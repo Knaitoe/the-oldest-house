@@ -76,7 +76,9 @@ The stable domestic floor remains physically in the Overworld so its windows, st
 
 The first impossible doorway appears in an interior partition at the end of the rear hall. Two blocks of matching corridor exist behind the doorway inside the normal footprint. The cross-dimension transition occurs only after the player steps into that buffer, giving the architecture a chance to conceal the transfer.
 
-The first cross-dimension prototype worked functionally but exposed Minecraft's dimension handoff too clearly. The active prototype therefore uses a same-dimension transition cell: it keeps the player's X/Z position and changes only Y, placing a matching corridor high above the physical structure in the same loaded chunk column. A reverse threshold returns the player to the domestic hall.
+The first cross-dimension prototype worked functionally but exposed Minecraft's dimension handoff too clearly. The active prototype therefore uses a same-dimension transition cell: it keeps the player's X/Z position and changes only Y, placing a matching corridor high above the physical structure in the same loaded chunk column.
+
+The return seam is deliberately **not** the impossible doorway. The hidden cell reproduces several blocks of the domestic hall on the near side of a matching ordinary door. A player who turns around can cross the door normally, walk back into what appears to be the same domestic hallway, and only then cross the concealed vertical seam. Door open/closed state is synchronized so the doorway does not reset between sides.
 
 The first prototype corridor is intentionally simple and long. Its purpose is to test the hidden transition and spatial contradiction before the modular graph system is layered on top.
 

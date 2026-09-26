@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.7` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.8` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -50,7 +50,9 @@ The first impossible-door threshold is currently **3 days** only for rapid testi
 
 ### Transition experiment
 
-Version 0.1.6 proved that a normal client-visible dimension change is too obvious for the first impossible threshold. Version 0.1.7 therefore keeps the player in the Overworld and moves only their Y coordinate into an isolated prototype cell in the same X/Z chunk column. This is explicitly a seam-quality experiment. The exposed F3 coordinate jump and long-term placement strategy are separate design problems.
+Version 0.1.6 proved that a normal client-visible dimension change is too obvious for the first impossible threshold. Version 0.1.7 therefore kept the player in the Overworld and moved only their Y coordinate into an isolated prototype cell in the same X/Z chunk column. That was substantially smoother, but the return doorway still read too clearly as a portal.
+
+Version 0.1.8 moves the return seam away from the doorway. The hidden cell now contains a copied collar of the domestic rear hall behind the same ordinary door. Backtracking crosses the door normally, continues several blocks into the copied hall, and only then transitions back down. The door's open/closed state is synchronized across the seam. This is still explicitly a seam-quality experiment; exposed F3 coordinates and final cell placement remain separate problems.
 
 ## Development commands
 
