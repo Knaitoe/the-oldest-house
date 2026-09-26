@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.6` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.7` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -16,8 +16,8 @@ Version `0.1.6` implements the first stable lifecycle and redesigned domestic sh
 - Automatic placement searches for empty, reasonably flat ground near the established settlement and will not deliberately bulldoze player structures.
 - The Oldest House now tracks a persistent perceived age once it has appeared.
 - At the provisional test threshold of age **3**, an ordinary-looking door appears at the end of the rear hall.
-- Crossing that doorway transfers the player into a dedicated void-backed interior dimension containing a deliberately simple long test corridor.
-- The transition is triggered after the player crosses the doorframe, with position/view direction preserved as closely as practical so we can evaluate whether the dimension change is visually hidden.
+- Crossing that doorway now transfers the player to a hidden same-dimension corridor cell high above the structure, preserving X/Z and remaining inside the same loaded chunk column.
+- The transition is still triggered only after the player crosses the doorframe. The same-dimension test preserves X/Z, view direction, and movement so we can compare its seam against the visibly disruptive cross-dimension prototype.
 - Operator-only development commands for forcing, aging, and inspecting The Oldest House state.
 - The exterior is generated once and then left alone. Future impossible space belongs behind it, not in a morphing facade.
 - No mixins.
@@ -47,6 +47,10 @@ Once The Oldest House has appeared, each successful new morning advances its per
 For testing, `/oldesthouse advance` fast-forwards this value without changing the world's actual time.
 
 The first impossible-door threshold is currently **3 days** only for rapid testing. It is a named constant and is not a final pacing decision.
+
+### Transition experiment
+
+Version 0.1.6 proved that a normal client-visible dimension change is too obvious for the first impossible threshold. Version 0.1.7 therefore keeps the player in the Overworld and moves only their Y coordinate into an isolated prototype cell in the same X/Z chunk column. This is explicitly a seam-quality experiment. The exposed F3 coordinate jump and long-term placement strategy are separate design problems.
 
 ## Development commands
 
