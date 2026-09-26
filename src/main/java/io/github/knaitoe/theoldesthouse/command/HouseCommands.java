@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.knaitoe.theoldesthouse.house.HouseBuilder;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
+import io.github.knaitoe.theoldesthouse.house.HouseStageManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
@@ -88,6 +89,7 @@ public final class HouseCommands {
 
         HouseBuilder.build(level, origin);
         data.markSpawned(origin);
+        HouseStageManager.applyCurrentStage(source.getServer(), data);
 
         source.sendSuccess(
                 () -> Component.literal(
@@ -117,6 +119,7 @@ public final class HouseCommands {
                                 ", spawned=" + data.isSpawned() +
                                 ", houseOrigin=" + housePosition +
                                 ", age=" + data.houseAge() +
+                                ", impossibleDoor=" + data.isImpossibleDoorRevealed() +
                                 ", visits=" + data.visitCount()
                 ),
                 false
@@ -157,6 +160,7 @@ public final class HouseCommands {
     private static int setAge(CommandSourceStack source, int days) {
         HouseSavedData data = HouseSavedData.get(source.getServer());
         data.setHouseAge(days);
+        HouseStageManager.applyCurrentStage(source.getServer(), data);
 
         source.sendSuccess(
                 () -> Component.literal("The Oldest House age set to " + days + " day(s)."),
@@ -176,6 +180,7 @@ public final class HouseCommands {
         }
 
         int newAge = data.advanceHouseAge(days);
+        HouseStageManager.applyCurrentStage(source.getServer(), data);
         source.sendSuccess(
                 () -> Component.literal(
                         "Advanced The Oldest House by " + days + " day(s). Perceived age is now " + newAge + " day(s)."

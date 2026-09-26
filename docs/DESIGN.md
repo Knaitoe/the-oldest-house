@@ -54,6 +54,8 @@ The initial implementation advances this value once per successful Minecraft mor
 
 Future architectural and narrative stages should key off perceived age rather than requiring testers or players to wait an exact amount of real time. Development command `/oldesthouse advance [days]` exists specifically to exercise these stages.
 
+The current transition prototype reveals the first impossible door at age 3. That threshold is deliberately provisional and isolated in `HouseStageManager` so later pacing work does not require architectural changes.
+
 ## Domestic phase
 
 The Oldest House is useful before it is scary:
@@ -68,9 +70,21 @@ The player should have time to adopt it as property.
 
 Later, a door appears in an interior wall where no door existed before. The exterior has not changed. Space beyond the door cannot fit inside the measured shell.
 
+## First impossible doorway and hidden transition
+
+The stable domestic floor remains physically in the Overworld so its windows, storage, furniture, pets, and exterior measurements are ordinary Minecraft reality.
+
+The first impossible doorway appears in an interior partition at the end of the rear hall. Two blocks of matching corridor exist behind the doorway inside the normal footprint. The cross-dimension transition occurs only after the player steps into that buffer, giving the architecture a chance to conceal the transfer.
+
+The receiving location in the dedicated interior dimension duplicates the same materials before continuing into architecture that cannot fit inside the exterior. A reverse threshold behind the matching receiving doorway returns the player to the Overworld hall.
+
+The first prototype corridor is intentionally simple and long. Its purpose is to test the hidden transition and spatial contradiction before the modular graph system is layered on top.
+
+If Minecraft's normal cross-dimension transition proves visibly disruptive in playtesting, the fallback is to evaluate same-dimension remote cells or a narrowly scoped client concealment layer.
+
 ## Interior
 
-The impossible interior will live in a controlled interior dimension of The Oldest House.
+The impossible interior lives in a controlled interior dimension of The Oldest House.
 
 It is represented internally as a graph of modular rooms/corridors/stair modules. Connections can move players between distant physical cells while preserving the illusion of continuous architecture.
 

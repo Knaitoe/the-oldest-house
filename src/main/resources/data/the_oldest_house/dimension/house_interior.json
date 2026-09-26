@@ -1,0 +1,11 @@
+{
+  "type": "the_oldest_house:house_interior",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "minecraft:the_void",
+      "layers": [],
+      "structure_overrides": []
+    }
+  }
+}

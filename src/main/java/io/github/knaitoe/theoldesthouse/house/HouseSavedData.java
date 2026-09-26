@@ -36,6 +36,8 @@ public final class HouseSavedData extends SavedData {
 
     private int houseAge;
     private long lastHouseAgeDay = -1L;
+    private boolean impossibleDoorRevealed;
+    private boolean interiorInitialized;
     private int visitCount;
 
     public static final Factory<HouseSavedData> FACTORY =
@@ -76,6 +78,8 @@ public final class HouseSavedData extends SavedData {
         data.lastHouseAgeDay = tag.contains("LastHouseAgeDay")
                 ? tag.getLong("LastHouseAgeDay")
                 : -1L;
+        data.impossibleDoorRevealed = tag.getBoolean("ImpossibleDoorRevealed");
+        data.interiorInitialized = tag.getBoolean("InteriorInitialized");
         data.visitCount = tag.getInt("VisitCount");
 
         return data;
@@ -108,6 +112,8 @@ public final class HouseSavedData extends SavedData {
 
         tag.putInt("HouseAge", houseAge);
         tag.putLong("LastHouseAgeDay", lastHouseAgeDay);
+        tag.putBoolean("ImpossibleDoorRevealed", impossibleDoorRevealed);
+        tag.putBoolean("InteriorInitialized", interiorInitialized);
         tag.putInt("VisitCount", visitCount);
         return tag;
     }
@@ -134,6 +140,14 @@ public final class HouseSavedData extends SavedData {
 
     public int houseAge() {
         return houseAge;
+    }
+
+    public boolean isImpossibleDoorRevealed() {
+        return impossibleDoorRevealed;
+    }
+
+    public boolean isInteriorInitialized() {
+        return interiorInitialized;
     }
 
     public int visitCount() {
@@ -283,6 +297,16 @@ public final class HouseSavedData extends SavedData {
         return true;
     }
 
+    public void markImpossibleDoorRevealed() {
+        impossibleDoorRevealed = true;
+        setDirty();
+    }
+
+    public void markInteriorInitialized() {
+        interiorInitialized = true;
+        setDirty();
+    }
+
     public void incrementVisitCount() {
         visitCount++;
         setDirty();
@@ -310,6 +334,8 @@ public final class HouseSavedData extends SavedData {
 
         houseAge = 0;
         lastHouseAgeDay = -1L;
+        impossibleDoorRevealed = false;
+        interiorInitialized = false;
         visitCount = 0;
         setDirty();
     }
