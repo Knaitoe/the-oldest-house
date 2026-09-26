@@ -12,10 +12,6 @@ public final class HouseSpawnManager {
     private static final int MAX_DISTANCE = 64;
     private static final int SITE_ATTEMPTS_PER_SUCCESSFUL_ROLL = 24;
 
-    private static final double FIRST_ELIGIBLE_DAY_CHANCE = 0.05D;
-    private static final double DAILY_CHANCE_INCREASE = 0.05D;
-    private static final double MAX_DAILY_CHANCE = 0.75D;
-
     private HouseSpawnManager() {
     }
 
@@ -33,24 +29,30 @@ public final class HouseSpawnManager {
             return;
         }
 
-        long eligibleDays = Math.max(1L, currentDay - data.eligibleSinceDay());
-        double chance = Math.min(
-                MAX_DAILY_CHANCE,
-                FIRST_ELIGIBLE_DAY_CHANCE + (eligibleDays - 1L) * DAILY_CHANCE_INCREASE
-        );
+        double chance = data.spawnChancePercent() / 100.0D;
 
         if (level.getRandom().nextDouble() >= chance) {
+            int nextChance = data.adjustSpawnChance(level.getRandom());
+            TheOldestHouse.LOGGER.debug(
+                    "The House did not appear. Next hidden appearance chance is {}%.",
+                    nextChance
+            );
             return;
         }
 
         Optional<BlockPos> anchor = data.anchorPosition();
         if (anchor.isEmpty()) {
+            data.adjustSpawnChance(level.getRandom());
             return;
         }
 
         Optional<BlockPos> origin = findSafeOrigin(level, anchor.get());
         if (origin.isEmpty()) {
-            TheOldestHouse.LOGGER.debug("House appearance roll succeeded, but no safe nearby site was found.");
+            int nextChance = data.adjustSpawnChance(level.getRandom());
+            TheOldestHouse.LOGGER.debug(
+                    "House appearance roll succeeded, but no safe nearby site was found. Next chance is {}%.",
+                    nextChance
+            );
             return;
         }
 

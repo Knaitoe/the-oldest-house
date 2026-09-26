@@ -106,6 +106,7 @@ public final class HouseCommands {
                                 ", anchor=" + anchorPosition +
                                 ", eligible=" + data.isEligible() +
                                 ", eligibleSinceDay=" + data.eligibleSinceDay() +
+                                ", spawnChance=" + data.spawnChancePercent() + "%" +
                                 ", spawned=" + data.isSpawned() +
                                 ", houseOrigin=" + housePosition +
                                 ", age=" + data.houseAge() +
@@ -127,7 +128,7 @@ public final class HouseCommands {
 
         source.sendSuccess(
                 () -> Component.literal(
-                        "Debug override: House eligibility enabled at the player's current location."
+                        "Debug override: House eligibility enabled at the player's current location. Spawn chance reset to 5%."
                 ),
                 true
         );

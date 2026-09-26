@@ -27,9 +27,20 @@ A player establishes the candidate settlement by repeatedly sleeping through nig
 
 Reaching the threshold only makes the world **eligible**. It does not spawn the House immediately.
 
-Beginning on a later morning, the mod makes one hidden appearance roll per Minecraft day. The chance starts low and gradually rises. If the roll succeeds, the game searches for reasonably flat, empty terrain near the established settlement and places the House there. If no safe site is available, nothing is destroyed and the game simply tries again on a later morning.
+Eligibility initializes a hidden appearance chance at **5%**. The same morning that establishes eligibility cannot spawn the House.
 
-No advancement, toast, chat line, sound sting, or other notification reveals eligibility or the successful appearance.
+Beginning on the following morning, the mod makes one hidden appearance roll per Minecraft day using the current chance. If the House does not appear, the chance for the next eligible morning performs a random walk:
+
+- 50% chance to increase by 2-5 percentage points,
+- 50% chance to decrease by 1-2 percentage points,
+- minimum 5%,
+- maximum 100%.
+
+Because upward movements are larger than downward movements, the chance has a gentle long-term upward drift while remaining capable of falling from one night to the next. The spawn should therefore feel increasingly plausible without becoming a visible or deterministic countdown.
+
+If a roll succeeds, the game searches for reasonably flat, empty terrain near the established settlement and places the House there. If no safe site is available, nothing is destroyed; the chance still changes for the next eligible night and the system tries again later.
+
+No advancement, toast, chat line, sound sting, or other notification reveals eligibility, probability changes, or the successful appearance.
 
 One morning, a House simply exists on ground that was previously empty.
 
