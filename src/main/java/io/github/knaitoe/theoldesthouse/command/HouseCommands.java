@@ -43,6 +43,13 @@ public final class HouseCommands {
                                                 context.getSource(),
                                                 IntegerArgumentType.getInteger(context, "days")
                                         ))))
+                        .then(Commands.literal("advance")
+                                .executes(context -> advanceAge(context.getSource(), 1))
+                                .then(Commands.argument("days", IntegerArgumentType.integer(1))
+                                        .executes(context -> advanceAge(
+                                                context.getSource(),
+                                                IntegerArgumentType.getInteger(context, "days")
+                                        ))))
                         .then(Commands.literal("visit")
                                 .executes(HouseCommands::incrementVisit))
                         .then(Commands.literal("reset")
@@ -156,6 +163,26 @@ public final class HouseCommands {
                 true
         );
         return 1;
+    }
+
+    private static int advanceAge(CommandSourceStack source, int days) {
+        HouseSavedData data = HouseSavedData.get(source.getServer());
+
+        if (!data.isSpawned()) {
+            source.sendFailure(Component.literal(
+                    "The Oldest House has not spawned yet. Spawn it before advancing its perceived age."
+            ));
+            return 0;
+        }
+
+        int newAge = data.advanceHouseAge(days);
+        source.sendSuccess(
+                () -> Component.literal(
+                        "Advanced The Oldest House by " + days + " day(s). Perceived age is now " + newAge + " day(s)."
+                ),
+                true
+        );
+        return newAge;
     }
 
     private static int incrementVisit(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {

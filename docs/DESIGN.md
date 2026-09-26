@@ -46,6 +46,14 @@ One morning, The Oldest House simply exists on ground that was previously empty.
 
 The exterior remains permanently measurable and trustworthy.
 
+## Perceived age
+
+After The Oldest House appears, the mod tracks how long it has perceived the structure as having existed in the world.
+
+The initial implementation advances this value once per successful Minecraft morning while The Oldest House is present. It is persisted separately from ordinary world time so development commands can fast-forward or set it directly.
+
+Future architectural and narrative stages should key off perceived age rather than requiring testers or players to wait an exact amount of real time. Development command `/oldesthouse advance [days]` exists specifically to exercise these stages.
+
 ## Domestic phase
 
 The Oldest House is useful before it is scary:
