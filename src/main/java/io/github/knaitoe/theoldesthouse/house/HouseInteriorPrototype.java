@@ -10,34 +10,44 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 
 public final class HouseInteriorPrototype {
-    public static final int FLOOR_Y = 63;
-    public static final int PLAYER_Y = 64;
-    public static final int ENTRY_X = 0;
+    // High enough to be isolated from ordinary survival terrain while staying
+    // in the same X/Z chunk column as the physical House.
+    public static final int FLOOR_Y = 300;
+    public static final int PLAYER_Y = FLOOR_Y + 1;
 
-    private static final int MIN_Z = -4;
-    private static final int MAX_Z = 48;
+    private static final int START_Z_OFFSET = 12;
+    private static final int DOOR_Z_OFFSET = 15;
+    private static final int END_Z_OFFSET = 64;
 
     private HouseInteriorPrototype() {
     }
 
-    public static void build(ServerLevel level) {
-        for (int z = MIN_Z; z <= MAX_Z; z++) {
-            for (int x = -2; x <= 2; x++) {
+    public static void build(ServerLevel level, BlockPos houseOrigin) {
+        int centerX = houseOrigin.getX() + HouseBuilder.WIDTH / 2;
+
+        for (int zOffset = START_Z_OFFSET; zOffset <= END_Z_OFFSET; zOffset++) {
+            int z = houseOrigin.getZ() + zOffset;
+
+            for (int x = centerX - 2; x <= centerX + 2; x++) {
                 level.setBlock(new BlockPos(x, FLOOR_Y, z), Blocks.SPRUCE_PLANKS.defaultBlockState(), 3);
                 level.setBlock(new BlockPos(x, PLAYER_Y + 5, z), Blocks.SPRUCE_SLAB.defaultBlockState(), 3);
             }
 
             for (int y = PLAYER_Y; y <= PLAYER_Y + 4; y++) {
-                level.setBlock(new BlockPos(-2, y, z), Blocks.WHITE_TERRACOTTA.defaultBlockState(), 3);
-                level.setBlock(new BlockPos(2, y, z), Blocks.WHITE_TERRACOTTA.defaultBlockState(), 3);
+                level.setBlock(new BlockPos(centerX - 2, y, z), Blocks.WHITE_TERRACOTTA.defaultBlockState(), 3);
+                level.setBlock(new BlockPos(centerX + 2, y, z), Blocks.WHITE_TERRACOTTA.defaultBlockState(), 3);
             }
 
-            level.setBlock(new BlockPos(0, PLAYER_Y, z), Blocks.RED_CARPET.defaultBlockState(), 3);
+            level.setBlock(new BlockPos(centerX, PLAYER_Y, z), Blocks.RED_CARPET.defaultBlockState(), 3);
         }
 
-        for (int x = -2; x <= 2; x++) {
+        int doorZ = houseOrigin.getZ() + DOOR_Z_OFFSET;
+
+        // Matching partition and door. The player arrives on the far side with
+        // identical X/Z so the teleport only changes vertical position.
+        for (int x = centerX - 2; x <= centerX + 2; x++) {
             for (int y = PLAYER_Y; y <= PLAYER_Y + 4; y++) {
-                level.setBlock(new BlockPos(x, y, -2), Blocks.WHITE_TERRACOTTA.defaultBlockState(), 3);
+                level.setBlock(new BlockPos(x, y, doorZ), Blocks.WHITE_TERRACOTTA.defaultBlockState(), 3);
             }
         }
 
@@ -45,21 +55,23 @@ public final class HouseInteriorPrototype {
                 .setValue(DoorBlock.FACING, Direction.NORTH)
                 .setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER);
         BlockState upper = lower.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER);
-        level.setBlock(new BlockPos(0, PLAYER_Y, -2), lower, 3);
-        level.setBlock(new BlockPos(0, PLAYER_Y + 1, -2), upper, 3);
+        level.setBlock(new BlockPos(centerX, PLAYER_Y, doorZ), lower, 3);
+        level.setBlock(new BlockPos(centerX, PLAYER_Y + 1, doorZ), upper, 3);
 
-        for (int z : new int[]{4, 16, 28, 40}) {
-            level.setBlock(new BlockPos(0, PLAYER_Y + 4, z), Blocks.CHAIN.defaultBlockState(), 3);
+        for (int zOffset : new int[]{20, 32, 44, 56}) {
+            int z = houseOrigin.getZ() + zOffset;
+            level.setBlock(new BlockPos(centerX, PLAYER_Y + 4, z), Blocks.CHAIN.defaultBlockState(), 3);
             level.setBlock(
-                    new BlockPos(0, PLAYER_Y + 3, z),
+                    new BlockPos(centerX, PLAYER_Y + 3, z),
                     Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true),
                     3
             );
         }
 
-        for (int x = -2; x <= 2; x++) {
+        int endZ = houseOrigin.getZ() + END_Z_OFFSET;
+        for (int x = centerX - 2; x <= centerX + 2; x++) {
             for (int y = PLAYER_Y; y <= PLAYER_Y + 4; y++) {
-                level.setBlock(new BlockPos(x, y, MAX_Z), Blocks.WHITE_TERRACOTTA.defaultBlockState(), 3);
+                level.setBlock(new BlockPos(x, y, endZ), Blocks.WHITE_TERRACOTTA.defaultBlockState(), 3);
             }
         }
     }

@@ -3,7 +3,6 @@ package io.github.knaitoe.theoldesthouse.house;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
 
 public final class HouseStageManager {
     public static final int FIRST_IMPOSSIBLE_DOOR_AGE = 3;
@@ -16,12 +15,12 @@ public final class HouseStageManager {
             return;
         }
 
-        if (!data.isImpossibleDoorRevealed()) {
-            BlockPos origin = data.housePosition().orElse(null);
-            if (origin == null) {
-                return;
-            }
+        BlockPos origin = data.housePosition().orElse(null);
+        if (origin == null) {
+            return;
+        }
 
+        if (!data.isImpossibleDoorRevealed()) {
             HouseBuilder.revealImpossibleDoor(server.overworld(), origin);
             data.markImpossibleDoorRevealed();
             TheOldestHouse.LOGGER.info(
@@ -31,16 +30,11 @@ public final class HouseStageManager {
         }
 
         if (!data.isInteriorInitialized()) {
-            ServerLevel interior = server.getLevel(HouseDimensions.INTERIOR);
-            if (interior == null) {
-                TheOldestHouse.LOGGER.error(
-                        "The Oldest House interior dimension is unavailable. Check the bundled dimension data."
-                );
-                return;
-            }
-
-            HouseInteriorPrototype.build(interior);
+            HouseInteriorPrototype.build(server.overworld(), origin);
             data.markInteriorInitialized();
+            TheOldestHouse.LOGGER.info(
+                    "Built the same-dimension transition cell for The Oldest House."
+            );
         }
     }
 }
