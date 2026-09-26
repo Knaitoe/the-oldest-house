@@ -102,11 +102,12 @@ public final class HouseCommands {
 
         source.sendSuccess(
                 () -> Component.literal(
-                        "House state | eligible=" + data.isEligible() +
+                        "House state | settlementNights=" + data.settlementNights() +
+                                ", anchor=" + anchorPosition +
+                                ", eligible=" + data.isEligible() +
                                 ", eligibleSinceDay=" + data.eligibleSinceDay() +
                                 ", spawned=" + data.isSpawned() +
                                 ", houseOrigin=" + housePosition +
-                                ", anchor=" + anchorPosition +
                                 ", age=" + data.houseAge() +
                                 ", visits=" + data.visitCount()
                 ),
@@ -126,8 +127,7 @@ public final class HouseCommands {
 
         source.sendSuccess(
                 () -> Component.literal(
-                        "House eligibility enabled. Anchor saved at the player's current position. " +
-                                "Automatic trigger detection/spawning is intentionally not enabled in v0.1."
+                        "Debug override: House eligibility enabled at the player's current location."
                 ),
                 true
         );

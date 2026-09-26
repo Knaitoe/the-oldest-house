@@ -19,11 +19,19 @@ The technical implementation should be boring and dependable even when the playe
 
 ## Appearance
 
-The world begins normally. Player behavior eventually makes the world eligible for the House. Eligibility should start a delayed chance of appearance rather than spawn the building immediately.
+The world begins normally. The House does not exist at world creation.
 
-The final eligibility trigger is intentionally undecided. The strongest current direction is recognizing that a player has established a genuine home and lived there for some time.
+The spawn trigger is **settlement residency**, not generic exploration and not a cursed-item quest.
 
-After eligibility, one morning the House simply exists on previously empty nearby ground.
+A player establishes the candidate settlement by repeatedly sleeping through nights in the same home area. The initial implementation counts five successful overnight sleeps whose wake positions stay within 32 horizontal blocks of the same settlement anchor. Moving outside that area begins a new candidate settlement count.
+
+Reaching the threshold only makes the world **eligible**. It does not spawn the House immediately.
+
+Beginning on a later morning, the mod makes one hidden appearance roll per Minecraft day. The chance starts low and gradually rises. If the roll succeeds, the game searches for reasonably flat, empty terrain near the established settlement and places the House there. If no safe site is available, nothing is destroyed and the game simply tries again on a later morning.
+
+No advancement, toast, chat line, sound sting, or other notification reveals eligibility or the successful appearance.
+
+One morning, a House simply exists on ground that was previously empty.
 
 The exterior remains permanently measurable and trustworthy.
 
