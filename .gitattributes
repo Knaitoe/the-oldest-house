@@ -1,0 +1,5 @@
+src/generated/**/.cache/* text eol=lf
+src/generated/**/*.json text eol=lf
+*.gradle text eol=lf
+*.java text eol=lf
+*.md text eol=lf
