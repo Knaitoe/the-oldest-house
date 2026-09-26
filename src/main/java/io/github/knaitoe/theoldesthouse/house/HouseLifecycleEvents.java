@@ -48,7 +48,7 @@ public final class HouseLifecycleEvents {
 
         if (!wasEligible && data.isEligible()) {
             TheOldestHouse.LOGGER.info(
-                    "House eligibility established after {} settlement nights near {}.",
+                    "The Oldest House eligibility established after {} settlement nights near {}.",
                     nights,
                     data.anchorPosition().orElse(BlockPos.ZERO)
             );

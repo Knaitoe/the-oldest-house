@@ -59,7 +59,7 @@ public final class HouseCommands {
 
         if (data.isSpawned()) {
             source.sendFailure(Component.literal(
-                    "The House is already marked as spawned. Use /oldesthouse reset before another test spawn."
+                    "The Oldest House is already marked as spawned. Use /oldesthouse reset before another test spawn."
             ));
             return 0;
         }
@@ -84,7 +84,7 @@ public final class HouseCommands {
 
         source.sendSuccess(
                 () -> Component.literal(
-                        "Spawned prototype House at " +
+                        "Spawned prototype of The Oldest House at " +
                                 origin.getX() + ", " + origin.getY() + ", " + origin.getZ() +
                                 " (north-west floor corner)."
                 ),
@@ -102,7 +102,7 @@ public final class HouseCommands {
 
         source.sendSuccess(
                 () -> Component.literal(
-                        "House state | settlementNights=" + data.settlementNights() +
+                        "The Oldest House state | settlementNights=" + data.settlementNights() +
                                 ", anchor=" + anchorPosition +
                                 ", eligible=" + data.isEligible() +
                                 ", eligibleSinceDay=" + data.eligibleSinceDay() +
@@ -128,7 +128,7 @@ public final class HouseCommands {
 
         source.sendSuccess(
                 () -> Component.literal(
-                        "Debug override: House eligibility enabled at the player's current location. Spawn chance reset to 5%."
+                        "Debug override: The Oldest House eligibility enabled at the player's current location. Spawn chance reset to 5%."
                 ),
                 true
         );
@@ -141,7 +141,7 @@ public final class HouseCommands {
         data.markIneligible();
 
         source.sendSuccess(
-                () -> Component.literal("House eligibility disabled."),
+                () -> Component.literal("The Oldest House eligibility disabled."),
                 true
         );
         return 1;
@@ -152,7 +152,7 @@ public final class HouseCommands {
         data.setHouseAge(days);
 
         source.sendSuccess(
-                () -> Component.literal("House age set to " + days + " day(s)."),
+                () -> Component.literal("The Oldest House age set to " + days + " day(s)."),
                 true
         );
         return 1;
@@ -164,7 +164,7 @@ public final class HouseCommands {
         data.incrementVisitCount();
 
         source.sendSuccess(
-                () -> Component.literal("House visit count is now " + data.visitCount() + "."),
+                () -> Component.literal("The Oldest House visit count is now " + data.visitCount() + "."),
                 true
         );
         return 1;
@@ -177,7 +177,7 @@ public final class HouseCommands {
 
         source.sendSuccess(
                 () -> Component.literal(
-                        "Persistent House state reset. Existing prototype blocks were left untouched."
+                        "Persistent state for The Oldest House reset. Existing prototype blocks were left untouched."
                 ),
                 true
         );

@@ -20,7 +20,7 @@ public final class HouseSpawnManager {
             return;
         }
 
-        // The same morning that establishes eligibility can never spawn the House.
+        // The same morning that establishes eligibility can never spawn The Oldest House.
         if (currentDay <= data.eligibleSinceDay()) {
             return;
         }
@@ -34,7 +34,7 @@ public final class HouseSpawnManager {
         if (level.getRandom().nextDouble() >= chance) {
             int nextChance = data.adjustSpawnChance(level.getRandom());
             TheOldestHouse.LOGGER.debug(
-                    "The House did not appear. Next hidden appearance chance is {}%.",
+                    "The Oldest House did not appear. Next hidden appearance chance is {}%.",
                     nextChance
             );
             return;
@@ -50,7 +50,7 @@ public final class HouseSpawnManager {
         if (origin.isEmpty()) {
             int nextChance = data.adjustSpawnChance(level.getRandom());
             TheOldestHouse.LOGGER.debug(
-                    "House appearance roll succeeded, but no safe nearby site was found. Next chance is {}%.",
+                    "The Oldest House appearance roll succeeded, but no safe nearby site was found. Next chance is {}%.",
                     nextChance
             );
             return;
@@ -60,7 +60,7 @@ public final class HouseSpawnManager {
         data.markSpawned(origin.get());
 
         // Deliberately no player-facing message. The discovery is the event.
-        TheOldestHouse.LOGGER.info("The House appeared at {}.", origin.get());
+        TheOldestHouse.LOGGER.info("The Oldest House appeared at {}.", origin.get());
     }
 
     private static Optional<BlockPos> findSafeOrigin(ServerLevel level, BlockPos anchor) {

@@ -43,7 +43,7 @@ public final class HouseBuilder {
     }
 
     /**
-     * Places the v0.1.2 static domestic House.
+     * Places the static domestic exterior of The Oldest House.
      *
      * origin is the north-west corner of the finished floor at floor level.
      * The exterior is intentionally fixed and conventional. The impossible
