@@ -32,53 +32,48 @@ public final class HouseTransitionEvents {
         }
 
         if (player.getY() < 200.0D) {
-            tryEnterInterior(player, origin);
+            tryEnterHiddenCell(player, origin);
         } else {
             tryReturnToDomesticFloor(player, origin);
         }
     }
 
-    private static void tryEnterInterior(ServerPlayer player, BlockPos origin) {
-        double centerX = origin.getX() + HouseBuilder.WIDTH / 2.0D + 0.5D;
+    private static void tryEnterHiddenCell(ServerPlayer player, BlockPos origin) {
+        double centerX = origin.getX() + HouseBuilder.WIDTH / 2 + 0.5D;
 
-        if (Math.abs(player.getX() - centerX) > 0.8D
+        // The player has already crossed the visible doorway before this seam.
+        if (Math.abs(player.getX() - centerX) > 0.72D
                 || player.getY() < origin.getY() + 1.0D
                 || player.getY() > origin.getY() + 4.2D
-                || player.getZ() < origin.getZ() + 16.15D
-                || player.getZ() > origin.getZ() + 17.85D) {
+                || player.getZ() < origin.getZ() + 16.25D
+                || player.getZ() > origin.getZ() + 17.40D) {
             return;
         }
 
-        HouseInteriorPrototype.build(player.serverLevel(), origin);
-
-        Vec3 movement = player.getDeltaMovement();
-        float yaw = player.getYRot();
-        float pitch = player.getXRot();
-
-        // Same dimension, same X/Z, same loaded chunk column. Only Y changes.
-        // This is specifically a seam-quality experiment.
-        player.teleportTo(
-                player.serverLevel(),
-                player.getX(),
-                HouseInteriorPrototype.PLAYER_Y + 0.10D,
-                player.getZ(),
-                yaw,
-                pitch
-        );
-        player.setDeltaMovement(movement);
+        HouseInteriorPrototype.syncDoorFromDomesticFloor(player.serverLevel(), origin);
+        moveVertically(player, HouseInteriorPrototype.PLAYER_Y + 0.10D);
     }
 
     private static void tryReturnToDomesticFloor(ServerPlayer player, BlockPos origin) {
-        double centerX = origin.getX() + HouseBuilder.WIDTH / 2.0D + 0.5D;
+        double centerX = origin.getX() + HouseBuilder.WIDTH / 2 + 0.5D;
+        double returnZ = origin.getZ() + HouseInteriorPrototype.RETURN_SEAM_Z_OFFSET;
 
-        if (Math.abs(player.getX() - centerX) > 0.9D
+        // Return only after the player has crossed the copied door and walked
+        // several blocks into the fake domestic hall. The doorway itself is
+        // therefore ordinary architecture in both directions.
+        if (Math.abs(player.getX() - centerX) > 0.72D
                 || player.getY() < HouseInteriorPrototype.PLAYER_Y
                 || player.getY() > HouseInteriorPrototype.PLAYER_Y + 4.2D
-                || player.getZ() > origin.getZ() + 14.85D
-                || player.getZ() < origin.getZ() + 13.25D) {
+                || player.getZ() < returnZ - 0.55D
+                || player.getZ() > returnZ + 0.55D) {
             return;
         }
 
+        HouseInteriorPrototype.syncDoorToDomesticFloor(player.serverLevel(), origin);
+        moveVertically(player, origin.getY() + 1.10D);
+    }
+
+    private static void moveVertically(ServerPlayer player, double destinationY) {
         Vec3 movement = player.getDeltaMovement();
         float yaw = player.getYRot();
         float pitch = player.getXRot();
@@ -86,8 +81,8 @@ public final class HouseTransitionEvents {
         player.teleportTo(
                 player.serverLevel(),
                 player.getX(),
-                origin.getY() + 1.10D,
-                origin.getZ() + 14.35D,
+                destinationY,
+                player.getZ(),
                 yaw,
                 pitch
         );
