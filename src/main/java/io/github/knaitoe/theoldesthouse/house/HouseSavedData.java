@@ -4,12 +4,16 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.saveddata.SavedData;
 
 import java.util.Optional;
 
 public final class HouseSavedData extends SavedData {
     private static final String DATA_NAME = "the_oldest_house";
+
+    public static final int MIN_SPAWN_CHANCE_PERCENT = 5;
+    public static final int MAX_SPAWN_CHANCE_PERCENT = 100;
 
     private boolean eligible;
     private long eligibleSinceDay = -1L;
@@ -28,6 +32,7 @@ public final class HouseSavedData extends SavedData {
     private int settlementNights;
     private long lastCountedSettlementDay = -1L;
     private long lastSpawnRollDay = -1L;
+    private int spawnChancePercent = MIN_SPAWN_CHANCE_PERCENT;
 
     private int houseAge;
     private int visitCount;
@@ -62,6 +67,9 @@ public final class HouseSavedData extends SavedData {
         data.lastSpawnRollDay = tag.contains("LastSpawnRollDay")
                 ? tag.getLong("LastSpawnRollDay")
                 : -1L;
+        data.spawnChancePercent = tag.contains("SpawnChancePercent")
+                ? clampSpawnChance(tag.getInt("SpawnChancePercent"))
+                : MIN_SPAWN_CHANCE_PERCENT;
 
         data.houseAge = tag.getInt("HouseAge");
         data.visitCount = tag.getInt("VisitCount");
@@ -92,6 +100,7 @@ public final class HouseSavedData extends SavedData {
         tag.putInt("SettlementNights", settlementNights);
         tag.putLong("LastCountedSettlementDay", lastCountedSettlementDay);
         tag.putLong("LastSpawnRollDay", lastSpawnRollDay);
+        tag.putInt("SpawnChancePercent", spawnChancePercent);
 
         tag.putInt("HouseAge", houseAge);
         tag.putInt("VisitCount", visitCount);
@@ -112,6 +121,10 @@ public final class HouseSavedData extends SavedData {
 
     public int settlementNights() {
         return settlementNights;
+    }
+
+    public int spawnChancePercent() {
+        return spawnChancePercent;
     }
 
     public int houseAge() {
@@ -161,6 +174,7 @@ public final class HouseSavedData extends SavedData {
         if (!eligible && settlementNights >= requiredNights) {
             eligible = true;
             eligibleSinceDay = currentDay;
+            spawnChancePercent = MIN_SPAWN_CHANCE_PERCENT;
         }
 
         setDirty();
@@ -184,6 +198,27 @@ public final class HouseSavedData extends SavedData {
         return true;
     }
 
+    /**
+     * Chooses a direction with equal probability. Upward nights gain 2-5
+     * percentage points; downward nights lose 1-2 points. The asymmetry gives
+     * the system a gentle long-term upward drift without becoming a countdown.
+     */
+    public int adjustSpawnChance(RandomSource random) {
+        if (random.nextBoolean()) {
+            spawnChancePercent += 2 + random.nextInt(4);
+        } else {
+            spawnChancePercent -= 1 + random.nextInt(2);
+        }
+
+        spawnChancePercent = clampSpawnChance(spawnChancePercent);
+        setDirty();
+        return spawnChancePercent;
+    }
+
+    private static int clampSpawnChance(int value) {
+        return Math.max(MIN_SPAWN_CHANCE_PERCENT, Math.min(MAX_SPAWN_CHANCE_PERCENT, value));
+    }
+
     public void markEligible(BlockPos anchor, long currentDay) {
         eligible = true;
         eligibleSinceDay = currentDay;
@@ -192,12 +227,14 @@ public final class HouseSavedData extends SavedData {
         anchorY = anchor.getY();
         anchorZ = anchor.getZ();
         settlementNights = Math.max(settlementNights, HouseLifecycleEvents.REQUIRED_SETTLEMENT_NIGHTS);
+        spawnChancePercent = MIN_SPAWN_CHANCE_PERCENT;
         setDirty();
     }
 
     public void markIneligible() {
         eligible = false;
         eligibleSinceDay = -1L;
+        spawnChancePercent = MIN_SPAWN_CHANCE_PERCENT;
         setDirty();
     }
 
@@ -238,6 +275,7 @@ public final class HouseSavedData extends SavedData {
         settlementNights = 0;
         lastCountedSettlementDay = -1L;
         lastSpawnRollDay = -1L;
+        spawnChancePercent = MIN_SPAWN_CHANCE_PERCENT;
 
         houseAge = 0;
         visitCount = 0;
