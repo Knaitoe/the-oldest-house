@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.4` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.5` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -14,7 +14,8 @@ Version `0.1.4` implements the first stable lifecycle and redesigned domestic sh
 - The hidden spawn chance begins at **5%**.
 - After each eligible night in which The Oldest House does not appear, the next night's chance randomly **rises by 2-5 percentage points** or **falls by 1-2 points**, with a floor of **5%** and ceiling of **100%**.
 - Automatic placement searches for empty, reasonably flat ground near the established settlement and will not deliberately bulldoze player structures.
-- Operator-only development commands for forcing and inspecting The Oldest House state.
+- The Oldest House now tracks a persistent perceived age once it has appeared.
+- Operator-only development commands for forcing, aging, and inspecting The Oldest House state.
 - The exterior is generated once and then left alone. Future impossible space belongs behind it, not in a morphing facade.
 - No mixins.
 
@@ -36,6 +37,12 @@ The actual interior dimension of The Oldest House, modular graph, nightly interi
 
 The asymmetric step sizes mean the probability tends to drift upward over time, but individual nights can still make the House less likely. It feels less like a countdown and more like something circling the settlement.
 
+## Perceived House age
+
+Once The Oldest House has appeared, each successful new morning advances its perceived age by one day. The value is stored in world data and is intended to drive future staged changes such as the first impossible door, deeper architecture, navigation anomalies, and other progression.
+
+For testing, `/oldesthouse advance` fast-forwards this value without changing the world's actual time.
+
 ## Development commands
 
 Commands require permission level 2.
@@ -46,7 +53,9 @@ Commands require permission level 2.
 | `/oldesthouse status` | Show persistent The Oldest House and settlement state, including hidden spawn chance. |
 | `/oldesthouse eligible` | Debug override: mark the current location eligible immediately and reset chance to 5%. |
 | `/oldesthouse ineligible` | Clear eligibility without removing an already spawned house. |
-| `/oldesthouse age <days>` | Set the stored The Oldest House age for later growth testing. |
+| `/oldesthouse age <days>` | Set The Oldest House perceived age to an exact value. |
+| `/oldesthouse advance` | Advance The Oldest House perceived age by one day. |
+| `/oldesthouse advance <days>` | Fast-forward The Oldest House perceived age by the supplied number of days. |
 | `/oldesthouse visit` | Increment the stored visit count. |
 | `/oldesthouse reset` | Reset persistent The Oldest House state. This does **not** erase blocks already placed in the world. |
 

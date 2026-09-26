@@ -35,6 +35,7 @@ public final class HouseSavedData extends SavedData {
     private int spawnChancePercent = MIN_SPAWN_CHANCE_PERCENT;
 
     private int houseAge;
+    private long lastHouseAgeDay = -1L;
     private int visitCount;
 
     public static final Factory<HouseSavedData> FACTORY =
@@ -72,6 +73,9 @@ public final class HouseSavedData extends SavedData {
                 : MIN_SPAWN_CHANCE_PERCENT;
 
         data.houseAge = tag.getInt("HouseAge");
+        data.lastHouseAgeDay = tag.contains("LastHouseAgeDay")
+                ? tag.getLong("LastHouseAgeDay")
+                : -1L;
         data.visitCount = tag.getInt("VisitCount");
 
         return data;
@@ -103,6 +107,7 @@ public final class HouseSavedData extends SavedData {
         tag.putInt("SpawnChancePercent", spawnChancePercent);
 
         tag.putInt("HouseAge", houseAge);
+        tag.putLong("LastHouseAgeDay", lastHouseAgeDay);
         tag.putInt("VisitCount", visitCount);
         return tag;
     }
@@ -252,6 +257,32 @@ public final class HouseSavedData extends SavedData {
         setDirty();
     }
 
+    public int advanceHouseAge(int days) {
+        if (days <= 0) {
+            return houseAge;
+        }
+
+        houseAge += days;
+        setDirty();
+        return houseAge;
+    }
+
+    /**
+     * Advances perceived age once per Minecraft morning while The Oldest House
+     * exists. The day guard prevents multiplayer wake events from aging the
+     * structure multiple times on the same morning.
+     */
+    public boolean advanceHouseAgeForMorning(long currentDay) {
+        if (!spawned || currentDay == lastHouseAgeDay) {
+            return false;
+        }
+
+        lastHouseAgeDay = currentDay;
+        houseAge++;
+        setDirty();
+        return true;
+    }
+
     public void incrementVisitCount() {
         visitCount++;
         setDirty();
@@ -278,6 +309,7 @@ public final class HouseSavedData extends SavedData {
         spawnChancePercent = MIN_SPAWN_CHANCE_PERCENT;
 
         houseAge = 0;
+        lastHouseAgeDay = -1L;
         visitCount = 0;
         setDirty();
     }
