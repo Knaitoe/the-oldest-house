@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.5` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.6` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -15,6 +15,9 @@ Version `0.1.5` implements the first stable lifecycle and redesigned domestic sh
 - After each eligible night in which The Oldest House does not appear, the next night's chance randomly **rises by 2-5 percentage points** or **falls by 1-2 points**, with a floor of **5%** and ceiling of **100%**.
 - Automatic placement searches for empty, reasonably flat ground near the established settlement and will not deliberately bulldoze player structures.
 - The Oldest House now tracks a persistent perceived age once it has appeared.
+- At the provisional test threshold of age **3**, an ordinary-looking door appears at the end of the rear hall.
+- Crossing that doorway transfers the player into a dedicated void-backed interior dimension containing a deliberately simple long test corridor.
+- The transition is triggered after the player crosses the doorframe, with position/view direction preserved as closely as practical so we can evaluate whether the dimension change is visually hidden.
 - Operator-only development commands for forcing, aging, and inspecting The Oldest House state.
 - The exterior is generated once and then left alone. Future impossible space belongs behind it, not in a morphing facade.
 - No mixins.
@@ -42,6 +45,8 @@ The asymmetric step sizes mean the probability tends to drift upward over time, 
 Once The Oldest House has appeared, each successful new morning advances its perceived age by one day. The value is stored in world data and is intended to drive future staged changes such as the first impossible door, deeper architecture, navigation anomalies, and other progression.
 
 For testing, `/oldesthouse advance` fast-forwards this value without changing the world's actual time.
+
+The first impossible-door threshold is currently **3 days** only for rapid testing. It is a named constant and is not a final pacing decision.
 
 ## Development commands
 

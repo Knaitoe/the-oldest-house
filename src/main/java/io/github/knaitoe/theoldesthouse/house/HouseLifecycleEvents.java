@@ -41,7 +41,9 @@ public final class HouseLifecycleEvents {
         // Once The Oldest House exists, each new morning advances its perceived
         // age exactly once, even on multiplayer servers where several players
         // may receive the same wake event.
-        data.advanceHouseAgeForMorning(currentDay);
+        if (data.advanceHouseAgeForMorning(currentDay)) {
+            HouseStageManager.applyCurrentStage(level.getServer(), data);
+        }
 
         boolean wasEligible = data.isEligible();
 

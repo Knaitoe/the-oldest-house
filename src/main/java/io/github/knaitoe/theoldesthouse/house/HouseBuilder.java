@@ -161,6 +161,15 @@ public final class HouseBuilder {
             }
         }
 
+        // The hall ends at an interior partition before the exterior rear wall.
+        // A two-block-deep hidden buffer behind it lets the eventual transition
+        // occur after the player has crossed the doorframe.
+        for (int x = 6; x <= 8; x++) {
+            for (int y = 1; y <= 4; y++) {
+                set(level, origin, x, y, 15, Blocks.WHITE_TERRACOTTA.defaultBlockState());
+            }
+        }
+
         // Simple dark wood base trim gives the interior walls more deliberate
         // scale without needing custom blocks.
         for (int x = 1; x < WIDTH - 1; x++) {
@@ -352,14 +361,43 @@ public final class HouseBuilder {
     }
 
     private static void furnishHall(ServerLevel level, BlockPos origin) {
-        // A runner deliberately guides the eye toward the currently blank end
-        // wall. That wall is reserved for the first impossible door event.
-        for (int z = 11; z < REAR_WALL_Z; z++) {
+        // A runner guides the eye toward the blank interior wall at z=15.
+        // The two blocks behind that wall are deliberately kept empty so the
+        // threshold transition can be concealed inside the architecture.
+        for (int z = 11; z <= 14; z++) {
             set(level, origin, CENTER_X, 1, z, Blocks.RED_CARPET.defaultBlockState());
         }
 
         set(level, origin, 6, 1, 11, Blocks.BARREL.defaultBlockState());
-        set(level, origin, 8, 1, 16, Blocks.BARREL.defaultBlockState());
+    }
+
+    public static void revealImpossibleDoor(ServerLevel level, BlockPos origin) {
+        for (int x = 6; x <= 8; x++) {
+            for (int y = 1; y <= 4; y++) {
+                set(level, origin, x, y, 15, Blocks.WHITE_TERRACOTTA.defaultBlockState());
+            }
+        }
+
+        placeDoor(level, origin, CENTER_X, 1, 15, Direction.NORTH, Blocks.SPRUCE_DOOR.defaultBlockState());
+
+        for (int z = 16; z <= 17; z++) {
+            for (int x = 6; x <= 8; x++) {
+                set(level, origin, x, 0, z, Blocks.SPRUCE_PLANKS.defaultBlockState());
+                for (int y = 1; y <= 4; y++) {
+                    set(level, origin, x, y, z, Blocks.AIR.defaultBlockState());
+                }
+            }
+
+            for (int y = 1; y <= 4; y++) {
+                set(level, origin, 5, y, z, Blocks.WHITE_TERRACOTTA.defaultBlockState());
+                set(level, origin, 9, y, z, Blocks.WHITE_TERRACOTTA.defaultBlockState());
+            }
+
+            for (int x = 6; x <= 8; x++) {
+                set(level, origin, x, 5, z, Blocks.SPRUCE_SLAB.defaultBlockState());
+            }
+            set(level, origin, CENTER_X, 1, z, Blocks.RED_CARPET.defaultBlockState());
+        }
     }
 
     private static void installLighting(ServerLevel level, BlockPos origin) {
