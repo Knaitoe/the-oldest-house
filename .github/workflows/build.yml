@@ -25,3 +25,10 @@ jobs:
 
       - name: Build
         run: gradle build
+
+      - name: Upload mod jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: the-oldest-house-${{ github.sha }}
+          path: build/libs/*.jar
+          if-no-files-found: error
