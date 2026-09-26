@@ -1,6 +1,6 @@
-# Static House architecture
+# Static architecture of The Oldest House
 
-The overworld House is intentionally conventional. Its exterior is the fixed measuring reference against which the impossible interior will later be judged.
+The overworld exterior of The Oldest House is intentionally conventional. Its exterior is the fixed measuring reference against which the impossible interior will later be judged.
 
 ## Prototype footprint
 
@@ -37,7 +37,7 @@ The rear central hall intentionally ends at an ordinary blank exterior wall. Tha
 
 ## Domestic purpose
 
-The House is meant to be attractive enough to use:
+The Oldest House is meant to be attractive enough to use:
 
 - crafting/furnace/smoker work area
 - storage barrels/chests

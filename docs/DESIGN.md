@@ -1,10 +1,10 @@
-# Design outline
+# Design outline for The Oldest House
 
 This file records the current design decisions so implementation does not outrun the concept.
 
 ## Central rule
 
-There is one anomalous House.
+There is one anomalous structure: The Oldest House.
 
 Its overworld exterior is a fixed authored design. The facade does not grow, morph, or advertise supernatural behavior. Impossible space is confined to what lies behind it.
 
@@ -13,23 +13,23 @@ The technical implementation should be boring and dependable even when the playe
 - Java 21.
 - NeoForge 1.21.1.
 - No core mixins unless a later mechanic proves genuinely impossible without one.
-- Persistent global House state in Overworld `SavedData`.
+- Persistent global The Oldest House state in Overworld `SavedData`.
 - Modular interior cells and a persistent topology graph rather than one enormous contiguous structure.
 - Generate/instantiate only what players can currently reach or interact with.
 
 ## Appearance
 
-The world begins normally. The House does not exist at world creation.
+The world begins normally. The Oldest House does not exist at world creation.
 
 The spawn trigger is **settlement residency**, not generic exploration and not a cursed-item quest.
 
 A player establishes the candidate settlement by repeatedly sleeping through nights in the same home area. The initial implementation counts five successful overnight sleeps whose wake positions stay within 32 horizontal blocks of the same settlement anchor. Moving outside that area begins a new candidate settlement count.
 
-Reaching the threshold only makes the world **eligible**. It does not spawn the House immediately.
+Reaching the threshold only makes the world **eligible**. It does not spawn The Oldest House immediately.
 
-Eligibility initializes a hidden appearance chance at **5%**. The same morning that establishes eligibility cannot spawn the House.
+Eligibility initializes a hidden appearance chance at **5%**. The same morning that establishes eligibility cannot spawn The Oldest House.
 
-Beginning on the following morning, the mod makes one hidden appearance roll per Minecraft day using the current chance. If the House does not appear, the chance for the next eligible morning performs a random walk:
+Beginning on the following morning, the mod makes one hidden appearance roll per Minecraft day using the current chance. If The Oldest House does not appear, the chance for the next eligible morning performs a random walk:
 
 - 50% chance to increase by 2-5 percentage points,
 - 50% chance to decrease by 1-2 percentage points,
@@ -38,17 +38,17 @@ Beginning on the following morning, the mod makes one hidden appearance roll per
 
 Because upward movements are larger than downward movements, the chance has a gentle long-term upward drift while remaining capable of falling from one night to the next. The spawn should therefore feel increasingly plausible without becoming a visible or deterministic countdown.
 
-If a roll succeeds, the game searches for reasonably flat, empty terrain near the established settlement and places the House there. If no safe site is available, nothing is destroyed; the chance still changes for the next eligible night and the system tries again later.
+If a roll succeeds, the game searches for reasonably flat, empty terrain near the established settlement and places The Oldest House there. If no safe site is available, nothing is destroyed; the chance still changes for the next eligible night and the system tries again later.
 
 No advancement, toast, chat line, sound sting, or other notification reveals eligibility, probability changes, or the successful appearance.
 
-One morning, a House simply exists on ground that was previously empty.
+One morning, The Oldest House simply exists on ground that was previously empty.
 
 The exterior remains permanently measurable and trustworthy.
 
 ## Domestic phase
 
-The House is useful before it is scary:
+The Oldest House is useful before it is scary:
 
 - furnished,
 - lit,
@@ -62,11 +62,11 @@ Later, a door appears in an interior wall where no door existed before. The exte
 
 ## Interior
 
-The impossible interior will live in a controlled House dimension.
+The impossible interior will live in a controlled interior dimension of The Oldest House.
 
 It is represented internally as a graph of modular rooms/corridors/stair modules. Connections can move players between distant physical cells while preserving the illusion of continuous architecture.
 
-The House grows a little each night by changing/unlocking graph state. New physical cells are generated only when approached.
+The Oldest House grows a little each night by changing/unlocking graph state. New physical cells are generated only when approached.
 
 The main staircase goes deeper on later visits.
 
@@ -76,7 +76,7 @@ The mod should attack ordinary Minecraft navigation habits rather than depend on
 
 ### Torches
 
-Players often mark one wall with torches to find their way home. The House records player-placed torches and, rarely while unobserved, can:
+Players often mark one wall with torches to find their way home. The Oldest House records player-placed torches and, rarely while unobserved, can:
 
 - move one,
 - add one,
@@ -124,7 +124,7 @@ They serve three jobs:
 
 There must be useful rewards found nowhere else, improving with depth.
 
-The House should not become a conventional loot dungeon. Unique tools and artifacts should ideally relate to understanding, navigating, or surviving the House.
+The Oldest House should not become a conventional loot dungeon. Unique tools and artifacts should ideally relate to understanding, navigating, or surviving the House.
 
 ## Death
 
@@ -132,7 +132,7 @@ Death inside creates a strong return loop.
 
 Ordinary dropped gear should be preserved rather than simply despawn. The room containing the items remains, but the topology may rearrange before the player returns.
 
-The House changes the route to the gear, not the gear itself.
+The Oldest House changes the route to the gear, not the gear itself.
 
 Compatibility with normal Minecraft death rules and common grave/keep-inventory behavior is preferred over replacing the death system wholesale.
 
@@ -158,6 +158,6 @@ Text dialogue is straightforward. Branching dialogue remains optional until choi
 
 The Minotaur is effectively endgame/conclusion, not a routine mob.
 
-For most of the mod it exists as sound, testimony, and abstract House state. A physical entity should only be instantiated when a local encounter requires one.
+For most of the mod it exists as sound, testimony, and abstract The Oldest House state. A physical entity should only be instantiated when a local encounter requires one.
 
 The final resolution is intentionally undecided. Do not reduce it prematurely to a standard boss health bar.
