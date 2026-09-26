@@ -1,0 +1,144 @@
+# Design outline
+
+This file records the current design decisions so implementation does not outrun the concept.
+
+## Central rule
+
+There is one anomalous House.
+
+Its overworld exterior is a fixed authored design. The facade does not grow, morph, or advertise supernatural behavior. Impossible space is confined to what lies behind it.
+
+The technical implementation should be boring and dependable even when the player-facing result is impossible:
+
+- Java 21.
+- NeoForge 1.21.1.
+- No core mixins unless a later mechanic proves genuinely impossible without one.
+- Persistent global House state in Overworld `SavedData`.
+- Modular interior cells and a persistent topology graph rather than one enormous contiguous structure.
+- Generate/instantiate only what players can currently reach or interact with.
+
+## Appearance
+
+The world begins normally. Player behavior eventually makes the world eligible for the House. Eligibility should start a delayed chance of appearance rather than spawn the building immediately.
+
+The final eligibility trigger is intentionally undecided. The strongest current direction is recognizing that a player has established a genuine home and lived there for some time.
+
+After eligibility, one morning the House simply exists on previously empty nearby ground.
+
+The exterior remains permanently measurable and trustworthy.
+
+## Domestic phase
+
+The House is useful before it is scary:
+
+- furnished,
+- lit,
+- safe from ordinary hostile spawning,
+- suitable for storage and sleeping,
+- player-modified domestic rooms become protected anchors.
+
+The player should have time to adopt it as property.
+
+Later, a door appears in an interior wall where no door existed before. The exterior has not changed. Space beyond the door cannot fit inside the measured shell.
+
+## Interior
+
+The impossible interior will live in a controlled House dimension.
+
+It is represented internally as a graph of modular rooms/corridors/stair modules. Connections can move players between distant physical cells while preserving the illusion of continuous architecture.
+
+The House grows a little each night by changing/unlocking graph state. New physical cells are generated only when approached.
+
+The main staircase goes deeper on later visits.
+
+## Navigation horror
+
+The mod should attack ordinary Minecraft navigation habits rather than depend on cinematic effects.
+
+### Torches
+
+Players often mark one wall with torches to find their way home. The House records player-placed torches and, rarely while unobserved, can:
+
+- move one,
+- add one,
+- alter spacing.
+
+This must remain rare enough that the player can doubt their own memory.
+
+### Coordinates
+
+Do not falsify F3 in the initial design.
+
+F3 tells the truth. Modular transitions make the player's experienced travel disagree with the coordinates: forty visible blocks may correspond to eleven actual X blocks, or several flights of stairs may barely change Y.
+
+### Maps
+
+Maps should work. Their honesty is the problem.
+
+Because interior cells occupy impossible/disconnected real coordinates, an interior map can naturally show a footprint larger than the exterior or disconnected architecture. Old and new maps may disagree after topology changes.
+
+### Measurement
+
+A custom measuring tool can return slightly different plausible readings for the same span.
+
+Earlier explorer notes tell players to count steps, producing another source of measurement that may disagree.
+
+## Sound and population
+
+The House is nearly silent and mostly empty.
+
+Do not fill it with conventional hostile mobs.
+
+Occasional distant growls foreshadow the Minotaur for a long time before there is any physical entity to fight.
+
+## Explorer notes
+
+Earlier explorers leave behind notes, measurements, journals, supplies, and contradictory observations.
+
+They serve three jobs:
+
+1. tell a story worth completing,
+2. teach navigation behavior such as counting steps,
+3. provide evidence that the player's experiences are not unique.
+
+## Rewards
+
+There must be useful rewards found nowhere else, improving with depth.
+
+The House should not become a conventional loot dungeon. Unique tools and artifacts should ideally relate to understanding, navigating, or surviving the House.
+
+## Death
+
+Death inside creates a strong return loop.
+
+Ordinary dropped gear should be preserved rather than simply despawn. The room containing the items remains, but the topology may rearrange before the player returns.
+
+The House changes the route to the gear, not the gear itself.
+
+Compatibility with normal Minecraft death rules and common grave/keep-inventory behavior is preferred over replacing the death system wholesale.
+
+## Dog
+
+The player eventually finds a lost dog inside.
+
+It becomes a genuine companion and useful ally, with enough time for ordinary Minecraft attachment to develop. Possible House-specific behaviors include reacting to bad doors, growls, topology changes, or lost belongings.
+
+## Mother of Lost Things
+
+A rare humanoid presence inspired by the woman who calls herself a mother to lost things.
+
+She should not be a normal roaming hostile mob.
+
+Her idea of caretaking is cruel. She becomes interested in the lost dog. Eventually the House separates the player from the dog; recovering it leads to an encounter with the Mother, who kills it with abrupt, casual violence.
+
+The current practical staging idea is a fall from a great height using ordinary Minecraft movement/physics rather than gore or elaborate animation.
+
+Text dialogue is straightforward. Branching dialogue remains optional until choices have meaningful consequences.
+
+## Minotaur
+
+The Minotaur is effectively endgame/conclusion, not a routine mob.
+
+For most of the mod it exists as sound, testimony, and abstract House state. A physical entity should only be instantiated when a local encounter requires one.
+
+The final resolution is intentionally undecided. Do not reduce it prematurely to a standard boss health bar.
