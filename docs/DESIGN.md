@@ -185,3 +185,18 @@ The Minotaur is effectively endgame/conclusion, not a routine mob.
 For most of the mod it exists as sound, testimony, and abstract The Oldest House state. A physical entity should only be instantiated when a local encounter requires one.
 
 The final resolution is intentionally undecided. Do not reduce it prematurely to a standard boss health bar.
+
+
+## Dimension-backed domestic interior prototype
+
+The active architecture now treats the Overworld structure as the fixed exterior shell and the dedicated House dimension as the actual usable interior from the moment the player enters.
+
+The House dimension uses the exterior's exact X/Y/Z coordinates. Crossing into the structure's physical bounds from the Overworld changes dimension without changing position, facing, or motion. The normal front door is therefore the expected entrance, but mining through an exterior wall or roof does not reveal backstage geometry; entering the volume still reaches the same House interior.
+
+To preserve the ordinary-looking main-floor windows, initialization copies a 32-block radius of nearby Overworld blocks around the structure into the House dimension at matching coordinates. The dimension uses Overworld visual effects, skylight, a plains sky, and synchronized day/weather state. The windows are ordinary glass looking at ordinary copied blocks rather than portal surfaces.
+
+The proxy exterior is currently a one-time snapshot. A later synchronization pass should update changed visible terrain selectively rather than overwrite player-modified interior rooms.
+
+NeoForge 1.21.1 supports custom dimension-transition screens through `RegisterDimensionTransitionScreenEvent`. The prototype uses this instead of a mixin to replace the normal loading presentation with a close-up door texture and brief diegetic text while the target level loads.
+
+The age-gated impossible rear door still exists, but it is now created inside the House dimension rather than in the Overworld shell.

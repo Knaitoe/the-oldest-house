@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.8` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.9` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -48,11 +48,17 @@ For testing, `/oldesthouse advance` fast-forwards this value without changing th
 
 The first impossible-door threshold is currently **3 days** only for rapid testing. It is a named constant and is not a final pacing decision.
 
-### Transition experiment
+### Dimension-backed domestic interior
 
-Version 0.1.6 proved that a normal client-visible dimension change is too obvious for the first impossible threshold. Version 0.1.7 therefore kept the player in the Overworld and moved only their Y coordinate into an isolated prototype cell in the same X/Z chunk column. That was substantially smoother, but the return doorway still read too clearly as a portal.
+Version 0.1.9 returns to the intended architecture: the Overworld contains the fixed exterior of The Oldest House, while the usable domestic interior exists in `the_oldest_house:house_interior`.
 
-Version 0.1.8 moves the return seam away from the doorway. The hidden cell now contains a copied collar of the domestic rear hall behind the same ordinary door. Backtracking crosses the door normally, continues several blocks into the copied hall, and only then transitions back down. The door's open/closed state is synchronized across the seam. This is still explicitly a seam-quality experiment; exposed F3 coordinates and final cell placement remain separate problems.
+The interior dimension uses the same coordinates as the exterior. Entering the physical bounds of the structure transfers the player to the matching X/Y/Z in that dimension, so the front door is the normal route but digging through a wall or dropping through the roof is not a bypass.
+
+On first initialization, the mod copies a 32-block view radius of the real Overworld around The Oldest House into the interior dimension and rebuilds the same static house at the same coordinates. With an Overworld-style sky, synchronized time/weather, and real glass windows, the copied landscape becomes the view outside instead of a portal-rendering effect.
+
+NeoForge's dimension-transition screen hook replaces the normal loading presentation specifically for travel into and out of The Oldest House. The current prototype shows a close-up spruce-door texture with a short diegetic line while the target level finishes loading.
+
+This is still a prototype. The exterior proxy is currently a snapshot taken when the interior is initialized; later work can refresh changed visible terrain without rebuilding the domestic interior.
 
 ## Development commands
 
