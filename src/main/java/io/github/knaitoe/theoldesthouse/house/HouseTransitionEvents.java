@@ -8,6 +8,8 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 public final class HouseTransitionEvents {
+    private static final double BOUNDARY_MARGIN = 0.55D;
+
     private HouseTransitionEvents() {
     }
 
@@ -16,13 +18,8 @@ public final class HouseTransitionEvents {
             return;
         }
 
-        ServerLevel level = player.serverLevel();
-        if (!level.dimension().equals(Level.OVERWORLD)) {
-            return;
-        }
-
         HouseSavedData data = HouseSavedData.get(player.getServer());
-        if (!data.isImpossibleDoorRevealed()) {
+        if (!data.isSpawned()) {
             return;
         }
 
@@ -31,57 +28,62 @@ public final class HouseTransitionEvents {
             return;
         }
 
-        if (player.getY() < 200.0D) {
-            tryEnterHiddenCell(player, origin);
-        } else {
-            tryReturnToDomesticFloor(player, origin);
-        }
-    }
-
-    private static void tryEnterHiddenCell(ServerPlayer player, BlockPos origin) {
-        double centerX = origin.getX() + HouseBuilder.WIDTH / 2 + 0.5D;
-
-        // The player has already crossed the visible doorway before this seam.
-        if (Math.abs(player.getX() - centerX) > 0.72D
-                || player.getY() < origin.getY() + 1.0D
-                || player.getY() > origin.getY() + 4.2D
-                || player.getZ() < origin.getZ() + 16.25D
-                || player.getZ() > origin.getZ() + 17.40D) {
+        if (player.serverLevel().dimension().equals(Level.OVERWORLD)) {
+            if (isInsideDomesticVolume(player, origin)) {
+                enterHouseDimension(player, data);
+            }
             return;
         }
 
-        HouseInteriorPrototype.syncDoorFromDomesticFloor(player.serverLevel(), origin);
-        moveVertically(player, HouseInteriorPrototype.PLAYER_Y + 0.10D);
+        if (player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)
+                && !isInsideDomesticVolume(player, origin)) {
+            leaveHouseDimension(player, data);
+        }
     }
 
-    private static void tryReturnToDomesticFloor(ServerPlayer player, BlockPos origin) {
-        double centerX = origin.getX() + HouseBuilder.WIDTH / 2 + 0.5D;
-        double returnZ = origin.getZ() + HouseInteriorPrototype.RETURN_SEAM_Z_OFFSET;
+    private static boolean isInsideDomesticVolume(ServerPlayer player, BlockPos origin) {
+        double minX = origin.getX() + BOUNDARY_MARGIN;
+        double maxX = origin.getX() + HouseBuilder.WIDTH - BOUNDARY_MARGIN;
+        double minZ = origin.getZ() + BOUNDARY_MARGIN;
+        double maxZ = origin.getZ() + HouseBuilder.DEPTH - BOUNDARY_MARGIN;
+        double minY = origin.getY() + 0.35D;
+        double maxY = origin.getY() + 5.45D;
 
-        // Return only after the player has crossed the copied door and walked
-        // several blocks into the fake domestic hall. The doorway itself is
-        // therefore ordinary architecture in both directions.
-        if (Math.abs(player.getX() - centerX) > 0.72D
-                || player.getY() < HouseInteriorPrototype.PLAYER_Y
-                || player.getY() > HouseInteriorPrototype.PLAYER_Y + 4.2D
-                || player.getZ() < returnZ - 0.55D
-                || player.getZ() > returnZ + 0.55D) {
+        return player.getX() >= minX
+                && player.getX() <= maxX
+                && player.getZ() >= minZ
+                && player.getZ() <= maxZ
+                && player.getY() >= minY
+                && player.getY() <= maxY;
+    }
+
+    private static void enterHouseDimension(ServerPlayer player, HouseSavedData data) {
+        ServerLevel interior = HouseDimensionMirror.ensureInitialized(player.getServer(), data);
+        if (interior == null) {
             return;
         }
 
-        HouseInteriorPrototype.syncDoorToDomesticFloor(player.serverLevel(), origin);
-        moveVertically(player, origin.getY() + 1.10D);
+        teleportMatchingCoordinates(player, interior);
     }
 
-    private static void moveVertically(ServerPlayer player, double destinationY) {
+    private static void leaveHouseDimension(ServerPlayer player, HouseSavedData data) {
+        HouseDimensionMirror.syncAtmosphere(
+                player.getServer().overworld(),
+                player.serverLevel()
+        );
+        teleportMatchingCoordinates(player, player.getServer().overworld());
+    }
+
+    private static void teleportMatchingCoordinates(ServerPlayer player, ServerLevel destination) {
         Vec3 movement = player.getDeltaMovement();
         float yaw = player.getYRot();
         float pitch = player.getXRot();
 
+        player.stopRiding();
         player.teleportTo(
-                player.serverLevel(),
+                destination,
                 player.getX(),
-                destinationY,
+                player.getY(),
                 player.getZ(),
                 yaw,
                 pitch
