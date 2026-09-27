@@ -263,3 +263,14 @@ Boundary transition effects should never visually identify themselves as portals
 The front door uses the same oak material as the authored exterior door and briefly fills the view as the player passes it. A window crossing uses only the surrounding white-terracotta sill/jamb because a player capable of crossing that opening has already removed the glass. A generic wall breach uses the authored white-terracotta wall material plus a narrow dark-oak structural edge, leaving only a tight dark gap while the dimension handoff completes.
 
 Entering is intentionally slower and more constricted than leaving. The difference should be perceptible over repeated use without becoming an explicit supernatural announcement.
+
+
+## Captured-frame transition foundation
+
+Synthetic full-screen reconstructions of doors, windows, and breaches were rejected in playtesting because they visually detached from the player's camera and read as loading-screen artwork.
+
+The current transition system captures the actual main framebuffer immediately when NeoForge constructs the receiving-level screen. That final gameplay frame is registered as a temporary dynamic texture and remains the visual background throughout the loading interval.
+
+Physical obstruction is then composited over the real frozen view. The door, window frame, or broken-wall edges only need to explain why the player's vision is partially blocked; they no longer need to fabricate an entire scene. The dynamic capture texture is released when the screen closes.
+
+This preserves camera orientation and environmental context up to the dimension handoff while keeping the underlying cross-dimension architecture unchanged.
