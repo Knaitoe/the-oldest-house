@@ -4,6 +4,9 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.knaitoe.theoldesthouse.house.HouseBuilder;
+import io.github.knaitoe.theoldesthouse.house.HouseDimensionMirror;
+import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.HouseMirrorSyncEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.house.HouseStageManager;
 import net.minecraft.commands.CommandSourceStack;
@@ -53,6 +56,8 @@ public final class HouseCommands {
                                         ))))
                         .then(Commands.literal("visit")
                                 .executes(HouseCommands::incrementVisit))
+                        .then(Commands.literal("reconcile")
+                                .executes(HouseCommands::reconcileMirror))
                         .then(Commands.literal("reset")
                                 .executes(HouseCommands::reset))
         );
@@ -202,10 +207,42 @@ public final class HouseCommands {
         return 1;
     }
 
+    private static int reconcileMirror(
+            com.mojang.brigadier.context.CommandContext<CommandSourceStack> context
+    ) {
+        CommandSourceStack source = context.getSource();
+        HouseSavedData data = HouseSavedData.get(source.getServer());
+        BlockPos origin = data.housePosition().orElse(null);
+        ServerLevel interior = source.getServer().getLevel(HouseDimensions.INTERIOR);
+
+        if (!data.isSpawned() || origin == null || interior == null) {
+            source.sendFailure(Component.literal(
+                    "The Oldest House interior is not available to reconcile."
+            ));
+            return 0;
+        }
+
+        int changed = HouseDimensionMirror.reconcileAuthoritativeDomestic(
+                interior,
+                source.getServer().overworld(),
+                origin
+        );
+
+        source.sendSuccess(
+                () -> Component.literal(
+                        "Reconciled the authoritative House interior into the Overworld proxy; "
+                                + changed + " shared position(s) changed."
+                ),
+                false
+        );
+        return 1;
+    }
+
     private static int reset(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
         HouseSavedData data = HouseSavedData.get(source.getServer());
         data.reset();
+        HouseMirrorSyncEvents.clearPending();
 
         source.sendSuccess(
                 () -> Component.literal(

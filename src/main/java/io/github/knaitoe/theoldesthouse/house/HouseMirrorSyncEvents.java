@@ -19,6 +19,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class HouseMirrorSyncEvents {
     private static final Set<PendingSync> PENDING = new LinkedHashSet<>();
     private static int atmosphereTicker;
+    private static int authoritativeTicker;
+    private static final int AUTHORITATIVE_RECONCILE_INTERVAL = 20;
+    private static final double ACTIVE_RECONCILE_RADIUS_SQUARED = 96.0D * 96.0D;
 
     private HouseMirrorSyncEvents() {
     }
@@ -33,53 +36,95 @@ public final class HouseMirrorSyncEvents {
     }
 
     public static void onExplosion(ExplosionEvent.Detonate event) {
-        if (!(event.getLevel() instanceof ServerLevel level)
-                || !level.dimension().equals(HouseDimensions.INTERIOR)) {
+        if (!(event.getLevel() instanceof ServerLevel level)) {
+            return;
+        }
+
+        ResourceKey<Level> dimension = level.dimension();
+        if (!dimension.equals(Level.OVERWORLD)
+                && !dimension.equals(HouseDimensions.INTERIOR)) {
             return;
         }
 
         HouseSavedData data = HouseSavedData.get(level.getServer());
         BlockPos origin = data.housePosition().orElse(null);
-        if (origin == null || !data.isImpossibleDoorRevealed()) {
-            return;
+
+        if (dimension.equals(HouseDimensions.INTERIOR)
+                && origin != null
+                && data.isImpossibleDoorRevealed()) {
+            event.getAffectedBlocks().removeIf(
+                    pos -> HouseImpossibleHallway.isProtectedStructureBlock(origin, pos)
+            );
         }
 
-        event.getAffectedBlocks().removeIf(
-                pos -> HouseImpossibleHallway.isProtectedStructureBlock(origin, pos)
-        );
+        // Detonate fires before the affected blocks are removed. Queue them now;
+        // the post-tick mirror reads the committed result.
+        for (BlockPos pos : event.getAffectedBlocks()) {
+            queue(level, pos);
+        }
     }
 
     public static void onPiston(PistonEvent.Pre event) {
-        if (!(event.getLevel() instanceof ServerLevel level)
-                || !level.dimension().equals(HouseDimensions.INTERIOR)) {
+        if (!(event.getLevel() instanceof ServerLevel level)) {
             return;
         }
 
-        HouseSavedData data = HouseSavedData.get(level.getServer());
-        BlockPos origin = data.housePosition().orElse(null);
-        if (origin == null || !data.isImpossibleDoorRevealed()) {
+        ResourceKey<Level> dimension = level.dimension();
+        if (!dimension.equals(Level.OVERWORLD)
+                && !dimension.equals(HouseDimensions.INTERIOR)) {
             return;
         }
 
         var resolver = event.getStructureHelper();
-        if (resolver != null && resolver.resolve()) {
-            boolean touchesProtected = resolver.getToPush().stream()
-                    .anyMatch(pos -> HouseImpossibleHallway.isProtectedStructureBlock(origin, pos));
+        HouseSavedData data = HouseSavedData.get(level.getServer());
+        BlockPos origin = data.housePosition().orElse(null);
 
-            if (touchesProtected) {
+        if (dimension.equals(HouseDimensions.INTERIOR)
+                && origin != null
+                && data.isImpossibleDoorRevealed()) {
+            if (resolver != null && resolver.resolve()) {
+                boolean touchesProtected = resolver.getToPush().stream()
+                        .anyMatch(pos ->
+                                HouseImpossibleHallway.isProtectedStructureBlock(origin, pos)
+                                        || HouseImpossibleHallway.isProtectedStructureBlock(
+                                                origin,
+                                                pos.relative(event.getDirection())
+                                        )
+                        );
+
+                if (touchesProtected) {
+                    event.setCanceled(true);
+                    return;
+                }
+            }
+
+            BlockPos face = event.getFaceOffsetPos();
+            if (HouseImpossibleHallway.isProtectedStructureBlock(origin, face)
+                    || HouseImpossibleHallway.isProtectedStructureBlock(
+                            origin,
+                            face.relative(event.getDirection())
+                    )) {
                 event.setCanceled(true);
                 return;
             }
         }
 
-        BlockPos face = event.getFaceOffsetPos();
-        if (HouseImpossibleHallway.isProtectedStructureBlock(origin, face)
-                || HouseImpossibleHallway.isProtectedStructureBlock(
-                        origin,
-                        face.relative(event.getDirection())
-                )) {
-            event.setCanceled(true);
+        // Queue the source and destination cells before movement. Post-tick
+        // reconciliation sees the final piston result, including moved block
+        // entities on implementations that support them.
+        if (resolver != null && resolver.resolve()) {
+            for (BlockPos pos : resolver.getToPush()) {
+                queue(level, pos);
+                queue(level, pos.relative(event.getDirection()));
+            }
+
+            for (BlockPos pos : resolver.getToDestroy()) {
+                queue(level, pos);
+            }
         }
+
+        queue(level, event.getFaceOffsetPos());
+        queue(level, event.getFaceOffsetPos().relative(event.getDirection()));
     }
 
     public static void onPlace(BlockEvent.EntityPlaceEvent event) {
@@ -113,43 +158,96 @@ public final class HouseMirrorSyncEvents {
             }
         }
 
-        if (PENDING.isEmpty()) {
-            return;
-        }
-
-        Set<PendingSync> work = new LinkedHashSet<>(PENDING);
-        PENDING.clear();
-
-        if (!data.isSpawned() || !data.isInteriorInitialized()) {
-            return;
-        }
-
         BlockPos origin = data.housePosition().orElse(null);
         ServerLevel interior = server.getLevel(HouseDimensions.INTERIOR);
-        if (origin == null || interior == null) {
+
+        // Explicit player/world events are applied first. Overworld edits such
+        // as breaking an exterior wall therefore reach the authoritative House
+        // dimension before the periodic authority pass runs.
+        if (!PENDING.isEmpty()) {
+            Set<PendingSync> work = new LinkedHashSet<>(PENDING);
+            PENDING.clear();
+
+            if (data.isSpawned()
+                    && data.isInteriorInitialized()
+                    && origin != null
+                    && interior != null) {
+                for (PendingSync pending : work) {
+                    if (!HouseDimensionMirror.isSharedPosition(origin, pending.pos())) {
+                        continue;
+                    }
+
+                    ServerLevel source;
+                    ServerLevel target;
+
+                    if (pending.source().equals(Level.OVERWORLD)) {
+                        source = server.overworld();
+                        target = interior;
+                    } else if (pending.source().equals(HouseDimensions.INTERIOR)) {
+                        source = interior;
+                        target = server.overworld();
+                    } else {
+                        continue;
+                    }
+
+                    HouseDimensionMirror.copyStateAndBlockEntity(
+                            source,
+                            target,
+                            pending.pos()
+                    );
+                }
+            }
+        }
+
+        authoritativeTicker++;
+        if (authoritativeTicker < AUTHORITATIVE_RECONCILE_INTERVAL) {
+            return;
+        }
+        authoritativeTicker = 0;
+
+        if (!data.isSpawned()
+                || !data.isInteriorInitialized()
+                || origin == null
+                || interior == null
+                || !isHouseActivelyObserved(server, interior, origin)) {
             return;
         }
 
-        for (PendingSync pending : work) {
-            if (!HouseDimensionMirror.isSharedPosition(origin, pending.pos())) {
-                continue;
+        // Once initialized, the House dimension owns domestic persistence.
+        // This catches furnace progress, container inventory/menu changes,
+        // environmental ticks, redstone state and other mutations that do not
+        // reliably emit a placement/break event.
+        HouseDimensionMirror.reconcileAuthoritativeDomestic(
+                interior,
+                server.overworld(),
+                origin
+        );
+    }
+
+    private static boolean isHouseActivelyObserved(
+            MinecraftServer server,
+            ServerLevel interior,
+            BlockPos origin
+    ) {
+        double centerX = origin.getX() + HouseBuilder.WIDTH / 2.0D;
+        double centerY = origin.getY() + 4.0D;
+        double centerZ = origin.getZ() + HouseBuilder.DEPTH / 2.0D;
+
+        for (ServerPlayer player : server.overworld().players()) {
+            if (player.distanceToSqr(centerX, centerY, centerZ)
+                    <= ACTIVE_RECONCILE_RADIUS_SQUARED) {
+                return true;
             }
-
-            ServerLevel source;
-            ServerLevel target;
-
-            if (pending.source().equals(Level.OVERWORLD)) {
-                source = server.overworld();
-                target = interior;
-            } else if (pending.source().equals(HouseDimensions.INTERIOR)) {
-                source = interior;
-                target = server.overworld();
-            } else {
-                continue;
-            }
-
-            HouseDimensionMirror.copyState(source, target, pending.pos());
         }
+
+        for (ServerPlayer player : interior.players()) {
+            if (player.distanceToSqr(centerX, centerY, centerZ)
+                    <= ACTIVE_RECONCILE_RADIUS_SQUARED) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static boolean protectImpossibleStructure(LevelAccessor level, BlockPos pos) {
@@ -185,6 +283,12 @@ public final class HouseMirrorSyncEvents {
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             add(dimension, pos.relative(direction));
         }
+    }
+
+    public static void clearPending() {
+        PENDING.clear();
+        atmosphereTicker = 0;
+        authoritativeTicker = 0;
     }
 
     private static void add(ResourceKey<Level> source, BlockPos pos) {

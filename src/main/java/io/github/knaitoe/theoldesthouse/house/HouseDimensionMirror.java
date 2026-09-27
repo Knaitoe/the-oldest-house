@@ -2,8 +2,10 @@ package io.github.knaitoe.theoldesthouse.house;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 public final class HouseDimensionMirror {
@@ -31,10 +33,9 @@ public final class HouseDimensionMirror {
             // updates from that process can turn attached blocks into item debris.
             copyInitialSnapshot(overworld, interior, origin);
 
-            // BlockState mirroring intentionally does not copy block-entity
-            // NBT. Re-attach the authored domestic loot tables to the mirrored
-            // chests before the interior becomes authoritative.
-            HouseBuilder.applyDomesticLootTables(interior, origin);
+            // The initial snapshot now carries block-entity data too, including
+            // authored lazy loot tables and any player-owned container contents
+            // that existed before the first threshold crossing.
             data.markInteriorInitialized();
 
             if (data.houseAge() >= HouseStageManager.FIRST_IMPOSSIBLE_DOOR_AGE) {
@@ -95,26 +96,109 @@ public final class HouseDimensionMirror {
                         continue;
                     }
 
-                    copyState(source, target, pos);
+                    copyStateAndBlockEntity(source, target, pos);
                 }
             }
         }
     }
 
     public static void copyState(ServerLevel source, ServerLevel target, BlockPos pos) {
-        BlockState state = source.getBlockState(pos);
+        copyStateAndBlockEntity(source, target, pos);
+    }
+
+    /**
+     * Copies both the visible block state and the server-side block-entity data.
+     *
+     * The House dimension is authoritative after initialization, but this method
+     * is also used for explicit Overworld player edits before the authoritative
+     * reconciliation pass. Metadata such as block-entity id/coordinates is not
+     * copied; the target entity keeps its own identity and receives only saved
+     * custom/component data.
+     */
+    public static boolean copyStateAndBlockEntity(
+            ServerLevel source,
+            ServerLevel target,
+            BlockPos pos
+    ) {
+        BlockState sourceState = source.getBlockState(pos);
+        BlockState targetState = target.getBlockState(pos);
+        boolean changed = false;
 
         // Native terrain in both dimensions already matches because the House
-        // dimension now uses the same Overworld noise generator and server seed.
-        // Avoid rewriting matching terrain, especially fluids: native generation
-        // owns their fluid states, lighting, heightmaps, and biome rendering.
-        if (state.equals(target.getBlockState(pos))) {
-            return;
+        // dimension uses the same Overworld generator and seed. Only overlay
+        // actual differences.
+        if (!sourceState.equals(targetState)) {
+            target.setBlock(pos, sourceState, 2);
+            changed = true;
+            targetState = target.getBlockState(pos);
         }
 
-        // Flag 2 updates clients without cascading neighbor physics. Exact
-        // player edits and the authored House are overlaid onto native terrain.
-        target.setBlock(pos, state, 2);
+        BlockEntity sourceEntity = source.getBlockEntity(pos);
+        BlockEntity targetEntity = target.getBlockEntity(pos);
+
+        if (sourceEntity == null || targetEntity == null) {
+            return changed;
+        }
+
+        // A state replacement should already have created the correct target
+        // block entity. Refuse to load data across different entity types rather
+        // than risk corrupting a modded container.
+        if (sourceEntity.getType() != targetEntity.getType()) {
+            return changed;
+        }
+
+        CompoundTag sourceData = sourceEntity.saveWithoutMetadata(source.registryAccess());
+        CompoundTag targetData = targetEntity.saveWithoutMetadata(target.registryAccess());
+
+        if (sourceData.equals(targetData)) {
+            return changed;
+        }
+
+        targetEntity.loadWithComponents(sourceData.copy(), target.registryAccess());
+        targetEntity.setChanged();
+
+        // Push the refreshed block-entity data to any clients tracking this
+        // location. The state itself is unchanged here.
+        target.sendBlockUpdated(pos, targetState, targetState, 3);
+        return true;
+    }
+
+    /**
+     * Reconciles the stable domestic footprint from the House dimension back to
+     * the Overworld proxy. This deliberately excludes impossible-only geometry.
+     */
+    public static int reconcileAuthoritativeDomestic(
+            ServerLevel interior,
+            ServerLevel overworld,
+            BlockPos origin
+    ) {
+        int changed = 0;
+        int minY = Math.max(
+                overworld.getMinBuildHeight(),
+                origin.getY() + HouseBuilder.BASEMENT_FLOOR_Y
+        );
+        int maxY = Math.min(
+                overworld.getMaxBuildHeight() - 1,
+                origin.getY() + HouseBuilder.HEIGHT
+        );
+
+        for (int x = origin.getX(); x < origin.getX() + HouseBuilder.WIDTH; x++) {
+            for (int z = origin.getZ(); z < origin.getZ() + HouseBuilder.DEPTH; z++) {
+                for (int y = minY; y <= maxY; y++) {
+                    BlockPos pos = new BlockPos(x, y, z);
+
+                    if (!isSharedPosition(origin, pos)) {
+                        continue;
+                    }
+
+                    if (copyStateAndBlockEntity(interior, overworld, pos)) {
+                        changed++;
+                    }
+                }
+            }
+        }
+
+        return changed;
     }
 
     private static void copyInitialSnapshot(ServerLevel source, ServerLevel target, BlockPos origin) {
@@ -129,7 +213,7 @@ public final class HouseDimensionMirror {
             for (int z = minZ; z <= maxZ; z++) {
                 for (int y = minY; y <= maxY; y++) {
                     BlockPos pos = new BlockPos(x, y, z);
-                    copyState(source, target, pos);
+                    copyStateAndBlockEntity(source, target, pos);
                 }
             }
         }
