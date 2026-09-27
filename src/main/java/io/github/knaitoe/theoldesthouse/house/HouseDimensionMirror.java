@@ -89,8 +89,12 @@ public final class HouseDimensionMirror {
                 origin.getY() + HouseBuilder.HEIGHT
         );
 
-        for (int x = origin.getX(); x < origin.getX() + HouseBuilder.WIDTH; x++) {
-            for (int z = origin.getZ() - 1; z < origin.getZ() + HouseBuilder.DEPTH; z++) {
+        for (int x = origin.getX() + HouseBuilder.DOMESTIC_MIN_X;
+                x <= origin.getX() + HouseBuilder.DOMESTIC_MAX_X;
+                x++) {
+            for (int z = origin.getZ() + HouseBuilder.DOMESTIC_MIN_Z;
+                    z <= origin.getZ() + HouseBuilder.DOMESTIC_MAX_Z;
+                    z++) {
                 for (int y = minY; y <= maxY; y++) {
                     BlockPos pos = new BlockPos(x, y, z);
 
@@ -184,8 +188,12 @@ public final class HouseDimensionMirror {
                 origin.getY() + HouseBuilder.HEIGHT
         );
 
-        for (int x = origin.getX(); x < origin.getX() + HouseBuilder.WIDTH; x++) {
-            for (int z = origin.getZ() - 1; z < origin.getZ() + HouseBuilder.DEPTH; z++) {
+        for (int x = origin.getX() + HouseBuilder.DOMESTIC_MIN_X;
+                x <= origin.getX() + HouseBuilder.DOMESTIC_MAX_X;
+                x++) {
+            for (int z = origin.getZ() + HouseBuilder.DOMESTIC_MIN_Z;
+                    z <= origin.getZ() + HouseBuilder.DOMESTIC_MAX_Z;
+                    z++) {
                 for (int y = minY; y <= maxY; y++) {
                     BlockPos pos = new BlockPos(x, y, z);
 
