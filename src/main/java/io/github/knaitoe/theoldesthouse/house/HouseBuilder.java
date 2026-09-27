@@ -7,6 +7,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
@@ -17,11 +18,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.levelgen.Heightmap;
 
 public final class HouseBuilder {
     public static final int WIDTH = 15;
     public static final int DEPTH = 19;
-    public static final int HEIGHT = 20;
+    public static final int HEIGHT = 21;
 
     public static final int BASEMENT_FLOOR_Y = -5;
     public static final int SECOND_FLOOR_Y = 6;
@@ -64,6 +66,8 @@ public final class HouseBuilder {
      * rear ground-floor hall.
      */
     public static void build(ServerLevel level, BlockPos origin) {
+        HouseSiteProfile site = HouseSiteProfile.capture(level, origin);
+
         clearAboveGroundVolume(level, origin);
         buildBasement(level, origin);
         buildFloors(level, origin);
@@ -71,9 +75,10 @@ public final class HouseBuilder {
         buildMainInteriorWalls(level, origin);
         buildUpperInteriorWalls(level, origin);
         installDoorsAndWindows(level, origin);
+        buildExteriorDetailing(level, origin);
         buildCeilingsAndRoof(level, origin);
         buildStaircases(level, origin);
-        buildPorch(level, origin);
+        buildPorch(level, origin, site);
         buildChimneyAndFireplace(level, origin);
 
         furnishLivingRoom(level, origin);
@@ -86,6 +91,45 @@ public final class HouseBuilder {
         installLighting(level, origin);
 
         applyDomesticLootTables(level, origin);
+    }
+
+    /**
+     * Scores an otherwise buildable site. Lower is better. The footprint itself
+     * strongly prefers dry ground, while water in front is allowed because the
+     * porch can adapt into a supported landing.
+     */
+    public static int siteScore(ServerLevel level, BlockPos origin) {
+        int minY = Integer.MAX_VALUE;
+        int maxY = Integer.MIN_VALUE;
+        int footprintWater = 0;
+
+        for (int x = 0; x < WIDTH; x++) {
+            for (int z = 0; z < DEPTH; z++) {
+                int worldX = origin.getX() + x;
+                int worldZ = origin.getZ() + z;
+                int height = surfaceHeight(level, worldX, worldZ);
+
+                minY = Math.min(minY, height);
+                maxY = Math.max(maxY, height);
+
+                if (surfaceIsWater(level, worldX, worldZ, height)) {
+                    footprintWater++;
+                }
+            }
+        }
+
+        if (footprintWater > 4) {
+            return Integer.MAX_VALUE;
+        }
+
+        HouseSiteProfile site = HouseSiteProfile.capture(level, origin);
+        int relief = maxY - minY;
+        int porchDrop = Math.max(0, origin.getY() - site.frontGroundY());
+
+        return relief * 30
+                + footprintWater * 80
+                + Math.min(8, porchDrop) * 5
+                + (site.frontWater() ? 12 : 0);
     }
 
     private static void clearAboveGroundVolume(ServerLevel level, BlockPos origin) {
@@ -334,6 +378,51 @@ public final class HouseBuilder {
         }
     }
 
+    private static void buildExteriorDetailing(ServerLevel level, BlockPos origin) {
+        // Strong vertical bays are the main difference between "box with windows"
+        // and a facade that reads as timber-framed architecture.
+        for (int x : new int[]{5, 9}) {
+            for (int y = 1; y <= UPPER_WALL_TOP_Y; y++) {
+                if (y != SECOND_FLOOR_Y) {
+                    set(level, origin, x, y, 0, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+                }
+            }
+        }
+
+        for (int z : new int[]{6, 12}) {
+            for (int y = 1; y <= UPPER_WALL_TOP_Y; y++) {
+                if (y != SECOND_FLOOR_Y) {
+                    set(level, origin, 0, y, z, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+                    set(level, origin, WIDTH - 1, y, z, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+                }
+            }
+        }
+
+        // Projecting sills/headers add one block of facade depth around the
+        // major front window bays.
+        for (int[] band : new int[][]{{1, 4}, {7, 10}}) {
+            int sillY = band[0];
+            int headerY = band[1];
+
+            for (int x = 1; x <= 4; x++) {
+                set(level, origin, x, sillY, -1, Blocks.DARK_OAK_SLAB.defaultBlockState());
+                set(level, origin, x, headerY, -1, Blocks.DARK_OAK_SLAB.defaultBlockState());
+            }
+
+            for (int x = 10; x <= 13; x++) {
+                set(level, origin, x, sillY, -1, Blocks.DARK_OAK_SLAB.defaultBlockState());
+                set(level, origin, x, headerY, -1, Blocks.DARK_OAK_SLAB.defaultBlockState());
+            }
+        }
+
+        // Stone plinth at the front corners keeps the taller two-story facade
+        // visually grounded.
+        for (int x : new int[]{0, WIDTH - 1}) {
+            set(level, origin, x, 0, -1, Blocks.STONE_BRICKS.defaultBlockState());
+            set(level, origin, x, 0, -2, Blocks.STONE_BRICK_SLAB.defaultBlockState());
+        }
+    }
+
     private static void buildCeilingsAndRoof(ServerLevel level, BlockPos origin) {
         for (int x = 1; x < WIDTH - 1; x++) {
             for (int z = 1; z < REAR_WALL_Z; z++) {
@@ -342,58 +431,97 @@ public final class HouseBuilder {
             }
         }
 
+        // Main roof: a complete steep gable with a one-block overhang, a
+        // deepslate body, and dark-oak verge boards at the front/back. The old
+        // version exposed each stair tread from below and read like teeth.
         for (int z = -1; z <= DEPTH; z++) {
-            set(level, origin, -1, ROOF_BASE_Y, z,
-                    Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST));
-            set(level, origin, WIDTH, ROOF_BASE_Y, z,
-                    Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.EAST));
-
-            for (int layer = 0; layer <= 6; layer++) {
+            for (int layer = 0; layer <= 7; layer++) {
                 int y = ROOF_BASE_Y + layer;
-                int leftX = layer;
-                int rightX = WIDTH - 1 - layer;
+                int leftX = -1 + layer;
+                int rightX = WIDTH - layer;
 
                 set(level, origin, leftX, y, z,
-                        Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST));
+                        Blocks.DEEPSLATE_TILE_STAIRS.defaultBlockState()
+                                .setValue(StairBlock.FACING, Direction.WEST));
                 set(level, origin, rightX, y, z,
-                        Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.EAST));
+                        Blocks.DEEPSLATE_TILE_STAIRS.defaultBlockState()
+                                .setValue(StairBlock.FACING, Direction.EAST));
             }
 
-            set(level, origin, CENTER_X, ROOF_BASE_Y + 7, z, Blocks.DARK_OAK_SLAB.defaultBlockState());
+            set(level, origin, CENTER_X, ROOF_BASE_Y + 8, z,
+                    Blocks.DEEPSLATE_TILE_SLAB.defaultBlockState());
         }
 
-        for (int layer = 0; layer <= 6; layer++) {
-            int y = ROOF_BASE_Y + layer;
-            int leftEdge = layer;
-            int rightEdge = WIDTH - 1 - layer;
+        // Front/back bargeboards visually bind the stair courses into one roof
+        // edge instead of a row of isolated stair noses.
+        for (int z : new int[]{-2, DEPTH + 1}) {
+            for (int layer = 0; layer <= 7; layer++) {
+                int y = ROOF_BASE_Y + layer;
+                int leftX = -1 + layer;
+                int rightX = WIDTH - layer;
 
-            for (int x = leftEdge + 1; x < rightEdge; x++) {
+                set(level, origin, leftX, y, z,
+                        Blocks.DARK_OAK_STAIRS.defaultBlockState()
+                                .setValue(StairBlock.FACING, Direction.WEST));
+                set(level, origin, rightX, y, z,
+                        Blocks.DARK_OAK_STAIRS.defaultBlockState()
+                                .setValue(StairBlock.FACING, Direction.EAST));
+            }
+
+            set(level, origin, CENTER_X, ROOF_BASE_Y + 8, z,
+                    Blocks.DARK_OAK_SLAB.defaultBlockState());
+        }
+
+        // Filled plaster gables with a central timber post and twin attic panes.
+        for (int layer = 0; layer <= 7; layer++) {
+            int y = ROOF_BASE_Y + layer;
+            int leftEdge = -1 + layer;
+            int rightEdge = WIDTH - layer;
+
+            for (int x = Math.max(0, leftEdge + 1);
+                    x <= Math.min(WIDTH - 1, rightEdge - 1);
+                    x++) {
                 set(level, origin, x, y, 0, Blocks.WHITE_TERRACOTTA.defaultBlockState());
                 set(level, origin, x, y, REAR_WALL_Z, Blocks.WHITE_TERRACOTTA.defaultBlockState());
             }
         }
 
-        set(level, origin, CENTER_X, ROOF_BASE_Y + 2, 0, Blocks.GLASS_PANE.defaultBlockState());
+        for (int y = ROOF_BASE_Y; y <= ROOF_BASE_Y + 7; y++) {
+            set(level, origin, CENTER_X, y, 0, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+            set(level, origin, CENTER_X, y, REAR_WALL_Z, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+        }
+
+        for (int x : new int[]{CENTER_X - 1, CENTER_X + 1}) {
+            for (int y = ROOF_BASE_Y + 3; y <= ROOF_BASE_Y + 4; y++) {
+                set(level, origin, x, y, 0, Blocks.GLASS_PANE.defaultBlockState());
+            }
+        }
+
+        // One horizontal tie breaks up the huge triangular plaster field.
+        for (int x = 3; x <= WIDTH - 4; x++) {
+            set(level, origin, x, ROOF_BASE_Y + 2, 0, Blocks.DARK_OAK_PLANKS.defaultBlockState());
+        }
     }
 
     private static void buildStaircases(ServerLevel level, BlockPos origin) {
-        // Two-wide central stair climbs from the living floor into the upstairs
-        // landing. Ceiling/floor openings are carved only where headroom needs it.
-        for (int x = 6; x <= 7; x++) {
-            for (int z = 4; z <= 8; z++) {
-                set(level, origin, x, 5, z, Blocks.AIR.defaultBlockState());
-                set(level, origin, x, SECOND_FLOOR_Y, z, Blocks.AIR.defaultBlockState());
-            }
+        // A one-wide open stair gives the living room back most of its volume.
+        // The previous two-wide flight dominated the room visually.
+        for (int z = 4; z <= 8; z++) {
+            set(level, origin, 6, 5, z, Blocks.AIR.defaultBlockState());
+            set(level, origin, 6, SECOND_FLOOR_Y, z, Blocks.AIR.defaultBlockState());
         }
 
         for (int step = 0; step < 5; step++) {
             int z = 8 - step;
             int y = 1 + step;
-            for (int x = 6; x <= 7; x++) {
-                set(level, origin, x, y, z,
-                        Blocks.SPRUCE_STAIRS.defaultBlockState()
-                                .setValue(StairBlock.FACING, Direction.NORTH));
-            }
+
+            set(level, origin, 6, y, z,
+                    Blocks.SPRUCE_STAIRS.defaultBlockState()
+                            .setValue(StairBlock.FACING, Direction.NORTH));
+
+            // A rising rail on the open side keeps the stair readable as one
+            // architectural element instead of a stack of blocks.
+            set(level, origin, 7, y + 1, z, Blocks.SPRUCE_FENCE.defaultBlockState());
         }
 
         // Basement access descends from the rear-right utility room.
@@ -415,25 +543,168 @@ public final class HouseBuilder {
         }
     }
 
-    private static void buildPorch(ServerLevel level, BlockPos origin) {
+    private static void buildPorch(
+            ServerLevel level,
+            BlockPos origin,
+            HouseSiteProfile site
+    ) {
         for (int x = 4; x <= 10; x++) {
             for (int z = -3; z <= -1; z++) {
                 set(level, origin, x, 0, z, Blocks.SPRUCE_PLANKS.defaultBlockState());
-                set(level, origin, x, 4, z, Blocks.DARK_OAK_SLAB.defaultBlockState());
             }
         }
 
-        for (int y = 1; y <= 3; y++) {
-            set(level, origin, 4, y, -3, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
-            set(level, origin, 10, y, -3, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+        // Front posts and header.
+        for (int x : new int[]{4, 10}) {
+            for (int y = 1; y <= 4; y++) {
+                set(level, origin, x, y, -3, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+            }
+
+            extendSupportToTerrain(
+                    level,
+                    origin,
+                    x,
+                    -3,
+                    -1,
+                    site.frontWater()
+                            ? Blocks.STONE_BRICKS.defaultBlockState()
+                            : Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState()
+            );
         }
 
-        for (int x = 6; x <= 8; x++) {
-            set(level, origin, x, 0, -4,
-                    Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH));
+        for (int x = 4; x <= 10; x++) {
+            set(level, origin, x, 4, -3, Blocks.DARK_OAK_PLANKS.defaultBlockState());
+        }
+
+        // A separate pitched porch roof gives the facade a second scale and
+        // breaks up the huge flat front wall.
+        for (int z = -3; z <= 0; z++) {
+            for (int layer = 0; layer <= 3; layer++) {
+                int y = 5 + layer;
+                int leftX = 3 + layer;
+                int rightX = 11 - layer;
+
+                set(level, origin, leftX, y, z,
+                        Blocks.DEEPSLATE_TILE_STAIRS.defaultBlockState()
+                                .setValue(StairBlock.FACING, Direction.WEST));
+                set(level, origin, rightX, y, z,
+                        Blocks.DEEPSLATE_TILE_STAIRS.defaultBlockState()
+                                .setValue(StairBlock.FACING, Direction.EAST));
+            }
+
+            set(level, origin, CENTER_X, 9, z,
+                    Blocks.DEEPSLATE_TILE_SLAB.defaultBlockState());
+        }
+
+        // Dark-oak front verge on the porch roof.
+        for (int layer = 0; layer <= 3; layer++) {
+            int y = 5 + layer;
+            int leftX = 3 + layer;
+            int rightX = 11 - layer;
+
+            set(level, origin, leftX, y, -4,
+                    Blocks.DARK_OAK_STAIRS.defaultBlockState()
+                            .setValue(StairBlock.FACING, Direction.WEST));
+            set(level, origin, rightX, y, -4,
+                    Blocks.DARK_OAK_STAIRS.defaultBlockState()
+                            .setValue(StairBlock.FACING, Direction.EAST));
+        }
+        set(level, origin, CENTER_X, 9, -4, Blocks.DARK_OAK_SLAB.defaultBlockState());
+
+        // Small plaster gable behind the porch verge.
+        for (int layer = 0; layer <= 3; layer++) {
+            int y = 5 + layer;
+            int left = 3 + layer;
+            int right = 11 - layer;
+            for (int x = left + 1; x < right; x++) {
+                set(level, origin, x, y, -3, Blocks.WHITE_TERRACOTTA.defaultBlockState());
+            }
+        }
+        for (int y = 5; y <= 8; y++) {
+            set(level, origin, CENTER_X, y, -3, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+        }
+
+        if (site.frontWater()) {
+            buildWaterApproach(level, origin);
+        } else {
+            buildGroundApproach(level, origin, site.frontGroundY());
         }
 
         placeHangingLantern(level, origin, CENTER_X, 3, -2);
+    }
+
+    private static void buildGroundApproach(
+            ServerLevel level,
+            BlockPos origin,
+            int absoluteGroundY
+    ) {
+        int drop = Math.max(0, origin.getY() - absoluteGroundY);
+        int courses = Math.max(1, Math.min(6, drop + 1));
+
+        for (int step = 0; step < courses; step++) {
+            int z = -4 - step;
+            int y = -step;
+
+            for (int x = 6; x <= 8; x++) {
+                set(level, origin, x, y, z,
+                        Blocks.STONE_BRICK_STAIRS.defaultBlockState()
+                                .setValue(StairBlock.FACING, Direction.NORTH));
+                extendSupportToTerrain(
+                        level,
+                        origin,
+                        x,
+                        z,
+                        y - 1,
+                        Blocks.STONE_BRICKS.defaultBlockState()
+                );
+            }
+        }
+    }
+
+    private static void buildWaterApproach(ServerLevel level, BlockPos origin) {
+        // If the front approach is water, do not generate stairs that terminate
+        // underwater. A short three-wide landing reads as a modest dock instead.
+        for (int z = -4; z >= -7; z--) {
+            for (int x = 6; x <= 8; x++) {
+                set(level, origin, x, 0, z, Blocks.SPRUCE_PLANKS.defaultBlockState());
+            }
+        }
+
+        for (int x : new int[]{6, 8}) {
+            extendSupportToTerrain(
+                    level,
+                    origin,
+                    x,
+                    -7,
+                    -1,
+                    Blocks.STONE_BRICKS.defaultBlockState()
+            );
+            set(level, origin, x, 1, -7, Blocks.SPRUCE_FENCE.defaultBlockState());
+        }
+
+        placeHangingLantern(level, origin, CENTER_X, 2, -7);
+    }
+
+    private static void extendSupportToTerrain(
+            ServerLevel level,
+            BlockPos origin,
+            int relX,
+            int relZ,
+            int startRelY,
+            BlockState supportState
+    ) {
+        for (int relY = startRelY; relY >= startRelY - 12; relY--) {
+            BlockPos pos = origin.offset(relX, relY, relZ);
+            BlockState current = level.getBlockState(pos);
+
+            if (!current.isAir()
+                    && !current.canBeReplaced()
+                    && level.getFluidState(pos).isEmpty()) {
+                return;
+            }
+
+            level.setBlock(pos, supportState, 3);
+        }
     }
 
     private static void buildChimneyAndFireplace(ServerLevel level, BlockPos origin) {
@@ -620,6 +891,52 @@ public final class HouseBuilder {
 
         assignLoot(level, origin.offset(3, -4, 4), BASEMENT_LOOT, 0xBA5E01L);
         assignLoot(level, origin.offset(11, -4, 4), BASEMENT_LOOT, 0xBA5E02L);
+    }
+
+    private static int surfaceHeight(ServerLevel level, int x, int z) {
+        return level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+    }
+
+    private static boolean surfaceIsWater(
+            ServerLevel level,
+            int x,
+            int z,
+            int surfaceHeight
+    ) {
+        BlockPos surfaceBlock = new BlockPos(x, surfaceHeight - 1, z);
+        return level.getFluidState(surfaceBlock).is(FluidTags.WATER);
+    }
+
+    private record HouseSiteProfile(
+            int frontGroundY,
+            boolean frontWater
+    ) {
+        static HouseSiteProfile capture(ServerLevel level, BlockPos origin) {
+            int[] heights = new int[12];
+            int index = 0;
+            int waterSamples = 0;
+
+            for (int z = -4; z >= -7; z--) {
+                for (int x = 6; x <= 8; x++) {
+                    int worldX = origin.getX() + x;
+                    int worldZ = origin.getZ() + z;
+                    int height = surfaceHeight(level, worldX, worldZ);
+
+                    heights[index++] = height;
+                    if (surfaceIsWater(level, worldX, worldZ, height)) {
+                        waterSamples++;
+                    }
+                }
+            }
+
+            java.util.Arrays.sort(heights);
+            int median = heights[heights.length / 2];
+
+            return new HouseSiteProfile(
+                    median,
+                    waterSamples >= 4
+            );
+        }
     }
 
     private static void assignLoot(

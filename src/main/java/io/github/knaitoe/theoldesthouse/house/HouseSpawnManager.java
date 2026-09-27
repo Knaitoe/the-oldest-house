@@ -10,7 +10,7 @@ import java.util.Optional;
 public final class HouseSpawnManager {
     private static final int MIN_DISTANCE = 32;
     private static final int MAX_DISTANCE = 64;
-    private static final int SITE_ATTEMPTS_PER_SUCCESSFUL_ROLL = 24;
+    private static final int SITE_ATTEMPTS_PER_SUCCESSFUL_ROLL = 40;
 
     private HouseSpawnManager() {
     }
@@ -64,12 +64,18 @@ public final class HouseSpawnManager {
     }
 
     private static Optional<BlockPos> findSafeOrigin(ServerLevel level, BlockPos anchor) {
+        BlockPos bestOrigin = null;
+        int bestScore = Integer.MAX_VALUE;
+
         for (int attempt = 0; attempt < SITE_ATTEMPTS_PER_SUCCESSFUL_ROLL; attempt++) {
             double angle = level.getRandom().nextDouble() * Math.PI * 2.0D;
-            int distance = MIN_DISTANCE + level.getRandom().nextInt(MAX_DISTANCE - MIN_DISTANCE + 1);
+            int distance = MIN_DISTANCE
+                    + level.getRandom().nextInt(MAX_DISTANCE - MIN_DISTANCE + 1);
 
-            int centerX = anchor.getX() + (int) Math.round(Math.cos(angle) * distance);
-            int centerZ = anchor.getZ() + (int) Math.round(Math.sin(angle) * distance);
+            int centerX = anchor.getX()
+                    + (int) Math.round(Math.cos(angle) * distance);
+            int centerZ = anchor.getZ()
+                    + (int) Math.round(Math.sin(angle) * distance);
 
             int originX = centerX - HouseBuilder.WIDTH / 2;
             int originZ = centerZ - HouseBuilder.DEPTH / 2;
@@ -89,16 +95,25 @@ public final class HouseSpawnManager {
                 }
             }
 
-            if (maxY - minY > 2) {
+            // The deeper basement/foundation can absorb a little more relief
+            // than the old one-story prototype without making the house float.
+            if (maxY - minY > 4) {
                 continue;
             }
 
             BlockPos origin = new BlockPos(originX, maxY, originZ);
-            if (HouseBuilder.canBuildAt(level, origin)) {
-                return Optional.of(origin);
+            if (!HouseBuilder.canBuildAt(level, origin)) {
+                continue;
+            }
+
+            int score = HouseBuilder.siteScore(level, origin);
+            if (score < bestScore) {
+                bestScore = score;
+                bestOrigin = origin;
             }
         }
 
-        return Optional.empty();
+        return Optional.ofNullable(bestOrigin);
     }
+
 }
