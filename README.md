@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.29` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.30` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -266,3 +266,16 @@ The front-bedroom doors no longer open onto the upstairs stairwell void. Both do
 The open stairwell now has a continuous spruce-fence guardrail along its solid corridor edge. The upstairs runner has also been adjusted so it stops at the stair opening and resumes on the rear landing rather than implying floor where there is none.
 
 Doorway-clearance volumes were updated to the new landing positions so later furnishing/structure passes cannot recreate the same defect.
+
+
+### 0.1.30 domestic polish and threshold-view repair
+
+This pass focuses on visible architectural finish and two immersion defects found in playtesting.
+
+- The main domestic staircase is now a single clean stair flight. The rising fence course that visually read as a second staircase has been removed; railing exists only around the actual upper-floor opening.
+- The basement stair now turns ninety degrees at the bottom so it discharges into open basement floor rather than aiming directly into the rear foundation wall.
+- Water-site docks now have continuous perimeter fencing, a deliberate east-side ladder opening, a supported ladder column and a ladder extending down toward the sampled water level.
+- The three upstairs bedrooms now have distinct decorative identities using different rug shapes/palettes, wall hangings, plants, books/work surfaces and hobby furniture instead of repeated rectangular carpet strips.
+- Impossible-hall construction now uses client-update / known-shape / suppress-drops flags and immediately purges item/falling-block debris inside the construction volume.
+- The first impossible threshold door appears open, making the long sightline legible as soon as the stage exists.
+- The Overworld sightline no longer tries to render the physical corridor sixty blocks through ordinary terrain. Instead, it renders a depth-tested perspective view immediately behind the real threshold aperture. This avoids hills, water, trees and other valid Overworld geometry occluding the impossible view while keeping the physical exterior unchanged.

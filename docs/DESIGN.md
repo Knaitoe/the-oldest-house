@@ -396,3 +396,22 @@ The proxy has no blocks, collision, pathfinding, light propagation, saved data o
 The upper stair opening occupies relative x=6, z=2..6. No bedroom doorway may open directly onto those cells.
 
 The two front-bedroom doors are paired on the solid landing at relative z=8, beyond the stair opening. A spruce-fence guardrail runs along the solid x=7 edge of the stairwell while x=8 remains the clear circulation lane. Floor runners stop at the void and resume only on solid landing blocks.
+
+
+## Domestic finish pass
+
+Domestic rooms should communicate different inhabitants/history without introducing custom assets. Bedroom layouts therefore use distinct rug silhouettes and palettes, wall banners as textile art, plants, book storage and hobby/work blocks rather than repeating the same bed/chest/bookshelf/carpet grammar.
+
+The principal stair is a single visual mass. Railings are reserved for actual exposed landings rather than following every stair tread as a second parallel diagonal. The basement descent uses an L-turn at its lower end so circulation opens into usable basement floor.
+
+Water-site docks are treated as complete small structures: perimeter fencing, a deliberate ladder opening, supported posts and a ladder reaching the water.
+
+## Construction-debris suppression
+
+Impossible-space carving is authored replacement, not player mining. Corridor construction uses update flags that suppress block drops and neighbor-shape cascades, then removes any item/falling-block entities inside the just-built corridor as a defensive cleanup. This happens only at construction time before the space is ordinarily accessible.
+
+## Threshold sightline portal
+
+Rendering the proxy at the corridor's true Overworld coordinates allowed ordinary terrain behind the fixed exterior to win the depth test. The external sightline is therefore represented at the threshold aperture itself.
+
+While the player remains in the Overworld/front side and the revealed threshold door is open, a client-only perspective tunnel is drawn immediately behind that real doorway. The actual wall and door still occlude it through normal depth testing. The illusion contains converging wall/floor/ceiling planes, the red runner, a dark terminal plane and diminishing warm depth markers. It has no collision or saved world state. Crossing into the House dimension replaces it with the real physical corridor.

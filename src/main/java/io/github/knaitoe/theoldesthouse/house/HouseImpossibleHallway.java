@@ -2,8 +2,12 @@ package io.github.knaitoe.theoldesthouse.house;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.item.FallingBlockEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LanternBlock;
+import net.minecraft.world.phys.AABB;
 
 public final class HouseImpossibleHallway {
     public static final int START_Z_OFFSET = 16;
@@ -13,6 +17,10 @@ public final class HouseImpossibleHallway {
     private static final int RIGHT_WALL_X_OFFSET = 9;
     private static final int INNER_MIN_X_OFFSET = 6;
     private static final int INNER_MAX_X_OFFSET = 8;
+    private static final int QUIET_FLAGS =
+            Block.UPDATE_CLIENTS
+                    | Block.UPDATE_KNOWN_SHAPE
+                    | Block.UPDATE_SUPPRESS_DROPS;
 
     private HouseImpossibleHallway() {
     }
@@ -21,27 +29,27 @@ public final class HouseImpossibleHallway {
         for (int x = LEFT_WALL_X_OFFSET; x <= RIGHT_WALL_X_OFFSET; x++) {
             for (int z = START_Z_OFFSET; z <= END_Z_OFFSET; z++) {
                 for (int y = 0; y <= 5; y++) {
-                    level.setBlock(origin.offset(x, y, z), Blocks.AIR.defaultBlockState(), 2);
+                    level.setBlock(origin.offset(x, y, z), Blocks.AIR.defaultBlockState(), QUIET_FLAGS);
                 }
             }
         }
 
         for (int z = START_Z_OFFSET; z <= END_Z_OFFSET; z++) {
             for (int x = INNER_MIN_X_OFFSET; x <= INNER_MAX_X_OFFSET; x++) {
-                level.setBlock(origin.offset(x, 0, z), Blocks.SPRUCE_PLANKS.defaultBlockState(), 2);
-                level.setBlock(origin.offset(x, 5, z), Blocks.SPRUCE_SLAB.defaultBlockState(), 2);
+                level.setBlock(origin.offset(x, 0, z), Blocks.SPRUCE_PLANKS.defaultBlockState(), QUIET_FLAGS);
+                level.setBlock(origin.offset(x, 5, z), Blocks.SPRUCE_SLAB.defaultBlockState(), QUIET_FLAGS);
             }
 
             for (int y = 1; y <= 4; y++) {
-                level.setBlock(origin.offset(LEFT_WALL_X_OFFSET, y, z), Blocks.WHITE_TERRACOTTA.defaultBlockState(), 2);
-                level.setBlock(origin.offset(RIGHT_WALL_X_OFFSET, y, z), Blocks.WHITE_TERRACOTTA.defaultBlockState(), 2);
+                level.setBlock(origin.offset(LEFT_WALL_X_OFFSET, y, z), Blocks.WHITE_TERRACOTTA.defaultBlockState(), QUIET_FLAGS);
+                level.setBlock(origin.offset(RIGHT_WALL_X_OFFSET, y, z), Blocks.WHITE_TERRACOTTA.defaultBlockState(), QUIET_FLAGS);
             }
 
-            level.setBlock(origin.offset(HouseBuilder.WIDTH / 2, 1, z), Blocks.RED_CARPET.defaultBlockState(), 2);
+            level.setBlock(origin.offset(HouseBuilder.WIDTH / 2, 1, z), Blocks.RED_CARPET.defaultBlockState(), QUIET_FLAGS);
         }
 
         for (int z : new int[]{24, 36, 48, 60}) {
-            level.setBlock(origin.offset(HouseBuilder.WIDTH / 2, 4, z), Blocks.CHAIN.defaultBlockState(), 2);
+            level.setBlock(origin.offset(HouseBuilder.WIDTH / 2, 4, z), Blocks.CHAIN.defaultBlockState(), QUIET_FLAGS);
             level.setBlock(
                     origin.offset(HouseBuilder.WIDTH / 2, 3, z),
                     Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true),
@@ -51,9 +59,29 @@ public final class HouseImpossibleHallway {
 
         for (int x = LEFT_WALL_X_OFFSET; x <= RIGHT_WALL_X_OFFSET; x++) {
             for (int y = 1; y <= 4; y++) {
-                level.setBlock(origin.offset(x, y, END_Z_OFFSET), Blocks.WHITE_TERRACOTTA.defaultBlockState(), 2);
+                level.setBlock(
+                        origin.offset(x, y, END_Z_OFFSET),
+                        Blocks.WHITE_TERRACOTTA.defaultBlockState(),
+                        QUIET_FLAGS
+                );
             }
         }
+
+        purgeConstructionDebris(level, origin);
+    }
+
+    private static void purgeConstructionDebris(ServerLevel level, BlockPos origin) {
+        AABB bounds = new AABB(
+                origin.getX() + LEFT_WALL_X_OFFSET - 1,
+                origin.getY() - 1,
+                origin.getZ() + START_Z_OFFSET - 1,
+                origin.getX() + RIGHT_WALL_X_OFFSET + 2,
+                origin.getY() + 7,
+                origin.getZ() + END_Z_OFFSET + 2
+        );
+
+        level.getEntitiesOfClass(ItemEntity.class, bounds).forEach(ItemEntity::discard);
+        level.getEntitiesOfClass(FallingBlockEntity.class, bounds).forEach(FallingBlockEntity::discard);
     }
 
     public static boolean isInteriorOnlyPosition(BlockPos origin, BlockPos pos) {
