@@ -367,3 +367,16 @@ Stairs and railings should be laid out to respect these zones in the first place
 The boundary between domestic and impossible architecture is exact: the threshold partition at relative z=15 belongs to the stable domestic house and must exist consistently in both the Overworld proxy and the House dimension. Impossible-only geometry begins at relative z=16.
 
 Stage application is not a player block event, so it cannot rely on incremental event-driven mirror queues. Whenever a stage changes shared domestic architecture, the House dimension explicitly synchronizes the shared domestic footprint back into the Overworld. Positions classified as impossible/interior-only are skipped, so the physical hallway remains absent from the Overworld while its doorway and surrounding partition remain visually consistent.
+
+
+## Mirror v2: authoritative domestic persistence
+
+After first initialization, the House dimension is authoritative for the stable domestic interior. The Overworld representation is a proxy used to preserve exterior sightlines and threshold continuity.
+
+Mirroring now copies compatible block-entity custom/component data as well as BlockState. Block-entity identity/coordinates are never copied; target entities retain their own metadata and receive only serialized custom/component state. This supports vanilla containers, furnaces, lecterns and compatible modded block entities without treating the two dimensions as independent inventories.
+
+Explicit Overworld block interactions are applied to the House dimension first. A periodic active-area reconciliation then pushes the authoritative domestic footprint from the House dimension back to the Overworld. The pass runs only while a player is within 96 blocks of the structure in either dimension, avoiding permanent chunk churn when the House is inactive.
+
+This periodic authority pass exists specifically for state changes that event-only mirroring misses: inventory menu operations, furnace progress, environmental/random ticks, redstone changes and similar server-side mutations.
+
+The impossible hallway and future impossible graph cells remain outside the shared domestic set and are never written into the Overworld proxy.

@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.26` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.27` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -233,3 +233,18 @@ A final doorway-clearance pass now runs after all structural, furnishing and lig
 The first impossible doorway threshold is now correctly treated as shared domestic architecture. The impossible hallway begins at z+16; the z+15 partition containing the revealed doorway is no longer excluded from mirroring.
 
 After a House stage modifies domestic/shared architecture, the House dimension now explicitly pushes the complete shared domestic footprint back into the Overworld proxy. This makes the threshold doorway appear immediately and keeps player-visible ordinary rooms consistent while still excluding all hallway geometry from the Overworld.
+
+
+### 0.1.27 Mirror v2: authoritative domestic persistence
+
+The House dimension is now the authoritative copy of the initialized domestic interior.
+
+- Mirror copies now include block-entity custom/component NBT in addition to BlockState. Chests, barrels, furnaces, lecterns and compatible modded block entities can therefore carry inventory/state across the proxy boundary.
+- Initial House-dimension creation copies existing block-entity data from the Overworld snapshot instead of reconstructing chest loot tables after the fact.
+- Once initialized, the active domestic footprint is reconciled from the House dimension back to the Overworld once per second while a player is within 96 blocks in either dimension. This catches mutations that do not reliably fire placement/break events, including container menu changes, furnace progress, many redstone/environmental state changes and block-entity updates.
+- Explicit Overworld player edits are still accepted first and pushed into the House dimension before the authoritative pass, preserving break/place/door interactions on the exterior shell.
+- Explosions and piston movement now queue shared-position mirror updates as well.
+- `/oldesthouse reconcile` forces an immediate authoritative domestic reconciliation and reports how many shared positions changed.
+- `/oldesthouse reset` clears queued mirror work in addition to persistent House state.
+
+Impossible-only hallway cells remain excluded from all domestic reconciliation.
