@@ -72,6 +72,35 @@ public final class HouseDimensionMirror {
                 && pos.getY() <= origin.getY() + VIEW_ABOVE_FLOOR;
     }
 
+    public static void syncSharedDomesticRegion(
+            ServerLevel source,
+            ServerLevel target,
+            BlockPos origin
+    ) {
+        int minY = Math.max(
+                target.getMinBuildHeight(),
+                origin.getY() + HouseBuilder.BASEMENT_FLOOR_Y
+        );
+        int maxY = Math.min(
+                target.getMaxBuildHeight() - 1,
+                origin.getY() + HouseBuilder.HEIGHT
+        );
+
+        for (int x = origin.getX(); x < origin.getX() + HouseBuilder.WIDTH; x++) {
+            for (int z = origin.getZ(); z < origin.getZ() + HouseBuilder.DEPTH; z++) {
+                for (int y = minY; y <= maxY; y++) {
+                    BlockPos pos = new BlockPos(x, y, z);
+
+                    if (!isSharedPosition(origin, pos)) {
+                        continue;
+                    }
+
+                    copyState(source, target, pos);
+                }
+            }
+        }
+    }
+
     public static void copyState(ServerLevel source, ServerLevel target, BlockPos pos) {
         BlockState state = source.getBlockState(pos);
 
@@ -79,7 +108,7 @@ public final class HouseDimensionMirror {
         // dimension now uses the same Overworld noise generator and server seed.
         // Avoid rewriting matching terrain, especially fluids: native generation
         // owns their fluid states, lighting, heightmaps, and biome rendering.
-        if (state == target.getBlockState(pos)) {
+        if (state.equals(target.getBlockState(pos))) {
             return;
         }
 
