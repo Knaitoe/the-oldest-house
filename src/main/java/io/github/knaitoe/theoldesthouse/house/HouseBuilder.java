@@ -102,7 +102,13 @@ public final class HouseBuilder {
         installLighting(level, origin);
 
         enforceDoorwayClearance(level, origin);
+
+        // Clearance is intentionally the last destructive geometry pass. Restore
+        // authored apertures after it so the cleanup cannot delete the doors it
+        // was meant to keep usable.
+        installDoors(level, origin);
         restoreWindows(level, origin);
+
         applyDomesticLootTables(level, origin);
         spawnDomesticPaintings(level, origin);
     }
