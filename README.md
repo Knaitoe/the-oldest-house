@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.17` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.18` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -148,3 +148,13 @@ Door, window, and wall-breach overlays are therefore contextual interruptions of
 - **breach:** the real hole/view remains visible while plaster and a timber edge tighten around it.
 
 The captured frame is rendered with an explicit normalized-UV quad instead of `GuiGraphics.blit`, avoiding the texture-scaling ambiguity encountered in earlier prototypes.
+
+
+### 0.1.18 motion pass
+
+Captured-frame transitions now include restrained camera-motion cues instead of treating the captured gameplay image as a stationary photograph.
+
+- **window:** the captured world drifts downward and sideways with a slight forward zoom while the sill rises and one jamb travels across the view, approximating a head-and-shoulder climb through the opening;
+- **breach:** the captured world slides laterally and slightly forward while one dominant wall face crosses the center and the opposite edge closes late, approximating a shoulder-first squeeze rather than an iris wipe.
+
+The motion is intentionally small so the captured HUD does not visibly detach from the screen.
