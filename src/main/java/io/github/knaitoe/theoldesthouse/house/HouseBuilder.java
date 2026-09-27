@@ -298,8 +298,8 @@ public final class HouseBuilder {
         // Two front bedrooms flank a central stair/landing hall.
         for (int z = 1; z <= 9; z++) {
             for (int y = 7; y <= UPPER_WALL_TOP_Y; y++) {
-                boolean leftDoor = z == 4 && y <= 8;
-                boolean rightDoor = z == 4 && y <= 8;
+                boolean leftDoor = z == 8 && y <= 8;
+                boolean rightDoor = z == 8 && y <= 8;
 
                 if (!leftDoor) {
                     set(level, origin, 5, y, z, Blocks.WHITE_TERRACOTTA.defaultBlockState());
@@ -328,8 +328,10 @@ public final class HouseBuilder {
         placeDoor(level, origin, 5, 1, 13, Direction.EAST, Blocks.SPRUCE_DOOR.defaultBlockState());
         placeDoor(level, origin, 9, 1, 13, Direction.WEST, Blocks.SPRUCE_DOOR.defaultBlockState());
 
-        placeDoor(level, origin, 5, 7, 4, Direction.EAST, Blocks.SPRUCE_DOOR.defaultBlockState());
-        placeDoor(level, origin, 9, 7, 4, Direction.WEST, Blocks.SPRUCE_DOOR.defaultBlockState());
+        // The paired front-bedroom doors sit on the solid rear landing rather
+        // than opening over the stairwell void.
+        placeDoor(level, origin, 5, 7, 8, Direction.EAST, Blocks.SPRUCE_DOOR.defaultBlockState());
+        placeDoor(level, origin, 9, 7, 8, Direction.WEST, Blocks.SPRUCE_DOOR.defaultBlockState());
         placeDoor(level, origin, CENTER_X, 7, 10, Direction.SOUTH, Blocks.SPRUCE_DOOR.defaultBlockState());
 
         // Ground floor front windows.
@@ -520,9 +522,16 @@ public final class HouseBuilder {
                     Blocks.SPRUCE_STAIRS.defaultBlockState()
                             .setValue(StairBlock.FACING, Direction.NORTH));
 
-            // Keep the rail to the west. The center line at x=7 remains clear
-            // from the front door through the rear-hall doorway.
+            // Keep the rising stair rail to the west, away from the house's
+            // central circulation line.
             set(level, origin, 5, y + 1, z, Blocks.SPRUCE_FENCE.defaultBlockState());
+        }
+
+        // Upstairs, the stair opening occupies x=6,z=2..6. A continuous rail
+        // on the solid x=7 floor edge makes this read as a finished landing.
+        // x=8 remains a clear one-block passage around the stairwell.
+        for (int z = 2; z <= 6; z++) {
+            set(level, origin, 7, 7, z, Blocks.SPRUCE_FENCE.defaultBlockState());
         }
 
         // Basement access descends from the rear-right utility room.
@@ -817,12 +826,12 @@ public final class HouseBuilder {
             set(level, origin, x, 7, 12, Blocks.GRAY_CARPET.defaultBlockState());
         }
 
-        // Short landing runners stop at the open stairwell instead of
-        // trying to float carpet over the two-wide opening.
-        for (int z = 1; z <= 3; z++) {
+        // Keep the stairwell edge visually open; the runner resumes on the
+        // solid rear landing between the paired bedroom doors and rear room.
+        set(level, origin, CENTER_X, 7, 1, Blocks.RED_CARPET.defaultBlockState());
+        for (int z = 7; z <= 9; z++) {
             set(level, origin, CENTER_X, 7, z, Blocks.RED_CARPET.defaultBlockState());
         }
-        set(level, origin, CENTER_X, 7, 9, Blocks.RED_CARPET.defaultBlockState());
     }
 
     private static void furnishBasement(ServerLevel level, BlockPos origin) {
@@ -888,11 +897,12 @@ public final class HouseBuilder {
         clearCollisionVolume(level, origin, 8, 8, 1, 3, 12, 14);
         clearCollisionVolume(level, origin, 10, 10, 1, 3, 12, 14);
 
-        // Upstairs front-bedroom doors.
-        clearCollisionVolume(level, origin, 4, 4, 7, 9, 3, 5);
-        clearCollisionVolume(level, origin, 6, 6, 7, 9, 3, 5);
-        clearCollisionVolume(level, origin, 8, 8, 7, 9, 3, 5);
-        clearCollisionVolume(level, origin, 10, 10, 7, 9, 3, 5);
+        // Upstairs front-bedroom doors share a solid landing behind the
+        // stairwell. Their approaches must never overlap the open shaft.
+        clearCollisionVolume(level, origin, 4, 4, 7, 9, 7, 9);
+        clearCollisionVolume(level, origin, 6, 6, 7, 9, 7, 9);
+        clearCollisionVolume(level, origin, 8, 8, 7, 9, 7, 9);
+        clearCollisionVolume(level, origin, 10, 10, 7, 9, 7, 9);
 
         // Upstairs rear-bedroom doorway.
         clearCollisionVolume(level, origin, 6, 8, 7, 9, 9, 9);
