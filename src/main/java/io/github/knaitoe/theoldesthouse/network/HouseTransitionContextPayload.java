@@ -8,7 +8,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
-public record HouseTransitionContextPayload(int kindId) implements CustomPacketPayload {
+public record HouseTransitionContextPayload(int kindId, int token) implements CustomPacketPayload {
     public static final Type<HouseTransitionContextPayload> TYPE = new Type<>(
             ResourceLocation.fromNamespaceAndPath(
                     TheOldestHouse.MOD_ID,
@@ -20,11 +20,13 @@ public record HouseTransitionContextPayload(int kindId) implements CustomPacketP
             StreamCodec.composite(
                     ByteBufCodecs.VAR_INT,
                     HouseTransitionContextPayload::kindId,
+                    ByteBufCodecs.VAR_INT,
+                    HouseTransitionContextPayload::token,
                     HouseTransitionContextPayload::new
             );
 
-    public HouseTransitionContextPayload(HouseTransitionKind kind) {
-        this(kind.ordinal());
+    public HouseTransitionContextPayload(HouseTransitionKind kind, int token) {
+        this(kind.ordinal(), token);
     }
 
     public HouseTransitionKind kind() {

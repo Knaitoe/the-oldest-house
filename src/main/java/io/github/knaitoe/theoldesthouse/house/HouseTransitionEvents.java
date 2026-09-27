@@ -4,6 +4,7 @@ import io.github.knaitoe.theoldesthouse.network.HouseTransitionContextPayload;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -15,11 +16,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class HouseTransitionEvents {
     private static final double BOUNDARY_MARGIN = 0.55D;
+    private static final int ACK_TIMEOUT_TICKS = 40;
 
-    // Give the context payload one full server tick to reach the client before
-    // Minecraft sends the actual dimension-change packet. Without this, the
-    // transition-screen factory can win the race and fall back to DOOR.
-    private static final int CONTEXT_LEAD_TICKS = 1;
+    private static final AtomicInteger NEXT_TOKEN = new AtomicInteger(1);
     private static final Map<UUID, PendingTransition> PENDING = new HashMap<>();
 
     private HouseTransitionEvents() {
@@ -32,21 +31,27 @@ public final class HouseTransitionEvents {
 
         PendingTransition pending = PENDING.get(player.getUUID());
         if (pending != null) {
-            if (pending.ticksRemaining() > 0) {
-                PENDING.put(
-                        player.getUUID(),
-                        new PendingTransition(
-                                pending.destination(),
-                                pending.ticksRemaining() - 1
-                        )
+            if (pending.acknowledged()) {
+                PENDING.remove(player.getUUID());
+                ServerLevel destination = player.getServer().getLevel(
+                        pending.destination()
                 );
+                if (destination != null) {
+                    teleportMatchingCoordinates(player, destination);
+                }
                 return;
             }
 
-            PENDING.remove(player.getUUID());
-            ServerLevel destination = player.getServer().getLevel(pending.destination());
-            if (destination != null) {
-                teleportMatchingCoordinates(player, destination);
+            int waited = pending.waitedTicks() + 1;
+            if (waited > ACK_TIMEOUT_TICKS) {
+                // Do not perform an unclassified fallback teleport. Cancel and
+                // allow the boundary to retrigger instead.
+                PENDING.remove(player.getUUID());
+            } else {
+                PENDING.put(
+                        player.getUUID(),
+                        pending.withWaitedTicks(waited)
+                );
             }
             return;
         }
@@ -74,6 +79,18 @@ public final class HouseTransitionEvents {
             HouseTransitionKind kind = classifyBoundary(player, origin);
             scheduleExit(player, kind);
         }
+    }
+
+    public static void acknowledgeContext(ServerPlayer player, int token) {
+        PendingTransition pending = PENDING.get(player.getUUID());
+        if (pending == null || pending.token() != token) {
+            return;
+        }
+
+        PENDING.put(
+                player.getUUID(),
+                pending.acknowledge()
+        );
     }
 
     private static boolean isInsideDomesticVolume(ServerPlayer player, BlockPos origin) {
@@ -119,8 +136,6 @@ public final class HouseTransitionEvents {
         boolean left = relX <= 1.20D;
         boolean right = relX >= HouseBuilder.WIDTH - 1.20D;
 
-        // The authored front door occupies the single center block. Keep this
-        // deliberately narrow so mining the plaster beside it is still BREACH.
         double doorCenterX = HouseBuilder.WIDTH / 2.0D + 0.5D;
 
         if (front
@@ -130,7 +145,6 @@ public final class HouseTransitionEvents {
             return HouseTransitionKind.DOOR;
         }
 
-        // Authored front windows: x = 2,3 and x = 11,12.
         if (front
                 && relY >= 1.35D
                 && relY <= 4.35D
@@ -139,7 +153,6 @@ public final class HouseTransitionEvents {
             return HouseTransitionKind.WINDOW;
         }
 
-        // Authored side windows: z = 4,5.
         if ((left || right)
                 && relY >= 1.35D
                 && relY <= 4.35D
@@ -159,7 +172,10 @@ public final class HouseTransitionEvents {
             HouseSavedData data,
             HouseTransitionKind kind
     ) {
-        ServerLevel interior = HouseDimensionMirror.ensureInitialized(player.getServer(), data);
+        ServerLevel interior = HouseDimensionMirror.ensureInitialized(
+                player.getServer(),
+                data
+        );
         if (interior == null) {
             return;
         }
@@ -167,7 +183,10 @@ public final class HouseTransitionEvents {
         beginPendingTransition(player, kind, HouseDimensions.INTERIOR);
     }
 
-    private static void scheduleExit(ServerPlayer player, HouseTransitionKind kind) {
+    private static void scheduleExit(
+            ServerPlayer player,
+            HouseTransitionKind kind
+    ) {
         beginPendingTransition(player, kind, Level.OVERWORLD);
     }
 
@@ -176,18 +195,30 @@ public final class HouseTransitionEvents {
             HouseTransitionKind kind,
             ResourceKey<Level> destination
     ) {
-        PacketDistributor.sendToPlayer(
-                player,
-                new HouseTransitionContextPayload(kind)
+        int token = NEXT_TOKEN.getAndUpdate(
+                current -> current == Integer.MAX_VALUE ? 1 : current + 1
         );
 
         PENDING.put(
                 player.getUUID(),
-                new PendingTransition(destination, CONTEXT_LEAD_TICKS)
+                new PendingTransition(
+                        destination,
+                        token,
+                        false,
+                        0
+                )
+        );
+
+        PacketDistributor.sendToPlayer(
+                player,
+                new HouseTransitionContextPayload(kind, token)
         );
     }
 
-    private static void teleportMatchingCoordinates(ServerPlayer player, ServerLevel destination) {
+    private static void teleportMatchingCoordinates(
+            ServerPlayer player,
+            ServerLevel destination
+    ) {
         Vec3 movement = player.getDeltaMovement();
         float yaw = player.getYRot();
         float pitch = player.getXRot();
@@ -204,6 +235,28 @@ public final class HouseTransitionEvents {
         player.setDeltaMovement(movement);
     }
 
-    private record PendingTransition(ResourceKey<Level> destination, int ticksRemaining) {
+    private record PendingTransition(
+            ResourceKey<Level> destination,
+            int token,
+            boolean acknowledged,
+            int waitedTicks
+    ) {
+        PendingTransition acknowledge() {
+            return new PendingTransition(
+                    destination,
+                    token,
+                    true,
+                    waitedTicks
+            );
+        }
+
+        PendingTransition withWaitedTicks(int ticks) {
+            return new PendingTransition(
+                    destination,
+                    token,
+                    acknowledged,
+                    ticks
+            );
+        }
     }
 }

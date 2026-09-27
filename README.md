@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.13` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.14` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -66,7 +66,7 @@ NeoForge's dimension-transition screen hook replaces the normal loading presenta
 
 Each vignette uses a slightly randomized minimum duration so the transition does not become a perfectly timed loading ritual.
 
-Version 0.1.12 added a one-tick context lead for door/window/breach transitions. Version 0.1.13 replaces the unreliable stretched-blit door rendering with pose-matrix scaling of a single native 16x16 sprite, eliminating texture tiling regardless of GUI blit overload behavior.
+Version 0.1.12 added an initial context lead for door/window/breach transitions. Testing showed that a fixed tick delay was still not a reliable network ordering guarantee. Version 0.1.14 uses an explicit client acknowledgment handshake: the server sends the transition kind, the client stores it and replies, and only after that reply does the server change dimensions.
 
 The initial exterior proxy is still seeded from a snapshot, but common player-driven block changes in the shared visible region are mirrored both directions after initialization. Breaking or placing blocks, breaking windows, and right-click state changes such as opening doors are deferred to the end of the server tick and copied to the matching coordinates in the other dimension. The impossible hallway is excluded from that synchronization. Its generated floor, ceiling, side walls, and terminal wall are protected against player mining and explosions, while decorative objects and player-placed markers remain ordinary breakable Minecraft blocks.
 
