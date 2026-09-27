@@ -13,6 +13,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.ExplosionEvent;
+import net.neoforged.neoforge.event.level.PistonEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 public final class HouseMirrorSyncEvents {
@@ -46,6 +47,39 @@ public final class HouseMirrorSyncEvents {
         event.getAffectedBlocks().removeIf(
                 pos -> HouseImpossibleHallway.isProtectedStructureBlock(origin, pos)
         );
+    }
+
+    public static void onPiston(PistonEvent.Pre event) {
+        if (!(event.getLevel() instanceof ServerLevel level)
+                || !level.dimension().equals(HouseDimensions.INTERIOR)) {
+            return;
+        }
+
+        HouseSavedData data = HouseSavedData.get(level.getServer());
+        BlockPos origin = data.housePosition().orElse(null);
+        if (origin == null || !data.isImpossibleDoorRevealed()) {
+            return;
+        }
+
+        var resolver = event.getStructureHelper();
+        if (resolver != null && resolver.resolve()) {
+            boolean touchesProtected = resolver.getToPush().stream()
+                    .anyMatch(pos -> HouseImpossibleHallway.isProtectedStructureBlock(origin, pos));
+
+            if (touchesProtected) {
+                event.setCanceled(true);
+                return;
+            }
+        }
+
+        BlockPos face = event.getFaceOffsetPos();
+        if (HouseImpossibleHallway.isProtectedStructureBlock(origin, face)
+                || HouseImpossibleHallway.isProtectedStructureBlock(
+                        origin,
+                        face.relative(event.getDirection())
+                )) {
+            event.setCanceled(true);
+        }
     }
 
     public static void onPlace(BlockEvent.EntityPlaceEvent event) {
