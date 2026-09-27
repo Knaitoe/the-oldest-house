@@ -380,3 +380,12 @@ Explicit Overworld block interactions are applied to the House dimension first. 
 This periodic authority pass exists specifically for state changes that event-only mirroring misses: inventory menu operations, furnace progress, environmental/random ticks, redstone changes and similar server-side mutations.
 
 The impossible hallway and future impossible graph cells remain outside the shared domestic set and are never written into the Overworld proxy.
+
+
+## Overworld sightline into impossible space
+
+The physical impossible hallway must never be instantiated in the Overworld: doing so would make it discoverable from behind the fixed exterior and violate the trustworthy-exterior rule.
+
+After the first impossible threshold is revealed, clients receive the House origin/reveal state. When an Overworld camera is on the domestic/front side of the threshold and has a clear line of sight to the open threshold door, a client-only world-space proxy renders the hallway's inward-facing floor, wall, ceiling, carpet and depth-lighting surfaces. The existing Overworld depth buffer provides natural occlusion through the real house geometry.
+
+The proxy has no blocks, collision, pathfinding, light propagation, saved data or rear-side visibility. It exists only to preserve the visual sightline through the ordinary house. The moment the player crosses the threshold, the real House-dimension corridor replaces the proxy.

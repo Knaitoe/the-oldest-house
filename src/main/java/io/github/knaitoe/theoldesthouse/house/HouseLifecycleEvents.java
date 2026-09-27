@@ -5,7 +5,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import io.github.knaitoe.theoldesthouse.network.HouseSightlineStatePayload;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerWakeUpEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class HouseLifecycleEvents {
     public static final int REQUIRED_SETTLEMENT_NIGHTS = 5;
@@ -14,6 +17,23 @@ public final class HouseLifecycleEvents {
     private static final long MORNING_WINDOW_TICKS = 1500L;
 
     private HouseLifecycleEvents() {
+    }
+
+    public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+
+        HouseSavedData data = HouseSavedData.get(player.getServer());
+        BlockPos origin = data.housePosition().orElse(BlockPos.ZERO);
+
+        PacketDistributor.sendToPlayer(
+                player,
+                new HouseSightlineStatePayload(
+                        origin,
+                        data.isImpossibleDoorRevealed()
+                )
+        );
     }
 
     public static void onPlayerWakeUp(PlayerWakeUpEvent event) {

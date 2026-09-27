@@ -1,5 +1,6 @@
 package io.github.knaitoe.theoldesthouse.network;
 
+import io.github.knaitoe.theoldesthouse.client.HouseSightlineState;
 import io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -9,7 +10,16 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("2")
+        event.registrar("3")
+                .playToClient(
+                        HouseSightlineStatePayload.TYPE,
+                        HouseSightlineStatePayload.STREAM_CODEC,
+                        (payload, context) ->
+                                HouseSightlineState.set(
+                                        payload.origin(),
+                                        payload.revealed()
+                                )
+                )
                 .playToClient(
                         HouseTransitionContextPayload.TYPE,
                         HouseTransitionContextPayload.STREAM_CODEC,
