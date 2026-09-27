@@ -17,7 +17,10 @@ public final class HouseNetwork {
                             // Store the presentation context before acknowledging it.
                             // The server will not change dimension until this ACK
                             // returns, so the transition screen cannot race the packet.
-                            HouseTransitionContextState.set(payload.kind());
+                            HouseTransitionContextState.set(
+                                    payload.kind(),
+                                    payload.token()
+                            );
                             context.reply(
                                     new HouseTransitionContextAckPayload(payload.token())
                             );
