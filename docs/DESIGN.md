@@ -348,3 +348,8 @@ A successful appearance roll now samples forty potential sites and selects the l
 The builder captures a front-approach terrain profile before clearing blocks. Porch supports extend downward until they meet non-replaceable terrain. On land, the stone-brick entrance stairs gain as many descending courses as needed (within a bounded range) to meet the sampled approach height. If enough front samples are water, the same entrance generates a short three-wide spruce landing/dock with stone-brick supports rather than submerged stairs.
 
 This adaptation affects only the ordinary exterior relationship to terrain. The House footprint, measurements, and domestic/interior topology remain authored and stable.
+
+
+### Front approach stair orientation
+
+The adaptive entrance run descends away from the north-facing facade. Stone-brick stair blocks therefore face south, toward the building, so the run rises naturally as the player approaches the porch.
