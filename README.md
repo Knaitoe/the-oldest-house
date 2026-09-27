@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.21` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.22` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -183,3 +183,18 @@ The front-door treatment remains unchanged because its discrete door-panel anima
 A successful entry through the authored front door now schedules a real door close eight server ticks after the player reaches the House interior. Vanilla `DoorBlock.setOpen` performs the close so the normal wooden-door sound and game event are preserved. The resulting closed lower/upper door states are then mirrored back to the Overworld shell.
 
 Window and wall-breach entries do not affect the front door.
+
+
+### 0.1.22 domestic architecture expansion
+
+The static domestic portion of The Oldest House is now a three-level usable residence:
+
+- a stone-brick basement with a real stairwell, workshop/storage furnishings, lighting and loot chests;
+- the existing ground floor, reorganized into living/kitchen space, a rear study, utility room and the original central hall that eventually reveals the impossible doorway;
+- a full second story reached by a two-wide central staircase, with two front bedrooms and a larger rear bedroom.
+
+Bedroom windows have been restored on safe front/side elevations. The rear upper facade remains solid because the impossible hallway eventually projects from the center of the rear ground floor and should never become visible through an ordinary window.
+
+Six authored chests now use three custom lazy-generated loot tables: bedroom belongings, study supplies, and basement/workshop supplies. The same deterministic tables are reattached to the House-dimension chest block entities during first interior initialization because the mirror currently synchronizes BlockState rather than general BlockEntity NBT.
+
+The domestic transition envelope now includes the basement and second story while still excluding the roof/attic.

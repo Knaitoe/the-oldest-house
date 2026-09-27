@@ -306,3 +306,28 @@ The frozen interval is correspondingly shorter.
 The front-door transition should resolve as an ordinary physical action rather than ending with an open door frozen in whichever state the player left it.
 
 After a successful DOOR-classified entry into the House interior, the server waits eight ticks and closes the actual front oak door in the interior dimension using vanilla door behavior. The closed state is then copied to the matching Overworld shell. This preserves vanilla sound/game-event semantics and keeps both representations synchronized. Non-door crossings never trigger this behavior.
+
+
+## Expanded domestic architecture
+
+The trustworthy domestic structure now has three stable levels before impossible architecture begins.
+
+The basement is excavated only within the fixed footprint and sealed in stone brick before its interior is cleared. It contains an ordinary workshop/storage layout and a stair into the rear-right ground-floor utility room.
+
+The ground floor retains the established living/kitchen front half and central rear hall. The former ground-floor bedroom has become a study; the opposite rear room is utility/storage and contains the basement stair.
+
+A full second story sits at y+6. A two-wide central staircase rises into a landing between two front bedrooms; a larger rear bedroom occupies the back half. Bedroom windows are restored on front and side elevations. No rear-facing bedroom window is used, because the eventual impossible hallway occupies the rear-center sightline below and must remain invisible from ordinary domestic windows.
+
+The domestic boundary detector spans basement floor through the upper-story ceiling zone but stops below the roof. Breaking into the basement or upper floor therefore enters the House dimension as a breach, while standing on the roof remains ordinary Overworld space.
+
+### Domestic chest loot
+
+Authored chests use mod loot tables under `data/the_oldest_house/loot_table/chests/`:
+
+- `bedroom`: papers, books, candles, food and occasional personal/navigation items;
+- `study`: writing/map supplies with occasional compass, spyglass or name tag;
+- `basement`: practical workshop fuel, iron, redstone, torches and occasional utility items.
+
+These tables are deliberately useful but mundane. Deeper impossible-space rewards remain a separate progression system.
+
+Because general block-entity NBT synchronization is not implemented yet, the builder deterministically reapplies the authored loot tables to matching chest block entities when the House interior dimension is initialized.
