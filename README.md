@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.18` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.19` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -158,3 +158,12 @@ Captured-frame transitions now include restrained camera-motion cues instead of 
 - **breach:** the captured world slides laterally and slightly forward while one dominant wall face crosses the center and the opposite edge closes late, approximating a shoulder-first squeeze rather than an iris wipe.
 
 The motion is intentionally small so the captured HUD does not visibly detach from the screen.
+
+
+### 0.1.19 live-camera handoff
+
+The window and breach transitions no longer fake body movement by translating the captured framebuffer. That approach moved the crosshair, held item, hotbar, and world together like a flat photograph.
+
+The server now waits while the client performs a short **live source-world camera motion** before acknowledging the transition context. NeoForge camera-angle and FOV events provide a small yaw/pitch/roll lean and forward FOV compression while the world is still genuinely rendering and the HUD remains fixed. Only when that live motion reaches the handoff point does the client ACK, allowing the dimension change.
+
+The receiving screen then captures that final live frame, holds it for a much shorter interval with restrained wall/window-edge occlusion, and the destination camera settles back to neutral after the screen closes.
