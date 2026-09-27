@@ -12,6 +12,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 public final class HouseMirrorSyncEvents {
@@ -22,7 +23,29 @@ public final class HouseMirrorSyncEvents {
     }
 
     public static void onBreak(BlockEvent.BreakEvent event) {
+        if (protectImpossibleStructure(event.getLevel(), event.getPos())) {
+            event.setCanceled(true);
+            return;
+        }
+
         queue(event.getLevel(), event.getPos());
+    }
+
+    public static void onExplosion(ExplosionEvent.Detonate event) {
+        if (!(event.getLevel() instanceof ServerLevel level)
+                || !level.dimension().equals(HouseDimensions.INTERIOR)) {
+            return;
+        }
+
+        HouseSavedData data = HouseSavedData.get(level.getServer());
+        BlockPos origin = data.housePosition().orElse(null);
+        if (origin == null || !data.isImpossibleDoorRevealed()) {
+            return;
+        }
+
+        event.getAffectedBlocks().removeIf(
+                pos -> HouseImpossibleHallway.isProtectedStructureBlock(origin, pos)
+        );
     }
 
     public static void onPlace(BlockEvent.EntityPlaceEvent event) {
@@ -93,6 +116,22 @@ public final class HouseMirrorSyncEvents {
 
             HouseDimensionMirror.copyState(source, target, pending.pos());
         }
+    }
+
+    private static boolean protectImpossibleStructure(LevelAccessor level, BlockPos pos) {
+        if (!(level instanceof ServerLevel serverLevel)
+                || !serverLevel.dimension().equals(HouseDimensions.INTERIOR)) {
+            return false;
+        }
+
+        HouseSavedData data = HouseSavedData.get(serverLevel.getServer());
+        if (!data.isImpossibleDoorRevealed()) {
+            return false;
+        }
+
+        BlockPos origin = data.housePosition().orElse(null);
+        return origin != null
+                && HouseImpossibleHallway.isProtectedStructureBlock(origin, pos);
     }
 
     private static void queue(LevelAccessor level, BlockPos pos) {

@@ -70,19 +70,15 @@ The player should have time to adopt it as property.
 
 Later, a door appears in an interior wall where no door existed before. The exterior has not changed. Space beyond the door cannot fit inside the measured shell.
 
-## First impossible doorway and hidden transition
+## Domestic boundary transition
 
-The stable domestic floor remains physically in the Overworld so its windows, storage, furniture, pets, and exterior measurements are ordinary Minecraft reality.
+The fixed Overworld structure is the exterior shell. The usable domestic interior exists in The Oldest House dimension at the same X/Y/Z coordinates.
 
-The first impossible doorway appears in an interior partition at the end of the rear hall. Two blocks of matching corridor exist behind the doorway inside the normal footprint. The cross-dimension transition occurs only after the player steps into that buffer, giving the architecture a chance to conceal the transfer.
+Crossing into the shell's physical bounds changes dimension without changing coordinates, facing, or motion. The normal front door is the expected route, but a player who breaks a window or cuts through an exterior wall still enters the same interior rather than discovering backstage geometry.
 
-The first cross-dimension prototype worked functionally but exposed Minecraft's dimension handoff too clearly. The active prototype therefore uses a same-dimension transition cell: it keeps the player's X/Z position and changes only Y, placing a matching corridor high above the physical structure in the same loaded chunk column.
+The transition presentation is context-sensitive. The server classifies the crossed boundary as the authored front door, a known window opening, or another breach and sends that context to the client before the dimension change. The client then uses a matching short vignette rather than always showing a door.
 
-The return seam is deliberately **not** the impossible doorway. The hidden cell reproduces several blocks of the domestic hall on the near side of a matching ordinary door. A player who turns around can cross the door normally, walk back into what appears to be the same domestic hallway, and only then cross the concealed vertical seam. Door open/closed state is synchronized so the doorway does not reset between sides.
-
-The first prototype corridor is intentionally simple and long. Its purpose is to test the hidden transition and spatial contradiction before the modular graph system is layered on top.
-
-The cross-dimension transition did prove visibly disruptive in playtesting. The same-dimension cell is now the active experiment. Its purpose is to isolate seam quality from the separate questions of F3 behavior, map behavior, and long-term cell placement.
+The unavoidable dimension-loading interval is intentionally disguised rather than eliminated. Durations vary slightly so the pause does not become a perfectly repeatable teleport tell.
 
 ## Interior
 
@@ -211,3 +207,12 @@ After initialization, player-driven changes in the shared visible region are mir
 The rear impossible corridor is explicitly excluded from mirroring. At the provisional age threshold, the interior partition gains its door and a sealed 56-block corridor is constructed directly behind it in the House dimension. No secondary teleport is used. Because the Overworld structure is fixed, rear-facing and rear-side windows are intentionally omitted from the authored facade so ordinary windows never gain a sightline to interior-only geometry.
 
 The custom transition presentation now has a minimum visible duration of 1.65 seconds. Its purpose is not to pretend the dimension handoff takes no time; it turns that unavoidable pause into a deliberate door-focused beat instead of an unreadably fast loading flash.
+
+
+## Structural resistance beyond the domestic layer
+
+The ordinary domestic rooms remain editable because player ownership is part of the premise.
+
+Generated impossible architecture follows a different rule. In the current hallway prototype, the structural floor, ceiling, side walls, and terminal wall cannot be mined by players and are removed from explosion block lists. Decorative carpet and lanterns are not protected, and player-placed torches, blocks, markers, and other objects remain ordinary.
+
+This distinction should persist as the graph system grows: players may annotate and inhabit impossible space, but they cannot simply quarry through The Oldest House's generated structural fabric to bypass topology.
