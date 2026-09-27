@@ -33,6 +33,10 @@ public final class HouseDimensionMirror {
             // updates from that process can turn attached blocks into item debris.
             copyInitialSnapshot(overworld, interior, origin);
 
+            // Paintings are entities rather than blocks, so recreate authored
+            // domestic art after the initial block snapshot.
+            HouseBuilder.spawnDomesticPaintings(interior, origin);
+
             // The initial snapshot now carries block-entity data too, including
             // authored lazy loot tables and any player-owned container contents
             // that existed before the first threshold crossing.
@@ -87,8 +91,12 @@ public final class HouseDimensionMirror {
                 origin.getY() + HouseBuilder.HEIGHT
         );
 
-        for (int x = origin.getX(); x < origin.getX() + HouseBuilder.WIDTH; x++) {
-            for (int z = origin.getZ(); z < origin.getZ() + HouseBuilder.DEPTH; z++) {
+        for (int x = origin.getX() + HouseBuilder.DOMESTIC_MIN_X;
+                x <= origin.getX() + HouseBuilder.DOMESTIC_MAX_X;
+                x++) {
+            for (int z = origin.getZ() + HouseBuilder.DOMESTIC_MIN_Z;
+                    z <= origin.getZ() + HouseBuilder.DOMESTIC_MAX_Z;
+                    z++) {
                 for (int y = minY; y <= maxY; y++) {
                     BlockPos pos = new BlockPos(x, y, z);
 
@@ -182,8 +190,12 @@ public final class HouseDimensionMirror {
                 origin.getY() + HouseBuilder.HEIGHT
         );
 
-        for (int x = origin.getX(); x < origin.getX() + HouseBuilder.WIDTH; x++) {
-            for (int z = origin.getZ(); z < origin.getZ() + HouseBuilder.DEPTH; z++) {
+        for (int x = origin.getX() + HouseBuilder.DOMESTIC_MIN_X;
+                x <= origin.getX() + HouseBuilder.DOMESTIC_MAX_X;
+                x++) {
+            for (int z = origin.getZ() + HouseBuilder.DOMESTIC_MIN_Z;
+                    z <= origin.getZ() + HouseBuilder.DOMESTIC_MAX_Z;
+                    z++) {
                 for (int y = minY; y <= maxY; y++) {
                     BlockPos pos = new BlockPos(x, y, z);
 
