@@ -52,12 +52,13 @@ public final class HouseTransitionClient {
             ReceivingLevelScreen.Reason reason,
             boolean entering
     ) {
-        HouseTransitionKind kind = HouseTransitionContextState.consume();
+        HouseTransitionKind kind = HouseTransitionContextState.peekKind();
+        int token = HouseTransitionContextState.peekToken();
 
         return switch (kind) {
-            case DOOR -> new DoorPassageScreen(ready, reason, entering);
-            case WINDOW -> new WindowPassageScreen(ready, reason, entering);
-            case BREACH -> new BreachPassageScreen(ready, reason, entering);
+            case DOOR -> new DoorPassageScreen(ready, reason, entering, token);
+            case WINDOW -> new WindowPassageScreen(ready, reason, entering, token);
+            case BREACH -> new BreachPassageScreen(ready, reason, entering, token);
         };
     }
 
@@ -65,11 +66,13 @@ public final class HouseTransitionClient {
         protected final long openedAt;
         protected final long minimumVisibleNanos;
         protected final boolean entering;
+        protected final int transitionToken;
 
         protected TimedPassageScreen(
                 BooleanSupplier ready,
                 Reason reason,
                 boolean entering,
+                int transitionToken,
                 long minMillis,
                 long maxMillis
         ) {
@@ -77,6 +80,7 @@ public final class HouseTransitionClient {
                     ready,
                     reason,
                     entering,
+                    transitionToken,
                     System.nanoTime(),
                     randomDuration(minMillis, maxMillis),
                     true
@@ -87,6 +91,7 @@ public final class HouseTransitionClient {
                 BooleanSupplier ready,
                 Reason reason,
                 boolean entering,
+                int transitionToken,
                 long openedAt,
                 long minimumVisibleNanos,
                 boolean resolvedDuration
@@ -99,6 +104,13 @@ public final class HouseTransitionClient {
             this.openedAt = openedAt;
             this.minimumVisibleNanos = minimumVisibleNanos;
             this.entering = entering;
+            this.transitionToken = transitionToken;
+        }
+
+        @Override
+        public void removed() {
+            super.removed();
+            HouseTransitionContextState.clear(transitionToken);
         }
 
         protected double progress() {
@@ -129,8 +141,8 @@ public final class HouseTransitionClient {
     private static final class DoorPassageScreen extends TimedPassageScreen {
         private boolean soundPlayed;
 
-        private DoorPassageScreen(BooleanSupplier ready, Reason reason, boolean entering) {
-            super(ready, reason, entering, 1500L, 1900L);
+        private DoorPassageScreen(BooleanSupplier ready, Reason reason, boolean entering, int token) {
+            super(ready, reason, entering, token, 1500L, 1900L);
         }
 
         @Override
@@ -211,8 +223,8 @@ public final class HouseTransitionClient {
     }
 
     private static final class WindowPassageScreen extends TimedPassageScreen {
-        private WindowPassageScreen(BooleanSupplier ready, Reason reason, boolean entering) {
-            super(ready, reason, entering, 1350L, 1750L);
+        private WindowPassageScreen(BooleanSupplier ready, Reason reason, boolean entering, int token) {
+            super(ready, reason, entering, token, 1350L, 1750L);
         }
 
         @Override
@@ -261,8 +273,8 @@ public final class HouseTransitionClient {
     }
 
     private static final class BreachPassageScreen extends TimedPassageScreen {
-        private BreachPassageScreen(BooleanSupplier ready, Reason reason, boolean entering) {
-            super(ready, reason, entering, 1400L, 1800L);
+        private BreachPassageScreen(BooleanSupplier ready, Reason reason, boolean entering, int token) {
+            super(ready, reason, entering, token, 1400L, 1800L);
         }
 
         @Override

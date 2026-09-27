@@ -247,3 +247,10 @@ A fixed one-tick lead did not reliably ensure that the client had processed the 
 The transition now uses an explicit handshake. Each crossing gets a unique integer token. The server sends `HouseTransitionContextPayload(kind, token)`; the client stores the kind and immediately replies with `HouseTransitionContextAckPayload(token)`. The server performs the dimension handoff only after the matching acknowledgment returns. A stale or mismatched token is ignored. If no acknowledgment arrives within 40 server ticks, the pending transition is cancelled rather than falling back to an incorrect animation.
 
 This makes presentation selection causally ordered instead of timing-dependent.
+
+
+## Persistent client transition context
+
+The client transition kind is now token-scoped and persistent for the complete receiving-screen lifetime. Screen factories use a non-destructive peek instead of consuming the value. The context is cleared only when the transition screen's `removed()` lifecycle callback fires for the matching token.
+
+Server-side transition preparation also logs the classified boundary kind and crossing coordinates. This makes future testing diagnostic rather than visual guesswork: if the server reports WINDOW while the client renders DOOR, classification is exonerated and the bug is isolated to client state/rendering.

@@ -1,5 +1,6 @@
 package io.github.knaitoe.theoldesthouse.house;
 
+import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.network.HouseTransitionContextPayload;
 import java.util.HashMap;
 import java.util.Map;
@@ -197,6 +198,18 @@ public final class HouseTransitionEvents {
     ) {
         int token = NEXT_TOKEN.getAndUpdate(
                 current -> current == Integer.MAX_VALUE ? 1 : current + 1
+        );
+
+        TheOldestHouse.LOGGER.info(
+                "Prepared The Oldest House transition for {}: kind={}, token={}, from={}, to={}, pos=({}, {}, {})",
+                player.getGameProfile().getName(),
+                kind,
+                token,
+                player.serverLevel().dimension().location(),
+                destination.location(),
+                String.format("%.2f", player.getX()),
+                String.format("%.2f", player.getY()),
+                String.format("%.2f", player.getZ())
         );
 
         PENDING.put(
