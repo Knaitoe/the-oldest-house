@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseBuilder;
-import io.github.knaitoe.theoldesthouse.house.HouseImpossibleHallway;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -13,13 +12,10 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -52,206 +48,147 @@ public final class HouseSightlineRenderer {
         Vec3 camera = event.getCamera().getPosition();
 
         double thresholdZ = origin.getZ() + 15.0D;
-
-        // Never expose the visual corridor from behind the fixed exterior.
         if (camera.z >= thresholdZ - 0.10D) {
             return;
         }
 
         double centerX = origin.getX() + HouseBuilder.WIDTH / 2.0D + 0.5D;
-        double centerY = origin.getY() + 2.25D;
-        double centerZ = origin.getZ() + 14.72D;
+        double centerY = origin.getY() + 2.0D;
+        double centerZ = origin.getZ() + 15.0D;
 
         if (camera.distanceToSqr(centerX, centerY, centerZ) > MAX_VIEW_DISTANCE_SQUARED) {
             return;
         }
 
-        // The physical threshold door must actually be open before a corridor
-        // beyond it can be seen.
+        // The portal is drawn immediately behind the real threshold doorway,
+        // not sixty blocks into Overworld terrain. This prevents native trees,
+        // hills or water behind the fixed exterior from depth-occluding the
+        // impossible view.
         BlockPos thresholdDoor = origin.offset(HouseBuilder.WIDTH / 2, 1, 15);
         BlockState thresholdState = minecraft.level.getBlockState(thresholdDoor);
-        if (!(thresholdState.getBlock() instanceof DoorBlock)
-                || !thresholdState.getValue(DoorBlock.OPEN)) {
+        if (thresholdState.getBlock() instanceof DoorBlock
+                && !thresholdState.getValue(DoorBlock.OPEN)) {
             return;
         }
 
-        Vec3 target = new Vec3(centerX, centerY, centerZ);
-        BlockHitResult obstruction = minecraft.level.clip(
-                new ClipContext(
-                        camera,
-                        target,
-                        ClipContext.Block.COLLIDER,
-                        ClipContext.Fluid.NONE,
-                        minecraft.player
-                )
-        );
-
-        if (obstruction.getType() != HitResult.Type.MISS
-                && obstruction.getLocation().distanceToSqr(target) > 0.16D) {
-            return;
-        }
-
-        renderCorridor(event, origin, camera);
+        renderThresholdView(event, origin, camera);
     }
 
-    private static void renderCorridor(
+    private static void renderThresholdView(
             RenderLevelStageEvent event,
             BlockPos origin,
             Vec3 camera
     ) {
         Minecraft minecraft = Minecraft.getInstance();
         MultiBufferSource.BufferSource buffers = minecraft.renderBuffers().bufferSource();
-        VertexConsumer consumer = buffers.getBuffer(RenderType.cutout());
+        RenderType renderType = RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS);
+        VertexConsumer out = buffers.getBuffer(renderType);
 
         TextureAtlasSprite wall = particleSprite(Blocks.WHITE_TERRACOTTA.defaultBlockState());
         TextureAtlasSprite floor = particleSprite(Blocks.SPRUCE_PLANKS.defaultBlockState());
         TextureAtlasSprite ceiling = particleSprite(Blocks.SPRUCE_SLAB.defaultBlockState());
         TextureAtlasSprite carpet = particleSprite(Blocks.RED_CARPET.defaultBlockState());
+        TextureAtlasSprite dark = particleSprite(Blocks.BLACK_CONCRETE.defaultBlockState());
+        TextureAtlasSprite lamp = particleSprite(Blocks.LANTERN.defaultBlockState());
 
         PoseStack pose = event.getPoseStack();
         pose.pushPose();
         pose.translate(-camera.x, -camera.y, -camera.z);
         Matrix4f matrix = pose.last().pose();
 
-        int startZ = HouseImpossibleHallway.START_Z_OFFSET;
-        int endZ = HouseImpossibleHallway.END_Z_OFFSET;
+        float x0 = origin.getX() + 7.03F;
+        float x1 = origin.getX() + 7.97F;
+        float y0 = origin.getY() + 1.03F;
+        float y1 = origin.getY() + 2.97F;
 
-        for (int relZ = startZ; relZ <= endZ; relZ++) {
-            float depth = (relZ - startZ) / (float) Math.max(1, endZ - startZ);
-            float brightness = 0.78F - depth * 0.50F;
+        float farX0 = origin.getX() + 7.39F;
+        float farX1 = origin.getX() + 7.61F;
+        float farY0 = origin.getY() + 1.88F;
+        float farY1 = origin.getY() + 2.12F;
 
-            float z0 = origin.getZ() + relZ;
-            float z1 = z0 + 1.0F;
+        // Just behind the threshold plane, but still in front of any ordinary
+        // Overworld terrain that physically exists behind the exterior wall.
+        float zBase = origin.getZ() + 15.015F;
 
-            for (int relX = 6; relX <= 8; relX++) {
-                float x0 = origin.getX() + relX;
-                float x1 = x0 + 1.0F;
+        quad(out, matrix, x0, y0, x1, y1, zBase + 0.003F, dark, 0.20F);
 
-                quadUp(
-                        consumer,
-                        matrix,
-                        x0,
-                        origin.getY() + 1.002F,
-                        z0,
-                        x1,
-                        z1,
-                        floor,
-                        brightness
-                );
+        // Perspective tunnel surfaces converge on the far rectangle.
+        trapezoid(
+                out, matrix,
+                x0, y0, x0, y1,
+                farX0, farY1, farX0, farY0,
+                zBase, wall, 0.56F
+        );
+        trapezoid(
+                out, matrix,
+                x1, y1, x1, y0,
+                farX1, farY0, farX1, farY1,
+                zBase, wall, 0.52F
+        );
+        trapezoid(
+                out, matrix,
+                x0, y0, x1, y0,
+                farX1, farY0, farX0, farY0,
+                zBase - 0.001F, floor, 0.48F
+        );
+        trapezoid(
+                out, matrix,
+                x1, y1, x0, y1,
+                farX0, farY1, farX1, farY1,
+                zBase - 0.001F, ceiling, 0.37F
+        );
 
-                quadDown(
-                        consumer,
-                        matrix,
-                        x0,
-                        origin.getY() + 5.0F,
-                        z0,
-                        x1,
-                        z1,
-                        ceiling,
-                        brightness * 0.82F
-                );
-            }
+        quad(
+                out,
+                matrix,
+                farX0,
+                farY0,
+                farX1,
+                farY1,
+                zBase - 0.002F,
+                wall,
+                0.18F
+        );
 
-            for (int relY = 1; relY <= 4; relY++) {
-                float y0 = origin.getY() + relY;
-                float y1 = y0 + 1.0F;
+        // Narrow red runner tapering to the vanishing point.
+        trapezoid(
+                out,
+                matrix,
+                origin.getX() + 7.40F,
+                y0 + 0.01F,
+                origin.getX() + 7.60F,
+                y0 + 0.01F,
+                origin.getX() + 7.52F,
+                farY0 + 0.005F,
+                origin.getX() + 7.48F,
+                farY0 + 0.005F,
+                zBase - 0.004F,
+                carpet,
+                0.62F
+        );
 
-                quadEast(
-                        consumer,
-                        matrix,
-                        origin.getX() + 6.001F,
-                        y0,
-                        y1,
-                        z0,
-                        z1,
-                        wall,
-                        brightness
-                );
+        // Diminishing warm markers suggest the real authored lantern rhythm.
+        for (int i = 0; i < 4; i++) {
+            float t = 0.28F + i * 0.17F;
+            float cx = lerp(origin.getX() + 7.50F, origin.getX() + 7.50F, t);
+            float cy = lerp(y1 - 0.34F, origin.getY() + 2.06F, t);
+            float size = 0.095F * (1.0F - t) + 0.018F;
 
-                quadWest(
-                        consumer,
-                        matrix,
-                        origin.getX() + 8.999F,
-                        y0,
-                        y1,
-                        z0,
-                        z1,
-                        wall,
-                        brightness
-                );
-            }
-
-            // Thin runner down the center. Slightly above the floor prevents
-            // z-fighting without making it look detached.
-            quadUp(
-                    consumer,
+            quad(
+                    out,
                     matrix,
-                    origin.getX() + 7.0F,
-                    origin.getY() + 1.012F,
-                    z0,
-                    origin.getX() + 8.0F,
-                    z1,
-                    carpet,
-                    Math.min(0.72F, brightness + 0.08F)
+                    cx - size,
+                    cy - size,
+                    cx + size,
+                    cy + size,
+                    zBase - 0.006F - i * 0.0002F,
+                    lamp,
+                    1.0F
             );
-        }
-
-        // A real terminal wall is important: the view should read as extremely
-        // long, not as an infinite debug tunnel.
-        float terminalZ = origin.getZ() + endZ + 0.001F;
-        for (int relX = 6; relX <= 8; relX++) {
-            for (int relY = 1; relY <= 4; relY++) {
-                quadNorth(
-                        consumer,
-                        matrix,
-                        origin.getX() + relX,
-                        origin.getY() + relY,
-                        terminalZ,
-                        origin.getX() + relX + 1.0F,
-                        origin.getY() + relY + 1.0F,
-                        wall,
-                        0.22F
-                );
-            }
         }
 
         pose.popPose();
-        buffers.endBatch(RenderType.cutout());
-
-        // Render just the authored lights as actual block models after the
-        // efficient corridor surfaces. Four lanterns are cheap and give the
-        // stretch readable depth markers.
-        renderDepthLights(event, origin, camera, buffers);
-    }
-
-    private static void renderDepthLights(
-            RenderLevelStageEvent event,
-            BlockPos origin,
-            Vec3 camera,
-            MultiBufferSource.BufferSource buffers
-    ) {
-        Minecraft minecraft = Minecraft.getInstance();
-        PoseStack pose = event.getPoseStack();
-
-        for (int relZ : new int[]{24, 36, 48, 60}) {
-            pose.pushPose();
-            pose.translate(
-                    origin.getX() + HouseBuilder.WIDTH / 2.0D - camera.x,
-                    origin.getY() + 3.0D - camera.y,
-                    origin.getZ() + relZ - camera.z
-            );
-
-            minecraft.getBlockRenderer().renderSingleBlock(
-                    Blocks.LANTERN.defaultBlockState(),
-                    pose,
-                    buffers,
-                    LightTexture.FULL_BRIGHT,
-                    OverlayTexture.NO_OVERLAY
-            );
-            pose.popPose();
-        }
-
-        buffers.endBatch();
+        buffers.endBatch(renderType);
     }
 
     private static TextureAtlasSprite particleSprite(BlockState state) {
@@ -262,92 +199,45 @@ public final class HouseSightlineRenderer {
                 .getParticleIcon();
     }
 
-    private static void quadUp(
+    private static void trapezoid(
             VertexConsumer out,
             Matrix4f matrix,
-            float x0,
-            float y,
-            float z0,
-            float x1,
-            float z1,
-            TextureAtlasSprite sprite,
-            float shade
-    ) {
-        vertex(out, matrix, x0, y, z1, sprite.getU0(), sprite.getV1(), shade, 0, 1, 0);
-        vertex(out, matrix, x1, y, z1, sprite.getU1(), sprite.getV1(), shade, 0, 1, 0);
-        vertex(out, matrix, x1, y, z0, sprite.getU1(), sprite.getV0(), shade, 0, 1, 0);
-        vertex(out, matrix, x0, y, z0, sprite.getU0(), sprite.getV0(), shade, 0, 1, 0);
-    }
-
-    private static void quadDown(
-            VertexConsumer out,
-            Matrix4f matrix,
-            float x0,
-            float y,
-            float z0,
-            float x1,
-            float z1,
-            TextureAtlasSprite sprite,
-            float shade
-    ) {
-        vertex(out, matrix, x0, y, z0, sprite.getU0(), sprite.getV0(), shade, 0, -1, 0);
-        vertex(out, matrix, x1, y, z0, sprite.getU1(), sprite.getV0(), shade, 0, -1, 0);
-        vertex(out, matrix, x1, y, z1, sprite.getU1(), sprite.getV1(), shade, 0, -1, 0);
-        vertex(out, matrix, x0, y, z1, sprite.getU0(), sprite.getV1(), shade, 0, -1, 0);
-    }
-
-    private static void quadEast(
-            VertexConsumer out,
-            Matrix4f matrix,
-            float x,
-            float y0,
-            float y1,
-            float z0,
-            float z1,
-            TextureAtlasSprite sprite,
-            float shade
-    ) {
-        vertex(out, matrix, x, y0, z0, sprite.getU0(), sprite.getV1(), shade, 1, 0, 0);
-        vertex(out, matrix, x, y0, z1, sprite.getU1(), sprite.getV1(), shade, 1, 0, 0);
-        vertex(out, matrix, x, y1, z1, sprite.getU1(), sprite.getV0(), shade, 1, 0, 0);
-        vertex(out, matrix, x, y1, z0, sprite.getU0(), sprite.getV0(), shade, 1, 0, 0);
-    }
-
-    private static void quadWest(
-            VertexConsumer out,
-            Matrix4f matrix,
-            float x,
-            float y0,
-            float y1,
-            float z0,
-            float z1,
-            TextureAtlasSprite sprite,
-            float shade
-    ) {
-        vertex(out, matrix, x, y0, z1, sprite.getU0(), sprite.getV1(), shade, -1, 0, 0);
-        vertex(out, matrix, x, y0, z0, sprite.getU1(), sprite.getV1(), shade, -1, 0, 0);
-        vertex(out, matrix, x, y1, z0, sprite.getU1(), sprite.getV0(), shade, -1, 0, 0);
-        vertex(out, matrix, x, y1, z1, sprite.getU0(), sprite.getV0(), shade, -1, 0, 0);
-    }
-
-    private static void quadNorth(
-            VertexConsumer out,
-            Matrix4f matrix,
-            float x0,
-            float y0,
+            float ax,
+            float ay,
+            float bx,
+            float by,
+            float cx,
+            float cy,
+            float dx,
+            float dy,
             float z,
-            float x1,
-            float y1,
             TextureAtlasSprite sprite,
             float shade
     ) {
-        vertex(out, matrix, x1, y0, z, sprite.getU1(), sprite.getV1(), shade, 0, 0, -1);
-        vertex(out, matrix, x0, y0, z, sprite.getU0(), sprite.getV1(), shade, 0, 0, -1);
-        vertex(out, matrix, x0, y1, z, sprite.getU0(), sprite.getV0(), shade, 0, 0, -1);
-        vertex(out, matrix, x1, y1, z, sprite.getU1(), sprite.getV0(), shade, 0, 0, -1);
+        texturedVertex(out, matrix, ax, ay, z, sprite.getU0(), sprite.getV1(), shade);
+        texturedVertex(out, matrix, bx, by, z, sprite.getU0(), sprite.getV0(), shade);
+        texturedVertex(out, matrix, cx, cy, z, sprite.getU1(), sprite.getV0(), shade);
+        texturedVertex(out, matrix, dx, dy, z, sprite.getU1(), sprite.getV1(), shade);
     }
 
-    private static void vertex(
+    private static void quad(
+            VertexConsumer out,
+            Matrix4f matrix,
+            float x0,
+            float y0,
+            float x1,
+            float y1,
+            float z,
+            TextureAtlasSprite sprite,
+            float shade
+    ) {
+        texturedVertex(out, matrix, x0, y0, z, sprite.getU0(), sprite.getV1(), shade);
+        texturedVertex(out, matrix, x1, y0, z, sprite.getU1(), sprite.getV1(), shade);
+        texturedVertex(out, matrix, x1, y1, z, sprite.getU1(), sprite.getV0(), shade);
+        texturedVertex(out, matrix, x0, y1, z, sprite.getU0(), sprite.getV0(), shade);
+    }
+
+    private static void texturedVertex(
             VertexConsumer out,
             Matrix4f matrix,
             float x,
@@ -355,10 +245,7 @@ public final class HouseSightlineRenderer {
             float z,
             float u,
             float v,
-            float shade,
-            float nx,
-            float ny,
-            float nz
+            float shade
     ) {
         int channel = Math.max(0, Math.min(255, Math.round(255.0F * shade)));
         out.addVertex(matrix, x, y, z)
@@ -366,6 +253,10 @@ public final class HouseSightlineRenderer {
                 .setUv(u, v)
                 .setOverlay(OverlayTexture.NO_OVERLAY)
                 .setLight(LightTexture.FULL_BRIGHT)
-                .setNormal(nx, ny, nz);
+                .setNormal(0.0F, 0.0F, -1.0F);
+    }
+
+    private static float lerp(float start, float end, float t) {
+        return start + (end - start) * t;
     }
 }
