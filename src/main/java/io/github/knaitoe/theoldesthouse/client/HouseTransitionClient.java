@@ -26,6 +26,8 @@ import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterDimensionTransitionScreenEvent;
 import org.joml.Matrix4f;
 
@@ -55,6 +57,13 @@ public final class HouseTransitionClient {
                 Level.OVERWORLD,
                 HouseDimensions.INTERIOR,
                 (supplier, reason) -> createScreen(supplier, reason, false)
+        );
+    }
+
+    @SubscribeEvent
+    public static void registerReloadListeners(RegisterClientReloadListenersEvent event) {
+        event.registerReloadListener(
+                (ResourceManagerReloadListener) resourceManager -> HouseSightlineRenderer.invalidateSprites()
         );
     }
 

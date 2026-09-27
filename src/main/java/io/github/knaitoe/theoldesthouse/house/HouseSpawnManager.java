@@ -77,14 +77,16 @@ public final class HouseSpawnManager {
             int centerZ = anchor.getZ()
                     + (int) Math.round(Math.sin(angle) * distance);
 
-            int originX = centerX - HouseBuilder.WIDTH / 2;
-            int originZ = centerZ - HouseBuilder.DEPTH / 2;
+            int originX = centerX - HouseLayout.CENTER_X;
+            int originZ = centerZ - HouseLayout.CENTER_Z;
 
+            // Relief across the whole claimed footprint. Cheap heightmap reads
+            // reject most candidates before any block is inspected.
             int minY = Integer.MAX_VALUE;
             int maxY = Integer.MIN_VALUE;
-
-            for (int x = 0; x < HouseBuilder.WIDTH; x++) {
-                for (int z = 0; z < HouseBuilder.DEPTH; z++) {
+            boolean tooSteep = false;
+            for (int x = HouseLayout.CLEAR_MIN_X; x <= HouseLayout.CLEAR_MAX_X && !tooSteep; x++) {
+                for (int z = HouseLayout.CLEAR_MIN_Z; z <= HouseLayout.CLEAR_MAX_Z; z++) {
                     int y = level.getHeight(
                             Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                             originX + x,
@@ -92,12 +94,13 @@ public final class HouseSpawnManager {
                     );
                     minY = Math.min(minY, y);
                     maxY = Math.max(maxY, y);
+                    if (maxY - minY > HouseBuilder.MAX_SITE_RELIEF) {
+                        tooSteep = true;
+                        break;
+                    }
                 }
             }
-
-            // The deeper basement/foundation can absorb a little more relief
-            // than the old one-story prototype without making the house float.
-            if (maxY - minY > 4) {
+            if (tooSteep) {
                 continue;
             }
 
@@ -106,10 +109,13 @@ public final class HouseSpawnManager {
                 continue;
             }
 
-            int score = HouseBuilder.siteScore(level, origin);
+            int score = HouseBuilder.siteScore(level, origin, maxY - minY);
             if (score < bestScore) {
                 bestScore = score;
                 bestOrigin = origin;
+                if (score == 0) {
+                    break; // Perfectly flat, dry and level with the approach.
+                }
             }
         }
 

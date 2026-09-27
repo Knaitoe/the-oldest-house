@@ -3,7 +3,7 @@ package io.github.knaitoe.theoldesthouse.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
-import io.github.knaitoe.theoldesthouse.house.HouseBuilder;
+import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -27,7 +27,14 @@ import org.joml.Matrix4f;
 public final class HouseSightlineRenderer {
     private static final double MAX_VIEW_DISTANCE_SQUARED = 96.0D * 96.0D;
 
+    // Resolved once and dropped on resource reload (see HouseTransitionClient).
+    private static Sprites sprites;
+
     private HouseSightlineRenderer() {
+    }
+
+    static void invalidateSprites() {
+        sprites = null;
     }
 
     @SubscribeEvent
@@ -47,14 +54,14 @@ public final class HouseSightlineRenderer {
         BlockPos origin = HouseSightlineState.origin();
         Vec3 camera = event.getCamera().getPosition();
 
-        double thresholdZ = origin.getZ() + 15.0D;
+        double thresholdZ = origin.getZ() + HouseLayout.THRESHOLD_Z;
         if (camera.z >= thresholdZ - 0.10D) {
             return;
         }
 
-        double centerX = origin.getX() + HouseBuilder.WIDTH / 2.0D + 0.5D;
+        double centerX = origin.getX() + HouseLayout.AXIS_X + 0.5D;
         double centerY = origin.getY() + 2.0D;
-        double centerZ = origin.getZ() + 15.0D;
+        double centerZ = thresholdZ;
 
         if (camera.distanceToSqr(centerX, centerY, centerZ) > MAX_VIEW_DISTANCE_SQUARED) {
             return;
@@ -64,7 +71,7 @@ public final class HouseSightlineRenderer {
         // not sixty blocks into Overworld terrain. This prevents native trees,
         // hills or water behind the fixed exterior from depth-occluding the
         // impossible view.
-        BlockPos thresholdDoor = origin.offset(HouseBuilder.WIDTH / 2, 1, 15);
+        BlockPos thresholdDoor = origin.offset(HouseLayout.AXIS_X, 1, HouseLayout.THRESHOLD_Z);
         BlockState thresholdState = minecraft.level.getBlockState(thresholdDoor);
         if (thresholdState.getBlock() instanceof DoorBlock
                 && !thresholdState.getValue(DoorBlock.OPEN)) {
@@ -84,31 +91,42 @@ public final class HouseSightlineRenderer {
         RenderType renderType = RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS);
         VertexConsumer out = buffers.getBuffer(renderType);
 
-        TextureAtlasSprite wall = particleSprite(Blocks.WHITE_TERRACOTTA.defaultBlockState());
-        TextureAtlasSprite floor = particleSprite(Blocks.SPRUCE_PLANKS.defaultBlockState());
-        TextureAtlasSprite ceiling = particleSprite(Blocks.SPRUCE_SLAB.defaultBlockState());
-        TextureAtlasSprite carpet = particleSprite(Blocks.RED_CARPET.defaultBlockState());
-        TextureAtlasSprite dark = particleSprite(Blocks.BLACK_CONCRETE.defaultBlockState());
-        TextureAtlasSprite lamp = particleSprite(Blocks.LANTERN.defaultBlockState());
+        if (sprites == null) {
+            sprites = new Sprites(
+                    particleSprite(Blocks.WHITE_TERRACOTTA.defaultBlockState()),
+                    particleSprite(Blocks.SPRUCE_PLANKS.defaultBlockState()),
+                    particleSprite(Blocks.SPRUCE_SLAB.defaultBlockState()),
+                    particleSprite(Blocks.RED_CARPET.defaultBlockState()),
+                    particleSprite(Blocks.BLACK_CONCRETE.defaultBlockState()),
+                    particleSprite(Blocks.LANTERN.defaultBlockState())
+            );
+        }
+        TextureAtlasSprite wall = sprites.wall();
+        TextureAtlasSprite floor = sprites.floor();
+        TextureAtlasSprite ceiling = sprites.ceiling();
+        TextureAtlasSprite carpet = sprites.carpet();
+        TextureAtlasSprite dark = sprites.dark();
+        TextureAtlasSprite lamp = sprites.lamp();
 
         PoseStack pose = event.getPoseStack();
         pose.pushPose();
         pose.translate(-camera.x, -camera.y, -camera.z);
         Matrix4f matrix = pose.last().pose();
 
-        float x0 = origin.getX() + 7.03F;
-        float x1 = origin.getX() + 7.97F;
+        float doorX = origin.getX() + HouseLayout.AXIS_X;
+        float x0 = doorX + 0.03F;
+        float x1 = doorX + 0.97F;
         float y0 = origin.getY() + 1.03F;
         float y1 = origin.getY() + 2.97F;
 
-        float farX0 = origin.getX() + 7.39F;
-        float farX1 = origin.getX() + 7.61F;
+        float farX0 = doorX + 0.39F;
+        float farX1 = doorX + 0.61F;
         float farY0 = origin.getY() + 1.88F;
         float farY1 = origin.getY() + 2.12F;
 
         // Just behind the threshold plane, but still in front of any ordinary
         // Overworld terrain that physically exists behind the exterior wall.
-        float zBase = origin.getZ() + 15.015F;
+        float zBase = origin.getZ() + HouseLayout.THRESHOLD_Z + 0.015F;
 
         quad(out, matrix, x0, y0, x1, y1, zBase + 0.003F, dark, 0.20F);
 
@@ -154,13 +172,13 @@ public final class HouseSightlineRenderer {
         trapezoid(
                 out,
                 matrix,
-                origin.getX() + 7.40F,
+                doorX + 0.40F,
                 y0 + 0.01F,
-                origin.getX() + 7.60F,
+                doorX + 0.60F,
                 y0 + 0.01F,
-                origin.getX() + 7.52F,
+                doorX + 0.52F,
                 farY0 + 0.005F,
-                origin.getX() + 7.48F,
+                doorX + 0.48F,
                 farY0 + 0.005F,
                 zBase - 0.004F,
                 carpet,
@@ -170,7 +188,7 @@ public final class HouseSightlineRenderer {
         // Diminishing warm markers suggest the real authored lantern rhythm.
         for (int i = 0; i < 4; i++) {
             float t = 0.28F + i * 0.17F;
-            float cx = lerp(origin.getX() + 7.50F, origin.getX() + 7.50F, t);
+            float cx = doorX + 0.50F;
             float cy = lerp(y1 - 0.34F, origin.getY() + 2.06F, t);
             float size = 0.095F * (1.0F - t) + 0.018F;
 
@@ -258,5 +276,15 @@ public final class HouseSightlineRenderer {
 
     private static float lerp(float start, float end, float t) {
         return start + (end - start) * t;
+    }
+
+    private record Sprites(
+            TextureAtlasSprite wall,
+            TextureAtlasSprite floor,
+            TextureAtlasSprite ceiling,
+            TextureAtlasSprite carpet,
+            TextureAtlasSprite dark,
+            TextureAtlasSprite lamp
+    ) {
     }
 }

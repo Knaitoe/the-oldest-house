@@ -6,7 +6,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.knaitoe.theoldesthouse.house.HouseBuilder;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensionMirror;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.HouseInteriorInitializer;
+import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import io.github.knaitoe.theoldesthouse.house.HouseMirrorSyncEvents;
+import io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.house.HouseStageManager;
 import io.github.knaitoe.theoldesthouse.network.HouseSightlineStatePayload;
@@ -80,7 +83,7 @@ public final class HouseCommands {
         }
 
         Direction facing = player.getDirection();
-        BlockPos projectedCenter = player.blockPosition().relative(facing, 24);
+        BlockPos projectedCenter = player.blockPosition().relative(facing, 36);
 
         int floorY = level.getHeight(
                 Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
@@ -89,9 +92,9 @@ public final class HouseCommands {
         );
 
         BlockPos origin = new BlockPos(
-                projectedCenter.getX() - HouseBuilder.WIDTH / 2,
+                projectedCenter.getX() - HouseLayout.CENTER_X,
                 floorY,
-                projectedCenter.getZ() - HouseBuilder.DEPTH / 2
+                projectedCenter.getZ() - HouseLayout.CENTER_Z
         );
 
         HouseBuilder.build(level, origin);
@@ -127,6 +130,11 @@ public final class HouseCommands {
                                 ", houseOrigin=" + housePosition +
                                 ", age=" + data.houseAge() +
                                 ", impossibleDoor=" + data.isImpossibleDoorRevealed() +
+                                ", interiorInitialized=" + data.isInteriorInitialized() +
+                                ", layout=v" + data.layoutVersion() +
+                                (data.isSpawned() && !data.isCurrentLayout()
+                                        ? " (outdated: reset and respawn for v" + HouseLayout.LAYOUT_VERSION + ")"
+                                        : "") +
                                 ", visits=" + data.visitCount()
                 ),
                 false
@@ -245,6 +253,8 @@ public final class HouseCommands {
         HouseSavedData data = HouseSavedData.get(source.getServer());
         data.reset();
         HouseMirrorSyncEvents.clearPending();
+        HouseInteriorInitializer.cancel();
+        HouseTransitionEvents.clearAll();
         PacketDistributor.sendToAllPlayers(
                 new HouseSightlineStatePayload(BlockPos.ZERO, false)
         );

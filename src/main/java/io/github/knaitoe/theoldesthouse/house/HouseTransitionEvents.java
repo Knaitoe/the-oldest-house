@@ -5,7 +5,7 @@ import io.github.knaitoe.theoldesthouse.network.HouseTransitionContextPayload;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -14,15 +14,15 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class HouseTransitionEvents {
-    private static final double BOUNDARY_MARGIN = 0.55D;
     private static final int ACK_TIMEOUT_TICKS = 40;
-    private static final int FRONT_DOOR_CLOSE_DELAY_TICKS = 8;
+    private static final int DOOR_CLOSE_DELAY_TICKS = 8;
 
-    private static final AtomicInteger NEXT_TOKEN = new AtomicInteger(1);
+    private static int nextToken = 1;
     private static final Map<UUID, PendingTransition> PENDING = new HashMap<>();
     private static final Map<UUID, PendingDoorClose> PENDING_DOOR_CLOSE = new HashMap<>();
 
@@ -38,207 +38,137 @@ public final class HouseTransitionEvents {
 
         PendingTransition pending = PENDING.get(player.getUUID());
         if (pending != null) {
-            if (pending.acknowledged()) {
-                PENDING.remove(player.getUUID());
-                ServerLevel destination = player.getServer().getLevel(
-                        pending.destination()
-                );
-                if (destination != null) {
-                    boolean enteringThroughFrontDoor =
-                            pending.kind() == HouseTransitionKind.DOOR
-                                    && pending.destination().equals(HouseDimensions.INTERIOR);
-
-                    teleportMatchingCoordinates(player, destination);
-
-                    if (enteringThroughFrontDoor) {
-                        HouseSavedData data = HouseSavedData.get(player.getServer());
-                        data.housePosition().ifPresent(origin ->
-                                PENDING_DOOR_CLOSE.put(
-                                        player.getUUID(),
-                                        new PendingDoorClose(
-                                                origin.immutable(),
-                                                FRONT_DOOR_CLOSE_DELAY_TICKS
-                                        )
-                                )
-                        );
-                    }
-                }
-                return;
-            }
-
-            int waited = pending.waitedTicks() + 1;
-            if (waited > ACK_TIMEOUT_TICKS) {
-                // Do not perform an unclassified fallback teleport. Cancel and
-                // allow the boundary to retrigger instead.
-                PENDING.remove(player.getUUID());
-            } else {
-                PENDING.put(
-                        player.getUUID(),
-                        pending.withWaitedTicks(waited)
-                );
-            }
+            tickPendingTransition(player, pending);
             return;
         }
 
         HouseSavedData data = HouseSavedData.get(player.getServer());
-        if (!data.isSpawned()) {
+        BlockPos origin = data.houseOrigin();
+        if (!data.isSpawned() || origin == null) {
             return;
         }
 
-        BlockPos origin = data.housePosition().orElse(null);
-        if (origin == null) {
-            return;
-        }
+        double relX = player.getX() - origin.getX();
+        double relY = player.getY() - origin.getY();
+        double relZ = player.getZ() - origin.getZ();
+        ResourceKey<Level> dimension = player.serverLevel().dimension();
 
-        if (player.serverLevel().dimension().equals(Level.OVERWORLD)) {
-            if (isInsideDomesticVolume(player, origin)) {
-                HouseTransitionKind kind = classifyBoundary(player, origin);
-                scheduleEntry(player, data, kind);
+        if (dimension.equals(Level.OVERWORLD)) {
+            if (HouseLayout.isInsideDomesticVolume(relX, relY, relZ)) {
+                scheduleEntry(player, data, relX, relY, relZ);
             }
             return;
         }
 
-        if (player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)
-                && !isValidHouseInteriorSpace(player, data, origin)) {
-            HouseTransitionKind kind = classifyBoundary(player, origin);
-            scheduleExit(player, kind);
+        if (dimension.equals(HouseDimensions.INTERIOR) && !isValidHouseInteriorSpace(data, origin, player, relX, relY, relZ)) {
+            beginPendingTransition(player, classify(relX, relY, relZ), Level.OVERWORLD, HouseLayout.doorAt(relX, relY, relZ));
+        }
+    }
+
+    private static void tickPendingTransition(ServerPlayer player, PendingTransition pending) {
+        if (!pending.acknowledged) {
+            if (++pending.waitedTicks > ACK_TIMEOUT_TICKS) {
+                // Do not perform an unclassified fallback teleport. Cancel and
+                // allow the boundary to retrigger instead.
+                PENDING.remove(player.getUUID());
+            }
+            return;
+        }
+
+        PENDING.remove(player.getUUID());
+        ServerLevel destination = player.getServer().getLevel(pending.destination);
+        if (destination == null) {
+            return;
+        }
+
+        HouseSavedData data = HouseSavedData.get(player.getServer());
+        BlockPos origin = data.houseOrigin();
+        boolean entering = pending.destination.equals(HouseDimensions.INTERIOR);
+
+        if (!entering && origin != null && data.isInteriorInitialized()) {
+            // The Overworld proxy is only reconciled while someone there could
+            // see it; bring it up to date before this player arrives.
+            ServerLevel interior = player.getServer().getLevel(HouseDimensions.INTERIOR);
+            if (interior != null) {
+                HouseDimensionMirror.reconcileAuthoritativeDomestic(interior, destination, origin);
+            }
+        }
+
+        teleportMatchingCoordinates(player, destination);
+
+        if (entering && pending.door != null && origin != null) {
+            PENDING_DOOR_CLOSE.put(player.getUUID(), new PendingDoorClose(origin, pending.door));
         }
     }
 
     public static void acknowledgeContext(ServerPlayer player, int token) {
         PendingTransition pending = PENDING.get(player.getUUID());
-        if (pending == null || pending.token() != token) {
-            return;
+        if (pending != null && pending.token == token) {
+            pending.acknowledged = true;
         }
-
-        PENDING.put(
-                player.getUUID(),
-                pending.acknowledge()
-        );
     }
 
-    private static boolean isInsideDomesticVolume(ServerPlayer player, BlockPos origin) {
-        double minX = origin.getX() + BOUNDARY_MARGIN;
-        double maxX = origin.getX() + HouseBuilder.WIDTH - BOUNDARY_MARGIN;
-        double minZ = origin.getZ() + BOUNDARY_MARGIN;
-        double maxZ = origin.getZ() + HouseBuilder.DEPTH - BOUNDARY_MARGIN;
-        double minY = origin.getY() + HouseBuilder.BASEMENT_FLOOR_Y + 0.35D;
-        double maxY = origin.getY() + HouseBuilder.UPPER_WALL_TOP_Y + 0.95D;
+    /** Drops per-player state for a player who has left. */
+    public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        UUID id = event.getEntity().getUUID();
+        PENDING.remove(id);
+        PENDING_DOOR_CLOSE.remove(id);
+    }
 
-        return player.getX() >= minX
-                && player.getX() <= maxX
-                && player.getZ() >= minZ
-                && player.getZ() <= maxZ
-                && player.getY() >= minY
-                && player.getY() <= maxY;
+    /** Drops all per-player state (server stop, world reset). */
+    public static void clearAll() {
+        PENDING.clear();
+        PENDING_DOOR_CLOSE.clear();
     }
 
     private static boolean isValidHouseInteriorSpace(
-            ServerPlayer player,
             HouseSavedData data,
-            BlockPos origin
+            BlockPos origin,
+            ServerPlayer player,
+            double relX,
+            double relY,
+            double relZ
     ) {
-        if (isInsideDomesticVolume(player, origin)) {
+        if (HouseLayout.isInsideDomesticVolume(relX, relY, relZ)) {
             return true;
         }
 
         return data.isImpossibleDoorRevealed()
-                && HouseImpossibleHallway.isInsideWalkableVolume(
-                        origin,
-                        player.getX(),
-                        player.getY(),
-                        player.getZ()
-                );
+                && HouseImpossibleHallway.isInsideWalkableVolume(origin, player.getX(), player.getY(), player.getZ());
     }
 
-    private static HouseTransitionKind classifyBoundary(ServerPlayer player, BlockPos origin) {
-        double relX = player.getX() - origin.getX();
-        double relY = player.getY() - origin.getY();
-        double relZ = player.getZ() - origin.getZ();
-
-        boolean front = relZ <= 1.20D;
-        boolean left = relX <= 1.20D;
-        boolean right = relX >= HouseBuilder.WIDTH - 1.20D;
-
-        double doorCenterX = HouseBuilder.WIDTH / 2.0D + 0.5D;
-
-        if (front
-                && Math.abs(relX - doorCenterX) <= 0.52D
-                && relY >= 0.55D
-                && relY <= 3.20D) {
+    private static HouseTransitionKind classify(double relX, double relY, double relZ) {
+        if (HouseLayout.doorAt(relX, relY, relZ) != null) {
             return HouseTransitionKind.DOOR;
         }
-
-        boolean mainWindowY = relY >= 1.35D && relY <= 4.35D;
-        boolean upperWindowY = relY >= 7.35D && relY <= 10.35D;
-
-        if (front
-                && (mainWindowY || upperWindowY)
-                && (within(relX, 1.75D, 4.25D)
-                || within(relX, 10.75D, 13.25D))) {
+        if (HouseLayout.isAtWindow(relX, relY, relZ)) {
             return HouseTransitionKind.WINDOW;
         }
-
-        if (left && mainWindowY && within(relZ, 6.75D, 9.25D)) {
-            return HouseTransitionKind.WINDOW;
-        }
-
-        if (right && mainWindowY && within(relZ, 3.75D, 6.25D)) {
-            return HouseTransitionKind.WINDOW;
-        }
-
-        if (left
-                && upperWindowY
-                && (within(relZ, 1.75D, 4.25D)
-                || within(relZ, 12.75D, 15.25D))) {
-            return HouseTransitionKind.WINDOW;
-        }
-
-        if (right
-                && upperWindowY
-                && (within(relZ, 3.75D, 6.25D)
-                || within(relZ, 12.75D, 15.25D))) {
-            return HouseTransitionKind.WINDOW;
-        }
-
         return HouseTransitionKind.BREACH;
     }
 
-    private static boolean within(double value, double min, double max) {
-        return value >= min && value <= max;
-    }
-
-    private static void scheduleEntry(
-            ServerPlayer player,
-            HouseSavedData data,
-            HouseTransitionKind kind
-    ) {
-        ServerLevel interior = HouseDimensionMirror.ensureInitialized(
-                player.getServer(),
-                data
-        );
+    private static void scheduleEntry(ServerPlayer player, HouseSavedData data, double relX, double relY, double relZ) {
+        ServerLevel interior = HouseInteriorInitializer.ensureInitialized(player.getServer(), data);
         if (interior == null) {
             return;
         }
 
-        beginPendingTransition(player, kind, HouseDimensions.INTERIOR);
-    }
-
-    private static void scheduleExit(
-            ServerPlayer player,
-            HouseTransitionKind kind
-    ) {
-        beginPendingTransition(player, kind, Level.OVERWORLD);
+        beginPendingTransition(
+                player,
+                classify(relX, relY, relZ),
+                HouseDimensions.INTERIOR,
+                HouseLayout.doorAt(relX, relY, relZ)
+        );
     }
 
     private static void beginPendingTransition(
             ServerPlayer player,
             HouseTransitionKind kind,
-            ResourceKey<Level> destination
+            ResourceKey<Level> destination,
+            @Nullable HouseLayout.ExteriorDoor door
     ) {
-        int token = NEXT_TOKEN.getAndUpdate(
-                current -> current == Integer.MAX_VALUE ? 1 : current + 1
-        );
+        int token = nextToken;
+        nextToken = nextToken == Integer.MAX_VALUE ? 1 : nextToken + 1;
 
         TheOldestHouse.LOGGER.info(
                 "Prepared The Oldest House transition for {}: kind={}, token={}, from={}, to={}, pos=({}, {}, {})",
@@ -252,21 +182,8 @@ public final class HouseTransitionEvents {
                 String.format("%.2f", player.getZ())
         );
 
-        PENDING.put(
-                player.getUUID(),
-                new PendingTransition(
-                        destination,
-                        kind,
-                        token,
-                        false,
-                        0
-                )
-        );
-
-        PacketDistributor.sendToPlayer(
-                player,
-                new HouseTransitionContextPayload(kind, token)
-        );
+        PENDING.put(player.getUUID(), new PendingTransition(destination, token, door));
+        PacketDistributor.sendToPlayer(player, new HouseTransitionContextPayload(kind, token));
     }
 
     private static void tickPendingDoorClose(ServerPlayer player) {
@@ -280,33 +197,25 @@ public final class HouseTransitionEvents {
             return;
         }
 
-        if (pending.ticksRemaining() > 0) {
-            PENDING_DOOR_CLOSE.put(
-                    player.getUUID(),
-                    pending.withTicksRemaining(pending.ticksRemaining() - 1)
-            );
+        if (pending.ticksRemaining-- > 0) {
             return;
         }
 
         PENDING_DOOR_CLOSE.remove(player.getUUID());
-        closeFrontDoorBehindPlayer(player, pending.origin());
+        closeDoorBehindPlayer(player, pending.origin, pending.door);
     }
 
-    private static void closeFrontDoorBehindPlayer(
-            ServerPlayer player,
-            BlockPos origin
-    ) {
+    private static void closeDoorBehindPlayer(ServerPlayer player, BlockPos origin, HouseLayout.ExteriorDoor exteriorDoor) {
         ServerLevel interior = player.getServer().getLevel(HouseDimensions.INTERIOR);
         if (interior == null) {
             return;
         }
 
-        BlockPos lowerPos = origin.offset(HouseBuilder.WIDTH / 2, 1, 0);
+        BlockPos lowerPos = origin.offset(exteriorDoor.x(), exteriorDoor.y(), exteriorDoor.z());
         BlockPos upperPos = lowerPos.above();
         BlockState lowerState = interior.getBlockState(lowerPos);
 
-        if (!(lowerState.getBlock() instanceof DoorBlock door)
-                || !lowerState.getValue(DoorBlock.OPEN)) {
+        if (!(lowerState.getBlock() instanceof DoorBlock door) || !lowerState.getValue(DoorBlock.OPEN)) {
             return;
         }
 
@@ -316,85 +225,52 @@ public final class HouseTransitionEvents {
 
         // Be explicit about both halves before mirroring. This avoids relying
         // on the timing of the paired-door neighbor update.
-        BlockState currentLower = interior.getBlockState(lowerPos);
-        if (currentLower.getBlock() instanceof DoorBlock
-                && currentLower.getValue(DoorBlock.OPEN)) {
-            interior.setBlock(
-                    lowerPos,
-                    currentLower.setValue(DoorBlock.OPEN, false),
-                    10
-            );
-        }
-
-        BlockState currentUpper = interior.getBlockState(upperPos);
-        if (currentUpper.getBlock() instanceof DoorBlock
-                && currentUpper.getValue(DoorBlock.OPEN)) {
-            interior.setBlock(
-                    upperPos,
-                    currentUpper.setValue(DoorBlock.OPEN, false),
-                    10
-            );
+        for (BlockPos pos : new BlockPos[]{lowerPos, upperPos}) {
+            BlockState current = interior.getBlockState(pos);
+            if (current.getBlock() instanceof DoorBlock && current.getValue(DoorBlock.OPEN)) {
+                interior.setBlock(pos, current.setValue(DoorBlock.OPEN, false), 10);
+            }
         }
 
         ServerLevel overworld = player.getServer().overworld();
-        HouseDimensionMirror.copyState(interior, overworld, lowerPos);
-        HouseDimensionMirror.copyState(interior, overworld, upperPos);
+        HouseDimensionMirror.copyStateAndBlockEntity(interior, overworld, lowerPos);
+        HouseDimensionMirror.copyStateAndBlockEntity(interior, overworld, upperPos);
     }
 
-    private static void teleportMatchingCoordinates(
-            ServerPlayer player,
-            ServerLevel destination
-    ) {
+    private static void teleportMatchingCoordinates(ServerPlayer player, ServerLevel destination) {
         Vec3 movement = player.getDeltaMovement();
         float yaw = player.getYRot();
         float pitch = player.getXRot();
 
         player.stopRiding();
-        player.teleportTo(
-                destination,
-                player.getX(),
-                player.getY(),
-                player.getZ(),
-                yaw,
-                pitch
-        );
+        player.teleportTo(destination, player.getX(), player.getY(), player.getZ(), yaw, pitch);
         player.setDeltaMovement(movement);
     }
 
-    private record PendingTransition(
-            ResourceKey<Level> destination,
-            HouseTransitionKind kind,
-            int token,
-            boolean acknowledged,
-            int waitedTicks
-    ) {
-        PendingTransition acknowledge() {
-            return new PendingTransition(
-                    destination,
-                    kind,
-                    token,
-                    true,
-                    waitedTicks
-            );
-        }
+    /** Mutable: updated in place every tick rather than re-allocated. */
+    private static final class PendingTransition {
+        final ResourceKey<Level> destination;
+        final int token;
+        @Nullable
+        final HouseLayout.ExteriorDoor door;
+        boolean acknowledged;
+        int waitedTicks;
 
-        PendingTransition withWaitedTicks(int ticks) {
-            return new PendingTransition(
-                    destination,
-                    kind,
-                    token,
-                    acknowledged,
-                    ticks
-            );
+        PendingTransition(ResourceKey<Level> destination, int token, @Nullable HouseLayout.ExteriorDoor door) {
+            this.destination = destination;
+            this.token = token;
+            this.door = door;
         }
     }
 
-    private record PendingDoorClose(
-            BlockPos origin,
-            int ticksRemaining
-    ) {
-        PendingDoorClose withTicksRemaining(int ticks) {
-            return new PendingDoorClose(origin, ticks);
+    private static final class PendingDoorClose {
+        final BlockPos origin;
+        final HouseLayout.ExteriorDoor door;
+        int ticksRemaining = DOOR_CLOSE_DELAY_TICKS;
+
+        PendingDoorClose(BlockPos origin, HouseLayout.ExteriorDoor door) {
+            this.origin = origin;
+            this.door = door;
         }
     }
 }

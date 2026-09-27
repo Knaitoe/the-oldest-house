@@ -2,28 +2,35 @@ package io.github.knaitoe.theoldesthouse.client;
 
 import net.minecraft.core.BlockPos;
 
+/**
+ * Client copy of the House origin and reveal state. Written from the network
+ * thread and read every frame by the renderer, so it is published as one
+ * immutable snapshot rather than guarded by a lock.
+ */
 public final class HouseSightlineState {
-    private static BlockPos origin = BlockPos.ZERO;
-    private static boolean revealed;
+    private static final Snapshot EMPTY = new Snapshot(BlockPos.ZERO, false);
+
+    private static volatile Snapshot snapshot = EMPTY;
 
     private HouseSightlineState() {
     }
 
-    public static synchronized void set(BlockPos newOrigin, boolean newRevealed) {
-        origin = newOrigin == null ? BlockPos.ZERO : newOrigin.immutable();
-        revealed = newRevealed;
+    public static void set(BlockPos newOrigin, boolean newRevealed) {
+        snapshot = new Snapshot(newOrigin == null ? BlockPos.ZERO : newOrigin.immutable(), newRevealed);
     }
 
-    public static synchronized BlockPos origin() {
-        return origin;
+    public static BlockPos origin() {
+        return snapshot.origin();
     }
 
-    public static synchronized boolean revealed() {
-        return revealed;
+    public static boolean revealed() {
+        return snapshot.revealed();
     }
 
-    public static synchronized void clear() {
-        origin = BlockPos.ZERO;
-        revealed = false;
+    public static void clear() {
+        snapshot = EMPTY;
+    }
+
+    private record Snapshot(BlockPos origin, boolean revealed) {
     }
 }

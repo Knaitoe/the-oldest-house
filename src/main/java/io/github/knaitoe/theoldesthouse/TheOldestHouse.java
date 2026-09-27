@@ -22,7 +22,10 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HouseCommands::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onPlayerWakeUp);
         NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onPlayerLoggedIn);
+        NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onServerStarted);
+        NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onServerStopped);
         NeoForge.EVENT_BUS.addListener(HouseTransitionEvents::onPlayerTick);
+        NeoForge.EVENT_BUS.addListener(HouseTransitionEvents::onPlayerLoggedOut);
 
         NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onBreak);
         NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onExplosion);

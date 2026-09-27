@@ -9,6 +9,7 @@ import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -72,6 +73,17 @@ public final class HouseTransitionMotion {
             HouseTransitionContextState.clear(token);
             reset();
         }
+    }
+
+    /**
+     * Nothing about one server's House may survive into the next connection:
+     * a stale reveal flag would draw the hallway view over an unrelated world.
+     */
+    @SubscribeEvent
+    public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
+        HouseSightlineState.clear();
+        HouseTransitionContextState.reset();
+        reset();
     }
 
     @SubscribeEvent
