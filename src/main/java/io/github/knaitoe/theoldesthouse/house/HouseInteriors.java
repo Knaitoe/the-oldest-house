@@ -124,7 +124,7 @@ final class HouseInteriors {
             c.set(1, 1, z, barrel(Direction.EAST));
             c.set(1, 2, z, BOOKSHELF);
             if (z != 4 && z != 11) {
-                c.set(1, 3, z, slab(Blocks.DARK_OAK_SLAB, SlabType.BOTTOM));
+                c.set(1, 3, z, slab(Blocks.DARK_OAK_SLAB, SlabType.TOP));
             }
         }
         c.set(1, 4, 2, Blocks.POTTED_FERN.defaultBlockState());
@@ -160,7 +160,7 @@ final class HouseInteriors {
         c.set(7, 1, 14, stairsTop(Blocks.DARK_OAK_STAIRS, Direction.SOUTH));
         c.set(8, 1, 14, barrel(Direction.NORTH));
         c.set(6, 2, 14, candle(3));
-        c.set(8, 2, 14, Blocks.POTTED_FLOWERING_AZALEA_BUSH.defaultBlockState());
+        c.set(8, 2, 14, Blocks.POTTED_ALLIUM.defaultBlockState());
 
         // Card table at the rear.
         table(c, 10, 1, 12);
@@ -431,7 +431,7 @@ final class HouseInteriors {
         // Dressing table under the front window.
         c.fill(10, 7, 0, 11, 7, 0, slab(Blocks.DARK_OAK_SLAB, SlabType.TOP));
         c.set(10, 7, 1, stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH));
-        c.set(11, 8, 0, Blocks.POTTED_FLOWERING_AZALEA_BUSH.defaultBlockState());
+        c.set(11, 8, 0, Blocks.POTTED_ALLIUM.defaultBlockState());
 
         // Armchair at the fire.
         c.set(5, 7, 7, stairs(Blocks.DARK_OAK_STAIRS, Direction.EAST));

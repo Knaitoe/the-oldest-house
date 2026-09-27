@@ -186,6 +186,12 @@ public final class HouseLayout {
     /** Low service-range roof behind the tower. */
     public static final Roof ROOF_SERVICE = new Roof(
             "service", RoofKind.RIDGE_X, 17, 19, 28, 26, 8, 8, 1, false, true, false);
+    /**
+     * Wall dormer rising from the great room's west wall above the literary
+     * bedroom, breaking what would otherwise be one long roof plane.
+     */
+    public static final Roof ROOF_GREAT_DORMER = new Roof(
+            "great_dormer", RoofKind.RIDGE_X, -1, 10, 6, 15, 12, 11, 1, true, false, false);
     /** Single dormer on the kitchen's east slope. */
     public static final Roof ROOF_KITCHEN_DORMER = new Roof(
             "kitchen_dormer", RoofKind.RIDGE_X, 25, 1, 28, 5, 8, 8, 1, false, true, false);
@@ -193,6 +199,7 @@ public final class HouseLayout {
     /** Placement priority for equal-depth conflicts: earlier wins. */
     public static final List<Roof> ROOFS = List.of(
             ROOF_KITCHEN_DORMER,
+            ROOF_GREAT_DORMER,
             ROOF_TOWER,
             ROOF_GREAT,
             ROOF_CROSS,
@@ -300,6 +307,7 @@ public final class HouseLayout {
             new Window(Face.WEST, 0, 11, 11, 3, 4),
             new Window(Face.WEST, 0, 2, 3, 8, 9),
             new Window(Face.WEST, 0, 12, 13, 8, 9),
+            new Window(Face.WEST, 0, 12, 13, 12, 13),
             new Window(Face.WEST, 1, 17, 18, 2, 3),
             new Window(Face.WEST, 1, 22, 23, 2, 3),
             new Window(Face.WEST, 1, 19, 22, 8, 9),
@@ -378,6 +386,18 @@ public final class HouseLayout {
     public static boolean isRoomInterior(int x, int y, int z) {
         for (Room room : ROOMS) {
             if (room.contains(x, y, z)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** True inside any storey's wall-inclusive volume (rooms, walls and openings). */
+    public static boolean isWithinMass(int x, int y, int z) {
+        for (Mass mass : MASSES) {
+            if (x >= mass.x0() && x <= mass.x1()
+                    && z >= mass.z0() && z <= mass.z1()
+                    && y >= mass.floorY() && y <= mass.topY()) {
                 return true;
             }
         }
