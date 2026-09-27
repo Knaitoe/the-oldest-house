@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.24` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.25` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -217,3 +217,12 @@ Before construction clears anything, the builder samples the front approach. Por
 ### 0.1.24 front stair orientation fix
 
 Terrain-adaptive stone-brick approach stairs now face south toward The Oldest House, so their ascending side points back toward the porch while the courses descend northward to the sampled ground level.
+
+
+### 0.1.25 doorway-clearance audit
+
+The ground-to-second-floor staircase has been moved forward, away from the central rear-hall doorway, and its railing has moved to the west side so the house's center circulation line remains open.
+
+The basement stair now begins one block deeper inside the utility room so its railing no longer crowds the utility-room doorway. Nearby utility furnishings were relocated accordingly.
+
+A final doorway-clearance pass now runs after all structural, furnishing and lighting generation. Each authored doorway has protected approach cells on both sides; only colliding blocks are removed, so passable carpets and other zero-collision decoration can remain. The future impossible doorway receives the same clearance treatment when revealed.
