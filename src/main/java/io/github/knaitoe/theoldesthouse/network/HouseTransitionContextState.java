@@ -28,6 +28,12 @@ public final class HouseTransitionContextState {
         return armed;
     }
 
+    public static synchronized void reset() {
+        armed = false;
+        currentKind = HouseTransitionKind.DOOR;
+        currentToken = -1;
+    }
+
     public static synchronized void clear(int token) {
         if (!armed || currentToken != token) {
             return;

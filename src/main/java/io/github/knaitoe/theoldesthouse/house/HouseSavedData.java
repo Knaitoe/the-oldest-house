@@ -8,6 +8,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.saveddata.SavedData;
 
 import java.util.Optional;
+import javax.annotation.Nullable;
 
 public final class HouseSavedData extends SavedData {
     private static final String DATA_NAME = "the_oldest_house";
@@ -39,6 +40,11 @@ public final class HouseSavedData extends SavedData {
     private boolean impossibleDoorRevealed;
     private boolean interiorInitialized;
     private int visitCount;
+    private int layoutVersion;
+
+    // Derived, not saved: hot paths read the origin every tick.
+    @Nullable
+    private BlockPos cachedHouseOrigin;
 
     public static final Factory<HouseSavedData> FACTORY =
             new Factory<>(HouseSavedData::new, HouseSavedData::load);
@@ -81,6 +87,9 @@ public final class HouseSavedData extends SavedData {
         data.impossibleDoorRevealed = tag.getBoolean("ImpossibleDoorRevealed");
         data.interiorInitialized = tag.getBoolean("InteriorInitialized");
         data.visitCount = tag.getInt("VisitCount");
+        // Houses spawned before layout versioning are the original 15x19 build.
+        data.layoutVersion = tag.contains("LayoutVersion") ? tag.getInt("LayoutVersion") : 1;
+        data.refreshOriginCache();
 
         return data;
     }
@@ -115,6 +124,7 @@ public final class HouseSavedData extends SavedData {
         tag.putBoolean("ImpossibleDoorRevealed", impossibleDoorRevealed);
         tag.putBoolean("InteriorInitialized", interiorInitialized);
         tag.putInt("VisitCount", visitCount);
+        tag.putInt("LayoutVersion", layoutVersion);
         return tag;
     }
 
@@ -155,9 +165,26 @@ public final class HouseSavedData extends SavedData {
     }
 
     public Optional<BlockPos> housePosition() {
-        return hasHousePosition
-                ? Optional.of(new BlockPos(houseX, houseY, houseZ))
-                : Optional.empty();
+        return Optional.ofNullable(cachedHouseOrigin);
+    }
+
+    /** The House origin without allocation, or null before it has spawned. */
+    @Nullable
+    public BlockPos houseOrigin() {
+        return cachedHouseOrigin;
+    }
+
+    /** Architecture version the spawned House was generated with. */
+    public int layoutVersion() {
+        return layoutVersion;
+    }
+
+    public boolean isCurrentLayout() {
+        return layoutVersion == HouseLayout.LAYOUT_VERSION;
+    }
+
+    private void refreshOriginCache() {
+        cachedHouseOrigin = hasHousePosition ? new BlockPos(houseX, houseY, houseZ) : null;
     }
 
     public Optional<BlockPos> anchorPosition() {
@@ -263,6 +290,8 @@ public final class HouseSavedData extends SavedData {
         houseX = origin.getX();
         houseY = origin.getY();
         houseZ = origin.getZ();
+        layoutVersion = HouseLayout.LAYOUT_VERSION;
+        refreshOriginCache();
         setDirty();
     }
 
@@ -337,6 +366,8 @@ public final class HouseSavedData extends SavedData {
         impossibleDoorRevealed = false;
         interiorInitialized = false;
         visitCount = 0;
+        layoutVersion = 0;
+        refreshOriginCache();
         setDirty();
     }
 }

@@ -23,7 +23,7 @@ public final class HouseStageManager {
             return;
         }
 
-        ServerLevel interior = HouseDimensionMirror.ensureInitialized(server, data);
+        ServerLevel interior = HouseInteriorInitializer.ensureInitialized(server, data);
         if (interior == null) {
             return;
         }
@@ -34,9 +34,9 @@ public final class HouseStageManager {
             data.markImpossibleDoorRevealed();
 
             // The impossible hallway itself remains interior-only, but the
-            // threshold partition at z+15 is ordinary domestic architecture
+            // threshold wall at the end of the hall is ordinary domestic architecture
             // and must immediately agree in both dimensions.
-            HouseDimensionMirror.syncSharedDomesticRegion(
+            HouseDimensionMirror.reconcileAuthoritativeDomestic(
                     interior,
                     server.overworld(),
                     origin

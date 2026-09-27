@@ -10,13 +10,16 @@ import net.minecraft.world.level.block.LanternBlock;
 import net.minecraft.world.phys.AABB;
 
 public final class HouseImpossibleHallway {
-    public static final int START_Z_OFFSET = 16;
-    public static final int END_Z_OFFSET = 72;
+    /** The hallway begins immediately behind the threshold wall at the end of the hall. */
+    public static final int START_Z_OFFSET = HouseLayout.THRESHOLD_Z + 1;
+    public static final int LENGTH = 56;
+    public static final int END_Z_OFFSET = START_Z_OFFSET + LENGTH;
 
-    private static final int LEFT_WALL_X_OFFSET = 5;
-    private static final int RIGHT_WALL_X_OFFSET = 9;
-    private static final int INNER_MIN_X_OFFSET = 6;
-    private static final int INNER_MAX_X_OFFSET = 8;
+    // Same width and walls as the domestic hall, so it reads as its continuation.
+    private static final int LEFT_WALL_X_OFFSET = HouseLayout.AXIS_X - 2;
+    private static final int RIGHT_WALL_X_OFFSET = HouseLayout.AXIS_X + 2;
+    private static final int INNER_MIN_X_OFFSET = HouseLayout.HALL_MIN_X;
+    private static final int INNER_MAX_X_OFFSET = HouseLayout.HALL_MAX_X;
     private static final int QUIET_FLAGS =
             Block.UPDATE_CLIENTS
                     | Block.UPDATE_KNOWN_SHAPE
@@ -45,13 +48,14 @@ public final class HouseImpossibleHallway {
                 level.setBlock(origin.offset(RIGHT_WALL_X_OFFSET, y, z), Blocks.WHITE_TERRACOTTA.defaultBlockState(), QUIET_FLAGS);
             }
 
-            level.setBlock(origin.offset(HouseBuilder.WIDTH / 2, 1, z), Blocks.RED_CARPET.defaultBlockState(), QUIET_FLAGS);
+            level.setBlock(origin.offset(HouseLayout.AXIS_X, 1, z), Blocks.RED_CARPET.defaultBlockState(), QUIET_FLAGS);
         }
 
-        for (int z : new int[]{24, 36, 48, 60}) {
-            level.setBlock(origin.offset(HouseBuilder.WIDTH / 2, 4, z), Blocks.CHAIN.defaultBlockState(), QUIET_FLAGS);
+        for (int step : new int[]{8, 20, 32, 44}) {
+            int z = START_Z_OFFSET + step;
+            level.setBlock(origin.offset(HouseLayout.AXIS_X, 4, z), Blocks.CHAIN.defaultBlockState(), QUIET_FLAGS);
             level.setBlock(
-                    origin.offset(HouseBuilder.WIDTH / 2, 3, z),
+                    origin.offset(HouseLayout.AXIS_X, 3, z),
                     Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true),
                     2
             );
@@ -132,7 +136,9 @@ public final class HouseImpossibleHallway {
         double maxX = origin.getX() + INNER_MAX_X_OFFSET + 0.85D;
         double minY = origin.getY() + 0.35D;
         double maxY = origin.getY() + 5.45D;
-        double minZ = origin.getZ() + START_Z_OFFSET - 0.25D;
+        // Starts inside the threshold doorway so it overlaps the hall's own
+        // volume: there is never a gap that would count as leaving the house.
+        double minZ = origin.getZ() + HouseLayout.THRESHOLD_Z - 0.25D;
         double maxZ = origin.getZ() + END_Z_OFFSET - 0.25D;
 
         return x >= minX && x <= maxX

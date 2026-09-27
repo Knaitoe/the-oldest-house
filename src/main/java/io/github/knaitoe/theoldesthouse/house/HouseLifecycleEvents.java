@@ -8,6 +8,8 @@ import net.minecraft.world.level.Level;
 import io.github.knaitoe.theoldesthouse.network.HouseSightlineStatePayload;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerWakeUpEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class HouseLifecycleEvents {
@@ -34,6 +36,29 @@ public final class HouseLifecycleEvents {
                         data.isImpossibleDoorRevealed()
                 )
         );
+    }
+
+    public static void onServerStarted(ServerStartedEvent event) {
+        HouseSavedData data = HouseSavedData.get(event.getServer());
+        if (data.isSpawned() && !data.isCurrentLayout()) {
+            TheOldestHouse.LOGGER.warn(
+                    "The Oldest House in this world was generated with layout v{}, but this build uses v{}. "
+                            + "Transitions, mirroring and the impossible hallway assume the current layout; "
+                            + "use /oldesthouse reset and respawn it (or a fresh world) for reliable behaviour.",
+                    data.layoutVersion(),
+                    HouseLayout.LAYOUT_VERSION
+            );
+        }
+    }
+
+    /**
+     * Static per-server state must not leak into the next world opened in the
+     * same game session (single-player).
+     */
+    public static void onServerStopped(ServerStoppedEvent event) {
+        HouseMirrorSyncEvents.clearPending();
+        HouseInteriorInitializer.cancel();
+        HouseTransitionEvents.clearAll();
     }
 
     public static void onPlayerWakeUp(PlayerWakeUpEvent event) {

@@ -26,6 +26,12 @@ jobs:
       - name: Build
         run: gradle build
 
+      # Generates The Oldest House on a game-test server and checks its
+      # architecture (sightline, enclosure, walkability, glazing). The log
+      # also carries an OTH-DUMP block listing for offline rendering.
+      - name: Structure game tests
+        run: gradle runGameTestServer
+
       - name: Upload mod jar
         uses: actions/upload-artifact@v4
         with:
