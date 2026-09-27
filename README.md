@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.15` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.16` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -123,3 +123,13 @@ Version 0.1.13 changes the generator of `the_oldest_house:house_interior` from a
 Transition context is no longer consumed when the receiving screen is first constructed. The acknowledged kind/token remains stable for the duration of the dimension handoff and is cleared only when the transition screen closes. This prevents any receiving-screen recreation from silently falling back to the default door treatment.
 
 Server logs also record the classified transition kind, token, source/destination dimensions, and player coordinates for each crossing so future threshold bugs can be distinguished from client presentation bugs.
+
+
+### 0.1.16 physical transition vignettes
+
+The three boundary transitions now share one presentation rule: the player's view is physically obstructed rather than covered by a supernatural effect.
+
+- The front-door vignette now uses the authored oak door rather than spruce.
+- Window crossings show the nearby white-terracotta sill/jamb moving close to the camera; the old exposure/refraction effect has been removed.
+- Wall breaches show white-terracotta wall faces with a narrow stripped-dark-oak structural edge as the player squeezes through the hole; the old iris/dust effect has been removed.
+- Entering The Oldest House is intentionally a little slower/tighter than leaving it.
