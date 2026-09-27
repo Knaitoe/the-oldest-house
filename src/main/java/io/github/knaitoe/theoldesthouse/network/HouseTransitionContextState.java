@@ -24,6 +24,10 @@ public final class HouseTransitionContextState {
         return currentToken;
     }
 
+    public static synchronized boolean isArmed() {
+        return armed;
+    }
+
     public static synchronized void clear(int token) {
         if (!armed || currentToken != token) {
             return;

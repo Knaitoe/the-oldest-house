@@ -14,15 +14,13 @@ public final class HouseNetwork {
                         HouseTransitionContextPayload.TYPE,
                         HouseTransitionContextPayload.STREAM_CODEC,
                         (payload, context) -> {
-                            // Store the presentation context before acknowledging it.
-                            // The server will not change dimension until this ACK
-                            // returns, so the transition screen cannot race the packet.
+                            // Store the presentation context, but do not ACK yet.
+                            // The client performs a short live-camera movement first;
+                            // HouseTransitionMotion sends the ACK when that movement
+                            // reaches its handoff point.
                             HouseTransitionContextState.set(
                                     payload.kind(),
                                     payload.token()
-                            );
-                            context.reply(
-                                    new HouseTransitionContextAckPayload(payload.token())
                             );
                         }
                 )

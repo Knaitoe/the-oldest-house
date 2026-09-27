@@ -281,3 +281,12 @@ This preserves camera orientation and environmental context up to the dimension 
 A captured frame alone preserved continuity but still read as a stationary image being covered by UI geometry. Window and breach transitions now apply small whole-frame transforms to imply camera movement during the hidden handoff.
 
 Window entry combines a slight forward zoom, downward world drift, lateral head movement, a rising sill, and a traveling jamb. Breach entry favors lateral camera displacement and one wall face crossing the center before the opposite edge closes. These transforms remain restrained because the framebuffer capture includes the HUD; large transforms would make the interface itself visibly move and reveal the trick.
+
+
+## Live camera motion before handoff
+
+Playtesting showed that transforming the captured framebuffer could not convincingly imply player movement because the HUD, held item, crosshair, and world all moved together as one 2D image.
+
+Window and breach crossings now delay their transition ACK for a few hundred milliseconds while the source world remains live. During that interval, client camera yaw, pitch, roll, and FOV receive small additive offsets through NeoForge viewport events. The HUD remains fixed because this is real camera-space movement rather than framebuffer movement.
+
+At the peak of that motion the client sends the transition acknowledgment. The server then changes dimensions, the receiving screen captures the final source frame, and only restrained architectural edges continue across the shorter frozen interval. When the screen closes, the camera offset decays back to neutral in the destination world.
