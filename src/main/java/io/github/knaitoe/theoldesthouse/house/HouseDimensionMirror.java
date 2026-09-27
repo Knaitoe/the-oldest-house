@@ -33,9 +33,11 @@ public final class HouseDimensionMirror {
             // updates from that process can turn attached blocks into item debris.
             copyInitialSnapshot(overworld, interior, origin);
 
-            // The initial snapshot now carries block-entity data too, including
-            // authored lazy loot tables and any player-owned container contents
-            // that existed before the first threshold crossing.
+            // Static hanging decor is entity-backed rather than block-backed,
+            // so recreate the authored paintings once in the authoritative
+            // interior after the block snapshot is complete.
+            HouseBuilder.spawnDomesticPaintings(interior, origin);
+
             data.markInteriorInitialized();
 
             if (data.houseAge() >= HouseStageManager.FIRST_IMPOSSIBLE_DOOR_AGE) {
@@ -88,7 +90,7 @@ public final class HouseDimensionMirror {
         );
 
         for (int x = origin.getX(); x < origin.getX() + HouseBuilder.WIDTH; x++) {
-            for (int z = origin.getZ(); z < origin.getZ() + HouseBuilder.DEPTH; z++) {
+            for (int z = origin.getZ() - 1; z < origin.getZ() + HouseBuilder.DEPTH; z++) {
                 for (int y = minY; y <= maxY; y++) {
                     BlockPos pos = new BlockPos(x, y, z);
 
@@ -183,7 +185,7 @@ public final class HouseDimensionMirror {
         );
 
         for (int x = origin.getX(); x < origin.getX() + HouseBuilder.WIDTH; x++) {
-            for (int z = origin.getZ(); z < origin.getZ() + HouseBuilder.DEPTH; z++) {
+            for (int z = origin.getZ() - 1; z < origin.getZ() + HouseBuilder.DEPTH; z++) {
                 for (int y = minY; y <= maxY; y++) {
                     BlockPos pos = new BlockPos(x, y, z);
 
