@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.10` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.11` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -16,8 +16,8 @@ Version `0.1.10` implements the first stable lifecycle and redesigned domestic s
 - Automatic placement searches for empty, reasonably flat ground near the established settlement and will not deliberately bulldoze player structures.
 - The Oldest House now tracks a persistent perceived age once it has appeared.
 - At the provisional test threshold of age **3**, an ordinary-looking door appears at the end of the rear hall.
-- Crossing that doorway now transfers the player to a hidden same-dimension corridor cell high above the structure, preserving X/Z and remaining inside the same loaded chunk column.
-- The transition is still triggered only after the player crosses the doorframe. The same-dimension test preserves X/Z, view direction, and movement so we can compare its seam against the visibly disruptive cross-dimension prototype.
+- The usable domestic interior lives in The Oldest House dimension at matching coordinates, with nearby Overworld scenery mirrored outside its windows.
+- The age-gated rear door opens directly into interior-only impossible architecture; there is no second teleport behind it.
 - Operator-only development commands for forcing, aging, and inspecting The Oldest House state.
 - The exterior is generated once and then left alone. Future impossible space belongs behind it, not in a morphing facade.
 - No mixins.
@@ -56,9 +56,15 @@ The interior dimension uses the same coordinates as the exterior. Entering the p
 
 On first initialization, the mod copies a 32-block view radius of the real Overworld around The Oldest House into the interior dimension and rebuilds the same static house at the same coordinates. With an Overworld-style sky, synchronized time/weather, and real glass windows, the copied landscape becomes the view outside instead of a portal-rendering effect.
 
-NeoForge's dimension-transition screen hook replaces the normal loading presentation specifically for travel into and out of The Oldest House. Version 0.1.10 intentionally holds the door-focused transition screen for at least 1.65 seconds so it reads as a deliberate beat rather than a one-frame loading flash.
+NeoForge's dimension-transition screen hook replaces the normal loading presentation specifically for travel into and out of The Oldest House. Version 0.1.11 sends the entry context to the client before each transition and uses a matching vignette:
 
-The initial exterior proxy is still seeded from a snapshot, but common player-driven block changes in the shared visible region are now mirrored both directions after initialization. Breaking or placing blocks, breaking windows, and right-click state changes such as opening doors are deferred to the end of the server tick and copied to the matching coordinates in the other dimension. The impossible hallway is excluded from that synchronization.
+- **front door:** an animated spruce-door close-up with a vanilla wooden-door sound;
+- **window opening:** a bright-to-dark exposure/refraction transition;
+- **wall or other breach:** a closing plaster/dust aperture.
+
+Each vignette uses a slightly randomized minimum duration so the transition does not become a perfectly timed loading ritual.
+
+The initial exterior proxy is still seeded from a snapshot, but common player-driven block changes in the shared visible region are mirrored both directions after initialization. Breaking or placing blocks, breaking windows, and right-click state changes such as opening doors are deferred to the end of the server tick and copied to the matching coordinates in the other dimension. The impossible hallway is excluded from that synchronization. Its generated floor, ceiling, side walls, and terminal wall are protected against player mining and explosions, while decorative objects and player-placed markers remain ordinary breakable Minecraft blocks.
 
 ## Development commands
 

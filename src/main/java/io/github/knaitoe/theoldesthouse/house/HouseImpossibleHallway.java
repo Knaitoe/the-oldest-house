@@ -18,8 +18,6 @@ public final class HouseImpossibleHallway {
     }
 
     public static void build(ServerLevel level, BlockPos origin) {
-        // Clear only the interior-dimension corridor envelope and do it without
-        // neighbor-update physics so copied scenery cannot explode into drops.
         for (int x = LEFT_WALL_X_OFFSET; x <= RIGHT_WALL_X_OFFSET; x++) {
             for (int z = START_Z_OFFSET; z <= END_Z_OFFSET; z++) {
                 for (int y = 0; y <= 5; y++) {
@@ -42,7 +40,6 @@ public final class HouseImpossibleHallway {
             level.setBlock(origin.offset(HouseBuilder.WIDTH / 2, 1, z), Blocks.RED_CARPET.defaultBlockState(), 2);
         }
 
-        // A deliberately sparse, monotonous first impossible space.
         for (int z : new int[]{24, 36, 48, 60}) {
             level.setBlock(origin.offset(HouseBuilder.WIDTH / 2, 4, z), Blocks.CHAIN.defaultBlockState(), 2);
             level.setBlock(
@@ -70,6 +67,36 @@ public final class HouseImpossibleHallway {
                 && relY <= 5
                 && relZ >= 15
                 && relZ <= END_Z_OFFSET;
+    }
+
+    public static boolean isProtectedStructureBlock(BlockPos origin, BlockPos pos) {
+        int relX = pos.getX() - origin.getX();
+        int relY = pos.getY() - origin.getY();
+        int relZ = pos.getZ() - origin.getZ();
+
+        if (relZ < START_Z_OFFSET || relZ > END_Z_OFFSET) {
+            return false;
+        }
+
+        boolean floor = relY == 0
+                && relX >= INNER_MIN_X_OFFSET
+                && relX <= INNER_MAX_X_OFFSET;
+
+        boolean ceiling = relY == 5
+                && relX >= INNER_MIN_X_OFFSET
+                && relX <= INNER_MAX_X_OFFSET;
+
+        boolean sideWall = relY >= 1
+                && relY <= 4
+                && (relX == LEFT_WALL_X_OFFSET || relX == RIGHT_WALL_X_OFFSET);
+
+        boolean terminalWall = relZ == END_Z_OFFSET
+                && relY >= 1
+                && relY <= 4
+                && relX >= LEFT_WALL_X_OFFSET
+                && relX <= RIGHT_WALL_X_OFFSET;
+
+        return floor || ceiling || sideWall || terminalWall;
     }
 
     public static boolean isInsideWalkableVolume(BlockPos origin, double x, double y, double z) {
