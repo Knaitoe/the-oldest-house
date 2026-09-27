@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.23` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.24` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -212,3 +212,8 @@ The static house exterior has been rebuilt around stronger vanilla-build convent
 Natural spawning now evaluates up to 40 candidate sites and chooses the best rather than accepting the first valid one. Dry footprints and flatter terrain are strongly preferred, while a small amount of nearby water is permitted.
 
 Before construction clears anything, the builder samples the front approach. Porch posts extend down to real terrain. On land, the front stair run extends outward/downward to the sampled ground height. If the approach is substantially water-covered, the front becomes a short supported spruce landing/dock rather than generating stairs into water.
+
+
+### 0.1.24 front stair orientation fix
+
+Terrain-adaptive stone-brick approach stairs now face south toward The Oldest House, so their ascending side points back toward the porch while the courses descend northward to the sampled ground level.

@@ -648,7 +648,10 @@ public final class HouseBuilder {
             for (int x = 6; x <= 8; x++) {
                 set(level, origin, x, y, z,
                         Blocks.STONE_BRICK_STAIRS.defaultBlockState()
-                                .setValue(StairBlock.FACING, Direction.NORTH));
+                                // The approach descends northward away from the
+                                // porch, so the stair backs/ascending direction
+                                // face south toward The Oldest House.
+                                .setValue(StairBlock.FACING, Direction.SOUTH));
                 extendSupportToTerrain(
                         level,
                         origin,
