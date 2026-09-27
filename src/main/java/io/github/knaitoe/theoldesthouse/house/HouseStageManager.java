@@ -28,9 +28,11 @@ public final class HouseStageManager {
 
         if (!data.isImpossibleDoorRevealed()) {
             HouseBuilder.revealImpossibleDoor(interior, origin);
+            HouseImpossibleHallway.build(interior, origin);
             data.markImpossibleDoorRevealed();
+
             TheOldestHouse.LOGGER.info(
-                    "The first impossible doorway in The Oldest House has been revealed at perceived age {}.",
+                    "The first impossible doorway and direct hallway in The Oldest House have been revealed at perceived age {}.",
                     data.houseAge()
             );
         }

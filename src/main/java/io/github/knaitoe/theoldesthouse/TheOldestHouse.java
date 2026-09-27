@@ -3,6 +3,7 @@ package io.github.knaitoe.theoldesthouse;
 import com.mojang.logging.LogUtils;
 import io.github.knaitoe.theoldesthouse.command.HouseCommands;
 import io.github.knaitoe.theoldesthouse.house.HouseLifecycleEvents;
+import io.github.knaitoe.theoldesthouse.house.HouseMirrorSyncEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -18,6 +19,12 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HouseCommands::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onPlayerWakeUp);
         NeoForge.EVENT_BUS.addListener(HouseTransitionEvents::onPlayerTick);
+
+        NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onBreak);
+        NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onPlace);
+        NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onRightClick);
+        NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onServerTick);
+
         LOGGER.info("The Oldest House prototype initialized.");
     }
 }

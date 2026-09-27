@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.9` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.10` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -56,9 +56,9 @@ The interior dimension uses the same coordinates as the exterior. Entering the p
 
 On first initialization, the mod copies a 32-block view radius of the real Overworld around The Oldest House into the interior dimension and rebuilds the same static house at the same coordinates. With an Overworld-style sky, synchronized time/weather, and real glass windows, the copied landscape becomes the view outside instead of a portal-rendering effect.
 
-NeoForge's dimension-transition screen hook replaces the normal loading presentation specifically for travel into and out of The Oldest House. The current prototype shows a close-up spruce-door texture with a short diegetic line while the target level finishes loading.
+NeoForge's dimension-transition screen hook replaces the normal loading presentation specifically for travel into and out of The Oldest House. Version 0.1.10 intentionally holds the door-focused transition screen for at least 1.65 seconds so it reads as a deliberate beat rather than a one-frame loading flash.
 
-This is still a prototype. The exterior proxy is currently a snapshot taken when the interior is initialized; later work can refresh changed visible terrain without rebuilding the domestic interior.
+The initial exterior proxy is still seeded from a snapshot, but common player-driven block changes in the shared visible region are now mirrored both directions after initialization. Breaking or placing blocks, breaking windows, and right-click state changes such as opening doors are deferred to the end of the server tick and copied to the matching coordinates in the other dimension. The impossible hallway is excluded from that synchronization.
 
 ## Development commands
 

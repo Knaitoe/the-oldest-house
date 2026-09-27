@@ -22,6 +22,10 @@ public final class HouseTransitionClient {
     private static final ResourceLocation DOOR_TEXTURE =
             ResourceLocation.withDefaultNamespace("textures/block/spruce_door_bottom.png");
 
+    // Intentionally long enough to be perceived as a held beat instead of a
+    // one-frame loading flash that merely announces a teleport.
+    private static final long MIN_VISIBLE_NANOS = 1_650_000_000L;
+
     private HouseTransitionClient() {
     }
 
@@ -33,7 +37,7 @@ public final class HouseTransitionClient {
                 (supplier, reason) -> new DoorFocusScreen(
                         supplier,
                         reason,
-                        Component.literal("The latch catches.")
+                        Component.literal("The door sticks for a moment.")
                 )
         );
 
@@ -43,7 +47,7 @@ public final class HouseTransitionClient {
                 (supplier, reason) -> new DoorFocusScreen(
                         supplier,
                         reason,
-                        Component.literal("The door settles behind you.")
+                        Component.literal("The latch settles behind you.")
                 )
         );
     }
@@ -51,8 +55,21 @@ public final class HouseTransitionClient {
     private static final class DoorFocusScreen extends ReceivingLevelScreen {
         private final Component message;
 
-        private DoorFocusScreen(BooleanSupplier supplier, Reason reason, Component message) {
-            super(supplier, reason);
+        private DoorFocusScreen(BooleanSupplier ready, Reason reason, Component message) {
+            this(ready, reason, message, System.nanoTime());
+        }
+
+        private DoorFocusScreen(
+                BooleanSupplier ready,
+                Reason reason,
+                Component message,
+                long openedAt
+        ) {
+            super(
+                    () -> ready.getAsBoolean()
+                            && System.nanoTime() - openedAt >= MIN_VISIBLE_NANOS,
+                    reason
+            );
             this.message = message;
         }
 
@@ -63,7 +80,7 @@ public final class HouseTransitionClient {
                     this.font,
                     this.message,
                     this.width / 2,
-                    this.height - 36,
+                    this.height - 42,
                     0xFFE7DED1
             );
         }
@@ -83,7 +100,7 @@ public final class HouseTransitionClient {
                     16,
                     16
             );
-            graphics.fill(0, 0, this.width, this.height, 0x55000000);
+            graphics.fill(0, 0, this.width, this.height, 0x66000000);
         }
     }
 }

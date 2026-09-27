@@ -25,21 +25,22 @@ public final class HouseDimensionMirror {
 
         syncAtmosphere(overworld, interior);
 
-        if (data.isInteriorInitialized()) {
-            return interior;
+        if (!data.isInteriorInitialized()) {
+            // Copy the real scene directly with client-update-only flags. We do
+            // not copy the House and then clear/rebuild it, because neighbor
+            // updates from that process can turn attached blocks into item debris.
+            copyInitialSnapshot(overworld, interior, origin);
+            data.markInteriorInitialized();
+
+            if (data.houseAge() >= HouseStageManager.FIRST_IMPOSSIBLE_DOOR_AGE) {
+                HouseStageManager.applyCurrentStage(server, data);
+            }
+
+            TheOldestHouse.LOGGER.info(
+                    "Initialized The Oldest House interior with a direct mirrored Overworld snapshot."
+            );
         }
 
-        copyVisibleSurroundings(overworld, interior, origin);
-        HouseBuilder.build(interior, origin);
-
-        if (data.houseAge() >= HouseStageManager.FIRST_IMPOSSIBLE_DOOR_AGE) {
-            HouseBuilder.revealImpossibleDoor(interior, origin);
-        }
-
-        data.markInteriorInitialized();
-        TheOldestHouse.LOGGER.info(
-                "Initialized The Oldest House interior dimension and mirrored its nearby Overworld surroundings."
-        );
         return interior;
     }
 
@@ -53,7 +54,28 @@ public final class HouseDimensionMirror {
         );
     }
 
-    private static void copyVisibleSurroundings(ServerLevel source, ServerLevel target, BlockPos origin) {
+    public static boolean isSharedPosition(BlockPos origin, BlockPos pos) {
+        if (HouseImpossibleHallway.isInteriorOnlyPosition(origin, pos)) {
+            return false;
+        }
+
+        return pos.getX() >= origin.getX() - VIEW_RADIUS
+                && pos.getX() <= origin.getX() + HouseBuilder.WIDTH - 1 + VIEW_RADIUS
+                && pos.getZ() >= origin.getZ() - VIEW_RADIUS
+                && pos.getZ() <= origin.getZ() + HouseBuilder.DEPTH - 1 + VIEW_RADIUS
+                && pos.getY() >= origin.getY() - VIEW_BELOW_FLOOR
+                && pos.getY() <= origin.getY() + VIEW_ABOVE_FLOOR;
+    }
+
+    public static void copyState(ServerLevel source, ServerLevel target, BlockPos pos) {
+        BlockState state = source.getBlockState(pos);
+        // Flag 2 updates clients without cascading neighbor physics. Exact
+        // neighbor states are synchronized separately, which avoids duplicate
+        // drops and other mirror-side side effects.
+        target.setBlock(pos, state, 2);
+    }
+
+    private static void copyInitialSnapshot(ServerLevel source, ServerLevel target, BlockPos origin) {
         int minX = origin.getX() - VIEW_RADIUS;
         int maxX = origin.getX() + HouseBuilder.WIDTH - 1 + VIEW_RADIUS;
         int minZ = origin.getZ() - VIEW_RADIUS;
@@ -65,8 +87,7 @@ public final class HouseDimensionMirror {
             for (int z = minZ; z <= maxZ; z++) {
                 for (int y = minY; y <= maxY; y++) {
                     BlockPos pos = new BlockPos(x, y, z);
-                    BlockState sourceState = source.getBlockState(pos);
-                    target.setBlock(pos, sourceState, 2);
+                    copyState(source, target, pos);
                 }
             }
         }
