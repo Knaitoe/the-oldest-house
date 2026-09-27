@@ -56,8 +56,8 @@ public final class HouseBuilder {
     }
 
     public static boolean canBuildAt(ServerLevel level, BlockPos origin) {
-        for (int x = DOMESTIC_MIN_X; x <= DOMESTIC_MAX_X; x++) {
-            for (int z = DOMESTIC_MIN_Z; z <= DOMESTIC_MAX_Z; z++) {
+        for (int x = -3; x <= WIDTH + 1; x++) {
+            for (int z = -4; z <= DEPTH; z++) {
                 for (int y = 0; y <= HEIGHT; y++) {
                     BlockState state = level.getBlockState(origin.offset(x, y, z));
                     if (!state.isAir() && !state.canBeReplaced()) {
@@ -142,8 +142,11 @@ public final class HouseBuilder {
     }
 
     private static void clearAboveGroundVolume(ServerLevel level, BlockPos origin) {
-        for (int x = DOMESTIC_MIN_X; x <= DOMESTIC_MAX_X; x++) {
-            for (int z = DOMESTIC_MIN_Z; z <= DOMESTIC_MAX_Z; z++) {
+        // Clear only the fixed architectural envelope. The adaptive stair/dock
+        // approach extends farther forward and must meet the existing terrain
+        // rather than bulldozing a ten-block runway through it.
+        for (int x = -3; x <= WIDTH + 1; x++) {
+            for (int z = -4; z <= DEPTH; z++) {
                 for (int y = 0; y <= HEIGHT; y++) {
                     set(level, origin, x, y, z, Blocks.AIR.defaultBlockState());
                 }
