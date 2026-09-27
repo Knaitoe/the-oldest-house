@@ -25,6 +25,7 @@ public final class TheOldestHouse {
 
         NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onBreak);
         NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onExplosion);
+        NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onPiston);
         NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onPlace);
         NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onRightClick);
         NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onServerTick);
