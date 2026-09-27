@@ -11,6 +11,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -118,19 +119,11 @@ public final class HouseTransitionEvents {
     }
 
     private static boolean isInsideDomesticVolume(ServerPlayer player, BlockPos origin) {
-        double minX = origin.getX() + BOUNDARY_MARGIN;
-        double maxX = origin.getX() + HouseBuilder.WIDTH - BOUNDARY_MARGIN;
-        double minZ = origin.getZ() + BOUNDARY_MARGIN;
-        double maxZ = origin.getZ() + HouseBuilder.DEPTH - BOUNDARY_MARGIN;
-        double minY = origin.getY() + HouseBuilder.BASEMENT_FLOOR_Y + 0.35D;
-        double maxY = origin.getY() + HouseBuilder.UPPER_WALL_TOP_Y + 0.95D;
+        double relX = player.getX() - origin.getX();
+        double relY = player.getY() - origin.getY();
+        double relZ = player.getZ() - origin.getZ();
 
-        return player.getX() >= minX
-                && player.getX() <= maxX
-                && player.getZ() >= minZ
-                && player.getZ() <= maxZ
-                && player.getY() >= minY
-                && player.getY() <= maxY;
+        return HouseBuilder.isInsideDomesticFootprint(relX, relY, relZ);
     }
 
     private static boolean isValidHouseInteriorSpace(
@@ -152,53 +145,36 @@ public final class HouseTransitionEvents {
     }
 
     private static HouseTransitionKind classifyBoundary(ServerPlayer player, BlockPos origin) {
-        double relX = player.getX() - origin.getX();
-        double relY = player.getY() - origin.getY();
-        double relZ = player.getZ() - origin.getZ();
+        // Classify the opening the player actually crossed instead of maintaining
+        // a second hardcoded copy of the house facade in transition code.
+        BlockPos feet = player.blockPosition();
 
-        boolean front = relZ <= 1.20D;
-        boolean left = relX <= 1.20D;
-        boolean right = relX >= HouseBuilder.WIDTH - 1.20D;
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 2; dy++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    BlockState state = player.serverLevel().getBlockState(
+                            feet.offset(dx, dy, dz)
+                    );
 
-        double doorCenterX = HouseBuilder.WIDTH / 2.0D + 0.5D;
-
-        if (front
-                && Math.abs(relX - doorCenterX) <= 0.52D
-                && relY >= 0.55D
-                && relY <= 3.20D) {
-            return HouseTransitionKind.DOOR;
+                    if (state.getBlock() instanceof DoorBlock) {
+                        return HouseTransitionKind.DOOR;
+                    }
+                }
+            }
         }
 
-        boolean mainWindowY = relY >= 1.35D && relY <= 4.35D;
-        boolean upperWindowY = relY >= 7.35D && relY <= 10.35D;
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 2; dy++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    BlockState state = player.serverLevel().getBlockState(
+                            feet.offset(dx, dy, dz)
+                    );
 
-        if (front
-                && (mainWindowY || upperWindowY)
-                && (within(relX, 1.75D, 4.25D)
-                || within(relX, 10.75D, 13.25D))) {
-            return HouseTransitionKind.WINDOW;
-        }
-
-        if (left && mainWindowY && within(relZ, 6.75D, 9.25D)) {
-            return HouseTransitionKind.WINDOW;
-        }
-
-        if (right && mainWindowY && within(relZ, 3.75D, 6.25D)) {
-            return HouseTransitionKind.WINDOW;
-        }
-
-        if (left
-                && upperWindowY
-                && (within(relZ, 1.75D, 4.25D)
-                || within(relZ, 12.75D, 15.25D))) {
-            return HouseTransitionKind.WINDOW;
-        }
-
-        if (right
-                && upperWindowY
-                && (within(relZ, 3.75D, 6.25D)
-                || within(relZ, 12.75D, 15.25D))) {
-            return HouseTransitionKind.WINDOW;
+                    if (state.is(Blocks.GLASS_PANE)) {
+                        return HouseTransitionKind.WINDOW;
+                    }
+                }
+            }
         }
 
         return HouseTransitionKind.BREACH;
@@ -301,7 +277,7 @@ public final class HouseTransitionEvents {
             return;
         }
 
-        BlockPos lowerPos = origin.offset(HouseBuilder.WIDTH / 2, 1, 0);
+        BlockPos lowerPos = origin.offset(HouseBuilder.HALL_CENTER_X, 1, 0);
         BlockPos upperPos = lowerPos.above();
         BlockState lowerState = interior.getBlockState(lowerPos);
 
