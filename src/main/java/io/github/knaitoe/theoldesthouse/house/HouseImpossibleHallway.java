@@ -10,13 +10,13 @@ import net.minecraft.world.level.block.LanternBlock;
 import net.minecraft.world.phys.AABB;
 
 public final class HouseImpossibleHallway {
-    public static final int START_Z_OFFSET = 16;
-    public static final int END_Z_OFFSET = 72;
+    public static final int START_Z_OFFSET = HouseBuilder.IMPOSSIBLE_DOOR_Z + 1;
+    public static final int END_Z_OFFSET = START_Z_OFFSET + 56;
 
-    private static final int LEFT_WALL_X_OFFSET = 5;
-    private static final int RIGHT_WALL_X_OFFSET = 9;
-    private static final int INNER_MIN_X_OFFSET = 6;
-    private static final int INNER_MAX_X_OFFSET = 8;
+    private static final int LEFT_WALL_X_OFFSET = HouseBuilder.HALL_CENTER_X - 2;
+    private static final int RIGHT_WALL_X_OFFSET = HouseBuilder.HALL_CENTER_X + 2;
+    private static final int INNER_MIN_X_OFFSET = HouseBuilder.HALL_CENTER_X - 1;
+    private static final int INNER_MAX_X_OFFSET = HouseBuilder.HALL_CENTER_X + 1;
     private static final int QUIET_FLAGS =
             Block.UPDATE_CLIENTS
                     | Block.UPDATE_KNOWN_SHAPE
