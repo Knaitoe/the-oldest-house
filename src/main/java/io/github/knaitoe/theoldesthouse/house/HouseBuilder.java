@@ -32,6 +32,13 @@ public final class HouseBuilder {
     public static final int DEPTH = 19;
     public static final int HEIGHT = 19;
 
+    // Everything the authored domestic build may occupy, including porch,
+    // adaptive approach, roof overhangs, and the one-story study wing.
+    public static final int DOMESTIC_MIN_X = -3;
+    public static final int DOMESTIC_MAX_X = WIDTH + 1;
+    public static final int DOMESTIC_MIN_Z = -10;
+    public static final int DOMESTIC_MAX_Z = DEPTH;
+
     public static final int BASEMENT_FLOOR_Y = -5;
     public static final int SECOND_FLOOR_Y = 6;
     public static final int UPPER_WALL_TOP_Y = 10;
@@ -49,8 +56,8 @@ public final class HouseBuilder {
     }
 
     public static boolean canBuildAt(ServerLevel level, BlockPos origin) {
-        for (int x = -2; x <= WIDTH + 1; x++) {
-            for (int z = -4; z <= DEPTH; z++) {
+        for (int x = DOMESTIC_MIN_X; x <= DOMESTIC_MAX_X; x++) {
+            for (int z = DOMESTIC_MIN_Z; z <= DOMESTIC_MAX_Z; z++) {
                 for (int y = 0; y <= HEIGHT; y++) {
                     BlockState state = level.getBlockState(origin.offset(x, y, z));
                     if (!state.isAir() && !state.canBeReplaced()) {
@@ -81,6 +88,7 @@ public final class HouseBuilder {
         restoreWindows(level, origin);
         buildExteriorFraming(level, origin);
         buildMainRoof(level, origin);
+        buildStudyWingRoof(level, origin);
         buildProjectedUpperGable(level, origin);
         buildPorch(level, origin, site);
 
@@ -134,8 +142,8 @@ public final class HouseBuilder {
     }
 
     private static void clearAboveGroundVolume(ServerLevel level, BlockPos origin) {
-        for (int x = -2; x <= WIDTH + 1; x++) {
-            for (int z = -4; z <= DEPTH; z++) {
+        for (int x = DOMESTIC_MIN_X; x <= DOMESTIC_MAX_X; x++) {
+            for (int z = DOMESTIC_MIN_Z; z <= DOMESTIC_MAX_Z; z++) {
                 for (int y = 0; y <= HEIGHT; y++) {
                     set(level, origin, x, y, z, Blocks.AIR.defaultBlockState());
                 }
@@ -179,7 +187,8 @@ public final class HouseBuilder {
 
     private static void buildDomesticFloors(ServerLevel level, BlockPos origin) {
         // Ground and second floor. The second-floor blocks themselves are the
-        // downstairs ceiling; there is no extra slab layer trapped beneath them.
+        // downstairs ceiling; there is deliberately no decorative slab layer
+        // trapped between stories.
         for (int x = 1; x < WIDTH - 1; x++) {
             for (int z = 1; z < REAR_WALL_Z; z++) {
                 set(level, origin, x, 0, z, Blocks.OAK_PLANKS.defaultBlockState());
@@ -187,7 +196,17 @@ public final class HouseBuilder {
             }
         }
 
-        // Front edge remains solid beneath the projected bays.
+        // The front-left bay is real room area rather than a hollow facade.
+        for (int x = 1; x <= 4; x++) {
+            set(level, origin, x, 0, 0, Blocks.OAK_PLANKS.defaultBlockState());
+        }
+
+        // The study grows one block through the west wall into a one-story wing.
+        for (int z = 11; z <= 16; z++) {
+            set(level, origin, 0, 0, z, Blocks.SPRUCE_PLANKS.defaultBlockState());
+        }
+
+        // Front edge remains solid beneath the upper-story projection.
         for (int x = 1; x < WIDTH - 1; x++) {
             set(level, origin, x, SECOND_FLOOR_Y, 0, Blocks.DARK_OAK_PLANKS.defaultBlockState());
         }
@@ -201,48 +220,60 @@ public final class HouseBuilder {
     }
 
     private static void buildGroundShell(ServerLevel level, BlockPos origin) {
-        // Ordinary perimeter.
         wallBand(level, origin, 1, 5, 0, REAR_WALL_Z);
 
-        // Real one-block front-left bay. The playable room expands into z=0,
-        // while the bay wall sits at z=-1.
+        // Front-left bay: move the exterior wall one block forward and open the
+        // old wall plane into the living room.
         for (int x = 1; x <= 4; x++) {
             for (int y = 1; y <= 5; y++) {
                 set(level, origin, x, y, 0, Blocks.AIR.defaultBlockState());
                 set(level, origin, x, y, -1, Blocks.WHITE_TERRACOTTA.defaultBlockState());
             }
         }
-
         for (int y = 1; y <= 5; y++) {
             set(level, origin, 1, y, -1, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
             set(level, origin, 4, y, -1, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
         }
 
-        // Bay cap creates a deep shadow line under the upper floor.
-        for (int x = 0; x <= 5; x++) {
-            set(level, origin, x, 5, -2, Blocks.DARK_OAK_SLAB.defaultBlockState());
+        // Rear-left study wing: a true one-story side projection. The old west
+        // wall is opened between z=11..16, while the new wall moves to x=-1.
+        for (int z = 11; z <= 16; z++) {
+            for (int y = 1; y <= 5; y++) {
+                set(level, origin, 0, y, z, Blocks.AIR.defaultBlockState());
+                set(level, origin, -1, y, z, Blocks.WHITE_TERRACOTTA.defaultBlockState());
+            }
+        }
+        for (int x = -1; x <= 0; x++) {
+            for (int y = 1; y <= 5; y++) {
+                set(level, origin, x, y, 10, Blocks.WHITE_TERRACOTTA.defaultBlockState());
+                set(level, origin, x, y, 17, Blocks.WHITE_TERRACOTTA.defaultBlockState());
+            }
+        }
+        for (int y = 1; y <= 5; y++) {
+            set(level, origin, -1, y, 10, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+            set(level, origin, -1, y, 17, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
         }
     }
 
     private static void buildUpperShell(ServerLevel level, BlockPos origin) {
         wallBand(level, origin, 7, UPPER_WALL_TOP_Y, 0, REAR_WALL_Z);
 
-        // Right-hand upper room projects one block toward the front, giving the
-        // facade a genuine offset mass instead of painted-on trim.
+        // The right-hand bedroom projects toward the front, counterbalancing the
+        // lower left bay and rear study wing.
         for (int x = 9; x <= 13; x++) {
             for (int y = 7; y <= UPPER_WALL_TOP_Y; y++) {
                 set(level, origin, x, y, 0, Blocks.AIR.defaultBlockState());
                 set(level, origin, x, y, -1, Blocks.WHITE_TERRACOTTA.defaultBlockState());
             }
         }
-
         for (int y = 7; y <= UPPER_WALL_TOP_Y; y++) {
             set(level, origin, 9, y, -1, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
             set(level, origin, 13, y, -1, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
         }
 
-        // Jetty ledge: a shadow-producing projection, not a fake second floor.
-        for (int x = 5; x <= 13; x++) {
+        // A short jetty only under the projecting room. Keeping this local avoids
+        // recreating the old mysterious second band around the entire facade.
+        for (int x = 9; x <= 13; x++) {
             set(level, origin, x, 6, -1, Blocks.DARK_OAK_SLAB.defaultBlockState());
         }
     }
@@ -399,15 +430,17 @@ public final class HouseBuilder {
     }
 
     private static void restoreWindows(ServerLevel level, BlockPos origin) {
-        // Standard front windows that remain on the original wall plane.
+        // Ground-floor front glazing.
         for (int x : new int[]{11, 12}) {
             paneColumn(level, origin, x, 0, 2, 3);
         }
+
+        // Upper-left bedroom stays on the original facade plane.
         for (int x : new int[]{2, 3}) {
             paneColumn(level, origin, x, 0, 8, 9);
         }
 
-        // Projected ground-left bay and upper-right gable.
+        // Projected ground-left bay and upper-right gable room.
         for (int x : new int[]{2, 3}) {
             paneColumn(level, origin, x, -1, 2, 3);
         }
@@ -415,7 +448,7 @@ public final class HouseBuilder {
             paneColumn(level, origin, x, -1, 8, 9);
         }
 
-        // Ground side windows.
+        // Living room and kitchen side windows.
         for (int z : new int[]{7, 8}) {
             paneColumn(level, origin, 0, z, 2, 3);
         }
@@ -423,12 +456,23 @@ public final class HouseBuilder {
             paneColumn(level, origin, WIDTH - 1, z, 2, 3);
         }
 
-        // Upper side windows, including rear bedroom.
-        for (int z : new int[]{2, 3, 13, 14}) {
+        // Study-wing side window on the actual projected wall.
+        for (int z : new int[]{13, 14}) {
+            paneColumn(level, origin, -1, z, 2, 3);
+        }
+
+        // Upper side windows. The west-rear pair is intentionally omitted because
+        // the lower study roof now intersects that elevation.
+        for (int z : new int[]{2, 3}) {
             paneColumn(level, origin, 0, z, 8, 9);
         }
         for (int z : new int[]{4, 5, 13, 14}) {
             paneColumn(level, origin, WIDTH - 1, z, 8, 9);
+        }
+
+        // Rear bedroom gets its light from the back wall instead.
+        for (int x : new int[]{6, 7}) {
+            paneColumn(level, origin, x, REAR_WALL_Z, 8, 9);
         }
     }
 
@@ -446,7 +490,7 @@ public final class HouseBuilder {
     }
 
     private static void buildExteriorFraming(ServerLevel level, BlockPos origin) {
-        // Corners and meaningful structural bays, not a stripe on every layer.
+        // Main-house corners.
         for (int y = 1; y <= UPPER_WALL_TOP_Y; y++) {
             set(level, origin, 0, y, 0, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
             set(level, origin, WIDTH - 1, y, 0, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
@@ -454,40 +498,53 @@ public final class HouseBuilder {
             set(level, origin, WIDTH - 1, y, REAR_WALL_Z, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
         }
 
+        // Front facade framing is sparse and structural rather than a grid pasted
+        // over every wall block.
         for (int y = 1; y <= 5; y++) {
             set(level, origin, 5, y, 0, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
             set(level, origin, 9, y, 0, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
         }
 
-        // Horizontal beam under the second floor, visually thin and outside the
-        // room rather than a second structural layer inside.
-        for (int x = 5; x <= 13; x++) {
-            set(level, origin, x, 5, -1, Blocks.DARK_OAK_SLAB.defaultBlockState());
-        }
-
-        // Window sills/headers stay outside aperture cells.
-        for (int x = 10; x <= 13; x++) {
-            set(level, origin, x, 1, -1, Blocks.DARK_OAK_SLAB.defaultBlockState());
-            set(level, origin, x, 4, -1, Blocks.DARK_OAK_SLAB.defaultBlockState());
+        // Living-room bay frame and header.
+        for (int y = 1; y <= 5; y++) {
+            set(level, origin, 1, y, -1, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+            set(level, origin, 4, y, -1, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
         }
         for (int x = 1; x <= 4; x++) {
-            set(level, origin, x, 7, -1, Blocks.DARK_OAK_SLAB.defaultBlockState());
-            set(level, origin, x, 10, -1, Blocks.DARK_OAK_SLAB.defaultBlockState());
+            set(level, origin, x, 5, -1, Blocks.DARK_OAK_PLANKS.defaultBlockState());
+        }
+
+        // Upper projecting room gets a distinct lower and upper frame.
+        for (int y = 7; y <= UPPER_WALL_TOP_Y; y++) {
+            set(level, origin, 9, y, -1, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+            set(level, origin, 13, y, -1, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+        }
+        for (int x = 9; x <= 13; x++) {
+            set(level, origin, x, UPPER_WALL_TOP_Y, -1, Blocks.DARK_OAK_PLANKS.defaultBlockState());
+        }
+
+        // One-story study wing frame. Its roof will sit directly on this beam.
+        for (int y = 1; y <= 5; y++) {
+            set(level, origin, -1, y, 10, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+            set(level, origin, -1, y, 17, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+        }
+        for (int z = 10; z <= 17; z++) {
+            set(level, origin, -1, 5, z, Blocks.DARK_OAK_PLANKS.defaultBlockState());
         }
     }
 
     private static void buildMainRoof(ServerLevel level, BlockPos origin) {
-        // Broad front/rear roof planes: the front of the house sees an eave and
-        // roof surface, not the cut end of a giant triangle.
+        // Broad front/rear planes keep the main mass readable from the front.
+        // The side wing and front gable break this silhouette later.
         for (int layer = 0; layer < 5; layer++) {
             int y = ROOF_BASE_Y + layer;
 
             int frontBlockZ = -2 + layer * 2;
             int frontStairZ = frontBlockZ + 1;
-            int rearBlockZ = DEPTH + layer * -2;
+            int rearBlockZ = DEPTH - layer * 2;
             int rearStairZ = rearBlockZ - 1;
 
-            for (int x = -1; x <= WIDTH; x++) {
+            for (int x = -2; x <= WIDTH + 1; x++) {
                 set(level, origin, x, y, frontBlockZ, Blocks.DEEPSLATE_TILES.defaultBlockState());
                 set(level, origin, x, y, frontStairZ,
                         Blocks.DEEPSLATE_TILE_STAIRS.defaultBlockState()
@@ -500,13 +557,12 @@ public final class HouseBuilder {
             }
         }
 
-        // Two-wide ridge gives the low, substantial farmhouse roof a coherent top.
-        for (int x = -1; x <= WIDTH; x++) {
+        for (int x = -2; x <= WIDTH + 1; x++) {
             set(level, origin, x, ROOF_BASE_Y + 5, 8, Blocks.DEEPSLATE_TILE_SLAB.defaultBlockState());
             set(level, origin, x, ROOF_BASE_Y + 5, 9, Blocks.DEEPSLATE_TILE_SLAB.defaultBlockState());
         }
 
-        // Close the upstairs ceiling with one layer only.
+        // One upstairs ceiling layer, and only one.
         for (int x = 1; x < WIDTH - 1; x++) {
             for (int z = 1; z < REAR_WALL_Z; z++) {
                 if (level.getBlockState(origin.offset(x, ROOF_BASE_Y, z)).isAir()) {
@@ -517,10 +573,9 @@ public final class HouseBuilder {
     }
 
     private static void buildProjectedUpperGable(ServerLevel level, BlockPos origin) {
-        // Small front gable over the projecting right bedroom. Because the gable
-        // is five blocks wide rather than fifteen, its stepped profile reads as
-        // intentional architecture instead of roof teeth.
-        for (int z = -3; z <= 2; z++) {
+        // Front-facing gable over the projecting right bedroom. It deliberately
+        // has its own roof direction so the main roof is not one uninterrupted cap.
+        for (int z = -4; z <= 2; z++) {
             set(level, origin, 8, 11, z,
                     Blocks.DEEPSLATE_TILE_STAIRS.defaultBlockState()
                             .setValue(StairBlock.FACING, Direction.WEST));
@@ -552,13 +607,66 @@ public final class HouseBuilder {
             }
         }
 
-        for (int y = 11; y <= 13; y++) {
-            set(level, origin, 11, y, -1, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+        // Dark timber traces the stepped gable edge without filling the whole face.
+        set(level, origin, 9, 11, -1, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+        set(level, origin, 13, 11, -1, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+        set(level, origin, 10, 12, -1, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+        set(level, origin, 12, 12, -1, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+        set(level, origin, 11, 13, -1, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+
+        set(level, origin, 11, 11, -1, Blocks.GLASS_PANE.defaultBlockState());
+    }
+
+
+    private static void buildStudyWingRoof(ServerLevel level, BlockPos origin) {
+        // Lower cross-gable over the one-story study wing. The roof runs on a
+        // different axis and at a different height from the main roof, giving the
+        // rear-left quarter a separate mass instead of decorative trim.
+        for (int x = -3; x <= 1; x++) {
+            set(level, origin, x, 6, 9,
+                    Blocks.DEEPSLATE_TILE_STAIRS.defaultBlockState()
+                            .setValue(StairBlock.FACING, Direction.SOUTH));
+            set(level, origin, x, 6, 18,
+                    Blocks.DEEPSLATE_TILE_STAIRS.defaultBlockState()
+                            .setValue(StairBlock.FACING, Direction.NORTH));
+
+            set(level, origin, x, 7, 10,
+                    Blocks.DEEPSLATE_TILE_STAIRS.defaultBlockState()
+                            .setValue(StairBlock.FACING, Direction.SOUTH));
+            set(level, origin, x, 7, 17,
+                    Blocks.DEEPSLATE_TILE_STAIRS.defaultBlockState()
+                            .setValue(StairBlock.FACING, Direction.NORTH));
+
+            set(level, origin, x, 8, 11,
+                    Blocks.DEEPSLATE_TILE_STAIRS.defaultBlockState()
+                            .setValue(StairBlock.FACING, Direction.SOUTH));
+            set(level, origin, x, 8, 16,
+                    Blocks.DEEPSLATE_TILE_STAIRS.defaultBlockState()
+                            .setValue(StairBlock.FACING, Direction.NORTH));
+
+            set(level, origin, x, 9, 12,
+                    Blocks.DEEPSLATE_TILE_STAIRS.defaultBlockState()
+                            .setValue(StairBlock.FACING, Direction.SOUTH));
+            set(level, origin, x, 9, 15,
+                    Blocks.DEEPSLATE_TILE_STAIRS.defaultBlockState()
+                            .setValue(StairBlock.FACING, Direction.NORTH));
+
+            set(level, origin, x, 10, 13, Blocks.DEEPSLATE_TILE_SLAB.defaultBlockState());
+            set(level, origin, x, 10, 14, Blocks.DEEPSLATE_TILE_SLAB.defaultBlockState());
         }
 
-        // Small attic slit above the bedroom windows.
-        set(level, origin, 10, 11, -1, Blocks.GLASS_PANE.defaultBlockState());
-        set(level, origin, 12, 11, -1, Blocks.GLASS_PANE.defaultBlockState());
+        // Western gable face above the study wall.
+        for (int y = 6; y <= 9; y++) {
+            int inset = y - 6;
+            for (int z = 10 + inset; z <= 17 - inset; z++) {
+                set(level, origin, -1, y, z, Blocks.WHITE_TERRACOTTA.defaultBlockState());
+            }
+        }
+
+        for (int y = 6; y <= 9; y++) {
+            set(level, origin, -1, y, 13, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
+        }
+        set(level, origin, -1, 7, 14, Blocks.GLASS_PANE.defaultBlockState());
     }
 
     private static void buildPorch(
@@ -670,11 +778,13 @@ public final class HouseBuilder {
         }
         set(level, origin, 7, 1, -7, Blocks.SPRUCE_FENCE.defaultBlockState());
 
-        // Real lamp post, not a lantern dangling from the firmament.
-        for (int y = 1; y <= 3; y++) {
+        // Crooked dock lamp: a post and arm physically support the hanging light.
+        for (int y = 1; y <= 4; y++) {
             set(level, origin, 6, y, -7, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
         }
-        set(level, origin, 6, 4, -7, Blocks.LANTERN.defaultBlockState());
+        set(level, origin, 7, 4, -7, Blocks.DARK_OAK_FENCE.defaultBlockState());
+        set(level, origin, 7, 3, -7,
+                Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true));
 
         // Ladder backed by its own support column.
         extendSupportToTerrain(
@@ -696,24 +806,25 @@ public final class HouseBuilder {
     }
 
     private static void furnishLivingRoom(ServerLevel level, BlockPos origin) {
-        // Irregular hearth rug anchors the seating group.
-        carpet(level, origin, Blocks.BROWN_CARPET.defaultBlockState(),
+        // Hearth rug belongs on the ground floor. This used to route through a
+        // helper that hardcoded y=7, which quietly dumped the living-room carpet
+        // into the bedrooms upstairs.
+        carpet(level, origin, Blocks.BROWN_CARPET.defaultBlockState(), 1,
                 new int[][]{
                         {2, 3}, {3, 3}, {4, 3},
                         {2, 4}, {3, 4}, {4, 4},
                         {2, 5}, {3, 5}, {4, 5},
                         {2, 6}, {3, 6}, {4, 6}
                 });
-        carpet(level, origin, Blocks.LIGHT_GRAY_CARPET.defaultBlockState(),
+        carpet(level, origin, Blocks.LIGHT_GRAY_CARPET.defaultBlockState(), 1,
                 new int[][]{{2, 4}, {2, 5}, {4, 4}, {4, 5}});
 
-        // Sofa actually faces the fireplace.
+        // Sofa and both chairs face the west-wall fireplace.
         for (int z = 4; z <= 6; z++) {
             set(level, origin, 4, 1, z,
                     Blocks.DARK_OAK_STAIRS.defaultBlockState()
                             .setValue(StairBlock.FACING, Direction.WEST));
         }
-
         set(level, origin, 3, 1, 3,
                 Blocks.SPRUCE_STAIRS.defaultBlockState()
                         .setValue(StairBlock.FACING, Direction.WEST));
@@ -759,8 +870,8 @@ public final class HouseBuilder {
         set(level, origin, 4, 1, 16, Blocks.BARREL.defaultBlockState());
         set(level, origin, 2, 1, 15, Blocks.CARTOGRAPHY_TABLE.defaultBlockState());
 
-        carpet(level, origin, Blocks.RED_CARPET.defaultBlockState(),
-                new int[][]{{2, 13}, {3, 13}, {4, 13}, {3, 14}});
+        carpet(level, origin, Blocks.RED_CARPET.defaultBlockState(), 1,
+                new int[][]{{1, 13}, {2, 13}, {3, 13}, {4, 13}, {2, 14}, {3, 14}});
     }
 
     private static void furnishUtilityRoom(ServerLevel level, BlockPos origin) {
@@ -778,7 +889,8 @@ public final class HouseBuilder {
     }
 
     private static void furnishUpperBedrooms(ServerLevel level, BlockPos origin) {
-        // Left room: reader/writer. Full-block nightstand keeps the candle grounded.
+        // Left room: reader/writer. Books, maps and a candle make the room read as
+        // a person rather than the same bedroom with a different flower.
         placeBed(level, origin, 2, 7, 6, Direction.SOUTH);
         set(level, origin, 2, 7, 2, Blocks.CHEST.defaultBlockState());
         set(level, origin, 4, 7, 2, Blocks.CHISELED_BOOKSHELF.defaultBlockState());
@@ -787,26 +899,28 @@ public final class HouseBuilder {
         set(level, origin, 4, 7, 5, Blocks.LECTERN.defaultBlockState());
         set(level, origin, 4, 7, 6, Blocks.CARTOGRAPHY_TABLE.defaultBlockState());
 
-        carpet(level, origin, Blocks.BLUE_CARPET.defaultBlockState(),
+        carpet(level, origin, Blocks.BLUE_CARPET.defaultBlockState(), 7,
                 new int[][]{{2, 3}, {3, 3}, {4, 3}, {2, 4}, {3, 4}, {4, 4}, {3, 5}});
-        carpet(level, origin, Blocks.LIGHT_BLUE_CARPET.defaultBlockState(),
+        carpet(level, origin, Blocks.LIGHT_BLUE_CARPET.defaultBlockState(), 7,
                 new int[][]{{2, 5}, {4, 5}});
 
-        // Right room: music/hobby. Jukebox, loom and a flower on a real nightstand.
+        // Right room: music/making. No decorative plant clone; the accessory set
+        // is jukebox, note block, loom, and a small lit bedside stand.
         placeBed(level, origin, 12, 7, 6, Direction.SOUTH);
         set(level, origin, 12, 7, 2, Blocks.CHEST.defaultBlockState());
         set(level, origin, 10, 7, 2, Blocks.LOOM.defaultBlockState());
         set(level, origin, 12, 7, 4, Blocks.JUKEBOX.defaultBlockState());
-        set(level, origin, 13, 7, 6, Blocks.BARREL.defaultBlockState());
-        set(level, origin, 13, 8, 6, Blocks.POTTED_DANDELION.defaultBlockState());
+        set(level, origin, 13, 7, 6, Blocks.OAK_PLANKS.defaultBlockState());
+        set(level, origin, 13, 8, 6, Blocks.LANTERN.defaultBlockState());
         set(level, origin, 10, 7, 6, Blocks.NOTE_BLOCK.defaultBlockState());
 
-        carpet(level, origin, Blocks.GREEN_CARPET.defaultBlockState(),
+        carpet(level, origin, Blocks.GREEN_CARPET.defaultBlockState(), 7,
                 new int[][]{{10, 3}, {11, 3}, {12, 3}, {10, 4}, {11, 4}, {12, 4}});
-        carpet(level, origin, Blocks.LIME_CARPET.defaultBlockState(),
+        carpet(level, origin, Blocks.LIME_CARPET.defaultBlockState(), 7,
                 new int[][]{{11, 2}, {11, 5}});
 
-        // Rear room: older/formal. Matching nightstands, wardrobe, writing table.
+        // Rear room: older/formal. Wardrobe, writing surface and asymmetric
+        // bedside pieces distinguish it from both front rooms.
         placeBed(level, origin, CENTER_X, 7, 14, Direction.SOUTH);
         set(level, origin, 11, 7, 16, Blocks.CHEST.defaultBlockState());
         set(level, origin, 2, 7, 16, Blocks.BOOKSHELF.defaultBlockState());
@@ -814,20 +928,18 @@ public final class HouseBuilder {
 
         set(level, origin, 5, 7, 14, Blocks.BARREL.defaultBlockState());
         set(level, origin, 5, 8, 14, Blocks.CANDLE.defaultBlockState());
-        set(level, origin, 9, 7, 14, Blocks.BARREL.defaultBlockState());
-        set(level, origin, 9, 8, 14, Blocks.LANTERN.defaultBlockState());
+        set(level, origin, 9, 7, 14, Blocks.CHEST.defaultBlockState());
 
         set(level, origin, 11, 7, 12, Blocks.CARTOGRAPHY_TABLE.defaultBlockState());
         set(level, origin, 12, 7, 12, Blocks.BOOKSHELF.defaultBlockState());
-        set(level, origin, 12, 7, 15, Blocks.BARREL.defaultBlockState());
-        set(level, origin, 12, 8, 15, Blocks.POTTED_FERN.defaultBlockState());
+        set(level, origin, 12, 7, 15, Blocks.LECTERN.defaultBlockState());
 
-        carpet(level, origin, Blocks.GRAY_CARPET.defaultBlockState(),
+        carpet(level, origin, Blocks.GRAY_CARPET.defaultBlockState(), 7,
                 new int[][]{
                         {4, 12}, {5, 12}, {6, 12}, {7, 12}, {8, 12}, {9, 12}, {10, 12},
                         {5, 13}, {6, 13}, {7, 13}, {8, 13}, {9, 13}
                 });
-        carpet(level, origin, Blocks.LIGHT_GRAY_CARPET.defaultBlockState(),
+        carpet(level, origin, Blocks.LIGHT_GRAY_CARPET.defaultBlockState(), 7,
                 new int[][]{{4, 13}, {10, 13}, {6, 14}, {8, 14}});
 
         // Landing runner only on real floor.
@@ -927,7 +1039,7 @@ public final class HouseBuilder {
     public static void spawnDomesticPaintings(ServerLevel level, BlockPos origin) {
         spawnPainting(level, origin.offset(1, 8, 4), Direction.EAST, PaintingVariants.MATCH);
         spawnPainting(level, origin.offset(13, 8, 4), Direction.WEST, PaintingVariants.BUST);
-        spawnPainting(level, origin.offset(7, 8, 17), Direction.NORTH, PaintingVariants.BAROQUE);
+        spawnPainting(level, origin.offset(3, 8, 17), Direction.NORTH, PaintingVariants.BAROQUE);
         spawnPainting(level, origin.offset(4, 2, 17), Direction.NORTH, PaintingVariants.PLANT);
     }
 
@@ -992,10 +1104,11 @@ public final class HouseBuilder {
             ServerLevel level,
             BlockPos origin,
             BlockState state,
+            int y,
             int[][] cells
     ) {
         for (int[] cell : cells) {
-            set(level, origin, cell[0], 7, cell[1], state);
+            set(level, origin, cell[0], y, cell[1], state);
         }
     }
 
@@ -1093,14 +1206,14 @@ public final class HouseBuilder {
             Direction facing,
             BlockState baseState
     ) {
+        BlockState closed = baseState
+                .setValue(DoorBlock.FACING, facing)
+                .setValue(DoorBlock.OPEN, false);
+
         set(level, origin, x, y, z,
-                baseState
-                        .setValue(DoorBlock.FACING, facing)
-                        .setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER));
+                closed.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER));
         set(level, origin, x, y + 1, z,
-                baseState
-                        .setValue(DoorBlock.FACING, facing)
-                        .setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER));
+                closed.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER));
     }
 
     private static void setQuiet(
