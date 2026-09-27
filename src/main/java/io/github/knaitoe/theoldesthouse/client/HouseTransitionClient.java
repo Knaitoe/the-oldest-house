@@ -174,11 +174,12 @@ public final class HouseTransitionClient {
                     DOOR_TOP,
                     doorX,
                     doorY,
-                    0,
-                    0.0F,
-                    0.0F,
                     doorWidth,
                     half,
+                    0.0F,
+                    0.0F,
+                    16,
+                    16,
                     16,
                     16
             );
@@ -186,11 +187,12 @@ public final class HouseTransitionClient {
                     DOOR_BOTTOM,
                     doorX,
                     doorY + half,
-                    0,
-                    0.0F,
-                    0.0F,
                     doorWidth,
                     doorHeight - half,
+                    0.0F,
+                    0.0F,
+                    16,
+                    16,
                     16,
                     16
             );
