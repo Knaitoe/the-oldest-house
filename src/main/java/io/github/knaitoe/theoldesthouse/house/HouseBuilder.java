@@ -389,7 +389,7 @@ public final class HouseBuilder {
             placeWindowColumn(level, origin, x, -1, 8, 9);
         }
 
-        for (int z : new int[]{3, 4, 13, 14}) {
+        for (int z : new int[]{1, 2, 13, 14}) {
             placeWindowColumn(level, origin, 0, z, 8, 9);
         }
         for (int z : new int[]{4, 5, 13, 14}) {
@@ -507,6 +507,8 @@ public final class HouseBuilder {
         }
 
         for (int x = -1; x <= WIDTH; x++) {
+            set(level, origin, x, ROOF_BASE_Y + 5, 8, Blocks.DEEPSLATE_TILES.defaultBlockState());
+            set(level, origin, x, ROOF_BASE_Y + 5, 10, Blocks.DEEPSLATE_TILES.defaultBlockState());
             set(level, origin, x, ROOF_BASE_Y + 5, 9, Blocks.DEEPSLATE_TILE_SLAB.defaultBlockState());
         }
 
@@ -598,12 +600,6 @@ public final class HouseBuilder {
                         Blocks.SPRUCE_STAIRS.defaultBlockState()
                                 .setValue(StairBlock.FACING, Direction.SOUTH));
             }
-        }
-
-        // Framed stair stringer / visual side wall.
-        for (int y = 1; y <= 5; y++) {
-            set(level, origin, 6, y, 3 + Math.min(4, y - 1),
-                    Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
         }
 
         // Upper guard follows the actual opening only.
