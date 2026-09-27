@@ -7,7 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
 
 public final class HouseDimensionMirror {
-    public static final int VIEW_RADIUS = 32;
+    public static final int VIEW_RADIUS = 48;
     public static final int VIEW_BELOW_FLOOR = 6;
     public static final int VIEW_ABOVE_FLOOR = 24;
 
@@ -37,7 +37,7 @@ public final class HouseDimensionMirror {
             }
 
             TheOldestHouse.LOGGER.info(
-                    "Initialized The Oldest House interior with a direct mirrored Overworld snapshot."
+                    "Initialized The Oldest House interior over matching native Overworld terrain."
             );
         }
 
@@ -69,9 +69,17 @@ public final class HouseDimensionMirror {
 
     public static void copyState(ServerLevel source, ServerLevel target, BlockPos pos) {
         BlockState state = source.getBlockState(pos);
+
+        // Native terrain in both dimensions already matches because the House
+        // dimension now uses the same Overworld noise generator and server seed.
+        // Avoid rewriting matching terrain, especially fluids: native generation
+        // owns their fluid states, lighting, heightmaps, and biome rendering.
+        if (state == target.getBlockState(pos)) {
+            return;
+        }
+
         // Flag 2 updates clients without cascading neighbor physics. Exact
-        // neighbor states are synchronized separately, which avoids duplicate
-        // drops and other mirror-side side effects.
+        // player edits and the authored House are overlaid onto native terrain.
         target.setBlock(pos, state, 2);
     }
 

@@ -1,11 +1,13 @@
 {
   "type": "the_oldest_house:house_interior",
   "generator": {
-    "type": "minecraft:flat",
-    "settings": {
-      "biome": "minecraft:plains",
-      "layers": [],
-      "structure_overrides": []
+    "type": "minecraft:noise",
+    "seed": 0,
+    "settings": "minecraft:overworld",
+    "biome_source": {
+      "type": "minecraft:multi_noise",
+      "preset": "minecraft:overworld"
     }
-  }
+  },
+  "forge:use_server_seed": true
 }
