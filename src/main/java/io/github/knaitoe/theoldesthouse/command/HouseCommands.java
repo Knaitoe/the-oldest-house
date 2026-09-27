@@ -9,6 +9,7 @@ import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseMirrorSyncEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.house.HouseStageManager;
+import io.github.knaitoe.theoldesthouse.network.HouseSightlineStatePayload;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
@@ -18,6 +19,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.Optional;
 
@@ -243,6 +245,9 @@ public final class HouseCommands {
         HouseSavedData data = HouseSavedData.get(source.getServer());
         data.reset();
         HouseMirrorSyncEvents.clearPending();
+        PacketDistributor.sendToAllPlayers(
+                new HouseSightlineStatePayload(BlockPos.ZERO, false)
+        );
 
         source.sendSuccess(
                 () -> Component.literal(
