@@ -299,3 +299,10 @@ The block-texture overlays used for window and breach transitions were rejected 
 Window and breach transitions now rely on the real source-world geometry during the live camera phase. The final framebuffer already contains the correctly lit and perspective-rendered sill, wall, trim, held item, and surroundings. During the receiving-screen interval, no synthetic block surfaces are painted over that image; only low-opacity edge shadows provide limited occlusion while the destination becomes ready.
 
 The frozen interval is correspondingly shorter.
+
+
+## Front door closes behind entry
+
+The front-door transition should resolve as an ordinary physical action rather than ending with an open door frozen in whichever state the player left it.
+
+After a successful DOOR-classified entry into the House interior, the server waits eight ticks and closes the actual front oak door in the interior dimension using vanilla door behavior. The closed state is then copied to the matching Overworld shell. This preserves vanilla sound/game-event semantics and keeps both representations synchronized. Non-door crossings never trigger this behavior.

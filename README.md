@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.20` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.21` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -176,3 +176,10 @@ Recorded testing showed that the live camera motion worked, but the GUI-rendered
 Window and wall-breach transitions therefore no longer draw synthetic block-material surfaces. The real source-world geometry is allowed to provide the window frame, sill, wall, and timber during the live pre-handoff camera movement. The receiving screen holds that genuine final gameplay frame for a much shorter interval and applies only subtle edge shadows to hide the dimension swap.
 
 The front-door treatment remains unchanged because its discrete door-panel animation already reads correctly.
+
+
+### 0.1.21 front-door follow-through
+
+A successful entry through the authored front door now schedules a real door close eight server ticks after the player reaches the House interior. Vanilla `DoorBlock.setOpen` performs the close so the normal wooden-door sound and game event are preserved. The resulting closed lower/upper door states are then mirrored back to the Overworld shell.
+
+Window and wall-breach entries do not affect the front door.

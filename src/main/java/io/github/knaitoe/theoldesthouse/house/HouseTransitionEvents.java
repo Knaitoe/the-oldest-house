@@ -11,6 +11,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -18,9 +20,11 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public final class HouseTransitionEvents {
     private static final double BOUNDARY_MARGIN = 0.55D;
     private static final int ACK_TIMEOUT_TICKS = 40;
+    private static final int FRONT_DOOR_CLOSE_DELAY_TICKS = 8;
 
     private static final AtomicInteger NEXT_TOKEN = new AtomicInteger(1);
     private static final Map<UUID, PendingTransition> PENDING = new HashMap<>();
+    private static final Map<UUID, PendingDoorClose> PENDING_DOOR_CLOSE = new HashMap<>();
 
     private HouseTransitionEvents() {
     }
@@ -30,6 +34,8 @@ public final class HouseTransitionEvents {
             return;
         }
 
+        tickPendingDoorClose(player);
+
         PendingTransition pending = PENDING.get(player.getUUID());
         if (pending != null) {
             if (pending.acknowledged()) {
@@ -38,7 +44,24 @@ public final class HouseTransitionEvents {
                         pending.destination()
                 );
                 if (destination != null) {
+                    boolean enteringThroughFrontDoor =
+                            pending.kind() == HouseTransitionKind.DOOR
+                                    && pending.destination().equals(HouseDimensions.INTERIOR);
+
                     teleportMatchingCoordinates(player, destination);
+
+                    if (enteringThroughFrontDoor) {
+                        HouseSavedData data = HouseSavedData.get(player.getServer());
+                        data.housePosition().ifPresent(origin ->
+                                PENDING_DOOR_CLOSE.put(
+                                        player.getUUID(),
+                                        new PendingDoorClose(
+                                                origin.immutable(),
+                                                FRONT_DOOR_CLOSE_DELAY_TICKS
+                                        )
+                                )
+                        );
+                    }
                 }
                 return;
             }
@@ -216,6 +239,7 @@ public final class HouseTransitionEvents {
                 player.getUUID(),
                 new PendingTransition(
                         destination,
+                        kind,
                         token,
                         false,
                         0
@@ -226,6 +250,78 @@ public final class HouseTransitionEvents {
                 player,
                 new HouseTransitionContextPayload(kind, token)
         );
+    }
+
+    private static void tickPendingDoorClose(ServerPlayer player) {
+        PendingDoorClose pending = PENDING_DOOR_CLOSE.get(player.getUUID());
+        if (pending == null) {
+            return;
+        }
+
+        if (!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)) {
+            PENDING_DOOR_CLOSE.remove(player.getUUID());
+            return;
+        }
+
+        if (pending.ticksRemaining() > 0) {
+            PENDING_DOOR_CLOSE.put(
+                    player.getUUID(),
+                    pending.withTicksRemaining(pending.ticksRemaining() - 1)
+            );
+            return;
+        }
+
+        PENDING_DOOR_CLOSE.remove(player.getUUID());
+        closeFrontDoorBehindPlayer(player, pending.origin());
+    }
+
+    private static void closeFrontDoorBehindPlayer(
+            ServerPlayer player,
+            BlockPos origin
+    ) {
+        ServerLevel interior = player.getServer().getLevel(HouseDimensions.INTERIOR);
+        if (interior == null) {
+            return;
+        }
+
+        BlockPos lowerPos = origin.offset(HouseBuilder.WIDTH / 2, 1, 0);
+        BlockPos upperPos = lowerPos.above();
+        BlockState lowerState = interior.getBlockState(lowerPos);
+
+        if (!(lowerState.getBlock() instanceof DoorBlock door)
+                || !lowerState.getValue(DoorBlock.OPEN)) {
+            return;
+        }
+
+        // Let vanilla own the actual close interaction so its sound and game
+        // event remain indistinguishable from an ordinary wooden door.
+        door.setOpen(player, interior, lowerState, lowerPos, false);
+
+        // Be explicit about both halves before mirroring. This avoids relying
+        // on the timing of the paired-door neighbor update.
+        BlockState currentLower = interior.getBlockState(lowerPos);
+        if (currentLower.getBlock() instanceof DoorBlock
+                && currentLower.getValue(DoorBlock.OPEN)) {
+            interior.setBlock(
+                    lowerPos,
+                    currentLower.setValue(DoorBlock.OPEN, false),
+                    10
+            );
+        }
+
+        BlockState currentUpper = interior.getBlockState(upperPos);
+        if (currentUpper.getBlock() instanceof DoorBlock
+                && currentUpper.getValue(DoorBlock.OPEN)) {
+            interior.setBlock(
+                    upperPos,
+                    currentUpper.setValue(DoorBlock.OPEN, false),
+                    10
+            );
+        }
+
+        ServerLevel overworld = player.getServer().overworld();
+        HouseDimensionMirror.copyState(interior, overworld, lowerPos);
+        HouseDimensionMirror.copyState(interior, overworld, upperPos);
     }
 
     private static void teleportMatchingCoordinates(
@@ -250,6 +346,7 @@ public final class HouseTransitionEvents {
 
     private record PendingTransition(
             ResourceKey<Level> destination,
+            HouseTransitionKind kind,
             int token,
             boolean acknowledged,
             int waitedTicks
@@ -257,6 +354,7 @@ public final class HouseTransitionEvents {
         PendingTransition acknowledge() {
             return new PendingTransition(
                     destination,
+                    kind,
                     token,
                     true,
                     waitedTicks
@@ -266,10 +364,20 @@ public final class HouseTransitionEvents {
         PendingTransition withWaitedTicks(int ticks) {
             return new PendingTransition(
                     destination,
+                    kind,
                     token,
                     acknowledged,
                     ticks
             );
+        }
+    }
+
+    private record PendingDoorClose(
+            BlockPos origin,
+            int ticksRemaining
+    ) {
+        PendingDoorClose withTicksRemaining(int ticks) {
+            return new PendingDoorClose(origin, ticks);
         }
     }
 }
