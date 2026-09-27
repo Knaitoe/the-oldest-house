@@ -223,3 +223,18 @@ This distinction should persist as the graph system grows: players may annotate 
 Recorded playtesting exposed two presentation bugs. First, the wrong GuiGraphics blit overload treated the desired screen-space door size as texture-coordinate size, producing a tiled spruce pattern. The door vignette now uses separate destination and 16x16 source dimensions.
 
 Second, sending boundary context and changing dimension in the same server tick could allow the dimension-transition screen to be chosen before the context payload had been handled. Crossings now use a one-tick lead: classify boundary, send context, then perform the matching-coordinate dimension handoff on the following tick. The authored front-door hitbox was also narrowed so breaking the plaster immediately beside the door is classified as a breach rather than a door.
+
+
+## Native terrain mirror
+
+The finite copied-landscape model was rejected after playtesting exposed truncated terrain and incorrect water presentation.
+
+The House dimension now uses `minecraft:overworld` noise settings, the Overworld multi-noise biome preset, and NeoForge's server-seed dimension option. At matching coordinates, untouched terrain is therefore generated from the same seed rather than copied into a flat dimension.
+
+The synchronization layer becomes an **overlay**, not a terrain generator. During initialization it compares nearby House-dimension blocks with the real Overworld and writes only differing states. This naturally captures the authored House and pre-existing player edits while leaving matching water, terrain, biome context, lighting, heightmaps, and distant chunks to vanilla generation.
+
+Existing chunks generated under the older flat-dimension prototype cannot be repaired merely by changing the datapack generator and should not be used to judge this version's terrain continuity.
+
+## Transition sprite scaling correction
+
+The attempted destination-size blit still tiled Minecraft's block texture in recorded testing. The door vignette now draws each 16x16 door half at native GUI size inside a pushed pose, then scales the pose itself to screen dimensions. Only one texture quad exists, so the animation no longer depends on ambiguous blit overload behavior.

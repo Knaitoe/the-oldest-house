@@ -170,31 +170,21 @@ public final class HouseTransitionClient {
             int doorY = (this.height - doorHeight) / 2;
             int half = doorHeight / 2;
 
-            graphics.blit(
+            drawScaledDoorHalf(
+                    graphics,
                     DOOR_TOP,
                     doorX,
                     doorY,
                     doorWidth,
-                    half,
-                    0.0F,
-                    0.0F,
-                    16,
-                    16,
-                    16,
-                    16
+                    half
             );
-            graphics.blit(
+            drawScaledDoorHalf(
+                    graphics,
                     DOOR_BOTTOM,
                     doorX,
                     doorY + half,
                     doorWidth,
-                    doorHeight - half,
-                    0.0F,
-                    0.0F,
-                    16,
-                    16,
-                    16,
-                    16
+                    doorHeight - half
             );
 
             int jambWidth = Math.max(10, this.width / 64);
@@ -313,6 +303,39 @@ public final class HouseTransitionClient {
                 );
             }
         }
+    }
+
+    private static void drawScaledDoorHalf(
+            GuiGraphics graphics,
+            ResourceLocation texture,
+            int x,
+            int y,
+            int width,
+            int height
+    ) {
+        graphics.pose().pushPose();
+        graphics.pose().translate(x, y, 0.0F);
+        graphics.pose().scale(
+                width / 16.0F,
+                height / 16.0F,
+                1.0F
+        );
+
+        // Draw one 16x16 sprite at its native size, then let the pose transform
+        // enlarge that quad. This makes texture tiling impossible regardless of
+        // GuiGraphics blit overload semantics.
+        graphics.blit(
+                texture,
+                0,
+                0,
+                0.0F,
+                0.0F,
+                16,
+                16,
+                16,
+                16
+        );
+        graphics.pose().popPose();
     }
 
     private static int mixColor(int a, int b, double amount) {
