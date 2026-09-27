@@ -200,3 +200,14 @@ The proxy exterior is currently a one-time snapshot. A later synchronization pas
 NeoForge 1.21.1 supports custom dimension-transition screens through `RegisterDimensionTransitionScreenEvent`. The prototype uses this instead of a mixin to replace the normal loading presentation with a close-up door texture and brief diegetic text while the target level loads.
 
 The age-gated impossible rear door still exists, but it is now created inside the House dimension rather than in the Overworld shell.
+
+
+## Mirror synchronization and direct impossible hallway
+
+The initial dimension copy no longer rebuilds or clears a copied House. It writes the Overworld block states directly into the interior dimension with client-update-only flags. This avoids neighbor-physics cascades that previously created dropped block debris during the first transition.
+
+After initialization, player-driven changes in the shared visible region are mirrored at matching coordinates in both directions. The current synchronization layer queues break, placement, multi-placement, and right-click interactions and resolves them at the end of the server tick, after vanilla has committed the real block state. Neighbor positions are included so two-block doors and connected panes stay visually consistent.
+
+The rear impossible corridor is explicitly excluded from mirroring. At the provisional age threshold, the interior partition gains its door and a sealed 56-block corridor is constructed directly behind it in the House dimension. No secondary teleport is used. Because the Overworld structure is fixed, rear-facing and rear-side windows are intentionally omitted from the authored facade so ordinary windows never gain a sightline to interior-only geometry.
+
+The custom transition presentation now has a minimum visible duration of 1.65 seconds. Its purpose is not to pretend the dimension handoff takes no time; it turns that unavoidable pause into a deliberate door-focused beat instead of an unreadably fast loading flash.

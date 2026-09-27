@@ -185,16 +185,16 @@ public final class HouseBuilder {
         placeDoor(level, origin, 5, 1, 13, Direction.EAST, Blocks.SPRUCE_DOOR.defaultBlockState());
         placeDoor(level, origin, 9, 1, 13, Direction.WEST, Blocks.SPRUCE_DOOR.defaultBlockState());
 
-        // Front and rear paired windows.
+        // Front paired windows. Rear-facing windows are intentionally avoided:
+        // once the impossible hallway exists, the fixed facade must never gain
+        // a sightline to geometry that is only present in the House dimension.
         for (int x : new int[]{2, 3, 11, 12}) {
             set(level, origin, x, 2, 0, Blocks.GLASS_PANE.defaultBlockState());
             set(level, origin, x, 3, 0, Blocks.GLASS_PANE.defaultBlockState());
-            set(level, origin, x, 2, REAR_WALL_Z, Blocks.GLASS_PANE.defaultBlockState());
-            set(level, origin, x, 3, REAR_WALL_Z, Blocks.GLASS_PANE.defaultBlockState());
         }
 
-        // Side paired windows.
-        for (int z : new int[]{4, 5, 14, 15}) {
+        // Side windows stay toward the front half for the same reason.
+        for (int z : new int[]{4, 5}) {
             set(level, origin, 0, 2, z, Blocks.GLASS_PANE.defaultBlockState());
             set(level, origin, 0, 3, z, Blocks.GLASS_PANE.defaultBlockState());
             set(level, origin, WIDTH - 1, 2, z, Blocks.GLASS_PANE.defaultBlockState());
@@ -244,9 +244,8 @@ public final class HouseBuilder {
             }
         }
 
-        // Small attic windows give the facade a believable second visual scale.
+        // A small front attic window gives the facade a believable second scale.
         set(level, origin, CENTER_X, 7, 0, Blocks.GLASS_PANE.defaultBlockState());
-        set(level, origin, CENTER_X, 7, REAR_WALL_Z, Blocks.GLASS_PANE.defaultBlockState());
     }
 
     private static void buildPorch(ServerLevel level, BlockPos origin) {

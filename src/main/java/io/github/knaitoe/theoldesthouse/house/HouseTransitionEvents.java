@@ -36,8 +36,8 @@ public final class HouseTransitionEvents {
         }
 
         if (player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)
-                && !isInsideDomesticVolume(player, origin)) {
-            leaveHouseDimension(player, data);
+                && !isValidHouseInteriorSpace(player, data, origin)) {
+            leaveHouseDimension(player);
         }
     }
 
@@ -57,6 +57,24 @@ public final class HouseTransitionEvents {
                 && player.getY() <= maxY;
     }
 
+    private static boolean isValidHouseInteriorSpace(
+            ServerPlayer player,
+            HouseSavedData data,
+            BlockPos origin
+    ) {
+        if (isInsideDomesticVolume(player, origin)) {
+            return true;
+        }
+
+        return data.isImpossibleDoorRevealed()
+                && HouseImpossibleHallway.isInsideWalkableVolume(
+                        origin,
+                        player.getX(),
+                        player.getY(),
+                        player.getZ()
+                );
+    }
+
     private static void enterHouseDimension(ServerPlayer player, HouseSavedData data) {
         ServerLevel interior = HouseDimensionMirror.ensureInitialized(player.getServer(), data);
         if (interior == null) {
@@ -66,11 +84,7 @@ public final class HouseTransitionEvents {
         teleportMatchingCoordinates(player, interior);
     }
 
-    private static void leaveHouseDimension(ServerPlayer player, HouseSavedData data) {
-        HouseDimensionMirror.syncAtmosphere(
-                player.getServer().overworld(),
-                player.serverLevel()
-        );
+    private static void leaveHouseDimension(ServerPlayer player) {
         teleportMatchingCoordinates(player, player.getServer().overworld());
     }
 
