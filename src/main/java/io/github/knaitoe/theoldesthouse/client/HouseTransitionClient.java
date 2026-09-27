@@ -156,12 +156,34 @@ public final class HouseTransitionClient {
         }
 
         protected void drawCapturedFrame(GuiGraphics graphics) {
+            drawCapturedFrameMotion(graphics, 1.0D, 0.0D, 0.0D);
+        }
+
+        protected void drawCapturedFrameMotion(
+                GuiGraphics graphics,
+                double zoom,
+                double offsetX,
+                double offsetY
+        ) {
             if (capturedFrame == null) {
                 graphics.fill(0, 0, this.width, this.height, 0xFF0D0C0B);
                 return;
             }
 
+            graphics.pose().pushPose();
+
+            float cx = this.width / 2.0F;
+            float cy = this.height / 2.0F;
+            graphics.pose().translate(
+                    cx + (float) offsetX,
+                    cy + (float) offsetY,
+                    0.0F
+            );
+            graphics.pose().scale((float) zoom, (float) zoom, 1.0F);
+            graphics.pose().translate(-cx, -cy, 0.0F);
+
             capturedFrame.draw(graphics, this.width, this.height);
+            graphics.pose().popPose();
         }
 
         protected double progress() {
@@ -304,50 +326,68 @@ public final class HouseTransitionClient {
 
         @Override
         public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            drawCapturedFrame(graphics);
-
-            double p = smoothstep(progress());
+            double raw = progress();
+            double p = smoothstep(raw);
             double squeeze = entering
-                    ? smoothstep(Math.min(1.0D, p / 0.72D))
-                    : smoothstep(Math.min(1.0D, p / 0.55D));
+                    ? smoothstep(Math.min(1.0D, raw / 0.78D))
+                    : smoothstep(Math.min(1.0D, raw / 0.60D));
 
-            // Keep the actual gameplay frame visible for most of the movement.
-            // The sill rises into view while one jamb passes close to the camera.
+            // Sell a physical climb rather than a flat wipe. As the player's
+            // head rises over the sill, the world appears to drop slightly and
+            // drift toward the shoulder that clears the opening.
+            double cameraLift = entering ? -this.height * 0.055D : -this.height * 0.035D;
+            double cameraSide = (entering ? -1.0D : 1.0D) * this.width * 0.025D;
+            double bob = Math.sin(Math.min(1.0D, raw) * Math.PI) * this.height * 0.012D;
+            double zoom = 1.0D + p * (entering ? 0.035D : 0.022D);
+
+            drawCapturedFrameMotion(
+                    graphics,
+                    zoom,
+                    cameraSide * p,
+                    cameraLift * p + bob
+            );
+
+            // The sill starts low, then rises quickly as the body commits to
+            // climbing through. It does not simply grow to fill the screen.
             int sillHeight = lerpInt(
-                    Math.max(6, this.height / 30),
-                    Math.max(28, (int) (this.height * 0.58D)),
+                    Math.max(4, this.height / 36),
+                    Math.max(24, (int) (this.height * 0.50D)),
                     squeeze
             );
+            int sillY = this.height - sillHeight
+                    + (int) (Math.sin(raw * Math.PI) * this.height * 0.035D);
 
             drawScaledTexture(
                     graphics,
                     WHITE_TERRACOTTA,
                     -12,
-                    this.height - sillHeight,
+                    sillY,
                     this.width + 24,
-                    sillHeight + 12
+                    sillHeight + 18
             );
 
-            int jambWidth = lerpInt(
-                    Math.max(8, this.width / 45),
-                    Math.max(32, (int) (this.width * 0.36D)),
-                    squeeze
-            );
+            // The jamb sweeps inward and slightly past center rather than just
+            // becoming a wider rectangle. That directional travel is the cue
+            // that the player's shoulder/head is passing the frame.
+            int jambWidth = Math.max(18, this.width / 12);
+            int travel = (int) ((this.width * 0.52D + jambWidth) * squeeze);
+            int jambX = entering
+                    ? -jambWidth + travel
+                    : this.width - travel;
 
-            int jambX = entering ? 0 : this.width - jambWidth;
             drawScaledTexture(
                     graphics,
                     WHITE_TERRACOTTA,
                     jambX,
-                    -12,
+                    -18,
                     jambWidth,
-                    this.height + 24
+                    this.height + 36
             );
 
             int shadowWidth = Math.max(3, this.width / 150);
             int shadowX = entering
-                    ? jambWidth - shadowWidth
-                    : this.width - jambWidth;
+                    ? jambX + jambWidth - shadowWidth
+                    : jambX;
 
             graphics.fill(
                     shadowX,
@@ -385,79 +425,91 @@ public final class HouseTransitionClient {
 
         @Override
         public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            drawCapturedFrame(graphics);
-
-            double p = smoothstep(progress());
+            double raw = progress();
+            double p = smoothstep(raw);
             double squeeze = entering
-                    ? smoothstep(Math.min(1.0D, p / 0.74D))
-                    : smoothstep(Math.min(1.0D, p / 0.56D));
+                    ? smoothstep(Math.min(1.0D, raw / 0.80D))
+                    : smoothstep(Math.min(1.0D, raw / 0.62D));
 
-            int gapStart = Math.max(110, (int) (this.width * 0.70D));
-            int gapEnd = Math.max(28, (int) (this.width * 0.08D));
-            int gap = lerpInt(gapStart, gapEnd, squeeze);
+            // A squeeze through a rough breach is mostly lateral. The player's
+            // viewpoint slides and moves a little closer as one shoulder turns.
+            double direction = entering ? -1.0D : 1.0D;
+            double lateral = direction * this.width * 0.060D * p;
+            double vertical = Math.sin(raw * Math.PI) * this.height * 0.010D;
+            double zoom = 1.0D + p * (entering ? 0.045D : 0.028D);
 
-            int center = this.width / 2
-                    + (int) ((entering ? -1.0D : 1.0D) * this.width * 0.035D);
-            int leftEdge = center - gap / 2;
-            int rightEdge = center + gap / 2;
+            drawCapturedFrameMotion(
+                    graphics,
+                    zoom,
+                    lateral,
+                    vertical
+            );
 
-            // These are contextual edges laid over the real view, not a
-            // replacement scene. Most of the frozen gameplay frame remains
-            // visible until the player is nearly through the breach.
+            // Use one dominant wall face that actually travels across the
+            // player's field of view. The opposite edge only closes in late.
+            int dominantWidth = Math.max(40, (int) (this.width * 0.47D));
+            int dominantTravel = (int) ((this.width * 0.64D) * squeeze);
+            int dominantX = entering
+                    ? -dominantWidth + dominantTravel
+                    : this.width - dominantTravel;
+
             drawScaledTexture(
                     graphics,
                     WHITE_TERRACOTTA,
-                    -16,
-                    -16,
-                    Math.max(1, leftEdge + 16),
-                    this.height + 32
+                    dominantX,
+                    -20,
+                    dominantWidth,
+                    this.height + 40
             );
 
-            drawScaledTexture(
-                    graphics,
-                    WHITE_TERRACOTTA,
-                    rightEdge,
-                    -16,
-                    Math.max(1, this.width - rightEdge + 16),
-                    this.height + 32
-            );
-
-            int timberWidth = Math.max(8, this.width / 56);
+            int timberWidth = Math.max(8, this.width / 54);
             int timberX = entering
-                    ? leftEdge - timberWidth
-                    : rightEdge;
+                    ? dominantX + dominantWidth - timberWidth
+                    : dominantX;
 
             drawScaledTexture(
                     graphics,
                     DARK_OAK,
                     timberX,
-                    -10,
+                    -12,
                     timberWidth,
-                    this.height + 20
+                    this.height + 24
             );
 
+            double late = smoothstep(Math.max(0.0D, (raw - 0.34D) / 0.58D));
+            int oppositeWidth = lerpInt(
+                    Math.max(4, this.width / 70),
+                    Math.max(28, (int) (this.width * 0.32D)),
+                    late
+            );
+
+            int oppositeX = entering
+                    ? this.width - oppositeWidth
+                    : 0;
+
+            drawScaledTexture(
+                    graphics,
+                    WHITE_TERRACOTTA,
+                    oppositeX,
+                    -18,
+                    oppositeWidth,
+                    this.height + 36
+            );
+
+            // A small top edge moves down as the head ducks/turns into the hole.
             int capHeight = lerpInt(
-                    Math.max(4, this.height / 38),
-                    Math.max(18, (int) (this.height * 0.18D)),
+                    Math.max(3, this.height / 44),
+                    Math.max(12, (int) (this.height * 0.13D)),
                     squeeze
             );
 
             drawScaledTexture(
                     graphics,
                     WHITE_TERRACOTTA,
-                    leftEdge,
-                    -8,
-                    Math.max(1, rightEdge - leftEdge),
-                    capHeight + 8
-            );
-
-            drawScaledTexture(
-                    graphics,
-                    WHITE_TERRACOTTA,
-                    leftEdge,
-                    this.height - capHeight,
-                    Math.max(1, rightEdge - leftEdge),
-                    capHeight + 8
+                    0,
+                    -6,
+                    this.width,
+                    capHeight + 6
             );
         }
     }

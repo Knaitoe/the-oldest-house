@@ -274,3 +274,10 @@ The current transition system captures the actual main framebuffer immediately w
 Physical obstruction is then composited over the real frozen view. The door, window frame, or broken-wall edges only need to explain why the player's vision is partially blocked; they no longer need to fabricate an entire scene. The dynamic capture texture is released when the screen closes.
 
 This preserves camera orientation and environmental context up to the dimension handoff while keeping the underlying cross-dimension architecture unchanged.
+
+
+## Motion cues over captured frames
+
+A captured frame alone preserved continuity but still read as a stationary image being covered by UI geometry. Window and breach transitions now apply small whole-frame transforms to imply camera movement during the hidden handoff.
+
+Window entry combines a slight forward zoom, downward world drift, lateral head movement, a rising sill, and a traveling jamb. Breach entry favors lateral camera displacement and one wall face crossing the center before the opposite edge closes. These transforms remain restrained because the framebuffer capture includes the HUD; large transforms would make the interface itself visibly move and reveal the trick.
