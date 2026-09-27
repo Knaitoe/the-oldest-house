@@ -542,10 +542,12 @@ public final class HouseBuilder {
             set(level, origin, x, 7, 12, Blocks.GRAY_CARPET.defaultBlockState());
         }
 
-        // Simple landing runner.
-        for (int z = 1; z <= 9; z++) {
+        // Short landing runners stop at the open stairwell instead of
+        // trying to float carpet over the two-wide opening.
+        for (int z = 1; z <= 3; z++) {
             set(level, origin, CENTER_X, 7, z, Blocks.RED_CARPET.defaultBlockState());
         }
+        set(level, origin, CENTER_X, 7, 9, Blocks.RED_CARPET.defaultBlockState());
     }
 
     private static void furnishBasement(ServerLevel level, BlockPos origin) {
