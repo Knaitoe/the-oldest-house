@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.30` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.31` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -279,3 +279,23 @@ This pass focuses on visible architectural finish and two immersion defects foun
 - Impossible-hall construction now uses client-update / known-shape / suppress-drops flags and immediately purges item/falling-block debris inside the construction volume.
 - The first impossible threshold door appears open, making the long sightline legible as soon as the stage exists.
 - The Overworld sightline no longer tries to render the physical corridor sixty blocks through ordinary terrain. Instead, it renders a depth-tested perspective view immediately behind the real threshold aperture. This avoids hills, water, trees and other valid Overworld geometry occluding the impossible view while keeping the physical exterior unchanged.
+
+
+### 0.1.31 HouseBuilder rewrite
+
+The domestic House generator has been replaced rather than incrementally patched.
+
+- The old front-facing full-width gable is gone. The main roof now presents broad front/rear planes with a low two-block-run pitch and a two-wide ridge, so the primary facade reads as eave + roof rather than a giant plaster triangle edged with stair teeth.
+- The facade has real massing: a one-block-deep ground-floor bay projects on the left, while the upper-right bedroom projects forward beneath its own smaller gable.
+- The old double ceiling/floor sandwich has been removed. The second-floor blocks are the downstairs ceiling, eliminating the strange inter-floor cavity visible around the stairwell.
+- Exterior timber is structural and bay-oriented rather than a uniform horizontal belt.
+- The porch is a simpler lean-to composition that supports the main architecture instead of competing with it.
+- Water-site docks keep the completed rail/ladder layout and now use a real corner lamp post instead of a lantern hanging from empty sky.
+- The main stair has moved into a dedicated edge of the circulation zone and has no decorative second stair/fence course.
+- The basement stair now turns through a real lower landing before entering the cellar.
+- Living-room seating is arranged around the fireplace, with a rug and table anchoring the group.
+- Upstairs bedrooms now differ by activities and furniture, not merely color: reader/writer, music/hobby, and formal/work-oriented rooms.
+- Nightstand accessories sit on full blocks, eliminating floating pots/candles.
+- Actual vanilla painting entities replace wall-banner stand-ins. The same authored paintings are spawned separately in the Overworld and authoritative House dimension because entity mirroring is not yet generalized.
+- Window panes are restored after structural/furnishing passes as a final aperture invariant.
+- The first impossible door again appears closed.

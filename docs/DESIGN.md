@@ -415,3 +415,18 @@ Impossible-space carving is authored replacement, not player mining. Corridor co
 Rendering the proxy at the corridor's true Overworld coordinates allowed ordinary terrain behind the fixed exterior to win the depth test. The external sightline is therefore represented at the threshold aperture itself.
 
 While the player remains in the Overworld/front side and the revealed threshold door is open, a client-only perspective tunnel is drawn immediately behind that real doorway. The actual wall and door still occlude it through normal depth testing. The illusion contains converging wall/floor/ceiling planes, the red runner, a dark terminal plane and diminishing warm depth markers. It has no collision or saved world state. Crossing into the House dimension replaces it with the real physical corridor.
+
+
+## Domestic architecture rewrite
+
+The static House is no longer generated as a rectangular shell with a full-width front gable.
+
+The main roof ridge runs east-west so the primary north facade presents a continuous eave and roof plane. Its profile uses a two-block horizontal run per rise, keeping the roof substantial without making it nearly as tall as the domestic walls. A smaller projecting upper-right gable, the left ground-floor bay, the offset chimney and the porch create asymmetrical massing.
+
+The left living-room bay and right upper-bedroom gable project one block beyond the nominal front wall. Their playable interior remains on relative z=0, inside the domestic boundary; the structural wall sits at z=-1. Shared domestic synchronization therefore includes that single projected front wall layer.
+
+The second floor is a single structural layer at relative y=6 and also serves as the ground-floor ceiling. No independent ceiling slab is generated beneath it.
+
+Domestic furnishing follows focal points and room roles. The living room faces the hearth. Bedrooms use different functional props, furniture arrangements and actual paintings. Rugs anchor furniture groups rather than acting as arbitrary colored rectangles.
+
+Windows and door approaches are invariants. Window panes are restored after structural/furnishing passes, and doorway clearance is audited after all furniture is placed.
