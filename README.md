@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.28` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.29` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -257,3 +257,12 @@ The impossible hallway remains physically absent from the Overworld, but can now
 The server synchronizes the House origin and reveal state to clients. While the player remains in the Overworld, a client-only renderer draws only the inner corridor surfaces at the hallway's world-space coordinates. Vanilla depth testing lets the real domestic walls and closed doors occlude the proxy naturally. A ray check suppresses the render when there is no clear sightline toward the threshold, and the renderer is always disabled from the rear side of the threshold.
 
 No proxy blocks, collision, lighting state, or chunks are created in the Overworld. Crossing the threshold still hands off to the real hallway in the House dimension.
+
+
+### 0.1.29 upstairs landing correction
+
+The front-bedroom doors no longer open onto the upstairs stairwell void. Both doors have moved to the solid rear section of the central landing at relative z+8, where each has a full walkable approach.
+
+The open stairwell now has a continuous spruce-fence guardrail along its solid corridor edge. The upstairs runner has also been adjusted so it stops at the stair opening and resumes on the rear landing rather than implying floor where there is none.
+
+Doorway-clearance volumes were updated to the new landing positions so later furnishing/structure passes cannot recreate the same defect.

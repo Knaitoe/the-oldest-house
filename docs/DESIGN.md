@@ -389,3 +389,10 @@ The physical impossible hallway must never be instantiated in the Overworld: doi
 After the first impossible threshold is revealed, clients receive the House origin/reveal state. When an Overworld camera is on the domestic/front side of the threshold and has a clear line of sight to the open threshold door, a client-only world-space proxy renders the hallway's inward-facing floor, wall, ceiling, carpet and depth-lighting surfaces. The existing Overworld depth buffer provides natural occlusion through the real house geometry.
 
 The proxy has no blocks, collision, pathfinding, light propagation, saved data or rear-side visibility. It exists only to preserve the visual sightline through the ordinary house. The moment the player crosses the threshold, the real House-dimension corridor replaces the proxy.
+
+
+## Upper-floor landing
+
+The upper stair opening occupies relative x=6, z=2..6. No bedroom doorway may open directly onto those cells.
+
+The two front-bedroom doors are paired on the solid landing at relative z=8, beyond the stair opening. A spruce-fence guardrail runs along the solid x=7 edge of the stairwell while x=8 remains the clear circulation lane. Floor runners stop at the void and resume only on solid landing blocks.
