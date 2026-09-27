@@ -122,8 +122,8 @@ public final class HouseTransitionEvents {
         double maxX = origin.getX() + HouseBuilder.WIDTH - BOUNDARY_MARGIN;
         double minZ = origin.getZ() + BOUNDARY_MARGIN;
         double maxZ = origin.getZ() + HouseBuilder.DEPTH - BOUNDARY_MARGIN;
-        double minY = origin.getY() + 0.35D;
-        double maxY = origin.getY() + 5.45D;
+        double minY = origin.getY() + HouseBuilder.BASEMENT_FLOOR_Y + 0.35D;
+        double maxY = origin.getY() + HouseBuilder.UPPER_WALL_TOP_Y + 0.95D;
 
         return player.getX() >= minX
                 && player.getX() <= maxX
@@ -169,18 +169,35 @@ public final class HouseTransitionEvents {
             return HouseTransitionKind.DOOR;
         }
 
+        boolean mainWindowY = relY >= 1.35D && relY <= 4.35D;
+        boolean upperWindowY = relY >= 7.35D && relY <= 10.35D;
+
         if (front
-                && relY >= 1.35D
-                && relY <= 4.35D
+                && (mainWindowY || upperWindowY)
                 && (within(relX, 1.75D, 4.25D)
                 || within(relX, 10.75D, 13.25D))) {
             return HouseTransitionKind.WINDOW;
         }
 
-        if ((left || right)
-                && relY >= 1.35D
-                && relY <= 4.35D
-                && within(relZ, 3.75D, 6.25D)) {
+        if (left && mainWindowY && within(relZ, 6.75D, 9.25D)) {
+            return HouseTransitionKind.WINDOW;
+        }
+
+        if (right && mainWindowY && within(relZ, 3.75D, 6.25D)) {
+            return HouseTransitionKind.WINDOW;
+        }
+
+        if (left
+                && upperWindowY
+                && (within(relZ, 1.75D, 4.25D)
+                || within(relZ, 12.75D, 15.25D))) {
+            return HouseTransitionKind.WINDOW;
+        }
+
+        if (right
+                && upperWindowY
+                && (within(relZ, 3.75D, 6.25D)
+                || within(relZ, 12.75D, 15.25D))) {
             return HouseTransitionKind.WINDOW;
         }
 

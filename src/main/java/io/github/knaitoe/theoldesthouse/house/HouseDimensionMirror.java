@@ -30,6 +30,11 @@ public final class HouseDimensionMirror {
             // not copy the House and then clear/rebuild it, because neighbor
             // updates from that process can turn attached blocks into item debris.
             copyInitialSnapshot(overworld, interior, origin);
+
+            // BlockState mirroring intentionally does not copy block-entity
+            // NBT. Re-attach the authored domestic loot tables to the mirrored
+            // chests before the interior becomes authoritative.
+            HouseBuilder.applyDomesticLootTables(interior, origin);
             data.markInteriorInitialized();
 
             if (data.houseAge() >= HouseStageManager.FIRST_IMPOSSIBLE_DOOR_AGE) {
