@@ -1310,7 +1310,7 @@ public final class HouseBuilder {
             return new RoofProfile(
                     4,
                     4,
-                    (int) ((hash >>> 1) & 1L),
+                    0,
                     5 + (int) ((hash >>> 2) & 1L),
                     3,
                     ((hash >>> 4) & 1L) == 0L
