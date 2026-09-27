@@ -506,17 +506,36 @@ public final class HouseBuilder {
             }
         }
 
-        buildGableAlongZ(level, origin, -1, 6, -3, 10, ROOF_BASE_Y, roof.leftRise());
-        buildGableAlongZ(level, origin, 8, 15, -2, 10, ROOF_BASE_Y, roof.rightRise());
-        buildGableAlongX(level, origin, -1, 15, 7, 20, ROOF_BASE_Y, roof.rearRise());
+        buildGableAlongZ(level, origin, -2, 7, -3, 10, ROOF_BASE_Y, roof.leftRise());
+        buildGableAlongZ(
+                level,
+                origin,
+                7,
+                16,
+                -2,
+                10,
+                ROOF_BASE_Y + roof.rightBaseLift(),
+                roof.rightRise()
+        );
+        buildGableAlongX(level, origin, -2, 16, 6, 21, ROOF_BASE_Y, roof.rearRise());
 
-        fillFrontGable(level, origin, 0, 5, -2, ROOF_BASE_Y, roof.leftRise(), 2);
-        fillFrontGable(level, origin, 9, 14, -1, ROOF_BASE_Y, roof.rightRise(), 11);
+        fillFrontGable(level, origin, -1, 6, -2, ROOF_BASE_Y, roof.leftRise(), 2);
+        fillFrontGable(
+                level,
+                origin,
+                8,
+                15,
+                -1,
+                ROOF_BASE_Y + roof.rightBaseLift(),
+                roof.rightRise(),
+                11
+        );
 
         for (int z = -3; z <= 10; z++) {
-            set(level, origin, -2, ROOF_BASE_Y - 1, z, Blocks.DARK_OAK_SLAB.defaultBlockState());
-            set(level, origin, 7, ROOF_BASE_Y - 1, z, Blocks.DARK_OAK_SLAB.defaultBlockState());
-            set(level, origin, 16, ROOF_BASE_Y - 1, z, Blocks.DARK_OAK_SLAB.defaultBlockState());
+            set(level, origin, -3, ROOF_BASE_Y - 1, z, Blocks.DARK_OAK_SLAB.defaultBlockState());
+            set(level, origin, 8, ROOF_BASE_Y - 1, z, Blocks.DARK_OAK_SLAB.defaultBlockState());
+            set(level, origin, 6, ROOF_BASE_Y - 1, z, Blocks.DARK_OAK_SLAB.defaultBlockState());
+            set(level, origin, 17, ROOF_BASE_Y - 1, z, Blocks.DARK_OAK_SLAB.defaultBlockState());
         }
 
         for (int y = 11; y <= 12; y++) {
@@ -524,7 +543,7 @@ public final class HouseBuilder {
                 set(level, origin, 15, y, z, Blocks.WHITE_TERRACOTTA.defaultBlockState());
             }
         }
-        buildGableAlongZ(level, origin, 12, 17, 9, 18, 13, roof.towerRise());
+        buildGableAlongZ(level, origin, 11, 17, 9, 18, 13, roof.towerRise());
 
         int dormerX = roof.dormerOnLeft() ? 2 : 11;
         int dormerZ = 8;
@@ -1233,6 +1252,7 @@ public final class HouseBuilder {
     private record RoofProfile(
             int leftRise,
             int rightRise,
+            int rightBaseLift,
             int rearRise,
             int towerRise,
             boolean dormerOnLeft
@@ -1240,10 +1260,11 @@ public final class HouseBuilder {
         static RoofProfile capture(ServerLevel level, BlockPos origin) {
             long hash = level.getSeed() ^ origin.asLong() ^ 0x5A17C0DEL;
             return new RoofProfile(
-                    4 + (int) (hash & 1L),
-                    5 + (int) ((hash >>> 1) & 1L),
+                    4,
+                    4,
+                    (int) ((hash >>> 1) & 1L),
                     5 + (int) ((hash >>> 2) & 1L),
-                    3 + (int) ((hash >>> 3) & 1L),
+                    3,
                     ((hash >>> 4) & 1L) == 0L
             );
         }
