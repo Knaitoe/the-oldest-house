@@ -216,3 +216,10 @@ The ordinary domestic rooms remain editable because player ownership is part of 
 Generated impossible architecture follows a different rule. In the current hallway prototype, the structural floor, ceiling, side walls, and terminal wall cannot be mined by players and are removed from explosion block lists. Decorative carpet and lanterns are not protected, and player-placed torches, blocks, markers, and other objects remain ordinary.
 
 This distinction should persist as the graph system grows: players may annotate and inhabit impossible space, but they cannot simply quarry through The Oldest House's generated structural fabric to bypass topology.
+
+
+## Transition presentation timing correction
+
+Recorded playtesting exposed two presentation bugs. First, the wrong GuiGraphics blit overload treated the desired screen-space door size as texture-coordinate size, producing a tiled spruce pattern. The door vignette now uses separate destination and 16x16 source dimensions.
+
+Second, sending boundary context and changing dimension in the same server tick could allow the dimension-transition screen to be chosen before the context payload had been handled. Crossings now use a one-tick lead: classify boundary, send context, then perform the matching-coordinate dimension handoff on the following tick. The authored front-door hitbox was also narrowed so breaking the plaster immediately beside the door is classified as a breach rather than a door.
