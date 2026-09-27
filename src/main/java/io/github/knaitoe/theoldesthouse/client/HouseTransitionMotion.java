@@ -11,7 +11,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 @EventBusSubscriber(modid = TheOldestHouse.MOD_ID, value = Dist.CLIENT)
 public final class HouseTransitionMotion {
@@ -51,7 +51,7 @@ public final class HouseTransitionMotion {
 
         if (phase == Phase.PRE) {
             if (System.nanoTime() - phaseStartedAt >= preDurationNanos) {
-                ClientPacketDistributor.sendToServer(
+                PacketDistributor.sendToServer(
                         new HouseTransitionContextAckPayload(token)
                 );
                 phase = Phase.HOLD;
@@ -155,7 +155,7 @@ public final class HouseTransitionMotion {
         phaseStartedAt = System.nanoTime();
 
         if (kind == HouseTransitionKind.DOOR) {
-            ClientPacketDistributor.sendToServer(
+            PacketDistributor.sendToServer(
                     new HouseTransitionContextAckPayload(token)
             );
             phase = Phase.HOLD;
