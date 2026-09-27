@@ -90,6 +90,7 @@ public final class HouseBuilder {
         furnishBasement(level, origin);
         installLighting(level, origin);
 
+        enforceDoorwayClearance(level, origin);
         applyDomesticLootTables(level, origin);
     }
 
@@ -506,38 +507,38 @@ public final class HouseBuilder {
     private static void buildStaircases(ServerLevel level, BlockPos origin) {
         // A one-wide open stair gives the living room back most of its volume.
         // The previous two-wide flight dominated the room visually.
-        for (int z = 4; z <= 8; z++) {
+        for (int z = 2; z <= 6; z++) {
             set(level, origin, 6, 5, z, Blocks.AIR.defaultBlockState());
             set(level, origin, 6, SECOND_FLOOR_Y, z, Blocks.AIR.defaultBlockState());
         }
 
         for (int step = 0; step < 5; step++) {
-            int z = 8 - step;
+            int z = 6 - step;
             int y = 1 + step;
 
             set(level, origin, 6, y, z,
                     Blocks.SPRUCE_STAIRS.defaultBlockState()
                             .setValue(StairBlock.FACING, Direction.NORTH));
 
-            // A rising rail on the open side keeps the stair readable as one
-            // architectural element instead of a stack of blocks.
-            set(level, origin, 7, y + 1, z, Blocks.SPRUCE_FENCE.defaultBlockState());
+            // Keep the rail to the west. The center line at x=7 remains clear
+            // from the front door through the rear-hall doorway.
+            set(level, origin, 5, y + 1, z, Blocks.SPRUCE_FENCE.defaultBlockState());
         }
 
         // Basement access descends from the rear-right utility room.
-        for (int z = 13; z <= 16; z++) {
+        for (int z = 14; z <= 17; z++) {
             set(level, origin, 11, 0, z, Blocks.AIR.defaultBlockState());
         }
 
         for (int step = 0; step < 4; step++) {
-            int z = 13 + step;
+            int z = 14 + step;
             int y = -1 - step;
             set(level, origin, 11, y, z,
                     Blocks.STONE_BRICK_STAIRS.defaultBlockState()
                             .setValue(StairBlock.FACING, Direction.NORTH));
         }
 
-        for (int z = 13; z <= 16; z++) {
+        for (int z = 14; z <= 17; z++) {
             set(level, origin, 10, 1, z, Blocks.SPRUCE_FENCE.defaultBlockState());
             set(level, origin, 12, 1, z, Blocks.SPRUCE_FENCE.defaultBlockState());
         }
@@ -777,8 +778,8 @@ public final class HouseBuilder {
     private static void furnishUtilityRoom(ServerLevel level, BlockPos origin) {
         set(level, origin, 11, 1, 11, Blocks.BARREL.defaultBlockState());
         set(level, origin, 12, 1, 11, Blocks.BARREL.defaultBlockState());
-        set(level, origin, 12, 1, 17, Blocks.CRAFTING_TABLE.defaultBlockState());
-        set(level, origin, 10, 1, 17, Blocks.CAULDRON.defaultBlockState());
+        set(level, origin, 12, 1, 12, Blocks.CRAFTING_TABLE.defaultBlockState());
+        set(level, origin, 10, 1, 12, Blocks.CAULDRON.defaultBlockState());
     }
 
     private static void furnishHall(ServerLevel level, BlockPos origin) {
@@ -865,6 +866,64 @@ public final class HouseBuilder {
             }
 
             set(level, origin, CENTER_X, 1, z, Blocks.RED_CARPET.defaultBlockState());
+        }
+
+        clearCollisionVolume(level, origin, 6, 8, 1, 3, 14, 14);
+        clearCollisionVolume(level, origin, 6, 8, 1, 3, 16, 16);
+    }
+
+    private static void enforceDoorwayClearance(ServerLevel level, BlockPos origin) {
+        // Main front door. Keep both the porch-side and room-side approach free.
+        clearCollisionVolume(level, origin, 6, 8, 1, 3, -1, -1);
+        clearCollisionVolume(level, origin, 6, 8, 1, 3, 1, 2);
+
+        // Ground-floor central hall door. This is the route that the previous
+        // stair/railing pass managed to obstruct.
+        clearCollisionVolume(level, origin, 6, 8, 1, 3, 8, 8);
+        clearCollisionVolume(level, origin, 6, 8, 1, 3, 10, 10);
+
+        // Ground-floor side-room doors at x=5 and x=9, z=13.
+        clearCollisionVolume(level, origin, 4, 4, 1, 3, 12, 14);
+        clearCollisionVolume(level, origin, 6, 6, 1, 3, 12, 14);
+        clearCollisionVolume(level, origin, 8, 8, 1, 3, 12, 14);
+        clearCollisionVolume(level, origin, 10, 10, 1, 3, 12, 14);
+
+        // Upstairs front-bedroom doors.
+        clearCollisionVolume(level, origin, 4, 4, 7, 9, 3, 5);
+        clearCollisionVolume(level, origin, 6, 6, 7, 9, 3, 5);
+        clearCollisionVolume(level, origin, 8, 8, 7, 9, 3, 5);
+        clearCollisionVolume(level, origin, 10, 10, 7, 9, 3, 5);
+
+        // Upstairs rear-bedroom doorway.
+        clearCollisionVolume(level, origin, 6, 8, 7, 9, 9, 9);
+        clearCollisionVolume(level, origin, 6, 8, 7, 9, 11, 11);
+    }
+
+    private static void clearCollisionVolume(
+            ServerLevel level,
+            BlockPos origin,
+            int minX,
+            int maxX,
+            int minY,
+            int maxY,
+            int minZ,
+            int maxZ
+    ) {
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                for (int z = minZ; z <= maxZ; z++) {
+                    BlockPos pos = origin.offset(x, y, z);
+                    BlockState state = level.getBlockState(pos);
+
+                    // Preserve carpets and other zero-collision decoration; only
+                    // structural/furniture blocks capable of physically blocking
+                    // the passage are removed.
+                    if (!state.isAir()
+                            && !state.getCollisionShape(level, pos).isEmpty()) {
+                        level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                    }
+                }
+            }
         }
     }
 

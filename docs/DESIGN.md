@@ -353,3 +353,10 @@ This adaptation affects only the ordinary exterior relationship to terrain. The 
 ### Front approach stair orientation
 
 The adaptive entrance run descends away from the north-facing facade. Stone-brick stair blocks therefore face south, toward the building, so the run rises naturally as the player approaches the porch.
+
+
+## Doorway clearance invariant
+
+Authored domestic doorways are circulation constraints, not decorative suggestions. After all structural, furniture and lighting passes complete, the builder audits protected approach volumes on both sides of every doorway. Any block with a non-empty collision shape inside those approach volumes is removed; zero-collision decoration such as carpet is preserved.
+
+Stairs and railings should be laid out to respect these zones in the first place. The clearance audit is a final invariant check so later architectural additions cannot silently turn a usable doorway into a decorative slot.
