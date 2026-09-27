@@ -39,10 +39,6 @@ public final class HouseTransitionClient {
             ResourceLocation.withDefaultNamespace("textures/block/oak_door_top.png");
     private static final ResourceLocation DOOR_BOTTOM =
             ResourceLocation.withDefaultNamespace("textures/block/oak_door_bottom.png");
-    private static final ResourceLocation WHITE_TERRACOTTA =
-            ResourceLocation.withDefaultNamespace("textures/block/white_terracotta.png");
-    private static final ResourceLocation DARK_OAK =
-            ResourceLocation.withDefaultNamespace("textures/block/stripped_dark_oak_log.png");
 
     private HouseTransitionClient() {
     }
@@ -314,8 +310,8 @@ public final class HouseTransitionClient {
                     entering,
                     token,
                     frame,
-                    entering ? 650L : 500L,
-                    entering ? 850L : 700L
+                    entering ? 360L : 280L,
+                    entering ? 520L : 420L
             );
         }
 
@@ -326,57 +322,44 @@ public final class HouseTransitionClient {
 
         @Override
         public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            double raw = progress();
-            double squeeze = smoothstep(
-                    Math.min(1.0D, raw / (entering ? 0.72D : 0.58D))
-            );
-
             drawCapturedFrame(graphics);
 
-            // The loading screen now continues motion that already began in the
-            // live source world. These are only nearby architectural edges, not
-            // a substitute for camera movement.
-            int sillHeight = lerpInt(
-                    Math.max(3, this.height / 45),
-                    Math.max(16, (int) (this.height * 0.30D)),
-                    squeeze
+            double raw = progress();
+            double p = smoothstep(raw);
+
+            // The source-world camera already performed the actual climb before
+            // teleport. Preserve that real final frame instead of painting fake
+            // block faces over it. Only a little near-camera shadow remains to
+            // soften the frozen handoff.
+            int sideAlpha = (int) (48.0D * Math.sin(Math.min(1.0D, p) * Math.PI));
+            int bottomAlpha = (int) (34.0D * Math.sin(Math.min(1.0D, p) * Math.PI));
+
+            int sideWidth = Math.max(
+                    8,
+                    (int) (this.width * (entering ? 0.055D : 0.040D))
             );
+            int sideColor = (sideAlpha << 24);
+            int bottomColor = (bottomAlpha << 24);
 
-            drawScaledTexture(
-                    graphics,
-                    WHITE_TERRACOTTA,
-                    -10,
-                    this.height - sillHeight,
-                    this.width + 20,
-                    sillHeight + 10
-            );
+            if (entering) {
+                graphics.fill(0, 0, sideWidth, this.height, sideColor);
+            } else {
+                graphics.fill(
+                        this.width - sideWidth,
+                        0,
+                        this.width,
+                        this.height,
+                        sideColor
+                );
+            }
 
-            int jambWidth = Math.max(12, this.width / 16);
-            int travel = (int) (this.width * 0.34D * squeeze);
-            int jambX = entering
-                    ? -jambWidth + travel
-                    : this.width - travel;
-
-            drawScaledTexture(
-                    graphics,
-                    WHITE_TERRACOTTA,
-                    jambX,
-                    -12,
-                    jambWidth,
-                    this.height + 24
-            );
-
-            int shadowWidth = Math.max(2, this.width / 180);
-            int shadowX = entering
-                    ? jambX + jambWidth - shadowWidth
-                    : jambX;
-
+            int bottomHeight = Math.max(6, (int) (this.height * 0.045D));
             graphics.fill(
-                    shadowX,
                     0,
-                    shadowX + shadowWidth,
+                    this.height - bottomHeight,
+                    this.width,
                     this.height,
-                    0xA00E0C0A
+                    bottomColor
             );
         }
     }
@@ -395,8 +378,8 @@ public final class HouseTransitionClient {
                     entering,
                     token,
                     frame,
-                    entering ? 700L : 525L,
-                    entering ? 900L : 725L
+                    entering ? 400L : 300L,
+                    entering ? 560L : 440L
             );
         }
 
@@ -407,65 +390,48 @@ public final class HouseTransitionClient {
 
         @Override
         public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            double raw = progress();
-            double squeeze = smoothstep(
-                    Math.min(1.0D, raw / (entering ? 0.74D : 0.60D))
-            );
-
             drawCapturedFrame(graphics);
 
-            // Live camera motion has already turned the player's shoulder into
-            // the breach. The frozen interval only needs a close wall edge to
-            // continue that trajectory and hide the actual dimension handoff.
-            int wallWidth = Math.max(24, (int) (this.width * 0.20D));
-            int travel = (int) (this.width * 0.38D * squeeze);
-            int wallX = entering
-                    ? -wallWidth + travel
-                    : this.width - travel;
+            double raw = progress();
+            double p = smoothstep(raw);
 
-            drawScaledTexture(
-                    graphics,
-                    WHITE_TERRACOTTA,
-                    wallX,
-                    -14,
-                    wallWidth,
-                    this.height + 28
+            // The shoulder turn and approach happen while the source world is
+            // still live. Keep the captured world intact here and use only a
+            // restrained near-wall shadow to conceal the handoff.
+            double pulse = Math.sin(Math.min(1.0D, p) * Math.PI);
+            int nearAlpha = (int) (58.0D * pulse);
+            int farAlpha = (int) (28.0D * pulse);
+
+            int nearWidth = Math.max(
+                    12,
+                    (int) (this.width * (entering ? 0.075D : 0.055D))
+            );
+            int farWidth = Math.max(
+                    5,
+                    (int) (this.width * 0.025D)
             );
 
-            int timberWidth = Math.max(6, this.width / 70);
-            int timberX = entering
-                    ? wallX + wallWidth - timberWidth
-                    : wallX;
+            int nearColor = (nearAlpha << 24);
+            int farColor = (farAlpha << 24);
 
-            drawScaledTexture(
-                    graphics,
-                    DARK_OAK,
-                    timberX,
-                    -10,
-                    timberWidth,
-                    this.height + 20
-            );
-
-            double late = smoothstep(Math.max(0.0D, (raw - 0.48D) / 0.46D));
-            int oppositeWidth = lerpInt(
-                    0,
-                    Math.max(12, (int) (this.width * 0.10D)),
-                    late
-            );
-
-            if (oppositeWidth > 0) {
-                int oppositeX = entering
-                        ? this.width - oppositeWidth
-                        : 0;
-
-                drawScaledTexture(
-                        graphics,
-                        WHITE_TERRACOTTA,
-                        oppositeX,
-                        -12,
-                        oppositeWidth,
-                        this.height + 24
+            if (entering) {
+                graphics.fill(0, 0, nearWidth, this.height, nearColor);
+                graphics.fill(
+                        this.width - farWidth,
+                        0,
+                        this.width,
+                        this.height,
+                        farColor
                 );
+            } else {
+                graphics.fill(
+                        this.width - nearWidth,
+                        0,
+                        this.width,
+                        this.height,
+                        nearColor
+                );
+                graphics.fill(0, 0, farWidth, this.height, farColor);
             }
         }
     }

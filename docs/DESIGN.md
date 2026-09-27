@@ -290,3 +290,12 @@ Playtesting showed that transforming the captured framebuffer could not convinci
 Window and breach crossings now delay their transition ACK for a few hundred milliseconds while the source world remains live. During that interval, client camera yaw, pitch, roll, and FOV receive small additive offsets through NeoForge viewport events. The HUD remains fixed because this is real camera-space movement rather than framebuffer movement.
 
 At the peak of that motion the client sends the transition acknowledgment. The server then changes dimensions, the receiving screen captures the final source frame, and only restrained architectural edges continue across the shorter frozen interval. When the screen closes, the camera offset decays back to neutral in the destination world.
+
+
+## Prefer real geometry over GUI block textures
+
+The block-texture overlays used for window and breach transitions were rejected after playtesting. Scaling a single 16x16 block texture across a large GUI rectangle destroys the spatial cues supplied by Minecraft's normal world renderer and looks visually broken.
+
+Window and breach transitions now rely on the real source-world geometry during the live camera phase. The final framebuffer already contains the correctly lit and perspective-rendered sill, wall, trim, held item, and surroundings. During the receiving-screen interval, no synthetic block surfaces are painted over that image; only low-opacity edge shadows provide limited occlusion while the destination becomes ready.
+
+The frozen interval is correspondingly shorter.
