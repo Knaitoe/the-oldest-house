@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.22` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.23` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -198,3 +198,17 @@ Bedroom windows have been restored on safe front/side elevations. The rear upper
 Six authored chests now use three custom lazy-generated loot tables: bedroom belongings, study supplies, and basement/workshop supplies. The same deterministic tables are reattached to the House-dimension chest block entities during first interior initialization because the mirror currently synchronizes BlockState rather than general BlockEntity NBT.
 
 The domestic transition envelope now includes the basement and second story while still excluding the roof/attic.
+
+
+### 0.1.23 architectural and terrain-aware generation pass
+
+The static house exterior has been rebuilt around stronger vanilla-build conventions rather than treating the roof as a procedural cap.
+
+- The main roof is now a complete steep deepslate-tile gable with a full one-block overhang, dark-oak front/back bargeboards, a filled plaster gable, central timber framing, and twin attic panes.
+- A separate pitched porch gable creates a second architectural scale over the entrance instead of the old flat porch lid.
+- The facade gains stronger vertical timber bays, projecting dark-oak window sills/headers, and a more grounded stone plinth.
+- The main interior stair is reduced to a one-wide open flight with a rising railing so it no longer consumes the living room as a large central block mass.
+
+Natural spawning now evaluates up to 40 candidate sites and chooses the best rather than accepting the first valid one. Dry footprints and flatter terrain are strongly preferred, while a small amount of nearby water is permitted.
+
+Before construction clears anything, the builder samples the front approach. Porch posts extend down to real terrain. On land, the front stair run extends outward/downward to the sampled ground height. If the approach is substantially water-covered, the front becomes a short supported spruce landing/dock rather than generating stairs into water.

@@ -331,3 +331,20 @@ Authored chests use mod loot tables under `data/the_oldest_house/loot_table/ches
 These tables are deliberately useful but mundane. Deeper impossible-space rewards remain a separate progression system.
 
 Because general block-entity NBT synchronization is not implemented yet, the builder deterministically reapplies the authored loot tables to matching chest block entities when the House interior dimension is initialized.
+
+
+## Architectural language: vanilla-build hierarchy
+
+The static exterior should resemble a deliberately authored Minecraft home before it reads as anomalous. Reference patterns from established survival/Tudor/farmhouse builds inform the implementation: strong timber bays, inset/recessed glazing, a visible masonry base, one-block eaves, a filled gable, separate roof-edge trim, and layered roof masses.
+
+The main roof uses deepslate tile stair courses with a dark-oak bargeboard at the front and rear. The gable itself is plaster-filled and timber-framed instead of being an uninterrupted triangle. The entrance porch has its own smaller pitched gable, producing a clear primary roof / secondary roof hierarchy.
+
+The ground-to-upper stair is intentionally narrow and open-railed. Domestic circulation should not dominate the room as a solid wooden sculpture.
+
+## Terrain-aware siting and porch adaptation
+
+A successful appearance roll now samples forty potential sites and selects the lowest-scoring valid candidate. Candidate scoring strongly penalizes water inside the house footprint and uneven terrain, while allowing nearby shoreline conditions that the exterior can plausibly accommodate.
+
+The builder captures a front-approach terrain profile before clearing blocks. Porch supports extend downward until they meet non-replaceable terrain. On land, the stone-brick entrance stairs gain as many descending courses as needed (within a bounded range) to meet the sampled approach height. If enough front samples are water, the same entrance generates a short three-wide spruce landing/dock with stone-brick supports rather than submerged stairs.
+
+This adaptation affects only the ordinary exterior relationship to terrain. The House footprint, measurements, and domestic/interior topology remain authored and stable.
