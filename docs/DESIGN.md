@@ -238,3 +238,12 @@ Existing chunks generated under the older flat-dimension prototype cannot be rep
 ## Transition sprite scaling correction
 
 The attempted destination-size blit still tiled Minecraft's block texture in recorded testing. The door vignette now draws each 16x16 door half at native GUI size inside a pushed pose, then scales the pose itself to screen dimensions. Only one texture quad exists, so the animation no longer depends on ambiguous blit overload behavior.
+
+
+## Acknowledged transition context
+
+A fixed one-tick lead did not reliably ensure that the client had processed the door/window/breach context before Minecraft created its dimension transition screen.
+
+The transition now uses an explicit handshake. Each crossing gets a unique integer token. The server sends `HouseTransitionContextPayload(kind, token)`; the client stores the kind and immediately replies with `HouseTransitionContextAckPayload(token)`. The server performs the dimension handoff only after the matching acknowledgment returns. A stale or mismatched token is ignored. If no acknowledgment arrives within 40 server ticks, the pending transition is cancelled rather than falling back to an incorrect animation.
+
+This makes presentation selection causally ordered instead of timing-dependent.
