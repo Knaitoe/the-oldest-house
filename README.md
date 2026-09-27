@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.19` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.20` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -167,3 +167,12 @@ The window and breach transitions no longer fake body movement by translating th
 The server now waits while the client performs a short **live source-world camera motion** before acknowledging the transition context. NeoForge camera-angle and FOV events provide a small yaw/pitch/roll lean and forward FOV compression while the world is still genuinely rendering and the HUD remains fixed. Only when that live motion reaches the handoff point does the client ACK, allowing the dimension change.
 
 The receiving screen then captures that final live frame, holds it for a much shorter interval with restrained wall/window-edge occlusion, and the destination camera settles back to neutral after the screen closes.
+
+
+### 0.1.20 real-geometry handoff
+
+Recorded testing showed that the live camera motion worked, but the GUI-rendered white-terracotta and dark-oak overlays did not. A single 16x16 block face stretched across a large screen-space rectangle produced visibly distorted texel density and read as a broken texture rather than nearby Minecraft geometry.
+
+Window and wall-breach transitions therefore no longer draw synthetic block-material surfaces. The real source-world geometry is allowed to provide the window frame, sill, wall, and timber during the live pre-handoff camera movement. The receiving screen holds that genuine final gameplay frame for a much shorter interval and applies only subtle edge shadows to hide the dimension swap.
+
+The front-door treatment remains unchanged because its discrete door-panel animation already reads correctly.
