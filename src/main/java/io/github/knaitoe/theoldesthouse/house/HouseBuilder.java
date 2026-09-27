@@ -162,17 +162,18 @@ public final class HouseBuilder {
         return inRect(x, z, 0, 7, 0, 10)
                 || inRect(x, z, 7, 11, 0, 18)
                 || inRect(x, z, 11, 18, 2, 11)
-                || inRect(x, z, 2, 8, 10, 22)
-                || inRect(x, z, 8, 11, 10, 18)
-                || inRect(x, z, 12, 18, 10, 18);
+                || inRect(x, z, 2, 7, 10, 18)
+                || inRect(x, z, 2, 6, 18, 22)
+                || inRect(x, z, 11, 18, 12, 18);
     }
 
     private static boolean isUpperFootprint(int x, int z) {
         return inRect(x, z, -1, 8, -1, 10)
                 || inRect(x, z, 7, 11, 0, 18)
                 || inRect(x, z, 10, 19, 1, 11)
-                || inRect(x, z, 1, 9, 10, 22)
-                || inRect(x, z, 12, 19, 10, 19);
+                || inRect(x, z, 1, 7, 10, 18)
+                || inRect(x, z, 1, 6, 18, 22)
+                || inRect(x, z, 11, 19, 12, 18);
     }
 
     private static boolean inRect(int x, int z, int minX, int maxX, int minZ, int maxZ) {
@@ -348,8 +349,8 @@ public final class HouseBuilder {
         int[][] groundPosts = {
                 {0, 0}, {7, 0}, {0, 10},
                 {11, 2}, {18, 2}, {18, 11},
-                {2, 22}, {8, 22}, {2, 10},
-                {12, 10}, {18, 10}, {18, 18}, {12, 18},
+                {2, 22}, {6, 22}, {2, 10},
+                {11, 12}, {18, 12}, {18, 18}, {11, 18},
                 {7, 18}, {11, 18}
         };
         for (int[] p : groundPosts) {
@@ -367,8 +368,8 @@ public final class HouseBuilder {
         int[][] upperPosts = {
                 {-1, -1}, {8, -1}, {-1, 10},
                 {10, 1}, {19, 1}, {19, 11},
-                {1, 22}, {9, 22}, {1, 10},
-                {12, 10}, {19, 10}, {19, 19}, {12, 19}
+                {1, 22}, {6, 22}, {1, 10},
+                {11, 12}, {19, 12}, {19, 18}, {11, 18}
         };
         for (int[] p : upperPosts) {
             framePost(level, origin, p[0], p[1], 7, UPPER_WALL_TOP_Y, style.timber());
@@ -376,8 +377,8 @@ public final class HouseBuilder {
 
         frameBeamX(level, origin, -1, 8, -1, 10, style.timber());
         frameBeamX(level, origin, 10, 19, 1, 10, style.timber());
-        frameBeamX(level, origin, 1, 9, 22, 10, style.timber());
-        frameBeamZ(level, origin, 19, 10, 19, 10, style.timber());
+        frameBeamX(level, origin, 1, 6, 22, 10, style.timber());
+        frameBeamZ(level, origin, 19, 12, 18, 10, style.timber());
 
         framePost(level, origin, 7, 3, 1, 4, style.timber());
         framePost(level, origin, 7, 8, 1, 4, style.timber());
@@ -409,10 +410,10 @@ public final class HouseBuilder {
         fillGableFace(level, origin, 10, 19, 1, rightBase,
                 roof.rightRise(), HALL_CENTER_X + 5, style);
 
-        buildFlaredGableX(level, origin, 0, 11, 9, 24,
+        buildFlaredGableX(level, origin, 0, 10, 9, 24,
                 ROOF_BASE_Y, roof.rearRise(), style.roofBlock(), style.roofStair(), style.timber());
 
-        buildHipRoof(level, origin, 11, 20, 9, 20,
+        buildHipRoof(level, origin, 10, 20, 11, 20,
                 ROOF_BASE_Y + 1, roof.towerRise(), style);
 
         int dormerX = roof.dormerLeft() ? 3 : 7;
@@ -834,19 +835,19 @@ public final class HouseBuilder {
 
         set(level, origin, 5, 1, 19, Blocks.CARTOGRAPHY_TABLE.defaultBlockState());
         set(level, origin, 6, 1, 19, Blocks.LECTERN.defaultBlockState());
-        set(level, origin, 7, 1, 20, Blocks.CHEST.defaultBlockState());
-        set(level, origin, 6, 1, 20, Blocks.BARREL.defaultBlockState());
+        set(level, origin, 6, 1, 20, Blocks.CHEST.defaultBlockState());
+        set(level, origin, 5, 1, 20, Blocks.BARREL.defaultBlockState());
 
         carpet(level, origin, Blocks.RED_CARPET.defaultBlockState(), 1,
                 new int[][]{{4, 14}, {5, 14}, {6, 14}, {4, 15}, {5, 15}, {6, 15}});
     }
 
     private static void furnishServiceRoom(ServerLevel level, BlockPos origin) {
-        set(level, origin, 13, 1, 11, Blocks.CAULDRON.defaultBlockState());
-        set(level, origin, 14, 1, 11, Blocks.BARREL.defaultBlockState());
-        set(level, origin, 15, 1, 11, Blocks.BARREL.defaultBlockState());
-        set(level, origin, 17, 1, 12, Blocks.CRAFTING_TABLE.defaultBlockState());
-        set(level, origin, 17, 1, 13, Blocks.BARREL.defaultBlockState());
+        set(level, origin, 13, 1, 12, Blocks.CAULDRON.defaultBlockState());
+        set(level, origin, 14, 1, 12, Blocks.BARREL.defaultBlockState());
+        set(level, origin, 15, 1, 12, Blocks.BARREL.defaultBlockState());
+        set(level, origin, 17, 1, 13, Blocks.CRAFTING_TABLE.defaultBlockState());
+        set(level, origin, 17, 1, 14, Blocks.BARREL.defaultBlockState());
     }
 
     private static void furnishUpperFloor(ServerLevel level, BlockPos origin) {
@@ -873,8 +874,8 @@ public final class HouseBuilder {
         set(level, origin, 3, 7, 20, Blocks.CHEST.defaultBlockState());
         set(level, origin, 2, 7, 12, Blocks.BOOKSHELF.defaultBlockState());
         set(level, origin, 3, 7, 12, Blocks.CHISELED_BOOKSHELF.defaultBlockState());
-        set(level, origin, 7, 7, 19, Blocks.CARTOGRAPHY_TABLE.defaultBlockState());
-        set(level, origin, 7, 7, 20, Blocks.LECTERN.defaultBlockState());
+        set(level, origin, 6, 7, 19, Blocks.CARTOGRAPHY_TABLE.defaultBlockState());
+        set(level, origin, 6, 7, 20, Blocks.LECTERN.defaultBlockState());
         set(level, origin, 2, 7, 18, Blocks.BARREL.defaultBlockState());
         set(level, origin, 2, 8, 18, Blocks.CANDLE.defaultBlockState());
         carpet(level, origin, Blocks.GRAY_CARPET.defaultBlockState(), 7,
@@ -929,7 +930,7 @@ public final class HouseBuilder {
         window(level, origin, 2, 14, 2, 3);
         window(level, origin, 2, 19, 2, 3);
         window(level, origin, 4, 22, 2, 3);
-        window(level, origin, 7, 22, 2, 3);
+        window(level, origin, 6, 22, 2, 3);
 
         window(level, origin, 18, 13, 2, 3);
         window(level, origin, 18, 16, 4, 5);
@@ -945,7 +946,7 @@ public final class HouseBuilder {
         window(level, origin, 1, 4, 8, 9);
         window(level, origin, 18, 5, 8, 9);
         window(level, origin, 3, 22, 8, 9);
-        window(level, origin, 6, 22, 8, 9);
+        window(level, origin, 5, 22, 8, 9);
     }
 
     public static void revealImpossibleDoor(ServerLevel level, BlockPos origin) {
