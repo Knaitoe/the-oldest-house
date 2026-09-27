@@ -78,7 +78,8 @@ public final class HouseTransitionClient {
                     reason,
                     entering,
                     System.nanoTime(),
-                    randomDuration(minMillis, maxMillis)
+                    randomDuration(minMillis, maxMillis),
+                    true
             );
         }
 
@@ -87,7 +88,8 @@ public final class HouseTransitionClient {
                 Reason reason,
                 boolean entering,
                 long openedAt,
-                long minimumVisibleNanos
+                long minimumVisibleNanos,
+                boolean resolvedDuration
         ) {
             super(
                     () -> ready.getAsBoolean()
@@ -324,10 +326,10 @@ public final class HouseTransitionClient {
         int bg = (b >>> 8) & 0xFF;
         int bb = b & 0xFF;
 
-        int ca = lerpInt(aa, ba, t);
-        int cr = lerpInt(ar, br, t);
-        int cg = lerpInt(ag, bg, t);
-        int cb = lerpInt(ab, bb, t);
+        int ca = TimedPassageScreen.lerpInt(aa, ba, t);
+        int cr = TimedPassageScreen.lerpInt(ar, br, t);
+        int cg = TimedPassageScreen.lerpInt(ag, bg, t);
+        int cb = TimedPassageScreen.lerpInt(ab, bb, t);
 
         return (ca << 24) | (cr << 16) | (cg << 8) | cb;
     }
