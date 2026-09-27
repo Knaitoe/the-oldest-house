@@ -254,3 +254,12 @@ This makes presentation selection causally ordered instead of timing-dependent.
 The client transition kind is now token-scoped and persistent for the complete receiving-screen lifetime. Screen factories use a non-destructive peek instead of consuming the value. The context is cleared only when the transition screen's `removed()` lifecycle callback fires for the matching token.
 
 Server-side transition preparation also logs the classified boundary kind and crossing coordinates. This makes future testing diagnostic rather than visual guesswork: if the server reports WINDOW while the client renders DOOR, classification is exonerated and the bug is isolated to client state/rendering.
+
+
+## Physical obstruction transition language
+
+Boundary transition effects should never visually identify themselves as portals.
+
+The front door uses the same oak material as the authored exterior door and briefly fills the view as the player passes it. A window crossing uses only the surrounding white-terracotta sill/jamb because a player capable of crossing that opening has already removed the glass. A generic wall breach uses the authored white-terracotta wall material plus a narrow dark-oak structural edge, leaving only a tight dark gap while the dimension handoff completes.
+
+Entering is intentionally slower and more constricted than leaving. The difference should be perceptible over repeated use without becoming an explicit supernatural announcement.

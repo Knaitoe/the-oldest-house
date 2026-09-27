@@ -25,9 +25,13 @@ import net.neoforged.neoforge.client.event.RegisterDimensionTransitionScreenEven
 )
 public final class HouseTransitionClient {
     private static final ResourceLocation DOOR_TOP =
-            ResourceLocation.withDefaultNamespace("textures/block/spruce_door_top.png");
+            ResourceLocation.withDefaultNamespace("textures/block/oak_door_top.png");
     private static final ResourceLocation DOOR_BOTTOM =
-            ResourceLocation.withDefaultNamespace("textures/block/spruce_door_bottom.png");
+            ResourceLocation.withDefaultNamespace("textures/block/oak_door_bottom.png");
+    private static final ResourceLocation WHITE_TERRACOTTA =
+            ResourceLocation.withDefaultNamespace("textures/block/white_terracotta.png");
+    private static final ResourceLocation DARK_OAK =
+            ResourceLocation.withDefaultNamespace("textures/block/stripped_dark_oak_log.png");
 
     private HouseTransitionClient() {
     }
@@ -142,7 +146,14 @@ public final class HouseTransitionClient {
         private boolean soundPlayed;
 
         private DoorPassageScreen(BooleanSupplier ready, Reason reason, boolean entering, int token) {
-            super(ready, reason, entering, token, 1500L, 1900L);
+            super(
+                    ready,
+                    reason,
+                    entering,
+                    token,
+                    entering ? 1450L : 1000L,
+                    entering ? 1800L : 1325L
+            );
         }
 
         @Override
@@ -224,7 +235,14 @@ public final class HouseTransitionClient {
 
     private static final class WindowPassageScreen extends TimedPassageScreen {
         private WindowPassageScreen(BooleanSupplier ready, Reason reason, boolean entering, int token) {
-            super(ready, reason, entering, token, 1350L, 1750L);
+            super(
+                    ready,
+                    reason,
+                    entering,
+                    token,
+                    entering ? 1350L : 900L,
+                    entering ? 1700L : 1200L
+            );
         }
 
         @Override
@@ -236,45 +254,73 @@ public final class HouseTransitionClient {
         public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
             double p = smoothstep(progress());
 
-            int outside = 0xFFE7EEF2;
-            int inside = 0xFF171717;
+            // The player has already broken the pane if they can physically pass
+            // through it. Do not invent magical glass effects. Instead, hold the
+            // camera against the surrounding wall/sill while they squeeze through.
+            graphics.fill(0, 0, this.width, this.height, 0xFF0E0D0C);
 
-            int from = entering ? outside : inside;
-            int to = entering ? inside : outside;
-            int mixed = mixColor(from, to, p);
+            double squeeze = entering
+                    ? smoothstep(Math.min(1.0D, p / 0.62D))
+                    : smoothstep(Math.min(1.0D, p / 0.48D));
 
-            graphics.fill(0, 0, this.width, this.height, mixed);
+            int sillStart = Math.max(18, (int) (this.height * 0.14D));
+            int sillEnd = Math.max(
+                    sillStart,
+                    (int) (this.height * (entering ? 0.48D : 0.38D))
+            );
+            int sillHeight = lerpInt(sillStart, sillEnd, squeeze);
 
-            int bandAlpha = (int) (90.0D * (1.0D - Math.abs(0.5D - p) * 2.0D));
-            int bandColor = (bandAlpha << 24) | 0x00DDEAF0;
+            drawScaledTexture(
+                    graphics,
+                    WHITE_TERRACOTTA,
+                    -16,
+                    this.height - sillHeight,
+                    this.width + 32,
+                    sillHeight + 16
+            );
 
-            int bandWidth = Math.max(16, this.width / 24);
-            int offset = (int) (p * (this.width + bandWidth * 3));
-            for (int i = -2; i <= 2; i++) {
-                int x = offset + i * bandWidth * 2 - bandWidth * 2;
-                graphics.fill(
-                        x,
-                        0,
-                        x + bandWidth,
-                        this.height,
-                        bandColor
-                );
-            }
+            // One jamb passes close to the face. Which side is arbitrary enough
+            // to vary with travel direction without implying a supernatural effect.
+            int edgeStart = Math.max(24, (int) (this.width * 0.10D));
+            int edgeEnd = Math.max(edgeStart, (int) (this.width * 0.42D));
+            int edgeWidth = lerpInt(edgeStart, edgeEnd, squeeze);
+            int edgeX = entering ? 0 : this.width - edgeWidth;
 
-            int vignetteAlpha = (int) (95.0D * Math.sin(p * Math.PI));
+            drawScaledTexture(
+                    graphics,
+                    WHITE_TERRACOTTA,
+                    edgeX,
+                    -16,
+                    edgeWidth,
+                    this.height + 32
+            );
+
+            // A narrow shadow at the inner edge gives the eye a physical corner
+            // to track as the camera passes the opening.
+            int shadowWidth = Math.max(4, this.width / 120);
+            int shadowX = entering
+                    ? edgeWidth - shadowWidth
+                    : this.width - edgeWidth;
             graphics.fill(
+                    shadowX,
                     0,
-                    0,
-                    this.width,
+                    shadowX + shadowWidth,
                     this.height,
-                    (vignetteAlpha << 24)
+                    0xAA171310
             );
         }
     }
 
     private static final class BreachPassageScreen extends TimedPassageScreen {
         private BreachPassageScreen(BooleanSupplier ready, Reason reason, boolean entering, int token) {
-            super(ready, reason, entering, token, 1400L, 1800L);
+            super(
+                    ready,
+                    reason,
+                    entering,
+                    token,
+                    entering ? 1450L : 950L,
+                    entering ? 1825L : 1275L
+            );
         }
 
         @Override
@@ -285,39 +331,94 @@ public final class HouseTransitionClient {
         @Override
         public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
             double p = smoothstep(progress());
+            graphics.fill(0, 0, this.width, this.height, 0xFF0C0B0A);
 
-            graphics.fill(0, 0, this.width, this.height, 0xFF151311);
+            // A rough hole is represented by nearby real wall material, not by
+            // an iris or portal effect. The passage tightens as the player's face
+            // gets close to the plaster and opens again only when gameplay resumes.
+            double squeeze = entering
+                    ? smoothstep(Math.min(1.0D, p / 0.68D))
+                    : smoothstep(Math.min(1.0D, p / 0.50D));
 
-            int aperture = lerpInt(
-                    Math.max(this.width, this.height),
-                    0,
-                    Math.min(1.0D, p / 0.72D)
+            int gapStart = Math.max(90, (int) (this.width * 0.56D));
+            int gapEnd = Math.max(36, (int) (this.width * (entering ? 0.13D : 0.20D)));
+            int gap = lerpInt(gapStart, gapEnd, squeeze);
+
+            int center = this.width / 2
+                    + (int) ((entering ? -1.0D : 1.0D) * this.width * 0.04D);
+            int leftEdge = center - gap / 2;
+            int rightEdge = center + gap / 2;
+
+            drawScaledTexture(
+                    graphics,
+                    WHITE_TERRACOTTA,
+                    -24,
+                    -24,
+                    leftEdge + 24,
+                    this.height + 48
+            );
+            drawScaledTexture(
+                    graphics,
+                    WHITE_TERRACOTTA,
+                    rightEdge,
+                    -24,
+                    this.width - rightEdge + 24,
+                    this.height + 48
             );
 
-            int left = (this.width - aperture) / 2;
-            int right = (this.width + aperture) / 2;
+            // One exposed timber edge keeps the breach tied to the authored
+            // timber/plaster construction without making every hole identical.
+            int timberWidth = Math.max(10, this.width / 44);
+            int timberX = entering
+                    ? leftEdge - timberWidth
+                    : rightEdge;
+            drawScaledTexture(
+                    graphics,
+                    DARK_OAK,
+                    timberX,
+                    -16,
+                    timberWidth,
+                    this.height + 32
+            );
 
-            graphics.fill(0, 0, left, this.height, 0xFFE1DDD6);
-            graphics.fill(right, 0, this.width, this.height, 0xFFE1DDD6);
-
-            int dustAlpha = (int) (110.0D * Math.sin(p * Math.PI));
-            int dustColor = (dustAlpha << 24) | 0x00C9C0B3;
-
-            for (int i = 0; i < 7; i++) {
-                int y = (i + 1) * this.height / 8;
-                int drift = (int) ((p - 0.5D) * this.width * (0.05D + i * 0.008D));
-                graphics.fill(
-                        this.width / 4 + drift,
-                        y,
-                        this.width * 3 / 4 + drift,
-                        y + Math.max(2, this.height / 90),
-                        dustColor
-                );
-            }
+            // Slightly uneven top/bottom plaster makes the opening feel cut
+            // through a wall rather than generated by a UI mask.
+            int cap = lerpInt(
+                    Math.max(8, this.height / 18),
+                    Math.max(18, this.height / 5),
+                    squeeze
+            );
+            drawScaledTexture(
+                    graphics,
+                    WHITE_TERRACOTTA,
+                    leftEdge,
+                    -8,
+                    Math.max(1, rightEdge - leftEdge),
+                    cap
+            );
+            drawScaledTexture(
+                    graphics,
+                    WHITE_TERRACOTTA,
+                    leftEdge,
+                    this.height - cap,
+                    Math.max(1, rightEdge - leftEdge),
+                    cap + 8
+            );
         }
     }
 
     private static void drawScaledDoorHalf(
+            GuiGraphics graphics,
+            ResourceLocation texture,
+            int x,
+            int y,
+            int width,
+            int height
+    ) {
+        drawScaledTexture(graphics, texture, x, y, width, height);
+    }
+
+    private static void drawScaledTexture(
             GuiGraphics graphics,
             ResourceLocation texture,
             int x,
@@ -333,9 +434,8 @@ public final class HouseTransitionClient {
                 1.0F
         );
 
-        // Draw one 16x16 sprite at its native size, then let the pose transform
-        // enlarge that quad. This makes texture tiling impossible regardless of
-        // GuiGraphics blit overload semantics.
+        // Draw one native 16x16 quad and scale the pose around it. This keeps
+        // every obstruction as one physical-looking surface rather than a tiled UI.
         graphics.blit(
                 texture,
                 0,
@@ -350,24 +450,4 @@ public final class HouseTransitionClient {
         graphics.pose().popPose();
     }
 
-    private static int mixColor(int a, int b, double amount) {
-        double t = Math.max(0.0D, Math.min(1.0D, amount));
-
-        int aa = (a >>> 24) & 0xFF;
-        int ar = (a >>> 16) & 0xFF;
-        int ag = (a >>> 8) & 0xFF;
-        int ab = a & 0xFF;
-
-        int ba = (b >>> 24) & 0xFF;
-        int br = (b >>> 16) & 0xFF;
-        int bg = (b >>> 8) & 0xFF;
-        int bb = b & 0xFF;
-
-        int ca = TimedPassageScreen.lerpInt(aa, ba, t);
-        int cr = TimedPassageScreen.lerpInt(ar, br, t);
-        int cg = TimedPassageScreen.lerpInt(ag, bg, t);
-        int cb = TimedPassageScreen.lerpInt(ab, bb, t);
-
-        return (ca << 24) | (cr << 16) | (cg << 8) | cb;
-    }
 }
