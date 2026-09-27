@@ -360,3 +360,10 @@ The adaptive entrance run descends away from the north-facing facade. Stone-bric
 Authored domestic doorways are circulation constraints, not decorative suggestions. After all structural, furniture and lighting passes complete, the builder audits protected approach volumes on both sides of every doorway. Any block with a non-empty collision shape inside those approach volumes is removed; zero-collision decoration such as carpet is preserved.
 
 Stairs and railings should be laid out to respect these zones in the first place. The clearance audit is a final invariant check so later architectural additions cannot silently turn a usable doorway into a decorative slot.
+
+
+## Stage-aware shared mirror
+
+The boundary between domestic and impossible architecture is exact: the threshold partition at relative z=15 belongs to the stable domestic house and must exist consistently in both the Overworld proxy and the House dimension. Impossible-only geometry begins at relative z=16.
+
+Stage application is not a player block event, so it cannot rely on incremental event-driven mirror queues. Whenever a stage changes shared domestic architecture, the House dimension explicitly synchronizes the shared domestic footprint back into the Overworld. Positions classified as impossible/interior-only are skipped, so the physical hallway remains absent from the Overworld while its doorway and surrounding partition remain visually consistent.

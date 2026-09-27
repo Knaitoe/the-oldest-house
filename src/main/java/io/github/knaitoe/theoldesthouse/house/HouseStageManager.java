@@ -31,6 +31,15 @@ public final class HouseStageManager {
             HouseImpossibleHallway.build(interior, origin);
             data.markImpossibleDoorRevealed();
 
+            // The impossible hallway itself remains interior-only, but the
+            // threshold partition at z+15 is ordinary domestic architecture
+            // and must immediately agree in both dimensions.
+            HouseDimensionMirror.syncSharedDomesticRegion(
+                    interior,
+                    server.overworld(),
+                    origin
+            );
+
             TheOldestHouse.LOGGER.info(
                     "The first impossible doorway and direct hallway in The Oldest House have been revealed at perceived age {}.",
                     data.houseAge()

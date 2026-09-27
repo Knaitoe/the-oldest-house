@@ -65,7 +65,7 @@ public final class HouseImpossibleHallway {
                 && relX <= RIGHT_WALL_X_OFFSET
                 && relY >= 0
                 && relY <= 5
-                && relZ >= 15
+                && relZ >= START_Z_OFFSET
                 && relZ <= END_Z_OFFSET;
     }
 
