@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.1.16` implements the first stable lifecycle and redesigned domestic shell:
+Version `0.1.17` implements the first stable lifecycle and redesigned domestic shell:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -133,3 +133,18 @@ The three boundary transitions now share one presentation rule: the player's vie
 - Window crossings show the nearby white-terracotta sill/jamb moving close to the camera; the old exposure/refraction effect has been removed.
 - Wall breaches show white-terracotta wall faces with a narrow stripped-dark-oak structural edge as the player squeezes through the hole; the old iris/dust effect has been removed.
 - Entering The Oldest House is intentionally a little slower/tighter than leaving it.
+
+
+### 0.1.17 captured-frame transitions
+
+Transition screens now begin from a GPU capture of the actual final gameplay frame rather than replacing the player's view with a synthetic background.
+
+When NeoForge requests the receiving-level screen, the client captures Minecraft's main render target with `Screenshot.takeScreenshot`, registers that image as a temporary dynamic texture, and holds it behind the physical obstruction while the destination dimension loads. The temporary texture is released when the receiving screen closes.
+
+Door, window, and wall-breach overlays are therefore contextual interruptions of the player's real view:
+
+- **door:** the oak door moves across the captured scene;
+- **window:** the captured scene remains visible while a sill and jamb move close to the camera;
+- **breach:** the real hole/view remains visible while plaster and a timber edge tighten around it.
+
+The captured frame is rendered with an explicit normalized-UV quad instead of `GuiGraphics.blit`, avoiding the texture-scaling ambiguity encountered in earlier prototypes.
