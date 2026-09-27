@@ -1,7 +1,6 @@
 package io.github.knaitoe.theoldesthouse.house;
 
 import static io.github.knaitoe.theoldesthouse.house.HouseCanvas.log;
-import static io.github.knaitoe.theoldesthouse.house.HouseCanvas.slab;
 import static io.github.knaitoe.theoldesthouse.house.HouseCanvas.stairs;
 import static io.github.knaitoe.theoldesthouse.house.HouseCanvas.stairsTop;
 
@@ -12,7 +11,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.SlabType;
 
 /**
  * Architecture of The Oldest House: masses, floors, walls, the stair tower,
@@ -335,13 +333,14 @@ final class HouseShell {
     /** A plainer kitchen stack on the east wall behind the range. */
     private static void buildKitchenChimney(HouseCanvas c) {
         c.fill(28, 0, 6, 29, 0, 10, STONE);
-        c.fill(28, 1, 7, 29, 8, 9, BRICK);
-        for (int z = 7; z <= 9; z++) {
-            c.set(29, 9, z, stairs(Blocks.BRICK_STAIRS, Direction.WEST));
+        c.fill(28, 1, 7, 29, 9, 9, BRICK);
+        for (int x = 28; x <= 29; x++) {
+            c.set(x, 10, 9, stairs(Blocks.BRICK_STAIRS, Direction.NORTH));
         }
-        c.fill(28, 9, 7, 28, 15, 9, BRICK);
-        c.fill(28, 16, 7, 29, 16, 9, BRICK);
-        chimneyPot(c, 28, 17, 8);
+        c.fill(28, 10, 7, 29, 15, 8, BRICK);
+        c.fill(28, 16, 6, 29, 16, 9, BRICK);
+        chimneyPot(c, 28, 17, 7);
+        chimneyPot(c, 29, 17, 8);
     }
 
     private static void chimneyPot(HouseCanvas c, int x, int y, int z) {
@@ -358,14 +357,20 @@ final class HouseShell {
         floorBeams(c);
         cornerPosts(c);
         explicitFraming(c);
+        blockedWindows(c);
         towerMasonry(c);
         porchTimber(c);
     }
 
+    /**
+     * Open air outside the building: not in a room, and not in a doorway or
+     * other opening within a storey's walls.
+     */
     private static boolean isExteriorCell(HouseCanvas c, int x, int y, int z) {
         return HouseLayout.isWithinEnvelope(x, y, z)
                 && c.isAir(x, y, z)
-                && !HouseLayout.isRoomInterior(x, y, z);
+                && !HouseLayout.isRoomInterior(x, y, z)
+                && !HouseLayout.isWithinMass(x, y, z);
     }
 
     private static boolean facesOutward(HouseCanvas c, int x, int y, int z, Face face) {
@@ -464,27 +469,27 @@ final class HouseShell {
      */
     private static void explicitFraming(HouseCanvas c) {
         // Great room.
-        frame(c, Face.NORTH, 0, 0, 13, 1, 5, new int[]{0, 3, 10, 13}, new int[]{4});
-        frame(c, Face.NORTH, -2, 4, 9, 1, 4, new int[]{4, 9}, new int[]{4});
-        frame(c, Face.WEST, 4, -1, -1, 1, 5, new int[]{}, new int[]{4});
-        frame(c, Face.EAST, 9, -1, -1, 1, 5, new int[]{}, new int[]{4});
+        frame(c, Face.NORTH, 0, 0, 13, 1, 5, new int[]{0, 3, 10, 13}, new int[]{});
+        frame(c, Face.NORTH, -2, 4, 9, 1, 4, new int[]{4, 9}, new int[]{});
+        frame(c, Face.WEST, 4, -1, -1, 1, 5, new int[]{}, new int[]{});
+        frame(c, Face.EAST, 9, -1, -1, 1, 5, new int[]{}, new int[]{});
         frame(c, Face.NORTH, -1, 0, 13, 7, 10, new int[]{0, 5, 8, 13}, new int[]{7, 10});
         frame(c, Face.WEST, 0, 0, 15, 1, 5, new int[]{0, 3, 5, 10, 12, 15}, new int[]{2});
         frame(c, Face.WEST, 0, -1, 15, 7, 10, new int[]{-1, 1, 4, 11, 14, 15}, new int[]{7, 10});
-        frame(c, Face.EAST, 13, 0, 3, 1, 5, new int[]{0, 3}, new int[]{4});
+        frame(c, Face.EAST, 13, 0, 3, 1, 5, new int[]{0, 3}, new int[]{});
 
         // Entrance and hall.
         frame(c, Face.NORTH, HouseLayout.FRONT_DOOR_Z, 13, 17, 4, 5, new int[]{}, new int[]{4});
-        frame(c, Face.WEST, 17, 1, 3, 1, 5, new int[]{1, 3}, new int[]{4});
+        frame(c, Face.WEST, 17, 1, 3, 1, 5, new int[]{1, 3}, new int[]{});
         frame(c, Face.NORTH, 0, 13, 17, 7, 10, new int[]{13, 17}, new int[]{7, 10});
         frame(c, Face.SOUTH, HouseLayout.THRESHOLD_Z, 13, 17, 7, 10, new int[]{13, 15, 17}, new int[]{10});
         frame(c, Face.SOUTH, HouseLayout.THRESHOLD_Z, 13, 13, 1, 5, new int[]{13}, new int[]{});
         frame(c, Face.SOUTH, HouseLayout.THRESHOLD_Z, 17, 17, 1, 5, new int[]{17}, new int[]{});
 
         // Kitchen wing.
-        frame(c, Face.NORTH, 1, 17, 27, 1, 5, new int[]{17, 18, 22, 23, 26, 27}, new int[]{4});
+        frame(c, Face.NORTH, 1, 17, 27, 1, 5, new int[]{17, 18, 22, 23, 26, 27}, new int[]{});
         frame(c, Face.NORTH, 1, 17, 27, 7, 8, new int[]{17, 20, 24, 27}, new int[]{7});
-        frame(c, Face.EAST, 27, 1, 12, 1, 5, new int[]{1, 2, 5, 6, 9, 12}, new int[]{4});
+        frame(c, Face.EAST, 27, 1, 12, 1, 5, new int[]{1, 2, 5, 6, 9, 12}, new int[]{});
         frame(c, Face.EAST, 27, 1, 12, 7, 8, new int[]{1, 6, 10, 12}, new int[]{8});
         frame(c, Face.SOUTH, 12, 25, 27, 1, 8, new int[]{25, 27}, new int[]{3, 8});
 
@@ -495,16 +500,16 @@ final class HouseShell {
         frame(c, Face.SOUTH, 20, 17, 24, 9, 14, new int[]{17, 20, 24}, new int[]{14});
 
         // Study wing.
-        frame(c, Face.WEST, 1, 15, 26, 1, 5, new int[]{16, 19, 21, 24, 26}, new int[]{4});
+        frame(c, Face.WEST, 1, 15, 26, 1, 5, new int[]{16, 19, 21, 24, 26}, new int[]{});
         frame(c, Face.WEST, 1, 15, 26, 7, 9, new int[]{15, 18, 23, 26}, new int[]{7, 9});
-        frame(c, Face.SOUTH, 26, 1, 13, 1, 5, new int[]{1, 3, 4, 9, 11, 13}, new int[]{3});
-        frame(c, Face.SOUTH, 26, 1, 13, 7, 9, new int[]{1, 3, 4, 9, 11, 13}, new int[]{9});
+        frame(c, Face.SOUTH, 26, 1, 13, 1, 5, new int[]{1, 4, 9, 12, 13}, new int[]{});
+        frame(c, Face.SOUTH, 26, 1, 13, 7, 9, new int[]{1, 4, 9, 13}, new int[]{9});
 
         // Service range.
-        frame(c, Face.EAST, 27, 20, 25, 1, 5, new int[]{20, 21, 24, 25}, new int[]{4});
+        frame(c, Face.EAST, 27, 20, 25, 1, 5, new int[]{20, 21, 24, 25}, new int[]{});
         frame(c, Face.EAST, 27, 20, 25, 7, 8, new int[]{20, 21, 24, 25}, new int[]{8});
-        frame(c, Face.NORTH, 20, 24, 27, 1, 5, new int[]{27}, new int[]{4});
-        frame(c, Face.SOUTH, 25, 17, 27, 1, 5, new int[]{22, 27}, new int[]{4});
+        frame(c, Face.NORTH, 20, 24, 27, 1, 5, new int[]{27}, new int[]{});
+        frame(c, Face.SOUTH, 25, 17, 27, 1, 5, new int[]{22, 25, 27}, new int[]{});
         frame(c, Face.SOUTH, 25, 17, 27, 7, 8, new int[]{22, 27}, new int[]{8});
     }
 
@@ -544,6 +549,30 @@ final class HouseShell {
                 }
             }
         }
+    }
+
+    /**
+     * The rear elevation carries no glass: the impossible hallway will run
+     * south from the threshold and must never be visible from an ordinary
+     * window. Instead it has old openings bricked up long ago, framed in
+     * timber like the rest, which also reads true of a house this old.
+     */
+    private static void blockedWindows(HouseCanvas c) {
+        blockedWindow(c, Face.SOUTH, 26, 2, 3, 2, 3);
+        blockedWindow(c, Face.SOUTH, 26, 10, 11, 2, 3);
+        blockedWindow(c, Face.SOUTH, 26, 2, 3, 8, 8);
+        blockedWindow(c, Face.SOUTH, HouseLayout.THRESHOLD_Z, HouseLayout.AXIS_X, HouseLayout.AXIS_X, 8, 9);
+        blockedWindow(c, Face.SOUTH, 25, 23, 24, 2, 3);
+    }
+
+    private static void blockedWindow(HouseCanvas c, Face face, int plane, int a0, int a1, int y0, int y1) {
+        boolean horizontal = face == Face.NORTH || face == Face.SOUTH;
+        for (int a = a0; a <= a1; a++) {
+            for (int y = y0; y <= y1; y++) {
+                c.set(horizontal ? a : plane, y, horizontal ? plane : a, BRICK);
+            }
+        }
+        frame(c, face, plane, a0 - 1, a1 + 1, y0, y1, new int[]{a0 - 1, a1 + 1}, new int[]{});
     }
 
     /** The stair tower's exposed yard face is masonry up to the floor line. */
@@ -599,8 +628,8 @@ final class HouseShell {
     }
 
     /**
-     * Sills and drip hoods give the glazing depth. They are added after the
-     * roofs so they can never take a roof course's cell.
+     * Projecting sills give the ground-floor glazing depth. They are added
+     * after the roofs so they can never take a roof course's cell.
      */
     static void trimWindows(HouseCanvas c) {
         for (Window window : HouseLayout.WINDOWS) {
@@ -615,18 +644,16 @@ final class HouseShell {
                 case WEST -> Direction.WEST;
             };
 
+            if (window.y0() > 3) {
+                continue; // Upper windows sit on the sill rail of the framing.
+            }
+
             for (int a = window.a0(); a <= window.a1(); a++) {
                 int x = window.x(a) + outward.getStepX();
                 int z = window.z(a) + outward.getStepZ();
-
                 int sillY = window.y0() - 1;
                 if (isExteriorCell(c, x, sillY, z)) {
                     c.set(x, sillY, z, stairsTop(Blocks.DARK_OAK_STAIRS, outward.getOpposite()));
-                }
-
-                int hoodY = window.y1() + 1;
-                if (hoodY <= 5 && isExteriorCell(c, x, hoodY, z)) {
-                    c.set(x, hoodY, z, slab(Blocks.DARK_OAK_SLAB, SlabType.BOTTOM));
                 }
             }
         }

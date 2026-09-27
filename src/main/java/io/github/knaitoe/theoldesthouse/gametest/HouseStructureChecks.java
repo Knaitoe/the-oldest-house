@@ -37,6 +37,7 @@ final class HouseStructureChecks {
         failures.addAll(sightlineIsClear());
         failures.addAll(thresholdIsOrdinaryWall());
         failures.addAll(noRoofInsideRooms());
+        failures.addAll(roofsAreContinuous());
         failures.addAll(roomsAreEnclosed());
         failures.addAll(windowsAreGlazed());
         failures.addAll(doorsAreComplete());
@@ -100,6 +101,36 @@ final class HouseStructureChecks {
                             failures.add("roof block inside " + room.name() + " at " + rel(x, y, z));
                         }
                     }
+                }
+            }
+        }
+        return limit(failures);
+    }
+
+    /**
+     * Every column under a roof must be capped at (or above) the highest roof
+     * surface planned for it; anything lower is a visible hole in the roof.
+     */
+    List<String> roofsAreContinuous() {
+        List<String> failures = new ArrayList<>();
+        for (int x = HouseLayout.MIN_X; x <= HouseLayout.MAX_X; x++) {
+            for (int z = HouseLayout.CLEAR_MIN_Z; z <= HouseLayout.MAX_Z; z++) {
+                int highest = Integer.MIN_VALUE;
+                for (HouseLayout.Roof roof : HouseLayout.ROOFS) {
+                    if (roof.covers(x, z)) {
+                        highest = Math.max(highest, roof.height(x, z));
+                    }
+                }
+                if (highest == Integer.MIN_VALUE) {
+                    continue;
+                }
+
+                int top = HouseLayout.MAX_Y;
+                while (top > HouseLayout.MIN_Y && get(x, top, z).isAir()) {
+                    top--;
+                }
+                if (top < highest) {
+                    failures.add("roof hole at " + rel(x, highest, z) + " (column tops out at y=" + top + ")");
                 }
             }
         }
