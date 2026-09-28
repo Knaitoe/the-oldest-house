@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.knaitoe.theoldesthouse.house.HouseBetweenRoom;
 import io.github.knaitoe.theoldesthouse.house.HouseBuilder;
@@ -11,11 +12,12 @@ import io.github.knaitoe.theoldesthouse.house.HouseDimensionMirror;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseInteriorInitializer;
 import io.github.knaitoe.theoldesthouse.house.HouseLayout;
+import io.github.knaitoe.theoldesthouse.house.HouseMemory;
 import io.github.knaitoe.theoldesthouse.house.HouseMirrorSyncEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseProgression;
+import io.github.knaitoe.theoldesthouse.house.HouseShifts;
 import io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
-import io.github.knaitoe.theoldesthouse.house.HouseStageManager;
 import io.github.knaitoe.theoldesthouse.network.HouseSightlineStatePayload;
 import io.github.knaitoe.theoldesthouse.opening.NavidsonPhoto;
 import io.github.knaitoe.theoldesthouse.opening.OpeningSequence;
@@ -34,6 +36,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 
 public final class HouseCommands {
     private HouseCommands() {
@@ -78,6 +81,7 @@ public final class HouseCommands {
                                         .executes(context -> reveal(context.getSource(), "room")))
                                 .then(Commands.literal("hallway")
                                         .executes(context -> reveal(context.getSource(), "hallway"))))
+                        .then(shiftCommand())
                         .then(Commands.literal("restock")
                                 .executes(context -> restock(context.getSource())))
                         .then(Commands.literal("visit")
@@ -121,7 +125,6 @@ public final class HouseCommands {
 
         HouseBuilder.build(level, origin);
         data.markSpawned(origin);
-        HouseStageManager.applyCurrentStage(source.getServer(), data);
 
         source.sendSuccess(
                 () -> Component.literal(
@@ -241,6 +244,34 @@ public final class HouseCommands {
         return 1;
     }
 
+    /** {@code /oldesthouse shift [kind]}: one subtle change now, picked by weight or named. */
+    private static LiteralArgumentBuilder<CommandSourceStack> shiftCommand() {
+        LiteralArgumentBuilder<CommandSourceStack> shift = Commands.literal("shift")
+                .executes(context -> shift(context.getSource(), null));
+        for (HouseShifts.Shift kind : HouseShifts.Shift.values()) {
+            shift.then(Commands.literal(kind.id()).executes(context -> shift(context.getSource(), kind)));
+        }
+        return shift;
+    }
+
+    private static int shift(CommandSourceStack source, @Nullable HouseShifts.Shift kind) {
+        HouseSavedData data = HouseSavedData.get(source.getServer());
+        if (!data.isSpawned()) {
+            source.sendFailure(Component.literal("The Oldest House has not spawned yet."));
+            return 0;
+        }
+        String change = HouseShifts.trigger(source.getServer(), data, kind);
+        if (change == null) {
+            source.sendFailure(Component.literal(kind == null
+                    ? "Nothing in the house can change right now (everything may be in view)."
+                    : kind.id() + " cannot happen right now: it may be in view, used up, or have nothing to change."));
+            return 0;
+        }
+        source.sendSuccess(() -> Component.literal("The house changed: " + change + ". Subtle changes so far: "
+                + data.shiftsTriggered() + "."), true);
+        return 1;
+    }
+
     private static int reveal(CommandSourceStack source, String what) {
         String error = HouseProgression.reveal(source.getServer(), what);
         if (error != null) {
@@ -254,7 +285,6 @@ public final class HouseCommands {
     private static int setAge(CommandSourceStack source, int days) {
         HouseSavedData data = HouseSavedData.get(source.getServer());
         data.setHouseAge(days);
-        HouseStageManager.applyCurrentStage(source.getServer(), data);
 
         source.sendSuccess(
                 () -> Component.literal("The Oldest House age set to " + days + " day(s)."),
@@ -274,7 +304,6 @@ public final class HouseCommands {
         }
 
         int newAge = data.advanceHouseAge(days);
-        HouseStageManager.applyCurrentStage(source.getServer(), data);
         source.sendSuccess(
                 () -> Component.literal(
                         "Advanced The Oldest House by " + days + " day(s). Perceived age is now " + newAge + " day(s)."
@@ -331,6 +360,8 @@ public final class HouseCommands {
         CommandSourceStack source = context.getSource();
         HouseSavedData data = HouseSavedData.get(source.getServer());
         data.reset();
+        HouseShifts.refreshCache(data);
+        HouseMemory.get(source.getServer()).clear();
         HouseMirrorSyncEvents.clearPending();
         HouseInteriorInitializer.cancel();
         HouseTransitionEvents.clearAll();

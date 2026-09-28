@@ -14,7 +14,13 @@ public final class HouseConfig {
     public static final ModConfigSpec.IntValue ROOM_MIN_MORNINGS_AFTER_RUGS;
     public static final ModConfigSpec.IntValue ROOM_BASE_CHANCE;
     public static final ModConfigSpec.IntValue ROOM_CHANCE_STEP;
-    public static final ModConfigSpec.IntValue HALLWAY_MORNINGS_AFTER_ROOM;
+    public static final ModConfigSpec.IntValue SHIFTS_BEFORE_HALLWAY;
+    public static final ModConfigSpec.IntValue HALLWAY_BASE_CHANCE;
+    public static final ModConfigSpec.IntValue HALLWAY_CHANCE_STEP;
+    public static final ModConfigSpec.IntValue SHIFT_BASE_CHANCE;
+    public static final ModConfigSpec.IntValue SHIFT_CHANCE_STEP;
+    public static final ModConfigSpec.IntValue SHIFT_BASE_CHANCE_AFTER_HALLWAY;
+    public static final ModConfigSpec.IntValue SHIFT_CHANCE_STEP_AFTER_HALLWAY;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -31,9 +37,29 @@ public final class HouseConfig {
         ROOM_CHANCE_STEP = builder
                 .comment("Percent added to that chance for every eligible morning it did not appear.")
                 .defineInRange("roomChanceStep", 25, 0, 100);
-        HALLWAY_MORNINGS_AFTER_ROOM = builder
-                .comment("Mornings after the room appears before the impossible hallway opens at the end of the hall.")
-                .defineInRange("hallwayMorningsAfterRoom", 3, 0, 1000);
+        SHIFTS_BEFORE_HALLWAY = builder
+                .comment("Subtle changes (paintings, candles, a door's hinge...) that must happen, after the room",
+                        "between rooms, before the impossible hallway can open.")
+                .defineInRange("shiftsBeforeHallway", 2, 0, 100);
+        HALLWAY_BASE_CHANCE = builder
+                .comment("Percent chance the hallway opens on its first eligible morning. It is rolled before any",
+                        "subtle change, so it outweighs them.")
+                .defineInRange("hallwayBaseChance", 50, 0, 100);
+        HALLWAY_CHANCE_STEP = builder
+                .comment("Percent added to the hallway's chance for every eligible morning it stays shut.")
+                .defineInRange("hallwayChanceStep", 25, 0, 100);
+        SHIFT_BASE_CHANCE = builder
+                .comment("Percent chance of a subtle change on a morning when nothing larger happens, before the hallway.")
+                .defineInRange("shiftBaseChance", 45, 0, 100);
+        SHIFT_CHANCE_STEP = builder
+                .comment("Percent added to that chance for every quiet morning in a row.")
+                .defineInRange("shiftChanceStep", 20, 0, 100);
+        SHIFT_BASE_CHANCE_AFTER_HALLWAY = builder
+                .comment("The same chance once the hallway is open: the house keeps changing, less often.")
+                .defineInRange("shiftBaseChanceAfterHallway", 25, 0, 100);
+        SHIFT_CHANCE_STEP_AFTER_HALLWAY = builder
+                .comment("Percent added per quiet morning in a row once the hallway is open.")
+                .defineInRange("shiftChanceStepAfterHallway", 15, 0, 100);
         SPEC = builder.build();
     }
 

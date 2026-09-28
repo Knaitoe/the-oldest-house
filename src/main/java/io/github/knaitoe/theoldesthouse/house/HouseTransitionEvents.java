@@ -197,6 +197,9 @@ public final class HouseTransitionEvents {
             return true;
         }
 
+        if (HouseShifts.isInDeepenedHall(origin, player.getX(), player.getY(), player.getZ())) {
+            return true;
+        }
         return data.isImpossibleDoorRevealed()
                 && HouseImpossibleHallway.isInsideWalkableVolume(origin, player.getX(), player.getY(), player.getZ());
     }

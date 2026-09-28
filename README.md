@@ -18,7 +18,8 @@ Version `0.3.5` revises the per-player opening sequence so the ordinary manor, n
 - The Oldest House's perceived age advances only after at least one real manor entry. Ignoring the invitation cannot reveal the impossible threshold off-screen.
 - **The first night spent in the manor:** pairs of rugs trade colours between rooms.
 - **Around day 3:** a door appears in the partition between the two upstairs bedrooms. The wall is one block thick and the other side is bookshelves; the door opens onto a windowless sitting room that cannot fit there. It is the manor's first teleport door.
-- **A few mornings later:** an ordinary-looking door appears at the far end of the central hall, opening onto the impossible hallway.
+- **Subtle changes, from the first night on:** paintings trade walls, a candle nobody lit is burning, a chair turns to face a door, a note from the Navidsons turns up on a shelf, the hall is one step longer, and more. Nothing changes while anyone is looking.
+- **After the room and two subtle changes:** the door at the far end of the central hall gets a heavily weighted daily chance of opening onto the impossible hallway. The subtle changes carry on afterwards, less often.
 - The usable domestic interior lives in The Oldest House dimension at matching coordinates, with nearby Overworld scenery mirrored outside its windows.
 - The hallway door at the end of the hall opens directly into interior-only impossible architecture; there is no teleport behind it.
 - Operator-only development commands exist for opening-sequence testing, forcing/aging the House, and mirror inspection.
@@ -50,11 +51,24 @@ What the mornings bring, all tunable in `the_oldest_house-house-server.toml`:
 
 1. **Rugs:** the morning after someone first sleeps in a manor bed, the great room and principal bedroom rugs trade colours, and so do the study's and literary bedroom's. Only carpet still where the house laid it changes. If nobody sleeps there, they change at perceived age 2 anyway.
 2. **The room between rooms:** from the morning after the rugs, each morning has a 35% chance of the bedroom door appearing, rising by 25 points each morning it does not (35, 60, 85, 100): usually around day 3. `/oldesthouse status` shows the chance for the next morning.
-3. **The impossible hallway:** three mornings after the room, the door at the end of the hall opens onto it, where it always has.
+3. **Subtle changes** (`HouseShifts`): from the rugs on, on any morning when nothing larger happens, there is a 45% chance of one, rising by 20 points each quiet morning in a row and falling back after one happens. Each only touches what no player can see (in range, in a wide view cone and in line of sight):
+   - **Paintings** trade walls with one of the same size, or one hangs a block over.
+   - **The hall** is one block longer (once): the end wall moves back into space only the House dimension has, and the last slice of hall repeats in front of it. Outside, and in the Overworld proxy, nothing changes.
+   - **Doors:** one hangs from its other side, and any left open are shut.
+   - **Chests:** the first time one of the manor's own chests or barrels is opened, the house remembers what was in it. Later it may put one common thing back (bread, string, a candle; never a tool, book or anything named or enchanted), only into an emptied slot, never the same slot twice.
+   - **Candles:** one nobody lit is burning.
+   - **Echoes:** the next time someone is across the house from the principal bedroom, they alone hear its door open and close, or footsteps crossing the upper hall and a door shutting.
+   - **Chairs:** one turns a quarter to face a door (upstairs, the room between rooms' door once it exists).
+   - **Notes:** a written book from Will or Karen Navidson turns up on a shelf, preferably in the literary bedroom: Will measuring the house, a different number each time; Karen watching him. Later notes wait for the rugs, the room, the deeper hall or the hallway.
+   - **A guest bed** (one nobody's spawn is set in) changes colour, to the colour of a player's own bed at home if one is loaded.
+   - **A window:** an invisible light sits behind one upstairs window of the Overworld proxy, preferring the side facing a player's home. From outside at night the window is lit; inside, the room is as dark as ever.
+4. **The impossible hallway:** once the room exists and two subtle changes have happened, it gets its own roll each morning, ahead of the subtle changes: 50%, rising by 25 each morning it stays shut. When it opens, the door is at the end of the hall where it always has been (a deepened hall's extra block becomes its threshold). Afterwards subtle changes carry on at 25% (+15 per quiet morning).
+
+At most one of these happens on any morning.
 
 The room lives in `the_oldest_house:between` at the same coordinates as the bedroom. Clicking the door moves the player there through the usual door transition; a copy of the bedroom stands in front of the same door, now open, with the room behind it. Walking back out through the doorway returns them to the real bedroom, where the door has always been shut. The real door never opens, the wall and shelves around it cannot be broken, and nothing in the copied bedroom can be used.
 
-For testing, `/oldesthouse day [n]` passes whole nights as if everyone online slept (in the manor if they are standing in it), and `/oldesthouse reveal rugs|room|hallway` forces a stage. `/oldesthouse age` and `/oldesthouse advance` still set perceived age directly, without running mornings.
+For testing, `/oldesthouse day [n]` passes whole nights as if everyone online slept (in the manor if they are standing in it), `/oldesthouse reveal rugs|room|hallway` forces a stage, and `/oldesthouse shift [kind]` makes one subtle change now (a random one, or `paintings`, `deeper_hall`, `doors`, `chests`, `candles`, `echoes`, `chairs`, `notes`, `guest_bed`, `window`). `/oldesthouse age` and `/oldesthouse advance` still set perceived age directly, without running mornings.
 
 ### Dimension-backed domestic interior
 
@@ -88,6 +102,7 @@ Commands require permission level 2.
 | `/oldesthouse status` | Show the House's state, the mod's day count, the rugs, the room's chance of appearing next morning, when the hallway opens, and your own opening progress. |
 | `/oldesthouse day [n]` | Pass one (or `n`) nights as the mod sees them: the clock jumps to dawn, everyone online counts as having slept, and each morning runs as a real one would (opening steps, House age, rugs, the room's roll, the hallway). Stops early while Navidson's photo develops. |
 | `/oldesthouse reveal rugs\|room\|hallway` | Force that stage now. |
+| `/oldesthouse shift [kind]` | Make one subtle change now: random by weight, or the named one. Fails if what it would change is in someone's view. |
 | `/oldesthouse age <days>` | Set The Oldest House perceived age to an exact value (does not run mornings). |
 | `/oldesthouse advance` | Advance The Oldest House perceived age by one day. |
 | `/oldesthouse advance <days>` | Fast-forward The Oldest House perceived age by the supplied number of days. |
@@ -417,6 +432,6 @@ The opening has been revised so the player's own home remains ordinary.
 - Mirrored projections no longer copy data attachments, so a projection of Hillary can't be tamed or treated as Hillary.
 - Navidson's photograph stops searching camera spots once it has a good view, avoiding a one-tick lag spike.
 - Days are counted by the mod, so `/time set` can no longer stall the opening, and sleeping in a manor bed now passes the night.
-- The first night in the manor shifts the rugs; around day 3 the room between rooms appears; the impossible hallway follows three mornings later, at the end of the hall as before.
+- The first night in the manor shifts the rugs; around day 3 the room between rooms appears; ten kinds of subtle change follow on quiet mornings; after the room and two of them, the impossible hallway gets a heavily weighted daily roll, at the end of the hall as before. Subtle changes continue after it opens.
 - `/oldesthouse day [n]`, `/oldesthouse reveal rugs|room|hallway`, and a fuller `/oldesthouse status`.
 - Every chest and barrel in the manor now has a loot table for its room: pantry food in the kitchen, bottles and bowls in the scullery, candles and odds and ends in the parlour and landings, books and ink in the literary bedroom, fletching and scrap metal in the maker loft, moth-eaten leftovers in the box room. `/oldesthouse restock` applies them to an existing house.

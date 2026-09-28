@@ -152,7 +152,6 @@ public final class HouseInteriorInitializer {
         HouseBuilder.applyInteriorContents(completed.interior, completed.origin);
         data.markInteriorInitialized();
 
-        HouseStageManager.applyCurrentStage(server, data);
 
         TheOldestHouse.LOGGER.info("Initialized The Oldest House interior over matching native Overworld terrain.");
     }

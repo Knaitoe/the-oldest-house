@@ -47,7 +47,16 @@ public final class HouseDimensionMirror {
         return isNearHouse(origin, pos, VIEW_RADIUS)
                 && pos.getY() >= origin.getY() - VIEW_BELOW_FLOOR
                 && pos.getY() <= origin.getY() + VIEW_ABOVE_FLOOR
-                && !HouseImpossibleHallway.isInteriorOnlyPosition(origin, pos);
+                && !isUnmirrored(origin, pos);
+    }
+
+    /**
+     * Positions the two dimensions deliberately disagree on: the impossible
+     * hallway, and the subtle changes that must not show from outside (or,
+     * for the lit window, from inside). See {@link HouseShifts#isUnmirrored}.
+     */
+    public static boolean isUnmirrored(BlockPos origin, BlockPos pos) {
+        return HouseImpossibleHallway.isInteriorOnlyPosition(origin, pos) || HouseShifts.isUnmirrored(origin, pos);
     }
 
     /** Cheap horizontal bounds test against the house envelope plus a margin. */
@@ -178,7 +187,7 @@ public final class HouseDimensionMirror {
                             pos.set(x, y, z);
                             BlockState state = source.getBlockState(pos);
                             if (state == target.getBlockState(pos)
-                                    || HouseImpossibleHallway.isInteriorOnlyPosition(origin, pos)) {
+                                    || isUnmirrored(origin, pos)) {
                                 continue;
                             }
                             overworld.setBlock(pos.immutable(), state, MIRROR_FLAGS);
@@ -192,7 +201,7 @@ public final class HouseDimensionMirror {
                     if (bePos.getX() < x0 || bePos.getX() > x1
                             || bePos.getZ() < z0 || bePos.getZ() > z1
                             || bePos.getY() < minY || bePos.getY() > maxY
-                            || HouseImpossibleHallway.isInteriorOnlyPosition(origin, bePos)
+                            || isUnmirrored(origin, bePos)
                             || isInventoryBearing(interior, blockEntity)) {
                         continue;
                     }

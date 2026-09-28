@@ -1,10 +1,15 @@
 package io.github.knaitoe.theoldesthouse.house;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
 
@@ -36,6 +41,17 @@ public final class HouseSavedData extends SavedData {
     private int roomRevealedAge = -1;
     private int roomMissedMornings;
     private int roomDoorX = -1;
+
+    // Subtle changes (see HouseShifts) and the hallway's roll.
+    private int shiftsTriggered;
+    private int shiftDryMornings;
+    private int hallwayMissedMornings;
+    private boolean hallDeepened;
+    private int notesWritten;
+    private boolean echoPending;
+    @Nullable
+    private BlockPos windowLight;
+    private final List<String> shiftHistory = new ArrayList<>();
 
     // Derived, not saved: hot paths read the origin every tick.
     @Nullable
@@ -69,6 +85,17 @@ public final class HouseSavedData extends SavedData {
         data.roomRevealedAge = tag.contains("RoomRevealedAge") ? tag.getInt("RoomRevealedAge") : -1;
         data.roomMissedMornings = tag.getInt("RoomMissedMornings");
         data.roomDoorX = tag.contains("RoomDoorX") ? tag.getInt("RoomDoorX") : -1;
+        data.shiftsTriggered = tag.getInt("ShiftsTriggered");
+        data.shiftDryMornings = tag.getInt("ShiftDryMornings");
+        data.hallwayMissedMornings = tag.getInt("HallwayMissedMornings");
+        data.hallDeepened = tag.getBoolean("HallDeepened");
+        data.notesWritten = tag.getInt("NotesWritten");
+        data.echoPending = tag.getBoolean("EchoPending");
+        data.windowLight = tag.contains("WindowLight") ? BlockPos.of(tag.getLong("WindowLight")) : null;
+        ListTag history = tag.getList("ShiftHistory", Tag.TAG_STRING);
+        for (int i = 0; i < history.size(); i++) {
+            data.shiftHistory.add(history.getString(i));
+        }
         data.refreshOriginCache();
 
         return data;
@@ -97,6 +124,20 @@ public final class HouseSavedData extends SavedData {
         tag.putInt("RoomRevealedAge", roomRevealedAge);
         tag.putInt("RoomMissedMornings", roomMissedMornings);
         tag.putInt("RoomDoorX", roomDoorX);
+        tag.putInt("ShiftsTriggered", shiftsTriggered);
+        tag.putInt("ShiftDryMornings", shiftDryMornings);
+        tag.putInt("HallwayMissedMornings", hallwayMissedMornings);
+        tag.putBoolean("HallDeepened", hallDeepened);
+        tag.putInt("NotesWritten", notesWritten);
+        tag.putBoolean("EchoPending", echoPending);
+        if (windowLight != null) {
+            tag.putLong("WindowLight", windowLight.asLong());
+        }
+        ListTag history = new ListTag();
+        for (String entry : shiftHistory) {
+            history.add(StringTag.valueOf(entry));
+        }
+        tag.put("ShiftHistory", history);
         return tag;
     }
 
@@ -244,6 +285,111 @@ public final class HouseSavedData extends SavedData {
         setDirty();
     }
 
+    /** Subtle changes that have happened so far (see HouseShifts). */
+    public int shiftsTriggered() {
+        return shiftsTriggered;
+    }
+
+    /** Eligible mornings since the last subtle change. */
+    public int shiftDryMornings() {
+        return shiftDryMornings;
+    }
+
+    public void noteShiftDryMorning() {
+        shiftDryMornings++;
+        setDirty();
+    }
+
+    /** Records a subtle change by name, oldest first. */
+    public void recordShift(String name) {
+        shiftsTriggered++;
+        shiftDryMornings = 0;
+        shiftHistory.add(name + "@" + houseAge);
+        while (shiftHistory.size() > 32) {
+            shiftHistory.remove(0);
+        }
+        setDirty();
+    }
+
+    /** Recent subtle changes as "name@age", oldest first. */
+    public List<String> shiftHistory() {
+        return List.copyOf(shiftHistory);
+    }
+
+    public boolean hasShifted(String name) {
+        for (String entry : shiftHistory) {
+            if (entry.startsWith(name + "@")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** The most recent subtle change's name, or null. */
+    @Nullable
+    public String lastShift() {
+        if (shiftHistory.isEmpty()) {
+            return null;
+        }
+        String last = shiftHistory.get(shiftHistory.size() - 1);
+        int at = last.indexOf('@');
+        return at < 0 ? last : last.substring(0, at);
+    }
+
+    /** Eligible mornings on which the hallway did not open. */
+    public int hallwayMissedMornings() {
+        return hallwayMissedMornings;
+    }
+
+    public void noteHallwayMissedMorning() {
+        hallwayMissedMornings++;
+        setDirty();
+    }
+
+    /** Whether the end of the hall has been moved back a block (until the hallway opens). */
+    public boolean isHallDeepened() {
+        return hallDeepened;
+    }
+
+    public void markHallDeepened() {
+        hallDeepened = true;
+        setDirty();
+    }
+
+    public int notesWritten() {
+        return notesWritten;
+    }
+
+    /** Bit {@code index} set: that note of the Navidsons' has been left on a shelf. */
+    public boolean isNoteWritten(int index) {
+        return (notesWritten & (1 << index)) != 0;
+    }
+
+    public void markNoteWritten(int index) {
+        notesWritten |= 1 << index;
+        setDirty();
+    }
+
+    public boolean isEchoPending() {
+        return echoPending;
+    }
+
+    public void setEchoPending(boolean pending) {
+        echoPending = pending;
+        setDirty();
+    }
+
+    /** The Overworld-only light behind one of the manor's upper windows, or null. */
+    @Nullable
+    public BlockPos windowLight() {
+        return windowLight;
+    }
+
+    public void setWindowLight(@Nullable BlockPos pos) {
+        windowLight = pos == null ? null : pos.immutable();
+        setDirty();
+    }
+
     public void markImpossibleDoorRevealed() {
         impossibleDoorRevealed = true;
         setDirty();
@@ -277,6 +423,14 @@ public final class HouseSavedData extends SavedData {
         roomRevealedAge = -1;
         roomMissedMornings = 0;
         roomDoorX = -1;
+        shiftsTriggered = 0;
+        shiftDryMornings = 0;
+        hallwayMissedMornings = 0;
+        hallDeepened = false;
+        notesWritten = 0;
+        echoPending = false;
+        windowLight = null;
+        shiftHistory.clear();
         refreshOriginCache();
         setDirty();
     }
