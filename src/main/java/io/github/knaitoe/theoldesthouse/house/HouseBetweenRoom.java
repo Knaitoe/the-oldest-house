@@ -112,6 +112,8 @@ public final class HouseBetweenRoom {
 
     /** Players who have been inside the room since arriving; stepping back out returns them. */
     private static final Set<UUID> INSIDE = new HashSet<>();
+    /** Whether this server session has checked the door's spot against the paintings. */
+    private static boolean doorChecked;
 
     private HouseBetweenRoom() {
     }
@@ -174,14 +176,59 @@ public final class HouseBetweenRoom {
         return true;
     }
 
-    /** Builds the pocket (view, room, bedroom copy) if this house's room does not have one yet. */
+    /**
+     * Builds the pocket (view, room, bedroom copy) if this house's room does
+     * not have one yet.
+     */
     public static void ensurePocket(MinecraftServer server) {
         HouseSavedData data = HouseSavedData.get(server);
         BlockPos origin = data.houseOrigin();
         ServerLevel interior = server.getLevel(HouseDimensions.INTERIOR);
-        if (origin != null && interior != null && data.isRoomRevealed() && !data.isRoomPocketBuilt()) {
+        if (origin == null || interior == null || !data.isRoomRevealed()) {
+            return;
+        }
+        if (!data.isRoomPocketBuilt()) {
             buildPocket(interior, data, origin);
         }
+    }
+
+    /**
+     * Moves the door along the partition if something hangs right beside it
+     * (a painting, a frame). Returns whether it moved.
+     */
+    public static boolean moveDoorIfCrowded(MinecraftServer server, ServerLevel interior, HouseSavedData data, BlockPos origin) {
+        int oldX = data.roomDoorX();
+        BlockPos oldDoor = doorPos(origin, oldX);
+        // The partition's plaster goes back first, so the old spot is judged like any other.
+        interior.setBlock(oldDoor, HouseShell.PLASTER, BUILD_FLAGS);
+        interior.setBlock(oldDoor.above(), HouseShell.PLASTER, BUILD_FLAGS);
+        if (isClearInFront(interior, origin, oldX)) {
+            placeDoor(interior, origin, oldX);
+            return false;
+        }
+        int newX = chooseDoorX(interior, origin);
+        if (newX == oldX || !isClearInFront(interior, origin, newX)) {
+            placeDoor(interior, origin, oldX);
+            return false;
+        }
+        placeDoor(interior, origin, newX);
+        HouseDimensionMirror.reconcileAuthoritativeDomestic(interior, server.overworld(), origin);
+
+        // The pocket's room moves with it.
+        BlockPos pocket = pocketOrigin(origin);
+        for (int x = oldX - ROOM_HALF_WIDTH - 1; x <= oldX + ROOM_HALF_WIDTH + 1; x++) {
+            for (int y = FLOOR_Y; y <= CEILING_Y; y++) {
+                for (int z = WALL_Z + 1; z <= ROOM_MAX_Z + 1; z++) {
+                    interior.setBlock(pocket.offset(x, y, z), Blocks.AIR.defaultBlockState(), BUILD_FLAGS);
+                }
+            }
+        }
+        data.setRoomDoorX(newX);
+        buildRoom(interior, pocket, newX);
+        copyBedroom(interior, origin);
+        PacketDistributor.sendToAllPlayers(doorPayload(data));
+        TheOldestHouse.LOGGER.info("Moved the room between rooms' door from x+{} to x+{}, away from what hangs on the wall.", oldX, newX);
+        return true;
     }
 
     private static void buildPocket(ServerLevel interior, HouseSavedData data, BlockPos origin) {
@@ -260,9 +307,12 @@ public final class HouseBetweenRoom {
                 return false;
             }
         }
+        // Nothing hanging on the wall beside or above it: a door squeezed up
+        // against a painting looks like what it is, an afterthought.
         BlockPos lower = origin.offset(x, DOOR_Y, WALL_Z - 1);
-        AABB front = new AABB(lower).expandTowards(0.0D, 1.0D, 0.0D);
-        return level.getEntitiesOfClass(HangingEntity.class, front).isEmpty();
+        AABB around = new AABB(lower.getX() - 1.0D, lower.getY(), lower.getZ(),
+                lower.getX() + 2.0D, lower.getY() + 3.0D, lower.getZ() + 1.0D);
+        return level.getEntitiesOfClass(HangingEntity.class, around).isEmpty();
     }
 
     private static boolean isBacked(ServerLevel level, BlockPos origin, int x) {
@@ -489,8 +539,7 @@ public final class HouseBetweenRoom {
         setDoorOpen(interior, pocketDoor, false);
         INSIDE.remove(player.getUUID());
 
-        // Straight up, relative, so nothing about where they stand or look changes.
-        player.connection.teleport(0.0D, dy, 0.0D, 0.0F, 0.0F, RelativeMovement.ALL);
+        shift(player, dy);
         setDoorOpen(interior, pocketDoor, true);
         interior.playSound(null, pocketDoor, SoundEvents.WOODEN_DOOR_OPEN, SoundSource.BLOCKS, 1.0F,
                 0.9F + interior.getRandom().nextFloat() * 0.1F);
@@ -539,7 +588,7 @@ public final class HouseBetweenRoom {
     private static void returnToManor(ServerPlayer player, BlockPos origin, int doorX) {
         int dy = pocketDy(origin);
         boolean cameThrough = INSIDE.remove(player.getUUID());
-        player.connection.teleport(0.0D, -dy, 0.0D, 0.0F, 0.0F, RelativeMovement.ALL);
+        shift(player, -dy);
         ServerLevel level = player.serverLevel();
         setDoorOpen(level, doorPos(origin, doorX).above(dy), false);
         if (cameThrough) {
@@ -550,6 +599,17 @@ public final class HouseBetweenRoom {
                     real.getX() + 0.5D, real.getY() + 0.5D, real.getZ() + 0.5D, 1.0F,
                     0.9F + player.getRandom().nextFloat() * 0.1F, player.getRandom().nextLong()));
         }
+    }
+
+    /**
+     * Straight up or down by {@code dy}, sent to the client as a relative
+     * move so nothing about where they stand, look or are moving changes.
+     * The server's teleport takes the absolute destination; the relative
+     * flags only shape the packet.
+     */
+    private static void shift(ServerPlayer player, int dy) {
+        player.connection.teleport(player.getX(), player.getY() + dy, player.getZ(),
+                player.getYRot(), player.getXRot(), RelativeMovement.ALL);
     }
 
     /** Players left in the old separate dimension by an earlier version are brought back to the bedroom. */
@@ -588,6 +648,18 @@ public final class HouseBetweenRoom {
                 setDoorOpen(level, lower, false);
             }
         }
+
+        // Once per session, with the bedroom's paintings loaded and nobody
+        // looking, a door crowded against a painting moves along the wall.
+        ServerLevel interior = server.getLevel(HouseDimensions.INTERIOR);
+        if (!doorChecked && interior != null && interior.isLoaded(lower)
+                && interior.areEntitiesLoaded(ChunkPos.asLong(lower))
+                && !HouseWatchers.isWatched(interior, lower)
+                && !HouseWatchers.isWatched(interior, lower.above())
+                && interior.players().stream().noneMatch(p -> isInPocket(origin, p.getX(), p.getY(), p.getZ()))) {
+            doorChecked = true;
+            moveDoorIfCrowded(server, interior, data, origin);
+        }
     }
 
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
@@ -602,6 +674,7 @@ public final class HouseBetweenRoom {
 
     public static void clearAll() {
         INSIDE.clear();
+        doorChecked = false;
     }
 
     // ------------------------------------------------------------------
