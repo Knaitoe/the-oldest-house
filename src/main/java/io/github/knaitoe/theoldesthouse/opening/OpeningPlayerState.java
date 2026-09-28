@@ -39,7 +39,8 @@ public final class OpeningPlayerState {
             Codec.LONG.optionalFieldOf("last_morning_day", -1L).forGetter(OpeningPlayerState::lastMorningDay),
             Codec.INT.optionalFieldOf("failed_door_nights", 0).forGetter(OpeningPlayerState::failedDoorNights),
             BlockPos.CODEC.optionalFieldOf("entrance_door").forGetter(state -> Optional.ofNullable(state.entranceDoorPos)),
-            UUIDUtil.CODEC.optionalFieldOf("hillary").forGetter(state -> Optional.ofNullable(state.hillaryUuid))
+            UUIDUtil.CODEC.optionalFieldOf("hillary").forGetter(state -> Optional.ofNullable(state.hillaryUuid)),
+            Codec.BOOL.optionalFieldOf("entered_house", false).forGetter(OpeningPlayerState::enteredHouse)
     ).apply(instance, OpeningPlayerState::new));
 
     private OpeningStage stage = OpeningStage.NONE;
@@ -55,6 +56,7 @@ public final class OpeningPlayerState {
     private BlockPos entranceDoorPos;
     @Nullable
     private UUID hillaryUuid;
+    private boolean enteredHouse;
 
     public OpeningPlayerState() {
     }
@@ -70,7 +72,8 @@ public final class OpeningPlayerState {
             long lastMorningDay,
             int failedDoorNights,
             Optional<BlockPos> entranceDoorPos,
-            Optional<UUID> hillaryUuid
+            Optional<UUID> hillaryUuid,
+            boolean enteredHouse
     ) {
         this.stage = stage;
         this.nightsSlept = nightsSlept;
@@ -83,6 +86,7 @@ public final class OpeningPlayerState {
         this.failedDoorNights = failedDoorNights;
         this.entranceDoorPos = entranceDoorPos.orElse(null);
         this.hillaryUuid = hillaryUuid.orElse(null);
+        this.enteredHouse = enteredHouse;
     }
 
     public OpeningStage stage() {
@@ -131,6 +135,10 @@ public final class OpeningPlayerState {
         return hillaryUuid;
     }
 
+    public boolean enteredHouse() {
+        return enteredHouse;
+    }
+
     /** Counts one completed sleep per in-game day. */
     public boolean recordSleep(long day) {
         if (day == lastSleepDay) {
@@ -162,13 +170,23 @@ public final class OpeningPlayerState {
     }
 
     public void markDoorPlaced(BlockPos lower) {
-        stage = OpeningStage.DOOR_PLACED;
+        // Legacy 0.3.0 compatibility only.
+        stage = OpeningStage.HILLARY_ARRIVED;
         entranceDoorPos = lower.immutable();
         failedDoorNights = 0;
     }
 
+    public void markHillaryArrived() {
+        stage = enteredHouse ? OpeningStage.ENTERED : OpeningStage.HILLARY_ARRIVED;
+        failedDoorNights = 0;
+        entranceDoorPos = null;
+    }
+
     public void markEntered() {
-        stage = OpeningStage.ENTERED;
+        enteredHouse = true;
+        if (stage.isAtLeast(OpeningStage.HILLARY_ARRIVED)) {
+            stage = OpeningStage.ENTERED;
+        }
     }
 
     public int recordFailedDoorNight() {
@@ -228,6 +246,7 @@ public final class OpeningPlayerState {
         failedDoorNights = 0;
         entranceDoorPos = null;
         hillaryUuid = null;
+        enteredHouse = false;
     }
 
     public void setStageForTesting(OpeningStage newStage, long day) {
