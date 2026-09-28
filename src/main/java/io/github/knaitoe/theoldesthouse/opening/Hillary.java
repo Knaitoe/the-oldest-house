@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.opening;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -38,10 +39,9 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
  * Hillary, the Navidsons' husky.
  *
  * She waits near the doorstep she was found on until her recipient tames
- * her with a single bone. If she follows them through the entrance door she
- * runs a few blocks ahead down the hall, and once she is out of sight (or
- * after about two seconds) the House lets her go: she is taken out of the
- * House dimension and set down, sitting, on her doorstep.
+ * her with a single bone. Once the invitation has arrived she tries to lead
+ * her recipient from their home to the Navidsons' manor, waiting when they
+ * fall behind. She stops outside the front door and refuses to enter.
  *
  * While she is between dimensions her saved entity data is kept in
  * {@link OpeningWorldData}, so a server stop cannot lose her.
@@ -51,6 +51,9 @@ public final class Hillary {
     public static final int LEASH_RADIUS = 6;
 
     private static final int FOLLOW_RADIUS = 12;
+    private static final int GUIDE_RESUME_RADIUS = 14;
+    private static final int GUIDE_WAIT_RADIUS = 20;
+    private static final double MANOR_STOP_RADIUS = 3.25D;
     private static final int RUN_MIN_TICKS = 10;
     private static final int RUN_MAX_TICKS = 40;
     private static final int APPEAR_TIMEOUT_TICKS = 100;
@@ -127,20 +130,91 @@ public final class Hillary {
         wolf.tame(player);
         wolf.getNavigation().stop();
         wolf.setTarget(null);
-        wolf.setOrderedToSit(true);
+        wolf.setOrderedToSit(false);
+        wolf.setInSittingPose(false);
         wolf.clearRestriction();
         wolf.level().broadcastEntityEvent(wolf, (byte) 7);
     }
 
-    /** Keeps an untamed Hillary near her doorstep. */
+    /**
+     * Drives Hillary's opening behavior. Before her invitation beat she stays
+     * close to the player's doorstep. Afterwards she leads toward the
+     * Navidsons' front porch, but only while the player keeps up.
+     */
+    public static void tickGuide(
+            ServerLevel overworld,
+            ServerPlayer player,
+            UUID wolfId,
+            boolean active,
+            @Nullable BlockPos houseOrigin
+    ) {
+        if (!(overworld.getEntity(wolfId) instanceof Wolf wolf)) {
+            return;
+        }
+        HillaryTag tag = tagOf(wolf);
+        if (tag == null || !player.getUUID().equals(tag.recipient())) {
+            return;
+        }
+
+        if (!active || houseOrigin == null) {
+            keepNearHome(wolf, tag.home());
+            return;
+        }
+
+        BlockPos porch = houseOrigin.offset(
+                HouseLayout.AXIS_X,
+                1,
+                HouseLayout.FRONT_DOOR_Z - 2
+        );
+        wolf.clearRestriction();
+
+        double toPorch = wolf.distanceToSqr(Vec3.atBottomCenterOf(porch));
+        if (toPorch <= MANOR_STOP_RADIUS * MANOR_STOP_RADIUS) {
+            wolf.getNavigation().stop();
+            if (wolf.isTame()) {
+                wolf.setOrderedToSit(true);
+                wolf.setInSittingPose(true);
+            } else {
+                wolf.restrictTo(porch, 4);
+            }
+            return;
+        }
+
+        // A manually seated tamed Hillary stays put. Otherwise she behaves
+        // like a guide rather than a follower: move ahead, then wait.
+        if (wolf.isTame() && wolf.isOrderedToSit()) {
+            return;
+        }
+
+        double playerDistance = wolf.distanceToSqr(player);
+        if (playerDistance > (double) GUIDE_WAIT_RADIUS * GUIDE_WAIT_RADIUS) {
+            wolf.getNavigation().stop();
+            return;
+        }
+
+        if (playerDistance <= (double) GUIDE_RESUME_RADIUS * GUIDE_RESUME_RADIUS
+                || wolf.getNavigation().isDone()) {
+            wolf.getNavigation().moveTo(
+                    porch.getX() + 0.5D,
+                    porch.getY(),
+                    porch.getZ() + 0.5D,
+                    1.15D
+            );
+        }
+    }
+
+    /** Keeps Hillary near the original doorstep until it is time to guide. */
     public static void tickLeash(ServerLevel overworld, UUID wolfId) {
         if (!(overworld.getEntity(wolfId) instanceof Wolf wolf)) {
             return;
         }
         HillaryTag tag = tagOf(wolf);
-        if (tag == null) {
-            return;
+        if (tag != null) {
+            keepNearHome(wolf, tag.home());
         }
+    }
+
+    private static void keepNearHome(Wolf wolf, BlockPos home) {
         if (wolf.isTame()) {
             if (wolf.hasRestriction()) {
                 wolf.clearRestriction();
@@ -148,7 +222,6 @@ public final class Hillary {
             return;
         }
 
-        BlockPos home = tag.home();
         if (!wolf.hasRestriction()) {
             wolf.restrictTo(home, LEASH_RADIUS);
         }
@@ -157,10 +230,11 @@ public final class Hillary {
             return;
         }
         if (distanceSquared > 32.0D * 32.0D) {
-            Vec3 at = Doorsteps.restingPoint(overworld, home);
+            Vec3 at = Doorsteps.restingPoint((ServerLevel) wolf.level(), home);
             wolf.moveTo(at.x, at.y, at.z, wolf.getYRot(), 0.0F);
             wolf.getNavigation().stop();
-        } else if (distanceSquared > (LEASH_RADIUS + 1.0D) * (LEASH_RADIUS + 1.0D) && wolf.getNavigation().isDone()) {
+        } else if (distanceSquared > (LEASH_RADIUS + 1.0D) * (LEASH_RADIUS + 1.0D)
+                && wolf.getNavigation().isDone() {
             wolf.getNavigation().moveTo(home.getX() + 0.5D, home.getY(), home.getZ() + 0.5D, 1.0D);
         }
     }
@@ -173,40 +247,23 @@ public final class Hillary {
      * Hillary is following (standing, close by), she goes too.
      */
     public static void beforeEntry(ServerPlayer player, @Nullable UUID wolfId) {
-        if (wolfId == null || RUNS.containsKey(wolfId)) {
-            return;
-        }
-        if (!(player.serverLevel().getEntity(wolfId) instanceof Wolf wolf)) {
+        if (wolfId == null || !(player.server.overworld().getEntity(wolfId) instanceof Wolf wolf)) {
             return;
         }
         HillaryTag tag = tagOf(wolf);
-        if (tag == null
-                || !wolf.isAlive()
-                || !wolf.isTame()
-                || !wolf.isOwnedBy(player)
-                || wolf.isOrderedToSit()
-                || wolf.isLeashed()
-                || wolf.isPassenger()
-                || wolf.distanceToSqr(player) > (double) FOLLOW_RADIUS * FOLLOW_RADIUS) {
+        if (tag == null || !player.getUUID().equals(tag.recipient())) {
             return;
         }
-
-        CompoundTag data = capture(wolf, false);
-        // Held in saved data until she is safely in the House, in case the
-        // server stops in between.
-        OpeningWorldData.get(player.server).putReturn(new OpeningWorldData.PendingReturn(wolfId, data, tag.home()));
-        RUNS.put(wolfId, new Run(wolfId, player.getUUID(), tag.home(), data));
+        wolf.getNavigation().stop();
+        if (wolf.isTame()) {
+            wolf.setOrderedToSit(true);
+            wolf.setInSittingPose(true);
+        }
     }
 
     /** Called once the owner has arrived; she appears just ahead of them. */
     public static void afterEntry(ServerPlayer player, Vec3 appearAt, Vec3 runTo) {
-        for (Run run : RUNS.values()) {
-            if (run.player.equals(player.getUUID()) && run.phase == Phase.APPEARING) {
-                run.appearAt = appearAt;
-                run.runTo = runTo;
-                run.yaw = player.getYRot();
-            }
-        }
+        // Hillary never crosses the manor threshold.
     }
 
     public static boolean isRunning(UUID wolfId) {
@@ -376,6 +433,19 @@ public final class Hillary {
         Vec3 toWolf = wolf.getEyePosition().subtract(player.getEyePosition());
         double distance = toWolf.length();
         return distance < 0.5D || player.getViewVector(1.0F).dot(toWolf.scale(1.0D / distance)) >= VIEW_CONE_COS;
+    }
+
+    /** Leaves Hillary waiting outside the manor when her owner enters. */
+    public static void waitAtManor(MinecraftServer server, UUID wolfId) {
+        ServerLevel overworld = server.overworld();
+        if (!(overworld.getEntity(wolfId) instanceof Wolf wolf)) {
+            return;
+        }
+        wolf.getNavigation().stop();
+        if (wolf.isTame()) {
+            wolf.setOrderedToSit(true);
+            wolf.setInSittingPose(true);
+        }
     }
 
     // ------------------------------------------------------------------
