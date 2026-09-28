@@ -232,7 +232,7 @@ public final class SnapshotRenderer {
             int[] light = glassBehind.get(glass);
             return new WindowPlan(unpackX(glass), unpackY(glass), unpackZ(glass), false, light[0], light[1], light[2]);
         }
-        Long wall = pickHighest(wallHits, 6);
+        Long wall = pickMostVisibleNearTop(wallHits, 6);
         if (wall != null) {
             int[] light = wallBehind.get(wall);
             return new WindowPlan(unpackX(wall), unpackY(wall), unpackZ(wall), true, light[0], light[1], light[2]);
@@ -527,6 +527,33 @@ public final class SnapshotRenderer {
             }
         }
         return imagined ? null : chosen;
+    }
+
+    /**
+     * Among the top two rows of candidates, the block showing the most of
+     * itself: squarely facing the camera and clear of corners.
+     */
+    private static Long pickMostVisibleNearTop(java.util.Map<Long, int[]> counts, int minPixels) {
+        int topY = Integer.MIN_VALUE;
+        for (java.util.Map.Entry<Long, int[]> entry : counts.entrySet()) {
+            if (entry.getValue()[0] >= minPixels) {
+                topY = Math.max(topY, unpackY(entry.getKey()));
+            }
+        }
+        Long best = null;
+        int bestCount = 0;
+        for (java.util.Map.Entry<Long, int[]> entry : counts.entrySet()) {
+            int count = entry.getValue()[0];
+            int y = unpackY(entry.getKey());
+            if (count < minPixels || y < topY - 1) {
+                continue;
+            }
+            if (count > bestCount || (count == bestCount && y > unpackY(best))) {
+                best = entry.getKey();
+                bestCount = count;
+            }
+        }
+        return best;
     }
 
     /** Wall on both sides within the face and above or below: somewhere a window could be. */
