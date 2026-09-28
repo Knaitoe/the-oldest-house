@@ -311,12 +311,12 @@ public final class HouseSavedData extends SavedData {
     }
 
     /**
-     * Advances perceived age once per Minecraft morning while The Oldest House
-     * exists. The day guard prevents multiplayer wake events from aging the
-     * structure multiple times on the same morning.
+     * Advances perceived age once per Minecraft morning after the manor has
+     * actually been entered. The day guard prevents multiplayer wake events
+     * from aging the structure multiple times on the same morning.
      */
     public boolean advanceHouseAgeForMorning(long currentDay) {
-        if (!spawned || currentDay == lastHouseAgeDay) {
+        if (!spawned || visitCount <= 0 || currentDay == lastHouseAgeDay) {
             return false;
         }
 
