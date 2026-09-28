@@ -3,6 +3,8 @@ package io.github.knaitoe.theoldesthouse.command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
+import io.github.knaitoe.theoldesthouse.house.HouseSpawnManager;
 import io.github.knaitoe.theoldesthouse.opening.Doorsteps;
 import io.github.knaitoe.theoldesthouse.opening.NavidsonLetter;
 import io.github.knaitoe.theoldesthouse.opening.NavidsonPhoto;
@@ -44,6 +46,7 @@ public final class OpeningCommands {
                 .then(withTarget("photo", OpeningCommands::photo))
                 .then(withTarget("copy", OpeningCommands::visitCopy))
                 .then(withTarget("hillary", OpeningCommands::hillary))
+                .then(withTarget("house", OpeningCommands::house))
                 .then(withTarget("reset", OpeningCommands::reset));
     }
 
@@ -182,6 +185,33 @@ public final class OpeningCommands {
     }
 
     /** Morning two now: Hillary on the doorstep and the door placed at once (even in view). */
+    /**
+     * Has the Navidsons move in next door now, as the letter's morning would:
+     * the same site search, and a report of why sites were turned down.
+     */
+    private static int house(CommandSourceStack source, ServerPlayer player) {
+        HouseSavedData data = HouseSavedData.get(source.getServer());
+        if (data.isSpawned()) {
+            BlockPos origin = data.houseOrigin();
+            source.sendSuccess(() -> Component.literal("The Oldest House already stands at "
+                    + (origin == null ? "an unknown position" : format(origin)) + "."), false);
+            return 1;
+        }
+        Optional<BlockPos> bed = Doorsteps.bedPosition(player);
+        if (bed.isEmpty()) {
+            source.sendFailure(Component.literal(player.getGameProfile().getName() + " has no bed respawn point in the Overworld."));
+            return 0;
+        }
+        boolean spawned = HouseSpawnManager.ensureSpawnedNear(source.getServer().overworld(), data, bed.get());
+        String summary = OpeningSequence.houseSearchSummary();
+        if (!spawned) {
+            source.sendFailure(Component.literal("No site near " + format(bed.get()) + ": " + summary + "."));
+            return 0;
+        }
+        source.sendSuccess(() -> Component.literal("The Navidsons have moved in: " + summary + "."), true);
+        return 1;
+    }
+
     /** Clears this player's opening progression. */
     private static int reset(CommandSourceStack source, ServerPlayer player) {
         OpeningSequence.state(player).reset();
