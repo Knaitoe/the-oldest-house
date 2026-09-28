@@ -61,7 +61,9 @@ public final class HouseProxyEntityEvacuation {
         for (Mob mob : level.getEntitiesOfClass(
                 Mob.class,
                 bounds,
-                entity -> entity.isAlive() && !entity.isRemoved()
+                entity -> entity.isAlive()
+                        && !entity.isRemoved()
+                        && !HouseExteriorEntityMirror.isProjection(entity)
         )) {
             double relX = mob.getX() - origin.getX();
             double relY = mob.getY() - origin.getY();
