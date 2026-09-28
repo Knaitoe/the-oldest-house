@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -17,46 +18,60 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
- * Visual entity layer for the domestic House.
+ * Bidirectional visual entity continuity across the domestic House boundary.
  *
- * Blocks outside the windows are mirrored into the House dimension already,
- * but real Overworld mobs cannot cross dimensions with them. While a player
- * occupies the domestic interior this class keeps lightweight, invulnerable,
- * no-AI projections of nearby Overworld mobs at matching coordinates in the
- * House dimension. The real entity remains authoritative in the Overworld.
+ * The Overworld and House dimension each own their real entities. The other
+ * dimension receives disposable, non-interactive projections at matching
+ * coordinates:
  *
- * Projections are scenery only: they never drive AI, never carry game logic
- * back to the source, and are discarded as soon as nobody is in the domestic
- * interior. This lets a player look out the front door and still see Hillary
- * sitting on the real Overworld doorstep.
+ *   Overworld exterior mob -> House-dimension exterior projection
+ *   House domestic mob      -> Overworld proxy-interior projection
+ *
+ * This means a player inside can still see Hillary on the real doorstep, and
+ * a player outside can see a real House-dimension NPC through a window. No
+ * entity is actually duplicated for gameplay: the projection has no AI,
+ * collision, damage, interaction or authority.
+ *
+ * Impossible-space entities are intentionally excluded. Only real mobs inside
+ * {@link HouseLayout#isInsideDomesticVolume(double, double, double)} project
+ * from the House to the Overworld.
  */
 public final class HouseExteriorEntityMirror {
-    public static final String PROJECTION_TAG = "the_oldest_house.exterior_projection";
+    public static final String PROJECTION_TAG = "the_oldest_house.entity_projection";
 
     private static final int SYNC_INTERVAL_TICKS = 2;
     private static final int STATE_REFRESH_INTERVAL_TICKS = 20;
     private static final int ENTITY_VIEW_MARGIN = 40;
 
-    private static final TicketType<ChunkPos> SOURCE_VIEW_TICKET = TicketType.create(
-            TheOldestHouse.MOD_ID + "_exterior_entity_view",
+    private static final TicketType<ChunkPos> OVERWORLD_SOURCE_TICKET = TicketType.create(
+            TheOldestHouse.MOD_ID + "_overworld_entity_view",
+            Comparator.comparingLong(ChunkPos::toLong)
+    );
+    private static final TicketType<ChunkPos> INTERIOR_SOURCE_TICKET = TicketType.create(
+            TheOldestHouse.MOD_ID + "_interior_entity_view",
             Comparator.comparingLong(ChunkPos::toLong)
     );
 
-    /** Overworld source UUID -> House-dimension projection UUID. */
-    private static final Map<UUID, UUID> PROJECTIONS = new HashMap<>();
-    private static final LongSet TICKETED_CHUNKS = new LongOpenHashSet();
-    private static boolean scrubbedLoadedProjections;
+    /** Real Overworld UUID -> projection UUID in the House dimension. */
+    private static final Map<UUID, UUID> OVERWORLD_TO_INTERIOR = new HashMap<>();
+    /** Real House-dimension UUID -> projection UUID in the Overworld proxy. */
+    private static final Map<UUID, UUID> INTERIOR_TO_OVERWORLD = new HashMap<>();
+
+    private static final LongSet OVERWORLD_TICKETED_CHUNKS = new LongOpenHashSet();
+    private static final LongSet INTERIOR_TICKETED_CHUNKS = new LongOpenHashSet();
+
+    private static boolean scrubbedInteriorProjections;
+    private static boolean scrubbedOverworldProjections;
 
     private HouseExteriorEntityMirror() {
     }
@@ -81,7 +96,8 @@ public final class HouseExteriorEntityMirror {
         }
     }
 
-    private static boolean isProjection(Entity entity) {
+    /** True for scenery entities created by either mirror direction. */
+    public static boolean isProjection(Entity entity) {
         return entity.getTags().contains(PROJECTION_TAG);
     }
 
@@ -100,83 +116,118 @@ public final class HouseExteriorEntityMirror {
             return;
         }
 
-        if (!hasDomesticObserver(interior, origin)) {
-            clearProjections(interior);
-            releaseSourceTickets(server.overworld());
-            return;
+        ServerLevel overworld = server.overworld();
+        AABB view = viewBounds(origin);
+        boolean refreshState = server.getTickCount() % STATE_REFRESH_INTERVAL_TICKS == 0;
+
+        // Inside looking out: real Overworld mobs become projections in the
+        // House dimension's mirrored exterior scenery.
+        if (hasDomesticObserver(interior, origin)) {
+            ensureOverworldSourceTickets(overworld, origin);
+            scrubInteriorProjectionsIfNeeded(interior, view);
+            removeNativeExteriorMobs(interior, origin, view);
+            syncDirection(
+                    overworld,
+                    interior,
+                    origin,
+                    view,
+                    OVERWORLD_TO_INTERIOR,
+                    mob -> eligibleOverworldExteriorSource(origin, mob),
+                    refreshState
+            );
+        } else {
+            clearProjectionMap(interior, OVERWORLD_TO_INTERIOR);
+            releaseTickets(overworld, OVERWORLD_SOURCE_TICKET, OVERWORLD_TICKETED_CHUNKS);
         }
 
-        ServerLevel overworld = server.overworld();
-        ensureSourceTickets(overworld, origin);
-
-        AABB view = viewBounds(origin);
-        scrubLoadedProjectionsIfNeeded(interior, view);
-
-        removeNativeExteriorMobs(interior, origin, view);
-        sync(overworld, interior, origin, view, server.getTickCount() % STATE_REFRESH_INTERVAL_TICKS == 0);
+        // Outside looking in: real domestic House mobs become projections
+        // inside the Overworld proxy shell.
+        if (hasOverworldObserver(overworld, origin)) {
+            ensureInteriorSourceTickets(interior, origin);
+            scrubOverworldProjectionsIfNeeded(overworld, view);
+            syncDirection(
+                    interior,
+                    overworld,
+                    origin,
+                    view,
+                    INTERIOR_TO_OVERWORLD,
+                    mob -> eligibleDomesticInteriorSource(origin, mob),
+                    refreshState
+            );
+        } else {
+            clearProjectionMap(overworld, INTERIOR_TO_OVERWORLD);
+            releaseTickets(interior, INTERIOR_SOURCE_TICKET, INTERIOR_TICKETED_CHUNKS);
+        }
     }
 
     /**
-     * Synchronises one frame of exterior entity scenery.
-     *
-     * Public primarily so GameTests can exercise the mirror without waiting
-     * for the normal server-tick observer gate.
+     * Seeds the inside-looking-out layer immediately before an entering
+     * player's teleport. Prevents one empty exterior frame on arrival.
      */
     public static int syncNow(ServerLevel overworld, ServerLevel interior, BlockPos origin) {
         AABB view = viewBounds(origin);
-        scrubLoadedProjectionsIfNeeded(interior, view);
+        scrubInteriorProjectionsIfNeeded(interior, view);
         removeNativeExteriorMobs(interior, origin, view);
-        return sync(overworld, interior, origin, view, true);
-    }
-
-    private static void scrubLoadedProjectionsIfNeeded(ServerLevel interior, AABB view) {
-        if (scrubbedLoadedProjections) {
-            return;
-        }
-
-        // A clean shutdown removes projections before saving, but after a
-        // crash a tamed/persistent projected mob may have been written to a
-        // House chunk. Never let yesterday's scenery become an entity.
-        for (Mob mob : interior.getEntitiesOfClass(
-                Mob.class,
+        return syncDirection(
+                overworld,
+                interior,
+                origin,
                 view,
-                entity -> entity.getTags().contains(PROJECTION_TAG)
-        )) {
-            mob.discard();
-        }
-        PROJECTIONS.clear();
-        scrubbedLoadedProjections = true;
+                OVERWORLD_TO_INTERIOR,
+                mob -> eligibleOverworldExteriorSource(origin, mob),
+                true
+        );
     }
 
-    private static int sync(
-            ServerLevel overworld,
+    /**
+     * Seeds the outside-looking-in layer immediately before an exiting
+     * player's teleport. Prevents domestic NPCs popping into view a tick late.
+     */
+    public static int syncDomesticToOverworldNow(
             ServerLevel interior,
+            ServerLevel overworld,
+            BlockPos origin
+    ) {
+        AABB view = viewBounds(origin);
+        scrubOverworldProjectionsIfNeeded(overworld, view);
+        return syncDirection(
+                interior,
+                overworld,
+                origin,
+                view,
+                INTERIOR_TO_OVERWORLD,
+                mob -> eligibleDomesticInteriorSource(origin, mob),
+                true
+        );
+    }
+
+    private static int syncDirection(
+            ServerLevel sourceLevel,
+            ServerLevel targetLevel,
             BlockPos origin,
             AABB view,
+            Map<UUID, UUID> projections,
+            Predicate<Mob> sourceFilter,
             boolean refreshState
     ) {
         Set<UUID> seen = new HashSet<>();
         int visible = 0;
 
-        for (Mob source : overworld.getEntitiesOfClass(
-                Mob.class,
-                view,
-                mob -> eligibleSource(origin, mob)
-        )) {
+        for (Mob source : sourceLevel.getEntitiesOfClass(Mob.class, view, sourceFilter)) {
             UUID sourceId = source.getUUID();
             seen.add(sourceId);
 
-            Mob projection = projectionOf(interior, sourceId);
+            Mob projection = projectionOf(targetLevel, projections, sourceId);
             if (projection == null || projection.getType() != source.getType()) {
                 if (projection != null) {
                     projection.discard();
                 }
-                projection = createProjection(interior, source);
+                projection = createProjection(targetLevel, source);
                 if (projection == null) {
-                    PROJECTIONS.remove(sourceId);
+                    projections.remove(sourceId);
                     continue;
                 }
-                PROJECTIONS.put(sourceId, projection.getUUID());
+                projections.put(sourceId, projection.getUUID());
             } else if (refreshState) {
                 loadVisualState(source, projection);
             }
@@ -185,13 +236,13 @@ public final class HouseExteriorEntityMirror {
             visible++;
         }
 
-        Iterator<Map.Entry<UUID, UUID>> iterator = PROJECTIONS.entrySet().iterator();
+        Iterator<Map.Entry<UUID, UUID>> iterator = projections.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<UUID, UUID> entry = iterator.next();
             if (seen.contains(entry.getKey())) {
                 continue;
             }
-            Entity stale = interior.getEntity(entry.getValue());
+            Entity stale = targetLevel.getEntity(entry.getValue());
             if (stale != null) {
                 stale.discard();
             }
@@ -201,10 +252,8 @@ public final class HouseExteriorEntityMirror {
         return visible;
     }
 
-    private static boolean eligibleSource(BlockPos origin, Mob mob) {
-        if (!mob.isAlive()
-                || mob.isRemoved()
-                || mob.getTags().contains(PROJECTION_TAG)) {
+    private static boolean eligibleOverworldExteriorSource(BlockPos origin, Mob mob) {
+        if (!eligibleRealMob(mob)) {
             return false;
         }
 
@@ -212,25 +261,46 @@ public final class HouseExteriorEntityMirror {
         double relY = mob.getY() - origin.getY();
         double relZ = mob.getZ() - origin.getZ();
 
-        // The Overworld proxy itself must stay empty. Mobs inside it are
-        // handled by HouseProxyEntityEvacuation, not projected as though they
-        // were valid outdoor scenery.
+        // The proxy itself is intentionally kept empty of real mobs.
         return !HouseLayout.isInsideDomesticVolume(relX, relY, relZ);
     }
 
+    private static boolean eligibleDomesticInteriorSource(BlockPos origin, Mob mob) {
+        if (!eligibleRealMob(mob)) {
+            return false;
+        }
+
+        double relX = mob.getX() - origin.getX();
+        double relY = mob.getY() - origin.getY();
+        double relZ = mob.getZ() - origin.getZ();
+
+        // Never leak impossible-hall/vignette inhabitants into the mundane
+        // Overworld facade. Only the ordinary domestic manor is transparent.
+        return HouseLayout.isInsideDomesticVolume(relX, relY, relZ)
+                && !HouseImpossibleHallway.isInteriorOnlyPosition(origin, mob.blockPosition());
+    }
+
+    private static boolean eligibleRealMob(Mob mob) {
+        return mob.isAlive() && !mob.isRemoved() && !isProjection(mob);
+    }
+
     @Nullable
-    private static Mob projectionOf(ServerLevel interior, UUID sourceId) {
-        UUID projectionId = PROJECTIONS.get(sourceId);
+    private static Mob projectionOf(
+            ServerLevel targetLevel,
+            Map<UUID, UUID> projections,
+            UUID sourceId
+    ) {
+        UUID projectionId = projections.get(sourceId);
         if (projectionId == null) {
             return null;
         }
-        Entity entity = interior.getEntity(projectionId);
+        Entity entity = targetLevel.getEntity(projectionId);
         return entity instanceof Mob mob ? mob : null;
     }
 
     @Nullable
-    private static Mob createProjection(ServerLevel interior, Mob source) {
-        Entity created = source.getType().create(interior);
+    private static Mob createProjection(ServerLevel targetLevel, Mob source) {
+        Entity created = source.getType().create(targetLevel);
         if (!(created instanceof Mob projection)) {
             return null;
         }
@@ -241,17 +311,16 @@ public final class HouseExteriorEntityMirror {
         configureProjection(projection);
         positionProjection(source, projection);
 
-        if (!interior.addFreshEntity(projection)) {
+        if (!targetLevel.addFreshEntity(projection)) {
             return null;
         }
         return projection;
     }
 
     /**
-     * Uses normal entity NBT so skins/variants, custom names, collars,
-     * villager data and visible equipment match without a parallel catalogue
-     * of every mob type. Identity, physics and persistence fields are stripped
-     * before loading because this is a projection, not a cloned game object.
+     * Uses normal entity NBT so visible variants, names, collars, villager
+     * appearance and equipment match without maintaining a catalogue for every
+     * mob type. Gameplay identity and physics fields are stripped first.
      */
     private static void loadVisualState(Mob source, Mob projection) {
         CompoundTag tag = new CompoundTag();
@@ -305,15 +374,16 @@ public final class HouseExteriorEntityMirror {
     }
 
     /**
-     * Native mobs in the House dimension's mirrored outdoor view would appear
-     * alongside the Overworld projections. Remove only those outdoor/native
-     * mobs; authored entities inside the domestic House remain untouched.
+     * The House dimension uses matching Overworld terrain for scenery. Native
+     * mobs spawned in that copied exterior would double the projected real
+     * population, so only outdoor/native mobs are removed. Authored domestic
+     * mobs remain untouched and can project outward in the reverse direction.
      */
     private static void removeNativeExteriorMobs(ServerLevel interior, BlockPos origin, AABB view) {
         for (Mob mob : interior.getEntitiesOfClass(
                 Mob.class,
                 view,
-                entity -> !entity.getTags().contains(PROJECTION_TAG)
+                entity -> !isProjection(entity)
         )) {
             double relX = mob.getX() - origin.getX();
             double relY = mob.getY() - origin.getY();
@@ -336,6 +406,16 @@ public final class HouseExteriorEntityMirror {
         return false;
     }
 
+    private static boolean hasOverworldObserver(ServerLevel overworld, BlockPos origin) {
+        AABB view = viewBounds(origin);
+        for (ServerPlayer player : overworld.players()) {
+            if (view.contains(player.position())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static AABB viewBounds(BlockPos origin) {
         return new AABB(
                 origin.getX() + HouseLayout.MIN_X - ENTITY_VIEW_MARGIN,
@@ -347,78 +427,129 @@ public final class HouseExteriorEntityMirror {
         );
     }
 
-    private static void ensureSourceTickets(ServerLevel overworld, BlockPos origin) {
-        int minX = origin.getX() + HouseLayout.MIN_X - ENTITY_VIEW_MARGIN;
-        int maxX = origin.getX() + HouseLayout.MAX_X + ENTITY_VIEW_MARGIN;
-        int minZ = origin.getZ() + HouseLayout.MIN_Z - ENTITY_VIEW_MARGIN;
-        int maxZ = origin.getZ() + HouseLayout.MAX_Z + ENTITY_VIEW_MARGIN;
+    private static void scrubInteriorProjectionsIfNeeded(ServerLevel interior, AABB view) {
+        if (scrubbedInteriorProjections) {
+            return;
+        }
+        scrubLoadedProjections(interior, view);
+        OVERWORLD_TO_INTERIOR.clear();
+        scrubbedInteriorProjections = true;
+    }
 
+    private static void scrubOverworldProjectionsIfNeeded(ServerLevel overworld, AABB view) {
+        if (scrubbedOverworldProjections) {
+            return;
+        }
+        scrubLoadedProjections(overworld, view);
+        INTERIOR_TO_OVERWORLD.clear();
+        scrubbedOverworldProjections = true;
+    }
+
+    private static void scrubLoadedProjections(ServerLevel level, AABB view) {
+        // Clean shutdown removes projections before saving. After a crash, a
+        // tame/persistent projection might have been written into a chunk.
+        for (Mob mob : level.getEntitiesOfClass(Mob.class, view, HouseExteriorEntityMirror::isProjection)) {
+            mob.discard();
+        }
+    }
+
+    private static void ensureOverworldSourceTickets(ServerLevel overworld, BlockPos origin) {
+        ensureTickets(
+                overworld,
+                OVERWORLD_SOURCE_TICKET,
+                OVERWORLD_TICKETED_CHUNKS,
+                origin.getX() + HouseLayout.MIN_X - ENTITY_VIEW_MARGIN,
+                origin.getX() + HouseLayout.MAX_X + ENTITY_VIEW_MARGIN,
+                origin.getZ() + HouseLayout.MIN_Z - ENTITY_VIEW_MARGIN,
+                origin.getZ() + HouseLayout.MAX_Z + ENTITY_VIEW_MARGIN
+        );
+    }
+
+    private static void ensureInteriorSourceTickets(ServerLevel interior, BlockPos origin) {
+        ensureTickets(
+                interior,
+                INTERIOR_SOURCE_TICKET,
+                INTERIOR_TICKETED_CHUNKS,
+                origin.getX() + HouseLayout.MIN_X,
+                origin.getX() + HouseLayout.MAX_X,
+                origin.getZ() + HouseLayout.MIN_Z,
+                origin.getZ() + HouseLayout.MAX_Z
+        );
+    }
+
+    private static void ensureTickets(
+            ServerLevel level,
+            TicketType<ChunkPos> ticketType,
+            LongSet ticketed,
+            int minX,
+            int maxX,
+            int minZ,
+            int maxZ
+    ) {
         LongSet wanted = new LongOpenHashSet();
+
         for (int cx = minX >> 4; cx <= maxX >> 4; cx++) {
             for (int cz = minZ >> 4; cz <= maxZ >> 4; cz++) {
                 long key = ChunkPos.asLong(cx, cz);
                 wanted.add(key);
-                if (TICKETED_CHUNKS.add(key)) {
+                if (ticketed.add(key)) {
                     ChunkPos chunk = new ChunkPos(cx, cz);
-                    overworld.getChunkSource().addRegionTicket(
-                            SOURCE_VIEW_TICKET,
-                            chunk,
-                            0,
-                            chunk
-                    );
+                    level.getChunkSource().addRegionTicket(ticketType, chunk, 0, chunk);
                 }
             }
         }
 
-        var iterator = TICKETED_CHUNKS.iterator();
+        var iterator = ticketed.iterator();
         while (iterator.hasNext()) {
             long key = iterator.nextLong();
             if (wanted.contains(key)) {
                 continue;
             }
             ChunkPos chunk = new ChunkPos(key);
-            overworld.getChunkSource().removeRegionTicket(
-                    SOURCE_VIEW_TICKET,
-                    chunk,
-                    0,
-                    chunk
-            );
+            level.getChunkSource().removeRegionTicket(ticketType, chunk, 0, chunk);
             iterator.remove();
         }
     }
 
-    private static void releaseSourceTickets(ServerLevel overworld) {
-        var iterator = TICKETED_CHUNKS.iterator();
+    private static void releaseTickets(
+            ServerLevel level,
+            TicketType<ChunkPos> ticketType,
+            LongSet ticketed
+    ) {
+        var iterator = ticketed.iterator();
         while (iterator.hasNext()) {
             ChunkPos chunk = new ChunkPos(iterator.nextLong());
-            overworld.getChunkSource().removeRegionTicket(
-                    SOURCE_VIEW_TICKET,
-                    chunk,
-                    0,
-                    chunk
-            );
+            level.getChunkSource().removeRegionTicket(ticketType, chunk, 0, chunk);
             iterator.remove();
         }
     }
 
-    private static void clearProjections(ServerLevel interior) {
-        for (UUID projectionId : PROJECTIONS.values()) {
-            Entity entity = interior.getEntity(projectionId);
+    private static void clearProjectionMap(ServerLevel target, Map<UUID, UUID> projections) {
+        for (UUID projectionId : projections.values()) {
+            Entity entity = target.getEntity(projectionId);
             if (entity != null) {
                 entity.discard();
             }
         }
-        PROJECTIONS.clear();
+        projections.clear();
     }
 
     public static void clear(MinecraftServer server) {
         ServerLevel interior = server.getLevel(HouseDimensions.INTERIOR);
+        ServerLevel overworld = server.overworld();
+
         if (interior != null) {
-            clearProjections(interior);
+            clearProjectionMap(interior, OVERWORLD_TO_INTERIOR);
+            releaseTickets(interior, INTERIOR_SOURCE_TICKET, INTERIOR_TICKETED_CHUNKS);
         } else {
-            PROJECTIONS.clear();
+            OVERWORLD_TO_INTERIOR.clear();
+            INTERIOR_TICKETED_CHUNKS.clear();
         }
-        releaseSourceTickets(server.overworld());
-        scrubbedLoadedProjections = false;
+
+        clearProjectionMap(overworld, INTERIOR_TO_OVERWORLD);
+        releaseTickets(overworld, OVERWORLD_SOURCE_TICKET, OVERWORLD_TICKETED_CHUNKS);
+
+        scrubbedInteriorProjections = false;
+        scrubbedOverworldProjections = false;
     }
 }
