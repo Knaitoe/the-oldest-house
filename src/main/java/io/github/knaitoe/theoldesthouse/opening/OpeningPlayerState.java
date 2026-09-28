@@ -37,8 +37,6 @@ public final class OpeningPlayerState {
             Codec.LONG.optionalFieldOf("eligible_day", -1L).forGetter(OpeningPlayerState::eligibleDay),
             Codec.LONG.optionalFieldOf("letter_day", -1L).forGetter(OpeningPlayerState::letterDay),
             Codec.LONG.optionalFieldOf("last_morning_day", -1L).forGetter(OpeningPlayerState::lastMorningDay),
-            Codec.INT.optionalFieldOf("failed_door_nights", 0).forGetter(OpeningPlayerState::failedDoorNights),
-            BlockPos.CODEC.optionalFieldOf("entrance_door").forGetter(state -> Optional.ofNullable(state.entranceDoorPos)),
             UUIDUtil.CODEC.optionalFieldOf("hillary").forGetter(state -> Optional.ofNullable(state.hillaryUuid)),
             Codec.BOOL.optionalFieldOf("entered_house", false).forGetter(OpeningPlayerState::enteredHouse)
     ).apply(instance, OpeningPlayerState::new));
@@ -51,9 +49,6 @@ public final class OpeningPlayerState {
     private long eligibleDay = -1L;
     private long letterDay = -1L;
     private long lastMorningDay = -1L;
-    private int failedDoorNights;
-    @Nullable
-    private BlockPos entranceDoorPos;
     @Nullable
     private UUID hillaryUuid;
     private boolean enteredHouse;
@@ -70,8 +65,6 @@ public final class OpeningPlayerState {
             long eligibleDay,
             long letterDay,
             long lastMorningDay,
-            int failedDoorNights,
-            Optional<BlockPos> entranceDoorPos,
             Optional<UUID> hillaryUuid,
             boolean enteredHouse
     ) {
@@ -83,8 +76,6 @@ public final class OpeningPlayerState {
         this.eligibleDay = eligibleDay;
         this.letterDay = letterDay;
         this.lastMorningDay = lastMorningDay;
-        this.failedDoorNights = failedDoorNights;
-        this.entranceDoorPos = entranceDoorPos.orElse(null);
         this.hillaryUuid = hillaryUuid.orElse(null);
         this.enteredHouse = enteredHouse;
     }
@@ -119,15 +110,6 @@ public final class OpeningPlayerState {
 
     public long lastMorningDay() {
         return lastMorningDay;
-    }
-
-    public int failedDoorNights() {
-        return failedDoorNights;
-    }
-
-    @Nullable
-    public BlockPos entranceDoorPos() {
-        return entranceDoorPos;
     }
 
     @Nullable
@@ -169,17 +151,8 @@ public final class OpeningPlayerState {
         letterDay = day;
     }
 
-    public void markDoorPlaced(BlockPos lower) {
-        // Legacy 0.3.0 compatibility only.
-        stage = OpeningStage.HILLARY_ARRIVED;
-        entranceDoorPos = lower.immutable();
-        failedDoorNights = 0;
-    }
-
     public void markHillaryArrived() {
         stage = enteredHouse ? OpeningStage.ENTERED : OpeningStage.HILLARY_ARRIVED;
-        failedDoorNights = 0;
-        entranceDoorPos = null;
     }
 
     public void markEntered() {
@@ -187,10 +160,6 @@ public final class OpeningPlayerState {
         if (stage.isAtLeast(OpeningStage.HILLARY_ARRIVED)) {
             stage = OpeningStage.ENTERED;
         }
-    }
-
-    public int recordFailedDoorNight() {
-        return ++failedDoorNights;
     }
 
     public void setHillary(@Nullable UUID uuid) {
@@ -234,7 +203,7 @@ public final class OpeningPlayerState {
         doorUse.removeIf(use -> use.pos().equals(door));
     }
 
-    /** Back to the start; the door and Hillary, if any, are left in the world. */
+    /** Back to the start; Hillary, if present, is left in the world. */
     public void reset() {
         stage = OpeningStage.NONE;
         nightsSlept = 0;
@@ -243,8 +212,6 @@ public final class OpeningPlayerState {
         eligibleDay = -1L;
         letterDay = -1L;
         lastMorningDay = -1L;
-        failedDoorNights = 0;
-        entranceDoorPos = null;
         hillaryUuid = null;
         enteredHouse = false;
     }
