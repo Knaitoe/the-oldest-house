@@ -149,6 +149,7 @@ public final class OpeningSequence {
                     player,
                     state.hillaryUuid(),
                     state.stage().isAtLeast(OpeningStage.HILLARY_ARRIVED),
+                    state.enteredHouse(),
                     house.houseOrigin()
             );
         }
@@ -373,7 +374,10 @@ public final class OpeningSequence {
         }
         state.markEntered();
         if (state.hillaryUuid() != null) {
-            Hillary.waitAtManor(player.server, state.hillaryUuid());
+            BlockPos origin = HouseSavedData.get(player.server).houseOrigin();
+            if (origin != null) {
+                Hillary.enterProxyManor(player.server, state.hillaryUuid(), origin);
+            }
         }
     }
 
