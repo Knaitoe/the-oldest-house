@@ -1,6 +1,8 @@
 # Design outline for The Oldest House
 
-This file records the current design decisions so implementation does not outrun the concept.
+> **Historical implementation outline.** The current creative canon is [DESIGN_DOCUMENT.md](DESIGN_DOCUMENT.md), and the current opening contract is [OPENING.md](OPENING.md). Sections below remain useful as implementation history, but the retired natural-appearance roll and pre-Hillary dog concept must not be reintroduced.
+
+This file records implementation decisions so implementation history does not disappear.
 
 ## Central rule
 
@@ -21,40 +23,25 @@ The technical implementation should be boring and dependable even when the playe
 
 The world begins normally. The Oldest House does not exist at world creation.
 
-The spawn trigger is **settlement residency**, not generic exploration and not a cursed-item quest.
+The old five-settlement-night eligibility and hidden 5%-to-100% appearance roll are retired. Automatic appearance now belongs exclusively to the per-player opening sequence:
 
-A player establishes the candidate settlement by repeatedly sleeping through nights in the same home area. The initial implementation counts five successful overnight sleeps whose wake positions stay within 32 horizontal blocks of the same settlement anchor. Moving outside that area begins a new candidate settlement count.
+1. A player establishes an Overworld bed respawn point, completes two sleeps, and has spent at least three in-game days in the world.
+2. On the next handled morning, the Navidsons move in. `HouseSpawnManager.ensureSpawnedNear` uses the existing terrain-aware safe-site search to place the manor 32-64 blocks from the player's home if it does not already exist.
+3. Navidson photographs the player's home from the actual geographic side implied by the manor's porch, then leaves the letter and photograph at the player's familiar doorstep.
+4. On the following handled morning, Hillary appears and leads the player over ordinary terrain toward the manor. She waits if they fall behind and refuses to cross the manor's front door.
+5. There is no anomalous doorway in the player's own home.
 
-Reaching the threshold only makes the world **eligible**. It does not spawn The Oldest House immediately.
-
-Eligibility initializes a hidden appearance chance at **5%**. The same morning that establishes eligibility cannot spawn The Oldest House.
-
-Beginning on the following morning, the mod makes one hidden appearance roll per Minecraft day using the current chance. If The Oldest House does not appear, the chance for the next eligible morning performs a random walk:
-
-- 50% chance to increase by 2-5 percentage points,
-- 50% chance to decrease by 1-2 percentage points,
-- minimum 5%,
-- maximum 100%.
-
-Because upward movements are larger than downward movements, the chance has a gentle long-term upward drift while remaining capable of falling from one night to the next. The spawn should therefore feel increasingly plausible without becoming a visible or deterministic countdown.
-
-If a roll succeeds, the game searches for reasonably flat, empty terrain near the established settlement and places The Oldest House there. If no safe site is available, nothing is destroyed; the chance still changes for the next eligible night and the system tries again later.
-
-No advancement, toast, chat line, sound sting, or other notification reveals eligibility, probability changes, or the successful appearance.
-
-One morning, The Oldest House simply exists on ground that was previously empty.
-
-The exterior remains permanently measurable and trustworthy.
+No separate probability roll can make the House appear independently of that sequence.
 
 ## Perceived age
 
-After The Oldest House appears, the mod tracks how long it has perceived the structure as having existed in the world.
+The House can exist in the Overworld before it has begun to change.
 
-The initial implementation advances this value once per successful Minecraft morning while The Oldest House is present. It is persisted separately from ordinary world time so development commands can fast-forward or set it directly.
+Perceived age advances once per successful Minecraft morning **only after at least one player has actually entered the manor**. A player can therefore ignore the letter or Hillary indefinitely without returning to find that the first impossible threshold revealed itself off-screen.
 
-Future architectural and narrative stages should key off perceived age rather than requiring testers or players to wait an exact amount of real time. Development command `/oldesthouse advance [days]` exists specifically to exercise these stages.
+Perceived age is persisted separately from ordinary world time so development commands can fast-forward or set it directly. `/oldesthouse advance [days]` exists specifically to exercise staged changes.
 
-The current transition prototype reveals the first impossible door at age 3. That threshold is deliberately provisional and isolated in `HouseStageManager` so later pacing work does not require architectural changes.
+The current prototype reveals the first impossible door at perceived age 3. That threshold is deliberately provisional and isolated in `HouseStageManager` so later pacing work does not require architectural changes.
 
 ## Domestic phase
 
@@ -158,9 +145,11 @@ Compatibility with normal Minecraft death rules and common grave/keep-inventory 
 
 ## Dog
 
-The player eventually finds a lost dog inside.
+The dog is Hillary, the Navidsons' gray husky.
 
-It becomes a genuine companion and useful ally, with enough time for ordinary Minecraft attachment to develop. Possible House-specific behaviors include reacting to bad doors, growls, topology changes, or lost belongings.
+She first appears at the player's doorstep during the opening and leads the player to her owners' manor, stopping outside the front door. The first bone from her recipient tames her.
+
+Once the labyrinth exists, Hillary becomes a genuine companion and navigation ally: she can seek vignette doors from their yielded objects, wait when the player falls behind, refuse especially dangerous destinations, react to Growls and topology changes, and eventually become entangled with the Mother of Strays.
 
 ## Mother of Lost Things
 
