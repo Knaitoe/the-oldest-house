@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -26,9 +25,9 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
  *
  * She appears at the player's doorstep, accepts the recipient's first bone,
  * then tries to lead them over ordinary Overworld terrain to the Navidsons'
- * manor. She waits when the player falls behind. When the player crosses the
- * front-door boundary, Hillary enters the literal Overworld proxy manor while
- * the player alone is handed off to the matching House dimension.
+ * manor. She waits when the player falls behind. The Overworld manor proxy
+ * rejects all non-player mobs, so Hillary waits outside rather than becoming
+ * trapped in a duplicate interior the player cannot physically share.
  */
 public final class Hillary {
     public static final String NAME = "Hillary";
@@ -115,7 +114,6 @@ public final class Hillary {
             ServerPlayer player,
             UUID wolfId,
             boolean active,
-            boolean playerHasEntered,
             @Nullable BlockPos houseOrigin
     ) {
         if (!(overworld.getEntity(wolfId) instanceof Wolf wolf)) {
@@ -129,11 +127,6 @@ public final class Hillary {
 
         if (!active || houseOrigin == null) {
             keepNear(wolf, tag.home());
-            return;
-        }
-
-        if (playerHasEntered) {
-            keepInProxyManor(wolf, tag.recipient(), proxyFoyer(houseOrigin));
             return;
         }
 
@@ -215,68 +208,17 @@ public final class Hillary {
         );
     }
 
-    /** A few blocks past the authored front door, inside the literal proxy hall. */
-    private static BlockPos proxyFoyer(BlockPos houseOrigin) {
-        return houseOrigin.offset(
-                HouseLayout.AXIS_X,
-                1,
-                HouseLayout.FRONT_DOOR_Z + 3
-        );
-    }
-
     private static void settleAtManor(Wolf wolf, UUID recipient, BlockPos porch) {
         wolf.getNavigation().stop();
         wolf.setData(OpeningRegistry.HILLARY, new HillaryTag(recipient, porch.immutable()));
         if (wolf.isTame()) {
             wolf.setOwnerUUID(recipient);
-            wolf.setOrderedToSit(false);
-            wolf.setInSittingPose(false);
+            wolf.setOrderedToSit(true);
+            wolf.setInSittingPose(true);
             wolf.clearRestriction();
         } else {
             wolf.restrictTo(porch, 4);
         }
     }
 
-    /**
-     * Moves Hillary into the literal Overworld manor when her player crosses
-     * the boundary. She deliberately remains in the proxy world; only the
-     * player is dimension-shifted.
-     */
-    public static void enterProxyManor(MinecraftServer server, UUID wolfId, BlockPos houseOrigin) {
-        ServerLevel overworld = server.overworld();
-        if (!(overworld.getEntity(wolfId) instanceof Wolf wolf)) {
-            return;
-        }
-
-        HillaryTag tag = tagOf(wolf);
-        if (tag == null) {
-            return;
-        }
-
-        keepInProxyManor(wolf, tag.recipient(), proxyFoyer(houseOrigin));
-    }
-
-    private static void keepInProxyManor(Wolf wolf, UUID recipient, BlockPos foyer) {
-        wolf.getNavigation().stop();
-
-        // Never let vanilla owner-follow logic pull her across the proxy
-        // boundary or teleport her after the player changes dimension.
-        if (wolf.isTame() && wolf.getOwnerUUID() != null) {
-            wolf.setOwnerUUID(null);
-        }
-
-        Vec3 target = Vec3.atBottomCenterOf(foyer);
-        if (wolf.distanceToSqr(target) > 2.25D) {
-            wolf.moveTo(target.x, target.y, target.z, wolf.getYRot(), 0.0F);
-        }
-
-        wolf.setData(OpeningRegistry.HILLARY, new HillaryTag(recipient, foyer.immutable()));
-        wolf.setOrderedToSit(true);
-        wolf.setInSittingPose(true);
-        if (!wolf.isTame()) {
-            wolf.restrictTo(foyer, 4);
-        } else {
-            wolf.clearRestriction();
-        }
-    }
 }
