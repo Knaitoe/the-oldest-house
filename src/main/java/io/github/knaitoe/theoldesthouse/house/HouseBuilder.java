@@ -4,6 +4,7 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -35,18 +36,28 @@ import net.minecraft.world.level.storage.loot.LootTable;
  * {@link HouseInteriors}; the geometry they share lives in {@link HouseLayout}.
  */
 public final class HouseBuilder {
-    private static final ResourceKey<LootTable> BEDROOM_LOOT = lootTable("chests/bedroom");
-    private static final ResourceKey<LootTable> STUDY_LOOT = lootTable("chests/study");
-    private static final ResourceKey<LootTable> BASEMENT_LOOT = lootTable("chests/basement");
-
-    /** Authored chests that receive loot inside the House dimension. */
-    private static final List<LootChest> LOOT_CHESTS = List.of(
-            new LootChest(2, 1, 17, STUDY_LOOT, 0x51A7D11L),
-            new LootChest(12, 7, 7, BEDROOM_LOOT, 0xBED001L),
-            new LootChest(20, 7, 2, BEDROOM_LOOT, 0xBED002L),
-            new LootChest(19, -4, 13, BASEMENT_LOOT, 0xBA5E01L),
-            new LootChest(26, -4, 17, BASEMENT_LOOT, 0xBA5E02L)
+    /**
+     * What each room keeps in its chests and barrels (barrels double as the
+     * manor's cupboards and bedside drawers). Anything outside a named room,
+     * such as the landings, is treated as parlour storage.
+     */
+    private static final Map<String, ResourceKey<LootTable>> ROOM_LOOT = Map.ofEntries(
+            Map.entry("great_room", lootTable("chests/parlour")),
+            Map.entry("great_bay", lootTable("chests/parlour")),
+            Map.entry("hall", lootTable("chests/parlour")),
+            Map.entry("upper_hall", lootTable("chests/parlour")),
+            Map.entry("stair_tower", lootTable("chests/parlour")),
+            Map.entry("long_gallery", lootTable("chests/parlour")),
+            Map.entry("kitchen", lootTable("chests/kitchen")),
+            Map.entry("scullery", lootTable("chests/scullery")),
+            Map.entry("study", lootTable("chests/study")),
+            Map.entry("cellar", lootTable("chests/basement")),
+            Map.entry("principal_bedroom", lootTable("chests/bedroom")),
+            Map.entry("literary_bedroom", lootTable("chests/literary")),
+            Map.entry("maker_loft", lootTable("chests/workshop")),
+            Map.entry("box_room", lootTable("chests/attic"))
     );
+    private static final ResourceKey<LootTable> DEFAULT_LOOT = lootTable("chests/parlour");
 
     /** Relief the foundations are allowed to absorb across the footprint. */
     public static final int MAX_SITE_RELIEF = 5;
@@ -194,17 +205,16 @@ public final class HouseBuilder {
      * be looted twice.
      */
     public static void applyInteriorContents(ServerLevel level, BlockPos origin) {
-        for (LootChest chest : LOOT_CHESTS) {
-            BlockPos pos = origin.offset(chest.x(), chest.y(), chest.z());
-            if (level.getBlockEntity(pos) instanceof RandomizableContainerBlockEntity container) {
-                container.setLootTable(chest.table(), level.getSeed() ^ pos.asLong() ^ chest.salt());
-                container.setChanged();
-            }
-        }
-
         for (BlockEntity blockEntity : blockEntitiesInEnvelope(level, origin)) {
             BlockPos pos = blockEntity.getBlockPos();
-            if (blockEntity instanceof LecternBlockEntity lectern && !lectern.hasBook()) {
+            if (blockEntity instanceof RandomizableContainerBlockEntity container
+                    && container.getLootTable() == null
+                    && container.isEmpty()) {
+                // Filled from its table when first opened, like any chest in the world.
+                ResourceKey<LootTable> table = lootFor(pos.subtract(origin));
+                container.setLootTable(table, level.getSeed() ^ pos.asLong() ^ table.location().hashCode());
+                container.setChanged();
+            } else if (blockEntity instanceof LecternBlockEntity lectern && !lectern.hasBook()) {
                 LecternBlock.tryPlaceBook(null, level, pos, level.getBlockState(pos), new ItemStack(Items.WRITABLE_BOOK));
             } else if (blockEntity instanceof ChiseledBookShelfBlockEntity shelf && shelf.isEmpty()) {
                 long hash = pos.asLong() * 0x9E3779B97F4A7C15L;
@@ -265,7 +275,13 @@ public final class HouseBuilder {
         );
     }
 
-    private record LootChest(int x, int y, int z, ResourceKey<LootTable> table, long salt) {
+    private static ResourceKey<LootTable> lootFor(BlockPos rel) {
+        for (HouseLayout.Room room : HouseLayout.ROOMS) {
+            if (room.box().contains(rel.getX(), rel.getY(), rel.getZ())) {
+                return ROOM_LOOT.getOrDefault(room.name(), DEFAULT_LOOT);
+            }
+        }
+        return DEFAULT_LOOT;
     }
 
     /** Terrain in front of the entrance, sampled before anything is cleared. */

@@ -91,6 +91,7 @@ Commands require permission level 2.
 | `/oldesthouse age <days>` | Set The Oldest House perceived age to an exact value (does not run mornings). |
 | `/oldesthouse advance` | Advance The Oldest House perceived age by one day. |
 | `/oldesthouse advance <days>` | Fast-forward The Oldest House perceived age by the supplied number of days. |
+| `/oldesthouse restock` | Give every empty, untouched chest and barrel in the manor its room's loot table (for houses built before the tables existed). |
 | `/oldesthouse visit` | Increment the stored visit count. |
 | `/oldesthouse reconcile` | Force an authoritative House-dimension to Overworld reconciliation and report how many positions changed. |
 | `/oldesthouse reset` | Reset persistent The Oldest House state. This does **not** erase blocks already placed in the world. |
@@ -418,3 +419,4 @@ The opening has been revised so the player's own home remains ordinary.
 - Days are counted by the mod, so `/time set` can no longer stall the opening, and sleeping in a manor bed now passes the night.
 - The first night in the manor shifts the rugs; around day 3 the room between rooms appears; the impossible hallway follows three mornings later, at the end of the hall as before.
 - `/oldesthouse day [n]`, `/oldesthouse reveal rugs|room|hallway`, and a fuller `/oldesthouse status`.
+- Every chest and barrel in the manor now has a loot table for its room: pantry food in the kitchen, bottles and bowls in the scullery, candles and odds and ends in the parlour and landings, books and ink in the literary bedroom, fletching and scrap metal in the maker loft, moth-eaten leftovers in the box room. `/oldesthouse restock` applies them to an existing house.
