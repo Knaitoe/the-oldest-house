@@ -1,5 +1,6 @@
 package io.github.knaitoe.theoldesthouse.house;
 
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlaces;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -24,8 +25,7 @@ public final class HouseLabyrinth {
 
     /** Whether {@code pos} in {@code dimension} lies past the labyrinth threshold. */
     public static boolean isBeyondThreshold(MinecraftServer server, ResourceKey<Level> dimension, BlockPos pos) {
-        if (dimension.equals(HouseDimensions.OUTSIDE) || dimension.equals(HouseDimensions.BETWEEN)
-                || dimension.equals(HouseDimensions.LABYRINTH)) {
+        if (dimension.equals(HouseDimensions.OUTSIDE) || dimension.equals(HouseDimensions.BETWEEN)) {
             return true;
         }
         if (!dimension.equals(HouseDimensions.INTERIOR)) {
@@ -38,7 +38,8 @@ public final class HouseLabyrinth {
     /** Within the House dimension: past the threshold wall, in the impossible hallway. */
     public static boolean isBeyondThreshold(BlockPos origin, BlockPos pos) {
         return HouseImpossibleHallway.isInteriorOnlyPosition(origin, pos)
-                || HouseBetweenRoom.isInPocket(origin, pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D);
+                || HouseBetweenRoom.isInPocket(origin, pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D)
+                || LabyrinthPlaces.isInStack(origin, pos);
     }
 
     /** Beds past the threshold do not let anyone sleep. */

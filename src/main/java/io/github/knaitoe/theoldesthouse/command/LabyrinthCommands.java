@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.command;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthBuilder;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
@@ -25,7 +26,7 @@ public final class LabyrinthCommands {
     public static LiteralArgumentBuilder<CommandSourceStack> door() {
         LiteralArgumentBuilder<CommandSourceStack> door = Commands.literal("door");
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
-            if (place.base() != null) {
+            if (place.slot() >= 0) {
                 door.then(Commands.literal(place.id()).executes(context -> placeDoor(context.getSource(), place.id())));
             }
         }
@@ -45,11 +46,11 @@ public final class LabyrinthCommands {
                     return 1;
                 }))
                 .then(Commands.literal("build").executes(context -> {
-                    boolean built = LabyrinthBuilder.buildAll(context.getSource().getServer());
-                    context.getSource().sendSuccess(() -> Component.literal(built
-                            ? "Carved every labyrinth place again (and put the floorboards back if they are unfinished)."
-                            : "The labyrinth dimension is missing."), true);
-                    return built ? 1 : 0;
+                    boolean started = LabyrinthBuilder.rebuild(context.getSource().getServer());
+                    context.getSource().sendSuccess(() -> Component.literal(started
+                            ? "Carving every labyrinth place again above the manor, a place a tick (the floorboards go back if unfinished)."
+                            : "The Navidsons' house must exist first."), true);
+                    return started ? 1 : 0;
                 }))
                 .then(Commands.literal("status").executes(context -> {
                     ServerPlayer viewer = context.getSource().getEntity() instanceof ServerPlayer p ? p : null;
@@ -64,9 +65,13 @@ public final class LabyrinthCommands {
         return Commands.literal("vignette")
                 .then(Commands.literal(TellTaleFloorboards.ID)
                         .then(Commands.literal("reset").executes(context -> {
-                            if (!LabyrinthBuilder.ensureBuilt(context.getSource().getServer())
-                                    || !TellTaleFloorboards.reset(context.getSource().getServer())) {
-                                context.getSource().sendFailure(Component.literal("The labyrinth dimension is missing."));
+                            if (!LabyrinthBuilder.ensureBuilt(context.getSource().getServer())) {
+                                context.getSource().sendFailure(Component.literal(
+                                        "The labyrinth is not carved yet (it needs the Navidsons' house; if that exists, try again in a moment)."));
+                                return 0;
+                            }
+                            if (!TellTaleFloorboards.reset(context.getSource().getServer())) {
+                                context.getSource().sendFailure(Component.literal("The Navidsons' house must exist first."));
                                 return 0;
                             }
                             context.getSource().sendSuccess(() -> Component.literal(
@@ -83,17 +88,19 @@ public final class LabyrinthCommands {
 
     private static int placeDoor(CommandSourceStack source, String destination) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
-        if (!LabyrinthBuilder.ensureBuilt(source.getServer())) {
-            source.sendFailure(Component.literal("The labyrinth dimension is missing."));
+        if (HouseSavedData.get(source.getServer()).houseOrigin() == null) {
+            source.sendFailure(Component.literal("The Navidsons' house must exist first (/oldesthouse opening house, or /oldesthouse spawn)."));
             return 0;
         }
+        LabyrinthBuilder.ensureBuilt(source.getServer());
         String error = LabyrinthDoors.placeCommandDoor(player, destination);
         if (error != null) {
             source.sendFailure(Component.literal(error));
             return 0;
         }
         source.sendSuccess(() -> Component.literal("A door to " + destination
-                + " stands in front of you. Open it to go through; the door you arrive at leads back here."), true);
+                + " stands in front of you. Open it to go through; walk back out through the door you arrive at to come back."
+                + (LabyrinthBuilder.isCarving() ? " The labyrinth is being carved; give it a moment." : "")), true);
         return 1;
     }
 
