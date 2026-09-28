@@ -242,7 +242,7 @@ public final class HouseProgression {
                 if (!data.areRugsShifted()) {
                     shiftRugs(server, data);
                 }
-                return HouseBetweenRoom.reveal(server, data) ? null : "The House interior or the between dimension is not available.";
+                return HouseBetweenRoom.reveal(server, data) ? null : "The House interior is not available.";
             }
             case "hallway" -> {
                 if (data.isImpossibleDoorRevealed()) {

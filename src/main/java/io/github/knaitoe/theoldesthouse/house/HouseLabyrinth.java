@@ -37,7 +37,8 @@ public final class HouseLabyrinth {
 
     /** Within the House dimension: past the threshold wall, in the impossible hallway. */
     public static boolean isBeyondThreshold(BlockPos origin, BlockPos pos) {
-        return HouseImpossibleHallway.isInteriorOnlyPosition(origin, pos);
+        return HouseImpossibleHallway.isInteriorOnlyPosition(origin, pos)
+                || HouseBetweenRoom.isInPocket(origin, pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D);
     }
 
     /** Beds past the threshold do not let anyone sleep. */

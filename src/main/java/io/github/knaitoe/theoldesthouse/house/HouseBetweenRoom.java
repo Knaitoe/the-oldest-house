@@ -2,23 +2,26 @@ package io.github.knaitoe.theoldesthouse.house;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.network.HouseRoomDoorPayload;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.decoration.Painting;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.Block;
@@ -27,10 +30,12 @@ import net.minecraft.world.level.block.CandleBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
@@ -45,20 +50,22 @@ import net.neoforged.neoforge.network.PacketDistributor;
  *
  * One morning a door is set into the partition between the principal and
  * literary bedrooms. The partition is a single block thick; on the literary
- * side there are only bookshelves. Opening the door moves the player, at
- * unchanged coordinates, into {@link HouseDimensions#BETWEEN}, where a copy
- * of the principal bedroom stands in front of the same door and a windowless
- * sitting room lies behind it, where the literary bedroom ought to be.
+ * side there are only bookshelves.
  *
- * The copy of the bedroom is refreshed each time someone goes through, so the
- * swap cannot be seen. It only has to hold up for as long as the player is
- * facing the door: walking back out through the doorway returns them to the
- * real bedroom, and so does wandering away from the door without going in.
- * The real door in the manor never opens, since there is nothing behind it.
+ * The room is real, and so is its door, but they are not where the bedroom
+ * is: they stand in "the pocket", high above the manor in the House
+ * dimension, directly over it (see {@link #pocketDy}), in front of an exact
+ * copy of the principal bedroom, which also has the real view outside its
+ * windows. Nobody inside the manor can see that far up.
  *
- * This is the manor's first teleport door. Later doors will reuse the same
- * transition, and "rearranging" the house will mean changing where a door
- * leads rather than moving blocks.
+ * Clicking the door in the real bedroom moves the player straight up into the
+ * copy, by a relative shift of exactly the pocket's height, so position,
+ * facing and momentum are untouched and nothing reloads: the chunks are the
+ * ones they are already standing in. In the same tick the copy's door swings
+ * open, with an ordinary door's sound, onto the room. Walking back out
+ * through the doorway (or wandering away from the door without going in)
+ * shifts them back down the same way. The real door never opens: there is
+ * nothing behind it but shelves.
  */
 public final class HouseBetweenRoom {
     /** The partition between the principal (north) and literary (south) bedrooms. */
@@ -77,7 +84,7 @@ public final class HouseBetweenRoom {
     private static final int ROOM_MIN_Y = 7;
     private static final int ROOM_MAX_Y = 10;
 
-    // The principal bedroom with its walls, copied in front of the door.
+    // The principal bedroom with its walls, copied in front of the pocket's door.
     private static final int COPY_MIN_X = 0;
     private static final int COPY_MAX_X = 13;
     private static final int COPY_MIN_Y = FLOOR_Y;
@@ -85,28 +92,65 @@ public final class HouseBetweenRoom {
     private static final int COPY_MIN_Z = -1;
     private static final int COPY_MAX_Z = WALL_Z;
 
+    /**
+     * What can be seen from the bedroom that is not the bedroom: the view out
+     * of its front and west windows, and the upper hall through its door.
+     * Copied once, when the pocket is made. {x0, y0, z0, x1, y1, z1}.
+     */
+    private static final int[][] BACKDROP = {
+            {-3, 0, -18, 17, 24, -2},
+            {-18, 0, -2, -1, 24, 10},
+            {14, FLOOR_Y, -1, 17, CEILING_Y, 10}
+    };
+
     /** How far from the door someone can wander in the copied bedroom before being put back. */
     private static final double APPROACH_RADIUS = 6.0D;
-    private static final int DOOR_OPEN_DELAY_TICKS = 6;
     private static final int DOOR_CHECK_INTERVAL = 20;
 
-    private static final int BUILD_FLAGS = Block.UPDATE_CLIENTS;
+    /** Walls and floors placed together, with no shape updates to break anything half-built. */
+    private static final int BUILD_FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
     /** Players who have been inside the room since arriving; stepping back out returns them. */
     private static final Set<UUID> INSIDE = new HashSet<>();
-    /** Ticks until the door opens in front of a player who has just arrived. */
-    private static final Map<UUID, Integer> DOOR_OPENING = new HashMap<>();
 
     private HouseBetweenRoom() {
+    }
+
+    // ------------------------------------------------------------------
+    // Where the pocket is
+
+    /**
+     * How far above the manor the pocket stands: 100 blocks, or less if the
+     * House is so high the pocket would not fit under the build limit (the
+     * House dimension's is 320).
+     */
+    public static int pocketDy(BlockPos origin) {
+        return Math.max(40, Math.min(100, 320 - 32 - origin.getY()));
+    }
+
+    /** The pocket's own origin: the manor's, shifted up. */
+    public static BlockPos pocketOrigin(BlockPos origin) {
+        return origin.above(pocketDy(origin));
+    }
+
+    /** Whether a position (in the House dimension) is inside the pocket's copied bedroom or room. */
+    public static boolean isInPocket(BlockPos origin, double x, double y, double z) {
+        BlockPos pocket = pocketOrigin(origin);
+        double relX = x - pocket.getX();
+        double relY = y - pocket.getY();
+        double relZ = z - pocket.getZ();
+        return relX >= COPY_MIN_X - 1 && relX <= COPY_MAX_X + 2
+                && relY >= FLOOR_Y - 1 && relY <= CEILING_Y + 1
+                && relZ >= COPY_MIN_Z - 1 && relZ <= ROOM_MAX_Z + 2;
     }
 
     // ------------------------------------------------------------------
     // Appearing
 
     /**
-     * Sets the door into the bedroom partition and builds the room behind it.
+     * Sets the door into the bedroom partition and builds the pocket above.
      *
-     * @return false if a dimension it needs is missing
+     * @return false if the House dimension is missing
      */
     public static boolean reveal(MinecraftServer server, HouseSavedData data) {
         BlockPos origin = data.houseOrigin();
@@ -114,23 +158,53 @@ public final class HouseBetweenRoom {
             return false;
         }
         ServerLevel interior = HouseInteriorInitializer.ensureInitialized(server, data);
-        ServerLevel between = server.getLevel(HouseDimensions.BETWEEN);
-        if (interior == null || between == null) {
+        if (interior == null) {
             return false;
         }
 
         int doorX = chooseDoorX(interior, origin);
         placeDoor(interior, origin, doorX);
         HouseDimensionMirror.reconcileAuthoritativeDomestic(interior, server.overworld(), origin);
-
-        buildRoom(between, origin, doorX);
-        copyBedroom(interior, between, origin);
         data.markRoomRevealed(doorX);
+        buildPocket(interior, data, origin);
         PacketDistributor.sendToAllPlayers(doorPayload(data));
 
         TheOldestHouse.LOGGER.info("A door has appeared in the principal bedroom of The Oldest House at {} (perceived age {}).",
                 doorPos(origin, doorX), data.houseAge());
         return true;
+    }
+
+    /** Builds the pocket (view, room, bedroom copy) if this house's room does not have one yet. */
+    public static void ensurePocket(MinecraftServer server) {
+        HouseSavedData data = HouseSavedData.get(server);
+        BlockPos origin = data.houseOrigin();
+        ServerLevel interior = server.getLevel(HouseDimensions.INTERIOR);
+        if (origin != null && interior != null && data.isRoomRevealed() && !data.isRoomPocketBuilt()) {
+            buildPocket(interior, data, origin);
+        }
+    }
+
+    private static void buildPocket(ServerLevel interior, HouseSavedData data, BlockPos origin) {
+        int dy = pocketDy(origin);
+        BlockPos.MutableBlockPos from = new BlockPos.MutableBlockPos();
+        for (int[] box : BACKDROP) {
+            for (int x = box[0]; x <= box[3]; x++) {
+                for (int y = box[1]; y <= box[4]; y++) {
+                    for (int z = box[2]; z <= box[5]; z++) {
+                        from.set(origin.getX() + x, origin.getY() + y, origin.getZ() + z);
+                        BlockState state = interior.getBlockState(from);
+                        BlockPos to = from.above(dy);
+                        if (interior.getBlockState(to) != state) {
+                            interior.setBlock(to, state.hasBlockEntity() ? Blocks.AIR.defaultBlockState() : state, BUILD_FLAGS);
+                        }
+                    }
+                }
+            }
+        }
+        buildRoom(interior, pocketOrigin(origin), data.roomDoorX());
+        copyBedroom(interior, origin);
+        data.markRoomPocketBuilt();
+        TheOldestHouse.LOGGER.info("Built the room between rooms {} blocks above the manor.", dy);
     }
 
     /** What clients need to know to leave the door shut when it is clicked. */
@@ -287,29 +361,83 @@ public final class HouseBetweenRoom {
     }
 
     /**
-     * Copies the principal bedroom, its walls and its paintings from the
-     * manor into the space between, in front of the room's door. Block
-     * entities come without their inventories, and nothing in the copy can
-     * be used or broken.
+     * Copies the principal bedroom, its walls and its paintings into the
+     * pocket, in front of the room's door. Block entities come without their
+     * inventories, and nothing in the copy can be used or broken.
+     *
+     * Paintings are matched one for one with any already hanging in the
+     * copy, never added on top of them: two paintings in one place pop off
+     * the wall and drop as items.
      */
-    public static void copyBedroom(ServerLevel interior, ServerLevel between, BlockPos origin) {
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+    public static void copyBedroom(ServerLevel level, BlockPos origin) {
+        int dy = pocketDy(origin);
+        BlockPos.MutableBlockPos from = new BlockPos.MutableBlockPos();
         for (int x = COPY_MIN_X; x <= COPY_MAX_X; x++) {
             for (int y = COPY_MIN_Y; y <= COPY_MAX_Y; y++) {
                 for (int z = COPY_MIN_Z; z <= COPY_MAX_Z; z++) {
-                    pos.set(origin.getX() + x, origin.getY() + y, origin.getZ() + z);
-                    HouseDimensionMirror.copyStateAndBlockEntity(interior, between, pos);
+                    from.set(origin.getX() + x, origin.getY() + y, origin.getZ() + z);
+                    copyUp(level, from.immutable(), dy);
                 }
             }
         }
 
-        AABB bounds = copyBounds(origin);
-        for (Painting old : between.getEntitiesOfClass(Painting.class, bounds)) {
-            old.discard();
+        AABB real = copyBounds(origin);
+        AABB pocket = real.move(0, dy, 0);
+        if (!entitiesLoaded(level, real) || !entitiesLoaded(level, pocket)) {
+            return; // Not now: better no paintings than two.
         }
-        for (Painting painting : interior.getEntitiesOfClass(Painting.class, bounds)) {
-            Painting copy = new Painting(between, painting.getPos(), painting.getDirection(), painting.getVariant());
-            between.addFreshEntity(copy);
+        List<Painting> copies = new ArrayList<>(level.getEntitiesOfClass(Painting.class, pocket));
+        for (Painting painting : level.getEntitiesOfClass(Painting.class, real)) {
+            BlockPos at = painting.getPos().above(dy);
+            Painting match = null;
+            for (Painting copy : copies) {
+                if (copy.getPos().equals(at) && copy.getDirection() == painting.getDirection()) {
+                    match = copy;
+                    break;
+                }
+            }
+            if (match != null) {
+                copies.remove(match);
+                if (match.getVariant().equals(painting.getVariant())) {
+                    continue;
+                }
+                match.discard();
+            }
+            level.addFreshEntity(new Painting(level, at, painting.getDirection(), painting.getVariant()));
+        }
+        // Anything left in the copy has no original any more.
+        copies.forEach(Painting::discard);
+    }
+
+    private static boolean entitiesLoaded(ServerLevel level, AABB box) {
+        for (int cx = ((int) Math.floor(box.minX)) >> 4; cx <= ((int) Math.floor(box.maxX)) >> 4; cx++) {
+            for (int cz = ((int) Math.floor(box.minZ)) >> 4; cz <= ((int) Math.floor(box.maxZ)) >> 4; cz++) {
+                if (!level.areEntitiesLoaded(ChunkPos.asLong(cx, cz))) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /** One block and its non-inventory block-entity data, copied straight up by {@code dy}. */
+    private static void copyUp(ServerLevel level, BlockPos from, int dy) {
+        BlockPos to = from.above(dy);
+        BlockState state = level.getBlockState(from);
+        if (level.getBlockState(to) != state) {
+            level.setBlock(to, state, BUILD_FLAGS);
+        }
+        BlockEntity source = level.getBlockEntity(from);
+        BlockEntity target = level.getBlockEntity(to);
+        if (source == null || target == null || source.getType() != target.getType()
+                || HouseDimensionMirror.isInventoryBearing(level, source)) {
+            return;
+        }
+        CompoundTag data = source.saveWithoutMetadata(level.registryAccess());
+        if (!data.equals(target.saveWithoutMetadata(level.registryAccess()))) {
+            target.loadWithComponents(data, level.registryAccess());
+            target.setChanged();
+            level.sendBlockUpdated(to, state, state, Block.UPDATE_CLIENTS);
         }
     }
 
@@ -325,8 +453,8 @@ public final class HouseBetweenRoom {
 
     /**
      * Clicking the door in the manor: it stays shut there (the client is told
-     * where it is, so it never shows it opening onto the shelves) and the
-     * player goes through to the space between instead.
+     * where it is, so it never shows it opening onto the shelves). The player
+     * is shifted up into the copy, where the same door swings open.
      */
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         Level level = event.getLevel();
@@ -343,68 +471,52 @@ public final class HouseBetweenRoom {
 
         event.setCanceled(true);
         event.setCancellationResult(InteractionResult.SUCCESS);
-        if (event.getEntity() instanceof ServerPlayer player && level.dimension().equals(HouseDimensions.INTERIOR)) {
-            enter(player, data, origin);
+        if (event.getEntity() instanceof ServerPlayer player
+                && level instanceof ServerLevel interior
+                && level.dimension().equals(HouseDimensions.INTERIOR)
+                && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND) {
+            enter(player, interior, data, origin);
         }
     }
 
-    private static void enter(ServerPlayer player, HouseSavedData data, BlockPos origin) {
-        MinecraftServer server = player.server;
-        ServerLevel interior = server.getLevel(HouseDimensions.INTERIOR);
-        ServerLevel between = server.getLevel(HouseDimensions.BETWEEN);
-        if (interior == null || between == null) {
-            return;
+    private static void enter(ServerPlayer player, ServerLevel interior, HouseSavedData data, BlockPos origin) {
+        if (!data.isRoomPocketBuilt()) {
+            buildPocket(interior, data, origin);
         }
-        int doorX = data.roomDoorX();
-        HouseTransitionEvents.beginDoorTransition(
-                player,
-                HouseDimensions.BETWEEN,
-                p -> {
-                    copyBedroom(interior, between, origin);
-                    setDoorOpen(between, doorPos(origin, doorX), false, null);
-                    INSIDE.remove(p.getUUID());
-                },
-                p -> DOOR_OPENING.put(p.getUUID(), DOOR_OPEN_DELAY_TICKS)
-        );
+        copyBedroom(interior, origin);
+        int dy = pocketDy(origin);
+        BlockPos pocketDoor = doorPos(origin, data.roomDoorX()).above(dy);
+        setDoorOpen(interior, pocketDoor, false);
+        INSIDE.remove(player.getUUID());
+
+        // Straight up, relative, so nothing about where they stand or look changes.
+        player.connection.teleport(0.0D, dy, 0.0D, 0.0F, 0.0F, RelativeMovement.ALL);
+        setDoorOpen(interior, pocketDoor, true);
+        interior.playSound(null, pocketDoor, SoundEvents.WOODEN_DOOR_OPEN, SoundSource.BLOCKS, 1.0F,
+                0.9F + interior.getRandom().nextFloat() * 0.1F);
     }
 
     /**
-     * Each tick for a player in the space between: opens the door in front
-     * of someone who has just arrived, and returns them to the manor when
-     * they come back out of the room or wander off from the door.
+     * Each tick for a player in the House dimension. Returns true when they
+     * are in the pocket (so the manor's own bounds do not apply), after
+     * returning them to the real bedroom if they have come back out through
+     * the doorway or wandered off from the door.
      */
-    static void tickPlayer(ServerPlayer player, HouseSavedData data, BlockPos origin) {
-        if (!data.isRoomRevealed()) {
-            return;
+    public static boolean tickPocket(ServerPlayer player, HouseSavedData data, BlockPos origin) {
+        if (!data.isRoomRevealed() || !isInPocket(origin, player.getX(), player.getY(), player.getZ())) {
+            INSIDE.remove(player.getUUID());
+            return false;
         }
         UUID id = player.getUUID();
+        BlockPos pocket = pocketOrigin(origin);
         int doorX = data.roomDoorX();
-        ServerLevel between = player.serverLevel();
-
-        Integer opening = DOOR_OPENING.get(id);
-        if (opening != null) {
-            if (opening <= 0) {
-                DOOR_OPENING.remove(id);
-                setDoorOpen(between, doorPos(origin, doorX), true, player);
-            } else {
-                DOOR_OPENING.put(id, opening - 1);
-            }
-        }
-
-        double relX = player.getX() - origin.getX();
-        double relY = player.getY() - origin.getY();
-        double relZ = player.getZ() - origin.getZ();
-        if (relX < COPY_MIN_X - 4 || relX > COPY_MAX_X + 5
-                || relZ < COPY_MIN_Z - 4 || relZ > ROOM_MAX_Z + 3
-                || relY < FLOOR_Y - 4 || relY > CEILING_Y + 3) {
-            // Somewhere else in this dimension (a command put them there).
-            INSIDE.remove(id);
-            return;
-        }
+        double relX = player.getX() - pocket.getX();
+        double relY = player.getY() - pocket.getY();
+        double relZ = player.getZ() - pocket.getZ();
 
         if (relZ >= ROOM_MIN_Z + 0.35D) {
             INSIDE.add(id);
-            return;
+            return true;
         }
 
         boolean leave;
@@ -421,38 +533,40 @@ public final class HouseBetweenRoom {
         if (leave) {
             returnToManor(player, origin, doorX);
         }
+        return true;
     }
 
     private static void returnToManor(ServerPlayer player, BlockPos origin, int doorX) {
-        if (!HouseTransitionEvents.beginDoorTransition(player, HouseDimensions.INTERIOR, null, p -> {
-            ServerLevel between = p.server.getLevel(HouseDimensions.BETWEEN);
-            if (between != null) {
-                setDoorOpen(between, doorPos(origin, doorX), false, null);
-            }
+        int dy = pocketDy(origin);
+        boolean cameThrough = INSIDE.remove(player.getUUID());
+        player.connection.teleport(0.0D, -dy, 0.0D, 0.0F, 0.0F, RelativeMovement.ALL);
+        ServerLevel level = player.serverLevel();
+        setDoorOpen(level, doorPos(origin, doorX).above(dy), false);
+        if (cameThrough) {
             // The door they came through has swung shut behind them.
-            p.serverLevel().playSound(null, doorPos(origin, doorX), SoundEvents.WOODEN_DOOR_CLOSE, SoundSource.BLOCKS,
-                    1.0F, 0.9F + p.getRandom().nextFloat() * 0.1F);
-        })) {
-            return;
+            BlockPos real = doorPos(origin, doorX);
+            player.connection.send(new ClientboundSoundPacket(
+                    BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.WOODEN_DOOR_CLOSE), SoundSource.BLOCKS,
+                    real.getX() + 0.5D, real.getY() + 0.5D, real.getZ() + 0.5D, 1.0F,
+                    0.9F + player.getRandom().nextFloat() * 0.1F, player.getRandom().nextLong()));
         }
-        INSIDE.remove(player.getUUID());
-        DOOR_OPENING.remove(player.getUUID());
     }
 
-    private static void setDoorOpen(ServerLevel level, BlockPos lower, boolean open, @Nullable ServerPlayer opener) {
-        BlockState state = level.getBlockState(lower);
-        if (!(state.getBlock() instanceof DoorBlock door) || state.getValue(DoorBlock.OPEN) == open) {
+    /** Players left in the old separate dimension by an earlier version are brought back to the bedroom. */
+    static void rescueFromBetween(ServerPlayer player, HouseSavedData data, BlockPos origin) {
+        if (HouseTransitionEvents.isPending(player)) {
             return;
         }
-        if (opener != null) {
-            // Vanilla's own open, so its sound and game event are an ordinary door's.
-            door.setOpen(opener, level, state, lower, open);
-            return;
-        }
+        int doorX = data.isRoomRevealed() ? data.roomDoorX() : 9;
+        Vec3 target = Vec3.atBottomCenterOf(doorPos(origin, doorX).north());
+        HouseTransitionEvents.beginDoorTransition(player, HouseDimensions.INTERIOR, null, null, target, 0.0F);
+    }
+
+    private static void setDoorOpen(ServerLevel level, BlockPos lower, boolean open) {
         for (BlockPos half : new BlockPos[]{lower, lower.above()}) {
-            BlockState current = level.getBlockState(half);
-            if (current.getBlock() instanceof DoorBlock) {
-                level.setBlock(half, current.setValue(DoorBlock.OPEN, open), BUILD_FLAGS);
+            BlockState state = level.getBlockState(half);
+            if (state.getBlock() instanceof DoorBlock && state.getValue(DoorBlock.OPEN) != open) {
+                level.setBlock(half, state.setValue(DoorBlock.OPEN, open), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
             }
         }
     }
@@ -471,7 +585,7 @@ public final class HouseBetweenRoom {
         BlockPos lower = doorPos(origin, data.roomDoorX());
         for (ServerLevel level : new ServerLevel[]{server.getLevel(HouseDimensions.INTERIOR), server.overworld()}) {
             if (level != null && level.isLoaded(lower)) {
-                setDoorOpen(level, lower, false, null);
+                setDoorOpen(level, lower, false);
             }
         }
     }
@@ -484,12 +598,10 @@ public final class HouseBetweenRoom {
 
     public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         INSIDE.remove(event.getEntity().getUUID());
-        DOOR_OPENING.remove(event.getEntity().getUUID());
     }
 
     public static void clearAll() {
         INSIDE.clear();
-        DOOR_OPENING.clear();
     }
 
     // ------------------------------------------------------------------
@@ -519,11 +631,14 @@ public final class HouseBetweenRoom {
         return partition || backing;
     }
 
-    /** In the space between: the copied bedroom, and the room's walls, floor and ceiling. */
-    public static boolean isProtectedBetweenPosition(BlockPos origin, int doorX, BlockPos pos) {
-        int x = pos.getX() - origin.getX();
-        int y = pos.getY() - origin.getY();
-        int z = pos.getZ() - origin.getZ();
+    /**
+     * In the pocket ({@code pocketOrigin} is the manor's origin shifted up):
+     * the copied bedroom, and the room's walls, floor and ceiling.
+     */
+    public static boolean isProtectedPocketPosition(BlockPos pocketOrigin, int doorX, BlockPos pos) {
+        int x = pos.getX() - pocketOrigin.getX();
+        int y = pos.getY() - pocketOrigin.getY();
+        int z = pos.getZ() - pocketOrigin.getZ();
         if (isInCopy(x, y, z)) {
             return true;
         }
@@ -540,26 +655,23 @@ public final class HouseBetweenRoom {
                 && z >= COPY_MIN_Z && z <= COPY_MAX_Z;
     }
 
-    @Nullable
-    private static BlockPos betweenOrigin(Level level, HouseSavedData[] dataOut) {
-        if (!level.dimension().equals(HouseDimensions.BETWEEN) || level.getServer() == null) {
+    /** The manor's origin, if {@code level} is the House dimension and the room exists. */
+    private static BlockPos pocketHouse(Level level) {
+        if (!level.dimension().equals(HouseDimensions.INTERIOR) || level.getServer() == null) {
             return null;
         }
         HouseSavedData data = HouseSavedData.get(level.getServer());
-        if (!data.isRoomRevealed()) {
-            return null;
-        }
-        dataOut[0] = data;
-        return data.houseOrigin();
+        return data.isRoomRevealed() ? data.houseOrigin() : null;
+    }
+
+    private static boolean isProtectedInPocket(Level level, BlockPos pos) {
+        BlockPos origin = pocketHouse(level);
+        return origin != null
+                && isProtectedPocketPosition(pocketOrigin(origin), HouseSavedData.get(level.getServer()).roomDoorX(), pos);
     }
 
     public static void onBreak(BlockEvent.BreakEvent event) {
-        if (!(event.getLevel() instanceof Level level)) {
-            return;
-        }
-        HouseSavedData[] data = new HouseSavedData[1];
-        BlockPos origin = betweenOrigin(level, data);
-        if (origin != null && isProtectedBetweenPosition(origin, data[0].roomDoorX(), event.getPos())) {
+        if (event.getLevel() instanceof Level level && isProtectedInPocket(level, event.getPos())) {
             event.setCanceled(true);
         }
     }
@@ -568,40 +680,30 @@ public final class HouseBetweenRoom {
         if (!(event.getLevel() instanceof Level level)) {
             return;
         }
-        HouseSavedData[] data = new HouseSavedData[1];
-        BlockPos origin = betweenOrigin(level, data);
+        BlockPos origin = pocketHouse(level);
         if (origin == null) {
             return;
         }
-        BlockPos pos = event.getPos();
-        if (isInCopy(pos.getX() - origin.getX(), pos.getY() - origin.getY(), pos.getZ() - origin.getZ())
-                || isProtectedBetweenPosition(origin, data[0].roomDoorX(), pos)) {
+        BlockPos rel = event.getPos().subtract(pocketOrigin(origin));
+        if (isInCopy(rel.getX(), rel.getY(), rel.getZ()) || isProtectedInPocket(level, event.getPos())) {
             event.setCanceled(true);
         }
     }
 
     public static void onExplosion(ExplosionEvent.Detonate event) {
-        HouseSavedData[] data = new HouseSavedData[1];
-        BlockPos origin = betweenOrigin(event.getLevel(), data);
-        if (origin != null) {
-            int doorX = data[0].roomDoorX();
-            event.getAffectedBlocks().removeIf(pos -> isProtectedBetweenPosition(origin, doorX, pos));
+        Level level = event.getLevel();
+        if (pocketHouse(level) != null) {
+            event.getAffectedBlocks().removeIf(pos -> isProtectedInPocket(level, pos));
         }
     }
 
     public static void onPiston(PistonEvent.Pre event) {
-        if (!(event.getLevel() instanceof Level level)) {
+        if (!(event.getLevel() instanceof Level level) || pocketHouse(level) == null) {
             return;
         }
-        HouseSavedData[] data = new HouseSavedData[1];
-        BlockPos origin = betweenOrigin(level, data);
-        if (origin == null) {
-            return;
-        }
-        int doorX = data[0].roomDoorX();
         Direction direction = event.getDirection();
         BlockPos face = event.getFaceOffsetPos();
-        if (isProtectedBetweenPosition(origin, doorX, face) || isProtectedBetweenPosition(origin, doorX, face.relative(direction))) {
+        if (isProtectedInPocket(level, face) || isProtectedInPocket(level, face.relative(direction))) {
             event.setCanceled(true);
             return;
         }
@@ -609,7 +711,7 @@ public final class HouseBetweenRoom {
         if (resolver != null && resolver.resolve()) {
             for (List<BlockPos> list : List.of(resolver.getToPush(), resolver.getToDestroy())) {
                 for (BlockPos pos : list) {
-                    if (isProtectedBetweenPosition(origin, doorX, pos) || isProtectedBetweenPosition(origin, doorX, pos.relative(direction))) {
+                    if (isProtectedInPocket(level, pos) || isProtectedInPocket(level, pos.relative(direction))) {
                         event.setCanceled(true);
                         return;
                     }
@@ -619,16 +721,17 @@ public final class HouseBetweenRoom {
     }
 
     /** Nothing in the copied bedroom can be used; only its door opens. */
-    public static void onRightClickInBetween(PlayerInteractEvent.RightClickBlock event) {
-        HouseSavedData[] data = new HouseSavedData[1];
-        BlockPos origin = betweenOrigin(event.getLevel(), data);
-        if (origin == null) {
+    public static void onRightClickInPocket(PlayerInteractEvent.RightClickBlock event) {
+        Level level = event.getLevel();
+        BlockPos origin = pocketHouse(level);
+        if (origin == null || level.isClientSide()) {
             return;
         }
+        BlockPos pocket = pocketOrigin(origin);
         BlockPos pos = event.getPos();
-        int doorX = data[0].roomDoorX();
-        if (isInCopy(pos.getX() - origin.getX(), pos.getY() - origin.getY(), pos.getZ() - origin.getZ())
-                && !isDoorCell(origin, doorX, pos)) {
+        BlockPos rel = pos.subtract(pocket);
+        if (isInCopy(rel.getX(), rel.getY(), rel.getZ())
+                && !isDoorCell(pocket, HouseSavedData.get(level.getServer()).roomDoorX(), pos)) {
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.FAIL);
         }

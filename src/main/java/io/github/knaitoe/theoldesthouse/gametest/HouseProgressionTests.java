@@ -11,6 +11,8 @@ import io.github.knaitoe.theoldesthouse.house.HouseMemory;
 import io.github.knaitoe.theoldesthouse.house.HouseShiftEffects;
 import io.github.knaitoe.theoldesthouse.house.HouseShifts;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.entity.decoration.PaintingVariants;
@@ -341,11 +343,11 @@ public final class HouseProgressionTests {
         helper.assertTrue(level.getBlockState(origin.offset(doorX, 8, z0)).isAir(), "headroom just inside the door");
         helper.assertTrue(level.getBlockState(origin.offset(doorX, 7, z0 + 4)).is(Blocks.RED_CARPET), "the bedroom's old red rug");
 
-        helper.assertTrue(HouseBetweenRoom.isProtectedBetweenPosition(origin, doorX, origin.offset(doorX + 4, 8, z0 + 3)),
+        helper.assertTrue(HouseBetweenRoom.isProtectedPocketPosition(origin, doorX, origin.offset(doorX + 4, 8, z0 + 3)),
                 "the room's walls cannot be broken");
-        helper.assertTrue(!HouseBetweenRoom.isProtectedBetweenPosition(origin, doorX, origin.offset(doorX, 7, z0 + 4)),
+        helper.assertTrue(!HouseBetweenRoom.isProtectedPocketPosition(origin, doorX, origin.offset(doorX, 7, z0 + 4)),
                 "its furnishings can");
-        helper.assertTrue(HouseBetweenRoom.isProtectedBetweenPosition(origin, doorX, origin.offset(5, 7, 4)),
+        helper.assertTrue(HouseBetweenRoom.isProtectedPocketPosition(origin, doorX, origin.offset(5, 7, 4)),
                 "nor can anything in the copied bedroom");
         helper.succeed();
     }
@@ -363,8 +365,37 @@ public final class HouseProgressionTests {
 
     @GameTest(template = "empty")
     public static void theRoomLiesPastTheThreshold(GameTestHelper helper) {
-        helper.assertTrue(HouseLabyrinth.isBeyondThreshold(helper.getLevel().getServer(), HouseDimensions.BETWEEN, BlockPos.ZERO),
+        BlockPos origin = new BlockPos(100_000, 64, 100_000);
+        helper.assertTrue(HouseLabyrinth.isBeyondThreshold(origin, HouseBetweenRoom.pocketOrigin(origin).offset(9, 7, 14)),
                 "beds do not work in the room between rooms");
+        helper.assertTrue(HouseLabyrinth.isBeyondThreshold(origin, HouseBetweenRoom.pocketOrigin(origin).offset(5, 7, 4)),
+                "nor in the copy of the bedroom in front of it");
+        helper.assertTrue(!HouseLabyrinth.isBeyondThreshold(origin, origin.offset(5, 7, 4)),
+                "but they do in the real bedroom");
         helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void copyingTheBedroomNeverDoublesItsPaintings(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos origin = helper.absolutePos(BlockPos.ZERO).offset(160, -2, 140);
+        int dy = HouseBetweenRoom.pocketDy(origin);
+        level.setBlock(origin.offset(5, 8, 9), Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
+        var variants = level.registryAccess().registryOrThrow(Registries.PAINTING_VARIANT);
+        level.addFreshEntity(new Painting(level, origin.offset(5, 8, 8), Direction.NORTH, variants.getHolderOrThrow(PaintingVariants.KEBAB)));
+
+        HouseBetweenRoom.copyBedroom(level, origin);
+        HouseBetweenRoom.copyBedroom(level, origin);
+        HouseBetweenRoom.copyBedroom(level, origin);
+
+        AABB pocket = new AABB(origin.offset(0, dy, -2).getCenter(), origin.offset(14, dy + 12, 10).getCenter()).inflate(1.0D);
+        int copies = level.getEntitiesOfClass(Painting.class, pocket).size();
+        helper.assertTrue(copies == 1, "the copy should hang exactly one painting, had " + copies);
+        helper.assertTrue(level.getBlockState(origin.offset(5, 8 + dy, 9)).is(Blocks.STONE), "its wall is copied too");
+        helper.runAfterDelay(120, () -> {
+            helper.assertTrue(level.getEntitiesOfClass(ItemEntity.class, pocket.inflate(4.0D)).isEmpty(),
+                    "nothing should have dropped off the copied walls");
+            helper.succeed();
+        });
     }
 }
