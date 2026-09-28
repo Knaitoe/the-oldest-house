@@ -44,7 +44,6 @@ public final class OpeningCommands {
                 .then(withTarget("photo", OpeningCommands::photo))
                 .then(withTarget("copy", OpeningCommands::visitCopy))
                 .then(withTarget("hillary", OpeningCommands::hillary))
-                .then(withTarget("door", OpeningCommands::door))
                 .then(withTarget("reset", OpeningCommands::reset));
     }
 
@@ -62,8 +61,6 @@ public final class OpeningCommands {
     private static int status(CommandSourceStack source, ServerPlayer player) {
         OpeningPlayerState state = OpeningSequence.state(player);
         long day = OpeningSequence.currentDay(source.getServer());
-        OpeningWorldData.EntranceRecord door = OpeningWorldData.get(source.getServer()).doorOf(player.getUUID());
-        OpeningSequence.PendingDoorView pending = OpeningSequence.pendingDoor(player.getUUID());
         Optional<BlockPos> bed = Doorsteps.bedPosition(player);
 
         String text = player.getGameProfile().getName() + " | stage=" + state.stage().name().toLowerCase()
@@ -75,11 +72,8 @@ public final class OpeningCommands {
                 + ", letterDay=" + state.letterDay()
                 + ", lastMorning=" + state.lastMorningDay()
                 + ", trackedDoors=" + state.doorUse().size()
-                + ", failedDoorNights=" + state.failedDoorNights()
                 + ", hillary=" + (state.hillaryUuid() == null ? "none" : state.hillaryUuid())
-                + ", door=" + (door == null ? "none" : format(door.lower()) + " opening " + door.open().getName()
-                        + (door.freestanding() ? " (freestanding)" : ""))
-                + (pending == null ? "" : ", doorPending=" + pending.plans() + " plan(s)")
+                + ", enteredHouse=" + state.enteredHouse()
                 + photoSummary(OpeningWorldData.get(source.getServer()).photoOf(player.getUUID()));
         source.sendSuccess(() -> Component.literal(text), false);
         return 1;
@@ -93,7 +87,7 @@ public final class OpeningCommands {
                 + (photo.window() == null ? "" : (photo.windowCarved() ? ", window cut at " : ", window lit at ") + format(photo.window()));
     }
 
-    /** The next step, as the next morning would run it (the letter waits for its photo; the door for you to look away). */
+    /** The next step, as the next morning would run it. */
     private static int advance(CommandSourceStack source, ServerPlayer player) {
         String result = OpeningSequence.advance(player);
         source.sendSuccess(() -> Component.literal(player.getGameProfile().getName() + ": " + result + "."), true);
@@ -188,33 +182,12 @@ public final class OpeningCommands {
     }
 
     /** Morning two now: Hillary on the doorstep and the door placed at once (even in view). */
-    private static int door(CommandSourceStack source, ServerPlayer player) {
-        Optional<BlockPos> bed = Doorsteps.bedPosition(player);
-        if (bed.isEmpty()) {
-            source.sendFailure(Component.literal(player.getGameProfile().getName() + " has no bed respawn point."));
-            return 0;
-        }
-        OpeningPlayerState state = OpeningSequence.state(player);
-        if (state.stage().ordinal() < OpeningStage.LETTER_DELIVERED.ordinal()) {
-            state.setStageForTesting(OpeningStage.LETTER_DELIVERED, OpeningSequence.currentDay(source.getServer()) - 1L);
-        }
-        OpeningSequence.secondMorning(player, state, bed.get(), true);
-        OpeningWorldData.EntranceRecord door = OpeningWorldData.get(source.getServer()).doorOf(player.getUUID());
-        if (door == null) {
-            source.sendFailure(Component.literal("No place for the door yet (see the log); failed nights: "
-                    + state.failedDoorNights() + "."));
-            return 0;
-        }
-        source.sendSuccess(() -> Component.literal("Door placed at " + format(door.lower()) + "."), true);
-        return 1;
-    }
-
-    /** Clears the player's progress and removes their door, restoring the wall it replaced. */
+    /** Clears this player's opening progression. */
     private static int reset(CommandSourceStack source, ServerPlayer player) {
-        boolean removed = OpeningSequence.removeEntranceDoor(source.getServer(), player.getUUID());
         OpeningSequence.state(player).reset();
-        source.sendSuccess(() -> Component.literal("Opening sequence reset for " + player.getGameProfile().getName()
-                + (removed ? "; door removed and the wall restored." : ".")), true);
+        source.sendSuccess(() -> Component.literal(
+                "Opening sequence reset for " + player.getGameProfile().getName() + "."
+        ), true);
         return 1;
     }
 
