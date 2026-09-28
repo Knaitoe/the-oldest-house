@@ -14,7 +14,7 @@ Version `0.3.5` revises the per-player opening sequence so the ordinary manor, n
 - Will Navidson's letter and the photograph are left at the player's familiar doorstep.
 - **Morning 2:** Hillary appears at that doorstep and tries to lead the player over ordinary Overworld terrain to the Navidsons' manor. She waits if they fall behind and waits at the front entrance.
 - **No impossible doorway is placed in the player's home.** The retired 0.3.0 entrance-door block, placement code, state, assets and debug controls have been removed.
-- At the ordinary authored front-door boundary, the player alone is transferred to the House dimension. Hillary goes a few blocks into the literal Overworld proxy manor and stays there rather than crossing dimensions.
+- At the ordinary authored front-door boundary, the player alone is transferred to the House dimension. Hillary never crosses dimensions: she sits on the porch outside the front door and stays in the Overworld.
 - The Oldest House's perceived age advances only after at least one real manor entry. Ignoring the invitation cannot reveal the impossible threshold off-screen.
 - At the provisional test threshold of perceived age **3**, an ordinary-looking door appears at the far end of the central hall.
 - The usable domestic interior lives in The Oldest House dimension at matching coordinates, with nearby Overworld scenery mirrored outside its windows.
@@ -32,7 +32,7 @@ The modular room graph, navigation anomalies, explorer notes, Mother of Strays, 
 3. Navidson's photograph preserves the actual bearing from the manor's porch toward the player's home. Camera distance may be compressed to fit the captured copy, and framing may shift only slightly on that same side.
 4. The letter and photograph arrive at the player's most familiar doorstep.
 5. On the following handled morning, Hillary appears there and begins guiding toward the manor.
-6. The player physically reaches the Navidsons' ordinary front door. The boundary transfers the player to the matching House-dimension interior while Hillary remains in the Overworld proxy structure. Only then may perceived House age begin advancing.
+6. The player physically reaches the Navidsons' ordinary front door. The boundary transfers the player to the matching House-dimension interior while Hillary waits outside on the porch in the Overworld. Only then may perceived House age begin advancing.
 
 There is no independent hidden appearance roll anymore. The opening sequence owns automatic House appearance; `HouseSpawnManager.ensureSpawnedNear` still owns the terrain-aware site search.
 
@@ -371,7 +371,7 @@ The opening has been revised so the player's own home remains ordinary.
 
 ### 0.3.3 proxy-Hillary and smooth-door handoff
 
-- Hillary no longer waits outside once the player enters. At the front-door handoff she is moved into the literal Overworld proxy foyer and remains an Overworld entity; only the player transitions to `the_oldest_house:interior`.
+- Hillary no longer waits outside once the player enters. At the front-door handoff she is moved into the literal Overworld proxy foyer and remains an Overworld entity; only the player transitions to `the_oldest_house:interior`. (Superseded in 0.3.4: she waits outside on the porch.)
 - Vanilla tame-owner follow behavior is suppressed while Hillary is parked in the proxy so she cannot try to follow/teleport across dimensions.
 - The bespoke giant swinging-door transition screen and duplicate UI door sound are removed.
 - `DOOR` transitions now use the same short captured-frame/motion treatment as the generic breach boundary, while the real Minecraft door supplies its own in-world animation and sound.
@@ -395,3 +395,11 @@ The opening has been revised so the player's own home remains ordinary.
 - Proxy evacuation explicitly ignores projections, so a visible interior NPC is not mistaken for a trapped real Overworld mob and thrown out of the house.
 - Both projection directions are seeded before dimension exits/entries where appropriate to avoid one-frame pop-in.
 
+
+### Unreleased fixes
+
+- Hillary stops guiding once the player has entered the manor. She keeps her porch spot and her owner instead of being pulled back to the porch with no owner forever.
+- If there is no room at the doorstep for Hillary on the second morning, the opening waits and tries again the next morning instead of moving on without her.
+- The House dimension's native-mob cleanup no longer deletes mobs in the impossible hallway or anywhere past the labyrinth threshold.
+- Mirrored projections no longer copy data attachments, so a projection of Hillary can't be tamed or treated as Hillary.
+- Navidson's photograph stops searching camera spots once it has a good view, avoiding a one-tick lag spike.

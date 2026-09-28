@@ -23,6 +23,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.AABB;
+import net.neoforged.neoforge.attachment.AttachmentHolder;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -355,7 +356,10 @@ public final class HouseExteriorEntityMirror {
                 "Invulnerable",
                 "Silent",
                 "DeathLootTable",
-                "DeathLootTableSeed"
+                "DeathLootTableSeed",
+                // Data attachments are gameplay identity (Hillary's tag, for
+                // one): a projection must never carry them.
+                AttachmentHolder.ATTACHMENTS_NBT_KEY
         }) {
             tag.remove(key);
         }
@@ -393,7 +397,9 @@ public final class HouseExteriorEntityMirror {
      * The House dimension uses matching Overworld terrain for scenery. Native
      * mobs spawned in that copied exterior would double the projected real
      * population, so only outdoor/native mobs are removed. Authored domestic
-     * mobs remain untouched and can project outward in the reverse direction.
+     * mobs remain untouched and can project outward in the reverse direction,
+     * and nothing past the labyrinth threshold is touched: the impossible
+     * hallway lies inside this view box.
      */
     private static void removeNativeExteriorMobs(ServerLevel interior, BlockPos origin, AABB view) {
         for (Mob mob : interior.getEntitiesOfClass(
@@ -404,7 +410,8 @@ public final class HouseExteriorEntityMirror {
             double relX = mob.getX() - origin.getX();
             double relY = mob.getY() - origin.getY();
             double relZ = mob.getZ() - origin.getZ();
-            if (!HouseLayout.isInsideDomesticVolume(relX, relY, relZ)) {
+            if (!HouseLayout.isInsideDomesticVolume(relX, relY, relZ)
+                    && !HouseLabyrinth.isBeyondThreshold(origin, mob.blockPosition())) {
                 mob.discard();
             }
         }

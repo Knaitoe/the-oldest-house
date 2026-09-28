@@ -148,7 +148,9 @@ public final class OpeningSequence {
                     overworld,
                     player,
                     state.hillaryUuid(),
-                    state.stage().isAtLeast(OpeningStage.HILLARY_ARRIVED),
+                    // She guides only until the player has been inside;
+                    // after that she is an ordinary companion again.
+                    state.stage().isAtLeast(OpeningStage.HILLARY_ARRIVED) && !state.enteredHouse(),
                     house.houseOrigin()
             );
         }
@@ -295,6 +297,13 @@ public final class OpeningSequence {
                 }
             }
         }
+        if (state.hillaryUuid() == null) {
+            // No doorstep or no room for her: stay at LETTER_DELIVERED so the
+            // next morning tries again instead of stalling without Hillary.
+            TheOldestHouse.LOGGER.info("No place for Hillary near {}'s bed at {}; she will try again tomorrow.",
+                    player.getGameProfile().getName(), bed);
+            return;
+        }
         state.markHillaryArrived();
     }
 
@@ -324,7 +333,9 @@ public final class OpeningSequence {
             case LETTER_DELIVERED -> {
                 state.setStageForTesting(OpeningStage.LETTER_DELIVERED, day - 1L);
                 secondMorning(player, state, bed.get());
-                return "Hillary is on the doorstep and will lead you toward the Navidsons' manor";
+                return state.stage() == OpeningStage.LETTER_DELIVERED
+                        ? "no doorstep with room for Hillary near the bed yet"
+                        : "Hillary is on the doorstep and will lead you toward the Navidsons' manor";
             }
             case HILLARY_ARRIVED -> {
                 return state.enteredHouse()
