@@ -110,20 +110,7 @@ public final class HouseExteriorEntityMirror {
         ensureSourceTickets(overworld, origin);
 
         AABB view = viewBounds(origin);
-        if (!scrubbedLoadedProjections) {
-            // A clean shutdown removes projections before saving, but after a
-            // crash a tamed/persistent projected mob may have been written to
-            // a House chunk. Never let yesterday's scenery become an entity.
-            for (Mob mob : interior.getEntitiesOfClass(
-                    Mob.class,
-                    view,
-                    entity -> entity.getTags().contains(PROJECTION_TAG)
-            )) {
-                mob.discard();
-            }
-            PROJECTIONS.clear();
-            scrubbedLoadedProjections = true;
-        }
+        scrubLoadedProjectionsIfNeeded(interior, view);
 
         removeNativeExteriorMobs(interior, origin, view);
         sync(overworld, interior, origin, view, server.getTickCount() % STATE_REFRESH_INTERVAL_TICKS == 0);
@@ -137,8 +124,28 @@ public final class HouseExteriorEntityMirror {
      */
     public static int syncNow(ServerLevel overworld, ServerLevel interior, BlockPos origin) {
         AABB view = viewBounds(origin);
+        scrubLoadedProjectionsIfNeeded(interior, view);
         removeNativeExteriorMobs(interior, origin, view);
         return sync(overworld, interior, origin, view, true);
+    }
+
+    private static void scrubLoadedProjectionsIfNeeded(ServerLevel interior, AABB view) {
+        if (scrubbedLoadedProjections) {
+            return;
+        }
+
+        // A clean shutdown removes projections before saving, but after a
+        // crash a tamed/persistent projected mob may have been written to a
+        // House chunk. Never let yesterday's scenery become an entity.
+        for (Mob mob : interior.getEntitiesOfClass(
+                Mob.class,
+                view,
+                entity -> entity.getTags().contains(PROJECTION_TAG)
+        )) {
+            mob.discard();
+        }
+        PROJECTIONS.clear();
+        scrubbedLoadedProjections = true;
     }
 
     private static int sync(
