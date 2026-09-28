@@ -397,7 +397,7 @@ public final class OpeningTests {
     }
 
     @GameTest(template = "empty")
-    public static void hillaryLeadsThenWaitsOutsideTheManor(GameTestHelper helper) {
+    public static void hillaryLeadsThenEntersTheLiteralProxyManor(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos home = helper.absolutePos(new BlockPos(2, 3, 2));
         level.setBlock(home.below(), Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
@@ -414,7 +414,7 @@ public final class OpeningTests {
         recipient.moveTo(home.getX() + 0.5D, home.getY(), home.getZ() + 0.5D);
 
         BlockPos manorOrigin = home.offset(28, 0, 0);
-        Hillary.tickGuide(level, recipient, wolf.getUUID(), true, manorOrigin);
+        Hillary.tickGuide(level, recipient, wolf.getUUID(), true, false, manorOrigin);
         helper.assertTrue(
                 wolf.getOwnerUUID() == null,
                 "Hillary kept vanilla follow-owner AI while she was supposed to lead"
@@ -426,15 +426,35 @@ public final class OpeningTests {
                 HouseLayout.FRONT_DOOR_Z - 2
         );
         wolf.moveTo(porch.getX() + 0.5D, porch.getY(), porch.getZ() + 0.5D, 0.0F, 0.0F);
-        Hillary.tickGuide(level, recipient, wolf.getUUID(), true, manorOrigin);
+        Hillary.tickGuide(level, recipient, wolf.getUUID(), true, false, manorOrigin);
 
         helper.assertTrue(
                 recipient.getUUID().equals(wolf.getOwnerUUID()),
-                "Hillary did not restore her owner when she reached the manor"
+                "Hillary did not restore her owner while waiting at the porch"
         );
-        helper.assertTrue(wolf.isOrderedToSit(), "Hillary should wait outside the manor");
+
+        Hillary.enterProxyManor(level.getServer(), wolf.getUUID(), manorOrigin);
+
+        BlockPos foyer = manorOrigin.offset(
+                HouseLayout.AXIS_X,
+                1,
+                HouseLayout.FRONT_DOOR_Z + 3
+        );
+        helper.assertTrue(
+                wolf.blockPosition().distManhattan(foyer) <= 1,
+                "Hillary did not enter the literal Overworld proxy manor: " + wolf.blockPosition()
+        );
+        helper.assertTrue(
+                wolf.getOwnerUUID() == null,
+                "Hillary kept owner-follow AI after the player crossed dimensions"
+        );
+        helper.assertTrue(wolf.isOrderedToSit(), "Hillary should settle inside the proxy manor");
+
         HillaryTag tag = Hillary.tagOf(wolf);
-        helper.assertTrue(tag != null && tag.home().equals(porch), "Hillary did not adopt the manor porch as her waiting place");
+        helper.assertTrue(
+                tag != null && tag.home().equals(foyer),
+                "Hillary did not adopt the proxy foyer as her waiting place"
+        );
 
         wolf.discard();
         helper.succeed();
