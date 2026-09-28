@@ -49,7 +49,6 @@ public final class OpeningSequence {
     public static void register(IEventBus bus) {
         bus.addListener(OpeningSequence::onServerTick);
         bus.addListener(OpeningSequence::onPlayerLoggedIn);
-        bus.addListener(OpeningSequence::onPlayerLoggedOut);
         bus.addListener(OpeningSequence::onPlayerWakeUp);
         bus.addListener(OpeningSequence::onRightClickBlock);
         bus.addListener(OpeningSequence::onServerStopped);
@@ -82,11 +81,6 @@ public final class OpeningSequence {
     private static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             state(player).noteFirstJoin(currentDay(player.server));
-        }
-    }
-
-    private static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
         }
     }
 
@@ -127,7 +121,6 @@ public final class OpeningSequence {
         );
     }
 
-    /** Blocks a player placed in the last minute are never turned into the door. */
     private static void onServerStopped(ServerStoppedEvent event) {
         clearAll();
     }
@@ -369,18 +362,13 @@ public final class OpeningSequence {
     }
 
     // ------------------------------------------------------------------
-    // The door
+    // First manor entry
 
-    /**
-     * The owner steps through into the House, handed to the existing
-     * dimension-shift transition. Returns false (the door rattles) for
-     * anyone else, or if the House cannot be reached.
-     */
-    /** Records the first ordinary entry into the manor. */
+    /** Records an ordinary entry into the manor; the first one unlocks aging. */
     public static void onEnteredHouse(ServerPlayer player) {
         OpeningPlayerState state = state(player);
+        HouseSavedData.get(player.server).incrementVisitCount();
         if (!state.enteredHouse()) {
-            HouseSavedData.get(player.server).incrementVisitCount();
             TheOldestHouse.LOGGER.info("{} has entered the House for the first time.", player.getGameProfile().getName());
         }
         state.markEntered();
@@ -389,8 +377,4 @@ public final class OpeningSequence {
         }
     }
 
-    /**
-     * Removes a player's entrance door and restores exactly what it replaced
-     * (also the hook for the House's eventual collapse).
-     */
 }
