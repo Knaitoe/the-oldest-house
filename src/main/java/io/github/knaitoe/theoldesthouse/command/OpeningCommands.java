@@ -4,17 +4,21 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.knaitoe.theoldesthouse.opening.Doorsteps;
+import io.github.knaitoe.theoldesthouse.opening.NavidsonLetter;
+import io.github.knaitoe.theoldesthouse.opening.NavidsonPhoto;
 import io.github.knaitoe.theoldesthouse.opening.OpeningPlayerState;
 import io.github.knaitoe.theoldesthouse.opening.OpeningSequence;
 import io.github.knaitoe.theoldesthouse.opening.OpeningStage;
 import io.github.knaitoe.theoldesthouse.opening.OpeningWorldData;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Debug controls for the opening sequence, under {@code /oldesthouse opening}.
@@ -33,6 +37,7 @@ public final class OpeningCommands {
                 .then(withTarget("status", OpeningCommands::status))
                 .then(withTarget("eligible", OpeningCommands::eligible))
                 .then(withTarget("letter", OpeningCommands::letter))
+                .then(withTarget("photo", OpeningCommands::photo))
                 .then(withTarget("door", OpeningCommands::door))
                 .then(withTarget("reset", OpeningCommands::reset));
     }
@@ -89,12 +94,45 @@ public final class OpeningCommands {
             return 0;
         }
         long day = OpeningSequence.currentDay(source.getServer());
-        if (!OpeningSequence.deliverLetter(player, OpeningSequence.state(player), bed.get(), day)) {
+        NavidsonPhoto.Result photo = takePhoto(source, player, bed.get());
+        if (!OpeningSequence.deliverLetter(player, OpeningSequence.state(player), bed.get(), day, photo == null ? null : photo.pixels())) {
             source.sendFailure(Component.literal("No doorstep near the bed to leave the letter on."));
             return 0;
         }
         source.sendSuccess(() -> Component.literal("Navidson's letter delivered to " + player.getGameProfile().getName() + "."), true);
         return 1;
+    }
+
+    /** Photographs the player's house again and hands the snapshot to whoever ran the command. */
+    private static int photo(CommandSourceStack source, ServerPlayer player) throws CommandSyntaxException {
+        Optional<BlockPos> bed = Doorsteps.bedPosition(player);
+        if (bed.isEmpty()) {
+            source.sendFailure(Component.literal(player.getGameProfile().getName() + " has no bed respawn point."));
+            return 0;
+        }
+        NavidsonPhoto.Result photo = takePhoto(source, player, bed.get());
+        ServerPlayer caller = source.getPlayerOrException();
+        ItemStack snapshot = NavidsonLetter.createSnapshot(source.getServer().overworld(), photo == null ? null : photo.pixels());
+        if (!caller.getInventory().add(snapshot)) {
+            caller.drop(snapshot, false);
+        }
+        return photo != null && photo.pixels() != null ? 1 : 0;
+    }
+
+    @Nullable
+    private static NavidsonPhoto.Result takePhoto(CommandSourceStack source, ServerPlayer player, BlockPos bed) {
+        BlockPos porch = OpeningSequence.navidsonPorch(source.getServer(), bed);
+        NavidsonPhoto.Result photo = NavidsonPhoto.takeNow(source.getServer(), player.getUUID(), bed, porch);
+        if (photo == null || photo.pixels() == null) {
+            source.sendFailure(Component.literal("The House could not photograph the house around " + format(bed)
+                    + "; the stock print is used."));
+            return photo;
+        }
+        String window = photo.window() == null ? "no window in view"
+                : (photo.windowCarved() ? "carved a lit window at " : "lit the window at ") + format(photo.window());
+        source.sendSuccess(() -> Component.literal("Photographed the copy in the_oldest_house:outside from "
+                + format(photo.copyMin()) + " (" + window + ")."), false);
+        return photo;
     }
 
     /** Morning two now: Hillary on the doorstep and the door placed at once (even in view). */

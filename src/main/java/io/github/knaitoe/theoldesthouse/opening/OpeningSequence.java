@@ -87,6 +87,7 @@ public final class OpeningSequence {
     private static void onServerTick(ServerTickEvent.Post event) {
         MinecraftServer server = event.getServer();
         Hillary.tick(server);
+        NavidsonPhoto.tick(server);
 
         int tick = server.getTickCount();
         if (tick % DOOR_ATTEMPT_INTERVAL == 0 && !PENDING_DOORS.isEmpty()) {
@@ -168,6 +169,7 @@ public final class OpeningSequence {
         PENDING_DOORS.clear();
         RECENT_PLACEMENTS.clear();
         Hillary.clear();
+        NavidsonPhoto.clear();
     }
 
     // ------------------------------------------------------------------
@@ -211,7 +213,7 @@ public final class OpeningSequence {
         switch (state.stage()) {
             case ELIGIBLE -> {
                 if (day > state.eligibleDay()) {
-                    deliverLetter(player, state, bed, day);
+                    beginLetter(player, bed, day);
                 }
             }
             case LETTER_DELIVERED -> {
@@ -227,8 +229,50 @@ public final class OpeningSequence {
     // ------------------------------------------------------------------
     // Morning 1: the letter
 
-    /** Leaves the letter and snapshot on the doorstep. Returns whether they were delivered. */
-    public static boolean deliverLetter(ServerPlayer player, OpeningPlayerState state, BlockPos bed, long day) {
+    /**
+     * The Navidsons move in next door (the House appears if it has not yet),
+     * Navidson photographs the player's house from their porch, and the
+     * letter is left with the photo once it is developed, a few seconds on.
+     */
+    private static void beginLetter(ServerPlayer player, BlockPos bed, long day) {
+        MinecraftServer server = player.server;
+        UUID id = player.getUUID();
+        BlockPos porch = navidsonPorch(server, bed);
+        boolean started = NavidsonPhoto.start(server, id, bed, porch, result -> {
+            ServerPlayer recipient = server.getPlayerList().getPlayer(id);
+            if (recipient == null || recipient.serverLevel() != server.overworld()) {
+                return; // Away when it was ready: the next morning they are home, it comes again.
+            }
+            OpeningPlayerState state = state(recipient);
+            if (state.stage() == OpeningStage.ELIGIBLE) {
+                deliverLetter(recipient, state, Doorsteps.bedPosition(recipient).orElse(bed), day, result.pixels());
+            }
+        });
+        if (!started && !NavidsonPhoto.isRunning(id)) {
+            deliverLetter(player, state(player), bed, day, null);
+        }
+    }
+
+    /**
+     * The Navidsons' porch: the front of The Oldest House, spawned next door
+     * to {@code bed} now if it does not exist yet. Null if it has no site.
+     */
+    @Nullable
+    public static BlockPos navidsonPorch(MinecraftServer server, BlockPos bed) {
+        HouseSavedData house = HouseSavedData.get(server);
+        if (!house.isSpawned()) {
+            HouseSpawnManager.ensureSpawnedNear(server.overworld(), house, bed);
+        }
+        BlockPos origin = house.houseOrigin();
+        return origin == null ? null : origin.offset(HouseLayout.AXIS_X, 1, HouseLayout.FRONT_DOOR_Z - 2);
+    }
+
+    /**
+     * Leaves the letter and snapshot on the doorstep. {@code photo} is the
+     * developed photograph (null for the stock print). Returns whether they
+     * were delivered.
+     */
+    public static boolean deliverLetter(ServerPlayer player, OpeningPlayerState state, BlockPos bed, long day, @Nullable byte[] photo) {
         ServerLevel level = player.server.overworld();
         Doorsteps.Delivery delivery = Doorsteps.resolve(level, state, bed, OpeningConfig.DOORSTEP_SEARCH_RADIUS.getAsInt());
         if (delivery == null) {
@@ -239,17 +283,11 @@ public final class OpeningSequence {
 
         Vec3 spot = Doorsteps.restingPoint(level, delivery.spot());
         level.addFreshEntity(DeliveredItemEntity.create(level, NavidsonLetter.createBook(), spot.add(-0.14D, 0.0D, 0.08D), player.getUUID()));
-        level.addFreshEntity(DeliveredItemEntity.create(level, NavidsonLetter.createSnapshot(level), spot.add(0.14D, 0.0D, -0.08D), player.getUUID()));
+        level.addFreshEntity(DeliveredItemEntity.create(level, NavidsonLetter.createSnapshot(level, photo), spot.add(0.14D, 0.0D, -0.08D), player.getUUID()));
         if (OpeningConfig.KNOCK_SOUND.getAsBoolean()) {
             knock(player, delivery.door() != null ? delivery.door() : delivery.spot());
         }
         state.markLetterDelivered(day);
-
-        // "We just moved in next door."
-        HouseSavedData house = HouseSavedData.get(player.server);
-        if (!house.isSpawned()) {
-            HouseSpawnManager.ensureSpawnedNear(level, house, bed);
-        }
 
         TheOldestHouse.LOGGER.info("Navidson's letter was left for {} at {}.", player.getGameProfile().getName(), delivery.spot());
         return true;

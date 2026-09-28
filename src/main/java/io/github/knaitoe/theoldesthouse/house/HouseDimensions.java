@@ -12,6 +12,15 @@ public final class HouseDimensions {
             ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "house_interior")
     );
 
+    /**
+     * The outside dimension: an empty void with a sky, holding every place
+     * that needs one (captured copies of the player's own base first).
+     */
+    public static final ResourceKey<Level> OUTSIDE = ResourceKey.create(
+            Registries.DIMENSION,
+            ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "outside")
+    );
+
     private HouseDimensions() {
     }
 }
