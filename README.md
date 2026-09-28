@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.3.1` revises the per-player opening sequence so the ordinary manor, not the player's home, is the first architectural relationship with the House:
+Version `0.3.2` revises the per-player opening sequence so the ordinary manor, not the player's home, is the first architectural relationship with the House:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -361,4 +361,11 @@ The opening has been revised so the player's own home remains ordinary.
 - Perceived House age is gated on real manor entry, preventing the age-3 impossible threshold from appearing while the invitation is being ignored.
 - Navidson's photograph now treats the real porch-to-home bearing as a hard relationship. Framing can shift only slightly on that side, while the copied facade can always receive a lit upper window without modifying the real home.
 - Old 0.3.0 `door_placed` player stages migrate to `HILLARY_ARRIVED`; obsolete door/return NBT is ignored.
+
+### 0.3.2 photograph regression fix
+
+- Navidson's snapshot no longer substitutes the baked stock home merely because the real porch-facing camera angle is obstructed.
+- Camera selection now tries the real porch relationship first, then broader same-side framing, and finally any viable angle around the captured settlement.
+- Once Capture has successfully produced the player's settlement copy, the rendered pixels from that copy remain authoritative even if the conservative visibility flag is false.
+- A GameTest now blocks the preferred facade of a custom test house and asserts that the result still depicts the captured house rather than stock art.
 
