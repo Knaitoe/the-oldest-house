@@ -361,6 +361,25 @@ final class HouseShell {
         blockedWindows(c);
         towerMasonry(c);
         porchTimber(c);
+        thresholdPress(c);
+    }
+
+    /**
+     * A shallow built-out press behind the end of the hall. Seen from the
+     * garden it is an ordinary timbered cupboard projection, so the rear of
+     * the house never shows the threshold door. The impossible hallway (which
+     * starts in exactly these cells) replaces it in the House dimension only.
+     */
+    private static void thresholdPress(HouseCanvas c) {
+        int z = HouseLayout.THRESHOLD_Z + 1; // HouseImpossibleHallway.START_Z_OFFSET
+        int x0 = HouseLayout.HALL_MIN_X - 1;
+        int x1 = HouseLayout.HALL_MAX_X + 1;
+        c.fill(x0, 0, z, x1, 1, z, STONE);
+        c.fill(x0 + 1, 2, z, x1 - 1, 5, z, PLASTER);
+        c.fill(x0, 2, z, x0, 5, z, POST);
+        c.fill(x1, 2, z, x1, 5, z, POST);
+        c.fill(x0 + 1, 4, z, x1 - 1, 4, z, log(Blocks.STRIPPED_DARK_OAK_LOG, Direction.Axis.X));
+        c.fill(x0, 6, z, x1, 6, z, stairs(Blocks.DEEPSLATE_TILE_STAIRS, Direction.NORTH));
     }
 
     /**

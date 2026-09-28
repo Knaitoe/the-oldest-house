@@ -169,7 +169,8 @@ final class HouseInteriors {
         c.set(11, 1, 12, stairs(Blocks.SPRUCE_STAIRS, Direction.EAST));
 
         // Writing desk under the front-right window.
-        c.fill(11, 1, 1, 12, 1, 1, slab(Blocks.DARK_OAK_SLAB, SlabType.TOP));
+        trestleTable(c, 10, 1, 1, 12, 1, Blocks.DARK_OAK_SLAB, Blocks.DARK_OAK_STAIRS);
+        c.set(10, 2, 1, candle(2));
         c.set(11, 1, 2, stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH));
         c.set(12, 2, 1, candle(1));
 
@@ -212,7 +213,7 @@ final class HouseInteriors {
      */
     private static void kitchen(HouseCanvas c) {
         // Dining end.
-        c.fill(20, 1, 4, 23, 1, 4, slab(Blocks.DARK_OAK_SLAB, SlabType.TOP));
+        trestleTable(c, 20, 1, 4, 23, 4, Blocks.DARK_OAK_SLAB, Blocks.DARK_OAK_STAIRS);
         c.set(20, 1, 3, stairs(Blocks.SPRUCE_STAIRS, Direction.NORTH));
         c.set(22, 1, 3, stairs(Blocks.SPRUCE_STAIRS, Direction.NORTH));
         c.set(21, 1, 5, stairs(Blocks.SPRUCE_STAIRS, Direction.SOUTH));
@@ -254,7 +255,7 @@ final class HouseInteriors {
         c.set(18, 2, 10, Blocks.POTTED_FERN.defaultBlockState());
 
         // Work table between range and dresser.
-        c.fill(21, 1, 8, 22, 1, 8, slab(Blocks.SPRUCE_SLAB, SlabType.TOP));
+        trestleTable(c, 21, 1, 8, 23, 8, Blocks.SPRUCE_SLAB, Blocks.SPRUCE_STAIRS);
         c.set(22, 5, 9, lantern(true));
     }
 
@@ -297,7 +298,7 @@ final class HouseInteriors {
         c.set(2, 1, 18, Blocks.CARTOGRAPHY_TABLE.defaultBlockState());
 
         // Writing desk under the second window.
-        c.fill(2, 1, 22, 2, 1, 23, slab(Blocks.DARK_OAK_SLAB, SlabType.TOP));
+        trestleTable(c, 2, 1, 22, 2, 23, Blocks.DARK_OAK_SLAB, Blocks.DARK_OAK_STAIRS);
         c.set(3, 1, 22, stairs(Blocks.DARK_OAK_STAIRS, Direction.EAST));
         c.set(2, 2, 22, lantern(false));
         c.set(2, 2, 23, candle(4));
@@ -429,7 +430,7 @@ final class HouseInteriors {
         c.fill(12, 9, 1, 12, 9, 2, slab(Blocks.DARK_OAK_SLAB, SlabType.BOTTOM));
 
         // Dressing table under the front window.
-        c.fill(10, 7, 0, 11, 7, 0, slab(Blocks.DARK_OAK_SLAB, SlabType.TOP));
+        trestleTable(c, 9, 7, 0, 11, 0, Blocks.DARK_OAK_SLAB, Blocks.DARK_OAK_STAIRS);
         c.set(10, 7, 1, stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH));
         c.set(11, 8, 0, Blocks.POTTED_ALLIUM.defaultBlockState());
 
@@ -455,7 +456,7 @@ final class HouseInteriors {
         c.fill(9, 8, 10, 10, 9, 10, BOOKSHELF);
         c.set(5, 8, 10, chiseled(Direction.SOUTH));
 
-        c.fill(6, 7, 14, 7, 7, 14, slab(Blocks.DARK_OAK_SLAB, SlabType.TOP));
+        trestleTable(c, 5, 7, 14, 7, 14, Blocks.DARK_OAK_SLAB, Blocks.DARK_OAK_STAIRS);
         c.set(6, 7, 13, stairs(Blocks.SPRUCE_STAIRS, Direction.NORTH));
         c.set(7, 8, 14, candle(3));
         c.set(9, 7, 14, facing(Blocks.LECTERN, Direction.NORTH));
@@ -521,7 +522,7 @@ final class HouseInteriors {
             c.set(2, 7, z, stairs(Blocks.SPRUCE_STAIRS, Direction.WEST));
         }
 
-        c.fill(6, 7, 18, 8, 7, 18, slab(Blocks.DARK_OAK_SLAB, SlabType.TOP));
+        trestleTable(c, 6, 7, 18, 8, 18, Blocks.DARK_OAK_SLAB, Blocks.DARK_OAK_STAIRS);
         c.set(7, 8, 18, Blocks.POTTED_FERN.defaultBlockState());
 
         c.set(5, 7, 25, stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH));
@@ -643,6 +644,18 @@ final class HouseInteriors {
                 c.setIfAir(x, y, z, carpet);
             }
         }
+    }
+
+    /**
+     * A board table standing on its own legs: upside-down stairs at each end
+     * (their lower half reads as a leg) with top slabs between them.
+     */
+    private static void trestleTable(HouseCanvas c, int x0, int y, int z0, int x1, int z1, Block top, Block legs) {
+        boolean alongX = z0 == z1;
+        Direction low = alongX ? Direction.WEST : Direction.NORTH;
+        c.fill(x0, y, z0, x1, y, z1, slab(top, SlabType.TOP));
+        c.set(x0, y, z0, stairsTop(legs, low));
+        c.set(x1, y, z1, stairsTop(legs, low.getOpposite()));
     }
 
     private static void table(HouseCanvas c, int x, int y, int z) {
