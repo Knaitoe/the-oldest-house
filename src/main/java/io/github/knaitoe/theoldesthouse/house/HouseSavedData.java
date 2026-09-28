@@ -292,6 +292,11 @@ public final class HouseSavedData extends SavedData {
         setDirty();
     }
 
+    public void setRoomDoorX(int doorX) {
+        roomDoorX = doorX;
+        setDirty();
+    }
+
     public void markRoomRevealed(int doorX) {
         roomRevealedAge = houseAge;
         roomDoorX = doorX;
