@@ -217,7 +217,11 @@ public final class NavidsonPhoto {
             case RENDERING -> {
                 if (render.step(rows)) {
                     SnapshotRenderer.Photo photo = render.finish(LevelSnapshotScene.paletteRgb(), LevelSnapshotScene.paletteIds());
-                    finish(new Result(photo.sawHouse() ? photo.pixels() : null, photo.sawHouse(), copy.targetMin(), window, carved));
+                    // Once Capture has succeeded, never substitute the stock
+                    // home merely because the conservative visibility flag
+                    // disagrees with the finished render. The photograph is
+                    // always of this player's copied settlement.
+                    finish(new Result(photo.pixels(), photo.sawHouse(), copy.targetMin(), window, carved));
                 }
             }
             case DONE -> {
@@ -236,7 +240,7 @@ public final class NavidsonPhoto {
         ty = SnapshotRenderer.houseCenterY(scene, home.getX(), home.getY(), home.getZ());
         camera = SnapshotRenderer.chooseCamera(scene, tx, ty, tz, preferredYaw, preferredDistance);
         if (camera == null) {
-            TheOldestHouse.LOGGER.info("No clear view of {}'s house at {}; the stock print is used.", player, bed);
+            TheOldestHouse.LOGGER.warn("No viable camera view of {}'s captured settlement at {}.", player, bed);
             fail();
             return;
         }
