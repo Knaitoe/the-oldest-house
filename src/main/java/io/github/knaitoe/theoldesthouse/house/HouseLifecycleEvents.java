@@ -38,6 +38,7 @@ public final class HouseLifecycleEvents {
         HouseSavedData data = HouseSavedData.get(event.getServer());
         HouseShifts.refreshCache(data);
         LabyrinthDoors.ensureHallwayDoor(event.getServer());
+        HouseBetweenRoom.ensurePocket(event.getServer());
         if (data.isSpawned() && !data.isCurrentLayout()) {
             TheOldestHouse.LOGGER.warn(
                     "The Oldest House in this world was generated with layout v{}, but this build uses v{}. "

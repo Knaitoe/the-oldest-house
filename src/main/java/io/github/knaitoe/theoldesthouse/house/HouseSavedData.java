@@ -41,6 +41,7 @@ public final class HouseSavedData extends SavedData {
     private int roomRevealedAge = -1;
     private int roomMissedMornings;
     private int roomDoorX = -1;
+    private boolean roomPocketBuilt;
 
     // Subtle changes (see HouseShifts) and the hallway's roll.
     private int shiftsTriggered;
@@ -85,6 +86,7 @@ public final class HouseSavedData extends SavedData {
         data.roomRevealedAge = tag.contains("RoomRevealedAge") ? tag.getInt("RoomRevealedAge") : -1;
         data.roomMissedMornings = tag.getInt("RoomMissedMornings");
         data.roomDoorX = tag.contains("RoomDoorX") ? tag.getInt("RoomDoorX") : -1;
+        data.roomPocketBuilt = tag.getBoolean("RoomPocketBuilt");
         data.shiftsTriggered = tag.getInt("ShiftsTriggered");
         data.shiftDryMornings = tag.getInt("ShiftDryMornings");
         data.hallwayMissedMornings = tag.getInt("HallwayMissedMornings");
@@ -124,6 +126,7 @@ public final class HouseSavedData extends SavedData {
         tag.putInt("RoomRevealedAge", roomRevealedAge);
         tag.putInt("RoomMissedMornings", roomMissedMornings);
         tag.putInt("RoomDoorX", roomDoorX);
+        tag.putBoolean("RoomPocketBuilt", roomPocketBuilt);
         tag.putInt("ShiftsTriggered", shiftsTriggered);
         tag.putInt("ShiftDryMornings", shiftDryMornings);
         tag.putInt("HallwayMissedMornings", hallwayMissedMornings);
@@ -279,6 +282,16 @@ public final class HouseSavedData extends SavedData {
         return roomDoorX;
     }
 
+    /** Whether the room's pocket above the manor has been built (older rooms were elsewhere). */
+    public boolean isRoomPocketBuilt() {
+        return roomPocketBuilt;
+    }
+
+    public void markRoomPocketBuilt() {
+        roomPocketBuilt = true;
+        setDirty();
+    }
+
     public void markRoomRevealed(int doorX) {
         roomRevealedAge = houseAge;
         roomDoorX = doorX;
@@ -423,6 +436,7 @@ public final class HouseSavedData extends SavedData {
         roomRevealedAge = -1;
         roomMissedMornings = 0;
         roomDoorX = -1;
+        roomPocketBuilt = false;
         shiftsTriggered = 0;
         shiftDryMornings = 0;
         hallwayMissedMornings = 0;

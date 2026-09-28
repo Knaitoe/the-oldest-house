@@ -70,7 +70,7 @@ public final class TheOldestHouse {
 
         // The room between rooms: its door is handled before the mirror sees the click.
         NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onRightClickBlock);
-        NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onRightClickInBetween);
+        NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onRightClickInPocket);
         NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onBreak);
         NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onPlace);
         NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onExplosion);

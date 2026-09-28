@@ -63,7 +63,11 @@ public final class HouseTransitionEvents {
         }
 
         if (dimension.equals(HouseDimensions.BETWEEN)) {
-            HouseBetweenRoom.tickPlayer(player, data, origin);
+            HouseBetweenRoom.rescueFromBetween(player, data, origin);
+            return;
+        }
+
+        if (dimension.equals(HouseDimensions.INTERIOR) && HouseBetweenRoom.tickPocket(player, data, origin)) {
             return;
         }
 
