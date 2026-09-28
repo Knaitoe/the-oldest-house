@@ -9,11 +9,6 @@ public enum OpeningStage {
     ELIGIBLE,
     LETTER_DELIVERED,
     HILLARY_ARRIVED,
-    /**
-     * Legacy 0.3.0 save value. It is treated as equivalent to HILLARY_ARRIVED;
-     * new code never creates a player-house entrance door.
-     */
-    DOOR_PLACED,
     ENTERED;
 
     public static final Codec<OpeningStage> CODEC = Codec.STRING.xmap(
