@@ -576,6 +576,27 @@ public final class OpeningTests {
                 interiorStandIn.addFreshEntity(resident),
                 "domestic source wolf was not added"
         );
+        helper.assertTrue(resident.isAlive(), "domestic source wolf is not alive after insertion");
+        helper.assertTrue(
+                !HouseExteriorEntityMirror.isProjection(resident),
+                "real domestic source was misclassified as a projection"
+        );
+        helper.assertTrue(
+                !HouseImpossibleHallway.isInteriorOnlyPosition(origin, resident.blockPosition()),
+                "ordinary domestic source was misclassified as impossible-space"
+        );
+        AABB sourceSearch = new AABB(
+                origin.getX() + HouseLayout.MIN_X - 40,
+                origin.getY() - 6,
+                origin.getZ() + HouseLayout.MIN_Z - 40,
+                origin.getX() + HouseLayout.MAX_X + 41,
+                origin.getY() + 25,
+                origin.getZ() + HouseLayout.MAX_Z + 41
+        );
+        helper.assertTrue(
+                interiorStandIn.getEntitiesOfClass(Mob.class, sourceSearch).contains(resident),
+                "domestic source wolf is not visible to the source entity query"
+        );
 
         int mirrored = HouseExteriorEntityMirror.syncDomesticToOverworldNow(
                 interiorStandIn,
