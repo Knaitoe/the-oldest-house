@@ -8,6 +8,7 @@ import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
 
@@ -60,9 +61,29 @@ final class HouseRoofs {
             canvas.setIfAir(candidate.x, candidate.y, candidate.z, surfaceState(candidate.roof, candidate.x, candidate.z));
         }
 
+        for (Candidate candidate : surface.values()) {
+            lineUnderside(canvas, candidate.x, candidate.y, candidate.z);
+        }
+
         for (Roof roof : roofs) {
             placeVergeBoards(canvas, roof);
         }
+    }
+
+    /**
+     * Rooms open to the roof would otherwise see the stepped underside of the
+     * tile stairs. Boarding each step with an upside-down plank stair turns
+     * it into a continuous sloped ceiling.
+     */
+    private static void lineUnderside(HouseCanvas canvas, int x, int y, int z) {
+        BlockState tile = canvas.get(x, y, z);
+        if (!tile.is(Blocks.DEEPSLATE_TILE_STAIRS)
+                || !HouseLayout.isRoomInterior(x, y - 1, z)
+                || !canvas.isAir(x, y - 1, z)) {
+            return;
+        }
+        Direction uphill = tile.getValue(StairBlock.FACING);
+        canvas.set(x, y - 1, z, HouseCanvas.stairsTop(Blocks.SPRUCE_STAIRS, uphill.getOpposite()));
     }
 
     private static BlockState surfaceState(Roof roof, int x, int z) {

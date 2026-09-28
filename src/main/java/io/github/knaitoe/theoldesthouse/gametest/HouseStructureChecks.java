@@ -56,6 +56,15 @@ final class HouseStructureChecks {
         if (!(lower.getBlock() instanceof DoorBlock) || !(upper.getBlock() instanceof DoorBlock)) {
             failures.add("revealed threshold has no door: " + lower + " / " + upper);
         }
+        // The Overworld keeps these cells, so the door must never show from the garden.
+        int behind = HouseLayout.THRESHOLD_Z + 1;
+        for (int x = HouseLayout.HALL_MIN_X; x <= HouseLayout.HALL_MAX_X; x++) {
+            for (int y = 1; y <= 2; y++) {
+                if (collisionHeight(x, y, behind) < 1.0D) {
+                    failures.add("threshold door is visible from outside at " + rel(x, y, behind) + ": " + get(x, y, behind));
+                }
+            }
+        }
         return failures;
     }
 
