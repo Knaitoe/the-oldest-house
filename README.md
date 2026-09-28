@@ -385,3 +385,13 @@ The opening has been revised so the player's own home remains ordinary.
 - The real Overworld mob remains authoritative. Projections have no AI, damage, interaction or gameplay authority and are removed when nobody is in the domestic interior.
 - Native outdoor mobs in the House dimension's mirrored view are suppressed to prevent duplicate populations.
 
+### 0.3.5 bidirectional entity continuity
+
+- Exterior entity continuity now works both directions across the ordinary domestic boundary.
+- Real Overworld mobs remain visible from inside the House via non-interactive matching-coordinate projections.
+- Real House-dimension mobs inside the ordinary domestic volume now remain visible from outside via projections inside the Overworld proxy shell.
+- Reverse projection is deliberately restricted to the domestic volume. Impossible hallway, vignette and deep-House entities do not bleed into the exterior facade.
+- The dimension containing the real mob remains authoritative; projected entities cannot be attacked, interacted with or used for gameplay.
+- Proxy evacuation explicitly ignores projections, so a visible interior NPC is not mistaken for a trapped real Overworld mob and thrown out of the house.
+- Both projection directions are seeded before dimension exits/entries where appropriate to avoid one-frame pop-in.
+
