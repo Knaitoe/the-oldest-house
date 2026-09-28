@@ -54,7 +54,6 @@ public final class OpeningSequence {
         bus.addListener(OpeningSequence::onRightClickBlock);
         bus.addListener(OpeningSequence::onServerStopped);
         bus.addListener(Hillary::onEntityInteract);
-        bus.addListener(Hillary::onEntityJoinLevel);
     }
 
     public static OpeningPlayerState state(ServerPlayer player) {
@@ -70,7 +69,6 @@ public final class OpeningSequence {
 
     private static void onServerTick(ServerTickEvent.Post event) {
         MinecraftServer server = event.getServer();
-        Hillary.tick(server);
         NavidsonPhoto.tick(server);
 
         int tick = server.getTickCount();
@@ -89,7 +87,6 @@ public final class OpeningSequence {
 
     private static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            Hillary.onPlayerLeft(player);
         }
     }
 
@@ -136,7 +133,6 @@ public final class OpeningSequence {
     }
 
     public static void clearAll() {
-        Hillary.clear();
         NavidsonPhoto.clear();
     }
 
