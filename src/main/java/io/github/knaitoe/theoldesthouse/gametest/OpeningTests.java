@@ -3,6 +3,7 @@ package io.github.knaitoe.theoldesthouse.gametest;
 import com.mojang.authlib.GameProfile;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.HouseExteriorEntityMirror;
 import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
 import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import io.github.knaitoe.theoldesthouse.house.HouseProxyEntityEvacuation;
@@ -29,6 +30,7 @@ import net.minecraft.server.network.Filterable;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.animal.WolfVariants;
 import net.minecraft.world.entity.npc.Villager;
@@ -45,6 +47,7 @@ import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -527,6 +530,90 @@ public final class OpeningTests {
 
         wolf.discard();
         villager.discard();
+        helper.succeed();
+    }
+
+
+    @GameTest(template = "empty")
+    public static void domesticHouseMobsProjectIntoTheOverworldProxy(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos origin = helper.absolutePos(new BlockPos(0, 8, 620));
+        BlockPos inside = origin.offset(
+                HouseLayout.AXIS_X,
+                1,
+                HouseLayout.FRONT_DOOR_Z + 4
+        );
+
+        Wolf resident = EntityType.WOLF.create(level);
+        helper.assertTrue(resident != null, "domestic source wolf did not create");
+        resident.setCustomName(Component.literal("House Resident"));
+        resident.moveTo(
+                inside.getX() + 0.5D,
+                inside.getY(),
+                inside.getZ() + 0.5D,
+                37.0F,
+                0.0F
+        );
+        level.addFreshEntity(resident);
+
+        int mirrored = HouseExteriorEntityMirror.syncDomesticToOverworldNow(
+                level,
+                level,
+                origin
+        );
+        helper.assertTrue(mirrored == 1, "expected one domestic source projection, got " + mirrored);
+
+        AABB search = new AABB(inside).inflate(2.0D);
+        List<Mob> projections = level.getEntitiesOfClass(
+                Mob.class,
+                search,
+                HouseExteriorEntityMirror::isProjection
+        );
+        helper.assertTrue(projections.size() == 1, "expected one visual projection, got " + projections.size());
+
+        Mob projection = projections.getFirst();
+        helper.assertTrue(
+                projection.getType() == resident.getType(),
+                "projection changed entity type"
+        );
+        helper.assertTrue(
+                projection.getCustomName() != null
+                        && "House Resident".equals(projection.getCustomName().getString()),
+                "projection did not preserve visible source state"
+        );
+        helper.assertTrue(
+                projection.isInvulnerable() && projection.isNoAi() && projection.isSilent(),
+                "projection retained gameplay behavior"
+        );
+        helper.assertTrue(
+                HouseLayout.isInsideDomesticVolume(
+                        projection.getX() - origin.getX(),
+                        projection.getY() - origin.getY(),
+                        projection.getZ() - origin.getZ()
+                ),
+                "reverse projection was not placed at the matching proxy-interior coordinates"
+        );
+
+        // A reverse projection lives geometrically inside the Overworld proxy,
+        // but the evacuation system must recognize it as scenery rather than
+        // expelling it as a trapped real mob.
+        int evacuated = HouseProxyEntityEvacuation.evacuateAll(level, origin);
+        helper.assertTrue(
+                evacuated <= 1,
+                "projection was incorrectly counted as a real trapped mob"
+        );
+        helper.assertTrue(
+                !projection.isRemoved()
+                        && HouseLayout.isInsideDomesticVolume(
+                                projection.getX() - origin.getX(),
+                                projection.getY() - origin.getY(),
+                                projection.getZ() - origin.getZ()
+                        ),
+                "projection was evacuated from the proxy"
+        );
+
+        HouseExteriorEntityMirror.clear(level.getServer());
+        resident.discard();
         helper.succeed();
     }
 
