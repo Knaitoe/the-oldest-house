@@ -166,7 +166,7 @@ Five characters belong to the house itself; everyone else lives inside a vignett
 
 ### The dog: Hillary
 
-- The Navidsons' gray husky. She turns up on the player's doorstep the morning after the letter, and the first bone from her recipient tames her. She leads the player over ordinary terrain to the Navidsons' manor and waits if they fall behind.
+- The Navidsons' gray husky. She turns up on the player's doorstep the morning after the letter, and the first bone from her recipient tames her. She doesn't set off at once: she notices the player, comes to them and looks up, head tilted, and won't go anywhere until they acknowledge her in turn (a pat, the bone, or crouching down facing her); ignored, she follows them and whines. Greeted, she barks, bounds and darts off towards the Navidsons' manor, then leads over ordinary terrain at a walkable pace, stopping to call back if the player falls behind.
 - During the opening she stops on the porch **outside** the front door and stays in the Overworld; she never enters the manor proxy or the House dimension (mobs cannot follow the player across). The player's matching-coordinate transition happens independently at the boundary. Once the player has gone in, she stops guiding and is an ordinary tamed dog again. Later, once the labyrinth exists, tamed Hillary becomes the guide described under Finding vignettes and may refuse particular dangerous destinations.
 
 ### The Minotaur

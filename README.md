@@ -12,7 +12,7 @@ Version `0.3.5` revises the per-player opening sequence so the ordinary manor, n
 - **Settling in:** a bed respawn point, two completed sleeps and three in-game days since joining make that player's opening eligible.
 - **Morning 1:** the Navidsons move in nearby. The manor is placed with the terrain-aware site search, then Navidson photographs a frozen copy of the player's settlement from the real manor-to-home bearing. The visible copied facade gets one lit upper window, invented in the copy if necessary. The real base is never altered.
 - Will Navidson's letter and the photograph are left at the player's familiar doorstep.
-- **Morning 2:** Hillary appears at that doorstep and tries to lead the player over ordinary Overworld terrain to the Navidsons' manor. She waits if they fall behind and waits at the front entrance.
+- **Morning 2:** Hillary appears at that doorstep. When she sees her recipient she stands, barks, trots over and looks up at them with her head tilted; she will not lead until they greet her back (a right-click, the bone, or crouching facing her), following them and whining if they walk off. Then she barks, bounds and darts off towards the manor, then leads over ordinary Overworld terrain at a pace the player can keep. She stops and calls back if they fall behind, and waits at the front entrance.
 - **No impossible doorway is placed in the player's home.** The retired 0.3.0 entrance-door block, placement code, state, assets and debug controls have been removed.
 - At the ordinary authored front-door boundary, the player alone is transferred to the House dimension. Hillary never crosses dimensions: she sits on the porch outside the front door and stays in the Overworld.
 - The Oldest House's perceived age advances only after at least one real manor entry. Ignoring the invitation cannot reveal the impossible threshold off-screen.
@@ -34,7 +34,7 @@ The modular room graph, navigation anomalies, explorer notes, Mother of Strays, 
 2. On the next handled morning, the opening places The Oldest House at the best safe site 32-64 blocks from the player's home if it does not already exist.
 3. Navidson's photograph preserves the actual bearing from the manor's porch toward the player's home. Camera distance may be compressed to fit the captured copy, and framing may shift only slightly on that same side.
 4. The letter and photograph arrive at the player's most familiar doorstep.
-5. On the following handled morning, Hillary appears there and begins guiding toward the manor.
+5. On the following handled morning, Hillary appears there. She greets the player and waits to be greeted back (right-click, bone, or crouch facing her) before guiding toward the manor.
 6. The player physically reaches the Navidsons' ordinary front door. The boundary transfers the player to the matching House-dimension interior while Hillary waits outside on the porch in the Overworld. Only then may perceived House age begin advancing.
 
 There is no independent hidden appearance roll anymore. The opening sequence owns automatic House appearance; `HouseSpawnManager.ensureSpawnedNear` still owns the terrain-aware site search.
@@ -434,4 +434,5 @@ The opening has been revised so the player's own home remains ordinary.
 - Days are counted by the mod, so `/time set` can no longer stall the opening, and sleeping in a manor bed now passes the night.
 - The first night in the manor shifts the rugs; around day 3 the room between rooms appears; ten kinds of subtle change follow on quiet mornings; after the room and two of them, the impossible hallway gets a heavily weighted daily roll, at the end of the hall as before. Subtle changes continue after it opens.
 - `/oldesthouse day [n]`, `/oldesthouse reveal rugs|room|hallway`, and a fuller `/oldesthouse status`.
+- Hillary greets her recipient and waits to be greeted back (right-click, bone, or crouching facing her) before darting off towards the manor; ignored, she follows and whines.
 - Every chest and barrel in the manor now has a loot table for its room: pantry food in the kitchen, bottles and bowls in the scullery, candles and odds and ends in the parlour and landings, books and ink in the literary bedroom, fletching and scrap metal in the maker loft, moth-eaten leftovers in the box room. `/oldesthouse restock` applies them to an existing house.

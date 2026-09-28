@@ -55,6 +55,7 @@ public final class OpeningSequence {
         bus.addListener(OpeningSequence::onRightClickBlock);
         bus.addListener(OpeningSequence::onServerStopped);
         bus.addListener(Hillary::onEntityInteract);
+        bus.addListener(Hillary::onEntityTick);
     }
 
     public static OpeningPlayerState state(ServerPlayer player) {
@@ -128,6 +129,7 @@ public final class OpeningSequence {
 
     public static void clearAll() {
         NavidsonPhoto.clear();
+        Hillary.clearAll();
     }
 
     // ------------------------------------------------------------------
@@ -362,6 +364,12 @@ public final class OpeningSequence {
         }
     }
 
+    private static boolean hillaryGreeted(ServerPlayer player, OpeningPlayerState state) {
+        return state.hillaryUuid() != null
+                && player.server.overworld().getEntity(state.hillaryUuid()) instanceof Wolf wolf
+                && Hillary.isAcknowledged(wolf);
+    }
+
     /** Where a player is in the opening, and what the next step waits on. */
     public static String describeProgress(ServerPlayer player) {
         OpeningPlayerState state = state(player);
@@ -380,7 +388,9 @@ public final class OpeningSequence {
             case LETTER_DELIVERED -> name + "letter delivered; Hillary arrives on the doorstep next morning.";
             case HILLARY_ARRIVED -> state.enteredHouse()
                     ? name + "complete (entered the manor)."
-                    : name + "Hillary is waiting to lead the way to the manor's front door.";
+                    : name + (hillaryGreeted(player, state)
+                            ? "Hillary has been greeted and is leading the way to the manor's front door."
+                            : "Hillary is waiting to be greeted (right-click her, give her the bone, or crouch facing her) before she leads the way.");
             case ENTERED -> name + "complete (entered the manor).";
         };
     }
