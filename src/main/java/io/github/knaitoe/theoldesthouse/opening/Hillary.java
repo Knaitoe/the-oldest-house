@@ -1,6 +1,7 @@
 package io.github.knaitoe.theoldesthouse.opening;
 
 import io.github.knaitoe.theoldesthouse.house.HouseLayout;
+import io.github.knaitoe.theoldesthouse.house.HouseProxyEntityEvacuation;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -130,11 +131,14 @@ public final class Hillary {
             return;
         }
 
-        BlockPos porch = porch(houseOrigin);
+        Vec3 porch = HouseProxyEntityEvacuation.frontDoorExit(overworld, houseOrigin);
+        if (porch == null) {
+            porch = Vec3.atBottomCenterOf(porchFallback(houseOrigin));
+        }
 
-        double toPorch = wolf.distanceToSqr(Vec3.atBottomCenterOf(porch));
+        double toPorch = wolf.distanceToSqr(porch);
         if (toPorch <= MANOR_STOP_RADIUS * MANOR_STOP_RADIUS) {
-            settleAtManor(wolf, tag.recipient(), porch);
+            settleAtManor(wolf, tag.recipient(), BlockPos.containing(porch));
             return;
         }
 
@@ -160,9 +164,9 @@ public final class Hillary {
         if (playerDistance <= (double) GUIDE_RESUME_RADIUS * GUIDE_RESUME_RADIUS
                 || wolf.getNavigation().isDone()) {
             wolf.getNavigation().moveTo(
-                    porch.getX() + 0.5D,
-                    porch.getY(),
-                    porch.getZ() + 0.5D,
+                    porch.x,
+                    porch.y,
+                    porch.z,
                     1.15D
             );
         }
@@ -200,7 +204,7 @@ public final class Hillary {
         }
     }
 
-    private static BlockPos porch(BlockPos houseOrigin) {
+    private static BlockPos porchFallback(BlockPos houseOrigin) {
         return houseOrigin.offset(
                 HouseLayout.AXIS_X,
                 1,
