@@ -61,6 +61,7 @@ public final class HouseLifecycleEvents {
         HouseExteriorEntityMirror.clear(event.getServer());
         HouseBetweenRoom.clearAll();
         HouseShifts.clearCache();
+        HouseChunkKeeper.release(event.getServer());
         LabyrinthDoors.clearAll();
         TellTaleFloorboards.clearAll();
     }

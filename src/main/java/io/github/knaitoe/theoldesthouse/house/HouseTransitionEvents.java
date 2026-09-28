@@ -10,19 +10,25 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class HouseTransitionEvents {
-    private static final int ACK_TIMEOUT_TICKS = 40;
-    private static final int DOOR_CLOSE_DELAY_TICKS = 8;
 
     private static int nextToken = 1;
     private static final Map<UUID, PendingTransition> PENDING = new HashMap<>();
@@ -56,7 +62,9 @@ public final class HouseTransitionEvents {
         ResourceKey<Level> dimension = player.serverLevel().dimension();
 
         if (dimension.equals(Level.OVERWORLD)) {
-            if (HouseLayout.isInsideDomesticVolume(relX, relY, relZ)) {
+            // The doorstep itself is crossed by the door's handle, not the wall.
+            if (HouseLayout.isInsideDomesticVolume(relX, relY, relZ)
+                    && !nearExteriorDoor(origin, player.getX(), player.getY(), player.getZ())) {
                 scheduleEntry(player, data, relX, relY, relZ);
             }
             return;
@@ -77,15 +85,9 @@ public final class HouseTransitionEvents {
     }
 
     private static void tickPendingTransition(ServerPlayer player, PendingTransition pending) {
-        if (!pending.acknowledged) {
-            if (++pending.waitedTicks > ACK_TIMEOUT_TICKS) {
-                // Do not perform an unclassified fallback teleport. Cancel and
-                // allow the boundary to retrigger instead.
-                PENDING.remove(player.getUUID());
-            }
-            return;
-        }
-
+        // The context payload was sent before this tick; packets on one
+        // connection are ordered, so the client has it before the respawn
+        // packet the move sends. Nothing to wait for.
         PENDING.remove(player.getUUID());
         ServerLevel destination = player.getServer().getLevel(pending.destination);
         if (destination == null) {
@@ -147,8 +149,9 @@ public final class HouseTransitionEvents {
             pending.after.accept(player);
         }
 
-        if (entering && pending.door != null && origin != null) {
-            PENDING_DOOR_CLOSE.put(player.getUUID(), new PendingDoorClose(origin, pending.door));
+        if (pending.door != null && origin != null) {
+            // The door shuts once they are a block past it on the far side.
+            PENDING_DOOR_CLOSE.put(player.getUUID(), new PendingDoorClose(origin, pending.door, entering ? -1.0D : 1.0D));
         }
         if (entering) {
             OpeningSequence.onEnteredHouse(player);
@@ -201,11 +204,8 @@ public final class HouseTransitionEvents {
         return PENDING.containsKey(player.getUUID());
     }
 
+    /** The client has the context; nothing waits on it any more, but the packet is still sent. */
     public static void acknowledgeContext(ServerPlayer player, int token) {
-        PendingTransition pending = PENDING.get(player.getUUID());
-        if (pending != null && pending.token == token) {
-            pending.acknowledged = true;
-        }
     }
 
     /** Drops per-player state for a player who has left. */
@@ -219,6 +219,7 @@ public final class HouseTransitionEvents {
     public static void clearAll() {
         PENDING.clear();
         PENDING_DOOR_CLOSE.clear();
+        DOOR_IDLE.clear();
     }
 
     private static boolean isValidHouseInteriorSpace(
@@ -230,6 +231,10 @@ public final class HouseTransitionEvents {
             double relZ
     ) {
         if (HouseLayout.isInsideDomesticVolume(relX, relY, relZ)) {
+            return true;
+        }
+        if (nearExteriorDoor(origin, player.getX(), player.getY(), player.getZ())) {
+            // Just crossed at the door and not yet through it.
             return true;
         }
 
@@ -298,50 +303,195 @@ public final class HouseTransitionEvents {
         if (pending == null) {
             return;
         }
-
-        if (!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)) {
+        ResourceKey<Level> dimension = player.serverLevel().dimension();
+        if (!dimension.equals(HouseDimensions.INTERIOR) && !dimension.equals(Level.OVERWORLD)) {
             PENDING_DOOR_CLOSE.remove(player.getUUID());
             return;
         }
 
-        if (pending.ticksRemaining-- > 0) {
+        double d = outwardDistance(pending.origin, pending.door, player.getX(), player.getZ());
+        boolean through = Math.signum(d) == pending.doneSide && Math.abs(d) >= 1.0D;
+        boolean gone = player.distanceToSqr(doorCentre(pending.origin, pending.door)) > 36.0D
+                || ++pending.ticks > DOOR_PASS_TIMEOUT_TICKS;
+        if (!through && !gone) {
+            return;
+        }
+        PENDING_DOOR_CLOSE.remove(player.getUUID());
+        setExteriorDoor(player.getServer(), pending.origin, pending.door, false, player.serverLevel());
+    }
+
+    // ------------------------------------------------------------------
+    // The front and back doors: crossing by the handle
+
+    /** How close to an exterior door a player may stand on the wrong side of the wall, having just crossed at it. */
+    private static final double DOOR_GRACE = 3.0D;
+    private static final int DOOR_PASS_TIMEOUT_TICKS = 200;
+    private static final int DOOR_IDLE_CLOSE_TICKS = 40;
+    private static final int DOOR_IDLE_INTERVAL = 10;
+    private static final Map<String, Integer> DOOR_IDLE = new HashMap<>();
+
+    /**
+     * Clicking a shut front or back door, from either side, crosses at it:
+     * the switch is made while the view is a still, shut door, and the same
+     * door then swings open on the other side. An open door works as any
+     * door does; walking through one crosses at the wall instead.
+     */
+    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        Level level = event.getLevel();
+        if (level.isClientSide()
+                || !(event.getEntity() instanceof ServerPlayer player)
+                || event.getHand() != InteractionHand.MAIN_HAND) {
+            return;
+        }
+        ResourceKey<Level> dimension = level.dimension();
+        boolean fromOverworld = dimension.equals(Level.OVERWORLD);
+        if (!fromOverworld && !dimension.equals(HouseDimensions.INTERIOR)) {
+            return;
+        }
+        HouseSavedData data = HouseSavedData.get(player.getServer());
+        BlockPos origin = data.houseOrigin();
+        if (!data.isSpawned() || origin == null) {
+            return;
+        }
+        HouseLayout.ExteriorDoor door = exteriorDoorAt(origin, event.getPos());
+        if (door == null) {
+            return;
+        }
+        BlockState state = level.getBlockState(event.getPos());
+        if (!(state.getBlock() instanceof DoorBlock) || state.getValue(DoorBlock.OPEN)) {
             return;
         }
 
-        PENDING_DOOR_CLOSE.remove(player.getUUID());
-        closeDoorBehindPlayer(player, pending.origin, pending.door);
+        event.setCanceled(true);
+        event.setCancellationResult(InteractionResult.SUCCESS);
+        if (PENDING.containsKey(player.getUUID())) {
+            return;
+        }
+        if (fromOverworld && HouseInteriorInitializer.ensureInitialized(player.getServer(), data) == null) {
+            return;
+        }
+        beginPendingTransition(
+                player,
+                HouseTransitionKind.DOOR,
+                fromOverworld ? HouseDimensions.INTERIOR : Level.OVERWORLD,
+                door,
+                null,
+                p -> setExteriorDoor(p.getServer(), origin, door, true, p.serverLevel())
+        );
     }
 
-    private static void closeDoorBehindPlayer(ServerPlayer player, BlockPos origin, HouseLayout.ExteriorDoor exteriorDoor) {
-        ServerLevel interior = player.getServer().getLevel(HouseDimensions.INTERIOR);
+    /** Doors left open with nobody at them swing shut, so the next crossing is by the handle. */
+    public static void onServerTick(ServerTickEvent.Post event) {
+        MinecraftServer server = event.getServer();
+        if (server.getTickCount() % DOOR_IDLE_INTERVAL != 0) {
+            return;
+        }
+        BlockPos origin = HouseSavedData.get(server).houseOrigin();
+        ServerLevel interior = server.getLevel(HouseDimensions.INTERIOR);
+        if (origin == null || interior == null) {
+            DOOR_IDLE.clear();
+            return;
+        }
+        for (HouseLayout.ExteriorDoor door : HouseLayout.EXTERIOR_DOORS) {
+            BlockPos lower = origin.offset(door.x(), door.y(), door.z());
+            if (!interior.isLoaded(lower)) {
+                continue;
+            }
+            BlockState state = interior.getBlockState(lower);
+            Vec3 centre = doorCentre(origin, door);
+            if (!(state.getBlock() instanceof DoorBlock) || !state.getValue(DoorBlock.OPEN)
+                    || anyoneWithin(server.overworld(), centre, 2.0D) || anyoneWithin(interior, centre, 2.0D)) {
+                DOOR_IDLE.remove(door.name());
+                continue;
+            }
+            if (DOOR_IDLE.merge(door.name(), DOOR_IDLE_INTERVAL, Integer::sum) >= DOOR_IDLE_CLOSE_TICKS) {
+                DOOR_IDLE.remove(door.name());
+                setExteriorDoor(server, origin, door, false, null);
+            }
+        }
+    }
+
+    private static boolean anyoneWithin(ServerLevel level, Vec3 point, double radius) {
+        for (ServerPlayer player : level.players()) {
+            if (player.distanceToSqr(point) <= radius * radius) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Nullable
+    private static HouseLayout.ExteriorDoor exteriorDoorAt(BlockPos origin, BlockPos pos) {
+        for (HouseLayout.ExteriorDoor door : HouseLayout.EXTERIOR_DOORS) {
+            BlockPos lower = origin.offset(door.x(), door.y(), door.z());
+            if (pos.equals(lower) || pos.equals(lower.above())) {
+                return door;
+            }
+        }
+        return null;
+    }
+
+    private static Vec3 doorCentre(BlockPos origin, HouseLayout.ExteriorDoor door) {
+        return Vec3.atCenterOf(origin.offset(door.x(), door.y(), door.z()));
+    }
+
+    /** Signed distance from the door's plane: positive outside the house. */
+    private static double outwardDistance(BlockPos origin, HouseLayout.ExteriorDoor door, double x, double z) {
+        Vec3 c = doorCentre(origin, door);
+        return switch (door.face()) {
+            case NORTH -> c.z - z;
+            case SOUTH -> z - c.z;
+            case EAST -> x - c.x;
+            case WEST -> c.x - x;
+        };
+    }
+
+    private static boolean nearExteriorDoor(BlockPos origin, double x, double y, double z) {
+        for (HouseLayout.ExteriorDoor door : HouseLayout.EXTERIOR_DOORS) {
+            Vec3 c = doorCentre(origin, door);
+            double dx = x - c.x;
+            double dz = z - c.z;
+            if (dx * dx + dz * dz <= DOOR_GRACE * DOOR_GRACE && y >= c.y - 2.0D && y <= c.y + 3.0D) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Opens or shuts an exterior door on the authoritative (House) side and
+     * mirrors it, with an ordinary door's sound in {@code soundLevel} (both
+     * dimensions if null).
+     */
+    private static void setExteriorDoor(
+            MinecraftServer server,
+            BlockPos origin,
+            HouseLayout.ExteriorDoor door,
+            boolean open,
+            @Nullable ServerLevel soundLevel
+    ) {
+        ServerLevel interior = server.getLevel(HouseDimensions.INTERIOR);
+        ServerLevel overworld = server.overworld();
         if (interior == null) {
             return;
         }
-
-        BlockPos lowerPos = origin.offset(exteriorDoor.x(), exteriorDoor.y(), exteriorDoor.z());
-        BlockPos upperPos = lowerPos.above();
-        BlockState lowerState = interior.getBlockState(lowerPos);
-
-        if (!(lowerState.getBlock() instanceof DoorBlock door) || !lowerState.getValue(DoorBlock.OPEN)) {
+        BlockPos lower = origin.offset(door.x(), door.y(), door.z());
+        boolean changed = false;
+        for (BlockPos half : new BlockPos[]{lower, lower.above()}) {
+            BlockState state = interior.getBlockState(half);
+            if (state.getBlock() instanceof DoorBlock && state.getValue(DoorBlock.OPEN) != open) {
+                interior.setBlock(half, state.setValue(DoorBlock.OPEN, open), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+                changed = true;
+            }
+            HouseDimensionMirror.copyStateAndBlockEntity(interior, overworld, half);
+        }
+        if (!changed) {
             return;
         }
-
-        // Let vanilla own the actual close interaction so its sound and game
-        // event remain indistinguishable from an ordinary wooden door.
-        door.setOpen(player, interior, lowerState, lowerPos, false);
-
-        // Be explicit about both halves before mirroring. This avoids relying
-        // on the timing of the paired-door neighbor update.
-        for (BlockPos pos : new BlockPos[]{lowerPos, upperPos}) {
-            BlockState current = interior.getBlockState(pos);
-            if (current.getBlock() instanceof DoorBlock && current.getValue(DoorBlock.OPEN)) {
-                interior.setBlock(pos, current.setValue(DoorBlock.OPEN, false), 10);
-            }
+        for (ServerLevel level : soundLevel != null ? new ServerLevel[]{soundLevel} : new ServerLevel[]{interior, overworld}) {
+            level.playSound(null, lower, open ? SoundEvents.WOODEN_DOOR_OPEN : SoundEvents.WOODEN_DOOR_CLOSE,
+                    SoundSource.BLOCKS, 1.0F, level.getRandom().nextFloat() * 0.1F + 0.9F);
         }
-
-        ServerLevel overworld = player.getServer().overworld();
-        HouseDimensionMirror.copyStateAndBlockEntity(interior, overworld, lowerPos);
-        HouseDimensionMirror.copyStateAndBlockEntity(interior, overworld, upperPos);
     }
 
     private static void teleportMatchingCoordinates(ServerPlayer player, ServerLevel destination) {
@@ -365,8 +515,6 @@ public final class HouseTransitionEvents {
         final Consumer<ServerPlayer> before;
         @Nullable
         final Consumer<ServerPlayer> after;
-        boolean acknowledged;
-        int waitedTicks;
         @Nullable
         Vec3 target;
         float targetYaw;
@@ -391,11 +539,14 @@ public final class HouseTransitionEvents {
     private static final class PendingDoorClose {
         final BlockPos origin;
         final HouseLayout.ExteriorDoor door;
-        int ticksRemaining = DOOR_CLOSE_DELAY_TICKS;
+        /** Which side of the door's plane counts as through: +1 outside, -1 inside. */
+        final double doneSide;
+        int ticks;
 
-        PendingDoorClose(BlockPos origin, HouseLayout.ExteriorDoor door) {
+        PendingDoorClose(BlockPos origin, HouseLayout.ExteriorDoor door, double doneSide) {
             this.origin = origin;
             this.door = door;
+            this.doneSide = doneSide;
         }
     }
 }

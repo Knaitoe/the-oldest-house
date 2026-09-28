@@ -130,6 +130,7 @@ public final class HouseCommands {
 
         HouseBuilder.build(level, origin);
         data.markSpawned(origin);
+        LabyrinthDoors.syncSealedDoors(source.getServer());
 
         source.sendSuccess(
                 () -> Component.literal(

@@ -3,6 +3,7 @@ package io.github.knaitoe.theoldesthouse;
 import com.mojang.logging.LogUtils;
 import io.github.knaitoe.theoldesthouse.command.HouseCommands;
 import io.github.knaitoe.theoldesthouse.house.HouseBetweenRoom;
+import io.github.knaitoe.theoldesthouse.house.HouseChunkKeeper;
 import io.github.knaitoe.theoldesthouse.house.HouseConfig;
 import io.github.knaitoe.theoldesthouse.house.HouseDays;
 import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
@@ -19,6 +20,7 @@ import io.github.knaitoe.theoldesthouse.network.HouseNetwork;
 import io.github.knaitoe.theoldesthouse.opening.OpeningConfig;
 import io.github.knaitoe.theoldesthouse.opening.OpeningRegistry;
 import io.github.knaitoe.theoldesthouse.opening.OpeningSequence;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -44,6 +46,10 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onServerStarted);
         NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onServerStopped);
         NeoForge.EVENT_BUS.addListener(HouseTransitionEvents::onPlayerTick);
+        // The manor's doors are crossed by the handle, before anything else sees the click.
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, HouseTransitionEvents::onRightClickBlock);
+        NeoForge.EVENT_BUS.addListener(HouseTransitionEvents::onServerTick);
+        NeoForge.EVENT_BUS.addListener(HouseChunkKeeper::onServerTick);
         NeoForge.EVENT_BUS.addListener(HouseTransitionEvents::onPlayerLoggedOut);
         NeoForge.EVENT_BUS.addListener(HouseProxyEntityEvacuation::onServerTick);
         NeoForge.EVENT_BUS.addListener(HouseExteriorEntityMirror::onServerTick);
