@@ -95,6 +95,14 @@ public final class HouseTransitionEvents {
             }
         }
 
+        if (entering && origin != null) {
+            // The proxy shell is not a playable interior. Clear any pets,
+            // villagers or other mobs before the player disappears across the
+            // dimension seam so nothing is visibly stranded in an inaccessible
+            // duplicate of the room.
+            HouseProxyEntityEvacuation.evacuateAll(player.getServer().overworld(), origin);
+        }
+
         teleportMatchingCoordinates(player, destination);
 
         if (entering && pending.door != null && origin != null) {
@@ -105,15 +113,6 @@ public final class HouseTransitionEvents {
         }
     }
 
-    /**
-     * Enters the House through a door somewhere else entirely (the opening
-     * sequence's entrance door): the same classified DOOR hand-off as the
-     * front door, but arriving at an explicit position in the House instead
-     * of at matching coordinates.
-     *
-     * @return whether the transition is under way (true if one already
-     *         was); false if the House interior is unavailable
-     */
     public static void acknowledgeContext(ServerPlayer player, int token) {
         PendingTransition pending = PENDING.get(player.getUUID());
         if (pending != null && pending.token == token) {
