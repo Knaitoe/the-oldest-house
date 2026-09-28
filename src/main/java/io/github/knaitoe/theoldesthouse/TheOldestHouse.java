@@ -5,6 +5,7 @@ import io.github.knaitoe.theoldesthouse.command.HouseCommands;
 import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
 import io.github.knaitoe.theoldesthouse.house.HouseLifecycleEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseMirrorSyncEvents;
+import io.github.knaitoe.theoldesthouse.house.HouseProxyEntityEvacuation;
 import io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents;
 import io.github.knaitoe.theoldesthouse.network.HouseNetwork;
 import io.github.knaitoe.theoldesthouse.opening.OpeningConfig;
@@ -34,6 +35,7 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onServerStopped);
         NeoForge.EVENT_BUS.addListener(HouseTransitionEvents::onPlayerTick);
         NeoForge.EVENT_BUS.addListener(HouseTransitionEvents::onPlayerLoggedOut);
+        NeoForge.EVENT_BUS.addListener(HouseProxyEntityEvacuation::onServerTick);
         NeoForge.EVENT_BUS.addListener(HouseLabyrinth::onCanPlayerSleep);
         NeoForge.EVENT_BUS.addListener(HouseLabyrinth::onSetSpawn);
 
