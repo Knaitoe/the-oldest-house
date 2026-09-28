@@ -4,18 +4,11 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.house.HouseSpawnManager;
-import io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -24,15 +17,14 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerWakeUpEvent;
-import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
@@ -50,13 +42,6 @@ public final class OpeningSequence {
 
     private static final long WAKE_WINDOW = 1500L;
     private static final int PLAYER_CHECK_INTERVAL = 20;
-    private static final int DOOR_ATTEMPT_INTERVAL = 10;
-    private static final long RECENT_PLACEMENT_TICKS = 1200L;
-    private static final long PENDING_DOOR_TIMEOUT = 24000L;
-    private static final int MAX_PLANS_CONSIDERED = 32;
-
-    private static final Map<UUID, PendingDoor> PENDING_DOORS = new HashMap<>();
-    private static final Map<UUID, Map<Long, Long>> RECENT_PLACEMENTS = new HashMap<>();
 
     private OpeningSequence() {
     }
@@ -67,7 +52,6 @@ public final class OpeningSequence {
         bus.addListener(OpeningSequence::onPlayerLoggedOut);
         bus.addListener(OpeningSequence::onPlayerWakeUp);
         bus.addListener(OpeningSequence::onRightClickBlock);
-        bus.addListener(OpeningSequence::onBlockPlaced);
         bus.addListener(OpeningSequence::onServerStopped);
         bus.addListener(Hillary::onEntityInteract);
         bus.addListener(Hillary::onEntityJoinLevel);
@@ -90,9 +74,6 @@ public final class OpeningSequence {
         NavidsonPhoto.tick(server);
 
         int tick = server.getTickCount();
-        if (tick % DOOR_ATTEMPT_INTERVAL == 0 && !PENDING_DOORS.isEmpty()) {
-            tickPendingDoors(server);
-        }
         if (tick % PLAYER_CHECK_INTERVAL == 0) {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 tickPlayer(player);
@@ -108,8 +89,6 @@ public final class OpeningSequence {
 
     private static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            PENDING_DOORS.remove(player.getUUID());
-            RECENT_PLACEMENTS.remove(player.getUUID());
             Hillary.onPlayerLeft(player);
         }
     }
@@ -141,33 +120,22 @@ public final class OpeningSequence {
         if (!Doorsteps.isOrdinaryDoor(clicked)) {
             return;
         }
+        BlockPos lower = clicked.getValue(DoorBlock.HALF) == DoubleBlockHalf.UPPER
+                ? event.getPos().below()
+                : event.getPos();
         state(player).recordDoorUse(
-                EntranceDoorBlock.lowerHalf(event.getPos(), clicked),
+                lower,
                 respawn,
                 OpeningConfig.DOORSTEP_SEARCH_RADIUS.getAsInt()
         );
     }
 
     /** Blocks a player placed in the last minute are never turned into the door. */
-    private static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)
-                || !(event.getLevel() instanceof ServerLevel level)
-                || !level.dimension().equals(Level.OVERWORLD)) {
-            return;
-        }
-        long now = level.getGameTime();
-        Map<Long, Long> placed = RECENT_PLACEMENTS.computeIfAbsent(player.getUUID(), id -> new HashMap<>());
-        placed.values().removeIf(time -> now - time > RECENT_PLACEMENT_TICKS);
-        placed.put(event.getPos().asLong(), now);
-    }
-
     private static void onServerStopped(ServerStoppedEvent event) {
         clearAll();
     }
 
     public static void clearAll() {
-        PENDING_DOORS.clear();
-        RECENT_PLACEMENTS.clear();
         Hillary.clear();
         NavidsonPhoto.clear();
     }
@@ -341,129 +309,12 @@ public final class OpeningSequence {
         state.markHillaryArrived();
     }
 
-    private static void startDoorAttempt(ServerPlayer player, OpeningPlayerState state, BlockPos bed, boolean immediate) {
-        ServerLevel level = player.server.overworld();
-        UUID owner = player.getUUID();
-
-        OpeningWorldData.EntranceRecord existing = OpeningWorldData.get(player.server).doorOf(owner);
-        if (existing != null) {
-            state.markDoorPlaced(existing.lower());
-            return;
-        }
-
-        Predicate<BlockPos> recent = recentlyPlacedBy(owner, level.getGameTime());
-        List<EntranceDoorPlacer.Plan> plans = EntranceDoorPlacer.findWallPlans(
-                level, bed, OpeningConfig.DOOR_SEARCH_RADIUS.getAsInt(), owner, recent);
-        if (plans.isEmpty()) {
-            int failed = state.recordFailedDoorNight();
-            int allowed = OpeningConfig.FREESTANDING_DOOR_AFTER_FAILED_NIGHTS.getAsInt();
-            if (failed < allowed) {
-                TheOldestHouse.LOGGER.info("No wall for {}'s door near {} ({} of {} nights); trying again tomorrow.",
-                        player.getGameProfile().getName(), bed, failed, allowed);
-                return;
-            }
-            plans = EntranceDoorPlacer.findFreestandingPlans(level, bed, owner);
-            if (plans.isEmpty()) {
-                TheOldestHouse.LOGGER.info("No open ground for {}'s freestanding door near {}; trying again tomorrow.",
-                        player.getGameProfile().getName(), bed);
-                return;
-            }
-        }
-
-        if (plans.size() > MAX_PLANS_CONSIDERED) {
-            plans = List.copyOf(plans.subList(0, MAX_PLANS_CONSIDERED));
-        }
-        PendingDoor pending = new PendingDoor(plans, level.getGameTime(), immediate);
-        PENDING_DOORS.put(owner, pending);
-        tryPlacePending(player, state, pending);
-    }
-
-    private static void tickPendingDoors(MinecraftServer server) {
-        long now = server.overworld().getGameTime();
-        Iterator<Map.Entry<UUID, PendingDoor>> iterator = PENDING_DOORS.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<UUID, PendingDoor> entry = iterator.next();
-            ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
-            if (player == null
-                    || player.serverLevel() != server.overworld()
-                    || now - entry.getValue().startedAt > PENDING_DOOR_TIMEOUT) {
-                iterator.remove();
-                continue;
-            }
-            OpeningPlayerState state = state(player);
-            if (state.stage() != OpeningStage.LETTER_DELIVERED) {
-                iterator.remove();
-                continue;
-            }
-            PendingDoor pending = entry.getValue();
-            if (placeFirstUnseen(player, state, pending) != Outcome.WAITING) {
-                iterator.remove();
-            }
-        }
-    }
-
-    private static void tryPlacePending(ServerPlayer player, OpeningPlayerState state, PendingDoor pending) {
-        if (placeFirstUnseen(player, state, pending) != Outcome.WAITING) {
-            PENDING_DOORS.remove(player.getUUID());
-        }
-    }
-
-    private enum Outcome {
-        PLACED,
-        WAITING,
-        NO_LONGER_POSSIBLE
-    }
-
-    /**
-     * Places the door at the best plan that is still valid and that the
-     * player cannot see right now. If every valid plan is in view, waits.
-     */
-    private static Outcome placeFirstUnseen(ServerPlayer player, OpeningPlayerState state, PendingDoor pending) {
-        ServerLevel level = player.server.overworld();
-        UUID owner = player.getUUID();
-        Predicate<BlockPos> recent = recentlyPlacedBy(owner, level.getGameTime());
-        boolean anyValid = false;
-
-        for (EntranceDoorPlacer.Plan plan : pending.plans) {
-            boolean valid = plan.freestanding()
-                    ? EntranceDoorPlacer.isValidFreestandingPlan(level, plan.lower(), plan.open(), owner, null)
-                    : EntranceDoorPlacer.isValidWallPlan(level, plan.lower(), plan.open(), owner, recent);
-            if (!valid) {
-                continue;
-            }
-            anyValid = true;
-            if (!pending.immediate && EntranceDoorPlacer.isVisibleTo(player, plan)) {
-                continue;
-            }
-
-            EntranceDoorPlacer.place(level, plan, owner);
-            state.markDoorPlaced(plan.lower());
-            TheOldestHouse.LOGGER.info("A new door has appeared near {}'s bed at {} (opening {}, {}).",
-                    player.getGameProfile().getName(), plan.lower(), plan.open().getName(),
-                    plan.freestanding() ? "freestanding" : "in a wall");
-            return Outcome.PLACED;
-        }
-        return anyValid ? Outcome.WAITING : Outcome.NO_LONGER_POSSIBLE;
-    }
-
-    private static Predicate<BlockPos> recentlyPlacedBy(UUID player, long now) {
-        Map<Long, Long> placed = RECENT_PLACEMENTS.get(player);
-        if (placed == null || placed.isEmpty()) {
-            return pos -> false;
-        }
-        return pos -> {
-            Long time = placed.get(pos.asLong());
-            return time != null && now - time <= RECENT_PLACEMENT_TICKS;
-        };
-    }
-
     // ------------------------------------------------------------------
     // Testing
 
     /**
-     * Runs the player's next step now, exactly as their next morning would:
-     * the letter waits for its photo, and the door waits until they look
-     * away. Returns a short description of what happened.
+     * Runs the player's next opening step now, exactly as the next morning
+     * would. Returns a short description of what happened.
      */
     public static String advance(ServerPlayer player) {
         Optional<BlockPos> bed = Doorsteps.bedPosition(player);
@@ -486,7 +337,7 @@ public final class OpeningSequence {
                 secondMorning(player, state, bed.get(), false);
                 return "Hillary is on the doorstep and will lead you toward the Navidsons' manor";
             }
-            case HILLARY_ARRIVED, DOOR_PLACED -> {
+            case HILLARY_ARRIVED -> {
                 return state.enteredHouse()
                         ? "you have already entered the manor"
                         : "follow Hillary to the Navidsons' manor and use its ordinary front door";
@@ -529,45 +380,6 @@ public final class OpeningSequence {
      * dimension-shift transition. Returns false (the door rattles) for
      * anyone else, or if the House cannot be reached.
      */
-    public static boolean useEntranceDoor(ServerPlayer player, BlockPos lower) {
-        OpeningWorldData.EntranceRecord record = OpeningWorldData.get(player.server).doorAt(lower);
-        if (record == null || !record.owner().equals(player.getUUID())) {
-            return false;
-        }
-        ServerLevel overworld = player.server.overworld();
-        if (player.serverLevel() != overworld) {
-            return false;
-        }
-
-        HouseSavedData house = HouseSavedData.get(player.server);
-        if (!house.isSpawned()) {
-            HouseSpawnManager.ensureSpawnedNear(overworld, house, Doorsteps.bedPosition(player).orElse(lower));
-        }
-        BlockPos origin = house.houseOrigin();
-        if (origin == null) {
-            TheOldestHouse.LOGGER.warn("{} used their entrance door, but The Oldest House has no site yet.",
-                    player.getGameProfile().getName());
-            return false;
-        }
-
-        UUID hillary = state(player).hillaryUuid();
-        Vec3 arrival = hallPosition(origin, HouseLayout.FRONT_DOOR_Z + 1.5D);
-        Vec3 hillaryAppears = hallPosition(origin, HouseLayout.FRONT_DOOR_Z + 2.8D);
-        Vec3 hillaryRunsTo = hallPosition(origin, HouseLayout.THRESHOLD_Z - 2.5D);
-        return HouseTransitionEvents.beginEntranceTransition(
-                player,
-                arrival,
-                0.0F, // South, down the hall.
-                0.0F,
-                traveller -> Hillary.beforeEntry(traveller, hillary),
-                traveller -> Hillary.afterEntry(traveller, hillaryAppears, hillaryRunsTo)
-        );
-    }
-
-    private static Vec3 hallPosition(BlockPos origin, double relZ) {
-        return new Vec3(origin.getX() + HouseLayout.AXIS_X + 0.5D, origin.getY() + 1.0D, origin.getZ() + relZ);
-    }
-
     /** Records the first ordinary entry into the manor. */
     public static void onEnteredHouse(ServerPlayer player) {
         OpeningPlayerState state = state(player);
@@ -585,46 +397,4 @@ public final class OpeningSequence {
      * Removes a player's entrance door and restores exactly what it replaced
      * (also the hook for the House's eventual collapse).
      */
-    public static boolean removeEntranceDoor(MinecraftServer server, UUID owner) {
-        OpeningWorldData data = OpeningWorldData.get(server);
-        OpeningWorldData.EntranceRecord record = data.removeDoor(owner);
-        if (record == null) {
-            return false;
-        }
-        ServerLevel level = server.overworld();
-        for (OpeningWorldData.ReplacedBlock replaced : record.replaced()) {
-            level.setBlock(replaced.pos(), replaced.state(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
-        }
-        for (OpeningWorldData.ReplacedBlock replaced : record.replaced()) {
-            CompoundTag tag = replaced.blockEntity();
-            BlockEntity blockEntity = tag == null ? null : level.getBlockEntity(replaced.pos());
-            if (blockEntity != null) {
-                blockEntity.loadWithComponents(tag, level.registryAccess());
-                blockEntity.setChanged();
-            }
-            level.blockUpdated(replaced.pos(), replaced.state().getBlock());
-        }
-        return true;
-    }
-
-    @Nullable
-    public static PendingDoorView pendingDoor(UUID player) {
-        PendingDoor pending = PENDING_DOORS.get(player);
-        return pending == null ? null : new PendingDoorView(pending.plans.size(), pending.startedAt);
-    }
-
-    public record PendingDoorView(int plans, long startedAt) {
-    }
-
-    private static final class PendingDoor {
-        final List<EntranceDoorPlacer.Plan> plans;
-        final long startedAt;
-        final boolean immediate;
-
-        PendingDoor(List<EntranceDoorPlacer.Plan> plans, long startedAt, boolean immediate) {
-            this.plans = plans;
-            this.startedAt = startedAt;
-            this.immediate = immediate;
-        }
-    }
 }
