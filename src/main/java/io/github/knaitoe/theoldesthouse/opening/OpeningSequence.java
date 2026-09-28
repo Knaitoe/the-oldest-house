@@ -149,7 +149,6 @@ public final class OpeningSequence {
                     player,
                     state.hillaryUuid(),
                     state.stage().isAtLeast(OpeningStage.HILLARY_ARRIVED),
-                    state.enteredHouse(),
                     house.houseOrigin()
             );
         }
@@ -373,12 +372,6 @@ public final class OpeningSequence {
             TheOldestHouse.LOGGER.info("{} has entered the House for the first time.", player.getGameProfile().getName());
         }
         state.markEntered();
-        if (state.hillaryUuid() != null) {
-            BlockPos origin = HouseSavedData.get(player.server).houseOrigin();
-            if (origin != null) {
-                Hillary.enterProxyManor(player.server, state.hillaryUuid(), origin);
-            }
-        }
     }
 
 }
