@@ -24,8 +24,11 @@ public final class HouseStructureTests {
     @GameTest(template = "empty", timeoutTicks = 600)
     public static void houseStructure(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        // Well clear of the test's own one-block structure.
-        BlockPos origin = helper.absolutePos(BlockPos.ZERO).offset(48, 0, 48);
+        // Well clear of the test's own one-block structure, and raised off
+        // the superflat test world (ground just above bedrock) so the cellar
+        // has room above the world's minimum build height. The foundations
+        // carry the house down to the ground.
+        BlockPos origin = helper.absolutePos(BlockPos.ZERO).offset(48, 8, 48);
 
         HouseBuilder.build(level, origin);
         HouseBuilder.applyInteriorContents(level, origin);
