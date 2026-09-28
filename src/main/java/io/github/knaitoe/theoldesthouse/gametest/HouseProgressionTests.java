@@ -10,6 +10,9 @@ import io.github.knaitoe.theoldesthouse.house.HouseProgression;
 import io.github.knaitoe.theoldesthouse.house.HouseRugs;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
@@ -18,6 +21,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -183,6 +187,17 @@ public final class HouseProgressionTests {
                 "its furnishings can");
         helper.assertTrue(HouseBetweenRoom.isProtectedBetweenPosition(origin, doorX, origin.offset(5, 7, 4)),
                 "nor can anything in the copied bedroom");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void everyRoomLootTableLoads(GameTestHelper helper) {
+        for (String name : new String[]{"kitchen", "scullery", "parlour", "study", "basement", "bedroom", "literary", "workshop", "attic"}) {
+            ResourceKey<LootTable> key = ResourceKey.create(Registries.LOOT_TABLE,
+                    ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "chests/" + name));
+            helper.assertTrue(helper.getLevel().getServer().reloadableRegistries().getLootTable(key) != LootTable.EMPTY,
+                    "loot table chests/" + name + " should load");
+        }
         helper.succeed();
     }
 

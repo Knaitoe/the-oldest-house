@@ -78,6 +78,8 @@ public final class HouseCommands {
                                         .executes(context -> reveal(context.getSource(), "room")))
                                 .then(Commands.literal("hallway")
                                         .executes(context -> reveal(context.getSource(), "hallway"))))
+                        .then(Commands.literal("restock")
+                                .executes(context -> restock(context.getSource())))
                         .then(Commands.literal("visit")
                                 .executes(HouseCommands::incrementVisit))
                         .then(Commands.literal("reconcile")
@@ -218,6 +220,25 @@ public final class HouseCommands {
             }
         }
         return passed;
+    }
+
+    /**
+     * Gives every empty, untouched container in the manor its room's loot
+     * table (and books to empty lecterns and shelves), for houses built
+     * before the room tables existed.
+     */
+    private static int restock(CommandSourceStack source) {
+        HouseSavedData data = HouseSavedData.get(source.getServer());
+        BlockPos origin = data.houseOrigin();
+        ServerLevel interior = source.getServer().getLevel(HouseDimensions.INTERIOR);
+        if (origin == null || interior == null || !data.isInteriorInitialized()) {
+            source.sendFailure(Component.literal("The House interior is not available yet."));
+            return 0;
+        }
+        HouseBuilder.applyInteriorContents(interior, origin);
+        source.sendSuccess(() -> Component.literal(
+                "Empty containers in the manor will fill from their room's loot table when opened."), true);
+        return 1;
     }
 
     private static int reveal(CommandSourceStack source, String what) {
