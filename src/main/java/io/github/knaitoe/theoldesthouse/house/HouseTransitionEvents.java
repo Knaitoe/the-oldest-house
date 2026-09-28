@@ -1,6 +1,8 @@
 package io.github.knaitoe.theoldesthouse.house;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlaces;
 import io.github.knaitoe.theoldesthouse.network.HouseTransitionContextPayload;
 import io.github.knaitoe.theoldesthouse.opening.OpeningSequence;
 import java.util.HashMap;
@@ -75,7 +77,8 @@ public final class HouseTransitionEvents {
             return;
         }
 
-        if (dimension.equals(HouseDimensions.INTERIOR) && HouseBetweenRoom.tickPocket(player, data, origin)) {
+        if (dimension.equals(HouseDimensions.INTERIOR)
+                && (HouseBetweenRoom.tickPocket(player, data, origin) || LabyrinthDoors.tickPlayer(player, origin))) {
             return;
         }
 
@@ -139,7 +142,7 @@ public final class HouseTransitionEvents {
 
         if (pending.target != null) {
             player.stopRiding();
-            player.teleportTo(destination, pending.target.x, pending.target.y, pending.target.z, pending.targetYaw, 0.0F);
+            player.teleportTo(destination, pending.target.x, pending.target.y, pending.target.z, pending.targetYaw, player.getXRot());
             player.setDeltaMovement(Vec3.ZERO);
         } else {
             teleportMatchingCoordinates(player, destination);
@@ -238,7 +241,8 @@ public final class HouseTransitionEvents {
             return true;
         }
 
-        if (HouseShifts.isInDeepenedHall(origin, player.getX(), player.getY(), player.getZ())) {
+        if (HouseShifts.isInDeepenedHall(origin, player.getX(), player.getY(), player.getZ())
+                || LabyrinthPlaces.isInStack(origin, player.getX(), player.getY(), player.getZ())) {
             return true;
         }
         return data.isImpossibleDoorRevealed()

@@ -2,8 +2,10 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -30,7 +32,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -50,6 +54,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * that board up with an axe and the caregiver's note is underneath; after
  * that the heartbeat stops, and the room is never dealt again.
  *
+ * The room lies north of its entry door (see {@link LabyrinthPlace}).
  * Cheating: the room cannot be dug out of, built in, or its floor broken;
  * trying is loud.
  */
@@ -57,7 +62,7 @@ public final class TellTaleFloorboards {
     public static final String ID = "floorboards";
 
     /** The loose board, relative to the room's base (the floor is at y -1). */
-    public static final BlockPos LOOSE_BOARD = new BlockPos(2, -1, 5);
+    public static final BlockPos LOOSE_BOARD = new BlockPos(2, -1, -6);
 
     public static final double MAX_HEAT = 100.0D;
     private static final double DECAY_PER_TICK = 0.08D;
@@ -76,19 +81,19 @@ public final class TellTaleFloorboards {
     public static void build(ServerLevel level, BlockPos base, boolean withBoard) {
         int flags = LabyrinthBuilder.flags();
         // Walls of old brown plaster, a dark ceiling, a floor of spruce boards.
-        LabyrinthBuilder.room(level, base, -5, 5, 3, 0, 8,
-                Blocks.BROWN_TERRACOTTA.defaultBlockState(),
-                Blocks.SPRUCE_PLANKS.defaultBlockState(),
-                Blocks.DARK_OAK_PLANKS.defaultBlockState());
+        BlockState wall = Blocks.BROWN_TERRACOTTA.defaultBlockState();
+        BlockState floor = Blocks.SPRUCE_PLANKS.defaultBlockState();
+        BlockState ceiling = Blocks.DARK_OAK_PLANKS.defaultBlockState();
+        LabyrinthBuilder.room(level, base, -5, 5, 3, -9, -1, wall, floor, ceiling);
 
         // Under the boards: sculk, and a few sensors that click when he stirs.
         for (int x = -5; x <= 5; x++) {
-            for (int z = 0; z <= 8; z++) {
+            for (int z = -9; z <= -1; z++) {
                 level.setBlock(base.offset(x, -2, z), Blocks.SCULK.defaultBlockState(), flags);
-                level.setBlock(base.offset(x, -3, z), Blocks.BROWN_TERRACOTTA.defaultBlockState(), flags);
+                level.setBlock(base.offset(x, -3, z), wall, flags);
             }
         }
-        for (BlockPos sensor : List.of(new BlockPos(-3, -2, 2), new BlockPos(3, -2, 6), new BlockPos(0, -2, 4))) {
+        for (BlockPos sensor : List.of(new BlockPos(-3, -2, -3), new BlockPos(3, -2, -7), new BlockPos(0, -2, -5))) {
             level.setBlock(base.offset(sensor), Blocks.SCULK_SENSOR.defaultBlockState(), flags);
         }
 
@@ -97,39 +102,47 @@ public final class TellTaleFloorboards {
                 : Blocks.AIR.defaultBlockState(), flags);
 
         // His bed, made; one candle on a barrel; a chair turned towards the bed.
-        LabyrinthBuilder.bed(level, base.offset(-4, 0, 6), Direction.SOUTH, Blocks.WHITE_BED);
-        level.setBlock(base.offset(-3, 0, 8), LabyrinthBuilder.barrel(Direction.UP), flags);
-        level.setBlock(base.offset(-3, 1, 8), LabyrinthBuilder.candle(3, true), flags);
-        level.setBlock(base.offset(-2, 0, 5), LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, Direction.EAST), flags);
+        LabyrinthBuilder.bed(level, base.offset(-4, 0, -7), Direction.NORTH, Blocks.WHITE_BED);
+        level.setBlock(base.offset(-3, 0, -9), LabyrinthBuilder.barrel(Direction.UP), flags);
+        level.setBlock(base.offset(-3, 1, -9), LabyrinthBuilder.candle(3, true), flags);
+        level.setBlock(base.offset(-2, 0, -6), LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, Direction.EAST), flags);
         // A wardrobe by the door, and a shuttered lantern by the bed.
-        level.setBlock(base.offset(4, 0, 0), LabyrinthBuilder.barrel(Direction.WEST), flags);
-        level.setBlock(base.offset(4, 1, 0), LabyrinthBuilder.barrel(Direction.WEST), flags);
-        LabyrinthBuilder.hangLantern(level, base.offset(-4, 3, 4), true);
+        level.setBlock(base.offset(4, 0, -1), LabyrinthBuilder.barrel(Direction.WEST), flags);
+        level.setBlock(base.offset(4, 1, -1), LabyrinthBuilder.barrel(Direction.WEST), flags);
+        LabyrinthBuilder.hangLantern(level, base.offset(-4, 3, -5), true);
 
+        LabyrinthBuilder.entrance(level, base, wall, floor, ceiling);
         LabyrinthBuilder.doors(level, base, LabyrinthPlace.FLOORBOARDS);
         heat = 0.0D;
     }
 
-    private static BlockPos base() {
-        return LabyrinthPlace.FLOORBOARDS.base();
+    /** Where the room stands for this world's manor, or null without one. */
+    @Nullable
+    private static BlockPos base(MinecraftServer server) {
+        BlockPos origin = HouseSavedData.get(server).houseOrigin();
+        return origin == null ? null : LabyrinthPlaces.base(origin, LabyrinthPlace.FLOORBOARDS);
     }
 
     /** The room's inside, where vibrations count and players are "in" it. */
-    private static AABB interior() {
-        BlockPos b = base();
-        return new AABB(b.getX() - 5, b.getY() - 2, b.getZ(), b.getX() + 6, b.getY() + 4, b.getZ() + 9);
+    private static AABB interior(BlockPos base) {
+        return new AABB(base.getX() - 5, base.getY() - 2, base.getZ() - 9, base.getX() + 6, base.getY() + 4, base.getZ());
     }
 
-    /** The room with its walls, floor and ceiling: nothing here may be broken or built. */
-    public static boolean isInShell(BlockPos pos) {
-        BlockPos rel = pos.subtract(base());
+    /** The room with its walls, floor and ceiling. */
+    public static boolean isInShell(BlockPos base, BlockPos pos) {
+        BlockPos rel = pos.subtract(base);
         return rel.getX() >= -6 && rel.getX() <= 6
                 && rel.getY() >= -3 && rel.getY() <= 4
-                && rel.getZ() >= -1 && rel.getZ() <= 9;
+                && rel.getZ() >= -10 && rel.getZ() <= 0;
     }
 
-    private static Vec3 heart() {
-        return Vec3.atCenterOf(base().offset(LOOSE_BOARD));
+    /** Whether {@code pos} is the loose board (in the House dimension). */
+    public static boolean isLooseBoard(ServerLevel level, BlockPos pos) {
+        if (!level.dimension().equals(HouseDimensions.INTERIOR)) {
+            return false;
+        }
+        BlockPos base = base(level.getServer());
+        return base != null && pos.equals(base.offset(LOOSE_BOARD));
     }
 
     public static double heat() {
@@ -163,10 +176,12 @@ public final class TellTaleFloorboards {
 
     public static void onGameEvent(VanillaGameEvent event) {
         Level level = event.getLevel();
-        if (level.isClientSide() || !level.dimension().equals(HouseDimensions.LABYRINTH) || level.getServer() == null) {
+        if (level.isClientSide() || !level.dimension().equals(HouseDimensions.INTERIOR) || level.getServer() == null) {
             return;
         }
-        if (!interior().contains(event.getEventPosition())
+        BlockPos base = base(level.getServer());
+        if (base == null
+                || !interior(base).contains(event.getEventPosition())
                 || LabyrinthData.get(level.getServer()).isCompleted(ID)) {
             return;
         }
@@ -185,8 +200,9 @@ public final class TellTaleFloorboards {
 
     public static void onServerTick(ServerTickEvent.Post event) {
         MinecraftServer server = event.getServer();
-        ServerLevel level = server.getLevel(HouseDimensions.LABYRINTH);
-        if (level == null || level.players().isEmpty()) {
+        ServerLevel level = server.getLevel(HouseDimensions.INTERIOR);
+        BlockPos base = base(server);
+        if (level == null || base == null || level.players().isEmpty()) {
             heat = 0.0D;
             return;
         }
@@ -194,7 +210,7 @@ public final class TellTaleFloorboards {
             return;
         }
         List<ServerPlayer> inside = new ArrayList<>();
-        AABB room = interior();
+        AABB room = interior(base);
         for (ServerPlayer player : level.players()) {
             if (room.contains(player.position())) {
                 inside.add(player);
@@ -205,11 +221,12 @@ public final class TellTaleFloorboards {
             return;
         }
 
+        Vec3 heart = Vec3.atCenterOf(base.offset(LOOSE_BOARD));
         if (heat >= MAX_HEAT) {
             // The lights go out.
             heat = 0.0D;
             for (ServerPlayer player : inside) {
-                play(player, SoundEvents.WARDEN_HEARTBEAT, heart(), 2.0F, 1.3F);
+                play(player, SoundEvents.WARDEN_HEARTBEAT, heart, 2.0F, 1.3F);
                 LabyrinthDoors.sendBack(player, 2, 24, 30);
             }
             TheOldestHouse.LOGGER.info("The heartbeat under the floorboards reached its peak.");
@@ -221,7 +238,7 @@ public final class TellTaleFloorboards {
         if (now >= nextBeat) {
             float t = (float) (heat / MAX_HEAT);
             for (ServerPlayer player : inside) {
-                play(player, SoundEvents.WARDEN_HEARTBEAT, heart(), 0.35F + 1.1F * t, 0.9F + 0.35F * t);
+                play(player, SoundEvents.WARDEN_HEARTBEAT, heart, 0.35F + 1.1F * t, 0.9F + 0.35F * t);
             }
             nextBeat = now + Math.max(7L, Math.round(40.0D - 32.0D * t));
         }
@@ -238,8 +255,7 @@ public final class TellTaleFloorboards {
 
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         if (!(event.getEntity() instanceof ServerPlayer player)
-                || !event.getLevel().dimension().equals(HouseDimensions.LABYRINTH)
-                || !event.getPos().equals(base().offset(LOOSE_BOARD))) {
+                || !isLooseBoard(player.serverLevel(), event.getPos())) {
             return;
         }
         ItemStack stack = event.getItemStack();
@@ -256,11 +272,15 @@ public final class TellTaleFloorboards {
     private static void pry(ServerPlayer player, ItemStack axe) {
         ServerLevel level = player.serverLevel();
         LabyrinthData data = LabyrinthData.get(level.getServer());
-        BlockPos board = base().offset(LOOSE_BOARD);
+        BlockPos base = base(level.getServer());
+        if (base == null) {
+            return;
+        }
+        BlockPos board = base.offset(LOOSE_BOARD);
         if (data.isCompleted(ID) || !level.getBlockState(board).is(Blocks.DARK_OAK_PLANKS)) {
             return;
         }
-        level.setBlock(board, Blocks.AIR.defaultBlockState(), net.minecraft.world.level.block.Block.UPDATE_ALL);
+        level.setBlock(board, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
         level.playSound(null, board, SoundEvents.ZOMBIE_BREAK_WOODEN_DOOR, SoundSource.BLOCKS, 0.7F, 1.4F);
         axe.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
         heat = Math.min(MAX_HEAT, heat + PRY_HEAT);
@@ -273,14 +293,17 @@ public final class TellTaleFloorboards {
         TheOldestHouse.LOGGER.info("{} pried up the loose floorboard.", player.getGameProfile().getName());
     }
 
+    /** The loose board comes up under an axe; anything else in the room is loud and stays put. */
     public static void onBreak(BlockEvent.BreakEvent event) {
-        if (!(event.getLevel() instanceof ServerLevel level)
-                || !level.dimension().equals(HouseDimensions.LABYRINTH)
-                || !isInShell(event.getPos())) {
+        if (!(event.getLevel() instanceof ServerLevel level) || !level.dimension().equals(HouseDimensions.INTERIOR)) {
+            return;
+        }
+        BlockPos base = base(level.getServer());
+        if (base == null || !isInShell(base, event.getPos())) {
             return;
         }
         event.setCanceled(true);
-        if (event.getPos().equals(base().offset(LOOSE_BOARD))
+        if (event.getPos().equals(base.offset(LOOSE_BOARD))
                 && event.getPlayer() instanceof ServerPlayer player
                 && player.getMainHandItem().is(ItemTags.AXES)) {
             pry(player, player.getMainHandItem());
@@ -288,14 +311,6 @@ public final class TellTaleFloorboards {
         }
         // Trying to dig or break your way out is loud.
         heat = Math.min(MAX_HEAT, heat + BREAK_HEAT);
-    }
-
-    public static void onPlace(BlockEvent.EntityPlaceEvent event) {
-        if (event.getLevel() instanceof ServerLevel level
-                && level.dimension().equals(HouseDimensions.LABYRINTH)
-                && isInShell(event.getPos())) {
-            event.setCanceled(true);
-        }
     }
 
     // ------------------------------------------------------------------
@@ -308,13 +323,14 @@ public final class TellTaleFloorboards {
 
     /** Puts the room back as it was, board and all, and lets it be dealt again. */
     public static boolean reset(MinecraftServer server) {
-        ServerLevel level = server.getLevel(HouseDimensions.LABYRINTH);
-        if (level == null) {
+        ServerLevel level = server.getLevel(HouseDimensions.INTERIOR);
+        BlockPos base = base(server);
+        if (level == null || base == null) {
             return false;
         }
         LabyrinthData data = LabyrinthData.get(server);
         data.setCompleted(ID, false);
-        build(level, base(), true);
+        build(level, base, true);
         return true;
     }
 

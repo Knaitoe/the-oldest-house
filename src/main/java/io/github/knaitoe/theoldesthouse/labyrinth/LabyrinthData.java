@@ -86,7 +86,16 @@ public final class LabyrinthData extends SavedData {
         }
     }
 
-    public record Waypoint(ResourceKey<Level> dimension, Vec3 pos, float yaw) {
+    /**
+     * Somewhere to go back to. A {@code door} waypoint is the door the player
+     * came through ({@code pos} its lower half, {@code yaw} the way it
+     * faces); crossing back out shifts them to in front of it. Any other is
+     * a plain spot and facing.
+     */
+    public record Waypoint(ResourceKey<Level> dimension, Vec3 pos, float yaw, boolean door) {
+        public Waypoint(ResourceKey<Level> dimension, Vec3 pos, float yaw) {
+            this(dimension, pos, yaw, false);
+        }
     }
 
     private final Map<String, Door> doors = new LinkedHashMap<>();
@@ -95,6 +104,8 @@ public final class LabyrinthData extends SavedData {
     private final Set<String> completed = new LinkedHashSet<>();
     private int dryDeals;
     private int builtVersion;
+    @Nullable
+    private BlockPos builtOrigin;
     private int nextCommandId = 1;
 
     public static final Factory<LabyrinthData> FACTORY = new Factory<>(LabyrinthData::new, LabyrinthData::load);
@@ -225,9 +236,27 @@ public final class LabyrinthData extends SavedData {
         return builtVersion;
     }
 
-    public void setBuiltVersion(int version) {
+    /** The manor the places were carved for, or null. */
+    @Nullable
+    public BlockPos builtOrigin() {
+        return builtOrigin;
+    }
+
+    public void setBuilt(int version, BlockPos origin) {
         builtVersion = version;
+        builtOrigin = origin.immutable();
         setDirty();
+    }
+
+    /** Forgets doors in dimensions that no longer exist (an earlier version's labyrinth). */
+    public void pruneDoors(MinecraftServer server) {
+        List<String> gone = new ArrayList<>();
+        for (Door door : doors.values()) {
+            if (server.getLevel(door.dimension) == null) {
+                gone.add(door.id);
+            }
+        }
+        gone.forEach(this::removeDoor);
     }
 
     // ------------------------------------------------------------------
@@ -262,7 +291,7 @@ public final class LabyrinthData extends SavedData {
             for (int j = 0; j < points.size(); j++) {
                 CompoundTag p = points.getCompound(j);
                 stack.addLast(new Waypoint(dimension(p.getString("Dim")),
-                        new Vec3(p.getDouble("X"), p.getDouble("Y"), p.getDouble("Z")), p.getFloat("Yaw")));
+                        new Vec3(p.getDouble("X"), p.getDouble("Y"), p.getDouble("Z")), p.getFloat("Yaw"), p.getBoolean("Door")));
             }
             data.returns.put(r.getUUID("Player"), stack);
         }
@@ -272,6 +301,7 @@ public final class LabyrinthData extends SavedData {
         }
         data.dryDeals = tag.getInt("DryDeals");
         data.builtVersion = tag.getInt("BuiltVersion");
+        data.builtOrigin = tag.contains("BuiltOrigin") ? BlockPos.of(tag.getLong("BuiltOrigin")) : null;
         data.nextCommandId = Math.max(1, tag.getInt("NextCommandId"));
         return data;
     }
@@ -307,6 +337,7 @@ public final class LabyrinthData extends SavedData {
                 p.putDouble("Y", point.pos().y);
                 p.putDouble("Z", point.pos().z);
                 p.putFloat("Yaw", point.yaw());
+                p.putBoolean("Door", point.door());
                 points.add(p);
             }
             r.put("Stack", points);
@@ -321,6 +352,9 @@ public final class LabyrinthData extends SavedData {
         tag.put("Completed", done);
         tag.putInt("DryDeals", dryDeals);
         tag.putInt("BuiltVersion", builtVersion);
+        if (builtOrigin != null) {
+            tag.putLong("BuiltOrigin", builtOrigin.asLong());
+        }
         tag.putInt("NextCommandId", nextCommandId);
         return tag;
     }

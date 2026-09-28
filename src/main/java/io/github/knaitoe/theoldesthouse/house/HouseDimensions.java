@@ -32,15 +32,6 @@ public final class HouseDimensions {
             ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "between")
     );
 
-    /**
-     * The labyrinth: solid plaster from bedrock to bedrock, with rooms carved
-     * into it and joined only by doors. Any tunnel finds more wall.
-     */
-    public static final ResourceKey<Level> LABYRINTH = ResourceKey.create(
-            Registries.DIMENSION,
-            ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "labyrinth")
-    );
-
     private HouseDimensions() {
     }
 }
