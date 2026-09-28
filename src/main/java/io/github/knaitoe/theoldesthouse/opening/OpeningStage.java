@@ -8,6 +8,11 @@ public enum OpeningStage {
     NONE,
     ELIGIBLE,
     LETTER_DELIVERED,
+    HILLARY_ARRIVED,
+    /**
+     * Legacy 0.3.0 save value. It is treated as equivalent to HILLARY_ARRIVED;
+     * new code never creates a player-house entrance door.
+     */
     DOOR_PLACED,
     ENTERED;
 
@@ -17,6 +22,9 @@ public enum OpeningStage {
     );
 
     public static OpeningStage byName(String name) {
+        if ("door_placed".equalsIgnoreCase(name)) {
+            return HILLARY_ARRIVED;
+        }
         for (OpeningStage stage : values()) {
             if (stage.name().equalsIgnoreCase(name)) {
                 return stage;
