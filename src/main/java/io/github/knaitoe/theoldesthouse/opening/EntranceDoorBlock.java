@@ -1,17 +1,20 @@
 package io.github.knaitoe.theoldesthouse.opening;
 
 import com.mojang.serialization.MapCodec;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
@@ -65,6 +68,12 @@ public final class EntranceDoorBlock extends DoorBlock {
 
     public static void rattle(Level level, BlockPos pos) {
         level.playSound(null, pos, SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 0.9F, 0.8F + level.getRandom().nextFloat() * 0.1F);
+    }
+
+    /** Sounds like the wooden door it looks like, whatever its block-set type. */
+    @Override
+    public SoundType getSoundType(BlockState state, LevelReader level, BlockPos pos, @Nullable Entity entity) {
+        return SoundType.WOOD;
     }
 
     /** Redstone never opens it. */
