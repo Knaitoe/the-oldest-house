@@ -536,7 +536,7 @@ public final class OpeningTests {
     }
 
 
-    @GameTest(template = "empty")
+    @GameTest(template = "empty", timeoutTicks = 100)
     public static void domesticHouseMobsProjectIntoTheOverworldProxy(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();
         ServerLevel overworld = helper.getLevel();
@@ -577,83 +577,102 @@ public final class OpeningTests {
                 interiorStandIn.addFreshEntity(resident),
                 "domestic source wolf was not added"
         );
-        helper.assertTrue(resident.isAlive(), "domestic source wolf is not alive after insertion");
-        helper.assertTrue(
-                !HouseExteriorEntityMirror.isProjection(resident),
-                "real domestic source was misclassified as a projection"
-        );
-        helper.assertTrue(
-                !HouseImpossibleHallway.isInteriorOnlyPosition(origin, resident.blockPosition()),
-                "ordinary domestic source was misclassified as impossible-space"
-        );
-        AABB sourceSearch = new AABB(
-                origin.getX() + HouseLayout.MIN_X - 40,
-                origin.getY() - 6,
-                origin.getZ() + HouseLayout.MIN_Z - 40,
-                origin.getX() + HouseLayout.MAX_X + 41,
-                origin.getY() + 25,
-                origin.getZ() + HouseLayout.MAX_Z + 41
-        );
-        helper.assertTrue(
-                interiorStandIn.getEntitiesOfClass(Mob.class, sourceSearch).contains(resident),
-                "domestic source wolf is not visible to the source entity query"
-        );
 
-        int mirrored = HouseExteriorEntityMirror.syncDomesticToOverworldNow(
-                interiorStandIn,
-                overworld,
-                origin
-        );
-        helper.assertTrue(mirrored == 1, "expected one domestic source projection, got " + mirrored);
+        // EntitySectionStorage indexes fresh entities on the following level
+        // tick. Test the real query path, not the direct object reference.
+        helper.runAfterDelay(1, () -> {
+            try {
+                helper.assertTrue(resident.isAlive(), "domestic source wolf is not alive after insertion");
+                helper.assertTrue(
+                        !HouseExteriorEntityMirror.isProjection(resident),
+                        "real domestic source was misclassified as a projection"
+                );
+                helper.assertTrue(
+                        !HouseImpossibleHallway.isInteriorOnlyPosition(origin, resident.blockPosition()),
+                        "ordinary domestic source was misclassified as impossible-space"
+                );
 
-        AABB search = new AABB(inside).inflate(2.0D);
-        List<Mob> projections = overworld.getEntitiesOfClass(
-                Mob.class,
-                search,
-                HouseExteriorEntityMirror::isProjection
-        );
-        helper.assertTrue(projections.size() == 1, "expected one visual projection, got " + projections.size());
+                AABB sourceSearch = new AABB(
+                        origin.getX() + HouseLayout.MIN_X - 40,
+                        origin.getY() - 6,
+                        origin.getZ() + HouseLayout.MIN_Z - 40,
+                        origin.getX() + HouseLayout.MAX_X + 41,
+                        origin.getY() + 25,
+                        origin.getZ() + HouseLayout.MAX_Z + 41
+                );
+                helper.assertTrue(
+                        interiorStandIn.getEntitiesOfClass(Mob.class, sourceSearch).contains(resident),
+                        "domestic source wolf is not visible to the source entity query"
+                );
 
-        Mob projection = projections.getFirst();
-        helper.assertTrue(
-                projection.getType() == resident.getType(),
-                "projection changed entity type"
-        );
-        helper.assertTrue(
-                projection.getCustomName() != null
-                        && "House Resident".equals(projection.getCustomName().getString()),
-                "projection did not preserve visible source state"
-        );
-        helper.assertTrue(
-                projection.isInvulnerable() && projection.isNoAi() && projection.isSilent(),
-                "projection retained gameplay behavior"
-        );
-        helper.assertTrue(
-                HouseLayout.isInsideDomesticVolume(
-                        projection.getX() - origin.getX(),
-                        projection.getY() - origin.getY(),
-                        projection.getZ() - origin.getZ()
-                ),
-                "reverse projection was not placed at the matching proxy-interior coordinates"
-        );
+                int mirrored = HouseExteriorEntityMirror.syncDomesticToOverworldNow(
+                        interiorStandIn,
+                        overworld,
+                        origin
+                );
+                helper.assertTrue(mirrored == 1, "expected one domestic source projection, got " + mirrored);
 
-        // Geometrically the projection is inside the Overworld proxy, but it
-        // is scenery. The real-NPC evacuation rule must not throw it outside.
-        int evacuated = HouseProxyEntityEvacuation.evacuateAll(overworld, origin);
-        helper.assertTrue(evacuated == 0, "projection was counted as a trapped real Overworld mob");
-        helper.assertTrue(
-                !projection.isRemoved()
-                        && HouseLayout.isInsideDomesticVolume(
+                AABB search = new AABB(inside).inflate(2.0D);
+                List<Mob> projections = overworld.getEntitiesOfClass(
+                        Mob.class,
+                        search,
+                        HouseExteriorEntityMirror::isProjection
+                );
+                helper.assertTrue(
+                        projections.size() == 1,
+                        "expected one visual projection, got " + projections.size()
+                );
+
+                Mob projection = projections.getFirst();
+                helper.assertTrue(
+                        projection.getType() == resident.getType(),
+                        "projection changed entity type"
+                );
+                helper.assertTrue(
+                        projection.getCustomName() != null
+                                && "House Resident".equals(projection.getCustomName().getString()),
+                        "projection did not preserve visible source state"
+                );
+                helper.assertTrue(
+                        projection.isInvulnerable() && projection.isNoAi() && projection.isSilent(),
+                        "projection retained gameplay behavior"
+                );
+                helper.assertTrue(
+                        HouseLayout.isInsideDomesticVolume(
                                 projection.getX() - origin.getX(),
                                 projection.getY() - origin.getY(),
                                 projection.getZ() - origin.getZ()
                         ),
-                "projection was evacuated from the proxy"
-        );
+                        "reverse projection was not placed at matching proxy-interior coordinates"
+                );
 
-        HouseExteriorEntityMirror.clear(server);
-        resident.discard();
-        helper.succeed();
+                // Geometrically the projection is inside the Overworld proxy,
+                // but it is scenery. The real-NPC evacuation rule must not
+                // throw it outside.
+                int evacuated = HouseProxyEntityEvacuation.evacuateAll(overworld, origin);
+                helper.assertTrue(
+                        evacuated == 0,
+                        "projection was counted as a trapped real Overworld mob"
+                );
+                helper.assertTrue(
+                        !projection.isRemoved()
+                                && HouseLayout.isInsideDomesticVolume(
+                                        projection.getX() - origin.getX(),
+                                        projection.getY() - origin.getY(),
+                                        projection.getZ() - origin.getZ()
+                                ),
+                        "projection was evacuated from the proxy"
+                );
+
+                HouseExteriorEntityMirror.clear(server);
+                resident.discard();
+                helper.succeed();
+            } catch (Throwable failure) {
+                HouseExteriorEntityMirror.clear(server);
+                resident.discard();
+                throw failure;
+            }
+        });
     }
 
 
