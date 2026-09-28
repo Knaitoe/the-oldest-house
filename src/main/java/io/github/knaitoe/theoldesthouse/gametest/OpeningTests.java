@@ -5,6 +5,7 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
 import io.github.knaitoe.theoldesthouse.house.HouseLayout;
+import io.github.knaitoe.theoldesthouse.house.HouseProxyEntityEvacuation;
 import io.github.knaitoe.theoldesthouse.opening.DeliveredItemEntity;
 import io.github.knaitoe.theoldesthouse.opening.Doorsteps;
 import io.github.knaitoe.theoldesthouse.opening.Hillary;
@@ -27,8 +28,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.Filterable;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.animal.WolfVariants;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.WrittenBookContent;
@@ -397,7 +400,7 @@ public final class OpeningTests {
     }
 
     @GameTest(template = "empty")
-    public static void hillaryLeadsThenEntersTheLiteralProxyManor(GameTestHelper helper) {
+    public static void hillaryLeadsThenWaitsOutsideTheProxyManor(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos home = helper.absolutePos(new BlockPos(2, 3, 2));
         level.setBlock(home.below(), Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
@@ -414,7 +417,7 @@ public final class OpeningTests {
         recipient.moveTo(home.getX() + 0.5D, home.getY(), home.getZ() + 0.5D);
 
         BlockPos manorOrigin = home.offset(28, 0, 0);
-        Hillary.tickGuide(level, recipient, wolf.getUUID(), true, false, manorOrigin);
+        Hillary.tickGuide(level, recipient, wolf.getUUID(), true, manorOrigin);
         helper.assertTrue(
                 wolf.getOwnerUUID() == null,
                 "Hillary kept vanilla follow-owner AI while she was supposed to lead"
@@ -426,39 +429,94 @@ public final class OpeningTests {
                 HouseLayout.FRONT_DOOR_Z - 2
         );
         wolf.moveTo(porch.getX() + 0.5D, porch.getY(), porch.getZ() + 0.5D, 0.0F, 0.0F);
-        Hillary.tickGuide(level, recipient, wolf.getUUID(), true, false, manorOrigin);
+        Hillary.tickGuide(level, recipient, wolf.getUUID(), true, manorOrigin);
 
         helper.assertTrue(
                 recipient.getUUID().equals(wolf.getOwnerUUID()),
-                "Hillary did not restore her owner while waiting at the porch"
+                "Hillary did not restore her owner while waiting outside"
         );
-
-        Hillary.enterProxyManor(level.getServer(), wolf.getUUID(), manorOrigin);
-
-        BlockPos foyer = manorOrigin.offset(
-                HouseLayout.AXIS_X,
-                1,
-                HouseLayout.FRONT_DOOR_Z + 3
-        );
-        helper.assertTrue(
-                wolf.blockPosition().distManhattan(foyer) <= 1,
-                "Hillary did not enter the literal Overworld proxy manor: " + wolf.blockPosition()
-        );
-        helper.assertTrue(
-                wolf.getOwnerUUID() == null,
-                "Hillary kept owner-follow AI after the player crossed dimensions"
-        );
-        helper.assertTrue(wolf.isOrderedToSit(), "Hillary should settle inside the proxy manor");
+        helper.assertTrue(wolf.isOrderedToSit(), "Hillary should wait outside the proxy manor");
 
         HillaryTag tag = Hillary.tagOf(wolf);
         helper.assertTrue(
-                tag != null && tag.home().equals(foyer),
-                "Hillary did not adopt the proxy foyer as her waiting place"
+                tag != null && tag.home().equals(porch),
+                "Hillary did not adopt the manor porch as her waiting place"
         );
 
         wolf.discard();
         helper.succeed();
     }
+
+    @GameTest(template = "empty")
+    public static void proxyManorEvacuatesNonPlayerMobs(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos origin = helper.absolutePos(new BlockPos(0, 4, 520));
+
+        // Give both authored exits a safe patch of ordinary ground.
+        fill(
+                level,
+                origin.offset(HouseLayout.AXIS_X - 4, 0, HouseLayout.FRONT_DOOR_Z - 7),
+                origin.offset(HouseLayout.AXIS_X + 4, 0, HouseLayout.FRONT_DOOR_Z + 1),
+                Blocks.STONE.defaultBlockState()
+        );
+        fill(
+                level,
+                origin.offset(HouseLayout.BACK_DOOR.x() - 4, 0, HouseLayout.BACK_DOOR.z() - 1),
+                origin.offset(HouseLayout.BACK_DOOR.x() + 4, 0, HouseLayout.BACK_DOOR.z() + 7),
+                Blocks.STONE.defaultBlockState()
+        );
+
+        BlockPos inside = origin.offset(
+                HouseLayout.AXIS_X,
+                1,
+                HouseLayout.FRONT_DOOR_Z + 3
+        );
+
+        Wolf wolf = EntityType.WOLF.create(level);
+        Villager villager = EntityType.VILLAGER.create(level);
+        helper.assertTrue(wolf != null && villager != null, "test mobs did not create");
+
+        wolf.moveTo(inside.getX() + 0.35D, inside.getY(), inside.getZ() + 0.35D, 0.0F, 0.0F);
+        villager.moveTo(inside.getX() + 0.65D, inside.getY(), inside.getZ() + 0.65D, 0.0F, 0.0F);
+        level.addFreshEntity(wolf);
+        level.addFreshEntity(villager);
+
+        helper.assertTrue(
+                HouseLayout.isInsideDomesticVolume(
+                        wolf.getX() - origin.getX(),
+                        wolf.getY() - origin.getY(),
+                        wolf.getZ() - origin.getZ()
+                ),
+                "wolf did not begin inside the proxy"
+        );
+        helper.assertTrue(
+                HouseLayout.isInsideDomesticVolume(
+                        villager.getX() - origin.getX(),
+                        villager.getY() - origin.getY(),
+                        villager.getZ() - origin.getZ()
+                ),
+                "villager did not begin inside the proxy"
+        );
+
+        int moved = HouseProxyEntityEvacuation.evacuateAll(level, origin);
+        helper.assertTrue(moved == 2, "expected two mobs evacuated, got " + moved);
+
+        for (var mob : List.of(wolf, villager)) {
+            helper.assertTrue(
+                    !HouseLayout.isInsideDomesticVolume(
+                            mob.getX() - origin.getX(),
+                            mob.getY() - origin.getY(),
+                            mob.getZ() - origin.getZ()
+                    ),
+                    mob.getName().getString() + " remained trapped inside the proxy at " + mob.blockPosition()
+            );
+        }
+
+        wolf.discard();
+        villager.discard();
+        helper.succeed();
+    }
+
 
 
     // ------------------------------------------------------------------
