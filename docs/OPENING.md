@@ -54,8 +54,10 @@ Hillary is an ashen wolf named `Hillary`, persistent and tagged with the `the_ol
 
 Hillary is now the physical invitation to visit the neighbors:
 
-- once her stage begins, she tries to travel toward the Navidsons' front porch over ordinary Overworld terrain;
-- she advances while the player is close enough to follow and waits when they fall too far behind;
+- she waits on the doorstep until her recipient comes into sight (within 12 blocks, line of sight). Then she stands, barks, trots over and looks up at them with her head tilted (the vanilla begging tilt), whining every few seconds;
+- she does not lead until she is **acknowledged in turn**: a right-click from her recipient (a pat, which does not tame her), the taming bone, or the recipient crouching within 4 blocks while facing her for half a second. Anyone else's click does nothing. If the recipient walks off she follows and keeps asking; beyond 28 blocks she gives up and returns to the doorstep until she sees them again. The acknowledgement is stored on her (`acknowledged` in the attachment);
+- once greeted she barks, bounds (with hearts) and **darts** toward the Navidsons' front porch at a run for five seconds, over ordinary Overworld terrain;
+- after that she advances at a walking pace while the player is close enough to follow, and when they fall too far behind she stops, turns and barks once, watching them until they catch up;
 - if she was tamed, her vanilla follow-owner behavior is temporarily suppressed while she leads, then restored when she reaches the manor;
 - she settles at the safe standing point immediately outside the authored front door and **sits there rather than entering**;
 - when the player crosses the boundary, only the player is transferred to the matching House-dimension interior. Hillary remains visibly outside at the front entrance.

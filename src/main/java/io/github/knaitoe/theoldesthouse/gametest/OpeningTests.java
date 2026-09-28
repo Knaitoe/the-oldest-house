@@ -389,6 +389,7 @@ public final class OpeningTests {
             stranger.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BONE));
             stranger.interactOn(wolf, InteractionHand.MAIN_HAND);
             helper.assertTrue(!wolf.isTame(), "someone else tamed Hillary");
+            helper.assertTrue(!Hillary.isAcknowledged(wolf), "a stranger's bone counted as her recipient's greeting");
 
             recipient.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BONE));
             recipient.interactOn(wolf, InteractionHand.MAIN_HAND);
@@ -396,11 +397,41 @@ public final class OpeningTests {
             // player list, which fake players are not part of.
             helper.assertTrue(wolf.isTame() && recipient.getUUID().equals(wolf.getOwnerUUID()),
                     "one bone did not tame Hillary for her recipient");
+            helper.assertTrue(Hillary.isAcknowledged(wolf), "the bone should also greet her");
             wolf.discard();
         } finally {
             recipient.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
             stranger.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
         }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void hillaryWaitsToBeGreetedByHerRecipient(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos home = helper.absolutePos(new BlockPos(2, 3, 6));
+        level.setBlock(home.below(), Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
+
+        ServerPlayer recipient = FakePlayerFactory.get(level, new GameProfile(UUID.randomUUID(), "hillary_greeter"));
+        ServerPlayer stranger = FakePlayerFactory.get(level, new GameProfile(UUID.randomUUID(), "hillary_passerby"));
+        Wolf wolf = Hillary.spawn(level, home, recipient.getUUID());
+        helper.assertTrue(wolf != null, "Hillary did not spawn");
+
+        BlockPos manorOrigin = home.offset(28, 0, 0);
+        recipient.moveTo(home.getX() + 0.5D, home.getY(), home.getZ() + 0.5D);
+        Hillary.tickGuide(level, recipient, wolf.getUUID(), true, manorOrigin);
+        helper.assertTrue(wolf.getNavigation().isDone() || wolf.getNavigation().getTargetPos() == null
+                        || wolf.getNavigation().getTargetPos().distSqr(home) < 100,
+                "Hillary set off for the manor before anyone greeted her");
+
+        stranger.interactOn(wolf, InteractionHand.MAIN_HAND);
+        helper.assertTrue(!Hillary.isAcknowledged(wolf), "a stranger's pat counted as her greeting");
+
+        recipient.interactOn(wolf, InteractionHand.MAIN_HAND);
+        helper.assertTrue(Hillary.isAcknowledged(wolf), "her recipient's pat should greet her");
+        helper.assertTrue(!wolf.isTame(), "a pat is not a bone: she is greeted, not tamed");
+
+        wolf.discard();
         helper.succeed();
     }
 
@@ -419,6 +450,7 @@ public final class OpeningTests {
 
         wolf.tame(recipient);
         wolf.setOrderedToSit(false);
+        Hillary.acknowledge(wolf);
         recipient.moveTo(home.getX() + 0.5D, home.getY(), home.getZ() + 0.5D);
 
         BlockPos manorOrigin = home.offset(28, 0, 0);
