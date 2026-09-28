@@ -48,6 +48,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  */
 public final class HouseExteriorEntityMirror {
     public static final String PROJECTION_TAG = "the_oldest_house.entity_projection";
+    private static final String LEGACY_PROJECTION_TAG = "the_oldest_house.exterior_projection";
 
     private static final int SYNC_INTERVAL_TICKS = 2;
     private static final int STATE_REFRESH_INTERVAL_TICKS = 20;
@@ -98,7 +99,8 @@ public final class HouseExteriorEntityMirror {
 
     /** True for scenery entities created by either mirror direction. */
     public static boolean isProjection(Entity entity) {
-        return entity.getTags().contains(PROJECTION_TAG);
+        return entity.getTags().contains(PROJECTION_TAG)
+                || entity.getTags().contains(LEGACY_PROJECTION_TAG);
     }
 
     public static void onServerTick(ServerTickEvent.Post event) {
@@ -349,6 +351,10 @@ public final class HouseExteriorEntityMirror {
         }
 
         projection.load(tag);
+        // Loading source NBT replaces the projection's scoreboard tags too.
+        // Re-apply the marker after every visual-state refresh or the scenery
+        // entity could become eligible as a real source on the next sync.
+        projection.addTag(PROJECTION_TAG);
         configureProjection(projection);
     }
 
