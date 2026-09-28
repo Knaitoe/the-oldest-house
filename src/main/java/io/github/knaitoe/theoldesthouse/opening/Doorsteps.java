@@ -46,7 +46,7 @@ public final class Doorsteps {
     }
 
     public static boolean isOrdinaryDoor(BlockState state) {
-        return state.getBlock() instanceof DoorBlock && !(state.getBlock() instanceof EntranceDoorBlock);
+        return state.getBlock() instanceof DoorBlock;
     }
 
     /**
