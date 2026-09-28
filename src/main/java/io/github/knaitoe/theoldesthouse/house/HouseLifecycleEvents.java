@@ -13,9 +13,6 @@ import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class HouseLifecycleEvents {
-    public static final int REQUIRED_SETTLEMENT_NIGHTS = 5;
-    public static final int SETTLEMENT_RADIUS = 32;
-
     private static final long MORNING_WINDOW_TICKS = 1500L;
 
     private HouseLifecycleEvents() {
