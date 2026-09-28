@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.3.3` revises the per-player opening sequence so the ordinary manor, not the player's home, is the first architectural relationship with the House:
+Version `0.3.4` revises the per-player opening sequence so the ordinary manor, not the player's home, is the first architectural relationship with the House:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
