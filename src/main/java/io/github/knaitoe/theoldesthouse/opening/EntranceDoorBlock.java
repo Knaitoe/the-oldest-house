@@ -38,7 +38,7 @@ public final class EntranceDoorBlock extends DoorBlock {
         super(BlockSetType.IRON, properties);
     }
 
-    public static BlockBehaviour.Properties properties() {
+    public static BlockBehaviour.Properties defaultProperties() {
         return BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_DOOR)
                 .strength(-1.0F, 3600000.0F)
                 .noLootTable()
