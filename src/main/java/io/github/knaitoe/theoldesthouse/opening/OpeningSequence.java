@@ -38,7 +38,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
  * The opening sequence, per player: settle in, receive Navidson's letter,
- * find Hillary and a new door, and step through it into the House.
+ * meet Hillary, and let her lead the player to the Navidsons' manor.
  *
  * Mornings are the Overworld day time crossing into dawn (the first 1000
  * ticks of a day). Each player's morning is handled once, while they are in
@@ -186,7 +186,14 @@ public final class OpeningSequence {
             return;
         }
         if (state.hillaryUuid() != null) {
-            Hillary.tickLeash(overworld, state.hillaryUuid());
+            HouseSavedData house = HouseSavedData.get(player.server);
+            Hillary.tickGuide(
+                    overworld,
+                    player,
+                    state.hillaryUuid(),
+                    state.stage().isAtLeast(OpeningStage.HILLARY_ARRIVED),
+                    house.houseOrigin()
+            );
         }
 
         Optional<BlockPos> bed = Doorsteps.bedPosition(player);
@@ -308,15 +315,19 @@ public final class OpeningSequence {
     }
 
     // ------------------------------------------------------------------
-    // Morning 2: Hillary and the door
+    // Morning 2: Hillary
 
     /**
-     * Sets Hillary on the doorstep (once) and starts looking for the door's
-     * wall. With {@code immediate} the door is placed even if the player is
-     * looking (debug command).
+     * Sets Hillary on the doorstep. There is deliberately no anomalous door
+     * in the player's home: Hillary is the invitation and guides the player
+     * across ordinary Overworld space to the Navidsons' manor.
      */
     public static void secondMorning(ServerPlayer player, OpeningPlayerState state, BlockPos bed, boolean immediate) {
         ServerLevel level = player.server.overworld();
+        HouseSavedData house = HouseSavedData.get(player.server);
+        if (!house.isSpawned()) {
+            HouseSpawnManager.ensureSpawnedNear(level, house, bed);
+        }
         if (state.hillaryUuid() == null) {
             Doorsteps.Delivery delivery = Doorsteps.resolve(level, state, bed, OpeningConfig.DOORSTEP_SEARCH_RADIUS.getAsInt());
             if (delivery != null) {
@@ -327,7 +338,7 @@ public final class OpeningSequence {
                 }
             }
         }
-        startDoorAttempt(player, state, bed, immediate);
+        state.markHillaryArrived();
     }
 
     private static void startDoorAttempt(ServerPlayer player, OpeningPlayerState state, BlockPos bed, boolean immediate) {
@@ -473,15 +484,12 @@ public final class OpeningSequence {
             case LETTER_DELIVERED -> {
                 state.setStageForTesting(OpeningStage.LETTER_DELIVERED, day - 1L);
                 secondMorning(player, state, bed.get(), false);
-                if (state.stage() == OpeningStage.DOOR_PLACED) {
-                    return "Hillary is on the doorstep and the door is in place";
-                }
-                return PENDING_DOORS.containsKey(player.getUUID())
-                        ? "Hillary is on the doorstep; the door appears once you look away"
-                        : "Hillary is on the doorstep; no wall for the door yet (failed nights: " + state.failedDoorNights() + ")";
+                return "Hillary is on the doorstep and will lead you toward the Navidsons' manor";
             }
-            case DOOR_PLACED -> {
-                return "the door is in place; step through it";
+            case HILLARY_ARRIVED, DOOR_PLACED -> {
+                return state.enteredHouse()
+                        ? "you have already entered the manor"
+                        : "follow Hillary to the Navidsons' manor and use its ordinary front door";
             }
             default -> {
                 return "the opening sequence is complete";
@@ -560,12 +568,16 @@ public final class OpeningSequence {
         return new Vec3(origin.getX() + HouseLayout.AXIS_X + 0.5D, origin.getY() + 1.0D, origin.getZ() + relZ);
     }
 
-    /** Any first entry into the House completes the opening sequence. */
+    /** Records the first ordinary entry into the manor. */
     public static void onEnteredHouse(ServerPlayer player) {
         OpeningPlayerState state = state(player);
-        if (state.stage() == OpeningStage.DOOR_PLACED) {
-            state.markEntered();
+        if (!state.enteredHouse()) {
+            HouseSavedData.get(player.server).incrementVisitCount();
             TheOldestHouse.LOGGER.info("{} has entered the House for the first time.", player.getGameProfile().getName());
+        }
+        state.markEntered();
+        if (state.hillaryUuid() != null) {
+            Hillary.waitAtManor(player.server, state.hillaryUuid());
         }
     }
 
