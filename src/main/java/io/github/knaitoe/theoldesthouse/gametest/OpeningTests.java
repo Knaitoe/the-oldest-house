@@ -13,6 +13,7 @@ import io.github.knaitoe.theoldesthouse.opening.NavidsonLetter;
 import io.github.knaitoe.theoldesthouse.opening.NavidsonPhoto;
 import io.github.knaitoe.theoldesthouse.opening.OpeningSequence;
 import io.github.knaitoe.theoldesthouse.opening.OpeningWorldData;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
@@ -208,6 +209,50 @@ public final class OpeningTests {
         logPhoto("windowless", photo.pixels());
         helper.succeed();
     }
+
+    /**
+     * Regression for 0.3.1: if the geographically preferred facade is
+     * obstructed, the renderer must widen its angle around the captured
+     * settlement rather than silently substituting the baked stock house.
+     */
+    @GameTest(template = "empty", timeoutTicks = 400)
+    public static void photoKeepsThePlayersHouseWhenPreferredFacadeIsBlocked(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos base = helper.absolutePos(BlockPos.ZERO).offset(0, 1, 440);
+        BlockPos bed = buildTestHouse(level, base, true);
+
+        // A broad wall between the preferred +Z camera side and the house.
+        // Same-side framing is intentionally awful; another side is clear.
+        fill(
+                level,
+                base.offset(-8, 0, 25),
+                base.offset(38, 14, 27),
+                Blocks.DEEPSLATE_BRICKS.defaultBlockState()
+        );
+
+        NavidsonPhoto.Result photo = NavidsonPhoto.takeNow(
+                level.getServer(),
+                level,
+                UUID.randomUUID(),
+                bed,
+                bed.offset(0, 0, 60)
+        );
+
+        helper.assertTrue(photo != null, "photo job returned null");
+        helper.assertTrue(photo.pixels() != null, "blocked preferred facade fell back to stock/null capture");
+        helper.assertTrue(photo.sawHouse(), "fallback framing never found the copied custom house");
+
+        byte[] stock = NavidsonLetter.loadSnapshotPixels(level.getServer());
+        helper.assertTrue(
+                !Arrays.equals(photo.pixels(), stock),
+                "the player's captured build was replaced by the stock house"
+        );
+
+        assertValidMap(helper, photo.pixels());
+        logPhoto("blocked_preferred_facade", photo.pixels());
+        helper.succeed();
+    }
+
 
     /**
      * A two-storey cobblestone house (walls 11..19, eaves at 8, flat roof at
