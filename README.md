@@ -376,3 +376,12 @@ The opening has been revised so the player's own home remains ordinary.
 - The bespoke giant swinging-door transition screen and duplicate UI door sound are removed.
 - `DOOR` transitions now use the same short captured-frame/motion treatment as the generic breach boundary, while the real Minecraft door supplies its own in-world animation and sound.
 
+### 0.3.4 exterior entity continuity
+
+- The Overworld manor proxy now rejects living non-player mobs instead of allowing them to become trapped in inaccessible rooms.
+- Evacuated mobs remain intact and visible immediately outside the nearest authored exterior doorway; they are not deleted or hidden.
+- Hillary is staged specifically at the front entrance, sitting there and refusing to enter.
+- While a player occupies the domestic House dimension, nearby Overworld mobs are mirrored as non-interactive visual projections at matching coordinates so they remain visible through windows and open doors.
+- The real Overworld mob remains authoritative. Projections have no AI, damage, interaction or gameplay authority and are removed when nobody is in the domestic interior.
+- Native outdoor mobs in the House dimension's mirrored view are suppressed to prevent duplicate populations.
+
