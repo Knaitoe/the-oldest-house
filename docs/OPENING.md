@@ -91,9 +91,15 @@ There is intentionally no opening `door` command anymore.
 
 The Overworld manor is a visual/proxy shell, not a second playable interior. Living non-player mobs that wander into its domestic volume are therefore **evacuated rather than hidden or deleted**. Every few ticks the server checks the proxy and moves trapped mobs to a safe position immediately outside the nearest authored exterior doorway. Their entity identity, inventory/tame state and world remain intact, so villagers, pets and hostile mobs stay outside the House instead of becoming inaccessible duplicates.
 
-That alone is not enough: players standing in `the_oldest_house:interior` must still be able to **see those real Overworld mobs through windows and open doors**. While a player occupies the domestic interior, the server keeps the nearby Overworld source chunks loaded and maintains non-interactive visual projections of exterior mobs at the same coordinates in the House dimension. The Overworld entity remains authoritative; its projection has no AI, gravity, damage, interaction, persistence purpose, or gameplay authority. Native outdoor mobs in the House dimension's mirrored view are suppressed so the player sees one coherent exterior population rather than duplicates.
+Entity continuity is **bidirectional** across the domestic boundary.
 
-Hillary is the authored version of that rule: the real Hillary waits at the **front** entrance in the Overworld and sits there, visibly refusing to enter; the player sees her matching projection from inside the House.
+- Players standing in `the_oldest_house:interior` can see real Overworld mobs through windows and open doors. Nearby Overworld source chunks remain loaded, and non-interactive matching-coordinate projections are maintained in the House dimension.
+- Players standing outside in the Overworld can see real House-dimension mobs that are inside the ordinary domestic volume. Those mobs receive matching-coordinate visual projections inside the Overworld proxy shell.
+- The dimension containing the real entity is always authoritative. Projections have no AI, gravity, damage, interaction, persistence purpose, or gameplay authority.
+- Reverse projection is limited to `HouseLayout.isInsideDomesticVolume`. Impossible hallways, vignette rooms and later deep-House entities never leak into the mundane facade.
+- Native outdoor mobs in the House dimension's mirrored scenery are suppressed so there is one coherent exterior population rather than two unrelated sets of animals.
+
+Hillary is the authored exterior example: the real Hillary waits at the **front** entrance in the Overworld and sits there, visibly refusing to enter; a player inside sees her matching projection. A future authored NPC physically inside the domestic House works in the opposite direction and remains visible to a player looking in from outside.
 
 ## Dimension-transition presentation
 
