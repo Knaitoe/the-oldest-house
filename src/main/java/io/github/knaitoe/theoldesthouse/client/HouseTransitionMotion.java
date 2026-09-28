@@ -94,15 +94,12 @@ public final class HouseTransitionMotion {
         }
 
         switch (kind) {
-            case DOOR -> {
-                // The physical door itself already supplies the motion cue.
-            }
             case WINDOW -> {
                 event.setYaw(event.getYaw() + sideSign * 2.4F * factor);
                 event.setPitch(event.getPitch() + 3.6F * factor);
                 event.setRoll(event.getRoll() + sideSign * 4.5F * factor);
             }
-            case BREACH -> {
+            case DOOR, BREACH -> {
                 event.setYaw(event.getYaw() + sideSign * 5.8F * factor);
                 event.setPitch(event.getPitch() + 1.4F * factor);
                 event.setRoll(event.getRoll() + sideSign * 5.2F * factor);
@@ -118,9 +115,8 @@ public final class HouseTransitionMotion {
         }
 
         float scale = switch (kind) {
-            case DOOR -> 1.0F;
             case WINDOW -> 1.0F - 0.030F * factor;
-            case BREACH -> 1.0F - 0.045F * factor;
+            case DOOR, BREACH -> 1.0F - 0.045F * factor;
         };
 
         event.setFOV(event.getFOV() * scale);
@@ -150,15 +146,13 @@ public final class HouseTransitionMotion {
         sideSign = entering ? -1.0F : 1.0F;
 
         long preMillis = switch (kind) {
-            case DOOR -> 0L;
             case WINDOW -> entering ? 360L : 250L;
-            case BREACH -> entering ? 390L : 270L;
+            case DOOR, BREACH -> entering ? 390L : 270L;
         };
 
         long postMillis = switch (kind) {
-            case DOOR -> 0L;
             case WINDOW -> entering ? 260L : 190L;
-            case BREACH -> entering ? 290L : 210L;
+            case DOOR, BREACH -> entering ? 290L : 210L;
         };
 
         preDurationNanos = Math.max(1L, preMillis * 1_000_000L);
@@ -166,13 +160,6 @@ public final class HouseTransitionMotion {
         phase = Phase.PRE;
         phaseStartedAt = System.nanoTime();
 
-        if (kind == HouseTransitionKind.DOOR) {
-            PacketDistributor.sendToServer(
-                    new HouseTransitionContextAckPayload(token)
-            );
-            phase = Phase.HOLD;
-            phaseStartedAt = System.nanoTime();
-        }
     }
 
     private static float motionFactor() {
@@ -186,7 +173,7 @@ public final class HouseTransitionMotion {
                             (double) (now - phaseStartedAt) / preDurationNanos
                     )
             );
-            case HOLD -> kind == HouseTransitionKind.DOOR ? 0.0F : 1.0F;
+            case HOLD -> 1.0F;
             case POST -> {
                 float t = (float) Math.min(
                         1.0D,
