@@ -19,9 +19,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -37,11 +35,6 @@ import org.joml.Matrix4f;
         value = Dist.CLIENT
 )
 public final class HouseTransitionClient {
-    private static final ResourceLocation DOOR_TOP =
-            ResourceLocation.withDefaultNamespace("textures/block/oak_door_top.png");
-    private static final ResourceLocation DOOR_BOTTOM =
-            ResourceLocation.withDefaultNamespace("textures/block/oak_door_bottom.png");
-
     private HouseTransitionClient() {
     }
 
@@ -77,7 +70,7 @@ public final class HouseTransitionClient {
         CapturedFrame frame = CapturedFrame.capture(token);
 
         return switch (kind) {
-            case DOOR -> new DoorPassageScreen(
+            case DOOR -> new BreachPassageScreen(
                     ready,
                     reason,
                     entering,
@@ -213,95 +206,6 @@ public final class HouseTransitionClient {
                     maxMillis + 1L
             );
             return millis * 1_000_000L;
-        }
-    }
-
-    private static final class DoorPassageScreen extends TimedPassageScreen {
-        private boolean soundPlayed;
-
-        private DoorPassageScreen(
-                BooleanSupplier ready,
-                Reason reason,
-                boolean entering,
-                int token,
-                CapturedFrame frame
-        ) {
-            super(
-                    ready,
-                    reason,
-                    entering,
-                    token,
-                    frame,
-                    entering ? 1450L : 1000L,
-                    entering ? 1800L : 1325L
-            );
-        }
-
-        @Override
-        public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            if (!soundPlayed) {
-                soundPlayed = true;
-                Minecraft.getInstance().getSoundManager().play(
-                        SimpleSoundInstance.forUI(
-                                entering
-                                        ? SoundEvents.WOODEN_DOOR_OPEN
-                                        : SoundEvents.WOODEN_DOOR_CLOSE,
-                                entering ? 0.82F : 0.78F
-                        )
-                );
-            }
-
-            renderBackground(graphics, mouseX, mouseY, partialTick);
-        }
-
-        @Override
-        public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            drawCapturedFrame(graphics);
-
-            double p = progress();
-            double approach = smoothstep(Math.min(1.0D, p / 0.55D));
-
-            int startWidth = Math.max(90, (int) (this.width * 0.24D));
-            int endWidth = Math.max(this.width + 100, (int) (this.width * 1.12D));
-            int doorWidth = lerpInt(startWidth, endWidth, approach);
-            int doorHeight = doorWidth * 2;
-
-            int startX = entering
-                    ? this.width - startWidth / 4
-                    : -startWidth * 3 / 4;
-            int endX = (this.width - doorWidth) / 2;
-            int doorX = lerpInt(startX, endX, approach);
-            int doorY = (this.height - doorHeight) / 2;
-            int half = doorHeight / 2;
-
-            drawScaledTexture(
-                    graphics,
-                    DOOR_TOP,
-                    doorX,
-                    doorY,
-                    doorWidth,
-                    half
-            );
-            drawScaledTexture(
-                    graphics,
-                    DOOR_BOTTOM,
-                    doorX,
-                    doorY + half,
-                    doorWidth,
-                    doorHeight - half
-            );
-
-            int jambWidth = Math.max(6, this.width / 80);
-            int jambX = entering
-                    ? doorX - jambWidth
-                    : doorX + doorWidth;
-            graphics.fill(
-                    jambX,
-                    0,
-                    jambX + jambWidth,
-                    this.height,
-                    0xCC0A0705
-            );
         }
     }
 
@@ -500,37 +404,7 @@ public final class HouseTransitionClient {
         }
     }
 
-    private static void drawScaledTexture(
-            GuiGraphics graphics,
-            ResourceLocation texture,
-            int x,
-            int y,
-            int width,
-            int height
-    ) {
-        graphics.pose().pushPose();
-        graphics.pose().translate(x, y, 0.0F);
-        graphics.pose().scale(
-                width / 16.0F,
-                height / 16.0F,
-                1.0F
-        );
 
-        drawTextureQuad(
-                graphics,
-                texture,
-                0.0F,
-                0.0F,
-                16.0F,
-                16.0F,
-                0.0F,
-                1.0F,
-                0.0F,
-                1.0F
-        );
-
-        graphics.pose().popPose();
-    }
 
     private static void drawTextureQuad(
             GuiGraphics graphics,
