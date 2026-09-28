@@ -24,6 +24,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.Filterable;
@@ -536,15 +537,24 @@ public final class OpeningTests {
 
     @GameTest(template = "empty")
     public static void domesticHouseMobsProjectIntoTheOverworldProxy(GameTestHelper helper) {
-        ServerLevel level = helper.getLevel();
-        BlockPos origin = helper.absolutePos(new BlockPos(0, 8, 620));
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel overworld = helper.getLevel();
+        ServerLevel interiorStandIn = server.getLevel(Level.NETHER);
+        helper.assertTrue(interiorStandIn != null, "test server has no second dimension");
+
+        // Use ordinary valid build height in both dimensions and keep this
+        // far away from every other GameTest. The mirror code is coordinate-
+        // based, so the Nether can stand in for the House source dimension.
+        BlockPos origin = new BlockPos(2_000_000, 64, 2_000_000);
         BlockPos inside = origin.offset(
                 HouseLayout.AXIS_X,
                 1,
                 HouseLayout.FRONT_DOOR_Z + 4
         );
+        interiorStandIn.getChunkAt(inside);
+        overworld.getChunkAt(inside);
 
-        Wolf resident = EntityType.WOLF.create(level);
+        Wolf resident = EntityType.WOLF.create(interiorStandIn);
         helper.assertTrue(resident != null, "domestic source wolf did not create");
         resident.setCustomName(Component.literal("House Resident"));
         resident.moveTo(
@@ -554,17 +564,28 @@ public final class OpeningTests {
                 37.0F,
                 0.0F
         );
-        level.addFreshEntity(resident);
+        helper.assertTrue(
+                HouseLayout.isInsideDomesticVolume(
+                        resident.getX() - origin.getX(),
+                        resident.getY() - origin.getY(),
+                        resident.getZ() - origin.getZ()
+                ),
+                "test source is not inside the domestic volume"
+        );
+        helper.assertTrue(
+                interiorStandIn.addFreshEntity(resident),
+                "domestic source wolf was not added"
+        );
 
         int mirrored = HouseExteriorEntityMirror.syncDomesticToOverworldNow(
-                level,
-                level,
+                interiorStandIn,
+                overworld,
                 origin
         );
         helper.assertTrue(mirrored == 1, "expected one domestic source projection, got " + mirrored);
 
         AABB search = new AABB(inside).inflate(2.0D);
-        List<Mob> projections = level.getEntitiesOfClass(
+        List<Mob> projections = overworld.getEntitiesOfClass(
                 Mob.class,
                 search,
                 HouseExteriorEntityMirror::isProjection
@@ -594,14 +615,10 @@ public final class OpeningTests {
                 "reverse projection was not placed at the matching proxy-interior coordinates"
         );
 
-        // A reverse projection lives geometrically inside the Overworld proxy,
-        // but the evacuation system must recognize it as scenery rather than
-        // expelling it as a trapped real mob.
-        int evacuated = HouseProxyEntityEvacuation.evacuateAll(level, origin);
-        helper.assertTrue(
-                evacuated <= 1,
-                "projection was incorrectly counted as a real trapped mob"
-        );
+        // Geometrically the projection is inside the Overworld proxy, but it
+        // is scenery. The real-NPC evacuation rule must not throw it outside.
+        int evacuated = HouseProxyEntityEvacuation.evacuateAll(overworld, origin);
+        helper.assertTrue(evacuated == 0, "projection was counted as a trapped real Overworld mob");
         helper.assertTrue(
                 !projection.isRemoved()
                         && HouseLayout.isInsideDomesticVolume(
@@ -612,7 +629,7 @@ public final class OpeningTests {
                 "projection was evacuated from the proxy"
         );
 
-        HouseExteriorEntityMirror.clear(level.getServer());
+        HouseExteriorEntityMirror.clear(server);
         resident.discard();
         helper.succeed();
     }
