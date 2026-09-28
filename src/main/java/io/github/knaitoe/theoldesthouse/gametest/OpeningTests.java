@@ -7,9 +7,8 @@ import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
 import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import io.github.knaitoe.theoldesthouse.opening.DeliveredItemEntity;
 import io.github.knaitoe.theoldesthouse.opening.Doorsteps;
-import io.github.knaitoe.theoldesthouse.opening.EntranceDoorBlock;
-import io.github.knaitoe.theoldesthouse.opening.EntranceDoorPlacer;
 import io.github.knaitoe.theoldesthouse.opening.Hillary;
+import io.github.knaitoe.theoldesthouse.opening.HillaryTag;
 import io.github.knaitoe.theoldesthouse.opening.NavidsonLetter;
 import io.github.knaitoe.theoldesthouse.opening.NavidsonPhoto;
 import io.github.knaitoe.theoldesthouse.opening.OpeningSequence;
@@ -37,11 +36,9 @@ import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
-import net.minecraft.world.level.block.WallTorchBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
-import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.Vec3;
@@ -51,9 +48,9 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 /**
  * Checks the opening sequence's pieces on the game-test server: the letter,
- * the snapshot, the doorstep, the entrance door (in a wall and freestanding)
- * and Hillary's taming. Each test builds in its own band well clear of the
- * house structure test.
+ * the snapshot, doorstep selection, labyrinth bed rules and Hillary's
+ * taming/guidance. Each test builds in its own band well clear of the house
+ * structure test.
  */
 @GameTestHolder(TheOldestHouse.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -296,121 +293,6 @@ public final class OpeningTests {
     }
 
     // ------------------------------------------------------------------
-    // The entrance door
-
-    @GameTest(template = "empty")
-    public static void doorAppearsInAWall(GameTestHelper helper) {
-        ServerLevel level = helper.getLevel();
-        BlockPos base = helper.absolutePos(BlockPos.ZERO).offset(0, 24, 120);
-        BlockState planks = Blocks.OAK_PLANKS.defaultBlockState();
-        fill(level, base, base.offset(12, 0, 12), Blocks.STONE.defaultBlockState());
-        // A roofed room, walls at 2 and 10 on both axes, three blocks high.
-        for (int x = 2; x <= 10; x++) {
-            for (int z = 2; z <= 10; z++) {
-                boolean wall = x == 2 || x == 10 || z == 2 || z == 10;
-                for (int y = 1; y <= 3; y++) {
-                    level.setBlock(base.offset(x, y, z), wall ? planks : Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
-                }
-                level.setBlock(base.offset(x, 4, z), planks, Block.UPDATE_CLIENTS);
-            }
-        }
-        BlockPos bed = base.offset(5, 1, 5);
-        BlockState bedState = Blocks.RED_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.NORTH);
-        level.setBlock(bed, bedState.setValue(BedBlock.PART, BedPart.HEAD), Block.UPDATE_CLIENTS);
-        level.setBlock(bed.south(), bedState.setValue(BedBlock.PART, BedPart.FOOT), Block.UPDATE_CLIENTS);
-
-        // Torches on the outside of the south wall: that wall is no longer plain.
-        for (int x = 3; x <= 9; x++) {
-            level.setBlock(base.offset(x, 2, 11), Blocks.WALL_TORCH.defaultBlockState()
-                    .setValue(WallTorchBlock.FACING, Direction.SOUTH), Block.UPDATE_CLIENTS);
-        }
-
-        UUID owner = UUID.randomUUID();
-        List<EntranceDoorPlacer.Plan> plans = EntranceDoorPlacer.findWallPlans(level, bed, 12, owner, pos -> false);
-        helper.assertTrue(!plans.isEmpty(), "no wall position found in a plain room");
-        for (EntranceDoorPlacer.Plan candidate : plans) {
-            helper.assertTrue(candidate.lower().getZ() != base.getZ() + 10 || candidate.lower().getY() != base.getY() + 1,
-                    "door planned behind the torches at " + candidate.lower());
-        }
-        EntranceDoorPlacer.Plan plan = plans.get(0);
-        BlockPos lower = plan.lower();
-        helper.assertTrue(level.getBlockState(lower).is(Blocks.OAK_PLANKS), "door planned outside the wall: " + lower);
-        helper.assertTrue(level.getBlockState(lower.relative(plan.open())).isAir(), "door does not open onto the room");
-
-        EntranceDoorPlacer.place(level, plan, owner);
-        BlockState placedLower = level.getBlockState(lower);
-        BlockState placedUpper = level.getBlockState(lower.above());
-        helper.assertTrue(placedLower.getBlock() instanceof EntranceDoorBlock
-                        && placedLower.getValue(DoorBlock.HALF) == DoubleBlockHalf.LOWER, "lower half: " + placedLower);
-        helper.assertTrue(placedUpper.getBlock() instanceof EntranceDoorBlock
-                        && placedUpper.getValue(DoorBlock.HALF) == DoubleBlockHalf.UPPER, "upper half: " + placedUpper);
-        helper.assertTrue(placedLower.getValue(DoorBlock.FACING) == plan.open().getOpposite(), "door faces the wrong way");
-        helper.assertTrue(placedLower.getDestroySpeed(level, lower) < 0.0F, "door can be broken in survival");
-        helper.assertTrue(placedLower.getPistonPushReaction() == PushReaction.BLOCK, "pistons can move the door");
-
-        OpeningWorldData.EntranceRecord record = OpeningWorldData.get(level.getServer()).doorOf(owner);
-        helper.assertTrue(record != null && record.lower().equals(lower), "door not recorded");
-        helper.assertTrue(record.replaced().size() == 2
-                        && record.replaced().stream().allMatch(replaced -> replaced.state().is(Blocks.OAK_PLANKS)),
-                "replaced blocks not recorded: " + record.replaced());
-
-        // Digging out the floor must not destroy it.
-        level.setBlock(lower.below(), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-        helper.assertTrue(level.getBlockState(lower).getBlock() instanceof EntranceDoorBlock, "door fell without a floor");
-
-        // Another player's door must keep its distance and its own wall.
-        UUID neighbour = UUID.randomUUID();
-        for (EntranceDoorPlacer.Plan other : EntranceDoorPlacer.findWallPlans(level, bed, 12, neighbour, pos -> false)) {
-            helper.assertTrue(other.lower().distSqr(lower) >= EntranceDoorPlacer.MIN_DOOR_SPACING * EntranceDoorPlacer.MIN_DOOR_SPACING,
-                    "second door too close: " + other.lower());
-            helper.assertTrue(other.open() != plan.open() || !samePlane(other, plan), "second door on the same wall: " + other.lower());
-        }
-
-        helper.assertTrue(OpeningSequence.removeEntranceDoor(level.getServer(), owner), "door record missing on removal");
-        helper.assertTrue(level.getBlockState(lower).is(Blocks.OAK_PLANKS) && level.getBlockState(lower.above()).is(Blocks.OAK_PLANKS),
-                "wall not restored after removing the door");
-        helper.succeed();
-    }
-
-    private static boolean samePlane(EntranceDoorPlacer.Plan a, EntranceDoorPlacer.Plan b) {
-        return a.open().getAxis() == Direction.Axis.X
-                ? a.lower().getX() == b.lower().getX()
-                : a.lower().getZ() == b.lower().getZ();
-    }
-
-    @GameTest(template = "empty")
-    public static void freestandingDoorOnOpenGround(GameTestHelper helper) {
-        ServerLevel level = helper.getLevel();
-        BlockPos base = helper.absolutePos(BlockPos.ZERO).offset(0, 24, 150);
-        fill(level, base, base.offset(16, 0, 16), Blocks.GRASS_BLOCK.defaultBlockState());
-        fill(level, base.offset(0, 1, 0), base.offset(16, 4, 16), Blocks.AIR.defaultBlockState());
-        BlockPos bed = base.offset(8, 1, 8);
-
-        UUID owner = UUID.randomUUID();
-        helper.assertTrue(EntranceDoorPlacer.findWallPlans(level, bed, 12, owner, pos -> false).isEmpty(),
-                "found a wall on open ground");
-        List<EntranceDoorPlacer.Plan> plans = EntranceDoorPlacer.findFreestandingPlans(level, bed, owner);
-        helper.assertTrue(!plans.isEmpty(), "no open ground for a freestanding door");
-        EntranceDoorPlacer.Plan plan = plans.get(0);
-        helper.assertTrue(plan.lower().distSqr(bed) <= EntranceDoorPlacer.FREESTANDING_RADIUS * EntranceDoorPlacer.FREESTANDING_RADIUS,
-                "freestanding door too far from the bed");
-
-        EntranceDoorPlacer.place(level, plan, owner);
-        BlockPos lower = plan.lower();
-        Direction side = plan.open().getClockWise();
-        helper.assertTrue(level.getBlockState(lower).getBlock() instanceof EntranceDoorBlock, "freestanding door missing");
-        helper.assertTrue(level.getBlockState(lower.relative(side)).is(Blocks.STRIPPED_DARK_OAK_LOG)
-                && level.getBlockState(lower.relative(side.getOpposite()).above()).is(Blocks.STRIPPED_DARK_OAK_LOG)
-                && level.getBlockState(lower.above(2)).is(Blocks.STRIPPED_DARK_OAK_LOG), "frame incomplete");
-
-        OpeningWorldData.EntranceRecord record = OpeningWorldData.get(level.getServer()).doorOf(owner);
-        helper.assertTrue(record != null && record.freestanding() && record.replaced().size() == 9, "freestanding door not recorded");
-        OpeningSequence.removeEntranceDoor(level.getServer(), owner);
-        helper.assertTrue(level.getBlockState(lower).isAir() && level.getBlockState(lower.above(2)).isAir(), "frame not removed");
-        helper.succeed();
-    }
-
-    // ------------------------------------------------------------------
     // Beds and the labyrinth threshold
 
     @GameTest(template = "empty")
@@ -468,6 +350,51 @@ public final class OpeningTests {
         }
         helper.succeed();
     }
+
+    @GameTest(template = "empty")
+    public static void hillaryLeadsThenWaitsOutsideTheManor(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos home = helper.absolutePos(new BlockPos(2, 3, 2));
+        level.setBlock(home.below(), Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
+
+        ServerPlayer recipient = FakePlayerFactory.get(
+                level,
+                new GameProfile(UUID.randomUUID(), "hillary_guide_recipient")
+        );
+        Wolf wolf = Hillary.spawn(level, home, recipient.getUUID());
+        helper.assertTrue(wolf != null, "Hillary did not spawn");
+
+        wolf.tame(recipient);
+        wolf.setOrderedToSit(false);
+        recipient.moveTo(home.getX() + 0.5D, home.getY(), home.getZ() + 0.5D);
+
+        BlockPos manorOrigin = home.offset(28, 0, 0);
+        Hillary.tickGuide(level, recipient, wolf.getUUID(), true, manorOrigin);
+        helper.assertTrue(
+                wolf.getOwnerUUID() == null,
+                "Hillary kept vanilla follow-owner AI while she was supposed to lead"
+        );
+
+        BlockPos porch = manorOrigin.offset(
+                HouseLayout.AXIS_X,
+                1,
+                HouseLayout.FRONT_DOOR_Z - 2
+        );
+        wolf.moveTo(porch.getX() + 0.5D, porch.getY(), porch.getZ() + 0.5D, 0.0F, 0.0F);
+        Hillary.tickGuide(level, recipient, wolf.getUUID(), true, manorOrigin);
+
+        helper.assertTrue(
+                recipient.getUUID().equals(wolf.getOwnerUUID()),
+                "Hillary did not restore her owner when she reached the manor"
+        );
+        helper.assertTrue(wolf.isOrderedToSit(), "Hillary should wait outside the manor");
+        HillaryTag tag = Hillary.tagOf(wolf);
+        helper.assertTrue(tag != null && tag.home().equals(porch), "Hillary did not adopt the manor porch as her waiting place");
+
+        wolf.discard();
+        helper.succeed();
+    }
+
 
     // ------------------------------------------------------------------
 
