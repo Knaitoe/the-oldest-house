@@ -63,6 +63,7 @@ public final class TheOldestHouse {
         // test doors) are handled before anything else sees the click.
         NeoForge.EVENT_BUS.addListener(LabyrinthDoors::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(LabyrinthDoors::onBreak);
+        NeoForge.EVENT_BUS.addListener(LabyrinthDoors::onPlace);
         NeoForge.EVENT_BUS.addListener(LabyrinthDoors::onExplosion);
         NeoForge.EVENT_BUS.addListener(LabyrinthDoors::onServerTick);
         NeoForge.EVENT_BUS.addListener(LabyrinthDoors::onPlayerLoggedIn);
@@ -72,7 +73,6 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(TellTaleFloorboards::onServerTick);
         NeoForge.EVENT_BUS.addListener(TellTaleFloorboards::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(TellTaleFloorboards::onBreak);
-        NeoForge.EVENT_BUS.addListener(TellTaleFloorboards::onPlace);
 
         // The room between rooms: its door is handled before the mirror sees the click.
         NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onRightClickBlock);
