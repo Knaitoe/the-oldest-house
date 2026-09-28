@@ -411,7 +411,8 @@ public final class HouseExteriorEntityMirror {
             double relY = mob.getY() - origin.getY();
             double relZ = mob.getZ() - origin.getZ();
             if (!HouseLayout.isInsideDomesticVolume(relX, relY, relZ)
-                    && !HouseLabyrinth.isBeyondThreshold(origin, mob.blockPosition())) {
+                    && !HouseLabyrinth.isBeyondThreshold(origin, mob.blockPosition())
+                    && !HouseShifts.isInDeepenedHall(origin, mob.getX(), mob.getY(), mob.getZ())) {
                 mob.discard();
             }
         }
@@ -422,7 +423,8 @@ public final class HouseExteriorEntityMirror {
             double relX = player.getX() - origin.getX();
             double relY = player.getY() - origin.getY();
             double relZ = player.getZ() - origin.getZ();
-            if (HouseLayout.isInsideDomesticVolume(relX, relY, relZ)) {
+            if (HouseLayout.isInsideDomesticVolume(relX, relY, relZ)
+                    || HouseShifts.isInDeepenedHall(origin, player.getX(), player.getY(), player.getZ())) {
                 return true;
             }
         }
