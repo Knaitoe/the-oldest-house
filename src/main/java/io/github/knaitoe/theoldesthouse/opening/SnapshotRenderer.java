@@ -1,5 +1,7 @@
 package io.github.knaitoe.theoldesthouse.opening;
 
+import javax.annotation.Nullable;
+
 /**
  * Takes Navidson's photograph: the player's own house at night, seen from
  * the direction of the Navidsons' porch, with one lit window up top.
@@ -36,7 +38,11 @@ public final class SnapshotRenderer {
     private static final double MAX_DISTANCE = 96.0D;
     /** Width of the scene framed at the target, in blocks. */
     private static final double FRAME_WIDTH = 24.0D;
-    private static final double[] RELATION_OFFSETS_DEGREES = {0, 5, -5, 10, -10};
+    private static final double[] STRICT_RELATION_OFFSETS_DEGREES = {0, 5, -5, 10, -10};
+    private static final double[] SAME_SIDE_OFFSETS_DEGREES = {0, 15, -15, 25, -25, 40, -40, 55, -55, 70, -70};
+    private static final double[] ANY_SIDE_OFFSETS_DEGREES = {
+            0, 20, -20, 40, -40, 70, -70, 110, -110, 150, -150, 180
+    };
 
     /** The world as the camera sees it. */
     public interface Scene {
@@ -91,18 +97,63 @@ public final class SnapshotRenderer {
             double preferredDistance
     ) {
         double baseDistance = clamp(preferredDistance, 18.0D, 38.0D);
+
+        // First choice: preserve the actual porch-to-home relationship very
+        // closely. This is the intended composition when terrain permits it.
+        Camera camera = chooseCameraFromOffsets(
+                scene, tx, ty, tz, preferredYaw, baseDistance,
+                STRICT_RELATION_OFFSETS_DEGREES, 18.0D
+        );
+        if (camera != null) {
+            return camera;
+        }
+
+        // Second choice: stay on the same broad facade/hemisphere. A tree,
+        // hill or neighboring build should not turn the player's own house
+        // into a stock photograph.
+        camera = chooseCameraFromOffsets(
+                scene, tx, ty, tz, preferredYaw, baseDistance,
+                SAME_SIDE_OFFSETS_DEGREES, 45.0D
+        );
+        if (camera != null) {
+            return camera;
+        }
+
+        // Last resort: preserve the important truth, namely that the image is
+        // of the player's captured home. Only after the geographically
+        // faithful searches fail may framing walk around the copied build.
+        return chooseCameraFromOffsets(
+                scene, tx, ty, tz, preferredYaw, baseDistance,
+                ANY_SIDE_OFFSETS_DEGREES, 90.0D
+        );
+    }
+
+    @Nullable
+    private static Camera chooseCameraFromOffsets(
+            Scene scene,
+            double tx,
+            double ty,
+            double tz,
+            double preferredYaw,
+            double baseDistance,
+            double[] offsets,
+            double offsetPenaltyScale
+    ) {
         double[] distances = {
                 baseDistance,
                 clamp(baseDistance + 4.0D, 18.0D, 38.0D),
                 clamp(baseDistance - 4.0D, 18.0D, 38.0D),
                 38.0D,
-                22.0D
+                34.0D,
+                28.0D,
+                22.0D,
+                18.0D
         };
 
         Camera best = null;
-        double bestScore = 0.0D;
+        double bestScore = Double.NEGATIVE_INFINITY;
         for (double distance : distances) {
-            for (double offset : RELATION_OFFSETS_DEGREES) {
+            for (double offset : offsets) {
                 double yaw = preferredYaw + Math.toRadians(offset);
                 double cx = tx + Math.sin(yaw) * distance;
                 double cz = tz + Math.cos(yaw) * distance;
@@ -110,19 +161,32 @@ public final class SnapshotRenderer {
                 if (ground == Integer.MIN_VALUE) {
                     continue;
                 }
-                // A porch's eye height, a little raised: the Navidsons look across from theirs.
-                double cy = Math.min(ty + 4.0D, Math.max(ground + 1.62D, ty - 3.0D));
-                int camKind = scene.sample(floor(cx), floor(cy), floor(cz)) >>> 24;
-                if (camKind != AIR) {
-                    continue;
-                }
-                Camera camera = lookAt(cx, cy, cz, tx, ty, tz, distance);
-                double score = viewScore(scene, camera, tx, ty, tz)
-                        - Math.abs(offset) / 18.0D
-                        - Math.abs(distance - baseDistance) / 10.0D;
-                if (score > bestScore) {
-                    bestScore = score;
-                    best = camera;
+
+                // Try a small vertical stack. Custom houses and neighboring
+                // terrain can make ordinary eye height unusable even though a
+                // perfectly legible porch-like shot exists a block higher.
+                double baseY = Math.min(ty + 4.0D, Math.max(ground + 1.62D, ty - 3.0D));
+                for (double lift : new double[]{0.0D, 1.5D, 3.0D}) {
+                    double cy = baseY + lift;
+                    int camKind = scene.sample(floor(cx), floor(cy), floor(cz)) >>> 24;
+                    if (camKind != AIR) {
+                        continue;
+                    }
+
+                    Camera candidate = lookAt(cx, cy, cz, tx, ty, tz, distance);
+                    double rawView = viewScore(scene, candidate, tx, ty, tz);
+                    if (rawView <= 0.0D) {
+                        continue;
+                    }
+
+                    double score = rawView
+                            - Math.abs(offset) / offsetPenaltyScale
+                            - Math.abs(distance - baseDistance) / 10.0D
+                            - lift * 0.12D;
+                    if (score > bestScore) {
+                        bestScore = score;
+                        best = candidate;
+                    }
                 }
             }
         }
