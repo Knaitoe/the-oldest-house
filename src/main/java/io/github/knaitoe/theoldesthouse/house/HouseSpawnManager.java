@@ -15,54 +15,6 @@ public final class HouseSpawnManager {
     private HouseSpawnManager() {
     }
 
-    public static void tryNaturalMorningSpawn(ServerLevel level, HouseSavedData data, long currentDay) {
-        if (!data.isEligible() || data.isSpawned()) {
-            return;
-        }
-
-        // The same morning that establishes eligibility can never spawn The Oldest House.
-        if (currentDay <= data.eligibleSinceDay()) {
-            return;
-        }
-
-        if (!data.claimSpawnRoll(currentDay)) {
-            return;
-        }
-
-        double chance = data.spawnChancePercent() / 100.0D;
-
-        if (level.getRandom().nextDouble() >= chance) {
-            int nextChance = data.adjustSpawnChance(level.getRandom());
-            TheOldestHouse.LOGGER.debug(
-                    "The Oldest House did not appear. Next hidden appearance chance is {}%.",
-                    nextChance
-            );
-            return;
-        }
-
-        Optional<BlockPos> anchor = data.anchorPosition();
-        if (anchor.isEmpty()) {
-            data.adjustSpawnChance(level.getRandom());
-            return;
-        }
-
-        Optional<BlockPos> origin = findSafeOrigin(level, anchor.get());
-        if (origin.isEmpty()) {
-            int nextChance = data.adjustSpawnChance(level.getRandom());
-            TheOldestHouse.LOGGER.debug(
-                    "The Oldest House appearance roll succeeded, but no safe nearby site was found. Next chance is {}%.",
-                    nextChance
-            );
-            return;
-        }
-
-        HouseBuilder.build(level, origin.get());
-        data.markSpawned(origin.get());
-
-        // Deliberately no player-facing message. The discovery is the event.
-        TheOldestHouse.LOGGER.info("The Oldest House appeared at {}.", origin.get());
-    }
-
     /**
      * Spawns The Oldest House near {@code anchor} now, if it does not exist
      * yet (the opening sequence: the Navidsons have moved in next door).
