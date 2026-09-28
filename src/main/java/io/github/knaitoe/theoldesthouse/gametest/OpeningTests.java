@@ -8,6 +8,7 @@ import io.github.knaitoe.theoldesthouse.house.HouseImpossibleHallway;
 import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
 import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import io.github.knaitoe.theoldesthouse.house.HouseProxyEntityEvacuation;
+import io.github.knaitoe.theoldesthouse.house.HouseSpawnManager;
 import io.github.knaitoe.theoldesthouse.opening.DeliveredItemEntity;
 import io.github.knaitoe.theoldesthouse.opening.Doorsteps;
 import io.github.knaitoe.theoldesthouse.opening.Hillary;
@@ -403,6 +404,22 @@ public final class OpeningTests {
             recipient.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
             stranger.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
         }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void theHouseOnlyEverClearsNaturalGrowth(GameTestHelper helper) {
+        helper.assertTrue(HouseSpawnManager.isNaturalGrowth(Blocks.OAK_LOG.defaultBlockState()), "trees can be cleared");
+        helper.assertTrue(HouseSpawnManager.isNaturalGrowth(Blocks.OAK_LEAVES.defaultBlockState()), "their leaves too");
+        helper.assertTrue(HouseSpawnManager.isNaturalGrowth(Blocks.SHORT_GRASS.defaultBlockState()), "grass");
+        helper.assertTrue(HouseSpawnManager.isNaturalGrowth(Blocks.SNOW.defaultBlockState()), "snow");
+        helper.assertTrue(!HouseSpawnManager.isNaturalGrowth(Blocks.OAK_LEAVES.defaultBlockState()
+                .setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true)), "leaves a player placed");
+        helper.assertTrue(!HouseSpawnManager.isNaturalGrowth(Blocks.STRIPPED_OAK_LOG.defaultBlockState()), "stripped logs");
+        helper.assertTrue(!HouseSpawnManager.isNaturalGrowth(Blocks.OAK_PLANKS.defaultBlockState()), "planks");
+        helper.assertTrue(!HouseSpawnManager.isNaturalGrowth(Blocks.GLASS.defaultBlockState()), "glass");
+        helper.assertTrue(!HouseSpawnManager.isNaturalGrowth(Blocks.CHEST.defaultBlockState()), "a chest");
+        helper.assertTrue(!HouseSpawnManager.isNaturalGrowth(Blocks.COBBLESTONE.defaultBlockState()), "cobblestone");
         helper.succeed();
     }
 

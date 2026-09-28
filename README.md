@@ -31,7 +31,7 @@ The modular room graph, navigation anomalies, explorer notes, Mother of Strays, 
 ## Opening lifecycle
 
 1. Establish an Overworld bed respawn point and complete the configured settling-in requirements.
-2. On the next handled morning, the opening places The Oldest House at the best safe site 32-64 blocks from the player's home if it does not already exist.
+2. On the next handled morning, the opening places The Oldest House at the best site 32-96 blocks from the player's bed, searched in loosening passes (open and flat first; then wooded, clearing trees and undergrowth; then rough, up to 12 blocks of relief). Nothing that looks player-made (planks, glass, stripped logs, placed leaves, anything with a block entity) is ever cleared, and sites reaching into unloaded chunks are skipped. **The letter waits for the House:** if no site is found, the player stays eligible and the next morning tries again; Hillary likewise waits for it. Worlds where the letter or Hillary came without a House keep retrying every morning, and `/oldesthouse opening house` tries at once and reports why sites were turned down.
 3. Navidson's photograph preserves the actual bearing from the manor's porch toward the player's home. Camera distance may be compressed to fit the captured copy, and framing may shift only slightly on that same side.
 4. The letter and photograph arrive at the player's most familiar doorstep.
 5. On the following handled morning, Hillary appears there. She greets the player and waits to be greeted back (right-click, bone, or crouch facing her) before guiding toward the manor.
@@ -131,6 +131,7 @@ Commands require permission level 2.
 | `/oldesthouse opening letter [player]` | Take the photo and deliver Navidson's letter and snapshot immediately. |
 | `/oldesthouse opening photo [player]` | Photograph the player's house again and hand you the snapshot. |
 | `/oldesthouse opening copy [player]` | Stand where Navidson's camera stood in the outside dimension. |
+| `/oldesthouse opening house [player]` | Have the Navidsons move in next door now (the same site search as the letter's morning) and report why sites were turned down. |
 | `/oldesthouse opening hillary [player]` | Put a new Hillary on the player's doorstep, replacing any earlier one. |
 | `/oldesthouse opening reset [player]` | Clear that player's opening progress. |
 
@@ -449,6 +450,7 @@ The opening has been revised so the player's own home remains ordinary.
 - Days are counted by the mod, so `/time set` can no longer stall the opening, and sleeping in a manor bed now passes the night.
 - The first night in the manor shifts the rugs; around day 3 the room between rooms appears; ten kinds of subtle change follow on quiet mornings; after the room and two of them, the impossible hallway gets a heavily weighted daily roll, at the end of the hall as before. Subtle changes continue after it opens.
 - `/oldesthouse day [n]`, `/oldesthouse reveal rugs|room|hallway`, and a fuller `/oldesthouse status`.
+- The House's site search no longer gives up in woods or hills: it searches 32-96 blocks out in loosening passes, clears trees (never anything player-made), and skips unloaded chunks instead of reading them as the bottom of the world. The letter and Hillary now wait for the House, older saves retry every morning, and `/oldesthouse opening house` spawns it now with a report.
 - Hillary greets her recipient and waits to be greeted back (right-click, bone, or crouching facing her) before darting off towards the manor; ignored, she follows and whines.
 - The labyrinth: a door in the impossible hallway's far wall into a solid plaster dimension, the gray junction and corridor, a dealer that re-deals doors on every arrival with a dry-spell guarantee and leaking vignette doors, and the first vignette, The Tell-Tale Heart's floorboards. `/oldesthouse door <place>` puts a test door to any of it wherever you stand.
 - Every chest and barrel in the manor now has a loot table for its room: pantry food in the kitchen, bottles and bowls in the scullery, candles and odds and ends in the parlour and landings, books and ink in the literary bedroom, fletching and scrap metal in the maker loft, moth-eaten leftovers in the box room. `/oldesthouse restock` applies them to an existing house.

@@ -204,6 +204,14 @@ public final class OpeningSequence {
                 }
             }
             default -> {
+                // Saves from before the House waited for a site: the letter
+                // and Hillary came, but the House never did. Keep trying.
+                if (state.stage().isAtLeast(OpeningStage.HILLARY_ARRIVED) && !state.enteredHouse()) {
+                    HouseSavedData house = HouseSavedData.get(player.server);
+                    if (!house.isSpawned()) {
+                        HouseSpawnManager.ensureSpawnedNear(player.server.overworld(), house, bed);
+                    }
+                }
             }
         }
     }
@@ -216,10 +224,17 @@ public final class OpeningSequence {
      * Navidson photographs the player's house from their porch, and the
      * letter is left with the photo once it is developed, a few seconds on.
      */
-    private static void beginLetter(ServerPlayer player, BlockPos bed, long day) {
+    private static boolean beginLetter(ServerPlayer player, BlockPos bed, long day) {
         MinecraftServer server = player.server;
         UUID id = player.getUUID();
         BlockPos porch = navidsonPorch(server, bed);
+        if (porch == null) {
+            // Nobody has moved in next door yet: no letter until they have.
+            // The player stays eligible and the next morning tries again.
+            TheOldestHouse.LOGGER.info("The Navidsons have not found a house near {}'s bed yet; the letter waits.",
+                    player.getGameProfile().getName());
+            return false;
+        }
         boolean started = NavidsonPhoto.start(server, id, bed, porch, result -> {
             ServerPlayer recipient = server.getPlayerList().getPlayer(id);
             if (recipient == null || recipient.serverLevel() != server.overworld()) {
@@ -233,6 +248,7 @@ public final class OpeningSequence {
         if (!started && !NavidsonPhoto.isRunning(id)) {
             deliverLetter(player, state(player), bed, day, null);
         }
+        return true;
     }
 
     /**
@@ -300,8 +316,9 @@ public final class OpeningSequence {
     public static void secondMorning(ServerPlayer player, OpeningPlayerState state, BlockPos bed) {
         ServerLevel level = player.server.overworld();
         HouseSavedData house = HouseSavedData.get(player.server);
-        if (!house.isSpawned()) {
-            HouseSpawnManager.ensureSpawnedNear(level, house, bed);
+        if (!house.isSpawned() && !HouseSpawnManager.ensureSpawnedNear(level, house, bed)) {
+            // Hillary has nowhere to lead to yet; she comes once the House does.
+            return;
         }
         if (state.hillaryUuid() == null) {
             Doorsteps.Delivery delivery = Doorsteps.resolve(level, state, bed, OpeningConfig.DOORSTEP_SEARCH_RADIUS.getAsInt());
@@ -343,14 +360,18 @@ public final class OpeningSequence {
                     return "Navidson's photo is already being taken";
                 }
                 state.setStageForTesting(OpeningStage.ELIGIBLE, day - 1L);
-                beginLetter(player, bed.get(), day);
+                if (!beginLetter(player, bed.get(), day)) {
+                    return "the House found no site near the bed (" + houseSearchSummary() + ")";
+                }
                 return "Navidson is photographing the house; the letter follows in a few seconds";
             }
             case LETTER_DELIVERED -> {
                 state.setStageForTesting(OpeningStage.LETTER_DELIVERED, day - 1L);
                 secondMorning(player, state, bed.get());
                 return state.stage() == OpeningStage.LETTER_DELIVERED
-                        ? "no doorstep with room for Hillary near the bed yet"
+                        ? (HouseSavedData.get(player.server).isSpawned()
+                                ? "no doorstep with room for Hillary near the bed yet"
+                                : "the House found no site near the bed (" + houseSearchSummary() + ")")
                         : "Hillary is on the doorstep and will lead you toward the Navidsons' manor";
             }
             case HILLARY_ARRIVED -> {
@@ -370,10 +391,21 @@ public final class OpeningSequence {
                 && Hillary.isAcknowledged(wolf);
     }
 
+    /** The last site search, in a line. */
+    public static String houseSearchSummary() {
+        HouseSpawnManager.Report report = HouseSpawnManager.lastReport();
+        return report == null ? "no search since the server started" : report.describe();
+    }
+
     /** Where a player is in the opening, and what the next step waits on. */
     public static String describeProgress(ServerPlayer player) {
         OpeningPlayerState state = state(player);
         String name = player.getGameProfile().getName() + "'s opening: ";
+        if (state.stage().isAtLeast(OpeningStage.ELIGIBLE) && !state.enteredHouse()
+                && !HouseSavedData.get(player.server).isSpawned()) {
+            return name + state.stage().name().toLowerCase() + ", but the House has not appeared: "
+                    + houseSearchSummary() + ". It tries again every morning; /oldesthouse opening house tries now.";
+        }
         return switch (state.stage()) {
             case NONE -> {
                 int nights = OpeningConfig.MIN_NIGHTS_SLEPT.getAsInt();
