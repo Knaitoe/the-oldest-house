@@ -511,7 +511,8 @@ public final class SnapshotRenderer {
                 }
             }
         }
-        boolean mullions = litCount >= 20;
+        // Glazing bars only when the window is big enough to show them; smaller, they just break up the light.
+        boolean mullions = litCount >= 64;
         for (int i = 0; i < n; i++) {
             if (lit[i]) {
                 boolean bar = mullions && (Math.abs(fu[i] - 0.5D) < 0.06D || Math.abs(fv[i] - 0.5D) < 0.06D);
