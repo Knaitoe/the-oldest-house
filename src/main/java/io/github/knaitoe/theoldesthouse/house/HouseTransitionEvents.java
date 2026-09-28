@@ -92,6 +92,15 @@ public final class HouseTransitionEvents {
             ServerLevel interior = player.getServer().getLevel(HouseDimensions.INTERIOR);
             if (interior != null) {
                 HouseDimensionMirror.reconcileAuthoritativeDomestic(interior, destination, origin);
+
+                // Seed the reverse visual layer before arrival so domestic
+                // House NPCs are already visible through the Overworld shell
+                // on the player's first frame outside.
+                HouseExteriorEntityMirror.syncDomesticToOverworldNow(
+                        interior,
+                        destination,
+                        origin
+                );
             }
         }
 
