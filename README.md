@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.2.0` implements the first stable lifecycle and the rebuilt domestic manor:
+Version `0.3.0` adds the per-player opening sequence (Navidson's letter, Hillary and the door; see [docs/OPENING.md](docs/OPENING.md)) to the first stable lifecycle and the rebuilt domestic manor:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -86,6 +86,11 @@ Commands require permission level 2.
 | `/oldesthouse visit` | Increment the stored visit count. |
 | `/oldesthouse reconcile` | Force an authoritative House-dimension to Overworld reconciliation and report how many positions changed. |
 | `/oldesthouse reset` | Reset persistent The Oldest House state. This does **not** erase blocks already placed in the world. |
+| `/oldesthouse opening status [player]` | Show a player's opening-sequence stage, sleeps, bed, letter/door days, Hillary and door. |
+| `/oldesthouse opening eligible [player]` | Skip the settling-in requirements; the letter arrives on the next morning (day time 0-1000). |
+| `/oldesthouse opening letter [player]` | Deliver Navidson's letter and snapshot now. |
+| `/oldesthouse opening door [player]` | Run morning two now: Hillary on the doorstep and the door placed immediately (even in view). |
+| `/oldesthouse opening reset [player]` | Clear a player's opening progress and remove their door, restoring the wall it replaced. |
 
 ### Important
 
@@ -334,4 +339,14 @@ Performance and correctness:
 - The House origin is cached; per-player transition state is updated in place and dropped on logout; static state is cleared on server stop and client disconnect (a stale hallway view could previously carry into another world).
 - Natural spawn site search rejects candidates with heightmap reads before scanning blocks, and accepts flowers and saplings as clearable vegetation.
 - The client caches the sightline sprites (refreshed on resource reload).
+
+### 0.3.0 opening sequence
+
+Everything before a player first enters the House, run per player (see [docs/OPENING.md](docs/OPENING.md)):
+
+- **Settling in:** a bed respawn point, two completed sleeps and three in-game days since first joining (all configurable in the server config `the_oldest_house-server.toml`).
+- **Morning 1:** a written book from Will Navidson ("Howdy, Neighbor") and a snapshot (a locked filled map of a dark house with one lit upper window) wait on the doorstep of the player's most-used door, with one soft knock only the recipient hears. Both never despawn, only the recipient can pick them up, and water does not carry them off. The same morning the Navidsons' house (The Oldest House) appears next door if it has not already.
+- **Morning 2:** Hillary, an ashen husky, waits on the doorstep; the first bone from her recipient always tames her. A new door appears in a wall within 12 blocks of the bed (never one the player is looking at or just placed; after three nights without a wall, a freestanding framed door on open ground).
+- **The door:** unbreakable in survival and immovable by pistons, it opens only for its owner, who steps through into the House's hall via the existing DOOR transition. Anyone else hears a locked rattle. The blocks it replaced are recorded for later restoration.
+- **Hillary and the House:** if she follows her owner in, she runs a few blocks down the hall; out of sight (or after two seconds) she is taken out of the House and set down, sitting, on her doorstep.
 

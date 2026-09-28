@@ -6,8 +6,13 @@ import io.github.knaitoe.theoldesthouse.house.HouseLifecycleEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseMirrorSyncEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents;
 import io.github.knaitoe.theoldesthouse.network.HouseNetwork;
+import io.github.knaitoe.theoldesthouse.opening.OpeningConfig;
+import io.github.knaitoe.theoldesthouse.opening.OpeningRegistry;
+import io.github.knaitoe.theoldesthouse.opening.OpeningSequence;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
 import org.slf4j.Logger;
 
@@ -16,8 +21,10 @@ public final class TheOldestHouse {
     public static final String MOD_ID = "the_oldest_house";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public TheOldestHouse(IEventBus modEventBus) {
+    public TheOldestHouse(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.addListener(HouseNetwork::registerPayloads);
+        OpeningRegistry.register(modEventBus);
+        modContainer.registerConfig(ModConfig.Type.SERVER, OpeningConfig.SPEC);
 
         NeoForge.EVENT_BUS.addListener(HouseCommands::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onPlayerWakeUp);
@@ -33,6 +40,8 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onPlace);
         NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onRightClick);
         NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onServerTick);
+
+        OpeningSequence.register(NeoForge.EVENT_BUS);
 
         LOGGER.info("The Oldest House prototype initialized.");
     }

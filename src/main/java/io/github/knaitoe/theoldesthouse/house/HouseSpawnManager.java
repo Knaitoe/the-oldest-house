@@ -63,6 +63,27 @@ public final class HouseSpawnManager {
         TheOldestHouse.LOGGER.info("The Oldest House appeared at {}.", origin.get());
     }
 
+    /**
+     * Spawns The Oldest House near {@code anchor} now, if it does not exist
+     * yet (the opening sequence: the Navidsons have moved in next door).
+     *
+     * @return whether the House exists afterwards
+     */
+    public static boolean ensureSpawnedNear(ServerLevel level, HouseSavedData data, BlockPos anchor) {
+        if (data.isSpawned()) {
+            return true;
+        }
+        Optional<BlockPos> origin = findSafeOrigin(level, anchor);
+        if (origin.isEmpty()) {
+            TheOldestHouse.LOGGER.info("No safe site for The Oldest House near {} yet.", anchor);
+            return false;
+        }
+        HouseBuilder.build(level, origin.get());
+        data.markSpawned(origin.get());
+        TheOldestHouse.LOGGER.info("The Oldest House appeared at {} (next door to {}).", origin.get(), anchor);
+        return true;
+    }
+
     private static Optional<BlockPos> findSafeOrigin(ServerLevel level, BlockPos anchor) {
         BlockPos bestOrigin = null;
         int bestScore = Integer.MAX_VALUE;
