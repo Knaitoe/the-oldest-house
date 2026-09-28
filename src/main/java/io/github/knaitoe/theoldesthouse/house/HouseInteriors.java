@@ -476,13 +476,9 @@ final class HouseInteriors {
         for (int z = 2; z <= 25; z++) {
             c.setIfAir(axis, 7, z, Blocks.RED_CARPET.defaultBlockState());
         }
-        c.set(axis, 10, 5, lantern(true));
-        c.set(axis, 10, 11, lantern(true));
-
-        // A long pendant in the vaulted rear half.
-        int top = HouseLayout.ROOF_CROSS.height(axis, 20) - 1;
-        c.fill(axis, 11, 20, axis, top, 20, Blocks.CHAIN.defaultBlockState());
-        c.set(axis, 10, 20, lantern(true));
+        for (int z : new int[]{5, 11, 17, 23}) {
+            c.set(axis, 9, z, lantern(true));
+        }
 
         c.set(HouseLayout.HALL_MAX_X, 7, 9, stairs(Blocks.SPRUCE_STAIRS, Direction.EAST));
         c.set(HouseLayout.HALL_MAX_X, 7, 10, stairs(Blocks.SPRUCE_STAIRS, Direction.EAST));

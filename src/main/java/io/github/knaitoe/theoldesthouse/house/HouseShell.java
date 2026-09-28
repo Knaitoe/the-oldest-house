@@ -114,9 +114,8 @@ final class HouseShell {
         c.fill(18, 6, 21, 26, 6, 24, SPRUCE_FLOOR);
         c.walls(17, 20, 27, 25, 7, 8, PLASTER);
 
-        // The rear half of the upper hall rises into the cross-gable; carry
-        // its west partition up to the roof so it does not open into the
-        // long gallery's roof space.
+        // Carry the upper hall's west partition up to the cross-gable so the
+        // attic over the hall stays separate from the long gallery's roof.
         for (int z = 16; z <= 25; z++) {
             int top = HouseLayout.ROOF_CROSS.height(13, z) - 1;
             c.fill(13, 11, z, 13, top, z, PLASTER);
@@ -152,7 +151,9 @@ final class HouseShell {
     /** Ceilings go in after the roofs so a roof course always wins its cell. */
     static void buildCeilings(HouseCanvas c) {
         fillIfAir(c, 1, 11, 0, 12, 11, 14, CEILING);
-        fillIfAir(c, HouseLayout.HALL_MIN_X, 11, 1, HouseLayout.HALL_MAX_X, 11, 15, CEILING);
+        // The upper hall keeps one flat ceiling its whole length, just below
+        // the wall plate, so no roof underside ever shows inside it.
+        c.fill(HouseLayout.HALL_MIN_X, 10, 1, HouseLayout.HALL_MAX_X, 10, 25, CEILING);
         fillIfAir(c, 18, 15, 13, 23, 15, 19, CEILING);
     }
 
@@ -561,7 +562,6 @@ final class HouseShell {
         blockedWindow(c, Face.SOUTH, 26, 2, 3, 2, 3);
         blockedWindow(c, Face.SOUTH, 26, 10, 11, 2, 3);
         blockedWindow(c, Face.SOUTH, 26, 2, 3, 8, 8);
-        blockedWindow(c, Face.SOUTH, HouseLayout.THRESHOLD_Z, HouseLayout.AXIS_X, HouseLayout.AXIS_X, 8, 9);
         blockedWindow(c, Face.SOUTH, 25, 23, 24, 2, 3);
     }
 
