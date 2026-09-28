@@ -38,6 +38,9 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HouseTransitionEvents::onPlayerLoggedOut);
         NeoForge.EVENT_BUS.addListener(HouseProxyEntityEvacuation::onServerTick);
         NeoForge.EVENT_BUS.addListener(HouseExteriorEntityMirror::onServerTick);
+        NeoForge.EVENT_BUS.addListener(HouseExteriorEntityMirror::onEntityInteract);
+        NeoForge.EVENT_BUS.addListener(HouseExteriorEntityMirror::onEntityInteractSpecific);
+        NeoForge.EVENT_BUS.addListener(HouseExteriorEntityMirror::onAttack);
         NeoForge.EVENT_BUS.addListener(HouseLabyrinth::onCanPlayerSleep);
         NeoForge.EVENT_BUS.addListener(HouseLabyrinth::onSetSpawn);
 
