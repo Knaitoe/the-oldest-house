@@ -56,6 +56,7 @@ public final class HouseLifecycleEvents {
         HouseMirrorSyncEvents.clearPending();
         HouseInteriorInitializer.cancel();
         HouseTransitionEvents.clearAll();
+        HouseExteriorEntityMirror.clear(event.getServer());
     }
 
     public static void onPlayerWakeUp(PlayerWakeUpEvent event) {
