@@ -447,6 +447,73 @@ public final class OpeningSequence {
     }
 
     // ------------------------------------------------------------------
+    // Testing
+
+    /**
+     * Runs the player's next step now, exactly as their next morning would:
+     * the letter waits for its photo, and the door waits until they look
+     * away. Returns a short description of what happened.
+     */
+    public static String advance(ServerPlayer player) {
+        Optional<BlockPos> bed = Doorsteps.bedPosition(player);
+        if (bed.isEmpty()) {
+            return "no bed respawn point; sleep in a bed first";
+        }
+        OpeningPlayerState state = state(player);
+        long day = currentDay(player.server);
+        switch (state.stage()) {
+            case NONE, ELIGIBLE -> {
+                if (NavidsonPhoto.isRunning(player.getUUID())) {
+                    return "Navidson's photo is already being taken";
+                }
+                state.setStageForTesting(OpeningStage.ELIGIBLE, day - 1L);
+                beginLetter(player, bed.get(), day);
+                return "Navidson is photographing the house; the letter follows in a few seconds";
+            }
+            case LETTER_DELIVERED -> {
+                state.setStageForTesting(OpeningStage.LETTER_DELIVERED, day - 1L);
+                secondMorning(player, state, bed.get(), false);
+                if (state.stage() == OpeningStage.DOOR_PLACED) {
+                    return "Hillary is on the doorstep and the door is in place";
+                }
+                return PENDING_DOORS.containsKey(player.getUUID())
+                        ? "Hillary is on the doorstep; the door appears once you look away"
+                        : "Hillary is on the doorstep; no wall for the door yet (failed nights: " + state.failedDoorNights() + ")";
+            }
+            case DOOR_PLACED -> {
+                return "the door is in place; step through it";
+            }
+            default -> {
+                return "the opening sequence is complete";
+            }
+        }
+    }
+
+    /** A new Hillary on the doorstep, replacing any earlier one. Returns where she is, or null. */
+    @Nullable
+    public static BlockPos respawnHillary(ServerPlayer player) {
+        Optional<BlockPos> bed = Doorsteps.bedPosition(player);
+        if (bed.isEmpty()) {
+            return null;
+        }
+        ServerLevel level = player.server.overworld();
+        OpeningPlayerState state = state(player);
+        if (state.hillaryUuid() != null && level.getEntity(state.hillaryUuid()) instanceof Wolf old) {
+            old.discard();
+        }
+        Doorsteps.Delivery delivery = Doorsteps.resolve(level, state, bed.get(), OpeningConfig.DOORSTEP_SEARCH_RADIUS.getAsInt());
+        if (delivery == null) {
+            return null;
+        }
+        Wolf hillary = Hillary.spawn(level, delivery.spot(), player.getUUID());
+        if (hillary == null) {
+            return null;
+        }
+        state.setHillary(hillary.getUUID());
+        return delivery.spot();
+    }
+
+    // ------------------------------------------------------------------
     // The door
 
     /**

@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse;
 
 import com.mojang.logging.LogUtils;
 import io.github.knaitoe.theoldesthouse.command.HouseCommands;
+import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
 import io.github.knaitoe.theoldesthouse.house.HouseLifecycleEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseMirrorSyncEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents;
@@ -33,6 +34,8 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onServerStopped);
         NeoForge.EVENT_BUS.addListener(HouseTransitionEvents::onPlayerTick);
         NeoForge.EVENT_BUS.addListener(HouseTransitionEvents::onPlayerLoggedOut);
+        NeoForge.EVENT_BUS.addListener(HouseLabyrinth::onCanPlayerSleep);
+        NeoForge.EVENT_BUS.addListener(HouseLabyrinth::onSetSpawn);
 
         NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onBreak);
         NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onExplosion);

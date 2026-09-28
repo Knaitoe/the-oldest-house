@@ -16,10 +16,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * World-level opening-sequence records: every entrance door with the blocks it
@@ -53,10 +55,19 @@ public final class OpeningWorldData extends SavedData {
     public record PendingReturn(UUID wolf, CompoundTag entity, BlockPos home) {
     }
 
+    /**
+     * Where Navidson's photo of a player's house was taken: the copy's level
+     * and corner, the camera (position and look angles) and the lit window.
+     */
+    public record PhotoRecord(ResourceLocation dimension, BlockPos copyMin, Vec3 camera, float yaw, float pitch,
+                              @Nullable BlockPos window, boolean windowCarved) {
+    }
+
     public static final Factory<OpeningWorldData> FACTORY = new Factory<>(OpeningWorldData::new, OpeningWorldData::load);
 
     private final Map<UUID, EntranceRecord> doors = new HashMap<>();
     private final Map<UUID, PendingReturn> returns = new HashMap<>();
+    private final Map<UUID, PhotoRecord> photos = new HashMap<>();
 
     public OpeningWorldData() {
     }
@@ -109,6 +120,24 @@ public final class OpeningWorldData extends SavedData {
             );
             data.returns.put(pending.wolf(), pending);
         }
+
+        ListTag photoList = tag.getList("Photos", Tag.TAG_COMPOUND);
+        for (int i = 0; i < photoList.size(); i++) {
+            CompoundTag entry = photoList.getCompound(i);
+            ResourceLocation dimension = ResourceLocation.tryParse(entry.getString("Dimension"));
+            if (!entry.hasUUID("Player") || dimension == null) {
+                continue;
+            }
+            data.photos.put(entry.getUUID("Player"), new PhotoRecord(
+                    dimension,
+                    BlockPos.of(entry.getLong("CopyMin")),
+                    new Vec3(entry.getDouble("CameraX"), entry.getDouble("CameraY"), entry.getDouble("CameraZ")),
+                    entry.getFloat("Yaw"),
+                    entry.getFloat("Pitch"),
+                    entry.contains("Window") ? BlockPos.of(entry.getLong("Window")) : null,
+                    entry.getBoolean("WindowCarved")
+            ));
+        }
         return data;
     }
 
@@ -145,7 +174,36 @@ public final class OpeningWorldData extends SavedData {
             returnList.add(entry);
         }
         tag.put("HillaryReturns", returnList);
+
+        ListTag photoList = new ListTag();
+        photos.forEach((player, photo) -> {
+            CompoundTag entry = new CompoundTag();
+            entry.putUUID("Player", player);
+            entry.putString("Dimension", photo.dimension().toString());
+            entry.putLong("CopyMin", photo.copyMin().asLong());
+            entry.putDouble("CameraX", photo.camera().x);
+            entry.putDouble("CameraY", photo.camera().y);
+            entry.putDouble("CameraZ", photo.camera().z);
+            entry.putFloat("Yaw", photo.yaw());
+            entry.putFloat("Pitch", photo.pitch());
+            if (photo.window() != null) {
+                entry.putLong("Window", photo.window().asLong());
+            }
+            entry.putBoolean("WindowCarved", photo.windowCarved());
+            photoList.add(entry);
+        });
+        tag.put("Photos", photoList);
         return tag;
+    }
+
+    @Nullable
+    public PhotoRecord photoOf(UUID player) {
+        return photos.get(player);
+    }
+
+    public void putPhoto(UUID player, PhotoRecord photo) {
+        photos.put(player, photo);
+        setDirty();
     }
 
     @Nullable
