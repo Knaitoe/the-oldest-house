@@ -36,8 +36,7 @@ public final class SnapshotRenderer {
     private static final double MAX_DISTANCE = 96.0D;
     /** Width of the scene framed at the target, in blocks. */
     private static final double FRAME_WIDTH = 24.0D;
-    private static final double[] DISTANCES = {22.0D, 28.0D, 34.0D, 18.0D};
-    private static final double[] OFFSETS_DEGREES = {0, 20, -20, 40, -40, 70, -70, 110, -110, 150, -150, 180};
+    private static final double[] RELATION_OFFSETS_DEGREES = {0, 5, -5, 10, -10};
 
     /** The world as the camera sees it. */
     public interface Scene {
@@ -77,16 +76,33 @@ public final class SnapshotRenderer {
     // Camera placement
 
     /**
-     * Picks a camera position around the target, preferring the side facing
-     * {@code preferredYaw} (radians; the camera stands at
-     * {@code target + (sin yaw, 0, cos yaw) * distance}), where the view of
-     * the house is least obstructed. Returns null if nothing gives a view.
+     * Picks a camera position that preserves the real geographic relationship
+     * between the Navidsons' porch and the player's home. The bearing is a hard
+     * constraint: framing may slide only a few degrees to clear a tree or wall,
+     * and may move nearer/farther along that same side. It never walks around
+     * to the opposite facade simply because that would make a prettier image.
      */
-    public static Camera chooseCamera(Scene scene, double tx, double ty, double tz, double preferredYaw) {
+    public static Camera chooseCamera(
+            Scene scene,
+            double tx,
+            double ty,
+            double tz,
+            double preferredYaw,
+            double preferredDistance
+    ) {
+        double baseDistance = clamp(preferredDistance, 18.0D, 38.0D);
+        double[] distances = {
+                baseDistance,
+                clamp(baseDistance + 4.0D, 18.0D, 38.0D),
+                clamp(baseDistance - 4.0D, 18.0D, 38.0D),
+                38.0D,
+                22.0D
+        };
+
         Camera best = null;
         double bestScore = 0.0D;
-        for (double distance : DISTANCES) {
-            for (double offset : OFFSETS_DEGREES) {
+        for (double distance : distances) {
+            for (double offset : RELATION_OFFSETS_DEGREES) {
                 double yaw = preferredYaw + Math.toRadians(offset);
                 double cx = tx + Math.sin(yaw) * distance;
                 double cz = tz + Math.cos(yaw) * distance;
@@ -102,18 +118,20 @@ public final class SnapshotRenderer {
                 }
                 Camera camera = lookAt(cx, cy, cz, tx, ty, tz, distance);
                 double score = viewScore(scene, camera, tx, ty, tz)
-                        - Math.abs(offset) / 60.0D
-                        - Math.abs(distance - DISTANCES[0]) / 12.0D;
+                        - Math.abs(offset) / 18.0D
+                        - Math.abs(distance - baseDistance) / 10.0D;
                 if (score > bestScore) {
                     bestScore = score;
                     best = camera;
                 }
             }
-            if (best != null && bestScore >= 20.0D) {
-                break; // A clear view at this distance; no need to back off further.
-            }
         }
         return best;
+    }
+
+    /** Backwards-compatible helper for tests/tools that do not have a real porch distance. */
+    public static Camera chooseCamera(Scene scene, double tx, double ty, double tz, double preferredYaw) {
+        return chooseCamera(scene, tx, ty, tz, preferredYaw, 28.0D);
     }
 
     static Camera lookAt(double cx, double cy, double cz, double tx, double ty, double tz, double distance) {
@@ -193,6 +211,8 @@ public final class SnapshotRenderer {
         java.util.Map<Long, int[]> glassBehind = new java.util.HashMap<>();
         java.util.Map<Long, int[]> wallHits = new java.util.HashMap<>();
         java.util.Map<Long, int[]> wallBehind = new java.util.HashMap<>();
+        java.util.Map<Long, int[]> fallbackWallHits = new java.util.HashMap<>();
+        java.util.Map<Long, int[]> fallbackWallBehind = new java.util.HashMap<>();
         Hit hit = new Hit();
         int floorY = (int) Math.floor(ty);
 
@@ -212,15 +232,28 @@ public final class SnapshotRenderer {
                         hit.y,
                         hit.z + (hit.axis == 2 ? hit.stepSign : 0)
                 };
-                if (scene.sample(behind[0], behind[1], behind[2]) >>> 24 != AIR) {
-                    continue; // No room behind it for a light.
-                }
                 long key = packPos(hit.x, hit.y, hit.z);
+                boolean wallCandidate = hit.kind == SOLID
+                        && hit.y >= floorY - 1
+                        && hit.y <= floorY + 5
+                        && isInsideWall(scene, hit.x, hit.y, hit.z, hit.axis);
+
+                // Keep a fallback candidate even when the copied room behind
+                // it is solid. NavidsonPhoto is allowed to hollow one copied
+                // cell for the light, guaranteeing the invented window while
+                // leaving the player's real house untouched.
+                if (wallCandidate) {
+                    fallbackWallHits.computeIfAbsent(key, k -> new int[1])[0]++;
+                    fallbackWallBehind.putIfAbsent(key, behind);
+                }
+
+                if (scene.sample(behind[0], behind[1], behind[2]) >>> 24 != AIR) {
+                    continue;
+                }
                 if (hit.kind == GLASS && hit.y >= floorY - 3) {
                     glassHits.computeIfAbsent(key, k -> new int[1])[0]++;
                     glassBehind.putIfAbsent(key, behind);
-                } else if (hit.kind == SOLID && hit.y >= floorY - 1 && hit.y <= floorY + 5
-                        && isInsideWall(scene, hit.x, hit.y, hit.z, hit.axis)) {
+                } else if (wallCandidate) {
                     wallHits.computeIfAbsent(key, k -> new int[1])[0]++;
                     wallBehind.putIfAbsent(key, behind);
                 }
@@ -235,6 +268,15 @@ public final class SnapshotRenderer {
         Long wall = pickMostVisibleNearTop(wallHits, 6);
         if (wall != null) {
             int[] light = wallBehind.get(wall);
+            return new WindowPlan(unpackX(wall), unpackY(wall), unpackZ(wall), true, light[0], light[1], light[2]);
+        }
+
+        // Last resort for a windowless or very cramped build: use the most
+        // visible square wall face on the correct geographic side and carve
+        // one cell behind it in the copy.
+        wall = pickMostVisibleNearTop(fallbackWallHits, 4);
+        if (wall != null) {
+            int[] light = fallbackWallBehind.get(wall);
             return new WindowPlan(unpackX(wall), unpackY(wall), unpackZ(wall), true, light[0], light[1], light[2]);
         }
         return null;
