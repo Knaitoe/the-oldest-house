@@ -1,6 +1,8 @@
 package io.github.knaitoe.theoldesthouse.house;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
+import io.github.knaitoe.theoldesthouse.labyrinth.TellTaleFloorboards;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -35,6 +37,7 @@ public final class HouseLifecycleEvents {
     public static void onServerStarted(ServerStartedEvent event) {
         HouseSavedData data = HouseSavedData.get(event.getServer());
         HouseShifts.refreshCache(data);
+        LabyrinthDoors.ensureHallwayDoor(event.getServer());
         if (data.isSpawned() && !data.isCurrentLayout()) {
             TheOldestHouse.LOGGER.warn(
                     "The Oldest House in this world was generated with layout v{}, but this build uses v{}. "
@@ -57,6 +60,8 @@ public final class HouseLifecycleEvents {
         HouseExteriorEntityMirror.clear(event.getServer());
         HouseBetweenRoom.clearAll();
         HouseShifts.clearCache();
+        LabyrinthDoors.clearAll();
+        TellTaleFloorboards.clearAll();
     }
 
     public static void onPlayerWakeUp(PlayerWakeUpEvent event) {

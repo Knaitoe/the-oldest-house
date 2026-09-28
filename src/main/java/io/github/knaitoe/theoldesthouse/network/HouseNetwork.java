@@ -1,5 +1,6 @@
 package io.github.knaitoe.theoldesthouse.network;
 
+import io.github.knaitoe.theoldesthouse.client.HouseFadeState;
 import io.github.knaitoe.theoldesthouse.client.HouseRoomDoorClient;
 import io.github.knaitoe.theoldesthouse.client.HouseSightlineState;
 import io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents;
@@ -11,7 +12,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("4")
+        event.registrar("5")
                 .playToClient(
                         HouseSightlineStatePayload.TYPE,
                         HouseSightlineStatePayload.STREAM_CODEC,
@@ -20,6 +21,16 @@ public final class HouseNetwork {
                                         payload.origin(),
                                         payload.revealed()
                                 )
+                )
+                .playToClient(
+                        HouseFadePayload.TYPE,
+                        HouseFadePayload.STREAM_CODEC,
+                        (payload, context) -> HouseFadeState.begin(payload.fadeIn(), payload.hold(), payload.fadeOut())
+                )
+                .playToClient(
+                        HouseSealedDoorsPayload.TYPE,
+                        HouseSealedDoorsPayload.STREAM_CODEC,
+                        (payload, context) -> HouseRoomDoorClient.setSealed(payload.doors())
                 )
                 .playToClient(
                         HouseRoomDoorPayload.TYPE,

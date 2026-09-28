@@ -93,7 +93,7 @@ public final class HouseTransitionEvents {
         // Crossing the manor's own boundary, as opposed to a door within the
         // House (the room between rooms and back), which changes neither.
         boolean entering = pending.destination.equals(HouseDimensions.INTERIOR) && pending.from.equals(Level.OVERWORLD);
-        boolean leaving = pending.destination.equals(Level.OVERWORLD);
+        boolean leaving = pending.destination.equals(Level.OVERWORLD) && pending.from.equals(HouseDimensions.INTERIOR);
 
         if (leaving && origin != null && data.isInteriorInitialized()) {
             // The Overworld proxy is only reconciled while someone there could
@@ -131,7 +131,13 @@ public final class HouseTransitionEvents {
             pending.before.accept(player);
         }
 
-        teleportMatchingCoordinates(player, destination);
+        if (pending.target != null) {
+            player.stopRiding();
+            player.teleportTo(destination, pending.target.x, pending.target.y, pending.target.z, pending.targetYaw, 0.0F);
+            player.setDeltaMovement(Vec3.ZERO);
+        } else {
+            teleportMatchingCoordinates(player, destination);
+        }
 
         if (pending.after != null) {
             pending.after.accept(player);
@@ -163,6 +169,32 @@ public final class HouseTransitionEvents {
         }
         beginPendingTransition(player, HouseTransitionKind.DOOR, destination, null, before, after);
         return true;
+    }
+
+    /**
+     * A door to another dimension that arrives at a set place rather than at
+     * the same coordinates (the labyrinth's doors).
+     */
+    public static boolean beginDoorTransition(
+            ServerPlayer player,
+            ResourceKey<Level> destination,
+            @Nullable Consumer<ServerPlayer> before,
+            @Nullable Consumer<ServerPlayer> after,
+            Vec3 target,
+            float yaw
+    ) {
+        if (!beginDoorTransition(player, destination, before, after)) {
+            return false;
+        }
+        PendingTransition pending = PENDING.get(player.getUUID());
+        pending.target = target;
+        pending.targetYaw = yaw;
+        return true;
+    }
+
+    /** Whether the player is part-way through a transition. */
+    public static boolean isPending(ServerPlayer player) {
+        return PENDING.containsKey(player.getUUID());
     }
 
     public static void acknowledgeContext(ServerPlayer player, int token) {
@@ -331,6 +363,9 @@ public final class HouseTransitionEvents {
         final Consumer<ServerPlayer> after;
         boolean acknowledged;
         int waitedTicks;
+        @Nullable
+        Vec3 target;
+        float targetYaw;
 
         PendingTransition(
                 ResourceKey<Level> from,

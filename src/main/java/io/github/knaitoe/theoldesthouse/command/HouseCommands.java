@@ -18,6 +18,8 @@ import io.github.knaitoe.theoldesthouse.house.HouseProgression;
 import io.github.knaitoe.theoldesthouse.house.HouseShifts;
 import io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
 import io.github.knaitoe.theoldesthouse.network.HouseSightlineStatePayload;
 import io.github.knaitoe.theoldesthouse.opening.NavidsonPhoto;
 import io.github.knaitoe.theoldesthouse.opening.OpeningSequence;
@@ -82,6 +84,9 @@ public final class HouseCommands {
                                 .then(Commands.literal("hallway")
                                         .executes(context -> reveal(context.getSource(), "hallway"))))
                         .then(shiftCommand())
+                        .then(LabyrinthCommands.door())
+                        .then(LabyrinthCommands.labyrinth())
+                        .then(LabyrinthCommands.vignette())
                         .then(Commands.literal("restock")
                                 .executes(context -> restock(context.getSource())))
                         .then(Commands.literal("visit")
@@ -163,6 +168,7 @@ public final class HouseCommands {
             lines.add("Perceived age stays at " + data.houseAge() + " until somebody enters the manor.");
         }
         lines.addAll(HouseProgression.describe(data));
+        lines.addAll(LabyrinthDoors.describe(server, source.getEntity() instanceof ServerPlayer viewer ? viewer : null));
         if (source.getEntity() instanceof ServerPlayer player) {
             lines.add(OpeningSequence.describeProgress(player));
         }
@@ -366,6 +372,8 @@ public final class HouseCommands {
         HouseInteriorInitializer.cancel();
         HouseTransitionEvents.clearAll();
         HouseBetweenRoom.clearAll();
+        LabyrinthData.get(source.getServer()).removeDoor("hallway_end");
+        LabyrinthDoors.syncSealedDoors(source.getServer());
         PacketDistributor.sendToAllPlayers(
                 new HouseSightlineStatePayload(BlockPos.ZERO, false)
         );

@@ -52,6 +52,20 @@ public final class HouseTransitionClient {
                 (supplier, reason) -> createScreen(supplier, reason, false)
         );
 
+        // Doors into the labyrinth, from the impossible hallway or a test door, and back.
+        for (var outside : java.util.List.of(Level.OVERWORLD, HouseDimensions.INTERIOR)) {
+            event.registerConditionalEffect(
+                    outside,
+                    HouseDimensions.LABYRINTH,
+                    (supplier, reason) -> createScreen(supplier, reason, false)
+            );
+            event.registerConditionalEffect(
+                    HouseDimensions.LABYRINTH,
+                    outside,
+                    (supplier, reason) -> createScreen(supplier, reason, true)
+            );
+        }
+
         // The door to the room between rooms, and back out.
         event.registerConditionalEffect(
                 HouseDimensions.INTERIOR,

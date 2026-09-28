@@ -1,6 +1,7 @@
 package io.github.knaitoe.theoldesthouse.house;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import io.github.knaitoe.theoldesthouse.network.HouseSightlineStatePayload;
@@ -28,6 +29,8 @@ public final class HouseStageManager {
         data.markImpossibleDoorRevealed();
         // A deepened hall's extra block becomes the hallway's threshold.
         HouseShifts.refreshCache(data);
+        // And its far wall has a door, into the labyrinth.
+        LabyrinthDoors.ensureHallwayDoor(server);
 
         // The impossible hallway itself remains interior-only, but the
         // threshold wall at the end of the hall is ordinary domestic architecture
