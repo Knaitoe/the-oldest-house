@@ -2,6 +2,8 @@
 
 Before anything impossible happens, The Oldest House must feel like a beautiful, slightly eccentric old family house that plausibly existed for generations. The mundane architecture has to be coherent enough that the player learns it: when a door appears where there was a wall, the player should know something is genuinely wrong rather than suspect the generator.
 
+**Scale is a deliberate departure from the design document.** The design document describes a small house, 12 blocks wide outside and 13 inside, whose interior is a solid dimension of carved rooms joined by teleport doors. The project keeps the large manor instead: its exterior stays fixed, and the impossible space grows behind it (starting with the rear hallway).
+
 All geometry lives in `HouseLayout`. The builder (`HouseShell`, `HouseRoofs`, `HouseInteriors`), boundary transitions, mirror reconciliation, the sightline renderer, spawn checks and the structure game tests all read from it.
 
 ## Orientation
