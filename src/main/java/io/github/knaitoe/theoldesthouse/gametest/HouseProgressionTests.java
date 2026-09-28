@@ -375,27 +375,28 @@ public final class HouseProgressionTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 400)
     public static void copyingTheBedroomNeverDoublesItsPaintings(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockPos origin = helper.absolutePos(BlockPos.ZERO).offset(160, -2, 140);
+        // Right by the test, where its chunks (and their entities) stay loaded.
+        BlockPos origin = helper.absolutePos(BlockPos.ZERO).offset(2, -2, 2);
         int dy = HouseBetweenRoom.pocketDy(origin);
         level.setBlock(origin.offset(5, 8, 9), Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
         var variants = level.registryAccess().registryOrThrow(Registries.PAINTING_VARIANT);
         level.addFreshEntity(new Painting(level, origin.offset(5, 8, 8), Direction.NORTH, variants.getHolderOrThrow(PaintingVariants.KEBAB)));
-
-        HouseBetweenRoom.copyBedroom(level, origin);
-        HouseBetweenRoom.copyBedroom(level, origin);
-        HouseBetweenRoom.copyBedroom(level, origin);
-
         AABB pocket = new AABB(origin.offset(0, dy, -2).getCenter(), origin.offset(14, dy + 12, 10).getCenter()).inflate(1.0D);
-        int copies = level.getEntitiesOfClass(Painting.class, pocket).size();
-        helper.assertTrue(copies == 1, "the copy should hang exactly one painting, had " + copies);
-        helper.assertTrue(level.getBlockState(origin.offset(5, 8 + dy, 9)).is(Blocks.STONE), "its wall is copied too");
-        helper.runAfterDelay(120, () -> {
+        long start = level.getGameTime();
+
+        // Copy again every tick, as if someone kept going through the door,
+        // and wait long enough for any doubled painting to pop off its wall.
+        helper.succeedWhen(() -> {
+            HouseBetweenRoom.copyBedroom(level, origin);
+            int copies = level.getEntitiesOfClass(Painting.class, pocket).size();
+            helper.assertTrue(copies == 1, "the copy should hang exactly one painting, had " + copies);
+            helper.assertTrue(level.getBlockState(origin.offset(5, 8 + dy, 9)).is(Blocks.STONE), "its wall is copied too");
             helper.assertTrue(level.getEntitiesOfClass(ItemEntity.class, pocket.inflate(4.0D)).isEmpty(),
                     "nothing should have dropped off the copied walls");
-            helper.succeed();
+            helper.assertTrue(level.getGameTime() - start >= 120, "still watching for drops");
         });
     }
 }
