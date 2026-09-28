@@ -18,10 +18,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
@@ -56,6 +59,30 @@ public final class HouseExteriorEntityMirror {
     private static boolean scrubbedLoadedProjections;
 
     private HouseExteriorEntityMirror() {
+    }
+
+    public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
+        if (isProjection(event.getTarget())) {
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.FAIL);
+        }
+    }
+
+    public static void onEntityInteractSpecific(PlayerInteractEvent.EntityInteractSpecific event) {
+        if (isProjection(event.getTarget())) {
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.FAIL);
+        }
+    }
+
+    public static void onAttack(AttackEntityEvent event) {
+        if (isProjection(event.getTarget())) {
+            event.setCanceled(true);
+        }
+    }
+
+    private static boolean isProjection(Entity entity) {
+        return entity.getTags().contains(PROJECTION_TAG);
     }
 
     public static void onServerTick(ServerTickEvent.Post event) {
