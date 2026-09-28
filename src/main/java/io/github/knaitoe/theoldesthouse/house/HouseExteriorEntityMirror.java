@@ -314,6 +314,16 @@ public final class HouseExteriorEntityMirror {
         positionProjection(source, projection);
 
         if (!targetLevel.addFreshEntity(projection)) {
+            TheOldestHouse.LOGGER.warn(
+                    "Could not add {} projection for source {} from {} into {} at ({}, {}, {}).",
+                    source.getType(),
+                    source.getUUID(),
+                    source.level().dimension().location(),
+                    targetLevel.dimension().location(),
+                    source.getX(),
+                    source.getY(),
+                    source.getZ()
+            );
             return null;
         }
         return projection;
