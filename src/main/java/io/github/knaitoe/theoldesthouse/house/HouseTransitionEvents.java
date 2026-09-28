@@ -121,8 +121,8 @@ public final class HouseTransitionEvents {
      * front door, but arriving at an explicit position in the House instead
      * of at matching coordinates.
      *
-     * @return false if a transition is already pending or the House
-     *         interior is unavailable
+     * @return whether the transition is under way (true if one already
+     *         was); false if the House interior is unavailable
      */
     public static boolean beginEntranceTransition(
             ServerPlayer player,
@@ -133,7 +133,7 @@ public final class HouseTransitionEvents {
             Consumer<ServerPlayer> afterTeleport
     ) {
         if (PENDING.containsKey(player.getUUID())) {
-            return false;
+            return true;
         }
         HouseSavedData data = HouseSavedData.get(player.getServer());
         if (!data.isSpawned() || data.houseOrigin() == null) {
