@@ -75,7 +75,6 @@ public final class HouseLifecycleEvents {
         long timeOfDay = Math.floorMod(dayTime, 24000L);
 
         // Leaving a bed manually during the night also fires PlayerWakeUpEvent.
-        // Only the post-night-skip morning window counts as settlement residency.
         if (timeOfDay > MORNING_WINDOW_TICKS) {
             return;
         }
@@ -83,30 +82,11 @@ public final class HouseLifecycleEvents {
         long currentDay = dayTime / 24000L;
         HouseSavedData data = HouseSavedData.get(level.getServer());
 
-        // Once The Oldest House exists, each new morning advances its perceived
-        // age exactly once, even on multiplayer servers where several players
-        // may receive the same wake event.
+        // The opening sequence owns appearance. Perceived age begins only
+        // after somebody has actually entered the manor, so ignoring the
+        // invitation cannot reveal the impossible threshold off-screen.
         if (data.advanceHouseAgeForMorning(currentDay)) {
             HouseStageManager.applyCurrentStage(level.getServer(), data);
         }
-
-        boolean wasEligible = data.isEligible();
-
-        int nights = data.recordSettlementNight(
-                player.blockPosition(),
-                currentDay,
-                SETTLEMENT_RADIUS,
-                REQUIRED_SETTLEMENT_NIGHTS
-        );
-
-        if (!wasEligible && data.isEligible()) {
-            TheOldestHouse.LOGGER.info(
-                    "The Oldest House eligibility established after {} settlement nights near {}.",
-                    nights,
-                    data.anchorPosition().orElse(BlockPos.ZERO)
-            );
-        }
-
-        HouseSpawnManager.tryNaturalMorningSpawn(level, data, currentDay);
     }
 }
