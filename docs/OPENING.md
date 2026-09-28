@@ -32,6 +32,8 @@ The book `Howdy, Neighbor` by `Will Navidson` uses the font `the_oldest_house:na
 
 The letter waits for the photo, so it arrives a few seconds after dawn. If no clear view of the house exists, a stock print (`data/the_oldest_house/snapshot/porch.bin`, drawn by `tools/make_opening_assets.py`) is used instead. The copy stays in the outside dimension; it is the first capture the later base-copy vignettes can build on.
 
+![Two snapshots rendered on the game-test server: a house's own upper window lit, and a windowless house given one](../tools/snapshot_ingame_examples.png)
+
 `/oldesthouse opening photo [player]` retakes the photo and hands you the result; it also reports where the copy stands in the outside dimension.
 
 Both items are `the_oldest_house:delivered_item` entities: ordinary item entities that never despawn, can only be picked up by the recipient, and are not pushed by water.
