@@ -2,7 +2,6 @@ package io.github.knaitoe.theoldesthouse.gametest;
 
 import com.mojang.authlib.GameProfile;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
-import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.opening.DeliveredItemEntity;
 import io.github.knaitoe.theoldesthouse.opening.Doorsteps;
 import io.github.knaitoe.theoldesthouse.opening.EntranceDoorBlock;
@@ -170,13 +169,13 @@ public final class OpeningTests {
         BlockPos bed = buildTestHouse(level, base, true);
         BlockPos upperWindow = base.offset(15, 6, 19);
 
-        NavidsonPhoto.Result photo = NavidsonPhoto.takeNow(level.getServer(), UUID.randomUUID(), bed, bed.offset(0, 0, 60));
+        NavidsonPhoto.Result photo = NavidsonPhoto.takeNow(level.getServer(), level, UUID.randomUUID(), bed, bed.offset(0, 0, 60));
         helper.assertTrue(photo != null && photo.pixels() != null && photo.sawHouse(), "no photo of the house: " + photo);
         helper.assertTrue(photo.window() != null && !photo.windowCarved(), "their upper window was not the lit one: " + photo);
         helper.assertTrue(photo.window().getY() == upperWindow.getY(), "lit window is not the upper one: " + photo.window());
 
-        ServerLevel outside = level.getServer().getLevel(HouseDimensions.OUTSIDE);
-        helper.assertTrue(outside != null, "outside dimension missing");
+        // The game-test server has no mod dimensions: the copy stands in a far corner of the test world.
+        ServerLevel outside = level;
         BlockPos offset = copyOffset(photo, bed);
         helper.assertTrue(outside.getBlockState(bed.offset(offset)).is(BlockTags.BEDS), "the bed was not copied");
         helper.assertTrue(outside.getBlockState(base.offset(11, 2, 11).offset(offset)).is(Blocks.COBBLESTONE), "the walls were not copied");
@@ -193,11 +192,11 @@ public final class OpeningTests {
         BlockPos base = helper.absolutePos(BlockPos.ZERO).offset(0, 1, 340);
         BlockPos bed = buildTestHouse(level, base, false);
 
-        NavidsonPhoto.Result photo = NavidsonPhoto.takeNow(level.getServer(), UUID.randomUUID(), bed, bed.offset(0, 0, 60));
+        NavidsonPhoto.Result photo = NavidsonPhoto.takeNow(level.getServer(), level, UUID.randomUUID(), bed, bed.offset(0, 0, 60));
         helper.assertTrue(photo != null && photo.pixels() != null && photo.sawHouse(), "no photo of the house: " + photo);
         helper.assertTrue(photo.window() != null && photo.windowCarved(), "no window was cut into the copy: " + photo);
 
-        ServerLevel outside = level.getServer().getLevel(HouseDimensions.OUTSIDE);
+        ServerLevel outside = level;
         BlockPos real = photo.window().subtract(copyOffset(photo, bed));
         helper.assertTrue(outside.getBlockState(photo.window()).is(Blocks.GLASS), "the copy has no window");
         helper.assertTrue(level.getBlockState(real).is(Blocks.COBBLESTONE), "the real wall was cut: " + level.getBlockState(real));

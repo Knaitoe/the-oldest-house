@@ -97,7 +97,7 @@ public final class NavidsonPhoto {
         if (JOBS.containsKey(player)) {
             return false;
         }
-        NavidsonPhoto job = create(server, player, bed, lookFrom, onDone);
+        NavidsonPhoto job = create(server, server.getLevel(HouseDimensions.OUTSIDE), player, bed, lookFrom, onDone);
         if (job == null) {
             return false;
         }
@@ -105,11 +105,21 @@ public final class NavidsonPhoto {
         return true;
     }
 
-    /** Takes the photo in one go (commands and tests). */
+    /** Takes the photo in one go (commands), copying into the outside dimension. */
     @Nullable
     public static Result takeNow(MinecraftServer server, UUID player, BlockPos bed, @Nullable BlockPos lookFrom) {
+        return takeNow(server, server.getLevel(HouseDimensions.OUTSIDE), player, bed, lookFrom);
+    }
+
+    /**
+     * Takes the photo in one go, copying into {@code copyLevel} (the game-test
+     * server has no mod dimensions, so its tests copy into a far corner of
+     * the test world instead).
+     */
+    @Nullable
+    public static Result takeNow(MinecraftServer server, @Nullable ServerLevel copyLevel, UUID player, BlockPos bed, @Nullable BlockPos lookFrom) {
         Result[] result = new Result[1];
-        NavidsonPhoto job = create(server, player, bed, lookFrom, done -> result[0] = done);
+        NavidsonPhoto job = create(server, copyLevel, player, bed, lookFrom, done -> result[0] = done);
         if (job == null) {
             return null;
         }
@@ -153,8 +163,8 @@ public final class NavidsonPhoto {
     }
 
     @Nullable
-    private static NavidsonPhoto create(MinecraftServer server, UUID player, BlockPos bed, @Nullable BlockPos lookFrom, Consumer<Result> onDone) {
-        ServerLevel outside = server.getLevel(HouseDimensions.OUTSIDE);
+    private static NavidsonPhoto create(MinecraftServer server, @Nullable ServerLevel outside, UUID player, BlockPos bed,
+                                        @Nullable BlockPos lookFrom, Consumer<Result> onDone) {
         if (outside == null) {
             TheOldestHouse.LOGGER.warn("The outside dimension is missing; Navidson's photo uses the stock print.");
             return null;
