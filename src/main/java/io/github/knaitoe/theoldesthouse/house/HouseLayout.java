@@ -223,9 +223,8 @@ public final class HouseLayout {
 
     public static final Room PRINCIPAL_BEDROOM = new Room("principal_bedroom", new Box(1, 7, 0, 12, 10, 8), null);
     public static final Room LITERARY_BEDROOM = new Room("literary_bedroom", new Box(1, 7, 10, 12, 10, 14), null);
-    public static final Room UPPER_HALL = new Room("upper_hall", new Box(HALL_MIN_X, 7, 1, HALL_MAX_X, 10, 15), null);
-    /** The rear half of the upper hall rises open into the cross-gable. */
-    public static final Room UPPER_HALL_VAULT = new Room("upper_hall_vault", new Box(HALL_MIN_X, 7, 16, HALL_MAX_X, 15, 25), ROOF_CROSS);
+    /** Includes its ceiling course (y 10) so no roof course is ever placed there. */
+    public static final Room UPPER_HALL = new Room("upper_hall", new Box(HALL_MIN_X, 7, 1, HALL_MAX_X, 10, 25), null);
     public static final Room MAKER_LOFT = new Room("maker_loft", new Box(18, 7, 2, 26, 14, 11), ROOF_KITCHEN);
     public static final Room LONG_GALLERY = new Room("long_gallery", new Box(2, 7, 16, 12, 15, 25), ROOF_CROSS);
     public static final Room BOX_ROOM = new Room("box_room", new Box(18, 7, 21, 26, 11, 24), ROOF_SERVICE);
@@ -242,7 +241,6 @@ public final class HouseLayout {
             PRINCIPAL_BEDROOM,
             LITERARY_BEDROOM,
             UPPER_HALL,
-            UPPER_HALL_VAULT,
             MAKER_LOFT,
             LONG_GALLERY,
             BOX_ROOM
@@ -323,15 +321,37 @@ public final class HouseLayout {
 
     private static final double BOUNDARY_MARGIN = 0.55D;
 
-    /** True when a relative position lies inside any storey of the house. */
+    /**
+     * True when a relative position lies inside the house: at least
+     * {@link #BOUNDARY_MARGIN} inside the union of all storeys.
+     *
+     * Masses share walls, so each mass is not shrunk on its own; that left a
+     * sliver in every doorway between two masses that counted as outside and
+     * bounced players out of the House dimension and straight back in.
+     * Instead the player's footprint corners are sampled against the
+     * unshrunk union, which only trims the true exterior faces.
+     */
     public static boolean isInsideDomesticVolume(double relX, double relY, double relZ) {
+        for (double dx = -BOUNDARY_MARGIN; dx <= BOUNDARY_MARGIN; dx += BOUNDARY_MARGIN) {
+            for (double dz = -BOUNDARY_MARGIN; dz <= BOUNDARY_MARGIN; dz += BOUNDARY_MARGIN) {
+                if (!isWithinAnyMass(relX + dx, relY, relZ + dz)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Vertical ranges overlap between stacked masses (cellar to ground,
+     * ground to upper) so stairs never pass through a gap.
+     */
+    private static boolean isWithinAnyMass(double relX, double relY, double relZ) {
         for (Mass mass : MASSES) {
-            if (relX >= mass.x0() + BOUNDARY_MARGIN
-                    && relX <= mass.x1() + 1 - BOUNDARY_MARGIN
-                    && relZ >= mass.z0() + BOUNDARY_MARGIN
-                    && relZ <= mass.z1() + 1 - BOUNDARY_MARGIN
-                    && relY >= mass.floorY() + 0.35D
-                    && relY <= mass.topY() + 0.95D) {
+            if (relX >= mass.x0() && relX <= mass.x1() + 1
+                    && relZ >= mass.z0() && relZ <= mass.z1() + 1
+                    && relY >= mass.floorY() - 0.1D
+                    && relY <= mass.topY() + 1.0D) {
                 return true;
             }
         }

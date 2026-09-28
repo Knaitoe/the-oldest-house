@@ -26,6 +26,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 final class HouseStructureChecks {
     private final ServerLevel level;
     private final BlockPos origin;
+    /** Every standing point found by the last walk (relative x, feet y, z). */
+    private final List<double[]> points = new ArrayList<>();
 
     HouseStructureChecks(ServerLevel level, BlockPos origin) {
         this.level = level;
@@ -43,6 +45,7 @@ final class HouseStructureChecks {
         failures.addAll(doorsAreComplete());
         failures.addAll(everyRoomIsLit());
         failures.addAll(roomsAreReachable());
+        failures.addAll(interiorCountsAsInside());
         return failures;
     }
 
@@ -266,12 +269,70 @@ final class HouseStructureChecks {
     }
 
     /**
+     * Every point a player can stand on well inside the house, including
+     * interior doorways between masses, must count as inside the domestic
+     * volume; otherwise walking through it bounces the player between
+     * dimensions. Cells next to the outside (exterior doors, porch) are
+     * exempt, since crossing there is a real transition.
+     */
+    List<String> interiorCountsAsInside() {
+        if (points.isEmpty()) {
+            roomsAreReachable();
+        }
+        List<String> failures = new ArrayList<>();
+        Set<Long> reported = new HashSet<>();
+        for (double[] p : points) {
+            int bx = (int) Math.floor(p[0]);
+            int by = (int) Math.floor(p[1] + 1.0E-4D);
+            int bz = (int) Math.floor(p[2]);
+            if (!isEnclosedCell(bx, by, bz)) {
+                continue;
+            }
+            if (!reported.add(BlockPos.asLong(bx, by, bz))) {
+                continue;
+            }
+            // Sample the whole cell finely: a gap between two masses can be
+            // far narrower than the walk's sample spacing.
+            search:
+            for (int i = 0; i <= 20; i++) {
+                for (int k = 0; k <= 20; k++) {
+                    double x = bx + i * 0.05D;
+                    double z = bz + k * 0.05D;
+                    if (!HouseLayout.isInsideDomesticVolume(x, p[1], z)) {
+                        failures.add(String.format("standing at (%.2f, %.2f, %.2f) counts as outside the house", x, p[1], z));
+                        break search;
+                    }
+                }
+            }
+        }
+        return limit(failures);
+    }
+
+    /** A cell inside the building whose horizontal neighbours are all inside too. */
+    private static boolean isEnclosedCell(int x, int y, int z) {
+        if (!inside(x, y, z)) {
+            return false;
+        }
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            if (!inside(x + direction.getStepX(), y, z + direction.getStepZ())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean inside(int x, int y, int z) {
+        return HouseLayout.isRoomInterior(x, y, z) || HouseLayout.isWithinMass(x, y, z);
+    }
+
+    /**
      * Breadth-first walk over half-block sample points. Returns the set of
      * block cells (relative, keyed by feet block Y) a player can stand in.
      */
     private Set<Long> walk(int startGx, int startGz, double startFeet) {
         Set<Long> visited = new HashSet<>();
         Set<Long> cells = new HashSet<>();
+        points.clear();
         Deque<double[]> queue = new ArrayDeque<>();
         queue.add(new double[]{startGx, startGz, startFeet});
         visited.add(nodeKey(startGx, startGz, startFeet));
@@ -287,6 +348,7 @@ final class HouseStructureChecks {
             int gz = (int) node[1];
             double feet = node[2];
             cells.add(BlockPos.asLong(Math.floorDiv(gx, 2), (int) Math.floor(feet + 1.0E-4D), Math.floorDiv(gz, 2)));
+            points.add(new double[]{gx * 0.5D + 0.25D, feet, gz * 0.5D + 0.25D});
 
             for (Direction direction : Direction.Plane.HORIZONTAL) {
                 int ngx = gx + direction.getStepX();
