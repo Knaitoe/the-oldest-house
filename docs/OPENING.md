@@ -56,21 +56,21 @@ Hillary is now the physical invitation to visit the neighbors:
 
 - once her stage begins, she tries to travel toward the Navidsons' front porch over ordinary Overworld terrain;
 - she advances while the player is close enough to follow and waits when they fall too far behind;
-- if she was tamed, her vanilla follow-owner behavior is temporarily suppressed while she leads, then restored while she waits at the manor;
-- when she reaches the porch she waits for the player to approach the ordinary front door;
-- when the player crosses that boundary, Hillary goes into the **literal Overworld proxy manor** while the player alone is transferred to the matching House-dimension interior.
+- if she was tamed, her vanilla follow-owner behavior is temporarily suppressed while she leads, then restored when she reaches the manor;
+- she settles at the safe standing point immediately outside the authored front door and **sits there rather than entering**;
+- when the player crosses the boundary, only the player is transferred to the matching House-dimension interior. Hillary remains visibly outside at the front entrance.
 
 There is no custom entrance door in the player's wall, no freestanding fallback door, and no block replacement in the player's home.
 
 ## First manor entry
 
-The player enters through The Oldest House's ordinary authored front door in the Overworld. Crossing the domestic boundary moves the player into the matching House-dimension interior at the same coordinates. Hillary is not dimension-shifted: at that same handoff she is left a few blocks inside the literal Overworld proxy foyer.
+The player enters through The Oldest House's ordinary authored front door in the Overworld. Crossing the domestic boundary moves the player into the matching House-dimension interior at the same coordinates. Hillary is not dimension-shifted and does not enter the inaccessible proxy interior; she remains sitting immediately outside the front entrance.
 
 Every successful boundary entry increments the House visit count. The first entry marks that player's opening as `ENTERED` and, globally, allows perceived House age to begin advancing on later mornings.
 
 The first impossible doorway still appears only at the far end of the manor's central hall when `HouseStageManager` reaches its current test threshold. Because age is gated on real entry, the player must first have occupied the ordinary manor.
 
-Hillary remains in the Overworld proxy manor. She is deliberately not mirrored or teleported into the House dimension during the opening.
+Hillary remains visibly outside the front door in the Overworld. She is deliberately neither mirrored into the House dimension nor trapped inside the proxy shell.
 
 ## Testing the sequence
 
@@ -86,6 +86,12 @@ All commands live under `/oldesthouse opening` and take an optional target playe
 - `reset`: clear that player's opening progress.
 
 There is intentionally no opening `door` command anymore.
+
+## Proxy-entity rejection
+
+The Overworld manor is a visual/proxy shell, not a second playable interior. Living non-player mobs that wander into its domestic volume are therefore **evacuated rather than hidden or deleted**. Every few ticks the server checks the proxy and moves trapped mobs to a safe position immediately outside the nearest authored exterior doorway. Their entity identity, inventory/tame state and world remain intact, so villagers, pets and hostile mobs stay visible outside the House instead of becoming inaccessible duplicates.
+
+Hillary is the authored version of that rule: she waits at the **front** entrance and sits there, visibly refusing to enter.
 
 ## Dimension-transition presentation
 
