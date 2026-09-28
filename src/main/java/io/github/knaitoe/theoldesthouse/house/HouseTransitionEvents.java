@@ -6,7 +6,6 @@ import io.github.knaitoe.theoldesthouse.opening.OpeningSequence;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
@@ -63,7 +62,7 @@ public final class HouseTransitionEvents {
         }
 
         if (dimension.equals(HouseDimensions.INTERIOR) && !isValidHouseInteriorSpace(data, origin, player, relX, relY, relZ)) {
-            beginPendingTransition(player, classify(relX, relY, relZ), Level.OVERWORLD, HouseLayout.doorAt(relX, relY, relZ), null);
+            beginPendingTransition(player, classify(relX, relY, relZ), Level.OVERWORLD, HouseLayout.doorAt(relX, relY, relZ));
         }
     }
 
@@ -96,16 +95,7 @@ public final class HouseTransitionEvents {
             }
         }
 
-        if (pending.arrival != null) {
-            Arrival arrival = pending.arrival;
-            arrival.beforeTeleport().accept(player);
-            player.stopRiding();
-            player.teleportTo(destination, arrival.pos().x, arrival.pos().y, arrival.pos().z, arrival.yaw(), arrival.pitch());
-            player.setDeltaMovement(Vec3.ZERO);
-            arrival.afterTeleport().accept(player);
-        } else {
-            teleportMatchingCoordinates(player, destination);
-        }
+        teleportMatchingCoordinates(player, destination);
 
         if (entering && pending.door != null && origin != null) {
             PENDING_DOOR_CLOSE.put(player.getUUID(), new PendingDoorClose(origin, pending.door));
@@ -124,36 +114,6 @@ public final class HouseTransitionEvents {
      * @return whether the transition is under way (true if one already
      *         was); false if the House interior is unavailable
      */
-    public static boolean beginEntranceTransition(
-            ServerPlayer player,
-            Vec3 position,
-            float yaw,
-            float pitch,
-            Consumer<ServerPlayer> beforeTeleport,
-            Consumer<ServerPlayer> afterTeleport
-    ) {
-        if (PENDING.containsKey(player.getUUID())) {
-            return true;
-        }
-        HouseSavedData data = HouseSavedData.get(player.getServer());
-        if (!data.isSpawned() || data.houseOrigin() == null) {
-            return false;
-        }
-        ServerLevel interior = HouseInteriorInitializer.ensureInitialized(player.getServer(), data);
-        if (interior == null) {
-            return false;
-        }
-
-        beginPendingTransition(
-                player,
-                HouseTransitionKind.DOOR,
-                HouseDimensions.INTERIOR,
-                null,
-                new Arrival(position, yaw, pitch, beforeTeleport, afterTeleport)
-        );
-        return true;
-    }
-
     public static void acknowledgeContext(ServerPlayer player, int token) {
         PendingTransition pending = PENDING.get(player.getUUID());
         if (pending != null && pending.token == token) {
@@ -210,8 +170,7 @@ public final class HouseTransitionEvents {
                 player,
                 classify(relX, relY, relZ),
                 HouseDimensions.INTERIOR,
-                HouseLayout.doorAt(relX, relY, relZ),
-                null
+                HouseLayout.doorAt(relX, relY, relZ)
         );
     }
 
@@ -219,8 +178,7 @@ public final class HouseTransitionEvents {
             ServerPlayer player,
             HouseTransitionKind kind,
             ResourceKey<Level> destination,
-            @Nullable HouseLayout.ExteriorDoor door,
-            @Nullable Arrival arrival
+            @Nullable HouseLayout.ExteriorDoor door
     ) {
         int token = nextToken;
         nextToken = nextToken == Integer.MAX_VALUE ? 1 : nextToken + 1;
@@ -237,7 +195,7 @@ public final class HouseTransitionEvents {
                 String.format("%.2f", player.getZ())
         );
 
-        PENDING.put(player.getUUID(), new PendingTransition(destination, token, door, arrival));
+        PENDING.put(player.getUUID(), new PendingTransition(destination, token, door));
         PacketDistributor.sendToPlayer(player, new HouseTransitionContextPayload(kind, token));
     }
 
@@ -302,37 +260,23 @@ public final class HouseTransitionEvents {
         player.setDeltaMovement(movement);
     }
 
-    /** An explicit arrival point, with hooks either side of the teleport. */
-    private record Arrival(
-            Vec3 pos,
-            float yaw,
-            float pitch,
-            Consumer<ServerPlayer> beforeTeleport,
-            Consumer<ServerPlayer> afterTeleport
-    ) {
-    }
-
     /** Mutable: updated in place every tick rather than re-allocated. */
     private static final class PendingTransition {
         final ResourceKey<Level> destination;
         final int token;
         @Nullable
         final HouseLayout.ExteriorDoor door;
-        @Nullable
-        final Arrival arrival;
         boolean acknowledged;
         int waitedTicks;
 
         PendingTransition(
                 ResourceKey<Level> destination,
                 int token,
-                @Nullable HouseLayout.ExteriorDoor door,
-                @Nullable Arrival arrival
+                @Nullable HouseLayout.ExteriorDoor door
         ) {
             this.destination = destination;
             this.token = token;
             this.door = door;
-            this.arrival = arrival;
         }
     }
 
