@@ -26,8 +26,9 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
  *
  * She appears at the player's doorstep, accepts the recipient's first bone,
  * then tries to lead them over ordinary Overworld terrain to the Navidsons'
- * manor. She waits when the player falls behind and stops outside the front
- * door. Hillary never crosses the manor threshold during the opening.
+ * manor. She waits when the player falls behind. When the player crosses the
+ * front-door boundary, Hillary enters the literal Overworld proxy manor while
+ * the player alone is handed off to the matching House dimension.
  */
 public final class Hillary {
     public static final String NAME = "Hillary";
@@ -114,6 +115,7 @@ public final class Hillary {
             ServerPlayer player,
             UUID wolfId,
             boolean active,
+            boolean playerHasEntered,
             @Nullable BlockPos houseOrigin
     ) {
         if (!(overworld.getEntity(wolfId) instanceof Wolf wolf)) {
@@ -130,11 +132,12 @@ public final class Hillary {
             return;
         }
 
-        BlockPos porch = houseOrigin.offset(
-                HouseLayout.AXIS_X,
-                1,
-                HouseLayout.FRONT_DOOR_Z - 2
-        );
+        if (playerHasEntered) {
+            keepInProxyManor(wolf, tag.recipient(), proxyFoyer(houseOrigin));
+            return;
+        }
+
+        BlockPos porch = porch(houseOrigin);
 
         double toPorch = wolf.distanceToSqr(Vec3.atBottomCenterOf(porch));
         if (toPorch <= MANOR_STOP_RADIUS * MANOR_STOP_RADIUS) {
@@ -204,21 +207,42 @@ public final class Hillary {
         }
     }
 
+    private static BlockPos porch(BlockPos houseOrigin) {
+        return houseOrigin.offset(
+                HouseLayout.AXIS_X,
+                1,
+                HouseLayout.FRONT_DOOR_Z - 2
+        );
+    }
+
+    /** A few blocks past the authored front door, inside the literal proxy hall. */
+    private static BlockPos proxyFoyer(BlockPos houseOrigin) {
+        return houseOrigin.offset(
+                HouseLayout.AXIS_X,
+                1,
+                HouseLayout.FRONT_DOOR_Z + 3
+        );
+    }
+
     private static void settleAtManor(Wolf wolf, UUID recipient, BlockPos porch) {
         wolf.getNavigation().stop();
         wolf.setData(OpeningRegistry.HILLARY, new HillaryTag(recipient, porch.immutable()));
         if (wolf.isTame()) {
             wolf.setOwnerUUID(recipient);
-            wolf.setOrderedToSit(true);
-            wolf.setInSittingPose(true);
+            wolf.setOrderedToSit(false);
+            wolf.setInSittingPose(false);
             wolf.clearRestriction();
         } else {
             wolf.restrictTo(porch, 4);
         }
     }
 
-    /** Hillary stays outside when her recipient enters the manor. */
-    public static void waitAtManor(MinecraftServer server, UUID wolfId) {
+    /**
+     * Moves Hillary into the literal Overworld manor when her player crosses
+     * the boundary. She deliberately remains in the proxy world; only the
+     * player is dimension-shifted.
+     */
+    public static void enterProxyManor(MinecraftServer server, UUID wolfId, BlockPos houseOrigin) {
         ServerLevel overworld = server.overworld();
         if (!(overworld.getEntity(wolfId) instanceof Wolf wolf)) {
             return;
@@ -229,6 +253,30 @@ public final class Hillary {
             return;
         }
 
-        settleAtManor(wolf, tag.recipient(), tag.home());
+        keepInProxyManor(wolf, tag.recipient(), proxyFoyer(houseOrigin));
+    }
+
+    private static void keepInProxyManor(Wolf wolf, UUID recipient, BlockPos foyer) {
+        wolf.getNavigation().stop();
+
+        // Never let vanilla owner-follow logic pull her across the proxy
+        // boundary or teleport her after the player changes dimension.
+        if (wolf.isTame() && wolf.getOwnerUUID() != null) {
+            wolf.setOwnerUUID(null);
+        }
+
+        Vec3 target = Vec3.atBottomCenterOf(foyer);
+        if (wolf.distanceToSqr(target) > 2.25D) {
+            wolf.moveTo(target.x, target.y, target.z, wolf.getYRot(), 0.0F);
+        }
+
+        wolf.setData(OpeningRegistry.HILLARY, new HillaryTag(recipient, foyer.immutable()));
+        wolf.setOrderedToSit(true);
+        wolf.setInSittingPose(true);
+        if (!wolf.isTame()) {
+            wolf.restrictTo(foyer, 4);
+        } else {
+            wolf.clearRestriction();
+        }
     }
 }
