@@ -1,6 +1,7 @@
 package io.github.knaitoe.theoldesthouse.house;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
@@ -96,6 +97,7 @@ public final class HouseSpawnManager {
         clearTreetopsAbove(level, report.origin());
         HouseBuilder.build(level, report.origin());
         data.markSpawned(report.origin());
+        LabyrinthDoors.syncSealedDoors(level.getServer());
         TheOldestHouse.LOGGER.info("The Oldest House appeared next door to {}: {}.", anchor, report.describe());
         return true;
     }

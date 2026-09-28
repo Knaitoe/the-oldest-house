@@ -9,11 +9,10 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
-import io.github.knaitoe.theoldesthouse.house.HouseTransitionKind;
 import io.github.knaitoe.theoldesthouse.network.HouseTransitionContextState;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BooleanSupplier;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
@@ -92,83 +91,68 @@ public final class HouseTransitionClient {
             ReceivingLevelScreen.Reason reason,
             boolean entering
     ) {
-        HouseTransitionKind kind = HouseTransitionContextState.peekKind();
         int token = HouseTransitionContextState.peekToken();
-        CapturedFrame frame = CapturedFrame.capture(token);
-
-        return switch (kind) {
-            case DOOR -> new BreachPassageScreen(
-                    ready,
-                    reason,
-                    entering,
-                    token,
-                    frame
-            );
-            case WINDOW -> new WindowPassageScreen(
-                    ready,
-                    reason,
-                    entering,
-                    token,
-                    frame
-            );
-            case BREACH -> new BreachPassageScreen(
-                    ready,
-                    reason,
-                    entering,
-                    token,
-                    frame
-            );
-        };
+        return new StillFrameScreen(ready, reason, token, CapturedFrame.capture(token));
     }
 
-    private abstract static class TimedPassageScreen extends ReceivingLevelScreen {
-        protected final long openedAt;
-        protected final long minimumVisibleNanos;
-        protected final boolean entering;
-        protected final int transitionToken;
+    /**
+     * The last frame before the switch, held still until the other side has
+     * drawn in around the player. Nothing moves, darkens or swings: the
+     * switch is made where the view is already static (a shut door), so a
+     * held frame is a pause, not a cut. It lifts as soon as the sections
+     * around the player are compiled, or after {@link #HOLD_LIMIT_NANOS}.
+     */
+    private static final class StillFrameScreen extends ReceivingLevelScreen {
+        private static final long HOLD_LIMIT_NANOS = 1_500_000_000L;
+
+        private final int transitionToken;
         private final CapturedFrame capturedFrame;
 
-        protected TimedPassageScreen(
-                BooleanSupplier ready,
-                Reason reason,
-                boolean entering,
-                int transitionToken,
-                CapturedFrame capturedFrame,
-                long minMillis,
-                long maxMillis
-        ) {
-            this(
-                    ready,
-                    reason,
-                    entering,
-                    transitionToken,
-                    capturedFrame,
-                    System.nanoTime(),
-                    randomDuration(minMillis, maxMillis),
-                    true
-            );
+        private StillFrameScreen(BooleanSupplier ready, Reason reason, int token, CapturedFrame frame) {
+            this(ready, reason, token, frame, System.nanoTime());
         }
 
-        private TimedPassageScreen(
-                BooleanSupplier ready,
-                Reason reason,
-                boolean entering,
-                int transitionToken,
-                CapturedFrame capturedFrame,
-                long openedAt,
-                long minimumVisibleNanos,
-                boolean resolvedDuration
-        ) {
-            super(
-                    () -> ready.getAsBoolean()
-                            && System.nanoTime() - openedAt >= minimumVisibleNanos,
-                    reason
-            );
-            this.openedAt = openedAt;
-            this.minimumVisibleNanos = minimumVisibleNanos;
-            this.entering = entering;
-            this.transitionToken = transitionToken;
-            this.capturedFrame = capturedFrame;
+        private StillFrameScreen(BooleanSupplier ready, Reason reason, int token, CapturedFrame frame, long openedAt) {
+            super(() -> ready.getAsBoolean() && (surroundingsDrawn() || System.nanoTime() - openedAt > HOLD_LIMIT_NANOS), reason);
+            this.transitionToken = token;
+            this.capturedFrame = frame;
+        }
+
+        /** The player's section and its neighbours are meshed, so lifting the frame shows a finished view. */
+        private static boolean surroundingsDrawn() {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.level == null || minecraft.player == null) {
+                return false;
+            }
+            BlockPos at = minecraft.player.blockPosition();
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    for (int dy = -1; dy <= 1; dy++) {
+                        BlockPos section = at.offset(dx * 16, dy * 16, dz * 16);
+                        if (minecraft.level.isOutsideBuildHeight(section.getY())) {
+                            continue;
+                        }
+                        if (!minecraft.levelRenderer.isSectionCompiled(section)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            renderBackground(graphics, mouseX, mouseY, partialTick);
+        }
+
+        @Override
+        public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            if (capturedFrame == null) {
+                graphics.fill(0, 0, this.width, this.height, 0xFF0D0C0B);
+                return;
+            }
+            capturedFrame.draw(graphics, this.width, this.height);
         }
 
         @Override
@@ -177,201 +161,6 @@ public final class HouseTransitionClient {
             HouseTransitionMotion.beginPost(transitionToken);
             if (capturedFrame != null) {
                 capturedFrame.close();
-            }
-        }
-
-        protected void drawCapturedFrame(GuiGraphics graphics) {
-            drawCapturedFrameMotion(graphics, 1.0D, 0.0D, 0.0D);
-        }
-
-        protected void drawCapturedFrameMotion(
-                GuiGraphics graphics,
-                double zoom,
-                double offsetX,
-                double offsetY
-        ) {
-            if (capturedFrame == null) {
-                graphics.fill(0, 0, this.width, this.height, 0xFF0D0C0B);
-                return;
-            }
-
-            graphics.pose().pushPose();
-
-            float cx = this.width / 2.0F;
-            float cy = this.height / 2.0F;
-            graphics.pose().translate(
-                    cx + (float) offsetX,
-                    cy + (float) offsetY,
-                    0.0F
-            );
-            graphics.pose().scale((float) zoom, (float) zoom, 1.0F);
-            graphics.pose().translate(-cx, -cy, 0.0F);
-
-            capturedFrame.draw(graphics, this.width, this.height);
-            graphics.pose().popPose();
-        }
-
-        protected double progress() {
-            return Math.min(
-                    1.0D,
-                    (double) (System.nanoTime() - openedAt) / minimumVisibleNanos
-            );
-        }
-
-        protected static double smoothstep(double value) {
-            double t = Math.max(0.0D, Math.min(1.0D, value));
-            return t * t * (3.0D - 2.0D * t);
-        }
-
-        protected static int lerpInt(int start, int end, double amount) {
-            return (int) Math.round(start + (end - start) * amount);
-        }
-
-        private static long randomDuration(long minMillis, long maxMillis) {
-            long millis = ThreadLocalRandom.current().nextLong(
-                    minMillis,
-                    maxMillis + 1L
-            );
-            return millis * 1_000_000L;
-        }
-    }
-
-    private static final class WindowPassageScreen extends TimedPassageScreen {
-        private WindowPassageScreen(
-                BooleanSupplier ready,
-                Reason reason,
-                boolean entering,
-                int token,
-                CapturedFrame frame
-        ) {
-            super(
-                    ready,
-                    reason,
-                    entering,
-                    token,
-                    frame,
-                    entering ? 360L : 280L,
-                    entering ? 520L : 420L
-            );
-        }
-
-        @Override
-        public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            renderBackground(graphics, mouseX, mouseY, partialTick);
-        }
-
-        @Override
-        public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            drawCapturedFrame(graphics);
-
-            double raw = progress();
-            double p = smoothstep(raw);
-
-            // The source-world camera already performed the actual climb before
-            // teleport. Preserve that real final frame instead of painting fake
-            // block faces over it. Only a little near-camera shadow remains to
-            // soften the frozen handoff.
-            int sideAlpha = (int) (48.0D * Math.sin(Math.min(1.0D, p) * Math.PI));
-            int bottomAlpha = (int) (34.0D * Math.sin(Math.min(1.0D, p) * Math.PI));
-
-            int sideWidth = Math.max(
-                    8,
-                    (int) (this.width * (entering ? 0.055D : 0.040D))
-            );
-            int sideColor = (sideAlpha << 24);
-            int bottomColor = (bottomAlpha << 24);
-
-            if (entering) {
-                graphics.fill(0, 0, sideWidth, this.height, sideColor);
-            } else {
-                graphics.fill(
-                        this.width - sideWidth,
-                        0,
-                        this.width,
-                        this.height,
-                        sideColor
-                );
-            }
-
-            int bottomHeight = Math.max(6, (int) (this.height * 0.045D));
-            graphics.fill(
-                    0,
-                    this.height - bottomHeight,
-                    this.width,
-                    this.height,
-                    bottomColor
-            );
-        }
-    }
-
-    private static final class BreachPassageScreen extends TimedPassageScreen {
-        private BreachPassageScreen(
-                BooleanSupplier ready,
-                Reason reason,
-                boolean entering,
-                int token,
-                CapturedFrame frame
-        ) {
-            super(
-                    ready,
-                    reason,
-                    entering,
-                    token,
-                    frame,
-                    entering ? 400L : 300L,
-                    entering ? 560L : 440L
-            );
-        }
-
-        @Override
-        public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            renderBackground(graphics, mouseX, mouseY, partialTick);
-        }
-
-        @Override
-        public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            drawCapturedFrame(graphics);
-
-            double raw = progress();
-            double p = smoothstep(raw);
-
-            // The shoulder turn and approach happen while the source world is
-            // still live. Keep the captured world intact here and use only a
-            // restrained near-wall shadow to conceal the handoff.
-            double pulse = Math.sin(Math.min(1.0D, p) * Math.PI);
-            int nearAlpha = (int) (58.0D * pulse);
-            int farAlpha = (int) (28.0D * pulse);
-
-            int nearWidth = Math.max(
-                    12,
-                    (int) (this.width * (entering ? 0.075D : 0.055D))
-            );
-            int farWidth = Math.max(
-                    5,
-                    (int) (this.width * 0.025D)
-            );
-
-            int nearColor = (nearAlpha << 24);
-            int farColor = (farAlpha << 24);
-
-            if (entering) {
-                graphics.fill(0, 0, nearWidth, this.height, nearColor);
-                graphics.fill(
-                        this.width - farWidth,
-                        0,
-                        this.width,
-                        this.height,
-                        farColor
-                );
-            } else {
-                graphics.fill(
-                        this.width - nearWidth,
-                        0,
-                        this.width,
-                        this.height,
-                        nearColor
-                );
-                graphics.fill(0, 0, farWidth, this.height, farColor);
             }
         }
     }

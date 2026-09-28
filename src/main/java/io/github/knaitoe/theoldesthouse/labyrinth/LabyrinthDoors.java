@@ -361,6 +361,15 @@ public final class LabyrinthDoors {
         for (LabyrinthData.Door door : LabyrinthData.get(server).doors()) {
             doors.add(door.globalPos());
         }
+        // The manor's own front and back doors: shut, a click crosses at them.
+        BlockPos origin = HouseSavedData.get(server).houseOrigin();
+        if (origin != null) {
+            for (HouseLayout.ExteriorDoor door : HouseLayout.EXTERIOR_DOORS) {
+                BlockPos lower = origin.offset(door.x(), door.y(), door.z());
+                doors.add(GlobalPos.of(Level.OVERWORLD, lower));
+                doors.add(GlobalPos.of(HouseDimensions.INTERIOR, lower));
+            }
+        }
         return new HouseSealedDoorsPayload(doors);
     }
 

@@ -8,6 +8,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.InteractionResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -43,8 +45,13 @@ public final class HouseRoomDoorClient {
             ResourceKey<Level> dimension = event.getLevel().dimension();
             BlockPos clicked = event.getPos();
             if (sealed.contains(GlobalPos.of(dimension, clicked)) || sealed.contains(GlobalPos.of(dimension, clicked.below()))) {
-                event.setCanceled(true);
-                event.setCancellationResult(InteractionResult.SUCCESS);
+                // Shut, it is the server's to open (elsewhere, or after a
+                // switch); open, it shuts like any door.
+                BlockState state = event.getLevel().getBlockState(clicked);
+                if (!(state.getBlock() instanceof DoorBlock) || !state.getValue(DoorBlock.OPEN)) {
+                    event.setCanceled(true);
+                    event.setCancellationResult(InteractionResult.SUCCESS);
+                }
                 return;
             }
         }
