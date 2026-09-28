@@ -423,12 +423,9 @@ public final class OpeningTests {
                 "Hillary kept vanilla follow-owner AI while she was supposed to lead"
         );
 
-        BlockPos porch = manorOrigin.offset(
-                HouseLayout.AXIS_X,
-                1,
-                HouseLayout.FRONT_DOOR_Z - 2
-        );
-        wolf.moveTo(porch.getX() + 0.5D, porch.getY(), porch.getZ() + 0.5D, 0.0F, 0.0F);
+        Vec3 porch = HouseProxyEntityEvacuation.frontDoorExit(level, manorOrigin);
+        helper.assertTrue(porch != null, "no safe visible front-door waiting point");
+        wolf.moveTo(porch.x, porch.y, porch.z, 0.0F, 0.0F);
         Hillary.tickGuide(level, recipient, wolf.getUUID(), true, manorOrigin);
 
         helper.assertTrue(
@@ -439,8 +436,8 @@ public final class OpeningTests {
 
         HillaryTag tag = Hillary.tagOf(wolf);
         helper.assertTrue(
-                tag != null && tag.home().equals(porch),
-                "Hillary did not adopt the manor porch as her waiting place"
+                tag != null && tag.home().equals(BlockPos.containing(porch)),
+                "Hillary did not adopt the visible front doorstep as her waiting place"
         );
 
         wolf.discard();
@@ -509,6 +506,16 @@ public final class OpeningTests {
                             mob.getZ() - origin.getZ()
                     ),
                     mob.getName().getString() + " remained trapped inside the proxy at " + mob.blockPosition()
+            );
+
+            double nearestDoor = Double.MAX_VALUE;
+            for (HouseLayout.ExteriorDoor door : HouseLayout.EXTERIOR_DOORS) {
+                Vec3 doorCenter = Vec3.atCenterOf(origin.offset(door.x(), door.y(), door.z()));
+                nearestDoor = Math.min(nearestDoor, mob.position().distanceTo(doorCenter));
+            }
+            helper.assertTrue(
+                    nearestDoor <= 7.0D,
+                    mob.getName().getString() + " was evacuated out of sight instead of visibly outside: " + mob.blockPosition()
             );
         }
 
