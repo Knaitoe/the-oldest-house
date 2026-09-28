@@ -8,10 +8,11 @@ This is the design document with the decisions made while building the opening s
 
 - **The house is a large manor.** The Oldest House stays a large, old Tudor manor with a fixed exterior (see [ARCHITECTURE.md](ARCHITECTURE.md)), not a 12-block house. Its interior lives in the house dimension at the exterior's own coordinates; the impossible space begins at the labyrinth threshold, the door that appears at the end of the hall.
 - **Beds work, until the labyrinth.** Beds work anywhere in the manor. Past the labyrinth threshold they don't (sleeping quietly fails and no spawn point is set), except where a vignette says otherwise. Karen's room is the one bed past the threshold that sets your spawn.
-- **Entry is the opening sequence.** Navidson's letter and a snapshot of the player's own house, then Hillary and a new door in a plain wall near the bed. The door never breaks anything the player built. See [OPENING.md](OPENING.md).
-- **The dog is Hillary**, the Navidsons' gray husky, who turns up on the player's doorstep.
-- **Capture exists.** The first capture is Navidson's snapshot: the player's settlement copied into the outside dimension, altered, and photographed.
-- **Answered open questions:** the platform (NeoForge, Minecraft 1.21.1), the first expedition (Hillary through the new door), and part of multiplayer (per-player timelines).
+- **Entry is the opening sequence.** Navidson's letter and a snapshot of the player's own house arrive first. Hillary appears the next morning and leads the player across ordinary Overworld terrain to the Navidsons' manor. No impossible doorway ever appears in the player's own home. See [OPENING.md](OPENING.md).
+- **The dog is Hillary**, the Navidsons' gray husky, who turns up on the player's doorstep, guides them to her owners' porch, and refuses to enter the manor.
+- **Capture exists.** The first capture is Navidson's snapshot: the player's settlement copied into the outside dimension, altered, and photographed. The camera preserves the real bearing from the Navidsons' porch to the player's home; if that visible facade has no suitable upper window, only the copy is changed to add one.
+- **Domestic familiarity comes before impossible architecture.** The House's perceived age does not advance until somebody has actually entered the manor. Ignoring the invitation can never cause the first impossible threshold to reveal itself off-screen.
+- **Answered open questions:** the platform (NeoForge, Minecraft 1.21.1), the first expedition (following Hillary to the Navidsons' ordinary front door), and part of multiplayer (per-player timelines).
 
 ## Canon and core rules
 
@@ -71,7 +72,7 @@ The house is a fixed manor whose interior lives in its own dimension. Past the l
 
 These behaviors belong to the house itself, independent of any vignette, and carry the core horror.
 
-- **Entry: the opening sequence.** Once a player has settled in (a bed, two nights slept, three days since joining), the Navidsons move in next door: the house appears near their base. The next morning, Will Navidson's letter and a snapshot of the player's own house wait on the doorstep of the door they use most. The morning after, Hillary is on the doorstep, and a door has appeared in a plain wall near the player's bed. It is placed so it never breaks anything they built: nothing rests on, hangs from or connects to that wall, and the blocks it replaces are recorded so the collapse can restore them. The door opens only for its owner and leads into the house.
+- **Entry: the opening sequence.** Once a player has settled in (a bed, two nights slept, three days since joining), the Navidsons move in next door: the House appears near their base. Will Navidson's letter and a snapshot of the player's own house wait on the doorstep of the door they use most. The photograph is constrained to the real Navidson-porch-to-player-home bearing; only the copied settlement may gain the impossible lit upper window. The following morning Hillary appears at the player's doorstep and tries to lead them to the Navidsons' manor, waiting when they fall behind. She stops at the porch and refuses to cross the ordinary front door. The player's home never receives an impossible doorway. The opening sequence is the only automatic House-appearance path, and perceived House age begins only after somebody actually enters the manor.
 - **The quarter-inch:** the house measures longer inside than outside. Navidson's letter finds a quarter inch; by the next morning it's half an inch; past the threshold, it's a hallway the exterior can't hold.
 - **Shifting layout:** doors quietly change destinations, so backtracking never quite works.
 - **Infinite digging:** past the threshold the dimension is solid, so any tunnel only finds more wall.
@@ -162,8 +163,8 @@ Five characters belong to the house itself; everyone else lives inside a vignett
 
 ### The dog: Hillary
 
-- The Navidsons' gray husky. She turns up on the player's doorstep the morning the door appears, and the first bone from her recipient tames her. Tamed, she becomes the guide described under Finding vignettes.
-- The house won't keep her: when she follows the player in, she runs ahead down the hall and turns up outside, sitting on her doorstep.
+- The Navidsons' gray husky. She turns up on the player's doorstep the morning after the letter, and the first bone from her recipient tames her. She leads the player over ordinary terrain to the Navidsons' manor, waits if they fall behind, and settles on the porch.
+- She refuses to cross the manor's front door during the opening. Later, once the labyrinth exists, tamed Hillary becomes the guide described under Finding vignettes and may refuse particular dangerous destinations.
 
 ### The Minotaur
 
