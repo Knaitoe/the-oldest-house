@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseExteriorEntityMirror;
+import io.github.knaitoe.theoldesthouse.house.HouseImpossibleHallway;
 import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
 import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import io.github.knaitoe.theoldesthouse.house.HouseProxyEntityEvacuation;
