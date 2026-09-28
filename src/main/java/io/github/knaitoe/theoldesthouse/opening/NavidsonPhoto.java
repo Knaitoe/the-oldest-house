@@ -63,6 +63,7 @@ public final class NavidsonPhoto {
     private final UUID player;
     private final BlockPos bed;
     private final double preferredYaw;
+    private final double preferredDistance;
     private final long seed;
     private final SettlementCopy copy;
     private final Consumer<Result> onDone;
@@ -78,10 +79,18 @@ public final class NavidsonPhoto {
     private BlockPos window;
     private boolean carved;
 
-    private NavidsonPhoto(UUID player, BlockPos bed, double preferredYaw, SettlementCopy copy, Consumer<Result> onDone) {
+    private NavidsonPhoto(
+            UUID player,
+            BlockPos bed,
+            double preferredYaw,
+            double preferredDistance,
+            SettlementCopy copy,
+            Consumer<Result> onDone
+    ) {
         this.player = player;
         this.bed = bed.immutable();
         this.preferredYaw = preferredYaw;
+        this.preferredDistance = preferredDistance;
         this.seed = bed.asLong() ^ player.getMostSignificantBits() ^ 0x5DEECE66DL;
         this.copy = copy;
         this.onDone = onDone;
@@ -176,12 +185,17 @@ public final class NavidsonPhoto {
         SettlementCopy copy = new SettlementCopy(server.overworld(), sourceMin, sourceMax, outside, CopySlots.targetMin(slot, sourceMin));
 
         double yaw;
+        double distance;
         if (lookFrom != null && (lookFrom.getX() != bed.getX() || lookFrom.getZ() != bed.getZ())) {
-            yaw = Math.atan2(lookFrom.getX() - bed.getX(), lookFrom.getZ() - bed.getZ());
+            double dx = lookFrom.getX() - bed.getX();
+            double dz = lookFrom.getZ() - bed.getZ();
+            yaw = Math.atan2(dx, dz);
+            distance = Math.sqrt(dx * dx + dz * dz);
         } else {
             yaw = (Math.floorMod(bed.asLong() * 31L, 360L)) * Math.PI / 180.0D;
+            distance = 28.0D;
         }
-        return new NavidsonPhoto(player, bed, yaw, copy, onDone);
+        return new NavidsonPhoto(player, bed, yaw, distance, copy, onDone);
     }
 
     /** One tick of work; true when finished (the callback has run). */
@@ -220,7 +234,7 @@ public final class NavidsonPhoto {
         tx = home.getX() + 0.5D;
         tz = home.getZ() + 0.5D;
         ty = SnapshotRenderer.houseCenterY(scene, home.getX(), home.getY(), home.getZ());
-        camera = SnapshotRenderer.chooseCamera(scene, tx, ty, tz, preferredYaw);
+        camera = SnapshotRenderer.chooseCamera(scene, tx, ty, tz, preferredYaw, preferredDistance);
         if (camera == null) {
             TheOldestHouse.LOGGER.info("No clear view of {}'s house at {}; the stock print is used.", player, bed);
             fail();
@@ -234,7 +248,13 @@ public final class NavidsonPhoto {
                 // "Your little window up top": in the copy there is one, whether or not the player built it.
                 outside.setBlock(glass, Blocks.GLASS.defaultBlockState(), Block.UPDATE_CLIENTS);
             }
-            outside.setBlock(new BlockPos(plan.lightX(), plan.lightY(), plan.lightZ()),
+            BlockPos lightPos = new BlockPos(plan.lightX(), plan.lightY(), plan.lightZ());
+            if (!outside.getBlockState(lightPos).isAir()) {
+                // The photograph may invent a shallow room behind the copied
+                // facade, but it never alters the real home.
+                outside.setBlock(lightPos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+            }
+            outside.setBlock(lightPos,
                     Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, WINDOW_LIGHT), Block.UPDATE_ALL);
             window = glass;
             carved = plan.carve();
