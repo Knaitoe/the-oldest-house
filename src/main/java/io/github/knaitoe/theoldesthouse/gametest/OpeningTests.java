@@ -319,7 +319,10 @@ public final class OpeningTests {
 
             recipient.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BONE));
             recipient.interactOn(wolf, InteractionHand.MAIN_HAND);
-            helper.assertTrue(wolf.isTame() && wolf.isOwnedBy(recipient), "one bone did not tame Hillary");
+            // Compare owner UUIDs: isOwnedBy looks the owner up in the level's
+            // player list, which fake players are not part of.
+            helper.assertTrue(wolf.isTame() && recipient.getUUID().equals(wolf.getOwnerUUID()),
+                    "one bone did not tame Hillary for her recipient");
             wolf.discard();
         } finally {
             recipient.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
