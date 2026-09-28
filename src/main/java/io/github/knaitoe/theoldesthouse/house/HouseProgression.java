@@ -20,10 +20,18 @@ import net.minecraft.server.level.ServerLevel;
  *   each morning has a chance of a door appearing in the bedroom partition.
  *   The chance starts at {@link HouseConfig#ROOM_BASE_CHANCE} and rises by
  *   {@link HouseConfig#ROOM_CHANCE_STEP} for every morning it does not.</li>
- *   <li><b>The hallway:</b> {@link HouseConfig#HALLWAY_MORNINGS_AFTER_ROOM}
- *   mornings after the room, the door at the end of the hall opens onto the
- *   impossible hallway, where it always has.</li>
+ *   <li><b>Subtle changes</b> ({@link HouseShifts}): from the rugs on, on any
+ *   morning when nothing larger happens, a rising chance of one small change
+ *   nobody saw happen.</li>
+ *   <li><b>The hallway:</b> once the room exists and
+ *   {@link HouseConfig#SHIFTS_BEFORE_HALLWAY} subtle changes have happened,
+ *   the door at the end of the hall gets a heavily weighted daily chance
+ *   ({@link HouseConfig#HALLWAY_BASE_CHANCE}, rising by
+ *   {@link HouseConfig#HALLWAY_CHANCE_STEP}) of opening onto the impossible
+ *   hallway, where it always has. It is rolled before the subtle changes.</li>
  * </ol>
+ *
+ * At most one of these happens on any morning.
  *
  * A morning is a new day of {@link HouseCalendar} on which a player wakes
  * after sleeping, in the Overworld or in the manor. The House's perceived
@@ -56,28 +64,40 @@ public final class HouseProgression {
         return changes;
     }
 
-    /** Everything that happens on a new morning of the House's perceived age. */
+    /** Everything that happens on a new morning of the House's perceived age: at most one change. */
     public static List<String> morning(MinecraftServer server, HouseSavedData data) {
         List<String> changes = new ArrayList<>();
         if (shiftRugsIfDue(server, data)) {
             changes.add("the rugs changed colour");
+            return changes;
         }
 
-        int chance = roomChance(data, data.houseAge());
-        if (chance >= 0) {
-            int roll = server.overworld().getRandom().nextInt(100);
-            if (roll < chance && HouseBetweenRoom.reveal(server, data)) {
-                changes.add("a door appeared in the principal bedroom (" + chance + "% chance)");
-            } else {
-                data.noteRoomMissedMorning();
-                changes.add("no door this morning (" + chance + "% chance)");
+        int roomChance = roomChance(data, data.houseAge());
+        if (roomChance >= 0) {
+            if (server.overworld().getRandom().nextInt(100) < roomChance && HouseBetweenRoom.reveal(server, data)) {
+                changes.add("a door appeared in the principal bedroom (" + roomChance + "% chance)");
+                return changes;
             }
+            data.noteRoomMissedMorning();
+            changes.add("no door in the bedroom this morning (" + roomChance + "% chance)");
         }
 
-        boolean hallwayBefore = data.isImpossibleDoorRevealed();
-        HouseStageManager.applyCurrentStage(server, data);
-        if (!hallwayBefore && data.isImpossibleDoorRevealed()) {
-            changes.add("the door at the end of the hall opened onto the impossible hallway");
+        int hallwayChance = hallwayChance(data);
+        if (hallwayChance >= 0) {
+            if (server.overworld().getRandom().nextInt(100) < hallwayChance) {
+                HouseStageManager.revealHallway(server, data);
+                if (data.isImpossibleDoorRevealed()) {
+                    changes.add("the door at the end of the hall opened onto the impossible hallway (" + hallwayChance + "% chance)");
+                    return changes;
+                }
+            }
+            data.noteHallwayMissedMorning();
+            changes.add("the end of the hall stayed a wall (" + hallwayChance + "% chance)");
+        }
+
+        String shift = HouseShifts.morning(server, data);
+        if (shift != null) {
+            changes.add(shift);
         }
         return changes;
     }
@@ -133,9 +153,18 @@ public final class HouseProgression {
     // ------------------------------------------------------------------
     // The hallway
 
-    public static boolean isHallwayDue(HouseSavedData data) {
-        return data.isRoomRevealed()
-                && data.houseAge() >= data.roomRevealedAge() + HouseConfig.HALLWAY_MORNINGS_AFTER_ROOM.getAsInt();
+    /**
+     * The chance, in percent, that the hallway opens next morning; -1 while
+     * it cannot (no room yet, or too few subtle changes).
+     */
+    public static int hallwayChance(HouseSavedData data) {
+        if (!data.isSpawned() || data.isImpossibleDoorRevealed() || !data.isRoomRevealed()
+                || data.shiftsTriggered() < HouseConfig.SHIFTS_BEFORE_HALLWAY.getAsInt()) {
+            return -1;
+        }
+        long chance = HouseConfig.HALLWAY_BASE_CHANCE.getAsInt()
+                + (long) HouseConfig.HALLWAY_CHANCE_STEP.getAsInt() * data.hallwayMissedMornings();
+        return (int) Math.min(100L, chance);
     }
 
     // ------------------------------------------------------------------
@@ -176,14 +205,18 @@ public final class HouseProgression {
             }
         }
 
+        lines.add(HouseShifts.describe(data));
+
+        int needed = HouseConfig.SHIFTS_BEFORE_HALLWAY.getAsInt();
         if (data.isImpossibleDoorRevealed()) {
             lines.add("Impossible hallway: open.");
-        } else if (!data.isRoomRevealed()) {
-            lines.add("Impossible hallway: waiting for the room between rooms.");
+        } else if (!data.isRoomRevealed() || data.shiftsTriggered() < needed) {
+            lines.add("Impossible hallway: 0% next morning; it waits for the room between rooms ("
+                    + (data.isRoomRevealed() ? "there" : "not yet") + ") and " + needed + " subtle changes ("
+                    + data.shiftsTriggered() + " so far).");
         } else {
-            int due = data.roomRevealedAge() + HouseConfig.HALLWAY_MORNINGS_AFTER_ROOM.getAsInt();
-            lines.add("Impossible hallway: opens at age " + due
-                    + (nextAge >= due ? " (next morning)." : " (" + (due - age) + " mornings from now)."));
+            lines.add("Impossible hallway: " + hallwayChance(data) + "% chance next morning"
+                    + (data.hallwayMissedMornings() > 0 ? " (stayed shut " + data.hallwayMissedMornings() + " time(s))." : "."));
         }
         return lines;
     }
@@ -216,6 +249,7 @@ public final class HouseProgression {
                     return "The impossible hallway is already open.";
                 }
                 HouseStageManager.revealHallway(server, data);
+                HouseShifts.refreshCache(data);
                 return data.isImpossibleDoorRevealed() ? null : "The House interior is not available yet.";
             }
             default -> {

@@ -34,6 +34,7 @@ public final class HouseLifecycleEvents {
 
     public static void onServerStarted(ServerStartedEvent event) {
         HouseSavedData data = HouseSavedData.get(event.getServer());
+        HouseShifts.refreshCache(data);
         if (data.isSpawned() && !data.isCurrentLayout()) {
             TheOldestHouse.LOGGER.warn(
                     "The Oldest House in this world was generated with layout v{}, but this build uses v{}. "
@@ -55,6 +56,7 @@ public final class HouseLifecycleEvents {
         HouseTransitionEvents.clearAll();
         HouseExteriorEntityMirror.clear(event.getServer());
         HouseBetweenRoom.clearAll();
+        HouseShifts.clearCache();
     }
 
     public static void onPlayerWakeUp(PlayerWakeUpEvent event) {

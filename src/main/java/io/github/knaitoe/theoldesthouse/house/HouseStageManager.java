@@ -11,18 +11,6 @@ public final class HouseStageManager {
     private HouseStageManager() {
     }
 
-    /**
-     * Opens the impossible hallway once it is due (see
-     * {@link HouseProgression#isHallwayDue}). Houses that opened it before
-     * the room between rooms existed keep it.
-     */
-    public static void applyCurrentStage(MinecraftServer server, HouseSavedData data) {
-        if (!data.isSpawned() || data.isImpossibleDoorRevealed() || !HouseProgression.isHallwayDue(data)) {
-            return;
-        }
-        revealHallway(server, data);
-    }
-
     /** Opens the door at the end of the hall onto the impossible hallway, now. */
     public static void revealHallway(MinecraftServer server, HouseSavedData data) {
         BlockPos origin = data.housePosition().orElse(null);
@@ -38,6 +26,8 @@ public final class HouseStageManager {
         HouseBuilder.revealImpossibleDoor(interior, origin);
         HouseImpossibleHallway.build(interior, origin);
         data.markImpossibleDoorRevealed();
+        // A deepened hall's extra block becomes the hallway's threshold.
+        HouseShifts.refreshCache(data);
 
         // The impossible hallway itself remains interior-only, but the
         // threshold wall at the end of the hall is ordinary domestic architecture

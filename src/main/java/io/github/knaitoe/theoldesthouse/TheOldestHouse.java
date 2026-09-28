@@ -8,8 +8,10 @@ import io.github.knaitoe.theoldesthouse.house.HouseDays;
 import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
 import io.github.knaitoe.theoldesthouse.house.HouseLifecycleEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseExteriorEntityMirror;
+import io.github.knaitoe.theoldesthouse.house.HouseMemory;
 import io.github.knaitoe.theoldesthouse.house.HouseMirrorSyncEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseProxyEntityEvacuation;
+import io.github.knaitoe.theoldesthouse.house.HouseShifts;
 import io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents;
 import io.github.knaitoe.theoldesthouse.network.HouseNetwork;
 import io.github.knaitoe.theoldesthouse.opening.OpeningConfig;
@@ -59,6 +61,10 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onServerTick);
         NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onPlayerLoggedOut);
+
+        // Subtle changes: the house remembering its chests, and its echoes.
+        NeoForge.EVENT_BUS.addListener(HouseMemory::onRightClickBlock);
+        NeoForge.EVENT_BUS.addListener(HouseShifts::onServerTick);
 
         NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onBreak);
         NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onExplosion);
