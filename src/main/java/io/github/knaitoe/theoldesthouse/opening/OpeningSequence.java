@@ -182,7 +182,7 @@ public final class OpeningSequence {
             }
             case LETTER_DELIVERED -> {
                 if (day > state.letterDay()) {
-                    secondMorning(player, state, bed, false);
+                    secondMorning(player, state, bed);
                 }
             }
             default -> {
@@ -279,7 +279,7 @@ public final class OpeningSequence {
      * in the player's home: Hillary is the invitation and guides the player
      * across ordinary Overworld space to the Navidsons' manor.
      */
-    public static void secondMorning(ServerPlayer player, OpeningPlayerState state, BlockPos bed, boolean immediate) {
+    public static void secondMorning(ServerPlayer player, OpeningPlayerState state, BlockPos bed) {
         ServerLevel level = player.server.overworld();
         HouseSavedData house = HouseSavedData.get(player.server);
         if (!house.isSpawned()) {
@@ -323,7 +323,7 @@ public final class OpeningSequence {
             }
             case LETTER_DELIVERED -> {
                 state.setStageForTesting(OpeningStage.LETTER_DELIVERED, day - 1L);
-                secondMorning(player, state, bed.get(), false);
+                secondMorning(player, state, bed.get());
                 return "Hillary is on the doorstep and will lead you toward the Navidsons' manor";
             }
             case HILLARY_ARRIVED -> {
