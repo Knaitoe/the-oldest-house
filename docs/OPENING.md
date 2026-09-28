@@ -89,9 +89,11 @@ There is intentionally no opening `door` command anymore.
 
 ## Proxy-entity rejection
 
-The Overworld manor is a visual/proxy shell, not a second playable interior. Living non-player mobs that wander into its domestic volume are therefore **evacuated rather than hidden or deleted**. Every few ticks the server checks the proxy and moves trapped mobs to a safe position immediately outside the nearest authored exterior doorway. Their entity identity, inventory/tame state and world remain intact, so villagers, pets and hostile mobs stay visible outside the House instead of becoming inaccessible duplicates.
+The Overworld manor is a visual/proxy shell, not a second playable interior. Living non-player mobs that wander into its domestic volume are therefore **evacuated rather than hidden or deleted**. Every few ticks the server checks the proxy and moves trapped mobs to a safe position immediately outside the nearest authored exterior doorway. Their entity identity, inventory/tame state and world remain intact, so villagers, pets and hostile mobs stay outside the House instead of becoming inaccessible duplicates.
 
-Hillary is the authored version of that rule: she waits at the **front** entrance and sits there, visibly refusing to enter.
+That alone is not enough: players standing in `the_oldest_house:interior` must still be able to **see those real Overworld mobs through windows and open doors**. While a player occupies the domestic interior, the server keeps the nearby Overworld source chunks loaded and maintains non-interactive visual projections of exterior mobs at the same coordinates in the House dimension. The Overworld entity remains authoritative; its projection has no AI, gravity, damage, interaction, persistence purpose, or gameplay authority. Native outdoor mobs in the House dimension's mirrored view are suppressed so the player sees one coherent exterior population rather than duplicates.
+
+Hillary is the authored version of that rule: the real Hillary waits at the **front** entrance in the Overworld and sits there, visibly refusing to enter; the player sees her matching projection from inside the House.
 
 ## Dimension-transition presentation
 
