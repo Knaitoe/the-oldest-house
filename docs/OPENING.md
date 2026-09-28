@@ -34,7 +34,7 @@ The letter waits for the photo, so it arrives a few seconds after dawn. If no cl
 
 ![Two snapshots rendered on the game-test server: a house's own upper window lit, and a windowless house given one](../tools/snapshot_ingame_examples.png)
 
-`/oldesthouse opening photo [player]` retakes the photo and hands you the result; it also reports where the copy stands in the outside dimension.
+`/oldesthouse opening photo [player]` retakes the photo and hands you the result; it also reports where the copy stands in the outside dimension. `/oldesthouse opening copy [player]` puts you where the camera stood, looking at the altered copy.
 
 Both items are `the_oldest_house:delivered_item` entities: ordinary item entities that never despawn, can only be picked up by the recipient, and are not pushed by water.
 
@@ -47,6 +47,7 @@ Hillary is an ashen wolf named `Hillary` (name not always shown), persistent, un
 The door goes in a wall within `doorSearchRadius` (12) of the bed:
 
 - two stacked full, solid, opaque ordinary blocks (no block entity, redstone component, door, glass, bed or unbreakable block), not placed by the player in the last minute;
+- a plain wall, so the door never breaks anything the player built: every neighbour of both blocks (except the floor beneath) is air or a full block, and no painting or item frame hangs on either face. Torches, signs, ladders, buttons, panes, fences, rails, carpets and the like rule a wall out;
 - air two blocks high in front, with a sturdy floor, on a side the player can walk to from the bed (a walk search with steps and short drops);
 - at least 4 blocks from any other player's door and never on the same wall, and not inside the House's own footprint.
 
@@ -63,3 +64,19 @@ Leaving the House works as before: the ordinary front door leads out to the Over
 ## The House won't keep Hillary
 
 If Hillary is tamed by the player, standing and within 12 blocks when they go through the door, she goes with them: she appears just ahead in the hall and runs towards the threshold. Once she is out of the player's view (after at least half a second), or after two seconds, her entity is saved, removed from the House dimension and set down, sitting, on her doorstep in the Overworld. The doorstep chunk is loaded with a short ticket for the purpose. While she is between dimensions her saved data is kept in `OpeningWorldData`, and a Hillary found in the House after a restart is sent home the same way.
+
+## Testing the sequence
+
+All under `/oldesthouse opening`, each with an optional target player:
+
+- `status`: stage, sleeps, bed, days, Hillary, door and the last photo.
+- `advance`: the next step, exactly as the next morning would run it. From the start it takes the photo and leaves the letter a few seconds later; after the letter it brings Hillary and places the door once you look away.
+- `letter`, `door`: the same steps, immediately.
+- `photo`: retake the photo and hand yourself the snapshot. `copy`: stand where the camera stood, in the outside dimension.
+- `hillary`: a new Hillary on the doorstep.
+- `eligible`: skip settling in. `reset`: start over, removing the door and restoring the wall.
+
+## Beds and the labyrinth threshold
+
+Beds work anywhere in the manor. Past the labyrinth threshold (`HouseLabyrinth`: the impossible hallway behind the door at the end of the hall, and every place reached through the labyrinth, including the outside dimension) sleeping quietly fails and no spawn point is set. Commands that force a spawn point still work.
+

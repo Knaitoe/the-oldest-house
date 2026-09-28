@@ -86,11 +86,14 @@ Commands require permission level 2.
 | `/oldesthouse visit` | Increment the stored visit count. |
 | `/oldesthouse reconcile` | Force an authoritative House-dimension to Overworld reconciliation and report how many positions changed. |
 | `/oldesthouse reset` | Reset persistent The Oldest House state. This does **not** erase blocks already placed in the world. |
-| `/oldesthouse opening status [player]` | Show a player's opening-sequence stage, sleeps, bed, letter/door days, Hillary and door. |
+| `/oldesthouse opening status [player]` | Show a player's opening-sequence stage, sleeps, bed, letter/door days, Hillary, door and last photo. |
+| `/oldesthouse opening advance [player]` | Run the player's next step now, exactly as their next morning would: the letter waits for its photo, and the door waits until they look away. |
 | `/oldesthouse opening eligible [player]` | Skip the settling-in requirements; the letter arrives on the next morning (day time 0-1000). |
-| `/oldesthouse opening letter [player]` | Deliver Navidson's letter and snapshot now. |
-| `/oldesthouse opening photo [player]` | Photograph the player's house again (copying it to the outside dimension) and hand the snapshot to you. |
-| `/oldesthouse opening door [player]` | Run morning two now: Hillary on the doorstep and the door placed immediately (even in view). |
+| `/oldesthouse opening letter [player]` | Take the photo and deliver Navidson's letter and snapshot immediately. |
+| `/oldesthouse opening photo [player]` | Photograph the player's house again (copying it to the outside dimension) and hand you the snapshot. |
+| `/oldesthouse opening copy [player]` | Stand where Navidson's camera stood, in the outside dimension, looking at the altered copy of the player's house. |
+| `/oldesthouse opening hillary [player]` | Put a new Hillary on the player's doorstep, replacing any earlier one. |
+| `/oldesthouse opening door [player]` | Run morning two immediately: Hillary on the doorstep and the door placed at once (even in view). |
 | `/oldesthouse opening reset [player]` | Clear a player's opening progress and remove their door, restoring the wall it replaced. |
 
 ### Important
@@ -347,7 +350,8 @@ Everything before a player first enters the House, run per player (see [docs/OPE
 
 - **Settling in:** a bed respawn point, two completed sleeps and three in-game days since first joining (all configurable in the server config `the_oldest_house-server.toml`).
 - **Morning 1:** the Navidsons' house (The Oldest House) appears next door if it has not already. The House captures the player's settlement, rebuilds it in the new outside dimension, lights the upper window facing the Navidsons' porch (cutting one into the copy's wall if there is none) and photographs the copy at night with a small ray tracer. A written book from Will Navidson ("Howdy, Neighbor") and that snapshot (a locked filled map of the player's own house) then wait on the doorstep of the player's most-used door, with one soft knock only the recipient hears. Both never despawn, only the recipient can pick them up, and water does not carry them off.
-- **Morning 2:** Hillary, an ashen husky, waits on the doorstep; the first bone from her recipient always tames her. A new door appears in a wall within 12 blocks of the bed (never one the player is looking at or just placed; after three nights without a wall, a freestanding framed door on open ground).
+- **Morning 2:** Hillary, an ashen husky, waits on the doorstep; the first bone from her recipient always tames her. A new door appears in a plain wall within 12 blocks of the bed: never one with anything resting on, hanging from or connected to it, never one the player is looking at or just placed. After three nights without a wall, a freestanding framed door appears on open ground.
 - **The door:** unbreakable in survival and immovable by pistons, it opens only for its owner, who steps through into the House's hall via the existing DOOR transition. Anyone else hears a locked rattle. The blocks it replaced are recorded for later restoration.
 - **Hillary and the House:** if she follows her owner in, she runs a few blocks down the hall; out of sight (or after two seconds) she is taken out of the House and set down, sitting, on her doorstep.
-
+- **Beds and the labyrinth:** beds work throughout the manor. Past the labyrinth threshold (the door at the end of the hall, the impossible hallway, and every place reached through the labyrinth, including the outside dimension) sleeping quietly fails and no spawn point is set.
+- The adjusted design document is in [docs/DESIGN_DOCUMENT.md](docs/DESIGN_DOCUMENT.md).
