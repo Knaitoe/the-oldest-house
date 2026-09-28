@@ -54,6 +54,7 @@ The house is a fixed manor whose interior lives in its own dimension. Past the l
 
 - **Overworld:** the player's world, their base, the house's fixed exterior, and the entrance door.
 - **The house dimension:** the manor's interior at the exterior's own coordinates, with the nearby Overworld mirrored outside its windows, so crossing the walls changes dimension without changing position. Past the labyrinth threshold it is generated solid, with rooms carved out and placed from structure files built in creative mode. Beds work in the manor. Past the threshold they don't, except where noted, and compasses spin.
+- **The labyrinth dimension:** solid white plaster from bedrock to bedrock, so any tunnel finds only more wall. Past the hallway's far door, its places are carved into it thousands of blocks apart and joined only by doors: the gray (a junction and corridors) and indoor vignettes, starting with the Tell-Tale Heart's floorboards. It lies past the threshold.
 - **The between dimension:** rooms the manor has no room for, at the coordinates of the part of the house they open from, starting with the room between rooms. It lies past the labyrinth threshold.
 - **The outside dimension:** every vignette with a sky, including the courtyard, the lake, the cabins, the hotel grounds, the base copy, and the copy Navidson photographs. It lies past the labyrinth threshold, so its beds don't work either.
 

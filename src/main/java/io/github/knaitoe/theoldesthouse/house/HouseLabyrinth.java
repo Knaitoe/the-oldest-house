@@ -24,7 +24,8 @@ public final class HouseLabyrinth {
 
     /** Whether {@code pos} in {@code dimension} lies past the labyrinth threshold. */
     public static boolean isBeyondThreshold(MinecraftServer server, ResourceKey<Level> dimension, BlockPos pos) {
-        if (dimension.equals(HouseDimensions.OUTSIDE) || dimension.equals(HouseDimensions.BETWEEN)) {
+        if (dimension.equals(HouseDimensions.OUTSIDE) || dimension.equals(HouseDimensions.BETWEEN)
+                || dimension.equals(HouseDimensions.LABYRINTH)) {
             return true;
         }
         if (!dimension.equals(HouseDimensions.INTERIOR)) {

@@ -70,6 +70,15 @@ The room lives in `the_oldest_house:between` at the same coordinates as the bedr
 
 For testing, `/oldesthouse day [n]` passes whole nights as if everyone online slept (in the manor if they are standing in it), `/oldesthouse reveal rugs|room|hallway` forces a stage, and `/oldesthouse shift [kind]` makes one subtle change now (a random one, or `paintings`, `deeper_hall`, `doors`, `chests`, `candles`, `echoes`, `chairs`, `notes`, `guest_bed`, `window`). `/oldesthouse age` and `/oldesthouse advance` still set perceived age directly, without running mornings.
 
+## The labyrinth and the first vignette
+
+When the impossible hallway opens, its far wall has a door. It leads into `the_oldest_house:labyrinth`, a dimension that is solid white plaster from bedrock to bedrock: any tunnel only finds more wall. Rooms are carved into it thousands of blocks apart and joined only by doors.
+
+- **Doors that lead elsewhere** are ordinary spruce doors the mod keeps shut; the client is told where they are so it never swings one open. Clicking one moves you to where it leads, arriving in front of that place's entry door facing into the room. Between dimensions the usual door transition covers it; within the labyrinth a short fade to black does. Each trip remembers where you stood, so a place's entry door leads back the way you came.
+- **The gray:** the junction (a plain gray hall with a door in each wall) and a long gray corridor.
+- **The dealer:** whenever you arrive somewhere with dealt doors, they are all dealt again, so backtracking never quite works. At most one leads to a vignette; the chance is 30%, +25% for every dealing without one, so a dry spell guarantees a door. A vignette door leaks: its heartbeat can be heard faintly behind it. Now and then a gray door leaks too, and lies. Finished one-shots are never dealt again.
+- **The Tell-Tale Heart: the floorboards** (one-shot; verb: sneaking). An old man's bedroom, one candle, his bed made. Sculk lies under the boards. Every vibration you make (the ones a sculk sensor hears, so crouching makes none) speeds a heartbeat coming from under one darker board. If it races to the top, the lights go out and you are back where you came from. Pry the dark board up with an axe (right-click, or break it with an axe) and the caregiver's note is underneath; the heartbeat stops. The room cannot be dug out of, built in, or its floor broken; trying is loud.
+
 ### Dimension-backed domestic interior
 
 Version 0.1.9 returns to the intended architecture: the Overworld contains the fixed exterior of The Oldest House, while the usable domestic interior exists in `the_oldest_house:house_interior`.
@@ -106,6 +115,12 @@ Commands require permission level 2.
 | `/oldesthouse age <days>` | Set The Oldest House perceived age to an exact value (does not run mornings). |
 | `/oldesthouse advance` | Advance The Oldest House perceived age by one day. |
 | `/oldesthouse advance <days>` | Fast-forward The Oldest House perceived age by the supplied number of days. |
+| `/oldesthouse door <floorboards\|junction\|gray_corridor\|dealt>` | Place a test door two blocks in front of you, facing you, that leads there (`dealt`: wherever the dealer deals it, each time). The door you arrive at leads back to it. Works in any dimension. |
+| `/oldesthouse door remove` | Remove the nearest test door within eight blocks. |
+| `/oldesthouse labyrinth go` | Go straight to the junction; its entry door leads back to where you stood (or the hallway, once it exists). |
+| `/oldesthouse labyrinth build` | Carve every labyrinth place again. |
+| `/oldesthouse labyrinth status` | Deals, the dealer's odds, finished vignettes, and how many doors deep your way back is. |
+| `/oldesthouse vignette floorboards reset\|complete` | Put the floorboards back as new (dealable again), or mark them finished. |
 | `/oldesthouse restock` | Give every empty, untouched chest and barrel in the manor its room's loot table (for houses built before the tables existed). |
 | `/oldesthouse visit` | Increment the stored visit count. |
 | `/oldesthouse reconcile` | Force an authoritative House-dimension to Overworld reconciliation and report how many positions changed. |
@@ -435,4 +450,5 @@ The opening has been revised so the player's own home remains ordinary.
 - The first night in the manor shifts the rugs; around day 3 the room between rooms appears; ten kinds of subtle change follow on quiet mornings; after the room and two of them, the impossible hallway gets a heavily weighted daily roll, at the end of the hall as before. Subtle changes continue after it opens.
 - `/oldesthouse day [n]`, `/oldesthouse reveal rugs|room|hallway`, and a fuller `/oldesthouse status`.
 - Hillary greets her recipient and waits to be greeted back (right-click, bone, or crouching facing her) before darting off towards the manor; ignored, she follows and whines.
+- The labyrinth: a door in the impossible hallway's far wall into a solid plaster dimension, the gray junction and corridor, a dealer that re-deals doors on every arrival with a dry-spell guarantee and leaking vignette doors, and the first vignette, The Tell-Tale Heart's floorboards. `/oldesthouse door <place>` puts a test door to any of it wherever you stand.
 - Every chest and barrel in the manor now has a loot table for its room: pantry food in the kitchen, bottles and bowls in the scullery, candles and odds and ends in the parlour and landings, books and ink in the literary bedroom, fletching and scrap metal in the maker loft, moth-eaten leftovers in the box room. `/oldesthouse restock` applies them to an existing house.

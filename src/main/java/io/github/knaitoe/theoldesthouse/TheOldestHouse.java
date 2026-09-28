@@ -13,6 +13,8 @@ import io.github.knaitoe.theoldesthouse.house.HouseMirrorSyncEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseProxyEntityEvacuation;
 import io.github.knaitoe.theoldesthouse.house.HouseShifts;
 import io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
+import io.github.knaitoe.theoldesthouse.labyrinth.TellTaleFloorboards;
 import io.github.knaitoe.theoldesthouse.network.HouseNetwork;
 import io.github.knaitoe.theoldesthouse.opening.OpeningConfig;
 import io.github.knaitoe.theoldesthouse.opening.OpeningRegistry;
@@ -50,6 +52,21 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HouseExteriorEntityMirror::onAttack);
         NeoForge.EVENT_BUS.addListener(HouseLabyrinth::onCanPlayerSleep);
         NeoForge.EVENT_BUS.addListener(HouseLabyrinth::onSetSpawn);
+
+        // Doors that lead elsewhere (the labyrinth's, the hallway's far door,
+        // test doors) are handled before anything else sees the click.
+        NeoForge.EVENT_BUS.addListener(LabyrinthDoors::onRightClickBlock);
+        NeoForge.EVENT_BUS.addListener(LabyrinthDoors::onBreak);
+        NeoForge.EVENT_BUS.addListener(LabyrinthDoors::onExplosion);
+        NeoForge.EVENT_BUS.addListener(LabyrinthDoors::onServerTick);
+        NeoForge.EVENT_BUS.addListener(LabyrinthDoors::onPlayerLoggedIn);
+        NeoForge.EVENT_BUS.addListener(LabyrinthDoors::onPlayerLoggedOut);
+        // The first vignette: The Tell-Tale Heart's floorboards.
+        NeoForge.EVENT_BUS.addListener(TellTaleFloorboards::onGameEvent);
+        NeoForge.EVENT_BUS.addListener(TellTaleFloorboards::onServerTick);
+        NeoForge.EVENT_BUS.addListener(TellTaleFloorboards::onRightClickBlock);
+        NeoForge.EVENT_BUS.addListener(TellTaleFloorboards::onBreak);
+        NeoForge.EVENT_BUS.addListener(TellTaleFloorboards::onPlace);
 
         // The room between rooms: its door is handled before the mirror sees the click.
         NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onRightClickBlock);
