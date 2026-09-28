@@ -30,6 +30,13 @@ public final class HouseSavedData extends SavedData {
     private int visitCount;
     private int layoutVersion;
 
+    // After the first visit: the rugs, then the room between rooms.
+    private boolean sleptInManor;
+    private int rugsShiftedAge = -1;
+    private int roomRevealedAge = -1;
+    private int roomMissedMornings;
+    private int roomDoorX = -1;
+
     // Derived, not saved: hot paths read the origin every tick.
     @Nullable
     private BlockPos cachedHouseOrigin;
@@ -57,6 +64,11 @@ public final class HouseSavedData extends SavedData {
         data.interiorInitialized = tag.getBoolean("InteriorInitialized");
         data.visitCount = tag.getInt("VisitCount");
         data.layoutVersion = tag.contains("LayoutVersion") ? tag.getInt("LayoutVersion") : 1;
+        data.sleptInManor = tag.getBoolean("SleptInManor");
+        data.rugsShiftedAge = tag.contains("RugsShiftedAge") ? tag.getInt("RugsShiftedAge") : -1;
+        data.roomRevealedAge = tag.contains("RoomRevealedAge") ? tag.getInt("RoomRevealedAge") : -1;
+        data.roomMissedMornings = tag.getInt("RoomMissedMornings");
+        data.roomDoorX = tag.contains("RoomDoorX") ? tag.getInt("RoomDoorX") : -1;
         data.refreshOriginCache();
 
         return data;
@@ -80,6 +92,11 @@ public final class HouseSavedData extends SavedData {
         tag.putBoolean("InteriorInitialized", interiorInitialized);
         tag.putInt("VisitCount", visitCount);
         tag.putInt("LayoutVersion", layoutVersion);
+        tag.putBoolean("SleptInManor", sleptInManor);
+        tag.putInt("RugsShiftedAge", rugsShiftedAge);
+        tag.putInt("RoomRevealedAge", roomRevealedAge);
+        tag.putInt("RoomMissedMornings", roomMissedMornings);
+        tag.putInt("RoomDoorX", roomDoorX);
         return tag;
     }
 
@@ -153,11 +170,15 @@ public final class HouseSavedData extends SavedData {
     }
 
     /**
-     * Advances perceived age once per Minecraft morning, but only after at
+     * Advances perceived age once per morning (a day of {@link HouseCalendar}), but only after at
      * least one real manor entry. Ignoring the invitation can therefore never
      * reveal the impossible threshold off-screen.
      */
     public boolean advanceHouseAgeForMorning(long currentDay) {
+        if (lastHouseAgeDay > currentDay) {
+            // Stored by an earlier version from a world clock since wound back.
+            lastHouseAgeDay = currentDay - 1L;
+        }
         if (!spawned || visitCount <= 0 || currentDay == lastHouseAgeDay) {
             return false;
         }
@@ -166,6 +187,61 @@ public final class HouseSavedData extends SavedData {
         houseAge++;
         setDirty();
         return true;
+    }
+
+    public boolean sleptInManor() {
+        return sleptInManor;
+    }
+
+    public void markSleptInManor() {
+        if (!sleptInManor) {
+            sleptInManor = true;
+            setDirty();
+        }
+    }
+
+    public boolean areRugsShifted() {
+        return rugsShiftedAge >= 0;
+    }
+
+    /** Perceived age when the rugs changed colour, or -1. */
+    public int rugsShiftedAge() {
+        return rugsShiftedAge;
+    }
+
+    public void markRugsShifted() {
+        rugsShiftedAge = houseAge;
+        setDirty();
+    }
+
+    public boolean isRoomRevealed() {
+        return roomRevealedAge >= 0;
+    }
+
+    /** Perceived age when the room between rooms appeared, or -1. */
+    public int roomRevealedAge() {
+        return roomRevealedAge;
+    }
+
+    /** Eligible mornings on which the room did not appear. */
+    public int roomMissedMornings() {
+        return roomMissedMornings;
+    }
+
+    public void noteRoomMissedMorning() {
+        roomMissedMornings++;
+        setDirty();
+    }
+
+    /** House-relative x of the room's door in the bedroom partition, or -1. */
+    public int roomDoorX() {
+        return roomDoorX;
+    }
+
+    public void markRoomRevealed(int doorX) {
+        roomRevealedAge = houseAge;
+        roomDoorX = doorX;
+        setDirty();
     }
 
     public void markImpossibleDoorRevealed() {
@@ -196,6 +272,11 @@ public final class HouseSavedData extends SavedData {
         interiorInitialized = false;
         visitCount = 0;
         layoutVersion = 0;
+        sleptInManor = false;
+        rugsShiftedAge = -1;
+        roomRevealedAge = -1;
+        roomMissedMornings = 0;
+        roomDoorX = -1;
         refreshOriginCache();
         setDirty();
     }

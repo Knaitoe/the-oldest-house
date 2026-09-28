@@ -3,27 +3,36 @@ package io.github.knaitoe.theoldesthouse.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import io.github.knaitoe.theoldesthouse.house.HouseBetweenRoom;
 import io.github.knaitoe.theoldesthouse.house.HouseBuilder;
+import io.github.knaitoe.theoldesthouse.house.HouseCalendar;
+import io.github.knaitoe.theoldesthouse.house.HouseDays;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensionMirror;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseInteriorInitializer;
 import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import io.github.knaitoe.theoldesthouse.house.HouseMirrorSyncEvents;
+import io.github.knaitoe.theoldesthouse.house.HouseProgression;
 import io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.house.HouseStageManager;
 import io.github.knaitoe.theoldesthouse.network.HouseSightlineStatePayload;
+import io.github.knaitoe.theoldesthouse.opening.NavidsonPhoto;
+import io.github.knaitoe.theoldesthouse.opening.OpeningSequence;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public final class HouseCommands {
@@ -55,6 +64,20 @@ public final class HouseCommands {
                                                 context.getSource(),
                                                 IntegerArgumentType.getInteger(context, "days")
                                         ))))
+                        .then(Commands.literal("day")
+                                .executes(context -> advanceDays(context.getSource(), 1))
+                                .then(Commands.argument("days", IntegerArgumentType.integer(1, 60))
+                                        .executes(context -> advanceDays(
+                                                context.getSource(),
+                                                IntegerArgumentType.getInteger(context, "days")
+                                        ))))
+                        .then(Commands.literal("reveal")
+                                .then(Commands.literal("rugs")
+                                        .executes(context -> reveal(context.getSource(), "rugs")))
+                                .then(Commands.literal("room")
+                                        .executes(context -> reveal(context.getSource(), "room")))
+                                .then(Commands.literal("hallway")
+                                        .executes(context -> reveal(context.getSource(), "hallway"))))
                         .then(Commands.literal("visit")
                                 .executes(HouseCommands::incrementVisit))
                         .then(Commands.literal("reconcile")
@@ -111,25 +134,99 @@ public final class HouseCommands {
 
     private static int status(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        HouseSavedData data = HouseSavedData.get(source.getServer());
+        MinecraftServer server = source.getServer();
+        HouseSavedData data = HouseSavedData.get(server);
 
         String housePosition = formatPosition(data.housePosition());
+        List<String> lines = new ArrayList<>();
+        lines.add("The Oldest House state | spawned=" + data.isSpawned() +
+                ", houseOrigin=" + housePosition +
+                ", age=" + data.houseAge() +
+                ", impossibleDoor=" + data.isImpossibleDoorRevealed() +
+                ", interiorInitialized=" + data.isInteriorInitialized() +
+                ", layout=v" + data.layoutVersion() +
+                (data.isSpawned() && !data.isCurrentLayout()
+                        ? " (outdated: reset and respawn for v" + HouseLayout.LAYOUT_VERSION + ")"
+                        : "") +
+                ", visits=" + data.visitCount() +
+                ", sleptInManor=" + data.sleptInManor());
+        lines.add("Day " + HouseCalendar.today(server) + " as the mod counts them (time of day "
+                + HouseCalendar.timeOfDay(server) + "). Mornings come from waking after a night's sleep, or /oldesthouse day.");
+        if (!data.isSpawned()) {
+            lines.add("The House appears through the opening sequence (see /oldesthouse opening status).");
+        } else if (data.visitCount() <= 0) {
+            lines.add("Perceived age stays at " + data.houseAge() + " until somebody enters the manor.");
+        }
+        lines.addAll(HouseProgression.describe(data));
+        if (source.getEntity() instanceof ServerPlayer player) {
+            lines.add(OpeningSequence.describeProgress(player));
+        }
 
-        source.sendSuccess(
-                () -> Component.literal(
-                        "The Oldest House state | spawned=" + data.isSpawned() +
-                                ", houseOrigin=" + housePosition +
-                                ", age=" + data.houseAge() +
-                                ", impossibleDoor=" + data.isImpossibleDoorRevealed() +
-                                ", interiorInitialized=" + data.isInteriorInitialized() +
-                                ", layout=v" + data.layoutVersion() +
-                                (data.isSpawned() && !data.isCurrentLayout()
-                                        ? " (outdated: reset and respawn for v" + HouseLayout.LAYOUT_VERSION + ")"
-                                        : "") +
-                                ", visits=" + data.visitCount()
-                ),
-                false
-        );
+        for (String line : lines) {
+            source.sendSuccess(() -> Component.literal(line), false);
+        }
+        return 1;
+    }
+
+    /**
+     * Passes whole nights, as the mod sees them: the clock jumps to the next
+     * dawn and every online player counts as having slept (in the manor if
+     * they are standing in it), then each morning runs exactly as a real one.
+     */
+    private static int advanceDays(CommandSourceStack source, int days) {
+        MinecraftServer server = source.getServer();
+        ServerLevel overworld = server.overworld();
+        List<ServerPlayer> players = server.getPlayerList().getPlayers();
+        int passed = 0;
+
+        for (int i = 0; i < days; i++) {
+            long dawn = (Math.floorDiv(overworld.getDayTime(), HouseCalendar.TICKS_PER_DAY) + 1L) * HouseCalendar.TICKS_PER_DAY;
+            overworld.setDayTime(dawn);
+            long day = HouseCalendar.today(server);
+            passed++;
+
+            boolean anyInManor = false;
+            for (ServerPlayer player : players) {
+                OpeningSequence.state(player).recordSleep(day);
+                anyInManor |= HouseDays.isInManor(player);
+            }
+            List<String> changes = new ArrayList<>(HouseProgression.onMorningWake(server, day, anyInManor));
+            for (ServerPlayer player : players) {
+                String before = OpeningSequence.state(player).stage().name();
+                OpeningSequence.checkMorning(player, OpeningSequence.state(player), day);
+                String after = OpeningSequence.state(player).stage().name();
+                if (!before.equals(after)) {
+                    changes.add(player.getGameProfile().getName() + "'s opening: "
+                            + before.toLowerCase() + " -> " + after.toLowerCase());
+                }
+            }
+
+            HouseSavedData data = HouseSavedData.get(server);
+            String summary = "Day " + day + (anyInManor ? " (slept in the manor)" : "")
+                    + ": House age " + data.houseAge()
+                    + (changes.isEmpty() ? "." : "; " + String.join("; ", changes) + ".");
+            source.sendSuccess(() -> Component.literal(summary), true);
+
+            boolean developing = false;
+            for (ServerPlayer player : players) {
+                developing |= NavidsonPhoto.isRunning(player.getUUID());
+            }
+            if (developing && i < days - 1) {
+                source.sendSuccess(() -> Component.literal(
+                        "Navidson is photographing the house; stopping here so the letter can arrive first."), false);
+                break;
+            }
+        }
+        return passed;
+    }
+
+    private static int reveal(CommandSourceStack source, String what) {
+        String error = HouseProgression.reveal(source.getServer(), what);
+        if (error != null) {
+            source.sendFailure(Component.literal(error));
+            return 0;
+        }
+        source.sendSuccess(() -> Component.literal("Revealed: " + what + "."), true);
         return 1;
     }
 
@@ -216,9 +313,11 @@ public final class HouseCommands {
         HouseMirrorSyncEvents.clearPending();
         HouseInteriorInitializer.cancel();
         HouseTransitionEvents.clearAll();
+        HouseBetweenRoom.clearAll();
         PacketDistributor.sendToAllPlayers(
                 new HouseSightlineStatePayload(BlockPos.ZERO, false)
         );
+        PacketDistributor.sendToAllPlayers(HouseBetweenRoom.doorPayload(data));
 
         source.sendSuccess(
                 () -> Component.literal(

@@ -131,6 +131,19 @@ public final class OpeningPlayerState {
         return true;
     }
 
+    /**
+     * Earlier versions counted days from the world clock, which
+     * {@code /time set} can wind back. Any stored day later than today is
+     * brought back to today so no step waits on a day that already passed.
+     */
+    public void clampToToday(long day) {
+        firstJoinDay = Math.min(firstJoinDay, day);
+        eligibleDay = Math.min(eligibleDay, day);
+        letterDay = Math.min(letterDay, day);
+        lastSleepDay = Math.min(lastSleepDay, day);
+        lastMorningDay = Math.min(lastMorningDay, day);
+    }
+
     public void noteFirstJoin(long day) {
         if (firstJoinDay < 0L) {
             firstJoinDay = day;

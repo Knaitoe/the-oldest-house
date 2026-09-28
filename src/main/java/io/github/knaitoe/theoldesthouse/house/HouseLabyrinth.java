@@ -13,8 +13,8 @@ import net.neoforged.neoforge.event.entity.player.PlayerSetSpawnEvent;
  * The labyrinth: everything past the threshold door at the end of the hall.
  *
  * The manor itself is an ordinary house, and its beds work. Past the
- * threshold (the impossible hallway, and every place reached through the
- * labyrinth, including the outside dimension) beds do not: sleeping quietly
+ * threshold (the impossible hallway, the room between rooms, and every place
+ * reached through the labyrinth, including the outside dimension) beds do not: sleeping quietly
  * fails and no spawn point is set. Later exceptions (Karen's room) belong
  * here too.
  */
@@ -24,7 +24,7 @@ public final class HouseLabyrinth {
 
     /** Whether {@code pos} in {@code dimension} lies past the labyrinth threshold. */
     public static boolean isBeyondThreshold(MinecraftServer server, ResourceKey<Level> dimension, BlockPos pos) {
-        if (dimension.equals(HouseDimensions.OUTSIDE)) {
+        if (dimension.equals(HouseDimensions.OUTSIDE) || dimension.equals(HouseDimensions.BETWEEN)) {
             return true;
         }
         if (!dimension.equals(HouseDimensions.INTERIOR)) {

@@ -41,7 +41,7 @@ Perceived age advances once per successful Minecraft morning **only after at lea
 
 Perceived age is persisted separately from ordinary world time so development commands can fast-forward or set it directly. `/oldesthouse advance [days]` exists specifically to exercise staged changes.
 
-The current prototype reveals the first impossible door at perceived age 3. That threshold is deliberately provisional and isolated in `HouseStageManager` so later pacing work does not require architectural changes.
+After the first visit the House changes on its mornings, in order (`HouseProgression`, tuned in `HouseConfig`): the rugs trade colours the morning after someone first sleeps in the manor; from the next morning the room between rooms has a rising daily chance of appearing (usually around day 3); three mornings after that, the door at the end of the hall opens onto the impossible hallway.
 
 ## Domestic phase
 
@@ -193,7 +193,7 @@ The initial dimension copy no longer rebuilds or clears a copied House. It write
 
 After initialization, player-driven changes in the shared visible region are mirrored at matching coordinates in both directions. The current synchronization layer queues break, placement, multi-placement, and right-click interactions and resolves them at the end of the server tick, after vanilla has committed the real block state. Neighbor positions are included so two-block doors and connected panes stay visually consistent.
 
-The rear impossible corridor is explicitly excluded from mirroring. At the provisional age threshold, the interior partition gains its door and a sealed 56-block corridor is constructed directly behind it in the House dimension. No secondary teleport is used. Because the Overworld structure is fixed, rear-facing and rear-side windows are intentionally omitted from the authored facade so ordinary windows never gain a sightline to interior-only geometry.
+The rear impossible corridor is explicitly excluded from mirroring. Three mornings after the room between rooms appears, the interior partition at the end of the hall gains its door and a sealed 56-block corridor is constructed directly behind it in the House dimension. No secondary teleport is used. Because the Overworld structure is fixed, rear-facing and rear-side windows are intentionally omitted from the authored facade so ordinary windows never gain a sightline to interior-only geometry.
 
 The custom transition presentation now has a minimum visible duration of 1.65 seconds. Its purpose is not to pretend the dimension handoff takes no time; it turns that unavoidable pause into a deliberate door-focused beat instead of an unreadably fast loading flash.
 

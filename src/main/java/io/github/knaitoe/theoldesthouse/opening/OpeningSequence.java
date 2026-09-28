@@ -1,6 +1,8 @@
 package io.github.knaitoe.theoldesthouse.opening;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.house.HouseCalendar;
+import io.github.knaitoe.theoldesthouse.house.HouseDays;
 import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.house.HouseSpawnManager;
@@ -38,9 +40,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * receives the next step on the first morning they are home.
  */
 public final class OpeningSequence {
+    /** The last tick of the morning (inclusive, so {@code /time set day} is still morning). */
     public static final long MORNING_END = 1000L;
 
-    private static final long WAKE_WINDOW = 1500L;
     private static final int PLAYER_CHECK_INTERVAL = 20;
 
     private OpeningSequence() {
@@ -59,8 +61,9 @@ public final class OpeningSequence {
         return player.getData(OpeningRegistry.PLAYER_STATE);
     }
 
+    /** Today, as the mod counts days (see {@link HouseCalendar}). */
     public static long currentDay(MinecraftServer server) {
-        return server.overworld().getDayTime() / 24000L;
+        return HouseCalendar.today(server);
     }
 
     // ------------------------------------------------------------------
@@ -68,6 +71,9 @@ public final class OpeningSequence {
 
     private static void onServerTick(ServerTickEvent.Post event) {
         MinecraftServer server = event.getServer();
+        // Keeps the day count in step with every change of the clock,
+        // including ones made by commands between player checks.
+        HouseCalendar.today(server);
         NavidsonPhoto.tick(server);
 
         int tick = server.getTickCount();
@@ -84,16 +90,11 @@ public final class OpeningSequence {
         }
     }
 
-    /** A completed sleep: waking in the post-night morning window, once per day. */
+    /** A completed sleep (at home or in the manor), once per day. */
     private static void onPlayerWakeUp(PlayerWakeUpEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || !player.serverLevel().dimension().equals(Level.OVERWORLD)) {
-            return;
+        if (event.getEntity() instanceof ServerPlayer player && HouseDays.isMorningWake(player)) {
+            state(player).recordSleep(currentDay(player.server));
         }
-        long dayTime = player.serverLevel().getDayTime();
-        if (Math.floorMod(dayTime, 24000L) > WAKE_WINDOW) {
-            return;
-        }
-        state(player).recordSleep(dayTime / 24000L);
     }
 
     /** Counts uses of ordinary doors near the player's respawn point. */
@@ -135,8 +136,8 @@ public final class OpeningSequence {
     private static void tickPlayer(ServerPlayer player) {
         OpeningPlayerState state = state(player);
         ServerLevel overworld = player.server.overworld();
-        long dayTime = overworld.getDayTime();
-        long day = dayTime / 24000L;
+        long day = currentDay(player.server);
+        state.clampToToday(day);
         state.noteFirstJoin(day);
 
         if (player.serverLevel() != overworld) {
@@ -155,8 +156,21 @@ public final class OpeningSequence {
             );
         }
 
+        checkMorning(player, state, day);
+    }
+
+    /**
+     * The once-a-day part of a player's opening: their morning step if it is
+     * morning and they are home, then whether they have settled in. Runs
+     * from the player tick and from {@code /oldesthouse day}.
+     */
+    public static void checkMorning(ServerPlayer player, OpeningPlayerState state, long day) {
+        ServerLevel overworld = player.server.overworld();
+        if (player.serverLevel() != overworld) {
+            return;
+        }
         Optional<BlockPos> bed = Doorsteps.bedPosition(player);
-        if (Math.floorMod(dayTime, 24000L) < MORNING_END
+        if (HouseCalendar.timeOfDay(player.server) <= MORNING_END
                 && state.lastMorningDay() != day
                 && bed.isPresent()
                 && overworld.isPositionEntityTicking(bed.get())) {
@@ -346,6 +360,29 @@ public final class OpeningSequence {
                 return "the opening sequence is complete";
             }
         }
+    }
+
+    /** Where a player is in the opening, and what the next step waits on. */
+    public static String describeProgress(ServerPlayer player) {
+        OpeningPlayerState state = state(player);
+        String name = player.getGameProfile().getName() + "'s opening: ";
+        return switch (state.stage()) {
+            case NONE -> {
+                int nights = OpeningConfig.MIN_NIGHTS_SLEPT.getAsInt();
+                int days = OpeningConfig.MIN_DAYS_SINCE_JOIN.getAsInt();
+                long since = state.firstJoinDay() < 0L ? 0L : currentDay(player.server) - state.firstJoinDay();
+                yield name + "settling in (bed " + (Doorsteps.bedPosition(player).isPresent() ? "set" : "not set")
+                        + ", nights slept " + Math.min(state.nightsSlept(), nights) + "/" + nights
+                        + ", days since joining " + Math.min(since, days) + "/" + days
+                        + "). The letter comes the morning after all three are met.";
+            }
+            case ELIGIBLE -> name + "settled in; Navidson's letter arrives next morning.";
+            case LETTER_DELIVERED -> name + "letter delivered; Hillary arrives on the doorstep next morning.";
+            case HILLARY_ARRIVED -> state.enteredHouse()
+                    ? name + "complete (entered the manor)."
+                    : name + "Hillary is waiting to lead the way to the manor's front door.";
+            case ENTERED -> name + "complete (entered the manor).";
+        };
     }
 
     /** A new Hillary on the doorstep, replacing any earlier one. Returns where she is, or null. */

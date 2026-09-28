@@ -98,22 +98,20 @@ public final class HouseMirrorSyncEvents {
         boolean resolved = resolver != null && resolver.resolve();
         BlockPos face = event.getFaceOffsetPos();
 
-        if (level.dimension().equals(HouseDimensions.INTERIOR) && data.isImpossibleDoorRevealed()) {
-            boolean touchesProtected = HouseImpossibleHallway.isProtectedStructureBlock(origin, face)
-                    || HouseImpossibleHallway.isProtectedStructureBlock(origin, face.relative(direction));
-            if (!touchesProtected && resolved) {
-                for (BlockPos pos : resolver.getToPush()) {
-                    if (HouseImpossibleHallway.isProtectedStructureBlock(origin, pos)
-                            || HouseImpossibleHallway.isProtectedStructureBlock(origin, pos.relative(direction))) {
-                        touchesProtected = true;
-                        break;
-                    }
+        boolean touchesProtected = protectsImpossibleStructure(level, data, origin, face)
+                || protectsImpossibleStructure(level, data, origin, face.relative(direction));
+        if (!touchesProtected && resolved) {
+            for (BlockPos pos : resolver.getToPush()) {
+                if (protectsImpossibleStructure(level, data, origin, pos)
+                        || protectsImpossibleStructure(level, data, origin, pos.relative(direction))) {
+                    touchesProtected = true;
+                    break;
                 }
             }
-            if (touchesProtected) {
-                event.setCanceled(true);
-                return;
-            }
+        }
+        if (touchesProtected) {
+            event.setCanceled(true);
+            return;
         }
 
         // Queue source and destination cells before movement. Post-tick
@@ -278,6 +276,11 @@ public final class HouseMirrorSyncEvents {
             BlockPos origin,
             BlockPos pos
     ) {
+        if (HouseBetweenRoom.isProtectedHousePosition(data, origin, pos)) {
+            // The door to the room between rooms and the wall around it, on
+            // both sides of the mirror.
+            return true;
+        }
         return level.dimension().equals(HouseDimensions.INTERIOR)
                 && data.isImpossibleDoorRevealed()
                 && HouseImpossibleHallway.isProtectedStructureBlock(origin, pos);
