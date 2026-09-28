@@ -42,10 +42,6 @@ public final class HouseCommands {
                                 .executes(HouseCommands::spawn))
                         .then(Commands.literal("status")
                                 .executes(HouseCommands::status))
-                        .then(Commands.literal("eligible")
-                                .executes(HouseCommands::markEligible))
-                        .then(Commands.literal("ineligible")
-                                .executes(HouseCommands::markIneligible))
                         .then(Commands.literal("age")
                                 .then(Commands.argument("days", IntegerArgumentType.integer(0))
                                         .executes(context -> setAge(
@@ -118,16 +114,10 @@ public final class HouseCommands {
         HouseSavedData data = HouseSavedData.get(source.getServer());
 
         String housePosition = formatPosition(data.housePosition());
-        String anchorPosition = formatPosition(data.anchorPosition());
 
         source.sendSuccess(
                 () -> Component.literal(
-                        "The Oldest House state | settlementNights=" + data.settlementNights() +
-                                ", anchor=" + anchorPosition +
-                                ", eligible=" + data.isEligible() +
-                                ", eligibleSinceDay=" + data.eligibleSinceDay() +
-                                ", spawnChance=" + data.spawnChancePercent() + "%" +
-                                ", spawned=" + data.isSpawned() +
+                        "The Oldest House state | spawned=" + data.isSpawned() +
                                 ", houseOrigin=" + housePosition +
                                 ", age=" + data.houseAge() +
                                 ", impossibleDoor=" + data.isImpossibleDoorRevealed() +
@@ -139,36 +129,6 @@ public final class HouseCommands {
                                 ", visits=" + data.visitCount()
                 ),
                 false
-        );
-        return 1;
-    }
-
-    private static int markEligible(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context)
-            throws CommandSyntaxException {
-        CommandSourceStack source = context.getSource();
-        ServerPlayer player = source.getPlayerOrException();
-        HouseSavedData data = HouseSavedData.get(source.getServer());
-
-        long currentDay = source.getServer().overworld().getDayTime() / 24000L;
-        data.markEligible(player.blockPosition(), currentDay);
-
-        source.sendSuccess(
-                () -> Component.literal(
-                        "Debug override: The Oldest House eligibility enabled at the player's current location. Spawn chance reset to 5%."
-                ),
-                true
-        );
-        return 1;
-    }
-
-    private static int markIneligible(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
-        CommandSourceStack source = context.getSource();
-        HouseSavedData data = HouseSavedData.get(source.getServer());
-        data.markIneligible();
-
-        source.sendSuccess(
-                () -> Component.literal("The Oldest House eligibility disabled."),
-                true
         );
         return 1;
     }
