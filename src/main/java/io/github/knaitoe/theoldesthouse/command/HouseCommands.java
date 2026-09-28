@@ -65,6 +65,7 @@ public final class HouseCommands {
                                 .executes(HouseCommands::reconcileMirror))
                         .then(Commands.literal("reset")
                                 .executes(HouseCommands::reset))
+                        .then(OpeningCommands.build())
         );
     }
 
