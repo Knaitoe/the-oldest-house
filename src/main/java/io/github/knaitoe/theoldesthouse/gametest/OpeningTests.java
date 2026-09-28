@@ -2,6 +2,9 @@ package io.github.knaitoe.theoldesthouse.gametest;
 
 import com.mojang.authlib.GameProfile;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
+import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import io.github.knaitoe.theoldesthouse.opening.DeliveredItemEntity;
 import io.github.knaitoe.theoldesthouse.opening.Doorsteps;
 import io.github.knaitoe.theoldesthouse.opening.EntranceDoorBlock;
@@ -29,10 +32,12 @@ import net.minecraft.world.entity.animal.WolfVariants;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.WrittenBookContent;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.WallTorchBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -314,9 +319,19 @@ public final class OpeningTests {
         level.setBlock(bed, bedState.setValue(BedBlock.PART, BedPart.HEAD), Block.UPDATE_CLIENTS);
         level.setBlock(bed.south(), bedState.setValue(BedBlock.PART, BedPart.FOOT), Block.UPDATE_CLIENTS);
 
+        // Torches on the outside of the south wall: that wall is no longer plain.
+        for (int x = 3; x <= 9; x++) {
+            level.setBlock(base.offset(x, 2, 11), Blocks.WALL_TORCH.defaultBlockState()
+                    .setValue(WallTorchBlock.FACING, Direction.SOUTH), Block.UPDATE_CLIENTS);
+        }
+
         UUID owner = UUID.randomUUID();
         List<EntranceDoorPlacer.Plan> plans = EntranceDoorPlacer.findWallPlans(level, bed, 12, owner, pos -> false);
         helper.assertTrue(!plans.isEmpty(), "no wall position found in a plain room");
+        for (EntranceDoorPlacer.Plan candidate : plans) {
+            helper.assertTrue(candidate.lower().getZ() != base.getZ() + 10 || candidate.lower().getY() != base.getY() + 1,
+                    "door planned behind the torches at " + candidate.lower());
+        }
         EntranceDoorPlacer.Plan plan = plans.get(0);
         BlockPos lower = plan.lower();
         helper.assertTrue(level.getBlockState(lower).is(Blocks.OAK_PLANKS), "door planned outside the wall: " + lower);
@@ -392,6 +407,25 @@ public final class OpeningTests {
         helper.assertTrue(record != null && record.freestanding() && record.replaced().size() == 9, "freestanding door not recorded");
         OpeningSequence.removeEntranceDoor(level.getServer(), owner);
         helper.assertTrue(level.getBlockState(lower).isAir() && level.getBlockState(lower.above(2)).isAir(), "frame not removed");
+        helper.succeed();
+    }
+
+    // ------------------------------------------------------------------
+    // Beds and the labyrinth threshold
+
+    @GameTest(template = "empty")
+    public static void bedsStopWorkingPastTheLabyrinthThreshold(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(100_000, 64, 100_000);
+        helper.assertTrue(!HouseLabyrinth.isBeyondThreshold(origin, origin.offset(HouseLayout.AXIS_X, 1, HouseLayout.THRESHOLD_Z - 2)),
+                "a bed in the hall should work");
+        helper.assertTrue(!HouseLabyrinth.isBeyondThreshold(origin, origin.offset(4, 7, 4)),
+                "a bed in an upstairs bedroom should work");
+        helper.assertTrue(HouseLabyrinth.isBeyondThreshold(origin, origin.offset(HouseLayout.AXIS_X, 1, HouseLayout.THRESHOLD_Z + 5)),
+                "a bed in the impossible hallway should not work");
+        helper.assertTrue(HouseLabyrinth.isBeyondThreshold(helper.getLevel().getServer(), HouseDimensions.OUTSIDE, BlockPos.ZERO),
+                "the outside dimension lies past the threshold");
+        helper.assertTrue(!HouseLabyrinth.isBeyondThreshold(helper.getLevel().getServer(), Level.OVERWORLD, origin),
+                "the Overworld is not the labyrinth");
         helper.succeed();
     }
 

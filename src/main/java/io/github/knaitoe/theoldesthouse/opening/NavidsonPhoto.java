@@ -17,6 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LightBlock;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Navidson's snapshot of the player's house, "from our porch last night".
@@ -249,6 +250,20 @@ public final class NavidsonPhoto {
     private void finish(Result result) {
         phase = Phase.DONE;
         copy.releaseTickets();
+        if (camera != null && result.pixels() != null) {
+            // Remember where the photo was taken, for /oldesthouse opening copy.
+            float yaw = (float) Math.toDegrees(Math.atan2(-camera.fx(), camera.fz()));
+            float pitch = (float) -Math.toDegrees(Math.asin(Math.max(-1.0D, Math.min(1.0D, camera.fy()))));
+            OpeningWorldData.get(copy.target().getServer()).putPhoto(player, new OpeningWorldData.PhotoRecord(
+                    copy.target().dimension().location(),
+                    copy.targetMin(),
+                    new Vec3(camera.x(), camera.y(), camera.z()),
+                    yaw,
+                    pitch,
+                    window,
+                    carved
+            ));
+        }
         onDone.accept(result);
     }
 }

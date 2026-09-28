@@ -20,6 +20,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -35,6 +36,7 @@ import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -132,7 +134,35 @@ public final class EntranceDoorPlacer {
         if (!isFloor(level, front.below())) {
             return false;
         }
+        if (!isPlainWall(level, lower)) {
+            return false;
+        }
         return !isReserved(level, lower, open, owner);
+    }
+
+    /**
+     * "Placed so it never breaks anything they built": nothing may rest on,
+     * hang from or connect to either wall block. Every neighbour (except the
+     * floor beneath) must be air or a full block, and no painting or item
+     * frame may hang on either face. Torches, signs, ladders, buttons, panes,
+     * fences, rails, carpets and the like all rule a wall out.
+     */
+    public static boolean isPlainWall(ServerLevel level, BlockPos lower) {
+        BlockPos upper = lower.above();
+        for (BlockPos half : new BlockPos[]{lower, upper}) {
+            for (Direction direction : Direction.values()) {
+                BlockPos neighbour = half.relative(direction);
+                if (neighbour.equals(lower) || neighbour.equals(upper) || neighbour.equals(lower.below())) {
+                    continue;
+                }
+                BlockState state = level.getBlockState(neighbour);
+                if (!state.isAir() && !state.isCollisionShapeFullBlock(level, neighbour)) {
+                    return false;
+                }
+            }
+        }
+        AABB faces = new AABB(lower).minmax(new AABB(upper)).inflate(0.1D);
+        return level.getEntitiesOfClass(HangingEntity.class, faces).isEmpty();
     }
 
     /**

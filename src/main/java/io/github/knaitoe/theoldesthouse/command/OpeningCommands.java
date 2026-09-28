@@ -16,7 +16,10 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
@@ -35,9 +38,12 @@ public final class OpeningCommands {
     public static LiteralArgumentBuilder<CommandSourceStack> build() {
         return Commands.literal("opening")
                 .then(withTarget("status", OpeningCommands::status))
+                .then(withTarget("advance", OpeningCommands::advance))
                 .then(withTarget("eligible", OpeningCommands::eligible))
                 .then(withTarget("letter", OpeningCommands::letter))
                 .then(withTarget("photo", OpeningCommands::photo))
+                .then(withTarget("copy", OpeningCommands::visitCopy))
+                .then(withTarget("hillary", OpeningCommands::hillary))
                 .then(withTarget("door", OpeningCommands::door))
                 .then(withTarget("reset", OpeningCommands::reset));
     }
@@ -73,8 +79,54 @@ public final class OpeningCommands {
                 + ", hillary=" + (state.hillaryUuid() == null ? "none" : state.hillaryUuid())
                 + ", door=" + (door == null ? "none" : format(door.lower()) + " opening " + door.open().getName()
                         + (door.freestanding() ? " (freestanding)" : ""))
-                + (pending == null ? "" : ", doorPending=" + pending.plans() + " plan(s)");
+                + (pending == null ? "" : ", doorPending=" + pending.plans() + " plan(s)")
+                + photoSummary(OpeningWorldData.get(source.getServer()).photoOf(player.getUUID()));
         source.sendSuccess(() -> Component.literal(text), false);
+        return 1;
+    }
+
+    private static String photoSummary(@Nullable OpeningWorldData.PhotoRecord photo) {
+        if (photo == null) {
+            return ", photo=none";
+        }
+        return ", photo=copy at " + format(photo.copyMin()) + " in " + photo.dimension()
+                + (photo.window() == null ? "" : (photo.windowCarved() ? ", window cut at " : ", window lit at ") + format(photo.window()));
+    }
+
+    /** The next step, as the next morning would run it (the letter waits for its photo; the door for you to look away). */
+    private static int advance(CommandSourceStack source, ServerPlayer player) {
+        String result = OpeningSequence.advance(player);
+        source.sendSuccess(() -> Component.literal(player.getGameProfile().getName() + ": " + result + "."), true);
+        return 1;
+    }
+
+    /** Puts you where Navidson's camera stood, looking at the altered copy of the player's house. */
+    private static int visitCopy(CommandSourceStack source, ServerPlayer player) throws CommandSyntaxException {
+        OpeningWorldData.PhotoRecord photo = OpeningWorldData.get(source.getServer()).photoOf(player.getUUID());
+        if (photo == null) {
+            source.sendFailure(Component.literal("No photo has been taken of " + player.getGameProfile().getName()
+                    + "'s house yet; try /oldesthouse opening photo."));
+            return 0;
+        }
+        ServerLevel level = source.getServer().getLevel(ResourceKey.create(Registries.DIMENSION, photo.dimension()));
+        if (level == null) {
+            source.sendFailure(Component.literal("The copy's dimension " + photo.dimension() + " is not loaded."));
+            return 0;
+        }
+        ServerPlayer caller = source.getPlayerOrException();
+        caller.teleportTo(level, photo.camera().x, photo.camera().y, photo.camera().z, photo.yaw(), photo.pitch());
+        source.sendSuccess(() -> Component.literal("Standing where Navidson's camera stood, in " + photo.dimension() + "."), false);
+        return 1;
+    }
+
+    /** A new Hillary on the doorstep, replacing any earlier one. */
+    private static int hillary(CommandSourceStack source, ServerPlayer player) {
+        BlockPos at = OpeningSequence.respawnHillary(player);
+        if (at == null) {
+            source.sendFailure(Component.literal("No bed or doorstep for Hillary near " + player.getGameProfile().getName() + "."));
+            return 0;
+        }
+        source.sendSuccess(() -> Component.literal("Hillary is on " + player.getGameProfile().getName() + "'s doorstep at " + format(at) + "."), true);
         return 1;
     }
 
