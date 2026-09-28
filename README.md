@@ -4,45 +4,43 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.3.0` adds the per-player opening sequence (Navidson's letter, Hillary and the door; see [docs/OPENING.md](docs/OPENING.md)) to the first stable lifecycle and the rebuilt domestic manor:
+Version `0.3.1` revises the per-player opening sequence so the ordinary manor, not the player's home, is the first architectural relationship with the House:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
 - A furnished, asymmetric Tudor manor of several distinct masses under independent, intersecting roofs, with a fixed exterior (see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)).
-- **Automatic settlement-based eligibility:** five successful overnight sleeps within the same 32-block home area make the world eligible for The Oldest House.
-- Eligibility does **not** spawn The Oldest House immediately.
-- The hidden spawn chance begins at **5%**.
-- After each eligible night in which The Oldest House does not appear, the next night's chance randomly **rises by 2-5 percentage points** or **falls by 1-2 points**, with a floor of **5%** and ceiling of **100%**.
-- Automatic placement searches for empty, reasonably flat ground near the established settlement and will not deliberately bulldoze player structures.
-- The Oldest House now tracks a persistent perceived age once it has appeared.
-- At the provisional test threshold of age **3**, an ordinary-looking door appears at the end of the rear hall.
+- **Settling in:** a bed respawn point, two completed sleeps and three in-game days since joining make that player's opening eligible.
+- **Morning 1:** the Navidsons move in nearby. The manor is placed with the terrain-aware site search, then Navidson photographs a frozen copy of the player's settlement from the real manor-to-home bearing. The visible copied facade gets one lit upper window, invented in the copy if necessary. The real base is never altered.
+- Will Navidson's letter and the photograph are left at the player's familiar doorstep.
+- **Morning 2:** Hillary appears at that doorstep and tries to lead the player over ordinary Overworld terrain to the Navidsons' manor. She waits if they fall behind and stops outside the front door.
+- **No impossible doorway is placed in the player's home.** The retired 0.3.0 entrance-door block, placement code, state, assets and debug controls have been removed.
+- The ordinary authored front door is the player's first entrance. Hillary refuses to cross it.
+- The Oldest House's perceived age advances only after at least one real manor entry. Ignoring the invitation cannot reveal the impossible threshold off-screen.
+- At the provisional test threshold of perceived age **3**, an ordinary-looking door appears at the far end of the central hall.
 - The usable domestic interior lives in The Oldest House dimension at matching coordinates, with nearby Overworld scenery mirrored outside its windows.
 - The age-gated rear door opens directly into interior-only impossible architecture; there is no second teleport behind it.
-- Operator-only development commands for forcing, aging, and inspecting The Oldest House state.
+- Operator-only development commands exist for opening-sequence testing, forcing/aging the House, and mirror inspection.
 - The exterior is generated once and then left alone. Future impossible space belongs behind it, not in a morphing facade.
 - No mixins.
 
-The actual interior dimension of The Oldest House, modular graph, nightly interior growth, navigation anomalies, explorer notes, Mother of Lost Things, dog, and Minotaur are intentionally **not** faked into this first milestone. Their design is tracked in [docs/DESIGN.md](docs/DESIGN.md).
+The modular room graph, navigation anomalies, explorer notes, Mother of Strays, deeper Hillary behavior and Minotaur progression are tracked in [docs/DESIGN_DOCUMENT.md](docs/DESIGN_DOCUMENT.md).
 
-## Natural spawn lifecycle
+## Opening lifecycle
 
-1. Sleep through five nights while remaining within the same 32-block settlement area.
-2. On the fifth counted morning, that settlement becomes the House anchor and the world becomes eligible.
-3. The hidden appearance chance is initialized to 5%.
-4. Nothing can appear on that same morning.
-5. Starting the next morning, The Oldest House makes one hidden daily appearance roll using the current chance.
-6. If The Oldest House does not appear, the chance for the next eligible morning randomly changes:
-   - 50% chance to increase by 2-5 percentage points.
-   - 50% chance to decrease by 1-2 percentage points.
-   - never below 5%; never above 100%.
-7. When a roll succeeds and a suitable empty site is found 32-64 blocks from the settlement anchor, The Oldest House is placed.
-8. No toast, chat message, advancement, or horror sting announces this.
+1. Establish an Overworld bed respawn point and complete the configured settling-in requirements.
+2. On the next handled morning, the opening places The Oldest House at the best safe site 32-64 blocks from the player's home if it does not already exist.
+3. Navidson's photograph preserves the actual bearing from the manor's porch toward the player's home. Camera distance may be compressed to fit the captured copy, and framing may shift only slightly on that same side.
+4. The letter and photograph arrive at the player's most familiar doorstep.
+5. On the following handled morning, Hillary appears there and begins guiding toward the manor.
+6. The player physically reaches the Navidsons' ordinary front door and enters the domestic manor. Only then may perceived House age begin advancing.
 
-The asymmetric step sizes mean the probability tends to drift upward over time, but individual nights can still make the House less likely. It feels less like a countdown and more like something circling the settlement.
+There is no independent hidden appearance roll anymore. The opening sequence owns automatic House appearance; `HouseSpawnManager.ensureSpawnedNear` still owns the terrain-aware site search.
 
 ## Perceived House age
 
-Once The Oldest House has appeared, each successful new morning advances its perceived age by one day. The value is stored in world data and is intended to drive future staged changes such as the first impossible door, deeper architecture, navigation anomalies, and other progression.
+After the manor has actually been entered at least once, each successful new morning advances its perceived age by one day. The value is stored in world data and drives staged changes such as the first impossible door, deeper architecture, navigation anomalies and later progression.
+
+If the House has appeared but nobody has entered it, morning wake events leave perceived age unchanged. This preserves the intended domestic-familiarity phase.
 
 For testing, `/oldesthouse advance` fast-forwards this value without changing the world's actual time.
 
@@ -77,24 +75,21 @@ Commands require permission level 2.
 | Command | Purpose |
 | --- | --- |
 | `/oldesthouse spawn` | Force-spawn the test house about 36 blocks in front of the player. |
-| `/oldesthouse status` | Show persistent The Oldest House and settlement state, including hidden spawn chance, interior initialization and layout version. |
-| `/oldesthouse eligible` | Debug override: mark the current location eligible immediately and reset chance to 5%. |
-| `/oldesthouse ineligible` | Clear eligibility without removing an already spawned house. |
+| `/oldesthouse status` | Show persistent House position, age, threshold state, interior initialization, layout version and visits. |
 | `/oldesthouse age <days>` | Set The Oldest House perceived age to an exact value. |
 | `/oldesthouse advance` | Advance The Oldest House perceived age by one day. |
 | `/oldesthouse advance <days>` | Fast-forward The Oldest House perceived age by the supplied number of days. |
 | `/oldesthouse visit` | Increment the stored visit count. |
 | `/oldesthouse reconcile` | Force an authoritative House-dimension to Overworld reconciliation and report how many positions changed. |
 | `/oldesthouse reset` | Reset persistent The Oldest House state. This does **not** erase blocks already placed in the world. |
-| `/oldesthouse opening status [player]` | Show a player's opening-sequence stage, sleeps, bed, letter/door days, Hillary, door and last photo. |
-| `/oldesthouse opening advance [player]` | Run the player's next step now, exactly as their next morning would: the letter waits for its photo, and the door waits until they look away. |
-| `/oldesthouse opening eligible [player]` | Skip the settling-in requirements; the letter arrives on the next morning (day time 0-1000). |
+| `/oldesthouse opening status [player]` | Show a player's opening stage, sleeps, bed, timing, Hillary, first-entry state and last photo. |
+| `/oldesthouse opening advance [player]` | Run the player's next opening step now. |
+| `/oldesthouse opening eligible [player]` | Skip the settling-in requirements; the letter arrives on the next handled morning. |
 | `/oldesthouse opening letter [player]` | Take the photo and deliver Navidson's letter and snapshot immediately. |
-| `/oldesthouse opening photo [player]` | Photograph the player's house again (copying it to the outside dimension) and hand you the snapshot. |
-| `/oldesthouse opening copy [player]` | Stand where Navidson's camera stood, in the outside dimension, looking at the altered copy of the player's house. |
+| `/oldesthouse opening photo [player]` | Photograph the player's house again and hand you the snapshot. |
+| `/oldesthouse opening copy [player]` | Stand where Navidson's camera stood in the outside dimension. |
 | `/oldesthouse opening hillary [player]` | Put a new Hillary on the player's doorstep, replacing any earlier one. |
-| `/oldesthouse opening door [player]` | Run morning two immediately: Hillary on the doorstep and the door placed at once (even in view). |
-| `/oldesthouse opening reset [player]` | Clear a player's opening progress and remove their door, restoring the wall it replaced. |
+| `/oldesthouse opening reset [player]` | Clear that player's opening progress. |
 
 ### Important
 
@@ -355,3 +350,15 @@ Everything before a player first enters the House, run per player (see [docs/OPE
 - **Hillary and the House:** if she follows her owner in, she runs a few blocks down the hall; out of sight (or after two seconds) she is taken out of the House and set down, sitting, on her doorstep.
 - **Beds and the labyrinth:** beds work throughout the manor. Past the labyrinth threshold (the door at the end of the hall, the impossible hallway, and every place reached through the labyrinth, including the outside dimension) sleeping quietly fails and no spawn point is set.
 - The adjusted design document is in [docs/DESIGN_DOCUMENT.md](docs/DESIGN_DOCUMENT.md).
+
+### 0.3.1 opening continuity revision
+
+The opening has been revised so the player's own home remains ordinary.
+
+- The custom entrance door, its wall-placement/freestanding fallback logic, world records, registry entries, resources, immunity tags, config options and GameTests have been removed.
+- Hillary now leads the recipient from their doorstep to the actual Navidsons' manor, waits when they fall behind, and stops outside the authored front door rather than entering.
+- The old hidden settlement-night / appearance-roll lifecycle has been retired. The per-player opening is now the sole automatic appearance path; the terrain-aware safe-site search remains shared infrastructure.
+- Perceived House age is gated on real manor entry, preventing the age-3 impossible threshold from appearing while the invitation is being ignored.
+- Navidson's photograph now treats the real porch-to-home bearing as a hard relationship. Framing can shift only slightly on that side, while the copied facade can always receive a lit upper window without modifying the real home.
+- Old 0.3.0 `door_placed` player stages migrate to `HILLARY_ARRIVED`; obsolete door/return NBT is ignored.
+
