@@ -100,7 +100,13 @@ public final class HouseTransitionEvents {
             // villagers or other mobs before the player disappears across the
             // dimension seam so nothing is visibly stranded in an inaccessible
             // duplicate of the room.
-            HouseProxyEntityEvacuation.evacuateAll(player.getServer().overworld(), origin);
+            ServerLevel overworld = player.getServer().overworld();
+            HouseProxyEntityEvacuation.evacuateAll(overworld, origin);
+
+            // Seed the visual exterior-entity layer before the player changes
+            // dimensions. Their first frame inside can therefore still show
+            // Hillary, villagers, mobs, etc. outside at matching coordinates.
+            HouseExteriorEntityMirror.syncNow(overworld, destination, origin);
         }
 
         teleportMatchingCoordinates(player, destination);
