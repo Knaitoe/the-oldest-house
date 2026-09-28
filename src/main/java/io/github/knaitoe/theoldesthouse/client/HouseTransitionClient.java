@@ -51,6 +51,19 @@ public final class HouseTransitionClient {
                 HouseDimensions.INTERIOR,
                 (supplier, reason) -> createScreen(supplier, reason, false)
         );
+
+        // The door to the room between rooms, and back out.
+        event.registerConditionalEffect(
+                HouseDimensions.INTERIOR,
+                HouseDimensions.BETWEEN,
+                (supplier, reason) -> createScreen(supplier, reason, false)
+        );
+
+        event.registerConditionalEffect(
+                HouseDimensions.BETWEEN,
+                HouseDimensions.INTERIOR,
+                (supplier, reason) -> createScreen(supplier, reason, true)
+        );
     }
 
     @SubscribeEvent

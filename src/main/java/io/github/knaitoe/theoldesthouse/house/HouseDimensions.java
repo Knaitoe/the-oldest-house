@@ -21,6 +21,17 @@ public final class HouseDimensions {
             ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "outside")
     );
 
+    /**
+     * The space between rooms: an empty void holding rooms the manor has no
+     * room for, at the same coordinates as the part of the house they open
+     * from. A door in the manor leads here without the player's position
+     * changing, exactly as the front door leads into the interior.
+     */
+    public static final ResourceKey<Level> BETWEEN = ResourceKey.create(
+            Registries.DIMENSION,
+            ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "between")
+    );
+
     private HouseDimensions() {
     }
 }

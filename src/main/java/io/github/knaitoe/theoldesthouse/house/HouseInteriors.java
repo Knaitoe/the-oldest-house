@@ -145,7 +145,7 @@ final class HouseInteriors {
         c.set(4, 1, 5, stairs(Blocks.DARK_OAK_STAIRS, Direction.NORTH));
         c.set(4, 1, 10, stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH));
         c.fill(5, 1, 7, 5, 1, 8, slab(Blocks.SPRUCE_SLAB, SlabType.BOTTOM));
-        rug(c, 4, 1, 6, 6, 9, Blocks.BROWN_CARPET.defaultBlockState());
+        rug(c, HouseRugs.GREAT_ROOM);
         c.set(7, 4, 8, lantern(true));
 
         // Deep window seat in the bay, with its own lantern.
@@ -323,7 +323,7 @@ final class HouseInteriors {
         c.set(3, 1, 25, barrel(Direction.NORTH));
         c.set(3, 2, 25, Blocks.POTTED_CACTUS.defaultBlockState());
 
-        rug(c, 5, 1, 21, 8, 23, Blocks.RED_CARPET.defaultBlockState());
+        rug(c, HouseRugs.STUDY);
 
         c.set(7, 5, 18, lantern(true));
         c.set(4, 5, 23, lantern(true));
@@ -440,7 +440,7 @@ final class HouseInteriors {
         c.set(5, 8, 8, candle(1));
 
         c.set(12, 7, 7, chest(Direction.WEST));
-        rug(c, 4, 7, 3, 9, 5, Blocks.RED_CARPET.defaultBlockState());
+        rug(c, HouseRugs.PRINCIPAL_BEDROOM);
         c.set(7, 10, 5, lantern(true));
     }
 
@@ -465,7 +465,7 @@ final class HouseInteriors {
         c.set(11, 7, 14, Blocks.SPRUCE_FENCE.defaultBlockState());
         c.set(11, 8, 14, lantern(false));
 
-        rug(c, 4, 7, 11, 9, 12, Blocks.LIGHT_BLUE_CARPET.defaultBlockState());
+        rug(c, HouseRugs.LITERARY_BEDROOM);
         c.set(6, 10, 12, lantern(true));
     }
 
@@ -637,6 +637,10 @@ final class HouseInteriors {
     // ------------------------------------------------------------------
     // Helpers
     // ------------------------------------------------------------------
+
+    private static void rug(HouseCanvas c, HouseRugs.Rug rug) {
+        rug(c, rug.x0(), rug.y(), rug.z0(), rug.x1(), rug.z1(), rug.authored().defaultBlockState());
+    }
 
     private static void rug(HouseCanvas c, int x0, int y, int z0, int x1, int z1, BlockState carpet) {
         for (int x = x0; x <= x1; x++) {

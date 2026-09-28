@@ -2,6 +2,9 @@ package io.github.knaitoe.theoldesthouse;
 
 import com.mojang.logging.LogUtils;
 import io.github.knaitoe.theoldesthouse.command.HouseCommands;
+import io.github.knaitoe.theoldesthouse.house.HouseBetweenRoom;
+import io.github.knaitoe.theoldesthouse.house.HouseConfig;
+import io.github.knaitoe.theoldesthouse.house.HouseDays;
 import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
 import io.github.knaitoe.theoldesthouse.house.HouseLifecycleEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseExteriorEntityMirror;
@@ -28,9 +31,11 @@ public final class TheOldestHouse {
         modEventBus.addListener(HouseNetwork::registerPayloads);
         OpeningRegistry.register(modEventBus);
         modContainer.registerConfig(ModConfig.Type.SERVER, OpeningConfig.SPEC);
+        modContainer.registerConfig(ModConfig.Type.SERVER, HouseConfig.SPEC, MOD_ID + "-house-server.toml");
 
         NeoForge.EVENT_BUS.addListener(HouseCommands::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onPlayerWakeUp);
+        NeoForge.EVENT_BUS.addListener(HouseDays::onSleepFinished);
         NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onServerStarted);
         NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onServerStopped);
@@ -43,6 +48,17 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HouseExteriorEntityMirror::onAttack);
         NeoForge.EVENT_BUS.addListener(HouseLabyrinth::onCanPlayerSleep);
         NeoForge.EVENT_BUS.addListener(HouseLabyrinth::onSetSpawn);
+
+        // The room between rooms: its door is handled before the mirror sees the click.
+        NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onRightClickBlock);
+        NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onRightClickInBetween);
+        NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onBreak);
+        NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onPlace);
+        NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onExplosion);
+        NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onPiston);
+        NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onServerTick);
+        NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onPlayerLoggedIn);
+        NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onPlayerLoggedOut);
 
         NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onBreak);
         NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onExplosion);

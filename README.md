@@ -16,9 +16,11 @@ Version `0.3.5` revises the per-player opening sequence so the ordinary manor, n
 - **No impossible doorway is placed in the player's home.** The retired 0.3.0 entrance-door block, placement code, state, assets and debug controls have been removed.
 - At the ordinary authored front-door boundary, the player alone is transferred to the House dimension. Hillary never crosses dimensions: she sits on the porch outside the front door and stays in the Overworld.
 - The Oldest House's perceived age advances only after at least one real manor entry. Ignoring the invitation cannot reveal the impossible threshold off-screen.
-- At the provisional test threshold of perceived age **3**, an ordinary-looking door appears at the far end of the central hall.
+- **The first night spent in the manor:** pairs of rugs trade colours between rooms.
+- **Around day 3:** a door appears in the partition between the two upstairs bedrooms. The wall is one block thick and the other side is bookshelves; the door opens onto a windowless sitting room that cannot fit there. It is the manor's first teleport door.
+- **A few mornings later:** an ordinary-looking door appears at the far end of the central hall, opening onto the impossible hallway.
 - The usable domestic interior lives in The Oldest House dimension at matching coordinates, with nearby Overworld scenery mirrored outside its windows.
-- The age-gated rear door opens directly into interior-only impossible architecture; there is no second teleport behind it.
+- The hallway door at the end of the hall opens directly into interior-only impossible architecture; there is no teleport behind it.
 - Operator-only development commands exist for opening-sequence testing, forcing/aging the House, and mirror inspection.
 - The exterior is generated once and then left alone. Future impossible space belongs behind it, not in a morphing facade.
 - No mixins.
@@ -36,15 +38,23 @@ The modular room graph, navigation anomalies, explorer notes, Mother of Strays, 
 
 There is no independent hidden appearance roll anymore. The opening sequence owns automatic House appearance; `HouseSpawnManager.ensureSpawnedNear` still owns the terrain-aware site search.
 
-## Perceived House age
+## Days, mornings and perceived House age
 
-After the manor has actually been entered at least once, each successful new morning advances its perceived age by one day. The value is stored in world data and drives staged changes such as the first impossible door, deeper architecture, navigation anomalies and later progression.
+The mod counts days itself (`HouseCalendar`). A day passes at every dawn the world clock crosses, and `/time set` can only move the count forward: `/time set day` after dark counts as a new morning, while `/time set night` never sends the count back to day 0 (which used to stall the opening's "nights slept" and "days since joining" indefinitely).
 
-If the House has appeared but nobody has entered it, morning wake events leave perceived age unchanged. This preserves the intended domestic-familiarity phase.
+A **morning** is a player waking after a night's sleep, in the Overworld or in one of the manor's beds. Sleeping in the manor now ends the night for the world; before, the House dimension could not move the clock, so manor sleepers were woken at night and nothing advanced.
 
-For testing, `/oldesthouse advance` fast-forwards this value without changing the world's actual time.
+After the manor has actually been entered at least once, each new morning advances its perceived age by one. If the House has appeared but nobody has entered it, perceived age stays put, preserving the domestic-familiarity phase.
 
-The first impossible-door threshold is currently **3 days** only for rapid testing. It is a named constant and is not a final pacing decision.
+What the mornings bring, all tunable in `the_oldest_house-house-server.toml`:
+
+1. **Rugs:** the morning after someone first sleeps in a manor bed, the great room and principal bedroom rugs trade colours, and so do the study's and literary bedroom's. Only carpet still where the house laid it changes. If nobody sleeps there, they change at perceived age 2 anyway.
+2. **The room between rooms:** from the morning after the rugs, each morning has a 35% chance of the bedroom door appearing, rising by 25 points each morning it does not (35, 60, 85, 100): usually around day 3. `/oldesthouse status` shows the chance for the next morning.
+3. **The impossible hallway:** three mornings after the room, the door at the end of the hall opens onto it, where it always has.
+
+The room lives in `the_oldest_house:between` at the same coordinates as the bedroom. Clicking the door moves the player there through the usual door transition; a copy of the bedroom stands in front of the same door, now open, with the room behind it. Walking back out through the doorway returns them to the real bedroom, where the door has always been shut. The real door never opens, the wall and shelves around it cannot be broken, and nothing in the copied bedroom can be used.
+
+For testing, `/oldesthouse day [n]` passes whole nights as if everyone online slept (in the manor if they are standing in it), and `/oldesthouse reveal rugs|room|hallway` forces a stage. `/oldesthouse age` and `/oldesthouse advance` still set perceived age directly, without running mornings.
 
 ### Dimension-backed domestic interior
 
@@ -75,8 +85,10 @@ Commands require permission level 2.
 | Command | Purpose |
 | --- | --- |
 | `/oldesthouse spawn` | Force-spawn the test house about 36 blocks in front of the player. |
-| `/oldesthouse status` | Show persistent House position, age, threshold state, interior initialization, layout version and visits. |
-| `/oldesthouse age <days>` | Set The Oldest House perceived age to an exact value. |
+| `/oldesthouse status` | Show the House's state, the mod's day count, the rugs, the room's chance of appearing next morning, when the hallway opens, and your own opening progress. |
+| `/oldesthouse day [n]` | Pass one (or `n`) nights as the mod sees them: the clock jumps to dawn, everyone online counts as having slept, and each morning runs as a real one would (opening steps, House age, rugs, the room's roll, the hallway). Stops early while Navidson's photo develops. |
+| `/oldesthouse reveal rugs\|room\|hallway` | Force that stage now. |
+| `/oldesthouse age <days>` | Set The Oldest House perceived age to an exact value (does not run mornings). |
 | `/oldesthouse advance` | Advance The Oldest House perceived age by one day. |
 | `/oldesthouse advance <days>` | Fast-forward The Oldest House perceived age by the supplied number of days. |
 | `/oldesthouse visit` | Increment the stored visit count. |
@@ -403,3 +415,6 @@ The opening has been revised so the player's own home remains ordinary.
 - The House dimension's native-mob cleanup no longer deletes mobs in the impossible hallway or anywhere past the labyrinth threshold.
 - Mirrored projections no longer copy data attachments, so a projection of Hillary can't be tamed or treated as Hillary.
 - Navidson's photograph stops searching camera spots once it has a good view, avoiding a one-tick lag spike.
+- Days are counted by the mod, so `/time set` can no longer stall the opening, and sleeping in a manor bed now passes the night.
+- The first night in the manor shifts the rugs; around day 3 the room between rooms appears; the impossible hallway follows three mornings later, at the end of the hall as before.
+- `/oldesthouse day [n]`, `/oldesthouse reveal rugs|room|hallway`, and a fuller `/oldesthouse status`.

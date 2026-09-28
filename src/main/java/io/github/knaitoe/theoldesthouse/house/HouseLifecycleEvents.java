@@ -1,10 +1,9 @@
 package io.github.knaitoe.theoldesthouse.house;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import java.util.List;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.Level;
 import io.github.knaitoe.theoldesthouse.network.HouseSightlineStatePayload;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerWakeUpEvent;
@@ -13,8 +12,6 @@ import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class HouseLifecycleEvents {
-    private static final long MORNING_WINDOW_TICKS = 1500L;
-
     private HouseLifecycleEvents() {
     }
 
@@ -57,34 +54,25 @@ public final class HouseLifecycleEvents {
         HouseInteriorInitializer.cancel();
         HouseTransitionEvents.clearAll();
         HouseExteriorEntityMirror.clear(event.getServer());
+        HouseBetweenRoom.clearAll();
     }
 
     public static void onPlayerWakeUp(PlayerWakeUpEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)) {
+        if (!(event.getEntity() instanceof ServerPlayer player) || !HouseDays.isMorningWake(player)) {
+            // Leaving a bed during the night also fires PlayerWakeUpEvent.
             return;
         }
-
-        ServerLevel level = player.serverLevel();
-        if (!level.dimension().equals(Level.OVERWORLD)) {
-            return;
-        }
-
-        long dayTime = level.getDayTime();
-        long timeOfDay = Math.floorMod(dayTime, 24000L);
-
-        // Leaving a bed manually during the night also fires PlayerWakeUpEvent.
-        if (timeOfDay > MORNING_WINDOW_TICKS) {
-            return;
-        }
-
-        long currentDay = dayTime / 24000L;
-        HouseSavedData data = HouseSavedData.get(level.getServer());
 
         // The opening sequence owns appearance. Perceived age begins only
         // after somebody has actually entered the manor, so ignoring the
-        // invitation cannot reveal the impossible threshold off-screen.
-        if (data.advanceHouseAgeForMorning(currentDay)) {
-            HouseStageManager.applyCurrentStage(level.getServer(), data);
+        // invitation cannot reveal anything off-screen.
+        List<String> changes = HouseProgression.onMorningWake(
+                player.server,
+                HouseCalendar.today(player.server),
+                HouseDays.isInManor(player)
+        );
+        if (!changes.isEmpty()) {
+            TheOldestHouse.LOGGER.info("Morning at The Oldest House: {}.", String.join("; ", changes));
         }
     }
 }
