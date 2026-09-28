@@ -2,12 +2,14 @@ package io.github.knaitoe.theoldesthouse.gametest;
 
 import com.mojang.authlib.GameProfile;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.opening.DeliveredItemEntity;
 import io.github.knaitoe.theoldesthouse.opening.Doorsteps;
 import io.github.knaitoe.theoldesthouse.opening.EntranceDoorBlock;
 import io.github.knaitoe.theoldesthouse.opening.EntranceDoorPlacer;
 import io.github.knaitoe.theoldesthouse.opening.Hillary;
 import io.github.knaitoe.theoldesthouse.opening.NavidsonLetter;
+import io.github.knaitoe.theoldesthouse.opening.NavidsonPhoto;
 import io.github.knaitoe.theoldesthouse.opening.OpeningSequence;
 import io.github.knaitoe.theoldesthouse.opening.OpeningWorldData;
 import java.util.List;
@@ -21,6 +23,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.Filterable;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.animal.WolfVariants;
@@ -128,7 +131,7 @@ public final class OpeningTests {
     @GameTest(template = "empty")
     public static void snapshotIsLockedArt(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        ItemStack snapshot = NavidsonLetter.createSnapshot(level);
+        ItemStack snapshot = NavidsonLetter.createSnapshot(level, null);
         MapId id = snapshot.get(DataComponents.MAP_ID);
         helper.assertTrue(id != null, "snapshot has no map id");
         MapItemSavedData data = level.getMapData(id);
@@ -155,6 +158,97 @@ public final class OpeningTests {
         helper.assertTrue(!item.isPushedByFluid(), "delivered item would drift in water");
         helper.assertTrue(item.getAge() < 0, "delivered item would despawn");
         helper.succeed();
+    }
+
+    // ------------------------------------------------------------------
+    // Navidson's photo: a copy of the player's own house
+
+    @GameTest(template = "empty", timeoutTicks = 400)
+    public static void photoLightsTheirUpperWindow(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos base = helper.absolutePos(BlockPos.ZERO).offset(0, 1, 240);
+        BlockPos bed = buildTestHouse(level, base, true);
+        BlockPos upperWindow = base.offset(15, 6, 19);
+
+        NavidsonPhoto.Result photo = NavidsonPhoto.takeNow(level.getServer(), UUID.randomUUID(), bed, bed.offset(0, 0, 60));
+        helper.assertTrue(photo != null && photo.pixels() != null && photo.sawHouse(), "no photo of the house: " + photo);
+        helper.assertTrue(photo.window() != null && !photo.windowCarved(), "their upper window was not the lit one: " + photo);
+        helper.assertTrue(photo.window().getY() == upperWindow.getY(), "lit window is not the upper one: " + photo.window());
+
+        ServerLevel outside = level.getServer().getLevel(HouseDimensions.OUTSIDE);
+        helper.assertTrue(outside != null, "outside dimension missing");
+        BlockPos offset = copyOffset(photo, bed);
+        helper.assertTrue(outside.getBlockState(bed.offset(offset)).is(BlockTags.BEDS), "the bed was not copied");
+        helper.assertTrue(outside.getBlockState(base.offset(11, 2, 11).offset(offset)).is(Blocks.COBBLESTONE), "the walls were not copied");
+        helper.assertTrue(outside.getBlockState(upperWindow.offset(offset)).is(Blocks.GLASS), "the window was not copied");
+        helper.assertTrue(outside.getBlockState(upperWindow.north().offset(offset)).is(Blocks.LIGHT), "no light behind the copy's window");
+        helper.assertTrue(level.getBlockState(upperWindow.north()).isAir(), "the real house was altered");
+        assertValidMap(helper, photo.pixels());
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 400)
+    public static void photoGivesAWindowlessHouseAWindow(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos base = helper.absolutePos(BlockPos.ZERO).offset(0, 1, 340);
+        BlockPos bed = buildTestHouse(level, base, false);
+
+        NavidsonPhoto.Result photo = NavidsonPhoto.takeNow(level.getServer(), UUID.randomUUID(), bed, bed.offset(0, 0, 60));
+        helper.assertTrue(photo != null && photo.pixels() != null && photo.sawHouse(), "no photo of the house: " + photo);
+        helper.assertTrue(photo.window() != null && photo.windowCarved(), "no window was cut into the copy: " + photo);
+
+        ServerLevel outside = level.getServer().getLevel(HouseDimensions.OUTSIDE);
+        BlockPos real = photo.window().subtract(copyOffset(photo, bed));
+        helper.assertTrue(outside.getBlockState(photo.window()).is(Blocks.GLASS), "the copy has no window");
+        helper.assertTrue(level.getBlockState(real).is(Blocks.COBBLESTONE), "the real wall was cut: " + level.getBlockState(real));
+        helper.assertTrue(real.getY() >= bed.getY() + 2, "the window is not up top: " + real);
+        assertValidMap(helper, photo.pixels());
+        helper.succeed();
+    }
+
+    /**
+     * A two-storey cobblestone house (walls 11..19, eaves at 8, flat roof at
+     * 9) on a grass platform, bed inside; with {@code windows}, glass on the
+     * south wall below and up top.
+     */
+    private static BlockPos buildTestHouse(ServerLevel level, BlockPos base, boolean windows) {
+        fill(level, base.offset(-4, -1, -4), base.offset(34, -1, 34), Blocks.GRASS_BLOCK.defaultBlockState());
+        fill(level, base.offset(-4, 0, -4), base.offset(34, 12, 34), Blocks.AIR.defaultBlockState());
+        for (int x = 11; x <= 19; x++) {
+            for (int z = 11; z <= 19; z++) {
+                boolean wall = x == 11 || x == 19 || z == 11 || z == 19;
+                for (int y = 0; y <= 8; y++) {
+                    if (wall) {
+                        level.setBlock(base.offset(x, y, z), Blocks.COBBLESTONE.defaultBlockState(), Block.UPDATE_CLIENTS);
+                    }
+                }
+                level.setBlock(base.offset(x, 4, z), wall ? Blocks.COBBLESTONE.defaultBlockState() : Blocks.OAK_PLANKS.defaultBlockState(), Block.UPDATE_CLIENTS);
+                level.setBlock(base.offset(x, 9, z), Blocks.SPRUCE_PLANKS.defaultBlockState(), Block.UPDATE_CLIENTS);
+            }
+        }
+        if (windows) {
+            level.setBlock(base.offset(13, 2, 19), Blocks.GLASS.defaultBlockState(), Block.UPDATE_CLIENTS);
+            level.setBlock(base.offset(15, 6, 19), Blocks.GLASS.defaultBlockState(), Block.UPDATE_CLIENTS);
+        }
+        BlockPos bed = base.offset(15, 0, 14);
+        BlockState bedState = Blocks.RED_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.NORTH);
+        level.setBlock(bed, bedState.setValue(BedBlock.PART, BedPart.HEAD), Block.UPDATE_CLIENTS);
+        level.setBlock(bed.south(), bedState.setValue(BedBlock.PART, BedPart.FOOT), Block.UPDATE_CLIENTS);
+        return bed;
+    }
+
+    /** Copy position minus real position (the copy keeps heights). */
+    private static BlockPos copyOffset(NavidsonPhoto.Result photo, BlockPos bed) {
+        BlockPos sourceMin = bed.offset(-NavidsonPhoto.CAPTURE_RADIUS, 0, -NavidsonPhoto.CAPTURE_RADIUS);
+        return new BlockPos(photo.copyMin().getX() - sourceMin.getX(), 0, photo.copyMin().getZ() - sourceMin.getZ());
+    }
+
+    private static void assertValidMap(GameTestHelper helper, byte[] pixels) {
+        helper.assertTrue(pixels.length == 128 * 128, "photo is " + pixels.length + " bytes");
+        for (byte pixel : pixels) {
+            int colour = pixel & 0xFF;
+            helper.assertTrue(colour >= 4 && (colour >> 2) <= 61, "invalid map colour " + colour);
+        }
     }
 
     // ------------------------------------------------------------------

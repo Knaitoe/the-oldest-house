@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -64,7 +65,10 @@ public final class NavidsonLetter {
     public static final String SNAPSHOT_NAME = "A snapshot";
     public static final String SNAPSHOT_LORE = "On the back: \"Your place, from ours.\"";
 
-    /** Pre-baked map colours (128 x 128 ids); datapacks may replace it. */
+    /**
+     * The stock print (128 x 128 map colour ids), used only when the House
+     * cannot photograph the player's own house; datapacks may replace it.
+     */
     public static final ResourceLocation SNAPSHOT_ART =
             ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "snapshot/porch.bin");
 
@@ -98,7 +102,12 @@ public final class NavidsonLetter {
         return book;
     }
 
-    public static ItemStack createSnapshot(ServerLevel level) {
+    /**
+     * The snapshot as a locked map. {@code photo} is Navidson's photograph
+     * of the player's house (128 x 128 map colours); without one, the stock
+     * print is used.
+     */
+    public static ItemStack createSnapshot(ServerLevel level, @Nullable byte[] photo) {
         MapItemSavedData data = MapItemSavedData.createFresh(
                 SNAPSHOT_CENTER,
                 SNAPSHOT_CENTER,
@@ -107,7 +116,7 @@ public final class NavidsonLetter {
                 false,
                 HouseDimensions.INTERIOR
         );
-        byte[] pixels = loadSnapshotPixels(level.getServer());
+        byte[] pixels = photo != null && photo.length == MAP_PIXELS ? photo : loadSnapshotPixels(level.getServer());
         System.arraycopy(pixels, 0, data.colors, 0, Math.min(pixels.length, data.colors.length));
 
         MapId id = level.getFreeMapId();

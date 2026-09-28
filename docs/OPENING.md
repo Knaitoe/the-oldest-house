@@ -21,11 +21,22 @@ The doorstep is the block in front of the most-used door within `doorstepSearchR
 
 The book `Howdy, Neighbor` by `Will Navidson` uses the font `the_oldest_house:navidson`. The mod ships that font as a reference to Minecraft's default, so it is always safe; a resource pack can replace `assets/the_oldest_house/font/navidson.json` with a handwriting face. The spec's page 2 wraps to 16 lines in the default font (a book page holds 14), so it is split after "We measured twice." and the book has six pages. `OpeningTests.letterPagesFit` checks the wrapping with the default glyph widths.
 
-The snapshot is a locked filled map whose colours are pre-baked in `data/the_oldest_house/snapshot/porch.bin` (128 × 128 map colour ids; datapacks may replace it). `tools/make_opening_assets.py` draws the art, bakes it to the map palette and writes a preview to `tools/snapshot_preview.png`.
+### The snapshot: a photograph of the player's own house
+
+"Your place, from ours." The snapshot is a picture of the player's own house, taken the way the design document's Capture system works (`capture/SettlementCopy`, `opening/NavidsonPhoto`):
+
+1. **Capture.** The settlement around the bed (81 × 81 blocks, from 8 below the bed to 32 above) is captured into memory, a couple of chunk columns per tick, so the copy is one frozen moment.
+2. **Copy.** It is rebuilt in the outside dimension (`the_oldest_house:outside`, a void with a sky), in the player's own slot far from every other copy (`CopySlots`). Containers arrive empty and only non-inventory block-entity data (signs, banners, beds) is carried over; placement sends no neighbour updates and no entities are copied, so nothing in a copy can be duplicated or set running.
+3. **Alter.** The camera stands on the side of the house facing the Navidsons' porch (The Oldest House's front door; the House is spawned next door that morning if it does not exist yet), at a raised porch height, placed where the view of the house is clearest. In the copy, the highest window it can see on the house is lit by a hidden light block in the room behind it. If the house shows no window there, the copy gets one: a wall block up top becomes glass with the light behind it. The player's real base is never altered.
+4. **Photograph.** Once the light has settled (40 ticks), a small voxel ray tracer (`SnapshotRenderer`) photographs the copy at night, a few rows per tick: map colours of the real blocks, moonlit tops, torchlight on walls from the real block light, fog, stars, and the lit window with a warm glow. The result is quantized onto Minecraft's map palette and framed as an instant photo.
+
+The letter waits for the photo, so it arrives a few seconds after dawn. If no clear view of the house exists, a stock print (`data/the_oldest_house/snapshot/porch.bin`, drawn by `tools/make_opening_assets.py`) is used instead. The copy stays in the outside dimension; it is the first capture the later base-copy vignettes can build on.
+
+`/oldesthouse opening photo [player]` retakes the photo and hands you the result; it also reports where the copy stands in the outside dimension.
 
 Both items are `the_oldest_house:delivered_item` entities: ordinary item entities that never despawn, can only be picked up by the recipient, and are not pushed by water.
 
-**The House moves in next door.** The letter says the Navidsons just moved in, so the letter's morning also spawns The Oldest House near the recipient's bed if it does not exist yet (the same site search as the natural spawn). If no site is found, the door retries when it is used.
+**The House moves in next door.** The letter says the Navidsons just moved in, so the letter's morning spawns The Oldest House near the recipient's bed if it does not exist yet (the same site search as the natural spawn), before the photo is taken from its porch. If no site is found, the door retries when it is used.
 
 ## Morning 2: Hillary and the door
 

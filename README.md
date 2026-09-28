@@ -89,6 +89,7 @@ Commands require permission level 2.
 | `/oldesthouse opening status [player]` | Show a player's opening-sequence stage, sleeps, bed, letter/door days, Hillary and door. |
 | `/oldesthouse opening eligible [player]` | Skip the settling-in requirements; the letter arrives on the next morning (day time 0-1000). |
 | `/oldesthouse opening letter [player]` | Deliver Navidson's letter and snapshot now. |
+| `/oldesthouse opening photo [player]` | Photograph the player's house again (copying it to the outside dimension) and hand the snapshot to you. |
 | `/oldesthouse opening door [player]` | Run morning two now: Hillary on the doorstep and the door placed immediately (even in view). |
 | `/oldesthouse opening reset [player]` | Clear a player's opening progress and remove their door, restoring the wall it replaced. |
 
@@ -345,7 +346,7 @@ Performance and correctness:
 Everything before a player first enters the House, run per player (see [docs/OPENING.md](docs/OPENING.md)):
 
 - **Settling in:** a bed respawn point, two completed sleeps and three in-game days since first joining (all configurable in the server config `the_oldest_house-server.toml`).
-- **Morning 1:** a written book from Will Navidson ("Howdy, Neighbor") and a snapshot (a locked filled map of a dark house with one lit upper window) wait on the doorstep of the player's most-used door, with one soft knock only the recipient hears. Both never despawn, only the recipient can pick them up, and water does not carry them off. The same morning the Navidsons' house (The Oldest House) appears next door if it has not already.
+- **Morning 1:** the Navidsons' house (The Oldest House) appears next door if it has not already. The House captures the player's settlement, rebuilds it in the new outside dimension, lights the upper window facing the Navidsons' porch (cutting one into the copy's wall if there is none) and photographs the copy at night with a small ray tracer. A written book from Will Navidson ("Howdy, Neighbor") and that snapshot (a locked filled map of the player's own house) then wait on the doorstep of the player's most-used door, with one soft knock only the recipient hears. Both never despawn, only the recipient can pick them up, and water does not carry them off.
 - **Morning 2:** Hillary, an ashen husky, waits on the doorstep; the first bone from her recipient always tames her. A new door appears in a wall within 12 blocks of the bed (never one the player is looking at or just placed; after three nights without a wall, a freestanding framed door on open ground).
 - **The door:** unbreakable in survival and immovable by pistons, it opens only for its owner, who steps through into the House's hall via the existing DOOR transition. Anyone else hears a locked rattle. The blocks it replaced are recorded for later restoration.
 - **Hillary and the House:** if she follows her owner in, she runs a few blocks down the hall; out of sight (or after two seconds) she is taken out of the House and set down, sitting, on her doorstep.
