@@ -128,6 +128,16 @@ public final class HouseProxyEntityEvacuation {
         return nearbySafeExterior(level, origin, front, Direction.NORTH);
     }
 
+    /**
+     * Safe standing point immediately outside the authored front entrance.
+     * Used by Hillary so her refusal is staged at the exact boundary the
+     * player crosses.
+     */
+    @Nullable
+    public static Vec3 frontDoorExit(ServerLevel level, BlockPos origin) {
+        return safeOutsideDoor(level, origin, HouseLayout.FRONT_DOOR);
+    }
+
     @Nullable
     private static Vec3 safeOutsideDoor(
             ServerLevel level,
