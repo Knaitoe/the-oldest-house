@@ -183,6 +183,7 @@ public final class OpeningTests {
         helper.assertTrue(outside.getBlockState(upperWindow.north().offset(offset)).is(Blocks.LIGHT), "no light behind the copy's window");
         helper.assertTrue(level.getBlockState(upperWindow.north()).isAir(), "the real house was altered");
         assertValidMap(helper, photo.pixels());
+        logPhoto("upper_window", photo.pixels());
         helper.succeed();
     }
 
@@ -202,6 +203,7 @@ public final class OpeningTests {
         helper.assertTrue(level.getBlockState(real).is(Blocks.COBBLESTONE), "the real wall was cut: " + level.getBlockState(real));
         helper.assertTrue(real.getY() >= bed.getY() + 2, "the window is not up top: " + real);
         assertValidMap(helper, photo.pixels());
+        logPhoto("windowless", photo.pixels());
         helper.succeed();
     }
 
@@ -240,6 +242,15 @@ public final class OpeningTests {
     private static BlockPos copyOffset(NavidsonPhoto.Result photo, BlockPos bed) {
         BlockPos sourceMin = bed.offset(-NavidsonPhoto.CAPTURE_RADIUS, 0, -NavidsonPhoto.CAPTURE_RADIUS);
         return new BlockPos(photo.copyMin().getX() - sourceMin.getX(), 0, photo.copyMin().getZ() - sourceMin.getZ());
+    }
+
+    /** Logs a photo's map colours as hex so CI output can be turned back into an image. */
+    private static void logPhoto(String name, byte[] pixels) {
+        StringBuilder hex = new StringBuilder(pixels.length * 2);
+        for (byte pixel : pixels) {
+            hex.append(Character.forDigit((pixel >> 4) & 15, 16)).append(Character.forDigit(pixel & 15, 16));
+        }
+        TheOldestHouse.LOGGER.info("OTH-PHOTO|{}|{}", name, hex);
     }
 
     private static void assertValidMap(GameTestHelper helper, byte[] pixels) {
