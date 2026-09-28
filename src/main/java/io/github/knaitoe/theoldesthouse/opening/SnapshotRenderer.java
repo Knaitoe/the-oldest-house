@@ -44,6 +44,14 @@ public final class SnapshotRenderer {
             0, 20, -20, 40, -40, 70, -70, 110, -110, 150, -150, 180
     };
 
+    /**
+     * A view scoring this well (about 60% of the probe rays landing on the
+     * house) is taken without scoring the remaining distances. The search runs
+     * in one server tick, so it must not try every candidate when the first
+     * is already clear.
+     */
+    private static final double GOOD_VIEW_SCORE = 70.0D;
+
     /** The world as the camera sees it. */
     public interface Scene {
         /** {@code (kind << 24) | rgb} for the block at this position. */
@@ -188,6 +196,9 @@ public final class SnapshotRenderer {
                         best = candidate;
                     }
                 }
+            }
+            if (best != null && bestScore >= GOOD_VIEW_SCORE) {
+                break; // Distances are tried nearest the preferred one first.
             }
         }
         return best;

@@ -1,5 +1,6 @@
 package io.github.knaitoe.theoldesthouse.opening;
 
+import io.github.knaitoe.theoldesthouse.house.HouseExteriorEntityMirror;
 import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import io.github.knaitoe.theoldesthouse.house.HouseProxyEntityEvacuation;
 import java.util.UUID;
@@ -76,7 +77,8 @@ public final class Hillary {
     public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
         if (event.getLevel().isClientSide()
                 || !(event.getTarget() instanceof Wolf wolf)
-                || wolf.isTame()) {
+                || wolf.isTame()
+                || HouseExteriorEntityMirror.isProjection(wolf)) {
             return;
         }
 
@@ -127,6 +129,12 @@ public final class Hillary {
         }
 
         if (!active || houseOrigin == null) {
+            // Guiding clears her owner so FollowOwnerGoal cannot fight the
+            // path. If the player went in before she reached the porch, give
+            // her back to them now.
+            if (wolf.isTame() && wolf.getOwnerUUID() == null) {
+                wolf.setOwnerUUID(tag.recipient());
+            }
             keepNear(wolf, tag.home());
             return;
         }
