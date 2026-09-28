@@ -57,6 +57,8 @@ public final class HouseProgressionTests {
         for (HouseRugs.Rug rug : HouseRugs.SHIFTING) {
             for (int x = rug.x0(); x <= rug.x1(); x++) {
                 for (int z = rug.z0(); z <= rug.z1(); z++) {
+                    // Carpet needs something under it, or its neighbours' updates pop it off.
+                    level.setBlock(origin.offset(x, rug.y() - 1, z), Blocks.OAK_PLANKS.defaultBlockState(), Block.UPDATE_CLIENTS);
                     level.setBlock(origin.offset(x, rug.y(), z), rug.authored().defaultBlockState(), Block.UPDATE_CLIENTS);
                 }
             }
