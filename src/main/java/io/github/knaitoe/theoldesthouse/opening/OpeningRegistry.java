@@ -24,7 +24,7 @@ public final class OpeningRegistry {
             DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, TheOldestHouse.MOD_ID);
 
     public static final DeferredBlock<EntranceDoorBlock> ENTRANCE_DOOR =
-            BLOCKS.register("entrance_door", () -> new EntranceDoorBlock(EntranceDoorBlock.properties()));
+            BLOCKS.register("entrance_door", () -> new EntranceDoorBlock(EntranceDoorBlock.defaultProperties()));
 
     public static final DeferredItem<DoubleHighBlockItem> ENTRANCE_DOOR_ITEM =
             ITEMS.register("entrance_door", () -> new DoubleHighBlockItem(ENTRANCE_DOOR.get(), new Item.Properties()));
