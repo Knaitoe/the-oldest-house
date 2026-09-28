@@ -417,6 +417,12 @@ public final class OpeningTests {
         recipient.moveTo(home.getX() + 0.5D, home.getY(), home.getZ() + 0.5D);
 
         BlockPos manorOrigin = home.offset(28, 0, 0);
+        fill(
+                level,
+                manorOrigin.offset(HouseLayout.AXIS_X - 3, 0, HouseLayout.FRONT_DOOR_Z - 6),
+                manorOrigin.offset(HouseLayout.AXIS_X + 3, 0, HouseLayout.FRONT_DOOR_Z - 1),
+                Blocks.STONE.defaultBlockState()
+        );
         Hillary.tickGuide(level, recipient, wolf.getUUID(), true, manorOrigin);
         helper.assertTrue(
                 wolf.getOwnerUUID() == null,
