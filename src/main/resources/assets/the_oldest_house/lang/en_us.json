@@ -6,5 +6,8 @@
   "subtitles.the_oldest_house.small_steps": "Small bare feet",
   "subtitles.the_oldest_house.growl_far": "Something growls, far off",
   "subtitles.the_oldest_house.growl_below": "Something growls, below",
-  "subtitles.the_oldest_house.growl_near": "Something growls"
+  "subtitles.the_oldest_house.growl_near": "Something growls",
+  "item.the_oldest_house.phone": "Phone",
+  "item.the_oldest_house.harrigans_phone": "Mr. Harrigan's phone",
+  "item.the_oldest_house.scratch_ticket": "Scratch-off ticket"
 }
