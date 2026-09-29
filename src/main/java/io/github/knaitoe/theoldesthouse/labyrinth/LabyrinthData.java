@@ -38,7 +38,8 @@ import net.minecraft.world.phys.Vec3;
  *   <li>{@code place:<id>}: always that place (see {@link LabyrinthPlace});</li>
  *   <li>{@code dealt}: wherever the dealer last dealt it ({@code Door.dealt});</li>
  *   <li>{@code return}: back through the last door the player came through;</li>
- *   <li>{@code hallway_or_return}: the impossible hallway if it exists, else as return.</li>
+ *   <li>{@code hallway_or_return}: the impossible hallway if it exists, else as return;</li>
+ *   <li>{@code locked}: nowhere; it never opens.</li>
  * </ul>
  * Rearranging the house means changing these, never moving blocks.
  */
@@ -49,6 +50,8 @@ public final class LabyrinthData extends SavedData {
     public static final String DEALT = "dealt";
     public static final String RETURN = "return";
     public static final String HALLWAY_OR_RETURN = "hallway_or_return";
+    /** A door that never opens (the hotel's room doors). */
+    public static final String LOCKED = "locked";
 
     public static String toPlace(LabyrinthPlace place) {
         return "place:" + place.id();

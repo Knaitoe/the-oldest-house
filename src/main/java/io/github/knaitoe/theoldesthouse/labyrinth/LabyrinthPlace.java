@@ -49,6 +49,18 @@ public enum LabyrinthPlace {
     HIDE_AND_CLAP("hide_and_clap", Kind.ONE_SHOT, 4, new BoundingBox(-6, -1, -13, 6, 4, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
     )),
+    /** The Five and a Half Minute Hallway: a seamless loop that ends only when its time is up (see {@link LabyrinthLoops}). */
+    LONG_HALLWAY("long_hallway", Kind.GRAY, 5, new BoundingBox(-2, -1, -49, 14, 3, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
+            new DoorSpec("far", new BlockPos(12, 0, -45), Direction.SOUTH, LabyrinthData.DEALT)
+    )),
+    /** The spiral staircase: longer to climb than to descend. */
+    SPIRAL_STAIR("spiral_stair", Kind.GRAY, 6, new BoundingBox(-2, -1, -4, 2, 18, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
+            new DoorSpec("far", new BlockPos(0, 16, 0), Direction.NORTH, LabyrinthData.DEALT)
+    )),
+    /** The hotel hallway: numbered doors, all locked, the numbers climbing and repeating. */
+    HOTEL_HALLWAY("hotel_hallway", Kind.GRAY, 7, new BoundingBox(-2, -1, -49, 14, 3, 0), hotelDoors()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 
@@ -132,6 +144,24 @@ public enum LabyrinthPlace {
 
     public String entryDoorId() {
         return id + "/entry";
+    }
+
+    /** How often the dealer picks this gray place relative to the others: the plain gray most, the loops less. */
+    public int grayWeight() {
+        return this == JUNCTION || this == GRAY_CORRIDOR ? 3 : 1;
+    }
+
+    /** The hotel's entry door, and a locked room door either side of each of its four straights. */
+    private static List<DoorSpec> hotelDoors() {
+        List<DoorSpec> doors = new java.util.ArrayList<>();
+        doors.add(new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN));
+        for (int k = 0; k <= 3; k++) {
+            int x = 3 + 3 * k;
+            int z = -3 - 12 * k - 4;
+            doors.add(new DoorSpec("room_" + k + "_west", new BlockPos(x - 2, 0, z), Direction.EAST, LabyrinthData.LOCKED));
+            doors.add(new DoorSpec("room_" + k + "_east", new BlockPos(x + 2, 0, z), Direction.WEST, LabyrinthData.LOCKED));
+        }
+        return List.copyOf(doors);
     }
 
     /** Places the dealer can send a door to without it being a vignette: the gray. */

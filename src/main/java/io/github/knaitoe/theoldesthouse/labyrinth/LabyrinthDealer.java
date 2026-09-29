@@ -63,6 +63,20 @@ public final class LabyrinthDealer {
         deal(data, doors, place, random);
     }
 
+    private static LabyrinthPlace pickGray(List<LabyrinthPlace> gray, int totalWeight, RandomSource random) {
+        if (gray.isEmpty() || totalWeight <= 0) {
+            return LabyrinthPlace.JUNCTION;
+        }
+        int roll = random.nextInt(totalWeight);
+        for (LabyrinthPlace place : gray) {
+            roll -= place.grayWeight();
+            if (roll < 0) {
+                return place;
+            }
+        }
+        return gray.get(gray.size() - 1);
+    }
+
     /** Deals a set of doors in one go; {@code here} is never dealt back to itself. */
     public static void deal(LabyrinthData data, List<LabyrinthData.Door> doors, @Nullable LabyrinthPlace here, RandomSource random) {
         if (doors.isEmpty()) {
@@ -75,17 +89,18 @@ public final class LabyrinthDealer {
         }
 
         List<LabyrinthPlace> gray = new ArrayList<>();
+        int totalWeight = 0;
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
             if (place.isGray() && place != here) {
                 gray.add(place);
+                totalWeight += place.grayWeight();
             }
         }
         for (LabyrinthData.Door door : doors) {
             if (door == lucky) {
                 data.deal(door, vignettes.get(random.nextInt(vignettes.size())).id(), true);
             } else {
-                LabyrinthPlace place = gray.isEmpty() ? LabyrinthPlace.JUNCTION : gray.get(random.nextInt(gray.size()));
-                data.deal(door, place.id(), random.nextInt(100) < LYING_LEAK_CHANCE);
+                data.deal(door, pickGray(gray, totalWeight, random).id(), random.nextInt(100) < LYING_LEAK_CHANCE);
             }
         }
         data.setDryDeals(lucky != null ? 0 : data.dryDeals() + 1);

@@ -11,6 +11,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthBuilder;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDealer;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthLoops;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlaces;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthRegistry;
@@ -298,6 +299,75 @@ public final class LabyrinthTests {
         helper.assertTrue(black >= 10, "a blindfold, pressed hard: " + black + " black pixels");
         helper.assertTrue(red >= 10, "and the bed: " + red + " red pixels");
         helper.assertTrue(LabyrinthRegistry.BLINDFOLD.get().getEquipmentSlot() == EquipmentSlot.HEAD, "the blindfold is worn on the head");
+        helper.succeed();
+    }
+
+    /** Each period of a jogging hallway is block for block the same as the next, so the shift between them can't be seen. */
+    @GameTest(template = "empty")
+    public static void hallwayPeriodsAreIdentical(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        for (LabyrinthPlace place : List.of(LabyrinthPlace.LONG_HALLWAY, LabyrinthPlace.HOTEL_HALLWAY)) {
+            BlockPos base = helper.absolutePos(BlockPos.ZERO).offset(place == LabyrinthPlace.LONG_HALLWAY ? -300 : -340, 6, 40);
+            LabyrinthLoops.buildHallway(level, base, place);
+            for (int k = 0; k <= 1; k++) {
+                BlockPos a = base.offset(LabyrinthLoops.periodOrigin(k));
+                BlockPos b = base.offset(LabyrinthLoops.periodOrigin(k + 1));
+                for (int x = -2; x <= 5; x++) {
+                    for (int y = -1; y <= 3; y++) {
+                        for (int z = -11; z <= 0; z++) {
+                            BlockState first = level.getBlockState(a.offset(x, y, z));
+                            BlockState second = level.getBlockState(b.offset(x, y, z));
+                            helper.assertTrue(first == second, place.id() + ": period " + k + " and " + (k + 1) + " differ at "
+                                    + x + " " + y + " " + z + ": " + first + " / " + second);
+                        }
+                    }
+                }
+            }
+            helper.assertTrue(level.getBlockState(base.offset(0, 0, 1)).getBlock() instanceof DoorBlock, place.id() + " has its entry door");
+        }
+        helper.assertTrue(level.getBlockState(helper.absolutePos(BlockPos.ZERO).offset(-300, 6, 40).offset(12, 0, -45)).getBlock() instanceof DoorBlock,
+                "the long hallway's far door");
+        helper.succeed();
+    }
+
+    /** Each turn of the spiral is the same as the next, and it ends at a landing with a door. */
+    @GameTest(template = "empty")
+    public static void spiralTurnsAreIdentical(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos base = helper.absolutePos(BlockPos.ZERO).offset(-300, 6, 130);
+        LabyrinthLoops.buildSpiral(level, base);
+        for (int x = -2; x <= 2; x++) {
+            for (int z = -4; z <= 0; z++) {
+                for (int y = 0; y < LabyrinthLoops.TURN; y++) {
+                    BlockState first = level.getBlockState(base.offset(x, LabyrinthLoops.TURN + y, z));
+                    BlockState second = level.getBlockState(base.offset(x, 2 * LabyrinthLoops.TURN + y, z));
+                    helper.assertTrue(first == second, "turns 1 and 2 differ at " + x + " " + y + " " + z + ": " + first + " / " + second);
+                }
+            }
+        }
+        for (int i = 1; i < LabyrinthLoops.RING.size(); i++) {
+            BlockPos step = base.offset(LabyrinthLoops.RING.get(i)).above(LabyrinthLoops.stepY(1, i));
+            helper.assertTrue(level.getBlockState(step.above()).isAir() && level.getBlockState(step.above(2)).isAir(),
+                    "headroom over step " + i);
+        }
+        helper.assertTrue(level.getBlockState(base.offset(0, 16, 0)).getBlock() instanceof DoorBlock, "the far door at the top");
+        helper.assertTrue(level.getBlockState(base.offset(0, 16, -1)).isAir(), "and a landing before it");
+        helper.assertTrue(level.getBlockState(base.offset(LabyrinthLoops.WELL).above(9)).isAir(), "the well is open");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void loopsCountPeriodsTurnsAndRoomNumbers(GameTestHelper helper) {
+        BlockPos base = new BlockPos(0, 64, 0);
+        helper.assertTrue(LabyrinthLoops.periodOf(base, 0.5D) == -1, "the jog by the entry door is period -1");
+        helper.assertTrue(LabyrinthLoops.periodOf(base, -2.5D) == 0, "the first straight is period 0");
+        helper.assertTrue(LabyrinthLoops.periodOf(base, -14.5D) == 1, "twelve on is period 1");
+        helper.assertTrue(LabyrinthLoops.turnOf(base, 72.0D) == 2, "eight up is the third turn");
+        helper.assertTrue(LabyrinthLoops.roomNumber(0, 1, 0) == LabyrinthLoops.roomNumber(1, 0, 0),
+                "a lap on, the doors behind show what the doors ahead did");
+        helper.assertTrue(LabyrinthLoops.roomNumber(0, 0, 1) > LabyrinthLoops.roomNumber(0, 0, 0), "the numbers climb");
+        helper.assertTrue(LabyrinthLoops.roomNumber(LabyrinthLoops.HOTEL_ROOMS / 2, 0, 0) == LabyrinthLoops.roomNumber(0, 0, 0),
+                "and repeat");
         helper.succeed();
     }
 
