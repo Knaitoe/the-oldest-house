@@ -262,6 +262,48 @@ public final class OpeningTests {
         helper.succeed();
     }
 
+    /**
+     * A wooded base must still produce a photograph of the build. Natural
+     * leaf canopy is scenery, not evidence that the camera found the house.
+     */
+    @GameTest(template = "empty", timeoutTicks = 400)
+    public static void photoSeesTheHomeThroughNaturalLeafCover(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos base = helper.absolutePos(BlockPos.ZERO).offset(0, 1, 540);
+        BlockPos bed = buildTestHouse(level, base, true);
+        BlockPos upperWindow = base.offset(15, 6, 19);
+
+        // A dense tree-canopy shell around every facade. This reproduces the
+        // failure where the scorer happily framed leaves because they were
+        // close to the bed and therefore counted as "house" pixels.
+        BlockState leaves = Blocks.OAK_LEAVES.defaultBlockState();
+        fill(level, base.offset(8, 0, 8), base.offset(22, 11, 10), leaves);
+        fill(level, base.offset(8, 0, 20), base.offset(22, 11, 22), leaves);
+        fill(level, base.offset(8, 0, 11), base.offset(10, 11, 19), leaves);
+        fill(level, base.offset(20, 0, 11), base.offset(22, 11, 19), leaves);
+
+        NavidsonPhoto.Result photo = NavidsonPhoto.takeNow(
+                level.getServer(),
+                level,
+                UUID.randomUUID(),
+                bed,
+                bed.offset(0, 0, 60)
+        );
+
+        helper.assertTrue(photo != null && photo.pixels() != null && photo.sawHouse(),
+                "foliage prevented a usable photo of the actual home: " + photo);
+        helper.assertTrue(photo.window() != null && !photo.windowCarved(),
+                "foliage was mistaken for the house facade: " + photo);
+
+        BlockPos photographedRealWindow = photo.window().subtract(copyOffset(photo, bed));
+        helper.assertTrue(photographedRealWindow.equals(upperWindow),
+                "the camera did not find the real upper window through the foliage: " + photographedRealWindow);
+
+        assertValidMap(helper, photo.pixels());
+        logPhoto("leaf_cover", photo.pixels());
+        helper.succeed();
+    }
+
 
     /**
      * A two-storey cobblestone house (walls 11..19, eaves at 8, flat roof at
