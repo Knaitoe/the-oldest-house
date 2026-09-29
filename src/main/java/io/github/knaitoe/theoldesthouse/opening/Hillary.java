@@ -140,7 +140,7 @@ public final class Hillary {
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.SUCCESS);
             if (event.getHand() == InteractionHand.MAIN_HAND && wolf.level() instanceof ServerLevel level) {
-                takeScent(wolf, level);
+                takeScent(wolf, level, player.getUUID());
             }
             return;
         }
@@ -326,9 +326,9 @@ public final class Hillary {
      * she can be heard barking behind it, the way she found round outside.
      * With nothing left in the house to find, she whines and lies down.
      */
-    public static void takeScent(Wolf wolf, ServerLevel level) {
+    public static void takeScent(Wolf wolf, ServerLevel level, UUID seeker) {
         wolf.playSound(SoundEvents.WOLF_PANT, 1.0F, 1.2F);
-        LabyrinthDealer.Scent scent = LabyrinthDealer.giveScent(LabyrinthData.get(level.getServer()));
+        LabyrinthDealer.Scent scent = LabyrinthDealer.giveScent(LabyrinthData.get(level.getServer()), seeker);
         if (scent == LabyrinthDealer.Scent.NOTHING || HouseSavedData.get(level.getServer()).houseOrigin() == null) {
             wolf.playSound(SoundEvents.WOLF_WHINE, 0.8F, 0.8F);
             if (wolf.isTame()) {

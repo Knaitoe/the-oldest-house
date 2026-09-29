@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.util.RandomSource;
 
@@ -9,22 +10,20 @@ import net.minecraft.util.RandomSource;
  * The house deals the doors. Players can tilt the odds, but never summon a
  * place on demand.
  *
- * Whenever someone arrives in a place with dealt doors, all of them are
- * dealt again (so backtracking never quite works). At most one of them leads
- * to a vignette; the rest open onto the gray. The chance of a vignette door
- * rises with every dealing that had none, so a long dry spell guarantees
- * one. Vignette doors leak: its heartbeat can be heard at the door before it
- * is opened. Now and then a gray door leaks too, and lies.
+ * The physical doors are shared, but every player's changing graph is their
+ * own: destinations, dry spells, leaks and Hillary's scent are stored per
+ * player. Two people can therefore stand at the same door and be led
+ * somewhere different.
  *
- * Which vignette a vignette door leads to is weighted: a multi-visit
- * vignette already begun and not yet finished comes up
- * {@link #UNFINISHED_WEIGHT} times as often as the rest, so a place the
- * player has started keeps calling them back.
+ * Whenever someone arrives in a place with dealt doors, that player's doors
+ * are dealt again. At most one leads to a vignette; the rest open onto the
+ * gray. A long dry spell guarantees a vignette. Gray places may deal back to
+ * themselves: walking through a door and arriving somewhere impossibly
+ * familiar is part of the maze, not an error.
  *
- * Hillary can tilt the odds furthest. Give her a scent from a vignette's
- * object and the next dealing that can have a vignette door will have one,
- * to a place not yet finished if there is one, and what leaks from behind
- * it is her bark.
+ * The gray starts small and grows with progress. The junction and plain
+ * corridor are always in the pool. Reaching/finishing vignettes adds the
+ * long hallway, then the spiral stair, then the hotel hallway.
  */
 public final class LabyrinthDealer {
     public static final int VIGNETTE_BASE_CHANCE = 30;
@@ -37,11 +36,6 @@ public final class LabyrinthDealer {
     private LabyrinthDealer() {
     }
 
-    /**
-     * Vignettes that can be dealt: one-shots and multi-visits not yet
-     * finished, and recurring ones, once they have been made (the Red Room
-     * needs a room of the player's to copy).
-     */
     public static List<LabyrinthPlace> vignettesAvailable(LabyrinthData data) {
         List<LabyrinthPlace> places = new ArrayList<>();
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
@@ -55,15 +49,14 @@ public final class LabyrinthDealer {
         return places;
     }
 
-    /** The chance, in percent, that the next dealing includes a vignette door. */
-    public static int vignetteChance(LabyrinthData data) {
+    public static int vignetteChance(LabyrinthData data, UUID player) {
         if (vignettesAvailable(data).isEmpty()) {
             return 0;
         }
-        return (int) Math.min(100L, VIGNETTE_BASE_CHANCE + (long) VIGNETTE_CHANCE_STEP * data.dryDeals());
+        return (int) Math.min(100L,
+                VIGNETTE_BASE_CHANCE + (long) VIGNETTE_CHANCE_STEP * data.dryDeals(player));
     }
 
-    /** How often a vignette is picked for a vignette door, relative to the others. */
     public static int dealWeight(LabyrinthData data, LabyrinthPlace place) {
         return place.isMultiVisit() && !data.isCompleted(place.id()) && data.state(place.id()).getInt("Visit") > 0
                 ? UNFINISHED_WEIGHT : 1;
@@ -84,29 +77,50 @@ public final class LabyrinthDealer {
         return vignettes.get(vignettes.size() - 1);
     }
 
-    /** What Hillary makes of a scent. */
+    /**
+     * How far this player's gray maze has grown. Shared completed vignettes
+     * also count, so an established world's House does not shrink for a new
+     * player or after upgrading an older save.
+     */
+    public static int mazeTier(LabyrinthData data, UUID player) {
+        return Math.min(3, Math.max(data.vignettesVisited(player), data.completed().size()));
+    }
+
+    public static List<LabyrinthPlace> grayAvailable(LabyrinthData data, UUID player) {
+        int tier = mazeTier(data, player);
+        List<LabyrinthPlace> gray = new ArrayList<>();
+        gray.add(LabyrinthPlace.JUNCTION);
+        gray.add(LabyrinthPlace.GRAY_CORRIDOR);
+        if (tier >= 1) {
+            gray.add(LabyrinthPlace.LONG_HALLWAY);
+        }
+        if (tier >= 2) {
+            gray.add(LabyrinthPlace.SPIRAL_STAIR);
+        }
+        if (tier >= 3) {
+            gray.add(LabyrinthPlace.HOTEL_HALLWAY);
+        }
+        return gray;
+    }
+
     public enum Scent {
-        /** She has it: the next dealing will have a vignette door. */
         SEEKING,
-        /** She is already on one. */
         ALREADY,
-        /** There is nothing left in the house for her to find. */
         NOTHING
     }
 
-    public static Scent giveScent(LabyrinthData data) {
+    public static Scent giveScent(LabyrinthData data, UUID player) {
         if (vignettesAvailable(data).isEmpty()) {
             return Scent.NOTHING;
         }
-        if (data.hillaryScent()) {
+        if (data.hillaryScent(player)) {
             return Scent.ALREADY;
         }
-        data.setHillaryScent(true);
+        data.setHillaryScent(player, true);
         return Scent.SEEKING;
     }
 
-    /** Deals every dealt door of a place, as when someone arrives there. */
-    public static void dealPlace(LabyrinthData data, LabyrinthPlace place, RandomSource random) {
+    public static void dealPlace(LabyrinthData data, UUID player, LabyrinthPlace place, RandomSource random) {
         List<LabyrinthData.Door> doors = new ArrayList<>();
         for (LabyrinthPlace.DoorSpec spec : place.doors()) {
             LabyrinthData.Door door = data.door(place.doorId(spec));
@@ -114,10 +128,14 @@ public final class LabyrinthDealer {
                 doors.add(door);
             }
         }
-        deal(data, doors, place, random);
+        deal(data, player, doors, place, random);
     }
 
-    private static LabyrinthPlace pickGray(List<LabyrinthPlace> gray, int totalWeight, RandomSource random) {
+    private static LabyrinthPlace pickGray(List<LabyrinthPlace> gray, RandomSource random) {
+        int totalWeight = 0;
+        for (LabyrinthPlace place : gray) {
+            totalWeight += place.grayWeight();
+        }
         if (gray.isEmpty() || totalWeight <= 0) {
             return LabyrinthPlace.JUNCTION;
         }
@@ -131,16 +149,15 @@ public final class LabyrinthDealer {
         return gray.get(gray.size() - 1);
     }
 
-    /** Deals a set of doors in one go; {@code here} is never dealt back to itself. */
-    public static void deal(LabyrinthData data, List<LabyrinthData.Door> doors, @Nullable LabyrinthPlace here, RandomSource random) {
+    public static void deal(LabyrinthData data, UUID player, List<LabyrinthData.Door> doors,
+                            @Nullable LabyrinthPlace here, RandomSource random) {
         if (doors.isEmpty()) {
             return;
         }
         List<LabyrinthPlace> vignettes = vignettesAvailable(data);
         LabyrinthData.Door lucky = null;
-        boolean scent = data.hillaryScent() && !vignettes.isEmpty();
+        boolean scent = data.hillaryScent(player) && !vignettes.isEmpty();
         if (scent) {
-            // She goes for what hasn't been found yet.
             List<LabyrinthPlace> unfound = new ArrayList<>();
             for (LabyrinthPlace place : vignettes) {
                 if (place.isFinishable()) {
@@ -150,27 +167,20 @@ public final class LabyrinthDealer {
             if (!unfound.isEmpty()) {
                 vignettes = unfound;
             }
-            data.setHillaryScent(false);
+            data.setHillaryScent(player, false);
         }
-        if (!vignettes.isEmpty() && (scent || random.nextInt(100) < vignetteChance(data))) {
+        if (!vignettes.isEmpty() && (scent || random.nextInt(100) < vignetteChance(data, player))) {
             lucky = doors.get(random.nextInt(doors.size()));
         }
 
-        List<LabyrinthPlace> gray = new ArrayList<>();
-        int totalWeight = 0;
-        for (LabyrinthPlace place : LabyrinthPlace.values()) {
-            if (place.isGray() && place != here) {
-                gray.add(place);
-                totalWeight += place.grayWeight();
-            }
-        }
+        List<LabyrinthPlace> gray = grayAvailable(data, player);
         for (LabyrinthData.Door door : doors) {
             if (door == lucky) {
-                data.deal(door, pickVignette(data, vignettes, random).id(), true, scent);
+                data.deal(player, door, pickVignette(data, vignettes, random).id(), true, scent);
             } else {
-                data.deal(door, pickGray(gray, totalWeight, random).id(), random.nextInt(100) < LYING_LEAK_CHANCE);
+                data.deal(player, door, pickGray(gray, random).id(), random.nextInt(100) < LYING_LEAK_CHANCE);
             }
         }
-        data.setDryDeals(lucky != null ? 0 : data.dryDeals() + 1);
+        data.setDryDeals(player, lucky != null ? 0 : data.dryDeals(player) + 1);
     }
 }

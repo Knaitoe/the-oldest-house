@@ -142,10 +142,12 @@ public final class LabyrinthDoors {
 
         LabyrinthPlace place;
         if (LabyrinthData.DEALT.equals(door.destination)) {
-            if (door.dealt == null || door.command) {
-                LabyrinthDealer.deal(data, List.of(door), placeOf(server, door), player.getRandom());
+            LabyrinthData.Deal dealt = data.deal(player.getUUID(), door);
+            if (dealt == null || door.command) {
+                LabyrinthDealer.deal(data, player.getUUID(), List.of(door), placeOf(server, door), player.getRandom());
+                dealt = data.deal(player.getUUID(), door);
             }
-            place = LabyrinthPlace.byId(door.dealt);
+            place = dealt == null ? null : LabyrinthPlace.byId(dealt.place());
         } else {
             place = door.destination.startsWith("place:") ? LabyrinthPlace.byId(door.destination.substring(6)) : null;
         }
@@ -192,7 +194,8 @@ public final class LabyrinthDoors {
         INSIDE.remove(player.getUUID());
         Consumer<ServerPlayer> arrived = p -> {
             setDoorOpen(toLevel, entry.lower, true, p);
-            LabyrinthDealer.dealPlace(data, place, p.getRandom());
+            data.visit(p.getUUID(), place);
+            LabyrinthDealer.dealPlace(data, p.getUUID(), place, p.getRandom());
             RedRoom.prepareIfDealt(p, place);
             ModelHome.onArrive(p, place);
         };
@@ -417,7 +420,8 @@ public final class LabyrinthDoors {
         data.pushReturn(player.getUUID(), new LabyrinthData.Waypoint(
                 player.serverLevel().dimension(), player.position(), player.getYRot(), false));
         setDoorOpen(level, entry.lower, false, null);
-        LabyrinthDealer.dealPlace(data, place, player.getRandom());
+        data.visit(player.getUUID(), place);
+        LabyrinthDealer.dealPlace(data, player.getUUID(), place, player.getRandom());
         INSIDE.add(player.getUUID());
 
         HousePackets.send(player, new HouseFadePayload(0, 40, 60));
@@ -597,11 +601,15 @@ public final class LabyrinthDoors {
         LabyrinthData data = LabyrinthData.get(server);
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             for (LabyrinthData.Door door : data.doors()) {
-                if (door.leak
+                LabyrinthData.Deal personal = LabyrinthData.DEALT.equals(door.destination)
+                        ? data.deal(player.getUUID(), door) : null;
+                boolean leak = personal != null ? personal.leak() : door.leak;
+                boolean bark = personal != null ? personal.bark() : door.bark;
+                if (leak
                         && door.dimension.equals(player.serverLevel().dimension())
                         && player.position().distanceTo(Vec3.atCenterOf(door.lower)) <= LEAK_RADIUS) {
                     Vec3 behind = Vec3.atCenterOf(door.lower.relative(door.facing.getOpposite()));
-                    if (door.bark) {
+                    if (bark) {
                         // Hillary, somewhere behind it, the way she found round outside.
                         boolean whine = player.getRandom().nextInt(3) == 0;
                         playTo(player, whine ? SoundEvents.WOLF_WHINE : SoundEvents.WOLF_AMBIENT, behind, 0.35F, 1.0F);
@@ -792,21 +800,29 @@ public final class LabyrinthDoors {
                 : LabyrinthBuilder.isCarving() ? "being carved" : "not carved yet";
         lines.add("Labyrinth: " + where
                 + "; hallway door " + (data.door("hallway_end") != null ? "in place" : "not yet (it comes with the hallway)")
-                + "; next dealing has a " + LabyrinthDealer.vignetteChance(data) + "% chance of a vignette door ("
-                + data.dryDeals() + " dry dealing(s)); finished vignettes: "
-                + (data.completed().isEmpty() ? "none" : String.join(", ", data.completed())) + "."
-                + (data.hillaryScent() ? " Hillary has a scent: the next dealing that can will have a vignette door." : ""));
-        List<String> deals = new ArrayList<>();
-        for (LabyrinthData.Door door : data.doors()) {
-            if (LabyrinthData.DEALT.equals(door.destination) && door.dealt != null) {
-                deals.add(door.id + " -> " + door.dealt + (door.bark ? " (Hillary barks behind it)" : door.leak ? " (leaks)" : ""));
-            }
-        }
-        if (!deals.isEmpty()) {
-            lines.add("Dealt doors: " + String.join(", ", deals) + ".");
-        }
+                + "; finished vignettes: "
+                + (data.completed().isEmpty() ? "none" : String.join(", ", data.completed())) + ".");
         if (viewer != null) {
-            lines.add("Your way back: " + data.returnDepth(viewer.getUUID()) + " door(s) deep.");
+            UUID id = viewer.getUUID();
+            lines.add("Your next dealing has a " + LabyrinthDealer.vignetteChance(data, id)
+                    + "% chance of a vignette door (" + data.dryDeals(id) + " dry dealing(s)); gray maze tier "
+                    + LabyrinthDealer.mazeTier(data, id) + "/3."
+                    + (data.hillaryScent(id) ? " Hillary has your scent: the next dealing that can will have a vignette door." : ""));
+            List<String> deals = new ArrayList<>();
+            for (LabyrinthData.Door door : data.doors()) {
+                if (!LabyrinthData.DEALT.equals(door.destination)) {
+                    continue;
+                }
+                LabyrinthData.Deal dealt = data.deal(id, door);
+                if (dealt != null) {
+                    deals.add(door.id + " -> " + dealt.place()
+                            + (dealt.bark() ? " (Hillary barks behind it)" : dealt.leak() ? " (leaks)" : ""));
+                }
+            }
+            if (!deals.isEmpty()) {
+                lines.add("Your dealt doors: " + String.join(", ", deals) + ".");
+            }
+            lines.add("Your way back: " + data.returnDepth(id) + " door(s) deep.");
             String loop = LabyrinthLoops.describe(viewer.getUUID(), viewer.serverLevel().getGameTime());
             if (loop != null) {
                 lines.add(loop);

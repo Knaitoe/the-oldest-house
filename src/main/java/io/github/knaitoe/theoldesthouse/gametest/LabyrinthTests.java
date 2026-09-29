@@ -93,48 +93,120 @@ public final class LabyrinthTests {
     @GameTest(template = "empty")
     public static void dealerGuaranteesAVignetteAfterADrySpellAndNeverRepeatsAFinishedOne(GameTestHelper helper) {
         LabyrinthData data = new LabyrinthData();
+        UUID player = UUID.randomUUID();
         LabyrinthBuilder.registerDoors(data, LabyrinthPlace.JUNCTION, new BlockPos(0, 64, 0));
         RandomSource random = RandomSource.create(99);
 
         boolean dealt = false;
         for (int dealing = 0; dealing < 4 && !dealt; dealing++) {
-            LabyrinthDealer.dealPlace(data, LabyrinthPlace.JUNCTION, random);
+            LabyrinthDealer.dealPlace(data, player, LabyrinthPlace.JUNCTION, random);
             int vignettes = 0;
             for (LabyrinthPlace.DoorSpec spec : LabyrinthPlace.JUNCTION.doors()) {
                 LabyrinthData.Door door = data.door(LabyrinthPlace.JUNCTION.doorId(spec));
-                if (LabyrinthData.DEALT.equals(door.destination)) {
-                    helper.assertTrue(door.dealt != null && !door.dealt.equals(LabyrinthPlace.JUNCTION.id()),
-                            "a junction door was dealt back to the junction, or not at all");
-                    LabyrinthPlace dealtPlace = LabyrinthPlace.byId(door.dealt);
-                    if (dealtPlace != null && dealtPlace.isVignette()) {
-                        vignettes++;
-                        helper.assertTrue(door.leak, "a vignette door should leak");
-                    }
+                if (!LabyrinthData.DEALT.equals(door.destination)) {
+                    continue;
+                }
+                LabyrinthData.Deal answer = data.deal(player, door);
+                helper.assertTrue(answer != null, "a junction door was not dealt");
+                LabyrinthPlace dealtPlace = LabyrinthPlace.byId(answer.place());
+                if (dealtPlace != null && dealtPlace.isVignette()) {
+                    vignettes++;
+                    helper.assertTrue(answer.leak(), "a vignette door should leak");
                 }
             }
             helper.assertTrue(vignettes <= 1, "more than one vignette door in a dealing");
             dealt = vignettes == 1;
         }
         helper.assertTrue(dealt, "four dealings passed without a vignette door");
-        helper.assertTrue(data.dryDeals() == 0, "the dry spell resets");
+        helper.assertTrue(data.dryDeals(player) == 0, "the dry spell resets");
 
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
             if (place.isFinishable()) {
                 data.setCompleted(place.id(), true);
             }
         }
-        helper.assertTrue(LabyrinthDealer.vignetteChance(data) == 0, "nothing left to deal while the Red Room has no room to copy");
+        helper.assertTrue(LabyrinthDealer.vignetteChance(data, player) == 0,
+                "nothing left to deal while the Red Room has no room to copy");
         data.setReady(RedRoom.ID, true);
-        helper.assertTrue(LabyrinthDealer.vignetteChance(data) > 0, "the Red Room keeps being dealt once it has one");
+        helper.assertTrue(LabyrinthDealer.vignetteChance(data, player) > 0,
+                "the Red Room keeps being dealt once it has one");
         data.setReady(RedRoom.ID, false);
         for (int dealing = 0; dealing < 6; dealing++) {
-            LabyrinthDealer.dealPlace(data, LabyrinthPlace.JUNCTION, random);
+            LabyrinthDealer.dealPlace(data, player, LabyrinthPlace.JUNCTION, random);
             for (LabyrinthPlace.DoorSpec spec : LabyrinthPlace.JUNCTION.doors()) {
                 LabyrinthData.Door door = data.door(LabyrinthPlace.JUNCTION.doorId(spec));
-                LabyrinthPlace dealtPlace = LabyrinthPlace.byId(door.dealt);
+                LabyrinthData.Deal answer = data.deal(player, door);
+                LabyrinthPlace dealtPlace = answer == null ? null : LabyrinthPlace.byId(answer.place());
                 helper.assertTrue(dealtPlace == null || !dealtPlace.isFinishable(), "a finished vignette was dealt again");
             }
         }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void dealsDrySpellsAndScentsBelongToThePlayer(GameTestHelper helper) {
+        LabyrinthData data = new LabyrinthData();
+        UUID a = UUID.randomUUID();
+        UUID b = UUID.randomUUID();
+        LabyrinthBuilder.registerDoors(data, LabyrinthPlace.JUNCTION, new BlockPos(0, 64, 0));
+        LabyrinthData.Door west = data.door("junction/west");
+        helper.assertTrue(west != null, "the west door exists");
+
+        data.deal(a, west, LabyrinthPlace.JUNCTION.id(), true, false);
+        data.deal(b, west, LabyrinthPlace.GRAY_CORRIDOR.id(), false, true);
+        data.setDryDeals(a, 3);
+        data.setDryDeals(b, 1);
+        data.setHillaryScent(a, true);
+
+        helper.assertTrue(LabyrinthPlace.JUNCTION.id().equals(data.deal(a, west).place()), "a keeps a's route");
+        helper.assertTrue(LabyrinthPlace.GRAY_CORRIDOR.id().equals(data.deal(b, west).place()), "b keeps b's route");
+        helper.assertTrue(data.deal(a, west).leak() && !data.deal(a, west).bark(), "a keeps a's leak");
+        helper.assertTrue(!data.deal(b, west).leak() && data.deal(b, west).bark(), "b keeps b's leak");
+        helper.assertTrue(data.dryDeals(a) == 3 && data.dryDeals(b) == 1, "dry streaks are independent");
+        helper.assertTrue(data.hillaryScent(a) && !data.hillaryScent(b), "Hillary's scent is independent");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void grayMazeGrowsWithVignetteProgressAndAllowsSelfLoops(GameTestHelper helper) {
+        LabyrinthData data = new LabyrinthData();
+        UUID player = UUID.randomUUID();
+
+        List<LabyrinthPlace> start = LabyrinthDealer.grayAvailable(data, player);
+        helper.assertTrue(start.size() == 2 && start.contains(LabyrinthPlace.JUNCTION)
+                        && start.contains(LabyrinthPlace.GRAY_CORRIDOR),
+                "the first maze is only the junction and plain corridor");
+
+        data.visit(player, LabyrinthPlace.FLOORBOARDS);
+        helper.assertTrue(LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.LONG_HALLWAY),
+                "one vignette grows the long hallway");
+        data.visit(player, LabyrinthPlace.HIDE_AND_CLAP);
+        helper.assertTrue(LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.SPIRAL_STAIR),
+                "two vignettes grow the spiral stair");
+        data.visit(player, LabyrinthPlace.MODEL_HOME);
+        helper.assertTrue(LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.HOTEL_HALLWAY),
+                "three vignettes grow the hotel hallway");
+
+        LabyrinthBuilder.registerDoors(data, LabyrinthPlace.JUNCTION, new BlockPos(0, 64, 0));
+        for (LabyrinthPlace place : LabyrinthPlace.values()) {
+            if (place.isFinishable()) {
+                data.setCompleted(place.id(), true);
+            }
+        }
+        RandomSource random = RandomSource.create(17);
+        boolean selfLoop = false;
+        for (int i = 0; i < 24 && !selfLoop; i++) {
+            LabyrinthDealer.dealPlace(data, player, LabyrinthPlace.JUNCTION, random);
+            for (LabyrinthPlace.DoorSpec spec : LabyrinthPlace.JUNCTION.doors()) {
+                LabyrinthData.Door door = data.door(LabyrinthPlace.JUNCTION.doorId(spec));
+                if (door == null || !LabyrinthData.DEALT.equals(door.destination)) {
+                    continue;
+                }
+                LabyrinthData.Deal answer = data.deal(player, door);
+                selfLoop |= answer != null && LabyrinthPlace.JUNCTION.id().equals(answer.place());
+            }
+        }
+        helper.assertTrue(selfLoop, "the junction can now deal a door back to itself");
         helper.succeed();
     }
 
@@ -412,31 +484,33 @@ public final class LabyrinthTests {
     @GameTest(template = "empty")
     public static void hillarysScentDealsAVignetteDoorSheBarksBehind(GameTestHelper helper) {
         LabyrinthData data = new LabyrinthData();
+        UUID player = UUID.randomUUID();
         LabyrinthBuilder.registerDoors(data, LabyrinthPlace.JUNCTION, new BlockPos(0, 64, 0));
         helper.assertTrue(VignetteYields.of(TellTaleFloorboards.caregiversNote()) != null, "the caregiver's note carries its vignette");
         helper.assertTrue(VignetteYields.of(new ItemStack(Items.WRITABLE_BOOK)) == null, "an ordinary book does not");
-        helper.assertTrue(LabyrinthDealer.giveScent(data) == LabyrinthDealer.Scent.SEEKING, "she takes the scent");
-        helper.assertTrue(LabyrinthDealer.giveScent(data) == LabyrinthDealer.Scent.ALREADY, "and keeps it until it is used");
+        helper.assertTrue(LabyrinthDealer.giveScent(data, player) == LabyrinthDealer.Scent.SEEKING, "she takes the scent");
+        helper.assertTrue(LabyrinthDealer.giveScent(data, player) == LabyrinthDealer.Scent.ALREADY, "and keeps it until it is used");
 
-        LabyrinthDealer.dealPlace(data, LabyrinthPlace.JUNCTION, RandomSource.create(3));
+        LabyrinthDealer.dealPlace(data, player, LabyrinthPlace.JUNCTION, RandomSource.create(3));
         int barking = 0;
         for (LabyrinthPlace.DoorSpec spec : LabyrinthPlace.JUNCTION.doors()) {
             LabyrinthData.Door door = data.door(LabyrinthPlace.JUNCTION.doorId(spec));
-            if (door != null && door.bark) {
+            LabyrinthData.Deal answer = door == null ? null : data.deal(player, door);
+            if (answer != null && answer.bark()) {
                 barking++;
-                LabyrinthPlace dealt = LabyrinthPlace.byId(door.dealt);
-                helper.assertTrue(dealt != null && dealt.isFinishable() && door.leak, "the door she found leads to an unfound vignette");
+                LabyrinthPlace dealt = LabyrinthPlace.byId(answer.place());
+                helper.assertTrue(dealt != null && dealt.isFinishable() && answer.leak(), "the door she found leads to an unfound vignette");
             }
         }
         helper.assertTrue(barking == 1, "exactly one door has her behind it, found " + barking);
-        helper.assertTrue(!data.hillaryScent(), "the scent is spent");
+        helper.assertTrue(!data.hillaryScent(player), "the scent is spent");
 
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
             if (place.isFinishable()) {
                 data.setCompleted(place.id(), true);
             }
         }
-        helper.assertTrue(LabyrinthDealer.giveScent(data) == LabyrinthDealer.Scent.NOTHING, "with nothing left she finds nothing");
+        helper.assertTrue(LabyrinthDealer.giveScent(data, player) == LabyrinthDealer.Scent.NOTHING, "with nothing left she finds nothing");
         helper.succeed();
     }
 

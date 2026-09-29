@@ -415,7 +415,9 @@ public final class RedRoom {
         LabyrinthData data = LabyrinthData.get(player.server);
         for (LabyrinthPlace.DoorSpec spec : place.doors()) {
             LabyrinthData.Door door = data.door(place.doorId(spec));
-            if (door != null && LabyrinthData.DEALT.equals(door.destination) && ID.equals(door.dealt)) {
+            LabyrinthData.Deal dealt = door == null ? null : data.deal(player.getUUID(), door);
+            if (door != null && LabyrinthData.DEALT.equals(door.destination)
+                    && dealt != null && ID.equals(dealt.place())) {
                 prepare(player);
                 return;
             }
