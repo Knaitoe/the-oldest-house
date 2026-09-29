@@ -30,6 +30,17 @@ public final class HouseBlocks {
     public static final DeferredBlock<CarpetBlock> LITERARY_RUG_AUTHORED = carpet("literary_rug_authored", Blocks.LIGHT_BLUE_CARPET);
     public static final DeferredBlock<CarpetBlock> LITERARY_RUG_SHIFTED = carpet("literary_rug_shifted", Blocks.RED_CARPET);
 
+    public static final DeferredBlock<Block> HOTEL_WALLPAPER = BLOCKS.registerBlock(
+            "hotel_wallpaper", Block::new,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.YELLOW_TERRACOTTA).noLootTable());
+    public static final DeferredBlock<Block> HOTEL_WAINSCOT = BLOCKS.registerBlock(
+            "hotel_wainscot", Block::new,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS).noLootTable());
+    public static final DeferredBlock<Block> HOTEL_CEILING = BLOCKS.registerBlock(
+            "hotel_ceiling", Block::new,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.BIRCH_PLANKS).noLootTable());
+    public static final DeferredBlock<CarpetBlock> HOTEL_CARPET = carpet("hotel_carpet", Blocks.RED_CARPET);
+
     public static final DeferredBlock<Block> LOOSE_FLOORBOARD = BLOCKS.registerBlock(
             "loose_floorboard", Block::new,
             BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).noLootTable());

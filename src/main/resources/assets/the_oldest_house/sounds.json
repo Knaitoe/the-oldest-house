@@ -2,8 +2,16 @@
   "vignette.clap": {
     "sounds": [
       {
-        "name": "minecraft:note/snare",
-        "pitch": 1.35
+        "name": "the_oldest_house:vignette/clap1",
+        "attenuation_distance": 24
+      },
+      {
+        "name": "the_oldest_house:vignette/clap2",
+        "attenuation_distance": 24
+      },
+      {
+        "name": "the_oldest_house:vignette/clap3",
+        "attenuation_distance": 24
       }
     ],
     "subtitle": "subtitles.the_oldest_house.clap"
@@ -11,9 +19,14 @@
   "vignette.clap_muffled": {
     "sounds": [
       {
-        "name": "minecraft:note/snare",
-        "pitch": 1.05,
-        "volume": 0.6
+        "name": "the_oldest_house:vignette/clap_muffled1",
+        "volume": 0.82,
+        "attenuation_distance": 20
+      },
+      {
+        "name": "the_oldest_house:vignette/clap_muffled2",
+        "volume": 0.82,
+        "attenuation_distance": 20
       }
     ],
     "subtitle": "subtitles.the_oldest_house.clap_muffled"
@@ -21,16 +34,16 @@
   "vignette.small_steps": {
     "sounds": [
       {
-        "name": "minecraft:step/cloth1",
-        "pitch": 1.5
+        "name": "the_oldest_house:vignette/small_steps1",
+        "attenuation_distance": 18
       },
       {
-        "name": "minecraft:step/cloth2",
-        "pitch": 1.5
+        "name": "the_oldest_house:vignette/small_steps2",
+        "attenuation_distance": 18
       },
       {
-        "name": "minecraft:step/cloth3",
-        "pitch": 1.5
+        "name": "the_oldest_house:vignette/small_steps3",
+        "attenuation_distance": 18
       }
     ],
     "subtitle": "subtitles.the_oldest_house.small_steps"
