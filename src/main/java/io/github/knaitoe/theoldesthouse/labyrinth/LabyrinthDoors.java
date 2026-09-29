@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.HouseInternalTeleport;
 import io.github.knaitoe.theoldesthouse.house.HouseImpossibleHallway;
 import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
@@ -32,7 +33,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -464,11 +464,11 @@ public final class LabyrinthDoors {
     // The shift, and the copy behind the door
 
     /**
-     * Moves the player within their dimension, sent as a relative move so
-     * their view and momentum carry straight over.
+     * Moves the player within their dimension through the shared seamless
+     * House teleporter.
      */
     static void shift(ServerPlayer player, Vec3 to, float yaw) {
-        player.connection.teleport(to.x, to.y, to.z, yaw, player.getXRot(), RelativeMovement.ALL);
+        HouseInternalTeleport.shift(player, to, yaw);
     }
 
     /** The turn that lines a door up with another: the one taking {@code from} to {@code to}. */
