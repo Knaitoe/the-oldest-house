@@ -346,6 +346,6 @@ public final class TellTaleFloorboards {
         ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
         book.set(DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(
                 Filterable.passThrough("Kept by his bed"), "his caregiver", 0, pages, true));
-        return book;
+        return VignetteYields.mark(book, ID);
     }
 }

@@ -18,6 +18,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthRegistry;
 import io.github.knaitoe.theoldesthouse.labyrinth.RedRoom;
 import io.github.knaitoe.theoldesthouse.labyrinth.RoomSnapshot;
 import io.github.knaitoe.theoldesthouse.labyrinth.TellTaleFloorboards;
+import io.github.knaitoe.theoldesthouse.labyrinth.VignetteYields;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -368,6 +369,38 @@ public final class LabyrinthTests {
         helper.assertTrue(LabyrinthLoops.roomNumber(0, 0, 1) > LabyrinthLoops.roomNumber(0, 0, 0), "the numbers climb");
         helper.assertTrue(LabyrinthLoops.roomNumber(LabyrinthLoops.HOTEL_ROOMS / 2, 0, 0) == LabyrinthLoops.roomNumber(0, 0, 0),
                 "and repeat");
+        helper.succeed();
+    }
+
+    /** A scent from a vignette's object makes the next dealing include a vignette door, with Hillary heard behind it. */
+    @GameTest(template = "empty")
+    public static void hillarysScentDealsAVignetteDoorSheBarksBehind(GameTestHelper helper) {
+        LabyrinthData data = new LabyrinthData();
+        LabyrinthBuilder.registerDoors(data, LabyrinthPlace.JUNCTION, new BlockPos(0, 64, 0));
+        helper.assertTrue(VignetteYields.of(TellTaleFloorboards.caregiversNote()) != null, "the caregiver's note carries its vignette");
+        helper.assertTrue(VignetteYields.of(new ItemStack(Items.WRITABLE_BOOK)) == null, "an ordinary book does not");
+        helper.assertTrue(LabyrinthDealer.giveScent(data) == LabyrinthDealer.Scent.SEEKING, "she takes the scent");
+        helper.assertTrue(LabyrinthDealer.giveScent(data) == LabyrinthDealer.Scent.ALREADY, "and keeps it until it is used");
+
+        LabyrinthDealer.dealPlace(data, LabyrinthPlace.JUNCTION, RandomSource.create(3));
+        int barking = 0;
+        for (LabyrinthPlace.DoorSpec spec : LabyrinthPlace.JUNCTION.doors()) {
+            LabyrinthData.Door door = data.door(LabyrinthPlace.JUNCTION.doorId(spec));
+            if (door != null && door.bark) {
+                barking++;
+                LabyrinthPlace dealt = LabyrinthPlace.byId(door.dealt);
+                helper.assertTrue(dealt != null && dealt.isOneShot() && door.leak, "the door she found leads to an unfound vignette");
+            }
+        }
+        helper.assertTrue(barking == 1, "exactly one door has her behind it, found " + barking);
+        helper.assertTrue(!data.hillaryScent(), "the scent is spent");
+
+        for (LabyrinthPlace place : LabyrinthPlace.values()) {
+            if (place.isOneShot()) {
+                data.setCompleted(place.id(), true);
+            }
+        }
+        helper.assertTrue(LabyrinthDealer.giveScent(data) == LabyrinthDealer.Scent.NOTHING, "with nothing left she finds nothing");
         helper.succeed();
     }
 

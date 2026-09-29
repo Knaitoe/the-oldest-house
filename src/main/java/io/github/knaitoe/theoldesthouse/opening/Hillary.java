@@ -3,6 +3,10 @@ package io.github.knaitoe.theoldesthouse.opening;
 import io.github.knaitoe.theoldesthouse.house.HouseExteriorEntityMirror;
 import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import io.github.knaitoe.theoldesthouse.house.HouseProxyEntityEvacuation;
+import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDealer;
+import io.github.knaitoe.theoldesthouse.labyrinth.VignetteYields;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -13,6 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -22,6 +27,7 @@ import net.minecraft.world.entity.animal.WolfVariants;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
@@ -71,6 +77,10 @@ public final class Hillary {
     }
 
     private static final Map<UUID, Greeting> GREETINGS = new HashMap<>();
+    /** Hillaries on a scent, and when they give up scratching at the door. */
+    private static final Map<UUID, Long> SEEKING = new HashMap<>();
+    private static final int SEEK_TICKS = 400;
+    private static final int SCRATCH_TICKS = 100;
 
     private Hillary() {
     }
@@ -125,6 +135,15 @@ public final class Hillary {
         Player player = event.getEntity();
         ItemStack stack = event.getItemStack();
         boolean recipient = player.getUUID().equals(tag.recipient());
+
+        if (VignetteYields.of(stack) != null && (recipient || wolf.isOwnedBy(player))) {
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            if (event.getHand() == InteractionHand.MAIN_HAND && wolf.level() instanceof ServerLevel level) {
+                takeScent(wolf, level);
+            }
+            return;
+        }
 
         if (!wolf.isTame() && stack.is(Items.BONE)) {
             event.setCanceled(true);
@@ -196,6 +215,9 @@ public final class Hillary {
             return;
         }
         HillaryTag tag = tagOf(wolf);
+        if (tag != null && tickSeeking(wolf, level)) {
+            return;
+        }
         if (tag == null || tag.acknowledged()) {
             return;
         }
@@ -291,6 +313,81 @@ public final class Hillary {
     /** Drops all greeting state (server stop). */
     public static void clearAll() {
         GREETINGS.clear();
+        SEEKING.clear();
+    }
+
+    // ------------------------------------------------------------------
+    // Seeking
+
+    /**
+     * Something a vignette gave up, held out to her. She takes the scent
+     * and makes for the manor's front door, where she scratches to be let
+     * in; she never is. The house deals the next vignette door it can, and
+     * she can be heard barking behind it, the way she found round outside.
+     * With nothing left in the house to find, she whines and lies down.
+     */
+    public static void takeScent(Wolf wolf, ServerLevel level) {
+        wolf.playSound(SoundEvents.WOLF_PANT, 1.0F, 1.2F);
+        LabyrinthDealer.Scent scent = LabyrinthDealer.giveScent(LabyrinthData.get(level.getServer()));
+        if (scent == LabyrinthDealer.Scent.NOTHING || HouseSavedData.get(level.getServer()).houseOrigin() == null) {
+            wolf.playSound(SoundEvents.WOLF_WHINE, 0.8F, 0.8F);
+            if (wolf.isTame()) {
+                wolf.setOrderedToSit(true);
+                wolf.setInSittingPose(true);
+            }
+            return;
+        }
+        wolf.playSound(SoundEvents.WOLF_AMBIENT, 1.0F, 1.2F);
+        SEEKING.put(wolf.getUUID(), level.getGameTime() + SEEK_TICKS);
+    }
+
+    public static boolean isSeeking(Wolf wolf) {
+        return SEEKING.containsKey(wolf.getUUID());
+    }
+
+    /** On a scent: to the front door, then scratching at it. Returns false once she has given up. */
+    private static boolean tickSeeking(Wolf wolf, ServerLevel level) {
+        Long until = SEEKING.get(wolf.getUUID());
+        if (until == null) {
+            return false;
+        }
+        long now = level.getGameTime();
+        BlockPos origin = HouseSavedData.get(level.getServer()).houseOrigin();
+        if (now >= until || origin == null || !level.dimension().equals(Level.OVERWORLD)) {
+            SEEKING.remove(wolf.getUUID());
+            wolf.getNavigation().stop();
+            if (wolf.isTame()) {
+                wolf.setOrderedToSit(true);
+                wolf.setInSittingPose(true);
+            }
+            return false;
+        }
+        Vec3 porch = HouseProxyEntityEvacuation.frontDoorExit(level, origin);
+        if (porch == null) {
+            porch = Vec3.atBottomCenterOf(porchFallback(origin));
+        }
+        BlockPos door = origin.offset(HouseLayout.FRONT_DOOR.x(), HouseLayout.FRONT_DOOR.y(), HouseLayout.FRONT_DOOR.z());
+        wolf.setOrderedToSit(false);
+        wolf.setInSittingPose(false);
+        if (wolf.position().distanceTo(porch) > 1.5D) {
+            if (now % 10 == 0) {
+                wolf.getNavigation().moveTo(porch.x, porch.y, porch.z, GUIDE_SPEED);
+            }
+            return true;
+        }
+        wolf.getNavigation().stop();
+        wolf.getLookControl().setLookAt(Vec3.atCenterOf(door));
+        if (until - now > SCRATCH_TICKS) {
+            // Arrived: scratch for a while, then give up.
+            SEEKING.put(wolf.getUUID(), now + SCRATCH_TICKS);
+        }
+        if (now % 8 == 0) {
+            level.playSound(null, door, SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR, SoundSource.NEUTRAL, 0.12F, 1.9F);
+        }
+        if (now % 40 == 0) {
+            wolf.playSound(SoundEvents.WOLF_WHINE, 0.7F, 1.1F);
+        }
+        return true;
     }
 
     /**
