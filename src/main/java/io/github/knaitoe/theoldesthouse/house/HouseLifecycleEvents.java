@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.house;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
+import io.github.knaitoe.theoldesthouse.labyrinth.HideAndClap;
 import io.github.knaitoe.theoldesthouse.labyrinth.TellTaleFloorboards;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -64,6 +65,7 @@ public final class HouseLifecycleEvents {
         HouseChunkKeeper.release(event.getServer());
         LabyrinthDoors.clearAll();
         TellTaleFloorboards.clearAll();
+        HideAndClap.clearAll();
     }
 
     public static void onPlayerWakeUp(PlayerWakeUpEvent event) {

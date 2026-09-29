@@ -34,7 +34,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump to rebuild every place in existing worlds on next use. */
-    public static final int VERSION = 3;
+    public static final int VERSION = 4;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -144,6 +144,7 @@ public final class LabyrinthBuilder {
             case GRAY_CORRIDOR -> buildCorridor(level, base);
             case FLOORBOARDS -> TellTaleFloorboards.build(level, base, !data.isCompleted(place.id()));
             case RED_ROOM -> RedRoom.build(server, level, base);
+            case HIDE_AND_CLAP -> HideAndClap.build(server, level, base);
             default -> {
             }
         }

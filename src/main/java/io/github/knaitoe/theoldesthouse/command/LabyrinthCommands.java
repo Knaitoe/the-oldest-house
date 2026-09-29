@@ -6,6 +6,7 @@ import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthBuilder;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
+import io.github.knaitoe.theoldesthouse.labyrinth.HideAndClap;
 import io.github.knaitoe.theoldesthouse.labyrinth.HomeRooms;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
 import io.github.knaitoe.theoldesthouse.labyrinth.RedRoom;
@@ -84,6 +85,27 @@ public final class LabyrinthCommands {
                             LabyrinthData.get(context.getSource().getServer()).setCompleted(TellTaleFloorboards.ID, true);
                             context.getSource().sendSuccess(() -> Component.literal(
                                     "The floorboards are marked finished; the dealer will not deal them."), true);
+                            return 1;
+                        })))
+                .then(Commands.literal(HideAndClap.ID)
+                        .then(Commands.literal("reset").executes(context -> {
+                            if (!LabyrinthBuilder.ensureBuilt(context.getSource().getServer())) {
+                                context.getSource().sendFailure(Component.literal(
+                                        "The labyrinth is not carved yet (it needs the Navidsons' house; if that exists, try again in a moment)."));
+                                return 0;
+                            }
+                            if (!HideAndClap.reset(context.getSource().getServer())) {
+                                context.getSource().sendFailure(Component.literal("The Navidsons' house must exist first."));
+                                return 0;
+                            }
+                            context.getSource().sendSuccess(() -> Component.literal(
+                                    "The child's room is as it was: no wardrobe, the blindfold on the wall, dealable again."), true);
+                            return 1;
+                        }))
+                        .then(Commands.literal("complete").executes(context -> {
+                            LabyrinthData.get(context.getSource().getServer()).setCompleted(HideAndClap.ID, true);
+                            context.getSource().sendSuccess(() -> Component.literal(
+                                    "Hide-and-clap is marked finished; the dealer will not deal it."), true);
                             return 1;
                         })))
                 .then(Commands.literal(RedRoom.ID)
