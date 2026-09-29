@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.LiquidBlock;
@@ -65,6 +66,16 @@ final class LevelSnapshotScene implements SnapshotRenderer.Scene {
         }
         BlockState state = at.getBlockState(pos.set(x, y, z));
         if (state.isAir()) {
+            return 0;
+        }
+
+        // Navidson is photographing the player's home, not the canopy around
+        // it. Leaves are transient natural occlusion and were previously
+        // treated as solid "house" pixels by the camera scorer, which could
+        // produce a beautifully framed photograph of six oak trees and about
+        // three pixels of somebody's roof. Ignore foliage in the copied
+        // photographic scene only; the player's real world is untouched.
+        if (state.is(BlockTags.LEAVES)) {
             return 0;
         }
 
