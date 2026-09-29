@@ -315,9 +315,14 @@ public final class LabyrinthLoops {
             for (int i = 0; i < RING.size(); i++) {
                 level.setBlock(base.offset(RING.get(i)).above(stepY(turn, i)), i % 2 == 0 ? full : slab, flags);
             }
-            // A lamp under the step above the east side, clear of heads.
-            level.setBlock(base.offset(RING.get(2)).above(stepY(turn + 1, 2)), full, flags);
-            LabyrinthBuilder.hangLantern(level, base.offset(RING.get(2)).above(stepY(turn + 1, 2) - 1), false);
+            // Keep the light in a shallow niche in the outer east wall,
+            // not under the next flight. The old hanging lantern occupied the
+            // third block above a lower step, which was technically enough
+            // standing headroom but clipped jumps/sprinting on this very tight
+            // stair. Recessing it one block outside the walkable ring keeps
+            // every turn lit without putting collision geometry in the route.
+            BlockPos lamp = base.offset(2, TURN * turn + 2, -2);
+            level.setBlock(lamp, Blocks.LANTERN.defaultBlockState(), flags);
         }
         // The landing at the top, by the far door.
         level.setBlock(base.offset(RING.get(0)).above(stepY(SPIRAL_TURNS, 0)), full, flags);
