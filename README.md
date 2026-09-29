@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.4.0` revises the per-player opening sequence so the ordinary manor, not the player's home, is the first architectural relationship with the House:
+Version `0.4.1` revises the per-player opening sequence so the ordinary manor, not the player's home, is the first architectural relationship with the House:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -498,4 +498,14 @@ The opening has been revised so the player's own home remains ordinary.
 - The impossible hallway remains locked until somebody has traversed the room and at least two subtle House changes have occurred.
 - All seamless same-dimension topology now goes through `HouseInternalTeleport`: destination chunk prepared first, mounts left behind, pitch and ordinary momentum preserved, impossible vertical fall distance cleared, and no transition overlay.
 - Existing structural QA continues to walk the ordinary manor using player-sized step and headroom rules, while progression GameTests lock the reveal order and timing gates.
+
+### 0.4.1 animated entity mirrors
+
+- Bidirectional House/Overworld entity projections now visibly move with their authoritative mobs instead of behaving like periodically repositioned mannequins.
+- Projections within 48 blocks of a viewer update position and movement every server tick, including pitch/yaw, head turn, body turn, pose and velocity.
+- More distant projections remain visible but only catch up position twice per second, limiting cross-dimensional entity work where smooth motion is unlikely to matter.
+- Projection discovery/removal still runs at 10 Hz and expensive visible-NBT refreshes remain once per second.
+- Immediate pre-transition mirror seeding bypasses the distance throttle so the first frame after crossing always uses the source mob's current position.
+- The same motion policy applies in both directions: Overworld mobs seen from inside the House and domestic House mobs seen from outside.
+- A GameTest now moves and turns an authoritative domestic mob and verifies its projection follows while remaining non-interactive scenery.
 
