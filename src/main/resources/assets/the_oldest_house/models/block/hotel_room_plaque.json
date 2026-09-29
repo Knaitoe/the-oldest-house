@@ -1,0 +1,76 @@
+{
+  "textures": {
+    "plaque": "the_oldest_house:block/hotel_room_plaque",
+    "particle": "the_oldest_house:block/hotel_room_plaque"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        5,
+        0
+      ],
+      "to": [
+        14,
+        11,
+        1.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#plaque"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#plaque"
+        },
+        "east": {
+          "uv": [
+            14,
+            0,
+            16,
+            16
+          ],
+          "texture": "#plaque"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#plaque"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ],
+          "texture": "#plaque"
+        },
+        "down": {
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ],
+          "texture": "#plaque"
+        }
+      }
+    }
+  ]
+}

@@ -476,6 +476,8 @@ public final class LabyrinthTests {
                 "wallpaper stands above the trim");
         helper.assertTrue(level.getBlockState(hotelPeriod.above(3)).is(HouseBlocks.HOTEL_CEILING.get()),
                 "the hotel ceiling is its own warm plaster");
+        helper.assertTrue(level.getBlockState(hotelBase.offset(LabyrinthLoops.signPos(0, 0))).is(HouseBlocks.HOTEL_ROOM_PLAQUE.get()),
+                "hotel room numbers use the authored brass plaque block");
         helper.succeed();
     }
 

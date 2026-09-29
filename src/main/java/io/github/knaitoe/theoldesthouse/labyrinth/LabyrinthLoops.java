@@ -1,7 +1,10 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
+import io.github.knaitoe.theoldesthouse.house.HotelRoomPlaqueBlock;
 import io.github.knaitoe.theoldesthouse.house.HouseBlocks;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.network.HotelRoomNumbersPayload;
+import io.github.knaitoe.theoldesthouse.network.HousePackets;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,25 +16,15 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.LanternBlock;
 import net.minecraft.world.level.block.SlabBlock;
-import net.minecraft.world.level.block.WallSignBlock;
-import net.minecraft.world.level.block.entity.SignBlockEntity;
-import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.phys.AABB;
@@ -182,17 +175,6 @@ public final class LabyrinthLoops {
             level.setBlock(base.offset(c.getX(), 3, c.getZ()), ceiling, flags);
         }
         restore(level, base, place);
-        if (hotel) {
-            for (int k = 0; k <= 3; k++) {
-                for (int side = 0; side <= 1; side++) {
-                    BlockPos at = base.offset(signPos(k, side));
-                    if (level.getBlockEntity(at) instanceof SignBlockEntity sign) {
-                        sign.setText(plaque(roomNumber(0, k, side)), true);
-                        sign.setWaxed(true);
-                    }
-                }
-            }
-        }
         LabyrinthBuilder.entrance(level, base, wall, floorFor(hotel, 0, 0), ceiling);
         LabyrinthBuilder.doors(level, base, place);
     }
@@ -246,7 +228,8 @@ public final class LabyrinthLoops {
             return (hotel ? Blocks.LANTERN : Blocks.SOUL_LANTERN).defaultBlockState().setValue(LanternBlock.HANGING, true);
         }
         if (hotel && region.straight() && y == 1 && z == -3 && (x == -1 || x == 1)) {
-            return Blocks.DARK_OAK_WALL_SIGN.defaultBlockState().setValue(WallSignBlock.FACING, x == -1 ? Direction.EAST : Direction.WEST);
+            return HouseBlocks.HOTEL_ROOM_PLAQUE.get().defaultBlockState()
+                    .setValue(HotelRoomPlaqueBlock.FACING, x == -1 ? Direction.EAST : Direction.WEST);
         }
         return Blocks.AIR.defaultBlockState();
     }
@@ -269,28 +252,9 @@ public final class LabyrinthLoops {
         return HOTEL_FIRST_ROOM + Math.floorMod((laps + k) * 2 + side, HOTEL_ROOMS);
     }
 
-    private static SignText plaque(int number) {
-        return new SignText()
-                .setMessage(1, Component.literal("No. " + number))
-                .setColor(DyeColor.YELLOW);
-    }
-
     /** Shows this player the numbers for how far they have walked, before anything else they see this tick. */
     private static void sendNumbers(ServerPlayer player, BlockPos base, int laps) {
-        ServerLevel level = player.serverLevel();
-        RegistryOps<Tag> ops = level.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-        for (int k = 0; k <= 3; k++) {
-            for (int side = 0; side <= 1; side++) {
-                if (!(level.getBlockEntity(base.offset(signPos(k, side))) instanceof SignBlockEntity sign)) {
-                    continue;
-                }
-                CompoundTag tag = new CompoundTag();
-                SignText.DIRECT_CODEC.encodeStart(ops, plaque(roomNumber(laps, k, side))).result().ifPresent(t -> tag.put("front_text", t));
-                SignText.DIRECT_CODEC.encodeStart(ops, new SignText()).result().ifPresent(t -> tag.put("back_text", t));
-                tag.putBoolean("is_waxed", true);
-                player.connection.send(ClientboundBlockEntityDataPacket.create(sign, (entity, access) -> tag));
-            }
-        }
+        HousePackets.send(player, new HotelRoomNumbersPayload(base, laps));
     }
 
     // ------------------------------------------------------------------

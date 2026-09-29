@@ -3,6 +3,7 @@ package io.github.knaitoe.theoldesthouse.network;
 import io.github.knaitoe.theoldesthouse.client.HouseFadeState;
 import io.github.knaitoe.theoldesthouse.client.HouseRoomDoorClient;
 import io.github.knaitoe.theoldesthouse.client.HouseSightlineState;
+import io.github.knaitoe.theoldesthouse.client.HotelPlaqueClientState;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 public final class HouseNetwork {
@@ -10,7 +11,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("6")
+        event.registrar("7")
                 .playToClient(
                         HouseSightlineStatePayload.TYPE,
                         HouseSightlineStatePayload.STREAM_CODEC,
@@ -48,6 +49,11 @@ public final class HouseNetwork {
                         HouseTransitionCancelPayload.TYPE,
                         HouseTransitionCancelPayload.STREAM_CODEC,
                         (payload, context) -> HouseTransitionContextState.clear(payload.token())
+                )
+                .playToClient(
+                        HotelRoomNumbersPayload.TYPE,
+                        HotelRoomNumbersPayload.STREAM_CODEC,
+                        (payload, context) -> HotelPlaqueClientState.set(payload.base(), payload.laps())
                 );
     }
 }

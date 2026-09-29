@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=south": {
+      "model": "the_oldest_house:block/hotel_room_plaque"
+    },
+    "facing=west": {
+      "model": "the_oldest_house:block/hotel_room_plaque",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "the_oldest_house:block/hotel_room_plaque",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "the_oldest_house:block/hotel_room_plaque",
+      "y": 270
+    }
+  }
+}
