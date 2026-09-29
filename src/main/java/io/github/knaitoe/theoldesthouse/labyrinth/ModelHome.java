@@ -502,7 +502,11 @@ public final class ModelHome {
     }
 
     private static Tag encode(Transformation transformation) {
-        return Transformation.EXTENDED_CODEC.encodeStart(NbtOps.INSTANCE, transformation).getOrThrow();
+        // Built from a matrix, a Transformation splits itself into its parts
+        // only when a getter asks, and the codec reads the parts directly.
+        Transformation parts = new Transformation(transformation.getTranslation(), transformation.getLeftRotation(),
+                transformation.getScale(), transformation.getRightRotation());
+        return Transformation.EXTENDED_CODEC.encodeStart(NbtOps.INSTANCE, parts).getOrThrow();
     }
 
     @Nullable
