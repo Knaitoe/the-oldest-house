@@ -14,7 +14,7 @@ public final class HouseStageManager {
 
     /** Opens the door at the end of the hall onto the impossible hallway, now. */
     public static void revealHallway(MinecraftServer server, HouseSavedData data) {
-        BlockPos origin = data.housePosition().orElse(null);
+        BlockPos origin = data.houseOrigin();
         if (origin == null || data.isImpossibleDoorRevealed()) {
             return;
         }

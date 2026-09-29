@@ -15,6 +15,7 @@ import io.github.knaitoe.theoldesthouse.opening.Hillary;
 import io.github.knaitoe.theoldesthouse.opening.HillaryTag;
 import io.github.knaitoe.theoldesthouse.opening.NavidsonLetter;
 import io.github.knaitoe.theoldesthouse.opening.NavidsonPhoto;
+import io.github.knaitoe.theoldesthouse.opening.SnapshotRenderer;
 import io.github.knaitoe.theoldesthouse.opening.OpeningSequence;
 import io.github.knaitoe.theoldesthouse.opening.OpeningWorldData;
 import java.util.Arrays;
@@ -45,6 +46,7 @@ import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -259,6 +261,59 @@ public final class OpeningTests {
 
         assertValidMap(helper, photo.pixels());
         logPhoto("blocked_preferred_facade", photo.pixels());
+        helper.succeed();
+    }
+
+    /**
+     * The camera's own view of trees and timber, block by block: a natural
+     * trunk is see-through however tall it is, while a bare log post and a
+     * post under persistent (player-placed) leaves stay in the picture.
+     */
+    @GameTest(template = "empty")
+    public static void photoSceneSeesThroughTrunksButNotTimber(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos base = helper.absolutePos(BlockPos.ZERO).offset(300, 1, -200);
+        BlockState log = Blocks.JUNGLE_LOG.defaultBlockState();
+        BlockState naturalLeaves = Blocks.JUNGLE_LEAVES.defaultBlockState();
+        BlockState placedLeaves = Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true);
+
+        // A giant trunk, twice the height an earlier build scanned up, under its canopy.
+        BlockPos tree = base;
+        fill(level, tree, tree.above(24), log);
+        fill(level, tree.offset(-2, 25, -2), tree.offset(2, 26, 2), naturalLeaves);
+        // A bare timber post, and a post under player-placed leaves.
+        BlockPos post = base.offset(8, 0, 0);
+        fill(level, post, post.above(5), log);
+        BlockPos arbour = base.offset(14, 0, 0);
+        fill(level, arbour, arbour.above(5), log);
+        fill(level, arbour.offset(-1, 6, -1), arbour.offset(1, 6, 1), placedLeaves);
+
+        BlockPos min = base.offset(-4, -1, -4);
+        BlockPos max = base.offset(20, 30, 4);
+        try {
+            SnapshotRenderer.Scene upward = NavidsonPhoto.sceneOf(level, min, max);
+            for (int dy : new int[]{0, 12, 24}) {
+                helper.assertTrue(upward.sample(tree.getX(), tree.getY() + dy, tree.getZ()) == 0,
+                        "a natural trunk is see-through at height " + dy + " of 25");
+            }
+            helper.assertTrue(upward.sample(tree.getX(), tree.getY() + 25, tree.getZ()) == 0, "and so is its canopy");
+
+            // Asked top first, the lower logs take the column's answer from the cache.
+            SnapshotRenderer.Scene downward = NavidsonPhoto.sceneOf(level, min, max);
+            for (int dy : new int[]{24, 12, 0}) {
+                helper.assertTrue(downward.sample(tree.getX(), tree.getY() + dy, tree.getZ()) == 0,
+                        "a natural trunk is see-through at height " + dy + ", asked from the top down");
+            }
+
+            helper.assertTrue(upward.sample(post.getX(), post.getY(), post.getZ()) >>> 24 == SnapshotRenderer.SOLID,
+                    "a bare log post stays in the photograph");
+            helper.assertTrue(upward.sample(arbour.getX(), arbour.getY(), arbour.getZ()) >>> 24 == SnapshotRenderer.SOLID,
+                    "a post under player-placed leaves stays in the photograph");
+            helper.assertTrue(upward.sample(arbour.getX(), arbour.getY() + 6, arbour.getZ()) >>> 24 == SnapshotRenderer.SOLID,
+                    "and so do the leaves themselves");
+        } finally {
+            fill(level, base.offset(-4, 0, -4), max, Blocks.AIR.defaultBlockState());
+        }
         helper.succeed();
     }
 

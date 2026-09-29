@@ -4,6 +4,7 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseBetweenRoom;
 import io.github.knaitoe.theoldesthouse.house.HouseCalendar;
 import io.github.knaitoe.theoldesthouse.house.HouseConfig;
+import io.github.knaitoe.theoldesthouse.house.HouseDimensionMirror;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseImpossibleHallway;
 import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
@@ -31,6 +32,11 @@ import io.github.knaitoe.theoldesthouse.house.HouseProgression;
 import io.github.knaitoe.theoldesthouse.house.HouseRugs;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.house.HouseSoundBridge;
+import io.github.knaitoe.theoldesthouse.house.HouseStageManager;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlaces;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -111,7 +117,7 @@ public final class HouseProgressionTests {
         );
 
         BlockPos distant = origin.offset(
-                HouseLayout.MAX_X + HouseSoundBridge.SOUND_RADIUS + 20,
+                HouseLayout.MAX_X + HouseDimensionMirror.VIEW_RADIUS + 20,
                 2,
                 HouseLayout.CENTER_Z
         );
@@ -134,6 +140,37 @@ public final class HouseProgressionTests {
                 "records must not bleed through dimensions");
         helper.assertTrue(!HouseSoundBridge.bridgedCategory(SoundSource.AMBIENT),
                 "ambient/cave sound must not expose impossible space");
+        helper.succeed();
+    }
+
+    /**
+     * Neither the room between rooms nor the labyrinth may be heard from the
+     * Overworld, nor hear it: the pocket and the stack stand at coordinates
+     * the Overworld also has (in its sky, or deep underground), so a sound
+     * there must never cross the seam in either direction. Checked for a
+     * manor low enough that its stack is above it, and one so high that the
+     * stack goes below.
+     */
+    @GameTest(template = "empty")
+    public static void soundBridgeNeverReachesTheRoomOrTheLabyrinth(GameTestHelper helper) {
+        for (BlockPos origin : new BlockPos[]{new BlockPos(100_000, 64, 100_000), new BlockPos(100_000, 250, 100_000)}) {
+            BlockPos pocket = HouseBetweenRoom.pocketOrigin(origin);
+            BlockPos room = pocket.offset(9, 2, 20);
+            BlockPos copiedHall = pocket.offset(16, 2, 20);
+            BlockPos stackBase = LabyrinthPlaces.base(origin, LabyrinthPlace.JUNCTION);
+            helper.assertTrue(stackBase != null, "the labyrinth's first place fits somewhere for a manor at y=" + origin.getY());
+            BlockPos stack = stackBase.offset(0, 2, 4);
+            helper.assertTrue(LabyrinthPlaces.isInStack(origin, stack), "the sample position is in the stack");
+            if (origin.getY() > 200) {
+                helper.assertTrue(stack.getY() < origin.getY(), "a manor this high has its labyrinth below it");
+            }
+            for (BlockPos sealed : new BlockPos[]{room, copiedHall, stack}) {
+                helper.assertTrue(!HouseSoundBridge.isAudibleDomesticPosition(origin, sealed),
+                        "nothing at " + sealed.subtract(origin) + " from the manor may be heard outside it");
+                helper.assertTrue(!HouseSoundBridge.isAudibleOverworldPosition(origin, sealed),
+                        "no Overworld sound at " + sealed.subtract(origin) + " from the manor may be heard inside it");
+            }
+        }
         helper.succeed();
     }
 
@@ -171,6 +208,35 @@ public final class HouseProgressionTests {
                         && HouseRugs.PRINCIPAL_BEDROOM.shifted() == HouseRugs.GREAT_ROOM.authored(),
                 "the great room and bedroom rugs trade colours");
         helper.assertTrue(changed > 0, "some carpet should have changed");
+        helper.succeed();
+    }
+
+    // ------------------------------------------------------------------
+    // Outdated layouts
+
+    @GameTest(template = "empty")
+    public static void anOutdatedLayoutStandsTheHouseDown(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(100_000, 64, 100_000);
+        HouseSavedData current = new HouseSavedData();
+        current.markSpawned(origin);
+        helper.assertTrue(!current.isOutdated() && origin.equals(current.houseOrigin()),
+                "a House in this build's layout is live");
+
+        CompoundTag tag = current.save(new CompoundTag(), helper.getLevel().registryAccess());
+        tag.putInt("LayoutVersion", HouseLayout.LAYOUT_VERSION - 1);
+        HouseSavedData old = HouseSavedData.load(tag, helper.getLevel().registryAccess());
+        helper.assertTrue(old.isOutdated(), "a House saved with an older layout is outdated");
+        helper.assertTrue(old.houseOrigin() == null,
+                "every mechanism starts from houseOrigin(), so an outdated House must have none");
+        helper.assertTrue(old.housePosition().filter(origin::equals).isPresent(),
+                "status and reset still know where it stands");
+
+        MinecraftServer server = helper.getLevel().getServer();
+        helper.assertTrue(!HouseBetweenRoom.arm(server, old), "the room between rooms cannot be armed in it");
+        HouseStageManager.revealHallway(server, old);
+        helper.assertTrue(!old.isImpossibleDoorRevealed(), "the hallway cannot open in it");
+
+        helper.assertTrue(!new HouseSavedData().isOutdated(), "a House that has not spawned is not outdated");
         helper.succeed();
     }
 

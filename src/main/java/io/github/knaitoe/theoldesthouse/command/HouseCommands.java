@@ -157,8 +157,8 @@ public final class HouseCommands {
                 ", impossibleDoor=" + data.isImpossibleDoorRevealed() +
                 ", interiorInitialized=" + data.isInteriorInitialized() +
                 ", layout=v" + data.layoutVersion() +
-                (data.isSpawned() && !data.isCurrentLayout()
-                        ? " (outdated: reset and respawn for v" + HouseLayout.LAYOUT_VERSION + ")"
+                (data.isOutdated()
+                        ? " (outdated: the House has stood down; reset and respawn for v" + HouseLayout.LAYOUT_VERSION + ")"
                         : "") +
                 ", visits=" + data.visitCount() +
                 ", sleptInManor=" + data.sleptInManor());
@@ -338,7 +338,7 @@ public final class HouseCommands {
     ) {
         CommandSourceStack source = context.getSource();
         HouseSavedData data = HouseSavedData.get(source.getServer());
-        BlockPos origin = data.housePosition().orElse(null);
+        BlockPos origin = data.houseOrigin();
         ServerLevel interior = source.getServer().getLevel(HouseDimensions.INTERIOR);
 
         if (!data.isSpawned() || origin == null || interior == null) {

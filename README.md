@@ -532,9 +532,12 @@ The opening has been revised so the player's own home remains ordinary.
 - Sound hooks run at lowest event priority so canceled or modified sounds are not mirrored prematurely.
 - GameTests lock the spatial boundary and permitted sound categories.
 
-### Unreleased: transition and doorway hardening
+### Unreleased: transition, doorway and layout hardening
 
 - The unused transition acknowledgment is gone. The server never waited on it: the context and the dimension switch already arrive in order on one connection. The network protocol version is now 6.
 - A pending transition is now an explicit state machine: prepared, syncing, moving, then complete or failed. It is only forgotten once it has completed or failed. A destination level that is not there yet is waited for (up to a second) instead of the crossing silently vanishing. A crossing whose player has meanwhile died or been moved elsewhere, whose teleport another mod cancels, or which throws before arrival fails cleanly: logged, none of its hooks run, and the client told to drop its presentation context.
 - The room between rooms decides by plane crossings along the door's normal, not by distance from the door. Strafing or sidestepping at the copied door no longer counts as backing out (the retreat margin is now 0.75 blocks along the normal). A fast or knocked-back player cannot skip a plane, and nothing happens while someone stands in a doorway. Its three per-player maps are now one record per player.
 - GameTests cover a missing destination, a player who left by another way, logging out mid-transition, and the room's crossings: sidestepping, backing out on either side, traversal, one-tick fast crossings and wandering off.
+- A House generated with an older layout than the build's now stands down as a whole instead of running against coordinates it no longer matches. There are no crossings, mirroring, mornings, room between rooms, hallway, labyrinth or sound bridge; it is only an ordinary building. Anyone found inside one of the mod's dimensions is returned to the Overworld spawn. Operators are told once at login, and `/oldesthouse status` says so. `/oldesthouse reset` and a respawn bring it back.
+- Navidson's photograph now follows a tree trunk all the way up, however tall: giant jungle and spruce trunks disappear whole instead of leaving their lower twelve blocks standing. Each trunk is checked once for all its logs.
+- The sound bridge's reach is the visual mirror's shared region, with no separate radius. Tests now check that neither the room between rooms (and its copied hall) nor the labyrinth stack can be heard from the Overworld or hear it, including for a manor so high its labyrinth lies below it.

@@ -35,9 +35,11 @@ final class LevelSnapshotScene implements SnapshotRenderer.Scene {
     private final BlockPos min;
     private final BlockPos max;
     private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+    /** For looking about (up a trunk, round its canopy) without moving {@link #pos}, which sample() still uses. */
+    private final BlockPos.MutableBlockPos probe = new BlockPos.MutableBlockPos();
     private long cachedChunk = Long.MIN_VALUE;
     private LevelChunk chunk;
-    /** Expensive canopy checks are done once per log position. */
+    /** Expensive canopy checks are done once per trunk: every log in a column shares its answer. */
     private final Map<Long, Boolean> naturalTrunkCache = new HashMap<>();
 
     LevelSnapshotScene(ServerLevel level, BlockPos min, BlockPos max) {
@@ -118,51 +120,64 @@ final class LevelSnapshotScene implements SnapshotRenderer.Scene {
      * A natural trunk is a vertical log column that terminates in a real
      * non-persistent leaf canopy. This deliberately does not make every log
      * transparent: cabins, beams and player-built timber walls still belong
-     * in the photograph.
+     * in the photograph. The column is followed all the way up, however tall
+     * (giant jungle and spruce trunks run to thirty blocks), and the answer
+     * is kept for every log in it.
      */
     private boolean isNaturalTreeTrunk(BlockState state, int x, int y, int z) {
-        if (!state.is(BlockTags.LOGS)) {
-            return false;
-        }
-        if (state.hasProperty(RotatedPillarBlock.AXIS)
-                && state.getValue(RotatedPillarBlock.AXIS) != Direction.Axis.Y) {
+        if (!isUprightLog(state)) {
             return false;
         }
 
-        long key = BlockPos.asLong(x, y, z);
-        Boolean cached = naturalTrunkCache.get(key);
+        Boolean cached = naturalTrunkCache.get(BlockPos.asLong(x, y, z));
         if (cached != null) {
             return cached;
         }
 
         int top = y;
-        for (int dy = 1; dy <= 12; dy++) {
-            BlockState above = stateAt(x, y + dy, z);
-            if (!above.is(BlockTags.LOGS)
-                    || (above.hasProperty(RotatedPillarBlock.AXIS)
-                    && above.getValue(RotatedPillarBlock.AXIS) != Direction.Axis.Y)) {
+        Boolean known = null;
+        for (int ty = y + 1; ty <= max.getY(); ty++) {
+            // Only upright logs are ever cached, so a cached position here is
+            // the rest of this same column, already decided.
+            Boolean above = naturalTrunkCache.get(BlockPos.asLong(x, ty, z));
+            if (above != null) {
+                known = above;
                 break;
             }
-            top = y + dy;
+            if (!isUprightLog(stateAt(x, ty, z))) {
+                break;
+            }
+            top = ty;
         }
 
+        boolean natural = known != null ? known : hasNaturalCanopy(x, top, z);
+        for (int ty = y; ty <= top; ty++) {
+            naturalTrunkCache.put(BlockPos.asLong(x, ty, z), natural);
+        }
+        return natural;
+    }
+
+    private static boolean isUprightLog(BlockState state) {
+        return state.is(BlockTags.LOGS)
+                && (!state.hasProperty(RotatedPillarBlock.AXIS) || state.getValue(RotatedPillarBlock.AXIS) == Direction.Axis.Y);
+    }
+
+    /** At least four natural leaves around and just above the top of a column. */
+    private boolean hasNaturalCanopy(int x, int top, int z) {
         int naturalLeaves = 0;
-        for (int dy = -2; dy <= 4 && naturalLeaves < 4; dy++) {
-            for (int dx = -3; dx <= 3 && naturalLeaves < 4; dx++) {
-                for (int dz = -3; dz <= 3 && naturalLeaves < 4; dz++) {
+        for (int dy = -2; dy <= 4; dy++) {
+            for (int dx = -3; dx <= 3; dx++) {
+                for (int dz = -3; dz <= 3; dz++) {
                     if (dx * dx + dz * dz > 10) {
                         continue;
                     }
-                    if (isNaturalLeaf(stateAt(x + dx, top + dy, z + dz))) {
-                        naturalLeaves++;
+                    if (isNaturalLeaf(stateAt(x + dx, top + dy, z + dz)) && ++naturalLeaves >= 4) {
+                        return true;
                     }
                 }
             }
         }
-
-        boolean natural = naturalLeaves >= 4;
-        naturalTrunkCache.put(key, natural);
-        return natural;
+        return false;
     }
 
     private BlockState stateAt(int x, int y, int z) {
@@ -173,7 +188,7 @@ final class LevelSnapshotScene implements SnapshotRenderer.Scene {
         if (at == null) {
             return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
         }
-        return at.getBlockState(pos.set(x, y, z));
+        return at.getBlockState(probe.set(x, y, z));
     }
 
     @Override

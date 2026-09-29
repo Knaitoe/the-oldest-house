@@ -6,7 +6,9 @@ import io.github.knaitoe.theoldesthouse.labyrinth.Growl;
 import io.github.knaitoe.theoldesthouse.labyrinth.HideAndClap;
 import io.github.knaitoe.theoldesthouse.labyrinth.TellTaleFloorboards;
 import java.util.List;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import io.github.knaitoe.theoldesthouse.network.HouseSightlineStatePayload;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -27,13 +29,26 @@ public final class HouseLifecycleEvents {
         HouseSavedData data = HouseSavedData.get(player.getServer());
         BlockPos origin = data.housePosition().orElse(BlockPos.ZERO);
 
+        // The hallway's sightline is drawn against the current layout: an
+        // outdated House shows none.
         PacketDistributor.sendToPlayer(
                 player,
                 new HouseSightlineStatePayload(
                         origin,
-                        data.isImpossibleDoorRevealed()
+                        data.isImpossibleDoorRevealed() && !data.isOutdated()
                 )
         );
+
+        if (data.isOutdated() && player.hasPermissions(2)) {
+            // Only someone who can do something about it is told; to
+            // everyone else the House is simply a house.
+            player.sendSystemMessage(Component.literal(
+                    "The Oldest House here was built with layout v" + data.layoutVersion()
+                            + ", but this version of the mod uses v" + HouseLayout.LAYOUT_VERSION
+                            + ". It has gone quiet: an ordinary building, with nothing inside working. "
+                            + "Use /oldesthouse reset and let it respawn (or start a new world) to bring it back.")
+                    .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
+        }
     }
 
     public static void onServerStarted(ServerStartedEvent event) {
@@ -41,11 +56,12 @@ public final class HouseLifecycleEvents {
         HouseShifts.refreshCache(data);
         LabyrinthDoors.ensureHallwayDoor(event.getServer());
         HouseBetweenRoom.ensurePocket(event.getServer());
-        if (data.isSpawned() && !data.isCurrentLayout()) {
+        if (data.isOutdated()) {
             TheOldestHouse.LOGGER.warn(
                     "The Oldest House in this world was generated with layout v{}, but this build uses v{}. "
-                            + "Transitions, mirroring and the impossible hallway assume the current layout; "
-                            + "use /oldesthouse reset and respawn it (or a fresh world) for reliable behaviour.",
+                            + "It stands down entirely (no crossings, mirroring, mornings, rooms or labyrinth) "
+                            + "and anyone inside is returned to the Overworld spawn. "
+                            + "Use /oldesthouse reset and let it respawn (or a fresh world) to bring it back.",
                     data.layoutVersion(),
                     HouseLayout.LAYOUT_VERSION
             );

@@ -144,6 +144,15 @@ public final class NavidsonPhoto {
         return result[0];
     }
 
+    /**
+     * The camera's view of a box of a level, exactly as a photograph taken
+     * there would see it (natural trees filtered out, and so on). For tests
+     * and diagnostics; the photograph builds its own over the copy.
+     */
+    public static SnapshotRenderer.Scene sceneOf(ServerLevel level, BlockPos min, BlockPos max) {
+        return new LevelSnapshotScene(level, min, max);
+    }
+
     public static boolean isRunning(UUID player) {
         return JOBS.containsKey(player);
     }
