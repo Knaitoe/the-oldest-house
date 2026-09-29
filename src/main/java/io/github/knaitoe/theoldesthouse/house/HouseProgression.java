@@ -12,9 +12,8 @@ import net.minecraft.server.level.ServerLevel;
  * What the House does with its mornings once somebody has been inside.
  *
  * <ol>
- *   <li><b>The rugs:</b> the morning after someone first sleeps in a manor
- *   bed (or by {@link HouseConfig#RUGS_FALLBACK_AGE} regardless), pairs of
- *   rugs trade colours between rooms.</li>
+ *   <li><b>The rugs:</b> the first completed night somebody actually spends
+ *   in a manor bed, pairs of authored rugs trade colours between rooms.</li>
  *   <li><b>The room between rooms:</b> from House morning
  *   {@link HouseConfig#ROOM_FIRST_AGE} (and at least
  *   {@link HouseConfig#ROOM_MIN_MORNINGS_AFTER_RUGS} after the rugs), each
@@ -116,7 +115,7 @@ public final class HouseProgression {
         return data.isSpawned()
                 && !data.areRugsShifted()
                 && data.visitCount() > 0
-                && (data.sleptInManor() || data.houseAge() >= HouseConfig.RUGS_FALLBACK_AGE.getAsInt());
+                && data.sleptInManor();
     }
 
     private static boolean shiftRugsIfDue(MinecraftServer server, HouseSavedData data) {
@@ -192,9 +191,7 @@ public final class HouseProgression {
         } else if (data.sleptInManor()) {
             lines.add("Rugs: shift on the next morning (someone has slept in the manor).");
         } else {
-            int fallback = HouseConfig.RUGS_FALLBACK_AGE.getAsInt();
-            lines.add("Rugs: shift the morning after someone sleeps in a manor bed, or at age " + fallback
-                    + (nextAge >= fallback ? " (next morning)." : " (" + (fallback - age) + " mornings from now)."));
+            lines.add("Rugs: waiting for the first completed night in a manor bed.");
         }
 
         if (data.isRoomRevealed()) {
