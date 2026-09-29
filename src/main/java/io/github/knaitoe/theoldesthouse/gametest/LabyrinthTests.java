@@ -119,7 +119,7 @@ public final class LabyrinthTests {
         helper.assertTrue(data.dryDeals() == 0, "the dry spell resets");
 
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
-            if (place.isOneShot()) {
+            if (place.isFinishable()) {
                 data.setCompleted(place.id(), true);
             }
         }
@@ -132,7 +132,7 @@ public final class LabyrinthTests {
             for (LabyrinthPlace.DoorSpec spec : LabyrinthPlace.JUNCTION.doors()) {
                 LabyrinthData.Door door = data.door(LabyrinthPlace.JUNCTION.doorId(spec));
                 LabyrinthPlace dealtPlace = LabyrinthPlace.byId(door.dealt);
-                helper.assertTrue(dealtPlace == null || !dealtPlace.isOneShot(), "a finished one-shot was dealt again");
+                helper.assertTrue(dealtPlace == null || !dealtPlace.isFinishable(), "a finished vignette was dealt again");
             }
         }
         helper.succeed();
@@ -196,7 +196,9 @@ public final class LabyrinthTests {
     /** Every place gets a slot of its own inside the world, however high the manor stands. */
     @GameTest(template = "empty")
     public static void everyPlaceHasASlotThatOverlapsNoOther(GameTestHelper helper) {
-        for (int y : new int[]{-20, 64, 120, 180, 230}) {
+        // Including the heights where one column above and below the manor
+        // is too short for every place, and the stack carries on in another.
+        for (int y : new int[]{-20, 36, 55, 64, 78, 100, 120, 180, 230}) {
             BlockPos origin = new BlockPos(1_000, y, -2_000);
             List<BoundingBox> slots = new ArrayList<>();
             for (LabyrinthPlace place : LabyrinthPlace.values()) {
@@ -423,14 +425,14 @@ public final class LabyrinthTests {
             if (door != null && door.bark) {
                 barking++;
                 LabyrinthPlace dealt = LabyrinthPlace.byId(door.dealt);
-                helper.assertTrue(dealt != null && dealt.isOneShot() && door.leak, "the door she found leads to an unfound vignette");
+                helper.assertTrue(dealt != null && dealt.isFinishable() && door.leak, "the door she found leads to an unfound vignette");
             }
         }
         helper.assertTrue(barking == 1, "exactly one door has her behind it, found " + barking);
         helper.assertTrue(!data.hillaryScent(), "the scent is spent");
 
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
-            if (place.isOneShot()) {
+            if (place.isFinishable()) {
                 data.setCompleted(place.id(), true);
             }
         }

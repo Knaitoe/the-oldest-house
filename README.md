@@ -544,3 +544,13 @@ The opening has been revised so the player's own home remains ordinary.
 - Every one of the mod's own packets now goes out through one helper that skips connections without the mod's channel. NeoForge throws on such a send, which took down whatever event handler was sending (a login, a morning). Real clients always have the channel; this is what lets GameTests use real mock players at all.
 - The room between rooms with more than one person: stepping back out no longer shuts the copied doors on someone still inside. With anyone else in the pocket the doors stay as they are and only the leaver is shown them shut; the last one out shuts them for real. Entering re-sends the doors' true state, so a door once shown shut cannot stay shut on that player's screen.
 - New multiplayer GameTests with real (mock) players, in their own batch. They cover two players crossing in the same tick, a disconnect halfway through a crossing, and two players in the room between rooms at once (one backing out while the other is inside, then walking through).
+
+### Unreleased: Poltergeist, the model home
+
+- A new vignette in the labyrinth, and the first **multi-visit** one: played one beat per visit, resuming where it was left, until its last beat finishes it. A begun, unfinished multi-visit vignette is dealt three times as often as any other, and Hillary's scent now leads to any unfinished vignette, not only one-shots.
+- **The house:** a bright, empty show home. In the kitchen a table is set with six chairs, and the kid's window looks onto a small yard at night. The salesman's binder, the vignette's object, lies on the counter.
+- **Visits 1–3:** once you have seen the table set, turn away for a second and every chair is stacked on it, nearly to the ceiling. The stack teeters more the closer you come. Look away again and the chairs are back where they were.
+  - The living-room armchairs join the stack on the second visit, and the kid's chair on the third.
+  - The tree in the yard stands closer every visit. By the third, a branch taps at the kid's window and the grass has sunk in one long patch.
+- **Visit 4:** the kid's door stands open, the window is broken, and the tree has come in over the bed.
+- `/oldesthouse vignette model_home reset|visit <1-4>|complete` for testing. The labyrinth is carved again (version 6) to make room for the new place.

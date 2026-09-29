@@ -34,7 +34,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump to rebuild every place in existing worlds on next use. */
-    public static final int VERSION = 5;
+    public static final int VERSION = 6;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -147,6 +147,7 @@ public final class LabyrinthBuilder {
             case HIDE_AND_CLAP -> HideAndClap.build(server, level, base);
             case LONG_HALLWAY, HOTEL_HALLWAY -> LabyrinthLoops.buildHallway(level, base, place);
             case SPIRAL_STAIR -> LabyrinthLoops.buildSpiral(level, base);
+            case MODEL_HOME -> ModelHome.build(server, level, base);
             default -> {
             }
         }

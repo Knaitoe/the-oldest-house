@@ -194,6 +194,7 @@ public final class LabyrinthDoors {
             setDoorOpen(toLevel, entry.lower, true, p);
             LabyrinthDealer.dealPlace(data, place, p.getRandom());
             RedRoom.prepareIfDealt(p, place);
+            ModelHome.onArrive(p, place);
         };
         if (toLevel == fromLevel) {
             shift(player, target, yaw);
@@ -812,6 +813,7 @@ public final class LabyrinthDoors {
             }
         }
         lines.addAll(RedRoom.describe(server, viewer));
+        lines.addAll(ModelHome.describe(server));
         lines.addAll(Growl.describe(server, viewer));
         return lines;
     }

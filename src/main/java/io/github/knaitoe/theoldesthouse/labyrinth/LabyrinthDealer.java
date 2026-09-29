@@ -16,29 +16,37 @@ import net.minecraft.util.RandomSource;
  * one. Vignette doors leak: its heartbeat can be heard at the door before it
  * is opened. Now and then a gray door leaks too, and lies.
  *
+ * Which vignette a vignette door leads to is weighted: a multi-visit
+ * vignette already begun and not yet finished comes up
+ * {@link #UNFINISHED_WEIGHT} times as often as the rest, so a place the
+ * player has started keeps calling them back.
+ *
  * Hillary can tilt the odds furthest. Give her a scent from a vignette's
  * object and the next dealing that can have a vignette door will have one,
- * one-shots first, and what leaks from behind it is her bark.
+ * to a place not yet finished if there is one, and what leaks from behind
+ * it is her bark.
  */
 public final class LabyrinthDealer {
     public static final int VIGNETTE_BASE_CHANCE = 30;
     public static final int VIGNETTE_CHANCE_STEP = 25;
     /** Percent of gray doors that leak anyway. */
     public static final int LYING_LEAK_CHANCE = 15;
+    /** How much likelier a begun, unfinished multi-visit vignette is than any other vignette. */
+    public static final int UNFINISHED_WEIGHT = 3;
 
     private LabyrinthDealer() {
     }
 
     /**
-     * Vignettes that can be dealt: one-shots not yet finished, and recurring
-     * ones, once they have been made (the Red Room needs a room of the
-     * player's to copy).
+     * Vignettes that can be dealt: one-shots and multi-visits not yet
+     * finished, and recurring ones, once they have been made (the Red Room
+     * needs a room of the player's to copy).
      */
     public static List<LabyrinthPlace> vignettesAvailable(LabyrinthData data) {
         List<LabyrinthPlace> places = new ArrayList<>();
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
             if (!place.isVignette()
-                    || (place.isOneShot() && data.isCompleted(place.id()))
+                    || (place.isFinishable() && data.isCompleted(place.id()))
                     || (place.needsMaking() && !data.isReady(place.id()))) {
                 continue;
             }
@@ -53,6 +61,27 @@ public final class LabyrinthDealer {
             return 0;
         }
         return (int) Math.min(100L, VIGNETTE_BASE_CHANCE + (long) VIGNETTE_CHANCE_STEP * data.dryDeals());
+    }
+
+    /** How often a vignette is picked for a vignette door, relative to the others. */
+    public static int dealWeight(LabyrinthData data, LabyrinthPlace place) {
+        return place.isMultiVisit() && !data.isCompleted(place.id()) && data.state(place.id()).getInt("Visit") > 0
+                ? UNFINISHED_WEIGHT : 1;
+    }
+
+    private static LabyrinthPlace pickVignette(LabyrinthData data, List<LabyrinthPlace> vignettes, RandomSource random) {
+        int total = 0;
+        for (LabyrinthPlace place : vignettes) {
+            total += dealWeight(data, place);
+        }
+        int roll = random.nextInt(total);
+        for (LabyrinthPlace place : vignettes) {
+            roll -= dealWeight(data, place);
+            if (roll < 0) {
+                return place;
+            }
+        }
+        return vignettes.get(vignettes.size() - 1);
     }
 
     /** What Hillary makes of a scent. */
@@ -114,7 +143,7 @@ public final class LabyrinthDealer {
             // She goes for what hasn't been found yet.
             List<LabyrinthPlace> unfound = new ArrayList<>();
             for (LabyrinthPlace place : vignettes) {
-                if (place.isOneShot()) {
+                if (place.isFinishable()) {
                     unfound.add(place);
                 }
             }
@@ -137,7 +166,7 @@ public final class LabyrinthDealer {
         }
         for (LabyrinthData.Door door : doors) {
             if (door == lucky) {
-                data.deal(door, vignettes.get(random.nextInt(vignettes.size())).id(), true, scent);
+                data.deal(door, pickVignette(data, vignettes, random).id(), true, scent);
             } else {
                 data.deal(door, pickGray(gray, totalWeight, random).id(), random.nextInt(100) < LYING_LEAK_CHANCE);
             }

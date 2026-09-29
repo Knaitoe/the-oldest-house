@@ -61,6 +61,10 @@ public enum LabyrinthPlace {
     )),
     /** The hotel hallway: numbered doors, all locked, the numbers climbing and repeating. */
     HOTEL_HALLWAY("hotel_hallway", Kind.GRAY, 7, new BoundingBox(-2, -1, -49, 14, 3, 0), hotelDoors()),
+    /** Poltergeist: the model home, with the kid's-room window onto a yard (x -23..-9). See {@link ModelHome}. */
+    MODEL_HOME("model_home", Kind.MULTI_VISIT, 8, new BoundingBox(-23, -1, -21, 9, 10, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
+    )),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 
@@ -72,6 +76,12 @@ public enum LabyrinthPlace {
         ONE_SHOT,
         /** A vignette that keeps being dealt. */
         RECURRING,
+        /**
+         * A vignette played one beat per visit, resuming where it was left,
+         * until its last beat finishes it. Its saved state keeps the visit
+         * it is on under {@code "Visit"} (0 before the first).
+         */
+        MULTI_VISIT,
         /** Not a carved place at all. */
         HALLWAY
     }
@@ -108,11 +118,20 @@ public enum LabyrinthPlace {
     }
 
     public boolean isVignette() {
-        return kind == Kind.ONE_SHOT || kind == Kind.RECURRING;
+        return kind == Kind.ONE_SHOT || kind == Kind.RECURRING || kind == Kind.MULTI_VISIT;
     }
 
     public boolean isOneShot() {
         return kind == Kind.ONE_SHOT;
+    }
+
+    public boolean isMultiVisit() {
+        return kind == Kind.MULTI_VISIT;
+    }
+
+    /** A vignette that is finished at some point and then never dealt again: a one-shot or a multi-visit. */
+    public boolean isFinishable() {
+        return kind == Kind.ONE_SHOT || kind == Kind.MULTI_VISIT;
     }
 
     /**
