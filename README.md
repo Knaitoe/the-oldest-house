@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.3.6` revises the per-player opening sequence so the ordinary manor, not the player's home, is the first architectural relationship with the House:
+Version `0.3.7` revises the per-player opening sequence so the ordinary manor, not the player's home, is the first architectural relationship with the House:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -481,4 +481,11 @@ The opening has been revised so the player's own home remains ordinary.
 - Navidson's photograph ignores natural leaf canopy in the photographic copy and can search higher camera positions, preventing trees near the bed from being mistaken for the subject.
 - The labyrinth's impossible-hallway entrance is now a stable return root. Returns through it are clamped safely inside the valid hallway volume, and a missing return stack falls back to the hallway rather than stranding the player in the gray.
 - Regression tests cover dense leaf cover and the stable hallway return root.
+
+### 0.3.7 spiral staircase clearance
+
+- The spiral staircase no longer hangs lanterns over the walkable ring.
+- Each light is recessed into the outer east wall at the same relative height on every repeated turn, preserving the seamless-loop illusion.
+- Ordinary spiral steps now have three completely empty blocks above them, preventing lantern collision while jumping or sprinting.
+- A regression test verifies both the full maneuvering clearance and the repeated recessed-lamp placement.
 
