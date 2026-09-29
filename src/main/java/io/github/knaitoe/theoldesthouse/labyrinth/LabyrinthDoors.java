@@ -144,7 +144,7 @@ public final class LabyrinthDoors {
             place = door.destination.startsWith("place:") ? LabyrinthPlace.byId(door.destination.substring(6)) : null;
         }
         LabyrinthData.Door entry = place == null || place.slot() < 0 ? null : data.door(place.entryDoorId());
-        if (entry == null) {
+        if (entry == null || (place == LabyrinthPlace.RED_ROOM && !RedRoom.prepare(player))) {
             locked(player);
             return;
         }
@@ -187,6 +187,7 @@ public final class LabyrinthDoors {
         Consumer<ServerPlayer> arrived = p -> {
             setDoorOpen(toLevel, entry.lower, true, p);
             LabyrinthDealer.dealPlace(data, place, p.getRandom());
+            RedRoom.prepareIfDealt(p, place);
         };
         if (toLevel == fromLevel) {
             shift(player, target, yaw);
@@ -254,7 +255,9 @@ public final class LabyrinthDoors {
             return;
         }
         if (!back.door()) {
-            travelAbsolute(player, back);
+            // A plain spot (a bedside, or where a command took them from):
+            // no door lines up with it, so the lights go out instead.
+            fadeTo(player, back, 4, 10, 24);
             return;
         }
         BlockPos from = BlockPos.containing(back.pos());
@@ -301,8 +304,48 @@ public final class LabyrinthDoors {
         } else {
             target = back;
         }
+        fadeTo(player, target, fadeIn, hold, fadeOut);
+    }
+
+    /** Fades out, moves the player while the screen is dark, and fades back in. */
+    private static void fadeTo(ServerPlayer player, LabyrinthData.Waypoint target, int fadeIn, int hold, int fadeOut) {
         PacketDistributor.sendToPlayer(player, new HouseFadePayload(fadeIn, hold, fadeOut));
-        FADING.put(player.getUUID(), new Pending(target, p -> { }, new int[]{fadeIn}));
+        FADING.put(player.getUUID(), new Pending(target, p -> { }, new int[]{Math.max(1, fadeIn)}));
+    }
+
+    /**
+     * Wakes a sleeper somewhere deeper: in a gray place they never walked
+     * to, facing away from its door, with the way back leading first to the
+     * bed they slept in.
+     */
+    public static void wakeDeeper(ServerPlayer player) {
+        MinecraftServer server = player.server;
+        player.stopSleepInBed(false, true);
+        BlockPos origin = HouseSavedData.get(server).houseOrigin();
+        if (origin == null || isBusy(player)) {
+            return;
+        }
+        LabyrinthData data = LabyrinthData.get(server);
+        LabyrinthPlace place = player.getRandom().nextBoolean() ? LabyrinthPlace.JUNCTION : LabyrinthPlace.GRAY_CORRIDOR;
+        BlockPos base = LabyrinthPlaces.base(origin, place);
+        LabyrinthData.Door entry = data.door(place.entryDoorId());
+        ServerLevel level = entry == null ? null : server.getLevel(entry.dimension);
+        if (base == null || level == null) {
+            return;
+        }
+        data.pushReturn(player.getUUID(), new LabyrinthData.Waypoint(
+                player.serverLevel().dimension(), player.position(), player.getYRot(), false));
+        setDoorOpen(level, entry.lower, false, null);
+        LabyrinthDealer.dealPlace(data, place, player.getRandom());
+        INSIDE.add(player.getUUID());
+
+        PacketDistributor.sendToPlayer(player, new HouseFadePayload(0, 40, 60));
+        Vec3 to = Vec3.atBottomCenterOf(base.offset(0, 0, place == LabyrinthPlace.JUNCTION ? -9 : -21));
+        player.stopRiding();
+        player.teleportTo(level, to.x, to.y, to.z, Direction.NORTH.toYRot(), 0.0F);
+        player.setDeltaMovement(Vec3.ZERO);
+        player.resetFallDistance();
+        RedRoom.prepareIfDealt(player, place);
     }
 
     /** Takes a player to the junction from wherever they are, remembering where that was. */
@@ -655,7 +698,7 @@ public final class LabyrinthDoors {
         BlockPos origin = HouseSavedData.get(server).houseOrigin();
         List<String> lines = new ArrayList<>();
         String where = origin == null ? "no manor yet"
-                : LabyrinthBuilder.isBuilt(server) ? "carved " + (LabyrinthPlaces.stackAbove(origin) ? "above" : "below") + " the manor"
+                : LabyrinthBuilder.isBuilt(server) ? "carved around the manor (" + LabyrinthPlaces.slotsAbove(origin) + " slot(s) above it, the rest below)"
                 : LabyrinthBuilder.isCarving() ? "being carved" : "not carved yet";
         lines.add("Labyrinth: " + where
                 + "; hallway door " + (data.door("hallway_end") != null ? "in place" : "not yet (it comes with the hallway)")
@@ -674,6 +717,7 @@ public final class LabyrinthDoors {
         if (viewer != null) {
             lines.add("Your way back: " + data.returnDepth(viewer.getUUID()) + " door(s) deep.");
         }
+        lines.addAll(RedRoom.describe(server, viewer));
         return lines;
     }
 }

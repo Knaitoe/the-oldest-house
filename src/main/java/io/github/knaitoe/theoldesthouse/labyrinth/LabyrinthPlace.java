@@ -22,23 +22,43 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
  */
 public enum LabyrinthPlace {
     /** The gray: where the hallway's far door leads, with three doors the dealer deals. */
-    JUNCTION("junction", false, 0, new BoundingBox(-5, -1, -13, 5, 5, 0), List.of(
+    JUNCTION("junction", Kind.GRAY, 0, new BoundingBox(-5, -1, -13, 5, 5, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("west", new BlockPos(-5, 0, -6), Direction.EAST, LabyrinthData.DEALT),
             new DoorSpec("east", new BlockPos(5, 0, -6), Direction.WEST, LabyrinthData.DEALT),
             new DoorSpec("north", new BlockPos(0, 0, -13), Direction.SOUTH, LabyrinthData.DEALT)
     )),
     /** A long gray corridor: back the way you came, or on through a dealt door at the far end. */
-    GRAY_CORRIDOR("gray_corridor", false, 1, new BoundingBox(-2, -1, -28, 2, 4, 0), List.of(
+    GRAY_CORRIDOR("gray_corridor", Kind.GRAY, 1, new BoundingBox(-2, -1, -28, 2, 4, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(0, 0, -28), Direction.SOUTH, LabyrinthData.DEALT)
     )),
     /** The Tell-Tale Heart: a one-shot vignette. */
-    FLOORBOARDS("floorboards", true, 2, new BoundingBox(-6, -3, -10, 6, 4, 0), List.of(
+    FLOORBOARDS("floorboards", Kind.ONE_SHOT, 2, new BoundingBox(-6, -3, -10, 6, 4, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
+    )),
+    /**
+     * Hill House's Red Room: a copy of the player's own room, recurring. Its
+     * room box is the most a copy may take up (see {@link RedRoom}); the
+     * copy's own doorway is at (0, 0, 0).
+     */
+    RED_ROOM("red_room", Kind.RECURRING, 3, new BoundingBox(-15, -3, -15, 15, 9, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
     )),
     /** The far end of the impossible hallway, in the manor itself. */
-    HALLWAY_END("hallway_end", false, -1, null, List.of());
+    HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
+
+    /** What a place is to the dealer. */
+    public enum Kind {
+        /** Connective: dealt freely, never counted as a vignette. */
+        GRAY,
+        /** A vignette that is finished once and never dealt again. */
+        ONE_SHOT,
+        /** A vignette that keeps being dealt. */
+        RECURRING,
+        /** Not a carved place at all. */
+        HALLWAY
+    }
 
     /**
      * A door built into a place. {@code rel} is its lower half relative to
@@ -49,15 +69,15 @@ public enum LabyrinthPlace {
     }
 
     private final String id;
-    private final boolean vignette;
+    private final Kind kind;
     private final int slot;
     @Nullable
     private final BoundingBox room;
     private final List<DoorSpec> doors;
 
-    LabyrinthPlace(String id, boolean vignette, int slot, @Nullable BoundingBox room, List<DoorSpec> doors) {
+    LabyrinthPlace(String id, Kind kind, int slot, @Nullable BoundingBox room, List<DoorSpec> doors) {
         this.id = id;
-        this.vignette = vignette;
+        this.kind = kind;
         this.slot = slot;
         this.room = room;
         this.doors = doors;
@@ -67,8 +87,24 @@ public enum LabyrinthPlace {
         return id;
     }
 
+    public Kind kind() {
+        return kind;
+    }
+
     public boolean isVignette() {
-        return vignette;
+        return kind == Kind.ONE_SHOT || kind == Kind.RECURRING;
+    }
+
+    public boolean isOneShot() {
+        return kind == Kind.ONE_SHOT;
+    }
+
+    /**
+     * Whether the place has to be made from something first (the Red Room,
+     * from a room of the player's), and so is only dealt once it is ready.
+     */
+    public boolean needsMaking() {
+        return this == RED_ROOM;
     }
 
     /** Which slot above the manor holds the place, or -1 for the hallway's end. */
@@ -96,7 +132,7 @@ public enum LabyrinthPlace {
 
     /** Places the dealer can send a door to without it being a vignette: the gray. */
     public boolean isGray() {
-        return this == JUNCTION || this == GRAY_CORRIDOR;
+        return kind == Kind.GRAY;
     }
 
     @Nullable

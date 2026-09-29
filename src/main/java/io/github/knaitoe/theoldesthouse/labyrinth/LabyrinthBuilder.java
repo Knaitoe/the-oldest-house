@@ -34,7 +34,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump to rebuild every place in existing worlds on next use. */
-    public static final int VERSION = 2;
+    public static final int VERSION = 3;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -114,14 +114,15 @@ public final class LabyrinthBuilder {
             build(server, interior, pendingOrigin, place);
         }
         if (pending.isEmpty()) {
+            BlockPos origin = pendingOrigin;
             LabyrinthData data = LabyrinthData.get(server);
             data.pruneDoors(server);
-            data.setBuilt(VERSION, pendingOrigin);
+            data.setBuilt(VERSION, origin);
             pending = null;
             pendingOrigin = null;
             LabyrinthDoors.syncSealedDoors(server);
-            TheOldestHouse.LOGGER.info("Carved the labyrinth {} the manor (version {}).",
-                    LabyrinthPlaces.stackAbove(HouseSavedData.get(server).houseOrigin()) ? "above" : "below", VERSION);
+            TheOldestHouse.LOGGER.info("Carved the labyrinth around the manor, {} slot(s) above it (version {}).",
+                    LabyrinthPlaces.slotsAbove(origin), VERSION);
         }
     }
 
@@ -142,6 +143,7 @@ public final class LabyrinthBuilder {
             case JUNCTION -> buildJunction(level, base);
             case GRAY_CORRIDOR -> buildCorridor(level, base);
             case FLOORBOARDS -> TellTaleFloorboards.build(level, base, !data.isCompleted(place.id()));
+            case RED_ROOM -> RedRoom.build(server, level, base);
             default -> {
             }
         }
@@ -237,8 +239,15 @@ public final class LabyrinthBuilder {
      * arrived.
      */
     static void entrance(ServerLevel level, BlockPos base, BlockState wall, BlockState floor, BlockState ceiling) {
-        level.setBlock(base.offset(0, 0, 0), Blocks.AIR.defaultBlockState(), FLAGS);
-        level.setBlock(base.offset(0, 1, 0), Blocks.AIR.defaultBlockState(), FLAGS);
+        entrance(level, base, wall, floor, ceiling, true);
+    }
+
+    /** As above; without {@code carveOpening} the room's own doorway at z 0 is left as it is. */
+    static void entrance(ServerLevel level, BlockPos base, BlockState wall, BlockState floor, BlockState ceiling, boolean carveOpening) {
+        if (carveOpening) {
+            level.setBlock(base.offset(0, 0, 0), Blocks.AIR.defaultBlockState(), FLAGS);
+            level.setBlock(base.offset(0, 1, 0), Blocks.AIR.defaultBlockState(), FLAGS);
+        }
         BoundingBox vestibule = LabyrinthPlaces.localVestibule();
         for (int x = vestibule.minX(); x <= vestibule.maxX(); x++) {
             for (int y = vestibule.minY(); y <= vestibule.maxY(); y++) {

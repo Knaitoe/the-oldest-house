@@ -14,8 +14,9 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
  * is filled solid, so a tunnel out of any room only finds more wall, and
  * enough of it above that no weather is heard through the ceiling.
  *
- * A manor built high enough that the stack would not fit under the sky has
- * its slots below it instead.
+ * Slots fill upwards while they fit under the top of the world, then
+ * carry on downwards below the manor, so a manor built high has most (or
+ * all) of its places below it.
  */
 public final class LabyrinthPlaces {
     public static final int SLOT_HEIGHT = 24;
@@ -42,24 +43,45 @@ public final class LabyrinthPlaces {
         return count;
     }
 
-    /** Whether the stack goes above the manor (else below it). */
+    /** The bottom of the first slot above the manor. */
+    private static int firstAbove(BlockPos origin) {
+        return origin.getY() + HouseBetweenRoom.pocketDy(origin) + CLEAR_ABOVE_POCKET;
+    }
+
+    /** How many slots fit above the manor, under the top of the world. */
+    public static int slotsAbove(BlockPos origin) {
+        return Math.max(0, (MAX_Y + 1 - firstAbove(origin)) / SLOT_HEIGHT);
+    }
+
+    /** Whether the stack starts above the manor (else everything is below it). */
     public static boolean stackAbove(BlockPos origin) {
-        int top = origin.getY() + HouseBetweenRoom.pocketDy(origin) + CLEAR_ABOVE_POCKET + slotCount() * SLOT_HEIGHT;
-        return top <= MAX_Y;
+        return slotsAbove(origin) > 0;
     }
 
-    /** The lowest y of a slot. */
+    /**
+     * The lowest y of a slot. Slots fill upwards above the manor while they
+     * fit, then carry on downwards below it.
+     */
     public static int slotBottom(BlockPos origin, int slot) {
-        if (stackAbove(origin)) {
-            return origin.getY() + HouseBetweenRoom.pocketDy(origin) + CLEAR_ABOVE_POCKET + slot * SLOT_HEIGHT;
+        int above = slotsAbove(origin);
+        if (slot < above) {
+            return firstAbove(origin) + slot * SLOT_HEIGHT;
         }
-        return Math.max(MIN_Y, origin.getY() - SLOT_HEIGHT - (slot + 1) * SLOT_HEIGHT);
+        return origin.getY() - SLOT_HEIGHT - (slot - above + 1) * SLOT_HEIGHT;
     }
 
-    /** A place's base (its entry door's floor level, under the door), or null for the hallway's end. */
+    /** Whether a slot lies within the world, above or below. */
+    public static boolean fits(BlockPos origin, int slot) {
+        return slot >= 0 && slotBottom(origin, slot) >= MIN_Y && slotBottom(origin, slot) + SLOT_HEIGHT - 1 <= MAX_Y;
+    }
+
+    /**
+     * A place's base (its entry door's floor level, under the door), or null
+     * for the hallway's end or a place with no room left for it in the world.
+     */
     @Nullable
     public static BlockPos base(BlockPos origin, LabyrinthPlace place) {
-        if (place.slot() < 0) {
+        if (!fits(origin, place.slot())) {
             return null;
         }
         return new BlockPos(

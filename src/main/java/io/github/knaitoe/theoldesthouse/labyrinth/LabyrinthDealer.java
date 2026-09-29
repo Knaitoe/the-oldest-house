@@ -25,13 +25,20 @@ public final class LabyrinthDealer {
     private LabyrinthDealer() {
     }
 
-    /** Vignettes that can still be dealt: one-shots that have not been finished. */
+    /**
+     * Vignettes that can be dealt: one-shots not yet finished, and recurring
+     * ones, once they have been made (the Red Room needs a room of the
+     * player's to copy).
+     */
     public static List<LabyrinthPlace> vignettesAvailable(LabyrinthData data) {
         List<LabyrinthPlace> places = new ArrayList<>();
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
-            if (place.isVignette() && !data.isCompleted(place.id())) {
-                places.add(place);
+            if (!place.isVignette()
+                    || (place.isOneShot() && data.isCompleted(place.id()))
+                    || (place.needsMaking() && !data.isReady(place.id()))) {
+                continue;
             }
+            places.add(place);
         }
         return places;
     }

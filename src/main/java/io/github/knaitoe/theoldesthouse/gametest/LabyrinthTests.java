@@ -4,13 +4,18 @@ import com.mojang.authlib.GameProfile;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
+import io.github.knaitoe.theoldesthouse.labyrinth.HomeRooms;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthBuilder;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDealer;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlaces;
+import io.github.knaitoe.theoldesthouse.labyrinth.RedRoom;
+import io.github.knaitoe.theoldesthouse.labyrinth.RoomSnapshot;
 import io.github.knaitoe.theoldesthouse.labyrinth.TellTaleFloorboards;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -19,10 +24,19 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BedPart;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
@@ -95,8 +109,15 @@ public final class LabyrinthTests {
         helper.assertTrue(dealt, "four dealings passed without a vignette door");
         helper.assertTrue(data.dryDeals() == 0, "the dry spell resets");
 
-        data.setCompleted(TellTaleFloorboards.ID, true);
-        helper.assertTrue(LabyrinthDealer.vignetteChance(data) == 0, "nothing left to deal");
+        for (LabyrinthPlace place : LabyrinthPlace.values()) {
+            if (place.isOneShot()) {
+                data.setCompleted(place.id(), true);
+            }
+        }
+        helper.assertTrue(LabyrinthDealer.vignetteChance(data) == 0, "nothing left to deal while the Red Room has no room to copy");
+        data.setReady(RedRoom.ID, true);
+        helper.assertTrue(LabyrinthDealer.vignetteChance(data) > 0, "the Red Room keeps being dealt once it has one");
+        data.setReady(RedRoom.ID, false);
         for (int dealing = 0; dealing < 6; dealing++) {
             LabyrinthDealer.dealPlace(data, LabyrinthPlace.JUNCTION, random);
             for (LabyrinthPlace.DoorSpec spec : LabyrinthPlace.JUNCTION.doors()) {
@@ -142,6 +163,104 @@ public final class LabyrinthTests {
                 == LabyrinthPlace.FLOORBOARDS, "the floorboards' slot is its own");
         helper.assertTrue(LabyrinthPlaces.stackAbove(origin), "a manor at y 64 has its labyrinth above it");
         helper.assertTrue(!LabyrinthPlaces.stackAbove(new BlockPos(0, 200, 0)), "one at y 200 has it below");
+        helper.succeed();
+    }
+
+    /** Every place gets a slot of its own inside the world, however high the manor stands. */
+    @GameTest(template = "empty")
+    public static void everyPlaceHasASlotThatOverlapsNoOther(GameTestHelper helper) {
+        for (int y : new int[]{-20, 64, 120, 180, 230}) {
+            BlockPos origin = new BlockPos(1_000, y, -2_000);
+            List<BoundingBox> slots = new ArrayList<>();
+            for (LabyrinthPlace place : LabyrinthPlace.values()) {
+                if (place.slot() < 0) {
+                    continue;
+                }
+                BoundingBox slot = LabyrinthPlaces.slotBounds(origin, place);
+                helper.assertTrue(slot != null, place.id() + " has no slot for a manor at y " + y);
+                helper.assertTrue(slot.minY() >= -64 && slot.maxY() <= 319, place.id() + " is outside the world for a manor at y " + y);
+                helper.assertTrue(slot.maxY() < origin.getY() - 5 || slot.minY() > origin.getY() + 22,
+                        place.id() + " cuts through the manor at y " + y);
+                for (BoundingBox other : slots) {
+                    helper.assertTrue(!slot.intersects(other), place.id() + " overlaps another slot for a manor at y " + y);
+                }
+                slots.add(slot);
+            }
+        }
+        helper.succeed();
+    }
+
+    /**
+     * A room is copied with its door turned to the south at (0, 0, 0), its
+     * chest empty and its window kept, and stands in the Red Room behind
+     * the entry door.
+     */
+    @GameTest(template = "empty")
+    public static void redRoomCopiesARoomThroughItsOwnDoorWithNothingInIt(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos o = helper.absolutePos(BlockPos.ZERO).offset(-200, 6, 160);
+        for (int x = 0; x <= 6; x++) {
+            for (int y = 0; y <= 4; y++) {
+                for (int z = 0; z <= 5; z++) {
+                    boolean inside = x >= 1 && x <= 5 && y >= 1 && y <= 3 && z >= 1 && z <= 4;
+                    level.setBlock(o.offset(x, y, z), inside ? Blocks.AIR.defaultBlockState() : Blocks.STONE_BRICKS.defaultBlockState(), 3);
+                }
+            }
+        }
+        // A window in the north wall, a door in the east wall, a chest with something in it, a bed.
+        level.setBlock(o.offset(3, 2, 0), Blocks.GLASS_PANE.defaultBlockState(), 2);
+        BlockState door = Blocks.OAK_DOOR.defaultBlockState().setValue(DoorBlock.FACING, Direction.WEST);
+        level.setBlock(o.offset(6, 1, 2), door.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER), 2);
+        level.setBlock(o.offset(6, 2, 2), door.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER), 2);
+        level.setBlock(o.offset(1, 1, 1), Blocks.CHEST.defaultBlockState(), 3);
+        if (level.getBlockEntity(o.offset(1, 1, 1)) instanceof ChestBlockEntity chest) {
+            chest.setItem(0, new ItemStack(Items.DIAMOND, 3));
+        }
+        BlockState bed = Blocks.RED_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.EAST);
+        level.setBlock(o.offset(2, 1, 4), bed.setValue(BedBlock.PART, BedPart.FOOT), 2);
+        level.setBlock(o.offset(3, 1, 4), bed.setValue(BedBlock.PART, BedPart.HEAD), 2);
+
+        RoomSnapshot snapshot = RedRoom.capture(level, o.offset(3, 1, 2), 5L, 1L, 0L);
+        helper.assertTrue(snapshot != null, "the room was not copied");
+        BlockState doorway = snapshot.stateAt(BlockPos.ZERO);
+        helper.assertTrue(doorway != null && doorway.getBlock() instanceof DoorBlock && doorway.getValue(DoorBlock.OPEN),
+                "its own door should stand open at the doorway, was " + doorway);
+        // The east door turned to the south: (dx, dz) becomes (-dz, dx).
+        helper.assertTrue(Blocks.CHEST.equals(stateBlock(snapshot, new BlockPos(1, 0, -5))), "the chest lies where the turn puts it");
+        helper.assertTrue(Blocks.GLASS_PANE.equals(stateBlock(snapshot, new BlockPos(2, 1, -3))), "the window is kept");
+        helper.assertTrue(snapshot.max().getZ() == 0, "nothing of it lies past its doorway");
+
+        BlockPos base = o.offset(0, 0, 90);
+        RedRoom.place(level, base, snapshot);
+        helper.assertTrue(level.getBlockEntity(base.offset(1, 0, -5)) instanceof ChestBlockEntity chest && chest.isEmpty(),
+                "the copied chest should be there, and empty");
+        helper.assertTrue(level.getBlockState(base.offset(0, 0, 1)).is(Blocks.SPRUCE_DOOR), "the entry door stands behind the doorway");
+        helper.assertTrue(level.getBlockState(base.offset(0, 0, -1)).isAir(), "and the room opens beyond it");
+        helper.assertTrue(level.getBlockState(base.offset(0, 0, -7)).is(Blocks.WHITE_TERRACOTTA), "past its walls there is only white");
+        helper.assertTrue(RedRoom.isInRoom(base, base.offset(1, 0, -3)), "its bed lies in the Red Room");
+        helper.succeed();
+    }
+
+    private static Block stateBlock(RoomSnapshot snapshot, BlockPos local) {
+        BlockState state = snapshot.stateAt(local);
+        return state == null ? null : state.getBlock();
+    }
+
+    /** The spot a player spends the most time in is their room; old habits fade. */
+    @GameTest(template = "empty")
+    public static void homeRoomsTallyTheMostLivedInSpot(GameTestHelper helper) {
+        HomeRooms rooms = new HomeRooms();
+        UUID player = UUID.randomUUID();
+        BlockPos kitchen = new BlockPos(10, 64, 10);
+        BlockPos study = new BlockPos(30, 64, 10);
+        rooms.record(player, kitchen, 10);
+        rooms.record(player, study, 10);
+        rooms.record(player, study.east(), 10);
+        helper.assertTrue(rooms.topCell(player) != null && rooms.topCell(player).getKey() == HomeRooms.cellOf(study),
+                "the study has the most time");
+        helper.assertTrue(rooms.topCell(player).getValue().last().equals(study.east()), "and remembers where they last stood in it");
+        helper.assertTrue(rooms.choiceFor(player) == null, "nothing copied yet");
+        helper.assertTrue(rooms.needsCapture(player, HomeRooms.cellOf(study), 1L), "so the study wants copying");
         helper.succeed();
     }
 
