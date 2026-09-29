@@ -1,5 +1,6 @@
 package io.github.knaitoe.theoldesthouse.house;
 
+import io.github.knaitoe.theoldesthouse.network.HousePackets;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.network.HouseRoomDoorPayload;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -42,7 +44,6 @@ import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.level.PistonEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The room between rooms: the first space the manor has no room for.
@@ -241,7 +242,7 @@ public final class HouseBetweenRoom {
             }
         }
         data.markRoomRevealed();
-        PacketDistributor.sendToAllPlayers(doorPayload(data));
+        HousePackets.sendToAll(server, doorPayload(data));
         TheOldestHouse.LOGGER.info("The study door of The Oldest House now leads through the room between rooms (perceived age {}).",
                 data.houseAge());
         return true;
@@ -280,7 +281,7 @@ public final class HouseBetweenRoom {
             data.clearRoomDoorX();
         }
         buildPocket(interior, data, origin);
-        PacketDistributor.sendToAllPlayers(doorPayload(data));
+        HousePackets.sendToAll(server, doorPayload(data));
         TheOldestHouse.LOGGER.info("Moved the room between rooms behind the study door.");
     }
 
@@ -508,7 +509,12 @@ public final class HouseBetweenRoom {
         }
     }
 
-    private static void enter(ServerPlayer player, ServerLevel interior, HouseSavedData data, BlockPos origin, Side side) {
+    /**
+     * Sends a player into the pocket from one side, as clicking the real door
+     * from that side does: the copy on their side swings open and they are
+     * shifted up in front of it.
+     */
+    public static void enter(ServerPlayer player, ServerLevel interior, HouseSavedData data, BlockPos origin, Side side) {
         if (data.roomLayout() < LAYOUT) {
             buildPocket(interior, data, origin);
         }
@@ -522,6 +528,14 @@ public final class HouseBetweenRoom {
         // still-shut copied doorway / plaster wall before its block update
         // arrives, which gives the trick away.
         setDoorOpen(interior, door, true);
+        // This player may have been shown the copies' doors shut, on their
+        // own screen only, when they last left with someone still inside
+        // (see returnToManor). Nothing has corrected that since, so they are
+        // told the doors' true state now.
+        for (BlockPos copy : new BlockPos[]{hallDoor(origin), studyDoor(origin)}) {
+            player.connection.send(new ClientboundBlockUpdatePacket(interior, copy));
+            player.connection.send(new ClientboundBlockUpdatePacket(interior, copy.above()));
+        }
         shift(player, side == Side.HALL ? 0 : STUDY_SHIFT, pocketDy(origin));
         interior.playSound(null, door, SoundEvents.WOODEN_DOOR_OPEN, SoundSource.BLOCKS, 1.0F,
                 0.9F + interior.getRandom().nextFloat() * 0.1F);
@@ -643,8 +657,16 @@ public final class HouseBetweenRoom {
         // Block updates are sent before the teleport packet on this connection:
         // close the visible copied threshold first so a player backing through
         // it sees an ordinary door panel, never the 100-block vertical move.
-        setDoorOpen(level, side == Side.HALL ? hallDoor(origin) : studyDoor(origin), false);
-        setDoorOpen(level, side == Side.HALL ? studyDoor(origin) : hallDoor(origin), false);
+        // With someone else still in the pocket the doors really stay as they
+        // are (shutting one on them would give the whole thing away); the
+        // leaver alone is shown them shut.
+        if (anyoneElseInPocket(level, origin, player)) {
+            showDoorShut(player, level, side == Side.HALL ? hallDoor(origin) : studyDoor(origin));
+            showDoorShut(player, level, side == Side.HALL ? studyDoor(origin) : hallDoor(origin));
+        } else {
+            setDoorOpen(level, side == Side.HALL ? hallDoor(origin) : studyDoor(origin), false);
+            setDoorOpen(level, side == Side.HALL ? studyDoor(origin) : hallDoor(origin), false);
+        }
         shift(player, side == Side.HALL ? 0 : -STUDY_SHIFT, -pocketDy(origin));
 
         // The real partition is always shut. Its close sound belongs at the
@@ -677,6 +699,25 @@ public final class HouseBetweenRoom {
         }
         Vec3 target = Vec3.atBottomCenterOf(realDoor(origin).east());
         HouseTransitionEvents.beginDoorTransition(player, HouseDimensions.INTERIOR, null, null, target, 90.0F);
+    }
+
+    private static boolean anyoneElseInPocket(ServerLevel level, BlockPos origin, ServerPlayer player) {
+        for (ServerPlayer other : level.players()) {
+            if (other != player && !other.isSpectator() && isInPocket(origin, other.getX(), other.getY(), other.getZ())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** One player's view of a copied door, shut, whatever it really is. */
+    private static void showDoorShut(ServerPlayer player, ServerLevel level, BlockPos lower) {
+        for (BlockPos half : new BlockPos[]{lower, lower.above()}) {
+            BlockState state = level.getBlockState(half);
+            if (state.getBlock() instanceof DoorBlock) {
+                player.connection.send(new ClientboundBlockUpdatePacket(half, state.setValue(DoorBlock.OPEN, false)));
+            }
+        }
     }
 
     private static void setDoorOpen(ServerLevel level, BlockPos lower, boolean open) {
@@ -719,7 +760,7 @@ public final class HouseBetweenRoom {
 
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            PacketDistributor.sendToPlayer(player, doorPayload(HouseSavedData.get(player.server)));
+            HousePackets.send(player, doorPayload(HouseSavedData.get(player.server)));
         }
     }
 

@@ -1,5 +1,6 @@
 package io.github.knaitoe.theoldesthouse.house;
 
+import io.github.knaitoe.theoldesthouse.network.HousePackets;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlaces;
@@ -30,7 +31,6 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class HouseTransitionEvents {
 
@@ -235,7 +235,7 @@ public final class HouseTransitionEvents {
                 pending.token, player.getGameProfile().getName(),
                 pending.from.location(), pending.destination.location(), reason);
         if (!player.hasDisconnected()) {
-            PacketDistributor.sendToPlayer(player, new HouseTransitionCancelPayload(pending.token));
+            HousePackets.send(player, new HouseTransitionCancelPayload(pending.token));
         }
     }
 
@@ -405,7 +405,7 @@ public final class HouseTransitionEvents {
         );
 
         PENDING.put(player.getUUID(), new PendingTransition(player.serverLevel().dimension(), destination, token, door, before, after));
-        PacketDistributor.sendToPlayer(player, new HouseTransitionContextPayload(kind, token));
+        HousePackets.send(player, new HouseTransitionContextPayload(kind, token));
     }
 
     private static void tickPendingDoorClose(ServerPlayer player) {

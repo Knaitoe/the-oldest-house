@@ -1,5 +1,6 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
+import io.github.knaitoe.theoldesthouse.network.HousePackets;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseInternalTeleport;
@@ -46,7 +47,6 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * Doors that lead somewhere else: the impossible hallway's far door, the
@@ -389,7 +389,7 @@ public final class LabyrinthDoors {
 
     /** Fades out, moves the player while the screen is dark, and fades back in. */
     private static void fadeTo(ServerPlayer player, LabyrinthData.Waypoint target, int fadeIn, int hold, int fadeOut) {
-        PacketDistributor.sendToPlayer(player, new HouseFadePayload(fadeIn, hold, fadeOut));
+        HousePackets.send(player, new HouseFadePayload(fadeIn, hold, fadeOut));
         FADING.put(player.getUUID(), new Pending(target, p -> { }, new int[]{Math.max(1, fadeIn)}));
     }
 
@@ -419,7 +419,7 @@ public final class LabyrinthDoors {
         LabyrinthDealer.dealPlace(data, place, player.getRandom());
         INSIDE.add(player.getUUID());
 
-        PacketDistributor.sendToPlayer(player, new HouseFadePayload(0, 40, 60));
+        HousePackets.send(player, new HouseFadePayload(0, 40, 60));
         Vec3 to = Vec3.atBottomCenterOf(base.offset(0, 0, place == LabyrinthPlace.JUNCTION ? -9 : -21));
         player.stopRiding();
         player.teleportTo(level, to.x, to.y, to.z, Direction.NORTH.toYRot(), 0.0F);
@@ -740,7 +740,7 @@ public final class LabyrinthDoors {
     }
 
     public static void syncSealedDoors(MinecraftServer server) {
-        PacketDistributor.sendToAllPlayers(sealedPayload(server));
+        HousePackets.sendToAll(server, sealedPayload(server));
     }
 
     private static HouseSealedDoorsPayload sealedPayload(MinecraftServer server) {
@@ -762,7 +762,7 @@ public final class LabyrinthDoors {
 
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            PacketDistributor.sendToPlayer(player, sealedPayload(player.server));
+            HousePackets.send(player, sealedPayload(player.server));
         }
     }
 

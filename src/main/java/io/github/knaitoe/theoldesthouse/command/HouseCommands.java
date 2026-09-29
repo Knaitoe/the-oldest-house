@@ -1,5 +1,6 @@
 package io.github.knaitoe.theoldesthouse.command;
 
+import io.github.knaitoe.theoldesthouse.network.HousePackets;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -33,7 +34,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -376,10 +376,8 @@ public final class HouseCommands {
         HouseBetweenRoom.clearAll();
         LabyrinthData.get(source.getServer()).removeDoor("hallway_end");
         LabyrinthDoors.syncSealedDoors(source.getServer());
-        PacketDistributor.sendToAllPlayers(
-                new HouseSightlineStatePayload(BlockPos.ZERO, false)
-        );
-        PacketDistributor.sendToAllPlayers(HouseBetweenRoom.doorPayload(data));
+        HousePackets.sendToAll(source.getServer(), new HouseSightlineStatePayload(BlockPos.ZERO, false));
+        HousePackets.sendToAll(source.getServer(), HouseBetweenRoom.doorPayload(data));
 
         source.sendSuccess(
                 () -> Component.literal(
