@@ -5,6 +5,7 @@ import io.github.knaitoe.theoldesthouse.house.HouseBetweenRoom;
 import io.github.knaitoe.theoldesthouse.house.HouseCalendar;
 import io.github.knaitoe.theoldesthouse.house.HouseConfig;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.HouseImpossibleHallway;
 import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
 import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import io.github.knaitoe.theoldesthouse.house.HouseMemory;
@@ -29,6 +30,7 @@ import net.minecraft.world.level.block.state.properties.Half;
 import io.github.knaitoe.theoldesthouse.house.HouseProgression;
 import io.github.knaitoe.theoldesthouse.house.HouseRugs;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
+import io.github.knaitoe.theoldesthouse.house.HouseSoundBridge;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -36,6 +38,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
@@ -67,6 +70,70 @@ public final class HouseProgressionTests {
                 "setting the clock back to an evening is not a dawn (and never counts days backwards)");
         helper.assertTrue(HouseCalendar.dawnsBetween(0L, 240000L) == 10L, "/time add counts every day it skips");
         helper.assertTrue(HouseCalendar.dawnsBetween(23990L, 24010L) == 1L, "the ordinary passing of midnight into day");
+        helper.succeed();
+    }
+
+    // ------------------------------------------------------------------
+    // Domestic sound continuity
+
+    @GameTest(template = "empty")
+    public static void soundBridgeStopsAtTheImpossibleBoundary(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(100_000, 64, 100_000);
+
+        BlockPos domestic = origin.offset(
+                HouseLayout.AXIS_X,
+                2,
+                HouseLayout.FRONT_DOOR_Z + 5
+        );
+        helper.assertTrue(
+                HouseSoundBridge.isAudibleDomesticPosition(origin, domestic),
+                "ordinary domestic sounds should be audible from outside"
+        );
+
+        BlockPos impossibleHall = origin.offset(
+                HouseLayout.AXIS_X,
+                2,
+                HouseImpossibleHallway.START_Z_OFFSET + 8
+        );
+        helper.assertTrue(
+                !HouseSoundBridge.isAudibleDomesticPosition(origin, impossibleHall),
+                "the impossible hallway must not leak sound into the Overworld"
+        );
+
+        BlockPos exterior = origin.offset(
+                HouseLayout.AXIS_X,
+                2,
+                HouseLayout.FRONT_DOOR_Z - 8
+        );
+        helper.assertTrue(
+                HouseSoundBridge.isAudibleOverworldPosition(origin, exterior),
+                "nearby exterior sounds should be audible from inside"
+        );
+
+        BlockPos distant = origin.offset(
+                HouseLayout.MAX_X + HouseSoundBridge.SOUND_RADIUS + 20,
+                2,
+                HouseLayout.CENTER_Z
+        );
+        helper.assertTrue(
+                !HouseSoundBridge.isAudibleOverworldPosition(origin, distant),
+                "distant Overworld sounds should not be bridged"
+        );
+
+        helper.assertTrue(HouseSoundBridge.bridgedCategory(SoundSource.BLOCKS),
+                "ordinary block sounds should bridge");
+        helper.assertTrue(HouseSoundBridge.bridgedCategory(SoundSource.NEUTRAL),
+                "animal sounds should bridge");
+        helper.assertTrue(HouseSoundBridge.bridgedCategory(SoundSource.PLAYERS),
+                "nearby player sounds should bridge");
+        helper.assertTrue(HouseSoundBridge.bridgedCategory(SoundSource.HOSTILE),
+                "hostile mob sounds should bridge");
+        helper.assertTrue(!HouseSoundBridge.bridgedCategory(SoundSource.MUSIC),
+                "music must remain local presentation");
+        helper.assertTrue(!HouseSoundBridge.bridgedCategory(SoundSource.RECORDS),
+                "records must not bleed through dimensions");
+        helper.assertTrue(!HouseSoundBridge.bridgedCategory(SoundSource.AMBIENT),
+                "ambient/cave sound must not expose impossible space");
         helper.succeed();
     }
 
