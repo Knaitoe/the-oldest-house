@@ -284,7 +284,8 @@ public final class HarriganVignette {
         stand.setNoBasePlate(true);
         stand.setShowArms(true);
         stand.setInvulnerable(true);
-        stand.setYRot(inCasket ? 180.0F : 0.0F);
+        // The study's entry is south of him. North (180) keeps his face turned away.
+        stand.setYRot(180.0F);
         stand.setXRot(0.0F);
         if (dead) {
             stand.setHeadPose(new Rotations(inCasket ? -10.0F : 18.0F, 0.0F, inCasket ? 0.0F : 8.0F));
@@ -344,29 +345,30 @@ public final class HarriganVignette {
     }
 
     public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
-        handleEntityInteract(event);
+        if (handleEntityInteract(event.getEntity(), event.getTarget())) {
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.SUCCESS);
+        }
     }
 
     public static void onEntityInteractSpecific(PlayerInteractEvent.EntityInteractSpecific event) {
-        handleEntityInteract(event);
+        if (handleEntityInteract(event.getEntity(), event.getTarget())) {
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.SUCCESS);
+        }
     }
 
-    private static void handleEntityInteract(PlayerInteractEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || !(event.getTarget() instanceof ItemFrame frame)
+    private static boolean handleEntityInteract(Player playerEntity, Entity target) {
+        if (!(playerEntity instanceof ServerPlayer player) || !(target instanceof ItemFrame frame)
                 || !frame.getTags().contains(PROP_TAG)) {
-            return;
+            return false;
         }
         if (frame.getTags().contains(PROP_TAG + "_ticket")) {
             scratchTicket(player, frame);
         } else if (frame.getTags().contains(PROP_TAG + "_harrigan_phone")) {
             takeHarriganPhone(player, frame);
-        } else {
-            event.setCanceled(true);
-            event.setCancellationResult(InteractionResult.SUCCESS);
-            return;
         }
-        event.setCanceled(true);
-        event.setCancellationResult(InteractionResult.SUCCESS);
+        return true;
     }
 
     private static void scratchTicket(ServerPlayer player, ItemFrame frame) {
@@ -516,14 +518,14 @@ public final class HarriganVignette {
         placeCall(player, target);
     }
 
-    enum TargetKind {
+    public enum TargetKind {
         HOSTILE,
         FRIENDLY,
         FORBIDDEN,
         UNKNOWN
     }
 
-    static TargetKind classify(EntityType<?> type, boolean customNamed, @Nullable Entity probe) {
+    public static TargetKind classify(EntityType<?> type, boolean customNamed, @Nullable Entity probe) {
         ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(type);
         if (key != null && TheOldestHouse.MOD_ID.equals(key.getNamespace())) {
             return TargetKind.FORBIDDEN;
@@ -852,8 +854,13 @@ public final class HarriganVignette {
         if (damage != null) {
             damage.setBaseValue(10.0D);
         }
+        // The first two appearances may look threatening, but cannot hurt the
+        // caller. Only the third-and-later version is actually an attacker.
+        if (mode < 3 && damage != null) {
+            damage.setBaseValue(0.0D);
+        }
         level.addFreshEntity(ghost);
-        if (mode >= 2) {
+        if (mode >= 3) {
             ghost.setTarget(target);
         } else {
             ghost.getNavigation().stop();
