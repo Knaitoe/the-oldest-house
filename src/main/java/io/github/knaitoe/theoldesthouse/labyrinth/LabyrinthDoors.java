@@ -265,8 +265,11 @@ public final class LabyrinthDoors {
             // recovery point than silently putting them back inside this room.
             LabyrinthData.Waypoint root = hallwayReturn(data);
             if (root != null) {
-                travelAbsolute(player, root);
-                playTo(player, SoundEvents.WOODEN_DOOR_CLOSE, root.pos(), 0.9F, 0.9F);
+                // This is recovery, not a geometrically matched doorway. A
+                // naked same-dimension shift is visible no matter how carefully
+                // coordinates are chosen, so let the House turn the lights out
+                // and make the relocation while the screen is black.
+                fadeTo(player, root, 4, 10, 24);
                 return;
             }
 
