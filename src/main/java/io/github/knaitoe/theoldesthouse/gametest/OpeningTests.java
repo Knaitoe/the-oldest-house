@@ -747,6 +747,45 @@ public final class OpeningTests {
                         "reverse projection was not placed at matching proxy-interior coordinates"
                 );
 
+                // Movement is visual state too. The real mob remains the only
+                // authoritative entity, but its projection must visibly walk,
+                // turn and carry its current stride across the dimension seam.
+                resident.moveTo(
+                        inside.getX() + 2.25D,
+                        inside.getY(),
+                        inside.getZ() + 1.75D,
+                        123.0F,
+                        11.0F
+                );
+                resident.setYHeadRot(147.0F);
+                resident.setYBodyRot(109.0F);
+                resident.setDeltaMovement(new Vec3(0.18D, 0.0D, -0.07D));
+
+                HouseExteriorEntityMirror.syncDomesticToOverworldNow(
+                        interiorStandIn,
+                        overworld,
+                        origin
+                );
+
+                helper.assertTrue(
+                        projection.position().distanceTo(resident.position()) < 1.0E-6D,
+                        "projection did not follow the source mob's movement"
+                );
+                helper.assertTrue(
+                        Math.abs(projection.getYRot() - resident.getYRot()) < 0.001F
+                                && Math.abs(projection.getXRot() - resident.getXRot()) < 0.001F,
+                        "projection did not follow source body orientation"
+                );
+                helper.assertTrue(
+                        Math.abs(projection.getYHeadRot() - resident.getYHeadRot()) < 0.001F
+                                && Math.abs(projection.yBodyRot - resident.yBodyRot) < 0.001F,
+                        "projection did not follow source head/body turn"
+                );
+                helper.assertTrue(
+                        projection.getDeltaMovement().distanceTo(resident.getDeltaMovement()) < 1.0E-6D,
+                        "projection did not carry the source mob's current stride"
+                );
+
                 // Geometrically the projection is inside the Overworld proxy,
                 // but it is scenery. The real-NPC evacuation rule must not
                 // throw it outside.
