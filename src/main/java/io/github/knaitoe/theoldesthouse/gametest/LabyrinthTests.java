@@ -3,6 +3,7 @@ package io.github.knaitoe.theoldesthouse.gametest;
 import com.mojang.authlib.GameProfile;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.HouseInternalTeleport;
 import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
 import io.github.knaitoe.theoldesthouse.labyrinth.CrayonDrawing;
 import io.github.knaitoe.theoldesthouse.labyrinth.Growl;
@@ -509,6 +510,42 @@ public final class LabyrinthTests {
         helper.assertTrue(rooms.topCell(player).getValue().last().equals(study.east()), "and remembers where they last stood in it");
         helper.assertTrue(rooms.choiceFor(player) == null, "nothing copied yet");
         helper.assertTrue(rooms.needsCapture(player, HomeRooms.cellOf(study), 1L), "so the study wants copying");
+        helper.succeed();
+    }
+
+    /**
+     * Every seamless same-dimension House shift uses the same low-level
+     * contract: destination available first, pitch and ordinary momentum
+     * preserved, no accumulated fall distance from the impossible vertical
+     * displacement.
+     */
+    @GameTest(template = "empty")
+    public static void internalHouseTeleportPreservesThePlayersStride(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        ServerPlayer player = FakePlayerFactory.get(
+                level,
+                new GameProfile(UUID.randomUUID(), "house_internal_shift")
+        );
+
+        Vec3 start = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(2, 3, 2)));
+        player.moveTo(start.x, start.y, start.z, 37.0F, -14.0F);
+        Vec3 motion = new Vec3(0.21D, 0.03D, -0.13D);
+        player.setDeltaMovement(motion);
+        player.fallDistance = 18.0F;
+
+        Vec3 target = start.add(34.0D, 18.0D, 34.0D);
+        HouseInternalTeleport.shift(player, target, 101.0F);
+
+        helper.assertTrue(player.position().distanceTo(target) < 1.0E-6D,
+                "internal shift did not land at the prepared destination: " + player.position());
+        helper.assertTrue(Math.abs(player.getXRot() - (-14.0F)) < 0.001F,
+                "internal shift changed pitch");
+        helper.assertTrue(player.getDeltaMovement().distanceTo(motion) < 1.0E-6D,
+                "internal shift changed ordinary momentum: " + player.getDeltaMovement());
+        helper.assertTrue(player.fallDistance == 0.0F,
+                "impossible vertical distance leaked into fall damage");
+        helper.assertTrue(level.hasChunkAt(BlockPos.containing(target)),
+                "destination chunk was not available after the shift");
         helper.succeed();
     }
 
