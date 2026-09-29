@@ -15,15 +15,17 @@ import net.minecraft.server.level.ServerLevel;
  *   <li><b>The rugs:</b> the morning after someone first sleeps in a manor
  *   bed (or by {@link HouseConfig#RUGS_FALLBACK_AGE} regardless), pairs of
  *   rugs trade colours between rooms.</li>
- *   <li><b>The room between rooms:</b> from
- *   {@link HouseConfig#ROOM_MIN_MORNINGS_AFTER_RUGS} mornings after that,
- *   each morning has a chance of a door appearing in the bedroom partition.
- *   The chance starts at {@link HouseConfig#ROOM_BASE_CHANCE} and rises by
- *   {@link HouseConfig#ROOM_CHANCE_STEP} for every morning it does not.</li>
+ *   <li><b>The room between rooms:</b> from House morning
+ *   {@link HouseConfig#ROOM_FIRST_AGE} (and at least
+ *   {@link HouseConfig#ROOM_MIN_MORNINGS_AFTER_RUGS} after the rugs), each
+ *   morning has a chance of arming the room behind the study door: 50%, then
+ *   75%, then certain, by default. Armed, it starts routing the first time
+ *   nobody is in or looking at the doorway.</li>
  *   <li><b>Subtle changes</b> ({@link HouseShifts}): from the rugs on, on any
  *   morning when nothing larger happens, a rising chance of one small change
  *   nobody saw happen.</li>
- *   <li><b>The hallway:</b> once the room exists and
+ *   <li><b>The hallway:</b> once someone has gone through the room
+ *   (in one side, out the other) and
  *   {@link HouseConfig#SHIFTS_BEFORE_HALLWAY} subtle changes have happened,
  *   the door at the end of the hall gets a heavily weighted daily chance
  *   ({@link HouseConfig#HALLWAY_BASE_CHANCE}, rising by
@@ -32,6 +34,10 @@ import net.minecraft.server.level.ServerLevel;
  * </ol>
  *
  * At most one of these happens on any morning.
+ *
+ * The first night slept in the manor is a milestone (it brings the rugs);
+ * after that the clock is the House's mornings, wherever anyone slept, so
+ * sleeping at home can never stall it.
  *
  * A morning is a new day of {@link HouseCalendar} on which a player wakes
  * after sleeping, in the Overworld or in the manor. The House's perceived
@@ -74,12 +80,13 @@ public final class HouseProgression {
 
         int roomChance = roomChance(data, data.houseAge());
         if (roomChance >= 0) {
-            if (server.overworld().getRandom().nextInt(100) < roomChance && HouseBetweenRoom.reveal(server, data)) {
-                changes.add("a door appeared in the principal bedroom (" + roomChance + "% chance)");
+            if (server.overworld().getRandom().nextInt(100) < roomChance && HouseBetweenRoom.arm(server, data)) {
+                changes.add("the room between rooms is ready behind the study door; it opens once nobody is looking ("
+                        + roomChance + "% chance)");
                 return changes;
             }
             data.noteRoomMissedMorning();
-            changes.add("no door in the bedroom this morning (" + roomChance + "% chance)");
+            changes.add("the study door stayed an ordinary door (" + roomChance + "% chance)");
         }
 
         int hallwayChance = hallwayChance(data);
@@ -139,10 +146,11 @@ public final class HouseProgression {
      * House's perceived age is {@code age}; -1 when it cannot appear then.
      */
     public static int roomChance(HouseSavedData data, int age) {
-        if (!data.isSpawned() || data.isRoomRevealed() || !data.areRugsShifted()) {
+        if (!data.isSpawned() || data.isRoomArmed() || !data.areRugsShifted()) {
             return -1;
         }
-        if (age - data.rugsShiftedAge() < HouseConfig.ROOM_MIN_MORNINGS_AFTER_RUGS.getAsInt()) {
+        if (age < HouseConfig.ROOM_FIRST_AGE.getAsInt()
+                || age - data.rugsShiftedAge() < HouseConfig.ROOM_MIN_MORNINGS_AFTER_RUGS.getAsInt()) {
             return -1;
         }
         long chance = HouseConfig.ROOM_BASE_CHANCE.getAsInt()
@@ -155,10 +163,11 @@ public final class HouseProgression {
 
     /**
      * The chance, in percent, that the hallway opens next morning; -1 while
-     * it cannot (no room yet, or too few subtle changes).
+     * it cannot (nobody has gone through the room yet, or too few subtle
+     * changes).
      */
     public static int hallwayChance(HouseSavedData data) {
-        if (!data.isSpawned() || data.isImpossibleDoorRevealed() || !data.isRoomRevealed()
+        if (!data.isSpawned() || data.isImpossibleDoorRevealed() || !data.isRoomTraversed()
                 || data.shiftsTriggered() < HouseConfig.SHIFTS_BEFORE_HALLWAY.getAsInt()) {
             return -1;
         }
@@ -189,8 +198,11 @@ public final class HouseProgression {
         }
 
         if (data.isRoomRevealed()) {
-            lines.add("Room between rooms: appeared at age " + data.roomRevealedAge()
-                    + ", door at x+" + data.roomDoorX() + " in the principal bedroom's south wall.");
+            lines.add("Room between rooms: the study door has led through it since age " + data.roomRevealedAge() + "; "
+                    + (data.isRoomTraversed() ? "someone has gone through it." : "nobody has gone through it yet."));
+        } else if (data.isRoomArmed()) {
+            lines.add("Room between rooms: armed at age " + data.roomArmedAge()
+                    + "; the study door starts leading through it once nobody is in or looking at the doorway.");
         } else if (!data.areRugsShifted()) {
             lines.add("Room between rooms: 0% next morning (waiting for the rugs).");
         } else {
@@ -199,8 +211,9 @@ public final class HouseProgression {
                 lines.add("Room between rooms: " + chance + "% chance next morning"
                         + (data.roomMissedMornings() > 0 ? " (missed " + data.roomMissedMornings() + ")." : "."));
             } else {
-                int wait = data.rugsShiftedAge() + HouseConfig.ROOM_MIN_MORNINGS_AFTER_RUGS.getAsInt() - age;
-                lines.add("Room between rooms: 0% next morning; chances start in " + wait + " morning(s) at "
+                int first = Math.max(HouseConfig.ROOM_FIRST_AGE.getAsInt(),
+                        data.rugsShiftedAge() + HouseConfig.ROOM_MIN_MORNINGS_AFTER_RUGS.getAsInt());
+                lines.add("Room between rooms: 0% next morning; chances start at House morning " + first + " at "
                         + HouseConfig.ROOM_BASE_CHANCE.getAsInt() + "%.");
             }
         }
@@ -210,9 +223,9 @@ public final class HouseProgression {
         int needed = HouseConfig.SHIFTS_BEFORE_HALLWAY.getAsInt();
         if (data.isImpossibleDoorRevealed()) {
             lines.add("Impossible hallway: open.");
-        } else if (!data.isRoomRevealed() || data.shiftsTriggered() < needed) {
-            lines.add("Impossible hallway: 0% next morning; it waits for the room between rooms ("
-                    + (data.isRoomRevealed() ? "there" : "not yet") + ") and " + needed + " subtle changes ("
+        } else if (!data.isRoomTraversed() || data.shiftsTriggered() < needed) {
+            lines.add("Impossible hallway: 0% next morning; it waits for someone to go through the room between rooms ("
+                    + (data.isRoomTraversed() ? "done" : "not yet") + ") and " + needed + " subtle changes ("
                     + data.shiftsTriggered() + " so far).");
         } else {
             lines.add("Impossible hallway: " + hallwayChance(data) + "% chance next morning"
@@ -242,7 +255,9 @@ public final class HouseProgression {
                 if (!data.areRugsShifted()) {
                     shiftRugs(server, data);
                 }
-                return HouseBetweenRoom.reveal(server, data) ? null : "The House interior is not available.";
+                // A test command: no waiting for nobody to look.
+                return HouseBetweenRoom.arm(server, data) && HouseBetweenRoom.activate(server, data)
+                        ? null : "The House interior is not available.";
             }
             case "hallway" -> {
                 if (data.isImpossibleDoorRevealed()) {
