@@ -264,7 +264,8 @@ public final class OpeningTests {
 
     /**
      * A wooded base must still produce a photograph of the build. Natural
-     * leaf canopy is scenery, not evidence that the camera found the house.
+     * leaf canopy and the trunks feeding it are scenery, not evidence that
+     * the camera found the house.
      */
     @GameTest(template = "empty", timeoutTicks = 400)
     public static void photoSeesTheHomeThroughNaturalLeafCover(GameTestHelper helper) {
@@ -282,6 +283,19 @@ public final class OpeningTests {
         fill(level, base.offset(8, 0, 11), base.offset(10, 11, 19), leaves);
         fill(level, base.offset(20, 0, 11), base.offset(22, 11, 19), leaves);
 
+        // Put several genuine vertical trunks directly across the preferred
+        // south-facing composition. Without trunk filtering these are close
+        // enough to the bed to score as "house" and can beat the facade.
+        for (int x : new int[]{10, 13, 16, 19, 22}) {
+            for (int y = 0; y <= 8; y++) {
+                level.setBlock(
+                        base.offset(x, y, 21),
+                        Blocks.OAK_LOG.defaultBlockState(),
+                        Block.UPDATE_CLIENTS
+                );
+            }
+        }
+
         NavidsonPhoto.Result photo = NavidsonPhoto.takeNow(
                 level.getServer(),
                 level,
@@ -291,9 +305,9 @@ public final class OpeningTests {
         );
 
         helper.assertTrue(photo != null && photo.pixels() != null && photo.sawHouse(),
-                "foliage prevented a usable photo of the actual home: " + photo);
+                "trees prevented a usable photo of the actual home: " + photo);
         helper.assertTrue(photo.window() != null && !photo.windowCarved(),
-                "foliage was mistaken for the house facade: " + photo);
+                "leaves/trunks were mistaken for the house facade: " + photo);
 
         BlockPos photographedRealWindow = photo.window().subtract(copyOffset(photo, bed));
         helper.assertTrue(photographedRealWindow.equals(upperWindow),
