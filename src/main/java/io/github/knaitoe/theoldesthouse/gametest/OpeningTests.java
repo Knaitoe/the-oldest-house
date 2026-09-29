@@ -751,21 +751,30 @@ public final class OpeningTests {
                 // authoritative entity, but its projection must visibly walk,
                 // turn and carry its current stride across the dimension seam.
                 resident.moveTo(
-                        inside.getX() + 2.25D,
+                        inside.getX() + 0.75D,
                         inside.getY(),
-                        inside.getZ() + 1.75D,
+                        inside.getZ() + 0.80D,
                         123.0F,
                         11.0F
+                );
+                helper.assertTrue(
+                        HouseLayout.isInsideDomesticVolume(
+                                resident.getX() - origin.getX(),
+                                resident.getY() - origin.getY(),
+                                resident.getZ() - origin.getZ()
+                        ),
+                        "movement test accidentally moved the real mob outside the domestic volume"
                 );
                 resident.setYHeadRot(147.0F);
                 resident.setYBodyRot(109.0F);
                 resident.setDeltaMovement(new Vec3(0.18D, 0.0D, -0.07D));
 
-                HouseExteriorEntityMirror.syncDomesticToOverworldNow(
+                int movedMirrors = HouseExteriorEntityMirror.syncDomesticToOverworldNow(
                         interiorStandIn,
                         overworld,
                         origin
                 );
+                helper.assertTrue(movedMirrors == 1, "moving domestic source stopped projecting");
 
                 helper.assertTrue(
                         projection.position().distanceTo(resident.position()) < 1.0E-6D,
