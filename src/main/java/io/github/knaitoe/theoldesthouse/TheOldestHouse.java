@@ -62,8 +62,8 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HouseExteriorEntityMirror::onEntityInteract);
         NeoForge.EVENT_BUS.addListener(HouseExteriorEntityMirror::onEntityInteractSpecific);
         NeoForge.EVENT_BUS.addListener(HouseExteriorEntityMirror::onAttack);
-        NeoForge.EVENT_BUS.addListener(HouseSoundBridge::onSoundAtPosition);
-        NeoForge.EVENT_BUS.addListener(HouseSoundBridge::onSoundAtEntity);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, HouseSoundBridge::onSoundAtPosition);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, HouseSoundBridge::onSoundAtEntity);
         NeoForge.EVENT_BUS.addListener(HouseLabyrinth::onCanPlayerSleep);
         NeoForge.EVENT_BUS.addListener(HouseLabyrinth::onSetSpawn);
 
