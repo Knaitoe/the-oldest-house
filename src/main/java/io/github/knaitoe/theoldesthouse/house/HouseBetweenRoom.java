@@ -101,13 +101,8 @@ public final class HouseBetweenRoom {
     private static final int DOOR_CHECK_INTERVAL = 20;
     /** How far from its door someone can wander in a copy without going in before being put back. */
     private static final double APPROACH_RADIUS = 6.0D;
-    /**
-     * After crossing the impossible room, stay in the copied destination
-     * room until the pocket doorway is behind the player and out of view.
-     * Shifting back to the real manor while that seam is still on screen
-     * exposes the copied wall for a frame or two.
-     */
-    private static final double EXIT_HIDE_RADIUS = 2.75D;
+    /** How much farther than their entry point counts as backing away. */
+    private static final double BACK_OUT_MARGIN = 0.65D;
     /** Nobody closer than this to the doorway when it starts routing. */
     private static final double CLEAR_RADIUS = 4.0D;
 
@@ -141,6 +136,8 @@ public final class HouseBetweenRoom {
     private static final Set<UUID> INSIDE = new HashSet<>();
     /** The side each player in the pocket came in by. */
     private static final Map<UUID, Side> CAME_FROM = new HashMap<>();
+    /** Horizontal distance from that side's copied door when routing began. */
+    private static final Map<UUID, Double> ENTRY_DISTANCE = new HashMap<>();
 
     private HouseBetweenRoom() {
     }
@@ -504,8 +501,16 @@ public final class HouseBetweenRoom {
         }
         copyPaintings(interior, origin);
         BlockPos door = side == Side.HALL ? hallDoor(origin) : studyDoor(origin);
-        INSIDE.remove(player.getUUID());
-        CAME_FROM.put(player.getUUID(), side);
+        UUID id = player.getUUID();
+        INSIDE.remove(id);
+        CAME_FROM.put(id, side);
+        BlockPos localDoor = side == Side.HALL ? REAL_DOOR : REAL_DOOR.offset(STUDY_SHIFT, 0, 0);
+        double relX = player.getX() - origin.getX() + (side == Side.STUDY ? STUDY_SHIFT : 0);
+        double relZ = player.getZ() - origin.getZ();
+        ENTRY_DISTANCE.put(id, Math.sqrt(
+                sq(relX - (localDoor.getX() + 0.5D))
+                        + sq(relZ - (localDoor.getZ() + 0.5D))
+        ));
 
         // Open the destination copy before moving the player. Sending the
         // relative teleport first lets the client render one frame of the
@@ -555,22 +560,20 @@ public final class HouseBetweenRoom {
         double distanceSq = dx * dx + dz * dz;
 
         if (INSIDE.contains(id)) {
-            // They really crossed the room. The copied hall/study is there
-            // specifically so we do not need to reveal the shift the instant
-            // their feet leave the doorway. Keep them in that copy until the
-            // seam is comfortably behind them and nobody can see it, then
-            // return to the matching spot in the real manor. A hard wander
-            // limit remains as a safety net.
-            BlockPos pocketDoor = side == Side.HALL ? hallDoor(origin) : studyDoor(origin);
-            boolean seamHidden = distanceSq >= EXIT_HIDE_RADIUS * EXIT_HIDE_RADIUS
-                    && !HouseWatchers.isWatched(player.serverLevel(), pocketDoor)
-                    && !HouseWatchers.isWatched(player.serverLevel(), pocketDoor.above());
-            leave = seamHidden
-                    || distanceSq > APPROACH_RADIUS * APPROACH_RADIUS
-                    || relY < ROOM_MIN_Y - 0.5D
-                    || relY > ROOM_MAX_Y + 1;
+            // Once they clear either far side, there is no reason to keep them
+            // in a dead copy of the hall/study. Shut the copied door first,
+            // then immediately rejoin the real room behind the identical shut
+            // door. The panel itself hides the vertical shift, interactions
+            // become real at once, and multiplayer observers see the arrival
+            // at the threshold rather than six blocks later.
+            leave = true;
         } else {
-            leave = distanceSq > APPROACH_RADIUS * APPROACH_RADIUS
+            Side from = CAME_FROM.get(id);
+            double enteredAt = ENTRY_DISTANCE.getOrDefault(id, APPROACH_RADIUS);
+            boolean backedOut = from == side
+                    && Math.sqrt(distanceSq) >= enteredAt + BACK_OUT_MARGIN;
+            leave = backedOut
+                    || distanceSq > APPROACH_RADIUS * APPROACH_RADIUS
                     || relY < ROOM_MIN_Y - 0.5D
                     || relY > ROOM_MAX_Y + 1;
         }
@@ -584,22 +587,30 @@ public final class HouseBetweenRoom {
         UUID id = player.getUUID();
         boolean cameThrough = INSIDE.remove(id);
         Side from = CAME_FROM.remove(id);
-        shift(player, side == Side.HALL ? 0 : -STUDY_SHIFT, -pocketDy(origin));
+        ENTRY_DISTANCE.remove(id);
         ServerLevel level = player.serverLevel();
-        setDoorOpen(level, hallDoor(origin), false);
-        setDoorOpen(level, studyDoor(origin), false);
+
+        // Block updates are sent before the teleport packet on this connection:
+        // close the visible copied threshold first so a player backing through
+        // it sees an ordinary door panel, never the 100-block vertical move.
+        setDoorOpen(level, side == Side.HALL ? hallDoor(origin) : studyDoor(origin), false);
+        setDoorOpen(level, side == Side.HALL ? studyDoor(origin) : hallDoor(origin), false);
+        shift(player, side == Side.HALL ? 0 : -STUDY_SHIFT, -pocketDy(origin));
+
+        // The real partition is always shut. Its close sound belongs at the
+        // player's actual destination, whether they traversed or backed out.
+        BlockPos real = realDoor(origin);
+        player.connection.send(new ClientboundSoundPacket(
+                BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.WOODEN_DOOR_CLOSE), SoundSource.BLOCKS,
+                real.getX() + 0.5D, real.getY() + 0.5D, real.getZ() + 0.5D, 1.0F,
+                0.9F + player.getRandom().nextFloat() * 0.1F, player.getRandom().nextLong()));
+
         if (cameThrough) {
             if (from != null && from != side && !data.isRoomTraversed()) {
                 data.markRoomTraversed();
                 TheOldestHouse.LOGGER.info("{} went through the room between rooms, from the {} to the {}.",
                         player.getGameProfile().getName(), from == Side.HALL ? "hall" : "study", side == Side.HALL ? "hall" : "study");
             }
-            // The door they came through has swung shut behind them.
-            BlockPos real = realDoor(origin);
-            player.connection.send(new ClientboundSoundPacket(
-                    BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.WOODEN_DOOR_CLOSE), SoundSource.BLOCKS,
-                    real.getX() + 0.5D, real.getY() + 0.5D, real.getZ() + 0.5D, 1.0F,
-                    0.9F + player.getRandom().nextFloat() * 0.1F, player.getRandom().nextLong()));
         }
     }
 
@@ -608,6 +619,10 @@ public final class HouseBetweenRoom {
      */
     private static void shift(ServerPlayer player, int dx, int dy) {
         HouseInternalTeleport.translate(player, dx, dy, 0.0D);
+    }
+
+    private static double sq(double value) {
+        return value * value;
     }
 
     /** Players left in the old separate dimension by an earlier version are brought back to the hall. */
@@ -666,11 +681,13 @@ public final class HouseBetweenRoom {
     public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         INSIDE.remove(event.getEntity().getUUID());
         CAME_FROM.remove(event.getEntity().getUUID());
+        ENTRY_DISTANCE.remove(event.getEntity().getUUID());
     }
 
     public static void clearAll() {
         INSIDE.clear();
         CAME_FROM.clear();
+        ENTRY_DISTANCE.clear();
     }
 
     // ------------------------------------------------------------------
