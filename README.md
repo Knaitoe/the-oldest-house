@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.3.5` revises the per-player opening sequence so the ordinary manor, not the player's home, is the first architectural relationship with the House:
+Version `0.3.6` revises the per-player opening sequence so the ordinary manor, not the player's home, is the first architectural relationship with the House:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -473,3 +473,12 @@ The opening has been revised so the player's own home remains ordinary.
 - Hide-and-clap: the blindfold (a head-slot item with its own black overlay), a counted start, claps that move and get louder when you wander, a glimpse of small bare feet, a wardrobe placed behind you at the end and a crayon drawing inside it. Peeking resets it with a note.
 - The Red Room: a copy of the room you spend the most time in at home, dealt as a recurring vignette. Its bed works at night, loses you time and wakes you deeper. The labyrinth's slots now fill upwards above the manor and carry on below it, so a high manor keeps every place.
 - Every chest and barrel in the manor now has a loot table for its room: pantry food in the kitchen, bottles and bowls in the scullery, candles and odds and ends in the parlour and landings, books and ink in the literary bedroom, fletching and scrap metal in the maker loft, moth-eaten leftovers in the box room. `/oldesthouse restock` applies them to an existing house.
+
+### 0.3.6 playtest spatial fixes
+
+- The room-between-rooms opens its copied destination door before the same-dimension shift, eliminating the brief plaster/closed-door frame visible during entry.
+- After traversing the impossible room, the player stays in the copied destination room until the doorway seam is safely behind and unwitnessed before returning to the real manor.
+- Navidson's photograph ignores natural leaf canopy in the photographic copy and can search higher camera positions, preventing trees near the bed from being mistaken for the subject.
+- The labyrinth's impossible-hallway entrance is now a stable return root. Returns through it are clamped safely inside the valid hallway volume, and a missing return stack falls back to the hallway rather than stranding the player in the gray.
+- Regression tests cover dense leaf cover and the stable hallway return root.
+
