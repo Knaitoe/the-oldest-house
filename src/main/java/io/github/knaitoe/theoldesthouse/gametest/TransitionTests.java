@@ -78,8 +78,9 @@ public final class TransitionTests {
     @GameTest(template = "empty")
     public static void transitionIsAbandonedIfThePlayerLeftByAnotherWay(GameTestHelper helper) {
         ServerLevel start = helper.getLevel();
-        ServerLevel interior = start.getServer().getLevel(HouseDimensions.INTERIOR);
-        helper.assertTrue(interior != null && interior != start, "the House dimension should exist beside the test level");
+        // The test server has only the vanilla dimensions; any other level will do.
+        ServerLevel elsewhere = start.getServer().getLevel(Level.NETHER);
+        helper.assertTrue(elsewhere != null && elsewhere != start, "another level should exist beside the test level");
 
         ServerPlayer player = walker(helper, "transition_elsewhere");
         AtomicInteger hooks = new AtomicInteger();
@@ -87,12 +88,12 @@ public final class TransitionTests {
 
         // Before the transition's tick, something else (a death, a command)
         // has already put them somewhere else.
-        player.setServerLevel(interior);
+        player.setServerLevel(elsewhere);
         try {
             tick(player);
             helper.assertTrue(!HouseTransitionEvents.isPending(player), "a transition from a level the player has left should be abandoned");
             helper.assertTrue(hooks.get() == 0, "an abandoned transition must run none of its hooks");
-            helper.assertTrue(player.serverLevel() == interior, "an abandoned transition must not move the player again");
+            helper.assertTrue(player.serverLevel() == elsewhere, "an abandoned transition must not move the player again");
         } finally {
             player.setServerLevel(start);
         }
