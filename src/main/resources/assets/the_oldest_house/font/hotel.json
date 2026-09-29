@@ -1,0 +1,18 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "the_oldest_house:font/hotel.png",
+      "ascent": 12,
+      "height": 16,
+      "chars": [
+        " !\\\"#$%&'()*+,-./",
+        "0123456789:;<=>?",
+        "@ABCDEFGHIJKLMNO",
+        "PQRSTUVWXYZ[\\\\]^_",
+        "`abcdefghijklmno",
+        "pqrstuvwxyz{|}~"
+      ]
+    }
+  ]
+}

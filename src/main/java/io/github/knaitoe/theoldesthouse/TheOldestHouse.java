@@ -3,6 +3,7 @@ package io.github.knaitoe.theoldesthouse;
 import com.mojang.logging.LogUtils;
 import io.github.knaitoe.theoldesthouse.command.HouseCommands;
 import io.github.knaitoe.theoldesthouse.house.HouseBetweenRoom;
+import io.github.knaitoe.theoldesthouse.house.HouseBlockEntities;
 import io.github.knaitoe.theoldesthouse.house.HouseBlocks;
 import io.github.knaitoe.theoldesthouse.house.HouseChunkKeeper;
 import io.github.knaitoe.theoldesthouse.house.HouseConfig;
@@ -45,6 +46,7 @@ public final class TheOldestHouse {
         modEventBus.addListener(HouseNetwork::registerPayloads);
         OpeningRegistry.register(modEventBus);
         HouseBlocks.register(modEventBus);
+        HouseBlockEntities.register(modEventBus);
         LabyrinthRegistry.register(modEventBus);
         modContainer.registerConfig(ModConfig.Type.SERVER, OpeningConfig.SPEC);
         modContainer.registerConfig(ModConfig.Type.SERVER, HouseConfig.SPEC, MOD_ID + "-house-server.toml");

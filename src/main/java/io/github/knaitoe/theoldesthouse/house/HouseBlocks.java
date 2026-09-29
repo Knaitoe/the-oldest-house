@@ -20,6 +20,8 @@ public final class HouseBlocks {
 
     public static final DeferredHolder<MapCodec<? extends Block>, MapCodec<WardrobeBlock>> WARDROBE_TYPE =
             BLOCK_TYPES.register("wardrobe", () -> WardrobeBlock.CODEC);
+    public static final DeferredHolder<MapCodec<? extends Block>, MapCodec<HotelRoomPlaqueBlock>> HOTEL_ROOM_PLAQUE_TYPE =
+            BLOCK_TYPES.register("hotel_room_plaque", () -> HotelRoomPlaqueBlock.CODEC);
 
     public static final DeferredBlock<CarpetBlock> GREAT_ROOM_RUG_AUTHORED = carpet("great_room_rug_authored", Blocks.BROWN_CARPET);
     public static final DeferredBlock<CarpetBlock> GREAT_ROOM_RUG_SHIFTED = carpet("great_room_rug_shifted", Blocks.RED_CARPET);
@@ -40,6 +42,9 @@ public final class HouseBlocks {
             "hotel_ceiling", Block::new,
             BlockBehaviour.Properties.ofFullCopy(Blocks.BIRCH_PLANKS).noLootTable());
     public static final DeferredBlock<CarpetBlock> HOTEL_CARPET = carpet("hotel_carpet", Blocks.RED_CARPET);
+    public static final DeferredBlock<HotelRoomPlaqueBlock> HOTEL_ROOM_PLAQUE = BLOCKS.registerBlock(
+            "hotel_room_plaque", HotelRoomPlaqueBlock::new,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_WALL_SIGN).noLootTable());
 
     public static final DeferredBlock<Block> LOOSE_FLOORBOARD = BLOCKS.registerBlock(
             "loose_floorboard", Block::new,
