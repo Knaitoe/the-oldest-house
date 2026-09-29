@@ -47,7 +47,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * never short: it stays sporadic.
  *
  * Very rarely, once a player has been deep or heard it often, a night in a
- * manor bed ends in the cellar instead: they wake in the dark on its floor,
+ * manor bed ends in the cellar instead: they come to on its floor, out of black,
  * and a moment later the Growl comes from directly under it. Hillary, on the
  * porch outside, whines. Then not again for a long while.
  *
