@@ -103,6 +103,7 @@ public final class LabyrinthData extends SavedData {
     private final Map<UUID, Deque<Waypoint>> returns = new HashMap<>();
     private final Set<String> completed = new LinkedHashSet<>();
     private final Set<String> ready = new LinkedHashSet<>();
+    private final Map<String, CompoundTag> states = new HashMap<>();
     private int dryDeals;
     private int builtVersion;
     @Nullable
@@ -244,6 +245,21 @@ public final class LabyrinthData extends SavedData {
         }
     }
 
+    /** A vignette's own saved state (where things were left, what was found); empty if none. */
+    public CompoundTag state(String vignette) {
+        CompoundTag tag = states.get(vignette);
+        return tag == null ? new CompoundTag() : tag.copy();
+    }
+
+    public void setState(String vignette, CompoundTag tag) {
+        if (tag.isEmpty()) {
+            states.remove(vignette);
+        } else {
+            states.put(vignette, tag.copy());
+        }
+        setDirty();
+    }
+
     public int builtVersion() {
         return builtVersion;
     }
@@ -315,6 +331,10 @@ public final class LabyrinthData extends SavedData {
         for (int i = 0; i < readyList.size(); i++) {
             data.ready.add(readyList.getString(i));
         }
+        CompoundTag stateTag = tag.getCompound("States");
+        for (String key : stateTag.getAllKeys()) {
+            data.states.put(key, stateTag.getCompound(key));
+        }
         data.dryDeals = tag.getInt("DryDeals");
         data.builtVersion = tag.getInt("BuiltVersion");
         data.builtOrigin = tag.contains("BuiltOrigin") ? BlockPos.of(tag.getLong("BuiltOrigin")) : null;
@@ -371,6 +391,9 @@ public final class LabyrinthData extends SavedData {
             readyList.add(StringTag.valueOf(place));
         }
         tag.put("Ready", readyList);
+        CompoundTag stateTag = new CompoundTag();
+        states.forEach((key, value) -> stateTag.put(key, value.copy()));
+        tag.put("States", stateTag);
         tag.putInt("DryDeals", dryDeals);
         tag.putInt("BuiltVersion", builtVersion);
         if (builtOrigin != null) {

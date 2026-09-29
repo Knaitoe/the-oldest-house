@@ -14,7 +14,9 @@ import io.github.knaitoe.theoldesthouse.house.HouseMirrorSyncEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseProxyEntityEvacuation;
 import io.github.knaitoe.theoldesthouse.house.HouseShifts;
 import io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents;
+import io.github.knaitoe.theoldesthouse.labyrinth.HideAndClap;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthRegistry;
 import io.github.knaitoe.theoldesthouse.labyrinth.RedRoom;
 import io.github.knaitoe.theoldesthouse.labyrinth.TellTaleFloorboards;
 import io.github.knaitoe.theoldesthouse.network.HouseNetwork;
@@ -37,6 +39,7 @@ public final class TheOldestHouse {
     public TheOldestHouse(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.addListener(HouseNetwork::registerPayloads);
         OpeningRegistry.register(modEventBus);
+        LabyrinthRegistry.register(modEventBus);
         modContainer.registerConfig(ModConfig.Type.SERVER, OpeningConfig.SPEC);
         modContainer.registerConfig(ModConfig.Type.SERVER, HouseConfig.SPEC, MOD_ID + "-house-server.toml");
 
@@ -78,6 +81,10 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(RedRoom::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(RedRoom::onNeighborNotify);
         NeoForge.EVENT_BUS.addListener(RedRoom::onPiston);
+        NeoForge.EVENT_BUS.addListener(HideAndClap::onServerTick);
+        NeoForge.EVENT_BUS.addListener(HideAndClap::onRightClickBlock);
+        NeoForge.EVENT_BUS.addListener(HideAndClap::onAttackEntity);
+        NeoForge.EVENT_BUS.addListener(HideAndClap::onServerStopping);
 
         // The room between rooms: its door is handled before the mirror sees the click.
         NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onRightClickBlock);

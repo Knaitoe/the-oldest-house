@@ -1,0 +1,22 @@
+{
+  "vignette.clap": {
+    "sounds": [
+      {"name": "minecraft:note/snare", "pitch": 1.35}
+    ],
+    "subtitle": "subtitles.the_oldest_house.clap"
+  },
+  "vignette.clap_muffled": {
+    "sounds": [
+      {"name": "minecraft:note/snare", "pitch": 1.05, "volume": 0.6}
+    ],
+    "subtitle": "subtitles.the_oldest_house.clap_muffled"
+  },
+  "vignette.small_steps": {
+    "sounds": [
+      {"name": "minecraft:step/cloth1", "pitch": 1.5},
+      {"name": "minecraft:step/cloth2", "pitch": 1.5},
+      {"name": "minecraft:step/cloth3", "pitch": 1.5}
+    ],
+    "subtitle": "subtitles.the_oldest_house.small_steps"
+  }
+}

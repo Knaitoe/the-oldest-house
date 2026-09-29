@@ -4,6 +4,8 @@ import com.mojang.authlib.GameProfile;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
+import io.github.knaitoe.theoldesthouse.labyrinth.CrayonDrawing;
+import io.github.knaitoe.theoldesthouse.labyrinth.HideAndClap;
 import io.github.knaitoe.theoldesthouse.labyrinth.HomeRooms;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthBuilder;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData;
@@ -11,6 +13,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDealer;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlaces;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthRegistry;
 import io.github.knaitoe.theoldesthouse.labyrinth.RedRoom;
 import io.github.knaitoe.theoldesthouse.labyrinth.RoomSnapshot;
 import io.github.knaitoe.theoldesthouse.labyrinth.TellTaleFloorboards;
@@ -24,6 +27,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -238,6 +242,60 @@ public final class LabyrinthTests {
         helper.assertTrue(level.getBlockState(base.offset(0, 0, -1)).isAir(), "and the room opens beyond it");
         helper.assertTrue(level.getBlockState(base.offset(0, 0, -7)).is(Blocks.WHITE_TERRACOTTA), "past its walls there is only white");
         helper.assertTrue(RedRoom.isInRoom(base, base.offset(1, 0, -3)), "its bed lies in the Red Room");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void hideAndClapRoomHasOpenFloorAndABedWithItsPost(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos base = helper.absolutePos(BlockPos.ZERO).offset(-200, 6, 330);
+        HideAndClap.build(level.getServer(), level, base);
+        helper.assertTrue(level.getBlockState(base.offset(HideAndClap.BED_FOOT)).getBlock() instanceof BedBlock, "the child's bed");
+        helper.assertTrue(level.getBlockState(base.offset(HideAndClap.BED_POST)).is(Blocks.SPRUCE_FENCE), "its post");
+        helper.assertTrue(level.getBlockState(base.offset(0, 0, 1)).getBlock() instanceof DoorBlock, "a door in the south wall");
+        int open = HideAndClap.openSpots(level, base).size();
+        helper.assertTrue(open >= 40, "open floor to clap from, found " + open + " spots");
+        helper.succeed();
+    }
+
+    /** The wardrobe goes two blocks directly behind the player, or within 45 degrees of it. */
+    @GameTest(template = "empty")
+    public static void wardrobeStandsBehindThePlayer(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos base = helper.absolutePos(BlockPos.ZERO).offset(-200, 6, 400);
+        HideAndClap.build(level.getServer(), level, base);
+        Vec3 player = new Vec3(base.getX() + 0.5D, base.getY(), base.getZ() - 6.5D);
+        BlockPos behind = HideAndClap.wardrobeSpot(level, base, player, 180.0F);
+        helper.assertTrue(base.offset(0, 0, -5).equals(behind), "facing north, it goes two blocks south, was " + behind);
+
+        level.setBlock(behind, Blocks.STONE.defaultBlockState(), 3);
+        BlockPos aside = HideAndClap.wardrobeSpot(level, base, player, 180.0F);
+        helper.assertTrue(aside != null && !aside.equals(behind), "with that blocked it goes somewhere else");
+        double dx = aside.getX() + 0.5D - player.x;
+        double dz = aside.getZ() + 0.5D - player.z;
+        double angle = Math.toDegrees(Math.atan2(Math.abs(dx), dz));
+        double distance = Math.sqrt(dx * dx + dz * dz);
+        helper.assertTrue(dz > 0 && angle <= 50.0D && distance >= 1.3D && distance <= 2.9D,
+                "still behind them, within 45 degrees: " + aside + " at " + angle + " degrees, " + distance + " away");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void crayonDrawingShowsSomeoneBlindfoldedAndTheBed(GameTestHelper helper) {
+        byte[] page = CrayonDrawing.draw(new Vec3(0.5D, 1.0D, 0.5D), 0.0F, new Vec3(0.5D, 0.0D, 4.5D), new Vec3(2.5D, 0.0D, 6.5D), 7L);
+        int black = 0;
+        int red = 0;
+        for (byte pixel : page) {
+            if (pixel == CrayonDrawing.BLACK) {
+                black++;
+            } else if (pixel == CrayonDrawing.RED) {
+                red++;
+            }
+        }
+        helper.assertTrue(page.length == CrayonDrawing.SIZE * CrayonDrawing.SIZE, "a full map's worth");
+        helper.assertTrue(black >= 10, "a blindfold, pressed hard: " + black + " black pixels");
+        helper.assertTrue(red >= 10, "and the bed: " + red + " red pixels");
+        helper.assertTrue(LabyrinthRegistry.BLINDFOLD.get().getEquipmentSlot() == EquipmentSlot.HEAD, "the blindfold is worn on the head");
         helper.succeed();
     }
 

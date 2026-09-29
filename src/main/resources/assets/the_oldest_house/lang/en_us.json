@@ -1,3 +1,7 @@
 {
-  "entity.the_oldest_house.delivered_item": "Item"
+  "entity.the_oldest_house.delivered_item": "Item",
+  "item.the_oldest_house.blindfold": "Blindfold",
+  "subtitles.the_oldest_house.clap": "Someone claps",
+  "subtitles.the_oldest_house.clap_muffled": "A clap, muffled",
+  "subtitles.the_oldest_house.small_steps": "Small bare feet"
 }
