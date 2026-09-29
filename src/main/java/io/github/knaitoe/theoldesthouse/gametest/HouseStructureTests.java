@@ -2,8 +2,10 @@ package io.github.knaitoe.theoldesthouse.gametest;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseBuilder;
+import io.github.knaitoe.theoldesthouse.house.HousePaintings;
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
@@ -19,6 +21,15 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class HouseStructureTests {
     private HouseStructureTests() {
+    }
+
+    @GameTest(template = "empty")
+    public static void authoredPaintingVariantsLoad(GameTestHelper helper) {
+        var paintings = helper.getLevel().registryAccess().lookupOrThrow(Registries.PAINTING_VARIANT);
+        for (var key : HousePaintings.ALL) {
+            helper.assertTrue(paintings.get(key).isPresent(), "missing authored painting variant " + key.location());
+        }
+        helper.succeed();
     }
 
     @GameTest(template = "empty", timeoutTicks = 600)
