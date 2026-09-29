@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.4.1` revises the per-player opening sequence so the ordinary manor, not the player's home, is the first architectural relationship with the House:
+Version `0.4.2` revises the per-player opening sequence so the ordinary manor, not the player's home, is the first architectural relationship with the House:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -508,4 +508,14 @@ The opening has been revised so the player's own home remains ordinary.
 - Immediate pre-transition mirror seeding bypasses the distance throttle so the first frame after crossing always uses the source mob's current position.
 - The same motion policy applies in both directions: Overworld mobs seen from inside the House and domestic House mobs seen from outside.
 - A GameTest now moves and turns an authoritative domestic mob and verifies its projection follows while remaining non-interactive scenery.
+
+### 0.4.2 continuity fixes
+
+- Navidson's photographic copy now removes natural tree trunks as well as non-persistent leaves. Only vertical log columns that terminate in a natural leaf canopy are filtered, so timber houses and player-built log beams still photograph normally.
+- Tree trunks therefore neither render as bare poles nor count as nearby "house" geometry when camera views are scored.
+- The room-between-rooms no longer leaves players wandering through a dead copied hall/study. Crossing either exit immediately closes the copied threshold and rejoins the real manor behind the identical shut door.
+- Backing away from the room also returns after only a small retreat from the closest approach to the doorway, rather than waiting for the six-block safety limit.
+- Real block interaction and multiplayer presence resume at the doorway handoff instead of several blocks later.
+- Missing/stale labyrinth return-stack recovery now uses the existing lights-out fade before relocating the player to the impossible hallway root. Normal matched-door returns remain seamless.
+- The wooded-photo regression now includes multiple real oak trunks in front of the preferred facade.
 
