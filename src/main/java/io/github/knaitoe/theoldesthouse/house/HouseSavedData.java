@@ -40,8 +40,11 @@ public final class HouseSavedData extends SavedData {
     private int rugsShiftedAge = -1;
     private int roomRevealedAge = -1;
     private int roomMissedMornings;
+    /** The bedroom-partition door of the first version of the room, until it is taken down. */
     private int roomDoorX = -1;
-    private boolean roomPocketBuilt;
+    private int roomArmedAge = -1;
+    private boolean roomTraversed;
+    private int roomLayout;
 
     // Subtle changes (see HouseShifts) and the hallway's roll.
     private int shiftsTriggered;
@@ -86,7 +89,9 @@ public final class HouseSavedData extends SavedData {
         data.roomRevealedAge = tag.contains("RoomRevealedAge") ? tag.getInt("RoomRevealedAge") : -1;
         data.roomMissedMornings = tag.getInt("RoomMissedMornings");
         data.roomDoorX = tag.contains("RoomDoorX") ? tag.getInt("RoomDoorX") : -1;
-        data.roomPocketBuilt = tag.getBoolean("RoomPocketBuilt");
+        data.roomArmedAge = tag.contains("RoomArmedAge") ? tag.getInt("RoomArmedAge") : data.roomRevealedAge;
+        data.roomTraversed = tag.getBoolean("RoomTraversed");
+        data.roomLayout = tag.getInt("RoomLayout");
         data.shiftsTriggered = tag.getInt("ShiftsTriggered");
         data.shiftDryMornings = tag.getInt("ShiftDryMornings");
         data.hallwayMissedMornings = tag.getInt("HallwayMissedMornings");
@@ -126,7 +131,9 @@ public final class HouseSavedData extends SavedData {
         tag.putInt("RoomRevealedAge", roomRevealedAge);
         tag.putInt("RoomMissedMornings", roomMissedMornings);
         tag.putInt("RoomDoorX", roomDoorX);
-        tag.putBoolean("RoomPocketBuilt", roomPocketBuilt);
+        tag.putInt("RoomArmedAge", roomArmedAge);
+        tag.putBoolean("RoomTraversed", roomTraversed);
+        tag.putInt("RoomLayout", roomLayout);
         tag.putInt("ShiftsTriggered", shiftsTriggered);
         tag.putInt("ShiftDryMornings", shiftDryMornings);
         tag.putInt("HallwayMissedMornings", hallwayMissedMornings);
@@ -277,29 +284,56 @@ public final class HouseSavedData extends SavedData {
         setDirty();
     }
 
-    /** House-relative x of the room's door in the bedroom partition, or -1. */
+    /** House-relative x of the first version's door in the bedroom partition, or -1 once it is gone. */
     public int roomDoorX() {
         return roomDoorX;
     }
 
-    /** Whether the room's pocket above the manor has been built (older rooms were elsewhere). */
-    public boolean isRoomPocketBuilt() {
-        return roomPocketBuilt;
-    }
-
-    public void markRoomPocketBuilt() {
-        roomPocketBuilt = true;
+    public void clearRoomDoorX() {
+        roomDoorX = -1;
         setDirty();
     }
 
-    public void setRoomDoorX(int doorX) {
-        roomDoorX = doorX;
+    /** The morning roll has come up: the room is built and waits for nobody to be looking. */
+    public boolean isRoomArmed() {
+        return roomArmedAge >= 0;
+    }
+
+    public int roomArmedAge() {
+        return roomArmedAge;
+    }
+
+    public void markRoomArmed() {
+        if (roomArmedAge < 0) {
+            roomArmedAge = houseAge;
+        }
         setDirty();
     }
 
-    public void markRoomRevealed(int doorX) {
+    /** The study door leads through the room. */
+    public void markRoomRevealed() {
+        markRoomArmed();
         roomRevealedAge = houseAge;
-        roomDoorX = doorX;
+        setDirty();
+    }
+
+    /** Someone has gone in one side of the room and come out the other. */
+    public boolean isRoomTraversed() {
+        return roomTraversed;
+    }
+
+    public void markRoomTraversed() {
+        roomTraversed = true;
+        setDirty();
+    }
+
+    /** Which layout of the room's pocket has been built (see {@link HouseBetweenRoom#LAYOUT}). */
+    public int roomLayout() {
+        return roomLayout;
+    }
+
+    public void setRoomLayout(int layout) {
+        roomLayout = layout;
         setDirty();
     }
 
@@ -441,7 +475,9 @@ public final class HouseSavedData extends SavedData {
         roomRevealedAge = -1;
         roomMissedMornings = 0;
         roomDoorX = -1;
-        roomPocketBuilt = false;
+        roomArmedAge = -1;
+        roomTraversed = false;
+        roomLayout = 0;
         shiftsTriggered = 0;
         shiftDryMornings = 0;
         hallwayMissedMornings = 0;

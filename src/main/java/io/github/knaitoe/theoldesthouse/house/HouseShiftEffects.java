@@ -306,6 +306,9 @@ public final class HouseShiftEffects {
     public static String doors(Context ctx) {
         int closed = 0;
         for (BlockPos rel : INTERIOR_DOORS) {
+            if (isRoomDoor(ctx, rel)) {
+                continue;
+            }
             BlockPos lower = ctx.origin().offset(rel);
             BlockState state = ctx.interior().getBlockState(lower);
             if (state.getBlock() instanceof DoorBlock && state.getValue(DoorBlock.OPEN) && !watched(ctx, lower)) {
@@ -314,6 +317,9 @@ public final class HouseShiftEffects {
             }
         }
         for (BlockPos rel : shuffled(INTERIOR_DOORS, ctx.random())) {
+            if (isRoomDoor(ctx, rel)) {
+                continue;
+            }
             BlockPos lower = ctx.origin().offset(rel);
             BlockState state = ctx.interior().getBlockState(lower);
             if (!(state.getBlock() instanceof DoorBlock) || state.getValue(DoorBlock.HALF) != DoubleBlockHalf.LOWER || watched(ctx, lower)) {
@@ -324,6 +330,11 @@ public final class HouseShiftEffects {
             return "a door now hangs from its other side" + (closed > 0 ? "; " + closed + " open door(s) were shut" : "");
         }
         return closed > 0 ? closed + " open door(s) were shut" : null;
+    }
+
+    /** The study door stays exactly as the room's copies of it were made, once the room is armed. */
+    private static boolean isRoomDoor(Context ctx, BlockPos rel) {
+        return ctx.data().isRoomArmed() && rel.equals(HouseBetweenRoom.REAL_DOOR);
     }
 
     private static void setDoor(Context ctx, BlockPos lower, DoorHingeSide hinge, boolean open) {
@@ -413,10 +424,10 @@ public final class HouseShiftEffects {
         return null;
     }
 
-    /** Upstairs, the door to the room between rooms once it exists; otherwise the nearest door. */
+    /** Downstairs, the study door once it leads through the room between rooms; otherwise the nearest door. */
     private static BlockPos chairTarget(Context ctx, BlockPos chair) {
-        if (chair.getY() >= 6 && ctx.data().isRoomRevealed()) {
-            return new BlockPos(ctx.data().roomDoorX(), HouseBetweenRoom.DOOR_Y, HouseBetweenRoom.WALL_Z);
+        if (chair.getY() < 6 && ctx.data().isRoomRevealed()) {
+            return HouseBetweenRoom.REAL_DOOR;
         }
         List<BlockPos> doors = new ArrayList<>(INTERIOR_DOORS);
         doors.add(new BlockPos(HouseLayout.FRONT_DOOR.x(), HouseLayout.FRONT_DOOR.y(), HouseLayout.FRONT_DOOR.z()));

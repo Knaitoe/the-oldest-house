@@ -127,25 +127,23 @@ public final class HouseProgressionTests {
         helper.assertTrue(HouseProgression.roomChance(data, 5) == -1, "no room before the rugs");
 
         data.markRugsShifted();
-        int wait = HouseConfig.ROOM_MIN_MORNINGS_AFTER_RUGS.getAsInt();
+        int first = Math.max(HouseConfig.ROOM_FIRST_AGE.getAsInt(), 1 + HouseConfig.ROOM_MIN_MORNINGS_AFTER_RUGS.getAsInt());
         int base = HouseConfig.ROOM_BASE_CHANCE.getAsInt();
         int step = HouseConfig.ROOM_CHANCE_STEP.getAsInt();
-        if (wait > 0) {
-            helper.assertTrue(HouseProgression.roomChance(data, 1 + wait - 1) == -1, "the room waits after the rugs");
-        }
-        helper.assertTrue(HouseProgression.roomChance(data, 1 + wait) == Math.min(100, base),
-                "first eligible morning: the base chance");
+        helper.assertTrue(HouseProgression.roomChance(data, first - 1) == -1, "the room waits for House morning " + first);
+        helper.assertTrue(HouseProgression.roomChance(data, first) == Math.min(100, base),
+                "first eligible morning: the first chance");
         data.noteRoomMissedMorning();
-        helper.assertTrue(HouseProgression.roomChance(data, 2 + wait) == Math.min(100, base + step),
+        helper.assertTrue(HouseProgression.roomChance(data, first + 1) == Math.min(100, base + step),
                 "each missed morning raises the chance");
-        for (int i = 0; i < 10; i++) {
-            data.noteRoomMissedMorning();
-        }
-        helper.assertTrue(HouseProgression.roomChance(data, 12 + wait) == 100 || step == 0, "the chance caps at 100%");
+        data.noteRoomMissedMorning();
+        helper.assertTrue(HouseProgression.roomChance(data, first + 2) == 100 || base + 2 * step < 100,
+                "by default the third eligible morning is certain");
 
         data.setHouseAge(3);
-        data.markRoomRevealed(9);
+        data.markRoomArmed();
         helper.assertTrue(HouseProgression.roomChance(data, 4) == -1, "only one room");
+        helper.assertTrue(!data.isRoomRevealed(), "armed, it waits for nobody to be looking");
 
         int shiftBase = HouseConfig.SHIFT_BASE_CHANCE.getAsInt();
         int shiftStep = HouseConfig.SHIFT_CHANCE_STEP.getAsInt();
@@ -158,6 +156,9 @@ public final class HouseProgressionTests {
             helper.assertTrue(HouseProgression.hallwayChance(data) == -1, "the hallway waits for subtle changes (" + i + " so far)");
             data.recordShift("candles");
         }
+        data.markRoomRevealed();
+        helper.assertTrue(HouseProgression.hallwayChance(data) == -1, "and for someone to go through the room");
+        data.markRoomTraversed();
         helper.assertTrue(HouseShifts.chance(data) == Math.min(100, shiftBase), "a change resets the quiet mornings");
         int hallBase = HouseConfig.HALLWAY_BASE_CHANCE.getAsInt();
         int hallStep = HouseConfig.HALLWAY_CHANCE_STEP.getAsInt();
@@ -298,57 +299,30 @@ public final class HouseProgressionTests {
     // ------------------------------------------------------------------
     // The room between rooms
 
+    /** The room lies between two copies of the study door, seven blocks apart, the study's copy beyond the far one. */
     @GameTest(template = "empty")
-    public static void doorGoesWhereThereIsRoomInFrontAndShelvesBehind(GameTestHelper helper) {
+    public static void roomBetweenRoomsHasTheStudyDoorAtEachEnd(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockPos origin = helper.absolutePos(BlockPos.ZERO).offset(160, -2, 40);
-        int z = HouseBetweenRoom.WALL_Z;
-        for (int x = 3; x <= 12; x++) {
-            for (int y = 7; y <= 10; y++) {
-                level.setBlock(origin.offset(x, y, z), Blocks.WHITE_TERRACOTTA.defaultBlockState(), Block.UPDATE_CLIENTS);
-                level.setBlock(origin.offset(x, y, z - 1), Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
-                level.setBlock(origin.offset(x, y, z + 1), Blocks.BOOKSHELF.defaultBlockState(), Block.UPDATE_CLIENTS);
-            }
+        BlockPos pocket = helper.absolutePos(BlockPos.ZERO).offset(160, -2, 40);
+        HouseBetweenRoom.buildRoom(level, pocket);
+        BlockPos hallSide = pocket.offset(HouseBetweenRoom.REAL_DOOR);
+        BlockPos studySide = hallSide.offset(HouseBetweenRoom.STUDY_SHIFT, 0, 0);
+        for (BlockPos door : new BlockPos[]{hallSide, studySide}) {
+            BlockState lower = level.getBlockState(door);
+            BlockState upper = level.getBlockState(door.above());
+            helper.assertTrue(lower.getBlock() instanceof DoorBlock && lower.getValue(DoorBlock.HALF) == DoubleBlockHalf.LOWER
+                    && !lower.getValue(DoorBlock.OPEN) && lower.getValue(DoorBlock.FACING) == Direction.EAST,
+                    "a shut copy of the study door at " + door);
+            helper.assertTrue(upper.getBlock() instanceof DoorBlock && upper.getValue(DoorBlock.HALF) == DoubleBlockHalf.UPPER,
+                    "and its upper half");
         }
-        // Something stands in front of the first choice.
-        level.setBlock(origin.offset(9, 7, z - 1), Blocks.CHEST.defaultBlockState(), Block.UPDATE_CLIENTS);
-
-        int doorX = HouseBetweenRoom.chooseDoorX(level, origin);
-        helper.assertTrue(doorX == 10, "the door should move along to x=10, was " + doorX);
-
-        HouseBetweenRoom.placeDoor(level, origin, doorX);
-        BlockState lower = level.getBlockState(HouseBetweenRoom.doorPos(origin, doorX));
-        BlockState upper = level.getBlockState(HouseBetweenRoom.doorPos(origin, doorX).above());
-        helper.assertTrue(lower.getBlock() instanceof DoorBlock && lower.getValue(DoorBlock.HALF) == DoubleBlockHalf.LOWER
-                        && !lower.getValue(DoorBlock.OPEN), "a closed door's lower half in the partition");
-        helper.assertTrue(upper.getBlock() instanceof DoorBlock && upper.getValue(DoorBlock.HALF) == DoubleBlockHalf.UPPER,
-                "and its upper half");
-        helper.succeed();
-    }
-
-    @GameTest(template = "empty")
-    public static void roomBetweenRoomsIsEnclosedAndFurnished(GameTestHelper helper) {
-        ServerLevel level = helper.getLevel();
-        BlockPos origin = helper.absolutePos(BlockPos.ZERO).offset(160, -2, 80);
-        int doorX = 9;
-        HouseBetweenRoom.buildRoom(level, origin, doorX);
-
-        int z0 = HouseBetweenRoom.ROOM_MIN_Z;
-        int z1 = HouseBetweenRoom.ROOM_MAX_Z;
-        helper.assertTrue(level.getBlockState(origin.offset(doorX, 6, z0 + 3)).isSolid(), "a floor");
-        helper.assertTrue(level.getBlockState(origin.offset(doorX, 11, z0 + 3)).isSolid(), "a ceiling");
-        helper.assertTrue(level.getBlockState(origin.offset(doorX - 4, 8, z0 + 3)).isSolid(), "a west wall");
-        helper.assertTrue(level.getBlockState(origin.offset(doorX + 4, 8, z0 + 3)).isSolid(), "an east wall");
-        helper.assertTrue(level.getBlockState(origin.offset(doorX, 8, z1 + 1)).isSolid(), "a back wall");
-        helper.assertTrue(level.getBlockState(origin.offset(doorX, 8, z0)).isAir(), "headroom just inside the door");
-        helper.assertTrue(level.getBlockState(origin.offset(doorX, 7, z0 + 4)).is(Blocks.RED_CARPET), "the bedroom's old red rug");
-
-        helper.assertTrue(HouseBetweenRoom.isProtectedPocketPosition(origin, doorX, origin.offset(doorX + 4, 8, z0 + 3)),
-                "the room's walls cannot be broken");
-        helper.assertTrue(!HouseBetweenRoom.isProtectedPocketPosition(origin, doorX, origin.offset(doorX, 7, z0 + 4)),
-                "its furnishings can");
-        helper.assertTrue(HouseBetweenRoom.isProtectedPocketPosition(origin, doorX, origin.offset(5, 7, 4)),
-                "nor can anything in the copied bedroom");
+        helper.assertTrue(level.getBlockState(pocket.offset(9, 0, 20)).isSolid(), "a floor");
+        helper.assertTrue(level.getBlockState(pocket.offset(9, 6, 20)).isSolid(), "a ceiling");
+        helper.assertTrue(level.getBlockState(pocket.offset(9, 2, 16)).isSolid(), "a north wall");
+        helper.assertTrue(level.getBlockState(pocket.offset(9, 2, 24)).isSolid(), "a south wall");
+        helper.assertTrue(level.getBlockState(pocket.offset(8, 2, 20)).isAir() && level.getBlockState(pocket.offset(12, 2, 20)).isAir(),
+                "a clear way from one door to the other");
+        helper.assertTrue(level.getBlockState(pocket.offset(9, 1, 20)).is(Blocks.RED_CARPET), "a red rug");
         helper.succeed();
     }
 
@@ -363,37 +337,39 @@ public final class HouseProgressionTests {
         helper.succeed();
     }
 
+    /** The room is the House's first impossibility, not the labyrinth: beds and every other rule still apply there. */
     @GameTest(template = "empty")
-    public static void theRoomLiesPastTheThreshold(GameTestHelper helper) {
+    public static void theRoomIsNotYetTheLabyrinth(GameTestHelper helper) {
         BlockPos origin = new BlockPos(100_000, 64, 100_000);
-        helper.assertTrue(HouseLabyrinth.isBeyondThreshold(origin, HouseBetweenRoom.pocketOrigin(origin).offset(9, 7, 14)),
-                "beds do not work in the room between rooms");
-        helper.assertTrue(HouseLabyrinth.isBeyondThreshold(origin, HouseBetweenRoom.pocketOrigin(origin).offset(5, 7, 4)),
-                "nor in the copy of the bedroom in front of it");
-        helper.assertTrue(!HouseLabyrinth.isBeyondThreshold(origin, origin.offset(5, 7, 4)),
-                "but they do in the real bedroom");
+        BlockPos inRoom = HouseBetweenRoom.pocketOrigin(origin).offset(9, 1, 20);
+        helper.assertTrue(HouseBetweenRoom.isInPocket(origin, inRoom.getX() + 0.5D, inRoom.getY(), inRoom.getZ() + 0.5D),
+                "the room is in the pocket");
+        helper.assertTrue(!HouseLabyrinth.isBeyondThreshold(origin, inRoom), "but not past the labyrinth threshold");
+        helper.assertTrue(HouseBetweenRoom.studyDoor(origin).equals(HouseBetweenRoom.hallDoor(origin).offset(HouseBetweenRoom.STUDY_SHIFT, 0, 0)),
+                "its far door is the study's copy of the same door");
         helper.succeed();
     }
 
     @GameTest(template = "empty", timeoutTicks = 400)
-    public static void copyingTheBedroomNeverDoublesItsPaintings(GameTestHelper helper) {
+    public static void copyingTheHallNeverDoublesItsPaintings(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         // Right by the test, where its chunks (and their entities) stay loaded.
         BlockPos origin = helper.absolutePos(BlockPos.ZERO).offset(2, -2, 2);
         int dy = HouseBetweenRoom.pocketDy(origin);
-        level.setBlock(origin.offset(5, 8, 9), Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
+        // A painting on the hall's east wall, and the wall's copy above.
+        level.setBlock(origin.offset(17, 2, 10), Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
+        level.setBlock(origin.offset(17, 2 + dy, 10), Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
         var variants = level.registryAccess().registryOrThrow(Registries.PAINTING_VARIANT);
-        level.addFreshEntity(new Painting(level, origin.offset(5, 8, 8), Direction.NORTH, variants.getHolderOrThrow(PaintingVariants.KEBAB)));
-        AABB pocket = new AABB(origin.offset(0, dy, -2).getCenter(), origin.offset(14, dy + 12, 10).getCenter()).inflate(1.0D);
+        level.addFreshEntity(new Painting(level, origin.offset(16, 2, 10), Direction.WEST, variants.getHolderOrThrow(PaintingVariants.KEBAB)));
+        AABB pocket = new AABB(origin.offset(13, dy, 5).getCenter(), origin.offset(18, dy + 5, 14).getCenter()).inflate(1.0D);
         long start = level.getGameTime();
 
         // Copy again every tick, as if someone kept going through the door,
         // and wait long enough for any doubled painting to pop off its wall.
         helper.succeedWhen(() -> {
-            HouseBetweenRoom.copyBedroom(level, origin);
+            HouseBetweenRoom.copyPaintings(level, origin);
             int copies = level.getEntitiesOfClass(Painting.class, pocket).size();
             helper.assertTrue(copies == 1, "the copy should hang exactly one painting, had " + copies);
-            helper.assertTrue(level.getBlockState(origin.offset(5, 8 + dy, 9)).is(Blocks.STONE), "its wall is copied too");
             helper.assertTrue(level.getEntitiesOfClass(ItemEntity.class, pocket.inflate(4.0D)).isEmpty(),
                     "nothing should have dropped off the copied walls");
             helper.assertTrue(level.getGameTime() - start >= 120, "still watching for drops");

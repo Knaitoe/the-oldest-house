@@ -14,8 +14,9 @@ import net.neoforged.neoforge.event.entity.player.PlayerSetSpawnEvent;
 /**
  * The labyrinth: everything past the threshold door at the end of the hall.
  *
- * The manor itself is an ordinary house, and its beds work. Past the
- * threshold (the impossible hallway, the room between rooms, and every place
+ * The manor itself is an ordinary house, and its beds work; so is the room
+ * between rooms, the House's first quiet impossibility, which is not the
+ * labyrinth yet. Past the threshold (the impossible hallway and every place
  * reached through the labyrinth, including the outside dimension) beds do not: sleeping quietly
  * fails and no spawn point is set. The exception so far is the Red Room's
  * bed, which lets the player sleep (at night, as ever) but still sets no
@@ -40,7 +41,6 @@ public final class HouseLabyrinth {
     /** Within the House dimension: past the threshold wall, in the impossible hallway. */
     public static boolean isBeyondThreshold(BlockPos origin, BlockPos pos) {
         return HouseImpossibleHallway.isInteriorOnlyPosition(origin, pos)
-                || HouseBetweenRoom.isInPocket(origin, pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D)
                 || LabyrinthPlaces.isInStack(origin, pos);
     }
 
