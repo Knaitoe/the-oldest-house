@@ -38,6 +38,7 @@ import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.LanternBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -364,10 +365,25 @@ public final class LabyrinthTests {
                 }
             }
         }
-        for (int i = 1; i < LabyrinthLoops.RING.size(); i++) {
-            BlockPos step = base.offset(LabyrinthLoops.RING.get(i)).above(LabyrinthLoops.stepY(1, i));
-            helper.assertTrue(level.getBlockState(step.above()).isAir() && level.getBlockState(step.above(2)).isAir(),
-                    "headroom over step " + i);
+        // Every ordinary step has three completely empty blocks above it.
+        // The previous spiral lamps hung in that third block and interfered
+        // with jumping/sprinting even though two-block standing headroom was
+        // technically clear.
+        for (int turn = 0; turn < LabyrinthLoops.SPIRAL_TURNS - 1; turn++) {
+            for (int i = 0; i < LabyrinthLoops.RING.size(); i++) {
+                BlockPos step = base.offset(LabyrinthLoops.RING.get(i)).above(LabyrinthLoops.stepY(turn, i));
+                helper.assertTrue(
+                        level.getBlockState(step.above()).isAir()
+                                && level.getBlockState(step.above(2)).isAir()
+                                && level.getBlockState(step.above(3)).isAir(),
+                        "three-block maneuvering clearance over turn " + turn + " step " + i
+                );
+            }
+
+            BlockPos lamp = base.offset(2, LabyrinthLoops.TURN * turn + 2, -2);
+            BlockState lampState = level.getBlockState(lamp);
+            helper.assertTrue(lampState.is(Blocks.LANTERN), "turn " + turn + " lamp is not recessed into the east wall");
+            helper.assertTrue(!lampState.getValue(LanternBlock.HANGING), "turn " + turn + " lamp still hangs into the stair");
         }
         helper.assertTrue(level.getBlockState(base.offset(0, 16, 0)).getBlock() instanceof DoorBlock, "the far door at the top");
         helper.assertTrue(level.getBlockState(base.offset(0, 16, -1)).isAir(), "and a landing before it");
