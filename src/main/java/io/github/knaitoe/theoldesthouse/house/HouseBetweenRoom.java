@@ -102,6 +102,13 @@ public final class HouseBetweenRoom {
     private static final int DOOR_CHECK_INTERVAL = 20;
     /** How far from its door someone can wander in a copy without going in before being put back. */
     private static final double APPROACH_RADIUS = 6.0D;
+    /**
+     * After crossing the impossible room, stay in the copied destination
+     * room until the pocket doorway is behind the player and out of view.
+     * Shifting back to the real manor while that seam is still on screen
+     * exposes the copied wall for a frame or two.
+     */
+    private static final double EXIT_HIDE_RADIUS = 2.75D;
     /** Nobody closer than this to the doorway when it starts routing. */
     private static final double CLEAR_RADIUS = 4.0D;
 
@@ -500,8 +507,13 @@ public final class HouseBetweenRoom {
         BlockPos door = side == Side.HALL ? hallDoor(origin) : studyDoor(origin);
         INSIDE.remove(player.getUUID());
         CAME_FROM.put(player.getUUID(), side);
-        shift(player, side == Side.HALL ? 0 : STUDY_SHIFT, pocketDy(origin));
+
+        // Open the destination copy before moving the player. Sending the
+        // relative teleport first lets the client render one frame of the
+        // still-shut copied doorway / plaster wall before its block update
+        // arrives, which gives the trick away.
         setDoorOpen(interior, door, true);
+        shift(player, side == Side.HALL ? 0 : STUDY_SHIFT, pocketDy(origin));
         interior.playSound(null, door, SoundEvents.WOODEN_DOOR_OPEN, SoundSource.BLOCKS, 1.0F,
                 0.9F + interior.getRandom().nextFloat() * 0.1F);
     }
@@ -538,13 +550,28 @@ public final class HouseBetweenRoom {
         }
 
         boolean leave;
+        BlockPos localDoor = side == Side.HALL ? REAL_DOOR : REAL_DOOR.offset(STUDY_SHIFT, 0, 0);
+        double dx = relX - (localDoor.getX() + 0.5D);
+        double dz = relZ - (localDoor.getZ() + 0.5D);
+        double distanceSq = dx * dx + dz * dz;
+
         if (INSIDE.contains(id)) {
-            leave = true;
+            // They really crossed the room. The copied hall/study is there
+            // specifically so we do not need to reveal the shift the instant
+            // their feet leave the doorway. Keep them in that copy until the
+            // seam is comfortably behind them and nobody can see it, then
+            // return to the matching spot in the real manor. A hard wander
+            // limit remains as a safety net.
+            BlockPos pocketDoor = side == Side.HALL ? hallDoor(origin) : studyDoor(origin);
+            boolean seamHidden = distanceSq >= EXIT_HIDE_RADIUS * EXIT_HIDE_RADIUS
+                    && !HouseWatchers.isWatched(player.serverLevel(), pocketDoor)
+                    && !HouseWatchers.isWatched(player.serverLevel(), pocketDoor.above());
+            leave = seamHidden
+                    || distanceSq > APPROACH_RADIUS * APPROACH_RADIUS
+                    || relY < ROOM_MIN_Y - 0.5D
+                    || relY > ROOM_MAX_Y + 1;
         } else {
-            BlockPos door = side == Side.HALL ? REAL_DOOR : REAL_DOOR.offset(STUDY_SHIFT, 0, 0);
-            double dx = relX - (door.getX() + 0.5D);
-            double dz = relZ - (door.getZ() + 0.5D);
-            leave = dx * dx + dz * dz > APPROACH_RADIUS * APPROACH_RADIUS
+            leave = distanceSq > APPROACH_RADIUS * APPROACH_RADIUS
                     || relY < ROOM_MIN_Y - 0.5D
                     || relY > ROOM_MAX_Y + 1;
         }
