@@ -10,7 +10,6 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public final class HouseConfig {
     public static final ModConfigSpec SPEC;
 
-    public static final ModConfigSpec.IntValue RUGS_FALLBACK_AGE;
     public static final ModConfigSpec.IntValue ROOM_FIRST_AGE;
     public static final ModConfigSpec.IntValue ROOM_MIN_MORNINGS_AFTER_RUGS;
     public static final ModConfigSpec.IntValue ROOM_BASE_CHANCE;
@@ -25,16 +24,12 @@ public final class HouseConfig {
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
-        RUGS_FALLBACK_AGE = builder
-                .comment("The rugs change colour the morning after someone first sleeps in a manor bed.",
-                        "If nobody has by this perceived age, they change anyway.")
-                .defineInRange("rugsFallbackAge", 2, 1, 1000);
         ROOM_FIRST_AGE = builder
                 .comment("The first House morning on which the room between rooms can be rolled for.")
                 .defineInRange("roomFirstAge", 3, 1, 1000);
         ROOM_MIN_MORNINGS_AFTER_RUGS = builder
                 .comment("Mornings after the rugs change before the room between rooms can appear.")
-                .defineInRange("roomMinMorningsAfterRugs", 1, 0, 1000);
+                .defineInRange("roomMinMorningsAfterRugs", 2, 0, 1000);
         ROOM_BASE_CHANCE = builder
                 .comment("Percent chance the room is armed on its first eligible morning (it then opens once",
                         "nobody is looking at the study door).")
