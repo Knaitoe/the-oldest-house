@@ -1,20 +1,19 @@
 package io.github.knaitoe.theoldesthouse.client;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
-import io.github.knaitoe.theoldesthouse.network.HouseTransitionContextAckPayload;
 import io.github.knaitoe.theoldesthouse.network.HouseTransitionContextState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * Bookkeeping for a dimension switch on the client. There is no motion any
  * more: the switch is made where the view is already still, and the frame
  * is simply held (see HouseTransitionClient). The context the server sends
- * is acknowledged at once, and forgotten once the held frame lifts.
+ * is forgotten once the held frame lifts, when the server cancels the
+ * switch, or after a timeout if neither happens.
  */
 @EventBusSubscriber(modid = TheOldestHouse.MOD_ID, value = Dist.CLIENT)
 public final class HouseTransitionMotion {
@@ -32,7 +31,6 @@ public final class HouseTransitionMotion {
         if (HouseTransitionContextState.isArmed() && armedToken >= 0 && armedToken != token) {
             token = armedToken;
             armedAt = System.nanoTime();
-            PacketDistributor.sendToServer(new HouseTransitionContextAckPayload(token));
             return;
         }
         if (token >= 0 && System.nanoTime() - armedAt > HOLD_TIMEOUT_NANOS) {

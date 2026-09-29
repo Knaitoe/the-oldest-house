@@ -532,3 +532,9 @@ The opening has been revised so the player's own home remains ordinary.
 - Sound hooks run at lowest event priority so canceled or modified sounds are not mirrored prematurely.
 - GameTests lock the spatial boundary and permitted sound categories.
 
+### Unreleased: transition and doorway hardening
+
+- The unused transition acknowledgment is gone. The server never waited on it: the context and the dimension switch already arrive in order on one connection. The network protocol version is now 6.
+- A pending transition is now an explicit state machine: prepared, syncing, moving, then complete or failed. It is only forgotten once it has completed or failed. A destination level that is not there yet is waited for (up to a second) instead of the crossing silently vanishing. A crossing whose player has meanwhile died or been moved elsewhere, whose teleport another mod cancels, or which throws before arrival fails cleanly: logged, none of its hooks run, and the client told to drop its presentation context.
+- The room between rooms decides by plane crossings along the door's normal, not by distance from the door. Strafing or sidestepping at the copied door no longer counts as backing out (the retreat margin is now 0.75 blocks along the normal). A fast or knocked-back player cannot skip a plane, and nothing happens while someone stands in a doorway. Its three per-player maps are now one record per player.
+- GameTests cover a missing destination, a player who left by another way, logging out mid-transition, and the room's crossings: sidestepping, backing out on either side, traversal, one-tick fast crossings and wandering off.

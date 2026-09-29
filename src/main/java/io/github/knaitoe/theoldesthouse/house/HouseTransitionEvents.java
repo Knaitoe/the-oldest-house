@@ -3,6 +3,7 @@ package io.github.knaitoe.theoldesthouse.house;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlaces;
+import io.github.knaitoe.theoldesthouse.network.HouseTransitionCancelPayload;
 import io.github.knaitoe.theoldesthouse.network.HouseTransitionContextPayload;
 import io.github.knaitoe.theoldesthouse.opening.OpeningSequence;
 import java.util.HashMap;
@@ -87,24 +88,75 @@ public final class HouseTransitionEvents {
         }
     }
 
+    /**
+     * Moves a pending transition on. A transition goes
+     * PREPARED -> SYNCING -> MOVING -> COMPLETE within one tick when all is
+     * well; it waits in PREPARED (up to {@link #RESOLVE_ATTEMPTS} ticks) if
+     * the destination level is not available yet, and ends FAILED, with the
+     * player left where they are and the client told, if it cannot finish.
+     * It is only forgotten once it has completed or failed.
+     *
+     * <p>The context payload was sent when the transition was prepared, and
+     * packets on one connection are ordered, so the client has it before the
+     * respawn packet the move sends. Nothing waits on the client.
+     */
     private static void tickPendingTransition(ServerPlayer player, PendingTransition pending) {
-        // The context payload was sent before this tick; packets on one
-        // connection are ordered, so the client has it before the respawn
-        // packet the move sends. Nothing to wait for.
-        PENDING.remove(player.getUUID());
-        ServerLevel destination = player.getServer().getLevel(pending.destination);
-        if (destination == null) {
+        if (player.isRemoved() || player.isDeadOrDying()) {
+            fail(player, pending, "the player is no longer there to move");
+            return;
+        }
+        if (!player.serverLevel().dimension().equals(pending.from)) {
+            // Something else moved them first (death and respawn, a command,
+            // another mod). Their crossing is moot.
+            fail(player, pending, "the player left " + pending.from.location() + " by another way");
             return;
         }
 
-        HouseSavedData data = HouseSavedData.get(player.getServer());
-        BlockPos origin = data.houseOrigin();
-        // Crossing the manor's own boundary, as opposed to a door within the
-        // House (the room between rooms and back), which changes neither.
-        boolean entering = pending.destination.equals(HouseDimensions.INTERIOR) && pending.from.equals(Level.OVERWORLD);
-        boolean leaving = pending.destination.equals(Level.OVERWORLD) && pending.from.equals(HouseDimensions.INTERIOR);
+        ServerLevel destination = player.getServer().getLevel(pending.destination);
+        if (destination == null) {
+            if (++pending.attempts >= RESOLVE_ATTEMPTS) {
+                fail(player, pending, "destination " + pending.destination.location() + " never became available");
+            }
+            return;
+        }
 
-        if (leaving && origin != null && data.isInteriorInitialized()) {
+        try {
+            pending.phase = Phase.SYNCING;
+            HouseSavedData data = HouseSavedData.get(player.getServer());
+            BlockPos origin = data.houseOrigin();
+            syncBeforeMove(player, pending, destination, data, origin);
+
+            pending.phase = Phase.MOVING;
+            move(player, pending, destination);
+            pending.phase = Phase.COMPLETE;
+            PENDING.remove(player.getUUID());
+
+            settle(player, pending, origin);
+        } catch (RuntimeException e) {
+            TheOldestHouse.LOGGER.error("The Oldest House transition {} for {} threw during {}",
+                    pending.token, player.getGameProfile().getName(), pending.phase, e);
+            if (pending.arrived) {
+                // The move itself happened; only what follows it went wrong.
+                pending.phase = Phase.COMPLETE;
+                PENDING.remove(player.getUUID());
+            } else {
+                fail(player, pending, "it threw during " + pending.phase);
+            }
+        }
+    }
+
+    /** Brings both sides of the seam up to date before the player crosses it. */
+    private static void syncBeforeMove(
+            ServerPlayer player,
+            PendingTransition pending,
+            ServerLevel destination,
+            HouseSavedData data,
+            @Nullable BlockPos origin
+    ) {
+        if (origin == null) {
+            return;
+        }
+        if (pending.isLeaving() && data.isInteriorInitialized()) {
             // The Overworld proxy is only reconciled while someone there could
             // see it; bring it up to date before this player arrives.
             ServerLevel interior = player.getServer().getLevel(HouseDimensions.INTERIOR);
@@ -122,7 +174,7 @@ public final class HouseTransitionEvents {
             }
         }
 
-        if (entering && origin != null) {
+        if (pending.isEntering()) {
             // The proxy shell is not a playable interior. Clear any pets,
             // villagers or other mobs before the player disappears across the
             // dimension seam so nothing is visibly stranded in an inaccessible
@@ -135,7 +187,9 @@ public final class HouseTransitionEvents {
             // Hillary, villagers, mobs, etc. outside at matching coordinates.
             HouseExteriorEntityMirror.syncNow(overworld, destination, origin);
         }
+    }
 
+    private static void move(ServerPlayer player, PendingTransition pending, ServerLevel destination) {
         if (pending.before != null) {
             pending.before.accept(player);
         }
@@ -147,17 +201,36 @@ public final class HouseTransitionEvents {
         } else {
             teleportMatchingCoordinates(player, destination);
         }
+        if (!player.serverLevel().dimension().equals(pending.destination)) {
+            throw new IllegalStateException("the teleport did not arrive in " + pending.destination.location());
+        }
+        pending.arrived = true;
 
         if (pending.after != null) {
             pending.after.accept(player);
         }
+    }
 
+    /** What follows a completed crossing: the door shutting behind, the opening's first entry. */
+    private static void settle(ServerPlayer player, PendingTransition pending, @Nullable BlockPos origin) {
         if (pending.door != null && origin != null) {
             // The door shuts once they are a block past it on the far side.
-            PENDING_DOOR_CLOSE.put(player.getUUID(), new PendingDoorClose(origin, pending.door, entering ? -1.0D : 1.0D));
+            PENDING_DOOR_CLOSE.put(player.getUUID(), new PendingDoorClose(origin, pending.door, pending.isEntering() ? -1.0D : 1.0D));
         }
-        if (entering) {
+        if (pending.isEntering()) {
             OpeningSequence.onEnteredHouse(player);
+        }
+    }
+
+    /** Ends a transition that will not happen: logged, forgotten, and the client's held context released. */
+    private static void fail(ServerPlayer player, PendingTransition pending, String reason) {
+        pending.phase = Phase.FAILED;
+        PENDING.remove(player.getUUID());
+        TheOldestHouse.LOGGER.warn("The Oldest House transition {} for {} ({} -> {}) failed: {}",
+                pending.token, player.getGameProfile().getName(),
+                pending.from.location(), pending.destination.location(), reason);
+        if (!player.hasDisconnected()) {
+            PacketDistributor.sendToPlayer(player, new HouseTransitionCancelPayload(pending.token));
         }
     }
 
@@ -207,8 +280,19 @@ public final class HouseTransitionEvents {
         return PENDING.containsKey(player.getUUID());
     }
 
-    /** The client has the context; nothing waits on it any more, but the packet is still sent. */
-    public static void acknowledgeContext(ServerPlayer player, int token) {
+    /** The phase the player's pending transition is in, or null if there is none. For tests and diagnostics. */
+    @Nullable
+    public static Phase pendingPhase(ServerPlayer player) {
+        PendingTransition pending = PENDING.get(player.getUUID());
+        return pending == null ? null : pending.phase;
+    }
+
+    /** Abandons the player's pending transition, if any, as a failure. */
+    public static void cancelPending(ServerPlayer player, String reason) {
+        PendingTransition pending = PENDING.get(player.getUUID());
+        if (pending != null) {
+            fail(player, pending, reason);
+        }
     }
 
     /** Drops per-player state for a player who has left. */
@@ -508,6 +592,21 @@ public final class HouseTransitionEvents {
         player.setDeltaMovement(movement);
     }
 
+    /** Where a transition has got to. PREPARED is the only phase that outlasts a tick. */
+    public enum Phase {
+        /** Context sent to the client; waiting for the next tick and for the destination to exist. */
+        PREPARED,
+        /** Mirrors and proxies on both sides of the seam being brought up to date. */
+        SYNCING,
+        /** The before hook, the teleport and the after hook. */
+        MOVING,
+        COMPLETE,
+        FAILED
+    }
+
+    /** How many ticks a transition waits for its destination level before giving up. */
+    private static final int RESOLVE_ATTEMPTS = 20;
+
     /** Mutable: updated in place every tick rather than re-allocated. */
     private static final class PendingTransition {
         final ResourceKey<Level> from;
@@ -522,6 +621,10 @@ public final class HouseTransitionEvents {
         @Nullable
         Vec3 target;
         float targetYaw;
+        Phase phase = Phase.PREPARED;
+        int attempts;
+        /** The teleport itself has happened; anything that fails after it cannot undo the crossing. */
+        boolean arrived;
 
         PendingTransition(
                 ResourceKey<Level> from,
@@ -537,6 +640,15 @@ public final class HouseTransitionEvents {
             this.door = door;
             this.before = before;
             this.after = after;
+        }
+
+        /** Crossing the manor's own boundary inwards, as opposed to a door within the House. */
+        boolean isEntering() {
+            return destination.equals(HouseDimensions.INTERIOR) && from.equals(Level.OVERWORLD);
+        }
+
+        boolean isLeaving() {
+            return destination.equals(Level.OVERWORLD) && from.equals(HouseDimensions.INTERIOR);
         }
     }
 

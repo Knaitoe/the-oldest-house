@@ -239,6 +239,12 @@ The transition now uses an explicit handshake. Each crossing gets a unique integ
 
 This makes presentation selection causally ordered instead of timing-dependent.
 
+**Superseded.** The handshake has since been removed. The camera motion it waited for is gone, and the ordering it guaranteed already holds without it: the context payload and the dimension switch that follows travel on one ordered connection and are handled on the client's main thread in order. The token remains, scoping the client's held context to one crossing.
+
+On the server a pending transition is now an explicit state machine (`HouseTransitionEvents.Phase`): `PREPARED` (context sent; waiting for the next tick, and for up to 20 ticks for the destination level to exist) → `SYNCING` (mirror reconciliation, proxy evacuation, entity seeding) → `MOVING` (before hook, teleport, after hook) → `COMPLETE`, or `FAILED`. A transition is forgotten only on completion or failure. It fails, leaving the player where they were with none of its hooks run and telling the client (`HouseTransitionCancelPayload`) to drop its context, when the destination never appears, when the player has meanwhile left the source level another way (death, a command), when they are dead or gone, when the teleport does not arrive (another mod cancelled it), or when anything before arrival throws. A throw after arrival is logged and the crossing still counts.
+
+The room between rooms decides by planes, not distances (`HouseBetweenRoom.Crossing`). Along the door's normal (x) it keeps the room's inside, between the two door blocks' room-side faces, and an exit plane on each side far enough out that a player put back in the manor stands clear of the real door's panel. Each tick the segment from last tick's x to this tick's is tested against the planes, so nothing fast can skip one. Having crossed into the inside, crossing either exit plane returns the player on that side (the other side from the one they came in by is a traversal). Not having been in, they are returned on their own side once past its exit plane and a full 0.75 block further out along the normal than the closest they came, or more than six blocks from the door, or off the floor. Strafing along the wall never counts, and in a doorway nothing happens at all.
+
 
 ## Persistent client transition context
 
