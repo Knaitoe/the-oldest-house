@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.3.7` revises the per-player opening sequence so the ordinary manor, not the player's home, is the first architectural relationship with the House:
+Version `0.4.0` revises the per-player opening sequence so the ordinary manor, not the player's home, is the first architectural relationship with the House:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -488,4 +488,14 @@ The opening has been revised so the player's own home remains ordinary.
 - Each light is recessed into the outer east wall at the same relative height on every repeated turn, preserving the seamless-loop illusion.
 - Ordinary spiral steps now have three completely empty blocks above them, preventing lantern collision while jumping or sprinting.
 - A regression test verifies both the full maneuvering clearance and the repeated recessed-lamp placement.
+
+### 0.4.0 domestic House vertical slice
+
+- `development` is the canonical active branch, based on the known-good 0.3.7 playtest state plus the current domestic progression.
+- The rugs now change only after somebody actually completes a night in a manor bed. Calendar age alone can no longer trigger them.
+- The room between rooms cannot roll until the rugs have shifted, two further distinct House mornings have passed, and the House has reached at least morning 3. Its eligible odds remain 50%, then 75%, then guaranteed.
+- The room remains an unwitnessed hall-to-study pass-through and does not count as labyrinth space.
+- The impossible hallway remains locked until somebody has traversed the room and at least two subtle House changes have occurred.
+- All seamless same-dimension topology now goes through `HouseInternalTeleport`: destination chunk prepared first, mounts left behind, pitch and ordinary momentum preserved, impossible vertical fall distance cleared, and no transition overlay.
+- Existing structural QA continues to walk the ordinary manor using player-sized step and headroom rules, while progression GameTests lock the reveal order and timing gates.
 
