@@ -170,11 +170,13 @@ public final class SnapshotRenderer {
                     continue;
                 }
 
-                // Try a small vertical stack. Custom houses and neighboring
-                // terrain can make ordinary eye height unusable even though a
-                // perfectly legible porch-like shot exists a block higher.
+                // Try progressively higher sightlines. The preferred shot is
+                // still ordinary eye height, but wooded bases and uneven
+                // terrain need enough vertical freedom to see the home rather
+                // than accepting whatever natural obstruction happens to be
+                // nearest the camera.
                 double baseY = Math.min(ty + 4.0D, Math.max(ground + 1.62D, ty - 3.0D));
-                for (double lift : new double[]{0.0D, 1.5D, 3.0D}) {
+                for (double lift : new double[]{0.0D, 1.5D, 3.0D, 5.0D, 7.0D, 9.0D}) {
                     double cy = baseY + lift;
                     int camKind = scene.sample(floor(cx), floor(cy), floor(cz)) >>> 24;
                     if (camKind != AIR) {
