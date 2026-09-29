@@ -13,6 +13,7 @@ import io.github.knaitoe.theoldesthouse.house.HouseMemory;
 import io.github.knaitoe.theoldesthouse.house.HouseMirrorSyncEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseProxyEntityEvacuation;
 import io.github.knaitoe.theoldesthouse.house.HouseShifts;
+import io.github.knaitoe.theoldesthouse.house.HouseSoundBridge;
 import io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents;
 import io.github.knaitoe.theoldesthouse.labyrinth.Growl;
 import io.github.knaitoe.theoldesthouse.labyrinth.HideAndClap;
@@ -61,6 +62,8 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HouseExteriorEntityMirror::onEntityInteract);
         NeoForge.EVENT_BUS.addListener(HouseExteriorEntityMirror::onEntityInteractSpecific);
         NeoForge.EVENT_BUS.addListener(HouseExteriorEntityMirror::onAttack);
+        NeoForge.EVENT_BUS.addListener(HouseSoundBridge::onSoundAtPosition);
+        NeoForge.EVENT_BUS.addListener(HouseSoundBridge::onSoundAtEntity);
         NeoForge.EVENT_BUS.addListener(HouseLabyrinth::onCanPlayerSleep);
         NeoForge.EVENT_BUS.addListener(HouseLabyrinth::onSetSpawn);
 
