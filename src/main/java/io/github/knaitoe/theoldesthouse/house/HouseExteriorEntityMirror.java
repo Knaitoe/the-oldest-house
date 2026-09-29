@@ -265,7 +265,7 @@ public final class HouseExteriorEntityMirror {
                 loadVisualState(source, projection);
             }
 
-            if (refreshFarPosition || hasNearbyObserver(targetLevel, projection)) {
+            if (refreshFarPosition || hasNearbyObserver(targetLevel, source)) {
                 positionProjection(source, projection);
             }
             visible++;
@@ -315,7 +315,7 @@ public final class HouseExteriorEntityMirror {
                 continue;
             }
 
-            if (hasNearbyObserver(targetLevel, projection)) {
+            if (hasNearbyObserver(targetLevel, source)) {
                 positionProjection(source, projection);
             }
         }
