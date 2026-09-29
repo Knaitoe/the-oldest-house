@@ -4,11 +4,10 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.network.HouseRoomDoorPayload;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -100,9 +99,27 @@ public final class HouseBetweenRoom {
     private static final int BUILD_FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     private static final int DOOR_CHECK_INTERVAL = 20;
     /** How far from its door someone can wander in a copy without going in before being put back. */
-    private static final double APPROACH_RADIUS = 6.0D;
-    /** How much retreat from the closest approach counts as backing away. */
-    private static final double BACK_OUT_MARGIN = 0.35D;
+    public static final double APPROACH_RADIUS = 6.0D;
+    /**
+     * How far someone must step back from the door, measured along its
+     * normal (the x axis), from the closest they came to it, to count as
+     * backing away. Sidestepping along the wall never counts.
+     */
+    public static final double BACK_OUT_MARGIN = 0.75D;
+    /**
+     * The planes, in pocket coordinates, that decide everything. The room's
+     * inside runs from {@link #STUDY_ROOM_PLANE} to {@link #HALL_ROOM_PLANE}
+     * (the room-side faces of the two door blocks). Beyond
+     * {@link #HALL_EXIT_PLANE} or {@link #STUDY_EXIT_PLANE} a player is far
+     * enough out of a doorway that, put back in the manor, they stand clear
+     * of the real door's shut panel (on the study side of its block, x
+     * 13.0 to 13.19): 14.0 lands them with their box from 13.7, 5.6 with it
+     * up to 12.9.
+     */
+    public static final double HALL_ROOM_PLANE = REAL_DOOR.getX();
+    public static final double STUDY_ROOM_PLANE = REAL_DOOR.getX() + STUDY_SHIFT + 1.0D;
+    public static final double HALL_EXIT_PLANE = REAL_DOOR.getX() + 1.0D;
+    public static final double STUDY_EXIT_PLANE = REAL_DOOR.getX() + STUDY_SHIFT - 0.4D;
     /** Nobody closer than this to the doorway when it starts routing. */
     private static final double CLEAR_RADIUS = 4.0D;
 
@@ -130,14 +147,10 @@ public final class HouseBetweenRoom {
             {0, -1, 15, 13, 7, 27, STUDY_SHIFT},
     };
 
-    private enum Side { HALL, STUDY }
+    public enum Side { HALL, STUDY }
 
-    /** Players who have been inside the room since arriving. */
-    private static final Set<UUID> INSIDE = new HashSet<>();
-    /** The side each player in the pocket came in by. */
-    private static final Map<UUID, Side> CAME_FROM = new HashMap<>();
-    /** Closest horizontal distance reached from that side's copied door. */
-    private static final Map<UUID, Double> ENTRY_DISTANCE = new HashMap<>();
+    /** Each player in the pocket, and how they are getting on. */
+    private static final Map<UUID, Crossing> CROSSINGS = new HashMap<>();
 
     private HouseBetweenRoom() {
     }
@@ -501,16 +514,8 @@ public final class HouseBetweenRoom {
         }
         copyPaintings(interior, origin);
         BlockPos door = side == Side.HALL ? hallDoor(origin) : studyDoor(origin);
-        UUID id = player.getUUID();
-        INSIDE.remove(id);
-        CAME_FROM.put(id, side);
-        BlockPos localDoor = side == Side.HALL ? REAL_DOOR : REAL_DOOR.offset(STUDY_SHIFT, 0, 0);
         double relX = player.getX() - origin.getX() + (side == Side.STUDY ? STUDY_SHIFT : 0);
-        double relZ = player.getZ() - origin.getZ();
-        ENTRY_DISTANCE.put(id, Math.sqrt(
-                sq(relX - (localDoor.getX() + 0.5D))
-                        + sq(relZ - (localDoor.getZ() + 0.5D))
-        ));
+        CROSSINGS.put(player.getUUID(), new Crossing(side, relX));
 
         // Open the destination copy before moving the player. Sending the
         // relative teleport first lets the client render one frame of the
@@ -526,76 +531,113 @@ public final class HouseBetweenRoom {
      * Each tick for a player in the House dimension. Returns true when they
      * are in the pocket (so the manor's own bounds do not apply), after
      * returning them to the manor once they come out of the room on either
-     * side, or wander off from a door without going in.
+     * side, or back away or wander off from a door without going in.
      */
     public static boolean tickPocket(ServerPlayer player, HouseSavedData data, BlockPos origin) {
+        UUID id = player.getUUID();
         if (!data.isRoomArmed() || !isInPocket(origin, player.getX(), player.getY(), player.getZ())) {
-            UUID id = player.getUUID();
-            INSIDE.remove(id);
-            CAME_FROM.remove(id);
-            ENTRY_DISTANCE.remove(id);
+            CROSSINGS.remove(id);
             return false;
         }
-        UUID id = player.getUUID();
         BlockPos pocket = pocketOrigin(origin);
         double relX = player.getX() - pocket.getX();
         double relY = player.getY() - pocket.getY();
         double relZ = player.getZ() - pocket.getZ();
-        if (relX > ROOM_MIN_X + 0.35D && relX < ROOM_MAX_X + 0.65D) {
-            INSIDE.add(id);
-            return true;
-        }
-        // Out past a doorway, far enough that the real door's shut panel
-        // (on the study side of its block) is clear of them when they land.
-        Side side;
-        if (relX >= REAL_DOOR.getX() + 1.0D) {
-            side = Side.HALL;
-        } else if (relX <= REAL_DOOR.getX() + STUDY_SHIFT - 0.4D) {
-            side = Side.STUDY;
-        } else {
-            return true; // In a doorway.
-        }
-
-        boolean leave;
-        BlockPos localDoor = side == Side.HALL ? REAL_DOOR : REAL_DOOR.offset(STUDY_SHIFT, 0, 0);
-        double dx = relX - (localDoor.getX() + 0.5D);
-        double dz = relZ - (localDoor.getZ() + 0.5D);
-        double distanceSq = dx * dx + dz * dz;
-
-        if (INSIDE.contains(id)) {
-            // Once they clear either far side, there is no reason to keep them
-            // in a dead copy of the hall/study. Shut the copied door first,
-            // then immediately rejoin the real room behind the identical shut
-            // door. The panel itself hides the vertical shift, interactions
-            // become real at once, and multiplayer observers see the arrival
-            // at the threshold rather than six blocks later.
-            leave = true;
-        } else {
-            Side from = CAME_FROM.get(id);
-            double currentDistance = Math.sqrt(distanceSq);
-            double closestDistance = ENTRY_DISTANCE.getOrDefault(id, currentDistance);
-            if (currentDistance < closestDistance) {
-                closestDistance = currentDistance;
-                ENTRY_DISTANCE.put(id, closestDistance);
-            }
-            boolean backedOut = from == side
-                    && currentDistance >= closestDistance + BACK_OUT_MARGIN;
-            leave = backedOut
-                    || distanceSq > APPROACH_RADIUS * APPROACH_RADIUS
-                    || relY < ROOM_MIN_Y - 0.5D
-                    || relY > ROOM_MAX_Y + 1;
-        }
-        if (leave) {
-            returnToManor(player, data, origin, side);
+        // Someone found here with no record (a restart, a login) came in by
+        // whichever side they are on.
+        Crossing crossing = CROSSINGS.computeIfAbsent(id,
+                k -> new Crossing(relX >= (HALL_ROOM_PLANE + STUDY_ROOM_PLANE) / 2.0D ? Side.HALL : Side.STUDY, relX));
+        Side out = crossing.step(relX, relY, relZ);
+        if (out != null) {
+            returnToManor(player, data, origin, out, crossing);
         }
         return true;
     }
 
-    private static void returnToManor(ServerPlayer player, HouseSavedData data, BlockPos origin, Side side) {
-        UUID id = player.getUUID();
-        boolean cameThrough = INSIDE.remove(id);
-        Side from = CAME_FROM.remove(id);
-        ENTRY_DISTANCE.remove(id);
+    /**
+     * One player's way through the pocket, decided by which planes they
+     * cross along the door's normal (the x axis) rather than by guessing
+     * intent from distances. Every tick the segment from last tick's x to
+     * this tick's is tested against the planes, so a fast or knocked-back
+     * player cannot skip one.
+     *
+     * <ul>
+     *   <li>Crossing into the room's inside, between the two door blocks'
+     *   room-side faces, marks them as having been in.</li>
+     *   <li>Having been in, crossing either exit plane puts them back in the
+     *   manor on that side; out the other side from the one they came in by
+     *   is a traversal.</li>
+     *   <li>Not having been in, they are put back on their own side once past
+     *   its exit plane and either {@link #BACK_OUT_MARGIN} further from the
+     *   door along its normal than the closest they came, or more than
+     *   {@link #APPROACH_RADIUS} from it at all, or off the floor.</li>
+     *   <li>Anywhere in a doorway (between an exit plane and the room) nothing
+     *   happens: putting them back there would stand them in the real door.</li>
+     * </ul>
+     */
+    public static final class Crossing {
+        private final Side cameFrom;
+        private boolean inside;
+        private double lastX;
+        /** The closest they have come to their own door, along its normal, while outside it. */
+        private double closest;
+
+        public Crossing(Side cameFrom, double relX) {
+            this.cameFrom = cameFrom;
+            this.lastX = relX;
+            this.closest = outward(cameFrom, relX);
+        }
+
+        public Side cameFrom() {
+            return cameFrom;
+        }
+
+        public boolean hasBeenInside() {
+            return inside;
+        }
+
+        /** Distance out from a side's door, along its normal: positive away from the room. */
+        private static double outward(Side side, double relX) {
+            return side == Side.HALL ? relX - HALL_ROOM_PLANE : STUDY_ROOM_PLANE - relX;
+        }
+
+        /**
+         * Advances to this tick's position (pocket coordinates).
+         *
+         * @return the side to put them back on, or null to leave them be
+         */
+        @Nullable
+        public Side step(double relX, double relY, double relZ) {
+            double from = Math.min(lastX, relX);
+            double to = Math.max(lastX, relX);
+            lastX = relX;
+            if (to >= STUDY_ROOM_PLANE && from < HALL_ROOM_PLANE) {
+                inside = true;
+            }
+
+            Side side = relX >= HALL_EXIT_PLANE ? Side.HALL : relX <= STUDY_EXIT_PLANE ? Side.STUDY : null;
+            if (side == null) {
+                return null; // In the room or a doorway.
+            }
+            if (inside) {
+                return side;
+            }
+
+            double out = outward(side, relX);
+            if (side == cameFrom) {
+                closest = Math.min(closest, out);
+            }
+            double dz = relZ - (REAL_DOOR.getZ() + 0.5D);
+            boolean backedOut = side == cameFrom && out >= closest + BACK_OUT_MARGIN;
+            boolean wandered = out * out + dz * dz > APPROACH_RADIUS * APPROACH_RADIUS
+                    || relY < ROOM_MIN_Y - 0.5D
+                    || relY > ROOM_MAX_Y + 1;
+            return backedOut || wandered ? side : null;
+        }
+    }
+
+    private static void returnToManor(ServerPlayer player, HouseSavedData data, BlockPos origin, Side side, Crossing crossing) {
+        CROSSINGS.remove(player.getUUID());
         ServerLevel level = player.serverLevel();
 
         // Block updates are sent before the teleport packet on this connection:
@@ -613,12 +655,11 @@ public final class HouseBetweenRoom {
                 real.getX() + 0.5D, real.getY() + 0.5D, real.getZ() + 0.5D, 1.0F,
                 0.9F + player.getRandom().nextFloat() * 0.1F, player.getRandom().nextLong()));
 
-        if (cameThrough) {
-            if (from != null && from != side && !data.isRoomTraversed()) {
-                data.markRoomTraversed();
-                TheOldestHouse.LOGGER.info("{} went through the room between rooms, from the {} to the {}.",
-                        player.getGameProfile().getName(), from == Side.HALL ? "hall" : "study", side == Side.HALL ? "hall" : "study");
-            }
+        if (crossing.hasBeenInside() && crossing.cameFrom() != side && !data.isRoomTraversed()) {
+            data.markRoomTraversed();
+            TheOldestHouse.LOGGER.info("{} went through the room between rooms, from the {} to the {}.",
+                    player.getGameProfile().getName(), crossing.cameFrom() == Side.HALL ? "hall" : "study",
+                    side == Side.HALL ? "hall" : "study");
         }
     }
 
@@ -627,10 +668,6 @@ public final class HouseBetweenRoom {
      */
     private static void shift(ServerPlayer player, int dx, int dy) {
         HouseInternalTeleport.translate(player, dx, dy, 0.0D);
-    }
-
-    private static double sq(double value) {
-        return value * value;
     }
 
     /** Players left in the old separate dimension by an earlier version are brought back to the hall. */
@@ -687,15 +724,11 @@ public final class HouseBetweenRoom {
     }
 
     public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-        INSIDE.remove(event.getEntity().getUUID());
-        CAME_FROM.remove(event.getEntity().getUUID());
-        ENTRY_DISTANCE.remove(event.getEntity().getUUID());
+        CROSSINGS.remove(event.getEntity().getUUID());
     }
 
     public static void clearAll() {
-        INSIDE.clear();
-        CAME_FROM.clear();
-        ENTRY_DISTANCE.clear();
+        CROSSINGS.clear();
     }
 
     // ------------------------------------------------------------------
