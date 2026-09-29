@@ -344,6 +344,44 @@ public final class LabyrinthTests {
     }
 
     @GameTest(template = "empty")
+    public static void harriganStudyHasItsReadingChairPhonesAndFuneralRoom(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos base = helper.absolutePos(BlockPos.ZERO).offset(-200, 6, 470);
+        HarriganVignette.build(level.getServer(), level, base);
+
+        helper.assertTrue(level.getBlockState(base.offset(HarriganVignette.LECTERN)).is(Blocks.LECTERN),
+                "the reading lectern is in the study");
+        helper.assertTrue(level.getBlockState(base.offset(HarriganVignette.CHAIR)).getBlock() instanceof StairBlock,
+                "Harrigan's chair faces away from the entry");
+        helper.assertTrue(level.getBlockState(base.offset(HarriganVignette.FUNERAL_DOOR)).is(Blocks.DARK_OAK_PLANKS),
+                "the funeral room is hidden on the first visit");
+        helper.assertTrue(level.getBlockState(base.offset(HarriganVignette.CASKET)).is(Blocks.DARK_OAK_SLAB),
+                "the funeral room already has its casket behind the wall");
+        helper.assertTrue(HarriganPhoneItem.homeTime(0L).equals("06:00")
+                        && HarriganPhoneItem.homeTime(6000L).equals("12:00")
+                        && HarriganPhoneItem.homeTime(18000L).equals("00:00"),
+                "the phone reads Overworld time rather than dimension clock behavior");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void harriganTargetRulesProtectNamedMobsAndBosses(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        Entity zombie = EntityType.ZOMBIE.create(level);
+        Entity cow = EntityType.COW.create(level);
+        Entity dragon = EntityType.ENDER_DRAGON.create(level);
+        helper.assertTrue(HarriganVignette.classify(EntityType.ZOMBIE, false, zombie) == HarriganVignette.TargetKind.HOSTILE,
+                "an unnamed zombie is a hostile target");
+        helper.assertTrue(HarriganVignette.classify(EntityType.ZOMBIE, true, zombie) == HarriganVignette.TargetKind.FRIENDLY,
+                "a name-tagged zombie is friendly");
+        helper.assertTrue(HarriganVignette.classify(EntityType.COW, false, cow) == HarriganVignette.TargetKind.FRIENDLY,
+                "ordinary non-monsters are friendly");
+        helper.assertTrue(HarriganVignette.classify(EntityType.ENDER_DRAGON, false, dragon) == HarriganVignette.TargetKind.FORBIDDEN,
+                "bosses are out of Harrigan's reach");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
     public static void hideAndClapRoomHasOpenFloorAndABedWithItsPost(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos base = helper.absolutePos(BlockPos.ZERO).offset(-200, 6, 330);

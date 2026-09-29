@@ -65,6 +65,10 @@ public enum LabyrinthPlace {
     MODEL_HOME("model_home", Kind.MULTI_VISIT, 8, new BoundingBox(-23, -1, -21, 9, 10, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
     )),
+    /** Mr Harrigan's Phone: reading, the funeral, then the artifact that follows the player home. */
+    HARRIGAN("harrigan", Kind.MULTI_VISIT, 9, new BoundingBox(-8, -1, -25, 8, 7, 1), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
+    )),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

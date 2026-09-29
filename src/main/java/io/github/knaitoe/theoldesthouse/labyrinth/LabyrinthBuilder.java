@@ -148,6 +148,7 @@ public final class LabyrinthBuilder {
             case LONG_HALLWAY, HOTEL_HALLWAY -> LabyrinthLoops.buildHallway(level, base, place);
             case SPIRAL_STAIR -> LabyrinthLoops.buildSpiral(level, base);
             case MODEL_HOME -> ModelHome.build(server, level, base);
+            case HARRIGAN -> HarriganVignette.build(server, level, base);
             default -> {
             }
         }

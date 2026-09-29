@@ -5,6 +5,7 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
 import io.github.knaitoe.theoldesthouse.labyrinth.Growl;
 import io.github.knaitoe.theoldesthouse.labyrinth.HideAndClap;
+import io.github.knaitoe.theoldesthouse.labyrinth.HarriganVignette;
 import io.github.knaitoe.theoldesthouse.labyrinth.ModelHome;
 import io.github.knaitoe.theoldesthouse.labyrinth.TellTaleFloorboards;
 import java.util.List;
@@ -85,6 +86,7 @@ public final class HouseLifecycleEvents {
         TellTaleFloorboards.clearAll();
         HideAndClap.clearAll();
         ModelHome.clearAll();
+        HarriganVignette.clearAll();
         Growl.clearAll();
     }
 

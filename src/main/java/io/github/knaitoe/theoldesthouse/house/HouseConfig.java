@@ -21,6 +21,7 @@ public final class HouseConfig {
     public static final ModConfigSpec.IntValue SHIFT_CHANCE_STEP;
     public static final ModConfigSpec.IntValue SHIFT_BASE_CHANCE_AFTER_HALLWAY;
     public static final ModConfigSpec.IntValue SHIFT_CHANCE_STEP_AFTER_HALLWAY;
+    public static final ModConfigSpec.BooleanValue HARRIGAN_PLAYER_TARGETS;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -60,6 +61,11 @@ public final class HouseConfig {
         SHIFT_CHANCE_STEP_AFTER_HALLWAY = builder
                 .comment("Percent added per quiet morning in a row once the hallway is open.")
                 .defineInRange("shiftChanceStepAfterHallway", 15, 0, 100);
+        HARRIGAN_PLAYER_TARGETS = builder
+                .comment("Allow Mr Harrigan's phone to accept another player's name.",
+                        "Off by default: enabling it permits a phone owner to send Harrigan after another player.",
+                        "A player name consumes that day's call, but does not add a friendly-mob strike.")
+                .define("harriganPlayerTargets", false);
         SPEC = builder.build();
     }
 

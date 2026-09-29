@@ -18,6 +18,7 @@ import io.github.knaitoe.theoldesthouse.house.HouseSoundBridge;
 import io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents;
 import io.github.knaitoe.theoldesthouse.labyrinth.Growl;
 import io.github.knaitoe.theoldesthouse.labyrinth.HideAndClap;
+import io.github.knaitoe.theoldesthouse.labyrinth.HarriganVignette;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthRegistry;
 import io.github.knaitoe.theoldesthouse.labyrinth.ModelHome;
@@ -96,6 +97,14 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HideAndClap::onServerStopping);
         NeoForge.EVENT_BUS.addListener(ModelHome::onServerTick);
         NeoForge.EVENT_BUS.addListener(ModelHome::onAttackEntity);
+        NeoForge.EVENT_BUS.addListener(HarriganVignette::onServerTick);
+        NeoForge.EVENT_BUS.addListener(HarriganVignette::onContainerClose);
+        NeoForge.EVENT_BUS.addListener(HarriganVignette::onEntityInteract);
+        NeoForge.EVENT_BUS.addListener(HarriganVignette::onEntityInteractSpecific);
+        NeoForge.EVENT_BUS.addListener(HarriganVignette::onAttackEntity);
+        NeoForge.EVENT_BUS.addListener(HarriganVignette::onRightClickBlock);
+        NeoForge.EVENT_BUS.addListener(HarriganVignette::onServerChat);
+        NeoForge.EVENT_BUS.addListener(HarriganVignette::onPlayerLoggedOut);
 
         // The room between rooms: its door is handled before the mirror sees the click.
         NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onRightClickBlock);

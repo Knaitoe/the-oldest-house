@@ -198,6 +198,7 @@ public final class LabyrinthDoors {
             LabyrinthDealer.dealPlace(data, p.getUUID(), place, p.getRandom());
             RedRoom.prepareIfDealt(p, place);
             ModelHome.onArrive(p, place);
+            HarriganVignette.onArrive(p, place);
         };
         if (toLevel == fromLevel) {
             shift(player, target, yaw);
@@ -244,6 +245,9 @@ public final class LabyrinthDoors {
         if (into <= -THRESHOLD) {
             boolean through = INSIDE.remove(id);
             if (through || into <= -WANDER) {
+                if (place == LabyrinthPlace.HARRIGAN) {
+                    HarriganVignette.onDepart(player);
+                }
                 goBack(player, entry, data);
             }
         }
@@ -830,6 +834,7 @@ public final class LabyrinthDoors {
         }
         lines.addAll(RedRoom.describe(server, viewer));
         lines.addAll(ModelHome.describe(server));
+        lines.addAll(HarriganVignette.describe(server, viewer));
         lines.addAll(Growl.describe(server, viewer));
         return lines;
     }
