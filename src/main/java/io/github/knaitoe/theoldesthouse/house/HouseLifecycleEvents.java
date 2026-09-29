@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.house;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
+import io.github.knaitoe.theoldesthouse.labyrinth.Growl;
 import io.github.knaitoe.theoldesthouse.labyrinth.HideAndClap;
 import io.github.knaitoe.theoldesthouse.labyrinth.TellTaleFloorboards;
 import java.util.List;
@@ -66,6 +67,7 @@ public final class HouseLifecycleEvents {
         LabyrinthDoors.clearAll();
         TellTaleFloorboards.clearAll();
         HideAndClap.clearAll();
+        Growl.clearAll();
     }
 
     public static void onPlayerWakeUp(PlayerWakeUpEvent event) {
@@ -77,13 +79,17 @@ public final class HouseLifecycleEvents {
         // The opening sequence owns appearance. Perceived age begins only
         // after somebody has actually entered the manor, so ignoring the
         // invitation cannot reveal anything off-screen.
+        boolean inManor = HouseDays.isInManor(player);
         List<String> changes = HouseProgression.onMorningWake(
                 player.server,
                 HouseCalendar.today(player.server),
-                HouseDays.isInManor(player)
+                inManor
         );
         if (!changes.isEmpty()) {
             TheOldestHouse.LOGGER.info("Morning at The Oldest House: {}.", String.join("; ", changes));
+        }
+        if (inManor) {
+            Growl.onManorWake(player);
         }
     }
 }

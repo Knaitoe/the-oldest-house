@@ -744,6 +744,7 @@ public final class LabyrinthDoors {
             }
         }
         lines.addAll(RedRoom.describe(server, viewer));
+        lines.addAll(Growl.describe(server, viewer));
         return lines;
     }
 }

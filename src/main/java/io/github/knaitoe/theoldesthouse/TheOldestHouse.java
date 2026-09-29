@@ -14,6 +14,7 @@ import io.github.knaitoe.theoldesthouse.house.HouseMirrorSyncEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseProxyEntityEvacuation;
 import io.github.knaitoe.theoldesthouse.house.HouseShifts;
 import io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents;
+import io.github.knaitoe.theoldesthouse.labyrinth.Growl;
 import io.github.knaitoe.theoldesthouse.labyrinth.HideAndClap;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthRegistry;
@@ -81,6 +82,8 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(RedRoom::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(RedRoom::onNeighborNotify);
         NeoForge.EVENT_BUS.addListener(RedRoom::onPiston);
+        NeoForge.EVENT_BUS.addListener(Growl::onServerTick);
+        NeoForge.EVENT_BUS.addListener(Growl::onPlayerLoggedOut);
         NeoForge.EVENT_BUS.addListener(HideAndClap::onServerTick);
         NeoForge.EVENT_BUS.addListener(HideAndClap::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(HideAndClap::onAttackEntity);

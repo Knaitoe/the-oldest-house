@@ -87,6 +87,7 @@ public final class HouseCommands {
                         .then(LabyrinthCommands.door())
                         .then(LabyrinthCommands.labyrinth())
                         .then(LabyrinthCommands.vignette())
+                        .then(LabyrinthCommands.growl())
                         .then(Commands.literal("restock")
                                 .executes(context -> restock(context.getSource())))
                         .then(Commands.literal("visit")

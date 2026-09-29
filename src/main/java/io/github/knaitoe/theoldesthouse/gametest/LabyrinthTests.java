@@ -5,6 +5,7 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
 import io.github.knaitoe.theoldesthouse.labyrinth.CrayonDrawing;
+import io.github.knaitoe.theoldesthouse.labyrinth.Growl;
 import io.github.knaitoe.theoldesthouse.labyrinth.HideAndClap;
 import io.github.knaitoe.theoldesthouse.labyrinth.HomeRooms;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthBuilder;
@@ -401,6 +402,57 @@ public final class LabyrinthTests {
             }
         }
         helper.assertTrue(LabyrinthDealer.giveScent(data) == LabyrinthDealer.Scent.NOTHING, "with nothing left she finds nothing");
+        helper.succeed();
+    }
+
+    /** The Growl comes more often the deeper you are, but never often; the close ones only deep in. */
+    @GameTest(template = "empty")
+    public static void theGrowlComesMoreOftenDeeperButStaysSporadic(GameTestHelper helper) {
+        helper.assertTrue(Growl.meanGap(1) == Growl.BASE_GAP, "one door deep: the base gap");
+        helper.assertTrue(Growl.meanGap(4) < Growl.meanGap(2) && Growl.meanGap(2) < Growl.meanGap(1), "deeper, sooner");
+        helper.assertTrue(Growl.meanGap(60) == Growl.MIN_MEAN_GAP, "but the average never falls below its floor");
+        RandomSource random = RandomSource.create(5);
+        for (int i = 0; i < 200; i++) {
+            helper.assertTrue(Growl.gap(60, random) >= Growl.MIN_GAP, "no gap is ever short");
+        }
+        boolean near = false;
+        for (int i = 0; i < 400; i++) {
+            helper.assertTrue(Growl.pick(1, random) == Growl.Kind.FAR, "near the hallway it is always far off");
+            helper.assertTrue(Growl.pick(4, random) != Growl.Kind.NEAR, "not close until deep in");
+            near |= Growl.pick(9, random) == Growl.Kind.NEAR;
+        }
+        helper.assertTrue(near, "deep in, sometimes close");
+
+        Growl.GrowlData data = new Growl.GrowlData();
+        UUID player = UUID.randomUUID();
+        helper.assertTrue(!data.isBasementEligible(player, 0L), "the cellar waits");
+        for (int i = 0; i < Growl.BASEMENT_HEARD; i++) {
+            data.noteHeard(player);
+        }
+        helper.assertTrue(data.isBasementEligible(player, 0L), "until they have heard it often enough");
+        data.noteBasement(player, 3L);
+        helper.assertTrue(!data.isBasementEligible(player, 3L + Growl.BASEMENT_COOLDOWN_DAYS - 1), "then not again for a while");
+        helper.assertTrue(data.isBasementEligible(player, 3L + Growl.BASEMENT_COOLDOWN_DAYS), "and then it can");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void theCellarHasSomewhereToWakeUp(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos origin = helper.absolutePos(BlockPos.ZERO).offset(-420, 12, 40);
+        for (int x = 17; x <= 27; x++) {
+            for (int z = 12; z <= 25; z++) {
+                for (int y = -5; y <= 0; y++) {
+                    boolean inside = x >= 18 && x <= 26 && z >= 13 && z <= 24 && y >= -4 && y <= -1;
+                    level.setBlock(origin.offset(x, y, z), inside ? Blocks.AIR.defaultBlockState() : Blocks.STONE.defaultBlockState(), 2);
+                }
+            }
+        }
+        BlockPos spot = Growl.cellarSpot(level, origin, RandomSource.create(1));
+        helper.assertTrue(spot != null, "an open spot on the cellar floor");
+        BlockPos rel = spot.subtract(origin);
+        helper.assertTrue(rel.getY() == -4 && rel.getX() > 18 && rel.getX() < 26 && rel.getZ() > 13 && rel.getZ() < 24,
+                "standing on the floor, off the walls: " + rel);
         helper.succeed();
     }
 
