@@ -75,7 +75,9 @@ final class LevelSnapshotScene implements SnapshotRenderer.Scene {
         // produce a beautifully framed photograph of six oak trees and about
         // three pixels of somebody's roof. Ignore foliage in the copied
         // photographic scene only; the player's real world is untouched.
-        if (state.is(BlockTags.LEAVES)) {
+        if (state.is(BlockTags.LEAVES)
+                && state.hasProperty(LeavesBlock.PERSISTENT)
+                && !state.getValue(LeavesBlock.PERSISTENT)) {
             return 0;
         }
 
