@@ -416,6 +416,11 @@ Each classic gets its own vignette, and its motifs stay inside it.
 - A furnished model home. Turn from the kitchen table, turn back, and every chair is stacked. The stack teeters as you approach.
 - A tree outside the kid's window grows a stage closer each visit, until a branch is inside.
 - The salesman's binder sits on the counter: the headstones were moved, the bodies weren't.
+- Four visits, one beat each:
+  - **Visits 1–3:** the chairs stack once the player has seen the table set and then turned away for a second. The stack is display copies, so it can sway, and it teeters harder the closer the player comes. Seeing it is the beat. Look away again and every chair is back where it was.
+  - **Growth:** the living-room armchairs join the stack on visit 2, and the kid's chair on visit 3. On visit 3 a branch also taps at the kid's window, and the yard's grass has sunk in one grave-length patch.
+  - **Visit 4:** no chairs. The kid's door stands open, the window is broken in, and a branch reaches over the bed. Seeing it finishes the vignette.
+- Yields: the binder, which can be taken on any visit.
 - Assets: none; all vanilla.
 
 ### The Conjuring: hide-and-clap

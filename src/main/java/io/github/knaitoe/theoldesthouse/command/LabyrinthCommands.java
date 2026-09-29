@@ -1,5 +1,6 @@
 package io.github.knaitoe.theoldesthouse.command;
 
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
@@ -10,6 +11,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.Growl;
 import io.github.knaitoe.theoldesthouse.labyrinth.HideAndClap;
 import io.github.knaitoe.theoldesthouse.labyrinth.HomeRooms;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
+import io.github.knaitoe.theoldesthouse.labyrinth.ModelHome;
 import io.github.knaitoe.theoldesthouse.labyrinth.RedRoom;
 import io.github.knaitoe.theoldesthouse.labyrinth.TellTaleFloorboards;
 import net.minecraft.commands.CommandSourceStack;
@@ -107,6 +109,41 @@ public final class LabyrinthCommands {
                             LabyrinthData.get(context.getSource().getServer()).setCompleted(HideAndClap.ID, true);
                             context.getSource().sendSuccess(() -> Component.literal(
                                     "Hide-and-clap is marked finished; the dealer will not deal it."), true);
+                            return 1;
+                        })))
+                .then(Commands.literal(ModelHome.ID)
+                        .then(Commands.literal("reset").executes(context -> {
+                            if (!LabyrinthBuilder.ensureBuilt(context.getSource().getServer())) {
+                                context.getSource().sendFailure(Component.literal(
+                                        "The labyrinth is not carved yet (it needs the Navidsons' house; if that exists, try again in a moment)."));
+                                return 0;
+                            }
+                            if (!ModelHome.reset(context.getSource().getServer())) {
+                                context.getSource().sendFailure(Component.literal("The Navidsons' house must exist first."));
+                                return 0;
+                            }
+                            context.getSource().sendSuccess(() -> Component.literal(
+                                    "The model home is as new: never visited, the binder on the counter, dealable again."), true);
+                            return 1;
+                        }))
+                        .then(Commands.literal("visit")
+                                .then(Commands.argument("visit", IntegerArgumentType.integer(1, ModelHome.FINAL_VISIT)).executes(context -> {
+                                    int visit = IntegerArgumentType.getInteger(context, "visit");
+                                    if (!LabyrinthBuilder.ensureBuilt(context.getSource().getServer())
+                                            || !ModelHome.setVisit(context.getSource().getServer(), visit)) {
+                                        context.getSource().sendFailure(Component.literal(
+                                                "The labyrinth is not carved yet (it needs the Navidsons' house; if that exists, try again in a moment)."));
+                                        return 0;
+                                    }
+                                    context.getSource().sendSuccess(() -> Component.literal(
+                                            "The model home is set for visit " + visit + " of " + ModelHome.FINAL_VISIT
+                                                    + ", its beat not yet seen (/oldesthouse door model_home to go in)."), true);
+                                    return 1;
+                                })))
+                        .then(Commands.literal("complete").executes(context -> {
+                            LabyrinthData.get(context.getSource().getServer()).setCompleted(ModelHome.ID, true);
+                            context.getSource().sendSuccess(() -> Component.literal(
+                                    "The model home is marked finished; the dealer will not deal it."), true);
                             return 1;
                         })))
                 .then(Commands.literal(RedRoom.ID)

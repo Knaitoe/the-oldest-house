@@ -16,7 +16,10 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
  *
  * Slots fill upwards while they fit under the top of the world, then
  * carry on downwards below the manor, so a manor built high has most (or
- * all) of its places below it.
+ * all) of its places below it. When that column is full, the next slots
+ * take the same layers in a column further east (see {@link #column}):
+ * those places are not over the manor's chunks, which a door's shift loads
+ * before it moves anyone.
  */
 public final class LabyrinthPlaces {
     public static final int SLOT_HEIGHT = 24;
@@ -27,6 +30,12 @@ public final class LabyrinthPlaces {
     private static final int PAD = 8;
     private static final int FLOOR_IN_SLOT = 5;
     private static final int CLEAR_ABOVE_POCKET = 26;
+    /**
+     * How far east of the first column each further one stands: wider than
+     * any place (and its padding) and clear of the manor's own footprint.
+     */
+    public static final int COLUMN_SPACING = 96;
+    private static final int MAX_COLUMNS = 3;
     private static final int MAX_Y = 318;
     private static final int MIN_Y = -60;
 
@@ -58,21 +67,50 @@ public final class LabyrinthPlaces {
         return slotsAbove(origin) > 0;
     }
 
+    /** How many slots fit below the manor, above the bottom of the world. */
+    public static int slotsBelow(BlockPos origin) {
+        return Math.max(0, (origin.getY() - SLOT_HEIGHT - MIN_Y) / SLOT_HEIGHT);
+    }
+
+    /** How many slots one column holds for this manor: all that fit above it and below it. */
+    public static int slotsPerColumn(BlockPos origin) {
+        return slotsAbove(origin) + slotsBelow(origin);
+    }
+
     /**
-     * The lowest y of a slot. Slots fill upwards above the manor while they
-     * fit, then carry on downwards below it.
+     * Which column a slot stands in. The first column is over the manor;
+     * once it is full, slots carry on in the same layers of another column,
+     * {@link #COLUMN_SPACING} blocks further east, and so on.
+     */
+    public static int column(BlockPos origin, int slot) {
+        int perColumn = slotsPerColumn(origin);
+        return perColumn <= 0 ? MAX_COLUMNS : slot / perColumn;
+    }
+
+    private static int layer(BlockPos origin, int slot) {
+        int perColumn = slotsPerColumn(origin);
+        return perColumn <= 0 ? slot : slot % perColumn;
+    }
+
+    /**
+     * The lowest y of a slot. In each column, slots fill upwards above the
+     * manor while they fit, then carry on downwards below it.
      */
     public static int slotBottom(BlockPos origin, int slot) {
         int above = slotsAbove(origin);
-        if (slot < above) {
-            return firstAbove(origin) + slot * SLOT_HEIGHT;
+        int layer = layer(origin, slot);
+        if (layer < above) {
+            return firstAbove(origin) + layer * SLOT_HEIGHT;
         }
-        return origin.getY() - SLOT_HEIGHT - (slot - above + 1) * SLOT_HEIGHT;
+        return origin.getY() - SLOT_HEIGHT - (layer - above + 1) * SLOT_HEIGHT;
     }
 
-    /** Whether a slot lies within the world, above or below. */
+    /** Whether a slot lies within the world, above or below, in a column there is room for. */
     public static boolean fits(BlockPos origin, int slot) {
-        return slot >= 0 && slotBottom(origin, slot) >= MIN_Y && slotBottom(origin, slot) + SLOT_HEIGHT - 1 <= MAX_Y;
+        return slot >= 0
+                && column(origin, slot) < MAX_COLUMNS
+                && slotBottom(origin, slot) >= MIN_Y
+                && slotBottom(origin, slot) + SLOT_HEIGHT - 1 <= MAX_Y;
     }
 
     /**
@@ -85,7 +123,7 @@ public final class LabyrinthPlaces {
             return null;
         }
         return new BlockPos(
-                origin.getX() + HouseLayout.CENTER_X,
+                origin.getX() + HouseLayout.CENTER_X + column(origin, place.slot()) * COLUMN_SPACING,
                 slotBottom(origin, place.slot()) + FLOOR_IN_SLOT,
                 origin.getZ() + HouseLayout.CENTER_Z
         );
