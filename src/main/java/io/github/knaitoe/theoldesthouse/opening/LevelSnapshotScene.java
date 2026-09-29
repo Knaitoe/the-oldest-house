@@ -1,14 +1,18 @@
 package io.github.knaitoe.theoldesthouse.opening;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -33,6 +37,8 @@ final class LevelSnapshotScene implements SnapshotRenderer.Scene {
     private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
     private long cachedChunk = Long.MIN_VALUE;
     private LevelChunk chunk;
+    /** Expensive canopy checks are done once per log position. */
+    private final Map<Long, Boolean> naturalTrunkCache = new HashMap<>();
 
     LevelSnapshotScene(ServerLevel level, BlockPos min, BlockPos max) {
         this.level = level;
@@ -70,15 +76,12 @@ final class LevelSnapshotScene implements SnapshotRenderer.Scene {
             return 0;
         }
 
-        // Navidson is photographing the player's home, not the canopy around
-        // it. Leaves are transient natural occlusion and were previously
-        // treated as solid "house" pixels by the camera scorer, which could
-        // produce a beautifully framed photograph of six oak trees and about
-        // three pixels of somebody's roof. Ignore foliage in the copied
-        // photographic scene only; the player's real world is untouched.
-        if (state.is(BlockTags.LEAVES)
-                && state.hasProperty(LeavesBlock.PERSISTENT)
-                && !state.getValue(LeavesBlock.PERSISTENT)) {
+        // Navidson is photographing the player's home, not the woodland in
+        // front of it. Natural foliage and the vertical trunks that actually
+        // lead into that foliage are transparent in the photographic copy.
+        // Player-placed/persistent leaves remain, and log construction is not
+        // discarded merely for using a wood block.
+        if (isNaturalLeaf(state) || isNaturalTreeTrunk(state, x, y, z)) {
             return 0;
         }
 
@@ -103,6 +106,74 @@ final class LevelSnapshotScene implements SnapshotRenderer.Scene {
             return 0;
         }
         return SnapshotRenderer.pack(SnapshotRenderer.SOLID, colour.col);
+    }
+
+    private boolean isNaturalLeaf(BlockState state) {
+        return state.is(BlockTags.LEAVES)
+                && state.hasProperty(LeavesBlock.PERSISTENT)
+                && !state.getValue(LeavesBlock.PERSISTENT);
+    }
+
+    /**
+     * A natural trunk is a vertical log column that terminates in a real
+     * non-persistent leaf canopy. This deliberately does not make every log
+     * transparent: cabins, beams and player-built timber walls still belong
+     * in the photograph.
+     */
+    private boolean isNaturalTreeTrunk(BlockState state, int x, int y, int z) {
+        if (!state.is(BlockTags.LOGS)) {
+            return false;
+        }
+        if (state.hasProperty(RotatedPillarBlock.AXIS)
+                && state.getValue(RotatedPillarBlock.AXIS) != Direction.Axis.Y) {
+            return false;
+        }
+
+        long key = BlockPos.asLong(x, y, z);
+        Boolean cached = naturalTrunkCache.get(key);
+        if (cached != null) {
+            return cached;
+        }
+
+        int top = y;
+        for (int dy = 1; dy <= 12; dy++) {
+            BlockState above = stateAt(x, y + dy, z);
+            if (!above.is(BlockTags.LOGS)
+                    || (above.hasProperty(RotatedPillarBlock.AXIS)
+                    && above.getValue(RotatedPillarBlock.AXIS) != Direction.Axis.Y)) {
+                break;
+            }
+            top = y + dy;
+        }
+
+        int naturalLeaves = 0;
+        for (int dy = -2; dy <= 4 && naturalLeaves < 4; dy++) {
+            for (int dx = -3; dx <= 3 && naturalLeaves < 4; dx++) {
+                for (int dz = -3; dz <= 3 && naturalLeaves < 4; dz++) {
+                    if (dx * dx + dz * dz > 10) {
+                        continue;
+                    }
+                    if (isNaturalLeaf(stateAt(x + dx, top + dy, z + dz))) {
+                        naturalLeaves++;
+                    }
+                }
+            }
+        }
+
+        boolean natural = naturalLeaves >= 4;
+        naturalTrunkCache.put(key, natural);
+        return natural;
+    }
+
+    private BlockState stateAt(int x, int y, int z) {
+        if (!inside(x, z) || y < min.getY() || y > max.getY()) {
+            return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+        }
+        LevelChunk at = chunkAt(x, z);
+        if (at == null) {
+            return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+        }
+        return at.getBlockState(pos.set(x, y, z));
     }
 
     @Override
