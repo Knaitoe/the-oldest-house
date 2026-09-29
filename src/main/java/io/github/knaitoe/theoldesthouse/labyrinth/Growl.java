@@ -1,5 +1,6 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
+import io.github.knaitoe.theoldesthouse.network.HousePackets;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseCalendar;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
@@ -33,7 +34,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The Growl: the Minotaur's voice, heard long before it is seen. A low
@@ -227,7 +227,7 @@ public final class Growl {
             return false;
         }
         // Keep the eyes shut through the wake-up so the bedroom is never seen.
-        PacketDistributor.sendToPlayer(player, new HouseFadePayload(0, 50, 90));
+        HousePackets.send(player, new HouseFadePayload(0, 50, 90));
         long now = player.server.overworld().getGameTime();
         BASEMENT.put(player.getUUID(), new long[]{now + BASEMENT_MOVE_DELAY, 0});
         GrowlData.get(player.server).noteBasement(player.getUUID(), HouseCalendar.today(player.server));

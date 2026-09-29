@@ -1,12 +1,12 @@
 package io.github.knaitoe.theoldesthouse.house;
 
+import io.github.knaitoe.theoldesthouse.network.HousePackets;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import io.github.knaitoe.theoldesthouse.network.HouseSightlineStatePayload;
 import net.minecraft.server.level.ServerLevel;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class HouseStageManager {
     private HouseStageManager() {
@@ -41,9 +41,7 @@ public final class HouseStageManager {
                 origin
         );
 
-        PacketDistributor.sendToAllPlayers(
-                new HouseSightlineStatePayload(origin, true)
-        );
+        HousePackets.sendToAll(server, new HouseSightlineStatePayload(origin, true));
 
         TheOldestHouse.LOGGER.info(
                 "The first impossible doorway and direct hallway in The Oldest House have been revealed at perceived age {}.",

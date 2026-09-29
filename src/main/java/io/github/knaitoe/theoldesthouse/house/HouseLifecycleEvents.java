@@ -1,5 +1,6 @@
 package io.github.knaitoe.theoldesthouse.house;
 
+import io.github.knaitoe.theoldesthouse.network.HousePackets;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
 import io.github.knaitoe.theoldesthouse.labyrinth.Growl;
@@ -15,7 +16,6 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerWakeUpEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class HouseLifecycleEvents {
     private HouseLifecycleEvents() {
@@ -31,7 +31,7 @@ public final class HouseLifecycleEvents {
 
         // The hallway's sightline is drawn against the current layout: an
         // outdated House shows none.
-        PacketDistributor.sendToPlayer(
+        HousePackets.send(
                 player,
                 new HouseSightlineStatePayload(
                         origin,
