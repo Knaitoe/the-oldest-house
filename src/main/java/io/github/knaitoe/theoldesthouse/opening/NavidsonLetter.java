@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.opening;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.HouseWriting;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ public final class NavidsonLetter {
      * applying it is always safe; a resource pack can replace
      * {@code assets/the_oldest_house/font/navidson.json} with Navidson's hand.
      */
-    public static final ResourceLocation FONT = ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "navidson");
+    public static final ResourceLocation FONT = HouseWriting.WILL_FONT;
 
     /**
      * One beat per page. The spec's page 2 wraps to 16 lines in the default
@@ -86,8 +87,8 @@ public final class NavidsonLetter {
     public static ItemStack createBook() {
         List<Filterable<Component>> pages = new ArrayList<>();
         for (String page : PAGES) {
-            pages.add(Filterable.<Component>passThrough(
-                    Component.literal(page).withStyle(style -> style.withFont(FONT))
+            pages.add(Filterable.passThrough(
+                    HouseWriting.page(HouseWriting.WritingStyle.WILL, page)
             ));
         }
 

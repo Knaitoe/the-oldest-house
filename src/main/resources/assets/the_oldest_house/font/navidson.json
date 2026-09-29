@@ -2,7 +2,7 @@
   "providers": [
     {
       "type": "reference",
-      "id": "minecraft:default"
+      "id": "the_oldest_house:will"
     }
   ]
 }
