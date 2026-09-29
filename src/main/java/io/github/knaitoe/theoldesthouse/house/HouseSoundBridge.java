@@ -40,7 +40,6 @@ public final class HouseSoundBridge {
         mirror(
                 source,
                 event.getPosition(),
-                null,
                 event.getSound(),
                 event.getSource(),
                 event.getNewVolume(),
@@ -61,7 +60,6 @@ public final class HouseSoundBridge {
         mirror(
                 source,
                 entity.position(),
-                entity,
                 event.getSound(),
                 event.getSource(),
                 event.getNewVolume(),
@@ -72,7 +70,6 @@ public final class HouseSoundBridge {
     private static void mirror(
             ServerLevel source,
             Vec3 position,
-            @Nullable Entity sourceEntity,
             @Nullable Holder<SoundEvent> sound,
             SoundSource category,
             float volume,
