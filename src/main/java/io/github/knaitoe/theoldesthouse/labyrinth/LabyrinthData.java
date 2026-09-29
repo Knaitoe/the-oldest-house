@@ -103,9 +103,26 @@ public final class LabyrinthData extends SavedData {
         }
     }
 
+    /** One player's current answer for a dealt physical door. */
+    public record Deal(String place, boolean leak, boolean bark) {
+    }
+
+    /**
+     * The physical labyrinth is shared, but its changing graph is not. Each
+     * player keeps their own current deals, dry spell, Hillary scent and
+     * remembered discoveries.
+     */
+    private static final class PlayerDealer {
+        final Map<String, Deal> deals = new LinkedHashMap<>();
+        final Set<String> visited = new LinkedHashSet<>();
+        int dryDeals;
+        boolean hillaryScent;
+    }
+
     private final Map<String, Door> doors = new LinkedHashMap<>();
     private final Map<GlobalPos, String> index = new HashMap<>();
     private final Map<UUID, Deque<Waypoint>> returns = new HashMap<>();
+    private final Map<UUID, PlayerDealer> playerDealers = new HashMap<>();
     private final Set<String> completed = new LinkedHashSet<>();
     private final Set<String> ready = new LinkedHashSet<>();
     private final Map<String, CompoundTag> states = new HashMap<>();
@@ -167,6 +184,9 @@ public final class LabyrinthData extends SavedData {
         Door old = doors.remove(id);
         if (old != null) {
             index.remove(old.globalPos());
+            for (PlayerDealer dealer : playerDealers.values()) {
+                dealer.deals.remove(id);
+            }
             setDirty();
         }
     }
@@ -185,6 +205,85 @@ public final class LabyrinthData extends SavedData {
         door.leak = leak;
         door.bark = bark;
         setDirty();
+    }
+
+    private PlayerDealer playerDealer(UUID player) {
+        return playerDealers.computeIfAbsent(player, id -> {
+            PlayerDealer state = new PlayerDealer();
+            // Existing worlds had one shared streak/scent. Let each player
+            // inherit it once, then diverge from there.
+            state.dryDeals = dryDeals;
+            state.hillaryScent = hillaryScent;
+            return state;
+        });
+    }
+
+    /** This player's current destination and leak for a dealt physical door. */
+    @Nullable
+    public Deal deal(UUID player, Door door) {
+        PlayerDealer state = playerDealers.get(player);
+        Deal personal = state == null ? null : state.deals.get(door.id);
+        if (personal != null) {
+            return personal;
+        }
+        // Migration from saves made before deals became per-player.
+        return door.dealt == null ? null : new Deal(door.dealt, door.leak, door.bark);
+    }
+
+    public void deal(UUID player, Door door, String place, boolean leak) {
+        deal(player, door, place, leak, false);
+    }
+
+    public void deal(UUID player, Door door, String place, boolean leak, boolean bark) {
+        playerDealer(player).deals.put(door.id, new Deal(place, leak, bark));
+        setDirty();
+    }
+
+    public int dryDeals(UUID player) {
+        PlayerDealer state = playerDealers.get(player);
+        return state == null ? dryDeals : state.dryDeals;
+    }
+
+    public void setDryDeals(UUID player, int value) {
+        playerDealer(player).dryDeals = value;
+        setDirty();
+    }
+
+    public boolean hillaryScent(UUID player) {
+        PlayerDealer state = playerDealers.get(player);
+        return state == null ? hillaryScent : state.hillaryScent;
+    }
+
+    public void setHillaryScent(UUID player, boolean scent) {
+        PlayerDealer state = playerDealer(player);
+        if (state.hillaryScent != scent) {
+            state.hillaryScent = scent;
+            setDirty();
+        }
+    }
+
+    /** Remembers that this player has personally reached this place. */
+    public void visit(UUID player, LabyrinthPlace place) {
+        if (playerDealer(player).visited.add(place.id())) {
+            setDirty();
+        }
+    }
+
+    public Set<String> visited(UUID player) {
+        PlayerDealer state = playerDealers.get(player);
+        return state == null ? Set.of() : Set.copyOf(state.visited);
+    }
+
+    /** Distinct vignettes this player has personally reached. */
+    public int vignettesVisited(UUID player) {
+        int count = 0;
+        for (String id : visited(player)) {
+            LabyrinthPlace place = LabyrinthPlace.byId(id);
+            if (place != null && place.isVignette()) {
+                count++;
+            }
+        }
+        return count;
     }
 
     // ------------------------------------------------------------------
@@ -362,6 +461,29 @@ public final class LabyrinthData extends SavedData {
         }
         data.dryDeals = tag.getInt("DryDeals");
         data.hillaryScent = tag.getBoolean("HillaryScent");
+
+        ListTag playerDealerList = tag.getList("PlayerDealers", Tag.TAG_COMPOUND);
+        for (int i = 0; i < playerDealerList.size(); i++) {
+            CompoundTag p = playerDealerList.getCompound(i);
+            PlayerDealer state = new PlayerDealer();
+            state.dryDeals = p.getInt("DryDeals");
+            state.hillaryScent = p.getBoolean("HillaryScent");
+            ListTag deals = p.getList("Deals", Tag.TAG_COMPOUND);
+            for (int j = 0; j < deals.size(); j++) {
+                CompoundTag d = deals.getCompound(j);
+                String door = d.getString("Door");
+                String place = d.getString("Place");
+                if (!door.isEmpty() && !place.isEmpty()) {
+                    state.deals.put(door, new Deal(place, d.getBoolean("Leak"), d.getBoolean("Bark")));
+                }
+            }
+            ListTag visited = p.getList("Visited", Tag.TAG_STRING);
+            for (int j = 0; j < visited.size(); j++) {
+                state.visited.add(visited.getString(j));
+            }
+            data.playerDealers.put(p.getUUID("Player"), state);
+        }
+
         data.builtVersion = tag.getInt("BuiltVersion");
         data.builtOrigin = tag.contains("BuiltOrigin") ? BlockPos.of(tag.getLong("BuiltOrigin")) : null;
         data.nextCommandId = Math.max(1, tag.getInt("NextCommandId"));
@@ -407,6 +529,32 @@ public final class LabyrinthData extends SavedData {
             returnList.add(r);
         }
         tag.put("Returns", returnList);
+
+        ListTag playerDealerList = new ListTag();
+        for (Map.Entry<UUID, PlayerDealer> entry : playerDealers.entrySet()) {
+            CompoundTag p = new CompoundTag();
+            p.putUUID("Player", entry.getKey());
+            PlayerDealer state = entry.getValue();
+            p.putInt("DryDeals", state.dryDeals);
+            p.putBoolean("HillaryScent", state.hillaryScent);
+            ListTag deals = new ListTag();
+            for (Map.Entry<String, Deal> dealt : state.deals.entrySet()) {
+                CompoundTag d = new CompoundTag();
+                d.putString("Door", dealt.getKey());
+                d.putString("Place", dealt.getValue().place());
+                d.putBoolean("Leak", dealt.getValue().leak());
+                d.putBoolean("Bark", dealt.getValue().bark());
+                deals.add(d);
+            }
+            p.put("Deals", deals);
+            ListTag visited = new ListTag();
+            for (String place : state.visited) {
+                visited.add(StringTag.valueOf(place));
+            }
+            p.put("Visited", visited);
+            playerDealerList.add(p);
+        }
+        tag.put("PlayerDealers", playerDealerList);
 
         ListTag done = new ListTag();
         for (String vignette : completed) {

@@ -117,6 +117,9 @@ The house deals the doors: players can tilt the odds, but never summon a place o
 
 - Doors to unfinished multi-visit vignettes come up more often.
 - A long dry spell guarantees a new door.
+- Door deals are per-player. Two people can use the same physical door and be taken somewhere different; their dry streaks and Hillary scents are separate too.
+- Gray doors may loop back to the place the player is already in. The impossible repetition is intentional, not filtered out as a bad deal.
+- The gray maze grows instead of exposing every connective space immediately: it starts with the junction and plain corridor, then adds the long hallway after one vignette has been reached/finished, the spiral after two, and the hotel hallway after three.
 - Nothing appears on demand.
 - Zampanò's courtyard leads back to places already visited, never forward.
 
