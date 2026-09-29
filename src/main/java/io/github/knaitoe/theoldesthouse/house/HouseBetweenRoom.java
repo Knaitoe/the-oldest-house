@@ -101,8 +101,8 @@ public final class HouseBetweenRoom {
     private static final int DOOR_CHECK_INTERVAL = 20;
     /** How far from its door someone can wander in a copy without going in before being put back. */
     private static final double APPROACH_RADIUS = 6.0D;
-    /** How much farther than their entry point counts as backing away. */
-    private static final double BACK_OUT_MARGIN = 0.65D;
+    /** How much retreat from the closest approach counts as backing away. */
+    private static final double BACK_OUT_MARGIN = 0.35D;
     /** Nobody closer than this to the doorway when it starts routing. */
     private static final double CLEAR_RADIUS = 4.0D;
 
@@ -136,7 +136,7 @@ public final class HouseBetweenRoom {
     private static final Set<UUID> INSIDE = new HashSet<>();
     /** The side each player in the pocket came in by. */
     private static final Map<UUID, Side> CAME_FROM = new HashMap<>();
-    /** Horizontal distance from that side's copied door when routing began. */
+    /** Closest horizontal distance reached from that side's copied door. */
     private static final Map<UUID, Double> ENTRY_DISTANCE = new HashMap<>();
 
     private HouseBetweenRoom() {
@@ -530,7 +530,10 @@ public final class HouseBetweenRoom {
      */
     public static boolean tickPocket(ServerPlayer player, HouseSavedData data, BlockPos origin) {
         if (!data.isRoomArmed() || !isInPocket(origin, player.getX(), player.getY(), player.getZ())) {
-            INSIDE.remove(player.getUUID());
+            UUID id = player.getUUID();
+            INSIDE.remove(id);
+            CAME_FROM.remove(id);
+            ENTRY_DISTANCE.remove(id);
             return false;
         }
         UUID id = player.getUUID();
@@ -569,9 +572,14 @@ public final class HouseBetweenRoom {
             leave = true;
         } else {
             Side from = CAME_FROM.get(id);
-            double enteredAt = ENTRY_DISTANCE.getOrDefault(id, APPROACH_RADIUS);
+            double currentDistance = Math.sqrt(distanceSq);
+            double closestDistance = ENTRY_DISTANCE.getOrDefault(id, currentDistance);
+            if (currentDistance < closestDistance) {
+                closestDistance = currentDistance;
+                ENTRY_DISTANCE.put(id, closestDistance);
+            }
             boolean backedOut = from == side
-                    && Math.sqrt(distanceSq) >= enteredAt + BACK_OUT_MARGIN;
+                    && currentDistance >= closestDistance + BACK_OUT_MARGIN;
             leave = backedOut
                     || distanceSq > APPROACH_RADIUS * APPROACH_RADIUS
                     || relY < ROOM_MIN_Y - 0.5D
