@@ -4,7 +4,6 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -56,14 +55,46 @@ public final class HouseWriting {
         }
     }
 
+    private static final String CHILD_ALTERNATE_BASE = "aeiotrshnldcmyug";
+    private static final int CHILD_ALT_ONE = 0xE100;
+    private static final int CHILD_ALT_TWO = 0xE110;
+
     private HouseWriting() {
     }
 
     public static Component page(WritingStyle writing, String text) {
-        Component component = Component.literal(text);
+        String rendered = writing == WritingStyle.CHILD ? childHand(text) : text;
+        Component component = Component.literal(rendered);
         return writing.font() == null
                 ? component
                 : component.copy().withStyle(style -> style.withFont(writing.font()));
+    }
+
+    /**
+     * Swaps a minority of common lowercase letters for hand-drawn alternates.
+     * The choice is deterministic, so reopening a page never makes the writing
+     * crawl around, while repeated letters stop looking mechanically stamped.
+     */
+    static String childHand(String text) {
+        StringBuilder result = new StringBuilder(text.length());
+        for (int i = 0; i < text.length(); i++) {
+            char letter = text.charAt(i);
+            int alternate = CHILD_ALTERNATE_BASE.indexOf(letter);
+            if (alternate < 0) {
+                result.append(letter);
+                continue;
+            }
+
+            int pick = Math.floorMod(i * 31 + text.length() * 17 + letter * 13, 7);
+            if (pick == 0 || pick == 1) {
+                result.append((char) (CHILD_ALT_ONE + alternate));
+            } else if (pick == 4) {
+                result.append((char) (CHILD_ALT_TWO + alternate));
+            } else {
+                result.append(letter);
+            }
+        }
+        return result.toString();
     }
 
     public static ItemStack book(String title, String author, WritingStyle writing, List<String> pages) {

@@ -92,6 +92,11 @@ public final class OpeningTests {
             helper.assertTrue(usesFont(content.pages().getFirst().raw(), fonts.get(i)),
                     "writing sample " + i + " does not use " + fonts.get(i));
         }
+
+        WrittenBookContent child = samples.get(3).get(DataComponents.WRITTEN_BOOK_CONTENT);
+        String childText = child.pages().getFirst().raw().getString();
+        helper.assertTrue(childText.chars().anyMatch(c -> c >= 0xE100 && c <= 0xE11F),
+                "child writing should use alternate hand-drawn glyphs");
         helper.succeed();
     }
 

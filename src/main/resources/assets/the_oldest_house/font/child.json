@@ -6,12 +6,14 @@
       "ascent": 9,
       "height": 11,
       "chars": [
-        " !\"#$%&'()*+,-./",
+        " !\\\"#$%&'()*+,-./",
         "0123456789:;<=>?",
         "@ABCDEFGHIJKLMNO",
-        "PQRSTUVWXYZ[\\]^_",
+        "PQRSTUVWXYZ[\\\\]^_",
         "`abcdefghijklmno",
-        "pqrstuvwxyz{|}~"
+        "pqrstuvwxyz{|}~",
+        "",
+        ""
       ]
     }
   ]
