@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.4.2` revises the per-player opening sequence so the ordinary manor, not the player's home, is the first architectural relationship with the House:
+Version `0.4.3` revises the per-player opening sequence so the ordinary manor, not the player's home, is the first architectural relationship with the House:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -518,4 +518,17 @@ The opening has been revised so the player's own home remains ordinary.
 - Real block interaction and multiplayer presence resume at the doorway handoff instead of several blocks later.
 - Missing/stale labyrinth return-stack recovery now uses the existing lights-out fade before relocating the player to the impossible hallway root. Normal matched-door returns remain seamless.
 - The wooded-photo regression now includes multiple real oak trunks in front of the preferred facade.
+
+### 0.4.3 domestic sound bridge
+
+- Positional physical sounds now cross the ordinary House seam in both directions at matching coordinates.
+- Players inside the domestic House can hear nearby Overworld block, animal, hostile-mob and player sounds outside the manor; nearby Overworld players can hear those same categories from the ordinary domestic House interior.
+- The bridge is limited to the existing 48-block mirrored view region.
+- House-to-Overworld audio is restricted to ordinary mirrored domestic space. The room between rooms, impossible hallway, vignettes and deeper labyrinth do not leak sound into the mundane facade.
+- Music, records, ambient/cave audio and weather are not mirrored. Weather/time already synchronize independently.
+- Mirrored sounds preserve their sound event, category, volume, pitch and position, while vanilla sound playback keeps ordinary distance attenuation.
+- Projection entities remain silent; their authoritative real mob supplies the bridged sound, preventing duplicate barks/moos/etc.
+- A recursion guard prevents a bridged sound from bouncing back across the seam.
+- Sound hooks run at lowest event priority so canceled or modified sounds are not mirrored prematurely.
+- GameTests lock the spatial boundary and permitted sound categories.
 
