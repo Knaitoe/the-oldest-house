@@ -3,5 +3,8 @@
   "item.the_oldest_house.blindfold": "Blindfold",
   "subtitles.the_oldest_house.clap": "Someone claps",
   "subtitles.the_oldest_house.clap_muffled": "A clap, muffled",
-  "subtitles.the_oldest_house.small_steps": "Small bare feet"
+  "subtitles.the_oldest_house.small_steps": "Small bare feet",
+  "subtitles.the_oldest_house.growl_far": "Something growls, far off",
+  "subtitles.the_oldest_house.growl_below": "Something growls, below",
+  "subtitles.the_oldest_house.growl_near": "Something growls"
 }

@@ -6,6 +6,7 @@ import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthBuilder;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
+import io.github.knaitoe.theoldesthouse.labyrinth.Growl;
 import io.github.knaitoe.theoldesthouse.labyrinth.HideAndClap;
 import io.github.knaitoe.theoldesthouse.labyrinth.HomeRooms;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
@@ -135,6 +136,32 @@ public final class LabyrinthCommands {
                             }
                             return 1;
                         })));
+    }
+
+    /** {@code growl far|below|near} plays the Growl for you now; {@code growl basement} wakes you in the cellar. */
+    public static LiteralArgumentBuilder<CommandSourceStack> growl() {
+        LiteralArgumentBuilder<CommandSourceStack> growl = Commands.literal("growl");
+        for (Growl.Kind kind : Growl.Kind.values()) {
+            growl.then(Commands.literal(kind.name().toLowerCase(java.util.Locale.ROOT)).executes(context -> {
+                Growl.growl(context.getSource().getPlayerOrException(), kind);
+                return 1;
+            }));
+        }
+        growl.then(Commands.literal("basement").executes(context -> {
+            if (!Growl.wakeInBasement(context.getSource().getPlayerOrException())) {
+                context.getSource().sendFailure(Component.literal("The Navidsons' house must exist first."));
+                return 0;
+            }
+            return 1;
+        }));
+        growl.then(Commands.literal("status").executes(context -> {
+            ServerPlayer viewer = context.getSource().getEntity() instanceof ServerPlayer p ? p : null;
+            for (String line : Growl.describe(context.getSource().getServer(), viewer)) {
+                context.getSource().sendSuccess(() -> Component.literal(line), false);
+            }
+            return 1;
+        }));
+        return growl;
     }
 
     private static int placeDoor(CommandSourceStack source, String destination) throws CommandSyntaxException {
