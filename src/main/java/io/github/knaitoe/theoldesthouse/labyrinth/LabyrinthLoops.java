@@ -1,5 +1,6 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
+import io.github.knaitoe.theoldesthouse.house.HouseBlocks;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import java.util.ArrayList;
@@ -26,7 +27,6 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FallingBlock;
-import net.minecraft.world.level.block.GlazedTerracottaBlock;
 import net.minecraft.world.level.block.LanternBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.WallSignBlock;
@@ -164,8 +164,8 @@ public final class LabyrinthLoops {
     /** A hallway, carved into its solid slot. */
     public static void buildHallway(ServerLevel level, BlockPos base, LabyrinthPlace place) {
         boolean hotel = place == LabyrinthPlace.HOTEL_HALLWAY;
-        BlockState wall = hotel ? Blocks.YELLOW_TERRACOTTA.defaultBlockState() : Blocks.LIGHT_GRAY_TERRACOTTA.defaultBlockState();
-        BlockState ceiling = hotel ? Blocks.BIRCH_PLANKS.defaultBlockState() : Blocks.STONE.defaultBlockState();
+        BlockState wall = hotel ? HouseBlocks.HOTEL_WALLPAPER.get().defaultBlockState() : Blocks.LIGHT_GRAY_TERRACOTTA.defaultBlockState();
+        BlockState ceiling = hotel ? HouseBlocks.HOTEL_CEILING.get().defaultBlockState() : Blocks.STONE.defaultBlockState();
         Set<Long> open = openColumns(place);
         int flags = LabyrinthBuilder.flags();
         for (long column : open) {
@@ -174,7 +174,8 @@ public final class LabyrinthLoops {
                 BlockPos n = c.relative(side);
                 if (!open.contains(BlockPos.asLong(n.getX(), 0, n.getZ()))) {
                     for (int y = -1; y <= 3; y++) {
-                        level.setBlock(base.offset(n.getX(), y, n.getZ()), wall, flags);
+                        level.setBlock(base.offset(n.getX(), y, n.getZ()),
+                                hotel ? hotelWallFor(y) : wall, flags);
                     }
                 }
             }
@@ -197,12 +198,17 @@ public final class LabyrinthLoops {
     }
 
     private static BlockState floorFor(boolean hotel, int lx, int lz) {
-        if (!hotel) {
-            return Blocks.SMOOTH_STONE.defaultBlockState();
+        return hotel ? HouseBlocks.HOTEL_CARPET.get().defaultBlockState() : Blocks.SMOOTH_STONE.defaultBlockState();
+    }
+
+    private static BlockState hotelWallFor(int y) {
+        if (y <= 0) {
+            return HouseBlocks.HOTEL_WAINSCOT.get().defaultBlockState();
         }
-        // A loud carpet: glazed tiles turned four ways in a two-by-two repeat.
-        Direction facing = Direction.from2DDataValue(Math.floorMod(lx, 2) + 2 * Math.floorMod(lz, 2));
-        return Blocks.RED_GLAZED_TERRACOTTA.defaultBlockState().setValue(GlazedTerracottaBlock.FACING, facing);
+        if (y >= 3) {
+            return HouseBlocks.HOTEL_CEILING.get().defaultBlockState();
+        }
+        return HouseBlocks.HOTEL_WALLPAPER.get().defaultBlockState();
     }
 
     /**
@@ -240,7 +246,7 @@ public final class LabyrinthLoops {
             return (hotel ? Blocks.LANTERN : Blocks.SOUL_LANTERN).defaultBlockState().setValue(LanternBlock.HANGING, true);
         }
         if (hotel && region.straight() && y == 1 && z == -3 && (x == -1 || x == 1)) {
-            return Blocks.SPRUCE_WALL_SIGN.defaultBlockState().setValue(WallSignBlock.FACING, x == -1 ? Direction.EAST : Direction.WEST);
+            return Blocks.DARK_OAK_WALL_SIGN.defaultBlockState().setValue(WallSignBlock.FACING, x == -1 ? Direction.EAST : Direction.WEST);
         }
         return Blocks.AIR.defaultBlockState();
     }
@@ -266,7 +272,7 @@ public final class LabyrinthLoops {
     private static SignText plaque(int number) {
         return new SignText()
                 .setMessage(1, Component.literal("No. " + number))
-                .setColor(DyeColor.BLACK);
+                .setColor(DyeColor.YELLOW);
     }
 
     /** Shows this player the numbers for how far they have walked, before anything else they see this tick. */

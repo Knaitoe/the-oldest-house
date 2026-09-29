@@ -422,6 +422,17 @@ public final class LabyrinthTests {
         }
         helper.assertTrue(level.getBlockState(helper.absolutePos(BlockPos.ZERO).offset(-300, 6, 40).offset(12, 0, -45)).getBlock() instanceof DoorBlock,
                 "the long hallway's far door");
+
+        BlockPos hotelBase = helper.absolutePos(BlockPos.ZERO).offset(-340, 6, 40);
+        BlockPos hotelPeriod = hotelBase.offset(LabyrinthLoops.periodOrigin(0));
+        helper.assertTrue(level.getBlockState(hotelPeriod.below()).is(HouseBlocks.HOTEL_CARPET.get()),
+                "the hotel has its authored carpet");
+        helper.assertTrue(level.getBlockState(hotelPeriod.offset(-2, 0, 0)).is(HouseBlocks.HOTEL_WAINSCOT.get()),
+                "dark wainscot runs along the lower hotel wall");
+        helper.assertTrue(level.getBlockState(hotelPeriod.offset(-2, 1, 0)).is(HouseBlocks.HOTEL_WALLPAPER.get()),
+                "wallpaper stands above the trim");
+        helper.assertTrue(level.getBlockState(hotelPeriod.above(3)).is(HouseBlocks.HOTEL_CEILING.get()),
+                "the hotel ceiling is its own warm plaster");
         helper.succeed();
     }
 
