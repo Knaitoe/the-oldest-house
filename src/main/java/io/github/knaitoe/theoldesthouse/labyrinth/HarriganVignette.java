@@ -902,7 +902,7 @@ public final class HarriganVignette {
             CompoundTag tag = ghost.getPersistentData();
             UUID targetId = tag.hasUUID(GHOST_TARGET) ? tag.getUUID(GHOST_TARGET) : owner;
             ServerPlayer target = server.getPlayerList().getPlayer(targetId);
-            if (target == null || target.serverLevel() != ghost.serverLevel()
+            if (target == null || target.serverLevel() != (ServerLevel) ghost.level()
                     || target.serverLevel().dimension().equals(HouseDimensions.INTERIOR)) {
                 // A player assignment keeps waiting for its target. A friendly
                 // appearance deferred by logout/House entry tries again next night.
@@ -931,7 +931,7 @@ public final class HarriganVignette {
                 ghost.setTarget(null);
                 followAtDistance(ghost, target, 8.0D);
                 if (ghost.tickCount % 200 == 0) {
-                    disturbHouse(ghost.serverLevel(), ghost.blockPosition(), target);
+                    disturbHouse((ServerLevel) ghost.level(), ghost.blockPosition(), target);
                 }
             } else {
                 ghost.setTarget(target);
