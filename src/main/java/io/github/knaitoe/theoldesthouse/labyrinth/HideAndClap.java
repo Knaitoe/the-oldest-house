@@ -1,7 +1,9 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.house.HouseBlocks;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.WardrobeBlock;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,9 +39,9 @@ import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -270,9 +272,11 @@ public final class HideAndClap {
     }
 
     private static void setWardrobe(ServerLevel level, BlockPos lower, Direction facing, boolean open) {
-        BlockState barrel = Blocks.BARREL.defaultBlockState().setValue(BarrelBlock.FACING, facing).setValue(BarrelBlock.OPEN, open);
-        level.setBlock(lower, barrel, LabyrinthBuilder.flags());
-        level.setBlock(lower.above(), barrel.setValue(BarrelBlock.OPEN, false), LabyrinthBuilder.flags());
+        BlockState wardrobe = HouseBlocks.HIDE_AND_CLAP_WARDROBE.get().defaultBlockState()
+                .setValue(WardrobeBlock.FACING, facing)
+                .setValue(WardrobeBlock.OPEN, open);
+        level.setBlock(lower, wardrobe.setValue(WardrobeBlock.HALF, DoubleBlockHalf.LOWER), LabyrinthBuilder.flags());
+        level.setBlock(lower.above(), wardrobe.setValue(WardrobeBlock.HALF, DoubleBlockHalf.UPPER), LabyrinthBuilder.flags());
     }
 
     // ------------------------------------------------------------------

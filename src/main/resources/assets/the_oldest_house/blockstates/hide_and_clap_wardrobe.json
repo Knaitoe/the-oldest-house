@@ -1,0 +1,84 @@
+{
+  "variants": {
+    "facing=north,half=lower,open=false": {
+      "model": "the_oldest_house:block/wardrobe_lower_closed",
+      "y": 0,
+      "uvlock": true
+    },
+    "facing=north,half=lower,open=true": {
+      "model": "the_oldest_house:block/wardrobe_lower_open",
+      "y": 0,
+      "uvlock": true
+    },
+    "facing=north,half=upper,open=false": {
+      "model": "the_oldest_house:block/wardrobe_upper_closed",
+      "y": 0,
+      "uvlock": true
+    },
+    "facing=north,half=upper,open=true": {
+      "model": "the_oldest_house:block/wardrobe_upper_open",
+      "y": 0,
+      "uvlock": true
+    },
+    "facing=east,half=lower,open=false": {
+      "model": "the_oldest_house:block/wardrobe_lower_closed",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=east,half=lower,open=true": {
+      "model": "the_oldest_house:block/wardrobe_lower_open",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=east,half=upper,open=false": {
+      "model": "the_oldest_house:block/wardrobe_upper_closed",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=east,half=upper,open=true": {
+      "model": "the_oldest_house:block/wardrobe_upper_open",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=south,half=lower,open=false": {
+      "model": "the_oldest_house:block/wardrobe_lower_closed",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=south,half=lower,open=true": {
+      "model": "the_oldest_house:block/wardrobe_lower_open",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=south,half=upper,open=false": {
+      "model": "the_oldest_house:block/wardrobe_upper_closed",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=south,half=upper,open=true": {
+      "model": "the_oldest_house:block/wardrobe_upper_open",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=west,half=lower,open=false": {
+      "model": "the_oldest_house:block/wardrobe_lower_closed",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=west,half=lower,open=true": {
+      "model": "the_oldest_house:block/wardrobe_lower_open",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=west,half=upper,open=false": {
+      "model": "the_oldest_house:block/wardrobe_upper_closed",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=west,half=upper,open=true": {
+      "model": "the_oldest_house:block/wardrobe_upper_open",
+      "y": 270,
+      "uvlock": true
+    }
+  }
+}

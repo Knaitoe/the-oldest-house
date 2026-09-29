@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "the_oldest_house:great_room_rug_authored",
+    "the_oldest_house:great_room_rug_shifted",
+    "the_oldest_house:study_rug_authored",
+    "the_oldest_house:study_rug_shifted",
+    "the_oldest_house:principal_rug_authored",
+    "the_oldest_house:principal_rug_shifted",
+    "the_oldest_house:literary_rug_authored",
+    "the_oldest_house:literary_rug_shifted"
+  ]
+}

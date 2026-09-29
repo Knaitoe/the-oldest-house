@@ -642,7 +642,7 @@ final class HouseInteriors {
     // ------------------------------------------------------------------
 
     private static void rug(HouseCanvas c, HouseRugs.Rug rug) {
-        rug(c, rug.x0(), rug.y(), rug.z0(), rug.x1(), rug.z1(), rug.authored().defaultBlockState());
+        rug(c, rug.x0(), rug.y(), rug.z0(), rug.x1(), rug.z1(), rug.authoredBlock().defaultBlockState());
     }
 
     private static void rug(HouseCanvas c, int x0, int y, int z0, int x1, int z1, BlockState carpet) {

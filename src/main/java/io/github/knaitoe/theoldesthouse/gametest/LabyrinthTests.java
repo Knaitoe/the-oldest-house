@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.gametest;
 
 import com.mojang.authlib.GameProfile;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.house.HouseBlocks;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
 import io.github.knaitoe.theoldesthouse.labyrinth.CrayonDrawing;
@@ -64,7 +65,7 @@ public final class LabyrinthTests {
         BlockPos base = helper.absolutePos(BlockPos.ZERO).offset(-200, 6, 20);
         TellTaleFloorboards.build(level, base, true);
 
-        helper.assertTrue(level.getBlockState(base.offset(TellTaleFloorboards.LOOSE_BOARD)).is(Blocks.DARK_OAK_PLANKS),
+        helper.assertTrue(level.getBlockState(base.offset(TellTaleFloorboards.LOOSE_BOARD)).is(HouseBlocks.LOOSE_FLOORBOARD.get()),
                 "the loose board is down");
         helper.assertTrue(level.getBlockState(base.offset(0, -1, -2)).is(Blocks.SPRUCE_PLANKS), "the rest is spruce boards");
         helper.assertTrue(level.getBlockState(base.offset(1, -2, -1)).is(Blocks.SCULK), "sculk lies under the boards");
