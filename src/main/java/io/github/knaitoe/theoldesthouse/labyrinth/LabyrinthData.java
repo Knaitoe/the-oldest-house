@@ -102,6 +102,7 @@ public final class LabyrinthData extends SavedData {
     private final Map<GlobalPos, String> index = new HashMap<>();
     private final Map<UUID, Deque<Waypoint>> returns = new HashMap<>();
     private final Set<String> completed = new LinkedHashSet<>();
+    private final Set<String> ready = new LinkedHashSet<>();
     private int dryDeals;
     private int builtVersion;
     @Nullable
@@ -232,6 +233,17 @@ public final class LabyrinthData extends SavedData {
         return Set.copyOf(completed);
     }
 
+    /** Whether a place that has to be made first (see {@link LabyrinthPlace#needsMaking()}) has been. */
+    public boolean isReady(String place) {
+        return ready.contains(place);
+    }
+
+    public void setReady(String place, boolean isReady) {
+        if (isReady ? ready.add(place) : ready.remove(place)) {
+            setDirty();
+        }
+    }
+
     public int builtVersion() {
         return builtVersion;
     }
@@ -299,6 +311,10 @@ public final class LabyrinthData extends SavedData {
         for (int i = 0; i < done.size(); i++) {
             data.completed.add(done.getString(i));
         }
+        ListTag readyList = tag.getList("Ready", Tag.TAG_STRING);
+        for (int i = 0; i < readyList.size(); i++) {
+            data.ready.add(readyList.getString(i));
+        }
         data.dryDeals = tag.getInt("DryDeals");
         data.builtVersion = tag.getInt("BuiltVersion");
         data.builtOrigin = tag.contains("BuiltOrigin") ? BlockPos.of(tag.getLong("BuiltOrigin")) : null;
@@ -350,6 +366,11 @@ public final class LabyrinthData extends SavedData {
             done.add(StringTag.valueOf(vignette));
         }
         tag.put("Completed", done);
+        ListTag readyList = new ListTag();
+        for (String place : ready) {
+            readyList.add(StringTag.valueOf(place));
+        }
+        tag.put("Ready", readyList);
         tag.putInt("DryDeals", dryDeals);
         tag.putInt("BuiltVersion", builtVersion);
         if (builtOrigin != null) {

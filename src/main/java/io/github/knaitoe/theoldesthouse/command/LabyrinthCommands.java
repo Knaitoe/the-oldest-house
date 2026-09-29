@@ -6,7 +6,9 @@ import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthBuilder;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
+import io.github.knaitoe.theoldesthouse.labyrinth.HomeRooms;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
+import io.github.knaitoe.theoldesthouse.labyrinth.RedRoom;
 import io.github.knaitoe.theoldesthouse.labyrinth.TellTaleFloorboards;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -83,6 +85,33 @@ public final class LabyrinthCommands {
                             context.getSource().sendSuccess(() -> Component.literal(
                                     "The floorboards are marked finished; the dealer will not deal them."), true);
                             return 1;
+                        })))
+                .then(Commands.literal(RedRoom.ID)
+                        .then(Commands.literal("capture").executes(context -> {
+                            ServerPlayer player = context.getSource().getPlayerOrException();
+                            if (!RedRoom.captureHere(player)) {
+                                context.getSource().sendFailure(Component.literal(
+                                        "There is no room here to copy: stand inside an enclosed room with a floor and a ceiling."));
+                                return 0;
+                            }
+                            context.getSource().sendSuccess(() -> Component.literal(
+                                    "Copied the room you are standing in as your room. The Red Room will be it the next time a door leads there"
+                                            + " (/oldesthouse door red_room)."), true);
+                            return 1;
+                        }))
+                        .then(Commands.literal("forget").executes(context -> {
+                            ServerPlayer player = context.getSource().getPlayerOrException();
+                            HomeRooms.get(context.getSource().getServer()).forget(player.getUUID());
+                            context.getSource().sendSuccess(() -> Component.literal(
+                                    "Forgot where you spend your time and your copied room. The Red Room keeps whatever stands in it now."), true);
+                            return 1;
+                        }))
+                        .then(Commands.literal("status").executes(context -> {
+                            ServerPlayer viewer = context.getSource().getEntity() instanceof ServerPlayer p ? p : null;
+                            for (String line : RedRoom.describe(context.getSource().getServer(), viewer)) {
+                                context.getSource().sendSuccess(() -> Component.literal(line), false);
+                            }
+                            return 1;
                         })));
     }
 
@@ -98,9 +127,12 @@ public final class LabyrinthCommands {
             source.sendFailure(Component.literal(error));
             return 0;
         }
+        boolean noRoom = RedRoom.ID.equals(destination) && HomeRooms.get(source.getServer()).choiceFor(player.getUUID()) == null;
         source.sendSuccess(() -> Component.literal("A door to " + destination
                 + " stands in front of you. Open it to go through; walk back out through the door you arrive at to come back."
-                + (LabyrinthBuilder.isCarving() ? " The labyrinth is being carved; give it a moment." : "")), true);
+                + (LabyrinthBuilder.isCarving() ? " The labyrinth is being carved; give it a moment." : "")
+                + (noRoom ? " No room has been copied yet, so it stays locked: stand in a room of yours and run"
+                        + " /oldesthouse vignette red_room capture first." : "")), true);
         return 1;
     }
 
