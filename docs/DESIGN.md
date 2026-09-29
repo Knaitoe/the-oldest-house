@@ -151,6 +151,8 @@ She first appears at the player's doorstep during the opening and leads the play
 
 Once the labyrinth exists, Hillary becomes a genuine companion and navigation ally: she can seek vignette doors from their yielded objects, wait when the player falls behind, refuse especially dangerous destinations, react to Growls and topology changes, and eventually become entangled with the Mother of Strays.
 
+Built so far: seeking, from outside, since she never crosses into the House. Given a vignette's yielded object she takes the scent and scratches at the manor's front door; the next dealing that can have a vignette door does (unfound one-shots first), and that door leaks her bark instead of the heartbeat. It tilts the dealer's odds as far as they go without summoning a place: the player still has to find the door.
+
 ## Mother of Lost Things
 
 A rare humanoid presence inspired by the woman who calls herself a mother to lost things.

@@ -15,6 +15,10 @@ import net.minecraft.util.RandomSource;
  * rises with every dealing that had none, so a long dry spell guarantees
  * one. Vignette doors leak: its heartbeat can be heard at the door before it
  * is opened. Now and then a gray door leaks too, and lies.
+ *
+ * Hillary can tilt the odds furthest. Give her a scent from a vignette's
+ * object and the next dealing that can have a vignette door will have one,
+ * one-shots first, and what leaks from behind it is her bark.
  */
 public final class LabyrinthDealer {
     public static final int VIGNETTE_BASE_CHANCE = 30;
@@ -51,6 +55,27 @@ public final class LabyrinthDealer {
         return (int) Math.min(100L, VIGNETTE_BASE_CHANCE + (long) VIGNETTE_CHANCE_STEP * data.dryDeals());
     }
 
+    /** What Hillary makes of a scent. */
+    public enum Scent {
+        /** She has it: the next dealing will have a vignette door. */
+        SEEKING,
+        /** She is already on one. */
+        ALREADY,
+        /** There is nothing left in the house for her to find. */
+        NOTHING
+    }
+
+    public static Scent giveScent(LabyrinthData data) {
+        if (vignettesAvailable(data).isEmpty()) {
+            return Scent.NOTHING;
+        }
+        if (data.hillaryScent()) {
+            return Scent.ALREADY;
+        }
+        data.setHillaryScent(true);
+        return Scent.SEEKING;
+    }
+
     /** Deals every dealt door of a place, as when someone arrives there. */
     public static void dealPlace(LabyrinthData data, LabyrinthPlace place, RandomSource random) {
         List<LabyrinthData.Door> doors = new ArrayList<>();
@@ -84,7 +109,21 @@ public final class LabyrinthDealer {
         }
         List<LabyrinthPlace> vignettes = vignettesAvailable(data);
         LabyrinthData.Door lucky = null;
-        if (!vignettes.isEmpty() && random.nextInt(100) < vignetteChance(data)) {
+        boolean scent = data.hillaryScent() && !vignettes.isEmpty();
+        if (scent) {
+            // She goes for what hasn't been found yet.
+            List<LabyrinthPlace> unfound = new ArrayList<>();
+            for (LabyrinthPlace place : vignettes) {
+                if (place.isOneShot()) {
+                    unfound.add(place);
+                }
+            }
+            if (!unfound.isEmpty()) {
+                vignettes = unfound;
+            }
+            data.setHillaryScent(false);
+        }
+        if (!vignettes.isEmpty() && (scent || random.nextInt(100) < vignetteChance(data))) {
             lucky = doors.get(random.nextInt(doors.size()));
         }
 
@@ -98,7 +137,7 @@ public final class LabyrinthDealer {
         }
         for (LabyrinthData.Door door : doors) {
             if (door == lucky) {
-                data.deal(door, vignettes.get(random.nextInt(vignettes.size())).id(), true);
+                data.deal(door, vignettes.get(random.nextInt(vignettes.size())).id(), true, scent);
             } else {
                 data.deal(door, pickGray(gray, totalWeight, random).id(), random.nextInt(100) < LYING_LEAK_CHANCE);
             }

@@ -211,6 +211,6 @@ public final class CrayonDrawing {
                 Component.literal("Someone in a blindfold, seen from the wardrobe.").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)
         )));
         drawing.set(DataComponents.HIDE_ADDITIONAL_TOOLTIP, Unit.INSTANCE);
-        return drawing;
+        return VignetteYields.mark(drawing, HideAndClap.ID);
     }
 }

@@ -531,9 +531,15 @@ public final class LabyrinthDoors {
                 if (door.leak
                         && door.dimension.equals(player.serverLevel().dimension())
                         && player.position().distanceTo(Vec3.atCenterOf(door.lower)) <= LEAK_RADIUS) {
-                    // A heartbeat, faint, from behind the door.
                     Vec3 behind = Vec3.atCenterOf(door.lower.relative(door.facing.getOpposite()));
-                    playTo(player, SoundEvents.WARDEN_HEARTBEAT, behind, 0.3F, 0.9F);
+                    if (door.bark) {
+                        // Hillary, somewhere behind it, the way she found round outside.
+                        boolean whine = player.getRandom().nextInt(3) == 0;
+                        playTo(player, whine ? SoundEvents.WOLF_WHINE : SoundEvents.WOLF_AMBIENT, behind, 0.35F, 1.0F);
+                    } else {
+                        // A heartbeat, faint, from behind the door.
+                        playTo(player, SoundEvents.WARDEN_HEARTBEAT, behind, 0.3F, 0.9F);
+                    }
                 }
             }
         }
@@ -719,11 +725,12 @@ public final class LabyrinthDoors {
                 + "; hallway door " + (data.door("hallway_end") != null ? "in place" : "not yet (it comes with the hallway)")
                 + "; next dealing has a " + LabyrinthDealer.vignetteChance(data) + "% chance of a vignette door ("
                 + data.dryDeals() + " dry dealing(s)); finished vignettes: "
-                + (data.completed().isEmpty() ? "none" : String.join(", ", data.completed())) + ".");
+                + (data.completed().isEmpty() ? "none" : String.join(", ", data.completed())) + "."
+                + (data.hillaryScent() ? " Hillary has a scent: the next dealing that can will have a vignette door." : ""));
         List<String> deals = new ArrayList<>();
         for (LabyrinthData.Door door : data.doors()) {
             if (LabyrinthData.DEALT.equals(door.destination) && door.dealt != null) {
-                deals.add(door.id + " -> " + door.dealt + (door.leak ? " (leaks)" : ""));
+                deals.add(door.id + " -> " + door.dealt + (door.bark ? " (Hillary barks behind it)" : door.leak ? " (leaks)" : ""));
             }
         }
         if (!deals.isEmpty()) {

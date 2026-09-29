@@ -67,6 +67,8 @@ public final class LabyrinthData extends SavedData {
         @Nullable
         public String dealt;
         public boolean leak;
+        /** Its leak is Hillary barking from behind it: the door she found. */
+        public boolean bark;
         /** Placed by a command rather than part of the labyrinth. */
         public final boolean command;
 
@@ -108,6 +110,7 @@ public final class LabyrinthData extends SavedData {
     private final Set<String> ready = new LinkedHashSet<>();
     private final Map<String, CompoundTag> states = new HashMap<>();
     private int dryDeals;
+    private boolean hillaryScent;
     private int builtVersion;
     @Nullable
     private BlockPos builtOrigin;
@@ -152,6 +155,7 @@ public final class LabyrinthData extends SavedData {
             if (door.dealt == null) {
                 door.dealt = old.dealt;
                 door.leak = old.leak;
+                door.bark = old.bark;
             }
         }
         doors.put(door.id, door);
@@ -173,8 +177,13 @@ public final class LabyrinthData extends SavedData {
     }
 
     public void deal(Door door, String place, boolean leak) {
+        deal(door, place, leak, false);
+    }
+
+    public void deal(Door door, String place, boolean leak, boolean bark) {
         door.dealt = place;
         door.leak = leak;
+        door.bark = bark;
         setDirty();
     }
 
@@ -263,6 +272,18 @@ public final class LabyrinthData extends SavedData {
         setDirty();
     }
 
+    /** Hillary has taken a scent: the next dealing that can have a vignette door will, and she'll be heard behind it. */
+    public boolean hillaryScent() {
+        return hillaryScent;
+    }
+
+    public void setHillaryScent(boolean scent) {
+        if (hillaryScent != scent) {
+            hillaryScent = scent;
+            setDirty();
+        }
+    }
+
     public int builtVersion() {
         return builtVersion;
     }
@@ -311,6 +332,7 @@ public final class LabyrinthData extends SavedData {
                     d.getBoolean("Command"));
             door.dealt = d.contains("Dealt") ? d.getString("Dealt") : null;
             door.leak = d.getBoolean("Leak");
+            door.bark = d.getBoolean("Bark");
             data.doors.put(door.id, door);
             data.index.put(door.globalPos(), door.id);
         }
@@ -339,6 +361,7 @@ public final class LabyrinthData extends SavedData {
             data.states.put(key, stateTag.getCompound(key));
         }
         data.dryDeals = tag.getInt("DryDeals");
+        data.hillaryScent = tag.getBoolean("HillaryScent");
         data.builtVersion = tag.getInt("BuiltVersion");
         data.builtOrigin = tag.contains("BuiltOrigin") ? BlockPos.of(tag.getLong("BuiltOrigin")) : null;
         data.nextCommandId = Math.max(1, tag.getInt("NextCommandId"));
@@ -360,6 +383,7 @@ public final class LabyrinthData extends SavedData {
                 d.putString("Dealt", door.dealt);
             }
             d.putBoolean("Leak", door.leak);
+            d.putBoolean("Bark", door.bark);
             doorList.add(d);
         }
         tag.put("Doors", doorList);
@@ -398,6 +422,7 @@ public final class LabyrinthData extends SavedData {
         states.forEach((key, value) -> stateTag.put(key, value.copy()));
         tag.put("States", stateTag);
         tag.putInt("DryDeals", dryDeals);
+        tag.putBoolean("HillaryScent", hillaryScent);
         tag.putInt("BuiltVersion", builtVersion);
         if (builtOrigin != null) {
             tag.putLong("BuiltOrigin", builtOrigin.asLong());
