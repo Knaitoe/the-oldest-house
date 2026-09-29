@@ -15,7 +15,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.entity.decoration.PaintingVariant;
-import net.minecraft.world.entity.decoration.PaintingVariants;
 import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
@@ -46,32 +45,36 @@ final class HouseInteriors {
     private static final BlockState BOOKSHELF = Blocks.BOOKSHELF.defaultBlockState();
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
 
-    /** Paintings, spawned once in the Overworld shell and once in the House dimension. */
+    /**
+     * Original paintings for the manor. Their dimensions deliberately match
+     * the vanilla variants they replace so the subtle-change system can still
+     * trade equal-sized paintings between walls without changing collision.
+     */
     static final List<PaintingSpec> PAINTINGS = List.of(
-            // Great room: over the mantel, over the sideboard, beside the card table.
-            new PaintingSpec(3, 4, 8, Direction.EAST, PaintingVariants.BAROQUE),
-            new PaintingSpec(7, 3, 14, Direction.NORTH, PaintingVariants.LOWMIST),
-            new PaintingSpec(12, 3, 11, Direction.WEST, PaintingVariants.SEA),
+            // Great room: family residue, the manor itself, and the lake.
+            new PaintingSpec(3, 4, 8, Direction.EAST, HousePaintings.FAMILY_TABLE),
+            new PaintingSpec(7, 3, 14, Direction.NORTH, HousePaintings.NAVIDSON_MANOR),
+            new PaintingSpec(12, 3, 11, Direction.WEST, HousePaintings.LAKE_EVENING),
             // Hall portraits, well off the axis.
-            new PaintingSpec(14, 2, 15, Direction.EAST, PaintingVariants.GRAHAM),
-            new PaintingSpec(16, 2, 8, Direction.WEST, PaintingVariants.WANDERER),
+            new PaintingSpec(14, 2, 15, Direction.EAST, HousePaintings.WILL_PORTRAIT),
+            new PaintingSpec(16, 2, 8, Direction.WEST, HousePaintings.KAREN_PORTRAIT),
             // Study: the scholar over the fire.
-            new PaintingSpec(7, 4, 24, Direction.NORTH, PaintingVariants.BUST),
-            // Principal bedroom: formal portraits.
-            new PaintingSpec(10, 8, 8, Direction.NORTH, PaintingVariants.MATCH),
-            new PaintingSpec(12, 8, 5, Direction.WEST, PaintingVariants.GRAHAM),
+            new PaintingSpec(7, 4, 24, Direction.NORTH, HousePaintings.SCHOLAR_AT_DESK),
+            // Principal bedroom: formal, but not necessarily reassuring.
+            new PaintingSpec(10, 8, 8, Direction.NORTH, HousePaintings.ARCHITECTURAL_STUDY),
+            new PaintingSpec(12, 8, 5, Direction.WEST, HousePaintings.CHILD_PORTRAIT),
             // Literary bedroom.
-            new PaintingSpec(4, 9, 14, Direction.NORTH, PaintingVariants.MEDITATIVE),
+            new PaintingSpec(4, 9, 14, Direction.NORTH, HousePaintings.PRESSED_FERN),
             // Upper hall.
-            new PaintingSpec(14, 8, 8, Direction.EAST, PaintingVariants.WANDERER),
-            new PaintingSpec(16, 8, 18, Direction.WEST, PaintingVariants.PRAIRIE_RIDE),
+            new PaintingSpec(14, 8, 8, Direction.EAST, HousePaintings.OLD_MAN_PORTRAIT),
+            new PaintingSpec(16, 8, 18, Direction.WEST, HousePaintings.UNKNOWN_WOMAN_PORTRAIT),
             // Maker loft.
-            new PaintingSpec(18, 8, 9, Direction.EAST, PaintingVariants.KEBAB),
+            new PaintingSpec(18, 8, 9, Direction.EAST, HousePaintings.BRASS_CLOCK),
             // Long gallery.
-            new PaintingSpec(4, 8, 16, Direction.SOUTH, PaintingVariants.HUMBLE),
-            new PaintingSpec(9, 8, 16, Direction.SOUTH, PaintingVariants.STAGE),
-            new PaintingSpec(6, 8, 25, Direction.NORTH, PaintingVariants.SUNSET),
-            new PaintingSpec(10, 8, 25, Direction.NORTH, PaintingVariants.COURBET)
+            new PaintingSpec(4, 8, 16, Direction.SOUTH, HousePaintings.HOUSE_DRAWING),
+            new PaintingSpec(9, 8, 16, Direction.SOUTH, HousePaintings.EMPTY_CHAIR),
+            new PaintingSpec(6, 8, 25, Direction.NORTH, HousePaintings.WINTER_ROAD),
+            new PaintingSpec(10, 8, 25, Direction.NORTH, HousePaintings.THE_YARD)
     );
 
     private HouseInteriors() {
