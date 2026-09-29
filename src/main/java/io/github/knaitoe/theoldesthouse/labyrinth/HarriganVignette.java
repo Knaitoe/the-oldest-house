@@ -1148,13 +1148,13 @@ public final class HarriganVignette {
     }
 
     private static void clearTagged(ServerLevel level, AABB area, String tag) {
-        for (Entity entity : level.getEntities(null, area, e -> e.getTags().contains(tag))) {
+        for (Entity entity : level.getEntities((Entity) null, area, e -> e.getTags().contains(tag))) {
             entity.discard();
         }
     }
 
     private static void clearPropRole(ServerLevel level, AABB area, String role) {
-        for (Entity entity : level.getEntities(null, area, e -> e.getTags().contains(PROP_TAG + "_" + role))) {
+        for (Entity entity : level.getEntities((Entity) null, area, e -> e.getTags().contains(PROP_TAG + "_" + role))) {
             entity.discard();
         }
     }
