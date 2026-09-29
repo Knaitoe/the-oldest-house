@@ -245,6 +245,12 @@ On the server a pending transition is now an explicit state machine (`HouseTrans
 
 The room between rooms decides by planes, not distances (`HouseBetweenRoom.Crossing`). Along the door's normal (x) it keeps the room's inside, between the two door blocks' room-side faces, and an exit plane on each side far enough out that a player put back in the manor stands clear of the real door's panel. Each tick the segment from last tick's x to this tick's is tested against the planes, so nothing fast can skip one. Having crossed into the inside, crossing either exit plane returns the player on that side (the other side from the one they came in by is a traversal). Not having been in, they are returned on their own side once past its exit plane and a full 0.75 block further out along the normal than the closest they came, or more than six blocks from the door, or off the floor. Strafing along the wall never counts, and in a doorway nothing happens at all.
 
+## Outdated layouts
+
+`HouseSavedData` records the layout version the House was generated with. Every mechanism starts from `houseOrigin()` and stands down when it is null, so that method returns null for a House whose layout differs from the build's (`isOutdated()`). The mechanisms covered are crossings, the proxy mirror and entity mirror, the mornings, the room between rooms, the hallway, the labyrinth and the sound bridge. An outdated House goes quiet as a whole rather than acting on blocks that no longer mean what the code assumes. It is only an ordinary building. `housePosition()` still reports where it stands, for status and reset.
+
+Players found in any of the mod's dimensions while it is outdated are sent through the transition machinery to the Overworld spawn: nothing in there can be trusted to line up with the Overworld any more. Operators are told once at login. `/oldesthouse reset` followed by a respawn is the way back; a migration can replace that when the layouts stop changing.
+
 
 ## Persistent client transition context
 

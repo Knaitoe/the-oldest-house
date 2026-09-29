@@ -21,12 +21,12 @@ import net.neoforged.neoforge.event.PlayLevelSoundEvent;
  *
  * Only mundane/domestic space participates. Nothing from the impossible hall,
  * the room between rooms, vignettes or deeper labyrinth can leak into the
- * Overworld facade.
+ * Overworld facade, and nothing from the Overworld reaches them. Its reach
+ * is the visual mirror's own shared region
+ * ({@link HouseDimensionMirror#isSharedPosition}), so what can be seen across
+ * the seam and what can be heard across it are always the same place.
  */
 public final class HouseSoundBridge {
-    /** Matches the visible domestic/exterior mirror radius. */
-    public static final int SOUND_RADIUS = HouseDimensionMirror.VIEW_RADIUS;
-
     private static final ThreadLocal<Boolean> REPLAYING =
             ThreadLocal.withInitial(() -> Boolean.FALSE);
 

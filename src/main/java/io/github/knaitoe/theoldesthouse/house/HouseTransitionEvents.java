@@ -24,6 +24,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
@@ -54,6 +55,10 @@ public final class HouseTransitionEvents {
         }
 
         HouseSavedData data = HouseSavedData.get(player.getServer());
+        if (data.isOutdated() && HouseDimensions.isHouseDimension(player.serverLevel().dimension())) {
+            leaveOutdatedHouse(player);
+            return;
+        }
         BlockPos origin = data.houseOrigin();
         if (!data.isSpawned() || origin == null) {
             return;
@@ -232,6 +237,23 @@ public final class HouseTransitionEvents {
         if (!player.hasDisconnected()) {
             PacketDistributor.sendToPlayer(player, new HouseTransitionCancelPayload(pending.token));
         }
+    }
+
+    /**
+     * Someone inside a House whose layout this build no longer understands
+     * (see {@link HouseSavedData#houseOrigin()}): nothing in there works any
+     * more, and nowhere in it can be trusted to match the Overworld, so they
+     * are taken back to the Overworld's spawn, on the ground.
+     */
+    private static void leaveOutdatedHouse(ServerPlayer player) {
+        if (PENDING.containsKey(player.getUUID())) {
+            return;
+        }
+        ServerLevel overworld = player.getServer().overworld();
+        BlockPos spawn = overworld.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, overworld.getSharedSpawnPos());
+        TheOldestHouse.LOGGER.warn("{} was inside The Oldest House, whose layout is outdated; returning them to the Overworld spawn.",
+                player.getGameProfile().getName());
+        beginDoorTransition(player, Level.OVERWORLD, null, null, Vec3.atBottomCenterOf(spawn), player.getYRot());
     }
 
     /**

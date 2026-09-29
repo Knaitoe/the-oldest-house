@@ -171,14 +171,33 @@ public final class HouseSavedData extends SavedData {
         return visitCount;
     }
 
+    /**
+     * Where the House stands, whatever layout it was generated with: for
+     * reporting, resetting and respawning. Everything that drives the House
+     * uses {@link #houseOrigin()} instead.
+     */
     public Optional<BlockPos> housePosition() {
         return Optional.ofNullable(cachedHouseOrigin);
     }
 
-    /** The House origin without allocation, or null before it has spawned. */
+    /**
+     * The origin of the House as a working thing, without allocation: null
+     * before it has spawned, and null while it stands in a layout older than
+     * this build's ({@link #isCurrentLayout()}). Every mechanism (crossings,
+     * mirroring, the mornings, the room between rooms, the hallway, the
+     * labyrinth, the sound bridge) starts from this and stands down on null,
+     * so a House whose coordinates this build no longer understands goes
+     * quiet as a whole rather than acting on the wrong blocks. It is then
+     * only an ordinary building until it is reset and respawned.
+     */
     @Nullable
     public BlockPos houseOrigin() {
-        return cachedHouseOrigin;
+        return layoutVersion == HouseLayout.LAYOUT_VERSION ? cachedHouseOrigin : null;
+    }
+
+    /** Spawned, but in a layout this build cannot drive: the House has gone quiet. */
+    public boolean isOutdated() {
+        return spawned && layoutVersion != HouseLayout.LAYOUT_VERSION;
     }
 
     /** Architecture version the spawned House was generated with. */

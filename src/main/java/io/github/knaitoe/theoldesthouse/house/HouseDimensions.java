@@ -34,4 +34,9 @@ public final class HouseDimensions {
 
     private HouseDimensions() {
     }
+
+    /** Any of the mod's own dimensions: somewhere only the House leads to, and only the House leads back from. */
+    public static boolean isHouseDimension(ResourceKey<Level> dimension) {
+        return dimension.equals(INTERIOR) || dimension.equals(OUTSIDE) || dimension.equals(BETWEEN);
+    }
 }

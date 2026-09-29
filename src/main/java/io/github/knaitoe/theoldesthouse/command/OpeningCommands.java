@@ -192,7 +192,7 @@ public final class OpeningCommands {
     private static int house(CommandSourceStack source, ServerPlayer player) {
         HouseSavedData data = HouseSavedData.get(source.getServer());
         if (data.isSpawned()) {
-            BlockPos origin = data.houseOrigin();
+            BlockPos origin = data.housePosition().orElse(null);
             source.sendSuccess(() -> Component.literal("The Oldest House already stands at "
                     + (origin == null ? "an unknown position" : format(origin)) + "."), false);
             return 1;
