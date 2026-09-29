@@ -21,7 +21,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -605,14 +604,10 @@ public final class HouseBetweenRoom {
     }
 
     /**
-     * By {@code (dx, dy, 0)}, sent to the client as a relative move so
-     * nothing about where they stand, look or are moving changes. The
-     * server's teleport takes the absolute destination; the relative flags
-     * only shape the packet.
+     * By {@code (dx, dy, 0)} using the shared seamless-House teleporter.
      */
     private static void shift(ServerPlayer player, int dx, int dy) {
-        player.connection.teleport(player.getX() + dx, player.getY() + dy, player.getZ(),
-                player.getYRot(), player.getXRot(), RelativeMovement.ALL);
+        HouseInternalTeleport.translate(player, dx, dy, 0.0D);
     }
 
     /** Players left in the old separate dimension by an earlier version are brought back to the hall. */
