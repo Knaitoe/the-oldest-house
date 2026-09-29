@@ -259,7 +259,19 @@ public final class LabyrinthDoors {
         setDoorOpen(player.serverLevel(), entry.lower, false, null);
         LabyrinthData.Waypoint back = data.popReturn(id);
         if (back == null) {
-            // Nowhere remembered (a relog): into the room instead.
+            // A missing return stack must never strand the player in the gray
+            // once the House has a real labyrinth entrance. The impossible
+            // hallway is the stable root of the graph and is always a safer
+            // recovery point than silently putting them back inside this room.
+            LabyrinthData.Waypoint root = hallwayReturn(data);
+            if (root != null) {
+                travelAbsolute(player, root);
+                playTo(player, SoundEvents.WOODEN_DOOR_CLOSE, root.pos(), 0.9F, 0.9F);
+                return;
+            }
+
+            // Before the hallway exists there is genuinely nowhere else to
+            // recover to, so keep the old local fallback.
             Direction toRoom = entry.facing.getOpposite();
             Vec3 in = Vec3.atBottomCenterOf(entry.lower.relative(toRoom, 2));
             shift(player, in, toRoom.toYRot());
@@ -277,6 +289,20 @@ public final class LabyrinthDoors {
         Rotation turn = rotationFrom(fromFacing, entry.facing);
         Vec3 target = shifted(player.position(), entry.lower, from, inverse(turn));
         float yaw = player.getYRot() - angle(turn);
+
+        LabyrinthData.Door hallway = data.door("hallway_end");
+        if (hallway != null
+                && back.dimension().equals(hallway.dimension)
+                && from.equals(hallway.lower)) {
+            // The generic inverse transform can put a slow/diagonal crossing
+            // only a few hundredths of a block past the impossible hallway's
+            // valid-volume boundary. Clamp the root return comfortably onto
+            // the hallway side while keeping the player's lateral offset and
+            // view. Otherwise the next House tick may mistake the player for
+            // having stepped outside and eject them to the Overworld.
+            target = safeHallwaySide(target, hallway);
+        }
+
         ServerLevel to = player.server.getLevel(back.dimension());
         if (to == null) {
             return;
@@ -288,6 +314,45 @@ public final class LabyrinthDoors {
         }
         // The door they came through has shut behind them.
         playTo(player, SoundEvents.WOODEN_DOOR_CLOSE, Vec3.atCenterOf(from), 0.9F, 0.9F);
+    }
+
+    /**
+     * Stable recovery point for the labyrinth graph: safely inside the
+     * impossible hallway, one and a half blocks in front of its far door.
+     */
+    @Nullable
+    public static LabyrinthData.Waypoint hallwayReturn(LabyrinthData data) {
+        LabyrinthData.Door hallway = data.door("hallway_end");
+        if (hallway == null) {
+            return null;
+        }
+        Vec3 centre = Vec3.atBottomCenterOf(hallway.lower);
+        Vec3 safe = centre.add(
+                hallway.facing.getStepX() * 1.5D,
+                0.0D,
+                hallway.facing.getStepZ() * 1.5D
+        );
+        return new LabyrinthData.Waypoint(
+                hallway.dimension,
+                safe,
+                hallway.facing.toYRot(),
+                false
+        );
+    }
+
+    private static Vec3 safeHallwaySide(Vec3 target, LabyrinthData.Door hallway) {
+        Vec3 centre = Vec3.atBottomCenterOf(hallway.lower);
+        Vec3 delta = target.subtract(centre);
+        double along = delta.x * hallway.facing.getStepX() + delta.z * hallway.facing.getStepZ();
+        if (along >= 1.0D) {
+            return target;
+        }
+        double push = 1.0D - along;
+        return target.add(
+                hallway.facing.getStepX() * push,
+                0.0D,
+                hallway.facing.getStepZ() * push
+        );
     }
 
     /**
