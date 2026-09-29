@@ -163,6 +163,23 @@ public final class LabyrinthTests {
         helper.assertTrue(first.equals(data.popReturn(player)), "then the one before");
         helper.assertTrue(data.popReturn(player) == null, "then nowhere remembered");
 
+        // The hallway is the graph's recovery root. A lost/stale return stack
+        // must still have an unambiguous way back into the House proper.
+        BlockPos hallwayDoor = new BlockPos(100_015, 65, 100_083);
+        data.putDoor(new LabyrinthData.Door(
+                "hallway_end",
+                HouseDimensions.INTERIOR,
+                hallwayDoor,
+                Direction.NORTH,
+                LabyrinthData.toPlace(LabyrinthPlace.JUNCTION),
+                false
+        ));
+        LabyrinthData.Waypoint root = LabyrinthDoors.hallwayReturn(data);
+        helper.assertTrue(root != null, "the hallway should provide a return root");
+        helper.assertTrue(root.dimension().equals(HouseDimensions.INTERIOR), "the return root is not in the House");
+        helper.assertTrue(root.pos().z < hallwayDoor.getZ() - 0.25D,
+                "the return root is not safely on the hallway side of the far door: " + root.pos());
+
         BlockPos origin = new BlockPos(100_000, 64, 100_000);
         BlockPos junction = LabyrinthPlaces.base(origin, LabyrinthPlace.JUNCTION);
         helper.assertTrue(junction != null && HouseLabyrinth.isBeyondThreshold(origin, junction.offset(0, 1, -4)),
