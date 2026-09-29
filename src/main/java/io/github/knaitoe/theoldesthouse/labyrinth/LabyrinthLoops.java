@@ -25,6 +25,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.GlazedTerracottaBlock;
 import net.minecraft.world.level.block.LanternBlock;
 import net.minecraft.world.level.block.SlabBlock;
@@ -406,18 +407,27 @@ public final class LabyrinthLoops {
     // ------------------------------------------------------------------
     // Placing things
 
-    /** Blocks may be placed in the hallways' open cells (they are gone on the next pass), nowhere else in the stack. */
-    public static boolean allowsPlacing(Level level, BlockPos pos) {
+    /**
+     * Blocks may be placed in the hallways' open cells (they are gone on the
+     * next pass) and, in the spiral, anything that falls may be set over the
+     * well (it never lands). Nowhere else in the stack.
+     */
+    public static boolean allowsPlacing(Level level, BlockPos pos, BlockState placed) {
         if (!level.dimension().equals(HouseDimensions.INTERIOR) || level.getServer() == null) {
             return false;
         }
         BlockPos origin = HouseSavedData.get(level.getServer()).houseOrigin();
         LabyrinthPlace place = origin == null ? null : LabyrinthPlaces.placeAt(origin, pos);
-        if (place != LabyrinthPlace.LONG_HALLWAY && place != LabyrinthPlace.HOTEL_HALLWAY) {
+        BlockPos base = place == null ? null : LabyrinthPlaces.base(origin, place);
+        if (base == null) {
             return false;
         }
-        BlockPos base = LabyrinthPlaces.base(origin, place);
-        return base != null && isHallwayInterior(place, pos.subtract(base));
+        BlockPos rel = pos.subtract(base);
+        if (place == LabyrinthPlace.SPIRAL_STAIR) {
+            return placed.getBlock() instanceof FallingBlock && rel.getX() == WELL.getX() && rel.getZ() == WELL.getZ()
+                    && rel.getY() >= 0 && rel.getY() <= TURN * SPIRAL_TURNS + 1;
+        }
+        return (place == LabyrinthPlace.LONG_HALLWAY || place == LabyrinthPlace.HOTEL_HALLWAY) && isHallwayInterior(place, rel);
     }
 
     public static void forget(UUID player) {

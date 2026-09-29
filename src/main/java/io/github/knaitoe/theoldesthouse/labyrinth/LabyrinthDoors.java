@@ -660,7 +660,7 @@ public final class LabyrinthDoors {
 
     public static void onPlace(BlockEvent.EntityPlaceEvent event) {
         if (event.getLevel() instanceof ServerLevel level && isProtected(level, event.getPos())
-                && !LabyrinthLoops.allowsPlacing(level, event.getPos())) {
+                && !LabyrinthLoops.allowsPlacing(level, event.getPos(), event.getPlacedBlock())) {
             event.setCanceled(true);
         }
     }
