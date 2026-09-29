@@ -101,7 +101,8 @@ public final class LabyrinthTests {
                 if (LabyrinthData.DEALT.equals(door.destination)) {
                     helper.assertTrue(door.dealt != null && !door.dealt.equals(LabyrinthPlace.JUNCTION.id()),
                             "a junction door was dealt back to the junction, or not at all");
-                    if (TellTaleFloorboards.ID.equals(door.dealt)) {
+                    LabyrinthPlace dealtPlace = LabyrinthPlace.byId(door.dealt);
+                    if (dealtPlace != null && dealtPlace.isVignette()) {
                         vignettes++;
                         helper.assertTrue(door.leak, "a vignette door should leak");
                     }
@@ -126,7 +127,8 @@ public final class LabyrinthTests {
             LabyrinthDealer.dealPlace(data, LabyrinthPlace.JUNCTION, random);
             for (LabyrinthPlace.DoorSpec spec : LabyrinthPlace.JUNCTION.doors()) {
                 LabyrinthData.Door door = data.door(LabyrinthPlace.JUNCTION.doorId(spec));
-                helper.assertTrue(!TellTaleFloorboards.ID.equals(door.dealt), "a finished one-shot was dealt again");
+                LabyrinthPlace dealtPlace = LabyrinthPlace.byId(door.dealt);
+                helper.assertTrue(dealtPlace == null || !dealtPlace.isOneShot(), "a finished one-shot was dealt again");
             }
         }
         helper.succeed();
