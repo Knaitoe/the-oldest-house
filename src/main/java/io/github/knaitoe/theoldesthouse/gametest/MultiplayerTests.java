@@ -5,8 +5,6 @@ import io.github.knaitoe.theoldesthouse.house.HouseBetweenRoom;
 import io.github.knaitoe.theoldesthouse.house.HouseBetweenRoom.Side;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents;
-import io.github.knaitoe.theoldesthouse.network.HousePackets;
-import io.github.knaitoe.theoldesthouse.network.HouseTransitionCancelPayload;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,11 +18,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * Several real players at once. Fake players are never ticked and cannot
@@ -38,6 +34,14 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * go to the Nether (the transition machinery does not care where it goes),
  * and the room between rooms is built at an out-of-the-way spot in the test
  * level with its own House data, never the shared House.
+ *
+ * What a mock player is, as probed on this NeoForge: it is in the player list
+ * and its level, and the server ticks it as an entity, but it never fires
+ * PlayerTickEvent (that comes from the connection's tick, which a mock
+ * connection does not get), so tests fire the mod's player tick themselves.
+ * Its connection never negotiated the mod's channel, so any payload sent to
+ * it straight through PacketDistributor throws; everything goes through
+ * HousePackets, which skips it.
  */
 @GameTestHolder(TheOldestHouse.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -81,7 +85,7 @@ public final class MultiplayerTests {
     // ------------------------------------------------------------------
     // Crossings
 
-    @GameTest(template = "empty", batch = BATCH, required = false)
+    @GameTest(template = "empty", batch = BATCH)
     public static void twoPlayersCrossAtTheSameTime(GameTestHelper helper) {
         ServerLevel overworld = helper.getLevel();
         ServerLevel nether = overworld.getServer().getLevel(Level.NETHER);
@@ -116,7 +120,7 @@ public final class MultiplayerTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty", batch = BATCH, required = false)
+    @GameTest(template = "empty", batch = BATCH)
     public static void aDisconnectMidCrossingLeavesTheOtherAlone(GameTestHelper helper) {
         ServerLevel overworld = helper.getLevel();
         ServerLevel nether = overworld.getServer().getLevel(Level.NETHER);
@@ -143,7 +147,7 @@ public final class MultiplayerTests {
     // ------------------------------------------------------------------
     // The room between rooms, with two people in it
 
-    @GameTest(template = "empty", batch = BATCH, required = false, timeoutTicks = 200)
+    @GameTest(template = "empty", batch = BATCH, timeoutTicks = 200)
     public static void backingOutNeverShutsTheRoomOnSomeoneElse(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos origin = helper.absolutePos(BlockPos.ZERO).offset(700, 2, -400);
@@ -189,70 +193,5 @@ public final class MultiplayerTests {
         remove(inside);
         remove(backsOut);
         helper.succeed();
-    }
-
-    // ------------------------------------------------------------------
-
-    /**
-     * Not a test of the mod: a probe of what a mock player can do in this
-     * NeoForge (whether it takes our payloads, is ticked by the server, can
-     * change dimension). It reports in the log (OTH-PROBE lines) and never
-     * fails the build.
-     */
-    @GameTest(template = "empty", batch = BATCH, required = false, timeoutTicks = 200)
-    public static void probeMockPlayers(GameTestHelper helper) {
-        ServerLevel level = helper.getLevel();
-        MinecraftServer server = level.getServer();
-        List<String> notes = new ArrayList<>();
-        ServerPlayer created;
-        try {
-            created = mock(helper);
-        } catch (Throwable t) {
-            TheOldestHouse.LOGGER.error("OTH-PROBE|create=failed", t);
-            helper.fail("a mock player could not be created: " + t);
-            return;
-        }
-        final ServerPlayer player = created;
-        notes.add("create=ok");
-        notes.add("player=" + player.getClass().getName());
-        notes.add("connection=" + player.connection.getClass().getName());
-        notes.add("inPlayerList=" + server.getPlayerList().getPlayers().contains(player));
-        notes.add("inLevel=" + level.players().contains(player));
-        HouseTransitionCancelPayload payload = new HouseTransitionCancelPayload(-1);
-        notes.add("canReceive=" + HousePackets.canReceive(player, payload));
-        try {
-            PacketDistributor.sendToPlayer(player, payload);
-            notes.add("rawCustomPayload=ok");
-        } catch (Throwable t) {
-            notes.add("rawCustomPayload=" + t);
-        }
-
-        AtomicInteger tickEvents = new AtomicInteger();
-        NeoForge.EVENT_BUS.addListener((PlayerTickEvent.Post event) -> {
-            if (event.getEntity() == player) {
-                tickEvents.incrementAndGet();
-            }
-        });
-        int startTickCount = player.tickCount;
-
-        helper.runAfterDelay(10, () -> {
-            notes.add("serverTicked10: tickCount+" + (player.tickCount - startTickCount) + " tickEvents=" + tickEvents.get());
-            int before = tickEvents.get();
-            try {
-                for (int i = 0; i < 3; i++) {
-                    player.doTick();
-                }
-                notes.add("manualDoTick3: tickEvents+" + (tickEvents.get() - before));
-            } catch (Throwable t) {
-                notes.add("manualDoTick=" + t);
-                TheOldestHouse.LOGGER.error("OTH-PROBE|doTick", t);
-            }
-            remove(player);
-            notes.add("removed, stillListed=" + server.getPlayerList().getPlayers().contains(player));
-            for (String note : notes) {
-                TheOldestHouse.LOGGER.info("OTH-PROBE|{}", note);
-            }
-            helper.succeed();
-        });
     }
 }
