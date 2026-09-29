@@ -118,6 +118,12 @@ public final class LabyrinthDoors {
         MinecraftServer server = player.server;
         LabyrinthData data = LabyrinthData.get(server);
 
+        if (LabyrinthData.LOCKED.equals(door.destination)) {
+            // Somebody's room. It rattles in its frame and stays shut.
+            player.serverLevel().playSound(null, door.lower, SoundEvents.WOODEN_TRAPDOOR_CLOSE, SoundSource.BLOCKS, 0.5F, 0.6F);
+            locked(player);
+            return;
+        }
         if (LabyrinthData.RETURN.equals(door.destination) || LabyrinthData.HALLWAY_OR_RETURN.equals(door.destination)) {
             // An entry door, from inside: it just opens. Walking back out
             // through it is what takes the player back.
@@ -222,6 +228,12 @@ public final class LabyrinthDoors {
             INSIDE.add(id);
             if (into >= SHUT_BEHIND) {
                 setDoorOpen(player.serverLevel(), entry.lower, false, player);
+            }
+            if (LabyrinthLoops.isLoop(place)) {
+                BlockPos base = LabyrinthPlaces.base(origin, place);
+                if (base != null) {
+                    LabyrinthLoops.tick(player, place, base);
+                }
             }
             return true;
         }
@@ -641,7 +653,8 @@ public final class LabyrinthDoors {
     }
 
     public static void onPlace(BlockEvent.EntityPlaceEvent event) {
-        if (event.getLevel() instanceof ServerLevel level && isProtected(level, event.getPos())) {
+        if (event.getLevel() instanceof ServerLevel level && isProtected(level, event.getPos())
+                && !LabyrinthLoops.allowsPlacing(level, event.getPos())) {
             event.setCanceled(true);
         }
     }
@@ -682,11 +695,13 @@ public final class LabyrinthDoors {
     public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         FADING.remove(event.getEntity().getUUID());
         INSIDE.remove(event.getEntity().getUUID());
+        LabyrinthLoops.forget(event.getEntity().getUUID());
     }
 
     public static void clearAll() {
         FADING.clear();
         INSIDE.clear();
+        LabyrinthLoops.clearAll();
         LabyrinthBuilder.clearAll();
     }
 
@@ -716,6 +731,10 @@ public final class LabyrinthDoors {
         }
         if (viewer != null) {
             lines.add("Your way back: " + data.returnDepth(viewer.getUUID()) + " door(s) deep.");
+            String loop = LabyrinthLoops.describe(viewer.getUUID(), viewer.serverLevel().getGameTime());
+            if (loop != null) {
+                lines.add(loop);
+            }
         }
         lines.addAll(RedRoom.describe(server, viewer));
         return lines;
