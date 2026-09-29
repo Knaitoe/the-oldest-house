@@ -774,3 +774,18 @@ Nine ideas were cut or replaced along the way; each one's job is either covered 
 | Notes appearing in a brand-new world | Replaced by the chest turning up later in the same world |
 | Checking behind you with F5 | Replaced by forced first person and involuntary out-of-body moments |
 | Budget stand-ins (retextured phantom, hooded shore NPC) | Assets aren't a constraint |
+
+
+## Authored writing and document styles
+
+The House uses one writing pipeline rather than treating every note as an unrelated book.
+
+- **Will Navidson** uses the stable `the_oldest_house:navidson` font id. That id now points at the authored Will bitmap atlas, so existing resource packs that already override Navidson's hand remain compatible.
+- **Karen Green** has a separate, looser handwritten atlas.
+- **Zampano** uses a compact typewritten atlas. Components may mix normal text, strike-through corrections and bracketed marginal notes on the same page.
+- **Child writing** uses a deliberately uneven bitmap atlas with small baseline/angle variation.
+- Anonymous evidence can still request `PLAIN` and receive Minecraft's normal font.
+
+`/oldesthouse writing samples` gives the executing player one readable sample of each authored style. An optional player argument gives the set to another player.
+
+The writing layer intentionally uses Minecraft's normal book/text renderer and ordinary opaque bitmap font providers. It does not use emissive text, custom framebuffers, translucent world-space page quads, post-processing, or shader hooks. This keeps the evidence readable with common shader loaders while still allowing resource packs to replace any font atlas normally.

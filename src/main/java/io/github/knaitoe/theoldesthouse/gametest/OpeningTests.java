@@ -9,6 +9,7 @@ import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
 import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import io.github.knaitoe.theoldesthouse.house.HouseProxyEntityEvacuation;
 import io.github.knaitoe.theoldesthouse.house.HouseSpawnManager;
+import io.github.knaitoe.theoldesthouse.house.HouseWriting;
 import io.github.knaitoe.theoldesthouse.opening.DeliveredItemEntity;
 import io.github.knaitoe.theoldesthouse.opening.Doorsteps;
 import io.github.knaitoe.theoldesthouse.opening.Hillary;
@@ -27,6 +28,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -75,6 +77,35 @@ public final class OpeningTests {
 
     // ------------------------------------------------------------------
     // The letter
+
+    @GameTest(template = "empty")
+    public static void writingSamplesCarryTheirOwnFonts(GameTestHelper helper) {
+        List<ItemStack> samples = HouseWriting.samples();
+        List<ResourceLocation> fonts = HouseWriting.sampleFonts();
+        helper.assertTrue(samples.size() == 4 && fonts.size() == 4, "expected four writing specimens");
+        helper.assertTrue(fonts.stream().distinct().count() == 4, "the writing styles must use distinct font ids");
+        helper.assertTrue(NavidsonLetter.FONT.equals(HouseWriting.WILL_FONT), "Navidson's established font id changed");
+
+        for (int i = 0; i < samples.size(); i++) {
+            WrittenBookContent content = samples.get(i).get(DataComponents.WRITTEN_BOOK_CONTENT);
+            helper.assertTrue(content != null && !content.pages().isEmpty(), "writing sample " + i + " is not readable");
+            helper.assertTrue(usesFont(content.pages().getFirst().raw(), fonts.get(i)),
+                    "writing sample " + i + " does not use " + fonts.get(i));
+        }
+        helper.succeed();
+    }
+
+    private static boolean usesFont(Component component, ResourceLocation font) {
+        if (font.equals(component.getStyle().getFont())) {
+            return true;
+        }
+        for (Component child : component.getSiblings()) {
+            if (usesFont(child, font)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     @GameTest(template = "empty")
     public static void letterPagesFit(GameTestHelper helper) {

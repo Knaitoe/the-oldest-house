@@ -4,20 +4,19 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseBlocks;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
+import io.github.knaitoe.theoldesthouse.house.HouseWriting;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.Filterable;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -30,8 +29,6 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -336,17 +333,17 @@ public final class TellTaleFloorboards {
     }
 
     public static ItemStack caregiversNote() {
-        List<Filterable<Component>> pages = List.of(
-                Filterable.passThrough(Component.literal(
+        ItemStack book = HouseWriting.book(
+                "Kept by his bed",
+                "his caregiver",
+                HouseWriting.WritingStyle.PLAIN,
+                List.of(
                         "He says the eye is fine. He says it the way you say a door is locked.\n\n"
-                                + "I sit with him until he sleeps. I only look to see that he is breathing.")),
-                Filterable.passThrough(Component.literal(
+                                + "I sit with him until he sleeps. I only look to see that he is breathing.",
                         "Tonight I heard it through the floor, under his bed, under my feet. Slow, like his.\n\n"
-                                + "He was already asleep.\n\nI am taking the board up to show him there is nothing there."))
+                                + "He was already asleep.\n\nI am taking the board up to show him there is nothing there."
+                )
         );
-        ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
-        book.set(DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(
-                Filterable.passThrough("Kept by his bed"), "his caregiver", 0, pages, true));
         return VignetteYields.mark(book, ID);
     }
 }
