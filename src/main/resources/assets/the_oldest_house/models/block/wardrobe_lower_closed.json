@@ -1,0 +1,43 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "the_oldest_house:block/wardrobe_side",
+    "side": "the_oldest_house:block/wardrobe_side",
+    "top": "the_oldest_house:block/wardrobe_top",
+    "front": "the_oldest_house:block/wardrobe_front_lower"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        2
+      ],
+      "to": [
+        15,
+        16,
+        15
+      ],
+      "faces": {
+        "down": {
+          "texture": "#top"
+        },
+        "up": {
+          "texture": "#top"
+        },
+        "north": {
+          "texture": "#front"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        }
+      }
+    }
+  ]
+}

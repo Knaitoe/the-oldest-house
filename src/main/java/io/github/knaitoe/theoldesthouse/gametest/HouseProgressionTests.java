@@ -187,7 +187,7 @@ public final class HouseProgressionTests {
                 for (int z = rug.z0(); z <= rug.z1(); z++) {
                     // Carpet needs something under it, or its neighbours' updates pop it off.
                     level.setBlock(origin.offset(x, rug.y() - 1, z), Blocks.OAK_PLANKS.defaultBlockState(), Block.UPDATE_CLIENTS);
-                    level.setBlock(origin.offset(x, rug.y(), z), rug.authored().defaultBlockState(), Block.UPDATE_CLIENTS);
+                    level.setBlock(origin.offset(x, rug.y(), z), rug.authoredBlock().defaultBlockState(), Block.UPDATE_CLIENTS);
                 }
             }
         }
@@ -199,14 +199,14 @@ public final class HouseProgressionTests {
 
         helper.assertTrue(level.getBlockState(players).is(Blocks.YELLOW_CARPET), "a player's carpet should stay as it is");
         for (HouseRugs.Rug rug : HouseRugs.SHIFTING) {
-            helper.assertTrue(rug.authored() != rug.shifted(), rug.room() + " should change colour");
+            helper.assertTrue(rug.authoredBlock() != rug.shiftedBlock(), rug.room() + " should change colour");
             BlockPos far = origin.offset(rug.x1(), rug.y(), rug.z1());
-            helper.assertTrue(level.getBlockState(far).is(rug.shifted()),
-                    rug.room() + " should now be " + rug.shifted() + ", was " + level.getBlockState(far));
+            helper.assertTrue(level.getBlockState(far).is(rug.shiftedBlock()),
+                    rug.room() + " should now be " + rug.shiftedBlock() + ", was " + level.getBlockState(far));
         }
-        helper.assertTrue(HouseRugs.GREAT_ROOM.shifted() == HouseRugs.PRINCIPAL_BEDROOM.authored()
-                        && HouseRugs.PRINCIPAL_BEDROOM.shifted() == HouseRugs.GREAT_ROOM.authored(),
-                "the great room and bedroom rugs trade colours");
+        helper.assertTrue(HouseRugs.GREAT_ROOM.shiftedBlock() != HouseRugs.GREAT_ROOM.authoredBlock()
+                        && HouseRugs.PRINCIPAL_BEDROOM.shiftedBlock() != HouseRugs.PRINCIPAL_BEDROOM.authoredBlock(),
+                "each rug keeps its pattern but changes to its paired palette");
         helper.assertTrue(changed > 0, "some carpet should have changed");
         helper.succeed();
     }

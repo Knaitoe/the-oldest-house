@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/carpet",
+  "textures": {
+    "wool": "the_oldest_house:block/principal_rug_authored"
+  }
+}

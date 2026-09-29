@@ -1,6 +1,7 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.house.HouseBlocks;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import java.util.ArrayList;
@@ -98,7 +99,7 @@ public final class TellTaleFloorboards {
         }
 
         level.setBlock(base.offset(LOOSE_BOARD), withBoard
-                ? Blocks.DARK_OAK_PLANKS.defaultBlockState()
+                ? HouseBlocks.LOOSE_FLOORBOARD.get().defaultBlockState()
                 : Blocks.AIR.defaultBlockState(), flags);
 
         // His bed, made; one candle on a barrel; a chair turned towards the bed.
@@ -277,7 +278,7 @@ public final class TellTaleFloorboards {
             return;
         }
         BlockPos board = base.offset(LOOSE_BOARD);
-        if (data.isCompleted(ID) || !level.getBlockState(board).is(Blocks.DARK_OAK_PLANKS)) {
+        if (data.isCompleted(ID) || !level.getBlockState(board).is(HouseBlocks.LOOSE_FLOORBOARD.get())) {
             return;
         }
         level.setBlock(board, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
