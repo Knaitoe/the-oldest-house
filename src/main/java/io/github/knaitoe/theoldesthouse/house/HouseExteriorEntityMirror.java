@@ -51,8 +51,15 @@ public final class HouseExteriorEntityMirror {
     public static final String PROJECTION_TAG = "the_oldest_house.entity_projection";
     private static final String LEGACY_PROJECTION_TAG = "the_oldest_house.exterior_projection";
 
+    /** Discover/create/remove projections at 10 Hz. */
     private static final int SYNC_INTERVAL_TICKS = 2;
+    /** Refresh expensive visible NBT (equipment, variants, collars...) once a second. */
     private static final int STATE_REFRESH_INTERVAL_TICKS = 20;
+    /** Far projections only catch up position twice a second. */
+    private static final int FAR_POSITION_INTERVAL_TICKS = 10;
+    /** Only projections close enough to matter visually receive 20 Hz motion. */
+    public static final double MOTION_RADIUS = 48.0D;
+    private static final double MOTION_RADIUS_SQR = MOTION_RADIUS * MOTION_RADIUS;
     private static final int ENTITY_VIEW_MARGIN = 40;
 
     private static final TicketType<ChunkPos> OVERWORLD_SOURCE_TICKET = TicketType.create(
@@ -106,9 +113,10 @@ public final class HouseExteriorEntityMirror {
 
     public static void onServerTick(ServerTickEvent.Post event) {
         MinecraftServer server = event.getServer();
-        if (server.getTickCount() % SYNC_INTERVAL_TICKS != 0) {
-            return;
-        }
+        int tick = server.getTickCount();
+        boolean discoveryTick = tick % SYNC_INTERVAL_TICKS == 0;
+        boolean refreshState = tick % STATE_REFRESH_INTERVAL_TICKS == 0;
+        boolean refreshFarPosition = tick % FAR_POSITION_INTERVAL_TICKS == 0;
 
         HouseSavedData data = HouseSavedData.get(server);
         BlockPos origin = data.houseOrigin();
@@ -121,23 +129,32 @@ public final class HouseExteriorEntityMirror {
 
         ServerLevel overworld = server.overworld();
         AABB view = viewBounds(origin);
-        boolean refreshState = server.getTickCount() % STATE_REFRESH_INTERVAL_TICKS == 0;
 
         // Inside looking out: real Overworld mobs become projections in the
         // House dimension's mirrored exterior scenery.
         if (hasDomesticObserver(interior, origin)) {
-            ensureOverworldSourceTickets(overworld, origin);
-            scrubInteriorProjectionsIfNeeded(interior, view);
-            removeNativeExteriorMobs(interior, origin, view);
-            syncDirection(
-                    overworld,
-                    interior,
-                    origin,
-                    view,
-                    OVERWORLD_TO_INTERIOR,
-                    mob -> eligibleOverworldExteriorSource(origin, mob),
-                    refreshState
-            );
+            if (discoveryTick) {
+                ensureOverworldSourceTickets(overworld, origin);
+                scrubInteriorProjectionsIfNeeded(interior, view);
+                removeNativeExteriorMobs(interior, origin, view);
+                syncDirection(
+                        overworld,
+                        interior,
+                        origin,
+                        view,
+                        OVERWORLD_TO_INTERIOR,
+                        mob -> eligibleOverworldExteriorSource(origin, mob),
+                        refreshState,
+                        refreshFarPosition
+                );
+            } else {
+                syncNearbyMovement(
+                        overworld,
+                        interior,
+                        OVERWORLD_TO_INTERIOR,
+                        mob -> eligibleOverworldExteriorSource(origin, mob)
+                );
+            }
         } else {
             clearProjectionMap(interior, OVERWORLD_TO_INTERIOR);
             releaseTickets(overworld, OVERWORLD_SOURCE_TICKET, OVERWORLD_TICKETED_CHUNKS);
@@ -146,17 +163,27 @@ public final class HouseExteriorEntityMirror {
         // Outside looking in: real domestic House mobs become projections
         // inside the Overworld proxy shell.
         if (hasOverworldObserver(overworld, origin)) {
-            ensureInteriorSourceTickets(interior, origin);
-            scrubOverworldProjectionsIfNeeded(overworld, view);
-            syncDirection(
-                    interior,
-                    overworld,
-                    origin,
-                    view,
-                    INTERIOR_TO_OVERWORLD,
-                    mob -> eligibleDomesticInteriorSource(origin, mob),
-                    refreshState
-            );
+            if (discoveryTick) {
+                ensureInteriorSourceTickets(interior, origin);
+                scrubOverworldProjectionsIfNeeded(overworld, view);
+                syncDirection(
+                        interior,
+                        overworld,
+                        origin,
+                        view,
+                        INTERIOR_TO_OVERWORLD,
+                        mob -> eligibleDomesticInteriorSource(origin, mob),
+                        refreshState,
+                        refreshFarPosition
+                );
+            } else {
+                syncNearbyMovement(
+                        interior,
+                        overworld,
+                        INTERIOR_TO_OVERWORLD,
+                        mob -> eligibleDomesticInteriorSource(origin, mob)
+                );
+            }
         } else {
             clearProjectionMap(overworld, INTERIOR_TO_OVERWORLD);
             releaseTickets(interior, INTERIOR_SOURCE_TICKET, INTERIOR_TICKETED_CHUNKS);
@@ -178,6 +205,7 @@ public final class HouseExteriorEntityMirror {
                 view,
                 OVERWORLD_TO_INTERIOR,
                 mob -> eligibleOverworldExteriorSource(origin, mob),
+                true,
                 true
         );
     }
@@ -200,6 +228,7 @@ public final class HouseExteriorEntityMirror {
                 view,
                 INTERIOR_TO_OVERWORLD,
                 mob -> eligibleDomesticInteriorSource(origin, mob),
+                true,
                 true
         );
     }
@@ -211,7 +240,8 @@ public final class HouseExteriorEntityMirror {
             AABB view,
             Map<UUID, UUID> projections,
             Predicate<Mob> sourceFilter,
-            boolean refreshState
+            boolean refreshState,
+            boolean refreshFarPosition
     ) {
         Set<UUID> seen = new HashSet<>();
         int visible = 0;
@@ -235,7 +265,9 @@ public final class HouseExteriorEntityMirror {
                 loadVisualState(source, projection);
             }
 
-            positionProjection(source, projection);
+            if (refreshFarPosition || hasNearbyObserver(targetLevel, projection)) {
+                positionProjection(source, projection);
+            }
             visible++;
         }
 
@@ -253,6 +285,49 @@ public final class HouseExteriorEntityMirror {
         }
 
         return visible;
+    }
+
+    /**
+     * On the ticks between discovery passes, only nearby projections move.
+     * This is what makes walking/running/head turns look continuous without
+     * turning the whole mirrored landscape into a 20 Hz entity-copy job.
+     */
+    private static void syncNearbyMovement(
+            ServerLevel sourceLevel,
+            ServerLevel targetLevel,
+            Map<UUID, UUID> projections,
+            Predicate<Mob> sourceFilter
+    ) {
+        Iterator<Map.Entry<UUID, UUID>> iterator = projections.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<UUID, UUID> entry = iterator.next();
+            Entity sourceEntity = sourceLevel.getEntity(entry.getKey());
+            Entity projectionEntity = targetLevel.getEntity(entry.getValue());
+
+            if (!(sourceEntity instanceof Mob source)
+                    || !(projectionEntity instanceof Mob projection)
+                    || projection.getType() != source.getType()
+                    || !sourceFilter.test(source)) {
+                if (projectionEntity != null) {
+                    projectionEntity.discard();
+                }
+                iterator.remove();
+                continue;
+            }
+
+            if (hasNearbyObserver(targetLevel, projection)) {
+                positionProjection(source, projection);
+            }
+        }
+    }
+
+    private static boolean hasNearbyObserver(ServerLevel targetLevel, Entity projection) {
+        for (ServerPlayer player : targetLevel.players()) {
+            if (player.distanceToSqr(projection) <= MOTION_RADIUS_SQR) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean eligibleOverworldExteriorSource(BlockPos origin, Mob mob) {
@@ -390,6 +465,8 @@ public final class HouseExteriorEntityMirror {
                 source.getXRot()
         );
         projection.setYHeadRot(source.getYHeadRot());
+        projection.setYBodyRot(source.yBodyRot);
+        projection.setPose(source.getPose());
         projection.setDeltaMovement(source.getDeltaMovement());
     }
 
