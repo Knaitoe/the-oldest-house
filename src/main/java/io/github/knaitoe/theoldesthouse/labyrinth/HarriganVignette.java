@@ -21,6 +21,8 @@ import net.minecraft.core.Rotations;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -312,10 +314,9 @@ public final class HarriganVignette {
         ItemStack chest = new ItemStack(Items.LEATHER_CHESTPLATE);
         ItemStack legs = new ItemStack(Items.LEATHER_LEGGINGS);
         ItemStack boots = new ItemStack(Items.LEATHER_BOOTS);
-        DyedItemColor dark = new DyedItemColor(0x171719, false);
-        chest.set(DataComponents.DYED_COLOR, dark);
-        legs.set(DataComponents.DYED_COLOR, dark);
-        boots.set(DataComponents.DYED_COLOR, dark);
+        chest.set(DataComponents.DYED_COLOR, new DyedItemColor(0x151419, false));
+        legs.set(DataComponents.DYED_COLOR, new DyedItemColor(0x101014, false));
+        boots.set(DataComponents.DYED_COLOR, new DyedItemColor(0x211915, false));
         entity.setItemSlot(EquipmentSlot.CHEST, chest);
         entity.setItemSlot(EquipmentSlot.LEGS, legs);
         entity.setItemSlot(EquipmentSlot.FEET, boots);
@@ -830,16 +831,7 @@ public final class HarriganVignette {
     }
 
     private static void spawnGhost(ServerLevel level, ServerPlayer target, UUID owner, int mode, @Nullable UUID playerTarget) {
-        Vec3 spot = behind(target, mode == 1 ? 14.0D : 8.0D);
-        BlockPos feet = BlockPos.containing(spot);
-        for (int dy = 3; dy >= -3; dy--) {
-            BlockPos candidate = feet.offset(0, dy, 0);
-            if (level.getBlockState(candidate).isAir() && level.getBlockState(candidate.above()).isAir()
-                    && level.getBlockState(candidate.below()).isCollisionShapeFullBlock(level, candidate.below())) {
-                spot = Vec3.atBottomCenterOf(candidate);
-                break;
-            }
-        }
+        Vec3 spot = mode == 1 ? lightEdgeSpawn(level, target) : standingSpot(level, behind(target, 8.0D));
 
         Zombie ghost = EntityType.ZOMBIE.create(level);
         if (ghost == null) {
@@ -919,6 +911,9 @@ public final class HarriganVignette {
             }
 
             int mode = tag.getInt(GHOST_MODE);
+            if (ghost.tickCount % 18 == 0) {
+                dirtShoulders((ServerLevel) ghost.level(), ghost);
+            }
             if (mode == 1) {
                 ghost.setTarget(null);
                 ghost.getNavigation().stop();
@@ -1163,6 +1158,91 @@ public final class HarriganVignette {
             horizontal = new Vec3(0, 0, 1);
         }
         return player.position().subtract(horizontal.normalize().scale(distance));
+    }
+
+    /**
+     * First warning: put him where a human eye tends to read "the edge of my
+     * light", not simply a fixed distance behind the caller.
+     *
+     * We sample the forward 140-degree field, prefer block-light 2-4, and
+     * mildly prefer 12-16 blocks. Block light is intentional: moonlight and
+     * shader sky light must not shove him into a wall merely because the sky
+     * is bright.
+     */
+    static Vec3 lightEdgeSpawn(ServerLevel level, ServerPlayer player) {
+        Vec3 look = player.getLookAngle();
+        Vec3 forward = new Vec3(look.x, 0.0D, look.z);
+        if (forward.lengthSqr() < 0.001D) {
+            forward = new Vec3(0.0D, 0.0D, 1.0D);
+        }
+        forward = forward.normalize();
+        Vec3 right = new Vec3(-forward.z, 0.0D, forward.x);
+
+        Vec3 best = null;
+        double bestScore = Double.MAX_VALUE;
+        for (int radius = 10; radius <= 18; radius += 2) {
+            for (int step = -7; step <= 7; step++) {
+                double angle = Math.toRadians(step * 10.0D);
+                Vec3 direction = forward.scale(Math.cos(angle)).add(right.scale(Math.sin(angle))).normalize();
+                Vec3 raw = player.position().add(direction.scale(radius));
+                Vec3 candidate = standingSpotOrNull(level, raw);
+                if (candidate == null) {
+                    continue;
+                }
+
+                BlockPos eyes = BlockPos.containing(candidate.x, candidate.y + 1.5D, candidate.z);
+                int blockLight = level.getBrightness(LightLayer.BLOCK, eyes);
+                if (blockLight > 7) {
+                    continue;
+                }
+
+                double lightScore = Math.abs(blockLight - 3) * 4.0D;
+                double radiusScore = Math.abs(radius - 14) * 0.65D;
+                double angleScore = Math.abs(step) * 0.35D;
+                double score = lightScore + radiusScore + angleScore;
+                if (score < bestScore) {
+                    bestScore = score;
+                    best = candidate;
+                }
+            }
+        }
+        return best != null ? best : standingSpot(level, behind(player, 14.0D));
+    }
+
+    private static Vec3 standingSpot(ServerLevel level, Vec3 raw) {
+        Vec3 found = standingSpotOrNull(level, raw);
+        return found != null ? found : raw;
+    }
+
+    @Nullable
+    private static Vec3 standingSpotOrNull(ServerLevel level, Vec3 raw) {
+        BlockPos feet = BlockPos.containing(raw);
+        for (int dy = 3; dy >= -4; dy--) {
+            BlockPos candidate = feet.offset(0, dy, 0);
+            if (level.getBlockState(candidate).isAir()
+                    && level.getBlockState(candidate.above()).isAir()
+                    && level.getBlockState(candidate.below()).isCollisionShapeFullBlock(level, candidate.below())) {
+                return Vec3.atBottomCenterOf(candidate);
+            }
+        }
+        return null;
+    }
+
+    private static void dirtShoulders(ServerLevel level, Zombie ghost) {
+        BlockParticleOption dirt = new BlockParticleOption(ParticleTypes.BLOCK, Blocks.DIRT.defaultBlockState());
+        double y = ghost.getY() + 1.55D;
+        Vec3 right = new Vec3(
+                Math.cos(Math.toRadians(ghost.getYRot())),
+                0.0D,
+                Math.sin(Math.toRadians(ghost.getYRot()))
+        ).scale(0.26D);
+
+        level.sendParticles(dirt,
+                ghost.getX() + right.x, y, ghost.getZ() + right.z,
+                2, 0.05D, 0.04D, 0.05D, 0.005D);
+        level.sendParticles(dirt,
+                ghost.getX() - right.x, y, ghost.getZ() - right.z,
+                2, 0.05D, 0.04D, 0.05D, 0.005D);
     }
 
     private static boolean hasActiveGhost(MinecraftServer server, UUID owner) {
