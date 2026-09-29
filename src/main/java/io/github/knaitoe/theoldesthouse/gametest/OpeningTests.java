@@ -546,7 +546,7 @@ public final class OpeningTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty")
+    @GameTest(template = "empty", timeoutTicks = 100)
     public static void proxyManorEvacuatesNonPlayerMobs(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos origin = helper.absolutePos(new BlockPos(0, 4, 520));
@@ -597,35 +597,45 @@ public final class OpeningTests {
                 "villager did not begin inside the proxy"
         );
 
-        int moved = HouseProxyEntityEvacuation.evacuateAll(level, origin);
-        helper.assertTrue(moved == 2, "expected two mobs evacuated, got " + moved);
+        // Fresh entities enter EntitySectionStorage on the following level
+        // tick. The evacuation code intentionally uses the world's spatial
+        // query, so testing it in the spawn tick is nondeterministic.
+        helper.runAfterDelay(1, () -> {
+            try {
+                int moved = HouseProxyEntityEvacuation.evacuateAll(level, origin);
+                helper.assertTrue(moved == 2, "expected two mobs evacuated, got " + moved);
 
-        for (var mob : List.of(wolf, villager)) {
-            helper.assertTrue(
-                    !HouseLayout.isInsideDomesticVolume(
-                            mob.getX() - origin.getX(),
-                            mob.getY() - origin.getY(),
-                            mob.getZ() - origin.getZ()
-                    ),
-                    mob.getName().getString() + " remained trapped inside the proxy at " + mob.blockPosition()
-            );
+                for (var mob : List.of(wolf, villager)) {
+                    helper.assertTrue(
+                            !HouseLayout.isInsideDomesticVolume(
+                                    mob.getX() - origin.getX(),
+                                    mob.getY() - origin.getY(),
+                                    mob.getZ() - origin.getZ()
+                            ),
+                            mob.getName().getString() + " remained trapped inside the proxy at " + mob.blockPosition()
+                    );
 
-            double nearestDoor = Double.MAX_VALUE;
-            for (HouseLayout.ExteriorDoor door : HouseLayout.EXTERIOR_DOORS) {
-                Vec3 doorCenter = Vec3.atCenterOf(origin.offset(door.x(), door.y(), door.z()));
-                nearestDoor = Math.min(nearestDoor, mob.position().distanceTo(doorCenter));
+                    double nearestDoor = Double.MAX_VALUE;
+                    for (HouseLayout.ExteriorDoor door : HouseLayout.EXTERIOR_DOORS) {
+                        Vec3 doorCenter = Vec3.atCenterOf(origin.offset(door.x(), door.y(), door.z()));
+                        nearestDoor = Math.min(nearestDoor, mob.position().distanceTo(doorCenter));
+                    }
+                    helper.assertTrue(
+                            nearestDoor <= 7.0D,
+                            mob.getName().getString() + " was evacuated out of sight instead of visibly outside: " + mob.blockPosition()
+                    );
+                }
+
+                wolf.discard();
+                villager.discard();
+                helper.succeed();
+            } catch (Throwable failure) {
+                wolf.discard();
+                villager.discard();
+                throw failure;
             }
-            helper.assertTrue(
-                    nearestDoor <= 7.0D,
-                    mob.getName().getString() + " was evacuated out of sight instead of visibly outside: " + mob.blockPosition()
-            );
-        }
-
-        wolf.discard();
-        villager.discard();
-        helper.succeed();
+        });
     }
-
 
     @GameTest(template = "empty", timeoutTicks = 100)
     public static void domesticHouseMobsProjectIntoTheOverworldProxy(GameTestHelper helper) {
