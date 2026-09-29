@@ -5,6 +5,7 @@ import io.github.knaitoe.theoldesthouse.house.HouseCalendar;
 import io.github.knaitoe.theoldesthouse.house.HouseConfig;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
+import io.github.knaitoe.theoldesthouse.house.HouseWatchers;
 import io.github.knaitoe.theoldesthouse.house.HouseWriting;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -121,6 +122,8 @@ public final class HarriganVignette {
     private static final Map<UUID, Integer> LAST_PAGE = new HashMap<>();
     private static final Map<UUID, Long> NEXT_SPEECH = new HashMap<>();
     private static final Map<UUID, Long> WAITING_TEXT = new HashMap<>();
+    /** Caller -> the one active post-vignette Harrigan entity. */
+    private static final Map<UUID, UUID> ACTIVE_GHOSTS = new HashMap<>();
 
     private HarriganVignette() {
     }
@@ -148,8 +151,12 @@ public final class HarriganVignette {
             level.setBlock(base.offset(-6, 1, z), Blocks.BOOKSHELF.defaultBlockState(), flags);
         }
         level.setBlock(base.offset(CHAIR), LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH), flags);
-        level.setBlock(base.offset(SIDE_TABLE), Blocks.DARK_OAK_SLAB.defaultBlockState().setValue(net.minecraft.world.level.block.SlabBlock.TYPE,
-                net.minecraft.world.level.block.state.properties.SlabType.TOP), flags);
+        BlockState table = Blocks.DARK_OAK_SLAB.defaultBlockState().setValue(net.minecraft.world.level.block.SlabBlock.TYPE,
+                net.minecraft.world.level.block.state.properties.SlabType.TOP);
+        level.setBlock(base.offset(SIDE_TABLE), table, flags);
+        level.setBlock(base.offset(SIDE_TABLE).east(), table, flags);
+        level.setBlock(base.offset(SIDE_TABLE).south(), table, flags);
+        level.setBlock(base.offset(SIDE_TABLE).east().south(), table, flags);
         level.setBlock(base.offset(LECTERN), Blocks.LECTERN.defaultBlockState()
                 .setValue(LecternBlock.FACING, Direction.SOUTH)
                 .setValue(LecternBlock.HAS_BOOK, true), flags);
@@ -197,7 +204,11 @@ public final class HarriganVignette {
         BlockPos base = base(player.server);
         ServerLevel interior = player.server.getLevel(HouseDimensions.INTERIOR);
         if (base != null && interior != null) {
-            stage(interior, base, data, visit);
+            boolean someoneElseIsAlreadyHere = interior.getEntitiesOfClass(ServerPlayer.class, placeBounds(base))
+                    .stream().anyMatch(other -> !other.getUUID().equals(player.getUUID()));
+            if (!someoneElseIsAlreadyHere) {
+                stage(interior, base, data, visit);
+            }
         }
         NEXT_SPEECH.put(player.getUUID(), player.serverLevel().getGameTime() + 80L);
         LAST_PAGE.remove(player.getUUID());
@@ -373,7 +384,8 @@ public final class HarriganVignette {
 
     private static void scratchTicket(ServerPlayer player, ItemFrame frame) {
         LabyrinthData data = LabyrinthData.get(player.server);
-        if (!inVignette(player) || visitFor(data) != 1) {
+        CompoundTag state = data.state(ID);
+        if (!inVignette(player) || visitFor(data) != 1 || !state.getBoolean("TicketVisible")) {
             return;
         }
         frame.discard();
@@ -388,7 +400,6 @@ public final class HarriganVignette {
             }
         }
         clearPropRole(player.serverLevel(), placeBounds(base(player.server)), "player_phone");
-        CompoundTag state = data.state(ID);
         state.putBoolean("BeatDone", true);
         state.putBoolean("TicketVisible", false);
         data.setState(ID, state);
@@ -574,7 +585,7 @@ public final class HarriganVignette {
             p.putString("PendingPlayerName", targetName);
             p.putLong("PlayerNightDay", today + (isNight(caller.server) ? 1L : 0L));
             savePlayerState(data, caller.getUUID(), p);
-            acknowledge(caller, p);
+            acknowledge(caller, data, p);
             return;
         }
 
@@ -624,7 +635,7 @@ public final class HarriganVignette {
         p.putLong("HostileBed", caller.getRespawnPosition().asLong());
         p.putLong("HostileDay", today + 1L);
         savePlayerState(data, caller.getUUID(), p);
-        acknowledge(caller, p);
+        acknowledge(caller, data, p);
     }
 
     private static void scheduleFriendly(ServerPlayer caller, LabyrinthData data, CompoundTag p, long today) {
@@ -633,21 +644,22 @@ public final class HarriganVignette {
         p.putLong("LastCallDay", today);
         p.putBoolean("FriendlyPending", true);
         p.putLong("FriendlyNightDay", today);
+        p.putInt("TotalCalls", p.getInt("TotalCalls") + 1);
         savePlayerState(data, caller.getUUID(), p);
-        // Friendly calls do not answer in text. He answers in person.
-        caller.displayClientMessage(Component.literal("The line goes quiet.")
-                .withStyle(ChatFormatting.DARK_GRAY), false);
+        // No text reply. He answers in person.
     }
 
     private static void consumeBlocked(ServerPlayer caller, LabyrinthData data, CompoundTag p, long today) {
         p.putLong("LastCallDay", today);
+        p.putInt("TotalCalls", p.getInt("TotalCalls") + 1);
         savePlayerState(data, caller.getUUID(), p);
         scrambled(caller);
     }
 
-    private static void acknowledge(ServerPlayer player, CompoundTag state) {
+    private static void acknowledge(ServerPlayer player, LabyrinthData data, CompoundTag state) {
         int calls = state.getInt("TotalCalls");
         state.putInt("TotalCalls", calls + 1);
+        savePlayerState(data, player.getUUID(), state);
         String[] pool = calls < 2 ? ACK : DISTORTED;
         player.displayClientMessage(Component.literal(pool[Math.floorMod(calls, pool.length)])
                 .withStyle(ChatFormatting.DARK_GRAY), false);
@@ -698,6 +710,10 @@ public final class HarriganVignette {
             if (!funeral) {
                 for (ServerPlayer player : visitors) {
                     if (player.getZ() < base.getZ() - 14.0D) {
+                        Vec3 corpse = Vec3.atCenterOf(base.offset(CHAIR).above());
+                        if (HouseWatchers.isWatched(interior, corpse)) {
+                            continue;
+                        }
                         state.putBoolean("FuneralEntered", true);
                         data.setState(ID, state);
                         clearTagged(interior, placeBounds(base), BODY_TAG);
@@ -860,6 +876,7 @@ public final class HarriganVignette {
             damage.setBaseValue(0.0D);
         }
         level.addFreshEntity(ghost);
+        ACTIVE_GHOSTS.put(owner, ghost.getUUID());
         if (mode >= 3) {
             ghost.setTarget(target);
         } else {
@@ -872,67 +889,99 @@ public final class HarriganVignette {
         boolean night = isNight(server);
         long today = HouseCalendar.today(server);
 
-        for (ServerLevel level : server.getAllLevels()) {
-            List<Zombie> ghosts = level.getEntitiesOfClass(Zombie.class,
-                    new AABB(-3.0E7D, level.getMinBuildHeight(), -3.0E7D, 3.0E7D, level.getMaxBuildHeight(), 3.0E7D),
-                    e -> e.getTags().contains(GHOST_TAG));
-            for (Zombie ghost : ghosts) {
-                if (!night) {
-                    finishGhost(server, ghost, false, today);
-                    continue;
-                }
-                CompoundTag tag = ghost.getPersistentData();
-                UUID owner = tag.hasUUID(GHOST_OWNER) ? tag.getUUID(GHOST_OWNER) : null;
-                UUID targetId = tag.hasUUID(GHOST_TARGET) ? tag.getUUID(GHOST_TARGET) : owner;
-                ServerPlayer target = targetId == null ? null : server.getPlayerList().getPlayer(targetId);
-                if (target == null || target.serverLevel() != level
-                        || target.serverLevel().dimension().equals(HouseDimensions.INTERIOR)) {
-                    ghost.discard();
-                    continue;
-                }
+        for (UUID owner : List.copyOf(ACTIVE_GHOSTS.keySet())) {
+            Zombie ghost = activeGhost(server, owner);
+            if (ghost == null) {
+                continue;
+            }
+            if (!night) {
+                finishGhost(server, ghost, today);
+                continue;
+            }
 
-                int mode = tag.getInt(GHOST_MODE);
-                if (mode == 1) {
-                    ghost.getNavigation().stop();
-                    ghost.getLookControl().setLookAt(target, 30.0F, 30.0F);
-                    if (ghost.distanceToSqr(target) < 36.0D) {
-                        ghost.discard();
-                    }
-                } else if (mode == 2) {
-                    followAtDistance(ghost, target, 8.0D);
-                    if (ghost.tickCount % 200 == 0) {
-                        disturbHouse(level, ghost.blockPosition(), target);
-                    }
-                } else {
-                    ghost.setTarget(target);
-                    if (!target.isAlive() && owner != null && !target.getUUID().equals(owner)) {
-                        LabyrinthData data = LabyrinthData.get(server);
-                        CompoundTag p = playerState(data, owner);
-                        p.putString("MorningName", target.getGameProfile().getName());
-                        p.putLong("MorningDay", today + 1L);
-                        p.remove("PendingPlayer");
-                        p.remove("PendingPlayerName");
-                        p.remove("PlayerNightDay");
-                        savePlayerState(data, owner, p);
-                        ghost.discard();
-                    }
+            CompoundTag tag = ghost.getPersistentData();
+            UUID targetId = tag.hasUUID(GHOST_TARGET) ? tag.getUUID(GHOST_TARGET) : owner;
+            ServerPlayer target = server.getPlayerList().getPlayer(targetId);
+            if (target == null || target.serverLevel() != ghost.serverLevel()
+                    || target.serverLevel().dimension().equals(HouseDimensions.INTERIOR)) {
+                // A player assignment keeps waiting for its target. A friendly
+                // appearance deferred by logout/House entry tries again next night.
+                if (!tag.hasUUID(GHOST_TARGET)) {
+                    LabyrinthData data = LabyrinthData.get(server);
+                    CompoundTag p = playerState(data, owner);
+                    p.putBoolean("FriendlyPending", true);
+                    p.putLong("FriendlyNightDay", today + 1L);
+                    savePlayerState(data, owner, p);
+                }
+                ACTIVE_GHOSTS.remove(owner);
+                ghost.discard();
+                continue;
+            }
+
+            int mode = tag.getInt(GHOST_MODE);
+            if (mode == 1) {
+                ghost.setTarget(null);
+                ghost.getNavigation().stop();
+                ghost.getLookControl().setLookAt(target, 30.0F, 30.0F);
+                if (ghost.distanceToSqr(target) < 36.0D) {
+                    ACTIVE_GHOSTS.remove(owner);
+                    ghost.discard();
+                }
+            } else if (mode == 2) {
+                ghost.setTarget(null);
+                followAtDistance(ghost, target, 8.0D);
+                if (ghost.tickCount % 200 == 0) {
+                    disturbHouse(ghost.serverLevel(), ghost.blockPosition(), target);
+                }
+            } else {
+                ghost.setTarget(target);
+                if (!target.isAlive() && !target.getUUID().equals(owner)) {
+                    LabyrinthData data = LabyrinthData.get(server);
+                    CompoundTag p = playerState(data, owner);
+                    p.putString("MorningName", target.getGameProfile().getName());
+                    p.putLong("MorningDay", today + 1L);
+                    p.remove("PendingPlayer");
+                    p.remove("PendingPlayerName");
+                    p.remove("PlayerNightDay");
+                    savePlayerState(data, owner, p);
+                    ACTIVE_GHOSTS.remove(owner);
+                    ghost.discard();
                 }
             }
         }
     }
 
-    private static void finishGhost(MinecraftServer server, Zombie ghost, boolean severed, long today) {
+    private static void finishGhost(MinecraftServer server, Zombie ghost, long today) {
         CompoundTag tag = ghost.getPersistentData();
-        if (tag.hasUUID(GHOST_TARGET) && tag.hasUUID(GHOST_OWNER)) {
+        if (tag.hasUUID(GHOST_OWNER)) {
             UUID owner = tag.getUUID(GHOST_OWNER);
-            LabyrinthData data = LabyrinthData.get(server);
-            CompoundTag p = playerState(data, owner);
-            p.remove("PendingPlayer");
-            p.remove("PendingPlayerName");
-            p.remove("PlayerNightDay");
-            savePlayerState(data, owner, p);
+            ACTIVE_GHOSTS.remove(owner);
+            if (tag.hasUUID(GHOST_TARGET)) {
+                LabyrinthData data = LabyrinthData.get(server);
+                CompoundTag p = playerState(data, owner);
+                p.remove("PendingPlayer");
+                p.remove("PendingPlayerName");
+                p.remove("PlayerNightDay");
+                savePlayerState(data, owner, p);
+            }
         }
         ghost.discard();
+    }
+
+    @Nullable
+    private static Zombie activeGhost(MinecraftServer server, UUID owner) {
+        UUID entityId = ACTIVE_GHOSTS.get(owner);
+        if (entityId == null) {
+            return null;
+        }
+        for (ServerLevel level : server.getAllLevels()) {
+            Entity entity = level.getEntity(entityId);
+            if (entity instanceof Zombie zombie && !zombie.isRemoved()) {
+                return zombie;
+            }
+        }
+        ACTIVE_GHOSTS.remove(owner);
+        return null;
     }
 
     private static void followAtDistance(Zombie ghost, ServerPlayer target, double desired) {
@@ -1008,15 +1057,11 @@ public final class HarriganVignette {
         savePlayerState(data, owner, p);
         WAITING_TEXT.remove(owner);
 
-        for (ServerLevel level : server.getAllLevels()) {
-            for (Zombie ghost : level.getEntitiesOfClass(Zombie.class,
-                    new AABB(-3.0E7D, level.getMinBuildHeight(), -3.0E7D, 3.0E7D, level.getMaxBuildHeight(), 3.0E7D),
-                    e -> e.getTags().contains(GHOST_TAG)
-                            && e.getPersistentData().hasUUID(GHOST_OWNER)
-                            && owner.equals(e.getPersistentData().getUUID(GHOST_OWNER)))) {
-                ghost.discard();
-            }
+        Zombie ghost = activeGhost(server, owner);
+        if (ghost != null) {
+            ghost.discard();
         }
+        ACTIVE_GHOSTS.remove(owner);
         ServerPlayer player = server.getPlayerList().getPlayer(owner);
         if (player != null) {
             player.displayClientMessage(Component.literal("The screen goes black.")
@@ -1121,30 +1166,12 @@ public final class HarriganVignette {
     }
 
     private static boolean hasActiveGhost(MinecraftServer server, UUID owner) {
-        for (ServerLevel level : server.getAllLevels()) {
-            if (!level.getEntitiesOfClass(Zombie.class,
-                    new AABB(-3.0E7D, level.getMinBuildHeight(), -3.0E7D, 3.0E7D, level.getMaxBuildHeight(), 3.0E7D),
-                    e -> e.getTags().contains(GHOST_TAG)
-                            && e.getPersistentData().hasUUID(GHOST_OWNER)
-                            && owner.equals(e.getPersistentData().getUUID(GHOST_OWNER))).isEmpty()) {
-                return true;
-            }
-        }
-        return false;
+        return activeGhost(server, owner) != null;
     }
 
     private static boolean hasActivePlayerAssignment(MinecraftServer server, UUID owner) {
-        for (ServerLevel level : server.getAllLevels()) {
-            if (!level.getEntitiesOfClass(Zombie.class,
-                    new AABB(-3.0E7D, level.getMinBuildHeight(), -3.0E7D, 3.0E7D, level.getMaxBuildHeight(), 3.0E7D),
-                    e -> e.getTags().contains(GHOST_TAG)
-                            && e.getPersistentData().hasUUID(GHOST_OWNER)
-                            && owner.equals(e.getPersistentData().getUUID(GHOST_OWNER))
-                            && e.getPersistentData().hasUUID(GHOST_TARGET)).isEmpty()) {
-                return true;
-            }
-        }
-        return false;
+        Zombie ghost = activeGhost(server, owner);
+        return ghost != null && ghost.getPersistentData().hasUUID(GHOST_TARGET);
     }
 
     private static void clearTagged(ServerLevel level, AABB area, String tag) {
@@ -1165,7 +1192,14 @@ public final class HarriganVignette {
         NEXT_SPEECH.remove(event.getEntity().getUUID());
     }
 
-    public static void clearAll() {
+    public static void clearAll(MinecraftServer server) {
+        for (UUID owner : List.copyOf(ACTIVE_GHOSTS.keySet())) {
+            Zombie ghost = activeGhost(server, owner);
+            if (ghost != null) {
+                ghost.discard();
+            }
+        }
+        ACTIVE_GHOSTS.clear();
         WAITING_TEXT.clear();
         LAST_PAGE.clear();
         NEXT_SPEECH.clear();

@@ -86,7 +86,7 @@ public final class HouseLifecycleEvents {
         TellTaleFloorboards.clearAll();
         HideAndClap.clearAll();
         ModelHome.clearAll();
-        HarriganVignette.clearAll();
+        HarriganVignette.clearAll(event.getServer());
         Growl.clearAll();
     }
 
