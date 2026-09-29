@@ -119,15 +119,21 @@ public final class HouseProgressionTests {
         helper.assertTrue(!HouseProgression.isRugShiftDue(data), "no rugs before anyone has visited");
 
         data.incrementVisitCount();
+        data.setHouseAge(100);
+        helper.assertTrue(!HouseProgression.isRugShiftDue(data),
+                "the rugs must never change merely because enough mornings passed");
         data.setHouseAge(1);
-        helper.assertTrue(HouseProgression.isRugShiftDue(data) == (1 >= HouseConfig.RUGS_FALLBACK_AGE.getAsInt()),
-                "without a night in the manor, the rugs wait for the fallback age");
         data.markSleptInManor();
         helper.assertTrue(HouseProgression.isRugShiftDue(data), "a night in the manor shifts the rugs");
         helper.assertTrue(HouseProgression.roomChance(data, 5) == -1, "no room before the rugs");
 
         data.markRugsShifted();
-        int first = Math.max(HouseConfig.ROOM_FIRST_AGE.getAsInt(), 1 + HouseConfig.ROOM_MIN_MORNINGS_AFTER_RUGS.getAsInt());
+        int first = Math.max(
+                HouseConfig.ROOM_FIRST_AGE.getAsInt(),
+                data.rugsShiftedAge() + HouseConfig.ROOM_MIN_MORNINGS_AFTER_RUGS.getAsInt()
+        );
+        helper.assertTrue(HouseConfig.ROOM_MIN_MORNINGS_AFTER_RUGS.getAsInt() >= 2,
+                "the first impossible room needs at least two quiet House mornings after the rugs");
         int base = HouseConfig.ROOM_BASE_CHANCE.getAsInt();
         int step = HouseConfig.ROOM_CHANCE_STEP.getAsInt();
         helper.assertTrue(HouseProgression.roomChance(data, first - 1) == -1, "the room waits for House morning " + first);
