@@ -32,11 +32,11 @@ public final class HouseBlocks {
 
     public static final DeferredBlock<Block> LOOSE_FLOORBOARD = BLOCKS.registerBlock(
             "loose_floorboard", Block::new,
-            () -> BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).noLootTable());
+            BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).noLootTable());
 
     public static final DeferredBlock<WardrobeBlock> HIDE_AND_CLAP_WARDROBE = BLOCKS.registerBlock(
             "hide_and_clap_wardrobe", WardrobeBlock::new,
-            () -> BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS)
+            BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS)
                     .noOcclusion()
                     .strength(2.0F, 3.0F)
                     .noLootTable());
@@ -45,7 +45,7 @@ public final class HouseBlocks {
 
     private static DeferredBlock<CarpetBlock> carpet(String id, Block vanilla) {
         return BLOCKS.registerBlock(id, CarpetBlock::new,
-                () -> BlockBehaviour.Properties.ofFullCopy(vanilla));
+                BlockBehaviour.Properties.ofFullCopy(vanilla));
     }
 
     public static void register(IEventBus modEventBus) {
