@@ -54,7 +54,7 @@ public final class HarriganPhoneItem extends Item {
                 .withStyle(ChatFormatting.DARK_GRAY));
     }
 
-    static String homeTime(long dayTime) {
+    public static String homeTime(long dayTime) {
         long ticks = Math.floorMod(dayTime, 24000L);
         int hour = (int) ((ticks / 1000L + 6L) % 24L);
         int minute = (int) ((ticks % 1000L) * 60L / 1000L);
