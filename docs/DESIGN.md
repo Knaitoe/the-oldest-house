@@ -245,6 +245,16 @@ On the server a pending transition is now an explicit state machine (`HouseTrans
 
 The room between rooms decides by planes, not distances (`HouseBetweenRoom.Crossing`). Along the door's normal (x) it keeps the room's inside, between the two door blocks' room-side faces, and an exit plane on each side far enough out that a player put back in the manor stands clear of the real door's panel. Each tick the segment from last tick's x to this tick's is tested against the planes, so nothing fast can skip one. Having crossed into the inside, crossing either exit plane returns the player on that side (the other side from the one they came in by is a traversal). Not having been in, they are returned on their own side once past its exit plane and a full 0.75 block further out along the normal than the closest they came, or more than six blocks from the door, or off the floor. Strafing along the wall never counts, and in a doorway nothing happens at all.
 
+## Several people at once
+
+The room between rooms is shared: one pocket, one pair of copied doors. Leaving it shows the leaver its doors shut (the real partition they land in front of is shut), but with anyone else still in the pocket that is done with a per-player block update, not by changing the doors. The last one out shuts them for real. Entering always re-sends the copies' true door states to the one entering.
+
+Hide-and-clap is one room with one game, owned by the first player to put the blindfold on. Its claps, feet and wardrobe are sent to that player alone, so a second player in the room neither disturbs it nor experiences it.
+
+Every payload goes through `HousePackets`, which skips any connection that has not negotiated the mod's channel (fake players, GameTest mock players).
+
+Multiplayer GameTests use GameTest mock players: real ServerPlayers on a connection that goes nowhere. The server ticks them as entities but never fires `PlayerTickEvent` for them, so tests fire the mod's player tick themselves. The House's dimensions do not exist on the test server. Crossings in these tests therefore go to the Nether, and the room between rooms is built at an isolated spot in the test level with its own `HouseSavedData`.
+
 ## Outdated layouts
 
 `HouseSavedData` records the layout version the House was generated with. Every mechanism starts from `houseOrigin()` and stands down when it is null, so that method returns null for a House whose layout differs from the build's (`isOutdated()`). The mechanisms covered are crossings, the proxy mirror and entity mirror, the mornings, the room between rooms, the hallway, the labyrinth and the sound bridge. An outdated House goes quiet as a whole rather than acting on blocks that no longer mean what the code assumes. It is only an ordinary building. `housePosition()` still reports where it stands, for status and reset.
