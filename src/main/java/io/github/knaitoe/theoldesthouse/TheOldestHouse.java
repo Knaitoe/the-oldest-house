@@ -19,6 +19,7 @@ import io.github.knaitoe.theoldesthouse.house.HouseSoundBridge;
 import io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents;
 import io.github.knaitoe.theoldesthouse.labyrinth.Growl;
 import io.github.knaitoe.theoldesthouse.labyrinth.HideAndClap;
+import io.github.knaitoe.theoldesthouse.labyrinth.ClapGhostRegistry;
 import io.github.knaitoe.theoldesthouse.labyrinth.HarriganVignette;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthHazards;
@@ -55,6 +56,7 @@ public final class TheOldestHouse {
         HouseBlockEntities.register(modEventBus);
         LabyrinthRegistry.register(modEventBus);
         MotherRegistry.register(modEventBus);
+        ClapGhostRegistry.register(modEventBus);
         modContainer.registerConfig(ModConfig.Type.SERVER, OpeningConfig.SPEC);
         modContainer.registerConfig(ModConfig.Type.SERVER, HouseConfig.SPEC, MOD_ID + "-house-server.toml");
 
@@ -117,6 +119,14 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HideAndClap::onServerTick);
         NeoForge.EVENT_BUS.addListener(HideAndClap::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(HideAndClap::onAttackEntity);
+        NeoForge.EVENT_BUS.addListener(HideAndClap::onEquipmentChange);
+        NeoForge.EVENT_BUS.addListener(HideAndClap::onPlayerTick);
+        NeoForge.EVENT_BUS.addListener(HideAndClap::onPlayerLoggedIn);
+        NeoForge.EVENT_BUS.addListener(HideAndClap::onPlayerLoggedOut);
+        NeoForge.EVENT_BUS.addListener(HideAndClap::onPlayerRespawnPosition);
+        NeoForge.EVENT_BUS.addListener(HideAndClap::onPlayerRespawned);
+        NeoForge.EVENT_BUS.addListener(HideAndClap::onDeath);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, HideAndClap::onItemToss);
         NeoForge.EVENT_BUS.addListener(HideAndClap::onServerStopping);
         NeoForge.EVENT_BUS.addListener(ModelHome::onServerTick);
         NeoForge.EVENT_BUS.addListener(ModelHome::onAttackEntity);

@@ -4,6 +4,7 @@ import io.github.knaitoe.theoldesthouse.client.HouseFadeState;
 import io.github.knaitoe.theoldesthouse.client.HouseRoomDoorClient;
 import io.github.knaitoe.theoldesthouse.client.HouseSightlineState;
 import io.github.knaitoe.theoldesthouse.client.HotelPlaqueClientState;
+import io.github.knaitoe.theoldesthouse.client.ClapGameClientState;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 public final class HouseNetwork {
@@ -11,7 +12,9 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("7")
+        event.registrar("8")
+                .playToClient(ClapGamePayload.TYPE, ClapGamePayload.STREAM_CODEC,
+                        (payload, context) -> ClapGameClientState.accept(payload))
                 .playToClient(
                         HouseSightlineStatePayload.TYPE,
                         HouseSightlineStatePayload.STREAM_CODEC,

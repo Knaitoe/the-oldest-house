@@ -1,0 +1,352 @@
+{
+  "format": "oldest-house-cuboid-model-v1",
+  "texture": {
+    "width": 512,
+    "height": 512,
+    "uv_width": 128,
+    "uv_height": 128,
+    "path": "clap_ghost_girl.png"
+  },
+  "scale": 0.8,
+  "parts": [
+    {
+      "name": "root",
+      "parent": null,
+      "pivot": [
+        0,
+        24,
+        0
+      ],
+      "cubes": []
+    },
+    {
+      "name": "body",
+      "parent": "root",
+      "pivot": [
+        0,
+        -15,
+        0
+      ],
+      "cubes": [
+        {
+          "name": "cotton_nightdress",
+          "origin": [
+            -3.5,
+            0,
+            -2.5
+          ],
+          "size": [
+            7,
+            10,
+            5
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "head",
+      "parent": "root",
+      "pivot": [
+        0,
+        -16,
+        0
+      ],
+      "cubes": [
+        {
+          "name": "face",
+          "origin": [
+            -3,
+            -6,
+            -3
+          ],
+          "size": [
+            6,
+            6,
+            6
+          ],
+          "material": "face",
+          "uv": [
+            25,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "hair",
+      "parent": "head",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "cubes": [
+        {
+          "name": "dark_crown",
+          "origin": [
+            -3.5,
+            -7,
+            -3.5
+          ],
+          "size": [
+            7,
+            2,
+            7
+          ],
+          "material": "hair",
+          "uv": [
+            50,
+            0
+          ]
+        },
+        {
+          "name": "dark_back",
+          "origin": [
+            -3.5,
+            -5,
+            2.5
+          ],
+          "size": [
+            7,
+            6,
+            1
+          ],
+          "material": "hair",
+          "uv": [
+            79,
+            0
+          ]
+        },
+        {
+          "name": "left_hair",
+          "origin": [
+            -3.5,
+            -5,
+            -2.5
+          ],
+          "size": [
+            1,
+            5,
+            5
+          ],
+          "material": "hair",
+          "uv": [
+            96,
+            0
+          ]
+        },
+        {
+          "name": "right_hair",
+          "origin": [
+            2.5,
+            -5,
+            -2.5
+          ],
+          "size": [
+            1,
+            5,
+            5
+          ],
+          "material": "hair",
+          "uv": [
+            109,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "left_arm",
+      "parent": "root",
+      "pivot": [
+        4,
+        -15,
+        0
+      ],
+      "cubes": [
+        {
+          "name": "left_sleeve",
+          "origin": [
+            -1,
+            0,
+            -1
+          ],
+          "size": [
+            2,
+            3,
+            2
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            16
+          ]
+        },
+        {
+          "name": "left_hand",
+          "origin": [
+            -1,
+            3,
+            -1
+          ],
+          "size": [
+            2,
+            5,
+            2
+          ],
+          "material": "skin",
+          "uv": [
+            9,
+            16
+          ]
+        }
+      ]
+    },
+    {
+      "name": "right_arm",
+      "parent": "root",
+      "pivot": [
+        -4,
+        -15,
+        0
+      ],
+      "cubes": [
+        {
+          "name": "right_sleeve",
+          "origin": [
+            -1,
+            0,
+            -1
+          ],
+          "size": [
+            2,
+            3,
+            2
+          ],
+          "material": "cloth",
+          "uv": [
+            18,
+            16
+          ]
+        },
+        {
+          "name": "right_hand",
+          "origin": [
+            -1,
+            3,
+            -1
+          ],
+          "size": [
+            2,
+            5,
+            2
+          ],
+          "material": "skin",
+          "uv": [
+            27,
+            16
+          ]
+        }
+      ]
+    },
+    {
+      "name": "left_leg",
+      "parent": "root",
+      "pivot": [
+        1.6,
+        -6,
+        0
+      ],
+      "cubes": [
+        {
+          "name": "left_ankle",
+          "origin": [
+            -1,
+            0,
+            -1
+          ],
+          "size": [
+            2,
+            5,
+            2
+          ],
+          "material": "skin",
+          "uv": [
+            36,
+            16
+          ]
+        },
+        {
+          "name": "left_bare_foot",
+          "origin": [
+            -1,
+            5,
+            -2
+          ],
+          "size": [
+            2,
+            1,
+            3
+          ],
+          "material": "foot",
+          "uv": [
+            45,
+            16
+          ]
+        }
+      ]
+    },
+    {
+      "name": "right_leg",
+      "parent": "root",
+      "pivot": [
+        -1.6,
+        -6,
+        0
+      ],
+      "cubes": [
+        {
+          "name": "right_ankle",
+          "origin": [
+            -1,
+            0,
+            -1
+          ],
+          "size": [
+            2,
+            5,
+            2
+          ],
+          "material": "skin",
+          "uv": [
+            56,
+            16
+          ]
+        },
+        {
+          "name": "right_bare_foot",
+          "origin": [
+            -1,
+            5,
+            -2
+          ],
+          "size": [
+            2,
+            1,
+            3
+          ],
+          "material": "foot",
+          "uv": [
+            65,
+            16
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -117,6 +117,10 @@ public final class LabyrinthDoors {
         }
         MinecraftServer server = player.server;
         LabyrinthData data = LabyrinthData.get(server);
+        if (HideAndClap.isLocked(player)) {
+            locked(player);
+            return;
+        }
 
         if (LabyrinthData.LOCKED.equals(door.destination)) {
             // Somebody's room. It rattles in its frame and stays shut.
@@ -153,6 +157,10 @@ public final class LabyrinthDoors {
         }
         LabyrinthData.Door entry = place == null || place.slot() < 0 ? null : data.door(place.entryDoorId());
         if (entry == null || (place == LabyrinthPlace.RED_ROOM && !RedRoom.prepare(player))) {
+            locked(player);
+            return;
+        }
+        if (place == LabyrinthPlace.HIDE_AND_CLAP && !HideAndClap.canEnter(player)) {
             locked(player);
             return;
         }
@@ -218,6 +226,10 @@ public final class LabyrinthDoors {
      * the entry door or wandered off from it.
      */
     public static boolean tickPlayer(ServerPlayer player, BlockPos origin) {
+        if (HideAndClap.isLocked(player)) {
+            HideAndClap.confineLockedPlayer(player);
+            return true;
+        }
         LabyrinthPlace place = LabyrinthPlaces.placeAt(origin, player.blockPosition());
         if (place == null) {
             return false;
@@ -233,6 +245,12 @@ public final class LabyrinthDoors {
         UUID id = player.getUUID();
         double into = intoRoom(player, entry);
         if (into >= THRESHOLD) {
+            if (place == LabyrinthPlace.HIDE_AND_CLAP && !data.isCompleted(HideAndClap.ID)
+                    && HideAndClap.isInRoom(LabyrinthPlaces.base(origin, place), player.position())) {
+                if (HideAndClap.enter(player)) return true;
+                goBack(player, entry, data);
+                return true;
+            }
             INSIDE.add(id);
             if (into >= SHUT_BEHIND) {
                 setDoorOpen(player.serverLevel(), entry.lower, false, player);
