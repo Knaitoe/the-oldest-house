@@ -5,6 +5,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.phys.Vec3;
+import io.github.knaitoe.theoldesthouse.opening.Hillary;
+import net.minecraft.world.entity.animal.Wolf;
 
 /**
  * The one low-level move used by seamless House topology.
@@ -21,6 +23,7 @@ public final class HouseInternalTeleport {
     /** Move to an absolute point in the player's current dimension. */
     public static void shift(ServerPlayer player, Vec3 to, float yaw) {
         ServerLevel level = player.serverLevel();
+        Wolf companion = Hillary.following(player);
 
         // Do the potentially visible/loading work before the client is moved.
         // Once the teleport packet is sent, the destination must already be a
@@ -44,6 +47,7 @@ public final class HouseInternalTeleport {
         // behavior. The House changes adjacency, not the player's stride.
         player.setDeltaMovement(movement);
         player.resetFallDistance();
+        Hillary.followAcross(companion, player);
     }
 
     /** Translate by a fixed offset without rotating the player. */

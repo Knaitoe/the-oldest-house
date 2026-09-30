@@ -1,0 +1,82 @@
+{
+  "textures": {
+    "surface": "the_oldest_house:block/model_home_materials",
+    "particle": "the_oldest_house:block/model_home_materials"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#surface",
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#surface",
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#surface",
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#surface",
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#surface",
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#surface",
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "cullface": "down"
+        }
+      }
+    }
+  ]
+}

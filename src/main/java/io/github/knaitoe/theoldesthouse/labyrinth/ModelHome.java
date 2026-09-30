@@ -3,6 +3,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 import com.mojang.math.Transformation;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.HouseBlocks;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.house.HouseWatchers;
 import java.util.ArrayList;
@@ -121,7 +122,7 @@ public final class ModelHome {
     private static final int HEIGHT = 5;
     private static final String TAG = TheOldestHouse.MOD_ID + "_model_home_chair";
     private static final String INDEX_TAG = TAG + "_";
-    private static final BlockState WALL = Blocks.WHITE_CONCRETE.defaultBlockState();
+    private static final BlockState WALL = HouseBlocks.MODEL_HOME_WALLPAPER.get().defaultBlockState();
     private static final BlockState FLOOR = Blocks.BIRCH_PLANKS.defaultBlockState();
     private static final BlockState CEILING = Blocks.SMOOTH_QUARTZ.defaultBlockState();
     private static final BlockState NIGHT = Blocks.BLACK_CONCRETE.defaultBlockState();
@@ -189,7 +190,9 @@ public final class ModelHome {
         MinecraftServer server = player.server;
         ServerLevel level = server.getLevel(HouseDimensions.INTERIOR);
         BlockPos base = base(server);
-        if (level == null || base == null || !visitors(level, base).isEmpty()) {
+        if (level == null || base == null) return;
+        upgradeMaterials(level, base);
+        if (visitors(level, base).stream().anyMatch(other -> !other.getUUID().equals(player.getUUID()))) {
             return;
         }
         LabyrinthData data = LabyrinthData.get(server);
@@ -291,6 +294,26 @@ public final class ModelHome {
 
         LabyrinthBuilder.entrance(level, base, WALL, FLOOR, CEILING);
         LabyrinthBuilder.doors(level, base, LabyrinthPlace.MODEL_HOME);
+        upgradeMaterials(level, base);
+    }
+
+    /** Cosmetic replacement preserves furniture, scene state and anything the player dropped. */
+    public static void upgradeMaterials(ServerLevel level, BlockPos base) {
+        int flags = LabyrinthBuilder.flags();
+        for (int x = -9; x <= 9; x++) for (int z = -19; z <= 0; z++) for (int y = 0; y <= HEIGHT; y++) {
+            BlockPos pos = base.offset(x, y, z);
+            BlockState old = level.getBlockState(pos);
+            if (old.is(Blocks.WHITE_CONCRETE) || old.is(HouseBlocks.MODEL_HOME_WALLPAPER.get())) {
+                boolean kids = x <= -1 && z <= -8 && y >= 1 && y <= 3;
+                level.setBlock(pos, (kids ? HouseBlocks.MODEL_HOME_KIDS_WALLPAPER : HouseBlocks.MODEL_HOME_WALLPAPER)
+                        .get().defaultBlockState(), flags);
+            } else if (x >= -3 && x <= 0 && z >= -5 && z <= -3 && y == 0 && old.is(Blocks.LIGHT_GRAY_CARPET)) {
+                level.setBlock(pos, HouseBlocks.MODEL_HOME_RUG.get().defaultBlockState(), flags);
+            }
+        }
+        BlockPos tv = base.offset(7, 1, -4);
+        if (level.getBlockState(tv).is(Blocks.BLACK_CONCRETE))
+            level.setBlock(tv, HouseBlocks.MODEL_HOME_TELEVISION.get().defaultBlockState(), flags);
     }
 
     /**
@@ -603,6 +626,12 @@ public final class ModelHome {
                 unstack(level, base, visit);
             }
             return;
+        }
+        CompoundTag materials = data.state(ID);
+        if (!materials.getBoolean("Materials747")) {
+            upgradeMaterials(level, base);
+            materials.putBoolean("Materials747", true);
+            data.setState(ID, materials);
         }
         if (server.getTickCount() % 20 == 0) {
             checkBinder(level, base, data);

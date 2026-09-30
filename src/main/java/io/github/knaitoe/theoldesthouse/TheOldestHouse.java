@@ -8,6 +8,7 @@ import io.github.knaitoe.theoldesthouse.house.HouseBlocks;
 import io.github.knaitoe.theoldesthouse.house.HouseChunkKeeper;
 import io.github.knaitoe.theoldesthouse.house.HouseConfig;
 import io.github.knaitoe.theoldesthouse.house.HouseDays;
+import io.github.knaitoe.theoldesthouse.house.HouseSitting;
 import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
 import io.github.knaitoe.theoldesthouse.house.HouseLifecycleEvents;
 import io.github.knaitoe.theoldesthouse.house.HouseExteriorEntityMirror;
@@ -58,6 +59,8 @@ public final class TheOldestHouse {
         LabyrinthRegistry.register(modEventBus);
         MotherRegistry.register(modEventBus);
         ClapGhostRegistry.register(modEventBus);
+        HouseSitting.register(modEventBus);
+        NeoForge.EVENT_BUS.addListener(HouseSitting::onRightClick);
         modContainer.registerConfig(ModConfig.Type.SERVER, OpeningConfig.SPEC);
         modContainer.registerConfig(ModConfig.Type.SERVER, HouseConfig.SPEC, MOD_ID + "-house-server.toml");
 
