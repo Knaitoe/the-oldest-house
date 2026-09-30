@@ -195,10 +195,7 @@ public final class CompanionTests {
                 "health, identity, ownership and the selected order survive the crossing");
         BlockPos arrival=cat.blockPosition();
         helper.onEachTick(()->{
-            if(target.getEntity(id)!=cat) {
-                if(cat.tickCount==0) TheOldestHouse.LOGGER.debug("Waiting for native cat tracking at {}",cat.blockPosition());
-                return;
-            }
+            if(target.getEntity(id)!=cat)return;
             helper.assertTrue(target.getEntity(id)==cat,"the cat is tracked in the new world; removed="+cat.isRemoved()
                     +"; position="+cat.position()+"; tickets="+ShutdownWatch.ticketsAt(target,new ChunkPos(cat.blockPosition())));
             target.getChunkSource().removeRegionTicket(TicketType.PORTAL,new ChunkPos(arrival),3,arrival);
