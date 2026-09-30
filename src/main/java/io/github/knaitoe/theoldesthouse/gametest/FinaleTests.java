@@ -98,6 +98,10 @@ public final class FinaleTests {
             helper.assertTrue(!LabyrinthPlaces.isInStack(origin,p.pos()),"the staircase does not overwrite saved vignette slots");}
         var route=FinaleArchitecture.staircaseRoute(origin);helper.assertTrue(route.get(0).getY()-route.get(route.size()-1).getY()>=120,"this is an actual long descent");
         for(int i=0;i<route.size();i++)helper.assertTrue(blocks.containsKey(route.get(i).below()),"every tread has a real block at "+i);
+        for(int z=26;z<=32;z++)for(int y=FinaleArchitecture.ARENA;y<FinaleArchitecture.ARENA+3;y++){
+            var opening=blocks.get(FinaleArchitecture.base(origin).offset(0,y,z));
+            helper.assertTrue(opening==null||opening.isAir(),"the passage through the shaft wall really reaches the cell chamber");
+        }
         helper.assertTrue(blocks.get(FinaleArchitecture.cell(origin)).is(Blocks.IRON_BARS),"the cell is physically closed before commitment");helper.succeed();
     }
     @GameTest(template="empty") public static void escapeHasConnectedFloorAndRealWrongTurns(GameTestHelper helper){

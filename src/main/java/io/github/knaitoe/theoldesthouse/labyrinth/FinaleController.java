@@ -320,6 +320,8 @@ public final class FinaleController {
         if(!guided){player.server.overworld().setDayTime(player.server.overworld().getDayTime()+60*24000L);overgrowBase(player,record);}
         CompoundTag world=FinaleProgress.world(player.server);world.putBoolean("Ended",true);world.putLong("CollapsedOrigin",origin.asLong());world.putInt("Demolition",0);world.remove("Owner");
         LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);HouseSavedData.get(player.server).collapse();
+        io.github.knaitoe.theoldesthouse.network.HousePackets.sendToAll(player.server,new io.github.knaitoe.theoldesthouse.network.HouseSightlineStatePayload(BlockPos.ZERO,false));
+        io.github.knaitoe.theoldesthouse.network.HousePackets.sendToAll(player.server,HouseBetweenRoom.doorPayload(HouseSavedData.get(player.server)));
         words(player,player.blockPosition().above(2),guided?"An empty lot. The collar is still warm.":"An empty lot. Sixty mornings have passed.");
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post event){
