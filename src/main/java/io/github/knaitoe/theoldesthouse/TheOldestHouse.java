@@ -59,6 +59,7 @@ public final class TheOldestHouse {
         HouseBlockEntities.register(modEventBus);
         LabyrinthRegistry.register(modEventBus);
         MotherRegistry.register(modEventBus);
+        io.github.knaitoe.theoldesthouse.labyrinth.FinaleRegistry.register(modEventBus);
         ClapGhostRegistry.register(modEventBus);
         HouseSitting.register(modEventBus);
         NeoForge.EVENT_BUS.addListener(HouseSitting::onRightClick);
@@ -180,3 +181,4 @@ public final class TheOldestHouse {
         LOGGER.info("The Oldest House prototype initialized.");
     }
 }
+

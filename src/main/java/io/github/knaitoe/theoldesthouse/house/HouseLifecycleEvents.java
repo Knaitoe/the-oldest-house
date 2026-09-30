@@ -97,6 +97,7 @@ public final class HouseLifecycleEvents {
         MotherOfStrays.clearAll();
         io.github.knaitoe.theoldesthouse.opening.CompanionOrders.clearAll();
         Growl.clearAll();
+        io.github.knaitoe.theoldesthouse.labyrinth.FinaleController.clearAll();
     }
 
     public static void onPlayerWakeUp(PlayerWakeUpEvent event) {
@@ -122,3 +123,4 @@ public final class HouseLifecycleEvents {
         }
     }
 }
+

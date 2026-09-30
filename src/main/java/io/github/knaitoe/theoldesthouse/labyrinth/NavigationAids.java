@@ -36,7 +36,7 @@ public final class NavigationAids {
     public static boolean allowed(ServerPlayer player) {
         BlockPos origin=HouseSavedData.get(player.server).houseOrigin();
         return !player.isSpectator()&&origin!=null&&player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)
-                &&LabyrinthPlaces.placeAt(origin,player.blockPosition())!=null;
+                &&(LabyrinthPlaces.placeAt(origin,player.blockPosition())!=null||FinaleArchitecture.contains(origin,player.blockPosition()));
     }
     public static boolean placeChalk(ServerLevel level,BlockPos pos,Direction face,Direction arrow) {
         BlockState old=level.getBlockState(pos);
@@ -176,3 +176,4 @@ public final class NavigationAids {
         if(placeChalk(level,pos,Direction.UP,arrow))remember(level,pos,EXPLORER,true);
     }
 }
+

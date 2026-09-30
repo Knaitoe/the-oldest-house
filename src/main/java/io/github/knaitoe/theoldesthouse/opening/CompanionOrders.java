@@ -97,6 +97,7 @@ public final class CompanionOrders {
     public static void onEntityTick(EntityTickEvent.Post event) {
         if(!(event.getEntity() instanceof TamableAnimal pet)||!supported(pet)
                 ||!(pet.level() instanceof ServerLevel level)||HouseExteriorEntityMirror.isProjection(pet))return;
+        if(pet.getPersistentData().getBoolean(FinaleController.GUIDE))return;
         if(pet.getPersistentData().getBoolean("HouseStray")&&pet.isTame()&&!managed(pet))
             pet.getPersistentData().putInt(KEY,Order.FOLLOW.ordinal());
         if(!managed(pet))return;
@@ -215,3 +216,4 @@ public final class CompanionOrders {
         @Override public void stop(){pet.getNavigation().stop();}
     }
 }
+

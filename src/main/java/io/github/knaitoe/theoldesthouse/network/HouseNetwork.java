@@ -13,7 +13,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("10")
+        event.registrar("11")
                 .playToClient(CompanionMenuPayload.TYPE, CompanionMenuPayload.STREAM_CODEC,
                         (payload, context) -> context.enqueueWork(() -> io.github.knaitoe.theoldesthouse.client.CompanionWheel.open(payload.entityId())))
                 .playToServer(CompanionOrderPayload.TYPE, CompanionOrderPayload.STREAM_CODEC,
@@ -70,3 +70,4 @@ public final class HouseNetwork {
                 );
     }
 }
+
