@@ -30,18 +30,18 @@ jobs:
       # architecture (sightline, enclosure, walkability, glazing). The log
       # also carries an OTH-DUMP block listing for offline rendering.
       - name: Structure game tests
-        timeout-minutes: 12
+        timeout-minutes: 5
         run: |
           python3 - <<'PY' &
           import pathlib, subprocess, time
           folder = pathlib.Path('build/gametest-diagnostics')
           folder.mkdir(parents=True, exist_ok=True)
-          for elapsed in (150, 300):
-              time.sleep(150)
+          for elapsed in (90, 180):
+              time.sleep(90)
               listing = subprocess.check_output(['jps', '-l'], text=True)
               (folder / f'processes-{elapsed}.txt').write_text(listing)
               for process in listing.splitlines():
-                  if 'BootstrapLauncher' not in process:
+                  if not any(name in process for name in ('BootstrapLauncher', 'devlaunch.Main', 'gametest.Main')):
                       continue
                   pid = process.split()[0]
                   with (folder / f'threads-{elapsed}-{pid}.txt').open('w') as out:
@@ -49,7 +49,7 @@ jobs:
           PY
           diagnostic=$!
           trap 'kill "$diagnostic" 2>/dev/null || true' EXIT
-          timeout --signal=QUIT --kill-after=20s 11m gradle runGameTestServer --no-daemon
+          timeout --signal=QUIT --kill-after=20s 4m gradle runGameTestServer --no-daemon
 
       - name: Upload test diagnostics
         if: always()
