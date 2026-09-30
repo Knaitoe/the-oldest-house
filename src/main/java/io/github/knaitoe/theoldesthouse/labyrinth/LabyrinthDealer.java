@@ -23,8 +23,9 @@ import net.minecraft.util.RandomSource;
  *
  * The gray starts small and grows with progress. The junction and plain
  * corridor are always in the pool. Reaching/finishing vignettes adds the
- * long hallway and flooded passage, then the spiral stair and fractured
- * walkway, then the hotel hallway and compression passage.
+ * long hallway, flooded passage, false distance and the explorer camp;
+ * then the spiral stair, fractured walkway, light sink and moving threshold;
+ * then the hotel hallway, compression passage, gravity drift and duplicate passage.
  */
 public final class LabyrinthDealer {
     public static final int VIGNETTE_BASE_CHANCE = 30;
@@ -95,14 +96,20 @@ public final class LabyrinthDealer {
         if (tier >= 1) {
             gray.add(LabyrinthPlace.LONG_HALLWAY);
             gray.add(LabyrinthPlace.FLOODED_PASSAGE);
+            gray.add(LabyrinthPlace.FALSE_DISTANCE);
+            gray.add(LabyrinthPlace.EXPLORER_CAMP);
         }
         if (tier >= 2) {
             gray.add(LabyrinthPlace.SPIRAL_STAIR);
             gray.add(LabyrinthPlace.FRACTURED_WALKWAY);
+            gray.add(LabyrinthPlace.LIGHT_SINK);
+            gray.add(LabyrinthPlace.MOVING_THRESHOLD);
         }
         if (tier >= 3) {
             gray.add(LabyrinthPlace.HOTEL_HALLWAY);
             gray.add(LabyrinthPlace.COMPRESSION_PASSAGE);
+            gray.add(LabyrinthPlace.GRAVITY_DRIFT);
+            gray.add(LabyrinthPlace.DUPLICATE_PASSAGE);
         }
         return gray;
     }
@@ -132,7 +139,63 @@ public final class LabyrinthDealer {
                 doors.add(door);
             }
         }
+        if (place == LabyrinthPlace.DUPLICATE_PASSAGE) {
+            dealDuplicatePassage(data, player, doors, random);
+            return;
+        }
         deal(data, player, doors, place, random);
+    }
+
+    private static void dealDuplicatePassage(
+            LabyrinthData data,
+            UUID player,
+            List<LabyrinthData.Door> doors,
+            RandomSource random
+    ) {
+        if (doors.isEmpty()) {
+            return;
+        }
+
+        LabyrinthData.Door real = doors.get(random.nextInt(doors.size()));
+        List<LabyrinthPlace> vignettes = vignettesAvailable(data);
+        boolean scent = data.hillaryScent(player) && !vignettes.isEmpty();
+        boolean vignette = !vignettes.isEmpty()
+                && (scent || random.nextInt(100) < vignetteChance(data, player));
+
+        String realDestination;
+        boolean leak;
+        boolean bark = false;
+        if (vignette) {
+            if (scent) {
+                List<LabyrinthPlace> unfound = new ArrayList<>();
+                for (LabyrinthPlace candidate : vignettes) {
+                    if (candidate.isFinishable()) {
+                        unfound.add(candidate);
+                    }
+                }
+                if (!unfound.isEmpty()) {
+                    vignettes = unfound;
+                }
+                data.setHillaryScent(player, false);
+                bark = true;
+            }
+            realDestination = pickVignette(data, vignettes, random).id();
+            leak = true;
+        } else {
+            List<LabyrinthPlace> gray = new ArrayList<>(grayAvailable(data, player));
+            gray.remove(LabyrinthPlace.DUPLICATE_PASSAGE);
+            realDestination = pickGray(gray, random).id();
+            leak = random.nextInt(100) < LYING_LEAK_CHANCE;
+        }
+
+        for (LabyrinthData.Door door : doors) {
+            if (door == real) {
+                data.deal(player, door, realDestination, leak, bark);
+            } else {
+                data.deal(player, door, LabyrinthPlace.DUPLICATE_PASSAGE.id(), false, false);
+            }
+        }
+        data.setDryDeals(player, vignette ? 0 : data.dryDeals(player) + 1);
     }
 
     private static LabyrinthPlace pickGray(List<LabyrinthPlace> gray, RandomSource random) {

@@ -84,6 +84,40 @@ public enum LabyrinthPlace {
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(0, 0, -28), Direction.SOUTH, LabyrinthData.DEALT)
     )),
+    /** A corridor whose far door refuses to become as close as it looks. */
+    FALSE_DISTANCE("false_distance", Kind.GRAY, 13, new BoundingBox(-2, -1, -34, 2, 4, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
+            new DoorSpec("far", new BlockPos(0, 0, -34), Direction.SOUTH, LabyrinthData.DEALT)
+    )),
+    /** A dim stretch that consumes the light sources brought into it. */
+    LIGHT_SINK("light_sink", Kind.GRAY, 14, new BoundingBox(-3, -1, -28, 3, 4, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
+            new DoorSpec("far", new BlockPos(0, 0, -28), Direction.SOUTH, LabyrinthData.DEALT)
+    )),
+    /** One exit, three possible walls; it moves only when nobody sees it. */
+    MOVING_THRESHOLD("moving_threshold", Kind.GRAY, 15, new BoundingBox(-8, -1, -15, 8, 5, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
+            new DoorSpec("north", new BlockPos(0, 0, -15), Direction.SOUTH, LabyrinthData.DEALT),
+            new DoorSpec("west", new BlockPos(-8, 0, -8), Direction.EAST, LabyrinthData.DEALT),
+            new DoorSpec("east", new BlockPos(8, 0, -8), Direction.WEST, LabyrinthData.DEALT)
+    )),
+    /** Three identical exits: two return to the same room, one actually advances. */
+    DUPLICATE_PASSAGE("duplicate_passage", Kind.GRAY, 16, new BoundingBox(-8, -1, -15, 8, 5, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
+            new DoorSpec("north", new BlockPos(0, 0, -15), Direction.SOUTH, LabyrinthData.DEALT),
+            new DoorSpec("west", new BlockPos(-8, 0, -8), Direction.EAST, LabyrinthData.DEALT),
+            new DoorSpec("east", new BlockPos(8, 0, -8), Direction.WEST, LabyrinthData.DEALT)
+    )),
+    /** Sideways gravity drags the player toward a shallow recovery trench. */
+    GRAVITY_DRIFT("gravity_drift", Kind.GRAY, 17, new BoundingBox(-5, -6, -28, 4, 6, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
+            new DoorSpec("far", new BlockPos(0, 0, -28), Direction.SOUTH, LabyrinthData.DEALT)
+    )),
+    /** An abandoned explorer camp: finite supplies and one real chance to recover. */
+    EXPLORER_CAMP("explorer_camp", Kind.GRAY, 18, new BoundingBox(-6, -1, -15, 6, 5, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
+            new DoorSpec("far", new BlockPos(0, 0, -15), Direction.SOUTH, LabyrinthData.DEALT)
+    )),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 
@@ -186,7 +220,11 @@ public enum LabyrinthPlace {
 
     /** How often the dealer picks this gray place relative to the others: the plain gray most, the loops less. */
     public int grayWeight() {
-        return this == JUNCTION || this == GRAY_CORRIDOR ? 3 : 1;
+        if (this == JUNCTION || this == GRAY_CORRIDOR) {
+            return 3;
+        }
+        // The camp should feel found, not scheduled.
+        return this == EXPLORER_CAMP ? 1 : 1;
     }
 
     /** The hotel's entry door, and a locked room door either side of each of its four straights. */

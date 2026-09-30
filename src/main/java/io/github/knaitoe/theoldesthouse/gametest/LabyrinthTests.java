@@ -12,6 +12,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.HarriganPhoneItem;
 import io.github.knaitoe.theoldesthouse.labyrinth.HarriganVignette;
 import io.github.knaitoe.theoldesthouse.labyrinth.HomeRooms;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthBuilder;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthCampsite;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDealer;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
@@ -35,6 +36,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -513,21 +515,143 @@ public final class LabyrinthTests {
 
         helper.assertTrue(!LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.FLOODED_PASSAGE),
                 "fresh players do not immediately draw hazards");
+        helper.assertTrue(!LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.EXPLORER_CAMP),
+                "fresh players do not immediately find the recovery camp");
+
         data.visit(player, LabyrinthPlace.FLOORBOARDS);
-        helper.assertTrue(LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.FLOODED_PASSAGE),
+        List<LabyrinthPlace> tierOne = LabyrinthDealer.grayAvailable(data, player);
+        helper.assertTrue(tierOne.contains(LabyrinthPlace.FLOODED_PASSAGE),
                 "the flooded passage appears after the first vignette");
-        helper.assertTrue(!LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.FRACTURED_WALKWAY),
+        helper.assertTrue(tierOne.contains(LabyrinthPlace.FALSE_DISTANCE),
+                "false distance begins at the first grown tier");
+        helper.assertTrue(tierOne.contains(LabyrinthPlace.EXPLORER_CAMP),
+                "the explorer camp can be found once the maze has opened up");
+        helper.assertTrue(!tierOne.contains(LabyrinthPlace.FRACTURED_WALKWAY),
                 "the broken route still waits");
 
         data.visit(player, LabyrinthPlace.HIDE_AND_CLAP);
-        helper.assertTrue(LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.FRACTURED_WALKWAY),
+        List<LabyrinthPlace> tierTwo = LabyrinthDealer.grayAvailable(data, player);
+        helper.assertTrue(tierTwo.contains(LabyrinthPlace.FRACTURED_WALKWAY),
                 "the fractured walkway appears deeper in");
-        helper.assertTrue(!LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.COMPRESSION_PASSAGE),
+        helper.assertTrue(tierTwo.contains(LabyrinthPlace.LIGHT_SINK),
+                "the light sink appears deeper in");
+        helper.assertTrue(tierTwo.contains(LabyrinthPlace.MOVING_THRESHOLD),
+                "the moving threshold appears deeper in");
+        helper.assertTrue(!tierTwo.contains(LabyrinthPlace.COMPRESSION_PASSAGE),
                 "the crushing passage waits until the deepest tier");
 
         data.visit(player, LabyrinthPlace.HARRIGAN);
-        helper.assertTrue(LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.COMPRESSION_PASSAGE),
+        List<LabyrinthPlace> tierThree = LabyrinthDealer.grayAvailable(data, player);
+        helper.assertTrue(tierThree.contains(LabyrinthPlace.COMPRESSION_PASSAGE),
                 "the compression passage joins the deepest gray pool");
+        helper.assertTrue(tierThree.contains(LabyrinthPlace.GRAVITY_DRIFT),
+                "gravity drift joins the deepest gray pool");
+        helper.assertTrue(tierThree.contains(LabyrinthPlace.DUPLICATE_PASSAGE),
+                "the duplicate passage joins the deepest gray pool");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void eldritchHazardsHaveConcreteRulesAndRecovery(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+
+        BlockPos far = helper.absolutePos(BlockPos.ZERO).offset(-620, 8, 40);
+        LabyrinthHazards.buildFalseDistance(level, far);
+        helper.assertTrue(level.getBlockState(far.offset(0, 0, -34)).getBlock() instanceof DoorBlock,
+                "false distance eventually has a real far door");
+
+        BlockPos sink = helper.absolutePos(BlockPos.ZERO).offset(-660, 8, 40);
+        LabyrinthHazards.buildLightSink(level, sink);
+        helper.assertTrue(LabyrinthHazards.allowsPlacing(level, sink.offset(0, 0, -8), Blocks.TORCH.defaultBlockState()),
+                "the light sink accepts sacrificial portable light");
+        helper.assertTrue(!LabyrinthHazards.allowsPlacing(level, sink.offset(0, 0, -8), Blocks.COBBLESTONE.defaultBlockState()),
+                "the light sink does not become an ordinary buildable room");
+
+        BlockPos threshold = helper.absolutePos(BlockPos.ZERO).offset(-700, 8, 40);
+        LabyrinthHazards.buildMovingThreshold(level, threshold);
+        int visibleThresholds = 0;
+        for (BlockPos rel : List.of(new BlockPos(0, 0, -15), new BlockPos(-8, 0, -8), new BlockPos(8, 0, -8))) {
+            if (level.getBlockState(threshold.offset(rel)).getBlock() instanceof DoorBlock) {
+                visibleThresholds++;
+            }
+        }
+        helper.assertTrue(visibleThresholds == 1, "the moving-threshold room exposes exactly one exit at a time");
+
+        BlockPos duplicate = helper.absolutePos(BlockPos.ZERO).offset(-740, 8, 40);
+        LabyrinthHazards.buildDuplicatePassage(level, duplicate);
+        int duplicateDoors = 0;
+        for (BlockPos rel : List.of(new BlockPos(0, 0, -15), new BlockPos(-8, 0, -8), new BlockPos(8, 0, -8))) {
+            if (level.getBlockState(duplicate.offset(rel)).getBlock() instanceof DoorBlock) {
+                duplicateDoors++;
+            }
+        }
+        helper.assertTrue(duplicateDoors == 3, "all three duplicate exits look equally real");
+
+        BlockPos gravity = helper.absolutePos(BlockPos.ZERO).offset(-780, 12, 40);
+        LabyrinthHazards.buildGravityDrift(level, gravity);
+        helper.assertTrue(level.getBlockState(gravity.offset(-2, -2, -12)).isAir(),
+                "gravity drift has a real lower recovery trench");
+        helper.assertTrue(level.getBlockState(gravity.offset(-3, -3, -10)).is(Blocks.LADDER),
+                "the trench has a ladder back out");
+        helper.assertTrue(level.getBlockState(gravity.offset(0, 0, -28)).getBlock() instanceof DoorBlock,
+                "gravity drift still has a normal exit");
+
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void duplicatePassageAlwaysHasTwoWrongDoorsAndOneWayOn(GameTestHelper helper) {
+        LabyrinthData data = new LabyrinthData();
+        UUID player = UUID.randomUUID();
+        BlockPos base = new BlockPos(0, 64, 0);
+        LabyrinthBuilder.registerDoors(data, LabyrinthPlace.DUPLICATE_PASSAGE, base);
+        data.visit(player, LabyrinthPlace.FLOORBOARDS);
+        data.visit(player, LabyrinthPlace.HIDE_AND_CLAP);
+        data.visit(player, LabyrinthPlace.HARRIGAN);
+
+        LabyrinthDealer.dealPlace(data, player, LabyrinthPlace.DUPLICATE_PASSAGE, RandomSource.create(7));
+        int loops = 0;
+        int onward = 0;
+        for (LabyrinthPlace.DoorSpec spec : LabyrinthPlace.DUPLICATE_PASSAGE.doors()) {
+            if (!LabyrinthData.DEALT.equals(spec.destination())) {
+                continue;
+            }
+            LabyrinthData.Door door = data.door(LabyrinthPlace.DUPLICATE_PASSAGE.doorId(spec));
+            LabyrinthData.Deal deal = door == null ? null : data.deal(player, door);
+            helper.assertTrue(deal != null, "every apparent exit is dealt");
+            if (LabyrinthPlace.DUPLICATE_PASSAGE.id().equals(deal.place())) {
+                loops++;
+            } else {
+                onward++;
+            }
+        }
+        helper.assertTrue(loops == 2 && onward == 1,
+                "two identical exits recurse and exactly one advances: " + loops + " / " + onward);
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void explorerCampContainsFiniteRecoverySupplies(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos base = helper.absolutePos(BlockPos.ZERO).offset(-820, 8, 40);
+        LabyrinthCampsite.build(level.getServer(), level, base);
+
+        helper.assertTrue(level.getBlockState(base.offset(LabyrinthCampsite.FIRE)).is(Blocks.CAMPFIRE),
+                "the abandoned camp has a working fire");
+        helper.assertTrue(level.getBlockState(base.offset(0, 0, -15)).getBlock() instanceof DoorBlock,
+                "the camp is a route through the maze, not a dead end");
+        helper.assertTrue(level.getBlockEntity(base.offset(LabyrinthCampsite.CACHE)) instanceof Container,
+                "the explorers left a real scavengable cache");
+        Container cache = (Container) level.getBlockEntity(base.offset(LabyrinthCampsite.CACHE));
+        int food = 0;
+        for (int i = 0; i < cache.getContainerSize(); i++) {
+            ItemStack stack = cache.getItem(i);
+            if (stack.is(Items.BREAD) || stack.is(Items.BAKED_POTATO) || stack.is(Items.COOKED_BEEF)
+                    || stack.is(Items.APPLE) || stack.is(Items.COOKED_COD)) {
+                food += stack.getCount();
+            }
+        }
+        helper.assertTrue(food >= 15, "the first discoverers can actually recover food, found " + food);
         helper.succeed();
     }
 
