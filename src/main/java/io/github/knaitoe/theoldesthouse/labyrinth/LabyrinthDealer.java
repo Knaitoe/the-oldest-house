@@ -85,7 +85,8 @@ public final class LabyrinthDealer {
      * player or after upgrading an older save.
      */
     public static int mazeTier(LabyrinthData data, UUID player) {
-        return Math.min(3, Math.max(data.vignettesVisited(player), data.completed().size()));
+        int depthTier = Math.min(3, data.returnDepth(player) / 3);
+        return Math.min(3, Math.max(depthTier, Math.max(data.vignettesVisited(player), data.completed().size())));
     }
 
     public static List<LabyrinthPlace> grayAvailable(LabyrinthData data, UUID player) {
@@ -93,6 +94,10 @@ public final class LabyrinthDealer {
         List<LabyrinthPlace> gray = new ArrayList<>();
         gray.add(LabyrinthPlace.JUNCTION);
         gray.add(LabyrinthPlace.GRAY_CORRIDOR);
+        int depth = data.returnDepth(player);
+        if (depth >= 3) gray.add(LabyrinthPlace.FOLDED_MAZE);
+        if (depth >= 6) gray.add(LabyrinthPlace.DEEP_MAZE);
+        if (depth >= 9) gray.add(LabyrinthPlace.ABYSS_MAZE);
         if (tier >= 1) {
             gray.add(LabyrinthPlace.LONG_HALLWAY);
             gray.add(LabyrinthPlace.FLOODED_PASSAGE);
@@ -184,7 +189,7 @@ public final class LabyrinthDealer {
         } else {
             List<LabyrinthPlace> gray = new ArrayList<>(grayAvailable(data, player));
             gray.remove(LabyrinthPlace.DUPLICATE_PASSAGE);
-            realDestination = pickGray(gray, random).id();
+            realDestination = pickGray(gray, data.returnDepth(player), random).id();
             leak = random.nextInt(100) < LYING_LEAK_CHANCE;
         }
 
@@ -198,17 +203,27 @@ public final class LabyrinthDealer {
         data.setDryDeals(player, vignette ? 0 : data.dryDeals(player) + 1);
     }
 
-    private static LabyrinthPlace pickGray(List<LabyrinthPlace> gray, RandomSource random) {
+    public static int grayWeight(LabyrinthPlace place, int depth) {
+        return switch (place) {
+            case FOLDED_MAZE -> 5 + Math.min(6, Math.max(0, depth - 3));
+            case DEEP_MAZE -> 10 + Math.min(8, Math.max(0, depth - 6));
+            case ABYSS_MAZE -> 18 + Math.min(12, Math.max(0, depth - 9));
+            case JUNCTION -> depth >= 6 ? 1 : 3;
+            default -> place.grayWeight();
+        };
+    }
+
+    private static LabyrinthPlace pickGray(List<LabyrinthPlace> gray, int depth, RandomSource random) {
         int totalWeight = 0;
         for (LabyrinthPlace place : gray) {
-            totalWeight += place.grayWeight();
+            totalWeight += grayWeight(place, depth);
         }
         if (gray.isEmpty() || totalWeight <= 0) {
             return LabyrinthPlace.JUNCTION;
         }
         int roll = random.nextInt(totalWeight);
         for (LabyrinthPlace place : gray) {
-            roll -= place.grayWeight();
+            roll -= grayWeight(place, depth);
             if (roll < 0) {
                 return place;
             }
@@ -245,7 +260,7 @@ public final class LabyrinthDealer {
             if (door == lucky) {
                 data.deal(player, door, pickVignette(data, vignettes, random).id(), true, scent);
             } else {
-                data.deal(player, door, pickGray(gray, random).id(), random.nextInt(100) < LYING_LEAK_CHANCE);
+                data.deal(player, door, pickGray(gray, data.returnDepth(player), random).id(), random.nextInt(100) < LYING_LEAK_CHANCE);
             }
         }
         data.setDryDeals(player, lucky != null ? 0 : data.dryDeals(player) + 1);

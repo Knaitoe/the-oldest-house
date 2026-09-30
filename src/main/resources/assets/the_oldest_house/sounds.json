@@ -1,4 +1,16 @@
 {
+  "leak.television": {
+    "sounds": [{"name": "the_oldest_house:leaks/television", "attenuation_distance": 12}],
+    "subtitle": "subtitles.the_oldest_house.television_murmur"
+  },
+  "leak.phone": {
+    "sounds": [{"name": "the_oldest_house:leaks/phone", "attenuation_distance": 12}],
+    "subtitle": "subtitles.the_oldest_house.phone_muffled"
+  },
+  "leak.hotel_music": {
+    "sounds": [{"name": "the_oldest_house:leaks/hotel_music", "attenuation_distance": 12}],
+    "subtitle": "subtitles.the_oldest_house.music_muffled"
+  },
   "vignette.clap": {
     "sounds": [
       {

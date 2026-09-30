@@ -29,15 +29,17 @@ public final class ClapGameClientEvents {
         if (mc.player == null || mc.level == null) {
             restore(mc);
             ClapGameClientState.clear();
+            DoorLeakClientState.clear();
             return;
         }
-        if (ClapGameClientState.bound() || BlindfoldItem.isWorn(mc.player)) {
+        boolean cloth = ClapGameClientState.bound() || BlindfoldItem.isWorn(mc.player);
+        if (cloth || DoorLeakClientState.labyrinth()) {
             if (previousCamera == null) {
                 previousCamera = mc.options.getCameraType();
                 previousHideGui = mc.options.hideGui;
             }
             mc.options.setCameraType(CameraType.FIRST_PERSON);
-            mc.options.hideGui = false;
+            if (cloth) mc.options.hideGui = false;
         } else restore(mc);
     }
     private static void restore(Minecraft mc) {
