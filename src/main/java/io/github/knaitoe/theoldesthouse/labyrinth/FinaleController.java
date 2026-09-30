@@ -109,6 +109,10 @@ public final class FinaleController {
             if(player.getY()<FinaleArchitecture.ARENA-2||player.getZ()<b.getZ()+30||Math.abs(player.getX()-b.getX())>16)
                 HouseInternalTeleport.shift(player,Vec3.atBottomCenterOf(b.offset(0,FinaleArchitecture.ARENA,34)),0);
             if(player.tickCount%20==0)ensureMinotaur(player,origin,record);
+            if(phase==FinaleProgress.Phase.COLLAPSE&&player.tickCount%10==0){
+                player.serverLevel().sendParticles(new net.minecraft.core.particles.BlockParticleOption(net.minecraft.core.particles.ParticleTypes.BLOCK,Blocks.DEEPSLATE_TILES.defaultBlockState()),player.getX(),player.getY()+3,player.getZ(),20,5,1,5,.04);
+                if(player.tickCount%40==0)player.serverLevel().playSound(null,player.blockPosition(),SoundEvents.STONE_BREAK,SoundSource.BLOCKS,.7F,.55F);
+            }
         }else if(phase==FinaleProgress.Phase.ESCAPE){
             if(player.getY()<0){player.hurt(player.damageSources().genericKill(),Float.MAX_VALUE);return true;}
             if(player.getY()>FinaleArchitecture.BOTTOM+10)HouseInternalTeleport.shift(player,Vec3.atBottomCenterOf(FinaleArchitecture.bottomStart(origin)),0);
@@ -242,7 +246,7 @@ public final class FinaleController {
     public static void words(ServerPlayer player,BlockPos pos,String text){
         long now=player.serverLevel().getGameTime();if(now-LAST_WORDS.getOrDefault(player.getUUID(),-100L)<30)return;LAST_WORDS.put(player.getUUID(),now);
         Display.TextDisplay display=EntityType.TEXT_DISPLAY.create(player.serverLevel());if(display==null)return;
-        CompoundTag tag=new CompoundTag();tag.putString("text",Component.Serializer.toJson(Component.literal(text),player.registryAccess()));
+        CompoundTag tag=new CompoundTag();display.saveWithoutId(tag);tag.putString("text",Component.Serializer.toJson(Component.literal(text),player.registryAccess()));
         tag.putString("billboard","center");tag.putInt("line_width",240);tag.putInt("background",0x44000000);tag.putBoolean("see_through",false);
         display.load(tag);display.moveTo(pos.getX()+.5,pos.getY()+.4,pos.getZ()+.5);display.getPersistentData().putLong("FinaleWordsUntil",now+140);display.addTag("HouseFinaleWords");player.serverLevel().addFreshEntity(display);
     }
@@ -251,7 +255,9 @@ public final class FinaleController {
         CompoundTag record=FinaleProgress.player(player.server,player.getUUID());record.putString("Phase",FinaleProgress.Phase.LOCKED_OUT.name());record.putBoolean("NeedsRespawn",true);
         for(int i=0;i<player.getInventory().getContainerSize();i++)keep(player,player.getInventory().removeItemNoUpdate(i));
         keep(player,player.containerMenu.getCarried());player.containerMenu.setCarried(ItemStack.EMPTY);
-        for(var pet:CompanionOrders.followingAll(player)){
+        java.util.List<TamableAnimal> keptPets=new java.util.ArrayList<>();
+        for(Entity entity:player.serverLevel().getAllEntities())if(entity instanceof TamableAnimal pet&&pet.isAlive()&&player.getUUID().equals(CompanionOrders.owner(pet)))keptPets.add(pet);
+        for(var pet:keptPets){
             CompoundTag contents=new CompoundTag();pet.saveWithoutId(contents);
             contents.putString("id",net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(pet.getType()).toString());
             var entry=MotherCollection.get(player.server).keepPet(pet.getUUID(),contents,player.getUUID(),pet.getName().getString());
