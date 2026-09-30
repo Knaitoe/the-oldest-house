@@ -19,6 +19,8 @@ import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
  */
 @EventBusSubscriber(modid = TheOldestHouse.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class BlindfoldClient {
+    private static final ResourceLocation CLOTH = ResourceLocation.fromNamespaceAndPath(
+            TheOldestHouse.MOD_ID, "textures/gui/blindfold_edge.png");
     private BlindfoldClient() {
     }
 
@@ -29,7 +31,7 @@ public final class BlindfoldClient {
 
     private static void render(GuiGraphics graphics, DeltaTracker deltaTracker) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player == null || !BlindfoldItem.isWorn(minecraft.player)) {
+        if (minecraft.player == null || (!BlindfoldItem.isWorn(minecraft.player) && !ClapGameClientState.bound())) {
             return;
         }
         int width = graphics.guiWidth();
@@ -39,5 +41,11 @@ public final class BlindfoldClient {
         graphics.fill(0, 0, width, edge, 0xFF000000);
         // The cloth's lower edge is soft, not a ruled line.
         graphics.fillGradient(0, edge, width, edge + strip / 3, 0xFF000000, 0x00000000);
+        // A frayed, woven cloth edge above the gap. Tile its native pixels;
+        // the sealed area above remains fully opaque.
+        for (int x = 0; x < width; x += 64) {
+            int tile = Math.min(64, width - x);
+            graphics.blit(CLOTH, x, edge - 12, 0, 0, tile, 16, 64, 16);
+        }
     }
 }

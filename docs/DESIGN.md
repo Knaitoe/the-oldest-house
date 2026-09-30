@@ -249,7 +249,7 @@ The room between rooms decides by planes, not distances (`HouseBetweenRoom.Cross
 
 The room between rooms is shared: one pocket, one pair of copied doors. Leaving it shows the leaver its doors shut (the real partition they land in front of is shut), but with anyone else still in the pocket that is done with a per-player block update, not by changing the doors. The last one out shuts them for real. Entering always re-sends the copies' true door states to the one entering.
 
-Hide-and-clap is one room with one game, owned by the first player to put the blindfold on. Its claps, feet and wardrobe are sent to that player alone, so a second player in the room neither disturbs it nor experiences it.
+Hide-and-clap is one room with one game, reserved by the first player to enter. The entry shuts and other players cannot enter during that turn. Its claps and girl are private to its owner. The minute starts when that player equips the blindfold, and the reservation, timer and progress survive reconnects and world reloads. Failure drops the player's items in the room and returns them to the manor outside the impossible hallway; the Mother may collect abandoned keepsakes when those drops expire.
 
 Every payload goes through `HousePackets`, which skips any connection that has not negotiated the mod's channel (fake players, GameTest mock players).
 

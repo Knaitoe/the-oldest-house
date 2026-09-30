@@ -437,16 +437,16 @@ Each classic gets its own vignette, and its motifs stay inside it.
 
 *One-shot · verb: following claps blindfolded*
 
-- **Setup.** A child's bedroom with open floor. A blindfold hangs on the bedpost beside a note in a child's handwriting: put it on, count to ten, follow the claps, take it off when you think you've found me.
-- **The blindfold, not the Blindness effect.** Blindness still shows a few blocks, and milk clears it. The blindfold is a head-slot item with a full-screen overlay, like a carved pumpkin: black, except a thin strip at the bottom showing the floor around your feet. Taking it off is the player's choice, and the game's own rule prompts it at the end.
+- **Setup.** A child's bedroom with open floor. Entering reserves and locks the room. A woven blindfold hangs beside the child's note: put it on, count to ten, follow the claps and open the wardrobe within a minute.
+- **The blindfold, not the Blindness effect.** A head-slot cloth with an opaque overlay and a textured, frayed lower edge. A narrow floor strip, hotbar, action bar and subtitle arrows remain visible. The cloth binds until the wardrobe is opened; inventory swaps, third-person view and hiding the HUD do not permit peeking. The server owns the lock and deadline.
 - **The count.** Put it on and a child's voice counts to ten.
 - **The claps.** Three or four claps from open spots. Get within a block or two and the next sounds elsewhere; wander, and the current one repeats louder. Clap files must be mono, because Minecraft only positions mono sounds. Subtitle arrows keep it playable with the sound off.
-- **The glimpse.** At the third clap, small bare feet step away through the strip under the blindfold.
+- **The glimpse.** At the third clap, the private textured girl's bare feet step away through the strip below the cloth. They replace the earlier dyed leather boots.
 - **Facing away.** At the final clap, the mod reads which way the player faces and silently places the wardrobe two blocks directly behind them. If that spot is blocked, it uses the nearest open spot within 45 degrees. Two claps come from inside it, the player turns on their own, and the first thing through the strip is the base of a wardrobe that wasn't there.
-- **Payoff.** Inside, a crayon drawing of someone in a blindfold, drawn from exactly where the wardrobe stands.
-- **Cheating.** Take the blindfold off early and the claps stop, the room resets, and a new note on the bed says you peeked. If the player never puts it on, a single clap sometimes comes from under the bed.
+- **Payoff.** Opening the wardrobe while blindfolded completes the game, removes the temporary binding, restores the actual cloth to the inventory and unlocks the exit. Inside is the crayon drawing of someone blindfolded, drawn from where the wardrobe stands.
+- **Failure.** The minute begins on equipping, including the count to ten. At expiry, her feet approach and a quick camera twist suggests a snapped neck, followed by fatal damage. Native item drops remain in the room; even `keepInventory` worlds produce drops for this death. Their components and owner survive, so ordinary recovery and the Mother's collection on despawn still work. The player respawns in the manor outside the hallway's near entrance, retaining their usual bed for later deaths. Failure resets the round; success retires its one-shot. Logout does not cancel the reservation or restart the timer. If the player has not equipped the cloth, a clap sometimes comes from beneath the bed.
 - **Persists.** Once found, the wardrobe stays open and the game isn't offered again.
-- Assets: blindfold item and overlay, mono clap and counting audio, wardrobe model, a child skin (only the feet show), the drawing as map art.
+- Assets: woven blindfold item and cloth edge, articulated girl and bare-foot UV atlas, mono claps, wardrobe model and crayon map art. Details and playtest: [CLAP_AND_SEEK.md](CLAP_AND_SEEK.md).
 
 ### The Tell-Tale Heart: the floorboards
 

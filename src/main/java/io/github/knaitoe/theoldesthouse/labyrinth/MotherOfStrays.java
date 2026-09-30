@@ -318,12 +318,17 @@ public final class MotherOfStrays {
     }
 
     public static void onItemToss(ItemTossEvent event) {
-        if (!event.getPlayer().level().isClientSide) event.getEntity().getPersistentData().putUUID(DROPPER, event.getPlayer().getUUID());
+        if (!event.getPlayer().level().isClientSide) recordDropOwner(event.getEntity(), event.getPlayer().getUUID());
+    }
+
+    /** Also used by vignette deaths that deliberately override keepInventory. */
+    public static void recordDropOwner(ItemEntity item, UUID player) {
+        item.getPersistentData().putUUID(DROPPER, player);
     }
 
     public static void onLivingDrops(LivingDropsEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
-        for (ItemEntity item : event.getDrops()) item.getPersistentData().putUUID(DROPPER, player.getUUID());
+        for (ItemEntity item : event.getDrops()) recordDropOwner(item, player.getUUID());
     }
 
     public static void onPetDeath(LivingDeathEvent event) {
