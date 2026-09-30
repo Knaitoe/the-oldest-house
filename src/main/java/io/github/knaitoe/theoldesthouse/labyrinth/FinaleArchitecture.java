@@ -99,7 +99,7 @@ public final class FinaleArchitecture {
             x+=direction.getStepX();z+=direction.getStepZ();
         }
         // Entry hall and copied vestibule open onto the first stair landing.
-        boxFloor(blocks,b,-3,3,12,22,TOP-1,stone);
+        boxFloor(blocks,b,-3,3,13,22,TOP-1,stone);
         for(int y=TOP;y<TOP+4;y++)for(int zz=14;zz<=22;zz++){put(blocks,b,-3,y,zz,dark);put(blocks,b,3,y,zz,dark);}
         for(int xx=-3;xx<=3;xx++)for(int zz=14;zz<=22;zz++)put(blocks,b,xx,TOP+4,zz,dark);
         put(blocks,b,0,TOP,14,Blocks.DARK_OAK_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.SOUTH));
