@@ -158,6 +158,7 @@ Five characters belong to the house itself; everyone else lives inside a vignett
 
 ### The Mother of Strays
 
+- Her appearance draws on Johnnie in *House of Leaves*, footnote 249, pp. 266–267: petite, platinum-haired, conspicuously full-busted and wearing excessive eyeliner. Her costume and supernatural form are mod adaptations. Sixteen texture stages introduce small changes in complexion and makeup before asymmetry and restrained late deformation.
 - Keeps every meaningful item that despawns anywhere, starting when the mod is installed, and every tamed pet that dies.
 - Her den is walls of item frames. The pets follow her and won't come when called. Zampanò's missing cats are there, and a small dog with a bandaged head.
 - One item back per visit. Take one and she starts 30 to 40 blocks behind in the dark until you return it or trade something loved. The implemented offering rule accepts named or enchanted objects, or meaningful unstackable objects carried by that player for at least ten minutes.
@@ -686,7 +687,7 @@ The Minotaur is the centerpiece asset; most human characters are skins on one sh
 | Shore creature | Drowned Town | Pathfinding that treats water as impassable |
 | Fire hose | The hotel | Segmented body; repositions when unseen, follows at the end |
 | Vulture | The plain | Circling behavior only, never swoops |
-| The Mother of Strays | Her den and concealed stalking | Custom articulated model, gradual deformation and four texture stages; custom bandaged Pekingese |
+| The Mother of Strays | Her den and concealed stalking | Petite articulated model, platinum hair, heavy eyeliner, continuous restrained deformation and sixteen texture stages; custom bandaged Pekingese |
 
 ### NPC skins (one entity type)
 

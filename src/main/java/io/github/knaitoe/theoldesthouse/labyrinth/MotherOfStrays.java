@@ -679,8 +679,8 @@ public final class MotherOfStrays {
         dog.setNoAi(true);
         dog.setNoGravity(true);
         Vec3 forward = mother.getLookAngle().multiply(1, 0, 1).normalize();
-        dog.moveTo(mother.getX() + forward.x * .6D, mother.getY() + 1.15D,
-                mother.getZ() + forward.z * .6D, mother.getYRot(), 0.0F);
+        dog.moveTo(mother.getX() + forward.x * .5D, mother.getY() + .78D,
+                mother.getZ() + forward.z * .5D, mother.getYRot(), 0.0F);
         if (collection.dogThreatTicks() >= 600 && !collection.dogAtLedge()) {
             Vec3 ledge = Vec3.atBottomCenterOf(base.offset(-1, 9, -21));
             if (!HouseWatchers.isWatched(level, mother.getEyePosition())

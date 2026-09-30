@@ -2,9 +2,93 @@
   "format": "oldest-house-cuboid-model-v1",
   "coordinates": "Minecraft ModelPart: pixels, local parent pivots, positive Y down",
   "texture": {
-    "width": 128,
-    "height": 256,
-    "path": "mother_of_strays.png"
+    "width": 512,
+    "height": 1024,
+    "path": "mother_of_strays.png",
+    "uv_width": 128,
+    "uv_height": 256,
+    "stages": [
+      {
+        "stage": 0,
+        "corruption": 0.0,
+        "path": "mother_of_strays.png"
+      },
+      {
+        "stage": 1,
+        "corruption": 0.06666666666666667,
+        "path": "mother_of_strays_1.png"
+      },
+      {
+        "stage": 2,
+        "corruption": 0.13333333333333333,
+        "path": "mother_of_strays_2.png"
+      },
+      {
+        "stage": 3,
+        "corruption": 0.2,
+        "path": "mother_of_strays_3.png"
+      },
+      {
+        "stage": 4,
+        "corruption": 0.26666666666666666,
+        "path": "mother_of_strays_4.png"
+      },
+      {
+        "stage": 5,
+        "corruption": 0.3333333333333333,
+        "path": "mother_of_strays_5.png"
+      },
+      {
+        "stage": 6,
+        "corruption": 0.4,
+        "path": "mother_of_strays_6.png"
+      },
+      {
+        "stage": 7,
+        "corruption": 0.4666666666666667,
+        "path": "mother_of_strays_7.png"
+      },
+      {
+        "stage": 8,
+        "corruption": 0.5333333333333333,
+        "path": "mother_of_strays_8.png"
+      },
+      {
+        "stage": 9,
+        "corruption": 0.6,
+        "path": "mother_of_strays_9.png"
+      },
+      {
+        "stage": 10,
+        "corruption": 0.6666666666666666,
+        "path": "mother_of_strays_10.png"
+      },
+      {
+        "stage": 11,
+        "corruption": 0.7333333333333333,
+        "path": "mother_of_strays_11.png"
+      },
+      {
+        "stage": 12,
+        "corruption": 0.8,
+        "path": "mother_of_strays_12.png"
+      },
+      {
+        "stage": 13,
+        "corruption": 0.8666666666666667,
+        "path": "mother_of_strays_13.png"
+      },
+      {
+        "stage": 14,
+        "corruption": 0.9333333333333333,
+        "path": "mother_of_strays_14.png"
+      },
+      {
+        "stage": 15,
+        "corruption": 1.0,
+        "path": "mother_of_strays_15.png"
+      }
+    ]
   },
   "parts": [
     {
@@ -218,7 +302,7 @@
       ],
       "cubes": [
         {
-          "name": "coiffed_hair",
+          "name": "platinum_crown",
           "origin": [
             -3.5,
             -7,
@@ -226,7 +310,7 @@
           ],
           "size": [
             7,
-            3,
+            2,
             6
           ],
           "material": "hair",
@@ -236,21 +320,21 @@
           ],
           "uv_size": [
             7,
-            3,
+            2,
             6
           ]
         },
         {
-          "name": "bun",
+          "name": "platinum_back",
           "origin": [
-            -2,
+            -3.5,
             -5,
-            3
+            2.5
           ],
           "size": [
-            4,
-            4,
-            3
+            7,
+            6,
+            1
           ],
           "material": "hair",
           "uv": [
@@ -258,9 +342,55 @@
             17
           ],
           "uv_size": [
-            4,
-            4,
-            3
+            7,
+            6,
+            1
+          ]
+        },
+        {
+          "name": "left_bob",
+          "origin": [
+            -3.6,
+            -5,
+            -2.4
+          ],
+          "size": [
+            1,
+            5,
+            5
+          ],
+          "material": "hair",
+          "uv": [
+            17,
+            17
+          ],
+          "uv_size": [
+            1,
+            5,
+            5
+          ]
+        },
+        {
+          "name": "right_bob",
+          "origin": [
+            2.8,
+            -5,
+            -2.4
+          ],
+          "size": [
+            1,
+            5,
+            5
+          ],
+          "material": "hair",
+          "uv": [
+            30,
+            17
+          ],
+          "uv_size": [
+            1,
+            5,
+            5
           ]
         }
       ],
@@ -280,7 +410,7 @@
       ],
       "cubes": [
         {
-          "name": "unhinged_jaw",
+          "name": "lengthening_chin",
           "origin": [
             -3,
             0,
@@ -293,7 +423,7 @@
           ],
           "material": "jaw",
           "uv": [
-            15,
+            43,
             17
           ],
           "uv_size": [
@@ -332,7 +462,7 @@
           ],
           "material": "shawl",
           "uv": [
-            40,
+            68,
             17
           ],
           "uv_size": [
@@ -358,7 +488,7 @@
       ],
       "cubes": [
         {
-          "name": "lace_collar",
+          "name": "open_neckline",
           "origin": [
             -2.5,
             0,
@@ -369,9 +499,9 @@
             2,
             1
           ],
-          "material": "lace",
+          "material": "skin",
           "uv": [
-            75,
+            103,
             17
           ],
           "uv_size": [
@@ -410,8 +540,8 @@
           ],
           "material": "dress",
           "uv": [
-            88,
-            17
+            0,
+            30
           ],
           "uv_size": [
             10,
@@ -444,17 +574,17 @@
           ],
           "size": [
             12,
-            8,
+            7,
             8
           ],
           "material": "hem",
           "uv": [
-            0,
+            33,
             30
           ],
           "uv_size": [
             12,
-            8,
+            7,
             8
           ]
         }
@@ -488,7 +618,7 @@
           ],
           "material": "shoe",
           "uv": [
-            41,
+            74,
             30
           ],
           "uv_size": [
@@ -527,7 +657,7 @@
           ],
           "material": "shoe",
           "uv": [
-            58,
+            91,
             30
           ],
           "uv_size": [
@@ -566,7 +696,7 @@
           ],
           "material": "shawl",
           "uv": [
-            75,
+            108,
             30
           ],
           "uv_size": [
@@ -605,8 +735,8 @@
           ],
           "material": "skin",
           "uv": [
-            88,
-            30
+            0,
+            46
           ],
           "uv_size": [
             2,
@@ -644,8 +774,8 @@
           ],
           "material": "skin",
           "uv": [
-            97,
-            30
+            9,
+            46
           ],
           "uv_size": [
             3,
@@ -683,8 +813,8 @@
           ],
           "material": "skin",
           "uv": [
-            108,
-            30
+            20,
+            46
           ],
           "uv_size": [
             1,
@@ -706,8 +836,8 @@
           ],
           "material": "nail",
           "uv": [
-            113,
-            30
+            25,
+            46
           ],
           "uv_size": [
             1,
@@ -745,8 +875,8 @@
           ],
           "material": "skin",
           "uv": [
-            118,
-            30
+            30,
+            46
           ],
           "uv_size": [
             1,
@@ -768,8 +898,8 @@
           ],
           "material": "nail",
           "uv": [
-            123,
-            30
+            35,
+            46
           ],
           "uv_size": [
             1,
@@ -807,8 +937,8 @@
           ],
           "material": "skin",
           "uv": [
-            0,
-            47
+            40,
+            46
           ],
           "uv_size": [
             1,
@@ -830,8 +960,8 @@
           ],
           "material": "nail",
           "uv": [
-            5,
-            47
+            45,
+            46
           ],
           "uv_size": [
             1,
@@ -869,8 +999,8 @@
           ],
           "material": "shawl",
           "uv": [
-            10,
-            47
+            50,
+            46
           ],
           "uv_size": [
             3,
@@ -908,8 +1038,8 @@
           ],
           "material": "skin",
           "uv": [
-            23,
-            47
+            63,
+            46
           ],
           "uv_size": [
             2,
@@ -947,8 +1077,8 @@
           ],
           "material": "skin",
           "uv": [
-            32,
-            47
+            72,
+            46
           ],
           "uv_size": [
             3,
@@ -986,8 +1116,8 @@
           ],
           "material": "skin",
           "uv": [
-            43,
-            47
+            83,
+            46
           ],
           "uv_size": [
             1,
@@ -1009,8 +1139,8 @@
           ],
           "material": "nail",
           "uv": [
-            48,
-            47
+            88,
+            46
           ],
           "uv_size": [
             1,
@@ -1048,8 +1178,8 @@
           ],
           "material": "skin",
           "uv": [
-            53,
-            47
+            93,
+            46
           ],
           "uv_size": [
             1,
@@ -1071,8 +1201,8 @@
           ],
           "material": "nail",
           "uv": [
-            58,
-            47
+            98,
+            46
           ],
           "uv_size": [
             1,
@@ -1110,8 +1240,8 @@
           ],
           "material": "skin",
           "uv": [
-            63,
-            47
+            103,
+            46
           ],
           "uv_size": [
             1,
@@ -1133,8 +1263,8 @@
           ],
           "material": "nail",
           "uv": [
-            68,
-            47
+            108,
+            46
           ],
           "uv_size": [
             1,
