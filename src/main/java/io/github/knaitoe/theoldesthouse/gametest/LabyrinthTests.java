@@ -668,8 +668,18 @@ public final class LabyrinthTests {
                 "the darkness pressure increases with route depth");
         helper.assertTrue(LabyrinthLighting.rearrangeInterval(8) < LabyrinthLighting.rearrangeInterval(3),
                 "unwatched light changes become more frequent deeper in");
-        helper.assertTrue(LabyrinthLighting.mayRearrange(LabyrinthPlace.GRAY_CORRIDOR),
-                "ordinary gray corridors can betray light landmarks");
+        helper.assertTrue(LabyrinthLighting.mayRearrange(LabyrinthPlace.GRAY_CORRIDOR)
+                        && LabyrinthLighting.mayRearrange(LabyrinthPlace.LONG_HALLWAY)
+                        && LabyrinthLighting.mayRearrange(LabyrinthPlace.HOTEL_HALLWAY),
+                "ordinary and impossible hallways can betray light landmarks");
+        helper.assertTrue(LabyrinthLighting.authoredLightCount(LabyrinthPlace.GRAY_CORRIDOR, 1) == 3
+                        && LabyrinthLighting.authoredLightCount(LabyrinthPlace.GRAY_CORRIDOR, 7) == 0,
+                "ordinary corridor fixtures physically thin from three lights to none");
+        helper.assertTrue(LabyrinthLighting.authoredLightCount(LabyrinthPlace.LONG_HALLWAY, 1)
+                        > LabyrinthLighting.authoredLightCount(LabyrinthPlace.LONG_HALLWAY, 5),
+                "the long hallway physically loses fixtures with depth");
+        helper.assertTrue(LabyrinthLighting.authoredLightCount(LabyrinthPlace.HOTEL_HALLWAY, 2) == 1,
+                "the hotel begins with only one dim fixture per repeated straight");
         helper.assertTrue(!LabyrinthLighting.mayRearrange(LabyrinthPlace.FLOODED_PASSAGE)
                         && !LabyrinthLighting.mayRearrange(LabyrinthPlace.EXPLORER_CAMP),
                 "survival-critical air pockets and the recovery camp keep their safety lighting");

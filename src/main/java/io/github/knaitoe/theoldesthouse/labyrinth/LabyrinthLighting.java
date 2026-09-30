@@ -16,11 +16,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LanternBlock;
@@ -33,9 +30,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 /**
  * The gray's relationship with light.
  *
- * Early on, somebody has tried to help. Deeper in, ordinary darkness becomes
- * harder to see through and unattended light sources stop being reliable
- * landmarks. The House rearranges lights, rather than simply deleting them:
+ * Early on, somebody has tried to help. Deeper in, the fixtures themselves
+ * thin out and unattended light sources stop being reliable landmarks. The House rearranges lights, rather than simply deleting them:
  * the exception is the authored Light Sink, whose entire point is consumption.
  */
 public final class LabyrinthLighting {
@@ -46,6 +42,9 @@ public final class LabyrinthLighting {
 
     private static final Map<UUID, Integer> DEPTH = new HashMap<>();
     private static final Map<UUID, Long> NEXT_SHIFT = new HashMap<>();
+    /** Physical hall light state is shared: once the House darkens a hall, it does not brighten for the next visitor. */
+    private static final Map<LabyrinthPlace, Integer> HALL_BAND = new HashMap<>();
+    private static final Map<LabyrinthPlace, Integer> HALL_LAYOUT = new HashMap<>();
 
     private LabyrinthLighting() {
     }
@@ -100,6 +99,11 @@ public final class LabyrinthLighting {
         int depth = LabyrinthData.get(player.server).returnDepth(player.getUUID());
         DEPTH.put(player.getUUID(), depth);
         NEXT_SHIFT.putIfAbsent(player.getUUID(), (long) player.server.getTickCount() + rearrangeInterval(depth));
+
+        BlockPos origin = HouseSavedData.get(player.server).houseOrigin();
+        if (origin != null) {
+            applyPhysicalDepth(player.serverLevel(), origin, place, depth);
+        }
     }
 
     public static int darknessBand(int returnDepth) {
@@ -130,8 +134,8 @@ public final class LabyrinthLighting {
 
     public static boolean mayRearrange(LabyrinthPlace place) {
         return switch (place) {
-            case JUNCTION, GRAY_CORRIDOR, FALSE_DISTANCE, COMPRESSION_PASSAGE,
-                    MOVING_THRESHOLD, DUPLICATE_PASSAGE -> true;
+            case JUNCTION, GRAY_CORRIDOR, LONG_HALLWAY, HOTEL_HALLWAY,
+                    FALSE_DISTANCE, COMPRESSION_PASSAGE, MOVING_THRESHOLD, DUPLICATE_PASSAGE -> true;
             default -> false;
         };
     }
@@ -160,7 +164,7 @@ public final class LabyrinthLighting {
 
             int depth = data.returnDepth(player.getUUID());
             DEPTH.put(player.getUUID(), depth);
-            dimForDepth(level, player, place, depth);
+            applyPhysicalDepth(level, origin, place, depth);
 
             if (darknessBand(depth) == 0 || !mayRearrange(place)) {
                 continue;
@@ -182,28 +186,129 @@ public final class LabyrinthLighting {
         }
     }
 
-    private static void dimForDepth(ServerLevel level, ServerPlayer player, LabyrinthPlace place, int depth) {
-        int band = darknessBand(depth);
-        if (band == 0
-                || place == LabyrinthPlace.EXPLORER_CAMP
-                || place == LabyrinthPlace.FLOODED_PASSAGE
-                || place == LabyrinthPlace.FRACTURED_WALKWAY
-                || place == LabyrinthPlace.GRAVITY_DRIFT
-                || place == LabyrinthPlace.LIGHT_SINK) {
+    private static boolean isPhysicalHall(LabyrinthPlace place) {
+        return place == LabyrinthPlace.GRAY_CORRIDOR
+                || place == LabyrinthPlace.LONG_HALLWAY
+                || place == LabyrinthPlace.HOTEL_HALLWAY;
+    }
+
+    private static int effectiveBand(LabyrinthPlace place, int returnDepth) {
+        int band = darknessBand(returnDepth);
+        // The hotel is only dealt at the deepest maze tier. Even if a short
+        // return stack reaches it, it should never feel as well-lit as the
+        // first gray corridors.
+        return place == LabyrinthPlace.HOTEL_HALLWAY ? Math.max(2, band) : band;
+    }
+
+    private static void applyPhysicalDepth(
+            ServerLevel level,
+            BlockPos origin,
+            LabyrinthPlace place,
+            int returnDepth
+    ) {
+        if (!isPhysicalHall(place)) {
             return;
         }
-
-        int blockLight = level.getBrightness(LightLayer.BLOCK, player.blockPosition().above());
-        int threshold = switch (band) {
-            case 1 -> 1;
-            case 2 -> 4;
-            default -> 7;
-        };
-        if (blockLight <= threshold) {
-            player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 30, 0, true, false, false));
-        } else {
-            player.removeEffect(MobEffects.DARKNESS);
+        int wanted = effectiveBand(place, returnDepth);
+        int current = HALL_BAND.getOrDefault(place, 0);
+        if (wanted <= current) {
+            return;
         }
+        HALL_BAND.put(place, wanted);
+        BlockPos base = LabyrinthPlaces.base(origin, place);
+        if (base == null) {
+            return;
+        }
+        if (place == LabyrinthPlace.GRAY_CORRIDOR) {
+            refreshCorridorLights(level, base, wanted, HALL_LAYOUT.getOrDefault(place, 0));
+        } else {
+            LabyrinthLoops.refreshAuthoredLights(level, base, place);
+        }
+    }
+
+    public static int authoredLightCount(LabyrinthPlace place, int returnDepth) {
+        int band = effectiveBand(place, returnDepth);
+        if (place == LabyrinthPlace.GRAY_CORRIDOR) {
+            return corridorLightPositions(band, 0).size();
+        }
+        if (place == LabyrinthPlace.LONG_HALLWAY || place == LabyrinthPlace.HOTEL_HALLWAY) {
+            return loopLightOffsets(place, band, 0).size();
+        }
+        return -1;
+    }
+
+    private static List<BlockPos> corridorLightPositions(int band, int layout) {
+        int[][] patterns = {
+                {-4, -13, -22},
+                {-6, -15, -24},
+                {-3, -11, -20},
+                {-8, -17, -26}
+        };
+        int count = switch (Math.max(0, Math.min(3, band))) {
+            case 0 -> 3;
+            case 1 -> 2;
+            case 2 -> 1;
+            default -> 0;
+        };
+        int[] pattern = patterns[Math.floorMod(layout, patterns.length)];
+        List<BlockPos> result = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            result.add(new BlockPos(0, 3, pattern[i]));
+        }
+        return result;
+    }
+
+    private static void refreshCorridorLights(ServerLevel level, BlockPos base, int band, int layout) {
+        // Clear every authored ceiling anchor, but never floor/wall torches a
+        // player spent. Those are allowed to become their own landmarks.
+        for (int variant = 0; variant < 4; variant++) {
+            for (BlockPos rel : corridorLightPositions(0, variant)) {
+                BlockPos pos = base.offset(rel);
+                if (level.getBlockState(pos).is(Blocks.SOUL_LANTERN)) {
+                    level.setBlock(pos, Blocks.AIR.defaultBlockState(), FLAGS);
+                }
+            }
+        }
+        for (BlockPos rel : corridorLightPositions(band, layout)) {
+            level.setBlock(
+                    base.offset(rel),
+                    Blocks.SOUL_LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true),
+                    FLAGS
+            );
+        }
+    }
+
+    static List<Integer> loopLightOffsets(LabyrinthPlace place, int band, int layout) {
+        int index = Math.floorMod(layout, 4);
+        if (band >= 3) {
+            return List.of();
+        }
+        if (place == LabyrinthPlace.LONG_HALLWAY) {
+            if (band == 0) {
+                return switch (index) {
+                    case 0 -> List.of(-2, -5);
+                    case 1 -> List.of(-3, -5);
+                    case 2 -> List.of(-2, -4);
+                    default -> List.of(-3, -4);
+                };
+            }
+            return List.of(new int[] {-4, -5, -3, -2}[index]);
+        }
+        if (place == LabyrinthPlace.HOTEL_HALLWAY) {
+            return List.of(new int[] {-4, -5, -3, -2}[index]);
+        }
+        return List.of();
+    }
+
+    @Nullable
+    static BlockState loopLightState(LabyrinthPlace place, int localZ) {
+        int band = HALL_BAND.getOrDefault(place, place == LabyrinthPlace.HOTEL_HALLWAY ? 2 : 0);
+        int layout = HALL_LAYOUT.getOrDefault(place, 0);
+        if (!loopLightOffsets(place, band, layout).contains(localZ)) {
+            return null;
+        }
+        Block block = place == LabyrinthPlace.HOTEL_HALLWAY && band == 0 ? Blocks.LANTERN : Blocks.SOUL_LANTERN;
+        return block.defaultBlockState().setValue(LanternBlock.HANGING, true);
     }
 
     public static boolean rearrangeOne(
@@ -216,6 +321,9 @@ public final class LabyrinthLighting {
             return false;
         }
         BlockPos base = LabyrinthPlaces.base(origin, place);
+        if (base != null && (place == LabyrinthPlace.LONG_HALLWAY || place == LabyrinthPlace.HOTEL_HALLWAY)) {
+            return rearrangeLoopHall(level, base, place);
+        }
         BoundingBox room = place.room();
         if (base == null || room == null) {
             return false;
@@ -225,7 +333,11 @@ public final class LabyrinthLighting {
         for (BlockPos cursor : BlockPos.betweenClosed(
                 base.getX() + room.minX(), base.getY() + room.minY(), base.getZ() + room.minZ(),
                 base.getX() + room.maxX(), base.getY() + room.maxY(), base.getZ() + room.maxZ())) {
-            if (isPortableLight(level.getBlockState(cursor)) && !HouseWatchers.isWatched(level, cursor)) {
+            BlockState state = level.getBlockState(cursor);
+            boolean authoredCorridorLamp = place == LabyrinthPlace.GRAY_CORRIDOR
+                    && cursor.getY() == base.getY() + 3
+                    && state.is(Blocks.SOUL_LANTERN);
+            if (!authoredCorridorLamp && isPortableLight(state) && !HouseWatchers.isWatched(level, cursor)) {
                 lights.add(cursor.immutable());
             }
         }
@@ -247,6 +359,24 @@ public final class LabyrinthLighting {
             return true;
         }
         return false;
+    }
+
+    private static boolean rearrangeLoopHall(ServerLevel level, BlockPos base, LabyrinthPlace place) {
+        int oldLayout = HALL_LAYOUT.getOrDefault(place, 0);
+        int nextLayout = Math.floorMod(oldLayout + 1, 4);
+
+        List<BlockPos> watched = new ArrayList<>();
+        watched.addAll(LabyrinthLoops.authoredLightPositions(base, place, oldLayout));
+        watched.addAll(LabyrinthLoops.authoredLightPositions(base, place, nextLayout));
+        for (BlockPos pos : watched) {
+            if (HouseWatchers.isWatched(level, pos)) {
+                return false;
+            }
+        }
+
+        HALL_LAYOUT.put(place, nextLayout);
+        LabyrinthLoops.refreshAuthoredLights(level, base, place);
+        return true;
     }
 
     @Nullable
@@ -312,5 +442,7 @@ public final class LabyrinthLighting {
     public static void clearAll() {
         DEPTH.clear();
         NEXT_SHIFT.clear();
+        HALL_BAND.clear();
+        HALL_LAYOUT.clear();
     }
 }
