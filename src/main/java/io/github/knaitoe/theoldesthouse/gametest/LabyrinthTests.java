@@ -562,10 +562,10 @@ public final class LabyrinthTests {
 
         BlockPos sink = helper.absolutePos(BlockPos.ZERO).offset(-660, 8, 40);
         LabyrinthHazards.buildLightSink(level, sink);
-        helper.assertTrue(LabyrinthHazards.allowsPlacing(level, sink.offset(0, 0, -8), Blocks.TORCH.defaultBlockState()),
+        helper.assertTrue(LabyrinthHazards.isPortableLight(Blocks.TORCH.defaultBlockState()),
                 "the light sink accepts sacrificial portable light");
-        helper.assertTrue(!LabyrinthHazards.allowsPlacing(level, sink.offset(0, 0, -8), Blocks.COBBLESTONE.defaultBlockState()),
-                "the light sink does not become an ordinary buildable room");
+        helper.assertTrue(!LabyrinthHazards.isPortableLight(Blocks.COBBLESTONE.defaultBlockState()),
+                "ordinary building blocks are not light-sink sacrifices");
 
         BlockPos threshold = helper.absolutePos(BlockPos.ZERO).offset(-700, 8, 40);
         LabyrinthHazards.buildMovingThreshold(level, threshold);

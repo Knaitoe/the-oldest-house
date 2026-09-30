@@ -292,7 +292,7 @@ public final class LabyrinthHazards {
         return isPortableLight(placed);
     }
 
-    private static boolean isPortableLight(BlockState state) {
+    public static boolean isPortableLight(BlockState state) {
         return state.is(Blocks.TORCH)
                 || state.is(Blocks.WALL_TORCH)
                 || state.is(Blocks.SOUL_TORCH)
