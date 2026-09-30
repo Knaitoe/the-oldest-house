@@ -36,7 +36,7 @@ public final class MinotaurEntity extends PathfinderMob {
     public void owner(UUID id){owner=id;}
     public @Nullable UUID owner(){return owner;}
     private void motion(int motion,int duration){entityData.set(MOTION,motion);remaining=duration;}
-    public void wounded(){motion(WOUNDED,100);bar.removeAllPlayers();setDeltaMovement(Vec3.ZERO);}
+    public void wounded(){motion(WOUNDED,240);bar.removeAllPlayers();setDeltaMovement(Vec3.ZERO);}
     @Override public boolean removeWhenFarAway(double distance){return false;}
     @Override public boolean canBeLeashed(){return false;}
     @Override public void startSeenByPlayer(ServerPlayer player){super.startSeenByPlayer(player);if(owner!=null&&owner.equals(player.getUUID())&&motion()!=WOUNDED)bar.addPlayer(player);}
@@ -46,7 +46,7 @@ public final class MinotaurEntity extends PathfinderMob {
         ServerPlayer player=owner==null?null:level.getServer().getPlayerList().getPlayer(owner);
         if(motion()==WOUNDED){
             Vec3 cell=FinaleController.cellCenter(level.getServer());
-            if(cell!=null){Vec3 step=cell.subtract(position()).multiply(1,0,1);if(step.lengthSqr()>.25)move(MoverType.SELF,step.normalize().scale(.035));}
+            if(cell!=null){Vec3 step=cell.subtract(position()).multiply(1,0,1);if(step.lengthSqr()>.25)move(MoverType.SELF,step.normalize().scale(.12));}
             if(--remaining<=0){if(player!=null)FinaleController.beginEscape(player);discard();}return;
         }
         if(player==null||player.level()!=level||!player.isAlive()||FinaleProgress.phase(level.getServer(),owner)!=FinaleProgress.Phase.FIGHT){

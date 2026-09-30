@@ -88,6 +88,7 @@ public final class HouseCommands {
                         .then(LabyrinthCommands.labyrinth())
                         .then(LabyrinthCommands.vignette())
                         .then(LabyrinthCommands.growl())
+                        .then(io.github.knaitoe.theoldesthouse.labyrinth.FinaleCommands.build())
                         .then(Commands.literal("restock")
                                 .executes(context -> restock(context.getSource())))
                         .then(Commands.literal("visit")
@@ -369,6 +370,9 @@ public final class HouseCommands {
         CommandSourceStack source = context.getSource();
         HouseSavedData data = HouseSavedData.get(source.getServer());
         data.reset();
+        LabyrinthData.get(source.getServer()).setState(io.github.knaitoe.theoldesthouse.labyrinth.FinaleProgress.STATE, new net.minecraft.nbt.CompoundTag());
+        LabyrinthData.get(source.getServer()).setState("finale_architecture_049", new net.minecraft.nbt.CompoundTag());
+        io.github.knaitoe.theoldesthouse.labyrinth.FinaleController.clearAll();
         HouseShifts.refreshCache(data);
         HouseMemory.get(source.getServer()).clear();
         HouseMirrorSyncEvents.clearPending();
@@ -398,3 +402,4 @@ public final class HouseCommands {
         return pos.getX() + "," + pos.getY() + "," + pos.getZ();
     }
 }
+

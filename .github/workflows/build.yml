@@ -43,7 +43,9 @@ jobs:
                            'assets/the_oldest_house/models/item/chalk.json',
                            'assets/the_oldest_house/models/item/trail_spool.json',
                            'data/the_oldest_house/recipe/chalk.json',
-                           'data/the_oldest_house/recipe/trail_spool.json'):
+                           'data/the_oldest_house/recipe/trail_spool.json',
+                           'assets/the_oldest_house/textures/entity/finale_materials.png',
+                           'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
               assert 'version="0.4.9"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
           digest = hashlib.sha256(jar.read_bytes()).hexdigest()

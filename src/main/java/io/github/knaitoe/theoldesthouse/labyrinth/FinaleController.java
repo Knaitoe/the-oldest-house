@@ -37,7 +37,19 @@ public final class FinaleController {
     private static final int FLAGS=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     public static final String GUIDE="HouseFinaleGuide";
     private static final Map<UUID,Long> LAST_WORDS=new HashMap<>();
+    private static final Map<UUID,Long> MISSING_CREATURES=new HashMap<>();
+    private static final Set<TamableAnimal> GUIDE_GOALS=Collections.newSetFromMap(new WeakHashMap<>());
     private FinaleController(){}
+    public static @Nullable BlockPos companionTarget(ServerPlayer player,boolean exit) {
+        BlockPos origin=HouseSavedData.get(player.server).houseOrigin();if(origin==null)return null;
+        var phase=FinaleProgress.phase(player.server,player.getUUID());
+        if(FinaleProgress.committed(phase))return player.blockPosition();
+        if(player.getY()<FinaleArchitecture.ARENA+3)return exit?FinaleArchitecture.base(origin).offset(0,FinaleArchitecture.ARENA,31):FinaleArchitecture.cell(origin).north(4);
+        List<BlockPos> route=FinaleArchitecture.staircaseRoute(origin);int nearest=0;double distance=Double.MAX_VALUE;
+        for(int i=0;i<route.size();i++){double d=route.get(i).distToCenterSqr(player.position());if(d<distance){distance=d;nearest=i;}}
+        int step=Math.max(0,Math.min(route.size()-1,nearest+(exit?-5:5)));
+        return step==0&&exit?FinaleArchitecture.base(origin).offset(0,FinaleArchitecture.TOP,14):route.get(step);
+    }
     public static @Nullable Vec3 cellCenter(MinecraftServer server){BlockPos origin=HouseSavedData.get(server).houseOrigin();return origin==null?null:Vec3.atBottomCenterOf(FinaleArchitecture.cell(origin).south(5));}
     public static boolean lockedOut(ServerPlayer player){return FinaleProgress.terminal(FinaleProgress.phase(player.server,player.getUUID()));}
     public static boolean canOffer(LabyrinthData data,UUID player){
@@ -61,6 +73,15 @@ public final class FinaleController {
     }
     /** Must run before manor auto-entry, including a pending transition saved by another controller. */
     public static boolean enforceExclusion(ServerPlayer player){
+        FinaleProgress.Phase phase = FinaleProgress.phase(player.server, player.getUUID());
+        if (FinaleProgress.committed(phase) && !player.isDeadOrDying() && !player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)) {
+            BlockPos origin = HouseSavedData.get(player.server).houseOrigin(); ServerLevel interior = player.server.getLevel(HouseDimensions.INTERIOR);
+            if (origin != null && interior != null) {
+                HouseTransitionEvents.cancelPending(player, "the opened cell cannot be left this way");
+                BlockPos at = phase == FinaleProgress.Phase.ESCAPE ? FinaleArchitecture.bottomStart(origin) : FinaleArchitecture.base(origin).offset(0,FinaleArchitecture.ARENA,34);
+                interior.getChunkAt(at); player.teleportTo(interior,at.getX()+.5,at.getY(),at.getZ()+.5,0,0); player.resetFallDistance(); return true;
+            }
+        }
         if(!lockedOut(player))return false;
         if(HouseTransitionEvents.isPending(player))HouseTransitionEvents.cancelPending(player,"the House no longer admits this player");
         BlockPos origin=HouseSavedData.get(player.server).housePosition().orElse(null);
@@ -69,6 +90,7 @@ public final class FinaleController {
         return true;
     }
     public static boolean tickPlayer(ServerPlayer player,BlockPos origin){
+        if (LabyrinthData.get(player.server).returnDepth(player.getUUID()) >= 9) FinaleArchitecture.request(player.server);
         if(!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)||!FinaleArchitecture.contains(origin,player.blockPosition()))return false;
         if(!player.isAlive())return true;
         CompoundTag record=FinaleProgress.player(player.server,player.getUUID());FinaleProgress.Phase phase=FinaleProgress.phase(record);
@@ -155,9 +177,13 @@ public final class FinaleController {
     private static void ensureMinotaur(ServerPlayer player,BlockPos origin,CompoundTag record){
         ServerLevel level=player.serverLevel();BlockPos cell=FinaleArchitecture.cell(origin);level.getChunkAt(cell);
         // Entity lookup is only meaningful after the cell chunk is loaded.
-        if(record.hasUUID("Creature")&&level.getEntity(record.getUUID("Creature")) instanceof MinotaurEntity)return;
+        if(record.hasUUID("Creature")&&level.getEntity(record.getUUID("Creature")) instanceof MinotaurEntity){MISSING_CREATURES.remove(player.getUUID());return;}
+        if(record.hasUUID("Creature")){
+            long first=MISSING_CREATURES.computeIfAbsent(player.getUUID(),ignored->level.getGameTime());
+            if(level.getGameTime()-first<40)return;
+        }
         var existing=level.getEntitiesOfClass(MinotaurEntity.class,new AABB(FinaleArchitecture.base(origin)).inflate(100),e->player.getUUID().equals(e.owner()));
-        if(!existing.isEmpty()){record.putUUID("Creature",existing.get(0).getUUID());return;}
+        if(!existing.isEmpty()){record.putUUID("Creature",existing.get(0).getUUID());MISSING_CREATURES.remove(player.getUUID());return;}
         MinotaurEntity creature=FinaleRegistry.MINOTAUR.get().create(level);if(creature==null)return;
         creature.moveTo(cell.getX()+.5,cell.getY(),cell.getZ()+5,180,0);creature.owner(player.getUUID());
         if(FinaleProgress.phase(record)==FinaleProgress.Phase.COLLAPSE)creature.wounded();level.addFreshEntity(creature);record.putUUID("Creature",creature.getUUID());
@@ -181,20 +207,21 @@ public final class FinaleController {
         if(record.getBoolean("RescueAttempted")||!collection.canGuide(player.getUUID()))return;
         record.putBoolean("RescueAttempted",true);
         for(var entry:collection.all())if(entry.pet&&!entry.sealed&&player.getUUID().equals(entry.owner)){
-            CompoundTag saved=entry.contents.copy();saved.remove("UUID");saved.remove("Passengers");saved.remove("Owner");saved.putBoolean("NoAI",false);saved.putBoolean("Invulnerable",false);
-            Entity entity=EntityType.loadEntityRecursive(saved,player.serverLevel(),e->e);
+            Entity entity=MotherOfStrays.restorePetEntity(player.serverLevel(),entry);
             if(!(entity instanceof TamableAnimal pet))continue;
             pet.removeTag(MotherOfStrays.PET);pet.setOwnerUUID(null);pet.setTame(true,false);pet.setOrderedToSit(false);pet.setInSittingPose(false);
             pet.setNoAi(false);pet.setInvulnerable(false);pet.setHealth(pet.getMaxHealth());pet.setPersistenceRequired();pet.getPersistentData().putBoolean(GUIDE,true);
-            pet.moveTo(Vec3.atBottomCenterOf(FinaleArchitecture.bottomStart(origin).south(2)));player.serverLevel().addFreshEntity(pet);
+            pet.moveTo(Vec3.atBottomCenterOf(FinaleArchitecture.bottomStart(origin).south(2)));installGuideGoal(pet);player.serverLevel().addFreshEntity(pet);
             record.putUUID("Guide",pet.getUUID());record.putUUID("GuideEntry",entry.id);record.putBoolean("Guided",true);
             words(player,pet.blockPosition().above(),"You know that collar.");return;
         }
     }
     private static void tickGuide(ServerPlayer player,BlockPos origin,CompoundTag record){
         if(!record.hasUUID("Guide"))return;
-        Entity entity=player.serverLevel().getEntity(record.getUUID("Guide"));if(!(entity instanceof TamableAnimal pet)||!pet.isAlive()){record.putBoolean("Guided",false);return;}
         List<BlockPos> path=FinaleArchitecture.escapeRoute(origin);int step=Math.min(path.size()-1,record.getInt("GuideStep"));
+        player.serverLevel().getChunkAt(path.get(step));
+        Entity entity=player.serverLevel().getEntity(record.getUUID("Guide"));if(!(entity instanceof TamableAnimal pet))return;
+        if(!pet.isAlive()){record.putBoolean("Guided",false);return;}installGuideGoal(pet);
         if(pet.position().distanceToSqr(Vec3.atBottomCenterOf(path.get(step)))<2&&step<path.size()-1){step++;record.putInt("GuideStep",step);}
         if(pet.distanceToSqr(player)>100){pet.getNavigation().stop();pet.getLookControl().setLookAt(player);return;}
         BlockPos next=path.get(step);if(player.tickCount%5==0)pet.getNavigation().moveTo(next.getX()+.5,next.getY(),next.getZ()+.5,.8);
@@ -224,9 +251,19 @@ public final class FinaleController {
         CompoundTag record=FinaleProgress.player(player.server,player.getUUID());record.putString("Phase",FinaleProgress.Phase.LOCKED_OUT.name());record.putBoolean("NeedsRespawn",true);
         for(int i=0;i<player.getInventory().getContainerSize();i++)keep(player,player.getInventory().removeItemNoUpdate(i));
         keep(player,player.containerMenu.getCarried());player.containerMenu.setCarried(ItemStack.EMPTY);
+        for(var pet:CompanionOrders.followingAll(player)){
+            CompoundTag contents=new CompoundTag();pet.saveWithoutId(contents);
+            contents.putString("id",net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(pet.getType()).toString());
+            var entry=MotherCollection.get(player.server).keepPet(pet.getUUID(),contents,player.getUUID(),pet.getName().getString());
+            if(entry!=null){entry.sealed=true;MotherCollection.get(player.server).setDirty();}pet.discard();
+        }
         FinaleProgress.save(player.server,player.getUUID(),record);LabyrinthData.get(player.server).clearReturns(player.getUUID());
         if(record.hasUUID("Creature")&&player.serverLevel().getEntity(record.getUUID("Creature")) instanceof MinotaurEntity creature)creature.discard();
         CompoundTag world=FinaleProgress.world(player.server);world.remove("Owner");LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);
+        BlockPos origin=HouseSavedData.get(player.server).houseOrigin();if(origin!=null){
+            FinaleArchitecture.seal(player.serverLevel(),origin,false);BlockPos cell=FinaleArchitecture.cell(origin);
+            for(int x=-1;x<=1;x++)for(int y=0;y<4;y++)player.serverLevel().setBlock(cell.offset(x,y,0),Blocks.IRON_BARS.defaultBlockState(),FLAGS);
+        }
     }
     private static void keep(ServerPlayer player,ItemStack stack){if(!stack.isEmpty())MotherCollection.get(player.server).keepFinaleItem(stack,player.registryAccess(),player.getUUID(),player.serverLevel().getGameTime());}
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void drops(LivingDropsEvent event){
@@ -246,6 +283,7 @@ public final class FinaleController {
             player.getInventory().clearContent();record.remove("NeedsRespawn");FinaleProgress.save(player.server,player.getUUID(),record);}}
     }
     @SubscribeEvent public static void projectile(EntityJoinLevelEvent event){
+        if(!event.getLevel().isClientSide&&event.getEntity() instanceof TamableAnimal pet&&pet.getPersistentData().getBoolean(GUIDE))installGuideGoal(pet);
         if(event.getLevel().isClientSide||!(event.getEntity() instanceof Projectile projectile)||!(projectile.getOwner() instanceof ServerPlayer player))return;
         ItemStack used=player.getUseItem();if(!WeaponHistory.weapon(used))used=WeaponHistory.weapon(player.getMainHandItem())?player.getMainHandItem():player.getOffhandItem();
         UUID original=WeaponHistory.stamp(used);if(original!=null)projectile.getPersistentData().putUUID(WeaponHistory.ORIGINAL,original);
@@ -261,13 +299,18 @@ public final class FinaleController {
         if(record.hasUUID("Guide")&&player.serverLevel().getEntity(record.getUUID("Guide")) instanceof TamableAnimal pet){
             pet.getPersistentData().remove(GUIDE);pet.setOwnerUUID(player.getUUID());pet.setTame(true,false);pet.setInvulnerable(false);
             if(record.hasUUID("GuideEntry"))MotherCollection.get(player.server).releaseFinalePet(record.getUUID("GuideEntry"));
-            CompanionOrders.followAcross(pet,player);
+            // Transfer after the owner reaches the overworld; the guide has been waiting here.
+            record.putUUID("RecoveredGuide",pet.getUUID());
         }
         record.putString("Phase",FinaleProgress.Phase.ESCAPED.name());record.putBoolean("Guided",guided);record.putLong("EpilogueDue",player.server.overworld().getGameTime()+24000);
         FinaleProgress.save(player.server,player.getUUID(),record);player.removeEffect(MobEffects.DARKNESS);
         // Evacuate every resident before disabling the House's origin; no peer can be stranded.
         for(ServerPlayer other:player.server.getPlayerList().getPlayers())if(HouseDimensions.isHouseDimension(other.serverLevel().dimension())){HouseTransitionEvents.cancelPending(other,"the House is collapsing");outside(other,origin);}
         if(!player.serverLevel().dimension().equals(Level.OVERWORLD))outside(player,origin);
+        if(record.hasUUID("RecoveredGuide")){
+            ServerLevel interior=player.server.getLevel(HouseDimensions.INTERIOR);
+            if(interior!=null&&interior.getEntity(record.getUUID("RecoveredGuide")) instanceof TamableAnimal pet)CompanionOrders.followAcross(pet,player);
+        }
         if(!guided)player.server.overworld().setDayTime(player.server.overworld().getDayTime()+60*24000L);
         CompoundTag world=FinaleProgress.world(player.server);world.putBoolean("Ended",true);world.putLong("CollapsedOrigin",origin.asLong());world.putInt("Demolition",0);world.remove("Owner");
         LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);HouseSavedData.get(player.server).collapse();
@@ -311,5 +354,13 @@ public final class FinaleController {
         }
         return false;
     }
-    public static void clearAll(){LAST_WORDS.clear();FinaleArchitecture.clearAll();}
+    private static void installGuideGoal(TamableAnimal pet){
+        if(!GUIDE_GOALS.add(pet))return;
+        pet.goalSelector.addGoal(0,new net.minecraft.world.entity.ai.goal.Goal(){
+            {setFlags(EnumSet.of(Flag.MOVE,Flag.LOOK));}
+            @Override public boolean canUse(){return pet.getPersistentData().getBoolean(GUIDE);}
+            @Override public boolean canContinueToUse(){return canUse();}
+        });
+    }
+    public static void clearAll(){LAST_WORDS.clear();MISSING_CREATURES.clear();GUIDE_GOALS.clear();FinaleArchitecture.clearAll();}
 }
