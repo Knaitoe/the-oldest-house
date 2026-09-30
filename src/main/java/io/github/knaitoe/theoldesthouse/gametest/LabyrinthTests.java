@@ -19,6 +19,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthLoops;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlaces;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthRegistry;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthSpawnRules;
 import io.github.knaitoe.theoldesthouse.labyrinth.RedRoom;
 import io.github.knaitoe.theoldesthouse.labyrinth.RoomSnapshot;
 import io.github.knaitoe.theoldesthouse.labyrinth.TellTaleFloorboards;
@@ -79,6 +80,33 @@ public final class LabyrinthTests {
         helper.assertTrue(level.getBlockState(base.offset(0, 1, 1)).getBlock() instanceof DoorBlock, "both halves of it");
         helper.assertTrue(level.getBlockState(base.offset(0, 0, 0)).isAir(), "an opening through the room's own wall");
         helper.assertTrue(level.getBlockState(base.offset(0, 0, 2)).isAir(), "and a vestibule behind the door");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void vanillaMonstersCannotSpawnInLabyrinthSlots(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(0, 64, 0);
+        BlockPos inside = LabyrinthPlaces.base(origin, LabyrinthPlace.JUNCTION);
+        helper.assertTrue(inside != null, "junction slot fits the test house origin");
+
+        helper.assertTrue(LabyrinthSpawnRules.shouldBlock(
+                        HouseDimensions.INTERIOR, origin, EntityType.ZOMBIE, inside, false),
+                "vanilla monsters are rejected inside a Labyrinth slot");
+        helper.assertTrue(LabyrinthSpawnRules.shouldBlock(
+                        HouseDimensions.INTERIOR, origin, EntityType.CREEPER, inside, false),
+                "other vanilla monster types are rejected too");
+        helper.assertTrue(!LabyrinthSpawnRules.shouldBlock(
+                        HouseDimensions.INTERIOR, origin, EntityType.COW, inside, false),
+                "non-hostile vanilla mobs are not rejected by this rule");
+        helper.assertTrue(!LabyrinthSpawnRules.shouldBlock(
+                        Level.OVERWORLD, origin, EntityType.ZOMBIE, inside, false),
+                "the same mob remains legal outside the House dimension");
+        helper.assertTrue(!LabyrinthSpawnRules.shouldBlock(
+                        HouseDimensions.INTERIOR, origin, EntityType.ZOMBIE, origin, false),
+                "the rule is Labyrinth-only, not a blanket ban across the manor");
+        helper.assertTrue(!LabyrinthSpawnRules.shouldBlock(
+                        HouseDimensions.INTERIOR, origin, EntityType.ZOMBIE, inside, true),
+                "authored vanilla monsters can opt in explicitly");
         helper.succeed();
     }
 
