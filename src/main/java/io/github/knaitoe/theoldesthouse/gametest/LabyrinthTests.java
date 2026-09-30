@@ -17,6 +17,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDealer;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthHazards;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthLighting;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthLoops;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlaces;
@@ -627,6 +628,54 @@ public final class LabyrinthTests {
         }
         helper.assertTrue(loops == 2 && onward == 1,
                 "two identical exits recurse and exactly one advances: " + loops + " / " + onward);
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void junctionGivesThePlayerTomsNoteAndTorches(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos base = helper.absolutePos(BlockPos.ZERO).offset(-800, 8, -40);
+        LabyrinthBuilder.buildJunction(level, base);
+        LabyrinthLighting.buildEarlyAid(level.getServer(), level, base);
+
+        helper.assertTrue(level.getBlockState(base.offset(LabyrinthLighting.TOM_NOTE)).is(Blocks.LECTERN),
+                "Tom's note is physically waiting in the first junction");
+        helper.assertTrue(level.getBlockState(base.offset(LabyrinthLighting.TOM_NOTE))
+                        .getValue(net.minecraft.world.level.block.LecternBlock.HAS_BOOK),
+                "the lectern actually contains the note");
+        helper.assertTrue(level.getBlockEntity(base.offset(LabyrinthLighting.TOM_CACHE)) instanceof Container,
+                "Tom leaves a real scavengable cache");
+
+        Container cache = (Container) level.getBlockEntity(base.offset(LabyrinthLighting.TOM_CACHE));
+        int torches = 0;
+        for (int i = 0; i < cache.getContainerSize(); i++) {
+            if (cache.getItem(i).is(Items.TORCH)) {
+                torches += cache.getItem(i).getCount();
+            }
+        }
+        helper.assertTrue(torches >= 12, "the early cache contains enough torches to matter, found " + torches);
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void labyrinthDarknessAndLightMovementScaleWithDepth(GameTestHelper helper) {
+        helper.assertTrue(LabyrinthLighting.darknessBand(1) == 0 && LabyrinthLighting.darknessBand(2) == 0,
+                "the first rooms still let the player trust ordinary light");
+        helper.assertTrue(LabyrinthLighting.darknessBand(3) == 1,
+                "darkness begins only after the route is genuinely several doors deep");
+        helper.assertTrue(LabyrinthLighting.darknessBand(5) == 2
+                        && LabyrinthLighting.darknessBand(7) == 3,
+                "the darkness pressure increases with route depth");
+        helper.assertTrue(LabyrinthLighting.rearrangeInterval(8) < LabyrinthLighting.rearrangeInterval(3),
+                "unwatched light changes become more frequent deeper in");
+        helper.assertTrue(LabyrinthLighting.mayRearrange(LabyrinthPlace.GRAY_CORRIDOR),
+                "ordinary gray corridors can betray light landmarks");
+        helper.assertTrue(!LabyrinthLighting.mayRearrange(LabyrinthPlace.FLOODED_PASSAGE)
+                        && !LabyrinthLighting.mayRearrange(LabyrinthPlace.EXPLORER_CAMP),
+                "survival-critical air pockets and the recovery camp keep their safety lighting");
+        helper.assertTrue(LabyrinthLighting.isPortableLight(Blocks.TORCH.defaultBlockState())
+                        && LabyrinthLighting.isPortableLight(Blocks.LANTERN.defaultBlockState()),
+                "the House recognizes the player's ordinary portable lights");
         helper.succeed();
     }
 

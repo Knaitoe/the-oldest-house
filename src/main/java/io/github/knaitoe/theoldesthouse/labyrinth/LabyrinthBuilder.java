@@ -34,7 +34,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump to rebuild every place in existing worlds on next use. */
-    public static final int VERSION = 9;
+    public static final int VERSION = 10;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -140,7 +140,10 @@ public final class LabyrinthBuilder {
         fillSolid(level, slot);
         LabyrinthData data = LabyrinthData.get(server);
         switch (place) {
-            case JUNCTION -> buildJunction(level, base);
+            case JUNCTION -> {
+                buildJunction(level, base);
+                LabyrinthLighting.buildEarlyAid(server, level, base);
+            }
             case GRAY_CORRIDOR -> buildCorridor(level, base);
             case FLOORBOARDS -> TellTaleFloorboards.build(level, base, !data.isCompleted(place.id()));
             case RED_ROOM -> RedRoom.build(server, level, base);
