@@ -26,6 +26,31 @@ jobs:
       - name: Build
         run: gradle build
 
+      - name: Verify playable package
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, zipfile
+          jars = list(pathlib.Path('build/libs').glob('the_oldest_house-*.jar'))
+          runtime = [p for p in jars if not p.stem.endswith(('-sources', '-javadoc'))]
+          assert len(runtime) == 1, runtime
+          jar = runtime[0]
+          with zipfile.ZipFile(jar) as z:
+              for name in z.namelist():
+                  if name.endswith('.json'):
+                      json.loads(z.read(name))
+              for name in ('assets/the_oldest_house/blockstates/chalk_mark.json',
+                           'assets/the_oldest_house/blockstates/trail_line.json',
+                           'assets/the_oldest_house/models/item/chalk.json',
+                           'assets/the_oldest_house/models/item/trail_spool.json',
+                           'data/the_oldest_house/recipe/chalk.json',
+                           'data/the_oldest_house/recipe/trail_spool.json'):
+                  assert name in z.namelist(), name
+              assert 'version="0.4.8"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+          digest = hashlib.sha256(jar.read_bytes()).hexdigest()
+          jar.with_suffix('.jar.sha256').write_text(f'{digest}  {jar.name}\n')
+          print(f'Playable package: {jar.name}; SHA-256 {digest}')
+          PY
+
       # Generates The Oldest House on a game-test server and checks its
       # architecture (sightline, enclosure, walkability, glazing). The log
       # also carries an OTH-DUMP block listing for offline rendering.
@@ -72,5 +97,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: the-oldest-house-${{ github.sha }}
-          path: build/libs/*.jar
+          path: |
+            build/libs/*.jar
+            build/libs/*.jar.sha256
           if-no-files-found: error

@@ -1,5 +1,7 @@
 # Mazes, leaks and companions — 0.4.7
 
+For the current hallway distribution, command wheel, navigation aids and rare encounters, see [EXPLORATION_0_4_8.md](EXPLORATION_0_4_8.md). The 0.4.8 pacing supersedes the frequency described in this historical update.
+
 The ordinary gray corridor is a connected 5×5 maze with junctions, wrong branches and a circuit. Three return-stack crossings unlock a 7×7 folded maze; six unlock a 9×9 maze with rotated crossings; nine unlock an 11×11 maze with three fold pairs. Deep folds connect passages up to sixty blocks apart. Matching corridor middles and solid corners hide the shift. Reverse movement inverts it, and speed and vertical movement survive. Plans are seeded and saved, so revisits retain their geometry.
 
 Existing gray corridors migrate without deleting dropped entities. A drop covered by a new wall moves to clear floor with its components and Mother ownership intact. Portable lights survive. Existing active vignettes keep their state.

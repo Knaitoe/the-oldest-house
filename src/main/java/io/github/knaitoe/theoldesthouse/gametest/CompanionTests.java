@@ -129,6 +129,28 @@ public final class CompanionTests {
     }
 
     @GameTest(template="empty",batch="companions")
+    public static void rescueAnimalsAreVulnerableNativePetsAndScenesStayPrivate(GameTestHelper helper) {
+        var level=helper.getLevel();var owner=mock(helper);
+        BlockPos at=helper.absolutePos(new BlockPos(2,2,2));
+        owner.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5);
+        for(boolean cat:java.util.List.of(false,true)) {
+            var pet=LabyrinthEncounters.spawnStray(level,owner.position().add(1,0,0),cat);
+            helper.assertTrue(pet!=null&&!pet.isTame()&&!pet.isNoAi()&&!pet.isInvulnerable(),
+                    "lost animals begin as vulnerable native animals");
+            pet.tame(owner);
+            helper.assertTrue(CompanionOrders.canCommand(owner,pet)
+                    &&CompanionOrders.issue(pet,owner,CompanionOrders.Order.STAY),
+                    "rescued cats and dogs use native owners and companion orders");
+            pet.discard();
+        }
+        helper.assertTrue(!LabyrinthEncounters.eligible(LabyrinthPlace.HIDE_AND_CLAP)
+                &&!LabyrinthEncounters.eligible(LabyrinthPlace.HARRIGAN)
+                &&!LabyrinthEncounters.eligible(LabyrinthPlace.MOTHER_DEN),
+                "ambient encounters do not interrupt authored scenes");
+        remove(owner);helper.succeed();
+    }
+
+    @GameTest(template="empty",batch="companions")
     public static void commandWheelChecksOwnerReachAndSavesStay(GameTestHelper helper) {
         var level=helper.getLevel();var owner=mock(helper);var stranger=mock(helper);
         BlockPos at=helper.absolutePos(new BlockPos(2,2,2));
