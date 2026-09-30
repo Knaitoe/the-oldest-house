@@ -579,7 +579,7 @@ public final class Hillary {
         Vec3 point = HillaryPaths.safeBeside(wolf, player);
         if (wolf.level() != to) {
             Entity moved = wolf.changeDimension(new DimensionTransition(to, point, Vec3.ZERO,
-                    player.getYRot(), 0, DimensionTransition.DO_NOTHING));
+                    player.getYRot(), 0, DimensionTransition.PLACE_PORTAL_TICKET));
             if (!(moved instanceof Wolf arriving)) return null;
             wolf = arriving;
         } else wolf.teleportTo(point.x, point.y, point.z);
