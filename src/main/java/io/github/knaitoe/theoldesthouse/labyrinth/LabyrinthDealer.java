@@ -23,7 +23,8 @@ import net.minecraft.util.RandomSource;
  *
  * The gray starts small and grows with progress. The junction and plain
  * corridor are always in the pool. Reaching/finishing vignettes adds the
- * long hallway, then the spiral stair, then the hotel hallway.
+ * long hallway and flooded passage, then the spiral stair and fractured
+ * walkway, then the hotel hallway and compression passage.
  */
 public final class LabyrinthDealer {
     public static final int VIGNETTE_BASE_CHANCE = 30;
@@ -93,12 +94,15 @@ public final class LabyrinthDealer {
         gray.add(LabyrinthPlace.GRAY_CORRIDOR);
         if (tier >= 1) {
             gray.add(LabyrinthPlace.LONG_HALLWAY);
+            gray.add(LabyrinthPlace.FLOODED_PASSAGE);
         }
         if (tier >= 2) {
             gray.add(LabyrinthPlace.SPIRAL_STAIR);
+            gray.add(LabyrinthPlace.FRACTURED_WALKWAY);
         }
         if (tier >= 3) {
             gray.add(LabyrinthPlace.HOTEL_HALLWAY);
+            gray.add(LabyrinthPlace.COMPRESSION_PASSAGE);
         }
         return gray;
     }
