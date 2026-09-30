@@ -8,7 +8,7 @@ The dealer makes one anomaly roll per arrival and assigns at most one onward doo
 
 Ordinary hallways do not routinely deal themselves. The existing eight-room personal history, vignette dry-spell guarantee, multi-visit story progress, private door leaks and Hillary's scent remain in use. Anomalies and special rooms use the saved repeat penalty.
 
-After an anomaly or hazardous stretch, a 75% roll can offer a quieter destination. Deep exploration also offers a pause, with a four-visit quiet-room spacing rule. A quiet room has chairs, a water cauldron, finite food, a readable explorer note and two doors. The explorer camp retains its bedrolls, fire, food and finite recovery. The Growl does not play during these quiet stops. Players can sit with an empty-hand right-click on a stair chair or carpet; Shift dismounts. Quiet places keep their warm light.
+After an anomaly or hazardous stretch, a 75% roll can offer a quieter destination. Deep exploration also offers a pause, with forced rest offers paused for four visits after a quiet room. Weighted quiet destinations can still appear during that interval at their reduced repeat weight. A quiet room has chairs, a water cauldron, finite food, a readable explorer note and two doors. The explorer camp retains its bedrolls, fire, food and finite recovery. The Growl does not play during these quiet stops. Players can sit with an empty-hand right-click on a stair chair or carpet; Shift dismounts. Quiet places keep their warm light.
 
 ## Companion controls
 

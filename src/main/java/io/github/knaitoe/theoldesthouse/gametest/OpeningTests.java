@@ -632,11 +632,15 @@ public final class OpeningTests {
 
         Vec3 porch = HouseProxyEntityEvacuation.frontDoorExit(level, manorOrigin);
         helper.assertTrue(porch != null, "no safe visible front-door waiting point");
-        level.getChunkAt(BlockPos.containing(porch));
+        BlockPos porchBlock=BlockPos.containing(porch);
+        level.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.PORTAL,
+                new net.minecraft.world.level.ChunkPos(porchBlock),3,porchBlock);
+        level.getChunkAt(porchBlock);
         wolf.moveTo(porch.x, porch.y, porch.z, 0.0F, 0.0F);
         // Moving a fixture outside its template changes its tracked section.
         // Wait for the loaded destination to become visible to UUID lookup.
-        helper.runAfterDelay(2, () -> {
+        helper.onEachTick(() -> {
+        if (level.getEntity(wolf.getUUID()) != wolf) return;
         Hillary.tickGuide(level, recipient, wolf.getUUID(), true, manorOrigin);
 
         helper.assertTrue(
@@ -651,6 +655,8 @@ public final class OpeningTests {
                 "Hillary did not adopt the visible front doorstep as her waiting place"
         );
 
+        level.getChunkSource().removeRegionTicket(net.minecraft.server.level.TicketType.PORTAL,
+                new net.minecraft.world.level.ChunkPos(porchBlock),3,porchBlock);
         wolf.discard();
         helper.succeed();
         });
