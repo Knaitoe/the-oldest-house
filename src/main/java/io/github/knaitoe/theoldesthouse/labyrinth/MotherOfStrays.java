@@ -78,6 +78,10 @@ public final class MotherOfStrays {
 
     public record Shelf(BlockPos relative, Direction facing) {}
 
+    private static AABB box(BlockPos lower, BlockPos upper) {
+        return new AABB(lower.getX(), lower.getY(), lower.getZ(), upper.getX(), upper.getY(), upper.getZ());
+    }
+
     public static List<Shelf> shelves() {
         List<Shelf> result = new ArrayList<>();
         for (int y : new int[] {1, 3, 5}) {
@@ -165,7 +169,7 @@ public final class MotherOfStrays {
 
     private static MotherEntity ensureKeeper(ServerLevel level, BlockPos base) {
         for (MotherEntity mother : level.getEntitiesOfClass(MotherEntity.class,
-                new AABB(base.offset(-10, -4, -25), base.offset(11, 14, 1)))) {
+                box(base.offset(-10, -4, -25), base.offset(11, 14, 1)))) {
             if (mother.following() == null) return mother;
         }
         MotherEntity mother = MotherRegistry.MOTHER.get().create(level);
@@ -176,7 +180,7 @@ public final class MotherOfStrays {
     }
 
     private static void ensureStrays(ServerLevel level, BlockPos base) {
-        AABB box = new AABB(base.offset(-10, -1, -25), base.offset(11, 8, 1));
+        AABB box = box(base.offset(-10, -1, -25), base.offset(11, 8, 1));
         if (level.getEntitiesOfClass(Mob.class, box, mob -> mob.getTags().contains(PET)
                 && !mob.getPersistentData().hasUUID(ENTRY)).isEmpty()) {
             for (int i = 0; i < 3; i++) {
@@ -215,7 +219,7 @@ public final class MotherOfStrays {
 
     private static void refreshShelves(ServerLevel level, BlockPos base, MotherCollection collection) {
         for (ItemFrame frame : level.getEntitiesOfClass(ItemFrame.class,
-                new AABB(base.offset(-11, -1, -26), base.offset(12, 8, 1)))) {
+                box(base.offset(-11, -1, -26), base.offset(12, 8, 1)))) {
             if (frame.getTags().contains(FRAME)) frame.discard();
         }
         List<MotherCollection.Entry> items = collection.visible();
@@ -226,7 +230,9 @@ public final class MotherOfStrays {
             Shelf shelf = shelves.get(i);
             ItemFrame frame = new ItemFrame(level, base.offset(shelf.relative()), shelf.facing());
             frame.addTag(FRAME);
-            frame.setFixed(true);
+            CompoundTag frameData = frame.saveWithoutId(new CompoundTag());
+            frameData.putBoolean("Fixed", true);
+            frame.load(frameData);
             frame.setInvulnerable(true);
             int index = shelfPage * shelves.size() + i;
             if (index < items.size()) {
@@ -240,7 +246,7 @@ public final class MotherOfStrays {
     }
 
     private static void refreshPets(ServerLevel level, BlockPos base, MotherCollection collection) {
-        AABB box = new AABB(base.offset(-10, -4, -25), base.offset(11, 14, 1));
+        AABB box = box(base.offset(-10, -4, -25), base.offset(11, 14, 1));
         List<MotherCollection.Entry> pets = collection.all().stream().filter(e -> e.pet).toList();
         int end = Math.max(0, pets.size() - shelfPage * 12);
         int start = Math.max(0, end - 12);
@@ -427,7 +433,7 @@ public final class MotherOfStrays {
             }
             Entity restored = restorePetEntity(player.serverLevel(), entry);
             if (!(restored instanceof Mob living)) return true;
-            Vec3 restoredSpot = nearbyStandingSpot(player.serverLevel(), player.blockPosition());
+            Vec3 restoredSpot = nearbyStandingSpot(player.serverLevel(), player);
             living.moveTo(restoredSpot.x, restoredSpot.y, restoredSpot.z, player.getYRot(), 0.0F);
             living.removeTag(PET);
             living.addTag(RELEASED);
@@ -601,7 +607,7 @@ public final class MotherOfStrays {
             }
         }
         if (level == null || base == null || !LabyrinthBuilder.isBuilt(server)) return;
-        AABB bounds = new AABB(base.offset(-11, -4, -26), base.offset(12, 14, 1));
+        AABB bounds = box(base.offset(-11, -4, -26), base.offset(12, 14, 1));
         if (level.players().stream().noneMatch(p -> bounds.contains(p.position()))) return;
         MotherEntity keeper = collection.banished() ? null : ensureKeeper(level, base);
         if (keeper != null) keeper.setCorruption(collection.corruption());
@@ -656,7 +662,7 @@ public final class MotherOfStrays {
                                       MotherCollection collection, ServerPlayer owner) {
         MotherPekingese dog = null;
         for (MotherPekingese candidate : level.getEntitiesOfClass(MotherPekingese.class,
-                new AABB(base.offset(-11,-4,-26), base.offset(12,14,1)))) {
+                box(base.offset(-11,-4,-26), base.offset(12,14,1)))) {
             if (candidate.getTags().contains(LITTLE_DOG)) { dog = candidate; break; }
         }
         if (dog == null || !dog.isAlive()) {
