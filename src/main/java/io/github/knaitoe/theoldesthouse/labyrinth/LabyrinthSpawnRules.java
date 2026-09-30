@@ -58,7 +58,7 @@ public final class LabyrinthSpawnRules {
                 || !isVanilla(type)) {
             return false;
         }
-        return LabyrinthPlaces.isInStack(houseOrigin, position);
+        return LabyrinthPlaces.isInStack(houseOrigin, position) || FinaleArchitecture.contains(houseOrigin, position);
     }
 
     private static boolean isVanilla(EntityType<?> type) {

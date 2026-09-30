@@ -351,7 +351,8 @@ public final class HouseTransitionEvents {
         }
 
         if (HouseShifts.isInDeepenedHall(origin, player.getX(), player.getY(), player.getZ())
-                || LabyrinthPlaces.isInStack(origin, player.getX(), player.getY(), player.getZ())) {
+                || LabyrinthPlaces.isInStack(origin, player.getX(), player.getY(), player.getZ())
+                || io.github.knaitoe.theoldesthouse.labyrinth.FinaleArchitecture.contains(origin, player.blockPosition())) {
             return true;
         }
         return data.isImpossibleDoorRevealed()

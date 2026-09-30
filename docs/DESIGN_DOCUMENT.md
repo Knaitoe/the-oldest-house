@@ -678,7 +678,7 @@ Opening the locked boy's cell starts the finale: the player either dies and is l
 - The collapse begins, and Tom doesn't make it out.
 - The bottom: a vast dark floor with drop-offs, under the Darkness effect. Burning a collected note lights a few blocks for a few seconds.
 - The pet the Mother kept finds you and leads you out, if you left her shelves alone or gave her something she wanted. Otherwise you find your own way and come home months later to an overgrown base.
-- The entrance becomes an empty lot. The entrance door in the player's wall is gone, and the wall it replaced is back as it was.
+- The actual manor entrance site becomes an empty lot. The finale uses the existing real manor entrance; it does not add or restore a portal in the player's home wall.
 - Some time later, a chest turns up somewhere mundane: a village, a mineshaft, the player's own base. It holds the notes in a different hand, with annotations the player never wrote and one page from a room they never entered. After that, the notes keep surfacing in loot chests and in wandering traders' stock.
 
 Assets: the Minotaur, a custom creature with charge, stun, and wounded-crawl animations, and a voice built from the Growl.
@@ -804,3 +804,4 @@ The House uses one writing pipeline rather than treating every note as an unrela
 `/oldesthouse writing samples` gives the executing player one readable sample of each authored style. An optional player argument gives the set to another player.
 
 The writing layer intentionally uses Minecraft's normal book/text renderer and ordinary opaque bitmap font providers. It does not use emissive text, custom framebuffers, translucent world-space page quads, post-processing, or shader hooks. This keeps the evidence readable with common shader loaders while still allowing resource packs to replace any font atlas normally.
+
