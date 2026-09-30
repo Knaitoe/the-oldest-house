@@ -91,7 +91,10 @@ public final class FinaleArchitecture {
                 put(blocks,b,sx,y,sz,tread);put(blocks,b,sx,y-1,sz,stone);
             }
             // Widen every landing; the lower landings have no comforting rail.
-            if(n%32==0)for(int dx=-3;dx<=3;dx++)for(int dz=-3;dz<=3;dz++)put(blocks,b,x+dx,y,z+dz,stone);
+            if(n%32==0)for(int width=-4;width<=4;width++){
+                int sx=x+(direction.getAxis()==Direction.Axis.Z?width:0),sz=z+(direction.getAxis()==Direction.Axis.X?width:0);
+                put(blocks,b,sx,y,sz,stone);put(blocks,b,sx,y-1,sz,stone);
+            }
             if(n<96&&n%2==0)put(blocks,b,x+direction.getClockWise().getStepX()*2,y+1,z+direction.getClockWise().getStepZ()*2,Blocks.IRON_BARS.defaultBlockState());
             x+=direction.getStepX();z+=direction.getStepZ();
         }
