@@ -1,0 +1,80 @@
+{
+  "variants": {
+    "facing=up,arrow=north": {
+      "model": "the_oldest_house:block/chalk_arrow",
+      "y": 0
+    },
+    "facing=up,arrow=east": {
+      "model": "the_oldest_house:block/chalk_arrow",
+      "y": 90
+    },
+    "facing=up,arrow=south": {
+      "model": "the_oldest_house:block/chalk_arrow",
+      "y": 180
+    },
+    "facing=up,arrow=west": {
+      "model": "the_oldest_house:block/chalk_arrow",
+      "y": 270
+    },
+    "facing=down,arrow=north": {
+      "model": "the_oldest_house:block/chalk_down"
+    },
+    "facing=down,arrow=east": {
+      "model": "the_oldest_house:block/chalk_down"
+    },
+    "facing=down,arrow=south": {
+      "model": "the_oldest_house:block/chalk_down"
+    },
+    "facing=down,arrow=west": {
+      "model": "the_oldest_house:block/chalk_down"
+    },
+    "facing=north,arrow=north": {
+      "model": "the_oldest_house:block/chalk_north"
+    },
+    "facing=north,arrow=east": {
+      "model": "the_oldest_house:block/chalk_north"
+    },
+    "facing=north,arrow=south": {
+      "model": "the_oldest_house:block/chalk_north"
+    },
+    "facing=north,arrow=west": {
+      "model": "the_oldest_house:block/chalk_north"
+    },
+    "facing=south,arrow=north": {
+      "model": "the_oldest_house:block/chalk_south"
+    },
+    "facing=south,arrow=east": {
+      "model": "the_oldest_house:block/chalk_south"
+    },
+    "facing=south,arrow=south": {
+      "model": "the_oldest_house:block/chalk_south"
+    },
+    "facing=south,arrow=west": {
+      "model": "the_oldest_house:block/chalk_south"
+    },
+    "facing=east,arrow=north": {
+      "model": "the_oldest_house:block/chalk_east"
+    },
+    "facing=east,arrow=east": {
+      "model": "the_oldest_house:block/chalk_east"
+    },
+    "facing=east,arrow=south": {
+      "model": "the_oldest_house:block/chalk_east"
+    },
+    "facing=east,arrow=west": {
+      "model": "the_oldest_house:block/chalk_east"
+    },
+    "facing=west,arrow=north": {
+      "model": "the_oldest_house:block/chalk_west"
+    },
+    "facing=west,arrow=east": {
+      "model": "the_oldest_house:block/chalk_west"
+    },
+    "facing=west,arrow=south": {
+      "model": "the_oldest_house:block/chalk_west"
+    },
+    "facing=west,arrow=west": {
+      "model": "the_oldest_house:block/chalk_west"
+    }
+  }
+}

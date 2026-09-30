@@ -19,6 +19,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.phys.Vec3;
 
 /** A companion's nose points to real doors; the player still has to walk and cross them. */
@@ -29,6 +30,7 @@ public final class HillaryPaths {
             wolf.playSound(SoundEvents.WOLF_WHINE, 0.7F, 1.1F);
             return;
         }
+        CompanionOrders.issue(wolf, player, CompanionOrders.Order.EXIT);
         wolf.getPersistentData().putBoolean("HillaryFindExit", true);
         wolf.setOrderedToSit(false); wolf.setInSittingPose(false);
         wolf.getNavigation().stop();
@@ -82,14 +84,13 @@ public final class HillaryPaths {
         }
         return false;
     }
-    private static void lead(Wolf wolf, ServerPlayer player, BlockPos goal, @Nullable LabyrinthPlace place, @Nullable BlockPos base) {
+    public static void lead(TamableAnimal wolf, ServerPlayer player, BlockPos goal, @Nullable LabyrinthPlace place, @Nullable BlockPos base) {
         if (wolf.distanceToSqr(player) > 100) {
             wolf.getNavigation().stop();
             wolf.getLookControl().setLookAt(player, 30, 30);
             return;
         }
         wolf.setOrderedToSit(false); wolf.setInSittingPose(false); wolf.clearRestriction();
-        if (wolf.isTame()) wolf.setOwnerUUID(null);
         Vec3 destination = Vec3.atBottomCenterOf(goal);
         if (wolf.position().distanceToSqr(destination) <= 2.25) {
             wolf.getNavigation().stop();
@@ -131,7 +132,7 @@ public final class HillaryPaths {
         }
         return null;
     }
-    public static Vec3 safeBeside(Wolf wolf, ServerPlayer player) {
+    public static Vec3 safeBeside(TamableAnimal wolf, ServerPlayer player) {
         double angle = Math.toRadians(player.getYRot());
         Vec3 forward = new Vec3(-Math.sin(angle), 0, Math.cos(angle));
         Vec3 side = new Vec3(forward.z, 0, -forward.x);

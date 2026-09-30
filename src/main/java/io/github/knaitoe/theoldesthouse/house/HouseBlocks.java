@@ -57,6 +57,17 @@ public final class HouseBlocks {
                     .strength(2.0F, 3.0F)
                     .noLootTable());
 
+    public static final DeferredHolder<MapCodec<? extends Block>, MapCodec<io.github.knaitoe.theoldesthouse.labyrinth.ChalkMarkBlock>> CHALK_MARK_TYPE =
+            BLOCK_TYPES.register("chalk_mark", () -> io.github.knaitoe.theoldesthouse.labyrinth.ChalkMarkBlock.CODEC);
+    public static final DeferredHolder<MapCodec<? extends Block>, MapCodec<io.github.knaitoe.theoldesthouse.labyrinth.TrailLineBlock>> TRAIL_LINE_TYPE =
+            BLOCK_TYPES.register("trail_line", () -> io.github.knaitoe.theoldesthouse.labyrinth.TrailLineBlock.CODEC);
+    public static final DeferredBlock<io.github.knaitoe.theoldesthouse.labyrinth.ChalkMarkBlock> CHALK_MARK =
+            BLOCKS.registerBlock("chalk_mark", io.github.knaitoe.theoldesthouse.labyrinth.ChalkMarkBlock::new,
+                    BlockBehaviour.Properties.of().noCollission().noOcclusion().replaceable().instabreak().noLootTable());
+    public static final DeferredBlock<io.github.knaitoe.theoldesthouse.labyrinth.TrailLineBlock> TRAIL_LINE =
+            BLOCKS.registerBlock("trail_line", io.github.knaitoe.theoldesthouse.labyrinth.TrailLineBlock::new,
+                    BlockBehaviour.Properties.of().noCollission().noOcclusion().replaceable().instabreak().noLootTable());
+
     private HouseBlocks() {}
     public static final DeferredBlock<Block> MODEL_HOME_WALLPAPER = BLOCKS.registerBlock("model_home_wallpaper", Block::new,
             BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_CONCRETE).noLootTable());
