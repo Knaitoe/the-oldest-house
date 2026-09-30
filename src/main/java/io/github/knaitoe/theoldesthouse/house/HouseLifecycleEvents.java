@@ -4,6 +4,7 @@ import io.github.knaitoe.theoldesthouse.network.HousePackets;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthHazards;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthCampsite;
 import io.github.knaitoe.theoldesthouse.labyrinth.Growl;
 import io.github.knaitoe.theoldesthouse.labyrinth.HideAndClap;
 import io.github.knaitoe.theoldesthouse.labyrinth.HarriganVignette;
@@ -85,6 +86,7 @@ public final class HouseLifecycleEvents {
         HouseChunkKeeper.release(event.getServer());
         LabyrinthDoors.clearAll();
         LabyrinthHazards.clearAll();
+        LabyrinthCampsite.clearAll();
         TellTaleFloorboards.clearAll();
         HideAndClap.clearAll();
         ModelHome.clearAll();

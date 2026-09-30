@@ -22,6 +22,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.HideAndClap;
 import io.github.knaitoe.theoldesthouse.labyrinth.HarriganVignette;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthHazards;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthCampsite;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthRegistry;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthSpawnRules;
 import io.github.knaitoe.theoldesthouse.labyrinth.ModelHome;
@@ -76,6 +77,7 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HouseLabyrinth::onSetSpawn);
         NeoForge.EVENT_BUS.addListener(LabyrinthSpawnRules::onEntityJoinLevel);
         NeoForge.EVENT_BUS.addListener(LabyrinthHazards::onServerTick);
+        NeoForge.EVENT_BUS.addListener(LabyrinthCampsite::onServerTick);
 
         // Doors that lead elsewhere (the labyrinth's, the hallway's far door,
         // test doors) are handled before anything else sees the click.

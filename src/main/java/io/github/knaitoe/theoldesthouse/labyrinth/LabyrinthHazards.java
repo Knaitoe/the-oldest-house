@@ -2,10 +2,12 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
+import io.github.knaitoe.theoldesthouse.house.HouseWatchers;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -15,19 +17,25 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
- * Physical gray-space hazards.
+ * Physical and perceptual gray-space hazards.
  *
- * None is an instant-kill trap. They are meant to spend breath, food, health,
- * time or carried blocks, so a sequence of survivable problems becomes the
- * actual danger of being lost.
+ * None is designed as an instant execution. They cost breath, health, food,
+ * time, light, orientation or confidence, so surviving several is the actual
+ * threat of remaining lost.
  */
 public final class LabyrinthHazards {
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
@@ -40,17 +48,36 @@ public final class LabyrinthHazards {
     private static final int COMPRESSION_END_Z = -24;
     private static final int OUTER_CLOSE_TICKS = 30;
     private static final int INNER_CLOSE_TICKS = 75;
+
+    private static final Map<UUID, Integer> FALSE_DISTANCE_LAPS = new HashMap<>();
+    private static final Map<UUID, Long> FALSE_DISTANCE_COOLDOWN = new HashMap<>();
+    private static final Map<BlockPos, Long> SINK_LIGHTS = new HashMap<>();
+    private static final Map<UUID, Long> NEXT_PRESSURE_HIT = new HashMap<>();
+
     private static long compressionStarted = -1L;
     private static int compressionStage;
-    private static final Map<UUID, Long> NEXT_PRESSURE_HIT = new HashMap<>();
+    private static int movingDoorIndex;
+    private static long movingDoorNextTick;
+
+    private static final BlockPos[] MOVING_DOORS = {
+            new BlockPos(0, 0, -15),
+            new BlockPos(-8, 0, -8),
+            new BlockPos(8, 0, -8)
+    };
+    private static final Direction[] MOVING_FACING = {
+            Direction.SOUTH,
+            Direction.EAST,
+            Direction.WEST
+    };
 
     private LabyrinthHazards() {
     }
 
+    // ---------------------------------------------------------------------
+    // Existing physical hazards
+
     public static void buildFloodedPassage(ServerLevel level, BlockPos base) {
         LabyrinthBuilder.room(level, base, -1, 1, 5, -27, -1, WALL, FLOOR, CEILING);
-
-        // Dry threshold, then twenty-one blocks of low submerged tunnel.
         for (int z = -4; z >= -24; z--) {
             for (int x = -1; x <= 1; x++) {
                 level.setBlock(base.offset(x, 0, z), Blocks.WATER.defaultBlockState(), FLAGS);
@@ -58,27 +85,18 @@ public final class LabyrinthHazards {
                 level.setBlock(base.offset(x, 2, z), CEILING, FLAGS);
             }
         }
-
-        // Two unmistakable breathing chimneys. They are deliberately spaced
-        // so a player who keeps moving never has to bet the whole route on one
-        // breath bar.
         for (int z : new int[] {-9, -17}) {
             level.setBlock(base.offset(0, 2, z), Blocks.AIR.defaultBlockState(), FLAGS);
             level.setBlock(base.offset(0, 3, z), Blocks.AIR.defaultBlockState(), FLAGS);
             level.setBlock(base.offset(0, 4, z), Blocks.AIR.defaultBlockState(), FLAGS);
             LabyrinthBuilder.hangLantern(level, base.offset(0, 5, z), true);
         }
-
         LabyrinthBuilder.entrance(level, base, WALL, FLOOR, CEILING);
         LabyrinthBuilder.doors(level, base, LabyrinthPlace.FLOODED_PASSAGE);
     }
 
     public static void buildFracturedWalkway(ServerLevel level, BlockPos base) {
         LabyrinthBuilder.room(level, base, -3, 3, 10, -27, -1, WALL, FLOOR, CEILING);
-
-        // A broad stair takes the player onto a platform seven blocks above
-        // the lower floor. Missing the broken span therefore hurts, but cannot
-        // turn into a lethal void fall.
         for (int step = 0; step <= 6; step++) {
             int z = -2 - step;
             for (int x = -1; x <= 1; x++) {
@@ -89,22 +107,16 @@ public final class LabyrinthHazards {
                 );
             }
         }
-
         for (int z = -9; z >= -11; z--) {
             for (int x = -1; x <= 1; x++) {
                 level.setBlock(base.offset(x, 6, z), Blocks.STONE_BRICKS.defaultBlockState(), FLAGS);
             }
         }
-        // z -12 through -14 is the missing span: a difficult but possible
-        // sprint jump. Missing it costs health and time rather than the run.
         for (int z = -15; z >= -27; z--) {
             for (int x = -1; x <= 1; x++) {
                 level.setBlock(base.offset(x, 6, z), Blocks.STONE_BRICKS.defaultBlockState(), FLAGS);
             }
         }
-
-        // Falling is a setback, not a soft lock. A second stair on the east
-        // side climbs from the lower floor back to the far platform.
         for (int step = 0; step <= 6; step++) {
             level.setBlock(
                     base.offset(2, step, -19 - step),
@@ -112,7 +124,6 @@ public final class LabyrinthHazards {
                     FLAGS
             );
         }
-
         LabyrinthBuilder.hangLantern(level, base.offset(0, 10, -10), true);
         LabyrinthBuilder.hangLantern(level, base.offset(0, 10, -22), true);
         LabyrinthBuilder.entrance(level, base, WALL, FLOOR, CEILING);
@@ -127,6 +138,87 @@ public final class LabyrinthHazards {
         LabyrinthBuilder.doors(level, base, LabyrinthPlace.COMPRESSION_PASSAGE);
     }
 
+    // ---------------------------------------------------------------------
+    // Perceptual / eldritch hazards
+
+    public static void buildFalseDistance(ServerLevel level, BlockPos base) {
+        LabyrinthBuilder.room(level, base, -1, 1, 3, -33, -1, WALL, FLOOR, CEILING);
+        for (int z = -5; z >= -29; z -= 6) {
+            LabyrinthBuilder.hangLantern(level, base.offset(0, 3, z), true);
+        }
+        LabyrinthBuilder.entrance(level, base, WALL, FLOOR, CEILING);
+        LabyrinthBuilder.doors(level, base, LabyrinthPlace.FALSE_DISTANCE);
+    }
+
+    public static void buildLightSink(ServerLevel level, BlockPos base) {
+        BlockState sinkWall = Blocks.GRAY_TERRACOTTA.defaultBlockState();
+        BlockState sinkFloor = Blocks.DEEPSLATE_TILES.defaultBlockState();
+        BlockState sinkCeiling = Blocks.POLISHED_DEEPSLATE.defaultBlockState();
+        LabyrinthBuilder.room(level, base, -2, 2, 3, -27, -1, sinkWall, sinkFloor, sinkCeiling);
+        // There is deliberately no authored light in this room.
+        LabyrinthBuilder.entrance(level, base, sinkWall, sinkFloor, sinkCeiling);
+        LabyrinthBuilder.doors(level, base, LabyrinthPlace.LIGHT_SINK);
+    }
+
+    public static void buildMovingThreshold(ServerLevel level, BlockPos base) {
+        LabyrinthBuilder.room(level, base, -7, 7, 4, -14, -1, WALL, FLOOR, CEILING);
+        LabyrinthBuilder.hangLantern(level, base.offset(0, 4, -7), true);
+        LabyrinthBuilder.entrance(level, base, WALL, FLOOR, CEILING);
+        LabyrinthBuilder.placeDoor(level, base.offset(0, 0, 1), Direction.SOUTH);
+        LabyrinthBuilder.placeDoor(level, base.offset(MOVING_DOORS[0]), MOVING_FACING[0]);
+    }
+
+    public static void buildDuplicatePassage(ServerLevel level, BlockPos base) {
+        LabyrinthBuilder.room(level, base, -7, 7, 4, -14, -1, WALL, FLOOR, CEILING);
+        LabyrinthBuilder.hangLantern(level, base.offset(0, 4, -7), true);
+        // Three identical benches make the room readable as deliberately
+        // symmetrical rather than merely unfinished.
+        level.setBlock(base.offset(0, 0, -11), LabyrinthBuilder.stairs(Blocks.STONE_STAIRS, Direction.NORTH), FLAGS);
+        level.setBlock(base.offset(-5, 0, -8), LabyrinthBuilder.stairs(Blocks.STONE_STAIRS, Direction.WEST), FLAGS);
+        level.setBlock(base.offset(5, 0, -8), LabyrinthBuilder.stairs(Blocks.STONE_STAIRS, Direction.EAST), FLAGS);
+        LabyrinthBuilder.entrance(level, base, WALL, FLOOR, CEILING);
+        LabyrinthBuilder.doors(level, base, LabyrinthPlace.DUPLICATE_PASSAGE);
+    }
+
+    public static void buildGravityDrift(ServerLevel level, BlockPos base) {
+        LabyrinthBuilder.room(level, base, -3, 3, 4, -27, -1, WALL, FLOOR, CEILING);
+
+        // West-side recovery trench: a four-block fall, painful but ordinarily
+        // survivable, with ladders at two points so the pull cannot soft-lock.
+        for (int z = -5; z >= -24; z--) {
+            for (int x = -3; x <= -2; x++) {
+                for (int y = -4; y <= -1; y++) {
+                    level.setBlock(base.offset(x, y, z), Blocks.AIR.defaultBlockState(), FLAGS);
+                }
+                level.setBlock(base.offset(x, -5, z), FLOOR, FLAGS);
+            }
+        }
+        for (int z : new int[] {-10, -20}) {
+            for (int y = -4; y <= -1; y++) {
+                level.setBlock(
+                        base.offset(-3, y, z),
+                        Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.EAST),
+                        FLAGS
+                );
+            }
+        }
+
+        LabyrinthBuilder.hangLantern(level, base.offset(1, 3, -7), true);
+        LabyrinthBuilder.hangLantern(level, base.offset(1, 3, -21), true);
+        LabyrinthBuilder.entrance(level, base, WALL, FLOOR, CEILING);
+        LabyrinthBuilder.doors(level, base, LabyrinthPlace.GRAVITY_DRIFT);
+    }
+
+    // ---------------------------------------------------------------------
+    // Runtime
+
+    public static void onArrive(ServerPlayer player, LabyrinthPlace place) {
+        if (place == LabyrinthPlace.FALSE_DISTANCE) {
+            FALSE_DISTANCE_LAPS.put(player.getUUID(), 0);
+            FALSE_DISTANCE_COOLDOWN.put(player.getUUID(), player.server.getTickCount() + 20L);
+        }
+    }
+
     public static void onServerTick(ServerTickEvent.Post event) {
         MinecraftServer server = event.getServer();
         if (server.getTickCount() % 5 != 0) {
@@ -135,12 +227,17 @@ public final class LabyrinthHazards {
         ServerLevel level = server.getLevel(HouseDimensions.INTERIOR);
         BlockPos origin = HouseSavedData.get(server).houseOrigin();
         if (level == null || origin == null) {
-            resetState();
+            clearAll();
             return;
         }
 
-        tickFlooded(level, origin, server.getTickCount());
-        tickCompression(level, origin, server.getTickCount());
+        long now = server.getTickCount();
+        tickFlooded(level, origin, now);
+        tickCompression(level, origin, now);
+        tickFalseDistance(level, origin, now);
+        tickLightSink(level, origin, now);
+        tickMovingThreshold(level, origin, now);
+        tickGravityDrift(level, origin);
     }
 
     private static void tickFlooded(ServerLevel level, BlockPos origin, long now) {
@@ -150,11 +247,171 @@ public final class LabyrinthHazards {
         for (ServerPlayer player : level.players()) {
             if (LabyrinthPlaces.placeAt(origin, player.blockPosition()) == LabyrinthPlace.FLOODED_PASSAGE
                     && player.isInWater()) {
-                // Vanilla swimming already costs hunger. This small extra cost
-                // makes repeated flooded routes matter without making one
-                // crossing a death sentence.
                 player.causeFoodExhaustion(0.12F);
             }
+        }
+    }
+
+    private static void tickFalseDistance(ServerLevel level, BlockPos origin, long now) {
+        BlockPos base = LabyrinthPlaces.base(origin, LabyrinthPlace.FALSE_DISTANCE);
+        if (base == null) {
+            return;
+        }
+        for (ServerPlayer player : level.players()) {
+            if (LabyrinthPlaces.placeAt(origin, player.blockPosition()) != LabyrinthPlace.FALSE_DISTANCE) {
+                continue;
+            }
+            UUID id = player.getUUID();
+            int laps = FALSE_DISTANCE_LAPS.getOrDefault(id, 0);
+            if (laps >= 3 || now < FALSE_DISTANCE_COOLDOWN.getOrDefault(id, 0L)) {
+                continue;
+            }
+            if (player.getZ() <= base.getZ() - 24.0D) {
+                FALSE_DISTANCE_LAPS.put(id, laps + 1);
+                FALSE_DISTANCE_COOLDOWN.put(id, now + 30L);
+                player.causeFoodExhaustion(0.6F);
+                player.connection.teleport(
+                        base.getX() + 0.5D,
+                        player.getY(),
+                        base.getZ() - 8.5D,
+                        player.getYRot(),
+                        player.getXRot()
+                );
+            }
+        }
+    }
+
+    public static boolean allowsPlacing(Level level, BlockPos pos, BlockState placed) {
+        if (!level.dimension().equals(HouseDimensions.INTERIOR) || level.getServer() == null) {
+            return false;
+        }
+        BlockPos origin = HouseSavedData.get(level.getServer()).houseOrigin();
+        if (origin == null || LabyrinthPlaces.placeAt(origin, pos) != LabyrinthPlace.LIGHT_SINK) {
+            return false;
+        }
+        return isPortableLight(placed);
+    }
+
+    private static boolean isPortableLight(BlockState state) {
+        return state.is(Blocks.TORCH)
+                || state.is(Blocks.WALL_TORCH)
+                || state.is(Blocks.SOUL_TORCH)
+                || state.is(Blocks.SOUL_WALL_TORCH)
+                || state.is(Blocks.LANTERN)
+                || state.is(Blocks.SOUL_LANTERN);
+    }
+
+    private static void tickLightSink(ServerLevel level, BlockPos origin, long now) {
+        BlockPos base = LabyrinthPlaces.base(origin, LabyrinthPlace.LIGHT_SINK);
+        if (base == null) {
+            return;
+        }
+        var bounds = LabyrinthPlaces.placeBounds(origin, LabyrinthPlace.LIGHT_SINK);
+        if (bounds == null) {
+            return;
+        }
+
+        if (now % 20L == 0L) {
+            for (BlockPos cursor : BlockPos.betweenClosed(
+                    bounds.minX(), bounds.minY(), bounds.minZ(),
+                    bounds.maxX(), bounds.maxY(), bounds.maxZ())) {
+                BlockState state = level.getBlockState(cursor);
+                if (!isPortableLight(state)) {
+                    continue;
+                }
+                BlockPos pos = cursor.immutable();
+                long born = SINK_LIGHTS.computeIfAbsent(pos, p -> now);
+                if (now - born >= 240L) {
+                    level.setBlock(pos, Blocks.AIR.defaultBlockState(), FLAGS);
+                    SINK_LIGHTS.remove(pos);
+                    level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 0.7F);
+                }
+            }
+            SINK_LIGHTS.keySet().removeIf(pos -> !isPortableLight(level.getBlockState(pos)));
+        }
+
+        for (ServerPlayer player : level.players()) {
+            if (LabyrinthPlaces.placeAt(origin, player.blockPosition()) != LabyrinthPlace.LIGHT_SINK) {
+                continue;
+            }
+            boolean nearLight = false;
+            for (BlockPos light : SINK_LIGHTS.keySet()) {
+                if (light.distToCenterSqr(player.position()) <= 25.0D) {
+                    nearLight = true;
+                    break;
+                }
+            }
+            if (nearLight) {
+                player.removeEffect(MobEffects.DARKNESS);
+            } else {
+                player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 35, 0, true, false, false));
+            }
+        }
+    }
+
+    private static void tickMovingThreshold(ServerLevel level, BlockPos origin, long now) {
+        BlockPos base = LabyrinthPlaces.base(origin, LabyrinthPlace.MOVING_THRESHOLD);
+        if (base == null) {
+            return;
+        }
+        boolean occupied = level.players().stream()
+                .anyMatch(player -> LabyrinthPlaces.placeAt(origin, player.blockPosition()) == LabyrinthPlace.MOVING_THRESHOLD);
+        if (!occupied) {
+            if (movingDoorIndex != 0) {
+                moveThreshold(level, base, 0);
+            }
+            movingDoorNextTick = now + 40L;
+            return;
+        }
+        if (now < movingDoorNextTick) {
+            return;
+        }
+
+        BlockPos current = base.offset(MOVING_DOORS[movingDoorIndex]);
+        if (HouseWatchers.isWatched(level, current.above())) {
+            movingDoorNextTick = now + 20L;
+            return;
+        }
+        for (int step = 1; step <= MOVING_DOORS.length; step++) {
+            int next = (movingDoorIndex + step) % MOVING_DOORS.length;
+            BlockPos target = base.offset(MOVING_DOORS[next]);
+            if (!HouseWatchers.isWatched(level, target.above())) {
+                moveThreshold(level, base, next);
+                movingDoorNextTick = now + 70L;
+                return;
+            }
+        }
+        movingDoorNextTick = now + 20L;
+    }
+
+    private static void moveThreshold(ServerLevel level, BlockPos base, int next) {
+        BlockPos old = base.offset(MOVING_DOORS[movingDoorIndex]);
+        level.setBlock(old, WALL, FLAGS);
+        level.setBlock(old.above(), WALL, FLAGS);
+
+        movingDoorIndex = next;
+        LabyrinthBuilder.placeDoor(level, base.offset(MOVING_DOORS[next]), MOVING_FACING[next]);
+    }
+
+    private static void tickGravityDrift(ServerLevel level, BlockPos origin) {
+        BlockPos base = LabyrinthPlaces.base(origin, LabyrinthPlace.GRAVITY_DRIFT);
+        if (base == null) {
+            return;
+        }
+        for (ServerPlayer player : level.players()) {
+            if (LabyrinthPlaces.placeAt(origin, player.blockPosition()) == LabyrinthPlace.GRAVITY_DRIFT) {
+                double depth = Math.max(0.0D, Math.min(1.0D, (base.getZ() - player.getZ()) / 24.0D));
+                player.push(-0.035D - depth * 0.035D, 0.0D, 0.0D);
+                player.hurtMarked = true;
+                player.causeFoodExhaustion(0.01F);
+            }
+        }
+        AABB area = new AABB(
+                base.getX() - 4.0D, base.getY() - 5.0D, base.getZ() - 27.0D,
+                base.getX() + 4.0D, base.getY() + 5.0D, base.getZ()
+        );
+        for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, area)) {
+            item.push(-0.025D, 0.0D, 0.0D);
         }
     }
 
@@ -172,7 +429,7 @@ public final class LabyrinthHazards {
             if (compressionStarted >= 0L || compressionStage != 0) {
                 openCompression(level, base);
             }
-            resetState();
+            resetCompression();
             return;
         }
 
@@ -205,13 +462,7 @@ public final class LabyrinthHazards {
         }
     }
 
-    private static void closeLayer(
-            ServerLevel level,
-            BlockPos base,
-            List<ServerPlayer> players,
-            long now,
-            int side
-    ) {
+    private static void closeLayer(ServerLevel level, BlockPos base, List<ServerPlayer> players, long now, int side) {
         for (int z = COMPRESSION_START_Z; z >= COMPRESSION_END_Z; z--) {
             for (int x : new int[] {-side, side}) {
                 for (int y = 0; y <= 2; y++) {
@@ -229,6 +480,7 @@ public final class LabyrinthHazards {
         }
     }
 
+    @Nullable
     private static ServerPlayer occupant(List<ServerPlayer> players, BlockPos pos) {
         AABB block = new AABB(
                 pos.getX(), pos.getY(), pos.getZ(),
@@ -249,7 +501,6 @@ public final class LabyrinthHazards {
             player.causeFoodExhaustion(0.4F);
             NEXT_PRESSURE_HIT.put(player.getUUID(), now + 20L);
         }
-
         double center = base.getX() + 0.5D;
         double dx = center - player.getX();
         player.push(Math.max(-0.22D, Math.min(0.22D, dx)), 0.02D, 0.0D);
@@ -265,14 +516,19 @@ public final class LabyrinthHazards {
         }
     }
 
-    private static void resetState() {
+    private static void resetCompression() {
         compressionStarted = -1L;
         compressionStage = 0;
         NEXT_PRESSURE_HIT.clear();
     }
 
     public static void clearAll() {
-        resetState();
+        FALSE_DISTANCE_LAPS.clear();
+        FALSE_DISTANCE_COOLDOWN.clear();
+        SINK_LIGHTS.clear();
+        movingDoorIndex = 0;
+        movingDoorNextTick = 0L;
+        resetCompression();
     }
 
     public static int compressionStage() {

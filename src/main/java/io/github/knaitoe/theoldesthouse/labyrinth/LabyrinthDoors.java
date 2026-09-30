@@ -199,6 +199,7 @@ public final class LabyrinthDoors {
             RedRoom.prepareIfDealt(p, place);
             ModelHome.onArrive(p, place);
             HarriganVignette.onArrive(p, place);
+            LabyrinthHazards.onArrive(p, place);
         };
         if (toLevel == fromLevel) {
             shift(player, target, yaw);
@@ -741,7 +742,8 @@ public final class LabyrinthDoors {
 
     public static void onPlace(BlockEvent.EntityPlaceEvent event) {
         if (event.getLevel() instanceof ServerLevel level && isProtected(level, event.getPos())
-                && !LabyrinthLoops.allowsPlacing(level, event.getPos(), event.getPlacedBlock())) {
+                && !LabyrinthLoops.allowsPlacing(level, event.getPos(), event.getPlacedBlock())
+                && !LabyrinthHazards.allowsPlacing(level, event.getPos(), event.getPlacedBlock())) {
             event.setCanceled(true);
         }
     }
