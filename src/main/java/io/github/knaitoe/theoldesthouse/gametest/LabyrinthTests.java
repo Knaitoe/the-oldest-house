@@ -163,11 +163,13 @@ public final class LabyrinthTests {
                 data.setCompleted(place.id(), true);
             }
         }
-        helper.assertTrue(LabyrinthDealer.vignetteChance(data, player) == 0,
-                "nothing left to deal while the Red Room has no room to copy");
+        helper.assertTrue(LabyrinthDealer.vignetteChance(data, player) > 0
+                        && LabyrinthDealer.vignettesAvailable(data).equals(List.of(LabyrinthPlace.MOTHER_DEN)),
+                "the Mother's anchor stays findable when every finishable vignette is finished");
         data.setReady(RedRoom.ID, true);
-        helper.assertTrue(LabyrinthDealer.vignetteChance(data, player) > 0,
-                "the Red Room keeps being dealt once it has one");
+        helper.assertTrue(LabyrinthDealer.vignettesAvailable(data).contains(LabyrinthPlace.RED_ROOM)
+                        && LabyrinthDealer.vignettesAvailable(data).contains(LabyrinthPlace.MOTHER_DEN),
+                "a captured Red Room joins the recurring Mother's anchor");
         data.setReady(RedRoom.ID, false);
         for (int dealing = 0; dealing < 6; dealing++) {
             LabyrinthDealer.dealPlace(data, player, LabyrinthPlace.JUNCTION, random);
@@ -845,7 +847,7 @@ public final class LabyrinthTests {
             if (answer != null && answer.bark()) {
                 barking++;
                 LabyrinthPlace dealt = LabyrinthPlace.byId(answer.place());
-                helper.assertTrue(dealt != null && dealt.isFinishable() && answer.leak(), "the door she found leads to an unfound vignette");
+                helper.assertTrue(dealt != null && dealt.isVignette() && answer.leak(), "the door she found leads to an available vignette");
             }
         }
         helper.assertTrue(barking == 1, "exactly one door has her behind it, found " + barking);
@@ -856,7 +858,19 @@ public final class LabyrinthTests {
                 data.setCompleted(place.id(), true);
             }
         }
-        helper.assertTrue(LabyrinthDealer.giveScent(data, player) == LabyrinthDealer.Scent.NOTHING, "with nothing left she finds nothing");
+        helper.assertTrue(LabyrinthDealer.giveScent(data, player) == LabyrinthDealer.Scent.SEEKING,
+                "she can still find the recurring Mother's den after the one-shots are finished");
+        LabyrinthDealer.dealPlace(data, player, LabyrinthPlace.JUNCTION, RandomSource.create(4));
+        int motherDoors = 0;
+        for (LabyrinthPlace.DoorSpec spec : LabyrinthPlace.JUNCTION.doors()) {
+            LabyrinthData.Door door = data.door(LabyrinthPlace.JUNCTION.doorId(spec));
+            LabyrinthData.Deal answer = door == null ? null : data.deal(player, door);
+            if (answer != null && answer.bark()) {
+                helper.assertTrue(LabyrinthPlace.MOTHER_DEN.id().equals(answer.place()), "the only remaining anchor is the Mother");
+                motherDoors++;
+            }
+        }
+        helper.assertTrue(motherDoors == 1 && !data.hillaryScent(player), "the anchor scent is routed and spent once");
         helper.succeed();
     }
 
