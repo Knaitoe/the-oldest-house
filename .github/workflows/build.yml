@@ -36,6 +36,11 @@ jobs:
           import pathlib, subprocess, time
           folder = pathlib.Path('build/gametest-diagnostics')
           folder.mkdir(parents=True, exist_ok=True)
+          # JVM housekeeping threads; everything else is printed to the log so
+          # a stalled game server can be read without downloading the artifact.
+          quiet = ('GC Thread', 'G1 ', 'CompilerThread', 'VM Thread', 'VM Periodic', 'Signal Dispatcher',
+                   'Finalizer', 'Reference Handler', 'Common-Cleaner', 'Notification Thread', 'Service Thread',
+                   'Attach Listener', 'Monitor Deflation', 'JNI global', 'Heap', 'Timer hack thread')
           for elapsed in (90, 180):
               time.sleep(90)
               listing = subprocess.check_output(['jps', '-l'], text=True)
@@ -44,8 +49,12 @@ jobs:
                   if not any(name in process for name in ('BootstrapLauncher', 'devlaunch.Main', 'gametest.Main')):
                       continue
                   pid = process.split()[0]
-                  with (folder / f'threads-{elapsed}-{pid}.txt').open('w') as out:
-                      subprocess.run(['jstack', pid], stdout=out, stderr=subprocess.STDOUT, timeout=30)
+                  dump = subprocess.run(['jstack', pid], capture_output=True, text=True, timeout=30).stdout
+                  (folder / f'threads-{elapsed}-{pid}.txt').write_text(dump)
+                  blocks = [b for b in dump.split('\n\n') if b.strip() and not any(q in b.split('\n')[0] for q in quiet)]
+                  print(f'::group::Game server threads at {elapsed}s ({process})', flush=True)
+                  print('\n\n'.join(blocks), flush=True)
+                  print('::endgroup::', flush=True)
           PY
           diagnostic=$!
           trap 'kill "$diagnostic" 2>/dev/null || true' EXIT
