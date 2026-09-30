@@ -12,6 +12,8 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.server.level.TicketType;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
@@ -98,10 +100,19 @@ public final class CompanionTests {
         recipient.teleportTo(target,.5,100,.5,0,0);
         var dog=Hillary.followAcross(wolf,recipient);
         helper.assertTrue(dog!=null && dog.level()==target && dog.getUUID().equals(id),"the same UUID crossed dimensions");
+        BlockPos arrival=BlockPos.containing(dog.position());
         helper.assertTrue(Hillary.tagOf(dog).recipient().equals(recipient.getUUID()) && dog.isTame() && dog.getHealth()==7
                 && dog.getPersistentData().getBoolean("HillaryFindExit"),"health, owner, tag and requested route survive");
         helper.succeedWhen(()->{
             helper.assertTrue(target.getEntity(id)==dog,"the companion is tracked by the destination world");
+            // The crossing's vanilla portal ticket would outlive the whole run by
+            // fifteen seconds. Release it, so no ticket of this test's is still
+            // held when the server shuts down.
+            String held=ShutdownWatch.ticketsAt(target,new ChunkPos(arrival));
+            helper.assertTrue(held.contains("portal"),"the crossing holds her arrival with a portal ticket: "+held);
+            target.getChunkSource().removeRegionTicket(TicketType.PORTAL,new ChunkPos(arrival),3,arrival);
+            String left=ShutdownWatch.ticketsAt(target,new ChunkPos(arrival));
+            helper.assertTrue(!left.contains("portal"),"the portal ticket is released: "+left);
             dog.discard(); remove(recipient);
         });
     }
