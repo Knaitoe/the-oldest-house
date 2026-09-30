@@ -127,6 +127,7 @@ public final class MazeTests {
         BlockPos base = helper.absolutePos(BlockPos.ZERO).offset(700, 6, -180);
         MazeLayout layout = MazeLayout.create(LabyrinthPlace.ABYSS_MAZE, 747);
         LabyrinthMaze.build(helper.getLevel(), base, LabyrinthPlace.ABYSS_MAZE, layout);
+        Entity viewer = net.minecraft.world.entity.EntityType.ARMOR_STAND.create(helper.getLevel());
         for (int i = 0; i < layout.sleeves().size() / 2; i++) {
             MazeLayout.Sleeve a = layout.sleeves().get(i), b = layout.sleeves().get(layout.sleeves().size() - 1 - i);
             for (int x = -3; x <= 3; x++) for (int z = -3; z <= 3; z++) for (int y = -1; y <= 4; y++) {
@@ -138,7 +139,7 @@ public final class MazeTests {
             for (Vec3 tip : List.of(new Vec3(-6, 1.62, 4), new Vec3(6, 1.62, -4))) {
                 Vec3 end = a.world(tip).add(Vec3.atLowerCornerOf(base));
                 helper.assertTrue(helper.getLevel().clip(new ClipContext(eye, end, ClipContext.Block.COLLIDER,
-                        ClipContext.Fluid.NONE, (Entity) null)).getType() == HitResult.Type.BLOCK,
+                        ClipContext.Fluid.NONE, viewer)).getType() == HitResult.Type.BLOCK,
                         "solid corners occlude the nonidentical connectors before the shift");
             }
         }

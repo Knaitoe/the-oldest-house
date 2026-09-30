@@ -4,6 +4,10 @@
 
 This file records implementation decisions so implementation history does not disappear.
 
+## Current implementation update
+
+Version 0.4.7 supersedes the older Hillary refusal and early House-spawn behavior below. The opening is letter/photo, Hillary at home, then House on three mornings. Hillary can accompany the player into the real manor and labyrinth and retrace return doors on a compass request. Gray geometry, sensory door leaks, sitting and recent-room suppression are detailed in [MAZES_AND_COMPANIONS.md](MAZES_AND_COMPANIONS.md).
+
 ## Central rule
 
 There is one anomalous structure: The Oldest House.

@@ -26,8 +26,8 @@ public final class CompanionTests {
         var level = helper.getLevel();
         BlockPos pos = helper.absolutePos(new BlockPos(2, 2, 2));
         level.setBlock(pos, Blocks.DARK_OAK_STAIRS.defaultBlockState(), 3);
-        var a = FakePlayerFactory.get(level, new GameProfile(UUID.randomUUID(), "seat_reader"));
-        var b = FakePlayerFactory.get(level, new GameProfile(UUID.randomUUID(), "seat_other"));
+        var a = helper.makeMockServerPlayerInLevel();
+        var b = helper.makeMockServerPlayerInLevel();
         a.moveTo(pos.getX()+.5, pos.getY()+1, pos.getZ()+.5); b.moveTo(a.getX(),a.getY(),a.getZ());
         helper.assertTrue(HouseSitting.sit(a, pos), "the reader can sit in a chair");
         SeatEntity seat = (SeatEntity)a.getVehicle();
@@ -78,13 +78,14 @@ public final class CompanionTests {
         wolf.getPersistentData().putBoolean("HillaryFindExit",true); UUID id=wolf.getUUID();
         var arrived=FakePlayerFactory.get(target,recipient.getGameProfile()); arrived.moveTo(8600.5,80,8600.5);
         target.getChunkAt(arrived.blockPosition());
-        Hillary.followAcross(wolf,arrived);
-        var moved=target.getEntity(id);
-        helper.assertTrue(moved instanceof net.minecraft.world.entity.animal.Wolf,"the same UUID crossed dimensions");
-        var dog=(net.minecraft.world.entity.animal.Wolf)moved;
+        var dog=Hillary.followAcross(wolf,arrived);
+        helper.assertTrue(dog!=null && dog.level()==target && dog.getUUID().equals(id),"the same UUID crossed dimensions");
         helper.assertTrue(Hillary.tagOf(dog).recipient().equals(recipient.getUUID()) && dog.isTame() && dog.getHealth()==7
                 && dog.getPersistentData().getBoolean("HillaryFindExit"),"health, owner, tag and requested route survive");
-        dog.discard(); helper.succeed();
+        helper.runAfterDelay(2,()->{
+            helper.assertTrue(target.getEntity(id)==dog,"the companion is tracked by the destination world");
+            dog.discard(); helper.succeed();
+        });
     }
     @GameTest(template = "empty")
     public static void dogCanTraceBackFromDeepMazeAndBothSidesOfFolds(GameTestHelper helper) {
