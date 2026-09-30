@@ -27,6 +27,8 @@ import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthCampsite;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthRegistry;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthSpawnRules;
 import io.github.knaitoe.theoldesthouse.labyrinth.ModelHome;
+import io.github.knaitoe.theoldesthouse.labyrinth.MotherOfStrays;
+import io.github.knaitoe.theoldesthouse.labyrinth.MotherRegistry;
 import io.github.knaitoe.theoldesthouse.labyrinth.RedRoom;
 import io.github.knaitoe.theoldesthouse.labyrinth.TellTaleFloorboards;
 import io.github.knaitoe.theoldesthouse.network.HouseNetwork;
@@ -52,6 +54,7 @@ public final class TheOldestHouse {
         HouseBlocks.register(modEventBus);
         HouseBlockEntities.register(modEventBus);
         LabyrinthRegistry.register(modEventBus);
+        MotherRegistry.register(modEventBus);
         modContainer.registerConfig(ModConfig.Type.SERVER, OpeningConfig.SPEC);
         modContainer.registerConfig(ModConfig.Type.SERVER, HouseConfig.SPEC, MOD_ID + "-house-server.toml");
 
@@ -80,6 +83,16 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(LabyrinthHazards::onServerTick);
         NeoForge.EVENT_BUS.addListener(LabyrinthLighting::onServerTick);
         NeoForge.EVENT_BUS.addListener(LabyrinthCampsite::onServerTick);
+        NeoForge.EVENT_BUS.addListener(MotherOfStrays::onServerTick);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, MotherOfStrays::onItemExpire);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, MotherOfStrays::onItemToss);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, MotherOfStrays::onLivingDrops);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, MotherOfStrays::onPetDeath);
+        NeoForge.EVENT_BUS.addListener(MotherOfStrays::onEntityInteract);
+        NeoForge.EVENT_BUS.addListener(MotherOfStrays::onEntityInteractSpecific);
+        NeoForge.EVENT_BUS.addListener(MotherOfStrays::onAttack);
+        NeoForge.EVENT_BUS.addListener(MotherOfStrays::onRightClickBlock);
+        NeoForge.EVENT_BUS.addListener(MotherOfStrays::onDimensionChanged);
 
         // Doors that lead elsewhere (the labyrinth's, the hallway's far door,
         // test doors) are handled before anything else sees the click.

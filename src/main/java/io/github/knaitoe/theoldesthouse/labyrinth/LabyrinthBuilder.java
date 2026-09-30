@@ -34,7 +34,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump to rebuild every place in existing worlds on next use. */
-    public static final int VERSION = 10;
+    public static final int VERSION = 11;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -68,16 +68,16 @@ public final class LabyrinthBuilder {
         if (isBuilt(server)) {
             return true;
         }
-        start(server);
+        start(server, false);
         return false;
     }
 
     /** Carves every place again, from the beginning. */
     public static boolean rebuild(MinecraftServer server) {
-        return start(server);
+        return start(server, true);
     }
 
-    private static boolean start(MinecraftServer server) {
+    private static boolean start(MinecraftServer server, boolean force) {
         BlockPos origin = HouseSavedData.get(server).houseOrigin();
         if (origin == null || server.getLevel(HouseDimensions.INTERIOR) == null) {
             return false;
@@ -86,8 +86,11 @@ public final class LabyrinthBuilder {
             return true;
         }
         pending = new ArrayDeque<>();
+        LabyrinthData data = LabyrinthData.get(server);
+        // Version 11 adds one slot. Preserve existing caches, torches and vignette props when upgrading v10.
+        boolean extend = !force && data.builtVersion() == 10 && origin.equals(data.builtOrigin());
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
-            if (place.slot() >= 0) {
+            if (place.slot() >= 0 && (!extend || place == LabyrinthPlace.MOTHER_DEN)) {
                 pending.add(place);
             }
         }
@@ -161,6 +164,7 @@ public final class LabyrinthBuilder {
             case DUPLICATE_PASSAGE -> LabyrinthHazards.buildDuplicatePassage(level, base);
             case GRAVITY_DRIFT -> LabyrinthHazards.buildGravityDrift(level, base);
             case EXPLORER_CAMP -> LabyrinthCampsite.build(server, level, base);
+            case MOTHER_DEN -> MotherOfStrays.build(server, level, base);
             default -> {
             }
         }

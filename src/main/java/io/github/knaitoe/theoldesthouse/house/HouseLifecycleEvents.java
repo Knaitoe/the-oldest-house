@@ -10,6 +10,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.Growl;
 import io.github.knaitoe.theoldesthouse.labyrinth.HideAndClap;
 import io.github.knaitoe.theoldesthouse.labyrinth.HarriganVignette;
 import io.github.knaitoe.theoldesthouse.labyrinth.ModelHome;
+import io.github.knaitoe.theoldesthouse.labyrinth.MotherOfStrays;
 import io.github.knaitoe.theoldesthouse.labyrinth.TellTaleFloorboards;
 import java.util.List;
 import net.minecraft.ChatFormatting;
@@ -93,6 +94,7 @@ public final class HouseLifecycleEvents {
         HideAndClap.clearAll();
         ModelHome.clearAll();
         HarriganVignette.clearAll(event.getServer());
+        MotherOfStrays.clearAll();
         Growl.clearAll();
     }
 

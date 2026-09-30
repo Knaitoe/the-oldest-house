@@ -1,0 +1,1153 @@
+{
+  "format": "oldest-house-cuboid-model-v1",
+  "coordinates": "Minecraft ModelPart: pixels, local parent pivots, positive Y down",
+  "texture": {
+    "width": 128,
+    "height": 256,
+    "path": "mother_of_strays.png"
+  },
+  "parts": [
+    {
+      "name": "root",
+      "parent": null,
+      "pivot": [
+        0,
+        24,
+        0
+      ],
+      "cubes": [],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "body",
+      "parent": "root",
+      "pivot": [
+        0,
+        -23,
+        0
+      ],
+      "cubes": [
+        {
+          "name": "bodice",
+          "origin": [
+            -4,
+            0,
+            -2.5
+          ],
+          "size": [
+            8,
+            11,
+            5
+          ],
+          "material": "dress",
+          "uv": [
+            0,
+            0
+          ],
+          "uv_size": [
+            8,
+            11,
+            5
+          ]
+        },
+        {
+          "name": "left_bodice_fold",
+          "origin": [
+            -3.5,
+            3,
+            -4
+          ],
+          "size": [
+            3,
+            4,
+            3
+          ],
+          "material": "dress",
+          "uv": [
+            27,
+            0
+          ],
+          "uv_size": [
+            3,
+            4,
+            3
+          ]
+        },
+        {
+          "name": "right_bodice_fold",
+          "origin": [
+            0.5,
+            3,
+            -4
+          ],
+          "size": [
+            3,
+            4,
+            3
+          ],
+          "material": "dress",
+          "uv": [
+            40,
+            0
+          ],
+          "uv_size": [
+            3,
+            4,
+            3
+          ]
+        }
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "neck",
+      "parent": "root",
+      "pivot": [
+        0,
+        -23,
+        0
+      ],
+      "cubes": [
+        {
+          "name": "neck",
+          "origin": [
+            -1.5,
+            -3,
+            -1.5
+          ],
+          "size": [
+            3,
+            3,
+            3
+          ],
+          "material": "skin",
+          "uv": [
+            53,
+            0
+          ],
+          "uv_size": [
+            3,
+            3,
+            3
+          ]
+        }
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "head",
+      "parent": "root",
+      "pivot": [
+        0,
+        -26,
+        -0.1
+      ],
+      "cubes": [
+        {
+          "name": "face",
+          "origin": [
+            -3,
+            -6,
+            -3
+          ],
+          "size": [
+            6,
+            7,
+            6
+          ],
+          "material": "face",
+          "uv": [
+            66,
+            0
+          ],
+          "uv_size": [
+            6,
+            7,
+            6
+          ]
+        },
+        {
+          "name": "nose",
+          "origin": [
+            -0.5,
+            -3,
+            -4
+          ],
+          "size": [
+            1,
+            2,
+            1
+          ],
+          "material": "skin",
+          "uv": [
+            91,
+            0
+          ],
+          "uv_size": [
+            1,
+            2,
+            1
+          ]
+        }
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "hair",
+      "parent": "head",
+      "pivot": [
+        0,
+        0,
+        0.2
+      ],
+      "cubes": [
+        {
+          "name": "coiffed_hair",
+          "origin": [
+            -3.5,
+            -7,
+            -2.6
+          ],
+          "size": [
+            7,
+            3,
+            6
+          ],
+          "material": "hair",
+          "uv": [
+            96,
+            0
+          ],
+          "uv_size": [
+            7,
+            3,
+            6
+          ]
+        },
+        {
+          "name": "bun",
+          "origin": [
+            -2,
+            -5,
+            3
+          ],
+          "size": [
+            4,
+            4,
+            3
+          ],
+          "material": "hair",
+          "uv": [
+            0,
+            17
+          ],
+          "uv_size": [
+            4,
+            4,
+            3
+          ]
+        }
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "jaw",
+      "parent": "head",
+      "pivot": [
+        0,
+        0.2,
+        -0.2
+      ],
+      "cubes": [
+        {
+          "name": "unhinged_jaw",
+          "origin": [
+            -3,
+            0,
+            -3
+          ],
+          "size": [
+            6,
+            3,
+            6
+          ],
+          "material": "jaw",
+          "uv": [
+            15,
+            17
+          ],
+          "uv_size": [
+            6,
+            3,
+            6
+          ]
+        }
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "shawl",
+      "parent": "root",
+      "pivot": [
+        0,
+        -22.5,
+        0.2
+      ],
+      "cubes": [
+        {
+          "name": "shawl",
+          "origin": [
+            -5,
+            -0.5,
+            -3
+          ],
+          "size": [
+            10,
+            5,
+            7
+          ],
+          "material": "shawl",
+          "uv": [
+            40,
+            17
+          ],
+          "uv_size": [
+            10,
+            5,
+            7
+          ]
+        }
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "collar",
+      "parent": "root",
+      "pivot": [
+        0,
+        -22,
+        -3.2
+      ],
+      "cubes": [
+        {
+          "name": "lace_collar",
+          "origin": [
+            -2.5,
+            0,
+            -0.5
+          ],
+          "size": [
+            5,
+            2,
+            1
+          ],
+          "material": "lace",
+          "uv": [
+            75,
+            17
+          ],
+          "uv_size": [
+            5,
+            2,
+            1
+          ]
+        }
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "skirt_upper",
+      "parent": "root",
+      "pivot": [
+        0,
+        -13,
+        0
+      ],
+      "cubes": [
+        {
+          "name": "upper_skirt",
+          "origin": [
+            -5,
+            -1,
+            -3
+          ],
+          "size": [
+            10,
+            6,
+            6
+          ],
+          "material": "dress",
+          "uv": [
+            88,
+            17
+          ],
+          "uv_size": [
+            10,
+            6,
+            6
+          ]
+        }
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "skirt_lower",
+      "parent": "root",
+      "pivot": [
+        0,
+        -8,
+        0
+      ],
+      "cubes": [
+        {
+          "name": "lower_skirt",
+          "origin": [
+            -6,
+            0,
+            -4
+          ],
+          "size": [
+            12,
+            8,
+            8
+          ],
+          "material": "hem",
+          "uv": [
+            0,
+            30
+          ],
+          "uv_size": [
+            12,
+            8,
+            8
+          ]
+        }
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "left_leg",
+      "parent": "root",
+      "pivot": [
+        2,
+        -8,
+        0
+      ],
+      "cubes": [
+        {
+          "name": "left_shoe",
+          "origin": [
+            -1.5,
+            6,
+            -2.8
+          ],
+          "size": [
+            3,
+            2,
+            5
+          ],
+          "material": "shoe",
+          "uv": [
+            41,
+            30
+          ],
+          "uv_size": [
+            3,
+            2,
+            5
+          ]
+        }
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "right_leg",
+      "parent": "root",
+      "pivot": [
+        -2,
+        -8,
+        0
+      ],
+      "cubes": [
+        {
+          "name": "right_shoe",
+          "origin": [
+            -1.5,
+            6,
+            -2.8
+          ],
+          "size": [
+            3,
+            2,
+            5
+          ],
+          "material": "shoe",
+          "uv": [
+            58,
+            30
+          ],
+          "uv_size": [
+            3,
+            2,
+            5
+          ]
+        }
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "left_arm",
+      "parent": "root",
+      "pivot": [
+        4.5,
+        -22,
+        0
+      ],
+      "cubes": [
+        {
+          "name": "left_sleeve",
+          "origin": [
+            -1.5,
+            -0.5,
+            -1.5
+          ],
+          "size": [
+            3,
+            8,
+            3
+          ],
+          "material": "shawl",
+          "uv": [
+            75,
+            30
+          ],
+          "uv_size": [
+            3,
+            8,
+            3
+          ]
+        }
+      ],
+      "rotation": [
+        0,
+        0,
+        -0.06
+      ]
+    },
+    {
+      "name": "left_forearm",
+      "parent": "left_arm",
+      "pivot": [
+        0,
+        7.5,
+        0
+      ],
+      "cubes": [
+        {
+          "name": "left_forearm",
+          "origin": [
+            -1,
+            0,
+            -1
+          ],
+          "size": [
+            2,
+            7,
+            2
+          ],
+          "material": "skin",
+          "uv": [
+            88,
+            30
+          ],
+          "uv_size": [
+            2,
+            7,
+            2
+          ]
+        }
+      ],
+      "rotation": [
+        -0.14,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "left_hand",
+      "parent": "left_forearm",
+      "pivot": [
+        0,
+        6.5,
+        0
+      ],
+      "cubes": [
+        {
+          "name": "left_palm",
+          "origin": [
+            -1.5,
+            0,
+            -1
+          ],
+          "size": [
+            3,
+            3,
+            2
+          ],
+          "material": "skin",
+          "uv": [
+            97,
+            30
+          ],
+          "uv_size": [
+            3,
+            3,
+            2
+          ]
+        }
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "left_finger_0",
+      "parent": "left_hand",
+      "pivot": [
+        -1,
+        2.5,
+        -0.2
+      ],
+      "cubes": [
+        {
+          "name": "left_finger_0",
+          "origin": [
+            -0.35,
+            0,
+            -0.35
+          ],
+          "size": [
+            0.7,
+            3,
+            0.7
+          ],
+          "material": "skin",
+          "uv": [
+            108,
+            30
+          ],
+          "uv_size": [
+            1,
+            3,
+            1
+          ]
+        },
+        {
+          "name": "left_nail_0",
+          "origin": [
+            -0.38,
+            2.5,
+            -0.5
+          ],
+          "size": [
+            0.76,
+            2,
+            0.6
+          ],
+          "material": "nail",
+          "uv": [
+            113,
+            30
+          ],
+          "uv_size": [
+            1,
+            2,
+            1
+          ]
+        }
+      ],
+      "rotation": [
+        -0.18,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "left_finger_1",
+      "parent": "left_hand",
+      "pivot": [
+        0,
+        2.5,
+        -0.2
+      ],
+      "cubes": [
+        {
+          "name": "left_finger_1",
+          "origin": [
+            -0.35,
+            0,
+            -0.35
+          ],
+          "size": [
+            0.7,
+            5,
+            0.7
+          ],
+          "material": "skin",
+          "uv": [
+            118,
+            30
+          ],
+          "uv_size": [
+            1,
+            5,
+            1
+          ]
+        },
+        {
+          "name": "left_nail_1",
+          "origin": [
+            -0.38,
+            4.5,
+            -0.5
+          ],
+          "size": [
+            0.76,
+            2,
+            0.6
+          ],
+          "material": "nail",
+          "uv": [
+            123,
+            30
+          ],
+          "uv_size": [
+            1,
+            2,
+            1
+          ]
+        }
+      ],
+      "rotation": [
+        -0.18,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "left_finger_2",
+      "parent": "left_hand",
+      "pivot": [
+        1,
+        2.5,
+        -0.2
+      ],
+      "cubes": [
+        {
+          "name": "left_finger_2",
+          "origin": [
+            -0.35,
+            0,
+            -0.35
+          ],
+          "size": [
+            0.7,
+            4,
+            0.7
+          ],
+          "material": "skin",
+          "uv": [
+            0,
+            47
+          ],
+          "uv_size": [
+            1,
+            4,
+            1
+          ]
+        },
+        {
+          "name": "left_nail_2",
+          "origin": [
+            -0.38,
+            3.5,
+            -0.5
+          ],
+          "size": [
+            0.76,
+            2,
+            0.6
+          ],
+          "material": "nail",
+          "uv": [
+            5,
+            47
+          ],
+          "uv_size": [
+            1,
+            2,
+            1
+          ]
+        }
+      ],
+      "rotation": [
+        -0.18,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "right_arm",
+      "parent": "root",
+      "pivot": [
+        -4.5,
+        -22,
+        0
+      ],
+      "cubes": [
+        {
+          "name": "right_sleeve",
+          "origin": [
+            -1.5,
+            -0.5,
+            -1.5
+          ],
+          "size": [
+            3,
+            8,
+            3
+          ],
+          "material": "shawl",
+          "uv": [
+            10,
+            47
+          ],
+          "uv_size": [
+            3,
+            8,
+            3
+          ]
+        }
+      ],
+      "rotation": [
+        0,
+        0,
+        0.06
+      ]
+    },
+    {
+      "name": "right_forearm",
+      "parent": "right_arm",
+      "pivot": [
+        0,
+        7.5,
+        0
+      ],
+      "cubes": [
+        {
+          "name": "right_forearm",
+          "origin": [
+            -1,
+            0,
+            -1
+          ],
+          "size": [
+            2,
+            7,
+            2
+          ],
+          "material": "skin",
+          "uv": [
+            23,
+            47
+          ],
+          "uv_size": [
+            2,
+            7,
+            2
+          ]
+        }
+      ],
+      "rotation": [
+        -0.14,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "right_hand",
+      "parent": "right_forearm",
+      "pivot": [
+        0,
+        6.5,
+        0
+      ],
+      "cubes": [
+        {
+          "name": "right_palm",
+          "origin": [
+            -1.5,
+            0,
+            -1
+          ],
+          "size": [
+            3,
+            3,
+            2
+          ],
+          "material": "skin",
+          "uv": [
+            32,
+            47
+          ],
+          "uv_size": [
+            3,
+            3,
+            2
+          ]
+        }
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "right_finger_0",
+      "parent": "right_hand",
+      "pivot": [
+        -1,
+        2.5,
+        -0.2
+      ],
+      "cubes": [
+        {
+          "name": "right_finger_0",
+          "origin": [
+            -0.35,
+            0,
+            -0.35
+          ],
+          "size": [
+            0.7,
+            3,
+            0.7
+          ],
+          "material": "skin",
+          "uv": [
+            43,
+            47
+          ],
+          "uv_size": [
+            1,
+            3,
+            1
+          ]
+        },
+        {
+          "name": "right_nail_0",
+          "origin": [
+            -0.38,
+            2.5,
+            -0.5
+          ],
+          "size": [
+            0.76,
+            2,
+            0.6
+          ],
+          "material": "nail",
+          "uv": [
+            48,
+            47
+          ],
+          "uv_size": [
+            1,
+            2,
+            1
+          ]
+        }
+      ],
+      "rotation": [
+        -0.18,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "right_finger_1",
+      "parent": "right_hand",
+      "pivot": [
+        0,
+        2.5,
+        -0.2
+      ],
+      "cubes": [
+        {
+          "name": "right_finger_1",
+          "origin": [
+            -0.35,
+            0,
+            -0.35
+          ],
+          "size": [
+            0.7,
+            5,
+            0.7
+          ],
+          "material": "skin",
+          "uv": [
+            53,
+            47
+          ],
+          "uv_size": [
+            1,
+            5,
+            1
+          ]
+        },
+        {
+          "name": "right_nail_1",
+          "origin": [
+            -0.38,
+            4.5,
+            -0.5
+          ],
+          "size": [
+            0.76,
+            2,
+            0.6
+          ],
+          "material": "nail",
+          "uv": [
+            58,
+            47
+          ],
+          "uv_size": [
+            1,
+            2,
+            1
+          ]
+        }
+      ],
+      "rotation": [
+        -0.18,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "right_finger_2",
+      "parent": "right_hand",
+      "pivot": [
+        1,
+        2.5,
+        -0.2
+      ],
+      "cubes": [
+        {
+          "name": "right_finger_2",
+          "origin": [
+            -0.35,
+            0,
+            -0.35
+          ],
+          "size": [
+            0.7,
+            4,
+            0.7
+          ],
+          "material": "skin",
+          "uv": [
+            63,
+            47
+          ],
+          "uv_size": [
+            1,
+            4,
+            1
+          ]
+        },
+        {
+          "name": "right_nail_2",
+          "origin": [
+            -0.38,
+            3.5,
+            -0.5
+          ],
+          "size": [
+            0.76,
+            2,
+            0.6
+          ],
+          "material": "nail",
+          "uv": [
+            68,
+            47
+          ],
+          "uv_size": [
+            1,
+            2,
+            1
+          ]
+        }
+      ],
+      "rotation": [
+        -0.18,
+        0,
+        0
+      ]
+    }
+  ]
+}

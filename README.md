@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.4.3` revises the per-player opening sequence so the ordinary manor, not the player's home, is the first architectural relationship with the House:
+Version `0.4.4` adds the Mother of Strays, her den, custom animated Mother and Pekingese models, persistent lost belongings and pets, concealed stalking, gradual deformation, brutal reclamation, rescue and permanent farewell. See [docs/MOTHER.md](docs/MOTHER.md) for the interactions and development playtest. The ordinary manor remains the player's first architectural relationship with the House:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.
@@ -26,7 +26,7 @@ Version `0.4.3` revises the per-player opening sequence so the ordinary manor, n
 - The exterior is generated once and then left alone. Future impossible space belongs behind it, not in a morphing facade.
 - No mixins.
 
-The modular room graph, navigation anomalies, explorer notes, Mother of Strays, deeper Hillary behavior and Minotaur progression are tracked in [docs/DESIGN_DOCUMENT.md](docs/DESIGN_DOCUMENT.md).
+The broader room graph, navigation anomalies, explorer notes, deeper Hillary behavior and Minotaur progression are tracked in [docs/DESIGN_DOCUMENT.md](docs/DESIGN_DOCUMENT.md).
 
 ## Opening lifecycle
 
