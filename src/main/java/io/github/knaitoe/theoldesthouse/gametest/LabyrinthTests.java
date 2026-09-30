@@ -686,6 +686,21 @@ public final class LabyrinthTests {
         helper.assertTrue(LabyrinthLighting.isPortableLight(Blocks.TORCH.defaultBlockState())
                         && LabyrinthLighting.isPortableLight(Blocks.LANTERN.defaultBlockState()),
                 "the House recognizes the player's ordinary portable lights");
+        helper.assertTrue(LabyrinthLighting.allowsPortableLightIn(
+                        LabyrinthPlace.GRAY_CORRIDOR, Blocks.TORCH.defaultBlockState()),
+                "Tom's torches can actually be placed in ordinary gray space");
+        helper.assertTrue(LabyrinthLighting.allowsPortableLightIn(
+                        LabyrinthPlace.FALSE_DISTANCE, Blocks.LANTERN.defaultBlockState()),
+                "portable lights can mark stranger gray rooms too");
+        helper.assertTrue(!LabyrinthLighting.allowsPortableLightIn(
+                        LabyrinthPlace.FLOORBOARDS, Blocks.TORCH.defaultBlockState()),
+                "vignettes remain protected from player lighting edits");
+        helper.assertTrue(!LabyrinthLighting.allowsPortableLightIn(
+                        LabyrinthPlace.GRAY_CORRIDOR, Blocks.COBBLESTONE.defaultBlockState()),
+                "the exception is light, not general construction");
+        helper.assertTrue(!LabyrinthLighting.allowsPortableLightIn(
+                        LabyrinthPlace.LIGHT_SINK, Blocks.TORCH.defaultBlockState()),
+                "the Light Sink keeps its own consumptive placement rules");
         helper.succeed();
     }
 

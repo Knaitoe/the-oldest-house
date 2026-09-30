@@ -132,6 +132,32 @@ public final class LabyrinthLighting {
                 || state.is(Blocks.SOUL_LANTERN);
     }
 
+    /**
+     * The Labyrinth normally rejects building. Light is the deliberate
+     * exception in gray space: Tom's cache is meant to be usable, and those
+     * player-made landmarks are what the House later learns to rearrange.
+     */
+    public static boolean allowsPlacing(Level level, BlockPos pos, BlockState placed) {
+        if (!level.dimension().equals(HouseDimensions.INTERIOR)
+                || level.getServer() == null
+                || !isPortableLight(placed)) {
+            return false;
+        }
+        BlockPos origin = HouseSavedData.get(level.getServer()).houseOrigin();
+        LabyrinthPlace place = origin == null ? null : LabyrinthPlaces.placeAt(origin, pos);
+        return place != null
+                && place.kind() == LabyrinthPlace.Kind.GRAY
+                && place != LabyrinthPlace.LIGHT_SINK;
+    }
+
+    /** Pure rule for tests and callers that already know the place. */
+    public static boolean allowsPortableLightIn(LabyrinthPlace place, BlockState placed) {
+        return place != null
+                && place.kind() == LabyrinthPlace.Kind.GRAY
+                && place != LabyrinthPlace.LIGHT_SINK
+                && isPortableLight(placed);
+    }
+
     public static boolean mayRearrange(LabyrinthPlace place) {
         return switch (place) {
             case JUNCTION, GRAY_CORRIDOR, LONG_HALLWAY, HOTEL_HALLWAY,
