@@ -198,12 +198,14 @@ public final class CompanionTests {
                 &&owner.getUUID().equals(cat.getOwnerUUID())&&CompanionOrders.order(cat)==CompanionOrders.Order.FOLLOW,
                 "health, identity, ownership and the selected order survive the crossing");
         BlockPos arrival=cat.blockPosition();
-        helper.succeedWhen(()->{
+        helper.onEachTick(()->{
+            if(target.getEntity(id)!=cat)return;
             helper.assertTrue(target.getEntity(id)==cat,"the cat is tracked in the new world; removed="+cat.isRemoved()
                     +"; position="+cat.position()+"; tickets="+ShutdownWatch.ticketsAt(target,new ChunkPos(cat.blockPosition())));
             target.getChunkSource().removeRegionTicket(TicketType.PORTAL,new ChunkPos(arrival),3,arrival);
             cat.discard();remove(owner);
             target.setChunkForced(2,2,false);FORCED_CAT_FIXTURES.remove(target);
+            helper.succeed();
         });
     }
     @GameTest(template="empty",batch="companions")
