@@ -85,6 +85,10 @@ public final class LabyrinthCampsite {
                 cache.setItem(3, new ItemStack(Items.APPLE, 4));
                 cache.setItem(4, new ItemStack(Items.COOKED_COD, 3));
                 cache.setItem(5, new ItemStack(Items.TORCH, 8));
+                cache.setItem(6, new ItemStack(LabyrinthRegistry.CHALK.get()));
+                cache.setItem(7, new ItemStack(LabyrinthRegistry.TRAIL_SPOOL.get()));
+                cache.setItem(8, new ItemStack(Items.BONE, 4));
+                cache.setItem(9, new ItemStack(Items.COD, 3));
             }
         }
 

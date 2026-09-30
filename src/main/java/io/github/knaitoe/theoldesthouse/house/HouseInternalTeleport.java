@@ -23,7 +23,7 @@ public final class HouseInternalTeleport {
     /** Move to an absolute point in the player's current dimension. */
     public static void shift(ServerPlayer player, Vec3 to, float yaw) {
         ServerLevel level = player.serverLevel();
-        Wolf companion = Hillary.following(player);
+        var companions = io.github.knaitoe.theoldesthouse.opening.CompanionOrders.followingAll(player);
 
         // Do the potentially visible/loading work before the client is moved.
         // Once the teleport packet is sent, the destination must already be a
@@ -47,7 +47,7 @@ public final class HouseInternalTeleport {
         // behavior. The House changes adjacency, not the player's stride.
         player.setDeltaMovement(movement);
         player.resetFallDistance();
-        Hillary.followAcross(companion, player);
+        for (var companion : companions) io.github.knaitoe.theoldesthouse.opening.CompanionOrders.followAcross(companion, player);
     }
 
     /** Translate by a fixed offset without rotating the player. */

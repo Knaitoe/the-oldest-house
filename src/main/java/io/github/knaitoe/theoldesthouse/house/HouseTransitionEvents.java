@@ -195,7 +195,7 @@ public final class HouseTransitionEvents {
     }
 
     private static void move(ServerPlayer player, PendingTransition pending, ServerLevel destination) {
-        net.minecraft.world.entity.animal.Wolf companion = io.github.knaitoe.theoldesthouse.opening.Hillary.following(player);
+        var companions = io.github.knaitoe.theoldesthouse.opening.CompanionOrders.followingAll(player);
         if (pending.before != null) {
             pending.before.accept(player);
         }
@@ -211,7 +211,7 @@ public final class HouseTransitionEvents {
             throw new IllegalStateException("the teleport did not arrive in " + pending.destination.location());
         }
         pending.arrived = true;
-        io.github.knaitoe.theoldesthouse.opening.Hillary.followAcross(companion, player);
+        for (var companion : companions) io.github.knaitoe.theoldesthouse.opening.CompanionOrders.followAcross(companion, player);
 
         if (pending.after != null) {
             pending.after.accept(player);

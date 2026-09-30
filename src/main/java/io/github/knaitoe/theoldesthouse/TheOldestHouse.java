@@ -170,6 +170,10 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onRightClick);
         NeoForge.EVENT_BUS.addListener(HouseMirrorSyncEvents::onServerTick);
 
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, io.github.knaitoe.theoldesthouse.opening.CompanionOrders::onInteract);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.opening.CompanionOrders::onEntityTick);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, io.github.knaitoe.theoldesthouse.labyrinth.NavigationAids::onRightClick);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.NavigationAids::onPlayerTick);
         OpeningSequence.register(NeoForge.EVENT_BUS);
 
         LOGGER.info("The Oldest House prototype initialized.");

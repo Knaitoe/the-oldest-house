@@ -13,7 +13,14 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("9")
+        event.registrar("10")
+                .playToClient(CompanionMenuPayload.TYPE, CompanionMenuPayload.STREAM_CODEC,
+                        (payload, context) -> context.enqueueWork(() -> io.github.knaitoe.theoldesthouse.client.CompanionWheel.open(payload.entityId())))
+                .playToServer(CompanionOrderPayload.TYPE, CompanionOrderPayload.STREAM_CODEC,
+                        (payload, context) -> context.enqueueWork(() -> {
+                            if (context.player() instanceof net.minecraft.server.level.ServerPlayer player)
+                                io.github.knaitoe.theoldesthouse.opening.CompanionOrders.command(player, payload.entityId(), payload.order());
+                        }))
                 .playToClient(DoorLeaksPayload.TYPE, DoorLeaksPayload.STREAM_CODEC,
                         (payload, context) -> DoorLeakClientState.accept(payload))
                 .playToClient(ClapGamePayload.TYPE, ClapGamePayload.STREAM_CODEC,

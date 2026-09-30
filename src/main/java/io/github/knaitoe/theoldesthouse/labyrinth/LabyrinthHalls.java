@@ -65,6 +65,8 @@ public final class LabyrinthHalls {
             LabyrinthBuilder.hangLantern(level,base.offset(-9,3,-15),false);
             LabyrinthBuilder.hangLantern(level,base.offset(9,3,-15),false);
         }
+        if(place==LabyrinthPlace.BENT_HALL) NavigationAids.explorerMark(level,base.offset(-9,0,-19),Direction.EAST);
+        if(place==LabyrinthPlace.CROSS_HALL) NavigationAids.explorerMark(level,base.offset(-10,0,-15),Direction.EAST);
         if(place==LabyrinthPlace.QUIET_ROOM) {
             for(int z=-8;z>=-11;z--) level.setBlock(base.offset(-4,0,z),
                     LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS,Direction.WEST),flags);
@@ -77,6 +79,17 @@ public final class LabyrinthHalls {
                 cache.setItem(1,new ItemStack(Items.APPLE,2));
                 cache.setItem(2,new ItemStack(Items.PAPER,3));
             }
+            BlockPos note=base.offset(4,0,-13);
+            level.setBlock(note,Blocks.LECTERN.defaultBlockState()
+                    .setValue(net.minecraft.world.level.block.LecternBlock.FACING,Direction.WEST)
+                    .setValue(net.minecraft.world.level.block.LecternBlock.HAS_BOOK,true),flags);
+            if(level.getBlockEntity(note) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity lectern)
+                lectern.setBook(io.github.knaitoe.theoldesthouse.house.HouseWriting.book("A place to stop","No name",
+                        io.github.knaitoe.theoldesthouse.house.HouseWriting.WritingStyle.PLAIN,
+                        java.util.List.of("Sit down. Eat something. The corridor will still be there when you stand.\n\n"+
+                                "Tie the string at each door. Compare your marks with the chipped pillars, not with another mark.",
+                                "Let the animal listen before you follow. If it waits, catch up.\n\n"+
+                                "I found a cat here. It was more frightened than I was.")));
             LabyrinthBuilder.hangLantern(level,base.offset(-3,4,-7),false);
         }
         LabyrinthBuilder.entrance(level,base,Blocks.LIGHT_GRAY_TERRACOTTA.defaultBlockState(),

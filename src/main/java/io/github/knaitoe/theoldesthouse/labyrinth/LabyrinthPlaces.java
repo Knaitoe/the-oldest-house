@@ -35,7 +35,7 @@ public final class LabyrinthPlaces {
      * any place (and its padding) and clear of the manor's own footprint.
      */
     public static final int COLUMN_SPACING = 96;
-    private static final int MAX_COLUMNS = 3;
+    private static final int MAX_COLUMNS = 4;
     private static final int MAX_Y = 318;
     private static final int MIN_Y = -60;
 

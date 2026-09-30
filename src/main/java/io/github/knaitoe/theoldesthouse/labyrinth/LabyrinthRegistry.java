@@ -19,6 +19,11 @@ public final class LabyrinthRegistry {
     public static final DeferredItem<Item> SCRATCH_TICKET =
             ITEMS.registerSimpleItem("scratch_ticket", new Item.Properties().stacksTo(1));
 
+    public static final DeferredItem<NavigationItems.Chalk> CHALK =
+            ITEMS.register("chalk", () -> new NavigationItems.Chalk(new Item.Properties().durability(64)));
+    public static final DeferredItem<NavigationItems.Spool> TRAIL_SPOOL =
+            ITEMS.register("trail_spool", () -> new NavigationItems.Spool(new Item.Properties().durability(192)));
+
     private LabyrinthRegistry() {
     }
 

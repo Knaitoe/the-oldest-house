@@ -234,6 +234,7 @@ public final class Hillary {
             return;
         }
         HillaryTag tag = tagOf(wolf);
+        if (CompanionOrders.managed(wolf)) return;
         if (tag != null && tickSeeking(wolf, level)) {
             return;
         }
@@ -353,6 +354,7 @@ public final class Hillary {
      * With nothing left in the house to find, she whines and lies down.
      */
     public static void takeScent(Wolf wolf, ServerLevel level, UUID seeker) {
+        CompanionOrders.clear(wolf);
         wolf.getPersistentData().remove("HillaryFindExit");
         wolf.playSound(SoundEvents.WOLF_PANT, 1.0F, 1.2F);
         LabyrinthDealer.Scent scent = LabyrinthDealer.giveScent(LabyrinthData.get(level.getServer()), seeker);
@@ -371,6 +373,8 @@ public final class Hillary {
         LabyrinthPlace place = origin == null ? null : LabyrinthPlaces.placeAt(origin, wolf.blockPosition());
         if (level.dimension().equals(HouseDimensions.INTERIOR) && place != null) {
             LabyrinthDealer.dealPlace(LabyrinthData.get(level.getServer()), seeker, place, wolf.getRandom());
+            ServerPlayer owner = level.getServer().getPlayerList().getPlayer(seeker);
+            if (owner != null) { CompanionOrders.issue(wolf, owner, CompanionOrders.Order.DEEPER); return; }
         }
         SEEKING.put(wolf.getUUID(), level.getGameTime() + 2400);
     }
@@ -445,6 +449,7 @@ public final class Hillary {
         if (!(overworld.getEntity(wolfId) instanceof Wolf wolf)) {
             return;
         }
+        if (CompanionOrders.managed(wolf)) return;
 
         HillaryTag tag = tagOf(wolf);
         if (tag == null || !player.getUUID().equals(tag.recipient())) {

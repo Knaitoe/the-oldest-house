@@ -148,7 +148,7 @@ public final class Growl {
             UUID id = player.getUUID();
             LabyrinthPlace place = LabyrinthPlaces.placeAt(origin, player.blockPosition());
             int depth = labyrinth.returnDepth(id);
-            if (player.isSpectator() || place == null || place.isVignette() || depth <= 0) {
+            if (player.isSpectator() || place == null || place.isVignette() || LabyrinthPacing.quiet(place) || depth <= 0) {
                 continue;
             }
             record.noteDepth(id, depth);

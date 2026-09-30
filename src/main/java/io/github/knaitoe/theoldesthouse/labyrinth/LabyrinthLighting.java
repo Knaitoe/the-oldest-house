@@ -71,6 +71,8 @@ public final class LabyrinthLighting {
             if (empty) {
                 cache.setItem(0, new ItemStack(Items.TORCH, 14));
                 cache.setItem(1, new ItemStack(Items.BREAD, 2));
+                cache.setItem(2, new ItemStack(LabyrinthRegistry.CHALK.get()));
+                cache.setItem(3, new ItemStack(LabyrinthRegistry.TRAIL_SPOOL.get()));
             }
         }
     }
@@ -83,7 +85,7 @@ public final class LabyrinthLighting {
                 List.of(
                         "I have come back to this room from three different doors. I stopped trying to draw the order. "
                                 + "There may not be one.\n\nI started marking the way with lights instead.",
-                        "There are torches in the barrel. Take them.\n\n"
+                        "There are torches, chalk and string in the barrel. Take them.\n\n"
                                 + "One warning: some of mine were not where I left them when I came back. "
                                 + "Same number. Different walls.\n\n"
                                 + "If that happens, don't waste food putting everything back. Keep moving.\n\n-Tom"

@@ -19,5 +19,9 @@
   "block.the_oldest_house.model_home_wallpaper": "Show Home Wallpaper",
   "block.the_oldest_house.model_home_kids_wallpaper": "Child's Wallpaper",
   "block.the_oldest_house.model_home_rug": "Show Home Rug",
-  "block.the_oldest_house.model_home_television": "Television"
+  "block.the_oldest_house.model_home_television": "Television",
+  "item.the_oldest_house.chalk": "Chalk",
+  "item.the_oldest_house.trail_spool": "String Spool",
+  "block.the_oldest_house.chalk_mark": "Chalk Mark",
+  "block.the_oldest_house.trail_line": "Trailing String"
 }
