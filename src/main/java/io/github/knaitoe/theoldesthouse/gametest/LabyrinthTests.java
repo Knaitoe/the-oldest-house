@@ -46,6 +46,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.CandleBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.LanternBlock;
@@ -674,7 +675,8 @@ public final class LabyrinthTests {
                         && !LabyrinthLighting.mayRearrange(LabyrinthPlace.EXPLORER_CAMP),
                 "survival-critical air pockets and the recovery camp keep their safety lighting");
         helper.assertTrue(LabyrinthLighting.isPortableLight(Blocks.TORCH.defaultBlockState())
-                        && LabyrinthLighting.isPortableLight(Blocks.LANTERN.defaultBlockState()),
+                        && LabyrinthLighting.isPortableLight(Blocks.LANTERN.defaultBlockState())
+                        && LabyrinthLighting.isPortableLight(Blocks.CANDLE.defaultBlockState()),
                 "the House recognizes the player's ordinary portable lights");
         helper.succeed();
     }
@@ -742,6 +744,11 @@ public final class LabyrinthTests {
                 "the hotel ceiling is its own warm plaster");
         helper.assertTrue(level.getBlockState(hotelBase.offset(LabyrinthLoops.signPos(0, 0))).is(HouseBlocks.HOTEL_ROOM_PLAQUE.get()),
                 "hotel room numbers use the authored brass plaque block");
+        BlockPos hotelLamp = hotelPeriod.offset(1, 1, -6);
+        helper.assertTrue(level.getBlockState(hotelLamp).is(Blocks.CANDLE)
+                        && level.getBlockState(hotelLamp).getValue(CandleBlock.CANDLES) == 2
+                        && level.getBlockState(hotelLamp).getValue(CandleBlock.LIT),
+                "the deeper hotel uses a two-candle pool instead of a bright ceiling lantern");
         helper.succeed();
     }
 

@@ -92,7 +92,7 @@ These behaviors belong to the house itself, independent of any vignette, and car
 - **Infinite digging:** past the threshold the dimension is solid, so any tunnel only finds more wall.
 - **The Growl:** a low sound with no source, sometimes directly below. It is the Minotaur's voice, heard long before it is seen.
 - **Echoes:** the mod logs the player's door, furnace, and mining sounds and replays them later from deep inside.
-- **Holloway's markers:** torches go out or vanish when unseen, and string trails get cut.
+- **Holloway's markers:** the first junction now carries Tom's written exploration notes and a barrel of torches/food left for whoever follows. Portable lights work throughout gray space. The farther a player's return stack carries them from the entrance, the more low-light stretches press into Darkness and the more often unwatched lights may be relocated to another valid support. The House never moves a light while anyone can see either position; survival-critical flood/jump/gravity spaces and the explorer camp keep stable safety lighting. Looping halls still erase player markers on the next pass, the Light Sink consumes them, and the deepest hotel is physically lit only by isolated two-candle pools. String trails are still intended to be cut.
 - **The spiral staircase:** a loop that takes longer to climb than to descend. An anvil dropped down it never lands.
 - **The Five and a Half Minute Hallway:** always takes exactly that long, because it's a timed loop that sprinting, speed, and ender pearls can't beat. A torch placed in it is gone on the next pass.
 - **Maps:** a custom map item shows only the house's exterior footprint, with the player still inside it after 2,000 blocks.

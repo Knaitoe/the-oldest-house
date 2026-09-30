@@ -125,7 +125,8 @@ public final class LabyrinthLighting {
                 || state.is(Blocks.SOUL_TORCH)
                 || state.is(Blocks.SOUL_WALL_TORCH)
                 || state.is(Blocks.LANTERN)
-                || state.is(Blocks.SOUL_LANTERN);
+                || state.is(Blocks.SOUL_LANTERN)
+                || state.is(Blocks.CANDLE);
     }
 
     public static boolean mayRearrange(LabyrinthPlace place) {
