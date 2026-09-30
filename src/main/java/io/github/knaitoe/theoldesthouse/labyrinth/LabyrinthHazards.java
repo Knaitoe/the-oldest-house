@@ -143,7 +143,9 @@ public final class LabyrinthHazards {
 
     public static void buildFalseDistance(ServerLevel level, BlockPos base) {
         LabyrinthBuilder.room(level, base, -1, 1, 3, -33, -1, WALL, FLOOR, CEILING);
-        for (int z = -5; z >= -29; z -= 6) {
+        // Darker than the plain early corridor: the perspective trick is
+        // separated by longer stretches where the next pool never seems nearer.
+        for (int z : new int[] {-7, -18, -29}) {
             LabyrinthBuilder.hangLantern(level, base.offset(0, 3, z), true);
         }
         LabyrinthBuilder.entrance(level, base, WALL, FLOOR, CEILING);

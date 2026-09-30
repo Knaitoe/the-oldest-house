@@ -22,6 +22,7 @@ import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CandleBlock;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.LanternBlock;
 import net.minecraft.world.level.block.SlabBlock;
@@ -222,10 +223,25 @@ public final class LabyrinthLoops {
         }
     }
 
-    /** What stands in an open cell: a lamp hung in each straight, and in the hotel the room plaques. */
+    /**
+     * The early long hallway repeats around a dim soul lantern. The hotel is
+     * deeper and physically darker: each repeated straight has only two
+     * candles on a dark-oak ledge, leaving isolated warm pools around the
+     * numbered doors instead of a bright ceiling lamp.
+     */
     private static BlockState cellState(boolean hotel, Region region, int x, int y, int z) {
-        if (region.straight() && x == 0 && y == 2 && z == -4) {
-            return (hotel ? Blocks.LANTERN : Blocks.SOUL_LANTERN).defaultBlockState().setValue(LanternBlock.HANGING, true);
+        if (!hotel && region.straight() && x == 0 && y == 2 && z == -4) {
+            return Blocks.SOUL_LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true);
+        }
+        if (hotel && region.straight() && x == 1 && z == -6) {
+            if (y == 0) {
+                return Blocks.DARK_OAK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP);
+            }
+            if (y == 1) {
+                return Blocks.CANDLE.defaultBlockState()
+                        .setValue(CandleBlock.CANDLES, 2)
+                        .setValue(CandleBlock.LIT, true);
+            }
         }
         if (hotel && region.straight() && y == 1 && z == -3 && (x == -1 || x == 1)) {
             return HouseBlocks.HOTEL_ROOM_PLAQUE.get().defaultBlockState()
