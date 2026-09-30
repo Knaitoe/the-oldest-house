@@ -118,6 +118,10 @@ public enum LabyrinthPlace {
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(0, 0, -15), Direction.SOUTH, LabyrinthData.DEALT)
     )),
+    /** The Mother's den: a recurring anchor, never exhausted by completion. */
+    MOTHER_DEN("mother_of_strays", Kind.RECURRING, 19, new BoundingBox(-10, -4, -25, 10, 13, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
+    )),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 
@@ -247,6 +251,7 @@ public enum LabyrinthPlace {
 
     @Nullable
     public static LabyrinthPlace byId(String id) {
+        if ("mother".equals(id) || "mother_of_lost_things".equals(id)) return MOTHER_DEN;
         for (LabyrinthPlace place : values()) {
             if (place.id.equals(id)) {
                 return place;

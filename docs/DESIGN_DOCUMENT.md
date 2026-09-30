@@ -160,10 +160,16 @@ Five characters belong to the house itself; everyone else lives inside a vignett
 
 - Keeps every meaningful item that despawns anywhere, starting when the mod is installed, and every tamed pet that dies.
 - Her den is walls of item frames. The pets follow her and won't come when called. Zampanò's missing cats are there, and a small dog with a bandaged head.
-- One item back per visit. Take one and she follows 30 to 40 blocks behind in the dark until you return it or trade something loved: renamed, enchanted, or the item you've carried longest.
-- The den shows the latest 50 items plus the loved ones.
-- Hitting her costs you an item. She never leaves the house; take something out and she's waiting at the entrance next time.
+- One item back per visit. Take one and she starts 30 to 40 blocks behind in the dark until you return it or trade something loved. The implemented offering rule accepts named or enchanted objects, or meaningful unstackable objects carried by that player for at least ten minutes.
+- The den shows the latest 50 ordinary items plus all loved ones. The bell turns pages of shelves and archived pets.
+- Her features and hands gradually become monstrous while a claim remains active inside the House. She favors dark corners and obstructions, moving closer and more frequently as she deforms. Repositioning waits until every nearby player's view is clear.
+- After an explicit warning, a brutal reclamation takes the claim or another meaningful possession and hurts the player without intentionally killing them. Her ordinary appearance returns immediately; satiation does not heal her.
+- Hitting her costs a meaningful item. She never leaves the House. Claims persist when the player goes home; their threat resumes on returning to labyrinth space.
+- The bandaged Pekingese is her response to the novel's violence. Asking to take him without an offering begins a visible threat. She heard the offer and insists that elimination is kindness. Whether her relief includes pleasure remains ambiguous. A climbable gallery and a fifteen-second window at its ledge permit an offering or direct rescue; the dog's death is permanent.
+- A thing peacefully returned, a loved thing freely given, and the dog rescued together salve her. Retrieval then carries no new debt. Crouching and presenting the den's record after settling every claim dismisses her permanently, releases the collection, and stops further collection of losses. These acts and their consequences persist through reloads.
 - In multiplayer, friends' things turn up on her shelves.
+
+Implementation and playtest details: [MOTHER.md](MOTHER.md). This September 30 revision supersedes the earlier Mother-kills-Hillary proposal in `DESIGN.md`; Hillary is not used as the scripted victim.
 
 ### Tom
 
@@ -680,7 +686,7 @@ The Minotaur is the centerpiece asset; most human characters are skins on one sh
 | Shore creature | Drowned Town | Pathfinding that treats water as impassable |
 | Fire hose | The hotel | Segmented body; repositions when unseen, follows at the end |
 | Vulture | The plain | Circling behavior only, never swoops |
-| The Mother of Strays | Her den | Optional; she can be an NPC skin instead |
+| The Mother of Strays | Her den and concealed stalking | Custom articulated model, gradual deformation and four texture stages; custom bandaged Pekingese |
 
 ### NPC skins (one entity type)
 
@@ -745,7 +751,7 @@ Four design questions are still open, and most technical risk sits in capture, t
 
 - **An ending for everyone:** does the Minotaur come looking once enough vignettes are finished, or can a player who never opens the cell play forever?
 - **The Skinamarink crawl:** does the crawl under the bed lead into the Mapping the Interior crawlspace, linking two borrowed vignettes, or simply out?
-- **What counts as loved** for the Mother's trades: renamed, enchanted, and carried longest, or something else?
+- **Refining loved objects:** the first implementation accepts renamed or enchanted objects, or meaningful unstackable objects carried for ten minutes. A future inventory history system may distinguish the longest-carried object.
 - **Multiplayer:** each player already has their own letter and Hillary while the house itself is shared. Still open: whose base gets copied for shared vignettes, and how lost time works when world time is shared.
 
 ### Technical risks

@@ -199,6 +199,7 @@ public final class LabyrinthDoors {
             RedRoom.prepareIfDealt(p, place);
             ModelHome.onArrive(p, place);
             HarriganVignette.onArrive(p, place);
+            MotherOfStrays.onArrive(p, place);
             LabyrinthHazards.onArrive(p, place);
             LabyrinthLighting.onArrive(p, place);
         };
@@ -249,6 +250,9 @@ public final class LabyrinthDoors {
             if (through || into <= -WANDER) {
                 if (place == LabyrinthPlace.HARRIGAN) {
                     HarriganVignette.onDepart(player);
+                }
+                if (place == LabyrinthPlace.MOTHER_DEN) {
+                    MotherCollection.get(player.server).presence(player.getUUID(), false);
                 }
                 goBack(player, entry, data);
             }
