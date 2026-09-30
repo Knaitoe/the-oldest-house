@@ -50,7 +50,7 @@ public final class LabyrinthEncounters {
         }
         MotherCollection collection=MotherCollection.get(player.server);
         if(depth<5||collection.banished()||collection.salved()||collection.dogThreatOwner()!=null
-                ||collection.debt(player.getUUID())!=null
+                ||collection.anyDebt()
                 ||(state.contains("LastMother")&&now-state.getLong("LastMother")<24000)
                 ||player.getRandom().nextInt(motherDenominator(place))!=0)return;
         if(player.serverLevel().players().stream().anyMatch(p->LabyrinthPlaces.placeAt(origin,p.blockPosition())==LabyrinthPlace.MOTHER_DEN))return;
@@ -60,7 +60,8 @@ public final class LabyrinthEncounters {
             if(mother.following()==null)keeper=mother;
         }
         Vec3 spot=keeper==null?null:hiddenSpot(player,place,base,3);
-        if(spot==null||HouseWatchers.isWatched(player.serverLevel(),keeper.getEyePosition()))return;
+        if(spot==null||HouseWatchers.isWatched(player.serverLevel(),keeper.getEyePosition())
+                ||HouseWatchers.isWatched(player.serverLevel(),keeper.position().add(0,.7,0)))return;
         keeper.getPersistentData().putLong(HOME,keeper.blockPosition().asLong());
         keeper.getPersistentData().putLong(AMBIENT_UNTIL,now+900);
         keeper.getNavigation().stop();keeper.teleportTo(spot.x,spot.y,spot.z);

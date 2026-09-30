@@ -632,7 +632,11 @@ public final class OpeningTests {
 
         Vec3 porch = HouseProxyEntityEvacuation.frontDoorExit(level, manorOrigin);
         helper.assertTrue(porch != null, "no safe visible front-door waiting point");
+        level.getChunkAt(BlockPos.containing(porch));
         wolf.moveTo(porch.x, porch.y, porch.z, 0.0F, 0.0F);
+        // Moving a fixture outside its template changes its tracked section.
+        // Wait for the loaded destination to become visible to UUID lookup.
+        helper.runAfterDelay(2, () -> {
         Hillary.tickGuide(level, recipient, wolf.getUUID(), true, manorOrigin);
 
         helper.assertTrue(
@@ -649,6 +653,7 @@ public final class OpeningTests {
 
         wolf.discard();
         helper.succeed();
+        });
     }
 
     @GameTest(template = "empty", timeoutTicks = 100)
