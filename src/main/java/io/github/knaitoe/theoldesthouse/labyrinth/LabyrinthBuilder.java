@@ -34,7 +34,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump to rebuild every place in existing worlds on next use. */
-    public static final int VERSION = 11;
+    public static final int VERSION = 12;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -87,10 +87,11 @@ public final class LabyrinthBuilder {
         }
         pending = new ArrayDeque<>();
         LabyrinthData data = LabyrinthData.get(server);
-        // Version 11 adds one slot. Preserve existing caches, torches and vignette props when upgrading v10.
-        boolean extend = !force && data.builtVersion() == 10 && origin.equals(data.builtOrigin());
+        // Upgrade only the replaced corridor and new slots. Caches, drops and active vignette rounds elsewhere remain intact.
+        boolean extend = !force && data.builtVersion() >= 10 && data.builtVersion() < VERSION && origin.equals(data.builtOrigin());
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
-            if (place.slot() >= 0 && (!extend || place == LabyrinthPlace.MOTHER_DEN)) {
+            if (place.slot() >= 0 && (!extend || LabyrinthMaze.isMaze(place)
+                    || (data.builtVersion() == 10 && place == LabyrinthPlace.MOTHER_DEN))) {
                 pending.add(place);
             }
         }
@@ -140,6 +141,7 @@ public final class LabyrinthBuilder {
         if (base == null || slot == null) {
             return;
         }
+        LabyrinthMaze.Migration migration = LabyrinthMaze.isMaze(place) ? LabyrinthMaze.capture(level, slot, base) : null;
         fillSolid(level, slot);
         LabyrinthData data = LabyrinthData.get(server);
         switch (place) {
@@ -148,6 +150,7 @@ public final class LabyrinthBuilder {
                 LabyrinthLighting.buildEarlyAid(server, level, base);
             }
             case GRAY_CORRIDOR -> buildCorridor(level, base);
+            case FOLDED_MAZE, DEEP_MAZE, ABYSS_MAZE -> LabyrinthMaze.build(level, base, place, LabyrinthMaze.layout(server, place));
             case FLOORBOARDS -> TellTaleFloorboards.build(level, base, !data.isCompleted(place.id()));
             case RED_ROOM -> RedRoom.build(server, level, base);
             case HIDE_AND_CLAP -> HideAndClap.build(server, level, base);
@@ -169,6 +172,7 @@ public final class LabyrinthBuilder {
             }
         }
         registerDoors(data, place, base);
+        if (migration != null) LabyrinthMaze.restoreMigration(level, base, place, migration);
     }
 
     private static void fillSolid(ServerLevel level, BoundingBox slot) {
@@ -209,14 +213,9 @@ public final class LabyrinthBuilder {
         doors(level, base, LabyrinthPlace.JUNCTION);
     }
 
-    /** A long, narrow gray corridor. */
+    /** The ordinary gray corridor is now a real branching maze. */
     public static void buildCorridor(ServerLevel level, BlockPos base) {
-        room(level, base, -1, 1, 3, -27, -1, GRAY_WALL, GRAY_FLOOR, GRAY_CEILING);
-        for (int z = -4; z >= -27; z -= 9) {
-            hangLantern(level, base.offset(0, 3, z), true);
-        }
-        entrance(level, base, GRAY_WALL, GRAY_FLOOR, GRAY_CEILING);
-        doors(level, base, LabyrinthPlace.GRAY_CORRIDOR);
+        LabyrinthMaze.build(level, base, LabyrinthPlace.GRAY_CORRIDOR, LabyrinthMaze.layout(level.getServer(), LabyrinthPlace.GRAY_CORRIDOR));
     }
 
     // ------------------------------------------------------------------

@@ -5,6 +5,7 @@ import io.github.knaitoe.theoldesthouse.client.HouseRoomDoorClient;
 import io.github.knaitoe.theoldesthouse.client.HouseSightlineState;
 import io.github.knaitoe.theoldesthouse.client.HotelPlaqueClientState;
 import io.github.knaitoe.theoldesthouse.client.ClapGameClientState;
+import io.github.knaitoe.theoldesthouse.client.DoorLeakClientState;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 public final class HouseNetwork {
@@ -12,7 +13,9 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("8")
+        event.registrar("9")
+                .playToClient(DoorLeaksPayload.TYPE, DoorLeaksPayload.STREAM_CODEC,
+                        (payload, context) -> DoorLeakClientState.accept(payload))
                 .playToClient(ClapGamePayload.TYPE, ClapGamePayload.STREAM_CODEC,
                         (payload, context) -> ClapGameClientState.accept(payload))
                 .playToClient(

@@ -148,7 +148,9 @@ public final class LabyrinthLighting {
         LabyrinthPlace place = origin == null ? null : LabyrinthPlaces.placeAt(origin, pos);
         return place != null
                 && place.kind() == LabyrinthPlace.Kind.GRAY
-                && place != LabyrinthPlace.LIGHT_SINK;
+                && place != LabyrinthPlace.LIGHT_SINK
+                && (!LabyrinthMaze.isMaze(place) || !LabyrinthMaze.nearFold(LabyrinthMaze.layout(level.getServer(), place),
+                        pos.subtract(LabyrinthPlaces.base(origin, place))));
     }
 
     /** Pure rule for tests and callers that already know the place. */
@@ -162,6 +164,7 @@ public final class LabyrinthLighting {
     public static boolean mayRearrange(LabyrinthPlace place) {
         return switch (place) {
             case JUNCTION, GRAY_CORRIDOR, LONG_HALLWAY, HOTEL_HALLWAY,
+                    FOLDED_MAZE, DEEP_MAZE, ABYSS_MAZE,
                     FALSE_DISTANCE, COMPRESSION_PASSAGE, MOVING_THRESHOLD, DUPLICATE_PASSAGE -> true;
             default -> false;
         };
@@ -214,7 +217,7 @@ public final class LabyrinthLighting {
     }
 
     private static boolean isPhysicalHall(LabyrinthPlace place) {
-        return place == LabyrinthPlace.GRAY_CORRIDOR
+        return LabyrinthMaze.isMaze(place)
                 || place == LabyrinthPlace.LONG_HALLWAY
                 || place == LabyrinthPlace.HOTEL_HALLWAY;
     }
@@ -224,6 +227,7 @@ public final class LabyrinthLighting {
         // The hotel is only dealt at the deepest maze tier. Even if a short
         // return stack reaches it, it should never feel as well-lit as the
         // first gray corridors.
+        if (LabyrinthMaze.isMaze(place)) band = Math.max(band, darknessBand(LabyrinthMaze.minimumDepth(place)));
         return place == LabyrinthPlace.HOTEL_HALLWAY ? Math.max(2, band) : band;
     }
 
@@ -246,8 +250,8 @@ public final class LabyrinthLighting {
         if (base == null) {
             return;
         }
-        if (place == LabyrinthPlace.GRAY_CORRIDOR) {
-            refreshCorridorLights(level, base, wanted, HALL_LAYOUT.getOrDefault(place, 0));
+        if (LabyrinthMaze.isMaze(place)) {
+            LabyrinthMaze.refreshLights(level, base, place, wanted, HALL_LAYOUT.getOrDefault(place, 1));
         } else {
             LabyrinthLoops.refreshAuthoredLights(level, base, place);
         }
@@ -255,8 +259,8 @@ public final class LabyrinthLighting {
 
     public static int authoredLightCount(LabyrinthPlace place, int returnDepth) {
         int band = effectiveBand(place, returnDepth);
-        if (place == LabyrinthPlace.GRAY_CORRIDOR) {
-            return corridorLightPositions(band, 0).size();
+        if (LabyrinthMaze.isMaze(place)) {
+            return LabyrinthMaze.lightPositions(place, band, 1).size();
         }
         if (place == LabyrinthPlace.LONG_HALLWAY || place == LabyrinthPlace.HOTEL_HALLWAY) {
             return loopLightOffsets(place, band, 0).size();
@@ -361,7 +365,7 @@ public final class LabyrinthLighting {
                 base.getX() + room.minX(), base.getY() + room.minY(), base.getZ() + room.minZ(),
                 base.getX() + room.maxX(), base.getY() + room.maxY(), base.getZ() + room.maxZ())) {
             BlockState state = level.getBlockState(cursor);
-            boolean authoredCorridorLamp = place == LabyrinthPlace.GRAY_CORRIDOR
+            boolean authoredCorridorLamp = LabyrinthMaze.isMaze(place)
                     && cursor.getY() == base.getY() + 3
                     && state.is(Blocks.SOUL_LANTERN);
             if (!authoredCorridorLamp && isPortableLight(state) && !HouseWatchers.isWatched(level, cursor)) {
@@ -430,6 +434,7 @@ public final class LabyrinthLighting {
                     || !level.getBlockState(target.above()).isAir()
                     || !level.getBlockState(target.below()).isCollisionShapeFullBlock(level, target.below())
                     || HouseWatchers.isWatched(level, target)
+                    || (LabyrinthMaze.isMaze(place) && LabyrinthMaze.nearFold(LabyrinthMaze.layout(level.getServer(), place), target.subtract(base)))
                     || nearDoor(place, base, target)) {
                 continue;
             }

@@ -210,6 +210,8 @@ public final class LabyrinthDoors {
             MotherOfStrays.onArrive(p, place);
             LabyrinthHazards.onArrive(p, place);
             LabyrinthLighting.onArrive(p, place);
+            LabyrinthMaze.forget(p.getUUID());
+            LabyrinthDoorLeaks.send(p);
         };
         if (toLevel == fromLevel) {
             shift(player, target, yaw);
@@ -261,6 +263,7 @@ public final class LabyrinthDoors {
                     LabyrinthLoops.tick(player, place, base);
                 }
             }
+            if (LabyrinthMaze.isMaze(place)) LabyrinthMaze.tick(player, place, LabyrinthPlaces.base(origin, place));
             return true;
         }
         if (into <= -THRESHOLD) {
@@ -624,31 +627,6 @@ public final class LabyrinthDoors {
             }
         }
 
-        if (server.getTickCount() % LEAK_INTERVAL != 0) {
-            return;
-        }
-        LabyrinthData data = LabyrinthData.get(server);
-        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            for (LabyrinthData.Door door : data.doors()) {
-                LabyrinthData.Deal personal = LabyrinthData.DEALT.equals(door.destination)
-                        ? data.deal(player.getUUID(), door) : null;
-                boolean leak = personal != null ? personal.leak() : door.leak;
-                boolean bark = personal != null ? personal.bark() : door.bark;
-                if (leak
-                        && door.dimension.equals(player.serverLevel().dimension())
-                        && player.position().distanceTo(Vec3.atCenterOf(door.lower)) <= LEAK_RADIUS) {
-                    Vec3 behind = Vec3.atCenterOf(door.lower.relative(door.facing.getOpposite()));
-                    if (bark) {
-                        // Hillary, somewhere behind it, the way she found round outside.
-                        boolean whine = player.getRandom().nextInt(3) == 0;
-                        playTo(player, whine ? SoundEvents.WOLF_WHINE : SoundEvents.WOLF_AMBIENT, behind, 0.35F, 1.0F);
-                    } else {
-                        // A heartbeat, faint, from behind the door.
-                        playTo(player, SoundEvents.WARDEN_HEARTBEAT, behind, 0.3F, 0.9F);
-                    }
-                }
-            }
-        }
     }
 
     private static void playTo(ServerPlayer player, SoundEvent sound, Vec3 at, float volume, float pitch) {
@@ -709,7 +687,7 @@ public final class LabyrinthDoors {
         String dest = LabyrinthData.DEALT.equals(destination) ? LabyrinthData.DEALT : "place:" + destination;
         LabyrinthData.Door door = new LabyrinthData.Door(data.nextCommandDoorId(), level.dimension(), lower, facing, dest, true);
         LabyrinthPlace place = LabyrinthPlace.byId(destination);
-        door.leak = place != null && place.isVignette();
+        door.leak = place != null && (place.isVignette() || place == LabyrinthPlace.HOTEL_HALLWAY || place == LabyrinthPlace.FLOODED_PASSAGE);
         data.putDoor(door);
         syncSealedDoors(player.server);
         return null;
@@ -810,6 +788,7 @@ public final class LabyrinthDoors {
         FADING.remove(event.getEntity().getUUID());
         INSIDE.remove(event.getEntity().getUUID());
         LabyrinthLoops.forget(event.getEntity().getUUID());
+        LabyrinthMaze.forget(event.getEntity().getUUID());
         LabyrinthLighting.clearPlayer(event.getEntity().getUUID());
     }
 
@@ -817,6 +796,7 @@ public final class LabyrinthDoors {
         FADING.clear();
         INSIDE.clear();
         LabyrinthLoops.clearAll();
+        LabyrinthMaze.clearAll();
         LabyrinthBuilder.clearAll();
     }
 

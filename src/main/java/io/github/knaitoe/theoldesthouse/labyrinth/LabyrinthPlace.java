@@ -28,8 +28,8 @@ public enum LabyrinthPlace {
             new DoorSpec("east", new BlockPos(5, 0, -6), Direction.WEST, LabyrinthData.DEALT),
             new DoorSpec("north", new BlockPos(0, 0, -13), Direction.SOUTH, LabyrinthData.DEALT)
     )),
-    /** A long gray corridor: back the way you came, or on through a dealt door at the far end. */
-    GRAY_CORRIDOR("gray_corridor", Kind.GRAY, 1, new BoundingBox(-2, -1, -28, 2, 4, 0), List.of(
+    /** The first physical maze: branching halls, dead ends and a way onward. */
+    GRAY_CORRIDOR("gray_corridor", Kind.GRAY, 1, new BoundingBox(-13, -1, -28, 13, 4, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(0, 0, -28), Direction.SOUTH, LabyrinthData.DEALT)
     )),
@@ -121,6 +121,27 @@ public enum LabyrinthPlace {
     /** The Mother's den: a recurring anchor, never exhausted by completion. */
     MOTHER_DEN("mother_of_strays", Kind.RECURRING, 19, new BoundingBox(-10, -4, -25, 10, 13, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
+    )),
+    /** A larger maze, with one pair of distant, identical bends sewn together. */
+    FOLDED_MAZE("folded_maze", Kind.GRAY, 20, new BoundingBox(-19, -1, -66, 19, 4, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
+            new DoorSpec("north", new BlockPos(0, 0, -66), Direction.SOUTH, LabyrinthData.DEALT),
+            new DoorSpec("west", new BlockPos(-19, 0, -18), Direction.EAST, LabyrinthData.DEALT),
+            new DoorSpec("east", new BlockPos(19, 0, -18), Direction.WEST, LabyrinthData.DEALT)
+    )),
+    /** Two fold pairs rotate the player's route as well as changing adjacency. */
+    DEEP_MAZE("deep_maze", Kind.GRAY, 21, new BoundingBox(-25, -1, -76, 25, 4, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
+            new DoorSpec("north", new BlockPos(0, 0, -76), Direction.SOUTH, LabyrinthData.DEALT),
+            new DoorSpec("west", new BlockPos(-25, 0, -23), Direction.EAST, LabyrinthData.DEALT),
+            new DoorSpec("east", new BlockPos(25, 0, -23), Direction.WEST, LabyrinthData.DEALT)
+    )),
+    /** The widest maze: six hidden crossings, more cycles and longer backtracking. */
+    ABYSS_MAZE("abyss_maze", Kind.GRAY, 22, new BoundingBox(-37, -1, -86, 37, 4, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
+            new DoorSpec("north", new BlockPos(0, 0, -86), Direction.SOUTH, LabyrinthData.DEALT),
+            new DoorSpec("west", new BlockPos(-37, 0, -28), Direction.EAST, LabyrinthData.DEALT),
+            new DoorSpec("east", new BlockPos(37, 0, -28), Direction.WEST, LabyrinthData.DEALT)
     )),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
