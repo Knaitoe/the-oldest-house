@@ -167,8 +167,9 @@ public final class MotherTests {
         Wolf wolf = EntityType.WOLF.create(helper.getLevel());
         UUID owner = UUID.randomUUID();
         wolf.setTame(true, true); wolf.setOwnerUUID(owner);
-        wolf.setCustomName(Component.literal("Button")); wolf.setCollarColor(DyeColor.BLUE);
+        wolf.setCustomName(Component.literal("Button"));
         CompoundTag saved = new CompoundTag(); wolf.save(saved);
+        saved.putByte("CollarColor", (byte) DyeColor.BLUE.getId());
         MotherCollection data = new MotherCollection();
         var entry = data.keepPet(wolf.getUUID(), saved, owner, "Button");
         helper.assertTrue(data.keepPet(wolf.getUUID(), saved, owner, "Button") == null, "one death is kept once");
