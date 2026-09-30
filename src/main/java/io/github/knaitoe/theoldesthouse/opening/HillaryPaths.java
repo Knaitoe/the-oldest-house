@@ -95,7 +95,7 @@ public final class HillaryPaths {
         if (wolf.position().distanceToSqr(destination) <= 2.25) {
             wolf.getNavigation().stop();
             wolf.getLookControl().setLookAt(destination.add(0, 1, 0));
-            if (wolf.level().getGameTime() % 80 == 0) wolf.playSound(SoundEvents.WOLF_WHINE, 0.65F, 1.15F);
+            if (wolf.level().getGameTime() % 80 == 0) wolf.playSound(wolf instanceof net.minecraft.world.entity.animal.Cat ? SoundEvents.CAT_AMBIENT : SoundEvents.WOLF_WHINE, 0.65F, 1.15F);
             return;
         }
         if (wolf.level().getGameTime() % 10 != 0) return;
@@ -103,6 +103,14 @@ public final class HillaryPaths {
         if (base != null && LabyrinthMaze.isMaze(place)) {
             MazeLayout layout = LabyrinthMaze.layout(player.server, place);
             BlockPos next = nextStep(layout, wolf.blockPosition().subtract(base), goal.subtract(base));
+            if (next != null) step = base.offset(next);
+        }
+        if (base != null && io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthHalls.isHall(place)) {
+            var floor = io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthHalls.floor(place).stream()
+                    .filter(pos -> player.level().getBlockState(base.offset(pos)).getCollisionShape(player.level(), base.offset(pos)).isEmpty()
+                            && player.level().getBlockState(base.offset(pos).above()).getCollisionShape(player.level(), base.offset(pos).above()).isEmpty())
+                    .collect(java.util.stream.Collectors.toSet());
+            BlockPos next = nextStep(floor, wolf.blockPosition().subtract(base), goal.subtract(base));
             if (next != null) step = base.offset(next);
         }
         wolf.getNavigation().moveTo(step.getX() + 0.5, step.getY(), step.getZ() + 0.5, 1.15);
@@ -127,6 +135,27 @@ public final class HillaryPaths {
                 boolean fold = layout.sleeves().stream().anyMatch(s -> MazeLayout.crosses(s,
                         Vec3.atBottomCenterOf(pos), Vec3.atBottomCenterOf(next)));
                 if (fold) continue;
+                previous.put(next, pos); queue.addLast(next);
+            }
+        }
+        return null;
+    }
+    @Nullable public static BlockPos nextStep(java.util.Set<BlockPos> floor, BlockPos from, BlockPos goal) {
+        BlockPos start = new BlockPos(from.getX(), 0, from.getZ());
+        if (!floor.contains(start) || !floor.contains(goal)) return null;
+        Map<BlockPos, BlockPos> previous = new HashMap<>();
+        ArrayDeque<BlockPos> queue = new ArrayDeque<>();
+        previous.put(start, start); queue.add(start);
+        while (!queue.isEmpty()) {
+            BlockPos pos = queue.removeFirst();
+            if (pos.equals(goal)) {
+                BlockPos next = pos;
+                while (!previous.get(next).equals(start) && !next.equals(start)) next = previous.get(next);
+                return next;
+            }
+            for (Direction direction : Direction.Plane.HORIZONTAL) {
+                BlockPos next = pos.relative(direction);
+                if (!floor.contains(next) || previous.containsKey(next)) continue;
                 previous.put(next, pos); queue.addLast(next);
             }
         }

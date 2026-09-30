@@ -95,6 +95,7 @@ public final class HouseLifecycleEvents {
         ModelHome.clearAll();
         HarriganVignette.clearAll(event.getServer());
         MotherOfStrays.clearAll();
+        io.github.knaitoe.theoldesthouse.opening.CompanionOrders.clearAll();
         Growl.clearAll();
     }
 

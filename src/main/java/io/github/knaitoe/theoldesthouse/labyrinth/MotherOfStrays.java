@@ -168,6 +168,8 @@ public final class MotherOfStrays {
     }
 
     private static MotherEntity ensureKeeper(ServerLevel level, BlockPos base) {
+        for (Entity entity : level.getAllEntities())
+            if (entity instanceof MotherEntity visitor && LabyrinthEncounters.ambient(visitor)) return visitor;
         for (MotherEntity mother : level.getEntitiesOfClass(MotherEntity.class,
                 box(base.offset(-10, -4, -25), base.offset(11, 14, 1)))) {
             if (mother.following() == null) return mother;
@@ -616,6 +618,7 @@ public final class MotherOfStrays {
         if (level.players().stream().noneMatch(p -> bounds.contains(p.position()))) return;
         MotherEntity keeper = collection.banished() ? null : ensureKeeper(level, base);
         if (keeper != null) keeper.setCorruption(collection.corruption());
+        if (keeper != null && LabyrinthEncounters.ambient(keeper)) return;
         if (keeper != null && dogOwner != null && inDen(dogOwner)) tickDogThreat(level, base, keeper, collection, dogOwner);
         if (shelfRevision != collection.revision()) {
             refreshShelves(level, base, collection);

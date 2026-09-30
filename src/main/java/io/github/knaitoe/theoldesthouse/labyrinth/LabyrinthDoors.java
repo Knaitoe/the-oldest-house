@@ -208,6 +208,7 @@ public final class LabyrinthDoors {
             ModelHome.onArrive(p, place);
             HarriganVignette.onArrive(p, place);
             MotherOfStrays.onArrive(p, place);
+            LabyrinthEncounters.onArrive(p, place);
             LabyrinthHazards.onArrive(p, place);
             LabyrinthLighting.onArrive(p, place);
             LabyrinthMaze.forget(p.getUUID());

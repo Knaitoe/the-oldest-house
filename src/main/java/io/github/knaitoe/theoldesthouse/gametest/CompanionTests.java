@@ -127,4 +127,83 @@ public final class CompanionTests {
                 "each corridor has an exit route without requiring a fold crossing: "+floor);
         helper.succeed();
     }
+
+    @GameTest(template="empty",batch="companions")
+    public static void commandWheelChecksOwnerReachAndSavesStay(GameTestHelper helper) {
+        var level=helper.getLevel();var owner=mock(helper);var stranger=mock(helper);
+        BlockPos at=helper.absolutePos(new BlockPos(2,2,2));
+        owner.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5);stranger.moveTo(owner.position());
+        var cat=net.minecraft.world.entity.EntityType.CAT.create(level);
+        cat.moveTo(owner.position().add(1,0,0));cat.tame(owner);level.addFreshEntity(cat);
+        helper.assertTrue(!CompanionOrders.command(stranger,cat.getId(),CompanionOrders.Order.STAY.ordinal()),"another player cannot command your animal");
+        helper.assertTrue(CompanionOrders.command(owner,cat.getId(),CompanionOrders.Order.STAY.ordinal()),"an owned cat can stay");
+        helper.assertTrue(cat.isOrderedToSit()&&cat.getOwnerUUID().equals(owner.getUUID()),"stay retains native ownership");
+        CompoundTag saved=new CompoundTag();cat.save(saved);
+        var restored=net.minecraft.world.entity.EntityType.CAT.create(level);restored.load(saved);
+        helper.assertTrue(CompanionOrders.order(restored)==CompanionOrders.Order.STAY&&restored.isOrderedToSit()
+                &&owner.getUUID().equals(restored.getOwnerUUID()),"restart keeps the command and the owner");
+        owner.moveTo(owner.position().add(20,0,0));
+        helper.assertTrue(!CompanionOrders.command(owner,cat.getId(),CompanionOrders.Order.FOLLOW.ordinal()),"a packet cannot command a faraway animal");
+        helper.assertTrue(!CompanionOrders.command(stranger,cat.getId(),99),"invalid wheel choices are rejected");
+        helper.assertTrue(CompanionOrders.hesitationTicks(1)==0&&CompanionOrders.hesitationTicks(50)<=40,
+                "fear is a bounded pause");
+        cat.discard();remove(owner);remove(stranger);helper.succeed();
+    }
+    @GameTest(template="empty",batch="companions")
+    public static void rescuedCatCrossesWithOwnerAndItsSavedOrder(GameTestHelper helper) {
+        var source=helper.getLevel();var target=source.getServer().getLevel(Level.NETHER);var owner=mock(helper);
+        BlockPos at=helper.absolutePos(new BlockPos(2,2,2));source.setBlock(at.below(),Blocks.STONE.defaultBlockState(),3);
+        owner.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5);
+        var pet=LabyrinthEncounters.spawnStray(source,owner.position().add(1,0,0),true);
+        helper.assertTrue(pet instanceof net.minecraft.world.entity.animal.Cat,"a stray cat is a real cat");
+        pet.tame(owner);pet.setHealth(4);CompanionOrders.issue(pet,owner,CompanionOrders.Order.FOLLOW);
+        UUID id=pet.getUUID();
+        helper.assertTrue(CompanionOrders.followingAll(owner).contains(pet),"a rescued cat can replace the original companion at a threshold");
+        for(int x=30;x<=34;x++)for(int z=30;z<=34;z++) {
+            target.setBlock(new BlockPos(x,99,z),Blocks.STONE.defaultBlockState(),3);
+            for(int y=100;y<=103;y++)target.setBlock(new BlockPos(x,y,z),Blocks.AIR.defaultBlockState(),3);
+        }
+        owner.teleportTo(target,32.5,100,32.5,0,0);
+        var cat=CompanionOrders.followAcross(pet,owner);
+        helper.assertTrue(cat!=null&&cat.getUUID().equals(id)&&cat.level()==target&&cat.getHealth()==4
+                &&owner.getUUID().equals(cat.getOwnerUUID())&&CompanionOrders.order(cat)==CompanionOrders.Order.FOLLOW,
+                "health, identity, ownership and the selected order survive the crossing");
+        BlockPos arrival=cat.blockPosition();
+        helper.succeedWhen(()->{
+            helper.assertTrue(target.getEntity(id)==cat,"the cat is tracked in the new world");
+            target.getChunkSource().removeRegionTicket(TicketType.PORTAL,new ChunkPos(arrival),3,arrival);
+            cat.discard();remove(owner);
+        });
+    }
+    @GameTest(template="empty",batch="companions")
+    public static void dogAndCatCanFindRoutesAroundOrdinaryCorners(GameTestHelper helper) {
+        for(var place:java.util.List.of(LabyrinthPlace.BENT_HALL,LabyrinthPlace.CROSS_HALL,LabyrinthPlace.STRAIGHT_HALL)) {
+            var floor=LabyrinthHalls.floor(place);BlockPos goal=new BlockPos(0,0,-1);
+            for(BlockPos pos:floor)helper.assertTrue(HillaryPaths.nextStep(floor,pos,goal)!=null,
+                    "the physical hall has a route back from "+place+"/"+pos);
+        }
+        helper.succeed();
+    }
+    @GameTest(template="empty",batch="companions")
+    public static void marksStayPhysicalAndObservedMarksAreProtected(GameTestHelper helper) {
+        var level=helper.getLevel();BlockPos pos=helper.absolutePos(new BlockPos(2,2,2));
+        for(int x=0;x<=3;x++)level.setBlock(pos.east(x).below(),Blocks.STONE.defaultBlockState(),3);
+        helper.assertTrue(NavigationAids.placeChalk(level,pos,net.minecraft.core.Direction.UP,net.minecraft.core.Direction.NORTH),"chalk draws on a floor");
+        helper.assertTrue(level.getBlockState(pos).getCollisionShape(level,pos).isEmpty(),"a painted mark cannot obstruct a corridor");
+        level.setBlock(pos.east(3),Blocks.STONE.defaultBlockState(),3);
+        helper.assertTrue(!NavigationAids.placeChalk(level,pos.east(3),net.minecraft.core.Direction.UP,net.minecraft.core.Direction.NORTH),"chalk cannot replace a solid block");
+        helper.assertTrue(NavigationAids.placeLine(level,pos.east())&&NavigationAids.placeLine(level,pos.east(2)),"two real trail pieces are placed");
+        helper.assertTrue(level.getBlockState(pos.east()).getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.EAST)
+                &&level.getBlockState(pos.east(2)).getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.WEST),"adjacent pieces meet without a HUD line");
+        var owner=mock(helper);var observer=mock(helper);
+        owner.moveTo(pos.getX()+20,pos.getY(),pos.getZ()+.5);owner.setYRot(0);
+        observer.moveTo(pos.getX()+.5,pos.getY(),pos.getZ()+3);observer.setYRot(180);
+        NavigationAids.remember(level,pos,owner.getUUID(),true);
+        helper.assertTrue(!NavigationAids.erase(observer,pos),"another player cannot erase your mark");
+        helper.assertTrue(!NavigationAids.mayAlter(level,pos,owner),"any player watching protects the mark");
+        observer.setYRot(0);
+        helper.assertTrue(NavigationAids.mayAlter(level,pos,owner),"a distant unseen mark can be disturbed");
+        helper.assertTrue(NavigationAids.erase(owner,pos),"the owner can rub their chalk out");
+        remove(owner);remove(observer);helper.succeed();
+    }
 }
