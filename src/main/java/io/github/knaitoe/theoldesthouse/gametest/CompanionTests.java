@@ -82,7 +82,7 @@ public final class CompanionTests {
         helper.assertTrue(saved.hillaryDay()==11 && saved.houseDue(12), "restart keeps the three-day order");
         helper.succeed();
     }
-    @GameTest(template = "empty", batch = "companions")
+    @GameTest(template = "empty", batch = "companions", timeoutTicks = 240)
     public static void hillaryTransfersWithIdentityHealthAndHerExitRequest(GameTestHelper helper) {
         var source=helper.getLevel(); var target=source.getServer().getLevel(Level.NETHER);
         var recipient=mock(helper);
@@ -97,23 +97,26 @@ public final class CompanionTests {
             target.setBlock(new BlockPos(x,99,z),Blocks.STONE.defaultBlockState(),3);
             for(int y=100;y<=103;y++)target.setBlock(new BlockPos(x,y,z),Blocks.AIR.defaultBlockState(),3);
         }
-        recipient.teleportTo(target,.5,100,.5,0,0);
-        var dog=Hillary.followAcross(wolf,recipient);
-        helper.assertTrue(dog!=null && dog.level()==target && dog.getUUID().equals(id),"the same UUID crossed dimensions");
-        BlockPos arrival=BlockPos.containing(dog.position());
-        helper.assertTrue(Hillary.tagOf(dog).recipient().equals(recipient.getUUID()) && dog.isTame() && dog.getHealth()==7
-                && dog.getPersistentData().getBoolean("HillaryFindExit"),"health, owner, tag and requested route survive");
-        helper.succeedWhen(()->{
-            helper.assertTrue(target.getEntity(id)==dog,"the companion is tracked by the destination world");
-            // The crossing's vanilla portal ticket would outlive the whole run by
-            // fifteen seconds. Release it, so no ticket of this test's is still
-            // held when the server shuts down.
+        final net.minecraft.world.entity.animal.Wolf[] transferred={null};
+        helper.onEachTick(()->{
+            if(transferred[0]==null){
+                // Native entity sections register asynchronously. Transfer a real
+                // tracked source animal, rather than racing its first registration.
+                if(source.getEntity(id)!=wolf)return;
+                recipient.teleportTo(target,.5,100,.5,0,0);
+                transferred[0]=Hillary.followAcross(wolf,recipient);
+                helper.assertTrue(transferred[0]!=null,"the native transfer returns Hillary");return;
+            }
+            var dog=transferred[0];if(target.getEntity(id)!=dog)return;
+            helper.assertTrue(dog.level()==target&&dog.getUUID().equals(id),"the same UUID crossed dimensions");
+            helper.assertTrue(Hillary.tagOf(dog).recipient().equals(recipient.getUUID())&&dog.isTame()&&dog.getHealth()==7
+                    &&dog.getPersistentData().getBoolean("HillaryFindExit"),"health, owner, tag and requested route survive");
+            BlockPos arrival=BlockPos.containing(dog.position());
             String held=ShutdownWatch.ticketsAt(target,new ChunkPos(arrival));
             helper.assertTrue(held.contains("portal"),"the crossing holds her arrival with a portal ticket: "+held);
             target.getChunkSource().removeRegionTicket(TicketType.PORTAL,new ChunkPos(arrival),3,arrival);
-            String left=ShutdownWatch.ticketsAt(target,new ChunkPos(arrival));
-            helper.assertTrue(!left.contains("portal"),"the portal ticket is released: "+left);
-            dog.discard(); remove(recipient);
+            helper.assertTrue(!ShutdownWatch.ticketsAt(target,new ChunkPos(arrival)).contains("portal"),"the test releases its portal ticket");
+            dog.discard();remove(recipient);helper.succeed();
         });
     }
     @GameTest(template = "empty", batch = "companions")

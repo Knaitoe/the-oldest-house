@@ -105,6 +105,7 @@ public final class FinaleArchitecture {
         BlockPos last=descent.get(descent.size()-1);int lx=last.getX()-b.getX(),lz=last.getZ()-b.getZ();
         boxFloor(blocks,b,Math.min(lx,0)-1,Math.max(lx,0)+1,lz-1,lz+1,ARENA-1,stone);
         boxFloor(blocks,b,-1,1,lz,32,ARENA-1,stone);
+        for(int xx=-1;xx<=1;xx++)for(int y=ARENA;y<ARENA+4;y++)for(int zz=26;zz<=30;zz++)put(blocks,b,xx,y,zz,Blocks.AIR.defaultBlockState());
         // An arena with a scratched cell in its far wall; no creature before the cell is opened.
         boxFloor(blocks,b,-17,17,30,69,ARENA-1,stone);
         for(int y=ARENA;y<ARENA+13;y++)for(int zz=30;zz<=69;zz++){put(blocks,b,-17,y,zz,dark);put(blocks,b,17,y,zz,dark);}
