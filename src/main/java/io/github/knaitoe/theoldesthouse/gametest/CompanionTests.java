@@ -163,6 +163,7 @@ public final class CompanionTests {
             target.setBlock(new BlockPos(x,99,z),Blocks.STONE.defaultBlockState(),3);
             for(int y=100;y<=103;y++)target.setBlock(new BlockPos(x,y,z),Blocks.AIR.defaultBlockState(),3);
         }
+        target.getChunkAt(new BlockPos(32,100,32));
         owner.teleportTo(target,32.5,100,32.5,0,0);
         var cat=CompanionOrders.followAcross(pet,owner);
         helper.assertTrue(cat!=null&&cat.getUUID().equals(id)&&cat.level()==target&&cat.getHealth()==4
