@@ -95,9 +95,9 @@ public final class LabyrinthHazards {
                 level.setBlock(base.offset(x, 6, z), Blocks.STONE_BRICKS.defaultBlockState(), FLAGS);
             }
         }
-        // z -12 through -15 is the missing span: four blocks, difficult to
-        // clear cleanly but bridgeable with carried blocks.
-        for (int z = -16; z >= -27; z--) {
+        // z -12 through -14 is the missing span: a difficult but possible
+        // sprint jump. Missing it costs health and time rather than the run.
+        for (int z = -15; z >= -27; z--) {
             for (int x = -1; x <= 1; x++) {
                 level.setBlock(base.offset(x, 6, z), Blocks.STONE_BRICKS.defaultBlockState(), FLAGS);
             }
