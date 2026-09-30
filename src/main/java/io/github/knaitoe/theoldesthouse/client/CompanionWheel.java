@@ -41,7 +41,7 @@ public final class CompanionWheel extends Screen {
         gui.fill(cx-107,cy-1,cx+108,cy+1,0x665D625E);
         var entity=minecraft.level==null?null:minecraft.level.getEntity(entityId);
         String name=entity==null?"Companion":entity.getDisplayName().getString();
-        gui.drawCenteredString(font,name,cx,cy-136,0xEEE6D4);
+        gui.drawCenteredString(font,name,cx,Math.max(8,cy-136),0xEEE6D4);
         ItemStack[] icons={Items.BONE.getDefaultInstance(),Items.LEAD.getDefaultInstance(),
                 Items.TORCH.getDefaultInstance(),Items.COMPASS.getDefaultInstance()};
         for(int i=0;i<4;i++) {
@@ -52,7 +52,7 @@ public final class CompanionWheel extends Screen {
             gui.drawCenteredString(font,KEYS[i],x,y+14,0x9FABA3);
         }
         gui.drawCenteredString(font,"Esc",cx,cy-4,0xA8A99F);
-        gui.drawCenteredString(font,"The world keeps moving.",cx,cy+127,0xB2B7AB);
+        gui.drawCenteredString(font,"The world keeps moving.",cx,Math.min(height-14,cy+127),0xB2B7AB);
         super.render(gui,mouseX,mouseY,partial);
     }
     @Override public boolean mouseClicked(double x,double y,int button) {
