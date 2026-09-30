@@ -4,7 +4,7 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
-Version `0.4.4` adds the Mother of Strays, her den, custom animated Mother and Pekingese models, persistent lost belongings and pets, concealed stalking, gradual deformation, brutal reclamation, rescue and permanent farewell. See [docs/MOTHER.md](docs/MOTHER.md) for the interactions and development playtest. The ordinary manor remains the player's first architectural relationship with the House:
+Version `0.4.5` revises the Mother's appearance around Johnnie's description in *House of Leaves*: platinum hair, heavy eyeliner, a petite figure and a full bust. Sixteen detailed textures carry her through small changes in complexion and makeup before uneven eyes, a strained mouth and restrained late deformation. The Mother and Pekingese introduced in `0.4.4` retain their den, persistent lost belongings and pets, concealed stalking, brutal reclamation, rescue and permanent farewell. See [docs/MOTHER.md](docs/MOTHER.md) for the interactions and development playtest. The ordinary manor remains the player's first architectural relationship with the House:
 
 - NeoForge 1.21.1 / Java 21 project setup.
 - Persistent world-level state for The Oldest House using `SavedData`.

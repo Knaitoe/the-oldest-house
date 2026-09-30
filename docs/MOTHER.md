@@ -1,4 +1,4 @@
-# The Mother of Strays — 0.4.4
+# The Mother of Strays — 0.4.5
 
 The den is a recurring anchor dealt through normal labyrinth routing. It contains the Mother, three missing cats, a bandaged Pekingese, a chair, a record on a lectern, shelves of lost objects and a bell for paging. The gallery ladder overlooks a dry well.
 
@@ -27,4 +27,10 @@ The build's GameTests cover archive fidelity, multiplayer claims, visits, persis
 
 ## Model authoring
 
-`tools/generate_mother_assets.py` emits the Java model geometry, five UV textures, local-pivot JSON model sources in `art/`, and `art/mother_model_preview.png`. Pillow and numpy are authoring dependencies only. The Mother's head, neck, torso, jaw, arms and fingers progressively deform; her hands fold to carry the dog. The Pekingese has its own short-legged, flat-faced model, curled tail, floppy ears and head bandage. The preview renders the actual cuboids and textures rather than a separate concept illustration.
+The appearance reference is Johnnie in Mark Z. Danielewski's *House of Leaves*, footnote 249, chapter XI, pp. 266–267 in the cited edition. The passage gives her a petite figure, platinum hair, excessive eyeliner and a conspicuously full bust. Johnny's later perception of her makeup and mouth becomes grotesque. These descriptions guide the ordinary form and its deterioration; they do not establish a literal supernatural transformation. The bob, wine-coloured shawl, dark dress, burgundy nails and the sixteen-stage transformation are this mod's adaptations. They replace the earlier invented elderly, gray-bun appearance. A public quotation of the relevant passage is in [Engl 252's reading notes](https://engl252.wordpress.com/readings-of-house-of-leaves/).
+
+`tools/generate_mother_assets.py` emits the Java geometry, sixteen Mother UV textures, the Pekingese texture, local-pivot JSON model sources, `art/mother_model_preview.png` and `art/mother_texture_stages.png`. Pillow and numpy are authoring dependencies only. Mother textures are 512×1024 pixels on a 128×256 logical UV layout; the model source records both resolutions. All sixteen steps are used by the entity renderer.
+
+The progression keeps her identifiable. Stages 1–4 principally cool her complexion and reduce the warmth of her makeup. Stages 5–8 add faint shadows, creases and very small posture changes. Stages 9–12 introduce uneven eyelids, a strained mouth and longer, more curled fingers. Stages 13–16 deepen those changes and lengthen her chin slightly. Shape changes are continuous and eased; her head stretches at most 14 percent rather than 40 percent, and the chin extension begins only after 74 percent corruption. Her eyes stay visible throughout. Reclamation or the dog's death still restores the ordinary appearance immediately.
+
+Her petite scale is reflected in her collision dimensions and eye height. Her hands still fold to carry the dog. The Pekingese retains its short-legged, flat-faced model, curled tail, floppy ears and head bandage. Both previews render the authored cuboids and their actual textures. The stage sheet also magnifies the exact face UVs; those are texture samples, not separately drawn portraits.

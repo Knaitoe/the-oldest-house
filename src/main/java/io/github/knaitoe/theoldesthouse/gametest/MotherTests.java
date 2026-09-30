@@ -200,8 +200,12 @@ public final class MotherTests {
         helper.assertTrue(LabyrinthDealer.vignettesAvailable(new LabyrinthData()).contains(LabyrinthPlace.MOTHER_DEN),
                 "her den is reachable through normal dealer routing");
         helper.assertTrue(!LabyrinthPlace.MOTHER_DEN.isFinishable(), "the anchor remains findable after a retrieval");
-        helper.assertTrue(TheOldestHouse.class.getResourceAsStream("/assets/the_oldest_house/textures/entity/mother_of_strays_3.png") != null,
-                "the severe form's actual texture is packaged");
+        for (int stage = 0; stage < 16; stage++) {
+            String texture = "/assets/the_oldest_house/textures/entity/mother_of_strays"
+                    + (stage == 0 ? "" : "_" + stage) + ".png";
+            helper.assertTrue(TheOldestHouse.class.getResource(texture) != null,
+                    "every step in the Mother's gradual texture progression is packaged: " + stage);
+        }
         helper.assertTrue(TheOldestHouse.class.getResourceAsStream("/assets/the_oldest_house/textures/entity/mother_pekingese.png") != null,
                 "the dog's actual model texture is packaged");
         helper.succeed();

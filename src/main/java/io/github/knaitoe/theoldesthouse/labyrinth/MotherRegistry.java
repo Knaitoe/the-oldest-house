@@ -16,7 +16,7 @@ public final class MotherRegistry {
     public static final DeferredHolder<EntityType<?>, EntityType<MotherEntity>> MOTHER =
             TYPES.register("mother_of_strays", () -> EntityType.Builder
                     .<MotherEntity>of(MotherEntity::new, MobCategory.MISC)
-                    .sized(0.72F, 2.3F).eyeHeight(1.98F)
+                    .sized(0.66F, 1.9F).eyeHeight(1.62F)
                     .clientTrackingRange(12).updateInterval(3)
                     .build("mother_of_strays"));
     public static final DeferredHolder<EntityType<?>, EntityType<MotherPekingese>> PEKINGESE =
