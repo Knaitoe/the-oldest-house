@@ -25,8 +25,8 @@ public final class ClapGhostEntity extends PathfinderMob {
     public static AttributeSupplier.Builder attributes() {
         return createMobAttributes().add(Attributes.MAX_HEALTH, 1).add(Attributes.MOVEMENT_SPEED, 0);
     }
-    @Override protected void defineSynchedEntityData(SynchedEntityData.Builder builder) {
-        super.defineSynchedEntityData(builder);
+    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
         builder.define(VIEWER, Optional.empty());
     }
     public void setViewer(UUID player) { entityData.set(VIEWER, Optional.of(player)); }
