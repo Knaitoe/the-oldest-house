@@ -63,7 +63,7 @@ public final class FinaleController {
     public static boolean enforceExclusion(ServerPlayer player){
         if(!lockedOut(player))return false;
         if(HouseTransitionEvents.isPending(player))HouseTransitionEvents.cancelPending(player,"the House no longer admits this player");
-        BlockPos origin=HouseSavedData.get(player.server).housePosition();
+        BlockPos origin=HouseSavedData.get(player.server).housePosition().orElse(null);
         if(origin!=null&&(HouseDimensions.isHouseDimension(player.serverLevel().dimension())
                 ||player.serverLevel().dimension().equals(Level.OVERWORLD)&&HouseLayout.isInsideDomesticVolume(player.getX()-origin.getX(),player.getY()-origin.getY(),player.getZ()-origin.getZ())))outside(player,origin);
         return true;
@@ -107,7 +107,7 @@ public final class FinaleController {
     }
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void interact(PlayerInteractEvent.RightClickBlock event){
         if(!(event.getEntity() instanceof ServerPlayer player)||event.getHand()!=InteractionHand.MAIN_HAND)return;
-        BlockPos origin=HouseSavedData.get(player.server).housePosition();if(origin==null)return;
+        BlockPos origin=HouseSavedData.get(player.server).housePosition().orElse(null);if(origin==null)return;
         if(lockedOut(player)&&player.serverLevel().dimension().equals(Level.OVERWORLD)&&event.getPos().distSqr(origin.offset(HouseLayout.AXIS_X,1,HouseLayout.FRONT_DOOR_Z))<12){
             event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);
             player.serverLevel().playSound(null,event.getPos(),SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR,SoundSource.BLOCKS,.35F,.75F);
@@ -165,7 +165,7 @@ public final class FinaleController {
     public static void wound(ServerPlayer player,MinotaurEntity creature){
         CompoundTag record=FinaleProgress.player(player.server,player.getUUID());record.putString("Phase",FinaleProgress.Phase.COLLAPSE.name());FinaleProgress.save(player.server,player.getUUID(),record);
         creature.wounded();words(player,creature.blockPosition().above(),"It crawls back to the cell. The walls begin to move.");
-        player.serverLevel().playSound(null,player.blockPosition(),SoundEvents.GENERIC_EXPLODE,SoundSource.BLOCKS,.55F,.45F);
+        player.serverLevel().playSound(null,player.blockPosition(),SoundEvents.GENERIC_EXPLODE.value(),SoundSource.BLOCKS,.55F,.45F);
     }
     public static void beginEscape(ServerPlayer player){
         BlockPos origin=HouseSavedData.get(player.server).houseOrigin();if(origin==null)return;
@@ -236,7 +236,7 @@ public final class FinaleController {
     }
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void respawnPosition(PlayerRespawnPositionEvent event){
         if(event.getEntity() instanceof ServerPlayer player&&!event.isFromEndFight()&&FinaleProgress.player(player.server,player.getUUID()).getBoolean("NeedsRespawn")){
-            BlockPos origin=HouseSavedData.get(player.server).housePosition();if(origin==null)return;
+            BlockPos origin=HouseSavedData.get(player.server).housePosition().orElse(null);if(origin==null)return;
             Vec3 at=HouseProxyEntityEvacuation.frontDoorExit(player.server.overworld(),origin);player.server.overworld().getChunkAt(BlockPos.containing(at));
             event.setDimensionTransition(new DimensionTransition(player.server.overworld(),at,Vec3.ZERO,180,0,DimensionTransition.DO_NOTHING));
         }
