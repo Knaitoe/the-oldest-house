@@ -60,6 +60,7 @@ public final class TheOldestHouse {
         LabyrinthRegistry.register(modEventBus);
         MotherRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.FinaleRegistry.register(modEventBus);
+        io.github.knaitoe.theoldesthouse.labyrinth.FinaleLoot.register(modEventBus);
         ClapGhostRegistry.register(modEventBus);
         HouseSitting.register(modEventBus);
         NeoForge.EVENT_BUS.addListener(HouseSitting::onRightClick);

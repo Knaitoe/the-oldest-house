@@ -366,7 +366,7 @@ public final class MotherCollection extends SavedData {
     /** Pets are recovered by an explicit loved-object exchange; the original owner alone can do it. */
     public boolean canRecoverPet(UUID player, UUID id, ItemStack offering, long now) {
         Entry entry = entries.get(id);
-        return entry != null && entry.pet && player.equals(entry.owner)
+        return entry != null && entry.pet && !entry.sealed && player.equals(entry.owner)
                 && (banished || !usedVisit(player)) && debt(player) == null
                 && (salved() || banished || (claimOf(offering) == null && loved(offering, now, player)));
     }

@@ -60,7 +60,7 @@ public final class LabyrinthDoorLeaks {
         }
         BlockPos origin = HouseSavedData.get(player.server).houseOrigin();
         boolean inside = origin != null && player.level().dimension().equals(HouseDimensions.INTERIOR)
-                && (LabyrinthPlaces.isInStack(origin, player.blockPosition())
+                && (FinaleArchitecture.contains(origin, player.blockPosition()) || LabyrinthPlaces.isInStack(origin, player.blockPosition())
                     || HouseImpossibleHallway.isInsideWalkableVolume(origin, player.getX(), player.getY(), player.getZ()));
         HousePackets.send(player, new DoorLeaksPayload(player.level().dimension().location(), inside, hints));
     }

@@ -142,6 +142,11 @@ public final class CompanionOrders {
         if(now<data.getLong("CompanionFearUntil")) {
             pet.getNavigation().stop();pet.getLookControl().setLookAt(player,30,30);return;
         }
+        if (FinaleArchitecture.contains(origin, player.blockPosition())) {
+            BlockPos next = FinaleController.companionTarget(player, order(pet) == Order.EXIT);
+            if (next != null) { pet.getNavigation().moveTo(next.getX()+.5,next.getY(),next.getZ()+.5,.85); pet.getLookControl().setLookAt(player); }
+            return;
+        }
         BlockPos goal;
         if(order(pet)==Order.EXIT) {
             goal=base!=null ? base.offset(0,0,-1)

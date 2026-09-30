@@ -31,6 +31,15 @@ public final class FinaleArchitecture {
     public static BlockPos cell(BlockPos manor) { return base(manor).offset(0, ARENA, 59); }
     public static BlockPos bottomStart(BlockPos manor) { return base(manor).offset(-20, BOTTOM, 76); }
     public static BlockPos exit(BlockPos manor) { return base(manor).offset(24, BOTTOM, 112); }
+    public static List<BlockPos> staircaseRoute(BlockPos manor) {
+        BlockPos b=base(manor);List<BlockPos> route=new ArrayList<>();int x=0,z=12;Direction direction=Direction.EAST;
+        for(int n=0;n<256;n++){
+            if(x==12&&z==12)direction=Direction.NORTH;else if(x==12&&z==-12)direction=Direction.WEST;
+            else if(x==-12&&z==-12)direction=Direction.SOUTH;else if(x==-12&&z==12)direction=Direction.EAST;
+            route.add(b.offset(x,TOP-n/2,z));x+=direction.getStepX();z+=direction.getStepZ();
+        }
+        return List.copyOf(route);
+    }
     public static List<BlockPos> escapeRoute(BlockPos manor) {
         BlockPos b = base(manor); List<BlockPos> path = new ArrayList<>();
         int[][] corners = {{-20,76},{-20,92},{-4,92},{-4,82},{12,82},{12,104},{-8,104},{-8,112},{24,112}};
@@ -40,13 +49,17 @@ public final class FinaleArchitecture {
         }
         path.add(exit(manor)); return List.copyOf(path);
     }
+    public static void request(MinecraftServer server) {
+        LabyrinthData data = LabyrinthData.get(server); CompoundTag state = data.state(STATE);
+        if (!state.getBoolean("Requested")) { state.putBoolean("Requested", true); data.setState(STATE, state); }
+    }
     public static boolean ready(MinecraftServer server) { return LabyrinthData.get(server).state(STATE).getBoolean("Ready"); }
     public static void tick(MinecraftServer server) {
         BlockPos manor = HouseSavedData.get(server).houseOrigin(); if (manor == null) return;
         ServerLevel level = server.getLevel(HouseDimensions.INTERIOR); if (level == null) return;
         LabyrinthData data = LabyrinthData.get(server); CompoundTag state = data.state(STATE);
         if (state.contains("Origin") && state.getLong("Origin") != manor.asLong()) { state = new CompoundTag(); PLANS.remove(server); }
-        if (state.getBoolean("Ready")) return;
+        if (state.getBoolean("Ready") || !state.getBoolean("Requested")) return;
         List<Placement> plan = PLANS.computeIfAbsent(server, ignored -> plan(manor));
         int cursor = Math.max(0, state.getInt("Cursor")), end = Math.min(plan.size(), cursor + 1536);
         for (;cursor<end;cursor++) { Placement p=plan.get(cursor); level.setBlock(p.pos,p.block,FLAGS); }

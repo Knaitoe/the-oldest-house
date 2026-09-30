@@ -234,6 +234,7 @@ public final class Hillary {
             return;
         }
         HillaryTag tag = tagOf(wolf);
+        if (wolf.getPersistentData().getBoolean(io.github.knaitoe.theoldesthouse.labyrinth.FinaleController.GUIDE)) return;
         if (CompanionOrders.managed(wolf)) return;
         if (tag != null && tickSeeking(wolf, level)) {
             return;
@@ -617,3 +618,4 @@ public final class Hillary {
     }
 
 }
+

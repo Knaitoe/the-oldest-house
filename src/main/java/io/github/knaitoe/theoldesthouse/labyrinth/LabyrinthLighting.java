@@ -184,6 +184,7 @@ public final class LabyrinthLighting {
             return false;
         }
         BlockPos origin = HouseSavedData.get(level.getServer()).houseOrigin();
+        if (origin != null && FinaleArchitecture.contains(origin, pos)) return true;
         LabyrinthPlace place = origin == null ? null : LabyrinthPlaces.placeAt(origin, pos);
         return place != null
                 && place.kind() == LabyrinthPlace.Kind.GRAY
@@ -517,3 +518,4 @@ public final class LabyrinthLighting {
         HALL_LAYOUT.clear();
     }
 }
+
