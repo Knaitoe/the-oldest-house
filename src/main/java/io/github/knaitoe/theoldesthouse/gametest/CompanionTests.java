@@ -19,6 +19,7 @@ import net.neoforged.neoforge.common.util.FakePlayerFactory;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 
 @GameTestHolder(TheOldestHouse.MOD_ID)
+@net.neoforged.neoforge.gametest.PrefixGameTestTemplate(false)
 public final class CompanionTests {
     @GameTest(template = "empty")
     public static void seatsMountOnePlayerAndCleanUpAfterDismount(GameTestHelper helper) {
