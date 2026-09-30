@@ -174,7 +174,7 @@ public final class CompanionTests {
                 "fear is a bounded pause");
         cat.discard();remove(owner);remove(stranger);helper.succeed();
     }
-    @GameTest(template="empty",batch="companions",timeoutTicks=200)
+    @GameTest(template="empty",batch="cat_transfer",timeoutTicks=240)
     public static void rescuedCatCrossesWithOwnerAndItsSavedOrder(GameTestHelper helper) {
         var source=helper.getLevel();var target=source.getServer().getLevel(Level.NETHER);var owner=mock(helper);
         BlockPos at=helper.absolutePos(new BlockPos(2,2,2));source.setBlock(at.below(),Blocks.STONE.defaultBlockState(),3);
@@ -191,14 +191,19 @@ public final class CompanionTests {
         }
         // Share the established Nether test chunk with Hillary's transfer fixture,
         // on a separate floor so both native animals can be observed independently.
-        owner.teleportTo(target,.5,108,.5,0,0);
-        var cat=CompanionOrders.followAcross(pet,owner);
-        helper.assertTrue(cat!=null&&cat.getUUID().equals(id)&&cat.level()==target&&cat.getHealth()==4
-                &&owner.getUUID().equals(cat.getOwnerUUID())&&CompanionOrders.order(cat)==CompanionOrders.Order.FOLLOW,
-                "health, identity, ownership and the selected order survive the crossing");
-        BlockPos arrival=cat.blockPosition();
+        final net.minecraft.world.entity.TamableAnimal[] transferred={null};
         helper.onEachTick(()->{
-            if(target.getEntity(id)!=cat)return;
+            if(transferred[0]==null){
+                if(source.getEntity(id)!=pet)return;
+                owner.teleportTo(target,.5,108,.5,0,0);
+                transferred[0]=CompanionOrders.followAcross(pet,owner);
+                helper.assertTrue(transferred[0]!=null,"the native cat transfer succeeds");return;
+            }
+            var cat=transferred[0];if(target.getEntity(id)!=cat)return;
+            helper.assertTrue(cat.getUUID().equals(id)&&cat.level()==target&&cat.getHealth()==4
+                    &&owner.getUUID().equals(cat.getOwnerUUID())&&CompanionOrders.order(cat)==CompanionOrders.Order.FOLLOW,
+                    "health, identity, ownership and the selected order survive the crossing");
+            BlockPos arrival=cat.blockPosition();
             helper.assertTrue(target.getEntity(id)==cat,"the cat is tracked in the new world; removed="+cat.isRemoved()
                     +"; position="+cat.position()+"; tickets="+ShutdownWatch.ticketsAt(target,new ChunkPos(cat.blockPosition())));
             target.getChunkSource().removeRegionTicket(TicketType.PORTAL,new ChunkPos(arrival),3,arrival);
@@ -206,6 +211,9 @@ public final class CompanionTests {
             helper.succeed();
         });
     }
+    @net.minecraft.gametest.framework.AfterBatch(batch="cat_transfer")
+    public static void cleanCatPlayers(net.minecraft.server.level.ServerLevel level) { cleanPlayers(level); }
+
     @GameTest(template="empty",batch="companions")
     public static void dogAndCatCanFindRoutesAroundOrdinaryCorners(GameTestHelper helper) {
         for(var place:java.util.List.of(LabyrinthPlace.BENT_HALL,LabyrinthPlace.CROSS_HALL,LabyrinthPlace.STRAIGHT_HALL)) {
