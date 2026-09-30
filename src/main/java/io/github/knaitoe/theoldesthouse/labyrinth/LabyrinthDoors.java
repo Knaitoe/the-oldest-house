@@ -157,6 +157,7 @@ public final class LabyrinthDoors {
                 LabyrinthDealer.deal(data, player.getUUID(), List.of(door), placeOf(server, door), player.getRandom());
                 dealt = data.deal(player.getUUID(), door);
             }
+            if (dealt != null && FinaleArchitecture.ID.equals(dealt.place())) { FinaleController.enter(player, door); return; }
             place = dealt == null ? null : LabyrinthPlace.byId(dealt.place());
         } else {
             place = door.destination.startsWith("place:") ? LabyrinthPlace.byId(door.destination.substring(6)) : null;

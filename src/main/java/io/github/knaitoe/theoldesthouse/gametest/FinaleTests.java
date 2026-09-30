@@ -30,6 +30,11 @@ public final class FinaleTests {
             player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,sword);
             helper.assertTrue(creature.hurt(player.damageSources().playerAttack(player),8)&&creature.motion()==MinotaurEntity.WOUNDED,"one original hit starts the wounded crawl");
             helper.assertTrue(creature.getHealth()==creature.getMaxHealth()&&FinaleProgress.phase(server,player.getUUID())==FinaleProgress.Phase.COLLAPSE,"the encounter changes saved phase rather than draining conventional health");
+            for(var display:helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.Display.TextDisplay.class,creature.getBoundingBox().inflate(12))){
+                if(!display.getTags().contains("HouseFinaleWords"))continue;
+                CompoundTag text=new CompoundTag();display.saveWithoutId(text);
+                helper.assertTrue(text.getString("text").contains("edge passes through")||text.getString("text").contains("walls begin"),"the native dialogue display retains authored text");display.discard();
+            }
         }finally{data.setState(FinaleProgress.STATE,previous);if(creature!=null)creature.discard();if(server.getPlayerList().getPlayers().contains(player))server.getPlayerList().remove(player);}
         helper.succeed();
     }

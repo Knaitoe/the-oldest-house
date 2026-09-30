@@ -215,7 +215,8 @@ public final class CompanionTests {
     @GameTest(template="empty",batch="companions")
     public static void marksStayPhysicalAndObservedMarksAreProtected(GameTestHelper helper) {
         var level=helper.getLevel();BlockPos pos=helper.absolutePos(new BlockPos(2,2,2));
-        for(int x=0;x<=3;x++)level.setBlock(pos.east(x).below(),Blocks.STONE.defaultBlockState(),3);
+        level.getChunkAt(pos);
+        for(int x=0;x<=3;x++){level.setBlock(pos.east(x),Blocks.AIR.defaultBlockState(),3);level.setBlock(pos.east(x).below(),Blocks.STONE.defaultBlockState(),3);}
         helper.assertTrue(NavigationAids.placeChalk(level,pos,net.minecraft.core.Direction.UP,net.minecraft.core.Direction.NORTH),"chalk draws on a floor");
         helper.assertTrue(level.getBlockState(pos).getCollisionShape(level,pos).isEmpty(),"a painted mark cannot obstruct a corridor");
         level.setBlock(pos.east(3),Blocks.STONE.defaultBlockState(),3);
@@ -235,3 +236,4 @@ public final class CompanionTests {
         remove(owner);remove(observer);helper.succeed();
     }
 }
+

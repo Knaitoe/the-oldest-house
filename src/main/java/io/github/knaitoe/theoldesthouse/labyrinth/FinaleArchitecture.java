@@ -58,7 +58,7 @@ public final class FinaleArchitecture {
         BlockPos manor = HouseSavedData.get(server).houseOrigin(); if (manor == null) return;
         ServerLevel level = server.getLevel(HouseDimensions.INTERIOR); if (level == null) return;
         LabyrinthData data = LabyrinthData.get(server); CompoundTag state = data.state(STATE);
-        if (state.contains("Origin") && state.getLong("Origin") != manor.asLong()) { state = new CompoundTag(); PLANS.remove(server); }
+        if (state.contains("Origin") && state.getLong("Origin") != manor.asLong()) { boolean requested=state.getBoolean("Requested"); state = new CompoundTag(); state.putBoolean("Requested",requested); PLANS.remove(server); }
         if (state.getBoolean("Ready") || !state.getBoolean("Requested")) return;
         List<Placement> plan = PLANS.computeIfAbsent(server, ignored -> plan(manor));
         int cursor = Math.max(0, state.getInt("Cursor")), end = Math.min(plan.size(), cursor + 1536);
