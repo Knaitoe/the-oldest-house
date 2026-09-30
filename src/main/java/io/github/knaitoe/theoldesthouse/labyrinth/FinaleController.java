@@ -311,7 +311,7 @@ public final class FinaleController {
             ServerLevel interior=player.server.getLevel(HouseDimensions.INTERIOR);
             if(interior!=null&&interior.getEntity(record.getUUID("RecoveredGuide")) instanceof TamableAnimal pet)CompanionOrders.followAcross(pet,player);
         }
-        if(!guided)player.server.overworld().setDayTime(player.server.overworld().getDayTime()+60*24000L);
+        if(!guided){player.server.overworld().setDayTime(player.server.overworld().getDayTime()+60*24000L);overgrowBase(player,record);}
         CompoundTag world=FinaleProgress.world(player.server);world.putBoolean("Ended",true);world.putLong("CollapsedOrigin",origin.asLong());world.putInt("Demolition",0);world.remove("Owner");
         LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);HouseSavedData.get(player.server).collapse();
         words(player,player.blockPosition().above(2),guided?"An empty lot. The collar is still warm.":"An empty lot. Sixty mornings have passed.");
@@ -353,6 +353,22 @@ public final class FinaleController {
             }
         }
         return false;
+    }
+    private static void overgrowBase(ServerPlayer player,CompoundTag record){
+        if(!record.contains("Base")||!record.getString("BaseDimension").equals(Level.OVERWORLD.location().toString()))return;
+        ServerLevel level=player.server.overworld();BlockPos home=BlockPos.of(record.getLong("Base"));
+        // Age only crops and add plants to vacant, supported cells; built blocks stay intact.
+        for(BlockPos p:BlockPos.betweenClosed(home.offset(-8,-3,-8),home.offset(8,5,8))){
+            var state=level.getBlockState(p);
+            if(state.getBlock() instanceof CropBlock crop){level.setBlock(p,crop.getStateForAge(crop.getMaxAge()),FLAGS);continue;}
+            if(!state.isAir()||Math.floorMod(p.asLong(),11)!=0)continue;
+            if(level.canSeeSky(p)&&level.getBlockState(p.below()).is(Blocks.GRASS_BLOCK))level.setBlock(p,Blocks.SHORT_GRASS.defaultBlockState(),FLAGS);
+            else if(level.canSeeSky(p))for(Direction direction:Direction.Plane.HORIZONTAL){
+                BlockPos support=p.relative(direction);if(!level.getBlockState(support).isFaceSturdy(level,support,direction.getOpposite()))continue;
+                var vine=Blocks.VINE.defaultBlockState().setValue(VineBlock.getPropertyForFace(direction),true);
+                if(vine.canSurvive(level,p))level.setBlock(p,vine,FLAGS);break;
+            }
+        }
     }
     private static void installGuideGoal(TamableAnimal pet){
         if(!GUIDE_GOALS.add(pet))return;

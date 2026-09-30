@@ -16,6 +16,29 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class FinaleTests {
+    @GameTest(template="empty",batch="finale") public static void actualCreatureRejectsCopiesAndOneOriginalWoundStartsCollapse(GameTestHelper helper){
+        var player=helper.makeMockServerPlayerInLevel();var server=player.server;var data=LabyrinthData.get(server);
+        var previous=data.state(FinaleProgress.STATE);MinotaurEntity creature=FinaleRegistry.MINOTAUR.get().create(helper.getLevel());
+        try{
+            ItemStack sword=new ItemStack(Items.IRON_SWORD);UUID original=WeaponHistory.stamp(sword);CompoundTag record=new CompoundTag();
+            record.putUUID("Weapon",original);record.putString("Phase",FinaleProgress.Phase.FIGHT.name());FinaleProgress.save(server,player.getUUID(),record);
+            creature.owner(player.getUUID());creature.moveTo(player.position().add(0,0,4));
+            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,sword);
+            helper.assertTrue(!creature.hurt(player.damageSources().playerAttack(player),8),"even the original cannot wound outside the shield opening");
+            creature.stagger();ItemStack copy=sword.copy();WeaponHistory.markCopy(copy);player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,copy);
+            helper.assertTrue(!creature.hurt(player.damageSources().playerAttack(player),8)&&creature.motion()==MinotaurEntity.STUNNED,"a House copy passes through a genuinely stunned creature");
+            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,sword);
+            helper.assertTrue(creature.hurt(player.damageSources().playerAttack(player),8)&&creature.motion()==MinotaurEntity.WOUNDED,"one original hit starts the wounded crawl");
+            helper.assertTrue(creature.getHealth()==creature.getMaxHealth()&&FinaleProgress.phase(server,player.getUUID())==FinaleProgress.Phase.COLLAPSE,"the encounter changes saved phase rather than draining conventional health");
+        }finally{data.setState(FinaleProgress.STATE,previous);if(creature!=null)creature.discard();if(server.getPlayerList().getPlayers().contains(player))server.getPlayerList().remove(player);}
+        helper.succeed();
+    }
+    @GameTest(template="empty") public static void loadingAChargeNeverResumesAnUnwarnedDash(GameTestHelper helper){
+        var creature=FinaleRegistry.MINOTAUR.get().create(helper.getLevel());UUID owner=UUID.randomUUID();creature.owner(owner);
+        CompoundTag saved=new CompoundTag();creature.saveWithoutId(saved);saved.putInt("FinaleMotion",MinotaurEntity.CHARGING);saved.putInt("FinaleRemaining",12);
+        var restored=FinaleRegistry.MINOTAUR.get().create(helper.getLevel());restored.load(saved);
+        helper.assertTrue(owner.equals(restored.owner())&&restored.motion()==MinotaurEntity.WATCHING,"reconnect preserves the encounter owner and restores the charge's warning");creature.discard();restored.discard();helper.succeed();
+    }
     @GameTest(template="empty") public static void weaponIdentitySurvivesArchiveAndCopiesCannotWound(GameTestHelper helper){
         var registries=helper.getLevel().registryAccess();ItemStack sword=new ItemStack(Items.IRON_SWORD);sword.setDamageValue(73);
         UUID original=WeaponHistory.stamp(sword);MotherCollection mother=new MotherCollection();UUID owner=UUID.randomUUID();

@@ -36,6 +36,7 @@ public final class MinotaurEntity extends PathfinderMob {
     public void owner(UUID id){owner=id;}
     public @Nullable UUID owner(){return owner;}
     private void motion(int motion,int duration){entityData.set(MOTION,motion);remaining=duration;}
+    public void stagger(){motion(STUNNED,65);setDeltaMovement(Vec3.ZERO);}
     public void wounded(){motion(WOUNDED,240);bar.removeAllPlayers();setDeltaMovement(Vec3.ZERO);}
     @Override public boolean removeWhenFarAway(double distance){return false;}
     @Override public boolean canBeLeashed(){return false;}
@@ -60,7 +61,7 @@ public final class MinotaurEntity extends PathfinderMob {
                 Vec3 toward=position().subtract(player.position()).multiply(1,0,1).normalize();
                 if(player.isBlocking()&&player.getViewVector(1).multiply(1,0,1).normalize().dot(toward)>.25){
                     ItemStack shield=player.getUseItem();shield.hurtAndBreak(8,player,player.getUsedItemHand()==net.minecraft.world.InteractionHand.MAIN_HAND?EquipmentSlot.MAINHAND:EquipmentSlot.OFFHAND);
-                    level.playSound(null,blockPosition(),SoundEvents.SHIELD_BLOCK,SoundSource.HOSTILE,1.5F,.65F);motion(STUNNED,65);
+                    level.playSound(null,blockPosition(),SoundEvents.SHIELD_BLOCK,SoundSource.HOSTILE,1.5F,.65F);stagger();
                     player.setDeltaMovement(charge.scale(.12));player.hurtMarked=true;
                 }else{player.hurt(damageSources().genericKill(),Float.MAX_VALUE);motion(WATCHING,40);}return;
             }
