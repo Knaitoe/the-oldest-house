@@ -15,5 +15,9 @@
   "subtitles.the_oldest_house.growl_near": "Something growls",
   "item.the_oldest_house.phone": "Phone",
   "item.the_oldest_house.harrigans_phone": "Mr. Harrigan's phone",
-  "item.the_oldest_house.scratch_ticket": "Scratch-off ticket"
+  "item.the_oldest_house.scratch_ticket": "Scratch-off ticket",
+  "block.the_oldest_house.model_home_wallpaper": "Show Home Wallpaper",
+  "block.the_oldest_house.model_home_kids_wallpaper": "Child's Wallpaper",
+  "block.the_oldest_house.model_home_rug": "Show Home Rug",
+  "block.the_oldest_house.model_home_television": "Television"
 }

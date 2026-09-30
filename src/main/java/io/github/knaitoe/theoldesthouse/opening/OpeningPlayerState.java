@@ -38,7 +38,8 @@ public final class OpeningPlayerState {
             Codec.LONG.optionalFieldOf("letter_day", -1L).forGetter(OpeningPlayerState::letterDay),
             Codec.LONG.optionalFieldOf("last_morning_day", -1L).forGetter(OpeningPlayerState::lastMorningDay),
             UUIDUtil.CODEC.optionalFieldOf("hillary").forGetter(state -> Optional.ofNullable(state.hillaryUuid)),
-            Codec.BOOL.optionalFieldOf("entered_house", false).forGetter(OpeningPlayerState::enteredHouse)
+            Codec.BOOL.optionalFieldOf("entered_house", false).forGetter(OpeningPlayerState::enteredHouse),
+            Codec.LONG.optionalFieldOf("hillary_day", -1L).forGetter(OpeningPlayerState::hillaryDay)
     ).apply(instance, OpeningPlayerState::new));
 
     private OpeningStage stage = OpeningStage.NONE;
@@ -52,6 +53,7 @@ public final class OpeningPlayerState {
     @Nullable
     private UUID hillaryUuid;
     private boolean enteredHouse;
+    private long hillaryDay = -1L;
 
     public OpeningPlayerState() {
     }
@@ -66,7 +68,8 @@ public final class OpeningPlayerState {
             long letterDay,
             long lastMorningDay,
             Optional<UUID> hillaryUuid,
-            boolean enteredHouse
+            boolean enteredHouse,
+            long hillaryDay
     ) {
         this.stage = stage;
         this.nightsSlept = nightsSlept;
@@ -78,6 +81,7 @@ public final class OpeningPlayerState {
         this.lastMorningDay = lastMorningDay;
         this.hillaryUuid = hillaryUuid.orElse(null);
         this.enteredHouse = enteredHouse;
+        this.hillaryDay = hillaryDay;
     }
 
     public OpeningStage stage() {
@@ -121,6 +125,13 @@ public final class OpeningPlayerState {
         return enteredHouse;
     }
 
+    public long hillaryDay() { return hillaryDay; }
+
+    public boolean houseDue(long today) {
+        return stage.isAtLeast(OpeningStage.HILLARY_ARRIVED)
+                && today > (hillaryDay >= 0L ? hillaryDay : letterDay + 1L);
+    }
+
     /** Counts one completed sleep per in-game day. */
     public boolean recordSleep(long day) {
         if (day == lastSleepDay) {
@@ -142,6 +153,7 @@ public final class OpeningPlayerState {
         letterDay = Math.min(letterDay, day);
         lastSleepDay = Math.min(lastSleepDay, day);
         lastMorningDay = Math.min(lastMorningDay, day);
+        hillaryDay = Math.min(hillaryDay, day);
     }
 
     public void noteFirstJoin(long day) {
@@ -166,6 +178,11 @@ public final class OpeningPlayerState {
 
     public void markHillaryArrived() {
         stage = enteredHouse ? OpeningStage.ENTERED : OpeningStage.HILLARY_ARRIVED;
+    }
+
+    public void markHillaryArrived(long day) {
+        hillaryDay = day;
+        markHillaryArrived();
     }
 
     public void markEntered() {
@@ -227,6 +244,7 @@ public final class OpeningPlayerState {
         lastMorningDay = -1L;
         hillaryUuid = null;
         enteredHouse = false;
+        hillaryDay = -1L;
     }
 
     public void setStageForTesting(OpeningStage newStage, long day) {

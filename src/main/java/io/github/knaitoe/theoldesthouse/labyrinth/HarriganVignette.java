@@ -90,6 +90,8 @@ public final class HarriganVignette {
 
     public static final BlockPos CHAIR = new BlockPos(0, 0, -9);
     public static final BlockPos LECTERN = new BlockPos(-3, 0, -7);
+    public static final BlockPos READER_CHAIR = new BlockPos(-3, 0, -5);
+    private static final java.util.Set<UUID> READERS = new java.util.HashSet<>();
     public static final BlockPos SIDE_TABLE = new BlockPos(3, 0, -8);
     public static final BlockPos FUNERAL_DOOR = new BlockPos(0, 0, -13);
     public static final BlockPos CASKET = new BlockPos(0, 0, -20);
@@ -187,6 +189,10 @@ public final class HarriganVignette {
         if (place != LabyrinthPlace.HARRIGAN) {
             return;
         }
+        BlockPos occupiedBase = base(player.server);
+        ServerLevel occupiedLevel = player.server.getLevel(HouseDimensions.INTERIOR);
+        if (occupiedBase != null && occupiedLevel != null && occupiedLevel.getEntitiesOfClass(ServerPlayer.class, placeBounds(occupiedBase))
+                .stream().anyMatch(other -> !other.getUUID().equals(player.getUUID()))) return;
         LabyrinthData data = LabyrinthData.get(player.server);
         CompoundTag state = data.state(ID);
         int visit = state.getInt("Visit");
@@ -245,6 +251,9 @@ public final class HarriganVignette {
         clearTagged(level, placeBounds(base), BODY_TAG);
         clearTagged(level, placeBounds(base), PROP_TAG);
         int flags = LabyrinthBuilder.flags();
+        if (level.getBlockState(base.offset(READER_CHAIR)).isAir()) {
+            level.setBlock(base.offset(READER_CHAIR), LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH), flags);
+        }
 
         // Visit one seals the funeral room completely. Visit two exposes it.
         for (int y = 0; y <= 3; y++) {
@@ -341,6 +350,7 @@ public final class HarriganVignette {
         if (!inVignette(player) || visitFor(LabyrinthData.get(player.server)) != 1) {
             return;
         }
+        if (!READERS.remove(player.getUUID())) return;
         LabyrinthData data = LabyrinthData.get(player.server);
         CompoundTag state = data.state(ID);
         if (!state.getBoolean("TicketVisible")) {
@@ -445,6 +455,13 @@ public final class HarriganVignette {
     }
 
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (!event.getLevel().isClientSide() && event.getEntity() instanceof ServerPlayer reader
+                && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND && inVignette(reader)
+                && event.getPos().equals(base(reader.server).offset(LECTERN))
+                && visitFor(LabyrinthData.get(reader.server)) == 1
+                && event.getLevel().getBlockEntity(event.getPos()) instanceof LecternBlockEntity lectern && lectern.hasBook()) {
+            READERS.add(reader.getUUID());
+        }
         if (!(event.getEntity() instanceof ServerPlayer player) || !inVignette(player)
                 || visitFor(LabyrinthData.get(player.server)) != 2
                 || !isCasket(player.server, event.getPos())) {
@@ -1267,12 +1284,14 @@ public final class HarriganVignette {
     }
 
     public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        READERS.remove(event.getEntity().getUUID());
         WAITING_TEXT.remove(event.getEntity().getUUID());
         LAST_PAGE.remove(event.getEntity().getUUID());
         NEXT_SPEECH.remove(event.getEntity().getUUID());
     }
 
     public static void clearAll(MinecraftServer server) {
+        READERS.clear();
         for (UUID owner : List.copyOf(ACTIVE_GHOSTS.keySet())) {
             Zombie ghost = activeGhost(server, owner);
             if (ghost != null) {

@@ -639,7 +639,7 @@ public final class OpeningTests {
                 recipient.getUUID().equals(wolf.getOwnerUUID()),
                 "Hillary did not restore her owner while waiting outside"
         );
-        helper.assertTrue(wolf.isOrderedToSit(), "Hillary should wait outside the proxy manor");
+        helper.assertTrue(!wolf.isOrderedToSit(), "Hillary stands ready to accompany her recipient through the manor door");
 
         HillaryTag tag = Hillary.tagOf(wolf);
         helper.assertTrue(

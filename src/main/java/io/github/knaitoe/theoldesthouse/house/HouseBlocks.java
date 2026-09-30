@@ -58,6 +58,13 @@ public final class HouseBlocks {
                     .noLootTable());
 
     private HouseBlocks() {}
+    public static final DeferredBlock<Block> MODEL_HOME_WALLPAPER = BLOCKS.registerBlock("model_home_wallpaper", Block::new,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_CONCRETE).noLootTable());
+    public static final DeferredBlock<Block> MODEL_HOME_KIDS_WALLPAPER = BLOCKS.registerBlock("model_home_kids_wallpaper", Block::new,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_CONCRETE).noLootTable());
+    public static final DeferredBlock<CarpetBlock> MODEL_HOME_RUG = carpet("model_home_rug", Blocks.LIGHT_GRAY_CARPET);
+    public static final DeferredBlock<Block> MODEL_HOME_TELEVISION = BLOCKS.registerBlock("model_home_television", Block::new,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.BLACK_CONCRETE).lightLevel(s -> 1).noLootTable());
 
     private static DeferredBlock<CarpetBlock> carpet(String id, Block vanilla) {
         return BLOCKS.registerBlock(id, CarpetBlock::new,

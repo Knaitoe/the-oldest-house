@@ -115,6 +115,7 @@ public final class LabyrinthData extends SavedData {
     private static final class PlayerDealer {
         final Map<String, Deal> deals = new LinkedHashMap<>();
         final Set<String> visited = new LinkedHashSet<>();
+        final Deque<String> recent = new ArrayDeque<>();
         int dryDeals;
         boolean hillaryScent;
     }
@@ -264,9 +265,23 @@ public final class LabyrinthData extends SavedData {
 
     /** Remembers that this player has personally reached this place. */
     public void visit(UUID player, LabyrinthPlace place) {
-        if (playerDealer(player).visited.add(place.id())) {
-            setDirty();
+        PlayerDealer state = playerDealer(player);
+        state.visited.add(place.id());
+        state.recent.addFirst(place.id());
+        while (state.recent.size() > 8) state.recent.removeLast();
+        setDirty();
+    }
+
+    /** Zero is the latest visit; -1 means outside the last eight crossings. */
+    public int recentVisit(UUID player, LabyrinthPlace place) {
+        PlayerDealer state = playerDealers.get(player);
+        if (state == null) return -1;
+        int age = 0;
+        for (String id : state.recent) {
+            if (id.equals(place.id())) return age;
+            age++;
         }
+        return -1;
     }
 
     public Set<String> visited(UUID player) {
@@ -482,6 +497,8 @@ public final class LabyrinthData extends SavedData {
                 state.visited.add(visited.getString(j));
             }
             data.playerDealers.put(p.getUUID("Player"), state);
+            ListTag recent = p.getList("Recent", Tag.TAG_STRING);
+            for (int j = 0; j < Math.min(8, recent.size()); j++) state.recent.addLast(recent.getString(j));
         }
 
         data.builtVersion = tag.getInt("BuiltVersion");
@@ -552,6 +569,9 @@ public final class LabyrinthData extends SavedData {
                 visited.add(StringTag.valueOf(place));
             }
             p.put("Visited", visited);
+            ListTag recent = new ListTag();
+            for (String place : state.recent) recent.add(StringTag.valueOf(place));
+            p.put("Recent", recent);
             playerDealerList.add(p);
         }
         tag.put("PlayerDealers", playerDealerList);

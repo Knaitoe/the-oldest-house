@@ -4,6 +4,9 @@ import io.github.knaitoe.theoldesthouse.house.HouseExteriorEntityMirror;
 import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import io.github.knaitoe.theoldesthouse.house.HouseProxyEntityEvacuation;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
+import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlaces;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDealer;
 import io.github.knaitoe.theoldesthouse.labyrinth.VignetteYields;
@@ -28,6 +31,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
@@ -136,6 +140,21 @@ public final class Hillary {
         ItemStack stack = event.getItemStack();
         boolean recipient = player.getUUID().equals(tag.recipient());
 
+        if (recipient && stack.is(Items.COMPASS) && player instanceof ServerPlayer owner) {
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            if (event.getHand() == InteractionHand.MAIN_HAND) {
+                SEEKING.remove(wolf.getUUID());
+                HillaryPaths.askForExit(wolf, owner);
+            }
+            return;
+        }
+        if (recipient && stack.isEmpty()) {
+            wolf.getPersistentData().remove("HillaryFindExit");
+            SEEKING.remove(wolf.getUUID());
+            if (wolf.isTame()) wolf.setOwnerUUID(tag.recipient());
+        }
+
         if (VignetteYields.of(stack) != null && (recipient || wolf.isOwnedBy(player))) {
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.SUCCESS);
@@ -217,6 +236,13 @@ public final class Hillary {
         HillaryTag tag = tagOf(wolf);
         if (tag != null && tickSeeking(wolf, level)) {
             return;
+        }
+        if (tag != null && HillaryPaths.tickExit(wolf, level, tag.recipient())) return;
+        if (tag != null && tag.acknowledged() && level.dimension().equals(HouseDimensions.INTERIOR)
+                && !wolf.isOrderedToSit() && !wolf.isTame()) {
+            ServerPlayer recipient = level.getServer().getPlayerList().getPlayer(tag.recipient());
+            if (recipient != null && recipient.level() == level && wolf.distanceToSqr(recipient) > 9
+                    && level.getGameTime() % 10 == 0) wolf.getNavigation().moveTo(recipient, 1.15);
         }
         if (tag == null || tag.acknowledged()) {
             return;
@@ -327,6 +353,7 @@ public final class Hillary {
      * With nothing left in the house to find, she whines and lies down.
      */
     public static void takeScent(Wolf wolf, ServerLevel level, UUID seeker) {
+        wolf.getPersistentData().remove("HillaryFindExit");
         wolf.playSound(SoundEvents.WOLF_PANT, 1.0F, 1.2F);
         LabyrinthDealer.Scent scent = LabyrinthDealer.giveScent(LabyrinthData.get(level.getServer()), seeker);
         if (scent == LabyrinthDealer.Scent.NOTHING || HouseSavedData.get(level.getServer()).houseOrigin() == null) {
@@ -338,7 +365,14 @@ public final class Hillary {
             return;
         }
         wolf.playSound(SoundEvents.WOLF_AMBIENT, 1.0F, 1.2F);
-        SEEKING.put(wolf.getUUID(), level.getGameTime() + SEEK_TICKS);
+        wolf.setOrderedToSit(false);
+        wolf.setInSittingPose(false);
+        BlockPos origin = HouseSavedData.get(level.getServer()).houseOrigin();
+        LabyrinthPlace place = origin == null ? null : LabyrinthPlaces.placeAt(origin, wolf.blockPosition());
+        if (level.dimension().equals(HouseDimensions.INTERIOR) && place != null) {
+            LabyrinthDealer.dealPlace(LabyrinthData.get(level.getServer()), seeker, place, wolf.getRandom());
+        }
+        SEEKING.put(wolf.getUUID(), level.getGameTime() + 2400);
     }
 
     public static boolean isSeeking(Wolf wolf) {
@@ -354,9 +388,15 @@ public final class Hillary {
         long now = level.getGameTime();
         BlockPos origin = HouseSavedData.get(level.getServer()).houseOrigin();
         if (now >= until || origin == null || !level.dimension().equals(Level.OVERWORLD)) {
+            if (level.dimension().equals(HouseDimensions.INTERIOR) && now < until && origin != null) {
+                HillaryTag tag = tagOf(wolf);
+                return tag != null && HillaryPaths.tickDeeper(wolf, level, tag.recipient());
+            }
             SEEKING.remove(wolf.getUUID());
             wolf.getNavigation().stop();
             if (wolf.isTame()) {
+                HillaryTag owner = tagOf(wolf);
+                if (owner != null) wolf.setOwnerUUID(owner.recipient());
                 wolf.setOrderedToSit(true);
                 wolf.setInSittingPose(true);
             }
@@ -522,16 +562,48 @@ public final class Hillary {
         );
     }
 
+    /** Capture the real nearby companion before a threshold moves its player. */
+    @Nullable public static Wolf following(ServerPlayer player) {
+        UUID id = OpeningSequence.state(player).hillaryUuid();
+        if (id == null || !(player.serverLevel().getEntity(id) instanceof Wolf wolf)) return null;
+        HillaryTag tag = tagOf(wolf);
+        return tag != null && tag.acknowledged() && wolf.isAlive() && !wolf.isOrderedToSit()
+                && !wolf.isLeashed() && !wolf.isPassenger() && !HouseExteriorEntityMirror.isProjection(wolf)
+                && wolf.distanceToSqr(player) <= 144 ? wolf : null;
+    }
+
+    /** Normal dimension transfer retains identity, tame state, health and attachments. */
+    public static void followAcross(@Nullable Wolf wolf, ServerPlayer player) {
+        if (wolf == null || wolf.isRemoved()) return;
+        ServerLevel to = player.serverLevel();
+        Vec3 point = HillaryPaths.safeBeside(wolf, player);
+        if (wolf.level() != to) {
+            Entity moved = wolf.changeDimension(new DimensionTransition(to, point, Vec3.ZERO,
+                    player.getYRot(), 0, DimensionTransition.DO_NOTHING));
+            if (!(moved instanceof Wolf arriving)) return;
+            wolf = arriving;
+        } else wolf.teleportTo(point.x, point.y, point.z);
+        HillaryTag tag = tagOf(wolf);
+        if (tag != null && wolf.isTame()) wolf.setOwnerUUID(tag.recipient());
+        wolf.clearRestriction();
+        wolf.getNavigation().stop();
+        wolf.setDeltaMovement(Vec3.ZERO);
+        wolf.resetFallDistance();
+    }
+
     private static void settleAtManor(Wolf wolf, UUID recipient, BlockPos porch) {
         wolf.getNavigation().stop();
         HillaryTag tag = tagOf(wolf);
+        boolean firstArrival = tag == null || !tag.home().equals(porch);
         wolf.setData(OpeningRegistry.HILLARY, tag == null
                 ? new HillaryTag(recipient, porch.immutable(), true)
                 : tag.withHome(porch));
         if (wolf.isTame()) {
             wolf.setOwnerUUID(recipient);
-            wolf.setOrderedToSit(true);
-            wolf.setInSittingPose(true);
+            if (firstArrival) {
+                wolf.setOrderedToSit(false);
+                wolf.setInSittingPose(false);
+            }
             wolf.clearRestriction();
         } else {
             wolf.restrictTo(porch, 4);

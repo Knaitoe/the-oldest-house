@@ -30,7 +30,12 @@ jobs:
       # architecture (sightline, enclosure, walkability, glazing). The log
       # also carries an OTH-DUMP block listing for offline rendering.
       - name: Structure game tests
-        run: gradle runGameTestServer
+        timeout-minutes: 12
+        run: |
+          (sleep 540; jps -l | awk '/net.minecraft.gametest.Main/ {print $1}' | xargs -r -n 1 jstack) &
+          diagnostic=$!
+          trap 'kill "$diagnostic" 2>/dev/null || true' EXIT
+          timeout --signal=QUIT --kill-after=20s 11m gradle runGameTestServer --no-daemon
 
       - name: Upload mod jar
         uses: actions/upload-artifact@v4

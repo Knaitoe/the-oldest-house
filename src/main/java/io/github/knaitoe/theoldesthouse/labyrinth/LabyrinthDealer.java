@@ -64,14 +64,22 @@ public final class LabyrinthDealer {
                 ? UNFINISHED_WEIGHT : 1;
     }
 
-    private static LabyrinthPlace pickVignette(LabyrinthData data, List<LabyrinthPlace> vignettes, RandomSource random) {
+    public static int rememberedWeight(LabyrinthData data, UUID player, LabyrinthPlace place, int ordinaryWeight) {
+        boolean special = place.isVignette() || (!LabyrinthMaze.isMaze(place) && place != LabyrinthPlace.JUNCTION);
+        if (!special) return ordinaryWeight * 12;
+        int age = data.recentVisit(player, place);
+        int factor = age < 0 ? 12 : age == 0 ? 1 : age < 3 ? 2 : age < 6 ? 4 : 8;
+        return ordinaryWeight * factor;
+    }
+
+    private static LabyrinthPlace pickVignette(LabyrinthData data, UUID player, List<LabyrinthPlace> vignettes, RandomSource random) {
         int total = 0;
         for (LabyrinthPlace place : vignettes) {
-            total += dealWeight(data, place);
+            total += rememberedWeight(data, player, place, dealWeight(data, place));
         }
         int roll = random.nextInt(total);
         for (LabyrinthPlace place : vignettes) {
-            roll -= dealWeight(data, place);
+            roll -= rememberedWeight(data, player, place, dealWeight(data, place));
             if (roll < 0) {
                 return place;
             }
@@ -184,12 +192,12 @@ public final class LabyrinthDealer {
                 data.setHillaryScent(player, false);
                 bark = true;
             }
-            realDestination = pickVignette(data, vignettes, random).id();
+            realDestination = pickVignette(data, player, vignettes, random).id();
             leak = true;
         } else {
             List<LabyrinthPlace> gray = new ArrayList<>(grayAvailable(data, player));
             gray.remove(LabyrinthPlace.DUPLICATE_PASSAGE);
-            realDestination = pickGray(gray, data.returnDepth(player), random).id();
+            realDestination = pickGray(gray, data, player, random).id();
             leak = random.nextInt(100) < LYING_LEAK_CHANCE;
         }
 
@@ -213,17 +221,18 @@ public final class LabyrinthDealer {
         };
     }
 
-    private static LabyrinthPlace pickGray(List<LabyrinthPlace> gray, int depth, RandomSource random) {
+    private static LabyrinthPlace pickGray(List<LabyrinthPlace> gray, LabyrinthData data, UUID player, RandomSource random) {
+        int depth = data.returnDepth(player);
         int totalWeight = 0;
         for (LabyrinthPlace place : gray) {
-            totalWeight += grayWeight(place, depth);
+            totalWeight += rememberedWeight(data, player, place, grayWeight(place, depth));
         }
         if (gray.isEmpty() || totalWeight <= 0) {
             return LabyrinthPlace.JUNCTION;
         }
         int roll = random.nextInt(totalWeight);
         for (LabyrinthPlace place : gray) {
-            roll -= grayWeight(place, depth);
+            roll -= rememberedWeight(data, player, place, grayWeight(place, depth));
             if (roll < 0) {
                 return place;
             }
@@ -258,9 +267,9 @@ public final class LabyrinthDealer {
         List<LabyrinthPlace> gray = grayAvailable(data, player);
         for (LabyrinthData.Door door : doors) {
             if (door == lucky) {
-                data.deal(player, door, pickVignette(data, vignettes, random).id(), true, scent);
+                data.deal(player, door, pickVignette(data, player, vignettes, random).id(), true, scent);
             } else {
-                data.deal(player, door, pickGray(gray, data.returnDepth(player), random).id(), random.nextInt(100) < LYING_LEAK_CHANCE);
+                data.deal(player, door, pickGray(gray, data, player, random).id(), random.nextInt(100) < LYING_LEAK_CHANCE);
             }
         }
         data.setDryDeals(player, lucky != null ? 0 : data.dryDeals(player) + 1);
