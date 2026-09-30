@@ -15,6 +15,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthBuilder;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDealer;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoors;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthHazards;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthLoops;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlaces;
@@ -465,6 +466,68 @@ public final class LabyrinthTests {
         helper.assertTrue(black >= 10, "a blindfold, pressed hard: " + black + " black pixels");
         helper.assertTrue(red >= 10, "and the bed: " + red + " red pixels");
         helper.assertTrue(LabyrinthRegistry.BLINDFOLD.get().getEquipmentSlot() == EquipmentSlot.HEAD, "the blindfold is worn on the head");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void hazardPlacesStaySurvivableAndGiveRecoveryRoutes(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+
+        BlockPos flood = helper.absolutePos(BlockPos.ZERO).offset(-500, 8, 40);
+        LabyrinthHazards.buildFloodedPassage(level, flood);
+        helper.assertTrue(level.getBlockState(flood.offset(0, 0, -6)).is(Blocks.WATER),
+                "the flooded passage really submerges the route");
+        helper.assertTrue(level.getBlockState(flood.offset(0, 2, -9)).isAir(),
+                "the first air chimney interrupts the low ceiling");
+        helper.assertTrue(level.getBlockState(flood.offset(0, 2, -17)).isAir(),
+                "a second breathing point prevents one long unavoidable drown");
+        helper.assertTrue(level.getBlockState(flood.offset(0, 0, -28)).getBlock() instanceof DoorBlock,
+                "the flooded route has a way through");
+
+        BlockPos broken = helper.absolutePos(BlockPos.ZERO).offset(-540, 8, 40);
+        LabyrinthHazards.buildFracturedWalkway(level, broken);
+        helper.assertTrue(level.getBlockState(broken.offset(0, 6, -13)).isAir(),
+                "the elevated span is visibly broken");
+        helper.assertTrue(level.getBlockState(broken.offset(0, -1, -13)).is(Blocks.SMOOTH_STONE),
+                "missing the span lands on a real lower floor instead of a death void");
+        helper.assertTrue(level.getBlockState(broken.offset(2, 0, -19)).getBlock() instanceof StairBlock,
+                "the lower route has stairs back to the upper level");
+        helper.assertTrue(level.getBlockState(broken.offset(0, 7, -28)).getBlock() instanceof DoorBlock,
+                "the broken route remains completable");
+
+        BlockPos squeeze = helper.absolutePos(BlockPos.ZERO).offset(-580, 8, 40);
+        LabyrinthHazards.buildCompressionPassage(level, squeeze);
+        helper.assertTrue(level.getBlockState(squeeze.offset(0, 1, -12)).isAir(),
+                "the compression passage always leaves its center line open");
+        helper.assertTrue(level.getBlockState(squeeze.offset(2, 1, -12)).isAir(),
+                "it begins broad enough to telegraph the later closing");
+        helper.assertTrue(level.getBlockState(squeeze.offset(0, 0, -28)).getBlock() instanceof DoorBlock,
+                "the compression passage has an exit");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void hazardsEnterTheGrayPoolWithDepth(GameTestHelper helper) {
+        LabyrinthData data = new LabyrinthData();
+        UUID player = UUID.randomUUID();
+
+        helper.assertTrue(!LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.FLOODED_PASSAGE),
+                "fresh players do not immediately draw hazards");
+        data.visit(player, LabyrinthPlace.FLOORBOARDS);
+        helper.assertTrue(LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.FLOODED_PASSAGE),
+                "the flooded passage appears after the first vignette");
+        helper.assertTrue(!LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.FRACTURED_WALKWAY),
+                "the broken route still waits");
+
+        data.visit(player, LabyrinthPlace.HIDE_AND_CLAP);
+        helper.assertTrue(LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.FRACTURED_WALKWAY),
+                "the fractured walkway appears deeper in");
+        helper.assertTrue(!LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.COMPRESSION_PASSAGE),
+                "the crushing passage waits until the deepest tier");
+
+        data.visit(player, LabyrinthPlace.HARRIGAN);
+        helper.assertTrue(LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.COMPRESSION_PASSAGE),
+                "the compression passage joins the deepest gray pool");
         helper.succeed();
     }
 

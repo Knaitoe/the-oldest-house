@@ -69,6 +69,21 @@ public enum LabyrinthPlace {
     HARRIGAN("harrigan", Kind.MULTI_VISIT, 9, new BoundingBox(-8, -1, -25, 8, 7, 1), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
     )),
+    /** A submerged gray corridor with deliberately spaced air chimneys. */
+    FLOODED_PASSAGE("flooded_passage", Kind.GRAY, 10, new BoundingBox(-2, -1, -28, 2, 6, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
+            new DoorSpec("far", new BlockPos(0, 0, -28), Direction.SOUTH, LabyrinthData.DEALT)
+    )),
+    /** A raised broken route: missing the span hurts, but a lower recovery path remains. */
+    FRACTURED_WALKWAY("fractured_walkway", Kind.GRAY, 11, new BoundingBox(-4, -1, -28, 4, 10, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
+            new DoorSpec("far", new BlockPos(0, 7, -28), Direction.SOUTH, LabyrinthData.DEALT)
+    )),
+    /** A broad corridor that audibly presses inward until only its center line remains. */
+    COMPRESSION_PASSAGE("compression_passage", Kind.GRAY, 12, new BoundingBox(-3, -1, -28, 3, 4, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
+            new DoorSpec("far", new BlockPos(0, 0, -28), Direction.SOUTH, LabyrinthData.DEALT)
+    )),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

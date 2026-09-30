@@ -34,7 +34,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump to rebuild every place in existing worlds on next use. */
-    public static final int VERSION = 7;
+    public static final int VERSION = 8;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -149,6 +149,9 @@ public final class LabyrinthBuilder {
             case SPIRAL_STAIR -> LabyrinthLoops.buildSpiral(level, base);
             case MODEL_HOME -> ModelHome.build(server, level, base);
             case HARRIGAN -> HarriganVignette.build(server, level, base);
+            case FLOODED_PASSAGE -> LabyrinthHazards.buildFloodedPassage(level, base);
+            case FRACTURED_WALKWAY -> LabyrinthHazards.buildFracturedWalkway(level, base);
+            case COMPRESSION_PASSAGE -> LabyrinthHazards.buildCompressionPassage(level, base);
             default -> {
             }
         }
