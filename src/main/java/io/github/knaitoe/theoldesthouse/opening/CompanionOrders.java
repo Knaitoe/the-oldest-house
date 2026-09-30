@@ -88,7 +88,7 @@ public final class CompanionOrders {
         UUID owner=owner(pet);if(owner!=null&&pet.isTame())pet.setOwnerUUID(owner);
     }
     private static void reassureSound(TamableAnimal pet,boolean accepted) {
-        pet.playSound(pet instanceof Cat ? SoundEvents.CAT_AMBIENT
+        pet.playSound(pet instanceof Cat ? (accepted ? SoundEvents.CAT_AMBIENT : SoundEvents.CAT_HISS)
                 : accepted ? SoundEvents.WOLF_AMBIENT : SoundEvents.WOLF_WHINE,.5F,accepted?1.15F:.9F);
     }
     private static void install(TamableAnimal pet) {
@@ -107,6 +107,7 @@ public final class CompanionOrders {
         if(player==null||player.level()!=level)return;
         if (order(pet)==Order.FOLLOW && level.dimension().equals(HouseDimensions.INTERIOR)) noteRoom(pet, player);
         if(order(pet)==Order.FOLLOW&&!pet.isTame()&&!pet.isOrderedToSit()
+                &&level.getGameTime()>=pet.getPersistentData().getLong("CompanionFearUntil")
                 &&pet.distanceToSqr(player)>9&&level.getGameTime()%10==0)pet.getNavigation().moveTo(player,1.1);
         if(order(pet)==Order.STAY&&!pet.isOrderedToSit()) {
             pet.setOrderedToSit(true);pet.setInSittingPose(true);pet.getNavigation().stop();

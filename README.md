@@ -4,6 +4,8 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
+Version `0.4.8` begins exploration with ordinary halls and multiple side doors, makes impossible stretches rare and spaced apart, and adds a companion command wheel, physical chalk/string navigation, quieter rest rooms, and very rare Mother/stray encounters. Tamed cats and dogs can guide and cross thresholds alongside Hillary. See [docs/EXPLORATION_0_4_8.md](docs/EXPLORATION_0_4_8.md) for controls, odds and playtest commands.
+
 Version `0.4.7` adds connected gray mazes, increasingly distant and rotated corridor folds at depths 3/6/9, and destination-specific sensory leaks through doors. It also adds sitting, saved suppression of recent special rooms, Poltergeist materials, and Hillary as a real companion with compass-based return guidance. The opening now runs letter/photo, Hillary at home, then House on three separate mornings. See [docs/MAZES_AND_COMPANIONS.md](docs/MAZES_AND_COMPANIONS.md).
 
 Version `0.4.6` adds a textured ghost girl and bare feet to clap-and-seek, a woven blindfold, a room lock on entry and a blindfold that binds until the wardrobe is opened. One minute after equipping it, an unfinished game ends with approaching feet, a brief camera twist and death. Items drop in the room, including in `keepInventory` worlds, and the player respawns in the manor outside the impossible hallway; despawned keepsakes can reach the Mother. See [docs/CLAP_AND_SEEK.md](docs/CLAP_AND_SEEK.md). The Mother's sixteen-stage appearance from `0.4.5` and her persistent collection, stalking, rescue and farewell remain available. The ordinary manor remains the player's first architectural relationship with the House:

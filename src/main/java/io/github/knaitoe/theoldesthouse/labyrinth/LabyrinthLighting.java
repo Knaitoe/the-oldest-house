@@ -77,6 +77,37 @@ public final class LabyrinthLighting {
         }
     }
 
+    /** One finite upgrade of existing aid barrels; never replaces player contents. */
+    private static void upgradeNavigationCache(ServerLevel level, BlockPos origin, LabyrinthPlace place) {
+        if (place != LabyrinthPlace.JUNCTION && place != LabyrinthPlace.EXPLORER_CAMP) return;
+        LabyrinthData data = LabyrinthData.get(level.getServer());
+        var state = data.state("navigation_cache_048");
+        if (state.getBoolean(place.id())) return;
+        BlockPos base = LabyrinthPlaces.base(origin, place);
+        if (base == null) return;
+        BlockPos pos = base.offset(place == LabyrinthPlace.JUNCTION ? TOM_CACHE : LabyrinthCampsite.CACHE);
+        if (!(level.getBlockEntity(pos) instanceof Container cache)) return;
+        var supplies = new ArrayList<ItemStack>();
+        supplies.add(new ItemStack(LabyrinthRegistry.CHALK.get()));
+        supplies.add(new ItemStack(LabyrinthRegistry.TRAIL_SPOOL.get()));
+        if (place == LabyrinthPlace.EXPLORER_CAMP) {
+            supplies.add(new ItemStack(Items.BONE, 4));
+            supplies.add(new ItemStack(Items.COD, 3));
+        }
+        for (ItemStack supply : supplies) {
+            boolean present = false;
+            for (int i=0;i<cache.getContainerSize();i++) present |= cache.getItem(i).is(supply.getItem());
+            if (present) continue;
+            int empty = -1;
+            for (int i=0;i<cache.getContainerSize();i++) if (cache.getItem(i).isEmpty()) { empty=i; break; }
+            if (empty < 0) return;
+            cache.setItem(empty, supply);
+        }
+        cache.setChanged();
+        state.putBoolean(place.id(), true);
+        data.setState("navigation_cache_048", state);
+    }
+
     public static ItemStack tomsNote() {
         return HouseWriting.book(
                 "What I know so far",
@@ -105,6 +136,7 @@ public final class LabyrinthLighting {
 
         BlockPos origin = HouseSavedData.get(player.server).houseOrigin();
         if (origin != null) {
+            upgradeNavigationCache(player.serverLevel(), origin, place);
             applyPhysicalDepth(player.serverLevel(), origin, place, depth);
         }
     }

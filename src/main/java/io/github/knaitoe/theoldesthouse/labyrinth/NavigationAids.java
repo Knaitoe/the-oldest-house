@@ -162,7 +162,7 @@ public final class NavigationAids {
             if(LabyrinthPlaces.placeAt(origin,pos)!=here)continue;
             BlockState old=player.serverLevel().getBlockState(pos);
             if(old.is(HouseBlocks.CHALK_MARK.get())) {
-                if(old.getValue(ChalkMarkBlock.FACING)!=Direction.UP)continue;
+                if(old.getValue(ChalkMarkBlock.FACE)!=Direction.UP)continue;
                 player.serverLevel().setBlock(pos,old.setValue(ChalkMarkBlock.ARROW,old.getValue(ChalkMarkBlock.ARROW).getClockWise()),FLAGS);
             } else if(old.is(HouseBlocks.TRAIL_LINE.get())) {
                 player.serverLevel().setBlock(pos,Blocks.AIR.defaultBlockState(),FLAGS);
