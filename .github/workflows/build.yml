@@ -32,10 +32,32 @@ jobs:
       - name: Structure game tests
         timeout-minutes: 12
         run: |
-          (sleep 540; jps -l | awk '/net.minecraft.gametest.Main/ {print $1}' | xargs -r -n 1 jstack) &
+          python3 - <<'PY' &
+          import pathlib, subprocess, time
+          folder = pathlib.Path('build/gametest-diagnostics')
+          folder.mkdir(parents=True, exist_ok=True)
+          for elapsed in (150, 300):
+              time.sleep(150)
+              listing = subprocess.check_output(['jps', '-l'], text=True)
+              (folder / f'processes-{elapsed}.txt').write_text(listing)
+              for process in listing.splitlines():
+                  if 'BootstrapLauncher' not in process:
+                      continue
+                  pid = process.split()[0]
+                  with (folder / f'threads-{elapsed}-{pid}.txt').open('w') as out:
+                      subprocess.run(['jstack', pid], stdout=out, stderr=subprocess.STDOUT, timeout=30)
+          PY
           diagnostic=$!
           trap 'kill "$diagnostic" 2>/dev/null || true' EXIT
           timeout --signal=QUIT --kill-after=20s 11m gradle runGameTestServer --no-daemon
+
+      - name: Upload test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gametest-diagnostics-${{ github.sha }}
+          path: build/gametest-diagnostics/
+          if-no-files-found: ignore
 
       - name: Upload mod jar
         uses: actions/upload-artifact@v4
