@@ -78,7 +78,7 @@ public final class LabyrinthLighting {
     }
 
     /** One finite upgrade of existing aid barrels; never replaces player contents. */
-    private static void upgradeNavigationCache(ServerLevel level, BlockPos origin, LabyrinthPlace place) {
+    public static void upgradeNavigationCache(ServerLevel level, BlockPos origin, LabyrinthPlace place) {
         if (place != LabyrinthPlace.JUNCTION && place != LabyrinthPlace.EXPLORER_CAMP) return;
         LabyrinthData data = LabyrinthData.get(level.getServer());
         var state = data.state("navigation_cache_048");
@@ -94,17 +94,22 @@ public final class LabyrinthLighting {
             supplies.add(new ItemStack(Items.BONE, 4));
             supplies.add(new ItemStack(Items.COD, 3));
         }
-        for (ItemStack supply : supplies) {
+        boolean complete = true;
+        for (int supplyIndex=0;supplyIndex<supplies.size();supplyIndex++) {
+            ItemStack supply = supplies.get(supplyIndex);
+            String supplied = place.id() + "_" + supplyIndex;
+            if (state.getBoolean(supplied)) continue;
             boolean present = false;
             for (int i=0;i<cache.getContainerSize();i++) present |= cache.getItem(i).is(supply.getItem());
-            if (present) continue;
+            if (present) { state.putBoolean(supplied, true); continue; }
             int empty = -1;
             for (int i=0;i<cache.getContainerSize();i++) if (cache.getItem(i).isEmpty()) { empty=i; break; }
-            if (empty < 0) return;
+            if (empty < 0) { complete=false; continue; }
             cache.setItem(empty, supply);
+            state.putBoolean(supplied, true);
         }
         cache.setChanged();
-        state.putBoolean(place.id(), true);
+        state.putBoolean(place.id(), complete);
         data.setState("navigation_cache_048", state);
     }
 

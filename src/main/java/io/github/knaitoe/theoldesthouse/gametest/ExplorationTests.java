@@ -100,4 +100,28 @@ public final class ExplorationTests {
         helper.assertTrue(LabyrinthPacing.anomalyChance(saved,other)==0,"the new explorer's depth is independent");
         helper.succeed();
     }
+    @GameTest(template="empty")
+    public static void existingCacheUpgradePreservesContentsAndCannotRefill(GameTestHelper helper) {
+        var level=helper.getLevel();var data=LabyrinthData.get(level.getServer());
+        var previous=data.state("navigation_cache_048");data.setState("navigation_cache_048",new CompoundTag());
+        BlockPos origin=helper.absolutePos(new BlockPos(2000,4,0));
+        BlockPos base=LabyrinthPlaces.base(origin,LabyrinthPlace.JUNCTION);
+        BlockPos pos=base.offset(LabyrinthLighting.TOM_CACHE);
+        level.setBlock(pos,net.minecraft.world.level.block.Blocks.BARREL.defaultBlockState(),3);
+        var cache=(net.minecraft.world.Container)level.getBlockEntity(pos);
+        for(int i=1;i<cache.getContainerSize();i++)cache.setItem(i,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STONE,37));
+        try {
+            LabyrinthLighting.upgradeNavigationCache(level,origin,LabyrinthPlace.JUNCTION);
+            helper.assertTrue(cache.getItem(0).is(LabyrinthRegistry.CHALK.get()),"an empty slot receives chalk");
+            cache.setItem(0,net.minecraft.world.item.ItemStack.EMPTY);
+            LabyrinthLighting.upgradeNavigationCache(level,origin,LabyrinthPlace.JUNCTION);
+            helper.assertTrue(cache.getItem(0).is(LabyrinthRegistry.TRAIL_SPOOL.get()),"a partial upgrade resumes with the missing spool, not more chalk");
+            cache.setItem(0,net.minecraft.world.item.ItemStack.EMPTY);
+            LabyrinthLighting.upgradeNavigationCache(level,origin,LabyrinthPlace.JUNCTION);
+            helper.assertTrue(cache.getItem(0).isEmpty()&&cache.getItem(1).getCount()==37,
+                    "revisits do not refill supplies or replace stored items");
+        } finally { data.setState("navigation_cache_048",previous); }
+        helper.succeed();
+    }
+
 }
