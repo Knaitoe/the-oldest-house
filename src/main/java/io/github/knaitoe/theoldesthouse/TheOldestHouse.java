@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse;
 
 import com.mojang.logging.LogUtils;
 import io.github.knaitoe.theoldesthouse.command.HouseCommands;
+import io.github.knaitoe.theoldesthouse.gametest.ShutdownWatch;
 import io.github.knaitoe.theoldesthouse.house.HouseBetweenRoom;
 import io.github.knaitoe.theoldesthouse.house.HouseBlockEntities;
 import io.github.knaitoe.theoldesthouse.house.HouseBlocks;
@@ -70,6 +71,9 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onServerStarted);
         NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onServerStopped);
+        // Only on the GameTest server: explains a shutdown that stalls.
+        NeoForge.EVENT_BUS.addListener(ShutdownWatch::onServerStopping);
+        NeoForge.EVENT_BUS.addListener(ShutdownWatch::onServerStopped);
         NeoForge.EVENT_BUS.addListener(HouseTransitionEvents::onPlayerTick);
         // The manor's doors are crossed by the handle, before anything else sees the click.
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, HouseTransitionEvents::onRightClickBlock);
