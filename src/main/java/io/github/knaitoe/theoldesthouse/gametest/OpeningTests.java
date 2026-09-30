@@ -637,7 +637,7 @@ public final class OpeningTests {
 
         helper.assertTrue(
                 recipient.getUUID().equals(wolf.getOwnerUUID()),
-                "Hillary did not restore her owner while waiting outside"
+                "Hillary did not restore her owner while waiting outside; tracked=" + (level.getEntity(wolf.getUUID())==wolf) + "; managed=" + io.github.knaitoe.theoldesthouse.opening.CompanionOrders.managed(wolf) + "; distance=" + wolf.position().distanceTo(porch)
         );
         helper.assertTrue(!wolf.isOrderedToSit(), "Hillary stands ready to accompany her recipient through the manor door");
 

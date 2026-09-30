@@ -94,6 +94,7 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(LabyrinthLighting::onServerTick);
         NeoForge.EVENT_BUS.addListener(LabyrinthDoorLeaks::onServerTick);
         NeoForge.EVENT_BUS.addListener(LabyrinthCampsite::onServerTick);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthEncounters::onServerTick);
         NeoForge.EVENT_BUS.addListener(MotherOfStrays::onServerTick);
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, MotherOfStrays::onItemExpire);
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, MotherOfStrays::onItemToss);

@@ -105,10 +105,27 @@ public final class CompanionOrders {
             wolf.setIsInterested(false);
         UUID id=owner(pet);ServerPlayer player=id==null?null:level.getServer().getPlayerList().getPlayer(id);
         if(player==null||player.level()!=level)return;
+        if (order(pet)==Order.FOLLOW && level.dimension().equals(HouseDimensions.INTERIOR)) noteRoom(pet, player);
         if(order(pet)==Order.FOLLOW&&!pet.isTame()&&!pet.isOrderedToSit()
                 &&pet.distanceToSqr(player)>9&&level.getGameTime()%10==0)pet.getNavigation().moveTo(player,1.1);
         if(order(pet)==Order.STAY&&!pet.isOrderedToSit()) {
             pet.setOrderedToSit(true);pet.setInSittingPose(true);pet.getNavigation().stop();
+        }
+    }
+    private static void noteRoom(TamableAnimal pet, ServerPlayer player) {
+        BlockPos origin=HouseSavedData.get(player.server).houseOrigin();
+        if(origin==null)return;
+        LabyrinthPlace place=LabyrinthPlaces.placeAt(origin,player.blockPosition());
+        String room=place==null?"manor":place.id();
+        CompoundTag data=pet.getPersistentData();
+        if(room.equals(data.getString("CompanionLastRoom")))return;
+        data.putString("CompanionLastRoom",room);
+        int depth=LabyrinthData.get(player.server).returnDepth(player.getUUID());
+        int pause=place==null||LabyrinthPacing.quiet(place)?0:hesitationTicks(depth);
+        if(pause>0) {
+            data.putLong("CompanionFearUntil",player.serverLevel().getGameTime()+pause);
+            if(pet instanceof Wolf wolf)wolf.setIsInterested(true);
+            reassureSound(pet,false);
         }
     }
     /** Fear costs a few seconds at a new deep place, never an indefinite refusal. */
@@ -118,18 +135,8 @@ public final class CompanionOrders {
         if(origin==null||!level.dimension().equals(HouseDimensions.INTERIOR))return;
         LabyrinthPlace place=LabyrinthPlaces.placeAt(origin,player.blockPosition());
         BlockPos base=place==null?null:LabyrinthPlaces.base(origin,place);
+        noteRoom(pet, player);
         CompoundTag data=pet.getPersistentData();long now=level.getGameTime();
-        String room=place==null?"manor":place.id();
-        int depth=LabyrinthData.get(player.server).returnDepth(player.getUUID());
-        if(!room.equals(data.getString("CompanionLastRoom"))) {
-            data.putString("CompanionLastRoom",room);
-            int pause=LabyrinthPacing.quiet(place)?0:hesitationTicks(depth);
-            if(pause>0) {
-                data.putLong("CompanionFearUntil",now+pause);
-                if(pet instanceof Wolf wolf)wolf.setIsInterested(true);
-                reassureSound(pet,false);
-            }
-        }
         if(now<data.getLong("CompanionFearUntil")) {
             pet.getNavigation().stop();pet.getLookControl().setLookAt(player,30,30);return;
         }
@@ -187,7 +194,9 @@ public final class CompanionOrders {
             UUID id=owner(pet);
             var level=pet.level();
             if(!(level instanceof ServerLevel server)||!managed(pet)||pet.isOrderedToSit()||pet.isLeashed()||pet.isPassenger())return false;
-            Order order=order(pet);if(order!=Order.EXIT&&order!=Order.DEEPER)return false;
+            Order order=order(pet);
+            if(order==Order.FOLLOW)return server.getGameTime()<pet.getPersistentData().getLong("CompanionFearUntil");
+            if(order!=Order.EXIT&&order!=Order.DEEPER)return false;
             ServerPlayer player=id==null?null:server.getServer().getPlayerList().getPlayer(id);
             return player!=null&&player.level()==level&&server.dimension().equals(HouseDimensions.INTERIOR);
         }
@@ -196,7 +205,10 @@ public final class CompanionOrders {
         @Override public void tick() {
             UUID id=owner(pet);
             ServerPlayer player=id==null?null:((ServerLevel)pet.level()).getServer().getPlayerList().getPlayer(id);
-            if(player!=null)guide(pet,player);
+            if(player!=null) {
+                if(order(pet)==Order.FOLLOW) {pet.getNavigation().stop();pet.getLookControl().setLookAt(player,30,30);}
+                else guide(pet,player);
+            }
         }
         @Override public void stop(){pet.getNavigation().stop();}
     }
