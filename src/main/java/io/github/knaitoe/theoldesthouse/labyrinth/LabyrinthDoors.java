@@ -200,6 +200,7 @@ public final class LabyrinthDoors {
             ModelHome.onArrive(p, place);
             HarriganVignette.onArrive(p, place);
             LabyrinthHazards.onArrive(p, place);
+            LabyrinthLighting.onArrive(p, place);
         };
         if (toLevel == fromLevel) {
             shift(player, target, yaw);
@@ -436,6 +437,7 @@ public final class LabyrinthDoors {
         player.setDeltaMovement(Vec3.ZERO);
         player.resetFallDistance();
         RedRoom.prepareIfDealt(player, place);
+        LabyrinthLighting.onArrive(player, place);
     }
 
     /** Takes a player to the junction from wherever they are, remembering where that was. */
@@ -785,6 +787,7 @@ public final class LabyrinthDoors {
         FADING.remove(event.getEntity().getUUID());
         INSIDE.remove(event.getEntity().getUUID());
         LabyrinthLoops.forget(event.getEntity().getUUID());
+        LabyrinthLighting.clearPlayer(event.getEntity().getUUID());
     }
 
     public static void clearAll() {

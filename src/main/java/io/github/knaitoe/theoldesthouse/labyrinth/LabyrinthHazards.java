@@ -286,19 +286,12 @@ public final class LabyrinthHazards {
             return false;
         }
         BlockPos origin = HouseSavedData.get(level.getServer()).houseOrigin();
-        if (origin == null || LabyrinthPlaces.placeAt(origin, pos) != LabyrinthPlace.LIGHT_SINK) {
-            return false;
-        }
-        return isPortableLight(placed);
+        LabyrinthPlace place = origin == null ? null : LabyrinthPlaces.placeAt(origin, pos);
+        return place != null && place.kind() == LabyrinthPlace.Kind.GRAY && isPortableLight(placed);
     }
 
     public static boolean isPortableLight(BlockState state) {
-        return state.is(Blocks.TORCH)
-                || state.is(Blocks.WALL_TORCH)
-                || state.is(Blocks.SOUL_TORCH)
-                || state.is(Blocks.SOUL_WALL_TORCH)
-                || state.is(Blocks.LANTERN)
-                || state.is(Blocks.SOUL_LANTERN);
+        return LabyrinthLighting.isPortableLight(state);
     }
 
     private static void tickLightSink(ServerLevel level, BlockPos origin, long now) {
