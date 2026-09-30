@@ -207,7 +207,7 @@ public final class LabyrinthLoops {
                     BlockPos column = base.offset(region.origin().getX() + x, 0, region.origin().getZ() + z);
                     set(level, column.below(), floorFor(hotel, x, z), flags);
                     for (int y = 0; y <= 2; y++) {
-                        set(level, column.above(y), cellState(hotel, region, x, y, z), flags);
+                        set(level, column.above(y), cellState(place, hotel, region, x, y, z), flags);
                     }
                 }
             }
@@ -222,16 +222,65 @@ public final class LabyrinthLoops {
         }
     }
 
-    /** What stands in an open cell: a lamp hung in each straight, and in the hotel the room plaques. */
-    private static BlockState cellState(boolean hotel, Region region, int x, int y, int z) {
-        if (region.straight() && x == 0 && y == 2 && z == -4) {
-            return (hotel ? Blocks.LANTERN : Blocks.SOUL_LANTERN).defaultBlockState().setValue(LanternBlock.HANGING, true);
+    /** What stands in an open cell: the House's current lamp pattern, and in the hotel the room plaques. */
+    private static BlockState cellState(LabyrinthPlace place, boolean hotel, Region region, int x, int y, int z) {
+        if (region.straight() && x == 0 && y == 2) {
+            BlockState light = LabyrinthLighting.loopLightState(place, z);
+            if (light != null) {
+                return light;
+            }
         }
         if (hotel && region.straight() && y == 1 && z == -3 && (x == -1 || x == 1)) {
             return HouseBlocks.HOTEL_ROOM_PLAQUE.get().defaultBlockState()
                     .setValue(HotelRoomPlaqueBlock.FACING, x == -1 ? Direction.EAST : Direction.WEST);
         }
         return Blocks.AIR.defaultBlockState();
+    }
+
+    /**
+     * Rewrites only the authored ceiling lamps. Periods receive the exact
+     * same pattern, so changing the lights never exposes the seamless loop.
+     * Player blocks, room plaques and floor contents are untouched here.
+     */
+    static void refreshAuthoredLights(ServerLevel level, BlockPos base, LabyrinthPlace place) {
+        int flags = LabyrinthBuilder.flags();
+        for (Region region : regions(place)) {
+            if (!region.straight()) {
+                continue;
+            }
+            for (int z = -2; z >= -5; z--) {
+                if (z < region.z1() || z > region.z0()) {
+                    continue;
+                }
+                BlockPos pos = base.offset(region.origin().getX(), 2, region.origin().getZ() + z);
+                BlockState wanted = LabyrinthLighting.loopLightState(place, z);
+                set(level, pos, wanted == null ? Blocks.AIR.defaultBlockState() : wanted, flags);
+            }
+        }
+    }
+
+    static List<BlockPos> authoredLightPositions(
+            BlockPos base,
+            LabyrinthPlace place,
+            int layout
+    ) {
+        // The actual band is held by LabyrinthLighting; asking loopLightState
+        // through a temporary layout would mutate state, so gather every
+        // candidate anchor for the requested layout instead. Watching any of
+        // them is enough to postpone the trick.
+        List<BlockPos> result = new ArrayList<>();
+        for (Region region : regions(place)) {
+            if (!region.straight()) {
+                continue;
+            }
+            for (int z : LabyrinthLighting.loopLightOffsets(place,
+                    place == LabyrinthPlace.HOTEL_HALLWAY ? 2 : 0, layout)) {
+                if (z >= region.z1() && z <= region.z0()) {
+                    result.add(base.offset(region.origin().getX(), 2, region.origin().getZ() + z));
+                }
+            }
+        }
+        return result;
     }
 
     // ------------------------------------------------------------------
