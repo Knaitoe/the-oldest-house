@@ -177,6 +177,7 @@ public final class CompanionOrders {
     @Nullable public static TamableAnimal followAcross(TamableAnimal pet,ServerPlayer player) {
         if(pet.isRemoved())return null;
         Vec3 point=HillaryPaths.safeBeside(pet,player);
+        player.serverLevel().getChunkAt(BlockPos.containing(point));
         if(pet.level()!=player.level()) {
             Entity moved=pet.changeDimension(new DimensionTransition(player.serverLevel(),point,Vec3.ZERO,
                     player.getYRot(),0,DimensionTransition.PLACE_PORTAL_TICKET));

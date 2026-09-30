@@ -23,7 +23,6 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 @GameTestHolder(TheOldestHouse.MOD_ID)
 @net.neoforged.neoforge.gametest.PrefixGameTestTemplate(false)
 public final class CompanionTests {
-    private static final java.util.List<net.minecraft.server.level.ServerLevel> FORCED_CAT_FIXTURES = new java.util.ArrayList<>();
     private static final java.util.List<net.minecraft.server.level.ServerPlayer> MOCKS = new java.util.ArrayList<>();
     private static net.minecraft.server.level.ServerPlayer mock(GameTestHelper helper) {
         var player = helper.makeMockServerPlayerInLevel(); MOCKS.add(player); return player;
@@ -35,8 +34,6 @@ public final class CompanionTests {
     @net.minecraft.gametest.framework.AfterBatch(batch = "companions")
     public static void cleanPlayers(net.minecraft.server.level.ServerLevel level) {
         for (var player : java.util.List.copyOf(MOCKS)) remove(player);
-        for (var fixture : FORCED_CAT_FIXTURES) fixture.setChunkForced(2,2,false);
-        FORCED_CAT_FIXTURES.clear();
     }
     @GameTest(template = "empty", batch = "companions")
     public static void seatsMountOnePlayerAndCleanUpAfterDismount(GameTestHelper helper) {
@@ -184,27 +181,28 @@ public final class CompanionTests {
         pet.tame(owner);pet.setHealth(4);CompanionOrders.issue(pet,owner,CompanionOrders.Order.FOLLOW);
         UUID id=pet.getUUID();
         helper.assertTrue(CompanionOrders.followingAll(owner).contains(pet),"a rescued cat can replace the original companion at a threshold");
-        for(int x=30;x<=34;x++)for(int z=30;z<=34;z++) {
-            target.setBlock(new BlockPos(x,99,z),Blocks.STONE.defaultBlockState(),3);
-            for(int y=100;y<=103;y++)target.setBlock(new BlockPos(x,y,z),Blocks.AIR.defaultBlockState(),3);
+        target.getChunkAt(BlockPos.ZERO);
+        for(int x=-2;x<=2;x++)for(int z=-2;z<=2;z++) {
+            target.setBlock(new BlockPos(x,107,z),Blocks.STONE.defaultBlockState(),3);
+            for(int y=108;y<=111;y++)target.setBlock(new BlockPos(x,y,z),Blocks.AIR.defaultBlockState(),3);
         }
-        // A mock player's destination is outside the server's normal spawn fixture.
-        // Hold it as a ticking test chunk, then release both this and the portal ticket.
-        target.setChunkForced(2,2,true);FORCED_CAT_FIXTURES.add(target);
-        target.getChunkAt(new BlockPos(32,100,32));
-        owner.teleportTo(target,32.5,100,32.5,0,0);
+        // Share the established Nether test chunk with Hillary's transfer fixture,
+        // on a separate floor so both native animals can be observed independently.
+        owner.teleportTo(target,.5,108,.5,0,0);
         var cat=CompanionOrders.followAcross(pet,owner);
         helper.assertTrue(cat!=null&&cat.getUUID().equals(id)&&cat.level()==target&&cat.getHealth()==4
                 &&owner.getUUID().equals(cat.getOwnerUUID())&&CompanionOrders.order(cat)==CompanionOrders.Order.FOLLOW,
                 "health, identity, ownership and the selected order survive the crossing");
         BlockPos arrival=cat.blockPosition();
         helper.onEachTick(()->{
-            if(target.getEntity(id)!=cat)return;
+            if(target.getEntity(id)!=cat) {
+                if(cat.tickCount==0) TheOldestHouse.LOGGER.debug("Waiting for native cat tracking at {}",cat.blockPosition());
+                return;
+            }
             helper.assertTrue(target.getEntity(id)==cat,"the cat is tracked in the new world; removed="+cat.isRemoved()
                     +"; position="+cat.position()+"; tickets="+ShutdownWatch.ticketsAt(target,new ChunkPos(cat.blockPosition())));
             target.getChunkSource().removeRegionTicket(TicketType.PORTAL,new ChunkPos(arrival),3,arrival);
             cat.discard();remove(owner);
-            target.setChunkForced(2,2,false);FORCED_CAT_FIXTURES.remove(target);
             helper.succeed();
         });
     }
