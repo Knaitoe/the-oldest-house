@@ -6,7 +6,7 @@ The opening deliberately does **not** put an impossible doorway in the player's 
 
 ## Stages
 
-`NONE → ELIGIBLE → LETTER_DELIVERED → HILLARY_ARRIVED → ENTERED`, stored per player in the `the_oldest_house:opening` data attachment (copied on death), together with `nightsSlept`, per-door use counts near the respawn point, `firstJoinDay`, `letterDay`, Hillary's UUID and whether the player has entered the manor.
+`NONE → ELIGIBLE → LETTER_DELIVERED → HILLARY_ARRIVED → ENTERED`, stored per player in the `the_oldest_house:opening` data attachment (copied on death), together with `nightsSlept`, per-door use counts near the respawn point, `firstJoinDay`, `letterDay`, Hillary's UUID, saved arrival day and whether the player has entered the manor.
 
 Old 0.3.0 player data containing the stage name `door_placed` migrates to `HILLARY_ARRIVED`. The obsolete entrance-door NBT in old saves is ignored.
 
@@ -17,7 +17,7 @@ World-level `OpeningWorldData` (`the_oldest_house_opening.dat`) now stores only 
 - A **completed sleep** is a wake-up in the Overworld's post-night morning window, counted once per day.
 - A player becomes **eligible** when their respawn point is a bed in the Overworld, `nightsSlept >= minNightsSlept` (2) and `minDaysSinceJoin` (3) days have passed since they first joined.
 - A **morning** is Overworld day time in `[0, 1000)`. It is handled once per player per day, and only while the player is in the Overworld with their bed's area loaded. A player who is away, in another dimension or offline gets the step on the first morning they are home.
-- The letter comes on the first morning after the player became eligible. Hillary arrives on the first morning after the letter.
+- The letter comes on the first morning after eligibility. Hillary arrives the next morning and spends a day at home. The House’s site search starts on the following morning; failed searches retry without delaying the letter or Hillary.
 - The opening sequence is the only automatic path that causes The Oldest House to appear. The older hidden settlement-night / appearance-roll system is retired.
 - **Perceived House age does not advance until somebody has actually entered the manor.** Ignoring the letter or Hillary can therefore never reveal the impossible threshold off-screen.
 
@@ -31,7 +31,7 @@ The book `Howdy, Neighbor` by `Will Navidson` uses the font `the_oldest_house:na
 
 "Your place, from ours." The snapshot is a picture of the player's own house, taken with the design document's Capture system (`capture/SettlementCopy`, `opening/NavidsonPhoto`):
 
-1. **The House moves in next door.** If it does not already exist, the opening builds the Navidsons' manor at the best site 32-96 blocks from the player's bed, searched in loosening passes (open and flat first; then wooded, clearing trees and undergrowth; then rough, up to 12 blocks of relief). Nothing that looks player-made (planks, glass, stripped logs, placed leaves, anything with a block entity) is ever cleared, and sites reaching into unloaded chunks are skipped. **The letter waits for the House:** if no site is found, the player stays eligible and the next morning tries again; Hillary likewise waits for it. Worlds where the letter or Hillary came without a House keep retrying every morning, and `/oldesthouse opening house` tries at once and reports why sites were turned down.
+1. **An exterior viewpoint.** Capture begins without placing the manor. If a shared House already exists, its porch supplies the bearing; otherwise the viewpoint is outside the player’s home. The real base is never altered.
 2. **Capture.** The settlement around the bed (81 × 81 blocks, from 8 below the bed to 32 above) is captured into memory, a couple of chunk columns per tick, so the copy is one frozen moment.
 3. **Copy.** It is rebuilt in the outside dimension (`the_oldest_house:outside`), in the player's own slot far from every other copy (`CopySlots`). Containers arrive empty and only non-inventory block-entity data is carried over; placement sends no neighbour updates and no entities are copied, so the photograph cannot duplicate a live base.
 4. **Preserve the real relationship first.** The camera begins on the real bearing from the Navidsons' front porch to the player's bed, with only small lateral and distance adjustments. If terrain or another build completely blocks that facade, framing widens across the same side and only then may move farther around the copied settlement. The non-negotiable rule is that a successful Capture produces a photograph of the player's actual copied home; an awkward real angle must never silently substitute the baked stock house. If the real manor-to-home distance exceeds what fits inside the captured copy, the distance is compressed while the bearing is otherwise preserved.
@@ -56,17 +56,21 @@ Hillary is now the physical invitation to visit the neighbors:
 
 - she waits on the doorstep until her recipient comes into sight (within 12 blocks, line of sight). Then she stands, barks, trots over and looks up at them with her head tilted (the vanilla begging tilt), whining every few seconds;
 - she does not lead until she is **acknowledged in turn**: a right-click from her recipient (a pat, which does not tame her), the taming bone, or the recipient crouching within 4 blocks while facing her for half a second. Anyone else's click does nothing. If the recipient walks off she follows and keeps asking; beyond 28 blocks she gives up and returns to the doorstep until she sees them again. The acknowledgement is stored on her (`acknowledged` in the attachment);
-- once greeted she barks, bounds (with hearts) and **darts** toward the Navidsons' front porch at a run for five seconds, over ordinary Overworld terrain;
+- once greeted she remains at home until the morning after her arrival. When the House exists she barks, bounds and leads toward its front porch;
 - after that she advances at a walking pace while the player is close enough to follow, and when they fall too far behind she stops, turns and barks once, watching them until they catch up;
 - if she was tamed, her vanilla follow-owner behavior is temporarily suppressed while she leads, then restored when she reaches the manor;
-- she settles at the safe standing point immediately outside the authored front door and **sits there rather than entering**;
-- when the player crosses the boundary, only the player is transferred to the matching House-dimension interior. Hillary remains visibly outside at the front entrance.
+- she reaches the safe doorstep and remains standing, ready to accompany the player. A normal sit command tells her to stay;
+- at a threshold, the real nearby standing Hillary transfers with her player, retaining UUID, owner, health and attachments. She also accompanies internal doors and folds.
 
 There is no custom entrance door in the player's wall, no freestanding fallback door, and no block replacement in the player's home.
 
+## Morning 3: the House
+
+The first site search runs on a later morning than Hillary’s saved arrival day, near the player’s bed. A failed search retries each morning. It never blocks the first two steps. The shared House is generated once; another player may already have brought it into the world. `/oldesthouse opening advance` can advance the next step for testing.
+
 ## First manor entry
 
-The player enters through The Oldest House's ordinary authored front door in the Overworld. Crossing the domestic boundary moves the player into the matching House-dimension interior at the same coordinates. Hillary is not dimension-shifted and does not enter the inaccessible proxy interior; she remains sitting immediately outside the front entrance.
+The player enters through the manor’s ordinary authored front door. Its boundary transfers them into the matching House-dimension interior. Standing Hillary within 12 blocks accompanies them; a leashed, riding or sitting dog stays behind.
 
 Every successful boundary entry increments the House visit count. The first entry marks that player's opening as `ENTERED` and, globally, allows perceived House age to begin advancing on later mornings.
 

@@ -573,14 +573,14 @@ public final class Hillary {
     }
 
     /** Normal dimension transfer retains identity, tame state, health and attachments. */
-    public static void followAcross(@Nullable Wolf wolf, ServerPlayer player) {
-        if (wolf == null || wolf.isRemoved()) return;
+    @Nullable public static Wolf followAcross(@Nullable Wolf wolf, ServerPlayer player) {
+        if (wolf == null || wolf.isRemoved()) return null;
         ServerLevel to = player.serverLevel();
         Vec3 point = HillaryPaths.safeBeside(wolf, player);
         if (wolf.level() != to) {
             Entity moved = wolf.changeDimension(new DimensionTransition(to, point, Vec3.ZERO,
                     player.getYRot(), 0, DimensionTransition.DO_NOTHING));
-            if (!(moved instanceof Wolf arriving)) return;
+            if (!(moved instanceof Wolf arriving)) return null;
             wolf = arriving;
         } else wolf.teleportTo(point.x, point.y, point.z);
         HillaryTag tag = tagOf(wolf);
@@ -589,6 +589,7 @@ public final class Hillary {
         wolf.getNavigation().stop();
         wolf.setDeltaMovement(Vec3.ZERO);
         wolf.resetFallDistance();
+        return wolf;
     }
 
     private static void settleAtManor(Wolf wolf, UUID recipient, BlockPos porch) {

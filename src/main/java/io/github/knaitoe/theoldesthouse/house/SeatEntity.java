@@ -18,6 +18,7 @@ public final class SeatEntity extends Entity {
         setNoGravity(true);
     }
     public void support(BlockPos pos) { support = pos.immutable(); }
+    @Override protected boolean canAddPassenger(Entity passenger) { return getPassengers().isEmpty(); }
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {}
     @Override protected void readAdditionalSaveData(CompoundTag tag) { support = BlockPos.of(tag.getLong("Support")); }
     @Override protected void addAdditionalSaveData(CompoundTag tag) { tag.putLong("Support", support.asLong()); }
