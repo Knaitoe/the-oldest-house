@@ -208,14 +208,16 @@ public final class LabyrinthTests {
     }
 
     @GameTest(template = "empty")
-    public static void grayMazeGrowsWithVignetteProgressAndAllowsSelfLoops(GameTestHelper helper) {
+    public static void grayMazeGrowsWithVignetteProgressWithoutRoutineSelfLoops(GameTestHelper helper) {
         LabyrinthData data = new LabyrinthData();
         UUID player = UUID.randomUUID();
 
         List<LabyrinthPlace> start = LabyrinthDealer.grayAvailable(data, player);
-        helper.assertTrue(start.size() == 2 && start.contains(LabyrinthPlace.JUNCTION)
-                        && start.contains(LabyrinthPlace.GRAY_CORRIDOR),
-                "the first maze is only the junction and plain corridor");
+        helper.assertTrue(start.size() == 6 && start.contains(LabyrinthPlace.JUNCTION)
+                        && start.contains(LabyrinthPlace.STRAIGHT_HALL)
+                        && start.contains(LabyrinthPlace.BENT_HALL) && start.contains(LabyrinthPlace.CROSS_HALL)
+                        && start.contains(LabyrinthPlace.QUIET_ROOM),
+                "the opening pool contains familiar halls and a quiet place");
 
         data.visit(player, LabyrinthPlace.FLOORBOARDS);
         helper.assertTrue(LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.LONG_HALLWAY),
@@ -246,7 +248,7 @@ public final class LabyrinthTests {
                 selfLoop |= answer != null && LabyrinthPlace.JUNCTION.id().equals(answer.place());
             }
         }
-        helper.assertTrue(selfLoop, "the junction can now deal a door back to itself");
+        helper.assertTrue(!selfLoop, "ordinary junction doors do not immediately repeat the same room");
         helper.succeed();
     }
 

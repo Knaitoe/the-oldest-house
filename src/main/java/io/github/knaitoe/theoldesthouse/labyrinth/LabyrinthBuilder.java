@@ -34,7 +34,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump to rebuild every place in existing worlds on next use. */
-    public static final int VERSION = 12;
+    public static final int VERSION = 13;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -90,7 +90,8 @@ public final class LabyrinthBuilder {
         // Upgrade only the replaced corridor and new slots. Caches, drops and active vignette rounds elsewhere remain intact.
         boolean extend = !force && data.builtVersion() >= 10 && data.builtVersion() < VERSION && origin.equals(data.builtOrigin());
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
-            if (place.slot() >= 0 && (!extend || LabyrinthMaze.isMaze(place)
+            if (place.slot() >= 0 && (!extend || place.slot() >= 23
+                    || (data.builtVersion() < 12 && LabyrinthMaze.isMaze(place))
                     || (data.builtVersion() == 10 && place == LabyrinthPlace.MOTHER_DEN))) {
                 pending.add(place);
             }
@@ -150,6 +151,7 @@ public final class LabyrinthBuilder {
                 LabyrinthLighting.buildEarlyAid(server, level, base);
             }
             case GRAY_CORRIDOR -> buildCorridor(level, base);
+            case STRAIGHT_HALL, BENT_HALL, CROSS_HALL, QUIET_ROOM -> LabyrinthHalls.build(level, base, place);
             case FOLDED_MAZE, DEEP_MAZE, ABYSS_MAZE -> LabyrinthMaze.build(level, base, place, LabyrinthMaze.layout(server, place));
             case FLOORBOARDS -> TellTaleFloorboards.build(level, base, !data.isCompleted(place.id()));
             case RED_ROOM -> RedRoom.build(server, level, base);

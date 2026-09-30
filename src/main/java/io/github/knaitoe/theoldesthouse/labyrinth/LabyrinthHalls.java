@@ -1,0 +1,86 @@
+package io.github.knaitoe.theoldesthouse.labyrinth;
+
+import java.util.HashSet;
+import java.util.Set;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+
+/** Familiar hallways come first. Corners and side doors make choices without folding space. */
+public final class LabyrinthHalls {
+    public static final BlockPos QUIET_CACHE = new BlockPos(4, 0, -11);
+    private LabyrinthHalls() {}
+    public static boolean isHall(LabyrinthPlace place) {
+        return place == LabyrinthPlace.STRAIGHT_HALL || place == LabyrinthPlace.BENT_HALL
+                || place == LabyrinthPlace.CROSS_HALL || place == LabyrinthPlace.QUIET_ROOM;
+    }
+    public static Set<BlockPos> floor(LabyrinthPlace place) {
+        Set<BlockPos> floor = new HashSet<>();
+        switch (place) {
+            case STRAIGHT_HALL -> rectangle(floor, -1, 1, -35, 0);
+            case BENT_HALL -> {
+                rectangle(floor, -1, 1, -20, 0);
+                rectangle(floor, -16, 1, -20, -18);
+                rectangle(floor, -16, -14, -32, -18);
+            }
+            case CROSS_HALL -> {
+                rectangle(floor, -1, 1, -31, 0);
+                rectangle(floor, -14, 14, -16, -14);
+            }
+            case QUIET_ROOM -> {
+                rectangle(floor, -1, 1, -5, 0);
+                rectangle(floor, -5, 5, -14, -5);
+            }
+            default -> {}
+        }
+        return Set.copyOf(floor);
+    }
+    private static void rectangle(Set<BlockPos> floor, int x0, int x1, int z0, int z1) {
+        for (int x=x0;x<=x1;x++) for(int z=z0;z<=z1;z++) floor.add(new BlockPos(x,0,z));
+    }
+    public static void build(ServerLevel level, BlockPos base, LabyrinthPlace place) {
+        Set<BlockPos> floor = floor(place);
+        var box=place.room();
+        int flags=LabyrinthBuilder.flags(), height=place == LabyrinthPlace.QUIET_ROOM ? 4 : 3;
+        for(int x=box.minX();x<=box.maxX();x++) for(int z=box.minZ();z<=box.maxZ();z++)
+            for(int y=-1;y<=height+1;y++) {
+                boolean open=floor.contains(new BlockPos(x,0,z));
+                var state=!open ? Blocks.LIGHT_GRAY_TERRACOTTA.defaultBlockState()
+                        : y==-1 ? Blocks.SMOOTH_STONE.defaultBlockState()
+                        : y==height+1 ? Blocks.STONE.defaultBlockState() : Blocks.AIR.defaultBlockState();
+                level.setBlock(base.offset(x,y,z),state,flags);
+            }
+        for(int z=-5;z>box.minZ()+3;z-=10) if(floor.contains(new BlockPos(0,0,z)))
+            LabyrinthBuilder.hangLantern(level,base.offset(0,height,z),false);
+        // A chipped pillar and a dark threshold are recognizable without naming destinations.
+        int landmarkZ=place==LabyrinthPlace.STRAIGHT_HALL ? -19 : -12;
+        for(int y=0;y<=height;y++) level.setBlock(base.offset(2,y,landmarkZ),
+                (y==1 ? Blocks.CRACKED_STONE_BRICKS : Blocks.POLISHED_ANDESITE).defaultBlockState(),flags);
+        if(place==LabyrinthPlace.BENT_HALL) LabyrinthBuilder.hangLantern(level,base.offset(-12,3,-19),false);
+        if(place==LabyrinthPlace.CROSS_HALL) {
+            LabyrinthBuilder.hangLantern(level,base.offset(-9,3,-15),false);
+            LabyrinthBuilder.hangLantern(level,base.offset(9,3,-15),false);
+        }
+        if(place==LabyrinthPlace.QUIET_ROOM) {
+            for(int z=-8;z>=-11;z--) level.setBlock(base.offset(-4,0,z),
+                    LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS,Direction.WEST),flags);
+            level.setBlock(base.offset(-3,0,-12),Blocks.DARK_OAK_FENCE.defaultBlockState(),flags);
+            level.setBlock(base.offset(-3,1,-12),Blocks.OAK_PRESSURE_PLATE.defaultBlockState(),flags);
+            level.setBlock(base.offset(4,0,-7),Blocks.WATER_CAULDRON.defaultBlockState(),flags);
+            level.setBlock(base.offset(QUIET_CACHE),Blocks.BARREL.defaultBlockState(),flags);
+            if(level.getBlockEntity(base.offset(QUIET_CACHE)) instanceof Container cache) {
+                cache.setItem(0,new ItemStack(Items.BREAD,2));
+                cache.setItem(1,new ItemStack(Items.APPLE,2));
+                cache.setItem(2,new ItemStack(Items.PAPER,3));
+            }
+            LabyrinthBuilder.hangLantern(level,base.offset(-3,4,-7),false);
+        }
+        LabyrinthBuilder.entrance(level,base,Blocks.LIGHT_GRAY_TERRACOTTA.defaultBlockState(),
+                Blocks.SMOOTH_STONE.defaultBlockState(),Blocks.STONE.defaultBlockState());
+        LabyrinthBuilder.doors(level,base,place);
+    }
+}

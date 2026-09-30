@@ -65,7 +65,7 @@ public final class LabyrinthDealer {
     }
 
     public static int rememberedWeight(LabyrinthData data, UUID player, LabyrinthPlace place, int ordinaryWeight) {
-        boolean special = place.isVignette() || (!LabyrinthMaze.isMaze(place) && place != LabyrinthPlace.JUNCTION);
+        boolean special = place.isVignette() || !LabyrinthPacing.ordinary(place);
         if (!special) return ordinaryWeight * 12;
         int age = data.recentVisit(player, place);
         int factor = age < 0 ? 12 : age == 0 ? 1 : age < 3 ? 2 : age < 6 ? 4 : 8;
@@ -102,6 +102,10 @@ public final class LabyrinthDealer {
         List<LabyrinthPlace> gray = new ArrayList<>();
         gray.add(LabyrinthPlace.JUNCTION);
         gray.add(LabyrinthPlace.GRAY_CORRIDOR);
+        gray.add(LabyrinthPlace.STRAIGHT_HALL);
+        gray.add(LabyrinthPlace.BENT_HALL);
+        gray.add(LabyrinthPlace.CROSS_HALL);
+        gray.add(LabyrinthPlace.QUIET_ROOM);
         int depth = data.returnDepth(player);
         if (depth >= 3) gray.add(LabyrinthPlace.FOLDED_MAZE);
         if (depth >= 6) gray.add(LabyrinthPlace.DEEP_MAZE);
@@ -216,12 +220,23 @@ public final class LabyrinthDealer {
             case FOLDED_MAZE -> 5 + Math.min(6, Math.max(0, depth - 3));
             case DEEP_MAZE -> 10 + Math.min(8, Math.max(0, depth - 6));
             case ABYSS_MAZE -> 18 + Math.min(12, Math.max(0, depth - 9));
-            case JUNCTION -> depth >= 6 ? 1 : 3;
-            default -> place.grayWeight();
+            case STRAIGHT_HALL -> 24;
+            case BENT_HALL -> 18;
+            case CROSS_HALL -> 15;
+            case JUNCTION -> depth >= 9 ? 4 : 8;
+            case GRAY_CORRIDOR -> depth < 4 ? 0 : 2;
+            case QUIET_ROOM -> 3;
+            case EXPLORER_CAMP -> depth < 3 ? 0 : 2;
+            default -> depth < 4 ? 0 : place.grayWeight();
         };
     }
 
     private static LabyrinthPlace pickGray(List<LabyrinthPlace> gray, LabyrinthData data, UUID player, RandomSource random) {
+        gray = gray.stream().filter(place -> !LabyrinthPacing.anomaly(place)).toList();
+        return weightedGray(gray, data, player, random);
+    }
+
+    private static LabyrinthPlace weightedGray(List<LabyrinthPlace> gray, LabyrinthData data, UUID player, RandomSource random) {
         int depth = data.returnDepth(player);
         int totalWeight = 0;
         for (LabyrinthPlace place : gray) {
@@ -264,10 +279,30 @@ public final class LabyrinthDealer {
             lucky = doors.get(random.nextInt(doors.size()));
         }
 
-        List<LabyrinthPlace> gray = grayAvailable(data, player);
+        List<LabyrinthPlace> gray = new ArrayList<>(grayAvailable(data, player));
+        // Ordinary stretches do not repeatedly lead straight back into themselves.
+        if (here != null) gray.remove(here);
+        List<LabyrinthPlace> odd = gray.stream().filter(LabyrinthPacing::anomaly).toList();
+        List<LabyrinthData.Door> choices = new ArrayList<>(doors);
+        choices.remove(lucky);
+        LabyrinthData.Door oddDoor = null;
+        if (!odd.isEmpty() && !choices.isEmpty() && random.nextInt(100) < LabyrinthPacing.anomalyChance(data, player)) {
+            oddDoor = choices.remove(random.nextInt(choices.size()));
+        }
+        LabyrinthData.Door restDoor = null;
+        if (!choices.isEmpty() && LabyrinthPacing.restDue(data, player) && random.nextInt(100) < 75) {
+            restDoor = choices.get(random.nextInt(choices.size()));
+        }
         for (LabyrinthData.Door door : doors) {
             if (door == lucky) {
                 data.deal(player, door, pickVignette(data, player, vignettes, random).id(), true, scent);
+            } else if (door == oddDoor) {
+                data.deal(player, door, weightedGray(odd, data, player, random).id(),
+                        random.nextInt(100) < LYING_LEAK_CHANCE);
+            } else if (door == restDoor) {
+                boolean camp = data.returnDepth(player) >= 3 && random.nextBoolean()
+                        && data.recentVisit(player, LabyrinthPlace.EXPLORER_CAMP) < 0;
+                data.deal(player, door, (camp ? LabyrinthPlace.EXPLORER_CAMP : LabyrinthPlace.QUIET_ROOM).id(), false);
             } else {
                 data.deal(player, door, pickGray(gray, data, player, random).id(), random.nextInt(100) < LYING_LEAK_CHANCE);
             }
