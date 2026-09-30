@@ -47,9 +47,8 @@ public final class HouseSitting {
     }
     public static void onRightClick(PlayerInteractEvent.RightClickBlock event) {
         if (event.getLevel().isClientSide() || event.getHand() != InteractionHand.MAIN_HAND
-                || !event.getItemStack().isEmpty() || !(event.getEntity() instanceof ServerPlayer player)) return;
-        BlockState state = event.getLevel().getBlockState(event.getPos());
-        if (state.getBlock() instanceof CarpetBlock && !player.isShiftKeyDown()) return;
+                || !event.getItemStack().isEmpty() || !(event.getEntity() instanceof ServerPlayer player)
+                || player.isShiftKeyDown()) return;
         if (sit(player, event.getPos())) {
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.SUCCESS);
