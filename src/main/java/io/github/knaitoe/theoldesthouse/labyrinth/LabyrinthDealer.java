@@ -307,6 +307,12 @@ public final class LabyrinthDealer {
                 data.deal(player, door, pickGray(gray, data, player, random).id(), random.nextInt(100) < LYING_LEAK_CHANCE);
             }
         }
+        if (FinaleController.canOffer(data, player) && random.nextInt(100) < 18) {
+            LabyrinthData.Door vignetteDoor = lucky;
+            List<LabyrinthData.Door> finaleDoors = doors.stream().filter(d -> d != vignetteDoor).toList();
+            if (!finaleDoors.isEmpty()) data.deal(player, finaleDoors.get(random.nextInt(finaleDoors.size())), FinaleArchitecture.ID, false);
+        }
         data.setDryDeals(player, lucky != null ? 0 : data.dryDeals(player) + 1);
     }
 }
+

@@ -46,6 +46,7 @@ public final class HouseTransitionEvents {
             return;
         }
 
+        if (io.github.knaitoe.theoldesthouse.labyrinth.FinaleController.enforceExclusion(player)) return;
         tickPendingDoorClose(player);
 
         PendingTransition pending = PENDING.get(player.getUUID());
@@ -84,7 +85,7 @@ public final class HouseTransitionEvents {
         }
 
         if (dimension.equals(HouseDimensions.INTERIOR)
-                && (HouseBetweenRoom.tickPocket(player, data, origin) || LabyrinthDoors.tickPlayer(player, origin))) {
+                && (io.github.knaitoe.theoldesthouse.labyrinth.FinaleController.tickPlayer(player, origin) || HouseBetweenRoom.tickPocket(player, data, origin) || LabyrinthDoors.tickPlayer(player, origin))) {
             return;
         }
 
@@ -690,3 +691,4 @@ public final class HouseTransitionEvents {
         }
     }
 }
+

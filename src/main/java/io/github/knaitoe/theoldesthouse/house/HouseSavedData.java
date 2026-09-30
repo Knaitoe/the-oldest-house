@@ -23,6 +23,7 @@ public final class HouseSavedData extends SavedData {
     private static final String DATA_NAME = "the_oldest_house";
 
     private boolean spawned;
+    private boolean collapsed;
     private boolean hasHousePosition;
     private int houseX;
     private int houseY;
@@ -71,6 +72,7 @@ public final class HouseSavedData extends SavedData {
         HouseSavedData data = new HouseSavedData();
 
         data.spawned = tag.getBoolean("Spawned");
+        data.collapsed = tag.getBoolean("Collapsed");
         data.hasHousePosition = tag.getBoolean("HasHousePosition");
         data.houseX = tag.getInt("HouseX");
         data.houseY = tag.getInt("HouseY");
@@ -115,6 +117,7 @@ public final class HouseSavedData extends SavedData {
     @Override
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
         tag.putBoolean("Spawned", spawned);
+        tag.putBoolean("Collapsed", collapsed);
         tag.putBoolean("HasHousePosition", hasHousePosition);
         tag.putInt("HouseX", houseX);
         tag.putInt("HouseY", houseY);
@@ -192,7 +195,7 @@ public final class HouseSavedData extends SavedData {
      */
     @Nullable
     public BlockPos houseOrigin() {
-        return layoutVersion == HouseLayout.LAYOUT_VERSION ? cachedHouseOrigin : null;
+        return !collapsed && layoutVersion == HouseLayout.LAYOUT_VERSION ? cachedHouseOrigin : null;
     }
 
     /** Spawned, but in a layout this build cannot drive: the House has gone quiet. */
@@ -213,7 +216,11 @@ public final class HouseSavedData extends SavedData {
         cachedHouseOrigin = hasHousePosition ? new BlockPos(houseX, houseY, houseZ) : null;
     }
 
+    public boolean isCollapsed() { return collapsed; }
+    public void collapse() { collapsed = true; setDirty(); }
+
     public void markSpawned(BlockPos origin) {
+        collapsed = false;
         spawned = true;
         hasHousePosition = true;
         houseX = origin.getX();
@@ -477,6 +484,7 @@ public final class HouseSavedData extends SavedData {
     }
 
     public void reset() {
+        collapsed = false;
         spawned = false;
         hasHousePosition = false;
         houseX = 0;

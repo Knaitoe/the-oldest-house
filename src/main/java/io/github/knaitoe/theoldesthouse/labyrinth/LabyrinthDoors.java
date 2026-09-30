@@ -144,6 +144,12 @@ public final class LabyrinthDoors {
             return;
         }
 
+        String finaleDestination = LabyrinthData.DEALT.equals(door.destination)
+                ? (data.deal(player.getUUID(), door) == null ? "" : data.deal(player.getUUID(), door).place())
+                : door.destination;
+        if (FinaleArchitecture.ID.equals(finaleDestination) || ("place:" + FinaleArchitecture.ID).equals(finaleDestination)) {
+            FinaleController.enter(player, door); return;
+        }
         LabyrinthPlace place;
         if (LabyrinthData.DEALT.equals(door.destination)) {
             LabyrinthData.Deal dealt = data.deal(player.getUUID(), door);
@@ -732,7 +738,7 @@ public final class LabyrinthDoors {
             return false;
         }
         BlockPos origin = HouseSavedData.get(server).houseOrigin();
-        return origin != null && LabyrinthPlaces.isInStack(origin, pos);
+        return origin != null && (LabyrinthPlaces.isInStack(origin, pos) || FinaleArchitecture.contains(origin, pos));
     }
 
     public static void onBreak(BlockEvent.BreakEvent event) {
@@ -848,3 +854,4 @@ public final class LabyrinthDoors {
         return lines;
     }
 }
+

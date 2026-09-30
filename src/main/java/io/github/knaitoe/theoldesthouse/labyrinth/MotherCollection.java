@@ -39,6 +39,7 @@ public final class MotherCollection extends SavedData {
         public final String name;
         @Nullable public UUID claimant;
         public int remaining;
+        public boolean sealed;
 
         private Entry(UUID id, boolean pet, boolean loved, @Nullable UUID owner,
                       CompoundTag contents, String name) {
@@ -61,6 +62,7 @@ public final class MotherCollection extends SavedData {
     private final Set<UUID> usedVisit = new HashSet<>();
     private final Set<UUID> rememberedPets = new HashSet<>();
     private final Set<UUID> kindToHer = new HashSet<>();
+    private final Set<UUID> tookShelves = new HashSet<>();
     private final Map<UUID, Integer> shelfPages = new HashMap<>();
     private long revision;
     private boolean seeded;
@@ -143,6 +145,20 @@ public final class MotherCollection extends SavedData {
         changed();
         return entry;
     }
+
+    public void keepFinaleItem(ItemStack stack, HolderLookup.Provider registries, UUID owner, long now) {
+        if (stack.isEmpty()) return;
+        Entry entry = keepItem(stack, registries, owner, now);
+        if (entry == null) {
+            ItemStack stored = withoutClaim(stack);
+            entry = new Entry(UUID.randomUUID(), false, loved(stored, now, owner), owner,
+                    (CompoundTag) stored.save(registries), stored.getHoverName().getString());
+            entries.put(entry.id, entry);
+        }
+        entry.sealed = true; entry.claimant = null; entry.remaining = 0; debts.remove(owner); changed();
+    }
+    public boolean canGuide(UUID player) { return wasKind(player) || !tookShelves.contains(player); }
+    public boolean releaseFinalePet(UUID id) { Entry entry = entries.get(id); if (entry == null || !entry.pet) return false; entries.remove(id); changed(); return true; }
 
     public List<Entry> all() { return List.copyOf(entries.values()); }
     @Nullable public Entry entry(UUID id) { return entries.get(id); }
@@ -283,11 +299,12 @@ public final class MotherCollection extends SavedData {
     /** Server-thread atomic claim: the shelf becomes empty before the stack is delivered. */
     public ItemStack claimItem(UUID player, UUID id, HolderLookup.Provider registries) {
         Entry entry = entries.get(id);
-        if (entry == null || entry.pet || entry.claimant != null || (!banished && usedVisit(player)) || debt(player) != null) {
+        if (entry == null || entry.pet || entry.sealed || entry.claimant != null || (!banished && usedVisit(player)) || debt(player) != null) {
             return ItemStack.EMPTY;
         }
         ItemStack stack = entry.item(registries);
         if (stack.isEmpty()) return stack;
+        tookShelves.add(player);
         if (salved() || banished) {
             entries.remove(id);
             usedVisit.add(player);
@@ -413,6 +430,7 @@ public final class MotherCollection extends SavedData {
             Entry entry = new Entry(saved.getUUID("Id"), saved.getBoolean("Pet"), saved.getBoolean("Loved"),
                     saved.hasUUID("Owner") ? saved.getUUID("Owner") : null,
                     saved.getCompound("Contents"), saved.getString("Name"));
+            entry.sealed = saved.getBoolean("Sealed");
             if (saved.hasUUID("Claimant")) {
                 entry.claimant = saved.getUUID("Claimant");
                 entry.remaining = saved.contains("Remaining") ? saved.getInt("Remaining") : entry.item(registries).getCount();
@@ -424,6 +442,8 @@ public final class MotherCollection extends SavedData {
         readIds(tag, "UsedVisit", data.usedVisit);
         readIds(tag, "PetsRemembered", data.rememberedPets);
         readIds(tag, "Kind", data.kindToHer);
+        readIds(tag, "TookShelves", data.tookShelves);
+        data.tookShelves.addAll(data.debts.keySet());
         data.seeded = tag.getBoolean("Seeded");
         data.revision = tag.getLong("Revision");
         data.hungerTicks = tag.getInt("Hunger");
@@ -465,6 +485,7 @@ public final class MotherCollection extends SavedData {
             CompoundTag saved = new CompoundTag();
             saved.putUUID("Id", entry.id);
             saved.putBoolean("Pet", entry.pet);
+            saved.putBoolean("Sealed", entry.sealed);
             saved.putBoolean("Loved", entry.loved);
             if (entry.owner != null) saved.putUUID("Owner", entry.owner);
             if (entry.claimant != null) {
@@ -480,6 +501,7 @@ public final class MotherCollection extends SavedData {
         tag.put("UsedVisit", ids(usedVisit));
         tag.put("PetsRemembered", ids(rememberedPets));
         tag.put("Kind", ids(kindToHer));
+        tag.put("TookShelves", ids(tookShelves));
         tag.putBoolean("Seeded", seeded);
         tag.putLong("Revision", revision);
         tag.putInt("Hunger", hungerTicks);
