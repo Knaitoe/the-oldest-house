@@ -111,7 +111,10 @@ public final class FinaleController {
             // Commands and outside teleports cannot turn the commitment into a free exit.
             if(player.getY()<FinaleArchitecture.ARENA-2||player.getZ()<b.getZ()+30||Math.abs(player.getX()-b.getX())>16)
                 HouseInternalTeleport.shift(player,Vec3.atBottomCenterOf(b.offset(0,FinaleArchitecture.ARENA,34)),0);
-            if(player.tickCount%20==0)ensureMinotaur(player,origin,record);
+            if(player.tickCount%20==0){
+                if(phase==FinaleProgress.Phase.RELEASE)WitnessEnding.keepSceneLoaded(player,origin);
+                ensureMinotaur(player,origin,record);
+            }
             if(phase==FinaleProgress.Phase.COLLAPSE&&player.tickCount%10==0){
                 player.serverLevel().sendParticles(new net.minecraft.core.particles.BlockParticleOption(net.minecraft.core.particles.ParticleTypes.BLOCK,Blocks.DEEPSLATE_TILES.defaultBlockState()),player.getX(),player.getY()+3,player.getZ(),20,5,1,5,.04);
                 if(player.tickCount%40==0)player.serverLevel().playSound(null,player.blockPosition(),SoundEvents.STONE_BREAK,SoundSource.BLOCKS,.7F,.55F);

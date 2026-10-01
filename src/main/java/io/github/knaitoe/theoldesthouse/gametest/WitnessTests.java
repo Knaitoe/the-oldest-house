@@ -124,7 +124,10 @@ public final class WitnessTests {
     private static final Map<net.minecraft.world.level.ChunkPos,BlockPos> SCENE_TICKETS=new HashMap<>();
     @AfterBatch(batch="witness_walk") public static void cleanScene(net.minecraft.server.level.ServerLevel level){
         var interior=level.getServer().getLevel(HouseDimensions.INTERIOR);
-        if(interior!=null)for(var entry:SCENE_TICKETS.entrySet())interior.getChunkSource().removeRegionTicket(net.minecraft.server.level.TicketType.PORTAL,entry.getKey(),3,entry.getValue());SCENE_TICKETS.clear();
+        if(interior!=null)for(var entry:SCENE_TICKETS.entrySet()){
+            interior.getChunkSource().removeRegionTicket(net.minecraft.server.level.TicketType.PORTAL,entry.getKey(),3,entry.getValue());
+            interior.setChunkForced(entry.getKey().x,entry.getKey().z,false);
+        }SCENE_TICKETS.clear();
         if(scenePlayer!=null){level.getServer().getPlayerList().remove(scenePlayer);scenePlayer=null;}
         if(sceneCreature!=null){sceneCreature.discard();sceneCreature=null;}if(sceneFixture!=null){sceneFixture.close();sceneFixture=null;}
     }
@@ -134,6 +137,7 @@ public final class WitnessTests {
         for(BlockPos at:WitnessEnding.releaseRoute(origin)){
             var chunk=new net.minecraft.world.level.ChunkPos(at);if(SCENE_TICKETS.putIfAbsent(chunk,at)!=null)continue;
             level.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.PORTAL,chunk,3,at);
+            level.setChunkForced(chunk.x,chunk.z,true);
         }
         for(var placement:FinaleArchitecture.plan(origin))level.setBlock(placement.pos(),placement.block(),2);
         FinaleArchitecture.openCell(level,origin);FinaleArchitecture.seal(level,origin,true);
