@@ -1,0 +1,145 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "paper": "the_oldest_house:block/paper",
+    "particle": "the_oldest_house:block/paper"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        2
+      ],
+      "to": [
+        13,
+        0.4,
+        12
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3,
+            15.6,
+            14,
+            16
+          ],
+          "texture": "#paper"
+        },
+        "south": {
+          "uv": [
+            2,
+            15.6,
+            13,
+            16
+          ],
+          "texture": "#paper"
+        },
+        "west": {
+          "uv": [
+            2,
+            15.6,
+            12,
+            16
+          ],
+          "texture": "#paper"
+        },
+        "east": {
+          "uv": [
+            4,
+            15.6,
+            14,
+            16
+          ],
+          "texture": "#paper"
+        },
+        "up": {
+          "uv": [
+            2,
+            2,
+            13,
+            12
+          ],
+          "texture": "#paper"
+        },
+        "down": {
+          "uv": [
+            2,
+            4,
+            13,
+            14
+          ],
+          "texture": "#paper"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        0.4,
+        4
+      ],
+      "to": [
+        14,
+        0.8,
+        14
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            15.2,
+            13,
+            15.6
+          ],
+          "texture": "#paper"
+        },
+        "south": {
+          "uv": [
+            3,
+            15.2,
+            14,
+            15.6
+          ],
+          "texture": "#paper"
+        },
+        "west": {
+          "uv": [
+            4,
+            15.2,
+            14,
+            15.6
+          ],
+          "texture": "#paper"
+        },
+        "east": {
+          "uv": [
+            2,
+            15.2,
+            12,
+            15.6
+          ],
+          "texture": "#paper"
+        },
+        "up": {
+          "uv": [
+            3,
+            4,
+            14,
+            14
+          ],
+          "texture": "#paper"
+        },
+        "down": {
+          "uv": [
+            3,
+            2,
+            14,
+            12
+          ],
+          "texture": "#paper"
+        }
+      }
+    }
+  ]
+}

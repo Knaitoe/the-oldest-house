@@ -96,6 +96,7 @@ final class HouseInteriors {
         boxRoom(c);
         placeDoors(c);
         clearDoorways(c);
+        HouseFurnishings.decorateManor(c.level,c.origin);
     }
 
     // ------------------------------------------------------------------

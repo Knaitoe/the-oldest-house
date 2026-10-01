@@ -6,6 +6,8 @@ This file records implementation decisions so implementation history does not di
 
 ## Current implementation update
 
+Version 0.4.21 adds four serial-writing threads, original poems, reader-specific in-game details and saved finite copies, with twelve furniture variants and fourteen original pixel materials. Layout 19 applies safe decoration upgrades. This is scenery and writing, not an additional Witness source: ten eligible stories still require eight across two kinds, with three endings. See [NOTES_AND_FURNITURE_0_4_21.md](NOTES_AND_FURNITURE_0_4_21.md).
+
 Version 0.4.20 adds the playable Goatman path, trailer gathering and door vigil, with native child actors, randomized saved tells, multiplayer headcounts, companion hesitation and original item custody after an actual door-opening death. Enduring the full vigil is a personal survival source. Ten eligible stories require eight resolutions across at least two kinds; three ending options remain. Layout 18 appends slot 31 while preserving old scenes and caches. See [GOATMAN_0_4_20.md](GOATMAN_0_4_20.md).
 
 Version 0.4.19 gives Harrigan a saved reading sequence and a single final dismissal, with contextual and persistent instructions for both phones. The funeral choices and nine-source, seven-resolution Witness requirement remain. See [HARRIGAN_DIALOGUE_0_4_19.md](HARRIGAN_DIALOGUE_0_4_19.md).

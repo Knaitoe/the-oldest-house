@@ -34,13 +34,16 @@ public final class HouseWriting {
             ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "zampano");
     public static final ResourceLocation CHILD_FONT =
             ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "child");
+    public static final ResourceLocation CLAW_FONT =
+            ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "claw");
 
     public enum WritingStyle {
         PLAIN(null),
         WILL(WILL_FONT),
         KAREN(KAREN_FONT),
         ZAMPANO(ZAMPANO_FONT),
-        CHILD(CHILD_FONT);
+        CHILD(CHILD_FONT),
+        CLAW(CLAW_FONT);
 
         @Nullable
         private final ResourceLocation font;

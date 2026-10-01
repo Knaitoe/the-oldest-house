@@ -1,0 +1,68 @@
+{
+  "variants": {
+    "facing=north,thread=housekeeping": {
+      "model": "the_oldest_house:block/note_housekeeping",
+      "y": 0
+    },
+    "facing=east,thread=housekeeping": {
+      "model": "the_oldest_house:block/note_housekeeping",
+      "y": 90
+    },
+    "facing=south,thread=housekeeping": {
+      "model": "the_oldest_house:block/note_housekeeping",
+      "y": 180
+    },
+    "facing=west,thread=housekeeping": {
+      "model": "the_oldest_house:block/note_housekeeping",
+      "y": 270
+    },
+    "facing=north,thread=calls": {
+      "model": "the_oldest_house:block/note_calls",
+      "y": 0
+    },
+    "facing=east,thread=calls": {
+      "model": "the_oldest_house:block/note_calls",
+      "y": 90
+    },
+    "facing=south,thread=calls": {
+      "model": "the_oldest_house:block/note_calls",
+      "y": 180
+    },
+    "facing=west,thread=calls": {
+      "model": "the_oldest_house:block/note_calls",
+      "y": 270
+    },
+    "facing=north,thread=room": {
+      "model": "the_oldest_house:block/note_room",
+      "y": 0
+    },
+    "facing=east,thread=room": {
+      "model": "the_oldest_house:block/note_room",
+      "y": 90
+    },
+    "facing=south,thread=room": {
+      "model": "the_oldest_house:block/note_room",
+      "y": 180
+    },
+    "facing=west,thread=room": {
+      "model": "the_oldest_house:block/note_room",
+      "y": 270
+    },
+    "facing=north,thread=poems": {
+      "model": "the_oldest_house:block/note_poems",
+      "y": 0
+    },
+    "facing=east,thread=poems": {
+      "model": "the_oldest_house:block/note_poems",
+      "y": 90
+    },
+    "facing=south,thread=poems": {
+      "model": "the_oldest_house:block/note_poems",
+      "y": 180
+    },
+    "facing=west,thread=poems": {
+      "model": "the_oldest_house:block/note_poems",
+      "y": 270
+    }
+  }
+}

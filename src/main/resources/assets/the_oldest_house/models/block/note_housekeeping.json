@@ -1,0 +1,214 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "notebook_cover": "the_oldest_house:block/notebook_cover",
+    "paper": "the_oldest_house:block/paper",
+    "particle": "the_oldest_house:block/paper"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        3
+      ],
+      "to": [
+        14,
+        0.5,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            15.5,
+            14,
+            16
+          ],
+          "texture": "#notebook_cover"
+        },
+        "south": {
+          "uv": [
+            2,
+            15.5,
+            14,
+            16
+          ],
+          "texture": "#notebook_cover"
+        },
+        "west": {
+          "uv": [
+            3,
+            15.5,
+            13,
+            16
+          ],
+          "texture": "#notebook_cover"
+        },
+        "east": {
+          "uv": [
+            3,
+            15.5,
+            13,
+            16
+          ],
+          "texture": "#notebook_cover"
+        },
+        "up": {
+          "uv": [
+            2,
+            3,
+            14,
+            13
+          ],
+          "texture": "#notebook_cover"
+        },
+        "down": {
+          "uv": [
+            2,
+            3,
+            14,
+            13
+          ],
+          "texture": "#notebook_cover"
+        }
+      }
+    },
+    {
+      "from": [
+        2.5,
+        0.5,
+        3.5
+      ],
+      "to": [
+        13.5,
+        1.5,
+        12.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2.5,
+            14.5,
+            13.5,
+            15.5
+          ],
+          "texture": "#paper"
+        },
+        "south": {
+          "uv": [
+            2.5,
+            14.5,
+            13.5,
+            15.5
+          ],
+          "texture": "#paper"
+        },
+        "west": {
+          "uv": [
+            3.5,
+            14.5,
+            12.5,
+            15.5
+          ],
+          "texture": "#paper"
+        },
+        "east": {
+          "uv": [
+            3.5,
+            14.5,
+            12.5,
+            15.5
+          ],
+          "texture": "#paper"
+        },
+        "up": {
+          "uv": [
+            2.5,
+            3.5,
+            13.5,
+            12.5
+          ],
+          "texture": "#paper"
+        },
+        "down": {
+          "uv": [
+            2.5,
+            3.5,
+            13.5,
+            12.5
+          ],
+          "texture": "#paper"
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        1.5,
+        3.5
+      ],
+      "to": [
+        8.5,
+        1.7,
+        12.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            7.5,
+            14.3,
+            8.5,
+            14.5
+          ],
+          "texture": "#notebook_cover"
+        },
+        "south": {
+          "uv": [
+            7.5,
+            14.3,
+            8.5,
+            14.5
+          ],
+          "texture": "#notebook_cover"
+        },
+        "west": {
+          "uv": [
+            3.5,
+            14.3,
+            12.5,
+            14.5
+          ],
+          "texture": "#notebook_cover"
+        },
+        "east": {
+          "uv": [
+            3.5,
+            14.3,
+            12.5,
+            14.5
+          ],
+          "texture": "#notebook_cover"
+        },
+        "up": {
+          "uv": [
+            7.5,
+            3.5,
+            8.5,
+            12.5
+          ],
+          "texture": "#notebook_cover"
+        },
+        "down": {
+          "uv": [
+            7.5,
+            3.5,
+            8.5,
+            12.5
+          ],
+          "texture": "#notebook_cover"
+        }
+      }
+    }
+  ]
+}

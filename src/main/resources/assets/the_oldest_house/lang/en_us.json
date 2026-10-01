@@ -50,5 +50,7 @@
   "subtitles.the_oldest_house.goatman_hammer": "Someone hammers at the door",
   "subtitles.the_oldest_house.goatman_laugh": "A laugh",
   "subtitles.the_oldest_house.goatman_woods": "Birds in the woods",
-  "item.the_oldest_house.trailer_plate": "Supper plate"
+  "item.the_oldest_house.trailer_plate": "Supper plate",
+  "block.the_oldest_house.household_furniture": "Household Furniture",
+  "block.the_oldest_house.note_surface": "Loose Writing"
 }

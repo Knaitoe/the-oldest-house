@@ -3,6 +3,9 @@ package io.github.knaitoe.theoldesthouse.command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.knaitoe.theoldesthouse.house.HouseWriting;
+import io.github.knaitoe.theoldesthouse.house.HouseMarginalia;
+import io.github.knaitoe.theoldesthouse.house.HouseBlocks;
+import io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -17,6 +20,8 @@ public final class WritingCommands {
 
     public static LiteralArgumentBuilder<CommandSourceStack> build() {
         return Commands.literal("writing")
+                .then(Commands.literal("notes").executes(context -> giveNotes(context.getSource(),context.getSource().getPlayerOrException())))
+                .then(Commands.literal("furniture").executes(context -> giveFurniture(context.getSource(),context.getSource().getPlayerOrException())))
                 .then(Commands.literal("samples")
                         .executes(context -> giveSamples(
                                 context.getSource(),
@@ -25,6 +30,19 @@ public final class WritingCommands {
                                 .executes(context -> giveSamples(
                                         context.getSource(),
                                         EntityArgument.getPlayer(context, "target")))));
+    }
+    private static void give(ServerPlayer player,ItemStack stack) { if(!player.getInventory().add(stack)) player.drop(stack,false); }
+    private static int giveNotes(CommandSourceStack source,ServerPlayer player) {
+        var samples=HouseMarginalia.samples(player); for(var book:samples) give(player,book);
+        source.sendSuccess(()->Component.literal("Gave 17 serial-note and poem previews. Reading progress is unchanged."),false);return samples.size();
+    }
+    private static int giveFurniture(CommandSourceStack source,ServerPlayer player) {
+        for(var kind:HouseholdFurnitureBlock.Kind.values()) {
+            ItemStack piece=new ItemStack(HouseBlocks.FURNITURE_ITEM.get());
+            piece.set(net.minecraft.core.component.DataComponents.BLOCK_STATE,new net.minecraft.world.item.component.BlockItemStateProperties(java.util.Map.of("kind",kind.getSerializedName())));
+            piece.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,Component.literal(kind.getSerializedName().replace('_',' '))); give(player,piece);
+        }
+        source.sendSuccess(()->Component.literal("Gave twelve placeable furniture samples."),false);return HouseholdFurnitureBlock.Kind.values().length;
     }
 
     private static int giveSamples(CommandSourceStack source, ServerPlayer player) throws CommandSyntaxException {
