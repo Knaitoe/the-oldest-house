@@ -560,9 +560,17 @@ Assets: several family skin sets, the family photo as map art, the dialogue scre
 
 Two Jones father stories sit side by side: in Mapping the Interior a father feeds on his son, and in Father, Son, Holy Rabbit a father feeds his son with himself. Much of Jones's material is specifically Blackfeet, so borrow structures and human dramas, and be careful lifting Blackfeet elements directly.
 
-### The Only Good Indians: the elk through the fan
+### The Only Good Indians, part one: the parking lot
 
-*One-shot · verb: climbing*
+*One-shot prologue · verb: fleeing*
+
+- Night outside a roadside bar. A cow elk slams between pickups, looks at the player and walks into the field.
+- The men are flashlight beams and shouted accusations; the player cannot explain. Flee into a looping field as a herd closes in, visible only as glowing eyes. The screen cuts to black over hooves.
+- Afterward a clipping reports a man found dead in a field, with the player's username. If the player hurt the elk, part two's elk carries the wound.
+
+### The Only Good Indians, part two: the elk through the fan
+
+*Multi-visit · verb: climbing*
 
 - A living room lit only by a flickering ceiling-fan light. Fixing it means climbing within reach, and the ladder stops two rungs short, so players build up the rest.
 - From the top, through the blades, an elk lies on the carpet. It's drawn only in first person from that height, and only on the frames when the blades don't cover it. Stay too long and the blades knock you off onto the hearth.
@@ -607,15 +615,73 @@ Two Jones father stories sit side by side: in Mapping the Interior a father feed
 - Borrow the structure, not the Marias Massacre history.
 - Yields: your own journal. Assets: the visitor's skin.
 
-### My Heart Is a Chainsaw: Drowned Town
+### Indian Lake: Drowned Town
 
 *Multi-visit · verb: breath*
 
 - A lakeshore at night, with a flooded town below: streets, a school, a church.
-- A custom shore creature hunts you but can't enter water, so the lake is safe and the air bar is the clock. Doors, bubble columns, water breathing, and turtle shells all work.
-- The school's essays are waterlogged. Dry them in a furnace set up on the shore while the creature comes for you. They explain horror-movie rules that are really the house's rules.
+- The shore hunter is the Lake Witch, Stacey Graves, a custom creature with jointed limbs shared with the shallows. She cannot enter water or step onto grass blocks. Water and grass are refuges; the air bar is the clock. Doors, bubble columns, water breathing and turtle shells work.
+- The school's essays are waterlogged. Dry them in a furnace on shore while she comes for you. They explain horror-movie rules that are really the House's rules, including the grass rule.
 - On a later visit, a key from the school opens the church.
-- Yields: the dried essays, the church key. Assets: the shore creature, wet and dried page items.
+- The preacher below keeps the water consecrated. The roof hatch is the only thing inside the church that can be opened. Open it and the choir's hymn gets out. On the next cave visit the pews are empty and the preserved dead are standing on shore.
+- The kept church key opens the church inside the House; outside, Minecraft's drowned ignore its bearer.
+- Yields: the dried essays and church key. Assets: the custom Lake Witch, wet/dried pages, church and hymn. The budget hooded shore NPC was cut.
+
+First playable site in 0.4.11: [DROWNED_TOWN_0_4_11.md](DROWNED_TOWN_0_4_11.md). Three distinct essays earn the return visit, and the opened church roof supplies a personal Witness resolution. The connected sites below are design and saved integration points for subsequent passes.
+
+### Indian Lake: the shallows
+
+*One-shot companion · verb: throwing*
+
+- Dealt only after this player has actually been hunted in Drowned Town. The player is one of the boys who throws her.
+- Completing it adds a page to the dried essays listing the boys who were there, including the player's username.
+- Reuses the custom Lake Witch with jointed limbs.
+
+### Indian Lake: the cave of the preserved dead
+
+*Multi-visit · verb: moving quietly*
+
+- The lake never lets its drowned decompose. A cave at the waterline holds a century of them, fresh, seated in rows facing the water like a congregation. Walk through them to reach the back.
+- Every sound adds a voice to a hymn rising from the lake. Sneak and they remain seated. Let the hymn fill out and they begin to stand.
+- At the back is the canoe from the phone vignette, with the player's footage still on the phone. The phone is found here, rather than appearing automatically in inventory.
+- Opening the church roof empties the pews on later cave visits; the dead now stand on shore.
+
+### Indian Lake: the elk carcasses
+
+*One-shot · verb: hiding*
+
+- The Camp Blood killer searches the woods above the lake. A pile of elk carcasses is the only cover. Burrow in and watch its footsteps through a gap between hides.
+- Moving shifts and creaks the pile. Staying still is the only defense.
+- This uses the document's Camp Blood killer; the earlier pitch's unnamed connection to The Only Good Indians is superseded.
+
+### Indian Lake: the phone in the canoe
+
+*Verb: filming*
+
+- Film at night over the drowned steeple. When it happens, the phone drops and the view becomes the phone's, looking up at the sky, unable to move. There is no death screen.
+- The phone and footage are later found in the canoe at the back of the preserved-dead cave.
+
+### Indian Lake: costume night
+
+*Verb: looking away*
+
+- Lake Witch costumes stand on armor stands across the beach. One is not a costume, and moves only when the player looks away. Reach the grass.
+
+### Indian Lake: movie night
+
+*Verb: rowing*
+
+- After the massacre, row toward the bank. Each firework reveals what stands on the water, closer each time.
+
+### Indian Lake: winter
+
+*Verb: breaking through*
+
+- The lake is frozen and snow buries the grass. Stacey can walk anywhere. Breaking through the ice into water is the only refuge.
+
+### Indian Lake: Camp Blood
+
+- Its cabins stand on Drowned Town's shore. Its killer follows the slasher rules taught by the dried essays.
 
 ### Disappearance at Devil's Rock: pages on the floor
 
@@ -686,7 +752,7 @@ Assets: the Minotaur, a custom creature with charge, stun, and wounded-crawl ani
 ### The Witness: an earned release
 
 - This is an original mod ending. Three distinct personal resolutions restore passages in a written account and the play beside the cell. Survival, understanding, connection, and release can contribute; neither the Mother nor every vignette is mandatory.
-- The current pool is the floorboards, hide-and-clap, Harrigan, the model home, and the Mother's peaceful resolution. World completion flags and merely visiting rooms confer no credit. A later explorer can crouch and inspect a finished room's actual ending prop to record its aftermath; acquiring someone else's book or artifact does not transfer progress.
+- The current pool is the floorboards, hide-and-clap, Harrigan, the model home, Drowned Town's church roof, and the Mother's peaceful resolution. World completion flags and merely visiting rooms confer no credit. A later explorer can crouch and inspect a finished room's actual ending prop to record its aftermath; acquiring someone else's book or artifact does not transfer progress.
 - Read the restored play at the cell's lectern. Lay the original most-used weapon beside the cell, clear both hands, and crouch while opening it. Normal opening still chooses the violent encounter.
 - The Minotaur pauses, passes close to the witness, and physically walks into the staircase. Its quiet departure replaces the charge. The cell remains open and the passage back becomes available.
 - Walk back up the actual great staircase. The original weapon is returned once; carried items and surviving loaded owned companions leave with the player. There is no artificial advance of the Overworld clock, collapse, or empty lot. The player's own entrance closes; other explorers remain admitted.
@@ -702,7 +768,7 @@ The Minotaur is the centerpiece asset; most human characters are skins on one sh
 | Creature | Used in | Needs |
 | --- | --- | --- |
 | The Minotaur | The finale | Full model; charge, stun, and wounded-crawl animations; voice built from the Growl |
-| Shore creature | Drowned Town | Pathfinding that treats water as impassable |
+| Lake Witch, Stacey Graves | Drowned Town and the shallows | Custom model with jointed limbs; pathfinding and physical movement treat water and grass as impassable |
 | Fire hose | The hotel | Segmented body; repositions when unseen, follows at the end |
 | Vulture | The plain | Circling behavior only, never swoops |
 | The Mother of Strays | Her den and concealed stalking | Petite articulated model, platinum hair, heavy eyeliner, continuous restrained deformation and sixteen texture stages; custom bandaged Pekingese |

@@ -34,6 +34,8 @@ public final class WitnessAccount {
                 "Reading had given us somewhere to sit together. The telephone was still there when his voice was gone."),
         MODEL_HOME("model_home", "The window", "survival",
                 "The tree had crossed the glass. A room sold as a home could no longer keep the outside out."),
+        DROWNED_TOWN("drowned_town", "The lake", "understanding",
+                "I dried the school essays and returned for the key. Beneath the lake, a preacher kept singing. I opened the roof, and the hymn reached the shore."),
         MOTHER("mother_of_strays", "The keeper", "release",
                 "She let something go. For a moment, keeping it safe and keeping it forever were different things.");
         public final String id, title, kind, text;
@@ -90,6 +92,7 @@ public final class WitnessAccount {
                         case CLAP->"The wardrobe stood open. The game had ended here. Something had been left inside it.";
                         case HARRIGAN->"The casket was closed. I remembered the study, and the chair where someone had listened.";
                         case MODEL_HOME->"The tree was inside the window. The glass had failed to keep the world outside.";
+                        case DROWNED_TOWN->"The church roof was open. The voice below had reached the air. I could hear it from the bank.";
                         case MOTHER->"The shelves remained, but she had stopped keeping the things upon them.";
                     }:story.text;
             pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,story.title+"\n\n"+text));
@@ -131,7 +134,8 @@ public final class WitnessAccount {
         LabyrinthData data=LabyrinthData.get(player.server);Story story=Story.of(place.id());
         if(story==null||!data.isCompleted(place.id())||has(data,player.getUUID(),story))return;
         String prop=switch(story){case FLOORBOARDS->"the exposed space beneath the loose board";
-            case CLAP->"the open wardrobe";case HARRIGAN->"the casket";case MODEL_HOME->"the child's window";case MOTHER->"the keeper's record";};
+            case CLAP->"the open wardrobe";case HARRIGAN->"the casket";case MODEL_HOME->"the child's window";
+            case DROWNED_TOWN->"the church's open roof hatch";case MOTHER->"the keeper's record";};
         player.displayClientMessage(Component.literal("Someone reached the end before you. Crouch and examine "+prop+" to record what remains."),false);
     }
     /** Later explorers must inspect a resolved room's ending prop themselves. */
@@ -144,6 +148,7 @@ public final class WitnessAccount {
                 BlockPos wardrobe=BlockPos.of(state.getLong("Wardrobe"));yield rel.equals(wardrobe)||rel.equals(wardrobe.above());}
             case HARRIGAN->rel.distManhattan(HarriganVignette.CASKET)<=1;
             case MODEL_HOME->rel.equals(ModelHome.WINDOW)||rel.equals(ModelHome.WINDOW.above());
+            case DROWNED_TOWN->data.state(DrownedTown.ID).getBoolean("RoofOpened")&&rel.equals(DrownedTown.ROOF_HATCH);
             default->false;
         };
     }

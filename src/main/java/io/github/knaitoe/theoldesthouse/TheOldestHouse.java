@@ -58,6 +58,7 @@ public final class TheOldestHouse {
         HouseBlocks.register(modEventBus);
         HouseBlockEntities.register(modEventBus);
         LabyrinthRegistry.register(modEventBus);
+        io.github.knaitoe.theoldesthouse.labyrinth.DrownedTownRegistry.register(modEventBus);
         MotherRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.FinaleRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.FinaleLoot.register(modEventBus);
@@ -151,6 +152,12 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onServerChat);
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onPlayerLoggedOut);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.DrownedTown::onServerTick);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, io.github.knaitoe.theoldesthouse.labyrinth.DrownedTown::onRightClick);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.DrownedTown::onSmelted);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, io.github.knaitoe.theoldesthouse.labyrinth.DrownedTown::onPlaced);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.ChurchKeyItem::onChangeTarget);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.ChurchKeyItem::onEntityTick);
 
         // The room between rooms: its door is handled before the mirror sees the click.
         NeoForge.EVENT_BUS.addListener(HouseBetweenRoom::onRightClickBlock);

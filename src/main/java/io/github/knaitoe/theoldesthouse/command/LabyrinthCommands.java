@@ -172,6 +172,19 @@ public final class LabyrinthCommands {
                                 context.getSource().sendSuccess(() -> Component.literal(line), false);
                             }
                             return 1;
+                        })))
+                .then(Commands.literal("drowned_town")
+                        .then(Commands.literal("status").executes(context -> {
+                            for (String line : io.github.knaitoe.theoldesthouse.labyrinth.DrownedTown.describe(context.getSource().getServer()))
+                                context.getSource().sendSuccess(() -> Component.literal(line), false);
+                            return 1;
+                        }))
+                        .then(Commands.literal("reset").executes(context -> {
+                            if (!LabyrinthBuilder.ensureBuilt(context.getSource().getServer())
+                                    || !io.github.knaitoe.theoldesthouse.labyrinth.DrownedTown.reset(context.getSource().getServer())) {
+                                context.getSource().sendFailure(Component.literal("The House must exist and its labyrinth must be carved first.")); return 0;
+                            }
+                            context.getSource().sendSuccess(() -> Component.literal("Drowned Town reset: school stocked, church sealed, essays not yet dried."), true); return 1;
                         })));
     }
 

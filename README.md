@@ -4,6 +4,8 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
+Version `0.4.11` opens **Indian Lake: Drowned Town**, a sequential vignette with an actual submerged street grid, school and church. Recover and furnace-dry three readable essays while the custom, jointed Lake Witch hunts the dirt shore; water and native grass are refuges. Leave and return for the school’s church key, unlock the church, and open its roof hatch to release an original wordless hymn. The kept key makes Minecraft’s drowned ignore its bearer outside the House. The church resolution can contribute to the Witness ending. See [docs/DROWNED_TOWN_0_4_11.md](docs/DROWNED_TOWN_0_4_11.md).
+
 Version `0.4.10` adds **The Witness**, a third ending earned through three personally resolved or examined vignette endings. A growing written account restores an alternative passage at the cell: lay down the original weapon, release the Minotaur, and walk back up the staircase with your possessions and surviving loaded companions. The House remains and this explorer's entrance closes. The Tell-Tale Heart board now responds directly to an axe attack or use even when normal mining is cancelled, with an original spatial heartbeat that speeds up and stops at completion. See [docs/WITNESS_0_4_10.md](docs/WITNESS_0_4_10.md).
 
 Version `0.4.9` adds the optional great staircase, a custom articulated Minotaur, shield-stun and original-weapon combat, permanent defeat, collapse escape with conditional pet guidance, and saved endings with later notes. See [docs/FINALE_0_4_9.md](docs/FINALE_0_4_9.md) for mechanics and test commands.

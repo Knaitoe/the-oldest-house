@@ -34,7 +34,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump to rebuild every place in existing worlds on next use. */
-    public static final int VERSION = 13;
+    public static final int VERSION = 14;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -90,7 +90,8 @@ public final class LabyrinthBuilder {
         // Upgrade only the replaced corridor and new slots. Caches, drops and active vignette rounds elsewhere remain intact.
         boolean extend = !force && data.builtVersion() >= 10 && data.builtVersion() < VERSION && origin.equals(data.builtOrigin());
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
-            if (place.slot() >= 0 && (!extend || place.slot() >= 23
+            if (place.slot() >= 0 && (!extend || (data.builtVersion() < 13 && place.slot() >= 23)
+                    || place.slot() >= 27
                     || (data.builtVersion() < 12 && LabyrinthMaze.isMaze(place))
                     || (data.builtVersion() == 10 && place == LabyrinthPlace.MOTHER_DEN))) {
                 pending.add(place);
@@ -160,6 +161,7 @@ public final class LabyrinthBuilder {
             case SPIRAL_STAIR -> LabyrinthLoops.buildSpiral(level, base);
             case MODEL_HOME -> ModelHome.build(server, level, base);
             case HARRIGAN -> HarriganVignette.build(server, level, base);
+            case DROWNED_TOWN -> DrownedTown.build(server, level, base);
             case FLOODED_PASSAGE -> LabyrinthHazards.buildFloodedPassage(level, base);
             case FRACTURED_WALKWAY -> LabyrinthHazards.buildFracturedWalkway(level, base);
             case COMPRESSION_PASSAGE -> LabyrinthHazards.buildCompressionPassage(level, base);

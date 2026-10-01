@@ -24,5 +24,17 @@
   "item.the_oldest_house.chalk": "Chalk",
   "item.the_oldest_house.trail_spool": "String Spool",
   "block.the_oldest_house.chalk_mark": "Chalk Mark",
-  "block.the_oldest_house.trail_line": "Trailing String"
+  "block.the_oldest_house.trail_line": "Trailing String",
+  "entity.the_oldest_house.lake_witch": "Stacey Graves, the Lake Witch",
+  "entity.the_oldest_house.lake_congregant": "The preserved dead",
+  "item.the_oldest_house.waterlogged_essay_one": "Waterlogged essay I",
+  "item.the_oldest_house.waterlogged_essay_two": "Waterlogged essay II",
+  "item.the_oldest_house.waterlogged_essay_three": "Waterlogged essay III",
+  "item.the_oldest_house.dried_essay_one": "Dried essay I: Safe ground",
+  "item.the_oldest_house.dried_essay_two": "Dried essay II: The second visit",
+  "item.the_oldest_house.dried_essay_three": "Dried essay III: An audience",
+  "item.the_oldest_house.church_key": "Indian Lake church key",
+  "subtitles.the_oldest_house.lake_hymn": "A hymn rises from the lake",
+  "subtitles.the_oldest_house.lake_witch": "Something rasps on the shore",
+  "subtitles.the_oldest_house.indian_lake": "Lake water laps behind a door"
 }
