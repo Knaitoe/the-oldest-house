@@ -93,7 +93,7 @@ public final class MarginaliaTests {
             ItemStack notebook=last.book();f.end(p,last);f.reload();var restored=f.open(p,t);
             h.assertTrue(ItemStack.isSameItemSameComponents(notebook,restored.book())&&HouseMarginalia.next(f.data(),p.getUUID(),t)==4,"saved reload preserves the exact discovered text and completed serial");
             h.assertTrue(p.getInventory().items.stream().anyMatch(s->ItemStack.isSameItemSameComponents(s,kept)),"earlier collected pages are never rewritten in the inventory");
-            h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0&&WitnessAccount.Story.values().length==10&&WitnessAccount.REQUIRED==8,"reading scenery cannot alter the Witness pool or grant an ending");h.succeed();
+            h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0&&WitnessAccount.Story.values().length==11&&WitnessAccount.REQUIRED==9,"reading scenery cannot alter the Witness pool or grant an ending");h.succeed();
         });
     }
     @GameTest(template="empty",batch="marginalia_personal",timeoutTicks=140)
@@ -128,7 +128,7 @@ public final class MarginaliaTests {
         CompoundTag goat=data.state(GoatmanVignette.ID);goat.putUUID("UnchangedRun",UUID.randomUUID());data.setState(GoatmanVignette.ID,goat);
         var before=HouseMarginalia.record(data,p.getUUID());data.setBuilt(18,f.origin);
         h.assertTrue(!LabyrinthBuilder.ensureBuilt(f.level.getServer()),"the established layout starts a decoration upgrade");while(LabyrinthBuilder.isCarving())LabyrinthBuilder.tick(f.level.getServer());
-        h.assertTrue(data.builtVersion()==19&&f.level.getBlockEntity(changed)==chest&&((net.minecraft.world.Container)chest).getItem(0).getCount()==5,"older domestic fragments are not reconstructed over player storage");
+        h.assertTrue(data.builtVersion()==LabyrinthBuilder.VERSION&&f.level.getBlockEntity(changed)==chest&&((net.minecraft.world.Container)chest).getItem(0).getCount()==5,"older domestic fragments are not reconstructed over player storage");
         h.assertTrue(f.level.getBlockEntity(f.base.offset(LabyrinthLighting.TOM_CACHE))==cache&&cache.getItem(0).isEmpty()&&cache.getItem(4).getCount()==3&&f.level.getBlockState(lamp).is(Blocks.TORCH),"finite caches and placed lights survive the decoration pass");
         h.assertTrue(before.equals(HouseMarginalia.record(data,p.getUUID()))&&WitnessAccount.has(data,p.getUUID(),WitnessAccount.Story.HARRIGAN)
                 &&data.state(HarriganVignette.ID).getBoolean("ReadingFinished")&&goat.equals(data.state(GoatmanVignette.ID)),"personal writing, old dialogue, random runs and resolutions remain intact");

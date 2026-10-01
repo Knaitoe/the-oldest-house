@@ -79,6 +79,7 @@ public final class LabyrinthDoorLeaks {
                 case CAVE -> Holder.direct(DrownedTownRegistry.CAVE_LEAK.get());
                 case SHALLOWS -> Holder.direct(DrownedTownRegistry.SHALLOWS_LEAK.get());
                 case WOODS -> custom("goatman.woods");
+                case STONE -> Holder.direct(SoundEvents.STONE_HIT);
                 case CANOE -> Holder.direct(DrownedTownRegistry.PHONE_LEAK.get());
                 case MOTHER -> Holder.direct(SoundEvents.CAT_PURR);
                 case CLOTH -> custom("vignette.clap_muffled");

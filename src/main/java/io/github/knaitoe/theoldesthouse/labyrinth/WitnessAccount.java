@@ -44,6 +44,8 @@ public final class WitnessAccount {
                 "I took the canoe over the drowned steeple. The telephone fell. I could still see the sky, but I could no longer turn toward the shore. Something kept recording after my hands were empty."),
         GOATMAN("goatman","The trailer","survival",
                 "There were more of us than there were places at the table. Someone knocked at the door and used a voice we knew. I kept it closed until the knocking stopped. I still could not say who had been outside."),
+        TED_CAVER("ted_caver","The small passage","survival",
+                "I worked until the hole would take my shoulders. Beyond it, the stone moved and the line tightened. I crawled back through the same opening and climbed above the rope. I left without learning what had been pulling it."),
         MOTHER("mother_of_strays", "The keeper", "release",
                 "She let something go. For a moment, keeping it safe and keeping it forever were different things.");
         public final String id, title, kind, text;
@@ -106,6 +108,7 @@ public final class WitnessAccount {
                         case PRESERVED_CAVE->"The pews were empty. The people who had faced the water were standing on its bank. The canoe remained at the back.";
                         case SHALLOWS->"The shore remembered who had been there.";
                         case PHONE_CANOE->"The recording kept looking at the sky.";
+                        case TED_CAVER->"The line still descended into the small passage.";
                         case GOATMAN->"The door was closed. The table had too few places.";
                         case MOTHER->"The shelves remained, but she had stopped keeping the things upon them.";
                     }:story.text;
@@ -149,7 +152,7 @@ public final class WitnessAccount {
         if(story==null||!data.isCompleted(place.id())||has(data,player.getUUID(),story))return;
         String prop=switch(story){case FLOORBOARDS->"the exposed space beneath the loose board";
             case CLAP->"the open wardrobe";case HARRIGAN->"the casket";case MODEL_HOME->"the child's window";
-            case DROWNED_TOWN->"the church's open roof hatch";case PRESERVED_CAVE->"the canoe behind the empty pews";case SHALLOWS->"the bank";case PHONE_CANOE->"the canoe";case GOATMAN->"the trailer door";case MOTHER->"the keeper's record";};
+            case DROWNED_TOWN->"the church's open roof hatch";case PRESERVED_CAVE->"the canoe behind the empty pews";case SHALLOWS->"the bank";case PHONE_CANOE->"the canoe";case GOATMAN->"the trailer door";case TED_CAVER->"the cave landing";case MOTHER->"the keeper's record";};
         player.displayClientMessage(Component.literal("Someone reached the end before you. Crouch and examine "+prop+" to record what remains."),false);
     }
     /** Later explorers must inspect a resolved room's ending prop themselves. */

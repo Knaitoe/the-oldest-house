@@ -191,6 +191,10 @@ public enum LabyrinthPlace {
     GOATMAN("goatman",Kind.ONE_SHOT,31,new BoundingBox(-23,-1,-82,23,13,0),List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN)
     )),
+    /** A worked opening, a tight squeeze, and the line that leads back. */
+    TED_CAVER("ted_caver",Kind.MULTI_VISIT,32,new BoundingBox(-9,-4,-60,9,8,0),List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN)
+    )),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

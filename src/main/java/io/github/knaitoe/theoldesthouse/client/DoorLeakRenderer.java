@@ -93,6 +93,7 @@ public final class DoorLeakRenderer {
                 .apply(ResourceLocation.withDefaultNamespace("block/water_still"));
         BlockState state = switch (kind) {
             case WOODS -> Blocks.OAK_LEAVES.defaultBlockState();
+            case STONE -> Blocks.STONE.defaultBlockState();
             case HOTEL -> HouseBlocks.HOTEL_CARPET.get().defaultBlockState();
             case CLOTH -> Blocks.WHITE_WOOL.defaultBlockState();
             case MOTHER -> Blocks.GRAY_WOOL.defaultBlockState();

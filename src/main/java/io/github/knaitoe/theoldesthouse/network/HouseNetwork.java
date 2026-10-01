@@ -13,7 +13,9 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("21")
+        event.registrar("22")
+                .playToClient(CaverCrawlPayload.TYPE,CaverCrawlPayload.STREAM_CODEC,
+                        (payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.CaverCrawlClient.accept(payload)))
                 .playToClient(GoatmanScenePayload.TYPE,GoatmanScenePayload.STREAM_CODEC,
                         (payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.GoatmanClient.accept(payload)))
                 .playToClient(LakePhonePayload.TYPE,LakePhonePayload.STREAM_CODEC,
