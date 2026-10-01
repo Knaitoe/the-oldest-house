@@ -98,6 +98,7 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(LabyrinthDoorLeaks::onServerTick);
         NeoForge.EVENT_BUS.addListener(LabyrinthCampsite::onServerTick);
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthEncounters::onServerTick);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthEncounters::onInteract);
         NeoForge.EVENT_BUS.addListener(MotherOfStrays::onServerTick);
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, MotherOfStrays::onItemExpire);
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, MotherOfStrays::onItemToss);
@@ -145,6 +146,7 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(ModelHome::onServerTick);
         NeoForge.EVENT_BUS.addListener(ModelHome::onAttackEntity);
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onServerTick);
+        NeoForge.EVENT_BUS.addListener(HarriganVignette::onEntityTick);
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onContainerClose);
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onEntityInteract);
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onEntityInteractSpecific);

@@ -33,6 +33,7 @@ public final class HouseSitting {
         BlockState state = player.level().getBlockState(pos);
         if (!isSeat(state) || player.isPassenger() || player.isSpectator()
                 || player.distanceToSqr(pos.getCenter()) > 16
+                || io.github.knaitoe.theoldesthouse.labyrinth.HarriganVignette.occupiesChair(player.serverLevel(), pos)
                 || !player.level().getEntitiesOfClass(SeatEntity.class, new AABB(pos)).isEmpty()) return false;
         SeatEntity seat = SEAT.get().create(player.serverLevel());
         if (seat == null) return false;
