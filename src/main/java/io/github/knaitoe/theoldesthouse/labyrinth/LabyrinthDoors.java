@@ -214,6 +214,7 @@ public final class LabyrinthDoors {
             RedRoom.prepareIfDealt(p, place);
             ModelHome.onArrive(p, place);
             HarriganVignette.onArrive(p, place);
+            DrownedTown.onArrive(p, place);
             MotherOfStrays.onArrive(p, place);
             WitnessAccount.onArrive(p, place);
             LabyrinthEncounters.onArrive(p, place);
@@ -746,7 +747,8 @@ public final class LabyrinthDoors {
     public static void onBreak(BlockEvent.BreakEvent event) {
         if (event.getLevel() instanceof ServerLevel level
                 && isProtected(level, event.getPos())
-                && !TellTaleFloorboards.isLooseBoard(level, event.getPos())) {
+                && !TellTaleFloorboards.isLooseBoard(level, event.getPos())
+                && !DrownedTown.canBreak(level, event.getPos())) {
             event.setCanceled(true);
         }
     }
@@ -756,7 +758,7 @@ public final class LabyrinthDoors {
                 && !LabyrinthLoops.allowsPlacing(level, event.getPos(), event.getPlacedBlock())
                 && !LabyrinthHazards.allowsPlacing(level, event.getPos(), event.getPlacedBlock())
                 && !LabyrinthLighting.allowsPlacing(level, event.getPos(), event.getPlacedBlock())) {
-            event.setCanceled(true);
+            if (!DrownedTown.allowsPlacing(level, event.getPos(), event.getPlacedBlock())) event.setCanceled(true);
         }
     }
 
@@ -852,6 +854,7 @@ public final class LabyrinthDoors {
         lines.addAll(RedRoom.describe(server, viewer));
         lines.addAll(ModelHome.describe(server));
         lines.addAll(HarriganVignette.describe(server, viewer));
+        lines.addAll(DrownedTown.describe(server));
         lines.addAll(Growl.describe(server, viewer));
         return lines;
     }

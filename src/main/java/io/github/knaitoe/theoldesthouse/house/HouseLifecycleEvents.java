@@ -93,6 +93,7 @@ public final class HouseLifecycleEvents {
         TellTaleFloorboards.clearAll();
         HideAndClap.clearAll();
         ModelHome.clearAll();
+        io.github.knaitoe.theoldesthouse.labyrinth.DrownedTown.clearAll();
         HarriganVignette.clearAll(event.getServer());
         MotherOfStrays.clearAll();
         io.github.knaitoe.theoldesthouse.opening.CompanionOrders.clearAll();
@@ -123,4 +124,3 @@ public final class HouseLifecycleEvents {
         }
     }
 }
-

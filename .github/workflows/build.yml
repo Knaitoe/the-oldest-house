@@ -47,9 +47,18 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.10"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.11"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'assets/the_oldest_house/sounds/vignette/heartbeat.ogg' in z.namelist()
               assert 'vignette.heartbeat' in json.loads(z.read('assets/the_oldest_house/sounds.json'))
+              for name in ('assets/the_oldest_house/textures/entity/lake_witch.png',
+                           'assets/the_oldest_house/models/item/church_key.json',
+                           'data/the_oldest_house/recipe/dry_essay_one.json',
+                           'data/the_oldest_house/recipe/dry_essay_two.json',
+                           'data/the_oldest_house/recipe/dry_essay_three.json',
+                           'assets/the_oldest_house/sounds/indian_lake/hymn.ogg',
+                           'assets/the_oldest_house/sounds/indian_lake/witch.ogg',
+                           'assets/the_oldest_house/sounds/indian_lake/door.ogg'):
+                  assert name in z.namelist(), name
           digest = hashlib.sha256(jar.read_bytes()).hexdigest()
           jar.with_suffix('.jar.sha256').write_text(f'{digest}  {jar.name}\n')
           print(f'Playable package: {jar.name}; SHA-256 {digest}')

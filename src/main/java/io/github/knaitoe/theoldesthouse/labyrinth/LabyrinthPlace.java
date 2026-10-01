@@ -171,6 +171,10 @@ public enum LabyrinthPlace {
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(0, 0, -15), Direction.SOUTH, LabyrinthData.DEALT)
     )),
+    /** Indian Lake: dive for the essays, then return for the church. */
+    DROWNED_TOWN("drowned_town", Kind.MULTI_VISIT, 27, new BoundingBox(-29, -13, -64, 29, 8, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
+    )),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

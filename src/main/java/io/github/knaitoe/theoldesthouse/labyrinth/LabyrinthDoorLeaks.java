@@ -75,6 +75,7 @@ public final class LabyrinthDoorLeaks {
             sound = switch (cue.kind) {
                 case HEARTBEAT -> Holder.direct(LabyrinthRegistry.FLOORBOARD_HEARTBEAT.get());
                 case WATER -> Holder.direct(SoundEvents.WATER_AMBIENT);
+                case LAKE -> Holder.direct(DrownedTownRegistry.LAKE_LEAK.get());
                 case MOTHER -> Holder.direct(SoundEvents.CAT_PURR);
                 case CLOTH -> custom("vignette.clap_muffled");
                 case WARM_TV -> custom("leak.television");
