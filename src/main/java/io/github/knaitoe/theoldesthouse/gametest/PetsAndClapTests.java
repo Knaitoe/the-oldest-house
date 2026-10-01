@@ -50,6 +50,55 @@ public final class PetsAndClapTests {
         h.assertTrue(LabyrinthDealer.vignetteChance(loaded,owner)==65&&LabyrinthDealer.vignetteChance(loaded,other)==30,"only the bereaved player's vignette opportunity increases");
         h.assertTrue(LabyrinthDealer.rememberedWeight(loaded,owner,LabyrinthPlace.MOTHER_DEN,1)==96&&LabyrinthDealer.rememberedWeight(loaded,other,LabyrinthPlace.MOTHER_DEN,1)==12,"a held live pet overrides only its owner's recent-den suppression");h.succeed();
     }
+    @GameTest(template="empty") public static void vignetteArtifactsPayOnceAndBorrowedArtifactsAreRefused(GameTestHelper h) {
+        var data=new MotherCollection();var registries=h.getLevel().registryAccess();UUID owner=UUID.randomUUID();
+        for(var reward:List.of(VignetteYields.mark(new ItemStack(Items.PAPER,2),HideAndClap.ID),
+                new ItemStack(LabyrinthRegistry.PHONE.get()),new ItemStack(DrownedTownRegistry.LAKE_PHONE.get()),
+                new ItemStack(LabyrinthRegistry.SCRATCH_TICKET.get()),new ItemStack(DrownedTownRegistry.CHURCH_KEY.get()))) {
+            CompoundTag pet=new CompoundTag();UUID original=UUID.randomUUID();pet.putUUID("UUID",original);
+            var entry=data.keepLivingPet(original,pet,owner,"Waiting dog");int before=reward.getCount();
+            h.assertTrue(data.recoverPet(owner,entry.id,reward,registries,0)&&reward.getCount()==before-1,"one genuine vignette reward pays for one living pet");
+        }
+        var borrowed=VignetteYields.mark(new ItemStack(Items.PAPER),HideAndClap.ID);
+        var kept=data.keepItem(borrowed,registries,owner,0);data.presence(owner,false);data.presence(owner,true);
+        var loan=data.claimItem(owner,kept.id,registries);
+        h.assertTrue(!loan.isEmpty()&&MotherCollection.ransomPrice(loan)==0,"the Mother's own borrowed artifact cannot buy a pet");
+        var gift=VignetteYields.mark(new ItemStack(Items.PAPER),TellTaleFloorboards.ID);
+        h.assertTrue(data.trade(owner,gift,registries,0)&&data.debt(owner)==null&&gift.isEmpty(),"a vignette keepsake also settles a shelf bargain");h.succeed();
+    }
+    @GameTest(template="empty") public static void livingPaymentsAreSealedAndPersistWithoutDuplicatingOrSalving(GameTestHelper h) {
+        var data=new MotherCollection();var registries=h.getLevel().registryAccess();UUID owner=UUID.randomUUID(),original=UUID.randomUUID(),given=UUID.randomUUID();
+        CompoundTag pet=new CompoundTag();pet.putUUID("UUID",original);var entry=data.keepLivingPet(original,pet,owner,"Button");
+        CompoundTag stray=new CompoundTag();stray.putUUID("UUID",given);stray.putFloat("Health",5);
+        h.assertTrue(!data.tradeLife(UUID.randomUUID(),entry.id,given,stray,"Stray",registries),"another player cannot trade away the owner's captive");
+        h.assertTrue(data.tradeLife(owner,entry.id,given,stray,"Stray",registries)&&!data.holdsLivingPet(owner),"one life replaces one captive");
+        var loaded=MotherCollection.load(data.save(new CompoundTag(),registries),registries);
+        var offering=loaded.all().stream().filter(e->e.offeredLife).findFirst().orElseThrow();
+        h.assertTrue(offering.sealed&&!offering.livingClaim&&offering.owner==null&&offering.contents.getUUID("UUID").equals(given)
+                &&offering.contents.getFloat("Health")==5&&!loaded.canKeepOfferedLife(given),"the actual animal and its identity remain in saved sealed custody");
+        h.assertTrue(!loaded.canRecoverPet(owner,offering.id,new ItemStack(Items.DIAMOND),0)&&!loaded.salved(),"the offered animal cannot be bought straight back and a life bargain does not resolve Mother peacefully");
+        UUID person=UUID.randomUUID(),other=UUID.randomUUID();CompoundTag next=new CompoundTag();next.putUUID("UUID",other);
+        var second=loaded.keepLivingPet(other,next,owner,"Next dog");
+        h.assertTrue(loaded.tradeLife(owner,second.id,person,null,"Explorer",registries),"the collection records a completed native player payment");
+        var again=MotherCollection.load(loaded.save(new CompoundTag(),registries),registries);
+        h.assertTrue(again.wasPlayerOffered(person)&&again.all().stream().filter(e->e.pet).count()==1,"a player payment persists without spawning an archived player");h.succeed();
+    }
+    @GameTest(template="empty") public static void playerOfferRequiresTheSameClosedRoomIncludingACeiling(GameTestHelper h) {
+        BlockPos base=h.absolutePos(new BlockPos(4,2,4));closedRoom(h.getLevel(),base);
+        BlockPos beside=base.east();
+        h.assertTrue(MotherOfferings.enclosedTogether(h.getLevel(),base,beside),"a small closed room really encloses both positions");
+        h.assertTrue(!MotherOfferings.enclosedTogether(h.getLevel(),base,base.offset(4,0,0)),"someone outside the room is not a payment");
+        h.getLevel().setBlock(base.offset(2,0,0),net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);
+        h.getLevel().setBlock(base.offset(2,1,0),net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);
+        h.assertTrue(!MotherOfferings.enclosedTogether(h.getLevel(),base,beside),"an open exit invalidates the trap immediately");
+        closedRoom(h.getLevel(),base);h.getLevel().setBlock(base.above(3),net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);
+        h.assertTrue(!MotherOfferings.enclosedTogether(h.getLevel(),base,beside),"missing roofing is an escape, not an enclosed room");h.succeed();
+    }
+    private static void closedRoom(ServerLevel level,BlockPos base) {
+        for(int x=-2;x<=2;x++)for(int y=-1;y<=3;y++)for(int z=-2;z<=2;z++)
+            level.setBlock(base.offset(x,y,z),(x==-2||x==2||z==-2||z==2||y==-1||y==3
+                    ?net.minecraft.world.level.block.Blocks.STONE:net.minecraft.world.level.block.Blocks.AIR).defaultBlockState(),3);
+    }
     @GameTest(template="empty",batch="pet_actions") public static void wheelPetsCatsDogsPekingeseAndParrotsWithoutReplacingStay(GameTestHelper h) {
         var level=h.getLevel();var owner=h.makeMockServerPlayerInLevel();BlockPos at=h.absolutePos(new BlockPos(2,2,2));owner.moveTo(at.getCenter());
         for(var type:List.of(EntityType.CAT,EntityType.WOLF,MotherRegistry.PEKINGESE.get(),EntityType.PARROT)) {
@@ -102,7 +151,7 @@ public final class PetsAndClapTests {
             server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);server.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);LabyrinthBuilder.clearAll();LabyrinthDoors.clearAll();
         }
     }
-    private static Fixture death,recovery;
+    private static Fixture death,recovery,unpaid,lifeTrade,playerTrade;
     @AfterBatch(batch="clap_reveal") public static void cleanDeath(ServerLevel level){if(death!=null){death.close();death=null;}}
     @AfterBatch(batch="pet_ransom") public static void cleanRecovery(ServerLevel level){if(recovery!=null){recovery.close();recovery=null;}}
     @GameTest(template="empty",batch="clap_reveal",timeoutTicks=100)
@@ -120,6 +169,29 @@ public final class PetsAndClapTests {
             h.assertTrue(follower.isRemoved()&&entry.contents.hasUUID("UUID")&&entry.contents.getUUID("UUID").equals(id)&&entry.contents.getFloat("Health")==7,"a real vignette death captures the exact surviving follower");
             h.assertTrue(staying.isAlive()&&!staying.isRemoved()&&collection.all().stream().filter(e->e.livingClaim).count()==1,"the pet ordered to stay is left alone");
             h.assertTrue(LabyrinthDealer.rescueNeeded(LabyrinthData.get(f.server),owner.getUUID()),"the owner receives the urgent den dealing");h.succeed();
+        });
+    }
+    @AfterBatch(batch="pet_unpaid") public static void cleanUnpaid(ServerLevel level){if(unpaid!=null){unpaid.close();unpaid=null;}}
+    @GameTest(template="empty",batch="pet_unpaid",timeoutTicks=90)
+    public static void nativeRefusedRansomEndsInPetDeathRatherThanAnotherArchive(GameTestHelper h){
+        unpaid=new Fixture(h,new BlockPos(10000,80,10000));var f=unpaid;var owner=f.player(f.base.offset(0,0,-4));var original=f.dog(owner,false);
+        var den=LabyrinthPlaces.base(f.origin,LabyrinthPlace.MOTHER_DEN);MotherOfStrays.build(f.server,f.level,den);f.level.getChunkSource().addRegionTicket(TicketType.PORTAL,new ChunkPos(den),3,den);
+        final Mob[] display={null};final UUID[] entryId={null};
+        h.runAfterDelay(3,()->{
+            h.assertTrue(MotherOfStrays.claimFollowingPets(owner)==1,"the living original is actually claimed");
+            owner.teleportTo(f.level,den.getX()+.5,den.getY(),den.getZ()-5.5,0,0);MotherOfStrays.onArrive(owner,LabyrinthPlace.MOTHER_DEN);
+            var collection=MotherCollection.get(f.server);var entry=collection.all().stream().filter(e->e.livingClaim).findFirst().orElseThrow();entryId[0]=entry.id;
+            display[0]=f.level.getEntitiesOfClass(Mob.class,new AABB(den).inflate(30),e->e.getPersistentData().hasUUID("MotherEntry")&&entry.id.equals(e.getPersistentData().getUUID("MotherEntry"))).getFirst();
+            owner.moveTo(display[0].position().add(0,0,1));var dirt=new ItemStack(Items.DIRT);dirt.set(DataComponents.CUSTOM_NAME,Component.literal("Precious"));owner.setItemInHand(InteractionHand.MAIN_HAND,dirt);
+            MotherOfStrays.onEntityInteract(new PlayerInteractEvent.EntityInteract(owner,InteractionHand.MAIN_HAND,display[0]));
+            h.assertTrue(collection.holdsLivingPet(owner.getUUID())&&owner.getMainHandItem().getCount()==1,"a refused trade consumes nothing and leaves custody intact");
+            entry.ransomRemaining=20;collection.setDirty();
+        });
+        h.runAfterDelay(47,()->{
+            var collection=MotherCollection.get(f.server);
+            h.assertTrue(display[0].isDeadOrDying()||display[0].isRemoved(),"the displayed animal physically dies at the native deadline");
+            h.assertTrue(collection.entry(entryId[0])==null&&!collection.holdsLivingPet(owner.getUUID())&&!collection.canRecoverPet(owner.getUUID(),entryId[0],new ItemStack(Items.DIAMOND),0),"disposal removes the living entry instead of archiving a resurrectable duplicate");
+            h.assertTrue(!LabyrinthDealer.rescueNeeded(LabyrinthData.get(f.server),owner.getUUID())&&collection.corruption()==0,"the urgent route ends and Mother's appearance resets");h.succeed();
         });
     }
     @GameTest(template="empty",batch="pet_ransom",timeoutTicks=100)
@@ -140,6 +212,60 @@ public final class PetsAndClapTests {
             var restored=f.level.getEntity(id);h.assertTrue(restored instanceof Wolf&&((Wolf)restored).getHealth()==7&&owner.getUUID().equals(((Wolf)restored).getOwnerUUID()),"the original identity and health return to the native world");
             h.assertTrue(CompanionOrders.order((Wolf)restored)==CompanionOrders.Order.FOLLOW&&CompanionOrders.canCommand(owner,(Wolf)restored)&&owner.getMainHandItem().getCount()==1,"one actual diamond pays once and the recovered pet's wheel works");
             h.assertTrue(!MotherCollection.get(f.server).holdsLivingPet(owner.getUUID())&&!LabyrinthDealer.rescueNeeded(LabyrinthData.get(f.server),owner.getUUID()),"successful recovery immediately restores ordinary dealing");h.succeed();
+        });
+    }
+    @AfterBatch(batch="living_offerings") public static void cleanLifeTrades(ServerLevel level){if(lifeTrade!=null){lifeTrade.close();lifeTrade=null;}}
+    @GameTest(template="empty",batch="living_offerings",timeoutTicks=100)
+    public static void nativeMotherClickAcceptsArtifactThenAnActualStrayLife(GameTestHelper h) {
+        lifeTrade=new Fixture(h,new BlockPos(10400,80,10400));var f=lifeTrade;var owner=f.player(f.base.offset(0,0,-4));var first=f.dog(owner,false);UUID firstId=first.getUUID();
+        var den=LabyrinthPlaces.base(f.origin,LabyrinthPlace.MOTHER_DEN);MotherOfStrays.build(f.server,f.level,den);f.level.getChunkSource().addRegionTicket(TicketType.PORTAL,new ChunkPos(den),3,den);
+        final MotherEntity[] mother={null};final Wolf[] given={null};final UUID[] nextId={null};
+        h.runAfterDelay(3,()->{
+            h.assertTrue(MotherOfStrays.claimFollowingPets(owner)==1,"the original enters custody");
+            owner.teleportTo(f.level,den.getX()+.5,den.getY(),den.getZ()-9.5,0,0);MotherOfStrays.onArrive(owner,LabyrinthPlace.MOTHER_DEN);
+            mother[0]=f.level.getEntitiesOfClass(MotherEntity.class,new AABB(den).inflate(30)).getFirst();
+            owner.setItemInHand(InteractionHand.MAIN_HAND,VignetteYields.mark(new ItemStack(Items.PAPER,2),HideAndClap.ID));
+            MotherOfStrays.onEntityInteract(new PlayerInteractEvent.EntityInteract(owner,InteractionHand.MAIN_HAND,mother[0]));
+            h.assertTrue(f.level.getEntity(firstId) instanceof Wolf&&owner.getMainHandItem().getCount()==1,"clicking Mother herself delivers the pet and consumes exactly one artifact");
+            f.level.getEntity(firstId).discard();var second=f.dog(owner,false);nextId[0]=second.getUUID();
+            h.assertTrue(MotherOfStrays.claimFollowingPets(owner)==1,"another real loss creates a new bargain");
+            given[0]=EntityType.WOLF.create(f.level);given[0].moveTo(mother[0].position().add(1,0,0));given[0].setNoAi(true);given[0].setHealth(5);given[0].getPersistentData().putBoolean("HouseStray",true);f.level.addFreshEntity(given[0]);
+        });
+        h.runAfterDelay(9,()->{
+            owner.moveTo(mother[0].position().add(0,0,1));owner.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);owner.setShiftKeyDown(true);
+            MotherOfStrays.onEntityInteract(new PlayerInteractEvent.EntityInteract(owner,InteractionHand.MAIN_HAND,mother[0]));
+            var collection=MotherCollection.get(f.server);var stored=collection.all().stream().filter(e->e.offeredLife).findFirst().orElseThrow();
+            h.assertTrue(given[0].isRemoved()&&stored.contents.getUUID("UUID").equals(given[0].getUUID())&&stored.contents.getFloat("Health")==5,"the actual stray is kept, including its identity and health");
+            h.assertTrue(f.level.getEntity(nextId[0]) instanceof Wolf&&!collection.holdsLivingPet(owner.getUUID())&&!collection.salved(),"the second original returns without granting a peaceful resolution");h.succeed();
+        });
+    }
+    @AfterBatch(batch="trapped_player_offering") public static void cleanPlayerTrade(ServerLevel level){if(playerTrade!=null){playerTrade.close();playerTrade=null;}}
+    @GameTest(template="empty",batch="trapped_player_offering",timeoutTicks=100)
+    public static void nativePlayerTradeRejectsAnOpenRoomAndKillsOnlyTheTrappedExplorer(GameTestHelper h) {
+        playerTrade=new Fixture(h,new BlockPos(10800,80,10800));var f=playerTrade;var owner=f.player(f.base.offset(0,0,-4));var pet=f.dog(owner,false);UUID original=pet.getUUID();
+        var den=LabyrinthPlaces.base(f.origin,LabyrinthPlace.MOTHER_DEN);MotherOfStrays.build(f.server,f.level,den);f.level.getChunkSource().addRegionTicket(TicketType.PORTAL,new ChunkPos(den),3,den);
+        final MotherEntity[] mother={null};final ServerPlayer[] victim={null};final Mob[] captive={null};final BlockPos[] room={null};
+        h.runAfterDelay(3,()->{
+            h.assertTrue(MotherOfStrays.claimFollowingPets(owner)==1,"the original pet is waiting for a real trade");
+            owner.teleportTo(f.level,den.getX()+.5,den.getY(),den.getZ()-5.5,0,0);MotherOfStrays.onArrive(owner,LabyrinthPlace.MOTHER_DEN);
+            mother[0]=f.level.getEntitiesOfClass(MotherEntity.class,new AABB(den).inflate(30)).getFirst();mother[0].setNoAi(true);room[0]=mother[0].blockPosition();
+            closedRoom(f.level,room[0]);victim[0]=f.player(room[0].east());
+            captive[0]=f.level.getEntitiesOfClass(Mob.class,new AABB(den).inflate(30),e->e.getPersistentData().hasUUID("MotherEntry")).getFirst();
+            owner.moveTo(captive[0].position().add(0,0,1));owner.setShiftKeyDown(true);owner.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
+            victim[0].gameMode.changeGameModeForPlayer(GameType.CREATIVE);
+            h.assertTrue(!MotherOfferings.playerEligible(owner,mother[0],victim[0]),"creative players cannot be offered");victim[0].gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+            f.level.setBlock(room[0].offset(2,0,0),net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);
+            f.level.setBlock(room[0].offset(2,1,0),net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);
+            MotherOfStrays.onEntityInteract(new PlayerInteractEvent.EntityInteract(owner,InteractionHand.MAIN_HAND,captive[0]));
+            h.assertTrue(victim[0].isAlive()&&MotherCollection.get(f.server).holdsLivingPet(owner.getUUID()),"an open exit refuses the player offering without taking the captive");
+        });
+        h.runAfterDelay(9,()->{
+            closedRoom(f.level,room[0]);
+            h.assertTrue(MotherOfferings.playerEligible(owner,mother[0],victim[0]),"the survival player is physically enclosed with Mother and within her reach");
+            MotherOfStrays.onEntityInteract(new PlayerInteractEvent.EntityInteract(owner,InteractionHand.MAIN_HAND,captive[0]));
+            var collection=MotherCollection.get(f.server);
+            h.assertTrue(victim[0].isDeadOrDying()&&owner.isAlive()&&collection.wasPlayerOffered(victim[0].getUUID()),"the actual trapped player dies as the payment while the trader survives");
+            h.assertTrue(f.level.getEntity(original) instanceof Wolf&&!collection.holdsLivingPet(owner.getUUID()),"the original pet returns only after the native player payment succeeds");h.succeed();
         });
     }
 }

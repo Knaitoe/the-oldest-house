@@ -43,6 +43,7 @@ public final class MotherCollection extends SavedData {
         public boolean sealed;
         /** Living custody differs from the older archive of animals which already died. */
         public boolean livingClaim;
+        public boolean offeredLife;
         public boolean ransomStarted;
         public int ransomRemaining=RANSOM_TICKS;
 
@@ -66,6 +67,7 @@ public final class MotherCollection extends SavedData {
     private final Set<UUID> inDen = new HashSet<>();
     private final Set<UUID> usedVisit = new HashSet<>();
     private final Set<UUID> rememberedPets = new HashSet<>();
+    private final Set<UUID> offeredPlayers = new HashSet<>();
     private final Set<UUID> kindToHer = new HashSet<>();
     private final Set<UUID> tookShelves = new HashSet<>();
     private final Map<UUID, Integer> shelfPages = new HashMap<>();
@@ -184,11 +186,18 @@ public final class MotherCollection extends SavedData {
     /** Meaningful sacrifice without the exploit of naming a piece of dirt. */
     public static int ransomPrice(ItemStack stack) {
         if(stack.isEmpty()||claimOf(stack)!=null)return 0;
+        if(vignetteOffering(stack))return 1;
         if(stack.is(Items.DIAMOND)||stack.is(Items.GOLDEN_APPLE)||stack.is(Items.ENCHANTED_GOLDEN_APPLE)
                 ||stack.is(Items.NETHERITE_SCRAP)||stack.is(Items.NETHERITE_INGOT))return 1;
         if(stack.is(Items.EMERALD)&&stack.getCount()>=4)return 4;
         if(stack.isDamageableItem()&&stack.isEnchanted())return 1;
         return 0;
+    }
+
+    public static boolean vignetteOffering(ItemStack stack) {
+        return !stack.isEmpty() && (VignetteYields.of(stack) != null
+                || stack.is(LabyrinthRegistry.PHONE.get()) || stack.is(LabyrinthRegistry.HARRIGANS_PHONE.get())
+                || stack.is(LabyrinthRegistry.SCRATCH_TICKET.get()) || stack.is(DrownedTownRegistry.LAKE_PHONE.get()));
     }
 
     public void keepFinaleItem(ItemStack stack, HolderLookup.Provider registries, UUID owner, long now) {
@@ -224,8 +233,10 @@ public final class MotherCollection extends SavedData {
     public boolean anyDebt() { return !debts.isEmpty(); }
 
     public float corruption() {
+        float ransom=(float)entries.values().stream().filter(e->e.livingClaim&&e.ransomStarted)
+                .mapToDouble(e->(RANSOM_TICKS-e.ransomRemaining)/(double)RANSOM_TICKS).max().orElse(0);
         return salved() || banished ? 0.0F
-                : Math.min(1.0F, Math.max(hungerTicks / 3600.0F, dogThreatTicks / 900.0F));
+                : Math.min(1.0F, Math.max(ransom,Math.max(hungerTicks / 3600.0F, dogThreatTicks / 900.0F)));
     }
 
     /** Only active House visits advance a threat; logging out or going home never kills a pet off-screen. */
@@ -385,7 +396,8 @@ public final class MotherCollection extends SavedData {
     /** Exchange one loved thing for the whole claim, preserving both objects' components. */
     public boolean trade(UUID player, ItemStack held, HolderLookup.Provider registries, long now) {
         Entry entry = debt(player);
-        if (entry == null || entry.pet || claimOf(held) != null || !loved(held, now, player)) return false;
+        if (entry == null || entry.pet || claimOf(held) != null
+                || !(loved(held, now, player) || vignetteOffering(held))) return false;
         keepItem(held.copyWithCount(1), registries, player, now);
         held.shrink(1);
         retainReturnedPart(entry, registries);
@@ -415,7 +427,45 @@ public final class MotherCollection extends SavedData {
             return (salved()||banished||entry.ransomRemaining>0&&ransomPrice(offering)>0);
         return entry != null && entry.pet && !entry.sealed && player.equals(entry.owner)
                 && (banished || !usedVisit(player)) && debt(player) == null
-                && (salved() || banished || (claimOf(offering) == null && loved(offering, now, player)));
+                && (salved() || banished || (claimOf(offering) == null
+                && (loved(offering, now, player) || vignetteOffering(offering))));
+    }
+
+    /** Physical reach, enclosure and death are verified by the live-world interaction. */
+    public boolean canRecoverPetWithLife(UUID player, UUID id) {
+        Entry entry=entries.get(id);
+        return !salved() && !banished && entry!=null && entry.pet && !entry.sealed && player.equals(entry.owner)
+                && (entry.livingClaim ? entry.ransomRemaining>0 : !usedVisit(player) && debt(player)==null);
+    }
+
+    public boolean canTradeForLife(UUID player) {
+        Entry entry=debt(player);
+        return !salved() && !banished && entry!=null && !entry.pet;
+    }
+
+    public boolean canKeepOfferedLife(UUID original) { return !rememberedPets.contains(original); }
+
+    public boolean wasPlayerOffered(UUID player) { return offeredPlayers.contains(player); }
+
+    /** Animals stay in her actual collection. Player payments record a real death, never a player clone. */
+    public boolean tradeLife(UUID player, @Nullable UUID recoveredPet, UUID original,
+                             @Nullable CompoundTag contents, String name, HolderLookup.Provider registries) {
+        if (recoveredPet==null ? !canTradeForLife(player) : !canRecoverPetWithLife(player,recoveredPet)) return false;
+        Entry recovery=recoveredPet==null ? null : entries.get(recoveredPet);
+        if(recovery!=null && recovery.contents.hasUUID("UUID") && original.equals(recovery.contents.getUUID("UUID")))return false;
+        if(contents!=null) {
+            Entry given=keepPet(original,contents,null,name);
+            if(given==null)return false;
+            given.offeredLife=true;given.sealed=true;
+        } else offeredPlayers.add(original);
+        if(recovery!=null) finishPetRecovery(player,recovery);
+        else {
+            retainReturnedPart(debt(player),registries);
+            debts.remove(player);
+        }
+        hungerTicks=0;
+        changed();
+        return true;
     }
 
     public boolean recoverPet(UUID player, UUID id, ItemStack offering, HolderLookup.Provider registries, long now) {
@@ -430,12 +480,16 @@ public final class MotherCollection extends SavedData {
             }
             offering.shrink(count);
         }
-        if(recovering.livingClaim&&recovering.contents.hasUUID("UUID"))rememberedPets.remove(recovering.contents.getUUID("UUID"));
-        entries.remove(id);
-        usedVisit.add(player);
+        finishPetRecovery(player,recovering);
         kindToHer.add(player);
         changed();
         return true;
+    }
+
+    private void finishPetRecovery(UUID player, Entry recovering) {
+        if(recovering.livingClaim&&recovering.contents.hasUUID("UUID"))rememberedPets.remove(recovering.contents.getUUID("UUID"));
+        entries.remove(recovering.id);
+        usedVisit.add(player);
     }
 
     public boolean seedOnce() {
@@ -485,6 +539,7 @@ public final class MotherCollection extends SavedData {
                     saved.hasUUID("Owner") ? saved.getUUID("Owner") : null,
                     saved.getCompound("Contents"), saved.getString("Name"));
             entry.sealed = saved.getBoolean("Sealed");
+            entry.offeredLife = saved.getBoolean("OfferedLife");
             entry.livingClaim=saved.getBoolean("LivingClaim");entry.ransomStarted=saved.getBoolean("RansomStarted");
             entry.ransomRemaining=saved.contains("RansomRemaining")?Math.max(0,saved.getInt("RansomRemaining")):RANSOM_TICKS;
             if (saved.hasUUID("Claimant")) {
@@ -497,6 +552,7 @@ public final class MotherCollection extends SavedData {
         readIds(tag, "InDen", data.inDen);
         readIds(tag, "UsedVisit", data.usedVisit);
         readIds(tag, "PetsRemembered", data.rememberedPets);
+        readIds(tag, "OfferedPlayers", data.offeredPlayers);
         readIds(tag, "Kind", data.kindToHer);
         readIds(tag, "TookShelves", data.tookShelves);
         data.tookShelves.addAll(data.debts.keySet());
@@ -542,6 +598,7 @@ public final class MotherCollection extends SavedData {
             saved.putUUID("Id", entry.id);
             saved.putBoolean("Pet", entry.pet);
             saved.putBoolean("Sealed", entry.sealed);
+            saved.putBoolean("OfferedLife", entry.offeredLife);
             saved.putBoolean("LivingClaim",entry.livingClaim);saved.putBoolean("RansomStarted",entry.ransomStarted);
             saved.putInt("RansomRemaining",entry.ransomRemaining);
             saved.putBoolean("Loved", entry.loved);
@@ -558,6 +615,7 @@ public final class MotherCollection extends SavedData {
         tag.put("InDen", ids(inDen));
         tag.put("UsedVisit", ids(usedVisit));
         tag.put("PetsRemembered", ids(rememberedPets));
+        tag.put("OfferedPlayers", ids(offeredPlayers));
         tag.put("Kind", ids(kindToHer));
         tag.put("TookShelves", ids(tookShelves));
         tag.putBoolean("Seeded", seeded);
