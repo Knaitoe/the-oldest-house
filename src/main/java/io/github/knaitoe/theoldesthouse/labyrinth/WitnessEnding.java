@@ -97,8 +97,13 @@ public final class WitnessEnding {
         BlockPos at=route.get(step);player.serverLevel().getChunkAt(at);
         Vec3 target=Vec3.atBottomCenterOf(at);
         if(step==2)target=target.add(record.getInt("PassSide")*1.25,0,0);
+        if(step>=5){
+            BlockPos b=FinaleArchitecture.base(origin);int x=at.getX()-b.getX(),z=at.getZ()-b.getZ();
+            // The broad body must clear the higher treads on the inside of a spiral turn.
+            target=target.add(Math.abs(x)==12?Math.signum(x)*.6:0,0,Math.abs(z)==12?Math.signum(z)*.6:0);
+        }
         Vec3 delta=target.subtract(creature.position());
-        if(delta.multiply(1,0,1).lengthSqr()<.65&&Math.abs(delta.y)<1.2){
+        if(delta.multiply(1,0,1).lengthSqr()<(step>=5?.0225:.65)&&Math.abs(delta.y)<1.2){
             if(step==3)FinaleArchitecture.seal(player.serverLevel(),origin,false);
             record.putInt("ReleaseStep",step+1);FinaleProgress.save(player.server,player.getUUID(),record);return;
         }
