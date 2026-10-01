@@ -161,11 +161,14 @@ public final class IndianLakeLinkedTests {
         owner.getInventory().setItem(5,new ItemStack(DrownedTownRegistry.DRIED_ESSAY_ONE.get()));
         owner.moveTo(Vec3.atBottomCenterOf(f.base.offset(0,0,-12)));owner.setYRot(180);owner.setXRot(0);
         LakeWitchEntity falling=girl;int[] phase={0},started={0};
+        LakeWitchEntity stale=DrownedTownRegistry.LAKE_WITCH.get().create(f.level);stale.recollection(owner.getUUID(),f.base);
+        stale.moveTo(Vec3.atBottomCenterOf(f.base.offset(2,0,-8)));f.level.addFreshEntity(stale);
         h.onEachTick(()->{
             f.load();if(phase[0]==0&&falling.tickCount>=3){
                 ItemStack held=owner.getMainHandItem();held.getItem().use(f.level,owner,InteractionHand.MAIN_HAND);
                 held.getItem().releaseUsing(held,f.level,owner,72000-12);started[0]=falling.tickCount;phase[0]=1;
                 h.assertTrue(falling.memoryPhase()==2&&!IndianLakeProgress.hasThrown(data,owner.getUUID()),"releasing the charged grip launches the body but does not assume a landing");
+                if(stale.tickCount>0)h.assertTrue(stale.isRemoved(),"a late-loaded actor from an old visit cannot duplicate the current memory");
             }
             if(phase[0]!=1)return;
             h.assertTrue(falling.tickCount-started[0]<120,"native entity physics must reach water: position="+falling.position()+"; velocity="+falling.getDeltaMovement()+"; phase="+falling.memoryPhase()+"; noAI="+falling.isNoAi()+"; noGravity="+falling.isNoGravity());

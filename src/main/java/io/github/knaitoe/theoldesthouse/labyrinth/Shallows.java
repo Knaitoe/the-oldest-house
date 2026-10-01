@@ -106,6 +106,8 @@ public final class Shallows {
             if(girl.memoryPhase()!=3){girl.discard();return;}
             girl.move(MoverType.SELF,new Vec3(0,-.045,0));if(girl.getY()<girl.memoryBase().getY()-2.5)girl.discard();return;
         }
+        CompoundTag live=personal(LabyrinthData.get(level.getServer()),girl.memoryOwner());
+        if(!live.getBoolean("Active")||!live.hasUUID("Actor")||!girl.getUUID().equals(live.getUUID("Actor"))){girl.discard();return;}
         ServerPlayer owner=level.getServer().getPlayerList().getPlayer(girl.memoryOwner());
         // Native fake players used by server tests live in the level rather than the connection list.
         if(owner==null)owner=level.players().stream().filter(p->p.getUUID().equals(girl.memoryOwner())).findFirst().orElse(null);
