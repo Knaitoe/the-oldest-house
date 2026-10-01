@@ -134,6 +134,9 @@ public final class PetsAndClapTests {
             h.assertTrue(CompanionOrders.pet(wolf,owner)&&Hillary.introductionConfirmed(wolf),"the wheel's Pet action confirms the invitation");
             var porch=HouseProxyEntityEvacuation.frontDoorExit(level,origin);
             if(porch==null)porch=Vec3.atBottomCenterOf(origin.offset(HouseLayout.AXIS_X,1,HouseLayout.FRONT_DOOR_Z-2));
+            BlockPos platform=BlockPos.containing(porch).below();
+            for(int x=-3;x<=3;x++)for(int z=-3;z<=3;z++)level.setBlock(platform.offset(x,0,z),net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(),3);
+            wolf.setNoAi(true);
             introPorch=BlockPos.containing(porch);level.getChunkSource().addRegionTicket(TicketType.PORTAL,new ChunkPos(introPorch),3,introPorch);level.getChunkAt(introPorch);
             owner.moveTo(porch);wolf.moveTo(porch.add(1,0,0));
             h.runAfterDelay(4,()->{
@@ -145,11 +148,14 @@ public final class PetsAndClapTests {
     private static final class Fixture implements AutoCloseable {
         final net.minecraft.server.MinecraftServer server;final ServerLevel level;final HouseSavedData oldHouse;final LabyrinthData oldData;final MotherCollection oldMother;
         final GameTestHelper helper;final BlockPos origin,base;final List<ServerPlayer> players=new ArrayList<>();final boolean oldKeep;
-        Fixture(GameTestHelper h,BlockPos origin){helper=h;server=h.getLevel().getServer();level=HouseTestLevel.get(server);this.origin=origin;
+        Fixture(GameTestHelper h,BlockPos origin){this(h,origin,LabyrinthPlace.HIDE_AND_CLAP);}
+        Fixture(GameTestHelper h,BlockPos origin,LabyrinthPlace place){helper=h;server=h.getLevel().getServer();level=HouseTestLevel.get(server);this.origin=origin;
             oldHouse=HouseSavedData.get(server);oldData=LabyrinthData.get(server);oldMother=MotherCollection.get(server);oldKeep=level.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY);
             var house=new HouseSavedData();house.markSpawned(origin);server.overworld().getDataStorage().set("the_oldest_house",house);
             var data=new LabyrinthData();data.setBuilt(LabyrinthBuilder.VERSION,origin);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);server.overworld().getDataStorage().set("the_oldest_house_mother",new MotherCollection());
-            base=LabyrinthPlaces.base(origin,LabyrinthPlace.HIDE_AND_CLAP);HideAndClap.clearAll();HideAndClap.build(server,level,base);LabyrinthBuilder.registerDoors(data,LabyrinthPlace.HIDE_AND_CLAP,base);
+            base=LabyrinthPlaces.base(origin,place);HideAndClap.clearAll();MotherOfStrays.clearAll();
+            if(place==LabyrinthPlace.HIDE_AND_CLAP)HideAndClap.build(server,level,base);else MotherOfStrays.build(server,level,base);
+            LabyrinthBuilder.registerDoors(data,place,base);
             level.getChunkSource().addRegionTicket(TicketType.PORTAL,new ChunkPos(base),3,base);level.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(true,server);
         }
         ServerPlayer player(BlockPos at){var p=helper.makeMockServerPlayerInLevel();p.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);p.teleportTo(level,at.getX()+.5,at.getY(),at.getZ()+.5,180,0);players.add(p);return p;}
@@ -166,18 +172,15 @@ public final class PetsAndClapTests {
     private static Fixture death,recovery,unpaid,lifeTrade,playerTrade;
     @AfterBatch(batch="clap_reveal") public static void cleanDeath(ServerLevel level){if(death!=null){death.close();death=null;}}
     @AfterBatch(batch="pet_ransom") public static void cleanRecovery(ServerLevel level){if(recovery!=null){recovery.close();recovery=null;}}
-    @GameTest(template="empty",batch="clap_reveal",timeoutTicks=100)
+    @GameTest(template="empty",batch="clap_reveal",timeoutTicks=1400)
     public static void nativeFailureRemovesClothBeforeKillingAndClaimsOnlyFollowingPet(GameTestHelper h){
         death=new Fixture(h,new BlockPos(9200,80,9200));var f=death;var owner=f.player(f.base.offset(0,0,-4));var follower=f.dog(owner,false);var staying=f.dog(owner,true);UUID id=follower.getUUID();
         owner.getInventory().setItem(0,new ItemStack(Items.DIAMOND,3));owner.setItemSlot(EquipmentSlot.HEAD,new ItemStack(LabyrinthRegistry.BLINDFOLD.get()));HideAndClap.enter(owner);
         h.runAfterDelay(5,()->{
             h.assertTrue(HideAndClap.isBound(owner.getItemBySlot(EquipmentSlot.HEAD),owner.getUUID()),"server ticks bind the real worn cloth");
-            var data=LabyrinthData.get(f.server);CompoundTag state=data.state(HideAndClap.ID),session=state.getCompound("Session");
-            long before=f.level.getGameTime();((net.minecraft.world.level.storage.ServerLevelData)f.server.overworld().getLevelData()).setGameTime(before+ClapGameClock.LIMIT_TICKS);
-            session.putLong("EquippedAt",before);state.put("Session",session);data.setState(HideAndClap.ID,state);HideAndClap.clearAll();
         });
-        h.runAfterDelay(23,()->h.assertTrue(owner.isAlive()&&owner.getItemBySlot(EquipmentSlot.HEAD).isEmpty()&&HideAndClap.isLocked(owner),"the cloth physically comes off while the living player remains locked for the reveal"));
-        h.runAfterDelay(58,()->{
+        h.runAfterDelay(ClapGameClock.LIMIT_TICKS+23,()->h.assertTrue(owner.isAlive()&&owner.getItemBySlot(EquipmentSlot.HEAD).isEmpty()&&HideAndClap.isLocked(owner),"the cloth physically comes off while the living player remains locked for the reveal"));
+        h.runAfterDelay(ClapGameClock.LIMIT_TICKS+58,()->{
             h.assertTrue(owner.isDeadOrDying()&&owner.getInventory().isEmpty(),"the native kill and keepInventory loss execute after the visible interval");
             var collection=MotherCollection.get(f.server);var entry=collection.all().stream().filter(e->e.livingClaim).findFirst().orElseThrow();
             h.assertTrue(follower.isRemoved()&&entry.contents.hasUUID("UUID")&&entry.contents.getUUID("UUID").equals(id)&&entry.contents.getFloat("Health")==7,"a real vignette death captures the exact surviving follower");
@@ -188,7 +191,7 @@ public final class PetsAndClapTests {
     @AfterBatch(batch="pet_unpaid") public static void cleanUnpaid(ServerLevel level){if(unpaid!=null){unpaid.close();unpaid=null;}}
     @GameTest(template="empty",batch="pet_unpaid",timeoutTicks=90)
     public static void nativeRefusedRansomEndsInPetDeathRatherThanAnotherArchive(GameTestHelper h){
-        unpaid=new Fixture(h,new BlockPos(10000,80,10000));var f=unpaid;var owner=f.player(f.base.offset(0,0,-4));var original=f.dog(owner,false);
+        unpaid=new Fixture(h,new BlockPos(10000,80,10000),LabyrinthPlace.MOTHER_DEN);var f=unpaid;var owner=f.player(f.base.offset(0,0,-4));var original=f.dog(owner,false);
         var den=LabyrinthPlaces.base(f.origin,LabyrinthPlace.MOTHER_DEN);MotherOfStrays.build(f.server,f.level,den);f.level.getChunkSource().addRegionTicket(TicketType.PORTAL,new ChunkPos(den),3,den);
         final Mob[] display={null};final UUID[] entryId={null};
         h.runAfterDelay(3,()->{
@@ -211,7 +214,7 @@ public final class PetsAndClapTests {
     }
     @GameTest(template="empty",batch="pet_ransom",timeoutTicks=100)
     public static void nativeLivingRecoveryRetainsIdentityHealthAndOrderAndChargesOnce(GameTestHelper h){
-        recovery=new Fixture(h,new BlockPos(9600,80,9600));var f=recovery;var owner=f.player(f.base.offset(0,0,-4));var pet=f.dog(owner,false);UUID id=pet.getUUID();
+        recovery=new Fixture(h,new BlockPos(9600,80,9600),LabyrinthPlace.MOTHER_DEN);var f=recovery;var owner=f.player(f.base.offset(0,0,-4));var pet=f.dog(owner,false);UUID id=pet.getUUID();
         var den=LabyrinthPlaces.base(f.origin,LabyrinthPlace.MOTHER_DEN);MotherOfStrays.build(f.server,f.level,den);f.level.getChunkSource().addRegionTicket(TicketType.PORTAL,new ChunkPos(den),3,den);
         h.runAfterDelay(3,()->{
             h.assertTrue(MotherOfStrays.claimFollowingPets(owner)==1&&pet.isRemoved(),"standing follower enters living custody");
@@ -232,7 +235,7 @@ public final class PetsAndClapTests {
     @AfterBatch(batch="living_offerings") public static void cleanLifeTrades(ServerLevel level){if(lifeTrade!=null){lifeTrade.close();lifeTrade=null;}}
     @GameTest(template="empty",batch="living_offerings",timeoutTicks=100)
     public static void nativeMotherClickAcceptsArtifactThenAnActualStrayLife(GameTestHelper h) {
-        lifeTrade=new Fixture(h,new BlockPos(10400,80,10400));var f=lifeTrade;var owner=f.player(f.base.offset(0,0,-4));var first=f.dog(owner,false);UUID firstId=first.getUUID();
+        lifeTrade=new Fixture(h,new BlockPos(10400,80,10400),LabyrinthPlace.MOTHER_DEN);var f=lifeTrade;var owner=f.player(f.base.offset(0,0,-4));var first=f.dog(owner,false);UUID firstId=first.getUUID();
         var den=LabyrinthPlaces.base(f.origin,LabyrinthPlace.MOTHER_DEN);MotherOfStrays.build(f.server,f.level,den);f.level.getChunkSource().addRegionTicket(TicketType.PORTAL,new ChunkPos(den),3,den);
         final MotherEntity[] mother={null};final Wolf[] given={null};final UUID[] nextId={null};
         h.runAfterDelay(3,()->{
@@ -257,7 +260,7 @@ public final class PetsAndClapTests {
     @AfterBatch(batch="trapped_player_offering") public static void cleanPlayerTrade(ServerLevel level){if(playerTrade!=null){playerTrade.close();playerTrade=null;}}
     @GameTest(template="empty",batch="trapped_player_offering",timeoutTicks=100)
     public static void nativePlayerTradeRejectsAnOpenRoomAndKillsOnlyTheTrappedExplorer(GameTestHelper h) {
-        playerTrade=new Fixture(h,new BlockPos(10800,80,10800));var f=playerTrade;var owner=f.player(f.base.offset(0,0,-4));var pet=f.dog(owner,false);UUID original=pet.getUUID();
+        playerTrade=new Fixture(h,new BlockPos(10800,80,10800),LabyrinthPlace.MOTHER_DEN);var f=playerTrade;var owner=f.player(f.base.offset(0,0,-4));var pet=f.dog(owner,false);UUID original=pet.getUUID();
         var den=LabyrinthPlaces.base(f.origin,LabyrinthPlace.MOTHER_DEN);MotherOfStrays.build(f.server,f.level,den);f.level.getChunkSource().addRegionTicket(TicketType.PORTAL,new ChunkPos(den),3,den);
         final MotherEntity[] mother={null};final ServerPlayer[] victim={null};final Mob[] captive={null};final BlockPos[] room={null};
         h.runAfterDelay(3,()->{
