@@ -59,7 +59,6 @@ public final class LabyrinthBuilder {
     /** Whether every place stands, carved for this manor by this version. */
     public static boolean isBuilt(MinecraftServer server) {
         LabyrinthData data = LabyrinthData.get(server);
-        legacyDomesticUpgrade=!force && data.builtVersion()<17 && origin.equals(data.builtOrigin());
         BlockPos origin = HouseSavedData.get(server).houseOrigin();
         return origin != null && data.builtVersion() >= VERSION && origin.equals(data.builtOrigin());
     }
@@ -93,6 +92,7 @@ public final class LabyrinthBuilder {
         pending = new ArrayDeque<>();
         domesticUpgrades.clear();
         LabyrinthData data = LabyrinthData.get(server);
+        legacyDomesticUpgrade=!force && data.builtVersion()<17 && origin.equals(data.builtOrigin());
         // Older structural upgrades keep their scope. 0.4.17 dresses existing halls in place.
         boolean extend = !force && data.builtVersion() >= 10 && data.builtVersion() < VERSION && origin.equals(data.builtOrigin());
         for (LabyrinthPlace place : LabyrinthPlace.values()) {

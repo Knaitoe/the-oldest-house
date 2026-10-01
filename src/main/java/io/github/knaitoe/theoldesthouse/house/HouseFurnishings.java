@@ -21,20 +21,20 @@ public final class HouseFurnishings {
         if(!old.is(expected) || level.getBlockEntity(pos)!=null) return;
         if(old.getBlock() instanceof StairBlock && (old.getValue(StairBlock.HALF)!=Half.BOTTOM
                 || old.getValue(StairBlock.FACING).getOpposite()!=facing)) return;
-        level.setBlock(pos,HouseholdFurnitureBlock.state(kind,facing),LabyrinthBuilder.flags());
+        level.setBlock(pos,HouseholdFurnitureBlock.state(kind,facing),HouseCanvas.BUILD_FLAGS);
     }
     public static void paper(ServerLevel level,BlockPos pos,HouseMarginalia.Thread thread,Direction facing) {
         if(level.getBlockState(pos).isAir() && !level.getBlockState(pos.below()).isAir())
-            level.setBlock(pos,NoteSurfaceBlock.state(thread,facing),LabyrinthBuilder.flags());
+            level.setBlock(pos,NoteSurfaceBlock.state(thread,facing),HouseCanvas.BUILD_FLAGS);
     }
     private static void table(ServerLevel level,BlockPos pos,Block expected,HouseholdFurnitureBlock.Kind kind,Direction facing) {
         if(!level.getBlockState(pos).is(expected) || !level.getBlockState(pos.above()).is(Blocks.OAK_PRESSURE_PLATE)) return;
         replace(level,pos,expected,kind,facing);
-        if(level.getBlockState(pos).getBlock() instanceof HouseholdFurnitureBlock) level.setBlock(pos.above(),Blocks.AIR.defaultBlockState(),LabyrinthBuilder.flags());
+        if(level.getBlockState(pos).getBlock() instanceof HouseholdFurnitureBlock) level.setBlock(pos.above(),Blocks.AIR.defaultBlockState(),HouseCanvas.BUILD_FLAGS);
     }
     private static void add(ServerLevel level,BlockPos pos,HouseholdFurnitureBlock.Kind kind,Direction facing) {
         if(level.getBlockState(pos).isAir() && level.getBlockState(pos.above()).isAir() && !level.getBlockState(pos.below()).isAir())
-            level.setBlock(pos,HouseholdFurnitureBlock.state(kind,facing),LabyrinthBuilder.flags());
+            level.setBlock(pos,HouseholdFurnitureBlock.state(kind,facing),HouseCanvas.BUILD_FLAGS);
     }
     public static void decorate(ServerLevel level,BlockPos base,LabyrinthPlace place) {
         if(place==LabyrinthPlace.JUNCTION) {
