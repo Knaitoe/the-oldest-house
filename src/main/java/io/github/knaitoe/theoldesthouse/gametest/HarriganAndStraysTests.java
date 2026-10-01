@@ -60,11 +60,14 @@ public final class HarriganAndStraysTests {
             helper.assertTrue(animal!=null,"the actual encounter factory spawns a native stray");animal.setNoAi(true);animals.add(animal);return animal;
         }
         List<ArmorStand> bodies() {
-            return level.getEntitiesOfClass(ArmorStand.class,new AABB(base.offset(-8,-2,-25),base.offset(9,7,3)),e->e.getTags().contains(BODY));
+            return level.getEntitiesOfClass(ArmorStand.class,bounds(),e->e.getTags().contains(BODY));
+        }
+        AABB bounds() {
+            return new AABB(base.getX()-8,base.getY()-2,base.getZ()-25,base.getX()+9,base.getY()+7,base.getZ()+3);
         }
         public void close() {
             for(var animal:animals)animal.discard();
-            for(var entity:level.getEntitiesOfClass(Entity.class,new AABB(base.offset(-8,-2,-25),base.offset(9,7,3)),e->e instanceof ArmorStand||e instanceof ItemFrame||e instanceof SeatEntity))entity.discard();
+            for(var entity:level.getEntitiesOfClass(Entity.class,bounds(),e->e instanceof ArmorStand||e instanceof ItemFrame||e instanceof SeatEntity))entity.discard();
             for(var player:players)if(level.getServer().getPlayerList().getPlayers().contains(player))level.getServer().getPlayerList().remove(player);else player.discard();
             for(var chunk:chunks)level.getChunkSource().removeRegionTicket(TicketType.PORTAL,chunk,3,base);
             level.getServer().overworld().getDataStorage().set("the_oldest_house",oldHouse);
@@ -95,7 +98,7 @@ public final class HarriganAndStraysTests {
         UUID witness=UUID.randomUUID();WitnessAccount.resolve(data,witness,WitnessAccount.Story.HARRIGAN,"kept_phone");
         h.runAfterDelay(10,()->{
             h.assertTrue(f.bodies().size()==1,"one native study actor is loaded");var body=f.bodies().getFirst();seated(h,body,f.base.offset(HarriganVignette.CHAIR));
-            var frames=f.level.getEntitiesOfClass(ItemFrame.class,new AABB(f.base.offset(-8,-1,-25),f.base.offset(9,7,3))).stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet());
+            var frames=f.level.getEntitiesOfClass(ItemFrame.class,f.bounds()).stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet());
             UUID original=body.getUUID();
             // Reproduce the old persisted actor, with a reader already in the room.
             body.getPersistentData().remove("HarriganBodyPose");body.getPersistentData().remove("HarriganBodySeat");
@@ -106,8 +109,8 @@ public final class HarriganAndStraysTests {
                 var repaired=f.bodies().getFirst();seated(h,repaired,f.base.offset(HarriganVignette.CHAIR));
                 h.assertTrue(data.state(HarriganVignette.ID).getInt("Visit")==1&&data.state(HarriganVignette.ID).getInt("PagesTurned")==3
                         &&data.state(HarriganVignette.ID).getBoolean("TicketVisible")&&WitnessAccount.has(data,witness,WitnessAccount.Story.HARRIGAN),"reading, ticket and personal evidence survive the repair");
-                h.assertTrue(frames.equals(f.level.getEntitiesOfClass(ItemFrame.class,new AABB(f.base.offset(-8,-1,-25),f.base.offset(9,7,3))).stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet())),"the actual phones and props are untouched");
-                CompoundTag saved=new CompoundTag();repaired.saveWithoutId(saved);repaired.discard();var loaded=new ArmorStand(f.level,0,0,0);loaded.load(saved);f.level.addFreshEntity(loaded);
+                h.assertTrue(frames.equals(f.level.getEntitiesOfClass(ItemFrame.class,f.bounds()).stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet())),"the actual phones and props are untouched");
+                CompoundTag saved=new CompoundTag();repaired.saveWithoutId(saved);repaired.discard();var loaded=new ArmorStand(f.level,0,0,0);loaded.load(saved);h.assertTrue(f.level.addFreshEntity(loaded),"the saved original really returns to the native world");
                 seated(h,loaded,f.base.offset(HarriganVignette.CHAIR));h.assertTrue(loaded.getUUID().equals(original),"native entity NBT retains the pose and identity");
                 owner.moveTo(Vec3.atBottomCenterOf(f.base.offset(HarriganVignette.CHAIR).north()));
                 h.assertTrue(!HouseSitting.sit(owner,f.base.offset(HarriganVignette.CHAIR)),"the player cannot occupy Harrigan's chair through his body");
