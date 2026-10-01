@@ -234,6 +234,7 @@ public final class HarriganVignette {
         if (visitFor(data) == 2 && hasItem(player, LabyrinthRegistry.HARRIGANS_PHONE.get())) {
             // Keeping his phone closes the story but does not connect the player's phone.
             data.setCompleted(ID, true);
+            WitnessAccount.resolve(player,WitnessAccount.Story.HARRIGAN,"kept_phone");
             CompoundTag p = playerState(data, player.getUUID());
             p.putBoolean("KeptHarriganPhone", true);
             p.putBoolean("Contact", false);
@@ -478,6 +479,7 @@ public final class HarriganVignette {
         p.putBoolean("KeptHarriganPhone", false);
         savePlayerState(data, player.getUUID(), p);
         data.setCompleted(ID, true);
+        WitnessAccount.resolve(player,WitnessAccount.Story.HARRIGAN,"buried_phone");
         player.displayClientMessage(Component.literal("You tuck the phone beside his hand.")
                 .withStyle(ChatFormatting.DARK_GRAY), false);
         event.setCanceled(true);

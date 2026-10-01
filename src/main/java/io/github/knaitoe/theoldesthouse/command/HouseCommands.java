@@ -372,6 +372,7 @@ public final class HouseCommands {
         data.reset();
         LabyrinthData.get(source.getServer()).setState(io.github.knaitoe.theoldesthouse.labyrinth.FinaleProgress.STATE, new net.minecraft.nbt.CompoundTag());
         LabyrinthData.get(source.getServer()).setState("finale_architecture_049", new net.minecraft.nbt.CompoundTag());
+        LabyrinthData.get(source.getServer()).setState(io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount.STATE, new net.minecraft.nbt.CompoundTag());
         io.github.knaitoe.theoldesthouse.labyrinth.FinaleController.clearAll();
         HouseShifts.refreshCache(data);
         HouseMemory.get(source.getServer()).clear();
@@ -402,4 +403,3 @@ public final class HouseCommands {
         return pos.getX() + "," + pos.getY() + "," + pos.getZ();
     }
 }
-

@@ -21,7 +21,7 @@ import net.minecraft.world.phys.Vec3;
 
 /** One short encounter. Its empty, fixed boss bar describes no conventional health fight. */
 public final class MinotaurEntity extends PathfinderMob {
-    public static final int WATCHING=0, WINDUP=1, CHARGING=2, STUNNED=3, WOUNDED=4;
+    public static final int WATCHING=0, WINDUP=1, CHARGING=2, STUNNED=3, WOUNDED=4, RELEASED=5;
     private static final EntityDataAccessor<Integer> MOTION=SynchedEntityData.defineId(MinotaurEntity.class,EntityDataSerializers.INT);
     private final ServerBossEvent bar=new ServerBossEvent(Component.empty(),BossEvent.BossBarColor.WHITE,BossEvent.BossBarOverlay.PROGRESS);
     @Nullable private UUID owner;
@@ -38,13 +38,19 @@ public final class MinotaurEntity extends PathfinderMob {
     private void motion(int motion,int duration){entityData.set(MOTION,motion);remaining=duration;}
     public void stagger(){motion(STUNNED,65);setDeltaMovement(Vec3.ZERO);}
     public void wounded(){motion(WOUNDED,240);bar.removeAllPlayers();setDeltaMovement(Vec3.ZERO);}
+    public void released(){motion(RELEASED,0);bar.removeAllPlayers();setDeltaMovement(Vec3.ZERO);}
     @Override public boolean removeWhenFarAway(double distance){return false;}
     @Override public boolean canBeLeashed(){return false;}
-    @Override public void startSeenByPlayer(ServerPlayer player){super.startSeenByPlayer(player);if(owner!=null&&owner.equals(player.getUUID())&&motion()!=WOUNDED)bar.addPlayer(player);}
+    @Override public void startSeenByPlayer(ServerPlayer player){super.startSeenByPlayer(player);if(owner!=null&&owner.equals(player.getUUID())&&motion()!=WOUNDED&&motion()!=RELEASED)bar.addPlayer(player);}
     @Override public void stopSeenByPlayer(ServerPlayer player){super.stopSeenByPlayer(player);bar.removePlayer(player);}
     @Override public void tick(){
         super.tick();if(!(level() instanceof net.minecraft.server.level.ServerLevel level))return;
         ServerPlayer player=owner==null?null:level.getServer().getPlayerList().getPlayer(owner);
+        if(motion()==RELEASED){
+            bar.removeAllPlayers();
+            if(player==null||player.level()!=level||!player.isAlive()||FinaleProgress.phase(level.getServer(),owner)!=FinaleProgress.Phase.RELEASE){getNavigation().stop();return;}
+            WitnessEnding.tickCreature(this,player);return;
+        }
         if(motion()==WOUNDED){
             Vec3 cell=FinaleController.cellCenter(level.getServer());
             if(cell!=null){Vec3 step=cell.subtract(position()).multiply(1,0,1);if(step.lengthSqr()>.25)move(MoverType.SELF,step.normalize().scale(.12));}
@@ -87,6 +93,6 @@ public final class MinotaurEntity extends PathfinderMob {
     @Override public void addAdditionalSaveData(CompoundTag tag){super.addAdditionalSaveData(tag);if(owner!=null)tag.putUUID("FinaleOwner",owner);tag.putInt("FinaleMotion",motion());tag.putInt("FinaleRemaining",remaining);}
     @Override public void readAdditionalSaveData(CompoundTag tag){super.readAdditionalSaveData(tag);owner=tag.hasUUID("FinaleOwner")?tag.getUUID("FinaleOwner"):null;
         // Reloads never resume an untelegraphed lethal dash.
-        motion(tag.getInt("FinaleMotion")==WOUNDED?WOUNDED:WATCHING,tag.getInt("FinaleMotion")==WOUNDED?Math.max(1,tag.getInt("FinaleRemaining")):35);}
+        int saved=tag.getInt("FinaleMotion");motion(saved==WOUNDED?WOUNDED:saved==RELEASED?RELEASED:WATCHING,saved==WOUNDED?Math.max(1,tag.getInt("FinaleRemaining")):35);}
     @Override public void remove(RemovalReason reason){bar.removeAllPlayers();super.remove(reason);}
 }

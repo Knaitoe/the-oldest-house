@@ -14,6 +14,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.network.protocol.game.ClientboundStopSoundPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -23,6 +24,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.GameEventTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -64,7 +66,6 @@ public final class TellTaleFloorboards {
 
     public static final double MAX_HEAT = 100.0D;
     private static final double DECAY_PER_TICK = 0.08D;
-    private static final double PRY_HEAT = 30.0D;
     private static final double BREAK_HEAT = 35.0D;
 
     private static double heat;
@@ -147,6 +148,11 @@ public final class TellTaleFloorboards {
         return heat;
     }
 
+    public static long heartbeatInterval(double agitation) {
+        double t=Math.max(0,Math.min(1,agitation/MAX_HEAT));
+        return Math.max(7,Math.round(18-11*t));
+    }
+
     // ------------------------------------------------------------------
     // Vibrations
 
@@ -224,7 +230,7 @@ public final class TellTaleFloorboards {
             // The lights go out.
             heat = 0.0D;
             for (ServerPlayer player : inside) {
-                play(player, SoundEvents.WARDEN_HEARTBEAT, heart, 2.0F, 1.3F);
+                play(player, LabyrinthRegistry.FLOORBOARD_HEARTBEAT.get(), heart, 1.7F, 1.18F);
                 LabyrinthDoors.sendBack(player, 2, 24, 30);
             }
             TheOldestHouse.LOGGER.info("The heartbeat under the floorboards reached its peak.");
@@ -236,9 +242,9 @@ public final class TellTaleFloorboards {
         if (now >= nextBeat) {
             float t = (float) (heat / MAX_HEAT);
             for (ServerPlayer player : inside) {
-                play(player, SoundEvents.WARDEN_HEARTBEAT, heart, 0.35F + 1.1F * t, 0.9F + 0.35F * t);
+                play(player, LabyrinthRegistry.FLOORBOARD_HEARTBEAT.get(), heart, 0.65F + 0.8F * t, 0.95F + 0.23F * t);
             }
-            nextBeat = now + Math.max(7L, Math.round(40.0D - 32.0D * t));
+            nextBeat = now + heartbeatInterval(heat);
         }
     }
 
@@ -253,7 +259,7 @@ public final class TellTaleFloorboards {
 
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         if (!(event.getEntity() instanceof ServerPlayer player)
-                || !isLooseBoard(player.serverLevel(), event.getPos())) {
+                || player.isSpectator() || !isLooseBoard(player.serverLevel(), event.getPos())) {
             return;
         }
         ItemStack stack = event.getItemStack();
@@ -264,31 +270,46 @@ public final class TellTaleFloorboards {
         }
         event.setCanceled(true);
         event.setCancellationResult(InteractionResult.SUCCESS);
-        pry(player, stack);
+        pry(player, stack, event.getHand());
     }
 
-    private static void pry(ServerPlayer player, ItemStack axe) {
+    /** Attack is an authored pry action, so a generic mining veto cannot swallow the puzzle. */
+    public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
+        if (!(event.getEntity() instanceof ServerPlayer player) || player.isSpectator()
+                || !isLooseBoard(player.serverLevel(), event.getPos())
+                || !player.getMainHandItem().is(ItemTags.AXES)) return;
+        event.setCanceled(true);
+        pry(player, player.getMainHandItem(), InteractionHand.MAIN_HAND);
+    }
+
+    public static boolean pry(ServerPlayer player, ItemStack axe, InteractionHand hand) {
         ServerLevel level = player.serverLevel();
         LabyrinthData data = LabyrinthData.get(level.getServer());
         BlockPos base = base(level.getServer());
-        if (base == null) {
-            return;
+        if (base == null || !level.dimension().equals(HouseDimensions.INTERIOR) || player.isSpectator() || !axe.is(ItemTags.AXES)) {
+            return false;
         }
         BlockPos board = base.offset(LOOSE_BOARD);
-        if (data.isCompleted(ID) || !level.getBlockState(board).is(HouseBlocks.LOOSE_FLOORBOARD.get())) {
-            return;
+        if (data.isCompleted(ID) || !level.getBlockState(board).is(HouseBlocks.LOOSE_FLOORBOARD.get())
+                || board.distToCenterSqr(player.position())>36) {
+            return false;
         }
         level.setBlock(board, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
         level.playSound(null, board, SoundEvents.ZOMBIE_BREAK_WOODEN_DOOR, SoundSource.BLOCKS, 0.7F, 1.4F);
-        axe.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
-        heat = Math.min(MAX_HEAT, heat + PRY_HEAT);
+        axe.hurtAndBreak(1, player, hand==InteractionHand.MAIN_HAND?EquipmentSlot.MAINHAND:EquipmentSlot.OFFHAND);
+        heat = 0; nextBeat = 0;
 
         ItemEntity note = new ItemEntity(level, board.getX() + 0.5D, board.getY() + 0.1D, board.getZ() + 0.5D, caregiversNote());
         note.setDeltaMovement(Vec3.ZERO);
         note.setNoPickUpDelay();
         level.addFreshEntity(note);
         data.setCompleted(ID, true);
+        player.connection.send(new ClientboundStopSoundPacket(LabyrinthRegistry.HEARTBEAT_ID, SoundSource.AMBIENT));
+        for(ServerPlayer listener:level.players())if(!listener.getUUID().equals(player.getUUID())&&interior(base).contains(listener.position()))
+            listener.connection.send(new ClientboundStopSoundPacket(LabyrinthRegistry.HEARTBEAT_ID, SoundSource.AMBIENT));
+        WitnessAccount.resolve(player, WitnessAccount.Story.FLOORBOARDS, "pried");
         TheOldestHouse.LOGGER.info("{} pried up the loose floorboard.", player.getGameProfile().getName());
+        return true;
     }
 
     /** The loose board comes up under an axe; anything else in the room is loud and stays put. */
@@ -304,7 +325,7 @@ public final class TellTaleFloorboards {
         if (event.getPos().equals(base.offset(LOOSE_BOARD))
                 && event.getPlayer() instanceof ServerPlayer player
                 && player.getMainHandItem().is(ItemTags.AXES)) {
-            pry(player, player.getMainHandItem());
+            pry(player, player.getMainHandItem(), InteractionHand.MAIN_HAND);
             return;
         }
         // Trying to dig or break your way out is loud.

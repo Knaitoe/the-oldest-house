@@ -721,6 +721,7 @@ public final class ModelHome {
                 state.putBoolean("BeatDone", true);
                 data.setState(ID, state);
                 data.setCompleted(ID, true);
+                WitnessAccount.resolve(player,WitnessAccount.Story.MODEL_HOME,"saw_tree");
                 level.playSound(null, BlockPos.containing(window(base)), SoundEvents.AZALEA_LEAVES_STEP, SoundSource.BLOCKS, 0.8F, 0.7F);
                 TheOldestHouse.LOGGER.info("{} saw the tree in the kid's room; the model home is finished.", player.getGameProfile().getName());
                 return;

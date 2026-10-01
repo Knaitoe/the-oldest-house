@@ -838,6 +838,7 @@ public final class HideAndClap {
         state.putBoolean("Opened", true);
         data.setState(ID, state);
         data.setCompleted(ID, true);
+        WitnessAccount.resolve(player,WitnessAccount.Story.CLAP,"completed_game");
         release(finished, level.getServer());
         game = null;
         persist(data, serverLevel);

@@ -382,6 +382,7 @@ public final class MotherOfStrays {
         LAST_INTERACTION.put(player.getUUID(), now);
         MotherCollection collection = MotherCollection.get(player.server);
         if (target instanceof MotherEntity) {
+            boolean settledBefore=collection.salved()||collection.banished();
             if (player.isShiftKeyDown() && ID.equals(VignetteYields.of(held)) && collection.banish()) {
                 held.shrink(1);
                 banishFromHouse(player.server);
@@ -399,6 +400,8 @@ public final class MotherOfStrays {
             } else if (collection.debt(player.getUUID()) != null) say(player, "Something loved. Not something you can spare.");
             else if (collection.salved()) say(player, "Bring the record and bow your head, if you mean for me to leave.");
             else say(player, "Look carefully. Somebody did love these once.");
+            if(!settledBefore&&(collection.salved()||collection.banished()))WitnessAccount.resolve(player,WitnessAccount.Story.MOTHER,"salved");
+            else if(settledBefore&&player.isShiftKeyDown()&&held.isEmpty())WitnessAccount.resolve(player,WitnessAccount.Story.MOTHER,"aftermath");
         } else if (target instanceof ItemFrame frame) {
             if (!inDen(player)) return true;
             CompoundTag tag = frame.getPersistentData();
@@ -476,6 +479,7 @@ public final class MotherOfStrays {
             Vec3 safe = nearbyStandingSpot(player.serverLevel(), player);
             dog.teleportTo(safe.x, safe.y, safe.z);
             collection.recordDogRecovery(player.getUUID());
+            if(collection.salved())WitnessAccount.resolve(player,WitnessAccount.Story.MOTHER,"saved_dog");
             BlockPos base = base(player.server);
             if (base != null && !collection.banished()) {
                 MotherEntity mother = ensureKeeper(player.serverLevel(), base);

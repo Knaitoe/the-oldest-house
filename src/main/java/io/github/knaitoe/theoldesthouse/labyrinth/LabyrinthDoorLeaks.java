@@ -36,6 +36,7 @@ public final class LabyrinthDoorLeaks {
         String destination = deal != null ? deal.place() : door.destination.startsWith("place:") ? door.destination.substring(6) : door.dealt;
         if (destination == null) return null;
         LabyrinthPlace place = LabyrinthPlace.byId(destination);
+        if(place==LabyrinthPlace.FLOORBOARDS&&data.isCompleted(place.id()))return null;
         int salt = door.id.hashCode() ^ player.hashCode() ^ destination.hashCode();
         return new Cue(DoorLeakKind.forDestination(place, salt), bark);
     }
@@ -72,7 +73,7 @@ public final class LabyrinthDoorLeaks {
             sound = Holder.direct(player.getRandom().nextBoolean() ? SoundEvents.WOLF_AMBIENT : SoundEvents.WOLF_WHINE);
         } else {
             sound = switch (cue.kind) {
-                case HEARTBEAT -> Holder.direct(SoundEvents.WARDEN_HEARTBEAT);
+                case HEARTBEAT -> Holder.direct(LabyrinthRegistry.FLOORBOARD_HEARTBEAT.get());
                 case WATER -> Holder.direct(SoundEvents.WATER_AMBIENT);
                 case MOTHER -> Holder.direct(SoundEvents.CAT_PURR);
                 case CLOTH -> custom("vignette.clap_muffled");

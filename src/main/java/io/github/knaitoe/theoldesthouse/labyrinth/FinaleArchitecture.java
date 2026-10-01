@@ -29,6 +29,7 @@ public final class FinaleArchitecture {
                 && pos.getZ() >= b.getZ()-32 && pos.getZ() <= b.getZ()+122 && pos.getY() >= -32 && pos.getY() <= 240;
     }
     public static BlockPos cell(BlockPos manor) { return base(manor).offset(0, ARENA, 59); }
+    public static BlockPos lectern(BlockPos manor) { return base(manor).offset(-4, ARENA, 56); }
     public static BlockPos bottomStart(BlockPos manor) { return base(manor).offset(-20, BOTTOM, 76); }
     public static BlockPos exit(BlockPos manor) { return base(manor).offset(24, BOTTOM, 112); }
     public static List<BlockPos> staircaseRoute(BlockPos manor) {
@@ -131,7 +132,7 @@ public final class FinaleArchitecture {
         for(int x=minX;x<=maxX;x++)for(int z=minZ;z<=maxZ;z++)put(plan,b,x,y,z,block);
     }
     private static void furnish(ServerLevel level,BlockPos manor) {
-        BlockPos b=base(manor), barrel=b.offset(-10,ARENA,39), lectern=b.offset(-4,ARENA,56);
+        BlockPos b=base(manor), barrel=b.offset(-10,ARENA,39), lectern=lectern(manor);
         level.setBlock(barrel,Blocks.BARREL.defaultBlockState(),FLAGS);
         if(level.getBlockEntity(barrel) instanceof BarrelBlockEntity chest){
             chest.setItem(0,new ItemStack(Items.SHIELD));chest.setItem(1,HouseWriting.book("Holloway's last survey","Holloway",HouseWriting.WritingStyle.PLAIN,

@@ -45,5 +45,6 @@ public final class MinotaurModel extends HierarchicalModel<MinotaurEntity> {
         if(state==MinotaurEntity.CHARGING){body.xRot=.55F;head.xRot=-.4F;leftArm.xRot=rightArm.xRot=-.7F;float stride=Mth.sin(age*1.3F)*.8F;leftLeg.xRot=stride;rightLeg.xRot=-stride;}
         if(state==MinotaurEntity.STUNNED){head.xRot=.55F;head.zRot=Mth.sin(age*.7F)*.09F;body.xRot=.15F;jaw.xRot=.35F;leftArm.xRot=rightArm.xRot=.1F;}
         if(state==MinotaurEntity.WOUNDED){root.y+=9;body.xRot=1.0F;head.xRot=-.65F;leftArm.xRot=-1.0F+Mth.sin(age*.12F)*.08F;rightArm.xRot=-1.0F-Mth.sin(age*.12F)*.08F;leftLeg.xRot=-.7F;rightLeg.xRot=-.7F;jaw.xRot=.18F;}
+        if(state==MinotaurEntity.RELEASED){body.xRot=.07F+breath;head.xRot=.18F;leftArm.xRot=Mth.cos(walk*.65F+Mth.PI)*amount*.15F;rightArm.xRot=Mth.cos(walk*.65F)*amount*.15F;jaw.xRot=.02F;}
     }
 }
