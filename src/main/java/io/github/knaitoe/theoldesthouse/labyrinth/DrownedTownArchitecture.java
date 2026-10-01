@@ -93,7 +93,7 @@ public final class DrownedTownArchitecture {
 
     public static boolean isGrassPatch(int x, int z) {
         return (x >= -2 && x <= 3 && z >= -5 && z <= -2)
-                || (x >= 18 && x <= 22 && z >= -10 && z <= -6)
+                || (x >= 20 && x <= 24 && z >= -10 && z <= -6)
                 || (x >= -23 && x <= -19 && z >= -10 && z <= -7);
     }
     private static BlockState shore(int x, int z) {
@@ -146,7 +146,7 @@ public final class DrownedTownArchitecture {
         }
         for (int x = 13; x <= 17; x++) for (int z = -58; z <= -54; z++)
             level.setBlock(base.offset(x, 4, z), Blocks.DEEPSLATE_TILES.defaultBlockState(), F);
-        level.setBlock(base.offset(15, 5, -56), Blocks.DEEPSLATE_WALL.defaultBlockState(), F);
+        level.setBlock(base.offset(15, 5, -56), Blocks.DEEPSLATE_BRICK_WALL.defaultBlockState(), F);
         light(level, base.offset(15, -7, -52), 7);
     }
     private static void house(ServerLevel level, BlockPos base, int x0, int x1, int z0, int z1, BlockState wall) {

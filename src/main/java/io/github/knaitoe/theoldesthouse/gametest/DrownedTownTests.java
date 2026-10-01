@@ -118,7 +118,7 @@ public final class DrownedTownTests {
             var d=new LabyrinthData();d.setBuilt(LabyrinthBuilder.VERSION,origin);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",d);
             base=LabyrinthPlaces.base(origin,LabyrinthPlace.DROWNED_TOWN);DrownedTown.build(server,level,base);LabyrinthBuilder.registerDoors(d,LabyrinthPlace.DROWNED_TOWN,base);}
         public void close(){
-            for(var actor:level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class,new AABB(base.offset(-30,-14,-65),base.offset(31,10,19)),e->e instanceof LakeWitchEntity||e instanceof LakeCongregantEntity))actor.discard();
+            for(var actor:level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class,new AABB(base.getX()-30,base.getY()-14,base.getZ()-65,base.getX()+31,base.getY()+10,base.getZ()+19),e->e instanceof LakeWitchEntity||e instanceof LakeCongregantEntity))actor.discard();
             for(int x=(base.getX()-30)>>4;x<=(base.getX()+30)>>4;x++)for(int z=(base.getZ()-65)>>4;z<=(base.getZ()+18)>>4;z++)
                 level.getChunkSource().removeRegionTicket(TicketType.PORTAL,new ChunkPos(x,z),3,base);
             server.overworld().getDataStorage().set("the_oldest_house",house);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",labyrinth);DrownedTown.clearAll();LabyrinthDoors.clearAll();
@@ -146,7 +146,7 @@ public final class DrownedTownTests {
         helper.assertTrue(data.state(DrownedTown.ID).getInt("Visit")==1&&data.returnDepth(player.getUUID())==1, "native entry starts the first visit and remembers the way back");
         player.moveTo(Vec3.atBottomCenterOf(base.offset(15,-11,-39)));player.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(DrownedTownRegistry.CHURCH_KEY.get()));
         helper.assertTrue(!DrownedTown.unlockChurch(player,base.offset(DrownedTown.CHURCH_DOOR)), "even a borrowed key cannot skip the first visit");player.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
-        player.moveTo(Vec3.atBottomCenterOf(base.offset(19,0,-8)));
+        player.moveTo(Vec3.atBottomCenterOf(base.offset(20,0,-8)));
         var furnace=(FurnaceBlockEntity)level.getBlockEntity(base.offset(DrownedTown.FURNACE));
         click(player,base.offset(DrownedTown.FURNACE));player.openMenu(furnace);furnace.setItem(1,new ItemStack(Items.COAL,3));
         var first=(BarrelBlockEntity)level.getBlockEntity(base.offset(DrownedTown.PAPERS[0]));furnace.setItem(0,first.removeItemNoUpdate(0));first.setChanged();furnace.setChanged();
