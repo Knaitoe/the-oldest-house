@@ -66,17 +66,21 @@ public final class WitnessEnding {
         for(int i=stairs.size()-2;i>=stairs.size()-26;i--)route.add(stairs.get(i));return List.copyOf(route);
     }
     /** The owner remains in the chamber while the actor climbs beyond short simulation distances. */
-    public static void keepSceneLoaded(ServerPlayer player,BlockPos origin){
+    public static Set<net.minecraft.world.level.ChunkPos> releaseChunks(BlockPos origin){
+        List<BlockPos> route=releaseRoute(origin);int minX=Integer.MAX_VALUE,minZ=Integer.MAX_VALUE,maxX=Integer.MIN_VALUE,maxZ=Integer.MIN_VALUE;
+        for(BlockPos at:route){minX=Math.min(minX,at.getX());maxX=Math.max(maxX,at.getX());minZ=Math.min(minZ,at.getZ());maxZ=Math.max(maxZ,at.getZ());}
         Set<net.minecraft.world.level.ChunkPos> chunks=new HashSet<>();
-        for(BlockPos at:releaseRoute(origin))if(chunks.add(new net.minecraft.world.level.ChunkPos(at))){
-            var chunk=new net.minecraft.world.level.ChunkPos(at);player.serverLevel().getChunkAt(at);
+        for(int x=Math.floorDiv(minX-2,16);x<=Math.floorDiv(maxX+2,16);x++)for(int z=Math.floorDiv(minZ-2,16);z<=Math.floorDiv(maxZ+2,16);z++)
+            chunks.add(new net.minecraft.world.level.ChunkPos(x,z));return chunks;
+    }
+    public static void keepSceneLoaded(ServerPlayer player,BlockPos origin){
+        for(var chunk:releaseChunks(origin)){
+            player.serverLevel().getChunkAt(chunk.getWorldPosition());
             player.serverLevel().getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.PORTAL,chunk,3,chunk.getWorldPosition());
         }
     }
     private static void unloadScene(ServerPlayer player,BlockPos origin){
-        Set<net.minecraft.world.level.ChunkPos> chunks=new HashSet<>();
-        for(BlockPos at:releaseRoute(origin))if(chunks.add(new net.minecraft.world.level.ChunkPos(at))){
-            var chunk=new net.minecraft.world.level.ChunkPos(at);
+        for(var chunk:releaseChunks(origin)){
             player.serverLevel().getChunkSource().removeRegionTicket(net.minecraft.server.level.TicketType.PORTAL,chunk,3,chunk.getWorldPosition());
         }
     }
@@ -127,9 +131,14 @@ public final class WitnessEnding {
             }
             if(alreadyRecovered){record.remove("LaidDown");record.remove("LaidAt");}return alreadyRecovered;
         }
-        ItemStack stack=item.getItem();player.getInventory().add(stack);
-        if(stack.isEmpty())item.discard();else{item.setNoPickUpDelay();item.setInvulnerable(false);item.setPos(player.getX(),player.getY(),player.getZ());}
-        record.remove("LaidDown");record.remove("LaidAt");return true;
+        if(player.getInventory().getFreeSlot()<0){
+            if(!record.getBoolean("WeaponNeedsSpace")){
+                record.putBoolean("WeaponNeedsSpace",true);FinaleProgress.save(player.server,player.getUUID(),record);
+                FinaleController.words(player,player.blockPosition().above(2),"Make room for the weapon you laid down.");
+            }return false;
+        }
+        ItemStack stack=item.getItem();player.getInventory().add(stack);if(!stack.isEmpty())return false;
+        item.discard();record.remove("LaidDown");record.remove("LaidAt");record.remove("WeaponNeedsSpace");return true;
     }
     public static void keepWeaponOnDeath(ServerPlayer player,CompoundTag record){
         if(!record.hasUUID("LaidDown"))return;

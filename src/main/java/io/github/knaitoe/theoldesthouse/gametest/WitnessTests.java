@@ -126,7 +126,6 @@ public final class WitnessTests {
         var interior=level.getServer().getLevel(HouseDimensions.INTERIOR);
         if(interior!=null)for(var entry:SCENE_TICKETS.entrySet()){
             interior.getChunkSource().removeRegionTicket(net.minecraft.server.level.TicketType.PORTAL,entry.getKey(),3,entry.getValue());
-            interior.setChunkForced(entry.getKey().x,entry.getKey().z,false);
         }SCENE_TICKETS.clear();
         if(scenePlayer!=null){level.getServer().getPlayerList().remove(scenePlayer);scenePlayer=null;}
         if(sceneCreature!=null){sceneCreature.discard();sceneCreature=null;}if(sceneFixture!=null){sceneFixture.close();sceneFixture=null;}
@@ -134,10 +133,9 @@ public final class WitnessTests {
     @GameTest(template="empty",batch="witness_walk",timeoutTicks=1800) public static void releasedCreaturePhysicallyReachesAndClimbsTheStairs(GameTestHelper helper){
         var server=helper.getLevel().getServer();var level=HouseTestLevel.get(server);BlockPos origin=new BlockPos(3400,80,3400);
         sceneFixture=new Fixture(server,origin);
-        for(BlockPos at:WitnessEnding.releaseRoute(origin)){
-            var chunk=new net.minecraft.world.level.ChunkPos(at);if(SCENE_TICKETS.putIfAbsent(chunk,at)!=null)continue;
+        for(var chunk:WitnessEnding.releaseChunks(origin)){
+            BlockPos at=chunk.getWorldPosition();SCENE_TICKETS.put(chunk,at);
             level.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.PORTAL,chunk,3,at);
-            level.setChunkForced(chunk.x,chunk.z,true);
         }
         for(var placement:FinaleArchitecture.plan(origin))level.setBlock(placement.pos(),placement.block(),2);
         FinaleArchitecture.openCell(level,origin);FinaleArchitecture.seal(level,origin,true);
@@ -148,6 +146,8 @@ public final class WitnessTests {
         record.putUUID("Creature",sceneCreature.getUUID());FinaleProgress.save(server,player.getUUID(),record);
         var creature=sceneCreature;
         helper.succeedWhen(()->{
+            // The mock player's connection does not dispatch ordinary House player-tick hooks.
+            FinaleController.tickPlayer(player,origin);
             helper.assertTrue(FinaleProgress.phase(server,player.getUUID())==FinaleProgress.Phase.HOMEWARD,
                     "the native creature must walk its release route; step="+FinaleProgress.player(server,player.getUUID()).getInt("ReleaseStep")
                     +"; position="+creature.position()+"; actorTicks="+creature.tickCount+"; playerTicks="+player.tickCount+"; motion="+creature.motion()
@@ -175,13 +175,18 @@ public final class WitnessTests {
         returnPlayer=helper.makeMockServerPlayerInLevel();ServerPlayer player=returnPlayer;Vec3 stand=Vec3.atBottomCenterOf(at);player.teleportTo(level,stand.x,stand.y,stand.z,0,0);
         ItemStack sword=new ItemStack(Items.IRON_SWORD);sword.setDamageValue(49);UUID original=WeaponHistory.stamp(sword);
         ItemEntity item=new ItemEntity(level,at.getX()+.5,at.getY(),at.getZ()+.5,sword);item.setUnlimitedLifetime();item.setPickUpDelay(32767);level.addFreshEntity(item);
-        player.getInventory().add(new ItemStack(Items.EMERALD,7));CompoundTag record=new CompoundTag();record.putString("Phase",FinaleProgress.Phase.HOMEWARD.name());record.putUUID("LaidDown",item.getUUID());record.putLong("LaidAt",at.asLong());
+        player.getInventory().add(new ItemStack(Items.EMERALD,7));
+        for(int i=1;i<player.getInventory().items.size();i++)player.getInventory().setItem(i,new ItemStack(Items.COBBLESTONE,64));
+        CompoundTag record=new CompoundTag();record.putString("Phase",FinaleProgress.Phase.HOMEWARD.name());record.putUUID("LaidDown",item.getUUID());record.putLong("LaidAt",at.asLong());
         FinaleProgress.save(server,player.getUUID(),record);
         helper.runAfterDelay(40,()->{
+            helper.assertTrue(!WitnessEnding.returnWeapon(player,record)&&record.hasUUID("LaidDown")&&!item.isRemoved(),"a full inventory cannot discard or abandon the original weapon");
+            player.getInventory().setItem(35,ItemStack.EMPTY);
             long day=server.overworld().getDayTime();WitnessEnding.finish(player,origin,record);
             helper.assertTrue(FinaleProgress.phase(server,player.getUUID())==FinaleProgress.Phase.WITNESSED&&FinaleController.lockedOut(player),"the actual return saves the third terminal ending");
             helper.assertTrue(player.getInventory().items.stream().anyMatch(s->WeaponHistory.wounds(s,original)&&s.getDamageValue()==49)&&item.isRemoved(),"the physical original is recovered once, with its wear");
-            helper.assertTrue(player.getInventory().countItem(Items.EMERALD)==7&&server.overworld().getDayTime()==day&&HouseSavedData.get(server).houseOrigin().equals(origin),"possessions, the same day, and the House survive release");
+            helper.assertTrue(player.getInventory().countItem(Items.EMERALD)==7&&player.getInventory().countItem(Items.COBBLESTONE)==34*64
+                    &&server.overworld().getDayTime()==day&&HouseSavedData.get(server).houseOrigin().equals(origin),"possessions, the same day, and the House survive release");
             helper.assertTrue(!FinaleProgress.world(server).getBoolean("Ended"),"release never starts world demolition");helper.succeed();
         });
     }
