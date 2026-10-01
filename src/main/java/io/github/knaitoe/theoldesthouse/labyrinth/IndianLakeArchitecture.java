@@ -67,6 +67,30 @@ public final class IndianLakeArchitecture {
         light(level,base.offset(2,3,-8),8);light(level,base.offset(0,2,-13),6);
         LabyrinthBuilder.doors(level,base,LabyrinthPlace.SHALLOWS);
     }
+    public static void phone(ServerLevel level,BlockPos base){
+        for(int z=-60;z<=0;z++)for(int x=-26;x<=26;x++)for(int y=-4;y<=10;y++){
+            boolean wall=Math.abs(x)==26||z==-60||z==0||y==10;
+            BlockState state=wall?Blocks.BLACK_CONCRETE.defaultBlockState():y==-4?Blocks.DEEPSLATE.defaultBlockState()
+                    :y<=-1?(z<=-11?Blocks.WATER:Blocks.COARSE_DIRT).defaultBlockState():Blocks.AIR.defaultBlockState();
+            level.setBlock(base.offset(x,y,z),state,F);
+        }
+        // An enclosed night sky keeps the other stacked House rooms out of the shot.
+        for(int z=-56;z<=-7;z+=7)for(int x=-21;x<=21;x+=7){
+            if(Math.floorMod(x*7+z*11,5)<2){level.setBlock(base.offset(x,10,z),Blocks.WHITE_CONCRETE.defaultBlockState(),F);light(level,base.offset(x,9,z),3);}
+        }
+        for(int z=-1;z>=-11;z--)for(int x=-1;x<=1;x++)level.setBlock(base.offset(x,-1,z),Blocks.DARK_OAK_PLANKS.defaultBlockState(),F);
+        for(int z=-3;z>=-9;z-=3)for(int x:new int[]{-2,2})level.setBlock(base.offset(x,0,z),Blocks.DARK_OAK_FENCE.defaultBlockState(),F);
+        for(int side:new int[]{-1,1})for(int z=-4;z>=-8;z-=4){
+            for(int y=0;y<5;y++)level.setBlock(base.offset(side*17,y,z),Blocks.DARK_OAK_LOG.defaultBlockState(),F);
+            for(int dx=-2;dx<=2;dx++)level.setBlock(base.offset(side*17+dx,5,z),Blocks.DARK_OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true),F);
+        }
+        // The tower is genuinely below the water; it neither blocks the canoe nor offers dry land.
+        for(int y=-3;y<=-1;y++)for(int x=-2;x<=2;x++)for(int z=-39;z<=-35;z++)
+            if(Math.abs(x)==2||z==-39||z==-35)level.setBlock(base.offset(x,y,z),Blocks.DEEPSLATE_BRICKS.defaultBlockState(),F);
+        level.setBlock(base.offset(0,-2,-37),Blocks.BELL.defaultBlockState(),F);
+        light(level,base.offset(0,-3,-37),8);light(level,base.offset(0,4,-8),5);
+        LabyrinthBuilder.doors(level,base,LabyrinthPlace.PHONE_CANOE);
+    }
     private static BlockState stone(int x,int y,int z){
         return (Math.floorMod(x*17+y*3+z*7,11)<3?Blocks.MOSSY_COBBLESTONE:Math.floorMod(x+z,5)==0?Blocks.TUFF:Blocks.DEEPSLATE).defaultBlockState();
     }

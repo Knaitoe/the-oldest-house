@@ -47,7 +47,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.14"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.15"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'assets/the_oldest_house/sounds/vignette/heartbeat.ogg' in z.namelist()
               assert 'vignette.heartbeat' in json.loads(z.read('assets/the_oldest_house/sounds.json'))
               for name in ('assets/the_oldest_house/textures/entity/lake_witch.png',
@@ -64,7 +64,13 @@ jobs:
                            'assets/the_oldest_house/sounds/indian_lake/cave_voice_0.ogg',
                            'assets/the_oldest_house/sounds/indian_lake/cave_voice_7.ogg',
                            'assets/the_oldest_house/sounds/indian_lake/cave_door.ogg',
-                           'assets/the_oldest_house/sounds/indian_lake/shallows_door.ogg'):
+                           'assets/the_oldest_house/sounds/indian_lake/shallows_door.ogg',
+                           'assets/the_oldest_house/models/item/lake_phone.json',
+                           'assets/the_oldest_house/sounds/indian_lake/phone_door.ogg',
+                           'assets/the_oldest_house/sounds/indian_lake/phone_record.ogg',
+                           'assets/the_oldest_house/sounds/indian_lake/phone_water.ogg',
+                           'io/github/knaitoe/theoldesthouse/client/LakePhoneClient.class',
+                           'io/github/knaitoe/theoldesthouse/labyrinth/PhoneCanoe.class'):
                   assert name in z.namelist(), name
           digest = hashlib.sha256(jar.read_bytes()).hexdigest()
           jar.with_suffix('.jar.sha256').write_text(f'{digest}  {jar.name}\n')

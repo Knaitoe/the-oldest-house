@@ -13,7 +13,9 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("14")
+        event.registrar("15")
+                .playToClient(LakePhonePayload.TYPE,LakePhonePayload.STREAM_CODEC,
+                        (payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.LakePhoneClient.accept(payload)))
                 .playToClient(CompanionMenuPayload.TYPE, CompanionMenuPayload.STREAM_CODEC,
                         (payload, context) -> context.enqueueWork(() -> io.github.knaitoe.theoldesthouse.client.CompanionWheel.open(payload.entityId())))
                 .playToServer(CompanionOrderPayload.TYPE, CompanionOrderPayload.STREAM_CODEC,

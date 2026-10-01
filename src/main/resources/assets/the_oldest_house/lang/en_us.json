@@ -41,5 +41,9 @@
   "entity.the_oldest_house.lake_canoe": "The canoe at the back",
   "subtitles.the_oldest_house.cave_hymn": "Another voice joins the hymn",
   "subtitles.the_oldest_house.cave_door": "A voice beneath the water",
-  "subtitles.the_oldest_house.shallows_door": "Water against the reeds"
+  "subtitles.the_oldest_house.shallows_door": "Water against the reeds",
+  "item.the_oldest_house.lake_phone": "Lake phone",
+  "subtitles.the_oldest_house.canoe_door": "Water against a wooden hull",
+  "subtitles.the_oldest_house.phone_water": "Something falls into the water",
+  "subtitles.the_oldest_house.phone_record": "Recording begins"
 }

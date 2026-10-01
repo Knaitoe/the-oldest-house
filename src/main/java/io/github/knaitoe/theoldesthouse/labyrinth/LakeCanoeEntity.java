@@ -15,10 +15,12 @@ public final class LakeCanoeEntity extends Boat {
     public LakeCanoeEntity(EntityType<? extends Boat> type,Level level){super(type,level);setNoGravity(true);setInvulnerable(true);}
     @Override public void tick(){super.tick();setDeltaMovement(Vec3.ZERO);}
     @Override public void move(MoverType type,Vec3 movement) {}
-    @Override protected boolean canAddPassenger(Entity entity){return false;}
+    @Override protected boolean canAddPassenger(Entity entity){return getTags().contains(PhoneCanoe.CANOE)&&entity instanceof Player&&getPassengers().isEmpty();}
     @Override public boolean isPushable(){return false;}
     @Override public InteractionResult interact(Player player,InteractionHand hand){
-        if(player instanceof ServerPlayer serverPlayer&&hand==InteractionHand.MAIN_HAND)PreservedCave.examine(serverPlayer,this);
+        if(player instanceof ServerPlayer serverPlayer&&hand==InteractionHand.MAIN_HAND){
+            if(getTags().contains(PhoneCanoe.CANOE))PhoneCanoe.board(serverPlayer,this);else PreservedCave.examine(serverPlayer,this);
+        }
         return InteractionResult.sidedSuccess(level().isClientSide());
     }
     @Override public boolean hurt(DamageSource source,float amount){return false;}

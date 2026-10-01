@@ -182,13 +182,13 @@ public final class IndianLakeLinkedTests {
         });
     }
     @GameTest(template="empty",batch="lake_upgrade",timeoutTicks=200)
-    public static void actualFourteenToFifteenUpgradeKeepsTheSchoolsFiniteInventory(GameTestHelper h){
+    public static void actualFourteenUpgradeKeepsTheSchoolsFiniteInventory(GameTestHelper h){
         upgrade=new Fixture(h,new BlockPos(7600,80,7600),LabyrinthPlace.DROWNED_TOWN);Fixture f=upgrade;LabyrinthData data=LabyrinthData.get(f.server);
         var desk=(BarrelBlockEntity)f.level.getBlockEntity(f.base.offset(DrownedTown.PAPERS[0]));desk.setItem(0,ItemStack.EMPTY);desk.setItem(3,new ItemStack(Items.DIAMOND));desk.setChanged();
         CompoundTag state=data.state(DrownedTown.ID);state.putInt("Visit",2);state.putInt("DryMask",7);state.putBoolean("ChurchUnlocked",true);data.setState(DrownedTown.ID,state);
         data.setBuilt(14,f.origin);h.assertTrue(!LabyrinthBuilder.ensureBuilt(f.server),"an older stack begins its incremental upgrade");
         while(LabyrinthBuilder.isCarving())LabyrinthBuilder.tick(f.server);
-        h.assertTrue(data.builtVersion()==15&&f.level.getBlockEntity(f.base.offset(DrownedTown.PAPERS[0]))==desk&&desk.getItem(0).isEmpty()&&desk.getItem(3).is(Items.DIAMOND),"upgrade never rebuilds or restocks the existing school");
+        h.assertTrue(data.builtVersion()==LabyrinthBuilder.VERSION&&f.level.getBlockEntity(f.base.offset(DrownedTown.PAPERS[0]))==desk&&desk.getItem(0).isEmpty()&&desk.getItem(3).is(Items.DIAMOND),"upgrade never rebuilds or restocks the existing school");
         h.assertTrue(data.state(DrownedTown.ID).getInt("Visit")==2&&data.state(DrownedTown.ID).getBoolean("ChurchUnlocked")
                 &&data.door(LabyrinthPlace.PRESERVED_CAVE.entryDoorId())!=null&&data.door(LabyrinthPlace.SHALLOWS.entryDoorId())!=null,"new native doorways are added while church progress stays intact");h.succeed();
     }
