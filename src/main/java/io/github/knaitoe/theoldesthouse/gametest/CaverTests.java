@@ -106,7 +106,7 @@ public final class CaverTests {
             if(phase[0]==3){CaverVignette.playerTick(p);h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0&&WitnessAccount.count(f.data(),peer.getUUID())==0,"the chamber and an observing peer have no premature credit");
                 if(!CaverVignette.personal(f.data(),p.getUUID()).getBoolean("Pursuit"))return;
                 f.reload();f.at(p,.5,-3,-35.5);p.setShiftKeyDown(true);phase[0]=4;return;}
-            if(phase[0]==4){CaverVignette.playerTick(p);p.move(MoverType.SELF,new Vec3(0,0,.14));if(p.getZ()-f.b.getZ()> -21){p.setShiftKeyDown(false);f.at(p,-.5,-3,-10.5);phase[0]=5;}return;}
+            if(phase[0]==4){CaverVignette.playerTick(p);p.move(MoverType.SELF,new Vec3(0,0,.14));if(p.getZ()-f.b.getZ()> -21){p.setShiftKeyDown(false);f.at(p,-.5,-3,-9.5);phase[0]=5;}return;}
             if(phase[0]==5){h.assertTrue(p.onClimbable(),"the return uses the real native ladder beside the line");p.move(MoverType.SELF,new Vec3(0,.14,0));
                 if(p.getY()-f.b.getY()>=0){f.at(p,.5,0,-7.5);phase[0]=6;}return;}
             CaverVignette.playerTick(p);
