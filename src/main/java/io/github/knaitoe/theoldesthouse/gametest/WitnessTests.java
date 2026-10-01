@@ -97,7 +97,7 @@ public final class WitnessTests {
         public void close(){server.overworld().getDataStorage().set("the_oldest_house",house);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",labyrinth);TellTaleFloorboards.clearAll();}
     }
     private static void pryFixture(GameTestHelper helper,boolean attack){
-        var server=helper.getLevel().getServer();var level=server.getLevel(HouseDimensions.INTERIOR);BlockPos origin=new BlockPos(2200,80,2200);
+        var server=helper.getLevel().getServer();var level=HouseTestLevel.get(server);BlockPos origin=new BlockPos(2200,80,2200);
         try(var fixture=new Fixture(server,origin)){
             BlockPos base=LabyrinthPlaces.base(origin,LabyrinthPlace.FLOORBOARDS),board=base.offset(TellTaleFloorboards.LOOSE_BOARD);
             level.getChunkAt(board);level.setBlock(board,HouseBlocks.LOOSE_FLOORBOARD.get().defaultBlockState(),3);
@@ -123,11 +123,11 @@ public final class WitnessTests {
     private static final Map<net.minecraft.world.level.ChunkPos,BlockPos> SCENE_TICKETS=new HashMap<>();
     @AfterBatch(batch="witness_walk") public static void cleanScene(net.minecraft.server.level.ServerLevel level){
         var interior=level.getServer().getLevel(HouseDimensions.INTERIOR);
-        for(var entry:SCENE_TICKETS.entrySet())interior.getChunkSource().removeRegionTicket(net.minecraft.server.level.TicketType.PORTAL,entry.getKey(),3,entry.getValue());SCENE_TICKETS.clear();
+        if(interior!=null)for(var entry:SCENE_TICKETS.entrySet())interior.getChunkSource().removeRegionTicket(net.minecraft.server.level.TicketType.PORTAL,entry.getKey(),3,entry.getValue());SCENE_TICKETS.clear();
         if(sceneCreature!=null){sceneCreature.discard();sceneCreature=null;}if(sceneFixture!=null){sceneFixture.close();sceneFixture=null;}
     }
     @GameTest(template="empty",batch="witness_walk",timeoutTicks=1800) public static void releasedCreaturePhysicallyReachesAndClimbsTheStairs(GameTestHelper helper){
-        var server=helper.getLevel().getServer();var level=server.getLevel(HouseDimensions.INTERIOR);BlockPos origin=new BlockPos(3400,80,3400);
+        var server=helper.getLevel().getServer();var level=HouseTestLevel.get(server);BlockPos origin=new BlockPos(3400,80,3400);
         sceneFixture=new Fixture(server,origin);
         for(BlockPos at:WitnessEnding.releaseRoute(origin)){
             var chunk=new net.minecraft.world.level.ChunkPos(at);if(SCENE_TICKETS.putIfAbsent(chunk,at)!=null)continue;
@@ -151,10 +151,10 @@ public final class WitnessTests {
     private static Fixture returnFixture;
     private static BlockPos returnTicket;
     @AfterBatch(batch="witness_return") public static void cleanReturn(net.minecraft.server.level.ServerLevel level){
-        if(returnTicket!=null){level.getServer().getLevel(HouseDimensions.INTERIOR).getChunkSource().removeRegionTicket(net.minecraft.server.level.TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(returnTicket),3,returnTicket);returnTicket=null;}
+        if(returnTicket!=null&&level.getServer().getLevel(HouseDimensions.INTERIOR)!=null){level.getServer().getLevel(HouseDimensions.INTERIOR).getChunkSource().removeRegionTicket(net.minecraft.server.level.TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(returnTicket),3,returnTicket);returnTicket=null;}
         if(returnFixture!=null){returnFixture.close();returnFixture=null;}}
     @GameTest(template="empty",batch="witness_return") public static void releaseReturnsTheRealWeaponAndKeepsTheDayAndHouse(GameTestHelper helper){
-        var server=helper.getLevel().getServer();var level=server.getLevel(HouseDimensions.INTERIOR);BlockPos origin=new BlockPos(4700,80,4700);
+        var server=helper.getLevel().getServer();var level=HouseTestLevel.get(server);BlockPos origin=new BlockPos(4700,80,4700);
         returnFixture=new Fixture(server,origin);BlockPos at=FinaleArchitecture.cell(origin).north(3);level.getChunkAt(at);
         returnTicket=at;level.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(at),3,at);
         ServerPlayer player=FakePlayerFactory.get(level,new GameProfile(UUID.randomUUID(),"return_reader"));player.moveTo(Vec3.atBottomCenterOf(at));

@@ -47,7 +47,7 @@ public final class WitnessEnding {
         record.putInt("PassSide",player.getX()>cell.getX()+.5?-1:1);
         if(weapon!=null)record.putUUID("Weapon",weapon);
         if(laid!=null){
-            laid.setTarget(player.getUUID());laid.setUnlimitedLifetime();laid.setPickUpDelay(32767);
+            laid.setTarget(player.getUUID());laid.setUnlimitedLifetime();laid.setPickUpDelay(32767);laid.setInvulnerable(true);
             record.putUUID("LaidDown",laid.getUUID());record.putLong("LaidAt",laid.blockPosition().asLong());
         }
         if(player.getRespawnPosition()!=null)record.putLong("Base",player.getRespawnPosition().asLong());
@@ -94,9 +94,17 @@ public final class WitnessEnding {
         if(!record.hasUUID("LaidDown"))return true;
         player.serverLevel().getChunkAt(BlockPos.of(record.getLong("LaidAt")));
         Entity entity=player.serverLevel().getEntity(record.getUUID("LaidDown"));
-        if(!(entity instanceof ItemEntity item))return false;
+        if(!(entity instanceof ItemEntity item)){
+            boolean alreadyRecovered=false;
+            if(record.hasUUID("Weapon")){
+                UUID original=record.getUUID("Weapon");
+                for(int i=0;i<player.getInventory().getContainerSize();i++)alreadyRecovered|=WeaponHistory.wounds(player.getInventory().getItem(i),original);
+                alreadyRecovered|=WeaponHistory.wounds(player.containerMenu.getCarried(),original);
+            }
+            if(alreadyRecovered){record.remove("LaidDown");record.remove("LaidAt");}return alreadyRecovered;
+        }
         ItemStack stack=item.getItem();player.getInventory().add(stack);
-        if(stack.isEmpty())item.discard();else{item.setNoPickUpDelay();item.setPos(player.getX(),player.getY(),player.getZ());}
+        if(stack.isEmpty())item.discard();else{item.setNoPickUpDelay();item.setInvulnerable(false);item.setPos(player.getX(),player.getY(),player.getZ());}
         record.remove("LaidDown");record.remove("LaidAt");return true;
     }
     public static void keepWeaponOnDeath(ServerPlayer player,CompoundTag record){
@@ -116,7 +124,7 @@ public final class WitnessEnding {
                     &&!pet.getTags().contains(MotherOfStrays.PET)&&player.getUUID().equals(CompanionOrders.owner(pet)))companions.add(pet);
         record.putString("Phase",FinaleProgress.Phase.WITNESSED.name());record.putLong("EpilogueDue",player.server.overworld().getGameTime()+24000);
         FinaleProgress.save(player.server,player.getUUID(),record);
-        CompoundTag world=FinaleProgress.world(player.server);world.remove("Owner");LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);
+        CompoundTag world=FinaleProgress.world(player.server);world.remove("Owner");world.putBoolean("CellReleased",true);LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);
         LabyrinthData.get(player.server).clearReturns(player.getUUID());HouseTransitionEvents.cancelPending(player,"the account is complete");
         Vec3 outside=HouseProxyEntityEvacuation.frontDoorExit(player.server.overworld(),origin);
         player.server.overworld().getChunkAt(BlockPos.containing(outside));player.stopRiding();

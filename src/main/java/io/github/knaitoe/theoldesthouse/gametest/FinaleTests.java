@@ -98,7 +98,7 @@ public final class FinaleTests {
             helper.assertTrue(!LabyrinthPlaces.isInStack(origin,p.pos()),"the staircase does not overwrite saved vignette slots");}
         var route=FinaleArchitecture.staircaseRoute(origin);helper.assertTrue(route.get(0).getY()-route.get(route.size()-1).getY()>=120,"this is an actual long descent");
         for(int i=0;i<route.size();i++){
-            helper.assertTrue(blocks.containsKey(route.get(i).below()),"every tread has a real block at "+i);
+            helper.assertTrue(blocks.containsKey(route.get(i).below())&&!blocks.get(route.get(i).below()).isAir(),"every tread has a real block at "+i);
             var feet=blocks.get(route.get(i));var head=blocks.get(route.get(i).above());
             helper.assertTrue((feet==null||feet.isAir())&&(head==null||head.isAir()),"a landing cannot obstruct the route at tread "+i);
         }
@@ -112,9 +112,11 @@ public final class FinaleTests {
         BlockPos origin=BlockPos.ZERO;Map<BlockPos,net.minecraft.world.level.block.state.BlockState> blocks=new HashMap<>();for(var p:FinaleArchitecture.plan(origin))blocks.put(p.pos(),p.block());
         var route=FinaleArchitecture.escapeRoute(origin);
         helper.assertTrue(route.get(0).equals(FinaleArchitecture.bottomStart(origin))&&route.get(route.size()-1).equals(FinaleArchitecture.exit(origin)),"the real route joins the arrival and exit");
-        for(int i=0;i<route.size();i++){helper.assertTrue(blocks.containsKey(route.get(i).below()),"each route point has floor");
+        for(int i=0;i<route.size();i++){helper.assertTrue(blocks.containsKey(route.get(i).below())&&!blocks.get(route.get(i).below()).isAir(),"each route point has floor");
             if(i>0)helper.assertTrue(route.get(i).distManhattan(route.get(i-1))==1,"no teleport or gap replaces a walkable turn");}
         helper.assertTrue(blocks.containsKey(FinaleArchitecture.base(origin).offset(26,3,95)),"a wrong branch has real geometry");
-        helper.assertTrue(!blocks.containsKey(FinaleArchitecture.base(origin).offset(0,3,76)),"the bottom has real dropoffs rather than a solid flat maze");helper.succeed();
+        helper.assertTrue(blocks.get(FinaleArchitecture.base(origin).offset(0,3,76)).isAir(),"the bottom has real cleared dropoffs rather than generated stone");
+        helper.assertTrue(blocks.get(FinaleArchitecture.cell(origin).south(4).above(2)).isAir(),"the cell's interior is carved out of terrain");
+        helper.assertTrue(blocks.get(FinaleArchitecture.base(origin).offset(0,150,0)).isAir(),"the shaft has an actual open central void");helper.succeed();
     }
 }

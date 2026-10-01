@@ -27,6 +27,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.RedRoom;
 import io.github.knaitoe.theoldesthouse.labyrinth.RoomSnapshot;
 import io.github.knaitoe.theoldesthouse.labyrinth.TellTaleFloorboards;
 import io.github.knaitoe.theoldesthouse.labyrinth.VignetteYields;
+import io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -161,6 +162,7 @@ public final class LabyrinthTests {
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
             if (place.isFinishable()) {
                 data.setCompleted(place.id(), true);
+                var story=WitnessAccount.Story.of(place.id());if(story!=null)WitnessAccount.resolve(data,player,story,"resolved");
             }
         }
         helper.assertTrue(LabyrinthDealer.vignetteChance(data, player) > 0
@@ -233,6 +235,7 @@ public final class LabyrinthTests {
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
             if (place.isFinishable()) {
                 data.setCompleted(place.id(), true);
+                var story=WitnessAccount.Story.of(place.id());if(story!=null)WitnessAccount.resolve(data,player,story,"resolved");
             }
         }
         RandomSource random = RandomSource.create(17);
