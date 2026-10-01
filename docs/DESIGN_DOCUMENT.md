@@ -660,6 +660,7 @@ First playable site in 0.4.11: [DROWNED_TOWN_0_4_11.md](DROWNED_TOWN_0_4_11.md).
 
 - Film at night over the drowned steeple. When it happens, the phone drops and the view becomes the phone's, looking up at the sky, unable to move. There is no death screen.
 - The phone and footage are later found in the canoe at the back of the preserved-dead cave.
+- **Playable in 0.4.15:** empty-hand boarding, explicit filming, nine seconds over the actual submerged tower, then a tracked phone viewpoint fixed on the sky for seven seconds. A blackout returns the living recorder to shore, retaining other possessions. The original item and captured frame metadata wait for their owner at the cave canoe; the recovered phone opens its written frame record. Scene time pauses offline and a dropped original survives interruption and reload. Completion is a personal one-shot memory resolution, with no observer or borrowed-artifact credit. Builder 16 appends slot 30 without rebuilding earlier sites. See [PHONE_CANOE_0_4_15.md](PHONE_CANOE_0_4_15.md).
 
 ### Indian Lake: costume night
 
@@ -751,7 +752,7 @@ Assets: the Minotaur, a custom creature with charge, stun, and wounded-crawl ani
 
 ### The Witness: an earned release
 
-- This is an original mod ending. Resolve 75% of the playable Witness story pool, rounded up, across at least two story kinds to restore the final passages in a written account and the play beside the cell. The threshold scales automatically when shipped sources are added: eight sources require six resolutions in 0.4.13. Survival, understanding, connection, memory, and release can contribute; neither the Mother nor every vignette is mandatory.
+- This is an original mod ending. Resolve 75% of the playable Witness story pool, rounded up, across at least two story kinds to restore the final passages in a written account and the play beside the cell. The threshold scales automatically when shipped sources are added: nine sources require seven resolutions in 0.4.15. Survival, understanding, connection, memory, and release can contribute; neither the Mother nor every vignette is mandatory.
 - The current eight sources are the floorboards, hide-and-clap, Harrigan, the model home, Drowned Town's church roof, the preserved cave, the Shallows, and the Mother's peaceful resolution. World completion flags and merely visiting rooms confer no credit. A later explorer can crouch and inspect a finished room's actual ending prop to record its aftermath; acquiring someone else's book or artifact does not transfer progress.
 - Each vignette release must review the personal resolution hook, eligible pool, resulting 75% threshold, tests and current documentation. Draft sites and unfinished encounters do not enter the quota. See [VIGNETTE_RELEASE_CHECKLIST.md](VIGNETTE_RELEASE_CHECKLIST.md). Existing saved evidence is retained when the requirement rises; an uncommitted ending uses the current quota, while completed endings and a release already underway remain saved.
 - Read the restored play at the cell's lectern. Lay the original most-used weapon beside the cell, clear both hands, and crouch while opening it. Normal opening still chooses the violent encounter.

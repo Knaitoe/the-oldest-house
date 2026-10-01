@@ -158,6 +158,12 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, io.github.knaitoe.theoldesthouse.labyrinth.PreservedCave::onAttack);
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.Shallows::onServerTick);
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.Shallows::onToss);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.PhoneCanoe::onServerTick);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, io.github.knaitoe.theoldesthouse.labyrinth.PhoneCanoe::onDamage);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, io.github.knaitoe.theoldesthouse.labyrinth.PhoneCanoe::onToss);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, io.github.knaitoe.theoldesthouse.labyrinth.PhoneCanoe::onAttack);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, io.github.knaitoe.theoldesthouse.labyrinth.PhoneCanoe::onBlock);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.PhoneCanoe::onLogout);
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, io.github.knaitoe.theoldesthouse.labyrinth.Shallows::onAttack);
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, io.github.knaitoe.theoldesthouse.labyrinth.DrownedTown::onRightClick);
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.DrownedTown::onSmelted);

@@ -173,6 +173,11 @@ public final class LabyrinthCommands {
                             }
                             return 1;
                         })))
+                .then(Commands.literal("phone_canoe")
+                        .then(Commands.literal("status").executes(context -> {
+                            ServerPlayer player=context.getSource().getPlayerOrException();
+                            context.getSource().sendSuccess(()->Component.literal(io.github.knaitoe.theoldesthouse.labyrinth.PhoneCanoe.describe(player)),false);return 1;
+                        })))
                 .then(Commands.literal("preserved_cave")
                         .then(Commands.literal("status").executes(context -> {
                             for(String line:io.github.knaitoe.theoldesthouse.labyrinth.PreservedCave.describe(context.getSource().getServer()))

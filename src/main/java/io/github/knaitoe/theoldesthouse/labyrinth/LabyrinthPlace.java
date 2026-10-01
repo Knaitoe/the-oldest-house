@@ -183,6 +183,10 @@ public enum LabyrinthPlace {
     SHALLOWS("shallows", Kind.ONE_SHOT, 29, new BoundingBox(-18, -4, -36, 18, 10, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
     )),
+    /** The recording that survives its recorder. Personal, like the Shallows recollection. */
+    PHONE_CANOE("phone_canoe", Kind.ONE_SHOT, 30, new BoundingBox(-26,-4,-60,26,10,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN)
+    )),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

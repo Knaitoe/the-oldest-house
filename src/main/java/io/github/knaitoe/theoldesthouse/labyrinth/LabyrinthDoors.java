@@ -175,6 +175,7 @@ public final class LabyrinthDoors {
             locked(player);
             return;
         }
+        if(place==LabyrinthPlace.PHONE_CANOE&&!PhoneCanoe.canDeal(data,player.getUUID())){locked(player);return;}
         arrive(player, door, entry, place);
     }
 
@@ -221,6 +222,7 @@ public final class LabyrinthDoors {
             DrownedTown.onArrive(p, place);
             PreservedCave.onArrive(p, place);
             Shallows.onArrive(p, place);
+            PhoneCanoe.onArrive(p,place);
             MotherOfStrays.onArrive(p, place);
             WitnessAccount.onArrive(p, place);
             LabyrinthEncounters.onArrive(p, place);
@@ -290,6 +292,7 @@ public final class LabyrinthDoors {
                 }
                 if (place == LabyrinthPlace.PRESERVED_CAVE) PreservedCave.onDepart(player);
                 if (place == LabyrinthPlace.SHALLOWS) Shallows.onDepart(player);
+                if (place == LabyrinthPlace.PHONE_CANOE) PhoneCanoe.interrupt(player);
                 if (place == LabyrinthPlace.MOTHER_DEN) {
                     MotherCollection.get(player.server).presence(player.getUUID(), false);
                 }

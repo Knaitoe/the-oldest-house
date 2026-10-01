@@ -231,5 +231,32 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.shallows_door"
+  },
+  "leak.phone_canoe": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:indian_lake/phone_door",
+        "attenuation_distance": 18
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.canoe_door"
+  },
+  "vignette.phone_water": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:indian_lake/phone_water",
+        "attenuation_distance": 18
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.phone_water"
+  },
+  "vignette.phone_record": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:indian_lake/phone_record",
+        "attenuation_distance": 18
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.phone_record"
   }
 }

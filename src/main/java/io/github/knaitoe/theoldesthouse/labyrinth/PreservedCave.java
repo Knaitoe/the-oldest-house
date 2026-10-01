@@ -115,7 +115,7 @@ public final class PreservedCave {
             if(IndianLakeProgress.deadOnShore(data))data.setCompleted(ID,true);
         }
     }
-    /** Future phone encounter stores the original stack here. No substitute or invented footage is created. */
+    /** The filming encounter stores the original stack here. Its owner alone can retrieve it. */
     public static void rememberDroppedPhone(ServerPlayer owner,ItemStack phone){
         if(phone.isEmpty())return;LabyrinthData data=LabyrinthData.get(owner.server);CompoundTag state=data.state("indian_lake"),phones=state.getCompound("DroppedPhones");
         String id=owner.getUUID().toString();if(phones.contains(id))return;
@@ -125,6 +125,16 @@ public final class PreservedCave {
     public static boolean phoneWaiting(LabyrinthData data,UUID player){
         CompoundTag record=data.state("indian_lake").getCompound("DroppedPhones").getCompound(player.toString());
         return !record.isEmpty()&&!record.getBoolean("Recovered");
+    }
+    /** Continue the same recording after it falls. Identity and recovery status prevent replacing another artifact. */
+    public static boolean updateDroppedPhone(ServerPlayer owner,ItemStack phone){
+        LabyrinthData data=LabyrinthData.get(owner.server);CompoundTag state=data.state("indian_lake"),phones=state.getCompound("DroppedPhones"),record=phones.getCompound(owner.getUUID().toString());
+        if(record.isEmpty()||record.getBoolean("Recovered"))return false;
+        ItemStack original=ItemStack.parseOptional(owner.registryAccess(),record.getCompound("Item"));
+        var old=original.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);var next=phone.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+        if(old==null||next==null||!old.copyTag().hasUUID(PhoneCanoe.SCENE)||!next.copyTag().hasUUID(PhoneCanoe.SCENE)
+                ||!old.copyTag().getUUID(PhoneCanoe.SCENE).equals(next.copyTag().getUUID(PhoneCanoe.SCENE)))return false;
+        record.put("Item",phone.copyWithCount(1).save(owner.registryAccess()));phones.put(owner.getUUID().toString(),record);state.put("DroppedPhones",phones);data.setState("indian_lake",state);return true;
     }
     public static boolean recoverPhone(ServerPlayer player){
         if(!IndianLakeRooms.inside(player,LabyrinthPlace.PRESERVED_CAVE))return false;

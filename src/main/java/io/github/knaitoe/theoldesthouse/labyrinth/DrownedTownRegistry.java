@@ -26,6 +26,9 @@ public final class DrownedTownRegistry {
     public static final DeferredItem<DrownedEssayItem> DRIED_ESSAY_THREE = dry("dried_essay_three", 2);
     public static final DeferredItem<ChurchKeyItem> CHURCH_KEY = ITEMS.register("church_key", () -> new ChurchKeyItem(yieldProperties()));
     public static final DeferredItem<ShallowsBurdenItem> SHALLOWS_BURDEN = ITEMS.register("shallows_burden", () -> new ShallowsBurdenItem(new Item.Properties()));
+    public static final DeferredItem<LakePhoneItem> LAKE_PHONE=ITEMS.register("lake_phone",()->new LakePhoneItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredHolder<EntityType<?>,EntityType<LakePhoneCamera>> PHONE_CAMERA=TYPES.register("lake_phone_camera",
+            ()->EntityType.Builder.<LakePhoneCamera>of(LakePhoneCamera::new,MobCategory.MISC).sized(.1F,.1F).clientTrackingRange(10).updateInterval(1).build("lake_phone_camera"));
     public static final DeferredHolder<EntityType<?>, EntityType<LakeCanoeEntity>> CAVE_CANOE = TYPES.register("lake_canoe",
             () -> EntityType.Builder.<LakeCanoeEntity>of(LakeCanoeEntity::new, MobCategory.MISC).sized(1.375F,.5625F).clientTrackingRange(10).build("lake_canoe"));
     public static final DeferredHolder<EntityType<?>, EntityType<LakeWitchEntity>> LAKE_WITCH = TYPES.register("lake_witch",
@@ -39,6 +42,9 @@ public final class DrownedTownRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> LAKE_LEAK = sound("leak.indian_lake");
     public static final DeferredHolder<SoundEvent, SoundEvent> CAVE_LEAK = sound("leak.preserved_cave");
     public static final DeferredHolder<SoundEvent, SoundEvent> SHALLOWS_LEAK = sound("leak.shallows");
+    public static final DeferredHolder<SoundEvent,SoundEvent> PHONE_LEAK=sound("leak.phone_canoe");
+    public static final DeferredHolder<SoundEvent,SoundEvent> PHONE_RECORD=sound("vignette.phone_record");
+    public static final DeferredHolder<SoundEvent,SoundEvent> PHONE_WATER=sound("vignette.phone_water");
     private static final java.util.List<DeferredHolder<SoundEvent,SoundEvent>> CAVE_VOICES = java.util.stream.IntStream.range(0,8).mapToObj(i->sound("vignette.cave_voice_"+i)).toList();
     public static SoundEvent caveVoice(int index){return CAVE_VOICES.get(Math.max(0,Math.min(7,index))).get();}
     private DrownedTownRegistry() {}
