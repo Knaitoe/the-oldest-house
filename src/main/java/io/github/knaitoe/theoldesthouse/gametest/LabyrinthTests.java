@@ -861,6 +861,7 @@ public final class LabyrinthTests {
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
             if (place.isFinishable()) {
                 data.setCompleted(place.id(), true);
+                var story=WitnessAccount.Story.of(place.id());if(story!=null)WitnessAccount.resolve(data,player,story,"resolved");
             }
         }
         helper.assertTrue(LabyrinthDealer.giveScent(data, player) == LabyrinthDealer.Scent.SEEKING,

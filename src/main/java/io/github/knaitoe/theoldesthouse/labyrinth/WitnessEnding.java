@@ -118,6 +118,8 @@ public final class WitnessEnding {
     }
     public static void finish(ServerPlayer player,BlockPos origin,CompoundTag record){
         if(FinaleProgress.phase(record)!=FinaleProgress.Phase.HOMEWARD)return;
+        Vec3 outside=HouseProxyEntityEvacuation.frontDoorExit(player.server.overworld(),origin);
+        if(outside==null)return; // Do not seal the player's ending before a safe exterior landing exists.
         if(!returnWeapon(player,record))return;
         List<TamableAnimal> companions=new ArrayList<>();
         for(var level:player.server.getAllLevels())if(HouseDimensions.isHouseDimension(level.dimension()))
@@ -127,7 +129,6 @@ public final class WitnessEnding {
         FinaleProgress.save(player.server,player.getUUID(),record);
         CompoundTag world=FinaleProgress.world(player.server);world.remove("Owner");world.putBoolean("CellReleased",true);LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);
         LabyrinthData.get(player.server).clearReturns(player.getUUID());HouseTransitionEvents.cancelPending(player,"the account is complete");
-        Vec3 outside=HouseProxyEntityEvacuation.frontDoorExit(player.server.overworld(),origin);
         player.server.overworld().getChunkAt(BlockPos.containing(outside));player.stopRiding();
         player.teleportTo(player.server.overworld(),outside.x,outside.y,outside.z,180,0);player.resetFallDistance();
         for(var pet:companions)CompanionOrders.followAcross(pet,player);

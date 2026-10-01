@@ -120,10 +120,12 @@ public final class WitnessTests {
 
     private static Fixture sceneFixture;
     private static MinotaurEntity sceneCreature;
+    private static ServerPlayer scenePlayer;
     private static final Map<net.minecraft.world.level.ChunkPos,BlockPos> SCENE_TICKETS=new HashMap<>();
     @AfterBatch(batch="witness_walk") public static void cleanScene(net.minecraft.server.level.ServerLevel level){
         var interior=level.getServer().getLevel(HouseDimensions.INTERIOR);
         if(interior!=null)for(var entry:SCENE_TICKETS.entrySet())interior.getChunkSource().removeRegionTicket(net.minecraft.server.level.TicketType.PORTAL,entry.getKey(),3,entry.getValue());SCENE_TICKETS.clear();
+        if(scenePlayer!=null){level.getServer().getPlayerList().remove(scenePlayer);scenePlayer=null;}
         if(sceneCreature!=null){sceneCreature.discard();sceneCreature=null;}if(sceneFixture!=null){sceneFixture.close();sceneFixture=null;}
     }
     @GameTest(template="empty",batch="witness_walk",timeoutTicks=1800) public static void releasedCreaturePhysicallyReachesAndClimbsTheStairs(GameTestHelper helper){
@@ -135,13 +137,13 @@ public final class WitnessTests {
         }
         for(var placement:FinaleArchitecture.plan(origin))level.setBlock(placement.pos(),placement.block(),2);
         FinaleArchitecture.openCell(level,origin);FinaleArchitecture.seal(level,origin,true);
-        BlockPos cell=FinaleArchitecture.cell(origin);ServerPlayer player=FakePlayerFactory.get(level,new GameProfile(UUID.randomUUID(),"release_walker"));
-        player.moveTo(Vec3.atBottomCenterOf(cell.north(3)));CompoundTag record=new CompoundTag();record.putString("Phase",FinaleProgress.Phase.RELEASE.name());record.putInt("PassSide",1);
-        FinaleProgress.save(server,player.getUUID(),record);
+        BlockPos cell=FinaleArchitecture.cell(origin);scenePlayer=helper.makeMockServerPlayerInLevel();ServerPlayer player=scenePlayer;
+        Vec3 stand=Vec3.atBottomCenterOf(cell.north(3));player.teleportTo(level,stand.x,stand.y,stand.z,0,0);
+        CompoundTag record=new CompoundTag();record.putString("Phase",FinaleProgress.Phase.RELEASE.name());record.putInt("PassSide",1);
         sceneCreature=FinaleRegistry.MINOTAUR.get().create(level);sceneCreature.owner(player.getUUID());sceneCreature.released();sceneCreature.moveTo(Vec3.atBottomCenterOf(cell.south(5)));level.addFreshEntity(sceneCreature);
+        record.putUUID("Creature",sceneCreature.getUUID());FinaleProgress.save(server,player.getUUID(),record);
         var creature=sceneCreature;
         helper.succeedWhen(()->{
-            WitnessEnding.tickCreature(creature,player);
             helper.assertTrue(FinaleProgress.phase(server,player.getUUID())==FinaleProgress.Phase.HOMEWARD,
                     "the native creature must walk its release route; step="+FinaleProgress.player(server,player.getUUID()).getInt("ReleaseStep")+"; position="+creature.position());
             helper.assertTrue(creature.isRemoved()&&creature.getY()>FinaleArchitecture.ARENA+10,"departure happens after actual stair ascent");
@@ -150,14 +152,19 @@ public final class WitnessTests {
     }
     private static Fixture returnFixture;
     private static BlockPos returnTicket;
+    private static ServerPlayer returnPlayer;
     @AfterBatch(batch="witness_return") public static void cleanReturn(net.minecraft.server.level.ServerLevel level){
         if(returnTicket!=null&&level.getServer().getLevel(HouseDimensions.INTERIOR)!=null){level.getServer().getLevel(HouseDimensions.INTERIOR).getChunkSource().removeRegionTicket(net.minecraft.server.level.TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(returnTicket),3,returnTicket);returnTicket=null;}
+        if(returnPlayer!=null){level.getServer().getPlayerList().remove(returnPlayer);returnPlayer=null;}
         if(returnFixture!=null){returnFixture.close();returnFixture=null;}}
     @GameTest(template="empty",batch="witness_return") public static void releaseReturnsTheRealWeaponAndKeepsTheDayAndHouse(GameTestHelper helper){
         var server=helper.getLevel().getServer();var level=HouseTestLevel.get(server);BlockPos origin=new BlockPos(4700,80,4700);
         returnFixture=new Fixture(server,origin);BlockPos at=FinaleArchitecture.cell(origin).north(3);level.getChunkAt(at);
         returnTicket=at;level.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(at),3,at);
-        ServerPlayer player=FakePlayerFactory.get(level,new GameProfile(UUID.randomUUID(),"return_reader"));player.moveTo(Vec3.atBottomCenterOf(at));
+        level.setBlock(at.below(),Blocks.POLISHED_DEEPSLATE.defaultBlockState(),3);
+        BlockPos doorstep=origin.offset(HouseLayout.FRONT_DOOR.x(),HouseLayout.FRONT_DOOR.y()-1,HouseLayout.FRONT_DOOR.z()-2);
+        server.overworld().getChunkAt(doorstep);for(BlockPos ground:BlockPos.betweenClosed(doorstep.offset(-3,0,-3),doorstep.offset(3,0,0)))server.overworld().setBlock(ground,Blocks.STONE.defaultBlockState(),3);
+        returnPlayer=helper.makeMockServerPlayerInLevel();ServerPlayer player=returnPlayer;Vec3 stand=Vec3.atBottomCenterOf(at);player.teleportTo(level,stand.x,stand.y,stand.z,0,0);
         ItemStack sword=new ItemStack(Items.IRON_SWORD);sword.setDamageValue(49);UUID original=WeaponHistory.stamp(sword);
         ItemEntity item=new ItemEntity(level,at.getX()+.5,at.getY(),at.getZ()+.5,sword);item.setUnlimitedLifetime();item.setPickUpDelay(32767);level.addFreshEntity(item);
         player.getInventory().add(new ItemStack(Items.EMERALD,7));CompoundTag record=new CompoundTag();record.putString("Phase",FinaleProgress.Phase.HOMEWARD.name());record.putUUID("LaidDown",item.getUUID());record.putLong("LaidAt",at.asLong());
