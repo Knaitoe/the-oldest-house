@@ -42,6 +42,7 @@ public final class DrownedTown {
     public static final BlockPos CHURCH_DOOR = new BlockPos(15, -11, -40), ROOF_HATCH = new BlockPos(15, -4, -43);
     private static final String BODY = "the_oldest_house_indian_lake_body";
     private static final Map<UUID, BlockPos> OPEN_FURNACES = new HashMap<>();
+    private static long nextHymn;
     private DrownedTown() {}
 
     public static int nextVisit(int visit, boolean beatDone) { return visit < 1 ? 1 : beatDone && visit < FINAL_VISIT ? visit + 1 : visit; }
@@ -50,7 +51,7 @@ public final class DrownedTown {
                 && point.z >= base.getZ() - 64 && point.z <= base.getZ() + 18
                 && point.y >= base.getY() - 13 && point.y <= base.getY() + 9;
     }
-    private static AABB bounds(BlockPos base) { return new AABB(base.offset(-29, -13, -64), base.offset(30, 9, 18)); }
+    private static AABB bounds(BlockPos base) { return new AABB(base.getX()-29, base.getY()-13, base.getZ()-64, base.getX()+30, base.getY()+9, base.getZ()+18); }
     public static @Nullable BlockPos base(MinecraftServer server) {
         BlockPos origin = HouseSavedData.get(server).houseOrigin();
         return origin == null ? null : LabyrinthPlaces.base(origin, LabyrinthPlace.DROWNED_TOWN);
@@ -161,6 +162,7 @@ public final class DrownedTown {
         state.putBoolean("RoofOpened", true); state.putBoolean("BeatDone", true); data.setState(ID, state); data.setCompleted(ID, true);
         setRoof(player.serverLevel(), base, true);
         player.serverLevel().playSound(null, at, DrownedTownRegistry.HYMN.get(), SoundSource.AMBIENT, 1.4F, 1);
+        nextHymn = player.serverLevel().getGameTime() + 160;
         WitnessAccount.resolve(player, WitnessAccount.Story.DROWNED_TOWN, "released_hymn");
         player.displayClientMessage(Component.literal("The hymn goes out across the water. The preacher keeps singing below."), false);
         return true;
@@ -258,8 +260,9 @@ public final class DrownedTown {
         if (server.getTickCount() % 20 == 0) keepLoaded(level, base);
         ensureWitch(level, base, data);
         if (level.getBlockEntity(base.offset(FURNACE)) instanceof FurnaceBlockEntity furnace) recordDrying(server, essayIndex(furnace.getItem(2)));
-        if (server.getTickCount() % 160 == 0) {
+        if (level.getGameTime() >= nextHymn) {
             boolean open = data.state(ID).getBoolean("RoofOpened");
+            nextHymn = level.getGameTime() + (open ? 160 : 200);
             level.playSound(null, base.offset(15, open ? -1 : -8, -50), DrownedTownRegistry.HYMN.get(), SoundSource.AMBIENT,
                     open ? 1.0F : .45F, open ? 1 : .8F);
         }
@@ -278,5 +281,5 @@ public final class DrownedTown {
                 + "/3; church " + (state.getBoolean("ChurchUnlocked") ? "unlocked" : "locked")
                 + "; roof " + (state.getBoolean("RoofOpened") ? "open; hymn escaped" : "closed") + "; finished " + data.isCompleted(ID) + ".");
     }
-    public static void clearAll() { OPEN_FURNACES.clear(); }
+    public static void clearAll() { OPEN_FURNACES.clear(); nextHymn = 0; }
 }
