@@ -48,9 +48,10 @@ public final class DrownedEssayItem extends WrittenBookItem {
             };
         };
         for (String page : text) pages.add(HouseWriting.page(HouseWriting.WritingStyle.PLAIN, page));
-        if (!boys.isEmpty()) pages.add(HouseWriting.page(HouseWriting.WritingStyle.PLAIN,
-                "THE SHALLOWS\n\nThe boys who were there:\n\n" + String.join("\n", boys)
-                        + "\n\nThe shore remembers who threw her."));
+        for (int first = 0; first < boys.size() && pages.size() < 100; first += 6)
+            pages.add(HouseWriting.page(HouseWriting.WritingStyle.PLAIN,
+                    "THE SHALLOWS\n\nThe boys who were there:\n\n" + String.join("\n", boys.subList(first, Math.min(first + 6, boys.size())))
+                            + "\n\nThe shore remembers who threw her."));
         return new WrittenBookContent(Filterable.passThrough(title), "An Indian Lake student", 0,
                 pages.stream().map(Filterable::passThrough).toList(), true);
     }
@@ -65,6 +66,8 @@ public final class DrownedEssayItem extends WrittenBookItem {
                 for (String id : boys.getAllKeys().stream().sorted().toList()) names.add(boys.getString(id));
             }
             stack.set(DataComponents.WRITTEN_BOOK_CONTENT, content(essay, names));
+            // Publish the changed held stack before the native open-book packet reads its pages.
+            reader.inventoryMenu.broadcastChanges();
         }
         return super.use(level, player, hand);
     }
