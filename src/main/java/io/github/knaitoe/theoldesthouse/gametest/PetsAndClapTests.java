@@ -136,13 +136,15 @@ public final class PetsAndClapTests {
             if(porch==null)porch=Vec3.atBottomCenterOf(origin.offset(HouseLayout.AXIS_X,1,HouseLayout.FRONT_DOOR_Z-2));
             BlockPos platform=BlockPos.containing(porch).below();
             for(int x=-3;x<=3;x++)for(int z=-3;z<=3;z++)level.setBlock(platform.offset(x,0,z),net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(),3);
+            var grounded=HouseProxyEntityEvacuation.frontDoorExit(level,origin);if(grounded!=null)porch=grounded;
             wolf.setNoAi(true);
             introPorch=BlockPos.containing(porch);level.getChunkSource().addRegionTicket(TicketType.PORTAL,new ChunkPos(introPorch),3,introPorch);level.getChunkAt(introPorch);
             owner.moveTo(porch);wolf.moveTo(porch.add(1,0,0));
-            h.runAfterDelay(4,()->{
+            h.onEachTick(()->{
+            if(level.getEntity(wolf.getUUID())!=wolf)return;
             Hillary.tickGuide(level,owner,wolf.getUUID(),true,origin);
             h.assertTrue(!Hillary.introductionActive(wolf)&&wolf.getPersistentData().getBoolean(Hillary.INTRO_DONE)&&wolf.isOrderedToSit()
-                    &&CompanionOrders.order(wolf)==CompanionOrders.Order.STAY&&owner.getUUID().equals(wolf.getOwnerUUID()),"arrival restores the wheel command and native owner");h.succeed();
+                    &&CompanionOrders.order(wolf)==CompanionOrders.Order.STAY&&owner.getUUID().equals(wolf.getOwnerUUID()),"arrival restores the wheel command and native owner; done="+wolf.getPersistentData().getBoolean(Hillary.INTRO_DONE)+"; sit="+wolf.isOrderedToSit()+"; owner="+wolf.getOwnerUUID()+"; wolf="+wolf.position()+"; porch="+HouseProxyEntityEvacuation.frontDoorExit(level,origin)+"; confirmed="+Hillary.introductionConfirmed(wolf));h.succeed();
             });
     }
     private static final class Fixture implements AutoCloseable {
@@ -158,7 +160,7 @@ public final class PetsAndClapTests {
             LabyrinthBuilder.registerDoors(data,place,base);
             level.getChunkSource().addRegionTicket(TicketType.PORTAL,new ChunkPos(base),3,base);level.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(true,server);
         }
-        ServerPlayer player(BlockPos at){var p=helper.makeMockServerPlayerInLevel();p.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);p.teleportTo(level,at.getX()+.5,at.getY(),at.getZ()+.5,180,0);players.add(p);return p;}
+        ServerPlayer player(BlockPos at){var p=helper.makeMockServerPlayerInLevel();p.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);p.teleportTo(level,at.getX()+.5,at.getY(),at.getZ()+.5,180,0);p.hasChangedDimension();players.add(p);return p;}
         Wolf dog(ServerPlayer owner,boolean stay){var pet=EntityType.WOLF.create(level);pet.moveTo(owner.position().add(stay?-1:1,0,0));pet.tame(owner);pet.setHealth(7);pet.setNoAi(true);level.addFreshEntity(pet);CompanionOrders.issue(pet,owner,stay?CompanionOrders.Order.STAY:CompanionOrders.Order.FOLLOW);return pet;}
         public void close(){HideAndClap.clearAll();MotherOfStrays.clearAll();for(var p:players){if(server.getPlayerList().getPlayers().contains(p))server.getPlayerList().remove(p);else p.discard();}
             for(var place:List.of(LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.MOTHER_DEN)) {
@@ -179,9 +181,12 @@ public final class PetsAndClapTests {
         h.runAfterDelay(5,()->{
             h.assertTrue(HideAndClap.isBound(owner.getItemBySlot(EquipmentSlot.HEAD),owner.getUUID()),"server ticks bind the real worn cloth");
         });
-        h.runAfterDelay(ClapGameClock.LIMIT_TICKS+23,()->h.assertTrue(owner.isAlive()&&owner.getItemBySlot(EquipmentSlot.HEAD).isEmpty()&&HideAndClap.isLocked(owner),"the cloth physically comes off while the living player remains locked for the reveal"));
+        h.runAfterDelay(ClapGameClock.LIMIT_TICKS+23,()->{
+            HideAndClap.onPlayerTick(new net.neoforged.neoforge.event.tick.PlayerTickEvent.Pre(owner));
+            h.assertTrue(owner.isAlive()&&owner.getItemBySlot(EquipmentSlot.HEAD).isEmpty()&&HideAndClap.isLocked(owner),"the cloth physically comes off and player ticks cannot rebind it during the reveal");
+        });
         h.runAfterDelay(ClapGameClock.LIMIT_TICKS+58,()->{
-            h.assertTrue(owner.isDeadOrDying()&&owner.getInventory().isEmpty(),"the native kill and keepInventory loss execute after the visible interval");
+            h.assertTrue(owner.isDeadOrDying()&&owner.getInventory().isEmpty(),"the native kill and keepInventory loss execute after the visible interval; health="+owner.getHealth()+"; removed="+owner.isRemoved()+"; inventory="+owner.getInventory().isEmpty()+"; changing="+owner.isChangingDimension()+"; invulnerable="+owner.isInvulnerableTo(owner.damageSources().genericKill()));
             var collection=MotherCollection.get(f.server);var entry=collection.all().stream().filter(e->e.livingClaim).findFirst().orElseThrow();
             h.assertTrue(follower.isRemoved()&&entry.contents.hasUUID("UUID")&&entry.contents.getUUID("UUID").equals(id)&&entry.contents.getFloat("Health")==7,"a real vignette death captures the exact surviving follower");
             h.assertTrue(staying.isAlive()&&!staying.isRemoved()&&collection.all().stream().filter(e->e.livingClaim).count()==1,"the pet ordered to stay is left alone");
@@ -282,7 +287,7 @@ public final class PetsAndClapTests {
             h.assertTrue(MotherOfferings.playerEligible(owner,mother[0],victim[0]),"the survival player is physically enclosed with Mother and within her reach; mother="+mother[0].position()+"; victim="+victim[0].position()+"; alive="+victim[0].isAlive()+"; removed="+victim[0].isRemoved()+"; mode="+victim[0].gameMode.getGameModeForPlayer()+"; sight="+mother[0].hasLineOfSight(victim[0])+"; enclosed="+MotherOfferings.enclosedTogether(f.level,mother[0].blockPosition(),victim[0].blockPosition()));
             MotherOfStrays.onEntityInteract(new PlayerInteractEvent.EntityInteract(owner,InteractionHand.MAIN_HAND,captive[0]));
             var collection=MotherCollection.get(f.server);
-            h.assertTrue(victim[0].isDeadOrDying()&&owner.isAlive()&&collection.wasPlayerOffered(victim[0].getUUID()),"the actual trapped player dies as the payment while the trader survives");
+            h.assertTrue(victim[0].isDeadOrDying()&&owner.isAlive()&&collection.wasPlayerOffered(victim[0].getUUID()),"the actual trapped player dies as the payment while the trader survives; health="+victim[0].getHealth()+"; removed="+victim[0].isRemoved()+"; paid="+collection.wasPlayerOffered(victim[0].getUUID())+"; changing="+victim[0].isChangingDimension()+"; invulnerable="+victim[0].isInvulnerableTo(victim[0].damageSources().genericKill())+"; traderAlive="+owner.isAlive());
             h.assertTrue(f.level.getEntity(original) instanceof Wolf&&!collection.holdsLivingPet(owner.getUUID()),"the original pet returns only after the native player payment succeeds");h.succeed();
         });
     }

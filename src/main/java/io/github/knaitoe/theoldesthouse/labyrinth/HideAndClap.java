@@ -881,7 +881,7 @@ public final class HideAndClap {
         if (event.getSlot() == EquipmentSlot.HEAD && event.getEntity() instanceof ServerPlayer player && isLocked(player)) {
             ServerLevel level = player.server.getLevel(HouseDimensions.INTERIOR);
             startIfWorn(player, game, level, LabyrinthData.get(player.server), level.getGameTime());
-            if (game.clock.bound()) enforceBlindfold(player, game);
+            if (game.clock.bound() && !revealed(game,level.getGameTime())) enforceBlindfold(player, game);
         }
     }
 
@@ -890,7 +890,7 @@ public final class HideAndClap {
             confineLockedPlayer(player);
             ServerLevel level = player.server.getLevel(HouseDimensions.INTERIOR);
             startIfWorn(player, game, level, LabyrinthData.get(player.server), level.getGameTime());
-            if (game.clock.bound()) enforceBlindfold(player, game);
+            if (game.clock.bound() && !revealed(game,level.getGameTime())) enforceBlindfold(player, game);
         }
     }
 
@@ -907,7 +907,7 @@ public final class HideAndClap {
             if (isLocked(player)) {
                 game.needsSync = true;
                 confineLockedPlayer(player);
-                if (game.clock.bound()) enforceBlindfold(player, game);
+                if (game.clock.bound() && !revealed(game,player.serverLevel().getGameTime())) enforceBlindfold(player, game);
                 sync(player, game, 0);
             } else HousePackets.send(player, new ClapGamePayload(false, 0, 0));
         }
