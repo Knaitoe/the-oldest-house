@@ -41,16 +41,20 @@ public final class PhoneCanoeTests {
     }
     private static final class Fixture implements AutoCloseable {
         final net.minecraft.server.MinecraftServer server;final ServerLevel level;final HouseSavedData oldHouse;final LabyrinthData oldData;
-        final BlockPos origin,base;final List<ServerPlayer> players=new ArrayList<>();
+        final GameTestHelper helper;final BlockPos origin,base;final List<ServerPlayer> players=new ArrayList<>();
         Fixture(GameTestHelper h,BlockPos origin){
-            server=h.getLevel().getServer();level=HouseTestLevel.get(server);this.origin=origin;oldHouse=HouseSavedData.get(server);oldData=LabyrinthData.get(server);
+            helper=h;server=h.getLevel().getServer();level=HouseTestLevel.get(server);this.origin=origin;oldHouse=HouseSavedData.get(server);oldData=LabyrinthData.get(server);
             var house=new HouseSavedData();house.markSpawned(origin);server.overworld().getDataStorage().set("the_oldest_house",house);
             var data=new LabyrinthData();data.setBuilt(LabyrinthBuilder.VERSION,origin);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);
             base=LabyrinthPlaces.base(origin,LabyrinthPlace.PHONE_CANOE);PhoneCanoe.build(server,level,base);LabyrinthBuilder.registerDoors(data,LabyrinthPlace.PHONE_CANOE,base);IndianLakeRooms.keepLoaded(level,base,LabyrinthPlace.PHONE_CANOE);
         }
-        ServerPlayer player(String name,BlockPos at){var p=FakePlayerFactory.get(level,new GameProfile(UUID.randomUUID(),name));p.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);p.moveTo(Vec3.atBottomCenterOf(at));level.addNewPlayer(p);players.add(p);return p;}
+        ServerPlayer player(String name,BlockPos at){
+            // NeoForge FakePlayer deliberately refuses startRiding. Use Minecraft's real GameTest mock player.
+            var p=helper.makeMockServerPlayerInLevel();p.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+            p.teleportTo(level,at.getX()+.5,at.getY(),at.getZ()+.5,180,0);players.add(p);return p;
+        }
         public void close(){
-            for(var p:players){PhoneCanoe.interrupt(p);p.discard();}
+            for(var p:players){PhoneCanoe.interrupt(p);if(server.getPlayerList().getPlayers().contains(p))server.getPlayerList().remove(p);else p.discard();}
             for(var place:List.of(LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.PRESERVED_CAVE,LabyrinthPlace.DROWNED_TOWN)){
                 BlockPos b=LabyrinthPlaces.base(origin,place);AABB box=IndianLakeRooms.bounds(b,place);
                 for(var e:level.getEntitiesOfClass(Entity.class,box,e->e instanceof LakePhoneCamera||e instanceof LakeCanoeEntity||e instanceof LakeCongregantEntity||e instanceof LakeWitchEntity))e.discard();
@@ -68,7 +72,7 @@ public final class PhoneCanoeTests {
         scene=new Fixture(h,new BlockPos(8200,80,8200));Fixture f=scene;LabyrinthData data=LabyrinthData.get(f.server);
         var owner=f.player("lake_recorder",f.base.offset(PhoneCanoe.DOCK));var peer=f.player("lake_observer",f.base.offset(1,0,-10));
         owner.getInventory().setItem(5,new ItemStack(Items.DIAMOND,3));owner.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(Items.TORCH,8));
-        var canoe=PhoneCanoe.stage(f.level,f.base);h.assertTrue(PhoneCanoe.board(owner,canoe)&&owner.getVehicle()==canoe,"native boat interaction actually mounts its recorder");
+        var canoe=PhoneCanoe.stage(f.level,f.base);h.assertTrue(PhoneCanoe.board(owner,canoe)&&owner.getVehicle()==canoe,"native boarding: inside="+IndianLakeRooms.inside(owner,LabyrinthPlace.PHONE_CANOE)+"; distance="+owner.distanceToSqr(canoe)+"; player="+owner.position()+"; boat="+canoe.position()+"; hand="+owner.getMainHandItem()+"; alive="+owner.isAlive()+"; tags="+canoe.getTags()+"; riders="+canoe.getPassengers()+"; vehicle="+owner.getVehicle());
         h.assertTrue(!PhoneCanoe.board(peer,canoe)&&peer.getMainHandItem().isEmpty(),"another explorer cannot take the occupied boat or a second phone");
         var phone=owner.getMainHandItem();CustomData.update(DataComponents.CUSTOM_DATA,phone,t->t.putString("ProvenanceTest","keep me"));
         h.assertTrue(PhoneCanoe.beginFilm(owner,phone)&&!WitnessAccount.has(data,owner.getUUID(),WitnessAccount.Story.PHONE_CANOE),"choosing to film does not immediately award the ending");
@@ -102,7 +106,7 @@ public final class PhoneCanoeTests {
         PhoneCanoe.board(owner,canoe);owner.stopRiding();
         h.runAfterDelay(4,()->{
             h.assertTrue(owner.getMainHandItem().isEmpty()&&PhoneCanoe.personal(data,owner.getUUID()).getInt("Phase")==0&&!PreservedCave.phoneWaiting(data,owner.getUUID()),"leaving before filming removes only the unused scene phone");
-            owner.moveTo(Vec3.atBottomCenterOf(f.base.offset(PhoneCanoe.DOCK)));h.assertTrue(PhoneCanoe.board(owner,canoe)&&PhoneCanoe.beginFilm(owner,owner.getMainHandItem()),"an unplayed scene can be retried normally");
+            owner.moveTo(Vec3.atBottomCenterOf(f.base.offset(PhoneCanoe.DOCK)));h.assertTrue(PhoneCanoe.board(owner,canoe)&&PhoneCanoe.beginFilm(owner,owner.getMainHandItem()),"retry boarding: inside="+IndianLakeRooms.inside(owner,LabyrinthPlace.PHONE_CANOE)+"; distance="+owner.distanceToSqr(canoe)+"; player="+owner.position()+"; boat="+canoe.position()+"; hand="+owner.getMainHandItem()+"; passengers="+canoe.getPassengers()+"; phase="+PhoneCanoe.personal(data,owner.getUUID()).getInt("Phase")+"; vehicle="+owner.getVehicle());
         });
         h.runAfterDelay(205,()->{
             var saved=data.save(new CompoundTag(),owner.registryAccess());var loaded=LabyrinthData.FACTORY.deserializer().apply(saved,owner.registryAccess());
