@@ -6,6 +6,8 @@ This file records implementation decisions so implementation history does not di
 
 ## Current implementation update
 
+Version 0.4.20 adds the playable Goatman path, trailer gathering and door vigil, with native child actors, randomized saved tells, multiplayer headcounts, companion hesitation and original item custody after an actual door-opening death. Enduring the full vigil is a personal survival source. Ten eligible stories require eight resolutions across at least two kinds; three ending options remain. Layout 18 appends slot 31 while preserving old scenes and caches. See [GOATMAN_0_4_20.md](GOATMAN_0_4_20.md).
+
 Version 0.4.19 gives Harrigan a saved reading sequence and a single final dismissal, with contextual and persistent instructions for both phones. The funeral choices and nine-source, seven-resolution Witness requirement remain. See [HARRIGAN_DIALOGUE_0_4_19.md](HARRIGAN_DIALOGUE_0_4_19.md).
 
 Version 0.4.18 repairs Harrigan's seated study actor in existing saves and lets lost House cats and wolves be tamed with any vanilla meat. The existing story choices, nine-source Witness pool, seven-resolution quota and three endings remain. See [HARRIGAN_AND_STRAYS_0_4_18.md](HARRIGAN_AND_STRAYS_0_4_18.md).

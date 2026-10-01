@@ -43,6 +43,7 @@ public final class LabyrinthDealer {
             if (!place.isVignette()
                     || place == LabyrinthPlace.SHALLOWS
                     || place == LabyrinthPlace.PHONE_CANOE
+                    || place == LabyrinthPlace.GOATMAN
                     || (place.isFinishable() && data.isCompleted(place.id()))
                     || (place.needsMaking() && !data.isReady(place.id()))) {
                 continue;
@@ -57,6 +58,7 @@ public final class LabyrinthDealer {
         List<LabyrinthPlace> places=new ArrayList<>(vignettesAvailable(data));
         if (IndianLakeProgress.canDealShallows(data, player)) places.add(LabyrinthPlace.SHALLOWS);
         if (PhoneCanoe.canDeal(data,player)) places.add(LabyrinthPlace.PHONE_CANOE);
+        if (GoatmanVignette.canDeal(data,player)) places.add(LabyrinthPlace.GOATMAN);
         if(data.isCompleted(PreservedCave.ID)&&PreservedCave.phoneWaiting(data,player))places.add(LabyrinthPlace.PRESERVED_CAVE);
         for(LabyrinthPlace place:LabyrinthPlace.values()){
             WitnessAccount.Story story=WitnessAccount.Story.of(place.id());

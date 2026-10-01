@@ -69,6 +69,10 @@ public final class LabyrinthCommands {
 
     public static LiteralArgumentBuilder<CommandSourceStack> vignette() {
         return Commands.literal("vignette")
+                .then(Commands.literal("goatman").then(Commands.literal("status").executes(context->{
+                    var player=context.getSource().getPlayerOrException();var data=LabyrinthData.get(player.server);var run=io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette.run(data);
+                    context.getSource().sendSuccess(()->Component.literal("Trailer: phase "+run.getInt("Phase")+"; elapsed "+run.getInt("Clock")+"; expected children "+io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette.expectedCount(run)+"; your vigil "+run.getCompound("Cohort").getCompound(player.getUUID().toString()).getInt("Vigil")+"; personal resolution "+io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount.has(data,player.getUUID(),io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount.Story.GOATMAN)),false);return 1;
+                })))
                 .then(Commands.literal(TellTaleFloorboards.ID)
                         .then(Commands.literal("reset").executes(context -> {
                             if (!LabyrinthBuilder.ensureBuilt(context.getSource().getServer())) {

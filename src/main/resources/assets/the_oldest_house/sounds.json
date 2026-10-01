@@ -258,5 +258,32 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.phone_record"
+  },
+  "goatman.hammer": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:goatman/hammer",
+        "attenuation_distance": 32
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.goatman_hammer"
+  },
+  "goatman.laugh": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:goatman/laugh",
+        "attenuation_distance": 18
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.goatman_laugh"
+  },
+  "goatman.woods": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:goatman/woods",
+        "attenuation_distance": 18
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.goatman_woods"
   }
 }

@@ -144,6 +144,16 @@ public final class MotherCollection extends SavedData {
         return entry;
     }
 
+    /** A vignette taking leaves every original belonging, including ordinary supplies, on a real shelf. */
+    @Nullable public Entry keepVignetteItem(ItemStack stack,HolderLookup.Provider registries,UUID owner,long now) {
+        if(stack.isEmpty()||banished)return null;
+        Entry kept=keepItem(stack,registries,owner,now);if(kept!=null)return kept;
+        ItemStack stored=withoutClaim(stack);
+        Entry entry=new Entry(UUID.randomUUID(),false,loved(stored,now,owner),owner,
+                (CompoundTag)stored.save(registries),stored.getHoverName().getString());
+        entries.put(entry.id,entry);changed();return entry;
+    }
+
     @Nullable
     public Entry keepPet(UUID original, CompoundTag contents, @Nullable UUID owner, String name) {
         if (!rememberedPets.add(original)) return null;

@@ -43,21 +43,23 @@ public final class WitnessTests {
         WitnessAccount.resolve(data,player,WitnessAccount.Story.HARRIGAN,"kept_phone");
         WitnessAccount.resolve(data,player,WitnessAccount.Story.DROWNED_TOWN,"opened_roof");
         WitnessAccount.resolve(data,player,WitnessAccount.Story.PRESERVED_CAVE,"crossed_congregation");
-        helper.assertTrue(WitnessAccount.count(data,player)==5&&!WitnessAccount.ready(data,player),"five distinct resolutions still fall short of seven");
+        helper.assertTrue(WitnessAccount.count(data,player)==5&&!WitnessAccount.ready(data,player),"five distinct resolutions still fall short of eight");
         ItemStack unfinished=WitnessAccount.book(data,player,"reader",false);
         helper.assertTrue(unfinished.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream()
                 .noneMatch(p->p.raw().getString().contains("Crouch and open the bars")),"the final cell directions remain absent below the threshold");
         WitnessAccount.resolve(data,player,WitnessAccount.Story.SHALLOWS,"threw_her");
-        helper.assertTrue(WitnessAccount.count(data,player)==6&&!WitnessAccount.ready(data,player),"six resolutions fall short of the new seventh required source");
+        helper.assertTrue(WitnessAccount.count(data,player)==6&&!WitnessAccount.ready(data,player),"six resolutions fall short of eight");
         WitnessAccount.resolve(data,player,WitnessAccount.Story.PHONE_CANOE,"lost_recording");
+        helper.assertTrue(WitnessAccount.count(data,player)==7&&!WitnessAccount.ready(data,player),"the previous seven-source account stays saved below the new boundary");
+        WitnessAccount.resolve(data,player,WitnessAccount.Story.GOATMAN,"kept_door_closed");
         helper.assertTrue(WitnessAccount.ready(data,player)&&!WitnessAccount.has(data,player,WitnessAccount.Story.MOTHER)
-                &&!WitnessAccount.has(data,player,WitnessAccount.Story.FLOORBOARDS),"seven different resolutions permit two missed stories, without a mandatory Mother outcome");
+                &&!WitnessAccount.has(data,player,WitnessAccount.Story.FLOORBOARDS),"eight different resolutions permit two missed stories, without a mandatory Mother outcome");
         ItemStack complete=WitnessAccount.book(data,player,"reader",false);
         helper.assertTrue(complete.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream()
-                .anyMatch(p->p.raw().getString().contains("Crouch and open the bars")),"the seventh resolution restores the actual cell directions");helper.succeed();
+                .anyMatch(p->p.raw().getString().contains("Crouch and open the bars")),"the eighth resolution restores the actual cell directions");helper.succeed();
     }
     @GameTest(template="empty") public static void witnessQuotaTracksSeventyFivePercentOfTheEligiblePool(GameTestHelper helper){
-        helper.assertTrue(WitnessAccount.Story.values().length==9&&WitnessAccount.REQUIRED==7,"the nine playable Witness sources currently require seven resolutions");
+        helper.assertTrue(WitnessAccount.Story.values().length==10&&WitnessAccount.REQUIRED==8,"the ten playable Witness sources currently require eight resolutions");
         for(int[] quota:new int[][]{{5,4},{6,5},{7,6},{8,6},{9,7},{10,8},{11,9},{12,9}})
             helper.assertTrue(WitnessAccount.requiredForPoolSize(quota[0])==quota[1],"the Witness quota rounds 75 percent upward for a pool of "+quota[0]);
         helper.succeed();
@@ -65,10 +67,10 @@ public final class WitnessTests {
     @GameTest(template="empty") public static void accountAndDeliberateReadingSurviveWorldReload(GameTestHelper helper){
         LabyrinthData data=new LabyrinthData();UUID player=UUID.randomUUID();
         for(var story:List.of(WitnessAccount.Story.FLOORBOARDS,WitnessAccount.Story.CLAP,WitnessAccount.Story.HARRIGAN,
-                WitnessAccount.Story.DROWNED_TOWN,WitnessAccount.Story.PRESERVED_CAVE,WitnessAccount.Story.SHALLOWS,WitnessAccount.Story.PHONE_CANOE))WitnessAccount.resolve(data,player,story,"resolved");
+                WitnessAccount.Story.DROWNED_TOWN,WitnessAccount.Story.PRESERVED_CAVE,WitnessAccount.Story.SHALLOWS,WitnessAccount.Story.PHONE_CANOE,WitnessAccount.Story.GOATMAN))WitnessAccount.resolve(data,player,story,"resolved");
         helper.assertTrue(!WitnessEnding.qualified(data,player),"a complete account still requires reading the cell's passage");WitnessAccount.markRead(data,player);
         var registries=helper.getLevel().registryAccess();LabyrinthData loaded=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),registries),registries);
-        helper.assertTrue(WitnessAccount.count(loaded,player)==7&&WitnessEnding.qualified(loaded,player),"the chosen reading and distinct outcomes persist independently of player cloning");helper.succeed();
+        helper.assertTrue(WitnessAccount.count(loaded,player)==8&&WitnessEnding.qualified(loaded,player),"the chosen reading and distinct outcomes persist independently of player cloning");helper.succeed();
     }
     @GameTest(template="empty") public static void olderAccountsKeepTheirEvidenceUnderTheHigherQuota(GameTestHelper helper){
         LabyrinthData data=new LabyrinthData();UUID player=UUID.randomUUID();
@@ -77,13 +79,15 @@ public final class WitnessTests {
         CompoundTag world=data.state(WitnessAccount.STATE),record=world.getCompound(player.toString());
         record.putBoolean("ReadPlay",true);world.put(player.toString(),record);data.setState(WitnessAccount.STATE,world);
         var registries=helper.getLevel().registryAccess();LabyrinthData loaded=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),registries),registries);
-        helper.assertTrue(WitnessAccount.count(loaded,player)==3&&WitnessAccount.readPlay(loaded,player)&&!WitnessEnding.qualified(loaded,player),"old evidence and reading survive without bypassing seven resolutions");
+        helper.assertTrue(WitnessAccount.count(loaded,player)==3&&WitnessAccount.readPlay(loaded,player)&&!WitnessEnding.qualified(loaded,player),"old evidence and reading survive without bypassing eight resolutions");
         WitnessAccount.resolve(loaded,player,WitnessAccount.Story.CLAP,"again");
         helper.assertTrue(WitnessAccount.count(loaded,player)==3,"repeating an old scene cannot supply missing evidence");
         for(var story:List.of(WitnessAccount.Story.DROWNED_TOWN,WitnessAccount.Story.PRESERVED_CAVE,WitnessAccount.Story.SHALLOWS))WitnessAccount.resolve(loaded,player,story,"resolved");
-        helper.assertTrue(WitnessAccount.count(loaded,player)==6&&WitnessAccount.readPlay(loaded,player)&&!WitnessEnding.qualified(loaded,player),"a previously qualifying six-source reading remains saved while the seventh is now required");
+        helper.assertTrue(WitnessAccount.count(loaded,player)==6&&WitnessAccount.readPlay(loaded,player)&&!WitnessEnding.qualified(loaded,player),"a previously qualifying six-source reading remains saved while eight are now required");
         WitnessAccount.resolve(loaded,player,WitnessAccount.Story.PHONE_CANOE,"lost_recording");
-        helper.assertTrue(WitnessAccount.count(loaded,player)==7&&WitnessEnding.qualified(loaded,player),"the four Indian Lake resolutions complete the existing personal account");helper.succeed();
+        helper.assertTrue(WitnessAccount.count(loaded,player)==7&&!WitnessEnding.qualified(loaded,player),"all prior evidence and deliberate reading remain, while the new eighth source is required");
+        WitnessAccount.resolve(loaded,player,WitnessAccount.Story.GOATMAN,"kept_door_closed");
+        helper.assertTrue(WitnessAccount.count(loaded,player)==8&&WitnessEnding.qualified(loaded,player),"the new personal survival completes the account without erasing older evidence");helper.succeed();
     }
     @GameTest(template="empty",batch="witness_quota_fixture") public static void operatorReadyCommandMeetsTheCurrentQuotaWithoutDuplicateCredit(GameTestHelper helper) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         var server=helper.getLevel().getServer();

@@ -127,6 +127,8 @@ public final class CompanionOrders {
                 ||pet.getTags().contains(MotherOfStrays.PET)||Hillary.introductionActive(pet))return;
         if((pet.getPersistentData().getBoolean("HouseStray")||pet.getTags().contains(MotherOfStrays.RELEASED))&&pet.isTame()&&!managed(pet))
             pet.getPersistentData().putInt(KEY,Order.FOLLOW.ordinal());
+        UUID sceneOwner=owner(pet);ServerPlayer scenePlayer=sceneOwner==null?null:level.getServer().getPlayerList().getPlayer(sceneOwner);
+        if(scenePlayer!=null&&GoatmanVignette.companion(pet,scenePlayer)){install(pet);return;}
         if(!managed(pet))return;
         install(pet);
         if(pet instanceof Wolf wolf&&level.getGameTime()>=pet.getPersistentData().getLong("CompanionFearUntil"))
@@ -230,7 +232,10 @@ public final class CompanionOrders {
             UUID id=owner(pet);
             var level=pet.level();
             if(Hillary.introductionActive(pet)||pet.getTags().contains(MotherOfStrays.PET))return false;
-            if(!(level instanceof ServerLevel server)||!managed(pet)||pet.isOrderedToSit()||pet.isLeashed()||pet.isPassenger())return false;
+            if(!(level instanceof ServerLevel server)||pet.isOrderedToSit()||pet.isLeashed()||pet.isPassenger())return false;
+            ServerPlayer viewer=id==null?null:server.getServer().getPlayerList().getPlayer(id);
+            if(viewer!=null&&GoatmanVignette.companionScene(viewer))return true;
+            if(!managed(pet))return false;
             Order order=order(pet);
             if(order==Order.FOLLOW)return server.getGameTime()<pet.getPersistentData().getLong("CompanionFearUntil");
             if(order!=Order.EXIT&&order!=Order.DEEPER)return false;
@@ -243,6 +248,7 @@ public final class CompanionOrders {
             UUID id=owner(pet);
             ServerPlayer player=id==null?null:((ServerLevel)pet.level()).getServer().getPlayerList().getPlayer(id);
             if(player!=null) {
+                if(GoatmanVignette.companion(pet,player))return;
                 if(order(pet)==Order.FOLLOW) {pet.getNavigation().stop();pet.getLookControl().setLookAt(player,30,30);}
                 else guide(pet,player);
             }
