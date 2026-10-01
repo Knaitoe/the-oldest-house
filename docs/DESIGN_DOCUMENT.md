@@ -656,7 +656,7 @@ Two Jones father stories sit side by side: in Mapping the Interior a father feed
 
 ## The finale and the endings
 
-Opening the locked boy's cell starts the finale: the player either dies and is locked out, or wounds the Minotaur and the house collapses. Players who never open the cell never reach an ending, unless the Minotaur comes looking (see Open questions).
+Opening the locked boy's cell starts the finale: the player either dies and is locked out, wounds the Minotaur and the house collapses, or earns the Witness route through resolved vignettes and deliberately releases the prisoner. Players who never open the cell never reach an ending, unless the Minotaur comes looking (see Open questions).
 
 ### The cell and the fight
 
@@ -682,6 +682,16 @@ Opening the locked boy's cell starts the finale: the player either dies and is l
 - Some time later, a chest turns up somewhere mundane: a village, a mineshaft, the player's own base. It holds the notes in a different hand, with annotations the player never wrote and one page from a room they never entered. After that, the notes keep surfacing in loot chests and in wandering traders' stock.
 
 Assets: the Minotaur, a custom creature with charge, stun, and wounded-crawl animations, and a voice built from the Growl.
+
+### The Witness: an earned release
+
+- This is an original mod ending. Three distinct personal resolutions restore passages in a written account and the play beside the cell. Survival, understanding, connection, and release can contribute; neither the Mother nor every vignette is mandatory.
+- The current pool is the floorboards, hide-and-clap, Harrigan, the model home, and the Mother's peaceful resolution. World completion flags and merely visiting rooms confer no credit. A later explorer can crouch and inspect a finished room's actual ending prop to record its aftermath; acquiring someone else's book or artifact does not transfer progress.
+- Read the restored play at the cell's lectern. Lay the original most-used weapon beside the cell, clear both hands, and crouch while opening it. Normal opening still chooses the violent encounter.
+- The Minotaur pauses, passes close to the witness, and physically walks into the staircase. Its quiet departure replaces the charge. The cell remains open and the passage back becomes available.
+- Walk back up the actual great staircase. The original weapon is returned once; carried items and surviving loaded owned companions leave with the player. There is no artificial advance of the Overworld clock, collapse, or empty lot. The player's own entrance closes; other explorers remain admitted.
+- Later the completed account appears beside home. Its last page describes the witness opening the door from inside the cell.
+- Completion, reading, release progress, the laid-down physical weapon, and the ending survive saves. The actor waits while its owner is offline. Death before reaching home still uses the finale's permanent defeat rule.
 
 ## Assets
 
@@ -804,4 +814,3 @@ The House uses one writing pipeline rather than treating every note as an unrela
 `/oldesthouse writing samples` gives the executing player one readable sample of each authored style. An optional player argument gives the set to another player.
 
 The writing layer intentionally uses Minecraft's normal book/text renderer and ordinary opaque bitmap font providers. It does not use emissive text, custom framebuffers, translucent world-space page quads, post-processing, or shader hooks. This keeps the evidence readable with common shader loaders while still allowing resource packs to replace any font atlas normally.
-

@@ -4,6 +4,8 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
+Version `0.4.10` adds **The Witness**, a third ending earned through three personally resolved or examined vignette endings. A growing written account restores an alternative passage at the cell: lay down the original weapon, release the Minotaur, and walk back up the staircase with your possessions and surviving loaded companions. The House remains and this explorer's entrance closes. The Tell-Tale Heart board now responds directly to an axe attack or use even when normal mining is cancelled, with an original spatial heartbeat that speeds up and stops at completion. See [docs/WITNESS_0_4_10.md](docs/WITNESS_0_4_10.md).
+
 Version `0.4.9` adds the optional great staircase, a custom articulated Minotaur, shield-stun and original-weapon combat, permanent defeat, collapse escape with conditional pet guidance, and saved endings with later notes. See [docs/FINALE_0_4_9.md](docs/FINALE_0_4_9.md) for mechanics and test commands.
 
 Version `0.4.8` begins exploration with ordinary halls and multiple side doors, makes impossible stretches rare and spaced apart, and adds a companion command wheel, physical chalk/string navigation, quieter rest rooms, and very rare Mother/stray encounters. Tamed cats and dogs can guide and cross thresholds alongside Hillary. See [docs/EXPLORATION_0_4_8.md](docs/EXPLORATION_0_4_8.md) for controls, odds and playtest commands.
@@ -560,4 +562,3 @@ The opening has been revised so the player's own home remains ordinary.
   - The tree in the yard stands closer every visit. By the third, a branch taps at the kid's window and the grass has sunk in one long patch.
 - **Visit 4:** the kid's door stands open, the window is broken, and the tree has come in over the bed.
 - `/oldesthouse vignette model_home reset|visit <1-4>|complete` for testing. The labyrinth is carved again (version 6) to make room for the new place.
-

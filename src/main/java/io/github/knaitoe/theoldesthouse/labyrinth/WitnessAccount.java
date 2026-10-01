@@ -95,8 +95,11 @@ public final class WitnessAccount {
             pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,story.title+"\n\n"+text));
         }
         int n=count(data,player);
+        pages.add(HouseWriting.page(HouseWriting.WritingStyle.ZAMPANO,
+                "A PLAY WITHOUT AN AUDIENCE\n\nTHE PRISONER: They draw a monster so that nobody will ask who locked the door.\n\nTHE KEEPER: ")
+                .copy().append(Component.literal("There is no one inside.").withStyle(s->s.withColor(0xA52A2A).withStrikethrough(true))));
         if(n>0)pages.add(HouseWriting.page(HouseWriting.WritingStyle.ZAMPANO,
-                "A PLAY WITHOUT AN AUDIENCE\n\nTHE PRISONER: Who remembers the room when its door is closed?\n\n[The next line has been crossed out.]"));
+                "THE PRISONER: Who remembers the room when its door is closed?\n\n[The next line has been crossed out.]"));
         if(n>=2)pages.add(HouseWriting.page(HouseWriting.WritingStyle.ZAMPANO,
                 "THE WITNESS: I stayed long enough to hear the end.\n\nTHE KEEPER: ")
                 .copy().append(Component.literal("There is no one inside.").withStyle(s->s.withColor(0xA52A2A).withStrikethrough(true))));
@@ -124,6 +127,13 @@ public final class WitnessAccount {
         if(give&&!found&&!player.getInventory().add(book))player.drop(book,false);
         player.inventoryMenu.broadcastChanges();
     }
+    public static void onArrive(ServerPlayer player,LabyrinthPlace place){
+        LabyrinthData data=LabyrinthData.get(player.server);Story story=Story.of(place.id());
+        if(story==null||!data.isCompleted(place.id())||has(data,player.getUUID(),story))return;
+        String prop=switch(story){case FLOORBOARDS->"the exposed space beneath the loose board";
+            case CLAP->"the open wardrobe";case HARRIGAN->"the casket";case MODEL_HOME->"the child's window";case MOTHER->"the keeper's record";};
+        player.displayClientMessage(Component.literal("Someone reached the end before you. Crouch and examine "+prop+" to record what remains."),false);
+    }
     /** Later explorers must inspect a resolved room's ending prop themselves. */
     public static boolean aftermathTarget(LabyrinthData data,LabyrinthPlace place,BlockPos base,BlockPos at){
         if(!data.isCompleted(place.id()))return false;BlockPos rel=at.subtract(base);
@@ -147,8 +157,9 @@ public final class WitnessAccount {
                 &&player.serverLevel().getBlockEntity(event.getPos()) instanceof LecternBlockEntity desk){
             // Each reading is generated from this explorer's evidence. Sharing the page never shares its unlock.
             desk.setBook(book(data,player.getUUID(),player.getGameProfile().getName(),false));desk.setChanged();
-            player.serverLevel().setBlock(event.getPos(),Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.HAS_BOOK,true),3);
-            markRead(data,player.getUUID());updateBook(player,true);return;
+            player.serverLevel().setBlock(event.getPos(),player.serverLevel().getBlockState(event.getPos()).setValue(LecternBlock.HAS_BOOK,true),3);
+            event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);
+            if(player.openMenu(desk).isPresent())markRead(data,player.getUUID());updateBook(player,true);return;
         }
         LabyrinthPlace place=LabyrinthPlaces.placeAt(origin,player.blockPosition());
         if(place==null||Story.of(place.id())==null||!player.isShiftKeyDown())return;

@@ -84,4 +84,8 @@ public final class WeaponHistory {
                 || event.getItemStack().getItem() instanceof CrossbowItem || event.getItemStack().getItem() instanceof TridentItem))
             record(player, event.getItemStack(), 1);
     }
+    @SubscribeEvent public static void toss(net.neoforged.neoforge.event.entity.item.ItemTossEvent event) {
+        if(event.getPlayer() instanceof ServerPlayer player&&weapon(event.getEntity().getItem())&&identity(event.getEntity().getItem())==null)
+            record(player,event.getEntity().getItem(),Math.max(1,player.getStats().getValue(Stats.ITEM_USED.get(event.getEntity().getItem().getItem()))));
+    }
 }
