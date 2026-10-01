@@ -175,6 +175,14 @@ public enum LabyrinthPlace {
     DROWNED_TOWN("drowned_town", Kind.MULTI_VISIT, 27, new BoundingBox(-29, -13, -64, 29, 8, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
     )),
+    /** Indian Lake: a congregation kept fresh by the lake. */
+    PRESERVED_CAVE("preserved_cave", Kind.MULTI_VISIT, 28, new BoundingBox(-15, -3, -47, 15, 10, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
+    )),
+    /** A personal recollection, available only after the shore hunt. */
+    SHALLOWS("shallows", Kind.ONE_SHOT, 29, new BoundingBox(-18, -4, -36, 18, 10, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
+    )),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

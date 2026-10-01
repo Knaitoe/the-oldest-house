@@ -627,14 +627,14 @@ Two Jones father stories sit side by side: in Mapping the Interior a father feed
 - The kept church key opens the church inside the House; outside, Minecraft's drowned ignore its bearer.
 - Yields: the dried essays and church key. Assets: the custom Lake Witch, wet/dried pages, church and hymn. The budget hooded shore NPC was cut.
 
-First playable site in 0.4.11: [DROWNED_TOWN_0_4_11.md](DROWNED_TOWN_0_4_11.md). Three distinct essays earn the return visit, and the opened church roof supplies a personal Witness resolution. The connected sites below are design and saved integration points for subsequent passes.
+First playable site in 0.4.11: [DROWNED_TOWN_0_4_11.md](DROWNED_TOWN_0_4_11.md). Three distinct essays earn the return visit, and the opened church roof supplies a personal Witness resolution. The cave and Shallows are playable in 0.4.12: [CAVE_AND_SHALLOWS_0_4_12.md](CAVE_AND_SHALLOWS_0_4_12.md). The other connected sites remain design for subsequent passes.
 
 ### Indian Lake: the shallows
 
 *One-shot companion · verb: throwing*
 
 - Dealt only after this player has actually been hunted in Drowned Town. The player is one of the boys who throws her.
-- Completing it adds a page to the dried essays listing the boys who were there, including the player's username.
+- Completing it adds a page to the dried essays listing the boys who were there, including the player's username. In 0.4.12, lift her with empty hands, carry her to the bank, briefly hold use and release toward the water. Actual contact with the lake completes the recollection; leaving early stays retryable. Completion is personal.
 - Reuses the custom Lake Witch with jointed limbs.
 
 ### Indian Lake: the cave of the preserved dead
@@ -644,7 +644,7 @@ First playable site in 0.4.11: [DROWNED_TOWN_0_4_11.md](DROWNED_TOWN_0_4_11.md).
 - The lake never lets its drowned decompose. A cave at the waterline holds a century of them, fresh, seated in rows facing the water like a congregation. Walk through them to reach the back.
 - Every sound adds a voice to a hymn rising from the lake. Sneak and they remain seated. Let the hymn fill out and they begin to stand.
 - At the back is the canoe from the phone vignette, with the player's footage still on the phone. The phone is found here, rather than appearing automatically in inventory.
-- Opening the church roof empties the pews on later cave visits; the dead now stand on shore.
+- Opening the church roof empties the pews on later cave visits; the dead now stand on shore. In 0.4.12, 24 bodies occupy six rows, native player sounds add eight separate hymn voices, and bodies rise in three waves. An occupied cave cannot be restaged by another arrival. The canoe is present; retrieval preserves the owner's original recorded phone via a saved hook, while the filming encounter remains a later pass.
 
 ### Indian Lake: the elk carcasses
 

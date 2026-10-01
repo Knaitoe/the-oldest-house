@@ -36,6 +36,10 @@ public final class WitnessAccount {
                 "The tree had crossed the glass. A room sold as a home could no longer keep the outside out."),
         DROWNED_TOWN("drowned_town", "The lake", "understanding",
                 "I dried the school essays and returned for the key. Beneath the lake, a preacher kept singing. I opened the roof, and the hymn reached the shore."),
+        PRESERVED_CAVE("preserved_cave", "The congregation", "understanding",
+                "I walked between the people the lake had kept. Their clothes belonged to different years. Their faces had not changed. The canoe was behind the last row."),
+        SHALLOWS("shallows", "The boys", "memory",
+                "I carried her to the water. I let go. The school pages remembered my name among the boys on the bank."),
         MOTHER("mother_of_strays", "The keeper", "release",
                 "She let something go. For a moment, keeping it safe and keeping it forever were different things.");
         public final String id, title, kind, text;
@@ -93,6 +97,8 @@ public final class WitnessAccount {
                         case HARRIGAN->"The casket was closed. I remembered the study, and the chair where someone had listened.";
                         case MODEL_HOME->"The tree was inside the window. The glass had failed to keep the world outside.";
                         case DROWNED_TOWN->"The church roof was open. The voice below had reached the air. I could hear it from the bank.";
+                        case PRESERVED_CAVE->"The pews were empty. The people who had faced the water were standing on its bank. The canoe remained at the back.";
+                        case SHALLOWS->"The shore remembered who had been there.";
                         case MOTHER->"The shelves remained, but she had stopped keeping the things upon them.";
                     }:story.text;
             pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,story.title+"\n\n"+text));
@@ -135,7 +141,7 @@ public final class WitnessAccount {
         if(story==null||!data.isCompleted(place.id())||has(data,player.getUUID(),story))return;
         String prop=switch(story){case FLOORBOARDS->"the exposed space beneath the loose board";
             case CLAP->"the open wardrobe";case HARRIGAN->"the casket";case MODEL_HOME->"the child's window";
-            case DROWNED_TOWN->"the church's open roof hatch";case MOTHER->"the keeper's record";};
+            case DROWNED_TOWN->"the church's open roof hatch";case PRESERVED_CAVE->"the canoe behind the empty pews";case SHALLOWS->"the bank";case MOTHER->"the keeper's record";};
         player.displayClientMessage(Component.literal("Someone reached the end before you. Crouch and examine "+prop+" to record what remains."),false);
     }
     /** Later explorers must inspect a resolved room's ending prop themselves. */
@@ -149,6 +155,7 @@ public final class WitnessAccount {
             case HARRIGAN->rel.distManhattan(HarriganVignette.CASKET)<=1;
             case MODEL_HOME->rel.equals(ModelHome.WINDOW)||rel.equals(ModelHome.WINDOW.above());
             case DROWNED_TOWN->data.state(DrownedTown.ID).getBoolean("RoofOpened")&&rel.equals(DrownedTown.ROOF_HATCH);
+            case PRESERVED_CAVE->IndianLakeProgress.deadOnShore(data)&&rel.distManhattan(PreservedCave.CANOE)<=1;
             default->false;
         };
     }

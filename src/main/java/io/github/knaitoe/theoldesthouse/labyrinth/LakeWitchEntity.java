@@ -21,6 +21,9 @@ import net.minecraft.world.phys.Vec3;
 /** Stacey Graves. A bounded shore pathfinder whose nodes and physical movement both reject refuges. */
 public final class LakeWitchEntity extends PathfinderMob {
     private static final EntityDataAccessor<Boolean> STRIKING = SynchedEntityData.defineId(LakeWitchEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> MEMORY_PHASE = SynchedEntityData.defineId(LakeWitchEntity.class, EntityDataSerializers.INT);
+    @Nullable private UUID memoryOwner;
+    @Nullable private BlockPos memoryBase;
     @Nullable private BlockPos shoreBase;
     private final Deque<Vec3> route = new ArrayDeque<>();
     @Nullable private BlockPos routeGoal;
@@ -38,7 +41,23 @@ public final class LakeWitchEntity extends PathfinderMob {
                 .add(Attributes.ATTACK_DAMAGE, 6).add(Attributes.FOLLOW_RANGE, 40).add(Attributes.KNOCKBACK_RESISTANCE, .65);
     }
     @Override protected void registerGoals() {}
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { super.defineSynchedData(builder); builder.define(STRIKING, false); }
+    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { super.defineSynchedData(builder); builder.define(STRIKING, false); builder.define(MEMORY_PHASE, -1); }
+    public boolean memory() { return entityData.get(MEMORY_PHASE) >= 0; }
+    public int memoryPhase() { return entityData.get(MEMORY_PHASE); }
+    public void memoryPhase(int phase) { entityData.set(MEMORY_PHASE, phase); }
+    public @Nullable UUID memoryOwner() { return memoryOwner; }
+    public @Nullable BlockPos memoryBase() { return memoryBase; }
+    public void recollection(UUID owner, BlockPos base) {
+        memoryOwner=owner;memoryBase=base.immutable();shoreBase=null;memoryPhase(0);setNoAi(true);
+    }
+    @Override protected net.minecraft.world.InteractionResult mobInteract(net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand) {
+        if(memory()) {
+            if(player instanceof ServerPlayer serverPlayer && hand==net.minecraft.world.InteractionHand.MAIN_HAND) Shallows.lift(serverPlayer,this);
+            return net.minecraft.world.InteractionResult.sidedSuccess(level().isClientSide());
+        }
+        return super.mobInteract(player,hand);
+    }
+    @Override public boolean hurt(DamageSource source,float amount) { return !memory() && super.hurt(source,amount); }
     public boolean striking() { return entityData.get(STRIKING); }
     public void shore(BlockPos base, int visit) { shoreBase = base.immutable(); this.visit = visit; }
     public @Nullable BlockPos shoreBase() { return shoreBase; }
@@ -100,6 +119,7 @@ public final class LakeWitchEntity extends PathfinderMob {
     }
     @Override public void tick() {
         super.tick();
+        if(memory()) { setAirSupply(300); Shallows.tickActor(this); return; }
         if (!(level() instanceof ServerLevel level) || shoreBase == null || !isAlive()) return;
         if (cooldown > 0) cooldown--;
         ServerPlayer target = level.players().stream().filter(p -> canAttack(this, p))
@@ -141,7 +161,7 @@ public final class LakeWitchEntity extends PathfinderMob {
     }
     private void cancelStrike() { windup = 0; entityData.set(STRIKING, false); }
     @Override public void die(DamageSource source) {
-        if (level() instanceof ServerLevel level) {
+        if (!memory() && level() instanceof ServerLevel level) {
             LabyrinthData data = LabyrinthData.get(level.getServer()); CompoundTag state = data.state(DrownedTown.ID);
             state.putInt("WitchDefeatedVisit", visit); data.setState(DrownedTown.ID, state);
         }
@@ -149,9 +169,11 @@ public final class LakeWitchEntity extends PathfinderMob {
     }
     @Override public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag); if (shoreBase != null) tag.putLong("ShoreBase", shoreBase.asLong()); tag.putInt("TownVisit", visit);
+        if(memoryOwner!=null&&memoryBase!=null){tag.putUUID("MemoryOwner",memoryOwner);tag.putLong("MemoryBase",memoryBase.asLong());tag.putInt("MemoryPhase",memoryPhase());}
     }
     @Override public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag); shoreBase = tag.contains("ShoreBase") ? BlockPos.of(tag.getLong("ShoreBase")) : null;
         visit = tag.getInt("TownVisit"); cooldown = 30; cancelStrike(); route.clear();
+        if(tag.hasUUID("MemoryOwner")){recollection(tag.getUUID("MemoryOwner"),BlockPos.of(tag.getLong("MemoryBase")));memoryPhase(tag.getInt("MemoryPhase"));setNoGravity(memoryPhase()==1||memoryPhase()==3);}
     }
 }

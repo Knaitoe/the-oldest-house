@@ -59,6 +59,11 @@ public final class LakeWitchModel extends HierarchicalModel<LakeWitchEntity> {
         leftArm.zRot = -.09F; rightArm.zRot = .09F;
         leftArm.getChild("forearm").xRot = -.18F; rightArm.getChild("forearm").xRot = -.22F;
         head.getChild("hair").zRot = Mth.sin(age * .07F) * .015F;
+        if(entity.memory()) {
+            body.xRot=.06F;head.xRot=.12F;leftArm.xRot=rightArm.xRot=.1F;
+            if(entity.memoryPhase()==1){root.zRot=1.3F;leftLeg.xRot=.45F;rightLeg.xRot=.6F;leftArm.xRot=rightArm.xRot=-.4F;}
+            if(entity.memoryPhase()>=2){body.xRot=.7F;leftArm.xRot=-1.5F;rightArm.xRot=-1.2F;leftLeg.xRot=.45F;rightLeg.xRot=-.2F;}
+        }
         if (entity.striking()) {
             body.xRot = .32F; head.xRot = -.3F;
             leftArm.xRot = -1.75F; rightArm.xRot = -1.55F;

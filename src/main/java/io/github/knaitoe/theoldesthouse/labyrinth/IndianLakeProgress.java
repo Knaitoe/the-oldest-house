@@ -28,9 +28,9 @@ public final class IndianLakeProgress {
         return data.state("indian_lake").getCompound("Boys").contains(player.toString());
     }
 
-    /** Called by the future shallows' completed throwing beat, not by merely entering it. */
+    /** Called by the shallows' completed throwing beat, not by merely entering it. */
     public static void completedShallows(LabyrinthData data, UUID player, String name) {
-        if (!wasHunted(data, player)) return;
+        if (!wasHunted(data, player) || hasThrown(data, player)) return;
         CompoundTag state = data.state("indian_lake"), boys = state.getCompound("Boys");
         boys.putString(player.toString(), name);
         state.put("Boys", boys);

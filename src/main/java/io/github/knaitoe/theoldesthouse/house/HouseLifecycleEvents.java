@@ -94,6 +94,7 @@ public final class HouseLifecycleEvents {
         HideAndClap.clearAll();
         ModelHome.clearAll();
         io.github.knaitoe.theoldesthouse.labyrinth.DrownedTown.clearAll();
+        io.github.knaitoe.theoldesthouse.labyrinth.PreservedCave.clearAll();
         HarriganVignette.clearAll(event.getServer());
         MotherOfStrays.clearAll();
         io.github.knaitoe.theoldesthouse.opening.CompanionOrders.clearAll();

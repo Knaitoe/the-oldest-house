@@ -171,6 +171,10 @@ public final class LabyrinthDoors {
             locked(player);
             return;
         }
+        if (place == LabyrinthPlace.SHALLOWS && !IndianLakeProgress.canDealShallows(data, player.getUUID())) {
+            locked(player);
+            return;
+        }
         arrive(player, door, entry, place);
     }
 
@@ -215,6 +219,8 @@ public final class LabyrinthDoors {
             ModelHome.onArrive(p, place);
             HarriganVignette.onArrive(p, place);
             DrownedTown.onArrive(p, place);
+            PreservedCave.onArrive(p, place);
+            Shallows.onArrive(p, place);
             MotherOfStrays.onArrive(p, place);
             WitnessAccount.onArrive(p, place);
             LabyrinthEncounters.onArrive(p, place);
@@ -282,6 +288,8 @@ public final class LabyrinthDoors {
                 if (place == LabyrinthPlace.HARRIGAN) {
                     HarriganVignette.onDepart(player);
                 }
+                if (place == LabyrinthPlace.PRESERVED_CAVE) PreservedCave.onDepart(player);
+                if (place == LabyrinthPlace.SHALLOWS) Shallows.onDepart(player);
                 if (place == LabyrinthPlace.MOTHER_DEN) {
                     MotherCollection.get(player.server).presence(player.getUUID(), false);
                 }
@@ -855,6 +863,7 @@ public final class LabyrinthDoors {
         lines.addAll(ModelHome.describe(server));
         lines.addAll(HarriganVignette.describe(server, viewer));
         lines.addAll(DrownedTown.describe(server));
+        lines.addAll(PreservedCave.describe(server));
         lines.addAll(Growl.describe(server, viewer));
         return lines;
     }

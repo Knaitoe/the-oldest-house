@@ -141,5 +141,95 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.indian_lake"
+  },
+  "vignette.cave_voice_0": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:indian_lake/cave_voice_0",
+        "attenuation_distance": 36
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.cave_hymn"
+  },
+  "vignette.cave_voice_1": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:indian_lake/cave_voice_1",
+        "attenuation_distance": 36
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.cave_hymn"
+  },
+  "vignette.cave_voice_2": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:indian_lake/cave_voice_2",
+        "attenuation_distance": 36
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.cave_hymn"
+  },
+  "vignette.cave_voice_3": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:indian_lake/cave_voice_3",
+        "attenuation_distance": 36
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.cave_hymn"
+  },
+  "vignette.cave_voice_4": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:indian_lake/cave_voice_4",
+        "attenuation_distance": 36
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.cave_hymn"
+  },
+  "vignette.cave_voice_5": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:indian_lake/cave_voice_5",
+        "attenuation_distance": 36
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.cave_hymn"
+  },
+  "vignette.cave_voice_6": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:indian_lake/cave_voice_6",
+        "attenuation_distance": 36
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.cave_hymn"
+  },
+  "vignette.cave_voice_7": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:indian_lake/cave_voice_7",
+        "attenuation_distance": 36
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.cave_hymn"
+  },
+  "leak.preserved_cave": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:indian_lake/cave_door",
+        "attenuation_distance": 18
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.cave_door"
+  },
+  "leak.shallows": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:indian_lake/shallows_door",
+        "attenuation_distance": 18
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.shallows_door"
   }
 }

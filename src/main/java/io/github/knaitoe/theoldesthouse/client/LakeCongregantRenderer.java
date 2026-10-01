@@ -10,6 +10,6 @@ import net.minecraft.resources.ResourceLocation;
 public final class LakeCongregantRenderer extends MobRenderer<LakeCongregantEntity, LakeCongregantModel> {
     public LakeCongregantRenderer(EntityRendererProvider.Context context) { super(context, new LakeCongregantModel(context.bakeLayer(ModelLayers.PLAYER)), .3F); }
     @Override public ResourceLocation getTextureLocation(LakeCongregantEntity entity) {
-        return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "textures/entity/" + (entity.preacher() ? "lake_preacher" : "lake_congregant") + ".png");
+        return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "textures/entity/" + (entity.preacher() ? "lake_preacher" : entity.memoryBoy()?"lake_boy": "lake_congregant"+(entity.preservedEra()>0?"_"+entity.preservedEra():"")) + ".png");
     }
 }
