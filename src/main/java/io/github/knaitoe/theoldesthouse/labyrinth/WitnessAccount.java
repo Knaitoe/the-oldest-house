@@ -24,7 +24,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class WitnessAccount {
     public static final String STATE="witness_0410", BOOK_OWNER="HouseWitnessAccount";
-    public static final int REQUIRED=3;
+    public static final int REQUIRED=requiredForPoolSize(Story.values().length);
     public enum Story {
         FLOORBOARDS("floorboards", "The floor", "understanding",
                 "I took up the board. The sound ended. The words underneath belonged to someone who had stayed to care for him."),
@@ -47,6 +47,8 @@ public final class WitnessAccount {
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}
     }
     private WitnessAccount(){}
+    /** Seventy-five percent of shipped Witness stories, rounded up as the pool grows. */
+    public static int requiredForPoolSize(int availableStories){return (3*availableStories+3)/4;}
     public static CompoundTag record(LabyrinthData data,UUID player){return data.state(STATE).getCompound(player.toString()).copy();}
     private static void save(LabyrinthData data,UUID player,CompoundTag record){
         CompoundTag world=data.state(STATE);world.put(player.toString(),record.copy());data.setState(STATE,world);
