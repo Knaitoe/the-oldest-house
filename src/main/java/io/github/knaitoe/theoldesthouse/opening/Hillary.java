@@ -216,6 +216,8 @@ public final class Hillary {
             wolf.level().broadcastEntityEvent(wolf, (byte) 7);
             if (!tag.acknowledged()) {
                 acknowledge(wolf);
+                // Taming at the new house still leaves the invitation waiting for an explicit pat.
+                if(introductionActive(wolf))wolf.getPersistentData().remove(INTRO_CONFIRMED);
             }
             return;
         }

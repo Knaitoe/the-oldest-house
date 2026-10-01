@@ -159,7 +159,10 @@ public final class MotherOfStrays {
                         + "She remembers the things nobody came back for. Some still have their names.",
                         "Take one thing, if you must. Only one each time you come.\n\n"
                         + "If she follows, bring it back, or put something you have loved into her hands. "
-                        + "Do not offer rubble.\n\nThe animals are waiting too.",
+                        + "Things brought back from other rooms count too. Do not offer rubble.\n\n"
+                        + "She will exchange one waiting life for another. Bring an animal beside her, "
+                        + "or close a small room with her and another living person inside. "
+                        + "Bow with empty hands to offer the life. This is a bargain, not a kindness.",
                         "I watched her hands grow wrong while she waited. Then she took a thing back, "
                         + "hard enough to hurt, and her face was almost gentle again.\n\nShe called it a kindness.",
                         "A thing returned. A thing freely given. A life allowed to come home.\n\n"
@@ -412,11 +415,33 @@ public final class MotherOfStrays {
         boolean ours = target instanceof MotherEntity || target.getTags().contains(FRAME) || target.getTags().contains(PET);
         if (!ours) return false;
         if (!(actor instanceof ServerPlayer player) || actor.isSpectator()) return true;
+        if(target.level()!=player.level() || target.distanceToSqr(player)>36)return true;
         long now = player.serverLevel().getGameTime();
         if (now - LAST_INTERACTION.getOrDefault(player.getUUID(), -20L) < 4) return true;
         LAST_INTERACTION.put(player.getUUID(), now);
         MotherCollection collection = MotherCollection.get(player.server);
-        if (target instanceof MotherEntity) {
+        if (target instanceof MotherEntity mother) {
+            if(inDen(player)) {
+                MotherCollection.Entry captive=collection.all().stream()
+                        .filter(e->e.livingClaim&&player.getUUID().equals(e.owner)).findFirst().orElse(null);
+                if(captive!=null) {
+                    Entity display=displayFor(player,captive.id);
+                    if(collection.canRecoverPet(player.getUUID(),captive.id,held,now))
+                        return recoverPet(player,display,captive,held,now,collection);
+                    if(player.isShiftKeyDown()&&held.isEmpty()&&collection.canRecoverPetWithLife(player.getUUID(),captive.id)) {
+                        LivingEntity life=MotherOfferings.find(player,mother,collection);
+                        if(life!=null)return recoverPetWithLife(player,display,captive,held,now,collection,mother,life);
+                    }
+                    describeRansom(player);return true;
+                }
+                if(player.isShiftKeyDown()&&held.isEmpty()&&collection.canTradeForLife(player.getUUID())) {
+                    LivingEntity life=MotherOfferings.find(player,mother,collection);
+                    if(life!=null&&payWithLife(player,mother,life,collection,null)) {
+                        clearClaimInInventory(player);say(player,"Then this one stays. Your old bargain is closed.");
+                    }else say(player,"Bring a living thing within my reach. A person must be closed in here with me.");
+                    return true;
+                }
+            }
             boolean settledBefore=collection.salved()||collection.banished();
             if (player.isShiftKeyDown() && ID.equals(VignetteYields.of(held)) && collection.banish()) {
                 held.shrink(1);
@@ -472,8 +497,14 @@ public final class MotherOfStrays {
             UUID id = tag.getUUID(ENTRY);
             MotherCollection.Entry entry = collection.entry(id);
             if (entry == null || !collection.canRecoverPet(player.getUUID(), id, held, now)) {
+                if(entry!=null&&player.isShiftKeyDown()&&held.isEmpty()&&collection.canRecoverPetWithLife(player.getUUID(),id)) {
+                    MotherEntity mother=nearbyKeeper(player);
+                    LivingEntity life=mother==null?null:MotherOfferings.find(player,mother,collection);
+                    if(life!=null)return recoverPetWithLife(player,target,entry,held,now,collection,mother,life);
+                }
                 say(player, entry != null && !player.getUUID().equals(entry.owner)
-                        ? "This one remembers somebody else." : entry!=null&&entry.livingClaim?"A diamond, a golden apple, netherite, four emeralds, or enchanted equipment. Before I stop asking.":"Give me something you would miss, and call them again.");
+                        ? entry.offeredLife?"This one was given to me.":"This one remembers somebody else."
+                        : entry!=null&&entry.livingClaim?"Something valuable, a keepsake from another room, or another living thing. Before I stop asking.":"Give me something you would miss, a vignette keepsake, or another life, and call them again.");
                 return true;
             }
             return recoverPet(player,target,entry,held,now,collection);
@@ -481,29 +512,70 @@ public final class MotherOfStrays {
         return true;
     }
 
-    private static boolean recoverPet(ServerPlayer player,Entity display,MotherCollection.Entry entry,ItemStack held,long now,MotherCollection collection) {
-        if(!collection.canRecoverPet(player.getUUID(),entry.id,held,now))return true;
+    @Nullable private static Entity displayFor(ServerPlayer player,UUID id) {
+        return player.serverLevel().getEntitiesOfClass(Mob.class,player.getBoundingBox().inflate(32),
+                e->e.getTags().contains(PET)&&e.getPersistentData().hasUUID(ENTRY)&&id.equals(e.getPersistentData().getUUID(ENTRY)))
+                .stream().findFirst().orElse(null);
+    }
+    @Nullable private static MotherEntity nearbyKeeper(ServerPlayer player) {
+        return player.serverLevel().getEntitiesOfClass(MotherEntity.class,player.getBoundingBox().inflate(24),e->e.following()==null)
+                .stream().min(java.util.Comparator.comparingDouble((MotherEntity m)->m.distanceToSqr(player))).orElse(null);
+    }
+
+    private static boolean recoverPet(ServerPlayer player,@Nullable Entity display,MotherCollection.Entry entry,ItemStack held,long now,MotherCollection collection) {
+        return recoverPetWithLife(player,display,entry,held,now,collection,null,null);
+    }
+
+    private static boolean recoverPetWithLife(ServerPlayer player,@Nullable Entity display,MotherCollection.Entry entry,ItemStack held,long now,
+                                             MotherCollection collection,@Nullable MotherEntity mother,@Nullable LivingEntity life) {
+        if(life==null ? !collection.canRecoverPet(player.getUUID(),entry.id,held,now)
+                : !collection.canRecoverPetWithLife(player.getUUID(),entry.id))return true;
         Entity restored=entry.livingClaim?restoreLivingOriginal(player.serverLevel(),entry):restorePetEntity(player.serverLevel(),entry);
         if(!(restored instanceof LivingEntity living))return true;
         if(entry.livingClaim)for(ServerLevel world:player.server.getAllLevels())if(world.getEntity(living.getUUID())!=null)return true;
-        Vec3 safe=io.github.knaitoe.theoldesthouse.opening.HillaryPaths.safeBeside(living,player);
+        Vec3 safe=living instanceof TamableAnimal tame?io.github.knaitoe.theoldesthouse.opening.HillaryPaths.safeBeside(tame,player):nearbyStandingSpot(player.serverLevel(),player);
         living.moveTo(safe.x,safe.y,safe.z,player.getYRot(),0);living.removeTag(PET);living.addTag(RELEASED);living.setInvulnerable(false);
         living.getPersistentData().remove(ENTRY);
         if(living instanceof TamableAnimal tame){tame.setTame(true,true);tame.setOwnerUUID(player.getUUID());
             io.github.knaitoe.theoldesthouse.opening.CompanionOrders.resume(tame);}
         if(living instanceof AbstractHorse horse)horse.setOwnerUUID(player.getUUID());
         if(living instanceof Mob mob)mob.setPersistenceRequired();
-        if(player.serverLevel().addFreshEntity(living)&&collection.recoverPet(player.getUUID(),entry.id,held,player.registryAccess(),now)) {
-            display.discard();updateCustody(player.server,player.getUUID());
+        boolean added=player.serverLevel().addFreshEntity(living);
+        boolean paid=added&&(life==null ? collection.recoverPet(player.getUUID(),entry.id,held,player.registryAccess(),now)
+                : mother!=null&&payWithLife(player,mother,life,collection,entry.id));
+        if(paid) {
+            if(display!=null)display.discard();updateCustody(player.server,player.getUUID());
             player.inventoryMenu.broadcastChanges();say(player,"There. You came back for it.");
         }else if(living.isAlive())living.discard();
         return true;
+    }
+
+    private static boolean payWithLife(ServerPlayer trader,MotherEntity mother,LivingEntity life,MotherCollection collection,@Nullable UUID pet) {
+        if(pet==null ? !collection.canTradeForLife(trader.getUUID()) : !collection.canRecoverPetWithLife(trader.getUUID(),pet))return false;
+        if(life instanceof ServerPlayer victim) {
+            if(!MotherOfferings.playerEligible(trader,mother,victim))return false;
+            victim.displayClientMessage(Component.literal("She has accepted you in somebody else's place.").withStyle(ChatFormatting.DARK_RED),false);
+            victim.hurt(victim.damageSources().genericKill(),Float.MAX_VALUE);
+            if(!victim.isDeadOrDying())return false;
+            return collection.tradeLife(trader.getUUID(),pet,victim.getUUID(),null,victim.getName().getString(),trader.registryAccess());
+        }
+        if(!MotherOfferings.animalEligible(trader,mother,life)||!collection.canKeepOfferedLife(life.getUUID()))return false;
+        CompoundTag saved=new CompoundTag();
+        if(!life.save(saved)||!collection.tradeLife(trader.getUUID(),pet,life.getUUID(),saved,life.getName().getString(),trader.registryAccess()))return false;
+        if(life instanceof Mob mob)mob.getNavigation().stop();
+        life.discard();return true;
+    }
+
+    private static void describeRansom(ServerPlayer player) {
+        say(player,"Something valuable, a keepsake from another room, or a life in place of this one.");
+        player.displayClientMessage(Component.literal("Offer a valuable item or vignette artifact. Sneak-click with empty hands to offer an animal beside her, or another player trapped in a small closed room with her.")
+                .withStyle(ChatFormatting.GRAY),false);
     }
     private static void warnRansom(ServerPlayer owner,MotherCollection collection) {
         if(!collection.holdsLivingPet(owner.getUUID())||collection.salved()||collection.banished())return;
         if(collection.beginRansom(owner.getUUID())) {
             say(owner,"It is still alive. Give me something valuable, or I will not leave it lost.");
-            owner.displayClientMessage(Component.literal("Offer her or your pet a diamond, golden apple, netherite scrap, four emeralds, or enchanted equipment. You have one minute in her den.")
+            owner.displayClientMessage(Component.literal("Offer her or your pet a valuable item or vignette artifact. Empty-hand sneak-click offers another living thing beside her; a player must be trapped in a small closed room with her. You have one minute in her den.")
                     .withStyle(ChatFormatting.GRAY),false);
         }
     }
