@@ -29,7 +29,7 @@ public final class MinotaurEntity extends PathfinderMob {
     private Vec3 charge=Vec3.ZERO;
     public MinotaurEntity(EntityType<? extends MinotaurEntity> type,Level level){super(type,level);setPersistenceRequired();bar.setProgress(1);}
     public static AttributeSupplier.Builder attributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,100)
-            .add(Attributes.MOVEMENT_SPEED,.28).add(Attributes.FOLLOW_RANGE,48).add(Attributes.KNOCKBACK_RESISTANCE,1);}
+            .add(Attributes.MOVEMENT_SPEED,.28).add(Attributes.FOLLOW_RANGE,48).add(Attributes.KNOCKBACK_RESISTANCE,1).add(Attributes.STEP_HEIGHT,.6);}
     @Override protected void registerGoals(){}
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder){super.defineSynchedData(builder);builder.define(MOTION,WATCHING);}
     public int motion(){return entityData.get(MOTION);}
@@ -38,7 +38,7 @@ public final class MinotaurEntity extends PathfinderMob {
     private void motion(int motion,int duration){entityData.set(MOTION,motion);remaining=duration;}
     public void stagger(){motion(STUNNED,65);setDeltaMovement(Vec3.ZERO);}
     public void wounded(){motion(WOUNDED,240);bar.removeAllPlayers();setDeltaMovement(Vec3.ZERO);}
-    public void released(){motion(RELEASED,0);bar.removeAllPlayers();setDeltaMovement(Vec3.ZERO);}
+    public void released(){motion(RELEASED,0);bar.removeAllPlayers();setDeltaMovement(Vec3.ZERO);getAttribute(Attributes.STEP_HEIGHT).setBaseValue(1);}
     @Override public boolean removeWhenFarAway(double distance){return false;}
     @Override public boolean canBeLeashed(){return false;}
     @Override public void startSeenByPlayer(ServerPlayer player){super.startSeenByPlayer(player);if(owner!=null&&owner.equals(player.getUUID())&&motion()!=WOUNDED&&motion()!=RELEASED)bar.addPlayer(player);}
