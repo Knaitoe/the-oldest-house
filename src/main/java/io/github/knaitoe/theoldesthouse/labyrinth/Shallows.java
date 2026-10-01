@@ -17,6 +17,7 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.phys.*;
 import net.neoforged.neoforge.event.entity.player.*;
+import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /** Verb: throwing. The memory is personal; crossing its threshold alone never completes it. */
@@ -100,6 +101,11 @@ public final class Shallows {
     /** Called after the actor's ordinary native physics tick, not a timer that assumes a splash. */
     public static void tickActor(LakeWitchEntity girl){
         if(!(girl.level() instanceof ServerLevel level)||girl.memoryOwner()==null)return;
+        if(IndianLakeProgress.hasThrown(LabyrinthData.get(level.getServer()),girl.memoryOwner())){
+            // A finished body continues sinking even if its owner disconnects during the aftermath.
+            if(girl.memoryPhase()!=3){girl.discard();return;}
+            girl.move(MoverType.SELF,new Vec3(0,-.045,0));if(girl.getY()<girl.memoryBase().getY()-2.5)girl.discard();return;
+        }
         ServerPlayer owner=level.getServer().getPlayerList().getPlayer(girl.memoryOwner());
         // Native fake players used by server tests live in the level rather than the connection list.
         if(owner==null)owner=level.players().stream().filter(p->p.getUUID().equals(girl.memoryOwner())).findFirst().orElse(null);
