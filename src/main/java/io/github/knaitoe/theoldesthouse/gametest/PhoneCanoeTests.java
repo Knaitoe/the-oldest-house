@@ -134,7 +134,8 @@ public final class PhoneCanoeTests {
     }
     @GameTest(template="empty",batch="domestic_layout_upgrade",timeoutTicks=200)
     public static void nativeSixteenUpgradeDressesHallsWithoutRebuildingStories(GameTestHelper h){
-        domesticUpgrade=new Fixture(h,new BlockPos(9300,80,9300));Fixture f=domesticUpgrade;var data=LabyrinthData.get(f.server);
+        // Keep the persistent physical rooms separate from the Growl's 9300 lighting fixture.
+        domesticUpgrade=new Fixture(h,new BlockPos(23500,80,23500));Fixture f=domesticUpgrade;var data=LabyrinthData.get(f.server);
         BlockPos landing=LabyrinthPlaces.base(f.origin,LabyrinthPlace.JUNCTION);
         LabyrinthBuilder.buildJunction(f.level,landing);LabyrinthLighting.buildEarlyAid(f.server,f.level,landing);
         var cache=(BarrelBlockEntity)f.level.getBlockEntity(landing.offset(LabyrinthLighting.TOM_CACHE));
