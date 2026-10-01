@@ -174,6 +174,19 @@ public final class DrownedTownTests {
                     &&level.getBlockState(base.offset(DrownedTown.ROOF_HATCH)).getValue(TrapDoorBlock.OPEN), "native hatch use lets the hymn out and finishes the shared scene");
             helper.assertTrue(WitnessAccount.has(data,player.getUUID(),WitnessAccount.Story.DROWNED_TOWN), "this explorer records the actual resolution");
             click(player,base.offset(DrownedTown.ROOF_HATCH));helper.assertTrue(WitnessAccount.count(data,player.getUUID())==1, "repeated hatch use gives no additional resolution");
+            // Exercise actual item placement under the labyrinth's normal protection events.
+            player.getInventory().setItem(20,key.copy());player.moveTo(Vec3.atBottomCenterOf(base.offset(1,-11,-27)));
+            player.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.OAK_DOOR,2));
+            BlockPos ground=base.offset(0,-12,-28),airDoor=ground.above();
+            player.getMainHandItem().useOn(new net.minecraft.world.item.context.UseOnContext(player,InteractionHand.MAIN_HAND,
+                    new BlockHitResult(Vec3.atCenterOf(ground).add(0,.5,0),Direction.UP,ground,false)));
+            helper.assertTrue(level.getBlockState(airDoor).is(Blocks.OAK_DOOR)&&level.getBlockState(airDoor).getFluidState().isEmpty(), "a player-placed native door really supplies an air pocket");
+            var reclaim=new BlockEvent.BreakEvent(level,airDoor,level.getBlockState(airDoor),player);NeoForge.EVENT_BUS.post(reclaim);
+            helper.assertTrue(!reclaim.isCanceled()&&DrownedTown.canBreak(level,airDoor.above()), "both halves of a placed air door can be recovered");
+            player.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.SOUL_SAND));BlockPos sand=base.offset(-2,-11,-26);
+            player.getMainHandItem().useOn(new net.minecraft.world.item.context.UseOnContext(player,InteractionHand.MAIN_HAND,
+                    new BlockHitResult(Vec3.atCenterOf(sand.below()).add(0,.5,0),Direction.UP,sand.below(),false)));
+            helper.assertTrue(level.getBlockState(sand).is(Blocks.SOUL_SAND)&&DrownedTown.canBreak(level,sand), "portable soul sand is also permitted and recoverable");
             helper.succeed();
         });
     }
