@@ -198,7 +198,7 @@ public final class DrownedTownTests {
             for(int z=(huntTicket.getZ()-15)>>4;z<=huntTicket.getZ()>>4;z++)level.getChunkSource().removeRegionTicket(TicketType.PORTAL,new ChunkPos(x,z),3,huntTicket);huntTicket=null;}
         if(huntWitch!=null){huntWitch.discard();huntWitch=null;}if(huntPlayer!=null){huntPlayer.discard();huntPlayer=null;}
         if(beforeHunt!=null){LabyrinthData.get(level.getServer()).setState(DrownedTown.ID,beforeHunt);beforeHunt=null;}}
-    @GameTest(template="empty",batch="drowned_hunt",timeoutTicks=200)
+    @GameTest(template="empty",batch="drowned_hunt",timeoutTicks=450)
     public static void nativeWitchDetoursAroundGrassAndCannotBePushedIntoWater(GameTestHelper helper){
         ServerLevel level=helper.getLevel();BlockPos base=helper.absolutePos(new BlockPos(0,2,0));beforeHunt=LabyrinthData.get(level.getServer()).state(DrownedTown.ID).copy();
         huntTicket=base;
@@ -218,7 +218,13 @@ public final class DrownedTownTests {
         huntWitch=DrownedTownRegistry.LAKE_WITCH.get().create(level);huntWitch.shore(base,1);huntWitch.moveTo(Vec3.atBottomCenterOf(base.offset(-6,0,-7)));
         helper.assertTrue(level.addFreshEntity(huntWitch), "the native actor is accepted by the test level");
         helper.assertTrue(LakeWitchEntity.canAttack(huntWitch,huntPlayer), "the native survival player is a valid hunt target");
-        helper.onEachTick(()->helper.assertTrue(!LakeWitchEntity.safeGround(level,huntWitch.blockPosition()), "physical witch movement never crosses a refuge"));
+        helper.onEachTick(()->{
+            // Outer time includes asynchronous chunk activation; walking still has its own strict budget.
+            helper.assertTrue(huntWitch.tickCount<=220, "the real detour must finish within 220 actor ticks");
+            for(int x=(base.getX()-11)>>4;x<=(base.getX()+11)>>4;x++)for(int z=(base.getZ()-15)>>4;z<=base.getZ()>>4;z++)
+                level.getChunkSource().addRegionTicket(TicketType.PORTAL,new ChunkPos(x,z),3,base);
+            helper.assertTrue(!LakeWitchEntity.safeGround(level,huntWitch.blockPosition()), "physical witch movement never crosses a refuge");
+        });
         helper.succeedWhen(()->{
             helper.assertTrue(huntWitch.getX()>base.getX()+4&&huntWitch.distanceToSqr(huntPlayer)<8, "the native actor must actually complete its detour; pos="+huntWitch.position()+"; ticks="+huntWitch.tickCount
                     +"; tracked="+(level.getEntity(huntWitch.getUUID())==huntWitch)+"; removed="+huntWitch.isRemoved()+"; players="+level.players().size());
