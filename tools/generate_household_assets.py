@@ -167,7 +167,7 @@ letters={
  'Y':['10001','10001','01010','00100','00100','00100','00100'], 'Z':['11111','00001','00010','00100','01000','10000','11111'],
  '.':['0','0','0','0','0','1','1'], ' ':['0']*7,
 }
-chars=' ABCDEFGHIJKLMNO'+'PQRSTUVWXYZ.\u0000\u0000\u0000\u0000'
+chars='\u0000ABCDEFGHIJKLMNO'+'PQRSTUVWXYZ.\u0000\u0000\u0000\u0000'
 assert len(chars)==32
 atlas=Image.new('RGBA',(128,20),(0,0,0,0))
 for i,char in enumerate(chars):
@@ -181,7 +181,7 @@ for i,char in enumerate(chars):
                 if y in (1,5) and x<4: atlas.putpixel((x0+x+1,y0+y),(255,255,255,115))
 (ASSETS/'textures/font').mkdir(parents=True,exist_ok=True)
 atlas.save(ASSETS/'textures/font/claw.png')
-write_json('font/claw.json',{'providers':[{'type':'bitmap','file':'the_oldest_house:font/claw.png','ascent':8,'height':9,
+write_json('font/claw.json',{'providers':[{'type':'space','advances':{' ':4.0}}, {'type':'bitmap','file':'the_oldest_house:font/claw.png','ascent':8,'height':9,
                                        'chars':[chars[:16],chars[16:]]}, {'type':'reference','id':'minecraft:default'}]})
 
 # A contact sheet for source review; every tile is enlarged with nearest-neighbor sampling.

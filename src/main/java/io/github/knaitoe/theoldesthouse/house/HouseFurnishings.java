@@ -41,9 +41,13 @@ public final class HouseFurnishings {
             for(int z:new int[]{-9,-10}) replace(level,base.offset(-4,0,z),Blocks.SPRUCE_STAIRS,HouseholdFurnitureBlock.Kind.BLUE_SOFA,Direction.EAST);
             replace(level,base.offset(4,0,-3),Blocks.OAK_STAIRS,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.WEST);
             paper(level,base.offset(4,1,-3),HouseMarginalia.Thread.HOUSEKEEPING,Direction.WEST);
-            paper(level,base.offset(-3,1,-13),HouseMarginalia.Thread.CALLS,Direction.SOUTH);
-            paper(level,base.offset(-2,1,-13),HouseMarginalia.Thread.ROOM,Direction.SOUTH);
-            paper(level,base.offset(-1,1,-13),HouseMarginalia.Thread.POEMS,Direction.SOUTH);
+            // The old cupboard fronts are embedded in the wall. A shallow sideboard provides bare tops.
+            add(level,base.offset(-3,0,-12),HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);
+            add(level,base.offset(-2,0,-12),HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.SOUTH);
+            add(level,base.offset(-1,0,-12),HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);
+            paper(level,base.offset(-3,1,-12),HouseMarginalia.Thread.CALLS,Direction.SOUTH);
+            paper(level,base.offset(-2,1,-12),HouseMarginalia.Thread.ROOM,Direction.SOUTH);
+            paper(level,base.offset(-1,1,-12),HouseMarginalia.Thread.POEMS,Direction.SOUTH);
         } else if(LabyrinthHalls.isHall(place)) {
             int i=place.slot();
             for(var f:LabyrinthDomestic.fragments(place)) {

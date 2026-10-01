@@ -52,7 +52,7 @@ public final class MarginaliaTests {
             p.teleportTo(level,base.getX()+.5,base.getY(),base.getZ()-11.5,0,0);p.hasChangedDimension();players.add(p);return p;}
         void depth(ServerPlayer p,int depth) {data().clearReturns(p.getUUID());for(int i=0;i<depth;i++)data().pushReturn(p.getUUID(),new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,p.position(),0));}
         BlockPos surface(HouseMarginalia.Thread thread) {return base.offset(switch(thread) {
-            case HOUSEKEEPING->new BlockPos(4,1,-3);case CALLS->new BlockPos(-3,1,-13);case ROOM->new BlockPos(-2,1,-13);case POEMS->new BlockPos(-1,1,-13);});}
+            case HOUSEKEEPING->new BlockPos(4,1,-3);case CALLS->new BlockPos(-3,1,-12);case ROOM->new BlockPos(-2,1,-12);case POEMS->new BlockPos(-1,1,-12);});}
         HouseMarginalia.NotebookMenu open(ServerPlayer p,HouseMarginalia.Thread thread) {
             BlockPos pos=surface(thread);p.moveTo(Vec3.atBottomCenterOf(pos.below().south()));
             var event=new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,pos,new BlockHitResult(Vec3.atCenterOf(pos),Direction.UP,pos,false));
