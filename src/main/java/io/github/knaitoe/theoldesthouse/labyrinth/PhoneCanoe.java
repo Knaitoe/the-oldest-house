@@ -47,10 +47,10 @@ public final class PhoneCanoe {
         if(state.getBoolean("Finished")){player.displayClientMessage(Component.literal("The seat is wet. Your phone is somewhere else now."),true);return false;}
         if(!canoe.getPassengers().isEmpty()&&!canoe.hasPassenger(player)){player.displayClientMessage(Component.literal("Someone else is in the canoe."),true);return false;}
         if(state.getBoolean("Dropped")){
-            if(!player.startRiding(canoe))return false;state.putInt("Phase",3);state.putInt("Tick",Math.max(FILM_TICKS,state.getInt("Tick")));save(data,player.getUUID(),state);return true;
+            if(!player.startRiding(canoe,true))return false;state.putInt("Phase",3);state.putInt("Tick",Math.max(FILM_TICKS,state.getInt("Tick")));save(data,player.getUUID(),state);return true;
         }
         if(!player.getMainHandItem().isEmpty()||BlindfoldItem.isWorn(player)){player.displayClientMessage(Component.literal("You need an empty hand to take the phone."),true);return false;}
-        if(!player.startRiding(canoe))return false;
+        if(!player.startRiding(canoe,true))return false;
         UUID scene=UUID.randomUUID();ItemStack phone=new ItemStack(DrownedTownRegistry.LAKE_PHONE.get());
         phone.set(DataComponents.CUSTOM_NAME,Component.literal("Your phone · Indian Lake"));
         CustomData.update(DataComponents.CUSTOM_DATA,phone,t->{t.putUUID(OWNER,player.getUUID());t.putUUID(SCENE,scene);t.putString("Name",player.getGameProfile().getName());t.put("Footage",new ListTag());});
@@ -99,7 +99,7 @@ public final class PhoneCanoe {
         LakeCanoeEntity canoe=stage(player.serverLevel(),base);if(canoe==null)return;
         if(phase==1){if(player.getVehicle()!=canoe)interrupt(player);return;}
         // Native input predictions cannot row away, dive, dismount, or damage the explorer during the authored clip.
-        if(player.getVehicle()!=canoe&&!player.startRiding(canoe))return;player.setDeltaMovement(Vec3.ZERO);player.setAirSupply(player.getMaxAirSupply());player.fallDistance=0;
+        if(player.getVehicle()!=canoe){if(!canoe.getPassengers().isEmpty()||!player.startRiding(canoe,true))return;}player.setDeltaMovement(Vec3.ZERO);player.setAirSupply(player.getMaxAirSupply());player.fallDistance=0;
         int tick=state.getInt("Tick");double fraction=Math.min(1,tick/100.0);canoe.moveTo(base.getX()+.5,base.getY(),base.getZ()-12.5-20*fraction,180,0);
         if(tick<FILM_TICKS){
             ItemStack phone=scenePhone(player,state);if(phone.isEmpty()){interrupt(player);return;}
