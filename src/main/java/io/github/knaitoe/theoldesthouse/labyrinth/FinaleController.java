@@ -281,8 +281,7 @@ public final class FinaleController {
         if(record.hasUUID("Creature")&&player.serverLevel().getEntity(record.getUUID("Creature")) instanceof MinotaurEntity creature)creature.discard();
         CompoundTag world=FinaleProgress.world(player.server);world.remove("Owner");LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);
         BlockPos origin=HouseSavedData.get(player.server).houseOrigin();if(origin!=null){
-            FinaleArchitecture.seal(player.serverLevel(),origin,false);BlockPos cell=FinaleArchitecture.cell(origin);
-            for(int x=-1;x<=1;x++)for(int y=0;y<4;y++)player.serverLevel().setBlock(cell.offset(x,y,0),Blocks.IRON_BARS.defaultBlockState(),FLAGS);
+            FinaleArchitecture.seal(player.serverLevel(),origin,false);FinaleArchitecture.closeCell(player.serverLevel(),origin);
         }
     }
     private static void keep(ServerPlayer player,ItemStack stack){if(!stack.isEmpty())MotherCollection.get(player.server).keepFinaleItem(stack,player.registryAccess(),player.getUUID(),player.serverLevel().getGameTime());}
@@ -343,6 +342,11 @@ public final class FinaleController {
         for(ServerLevel level:server.getAllLevels())if(level.getGameTime()%20==0)
             for(Entity entity:level.getAllEntities())if(entity.getTags().contains("HouseFinaleWords")&&level.getGameTime()>=entity.getPersistentData().getLong("FinaleWordsUntil"))entity.discard();
         CompoundTag world=FinaleProgress.world(server);boolean changed=false;ServerLevel interior=server.getLevel(HouseDimensions.INTERIOR);
+        BlockPos activeOrigin=HouseSavedData.get(server).houseOrigin();
+        if(world.getBoolean("CellReleased")&&!world.hasUUID("Owner")&&interior!=null&&activeOrigin!=null
+                &&server.getPlayerList().getPlayers().stream().noneMatch(p->p.serverLevel()==interior&&FinaleArchitecture.contains(activeOrigin,p.blockPosition()))){
+            FinaleArchitecture.closeCell(interior,activeOrigin);world.remove("CellReleased");changed=true;
+        }
         for(String key:new ArrayList<>(world.getAllKeys())){CompoundTag record=world.getCompound(key);
             if(record.contains("Light")&&interior!=null&&interior.getGameTime()>=record.getLong("LightUntil")){
                 BlockPos light=BlockPos.of(record.getLong("Light"));if(interior.getBlockState(light).is(Blocks.LIGHT))interior.setBlock(light,Blocks.AIR.defaultBlockState(),FLAGS);

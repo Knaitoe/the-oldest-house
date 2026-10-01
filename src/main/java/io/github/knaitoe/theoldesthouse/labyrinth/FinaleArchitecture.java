@@ -19,6 +19,7 @@ public final class FinaleArchitecture {
     public static final String ID = "great_staircase", ENTRY = "finale.entry";
     public static final int TOP = 220, ARENA = 92, BOTTOM = 4;
     private static final String STATE = "finale_architecture_049";
+    private static final int CARVE_VERSION = 410;
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     public record Placement(BlockPos pos, BlockState block) {}
     private static final Map<MinecraftServer, List<Placement>> PLANS = new WeakHashMap<>();
@@ -60,20 +61,37 @@ public final class FinaleArchitecture {
         ServerLevel level = server.getLevel(HouseDimensions.INTERIOR); if (level == null) return;
         LabyrinthData data = LabyrinthData.get(server); CompoundTag state = data.state(STATE);
         if (state.contains("Origin") && state.getLong("Origin") != manor.asLong()) { boolean requested=state.getBoolean("Requested"); state = new CompoundTag(); state.putBoolean("Requested",requested); PLANS.remove(server); }
-        if (state.getBoolean("Ready") || !state.getBoolean("Requested")) return;
+        if (!state.getBoolean("Requested") || (state.getBoolean("Ready") && state.getInt("CarveVersion")==CARVE_VERSION)) return;
+        if(state.getInt("PlanVersion")!=CARVE_VERSION){
+            state.putBoolean("Upgrade",state.getBoolean("Ready"));state.putInt("Cursor",0);state.putInt("PlanVersion",CARVE_VERSION);PLANS.remove(server);
+        }
         List<Placement> plan = PLANS.computeIfAbsent(server, ignored -> plan(manor));
         int cursor = Math.max(0, state.getInt("Cursor")), end = Math.min(plan.size(), cursor + 1536);
-        for (;cursor<end;cursor++) { Placement p=plan.get(cursor); level.setBlock(p.pos,p.block,FLAGS); }
+        boolean upgrade=state.getBoolean("Upgrade");
+        for (;cursor<end;cursor++) { Placement p=plan.get(cursor);
+            // Saved 0.4.9 scenes retain their furniture, loot, floors and current cell/seal state.
+            if(!upgrade||(p.block.isAir()&&!preserveUpgradeVoid(manor,p.pos)))level.setBlock(p.pos,p.block,FLAGS);
+        }
         state.putLong("Origin",manor.asLong()); state.putInt("Cursor",cursor);
         if(cursor==plan.size()) {
-            furnish(level,manor); state.putBoolean("Ready",true); PLANS.remove(server);
+            if(!upgrade)furnish(level,manor);state.putBoolean("Ready",true);state.putInt("CarveVersion",CARVE_VERSION);state.remove("Upgrade");PLANS.remove(server);
             data.putDoor(new LabyrinthData.Door(ENTRY,HouseDimensions.INTERIOR,base(manor).offset(0,TOP,14),Direction.SOUTH,LabyrinthData.RETURN,false));
         }
         data.setState(STATE,state);
     }
+    private static boolean preserveUpgradeVoid(BlockPos manor,BlockPos pos){
+        BlockPos b=base(manor);
+        if(pos.getZ()==b.getZ()+29&&Math.abs(pos.getX()-b.getX())<=1&&pos.getY()>=ARENA&&pos.getY()<ARENA+4)return true;
+        return pos.equals(b.offset(-10,ARENA,39))||pos.equals(lectern(manor))||pos.equals(exit(manor).above(2))
+                ||pos.equals(b.offset(0,TOP,18))||pos.equals(b.offset(-14,ARENA+4,35))||pos.equals(b.offset(14,ARENA+4,47));
+    }
     public static List<Placement> plan(BlockPos manor) {
         BlockPos b=base(manor); LinkedHashMap<BlockPos,BlockState> blocks=new LinkedHashMap<>();
         BlockState stone=Blocks.POLISHED_DEEPSLATE.defaultBlockState(), dark=Blocks.DEEPSLATE_TILES.defaultBlockState();
+        // These coordinates belong to a generated world. Clear every intended void before authoring its shell.
+        clearVolume(blocks,b,-26,26,ARENA-8,TOP+14,-26,26);
+        clearVolume(blocks,b,-16,16,ARENA,ARENA+12,30,68);
+        clearVolume(blocks,b,-30,30,-26,22,71,120);
         // Tall black walls give scale without filling the entire shaft with blocks.
         for(int y=ARENA-8;y<=TOP+14;y++) for(int i=-27;i<=27;i++) {
             put(blocks,b,i,y,-27,dark);put(blocks,b,i,y,27,dark);put(blocks,b,-27,y,i,dark);put(blocks,b,27,y,i,dark);
@@ -128,6 +146,9 @@ public final class FinaleArchitecture {
         return blocks.entrySet().stream().map(e->new Placement(e.getKey(),e.getValue())).toList();
     }
     private static void put(Map<BlockPos,BlockState> plan,BlockPos base,int x,int y,int z,BlockState block){plan.put(base.offset(x,y,z),block);}
+    private static void clearVolume(Map<BlockPos,BlockState> plan,BlockPos b,int minX,int maxX,int minY,int maxY,int minZ,int maxZ){
+        BlockState air=Blocks.AIR.defaultBlockState();for(int y=minY;y<=maxY;y++)for(int z=minZ;z<=maxZ;z++)for(int x=minX;x<=maxX;x++)put(plan,b,x,y,z,air);
+    }
     private static void boxFloor(Map<BlockPos,BlockState> plan,BlockPos b,int minX,int maxX,int minZ,int maxZ,int y,BlockState block){
         for(int x=minX;x<=maxX;x++)for(int z=minZ;z<=maxZ;z++)put(plan,b,x,y,z,block);
     }
@@ -156,6 +177,9 @@ public final class FinaleArchitecture {
     }
     public static void openCell(ServerLevel level,BlockPos manor) {
         BlockPos door=cell(manor);for(int x=-1;x<=1;x++)for(int y=0;y<4;y++)level.setBlock(door.offset(x,y,0),Blocks.AIR.defaultBlockState(),FLAGS);
+    }
+    public static void closeCell(ServerLevel level,BlockPos manor){
+        BlockPos door=cell(manor);for(int x=-1;x<=1;x++)for(int y=0;y<4;y++)level.setBlock(door.offset(x,y,0),Blocks.IRON_BARS.defaultBlockState(),FLAGS);
     }
     public static void clearAll(){PLANS.clear();}
 }
