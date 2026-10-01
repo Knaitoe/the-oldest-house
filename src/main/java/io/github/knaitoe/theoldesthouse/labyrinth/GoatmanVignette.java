@@ -61,7 +61,7 @@ public final class GoatmanVignette {
     private static CompoundTag newRun(ServerPlayer p){
         CompoundTag r=new CompoundTag();r.putUUID("Id",UUID.randomUUID());r.putInt("Phase",PATH);r.putInt("Wrong",p.getRandom().nextInt(5));r.putBoolean("ExtraInside",p.getRandom().nextBoolean());
         List<Integer> tells=new ArrayList<>(List.of(FACE,SILENT,LATE_LAUGH,STILL,FIRELIGHT,HEAD,PET));
-        Collections.shuffle(tells,new Random(p.getRandom().nextLong()));int mask=0;for(int i=0,n=2+p.getRandom().nextInt(2);i<n;i++)mask|=tells.get(i);r.putInt("Tells",mask);
+        Collections.shuffle(tells,new Random(p.getRandom().nextLong()));int mask=0,n=2+p.getRandom().nextInt(2);for(int tell:tells){if(tell==HEAD&&(mask&FACE)!=0||tell==FACE&&(mask&HEAD)!=0)continue;mask|=tell;if(Integer.bitCount(mask)==n)break;}r.putInt("Tells",mask);
         List<Integer> skins=new ArrayList<>(List.of(0,1,2,3,4));Collections.shuffle(skins,new Random(p.getRandom().nextLong()));for(int i=0;i<5;i++)r.putInt("Skin"+i,skins.get(i));
         return r;
     }

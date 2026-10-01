@@ -9,8 +9,7 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.*;
 import net.minecraft.world.phys.Vec3;
-import com.mojang.math.Transformation;
-import org.joml.*;
+import net.minecraft.nbt.*;
 
 /** A winding three-block trail, a small clearing, and a quite ordinary hunting trailer. */
 public final class GoatmanWoods {
@@ -105,11 +104,13 @@ public final class GoatmanWoods {
         for(int i=0;i<count;i++){
             final int index=i;if(displays.stream().anyMatch(d->d.getPersistentData().getInt("Plate")==index&&!d.isRemoved()))continue;
             Display.ItemDisplay d=net.minecraft.world.entity.EntityType.ITEM_DISPLAY.create(l);if(d==null)continue;
-            d.addTag(PLATE);d.getPersistentData().putInt("Plate",i);d.setItemStack(new ItemStack(Items.COOKED_PORKCHOP));d.setItemTransform(ItemDisplayContext.FIXED);
-            d.setTransformation(new Transformation(new Vector3f(),new Quaternionf().rotateX((float)(-Math.PI/2)),new Vector3f(.45F),new Quaternionf()));
+            d.addTag(PLATE);d.getPersistentData().putInt("Plate",i);CompoundTag tag=d.saveWithoutId(new CompoundTag());tag.put("item",new ItemStack(Items.COOKED_PORKCHOP).save(l.registryAccess()));tag.putString("item_display","fixed");
+            CompoundTag transform=new CompoundTag();transform.put("scale",floats(.45F,.45F,.45F));transform.put("translation",floats(0,0,0));
+            transform.put("left_rotation",floats(-.70710677F,0,0,.70710677F));transform.put("right_rotation",floats(0,0,0,1));tag.put("transformation",transform);d.load(tag);
             d.moveTo(plate(i).add(b.getX(),b.getY(),b.getZ()));l.addFreshEntity(d);
         }
     }
+    private static ListTag floats(float... values){ListTag list=new ListTag();for(float value:values)list.add(FloatTag.valueOf(value));return list;}
     public static void atmosphere(ServerLevel l,BlockPos b,boolean night){
         for(int y=3;y<=13;y++)for(int z=-82;z<=0;z++)for(int x:new int[]{-23,23})put(l,b,x,y,z,sky(y,night));
         for(int y=3;y<=13;y++)for(int x=-23;x<=23;x++)for(int z:new int[]{-82,0})if(z!=0||y>7)put(l,b,x,y,z,sky(y,night));
