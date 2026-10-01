@@ -28,6 +28,10 @@ At the cell:
 
 The House remains. This player's entry is permanently closed, with no answering knock. Other players retain their journeys. The Overworld clock advances naturally; this ending does not add the collapse ending's sixty-day absence. A chest near home appears after one in-game day with the completed account, including an extra page written from inside the cell. Progress, reading, scene position, and ending survive reloads; the creature pauses while its owner is absent. Death during the release or return still invokes the finale defeat ending.
 
+The release route stays active while its owner is online, including the corridor between its waypoints. The laid-down weapon remains protected if your inventory fills: make one slot available to recover it before completing the return. The shared cell closes again once everyone has left, allowing other explorers to reach their own ending.
+
+Finale construction now clears the shaft, chamber, and lower maze out of generated terrain. Already-built 0.4.9 scenes receive this clearance gradually while retaining their floors, furniture, loot, and current cell and passage state.
+
 ## Tell-Tale Heart correction
 
 The room's loose board has an explicit axe-prying interaction before ordinary mining protection. **Attack or use the board with an axe.** The action raises the board, produces one caregiver's note, credits the explorer, and leaves the rest of the room protected. Repeated attack/break notifications cannot duplicate the note. Offhand use wears the correct axe.
