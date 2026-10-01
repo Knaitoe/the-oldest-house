@@ -100,19 +100,25 @@ public final class HarriganVignette {
     public static final BlockPos CASKET = new BlockPos(0, 0, -20);
 
     private static final String[] SMALL_TALK = {
-            "Mr. Harrigan: Keep going. A story earns its ending.",
+            "Mr. Harrigan: The book is on the lectern. Read me a little, would you?",
             "Mr. Harrigan: Most people read too quickly. They are afraid of silence.",
             "Mr. Harrigan: Money is useful because everybody agrees to pretend it means the same thing.",
             "Mr. Harrigan: You learn a person by what they skip.",
-            "Mr. Harrigan: Read the sentence again. This time, listen to it."
+            "Mr. Harrigan: Take your time. We have nowhere else to be."
     };
     private static final String[] PAGE_LINES = {
-            "Mr. Harrigan: Mm. That was the better page.",
-            "Mr. Harrigan: Don't rush the turn. Paper remembers rough hands.",
-            "Mr. Harrigan: There. You nearly missed the important bit.",
-            "Mr. Harrigan: Another page. Go on.",
-            "Mr. Harrigan: Some endings begin long before the last page."
+            "Mr. Harrigan: She kept going. Most people would have turned back.",
+            "Mr. Harrigan: A light in a window can look like an invitation.",
+            "Mr. Harrigan: Roads are promises. Mm. Read on.",
+            "Mr. Harrigan: Let's hear what he tells her. This is the last page."
     };
+    private static final List<String> READING_PAGES = List.of(
+            "The road narrowed after the mill, though the map showed no bend. Mara walked on because turning back would have meant admitting the map was right.",
+            "At dusk she found a house with one lamp burning. The old man inside asked no questions. He only moved another chair close to the fire.",
+            "He said roads were promises made by people who expected the land to cooperate. Mara laughed until she saw the mud on his boots was red.",
+            "In the morning the road was behind the house. There was no road in front of it. The old man was already awake, reading yesterday's newspaper.",
+            "Mara asked how long he had lived there. He folded the paper carefully and said, 'Long enough to stop asking the house.'"
+    );
     private static final String[] ACK = {
             "delivered",
             "i heard you",
@@ -126,7 +132,6 @@ public final class HarriganVignette {
             "do_e"
     };
 
-    private static final Map<UUID, Integer> LAST_PAGE = new HashMap<>();
     private static final Map<UUID, Long> NEXT_SPEECH = new HashMap<>();
     private static final Map<UUID, Long> WAITING_TEXT = new HashMap<>();
     /** Caller -> the one active post-vignette Harrigan entity. */
@@ -222,7 +227,7 @@ public final class HarriganVignette {
             }
         }
         NEXT_SPEECH.put(player.getUUID(), player.serverLevel().getGameTime() + 80L);
-        LAST_PAGE.remove(player.getUUID());
+        READERS.remove(player.getUUID());
     }
 
     public static void onDepart(ServerPlayer player) {
@@ -233,6 +238,8 @@ public final class HarriganVignette {
         if (origin == null || LabyrinthPlaces.placeAt(origin, player.blockPosition()) != LabyrinthPlace.HARRIGAN) {
             return;
         }
+        READERS.remove(player.getUUID());
+        NEXT_SPEECH.remove(player.getUUID());
         LabyrinthData data = LabyrinthData.get(player.server);
         if (visitFor(data) == 2 && hasItem(player, LabyrinthRegistry.HARRIGANS_PHONE.get())) {
             // Keeping his phone closes the story but does not connect the player's phone.
@@ -244,6 +251,8 @@ public final class HarriganVignette {
             savePlayerState(data, player.getUUID(), p);
             player.displayClientMessage(Component.literal("The phone in your pocket feels heavier outside the room.")
                     .withStyle(ChatFormatting.DARK_GRAY), false);
+            player.displayClientMessage(Component.literal("You kept his phone as a keepsake. Your own still keeps time, but his number has no connection.")
+                    .withStyle(ChatFormatting.GRAY), false);
         }
     }
 
@@ -294,13 +303,7 @@ public final class HarriganVignette {
                 "The Western Road",
                 "A. Vale",
                 HouseWriting.WritingStyle.PLAIN,
-                List.of(
-                        "The road narrowed after the mill, though the map showed no bend. Mara walked on because turning back would have meant admitting the map was right.",
-                        "At dusk she found a house with one lamp burning. The old man inside asked no questions. He only moved another chair close to the fire.",
-                        "He said roads were promises made by people who expected the land to cooperate. Mara laughed until she saw the mud on his boots was red.",
-                        "In the morning the road was behind the house. There was no road in front of it. The old man was already awake, reading yesterday's newspaper.",
-                        "Mara asked how long he had lived there. He folded the paper carefully and said, 'Long enough to stop asking the house.'"
-                ));
+                READING_PAGES);
     }
 
     private static void spawnBody(ServerLevel level, BlockPos pos, boolean dead, boolean inCasket) {
@@ -390,7 +393,7 @@ public final class HarriganVignette {
     // Reading and first visit
 
     public static void onContainerClose(PlayerContainerEvent.Close event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || !(event.getContainer() instanceof LecternMenu)) {
+        if (!(event.getEntity() instanceof ServerPlayer player) || !(event.getContainer() instanceof LecternMenu lectern)) {
             return;
         }
         if (!inVignette(player) || visitFor(LabyrinthData.get(player.server)) != 1) {
@@ -398,7 +401,11 @@ public final class HarriganVignette {
         }
         if (!READERS.remove(player.getUUID())) return;
         LabyrinthData data = LabyrinthData.get(player.server);
+        if (readingFinished(data.state(ID))) return;
+        observeReadingPage(player, data, lectern.getPage());
+        if (data.state(ID).getInt("ReadingPage") < READING_PAGES.size() - 1) return;
         CompoundTag state = data.state(ID);
+        state.putBoolean("ReadingFinished", true);
         if (!state.getBoolean("TicketVisible")) {
             state.putBoolean("TicketVisible", true);
             data.setState(ID, state);
@@ -408,7 +415,8 @@ public final class HarriganVignette {
                         LabyrinthRegistry.SCRATCH_TICKET.get().getDefaultInstance(), "ticket");
             }
         }
-        player.displayClientMessage(Component.literal("Mr. Harrigan: That's enough for today.")
+        NEXT_SPEECH.remove(player.getUUID());
+        player.displayClientMessage(Component.literal("Mr. Harrigan: That's enough for today. Scratch the ticket on the table; the spare phone is yours.")
                 .withStyle(ChatFormatting.GRAY), false);
     }
 
@@ -463,6 +471,8 @@ public final class HarriganVignette {
         player.serverLevel().playSound(null, frame.blockPosition(), SoundEvents.BRUSH_GENERIC, SoundSource.PLAYERS, 0.8F, 1.25F);
         player.displayClientMessage(Component.literal("The silver coating curls away. Twelve emeralds.")
                 .withStyle(ChatFormatting.GREEN), false);
+        player.displayClientMessage(Component.literal("You take the spare phone. Its display keeps the time back home, even inside the House. Harrigan's number is saved, but there is no signal here.")
+                .withStyle(ChatFormatting.GRAY), false);
     }
 
     private static void takeHarriganPhone(ServerPlayer player, ItemFrame frame) {
@@ -477,6 +487,10 @@ public final class HarriganVignette {
         }
         player.displayClientMessage(Component.literal("His phone is cold.")
                 .withStyle(ChatFormatting.DARK_GRAY), false);
+        player.displayClientMessage(Component.literal("Keep his phone as a keepsake, or carry it through the funeral door and lay it beside him. Your own phone may reach him if his goes with him.")
+                .withStyle(ChatFormatting.GRAY), false);
+        player.displayClientMessage(Component.literal("To bury it, hold Mr. Harrigan's phone and right-click the casket.")
+                .withStyle(ChatFormatting.GRAY), false);
     }
 
     public static void onAttackEntity(AttackEntityEvent event) {
@@ -527,6 +541,7 @@ public final class HarriganVignette {
         WitnessAccount.resolve(player,WitnessAccount.Story.HARRIGAN,"buried_phone");
         player.displayClientMessage(Component.literal("You tuck the phone beside his hand.")
                 .withStyle(ChatFormatting.DARK_GRAY), false);
+        explainCalling(player, data);
         event.setCanceled(true);
         event.setCancellationResult(InteractionResult.SUCCESS);
     }
@@ -548,14 +563,17 @@ public final class HarriganVignette {
         }
         if (player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)) {
             WAITING_TEXT.remove(player.getUUID());
-            player.displayClientMessage(Component.literal("Dead air.")
+            player.displayClientMessage(Component.literal("Dead air. Calls cannot leave the House; the phone's clock still keeps the time back home.")
                     .withStyle(ChatFormatting.DARK_GRAY), true);
             return;
         }
         LabyrinthData data = LabyrinthData.get(player.server);
         CompoundTag p = playerState(data, player.getUUID());
         if (p.getBoolean("Severed") || !p.getBoolean("Contact")) {
-            player.displayClientMessage(Component.literal("No service.")
+            String reason = p.getBoolean("Severed") ? "The connection is gone. The clock still keeps time."
+                    : p.getBoolean("KeptHarriganPhone") ? "His phone stayed with you. Lay it in the casket if you want yours to reach him."
+                    : "His number is saved, but there is no connection yet. The clock still keeps time.";
+            player.displayClientMessage(Component.literal("No service. " + reason)
                     .withStyle(ChatFormatting.DARK_GRAY), true);
             return;
         }
@@ -570,9 +588,10 @@ public final class HarriganVignette {
                     .withStyle(ChatFormatting.DARK_GRAY), true);
             return;
         }
+        explainCalling(player, data);
         WAITING_TEXT.put(player.getUUID(), player.server.getTickCount() + (long) TEXT_WINDOW_TICKS);
-        player.displayClientMessage(Component.literal("To: ")
-                .withStyle(ChatFormatting.GRAY), true);
+        player.displayClientMessage(Component.literal("To: type a creature's name in chat within 30 seconds, such as zombie.")
+                .withStyle(ChatFormatting.GRAY), false);
     }
 
     public static void onServerChat(ServerChatEvent event) {
@@ -770,6 +789,7 @@ public final class HarriganVignette {
         }
 
         if (visit == 2) {
+            for (ServerPlayer player : visitors) explainFuneral(player, data);
             CompoundTag state = data.state(ID);
             boolean funeral = state.getBoolean("FuneralEntered");
             if (!funeral) {
@@ -791,28 +811,75 @@ public final class HarriganVignette {
     }
 
     private static void tickReading(ServerPlayer player, LabyrinthData data) {
+        CompoundTag state = data.state(ID);
+        if (readingFinished(state)) return;
         long now = player.serverLevel().getGameTime();
-        if (player.containerMenu instanceof LecternMenu lectern) {
-            int page = lectern.getPage();
-            Integer old = LAST_PAGE.put(player.getUUID(), page);
-            if (old != null && old != page) {
-                CompoundTag state = data.state(ID);
-                int turns = state.getInt("PagesTurned") + 1;
-                state.putInt("PagesTurned", turns);
-                data.setState(ID, state);
-                player.displayClientMessage(Component.literal(PAGE_LINES[Math.floorMod(turns - 1, PAGE_LINES.length)])
-                        .withStyle(ChatFormatting.GRAY), false);
-                NEXT_SPEECH.put(player.getUUID(), now + 160L);
-            }
+        if (player.containerMenu instanceof LecternMenu lectern && READERS.contains(player.getUUID())) {
+            observeReadingPage(player, data, lectern.getPage());
             return;
         }
-
+        if (state.getBoolean("ReadingStarted")) return;
+        CompoundTag personal = playerState(data, player.getUUID());
+        if (!personal.getBoolean("StudyExplained")) {
+            personal.putBoolean("StudyExplained", true);
+            savePlayerState(data, player.getUUID(), personal);
+            player.displayClientMessage(Component.literal("Mr. Harrigan: The book is on the lectern. Read me a little, would you? There is a chair beside it.")
+                    .withStyle(ChatFormatting.GRAY), false);
+            player.displayClientMessage(Component.literal("Mr. Harrigan: Two phones on the table. The spare is for you; the other is mine. When my time comes, I'd like mine to go with me.")
+                    .withStyle(ChatFormatting.GRAY), false);
+            NEXT_SPEECH.put(player.getUUID(), now + 200L);
+        }
         long next = NEXT_SPEECH.getOrDefault(player.getUUID(), 0L);
         if (now >= next && player.position().distanceToSqr(Vec3.atCenterOf(base(player.server).offset(CHAIR))) < 100.0D) {
             int pick = Math.floorMod((int) (now / 20L + player.getUUID().getLeastSignificantBits()), SMALL_TALK.length);
             player.displayClientMessage(Component.literal(SMALL_TALK[pick]).withStyle(ChatFormatting.GRAY), false);
             NEXT_SPEECH.put(player.getUUID(), now + 180L + player.getRandom().nextInt(180));
         }
+    }
+
+    private static boolean readingFinished(CompoundTag state) {
+        // Older saves have already spoken the closing line when the ticket appears.
+        return state.getBoolean("ReadingFinished") || state.getBoolean("TicketVisible") || state.getBoolean("BeatDone");
+    }
+
+    private static void observeReadingPage(ServerPlayer player, LabyrinthData data, int page) {
+        CompoundTag state = data.state(ID);
+        if (readingFinished(state)) return;
+        page = Math.max(0, Math.min(READING_PAGES.size() - 1, page));
+        int highest = state.contains("ReadingPage") ? state.getInt("ReadingPage") : -1;
+        if (state.getBoolean("ReadingStarted") && page <= highest) return;
+        state.putBoolean("ReadingStarted", true);
+        if (page > highest) {
+            state.putInt("ReadingPage", page);
+            if (page > 0) state.putInt("PagesTurned", state.getInt("PagesTurned") + 1);
+        }
+        data.setState(ID, state);
+        if (page > highest && page > 0) player.displayClientMessage(Component.literal(PAGE_LINES[page - 1])
+                .withStyle(ChatFormatting.GRAY), false);
+    }
+
+    private static void explainFuneral(ServerPlayer player, LabyrinthData data) {
+        CompoundTag personal = playerState(data, player.getUUID());
+        if (personal.getBoolean("FuneralExplained")) return;
+        personal.putBoolean("FuneralExplained", true);
+        savePlayerState(data, player.getUUID(), personal);
+        player.displayClientMessage(Component.literal("The phone beside the study chair is his. The door beyond it now opens into a funeral room.")
+                .withStyle(ChatFormatting.GRAY), false);
+        player.displayClientMessage(Component.literal("Your spare phone stays yours. Keep his as a keepsake, or hold it and right-click his casket to lay it beside him. Only then may your own phone reach his number outside the House.")
+                .withStyle(ChatFormatting.GRAY), false);
+    }
+
+    private static void explainCalling(ServerPlayer player, LabyrinthData data) {
+        CompoundTag personal = playerState(data, player.getUUID());
+        if (personal.getBoolean("CallingExplained")) return;
+        personal.putBoolean("CallingExplained", true);
+        savePlayerState(data, player.getUUID(), personal);
+        player.displayClientMessage(Component.literal("Your own phone can reach his number now. Outside the House, right-click it, then type a creature's name in chat within 30 seconds.")
+                .withStyle(ChatFormatting.GRAY), false);
+        player.displayClientMessage(Component.literal("One call a day. Name a hostile species, such as zombie: those creatures within 64 blocks of your Overworld bed die at the next dawn. Keep a bed set as your respawn point.")
+                .withStyle(ChatFormatting.DARK_GRAY), false);
+        player.displayClientMessage(Component.literal("Naming harmless creatures or named lives can bring Harrigan to you instead. The clock works whether or not his number answers.")
+                .withStyle(ChatFormatting.DARK_GRAY), false);
     }
 
     private static void tickPhones(MinecraftServer server) {
@@ -1333,7 +1400,6 @@ public final class HarriganVignette {
     public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         READERS.remove(event.getEntity().getUUID());
         WAITING_TEXT.remove(event.getEntity().getUUID());
-        LAST_PAGE.remove(event.getEntity().getUUID());
         NEXT_SPEECH.remove(event.getEntity().getUUID());
     }
 
@@ -1347,7 +1413,6 @@ public final class HarriganVignette {
         }
         ACTIVE_GHOSTS.clear();
         WAITING_TEXT.clear();
-        LAST_PAGE.clear();
         NEXT_SPEECH.clear();
     }
 

@@ -22,7 +22,7 @@ public final class LabyrinthRegistry {
     public static final DeferredItem<HarriganPhoneItem> PHONE =
             ITEMS.register("phone", () -> new HarriganPhoneItem(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<Item> HARRIGANS_PHONE =
-            ITEMS.registerSimpleItem("harrigans_phone", new Item.Properties().stacksTo(1));
+            ITEMS.register("harrigans_phone", () -> new HarriganPhoneItem.Keepsake(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<Item> SCRATCH_TICKET =
             ITEMS.registerSimpleItem("scratch_ticket", new Item.Properties().stacksTo(1));
 

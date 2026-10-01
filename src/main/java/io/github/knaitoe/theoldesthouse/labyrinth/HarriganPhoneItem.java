@@ -50,8 +50,28 @@ public final class HarriganPhoneItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.literal("The time shown is the time back home.")
                 .withStyle(ChatFormatting.DARK_GRAY));
-        tooltip.add(Component.literal("Use it, then type a name in chat.")
+        tooltip.add(Component.literal("If his phone rests in the casket, yours can reach him.")
                 .withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.literal("Outside the House: use, then type a name in chat.")
+                .withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.literal("Try a hostile species, such as zombie. One call a day.")
+                .withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.literal("At dawn, that species dies near your Overworld bed.")
+                .withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.literal("Set a bed respawn. Naming harmless lives has a cost.")
+                .withStyle(ChatFormatting.DARK_GRAY));
+    }
+
+    /** The same saved item ID, with durable guidance for the funeral choice. */
+    public static final class Keepsake extends Item {
+        public Keepsake(Properties properties) { super(properties); }
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+            tooltip.add(Component.literal("His phone. Your spare phone remains yours.").withStyle(ChatFormatting.GRAY));
+            tooltip.add(Component.literal("Keep this as a keepsake, or take it to his funeral.").withStyle(ChatFormatting.DARK_GRAY));
+            tooltip.add(Component.literal("Hold it and use it on the casket to lay it beside him.").withStyle(ChatFormatting.DARK_GRAY));
+            tooltip.add(Component.literal("Then your own phone may reach him outside the House.").withStyle(ChatFormatting.DARK_GRAY));
+        }
     }
 
     public static String homeTime(long dayTime) {
