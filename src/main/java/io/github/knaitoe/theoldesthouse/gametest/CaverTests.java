@@ -96,8 +96,10 @@ public final class CaverTests {
         h.onEachTick(()->{
             clock[0]++;if(clock[0]<10)return;
             if(phase[0]==0){f.at(p,.5,-3,-21.5);p.setShiftKeyDown(true);CaverVignette.playerTick(p);phase[0]=1;return;}
-            if(phase[0]==1){CaverVignette.playerTick(p);h.assertTrue(p.getBbHeight()<.7,"native crawling uses the actual short collision box");
-                p.move(MoverType.SELF,new Vec3(0,0,-.14));if(p.getZ()-f.b.getZ()< -35.95){p.setShiftKeyDown(false);phase[0]=2;clock[0]=0;}return;}
+            if(phase[0]==1){CaverVignette.playerTick(p);
+                if(!CaverVignette.crawling(p)&&p.getZ()-f.b.getZ()< -34.1){p.setShiftKeyDown(false);phase[0]=2;clock[0]=0;return;}
+                h.assertTrue(p.getBbHeight()<.7,"native crawling uses the actual short collision box at "+p.position()+"; pose "+p.getPose()+"; forced "+p.getForcedPose());
+                p.move(MoverType.SELF,new Vec3(0,0,-.14));return;}
             if(phase[0]==2){if(clock[0]<3)return;CaverVignette.playerTick(p);h.assertTrue(CaverVignette.personal(f.data(),p.getUUID()).getBoolean("Squeezed")&&!CaverVignette.crawling(p),"the full physical squeeze reaches a standing chamber");
                 f.at(p,-2.5,-3,-39.5);f.click(p,CaverCave.MARK);f.at(p,2.5,-3,-42.5);f.click(p,CaverCave.STONE);
                 h.assertTrue(f.l.getBlockState(f.b.offset(CaverCave.STONE)).isAir(),"examining the actual stone opens its hidden route");f.at(p,4.5,-3,-53.5);phase[0]=3;clock[0]=0;return;}
