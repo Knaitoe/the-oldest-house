@@ -2,6 +2,8 @@
 
 NeoForge 1.21.1, Java 21. Install the same version on client and server (network protocol 12).
 
+This document records the original 0.4.10 release. Since 0.4.13 the current Witness requirement is 75% of the eligible pool, rounded up: six of eight stories, across at least two kinds. See [WITNESS_QUOTA_0_4_13.md](WITNESS_QUOTA_0_4_13.md) and the [vignette release checklist](VIGNETTE_RELEASE_CHECKLIST.md).
+
 ## The Witness
 
 Three different personal resolutions earn another passage in the play at the great staircase's cell. The current five sources are:
