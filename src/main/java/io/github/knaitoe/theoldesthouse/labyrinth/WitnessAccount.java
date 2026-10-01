@@ -46,6 +46,11 @@ public final class WitnessAccount {
                 "There were more of us than there were places at the table. Someone knocked at the door and used a voice we knew. I kept it closed until the knocking stopped. I still could not say who had been outside."),
         TED_CAVER("ted_caver","The small passage","survival",
                 "I worked until the hole would take my shoulders. Beyond it, the stone moved and the line tightened. I crawled back through the same opening and climbed above the rope. I left without learning what had been pulling it."),
+        ZAMPANO("zampano_courtyard","The readers","understanding","I coaxed the cat from the mat and read the survey behind the sealed windows. The gouges had been measured without anyone asking what made them."),
+        WHALE("whale","The undated letter","connection","The letters found me in ordinary chests. Their beginnings made a knock. In the middle attic, I read a page without a next date."),
+        BARN_WELL("barn_well","The cover","memory","I climbed below the initials. The cover shut above me. I waited until someone opened it, then climbed back into the yard."),
+        PLAIN("plain","The distant frame","memory","The bird circled something beyond the dunes. I held it in the spyglass and heard the shutter. The photograph came with me. The distance remained."),
+        HOSPITAL("hospital","The call button","understanding","I stayed through the ward's short night. I pressed the call button. The alarms stopped at dawn, without anyone coming through the door."),
         MOTHER("mother_of_strays", "The keeper", "release",
                 "She let something go. For a moment, keeping it safe and keeping it forever were different things.");
         public final String id, title, kind, text;
@@ -110,6 +115,11 @@ public final class WitnessAccount {
                         case PHONE_CANOE->"The recording kept looking at the sky.";
                         case TED_CAVER->"The line still descended into the small passage.";
                         case GOATMAN->"The door was closed. The table had too few places.";
+                        case ZAMPANO->"The windows stayed sealed. The gouges remained beside the trunk.";
+                        case WHALE->"An undated letter waited in the middle attic.";
+                        case BARN_WELL->"Two pairs of initials remained below the cover.";
+                        case PLAIN->"A bird still circled beyond the dunes.";
+                        case HOSPITAL->"The chair remained beside the empty incubator.";
                         case MOTHER->"The shelves remained, but she had stopped keeping the things upon them.";
                     }:story.text;
             pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,story.title+"\n\n"+text));
@@ -149,10 +159,10 @@ public final class WitnessAccount {
     }
     public static void onArrive(ServerPlayer player,LabyrinthPlace place){
         LabyrinthData data=LabyrinthData.get(player.server);Story story=Story.of(place.id());
-        if(story==null||!data.isCompleted(place.id())||has(data,player.getUUID(),story))return;
+        if(story==null||NovelVignettes.isNovel(place)||!data.isCompleted(place.id())||has(data,player.getUUID(),story))return;
         String prop=switch(story){case FLOORBOARDS->"the exposed space beneath the loose board";
             case CLAP->"the open wardrobe";case HARRIGAN->"the casket";case MODEL_HOME->"the child's window";
-            case DROWNED_TOWN->"the church's open roof hatch";case PRESERVED_CAVE->"the canoe behind the empty pews";case SHALLOWS->"the bank";case PHONE_CANOE->"the canoe";case GOATMAN->"the trailer door";case TED_CAVER->"the cave landing";case MOTHER->"the keeper's record";};
+            case DROWNED_TOWN->"the church's open roof hatch";case PRESERVED_CAVE->"the canoe behind the empty pews";case SHALLOWS->"the bank";case PHONE_CANOE->"the canoe";case GOATMAN->"the trailer door";case TED_CAVER->"the cave landing";case ZAMPANO->"the survey";case WHALE->"the undated letter";case BARN_WELL->"the well";case PLAIN->"the distant shape";case HOSPITAL->"the dawn chart";case MOTHER->"the keeper's record";};
         player.displayClientMessage(Component.literal("Someone reached the end before you. Crouch and examine "+prop+" to record what remains."),false);
     }
     /** Later explorers must inspect a resolved room's ending prop themselves. */

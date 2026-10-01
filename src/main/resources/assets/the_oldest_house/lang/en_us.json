@@ -52,5 +52,15 @@
   "subtitles.the_oldest_house.goatman_woods": "Birds in the woods",
   "item.the_oldest_house.trailer_plate": "Supper plate",
   "block.the_oldest_house.household_furniture": "Household Furniture",
-  "block.the_oldest_house.note_surface": "Loose Writing"
+  "block.the_oldest_house.note_surface": "Loose Writing",
+  "item.the_oldest_house.cat_collar": "A Cat's Collar",
+  "item.the_oldest_house.well_ribbon": "A Ribbon from the Well",
+  "item.the_oldest_house.archive_key": "The Key from the Mat",
+  "item.the_oldest_house.walkie_talkie": "Tom's Walkie-talkie",
+  "entity.the_oldest_house.vulture": "Vulture",
+  "entity.the_oldest_house.novel_actor": "A Familiar Figure",
+  "subtitles.the_oldest_house.novel.monitor": "The monitor calls",
+  "subtitles.the_oldest_house.novel.shutter": "A shutter closes",
+  "subtitles.the_oldest_house.novel.radio": "Radio static",
+  "subtitles.the_oldest_house.novel.collapse": "The House breaks"
 }

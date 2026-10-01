@@ -17,8 +17,9 @@ import net.minecraft.world.level.storage.ServerLevelData;
 /** The vanilla GameTest server omits data-pack dimensions; install a native test House level. */
 final class HouseTestLevel {
     private HouseTestLevel(){}
-    @SuppressWarnings("deprecation") static ServerLevel get(MinecraftServer server){
-        ServerLevel existing=server.getLevel(HouseDimensions.INTERIOR);if(existing!=null)return existing;
+    static ServerLevel get(MinecraftServer server){get(server,HouseDimensions.OUTSIDE);return get(server,HouseDimensions.INTERIOR);}
+    @SuppressWarnings("deprecation") static ServerLevel get(MinecraftServer server,net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dimension){
+        ServerLevel existing=server.getLevel(dimension);if(existing!=null)return existing;
         try{
             Field field=MinecraftServer.class.getDeclaredField("storageSource");field.setAccessible(true);
             var storage=(LevelStorageSource.LevelStorageAccess)field.get(server);var overworld=server.overworld();
@@ -29,9 +30,9 @@ final class HouseTestLevel {
                 public void start(){}public void stop(){}
             };
             ServerLevel level=new ServerLevel(server,Util.backgroundExecutor(),storage,
-                    new DerivedLevelData(server.getWorldData(),(ServerLevelData)overworld.getLevelData()),HouseDimensions.INTERIOR,
+                    new DerivedLevelData(server.getWorldData(),(ServerLevelData)overworld.getLevelData()),dimension,
                     stem,progress,false,0,List.of(),false,overworld.getRandomSequences());
-            server.forgeGetWorldMap().put(HouseDimensions.INTERIOR,level);server.markWorldsDirty();return level;
+            server.forgeGetWorldMap().put(dimension,level);server.markWorldsDirty();return level;
         }catch(ReflectiveOperationException exception){throw new IllegalStateException("Cannot initialize the native test House level",exception);}
     }
 }

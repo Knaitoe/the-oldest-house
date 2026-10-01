@@ -285,5 +285,41 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.goatman_woods"
+  },
+  "novel.monitor": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:novel/monitor",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.novel.monitor"
+  },
+  "novel.shutter": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:novel/shutter",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.novel.shutter"
+  },
+  "novel.radio": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:novel/radio",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.novel.radio"
+  },
+  "novel.collapse": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:novel/collapse",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.novel.collapse"
   }
 }

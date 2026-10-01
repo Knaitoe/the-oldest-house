@@ -227,6 +227,7 @@ public final class LabyrinthDoors {
             PhoneCanoe.onArrive(p,place);
             GoatmanVignette.onArrive(p,place);
             CaverVignette.onArrive(p,place);
+            NovelVignettes.onArrive(p,place);
             MotherOfStrays.onArrive(p, place);
             WitnessAccount.onArrive(p, place);
             LabyrinthEncounters.onArrive(p, place);

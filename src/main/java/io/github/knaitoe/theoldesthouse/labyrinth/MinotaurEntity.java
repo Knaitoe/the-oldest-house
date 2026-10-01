@@ -53,8 +53,10 @@ public final class MinotaurEntity extends PathfinderMob {
         }
         if(motion()==WOUNDED){
             Vec3 cell=FinaleController.cellCenter(level.getServer());
-            if(cell!=null){Vec3 step=cell.subtract(position()).multiply(1,0,1);if(step.lengthSqr()>.25)move(MoverType.SELF,step.normalize().scale(.12));}
-            if(--remaining<=0){if(player!=null)FinaleController.beginEscape(player);discard();}return;
+            if(cell!=null){Vec3 step=cell.subtract(position()).multiply(1,0,1);if(step.lengthSqr()>.25){setYRot((float)(Math.atan2(step.z,step.x)*180/Math.PI)-90);yBodyRot=getYRot();move(MoverType.SELF,step.normalize().scale(.12));}}
+            if(remaining>0)remaining--;
+            // A wounded prisoner remains alive, saved in its cell. The explorer owns the collapse clock.
+            return;
         }
         if(player==null||player.level()!=level||!player.isAlive()||FinaleProgress.phase(level.getServer(),owner)!=FinaleProgress.Phase.FIGHT){
             bar.removeAllPlayers();motion(WATCHING,35);setDeltaMovement(Vec3.ZERO);return;

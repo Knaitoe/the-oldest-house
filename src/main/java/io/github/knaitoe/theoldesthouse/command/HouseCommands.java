@@ -377,6 +377,7 @@ public final class HouseCommands {
         LabyrinthData.get(source.getServer()).setState(io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount.STATE, new net.minecraft.nbt.CompoundTag());
         LabyrinthData.get(source.getServer()).setState(io.github.knaitoe.theoldesthouse.labyrinth.GrowlChanges.STATE, new net.minecraft.nbt.CompoundTag());
         io.github.knaitoe.theoldesthouse.labyrinth.CaverVignette.clearAll();
+        io.github.knaitoe.theoldesthouse.labyrinth.NovelVignettes.clearAll();
         io.github.knaitoe.theoldesthouse.labyrinth.FinaleController.clearAll();
         HouseShifts.refreshCache(data);
         HouseMemory.get(source.getServer()).clear();

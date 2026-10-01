@@ -87,6 +87,7 @@ public final class HouseLifecycleEvents {
         HouseShifts.clearCache();
         HouseChunkKeeper.release(event.getServer());
         io.github.knaitoe.theoldesthouse.labyrinth.CaverVignette.clearAll();
+        io.github.knaitoe.theoldesthouse.labyrinth.NovelVignettes.clearAll();
         LabyrinthDoors.clearAll();
         LabyrinthHazards.clearAll();
         LabyrinthLighting.clearAll();

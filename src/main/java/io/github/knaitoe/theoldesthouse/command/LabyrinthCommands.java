@@ -69,6 +69,7 @@ public final class LabyrinthCommands {
 
     public static LiteralArgumentBuilder<CommandSourceStack> vignette() {
         return Commands.literal("vignette")
+                .then(io.github.knaitoe.theoldesthouse.labyrinth.NovelCommands.build())
                 .then(Commands.literal("ted_caver").then(Commands.literal("status").executes(context->{
                     var player=context.getSource().getPlayerOrException();var data=LabyrinthData.get(player.server);var own=io.github.knaitoe.theoldesthouse.labyrinth.CaverVignette.personal(data,player.getUUID());
                     context.getSource().sendSuccess(()->Component.literal("Cave: work "+data.state("ted_caver").getInt("Work")+"/24; your squeeze "+own.getBoolean("Squeezed")+"; mark "+own.getBoolean("MarkRead")+"; rope pulling "+own.getBoolean("Pursuit")+"; escaped "+own.getBoolean("Escaped")+"; personal resolution "+io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount.has(data,player.getUUID(),io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount.Story.TED_CAVER)),false);return 1;

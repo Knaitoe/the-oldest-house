@@ -19,6 +19,11 @@ public enum DoorLeakKind {
             case PHONE_CANOE -> CANOE;
             case GOATMAN -> WOODS;
             case TED_CAVER -> STONE;
+            case ZAMPANO_COURTYARD -> MOTHER;
+            case WHALE, HOSPITAL -> PHONE;
+            case BARN_WELL -> WOODS;
+            case PLAIN -> STONE;
+            case KAREN_ROOM -> WARM_TV;
             case HOTEL_HALLWAY -> HOTEL;
             default -> values()[Math.floorMod(lieSeed, values().length)];
         };
