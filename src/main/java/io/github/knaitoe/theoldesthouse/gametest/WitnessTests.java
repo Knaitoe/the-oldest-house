@@ -145,7 +145,7 @@ public final class WitnessTests {
         var creature=sceneCreature;
         helper.succeedWhen(()->{
             helper.assertTrue(FinaleProgress.phase(server,player.getUUID())==FinaleProgress.Phase.HOMEWARD,
-                    "the native creature must walk its release route; step="+FinaleProgress.player(server,player.getUUID()).getInt("ReleaseStep")+"; position="+creature.position());
+                    "the native creature must walk its release route; step="+FinaleProgress.player(server,player.getUUID()).getInt("ReleaseStep")+"; position="+creature.position()+"; cell="+level.getBlockState(cell));
             helper.assertTrue(creature.isRemoved()&&creature.getY()>FinaleArchitecture.ARENA+10,"departure happens after actual stair ascent");
             helper.assertTrue(level.getBlockState(cell).isAir()&&level.getBlockState(FinaleArchitecture.base(origin).offset(0,FinaleArchitecture.ARENA,29)).isAir(),"the cell and physical return passage stay open");
         });
