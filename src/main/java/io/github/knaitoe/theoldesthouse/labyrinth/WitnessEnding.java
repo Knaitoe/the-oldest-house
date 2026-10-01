@@ -79,6 +79,7 @@ public final class WitnessEnding {
         if(step==2)target=target.add(record.getInt("PassSide")*1.25,0,0);
         Vec3 delta=target.subtract(creature.position());
         if(delta.multiply(1,0,1).lengthSqr()<.65&&Math.abs(delta.y)<1.2){
+            if(step==3)FinaleArchitecture.seal(player.serverLevel(),origin,false);
             record.putInt("ReleaseStep",step+1);FinaleProgress.save(player.server,player.getUUID(),record);return;
         }
         if(player.tickCount%5==0)creature.getNavigation().moveTo(target.x,target.y,target.z,.7);
