@@ -536,7 +536,7 @@ public final class MotherOfStrays {
         Vec3 safe=living instanceof TamableAnimal tame?io.github.knaitoe.theoldesthouse.opening.HillaryPaths.safeBeside(tame,player):nearbyStandingSpot(player.serverLevel(),player);
         living.moveTo(safe.x,safe.y,safe.z,player.getYRot(),0);living.removeTag(PET);living.addTag(RELEASED);living.setInvulnerable(false);
         living.getPersistentData().remove(ENTRY);
-        if(living instanceof TamableAnimal tame){tame.setTame(true,true);tame.setOwnerUUID(player.getUUID());
+        if(living instanceof TamableAnimal tame){tame.setTame(true,!entry.livingClaim);tame.setOwnerUUID(player.getUUID());
             io.github.knaitoe.theoldesthouse.opening.CompanionOrders.resume(tame);}
         if(living instanceof AbstractHorse horse)horse.setOwnerUUID(player.getUUID());
         if(living instanceof Mob mob)mob.setPersistenceRequired();
