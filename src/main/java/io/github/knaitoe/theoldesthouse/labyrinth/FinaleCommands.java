@@ -6,7 +6,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 import io.github.knaitoe.theoldesthouse.house.*;
 
-/** Operator fixtures make both saved endings practical to test in a disposable world. */
+/** Operator fixtures make saved endings practical to test in a disposable world. */
 public final class FinaleCommands {
     private FinaleCommands(){}
     public static LiteralArgumentBuilder<CommandSourceStack> build(){
@@ -20,6 +20,12 @@ public final class FinaleCommands {
                 var level=player.server.getLevel(HouseDimensions.INTERIOR);if(level==null)return 0;var at=FinaleArchitecture.cell(origin).north(10);level.getChunkAt(at);player.teleportTo(level,at.getX()+.5,at.getY(),at.getZ()+.5,0,0);
                 FinaleProgress.phase(player.server,player.getUUID(),FinaleProgress.Phase.STAIRCASE);return 1;}))
             .then(Commands.literal("start").executes(c->FinaleController.start(c.getSource().getPlayerOrException())?1:0))
+            .then(Commands.literal("witness")
+                .then(Commands.literal("ready").executes(c->{var player=c.getSource().getPlayerOrException();var data=LabyrinthData.get(player.server);
+                    for(var story:java.util.List.of(WitnessAccount.Story.FLOORBOARDS,WitnessAccount.Story.CLAP,WitnessAccount.Story.HARRIGAN))WitnessAccount.resolve(data,player.getUUID(),story,"operator_fixture");
+                    WitnessAccount.updateBook(player,true);c.getSource().sendSuccess(()->Component.literal("Three personal resolutions recorded. Read the cell's lectern, lay down the original weapon, empty both hands, and crouch at the bars."),false);return 1;}))
+                .then(Commands.literal("begin").executes(c->WitnessEnding.begin(c.getSource().getPlayerOrException())?1:0))
+                .then(Commands.literal("status").executes(c->{var player=c.getSource().getPlayerOrException();c.getSource().sendSuccess(()->Component.literal(WitnessAccount.record(LabyrinthData.get(player.server),player.getUUID()).toString()),false);return 1;})))
             .then(Commands.literal("status").executes(c->{var player=c.getSource().getPlayerOrException();c.getSource().sendSuccess(()->Component.literal(FinaleProgress.player(player.server,player.getUUID()).toString()),false);return 1;}));
     }
 }

@@ -43,7 +43,7 @@ public final class FinaleController {
     public static @Nullable BlockPos companionTarget(ServerPlayer player,boolean exit) {
         BlockPos origin=HouseSavedData.get(player.server).houseOrigin();if(origin==null)return null;
         var phase=FinaleProgress.phase(player.server,player.getUUID());
-        if(FinaleProgress.committed(phase))return player.blockPosition();
+        if(FinaleProgress.committed(phase)&&phase!=FinaleProgress.Phase.HOMEWARD)return player.blockPosition();
         if(player.getY()<FinaleArchitecture.ARENA+3)return exit?FinaleArchitecture.base(origin).offset(0,FinaleArchitecture.ARENA,31):FinaleArchitecture.cell(origin).north(4);
         List<BlockPos> route=FinaleArchitecture.staircaseRoute(origin);int nearest=0;double distance=Double.MAX_VALUE;
         for(int i=0;i<route.size();i++){double d=route.get(i).distToCenterSqr(player.position());if(d<distance){distance=d;nearest=i;}}
@@ -104,7 +104,10 @@ public final class FinaleController {
             if(player.getY()<FinaleArchitecture.ARENA+4&&z>31&&!record.getBoolean("Warned")){
                 record.putBoolean("Warned",true);words(player,b.offset(0,FinaleArchitecture.ARENA+2,35),"The door behind you still leads back. The cell does not.");
             }
-        }else if(phase==FinaleProgress.Phase.FIGHT||phase==FinaleProgress.Phase.COLLAPSE){
+        }else if(phase==FinaleProgress.Phase.HOMEWARD){
+            WitnessEnding.returnWeapon(player,record);
+            if(player.getY()>FinaleArchitecture.TOP-2&&player.getZ()>b.getZ()+15){WitnessEnding.finish(player,origin,record);return true;}
+        }else if(phase==FinaleProgress.Phase.FIGHT||phase==FinaleProgress.Phase.COLLAPSE||phase==FinaleProgress.Phase.RELEASE){
             // Commands and outside teleports cannot turn the commitment into a free exit.
             if(player.getY()<FinaleArchitecture.ARENA-2||player.getZ()<b.getZ()+30||Math.abs(player.getX()-b.getX())>16)
                 HouseInternalTeleport.shift(player,Vec3.atBottomCenterOf(b.offset(0,FinaleArchitecture.ARENA,34)),0);
@@ -137,7 +140,7 @@ public final class FinaleController {
         if(lockedOut(player)&&player.serverLevel().dimension().equals(Level.OVERWORLD)&&event.getPos().distSqr(origin.offset(HouseLayout.AXIS_X,1,HouseLayout.FRONT_DOOR_Z))<12){
             event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);
             player.serverLevel().playSound(null,event.getPos(),SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR,SoundSource.BLOCKS,.35F,.75F);
-            words(player,event.getPos().above(),"Someone knocks back.");return;
+            words(player,event.getPos().above(),FinaleProgress.phase(player.server,player.getUUID())==FinaleProgress.Phase.WITNESSED?"The door stays quiet.":"Someone knocks back.");return;
         }
         if(!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)||!FinaleArchitecture.contains(origin,player.blockPosition()))return;
         var phase=FinaleProgress.phase(player.server,player.getUUID());
@@ -146,7 +149,9 @@ public final class FinaleController {
         }
         BlockPos cell=FinaleArchitecture.cell(origin);
         if(event.getPos().getZ()==cell.getZ()&&Math.abs(event.getPos().getX()-cell.getX())<=1&&Math.abs(event.getPos().getY()-cell.getY())<=3){
-            event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);start(player);
+            event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);
+            if(player.isShiftKeyDown()&&WitnessAccount.ready(LabyrinthData.get(player.server),player.getUUID()))WitnessEnding.begin(player);
+            else start(player);
         }
     }
     @SubscribeEvent public static void burnAir(PlayerInteractEvent.RightClickItem event){
@@ -190,6 +195,7 @@ public final class FinaleController {
         if(!existing.isEmpty()){record.putUUID("Creature",existing.get(0).getUUID());MISSING_CREATURES.remove(player.getUUID());return;}
         MinotaurEntity creature=FinaleRegistry.MINOTAUR.get().create(level);if(creature==null)return;
         creature.moveTo(cell.getX()+.5,cell.getY(),cell.getZ()+5,180,0);creature.owner(player.getUUID());
+        if(FinaleProgress.phase(record)==FinaleProgress.Phase.RELEASE)creature.released();
         if(FinaleProgress.phase(record)==FinaleProgress.Phase.COLLAPSE)creature.wounded();level.addFreshEntity(creature);record.putUUID("Creature",creature.getUUID());
     }
     public static void wound(ServerPlayer player,MinotaurEntity creature){
@@ -236,6 +242,12 @@ public final class FinaleController {
         FinaleWitness witness=FinaleRegistry.WITNESS.get().create(level);if(witness!=null){witness.moveTo(Vec3.atBottomCenterOf(at));level.addFreshEntity(witness);}
     }
     public static void inspectWeapon(ServerPlayer player,FinaleWitness witness){
+        LabyrinthData data=LabyrinthData.get(player.server);
+        if(player.isShiftKeyDown()&&WitnessAccount.count(data,player.getUUID())>0){
+            WitnessAccount.updateBook(player,true);words(player,witness.blockPosition().above(2),WitnessAccount.ready(data,player.getUUID())
+                    ?"The play has another passage. Read it before you decide what to carry through that door."
+                    :"You have written part of it. Other rooms have endings you have not heard yet.");return;
+        }
         UUID original=WeaponHistory.favorite(player);
         if(original==null){words(player,witness.blockPosition().above(2),"Bring the weapon your hand remembers. The shield alone will not finish it.");return;}
         ItemStack sample=WeaponHistory.sample(player,original);String name=sample.getHoverName().getString();
@@ -253,6 +265,7 @@ public final class FinaleController {
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void death(LivingDeathEvent event){
         if(!(event.getEntity() instanceof ServerPlayer player)||!FinaleProgress.committed(FinaleProgress.phase(player.server,player.getUUID())))return;
         CompoundTag record=FinaleProgress.player(player.server,player.getUUID());record.putString("Phase",FinaleProgress.Phase.LOCKED_OUT.name());record.putBoolean("NeedsRespawn",true);
+        WitnessEnding.keepWeaponOnDeath(player,record);
         for(int i=0;i<player.getInventory().getContainerSize();i++)keep(player,player.getInventory().removeItemNoUpdate(i));
         keep(player,player.containerMenu.getCarried());player.containerMenu.setCarried(ItemStack.EMPTY);
         java.util.List<TamableAnimal> keptPets=new java.util.ArrayList<>();
@@ -334,7 +347,7 @@ public final class FinaleController {
                 BlockPos light=BlockPos.of(record.getLong("Light"));if(interior.getBlockState(light).is(Blocks.LIGHT))interior.setBlock(light,Blocks.AIR.defaultBlockState(),FLAGS);
                 record.remove("Light");world.put(key,record);changed=true;
             }
-            if(FinaleProgress.phase(record)==FinaleProgress.Phase.ESCAPED&&!record.getBoolean("EpilogueDelivered")&&server.overworld().getGameTime()>=record.getLong("EpilogueDue")){
+            if((FinaleProgress.phase(record)==FinaleProgress.Phase.ESCAPED||FinaleProgress.phase(record)==FinaleProgress.Phase.WITNESSED)&&!record.getBoolean("EpilogueDelivered")&&server.overworld().getGameTime()>=record.getLong("EpilogueDue")){
                 UUID id;try{id=UUID.fromString(key);}catch(IllegalArgumentException ignored){continue;}
                 ServerPlayer player=server.getPlayerList().getPlayer(id);if(player!=null&&epilogue(player,record)){record.putBoolean("EpilogueDelivered",true);world.put(key,record);changed=true;}
             }
@@ -355,6 +368,7 @@ public final class FinaleController {
         for(BlockPos candidate:BlockPos.betweenClosed(home.offset(-4,0,-4),home.offset(4,2,4)))if(level.getBlockState(candidate).isAir()&&level.getBlockState(candidate.below()).isSolidRender(level,candidate.below())){
             level.setBlock(candidate,Blocks.CHEST.defaultBlockState(),FLAGS);
             if(level.getBlockEntity(candidate) instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest){
+                if(FinaleProgress.phase(record)==FinaleProgress.Phase.WITNESSED){chest.setItem(0,WitnessEnding.epilogue(player));chest.setChanged();return true;}
                 chest.setItem(0,HouseWriting.book("Loose pages","?",HouseWriting.WritingStyle.WILL,List.of("I have been reading your account.\n\nThis page was not there when you left. Neither was the handwriting beneath it.")));
                 String unseen=Arrays.stream(LabyrinthPlace.values()).filter(p->p.isVignette()&&!LabyrinthData.get(player.server).visited(player.getUUID()).contains(p.id())).map(LabyrinthPlace::id).findFirst().orElse("an unmeasured room");
                 chest.setItem(1,HouseWriting.book("Unnumbered page","?",HouseWriting.WritingStyle.ZAMPANO,List.of("A room outside the survey: "+unseen.replace('_',' ')+".\n\nThe inventory is incomplete. It always was.")));chest.setChanged();return true;

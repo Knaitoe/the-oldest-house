@@ -7,7 +7,7 @@ import net.minecraft.server.MinecraftServer;
 /** World-owned records survive player cloning, logout, and server restarts. */
 public final class FinaleProgress {
     public static final String STATE = "finale_049";
-    public enum Phase { UNSEEN, STAIRCASE, FIGHT, COLLAPSE, ESCAPE, LOCKED_OUT, ESCAPED }
+    public enum Phase { UNSEEN, STAIRCASE, FIGHT, COLLAPSE, ESCAPE, RELEASE, HOMEWARD, LOCKED_OUT, ESCAPED, WITNESSED }
     private FinaleProgress() {}
     public static CompoundTag world(MinecraftServer server) { return LabyrinthData.get(server).state(STATE); }
     public static CompoundTag player(MinecraftServer server, UUID id) { return world(server).getCompound(id.toString()).copy(); }
@@ -23,8 +23,8 @@ public final class FinaleProgress {
     public static void phase(MinecraftServer server, UUID id, Phase phase) {
         CompoundTag record = player(server, id); record.putString("Phase", phase.name()); save(server, id, record);
     }
-    public static boolean committed(Phase phase) { return phase == Phase.FIGHT || phase == Phase.COLLAPSE || phase == Phase.ESCAPE; }
-    public static boolean terminal(Phase phase) { return phase == Phase.LOCKED_OUT || phase == Phase.ESCAPED; }
+    public static boolean committed(Phase phase) { return phase == Phase.FIGHT || phase == Phase.COLLAPSE || phase == Phase.ESCAPE || phase == Phase.RELEASE || phase == Phase.HOMEWARD; }
+    public static boolean terminal(Phase phase) { return phase == Phase.LOCKED_OUT || phase == Phase.ESCAPED || phase == Phase.WITNESSED; }
     public static boolean eligible(LabyrinthData data, UUID player) {
         return data.returnDepth(player) >= 12 && data.vignettesVisited(player) >= 2;
     }

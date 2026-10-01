@@ -120,8 +120,9 @@ public final class TheOldestHouse {
         // The first vignette: The Tell-Tale Heart's floorboards.
         NeoForge.EVENT_BUS.addListener(TellTaleFloorboards::onGameEvent);
         NeoForge.EVENT_BUS.addListener(TellTaleFloorboards::onServerTick);
-        NeoForge.EVENT_BUS.addListener(TellTaleFloorboards::onRightClickBlock);
-        NeoForge.EVENT_BUS.addListener(TellTaleFloorboards::onBreak);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, true, TellTaleFloorboards::onLeftClickBlock);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, true, TellTaleFloorboards::onRightClickBlock);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, true, TellTaleFloorboards::onBreak);
         NeoForge.EVENT_BUS.addListener(RedRoom::onServerTick);
         NeoForge.EVENT_BUS.addListener(RedRoom::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(RedRoom::onNeighborNotify);
@@ -182,4 +183,3 @@ public final class TheOldestHouse {
         LOGGER.info("The Oldest House prototype initialized.");
     }
 }
-

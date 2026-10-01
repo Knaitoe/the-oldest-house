@@ -51,8 +51,18 @@ public final class LabyrinthDealer {
         return places;
     }
 
+    /** A shared ending can still be examined by an explorer who has not recorded its aftermath. */
+    public static List<LabyrinthPlace> vignettesAvailable(LabyrinthData data,UUID player) {
+        List<LabyrinthPlace> places=new ArrayList<>(vignettesAvailable(data));
+        for(LabyrinthPlace place:LabyrinthPlace.values()){
+            WitnessAccount.Story story=WitnessAccount.Story.of(place.id());
+            if(story!=null&&place.isFinishable()&&data.isCompleted(place.id())&&!WitnessAccount.has(data,player,story))places.add(place);
+        }
+        return places;
+    }
+
     public static int vignetteChance(LabyrinthData data, UUID player) {
-        if (vignettesAvailable(data).isEmpty()) {
+        if (vignettesAvailable(data,player).isEmpty()) {
             return 0;
         }
         return (int) Math.min(100L,
@@ -138,7 +148,7 @@ public final class LabyrinthDealer {
     }
 
     public static Scent giveScent(LabyrinthData data, UUID player) {
-        if (vignettesAvailable(data).isEmpty()) {
+        if (vignettesAvailable(data,player).isEmpty()) {
             return Scent.NOTHING;
         }
         if (data.hillaryScent(player)) {
@@ -174,7 +184,7 @@ public final class LabyrinthDealer {
         }
 
         LabyrinthData.Door real = doors.get(random.nextInt(doors.size()));
-        List<LabyrinthPlace> vignettes = vignettesAvailable(data);
+        List<LabyrinthPlace> vignettes = vignettesAvailable(data,player);
         boolean scent = data.hillaryScent(player) && !vignettes.isEmpty();
         boolean vignette = !vignettes.isEmpty()
                 && (scent || random.nextInt(100) < vignetteChance(data, player));
@@ -260,7 +270,7 @@ public final class LabyrinthDealer {
         if (doors.isEmpty()) {
             return;
         }
-        List<LabyrinthPlace> vignettes = vignettesAvailable(data);
+        List<LabyrinthPlace> vignettes = vignettesAvailable(data,player);
         LabyrinthData.Door lucky = null;
         boolean scent = data.hillaryScent(player) && !vignettes.isEmpty();
         if (scent) {
@@ -315,4 +325,3 @@ public final class LabyrinthDealer {
         data.setDryDeals(player, lucky != null ? 0 : data.dryDeals(player) + 1);
     }
 }
-
