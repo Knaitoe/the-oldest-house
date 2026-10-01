@@ -76,6 +76,8 @@ public final class LabyrinthDoorLeaks {
                 case HEARTBEAT -> Holder.direct(LabyrinthRegistry.FLOORBOARD_HEARTBEAT.get());
                 case WATER -> Holder.direct(SoundEvents.WATER_AMBIENT);
                 case LAKE -> Holder.direct(DrownedTownRegistry.LAKE_LEAK.get());
+                case CAVE -> Holder.direct(DrownedTownRegistry.CAVE_LEAK.get());
+                case SHALLOWS -> Holder.direct(DrownedTownRegistry.SHALLOWS_LEAK.get());
                 case MOTHER -> Holder.direct(SoundEvents.CAT_PURR);
                 case CLOTH -> custom("vignette.clap_muffled");
                 case WARM_TV -> custom("leak.television");

@@ -59,6 +59,12 @@ public final class DrownedEssayItem extends WrittenBookItem {
     @Override public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (player instanceof ServerPlayer reader) {
+            refresh(reader,stack);
+            reader.inventoryMenu.broadcastChanges();
+        }
+        return super.use(level, player, hand);
+    }
+    public void refresh(ServerPlayer reader,ItemStack stack){
             LabyrinthData data = LabyrinthData.get(reader.server);
             List<String> names = new ArrayList<>();
             if (IndianLakeProgress.hasThrown(data, reader.getUUID())) {
@@ -66,9 +72,5 @@ public final class DrownedEssayItem extends WrittenBookItem {
                 for (String id : boys.getAllKeys().stream().sorted().toList()) names.add(boys.getString(id));
             }
             stack.set(DataComponents.WRITTEN_BOOK_CONTENT, content(essay, names));
-            // Publish the changed held stack before the native open-book packet reads its pages.
-            reader.inventoryMenu.broadcastChanges();
-        }
-        return super.use(level, player, hand);
     }
 }

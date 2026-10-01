@@ -34,7 +34,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump to rebuild every place in existing worlds on next use. */
-    public static final int VERSION = 14;
+    public static final int VERSION = 15;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -91,7 +91,8 @@ public final class LabyrinthBuilder {
         boolean extend = !force && data.builtVersion() >= 10 && data.builtVersion() < VERSION && origin.equals(data.builtOrigin());
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
             if (place.slot() >= 0 && (!extend || (data.builtVersion() < 13 && place.slot() >= 23)
-                    || place.slot() >= 27
+                    || (data.builtVersion() < 14 && place.slot() >= 27)
+                    || place.slot() >= 28
                     || (data.builtVersion() < 12 && LabyrinthMaze.isMaze(place))
                     || (data.builtVersion() == 10 && place == LabyrinthPlace.MOTHER_DEN))) {
                 pending.add(place);
@@ -162,6 +163,8 @@ public final class LabyrinthBuilder {
             case MODEL_HOME -> ModelHome.build(server, level, base);
             case HARRIGAN -> HarriganVignette.build(server, level, base);
             case DROWNED_TOWN -> DrownedTown.build(server, level, base);
+            case PRESERVED_CAVE -> PreservedCave.build(server, level, base);
+            case SHALLOWS -> Shallows.build(server, level, base);
             case FLOODED_PASSAGE -> LabyrinthHazards.buildFloodedPassage(level, base);
             case FRACTURED_WALKWAY -> LabyrinthHazards.buildFracturedWalkway(level, base);
             case COMPRESSION_PASSAGE -> LabyrinthHazards.buildCompressionPassage(level, base);

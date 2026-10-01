@@ -9,5 +9,5 @@ import net.minecraft.resources.ResourceLocation;
 public final class LakeWitchRenderer extends MobRenderer<LakeWitchEntity, LakeWitchModel> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "textures/entity/lake_witch.png");
     public LakeWitchRenderer(EntityRendererProvider.Context context) { super(context, new LakeWitchModel(context.bakeLayer(LakeWitchModel.LAYER)), .4F); }
-    @Override public ResourceLocation getTextureLocation(LakeWitchEntity entity) { return TEXTURE; }
+    @Override public ResourceLocation getTextureLocation(LakeWitchEntity entity) { return entity.memory() ? ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/lake_witch_memory.png") : TEXTURE; }
 }

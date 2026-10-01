@@ -173,6 +173,29 @@ public final class LabyrinthCommands {
                             }
                             return 1;
                         })))
+                .then(Commands.literal("preserved_cave")
+                        .then(Commands.literal("status").executes(context -> {
+                            for(String line:io.github.knaitoe.theoldesthouse.labyrinth.PreservedCave.describe(context.getSource().getServer()))
+                                context.getSource().sendSuccess(() -> Component.literal(line),false);
+                            return 1;
+                        }))
+                        .then(Commands.literal("reset").executes(context -> {
+                            if(!LabyrinthBuilder.ensureBuilt(context.getSource().getServer()) || !io.github.knaitoe.theoldesthouse.labyrinth.PreservedCave.reset(context.getSource().getServer()))return 0;
+                            context.getSource().sendSuccess(() -> Component.literal("Cave visit reset. The church's permanent consequence is retained."),true);return 1;
+                        })))
+                .then(Commands.literal("shallows")
+                        .then(Commands.literal("status").executes(context -> {
+                            ServerPlayer player=context.getSource().getPlayerOrException();var data=io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData.get(player.server);
+                            context.getSource().sendSuccess(() -> Component.literal("Shallows: hunted "+io.github.knaitoe.theoldesthouse.labyrinth.IndianLakeProgress.wasHunted(data,player.getUUID())+"; participated "+io.github.knaitoe.theoldesthouse.labyrinth.IndianLakeProgress.hasThrown(data,player.getUUID())+"."),false);return 1;
+                        }))
+                        .then(Commands.literal("unlock").executes(context -> {
+                            ServerPlayer player=context.getSource().getPlayerOrException();io.github.knaitoe.theoldesthouse.labyrinth.IndianLakeProgress.hunted(io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData.get(player.server),player.getUUID());
+                            context.getSource().sendSuccess(() -> Component.literal("Debug only: your shore hunt recorded; Shallows can now be dealt."),true);return 1;
+                        }))
+                        .then(Commands.literal("reset").executes(context -> {
+                            io.github.knaitoe.theoldesthouse.labyrinth.Shallows.reset(context.getSource().getPlayerOrException());
+                            context.getSource().sendSuccess(() -> Component.literal("Your Shallows participation reset. Other explorers are unchanged."),true);return 1;
+                        })))
                 .then(Commands.literal("drowned_town")
                         .then(Commands.literal("status").executes(context -> {
                             for (String line : io.github.knaitoe.theoldesthouse.labyrinth.DrownedTown.describe(context.getSource().getServer()))

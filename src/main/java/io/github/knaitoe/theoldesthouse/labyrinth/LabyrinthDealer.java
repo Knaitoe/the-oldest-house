@@ -42,6 +42,7 @@ public final class LabyrinthDealer {
         List<LabyrinthPlace> places = new ArrayList<>();
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
             if (!place.isVignette()
+                    || place == LabyrinthPlace.SHALLOWS
                     || (place.isFinishable() && data.isCompleted(place.id()))
                     || (place.needsMaking() && !data.isReady(place.id()))) {
                 continue;
@@ -54,9 +55,11 @@ public final class LabyrinthDealer {
     /** A shared ending can still be examined by an explorer who has not recorded its aftermath. */
     public static List<LabyrinthPlace> vignettesAvailable(LabyrinthData data,UUID player) {
         List<LabyrinthPlace> places=new ArrayList<>(vignettesAvailable(data));
+        if (IndianLakeProgress.canDealShallows(data, player)) places.add(LabyrinthPlace.SHALLOWS);
+        if(data.isCompleted(PreservedCave.ID)&&PreservedCave.phoneWaiting(data,player))places.add(LabyrinthPlace.PRESERVED_CAVE);
         for(LabyrinthPlace place:LabyrinthPlace.values()){
             WitnessAccount.Story story=WitnessAccount.Story.of(place.id());
-            if(story!=null&&place.isFinishable()&&data.isCompleted(place.id())&&!WitnessAccount.has(data,player,story))places.add(place);
+            if(story!=null&&place.isFinishable()&&data.isCompleted(place.id())&&!WitnessAccount.has(data,player,story)&&!places.contains(place))places.add(place);
         }
         return places;
     }

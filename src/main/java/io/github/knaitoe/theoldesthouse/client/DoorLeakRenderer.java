@@ -56,7 +56,7 @@ public final class DoorLeakRenderer {
                 for (int i = 0; i < 4; i++) quad(out, matrix, leak.door(), facing, -.44F - i * .035F,
                         .44F + i * .035F, .18F + i * .28F, .46F + i * .28F, .014F,
                         sprite, 255, 177, 79, (int) ((92 - 20 * i) * flicker), LightTexture.FULL_BRIGHT);
-            } else if (kind == DoorLeakKind.WATER || kind == DoorLeakKind.LAKE) {
+            } else if (kind == DoorLeakKind.WATER || kind == DoorLeakKind.LAKE || kind == DoorLeakKind.CAVE || kind == DoorLeakKind.SHALLOWS) {
                 // Animated vanilla water atlas, in overlapping shallow patches rather than a square block.
                 for (int i = 0; i < 4; i++) quad(out, matrix, leak.door(), facing, -.38F + .05F * i,
                         .36F - .03F * i, .18F + i * .27F, .53F + i * .27F, .009F + i * .001F,
@@ -78,7 +78,7 @@ public final class DoorLeakRenderer {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null || mc.level.getGameTime() % 8 != 0) return;
         for (DoorLeaksPayload.Leak leak : DoorLeakClientState.leaks()) {
-            if ((leak.kind() != DoorLeakKind.WATER.ordinal() && leak.kind() != DoorLeakKind.LAKE.ordinal())
+            if ((leak.kind() != DoorLeakKind.WATER.ordinal() && leak.kind() != DoorLeakKind.LAKE.ordinal() && leak.kind() != DoorLeakKind.CAVE.ordinal() && leak.kind() != DoorLeakKind.SHALLOWS.ordinal())
                     || mc.player.position().distanceToSqr(Vec3.atCenterOf(leak.door())) > 64) continue;
             BlockState door = mc.level.getBlockState(leak.door());
             if (!(door.getBlock() instanceof DoorBlock) || door.getValue(DoorBlock.OPEN)) continue;
@@ -89,7 +89,7 @@ public final class DoorLeakRenderer {
     }
     private static TextureAtlasSprite sprite(DoorLeakKind kind) {
         Minecraft mc = Minecraft.getInstance();
-        if (kind == DoorLeakKind.WATER || kind == DoorLeakKind.LAKE) return mc.getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
+        if (kind == DoorLeakKind.WATER || kind == DoorLeakKind.LAKE || kind == DoorLeakKind.CAVE || kind == DoorLeakKind.SHALLOWS) return mc.getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
                 .apply(ResourceLocation.withDefaultNamespace("block/water_still"));
         BlockState state = switch (kind) {
             case HOTEL -> HouseBlocks.HOTEL_CARPET.get().defaultBlockState();
