@@ -48,7 +48,8 @@ public final class LakeWitchEntity extends PathfinderMob {
     public @Nullable UUID memoryOwner() { return memoryOwner; }
     public @Nullable BlockPos memoryBase() { return memoryBase; }
     public void recollection(UUID owner, BlockPos base) {
-        memoryOwner=owner;memoryBase=base.immutable();shoreBase=null;memoryPhase(0);setNoAi(true);
+        // No goals or hunt logic run in memory mode; leave native travel enabled for the throw's gravity.
+        memoryOwner=owner;memoryBase=base.immutable();shoreBase=null;memoryPhase(0);setNoAi(false);
     }
     @Override protected net.minecraft.world.InteractionResult mobInteract(net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand) {
         if(memory()) {

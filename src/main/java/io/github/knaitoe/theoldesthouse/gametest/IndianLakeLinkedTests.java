@@ -168,7 +168,7 @@ public final class IndianLakeLinkedTests {
                 h.assertTrue(falling.memoryPhase()==2&&!IndianLakeProgress.hasThrown(data,owner.getUUID()),"releasing the charged grip launches the body but does not assume a landing");
             }
             if(phase[0]!=1)return;
-            h.assertTrue(falling.tickCount-started[0]<120,"native entity physics must reach the water promptly");
+            h.assertTrue(falling.tickCount-started[0]<120,"native entity physics must reach water: position="+falling.position()+"; velocity="+falling.getDeltaMovement()+"; phase="+falling.memoryPhase()+"; noAI="+falling.isNoAi()+"; noGravity="+falling.isNoGravity());
             if(!IndianLakeProgress.hasThrown(data,owner.getUUID()))return;
             h.assertTrue(falling.memoryPhase()==3&&falling.getZ()<=f.base.getZ()-14,"the actual splash finishes the throwing beat");
             var book=owner.getInventory().getItem(5).get(DataComponents.WRITTEN_BOOK_CONTENT);
