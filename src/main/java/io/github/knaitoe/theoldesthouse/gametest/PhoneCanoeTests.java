@@ -1,6 +1,5 @@
 package io.github.knaitoe.theoldesthouse.gametest;
 
-import com.mojang.authlib.GameProfile;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.*;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
@@ -17,7 +16,6 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.phys.*;
-import net.neoforged.neoforge.common.util.FakePlayerFactory;
 import net.neoforged.neoforge.gametest.*;
 
 @GameTestHolder(TheOldestHouse.MOD_ID)
@@ -96,7 +94,8 @@ public final class PhoneCanoeTests {
             h.assertTrue(!PreservedCave.recoverPhone(peer)&&PreservedCave.recoverPhone(owner)&&!PreservedCave.recoverPhone(owner),"the actual cave delivers the original once to its owner");
             var recovered=owner.getInventory().items.stream().filter(s->s.is(DrownedTownRegistry.LAKE_PHONE.get())).findFirst().orElseThrow();
             h.assertTrue(ItemStack.isSameItemSameComponents(original,recovered),"recovery does not synthesize a replacement recording");
-            owner.setItemInHand(InteractionHand.MAIN_HAND,recovered);DrownedTownRegistry.LAKE_PHONE.get().use(f.level,owner,InteractionHand.MAIN_HAND);
+            for(int slot=0;slot<9;slot++)if(owner.getInventory().getItem(slot)==recovered){owner.getInventory().selected=slot;break;}
+            DrownedTownRegistry.LAKE_PHONE.get().use(f.level,owner,InteractionHand.MAIN_HAND);
             h.assertTrue(recovered.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().getLast().raw().getString().contains("The same sky"),"the recovered phone exposes its real saved frame record through the native reader");h.succeed();
         });
     }
