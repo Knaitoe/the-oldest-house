@@ -153,6 +153,7 @@ public final class WitnessTests {
                     +"; position="+creature.position()+"; actorTicks="+creature.tickCount+"; playerTicks="+player.tickCount+"; motion="+creature.motion()
                     +"; online="+(server.getPlayerList().getPlayer(player.getUUID())==player)+"; ownerLevel="+player.level().dimension().location()
                     +"; levelPlayers="+level.players().size()+"; forced="+level.getForcedChunks().contains(creature.chunkPosition().toLong())
+                    +"; grounded="+creature.onGround()+"; stepHeight="+creature.maxUpStep()+"; verticalSpeed="+creature.getDeltaMovement().y
                     +"; tracked="+(level.getEntity(creature.getUUID())==creature)+"; northBlocked="+level.getBlockCollisions(creature,creature.getBoundingBox().move(0,0,-.3)).iterator().hasNext());
             helper.assertTrue(creature.isRemoved()&&creature.getY()>FinaleArchitecture.ARENA+10,"departure happens after actual stair ascent");
             helper.assertTrue(level.getBlockState(cell).isAir()&&level.getBlockState(FinaleArchitecture.base(origin).offset(0,FinaleArchitecture.ARENA,29)).isAir(),"the cell and physical return passage stay open");

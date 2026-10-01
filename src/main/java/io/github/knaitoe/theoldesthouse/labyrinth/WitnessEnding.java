@@ -108,7 +108,10 @@ public final class WitnessEnding {
         Vec3 stride=delta.multiply(1,0,1);double distance=stride.length();
         creature.setDeltaMovement(creature.getDeltaMovement().multiply(0,1,0));
         // Downward contact keeps vanilla's on-ground stair stepping active for an authored stride.
-        if(distance>.001)creature.move(MoverType.SELF,stride.scale(Math.min(.14,distance)/distance).add(0,-.08,0));
+        if(distance>.001)creature.move(MoverType.SELF,stride.scale(Math.min(.14,distance)/distance)
+                .add(0,creature.getDeltaMovement().y>0?0:-.08,0));
+        // Stair corners can present a full riser to a broad body; use the native jump controller there.
+        if(creature.horizontalCollision&&delta.y>.1)creature.getJumpControl().jump();
         float facing=(float)(Math.atan2(delta.z,delta.x)*180/Math.PI)-90;creature.setYRot(facing);creature.yBodyRot=facing;
         creature.getLookControl().setLookAt(target.x,target.y+2,target.z,15,15);
         if(player.tickCount%24==0)player.serverLevel().playSound(null,creature.blockPosition(),SoundEvents.RAVAGER_STEP,SoundSource.HOSTILE,.45F,.65F);
