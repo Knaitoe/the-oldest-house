@@ -12,6 +12,7 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.storage.DerivedLevelData;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import net.minecraft.world.level.storage.ServerLevelData;
 
 /** The vanilla GameTest server omits data-pack dimensions; install a native test House level. */
 final class HouseTestLevel {
@@ -28,7 +29,7 @@ final class HouseTestLevel {
                 public void start(){}public void stop(){}
             };
             ServerLevel level=new ServerLevel(server,Util.backgroundExecutor(),storage,
-                    new DerivedLevelData(server.getWorldData(),overworld.getLevelData()),HouseDimensions.INTERIOR,
+                    new DerivedLevelData(server.getWorldData(),(ServerLevelData)overworld.getLevelData()),HouseDimensions.INTERIOR,
                     stem,progress,false,0,List.of(),false,overworld.getRandomSequences());
             server.forgeGetWorldMap().put(HouseDimensions.INTERIOR,level);server.markWorldsDirty();return level;
         }catch(ReflectiveOperationException exception){throw new IllegalStateException("Cannot initialize the native test House level",exception);}
