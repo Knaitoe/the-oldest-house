@@ -15,6 +15,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 /** Authored blocks used where a vanilla stand-in would be conspicuous. */
 public final class HouseBlocks {
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(TheOldestHouse.MOD_ID);
+    private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(TheOldestHouse.MOD_ID);
     private static final DeferredRegister<MapCodec<? extends Block>> BLOCK_TYPES =
             DeferredRegister.create(BuiltInRegistries.BLOCK_TYPE, TheOldestHouse.MOD_ID);
 
@@ -22,6 +23,18 @@ public final class HouseBlocks {
             BLOCK_TYPES.register("wardrobe", () -> WardrobeBlock.CODEC);
     public static final DeferredHolder<MapCodec<? extends Block>, MapCodec<HotelRoomPlaqueBlock>> HOTEL_ROOM_PLAQUE_TYPE =
             BLOCK_TYPES.register("hotel_room_plaque", () -> HotelRoomPlaqueBlock.CODEC);
+    public static final DeferredHolder<MapCodec<? extends Block>, MapCodec<HouseholdFurnitureBlock>> FURNITURE_TYPE =
+            BLOCK_TYPES.register("household_furniture", () -> HouseholdFurnitureBlock.CODEC);
+    public static final DeferredHolder<MapCodec<? extends Block>, MapCodec<NoteSurfaceBlock>> NOTE_SURFACE_TYPE =
+            BLOCK_TYPES.register("note_surface", () -> NoteSurfaceBlock.CODEC);
+    public static final DeferredBlock<HouseholdFurnitureBlock> HOUSEHOLD_FURNITURE = BLOCKS.registerBlock(
+            "household_furniture", HouseholdFurnitureBlock::new,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion().noLootTable());
+    public static final DeferredBlock<NoteSurfaceBlock> NOTE_SURFACE = BLOCKS.registerBlock(
+            "note_surface", NoteSurfaceBlock::new,
+            BlockBehaviour.Properties.of().noCollission().noOcclusion().instabreak().noLootTable());
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.BlockItem> FURNITURE_ITEM = ITEMS.registerSimpleBlockItem(HOUSEHOLD_FURNITURE);
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.BlockItem> NOTE_ITEM = ITEMS.registerSimpleBlockItem(NOTE_SURFACE);
 
     public static final DeferredBlock<CarpetBlock> GREAT_ROOM_RUG_AUTHORED = carpet("great_room_rug_authored", Blocks.BROWN_CARPET);
     public static final DeferredBlock<CarpetBlock> GREAT_ROOM_RUG_SHIFTED = carpet("great_room_rug_shifted", Blocks.RED_CARPET);
@@ -85,5 +98,6 @@ public final class HouseBlocks {
     public static void register(IEventBus modEventBus) {
         BLOCK_TYPES.register(modEventBus);
         BLOCKS.register(modEventBus);
+        ITEMS.register(modEventBus);
     }
 }

@@ -13,7 +13,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("20")
+        event.registrar("21")
                 .playToClient(GoatmanScenePayload.TYPE,GoatmanScenePayload.STREAM_CODEC,
                         (payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.GoatmanClient.accept(payload)))
                 .playToClient(LakePhonePayload.TYPE,LakePhonePayload.STREAM_CODEC,

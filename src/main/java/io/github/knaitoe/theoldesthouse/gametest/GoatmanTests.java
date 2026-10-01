@@ -174,7 +174,7 @@ public final class GoatmanTests {
         CompoundTag reading=data.state(HarriganVignette.ID);reading.putBoolean("ReadingFinished",true);data.setState(HarriganVignette.ID,reading);
         UUID player=UUID.randomUUID();WitnessAccount.resolve(data,player,WitnessAccount.Story.HARRIGAN,"kept_phone");data.setBuilt(17,f.origin);
         h.assertTrue(!LabyrinthBuilder.ensureBuilt(f.server),"the old layout starts its incremental upgrade");while(LabyrinthBuilder.isCarving())LabyrinthBuilder.tick(f.server);
-        h.assertTrue(data.builtVersion()==18&&data.door(LabyrinthPlace.GOATMAN.entryDoorId())!=null,"the trailer's physical slot and return door are appended");
+        h.assertTrue(data.builtVersion()==LabyrinthBuilder.VERSION&&data.door(LabyrinthPlace.GOATMAN.entryDoorId())!=null,"the trailer's physical slot and return door are appended");
         h.assertTrue(f.l.getBlockEntity(junction.offset(LabyrinthLighting.TOM_CACHE))==cache&&cache.getItem(0).isEmpty()&&cache.getItem(3).is(Items.DIAMOND),"existing finite supplies are neither rebuilt nor replenished");
         h.assertTrue(!canoe.isRemoved()&&canoe.getUUID().equals(canoeId)&&data.state(HarriganVignette.ID).getBoolean("ReadingFinished")&&WitnessAccount.has(data,player,WitnessAccount.Story.HARRIGAN),"the existing recording actor, finished dialogue and personal evidence survive unchanged");h.succeed();
     }

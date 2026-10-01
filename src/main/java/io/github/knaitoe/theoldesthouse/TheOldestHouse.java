@@ -66,6 +66,7 @@ public final class TheOldestHouse {
         io.github.knaitoe.theoldesthouse.labyrinth.GoatmanRegistry.register(modEventBus);
         HouseSitting.register(modEventBus);
         NeoForge.EVENT_BUS.addListener(HouseSitting::onRightClick);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.house.HouseMarginalia::onRightClick);
         modContainer.registerConfig(ModConfig.Type.SERVER, OpeningConfig.SPEC);
         modContainer.registerConfig(ModConfig.Type.SERVER, HouseConfig.SPEC, MOD_ID + "-house-server.toml");
 

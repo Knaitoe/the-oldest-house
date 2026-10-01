@@ -1,0 +1,244 @@
+{
+  "variants": {
+    "facing=north,kind=cane_chair": {
+      "model": "the_oldest_house:block/furniture_cane_chair",
+      "y": 0,
+      "uvlock": false
+    },
+    "facing=east,kind=cane_chair": {
+      "model": "the_oldest_house:block/furniture_cane_chair",
+      "y": 90,
+      "uvlock": false
+    },
+    "facing=south,kind=cane_chair": {
+      "model": "the_oldest_house:block/furniture_cane_chair",
+      "y": 180,
+      "uvlock": false
+    },
+    "facing=west,kind=cane_chair": {
+      "model": "the_oldest_house:block/furniture_cane_chair",
+      "y": 270,
+      "uvlock": false
+    },
+    "facing=north,kind=kitchen_stool": {
+      "model": "the_oldest_house:block/furniture_kitchen_stool",
+      "y": 0,
+      "uvlock": false
+    },
+    "facing=east,kind=kitchen_stool": {
+      "model": "the_oldest_house:block/furniture_kitchen_stool",
+      "y": 90,
+      "uvlock": false
+    },
+    "facing=south,kind=kitchen_stool": {
+      "model": "the_oldest_house:block/furniture_kitchen_stool",
+      "y": 180,
+      "uvlock": false
+    },
+    "facing=west,kind=kitchen_stool": {
+      "model": "the_oldest_house:block/furniture_kitchen_stool",
+      "y": 270,
+      "uvlock": false
+    },
+    "facing=north,kind=footstool": {
+      "model": "the_oldest_house:block/furniture_footstool",
+      "y": 0,
+      "uvlock": false
+    },
+    "facing=east,kind=footstool": {
+      "model": "the_oldest_house:block/furniture_footstool",
+      "y": 90,
+      "uvlock": false
+    },
+    "facing=south,kind=footstool": {
+      "model": "the_oldest_house:block/furniture_footstool",
+      "y": 180,
+      "uvlock": false
+    },
+    "facing=west,kind=footstool": {
+      "model": "the_oldest_house:block/furniture_footstool",
+      "y": 270,
+      "uvlock": false
+    },
+    "facing=north,kind=walnut_desk": {
+      "model": "the_oldest_house:block/furniture_walnut_desk",
+      "y": 0,
+      "uvlock": false
+    },
+    "facing=east,kind=walnut_desk": {
+      "model": "the_oldest_house:block/furniture_walnut_desk",
+      "y": 90,
+      "uvlock": false
+    },
+    "facing=south,kind=walnut_desk": {
+      "model": "the_oldest_house:block/furniture_walnut_desk",
+      "y": 180,
+      "uvlock": false
+    },
+    "facing=west,kind=walnut_desk": {
+      "model": "the_oldest_house:block/furniture_walnut_desk",
+      "y": 270,
+      "uvlock": false
+    },
+    "facing=north,kind=formica_table": {
+      "model": "the_oldest_house:block/furniture_formica_table",
+      "y": 0,
+      "uvlock": false
+    },
+    "facing=east,kind=formica_table": {
+      "model": "the_oldest_house:block/furniture_formica_table",
+      "y": 90,
+      "uvlock": false
+    },
+    "facing=south,kind=formica_table": {
+      "model": "the_oldest_house:block/furniture_formica_table",
+      "y": 180,
+      "uvlock": false
+    },
+    "facing=west,kind=formica_table": {
+      "model": "the_oldest_house:block/furniture_formica_table",
+      "y": 270,
+      "uvlock": false
+    },
+    "facing=north,kind=bedside_table": {
+      "model": "the_oldest_house:block/furniture_bedside_table",
+      "y": 0,
+      "uvlock": false
+    },
+    "facing=east,kind=bedside_table": {
+      "model": "the_oldest_house:block/furniture_bedside_table",
+      "y": 90,
+      "uvlock": false
+    },
+    "facing=south,kind=bedside_table": {
+      "model": "the_oldest_house:block/furniture_bedside_table",
+      "y": 180,
+      "uvlock": false
+    },
+    "facing=west,kind=bedside_table": {
+      "model": "the_oldest_house:block/furniture_bedside_table",
+      "y": 270,
+      "uvlock": false
+    },
+    "facing=north,kind=chest_of_drawers": {
+      "model": "the_oldest_house:block/furniture_chest_of_drawers",
+      "y": 0,
+      "uvlock": false
+    },
+    "facing=east,kind=chest_of_drawers": {
+      "model": "the_oldest_house:block/furniture_chest_of_drawers",
+      "y": 90,
+      "uvlock": false
+    },
+    "facing=south,kind=chest_of_drawers": {
+      "model": "the_oldest_house:block/furniture_chest_of_drawers",
+      "y": 180,
+      "uvlock": false
+    },
+    "facing=west,kind=chest_of_drawers": {
+      "model": "the_oldest_house:block/furniture_chest_of_drawers",
+      "y": 270,
+      "uvlock": false
+    },
+    "facing=north,kind=washing_machine": {
+      "model": "the_oldest_house:block/furniture_washing_machine",
+      "y": 0,
+      "uvlock": false
+    },
+    "facing=east,kind=washing_machine": {
+      "model": "the_oldest_house:block/furniture_washing_machine",
+      "y": 90,
+      "uvlock": false
+    },
+    "facing=south,kind=washing_machine": {
+      "model": "the_oldest_house:block/furniture_washing_machine",
+      "y": 180,
+      "uvlock": false
+    },
+    "facing=west,kind=washing_machine": {
+      "model": "the_oldest_house:block/furniture_washing_machine",
+      "y": 270,
+      "uvlock": false
+    },
+    "facing=north,kind=radiator": {
+      "model": "the_oldest_house:block/furniture_radiator",
+      "y": 0,
+      "uvlock": false
+    },
+    "facing=east,kind=radiator": {
+      "model": "the_oldest_house:block/furniture_radiator",
+      "y": 90,
+      "uvlock": false
+    },
+    "facing=south,kind=radiator": {
+      "model": "the_oldest_house:block/furniture_radiator",
+      "y": 180,
+      "uvlock": false
+    },
+    "facing=west,kind=radiator": {
+      "model": "the_oldest_house:block/furniture_radiator",
+      "y": 270,
+      "uvlock": false
+    },
+    "facing=north,kind=green_armchair": {
+      "model": "the_oldest_house:block/furniture_green_armchair",
+      "y": 0,
+      "uvlock": false
+    },
+    "facing=east,kind=green_armchair": {
+      "model": "the_oldest_house:block/furniture_green_armchair",
+      "y": 90,
+      "uvlock": false
+    },
+    "facing=south,kind=green_armchair": {
+      "model": "the_oldest_house:block/furniture_green_armchair",
+      "y": 180,
+      "uvlock": false
+    },
+    "facing=west,kind=green_armchair": {
+      "model": "the_oldest_house:block/furniture_green_armchair",
+      "y": 270,
+      "uvlock": false
+    },
+    "facing=north,kind=floral_armchair": {
+      "model": "the_oldest_house:block/furniture_floral_armchair",
+      "y": 0,
+      "uvlock": false
+    },
+    "facing=east,kind=floral_armchair": {
+      "model": "the_oldest_house:block/furniture_floral_armchair",
+      "y": 90,
+      "uvlock": false
+    },
+    "facing=south,kind=floral_armchair": {
+      "model": "the_oldest_house:block/furniture_floral_armchair",
+      "y": 180,
+      "uvlock": false
+    },
+    "facing=west,kind=floral_armchair": {
+      "model": "the_oldest_house:block/furniture_floral_armchair",
+      "y": 270,
+      "uvlock": false
+    },
+    "facing=north,kind=blue_sofa": {
+      "model": "the_oldest_house:block/furniture_blue_sofa",
+      "y": 0,
+      "uvlock": false
+    },
+    "facing=east,kind=blue_sofa": {
+      "model": "the_oldest_house:block/furniture_blue_sofa",
+      "y": 90,
+      "uvlock": false
+    },
+    "facing=south,kind=blue_sofa": {
+      "model": "the_oldest_house:block/furniture_blue_sofa",
+      "y": 180,
+      "uvlock": false
+    },
+    "facing=west,kind=blue_sofa": {
+      "model": "the_oldest_house:block/furniture_blue_sofa",
+      "y": 270,
+      "uvlock": false
+    }
+  }
+}

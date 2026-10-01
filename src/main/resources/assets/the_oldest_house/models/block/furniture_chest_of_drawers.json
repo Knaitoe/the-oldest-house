@@ -1,0 +1,78 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "walnut": "the_oldest_house:block/walnut",
+    "particle": "the_oldest_house:block/walnut",
+    "front": "the_oldest_house:block/drawer_front"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        15,
+        16,
+        15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            0,
+            15,
+            16
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            1,
+            0,
+            15,
+            16
+          ],
+          "texture": "#walnut"
+        },
+        "west": {
+          "uv": [
+            1,
+            0,
+            15,
+            16
+          ],
+          "texture": "#walnut"
+        },
+        "east": {
+          "uv": [
+            1,
+            0,
+            15,
+            16
+          ],
+          "texture": "#walnut"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ],
+          "texture": "#walnut"
+        },
+        "down": {
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ],
+          "texture": "#walnut"
+        }
+      }
+    }
+  ]
+}

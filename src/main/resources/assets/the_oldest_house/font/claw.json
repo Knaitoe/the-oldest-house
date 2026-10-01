@@ -1,0 +1,18 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "the_oldest_house:font/claw.png",
+      "ascent": 8,
+      "height": 9,
+      "chars": [
+        " ABCDEFGHIJKLMNO",
+        "PQRSTUVWXYZ.\u0000\u0000\u0000\u0000"
+      ]
+    },
+    {
+      "type": "reference",
+      "id": "minecraft:default"
+    }
+  ]
+}

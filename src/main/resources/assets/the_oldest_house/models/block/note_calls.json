@@ -1,0 +1,77 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "letter": "the_oldest_house:block/letter",
+    "particle": "the_oldest_house:block/paper"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        3
+      ],
+      "to": [
+        13,
+        0.5,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3,
+            15.5,
+            13,
+            16
+          ],
+          "texture": "#letter"
+        },
+        "south": {
+          "uv": [
+            3,
+            15.5,
+            13,
+            16
+          ],
+          "texture": "#letter"
+        },
+        "west": {
+          "uv": [
+            3,
+            15.5,
+            13,
+            16
+          ],
+          "texture": "#letter"
+        },
+        "east": {
+          "uv": [
+            3,
+            15.5,
+            13,
+            16
+          ],
+          "texture": "#letter"
+        },
+        "up": {
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ],
+          "texture": "#letter"
+        },
+        "down": {
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ],
+          "texture": "#letter"
+        }
+      }
+    }
+  ]
+}

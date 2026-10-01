@@ -36,7 +36,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 18;
+    public static final int VERSION = 19;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -51,6 +51,7 @@ public final class LabyrinthBuilder {
     @Nullable
     private static BlockPos pendingOrigin;
     private static final Set<LabyrinthPlace> domesticUpgrades = new HashSet<>();
+    private static boolean legacyDomesticUpgrade;
 
     private LabyrinthBuilder() {
     }
@@ -58,6 +59,7 @@ public final class LabyrinthBuilder {
     /** Whether every place stands, carved for this manor by this version. */
     public static boolean isBuilt(MinecraftServer server) {
         LabyrinthData data = LabyrinthData.get(server);
+        legacyDomesticUpgrade=!force && data.builtVersion()<17 && origin.equals(data.builtOrigin());
         BlockPos origin = HouseSavedData.get(server).houseOrigin();
         return origin != null && data.builtVersion() >= VERSION && origin.equals(data.builtOrigin());
     }
@@ -127,7 +129,10 @@ public final class LabyrinthBuilder {
         }
         LabyrinthPlace place = pending.poll();
         if (place != null) {
-            if (domesticUpgrades.remove(place)) LabyrinthDomestic.upgrade(interior, pendingOrigin, place);
+            if (domesticUpgrades.remove(place)) {
+                if(legacyDomesticUpgrade) LabyrinthDomestic.upgrade(interior, pendingOrigin, place);
+                io.github.knaitoe.theoldesthouse.house.HouseFurnishings.upgrade(interior,pendingOrigin,place);
+            }
             else build(server, interior, pendingOrigin, place);
         }
         if (pending.isEmpty()) {
@@ -135,6 +140,7 @@ public final class LabyrinthBuilder {
             LabyrinthData data = LabyrinthData.get(server);
             data.pruneDoors(server);
             data.setBuilt(VERSION, origin);
+            io.github.knaitoe.theoldesthouse.house.HouseFurnishings.upgradeManor(interior,origin);
             if (HouseSavedData.get(server).isImpossibleDoorRevealed())
                 io.github.knaitoe.theoldesthouse.house.HouseImpossibleHallway.dressDomesticApproach(interior, origin);
             pending = null;
@@ -195,6 +201,7 @@ public final class LabyrinthBuilder {
             }
         }
         registerDoors(data, place, base);
+        io.github.knaitoe.theoldesthouse.house.HouseFurnishings.decorate(level,base,place);
         if (migration != null) LabyrinthMaze.restoreMigration(level, base, place, migration);
     }
 

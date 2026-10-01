@@ -27,7 +27,8 @@ public final class HouseSitting {
     public static void register(IEventBus bus) { TYPES.register(bus); }
     public static boolean isSeat(BlockState state) {
         return state.getBlock() instanceof StairBlock && state.getValue(StairBlock.HALF) == Half.BOTTOM
-                || state.getBlock() instanceof CarpetBlock;
+                || state.getBlock() instanceof CarpetBlock
+                || state.getBlock() instanceof HouseholdFurnitureBlock && state.getValue(HouseholdFurnitureBlock.KIND).seat;
     }
     public static boolean sit(ServerPlayer player, BlockPos pos) {
         BlockState state = player.level().getBlockState(pos);
@@ -38,11 +39,16 @@ public final class HouseSitting {
         SeatEntity seat = SEAT.get().create(player.serverLevel());
         if (seat == null) return false;
         seat.support(pos);
-        seat.moveTo(pos.getX() + 0.5, pos.getY() + (state.getBlock() instanceof CarpetBlock ? 0.07 : 0.45), pos.getZ() + 0.5);
+        double height=state.getBlock() instanceof CarpetBlock ? .07 : state.getBlock() instanceof HouseholdFurnitureBlock
+                ? state.getValue(HouseholdFurnitureBlock.KIND).seatHeight/16.0 : .45;
+        seat.moveTo(pos.getX() + 0.5, pos.getY() + height, pos.getZ() + 0.5);
         if (!player.serverLevel().addFreshEntity(seat) || !player.startRiding(seat)) { seat.discard(); return false; }
         if (state.getBlock() instanceof StairBlock) {
             float yaw = state.getValue(StairBlock.FACING).getOpposite().toYRot();
             player.setYRot(yaw); player.setYHeadRot(yaw);
+        }
+        if (state.getBlock() instanceof HouseholdFurnitureBlock) {
+            float yaw=state.getValue(HouseholdFurnitureBlock.FACING).toYRot(); player.setYRot(yaw); player.setYHeadRot(yaw);
         }
         return true;
     }
