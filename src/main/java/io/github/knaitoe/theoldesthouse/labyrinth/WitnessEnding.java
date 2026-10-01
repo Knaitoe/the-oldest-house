@@ -53,6 +53,7 @@ public final class WitnessEnding {
         if(player.getRespawnPosition()!=null)record.putLong("Base",player.getRespawnPosition().asLong());
         record.putString("BaseDimension",player.getRespawnDimension().location().toString());
         FinaleProgress.save(player.server,player.getUUID(),record);
+        keepSceneLoaded(player,origin);
         FinaleArchitecture.seal(player.serverLevel(),origin,true);FinaleArchitecture.openCell(player.serverLevel(),origin);
         FinaleController.words(player,cell.above(),"There is someone inside.");return true;
     }
@@ -63,6 +64,21 @@ public final class WitnessEnding {
         BlockPos last=stairs.get(stairs.size()-1);
         route.add(new BlockPos(b.getX(),FinaleArchitecture.ARENA,last.getZ()));route.add(last);
         for(int i=stairs.size()-2;i>=stairs.size()-26;i--)route.add(stairs.get(i));return List.copyOf(route);
+    }
+    /** The owner remains in the chamber while the actor climbs beyond short simulation distances. */
+    public static void keepSceneLoaded(ServerPlayer player,BlockPos origin){
+        Set<net.minecraft.world.level.ChunkPos> chunks=new HashSet<>();
+        for(BlockPos at:releaseRoute(origin))if(chunks.add(new net.minecraft.world.level.ChunkPos(at))){
+            var chunk=new net.minecraft.world.level.ChunkPos(at);player.serverLevel().getChunkAt(at);
+            player.serverLevel().getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.PORTAL,chunk,3,chunk.getWorldPosition());
+        }
+    }
+    private static void unloadScene(ServerPlayer player,BlockPos origin){
+        Set<net.minecraft.world.level.ChunkPos> chunks=new HashSet<>();
+        for(BlockPos at:releaseRoute(origin))if(chunks.add(new net.minecraft.world.level.ChunkPos(at))){
+            var chunk=new net.minecraft.world.level.ChunkPos(at);
+            player.serverLevel().getChunkSource().removeRegionTicket(net.minecraft.server.level.TicketType.PORTAL,chunk,3,chunk.getWorldPosition());
+        }
     }
     /** The actor pauses while its owner is away, and resumes its saved physical route. */
     public static void tickCreature(MinotaurEntity creature,ServerPlayer player){
@@ -94,6 +110,7 @@ public final class WitnessEnding {
     }
     private static void depart(ServerPlayer player,MinotaurEntity creature,CompoundTag record,BlockPos origin){
         creature.discard();record.remove("Creature");record.putString("Phase",FinaleProgress.Phase.HOMEWARD.name());
+        unloadScene(player,origin);
         FinaleArchitecture.seal(player.serverLevel(),origin,false);FinaleProgress.save(player.server,player.getUUID(),record);
         FinaleController.words(player,FinaleArchitecture.base(origin).offset(0,FinaleArchitecture.ARENA+2,31),"The stairs lead back. The cell stays open.");
     }
