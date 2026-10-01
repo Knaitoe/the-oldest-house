@@ -46,8 +46,10 @@ public final class MotherOfferings {
     }
 
     public static boolean playerEligible(ServerPlayer trader, MotherEntity mother, ServerPlayer offered) {
-        return offered!=trader && offered.isAlive() && !offered.isRemoved() && !offered.isSpectator()
-                && !offered.isCreative() && offered.level()==mother.level() && mother.distanceToSqr(offered)<=16
+        var mode=offered.gameMode.getGameModeForPlayer();
+        return offered!=trader && offered.isAlive() && !offered.isRemoved()
+                && (mode==net.minecraft.world.level.GameType.SURVIVAL || mode==net.minecraft.world.level.GameType.ADVENTURE)
+                && offered.level()==mother.level() && mother.distanceToSqr(offered)<=16
                 && mother.hasLineOfSight(offered) && enclosedTogether(trader.serverLevel(),mother.blockPosition(),offered.blockPosition());
     }
 
