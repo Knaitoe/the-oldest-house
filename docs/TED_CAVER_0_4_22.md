@@ -24,7 +24,7 @@ The eligible Witness pool grows from ten to eleven stories. The automatically de
 
 ## Upgrade and verification
 
-Layout 20 appends slot 32. All prior slot coordinates and leak ordinals remain stable; the dry stone hint appends ordinal 12. Upgrading a version-19 world does not rebuild old actors, vignettes, furniture, containers or caches. Saved excavation, shifted-stone state, reader progress and finite tool supply are retained. Native crawling restores the prior forced pose on leaving, logout, spectator mode, native death, reset and server stop.
+Layout 20 appends slot 32, allowing a fifth stack column where needed at lower manor heights. All prior slot coordinates and leak ordinals remain stable; the dry stone hint appends ordinal 12. Upgrading a version-19 world does not rebuild old actors, vignettes, furniture, containers or caches. Saved excavation, shifted-stone state, reader progress and finite tool supply are retained. Native crawling restores the prior forced pose on leaving, logout, spectator mode, native death, reset and server stop.
 
 Six native GameTests cover slot bounds, actual timed pickaxe events, independent finite journal menus, native collision through the whole inward/return squeeze and real ladder, personal multiplayer credit, saved-data reload, pose cleanup, companion identity and an upgrade preserving old storage and scene evidence. Witness fixtures check the eight/nine boundary, quota derivation, reload and final account directions.
 

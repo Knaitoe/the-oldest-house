@@ -35,7 +35,8 @@ public final class LabyrinthPlaces {
      * any place (and its padding) and clear of the manor's own footprint.
      */
     public static final int COLUMN_SPACING = 96;
-    private static final int MAX_COLUMNS = 4;
+    // Slot 32 starts a fifth column at low/common manor heights; older slots never move.
+    private static final int MAX_COLUMNS = 5;
     private static final int MAX_Y = 318;
     private static final int MIN_Y = -60;
 

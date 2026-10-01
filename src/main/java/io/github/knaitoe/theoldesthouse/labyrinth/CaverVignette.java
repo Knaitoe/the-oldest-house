@@ -173,7 +173,8 @@ public final class CaverVignette {
     public static boolean companion(TamableAnimal pet,ServerPlayer p){
         if(!companionScene(p)||pet.level()!=p.level()||pet.isLeashed()||pet.isPassenger()||pet.isOrderedToSit()||CompanionOrders.order(pet)==CompanionOrders.Order.STAY
                 ||!p.getUUID().equals(CompanionOrders.owner(pet)))return false;
-        var b=base(p.server);pet.getNavigation().stop();var at=new Vec3(b.getX()+.5,b.getY(),b.getZ()-7.5);
+        var b=base(p.server);if(!IndianLakeRooms.bounds(b,LabyrinthPlace.TED_CAVER).inflate(3).contains(pet.position()))return false;
+        pet.getNavigation().stop();var at=new Vec3(b.getX()+.5,b.getY(),b.getZ()-7.5);
         if(pet.getZ()<b.getZ()-8.2||pet.distanceToSqr(at)>25){pet.teleportTo(at.x,at.y,at.z);pet.setDeltaMovement(Vec3.ZERO);pet.resetFallDistance();}
         else if(pet.distanceToSqr(at)>2)pet.getNavigation().moveTo(at.x,at.y,at.z,.65);
         pet.getLookControl().setLookAt(b.getX()+.5,b.getY()-2,b.getZ()-11.5,30,30);return true;
@@ -218,7 +219,9 @@ public final class CaverVignette {
     }
     public static void onRightClick(PlayerInteractEvent.RightClickBlock e){
         if(e.getEntity() instanceof ServerPlayer observer&&observer.gameMode.getGameModeForPlayer()==GameType.SPECTATOR
-                &&IndianLakeRooms.inside(observer,LabyrinthPlace.TED_CAVER)&&e.getPos().equals(base(observer.server).offset(CaverCave.JOURNAL))){e.setCanceled(true);return;}
+                &&observer.level().dimension().equals(HouseDimensions.INTERIOR)&&base(observer.server)!=null
+                &&IndianLakeRooms.bounds(base(observer.server),LabyrinthPlace.TED_CAVER).contains(observer.position())
+                &&e.getPos().equals(base(observer.server).offset(CaverCave.JOURNAL))){e.setCanceled(true);return;}
         if(!(e.getEntity() instanceof ServerPlayer p)||!inside(p)||!reach(p,e.getPos()))return;
         var b=base(p.server);boolean journal=e.getPos().equals(b.offset(CaverCave.JOURNAL));
         if(e.getHand()!=InteractionHand.MAIN_HAND)return;

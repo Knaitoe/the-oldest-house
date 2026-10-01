@@ -127,7 +127,9 @@ public final class CaverTests {
         h.runAfterDelay(12,()->{CaverVignette.playerTick(p);p.gameMode.changeGameModeForPlayer(GameType.SPECTATOR);CaverVignette.playerTick(p);
             h.assertTrue(!CaverVignette.crawling(p)&&p.getForcedPose()==null&&WitnessAccount.count(f.data(),p.getUUID())==0,"native spectator mode ends crawling without credit");p.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);});
         h.runAfterDelay(16,()->{CaverVignette.playerTick(p);h.assertTrue(CaverVignette.crawling(p),"a resumed alive player uses the tight passage again");
-            p.hurt(p.damageSources().genericKill(),Float.MAX_VALUE);h.assertTrue(!p.isAlive()&&!CaverVignette.crawling(p)&&p.getForcedPose()==null,"an actual native death clears the transient pose");h.succeed();});
+            var all=f.data().state(CaverVignette.ID);var people=all.getCompound("Players");var own=people.getCompound(p.getUUID().toString());own.putBoolean("Pursuit",true);own.putInt("ReturnCrawl",40);own.putInt("JournalStage",6);people.put(p.getUUID().toString(),own);all.put("Players",people);f.data().setState(CaverVignette.ID,all);
+            p.hurt(p.damageSources().genericKill(),Float.MAX_VALUE);h.assertTrue(!p.isAlive()&&!CaverVignette.crawling(p)&&p.getForcedPose()==null,"an actual native death clears the transient pose");
+            var after=CaverVignette.personal(f.data(),p.getUUID());h.assertTrue(!after.getBoolean("Pursuit")&&after.getInt("ReturnCrawl")==0&&!after.getBoolean("Escaped")&&CaverVignette.journal(f.data(),p.getUUID()).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()==7,"dying cannot turn a later arrival into an escape or erase the written observations");h.succeed();});
     }
     @GameTest(template="empty",batch="caver_upgrade",timeoutTicks=100)
     public static void oldLayoutAppendsCaveWithoutErasingFurnitureActorsCachesOrEvidence(GameTestHelper h){
