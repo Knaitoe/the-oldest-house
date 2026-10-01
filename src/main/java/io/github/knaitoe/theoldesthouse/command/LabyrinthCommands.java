@@ -220,6 +220,14 @@ public final class LabyrinthCommands {
                 return 1;
             }));
         }
+        growl.then(Commands.literal("change").executes(context -> {
+            if (!io.github.knaitoe.theoldesthouse.labyrinth.GrowlChanges.request(context.getSource().getPlayerOrException())) {
+                context.getSource().sendFailure(Component.literal("Enter an active gray hall or the ordinary manor. Quiet rooms, vignettes and the finale are excluded."));
+                return 0;
+            }
+            context.getSource().sendSuccess(() -> Component.literal("One change is waiting for an unwitnessed opportunity. Use /oldesthouse growl status to inspect it."), false);
+            return 1;
+        }));
         growl.then(Commands.literal("basement").executes(context -> {
             if (!Growl.wakeInBasement(context.getSource().getPlayerOrException())) {
                 context.getSource().sendFailure(Component.literal("The Navidsons' house must exist first."));
