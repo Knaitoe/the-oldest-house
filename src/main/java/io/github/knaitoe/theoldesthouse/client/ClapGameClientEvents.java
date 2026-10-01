@@ -33,7 +33,7 @@ public final class ClapGameClientEvents {
             return;
         }
         boolean cloth = ClapGameClientState.bound() || BlindfoldItem.isWorn(mc.player);
-        if (cloth || DoorLeakClientState.labyrinth()) {
+        if (cloth || ClapGameClientState.ending() || DoorLeakClientState.labyrinth()) {
             if (previousCamera == null) {
                 previousCamera = mc.options.getCameraType();
                 previousHideGui = mc.options.hideGui;
@@ -57,7 +57,7 @@ public final class ClapGameClientEvents {
         progress = progress * progress * (3 - 2 * progress);
         float effects = mc.options.fovEffectScale().get().floatValue();
         event.setYaw(ClapGameClientState.yaw() + 45 * progress * effects);
-        event.setPitch(32 + 18 * progress * effects);
+        event.setPitch((ClapGameClientState.revealed()?24:32) + 26 * progress * effects);
         event.setRoll(75 * progress * effects);
     }
 }

@@ -54,6 +54,9 @@ public final class Hillary {
     public static final String NAME = "Hillary";
     public static final int LEASH_RADIUS = 6;
 
+    public static final String INTRO_CONFIRMED="HillaryHousePat";
+    public static final String INTRO_DONE="HillaryHouseIntroduced";
+
     private static final int GUIDE_RESUME_RADIUS = 14;
     private static final int GUIDE_WAIT_RADIUS = 22;
     private static final double MANOR_STOP_RADIUS = 3.25D;
@@ -120,6 +123,32 @@ public final class Hillary {
         return tag.isSet() ? tag : null;
     }
 
+    /** Opening guidance temporarily owns movement, while retaining the wheel's chosen order. */
+    public static boolean introductionActive(Entity entity) {
+        HillaryTag tag=tagOf(entity);
+        if(tag==null||!(entity.level() instanceof ServerLevel level)
+                ||level!=level.getServer().overworld()||entity.getPersistentData().getBoolean(INTRO_DONE)
+                ||entity.getTags().contains(io.github.knaitoe.theoldesthouse.labyrinth.MotherOfStrays.PET))return false;
+        ServerPlayer player=level.getServer().getPlayerList().getPlayer(tag.recipient());
+        return player!=null&&player.level()==level&&isExpected(player,(Wolf)entity)
+                &&HouseSavedData.get(level.getServer()).houseOrigin()!=null;
+    }
+    public static boolean introductionConfirmed(Entity entity) {return entity.getPersistentData().getBoolean(INTRO_CONFIRMED);}
+    public static void confirmIntroduction(Wolf wolf,ServerPlayer player) {
+        HillaryTag tag=tagOf(wolf);
+        if(tag==null||!tag.recipient().equals(player.getUUID()))return;
+        acknowledge(wolf);
+        if(introductionActive(wolf)) {
+            wolf.getPersistentData().putBoolean(INTRO_CONFIRMED,true);
+            wolf.setOrderedToSit(false);wolf.setInSittingPose(false);wolf.clearRestriction();
+            GREETINGS.computeIfAbsent(wolf.getUUID(),id->new Greeting()).dartUntil=wolf.level().getGameTime()+DART_TICKS;
+        }
+    }
+    private static void finishIntroduction(Wolf wolf) {
+        wolf.getPersistentData().putBoolean(INTRO_DONE,true);
+        CompanionOrders.resume(wolf);forget(wolf);
+    }
+
     /**
      * The first bone always tames her, and only her recipient can. A bone,
      * or any right-click from her recipient before she has been greeted,
@@ -140,6 +169,12 @@ public final class Hillary {
         ItemStack stack = event.getItemStack();
         boolean recipient = player.getUUID().equals(tag.recipient());
 
+        if (wolf.getTags().contains(io.github.knaitoe.theoldesthouse.labyrinth.MotherOfStrays.PET))return;
+        if (recipient && stack.isEmpty() && event.getHand()==InteractionHand.MAIN_HAND
+                && player instanceof ServerPlayer owner && introductionActive(wolf) && !introductionConfirmed(wolf)) {
+            event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);
+            confirmIntroduction(wolf,owner);return;
+        }
         if (recipient && stack.is(Items.COMPASS) && player instanceof ServerPlayer owner) {
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.SUCCESS);
@@ -205,9 +240,9 @@ public final class Hillary {
      */
     public static void acknowledge(Wolf wolf) {
         HillaryTag tag = tagOf(wolf);
-        if (tag == null || tag.acknowledged()) {
-            return;
-        }
+        if (tag == null) return;
+        if(introductionActive(wolf))wolf.getPersistentData().putBoolean(INTRO_CONFIRMED,true);
+        if(tag.acknowledged())return;
         wolf.setData(OpeningRegistry.HILLARY, tag.withAcknowledged());
         wolf.setIsInterested(false);
         wolf.getNavigation().stop();
@@ -235,20 +270,23 @@ public final class Hillary {
         }
         HillaryTag tag = tagOf(wolf);
         if (wolf.getPersistentData().getBoolean(io.github.knaitoe.theoldesthouse.labyrinth.FinaleController.GUIDE)) return;
-        if (CompanionOrders.managed(wolf)) return;
-        if (tag != null && tickSeeking(wolf, level)) {
+        boolean introducing=introductionActive(wolf);
+        if (wolf.getTags().contains(io.github.knaitoe.theoldesthouse.labyrinth.MotherOfStrays.PET))return;
+        if (CompanionOrders.managed(wolf)&&!introducing) return;
+        if (!introducing && tag != null && tickSeeking(wolf, level)) {
             return;
         }
-        if (tag != null && HillaryPaths.tickExit(wolf, level, tag.recipient())) return;
+        if (!introducing && tag != null && HillaryPaths.tickExit(wolf, level, tag.recipient())) return;
         if (tag != null && tag.acknowledged() && level.dimension().equals(HouseDimensions.INTERIOR)
                 && !wolf.isOrderedToSit() && !wolf.isTame()) {
             ServerPlayer recipient = level.getServer().getPlayerList().getPlayer(tag.recipient());
             if (recipient != null && recipient.level() == level && wolf.distanceToSqr(recipient) > 9
                     && level.getGameTime() % 10 == 0) wolf.getNavigation().moveTo(recipient, 1.15);
         }
-        if (tag == null || tag.acknowledged()) {
+        if (tag == null || (tag.acknowledged()&&(!introducing||introductionConfirmed(wolf)))) {
             return;
         }
+        wolf.setOrderedToSit(false);wolf.setInSittingPose(false);
         ServerPlayer player = level.getServer().getPlayerList().getPlayer(tag.recipient());
         if (player == null || player.level() != level || !isExpected(player, wolf)) {
             forget(wolf);
@@ -297,7 +335,7 @@ public final class Hillary {
             greeting.nextCall = now + 80 + wolf.getRandom().nextInt(80);
         }
 
-        if (player.isShiftKeyDown() && distance <= 4.0D && isFacing(player, wolf)) {
+        if (!introducing && player.isShiftKeyDown() && distance <= 4.0D && isFacing(player, wolf)) {
             if (++greeting.crouchTicks >= CROUCH_TICKS) {
                 acknowledge(wolf);
             }
@@ -450,16 +488,21 @@ public final class Hillary {
         if (!(overworld.getEntity(wolfId) instanceof Wolf wolf)) {
             return;
         }
-        if (CompanionOrders.managed(wolf)) return;
+        if (wolf.getTags().contains(io.github.knaitoe.theoldesthouse.labyrinth.MotherOfStrays.PET))return;
 
         HillaryTag tag = tagOf(wolf);
         if (tag == null || !player.getUUID().equals(tag.recipient())) {
             return;
         }
 
-        if (active && houseOrigin != null && !tag.acknowledged()) {
-            // Not greeted yet: onEntityTick handles her while she is
-            // greeting; otherwise she waits on her doorstep.
+        if(!active) {
+            if(!wolf.getPersistentData().getBoolean(INTRO_DONE)&&OpeningSequence.state(player).enteredHouse())finishIntroduction(wolf);
+            if(CompanionOrders.managed(wolf))return;
+        }
+        if(wolf.getPersistentData().getBoolean(INTRO_DONE))return;
+        if (active && houseOrigin != null && (!tag.acknowledged()||!introductionConfirmed(wolf))) {
+            wolf.setOrderedToSit(false);wolf.setInSittingPose(false);
+            // A saved Stay command must not suppress her request for a pat.
             if (!isGreeting(wolf)) {
                 keepNear(wolf, tag.home());
             }
@@ -485,6 +528,8 @@ public final class Hillary {
         double toPorch = wolf.distanceToSqr(porch);
         if (toPorch <= MANOR_STOP_RADIUS * MANOR_STOP_RADIUS) {
             settleAtManor(wolf, tag.recipient(), BlockPos.containing(porch));
+            if(player.distanceToSqr(porch)<=64)finishIntroduction(wolf);
+            else {wolf.setOrderedToSit(false);wolf.setInSittingPose(false);wolf.getLookControl().setLookAt(player);}
             return;
         }
 

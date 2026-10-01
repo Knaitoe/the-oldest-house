@@ -13,7 +13,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("15")
+        event.registrar("16")
                 .playToClient(LakePhonePayload.TYPE,LakePhonePayload.STREAM_CODEC,
                         (payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.LakePhoneClient.accept(payload)))
                 .playToClient(CompanionMenuPayload.TYPE, CompanionMenuPayload.STREAM_CODEC,
@@ -25,6 +25,8 @@ public final class HouseNetwork {
                         }))
                 .playToClient(DoorLeaksPayload.TYPE, DoorLeaksPayload.STREAM_CODEC,
                         (payload, context) -> DoorLeakClientState.accept(payload))
+                .playToClient(ClapCuePayload.TYPE,ClapCuePayload.STREAM_CODEC,
+                        (payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.ClapCueClient.accept(payload)))
                 .playToClient(ClapGamePayload.TYPE, ClapGamePayload.STREAM_CODEC,
                         (payload, context) -> ClapGameClientState.accept(payload))
                 .playToClient(

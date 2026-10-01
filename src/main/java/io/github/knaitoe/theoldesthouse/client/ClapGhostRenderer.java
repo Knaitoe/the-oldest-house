@@ -14,6 +14,7 @@ public final class ClapGhostRenderer extends MobRenderer<ClapGhostEntity, ClapGh
     public ClapGhostRenderer(EntityRendererProvider.Context context) {
         super(context, new ClapGhostModel(context.bakeLayer(ClapGhostModel.LAYER)), 0);
     }
+    @Override protected int getBlockLightLevel(ClapGhostEntity entity,net.minecraft.core.BlockPos pos){return 12;}
     @Override public ResourceLocation getTextureLocation(ClapGhostEntity entity) { return TEXTURE; }
     @Override public boolean shouldRender(ClapGhostEntity entity, Frustum frustum, double x, double y, double z) {
         var player = Minecraft.getInstance().player;

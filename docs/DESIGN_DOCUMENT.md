@@ -752,7 +752,7 @@ Assets: the Minotaur, a custom creature with charge, stun, and wounded-crawl ani
 
 ### The Witness: an earned release
 
-- This is an original mod ending. Resolve 75% of the playable Witness story pool, rounded up, across at least two story kinds to restore the final passages in a written account and the play beside the cell. The threshold scales automatically when shipped sources are added: nine sources require seven resolutions in 0.4.15. Survival, understanding, connection, memory, and release can contribute; neither the Mother nor every vignette is mandatory.
+- This is an original mod ending. Resolve 75% of the playable Witness story pool, rounded up, across at least two story kinds to restore the final passages in a written account and the play beside the cell. The threshold scales automatically when shipped sources are added: nine sources require seven resolutions in 0.4.16. Survival, understanding, connection, memory, and release can contribute; neither the Mother nor every vignette is mandatory.
 - The current nine sources are the floorboards, hide-and-clap, Harrigan, the model home, Drowned Town's church roof, the preserved cave, the Shallows, Phone in the Canoe, and the Mother's peaceful resolution. World completion flags and merely visiting rooms confer no credit. A later explorer can crouch and inspect a finished room's actual ending prop to record its aftermath; acquiring someone else's book or artifact does not transfer progress.
 - Each vignette release must review the personal resolution hook, eligible pool, resulting 75% threshold, tests and current documentation. Draft sites and unfinished encounters do not enter the quota. See [VIGNETTE_RELEASE_CHECKLIST.md](VIGNETTE_RELEASE_CHECKLIST.md). Existing saved evidence is retained when the requirement rises; an uncommitted ending uses the current quota, while completed endings and a release already underway remain saved.
 - Read the restored play at the cell's lectern. Lay the original most-used weapon beside the cell, clear both hands, and crouch while opening it. Normal opening still chooses the violent encounter.
@@ -882,3 +882,11 @@ The House uses one writing pipeline rather than treating every note as an unrela
 `/oldesthouse writing samples` gives the executing player one readable sample of each authored style. An optional player argument gives the set to another player.
 
 The writing layer intentionally uses Minecraft's normal book/text renderer and ordinary opaque bitmap font providers. It does not use emissive text, custom framebuffers, translucent world-space page quads, post-processing, or shader hooks. This keeps the evidence readable with common shader loaders while still allowing resource packs to replace any font atlas normally.
+
+### Playable companion and clap update — 0.4.16
+
+The Pet wheel is sharp and unblurred, with an explicit Pet action that retains the chosen movement order. Hillary's introduction asks for a fresh pat once the House exists; it takes temporary priority over Stay/Follow and hands movement back on porch arrival. Mod-rescued and recovered tame animals use the same wheel.
+
+Hide-and-clap now provides brief pulses at real clap origins and repeats the wardrobe's muffled signal. Failure removes the cloth 12 ticks into the ending, then twists at tick 30 and kills at tick 40. The room stays locked during the reveal. The original cloth and possessions still become native drops. Only personally finishing or examining the authored ending grants Witness credit.
+
+Vignette deaths let the Mother claim nearby standing, unleashed following pets; Stay and other owners are excluded. Custody raises only that owner's den dealing. A real valuable exchange restores the original UUID, health, equipment, owner and wheel order. The one-minute ransom starts on the owner's den arrival, pauses outside/offline, and ends in permanent pet disposal if unpaid. Peaceful Mother outcomes suppress new capture. This mechanic adds no Witness source: nine eligible stories, seven required resolutions across at least two kinds, three endings. See [PETS_AND_CLAP_0_4_16.md](PETS_AND_CLAP_0_4_16.md).
