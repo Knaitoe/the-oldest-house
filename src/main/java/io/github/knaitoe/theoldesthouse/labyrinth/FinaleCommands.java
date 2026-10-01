@@ -22,10 +22,15 @@ public final class FinaleCommands {
             .then(Commands.literal("start").executes(c->FinaleController.start(c.getSource().getPlayerOrException())?1:0))
             .then(Commands.literal("witness")
                 .then(Commands.literal("ready").executes(c->{var player=c.getSource().getPlayerOrException();var data=LabyrinthData.get(player.server);
-                    for(var story:java.util.List.of(WitnessAccount.Story.FLOORBOARDS,WitnessAccount.Story.CLAP,WitnessAccount.Story.HARRIGAN))WitnessAccount.resolve(data,player.getUUID(),story,"operator_fixture");
-                    WitnessAccount.updateBook(player,true);c.getSource().sendSuccess(()->Component.literal("Three personal resolutions recorded. Read the cell's lectern, lay down the original weapon, empty both hands, and crouch at the bars."),false);return 1;}))
+                    for(var story:WitnessAccount.Story.values()){
+                        if(WitnessAccount.ready(data,player.getUUID()))break;
+                        WitnessAccount.resolve(data,player.getUUID(),story,"operator_fixture");
+                    }
+                    WitnessAccount.updateBook(player,true);c.getSource().sendSuccess(()->Component.literal(WitnessAccount.count(data,player.getUUID())+"/"+WitnessAccount.REQUIRED+" personal resolutions recorded. Read the cell's lectern, lay down the original weapon, empty both hands, and crouch at the bars."),false);return 1;}))
                 .then(Commands.literal("begin").executes(c->WitnessEnding.begin(c.getSource().getPlayerOrException())?1:0))
-                .then(Commands.literal("status").executes(c->{var player=c.getSource().getPlayerOrException();c.getSource().sendSuccess(()->Component.literal(WitnessAccount.record(LabyrinthData.get(player.server),player.getUUID()).toString()),false);return 1;})))
+                .then(Commands.literal("status").executes(c->{var player=c.getSource().getPlayerOrException();var data=LabyrinthData.get(player.server);
+                    c.getSource().sendSuccess(()->Component.literal("Resolutions: "+WitnessAccount.count(data,player.getUUID())+"/"+WitnessAccount.REQUIRED
+                            +"; eligible sources: "+WitnessAccount.Story.values().length+". "+WitnessAccount.record(data,player.getUUID())),false);return 1;})))
             .then(Commands.literal("status").executes(c->{var player=c.getSource().getPlayerOrException();c.getSource().sendSuccess(()->Component.literal(FinaleProgress.player(player.server,player.getUUID()).toString()),false);return 1;}));
     }
 }

@@ -81,6 +81,20 @@ public final class WitnessTests {
         for(var story:List.of(WitnessAccount.Story.DROWNED_TOWN,WitnessAccount.Story.PRESERVED_CAVE,WitnessAccount.Story.SHALLOWS))WitnessAccount.resolve(loaded,player,story,"resolved");
         helper.assertTrue(WitnessAccount.count(loaded,player)==6&&WitnessEnding.qualified(loaded,player),"the three Indian Lake resolutions complete the existing personal account");helper.succeed();
     }
+    @GameTest(template="empty",batch="witness_quota_fixture") public static void operatorReadyCommandMeetsTheCurrentQuotaWithoutDuplicateCredit(GameTestHelper helper) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        var server=helper.getLevel().getServer();
+        try(var fixture=new Fixture(server,new BlockPos(3300,80,3300))){
+            var player=FakePlayerFactory.get(helper.getLevel(),new GameProfile(UUID.randomUUID(),"quota_fixture"));
+            var dispatcher=new com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack>();dispatcher.register(FinaleCommands.build());
+            helper.assertTrue(dispatcher.execute("finale witness ready",player.createCommandSourceStack())==1,"the actual operator command succeeds");
+            var data=LabyrinthData.get(server);
+            helper.assertTrue(WitnessAccount.count(data,player.getUUID())==WitnessAccount.REQUIRED&&WitnessAccount.ready(data,player.getUUID())
+                    &&!WitnessAccount.readPlay(data,player.getUUID()),"the fixture reaches six without bypassing deliberate reading");
+            helper.assertTrue(player.getInventory().items.stream().anyMatch(s->WitnessAccount.ownedBook(s,player.getUUID())),"the operator receives the actual updated account");
+            dispatcher.execute("finale witness ready",player.createCommandSourceStack());
+            helper.assertTrue(WitnessAccount.count(data,player.getUUID())==WitnessAccount.REQUIRED&&!WitnessAccount.ready(data,UUID.randomUUID()),"repeating the fixture adds no credit and does not qualify another explorer");
+        }helper.succeed();
+    }
     @GameTest(template="empty") public static void finishedRoomsOfferOnlyTheirActualEndingProp(GameTestHelper helper){
         LabyrinthData data=new LabyrinthData();UUID player=UUID.randomUUID();BlockPos base=new BlockPos(30,100,20);
         data.setCompleted(TellTaleFloorboards.ID,true);
