@@ -82,7 +82,13 @@ public final class WitnessEnding {
             if(step==3)FinaleArchitecture.seal(player.serverLevel(),origin,false);
             record.putInt("ReleaseStep",step+1);FinaleProgress.save(player.server,player.getUUID(),record);return;
         }
-        if(player.tickCount%5==0)creature.getNavigation().moveTo(target.x,target.y,target.z,.7);
+        // A broad actor's pathfinder can accept a partial path at the narrow cell opening.
+        // Follow the authored route with native collision/step handling; never warp through a wall.
+        creature.getNavigation().stop();
+        Vec3 stride=delta.multiply(1,0,1);double distance=stride.length();
+        creature.setDeltaMovement(creature.getDeltaMovement().multiply(0,1,0));
+        if(distance>.001)creature.move(MoverType.SELF,stride.scale(Math.min(.14,distance)/distance));
+        float facing=(float)(Math.atan2(delta.z,delta.x)*180/Math.PI)-90;creature.setYRot(facing);creature.yBodyRot=facing;
         creature.getLookControl().setLookAt(target.x,target.y+2,target.z,15,15);
         if(player.tickCount%24==0)player.serverLevel().playSound(null,creature.blockPosition(),SoundEvents.RAVAGER_STEP,SoundSource.HOSTILE,.45F,.65F);
     }
