@@ -104,7 +104,7 @@ public final class GoatmanWoods {
         for(int i=0;i<count;i++){
             final int index=i;if(displays.stream().anyMatch(d->d.getPersistentData().getInt("Plate")==index&&!d.isRemoved()))continue;
             Display.ItemDisplay d=net.minecraft.world.entity.EntityType.ITEM_DISPLAY.create(l);if(d==null)continue;
-            d.addTag(PLATE);d.getPersistentData().putInt("Plate",i);CompoundTag tag=d.saveWithoutId(new CompoundTag());tag.put("item",new ItemStack(Items.COOKED_PORKCHOP).save(l.registryAccess()));tag.putString("item_display","fixed");
+            d.addTag(PLATE);d.getPersistentData().putInt("Plate",i);CompoundTag tag=d.saveWithoutId(new CompoundTag());tag.put("item",new ItemStack(GoatmanRegistry.PLATE.get()).save(l.registryAccess()));tag.putString("item_display","fixed");
             CompoundTag transform=new CompoundTag();transform.put("scale",floats(.45F,.45F,.45F));transform.put("translation",floats(0,0,0));
             transform.put("left_rotation",floats(-.70710677F,0,0,.70710677F));transform.put("right_rotation",floats(0,0,0,1));tag.put("transformation",transform);d.load(tag);
             d.moveTo(plate(i).add(b.getX(),b.getY(),b.getZ()));l.addFreshEntity(d);

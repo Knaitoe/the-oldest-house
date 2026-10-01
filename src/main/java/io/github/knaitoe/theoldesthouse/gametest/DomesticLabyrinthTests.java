@@ -170,7 +170,7 @@ public final class DomesticLabyrinthTests {
             data.setCompleted(TellTaleFloorboards.ID, true);
             var loaded = LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(), level.registryAccess()), level.registryAccess());
             h.assertTrue(loaded.isCompleted(TellTaleFloorboards.ID) && WitnessAccount.has(loaded, player, WitnessAccount.Story.FLOORBOARDS)
-                    && WitnessAccount.REQUIRED == 7, "existing resolutions and the seven-of-nine quota survive");
+                    && WitnessAccount.REQUIRED == WitnessAccount.requiredForPoolSize(WitnessAccount.Story.values().length), "existing evidence survives decoration and the quota follows the eligible story pool");
         } finally { item.discard(); cat.discard(); worldData.setState("domestic_0417", previousUpgrade); }
         h.succeed();
     }
