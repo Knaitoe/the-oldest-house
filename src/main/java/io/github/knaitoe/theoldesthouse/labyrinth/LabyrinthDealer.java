@@ -71,7 +71,7 @@ public final class LabyrinthDealer {
             return 0;
         }
         return (int) Math.min(100L,
-                VIGNETTE_BASE_CHANCE + (long) VIGNETTE_CHANCE_STEP * data.dryDeals(player));
+                (rescueNeeded(data,player)?65:VIGNETTE_BASE_CHANCE) + (long) VIGNETTE_CHANCE_STEP * data.dryDeals(player));
     }
 
     public static int dealWeight(LabyrinthData data, LabyrinthPlace place) {
@@ -80,11 +80,16 @@ public final class LabyrinthDealer {
     }
 
     public static int rememberedWeight(LabyrinthData data, UUID player, LabyrinthPlace place, int ordinaryWeight) {
+        if(place==LabyrinthPlace.MOTHER_DEN&&rescueNeeded(data,player))return Math.max(1,ordinaryWeight)*96;
         boolean special = place.isVignette() || !LabyrinthPacing.ordinary(place);
         if (!special) return ordinaryWeight * 12;
         int age = data.recentVisit(player, place);
         int factor = age < 0 ? 12 : age == 0 ? 1 : age < 3 ? 2 : age < 6 ? 4 : 8;
         return ordinaryWeight * factor;
+    }
+
+    public static boolean rescueNeeded(LabyrinthData data,UUID player) {
+        return data.state(MotherOfStrays.ID).getCompound("LivingPetOwners").getBoolean(player.toString());
     }
 
     private static LabyrinthPlace pickVignette(LabyrinthData data, UUID player, List<LabyrinthPlace> vignettes, RandomSource random) {

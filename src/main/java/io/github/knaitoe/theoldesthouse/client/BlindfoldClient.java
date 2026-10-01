@@ -31,7 +31,7 @@ public final class BlindfoldClient {
 
     private static void render(GuiGraphics graphics, DeltaTracker deltaTracker) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player == null || (!BlindfoldItem.isWorn(minecraft.player) && !ClapGameClientState.bound())) {
+        if (minecraft.player == null || ClapGameClientState.revealed() || (!BlindfoldItem.isWorn(minecraft.player) && !ClapGameClientState.bound())) {
             return;
         }
         int width = graphics.guiWidth();
@@ -47,5 +47,6 @@ public final class BlindfoldClient {
             int tile = Math.min(64, width - x);
             graphics.blit(CLOTH, x, edge - 12, 0, 0, tile, 16, 64, 16);
         }
+        ClapCueClient.render(graphics,edge);
     }
 }

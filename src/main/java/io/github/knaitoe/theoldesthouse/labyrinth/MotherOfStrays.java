@@ -249,26 +249,27 @@ public final class MotherOfStrays {
 
     private static void refreshPets(ServerLevel level, BlockPos base, MotherCollection collection) {
         AABB box = box(base.offset(-10, -4, -25), base.offset(11, 14, 1));
-        List<MotherCollection.Entry> pets = collection.all().stream().filter(e -> e.pet).toList();
+        List<MotherCollection.Entry> pets = collection.all().stream().filter(e -> e.pet&&!e.livingClaim).toList();
         int end = Math.max(0, pets.size() - shelfPage * 12);
         int start = Math.max(0, end - 12);
-        List<MotherCollection.Entry> page = pets.subList(start, end);
+        List<MotherCollection.Entry> page = new ArrayList<>(pets.subList(start,end));
+        page.addAll(collection.all().stream().filter(e->e.pet&&e.livingClaim).toList());
         Map<UUID, Mob> displayed = new HashMap<>();
         for (Mob pet : level.getEntitiesOfClass(Mob.class, box, mob -> mob.getTags().contains(PET))) {
             CompoundTag data = pet.getPersistentData();
             if (data.hasUUID(ENTRY)) {
                 UUID id = data.getUUID(ENTRY);
-                if (page.stream().noneMatch(entry -> entry.id.equals(id))) pet.discard();
+                if (page.stream().noneMatch(entry -> entry.id.equals(id))) {if(pet.isAlive())pet.discard();}
                 else displayed.put(id, pet);
             }
         }
         // The bell pages through every archived pet, twelve live bodies at a time.
-        for (int i = start; i < end; i++) {
-            MotherCollection.Entry entry = pets.get(i);
+        for (int i=0;i<page.size();i++) {
+            MotherCollection.Entry entry = page.get(i);
             if (displayed.containsKey(entry.id)) continue;
             Entity entity = restorePetEntity(level, entry);
             if (!(entity instanceof Mob pet)) continue;
-            int offset = i - start;
+            int offset = i;
             pet.moveTo(base.getX() - 6.5D + (offset % 6) * 2.0D, base.getY(),
                     base.getZ() - 11.5D - (offset / 6) * 3.0D, 0.0F, 0.0F);
             prepareKeptPet(pet);
@@ -307,6 +308,38 @@ public final class MotherOfStrays {
         return restored;
     }
 
+    @Nullable private static Entity restoreLivingOriginal(ServerLevel level,MotherCollection.Entry entry) {
+        CompoundTag copy=entry.contents.copy();copy.remove("Passengers");
+        copy.putShort("DeathTime",(short)0);copy.putShort("HurtTime",(short)0);
+        return EntityType.loadEntityRecursive(copy,level,entity->entity);
+    }
+    public static void updateCustody(MinecraftServer server,UUID owner) {
+        LabyrinthData data=LabyrinthData.get(server);CompoundTag state=data.state(ID),owners=state.getCompound("LivingPetOwners");
+        boolean held=MotherCollection.get(server).holdsLivingPet(owner);
+        if(owners.getBoolean(owner.toString())==held)return;
+        if(held)owners.putBoolean(owner.toString(),true);else owners.remove(owner.toString());
+        state.put("LivingPetOwners",owners);data.setState(ID,state);
+    }
+    /** Called before respawn or any vignette death handler moves the player. */
+    public static int claimFollowingPets(ServerPlayer player) {
+        if(player.isSpectator()||!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR))return 0;
+        BlockPos origin=HouseSavedData.get(player.server).houseOrigin();
+        LabyrinthPlace place=origin==null?null:LabyrinthPlaces.placeAt(origin,player.blockPosition());
+        if(place==null||!place.isVignette())return 0;
+        MotherCollection collection=MotherCollection.get(player.server);
+        if(collection.banished()||collection.salved())return 0;
+        int count=0;
+        for(TamableAnimal pet:io.github.knaitoe.theoldesthouse.opening.CompanionOrders.followingAll(player)) {
+            if(io.github.knaitoe.theoldesthouse.opening.CompanionOrders.managed(pet)
+                    &&io.github.knaitoe.theoldesthouse.opening.CompanionOrders.order(pet)==io.github.knaitoe.theoldesthouse.opening.CompanionOrders.Order.STAY)continue;
+            CompoundTag saved=new CompoundTag();
+            if(!pet.save(saved)||collection.keepLivingPet(pet.getUUID(),saved,player.getUUID(),pet.getName().getString())==null)continue;
+            pet.getNavigation().stop();pet.discard();count++;
+        }
+        if(count>0)updateCustody(player.server,player.getUUID());
+        return count;
+    }
+
     // Loss is recorded across all dimensions, even before the manor exists.
     public static void onItemExpire(ItemExpireEvent event) {
         ItemEntity item = event.getEntity();
@@ -334,6 +367,7 @@ public final class MotherOfStrays {
     }
 
     public static void onPetDeath(LivingDeathEvent event) {
+        if(event.getEntity() instanceof ServerPlayer player){claimFollowingPets(player);return;}
         LivingEntity pet = event.getEntity();
         if (!(pet.level() instanceof ServerLevel level) || pet.getTags().contains(PET)) return;
         if (MotherCollection.get(level.getServer()).banished()) return;
@@ -351,6 +385,7 @@ public final class MotherOfStrays {
         collection.presence(player.getUUID(), here);
         if (here) {
             say(player, "I keep what nobody comes back for.");
+            warnRansom(player,collection);
             BlockPos base = base(player.server);
             if (base != null) {
                 refreshShelves(player.serverLevel(), base, collection);
@@ -438,30 +473,55 @@ public final class MotherOfStrays {
             MotherCollection.Entry entry = collection.entry(id);
             if (entry == null || !collection.canRecoverPet(player.getUUID(), id, held, now)) {
                 say(player, entry != null && !player.getUUID().equals(entry.owner)
-                        ? "This one remembers somebody else." : "Give me something you would miss, and call them again.");
+                        ? "This one remembers somebody else." : entry!=null&&entry.livingClaim?"A diamond, a golden apple, netherite, four emeralds, or enchanted equipment. Before I stop asking.":"Give me something you would miss, and call them again.");
                 return true;
             }
-            Entity restored = restorePetEntity(player.serverLevel(), entry);
-            if (!(restored instanceof Mob living)) return true;
-            Vec3 restoredSpot = nearbyStandingSpot(player.serverLevel(), player);
-            living.moveTo(restoredSpot.x, restoredSpot.y, restoredSpot.z, player.getYRot(), 0.0F);
-            living.removeTag(PET);
-            living.addTag(RELEASED);
-            living.setInvulnerable(false);
-            living.setPersistenceRequired();
-            if (living instanceof TamableAnimal tame) {
-                tame.setTame(true, true);
-                tame.setOwnerUUID(player.getUUID());
-                tame.setOrderedToSit(false);
-            }
-            if (living instanceof AbstractHorse horse) horse.setOwnerUUID(player.getUUID());
-            if (player.serverLevel().addFreshEntity(living)
-                    && collection.recoverPet(player.getUUID(), id, held, player.registryAccess(), now)) {
-                pet.discard();
-                say(player, "Then do not make me keep them twice.");
-            } else living.discard();
+            return recoverPet(player,target,entry,held,now,collection);
         }
         return true;
+    }
+
+    private static boolean recoverPet(ServerPlayer player,Entity display,MotherCollection.Entry entry,ItemStack held,long now,MotherCollection collection) {
+        if(!collection.canRecoverPet(player.getUUID(),entry.id,held,now))return true;
+        Entity restored=entry.livingClaim?restoreLivingOriginal(player.serverLevel(),entry):restorePetEntity(player.serverLevel(),entry);
+        if(!(restored instanceof LivingEntity living))return true;
+        if(entry.livingClaim)for(ServerLevel world:player.server.getAllLevels())if(world.getEntity(living.getUUID())!=null)return true;
+        Vec3 safe=io.github.knaitoe.theoldesthouse.opening.HillaryPaths.safeBeside(living,player);
+        living.moveTo(safe.x,safe.y,safe.z,player.getYRot(),0);living.removeTag(PET);living.addTag(RELEASED);living.setInvulnerable(false);
+        living.getPersistentData().remove(ENTRY);
+        if(living instanceof TamableAnimal tame){tame.setTame(true,true);tame.setOwnerUUID(player.getUUID());
+            io.github.knaitoe.theoldesthouse.opening.CompanionOrders.resume(tame);}
+        if(living instanceof AbstractHorse horse)horse.setOwnerUUID(player.getUUID());
+        if(living instanceof Mob mob)mob.setPersistenceRequired();
+        if(player.serverLevel().addFreshEntity(living)&&collection.recoverPet(player.getUUID(),entry.id,held,player.registryAccess(),now)) {
+            display.discard();updateCustody(player.server,player.getUUID());
+            player.inventoryMenu.broadcastChanges();say(player,"There. You came back for it.");
+        }else if(living.isAlive())living.discard();
+        return true;
+    }
+    private static void warnRansom(ServerPlayer owner,MotherCollection collection) {
+        if(!collection.holdsLivingPet(owner.getUUID())||collection.salved()||collection.banished())return;
+        if(collection.beginRansom(owner.getUUID())) {
+            say(owner,"It is still alive. Give me something valuable, or I will not leave it lost.");
+            owner.displayClientMessage(Component.literal("Offer her or your pet a diamond, golden apple, netherite scrap, four emeralds, or enchanted equipment. You have one minute in her den.")
+                    .withStyle(ChatFormatting.GRAY),false);
+        }
+    }
+    private static void tickRansoms(ServerLevel level,BlockPos base,MotherEntity keeper,MotherCollection collection) {
+        for(ServerPlayer owner:level.players())if(owner.isAlive()&&!owner.isSpectator()&&inDen(owner)) {
+            warnRansom(owner,collection);
+            for(MotherCollection.Entry due:collection.advanceRansom(owner.getUUID(),20,true)) {
+                for(Mob pet:level.getEntitiesOfClass(Mob.class,new AABB(base).inflate(32),e->e.getTags().contains(PET))) {
+                    if(pet.getPersistentData().hasUUID(ENTRY)&&due.id.equals(pet.getPersistentData().getUUID(ENTRY))) {
+                        keeper.getLookControl().setLookAt(pet);keeper.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+                        pet.setInvulnerable(false);pet.setHealth(0);pet.die(pet.damageSources().mobAttack(keeper));
+                    }
+                }
+                collection.disposeLivingPet(due.id);keeper.setCorruption(0);updateCustody(owner.server,owner.getUUID());
+                say(owner,"There. It will not have to stay lost.");
+                owner.displayClientMessage(Component.literal("She kills "+due.name+". Her face is ordinary again.").withStyle(ChatFormatting.GRAY),false);
+            }
+        }
     }
 
     private static void releaseLittleDog(ServerPlayer player, MotherCollection collection) {
@@ -599,6 +659,7 @@ public final class MotherOfStrays {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             boolean here = inDen(player);
             collection.presence(player.getUUID(), here);
+            updateCustody(server,player.getUUID());
             if (server.getTickCount() % 200 == 0) {
                 long now = server.overworld().getGameTime();
                 for (int i = 0; i < player.getInventory().getContainerSize(); i++)
@@ -622,6 +683,9 @@ public final class MotherOfStrays {
         if (level.players().stream().noneMatch(p -> bounds.contains(p.position()))) return;
         MotherEntity keeper = collection.banished() ? null : ensureKeeper(level, base);
         if (keeper != null) keeper.setCorruption(collection.corruption());
+        if(keeper!=null&&collection.all().stream().anyMatch(e->e.livingClaim)) {
+            refreshPets(level,base,collection);tickRansoms(level,base,keeper,collection);
+        }
         if (keeper != null && LabyrinthEncounters.ambient(keeper)) return;
         if (keeper != null && dogOwner != null && inDen(dogOwner)) tickDogThreat(level, base, keeper, collection, dogOwner);
         if (shelfRevision != collection.revision()) {

@@ -14,12 +14,14 @@ public final class ClapGameClientState {
         endingTick = payload.endingTick();
         yaw = payload.yaw();
         received = System.nanoTime();
+        if(!bound&&endingTick==0)ClapCueClient.clear();
     }
     public static boolean bound() { return bound; }
-    public static boolean ending() { return bound && endingTick > 0; }
+    public static boolean ending() { return endingTick > 0; }
+    public static boolean revealed(){return ending()&&elapsed()>=io.github.knaitoe.theoldesthouse.labyrinth.ClapGameClock.REVEAL_TICK;}
     public static float yaw() { return yaw; }
     public static float elapsed() {
         return Math.max(0, endingTick - 1) + (System.nanoTime() - received) / 50_000_000.0F;
     }
-    public static void clear() { bound = false; endingTick = 0; }
+    public static void clear() { bound = false; endingTick = 0; ClapCueClient.clear(); }
 }

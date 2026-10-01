@@ -6,8 +6,9 @@ import net.minecraft.nbt.CompoundTag;
 /** The room is reserved on entry; the minute starts only when its owner wears the cloth. */
 public final class ClapGameClock {
     public static final int LIMIT_TICKS = 20 * 60;
-    public static final int ENDING_TICKS = 24;
-    public static final int TWIST_TICK = 20;
+    public static final int ENDING_TICKS = 40;
+    public static final int REVEAL_TICK = 12;
+    public static final int TWIST_TICK = 30;
     private final UUID owner;
     private long equippedAt = -1;
     private boolean completed;

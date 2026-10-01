@@ -33,6 +33,7 @@ import net.neoforged.neoforge.event.tick.EntityTickEvent;
 /** Real cats and dogs keep their native owner and health while obeying a companion order. */
 public final class CompanionOrders {
     public enum Order { FOLLOW, STAY, DEEPER, EXIT }
+    public static final int PET_ACTION=4;
     private static final String KEY="HouseCompanionOrder";
     private static final Set<TamableAnimal> INSTALLED=java.util.Collections.newSetFromMap(new WeakHashMap<>());
     private CompanionOrders() {}
@@ -41,7 +42,7 @@ public final class CompanionOrders {
         if(hillary!=null) return hillary.acknowledged() ? hillary.recipient() : null;
         return pet.isTame() ? pet.getOwnerUUID() : null;
     }
-    public static boolean supported(Entity entity) {return entity instanceof Wolf || entity instanceof Cat;}
+    public static boolean supported(Entity entity) {return entity instanceof TamableAnimal;}
     public static boolean managed(TamableAnimal pet) {return pet.getPersistentData().contains(KEY);}
     public static Order order(TamableAnimal pet) {
         int value=pet.getPersistentData().getInt(KEY);
@@ -49,6 +50,7 @@ public final class CompanionOrders {
     }
     public static boolean canCommand(ServerPlayer player, TamableAnimal pet) {
         return supported(pet)&&pet.isAlive()&&!HouseExteriorEntityMirror.isProjection(pet)
+                &&!pet.getTags().contains(MotherOfStrays.PET)
                 &&player.getUUID().equals(owner(pet))&&pet.level()==player.level()
                 &&pet.distanceToSqr(player)<=36&&!player.isSpectator();
     }
@@ -59,14 +61,37 @@ public final class CompanionOrders {
         boolean compass=event.getItemStack().is(net.minecraft.world.item.Items.COMPASS);
         if(!compass&&!event.getItemStack().isEmpty())return;
         event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);
+        if(Hillary.introductionActive(pet)&&!Hillary.introductionConfirmed(pet)&&!compass) {
+            pet(pet,player);return;
+        }
         if(compass)issue(pet,player,Order.EXIT);else HousePackets.send(player,new CompanionMenuPayload(pet.getId()));
     }
     /** Used by the serverbound packet; entity ids never confer ownership or unlimited reach. */
     public static boolean command(ServerPlayer player,int entityId,int value) {
-        if(value<0||value>=Order.values().length)return false;
+        if(value<0||value>PET_ACTION)return false;
         Entity entity=player.serverLevel().getEntity(entityId);
         if(!(entity instanceof TamableAnimal pet)||!canCommand(player,pet))return false;
-        return issue(pet,player,Order.values()[value]);
+        return value==PET_ACTION ? pet(pet,player) : issue(pet,player,Order.values()[value]);
+    }
+    /** A pat never replaces the stored movement order. Repeated packets cannot spam hearts. */
+    public static boolean pet(TamableAnimal pet,ServerPlayer player) {
+        if(!canCommand(player,pet))return false;
+        long now=player.serverLevel().getGameTime();
+        if(now<pet.getPersistentData().getLong("CompanionPatAfter"))return false;
+        pet.getPersistentData().putLong("CompanionPatAfter",now+20);
+        pet.getPersistentData().remove("CompanionFearUntil");
+        pet.getLookControl().setLookAt(player,30,30);
+        if(pet instanceof Wolf wolf) {wolf.setIsInterested(false);Hillary.confirmIntroduction(wolf,player);}
+        player.serverLevel().sendParticles(net.minecraft.core.particles.ParticleTypes.HEART,
+                pet.getX(),pet.getY()+pet.getBbHeight()+.2,pet.getZ(),3,.2,.1,.2,0);
+        pet.playSound(pet instanceof Cat?SoundEvents.CAT_PURR:SoundEvents.WOLF_AMBIENT,.45F,1.25F);
+        return true;
+    }
+    /** Resume the chosen wheel command after Hillary has finished the introduction. */
+    public static void resume(TamableAnimal pet) {
+        UUID id=owner(pet);if(id!=null&&pet.isTame())pet.setOwnerUUID(id);
+        boolean sit=managed(pet)&&order(pet)==Order.STAY;
+        pet.setOrderedToSit(sit);pet.setInSittingPose(sit);pet.getNavigation().stop();
     }
     public static boolean issue(TamableAnimal pet,ServerPlayer player,Order order) {
         if(!player.getUUID().equals(owner(pet)))return false;
@@ -78,7 +103,8 @@ public final class CompanionOrders {
         data.remove("HillaryFindExit");
         if(order==Order.EXIT)data.putBoolean("HillaryFindExit",true);
         if(pet.isTame())pet.setOwnerUUID(player.getUUID());
-        pet.setOrderedToSit(order==Order.STAY);pet.setInSittingPose(order==Order.STAY);
+        boolean sit=order==Order.STAY&&!Hillary.introductionActive(pet);
+        pet.setOrderedToSit(sit);pet.setInSittingPose(sit);
         pet.clearRestriction();pet.getNavigation().stop();
         install(pet);reassureSound(pet,true);
         return true;
@@ -97,8 +123,9 @@ public final class CompanionOrders {
     public static void onEntityTick(EntityTickEvent.Post event) {
         if(!(event.getEntity() instanceof TamableAnimal pet)||!supported(pet)
                 ||!(pet.level() instanceof ServerLevel level)||HouseExteriorEntityMirror.isProjection(pet))return;
-        if(pet.getPersistentData().getBoolean(FinaleController.GUIDE))return;
-        if(pet.getPersistentData().getBoolean("HouseStray")&&pet.isTame()&&!managed(pet))
+        if(pet.getPersistentData().getBoolean(FinaleController.GUIDE)
+                ||pet.getTags().contains(MotherOfStrays.PET)||Hillary.introductionActive(pet))return;
+        if((pet.getPersistentData().getBoolean("HouseStray")||pet.getTags().contains(MotherOfStrays.RELEASED))&&pet.isTame()&&!managed(pet))
             pet.getPersistentData().putInt(KEY,Order.FOLLOW.ordinal());
         if(!managed(pet))return;
         install(pet);
@@ -177,7 +204,8 @@ public final class CompanionOrders {
     public static List<TamableAnimal> followingAll(ServerPlayer player) {
         return player.serverLevel().getEntitiesOfClass(TamableAnimal.class,player.getBoundingBox().inflate(12),
                 pet->supported(pet)&&pet.isAlive()&&player.getUUID().equals(owner(pet))&&!pet.isOrderedToSit()
-                        &&!pet.isLeashed()&&!pet.isPassenger()&&!HouseExteriorEntityMirror.isProjection(pet)
+                        &&!pet.isLeashed()&&!pet.isPassenger()&&!pet.getTags().contains(MotherOfStrays.PET)
+                        &&!HouseExteriorEntityMirror.isProjection(pet)
                         &&pet.distanceToSqr(player)<=144);
     }
     @Nullable public static TamableAnimal followAcross(TamableAnimal pet,ServerPlayer player) {
@@ -201,6 +229,7 @@ public final class CompanionOrders {
         @Override public boolean canUse() {
             UUID id=owner(pet);
             var level=pet.level();
+            if(Hillary.introductionActive(pet)||pet.getTags().contains(MotherOfStrays.PET))return false;
             if(!(level instanceof ServerLevel server)||!managed(pet)||pet.isOrderedToSit()||pet.isLeashed()||pet.isPassenger())return false;
             Order order=order(pet);
             if(order==Order.FOLLOW)return server.getGameTime()<pet.getPersistentData().getLong("CompanionFearUntil");

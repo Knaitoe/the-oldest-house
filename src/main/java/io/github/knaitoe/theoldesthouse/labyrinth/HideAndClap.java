@@ -382,7 +382,7 @@ public final class HideAndClap {
         }
         confine(player, current, level, base);
         startIfWorn(player, current, level, data, now);
-        if (current.clock.bound()) enforceBlindfold(player, current);
+        if (current.clock.bound() && !revealed(current,now)) enforceBlindfold(player, current);
         if (current.clock.expired(now) && current.stage != Stage.ENDING) beginEnding(player, current, level, base, data, now);
         switch (current.stage) {
             case WAITING -> {
@@ -402,14 +402,22 @@ public final class HideAndClap {
                 if (now % 20 == 0) persist(data, level);
             }
             case WARDROBE -> {
-                if (current.wardrobe != null && current.insideClaps < 2 && now >= current.next) {
+                if (current.wardrobe != null && now >= current.next) {
                     play(player, CLAP_MUFFLED, Vec3.atCenterOf(current.wardrobe).add(0.0D, 0.5D, 0.0D), 1.0F, 1.0F);
+                    cue(player,current.wardrobe,true);
                     current.insideClaps++;
-                    current.next = now + 30;
+                    current.next = now + (current.insideClaps<2?30:70);
                 }
             }
             case ENDING -> {
                 long tick = now - current.endingAt;
+                if (tick == ClapGameClock.REVEAL_TICK) {
+                    removeBoundCopies(player,current.player);
+                    player.inventoryMenu.broadcastChanges();player.containerMenu.broadcastChanges();
+                    player.displayClientMessage(Component.literal("The cloth slips. She is right in front of you.")
+                            .withStyle(ChatFormatting.GRAY),true);
+                    sync(player,current,(int)tick+1);
+                }
                 if (tick == ClapGameClock.TWIST_TICK) {
                     sync(player, current, (int) tick + 1);
                     player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.BONE_BLOCK_BREAK,
@@ -574,9 +582,15 @@ public final class HideAndClap {
     }
 
     private static void sync(ServerPlayer player, Game current, int endingTick) {
-        HousePackets.send(player, new ClapGamePayload(current.clock.bound(), endingTick, current.endingYaw));
+        HousePackets.send(player, new ClapGamePayload(current.clock.bound()&&!revealed(current,player.serverLevel().getGameTime()), endingTick, current.endingYaw));
     }
 
+    private static boolean revealed(Game current,long now) {
+        return current.stage==Stage.ENDING&&now-current.endingAt>=ClapGameClock.REVEAL_TICK;
+    }
+    private static void cue(ServerPlayer player,BlockPos source,boolean wardrobe) {
+        HousePackets.send(player,new io.github.knaitoe.theoldesthouse.network.ClapCuePayload(source,wardrobe));
+    }
     private static void beginEnding(ServerPlayer player, Game current, ServerLevel level, BlockPos base, LabyrinthData data, long now) {
         removeFeet();
         current.stage = Stage.ENDING;
@@ -701,6 +715,7 @@ public final class HideAndClap {
         current.lastDistance = distance;
         play(player, CLAP, Vec3.atBottomCenterOf(spot).add(0.0D, 1.1D, 0.0D), 0.9F + 0.45F * current.louder,
                 0.95F + player.getRandom().nextFloat() * 0.1F);
+        cue(player,spot,false);
         current.next = now + CLAP_INTERVAL;
     }
 
