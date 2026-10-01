@@ -49,7 +49,7 @@ public final class LabyrinthEncounters {
             }
         }
         MotherCollection collection=MotherCollection.get(player.server);
-        if(depth<5||collection.banished()||collection.salved()||collection.dogThreatOwner()!=null
+        if(depth<LabyrinthPacing.STRANGE_DEPTH||collection.banished()||collection.salved()||collection.dogThreatOwner()!=null
                 ||collection.anyDebt()
                 ||(state.contains("LastMother")&&now-state.getLong("LastMother")<24000)
                 ||player.getRandom().nextInt(motherDenominator(place))!=0)return;

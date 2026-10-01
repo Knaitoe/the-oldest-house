@@ -39,7 +39,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * The Growl: the Minotaur's voice, heard long before it is seen. A low
  * sound with no source.
  *
- * It begins once the impossible hallway has opened, and only in the
+ * It begins eight crossings beyond the hallway root, and only in the
  * labyrinth (never in a vignette). Each player hears it alone, from far off
  * in the solid wall, from directly below, or, deep enough, from not far
  * behind them. The deeper they are (doors from the hallway, the length of
@@ -70,7 +70,7 @@ public final class Growl {
     }
 
     private static final int CHECK_INTERVAL = 20;
-    /** The average gap one door deep: fifteen minutes. */
+    /** The average gap at the first eligible depth: fifteen minutes. */
     public static final long BASE_GAP = 15L * 60L * 20L;
     /** The average gap never falls below this, however deep. */
     public static final long MIN_MEAN_GAP = 4L * 60L * 20L;
@@ -79,7 +79,7 @@ public final class Growl {
     private static final double DEPTH_FACTOR = 0.4D;
 
     /** How deep, or how many heard, before the cellar can happen. */
-    public static final int BASEMENT_DEPTH = 6;
+    public static final int BASEMENT_DEPTH = LabyrinthPacing.STRANGE_DEPTH;
     public static final int BASEMENT_HEARD = 6;
     /** Percent chance, per morning woken in a manor bed once eligible. */
     public static final int BASEMENT_CHANCE = 8;
@@ -103,7 +103,7 @@ public final class Growl {
 
     /** The average gap at a depth, in ticks. */
     public static long meanGap(int depth) {
-        double mean = BASE_GAP / (1.0D + DEPTH_FACTOR * Math.max(0, depth - 1));
+        double mean = BASE_GAP / (1.0D + DEPTH_FACTOR * Math.max(0, depth - LabyrinthPacing.STRANGE_DEPTH));
         return Math.max(MIN_MEAN_GAP, (long) mean);
     }
 
@@ -116,10 +116,10 @@ public final class Growl {
     /** Where it comes from at a depth: far off at first; from below, and then close, deeper in. */
     public static Kind pick(int depth, RandomSource random) {
         int roll = random.nextInt(100);
-        if (depth <= 2) {
+        if (depth <= LabyrinthPacing.STRANGE_DEPTH + 1) {
             return Kind.FAR;
         }
-        if (depth <= 5) {
+        if (depth < LabyrinthPacing.ABYSS_DEPTH) {
             return roll < 75 ? Kind.FAR : Kind.BELOW;
         }
         return roll < 55 ? Kind.FAR : roll < 85 ? Kind.BELOW : Kind.NEAR;
@@ -149,7 +149,9 @@ public final class Growl {
             UUID id = player.getUUID();
             LabyrinthPlace place = LabyrinthPlaces.placeAt(origin, player.blockPosition());
             int depth = labyrinth.returnDepth(id);
-            if (player.isSpectator() || place == null || place.isVignette() || LabyrinthPacing.quiet(place) || depth <= 0) {
+            if (player.isSpectator() || place == null || place.isVignette() || LabyrinthPacing.quiet(place)
+                    || depth < LabyrinthPacing.STRANGE_DEPTH) {
+                SCHEDULE.remove(id);
                 continue;
             }
             record.noteDepth(id, depth);
@@ -343,7 +345,7 @@ public final class Growl {
     public static List<String> describe(MinecraftServer server, @Nullable ServerPlayer viewer) {
         List<String> lines = new ArrayList<>();
         if (!HouseSavedData.get(server).isImpossibleDoorRevealed()) {
-            lines.add("The Growl: not yet (it begins once the impossible hallway opens).");
+            lines.add("The Growl: not yet (it begins eight crossings beyond the hallway root).");
             return lines;
         }
         if (viewer == null) {

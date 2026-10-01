@@ -14,6 +14,10 @@ This is the design document with the decisions made while building the opening s
 - **Domestic familiarity comes before impossible architecture.** The House's perceived age does not advance until somebody has actually entered the manor. Ignoring the invitation can never cause the first impossible threshold to reveal itself off-screen. After that it ages one day per morning: a player waking from a night's sleep, at home or in one of the manor's beds. The mod counts days itself, so setting the clock by command never stalls or rewinds it.
 - **Answered open questions:** the platform (NeoForge, Minecraft 1.21.1), the first expedition (following Hillary to the Navidsons' ordinary front door), and part of multiplayer (per-player timelines).
 
+## Implemented in 0.4.17
+
+The labyrinth now takes longer to become esoteric. Its approach and first landing use ordinary warm lighting, domestic timber, cupboard fronts and sealed household glazing. Early hallways contain cut-off kitchen, laundry, bedroom and dining fragments; smaller remnants persist in dead-end walls of the deeper gray mazes. The first five crossings from the hallway root stay domestic. Stories become possible at six, at a lower initial chance; folds, fading lamps, natural Growl cues and ambient Mother visits wait until eight. Larger folded networks open at twelve and sixteen. Gray hazard tiers open at six, ten and fourteen, irrespective of shared completed stories. Explicit Hillary scent tracking and active living-pet rescue preserve access to their stories. Version-16 layouts receive an in-place decoration upgrade with saved per-place checkpoints, retaining finite caches, portable lights, drops, companion identities, active vignettes and existing resolutions. These scenery-only fragments add no Witness source: nine eligible stories still require seven resolutions across two kinds, with three endings. See [DOMESTIC_LABYRINTH_0_4_17.md](DOMESTIC_LABYRINTH_0_4_17.md).
+
 ## Implemented in 0.4.8
 
 The first labyrinth stretches are ordinary straight, bent and crossing hallways with multiple side doors. Impossible places use a low per-arrival roll with three subsequent visits of spacing. Quiet rooms and explorer camps punctuate pressure. Chalk, trailing string, old explorer arrows and chipped masonry provide physical navigation; unseen floor arrows and string can rarely be disturbed deeper in. Hillary and native tamed cats/wolves have a saved four-command wheel and bounded fear. Rare lost animals can replace a fallen companion; the existing Mother can make an even rarer brief, unwitnessed visit outside her den. See [EXPLORATION_0_4_8.md](EXPLORATION_0_4_8.md) for implemented controls, probabilities and upgrade behavior. This supersedes the earlier frequency and compass-only guidance description below.
@@ -127,7 +131,7 @@ The house deals the doors: players can tilt the odds, but never summon a place o
 - A long dry spell guarantees a new door.
 - Door deals are per-player. Two people can use the same physical door and be taken somewhere different; their dry streaks and Hillary scents are separate too.
 - Gray doors may loop back to the place the player is already in. The impossible repetition is intentional, not filtered out as a bad deal.
-- The gray maze grows instead of exposing every connective space immediately: it starts with the junction and plain corridor, then adds the long hallway after one vignette has been reached/finished, the spiral after two, and the hotel hallway after three.
+- The gray grows with route depth: familiar landing and halls first, the first hazard tier at six crossings, the second at ten, and the third at fourteen. Folded maze expansions have separate eight/twelve/sixteen-crossing gates; each arrival shares one low anomaly roll across all doors, with three later visits of spacing.
 - Nothing appears on demand.
 - Zampanò's courtyard leads back to places already visited, never forward.
 

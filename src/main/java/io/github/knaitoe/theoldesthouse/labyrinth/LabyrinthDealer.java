@@ -21,11 +21,10 @@ import net.minecraft.util.RandomSource;
  * themselves: walking through a door and arriving somewhere impossibly
  * familiar is part of the maze, not an error.
  *
- * The gray starts small and grows with progress. The junction and plain
- * corridor are always in the pool. Reaching/finishing vignettes adds the
- * long hallway, flooded passage, false distance and the explorer camp;
- * then the spiral stair, fractured walkway, light sink and moving threshold;
- * then the hotel hallway, compression passage, gravity drift and duplicate passage.
+ * The approach stays domestic for the first five crossings. Stories become
+ * possible at six, impossible geometry at eight, and larger expansions at
+ * twelve and sixteen. An active pet rescue or a deliberately given scent
+ * can still find its story without waiting for the ordinary approach.
  */
 public final class LabyrinthDealer {
     public static final int VIGNETTE_BASE_CHANCE = 30;
@@ -70,8 +69,12 @@ public final class LabyrinthDealer {
         if (vignettesAvailable(data,player).isEmpty()) {
             return 0;
         }
-        return (int) Math.min(100L,
-                (rescueNeeded(data,player)?65:VIGNETTE_BASE_CHANCE) + (long) VIGNETTE_CHANCE_STEP * data.dryDeals(player));
+        boolean rescue = rescueNeeded(data, player);
+        int depth = data.returnDepth(player);
+        if (!rescue && LabyrinthPacing.domestic(depth)) return 0;
+        int base = rescue ? 65 : depth < 10 ? 12 : VIGNETTE_BASE_CHANCE;
+        int step = !rescue && depth < 10 ? 20 : VIGNETTE_CHANCE_STEP;
+        return (int) Math.min(100L, base + (long) step * data.dryDeals(player));
     }
 
     public static int dealWeight(LabyrinthData data, LabyrinthPlace place) {
@@ -107,14 +110,10 @@ public final class LabyrinthDealer {
         return vignettes.get(vignettes.size() - 1);
     }
 
-    /**
-     * How far this player's gray maze has grown. Shared completed vignettes
-     * also count, so an established world's House does not shrink for a new
-     * player or after upgrading an older save.
-     */
+    /** Route depth controls pressure, even in a world with completed stories. */
     public static int mazeTier(LabyrinthData data, UUID player) {
-        int depthTier = Math.min(3, data.returnDepth(player) / 3);
-        return Math.min(3, Math.max(depthTier, Math.max(data.vignettesVisited(player), data.completed().size())));
+        int depth = data.returnDepth(player);
+        return depth < LabyrinthPacing.STORY_DEPTH ? 0 : Math.min(3, 1 + (depth - LabyrinthPacing.STORY_DEPTH) / 4);
     }
 
     public static List<LabyrinthPlace> grayAvailable(LabyrinthData data, UUID player) {
@@ -127,9 +126,9 @@ public final class LabyrinthDealer {
         gray.add(LabyrinthPlace.CROSS_HALL);
         gray.add(LabyrinthPlace.QUIET_ROOM);
         int depth = data.returnDepth(player);
-        if (depth >= 3) gray.add(LabyrinthPlace.FOLDED_MAZE);
-        if (depth >= 6) gray.add(LabyrinthPlace.DEEP_MAZE);
-        if (depth >= 9) gray.add(LabyrinthPlace.ABYSS_MAZE);
+        if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.add(LabyrinthPlace.FOLDED_MAZE);
+        if (depth >= LabyrinthPacing.DEEP_DEPTH) gray.add(LabyrinthPlace.DEEP_MAZE);
+        if (depth >= LabyrinthPacing.ABYSS_DEPTH) gray.add(LabyrinthPlace.ABYSS_MAZE);
         if (tier >= 1) {
             gray.add(LabyrinthPlace.LONG_HALLWAY);
             gray.add(LabyrinthPlace.FLOODED_PASSAGE);
@@ -222,7 +221,7 @@ public final class LabyrinthDealer {
             List<LabyrinthPlace> gray = new ArrayList<>(grayAvailable(data, player));
             gray.remove(LabyrinthPlace.DUPLICATE_PASSAGE);
             realDestination = pickGray(gray, data, player, random).id();
-            leak = random.nextInt(100) < LYING_LEAK_CHANCE;
+            leak = lyingLeak(data, player, random);
         }
 
         for (LabyrinthData.Door door : doors) {
@@ -232,14 +231,14 @@ public final class LabyrinthDealer {
                 data.deal(player, door, LabyrinthPlace.DUPLICATE_PASSAGE.id(), false, false);
             }
         }
-        data.setDryDeals(player, vignette ? 0 : data.dryDeals(player) + 1);
+        recordDryDeal(data, player, vignette);
     }
 
     public static int grayWeight(LabyrinthPlace place, int depth) {
         return switch (place) {
-            case FOLDED_MAZE -> 5 + Math.min(6, Math.max(0, depth - 3));
-            case DEEP_MAZE -> 10 + Math.min(8, Math.max(0, depth - 6));
-            case ABYSS_MAZE -> 18 + Math.min(12, Math.max(0, depth - 9));
+            case FOLDED_MAZE -> 5 + Math.min(6, Math.max(0, depth - LabyrinthPacing.STRANGE_DEPTH));
+            case DEEP_MAZE -> 10 + Math.min(8, Math.max(0, depth - LabyrinthPacing.DEEP_DEPTH));
+            case ABYSS_MAZE -> 18 + Math.min(12, Math.max(0, depth - LabyrinthPacing.ABYSS_DEPTH));
             case STRAIGHT_HALL -> 24;
             case BENT_HALL -> 18;
             case CROSS_HALL -> 15;
@@ -249,6 +248,17 @@ public final class LabyrinthDealer {
             case EXPLORER_CAMP -> depth < 3 ? 0 : 2;
             default -> depth < 4 ? 0 : place.grayWeight();
         };
+    }
+
+    private static boolean lyingLeak(LabyrinthData data, UUID player, RandomSource random) {
+        return !LabyrinthPacing.domestic(data.returnDepth(player)) && random.nextInt(100) < LYING_LEAK_CHANCE;
+    }
+
+    private static void recordDryDeal(LabyrinthData data, UUID player, boolean story) {
+        // Exploring the quiet approach cannot bank an immediate guaranteed story.
+        if (story) data.setDryDeals(player, 0);
+        else if (!LabyrinthPacing.domestic(data.returnDepth(player)) || rescueNeeded(data, player))
+            data.setDryDeals(player, (int) Math.min(100L, (long) data.dryDeals(player) + 1));
     }
 
     private static LabyrinthPlace pickGray(List<LabyrinthPlace> gray, LabyrinthData data, UUID player, RandomSource random) {
@@ -318,20 +328,20 @@ public final class LabyrinthDealer {
                 data.deal(player, door, pickVignette(data, player, vignettes, random).id(), true, scent);
             } else if (door == oddDoor) {
                 data.deal(player, door, weightedGray(odd, data, player, random).id(),
-                        random.nextInt(100) < LYING_LEAK_CHANCE);
+                        lyingLeak(data, player, random));
             } else if (door == restDoor) {
                 boolean camp = data.returnDepth(player) >= 3 && random.nextBoolean()
                         && data.recentVisit(player, LabyrinthPlace.EXPLORER_CAMP) < 0;
                 data.deal(player, door, (camp ? LabyrinthPlace.EXPLORER_CAMP : LabyrinthPlace.QUIET_ROOM).id(), false);
             } else {
-                data.deal(player, door, pickGray(gray, data, player, random).id(), random.nextInt(100) < LYING_LEAK_CHANCE);
+                data.deal(player, door, pickGray(gray, data, player, random).id(), lyingLeak(data, player, random));
             }
         }
-        if (FinaleController.canOffer(data, player) && random.nextInt(100) < 18) {
+        if (!LabyrinthPacing.domestic(data.returnDepth(player)) && FinaleController.canOffer(data, player) && random.nextInt(100) < 18) {
             LabyrinthData.Door vignetteDoor = lucky;
             List<LabyrinthData.Door> finaleDoors = doors.stream().filter(d -> d != vignetteDoor).toList();
             if (!finaleDoors.isEmpty()) data.deal(player, finaleDoors.get(random.nextInt(finaleDoors.size())), FinaleArchitecture.ID, false);
         }
-        data.setDryDeals(player, lucky != null ? 0 : data.dryDeals(player) + 1);
+        recordDryDeal(data, player, lucky != null);
     }
 }

@@ -147,13 +147,13 @@ public final class LabyrinthLighting {
     }
 
     public static int darknessBand(int returnDepth) {
-        if (returnDepth < 3) {
+        if (returnDepth < LabyrinthPacing.STRANGE_DEPTH) {
             return 0;
         }
-        if (returnDepth < 5) {
+        if (returnDepth < LabyrinthPacing.DEEP_DEPTH) {
             return 1;
         }
-        if (returnDepth < 7) {
+        if (returnDepth < LabyrinthPacing.ABYSS_DEPTH) {
             return 2;
         }
         return 3;
@@ -518,4 +518,3 @@ public final class LabyrinthLighting {
         HALL_LAYOUT.clear();
     }
 }
-

@@ -47,7 +47,7 @@ public final class PetsAndClapTests {
         var data=new LabyrinthData();UUID owner=UUID.randomUUID(),other=UUID.randomUUID();CompoundTag state=data.state(MotherOfStrays.ID),owners=new CompoundTag();owners.putBoolean(owner.toString(),true);state.put("LivingPetOwners",owners);data.setState(MotherOfStrays.ID,state);
         data.visit(owner,LabyrinthPlace.MOTHER_DEN);
         var loaded=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),h.getLevel().registryAccess()),h.getLevel().registryAccess());
-        h.assertTrue(LabyrinthDealer.vignetteChance(loaded,owner)==65&&LabyrinthDealer.vignetteChance(loaded,other)==30,"only the bereaved player's vignette opportunity increases");
+        h.assertTrue(LabyrinthDealer.vignetteChance(loaded,owner)==65&&LabyrinthDealer.vignetteChance(loaded,other)==0,"only the bereaved player's vignette opportunity increases");
         h.assertTrue(LabyrinthDealer.rememberedWeight(loaded,owner,LabyrinthPlace.MOTHER_DEN,1)==96&&LabyrinthDealer.rememberedWeight(loaded,other,LabyrinthPlace.MOTHER_DEN,1)==12,"a held live pet overrides only its owner's recent-den suppression");h.succeed();
     }
     @GameTest(template="empty") public static void vignetteArtifactsPayOnceAndBorrowedArtifactsAreRefused(GameTestHelper h) {

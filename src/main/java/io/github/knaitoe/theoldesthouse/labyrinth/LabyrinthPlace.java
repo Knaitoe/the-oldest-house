@@ -144,14 +144,14 @@ public enum LabyrinthPlace {
             new DoorSpec("east", new BlockPos(37, 0, -28), Direction.WEST, LabyrinthData.DEALT)
     )),
     /** Ordinary connected hallways: several different doors along a single stretch. */
-    STRAIGHT_HALL("straight_hall", Kind.GRAY, 23, new BoundingBox(-2, -1, -36, 2, 4, 0), List.of(
+    STRAIGHT_HALL("straight_hall", Kind.GRAY, 23, new BoundingBox(-7, -1, -36, 7, 4, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("west_near", new BlockPos(-2, 0, -8), Direction.EAST, LabyrinthData.DEALT),
             new DoorSpec("east_middle", new BlockPos(2, 0, -15), Direction.WEST, LabyrinthData.DEALT),
             new DoorSpec("west_far", new BlockPos(-2, 0, -25), Direction.EAST, LabyrinthData.DEALT),
             new DoorSpec("far", new BlockPos(0, 0, -36), Direction.SOUTH, LabyrinthData.DEALT)
     )),
-    BENT_HALL("bent_hall", Kind.GRAY, 24, new BoundingBox(-17, -1, -33, 2, 4, 0), List.of(
+    BENT_HALL("bent_hall", Kind.GRAY, 24, new BoundingBox(-17, -1, -33, 7, 4, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("east_near", new BlockPos(2, 0, -8), Direction.WEST, LabyrinthData.DEALT),
             new DoorSpec("bend", new BlockPos(-8, 0, -21), Direction.SOUTH, LabyrinthData.DEALT),
