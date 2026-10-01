@@ -179,12 +179,18 @@ public final class DrownedTownTests {
     }
 
     private static ServerPlayer huntPlayer; private static LakeWitchEntity huntWitch; private static CompoundTag beforeHunt;
+    private static BlockPos huntTicket;
     @AfterBatch(batch="drowned_hunt") public static void cleanHunt(ServerLevel level){
+        if(huntTicket!=null){for(int x=(huntTicket.getX()-11)>>4;x<=(huntTicket.getX()+11)>>4;x++)
+            for(int z=(huntTicket.getZ()-15)>>4;z<=huntTicket.getZ()>>4;z++)level.getChunkSource().removeRegionTicket(TicketType.PORTAL,new ChunkPos(x,z),3,huntTicket);huntTicket=null;}
         if(huntWitch!=null){huntWitch.discard();huntWitch=null;}if(huntPlayer!=null){level.getServer().getPlayerList().remove(huntPlayer);huntPlayer=null;}
         if(beforeHunt!=null){LabyrinthData.get(level.getServer()).setState(DrownedTown.ID,beforeHunt);beforeHunt=null;}}
     @GameTest(template="empty",batch="drowned_hunt",timeoutTicks=200)
     public static void nativeWitchDetoursAroundGrassAndCannotBePushedIntoWater(GameTestHelper helper){
         ServerLevel level=helper.getLevel();BlockPos base=helper.absolutePos(new BlockPos(0,2,0));beforeHunt=LabyrinthData.get(level.getServer()).state(DrownedTown.ID).copy();
+        huntTicket=base;
+        for(int x=(base.getX()-11)>>4;x<=(base.getX()+11)>>4;x++)for(int z=(base.getZ()-15)>>4;z<=base.getZ()>>4;z++)
+            level.getChunkSource().addRegionTicket(TicketType.PORTAL,new ChunkPos(x,z),3,base);
         for(int x=-10;x<=10;x++)for(int z=-14;z<=0;z++){
             level.setBlock(base.offset(x,-1,z),z<=-12?Blocks.WATER.defaultBlockState():Blocks.COARSE_DIRT.defaultBlockState(),3);
             level.setBlock(base.offset(x,-2,z),Blocks.STONE.defaultBlockState(),3);
@@ -194,10 +200,12 @@ public final class DrownedTownTests {
         var route=LakeWitchEntity.shoreRoute(level,base,base.offset(-6,0,-7),base.offset(6,0,-7));
         helper.assertTrue(!route.isEmpty()&&route.stream().noneMatch(p->LakeWitchEntity.safeGround(level,p)), "the shore pathfinder routes around grass rather than assigning it an expensive cost");
         huntPlayer=helper.makeMockServerPlayerInLevel();huntPlayer.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);huntPlayer.moveTo(Vec3.atBottomCenterOf(base.offset(6,0,-7)));
-        huntWitch=DrownedTownRegistry.LAKE_WITCH.get().create(level);huntWitch.shore(base,1);huntWitch.moveTo(Vec3.atBottomCenterOf(base.offset(-6,0,-7)));level.addFreshEntity(huntWitch);
+        huntWitch=DrownedTownRegistry.LAKE_WITCH.get().create(level);huntWitch.shore(base,1);huntWitch.moveTo(Vec3.atBottomCenterOf(base.offset(-6,0,-7)));
+        helper.assertTrue(level.addFreshEntity(huntWitch), "the native actor is accepted by the test level");
         helper.onEachTick(()->helper.assertTrue(!LakeWitchEntity.safeGround(level,huntWitch.blockPosition()), "physical witch movement never crosses a refuge"));
         helper.succeedWhen(()->{
-            helper.assertTrue(huntWitch.getX()>base.getX()+4&&huntWitch.distanceToSqr(huntPlayer)<8, "the native actor must actually complete its detour; pos="+huntWitch.position()+"; ticks="+huntWitch.tickCount);
+            helper.assertTrue(huntWitch.getX()>base.getX()+4&&huntWitch.distanceToSqr(huntPlayer)<8, "the native actor must actually complete its detour; pos="+huntWitch.position()+"; ticks="+huntWitch.tickCount
+                    +"; tracked="+(level.getEntity(huntWitch.getUUID())==huntWitch)+"; removed="+huntWitch.isRemoved()+"; players="+level.players().size());
             helper.assertTrue(IndianLakeProgress.wasHunted(LabyrinthData.get(level.getServer()),huntPlayer.getUUID()), "a real approach records the hunt");
             huntPlayer.moveTo(Vec3.atBottomCenterOf(base.offset(6,-1,-13)));
             helper.assertTrue(!LakeWitchEntity.canAttack(huntWitch,huntPlayer), "water stops the chase and attack");
