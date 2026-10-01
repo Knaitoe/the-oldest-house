@@ -153,7 +153,7 @@ public final class GoatmanTests {
         Wolf pet=EntityType.WOLF.create(f.l);pet.tame(a);pet.setPersistenceRequired();pet.moveTo(f.b.getX()+1.5,f.b.getY()+1,f.b.getZ()-58.5);f.l.addFreshEntity(pet);CompanionOrders.issue(pet,a,CompanionOrders.Order.FOLLOW);UUID petId=pet.getUUID();
         h.runAfterDelay(6,()->{
             a.hasChangedDimension();BlockPos door=f.b.offset(GoatmanWoods.DOOR);
-            var click=new PlayerInteractEvent.RightClickBlock(a,InteractionHand.MAIN_HAND,door,new BlockHitResult(Vec3.atCenterOf(door),Direction.NORTH,door,false));NeoForge.EVENT_BUS.post(click);
+            var click=new PlayerInteractEvent.RightClickBlock(a,InteractionHand.OFF_HAND,door,new BlockHitResult(Vec3.atCenterOf(door),Direction.NORTH,door,false));NeoForge.EVENT_BUS.post(click);
             h.assertTrue(click.isCanceled()&&a.isDeadOrDying()&&a.getInventory().isEmpty()&&a.containerMenu.getCarried().isEmpty(),"a real door click causes native death and removes gear even with keepInventory");
             var collection=MotherCollection.get(f.server);var originals=collection.all().stream().filter(e->!e.pet&&a.getUUID().equals(e.owner)).map(e->ItemStack.parseOptional(f.l.registryAccess(),e.contents)).toList();
             h.assertTrue(originals.size()==5&&originals.stream().anyMatch(s->ItemStack.isSameItemSameComponents(s,axe))&&originals.stream().anyMatch(s->s.is(Items.DIAMOND)&&s.getCount()==3)&&originals.stream().anyMatch(s->s.is(Items.BREAD)&&s.getCount()==2),"all five original stacks reach actual shelves, with components, quantities and cursor contents intact");

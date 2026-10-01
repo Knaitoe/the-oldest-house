@@ -273,7 +273,7 @@ public final class GoatmanVignette {
         var state=p.serverLevel().getBlockState(b.offset(GoatmanWoods.DOOR));boolean open=state.getBlock() instanceof DoorBlock&&!state.getValue(DoorBlock.OPEN);GoatmanWoods.door(p.serverLevel(),b,open);return true;
     }
     public static void onBlock(PlayerInteractEvent.RightClickBlock e){
-        if(!(e.getEntity() instanceof ServerPlayer p)||e.getHand()!=InteractionHand.MAIN_HAND||!inside(p))return;
+        if(!(e.getEntity() instanceof ServerPlayer p)||!inside(p))return;
         if(openDoor(p,e.getPos())){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);return;}
         // Sleeping would skip the night; containers and props provide no alternative resolution.
         var state=e.getLevel().getBlockState(e.getPos());if(state.getBlock() instanceof BedBlock||state.is(Blocks.CAMPFIRE)||state.is(Blocks.SMOKER)||state.is(Blocks.BARREL)||state.getBlock() instanceof TrapDoorBlock){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);}

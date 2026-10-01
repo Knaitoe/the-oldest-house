@@ -85,7 +85,9 @@ jobs:
                            'assets/the_oldest_house/textures/entity/trailer_child_5.png',
                            'assets/the_oldest_house/sounds/goatman/hammer.ogg',
                            'assets/the_oldest_house/sounds/goatman/laugh.ogg',
-                           'assets/the_oldest_house/sounds/goatman/woods.ogg' ):
+                           'assets/the_oldest_house/sounds/goatman/woods.ogg',
+                           'assets/the_oldest_house/models/item/trailer_plate.json',
+                           'assets/the_oldest_house/textures/item/trailer_plate.png' ):
                   assert name in z.namelist(), name
               for i in range(6):
                   assert f'assets/the_oldest_house/textures/entity/trailer_child_{i}.png' in z.namelist()

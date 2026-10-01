@@ -39,6 +39,16 @@ def skins():
             box((20,26,27,31),shirt);box((0,20,15,26),shirt);box((16,52,31,58),shirt)
         im.save(ASSETS/f'textures/entity/trailer_child_{i}.png')
 
+def plate():
+    im=Image.new('RGBA',(32,32));d=ImageDraw.Draw(im)
+    d.ellipse((2,3,29,28),fill=(229,222,202,255),outline=(162,162,151,255),width=2)
+    d.ellipse((6,7,25,24),fill=(202,194,171,255),outline=(247,241,220,255))
+    d.polygon([(9,11),(18,9),(23,14),(21,20),(14,21),(8,17)],fill=(123,68,43,255))
+    d.line((10,13,18,11,21,14),fill=(186,127,76,255),width=2)
+    d.ellipse((9,14,13,18),fill=(216,184,137,255))
+    im.save(ASSETS/'textures/item/trailer_plate.png')
+    (ASSETS/'models/item/trailer_plate.json').write_text(json.dumps({'parent':'minecraft:item/generated','textures':{'layer0':'the_oldest_house:item/trailer_plate'}},indent=2)+'\n')
+
 def ogg(name,samples):
     folder=ASSETS/'sounds/goatman';folder.mkdir(parents=True,exist_ok=True)
     with tempfile.NamedTemporaryFile(suffix='.wav') as f:
@@ -74,10 +84,11 @@ def audio():
     path.write_text(json.dumps(sounds,indent=2)+'\n')
     path=ASSETS/'lang/en_us.json';lang=json.loads(path.read_text());lang.update({
         'entity.the_oldest_house.trailer_child':'Cousin',
+        'item.the_oldest_house.trailer_plate':'Supper plate',
         'subtitles.the_oldest_house.goatman_hammer':'Someone hammers at the door',
         'subtitles.the_oldest_house.goatman_laugh':'A laugh',
         'subtitles.the_oldest_house.goatman_woods':'Birds in the woods'})
     path.write_text(json.dumps(lang,indent=2)+'\n')
 
 if __name__=='__main__':
-    skins();audio();print('Generated six exact-UV child skins and three original mono recordings.')
+    skins();plate();audio();print('Generated six exact-UV child skins and three original mono recordings.')
