@@ -63,6 +63,7 @@ public final class TheOldestHouse {
         io.github.knaitoe.theoldesthouse.labyrinth.FinaleRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.FinaleLoot.register(modEventBus);
         ClapGhostRegistry.register(modEventBus);
+        io.github.knaitoe.theoldesthouse.labyrinth.GoatmanRegistry.register(modEventBus);
         HouseSitting.register(modEventBus);
         NeoForge.EVENT_BUS.addListener(HouseSitting::onRightClick);
         modContainer.registerConfig(ModConfig.Type.SERVER, OpeningConfig.SPEC);
@@ -160,6 +161,14 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, io.github.knaitoe.theoldesthouse.labyrinth.PreservedCave::onAttack);
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.Shallows::onServerTick);
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.Shallows::onToss);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette::onServerTick);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette::onBlock);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette::onAttack);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette::onDeath);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette::onRespawnPosition);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette::onRespawn);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette::onLogin);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette::onLogout);
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.PhoneCanoe::onServerTick);
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, io.github.knaitoe.theoldesthouse.labyrinth.PhoneCanoe::onDamage);
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, io.github.knaitoe.theoldesthouse.labyrinth.PhoneCanoe::onToss);

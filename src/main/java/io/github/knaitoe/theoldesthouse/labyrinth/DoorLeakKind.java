@@ -2,7 +2,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 /** Sensory hints, never destination labels. Gray doors can borrow an unrelated hint. */
 public enum DoorLeakKind {
-    HEARTBEAT, WARM_TV, CLOTH, PHONE, MOTHER, WATER, HOTEL, LAKE, CAVE, SHALLOWS, CANOE;
+    HEARTBEAT, WARM_TV, CLOTH, PHONE, MOTHER, WATER, HOTEL, LAKE, CAVE, SHALLOWS, CANOE, WOODS;
 
     public static DoorLeakKind forDestination(LabyrinthPlace place, int lieSeed) {
         if (place == null) return HEARTBEAT;
@@ -17,6 +17,7 @@ public enum DoorLeakKind {
             case PRESERVED_CAVE -> CAVE;
             case SHALLOWS -> SHALLOWS;
             case PHONE_CANOE -> CANOE;
+            case GOATMAN -> WOODS;
             case HOTEL_HALLWAY -> HOTEL;
             default -> values()[Math.floorMod(lieSeed, values().length)];
         };

@@ -187,6 +187,10 @@ public enum LabyrinthPlace {
     PHONE_CANOE("phone_canoe", Kind.ONE_SHOT, 30, new BoundingBox(-26,-4,-60,26,10,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN)
     )),
+    /** Anansi's Goatman: the latecomer's path, one extra child, and a closed trailer door. */
+    GOATMAN("goatman",Kind.ONE_SHOT,31,new BoundingBox(-23,-1,-82,23,13,0),List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN)
+    )),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

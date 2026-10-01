@@ -92,6 +92,7 @@ public final class DoorLeakRenderer {
         if (kind == DoorLeakKind.WATER || kind == DoorLeakKind.LAKE || kind == DoorLeakKind.CAVE || kind == DoorLeakKind.SHALLOWS || kind == DoorLeakKind.CANOE) return mc.getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
                 .apply(ResourceLocation.withDefaultNamespace("block/water_still"));
         BlockState state = switch (kind) {
+            case WOODS -> Blocks.OAK_LEAVES.defaultBlockState();
             case HOTEL -> HouseBlocks.HOTEL_CARPET.get().defaultBlockState();
             case CLOTH -> Blocks.WHITE_WOOL.defaultBlockState();
             case MOTHER -> Blocks.GRAY_WOOL.defaultBlockState();
