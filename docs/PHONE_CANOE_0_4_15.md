@@ -35,4 +35,4 @@ Walk to the jetty, right-click the canoe with an empty hand, and use the phone. 
 
 Five new required server GameTests cover real mounted movement, the timed native drop and waterline camera, damage protection without spectator mode or death, authentic frame metadata, inventory preservation, owner-only recovery, readable recording, interruptions and reloads, personal exhaustion, appended slots/leaks and a builder-15 upgrade that retains finite school inventory and the physical cave canoe. Witness tests cover the seven-of-nine threshold and saved accounts. Original audio consists of three mono recordings; all earlier assets are preserved.
 
-The required server suite also remains the regression check for the earlier House systems. The client camera and HUD code compile with the package; visual smoothness and atmosphere still need an in-game client pass.
+The complete suite contains 174 required server tests and also remains the regression check for the earlier House systems. The client camera and HUD code compile with the package; visual smoothness and atmosphere still need an in-game client pass.
