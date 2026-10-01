@@ -23,6 +23,7 @@ import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
@@ -90,7 +91,7 @@ public final class LabyrinthEncounters {
     /** A scarce piece of meat is enough to adopt a real lost animal in the House. */
     public static boolean feedStray(ServerPlayer player,TamableAnimal pet,InteractionHand hand) {
         ItemStack food=player.getItemInHand(hand);
-        if(player.isSpectator()||!player.isAlive()||pet.level()!=player.level()
+        if(player.gameMode.getGameModeForPlayer()==GameType.SPECTATOR||!player.isAlive()||pet.level()!=player.level()
                 ||!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)
                 ||!pet.isAlive()||pet.isTame()||pet.getOwnerUUID()!=null||pet.distanceToSqr(player)>16
                 ||!pet.getPersistentData().getBoolean(STRAY)||pet.getTags().contains(MotherOfStrays.PET)
