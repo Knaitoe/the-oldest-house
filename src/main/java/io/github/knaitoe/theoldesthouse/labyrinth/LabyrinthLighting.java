@@ -115,16 +115,16 @@ public final class LabyrinthLighting {
 
     public static ItemStack tomsNote() {
         return HouseWriting.book(
-                "What I know so far",
+                "For anyone passing through",
                 "Tom",
                 HouseWriting.WritingStyle.PLAIN,
                 List.of(
-                        "I have come back to this room from three different doors. I stopped trying to draw the order. "
-                                + "There may not be one.\n\nI started marking the way with lights instead.",
-                        "There are torches, chalk and string in the barrel. Take them.\n\n"
-                                + "One warning: some of mine were not where I left them when I came back. "
-                                + "Same number. Different walls.\n\n"
-                                + "If that happens, don't waste food putting everything back. Keep moving.\n\n-Tom"
+                        "I left some bread and spare lights in the barrel. Take what you need. "
+                                + "Sit down for a bit before you go on.\n\nSomeone has swept this end of the passage. "
+                                + "The cupboards further along are mostly empty.",
+                        "There are chalk and string too. Mark the door you came through before choosing the next one.\n\n"
+                                + "If you find a tap that works, fill your bottle. "
+                                + "Please leave a little food for the next person.\n\n-Tom"
                 )
         );
     }
