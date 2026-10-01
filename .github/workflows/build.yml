@@ -47,7 +47,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.21"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.22"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'assets/the_oldest_house/sounds/vignette/heartbeat.ogg' in z.namelist()
               assert 'vignette.heartbeat' in json.loads(z.read('assets/the_oldest_house/sounds.json'))
               for name in ('assets/the_oldest_house/textures/entity/lake_witch.png',
@@ -97,6 +97,11 @@ jobs:
                            'io/github/knaitoe/theoldesthouse/house/HouseMarginalia$NotebookMenu.class',
                            'io/github/knaitoe/theoldesthouse/house/HouseholdFurnitureBlock.class',
                            'io/github/knaitoe/theoldesthouse/gametest/MarginaliaTests.class',
+                           'io/github/knaitoe/theoldesthouse/labyrinth/CaverVignette.class',
+                           'io/github/knaitoe/theoldesthouse/labyrinth/CaverCave.class',
+                           'io/github/knaitoe/theoldesthouse/client/CaverCrawlClient.class',
+                           'io/github/knaitoe/theoldesthouse/network/CaverCrawlPayload.class',
+                           'io/github/knaitoe/theoldesthouse/gametest/CaverTests.class',
                            'assets/the_oldest_house/blockstates/household_furniture.json',
                            'assets/the_oldest_house/blockstates/note_surface.json',
                            'assets/the_oldest_house/font/claw.json',

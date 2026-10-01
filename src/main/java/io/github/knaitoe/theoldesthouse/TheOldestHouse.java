@@ -162,6 +162,11 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, io.github.knaitoe.theoldesthouse.labyrinth.PreservedCave::onAttack);
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.Shallows::onServerTick);
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.Shallows::onToss);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.CaverVignette::onServerTick);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, io.github.knaitoe.theoldesthouse.labyrinth.CaverVignette::onRightClick);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, io.github.knaitoe.theoldesthouse.labyrinth.CaverVignette::onLeftClick);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.CaverVignette::onLogout);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.CaverVignette::onDeath);
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette::onServerTick);
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette::onBlock);
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette::onAttack);

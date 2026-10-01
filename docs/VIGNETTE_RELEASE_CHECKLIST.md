@@ -9,9 +9,9 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current baseline: 0.4.21
+## Current baseline: 0.4.22
 
-Ten eligible sources require **eight distinct personal resolutions** across at least two kinds. The game has three ending options.
+Eleven eligible sources require **nine distinct personal resolutions** across at least two kinds. The game has three ending options.
 
 | Source | Kind |
 | --- | --- |
@@ -24,8 +24,9 @@ Ten eligible sources require **eight distinct personal resolutions** across at l
 | Shallows | Memory |
 | Phone in the Canoe | Memory |
 | Goatman door vigil | Survival |
+| Caver’s return above the rope | Survival |
 | Mother's peaceful resolution | Release |
 
-The next eleventh source raises the quota to nine; twelve sources also require nine. Existing recorded evidence remains saved as the quota rises. Explorers who have not committed to release must satisfy the current requirement. Completing every source, or resolving the Mother specifically, is not required.
+The next twelfth source keeps the quota at nine; thirteen sources require ten. Existing recorded evidence remains saved as the quota rises. Explorers who have not committed to release must satisfy the current requirement. Completing every source, or resolving the Mother specifically, is not required.
 
 Version 0.4.21 serial notes, poems and furniture are scenery, excluded from the playable Witness pool. They confer no resolution credit.
