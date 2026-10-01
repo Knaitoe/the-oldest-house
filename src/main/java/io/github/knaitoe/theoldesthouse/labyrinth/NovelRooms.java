@@ -64,9 +64,10 @@ public final class NovelRooms {
         sign(l,b.offset(4,1,-8),Direction.SOUTH,new String[]{"Outgoing mail","Signed books", "may be posted", "here."});
         // The ladder joins three separate, real attics; only one opens to the knock.
         for(int y=0;y<=11;y++){at(l,b,0,y,-19,Blocks.SMOOTH_STONE);l.setBlock(b.offset(0,y,-18),Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH),F);}
-        for(int y:new int[]{5,8,11}){room(l,b,-12,-4,-29,-19,y,2,NovelRegistry.INSTITUTE.get(),Blocks.DARK_OAK_PLANKS);
+        for(int y:new int[]{5,8,11}){room(l,b,-12,-5,-29,-19,y,2,NovelRegistry.INSTITUTE.get(),Blocks.DARK_OAK_PLANKS);
             box(l,b,-4,y,-21,-1,y-1,-17,Blocks.SMOOTH_STONE.defaultBlockState());door(l,b.offset(-5,y,-20),Direction.EAST,Blocks.IRON_DOOR,false);}
         // Leave a supported landing beside each door, with two blocks of headroom.
+        for(int y:new int[]{5,8,11})box(l,b,-4,y,-21,-1,y+2,-17,Blocks.AIR.defaultBlockState());
         for(int y:new int[]{5,8,11})box(l,b,-4,y-1,-20,0,y-1,-17,Blocks.SMOOTH_STONE.defaultBlockState());
         for(int y=0;y<=13;y++){at(l,b,0,y,-19,Blocks.SMOOTH_STONE);l.setBlock(b.offset(0,y,-18),Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH),F);}
         lectern(l,b.offset(ATTIC_DESK),NovelTexts.whaleLast());

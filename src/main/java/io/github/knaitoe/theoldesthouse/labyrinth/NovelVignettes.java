@@ -179,7 +179,7 @@ public final class NovelVignettes {
         var outside=server.getLevel(HouseDimensions.OUTSIDE);var well=LabyrinthPlaces.base(origin,LabyrinthPlace.BARN_WELL);if(outside!=null&&well!=null&&server.getTickCount()%20==0)NovelRooms.cover(outside,well,closeCover);
     }
     private static void tickPlain(ServerPlayer p,BlockPos b,CompoundTag own){
-        BlockPos target=b.offset(NovelRooms.FIGURE);p.serverLevel().getChunkAt(target);
+        BlockPos target=b.offset(NovelRooms.FIGURE);p.serverLevel().getChunkAt(target);p.serverLevel().getChunkSource().addRegionTicket(TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(target),3,target);
         var birds=p.serverLevel().getEntitiesOfClass(NovelVulture.class,new AABB(target).inflate(18));if(birds.isEmpty()&&p.tickCount%40==0){var v=NovelRegistry.VULTURE.get().create(p.serverLevel());if(v!=null){v.circle(target);v.moveTo(target.getX()+7,target.getY()+9,target.getZ());p.serverLevel().addFreshEntity(v);}}
         if(own.contains("Photo"))return;Vec3 look=target.getCenter().subtract(p.getEyePosition());boolean aim=p.isUsingItem()&&p.getUseItem().is(Items.SPYGLASS)&&look.lengthSqr()>400&&p.getViewVector(1).dot(look.normalize())>.997;
         int ticks=aim?own.getInt("Aim")+1:0;own.putInt("Aim",ticks);if(ticks<40)return;
@@ -243,7 +243,7 @@ public final class NovelVignettes {
     private static void showRecord(ServerPlayer p,CompoundTag own){var b=IndianLakeRooms.base(p.server,LabyrinthPlace.KAREN_ROOM);if(b==null)return;var photos=own.getList("Record",Tag.TAG_COMPOUND);if(photos.isEmpty())return;
         var photo=ItemStack.parseOptional(p.registryAccess(),photos.getCompound(Math.floorMod(own.getInt("Projection"),photos.size())));var at=b.offset(0,2,-14);
         var frames=p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.decoration.ItemFrame.class,new AABB(at).inflate(2));net.minecraft.world.entity.decoration.ItemFrame frame=frames.isEmpty()?new net.minecraft.world.entity.decoration.ItemFrame(p.serverLevel(),at,Direction.SOUTH):frames.get(0);
-        frame.setItem(photo);frame.setFixed(true);frame.setInvulnerable(true);if(frames.isEmpty())p.serverLevel().addFreshEntity(frame);p.playNotifySound(SoundEvents.LEVER_CLICK,SoundSource.BLOCKS,.3F,.7F);
+        frame.setItem(photo);var fixed=new CompoundTag();frame.saveWithoutId(fixed);fixed.putBoolean("Fixed",true);frame.load(fixed);frame.setInvulnerable(true);if(frames.isEmpty())p.serverLevel().addFreshEntity(frame);p.playNotifySound(SoundEvents.LEVER_CLICK,SoundSource.BLOCKS,.3F,.7F);
     }
     private static void tickTom(ServerPlayer p,BlockPos origin,CompoundTag own){
         var phase=FinaleProgress.phase(p.server,p.getUUID());if(phase!=FinaleProgress.Phase.STAIRCASE||!FinaleArchitecture.contains(origin,p.blockPosition()))return;
