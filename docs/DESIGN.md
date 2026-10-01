@@ -6,6 +6,8 @@ This file records implementation decisions so implementation history does not di
 
 ## Current implementation update
 
+Version 0.4.19 gives Harrigan a saved reading sequence and a single final dismissal, with contextual and persistent instructions for both phones. The funeral choices and nine-source, seven-resolution Witness requirement remain. See [HARRIGAN_DIALOGUE_0_4_19.md](HARRIGAN_DIALOGUE_0_4_19.md).
+
 Version 0.4.18 repairs Harrigan's seated study actor in existing saves and lets lost House cats and wolves be tamed with any vanilla meat. The existing story choices, nine-source Witness pool, seven-resolution quota and three endings remain. See [HARRIGAN_AND_STRAYS_0_4_18.md](HARRIGAN_AND_STRAYS_0_4_18.md).
 
 Version 0.4.17 adds a longer domestic labyrinth approach and trapped fragments of household rooms. Its current pacing, upgrade behavior and unchanged seven-of-nine Witness requirement are documented in [DOMESTIC_LABYRINTH_0_4_17.md](DOMESTIC_LABYRINTH_0_4_17.md).
