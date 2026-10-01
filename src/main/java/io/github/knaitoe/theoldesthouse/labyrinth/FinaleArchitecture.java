@@ -61,7 +61,8 @@ public final class FinaleArchitecture {
         ServerLevel level = server.getLevel(HouseDimensions.INTERIOR); if (level == null) return;
         LabyrinthData data = LabyrinthData.get(server); CompoundTag state = data.state(STATE);
         if (state.contains("Origin") && state.getLong("Origin") != manor.asLong()) { boolean requested=state.getBoolean("Requested"); state = new CompoundTag(); state.putBoolean("Requested",requested); PLANS.remove(server); }
-        if (!state.getBoolean("Requested") || (state.getBoolean("Ready") && state.getInt("CarveVersion")==CARVE_VERSION)) return;
+        if (!state.getBoolean("Requested")) return;
+        if(state.getBoolean("Ready") && state.getInt("CarveVersion")==CARVE_VERSION){FinaleCollapse.dress(level,manor);return;}
         if(state.getInt("PlanVersion")!=CARVE_VERSION){
             state.putBoolean("Upgrade",state.getBoolean("Ready"));state.putInt("Cursor",0);state.putInt("PlanVersion",CARVE_VERSION);PLANS.remove(server);
         }
@@ -78,6 +79,7 @@ public final class FinaleArchitecture {
             data.putDoor(new LabyrinthData.Door(ENTRY,HouseDimensions.INTERIOR,base(manor).offset(0,TOP,14),Direction.SOUTH,LabyrinthData.RETURN,false));
         }
         data.setState(STATE,state);
+        if(state.getBoolean("Ready"))FinaleCollapse.dress(level,manor);
     }
     private static boolean preserveUpgradeVoid(BlockPos manor,BlockPos pos){
         BlockPos b=base(manor);

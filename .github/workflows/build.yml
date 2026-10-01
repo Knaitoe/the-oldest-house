@@ -47,7 +47,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.22"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.23"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'assets/the_oldest_house/sounds/vignette/heartbeat.ogg' in z.namelist()
               assert 'vignette.heartbeat' in json.loads(z.read('assets/the_oldest_house/sounds.json'))
               for name in ('assets/the_oldest_house/textures/entity/lake_witch.png',
@@ -107,6 +107,23 @@ jobs:
                            'assets/the_oldest_house/font/claw.json',
                            'assets/the_oldest_house/textures/font/claw.png'):
                   assert name in z.namelist(), name
+              for name in ('io/github/knaitoe/theoldesthouse/labyrinth/NovelVignettes.class',
+                           'io/github/knaitoe/theoldesthouse/labyrinth/FinaleCollapse.class',
+                           'io/github/knaitoe/theoldesthouse/client/NovelSceneClient.class',
+                           'io/github/knaitoe/theoldesthouse/gametest/NovelTests.class',
+                           'io/github/knaitoe/theoldesthouse/gametest/CollapseTests.class',
+                           'assets/the_oldest_house/textures/block/cell_gouges.png',
+                           'assets/the_oldest_house/textures/block/well_carvings.png',
+                           'assets/the_oldest_house/blockstates/novel_prop.json',
+                           'assets/the_oldest_house/models/item/walkie_talkie.json',
+                           'assets/the_oldest_house/font/pelafina.json',
+                           'assets/the_oldest_house/sounds/novel/collapse.ogg'):
+                  assert name in z.namelist(), name
+              for variant in json.loads(z.read('assets/the_oldest_house/blockstates/novel_prop.json'))['variants'].values():
+                  model=json.loads(z.read('assets/the_oldest_house/models/'+variant['model'].split(':',1)[1]+'.json'))
+                  for texture in model['textures'].values():
+                      if texture.startswith('the_oldest_house:'):
+                          assert z.read('assets/the_oldest_house/textures/'+texture.split(':',1)[1]+'.png').startswith(b'\x89PNG\r\n\x1a\n')
               furniture=json.loads(z.read('assets/the_oldest_house/blockstates/household_furniture.json'))['variants']
               assert len(furniture)==48
               for variant in furniture.values():

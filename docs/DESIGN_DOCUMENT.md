@@ -14,6 +14,10 @@ This is the design document with the decisions made while building the opening s
 - **Domestic familiarity comes before impossible architecture.** The House's perceived age does not advance until somebody has actually entered the manor. Ignoring the invitation can never cause the first impossible threshold to reveal itself off-screen. After that it ages one day per morning: a player waking from a night's sleep, at home or in one of the manor's beds. The mod counts days itself, so setting the clock by command never stalls or rewinds it.
 - **Answered open questions:** the platform (NeoForge, Minecraft 1.21.1), the first expedition (following Hillary to the Navidsons' ordinary front door), and part of multiplayer (per-player timelines).
 
+## Implemented in 0.4.23
+
+This pass makes the six planned **House of Leaves sites** playable: Zampano’s courtyard, the Whale, the barn and well, the plain, the hospital and Karen’s room. The five new personal story resolutions make Witness require **twelve of sixteen**, across at least two kinds; Karen’s bed and actual-room projector are a navigation anchor. The finale now leaves the **Minotaur wounded and alive** while ceilings and floors physically break, a water shaft catches the fall, damaged corridors require jumping and crouching, and the final handle must be forced open. Layout 21 appends the new sites and preserves earlier rooms and evidence. See [NOVEL_AND_COLLAPSE_0_4_23.md](NOVEL_AND_COLLAPSE_0_4_23.md).
+
 ## Implemented in 0.4.22
 
 Version `0.4.22` adds a **Ted the Caver-inspired vignette**: an ordinary equipment camp, a cracked opening worked with a pickaxe, a real one-block crawling squeeze, old cuts beneath the mineral crust and a stone hiding another passage. The field notebook grows from practical notes into the explorer’s account of a tightening rope and the return through the same squeeze. Companions wait at the safe landing. Only personally reaching the low chamber and physically returning above the rope grants survival credit; observers and borrowed notebooks receive none. Layout 20 appends slot 32 while preserving old rooms, caches and evidence. Witness now requires **nine of eleven** eligible resolutions across at least two kinds, with three endings. See [TED_CAVER_0_4_22.md](TED_CAVER_0_4_22.md).
@@ -265,7 +269,7 @@ The notes carry the human stories: the horror sits on top, and the human story s
 
 ## Vignettes: House of Leaves places
 
-These places come from the novel the house grows out of, so several double as anchors.
+These places come from the novel the house grows out of, so several double as anchors. All six are playable adaptations in 0.4.23; see [NOVEL_AND_COLLAPSE_0_4_23.md](NOVEL_AND_COLLAPSE_0_4_23.md) for exact verbs, persistence, assets and direct testing. Their original writing is not a transcription. Holloway's independent hunt arenas remain planned; his existing final shield/cache is retained.
 
 ### Zampanò's courtyard
 
@@ -765,7 +769,8 @@ Opening the locked boy's cell starts the finale: the player either dies and is l
 
 ### Wounded: the collapse
 
-- It drags itself back into the cell it came from.
+- It drags itself back into the cell it came from and remains alive. Its wound never becomes a scripted kill.
+- In 0.4.23, actual ceiling and side floors fracture. A west breach exposes a supported dogleg and continuous water-caught shaft; the player moves through it without a transfer. The lower route has real rubble and a crouching lintel, crumbling margins and a latch requiring four timed pulls.
 - The collapse begins, and Tom doesn't make it out.
 - The bottom: a vast dark floor with drop-offs, under the Darkness effect. Burning a collected note lights a few blocks for a few seconds.
 - The pet the Mother kept finds you and leads you out, if you left her shelves alone or gave her something she wanted. Otherwise you find your own way and come home months later to an overgrown base.
@@ -776,8 +781,8 @@ Assets: the Minotaur, a custom creature with charge, stun, and wounded-crawl ani
 
 ### The Witness: an earned release
 
-- This is an original mod ending. Resolve 75% of the playable Witness story pool, rounded up, across at least two story kinds to restore the final passages in a written account and the play beside the cell. The threshold scales automatically when shipped sources are added: eleven sources require nine resolutions in 0.4.22. Survival, understanding, connection, memory, and release can contribute; neither the Mother nor every vignette is mandatory.
-- The current eleven sources are the floorboards, hide-and-clap, Harrigan, the model home, Drowned Town's church roof, the preserved cave, the Shallows, Phone in the Canoe, the Goatman door vigil, the caver’s return above the rope, and the Mother's peaceful resolution. World completion flags and merely visiting rooms confer no credit. A later explorer can crouch and inspect a finished room's actual ending prop to record its aftermath; acquiring someone else's book or artifact does not transfer progress.
+- This is an original mod ending. Resolve 75% of the playable Witness story pool, rounded up, across at least two story kinds to restore the final passages in a written account and the play beside the cell. The threshold scales automatically when shipped sources are added: sixteen sources require twelve resolutions in 0.4.23. Survival, understanding, connection, memory, and release can contribute; neither the Mother nor every vignette is mandatory.
+- The current sixteen sources are the floorboards, hide-and-clap, Harrigan, the model home, Drowned Town's church roof, the preserved cave, the Shallows, Phone in the Canoe, the Goatman door vigil, the caver’s return above the rope, Zampano's survey, the Whale's undated attic letter, the return above the well, the plain's photograph, the hospital's dawn chart, and the Mother's peaceful resolution. Karen's room is an anchor, excluded from this pool. World completion flags and merely visiting rooms confer no credit. A later explorer can crouch and inspect a finished room's actual ending prop to record its aftermath; acquiring someone else's book or artifact does not transfer progress.
 - Each vignette release must review the personal resolution hook, eligible pool, resulting 75% threshold, tests and current documentation. Draft sites and unfinished encounters do not enter the quota. See [VIGNETTE_RELEASE_CHECKLIST.md](VIGNETTE_RELEASE_CHECKLIST.md). Existing saved evidence is retained when the requirement rises; an uncommitted ending uses the current quota, while completed endings and a release already underway remain saved.
 - Read the restored play at the cell's lectern. Lay the original most-used weapon beside the cell, clear both hands, and crouch while opening it. Normal opening still chooses the violent encounter.
 - The Minotaur pauses, passes close to the witness, and physically walks into the staircase. Its quiet departure replaces the charge. The cell remains open and the passage back becomes available.

@@ -37,13 +37,16 @@ public final class HouseWriting {
     public static final ResourceLocation CLAW_FONT =
             ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "claw");
 
+    public static final ResourceLocation PELAFINA_FONT=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"pelafina");
+
     public enum WritingStyle {
         PLAIN(null),
         WILL(WILL_FONT),
         KAREN(KAREN_FONT),
         ZAMPANO(ZAMPANO_FONT),
         CHILD(CHILD_FONT),
-        CLAW(CLAW_FONT);
+        CLAW(CLAW_FONT),
+        PELAFINA(PELAFINA_FONT);
 
         @Nullable
         private final ResourceLocation font;

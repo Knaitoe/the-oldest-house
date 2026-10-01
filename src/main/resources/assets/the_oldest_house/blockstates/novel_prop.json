@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "facing=north,kind=projector": {
+      "model": "the_oldest_house:block/novel_projector",
+      "y": 0
+    },
+    "facing=east,kind=projector": {
+      "model": "the_oldest_house:block/novel_projector",
+      "y": 90
+    },
+    "facing=south,kind=projector": {
+      "model": "the_oldest_house:block/novel_projector",
+      "y": 180
+    },
+    "facing=west,kind=projector": {
+      "model": "the_oldest_house:block/novel_projector",
+      "y": 270
+    },
+    "facing=north,kind=incubator": {
+      "model": "the_oldest_house:block/novel_incubator",
+      "y": 0
+    },
+    "facing=east,kind=incubator": {
+      "model": "the_oldest_house:block/novel_incubator",
+      "y": 90
+    },
+    "facing=south,kind=incubator": {
+      "model": "the_oldest_house:block/novel_incubator",
+      "y": 180
+    },
+    "facing=west,kind=incubator": {
+      "model": "the_oldest_house:block/novel_incubator",
+      "y": 270
+    },
+    "facing=north,kind=mail_slot": {
+      "model": "the_oldest_house:block/novel_mail_slot",
+      "y": 0
+    },
+    "facing=east,kind=mail_slot": {
+      "model": "the_oldest_house:block/novel_mail_slot",
+      "y": 90
+    },
+    "facing=south,kind=mail_slot": {
+      "model": "the_oldest_house:block/novel_mail_slot",
+      "y": 180
+    },
+    "facing=west,kind=mail_slot": {
+      "model": "the_oldest_house:block/novel_mail_slot",
+      "y": 270
+    }
+  }
+}

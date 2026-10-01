@@ -36,6 +36,7 @@ public final class LabyrinthEncounters {
             Items.CHICKEN,Items.COOKED_CHICKEN,Items.MUTTON,Items.COOKED_MUTTON,Items.RABBIT,Items.COOKED_RABBIT,
             Items.ROTTEN_FLESH,Items.COD,Items.COOKED_COD,Items.SALMON,Items.COOKED_SALMON,Items.TROPICAL_FISH,Items.PUFFERFISH);
     private LabyrinthEncounters(){}
+    public static boolean isVanillaMeat(Item item){return STRAY_MEAT.contains(item);}
     public static boolean eligible(LabyrinthPlace place) {
         return LabyrinthPacing.ordinary(place)||LabyrinthPacing.quiet(place)
                 ||place==LabyrinthPlace.FOLDED_MAZE||place==LabyrinthPlace.DEEP_MAZE||place==LabyrinthPlace.ABYSS_MAZE;
@@ -92,7 +93,7 @@ public final class LabyrinthEncounters {
     public static boolean feedStray(ServerPlayer player,TamableAnimal pet,InteractionHand hand) {
         ItemStack food=player.getItemInHand(hand);
         if(player.gameMode.getGameModeForPlayer()==GameType.SPECTATOR||!player.isAlive()||pet.level()!=player.level()
-                ||!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)
+                ||!HouseDimensions.isHouseDimension(player.serverLevel().dimension())
                 ||!pet.isAlive()||pet.isTame()||pet.getOwnerUUID()!=null||pet.distanceToSqr(player)>16
                 ||!pet.getPersistentData().getBoolean(STRAY)||pet.getTags().contains(MotherOfStrays.PET)
                 ||HouseExteriorEntityMirror.isProjection(pet)||Hillary.tagOf(pet)!=null||!STRAY_MEAT.contains(food.getItem())) return false;

@@ -36,7 +36,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 20;
+    public static final int VERSION = 21;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -102,6 +102,7 @@ public final class LabyrinthBuilder {
                     || (data.builtVersion() < 16 && place.slot() >= 30)
                     || (data.builtVersion() < 18 && place.slot() >= 31)
                     || (data.builtVersion() < 20 && place.slot() >= 32)
+                    || (data.builtVersion() < 21 && place.slot() >= 33)
                     || (data.builtVersion() < 12 && LabyrinthMaze.isMaze(place))
                     || (data.builtVersion() == 10 && place == LabyrinthPlace.MOTHER_DEN);
             boolean domestic = place == LabyrinthPlace.JUNCTION || LabyrinthHalls.isHall(place) || LabyrinthMaze.isMaze(place);
@@ -165,6 +166,11 @@ public final class LabyrinthBuilder {
         if (base == null || slot == null) {
             return;
         }
+        if (NovelVignettes.isNovel(place)) {
+            ServerLevel site=server.getLevel(NovelRooms.dimension(place));
+            if(site!=null){NovelRooms.build(server,site,base,place);registerDoors(dataFor(server),place,base);}
+            return;
+        }
         LabyrinthMaze.Migration migration = LabyrinthMaze.isMaze(place) ? LabyrinthMaze.capture(level, slot, base) : null;
         fillSolid(level, slot);
         LabyrinthData data = LabyrinthData.get(server);
@@ -207,6 +213,8 @@ public final class LabyrinthBuilder {
         if (migration != null) LabyrinthMaze.restoreMigration(level, base, place, migration);
     }
 
+    private static LabyrinthData dataFor(MinecraftServer server){return LabyrinthData.get(server);}
+
     private static void fillSolid(ServerLevel level, BoundingBox slot) {
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int minY = Math.max(slot.minY(), level.getMinBuildHeight());
@@ -226,7 +234,7 @@ public final class LabyrinthBuilder {
     public static void registerDoors(LabyrinthData data, LabyrinthPlace place, BlockPos base) {
         for (LabyrinthPlace.DoorSpec spec : place.doors()) {
             data.putDoor(new LabyrinthData.Door(
-                    place.doorId(spec), HouseDimensions.INTERIOR, base.offset(spec.rel()), spec.facing(), spec.destination(), false));
+                    place.doorId(spec), NovelVignettes.isNovel(place)?NovelRooms.dimension(place):HouseDimensions.INTERIOR, base.offset(spec.rel()), spec.facing(), spec.destination(), false));
         }
     }
 

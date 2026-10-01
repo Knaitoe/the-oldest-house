@@ -195,6 +195,12 @@ public enum LabyrinthPlace {
     TED_CAVER("ted_caver",Kind.MULTI_VISIT,32,new BoundingBox(-9,-4,-60,9,8,0),List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN)
     )),
+    ZAMPANO_COURTYARD("zampano_courtyard",Kind.RECURRING,33,new BoundingBox(-15,-1,-41,15,16,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),new DoorSpec("apartment_west",new BlockPos(-12,0,-8),Direction.EAST,LabyrinthData.DEALT),new DoorSpec("apartment_east",new BlockPos(12,0,-8),Direction.WEST,LabyrinthData.DEALT))),
+    WHALE("whale",Kind.MULTI_VISIT,34,new BoundingBox(-14,-1,-33,14,17,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
+    BARN_WELL("barn_well",Kind.ONE_SHOT,35,new BoundingBox(-17,-13,-39,17,8,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
+    PLAIN("plain",Kind.ONE_SHOT,36,new BoundingBox(-30,-1,-65,30,16,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
+    HOSPITAL("hospital",Kind.MULTI_VISIT,37,new BoundingBox(-10,-1,-24,10,7,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
+    KAREN_ROOM("karen_room",Kind.RECURRING,38,new BoundingBox(-10,-1,-19,10,7,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

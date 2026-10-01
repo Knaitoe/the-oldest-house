@@ -92,7 +92,7 @@ public final class FinaleController {
     public static boolean tickPlayer(ServerPlayer player,BlockPos origin){
         if (LabyrinthData.get(player.server).returnDepth(player.getUUID()) >= 9) FinaleArchitecture.request(player.server);
         if(!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)||!FinaleArchitecture.contains(origin,player.blockPosition()))return false;
-        if(!player.isAlive())return true;
+        if(!player.isAlive()||player.gameMode.getGameModeForPlayer()==net.minecraft.world.level.GameType.SPECTATOR)return true;
         CompoundTag record=FinaleProgress.player(player.server,player.getUUID());FinaleProgress.Phase phase=FinaleProgress.phase(record);
         if(phase==FinaleProgress.Phase.UNSEEN){record.putString("Phase",FinaleProgress.Phase.STAIRCASE.name());record.putBoolean("Discovered",true);}
         BlockPos b=FinaleArchitecture.base(origin);long now=player.serverLevel().getGameTime();
@@ -109,23 +109,19 @@ public final class FinaleController {
             if(player.getY()>FinaleArchitecture.TOP-2&&player.getZ()>b.getZ()+15){WitnessEnding.finish(player,origin,record);return true;}
         }else if(phase==FinaleProgress.Phase.FIGHT||phase==FinaleProgress.Phase.COLLAPSE||phase==FinaleProgress.Phase.RELEASE){
             // Commands and outside teleports cannot turn the commitment into a free exit.
-            if(player.getY()<FinaleArchitecture.ARENA-2||player.getZ()<b.getZ()+30||Math.abs(player.getX()-b.getX())>16)
+            if(phase!=FinaleProgress.Phase.COLLAPSE&&(player.getY()<FinaleArchitecture.ARENA-2||player.getZ()<b.getZ()+30||Math.abs(player.getX()-b.getX())>16))
                 HouseInternalTeleport.shift(player,Vec3.atBottomCenterOf(b.offset(0,FinaleArchitecture.ARENA,34)),0);
             if(player.tickCount%20==0){
                 if(phase==FinaleProgress.Phase.RELEASE)WitnessEnding.keepSceneLoaded(player,origin);
                 ensureMinotaur(player,origin,record);
             }
-            if(phase==FinaleProgress.Phase.COLLAPSE&&player.tickCount%10==0){
-                player.serverLevel().sendParticles(new net.minecraft.core.particles.BlockParticleOption(net.minecraft.core.particles.ParticleTypes.BLOCK,Blocks.DEEPSLATE_TILES.defaultBlockState()),player.getX(),player.getY()+3,player.getZ(),20,5,1,5,.04);
-                if(player.tickCount%40==0)player.serverLevel().playSound(null,player.blockPosition(),SoundEvents.STONE_BREAK,SoundSource.BLOCKS,.7F,.55F);
-            }
+            if(phase==FinaleProgress.Phase.COLLAPSE){FinaleCollapse.tickRetreat(player,origin,record);FinaleProgress.save(player.server,player.getUUID(),record);}
         }else if(phase==FinaleProgress.Phase.ESCAPE){
             if(player.getY()<0){player.hurt(player.damageSources().genericKill(),Float.MAX_VALUE);return true;}
-            if(player.getY()>FinaleArchitecture.BOTTOM+10)HouseInternalTeleport.shift(player,Vec3.atBottomCenterOf(FinaleArchitecture.bottomStart(origin)),0);
+            FinaleCollapse.tickEscape(player,origin,record);
             boolean lit=now<record.getLong("LightUntil");
             if(lit)player.removeEffect(MobEffects.DARKNESS);else if(player.tickCount%20==0)player.addEffect(new MobEffectInstance(MobEffects.DARKNESS,60,0,false,false));
-            tickGuide(player,origin,record);
-            if(player.position().distanceToSqr(Vec3.atBottomCenterOf(FinaleArchitecture.exit(origin)))<8){FinaleProgress.save(player.server,player.getUUID(),record);finish(player,record.getBoolean("Guided"));return true;}
+            if(record.getBoolean("Descended")){createGuide(player,origin,record);tickGuide(player,origin,record);}
         }
         if(player.tickCount%20==0)FinaleProgress.save(player.server,player.getUUID(),record);
         return true;
@@ -151,6 +147,9 @@ public final class FinaleController {
         if(phase==FinaleProgress.Phase.ESCAPE&&player.getMainHandItem().is(Items.FLINT_AND_STEEL)&&burnable(player.getOffhandItem())){
             event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);burn(player);return;
         }
+        if(phase==FinaleProgress.Phase.ESCAPE&&event.getPos().distManhattan(FinaleArchitecture.exit(origin))<=1&&player.distanceToSqr(event.getPos().getCenter())<20){
+            event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);var record=FinaleProgress.player(player.server,player.getUUID());boolean open=FinaleCollapse.pull(player,origin,record);FinaleProgress.save(player.server,player.getUUID(),record);if(open)finish(player,record.getBoolean("Guided"));return;
+        }
         BlockPos cell=FinaleArchitecture.cell(origin);
         if(event.getPos().getZ()==cell.getZ()&&Math.abs(event.getPos().getX()-cell.getX())<=1&&Math.abs(event.getPos().getY()-cell.getY())<=3){
             event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);
@@ -175,13 +174,15 @@ public final class FinaleController {
         player.serverLevel().playSound(null,pos,SoundEvents.FIRECHARGE_USE,SoundSource.PLAYERS,.6F,.8F);player.removeEffect(MobEffects.DARKNESS);
     }
     public static boolean start(ServerPlayer player){
-        BlockPos origin=HouseSavedData.get(player.server).houseOrigin();if(origin==null||!FinaleArchitecture.ready(player.server)||lockedOut(player))return false;
+        BlockPos origin=HouseSavedData.get(player.server).houseOrigin();if(origin==null||!FinaleArchitecture.ready(player.server)||lockedOut(player)||!player.isAlive()||player.gameMode.getGameModeForPlayer()==net.minecraft.world.level.GameType.SPECTATOR)return false;
         CompoundTag world=FinaleProgress.world(player.server);if(world.hasUUID("Owner")&&!world.getUUID("Owner").equals(player.getUUID())){words(player,FinaleArchitecture.cell(origin),"There is already someone on the other side.");return false;}
         if(FinaleProgress.committed(FinaleProgress.phase(player.server,player.getUUID())))return false;
         UUID weapon=WeaponHistory.favorite(player);
         if(weapon==null){ItemStack fallback=new ItemStack(Items.STONE_SWORD);WeaponHistory.record(player,fallback,1);player.getInventory().add(fallback);weapon=WeaponHistory.favorite(player);}
         world.putUUID("Owner",player.getUUID());LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);
-        CompoundTag record=FinaleProgress.player(player.server,player.getUUID());record.putString("Phase",FinaleProgress.Phase.FIGHT.name());record.putUUID("Weapon",weapon);
+        CompoundTag record=FinaleProgress.player(player.server,player.getUUID());record.putString("Phase",(world.getBoolean("MinotaurWounded")?FinaleProgress.Phase.COLLAPSE:FinaleProgress.Phase.FIGHT).name());record.putUUID("Weapon",weapon);
+        if(world.hasUUID("WoundedCreature"))record.putUUID("Creature",world.getUUID("WoundedCreature"));
+        if(world.getBoolean("MinotaurWounded"))FinaleCollapse.wounded(player,origin,record);
         if(player.getRespawnPosition()!=null)record.putLong("Base",player.getRespawnPosition().asLong());record.putString("BaseDimension",player.getRespawnDimension().location().toString());
         FinaleArchitecture.seal(player.serverLevel(),origin,true);FinaleArchitecture.openCell(player.serverLevel(),origin);
         ensureMinotaur(player,origin,record);FinaleProgress.save(player.server,player.getUUID(),record);
@@ -203,7 +204,8 @@ public final class FinaleController {
         if(FinaleProgress.phase(record)==FinaleProgress.Phase.COLLAPSE)creature.wounded();level.addFreshEntity(creature);record.putUUID("Creature",creature.getUUID());
     }
     public static void wound(ServerPlayer player,MinotaurEntity creature){
-        CompoundTag record=FinaleProgress.player(player.server,player.getUUID());record.putString("Phase",FinaleProgress.Phase.COLLAPSE.name());FinaleProgress.save(player.server,player.getUUID(),record);
+        CompoundTag record=FinaleProgress.player(player.server,player.getUUID());record.putString("Phase",FinaleProgress.Phase.COLLAPSE.name());
+        BlockPos origin=HouseSavedData.get(player.server).houseOrigin();if(origin!=null)FinaleCollapse.wounded(player,origin,record);FinaleProgress.save(player.server,player.getUUID(),record);
         creature.wounded();words(player,creature.blockPosition().above(),"It crawls back to the cell. The walls begin to move.");
         player.serverLevel().playSound(null,player.blockPosition(),SoundEvents.GENERIC_EXPLODE.value(),SoundSource.BLOCKS,.55F,.45F);
     }
@@ -211,10 +213,10 @@ public final class FinaleController {
         BlockPos origin=HouseSavedData.get(player.server).houseOrigin();if(origin==null)return;
         CompoundTag record=FinaleProgress.player(player.server,player.getUUID());if(FinaleProgress.phase(record)!=FinaleProgress.Phase.COLLAPSE)return;
         record.putString("Phase",FinaleProgress.Phase.ESCAPE.name());record.putInt("GuideStep",0);
-        HouseInternalTeleport.shift(player,Vec3.atBottomCenterOf(FinaleArchitecture.bottomStart(origin)),0);
-        words(player,player.blockPosition().above(2),"Tom, over the radio: Keep moving. I'll hold—");
+        // The opened side wall leads to a real shaft and a water landing. No transfer replaces the fall.
+        words(player,player.blockPosition().above(2),"The west wall is open. Water is falling into the dark.");
         player.serverLevel().playSound(null,player.blockPosition(),SoundEvents.STONE_BREAK,SoundSource.BLOCKS,1,.5F);
-        createGuide(player,origin,record);FinaleProgress.save(player.server,player.getUUID(),record);
+        FinaleProgress.save(player.server,player.getUUID(),record);
     }
     private static void createGuide(ServerPlayer player,BlockPos origin,CompoundTag record){
         MotherCollection collection=MotherCollection.get(player.server);
@@ -281,7 +283,7 @@ public final class FinaleController {
             if(entry!=null){entry.sealed=true;MotherCollection.get(player.server).setDirty();}pet.discard();
         }
         FinaleProgress.save(player.server,player.getUUID(),record);LabyrinthData.get(player.server).clearReturns(player.getUUID());
-        if(record.hasUUID("Creature")&&player.serverLevel().getEntity(record.getUUID("Creature")) instanceof MinotaurEntity creature)creature.discard();
+        if(record.hasUUID("Creature")&&player.serverLevel().getEntity(record.getUUID("Creature")) instanceof MinotaurEntity creature&&creature.motion()!=MinotaurEntity.WOUNDED)creature.discard();
         CompoundTag world=FinaleProgress.world(player.server);world.remove("Owner");LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);
         BlockPos origin=HouseSavedData.get(player.server).houseOrigin();if(origin!=null){
             FinaleArchitecture.seal(player.serverLevel(),origin,false);FinaleArchitecture.closeCell(player.serverLevel(),origin);
@@ -408,5 +410,5 @@ public final class FinaleController {
             @Override public boolean canContinueToUse(){return canUse();}
         });
     }
-    public static void clearAll(){LAST_WORDS.clear();MISSING_CREATURES.clear();GUIDE_GOALS.clear();FinaleArchitecture.clearAll();}
+    public static void clearAll(){LAST_WORDS.clear();MISSING_CREATURES.clear();GUIDE_GOALS.clear();FinaleArchitecture.clearAll();FinaleCollapse.clearAll();}
 }

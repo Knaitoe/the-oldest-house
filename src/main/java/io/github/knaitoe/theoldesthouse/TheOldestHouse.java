@@ -61,6 +61,7 @@ public final class TheOldestHouse {
         io.github.knaitoe.theoldesthouse.labyrinth.DrownedTownRegistry.register(modEventBus);
         MotherRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.FinaleRegistry.register(modEventBus);
+        io.github.knaitoe.theoldesthouse.labyrinth.NovelRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.FinaleLoot.register(modEventBus);
         ClapGhostRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.GoatmanRegistry.register(modEventBus);
