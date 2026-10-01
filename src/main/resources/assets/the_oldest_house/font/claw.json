@@ -1,12 +1,18 @@
 {
   "providers": [
     {
+      "type": "space",
+      "advances": {
+        " ": 4.0
+      }
+    },
+    {
       "type": "bitmap",
       "file": "the_oldest_house:font/claw.png",
       "ascent": 8,
       "height": 9,
       "chars": [
-        " ABCDEFGHIJKLMNO",
+        "\u0000ABCDEFGHIJKLMNO",
         "PQRSTUVWXYZ.\u0000\u0000\u0000\u0000"
       ]
     },
