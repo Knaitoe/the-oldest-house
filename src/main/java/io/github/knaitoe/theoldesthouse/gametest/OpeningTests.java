@@ -615,6 +615,8 @@ public final class OpeningTests {
         wolf.tame(recipient);
         wolf.setOrderedToSit(false);
         Hillary.acknowledge(wolf);
+        // This guidance fixture begins after the invitation's confirming pat.
+        wolf.getPersistentData().putBoolean(Hillary.INTRO_CONFIRMED,true);
         recipient.moveTo(home.getX() + 0.5D, home.getY(), home.getZ() + 0.5D);
 
         BlockPos manorOrigin = home.offset(28, 0, 0);

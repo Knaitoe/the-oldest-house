@@ -110,12 +110,21 @@ public final class PetsAndClapTests {
         }
         owner.server.getPlayerList().remove(owner);h.succeed();
     }
-    @GameTest(template="empty",batch="pet_actions") public static void hillaryRequestsANewPatAndResumesSavedStayAtTheManor(GameTestHelper h) {
+    private static HouseSavedData introHouse;
+    private static ServerPlayer introOwner;
+    private static Wolf introWolf;
+    private static BlockPos introPorch;
+    @AfterBatch(batch="hillary_introduction") public static void cleanIntroduction(ServerLevel level) {
+        if(introWolf!=null){introWolf.discard();introWolf=null;}
+        if(introOwner!=null){level.getServer().getPlayerList().remove(introOwner);introOwner=null;}
+        if(introPorch!=null){level.getChunkSource().removeRegionTicket(TicketType.PORTAL,new ChunkPos(introPorch),3,introPorch);introPorch=null;}
+        if(introHouse!=null){level.getServer().overworld().getDataStorage().set("the_oldest_house",introHouse);introHouse=null;}
+    }
+    @GameTest(template="empty",batch="hillary_introduction",timeoutTicks=80) public static void hillaryRequestsANewPatAndResumesSavedStayAtTheManor(GameTestHelper h) {
         var level=h.getLevel();var owner=h.makeMockServerPlayerInLevel();var server=level.getServer();var oldHouse=HouseSavedData.get(server);
+        introHouse=oldHouse;introOwner=owner;
         var house=new HouseSavedData();server.overworld().getDataStorage().set("the_oldest_house",house);
-        Wolf wolf=null;
-        try {
-            BlockPos home=h.absolutePos(new BlockPos(2,2,2));owner.moveTo(home.getCenter());wolf=Hillary.spawn(level,home,owner.getUUID());wolf.tame(owner);
+            BlockPos home=h.absolutePos(new BlockPos(2,2,2));owner.moveTo(home.getCenter());var wolf=Hillary.spawn(level,home,owner.getUUID());introWolf=wolf;wolf.tame(owner);
             var state=OpeningSequence.state(owner);state.markHillaryArrived(1);state.setHillary(wolf.getUUID());Hillary.acknowledge(wolf);
             h.assertTrue(CompanionOrders.issue(wolf,owner,CompanionOrders.Order.STAY)&&wolf.isOrderedToSit(),"day-two Stay works before there is a house");
             BlockPos origin=home.offset(35,0,35);house.markSpawned(origin);
@@ -125,10 +134,13 @@ public final class PetsAndClapTests {
             h.assertTrue(CompanionOrders.pet(wolf,owner)&&Hillary.introductionConfirmed(wolf),"the wheel's Pet action confirms the invitation");
             var porch=HouseProxyEntityEvacuation.frontDoorExit(level,origin);
             if(porch==null)porch=Vec3.atBottomCenterOf(origin.offset(HouseLayout.AXIS_X,1,HouseLayout.FRONT_DOOR_Z-2));
-            owner.moveTo(porch);wolf.moveTo(porch.add(1,0,0));Hillary.tickGuide(level,owner,wolf.getUUID(),true,origin);
+            introPorch=BlockPos.containing(porch);level.getChunkSource().addRegionTicket(TicketType.PORTAL,new ChunkPos(introPorch),3,introPorch);level.getChunkAt(introPorch);
+            owner.moveTo(porch);wolf.moveTo(porch.add(1,0,0));
+            h.runAfterDelay(4,()->{
+            Hillary.tickGuide(level,owner,wolf.getUUID(),true,origin);
             h.assertTrue(!Hillary.introductionActive(wolf)&&wolf.getPersistentData().getBoolean(Hillary.INTRO_DONE)&&wolf.isOrderedToSit()
                     &&CompanionOrders.order(wolf)==CompanionOrders.Order.STAY&&owner.getUUID().equals(wolf.getOwnerUUID()),"arrival restores the wheel command and native owner");h.succeed();
-        } finally {if(wolf!=null)wolf.discard();server.getPlayerList().remove(owner);server.overworld().getDataStorage().set("the_oldest_house",oldHouse);}
+            });
     }
     private static final class Fixture implements AutoCloseable {
         final net.minecraft.server.MinecraftServer server;final ServerLevel level;final HouseSavedData oldHouse;final LabyrinthData oldData;final MotherCollection oldMother;
@@ -160,7 +172,9 @@ public final class PetsAndClapTests {
         owner.getInventory().setItem(0,new ItemStack(Items.DIAMOND,3));owner.setItemSlot(EquipmentSlot.HEAD,new ItemStack(LabyrinthRegistry.BLINDFOLD.get()));HideAndClap.enter(owner);
         h.runAfterDelay(5,()->{
             h.assertTrue(HideAndClap.isBound(owner.getItemBySlot(EquipmentSlot.HEAD),owner.getUUID()),"server ticks bind the real worn cloth");
-            var data=LabyrinthData.get(f.server);CompoundTag state=data.state(HideAndClap.ID),session=state.getCompound("Session");session.putLong("EquippedAt",f.level.getGameTime()-ClapGameClock.LIMIT_TICKS);state.put("Session",session);data.setState(HideAndClap.ID,state);HideAndClap.clearAll();
+            var data=LabyrinthData.get(f.server);CompoundTag state=data.state(HideAndClap.ID),session=state.getCompound("Session");
+            long before=f.level.getGameTime();((net.minecraft.world.level.storage.ServerLevelData)f.server.overworld().getLevelData()).setGameTime(before+ClapGameClock.LIMIT_TICKS);
+            session.putLong("EquippedAt",before);state.put("Session",session);data.setState(HideAndClap.ID,state);HideAndClap.clearAll();
         });
         h.runAfterDelay(23,()->h.assertTrue(owner.isAlive()&&owner.getItemBySlot(EquipmentSlot.HEAD).isEmpty()&&HideAndClap.isLocked(owner),"the cloth physically comes off while the living player remains locked for the reveal"));
         h.runAfterDelay(58,()->{
@@ -189,7 +203,8 @@ public final class PetsAndClapTests {
         });
         h.runAfterDelay(47,()->{
             var collection=MotherCollection.get(f.server);
-            h.assertTrue(display[0].isDeadOrDying()||display[0].isRemoved(),"the displayed animal physically dies at the native deadline");
+            var remaining=collection.entry(entryId[0]);
+            h.assertTrue(display[0].isDeadOrDying()||display[0].isRemoved(),"the displayed animal physically dies at the native deadline; owner="+owner.position()+"; alive="+owner.isAlive()+"; inDen="+MotherOfStrays.inDen(owner)+"; levelPlayers="+f.level.players().size()+"; remaining="+(remaining==null?-1:remaining.ransomRemaining)+"; started="+(remaining!=null&&remaining.ransomStarted)+"; health="+display[0].getHealth()+"; built="+LabyrinthBuilder.isBuilt(f.server));
             h.assertTrue(collection.entry(entryId[0])==null&&!collection.holdsLivingPet(owner.getUUID())&&!collection.canRecoverPet(owner.getUUID(),entryId[0],new ItemStack(Items.DIAMOND),0),"disposal removes the living entry instead of archiving a resurrectable duplicate");
             h.assertTrue(!LabyrinthDealer.rescueNeeded(LabyrinthData.get(f.server),owner.getUUID())&&collection.corruption()==0,"the urgent route ends and Mother's appearance resets");h.succeed();
         });
@@ -261,7 +276,7 @@ public final class PetsAndClapTests {
         });
         h.runAfterDelay(9,()->{
             closedRoom(f.level,room[0]);
-            h.assertTrue(MotherOfferings.playerEligible(owner,mother[0],victim[0]),"the survival player is physically enclosed with Mother and within her reach");
+            h.assertTrue(MotherOfferings.playerEligible(owner,mother[0],victim[0]),"the survival player is physically enclosed with Mother and within her reach; mother="+mother[0].position()+"; victim="+victim[0].position()+"; alive="+victim[0].isAlive()+"; removed="+victim[0].isRemoved()+"; mode="+victim[0].gameMode.getGameModeForPlayer()+"; sight="+mother[0].hasLineOfSight(victim[0])+"; enclosed="+MotherOfferings.enclosedTogether(f.level,mother[0].blockPosition(),victim[0].blockPosition()));
             MotherOfStrays.onEntityInteract(new PlayerInteractEvent.EntityInteract(owner,InteractionHand.MAIN_HAND,captive[0]));
             var collection=MotherCollection.get(f.server);
             h.assertTrue(victim[0].isDeadOrDying()&&owner.isAlive()&&collection.wasPlayerOffered(victim[0].getUUID()),"the actual trapped player dies as the payment while the trader survives");
