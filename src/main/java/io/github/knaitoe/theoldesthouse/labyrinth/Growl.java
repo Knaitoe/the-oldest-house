@@ -134,6 +134,7 @@ public final class Growl {
         if (server.getTickCount() % CHECK_INTERVAL != 0) {
             return;
         }
+        GrowlChanges.tick(server);
         ServerLevel interior = server.getLevel(HouseDimensions.INTERIOR);
         HouseSavedData house = HouseSavedData.get(server);
         BlockPos origin = house.houseOrigin();
@@ -172,31 +173,50 @@ public final class Growl {
 
     /** Plays the Growl for one player alone, placed where nothing is. */
     public static void growl(ServerPlayer player, Kind kind) {
-        RandomSource random = player.getRandom();
+        Voice voice = voice(player.position(), player.getYRot(), kind, player.getRandom());
+        play(player, voice);
+    }
+
+    public record Voice(Kind kind, Vec3 position, float volume, float pitch, long seed) {}
+
+    /** Each utterance has its own spatial origin and delivery; the original clips remain mono. */
+    public static Voice voice(Vec3 listener, float yaw, Kind kind, RandomSource random) {
         Vec3 at;
         switch (kind) {
-            case BELOW -> at = player.position().add(0.0D, -(12 + random.nextInt(7)), 0.0D);
+            case BELOW -> at = listener.add(random.nextDouble() * 14 - 7,
+                    -(8 + random.nextDouble() * 24), random.nextDouble() * 14 - 7);
             case NEAR -> {
-                double r = Math.toRadians(player.getYRot());
-                double distance = 10 + random.nextInt(5);
-                at = player.position().add(Math.sin(r) * distance, random.nextInt(5) - 2, -Math.cos(r) * distance);
+                double r = Math.toRadians(yaw) + (random.nextDouble() - .5) * 1.2;
+                double distance = 4 + random.nextDouble() * 8;
+                at = listener.add(Math.sin(r) * distance, random.nextDouble() * 4 - 1, -Math.cos(r) * distance);
             }
             default -> {
                 double angle = random.nextDouble() * Math.PI * 2.0D;
-                double distance = 28 + random.nextInt(13);
-                at = player.position().add(Math.cos(angle) * distance, random.nextInt(13) - 6, Math.sin(angle) * distance);
+                double distance = 24 + random.nextDouble() * 48;
+                at = listener.add(Math.cos(angle) * distance, random.nextDouble() * 20 - 14, Math.sin(angle) * distance);
             }
         }
-        play(player, kind, at, 1.0F);
+        return new Voice(kind, at, .78F + random.nextFloat() * .22F,
+                .88F + random.nextFloat() * .18F, random.nextLong());
+    }
+
+    public static ClientboundSoundPacket packet(Voice voice) {
+        Holder<SoundEvent> sound = Holder.direct(SoundEvent.createVariableRangeEvent(voice.kind().sound()));
+        Vec3 at = voice.position();
+        return new ClientboundSoundPacket(sound, SoundSource.HOSTILE, at.x, at.y, at.z,
+                voice.volume(), voice.pitch(), voice.seed());
+    }
+
+    private static void play(ServerPlayer player, Voice voice) {
+        player.connection.send(packet(voice));
+        GrowlData.get(player.server).noteHeard(player.getUUID());
+        GrowlChanges.onGrowl(player, player.getRandom());
+        TheOldestHouse.LOGGER.debug("{} heard the Growl ({} at {}).", player.getGameProfile().getName(), voice.kind(), voice.position());
     }
 
     private static void play(ServerPlayer player, Kind kind, Vec3 at, float volume) {
-        Holder<SoundEvent> sound = Holder.direct(SoundEvent.createVariableRangeEvent(kind.sound()));
         RandomSource random = player.getRandom();
-        player.connection.send(new ClientboundSoundPacket(sound, SoundSource.HOSTILE, at.x, at.y, at.z, volume,
-                0.92F + random.nextFloat() * 0.12F, random.nextLong()));
-        GrowlData.get(player.server).noteHeard(player.getUUID());
-        TheOldestHouse.LOGGER.debug("{} heard the Growl ({}).", player.getGameProfile().getName(), kind);
+        play(player, new Voice(kind, at, volume, .88F + random.nextFloat() * .18F, random.nextLong()));
     }
 
     // ------------------------------------------------------------------
@@ -267,7 +287,9 @@ public final class Growl {
             } else {
                 BASEMENT.remove(id);
                 // From directly under the cellar floor.
-                play(player, Kind.BELOW, player.position().add(0.0D, -7.0D, 0.0D), 1.3F);
+                RandomSource random = player.getRandom();
+                play(player, Kind.BELOW, player.position().add(random.nextDouble() * 3 - 1.5,
+                        -(5.5 + random.nextDouble() * 6), random.nextDouble() * 3 - 1.5), 1.15F + random.nextFloat() * .25F);
                 hillaryHears(server, origin);
                 TheOldestHouse.LOGGER.info("{} woke in the cellar of The Oldest House, and heard it underneath.",
                         player.getGameProfile().getName());
@@ -341,6 +363,7 @@ public final class Growl {
                 ? BASEMENT_CHANCE + "% on each morning woken in a manor bed."
                 : "not yet (needs " + BASEMENT_DEPTH + " doors deep or " + BASEMENT_HEARD + " growls heard, and "
                 + BASEMENT_COOLDOWN_DAYS + " days between).") );
+        lines.addAll(GrowlChanges.describe(server, viewer));
         return lines;
     }
 

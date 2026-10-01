@@ -4,6 +4,8 @@ A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 ## Current prototype
 
+Version `0.4.14` connects **the Growl to House changes**. Each eligible utterance has one 30% chance to queue a real, unseen change: a closed ordinary hallway door leads elsewhere, one portable light moves, or an owned/explorer navigation mark deep in the maze is altered. The cellar cue can change the ordinary manor instead. Pending opportunities survive reloads and wait for every observer to look away; return paths, authored stories and quiet stops remain available. Far origins now span 24–72 blocks, near origins 4–12, and below origins 8–32, with varied direction, pitch and volume. See [docs/GROWL_0_4_14.md](docs/GROWL_0_4_14.md) for mechanics and test commands.
+
 Version `0.4.13` makes the Witness ending require **75% of its playable story sources, rounded up**, across at least two story kinds. The current eight sources require six distinct personal resolutions; the requirement grows automatically as eligible vignettes are added. Existing recorded evidence is retained. Each new vignette must follow [docs/VIGNETTE_RELEASE_CHECKLIST.md](docs/VIGNETTE_RELEASE_CHECKLIST.md). See [docs/WITNESS_QUOTA_0_4_13.md](docs/WITNESS_QUOTA_0_4_13.md).
 
 Version `0.4.12` adds **Indian Lake: the preserved cave and the Shallows**. Quietly cross twenty-four preserved bodies while your sounds build a hymn, then examine the canoe and return. Opening the church roof empties the pews on a later cave visit. After a personal shore hunt, lift, carry and throw Stacey in the Shallows; actual water contact records your participation in the essays. Both sites contribute to Witness. See [docs/CAVE_AND_SHALLOWS_0_4_12.md](docs/CAVE_AND_SHALLOWS_0_4_12.md).

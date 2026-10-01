@@ -148,10 +148,18 @@ public final class NavigationAids {
         LabyrinthData data=LabyrinthData.get(player.server);CompoundTag state=data.state(STATE);
         long now=player.serverLevel().getGameTime();
         if(now-state.getLong("LastAltered")<2400||player.getRandom().nextInt(100)>=4)return;
-        ListTag marks=state.getList("Marks",Tag.TAG_COMPOUND);
         BlockPos origin=HouseSavedData.get(player.server).houseOrigin();
         LabyrinthPlace here=origin==null?null:LabyrinthPlaces.placeAt(origin,player.blockPosition());
-        if(LabyrinthPacing.quiet(here))return;
+        alterOne(player,here);
+    }
+    /** One existing mark, still subject to the original depth, distance, observation and cooldown rules. */
+    public static boolean alterOne(ServerPlayer player,LabyrinthPlace here) {
+        LabyrinthData data=LabyrinthData.get(player.server);CompoundTag state=data.state(STATE);
+        long now=player.serverLevel().getGameTime();BlockPos origin=HouseSavedData.get(player.server).houseOrigin();
+        if(origin==null||here==null||!here.isGray()||LabyrinthPacing.quiet(here)
+                ||data.returnDepth(player.getUUID())<6
+                ||(state.contains("LastAltered")&&now-state.getLong("LastAltered")<2400))return false;
+        ListTag marks=state.getList("Marks",Tag.TAG_COMPOUND);
         for(int i=marks.size()-1;i>=0;i--) {
             CompoundTag mark=marks.getCompound(i);
             if(!mark.hasUUID("Owner"))continue;
@@ -169,11 +177,11 @@ public final class NavigationAids {
                 for(Direction direction:Direction.Plane.HORIZONTAL)connections(player.serverLevel(),pos.relative(direction));
                 marks.remove(i);state.put("Marks",marks);
             } else continue;
-            state.putLong("LastAltered",now);data.setState(STATE,state);return;
+            state.putLong("LastAltered",now);data.setState(STATE,state);return true;
         }
+        return false;
     }
     public static void explorerMark(ServerLevel level,BlockPos pos,Direction arrow) {
         if(placeChalk(level,pos,Direction.UP,arrow))remember(level,pos,EXPLORER,true);
     }
 }
-

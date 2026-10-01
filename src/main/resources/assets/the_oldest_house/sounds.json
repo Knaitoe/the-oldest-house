@@ -88,11 +88,11 @@
     "sounds": [
       {
         "name": "the_oldest_house:growl/far1",
-        "attenuation_distance": 64
+        "attenuation_distance": 96
       },
       {
         "name": "the_oldest_house:growl/far2",
-        "attenuation_distance": 64
+        "attenuation_distance": 96
       }
     ],
     "subtitle": "subtitles.the_oldest_house.growl_far"
@@ -101,7 +101,7 @@
     "sounds": [
       {
         "name": "the_oldest_house:growl/below1",
-        "attenuation_distance": 40
+        "attenuation_distance": 48
       }
     ],
     "subtitle": "subtitles.the_oldest_house.growl_below"
@@ -110,7 +110,7 @@
     "sounds": [
       {
         "name": "the_oldest_house:growl/near1",
-        "attenuation_distance": 40
+        "attenuation_distance": 32
       }
     ],
     "subtitle": "subtitles.the_oldest_house.growl_near"
