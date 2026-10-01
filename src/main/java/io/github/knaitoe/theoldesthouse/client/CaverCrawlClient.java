@@ -30,7 +30,7 @@ public final class CaverCrawlClient {
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){
         if(player==null)return;var mc=Minecraft.getInstance();lease--;
         double rx=player.getX()-x,ry=player.getY()-y,rz=player.getZ()-z;
-        if(lease<=0||mc.player!=player||!player.isAlive()||mc.level==null||!mc.level.dimension().equals(HouseDimensions.INTERIOR)
+        if(lease<=0||mc.player!=player||!player.isAlive()||player.isSpectator()||mc.level==null||!mc.level.dimension().equals(HouseDimensions.INTERIOR)
                 ||rx<-.5||rx>1.5||ry< -3.5||ry> -1.8||rz> -20.5||rz< -36.4)clear();
     }
 }
