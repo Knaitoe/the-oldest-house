@@ -61,10 +61,11 @@ public final class PhoneCanoeTests {
             server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);LabyrinthBuilder.clearAll();LabyrinthDoors.clearAll();
         }
     }
-    private static Fixture scene,retry,upgrade;
+    private static Fixture scene,retry,upgrade,domesticUpgrade;
     @AfterBatch(batch="phone_scene") public static void cleanScene(ServerLevel level){if(scene!=null){scene.close();scene=null;}}
     @AfterBatch(batch="phone_retry") public static void cleanRetry(ServerLevel level){if(retry!=null){retry.close();retry=null;}}
     @AfterBatch(batch="phone_upgrade") public static void cleanUpgrade(ServerLevel level){if(upgrade!=null){upgrade.close();upgrade=null;}}
+    @AfterBatch(batch="domestic_layout_upgrade") public static void cleanDomesticUpgrade(ServerLevel level){if(domesticUpgrade!=null){domesticUpgrade.close();domesticUpgrade=null;}}
     @GameTest(template="empty",batch="phone_scene",timeoutTicks=430)
     public static void nativeCanoeDropSkyCameraBlackoutAndOwnedCaveRecovery(GameTestHelper h){
         scene=new Fixture(h,new BlockPos(8200,80,8200));Fixture f=scene;LabyrinthData data=LabyrinthData.get(f.server);
@@ -119,7 +120,7 @@ public final class PhoneCanoeTests {
         });
     }
     @GameTest(template="empty",batch="phone_upgrade",timeoutTicks=200)
-    public static void nativeFifteenUpgradeAddsOnlyTheFilmingRoom(GameTestHelper h){
+    public static void nativeFifteenUpgradeAppendsFilmingRoomAndPreservesOlderStories(GameTestHelper h){
         upgrade=new Fixture(h,new BlockPos(8900,80,8900));Fixture f=upgrade;var data=LabyrinthData.get(f.server);
         BlockPos town=LabyrinthPlaces.base(f.origin,LabyrinthPlace.DROWNED_TOWN),cave=LabyrinthPlaces.base(f.origin,LabyrinthPlace.PRESERVED_CAVE);
         DrownedTown.build(f.server,f.level,town);PreservedCave.build(f.server,f.level,cave);
@@ -127,8 +128,28 @@ public final class PhoneCanoeTests {
         var before=f.level.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(cave,LabyrinthPlace.PRESERVED_CAVE)).getFirst();
         CompoundTag state=data.state(PreservedCave.ID);state.putInt("Visit",3);state.putDouble("Voices",6);data.setState(PreservedCave.ID,state);data.setBuilt(15,f.origin);
         h.assertTrue(!LabyrinthBuilder.ensureBuilt(f.server),"a version fifteen world begins the native incremental upgrade");while(LabyrinthBuilder.isCarving())LabyrinthBuilder.tick(f.server);
-        h.assertTrue(data.builtVersion()==16&&data.door(LabyrinthPlace.PHONE_CANOE.entryDoorId())!=null,"new native room and return door are appended");
+        h.assertTrue(data.builtVersion()==LabyrinthBuilder.VERSION&&data.door(LabyrinthPlace.PHONE_CANOE.entryDoorId())!=null,"new native room and return door are appended");
         h.assertTrue(f.level.getBlockEntity(town.offset(DrownedTown.PAPERS[0]))==desk&&desk.getItem(0).isEmpty()&&desk.getItem(3).is(Items.DIAMOND),"finite school supplies are not restocked or replaced");
         h.assertTrue(!before.isRemoved()&&data.state(PreservedCave.ID).getInt("Visit")==3&&data.state(PreservedCave.ID).getDouble("Voices")==6,"existing physical cave canoe and visit noise are untouched");h.succeed();
+    }
+    @GameTest(template="empty",batch="domestic_layout_upgrade",timeoutTicks=200)
+    public static void nativeSixteenUpgradeDressesHallsWithoutRebuildingStories(GameTestHelper h){
+        domesticUpgrade=new Fixture(h,new BlockPos(9300,80,9300));Fixture f=domesticUpgrade;var data=LabyrinthData.get(f.server);
+        BlockPos landing=LabyrinthPlaces.base(f.origin,LabyrinthPlace.JUNCTION);
+        LabyrinthBuilder.buildJunction(f.level,landing);LabyrinthLighting.buildEarlyAid(f.server,f.level,landing);
+        var cache=(BarrelBlockEntity)f.level.getBlockEntity(landing.offset(LabyrinthLighting.TOM_CACHE));
+        cache.setItem(0,ItemStack.EMPTY);cache.setItem(5,new ItemStack(Items.EMERALD,3));
+        f.level.setBlock(landing.offset(0,-1,-3),net.minecraft.world.level.block.Blocks.SMOOTH_STONE.defaultBlockState(),3);
+        BlockPos marker=f.base.offset(2,0,-8);f.level.setBlock(marker,net.minecraft.world.level.block.Blocks.DIAMOND_BLOCK.defaultBlockState(),3);
+        var canoe=PhoneCanoe.stage(f.level,f.base);UUID canoeId=canoe.getUUID(),player=UUID.randomUUID();
+        CompoundTag round=data.state(HideAndClap.ID);round.putInt("UpgradeRound",137);data.setState(HideAndClap.ID,round);
+        data.setCompleted(HarriganVignette.ID,true);WitnessAccount.resolve(data,player,WitnessAccount.Story.HARRIGAN,"remembered");data.setBuilt(16,f.origin);
+        h.assertTrue(!LabyrinthBuilder.ensureBuilt(f.server),"version sixteen starts an in-place upgrade");
+        while(LabyrinthBuilder.isCarving())LabyrinthBuilder.tick(f.server);
+        h.assertTrue(data.builtVersion()==LabyrinthBuilder.VERSION&&f.level.getBlockState(landing.offset(0,-1,-3)).is(net.minecraft.world.level.block.Blocks.SPRUCE_PLANKS),"the landing is dressed and layout version advances");
+        h.assertTrue(cache==f.level.getBlockEntity(landing.offset(LabyrinthLighting.TOM_CACHE))&&cache.getItem(0).isEmpty()&&cache.getItem(5).getCount()==3,"native upgrade neither replaces nor refills the finite cache");
+        h.assertTrue(f.level.getBlockState(marker).is(net.minecraft.world.level.block.Blocks.DIAMOND_BLOCK)&&!canoe.isRemoved()&&canoe.getUUID().equals(canoeId),"the recording room and its native canoe are never rebuilt");
+        h.assertTrue(data.state(HideAndClap.ID).getInt("UpgradeRound")==137&&data.isCompleted(HarriganVignette.ID)&&WitnessAccount.has(data,player,WitnessAccount.Story.HARRIGAN),"active story state, completion and personal evidence remain");
+        h.assertTrue(data.state("domestic_0417").getBoolean(LabyrinthPlace.JUNCTION.id()),"the incremental decoration checkpoint is saved");h.succeed();
     }
 }
