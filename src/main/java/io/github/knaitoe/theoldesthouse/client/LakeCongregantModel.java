@@ -10,6 +10,10 @@ public final class LakeCongregantModel extends HumanoidModel<LakeCongregantEntit
         super.setupAnim(entity, walk, 0, age, 0, 0);
         leftArm.xRot = rightArm.xRot = entity.preacher() ? -.25F : -.05F;
         float seat=entity.seating(age-entity.tickCount);
+        // Lower the whole seated pose; unbending the knees alone leaves heads at standing height.
+        head.y=hat.y=body.y=6*seat;
+        leftArm.y=rightArm.y=2+6*seat;
+        leftLeg.y=rightLeg.y=12+6*seat;
         leftLeg.xRot=rightLeg.xRot=-1.45F*seat;leftLeg.yRot=.15F*seat;rightLeg.yRot=-.15F*seat;
         body.xRot=.1F*seat;head.xRot=.12F*seat;
     }
