@@ -133,6 +133,7 @@ public final class LabyrinthTests {
     public static void dealerGuaranteesAVignetteAfterADrySpellAndNeverRepeatsAFinishedOne(GameTestHelper helper) {
         LabyrinthData data = new LabyrinthData();
         UUID player = UUID.randomUUID();
+        deepen(data, player, 10);
         LabyrinthBuilder.registerDoors(data, LabyrinthPlace.JUNCTION, new BlockPos(0, 64, 0));
         RandomSource random = RandomSource.create(99);
 
@@ -210,7 +211,7 @@ public final class LabyrinthTests {
     }
 
     @GameTest(template = "empty")
-    public static void grayMazeGrowsWithVignetteProgressWithoutRoutineSelfLoops(GameTestHelper helper) {
+    public static void grayMazeGrowsWithRouteDepthWithoutRoutineSelfLoops(GameTestHelper helper) {
         LabyrinthData data = new LabyrinthData();
         UUID player = UUID.randomUUID();
 
@@ -222,14 +223,17 @@ public final class LabyrinthTests {
                 "the opening pool contains familiar halls and a quiet place");
 
         data.visit(player, LabyrinthPlace.FLOORBOARDS);
+        deepen(data, player, 6);
         helper.assertTrue(LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.LONG_HALLWAY),
-                "one vignette grows the long hallway");
+                "six crossings open the first deeper tier");
         data.visit(player, LabyrinthPlace.HIDE_AND_CLAP);
+        deepen(data, player, 10);
         helper.assertTrue(LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.SPIRAL_STAIR),
-                "two vignettes grow the spiral stair");
+                "ten crossings open the spiral stair");
         data.visit(player, LabyrinthPlace.MODEL_HOME);
+        deepen(data, player, 14);
         helper.assertTrue(LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.HOTEL_HALLWAY),
-                "three vignettes grow the hotel hallway");
+                "fourteen crossings open the hotel hallway");
 
         LabyrinthBuilder.registerDoors(data, LabyrinthPlace.JUNCTION, new BlockPos(0, 64, 0));
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
@@ -527,9 +531,10 @@ public final class LabyrinthTests {
                 "fresh players do not immediately find the recovery camp");
 
         data.visit(player, LabyrinthPlace.FLOORBOARDS);
+        deepen(data, player, 6);
         List<LabyrinthPlace> tierOne = LabyrinthDealer.grayAvailable(data, player);
         helper.assertTrue(tierOne.contains(LabyrinthPlace.FLOODED_PASSAGE),
-                "the flooded passage appears after the first vignette");
+                "the flooded passage waits for the sixth crossing");
         helper.assertTrue(tierOne.contains(LabyrinthPlace.FALSE_DISTANCE),
                 "false distance begins at the first grown tier");
         helper.assertTrue(tierOne.contains(LabyrinthPlace.EXPLORER_CAMP),
@@ -538,6 +543,7 @@ public final class LabyrinthTests {
                 "the broken route still waits");
 
         data.visit(player, LabyrinthPlace.HIDE_AND_CLAP);
+        deepen(data, player, 10);
         List<LabyrinthPlace> tierTwo = LabyrinthDealer.grayAvailable(data, player);
         helper.assertTrue(tierTwo.contains(LabyrinthPlace.FRACTURED_WALKWAY),
                 "the fractured walkway appears deeper in");
@@ -549,6 +555,7 @@ public final class LabyrinthTests {
                 "the crushing passage waits until the deepest tier");
 
         data.visit(player, LabyrinthPlace.HARRIGAN);
+        deepen(data, player, 14);
         List<LabyrinthPlace> tierThree = LabyrinthDealer.grayAvailable(data, player);
         helper.assertTrue(tierThree.contains(LabyrinthPlace.COMPRESSION_PASSAGE),
                 "the compression passage joins the deepest gray pool");
@@ -666,24 +673,24 @@ public final class LabyrinthTests {
 
     @GameTest(template = "empty")
     public static void labyrinthDarknessAndLightMovementScaleWithDepth(GameTestHelper helper) {
-        helper.assertTrue(LabyrinthLighting.darknessBand(1) == 0 && LabyrinthLighting.darknessBand(2) == 0,
+        helper.assertTrue(LabyrinthLighting.darknessBand(1) == 0 && LabyrinthLighting.darknessBand(7) == 0,
                 "the first rooms still let the player trust ordinary light");
-        helper.assertTrue(LabyrinthLighting.darknessBand(3) == 1,
-                "darkness begins only after the route is genuinely several doors deep");
-        helper.assertTrue(LabyrinthLighting.darknessBand(5) == 2
-                        && LabyrinthLighting.darknessBand(7) == 3,
+        helper.assertTrue(LabyrinthLighting.darknessBand(8) == 1,
+                "darkness waits for the eighth crossing");
+        helper.assertTrue(LabyrinthLighting.darknessBand(12) == 2
+                        && LabyrinthLighting.darknessBand(16) == 3,
                 "the darkness pressure increases with route depth");
-        helper.assertTrue(LabyrinthLighting.rearrangeInterval(8) < LabyrinthLighting.rearrangeInterval(3),
+        helper.assertTrue(LabyrinthLighting.rearrangeInterval(16) < LabyrinthLighting.rearrangeInterval(8),
                 "unwatched light changes become more frequent deeper in");
         helper.assertTrue(LabyrinthLighting.mayRearrange(LabyrinthPlace.GRAY_CORRIDOR)
                         && LabyrinthLighting.mayRearrange(LabyrinthPlace.LONG_HALLWAY)
                         && LabyrinthLighting.mayRearrange(LabyrinthPlace.HOTEL_HALLWAY),
                 "ordinary and impossible hallways can betray light landmarks");
         helper.assertTrue(LabyrinthLighting.authoredLightCount(LabyrinthPlace.GRAY_CORRIDOR, 1) == 3
-                        && LabyrinthLighting.authoredLightCount(LabyrinthPlace.GRAY_CORRIDOR, 7) == 0,
+                        && LabyrinthLighting.authoredLightCount(LabyrinthPlace.GRAY_CORRIDOR, 16) == 0,
                 "ordinary corridor fixtures physically thin from three lights to none");
         helper.assertTrue(LabyrinthLighting.authoredLightCount(LabyrinthPlace.LONG_HALLWAY, 1)
-                        > LabyrinthLighting.authoredLightCount(LabyrinthPlace.LONG_HALLWAY, 5),
+                        > LabyrinthLighting.authoredLightCount(LabyrinthPlace.LONG_HALLWAY, 12),
                 "the long hallway physically loses fixtures with depth");
         helper.assertTrue(LabyrinthLighting.authoredLightCount(LabyrinthPlace.HOTEL_HALLWAY, 2) == 1,
                 "the hotel begins with only one dim fixture per repeated straight");
@@ -883,8 +890,8 @@ public final class LabyrinthTests {
     /** The Growl comes more often the deeper you are, but never often; the close ones only deep in. */
     @GameTest(template = "empty")
     public static void theGrowlComesMoreOftenDeeperButStaysSporadic(GameTestHelper helper) {
-        helper.assertTrue(Growl.meanGap(1) == Growl.BASE_GAP, "one door deep: the base gap");
-        helper.assertTrue(Growl.meanGap(4) < Growl.meanGap(2) && Growl.meanGap(2) < Growl.meanGap(1), "deeper, sooner");
+        helper.assertTrue(Growl.meanGap(8) == Growl.BASE_GAP, "the first eligible depth starts with the full base gap");
+        helper.assertTrue(Growl.meanGap(12) < Growl.meanGap(10) && Growl.meanGap(10) < Growl.meanGap(8), "deeper, sooner");
         helper.assertTrue(Growl.meanGap(60) == Growl.MIN_MEAN_GAP, "but the average never falls below its floor");
         RandomSource random = RandomSource.create(5);
         for (int i = 0; i < 200; i++) {
@@ -892,9 +899,9 @@ public final class LabyrinthTests {
         }
         boolean near = false;
         for (int i = 0; i < 400; i++) {
-            helper.assertTrue(Growl.pick(1, random) == Growl.Kind.FAR, "near the hallway it is always far off");
-            helper.assertTrue(Growl.pick(4, random) != Growl.Kind.NEAR, "not close until deep in");
-            near |= Growl.pick(9, random) == Growl.Kind.NEAR;
+            helper.assertTrue(Growl.pick(8, random) == Growl.Kind.FAR, "near the hallway it is always far off");
+            helper.assertTrue(Growl.pick(12, random) != Growl.Kind.NEAR, "not close until deep in");
+            near |= Growl.pick(16, random) == Growl.Kind.NEAR;
         }
         helper.assertTrue(near, "deep in, sometimes close");
 
@@ -929,6 +936,11 @@ public final class LabyrinthTests {
         helper.assertTrue(rel.getY() == -4 && rel.getX() > 18 && rel.getX() < 26 && rel.getZ() > 13 && rel.getZ() < 24,
                 "standing on the floor, off the walls: " + rel);
         helper.succeed();
+    }
+
+    private static void deepen(LabyrinthData data, UUID player, int depth) {
+        while (data.returnDepth(player) < depth)
+            data.pushReturn(player, new LabyrinthData.Waypoint(HouseDimensions.INTERIOR, Vec3.ZERO, 0));
     }
 
     private static Block stateBlock(RoomSnapshot snapshot, BlockPos local) {

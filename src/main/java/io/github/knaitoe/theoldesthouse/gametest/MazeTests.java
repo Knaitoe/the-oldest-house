@@ -150,17 +150,17 @@ public final class MazeTests {
     public static void routeDepthUnlocksBiggerMazesWithoutFinishingVignettes(GameTestHelper helper) {
         LabyrinthData data = new LabyrinthData();
         UUID player = UUID.randomUUID(), other = UUID.randomUUID();
-        for (int depth = 1; depth <= 9; depth++) {
+        for (int depth = 1; depth <= 16; depth++) {
             data.pushReturn(player, new LabyrinthData.Waypoint(HouseDimensions.INTERIOR, Vec3.ZERO, 0));
             List<LabyrinthPlace> pool = LabyrinthDealer.grayAvailable(data, player);
-            helper.assertTrue(pool.contains(LabyrinthPlace.FOLDED_MAZE) == (depth >= 3), "folded halls begin at three doors deep");
-            helper.assertTrue(pool.contains(LabyrinthPlace.DEEP_MAZE) == (depth >= 6), "the second expansion begins at six");
-            helper.assertTrue(pool.contains(LabyrinthPlace.ABYSS_MAZE) == (depth >= 9), "the largest expansion begins at nine");
+            helper.assertTrue(pool.contains(LabyrinthPlace.FOLDED_MAZE) == (depth >= 8), "folded halls begin at eight doors deep");
+            helper.assertTrue(pool.contains(LabyrinthPlace.DEEP_MAZE) == (depth >= 12), "the second expansion begins at twelve");
+            helper.assertTrue(pool.contains(LabyrinthPlace.ABYSS_MAZE) == (depth >= 16), "the largest expansion begins at sixteen");
         }
         helper.assertTrue(!LabyrinthDealer.grayAvailable(data, other).contains(LabyrinthPlace.FOLDED_MAZE), "another player's route depth stays separate");
-        helper.assertTrue(LabyrinthDealer.grayWeight(LabyrinthPlace.ABYSS_MAZE, 12) > LabyrinthDealer.grayWeight(LabyrinthPlace.FOLDED_MAZE, 3),
+        helper.assertTrue(LabyrinthDealer.grayWeight(LabyrinthPlace.ABYSS_MAZE, 20) > LabyrinthDealer.grayWeight(LabyrinthPlace.FOLDED_MAZE, 8),
                 "deep gray dealings favor the larger impossible networks");
-        for (int i = 0; i < 9; i++) data.popReturn(player);
+        for (int i = 0; i < 16; i++) data.popReturn(player);
         helper.assertTrue(!LabyrinthDealer.grayAvailable(data, player).contains(LabyrinthPlace.FOLDED_MAZE), "backtracking lowers route intensity");
         helper.succeed();
     }

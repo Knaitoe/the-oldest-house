@@ -30,7 +30,12 @@ public final class LabyrinthMaze {
                 || place == LabyrinthPlace.DEEP_MAZE || place == LabyrinthPlace.ABYSS_MAZE;
     }
     public static int minimumDepth(LabyrinthPlace place) {
-        return switch (place) { case FOLDED_MAZE -> 3; case DEEP_MAZE -> 6; case ABYSS_MAZE -> 9; default -> 0; };
+        return switch (place) {
+            case FOLDED_MAZE -> LabyrinthPacing.STRANGE_DEPTH;
+            case DEEP_MAZE -> LabyrinthPacing.DEEP_DEPTH;
+            case ABYSS_MAZE -> LabyrinthPacing.ABYSS_DEPTH;
+            default -> 0;
+        };
     }
     public static MazeLayout layout(MinecraftServer server, LabyrinthPlace place) {
         return LAYOUTS.computeIfAbsent(place, p -> {
@@ -62,6 +67,7 @@ public final class LabyrinthMaze {
                 Blocks.SMOOTH_STONE.defaultBlockState(), Blocks.STONE.defaultBlockState());
         LabyrinthBuilder.doors(level, base, place);
         refreshLights(level, base, place, Math.max(0, LabyrinthLighting.darknessBand(minimumDepth(place))), 0);
+        LabyrinthDomestic.decorateMaze(level, base, place, layout);
     }
 
     public static List<BlockPos> lightPositions(LabyrinthPlace place, int band, int layout) {
@@ -77,11 +83,12 @@ public final class LabyrinthMaze {
     }
     public static void refreshLights(ServerLevel level, BlockPos base, LabyrinthPlace place, int band, int layout) {
         for (int variant = 0; variant < 3; variant++) for (BlockPos rel : lightPositions(place, 0, variant)) {
-            if (level.getBlockState(base.offset(rel)).is(Blocks.SOUL_LANTERN)) {
+            if (level.getBlockState(base.offset(rel)).is(Blocks.SOUL_LANTERN)
+                    || level.getBlockState(base.offset(rel)).is(Blocks.LANTERN)) {
                 level.setBlock(base.offset(rel), Blocks.AIR.defaultBlockState(), LabyrinthBuilder.flags());
             }
         }
-        for (BlockPos rel : lightPositions(place, band, layout)) LabyrinthBuilder.hangLantern(level, base.offset(rel), true);
+        for (BlockPos rel : lightPositions(place, band, layout)) LabyrinthBuilder.hangLantern(level, base.offset(rel), band > 0);
     }
     public static boolean nearFold(MazeLayout plan, BlockPos relative) {
         for (MazeLayout.Sleeve sleeve : plan.sleeves()) {
@@ -119,7 +126,13 @@ public final class LabyrinthMaze {
         List<Light> lights = new ArrayList<>();
         for (BlockPos pos : BlockPos.betweenClosed(slot.minX(), slot.minY(), slot.minZ(), slot.maxX(), slot.maxY(), slot.maxZ())) {
             BlockState state = level.getBlockState(pos);
-            if (LabyrinthLighting.isPortableLight(state) && !(state.is(Blocks.SOUL_LANTERN) && pos.getY() == base.getY() + 3))
+            boolean authored = pos.getY() == base.getY() + 3
+                    && (state.is(Blocks.SOUL_LANTERN) || state.is(Blocks.LANTERN))
+                    && java.util.List.of(LabyrinthPlace.GRAY_CORRIDOR, LabyrinthPlace.FOLDED_MAZE,
+                            LabyrinthPlace.DEEP_MAZE, LabyrinthPlace.ABYSS_MAZE).stream().anyMatch(place ->
+                            java.util.stream.IntStream.range(0, 3).anyMatch(variant -> lightPositions(place, 0, variant)
+                                    .stream().anyMatch(p -> base.offset(p).equals(pos))));
+            if (LabyrinthLighting.isPortableLight(state) && !authored)
                 lights.add(new Light(pos.immutable(), state));
         }
         return new Migration(level.players().stream().filter(p -> box.contains(p.position())).toList(),

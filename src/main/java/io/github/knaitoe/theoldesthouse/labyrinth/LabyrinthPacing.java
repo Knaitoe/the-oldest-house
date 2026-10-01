@@ -4,7 +4,13 @@ import java.util.UUID;
 
 /** Budget unsettling discoveries per arrival, rather than independently for every door. */
 public final class LabyrinthPacing {
+    /** Crossings from the hallway root. Shared story progress never shortens this approach. */
+    public static final int STORY_DEPTH = 6;
+    public static final int STRANGE_DEPTH = 8;
+    public static final int DEEP_DEPTH = 12;
+    public static final int ABYSS_DEPTH = 16;
     private LabyrinthPacing() {}
+    public static boolean domestic(int depth) { return depth < STORY_DEPTH; }
     public static boolean ordinary(LabyrinthPlace place) {
         return place==LabyrinthPlace.JUNCTION || place==LabyrinthPlace.GRAY_CORRIDOR
                 || place==LabyrinthPlace.STRAIGHT_HALL || place==LabyrinthPlace.BENT_HALL
@@ -23,14 +29,15 @@ public final class LabyrinthPacing {
     /** Three ordinary/story visits separate impossible discoveries, even at great depth. */
     public static int anomalyChance(LabyrinthData data, UUID player) {
         int depth=data.returnDepth(player);
-        if(depth<3) return 0;
+        if(depth<STRANGE_DEPTH) return 0;
         for(LabyrinthPlace place:LabyrinthPlace.values()) {
             int age=data.recentVisit(player,place);
             if(anomaly(place) && age>=0 && age<3) return 0;
         }
-        return depth<6 ? 3 : depth<9 ? 5 : depth<18 ? 8 : 10;
+        return depth<DEEP_DEPTH ? 3 : depth<ABYSS_DEPTH ? 5 : depth<24 ? 8 : 10;
     }
     public static boolean restDue(LabyrinthData data, UUID player) {
+        if (domestic(data.returnDepth(player))) return false;
         for(LabyrinthPlace place:LabyrinthPlace.values()) {
             int age=data.recentVisit(player,place);
             if(quiet(place) && age>=0 && age<4) return false;

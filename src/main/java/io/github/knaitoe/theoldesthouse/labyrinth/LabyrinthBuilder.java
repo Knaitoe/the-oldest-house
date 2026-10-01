@@ -5,6 +5,8 @@ import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashSet;
+import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,8 +35,8 @@ import net.minecraft.world.phys.AABB;
  * creative can replace these later.
  */
 public final class LabyrinthBuilder {
-    /** Bump to rebuild every place in existing worlds on next use. */
-    public static final int VERSION = 16;
+    /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
+    public static final int VERSION = 17;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -48,6 +50,7 @@ public final class LabyrinthBuilder {
     private static Deque<LabyrinthPlace> pending;
     @Nullable
     private static BlockPos pendingOrigin;
+    private static final Set<LabyrinthPlace> domesticUpgrades = new HashSet<>();
 
     private LabyrinthBuilder() {
     }
@@ -86,17 +89,21 @@ public final class LabyrinthBuilder {
             return true;
         }
         pending = new ArrayDeque<>();
+        domesticUpgrades.clear();
         LabyrinthData data = LabyrinthData.get(server);
-        // Upgrade only the replaced corridor and new slots. Caches, drops and active vignette rounds elsewhere remain intact.
+        // Older structural upgrades keep their scope. 0.4.17 dresses existing halls in place.
         boolean extend = !force && data.builtVersion() >= 10 && data.builtVersion() < VERSION && origin.equals(data.builtOrigin());
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
-            if (place.slot() >= 0 && (!extend || (data.builtVersion() < 13 && place.slot() >= 23)
+            boolean structural = !extend || (data.builtVersion() < 13 && place.slot() >= 23)
                     || (data.builtVersion() < 14 && place.slot() >= 27)
                     || (data.builtVersion() < 15 && place.slot() >= 28)
-                    || place.slot() >= 30
+                    || (data.builtVersion() < 16 && place.slot() >= 30)
                     || (data.builtVersion() < 12 && LabyrinthMaze.isMaze(place))
-                    || (data.builtVersion() == 10 && place == LabyrinthPlace.MOTHER_DEN))) {
+                    || (data.builtVersion() == 10 && place == LabyrinthPlace.MOTHER_DEN);
+            boolean domestic = place == LabyrinthPlace.JUNCTION || LabyrinthHalls.isHall(place) || LabyrinthMaze.isMaze(place);
+            if (place.slot() >= 0 && (structural || domestic)) {
                 pending.add(place);
+                if (!structural) domesticUpgrades.add(place);
             }
         }
         pendingOrigin = origin;
@@ -119,15 +126,19 @@ public final class LabyrinthBuilder {
         }
         LabyrinthPlace place = pending.poll();
         if (place != null) {
-            build(server, interior, pendingOrigin, place);
+            if (domesticUpgrades.remove(place)) LabyrinthDomestic.upgrade(interior, pendingOrigin, place);
+            else build(server, interior, pendingOrigin, place);
         }
         if (pending.isEmpty()) {
             BlockPos origin = pendingOrigin;
             LabyrinthData data = LabyrinthData.get(server);
             data.pruneDoors(server);
             data.setBuilt(VERSION, origin);
+            if (HouseSavedData.get(server).isImpossibleDoorRevealed())
+                io.github.knaitoe.theoldesthouse.house.HouseImpossibleHallway.dressDomesticApproach(interior, origin);
             pending = null;
             pendingOrigin = null;
+            domesticUpgrades.clear();
             LabyrinthDoors.syncSealedDoors(server);
             TheOldestHouse.LOGGER.info("Carved the labyrinth around the manor, {} slot(s) above it (version {}).",
                     LabyrinthPlaces.slotsAbove(origin), VERSION);
@@ -137,6 +148,7 @@ public final class LabyrinthBuilder {
     public static void clearAll() {
         pending = null;
         pendingOrigin = null;
+        domesticUpgrades.clear();
     }
 
     private static void build(MinecraftServer server, ServerLevel level, BlockPos origin, LabyrinthPlace place) {
@@ -210,15 +222,16 @@ public final class LabyrinthBuilder {
     // ------------------------------------------------------------------
     // The gray
 
-    /** A plain gray hall, 9 by 12, with a door in each wall. */
+    /** A household landing, 9 by 12, with a door in each wall. */
     public static void buildJunction(ServerLevel level, BlockPos base) {
-        room(level, base, -4, 4, 4, -12, -1, GRAY_WALL, GRAY_FLOOR, GRAY_CEILING);
-        hangLantern(level, base.offset(0, 4, -3), true);
-        hangLantern(level, base.offset(0, 4, -9), true);
+        room(level, base, -4, 4, 4, -12, -1, LabyrinthDomestic.WALL, LabyrinthDomestic.FLOOR, LabyrinthDomestic.CEILING);
+        hangLantern(level, base.offset(0, 4, -3), false);
+        hangLantern(level, base.offset(0, 4, -9), false);
         // A single bench against the west wall, facing nothing.
         level.setBlock(base.offset(-4, 0, -9), stairs(Blocks.STONE_STAIRS, Direction.WEST), FLAGS);
         level.setBlock(base.offset(-4, 0, -10), stairs(Blocks.STONE_STAIRS, Direction.WEST), FLAGS);
-        entrance(level, base, GRAY_WALL, GRAY_FLOOR, GRAY_CEILING);
+        entrance(level, base, LabyrinthDomestic.WALL, LabyrinthDomestic.FLOOR, LabyrinthDomestic.CEILING);
+        LabyrinthDomestic.decorateJunction(level, base);
         doors(level, base, LabyrinthPlace.JUNCTION);
     }
 
@@ -296,7 +309,7 @@ public final class LabyrinthBuilder {
             }
         }
         for (int z = 6; z <= vestibule.maxZ(); z += 8) {
-            hangLantern(level, base.offset(0, 3, z), true);
+            hangLantern(level, base.offset(0, 3, z), !floor.equals(LabyrinthDomestic.FLOOR));
         }
     }
 

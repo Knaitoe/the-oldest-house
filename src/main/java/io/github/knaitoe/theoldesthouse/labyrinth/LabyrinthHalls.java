@@ -37,6 +37,16 @@ public final class LabyrinthHalls {
             }
             default -> {}
         }
+        for (var fragment : LabyrinthDomestic.fragments(place)) {
+            rectangle(floor, fragment.x0(), fragment.x1(), fragment.z0(), fragment.z1());
+            int cx = (fragment.x0() + fragment.x1()) / 2, cz = (fragment.z0() + fragment.z1()) / 2;
+            for (int n = 0; n < 2; n++) floor.add(switch (fragment.entrance()) {
+                case EAST -> new BlockPos(fragment.x1() + 1, 0, cz + n);
+                case WEST -> new BlockPos(fragment.x0() - 1, 0, cz + n);
+                case NORTH -> new BlockPos(cx + n, 0, fragment.z0() - 1);
+                default -> new BlockPos(cx + n, 0, fragment.z1() + 1);
+            });
+        }
         return Set.copyOf(floor);
     }
     private static void rectangle(Set<BlockPos> floor, int x0, int x1, int z0, int z1) {
@@ -49,15 +59,15 @@ public final class LabyrinthHalls {
         for(int x=box.minX();x<=box.maxX();x++) for(int z=box.minZ();z<=box.maxZ();z++)
             for(int y=-1;y<=height+1;y++) {
                 boolean open=floor.contains(new BlockPos(x,0,z));
-                var state=!open ? Blocks.LIGHT_GRAY_TERRACOTTA.defaultBlockState()
-                        : y==-1 ? Blocks.SMOOTH_STONE.defaultBlockState()
-                        : y==height+1 ? Blocks.STONE.defaultBlockState() : Blocks.AIR.defaultBlockState();
+                var state=!open ? (y==0 ? Blocks.OAK_PLANKS.defaultBlockState() : LabyrinthDomestic.WALL)
+                        : y==-1 ? LabyrinthDomestic.FLOOR
+                        : y==height+1 ? LabyrinthDomestic.CEILING : Blocks.AIR.defaultBlockState();
                 level.setBlock(base.offset(x,y,z),state,flags);
             }
         for(int z=-5;z>box.minZ()+3;z-=10) if(floor.contains(new BlockPos(0,0,z)))
             LabyrinthBuilder.hangLantern(level,base.offset(0,height,z),false);
         // A chipped pillar and a dark threshold are recognizable without naming destinations.
-        int landmarkZ=place==LabyrinthPlace.STRAIGHT_HALL ? -19 : -12;
+        int landmarkZ=place==LabyrinthPlace.STRAIGHT_HALL ? -19 : -16;
         for(int y=0;y<=height;y++) level.setBlock(base.offset(2,y,landmarkZ),
                 (y==1 ? Blocks.CRACKED_STONE_BRICKS : Blocks.POLISHED_ANDESITE).defaultBlockState(),flags);
         if(place==LabyrinthPlace.BENT_HALL) LabyrinthBuilder.hangLantern(level,base.offset(-12,3,-19),false);
@@ -92,8 +102,8 @@ public final class LabyrinthHalls {
                                 "I found a cat here. It was more frightened than I was.")));
             LabyrinthBuilder.hangLantern(level,base.offset(-3,4,-7),false);
         }
-        LabyrinthBuilder.entrance(level,base,Blocks.LIGHT_GRAY_TERRACOTTA.defaultBlockState(),
-                Blocks.SMOOTH_STONE.defaultBlockState(),Blocks.STONE.defaultBlockState());
+        LabyrinthBuilder.entrance(level,base,LabyrinthDomestic.WALL,LabyrinthDomestic.FLOOR,LabyrinthDomestic.CEILING);
+        LabyrinthDomestic.decorateHall(level,base,place);
         LabyrinthBuilder.doors(level,base,place);
     }
 }
