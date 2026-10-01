@@ -65,6 +65,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerContainerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 /**
  * Mr Harrigan's Phone: a two-visit vignette followed by a persistent artifact.
@@ -87,6 +88,8 @@ public final class HarriganVignette {
     private static final String GHOST_OWNER = "HarriganGhostOwner";
     private static final String GHOST_TARGET = "HarriganGhostTarget";
     private static final String GHOST_MODE = "HarriganGhostMode";
+    private static final String BODY_POSE = "HarriganBodyPose";
+    private static final String BODY_SEAT = "HarriganBodySeat";
 
     public static final BlockPos CHAIR = new BlockPos(0, 0, -9);
     public static final BlockPos LECTERN = new BlockPos(-3, 0, -7);
@@ -317,7 +320,49 @@ public final class HarriganVignette {
             stand.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.PLAYER_HEAD));
         }
         equipSuit(stand);
+        stand.setNoGravity(true);
+        stand.getPersistentData().putInt(BODY_POSE, 1);
+        if (!inCasket) seatBody(stand, pos.below());
         level.addFreshEntity(stand);
+    }
+
+    private static void seatBody(ArmorStand stand, BlockPos chair) {
+        // The armor model's hip is thirteen pixels above the entity origin.
+        // Put it just above the stair's half-height seat, in front of its back.
+        stand.setPos(chair.getX() + 0.5D, chair.getY() + 0.55D - 13.0D / 16.0D, chair.getZ() + 0.3D);
+        stand.setYRot(180.0F);
+        stand.setXRot(0.0F);
+        stand.setNoGravity(true);
+        stand.setDeltaMovement(Vec3.ZERO);
+        boolean dead = stand.getItemBySlot(EquipmentSlot.HEAD).is(Items.ZOMBIE_HEAD);
+        stand.setHeadPose(new Rotations(dead ? 18.0F : 0.0F, 0.0F, dead ? 8.0F : 0.0F));
+        stand.setBodyPose(new Rotations(dead ? 8.0F : 0.0F, 0.0F, 0.0F));
+        stand.setLeftLegPose(new Rotations(-90.0F, -5.0F, 0.0F));
+        stand.setRightLegPose(new Rotations(-90.0F, 5.0F, 0.0F));
+        stand.setLeftArmPose(new Rotations(dead ? -25.0F : -40.0F, 0.0F, -5.0F));
+        stand.setRightArmPose(new Rotations(dead ? -25.0F : -40.0F, 0.0F, 5.0F));
+        stand.getPersistentData().putInt(BODY_POSE, 1);
+        stand.getPersistentData().putLong(BODY_SEAT, chair.asLong());
+    }
+
+    /** Repair the existing actor in place, even when a reader still occupies the scene. */
+    public static void onEntityTick(EntityTickEvent.Post event) {
+        if (!(event.getEntity() instanceof ArmorStand stand) || !stand.getTags().contains(BODY_TAG)
+                || stand.getPersistentData().getInt(BODY_POSE) >= 1
+                || !(stand.level() instanceof ServerLevel level) || !level.dimension().equals(HouseDimensions.INTERIOR)) return;
+        BlockPos base = base(level.getServer());
+        if (base == null || !placeBounds(base).contains(stand.position())) return;
+        BlockPos chair = base.offset(CHAIR);
+        if (Math.abs(stand.getX() - chair.getX() - 0.5D) < 0.75D
+                && Math.abs(stand.getZ() - chair.getZ() - 0.5D) < 0.75D) seatBody(stand, chair);
+        else stand.getPersistentData().putInt(BODY_POSE, 1); // Leave a body already in the casket there.
+    }
+
+    public static boolean occupiesChair(ServerLevel level, BlockPos chair) {
+        return !level.getEntitiesOfClass(ArmorStand.class, new AABB(chair).inflate(0, 1, 0),
+                stand -> stand.getTags().contains(BODY_TAG)
+                        && stand.getPersistentData().contains(BODY_SEAT)
+                        && stand.getPersistentData().getLong(BODY_SEAT) == chair.asLong()).isEmpty();
     }
 
     private static void equipSuit(LivingEntity entity) {

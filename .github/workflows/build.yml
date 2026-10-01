@@ -47,7 +47,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.17"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.18"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'assets/the_oldest_house/sounds/vignette/heartbeat.ogg' in z.namelist()
               assert 'vignette.heartbeat' in json.loads(z.read('assets/the_oldest_house/sounds.json'))
               for name in ('assets/the_oldest_house/textures/entity/lake_witch.png',

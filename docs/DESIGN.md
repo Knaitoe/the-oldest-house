@@ -6,6 +6,8 @@ This file records implementation decisions so implementation history does not di
 
 ## Current implementation update
 
+Version 0.4.18 repairs Harrigan's seated study actor in existing saves and lets lost House cats and wolves be tamed with any vanilla meat. The existing story choices, nine-source Witness pool, seven-resolution quota and three endings remain. See [HARRIGAN_AND_STRAYS_0_4_18.md](HARRIGAN_AND_STRAYS_0_4_18.md).
+
 Version 0.4.17 adds a longer domestic labyrinth approach and trapped fragments of household rooms. Its current pacing, upgrade behavior and unchanged seven-of-nine Witness requirement are documented in [DOMESTIC_LABYRINTH_0_4_17.md](DOMESTIC_LABYRINTH_0_4_17.md).
 
 Version 0.4.7 supersedes the older Hillary refusal and early House-spawn behavior below. The opening is letter/photo, Hillary at home, then House on three mornings. Hillary can accompany the player into the real manor and labyrinth and retrace return doors on a compass request. Gray geometry, sensory door leaks, sitting and recent-room suppression are detailed in [MAZES_AND_COMPANIONS.md](MAZES_AND_COMPANIONS.md).

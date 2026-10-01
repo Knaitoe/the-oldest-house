@@ -1,26 +1,39 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.HouseExteriorEntityMirror;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.house.HouseWatchers;
+import io.github.knaitoe.theoldesthouse.opening.CompanionOrders;
+import io.github.knaitoe.theoldesthouse.opening.Hillary;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Cat;
 import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 /** Very rare quiet encounters. Rescued animals remain ordinary, vulnerable, tamable pets. */
 public final class LabyrinthEncounters {
     public static final String STRAY="HouseStray",AMBIENT_UNTIL="HouseAmbientUntil";
     private static final String STATE="exploration_encounters",HOME="HouseAmbientHome";
+    private static final Set<Item> STRAY_MEAT=Set.of(Items.BEEF,Items.COOKED_BEEF,Items.PORKCHOP,Items.COOKED_PORKCHOP,
+            Items.CHICKEN,Items.COOKED_CHICKEN,Items.MUTTON,Items.COOKED_MUTTON,Items.RABBIT,Items.COOKED_RABBIT,
+            Items.ROTTEN_FLESH,Items.COD,Items.COOKED_COD,Items.SALMON,Items.COOKED_SALMON,Items.TROPICAL_FISH,Items.PUFFERFISH);
     private LabyrinthEncounters(){}
     public static boolean eligible(LabyrinthPlace place) {
         return LabyrinthPacing.ordinary(place)||LabyrinthPacing.quiet(place)
@@ -68,7 +81,29 @@ public final class LabyrinthEncounters {
         keeper.setCorruption(collection.corruption());
         state.putLong("LastMother",now);data.setState(STATE,state);
     }
-    /** Vanilla bone/fish taming and native owner storage are retained. No Mother-kept-pet tag. */
+    public static void onInteract(PlayerInteractEvent.EntityInteract event) {
+        if(event.getEntity() instanceof ServerPlayer player && event.getTarget() instanceof TamableAnimal pet
+                && feedStray(player,pet,event.getHand())) {
+            event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);
+        }
+    }
+    /** A scarce piece of meat is enough to adopt a real lost animal in the House. */
+    public static boolean feedStray(ServerPlayer player,TamableAnimal pet,InteractionHand hand) {
+        ItemStack food=player.getItemInHand(hand);
+        if(player.isSpectator()||!player.isAlive()||pet.level()!=player.level()
+                ||!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)
+                ||!pet.isAlive()||pet.isTame()||pet.getOwnerUUID()!=null||pet.distanceToSqr(player)>16
+                ||!pet.getPersistentData().getBoolean(STRAY)||pet.getTags().contains(MotherOfStrays.PET)
+                ||HouseExteriorEntityMirror.isProjection(pet)||Hillary.tagOf(pet)!=null||!STRAY_MEAT.contains(food.getItem())) return false;
+        if(!player.getAbilities().instabuild)food.shrink(1);
+        pet.tame(player);pet.setPersistenceRequired();pet.setTarget(null);
+        if(pet instanceof Wolf wolf){wolf.setPersistentAngerTarget(null);wolf.setRemainingPersistentAngerTime(0);wolf.setIsInterested(false);}
+        pet.setHealth(pet.getMaxHealth());
+        CompanionOrders.issue(pet,player,CompanionOrders.Order.FOLLOW);
+        player.serverLevel().broadcastEntityEvent(pet,(byte)7);
+        return true;
+    }
+    /** Native bone/fish taming still works too. No Mother-kept-pet tag. */
     public static TamableAnimal spawnStray(ServerLevel level,Vec3 spot,boolean cat) {
         TamableAnimal pet=cat?EntityType.CAT.create(level):EntityType.WOLF.create(level);
         if(pet==null)return null;
