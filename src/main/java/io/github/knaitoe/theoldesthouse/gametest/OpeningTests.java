@@ -688,15 +688,22 @@ public final class OpeningTests {
                 1,
                 HouseLayout.FRONT_DOOR_Z + 3
         );
+        // The fixture is a proxy volume rather than a complete manor. Hold the
+        // native mobs on a floor while their chunk's entity storage becomes ready.
+        fill(level, inside.offset(-1, -1, -1), inside.offset(1, -1, 1), Blocks.STONE.defaultBlockState());
+        var entityChunk = new net.minecraft.world.level.ChunkPos(inside);
+        level.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.PORTAL, entityChunk, 3, inside);
+        level.getChunkAt(inside);
 
         Wolf wolf = EntityType.WOLF.create(level);
         Villager villager = EntityType.VILLAGER.create(level);
         helper.assertTrue(wolf != null && villager != null, "test mobs did not create");
+        wolf.setNoAi(true);
+        villager.setNoAi(true);
 
         wolf.moveTo(inside.getX() + 0.35D, inside.getY(), inside.getZ() + 0.35D, 0.0F, 0.0F);
         villager.moveTo(inside.getX() + 0.65D, inside.getY(), inside.getZ() + 0.65D, 0.0F, 0.0F);
-        level.addFreshEntity(wolf);
-        level.addFreshEntity(villager);
+        helper.assertTrue(level.addFreshEntity(wolf) && level.addFreshEntity(villager), "test mobs were not admitted to the native level");
 
         helper.assertTrue(
                 HouseLayout.isInsideDomesticVolume(
@@ -715,10 +722,11 @@ public final class OpeningTests {
                 "villager did not begin inside the proxy"
         );
 
-        // Fresh entities enter EntitySectionStorage on the following level
-        // tick. The evacuation code intentionally uses the world's spatial
-        // query, so testing it in the spawn tick is nondeterministic.
-        helper.runAfterDelay(1, () -> {
+        // Spatial-query readiness can take more than one tick at a chunk boundary.
+        // Keep the real production query and every evacuation assertion.
+        helper.onEachTick(() -> {
+            var visible = level.getEntitiesOfClass(Mob.class, new net.minecraft.world.phys.AABB(inside).inflate(3));
+            if (!visible.contains(wolf) || !visible.contains(villager)) return;
             try {
                 int moved = HouseProxyEntityEvacuation.evacuateAll(level, origin);
                 helper.assertTrue(moved == 2, "expected two mobs evacuated, got " + moved);
@@ -751,7 +759,15 @@ public final class OpeningTests {
                 wolf.discard();
                 villager.discard();
                 throw failure;
+            } finally {
+                level.getChunkSource().removeRegionTicket(net.minecraft.server.level.TicketType.PORTAL, entityChunk, 3, inside);
             }
+        });
+        helper.runAfterDelay(90, () -> {
+            wolf.discard();
+            villager.discard();
+            level.getChunkSource().removeRegionTicket(net.minecraft.server.level.TicketType.PORTAL, entityChunk, 3, inside);
+            helper.fail("the native test mobs never became queryable");
         });
     }
 
