@@ -122,7 +122,7 @@ public final class WitnessEnding {
         player.server.overworld().getChunkAt(BlockPos.containing(outside));player.stopRiding();
         player.teleportTo(player.server.overworld(),outside.x,outside.y,outside.z,180,0);player.resetFallDistance();
         for(var pet:companions)CompanionOrders.followAcross(pet,player);
-        FinaleController.words(player,player.blockPosition().above(2),"The same evening. Everything you carried. The door closes quietly.");
+        FinaleController.words(player,player.blockPosition().above(2),"Your belongings. Your companions. The door closes quietly.");
     }
     public static ItemStack epilogue(ServerPlayer player){
         return WitnessAccount.book(LabyrinthData.get(player.server),player.getUUID(),player.getGameProfile().getName(),true);

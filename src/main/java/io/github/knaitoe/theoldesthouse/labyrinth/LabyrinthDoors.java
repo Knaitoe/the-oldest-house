@@ -215,6 +215,7 @@ public final class LabyrinthDoors {
             ModelHome.onArrive(p, place);
             HarriganVignette.onArrive(p, place);
             MotherOfStrays.onArrive(p, place);
+            WitnessAccount.onArrive(p, place);
             LabyrinthEncounters.onArrive(p, place);
             LabyrinthHazards.onArrive(p, place);
             LabyrinthLighting.onArrive(p, place);
@@ -855,4 +856,3 @@ public final class LabyrinthDoors {
         return lines;
     }
 }
-

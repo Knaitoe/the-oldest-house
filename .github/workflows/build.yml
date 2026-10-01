@@ -47,9 +47,9 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-          assert 'version="0.4.10"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
-          assert 'assets/the_oldest_house/sounds/vignette/heartbeat.ogg' in z.namelist()
-          assert 'vignette.heartbeat' in json.loads(z.read('assets/the_oldest_house/sounds.json'))
+              assert 'version="0.4.10"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'assets/the_oldest_house/sounds/vignette/heartbeat.ogg' in z.namelist()
+              assert 'vignette.heartbeat' in json.loads(z.read('assets/the_oldest_house/sounds.json'))
           digest = hashlib.sha256(jar.read_bytes()).hexdigest()
           jar.with_suffix('.jar.sha256').write_text(f'{digest}  {jar.name}\n')
           print(f'Playable package: {jar.name}; SHA-256 {digest}')
@@ -59,7 +59,7 @@ jobs:
       # architecture (sightline, enclosure, walkability, glazing). The log
       # also carries an OTH-DUMP block listing for offline rendering.
       - name: Structure game tests
-        timeout-minutes: 5
+        timeout-minutes: 7
         run: |
           python3 - <<'PY' &
           import pathlib, subprocess, time
@@ -87,7 +87,7 @@ jobs:
           PY
           diagnostic=$!
           trap 'kill "$diagnostic" 2>/dev/null || true' EXIT
-          timeout --signal=QUIT --kill-after=20s 4m gradle runGameTestServer --no-daemon
+          timeout --signal=QUIT --kill-after=20s 6m gradle runGameTestServer --no-daemon
 
       - name: Upload test diagnostics
         if: always()

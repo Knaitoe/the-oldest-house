@@ -139,7 +139,8 @@ public final class FinaleController {
         BlockPos origin=HouseSavedData.get(player.server).housePosition().orElse(null);if(origin==null)return;
         if(lockedOut(player)&&player.serverLevel().dimension().equals(Level.OVERWORLD)&&event.getPos().distSqr(origin.offset(HouseLayout.AXIS_X,1,HouseLayout.FRONT_DOOR_Z))<12){
             event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);
-            player.serverLevel().playSound(null,event.getPos(),SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR,SoundSource.BLOCKS,.35F,.75F);
+            if(FinaleProgress.phase(player.server,player.getUUID())!=FinaleProgress.Phase.WITNESSED)
+                player.serverLevel().playSound(null,event.getPos(),SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR,SoundSource.BLOCKS,.35F,.75F);
             words(player,event.getPos().above(),FinaleProgress.phase(player.server,player.getUUID())==FinaleProgress.Phase.WITNESSED?"The door stays quiet.":"Someone knocks back.");return;
         }
         if(!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)||!FinaleArchitecture.contains(origin,player.blockPosition()))return;

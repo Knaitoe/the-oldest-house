@@ -276,6 +276,7 @@ public final class TellTaleFloorboards {
     /** Attack is an authored pry action, so a generic mining veto cannot swallow the puzzle. */
     public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || player.isSpectator()
+                || event.getAction()!=PlayerInteractEvent.LeftClickBlock.Action.START
                 || !isLooseBoard(player.serverLevel(), event.getPos())
                 || !player.getMainHandItem().is(ItemTags.AXES)) return;
         event.setCanceled(true);
