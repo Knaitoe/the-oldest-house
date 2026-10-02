@@ -1,7 +1,7 @@
 {
   "textures": {
     "casing": "minecraft:block/dark_oak_planks",
-    "screen": "the_oldest_house:block/model_home_materials",
+    "screen": "the_oldest_house:block/model_home_static",
     "particle": "minecraft:block/dark_oak_planks"
   },
   "elements": [
@@ -58,8 +58,8 @@
         "west": {
           "texture": "#screen",
           "uv": [
-            8,
-            8,
+            0,
+            0,
             16,
             16
           ]

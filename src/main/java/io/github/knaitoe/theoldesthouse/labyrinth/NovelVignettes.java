@@ -40,6 +40,8 @@ public final class NovelVignettes {
     private static final ResourceLocation SMALL=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"well_child_scale");
     private static final Map<UUID,ServerPlayer> SCALED=new HashMap<>();
     private static final Map<UUID,SceneRecord> RECORDS=new HashMap<>();
+    private record PendingPhoto(LabyrinthPlace place,int due){}
+    private static final Map<UUID,PendingPhoto> PENDING_PHOTOS=new HashMap<>();
     private static final Map<UUID,Long> LAST_TICK=new HashMap<>();
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private NovelVignettes(){}
@@ -53,18 +55,19 @@ public final class NovelVignettes {
     public static @Nullable LabyrinthPlace current(ServerPlayer p){for(var place:PLACES)if(inside(p,place))return place;return null;}
     public static void onArrive(ServerPlayer p,LabyrinthPlace place){
         recordVisit(p,place);if(!isNovel(place)||!participant(p))return;var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());
+        if(place==LabyrinthPlace.BARN_WELL){BarnFarm.animals(p);cue(p,own,"The worn track leads past the barn to a covered well. The initials are below. The return door waits for you to come back up.");}
         if(place==LabyrinthPlace.ZAMPANO_COURTYARD){ensureCats(p);var c=own.getCompound("Courtyard");int visits=c.getInt("Visits")+1;c.putInt("Visits",visits);own.put("Courtyard",c);thinCats(p,visits);
             var visited=data.visited(p.getUUID()).stream().map(LabyrinthPlace::byId).filter(q->q!=null&&q.slot()>=0&&q!=place&&!q.isOneShot()).toList();
             for(int i=1;i<place.doors().size();i++){var d=data.door(place.doorId(place.doors().get(i)));if(d!=null)data.deal(p.getUUID(),d,visited.isEmpty()?place.id():visited.get((i-1)%visited.size()).id(),false);}
         }
         if(place==LabyrinthPlace.WHALE&&!own.contains("MailDue")){own.putLong("MailDue",p.serverLevel().getGameTime()+MAIL_INTERVAL);own.putBoolean("Correspondence",true);}
         if(place==LabyrinthPlace.HOSPITAL&&!own.getBoolean("WardFinished")){own.putInt("WardTicks",0);own.putInt("WardCalls",0);own.putBoolean("Alarm",false);}
-        if(place==LabyrinthPlace.KAREN_ROOM){showRecord(p,own);p.displayClientMessage(Component.literal("This room's bed can remember your place inside the House."),true);}
+        if(place==LabyrinthPlace.KAREN_ROOM){showRecord(p,own);p.displayClientMessage(Component.literal("The bed remembers your place. Use the projector to change photographs; sneak-use it to take your originals."),false);}
         save(data,p.getUUID(),own);
     }
     public static void recordVisit(ServerPlayer p,LabyrinthPlace place){
         if(!participant(p)||place.room()==null||place==LabyrinthPlace.KAREN_ROOM)return;var origin=HouseSavedData.get(p.server).houseOrigin();var b=origin==null?null:LabyrinthPlaces.base(origin,place);if(b==null)return;
-        var r=place.room();RECORDS.put(p.getUUID(),new SceneRecord(p.serverLevel(),b.offset(r.minX(),r.minY(),r.minZ()),b.offset(r.maxX(),r.maxY(),r.maxZ()),p.getEyePosition(),p.getViewVector(1)));
+        PENDING_PHOTOS.put(p.getUUID(),new PendingPhoto(place,p.tickCount+40));
     }
     public static void ensureCats(ServerPlayer p){var data=LabyrinthData.get(p.server);var all=data.state(STATE);if(all.getBoolean("CatsMade"))return;
         var b=IndianLakeRooms.base(p.server,LabyrinthPlace.ZAMPANO_COURTYARD);if(b==null)return;ListTag cats=new ListTag();
@@ -112,7 +115,8 @@ public final class NovelVignettes {
             if(own.getBoolean("AtticKnocked")&&own.getInt("Letters")>=3)open(p,place,NovelTexts.whaleLast(),"WhaleLast",true);else cue(p,own,"The letter has no address for you yet.");
         }else if(place==LabyrinthPlace.WHALE&&rel.equals(new BlockPos(-7,1,-25)))open(p,place,NovelTexts.whaleOpening(),"WhaleOpening",false);
         else if(place==LabyrinthPlace.BARN_WELL&&rel.equals(NovelRooms.WELL)){
-            if(own.getInt("WellTicks")>=WELL_WAIT)NovelRooms.cover(p.serverLevel(),b,false);
+            if(waitingBelow(p.server))cue(p,own,"The cover will not lift. Someone remains above the shaft.");
+            else NovelRooms.cover(p.serverLevel(),b,false);
         }else if(place==LabyrinthPlace.BARN_WELL&&rel.equals(NovelRooms.CARVING)){own.putBoolean("Initials",true);cue(p,own,"K. G. / D. G. Two pairs of cuts, low on the wood.");}
         else if(place==LabyrinthPlace.BARN_WELL&&rel.equals(NovelRooms.RIBBON)){if(own.getBoolean("WellReturned"))reward(p,own,"Ribbon",VignetteYields.mark(new ItemStack(NovelRegistry.RIBBON.get()),place.id()));}
         else if(place==LabyrinthPlace.BARN_WELL&&rel.equals(new BlockPos(-4,0,-17)))open(p,place,NovelTexts.well(),"WellBook",false);
@@ -122,7 +126,7 @@ public final class NovelVignettes {
             if(own.getBoolean("Alarm")){own.putBoolean("Alarm",false);own.putInt("WardCalls",own.getInt("WardCalls")+1);cue(p,own,"The button clicks. No footsteps follow.");}
         }else if(place==LabyrinthPlace.HOSPITAL&&rel.equals(NovelRooms.WARD_NOTE)){
             open(p,place,own.getBoolean("WardFinished")?NovelTexts.hospitalLast():NovelTexts.hospitalOpening(),own.getBoolean("WardFinished")?"WardLast":"WardOpening",own.getBoolean("WardFinished"));
-        }else if(place==LabyrinthPlace.KAREN_ROOM&&rel.equals(NovelRooms.PROJECTOR)){own.putInt("Projection",own.getInt("Projection")+1);showRecord(p,own);}
+        }else if(place==LabyrinthPlace.KAREN_ROOM&&rel.equals(NovelRooms.PROJECTOR)){if(p.isShiftKeyDown())SecretPhotographs.open(p);else{own.putInt("Projection",own.getInt("Projection")+1);showRecord(p,own);}}
         else if(place==LabyrinthPlace.KAREN_ROOM&&rel.equals(new BlockPos(6,1,-11)))open(p,place,NovelTexts.karen(),"KarenBook",false);
         else handled=false;
         if(handled){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);save(data,p.getUUID(),own);}
@@ -152,7 +156,9 @@ public final class NovelVignettes {
             var data=LabyrinthData.get(server);var own=personal(data,p.getUUID());var place=current(p);
             if(place!=null){var b=LabyrinthPlaces.base(origin,place);IndianLakeRooms.keepLoaded(p.serverLevel(),b,place);double y=p.getY()-b.getY();
                 if(place==LabyrinthPlace.BARN_WELL){scale(p,true);small.add(p.getUUID());
-                    if(y< -10.5){own.putBoolean("WellEntered",true);int ticks=Math.min(WELL_WAIT,own.getInt("WellTicks")+1);own.putInt("WellTicks",ticks);if(ticks<WELL_WAIT)closeCover=true;
+                    boolean shaft=Math.abs(p.getX()-b.getX()-.5)<.6 && Math.abs(p.getZ()-b.getZ()+22.5)<.6;
+                    if(shaft&&y< -10.5)own.putBoolean("WellEntered",true);
+                    if(shaft&&y<1&&own.getBoolean("WellEntered")&&own.getInt("WellTicks")<WELL_WAIT){int ticks=Math.min(WELL_WAIT,own.getInt("WellTicks")+1);own.putInt("WellTicks",ticks);if(ticks<WELL_WAIT)closeCover=true;
                         if(ticks==1)cue(p,own,"The cover shuts. Someone remains above you.");if(ticks<WELL_WAIT&&ticks%20==0)p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS,50,0,false,false));
                         if(ticks==WELL_WAIT){p.removeEffect(net.minecraft.world.effect.MobEffects.DARKNESS);cue(p,own,"Light reaches the initials. The cover has opened.");}}
                     if(own.getBoolean("WellEntered")&&own.getInt("WellTicks")>=WELL_WAIT&&y>=-.2&&!own.getBoolean("WellReturned")){own.putBoolean("WellReturned",true);WitnessAccount.resolve(p,WitnessAccount.Story.BARN_WELL,"waited_and_climbed_out");data.setCompleted(LabyrinthPlace.BARN_WELL.id(),true);cue(p,own,"A ribbon catches on the barrel beside the well.");}
@@ -168,15 +174,36 @@ public final class NovelVignettes {
                 }
                 if(p.tickCount%20==0)HousePackets.send(p,new NovelScenePayload(PLACES.indexOf(place)+1,own.getInt("WardTicks"),own.getString("Cue"),Math.max(0,own.getInt("CueUntil")-p.tickCount),0));
             }else if(own.getInt("WardTicks")>0&&!own.getBoolean("WardFinished")){own.putInt("WardTicks",0);own.putInt("NextAlarm",0);own.putBoolean("Alarm",false);}
-            var job=RECORDS.get(p.getUUID());if(job!=null&&job.tick()){var stack=job.finish();var photos=own.getList("Record",Tag.TAG_COMPOUND);photos.add(stack.save(p.registryAccess()));while(photos.size()>6)photos.remove(0);own.put("Record",photos);RECORDS.remove(p.getUUID());}
-            if(p.tickCount%20==0){returnPhoto(p,own);tickTom(p,origin,own);}
+            var pending=PENDING_PHOTOS.get(p.getUUID());
+            if(pending!=null&&p.tickCount>=pending.due()&&participant(p)){
+                var site=pending.place();var b=LabyrinthPlaces.base(origin,site);var r=site.room();
+                var box=new AABB(b.offset(r.minX(),r.minY(),r.minZ()),b.offset(r.maxX()+1,r.maxY()+1,r.maxZ()+1));
+                if(p.level().dimension().equals(NovelRooms.dimension(site))&&box.contains(p.getEyePosition())&&p.getZ()<b.getZ()-3){
+                    RECORDS.put(p.getUUID(),new SceneRecord(p.serverLevel(),b.offset(r.minX(),r.minY(),r.minZ()),b.offset(r.maxX(),r.maxY(),r.maxZ()),p.getEyePosition(),p.getViewVector(1)));PENDING_PHOTOS.remove(p.getUUID());
+                }else if(p.tickCount>pending.due()+1200)PENDING_PHOTOS.remove(p.getUUID());
+            }
+            var job=RECORDS.get(p.getUUID());if(job!=null&&job.tick()){var stack=job.finish();stack.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,Component.literal("Secret photograph"));var photos=own.getList("Record",Tag.TAG_COMPOUND);photos.add(stack.save(p.registryAccess()));while(photos.size()>6)photos.remove(0);own.put("Record",photos);RECORDS.remove(p.getUUID());}
+            if(p.tickCount%20==0){returnPhoto(p,own);tickTom(p,origin,own);if(place==LabyrinthPlace.KAREN_ROOM)SecretPhotographs.project(p,own);}
             save(data,p.getUUID(),own);
         }
         for(var p:new ArrayList<>(SCALED.values()))if(!small.contains(p.getUUID()))restoreScale(p);
         List<Entity> doubles=new ArrayList<>();for(var level:server.getAllLevels())for(Entity entity:level.getAllEntities())if(entity instanceof NovelActor a&&a.role()==1){
             var viewer=a.owner().map(server.getPlayerList()::getPlayer).orElse(null);if(viewer==null||viewer.level()!=level||level.getGameTime()>=a.getPersistentData().getLong("DoubleUntil")||viewer.position().distanceToSqr(a.position())>16)doubles.add(a);
         }doubles.forEach(Entity::discard);
-        var outside=server.getLevel(HouseDimensions.OUTSIDE);var well=LabyrinthPlaces.base(origin,LabyrinthPlace.BARN_WELL);if(outside!=null&&well!=null&&server.getTickCount()%20==0)NovelRooms.cover(outside,well,closeCover);
+        var outside=server.getLevel(HouseDimensions.OUTSIDE);var well=LabyrinthPlaces.base(origin,LabyrinthPlace.BARN_WELL);if(outside!=null&&well!=null)NovelRooms.cover(outside,well,closeCover);
+    }
+    public static boolean waitingBelow(MinecraftServer server) {
+        var level=server.getLevel(HouseDimensions.OUTSIDE);var origin=HouseSavedData.get(server).houseOrigin();
+        var b=origin==null?null:LabyrinthPlaces.base(origin,LabyrinthPlace.BARN_WELL);if(level==null||b==null)return false;
+        return level.players().stream().anyMatch(p->{var own=personal(LabyrinthData.get(server),p.getUUID());
+            return participant(p)&&inside(p,LabyrinthPlace.BARN_WELL)&&p.getY()<b.getY()+1
+                    &&Math.abs(p.getX()-b.getX()-.5)<.6&&Math.abs(p.getZ()-b.getZ()+22.5)<.6
+                    &&own.getBoolean("WellEntered")&&own.getInt("WellTicks")<WELL_WAIT;});
+    }
+    public static boolean exitLocked(ServerPlayer p,LabyrinthData.Door door) {
+        return participant(p)&&door.id.equals(LabyrinthPlace.BARN_WELL.entryDoorId())
+                &&!personal(LabyrinthData.get(p.server),p.getUUID()).getBoolean("WellReturned")
+                &&!WitnessAccount.has(LabyrinthData.get(p.server),p.getUUID(),WitnessAccount.Story.BARN_WELL);
     }
     private static void tickPlain(ServerPlayer p,BlockPos b,CompoundTag own){
         BlockPos target=b.offset(NovelRooms.FIGURE);p.serverLevel().getChunkAt(target);p.serverLevel().getChunkSource().addRegionTicket(TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(target),3,target);
@@ -244,10 +271,13 @@ public final class NovelVignettes {
         if(wakes%3==0){var actor=NovelRegistry.ACTOR.get().create(p.serverLevel());if(actor!=null){actor.appearance(p.getUUID(),1);actor.moveTo(Vec3.atBottomCenterOf(b.offset(NovelRooms.BED).south(2)));actor.getPersistentData().putLong("DoubleUntil",p.serverLevel().getGameTime()+100);p.serverLevel().addFreshEntity(actor);}}
         save(data,p.getUUID(),own);
     }
-    private static void showRecord(ServerPlayer p,CompoundTag own){var b=IndianLakeRooms.base(p.server,LabyrinthPlace.KAREN_ROOM);if(b==null)return;var photos=own.getList("Record",Tag.TAG_COMPOUND);if(photos.isEmpty())return;
-        var photo=ItemStack.parseOptional(p.registryAccess(),photos.getCompound(Math.floorMod(own.getInt("Projection"),photos.size())));var at=b.offset(0,2,-14);
-        var frames=p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.decoration.ItemFrame.class,new AABB(at).inflate(2));net.minecraft.world.entity.decoration.ItemFrame frame=frames.isEmpty()?new net.minecraft.world.entity.decoration.ItemFrame(p.serverLevel(),at,Direction.SOUTH):frames.get(0);
-        frame.setItem(photo);var fixed=new CompoundTag();frame.saveWithoutId(fixed);fixed.putBoolean("Fixed",true);frame.load(fixed);frame.setInvulnerable(true);if(frames.isEmpty())p.serverLevel().addFreshEntity(frame);p.playNotifySound(SoundEvents.LEVER_CLICK,SoundSource.BLOCKS,.3F,.7F);
+    private static void showRecord(ServerPlayer p,CompoundTag own){
+        var b=IndianLakeRooms.base(p.server,LabyrinthPlace.KAREN_ROOM);if(b==null)return;
+        // Remove the old small, shared projection once; native original maps remain in saved albums.
+        p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.decoration.ItemFrame.class,new AABB(b.offset(0,2,-14)).inflate(2),f->f.isInvulnerable()).forEach(Entity::discard);
+        SecretPhotographs.project(p,own);
+        if(own.getList("Record",Tag.TAG_COMPOUND).isEmpty())p.displayClientMessage(Component.literal("No photographs yet. Spend a moment inside another room, then return."),true);
+        p.playNotifySound(SoundEvents.LEVER_CLICK,SoundSource.BLOCKS,.3F,.7F);
     }
     private static void tickTom(ServerPlayer p,BlockPos origin,CompoundTag own){
         var phase=FinaleProgress.phase(p.server,p.getUUID());if(phase!=FinaleProgress.Phase.STAIRCASE||!FinaleArchitecture.contains(origin,p.blockPosition()))return;
@@ -263,7 +293,7 @@ public final class NovelVignettes {
         else if(LabyrinthData.get(p.server).returnDepth(p.getUUID())>=12){p.displayClientMessage(Component.literal("T m: ").append(Component.literal("come back by the same doors").withStyle(s->s.withObfuscated(true))),true);p.playNotifySound(NovelRegistry.RADIO_STATIC.get(),SoundSource.PLAYERS,.35F,.8F);return;}
         else line="Tom: The numbers change. Your way back still runs through the doors you opened.";cue(p,own,line);save(LabyrinthData.get(p.server),p.getUUID(),own);p.playNotifySound(NovelRegistry.RADIO_STATIC.get(),SoundSource.PLAYERS,.2F,1);
     }
-    @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p){restoreScale(p);RECORDS.remove(p.getUUID());LAST_TICK.remove(p.getUUID());}}
-    @SubscribeEvent public static void death(LivingDeathEvent e){if(e.getEntity() instanceof ServerPlayer p){restoreScale(p);RECORDS.remove(p.getUUID());}}
-    public static void clearAll(){for(var p:new ArrayList<>(SCALED.values()))restoreScale(p);RECORDS.clear();LAST_TICK.clear();}
+    @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p){restoreScale(p);RECORDS.remove(p.getUUID());PENDING_PHOTOS.remove(p.getUUID());LAST_TICK.remove(p.getUUID());}}
+    @SubscribeEvent public static void death(LivingDeathEvent e){if(e.getEntity() instanceof ServerPlayer p){restoreScale(p);RECORDS.remove(p.getUUID());PENDING_PHOTOS.remove(p.getUUID());}}
+    public static void clearAll(){for(var p:new ArrayList<>(SCALED.values()))restoreScale(p);RECORDS.clear();PENDING_PHOTOS.clear();LAST_TICK.clear();}
 }

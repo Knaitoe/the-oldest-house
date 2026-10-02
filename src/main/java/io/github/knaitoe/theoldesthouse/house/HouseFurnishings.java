@@ -24,8 +24,36 @@ public final class HouseFurnishings {
         level.setBlock(pos,HouseholdFurnitureBlock.state(kind,facing),HouseCanvas.BUILD_FLAGS);
     }
     public static void paper(ServerLevel level,BlockPos pos,HouseMarginalia.Thread thread,Direction facing) {
-        if(level.getBlockState(pos).isAir() && !level.getBlockState(pos.below()).isAir())
+        if(level.getBlockState(pos).isAir() && NoteSurfaceBlock.supported(level,pos) && keepPaper(level,pos,thread))
             level.setBlock(pos,NoteSurfaceBlock.state(thread,facing),HouseCanvas.BUILD_FLAGS);
+    }
+    /** One early mundane list, then roughly one third of the former scenery papers. */
+    public static boolean keepPaper(ServerLevel level,BlockPos pos,HouseMarginalia.Thread thread) {
+        BlockPos origin=HouseSavedData.get(level.getServer()).houseOrigin();
+        if(origin==null) return false;
+        BlockPos junction=LabyrinthPlaces.base(origin,LabyrinthPlace.JUNCTION);
+        if(junction!=null && IndianLakeRooms.bounds(junction,LabyrinthPlace.JUNCTION).contains(pos.getCenter()))
+            return pos.equals(junction.offset(4,1,-3));
+        BlockPos rel=pos.subtract(origin);
+        long hash=rel.getX()*73428767L ^ rel.getY()*912931L ^ rel.getZ()*42317861L ^ thread.ordinal()*137L;
+        hash^=hash>>>17;return Math.floorMod(hash,3)==0;
+    }
+    /** An in-place reduction never refills removed paper or changes saved reading snapshots. */
+    public static void reduceNotes(ServerLevel level,BlockPos origin,LabyrinthPlace place) {
+        LabyrinthData data=LabyrinthData.get(level.getServer());CompoundTag state=data.state("paper_density_0426");
+        if(!state.contains("Origin") || state.getLong("Origin")!=origin.asLong()) state=new CompoundTag();
+        if(state.getBoolean(place.id())) return;
+        BlockPos base=LabyrinthPlaces.base(origin,place);
+        if(base!=null) {
+            var r=place.room();
+            for(BlockPos at:BlockPos.betweenClosed(base.offset(r.minX(),0,r.minZ()),base.offset(r.maxX(),3,r.maxZ()))) {
+                BlockState paper=level.getBlockState(at);
+                if(paper.getBlock() instanceof NoteSurfaceBlock && (!NoteSurfaceBlock.supported(level,at)
+                        || !keepPaper(level,at,paper.getValue(NoteSurfaceBlock.THREAD))))
+                    level.setBlock(at,Blocks.AIR.defaultBlockState(),HouseCanvas.BUILD_FLAGS);
+            }
+        }
+        state.putLong("Origin",origin.asLong());state.putBoolean(place.id(),true);data.setState("paper_density_0426",state);
     }
     private static void table(ServerLevel level,BlockPos pos,Block expected,HouseholdFurnitureBlock.Kind kind,Direction facing) {
         if(!level.getBlockState(pos).is(expected) || !level.getBlockState(pos.above()).is(Blocks.OAK_PRESSURE_PLATE)) return;

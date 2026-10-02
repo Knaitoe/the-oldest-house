@@ -113,7 +113,7 @@ public final class DrownedTownTests {
 
     private static final class Fixture implements AutoCloseable {
         final MinecraftServer server; final HouseSavedData house; final LabyrinthData labyrinth; final ServerLevel level; final BlockPos base;
-        Fixture(MinecraftServer server,BlockPos origin){this.server=server;house=HouseSavedData.get(server);labyrinth=LabyrinthData.get(server);level=HouseTestLevel.get(server);
+        Fixture(MinecraftServer server,BlockPos origin){this.server=server;house=HouseSavedData.get(server);labyrinth=LabyrinthData.get(server);level=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);
             var h=new HouseSavedData();h.markSpawned(origin);server.overworld().getDataStorage().set("the_oldest_house",h);
             var d=new LabyrinthData();d.setBuilt(LabyrinthBuilder.VERSION,origin);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",d);
             base=LabyrinthPlaces.base(origin,LabyrinthPlace.DROWNED_TOWN);DrownedTown.build(server,level,base);LabyrinthBuilder.registerDoors(d,LabyrinthPlace.DROWNED_TOWN,base);}
@@ -135,12 +135,12 @@ public final class DrownedTownTests {
     public static void nativeFurnaceDoorReturnsKeyAndRoofCompleteTheActualSequence(GameTestHelper helper){
         MinecraftServer server=helper.getLevel().getServer();BlockPos origin=new BlockPos(5600,80,5600);sequenceFixture=new Fixture(server,origin);
         Fixture fixture=sequenceFixture;ServerLevel level=fixture.level;BlockPos base=fixture.base;LabyrinthData data=LabyrinthData.get(server);
-        helper.assertTrue(level.getFluidState(base.offset(0,-10,-30)).is(net.minecraft.tags.FluidTags.WATER)
-                &&level.getBlockState(base.offset(-2,-3,-18)).is(Blocks.BUBBLE_COLUMN), "real flooded streets and an upward air column exist");
+        helper.assertTrue(level.getBlockState(base.offset(0,-1,-30)).is(Blocks.COBBLESTONE)
+                &&level.getFluidState(base.offset(15,-3,-38)).is(net.minecraft.tags.FluidTags.WATER), "a dry main street and a real reservoir exist");
         helper.assertTrue(level.getBlockState(base.offset(DrownedTown.SCHOOL_DOOR)).getFluidState().isEmpty(), "the native school door holds a breath");
         // An ordinary return threshold in the same level exercises the actual labyrinth graph hooks.
         BlockPos source=base.offset(42,0,1);for(int x=-7;x<=7;x++)for(int z=0;z<=17;z++)level.setBlock(source.offset(x,-1,z),Blocks.STONE.defaultBlockState(),3);
-        var entrance=new LabyrinthData.Door("drowned_fixture",HouseDimensions.INTERIOR,source,Direction.SOUTH,"place:drowned_town",true);data.putDoor(entrance);
+        var entrance=new LabyrinthData.Door("drowned_fixture",HouseDimensions.OUTSIDE,source,Direction.SOUTH,"place:drowned_town",true);data.putDoor(entrance);
         sequencePlayer=helper.makeMockServerPlayerInLevel();ServerPlayer player=sequencePlayer;player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
         Vec3 start=Vec3.atBottomCenterOf(source.south(2));player.teleportTo(level,start.x,start.y,start.z,180,0);LabyrinthDoors.use(player,entrance);
         helper.assertTrue(data.state(DrownedTown.ID).getInt("Visit")==1&&data.returnDepth(player.getUUID())==1, "native entry starts the first visit and remembers the way back");
@@ -231,8 +231,8 @@ public final class DrownedTownTests {
             helper.assertTrue(IndianLakeProgress.wasHunted(LabyrinthData.get(level.getServer()),huntPlayer.getUUID()), "a real approach records the hunt");
             huntPlayer.moveTo(Vec3.atBottomCenterOf(base.offset(6,-1,-13)));
             helper.assertTrue(!LakeWitchEntity.canAttack(huntWitch,huntPlayer), "water stops the chase and attack");
-            Vec3 before=huntWitch.position();huntWitch.move(MoverType.SELF,new Vec3(0,0,-9));
-            helper.assertTrue(huntWitch.position().distanceToSqr(before)<.0001, "a force cannot push her across the water boundary");
+            Vec3 before=huntWitch.position();huntWitch.move(MoverType.SELF,new Vec3(0,0,-90));
+            helper.assertTrue(huntWitch.position().distanceToSqr(before)<.0001, "a force cannot push her beyond the authored landscape");
             huntPlayer.moveTo(Vec3.atBottomCenterOf(base.offset(1,0,-7)));helper.assertTrue(!LakeWitchEntity.canAttack(huntWitch,huntPlayer), "grass is safe during an attack windup too");
         });
     }

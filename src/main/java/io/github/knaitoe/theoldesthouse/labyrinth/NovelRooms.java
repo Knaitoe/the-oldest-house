@@ -21,7 +21,7 @@ public final class NovelRooms {
         BED=new BlockPos(4,0,-10),PROJECTOR=new BlockPos(0,1,-6);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private NovelRooms(){}
-    public static boolean outside(LabyrinthPlace p){return p==LabyrinthPlace.ZAMPANO_COURTYARD||p==LabyrinthPlace.BARN_WELL||p==LabyrinthPlace.PLAIN;}
+    public static boolean outside(LabyrinthPlace p){return p==LabyrinthPlace.ZAMPANO_COURTYARD||p==LabyrinthPlace.BARN_WELL||p==LabyrinthPlace.PLAIN||LakeLandscape.isLake(p);}
     public static net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dimension(LabyrinthPlace p){return outside(p)?HouseDimensions.OUTSIDE:HouseDimensions.INTERIOR;}
     public static void build(MinecraftServer server,ServerLevel l,BlockPos b,LabyrinthPlace p){
         var r=p.room();box(l,b,r.minX(),r.minY(),r.minZ(),r.maxX(),r.maxY(),r.maxZ(),Blocks.AIR.defaultBlockState());
@@ -83,6 +83,15 @@ public final class NovelRooms {
         cover(l,b,false);lectern(l,b.offset(-4,0,-17),NovelTexts.well());
         at(l,b,2,0,-25,Blocks.BARREL);
         for(int z=-4;z>=-33;z-=6)for(int x:new int[]{-13,16}){box(l,b,x,0,z,x,5,z,Blocks.SPRUCE_LOG.defaultBlockState());box(l,b,x-1,4,z-1,x+1,7,z+1,Blocks.SPRUCE_LEAVES.defaultBlockState());}
+        BarnFarm.dress(l,b);
+    }
+    /** A copied return vestibule must never open onto unsupported outside air. */
+    public static void safeApproach(ServerLevel l,BlockPos b){
+        for(int x=-7;x<=7;x++)for(int z=1;z<=9;z++){
+            if(l.getBlockState(b.offset(x,-1,z)).isAir())at(l,b,x,-1,z,Blocks.SMOOTH_STONE);
+            if(Math.abs(x)==7||z==9)for(int y=0;y<=5;y++)if(l.getBlockState(b.offset(x,y,z)).isAir())at(l,b,x,y,z,Blocks.DARK_OAK_PLANKS);
+            if(l.getBlockState(b.offset(x,5,z)).isAir())at(l,b,x,5,z,Blocks.DARK_OAK_PLANKS);
+        }
     }
     public static void cover(ServerLevel l,BlockPos b,boolean closed){l.setBlock(b.offset(WELL),Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.SOUTH).setValue(TrapDoorBlock.HALF,Half.TOP).setValue(TrapDoorBlock.OPEN,!closed),F);}
     private static void plain(ServerLevel l,BlockPos b){

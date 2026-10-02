@@ -7,7 +7,7 @@ import net.minecraft.world.phys.Vec3;
 public final class SceneRecord {
     private final ServerLevel level;private final SnapshotRenderer.Render render;
     public SceneRecord(ServerLevel l,BlockPos min,BlockPos max,Vec3 eye,Vec3 look){level=l;var target=eye.add(look.scale(12));
-        render=new SnapshotRenderer.Render(NavidsonPhoto.sceneOf(l,min,max),new SnapshotRenderer.Camera(eye.x,eye.y,eye.z,look.x,look.y,look.z,70),target.x,target.y,target.z,null,min.asLong());}
+        render=new SnapshotRenderer.Render(NavidsonPhoto.sceneOf(l,min,max),new SnapshotRenderer.Camera(eye.x,eye.y,eye.z,look.x,look.y,look.z,70),target.x,target.y,target.z,null,min.asLong()).roomExposure();}
     public boolean tick(){return render.step(8);}
     public ItemStack finish(){return NavidsonLetter.createSnapshot(level,render.finish(LevelSnapshotScene.paletteRgb(),LevelSnapshotScene.paletteIds()).pixels());}
 }

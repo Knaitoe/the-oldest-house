@@ -35,26 +35,31 @@ public final class HouseWatchers {
 
     private static boolean isWatched(ServerLevel level, Vec3 point, BlockPos target) {
         for (ServerPlayer player : level.players()) {
+            if(sees(player,point,target))return true;
+        }
+        return false;
+    }
+    public static boolean sees(ServerPlayer player,Vec3 point){return sees(player,point,BlockPos.containing(point));}
+    private static boolean sees(ServerPlayer player,Vec3 point,BlockPos target){
             if (player.isSpectator() || player.isSleeping()) {
-                continue;
+                return false;
             }
             Vec3 eye = player.getEyePosition();
             Vec3 toPoint = point.subtract(eye);
             double distance = toPoint.length();
             if (distance > RANGE) {
-                continue;
+                return false;
             }
             if (distance < 1.5D) {
                 return true; // Close enough to notice without looking.
             }
             if (player.getLookAngle().dot(toPoint.scale(1.0D / distance)) < VIEW_CONE_COS) {
-                continue;
+                return false;
             }
-            BlockHitResult hit = level.clip(new ClipContext(eye, point, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, player));
+            BlockHitResult hit = player.serverLevel().clip(new ClipContext(eye, point, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, player));
             if (hit.getType() == HitResult.Type.MISS || hit.getBlockPos().distManhattan(target) <= 1) {
                 return true;
             }
-        }
         return false;
     }
 }

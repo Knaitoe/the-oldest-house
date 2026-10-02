@@ -400,6 +400,10 @@ public final class SnapshotRenderer {
         private final Hit hit = new Hit();
         private int nextRow;
         private boolean sawHouse;
+        private boolean roomExposure;
+
+        /** Actual room colours with usable exposure, without the opening photograph's staged window. */
+        public Render roomExposure(){roomExposure=true;return this;}
 
         public Render(Scene scene, Camera camera, double tx, double ty, double tz, Long windowHint, long seed) {
             this.scene = scene;
@@ -443,7 +447,11 @@ public final class SnapshotRenderer {
                     if (hit.kind == AIR || hit.kind == VOID) {
                         rgb = dir[1] < -0.01D ? groundBeyond(dir[1]) : sky(dir[1], px, py, seed);
                     } else {
-                        rgb = shade(scene, hit, dir);
+                        if(roomExposure){
+                            int base=scene.sample(hit.x,hit.y,hit.z)&0xFFFFFF;
+                            double light=.62+scene.blockLight(hit.x,hit.y,hit.z)/15.0*.32;
+                            rgb=((int)(((base>>16)&255)*light)<<16)|((int)(((base>>8)&255)*light)<<8)|(int)((base&255)*light);
+                        }else rgb = shade(scene, hit, dir);
                         if (Math.sqrt(sq(hit.x + 0.5D - tx) + sq(hit.z + 0.5D - tz)) <= 12.0D) {
                             sawHouse = true;
                         }
@@ -462,7 +470,7 @@ public final class SnapshotRenderer {
             while (!step(h)) {
                 // Finish any rows not yet rendered.
             }
-            Long window = lightUpperWindow(scene, windowHint, r, g, b, kind, hx, hy, hz, axis, fu, fv, w, h, tx, ty, tz);
+            Long window = roomExposure?null:lightUpperWindow(scene, windowHint, r, g, b, kind, hx, hy, hz, axis, fu, fv, w, h, tx, ty, tz);
             vignette(r, g, b, w, h);
             byte[] pixels = compose(r, g, b, w, h, paletteRgb, paletteIds);
             return new Photo(pixels, sawHouse, window, camera);

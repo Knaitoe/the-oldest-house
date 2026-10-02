@@ -328,6 +328,10 @@ public final class LabyrinthData extends SavedData {
             setDirty();
         }
     }
+    /** Translate saved graph positions when an existing landscape moves to an outdoor pocket. */
+    public void remapReturns(java.util.function.UnaryOperator<Waypoint> mapper){
+        returns.replaceAll((id,stack)->{Deque<Waypoint> moved=new ArrayDeque<>();for(Waypoint point:stack)moved.addLast(mapper.apply(point));return moved;});setDirty();
+    }
 
     public int returnDepth(UUID player) {
         Deque<Waypoint> stack = returns.get(player);

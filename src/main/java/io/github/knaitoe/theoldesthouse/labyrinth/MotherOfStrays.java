@@ -115,17 +115,14 @@ public final class MotherOfStrays {
         level.setBlock(base.offset(CHAIR).west(), Blocks.DARK_OAK_TRAPDOOR.defaultBlockState(), FLAGS);
         level.setBlock(base.offset(CHAIR).east(), Blocks.DARK_OAK_TRAPDOOR.defaultBlockState(), FLAGS);
         level.setBlock(base.offset(0, 0, -13), Blocks.DARK_OAK_PLANKS.defaultBlockState(), FLAGS);
-        // An upper gallery looks down into a dry well. The ladder is an intervention route, not a trap.
+        // An upper gallery looks down into a dry well. Both people and a carrying keeper can climb.
         for (int x = -2; x <= 2; x++) for (int z = -18; z >= -22; z--) {
             level.setBlock(base.offset(x, -4, z), Blocks.DEEPSLATE.defaultBlockState(), FLAGS);
             for (int y = -3; y <= 0; y++) level.setBlock(base.offset(x, y, z), Blocks.AIR.defaultBlockState(), FLAGS);
         }
         for (int x = -6; x <= -1; x++) for (int z = -20; z >= -23; z--)
             level.setBlock(base.offset(x, 8, z), Blocks.DARK_OAK_PLANKS.defaultBlockState(), FLAGS);
-        for (int y = 0; y <= 8; y++) {
-            level.setBlock(base.offset(-6, y, -23), Blocks.DARK_OAK_LOG.defaultBlockState(), FLAGS);
-            level.setBlock(base.offset(-7, y, -23), Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.WEST), FLAGS);
-        }
+        galleryStairs(level,base);
         level.setBlock(base.offset(SHELF_BELL), Blocks.BELL.defaultBlockState(), FLAGS);
         BlockPos note = base.offset(-4, 0, -4);
         level.setBlock(note, Blocks.LECTERN.defaultBlockState()
@@ -167,7 +164,38 @@ public final class MotherOfStrays {
                         + "hard enough to hurt, and her face was almost gentle again.\n\nShe called it a kindness.",
                         "A thing returned. A thing freely given. A life allowed to come home.\n\n"
                         + "Perhaps those can teach her another kindness. If she learns it, bring this record, "
-                        + "bow your head, and ask her to leave.\n\nThe little dog is still alive. There is a ladder beside the gallery.")), ID);
+                        + "bow your head, and ask her to leave.\n\nThe little dog is still alive. Stairs rise beside the gallery.")), ID);
+    }
+
+    public static void galleryStairs(ServerLevel level,BlockPos base) {
+        for(int y=0;y<=8;y++)if(level.getBlockState(base.offset(-7,y,-23)).is(Blocks.LADDER))
+            level.setBlock(base.offset(-7,y,-23),Blocks.AIR.defaultBlockState(),FLAGS);
+        for(int step=0;step<9;step++)for(int x=-6;x<=-4;x++) {
+            int z=-11-step;
+            for(int y=0;y<step;y++)level.setBlock(base.offset(x,y,z),Blocks.DARK_OAK_PLANKS.defaultBlockState(),FLAGS);
+            level.setBlock(base.offset(x,step,z),LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS,Direction.NORTH),FLAGS);
+            for(int y=step+1;y<=step+3;y++)level.setBlock(base.offset(x,y,z),Blocks.AIR.defaultBlockState(),FLAGS);
+        }
+        // A way back out also repairs a keeper stranded in the old pit.
+        for(int step=0;step<3;step++) {
+            BlockPos at=base.offset(-3-step,-3+step,-21);
+            level.setBlock(at,LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS,Direction.WEST),FLAGS);
+            for(int y=1;y<=3;y++)level.setBlock(at.above(y),Blocks.AIR.defaultBlockState(),FLAGS);
+        }
+        for(int x=-6;x<=-4;x++)for(int z=-20;z>=-22;z--)
+            level.setBlock(base.offset(x,8,z),Blocks.DARK_OAK_PLANKS.defaultBlockState(),FLAGS);
+    }
+    public static void upgradeDen(ServerLevel level,BlockPos origin) {
+        var data=LabyrinthData.get(level.getServer());var state=data.state("den_stairs_0426");
+        if(state.contains("Origin")&&state.getLong("Origin")==origin.asLong())return;
+        BlockPos base=LabyrinthPlaces.base(origin,LabyrinthPlace.MOTHER_DEN);
+        if(base!=null && level.getBlockState(base.offset(CHAIR)).is(Blocks.DARK_OAK_STAIRS))galleryStairs(level,base);
+        state.putLong("Origin",origin.asLong());data.setState("den_stairs_0426",state);
+    }
+    public static boolean activeDogThreat(ServerLevel level) {
+        var owner=MotherCollection.get(level.getServer()).dogThreatOwner();
+        return owner!=null && level.players().stream().anyMatch(p->p.getUUID().equals(owner)&&p.isAlive()
+                &&p.gameMode.getGameModeForPlayer()!=net.minecraft.world.level.GameType.SPECTATOR&&inDen(p));
     }
 
     private static MotherEntity ensureKeeper(ServerLevel level, BlockPos base) {
@@ -191,7 +219,7 @@ public final class MotherOfStrays {
             for (int i = 0; i < 3; i++) {
                 Cat cat = EntityType.CAT.create(level);
                 if (cat == null) continue;
-                cat.moveTo(base.getX() - 3.5D + i * 3.0D, base.getY(), base.getZ() - 18.5D, 0.0F, 0.0F);
+                cat.moveTo(base.getX() - 3.5D + i * 3.0D, base.getY(), base.getZ() - 16.5D, 0.0F, 0.0F);
                 cat.setCustomName(Component.literal(new String[] {"A cat with no caller", "A cat from the courtyard", "A cat nobody counted"}[i]));
                 prepareKeptPet(cat);
                 level.addFreshEntity(cat);
@@ -484,7 +512,7 @@ public final class MotherOfStrays {
                 } else if (collection.beginDogThreat(player.getUUID())) {
                     say(player, "You would take this one? I can be kind to it. It need not stay lost.");
                     player.displayClientMessage(Component.literal(
-                            "She gathers the dog into her hands. You can still offer something loved. The ladder reaches the gallery.")
+                            "She gathers the dog into her hands. You can still offer something loved. The stairs reach the gallery.")
                             .withStyle(ChatFormatting.DARK_GRAY), false);
                 } else say(player, "Something loved, while there is still time.");
                 return true;
@@ -615,9 +643,7 @@ public final class MotherOfStrays {
             BlockPos base = base(player.server);
             if (base != null && !collection.banished()) {
                 MotherEntity mother = ensureKeeper(player.serverLevel(), base);
-                mother.setCarrying(false);
-                mother.setNoGravity(false);
-                mother.teleportTo(base.getX() + .5D, base.getY(), base.getZ() - 10.5D);
+                mother.stopCarrying();
             }
             say(player, collection.salved() ? "So there is a way to let something go without losing it."
                     : "Then take it. Do not let it become lost again.");
@@ -725,9 +751,10 @@ public final class MotherOfStrays {
         BlockPos base = origin == null ? null : LabyrinthPlaces.base(origin, LabyrinthPlace.MOTHER_DEN);
         boolean activeDebt = server.getPlayerList().getPlayers().stream().anyMatch(p -> p.serverLevel() == level
                 && collection.debt(p.getUUID()) != null);
-        ServerPlayer dogOwner = collection.dogThreatOwner() == null ? null
-                : server.getPlayerList().getPlayer(collection.dogThreatOwner());
-        collection.advance(20, activeDebt, dogOwner != null && inDen(dogOwner));
+        ServerPlayer dogOwner = collection.dogThreatOwner() == null || level==null ? null
+                : level.players().stream().filter(p->p.getUUID().equals(collection.dogThreatOwner())&&p.isAlive()
+                    &&p.gameMode.getGameModeForPlayer()!=net.minecraft.world.level.GameType.SPECTATOR&&inDen(p)).findFirst().orElse(null);
+        collection.advance(20, activeDebt, dogOwner != null);
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             boolean here = inDen(player);
             collection.presence(player.getUUID(), here);
@@ -760,6 +787,7 @@ public final class MotherOfStrays {
         }
         if (keeper != null && LabyrinthEncounters.ambient(keeper)) return;
         if (keeper != null && dogOwner != null && inDen(dogOwner)) tickDogThreat(level, base, keeper, collection, dogOwner);
+        else if(keeper!=null&&keeper.isCarrying())keeper.getNavigation().stop();
         if (shelfRevision != collection.revision()) {
             refreshShelves(level, base, collection);
             refreshPets(level, base, collection);
@@ -816,32 +844,26 @@ public final class MotherOfStrays {
         if (dog == null || !dog.isAlive()) {
             collection.endDogThreat(false);
             mother.setCorruption(0);
-            mother.setCarrying(false);
-            mother.setNoGravity(false);
-            mother.teleportTo(base.getX() + .5D, base.getY(), base.getZ() - 10.5D);
+            mother.stopCarrying();
             say(owner, "It will not have to stay lost now.");
             return;
         }
         if (collection.dogThrown()) return;
-        mother.setCarrying(true);
-        dog.setNoAi(true);
-        dog.setNoGravity(true);
-        Vec3 forward = mother.getLookAngle().multiply(1, 0, 1).normalize();
-        dog.moveTo(mother.getX() + forward.x * .5D, mother.getY() + .78D,
-                mother.getZ() + forward.z * .5D, mother.getYRot(), 0.0F);
+        mother.carryDog(dog);
         if (collection.dogThreatTicks() >= 600 && !collection.dogAtLedge()) {
             Vec3 ledge = Vec3.atBottomCenterOf(base.offset(-1, 9, -21));
-            if (!HouseWatchers.isWatched(level, mother.getEyePosition())
-                    && !HouseWatchers.isWatched(level, ledge.add(0, 1.98, 0))) {
-                mother.setNoGravity(true);
-                mother.teleportTo(ledge.x, ledge.y, ledge.z);
+            Vec3 target=Vec3.atBottomCenterOf(base.offset(mother.galleryStep()==0?new BlockPos(-5,0,-9)
+                    :mother.galleryStep()==1?new BlockPos(-5,9,-20):new BlockPos(-1,9,-21)));
+            if(mother.position().distanceToSqr(target)<1.1 && Math.abs(mother.getY()-target.y)<.35) {
+                if(mother.galleryStep()<2){mother.galleryStep(mother.galleryStep()+1);mother.getNavigation().stop();return;}
+                mother.getNavigation().stop();
                 collection.dogAtLedge(true);
                 say(owner, "You offered to take it. I heard you. I can still be kinder.");
                 owner.displayClientMessage(Component.literal(
                         "She stands above the well with the dog. There is still time to reach her or offer something loved.")
                         .withStyle(ChatFormatting.DARK_GRAY), false);
-            }
-            // Looking at her postpones the disposal; its last fifteen seconds begin on the ledge.
+            }else mother.getNavigation().moveTo(target.x,target.y,target.z,1.0D);
+            // Only physically reaching the gallery spends the final intervention window.
             return;
         }
         if (collection.dogLedgeTicks() >= 300 && collection.dogAtLedge()) {
@@ -851,7 +873,7 @@ public final class MotherOfStrays {
             dog.moveTo(base.getX() + .5D, base.getY() + 10.5D, base.getZ() - 20.5D, 0.0F, 0.0F);
             dog.setDeltaMovement(0, -.35D, 0);
             collection.dogThrown(true);
-            mother.setCarrying(false);
+            mother.stopCarrying();
             owner.displayClientMessage(Component.literal(
                     "She opens her hands over the well. She watches all the way down.")
                     .withStyle(ChatFormatting.DARK_GRAY), false);
@@ -868,6 +890,7 @@ public final class MotherOfStrays {
             if (mother != null) FOLLOWERS.put(player.getUUID(), mother);
         }
         if (!owed || player.serverLevel() != house || player.isSpectator()) {
+            if(mother!=null)mother.getNavigation().stop();
             if (mother != null && !HouseWatchers.isWatched(house, mother.getEyePosition())) {
                 mother.discard();
                 FOLLOWERS.remove(player.getUUID());

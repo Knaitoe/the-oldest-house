@@ -41,7 +41,7 @@ public final class PhoneCanoeTests {
         final net.minecraft.server.MinecraftServer server;final ServerLevel level;final HouseSavedData oldHouse;final LabyrinthData oldData;
         final GameTestHelper helper;final BlockPos origin,base;final List<ServerPlayer> players=new ArrayList<>();
         Fixture(GameTestHelper h,BlockPos origin){
-            helper=h;server=h.getLevel().getServer();level=HouseTestLevel.get(server);this.origin=origin;oldHouse=HouseSavedData.get(server);oldData=LabyrinthData.get(server);
+            helper=h;server=h.getLevel().getServer();level=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);this.origin=origin;oldHouse=HouseSavedData.get(server);oldData=LabyrinthData.get(server);
             var house=new HouseSavedData();house.markSpawned(origin);server.overworld().getDataStorage().set("the_oldest_house",house);
             var data=new LabyrinthData();data.setBuilt(LabyrinthBuilder.VERSION,origin);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);
             base=LabyrinthPlaces.base(origin,LabyrinthPlace.PHONE_CANOE);PhoneCanoe.build(server,level,base);LabyrinthBuilder.registerDoors(data,LabyrinthPlace.PHONE_CANOE,base);IndianLakeRooms.keepLoaded(level,base,LabyrinthPlace.PHONE_CANOE);

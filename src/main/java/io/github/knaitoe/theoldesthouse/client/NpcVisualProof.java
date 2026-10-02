@@ -58,6 +58,6 @@ public final class NpcVisualProof extends Screen {
         Path folder=Path.of("../build/font-smoke");Files.createDirectories(folder);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve("native-npcs.png"));}
         Files.writeString(folder.resolve("npcs-passed.txt"),"Native player model meshes, exact skin UVs, seated/casket poses and client renderer initialization passed.\n");
-        TheOldestHouse.LOGGER.info("HOUSE NPC CHECK PASSED: native screenshot saved");mc.stop();
+        TheOldestHouse.LOGGER.info("HOUSE NPC CHECK PASSED: native screenshot saved");mc.setScreen(new CastVisualProof());
     }
 }
