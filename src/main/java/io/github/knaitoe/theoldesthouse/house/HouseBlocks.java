@@ -22,6 +22,8 @@ public final class HouseBlocks {
             DeferredRegister.create(BuiltInRegistries.BLOCK_TYPE, TheOldestHouse.MOD_ID);
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<TownSignBlock>> TOWN_SIGN_TYPE=BLOCK_TYPES.register("town_sign",()->TownSignBlock.CODEC);
     public static final DeferredBlock<TownSignBlock> TOWN_SIGN=BLOCKS.registerBlock("town_sign",TownSignBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noCollission().noOcclusion().noLootTable());
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<TreeTendrilBlock>> TREE_TENDRIL_TYPE=BLOCK_TYPES.register("tree_tendril",()->TreeTendrilBlock.CODEC);
+    public static final DeferredBlock<TreeTendrilBlock> TREE_TENDRIL=BLOCKS.registerBlock("tree_tendril",TreeTendrilBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_LOG).noCollission().noOcclusion().noLootTable());
     public static final DeferredBlock<Block> STAIRCASE_STONE=BLOCKS.registerBlock("staircase_stone",Block::new,BlockBehaviour.Properties.ofFullCopy(Blocks.POLISHED_DEEPSLATE).noLootTable());
     public static final DeferredBlock<StairBlock> STAIRCASE_STAIRS=BLOCKS.registerBlock("staircase_stairs",p->new StairBlock(STAIRCASE_STONE.get().defaultBlockState(),p),BlockBehaviour.Properties.ofFullCopy(Blocks.POLISHED_DEEPSLATE_STAIRS).noLootTable());
     public static final DeferredBlock<SlabBlock> STAIRCASE_SLAB=BLOCKS.registerBlock("staircase_slab",SlabBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.POLISHED_DEEPSLATE_SLAB).noLootTable());

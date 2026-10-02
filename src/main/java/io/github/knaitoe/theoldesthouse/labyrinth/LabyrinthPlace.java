@@ -70,7 +70,7 @@ public enum LabyrinthPlace {
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
     )),
     /** A submerged gray corridor with deliberately spaced air chimneys. */
-    FLOODED_PASSAGE("flooded_passage", Kind.GRAY, 10, new BoundingBox(-2, -1, -28, 2, 6, 0), List.of(
+    FLOODED_PASSAGE("flooded_passage", Kind.GRAY, 10, new BoundingBox(-8, -3, -28, 8, 6, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(0, 0, -28), Direction.SOUTH, LabyrinthData.DEALT)
     )),

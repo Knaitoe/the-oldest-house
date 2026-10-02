@@ -22,7 +22,7 @@ import net.neoforged.neoforge.gametest.*;
 public final class LakeAmbushTests {
     private static LakeWitchEntity witch;private static ServerPlayer target;private static BlockPos base;private static CompoundTag old;
     @AfterBatch(batch="witch_surface_0427") public static void clean(ServerLevel l){
-        if(witch!=null)witch.discard();if(target!=null)target.discard();
+        if(witch!=null)witch.discard();if(target!=null)l.getServer().getPlayerList().remove(target);
         if(base!=null)for(int x=(base.getX()-30)>>4;x<=(base.getX()+30)>>4;x++)for(int z=(base.getZ()-65)>>4;z<=(base.getZ()+18)>>4;z++)l.getChunkSource().removeRegionTicket(TicketType.PORTAL,new ChunkPos(x,z),3,base);
         if(old!=null)LabyrinthData.get(l.getServer()).setState(DrownedTown.ID,old);witch=null;target=null;base=null;old=null;
     }
@@ -34,8 +34,8 @@ public final class LakeAmbushTests {
             l.setBlock(base.offset(x,-1,z),(x>=-5&&x<=5?Blocks.WATER:Blocks.COARSE_DIRT).defaultBlockState(),3);
             for(int y=0;y<=3;y++)l.setBlock(base.offset(x,y,z),Blocks.AIR.defaultBlockState(),3);
         }
-        target=FakePlayerFactory.get(l,new GameProfile(UUID.randomUUID(),"lake_back_0427"));target.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
-        target.moveTo(base.getX()+9.5,base.getY(),base.getZ()-25.5,-90,0);l.addNewPlayer(target);
+        target=h.makeMockServerPlayerInLevel();target.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+        target.moveTo(base.getX()+9.5,base.getY(),base.getZ()-25.5,-90,0);
         witch=DrownedTownRegistry.LAKE_WITCH.get().create(l);witch.shore(base,1);witch.moveTo(base.getX()-8.5,base.getY(),base.getZ()-25.5);l.addFreshEntity(witch);
         h.assertTrue(witch.getBbHeight()<1.0&&witch.getEyeHeight()<.8,"the native hunting collision body is low, as well as its rendered mesh");
         int[] wet={0},rush={0};double[] previous={witch.getX()};float health=target.getHealth();

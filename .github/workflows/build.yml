@@ -215,6 +215,8 @@ jobs:
           test -s build/font-smoke/npcs-passed.txt
           test -s build/font-smoke/native-npcs.png
           test -s build/font-smoke/cast-passed.txt
+          test -s build/font-smoke/home-design-passed.txt
+          test -s build/font-smoke/native-home-design.png
           test -s build/font-smoke/native-cast.png
           test -s build/font-smoke/architecture-passed.txt
           test -s build/architecture-proof/manifest.txt

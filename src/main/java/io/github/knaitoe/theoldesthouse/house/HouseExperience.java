@@ -91,6 +91,11 @@ public final class HouseExperience {
         if(!own.getString("LastRetreat").isEmpty())text.add("You turned back from "+own.getString("LastRetreat").replace('_',' ')+". There was still something left to do. The page leaves a space for it.");
         if(!own.getString("WaitingName").isEmpty())text.add("You asked "+own.getString("WaitingName")+" to wait. The ink keeps the name. It does not promise the animal is still there.");
         if(!own.getString("CaredName").isEmpty())text.add("You put your hand on "+own.getString("CaredName")+". For a moment the movement in the dark had a name.");
+        var camp=HollowayVignette.personal(d,p.getUUID());
+        if(camp.getBoolean("Looted"))text.add("You took something from Holloway's supplies. Someone has counted the empty places twice.");
+        if(WitnessAccount.has(d,p.getUUID(),WitnessAccount.Story.MOTHER))text.add("You have returned from the Mother with a bargain recorded in your account. A return is also a thing that happened here.");
+        var novel=NovelVignettes.personal(d,p.getUUID());
+        if(novel.contains("Photo"))text.add(novel.getBoolean("PhotoGivenAway")?"You gave away the original photograph. The page preserves the blank where its frame would fit.":"You have held the distant frame. A picture can remember a direction without returning you there.");
         return text;
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){

@@ -43,6 +43,6 @@ public final class CastVisualProof extends Screen {
         Path folder=Path.of("../build/font-smoke");Files.createDirectories(folder);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve("native-cast.png"));}
         Files.writeString(folder.resolve("cast-passed.txt"),"Native remaining-cast models, memory/hunting skins and outdoor effects passed.\n");
-        TheOldestHouse.LOGGER.info("HOUSE CAST CHECK PASSED: native screenshot saved");mc.setScreen(new SceneVisualProof());
+        TheOldestHouse.LOGGER.info("HOUSE CAST CHECK PASSED: native screenshot saved");mc.setScreen(new HomeDesignProof());
     }
 }

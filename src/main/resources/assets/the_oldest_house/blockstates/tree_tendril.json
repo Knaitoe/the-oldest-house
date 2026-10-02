@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=south": {
+      "model": "the_oldest_house:block/tree_tendril"
+    },
+    "facing=west": {
+      "model": "the_oldest_house:block/tree_tendril",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "the_oldest_house:block/tree_tendril",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "the_oldest_house:block/tree_tendril",
+      "y": 270
+    }
+  }
+}

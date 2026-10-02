@@ -342,11 +342,11 @@ public final class ModelHome {
             }
         }
         // Whatever of the tree came into the kid's room last time goes back out.
-        for (int x = -9; x <= -6; x++) {
+        for (int x = -9; x <= -5; x++) {
             for (int y = 1; y <= 3; y++) {
                 for (int z = TRUNK_Z - 1; z <= TRUNK_Z + 1; z++) {
                     BlockState here = level.getBlockState(base.offset(x, y, z));
-                    if (here.is(Blocks.OAK_LOG) || here.is(Blocks.OAK_LEAVES)) {
+                    if (here.is(Blocks.OAK_LOG) || here.is(Blocks.OAK_LEAVES)||here.is(io.github.knaitoe.theoldesthouse.house.HouseBlocks.TREE_TENDRIL.get())) {
                         level.setBlock(base.offset(x, y, z), Blocks.AIR.defaultBlockState(), flags);
                     }
                 }
@@ -368,11 +368,18 @@ public final class ModelHome {
         for (int y = 0; y <= 5; y++) {
             level.setBlock(base.offset(trunk, y, TRUNK_Z), log, flags);
         }
+        // Unequal limbs and layered crowns make the same approaching tree recognisable.
+        for(int[] limb:new int[][]{{-1,3,-1},{-2,4,-1},{-2,5,-2},{1,4,1},{1,5,2},{0,6,-1}}){
+            int x=trunk+limb[0];if(x>=-22&&x<=-10)level.setBlock(base.offset(x,limb[1],TRUNK_Z+limb[2]),log,flags);
+        }
+        for(int[] crown:new int[][]{{-2,6,-2},{1,7,2},{0,8,-1}})for(int dx=-1;dx<=1;dx++)for(int dz=-1;dz<=1;dz++){
+            BlockPos at=base.offset(trunk+crown[0]+dx,crown[1],TRUNK_Z+crown[2]+dz);if(at.getX()>=base.getX()-22&&at.getX()<=base.getX()-10&&level.getBlockState(at).isAir())level.setBlock(at,leaves,flags);
+        }
         for (int dx = -2; dx <= 2; dx++) {
             for (int dy = -1; dy <= 2; dy++) {
                 for (int dz = -2; dz <= 2; dz++) {
                     int x = trunk + dx;
-                    if (dx * dx + dy * dy + dz * dz > 6 || x > -10 || (dx == 0 && dz == 0 && dy <= 0)) {
+                    if (dx * dx + dy * dy + dz * dz > 6 || x < -22 || x > -10 || (dx == 0 && dz == 0 && dy <= 0)) {
                         continue;
                     }
                     level.setBlock(base.offset(x, 6 + dy, TRUNK_Z + dz), leaves, flags);
@@ -401,6 +408,10 @@ public final class ModelHome {
                         }
                     }
                 }
+            }
+            for(int[] tip:new int[][]{{reach+1,2,TRUNK_Z},{reach,3,TRUNK_Z-1},{reach-1,1,TRUNK_Z+1}}){
+                BlockPos at=base.offset(tip[0],tip[1],tip[2]);
+                if(tip[0]!=-9&&tip[0]<=-5&&(level.getBlockState(at).isAir()||level.getBlockState(at).is(Blocks.OAK_LEAVES)))level.setBlock(at,io.github.knaitoe.theoldesthouse.house.HouseBlocks.TREE_TENDRIL.get().defaultBlockState().setValue(io.github.knaitoe.theoldesthouse.house.TreeTendrilBlock.FACING,Direction.EAST),flags);
             }
         }
 

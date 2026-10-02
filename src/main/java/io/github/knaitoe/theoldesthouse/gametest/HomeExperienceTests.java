@@ -24,7 +24,7 @@ public final class HomeExperienceTests {
     @GameTest(template="empty") public static void homeLettersRememberNativeSeatsAndKeepFiniteOriginalRepliesAcrossSave(GameTestHelper h){
         var server=h.getLevel().getServer();var level=HouseTestLevel.get(server,HouseDimensions.INTERIOR);var oldHouse=HouseSavedData.get(server);var oldData=LabyrinthData.get(server);var house=new HouseSavedData();var d=new LabyrinthData();var origin=new BlockPos(95600,70,95600);house.markSpawned(origin);
         server.overworld().getDataStorage().set("the_oldest_house",house);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",d);
-        var p=FakePlayerFactory.get(level,new GameProfile(UUID.randomUUID(),"domestic_reader"));p.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);level.addNewPlayer(p);var desk=HomeLetters.desk(origin);var chair=origin.offset(6,1,22);var drawer=origin.offset(8,1,22);
+        var p=h.makeMockServerPlayerInLevel();p.teleportTo(level,origin.getX()+6.5,origin.getY()+1,origin.getZ()+23.5,0,0);p.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);var desk=HomeLetters.desk(origin);var chair=origin.offset(6,1,22);var drawer=origin.offset(8,1,22);
         try{
             level.setBlock(chair.below(),Blocks.OAK_PLANKS.defaultBlockState(),3);level.setBlock(chair,HouseBlocks.HOUSEHOLD_FURNITURE.get().defaultBlockState(),3);
             // Use an ordinary native stair seat so the actual ride event must succeed.
@@ -39,7 +39,7 @@ public final class HomeExperienceTests {
             var loaded=LabyrinthData.FACTORY.deserializer().apply(d.save(new CompoundTag(),p.registryAccess()),p.registryAccess());server.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);
             var own=HouseExperience.record(loaded,p.getUUID());h.assertTrue(own.getCompound("LetterTaken").getBoolean("0")&&own.getCompound("ReplySent").getBoolean("0")&&own.getLong("Seat")==chair.asLong()&&HouseExperience.record(loaded,UUID.randomUUID()).isEmpty(),"native reload retains finite personal correspondence without granting it to peers");
             h.assertTrue(WitnessAccount.count(loaded,p.getUUID())==0,"domestic attachment and letter collection confer no false story resolution");h.succeed();
-        }finally{p.closeContainer();p.stopRiding();p.discard();level.getEntitiesOfClass(SeatEntity.class,new net.minecraft.world.phys.AABB(chair).inflate(2)).forEach(net.minecraft.world.entity.Entity::discard);server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);}
+        }finally{p.closeContainer();p.stopRiding();server.getPlayerList().remove(p);level.getEntitiesOfClass(SeatEntity.class,new net.minecraft.world.phys.AABB(chair).inflate(2)).forEach(net.minecraft.world.entity.Entity::discard);server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);}
     }
     @GameTest(template="empty") public static void retreatChangesOnlyItsReadersFutureWritingAndPreservesCompletion(GameTestHelper h){
         var p=h.makeMockServerPlayerInLevel();var server=p.server;var prior=LabyrinthData.get(server);var d=new LabyrinthData();server.overworld().getDataStorage().set("the_oldest_house_labyrinth",d);

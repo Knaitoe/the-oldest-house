@@ -18,6 +18,47 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class SequenceRepairTests {
+    @GameTest(template="empty") public static void waterTrialCostsRealBreathAndItsChimneysRestoreIt(GameTestHelper h){
+        var p=h.makeMockServerPlayerInLevel();p.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);var l=h.getLevel();var base=h.absolutePos(BlockPos.ZERO).offset(720,10,0);LabyrinthHazards.buildFloodedPassage(l,base);var route=LabyrinthHazards.floodRoute(base);var pockets=LabyrinthHazards.floodAir(base);int lowest=300;
+        try{
+            p.setForcedPose(net.minecraft.world.entity.Pose.SWIMMING);p.setPose(net.minecraft.world.entity.Pose.SWIMMING);p.setSwimming(true);p.setAirSupply(300);p.moveTo(Vec3.atBottomCenterOf(route.getFirst()).add(0,.05,0));
+            for(var node:route){
+                Vec3 target=Vec3.atBottomCenterOf(node).add(0,.05,0);
+                for(int n=0;n<8&&p.position().distanceToSqr(target)>.0001;n++){
+                    Vec3 delta=target.subtract(p.position());p.move(net.minecraft.world.entity.MoverType.SELF,delta.normalize().scale(Math.min(.16,delta.length())));p.baseTick();
+                }
+                h.assertTrue(p.position().distanceToSqr(target)<.001&&l.noCollision(p,p.getBoundingBox()),"the native swimming body really clears each authored underwater turn");
+                lowest=Math.min(lowest,p.getAirSupply());h.assertTrue(p.getAirSupply()>0&&p.isAlive(),"the physical distances between refuges are survivable with ordinary swimming strides");
+                BlockPos pocket=pockets.stream().filter(q->q.getX()==node.getX()&&q.getZ()==node.getZ()).findFirst().orElse(null);
+                if(pocket!=null){
+                    for(int n=0;n<22;n++){p.move(net.minecraft.world.entity.MoverType.SELF,new Vec3(0,.16,0));p.baseTick();}
+                    h.assertTrue(p.getY()>base.getY()+2&&l.noCollision(p,p.getBoundingBox()),"a real vertical air pocket can be reached without clipping through a ceiling");
+                    for(int n=0;n<80;n++)p.baseTick();h.assertTrue(p.getAirSupply()==300,"native air recovery replenishes the swimmer at a physical refuge");
+                    for(int n=0;n<22;n++){p.move(net.minecraft.world.entity.MoverType.SELF,new Vec3(0,-.16,0));p.baseTick();}
+                }
+            }
+            h.assertTrue(lowest<180,"the route consumes a material amount of actual air instead of posing a decorative water trial");h.succeed();
+        }finally{p.setForcedPose(null);p.setSwimming(false);safelyRemove(p);}
+    }
+    private static void safelyRemove(net.minecraft.server.level.ServerPlayer p){p.server.getPlayerList().remove(p);}
+    @GameTest(template="empty") public static void everyObserverProtectsThePrisonersUnseenPhysicalDeparture(GameTestHelper h){
+        var s=h.getLevel().getServer();var l=h.getLevel();var oldHouse=io.github.knaitoe.theoldesthouse.house.HouseSavedData.get(s);var oldData=LabyrinthData.get(s);var origin=new BlockPos(96700,70,96700);var house=new io.github.knaitoe.theoldesthouse.house.HouseSavedData();house.markSpawned(origin);s.overworld().getDataStorage().set("the_oldest_house",house);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",new LabyrinthData());
+        var owner=h.makeMockServerPlayerInLevel();var peer=h.makeMockServerPlayerInLevel();var cell=FinaleArchitecture.cell(origin);var boy=FinaleRegistry.MINOTAUR.get().create(l);
+        try{
+            for(int x=-7;x<=7;x++)for(int z=-5;z<=10;z++){
+                l.setBlock(cell.offset(x,-1,z),net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(),3);
+                for(int y=0;y<=5;y++)l.setBlock(cell.offset(x,y,z),z==0&&Math.abs(x)>1?net.minecraft.world.level.block.Blocks.STONE.defaultBlockState():net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);
+            }
+            owner.moveTo(cell.getX()+.5,cell.getY(),cell.getZ()-3.5,0,0);peer.moveTo(cell.getX()+4.3,cell.getY(),cell.getZ()+6.5,180,0);owner.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);peer.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+            var record=new CompoundTag();record.putString("Phase",FinaleProgress.Phase.FIGHT.name());FinaleProgress.save(s,owner.getUUID(),record);
+            boy.caged();boy.owner(owner.getUUID());boy.moveTo(cell.getX()+.5,cell.getY(),cell.getZ()+4.5);l.addFreshEntity(boy);UUID original=boy.getUUID();
+            for(int n=0;n<50;n++){boy.tick();h.assertTrue(boy.childAppearance()&&boy.motion()==MinotaurEntity.CAGED,"an actual peer looking into the cell prevents any visible transformation");}
+            h.assertTrue(boy.getX()>cell.getX()+3.5,"the child physically walks behind the side wall instead of being replaced or teleported");
+            peer.setYRot(0);peer.setYHeadRot(0);peer.setXRot(0);
+            h.assertTrue(!boy.observed(),"masonry conceals the child from the owner after the peer turns away");boy.tick();
+            h.assertTrue(boy.getUUID().equals(original)&&!boy.childAppearance()&&boy.motion()==MinotaurEntity.WATCHING&&boy.getBbHeight()>3,"the same native actor changes only after every actual observer loses sight");h.succeed();
+        }finally{if(boy!=null)boy.discard();s.getPlayerList().remove(owner);s.getPlayerList().remove(peer);s.overworld().getDataStorage().set("the_oldest_house",oldHouse);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);}
+    }
     @GameTest(template="empty") public static void customEssayUsesReadableNativeBookWithoutDuplicatingItsOriginal(GameTestHelper h){
         var p=h.makeMockServerPlayerInLevel();var essay=new ItemStack(DrownedTownRegistry.DRIED_ESSAY_ONE.get());var identity=new CompoundTag();identity.putUUID("OriginalEssay",UUID.randomUUID());essay.set(DataComponents.CUSTOM_DATA,CustomData.of(identity));p.setItemInHand(InteractionHand.MAIN_HAND,essay);
         try{

@@ -489,12 +489,11 @@ public final class LabyrinthTests {
 
         BlockPos flood = helper.absolutePos(BlockPos.ZERO).offset(-500, 8, 40);
         LabyrinthHazards.buildFloodedPassage(level, flood);
-        helper.assertTrue(level.getBlockState(flood.offset(0, 0, -6)).is(Blocks.WATER),
+        helper.assertTrue(level.getBlockState(flood.offset(0, -1, -6)).is(Blocks.WATER),
                 "the flooded passage really submerges the route");
-        helper.assertTrue(level.getBlockState(flood.offset(0, 2, -9)).isAir(),
-                "the first air chimney interrupts the low ceiling");
-        helper.assertTrue(level.getBlockState(flood.offset(0, 2, -17)).isAir(),
-                "a second breathing point prevents one long unavoidable drown");
+        for(var pocket:LabyrinthHazards.floodAir(flood))helper.assertTrue(level.getBlockState(pocket.above(2)).isAir()&&level.getBlockState(pocket.above()).is(Blocks.WATER),"a physical chimney gives real air above the submerged route");
+        var submerged=LabyrinthHazards.floodRoute(flood);helper.assertTrue(submerged.size()>100,"turns replace the trivial straight swimming corridor");
+        for(int i=1;i<submerged.size();i++)helper.assertTrue(submerged.get(i).distManhattan(submerged.get(i-1))==1&&level.getBlockState(submerged.get(i)).is(Blocks.WATER),"all underwater turns are physically connected");
         helper.assertTrue(level.getBlockState(flood.offset(0, 0, -28)).getBlock() instanceof DoorBlock,
                 "the flooded route has a way through");
 
