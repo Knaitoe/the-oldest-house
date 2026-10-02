@@ -70,4 +70,4 @@ The model-home tree keeps the original trunk and branch progression, with unequa
 
 Holloway's spontaneous paranoia and belonging warnings use native text displays that follow his moving body and expire, rather than chat. First-person protection also covers the finale so a third-person camera cannot observe a change hidden from the eyes.
 
-Native verification of these additions is pending the final release run; earlier architecture/lake checks are retained and rerun with the new systems.
+Release verification requires all 259 declared native GameTests, package/font atlas validation, the native font/NPC/cast/home checks, twenty generated scene cutaways and three sky views. Sky proofs reject blank frames and require actual gradient and star/moon pixels. The workflow accepts gameplay only after the native server explicitly reports every required test passed. Completed results and matching JAR artifacts are published in [the development build report](https://github.com/Knaitoe/the-oldest-house/actions/workflows/build.yml?query=branch%3Adevelopment).
