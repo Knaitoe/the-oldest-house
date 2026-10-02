@@ -26,13 +26,15 @@ public final class VignetteArchitecture {
         String key=origin.asLong()+":"+p.id();
         BlockPos base=LabyrinthPlaces.base(origin,p);if(base==null||l.getBlockState(base.offset(0,-1,-2)).isAir())return;
         if(!done.getBoolean("Rugs:"+key)){var repair=new VignetteArchitecture(l,base,p);repair.rugsOnly=true;repair.dress();done.putBoolean("Rugs:"+key,true);d.setState(STATE,done);}
-        if(done.getBoolean(key))return;
-        new VignetteArchitecture(l,base,p).dress();
-        done.putBoolean(key,true);d.setState(STATE,done);
+        if(!done.getBoolean(key)){new VignetteArchitecture(l,base,p).dress();done.putBoolean(key,true);d.setState(STATE,done);}
+        // 0.4.28: the shell itself, once, after its furnishings exist so their supports are known.
+        var shells=d.state(SceneShells.STATE);
+        if(!shells.getBoolean(key)){SceneShells.apply(l,base,p);shells.putBoolean(key,true);d.setState(SceneShells.STATE,shells);}
     }
     /** Explicit structural rebuilds can dress their newly authored room again. */
     static void forget(ServerLevel l,BlockPos origin,LabyrinthPlace p){
         var d=LabyrinthData.get(l.getServer());var t=d.state(STATE);t.remove(origin.asLong()+":"+p.id());d.setState(STATE,t);
+        var shells=d.state(SceneShells.STATE);shells.remove(origin.asLong()+":"+p.id());d.setState(SceneShells.STATE,shells);
     }
     private void dress(){switch(scene){
         case FLOORBOARDS->floorboards();case HIDE_AND_CLAP->childRoom();case MODEL_HOME->modelHome();
@@ -48,6 +50,10 @@ public final class VignetteArchitecture {
     private BlockPos p(int x,int y,int z){return b.offset(x,y,z);}
     private boolean reserved(int x,int y,int z){
         for(var door:scene.doors())if(Math.abs(x-door.rel().getX())<=1&&Math.abs(z-door.rel().getZ())<=2&&y>=door.rel().getY()-1&&y<=door.rel().getY()+2)return true;
+        return storyReserved(scene,x,y,z);
+    }
+    /** Story volumes that set dressing and shell detailing must leave exactly as authored. */
+    static boolean storyReserved(LabyrinthPlace scene,int x,int y,int z){
         return switch(scene){
             case FLOORBOARDS->x==2&&z==-6&&y<=1;
             case MODEL_HOME->x<=-10&&x>=-21&&z>=-15&&z<=-11;
