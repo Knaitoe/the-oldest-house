@@ -53,7 +53,7 @@ public final class FinaleCollapse {
             l.setBlock(at.offset(2,4,0),NovelRegistry.SEALED_WINDOW.get().defaultBlockState(),F);}
         // Rubble and a native 1.5-block lintel. Jump and crouch are real collision requirements.
         obstruct(l,path,CHECKPOINTS[0],false);obstruct(l,path,CHECKPOINTS[1],true);obstruct(l,path,CHECKPOINTS[2],false);
-        var exit=FinaleArchitecture.exit(origin);for(int z=-2;z<=2;z++)for(int y=0;y<=4;y++)for(int x:new int[]{-2,2})l.setBlock(exit.offset(x,y,z),NovelRegistry.PLASTER.get().defaultBlockState(),F);
+        var exit=FinaleArchitecture.exit(origin);for(int x=-1;x<=1;x++)for(int y=0;y<=4;y++)for(int z:new int[]{-2,2})l.setBlock(exit.offset(x,y,z),NovelRegistry.PLASTER.get().defaultBlockState(),F);
         NovelRooms.door(l,exit,Direction.WEST,Blocks.DARK_OAK_DOOR,false);
         // Store the checkpoint after placing the new geometry; a depleted cache never refills.
         all.putLong("Origin",origin.asLong());data.setState("collapse_geometry_0423",all);

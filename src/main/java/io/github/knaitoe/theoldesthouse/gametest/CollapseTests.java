@@ -59,7 +59,7 @@ public final class CollapseTests {
     // Server players receive movement from clients; drive the real collision mover instead of the client-only travel path.
     private static void walk(ServerPlayer p,Vec3 target,boolean jump){var d=target.subtract(p.position()).multiply(1,0,1);p.setYRot((float)(Math.atan2(d.z,d.x)*180/Math.PI)-90);move(p,d.lengthSqr()<.0256?d:d.normalize().scale(.16),jump);}
     private static void move(ServerPlayer p,Vec3 horizontal,boolean jump){double vertical=p.getDeltaMovement().y;
-        if(p.isInWater())vertical=Math.min(.12,Math.max(0,vertical)+.03);else if(p.onGround())vertical=jump?.42:0;else vertical=(vertical-.08)*.98;
+        if(p.isInWater())vertical=p.horizontalCollision?.3:Math.min(.12,Math.max(0,vertical)+.03);else if(p.onGround())vertical=jump?.42:0;else vertical=(vertical-.08)*.98;
         var velocity=new Vec3(horizontal.x,vertical,horizontal.z);p.setDeltaMovement(velocity);p.move(MoverType.SELF,velocity);if(p.verticalCollision)p.setDeltaMovement(horizontal.x,0,horizontal.z);
     }
     @GameTest(template="empty",batch="collapse_finite",timeoutTicks=80) public static void collapseUpgradeKeepsCacheIdentityAndReloadedWoundCannotDie(GameTestHelper h){
