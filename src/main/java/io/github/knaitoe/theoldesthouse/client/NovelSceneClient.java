@@ -16,7 +16,7 @@ public final class NovelSceneClient {
     private NovelSceneClient(){}
     public static void accept(NovelScenePayload p){mode=p.mode();lease=60;elapsed=p.elapsed();caption=p.caption();captionTicks=p.captionTicks();shake=Math.max(0,Math.min(1,p.shake()));}
     private static boolean active(){var mc=Minecraft.getInstance();return lease>0&&mode>0&&mc.player!=null&&mc.player.isAlive()&&!mc.player.isSpectator()&&mc.level!=null&&HouseDimensions.isHouseDimension(mc.level.dimension());}
-    @SubscribeEvent public static void tick(ClientTickEvent.Post e){if(lease>0)lease--;if(captionTicks>0)captionTicks--;elapsed++;
+    @SubscribeEvent public static void tick(ClientTickEvent.Post e){if(lease>0)lease--;if(captionTicks>0)captionTicks--;if(mode!=12)elapsed++;
         if(!active()){mode=0;shake=0;caption="";}}
     /** Read-only presentation clock. Network time updates never race a local setDayTime. */
     public static long sceneTime(net.minecraft.world.level.Level level,long nativeTime){
@@ -26,8 +26,9 @@ public final class NovelSceneClient {
     public static long presentationTime(int mode,int elapsed,long nativeTime){return switch(mode){
         case 1->21000;case 3,7->18000;case 4->6000;
         case 5->18000+Math.min(6000,Math.max(0,elapsed)*6000L/3600);default->nativeTime;};}
-    @SubscribeEvent public static void fog(ViewportEvent.ComputeFogColor e){if(!active())return;if(mode==5){e.setRed(.16F);e.setGreen(.12F);e.setBlue(.21F);}else if(mode==1||mode==3){e.setRed(.035F);e.setGreen(.05F);e.setBlue(.073F);}else if(mode==4){e.setRed(.76F);e.setGreen(.67F);e.setBlue(.46F);}else if(mode>=10){e.setRed(.065F);e.setGreen(.059F);e.setBlue(.05F);}}
+    @SubscribeEvent public static void fog(ViewportEvent.ComputeFogColor e){if(!active())return;if(mode==5){e.setRed(.16F);e.setGreen(.12F);e.setBlue(.21F);}else if(mode==1||mode==3){e.setRed(.035F);e.setGreen(.05F);e.setBlue(.073F);}else if(mode==4){e.setRed(.76F);e.setGreen(.67F);e.setBlue(.46F);}else if(mode==12){e.setRed(0);e.setGreen(0);e.setBlue(0);}else if(mode>=10){e.setRed(.065F);e.setGreen(.059F);e.setBlue(.05F);}}
     @SubscribeEvent public static void mist(ViewportEvent.RenderFog e){
+        if(active()&&mode==12&&e.getMode()==net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN){e.setNearPlaneDistance(0);e.setFarPlaneDistance(Math.max(1.2F,34-elapsed*7));e.setCanceled(true);return;}
         if(!active()||mode!=3||e.getMode()!=net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN||Minecraft.getInstance().player.hasEffect(net.minecraft.world.effect.MobEffects.DARKNESS))return;
         e.setNearPlaneDistance(14);e.setFarPlaneDistance(48);e.setCanceled(true);
     }
@@ -35,6 +36,7 @@ public final class NovelSceneClient {
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
     public static final class Layers {
         @SubscribeEvent public static void overlay(RegisterGuiLayersEvent e){e.registerAboveAll(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"novel_caption"),(g,delta)->{
+            if(active()&&mode==12&&elapsed>=5)g.fill(0,0,g.guiWidth(),g.guiHeight(),0xF8000000);
             if(!active()||captionTicks<=0||caption.isEmpty())return;var mc=Minecraft.getInstance();var lines=mc.font.split(net.minecraft.network.chat.Component.literal(caption),Math.min(380,g.guiWidth()-32));int y=g.guiHeight()-72-lines.size()*10;
             for(var line:lines){int width=mc.font.width(line);g.fill((g.guiWidth()-width)/2-5,y-2,(g.guiWidth()+width)/2+5,y+10,0x88000000);g.drawString(mc.font,line,(g.guiWidth()-width)/2,y,0xFFE8DED1);y+=11;}
         });}

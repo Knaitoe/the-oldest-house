@@ -4,6 +4,23 @@ Sep 28, 2026 · @Sean Price · revised in the repository to match decisions made
 
 ## Revisions in this copy
 
+### 0.4.27: the home, the threshold, and the personal labyrinth
+
+Approved with Sean on October 2, 2026. These decisions supersede a blanket lock-until-complete rule and the explicit child-to-monster reveal. Implementation and native verification are in progress; [ARCHITECTURE_0_4_27.md](ARCHITECTURE_0_4_27.md) records the release evidence.
+
+- **Domestic attachment:** keep the fixed Tudor manor useful, warm, inhabited and specific. Remember actual seats, sleeping places, preparation containers and companion care. Familiar arrangements may echo later without taking, duplicating or rewriting the player's original belongings.
+- **Unheimlich:** familiarity becomes unsettling. The notes explore Freud's repressed familiar and concealed meanings; `UNHOMELY` colors only `HOME` blue. Original fictional writers disagree and revise one another rather than explain the House as a solved mechanism.
+- **Limen:** use Aguirre's threshold as an area of experience. Sound and perception change during an approach, hesitation, crossing and return. Native seamless transitions remain dependable; sensory ambiguity must not become broken interaction or unexplained loss of control.
+- **Personal routes and traces:** remembered in-game actions influence some notes, sensory echoes and destination weights. Relevant facts include voluntary retreat, owned companion care, actual lost/offered belongings, original photographs, Holloway's supplies and personal rescues. No out-of-game history or invented player trauma is used. Per-player state and finite originals survive native saves and reconnects.
+- **Prisoner and creature:** keep the visible child, the dangerous optional encounter, the wounded living creature, and the peaceful Witness release. Obscure the change until no actual observer can see it; preserve the same native entity identity. Contradictory explorer accounts and restored, struck-through text leave the relationship unresolved. Opening the cell remains the commitment point; reaching it does not force combat.
+- **Correspondence:** extend the Whale's letters into an evolving personal relationship and a finite correspondence at home. Ordinary details, affection, irritation, missing replies and uncertain dates precede more disturbing connections. Later pages invite rereading. Hidden messages deepen the relationship and provide optional orientation; existing Witness credit still requires the actual undated attic letter. Pelafina/Whalestoe-inspired writing has its own identity, distinct from the Mother of Lost Things.
+- **Return and rescue:** ordinary unfinished visits allow retreat and preserve unfinished progress without awarding Witness. The source grows dormant for its explorer until rediscovery; peers keep their access. Specific committed sequences retain their own physical constraints. Remember a real companion left waiting at a threshold; its voice and the explorer's earlier light can help orient a return.
+- **Architectural density:** rich household rooms and inhabited vignettes retain supported clutter and convincing silhouettes. The deepest core labyrinth uses proportion, silence, distance and absence. Water trials consume real breath and require physical navigation between refuges. The nine-wide stair descends 1,280 native blocks to the cell and continues another 1,280 below it.
+
+Design references: Magdalena Solarz, [*The Labyrinth as an Anti-Home in Mark Z. Danielewski's House of Leaves*](https://journals.umcs.pl/nh/article/viewFile/5798/4074), New Horizons in English Studies 2/2017; the supplied [Minotaur discussion](https://www.reddit.com/r/houseofleaves/comments/wogs5p/could_someone_help_me_understand_the_minotaur/) and [ending interpretation](https://vocal.media/horror/house-of-leaves-ending-explained-the-impossible-house-endless-hallway-and-terrifying-truth-behind-the-labyrinth-spoilers-55a52189fc); Freud's [*The Uncanny* excerpt](https://pressbooks.pub/guidetogothic/chapter/sigmund-freud-excerpts-from/); the publisher's [reading guide](https://www.penguinrandomhouse.com/books/36526/house-of-leaves-by-mark-z-danielewski/readers-guide/) and [Whalestoe description](https://penguinrandomhousehighereducation.com/book/?isbn=9780375714412). Aguirre's limen is read through Solarz's account. Interpretations inform the design without claiming one definitive explanation.
+
+No new Witness source or ending is added: seventeen eligible stories, thirteen personal resolutions across at least two kinds, three endings. Current layout is 25 and protocol 27. Existing actor/container identities, held/customized shields and authored personal evidence remain authoritative.
+
 0.4.25 implements Holloway’s shared human camp and three-arena pursuit, plus human Harrigan skins on the original seated body and an aged patched-coat skin for the finale’s old man. Tom and the private double use native standard/slim explorer skins. Layout 22 appends slot 39; seventeen eligible Witness sources require thirteen across at least two kinds. Three endings remain. See [HOUSE_NPCS_0_4_25.md](HOUSE_NPCS_0_4_25.md) for multiplayer state, assets and testing.
 
 This is the design document with the decisions made while building the opening sequence applied. Everything else is as written.
@@ -58,8 +75,8 @@ The mod is about the Oldest House: one impossible, expanding structure that only
 
 - **The house is the core.** Borrowed stories live only inside their own vignettes. None of their motifs appear in the house's hallways, anchors, or endings. The Usher crack, for example, exists only in the Usher vault.
 - **Nothing destroys the house except the end of the Minotaur.** Mining, explosions, and fire leave it untouched.
-- **The Minotaur is never seen in first person until the finale.** Before that, players glimpse it only when the house pulls the camera out of their body, in photos, and in miniatures. Its voice is the Growl.
-- **Two endings.** The Minotaur kills the player and they are locked out of the house for good. Or they wound it, and the house collapses.
+- **The Minotaur is never seen in first person until the finale.** Before that, images and indirect traces retain ambiguity. A child waits inside the final cell; no visible transformation explains the relationship. Its voice is the Growl.
+- **Three endings.** Defeat permanently excludes that explorer; wounding leaves the creature alive while the House collapses; the personal Witness account enables a peaceful release and walk home.
 - **The Mother of Strays is original to this mod.** She keeps what players lose, and she answers the book's Pekingese story: she keeps everything nobody else would.
 - **Assets are not a constraint.** Designs are not scaled back to save on models, creatures, or audio.
 - **Platform.** Minecraft Java Edition 1.21.1 with a NeoForge mod, designed for single-player first.

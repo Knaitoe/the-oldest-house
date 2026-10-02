@@ -52,6 +52,7 @@ public final class HouseMarginalia {
         if (!(state.getBlock() instanceof NoteSurfaceBlock)) return;
         Thread thread=state.getValue(NoteSurfaceBlock.THREAD); BlockPos pos=event.getPos().immutable();
         event.setCanceled(true); event.setCancellationResult(InteractionResult.SUCCESS);
+        if(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseWriting.open(player,pos))return;
         // The provider creates a separate container and page counter for every reader.
         player.openMenu(new SimpleMenuProvider((id,inventory,reader)->new NotebookMenu(id,player,pos,thread),Component.literal("Loose writing")));
     }

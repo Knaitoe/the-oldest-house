@@ -14,7 +14,6 @@ import net.neoforged.neoforge.client.event.*;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class LakePhoneClient {
     private static int phase,cameraId=-1,elapsed,lease;
-    private static CameraType previousCamera;
     private static net.minecraft.client.multiplayer.ClientLevel sceneLevel;
     private LakePhoneClient(){}
     public static void accept(LakePhonePayload packet){
@@ -29,7 +28,7 @@ public final class LakePhoneClient {
     private static void enforce(){
         Minecraft mc=Minecraft.getInstance();
         if(!bound()||mc.player==null||mc.level==null||mc.player.isDeadOrDying()||(sceneLevel!=null&&sceneLevel!=mc.level)){clear();return;}
-        if(previousCamera==null){previousCamera=mc.options.getCameraType();sceneLevel=mc.level;}
+        if(sceneLevel==null)sceneLevel=mc.level;
         mc.options.setCameraType(CameraType.FIRST_PERSON);
         if(mc.screen instanceof AbstractContainerScreen<?>)mc.setScreen(null);
         if(phase>=3&&mc.level.getEntity(cameraId) instanceof LakePhoneCamera camera)mc.setCameraEntity(camera);
@@ -37,8 +36,7 @@ public final class LakePhoneClient {
     public static void clear(){
         Minecraft mc=Minecraft.getInstance();
         if(mc.getCameraEntity() instanceof LakePhoneCamera)mc.setCameraEntity(mc.player);
-        if(previousCamera!=null)mc.options.setCameraType(previousCamera);
-        previousCamera=null;sceneLevel=null;phase=0;cameraId=-1;lease=0;
+        sceneLevel=null;phase=0;cameraId=-1;lease=0;
     }
     @SubscribeEvent public static void input(MovementInputUpdateEvent event){
         if(!bound()||phase<3)return;var input=event.getInput();input.forwardImpulse=0;input.leftImpulse=0;

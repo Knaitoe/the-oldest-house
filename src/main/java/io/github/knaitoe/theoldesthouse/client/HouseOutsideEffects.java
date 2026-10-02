@@ -62,6 +62,6 @@ public final class HouseOutsideEffects extends DimensionSpecialEffects {
     private static void skyVertex(BufferBuilder b,Matrix4f m,float x,float y,float z,float r,float g,float blue){b.addVertex(m,x,y,z).setColor(r,g,blue,1);}
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
     public static final class Registration {
-        @SubscribeEvent public static void register(RegisterDimensionSpecialEffectsEvent e){e.register(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"outside"),new HouseOutsideEffects());}
+        @SubscribeEvent public static void register(RegisterDimensionSpecialEffectsEvent e){e.register(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"outside"),new HouseOutsideEffects());e.register(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"interior"),new HouseOutsideEffects());}
     }
 }

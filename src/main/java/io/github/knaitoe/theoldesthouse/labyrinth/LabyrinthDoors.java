@@ -117,6 +117,7 @@ public final class LabyrinthDoors {
         }
         MinecraftServer server = player.server;
         LabyrinthData data = LabyrinthData.get(server);
+        if(VignetteGate.dormant(data,player.getUUID(),door)){setDoorOpen(player.serverLevel(),door.lower,false,player);player.displayClientMessage(Component.literal("The door is quiet. Leave its approach and find it again."),true);return;}
         if (HideAndClap.isLocked(player)) {
             locked(player);
             return;
@@ -129,7 +130,7 @@ public final class LabyrinthDoors {
             return;
         }
         if (LabyrinthData.RETURN.equals(door.destination) || LabyrinthData.HALLWAY_OR_RETURN.equals(door.destination)) {
-            if(NovelVignettes.exitLocked(player,door)){setDoorOpen(player.serverLevel(),door.lower,false,player);locked(player);return;}
+            if(NovelVignettes.exitLocked(player,door)||VignetteGate.exitLocked(player,door)){setDoorOpen(player.serverLevel(),door.lower,false,player);VignetteGate.explain(player);return;}
             // An entry door, from inside: it just opens. Walking back out
             // through it is what takes the player back.
             setDoorOpen(player.serverLevel(), door.lower, true, player);
@@ -216,6 +217,7 @@ public final class LabyrinthDoors {
                 fromLevel.dimension(), Vec3.atBottomCenterOf(from.lower), from.facing.toYRot(), true));
         INSIDE.remove(player.getUUID());
         Consumer<ServerPlayer> arrived = p -> {
+            VignetteGate.begin(p,place);
             setDoorOpen(toLevel, entry.lower, true, p);
             data.visit(p.getUUID(), place);
             LabyrinthDealer.dealPlace(data, p.getUUID(), place, p.getRandom());
@@ -271,7 +273,7 @@ public final class LabyrinthDoors {
         }
         UUID id = player.getUUID();
         double into = intoRoom(player, entry);
-        if(NovelVignettes.exitLocked(player,entry)&&INSIDE.contains(id)&&into<THRESHOLD) {
+        if((NovelVignettes.exitLocked(player,entry)||VignetteGate.exitLocked(player,entry))&&INSIDE.contains(id)&&into<THRESHOLD) {
             setDoorOpen(player.serverLevel(),entry.lower,false,player);
             shift(player,Vec3.atBottomCenterOf(entry.lower.relative(entry.facing.getOpposite(),2)),player.getYRot());
             return true;
@@ -284,6 +286,7 @@ public final class LabyrinthDoors {
                 return true;
             }
             INSIDE.add(id);
+            VignetteGate.stepped(player,place);
             if (into >= SHUT_BEHIND) {
                 setDoorOpen(player.serverLevel(), entry.lower, false, player);
             }
@@ -329,6 +332,7 @@ public final class LabyrinthDoors {
         UUID id = player.getUUID();
         setDoorOpen(player.serverLevel(), entry.lower, false, null);
         LabyrinthData.Waypoint back = data.popReturn(id);
+        if(back!=null)VignetteGate.departed(player,back,entry);
         if (back == null) {
             // A missing return stack must never strand the player in the gray
             // once the House has a real labyrinth entrance. The impossible
@@ -610,6 +614,11 @@ public final class LabyrinthDoors {
                         continue;
                     }
                     BlockState state = fromLevel.getBlockState(src).rotate(turn);
+                    if(y==-1&&state.isAir()){
+                        // A missing source threshold cannot erase the destination's supporting floor.
+                        if(!toLevel.getBlockState(dst).isAir())continue;
+                        state=Blocks.DARK_OAK_PLANKS.defaultBlockState();
+                    }
                     if (toLevel.getBlockState(dst) != state) {
                         toLevel.setBlock(dst, state, FLAGS);
                     }

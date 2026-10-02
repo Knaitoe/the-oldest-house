@@ -38,6 +38,7 @@ public final class FinaleController {
     public static final String GUIDE="HouseFinaleGuide";
     private static final Map<UUID,Long> LAST_WORDS=new HashMap<>();
     private static final Map<UUID,Long> MISSING_CREATURES=new HashMap<>();
+    private static final Map<MinecraftServer,MinotaurEntity> CAGED=new WeakHashMap<>();
     private static final Set<TamableAnimal> GUIDE_GOALS=Collections.newSetFromMap(new WeakHashMap<>());
     private FinaleController(){}
     public static @Nullable BlockPos companionTarget(ServerPlayer player,boolean exit) {
@@ -96,13 +97,14 @@ public final class FinaleController {
         CompoundTag record=FinaleProgress.player(player.server,player.getUUID());FinaleProgress.Phase phase=FinaleProgress.phase(record);
         if(phase==FinaleProgress.Phase.UNSEEN){record.putString("Phase",FinaleProgress.Phase.STAIRCASE.name());record.putBoolean("Discovered",true);}
         BlockPos b=FinaleArchitecture.base(origin);long now=player.serverLevel().getGameTime();
+        if(phase==FinaleProgress.Phase.STAIRCASE||phase==FinaleProgress.Phase.UNSEEN)StaircaseMazes.tick(player,b,record);
         if(phase==FinaleProgress.Phase.STAIRCASE||phase==FinaleProgress.Phase.UNSEEN){
             double z=player.getZ()-b.getZ();
-            if(player.getY()>FinaleArchitecture.TOP-2&&z<13)record.putBoolean("Inside",true);
-            if(player.getY()>FinaleArchitecture.TOP-2&&z>15&&record.getBoolean("Inside")){FinaleProgress.save(player.server,player.getUUID(),record);returnFromStaircase(player);return true;}
-            if(player.tickCount%40==0)ensureWitness(player.serverLevel(),origin);
+            if(player.getY()>FinaleArchitecture.TOP-2&&z<FinaleArchitecture.STAIR_RADIUS+1)record.putBoolean("Inside",true);
+            if(player.getY()>FinaleArchitecture.TOP-2&&z>FinaleArchitecture.STAIR_RADIUS+2.7&&record.getBoolean("Inside")){FinaleProgress.save(player.server,player.getUUID(),record);returnFromStaircase(player);return true;}
+            if(player.tickCount%40==0){ensureWitness(player.serverLevel(),origin);if(player.getY()<FinaleArchitecture.ARENA+16)ensureCaged(player.serverLevel(),origin);}
             if(player.getY()<FinaleArchitecture.ARENA+4&&z>31&&!record.getBoolean("Warned")){
-                record.putBoolean("Warned",true);words(player,b.offset(0,FinaleArchitecture.ARENA+2,35),"The door behind you still leads back. The cell does not.");
+                record.putBoolean("Warned",true);words(player,b.offset(0,FinaleArchitecture.ARENA+2,35),"Use the bars to open the cell. The stairs still lead back. The cell does not.");
             }
         }else if(phase==FinaleProgress.Phase.HOMEWARD){
             WitnessEnding.returnWeapon(player,record);
@@ -126,6 +128,20 @@ public final class FinaleController {
         }
         if(player.tickCount%20==0)FinaleProgress.save(player.server,player.getUUID(),record);
         return true;
+    }
+    public static @Nullable MinotaurEntity ensureCaged(ServerLevel level,BlockPos origin){
+        var world=FinaleProgress.world(level.getServer());if(world.hasUUID("Owner")||world.getBoolean("MinotaurWounded"))return null;
+        BlockPos cell=FinaleArchitecture.cell(origin);level.getChunkAt(cell);
+        if(world.hasUUID("CagedCreature")){
+            var live=level.getEntity(world.getUUID("CagedCreature"));if(live instanceof MinotaurEntity m){CAGED.put(level.getServer(),m);return m;}
+            var queued=CAGED.get(level.getServer());if(queued!=null&&!queued.isRemoved()&&queued.getUUID().equals(world.getUUID("CagedCreature")))return queued;
+            // Wait for native entity loading before replacing any saved prisoner.
+            long first=MISSING_CREATURES.computeIfAbsent(world.getUUID("CagedCreature"),id->level.getGameTime());if(level.getGameTime()-first<100)return null;
+        }
+        var old=level.getEntitiesOfClass(MinotaurEntity.class,new AABB(cell).inflate(12),m->m.motion()==MinotaurEntity.CAGED);
+        var boy=old.isEmpty()?FinaleRegistry.MINOTAUR.get().create(level):old.getFirst();if(boy==null)return null;
+        if(old.isEmpty()){boy.caged();boy.moveTo(cell.getX()+.5,cell.getY(),cell.getZ()+4.5,180,0);level.addFreshEntity(boy);}
+        world.putUUID("CagedCreature",boy.getUUID());LabyrinthData.get(level.getServer()).setState(FinaleProgress.STATE,world);CAGED.put(level.getServer(),boy);return boy;
     }
     private static void returnFromStaircase(ServerPlayer player){
         LabyrinthData data=LabyrinthData.get(player.server);var back=data.popReturn(player.getUUID());
@@ -183,6 +199,7 @@ public final class FinaleController {
         world.putUUID("Owner",player.getUUID());LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);
         CompoundTag record=FinaleProgress.player(player.server,player.getUUID());record.putString("Phase",(world.getBoolean("MinotaurWounded")?FinaleProgress.Phase.COLLAPSE:FinaleProgress.Phase.FIGHT).name());record.putUUID("Weapon",weapon);
         if(world.hasUUID("WoundedCreature"))record.putUUID("Creature",world.getUUID("WoundedCreature"));
+        else if(world.hasUUID("CagedCreature"))record.putUUID("Creature",world.getUUID("CagedCreature"));
         if(world.getBoolean("MinotaurWounded"))FinaleCollapse.wounded(player,origin,record);
         if(player.getRespawnPosition()!=null)record.putLong("Base",player.getRespawnPosition().asLong());record.putString("BaseDimension",player.getRespawnDimension().location().toString());
         FinaleArchitecture.seal(player.serverLevel(),origin,true);FinaleArchitecture.openCell(player.serverLevel(),origin);
@@ -192,7 +209,10 @@ public final class FinaleController {
     private static void ensureMinotaur(ServerPlayer player,BlockPos origin,CompoundTag record){
         ServerLevel level=player.serverLevel();BlockPos cell=FinaleArchitecture.cell(origin);level.getChunkAt(cell);
         // Entity lookup is only meaningful after the cell chunk is loaded.
-        if(record.hasUUID("Creature")&&level.getEntity(record.getUUID("Creature")) instanceof MinotaurEntity){MISSING_CREATURES.remove(player.getUUID());return;}
+        if(record.hasUUID("Creature")&&level.getEntity(record.getUUID("Creature")) instanceof MinotaurEntity creature){
+            if(creature.motion()==MinotaurEntity.CAGED){creature.awaken(player.getUUID());if(FinaleProgress.phase(record)==FinaleProgress.Phase.RELEASE)creature.released();}
+            MISSING_CREATURES.remove(player.getUUID());return;
+        }
         if(record.hasUUID("Creature")){
             long first=MISSING_CREATURES.computeIfAbsent(player.getUUID(),ignored->level.getGameTime());
             if(level.getGameTime()-first<40)return;
@@ -417,5 +437,5 @@ public final class FinaleController {
             @Override public boolean canContinueToUse(){return canUse();}
         });
     }
-    public static void clearAll(){LAST_WORDS.clear();MISSING_CREATURES.clear();GUIDE_GOALS.clear();FinaleArchitecture.clearAll();FinaleCollapse.clearAll();}
+    public static void clearAll(){LAST_WORDS.clear();MISSING_CREATURES.clear();CAGED.clear();GUIDE_GOALS.clear();FinaleArchitecture.clearAll();FinaleCollapse.clearAll();}
 }

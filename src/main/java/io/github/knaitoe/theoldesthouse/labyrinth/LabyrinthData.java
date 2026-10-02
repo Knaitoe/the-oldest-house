@@ -236,6 +236,7 @@ public final class LabyrinthData extends SavedData {
     }
 
     public void deal(UUID player, Door door, String place, boolean leak, boolean bark) {
+        VignetteGate.redealt(this,player,door);
         playerDealer(player).deals.put(door.id, new Deal(place, leak, bark));
         setDirty();
     }

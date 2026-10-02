@@ -29,6 +29,7 @@ public final class LabyrinthDoorLeaks {
 
     @Nullable
     public static Cue cue(LabyrinthData data, UUID player, LabyrinthData.Door door) {
+        if(VignetteGate.dormant(data,player,door))return null;
         LabyrinthData.Deal deal = LabyrinthData.DEALT.equals(door.destination) ? data.deal(player, door) : null;
         boolean leaks = deal != null ? deal.leak() : door.leak;
         boolean bark = deal != null ? deal.bark() : door.bark;
