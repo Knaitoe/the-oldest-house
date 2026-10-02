@@ -4,6 +4,8 @@ Sep 28, 2026 · @Sean Price · revised in the repository to match decisions made
 
 ## Revisions in this copy
 
+0.4.25 implements Holloway’s shared human camp and three-arena pursuit, plus human Harrigan skins on the original seated body. Tom and the private double use native standard/slim explorer skins. Layout 22 appends slot 39; seventeen eligible Witness sources require thirteen across at least two kinds. Three endings remain. See [HOUSE_NPCS_0_4_25.md](HOUSE_NPCS_0_4_25.md) for multiplayer state, assets and testing.
+
 This is the design document with the decisions made while building the opening sequence applied. Everything else is as written.
 
 - **The house is a large manor.** The Oldest House stays a large, old Tudor manor with a fixed exterior (see [ARCHITECTURE.md](ARCHITECTURE.md)), not a 12-block house. Its interior lives in the house dimension at the exterior's own coordinates; the impossible space begins at the labyrinth threshold, the door that appears at the end of the hall.
@@ -217,9 +219,10 @@ Implementation and playtest details: [MOTHER.md](MOTHER.md). This September 30 r
 ### Holloway
 
 - The player who came before. His camp is a dirt hut, torch trails, chests of ordinary gear, and signs that get stranger.
-- Looting the camp triggers his hunt on the next visit, in two or three scripted arenas. He tracks you by the torches you place.
-- He drops the shield the finale needs.
-- Yields his half-explored, wrong map.
+- Actually taking a finite native cache supply or one personal survey copy arms that explorer’s next physical visit. Reading, opening and borrowing confer none; late explorers retain access when the shared barrel is empty. His shared persistent human actor hunts active looters through three connected arenas. He searches by the pursued player’s actual placed torches when native sight is lost. Native cover, a faced shield or striking him buys time.
+- Each explorer must traverse the three arenas in order, spend four present seconds in each, see the hunter and crouch to pull the service latch. Peers and borrowed items confer no credit. In-room offline time pauses; departure/death ends the attempt while preserving theft. Shared geometry, menus and actor identity stay in place for late joiners.
+- One personal escape yields a finite battered vanilla shield usable in the finale; the existing finale preparation shield remains available. He stays alive.
+- Yields a locked native half-explored conjectural map once per explorer.
 
 ### The dog: Hillary
 
@@ -269,7 +272,7 @@ The notes carry the human stories: the horror sits on top, and the human story s
 
 ## Vignettes: House of Leaves places
 
-These places come from the novel the house grows out of, so several double as anchors. All six are playable adaptations in 0.4.23; see [NOVEL_AND_COLLAPSE_0_4_23.md](NOVEL_AND_COLLAPSE_0_4_23.md) for exact verbs, persistence, assets and direct testing. Their original writing is not a transcription. Holloway's independent hunt arenas remain planned; his existing final shield/cache is retained.
+These places come from the novel the house grows out of, so several double as anchors. All six are playable adaptations in 0.4.23; see [NOVEL_AND_COLLAPSE_0_4_23.md](NOVEL_AND_COLLAPSE_0_4_23.md) for exact verbs, persistence, assets and direct testing. Their original writing is not a transcription. Holloway's independent camp and three-room hunt are playable in 0.4.25; his existing final shield/cache is retained.
 
 ### Zampanò's courtyard
 
@@ -781,8 +784,8 @@ Assets: the Minotaur, a custom creature with charge, stun, and wounded-crawl ani
 
 ### The Witness: an earned release
 
-- This is an original mod ending. Resolve 75% of the playable Witness story pool, rounded up, across at least two story kinds to restore the final passages in a written account and the play beside the cell. The threshold scales automatically when shipped sources are added: sixteen sources require twelve resolutions in 0.4.23. Survival, understanding, connection, memory, and release can contribute; neither the Mother nor every vignette is mandatory.
-- The current sixteen sources are the floorboards, hide-and-clap, Harrigan, the model home, Drowned Town's church roof, the preserved cave, the Shallows, Phone in the Canoe, the Goatman door vigil, the caver’s return above the rope, Zampano's survey, the Whale's undated attic letter, the return above the well, the plain's photograph, the hospital's dawn chart, and the Mother's peaceful resolution. Karen's room is an anchor, excluded from this pool. World completion flags and merely visiting rooms confer no credit. A later explorer can crouch and inspect a finished room's actual ending prop to record its aftermath; acquiring someone else's book or artifact does not transfer progress.
+- This is an original mod ending. Resolve 75% of the playable Witness story pool, rounded up, across at least two story kinds to restore the final passages in a written account and the play beside the cell. The threshold scales automatically when shipped sources are added: seventeen sources require thirteen resolutions in 0.4.25. Survival, understanding, connection, memory, and release can contribute; neither the Mother nor every vignette is mandatory.
+- The current seventeen sources are the floorboards, hide-and-clap, Harrigan, the model home, Drowned Town's church roof, the preserved cave, the Shallows, Phone in the Canoe, the Goatman door vigil, the caver’s return above the rope, Zampano's survey, the Whale's undated attic letter, the return above the well, the plain's photograph, the hospital's dawn chart, Holloway’s personal service-latch escape, and the Mother's peaceful resolution. Karen's room is an anchor, excluded from this pool. World completion flags and merely visiting rooms confer no credit. A later explorer can crouch and inspect a finished room's actual ending prop to record its aftermath; acquiring someone else's book or artifact does not transfer progress.
 - Each vignette release must review the personal resolution hook, eligible pool, resulting 75% threshold, tests and current documentation. Draft sites and unfinished encounters do not enter the quota. See [VIGNETTE_RELEASE_CHECKLIST.md](VIGNETTE_RELEASE_CHECKLIST.md). Existing saved evidence is retained when the requirement rises; an uncommitted ending uses the current quota, while completed endings and a release already underway remain saved.
 - Read the restored play at the cell's lectern. Lay the original most-used weapon beside the cell, clear both hands, and crouch while opening it. Normal opening still chooses the violent encounter.
 - The Minotaur pauses, passes close to the witness, and physically walks into the staircase. Its quiet departure replaces the charge. The cell remains open and the passage back becomes available.
@@ -804,7 +807,9 @@ The Minotaur is the centerpiece asset; most human characters are skins on one sh
 | Vulture | The plain | Circling behavior only, never swoops |
 | The Mother of Strays | Her den and concealed stalking | Petite articulated model, platinum hair, heavy eyeliner, continuous restrained deformation and sixteen texture stages; custom bandaged Pekingese |
 
-### NPC skins (one entity type)
+### NPC skins and actors
+
+Shipped human models: Holloway’s persistent shared native actor has an olive canvas/flannel skin; Harrigan’s alive/dead suit skins render the original saved seated body through native equipment tracking; Tom and Karen’s private double retain the appropriate explorer’s standard/slim skin. Existing child/lake actors remain. Family, father, confession and other unshipped vignette casts below remain planned.
 
 - Tom (the player's own skin, applied at runtime), Holloway, the family (several sets), the old man, the father in Holy Rabbit plus a bandaged-leg variant, the confession's visitor.
 - The four cabin strangers, the séance family and medium, masked dancers, the bartender and bar strangers, ballroom ghost couples.

@@ -326,6 +326,7 @@ public final class HarriganVignette {
         stand.setNoGravity(true);
         stand.getPersistentData().putInt(BODY_POSE, 1);
         if (!inCasket) seatBody(stand, pos.below());
+        HarriganAppearance.apply(stand,inCasket);
         level.addFreshEntity(stand);
     }
 
@@ -351,10 +352,13 @@ public final class HarriganVignette {
     /** Repair the existing actor in place, even when a reader still occupies the scene. */
     public static void onEntityTick(EntityTickEvent.Post event) {
         if (!(event.getEntity() instanceof ArmorStand stand) || !stand.getTags().contains(BODY_TAG)
-                || stand.getPersistentData().getInt(BODY_POSE) >= 1
                 || !(stand.level() instanceof ServerLevel level) || !level.dimension().equals(HouseDimensions.INTERIOR)) return;
         BlockPos base = base(level.getServer());
         if (base == null || !placeBounds(base).contains(stand.position())) return;
+        // Only native head components change; UUID, seat, reader menus and scene progress stay intact.
+        boolean casket=stand.getZ()<base.getZ()-15;
+        HarriganAppearance.apply(stand,casket);
+        if(stand.getPersistentData().getInt(BODY_POSE)>=1)return;
         BlockPos chair = base.offset(CHAIR);
         if (Math.abs(stand.getX() - chair.getX() - 0.5D) < 0.75D
                 && Math.abs(stand.getZ() - chair.getZ() - 0.5D) < 0.75D) seatBody(stand, chair);

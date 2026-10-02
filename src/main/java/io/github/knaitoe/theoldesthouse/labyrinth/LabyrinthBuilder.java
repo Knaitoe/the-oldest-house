@@ -36,7 +36,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 21;
+    public static final int VERSION = 22;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -103,6 +103,7 @@ public final class LabyrinthBuilder {
                     || (data.builtVersion() < 18 && place.slot() >= 31)
                     || (data.builtVersion() < 20 && place.slot() >= 32)
                     || (data.builtVersion() < 21 && place.slot() >= 33)
+                    || (data.builtVersion() < 22 && place.slot() >= 39)
                     || (data.builtVersion() < 12 && LabyrinthMaze.isMaze(place))
                     || (data.builtVersion() == 10 && place == LabyrinthPlace.MOTHER_DEN);
             boolean domestic = place == LabyrinthPlace.JUNCTION || LabyrinthHalls.isHall(place) || LabyrinthMaze.isMaze(place);
@@ -195,6 +196,7 @@ public final class LabyrinthBuilder {
             case PHONE_CANOE -> PhoneCanoe.build(server, level, base);
             case GOATMAN -> GoatmanVignette.build(server,level,base);
             case TED_CAVER -> CaverCave.build(server,level,base);
+            case HOLLOWAY_CAMP -> HollowayCamp.build(level,base);
             case FLOODED_PASSAGE -> LabyrinthHazards.buildFloodedPassage(level, base);
             case FRACTURED_WALKWAY -> LabyrinthHazards.buildFracturedWalkway(level, base);
             case COMPRESSION_PASSAGE -> LabyrinthHazards.buildCompressionPassage(level, base);

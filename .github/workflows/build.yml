@@ -52,7 +52,14 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.24"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.25"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              for name in ('HouseHuman', 'HollowayCamp', 'HollowayVignette', 'HarriganAppearance'):
+                  assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
+              for name in ('holloway', 'harrigan', 'harrigan_dead'):
+                  from PIL import Image
+                  from io import BytesIO
+                  skin = Image.open(BytesIO(z.read(f'assets/the_oldest_house/textures/entity/{name}.png')))
+                  assert skin.size == (64, 64) and skin.mode == 'RGBA'
               assert 'assets/the_oldest_house/sounds/vignette/heartbeat.ogg' in z.namelist()
               assert 'vignette.heartbeat' in json.loads(z.read('assets/the_oldest_house/sounds.json'))
               for name in ('assets/the_oldest_house/textures/entity/lake_witch.png',
@@ -200,6 +207,8 @@ jobs:
           LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PfontSmoke --no-daemon
           test -s build/font-smoke/passed.txt
           test -s build/font-smoke/native-writing.png
+          test -s build/font-smoke/npcs-passed.txt
+          test -s build/font-smoke/native-npcs.png
 
       - name: Upload native writing proof
         if: always()

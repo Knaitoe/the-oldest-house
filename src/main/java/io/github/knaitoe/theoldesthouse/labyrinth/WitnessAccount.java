@@ -51,6 +51,8 @@ public final class WitnessAccount {
         BARN_WELL("barn_well","The cover","memory","I climbed below the initials. The cover shut above me. I waited until someone opened it, then climbed back into the yard."),
         PLAIN("plain","The distant frame","memory","The bird circled something beyond the dunes. I held it in the spyglass and heard the shutter. The photograph came with me. The distance remained."),
         HOSPITAL("hospital","The call button","understanding","I stayed through the ward's short night. I pressed the call button. The alarms stopped at dawn, without anyone coming through the door."),
+        HOLLOWAY("holloway_camp","The counted lights","survival",
+                "I took supplies from the dirt hut. When I returned, someone followed the light I had left. I passed the pillars, somebody's stairs and the broken stone. Beyond the service latch I found a shield and half a map. The missing half looked safer."),
         MOTHER("mother_of_strays", "The keeper", "release",
                 "She let something go. For a moment, keeping it safe and keeping it forever were different things.");
         public final String id, title, kind, text;
@@ -120,6 +122,7 @@ public final class WitnessAccount {
                         case BARN_WELL->"Two pairs of initials remained below the cover.";
                         case PLAIN->"A bird still circled beyond the dunes.";
                         case HOSPITAL->"The chair remained beside the empty incubator.";
+                        case HOLLOWAY->"The supplies had been counted. The service latch was still worn.";
                         case MOTHER->"The shelves remained, but she had stopped keeping the things upon them.";
                     }:story.text;
             pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,story.title+"\n\n"+text));
@@ -162,7 +165,7 @@ public final class WitnessAccount {
         if(story==null||NovelVignettes.isNovel(place)||!data.isCompleted(place.id())||has(data,player.getUUID(),story))return;
         String prop=switch(story){case FLOORBOARDS->"the exposed space beneath the loose board";
             case CLAP->"the open wardrobe";case HARRIGAN->"the casket";case MODEL_HOME->"the child's window";
-            case DROWNED_TOWN->"the church's open roof hatch";case PRESERVED_CAVE->"the canoe behind the empty pews";case SHALLOWS->"the bank";case PHONE_CANOE->"the canoe";case GOATMAN->"the trailer door";case TED_CAVER->"the cave landing";case ZAMPANO->"the survey";case WHALE->"the undated letter";case BARN_WELL->"the well";case PLAIN->"the distant shape";case HOSPITAL->"the dawn chart";case MOTHER->"the keeper's record";};
+            case DROWNED_TOWN->"the church's open roof hatch";case PRESERVED_CAVE->"the canoe behind the empty pews";case SHALLOWS->"the bank";case PHONE_CANOE->"the canoe";case GOATMAN->"the trailer door";case TED_CAVER->"the cave landing";case ZAMPANO->"the survey";case WHALE->"the undated letter";case BARN_WELL->"the well";case PLAIN->"the distant shape";case HOSPITAL->"the dawn chart";case HOLLOWAY->"the service latch";case MOTHER->"the keeper's record";};
         player.displayClientMessage(Component.literal("Someone reached the end before you. Crouch and examine "+prop+" to record what remains."),false);
     }
     /** Later explorers must inspect a resolved room's ending prop themselves. */

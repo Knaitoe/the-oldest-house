@@ -29,10 +29,11 @@ public final class NovelRegistry {
     public static final DeferredItem<WalkieTalkieItem> RADIO=ITEMS.register("walkie_talkie",()->new WalkieTalkieItem(new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<EntityType<?>,EntityType<NovelVulture>> VULTURE=TYPES.register("vulture",()->EntityType.Builder.<NovelVulture>of(NovelVulture::new,MobCategory.MISC).sized(.9F,.45F).clientTrackingRange(16).updateInterval(2).build("vulture"));
     public static final DeferredHolder<EntityType<?>,EntityType<NovelActor>> ACTOR=TYPES.register("novel_actor",()->EntityType.Builder.<NovelActor>of(NovelActor::new,MobCategory.MISC).sized(.6F,1.8F).clientTrackingRange(12).updateInterval(2).build("novel_actor"));
+    public static final DeferredHolder<EntityType<?>,EntityType<HouseHuman>> HUMAN=TYPES.register("house_human",()->EntityType.Builder.<HouseHuman>of(HouseHuman::new,MobCategory.MISC).sized(.6F,1.8F).clientTrackingRange(16).updateInterval(2).build("house_human"));
     public static final DeferredHolder<SoundEvent,SoundEvent> MONITOR=sound("novel.monitor"),SHUTTER=sound("novel.shutter"),RADIO_STATIC=sound("novel.radio"),COLLAPSE=sound("novel.collapse");
     private static DeferredBlock<Block> material(String id,Block base){return BLOCKS.registerBlock(id,Block::new,BlockBehaviour.Properties.ofFullCopy(base).noLootTable());}
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     private NovelRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);TYPES.register(bus);SOUNDS.register(bus);bus.addListener(NovelRegistry::attributes);}
-    private static void attributes(EntityAttributeCreationEvent e){e.put(VULTURE.get(),NovelVulture.attributes().build());e.put(ACTOR.get(),NovelActor.attributes().build());}
+    private static void attributes(EntityAttributeCreationEvent e){e.put(VULTURE.get(),NovelVulture.attributes().build());e.put(ACTOR.get(),NovelActor.attributes().build());e.put(HUMAN.get(),HouseHuman.attributes().build());}
 }
