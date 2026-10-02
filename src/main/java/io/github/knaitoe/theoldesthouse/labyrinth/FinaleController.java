@@ -345,8 +345,9 @@ public final class FinaleController {
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post event){
         MinecraftServer server=event.getServer();FinaleArchitecture.tick(server);
-        for(ServerLevel level:server.getAllLevels())if(level.getGameTime()%20==0)
-            for(Entity entity:level.getAllEntities())if(entity.getTags().contains("HouseFinaleWords")&&level.getGameTime()>=entity.getPersistentData().getLong("FinaleWordsUntil"))entity.discard();
+        List<Entity> expiredWords=new ArrayList<>();for(ServerLevel level:server.getAllLevels())if(level.getGameTime()%20==0)
+            for(Entity entity:level.getAllEntities())if(entity!=null&&entity.getTags().contains("HouseFinaleWords")&&level.getGameTime()>=entity.getPersistentData().getLong("FinaleWordsUntil"))expiredWords.add(entity);
+        expiredWords.forEach(Entity::discard);
         CompoundTag world=FinaleProgress.world(server);boolean changed=false;ServerLevel interior=server.getLevel(HouseDimensions.INTERIOR);
         BlockPos activeOrigin=HouseSavedData.get(server).houseOrigin();
         if(world.getBoolean("CellReleased")&&!world.hasUUID("Owner")&&interior!=null&&activeOrigin!=null
