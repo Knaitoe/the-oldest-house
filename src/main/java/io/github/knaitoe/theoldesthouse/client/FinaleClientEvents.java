@@ -21,7 +21,7 @@ public final class FinaleClientEvents {
         private final CagedBoyRenderer boy;
         MinotaurRenderer(EntityRendererProvider.Context context){super(context,new MinotaurModel(context.bakeLayer(MinotaurModel.LAYER)),.9F);boy=new CagedBoyRenderer(context);}
         @Override public ResourceLocation getTextureLocation(MinotaurEntity entity){return MATERIALS;}
-        @Override public void render(MinotaurEntity e,float yaw,float partial,com.mojang.blaze3d.vertex.PoseStack poses,net.minecraft.client.renderer.MultiBufferSource buffers,int light){if(e.motion()==MinotaurEntity.CAGED)boy.render(e,yaw,partial,poses,buffers,light);else super.render(e,yaw,partial,poses,buffers,light);}
+        @Override public void render(MinotaurEntity e,float yaw,float partial,com.mojang.blaze3d.vertex.PoseStack poses,net.minecraft.client.renderer.MultiBufferSource buffers,int light){if(e.childAppearance())boy.render(e,yaw,partial,poses,buffers,light);else super.render(e,yaw,partial,poses,buffers,light);}
     }
     private static final class CagedBoyRenderer extends MobRenderer<MinotaurEntity,net.minecraft.client.model.PlayerModel<MinotaurEntity>>{
         CagedBoyRenderer(EntityRendererProvider.Context context){super(context,new net.minecraft.client.model.PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER),false),.2F);}

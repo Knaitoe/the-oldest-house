@@ -220,6 +220,7 @@ public final class LabyrinthDoors {
             VignetteGate.begin(p,place);
             setDoorOpen(toLevel, entry.lower, true, p);
             data.visit(p.getUUID(), place);
+            io.github.knaitoe.theoldesthouse.house.HouseExperience.arrived(p,place);
             LabyrinthDealer.dealPlace(data, p.getUUID(), place, p.getRandom());
             RedRoom.prepareIfDealt(p, place);
             ModelHome.onArrive(p, place);
@@ -332,7 +333,7 @@ public final class LabyrinthDoors {
         UUID id = player.getUUID();
         setDoorOpen(player.serverLevel(), entry.lower, false, null);
         LabyrinthData.Waypoint back = data.popReturn(id);
-        if(back!=null)VignetteGate.departed(player,back,entry);
+        if(back!=null){io.github.knaitoe.theoldesthouse.house.HouseExperience.returned(player);VignetteGate.departed(player,back,entry);}
         if (back == null) {
             // A missing return stack must never strand the player in the gray
             // once the House has a real labyrinth entrance. The impossible

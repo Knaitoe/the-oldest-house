@@ -1,6 +1,6 @@
 # Architecture and atmosphere — 0.4.27
 
-Layout 24 / protocol 26. Install the same JAR on server and clients.
+Layout 25 / protocol 28. Install the same JAR on server and clients.
 
 The eighteen authored vignettes plus the explorer camp receive distinct furnishings and architectural details. The copied Red Room keeps the explorer's actual home snapshot. No scenery grants Witness evidence; the pool remains seventeen sources, requiring thirteen personal resolutions across two kinds, with three endings.
 

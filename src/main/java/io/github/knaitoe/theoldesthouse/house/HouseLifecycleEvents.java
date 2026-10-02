@@ -124,6 +124,7 @@ public final class HouseLifecycleEvents {
             TheOldestHouse.LOGGER.info("Morning at The Oldest House: {}.", String.join("; ", changes));
         }
         if (inManor) {
+            HouseExperience.slept(player);
             Growl.onManorWake(player);
         }
     }

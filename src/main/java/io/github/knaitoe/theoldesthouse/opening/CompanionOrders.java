@@ -85,6 +85,7 @@ public final class CompanionOrders {
         player.serverLevel().sendParticles(net.minecraft.core.particles.ParticleTypes.HEART,
                 pet.getX(),pet.getY()+pet.getBbHeight()+.2,pet.getZ(),3,.2,.1,.2,0);
         pet.playSound(pet instanceof Cat?SoundEvents.CAT_PURR:SoundEvents.WOLF_AMBIENT,.45F,1.25F);
+        io.github.knaitoe.theoldesthouse.house.HouseExperience.cared(player,pet);
         return true;
     }
     /** Resume the chosen wheel command after Hillary has finished the introduction. */
@@ -107,6 +108,7 @@ public final class CompanionOrders {
         pet.setOrderedToSit(sit);pet.setInSittingPose(sit);
         pet.clearRestriction();pet.getNavigation().stop();
         install(pet);reassureSound(pet,true);
+        io.github.knaitoe.theoldesthouse.house.HouseExperience.ordered(player,pet,order);
         return true;
     }
     public static void clear(TamableAnimal pet) {
@@ -256,4 +258,3 @@ public final class CompanionOrders {
         @Override public void stop(){pet.getNavigation().stop();}
     }
 }
-
