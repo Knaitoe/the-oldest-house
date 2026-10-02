@@ -81,7 +81,8 @@ public final class PlaytestRepairsTests {
             h.assertTrue(dog.getUUID().equals(id[0]),"carrying keeps the original living dog's UUID");
         });
         h.succeedWhen(()->{
-            h.assertTrue(mother!=null&&collection.dogAtLedge()&&mother.getY()>den.getY()+8.6,"the real Mother reaches the gallery before the intervention clock starts: "+(mother==null?"loading":mother.position()+" step="+mother.galleryStep()+" ticks="+collection.dogThreatTicks()+" active="+MotherOfStrays.activeDogThreat(l)+" path="+mother.getNavigation().getPath()));
+            var path=mother==null?null:mother.getNavigation().getPath();
+            h.assertTrue(mother!=null&&collection.dogAtLedge()&&mother.getY()>den.getY()+8.6,"the real Mother reaches the gallery before the intervention clock starts: "+(mother==null?"loading":mother.position()+" step="+mother.galleryStep()+" ticks="+collection.dogThreatTicks()+" active="+MotherOfStrays.activeDogThreat(l)+" path="+path+" end="+(path==null?null:path.getEndNode())+" target="+(path==null?null:path.getTarget())+" reach="+(path!=null&&path.canReach())+" foot="+l.getBlockState(mother.blockPosition())+" below="+l.getBlockState(mother.blockPosition().below())));
             h.assertTrue(halfway[0],"the actor passes through intermediate stair heights");h.assertTrue(dog.position().distanceToSqr(mother.position())<3,"the same dog follows her hands continuously");
             h.assertTrue(collection.dogLedgeTicks()<40,"navigation does not spend the final rescue window");
         });

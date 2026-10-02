@@ -39,6 +39,7 @@ public final class MotherEntity extends PathfinderMob {
     public static AttributeSupplier.Builder attributes() {
         return createMobAttributes().add(Attributes.MAX_HEALTH, 40.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.14D)
+                .add(Attributes.STEP_HEIGHT, 1.0D)
                 .add(Attributes.FOLLOW_RANGE, 48.0D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D);
     }
@@ -69,6 +70,7 @@ public final class MotherEntity extends PathfinderMob {
     public void galleryStep(int step) { galleryStep=Math.max(0,Math.min(2,step)); }
     public void carryDog(MotherPekingese dog) {
         carriedDog=dog;carriedDogId=dog.getUUID();setCarrying(true);setNoGravity(false);
+        getAttribute(Attributes.STEP_HEIGHT).setBaseValue(1.0D);
         dog.setNoAi(true);dog.setNoGravity(true);dog.noPhysics=true;
     }
     public void stopCarrying() {

@@ -852,10 +852,12 @@ public final class MotherOfStrays {
         if (collection.dogThrown()) return;
         mother.carryDog(dog);
         if (collection.dogThreatTicks() >= 600 && !collection.dogAtLedge()) {
-            Vec3 ledge = Vec3.atBottomCenterOf(base.offset(-1, 9, -21));
             Vec3 target=Vec3.atBottomCenterOf(base.offset(mother.galleryStep()==0?new BlockPos(-5,0,-9)
                     :mother.galleryStep()==1?new BlockPos(-5,9,-20):new BlockPos(-1,9,-21)));
-            if(mother.position().distanceToSqr(target)<1.1 && Math.abs(mother.getY()-target.y)<.35) {
+            // Native ground navigation may finish at an adjacent node near the stair approach.
+            // The final ledge still requires close physical contact at the full gallery height.
+            double reach=mother.galleryStep()<2?4.0:1.1;
+            if(mother.position().distanceToSqr(target)<reach && Math.abs(mother.getY()-target.y)<.35) {
                 if(mother.galleryStep()<2){mother.galleryStep(mother.galleryStep()+1);mother.getNavigation().stop();return;}
                 mother.getNavigation().stop();
                 collection.dogAtLedge(true);
