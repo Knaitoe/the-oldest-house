@@ -3,7 +3,11 @@
 
 A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
-Version `0.4.27` gives nineteen authored vignettes and camps a complete architectural pass: distinct room compositions, supported lighting, trim and beams, practical furniture, and small native clutter such as books, shoes, coats, cups, linens and tools. The great staircase now occupies a 69-block-wide enclosed shaft with nine clear walking blocks per flight and thirteen-block landings, while keeping its physical 128-block descent. Old rooms are dressed in place, with finite inventories, native actors and story progress retained; the copied Red Room remains the player’s actual home. Layout 24 / protocol 26; use the same jar on server and clients. Witness remains **thirteen of seventeen** personal resolutions across two kinds, with three endings. See [the architectural notes](docs/ARCHITECTURE_0_4_27.md).
+Version `0.4.27` adds a complete architectural pass and the approved home/threshold design. Native home routines feed personal writing and private furniture echoes; six finite study letters accept original replies, and eight Pelafina letters develop an ongoing correspondence. Ordinary unfinished visits allow retreat and preserve progress. A visible child inhabits the final cell, changing only beyond every observer's sight, with the same native identity and a peaceful release.
+
+Indian Lake has distinct streets, roofs, a varied forest, a beach, a usable canoe and a shore casualty. Its all-fours Witch physically crosses water, conceals her approach, strikes quickly from the rear and withdraws. The canoe uses real rowing controls. Holloway patrols and speaks beside his moving body, reacts to touching his belongings, fires visible native arrows and shows hit feedback. His independent encounter earns the shield.
+
+Nineteen scenes and camps have supported lighting, furniture and practical clutter. The great staircase has nine clear walking blocks, thirteen-block landings, a 1,280-block descent, an equally deep continuation and two side mazes that darken on personal visits. Native water trials require swimming turns and real breath; the model-home tree has living articulated tips. Old-save upgrades preserve finite originals, actor/container identities and personal evidence. Layout 25 / protocol 28; use the same JAR on server and clients. Witness remains **thirteen of seventeen** personal resolutions across two kinds, with three endings. See [the design document](docs/DESIGN_DOCUMENT.md) and [release evidence](docs/ARCHITECTURE_0_4_27.md).
 
 Version `0.4.26` repairs the Mother’s den with walkable stairs and continuous pet carrying; reduces notes and fixes unsupported paper; rebuilds the barn and lake scenery; keeps the well shut through its vigil and locks each unfinished player’s return. Indian Lake now has a dry town, school, beach and forest beside the drowned church, clearer objectives, and a Witch who runs across water. Secret photographs use readable private projections and finite original pickup. The Poltergeist TV animates, with clearer chair and window cues. The remaining cast receives new skin materials; the Witch’s human memory and transformed hunting form are distinct. Layout 23 / protocol 25; use the same jar on server and clients. Witness remains **thirteen of seventeen** personal resolutions across two kinds, with three endings. See [the change notes](docs/PLAYTEST_REPAIRS_0_4_26.md).
 
@@ -68,7 +72,7 @@ Version `0.4.6` adds a textured ghost girl and bare feet to clap-and-seek, a wov
 - The hallway door at the end of the hall opens directly into interior-only impossible architecture; there is no teleport behind it.
 - Operator-only development commands exist for opening-sequence testing, forcing/aging the House, and mirror inspection.
 - The exterior is generated once and then left alone. Future impossible space belongs behind it, not in a morphing facade.
-- No mixins.
+- Client display mixins keep scene clocks and native writing presentation consistent; server gameplay remains authoritative.
 
 The broader room graph, navigation anomalies, explorer notes, deeper Hillary behavior and Minotaur progression are tracked in [docs/DESIGN_DOCUMENT.md](docs/DESIGN_DOCUMENT.md).
 

@@ -12,7 +12,7 @@ public final class VignetteViewRules {
     private static CameraType previous;private static net.minecraft.client.multiplayer.ClientLevel scene;
     private VignetteViewRules(){}
     private static boolean vignette(){var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||!mc.player.isAlive()||mc.player.isSpectator()||!HouseDimensions.isHouseDimension(mc.level.dimension()))return false;
-        var place=LabyrinthPlaces.placeAt(HouseSightlineState.origin(),mc.player.blockPosition());return place!=null&&place.isVignette();}
+        var place=LabyrinthPlaces.placeAt(HouseSightlineState.origin(),mc.player.blockPosition());return place!=null&&place.isVignette()||mc.level.dimension().equals(HouseDimensions.INTERIOR)&&FinaleArchitecture.contains(HouseSightlineState.origin(),mc.player.blockPosition());}
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){enforce();}
     @SubscribeEvent public static void frame(RenderFrameEvent.Pre e){enforce();}
     private static void enforce(){var mc=Minecraft.getInstance();if(vignette()){
