@@ -37,20 +37,16 @@ public final class BarnFarm {
         for(int x=0;x<=9;x++)at(l,b,x,-1,-18,Blocks.DIRT_PATH);
         at(l,b,-2,0,-21,Blocks.MOSSY_COBBLESTONE_WALL);at(l,b,-2,1,-21,Blocks.LANTERN);
         at(l,b,-1,0,-20,Blocks.GRAVEL);at(l,b,0,0,-20,Blocks.GRAVEL);
-        // Supported rolling ground and dense trees hide the scene boundary in actual terrain.
+        // Supported rolling ground and a wood hide the scene boundary in actual terrain.
         for(int x=-23;x<=23;x++)for(int z=-45;z<=4;z++){
             if(x>=-15&&x<=15&&z>=-37&&z<=-1)continue;
             if(Math.abs(x)<4&&z>=-1)continue;
             int edge=Math.max(Math.abs(x)-15,Math.max(-z-37,z+1));
-            int height=Math.min(5,Math.max(0,edge/2))+Math.floorMod(x*13+z*7,2);
+            int height=Math.min(5,Math.max(0,edge/2))+(Landscapes.noise(x,z,7)>0?1:0);
             for(int y=-2;y<=height;y++)at(l,b,x,y,z,y==height?Blocks.PODZOL:Blocks.DIRT);
-            if(edge>=4){for(int y=height+1;y<=8;y++)l.setBlock(b.offset(x,y,z),Blocks.SPRUCE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true),F);}
         }
-        for(int x:new int[]{-16,17})for(int z=-5;z>=-37;z-=7){
-            for(int y=1;y<=6;y++)at(l,b,x,y,z,Blocks.SPRUCE_LOG);
-            for(int y=4;y<=8;y++)for(int dx=-2;dx<=2;dx++)for(int dz=-2;dz<=2;dz++)
-                if(Math.abs(dx)+Math.abs(dz)<=9-y)l.setBlock(b.offset(x+dx,y,z+dz),Blocks.SPRUCE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true),F);
-        }
+        // 0.4.28: a mixed wood on the bank, in place of a flat leaf curtain and evenly spaced spruces.
+        Landscapes.barnForest(l,b);
         NovelRooms.safeApproach(l,b);
     }
     public static void upgrade(ServerLevel l,BlockPos origin){

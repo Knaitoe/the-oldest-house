@@ -88,6 +88,7 @@ public final class ArchitectureTests {
                 if(scene!=LabyrinthPlace.RED_ROOM)export(level,base,scene);
             }
             h.assertTrue(dressed==19&&props>=90,"all nineteen authored vignettes/camps receive supported detail; the copied Red Room stays personal");
+            shellsAndEdges(h,server,origin,data);
             var camp=LabyrinthPlaces.base(origin,LabyrinthPlace.EXPLORER_CAMP);var cache=(BarrelBlockEntity)interior.getBlockEntity(camp.offset(LabyrinthCampsite.CACHE));
             cache.clearContent();cache.setItem(7,new ItemStack(Items.DIAMOND,3));
             var mother=LabyrinthPlaces.base(origin,LabyrinthPlace.MOTHER_DEN);var beings=interior.getEntitiesOfClass(Entity.class,box(mother.offset(-11,-5,-26),mother.offset(11,15,1)));
@@ -116,6 +117,65 @@ public final class ArchitectureTests {
             server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);server.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);LabyrinthBuilder.clearAll();LabyrinthDoors.clearAll();
         }
     }
+    /** 0.4.28: indoor shells read as built rooms, and the outdoor scenes end in land, not invisible walls. */
+    private static void shellsAndEdges(GameTestHelper h,net.minecraft.server.MinecraftServer server,BlockPos origin,LabyrinthData data){
+        var shells=data.state(SceneShells.STATE);
+        for(var scene:LabyrinthPlace.values())if(SceneShells.shapes(scene))
+            h.assertTrue(shells.getBoolean(origin.asLong()+":"+scene.id()),scene.id()+" records its one-time shell pass");
+        // Fireplaces: a grate set back into the wall, inside a brick or stone surround.
+        for(var scene:List.of(LabyrinthPlace.FLOORBOARDS,LabyrinthPlace.HARRIGAN)){
+            var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var b=LabyrinthPlaces.base(origin,scene);var r=scene.room();int grates=0;
+            for(var at:BlockPos.betweenClosed(b.offset(r.minX()-3,r.minY(),r.minZ()-3),b.offset(r.maxX()+3,r.maxY(),r.maxZ())))if(level.getBlockState(at).is(Blocks.CAMPFIRE))grates++;
+            h.assertTrue(grates==1,scene.id()+" has exactly one fireplace: "+grates);
+        }
+        // Windows: glass set back behind the wall plane, so each opening has a real reveal.
+        for(var scene:List.of(LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.KAREN_ROOM,LabyrinthPlace.HOSPITAL,LabyrinthPlace.MODEL_HOME,LabyrinthPlace.WHALE)){
+            var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var b=LabyrinthPlaces.base(origin,scene);var r=SceneShells.interior(scene);int panes=0;
+            for(var at:BlockPos.betweenClosed(b.offset(r.minX()-3,r.minY(),r.minZ()-3),b.offset(r.maxX()+3,r.maxY(),r.maxZ()))){
+                var rel=at.subtract(b);boolean outside=rel.getX()<r.minX()-1||rel.getX()>r.maxX()+1||rel.getZ()<r.minZ()-1;
+                var st=level.getBlockState(at);if(outside&&(st.is(Blocks.GLASS_PANE)||st.getBlock() instanceof StainedGlassPaneBlock))panes++;
+            }
+            h.assertTrue(panes>=2,scene.id()+" has recessed windows: "+panes);
+        }
+        // Framing and beams in the study.
+        var study=HouseTestLevel.get(server);var hb=LabyrinthPlaces.base(origin,LabyrinthPlace.HARRIGAN);int posts=0,beams=0,plaster=0;
+        for(var at:BlockPos.betweenClosed(hb.offset(-8,0,-25),hb.offset(8,6,1))){
+            var st=study.getBlockState(at);
+            if(st.is(Blocks.STRIPPED_DARK_OAK_LOG))posts++;if(st.is(Blocks.DARK_OAK_LOG))beams++;if(st.is(Blocks.GREEN_TERRACOTTA))plaster++;
+        }
+        h.assertTrue(posts>=10&&beams>=10&&plaster>=20,"the study is framed, beamed and plastered: "+posts+"/"+beams+"/"+plaster);
+        // Outdoor edges: no invisible walls remain around the plain or the courtyard.
+        var outside=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);
+        for(var scene:List.of(LabyrinthPlace.PLAIN,LabyrinthPlace.ZAMPANO_COURTYARD)){
+            var b=LabyrinthPlaces.base(origin,scene);int barriers=0;
+            for(var at:BlockPos.betweenClosed(b.offset(-31,0,-66),b.offset(31,17,1)))if(outside.getBlockState(at).is(Blocks.BARRIER))barriers++;
+            h.assertTrue(barriers==0,scene.id()+" keeps no invisible wall: "+barriers);
+        }
+        // The plain's dunes rise in steps of two or more from its walkable core: they can be seen, not climbed.
+        var plain=LabyrinthPlaces.base(origin,LabyrinthPlace.PLAIN);
+        for(int z=-62;z<=-2;z+=4)for(int side:new int[]{-1,1}){
+            int previous=-1;
+            for(int x=Landscapes.PLAIN_HALF_WIDTH;x<=Landscapes.PLAIN_HALF_WIDTH+14;x++){
+                int top=-9;for(int y=14;y>=-3;y--){var st=outside.getBlockState(plain.offset(side*x,y,z));if(!st.isAir()&&!st.is(Blocks.DEAD_BUSH)){top=y;break;}}
+                h.assertTrue(top-previous!=1,"no one-block step climbs the dune at x="+side*x+" z="+z+" ("+previous+" -> "+top+")");
+                previous=top;
+            }
+        }
+        // The barn's bank carries a wood, not a flat curtain of leaves.
+        var barn=LabyrinthPlaces.base(origin,LabyrinthPlace.BARN_WELL);int curtain=0,cells=0;
+        for(int x=-23;x<=23;x++)for(int z=-45;z<=4;z++)if(Landscapes.barnEdge(x,z)>=4){cells++;if(outside.getBlockState(barn.offset(x,8,z)).getBlock() instanceof LeavesBlock)curtain++;}
+        h.assertTrue(curtain*4<cells,"the bank's skyline is broken by separate crowns: "+curtain+"/"+cells);
+        // Anyone the plain has seen inside it is returned from beyond its edge.
+        var walker=h.makeMockServerPlayerInLevel();
+        try{
+            walker.gameMode.changeGameModeForPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+            walker.teleportTo(outside,plain.getX()+.5,plain.getY(),plain.getZ()-20.5,180,0);OutdoorBounds.remember(walker);
+            var inside=walker.position();walker.teleportTo(plain.getX()+40.5,plain.getY()+12,plain.getZ()-20.5);
+            h.assertTrue(OutdoorBounds.check(walker,origin)&&walker.position().distanceTo(inside)<1.0E-3,"crossing the dunes returns the explorer to where they stood");
+            h.assertTrue(!OutdoorBounds.check(walker,origin),"inside the plain nothing moves them");
+        }finally{server.getPlayerList().remove(walker);}
+    }
+
     private static void export(net.minecraft.server.level.ServerLevel l,BlockPos b,LabyrinthPlace scene)throws Exception{
         var r=scene.room();JsonObject file=new JsonObject();file.addProperty("name",scene.id());
         JsonArray palette=new JsonArray(),blocks=new JsonArray();Map<BlockState,Integer> lookup=new LinkedHashMap<>();
