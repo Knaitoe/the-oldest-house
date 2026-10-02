@@ -19,7 +19,7 @@ def material(im, box, tile, factor=1):
             rgb = cloth[tile].getpixel((x%16,y%16))
             im.putpixel((x,y),tuple(round(c*factor) for c in rgb)+(255,))
 
-def skin(name, elder=False, dead=False):
+def skin(name, elder=False, dead=False, witness=False):
     im=Image.new('RGBA',(64,64)); d=ImageDraw.Draw(im)
     flesh=(170,155,138) if elder else (163,119,89)
     if dead: flesh=(146,145,138)
@@ -43,6 +43,10 @@ def skin(name, elder=False, dead=False):
         d.point((10,12),fill=dark);d.point((13,12),fill=dark)
         d.rectangle((9,14,14,15),fill=hair);d.point((8,13),fill=hair);d.point((15,13),fill=hair)
         d.line((11,14,12,14),fill=(102,71,57))
+    if witness:
+        d.line((9,11,14,11),fill=flesh);d.point((10,11),fill=dark);d.point((13,11),fill=(112,119,121))
+        d.rectangle((9,14,14,15),fill=(175,170,157));d.point((8,13),fill=hair);d.point((15,13),fill=hair)
+        d.line((11,14,12,14),fill=(109,101,91))
     if dead: d.line((10,12,10,12),fill=dark);d.line((13,12,13,12),fill=dark)
     for box in [(16,16,39,31),(40,16,55,31),(32,48,47,63)]: material(im,box,1 if elder else 0)
     for box in [(0,16,15,31),(16,48,31,63)]: material(im,box,1 if elder else 0,.78)
@@ -52,7 +56,11 @@ def skin(name, elder=False, dead=False):
     d.line((27,20,25,24),fill=(58,57,53) if elder else (75,70,42))
     d.line((23,21,23,26),fill=(53,36,36) if elder else (40,39,26))
     d.rectangle((23,20,24,20),fill=flesh)
-    if elder:
+    if witness:
+        for box in [(16,16,39,31),(40,16,55,31),(32,48,47,63)]: material(im,box,0,.65)
+        material(im,(22,20,25,25),3,.82);d.rectangle((23,20,24,20),fill=flesh)
+        d.line((23,25,23,30),fill=(48,45,35));d.rectangle((26,26,27,28),fill=(73,69,56));d.rectangle((31,25,34,28),fill=(57,53,43))
+    elif elder:
         d.line((20,27,22,28),fill=(147,131,73));d.point((21,25),fill=(78,77,70))
     else:
         d.rectangle((20,24,21,26),fill=(69,65,37));d.rectangle((26,24,27,26),fill=(69,65,37))
@@ -66,7 +74,7 @@ def skin(name, elder=False, dead=False):
     return im
 
 if __name__=='__main__':
-    skins=[skin('holloway'),skin('harrigan',True),skin('harrigan_dead',True,True)]
+    skins=[skin('holloway'),skin('harrigan',True),skin('harrigan_dead',True,True),skin('finale_witness',True,witness=True)]
     assert all(im.size==(64,64) for im in skins)
     assert all(im.getpixel((8,8))[3]==255 and im.getpixel((56,56))[3]==0 for im in skins)
-    print('Imported generated cloth into Holloway, Harrigan and Harrigan corpse native skins.')
+    print('Imported generated cloth into Holloway, Harrigan alive/dead and the finale witness native skins.')

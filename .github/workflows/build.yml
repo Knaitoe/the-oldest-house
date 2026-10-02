@@ -55,7 +55,7 @@ jobs:
               assert 'version="0.4.25"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               for name in ('HouseHuman', 'HollowayCamp', 'HollowayVignette', 'HarriganAppearance'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
-              for name in ('holloway', 'harrigan', 'harrigan_dead'):
+              for name in ('holloway', 'harrigan', 'harrigan_dead', 'finale_witness'):
                   from PIL import Image
                   from io import BytesIO
                   skin = Image.open(BytesIO(z.read(f'assets/the_oldest_house/textures/entity/{name}.png')))

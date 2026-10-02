@@ -1,7 +1,7 @@
 # House people · 0.4.25
 
 Holloway now has a shared, persistent human actor and a playable camp and hunt.
-Harrigan has alive/dead human skins over the original saved seated body. Tom and
+Harrigan has alive/dead human skins over the original saved seated body. The finale’s old man has a distinct patched-coat skin, beard and quiet hunch, while his original actor and weapon-identification behavior remain. Tom and
 Karen's private double continue to use the appropriate explorer's skin, including
 standard/slim arms and a native adult default when a profile is unavailable.
 The Mother, Hillary, Minotaur and existing child/lake actors retain their custom
@@ -60,6 +60,7 @@ and boots at native pixel positions. It creates:
 - `src/main/resources/assets/the_oldest_house/textures/entity/holloway.png`
 - `src/main/resources/assets/the_oldest_house/textures/entity/harrigan.png`
 - `src/main/resources/assets/the_oldest_house/textures/entity/harrigan_dead.png`
+- `src/main/resources/assets/the_oldest_house/textures/entity/finale_witness.png`
 
 Final built-in prompt:
 

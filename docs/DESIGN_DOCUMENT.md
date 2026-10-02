@@ -4,7 +4,7 @@ Sep 28, 2026 · @Sean Price · revised in the repository to match decisions made
 
 ## Revisions in this copy
 
-0.4.25 implements Holloway’s shared human camp and three-arena pursuit, plus human Harrigan skins on the original seated body. Tom and the private double use native standard/slim explorer skins. Layout 22 appends slot 39; seventeen eligible Witness sources require thirteen across at least two kinds. Three endings remain. See [HOUSE_NPCS_0_4_25.md](HOUSE_NPCS_0_4_25.md) for multiplayer state, assets and testing.
+0.4.25 implements Holloway’s shared human camp and three-arena pursuit, plus human Harrigan skins on the original seated body and an aged patched-coat skin for the finale’s old man. Tom and the private double use native standard/slim explorer skins. Layout 22 appends slot 39; seventeen eligible Witness sources require thirteen across at least two kinds. Three endings remain. See [HOUSE_NPCS_0_4_25.md](HOUSE_NPCS_0_4_25.md) for multiplayer state, assets and testing.
 
 This is the design document with the decisions made while building the opening sequence applied. Everything else is as written.
 
@@ -809,7 +809,7 @@ The Minotaur is the centerpiece asset; most human characters are skins on one sh
 
 ### NPC skins and actors
 
-Shipped human models: Holloway’s persistent shared native actor has an olive canvas/flannel skin; Harrigan’s alive/dead suit skins render the original saved seated body through native equipment tracking; Tom and Karen’s private double retain the appropriate explorer’s standard/slim skin. Existing child/lake actors remain. Family, father, confession and other unshipped vignette casts below remain planned.
+Shipped human models: Holloway’s persistent shared native actor has an olive canvas/flannel skin; Harrigan’s alive/dead suit skins render the original saved seated body through native equipment tracking; Tom and Karen’s private double retain the appropriate explorer’s standard/slim skin. The finale’s old man has a patched coat, beard and quiet hunch, retaining his original actor/weapon inspection. Existing child/lake actors remain. Family, father, confession and other unshipped vignette casts below remain planned.
 
 - Tom (the player's own skin, applied at runtime), Holloway, the family (several sets), the old man, the father in Holy Rabbit plus a bandaged-leg variant, the confession's visitor.
 - The four cabin strangers, the séance family and medium, masked dancers, the bartender and bar strangers, ballroom ghost couples.

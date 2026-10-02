@@ -26,15 +26,15 @@ public final class NpcVisualProof extends Screen {
     @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){}
     @Override public void render(GuiGraphics g,int x,int y,float partial){
         g.fill(0,0,width,height,0xFF211E1B);g.drawString(font,"The Oldest House | native human models",10,10,0xFFE6DFCF,false);
-        ResourceLocation[] textures={HouseHumanRenderers.HOLLOWAY,HouseHumanRenderers.HARRIGAN,HouseHumanRenderers.HARRIGAN_DEAD};
-        String[] titles={"Holloway | shared pursuit","Mr. Harrigan | seated","Mr. Harrigan | funeral"};
-        for(int i=0;i<3;i++){
-            int at=10+i*width/3;g.fill(at,32,at+width/3-18,height-24,0xFF39332D);
+        ResourceLocation[] textures={HouseHumanRenderers.HOLLOWAY,HouseHumanRenderers.HARRIGAN,HouseHumanRenderers.HARRIGAN_DEAD,HouseHumanRenderers.WITNESS};
+        String[] titles={"Holloway | shared","Harrigan | study","Harrigan | funeral","Old man | witness"};
+        for(int i=0;i<4;i++){
+            int at=10+i*width/4;g.fill(at,32,at+width/4-18,height-24,0xFF39332D);
             g.drawString(font,titles[i],at+8,40,0xFFE6DFCF,false);
-            mesh(g,textures[i],at+width/6-8,68,i,0);
-            g.drawString(font,i==0?"Worn canvas, flannel, boots":i==1?"Wool suit, waistcoat, glasses":"Pallor; original saved body",at+8,182,0xFFC9BBA7,false);
-            mesh(g,textures[i],at+width/6-8,215,i,1);
-            g.drawString(font,i==0?"Back / native UV seams":i==1?"Side / native seated pose":"Casket / horizontal pose",at+8,height-42,0xFFC9BBA7,false);
+            mesh(g,textures[i],at+width/8-8,68,i,0);
+            g.drawString(font,i==0?"Canvas and flannel":i==1?"Suit and glasses":i==2?"Original saved body":"Patched coat / beard",at+8,182,0xFFC9BBA7,false);
+            mesh(g,textures[i],at+width/8-8,215,i,1);
+            g.drawString(font,i==0?"Back / UV seams":i==1?"Native seated pose":i==2?"Horizontal casket":"Quiet hunch / side",at+8,height-42,0xFFC9BBA7,false);
         }
         g.drawString(font,"Shared actors use native tracking. Tom and the double retain each explorer's standard or slim skin.",10,height-15,0xFFE6DFCF,false);
     }
@@ -42,6 +42,7 @@ public final class NpcVisualProof extends Screen {
         var mc=Minecraft.getInstance();var model=new PlayerModel<>(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER),false);
         if(kind==1){model.leftLeg.xRot=model.rightLeg.xRot=-(float)Math.PI/2;model.leftArm.xRot=model.rightArm.xRot=-(float)Math.PI*2/9;}
         if(kind==2&&view==0){model.head.xRot=.3F;model.body.xRot=.14F;model.leftLeg.xRot=model.rightLeg.xRot=-(float)Math.PI/2;model.leftArm.xRot=model.rightArm.xRot=-.43F;}
+        if(kind==3){model.body.xRot=.12F;model.head.xRot=.15F;model.leftArm.xRot=model.rightArm.xRot=-.15F;}
         if(kind==0){model.rightArm.xRot=-1.45F;model.rightArm.yRot=-.2F;model.leftArm.xRot=-1.45F;model.leftArm.yRot=.55F;}
         model.hat.copyFrom(model.head);model.jacket.copyFrom(model.body);model.leftSleeve.copyFrom(model.leftArm);model.rightSleeve.copyFrom(model.rightArm);model.leftPants.copyFrom(model.leftLeg);model.rightPants.copyFrom(model.rightLeg);
         g.flush();var poses=g.pose();poses.pushPose();poses.translate(x,y,100);poses.scale(62,62,62);
@@ -52,7 +53,7 @@ public final class NpcVisualProof extends Screen {
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event)throws Exception{
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof NpcVisualProof)||++frames<4)return;
         if(!HouseHumanRenderers.ready())throw new IllegalStateException("The native Harrigan renderer was not initialized");
-        for(var texture:new ResourceLocation[]{HouseHumanRenderers.HOLLOWAY,HouseHumanRenderers.HARRIGAN,HouseHumanRenderers.HARRIGAN_DEAD})
+        for(var texture:new ResourceLocation[]{HouseHumanRenderers.HOLLOWAY,HouseHumanRenderers.HARRIGAN,HouseHumanRenderers.HARRIGAN_DEAD,HouseHumanRenderers.WITNESS})
             if(mc.getResourceManager().getResource(texture).isEmpty())throw new IllegalStateException("Missing NPC skin "+texture);
         Path folder=Path.of("../build/font-smoke");Files.createDirectories(folder);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve("native-npcs.png"));}
