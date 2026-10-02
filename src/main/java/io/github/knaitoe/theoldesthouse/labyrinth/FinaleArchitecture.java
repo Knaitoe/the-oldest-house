@@ -115,6 +115,9 @@ public final class FinaleArchitecture {
             put(blocks,b,i,y,-SHAFT_RADIUS+1,stone);put(blocks,b,i,y,SHAFT_RADIUS-1,stone);
             put(blocks,b,-SHAFT_RADIUS+1,y,i,stone);put(blocks,b,SHAFT_RADIUS-1,y,i,stone);
         }
+        for(int y=ARENA+18;y<TOP;y+=24)for(int[] at:new int[][]{{-33,0},{33,0},{0,-33},{0,33}}){
+            put(blocks,b,at[0],y-1,at[1],stone);put(blocks,b,at[0],y,at[1],Blocks.SOUL_LANTERN.defaultBlockState());
+        }
         List<BlockPos> descent=new ArrayList<>(); int x=0,z=STAIR_RADIUS;Direction direction=Direction.EAST;
         for(int n=0;n<256;n++) {
             if(x==STAIR_RADIUS&&z==STAIR_RADIUS)direction=Direction.NORTH;

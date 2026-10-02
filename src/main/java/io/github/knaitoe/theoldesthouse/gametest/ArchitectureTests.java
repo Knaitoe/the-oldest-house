@@ -21,6 +21,7 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class ArchitectureTests {
+    private static AABB box(BlockPos a,BlockPos b){return new AABB(a.getX(),a.getY(),a.getZ(),b.getX(),b.getY(),b.getZ());}
     @GameTest(template="empty",batch="architecture_stair",timeoutTicks=200)
     public static void nativeGreatStaircaseUpgradeWaitsForResidentsAndPreservesEncounter(GameTestHelper h)throws Exception{
         var server=h.getLevel().getServer();var l=HouseTestLevel.get(server);var oldHouse=HouseSavedData.get(server);var oldData=LabyrinthData.get(server);
@@ -80,7 +81,7 @@ public final class ArchitectureTests {
             h.assertTrue(dressed==19&&props>=90,"all nineteen authored vignettes/camps receive supported detail; the copied Red Room stays personal");
             var camp=LabyrinthPlaces.base(origin,LabyrinthPlace.EXPLORER_CAMP);var cache=(BarrelBlockEntity)interior.getBlockEntity(camp.offset(LabyrinthCampsite.CACHE));
             cache.clearContent();cache.setItem(7,new ItemStack(Items.DIAMOND,3));
-            var mother=LabyrinthPlaces.base(origin,LabyrinthPlace.MOTHER_DEN);var beings=interior.getEntitiesOfClass(Entity.class,new AABB(mother.offset(-11,-5,-26),mother.offset(11,15,1)));
+            var mother=LabyrinthPlaces.base(origin,LabyrinthPlace.MOTHER_DEN);var beings=interior.getEntitiesOfClass(Entity.class,box(mother.offset(-11,-5,-26),mother.offset(11,15,1)));
             var ids=beings.stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet());
             UUID observer=UUID.randomUUID();WitnessAccount.resolve(data,observer,WitnessAccount.Story.HARRIGAN,"remembered");
             var round=new CompoundTag();round.putInt("ArchitectureRound",137);data.setState(HideAndClap.ID,round);
@@ -88,7 +89,7 @@ public final class ArchitectureTests {
             data.setState(VignetteArchitecture.STATE,new CompoundTag());data.setBuilt(23,origin);
             h.assertTrue(!LabyrinthBuilder.ensureBuilt(server),"the old layout schedules an in-place architectural upgrade");while(LabyrinthBuilder.isCarving())LabyrinthBuilder.tick(server);
             h.assertTrue(cache==interior.getBlockEntity(camp.offset(LabyrinthCampsite.CACHE))&&cache.getItem(0).isEmpty()&&cache.getItem(7).getCount()==3,"a emptied cache stays the same original inventory");
-            h.assertTrue(ids.equals(interior.getEntitiesOfClass(Entity.class,new AABB(mother.offset(-11,-5,-26),mother.offset(11,15,1))).stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet())),"native den residents retain their original UUIDs");
+            h.assertTrue(ids.equals(interior.getEntitiesOfClass(Entity.class,box(mother.offset(-11,-5,-26),mother.offset(11,15,1))).stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet())),"native den residents retain their original UUIDs");
             h.assertTrue(WitnessAccount.has(data,observer,WitnessAccount.Story.HARRIGAN)&&data.state(HideAndClap.ID).getInt("ArchitectureRound")==137,"personal evidence and active story state survive the architectural upgrade");
             BlockPos removed=camp.offset(4,1,-9);h.assertTrue(interior.getBlockState(removed).is(HouseBlocks.SCENE_DETAIL.get()),"the camp satchel stands on the original cache");
             interior.setBlock(removed,Blocks.AIR.defaultBlockState(),3);VignetteArchitecture.decorateOnce(interior,origin,LabyrinthPlace.EXPLORER_CAMP);
@@ -98,7 +99,7 @@ public final class ArchitectureTests {
         }finally{
             for(var scene:LabyrinthPlace.values())if(VignetteArchitecture.applies(scene)){
                 var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var base=LabyrinthPlaces.base(origin,scene);var r=scene.room();
-                for(var e:level.getEntitiesOfClass(Entity.class,new AABB(base.offset(r.minX()-1,r.minY()-1,r.minZ()-1),base.offset(r.maxX()+1,r.maxY()+2,r.maxZ()+2))))e.discard();
+                for(var e:level.getEntitiesOfClass(Entity.class,box(base.offset(r.minX()-1,r.minY()-1,r.minZ()-1),base.offset(r.maxX()+1,r.maxY()+2,r.maxZ()+2))))e.discard();
             }
             server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);server.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);LabyrinthBuilder.clearAll();LabyrinthDoors.clearAll();
         }
