@@ -34,7 +34,7 @@ public final class SceneVisualProof extends Screen {
     private void load()throws Exception{
         var json=JsonParser.parseString(Files.readString(files.get(index))).getAsJsonObject();name=json.get("name").getAsString();
         List<BlockState> palette=new ArrayList<>();for(var e:json.getAsJsonArray("palette"))palette.add(BlockState.CODEC.parse(JsonOps.INSTANCE,e).getOrThrow());
-        voxels.clear();int x0=999,x1=-999,z0=999,z1=-999,y0=999,y1=-999;
+        voxels.clear();int x0=Integer.MAX_VALUE,x1=Integer.MIN_VALUE,z0=Integer.MAX_VALUE,z1=Integer.MIN_VALUE,y0=Integer.MAX_VALUE,y1=Integer.MIN_VALUE;
         for(var e:json.getAsJsonArray("blocks")){var a=e.getAsJsonArray();int x=a.get(0).getAsInt(),y=a.get(1).getAsInt(),z=a.get(2).getAsInt();
             voxels.add(new Voxel(x,y,z,palette.get(a.get(3).getAsInt())));x0=Math.min(x0,x);x1=Math.max(x1,x);z0=Math.min(z0,z);z1=Math.max(z1,z);y0=Math.min(y0,y);y1=Math.max(y1,y);
         }
