@@ -41,7 +41,18 @@ public final class MinotaurEntity extends PathfinderMob {
     public void awaken(UUID owner){this.owner=owner;entityData.set(CHILD,false);motion(WATCHING,35);refreshDimensions();}
     @Override public EntityDimensions getDefaultDimensions(Pose pose){return childAppearance()?EntityDimensions.scalable(.48F,1.26F).withEyeHeight(1.12F):super.getDefaultDimensions(pose);}
     @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(MOTION.equals(key)||CHILD.equals(key))refreshDimensions();}
-    public boolean observed(){return level() instanceof net.minecraft.server.level.ServerLevel l&&(io.github.knaitoe.theoldesthouse.house.HouseWatchers.isWatched(l,position().add(0,.2,0))||io.github.knaitoe.theoldesthouse.house.HouseWatchers.isWatched(l,position().add(0,getBbHeight()*.55,0))||io.github.knaitoe.theoldesthouse.house.HouseWatchers.isWatched(l,getEyePosition()));}
+    public boolean observed(){
+        if(!(level() instanceof net.minecraft.server.level.ServerLevel l))return false;
+        for(var observer:l.players()){
+            Entity camera=observer.getCamera();
+            for(Vec3 point:java.util.List.of(position().add(0,.2,0),position().add(0,getBbHeight()*.55,0),getEyePosition())){
+                Vec3 delta=point.subtract(camera.getEyePosition());double distance=delta.length();if(distance>48)continue;
+                if(distance<1.5)return true;
+                if(camera.getViewVector(1).dot(delta.scale(1/distance))<.26)continue;
+                if(l.clip(new net.minecraft.world.level.ClipContext(camera.getEyePosition(),point,net.minecraft.world.level.ClipContext.Block.VISUAL,net.minecraft.world.level.ClipContext.Fluid.NONE,camera)).getType()==net.minecraft.world.phys.HitResult.Type.MISS)return true;
+            }
+        }return false;
+    }
     private void motion(int motion,int duration){entityData.set(MOTION,motion);remaining=duration;}
     public void stagger(){motion(STUNNED,65);setDeltaMovement(Vec3.ZERO);}
     public void wounded(){motion(WOUNDED,240);bar.removeAllPlayers();setDeltaMovement(Vec3.ZERO);}
