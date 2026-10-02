@@ -11,6 +11,7 @@ import net.minecraft.nbt.*;
 import net.minecraft.server.level.*;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.GameType;
