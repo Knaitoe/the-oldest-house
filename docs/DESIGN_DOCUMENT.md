@@ -4,6 +4,10 @@ Sep 28, 2026 · @Sean Price · revised in the repository to match decisions made
 
 ## Revisions in this copy
 
+### 0.4.28: shells and edges
+
+Every authored room should read as built, at the manor's level of detail: framed and cased walls, windows with depth, hearths, beamed ceilings and finished floors, in each scene's own character. Outdoor scenes end in land and buildings that can be seen but not crossed, never an invisible wall; distance haze keeps each scene's horizon its own. See [ARCHITECTURE_0_4_28.md](ARCHITECTURE_0_4_28.md).
+
 ### 0.4.27: the home, the threshold, and the personal labyrinth
 
 Approved with Sean on October 2, 2026. These implemented decisions supersede a blanket lock-until-complete rule and the explicit child-to-monster reveal. The release requires the complete native gameplay and client checks; [ARCHITECTURE_0_4_27.md](ARCHITECTURE_0_4_27.md) records their coverage and verification report.

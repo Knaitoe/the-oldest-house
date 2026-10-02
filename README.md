@@ -3,6 +3,8 @@
 
 A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
+Version `0.4.28` gives the vignettes' rooms the manor's structural reading: framed walls, cased openings, window reveals with daylight or drawn curtains behind, fireplaces, inset shelves, beamed and coffered ceilings and bordered or tiled floors, applied once in place. Caves and camps weather their stone. Outdoors, the plain's and courtyard's invisible walls are gone: unclimbable dunes and a ravine close the plain, apartment facades ring the courtyard and a mixed wood covers the barn's bank, with distance haze and a bounds guard. No Witness source is added: seventeen sources require thirteen across two kinds; three endings. Layout 26. See [docs/ARCHITECTURE_0_4_28.md](docs/ARCHITECTURE_0_4_28.md).
+
 Version `0.4.27` adds a complete architectural pass and the approved home/threshold design. Native home routines feed personal writing and private furniture echoes; six finite study letters accept original replies, and eight Pelafina letters develop an ongoing correspondence. Ordinary unfinished visits allow retreat and preserve progress. A visible child inhabits the final cell, changing only beyond every observer's sight, with the same native identity and a peaceful release.
 
 Indian Lake has distinct streets, roofs, a varied forest, a beach, a usable canoe and a shore casualty. Its all-fours Witch physically crosses water, conceals her approach, strikes quickly from the rear and withdraws. The canoe uses real rowing controls. Holloway patrols and speaks beside his moving body, reacts to touching his belongings, fires visible native arrows and shows hit feedback. His independent encounter earns the shield.
