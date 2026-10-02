@@ -632,6 +632,7 @@ public final class MotherOfStrays {
             dog.addTag(RELEASED);
             dog.setNoAi(false);
             dog.setNoGravity(false);
+            dog.noPhysics=false;
             dog.setInvulnerable(false);
             dog.setTame(true, true);
             dog.setOwnerUUID(player.getUUID());
@@ -869,6 +870,7 @@ public final class MotherOfStrays {
         if (collection.dogLedgeTicks() >= 300 && collection.dogAtLedge()) {
             dog.setNoAi(false);
             dog.setNoGravity(false);
+            dog.noPhysics=false;
             dog.setInvulnerable(false);
             dog.moveTo(base.getX() + .5D, base.getY() + 10.5D, base.getZ() - 20.5D, 0.0F, 0.0F);
             dog.setDeltaMovement(0, -.35D, 0);
