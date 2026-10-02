@@ -41,6 +41,10 @@ public final class ArchitectureTests {
             h.assertTrue(l.getBlockEntity(cache)==inventory&&inventory.getItem(0).isEmpty()&&inventory.getItem(4).getCount()==7,"the encounter cache remains the original, without replenishment");
             h.assertTrue(l.getBlockState(FinaleArchitecture.cell(origin)).isAir()&&!l.getBlockState(base.offset(0,FinaleArchitecture.ARENA,29)).isAir(),"the opened cell and closed encounter seal retain their saved physical state");
             h.assertTrue(d.door(FinaleArchitecture.ENTRY).lower.equals(FinaleArchitecture.entry(origin)),"the relocated entrance is registered at the new landing");
+            for(var route:List.of(FinaleArchitecture.staircaseRoute(origin),FinaleArchitecture.continuationRoute(origin)))for(var at:route){
+                var body=new AABB(at.getX()+.2,at.getY()+.01,at.getZ()+.2,at.getX()+.8,at.getY()+1.8,at.getZ()+.8);
+                h.assertTrue(l.noCollision(null,body),"a native player body clears every actual upper and lower tread: "+at);
+            }
             exportStair(l,origin);h.succeed();
         }finally{server.getPlayerList().remove(resident);server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);FinaleArchitecture.clearAll();}
     }

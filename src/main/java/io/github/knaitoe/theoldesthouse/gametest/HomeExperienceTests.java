@@ -46,6 +46,9 @@ public final class HomeExperienceTests {
         try{HouseExperience.arrived(p,LabyrinthPlace.DROWNED_TOWN);HouseExperience.returned(p);var own=HouseExperience.record(d,p.getUUID());
             h.assertTrue(own.getCompound("Retreats").getInt(LabyrinthPlace.DROWNED_TOWN.id())==1&&own.getInt("Returns")==1&&WitnessAccount.count(d,p.getUUID())==0,"an actual unfinished retreat creates a personal trace without awarding completion");
             h.assertTrue(HouseExperience.weight(d,p.getUUID(),LabyrinthPlace.DROWNED_TOWN,12)>12&&HouseExperience.weight(d,UUID.randomUUID(),LabyrinthPlace.DROWNED_TOWN,12)==12,"only the explorer's later destination odds remember the unfinished return");
+            d.setCompleted(DrownedTown.ID,true);WitnessAccount.resolve(d,UUID.randomUUID(),WitnessAccount.Story.DROWNED_TOWN,"peer_fixture_resolution");
+            h.assertTrue(HouseExperience.weight(d,p.getUUID(),LabyrinthPlace.DROWNED_TOWN,12)>12,"a peer's actual resolution and shared room flag cannot erase this explorer's unfinished affinity");
+            WitnessAccount.resolve(d,p.getUUID(),WitnessAccount.Story.DROWNED_TOWN,"own_fixture_resolution");h.assertTrue(HouseExperience.weight(d,p.getUUID(),LabyrinthPlace.DROWNED_TOWN,12)==12,"this explorer's own resolution ends the unfinished affinity");
             d.visit(p.getUUID(),LabyrinthPlace.DROWNED_TOWN);h.assertTrue(HouseExperience.weight(d,p.getUUID(),LabyrinthPlace.DROWNED_TOWN,12)==12,"personal affinity cannot defeat native recent-visit spacing");h.succeed();
         }finally{server.overworld().getDataStorage().set("the_oldest_house_labyrinth",prior);server.getPlayerList().remove(p);}
     }
