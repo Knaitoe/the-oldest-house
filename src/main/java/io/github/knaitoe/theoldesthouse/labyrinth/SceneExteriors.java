@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.*;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -25,7 +26,7 @@ public final class SceneExteriors {
     public static void decorateOnce(ServerLevel l,BlockPos origin,LabyrinthPlace site){
         if(!SITES.contains(site))return;var d=LabyrinthData.get(l.getServer());String key=origin.asLong()+":"+site.id();var done=d.state(STATE);
         if(done.getBoolean(key))return;var b=LabyrinthPlaces.base(origin,site);if(b==null||l.getBlockState(b.offset(0,-1,-3)).isAir())return;
-        var r=site.room();var box=new AABB(b.offset(r.minX()-2,r.minY()-2,r.minZ()-2),b.offset(r.maxX()+3,r.maxY()+6,18));
+        var r=site.room();var box=new AABB(Vec3.atLowerCornerOf(b.offset(r.minX()-2,r.minY()-2,r.minZ()-2)),Vec3.atLowerCornerOf(b.offset(r.maxX()+3,r.maxY()+6,18)));
         if(l.players().stream().anyMatch(p->box.intersects(p.getBoundingBox())))return;
         var work=new SceneExteriors(l,b,site);switch(site){case DROWNED_TOWN->work.town();case GOATMAN->work.trailer();case HOLLOWAY_CAMP->work.hut();case ZAMPANO_COURTYARD->work.archive();default->{}}
         done.putBoolean(key,true);d.setState(STATE,done);
