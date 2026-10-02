@@ -37,7 +37,7 @@ Validation includes the full required GameTest suite, every prop's physical supp
 
 ## Lake playtest repairs
 
-A read-only scene clock replaces local world-time rewrites, preventing server time packets from flashing the lake between day and night. It follows the actual scene coordinates and dimension rather than an expiring cue packet, so delayed updates cannot briefly restore the native day cycle. Leaving the scene restores native time immediately. The outside renderer draws one complete sky rather than overlapping lower-horizon geometry. Native GPU proofs check three camera elevations.
+A read-only scene clock replaces local world-time rewrites, preventing server time packets from flashing the lake between day and night. It follows the actual scene coordinates and dimension rather than an expiring cue packet, so delayed updates cannot briefly restore the native day cycle. The lake uses native time 18,000 for its night presentation; leaving restores native time immediately. The outside renderer draws one complete sky rather than overlapping lower-horizon geometry. Native GPU proofs check three camera elevations.
 
 Stacey’s hunting model and collision body are low on all fours. Native surface travel corrects her feet to the actual fluid height and excludes swimming drag. She starts behind the town, searches reachable occluded rear approaches, warns briefly, rushes, then withdraws after one strike. Living grass and real submersion remain refuges; the recalled human girl retains normal proportions and gravity. Native ticking tests require a water crossing and a real rear strike.
 
@@ -59,6 +59,8 @@ The native child and combat creature retain one UUID. After the bars open on the
 Eight finite Pelafina letters develop mundane details, affection, frustration, missing answers and unreliable dates. The original THREE/ONE/TWO acrostics remain on loose final sheets; the native attic resolution and Witness quota are unchanged. Ordinary unfinished visits allow personal retreat, preserve progress and grant no credit. The departed source becomes dormant until rediscovery; peers retain access. Recent-visit spacing still limits personal affinity.
 
 Unfinished affinity ends only with that explorer's own resolution; another player's completion cannot clear it. Both halves of the great staircase are checked against the full authored plan and the collision shapes of their actual native blocks.
+
+Hide-and-clap permits retreat before the actual blindfold is equipped. Early departure releases its reservation without restocking props or awarding Witness; equipping commits the existing binding and timed ending.
 
 ## Physical trials and living tree
 

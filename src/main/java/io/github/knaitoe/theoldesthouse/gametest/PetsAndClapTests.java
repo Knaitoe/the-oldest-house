@@ -172,6 +172,19 @@ public final class PetsAndClapTests {
         }
     }
     private static Fixture death,recovery,unpaid,lifeTrade,playerTrade;
+    @GameTest(template="empty") public static void nativeClapReservationAllowsRetreatUntilTheBlindfoldIsChosen(GameTestHelper h){
+        try(var f=new Fixture(h,new BlockPos(97600,80,97600),LabyrinthPlace.HIDE_AND_CLAP)){
+            var owner=f.player(f.base.north(3));var peer=f.player(f.base.south(5));
+            h.assertTrue(HideAndClap.enter(owner)&&!HideAndClap.isLocked(owner)&&!HideAndClap.canEnter(peer),"entering reserves the native game but leaves its owner's ordinary return usable");
+            owner.moveTo(f.base.getX()+.5,f.base.getY(),f.base.getZ()+3.5);var before=owner.position();HideAndClap.confineLockedPlayer(owner);
+            h.assertTrue(owner.position().equals(before),"player confinement cannot pull an uncommitted explorer back into the room");
+            HideAndClap.onServerTick(new net.neoforged.neoforge.event.tick.ServerTickEvent.Post(f.server));
+            h.assertTrue(HideAndClap.canEnter(peer)&&!LabyrinthData.get(f.server).state(HideAndClap.ID).getCompound("Session").contains("Player")&&WitnessAccount.count(LabyrinthData.get(f.server),owner.getUUID())==0,"actual early departure releases the reservation without false completion");
+            owner.moveTo(f.base.getX()+.5,f.base.getY(),f.base.getZ()-3.5);HideAndClap.enter(owner);owner.setItemSlot(EquipmentSlot.HEAD,new ItemStack(LabyrinthRegistry.BLINDFOLD.get()));
+            HideAndClap.onServerTick(new net.neoforged.neoforge.event.tick.ServerTickEvent.Post(f.server));
+            h.assertTrue(HideAndClap.isLocked(owner),"choosing the actual native blindfold commits the timed game");h.succeed();
+        }
+    }
     @AfterBatch(batch="clap_reveal") public static void cleanDeath(ServerLevel level){if(death!=null){death.close();death=null;}}
     @AfterBatch(batch="pet_ransom") public static void cleanRecovery(ServerLevel level){if(recovery!=null){recovery.close();recovery=null;}}
     @GameTest(template="empty",batch="clap_reveal",timeoutTicks=1400)

@@ -197,7 +197,7 @@ Doors leak instead of being labeled. Carpet creeps from under the hotel door int
 
 Inside the house, the house controls how the player sees.
 
-- **Forced first person.** The perspective toggle (F5) is locked from the first hallway on. This also removes the easiest labyrinth cheat, since third person sees around corners and over walls.
+- **Forced first person.** The perspective toggle (F5) is locked within authored vignettes and the finale, protecting scenes and unseen changes from views around corners. Leaving restores the explorer's previous camera preference.
 - **Out-of-body moments.** A few times, the house yanks the camera into third person for 2 to 3 seconds, showing what stands behind the player, then snaps back. It's the only way to glimpse the Minotaur before the finale.
 - **Borrowed eyes.** The camera can sit behind another entity's eyes, as spectator mode already does.
   - The set: stepping on your mark cuts your view to the TV camera.
@@ -238,6 +238,7 @@ Implementation and playtest details: [MOTHER.md](MOTHER.md). This September 30 r
 ### Holloway
 
 - The player who came before. His camp is a dirt hut, torch trails, chests of ordinary gear, and signs that get stranger.
+- Between attacks he patrols the encampment, speaks beside his moving body and grows suspicious when his belongings are touched. Native crossbow arrows remain visible; injury flashes, particles and stagger show successful hits without killing the shared actor. His journal sign has a physical wall support.
 - Actually taking a finite native cache supply or one personal survey copy arms that explorer’s next physical visit. Reading, opening and borrowing confer none; late explorers retain access when the shared barrel is empty. His shared persistent human actor hunts active looters through three connected arenas. He searches by the pursued player’s actual placed torches when native sight is lost. Native cover, a faced shield or striking him buys time.
 - Each explorer must traverse the three arenas in order, spend four present seconds in each, see the hunter and crouch to pull the service latch. Peers and borrowed items confer no credit. In-room offline time pauses; departure/death ends the attempt while preserving theft. Shared geometry, menus and actor identity stay in place for late joiners.
 - One personal escape from Holloway’s independent encounter yields the finite battered vanilla shield usable in the finale. There is no free preparation shield. He stays alive.
@@ -308,8 +309,8 @@ These places come from the novel the house grows out of, so several double as an
 *Multi-visit · verb: writing back*
 
 - Pelafina's room in an institute with three attics.
-- Her letters arrive in the next chest the player opens, anywhere, spaced out by in-game time. They escalate, then stop, with a gap in the dates.
-- Acrostics on paragraph starts spell a knock pattern that opens one attic door.
+- Eight finite letters arrive in the next eligible chest the player opens, spaced out by in-game time and saved per reader. Ordinary details and affection develop into irritation, missing replies and uncertain dates; later letters invite rereading the earlier ones. They are original Pelafina/Whalestoe-inspired adaptations.
+- Loose final sheets retain the THREE/ONE/TWO acrostics that spell the knock pattern for one attic door. The attic's undated letter supplies the personal resolution; collecting letters alone confers no Witness credit.
 - Optional: drop a signed book in her mail slot, and her reply picks up keywords from what you wrote.
 - Yields: her letters. Assets: mail-slot texture, her font.
 
@@ -489,13 +490,13 @@ Each classic gets its own vignette, and its motifs stay inside it.
   - **Growth:** the living-room armchairs join the stack on visit 2, and the kid's chair on visit 3. On visit 3 a branch also taps at the kid's window, and the yard's grass has sunk in one grave-length patch.
   - **Visit 4:** no chairs. The kid's door stands open, the window is broken in, and a branch reaches over the bed. Seeing it finishes the vignette.
 - Yields: the binder, which can be taken on any visit.
-- Assets: none; all vanilla.
+- Assets: native furniture and tree blocks, with locally animated jointed bark tips near the window. The original trunk and branch progression supply collision.
 
 ### The Conjuring: hide-and-clap
 
 *One-shot · verb: following claps blindfolded*
 
-- **Setup.** A child's bedroom with open floor. Entering reserves and locks the room. A woven blindfold hangs beside the child's note: put it on, count to ten, follow the claps and open the wardrobe within a minute.
+- **Setup.** A child's bedroom with open floor. Entering reserves the game; retreat before putting on the blindfold releases that reservation and preserves the original props. Equipping the actual cloth commits the timed game and locks the return. A woven blindfold hangs beside the child's note: put it on, count to ten, follow the claps and open the wardrobe within a minute.
 - **The blindfold, not the Blindness effect.** A head-slot cloth with an opaque overlay and a textured, frayed lower edge. A narrow floor strip, hotbar, action bar and subtitle arrows remain visible. The cloth binds until the wardrobe is opened; inventory swaps, third-person view and hiding the HUD do not permit peeking. The server owns the lock and deadline.
 - **The count.** Put it on and a child's voice counts to ten.
 - **The claps.** Three or four claps from open spots. Get within a block or two and the next sounds elsewhere; wander, and the current one repeats louder. Clap files must be mono, because Minecraft only positions mono sounds. Subtitle arrows keep it playable with the sound off.
@@ -669,8 +670,8 @@ Two Jones father stories sit side by side: in Mapping the Interior a father feed
 
 *Multi-visit · verb: breath*
 
-- A lakeshore at night, with a flooded town below: streets, a school, a church.
-- The shore hunter is the Lake Witch, Stacey Graves, a custom creature with jointed limbs shared with the shallows. She cannot enter water or step onto grass blocks. Water and grass are refuges; the air bar is the clock. Doors, bubble columns, water breathing and turtle shells work.
+- A lakeshore at night, with dry town streets, a school, distinct shop and cottage roofs, a working pier and an irregular sandy beach. The older church remains below the reservoir. Varied trees and dead wood frame the bank; a finite usable canoe and a prone shore casualty occupy the map.
+- The shore hunter is the Lake Witch, Stacey Graves, a custom jointed creature crawling on all fours. She travels on the actual water surface, hides behind real cover, approaches from the back, strikes quickly and withdraws. She starts away from the entrance. Living grass and genuine submersion remain refuges; walking at the surface does not. Doors, bubble columns, water breathing and turtle shells work. The human recollection keeps its ordinary proportions and physics.
 - The school's essays are waterlogged. Dry them in a furnace on shore while she comes for you. They explain horror-movie rules that are really the House's rules, including the grass rule.
 - On a later visit, a key from the school opens the church.
 - The preacher below keeps the water consecrated. The roof hatch is the only thing inside the church that can be opened. Open it and the choir's hymn gets out. On the next cave visit the pews are empty and the preserved dead are standing on shore.
@@ -709,6 +710,7 @@ First playable site in 0.4.11: [DROWNED_TOWN_0_4_11.md](DROWNED_TOWN_0_4_11.md).
 *Verb: filming*
 
 - Film at night over the drowned steeple. When it happens, the phone drops and the view becomes the phone's, looking up at the sky, unable to move. There is no death screen.
+- Board with empty hands and use native rowing/steering to reach the real steeple; the sequence does not drag the canoe along an animated route. Crouching interrupts before the drop. The fixed phone view and shore transfer occur only after the committed recording beat, with repositioning hidden by the blackout.
 - The phone and footage are later found in the canoe at the back of the preserved-dead cave.
 - **Playable in 0.4.15:** empty-hand boarding, explicit filming, nine seconds over the actual submerged tower, then a tracked phone viewpoint fixed on the sky for seven seconds. A blackout returns the living recorder to shore, retaining other possessions. The original item and captured frame metadata wait for their owner at the cave canoe; the recovered phone opens its written frame record. Scene time pauses offline and a dropped original survives interruption and reload. Completion is a personal one-shot memory resolution, with no observer or borrowed-artifact credit. Builder 16 appends slot 30 without rebuilding earlier sites. See [PHONE_CANOE_0_4_15.md](PHONE_CANOE_0_4_15.md).
 
@@ -778,8 +780,9 @@ Opening the locked boy's cell starts the finale: the player either dies and is l
 ### The cell and the fight
 
 - The cell is scratched from the inside. The struck-through Minotaur play sits on a lectern outside, in red strikethrough.
+- The visible child and encounter creature share one native UUID. On the hostile route the child physically walks behind the cell wall; no change can happen while any actual observer, including a spectator camera, can see it. Peaceful release retains the child appearance. The wounded creature stays alive in its cell.
 - A nameless boss bar appears and never moves, whatever players throw at it.
-- The Minotaur charges. Block the charge with a shield and it's stunned for a moment, the way a ravager is. Holloway's dropped shield teaches this.
+- The Minotaur charges. Block the charge with a shield and it's stunned for a moment, the way a ravager is. The battered shield earned through Holloway's independent encounter teaches this.
 - Only the original of the player's most-used weapon wounds it; the house's copy passes straight through. The old man can tell which is which. If the original went to the Mother, the player has to get it back first.
 
 ### Killed: locked out
@@ -821,7 +824,7 @@ The Minotaur is the centerpiece asset; most human characters are skins on one sh
 | Creature | Used in | Needs |
 | --- | --- | --- |
 | The Minotaur | The finale | Full model; charge, stun, and wounded-crawl animations; voice built from the Growl |
-| Lake Witch, Stacey Graves | Drowned Town and the shallows | Custom model with jointed limbs; pathfinding and physical movement treat water and grass as impassable |
+| Lake Witch, Stacey Graves | Drowned Town and the shallows | Jointed all-fours hunter with physical surface travel, concealed rear flanks and brief strikes; living grass and genuine submersion are refuges. The recalled human girl retains ordinary proportions. |
 | Fire hose | The hotel | Segmented body; repositions when unseen, follows at the end |
 | Vulture | The plain | Circling behavior only, never swoops |
 | The Mother of Strays | Her den and concealed stalking | Petite articulated model, platinum hair, heavy eyeliner, continuous restrained deformation and sixteen texture stages; custom bandaged Pekingese |

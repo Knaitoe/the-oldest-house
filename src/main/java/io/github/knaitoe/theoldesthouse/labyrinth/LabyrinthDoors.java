@@ -282,7 +282,7 @@ public final class LabyrinthDoors {
         if (into >= THRESHOLD) {
             if (place == LabyrinthPlace.HIDE_AND_CLAP && !data.isCompleted(HideAndClap.ID)
                     && HideAndClap.isInRoom(LabyrinthPlaces.base(origin, place), player.position())) {
-                if (HideAndClap.enter(player)) return true;
+                if (HideAndClap.enter(player)) { INSIDE.add(id); VignetteGate.stepped(player,place); return true; }
                 goBack(player, entry, data);
                 return true;
             }
@@ -306,6 +306,7 @@ public final class LabyrinthDoors {
                 if (place == LabyrinthPlace.HARRIGAN) {
                     HarriganVignette.onDepart(player);
                 }
+                if (place == LabyrinthPlace.HIDE_AND_CLAP) HideAndClap.departBeforeStarting(player);
                 if (place == LabyrinthPlace.PRESERVED_CAVE) PreservedCave.onDepart(player);
                 if (place == LabyrinthPlace.SHALLOWS) Shallows.onDepart(player);
                 if (place == LabyrinthPlace.PHONE_CANOE) PhoneCanoe.interrupt(player);
