@@ -270,7 +270,7 @@ public final class LabyrinthDealer {
     }
 
     private static LabyrinthPlace pickGray(List<LabyrinthPlace> gray, LabyrinthData data, UUID player, RandomSource random) {
-        gray = gray.stream().filter(place -> !LabyrinthPacing.anomaly(place)).toList();
+        gray = gray.stream().filter(place -> !LabyrinthPacing.anomaly(place)&&!LabyrinthPacing.physicalTrial(place)).toList();
         return weightedGray(gray, data, player, random);
     }
 
@@ -328,7 +328,10 @@ public final class LabyrinthDealer {
             oddDoor = choices.remove(random.nextInt(choices.size()));
         }
         LabyrinthData.Door restDoor = null;
-        if (!choices.isEmpty() && LabyrinthPacing.restDue(data, player) && random.nextInt(100) < 75) {
+        List<LabyrinthPlace> trials=gray.stream().filter(LabyrinthPacing::physicalTrial).toList();
+        LabyrinthData.Door trialDoor=null;
+        if(oddDoor==null&&!trials.isEmpty()&&!choices.isEmpty()&&random.nextInt(100)<LabyrinthPacing.trialChance(data,player))trialDoor=choices.remove(random.nextInt(choices.size()));
+        if (!choices.isEmpty() && LabyrinthPacing.restDue(data, player) && random.nextInt(100) < 35) {
             restDoor = choices.get(random.nextInt(choices.size()));
         }
         for (LabyrinthData.Door door : doors) {
@@ -341,6 +344,8 @@ public final class LabyrinthDealer {
                 boolean camp = data.returnDepth(player) >= 3 && random.nextBoolean()
                         && data.recentVisit(player, LabyrinthPlace.EXPLORER_CAMP) < 0;
                 data.deal(player, door, (camp ? LabyrinthPlace.EXPLORER_CAMP : LabyrinthPlace.QUIET_ROOM).id(), false);
+            } else if(door==trialDoor){
+                data.deal(player,door,weightedGray(trials,data,player,random).id(),lyingLeak(data,player,random));
             } else {
                 data.deal(player, door, pickGray(gray, data, player, random).id(), lyingLeak(data, player, random));
             }

@@ -10,6 +10,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public final class HouseBlockEntities {
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, TheOldestHouse.MOD_ID);
+    public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<TreeTendrilBlockEntity>> TREE_TENDRIL=BLOCK_ENTITIES.register("tree_tendril",()->BlockEntityType.Builder.of(TreeTendrilBlockEntity::new,HouseBlocks.TREE_TENDRIL.get()).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HotelRoomPlaqueBlockEntity>> HOTEL_ROOM_PLAQUE =
             BLOCK_ENTITIES.register("hotel_room_plaque", () ->

@@ -19,6 +19,12 @@ public final class LabyrinthPacing {
     public static boolean quiet(LabyrinthPlace place) {
         return place==LabyrinthPlace.QUIET_ROOM || place==LabyrinthPlace.EXPLORER_CAMP;
     }
+    public static boolean physicalTrial(LabyrinthPlace place){return place==LabyrinthPlace.FLOODED_PASSAGE||place==LabyrinthPlace.FRACTURED_WALKWAY||place==LabyrinthPlace.LIGHT_SINK;}
+    public static int trialChance(LabyrinthData data,UUID player){
+        int depth=data.returnDepth(player);if(domestic(depth))return 0;
+        for(var place:LabyrinthPlace.values()){int age=data.recentVisit(player,place);if(physicalTrial(place)&&age>=0&&age<2)return 0;}
+        return depth<10?28:depth<16?35:42;
+    }
     public static boolean anomaly(LabyrinthPlace place) {
         return switch(place) {
             case FOLDED_MAZE, DEEP_MAZE, ABYSS_MAZE, LONG_HALLWAY, SPIRAL_STAIR, HOTEL_HALLWAY,

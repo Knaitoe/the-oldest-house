@@ -29,11 +29,11 @@ The pass also restores physically missing registered doors in Harrigan’s study
 
 Twenty-four small native props have matching selection shapes, four orientations and sixteen material textures. Props are scenery without inventories or drops. They are only placed on a real surface or against a supporting wall. Original containers are neither replaced nor filled.
 
-The great staircase doubles its centreline radius from twelve to twenty-four blocks. Flights have nine clear walking blocks between the upper rails, with wider thirteen-block landings; it still descends 128 blocks physically. A 69-block shaft, structural piers, horizontal bands, roof and complete bottom floor enclose the void. Upgrades wait for the old shaft's residents to leave and preserve the existing encounter, open/closed cell and seal, inventory, prisoner and escape geometry.
+The great staircase doubles its centreline radius from twelve to twenty-four blocks. Flights have nine clear walking blocks between the upper rails, with wider thirteen-block landings; it descends 1,280 blocks physically and continues another 1,280 below the cell. A 69-block shaft, structural piers, horizontal bands, roof and complete bottom floor enclose the void. Upgrades wait for the old shaft's residents to leave and preserve the existing encounter, open/closed cell and seal, inventory, prisoner and escape geometry.
 
 Each scene has an origin-specific saved decoration checkpoint. Existing saves receive additions in place instead of rerunning the native story builders. Removing a prop after that pass does not make it respawn on an ordinary revisit or upgrade check.
 
-Validation includes the full required GameTest suite, every prop's physical support, real door approaches, finite cache and actor identity preservation, persistent story/evidence state, native shaft width/enclosure and old resident deferral. Client proofs render nineteen actual generated scene cutaways plus the native upgraded shaft, alongside the existing writing and cast checks.
+Validation includes the full required GameTest suite, every prop's physical support, real door approaches, finite cache and actor identity preservation, persistent story/evidence state, native shaft width/enclosure and old resident deferral. Client proofs render nineteen actual generated scene cutaways plus the native upgraded shaft, alongside the existing writing and cast checks. The new home-design GPU proof checks the child, two tendril poses, native furniture and blue HOME typography.
 
 ## Lake playtest repairs
 
@@ -44,3 +44,24 @@ Stacey’s hunting model and collision body are low on all fours. Native surface
 The bank has an institutional slate-roofed school, portico, cottages, market awning, upstairs brick shop and copper-roofed boat shed. An irregular sandy/gravel shore meets an L-shaped pier; trees mix species, crown shapes, heights, leaning trunks and dead wood. A finite usable canoe and a prone shore casualty retain their identities across visits. The one-time lakeside checkpoint preserves original desks, inventories, doors and church state, and waits for present visitors before changing the town.
 
 The unclaimed ordinary shield in the old finale preparation barrel is retired once. Earn the battered shield in Holloway’s own encounter. Held or customized equipment is retained. The finale still supports the peaceful Witness route.
+
+
+## Personal home and threshold
+
+Actual native sitting, morning waking in a manor bed, preparation-container opening, owned companion care and waiting orders are stored per explorer. Six home letters become available as those actions and real returns accumulate. The empty west-facing study lectern opens a private native reader; taking a letter is finite. Use a nonblank writable or signed answer on that lectern to move its original into a vacant slot of the adjacent existing barrel. A full drawer, a blank answer or a duplicate stage consumes nothing. Existing lectern books and barrel contents keep their identities.
+
+A chair and floor the explorer actually used may appear as a private native block-rendered echo in an empty corner of a deep quiet room. No inventory or collectible furniture copy is made. Leases expire on death, level changes and silence from the server. The manor threshold gradually mutes color and shortens the view when approached; hesitation can produce a quiet step behind the explorer, and turning back restores ordinary perception. Native door controls remain unchanged.
+
+Stair pages bind finite personal snapshots of actual retreats, companion care/waiting, Mother's records, Holloway theft and the original distant photograph. Freud-inspired UNHOMELY notes color only HOME blue; limen notes treat the threshold as an inhabited interval. Conflicting restored/struck red prisoner accounts remain unresolved.
+
+The native child and combat creature retain one UUID. After the bars open on the hostile route, the child physically moves behind the cell wall; feet, body and eye visibility from every actual observer protect the change. Peaceful release retains the child appearance. The already wounded creature remains alive and saved.
+
+Eight finite Pelafina letters develop mundane details, affection, frustration, missing answers and unreliable dates. The original THREE/ONE/TWO acrostics remain on loose final sheets; the native attic resolution and Witness quota are unchanged. Ordinary unfinished visits allow personal retreat, preserve progress and grant no credit. The departed source becomes dormant until rediscovery; peers retain access. Recent-visit spacing still limits personal affinity.
+
+## Physical trials and living tree
+
+The flooded passage has a connected 110-block swimming route with twelve turns, low ceilings and three real air chimneys. Its entry/exit dive pools sit below dry floor level. Native swimmer movement, collision, air depletion and recovery are checked. Older geometry is changed only when empty; an existing native container blocks replacement. Physical trial doors receive one shared 28/35/42-percent depth-based offer, two-visit spacing and no simultaneous anomaly offer. Rest offers fall from 75 to 35 percent, preserving the six/eight/twelve/sixteen depth gates.
+
+The model-home tree keeps the original trunk and branch progression, with unequal limbs/crowns and three jointed bark tendrils near the window. Original logs supply collision; the small tips move through a native block-entity renderer without server movement packets or camera forcing. The next ordinary restaging clears earlier authored tendrils.
+
+Native verification of these additions is pending the final release run; earlier architecture/lake checks are retained and rerun with the new systems.

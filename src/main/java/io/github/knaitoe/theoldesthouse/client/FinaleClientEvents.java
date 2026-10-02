@@ -15,8 +15,8 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
 public final class FinaleClientEvents {
     public static final ResourceLocation MATERIALS=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/minotaur_materials.png");
-    @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions event){event.registerLayerDefinition(MinotaurModel.LAYER,MinotaurModel::createBodyLayer);}
-    @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers event){event.registerEntityRenderer(FinaleRegistry.MINOTAUR.get(),MinotaurRenderer::new);event.registerEntityRenderer(FinaleRegistry.WITNESS.get(),WitnessRenderer::new);}
+    @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions event){event.registerLayerDefinition(MinotaurModel.LAYER,MinotaurModel::createBodyLayer);event.registerLayerDefinition(TreeTendrilRenderer.LAYER,TreeTendrilRenderer::layer);}
+    @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers event){event.registerEntityRenderer(FinaleRegistry.MINOTAUR.get(),MinotaurRenderer::new);event.registerEntityRenderer(FinaleRegistry.WITNESS.get(),WitnessRenderer::new);event.registerBlockEntityRenderer(io.github.knaitoe.theoldesthouse.house.HouseBlockEntities.TREE_TENDRIL.get(),TreeTendrilRenderer::new);}
     private static final class MinotaurRenderer extends MobRenderer<MinotaurEntity,MinotaurModel>{
         private final CagedBoyRenderer boy;
         MinotaurRenderer(EntityRendererProvider.Context context){super(context,new MinotaurModel(context.bakeLayer(MinotaurModel.LAYER)),.9F);boy=new CagedBoyRenderer(context);}

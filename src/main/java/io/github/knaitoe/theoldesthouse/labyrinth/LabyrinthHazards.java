@@ -77,22 +77,39 @@ public final class LabyrinthHazards {
     // Existing physical hazards
 
     public static void buildFloodedPassage(ServerLevel level, BlockPos base) {
-        LabyrinthBuilder.room(level, base, -1, 1, 5, -27, -1, WALL, FLOOR, CEILING);
-        for (int z = -4; z >= -24; z--) {
-            for (int x = -1; x <= 1; x++) {
-                level.setBlock(base.offset(x, 0, z), Blocks.WATER.defaultBlockState(), FLAGS);
-                level.setBlock(base.offset(x, 1, z), Blocks.WATER.defaultBlockState(), FLAGS);
-                level.setBlock(base.offset(x, 2, z), CEILING, FLAGS);
-            }
+        LabyrinthBuilder.room(level, base, -7, 7, 5, -27, -1, WALL, FLOOR, CEILING);
+        for(int x=-7;x<=7;x++)for(int z=-26;z<=-3;z++)for(int y=-2;y<=4;y++)level.setBlock(base.offset(x,y,z),y==-2?FLOOR:WALL,FLAGS);
+        for(BlockPos feet:floodRoute(base)){
+            level.setBlock(feet,Blocks.WATER.defaultBlockState(),FLAGS);
+            level.setBlock(feet.below(),Math.floorMod(feet.getZ(),7)==0?Blocks.MOSSY_STONE_BRICKS.defaultBlockState():FLOOR,FLAGS);
         }
-        for (int z : new int[] {-9, -17}) {
-            level.setBlock(base.offset(0, 2, z), Blocks.AIR.defaultBlockState(), FLAGS);
-            level.setBlock(base.offset(0, 3, z), Blocks.AIR.defaultBlockState(), FLAGS);
-            level.setBlock(base.offset(0, 4, z), Blocks.AIR.defaultBlockState(), FLAGS);
-            LabyrinthBuilder.hangLantern(level, base.offset(0, 5, z), true);
+        // The channels sit below the dry vestibule, so source water cannot wash through a door.
+        for(int z:new int[]{-3,-27})for(int x=0;x<=1;x++){
+            level.setBlock(base.offset(x,-3,z),FLOOR,FLAGS);
+            for(int y=-2;y<=3;y++)level.setBlock(base.offset(x,y,z),y<0?Blocks.WATER.defaultBlockState():Blocks.AIR.defaultBlockState(),FLAGS);
+        }
+        for(BlockPos pocket:floodAir(base)){
+            for(int x=0;x<=1;x++)for(int z=0;z<=1;z++)for(int y=-1;y<=4;y++)level.setBlock(pocket.offset(x,y,z),y<2?Blocks.WATER.defaultBlockState():Blocks.AIR.defaultBlockState(),FLAGS);
+            LabyrinthBuilder.hangLantern(level,pocket.above(5),true);
         }
         LabyrinthBuilder.entrance(level, base, WALL, FLOOR, CEILING);
         LabyrinthBuilder.doors(level, base, LabyrinthPlace.FLOODED_PASSAGE);
+        var d=LabyrinthData.get(level.getServer());var state=d.state("water_trial_0427");state.putBoolean(Long.toString(base.asLong()),true);d.setState("water_trial_0427",state);
+    }
+    public static List<BlockPos> floodAir(BlockPos base){return List.of(base.offset(-6,0,-24),base.offset(0,0,-14),base.offset(6,0,-17));}
+    public static List<BlockPos> floodRoute(BlockPos base){
+        int[][] corners={{0,-3},{-6,-3},{-6,-24},{-3,-24},{-3,-6},{0,-6},{0,-22},{3,-22},{3,-9},{6,-9},{6,-26},{0,-26},{0,-27}};
+        var route=new java.util.ArrayList<BlockPos>();
+        for(int i=0;i<corners.length-1;i++){int x=corners[i][0],z=corners[i][1];while(x!=corners[i+1][0]||z!=corners[i+1][1]){route.add(base.offset(x,-1,z));x+=Integer.signum(corners[i+1][0]-x);z+=Integer.signum(corners[i+1][1]-z);}}
+        route.add(base.offset(0,-1,-27));return List.copyOf(route);
+    }
+    public static void upgradeFlooded(ServerLevel level,BlockPos origin){
+        if(!LabyrinthBuilder.ready(level.getServer()))return;var base=LabyrinthPlaces.base(origin,LabyrinthPlace.FLOODED_PASSAGE);if(base==null)return;
+        var d=LabyrinthData.get(level.getServer());if(d.state("water_trial_0427").getBoolean(Long.toString(base.asLong())))return;
+        if(level.players().stream().anyMatch(p->new AABB(base.offset(-9,-3,-30),base.offset(9,8,2)).contains(p.position())))return;
+        // Preserve a player-authored container instead of replacing its identity during a scenery upgrade.
+        for(BlockPos pos:BlockPos.betweenClosed(base.offset(-8,-2,-27),base.offset(8,5,-1)))if(level.getBlockEntity(pos)!=null)return;
+        buildFloodedPassage(level,base);
     }
 
     public static void buildFracturedWalkway(ServerLevel level, BlockPos base) {
@@ -232,6 +249,7 @@ public final class LabyrinthHazards {
         }
 
         long now = server.getTickCount();
+        if(now%100==0)upgradeFlooded(level,origin);
         tickFlooded(level, origin, now);
         tickCompression(level, origin, now);
         tickFalseDistance(level, origin, now);
