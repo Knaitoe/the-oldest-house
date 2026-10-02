@@ -218,6 +218,8 @@ jobs:
           test -s build/font-smoke/native-cast.png
           test -s build/font-smoke/architecture-passed.txt
           test -s build/architecture-proof/manifest.txt
+          test -s build/font-smoke/sky-passed.txt
+          test -s build/font-smoke/native-sky-2.png
 
       - name: Upload native writing proof
         if: always()

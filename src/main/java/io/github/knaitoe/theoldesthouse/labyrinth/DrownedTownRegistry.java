@@ -33,7 +33,7 @@ public final class DrownedTownRegistry {
             () -> EntityType.Builder.<LakeCanoeEntity>of(LakeCanoeEntity::new, MobCategory.MISC).sized(1.375F,.5625F).clientTrackingRange(10).build("lake_canoe"));
     public static final DeferredHolder<EntityType<?>, EntityType<LakeWitchEntity>> LAKE_WITCH = TYPES.register("lake_witch",
             () -> EntityType.Builder.<LakeWitchEntity>of(LakeWitchEntity::new, MobCategory.MONSTER)
-                    .sized(.68F, 2.05F).eyeHeight(1.78F).clientTrackingRange(12).updateInterval(2).build("lake_witch"));
+                    .sized(.78F, .94F).eyeHeight(.68F).clientTrackingRange(12).updateInterval(2).build("lake_witch"));
     public static final DeferredHolder<EntityType<?>, EntityType<LakeCongregantEntity>> CONGREGANT = TYPES.register("lake_congregant",
             () -> EntityType.Builder.<LakeCongregantEntity>of(LakeCongregantEntity::new, MobCategory.MISC)
                     .sized(.6F, 1.8F).eyeHeight(1.6F).clientTrackingRange(10).build("lake_congregant"));

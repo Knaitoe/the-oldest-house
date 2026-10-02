@@ -14,20 +14,25 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.*;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.HitResult;
 
-/** Stacey Graves. A bounded shore pathfinder whose nodes and physical movement both reject refuges. */
+/** Stacey Graves: a physical, concealed flank, a short rush, then a withdrawal to cover. */
 public final class LakeWitchEntity extends PathfinderMob {
     private static final EntityDataAccessor<Boolean> STRIKING = SynchedEntityData.defineId(LakeWitchEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Integer> MEMORY_PHASE = SynchedEntityData.defineId(LakeWitchEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> HUNT_PHASE = SynchedEntityData.defineId(LakeWitchEntity.class, EntityDataSerializers.INT);
+    public static final int STALK=0, LUNGE=1, WITHDRAW=2;
     @Nullable private UUID memoryOwner;
     @Nullable private BlockPos memoryBase;
     @Nullable private BlockPos shoreBase;
     private final Deque<Vec3> route = new ArrayDeque<>();
     @Nullable private BlockPos routeGoal;
-    private int windup, cooldown, visit;
+    private int windup, cooldown, visit, lungeTicks, settleTicks;
 
     public LakeWitchEntity(EntityType<? extends LakeWitchEntity> type, Level level) {
         super(type, level);
@@ -41,10 +46,13 @@ public final class LakeWitchEntity extends PathfinderMob {
                 .add(Attributes.ATTACK_DAMAGE, 6).add(Attributes.FOLLOW_RANGE, 40).add(Attributes.KNOCKBACK_RESISTANCE, .65);
     }
     @Override protected void registerGoals() {}
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { super.defineSynchedData(builder); builder.define(STRIKING, false); builder.define(MEMORY_PHASE, -1); }
+    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { super.defineSynchedData(builder); builder.define(STRIKING, false); builder.define(MEMORY_PHASE, -1);builder.define(HUNT_PHASE,STALK); }
     public boolean memory() { return entityData.get(MEMORY_PHASE) >= 0; }
     public int memoryPhase() { return entityData.get(MEMORY_PHASE); }
-    public void memoryPhase(int phase) { entityData.set(MEMORY_PHASE, phase); }
+    public void memoryPhase(int phase) { entityData.set(MEMORY_PHASE, phase);refreshDimensions(); }
+    public int huntPhase(){return entityData.get(HUNT_PHASE);}
+    @Override public EntityDimensions getDefaultDimensions(Pose pose){return memory()?EntityDimensions.scalable(.6F,1.8F).withEyeHeight(1.6F):super.getDefaultDimensions(pose);}
+    @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(MEMORY_PHASE.equals(key))refreshDimensions();}
     public @Nullable UUID memoryOwner() { return memoryOwner; }
     public @Nullable BlockPos memoryBase() { return memoryBase; }
     public void recollection(UUID owner, BlockPos base) {
@@ -60,7 +68,7 @@ public final class LakeWitchEntity extends PathfinderMob {
     }
     @Override public boolean hurt(DamageSource source,float amount) { return !memory() && super.hurt(source,amount); }
     public boolean striking() { return entityData.get(STRIKING); }
-    public void shore(BlockPos base, int visit) { shoreBase = base.immutable(); this.visit = visit;setNoGravity(true); }
+    public void shore(BlockPos base, int visit) { shoreBase = base.immutable(); this.visit = visit;settleTicks=60;setNoGravity(true); }
     public @Nullable BlockPos shoreBase() { return shoreBase; }
     public void relocateLandscape(BlockPos delta){if(shoreBase!=null)shoreBase=shoreBase.offset(delta);if(memoryBase!=null)memoryBase=memoryBase.offset(delta);route.clear();routeGoal=null;}
     @Override public boolean removeWhenFarAway(double distance) { return false; }
@@ -79,13 +87,23 @@ public final class LakeWitchEntity extends PathfinderMob {
                 && level.getBlockState(feet.above()).getCollisionShape(level, feet.above()).isEmpty()
                 && (level.getFluidState(feet.below()).is(FluidTags.WATER)||level.getBlockState(feet.below()).isFaceSturdy(level, feet.below(), Direction.UP));
     }
+    /** Native travel must not apply swimming drag or gravity to the surface hunter. Memory keeps normal physics. */
+    @Override public void travel(Vec3 input){if(shoreBase!=null&&!memory()){setDeltaMovement(Vec3.ZERO);return;}super.travel(input);}
+    public static double surfaceHeight(Level level,BlockPos base,BlockPos node){
+        var fluid=level.getFluidState(node.below());
+        return fluid.is(FluidTags.WATER)?node.getY()-1+fluid.getHeight(level,node.below())+.004:base.getY();
+    }
     public static boolean canAttack(LakeWitchEntity witch, ServerPlayer player) {
         return player.isAlive() && !player.isCreative() && !player.isSpectator() && witch.level() == player.level()
                 && witch.shoreBase != null && DrownedTown.contains(witch.shoreBase, player.position())
                 && !safeGround(player.level(), player.blockPosition()) && !player.isInWaterOrBubble();
     }
     @Override public void move(MoverType type, Vec3 movement) {
-        if(shoreBase!=null&&!memory()){movement=new Vec3(movement.x,0,movement.z);setDeltaMovement(getDeltaMovement().x,0,getDeltaMovement().z);}
+        if(shoreBase!=null&&!memory()){
+            BlockPos node=BlockPos.containing(getX()+movement.x,shoreBase.getY(),getZ()+movement.z);
+            movement=new Vec3(movement.x,net.minecraft.util.Mth.clamp(surfaceHeight(level(),shoreBase,node)-getY(),-.35,.35),movement.z);
+            setDeltaMovement(Vec3.ZERO);
+        }
         if (!level().isClientSide() && shoreBase != null && (Math.abs(movement.x) > .00001 || Math.abs(movement.z) > .00001)) {
             double half = getBbWidth() / 2.0 + .015;
             boolean allowed = true;
@@ -101,7 +119,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         super.move(type, movement);
     }
 
-    /** Four-neighbor breadth-first paths detour around grass, props and trees; water has no node. */
+    /** Four-neighbor physical surface paths detour around living grass, props and trees. */
     public static List<BlockPos> shoreRoute(Level level, BlockPos base, BlockPos start, BlockPos goal) {
         if (!walkable(level, base, start) || !walkable(level, base, goal)) return List.of();
         Map<BlockPos, BlockPos> previous = new HashMap<>(); ArrayDeque<BlockPos> open = new ArrayDeque<>();
@@ -120,49 +138,86 @@ public final class LakeWitchEntity extends PathfinderMob {
         }
         return List.of();
     }
+    public static boolean inView(ServerPlayer player,Vec3 point){
+        Vec3 direction=point.subtract(player.getEyePosition());if(direction.lengthSqr()<.01)return true;
+        return player.getViewVector(1).dot(direction.normalize())>.35
+                &&player.level().clip(new ClipContext(player.getEyePosition(),point,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,player)).getType()==HitResult.Type.MISS;
+    }
+    public static double behindScore(ServerPlayer target,Vec3 point){
+        Vec3 toward=point.subtract(target.position()).multiply(1,0,1).normalize();
+        return -target.getViewVector(1).multiply(1,0,1).normalize().dot(toward);
+    }
+    /** One reachable search favors the back of the player, occlusion and genuinely unlit ground. */
+    public static BlockPos ambushGoal(Level level,BlockPos base,BlockPos start,ServerPlayer target,boolean withdraw){
+        var open=new ArrayDeque<BlockPos>();var seen=new HashSet<BlockPos>();open.add(start);seen.add(start);
+        BlockPos best=null;double score=-Double.MAX_VALUE;
+        while(!open.isEmpty()&&seen.size()<4000){
+            BlockPos at=open.removeFirst();Vec3 point=Vec3.atBottomCenterOf(at).add(0,.6,0);double distance=point.distanceTo(target.position());
+            if(distance>3.5&&distance<17&&at.getZ()<base.getZ()-11){
+                boolean visible=inView(target,point);double value=behindScore(target,point)*12+(visible?-32:18)
+                        -Math.abs(distance-(withdraw?12:6))*2-level.getBrightness(LightLayer.BLOCK,at)*1.5
+                        -Math.sqrt(at.distSqr(start))*.22;
+                if(value>score){score=value;best=at;}
+            }
+            for(Direction side:Direction.Plane.HORIZONTAL){BlockPos next=at.relative(side);if(seen.add(next)&&walkable(level,base,next))open.add(next);}
+        }
+        return best;
+    }
+    private void routeTo(BlockPos goal){
+        route.clear();routeGoal=goal;
+        for(BlockPos node:shoreRoute(level(),shoreBase,BlockPos.containing(getX(),shoreBase.getY(),getZ()),goal))route.add(Vec3.atBottomCenterOf(node));
+    }
+    private void follow(double speed){
+        while(!route.isEmpty()){
+            Vec3 toward=route.peek().subtract(position()).multiply(1,0,1);
+            if(toward.lengthSqr()<.025){route.removeFirst();continue;}
+            double oldX=getX(),oldZ=getZ();move(MoverType.SELF,toward.normalize().scale(Math.min(speed,toward.length())));
+            setYRot((float)(Math.atan2(getZ()-oldZ,getX()-oldX)*180/Math.PI)-90);yBodyRot=getYRot();
+            walkAnimation.update((float)Math.sqrt((getX()-oldX)*(getX()-oldX)+(getZ()-oldZ)*(getZ()-oldZ))*4,.4F);break;
+        }
+    }
     @Override public void tick() {
         super.tick();
         if(memory()) { setAirSupply(300); Shallows.tickActor(this); return; }
         if (!(level() instanceof ServerLevel level) || shoreBase == null || !isAlive()) return;
+        setAirSupply(300);move(MoverType.SELF,Vec3.ZERO);
+        if(settleTicks>0){settleTicks--;return;}
         if (cooldown > 0) cooldown--;
         ServerPlayer target = level.players().stream().filter(p -> canAttack(this, p))
+                .filter(p->p.getZ()<shoreBase.getZ()-12||Math.abs(p.getX()-shoreBase.getX())>5)
                 .min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
         if (target == null || distanceToSqr(target) > 1600) { cancelStrike(); route.clear(); setDeltaMovement(0, getDeltaMovement().y, 0); return; }
         getLookControl().setLookAt(target, 30, 30);
-        setYRot((float)(Math.atan2(target.getZ() - getZ(), target.getX() - getX()) * 180 / Math.PI) - 90); yBodyRot = getYRot();
         if (distanceToSqr(target) < 784 && getSensing().hasLineOfSight(target))
             IndianLakeProgress.hunted(LabyrinthData.get(level.getServer()), target.getUUID());
-        if (windup > 0) {
-            if (--windup == 0) {
-                entityData.set(STRIKING, false); cooldown = 45;
-                if (canAttack(this, target) && distanceToSqr(target) < 5.8 && getSensing().hasLineOfSight(target)) {
-                    target.hurt(damageSources().mobAttack(this), 6);
-                    Vec3 away = target.position().subtract(position()).multiply(1, 0, 1).normalize();
-                    target.setDeltaMovement(away.scale(.3).add(0, .12, 0)); target.hurtMarked = true;
-                }
-            }
-            return;
-        }
-        if (distanceToSqr(target) < 5.0 && cooldown == 0 && getSensing().hasLineOfSight(target)) {
-            windup = 18; entityData.set(STRIKING, true);
-            level.playSound(null, blockPosition(), DrownedTownRegistry.WITCH_VOICE.get(), SoundSource.HOSTILE, .8F, .9F); return;
-        }
+        if(windup>0){windup--;return;}
         BlockPos goal = BlockPos.containing(target.getX(), shoreBase.getY(), target.getZ());
-        if (!walkable(level, shoreBase, goal)) return;
-        if (tickCount % 20 == 0 || routeGoal==null || route.isEmpty()&&!goal.equals(routeGoal)) {
-            route.clear(); routeGoal = goal;
-            for (BlockPos step : shoreRoute(level, shoreBase, BlockPos.containing(getX(), shoreBase.getY(), getZ()), goal))
-                route.add(Vec3.atBottomCenterOf(step));
+        if(!walkable(level,shoreBase,goal)){cancelStrike();return;}
+        if(huntPhase()==LUNGE){
+            if(--lungeTicks<=0){cancelStrike();cooldown=65;entityData.set(HUNT_PHASE,WITHDRAW);route.clear();return;}
+            if(routeGoal==null||!goal.equals(routeGoal)||route.isEmpty())routeTo(goal);
+            follow(.62);
+            if(canAttack(this,target)&&distanceToSqr(target)<3.8&&getSensing().hasLineOfSight(target)){
+                target.hurt(damageSources().mobAttack(this),6);Vec3 away=target.position().subtract(position()).multiply(1,0,1).normalize();
+                target.setDeltaMovement(away.scale(.3).add(0,.12,0));target.hurtMarked=true;
+                cancelStrike();cooldown=75;entityData.set(HUNT_PHASE,WITHDRAW);route.clear();
+            }return;
         }
-        if (!route.isEmpty()) {
-            Vec3 step = route.peek().subtract(position()).multiply(1, 0, 1);
-            if (step.lengthSqr() < .02) route.removeFirst();
-            else move(MoverType.SELF, step.normalize().scale(Math.min(level.getFluidState(blockPosition().below()).is(FluidTags.WATER)?.32:.20, step.length())));
+        boolean watched=inView(target,position().add(0,.6,0));
+        if(cooldown==0&&distanceToSqr(target)<72&&getSensing().hasLineOfSight(target)
+                &&(!watched||behindScore(target,position())>.25||distanceToSqr(target)<5)){
+            entityData.set(HUNT_PHASE,LUNGE);entityData.set(STRIKING,true);windup=4;lungeTicks=24;routeTo(goal);
+            level.playSound(null,blockPosition(),DrownedTownRegistry.WITCH_VOICE.get(),SoundSource.HOSTILE,.55F,1.2F);return;
         }
-        if (tickCount % 160 == 0 && distanceToSqr(target) < 400)
-            level.playSound(null, blockPosition(), DrownedTownRegistry.WITCH_VOICE.get(), SoundSource.HOSTILE, .45F, .7F);
+        boolean withdraw=cooldown>0;entityData.set(HUNT_PHASE,withdraw?WITHDRAW:STALK);
+        if(tickCount%24==0||routeGoal==null||route.isEmpty()){
+            BlockPos cover=ambushGoal(level,shoreBase,BlockPos.containing(getX(),shoreBase.getY(),getZ()),target,withdraw);
+            if(cover!=null)routeTo(cover);
+            else if(!watched||distanceToSqr(target)<100)routeTo(goal);
+        }
+        follow(withdraw?.34:.24);
     }
-    private void cancelStrike() { windup = 0; entityData.set(STRIKING, false); }
+    private void cancelStrike() { windup = 0;lungeTicks=0;entityData.set(STRIKING, false);entityData.set(HUNT_PHASE,STALK); }
     @Override public void die(DamageSource source) {
         if (!memory() && level() instanceof ServerLevel level) {
             LabyrinthData data = LabyrinthData.get(level.getServer()); CompoundTag state = data.state(DrownedTown.ID);
@@ -177,7 +232,7 @@ public final class LakeWitchEntity extends PathfinderMob {
     @Override public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag); shoreBase = tag.contains("ShoreBase") ? BlockPos.of(tag.getLong("ShoreBase")) : null;
         visit = tag.getInt("TownVisit"); cooldown = 30; cancelStrike(); route.clear();
-        if(shoreBase!=null)setNoGravity(true);
+        if(shoreBase!=null){setNoGravity(true);settleTicks=40;}
         if(tag.hasUUID("MemoryOwner")){recollection(tag.getUUID("MemoryOwner"),BlockPos.of(tag.getLong("MemoryBase")));memoryPhase(tag.getInt("MemoryPhase"));setNoGravity(memoryPhase()==1||memoryPhase()==3);}
     }
 }

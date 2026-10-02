@@ -76,6 +76,7 @@ public final class LakeLandscape {
         for(int x:new int[]{r.minX()+1,r.maxX()-1})for(int z=-6;z>r.minZ();z-=7)tree(l,b,x,z);
         for(int x=r.minX()+4;x<r.maxX()-3;x+=7)tree(l,b,x,r.minZ()+1);
         NovelRooms.safeApproach(l,b);
+        LakeSettlement.decorateOnce(l,b,site);
     }
     private static void town(ServerLevel l,BlockPos b){
         // School and shops are dry; the older church alone remains below the reservoir.
@@ -166,6 +167,8 @@ public final class LakeLandscape {
     }
     @SubscribeEvent public static void night(ServerTickEvent.Post event){
         if(event.getServer().getTickCount()%20!=0)return;
+        var origin=HouseSavedData.get(event.getServer()).houseOrigin();var outside=event.getServer().getLevel(HouseDimensions.OUTSIDE);
+        if(origin!=null&&outside!=null)for(var site:SITES)LakeSettlement.decorateOnce(outside,LabyrinthPlaces.base(origin,site),site);
         for(ServerPlayer p:event.getServer().getPlayerList().getPlayers())for(var site:SITES)if(IndianLakeRooms.inside(p,site)){
             io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.NovelScenePayload(7,0,"",0,0));break;
         }

@@ -138,7 +138,7 @@ public final class LabyrinthBuilder {
         if (place != null) {
             if (architecturalUpgrades.remove(place)) {
                 ServerLevel site=server.getLevel(NovelRooms.dimension(place));
-                if(site!=null)VignetteArchitecture.decorateOnce(site,pendingOrigin,place);
+                if(site!=null){if(LakeLandscape.isLake(place))LakeSettlement.decorateOnce(site,LabyrinthPlaces.base(pendingOrigin,place),place);VignetteArchitecture.decorateOnce(site,pendingOrigin,place);}
             } else if (domesticUpgrades.remove(place)) {
                 if(legacyDomesticUpgrade) LabyrinthDomestic.upgrade(interior, pendingOrigin, place);
                 io.github.knaitoe.theoldesthouse.house.HouseFurnishings.upgrade(interior,pendingOrigin,place);
@@ -154,6 +154,7 @@ public final class LabyrinthBuilder {
             MotherOfStrays.upgradeDen(interior,origin);
             ServerLevel outside=server.getLevel(HouseDimensions.OUTSIDE);
             if(outside!=null)BarnFarm.upgrade(outside,origin);
+            FinaleArchitecture.retirePreparationShield(interior,origin);
             io.github.knaitoe.theoldesthouse.house.HouseFurnishings.upgradeManor(interior,origin);
             if (HouseSavedData.get(server).isImpossibleDoorRevealed())
                 io.github.knaitoe.theoldesthouse.house.HouseImpossibleHallway.dressDomesticApproach(interior, origin);
@@ -187,8 +188,9 @@ public final class LabyrinthBuilder {
         }
         if(LakeLandscape.isLake(place)){
             ServerLevel site=server.getLevel(HouseDimensions.OUTSIDE);if(site==null)return;
+            LakeSettlement.forget(site,base,place);
             switch(place){case DROWNED_TOWN->DrownedTown.build(server,site,base);case SHALLOWS->Shallows.build(server,site,base);case PHONE_CANOE->PhoneCanoe.build(server,site,base);default->{}}
-            LakeLandscape.dress(site,base,place);NovelRooms.safeApproach(site,base);registerDoors(dataFor(server),place,base);VignetteArchitecture.forget(site,origin,place);VignetteArchitecture.decorateOnce(site,origin,place);return;
+            if(place!=LabyrinthPlace.DROWNED_TOWN)LakeLandscape.dress(site,base,place);NovelRooms.safeApproach(site,base);registerDoors(dataFor(server),place,base);VignetteArchitecture.forget(site,origin,place);VignetteArchitecture.decorateOnce(site,origin,place);return;
         }
         LabyrinthMaze.Migration migration = LabyrinthMaze.isMaze(place) ? LabyrinthMaze.capture(level, slot, base) : null;
         fillSolid(level, slot);

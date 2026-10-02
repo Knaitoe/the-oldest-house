@@ -64,7 +64,7 @@ public final class FinaleArchitecture {
         LabyrinthData data = LabyrinthData.get(server); CompoundTag state = data.state(STATE);
         if (state.contains("Origin") && state.getLong("Origin") != manor.asLong()) { boolean requested=state.getBoolean("Requested"); state = new CompoundTag(); state.putBoolean("Requested",requested); PLANS.remove(server); }
         if (!state.getBoolean("Requested")) return;
-        if(state.getBoolean("Ready") && state.getInt("CarveVersion")==CARVE_VERSION){FinaleCollapse.dress(level,manor);return;}
+        if(state.getBoolean("Ready") && state.getInt("CarveVersion")==CARVE_VERSION){retirePreparationShield(level,manor);FinaleCollapse.dress(level,manor);return;}
         // Existing explorers finish their visit before an old physical descent is replaced.
         if(state.getBoolean("Ready")&&level.players().stream().anyMatch(p->contains(manor,p.blockPosition())))return;
         if(state.getInt("PlanVersion")!=CARVE_VERSION){
@@ -86,7 +86,7 @@ public final class FinaleArchitecture {
             data.putDoor(new LabyrinthData.Door(ENTRY,HouseDimensions.INTERIOR,entry(manor),Direction.SOUTH,LabyrinthData.RETURN,false));
         }
         data.setState(STATE,state);
-        if(state.getBoolean("Ready"))FinaleCollapse.dress(level,manor);
+        if(state.getBoolean("Ready")){retirePreparationShield(level,manor);FinaleCollapse.dress(level,manor);}
     }
     private static boolean preserveUpgradeVoid(BlockPos manor,BlockPos pos){
         BlockPos b=base(manor);
@@ -182,7 +182,7 @@ public final class FinaleArchitecture {
         BlockPos b=base(manor), barrel=b.offset(-10,ARENA,39), lectern=lectern(manor);
         level.setBlock(barrel,Blocks.BARREL.defaultBlockState(),FLAGS);
         if(level.getBlockEntity(barrel) instanceof BarrelBlockEntity chest){
-            chest.setItem(0,new ItemStack(Items.SHIELD));chest.setItem(1,HouseWriting.book("Holloway's last survey","Holloway",HouseWriting.WritingStyle.PLAIN,
+            chest.setItem(1,HouseWriting.book("Holloway's last survey","Holloway",HouseWriting.WritingStyle.PLAIN,
                     List.of("The rush is straight. Face it. Raise the shield before it reaches you.\n\nWhen it stops, there is only a moment.",
                     "A copy has the weight and the edge. It has never been used.\n\nBring the thing your hand remembers. Ask the old man if you cannot tell.")));chest.setChanged();
         }
@@ -194,6 +194,15 @@ public final class FinaleArchitecture {
             desk.setBook(HouseWriting.book("The prisoner","Zampano",List.of(page)));desk.setChanged();
         }
         lightArchitecture(level,manor);
+    }
+    /** Remove only the untouched old authored shortcut. Held rewards and deposited custom shields survive. */
+    public static void retirePreparationShield(ServerLevel level,BlockPos manor){
+        var data=LabyrinthData.get(level.getServer());var state=data.state(STATE);String key="ShieldEncounter:"+manor.asLong();
+        if(state.getBoolean(key))return;
+        if(level.getBlockEntity(base(manor).offset(-10,ARENA,39)) instanceof BarrelBlockEntity cache){
+            var item=cache.getItem(0);if(item.getCount()==1&&ItemStack.isSameItemSameComponents(item,new ItemStack(Items.SHIELD))){cache.setItem(0,ItemStack.EMPTY);cache.setChanged();}
+            state.putBoolean(key,true);data.setState(STATE,state);
+        }
     }
     private static void lightArchitecture(ServerLevel level,BlockPos manor){
         BlockPos b=base(manor);

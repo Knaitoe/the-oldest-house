@@ -221,7 +221,7 @@ Implementation and playtest details: [MOTHER.md](MOTHER.md). This September 30 r
 - The player who came before. His camp is a dirt hut, torch trails, chests of ordinary gear, and signs that get stranger.
 - Actually taking a finite native cache supply or one personal survey copy arms that explorer’s next physical visit. Reading, opening and borrowing confer none; late explorers retain access when the shared barrel is empty. His shared persistent human actor hunts active looters through three connected arenas. He searches by the pursued player’s actual placed torches when native sight is lost. Native cover, a faced shield or striking him buys time.
 - Each explorer must traverse the three arenas in order, spend four present seconds in each, see the hunter and crouch to pull the service latch. Peers and borrowed items confer no credit. In-room offline time pauses; departure/death ends the attempt while preserving theft. Shared geometry, menus and actor identity stay in place for late joiners.
-- One personal escape yields a finite battered vanilla shield usable in the finale; the existing finale preparation shield remains available. He stays alive.
+- One personal escape from Holloway’s independent encounter yields the finite battered vanilla shield usable in the finale. There is no free preparation shield. He stays alive.
 - Yields a locked native half-explored conjectural map once per explorer.
 
 ### The dog: Hillary
@@ -272,7 +272,7 @@ The notes carry the human stories: the horror sits on top, and the human story s
 
 ## Vignettes: House of Leaves places
 
-These places come from the novel the house grows out of, so several double as anchors. All six are playable adaptations in 0.4.23; see [NOVEL_AND_COLLAPSE_0_4_23.md](NOVEL_AND_COLLAPSE_0_4_23.md) for exact verbs, persistence, assets and direct testing. Their original writing is not a transcription. Holloway's independent camp and three-room hunt are playable in 0.4.25; his existing final shield/cache is retained.
+These places come from the novel the house grows out of, so several double as anchors. All six are playable adaptations in 0.4.23; see [NOVEL_AND_COLLAPSE_0_4_23.md](NOVEL_AND_COLLAPSE_0_4_23.md) for exact verbs, persistence, assets and direct testing. Their original writing is not a transcription. Holloway's independent camp and three-room hunt are playable in 0.4.25; his finale survey cache is retained, without a free shield.
 
 ### Zampanò's courtyard
 

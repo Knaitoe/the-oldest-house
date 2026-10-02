@@ -31,7 +31,7 @@ public final class CastVisualProof extends Screen {
             var buffers=mc.renderBuffers().bufferSource();var consumer=buffers.getBuffer(RenderType.entityCutoutNoCull(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/"+textures[i]+".png")));
             if(i==2)new MotherModel(mc.getEntityModels().bakeLayer(MotherModel.LAYER)).renderToBuffer(pose,consumer,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);
             else if(i==3)new GoatmanChildModel(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER)).renderToBuffer(pose,consumer,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);
-            else new LakeWitchModel(mc.getEntityModels().bakeLayer(LakeWitchModel.LAYER)).renderToBuffer(pose,consumer,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);
+            else {var model=new LakeWitchModel(mc.getEntityModels().bakeLayer(LakeWitchModel.LAYER));if(i==0){model.huntPose(0,.5F,0,false);if(model.body.xRot<1.5F||model.head.y<15)throw new IllegalStateException("Hunt model is not on all fours");}model.renderToBuffer(pose,consumer,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);}
             buffers.endBatch();pose.popPose();
         }
         g.drawString(font,"Native UVs / original appearance IDs / ordinary clothing, changed by wear and the lake.",10,height-14,0xFFE6DFCF,false);
@@ -39,6 +39,7 @@ public final class CastVisualProof extends Screen {
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof CastVisualProof)||++frames<4)return;
         var effects=new HouseOutsideEffects();if(!Float.isNaN(effects.getCloudHeight())||effects.hasGround())throw new IllegalStateException("Outdoor pockets still have sea-level sky or clouds");
+        for(long time:new long[]{0,6000,12000,23999,72000})if(NovelSceneClient.presentationTime(7,0,time)!=18000)throw new IllegalStateException("A native time update can flash the lake sky");
         Path folder=Path.of("../build/font-smoke");Files.createDirectories(folder);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve("native-cast.png"));}
         Files.writeString(folder.resolve("cast-passed.txt"),"Native remaining-cast models, memory/hunting skins and outdoor effects passed.\n");
