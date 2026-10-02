@@ -31,11 +31,19 @@ def girl(name,material,monster=False):
     for box in [(40,28,56,32),(32,60,48,64)]:d.rectangle((box[0],box[1],box[2]-1,box[3]-1),fill=flesh+(255,))
     d.rectangle((0,28,15,31),fill=(31,28,25,255));d.rectangle((16,60,31,63),fill=(31,28,25,255))
     # Native hair overlay only at the back and sides; clear front never hides the girl's face.
+    d.rectangle((40,8,47,15),fill=(0,0,0,0))
     d.rectangle((32,8,35,15),fill=(29,23,20,255));d.rectangle((52,8,63,15),fill=(29,23,20,255))
     if monster:
         for x in (10,13):d.point((x,11),fill=(171,174,170,255));d.point((x,12),fill=(43,40,38,255))
         d.line((10,14,13,14),fill=(30,25,23,255));d.point((12,14),fill=(147,136,122,255))
         d.line((14,9,13,12),fill=(32,25,20,255));d.point((22,25),fill=(47,44,39,255))
+    else:
+        # Keep her features readable at native eight-pixel face resolution.
+        d.line((9,10,10,10),fill=(57,36,27,255));d.line((13,10,14,10),fill=(57,36,27,255))
+        for white,iris in [(9,10),(14,13)]:
+            d.point((white,11),fill=(201,184,162,255));d.point((iris,11),fill=(49,35,28,255))
+        d.point((11,12),fill=(122,80,61,255));d.point((12,13),fill=(175,125,96,255))
+        d.line((11,14,12,14),fill=(125,70,64,255))
     im.save(OUT/f'{name}.png',optimize=True)
 
 def minotaur():
