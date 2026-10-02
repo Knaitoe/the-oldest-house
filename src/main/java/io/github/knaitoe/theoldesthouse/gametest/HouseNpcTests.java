@@ -73,7 +73,8 @@ public final class HouseNpcTests {
         barrel.clearContent();var late=f.player();f.click(late,HollowayCamp.JOURNAL);var survey=(HollowayVignette.SurveyMenu)late.containerMenu;
         h.assertTrue(!f.own(late).getBoolean("Looted")&&survey.clickMenuButton(late,3)&&!survey.clickMenuButton(late,3)&&f.own(late).getBoolean("Looted"),"a late explorer takes one personal survey through the native book menu, even after every shared supply is gone");
         h.assertTrue(barrel.isEmpty(),"the late-player path never refills the shared barrel");
-        h.runAfterDelay(2,()->{h.assertTrue(f.l.getEntitiesOfClass(HouseHuman.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.HOLLOWAY_CAMP)).size()==1,"native queued registration produces exactly one shared actor");h.succeed();});
+        h.succeedWhen(()->{var actors=f.l.getEntitiesOfClass(HouseHuman.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.HOLLOWAY_CAMP));
+            h.assertTrue(actors.size()==1&&actors.getFirst().getUUID().equals(id),"native queued registration produces exactly one shared actor; visible="+actors.size()+", cached="+f.actor().position()+", removed="+f.actor().isRemoved());});
     }
     @GameTest(template="empty",batch="npc_hunt",timeoutTicks=350) public static void twoPlayersEscapeTheSharedHunterButMustEachPullTheLatch(GameTestHelper h){
         hunt=new Fixture(h,41400);var f=hunt;var a=f.player();var b=f.player();var observer=f.player();f.loot(a,0);f.loot(b,1);f.returnForHunt(a);f.returnForHunt(b);
@@ -128,14 +129,16 @@ public final class HouseNpcTests {
     @GameTest(template="empty",batch="npc_upgrade",timeoutTicks=150) public static void layoutTwentyOneAppendsTheCampWithoutRefillingOrReplacingOldScenes(GameTestHelper h){
         upgrade=new Fixture(h,43000);var f=upgrade;var old=f.b.offset(30,0,0);f.l.setBlock(old,Blocks.BARREL.defaultBlockState(),3);var container=f.l.getBlockEntity(old);((BarrelBlockEntity)container).setItem(0,new ItemStack(Items.DIAMOND,3));
         var harrigan=LabyrinthPlaces.base(f.origin,LabyrinthPlace.HARRIGAN);HarriganVignette.build(f.l.getServer(),f.l,harrigan);
+        IndianLakeRooms.keepLoaded(f.l,harrigan,LabyrinthPlace.HARRIGAN);
+        var reader=f.player();reader.moveTo(harrigan.getX()-2.5,harrigan.getY(),harrigan.getZ()-5.5);
         var bodies=f.l.getEntitiesOfClass(ArmorStand.class,IndianLakeRooms.bounds(harrigan,LabyrinthPlace.HARRIGAN));var body=bodies.getFirst();var id=body.getUUID();
         var head=body.getItemBySlot(EquipmentSlot.HEAD).copy();head.remove(DataComponents.CUSTOM_DATA);body.setItemSlot(EquipmentSlot.HEAD,head);
         HarriganVignette.onEntityTick(new net.neoforged.neoforge.event.tick.EntityTickEvent.Post(body));
-        var prior=new CompoundTag();prior.putBoolean("TicketVisible",true);prior.putInt("Visit",1);f.data().setState(HarriganVignette.ID,prior);f.data().setBuilt(21,f.origin);
+        var prior=new CompoundTag();prior.putBoolean("TicketVisible",true);prior.putBoolean("ReadingFinished",true);prior.putInt("Visit",1);f.data().setState(HarriganVignette.ID,prior);f.data().setBuilt(21,f.origin);
         LabyrinthBuilder.ensureBuilt(f.l.getServer());
         h.runAfterDelay(100,()->{
             h.assertTrue(f.data().builtVersion()==22&&f.l.getBlockEntity(old)==container&&((BarrelBlockEntity)container).getItem(0).getCount()==3,"an append preserves existing container identity and contents");
-            h.assertTrue(body.isAlive()&&body.getUUID().equals(id)&&HarriganAppearance.variant(body)==1&&f.data().state(HarriganVignette.ID).equals(prior),"legacy Harrigan receives a native tracked human skin in place, without changing actor identity or dialogue");
+            h.assertTrue(body.isAlive()&&body.getUUID().equals(id)&&HarriganAppearance.variant(body)==1&&f.data().state(HarriganVignette.ID).equals(prior),"legacy seated identity/dialogue: alive="+body.isAlive()+", appearance="+HarriganAppearance.variant(body)+", state="+f.data().state(HarriganVignette.ID));
             var saved=body.saveWithoutId(new CompoundTag());var restored=new ArmorStand(f.l,body.getX(),body.getY(),body.getZ());restored.load(saved);
             h.assertTrue(HarriganAppearance.variant(restored)==1&&restored.getUUID().equals(id),"the client-visible appearance component persists with the native actor");
             body.discard();for(var e:bodies)if(e!=body)e.discard();h.succeed();

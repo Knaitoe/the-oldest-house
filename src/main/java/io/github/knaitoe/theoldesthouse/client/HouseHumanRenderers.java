@@ -16,6 +16,7 @@ import net.neoforged.neoforge.client.event.*;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class HouseHumanRenderers {
     public static final ResourceLocation HOLLOWAY=texture("holloway"),HARRIGAN=texture("harrigan"),HARRIGAN_DEAD=texture("harrigan_dead");
+    public static final ResourceLocation WITNESS=texture("finale_witness");
     private static HarriganRenderer harrigan;
     private HouseHumanRenderers(){}
     public static boolean ready(){return harrigan!=null;}
@@ -57,7 +58,9 @@ public final class HouseHumanRenderers {
         @Override protected boolean shouldShowName(ArmorStand body){return false;}
         @Override protected void setupRotations(ArmorStand body,com.mojang.blaze3d.vertex.PoseStack poses,float age,float yaw,float partial,float scale){
             super.setupRotations(body,poses,age,yaw,partial,scale);
-            if(HarriganAppearance.variant(body)==3)poses.mulPose(Axis.XP.rotationDegrees(90));
+            if(HarriganAppearance.variant(body)==3){
+                poses.mulPose(Axis.XP.rotationDegrees(-90));poses.mulPose(Axis.YP.rotationDegrees(180));
+            }
         }
     }
 }
