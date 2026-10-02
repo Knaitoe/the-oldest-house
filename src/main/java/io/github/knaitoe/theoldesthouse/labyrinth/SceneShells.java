@@ -505,7 +505,7 @@ public final class SceneShells {
                     for (int y = low; y <= high; y++) {
                         set(f.x(), y, f.z(), y == low ? slab(SlabType.BOTTOM) : AIR);
                         set(ox, y, oz, y == low ? Blocks.CHISELED_BOOKSHELF.defaultBlockState()
-                                .setValue(ChiseledBookShelfBlock.FACING, f.in()) : Blocks.BOOKSHELF.defaultBlockState());
+                                .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, f.in()) : Blocks.BOOKSHELF.defaultBlockState());
                     }
                     setIf(ox, low - 1, oz, p.backing().defaultBlockState());
                     setIf(ox, high + 1, oz, p.backing().defaultBlockState());
