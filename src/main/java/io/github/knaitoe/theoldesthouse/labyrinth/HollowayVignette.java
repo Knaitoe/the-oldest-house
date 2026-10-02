@@ -158,7 +158,7 @@ public final class HollowayVignette {
         ItemStack map=MapItem.create(l,0,0,(byte)0,false,false);var data=MapItem.getSavedData(map,l);
         if(data!=null){Arrays.fill(data.colors,(byte)0);for(int y=15;y<65;y++)for(int x=18;x<108;x++){
             boolean mark=(x%18==0&&y%16<12)||(y%16==0&&x%18<14);if(mark)data.setColor(x,y,(byte)116);
-        }data.locked=true;data.setDirty();}
+        }l.setMapData(map.get(DataComponents.MAP_ID),data.locked());}
         map=VignetteYields.mark(map,ID);map.set(DataComponents.CUSTOM_NAME,Component.literal("Holloway's unfinished survey — conjecture"));return map;
     }
     /** Shared supplies may be gone; every explorer can take one personal survey copy. */
