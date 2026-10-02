@@ -56,7 +56,7 @@ public final class WritingCommands {
         int count = given;
         source.sendSuccess(() -> Component.literal(
                 "Gave " + player.getGameProfile().getName()
-                        + " " + count + " writing samples: Will, Karen, Zampano, and child."),
+                        + " " + count + " writing samples: Will, Karen, Zampano, child, Pelafina, and claw."),
                 false);
         return given;
     }

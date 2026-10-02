@@ -71,9 +71,10 @@ public final class HouseWriting {
     public static Component page(WritingStyle writing, String text) {
         String rendered = writing == WritingStyle.CHILD ? childHand(text) : text;
         Component component = Component.literal(rendered);
-        return writing.font() == null
+        component = writing.font() == null
                 ? component
                 : component.copy().withStyle(style -> style.withFont(writing.font()));
+        return HouseText.color(component);
     }
 
     /**
@@ -114,7 +115,7 @@ public final class HouseWriting {
     public static ItemStack book(String title, String author, List<Component> pages) {
         List<Filterable<Component>> filtered = new ArrayList<>();
         for (Component page : pages) {
-            filtered.add(Filterable.passThrough(page));
+            filtered.add(Filterable.passThrough(HouseText.color(page)));
         }
         ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
         book.set(DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(
@@ -122,7 +123,7 @@ public final class HouseWriting {
         return book;
     }
 
-    /** Four short specimens for /oldesthouse writing samples. */
+    /** Six short specimens for /oldesthouse writing samples. */
     public static List<ItemStack> samples() {
         ItemStack will = book(
                 "Writing sample: Will", "Will Navidson", WritingStyle.WILL,
@@ -149,14 +150,19 @@ public final class HouseWriting {
 
         ItemStack child = book(
                 "Writing sample: child", "Daisy", WritingStyle.CHILD,
-                List.of("the hall came back again.\n\ni counted 32 steps but dad says 31.\n\n"
+                List.of("the house came back again.\n\ni counted 32 steps but dad says 31.\n\n"
                         + "i drew the door so i remember it.")
         );
 
-        return List.of(will, karen, zampano, child);
+        ItemStack pelafina = book("Writing sample: Pelafina", "Pelafina", WritingStyle.PELAFINA,
+                List.of("My dear child,\n\nThe House has kept your letter.\n\n\u201cDo not come for me.\u201d\n\n"
+                        + "That is a request. It is not an address."));
+        ItemStack claw = book("Writing sample: claw", "?", WritingStyle.CLAW,
+                List.of("YOU ARE USELESS.\n\nTHE HOUSE KNOWS.\n\nYOU ARE USELESS."));
+        return List.of(will, karen, zampano, child, pelafina, claw);
     }
 
     public static List<ResourceLocation> sampleFonts() {
-        return List.of(WILL_FONT, KAREN_FONT, ZAMPANO_FONT, CHILD_FONT);
+        return List.of(WILL_FONT, KAREN_FONT, ZAMPANO_FONT, CHILD_FONT, PELAFINA_FONT, CLAW_FONT);
     }
 }

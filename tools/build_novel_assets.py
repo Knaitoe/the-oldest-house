@@ -26,7 +26,8 @@ write('blockstates/novel_prop.json',{'variants':variants})
 for name,texture in [('cat_collar','minecraft:item/lead'),('well_ribbon','minecraft:item/string'),('archive_key','minecraft:item/tripwire_hook')]:write(f'models/item/{name}.json',{'parent':'minecraft:item/generated','textures':{'layer0':texture}})
 write('models/item/walkie_talkie.json',{'parent':'minecraft:block/block','textures':{'case':'minecraft:block/gray_concrete','metal':'minecraft:block/iron_block','particle':'minecraft:block/gray_concrete'},'elements':[cube([4,2,5,12,13,11],'case'),cube([5,13,7,6,20,8],'metal'),cube([5,8,4.6,11,12,5],'metal')],'display':{'gui':{'rotation':[20,35,0],'translation':[0,-2,0],'scale':[.85,.85,.85]},'firstperson_righthand':{'rotation':[0,-45,0],'translation':[1,3,0],'scale':[.5,.5,.5]}}})
 # A distinct compressed bitmap provider in the established handwriting system.
-font=json.loads((A/'font/karen.json').read_text());font['providers'][0]['height']=10;font['providers'][0]['ascent']=8;write('font/pelafina.json',font)
+from generate_writing_fonts import make as make_font
+make_font('pelafina')
 rng=random.Random(423);rate=22050
 for name,duration in [('monitor',1.2),('shutter',.28),('radio',1.0),('collapse',2.7)]:
  samples=[];low=0

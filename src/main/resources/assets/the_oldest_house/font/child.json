@@ -1,20 +1,31 @@
 {
   "providers": [
     {
+      "type": "space",
+      "advances": {
+        " ": 4.0
+      }
+    },
+    {
       "type": "bitmap",
       "file": "the_oldest_house:font/child.png",
-      "ascent": 9,
-      "height": 11,
+      "ascent": 7,
+      "height": 9,
       "chars": [
-        " !\\\"#$%&'()*+,-./",
-        "0123456789:;<=>?",
-        "@ABCDEFGHIJKLMNO",
-        "PQRSTUVWXYZ[\\\\]^_",
-        "`abcdefghijklmno",
-        "pqrstuvwxyz{|}~",
-        "",
-        ""
+        "!\"#$%&'()*+,-./0",
+        "123456789:;<=>?@",
+        "ABCDEFGHIJKLMNOP",
+        "QRSTUVWXYZ[\\]^_`",
+        "abcdefghijklmnop",
+        "qrstuvwxyz{|}~\u2018\u2019",
+        "\u201c\u201d\u2013\u2014\u2026\u00b7\ue100\ue101\ue102\ue103\ue104\ue105\ue106\ue107\ue108\ue109",
+        "\ue10a\ue10b\ue10c\ue10d\ue10e\ue10f\ue110\ue111\ue112\ue113\ue114\ue115\ue116\ue117\ue118\ue119",
+        "\ue11a\ue11b\ue11c\ue11d\ue11e\ue11f\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000"
       ]
+    },
+    {
+      "type": "reference",
+      "id": "minecraft:default"
     }
   ]
 }

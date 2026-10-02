@@ -25,7 +25,7 @@ World-level `OpeningWorldData` (`the_oldest_house_opening.dat`) now stores only 
 
 The doorstep is the block in front of the most-used ordinary door within `doorstepSearchRadius` (32) of the bed, on the side that can see the sky (a heightmap test, so fresh roofs count immediately), or else the side away from the bed. Fallbacks: the ordinary door nearest the bed, then the floor beside the bed.
 
-The book `Howdy, Neighbor` by `Will Navidson` uses the font `the_oldest_house:navidson`. The mod ships that font as a reference to Minecraft's default, so it is always safe; a resource pack can replace `assets/the_oldest_house/font/navidson.json` with a handwriting face. The spec's page 2 wraps to 16 lines in the default font (a book page holds 14), so it is split after "We measured twice." and the book has six pages. `OpeningTests.letterPagesFit` checks the wrapping with the default glyph widths.
+The book `Howdy, Neighbor` by `Will Navidson` uses the font `the_oldest_house:navidson`. The established ID references Will's opaque bitmap hand, with Minecraft's default as a fallback; a resource pack can replace `assets/the_oldest_house/font/navidson.json`. The spec's page 2 wraps to 16 lines in the default font (a book page holds 14), so it is split after "We measured twice." and the book has six pages. `OpeningTests.letterPagesFit` retains its default-width guard; the 0.4.24 client probe also checks all six pages with the actual loaded custom font.
 
 ### The snapshot: a photograph of the player's own house
 

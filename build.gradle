@@ -35,6 +35,10 @@ neoForge {
         client {
             client()
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            if (providers.gradleProperty('fontSmoke').isPresent()) {
+                systemProperty 'the_oldest_house.fontSmoke', 'true'
+                programArguments.addAll '--width', '1200', '--height', '800'
+            }
         }
 
         server {

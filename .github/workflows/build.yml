@@ -26,6 +26,11 @@ jobs:
       - name: Build
         run: gradle build
 
+      - name: Verify writing atlas structure
+        run: |
+          python3 -m pip install Pillow
+          python3 tools/verify_writing_fonts.py
+
       - name: Verify playable package
         run: |
           python3 - <<'PY'
@@ -47,7 +52,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.23"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.24"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'assets/the_oldest_house/sounds/vignette/heartbeat.ogg' in z.namelist()
               assert 'vignette.heartbeat' in json.loads(z.read('assets/the_oldest_house/sounds.json'))
               for name in ('assets/the_oldest_house/textures/entity/lake_witch.png',
@@ -187,3 +192,21 @@ jobs:
             build/libs/*.jar
             build/libs/*.jar.sha256
           if-no-files-found: error
+
+      - name: Check native client font rendering
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri
+          LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PfontSmoke --no-daemon
+          test -s build/font-smoke/passed.txt
+          test -s build/font-smoke/native-writing.png
+
+      - name: Upload native writing proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: writing-proof-${{ github.sha }}
+          path: |
+            build/font-smoke/
+            run/logs/latest.log
+          if-no-files-found: ignore

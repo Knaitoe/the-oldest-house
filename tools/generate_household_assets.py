@@ -150,39 +150,9 @@ variants={f'facing={facing},thread={thread}':{'model':'the_oldest_house:block/no
 write_json('blockstates/note_surface.json',{'variants':variants})
 write_json('models/item/note_surface.json',{'parent':'the_oldest_house:block/note_housekeeping'})
 
-# Five-by-seven capitals, cut into narrow uneven strokes. No obfuscation or moving glyphs.
-letters={
- 'A':['01110','10001','10001','11111','10001','10001','10001'], 'B':['11110','10001','10001','11110','10001','10001','11110'],
- 'C':['01111','10000','10000','10000','10000','10000','01111'], 'D':['11110','10001','10001','10001','10001','10001','11110'],
- 'E':['11111','10000','10000','11110','10000','10000','11111'], 'F':['11111','10000','10000','11110','10000','10000','10000'],
- 'G':['01111','10000','10000','10111','10001','10001','01110'], 'H':['10001','10001','10001','11111','10001','10001','10001'],
- 'I':['11111','00100','00100','00100','00100','00100','11111'], 'J':['00111','00010','00010','00010','00010','10010','01100'],
- 'K':['10001','10010','10100','11000','10100','10010','10001'], 'L':['10000','10000','10000','10000','10000','10000','11111'],
- 'M':['10001','11011','10101','10101','10001','10001','10001'], 'N':['10001','11001','10101','10011','10001','10001','10001'],
- 'O':['01110','10001','10001','10001','10001','10001','01110'], 'P':['11110','10001','10001','11110','10000','10000','10000'],
- 'Q':['01110','10001','10001','10001','10101','10010','01101'], 'R':['11110','10001','10001','11110','10100','10010','10001'],
- 'S':['01111','10000','10000','01110','00001','00001','11110'], 'T':['11111','00100','00100','00100','00100','00100','00100'],
- 'U':['10001','10001','10001','10001','10001','10001','01110'], 'V':['10001','10001','10001','10001','10001','01010','00100'],
- 'W':['10001','10001','10001','10101','10101','10101','01010'], 'X':['10001','10001','01010','00100','01010','10001','10001'],
- 'Y':['10001','10001','01010','00100','00100','00100','00100'], 'Z':['11111','00001','00010','00100','01000','10000','11111'],
- '.':['0','0','0','0','0','1','1'], ' ':['0']*7,
-}
-chars='\u0000ABCDEFGHIJKLMNO'+'PQRSTUVWXYZ.\u0000\u0000\u0000\u0000'
-assert len(chars)==32
-atlas=Image.new('RGBA',(128,20),(0,0,0,0))
-for i,char in enumerate(chars):
-    if char not in letters: continue
-    x0,y0=i%16*8,i//16*10
-    for y,row in enumerate(letters[char]):
-        for x,ink in enumerate(row):
-            if ink=='1':
-                drift=1 if y in (0,3,6) and char not in ('.',' ') else 0
-                atlas.putpixel((x0+x+drift,y0+y+1),(255,255,255,255))
-                if y in (1,5) and x<4: atlas.putpixel((x0+x+1,y0+y),(255,255,255,115))
-(ASSETS/'textures/font').mkdir(parents=True,exist_ok=True)
-atlas.save(ASSETS/'textures/font/claw.png')
-write_json('font/claw.json',{'providers':[{'type':'space','advances':{' ':4.0}}, {'type':'bitmap','file':'the_oldest_house:font/claw.png','ascent':8,'height':9,
-                                       'chars':[chars[:16],chars[16:]]}, {'type':'reference','id':'minecraft:default'}]})
+# Keep the common writing generator authoritative for the scratched notebook.
+from generate_writing_fonts import make as make_font
+make_font("claw")
 
 # A contact sheet for source review; every tile is enlarged with nearest-neighbor sampling.
 names=[p.stem for p in sorted((ASSETS/'textures/block').glob('*.png')) if p.stem in
