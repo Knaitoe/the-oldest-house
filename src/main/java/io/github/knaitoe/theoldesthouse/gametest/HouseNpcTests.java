@@ -137,7 +137,7 @@ public final class HouseNpcTests {
         var prior=new CompoundTag();prior.putBoolean("TicketVisible",true);prior.putBoolean("ReadingFinished",true);prior.putInt("Visit",1);f.data().setState(HarriganVignette.ID,prior);f.data().setBuilt(21,f.origin);
         LabyrinthBuilder.ensureBuilt(f.l.getServer());
         h.runAfterDelay(100,()->{
-            h.assertTrue(f.data().builtVersion()==22&&f.l.getBlockEntity(old)==container&&((BarrelBlockEntity)container).getItem(0).getCount()==3,"an append preserves existing container identity and contents");
+            h.assertTrue(f.data().builtVersion()==LabyrinthBuilder.VERSION&&f.l.getBlockEntity(old)==container&&((BarrelBlockEntity)container).getItem(0).getCount()==3,"an append preserves existing container identity and contents");
             h.assertTrue(body.isAlive()&&body.getUUID().equals(id)&&HarriganAppearance.variant(body)==1&&f.data().state(HarriganVignette.ID).equals(prior),"legacy seated identity/dialogue: alive="+body.isAlive()+", appearance="+HarriganAppearance.variant(body)+", state="+f.data().state(HarriganVignette.ID));
             var saved=body.saveWithoutId(new CompoundTag());var restored=new ArmorStand(f.l,body.getX(),body.getY(),body.getZ());restored.load(saved);
             h.assertTrue(HarriganAppearance.variant(restored)==1&&restored.getUUID().equals(id),"the client-visible appearance component persists with the native actor");

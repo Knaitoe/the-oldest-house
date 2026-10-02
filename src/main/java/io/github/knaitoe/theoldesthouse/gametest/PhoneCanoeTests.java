@@ -55,8 +55,9 @@ public final class PhoneCanoeTests {
             for(var p:players){PhoneCanoe.interrupt(p);if(server.getPlayerList().getPlayers().contains(p))server.getPlayerList().remove(p);else p.discard();}
             for(var place:List.of(LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.PRESERVED_CAVE,LabyrinthPlace.DROWNED_TOWN)){
                 BlockPos b=LabyrinthPlaces.base(origin,place);AABB box=IndianLakeRooms.bounds(b,place);
-                for(var e:level.getEntitiesOfClass(Entity.class,box,e->e instanceof LakePhoneCamera||e instanceof LakeCanoeEntity||e instanceof LakeCongregantEntity||e instanceof LakeWitchEntity))e.discard();
-                for(int x=((int)box.minX-1)>>4;x<=((int)box.maxX+1)>>4;x++)for(int z=((int)box.minZ-1)>>4;z<=((int)box.maxZ+1)>>4;z++)level.getChunkSource().removeRegionTicket(TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(x,z),3,b);
+                var sceneLevel=HouseTestLevel.get(server,NovelRooms.dimension(place));
+                for(var e:sceneLevel.getEntitiesOfClass(Entity.class,box,e->e instanceof LakePhoneCamera||e instanceof LakeCanoeEntity||e instanceof LakeCongregantEntity||e instanceof LakeWitchEntity))e.discard();
+                for(int x=((int)box.minX-1)>>4;x<=((int)box.maxX+1)>>4;x++)for(int z=((int)box.minZ-1)>>4;z<=((int)box.maxZ+1)>>4;z++)sceneLevel.getChunkSource().removeRegionTicket(TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(x,z),3,b);
             }
             server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);LabyrinthBuilder.clearAll();LabyrinthDoors.clearAll();
         }
@@ -90,13 +91,13 @@ public final class PhoneCanoeTests {
             var original=ItemStack.parseOptional(owner.registryAccess(),data.state("indian_lake").getCompound("DroppedPhones").getCompound(owner.getUUID().toString()).getCompound("Item"));
             var metadata=original.get(DataComponents.CUSTOM_DATA).copyTag();var frames=metadata.getList("Footage",Tag.TAG_COMPOUND);
             h.assertTrue(frames.size()==7&&frames.getCompound(0).getInt("Tick")==0&&frames.getCompound(6).getInt("Tick")==320&&metadata.getString("ProvenanceTest").equals("keep me"),"authentic frame times, final sky frame and original components survive the loss");
-            BlockPos caveBase=LabyrinthPlaces.base(f.origin,LabyrinthPlace.PRESERVED_CAVE);PreservedCave.build(f.server,f.level,caveBase);IndianLakeRooms.keepLoaded(f.level,caveBase,LabyrinthPlace.PRESERVED_CAVE);
-            owner.moveTo(Vec3.atBottomCenterOf(caveBase.offset(PreservedCave.CANOE)));peer.moveTo(owner.position());
+            BlockPos caveBase=LabyrinthPlaces.base(f.origin,LabyrinthPlace.PRESERVED_CAVE);var caveLevel=HouseTestLevel.get(f.server,HouseDimensions.INTERIOR);PreservedCave.build(f.server,caveLevel,caveBase);IndianLakeRooms.keepLoaded(caveLevel,caveBase,LabyrinthPlace.PRESERVED_CAVE);
+            var at=Vec3.atBottomCenterOf(caveBase.offset(PreservedCave.CANOE));owner.teleportTo(caveLevel,at.x,at.y,at.z,180,0);peer.teleportTo(caveLevel,at.x,at.y,at.z,180,0);
             h.assertTrue(!PreservedCave.recoverPhone(peer)&&PreservedCave.recoverPhone(owner)&&!PreservedCave.recoverPhone(owner),"the actual cave delivers the original once to its owner");
             var recovered=owner.getInventory().items.stream().filter(s->s.is(DrownedTownRegistry.LAKE_PHONE.get())).findFirst().orElseThrow();
             h.assertTrue(ItemStack.isSameItemSameComponents(original,recovered),"recovery does not synthesize a replacement recording");
             for(int slot=0;slot<9;slot++)if(owner.getInventory().getItem(slot)==recovered){owner.getInventory().selected=slot;break;}
-            DrownedTownRegistry.LAKE_PHONE.get().use(f.level,owner,InteractionHand.MAIN_HAND);
+            DrownedTownRegistry.LAKE_PHONE.get().use(caveLevel,owner,InteractionHand.MAIN_HAND);
             h.assertTrue(recovered.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().getLast().raw().getString().contains("The same sky"),"the recovered phone exposes its real saved frame record through the native reader");h.succeed();
         });
     }
@@ -123,9 +124,9 @@ public final class PhoneCanoeTests {
     public static void nativeFifteenUpgradeAppendsFilmingRoomAndPreservesOlderStories(GameTestHelper h){
         upgrade=new Fixture(h,new BlockPos(8900,80,8900));Fixture f=upgrade;var data=LabyrinthData.get(f.server);
         BlockPos town=LabyrinthPlaces.base(f.origin,LabyrinthPlace.DROWNED_TOWN),cave=LabyrinthPlaces.base(f.origin,LabyrinthPlace.PRESERVED_CAVE);
-        DrownedTown.build(f.server,f.level,town);PreservedCave.build(f.server,f.level,cave);
+        var caveLevel=HouseTestLevel.get(f.server,HouseDimensions.INTERIOR);DrownedTown.build(f.server,f.level,town);PreservedCave.build(f.server,caveLevel,cave);
         var desk=(BarrelBlockEntity)f.level.getBlockEntity(town.offset(DrownedTown.PAPERS[0]));desk.setItem(0,ItemStack.EMPTY);desk.setItem(3,new ItemStack(Items.DIAMOND));
-        var before=f.level.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(cave,LabyrinthPlace.PRESERVED_CAVE)).getFirst();
+        var before=caveLevel.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(cave,LabyrinthPlace.PRESERVED_CAVE)).getFirst();
         CompoundTag state=data.state(PreservedCave.ID);state.putInt("Visit",3);state.putDouble("Voices",6);data.setState(PreservedCave.ID,state);data.setBuilt(15,f.origin);
         h.assertTrue(!LabyrinthBuilder.ensureBuilt(f.server),"a version fifteen world begins the native incremental upgrade");while(LabyrinthBuilder.isCarving())LabyrinthBuilder.tick(f.server);
         h.assertTrue(data.builtVersion()==LabyrinthBuilder.VERSION&&data.door(LabyrinthPlace.PHONE_CANOE.entryDoorId())!=null,"new native room and return door are appended");
@@ -136,19 +137,20 @@ public final class PhoneCanoeTests {
     public static void nativeSixteenUpgradeDressesHallsWithoutRebuildingStories(GameTestHelper h){
         // Keep the persistent physical rooms separate from the Growl's 9300 lighting fixture.
         domesticUpgrade=new Fixture(h,new BlockPos(23500,80,23500));Fixture f=domesticUpgrade;var data=LabyrinthData.get(f.server);
+        var interior=HouseTestLevel.get(f.server,HouseDimensions.INTERIOR);
         BlockPos landing=LabyrinthPlaces.base(f.origin,LabyrinthPlace.JUNCTION);
-        LabyrinthBuilder.buildJunction(f.level,landing);LabyrinthLighting.buildEarlyAid(f.server,f.level,landing);
-        var cache=(BarrelBlockEntity)f.level.getBlockEntity(landing.offset(LabyrinthLighting.TOM_CACHE));
+        LabyrinthBuilder.buildJunction(interior,landing);LabyrinthLighting.buildEarlyAid(f.server,interior,landing);
+        var cache=(BarrelBlockEntity)interior.getBlockEntity(landing.offset(LabyrinthLighting.TOM_CACHE));
         cache.setItem(0,ItemStack.EMPTY);cache.setItem(5,new ItemStack(Items.EMERALD,3));
-        f.level.setBlock(landing.offset(0,-1,-3),net.minecraft.world.level.block.Blocks.SMOOTH_STONE.defaultBlockState(),3);
+        interior.setBlock(landing.offset(0,-1,-3),net.minecraft.world.level.block.Blocks.SMOOTH_STONE.defaultBlockState(),3);
         BlockPos marker=f.base.offset(2,0,-8);f.level.setBlock(marker,net.minecraft.world.level.block.Blocks.DIAMOND_BLOCK.defaultBlockState(),3);
         var canoe=PhoneCanoe.stage(f.level,f.base);UUID canoeId=canoe.getUUID(),player=UUID.randomUUID();
         CompoundTag round=data.state(HideAndClap.ID);round.putInt("UpgradeRound",137);data.setState(HideAndClap.ID,round);
         data.setCompleted(HarriganVignette.ID,true);WitnessAccount.resolve(data,player,WitnessAccount.Story.HARRIGAN,"remembered");data.setBuilt(16,f.origin);
         h.assertTrue(!LabyrinthBuilder.ensureBuilt(f.server),"version sixteen starts an in-place upgrade");
         while(LabyrinthBuilder.isCarving())LabyrinthBuilder.tick(f.server);
-        h.assertTrue(data.builtVersion()==LabyrinthBuilder.VERSION&&f.level.getBlockState(landing.offset(0,-1,-3)).is(net.minecraft.world.level.block.Blocks.SPRUCE_PLANKS),"the landing is dressed and layout version advances");
-        h.assertTrue(cache==f.level.getBlockEntity(landing.offset(LabyrinthLighting.TOM_CACHE))&&cache.getItem(0).isEmpty()&&cache.getItem(5).getCount()==3,"native upgrade neither replaces nor refills the finite cache");
+        h.assertTrue(data.builtVersion()==LabyrinthBuilder.VERSION&&interior.getBlockState(landing.offset(0,-1,-3)).is(net.minecraft.world.level.block.Blocks.SPRUCE_PLANKS),"the landing is dressed and layout version advances");
+        h.assertTrue(cache==interior.getBlockEntity(landing.offset(LabyrinthLighting.TOM_CACHE))&&cache.getItem(0).isEmpty()&&cache.getItem(5).getCount()==3,"native upgrade neither replaces nor refills the finite cache");
         h.assertTrue(f.level.getBlockState(marker).is(net.minecraft.world.level.block.Blocks.DIAMOND_BLOCK)&&!canoe.isRemoved()&&canoe.getUUID().equals(canoeId),"the recording room and its native canoe are never rebuilt");
         h.assertTrue(data.state(HideAndClap.ID).getInt("UpgradeRound")==137&&data.isCompleted(HarriganVignette.ID)&&WitnessAccount.has(data,player,WitnessAccount.Story.HARRIGAN),"active story state, completion and personal evidence remain");
         h.assertTrue(data.state("domestic_0417").getBoolean(LabyrinthPlace.JUNCTION.id()),"the incremental decoration checkpoint is saved");h.succeed();
