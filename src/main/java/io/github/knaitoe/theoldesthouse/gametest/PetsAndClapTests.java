@@ -178,10 +178,13 @@ public final class PetsAndClapTests {
             h.assertTrue(HideAndClap.enter(owner)&&!HideAndClap.isLocked(owner)&&!HideAndClap.canEnter(peer),"entering reserves the native game but leaves its owner's ordinary return usable");
             owner.moveTo(f.base.getX()+.5,f.base.getY(),f.base.getZ()+3.5);var before=owner.position();HideAndClap.confineLockedPlayer(owner);
             h.assertTrue(owner.position().equals(before),"player confinement cannot pull an uncommitted explorer back into the room");
-            HideAndClap.onServerTick(new net.neoforged.neoforge.event.tick.ServerTickEvent.Post(f.server));
+            HideAndClap.onServerTick(new net.neoforged.neoforge.event.tick.ServerTickEvent.Post(()->true,f.server));
             h.assertTrue(HideAndClap.canEnter(peer)&&!LabyrinthData.get(f.server).state(HideAndClap.ID).getCompound("Session").contains("Player")&&WitnessAccount.count(LabyrinthData.get(f.server),owner.getUUID())==0,"actual early departure releases the reservation without false completion");
-            owner.moveTo(f.base.getX()+.5,f.base.getY(),f.base.getZ()-3.5);HideAndClap.enter(owner);owner.setItemSlot(EquipmentSlot.HEAD,new ItemStack(LabyrinthRegistry.BLINDFOLD.get()));
-            HideAndClap.onServerTick(new net.neoforged.neoforge.event.tick.ServerTickEvent.Post(f.server));
+            owner.moveTo(f.base.getX()+.5,f.base.getY(),f.base.getZ()-3.5);HideAndClap.enter(owner);owner.getInventory().setItem(0,new ItemStack(Items.DIAMOND,2));
+            HideAndClap.onDeath(new net.neoforged.neoforge.event.entity.living.LivingDeathEvent(owner,owner.damageSources().generic()));
+            h.assertTrue(owner.getInventory().countItem(Items.DIAMOND)==2&&!LabyrinthData.get(f.server).state(HideAndClap.ID).getCompound("FailedPlayers").getBoolean(owner.getUUID().toString())&&HideAndClap.canEnter(peer),"an ordinary death before commitment preserves native inventory rules and adds no game-failure state");
+            HideAndClap.enter(owner);owner.setItemSlot(EquipmentSlot.HEAD,new ItemStack(LabyrinthRegistry.BLINDFOLD.get()));
+            HideAndClap.onServerTick(new net.neoforged.neoforge.event.tick.ServerTickEvent.Post(()->true,f.server));
             h.assertTrue(HideAndClap.isLocked(owner),"choosing the actual native blindfold commits the timed game");h.succeed();
         }
     }

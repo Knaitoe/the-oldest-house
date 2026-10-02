@@ -895,11 +895,17 @@ public final class HideAndClap {
     }
 
     public static void onEquipmentChange(LivingEquipmentChangeEvent event) {
-        if (event.getSlot() == EquipmentSlot.HEAD && event.getEntity() instanceof ServerPlayer player && isLocked(player)) {
+        if (event.getSlot() == EquipmentSlot.HEAD && event.getEntity() instanceof ServerPlayer player && (isLocked(player) || reservedHere(player))) {
             ServerLevel level = player.server.getLevel(HouseDimensions.INTERIOR);
             startIfWorn(player, game, level, LabyrinthData.get(player.server), level.getGameTime());
             if (game.clock.bound() && !revealed(game,level.getGameTime())) enforceBlindfold(player, game);
         }
+    }
+
+    private static boolean reservedHere(ServerPlayer player) {
+        BlockPos base=base(player.server);
+        return game!=null&&game.player.equals(player.getUUID())&&player.isAlive()&&base!=null
+                &&player.level().dimension().equals(HouseDimensions.INTERIOR)&&isInRoom(base,player.position());
     }
 
     public static void onPlayerTick(PlayerTickEvent.Pre event) {
@@ -940,6 +946,7 @@ public final class HideAndClap {
 
     public static void onDeath(LivingDeathEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && game != null && game.player.equals(player.getUUID())) {
+            if (!game.clock.started()) { departBeforeStarting(player); return; }
             LabyrinthData data = LabyrinthData.get(player.server);
             CompoundTag state = data.state(ID);
             CompoundTag failures = state.getCompound("FailedPlayers");
