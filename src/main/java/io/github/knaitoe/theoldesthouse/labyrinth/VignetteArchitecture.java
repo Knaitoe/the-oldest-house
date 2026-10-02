@@ -80,6 +80,12 @@ public final class VignetteArchitecture {
     private void detail(int x,int y,int z,SceneDetailBlock.Kind kind){detail(x,y,z,kind,Direction.NORTH);}
     private void table(int x,int y,int z,SceneDetailBlock.Kind kind){furniture(x,y,z,WALNUT_DESK,Direction.SOUTH);detail(x,y+1,z,kind);}
     private void cabinet(int x,int y,int z,SceneDetailBlock.Kind kind){furniture(x,y,z,CHEST_OF_DRAWERS,Direction.SOUTH);detail(x,y+1,z,kind);}
+    private void wardBed(int x,int z){
+        var foot=p(x,0,z);var head=foot.north();
+        if(l.getBlockState(foot).isAir()&&l.getBlockState(head).isAir()
+                &&l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,new net.minecraft.world.phys.AABB(foot)).isEmpty()
+                &&l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,new net.minecraft.world.phys.AABB(head)).isEmpty())LabyrinthBuilder.bed(l,foot,Direction.NORTH,Blocks.WHITE_BED);
+    }
     private void rug(int x0,int x1,int z0,int z1,Block edge,Block centre){
         for(int x=x0;x<=x1;x++)for(int z=z0;z<=z1;z++)add(x,0,z,(x==x0||x==x1||z==z0||z==z1)?edge:centre);
     }
@@ -139,6 +145,15 @@ public final class VignetteArchitecture {
         rug(-1,1,-18,-15,Blocks.BLACK_CARPET,Blocks.GRAY_CARPET);pendant(0,4,-6,6);pendant(0,4,-17,6);
     }
     private void mother(){
+        // Cabinet backs support the original fixed frames; ledges sit between their three rows.
+        for(int x:new int[]{-10,10})for(int z=-24;z<=-2;z++)for(int y=0;y<=6;y++)add(x,y,z,Blocks.DARK_OAK_PLANKS);
+        for(int x=-8;x<=8;x++)for(int y=0;y<=6;y++)add(x,y,-25,Blocks.DARK_OAK_PLANKS);
+        var ledge=Blocks.DARK_OAK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP);
+        for(int y:new int[]{2,4,6}){
+            for(int z=-24;z<=-2;z++)for(int x:new int[]{-9,9})add(x,y,z,ledge);
+            for(int x=-8;x<=8;x++)add(x,y,-24,ledge);
+        }
+        for(int z:new int[]{-4,-8,-12,-20})for(int x:new int[]{-9,9})detail(x,3,z,z==-8?CROCK:BOOKS);
         for(int z:new int[]{-3,-9,-16,-24})for(int x:new int[]{-10,10})for(int y=0;y<=12;y++)trim(x,y,z,Blocks.STRIPPED_DARK_OAK_WOOD);
         for(int z:new int[]{-3,-16,-24})for(int x=-9;x<=9;x++)add(x,12,z,Blocks.DARK_OAK_PLANKS);
         cabinet(7,0,-6,BOOKS);cabinet(7,0,-7,CROCK);table(-7,0,-4,TEA_SET);
@@ -166,6 +181,10 @@ public final class VignetteArchitecture {
         furniture(-7,0,-32,CANE_CHAIR,Direction.NORTH);cabinet(8,0,-37,FILE_TRAY);cabinet(7,0,-37,BOOKS);
         cabinet(-10,0,-24,FILE_TRAY);detail(-10,0,-27,CRATE);detail(-9,0,-27,BOOKS);
         for(int z:new int[]{-26,-32,-36})for(int y=0;y<=2;y++)add(-11,y,z,Blocks.BOOKSHELF);
+        for(int z:new int[]{-27,-33}){
+            table(-3,0,z,INK_PAPERS);table(-2,0,z,BOOKS);table(2,0,z,FILE_TRAY);table(3,0,z,BOOKS);
+            furniture(-3,0,z+2,CANE_CHAIR,Direction.NORTH);furniture(3,0,z+2,CANE_CHAIR,Direction.NORTH);
+        }
         rug(-4,3,-35,-25,Blocks.BROWN_CARPET,Blocks.GRAY_CARPET);
         detail(11,2,-37,CLOCK,Direction.WEST);detail(-11,2,-21,COAT,Direction.EAST);
         pendant(-7,5,-25,8);pendant(4,5,-28,8);
@@ -178,6 +197,11 @@ public final class VignetteArchitecture {
         cabinet(9,0,-25,TOWELS);furniture(10,0,-27,CHEST_OF_DRAWERS,Direction.SOUTH);detail(10,1,-27,BLANKET);
         furniture(10,0,-16,RADIATOR,Direction.WEST);furniture(-10,0,-6,FORMICA_TABLE,Direction.SOUTH);detail(-10,1,-6,TEA_SET);
         furniture(-10,0,-4,KITCHEN_STOOL,Direction.NORTH);cabinet(-11,0,-10,DISH_RACK);detail(12,2,-16,CLOCK,Direction.WEST);
+        for(int z:new int[]{-4,-8,-12,-16})for(int y=0;y<=2;y++)add(-12,y,z,Blocks.BOOKSHELF);
+        for(int x=-7;x<=-4;x++){furniture(x,0,-11,FORMICA_TABLE,Direction.SOUTH);detail(x,1,-11,x%2==0?INK_PAPERS:BOOKS);}
+        furniture(-7,0,-9,CANE_CHAIR,Direction.NORTH);furniture(-5,0,-9,CANE_CHAIR,Direction.NORTH);
+        table(7,0,-14,TEA_SET);furniture(7,0,-12,GREEN_ARMCHAIR,Direction.NORTH);furniture(9,0,-14,GREEN_ARMCHAIR,Direction.WEST);
+        rug(5,10,-17,-11,Blocks.GRAY_CARPET,Blocks.LIGHT_GRAY_CARPET);
         rug(4,8,-25,-21,Blocks.GRAY_CARPET,Blocks.LIGHT_GRAY_CARPET);
         for(int y:new int[]{5,8,11}){
             table(-11,y,-28,BOOKS);detail(-7,y,-27,CRATE);detail(-7,y,-23,SATCHEL);
@@ -214,8 +238,12 @@ public final class VignetteArchitecture {
         for(int z:new int[]{-8,-18})panel(-9,z-1,z+1,2,3,Blocks.LIGHT_BLUE_STAINED_GLASS);
         for(int z:new int[]{-7,-19}){
             // Beds occupy side bays, leaving a generous central ward and the original incubator.
-            if(l.getBlockState(p(-7,0,z)).isAir()&&l.getBlockState(p(-7,0,z-1)).isAir())LabyrinthBuilder.bed(l,p(-7,0,z),Direction.NORTH,Blocks.WHITE_BED);
+            wardBed(-7,z);
             cabinet(-5,0,z,TOWELS);table(-8,0,z-2,MEDICAL_TRAY);
+        }
+        for(int z:new int[]{-7,-17}){
+            wardBed(6,z);
+            cabinet(4,0,z,TOWELS);
         }
         for(int z:new int[]{-11,-15})for(int x=-9;x<=-5;x++)add(x,3,z,Blocks.WHITE_WOOL);
         table(7,0,-21,FILE_TRAY);table(6,0,-21,MEDICAL_TRAY);furniture(7,0,-19,KITCHEN_STOOL,Direction.NORTH);

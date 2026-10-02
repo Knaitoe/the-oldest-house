@@ -119,15 +119,19 @@ public final class ArchitectureTests {
         if(scene==LabyrinthPlace.GOATMAN){minZ=-79;maxZ=-45;}
         if(scene==LabyrinthPlace.HOLLOWAY_CAMP)minZ=-24;
         if(scene==LabyrinthPlace.TED_CAVER){minZ=-8;minY=-1;}
-        if(scene==LabyrinthPlace.MOTHER_DEN)maxY=10;
+        if(scene==LabyrinthPlace.MOTHER_DEN)maxY=12;
         if(scene==LabyrinthPlace.PRESERVED_CAVE)maxY=4;
         if(scene==LabyrinthPlace.WHALE)maxY=9;
         if(scene==LabyrinthPlace.PLAIN)minZ=-105;
+        if(LakeLandscape.isLake(scene))maxY=16;
         for(int x=r.minX();x<=r.maxX();x++)for(int y=minY;y<=maxY;y++)for(int z=minZ;z<=maxZ;z++){
             var at=b.offset(x,y,z);var s=l.getBlockState(at);
-            if(s.isAir()||s.is(Blocks.BARRIER)||s.is(Blocks.LIGHT)||s.is(Blocks.WATER))continue;
+            if(s.isAir()||s.is(Blocks.BARRIER)||s.is(Blocks.LIGHT))continue;
+            if(s.is(Blocks.WATER)&&(!LakeLandscape.isLake(scene)||!l.getBlockState(at.above()).isAir()))continue;
             // A documented cutaway removes roofs and the near walls, not interior contents.
             if(y>=0&&(x==r.maxX()||z==maxZ))continue;
+            if(y>=0&&((scene==LabyrinthPlace.WHALE&&x==13)||(scene==LabyrinthPlace.HOSPITAL&&x==9)
+                    ||(scene==LabyrinthPlace.KAREN_ROOM&&x==9)||(scene==LabyrinthPlace.ZAMPANO_COURTYARD&&x==12&&z<=-19)))continue;
             if(y>2&&s.is(Blocks.BIRCH_PLANKS))continue;
             boolean exposed=false;for(var side:Direction.values())if(l.getBlockState(at.relative(side)).isAir()||!l.getBlockState(at.relative(side)).isSolid()){exposed=true;break;}
             if(!exposed&&y!=minY)continue;

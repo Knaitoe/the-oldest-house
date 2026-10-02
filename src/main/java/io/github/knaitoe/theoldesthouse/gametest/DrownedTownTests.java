@@ -223,7 +223,8 @@ public final class DrownedTownTests {
             helper.assertTrue(huntWitch.tickCount<=220, "the real detour must finish within 220 actor ticks");
             for(int x=(base.getX()-11)>>4;x<=(base.getX()+11)>>4;x++)for(int z=(base.getZ()-15)>>4;z<=base.getZ()>>4;z++)
                 level.getChunkSource().addRegionTicket(TicketType.PORTAL,new ChunkPos(x,z),3,base);
-            helper.assertTrue(!LakeWitchEntity.safeGround(level,huntWitch.blockPosition()), "physical witch movement never crosses a refuge");
+            var feet=BlockPos.containing(huntWitch.getX(),base.getY(),huntWitch.getZ());
+            helper.assertTrue(!level.getBlockState(feet.below()).is(Blocks.GRASS_BLOCK)&&huntWitch.getY()>base.getY()-.2, "physical witch movement remains on the surface and never crosses living grass");
         });
         helper.succeedWhen(()->{
             helper.assertTrue(huntWitch.getX()>base.getX()+4&&huntWitch.distanceToSqr(huntPlayer)<8, "the native actor must actually complete its detour; pos="+huntWitch.position()+"; ticks="+huntWitch.tickCount

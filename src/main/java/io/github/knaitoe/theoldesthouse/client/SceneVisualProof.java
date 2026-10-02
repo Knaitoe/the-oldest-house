@@ -43,12 +43,19 @@ public final class SceneVisualProof extends Screen {
     @Override public void renderBackground(GuiGraphics g,int x,int y,float delta){}
     @Override public void render(GuiGraphics g,int x,int y,float delta){
         var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xFF292723);g.drawString(font,"THE OLDEST HOUSE / 0.4.27",16,12,0xFFE0D5BF,false);
-        g.drawString(font,name.replace('_',' '),16,29,0xFFF3EEE3,false);g.drawString(font,"Native generated blocks / roofs and near walls cut away for inspection",16,height-19,0xFFD4C8B3,false);g.flush();
+        g.drawString(font,name.replace('_',' '),16,29,0xFFF3EEE3,false);g.drawString(font,"Native geometry view / interiors cut away / actors omitted",16,height-19,0xFFD4C8B3,false);g.flush();
         var pose=g.pose();pose.pushPose();pose.translate(width/2.,height/2.+12,200);float scale=(float)Math.min((width-40)/span,(height-85)/(span*.62));
         pose.scale(scale,-scale,scale);pose.mulPose(Axis.XP.rotationDegrees(32));pose.mulPose(Axis.YP.rotationDegrees(-45));pose.translate(-cx,-cy,-cz);
         var buffers=mc.renderBuffers().bufferSource();
-        for(var v:voxels){pose.pushPose();pose.translate(v.x,v.y,v.z);mc.getBlockRenderer().renderSingleBlock(v.state,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();}
+        for(var v:voxels){pose.pushPose();pose.translate(v.x,v.y,v.z);
+            if(v.state.is(net.minecraft.world.level.block.Blocks.WATER))water(pose,buffers,v.state);else mc.getBlockRenderer().renderSingleBlock(v.state,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();}
         buffers.endBatch();pose.popPose();
+    }
+    private static void water(com.mojang.blaze3d.vertex.PoseStack pose,MultiBufferSource buffers,BlockState state){
+        var sprite=Minecraft.getInstance().getTextureAtlas(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS).apply(net.minecraft.resources.ResourceLocation.withDefaultNamespace("block/water_still"));
+        var out=buffers.getBuffer(RenderType.entityTranslucent(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS));var matrix=pose.last().pose();float y=state.getFluidState().getOwnHeight();
+        float[][] points={{0,y,0,sprite.getU0(),sprite.getV0()},{0,y,1,sprite.getU0(),sprite.getV1()},{1,y,1,sprite.getU1(),sprite.getV1()},{1,y,0,sprite.getU1(),sprite.getV0()}};
+        for(var p:points)out.addVertex(matrix,p[0],p[1],p[2]).setColor(63,118,228,185).setUv(p[3],p[4]).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(0,1,0);
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof SceneVisualProof s)||++s.frames<3)return;
@@ -56,7 +63,7 @@ public final class SceneVisualProof extends Screen {
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(s.name+".png"));}
         if(++s.index<s.files.size())s.load();else{
             Files.writeString(Path.of("../build/font-smoke/architecture-passed.txt"),"All twenty native generated scene cutaways rendered successfully.\n");
-            TheOldestHouse.LOGGER.info("HOUSE ARCHITECTURE CHECK PASSED: twenty native scene screenshots saved");mc.stop();
+            TheOldestHouse.LOGGER.info("HOUSE ARCHITECTURE CHECK PASSED: twenty native scene screenshots saved");mc.setScreen(new OutsideSkyProof());
         }
     }
 }

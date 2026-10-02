@@ -41,6 +41,7 @@ public final class DrownedTown {
     public static final BlockPos KEY_DESK = new BlockPos(-14, 1, -32);
     public static final BlockPos CHURCH_DOOR = new BlockPos(15, -11, -40), ROOF_HATCH = new BlockPos(15, -4, -43);
     private static final String BODY = "the_oldest_house_indian_lake_body";
+    public static final String SHORE_BODY="the_oldest_house_lake_shore_body", TOWN_CANOE="the_oldest_house_town_canoe";
     private static final Map<UUID, BlockPos> OPEN_FURNACES = new HashMap<>();
     private static long nextHymn;
     private DrownedTown() {}
@@ -117,6 +118,7 @@ public final class DrownedTown {
         setChurchDoor(level, base, state.getBoolean("ChurchUnlocked"));
         setRoof(level, base, state.getBoolean("RoofOpened"));
         ensureBodies(level, base, data);
+        stageShore(level,base,data);
     }
 
     public static boolean dried(LabyrinthData data, int essay) {
@@ -239,8 +241,31 @@ public final class DrownedTown {
         List<LakeWitchEntity> witches = level.getEntitiesOfClass(LakeWitchEntity.class, bounds(base));
         if (!witches.isEmpty()) { for (int i = 1; i < witches.size(); i++) witches.get(i).discard(); return; }
         LakeWitchEntity witch = DrownedTownRegistry.LAKE_WITCH.get().create(level); if (witch == null) return;
-        BlockPos spawn = base.offset(-12, 0, -8); witch.shore(base, visit);
+        BlockPos spawn = witchSpawn(level,base); witch.shore(base, visit);
         witch.moveTo(Vec3.atBottomCenterOf(spawn)); level.addFreshEntity(witch);
+    }
+    public static BlockPos witchSpawn(ServerLevel level,BlockPos base){
+        for(var relative:List.of(new BlockPos(-24,0,-40),new BlockPos(-13,0,-51),new BlockPos(25,0,-57),new BlockPos(24,0,-32))){
+            var at=base.offset(relative);if(LakeWitchEntity.walkable(level,base,at)
+                    &&visitors(level,base).stream().noneMatch(p->LakeWitchEntity.inView(p,Vec3.atBottomCenterOf(at).add(0,.6,0))))return at;
+        }return base.offset(25,0,-57);
+    }
+    /** One original usable canoe and one shore casualty, independent of the later church aftermath. */
+    public static void stageShore(ServerLevel level,BlockPos base,LabyrinthData data){
+        var state=data.state(ID);
+        if(!state.getBoolean("TownCanoePlaced")){
+            var canoe=net.minecraft.world.entity.EntityType.BOAT.create(level);
+            if(canoe!=null){canoe.setVariant(net.minecraft.world.entity.vehicle.Boat.Type.SPRUCE);canoe.addTag(TOWN_CANOE);
+                canoe.moveTo(base.getX()+13.5,base.getY()-.25,base.getZ()-34.5,90,0);
+                if(level.addFreshEntity(canoe)){state.putBoolean("TownCanoePlaced",true);state.putUUID("TownCanoeUUID",canoe.getUUID());}}
+        }
+        if(!state.getBoolean("ShoreBodyPlaced")){
+            var body=DrownedTownRegistry.CONGREGANT.get().create(level);
+            if(body!=null){body.addTag(SHORE_BODY);body.pose(false,false);body.lying(true);body.preservedEra(2);
+                body.moveTo(base.getX()+5.5,base.getY()+.03,base.getZ()-30.5,32,0);
+                if(level.addFreshEntity(body)){state.putBoolean("ShoreBodyPlaced",true);state.putUUID("ShoreBodyUUID",body.getUUID());}}
+        }
+        data.setState(ID,state);
     }
     private static void ensureBodies(ServerLevel level, BlockPos base, LabyrinthData data) {
         boolean shore = IndianLakeProgress.deadOnShore(data);

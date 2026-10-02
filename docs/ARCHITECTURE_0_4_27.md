@@ -25,6 +25,8 @@ The eighteen authored vignettes plus the explorer camp receive distinct furnishi
 | Drowned town | Dry classroom and shop furnishings, practical shore equipment and small street planting; underwater passages remain open. |
 | Shallows and canoe shore | Shore-side storage, rope, work tools, grass and worn stones, away from the canoe and memory routes. |
 
+The pass also restores physically missing registered doors in Harrigan’s study and Holloway’s camp, in fresh builds and existing authored walls.
+
 Twenty-four small native props have matching selection shapes, four orientations and sixteen material textures. Props are scenery without inventories or drops. They are only placed on a real surface or against a supporting wall. Original containers are neither replaced nor filled.
 
 The great staircase doubles its centreline radius from twelve to twenty-four blocks. Flights have nine clear walking blocks between the upper rails, with wider thirteen-block landings; it still descends 128 blocks physically. A 69-block shaft, structural piers, horizontal bands, roof and complete bottom floor enclose the void. Upgrades wait for the old shaft's residents to leave and preserve the existing encounter, open/closed cell and seal, inventory, prisoner and escape geometry.
@@ -32,3 +34,13 @@ The great staircase doubles its centreline radius from twelve to twenty-four blo
 Each scene has an origin-specific saved decoration checkpoint. Existing saves receive additions in place instead of rerunning the native story builders. Removing a prop after that pass does not make it respawn on an ordinary revisit or upgrade check.
 
 Validation includes the full required GameTest suite, every prop's physical support, real door approaches, finite cache and actor identity preservation, persistent story/evidence state, native shaft width/enclosure and old resident deferral. Client proofs render nineteen actual generated scene cutaways plus the native upgraded shaft, alongside the existing writing and cast checks.
+
+## Lake playtest repairs
+
+A read-only scene clock replaces local world-time rewrites, preventing server time packets from flashing the lake between day and night. The outside renderer draws one complete sky rather than overlapping lower-horizon geometry. Native GPU proofs check three camera elevations.
+
+Stacey’s hunting model and collision body are low on all fours. Native surface travel corrects her feet to the actual fluid height and excludes swimming drag. She starts behind the town, searches reachable occluded rear approaches, warns briefly, rushes, then withdraws after one strike. Living grass and real submersion remain refuges; the recalled human girl retains normal proportions and gravity. Native ticking tests require a water crossing and a real rear strike.
+
+The bank has an institutional slate-roofed school, portico, cottages, market awning, upstairs brick shop and copper-roofed boat shed. An irregular sandy/gravel shore meets an L-shaped pier; trees mix species, crown shapes, heights, leaning trunks and dead wood. A finite usable canoe and a prone shore casualty retain their identities across visits. The one-time lakeside checkpoint preserves original desks, inventories, doors and church state, and waits for present visitors before changing the town.
+
+The unclaimed ordinary shield in the old finale preparation barrel is retired once. Earn the battered shield in Holloway’s own encounter. Held or customized equipment is retained. The finale still supports the peaceful Witness route.
