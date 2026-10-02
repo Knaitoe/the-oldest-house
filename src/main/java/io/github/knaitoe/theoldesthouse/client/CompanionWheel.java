@@ -19,7 +19,7 @@ public final class CompanionWheel extends Screen {
     public CompanionWheel(int entityId) {super(Component.literal("Companion"));this.entityId=entityId;}
     public static void open(int id) {
         Minecraft client=Minecraft.getInstance();
-        if(client.level!=null&&client.level.getEntity(id)!=null)client.setScreen(new CompanionWheel(id));
+        if(client.level!=null&&CompanionOrders.supported(client.level.getEntity(id)))client.setScreen(new CompanionWheel(id));
     }
     @Override public boolean isPauseScreen(){return false;}
     // Screen's default background invokes the post-process blur. This menu draws its own backdrop.

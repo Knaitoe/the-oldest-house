@@ -45,18 +45,28 @@ public final class ArchitectureTests {
                 var body=new AABB(at.getX()+.2,at.getY()+.01,at.getZ()+.2,at.getX()+.8,at.getY()+1.8,at.getZ()+.8);
                 h.assertTrue(l.noCollision(null,body),"a native player body clears every actual upper and lower tread: "+at);
             }
-            exportStair(l,origin);h.succeed();
+            // Railings and depth variation must exist beyond the first visible stretch, on both descents.
+            Set<Block> treadKinds=new HashSet<>();int checked=0;
+            for(int top=FinaleArchitecture.TOP;top>FinaleArchitecture.LOOP_BOTTOM+128;top-=128){
+                int rails=0;for(var at:BlockPos.betweenClosed(base.offset(-31,top-127,-31),base.offset(31,top,31)))if(l.getBlockState(at).is(Blocks.IRON_BARS))rails++;
+                h.assertTrue(rails>80,"every full depth band has actual native guard rails: "+top+" / "+rails);checked++;
+            }
+            for(var at:FinaleArchitecture.continuationRoute(origin))treadKinds.add(l.getBlockState(at.below()).getBlock());
+            h.assertTrue(checked>=19&&treadKinds.containsAll(List.of(Blocks.TUFF_BRICK_STAIRS,Blocks.DEEPSLATE_BRICK_STAIRS,Blocks.POLISHED_BLACKSTONE_BRICK_STAIRS)),"the lower continuation uses distinct authored native stair materials");
+            exportStair(l,origin,"great_staircase",FinaleArchitecture.TOP-144,FinaleArchitecture.TOP+15);
+            exportStair(l,origin,"great_staircase_middle",FinaleArchitecture.TOP-640,FinaleArchitecture.TOP-544);
+            exportStair(l,origin,"great_staircase_lower",FinaleArchitecture.ARENA-768,FinaleArchitecture.ARENA-672);h.succeed();
         }finally{server.getPlayerList().remove(resident);server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);FinaleArchitecture.clearAll();}
     }
-    private static void exportStair(net.minecraft.server.level.ServerLevel l,BlockPos origin)throws Exception{
-        BlockPos b=FinaleArchitecture.base(origin);JsonObject file=new JsonObject();file.addProperty("name","great_staircase");JsonArray palette=new JsonArray(),blocks=new JsonArray();Map<BlockState,Integer> lookup=new LinkedHashMap<>();
-        for(int x=-34;x<34;x++)for(int z=-34;z<34;z++)for(int y=FinaleArchitecture.TOP-144;y<FinaleArchitecture.TOP+15;y++){
+    private static void exportStair(net.minecraft.server.level.ServerLevel l,BlockPos origin,String name,int low,int high)throws Exception{
+        BlockPos b=FinaleArchitecture.base(origin);JsonObject file=new JsonObject();file.addProperty("name",name);JsonArray palette=new JsonArray(),blocks=new JsonArray();Map<BlockState,Integer> lookup=new LinkedHashMap<>();
+        for(int x=-34;x<34;x++)for(int z=-34;z<34;z++)for(int y=low;y<high;y++){
             var s=l.getBlockState(b.offset(x,y,z));if(s.isAir()||s.is(Blocks.LIGHT))continue;
             boolean visible=false;for(var side:Direction.values())if(l.getBlockState(b.offset(x,y,z).relative(side)).isAir()){visible=true;break;}if(!visible)continue;
             Integer i=lookup.get(s);if(i==null){i=lookup.size();lookup.put(s,i);palette.add(BlockState.CODEC.encodeStart(JsonOps.INSTANCE,s).getOrThrow());}
             JsonArray row=new JsonArray();row.add(x);row.add(y);row.add(z);row.add(i);blocks.add(row);
         }
-        file.add("palette",palette);file.add("blocks",blocks);var folder=Path.of("../build/architecture-proof");Files.createDirectories(folder);Files.writeString(folder.resolve("great_staircase.json"),new Gson().toJson(file));
+        file.add("palette",palette);file.add("blocks",blocks);var folder=Path.of("../build/architecture-proof");Files.createDirectories(folder);Files.writeString(folder.resolve(name+".json"),new Gson().toJson(file));
     }
     @GameTest(template="empty",batch="architecture_pass",timeoutTicks=200)
     public static void nativeEverySceneHasSupportedDetailAndPreservesOriginalsOnUpgrade(GameTestHelper h)throws Exception{
@@ -89,6 +99,7 @@ public final class ArchitectureTests {
             }
             h.assertTrue(dressed==19&&props>=90,"all nineteen authored vignettes/camps receive supported detail; the copied Red Room stays personal");
             shellsAndEdges(h,server,origin,data);
+            frontsAndInteriors(h,server,origin,data);
             var camp=LabyrinthPlaces.base(origin,LabyrinthPlace.EXPLORER_CAMP);var cache=(BarrelBlockEntity)interior.getBlockEntity(camp.offset(LabyrinthCampsite.CACHE));
             cache.clearContent();cache.setItem(7,new ItemStack(Items.DIAMOND,3));
             var mother=LabyrinthPlaces.base(origin,LabyrinthPlace.MOTHER_DEN);var beings=interior.getEntitiesOfClass(Entity.class,box(mother.offset(-11,-5,-26),mother.offset(11,15,1)));
@@ -116,6 +127,18 @@ public final class ArchitectureTests {
             }
             server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);server.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);LabyrinthBuilder.clearAll();LabyrinthDoors.clearAll();
         }
+    }
+    private static void frontsAndInteriors(GameTestHelper h,net.minecraft.server.MinecraftServer server,BlockPos origin,LabyrinthData data){
+        for(var scene:List.of(LabyrinthPlace.DROWNED_TOWN,LabyrinthPlace.GOATMAN,LabyrinthPlace.HOLLOWAY_CAMP,LabyrinthPlace.ZAMPANO_COURTYARD))h.assertTrue(data.state(SceneExteriors.STATE).getBoolean(origin.asLong()+":"+scene.id()),scene.id()+" has a finite exterior checkpoint");
+        var town=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);var b=LabyrinthPlaces.base(origin,LabyrinthPlace.DROWNED_TOWN);
+        // Actual routes through the cottage partition, shop door and upstairs stairs remain clear.
+        for(var at:List.of(b.offset(-19,0,-53),b.offset(-18,0,-53),b.offset(-7,0,-42),b.offset(-9,4,-57)))h.assertTrue(town.noCollision(null,new AABB(at.getX()+.2,at.getY()+.01,at.getZ()+.2,at.getX()+.8,at.getY()+1.8,at.getZ()+.8)),"the dressed town retains a native player passage at "+at);
+        h.assertTrue(town.getBlockState(b.offset(-23,1,-45)).is(Blocks.LIGHT_GRAY_STAINED_GLASS_PANE)&&town.getBlockState(b.offset(-8,4,-58)).getBlock() instanceof BedBlock,"the cottage has framed sash windows and the upstairs flat has a real native bed");
+        var interior=HouseTestLevel.get(server);var trailer=LabyrinthPlaces.base(origin,LabyrinthPlace.GOATMAN);var hut=LabyrinthPlaces.base(origin,LabyrinthPlace.HOLLOWAY_CAMP);var archive=LabyrinthPlaces.base(origin,LabyrinthPlace.ZAMPANO_COURTYARD);
+        h.assertTrue(interior.getBlockState(trailer.offset(0,7,-65)).is(Blocks.SMOOTH_STONE_SLAB)&&interior.getBlockState(trailer.offset(5,0,-51)).is(Blocks.IRON_BARS),"the trailer has a stepped metal roof and a physical tow frame");
+        h.assertTrue(interior.getBlockState(hut.offset(3,3,0)).is(Blocks.STRIPPED_SPRUCE_LOG)&&!interior.getBlockState(hut.offset(0,8,-5)).isAir(),"the dugout has a braced entry and an earth-covered roof");
+        h.assertTrue(town.getBlockState(archive.offset(3,3,-18)).is(Blocks.STONE_BRICKS)&&town.getBlockState(archive.offset(0,9,-25)).is(Blocks.LIGHT_GRAY_STAINED_GLASS),"the archive has projecting pilasters and glazed rooflights");
+        var removed=archive.offset(0,9,-25);town.setBlock(removed,Blocks.AIR.defaultBlockState(),2);SceneExteriors.decorateOnce(town,origin,LabyrinthPlace.ZAMPANO_COURTYARD);h.assertTrue(town.getBlockState(removed).isAir(),"completed exterior upgrades do not replenish removed scenery");
     }
     /** 0.4.28: indoor shells read as built rooms, and the outdoor scenes end in land, not invisible walls. */
     private static void shellsAndEdges(GameTestHelper h,net.minecraft.server.MinecraftServer server,BlockPos origin,LabyrinthData data){

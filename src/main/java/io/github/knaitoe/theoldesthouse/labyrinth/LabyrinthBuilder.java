@@ -36,7 +36,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 26;
+    public static final int VERSION = 27;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -95,6 +95,7 @@ public final class LabyrinthBuilder {
         architecturalUpgrades.clear();
         LabyrinthData data = LabyrinthData.get(server);
         if(!force&&!LakeLandscape.upgradeWorld(server,origin)){pending=null;pendingOrigin=null;return false;}
+        if(!force&&!OutdoorRelocation.upgrade(server,origin)){pending=null;pendingOrigin=null;return false;}
         legacyDomesticUpgrade=!force && data.builtVersion()<17 && origin.equals(data.builtOrigin());
         // Older structural upgrades keep their scope. 0.4.17 dresses existing halls in place.
         boolean extend = !force && data.builtVersion() >= 10 && data.builtVersion() < VERSION && origin.equals(data.builtOrigin());

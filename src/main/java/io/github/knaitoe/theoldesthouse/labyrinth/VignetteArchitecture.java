@@ -30,11 +30,13 @@ public final class VignetteArchitecture {
         // 0.4.28: the shell itself, once, after its furnishings exist so their supports are known.
         var shells=d.state(SceneShells.STATE);
         if(!shells.getBoolean(key)){SceneShells.apply(l,base,p);shells.putBoolean(key,true);d.setState(SceneShells.STATE,shells);}
+        SceneExteriors.decorateOnce(l,origin,p);
     }
     /** Explicit structural rebuilds can dress their newly authored room again. */
     static void forget(ServerLevel l,BlockPos origin,LabyrinthPlace p){
         var d=LabyrinthData.get(l.getServer());var t=d.state(STATE);t.remove(origin.asLong()+":"+p.id());d.setState(STATE,t);
         var shells=d.state(SceneShells.STATE);shells.remove(origin.asLong()+":"+p.id());d.setState(SceneShells.STATE,shells);
+        SceneExteriors.forget(l,origin,p);
     }
     private void dress(){switch(scene){
         case FLOORBOARDS->floorboards();case HIDE_AND_CLAP->childRoom();case MODEL_HOME->modelHome();

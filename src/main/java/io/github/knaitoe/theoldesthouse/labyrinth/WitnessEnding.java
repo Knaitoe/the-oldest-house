@@ -100,7 +100,7 @@ public final class WitnessEnding {
         if(step>=5){
             BlockPos b=FinaleArchitecture.base(origin);int x=at.getX()-b.getX(),z=at.getZ()-b.getZ();
             // The broad body must clear the higher treads on the inside of a spiral turn.
-            target=target.add(Math.abs(x)==12?Math.signum(x)*.6:0,0,Math.abs(z)==12?Math.signum(z)*.6:0);
+            target=target.add(Math.abs(x)==FinaleArchitecture.STAIR_RADIUS?Math.signum(x)*.6:0,0,Math.abs(z)==FinaleArchitecture.STAIR_RADIUS?Math.signum(z)*.6:0);
         }
         Vec3 delta=target.subtract(creature.position());
         if(delta.multiply(1,0,1).lengthSqr()<(step>=5?.0225:.65)&&Math.abs(delta.y)<1.2){
@@ -125,6 +125,8 @@ public final class WitnessEnding {
         creature.discard();record.remove("Creature");record.putString("Phase",FinaleProgress.Phase.HOMEWARD.name());
         unloadScene(player,origin);
         FinaleArchitecture.seal(player.serverLevel(),origin,false);FinaleProgress.save(player.server,player.getUUID(),record);
+        FinaleController.releaseClaim(player.server,player.getUUID());
+        var world=FinaleProgress.world(player.server);world.putBoolean("CellReleased",true);LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);
         FinaleController.words(player,FinaleArchitecture.base(origin).offset(0,FinaleArchitecture.ARENA+2,31),"The stairs lead back. The cell stays open.");
     }
     public static boolean returnWeapon(ServerPlayer player,CompoundTag record){
@@ -168,7 +170,8 @@ public final class WitnessEnding {
                     &&!pet.getTags().contains(MotherOfStrays.PET)&&player.getUUID().equals(CompanionOrders.owner(pet)))companions.add(pet);
         record.putString("Phase",FinaleProgress.Phase.WITNESSED.name());record.putLong("EpilogueDue",player.server.overworld().getGameTime()+24000);
         FinaleProgress.save(player.server,player.getUUID(),record);
-        CompoundTag world=FinaleProgress.world(player.server);world.remove("Owner");world.putBoolean("CellReleased",true);LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);
+        FinaleController.releaseClaim(player.server,player.getUUID());
+        CompoundTag world=FinaleProgress.world(player.server);world.putBoolean("CellReleased",true);LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);
         LabyrinthData.get(player.server).clearReturns(player.getUUID());HouseTransitionEvents.cancelPending(player,"the account is complete");
         player.server.overworld().getChunkAt(BlockPos.containing(outside));player.stopRiding();
         player.teleportTo(player.server.overworld(),outside.x,outside.y,outside.z,180,0);player.resetFallDistance();

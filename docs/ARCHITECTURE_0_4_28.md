@@ -1,5 +1,7 @@
 # Shells and outdoor edges · 0.4.28
 
+> Historical 0.4.28 notes. The 110-block haze is superseded by 4,096-block physical spacing in 0.4.29, which also completes the stair, town and exteriors. See [the current release](ARCHITECTURE_0_4_29.md).
+
 Layout 26, protocol 28 (unchanged). Install the same JAR on server and clients; the outside haze is drawn by the client.
 
 0.4.27 furnished the vignettes. This pass gives their rooms the structural reading the manor has: framed walls, cased openings, windows with depth, hearths, and ceilings and floors that are built rather than painted. Outdoors, the land itself now closes each scene. No scenery grants Witness evidence; the pool stays seventeen sources, thirteen required across two kinds, three endings.

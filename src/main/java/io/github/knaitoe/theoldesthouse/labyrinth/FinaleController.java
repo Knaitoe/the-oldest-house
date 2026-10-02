@@ -53,6 +53,22 @@ public final class FinaleController {
     }
     public static @Nullable Vec3 cellCenter(MinecraftServer server){BlockPos origin=HouseSavedData.get(server).houseOrigin();return origin==null?null:Vec3.atBottomCenterOf(FinaleArchitecture.cell(origin).south(5));}
     public static boolean lockedOut(ServerPlayer player){return FinaleProgress.terminal(FinaleProgress.phase(player.server,player.getUUID()));}
+    /** Only the explorer holding the shared claim may release its physical seal. */
+    public static boolean releaseClaim(MinecraftServer server,UUID explorer){
+        var world=FinaleProgress.world(server);if(!world.hasUUID("Owner")||!world.getUUID("Owner").equals(explorer))return false;
+        world.remove("Owner");LabyrinthData.get(server).setState(FinaleProgress.STATE,world);
+        var origin=HouseSavedData.get(server).houseOrigin();var level=server.getLevel(HouseDimensions.INTERIOR);
+        if(origin!=null&&level!=null)FinaleArchitecture.seal(level,origin,false);return true;
+    }
+    /** Repair an obsolete saved claim; an offline committed attempt remains paused and owned. */
+    public static void reconcileClaim(MinecraftServer server){
+        var world=FinaleProgress.world(server);if(!world.hasUUID("Owner"))return;
+        UUID id=world.getUUID("Owner");var phase=FinaleProgress.phase(server,id);
+        if(!FinaleProgress.committed(phase)||phase==FinaleProgress.Phase.HOMEWARD){
+            releaseClaim(server,id);
+            if(phase==FinaleProgress.Phase.HOMEWARD){world=FinaleProgress.world(server);world.putBoolean("CellReleased",true);LabyrinthData.get(server).setState(FinaleProgress.STATE,world);}
+        }
+    }
     public static boolean canOffer(LabyrinthData data,UUID player){
         CompoundTag world=data.state(FinaleProgress.STATE),record=world.getCompound(player.toString());
         return !world.getBoolean("Ended")&&!FinaleProgress.terminal(FinaleProgress.phase(record))
@@ -130,7 +146,7 @@ public final class FinaleController {
         return true;
     }
     public static @Nullable MinotaurEntity ensureCaged(ServerLevel level,BlockPos origin){
-        var world=FinaleProgress.world(level.getServer());if(world.hasUUID("Owner")||world.getBoolean("MinotaurWounded"))return null;
+        var world=FinaleProgress.world(level.getServer());if(world.hasUUID("Owner")||world.getBoolean("MinotaurWounded")||world.getBoolean("CellReleased"))return null;
         BlockPos cell=FinaleArchitecture.cell(origin);level.getChunkAt(cell);
         if(world.hasUUID("CagedCreature")){
             var live=level.getEntity(world.getUUID("CagedCreature"));if(live instanceof MinotaurEntity m){CAGED.put(level.getServer(),m);return m;}
@@ -305,9 +321,9 @@ public final class FinaleController {
         }
         FinaleProgress.save(player.server,player.getUUID(),record);LabyrinthData.get(player.server).clearReturns(player.getUUID());
         if(record.hasUUID("Creature")&&player.serverLevel().getEntity(record.getUUID("Creature")) instanceof MinotaurEntity creature&&creature.motion()!=MinotaurEntity.WOUNDED)creature.discard();
-        CompoundTag world=FinaleProgress.world(player.server);world.remove("Owner");LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);
-        BlockPos origin=HouseSavedData.get(player.server).houseOrigin();if(origin!=null){
-            FinaleArchitecture.seal(player.serverLevel(),origin,false);FinaleArchitecture.closeCell(player.serverLevel(),origin);
+        releaseClaim(player.server,player.getUUID());
+        BlockPos origin=HouseSavedData.get(player.server).houseOrigin();var interior=player.server.getLevel(HouseDimensions.INTERIOR);if(origin!=null&&interior!=null){
+            if(!FinaleProgress.world(player.server).hasUUID("Owner")){FinaleArchitecture.seal(interior,origin,false);FinaleArchitecture.closeCell(interior,origin);}
         }
     }
     private static void keep(ServerPlayer player,ItemStack stack){if(!stack.isEmpty())MotherCollection.get(player.server).keepFinaleItem(stack,player.registryAccess(),player.getUUID(),player.serverLevel().getGameTime());}
@@ -369,7 +385,7 @@ public final class FinaleController {
         words(player,player.blockPosition().above(2),guided?"An empty lot. The collar is still warm.":"An empty lot. Sixty mornings have passed.");
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post event){
-        MinecraftServer server=event.getServer();FinaleArchitecture.tick(server);
+        MinecraftServer server=event.getServer();FinaleArchitecture.tick(server);reconcileClaim(server);
         List<Entity> expiredWords=new ArrayList<>();for(ServerLevel level:server.getAllLevels())if(level.getGameTime()%20==0)
             for(Entity entity:level.getAllEntities())if(entity!=null&&entity.getTags().contains("HouseFinaleWords")&&level.getGameTime()>=entity.getPersistentData().getLong("FinaleWordsUntil"))expiredWords.add(entity);
         expiredWords.forEach(Entity::discard);
