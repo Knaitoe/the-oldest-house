@@ -74,8 +74,11 @@ public final class SceneExteriors {
     private void desk(int x,int y,int z,SceneDetailBlock.Kind kind){furniture(x,y,z,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);prop(x,y+1,z,kind,Direction.SOUTH);}
     private void cabinet(int x,int y,int z,SceneDetailBlock.Kind kind){furniture(x,y,z,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.SOUTH);prop(x,y+1,z,kind,Direction.SOUTH);}
     private void beamX(int x0,int x1,int y,int z,Block block){for(int x=x0;x<=x1;x++)set(x,y,z,block.defaultBlockState().setValue(RotatedPillarBlock.AXIS,Direction.Axis.X));}
+    private static BlockState pane(Block block,Direction.Axis along){var st=block.defaultBlockState();return along==Direction.Axis.X
+        ?st.setValue(BlockStateProperties.EAST,true).setValue(BlockStateProperties.WEST,true)
+        :st.setValue(BlockStateProperties.NORTH,true).setValue(BlockStateProperties.SOUTH,true);}
     private void windowSouth(int x0,int x1,int y,int z,Block frame){
-        for(int x=x0;x<=x1;x++){set(x,y-1,z,frame);for(int yy=y;yy<y+2;yy++)set(x,yy,z,Blocks.LIGHT_GRAY_STAINED_GLASS_PANE);set(x,y+2,z,frame);}
+        for(int x=x0;x<=x1;x++){set(x,y-1,z,frame);for(int yy=y;yy<y+2;yy++)set(x,yy,z,pane(Blocks.LIGHT_GRAY_STAINED_GLASS_PANE,Direction.Axis.X));set(x,y+2,z,frame);}
         for(int xx:new int[]{x0-1,x1+1})for(int yy=y-1;yy<=y+2;yy++)set(xx,yy,z,frame);
         for(int x=x0;x<=x1;x++)add(x,y-1,z+1,Blocks.STONE_BRICK_SLAB);
     }
@@ -109,7 +112,7 @@ public final class SceneExteriors {
         // Brick store: projecting sill bands, bays on both floors, and a lived-in room above the shop.
         for(int z=-60;z<=-53;z++){set(-4,3,z,Blocks.POLISHED_ANDESITE);set(-4,7,z,Blocks.STONE_BRICKS);}
         for(int z:new int[]{-59,-53})for(int y:new int[]{1,5}){
-            set(-4,y-1,z,Blocks.STONE_BRICKS);set(-4,y,z,Blocks.LIGHT_GRAY_STAINED_GLASS_PANE);set(-4,y+1,z,Blocks.LIGHT_GRAY_STAINED_GLASS_PANE);set(-4,y+2,z,Blocks.STONE_BRICKS);
+            set(-4,y-1,z,Blocks.STONE_BRICKS);set(-4,y,z,pane(Blocks.LIGHT_GRAY_STAINED_GLASS_PANE,Direction.Axis.Z));set(-4,y+1,z,pane(Blocks.LIGHT_GRAY_STAINED_GLASS_PANE,Direction.Axis.Z));set(-4,y+2,z,Blocks.STONE_BRICKS);
             add(-3,y-1,z,Blocks.STONE_BRICK_SLAB);
         }
         for(int x:new int[]{-9,-6})windowSouth(x,x,5,-52,Blocks.STONE_BRICKS);
@@ -119,7 +122,7 @@ public final class SceneExteriors {
         furniture(-7,4,-54,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.SOUTH);prop(-10,5,-60,SceneDetailBlock.Kind.COAT,Direction.EAST);
         // Low weatherboard cabin and the boat shed have deliberately different frames and fittings.
         for(int z=-18;z<=-14;z++){set(-5,0,z,Blocks.STONE_BRICKS);set(-5,3,z,Blocks.STRIPPED_SPRUCE_WOOD);}
-        for(int z:new int[]{-18,-14}){set(-5,1,z,Blocks.GLASS_PANE);set(-5,2,z,Blocks.GLASS_PANE);add(-4,0,z,Blocks.SPRUCE_SLAB);}
+        for(int z:new int[]{-18,-14}){set(-5,1,z,pane(Blocks.GLASS_PANE,Direction.Axis.Z));set(-5,2,z,pane(Blocks.GLASS_PANE,Direction.Axis.Z));add(-4,0,z,Blocks.SPRUCE_SLAB);}
         cabinet(-11,0,-18,SceneDetailBlock.Kind.DISH_RACK);furniture(-6,0,-18,HouseholdFurnitureBlock.Kind.BLUE_SOFA,Direction.WEST);
         prop(-11,2,-15,SceneDetailBlock.Kind.CLOCK,Direction.EAST);prop(-8,0,-14,SceneDetailBlock.Kind.BLANKET,Direction.NORTH);
         for(int x=-26;x<=-20;x++)set(x,3,-13,Blocks.STRIPPED_SPRUCE_WOOD);
