@@ -122,6 +122,7 @@ public final class FinaleController {
             boolean lit=now<record.getLong("LightUntil");
             if(lit)player.removeEffect(MobEffects.DARKNESS);else if(player.tickCount%20==0)player.addEffect(new MobEffectInstance(MobEffects.DARKNESS,60,0,false,false));
             if(record.getBoolean("Descended")){createGuide(player,origin,record);tickGuide(player,origin,record);}
+            FinaleProgress.save(player.server,player.getUUID(),record);
         }
         if(player.tickCount%20==0)FinaleProgress.save(player.server,player.getUUID(),record);
         return true;

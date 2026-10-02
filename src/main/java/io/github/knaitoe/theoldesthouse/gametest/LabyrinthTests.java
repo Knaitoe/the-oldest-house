@@ -167,8 +167,8 @@ public final class LabyrinthTests {
             }
         }
         helper.assertTrue(LabyrinthDealer.vignetteChance(data, player) > 0
-                        && LabyrinthDealer.vignettesAvailable(data).equals(List.of(LabyrinthPlace.MOTHER_DEN)),
-                "the Mother's anchor stays findable when every finishable vignette is finished");
+                        && LabyrinthDealer.vignettesAvailable(data).equals(List.of(LabyrinthPlace.MOTHER_DEN,LabyrinthPlace.ZAMPANO_COURTYARD,LabyrinthPlace.KAREN_ROOM)),
+                "the recurring Mother, courtyard and room anchors stay findable when finishable stories are finished");
         data.setReady(RedRoom.ID, true);
         helper.assertTrue(LabyrinthDealer.vignettesAvailable(data).contains(LabyrinthPlace.RED_ROOM)
                         && LabyrinthDealer.vignettesAvailable(data).contains(LabyrinthPlace.MOTHER_DEN),
