@@ -43,7 +43,9 @@ public final class StaircaseWriting {
         if(IndianLakeProgress.hasThrown(data,p.getUUID()))pages.add("You let go at the water.\n\nThe water has not let go of you.");
         else if(IndianLakeProgress.wasHunted(data,p.getUUID()))pages.add("You have heard something approach behind you.\n\nA railing only protects you from one direction.");
         else pages.add("Below the bars, something is waiting to hear how you hold a weapon.\n\nDo not mistake waiting for sleep.");
-        ItemStack book=HouseWriting.book("Stair page "+(number+1),names[Math.floorMod(number,names.length)],HouseWriting.WritingStyle.PLAIN,pages);
+        var traces=HouseExperience.traces(p);if(!traces.isEmpty())pages.add(traces.get(Math.floorMod(number,traces.size())));
+        var rendered=new ArrayList<Component>();for(String page:pages)rendered.add(HouseWriting.page(HouseWriting.WritingStyle.PLAIN,page));rendered.addAll(ThresholdWriting.pages(number));
+        ItemStack book=HouseWriting.book("Stair page "+(number+1),names[Math.floorMod(number,names.length)],rendered);
         books.put(key,book.save(p.registryAccess()));own.put("Books",books);all.put(p.getUUID().toString(),own);data.setState(ID,all);return book;
     }
     private static final class PageMenu extends LecternMenu {

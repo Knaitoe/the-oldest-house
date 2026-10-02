@@ -50,6 +50,7 @@ public final class HouseSitting {
         if (state.getBlock() instanceof HouseholdFurnitureBlock) {
             float yaw=state.getValue(HouseholdFurnitureBlock.FACING).toYRot(); player.setYRot(yaw); player.setYHeadRot(yaw);
         }
+        HouseExperience.sat(player,pos,state);
         return true;
     }
     public static void onRightClick(PlayerInteractEvent.RightClickBlock event) {

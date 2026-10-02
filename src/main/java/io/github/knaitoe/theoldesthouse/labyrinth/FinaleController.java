@@ -210,7 +210,7 @@ public final class FinaleController {
         ServerLevel level=player.serverLevel();BlockPos cell=FinaleArchitecture.cell(origin);level.getChunkAt(cell);
         // Entity lookup is only meaningful after the cell chunk is loaded.
         if(record.hasUUID("Creature")&&level.getEntity(record.getUUID("Creature")) instanceof MinotaurEntity creature){
-            if(creature.motion()==MinotaurEntity.CAGED){creature.awaken(player.getUUID());if(FinaleProgress.phase(record)==FinaleProgress.Phase.RELEASE)creature.released();}
+            if(creature.motion()==MinotaurEntity.CAGED){creature.owner(player.getUUID());if(FinaleProgress.phase(record)==FinaleProgress.Phase.RELEASE)creature.released();}
             MISSING_CREATURES.remove(player.getUUID());return;
         }
         if(record.hasUUID("Creature")){
@@ -221,7 +221,7 @@ public final class FinaleController {
         if(!existing.isEmpty()){record.putUUID("Creature",existing.get(0).getUUID());MISSING_CREATURES.remove(player.getUUID());return;}
         MinotaurEntity creature=FinaleRegistry.MINOTAUR.get().create(level);if(creature==null)return;
         creature.moveTo(cell.getX()+.5,cell.getY(),cell.getZ()+5,180,0);creature.owner(player.getUUID());
-        if(FinaleProgress.phase(record)==FinaleProgress.Phase.RELEASE)creature.released();
+        if(FinaleProgress.phase(record)==FinaleProgress.Phase.RELEASE){creature.caged();creature.released();}
         if(FinaleProgress.phase(record)==FinaleProgress.Phase.COLLAPSE)creature.wounded();level.addFreshEntity(creature);record.putUUID("Creature",creature.getUUID());
     }
     public static void wound(ServerPlayer player,MinotaurEntity creature){

@@ -146,7 +146,8 @@ public final class FinaleArchitecture {
                 int sx=x+(direction.getAxis()==Direction.Axis.Z?width:0),sz=z+(direction.getAxis()==Direction.Axis.X?width:0);
                 put(blocks,b,sx,y,sz,tread);put(blocks,b,sx,y-1,sz,stone);
             }
-            if(at.getY()>TOP-128)for(Direction side:List.of(direction.getClockWise(),direction.getCounterClockWise())){
+            int turnDistance=Math.floorMod(step.index-STAIR_RADIUS,STAIR_RADIUS*2);
+            if(at.getY()>TOP-128&&turnDistance>10&&turnDistance<STAIR_RADIUS*2-10)for(Direction side:List.of(direction.getClockWise(),direction.getCounterClockWise())){
                 var rail=Blocks.IRON_BARS.defaultBlockState();
                 if(direction.getAxis()==Direction.Axis.X)rail=rail.setValue(BlockStateProperties.EAST,true).setValue(BlockStateProperties.WEST,true);
                 else rail=rail.setValue(BlockStateProperties.NORTH,true).setValue(BlockStateProperties.SOUTH,true);

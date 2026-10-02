@@ -23,6 +23,7 @@ import net.minecraft.world.phys.Vec3;
 public final class MinotaurEntity extends PathfinderMob {
     public static final int WATCHING=0, WINDUP=1, CHARGING=2, STUNNED=3, WOUNDED=4, RELEASED=5, CAGED=6;
     private static final EntityDataAccessor<Integer> MOTION=SynchedEntityData.defineId(MinotaurEntity.class,EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> CHILD=SynchedEntityData.defineId(MinotaurEntity.class,EntityDataSerializers.BOOLEAN);
     private final ServerBossEvent bar=new ServerBossEvent(Component.empty(),BossEvent.BossBarColor.WHITE,BossEvent.BossBarOverlay.PROGRESS);
     @Nullable private UUID owner;
     private int remaining=35;
@@ -31,14 +32,16 @@ public final class MinotaurEntity extends PathfinderMob {
     public static AttributeSupplier.Builder attributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,100)
             .add(Attributes.MOVEMENT_SPEED,.28).add(Attributes.FOLLOW_RANGE,48).add(Attributes.KNOCKBACK_RESISTANCE,1).add(Attributes.STEP_HEIGHT,.6);}
     @Override protected void registerGoals(){}
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder){super.defineSynchedData(builder);builder.define(MOTION,WATCHING);}
+    @Override protected void defineSynchedData(SynchedEntityData.Builder builder){super.defineSynchedData(builder);builder.define(MOTION,WATCHING);builder.define(CHILD,false);}
     public int motion(){return entityData.get(MOTION);}
     public void owner(UUID id){owner=id;}
     public @Nullable UUID owner(){return owner;}
-    public void caged(){motion(CAGED,0);refreshDimensions();}
-    public void awaken(UUID owner){this.owner=owner;motion(WATCHING,35);refreshDimensions();}
-    @Override public EntityDimensions getDefaultDimensions(Pose pose){return motion()==CAGED?EntityDimensions.scalable(.48F,1.26F).withEyeHeight(1.12F):super.getDefaultDimensions(pose);}
-    @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(MOTION.equals(key))refreshDimensions();}
+    public boolean childAppearance(){return entityData.get(CHILD);}
+    public void caged(){entityData.set(CHILD,true);motion(CAGED,0);refreshDimensions();}
+    public void awaken(UUID owner){this.owner=owner;entityData.set(CHILD,false);motion(WATCHING,35);refreshDimensions();}
+    @Override public EntityDimensions getDefaultDimensions(Pose pose){return childAppearance()?EntityDimensions.scalable(.48F,1.26F).withEyeHeight(1.12F):super.getDefaultDimensions(pose);}
+    @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(MOTION.equals(key)||CHILD.equals(key))refreshDimensions();}
+    public boolean observed(){return level() instanceof net.minecraft.server.level.ServerLevel l&&(io.github.knaitoe.theoldesthouse.house.HouseWatchers.isWatched(l,position().add(0,.2,0))||io.github.knaitoe.theoldesthouse.house.HouseWatchers.isWatched(l,position().add(0,getBbHeight()*.55,0))||io.github.knaitoe.theoldesthouse.house.HouseWatchers.isWatched(l,getEyePosition()));}
     private void motion(int motion,int duration){entityData.set(MOTION,motion);remaining=duration;}
     public void stagger(){motion(STUNNED,65);setDeltaMovement(Vec3.ZERO);}
     public void wounded(){motion(WOUNDED,240);bar.removeAllPlayers();setDeltaMovement(Vec3.ZERO);}
@@ -51,6 +54,13 @@ public final class MinotaurEntity extends PathfinderMob {
         super.tick();if(!(level() instanceof net.minecraft.server.level.ServerLevel level))return;
         ServerPlayer player=owner==null?null:level.getServer().getPlayerList().getPlayer(owner);
         if(motion()==CAGED){bar.removeAllPlayers();setDeltaMovement(Vec3.ZERO);getNavigation().stop();
+            if(player!=null&&player.level()==level&&FinaleProgress.phase(level.getServer(),owner)==FinaleProgress.Phase.FIGHT){
+                var center=FinaleController.cellCenter(level.getServer());
+                if(center!=null){Vec3 hiding=center.add(3.8,0,-.5);Vec3 delta=hiding.subtract(position()).multiply(1,0,1);
+                    if(delta.lengthSqr()>.09)move(MoverType.SELF,delta.normalize().scale(Math.min(.13,delta.length())));
+                    if(!observed()&&Math.abs(getX()-hiding.x)<.65)awaken(owner);
+                }return;
+            }
             var visitor=level.players().stream().filter(p->p.isAlive()&&!p.isSpectator()).min(java.util.Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
             if(visitor!=null&&distanceToSqr(visitor)<225)getLookControl().setLookAt(visitor,20,20);return;}
         if(motion()==RELEASED){
@@ -99,9 +109,9 @@ public final class MinotaurEntity extends PathfinderMob {
         if(!original){FinaleController.words(player,blockPosition().above(),"The edge passes through. This is not the one you used.");return false;}
         FinaleController.wound(player,this);return true;
     }
-    @Override public void addAdditionalSaveData(CompoundTag tag){super.addAdditionalSaveData(tag);if(owner!=null)tag.putUUID("FinaleOwner",owner);tag.putInt("FinaleMotion",motion());tag.putInt("FinaleRemaining",remaining);}
+    @Override public void addAdditionalSaveData(CompoundTag tag){super.addAdditionalSaveData(tag);if(owner!=null)tag.putUUID("FinaleOwner",owner);tag.putInt("FinaleMotion",motion());tag.putBoolean("ChildAppearance",childAppearance());tag.putInt("FinaleRemaining",remaining);}
     @Override public void readAdditionalSaveData(CompoundTag tag){super.readAdditionalSaveData(tag);owner=tag.hasUUID("FinaleOwner")?tag.getUUID("FinaleOwner"):null;
         // Reloads never resume an untelegraphed lethal dash.
-        int saved=tag.getInt("FinaleMotion");motion(saved==CAGED?CAGED:saved==WOUNDED?WOUNDED:saved==RELEASED?RELEASED:WATCHING,saved==WOUNDED?Math.max(1,tag.getInt("FinaleRemaining")):35);refreshDimensions();}
+        int saved=tag.getInt("FinaleMotion");entityData.set(CHILD,tag.getBoolean("ChildAppearance")||saved==CAGED);motion(saved==CAGED?CAGED:saved==WOUNDED?WOUNDED:saved==RELEASED?RELEASED:WATCHING,saved==WOUNDED?Math.max(1,tag.getInt("FinaleRemaining")):35);refreshDimensions();}
     @Override public void remove(RemovalReason reason){bar.removeAllPlayers();super.remove(reason);}
 }

@@ -144,7 +144,7 @@ public final class NovelVignettes {
     }
     @SubscribeEvent public static void opened(PlayerContainerEvent.Open e){
         if(!(e.getEntity() instanceof ServerPlayer p)||!participant(p)||!(e.getContainer() instanceof ChestMenu menu))return;var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());
-        if(!own.getBoolean("Correspondence")||own.getInt("Letters")>=4||p.serverLevel().getGameTime()<own.getLong("MailDue"))return;
+        if(!own.getBoolean("Correspondence")||own.getInt("Letters")>=8||p.serverLevel().getGameTime()<own.getLong("MailDue"))return;
         var chest=menu.getContainer();for(int i=0;i<chest.getContainerSize();i++)if(chest.getItem(i).isEmpty()){
             int n=own.getInt("Letters");ItemStack letter=VignetteYields.mark(NovelTexts.letter(n,p.getGameProfile().getName()),LabyrinthPlace.WHALE.id());CustomData.update(DataComponents.CUSTOM_DATA,letter,t->t.putUUID("LetterTo",p.getUUID()));
             chest.setItem(i,letter);chest.setChanged();menu.broadcastChanges();own.putInt("Letters",n+1);own.putLong("MailDue",p.serverLevel().getGameTime()+MAIL_INTERVAL);save(data,p.getUUID(),own);break;}

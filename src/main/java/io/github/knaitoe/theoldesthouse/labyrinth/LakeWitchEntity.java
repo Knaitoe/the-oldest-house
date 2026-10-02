@@ -33,6 +33,10 @@ public final class LakeWitchEntity extends PathfinderMob {
     private final Deque<Vec3> route = new ArrayDeque<>();
     @Nullable private BlockPos routeGoal;
     private int windup, cooldown, visit, lungeTicks, settleTicks;
+    private double closestRush=Double.MAX_VALUE;
+    private int strikeAttempts;
+    private boolean lastStrikeAccepted;
+    public String huntDiagnostic(){return "closestRush="+closestRush+", attempts="+strikeAttempts+", accepted="+lastStrikeAccepted+", route="+route.size()+", node="+routeGoal;}
 
     public LakeWitchEntity(EntityType<? extends LakeWitchEntity> type, Level level) {
         super(type, level);
@@ -216,8 +220,9 @@ public final class LakeWitchEntity extends PathfinderMob {
             if(--lungeTicks<=0){cancelStrike();cooldown=65;entityData.set(HUNT_PHASE,WITHDRAW);route.clear();return;}
             if(routeGoal==null||!goal.equals(routeGoal)||route.isEmpty())routeTo(goal);
             follow(.62);
+            closestRush=Math.min(closestRush,distanceToSqr(target));
             if(canAttack(this,target)&&distanceToSqr(target)<3.8&&getSensing().hasLineOfSight(target)){
-                target.hurt(damageSources().mobAttack(this),6);Vec3 away=target.position().subtract(position()).multiply(1,0,1).normalize();
+                strikeAttempts++;lastStrikeAccepted=target.hurt(damageSources().mobAttack(this),6);Vec3 away=target.position().subtract(position()).multiply(1,0,1).normalize();
                 target.setDeltaMovement(away.scale(.3).add(0,.12,0));target.hurtMarked=true;
                 cancelStrike();cooldown=75;entityData.set(HUNT_PHASE,WITHDRAW);route.clear();
             }return;

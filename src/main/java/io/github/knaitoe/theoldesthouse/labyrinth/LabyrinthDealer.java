@@ -96,7 +96,7 @@ public final class LabyrinthDealer {
         if (!special) return ordinaryWeight * 12;
         int age = data.recentVisit(player, place);
         int factor = age < 0 ? 12 : age == 0 ? 1 : age < 3 ? 2 : age < 6 ? 4 : 8;
-        return ordinaryWeight * factor;
+        return io.github.knaitoe.theoldesthouse.house.HouseExperience.weight(data,player,place,ordinaryWeight * factor);
     }
 
     public static boolean rescueNeeded(LabyrinthData data,UUID player) {

@@ -47,7 +47,7 @@ public final class LakeAmbushTests {
                 wet[0]++;h.assertTrue(Math.abs(witch.getY()-LakeWitchEntity.supportHeight(l,base,witch.getX(),witch.getZ(),witch.getBbWidth()))<.02,"the actual ticking actor rests on the fluid surface or the bank supporting its footprint: y="+witch.getY());
             }
             if(witch.huntPhase()==LakeWitchEntity.LUNGE)rush[0]++;
-            h.assertTrue(witch.tickCount<230,"the flank and short strike have a strict native movement budget: offset="+witch.position().subtract(target.position())+", phase="+witch.huntPhase()+", targetHealth="+target.getHealth()+", wet="+wet[0]+", rush="+rush[0]+", watched="+LakeWitchEntity.inView(target,witch.position().add(0,.6,0))+", sight="+witch.getSensing().hasLineOfSight(target));
+            h.assertTrue(witch.tickCount<230,"the flank and short strike have a strict native movement budget: offset="+witch.position().subtract(target.position())+", phase="+witch.huntPhase()+", targetHealth="+target.getHealth()+", wet="+wet[0]+", rush="+rush[0]+", watched="+LakeWitchEntity.inView(target,witch.position().add(0,.6,0))+", sight="+witch.getSensing().hasLineOfSight(target)+", "+witch.huntDiagnostic());
         });
         h.succeedWhen(()->{
             h.assertTrue(target.getHealth()<health,"the quick approach must deliver an actual native strike");
