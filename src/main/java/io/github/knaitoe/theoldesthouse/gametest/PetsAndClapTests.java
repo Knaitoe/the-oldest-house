@@ -99,15 +99,17 @@ public final class PetsAndClapTests {
             level.setBlock(base.offset(x,y,z),(x==-2||x==2||z==-2||z==2||y==-1||y==3
                     ?net.minecraft.world.level.block.Blocks.STONE:net.minecraft.world.level.block.Blocks.AIR).defaultBlockState(),3);
     }
-    @GameTest(template="empty",batch="pet_actions") public static void wheelPetsCatsDogsPekingeseAndParrotsWithoutReplacingStay(GameTestHelper h) {
+    @GameTest(template="empty",batch="pet_actions") public static void wheelPetsCatsDogsAndPekingeseWithoutReplacingStayAndRefusesParrots(GameTestHelper h) {
         var level=h.getLevel();var owner=h.makeMockServerPlayerInLevel();BlockPos at=h.absolutePos(new BlockPos(2,2,2));owner.moveTo(at.getCenter());
-        for(var type:List.of(EntityType.CAT,EntityType.WOLF,MotherRegistry.PEKINGESE.get(),EntityType.PARROT)) {
+        for(var type:List.of(EntityType.CAT,EntityType.WOLF,MotherRegistry.PEKINGESE.get())) {
             var entity=type.create(level);h.assertTrue(entity instanceof TamableAnimal,"every supported animal is a native tameable");var pet=(TamableAnimal)entity;
             pet.moveTo(owner.position().add(1,0,0));pet.tame(owner);pet.addTag(MotherOfStrays.RELEASED);level.addFreshEntity(pet);
             h.assertTrue(CompanionOrders.issue(pet,owner,CompanionOrders.Order.STAY)&&CompanionOrders.command(owner,pet.getId(),CompanionOrders.PET_ACTION),"the real server packet route accepts the Pet action");
             h.assertTrue(CompanionOrders.order(pet)==CompanionOrders.Order.STAY&&pet.isOrderedToSit()&&owner.getUUID().equals(pet.getOwnerUUID()),"a pat preserves the chosen order and native owner");
             pet.addTag(MotherOfStrays.PET);h.assertTrue(!CompanionOrders.canCommand(owner,pet),"a kept display animal cannot be commanded out of custody");pet.discard();
         }
+        var parrot=EntityType.PARROT.create(level);parrot.moveTo(owner.position().add(1,0,0));parrot.tame(owner);level.addFreshEntity(parrot);
+        h.assertTrue(!CompanionOrders.supported(parrot)&&!CompanionOrders.issue(parrot,owner,CompanionOrders.Order.STAY)&&!CompanionOrders.command(owner,parrot.getId(),CompanionOrders.PET_ACTION),"an owned parrot keeps native interaction and cannot use or forge a cat/dog wheel action");parrot.discard();
         owner.server.getPlayerList().remove(owner);h.succeed();
     }
     private static HouseSavedData introHouse;

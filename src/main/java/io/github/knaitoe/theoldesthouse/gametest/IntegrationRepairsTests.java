@@ -29,27 +29,36 @@ public final class IntegrationRepairsTests {
     private static final class Fixture implements AutoCloseable {
         final net.minecraft.server.MinecraftServer server;final HouseSavedData oldHouse;final LabyrinthData oldData;
         final BlockPos origin;final LabyrinthData data=new LabyrinthData();final List<Entity> entities=new ArrayList<>();final List<ServerPlayer> players=new ArrayList<>();
+        private record Ticket(ServerLevel level,net.minecraft.world.level.ChunkPos chunk,BlockPos at){}
+        final List<Ticket> tickets=new ArrayList<>();
         Fixture(GameTestHelper h,int at){server=h.getLevel().getServer();origin=new BlockPos(at,80,at);oldHouse=HouseSavedData.get(server);oldData=LabyrinthData.get(server);
             var house=new HouseSavedData();house.markSpawned(origin);server.overworld().getDataStorage().set("the_oldest_house",house);data.setBuilt(LabyrinthBuilder.VERSION,origin);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);}
         ServerLevel level(LabyrinthPlace p){return HouseTestLevel.get(server,NovelRooms.dimension(p));}
-        ServerPlayer player(GameTestHelper h,ServerLevel l,Vec3 at){var p=NativeTestPlayers.survival(h,"integration");p.teleportTo(l,at.x,at.y,at.z,0,0);players.add(p);return p;}
+        ServerPlayer player(GameTestHelper h,ServerLevel l,Vec3 at){var pos=BlockPos.containing(at);var chunk=new net.minecraft.world.level.ChunkPos(pos);l.getChunkSource().addRegionTicket(TicketType.PORTAL,chunk,3,pos);l.getChunkAt(pos);tickets.add(new Ticket(l,chunk,pos));
+            for(int x=-2;x<=2;x++)for(int z=-2;z<=2;z++){var floor=pos.offset(x,-1,z);if(l.getBlockState(floor).isAir())l.setBlock(floor,Blocks.STONE.defaultBlockState(),2);}
+            var p=NativeTestPlayers.survival(h,"integration");p.teleportTo(l,at.x,at.y,at.z,0,0);players.add(p);return p;}
         <E extends Entity>E keep(E e){entities.add(e);return e;}
-        public void close(){for(var p:players){p.stopRiding();p.getInventory().clearContent();NativeTestPlayers.remove(p);}entities.forEach(Entity::discard);server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);LabyrinthBuilder.clearAll();FinaleArchitecture.clearAll();}
+        public void close(){for(var p:players){p.stopRiding();p.getInventory().clearContent();NativeTestPlayers.remove(p);}entities.forEach(Entity::discard);for(var t:tickets)t.level.getChunkSource().removeRegionTicket(TicketType.PORTAL,t.chunk,3,t.at);server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);LabyrinthBuilder.clearAll();FinaleArchitecture.clearAll();}
     }
+    private static Fixture companions,tosses;
+    @AfterBatch(batch="integration_companions")public static void cleanupCompanions(ServerLevel l){if(companions!=null){companions.close();companions=null;}}
+    @AfterBatch(batch="integration_toss")public static void cleanupTosses(ServerLevel l){if(tosses!=null){tosses.close();tosses=null;}}
     @GameTest(template="empty",batch="integration_companions")
     public static void nativeWheelAndServerCommandsAcceptOnlyOwnedCatsAndDogs(GameTestHelper h){
-        try(var f=new Fixture(h,96500)){
+        companions=new Fixture(h,96500);var f=companions;
             var l=f.level(LabyrinthPlace.FLOORBOARDS);var p=f.player(h,l,new Vec3(96500,100,96500));
             var cat=f.keep(EntityType.CAT.create(l));var wolf=f.keep(EntityType.WOLF.create(l));var parrot=f.keep(EntityType.PARROT.create(l));
             for(TamableAnimal pet:List.of(cat,wolf,parrot)){pet.setTame(true,true);pet.setOwnerUUID(p.getUUID());pet.moveTo(p.position());l.addFreshEntity(pet);}
+            h.succeedWhen(()->{
+            h.assertTrue(l.getEntity(cat.getId())==cat&&l.getEntity(wolf.getId())==wolf&&l.getEntity(parrot.getId())==parrot,"native entity chunks finish tracking all three owned animals before packet lookup");
             h.assertTrue(CompanionOrders.command(p,cat.getId(),CompanionOrders.Order.STAY.ordinal())&&CompanionOrders.command(p,wolf.getId(),CompanionOrders.Order.STAY.ordinal()),"both native cats and dogs retain their owned wheel commands");
             h.assertTrue(!CompanionOrders.supported(parrot)&&!CompanionOrders.canCommand(p,parrot)&&!CompanionOrders.command(p,parrot.getId(),0)&&!CompanionOrders.issue(parrot,p,CompanionOrders.Order.STAY)&&!CompanionOrders.managed(parrot),"an owned parrot cannot open or forge a companion command or acquire saved wheel orders");
-            cat.setOwnerUUID(UUID.randomUUID());h.assertTrue(!CompanionOrders.command(p,cat.getId(),0),"species eligibility does not bypass ownership");h.succeed();
-        }
+            cat.setOwnerUUID(UUID.randomUUID());h.assertTrue(!CompanionOrders.command(p,cat.getId(),0),"species eligibility does not bypass ownership");
+            });
     }
     @GameTest(template="empty",batch="integration_toss")
     public static void canceledCanoeTossKeepsResidualOriginalThroughNativeSaveAndRelease(GameTestHelper h){
-        try(var f=new Fixture(h,97000)){
+        tosses=new Fixture(h,97000);var f=tosses;
             var l=f.level(LabyrinthPlace.PHONE_CANOE);var b=LabyrinthPlaces.base(f.origin,LabyrinthPlace.PHONE_CANOE);var p=f.player(h,l,Vec3.atBottomCenterOf(b.offset(PhoneCanoe.DOCK)));
             for(int i=0;i<36;i++)p.getInventory().setItem(i,new ItemStack(Items.STONE,64));
             var original=new ItemStack(Items.DIAMOND,7);original.set(DataComponents.CUSTOM_NAME,Component.literal("The seven originals"));CustomData.update(DataComponents.CUSTOM_DATA,original,t->t.putUUID("Provenance",UUID.randomUUID()));
@@ -60,10 +69,11 @@ public final class IntegrationRepairsTests {
             var loaded=LabyrinthData.FACTORY.deserializer().apply(f.data.save(new CompoundTag(),p.registryAccess()),p.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);
             var saved=PhoneCanoe.personal(loaded,p.getUUID());saved.putInt("Phase",0);all=loaded.state(PhoneCanoe.ID);all.put(p.getUUID().toString(),saved);loaded.setState(PhoneCanoe.ID,all);
             PhoneCanoe.tick(p);
+            h.runAfterDelay(10,()->{
             var returned=l.getEntitiesOfClass(ItemEntity.class,p.getBoundingBox().inflate(2),e->ItemStack.isSameItemSameComponents(e.getItem(),original));returned.forEach(f::keep);
-            h.assertTrue(returned.size()==1&&returned.getFirst().getItem().getCount()==3&&p.getUUID().equals(returned.getFirst().getTarget())&&PhoneCanoe.personal(loaded,p.getUUID()).getList("ReturnedTosses",Tag.TAG_COMPOUND).isEmpty(),"a full inventory after the saved binding ends returns one owner-targeted residual stack");
+            h.assertTrue(returned.size()==1&&returned.getFirst().getItem().getCount()==3&&p.getUUID().equals(returned.getFirst().getTarget())&&PhoneCanoe.personal(loaded,p.getUUID()).getList("ReturnedTosses",Tag.TAG_COMPOUND).isEmpty(),"a full inventory after the saved binding ends returns one owner-targeted residual stack: visible="+returned.size()+"; saved="+PhoneCanoe.personal(loaded,p.getUUID()).getList("ReturnedTosses",Tag.TAG_COMPOUND).size());
             PhoneCanoe.tick(p);h.assertTrue(l.getEntitiesOfClass(ItemEntity.class,p.getBoundingBox().inflate(2),e->ItemStack.isSameItemSameComponents(e.getItem(),original)).size()==1,"subsequent ticks cannot duplicate the saved toss refund");h.succeed();
-        }
+            });
     }
     @GameTest(template="empty",batch="integration_finale")
     public static void nativeFinaleClaimReleasesOnlyItsOwnerAndRetainsOfflineCommittedAttempts(GameTestHelper h){
