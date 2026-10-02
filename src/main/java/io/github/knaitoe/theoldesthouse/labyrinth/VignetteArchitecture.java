@@ -118,7 +118,7 @@ public final class VignetteArchitecture {
         cabinet(7,0,-17,DISH_RACK);cabinet(6,0,-17,CROCK);detail(5,1,-13,TEA_SET);
         furniture(2,0,-17,RADIATOR,Direction.SOUTH);cabinet(-7,0,-16,TOYS);detail(-6,0,-16,BLANKET);
         rug(-2,1,-6,-3,Blocks.GRAY_CARPET,Blocks.LIGHT_GRAY_CARPET);
-        pot(8,0,-9,Blocks.POTTED_FERN);pot(-8,0,-7,Blocks.POTTED_AZALEA_BUSH);
+        pot(8,0,-9,Blocks.POTTED_FERN);pot(-8,0,-7,Blocks.POTTED_OAK_SAPLING);
         // Nothing is added to the tree's swept yard or the animated chair stack.
     }
     private void harrigan(){
@@ -217,7 +217,7 @@ public final class VignetteArchitecture {
         furniture(-4,0,-10,FOOTSTOOL,Direction.NORTH);cabinet(7,0,-14,BLANKET);
         table(7,0,-5,FILE_TRAY);detail(6,0,-6,SATCHEL);detail(7,0,-2,SHOES);
         detail(8,2,-8,FRAME,Direction.WEST);detail(-8,2,-3,COAT,Direction.EAST);
-        pot(-8,0,-16,Blocks.POTTED_AZALEA_BUSH);pot(8,0,-17,Blocks.POTTED_FERN);
+        pot(-8,0,-16,Blocks.POTTED_OAK_SAPLING);pot(8,0,-17,Blocks.POTTED_FERN);
         rug(-8,-4,-12,-5,Blocks.BROWN_CARPET,Blocks.GRAY_CARPET);rug(4,7,-13,-8,Blocks.GRAY_CARPET,Blocks.LIGHT_GRAY_CARPET);
         pendant(-6,4,-8,5);pendant(6,4,-8,5);
     }
