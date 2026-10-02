@@ -44,7 +44,7 @@ public final class LakeAmbushTests {
             h.assertTrue(Math.abs(witch.getX()-previous[0])<.7,"the ambush follows a physical route rather than teleporting");previous[0]=witch.getX();
             var node=BlockPos.containing(witch.getX(),base.getY(),witch.getZ());
             if(l.getFluidState(node.below()).is(net.minecraft.tags.FluidTags.WATER)){
-                wet[0]++;h.assertTrue(Math.abs(witch.getY()-LakeWitchEntity.surfaceHeight(l,base,node))<.02,"the actual ticking actor rests on the native fluid surface, not below it");
+                wet[0]++;h.assertTrue(Math.abs(witch.getY()-LakeWitchEntity.supportHeight(l,base,witch.getX(),witch.getZ(),witch.getBbWidth()))<.02,"the actual ticking actor rests on the fluid surface or the bank supporting its footprint: y="+witch.getY());
             }
             if(witch.huntPhase()==LakeWitchEntity.LUNGE)rush[0]++;
             h.assertTrue(witch.tickCount<230,"the flank and short strike have a strict native movement budget");

@@ -42,7 +42,14 @@ public final class HollowayVignette {
     public static @Nullable BlockPos base(MinecraftServer s){return IndianLakeRooms.base(s,LabyrinthPlace.HOLLOWAY_CAMP);}
     public static boolean inside(ServerPlayer p){return p.gameMode.getGameModeForPlayer()!=net.minecraft.world.level.GameType.SPECTATOR&&IndianLakeRooms.inside(p,LabyrinthPlace.HOLLOWAY_CAMP);}
     public static boolean canDeal(LabyrinthData data,UUID id){return !personal(data,id).getBoolean("Escaped")&&!WitnessAccount.has(data,id,WitnessAccount.Story.HOLLOWAY);}
-    public static boolean pursued(ServerPlayer p){return inside(p)&&personal(LabyrinthData.get(p.server),p.getUUID()).getBoolean("Run");}
+    public static boolean pursued(ServerPlayer p){var own=personal(LabyrinthData.get(p.server),p.getUUID());return inside(p)&&(own.getBoolean("Run")||own.getBoolean("CampAnger"));}
+    public static void provoke(ServerPlayer p,boolean theft){
+        if(!inside(p))return;enter(p);var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());
+        long now=p.serverLevel().getGameTime();if(!theft&&own.contains("TouchedAt")&&now-own.getLong("TouchedAt")<20)return;
+        int suspicion=Math.min(3,own.getInt("Suspicion")+1);own.putInt("Suspicion",suspicion);own.putLong("TouchedAt",now);
+        if(theft||suspicion>=3)own.putBoolean("CampAnger",true);save(data,p.getUUID(),own);
+        p.displayClientMessage(Component.literal(theft?"Holloway: Put it back. You think I didn't see?":suspicion>=3?"Holloway: I told you. Get away from my things.":"Holloway: Don't touch that. I counted everything."),false);
+    }
     public static void onArrive(ServerPlayer p,LabyrinthPlace place){if(place==LabyrinthPlace.HOLLOWAY_CAMP)enter(p);}
     public static void enter(ServerPlayer p){
         if(!inside(p)||!PRESENT.add(p.getUUID()))return;
@@ -63,12 +70,12 @@ public final class HollowayVignette {
     /** Called only by the native source slot's onTake, never by opening or receiving a borrowed item. */
     private static void looted(ServerPlayer p){
         if(!inside(p))return;enter(p);var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());
-        if(own.getBoolean("Looted"))return;own.putBoolean("Looted",true);own.putInt("LootVisit",own.getInt("Visits"));save(data,p.getUUID(),own);
+        provoke(p,true);own=personal(data,p.getUUID());if(own.getBoolean("Looted"))return;own.putBoolean("Looted",true);own.putInt("LootVisit",own.getInt("Visits"));save(data,p.getUUID(),own);
         p.displayClientMessage(Component.literal("The empty space in the barrel looks deliberate."),false);
     }
     public static void depart(ServerPlayer p){
         PRESENT.remove(p.getUUID());var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());
-        if(!own.getBoolean("InRoom"))return;own.putBoolean("InRoom",false);own.putBoolean("Run",false);own.putInt("Arena",0);own.putInt("ArenaTicks",0);save(data,p.getUUID(),own);
+        if(!own.getBoolean("InRoom"))return;own.putBoolean("InRoom",false);own.putBoolean("Run",false);own.putBoolean("CampAnger",false);own.putInt("Arena",0);own.putInt("ArenaTicks",0);save(data,p.getUUID(),own);
     }
     public static void clearAll(){PRESENT.clear();MISSING.clear();LIVE.clear();}
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){PRESENT.remove(e.getEntity().getUUID());}
@@ -79,7 +86,7 @@ public final class HollowayVignette {
         var visitors=IndianLakeRooms.visitors(l,b,LabyrinthPlace.HOLLOWAY_CAMP);if(visitors.isEmpty()){
             var all=LabyrinthData.get(s).state(ID);if(all.hasUUID("Actor")&&l.getEntity(all.getUUID("Actor")) instanceof HouseHuman actor){actor.pursue(null);actor.getNavigation().stop();}return;
         }
-        IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.HOLLOWAY_CAMP);var actor=ensureActor(l,b);if(actor!=null)hunt(actor,visitors,b);
+        IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.HOLLOWAY_CAMP);HollowayCamp.repairSigns(l,b);var actor=ensureActor(l,b);if(actor!=null)hunt(actor,visitors,b);
     }
     public static void playerTick(ServerPlayer p){
         if(!inside(p)){if(PRESENT.contains(p.getUUID())||personal(LabyrinthData.get(p.server),p.getUUID()).getBoolean("InRoom"))depart(p);return;}
@@ -111,7 +118,7 @@ public final class HollowayVignette {
     private static void hunt(HouseHuman actor,List<ServerPlayer> visitors,BlockPos b){
         var l=(ServerLevel)actor.level();var target=visitors.stream().filter(HollowayVignette::pursued)
                 .min(Comparator.comparingDouble(actor::distanceToSqr)).orElse(null);actor.pursue(target);
-        if(target==null){actor.getNavigation().stop();return;}
+        if(target==null){actor.patrol(b,visitors);return;}
         var data=LabyrinthData.get(target.server);
         for(var visitor:visitors)if(pursued(visitor)&&actor.distanceToSqr(visitor)<1024&&actor.hasLineOfSight(visitor)){
             var own=personal(data,visitor.getUUID());if(!own.getBoolean("Seen")){own.putBoolean("Seen",true);save(data,visitor.getUUID(),own);}
@@ -125,9 +132,10 @@ public final class HollowayVignette {
         double distance=actor.distanceToSqr(target);
         if(actor.attackReady()&&sight&&distance<100){
             actor.attacked();l.playSound(null,actor.blockPosition(),SoundEvents.CROSSBOW_SHOOT,SoundSource.HOSTILE,.65F,.6F);
-            if(target.isBlocking()&&target.getViewVector(1).dot(actor.position().subtract(target.position()).normalize())>.25){actor.blocked();target.playSound(SoundEvents.SHIELD_BLOCK,1,.9F);}
-            else target.hurt(l.damageSources().mobAttack(actor),distance<5?3:2);
-            l.sendParticles(ParticleTypes.CRIT,target.getX(),target.getY()+1,target.getZ(),4,.12,.12,.12,.01);
+            var bolt=net.minecraft.world.entity.EntityType.ARROW.create(l);
+            if(bolt!=null){bolt.setOwner(actor);bolt.setPos(actor.getX(),actor.getEyeY()-.1,actor.getZ());bolt.setBaseDamage(1.5);bolt.pickup=net.minecraft.world.entity.projectile.AbstractArrow.Pickup.DISALLOWED;
+                Vec3 aim=target.position().add(0,target.getBbHeight()*.55,0).subtract(bolt.position());
+                bolt.shoot(aim.x,aim.y+aim.horizontalDistance()*.06,aim.z,1.6F,3);l.addFreshEntity(bolt);}
         }
     }
     /** Only the pursued explorer's actual, still-present native torch is a search marker. */
@@ -149,7 +157,7 @@ public final class HollowayVignette {
             p.displayClientMessage(Component.literal("The service latch is stiff. The survey describes three rooms on the way here."),true);return true;
         }
         if(!p.isShiftKeyDown()){p.displayClientMessage(Component.literal("Crouch and pull the service latch."),true);return true;}
-        own.putBoolean("Escaped",true);own.putBoolean("Run",false);own.putBoolean("Rewarded",true);save(data,p.getUUID(),own);
+        own.putBoolean("Escaped",true);own.putBoolean("Run",false);own.putBoolean("CampAnger",false);own.putBoolean("Rewarded",true);save(data,p.getUUID(),own);
         var shield=owned(VignetteYields.mark(new ItemStack(Items.SHIELD),ID),p.getUUID());shield.set(DataComponents.CUSTOM_NAME,Component.literal("Holloway's battered shield"));
         give(p,shield);give(p,owned(wrongMap(p.serverLevel()),p.getUUID()));
         WitnessAccount.resolve(p,WitnessAccount.Story.HOLLOWAY,"three_rooms_and_service_latch");
@@ -204,8 +212,10 @@ public final class HollowayVignette {
         if(!(e.getEntity() instanceof ServerPlayer p)||e.getHand()!=InteractionHand.MAIN_HAND||!inside(p))return;
         var at=e.getPos();if(p.distanceToSqr(at.getCenter())>36)return;
         if(at.equals(base(p.server).offset(HollowayCamp.CACHE))&&p.level().getBlockEntity(at) instanceof net.minecraft.world.Container cache){
+            provoke(p,false);
             e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);p.openMenu(new SimpleMenuProvider((id,inventory,player)->new CacheMenu(id,p,cache,at),Component.literal("Counted supplies")));
         }else if(at.equals(base(p.server).offset(HollowayCamp.JOURNAL))){
+            provoke(p,false);
             e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);p.openMenu(new SimpleMenuProvider((id,inventory,player)->new SurveyMenu(id,p,at),Component.literal("Holloway's survey")));
         }else if(finish(p,at)){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);}
     }

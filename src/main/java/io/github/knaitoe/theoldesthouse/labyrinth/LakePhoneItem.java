@@ -30,7 +30,7 @@ public final class LakePhoneItem extends WrittenBookItem {
                     }
                     ItemStack book=HouseWriting.book("The phone's recording",recording.getString("Name"),pages.stream().map(p->HouseWriting.page(HouseWriting.WritingStyle.PLAIN,p)).toList());
                     stack.set(DataComponents.WRITTEN_BOOK_CONTENT,book.get(DataComponents.WRITTEN_BOOK_CONTENT));owner.inventoryMenu.broadcastChanges();
-                    return super.use(level,player,hand);
+                    NativeItemReader.open(owner,stack,hand);return InteractionResultHolder.sidedSuccess(stack,level.isClientSide);
                 }
             }
         }

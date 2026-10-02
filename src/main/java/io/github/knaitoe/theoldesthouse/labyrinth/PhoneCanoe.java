@@ -28,13 +28,13 @@ public final class PhoneCanoe {
     public static CompoundTag personal(LabyrinthData data,UUID player){return data.state(ID).getCompound(player.toString()).copy();}
     private static void save(LabyrinthData data,UUID player,CompoundTag state){CompoundTag all=data.state(ID);all.put(player.toString(),state);data.setState(ID,all);}
     public static boolean canDeal(LabyrinthData data,UUID player){return !personal(data,player).getBoolean("Finished")&&!WitnessAccount.has(data,player,WitnessAccount.Story.PHONE_CANOE);}
-    public static boolean bound(ServerPlayer player){return personal(LabyrinthData.get(player.server),player.getUUID()).getInt("Phase")>=2&&IndianLakeRooms.inside(player,LabyrinthPlace.PHONE_CANOE);}
+    public static boolean bound(ServerPlayer player){return personal(LabyrinthData.get(player.server),player.getUUID()).getInt("Phase")>=3&&IndianLakeRooms.inside(player,LabyrinthPlace.PHONE_CANOE);}
     public static void build(net.minecraft.server.MinecraftServer server,ServerLevel level,BlockPos base){IndianLakeArchitecture.phone(level,base);stage(level,base);}
     public static LakeCanoeEntity stage(ServerLevel level,BlockPos base){
         var boats=level.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(base,LabyrinthPlace.PHONE_CANOE),b->b.getTags().contains(CANOE));
-        if(!boats.isEmpty()){for(int i=1;i<boats.size();i++)boats.get(i).discard();return boats.getFirst();}
+        if(!boats.isEmpty()){for(int i=1;i<boats.size();i++)boats.get(i).discard();boats.getFirst().mobile(true);return boats.getFirst();}
         LakeCanoeEntity boat=DrownedTownRegistry.CAVE_CANOE.get().create(level);if(boat==null)return null;
-        boat.addTag(CANOE);boat.moveTo(Vec3.atBottomCenterOf(base.offset(BOAT)));boat.setYRot(180);level.addFreshEntity(boat);return boat;
+        boat.addTag(CANOE);boat.mobile(true);boat.moveTo(Vec3.atBottomCenterOf(base.offset(BOAT)));boat.setYRot(180);level.addFreshEntity(boat);return boat;
     }
     public static void onArrive(ServerPlayer player,LabyrinthPlace place){
         if(place!=LabyrinthPlace.PHONE_CANOE)return;BlockPos base=IndianLakeRooms.base(player.server,place);if(base==null)return;
@@ -55,7 +55,7 @@ public final class PhoneCanoe {
         phone.set(DataComponents.CUSTOM_NAME,Component.literal("Your phone · Indian Lake"));
         CustomData.update(DataComponents.CUSTOM_DATA,phone,t->{t.putUUID(OWNER,player.getUUID());t.putUUID(SCENE,scene);t.putString("Name",player.getGameProfile().getName());t.put("Footage",new ListTag());});
         player.setItemInHand(InteractionHand.MAIN_HAND,phone);state.putUUID(SCENE,scene);state.putInt("Phase",1);state.put("Item",phone.save(player.registryAccess()));save(data,player.getUUID(),state);
-        player.inventoryMenu.broadcastChanges();player.displayClientMessage(Component.literal("Use the phone when you are ready to film. Crouch to leave the canoe."),true);return true;
+        canoe.fixedView(false);player.inventoryMenu.broadcastChanges();player.displayClientMessage(Component.literal("Use the phone, then row toward the drowned steeple. Crouch to stop filming and leave."),true);return true;
     }
     private static boolean original(ItemStack stack,UUID player,CompoundTag state){
         CustomData c=stack.get(DataComponents.CUSTOM_DATA);if(c==null||!state.hasUUID(SCENE))return false;CompoundTag t=c.copyTag();
@@ -66,7 +66,7 @@ public final class PhoneCanoe {
         LabyrinthData data=LabyrinthData.get(player.server);CompoundTag state=personal(data,player.getUUID());
         if(state.getInt("Phase")!=1||!original(phone,player.getUUID(),state))return false;
         state.putInt("Phase",2);state.putInt("Tick",0);state.put("Item",phone.copyWithCount(1).save(player.registryAccess()));save(data,player.getUUID(),state);send(player,2,-1,0);
-        sound(player,DrownedTownRegistry.PHONE_RECORD.get(),player.position(),.65F);return true;
+        sound(player,DrownedTownRegistry.PHONE_RECORD.get(),player.position(),.65F);player.displayClientMessage(Component.literal("Recording. Row over the steeple in the dark water ahead."),true);return true;
     }
     private static ItemStack scenePhone(ServerPlayer player,CompoundTag state){
         for(int i=0;i<player.getInventory().getContainerSize();i++){ItemStack item=player.getInventory().getItem(i);if(original(item,player.getUUID(),state))return item;}
@@ -89,18 +89,28 @@ public final class PhoneCanoe {
     private static LakePhoneCamera camera(ServerPlayer player,BlockPos base){
         String owner=CAMERA+player.getUUID();var cameras=player.serverLevel().getEntitiesOfClass(LakePhoneCamera.class,IndianLakeRooms.bounds(base,LabyrinthPlace.PHONE_CANOE),c->c.getTags().contains(owner));
         LakePhoneCamera camera=cameras.isEmpty()?DrownedTownRegistry.PHONE_CAMERA.get().create(player.serverLevel()):cameras.getFirst();if(camera==null)return null;
-        for(int i=1;i<cameras.size();i++)cameras.get(i).discard();camera.moveTo(base.getX()+1.2,base.getY()+.15,base.getZ()-32.5,0,-88);
+        var state=personal(LabyrinthData.get(player.server),player.getUUID());
+        for(int i=1;i<cameras.size();i++)cameras.get(i).discard();camera.moveTo(dropPosition(state,base),0,-88);
         if(cameras.isEmpty()){camera.addTag(CAMERA);camera.addTag(owner);player.serverLevel().addFreshEntity(camera);}return camera;
     }
+    private static Vec3 dropPosition(CompoundTag state,BlockPos base){return state.contains("DropX")?new Vec3(state.getDouble("DropX"),state.getDouble("DropY"),state.getDouble("DropZ")):new Vec3(base.getX()+1.2,base.getY()+.15,base.getZ()-32.5);}
     public static void tick(ServerPlayer player){
         LabyrinthData data=LabyrinthData.get(player.server);CompoundTag state=personal(data,player.getUUID());int phase=state.getInt("Phase");if(phase==0)return;
         if(!IndianLakeRooms.inside(player,LabyrinthPlace.PHONE_CANOE)){interrupt(player);return;}
         BlockPos base=IndianLakeRooms.base(player.server,LabyrinthPlace.PHONE_CANOE);IndianLakeRooms.keepLoaded(player.serverLevel(),base,LabyrinthPlace.PHONE_CANOE);
         LakeCanoeEntity canoe=stage(player.serverLevel(),base);if(canoe==null)return;
         if(phase==1){if(player.getVehicle()!=canoe)interrupt(player);return;}
-        // Native input predictions cannot row away, dive, dismount, or damage the explorer during the authored clip.
-        if(player.getVehicle()!=canoe){if(!canoe.getPassengers().isEmpty()||!player.startRiding(canoe,true))return;}player.setDeltaMovement(Vec3.ZERO);player.setAirSupply(player.getMaxAirSupply());player.fallDistance=0;
-        int tick=state.getInt("Tick");double fraction=Math.min(1,tick/100.0);canoe.moveTo(base.getX()+.5,base.getY(),base.getZ()-12.5-20*fraction,180,0);
+        if(phase==2&&player.getVehicle()!=canoe){interrupt(player);return;}
+        if(phase>=3){
+            if(player.getVehicle()!=canoe){if(!canoe.getPassengers().isEmpty()||!player.startRiding(canoe,true))return;}
+            player.setDeltaMovement(Vec3.ZERO);player.setAirSupply(player.getMaxAirSupply());player.fallDistance=0;
+        }
+        canoe.fixedView(phase>=3);int tick=state.getInt("Tick");
+        if(phase==2&&tick>=FILM_TICKS&&canoe.position().multiply(1,0,1).distanceToSqr(Vec3.atBottomCenterOf(base.offset(STEEPLE)).multiply(1,0,1))>64){
+            if(player.serverLevel().getGameTime()%20==0)send(player,2,-1,tick);
+            if(player.serverLevel().getGameTime()%100==0)player.displayClientMessage(Component.literal("Keep filming. Row closer to the submerged steeple."),true);
+            return;
+        }
         if(tick<FILM_TICKS){
             ItemStack phone=scenePhone(player,state);if(phone.isEmpty()){interrupt(player);return;}
             if(tick%40==0)frame(player,phone,tick,image(player,base),player.getEyePosition(),player.getYRot(),player.getXRot());
@@ -108,16 +118,17 @@ public final class PhoneCanoe {
             if(tick==120)sound(player,DrownedTownRegistry.PHONE_WATER.get(),Vec3.atCenterOf(base.offset(STEEPLE)),.7F);
         }else if(!state.getBoolean("Dropped")){
             ItemStack phone=scenePhone(player,state);if(phone.isEmpty()){interrupt(player);return;}
-            frame(player,phone,tick,"The image turns. Water crosses the lens. Above it: sky.",new Vec3(base.getX()+1.2,base.getY()+.15,base.getZ()-32.5),0,-88);
+            state.putDouble("DropX",canoe.getX()+.7);state.putDouble("DropY",base.getY()-.1);state.putDouble("DropZ",canoe.getZ()+.25);
+            frame(player,phone,tick,"The image turns. Water crosses the lens. Above it: sky.",dropPosition(state,base),0,-88);
             CustomData.update(DataComponents.CUSTOM_DATA,phone,t->t.putBoolean("Dropped",true));
             state.put("Item",phone.copyWithCount(1).save(player.registryAccess()));
-            PreservedCave.rememberDroppedPhone(player,phone);removePhone(player,state);state.putBoolean("Dropped",true);state.putInt("Phase",3);
+            PreservedCave.rememberDroppedPhone(player,phone);removePhone(player,state);state.putBoolean("Dropped",true);state.putInt("Phase",3);canoe.fixedView(true);save(data,player.getUUID(),state);
             sound(player,DrownedTownRegistry.PHONE_WATER.get(),player.position(),1F);
         }
         if(tick>=FILM_TICKS){LakePhoneCamera camera=camera(player,base);if(camera!=null&&(tick%20==0||tick==FILM_TICKS))send(player,3,camera.getId(),tick);}
         if(tick==FILM_TICKS+SKY_TICKS){
             ItemStack phone=ItemStack.parseOptional(player.registryAccess(),state.getCompound("Item"));
-            frame(player,phone,tick,"The same sky. The camera has not turned back.",new Vec3(base.getX()+1.2,base.getY()+.15,base.getZ()-32.5),0,-88);
+            frame(player,phone,tick,"The same sky. The camera has not turned back.",dropPosition(state,base),0,-88);
             state.put("Item",phone.save(player.registryAccess()));PreservedCave.updateDroppedPhone(player,phone);
             HousePackets.send(player,new HouseFadePayload(12,20,20));
         }
@@ -128,7 +139,7 @@ public final class PhoneCanoe {
         state.putInt("Phase",0);state.putBoolean("Finished",true);save(LabyrinthData.get(player.server),player.getUUID(),state);
         player.stopRiding();BlockPos base=IndianLakeRooms.base(player.server,LabyrinthPlace.PHONE_CANOE);Vec3 at=Vec3.atBottomCenterOf(base.offset(DOCK));
         player.connection.teleport(at.x,at.y,at.z,180,0);player.setDeltaMovement(Vec3.ZERO);clearCamera(player,base);send(player,0,-1,0);
-        LakeCanoeEntity canoe=stage(player.serverLevel(),base);if(canoe!=null)canoe.moveTo(Vec3.atBottomCenterOf(base.offset(BOAT)));
+        LakeCanoeEntity canoe=stage(player.serverLevel(),base);if(canoe!=null){canoe.fixedView(false);canoe.setDeltaMovement(Vec3.ZERO);canoe.moveTo(Vec3.atBottomCenterOf(base.offset(BOAT)));}
         WitnessAccount.resolve(player,WitnessAccount.Story.PHONE_CANOE,"lost_recording");player.displayClientMessage(Component.literal("Your hands are empty. Something wooden scrapes against stone, far away."),false);
     }
     private static void clearCamera(ServerPlayer player,BlockPos base){
@@ -139,7 +150,7 @@ public final class PhoneCanoe {
         LabyrinthData data=LabyrinthData.get(player.server);CompoundTag state=personal(data,player.getUUID());
         if(!state.getBoolean("Dropped"))removePhone(player,state);state.putInt("Phase",0);save(data,player.getUUID(),state);
         clearCamera(player,IndianLakeRooms.base(player.server,LabyrinthPlace.PHONE_CANOE));send(player,0,-1,0);
-        if(player.getVehicle() instanceof LakeCanoeEntity canoe&&canoe.getTags().contains(CANOE))player.stopRiding();
+        if(player.getVehicle() instanceof LakeCanoeEntity canoe&&canoe.getTags().contains(CANOE)){canoe.fixedView(false);player.stopRiding();}
     }
     private static void send(ServerPlayer player,int phase,int entity,int elapsed){HousePackets.send(player,new LakePhonePayload(phase,entity,elapsed));}
     private static void sound(ServerPlayer player,SoundEvent sound,Vec3 at,float volume){player.connection.send(new ClientboundSoundPacket(Holder.direct(sound),SoundSource.AMBIENT,at.x,at.y,at.z,volume,1,player.getRandom().nextLong()));}
@@ -148,7 +159,6 @@ public final class PhoneCanoe {
         if(server.getTickCount()%20!=0)return;BlockPos base=IndianLakeRooms.base(server,LabyrinthPlace.PHONE_CANOE);ServerLevel level=server.getLevel(io.github.knaitoe.theoldesthouse.house.HouseDimensions.OUTSIDE);
         if(base==null||level==null||IndianLakeRooms.visitors(level,base,LabyrinthPlace.PHONE_CANOE).isEmpty())return;
         IndianLakeRooms.keepLoaded(level,base,LabyrinthPlace.PHONE_CANOE);LakeCanoeEntity canoe=stage(level,base);
-        if(canoe!=null&&canoe.getPassengers().isEmpty())canoe.moveTo(Vec3.atBottomCenterOf(base.offset(BOAT)));
     }
     public static void onDamage(LivingIncomingDamageEvent event){if(event.getEntity() instanceof ServerPlayer player&&bound(player))event.setCanceled(true);}
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event){if(event.getEntity() instanceof ServerPlayer player)clearCamera(player,IndianLakeRooms.base(player.server,LabyrinthPlace.PHONE_CANOE));}
