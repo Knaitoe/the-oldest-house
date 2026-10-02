@@ -175,13 +175,13 @@ public final class Landscapes {
             }
         }
         // The well's cube-crowned spruces inside the farm become real trees where they stood.
-        for (int z = -4; z >= -33; z -= 6) {
-            for (int x = -14; x <= -12; x++) for (int dz = -1; dz <= 1; dz++) for (int y = 0; y <= 8; y++) {
+        for (int z = -4; z >= -33; z -= 6) for (int column : new int[]{-13, 16}) {
+            for (int x = column - 1; x <= column + 1; x++) for (int dz = -1; dz <= 1; dz++) for (int y = 0; y <= 8; y++) {
                 var st = get(l, b, x, y, z + dz);
                 if (st.getBlock() instanceof LeavesBlock || st.is(Blocks.SPRUCE_LOG)) set(l, b, x, y, z + dz, AIR);
             }
-            int seed = hash(-13, z, 23);
-            tree(l, b, -13, z, seed % 3, 5 + seed % 3, (seed >> 2) % 3 - 1, 0);
+            int seed = hash(column, z, 23);
+            tree(l, b, column, z, seed % 3, 5 + seed % 3, (seed >> 2) % 3 - 1, 0);
         }
         // Two loose rows: smaller trees at the foot of the bank, taller ones behind them.
         for (int side : new int[]{-1, 1}) {
