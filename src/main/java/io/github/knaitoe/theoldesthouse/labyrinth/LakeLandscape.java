@@ -42,8 +42,12 @@ public final class LakeLandscape {
         }
     }
     public static void liftSchool(ServerLevel l,BlockPos b){
-        var cells=capture(l,b.offset(-26,-12,-35),b.offset(-6,-5,-22));paste(l,cells,new BlockPos(0,11,0),true);
-        var houses=capture(l,b.offset(-25,-12,-60),b.offset(-14,-7,-45));paste(l,houses,new BlockPos(0,11,0),true);
+        var cells=capture(l,b.offset(-26,-12,-35),b.offset(-6,-5,-22));paste(l,cells,new BlockPos(0,11,0),true);clearCopiedContents(l,cells);
+        var houses=capture(l,b.offset(-25,-12,-60),b.offset(-14,-7,-45));paste(l,houses,new BlockPos(0,11,0),true);clearCopiedContents(l,houses);
+    }
+    private static void clearCopiedContents(ServerLevel l,List<Cell> cells){
+        // setBlock invokes native onRemove drops. Empty only after the full contents have been pasted.
+        for(Cell cell:cells)net.minecraft.world.Clearable.tryClear(l.getBlockEntity(cell.position()));
     }
     public static void dress(ServerLevel l,BlockPos b,LabyrinthPlace site){
         var r=site.room();
@@ -147,6 +151,7 @@ public final class LakeLandscape {
                 e.changeDimension(new DimensionTransition(to,relocated(site,old,dest,e.position()),e.getDeltaMovement(),e.getYRot(),e.getXRot(),DimensionTransition.DO_NOTHING));
             }
             // Clear source only after preserving native inventories and actors in the destination.
+            clearCopiedContents(from,cells);
             for(Cell cell:cells)from.setBlock(cell.position(),Blocks.AIR.defaultBlockState(),F);
             progress.putBoolean(site.id(),true);data.setState("lake_landscape_0426",progress);
         }

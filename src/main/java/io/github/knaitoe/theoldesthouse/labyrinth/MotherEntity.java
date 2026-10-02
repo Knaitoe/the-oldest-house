@@ -69,9 +69,10 @@ public final class MotherEntity extends PathfinderMob {
     public void galleryStep(int step) { galleryStep=Math.max(0,Math.min(2,step)); }
     public void carryDog(MotherPekingese dog) {
         carriedDog=dog;carriedDogId=dog.getUUID();setCarrying(true);setNoGravity(false);
-        dog.setNoAi(true);dog.setNoGravity(true);
+        dog.setNoAi(true);dog.setNoGravity(true);dog.noPhysics=true;
     }
     public void stopCarrying() {
+        if(carriedDog!=null)carriedDog.noPhysics=false;
         carriedDog=null;carriedDogId=null;galleryStep=0;setCarrying(false);setNoGravity(false);getNavigation().stop();
     }
 
@@ -83,6 +84,7 @@ public final class MotherEntity extends PathfinderMob {
                 carriedDog=carriedDogId!=null && server.getEntity(carriedDogId) instanceof MotherPekingese dog ? dog : null;
             }
             if(carriedDog!=null && carriedDog.isAlive()) {
+                carriedDog.noPhysics=true;
                 Vec3 forward=getLookAngle().multiply(1,0,1).normalize();
                 carriedDog.setDeltaMovement(Vec3.ZERO);
                 carriedDog.moveTo(getX()+forward.x*.5,getY()+.78,getZ()+forward.z*.5,getYRot(),0);
