@@ -135,8 +135,12 @@ public final class FinaleArchitecture {
                 int sx=x+(direction.getAxis()==Direction.Axis.Z?width:0),sz=z+(direction.getAxis()==Direction.Axis.X?width:0);
                 put(blocks,b,sx,y,sz,stone);put(blocks,b,sx,y-1,sz,stone);
             }
-            if(n<96)for(Direction side:List.of(direction.getClockWise(),direction.getCounterClockWise()))
-                put(blocks,b,x+side.getStepX()*5,y+1,z+side.getStepZ()*5,Blocks.IRON_BARS.defaultBlockState());
+            if(n<96)for(Direction side:List.of(direction.getClockWise(),direction.getCounterClockWise())){
+                var rail=Blocks.IRON_BARS.defaultBlockState();
+                if(direction.getAxis()==Direction.Axis.X)rail=rail.setValue(BlockStateProperties.EAST,true).setValue(BlockStateProperties.WEST,true);
+                else rail=rail.setValue(BlockStateProperties.NORTH,true).setValue(BlockStateProperties.SOUTH,true);
+                put(blocks,b,x+side.getStepX()*5,y+1,z+side.getStepZ()*5,rail);
+            }
             x+=direction.getStepX();z+=direction.getStepZ();
         }
         // Entry hall and copied vestibule open onto the first stair landing.
