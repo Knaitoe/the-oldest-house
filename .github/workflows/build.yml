@@ -186,14 +186,27 @@ jobs:
           PY
           diagnostic=$!
           trap 'kill "$diagnostic" 2>/dev/null || true' EXIT
-          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer --no-daemon
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer --no-daemon 2>&1 | tee build/native-gametest.log
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          log = Path('build/native-gametest.log').read_text()
+          passed = re.findall(r'All (\d+) required tests passed', log)
+          declared = sum(len(re.findall(r'@GameTest\s*\(', p.read_text())) for p in Path('src/main/java').rglob('*.java'))
+          assert passed, 'The native server never completed its required tests; a successful process exit is insufficient.'
+          assert int(passed[-1]) >= declared, f'Only {passed[-1]} native tests completed; {declared} are declared.'
+          print(f'Native gameplay verified: {passed[-1]} completed tests, {declared} declared.')
+          PY
 
       - name: Upload test diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: gametest-diagnostics-${{ github.sha }}
-          path: build/gametest-diagnostics/
+          path: |
+            build/gametest-diagnostics/
+            build/native-gametest.log
           if-no-files-found: ignore
 
       - name: Upload mod jar

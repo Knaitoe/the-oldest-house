@@ -54,6 +54,7 @@ public final class SequenceRepairTests {
             boy.caged();boy.owner(owner.getUUID());boy.moveTo(cell.getX()+.5,cell.getY(),cell.getZ()+4.5);l.addFreshEntity(boy);UUID original=boy.getUUID();
             for(int n=0;n<50;n++){boy.tick();h.assertTrue(boy.childAppearance()&&boy.motion()==MinotaurEntity.CAGED,"an actual peer looking into the cell prevents any visible transformation");}
             h.assertTrue(boy.getX()>cell.getX()+3.5,"the child physically walks behind the side wall instead of being replaced or teleported");
+            peer.gameMode.changeGameModeForPlayer(GameType.SPECTATOR);h.assertTrue(boy.observed(),"a native spectator looking into the cell is also an actual observer");boy.tick();h.assertTrue(boy.childAppearance(),"observing through a spectator camera cannot expose the change");
             peer.setYRot(0);peer.setYHeadRot(0);peer.setXRot(0);
             h.assertTrue(!boy.observed(),"masonry conceals the child from the owner after the peer turns away");boy.tick();
             h.assertTrue(boy.getUUID().equals(original)&&!boy.childAppearance()&&boy.motion()==MinotaurEntity.WATCHING&&boy.getBbHeight()>3,"the same native actor changes only after every actual observer loses sight");h.succeed();
