@@ -88,7 +88,7 @@ public final class LakeAmbushTests {
         }finally{l.getEntitiesOfClass(Entity.class,IndianLakeRooms.bounds(b,LabyrinthPlace.DROWNED_TOWN),e->e.getTags().contains(DrownedTown.TOWN_CANOE)||e.getTags().contains(DrownedTown.SHORE_BODY)).forEach(Entity::discard);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",prior);}
     }
     @GameTest(template="empty") public static void unclaimedPreparationShieldIsRetiredWithoutTakingEarnedEquipment(GameTestHelper h){
-        var l=h.getLevel();var origin=new BlockPos(88500,60,88500),at=FinaleArchitecture.base(origin).offset(-10,FinaleArchitecture.ARENA,39);var d=LabyrinthData.get(l.getServer());var old=d.state("finale_architecture_049").copy();
+        var l=h.getLevel();var origin=new BlockPos(88500,60,88500);var at=FinaleArchitecture.base(origin).offset(-10,FinaleArchitecture.ARENA,39);var d=LabyrinthData.get(l.getServer());var old=d.state("finale_architecture_049").copy();
         l.setBlock(at,Blocks.BARREL.defaultBlockState(),3);var cache=(BarrelBlockEntity)l.getBlockEntity(at);cache.setItem(0,new ItemStack(Items.SHIELD));var earned=new ItemStack(Items.SHIELD);earned.setDamageValue(13);cache.setItem(4,earned);
         try{FinaleArchitecture.retirePreparationShield(l,origin);h.assertTrue(cache.getItem(0).isEmpty()&&cache.getItem(4)==earned,"only the untouched authored shortcut is retired; other shield equipment stays native");FinaleArchitecture.retirePreparationShield(l,origin);h.assertTrue(cache.getItem(0).isEmpty(),"the preparation barrel never restocks the bypass");h.succeed();}
         finally{d.setState("finale_architecture_049",old);}
