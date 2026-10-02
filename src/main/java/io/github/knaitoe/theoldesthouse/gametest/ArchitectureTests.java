@@ -152,11 +152,12 @@ public final class ArchitectureTests {
             h.assertTrue(barriers==0,scene.id()+" keeps no invisible wall: "+barriers);
         }
         // The plain's dunes rise in steps of two or more from its walkable core: they can be seen, not climbed.
+        // The core's scattered slabs are half steps over its own ground, not a rise.
         var plain=LabyrinthPlaces.base(origin,LabyrinthPlace.PLAIN);
         for(int z=-62;z<=-2;z+=4)for(int side:new int[]{-1,1}){
             int previous=-1;
             for(int x=Landscapes.PLAIN_HALF_WIDTH;x<=Landscapes.PLAIN_HALF_WIDTH+14;x++){
-                int top=-9;for(int y=14;y>=-3;y--){var st=outside.getBlockState(plain.offset(side*x,y,z));if(!st.isAir()&&!st.is(Blocks.DEAD_BUSH)){top=y;break;}}
+                int top=-9;for(int y=14;y>=-3;y--){var st=outside.getBlockState(plain.offset(side*x,y,z));if(!st.isAir()&&!st.is(Blocks.DEAD_BUSH)&&!(st.getBlock() instanceof SlabBlock)){top=y;break;}}
                 h.assertTrue(top-previous!=1,"no one-block step climbs the dune at x="+side*x+" z="+z+" ("+previous+" -> "+top+")");
                 previous=top;
             }
