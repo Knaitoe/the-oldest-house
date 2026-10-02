@@ -43,6 +43,7 @@ public final class HollowayCamp {
         level.setBlock(base.offset(LATCH).below(),Blocks.SMOOTH_STONE.defaultBlockState(),3);
         level.setBlock(base.offset(LATCH),Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACE,AttachFace.FLOOR),3);
         LabyrinthBuilder.entrance(level,base,dirt,Blocks.COARSE_DIRT.defaultBlockState(),dirt);
+        LabyrinthBuilder.doors(level,base,LabyrinthPlace.HOLLOWAY_CAMP);
         HollowayVignette.ensureActor(level,base);
     }
     private static void sign(ServerLevel level,BlockPos at,String a,String b,String c,String d){

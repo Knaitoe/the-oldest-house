@@ -234,6 +234,10 @@ public final class VignetteArchitecture {
         pendant(-6,4,-8,5);pendant(6,4,-8,5);
     }
     private void holloway(){
+        for(var door:scene.doors()){
+            var at=b.offset(door.rel());var wall=door.name().equals("entry")?Blocks.DIRT:Blocks.STONE_BRICKS;
+            if(l.getBlockState(at).is(wall)&&l.getBlockState(at.above()).is(wall))LabyrinthBuilder.placeDoor(l,at,door.facing());
+        }
         table(5,0,-9,TOOLS);detail(-4,1,-7,SATCHEL);detail(-5,0,-5,SHOES);detail(4,0,-3,ROPE_COIL);
         cabinet(-5,0,-10,BLANKET);detail(5,0,-5,CRATE);
         // The hunting chambers stay open; debris collects against their boundaries.
