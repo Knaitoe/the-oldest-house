@@ -65,7 +65,11 @@ PUNCT = {
  '{':'011/010/010/100/010/010/011', '|':'1/1/1/1/1/1/1', '}':'110/010/010/001/010/010/110',
  '~':'00000/00000/01001/10110',
 }
-GLYPHS = CAPS | LOWER | DIGITS | PUNCT
+GLYPHS = CAPS | LOWER | DIGITS | PUNCT | {
+ '‘':'01/10/10', '’':'01/01/10', '“':'0101/1010/1010', '”':'0101/0101/1010',
+ '–':'0000/0000/0000/1111', '—':'000000/000000/000000/111111',
+ '…':'00000/00000/00000/00000/00000/00000/10101', '·':'0/0/0/1',
+}
 CHILD_LETTERS = 'aeiotrshnldcmyug'
 ALIASES = {'\u2018':"'", '\u2019':"'", '\u201c':'"', '\u201d':'"', '\u2013':'-', '\u2014':'-',
            '\u2026':'.', '\u00b7':'.'}
@@ -83,7 +87,7 @@ def make(name):
     draw = ImageDraw.Draw(atlas)
     for i, char in enumerate(''.join(mapping)):
         alternate = ord(char) - 0xE100 if '\uE100' <= char < '\uE120' else -1
-        source = CHILD_LETTERS[alternate%16] if alternate >= 0 else ALIASES.get(char,char)
+        source = CHILD_LETTERS[alternate%16] if alternate >= 0 else char
         if source not in GLYPHS: continue
         pattern = GLYPHS[source]
         if name in ('will','child') and source == 'a': pattern='0000/0000/0110/1001/1001/1001/0111'
