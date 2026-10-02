@@ -173,9 +173,9 @@ public final class NovelVignettes {
             save(data,p.getUUID(),own);
         }
         for(var p:new ArrayList<>(SCALED.values()))if(!small.contains(p.getUUID()))restoreScale(p);
-        for(var level:server.getAllLevels())for(Entity entity:level.getAllEntities())if(entity instanceof NovelActor a&&a.role()==1){
-            var viewer=a.owner().map(server.getPlayerList()::getPlayer).orElse(null);if(viewer==null||viewer.level()!=level||level.getGameTime()>=a.getPersistentData().getLong("DoubleUntil")||viewer.position().distanceToSqr(a.position())>16)a.discard();
-        }
+        List<Entity> doubles=new ArrayList<>();for(var level:server.getAllLevels())for(Entity entity:level.getAllEntities())if(entity instanceof NovelActor a&&a.role()==1){
+            var viewer=a.owner().map(server.getPlayerList()::getPlayer).orElse(null);if(viewer==null||viewer.level()!=level||level.getGameTime()>=a.getPersistentData().getLong("DoubleUntil")||viewer.position().distanceToSqr(a.position())>16)doubles.add(a);
+        }doubles.forEach(Entity::discard);
         var outside=server.getLevel(HouseDimensions.OUTSIDE);var well=LabyrinthPlaces.base(origin,LabyrinthPlace.BARN_WELL);if(outside!=null&&well!=null&&server.getTickCount()%20==0)NovelRooms.cover(outside,well,closeCover);
     }
     private static void tickPlain(ServerPlayer p,BlockPos b,CompoundTag own){
@@ -205,7 +205,7 @@ public final class NovelVignettes {
         for(int i=0;i<p.getInventory().getContainerSize();i++)if(photo(p.getInventory().getItem(i),p.getUUID()))return;
         if(photo(p.containerMenu.getCarried(),p.getUUID()))return;
         // Remove the same original from every observed storage location before recalling it.
-        for(var level:p.server.getAllLevels())for(Entity entity:level.getAllEntities())if(entity instanceof ItemEntity item&&photo(item.getItem(),p.getUUID()))item.discard();
+        List<Entity> dropped=new ArrayList<>();for(var level:p.server.getAllLevels())for(Entity entity:level.getAllEntities())if(entity instanceof ItemEntity item&&photo(item.getItem(),p.getUUID()))dropped.add(item);dropped.forEach(Entity::discard);
         for(var other:p.server.getPlayerList().getPlayers()){
             for(int i=0;i<other.getInventory().getContainerSize();i++)if(photo(other.getInventory().getItem(i),p.getUUID()))other.getInventory().setItem(i,ItemStack.EMPTY);
             if(photo(other.containerMenu.getCarried(),p.getUUID())){other.containerMenu.setCarried(ItemStack.EMPTY);other.containerMenu.broadcastChanges();}
