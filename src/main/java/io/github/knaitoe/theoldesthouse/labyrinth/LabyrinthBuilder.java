@@ -36,7 +36,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 23;
+    public static final int VERSION = 24;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -51,6 +51,7 @@ public final class LabyrinthBuilder {
     @Nullable
     private static BlockPos pendingOrigin;
     private static final Set<LabyrinthPlace> domesticUpgrades = new HashSet<>();
+    private static final Set<LabyrinthPlace> architecturalUpgrades = new HashSet<>();
     private static boolean legacyDomesticUpgrade;
 
     private LabyrinthBuilder() {
@@ -91,6 +92,7 @@ public final class LabyrinthBuilder {
         }
         pending = new ArrayDeque<>();
         domesticUpgrades.clear();
+        architecturalUpgrades.clear();
         LabyrinthData data = LabyrinthData.get(server);
         if(!force&&!LakeLandscape.upgradeWorld(server,origin)){pending=null;pendingOrigin=null;return false;}
         legacyDomesticUpgrade=!force && data.builtVersion()<17 && origin.equals(data.builtOrigin());
@@ -108,9 +110,10 @@ public final class LabyrinthBuilder {
                     || (data.builtVersion() < 12 && LabyrinthMaze.isMaze(place))
                     || (data.builtVersion() == 10 && place == LabyrinthPlace.MOTHER_DEN);
             boolean domestic = place == LabyrinthPlace.JUNCTION || LabyrinthHalls.isHall(place) || LabyrinthMaze.isMaze(place);
-            if (place.slot() >= 0 && (structural || domestic)) {
+            boolean architecture=VignetteArchitecture.applies(place);
+            if (place.slot() >= 0 && (structural || domestic || architecture)) {
                 pending.add(place);
-                if (!structural) domesticUpgrades.add(place);
+                if (!structural) {if(architecture)architecturalUpgrades.add(place);else domesticUpgrades.add(place);}
             }
         }
         pendingOrigin = origin;
@@ -133,7 +136,10 @@ public final class LabyrinthBuilder {
         }
         LabyrinthPlace place = pending.poll();
         if (place != null) {
-            if (domesticUpgrades.remove(place)) {
+            if (architecturalUpgrades.remove(place)) {
+                ServerLevel site=server.getLevel(NovelRooms.dimension(place));
+                if(site!=null)VignetteArchitecture.decorateOnce(site,pendingOrigin,place);
+            } else if (domesticUpgrades.remove(place)) {
                 if(legacyDomesticUpgrade) LabyrinthDomestic.upgrade(interior, pendingOrigin, place);
                 io.github.knaitoe.theoldesthouse.house.HouseFurnishings.upgrade(interior,pendingOrigin,place);
                 io.github.knaitoe.theoldesthouse.house.HouseFurnishings.reduceNotes(interior,pendingOrigin,place);
@@ -154,6 +160,7 @@ public final class LabyrinthBuilder {
             pending = null;
             pendingOrigin = null;
             domesticUpgrades.clear();
+            architecturalUpgrades.clear();
             LabyrinthDoors.syncSealedDoors(server);
             TheOldestHouse.LOGGER.info("Carved the labyrinth around the manor, {} slot(s) above it (version {}).",
                     LabyrinthPlaces.slotsAbove(origin), VERSION);
@@ -164,6 +171,7 @@ public final class LabyrinthBuilder {
         pending = null;
         pendingOrigin = null;
         domesticUpgrades.clear();
+        architecturalUpgrades.clear();
     }
 
     private static void build(MinecraftServer server, ServerLevel level, BlockPos origin, LabyrinthPlace place) {
@@ -174,13 +182,13 @@ public final class LabyrinthBuilder {
         }
         if (NovelVignettes.isNovel(place)) {
             ServerLevel site=server.getLevel(NovelRooms.dimension(place));
-            if(site!=null){NovelRooms.build(server,site,base,place);registerDoors(dataFor(server),place,base);}
+            if(site!=null){NovelRooms.build(server,site,base,place);registerDoors(dataFor(server),place,base);VignetteArchitecture.forget(site,origin,place);VignetteArchitecture.decorateOnce(site,origin,place);}
             return;
         }
         if(LakeLandscape.isLake(place)){
             ServerLevel site=server.getLevel(HouseDimensions.OUTSIDE);if(site==null)return;
             switch(place){case DROWNED_TOWN->DrownedTown.build(server,site,base);case SHALLOWS->Shallows.build(server,site,base);case PHONE_CANOE->PhoneCanoe.build(server,site,base);default->{}}
-            LakeLandscape.dress(site,base,place);NovelRooms.safeApproach(site,base);registerDoors(dataFor(server),place,base);return;
+            LakeLandscape.dress(site,base,place);NovelRooms.safeApproach(site,base);registerDoors(dataFor(server),place,base);VignetteArchitecture.forget(site,origin,place);VignetteArchitecture.decorateOnce(site,origin,place);return;
         }
         LabyrinthMaze.Migration migration = LabyrinthMaze.isMaze(place) ? LabyrinthMaze.capture(level, slot, base) : null;
         fillSolid(level, slot);
@@ -222,6 +230,8 @@ public final class LabyrinthBuilder {
         }
         registerDoors(data, place, base);
         io.github.knaitoe.theoldesthouse.house.HouseFurnishings.decorate(level,base,place);
+        VignetteArchitecture.forget(level,origin,place);
+        VignetteArchitecture.decorateOnce(level,origin,place);
         if (migration != null) LabyrinthMaze.restoreMigration(level, base, place, migration);
     }
 

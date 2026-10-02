@@ -106,6 +106,15 @@ public final class FinaleTests {
             var opening=blocks.get(FinaleArchitecture.base(origin).offset(0,y,z));
             helper.assertTrue(opening==null||opening.isAir(),"the passage through the shaft wall really reaches the cell chamber");
         }
+        for(int n:new int[]{12,48,100,180}){
+            var at=route.get(n);var next=route.get(n+1);boolean alongX=next.getX()!=at.getX();
+            for(int lateral=-4;lateral<=4;lateral++){
+                var walking=at.offset(alongX?0:lateral,0,alongX?lateral:0);
+                helper.assertTrue(!blocks.get(walking.below()).isAir()&&blocks.get(walking).isAir()&&blocks.get(walking.above()).isAir(),"nine unobstructed blocks of actual walking width at tread "+n);
+            }
+        }
+        for(int x=-FinaleArchitecture.SHAFT_RADIUS;x<=FinaleArchitecture.SHAFT_RADIUS;x++)for(int z=-FinaleArchitecture.SHAFT_RADIUS;z<=FinaleArchitecture.SHAFT_RADIUS;z++)
+            helper.assertTrue(!blocks.get(FinaleArchitecture.base(origin).offset(x,FinaleArchitecture.ARENA-9,z)).isAir(),"a complete shaft floor encloses the view below the great staircase");
         helper.assertTrue(blocks.get(FinaleArchitecture.cell(origin)).is(Blocks.IRON_BARS),"the cell is physically closed before commitment");helper.succeed();
     }
     @GameTest(template="empty") public static void escapeHasConnectedFloorAndRealWrongTurns(GameTestHelper helper){

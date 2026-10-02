@@ -52,7 +52,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.26"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.27"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               for name in ('HouseHuman', 'HollowayCamp', 'HollowayVignette', 'HarriganAppearance'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               for name in ('holloway', 'harrigan', 'harrigan_dead', 'finale_witness', 'lake_witch', 'lake_witch_memory'):
@@ -156,7 +156,9 @@ jobs:
       # architecture (sightline, enclosure, walkability, glazing). The log
       # also carries an OTH-DUMP block listing for offline rendering.
       - name: Structure game tests
-        timeout-minutes: 7
+        timeout-minutes: 9
+        env:
+          JAVA_TOOL_OPTIONS: -Xmx4g
         run: |
           python3 - <<'PY' &
           import pathlib, subprocess, time
@@ -184,7 +186,7 @@ jobs:
           PY
           diagnostic=$!
           trap 'kill "$diagnostic" 2>/dev/null || true' EXIT
-          timeout --signal=QUIT --kill-after=20s 8m gradle runGameTestServer --no-daemon
+          timeout --signal=QUIT --kill-after=20s 9m gradle runGameTestServer --no-daemon
 
       - name: Upload test diagnostics
         if: always()
@@ -207,13 +209,15 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq xvfb libgl1-mesa-dri
-          LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PfontSmoke --no-daemon
+          LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 5m gradle runClient -PfontSmoke --no-daemon
           test -s build/font-smoke/passed.txt
           test -s build/font-smoke/native-writing.png
           test -s build/font-smoke/npcs-passed.txt
           test -s build/font-smoke/native-npcs.png
           test -s build/font-smoke/cast-passed.txt
           test -s build/font-smoke/native-cast.png
+          test -s build/font-smoke/architecture-passed.txt
+          test -s build/architecture-proof/manifest.txt
 
       - name: Upload native writing proof
         if: always()
