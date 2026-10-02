@@ -53,7 +53,26 @@ public final class HouseNpcTests {
             var bounds=IndianLakeRooms.bounds(b,LabyrinthPlace.HOLLOWAY_CAMP);for(int x=((int)bounds.minX)>>4;x<=((int)bounds.maxX)>>4;x++)for(int z=((int)bounds.minZ)>>4;z<=((int)bounds.maxZ)>>4;z++)l.getChunkSource().removeRegionTicket(TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(x,z),3,b);
             var s=l.getServer();s.overworld().getDataStorage().set("the_oldest_house",oldHouse);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);}
     }
-    private static Fixture cache,hunt,resume,torches,guards,upgrade;
+    private static Fixture cache,hunt,resume,torches,guards,upgrade,activity;
+    @AfterBatch(batch="npc_activity") public static void activityCleanup(ServerLevel l){if(activity!=null){activity.close();activity=null;}}
+    @GameTest(template="empty",batch="npc_activity",timeoutTicks=260)
+    public static void nativePatrolBelongingWarningsVisibleBoltsAndHurtFeedback(GameTestHelper h){
+        activity=new Fixture(h,43800);var f=activity;var p=f.player();var actor=f.actor();var start=actor.position();UUID id=actor.getUUID();
+        h.runAfterDelay(65,()->{
+            h.assertTrue(actor.position().distanceToSqr(start)>1,"the unprovoked human physically patrols his encampment");
+            h.assertTrue(f.l.getBlockState(f.b.offset(-8,0,-19)).is(Blocks.SPRUCE_SIGN)&&f.l.getBlockState(f.b.offset(-8,1,-19)).isAir(),"the native sign post starts on its stone floor");
+            f.click(p,HollowayCamp.CACHE);h.assertTrue(f.own(p).getInt("Suspicion")>0&&!f.own(p).getBoolean("Looted"),"handling a belonging draws a warning before theft");p.closeContainer();
+            var food=f.cache(p);food.quickMoveStack(p,1);p.closeContainer();h.assertTrue(HollowayVignette.pursued(p),"actual theft can immediately provoke hostility");
+            actor.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()-18.5);f.at(p,0,-23.5);
+        });
+        h.runAfterDelay(85,()->{
+            float health=actor.getHealth();h.assertTrue(actor.hurt(f.l.damageSources().playerAttack(p),6)&&actor.getHealth()<health&&actor.hurtTime>0,"a native hit causes injury, red hurt feedback and a stagger");
+            h.assertTrue(actor.isAlive()&&actor.getUUID().equals(id),"injury preserves the original encounter actor");
+            f.at(p,0,-23.5);
+        });
+        boolean[] bolt={false};h.onEachTick(()->{if(!f.l.getEntitiesOfClass(net.minecraft.world.entity.projectile.Arrow.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.HOLLOWAY_CAMP),a->a.getOwner()==actor).isEmpty())bolt[0]=true;});
+        h.runAfterDelay(190,()->{h.assertTrue(bolt[0],"a real tracked arrow leaves the crossbow instead of invisible direct damage");h.succeed();});
+    }
     @AfterBatch(batch="npc_cache") public static void c1(ServerLevel l){if(cache!=null){cache.close();cache=null;}}
     @AfterBatch(batch="npc_hunt") public static void c2(ServerLevel l){if(hunt!=null){hunt.close();hunt=null;}}
     @AfterBatch(batch="npc_resume") public static void c3(ServerLevel l){if(resume!=null){resume.close();resume=null;}}

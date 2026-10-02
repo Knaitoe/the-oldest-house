@@ -41,10 +41,10 @@ public final class LakePhoneClient {
         previousCamera=null;sceneLevel=null;phase=0;cameraId=-1;lease=0;
     }
     @SubscribeEvent public static void input(MovementInputUpdateEvent event){
-        if(!bound())return;var input=event.getInput();input.forwardImpulse=0;input.leftImpulse=0;
+        if(!bound()||phase<3)return;var input=event.getInput();input.forwardImpulse=0;input.leftImpulse=0;
         input.up=false;input.down=false;input.left=false;input.right=false;input.jumping=false;input.shiftKeyDown=false;
     }
-    @SubscribeEvent public static void interact(InputEvent.InteractionKeyMappingTriggered event){if(bound()){event.setCanceled(true);event.setSwingHand(false);}}
+    @SubscribeEvent public static void interact(InputEvent.InteractionKeyMappingTriggered event){if(bound()&&phase>=3){event.setCanceled(true);event.setSwingHand(false);}}
     @SubscribeEvent public static void angles(ViewportEvent.ComputeCameraAngles event){
         if(bound()&&phase>=3){event.setYaw(0);event.setPitch(-88);event.setRoll(3);}
     }

@@ -76,7 +76,10 @@ public final class PhoneCanoeTests {
         h.assertTrue(!PhoneCanoe.board(peer,canoe)&&peer.getMainHandItem().isEmpty(),"another explorer cannot take the occupied boat or a second phone");
         var phone=owner.getMainHandItem();CustomData.update(DataComponents.CUSTOM_DATA,phone,t->t.putString("ProvenanceTest","keep me"));
         h.assertTrue(PhoneCanoe.beginFilm(owner,phone)&&!WitnessAccount.has(data,owner.getUUID(),WitnessAccount.Story.PHONE_CANOE),"choosing to film does not immediately award the ending");
-        h.runAfterDelay(110,()->h.assertTrue(canoe.getZ()<f.base.getZ()-31&&owner.getVehicle()==canoe,"native server ticks carry the canoe over the submerged tower"));
+        // The server test supplies physical motion that the real client produces through boat input.
+        // It must survive scene ticks; the former no-op move and scripted moveTo both fail this check.
+        h.onEachTick(()->{if(canoe.rowing()&&owner.getVehicle()==canoe&&canoe.getZ()>f.base.getZ()-33)canoe.move(MoverType.SELF,new Vec3(0,0,-.22));});
+        h.runAfterDelay(110,()->h.assertTrue(canoe.getZ()<f.base.getZ()-31&&owner.getVehicle()==canoe,"native boat movement is retained while recording"));
         h.runAfterDelay(195,()->{
             h.assertTrue(PhoneCanoe.personal(data,owner.getUUID()).getBoolean("Dropped")&&owner.getInventory().countItem(DrownedTownRegistry.LAKE_PHONE.get())==0,"the actual recording leaves the original inventory at the drop");
             var cameras=f.level.getEntitiesOfClass(LakePhoneCamera.class,IndianLakeRooms.bounds(f.base,LabyrinthPlace.PHONE_CANOE));
@@ -104,6 +107,7 @@ public final class PhoneCanoeTests {
     @GameTest(template="empty",batch="phone_retry",timeoutTicks=460)
     public static void interruptionsBeforeAndAfterTheDropPreserveAPlayableOriginal(GameTestHelper h){
         retry=new Fixture(h,new BlockPos(8500,80,8500));Fixture f=retry;var owner=f.player("paused_recorder",f.base.offset(PhoneCanoe.DOCK));var data=LabyrinthData.get(f.server);var canoe=PhoneCanoe.stage(f.level,f.base);
+        h.onEachTick(()->{if(canoe.rowing()&&PhoneCanoe.personal(LabyrinthData.get(f.server),owner.getUUID()).getInt("Phase")==2&&canoe.getZ()>f.base.getZ()-33)canoe.move(MoverType.SELF,new Vec3(0,0,-.22));});
         PhoneCanoe.board(owner,canoe);owner.stopRiding();
         h.runAfterDelay(4,()->{
             h.assertTrue(owner.getMainHandItem().isEmpty()&&PhoneCanoe.personal(data,owner.getUUID()).getInt("Phase")==0&&!PreservedCave.phoneWaiting(data,owner.getUUID()),"leaving before filming removes only the unused scene phone");

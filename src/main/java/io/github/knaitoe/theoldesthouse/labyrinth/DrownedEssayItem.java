@@ -33,7 +33,7 @@ public final class DrownedEssayItem extends WrittenBookItem {
         String[] text = switch (essay) {
             case 0 -> new String[]{
                 "FILM STUDIES\n\nSafe ground\n\nThe monster has a rule. A rule is useful only if you notice it before you need it.",
-                "At this lake she cannot enter water. She cannot step onto grass.\n\nThe dirt between those places is hers.\n\nLook at what you are standing on.",
+                "She crosses the surface of the lake. She cannot follow beneath it. She cannot step onto living grass.\n\nThe exposed shore is hers.\n\nLook at what you are standing on.",
                 "Water buys time. It does not give you breath.\n\nA door can hold a little air. Bubbles rise from soul sand. A shell and a potion buy more.\n\nShe waits for you to need the shore."
             };
             case 1 -> new String[]{
@@ -61,8 +61,9 @@ public final class DrownedEssayItem extends WrittenBookItem {
         if (player instanceof ServerPlayer reader) {
             refresh(reader,stack);
             reader.inventoryMenu.broadcastChanges();
+            NativeItemReader.open(reader,stack,hand);
         }
-        return super.use(level, player, hand);
+        return InteractionResultHolder.sidedSuccess(stack,level.isClientSide);
     }
     public void refresh(ServerPlayer reader,ItemStack stack){
             LabyrinthData data = LabyrinthData.get(reader.server);

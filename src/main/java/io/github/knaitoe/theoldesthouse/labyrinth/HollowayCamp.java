@@ -47,8 +47,17 @@ public final class HollowayCamp {
         HollowayVignette.ensureActor(level,base);
     }
     private static void sign(ServerLevel level,BlockPos at,String a,String b,String c,String d){
-        level.setBlock(at,Blocks.SPRUCE_SIGN.defaultBlockState(),3);
+        level.setBlock(at.below(),Blocks.SPRUCE_SIGN.defaultBlockState(),3);at=at.below();
         if(level.getBlockEntity(at) instanceof SignBlockEntity sign){var text=sign.getFrontText();String[] lines={a,b,c,d};for(int i=0;i<4;i++)text=text.setMessage(i,net.minecraft.network.chat.Component.literal(lines[i]));sign.setText(text,true);sign.setWaxed(true);sign.setChanged();}
+    }
+    public static void repairSigns(ServerLevel level,BlockPos base){
+        var data=LabyrinthData.get(level.getServer());var all=data.state(HollowayVignette.ID);if(all.getBoolean("GroundedSigns"))return;
+        for(BlockPos old:new BlockPos[]{base.offset(-5,1,-10),base.offset(-8,1,-19),base.offset(-6,1,-43)})
+            if(level.getBlockEntity(old) instanceof SignBlockEntity source&&level.getBlockState(old.below()).isAir()){
+                var front=source.getFrontText();var back=source.getBackText();level.setBlock(old,Blocks.AIR.defaultBlockState(),3);level.setBlock(old.below(),Blocks.SPRUCE_SIGN.defaultBlockState(),3);
+                if(level.getBlockEntity(old.below()) instanceof SignBlockEntity target){target.setText(front,true);target.setText(back,false);target.setWaxed(true);target.setChanged();}
+            }
+        all.putBoolean("GroundedSigns",true);data.setState(HollowayVignette.ID,all);
     }
     public static ItemStack journal(){return HouseWriting.book("Holloway's survey","Holloway",HouseWriting.WritingStyle.WILL,java.util.List.of(
             "No tent left. Dirt holds warmth better than canvas. I have food, a pickaxe and sixteen torches.\n\nLeave them where they are. I will know.\n\nA copy of this survey is still a thing taken.",

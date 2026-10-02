@@ -93,6 +93,11 @@ public final class LakeWitchEntity extends PathfinderMob {
         var fluid=level.getFluidState(node.below());
         return fluid.is(FluidTags.WATER)?node.getY()-1+fluid.getHeight(level,node.below())+.004:base.getY();
     }
+    public static double supportHeight(Level level,BlockPos base,double x,double z,double width){
+        double y=-Double.MAX_VALUE,half=width*.5-.02;
+        for(int sx:new int[]{-1,1})for(int sz:new int[]{-1,1})y=Math.max(y,surfaceHeight(level,base,BlockPos.containing(x+sx*half,base.getY(),z+sz*half)));
+        return y;
+    }
     public static boolean canAttack(LakeWitchEntity witch, ServerPlayer player) {
         return player.isAlive() && !player.isCreative() && !player.isSpectator() && witch.level() == player.level()
                 && witch.shoreBase != null && DrownedTown.contains(witch.shoreBase, player.position())
@@ -101,7 +106,7 @@ public final class LakeWitchEntity extends PathfinderMob {
     @Override public void move(MoverType type, Vec3 movement) {
         if(shoreBase!=null&&!memory()){
             BlockPos node=BlockPos.containing(getX()+movement.x,shoreBase.getY(),getZ()+movement.z);
-            movement=new Vec3(movement.x,net.minecraft.util.Mth.clamp(surfaceHeight(level(),shoreBase,node)-getY(),-.35,.35),movement.z);
+            movement=new Vec3(movement.x,net.minecraft.util.Mth.clamp(supportHeight(level(),shoreBase,getX()+movement.x,getZ()+movement.z,getBbWidth())-getY(),-.35,.35),movement.z);
             setDeltaMovement(Vec3.ZERO);
         }
         if (!level().isClientSide() && shoreBase != null && (Math.abs(movement.x) > .00001 || Math.abs(movement.z) > .00001)) {
