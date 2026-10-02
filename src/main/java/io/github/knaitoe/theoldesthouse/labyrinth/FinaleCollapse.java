@@ -45,7 +45,7 @@ public final class FinaleCollapse {
         for(int x=-23;x<=-17;x++)for(int z=73;z<=79;z++)if(x==-23||x==-17||z==73||z==79)l.setBlock(b.offset(x,3,z),Blocks.POLISHED_DEEPSLATE.defaultBlockState(),F);
         NovelRooms.box(l,b,-25,3,75,-23,3,81,Blocks.POLISHED_DEEPSLATE.defaultBlockState());
         var supplies=cache(origin);if(l.getBlockState(supplies).isAir()){
-            l.setBlock(supplies,Blocks.BARREL.defaultBlockState(),F);if(l.getBlockEntity(supplies) instanceof BarrelBlockEntity c){c.setItem(0,new ItemStack(Items.FLINT_AND_STEEL));c.setItem(1,new ItemStack(Items.PAPER,6));c.setItem(2,HouseWriting.book("A little light","Tom",HouseWriting.WritingStyle.WILL,List.of("Flint in your right hand. A page in the other.\n\nUse them. The light lasts a few seconds.\n\nThe way through has fallen across itself. Jump the low rubble; crouch under the lintel.")));c.setChanged();}}
+            l.setBlock(supplies,Blocks.BARREL.defaultBlockState(),F);if(l.getBlockEntity(supplies) instanceof BarrelBlockEntity c){c.setItem(0,new ItemStack(Items.FLINT_AND_STEEL));c.setItem(1,new ItemStack(Items.PAPER,6));c.setItem(2,HouseWriting.book("A little light","Tom",HouseWriting.WritingStyle.WILL,List.of("Flint in your right hand. A page in the other.\n\nUse them. The light lasts a few seconds.","The way through has fallen across itself.\n\nJump the low rubble. Crouch under the lintel.\n\nThe handle will need more than one pull.")));c.setChanged();}}
         l.setBlock(supplies.above(2),Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL,7),F);
         // Ordinary room fragments, now suspended over the last route.
         var path=FinaleArchitecture.escapeRoute(origin);
