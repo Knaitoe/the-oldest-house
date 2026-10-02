@@ -48,7 +48,7 @@ public final class FinaleController {
         List<BlockPos> route=FinaleArchitecture.staircaseRoute(origin);int nearest=0;double distance=Double.MAX_VALUE;
         for(int i=0;i<route.size();i++){double d=route.get(i).distToCenterSqr(player.position());if(d<distance){distance=d;nearest=i;}}
         int step=Math.max(0,Math.min(route.size()-1,nearest+(exit?-5:5)));
-        return step==0&&exit?FinaleArchitecture.base(origin).offset(0,FinaleArchitecture.TOP,14):route.get(step);
+        return step==0&&exit?FinaleArchitecture.entry(origin):route.get(step);
     }
     public static @Nullable Vec3 cellCenter(MinecraftServer server){BlockPos origin=HouseSavedData.get(server).houseOrigin();return origin==null?null:Vec3.atBottomCenterOf(FinaleArchitecture.cell(origin).south(5));}
     public static boolean lockedOut(ServerPlayer player){return FinaleProgress.terminal(FinaleProgress.phase(player.server,player.getUUID()));}

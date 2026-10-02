@@ -27,6 +27,12 @@ public final class HouseBlocks {
             BLOCK_TYPES.register("household_furniture", () -> HouseholdFurnitureBlock.CODEC);
     public static final DeferredHolder<MapCodec<? extends Block>, MapCodec<NoteSurfaceBlock>> NOTE_SURFACE_TYPE =
             BLOCK_TYPES.register("note_surface", () -> NoteSurfaceBlock.CODEC);
+    public static final DeferredHolder<MapCodec<? extends Block>, MapCodec<SceneDetailBlock>> SCENE_DETAIL_TYPE =
+            BLOCK_TYPES.register("scene_detail", () -> SceneDetailBlock.CODEC);
+    public static final DeferredBlock<SceneDetailBlock> SCENE_DETAIL = BLOCKS.registerBlock(
+            "scene_detail", SceneDetailBlock::new,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noCollission().noOcclusion().noLootTable()
+                    .lightLevel(s -> s.getValue(SceneDetailBlock.KIND) == SceneDetailBlock.Kind.TABLE_LAMP ? 9 : 0));
     public static final DeferredBlock<HouseholdFurnitureBlock> HOUSEHOLD_FURNITURE = BLOCKS.registerBlock(
             "household_furniture", HouseholdFurnitureBlock::new,
             BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion().noLootTable());
