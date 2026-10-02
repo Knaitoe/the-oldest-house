@@ -202,10 +202,14 @@ public final class NovelVignettes {
         if(!own.contains("Photo")||own.getBoolean("PhotoGivenAway"))return;
         if(MotherCollection.get(p.server).all().stream().filter(e->!e.pet).anyMatch(e->photo(e.item(p.registryAccess()),p.getUUID()))){own.putBoolean("PhotoGivenAway",true);return;}
         long day=p.server.overworld().getDayTime()/24000;if(day<=own.getLong("PhotoDay"))return;own.putLong("PhotoDay",day);
-        if(p.getInventory().items.stream().anyMatch(s->photo(s,p.getUUID()))||photo(p.containerMenu.getCarried(),p.getUUID()))return;
+        for(int i=0;i<p.getInventory().getContainerSize();i++)if(photo(p.getInventory().getItem(i),p.getUUID()))return;
+        if(photo(p.containerMenu.getCarried(),p.getUUID()))return;
         // Remove the same original from every observed storage location before recalling it.
         for(var level:p.server.getAllLevels())for(Entity entity:level.getAllEntities())if(entity instanceof ItemEntity item&&photo(item.getItem(),p.getUUID()))item.discard();
-        for(var other:p.server.getPlayerList().getPlayers())for(int i=0;i<other.getInventory().getContainerSize();i++)if(photo(other.getInventory().getItem(i),p.getUUID()))other.getInventory().setItem(i,ItemStack.EMPTY);
+        for(var other:p.server.getPlayerList().getPlayers()){
+            for(int i=0;i<other.getInventory().getContainerSize();i++)if(photo(other.getInventory().getItem(i),p.getUUID()))other.getInventory().setItem(i,ItemStack.EMPTY);
+            if(photo(other.containerMenu.getCarried(),p.getUUID())){other.containerMenu.setCarried(ItemStack.EMPTY);other.containerMenu.broadcastChanges();}
+        }
         var stores=own.getList("PhotoStores",Tag.TAG_COMPOUND);for(int n=0;n<stores.size();n++){var loc=stores.getCompound(n);var key=net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,ResourceLocation.parse(loc.getString("Dimension")));var level=p.server.getLevel(key);if(level==null)continue;var at=BlockPos.of(loc.getLong("Pos"));level.getChunkAt(at);
             if(level.getBlockEntity(at) instanceof Container c){for(int i=0;i<c.getContainerSize();i++)if(photo(c.getItem(i),p.getUUID()))c.setItem(i,ItemStack.EMPTY);c.setChanged();}}
         give(p,ItemStack.parseOptional(p.registryAccess(),own.getCompound("Photo")));cue(p,own,"The photograph is back. It has not become easier to look at.");

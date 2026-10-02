@@ -57,6 +57,7 @@ The corresponding `status` command shows personal saved progress. Existing `/old
 
 Eight generated 64px material tiles are integrated into native UV models: cell gouges, sealed windows, institute paint, collapse plaster, well carvings, archive paper, mail-slot metal and ward cloth. `tools/novel_materials_preview.png` shows their imported resolutions. `tools/build_novel_assets.py` authors prop/item models and four original mono cues. Pelafina has a separate compact provider in the existing handwriting system. The original Minotaur material atlas was reviewed and retained; its wounded movement now turns toward the cell.
 
+
 Native server checks cover real cat adoption/key/menus, timed chest correspondence and knocks, cover/scale restoration, spyglass memory and actual Mother custody, ward interruption and personal dawn reading, the native bed and actual projected map, append-only upgrade, physical collapse movement, finite new supplies and the surviving saved wound. Client lighting, animation, audio balance and the full in-game finale still need a human playthrough.
 
 Holloway's separate torch-following hunt arenas remain a subsequent core-character pass; this release retains his existing shield and last survey in the finale preparation chamber. The six novel sites above are playable adaptations of the plan, not verbatim novel passages.

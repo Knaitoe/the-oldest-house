@@ -24,10 +24,10 @@ import net.neoforged.neoforge.gametest.*;
 public final class NovelTests {
     private static final class Fixture implements AutoCloseable {
         final GameTestHelper h;final ServerLevel l;final BlockPos origin,b;final LabyrinthPlace place;
-        final HouseSavedData oldHouse;final LabyrinthData oldData;final MotherCollection oldMother;
+        final HouseSavedData oldHouse;final LabyrinthData oldData;final MotherCollection oldMother;final long oldDayTime;
         final List<ServerPlayer> players=new ArrayList<>();
         Fixture(GameTestHelper h,int coord,LabyrinthPlace place){this.h=h;this.place=place;var s=h.getLevel().getServer();l=HouseTestLevel.get(s,NovelRooms.dimension(place));origin=new BlockPos(coord,80,coord);
-            oldHouse=HouseSavedData.get(s);oldData=LabyrinthData.get(s);oldMother=MotherCollection.get(s);var house=new HouseSavedData();house.markSpawned(origin);
+            oldHouse=HouseSavedData.get(s);oldData=LabyrinthData.get(s);oldMother=MotherCollection.get(s);oldDayTime=s.overworld().getDayTime();var house=new HouseSavedData();house.markSpawned(origin);
             s.overworld().getDataStorage().set("the_oldest_house",house);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",new LabyrinthData());s.overworld().getDataStorage().set("the_oldest_house_mother",new MotherCollection());
             b=LabyrinthPlaces.base(origin,place);NovelRooms.build(s,l,b,place);data().setBuilt(LabyrinthBuilder.VERSION,origin);LabyrinthBuilder.registerDoors(data(),place,b);IndianLakeRooms.keepLoaded(l,b,place);}
         LabyrinthData data(){return LabyrinthData.get(l.getServer());}CompoundTag own(ServerPlayer p){return NovelVignettes.personal(data(),p.getUUID());}
@@ -36,9 +36,9 @@ public final class NovelTests {
         void click(ServerPlayer p,BlockPos local){var at=b.offset(local);var e=new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new BlockHitResult(at.getCenter(),Direction.SOUTH,at,false));NeoForge.EVENT_BUS.post(e);h.assertTrue(e.isCanceled(),"the registered prop interaction handles the real block");}
         void reload(){var loaded=LabyrinthData.FACTORY.deserializer().apply(data().save(new CompoundTag(),l.registryAccess()),l.registryAccess());l.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);}
         @Override public void close(){NovelVignettes.clearAll();for(var p:players)l.getServer().getPlayerList().remove(p);
-            for(Entity e:l.getAllEntities())if(e.blockPosition().distSqr(b)<240*240&&(e instanceof Cat||e instanceof NovelVulture||e instanceof NovelActor||e instanceof net.minecraft.world.entity.decoration.ItemFrame||e instanceof net.minecraft.world.entity.item.ItemEntity))e.discard();
+            List<Entity> cleanup=new ArrayList<>();for(Entity e:l.getAllEntities())if(e!=null&&e.blockPosition().distSqr(b)<240*240&&(e instanceof Cat||e instanceof NovelVulture||e instanceof NovelActor||e instanceof net.minecraft.world.entity.decoration.ItemFrame||e instanceof net.minecraft.world.entity.item.ItemEntity))cleanup.add(e);cleanup.forEach(Entity::discard);
             var bounds=IndianLakeRooms.bounds(b,place);for(int x=((int)bounds.minX-1)>>4;x<=((int)bounds.maxX+1)>>4;x++)for(int z=((int)bounds.minZ-1)>>4;z<=((int)bounds.maxZ+1)>>4;z++)l.getChunkSource().removeRegionTicket(TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(x,z),3,b);
-            var s=l.getServer();s.overworld().getDataStorage().set("the_oldest_house",oldHouse);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);s.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);LabyrinthBuilder.clearAll();}
+            var s=l.getServer();s.overworld().getDataStorage().set("the_oldest_house",oldHouse);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);s.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);s.overworld().setDayTime(oldDayTime);LabyrinthBuilder.clearAll();}
     }
     private static Fixture courtyard,whale,well,plain,ward,karen,upgrade;
     @AfterBatch(batch="novel_courtyard") public static void c1(ServerLevel l){if(courtyard!=null){courtyard.close();courtyard=null;}}
@@ -84,14 +84,18 @@ public final class NovelTests {
         h.onEachTick(()->{if(stage[0]==1){if(p.getY()<f.b.getY()+2){h.assertTrue(p.onClimbable(),"the ladder and open cover form a continuous climb at "+p.position());p.move(MoverType.SELF,new Vec3(0,.14,0));return;}
             h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.BARN_WELL)&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.BARN_WELL),"climbing physically above the shaft resolves only that child");f.at(p,2.5,0,-24.5);f.click(p,NovelRooms.RIBBON);f.click(p,NovelRooms.RIBBON);h.assertTrue(p.getInventory().countItem(NovelRegistry.RIBBON.get())==1,"the ribbon is finite");f.at(p,40,0,-3);stage[0]=2;}
             else if(stage[0]==2&&!NovelVignettes.childScale(p)){h.succeed();}});}
-    @GameTest(template="empty",batch="novel_plain",timeoutTicks=220) public static void nativeSpyglassMakesOneFrameAndMotherCustodyStopsItsReturn(GameTestHelper h){
+    @GameTest(template="empty",batch="novel_plain",timeoutTicks=260) public static void nativeSpyglassMakesOneFrameAndMotherCustodyStopsItsReturn(GameTestHelper h){
         plain=new Fixture(h,33200,LabyrinthPlace.PLAIN);var f=plain;var p=f.player();var peer=f.player();f.at(p,3.5,0,-6.5);f.click(p,new BlockPos(3,0,-7));f.click(p,new BlockPos(3,0,-7));h.assertTrue(p.getInventory().countItem(Items.SPYGLASS)==1,"the equipment barrel gives one spyglass per explorer");
         f.at(p,.5,0,-20.5);h.runAfterDelay(8,()->{var target=f.b.offset(NovelRooms.FIGURE).getCenter().subtract(p.getEyePosition());p.setYRot(180);p.setXRot((float)(-Math.atan2(target.y,Math.sqrt(target.x*target.x+target.z*target.z))*180/Math.PI));p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.SPYGLASS));p.startUsingItem(InteractionHand.MAIN_HAND);});
         h.runAfterDelay(12,()->{var target=f.b.offset(NovelRooms.FIGURE).getCenter().subtract(p.getEyePosition()).normalize();h.assertTrue(NovelVignettes.inside(p,f.place)&&p.isUsingItem()&&p.getViewVector(1).dot(target)>.997,"native spyglass aim/use survives entry: inside="+NovelVignettes.inside(p,f.place)+" use="+p.isUsingItem()+" dot="+p.getViewVector(1).dot(target)+" aim="+f.own(p).getInt("Aim")+" at="+p.position());});
         h.runAfterDelay(90,()->{h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.PLAIN)&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.PLAIN),"holding the actual spyglass on the distant shape produces personal memory");
             var original=ItemStack.parseOptional(p.registryAccess(),f.own(p).getCompound("Photo"));p.stopUsingItem();for(int i=0;i<p.getInventory().getContainerSize();i++)if(p.getInventory().getItem(i).is(Items.FILLED_MAP))p.getInventory().setItem(i,ItemStack.EMPTY);
-            MotherCollection.get(p.server).keepItem(original,p.registryAccess(),p.getUUID(),f.l.getGameTime());});
-        h.runAfterDelay(130,()->{h.assertTrue(f.own(p).getBoolean("PhotoGivenAway"),"the actual Mother collection, rather than a borrowed map, settles the returning photograph");h.succeed();});}
+            p.setItemInHand(InteractionHand.OFF_HAND,original);p.server.overworld().setDayTime(p.server.overworld().getDayTime()+24000);});
+        h.runAfterDelay(125,()->{h.assertTrue(p.getOffhandItem().is(Items.FILLED_MAP)&&p.getInventory().countItem(Items.FILLED_MAP)==1,"morning preserves the photograph already in the actual offhand");
+            var original=p.getOffhandItem();p.setItemInHand(InteractionHand.OFF_HAND,ItemStack.EMPTY);peer.containerMenu.setCarried(original);p.server.overworld().setDayTime(p.server.overworld().getDayTime()+24000);});
+        h.runAfterDelay(165,()->{h.assertTrue(peer.containerMenu.getCarried().isEmpty()&&p.getInventory().countItem(Items.FILLED_MAP)==1,"morning recalls the actual peer cursor's original without duplicating it");
+            var original=ItemStack.parseOptional(p.registryAccess(),f.own(p).getCompound("Photo"));for(int i=0;i<p.getInventory().getContainerSize();i++)if(p.getInventory().getItem(i).is(Items.FILLED_MAP))p.getInventory().setItem(i,ItemStack.EMPTY);MotherCollection.get(p.server).keepItem(original,p.registryAccess(),p.getUUID(),f.l.getGameTime());});
+        h.runAfterDelay(205,()->{h.assertTrue(f.own(p).getBoolean("PhotoGivenAway"),"the actual Mother collection, rather than a borrowed map, settles the returning photograph");h.succeed();});}
     @GameTest(template="empty",batch="novel_ward",timeoutTicks=180) public static void wardDepartureResetsNightAndOnlyPresentDawnReadingCounts(GameTestHelper h){
         ward=new Fixture(h,33500,LabyrinthPlace.HOSPITAL);var f=ward;var p=f.player();var peer=f.player();
         h.runAfterDelay(12,()->{f.at(p,4.5,0,-13.5);f.click(p,NovelRooms.BUTTON);h.assertTrue(f.own(p).getInt("WardCalls")==1&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.HOSPITAL),"an actual call changes the chart but is no resolution");f.at(p,30,0,-3);});
