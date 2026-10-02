@@ -55,7 +55,7 @@ public final class NovelVignettes {
         recordVisit(p,place);if(!isNovel(place)||!participant(p))return;var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());
         if(place==LabyrinthPlace.ZAMPANO_COURTYARD){ensureCats(p);var c=own.getCompound("Courtyard");int visits=c.getInt("Visits")+1;c.putInt("Visits",visits);own.put("Courtyard",c);thinCats(p,visits);
             var visited=data.visited(p.getUUID()).stream().map(LabyrinthPlace::byId).filter(q->q!=null&&q.slot()>=0&&q!=place&&!q.isOneShot()).toList();
-            if(!visited.isEmpty())for(int i=1;i<place.doors().size();i++){var d=data.door(place.doorId(place.doors().get(i)));if(d!=null)data.deal(p.getUUID(),d,visited.get((i-1)%visited.size()).id(),false);}
+            for(int i=1;i<place.doors().size();i++){var d=data.door(place.doorId(place.doors().get(i)));if(d!=null)data.deal(p.getUUID(),d,visited.isEmpty()?place.id():visited.get((i-1)%visited.size()).id(),false);}
         }
         if(place==LabyrinthPlace.WHALE&&!own.contains("MailDue")){own.putLong("MailDue",p.serverLevel().getGameTime()+MAIL_INTERVAL);own.putBoolean("Correspondence",true);}
         if(place==LabyrinthPlace.HOSPITAL&&!own.getBoolean("WardFinished")){own.putInt("WardTicks",0);own.putInt("WardCalls",0);own.putBoolean("Alarm",false);}
