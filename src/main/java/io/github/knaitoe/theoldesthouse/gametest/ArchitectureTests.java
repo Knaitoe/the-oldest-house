@@ -175,9 +175,11 @@ public final class ArchitectureTests {
         var walker=h.makeMockServerPlayerInLevel();
         try{
             walker.gameMode.changeGameModeForPlayer(net.minecraft.world.level.GameType.SURVIVAL);
-            walker.teleportTo(outside,plain.getX()+.5,plain.getY(),plain.getZ()-20.5,180,0);OutdoorBounds.remember(walker);
+            // The guard reads coordinates only, so the walker stays in its own level and no arrival handler moves it.
+            walker.teleportTo(plain.getX()+.5,plain.getY(),plain.getZ()-20.5);OutdoorBounds.remember(walker);
             var inside=walker.position();walker.teleportTo(plain.getX()+40.5,plain.getY()+12,plain.getZ()-20.5);
-            h.assertTrue(OutdoorBounds.check(walker,origin)&&walker.position().distanceTo(inside)<1.0E-3,"crossing the dunes returns the explorer to where they stood");
+            boolean returned=OutdoorBounds.check(walker,origin);
+            h.assertTrue(returned&&walker.position().distanceTo(inside)<1.0E-3,"crossing the dunes returns the explorer to where they stood: "+returned+" at "+walker.position().subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(plain))+", stood at "+inside.subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(plain)));
             h.assertTrue(!OutdoorBounds.check(walker,origin),"inside the plain nothing moves them");
         }finally{server.getPlayerList().remove(walker);}
     }

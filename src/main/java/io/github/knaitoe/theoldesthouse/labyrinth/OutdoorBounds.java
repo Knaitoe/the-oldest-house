@@ -61,29 +61,33 @@ public final class OutdoorBounds {
     /** Returns true when the player was put back inside a scene. */
     public static boolean check(ServerPlayer player, BlockPos origin) {
         if (player.isSpectator() || player.isCreative() || !player.isAlive()) return false;
+        Vec3 back = SAFE.get(player.getUUID());
+        BlockPos home = null;
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
             if (!NovelRooms.outside(place)) continue;
             BlockPos base = LabyrinthPlaces.base(origin, place);
             if (base == null) continue;
             Area area = area(place);
-            double x = player.getX() - base.getX(), y = player.getY() - base.getY(), z = player.getZ() - base.getZ();
-            if (x < area.minX() - NEIGHBOURHOOD || x > area.maxX() + NEIGHBOURHOOD
-                    || z < area.minZ() - NEIGHBOURHOOD || z > area.maxZ() + NEIGHBOURHOOD) continue;
-            if (area.contains(x, y, z)) {
+            if (area.contains(player.getX() - base.getX(), player.getY() - base.getY(), player.getZ() - base.getZ())) {
                 if (player.onGround() || player.isInWater() || player.isPassenger()) SAFE.put(player.getUUID(), player.position());
                 return false;
             }
-            // Only someone this scene has actually seen standing inside it is returned to it.
-            Vec3 back = SAFE.get(player.getUUID());
-            if (back == null || !area.contains(back.x - base.getX(), back.y - base.getY(), back.z - base.getZ())) return false;
-            if (player.isPassenger()) player.stopRiding();
-            player.teleportTo(back.x, back.y, back.z);
-            player.setDeltaMovement(Vec3.ZERO);
-            player.resetFallDistance();
-            player.hurtMarked = true;
-            return true;
+            // Only the scene the player was last seen standing inside claims them, and only from its neighbourhood.
+            if (back != null && area.contains(back.x - base.getX(), back.y - base.getY(), back.z - base.getZ())
+                    && near(area, player.getX() - base.getX(), player.getZ() - base.getZ())) home = base;
         }
-        return false;
+        if (home == null) return false;
+        if (player.isPassenger()) player.stopRiding();
+        player.teleportTo(back.x, back.y, back.z);
+        player.setDeltaMovement(Vec3.ZERO);
+        player.resetFallDistance();
+        player.hurtMarked = true;
+        return true;
+    }
+
+    private static boolean near(Area area, double x, double z) {
+        return x >= area.minX() - NEIGHBOURHOOD && x <= area.maxX() + NEIGHBOURHOOD
+                && z >= area.minZ() - NEIGHBOURHOOD && z <= area.maxZ() + NEIGHBOURHOOD;
     }
 
     @Nullable
