@@ -27,9 +27,12 @@ public final class NovelCreatureRenderers {
             r.addOrReplaceChild("tail",CubeListBuilder.create().texOffs(128,128).addBox(-3,-.5F,5,6,1,7),PartPose.ZERO);return LayerDefinition.create(m,256,512);}
         @Override public void setupAnim(NovelVulture e,float walk,float amount,float age,float yaw,float pitch){root.getAllParts().forEach(ModelPart::resetPose);root.zRot=.18F;left.zRot=(float)Math.sin(age*.025)*.025F;right.zRot=-left.zRot;}}
     private static final class ActorRenderer extends MobRenderer<NovelActor,PlayerModel<NovelActor>>{
-        ActorRenderer(EntityRendererProvider.Context c){super(c,new PlayerModel<>(c.bakeLayer(ModelLayers.PLAYER),false),.3F);}
+        private final PlayerModel<NovelActor> standard,slim;
+        ActorRenderer(EntityRendererProvider.Context c){super(c,new PlayerModel<>(c.bakeLayer(ModelLayers.PLAYER),false),.3F);standard=model;slim=new PlayerModel<>(c.bakeLayer(ModelLayers.PLAYER_SLIM),true);}
+        private net.minecraft.client.resources.PlayerSkin skin(NovelActor e){var mc=Minecraft.getInstance();var info=mc.getConnection()==null?null:e.owner().map(mc.getConnection()::getPlayerInfo).orElse(null);return info!=null?info.getSkin():net.minecraft.client.resources.DefaultPlayerSkin.get(e.owner().orElse(new java.util.UUID(0,0)));}
+        @Override public void render(NovelActor e,float yaw,float partial,com.mojang.blaze3d.vertex.PoseStack poses,net.minecraft.client.renderer.MultiBufferSource buffers,int light){model=skin(e).model()==net.minecraft.client.resources.PlayerSkin.Model.SLIM?slim:standard;super.render(e,yaw,partial,poses,buffers,light);}
         @Override public boolean shouldRender(NovelActor e,Frustum f,double x,double y,double z){var p=Minecraft.getInstance().player;return p!=null&&e.owner().filter(p.getUUID()::equals).isPresent()&&super.shouldRender(e,f,x,y,z);}
-        @Override public ResourceLocation getTextureLocation(NovelActor e){var mc=Minecraft.getInstance();var info=mc.getConnection()==null?null:e.owner().map(mc.getConnection()::getPlayerInfo).orElse(null);return info!=null?info.getSkin().texture():ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/trailer_child_2.png");}
+        @Override public ResourceLocation getTextureLocation(NovelActor e){return skin(e).texture();}
         @Override protected boolean shouldShowName(NovelActor e){return false;}
     }
 }

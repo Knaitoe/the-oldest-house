@@ -40,3 +40,6 @@ repo/
 
 # Python
 __pycache__/
+
+# Full ImageGen master stays in the image deliverable; native import is versioned.
+art/npcs/clothing-materials-generated.png

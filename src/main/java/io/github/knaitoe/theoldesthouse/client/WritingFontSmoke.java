@@ -37,6 +37,7 @@ public final class WritingFontSmoke {
         mc.resizeDisplay();
         List<ItemStack> books = new ArrayList<>(HouseWriting.samples());
         books.add(NavidsonLetter.createBook());
+        books.add(io.github.knaitoe.theoldesthouse.labyrinth.HollowayCamp.journal());
         books.addAll(List.of(NovelTexts.archive(), NovelTexts.whaleOpening(), NovelTexts.whaleLast(),
                 NovelTexts.well(), NovelTexts.apology(), NovelTexts.hospitalOpening(), NovelTexts.hospitalLast(), NovelTexts.karen()));
         for (int n = 0; n < 4; n++) books.add(NovelTexts.letter(n, "Explorer"));
@@ -79,7 +80,7 @@ public final class WritingFontSmoke {
         }
         Files.writeString(folder.resolve("passed.txt"), "Loaded all custom fonts; native book wrapping and String/Component/sequence rendering passed.\n");
         TheOldestHouse.LOGGER.info("WRITING FONT CHECK PASSED: native screenshot saved");
-        mc.stop();
+        mc.setScreen(new NpcVisualProof());
     }
 
     private static final class ProofScreen extends Screen {

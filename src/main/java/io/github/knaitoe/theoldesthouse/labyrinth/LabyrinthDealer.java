@@ -45,6 +45,7 @@ public final class LabyrinthDealer {
                     || place == LabyrinthPlace.PHONE_CANOE
                     || place == LabyrinthPlace.GOATMAN
                     || place == LabyrinthPlace.TED_CAVER
+                    || place == LabyrinthPlace.HOLLOWAY_CAMP
                     || (NovelVignettes.isNovel(place) && place.kind()!=LabyrinthPlace.Kind.RECURRING)
                     || (place.isFinishable() && data.isCompleted(place.id()))
                     || (place.needsMaking() && !data.isReady(place.id()))) {
@@ -62,6 +63,7 @@ public final class LabyrinthDealer {
         if (PhoneCanoe.canDeal(data,player)) places.add(LabyrinthPlace.PHONE_CANOE);
         if (GoatmanVignette.canDeal(data,player)) places.add(LabyrinthPlace.GOATMAN);
         if (CaverVignette.canDeal(data,player)) places.add(LabyrinthPlace.TED_CAVER);
+        if (HollowayVignette.canDeal(data,player)) places.add(LabyrinthPlace.HOLLOWAY_CAMP);
         for(var p:NovelVignettes.PLACES)if(NovelVignettes.canDeal(data,player,p)&&!places.contains(p))places.add(p);
         if(data.isCompleted(PreservedCave.ID)&&PreservedCave.phoneWaiting(data,player))places.add(LabyrinthPlace.PRESERVED_CAVE);
         for(LabyrinthPlace place:LabyrinthPlace.values()){

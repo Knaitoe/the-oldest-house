@@ -227,6 +227,7 @@ public final class LabyrinthDoors {
             PhoneCanoe.onArrive(p,place);
             GoatmanVignette.onArrive(p,place);
             CaverVignette.onArrive(p,place);
+            HollowayVignette.onArrive(p,place);
             NovelVignettes.onArrive(p,place);
             MotherOfStrays.onArrive(p, place);
             WitnessAccount.onArrive(p, place);
@@ -300,6 +301,7 @@ public final class LabyrinthDoors {
                 if (place == LabyrinthPlace.PHONE_CANOE) PhoneCanoe.interrupt(player);
                 if (place == LabyrinthPlace.GOATMAN) GoatmanVignette.depart(player);
                 if (place == LabyrinthPlace.TED_CAVER) CaverVignette.depart(player);
+                if (place == LabyrinthPlace.HOLLOWAY_CAMP) HollowayVignette.depart(player);
                 if (place == LabyrinthPlace.MOTHER_DEN) {
                     MotherCollection.get(player.server).presence(player.getUUID(), false);
                 }
@@ -776,7 +778,8 @@ public final class LabyrinthDoors {
                 && !LabyrinthLoops.allowsPlacing(level, event.getPos(), event.getPlacedBlock())
                 && !LabyrinthHazards.allowsPlacing(level, event.getPos(), event.getPlacedBlock())
                 && !LabyrinthLighting.allowsPlacing(level, event.getPos(), event.getPlacedBlock())) {
-            if (!DrownedTown.allowsPlacing(level, event.getPos(), event.getPlacedBlock())) event.setCanceled(true);
+            if (!DrownedTown.allowsPlacing(level, event.getPos(), event.getPlacedBlock())
+                    && !HollowayVignette.allowsPlacing(level,event.getPos(),event.getPlacedBlock())) event.setCanceled(true);
         }
     }
 

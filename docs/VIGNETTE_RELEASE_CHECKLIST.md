@@ -9,9 +9,9 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current baseline: 0.4.23
+## Current baseline: 0.4.25
 
-Sixteen eligible sources require **twelve distinct personal resolutions** across at least two kinds. The game has three ending options.
+Seventeen eligible sources require **thirteen distinct personal resolutions** across at least two kinds. The game has three ending options.
 
 | Source | Kind |
 | --- | --- |
@@ -29,10 +29,11 @@ Sixteen eligible sources require **twelve distinct personal resolutions** across
 | Whale’s personally decoded undated letter | Connection |
 | Well wait and return above the cover | Memory |
 | Plain’s native spyglass photograph | Memory |
-| Hospital’s personal dawn chart | Understanding |
+| Hospital's personal dawn chart | Understanding |
+| Holloway's personal three-arena escape and service latch | Survival |
 | Mother's peaceful resolution | Release |
 
-The next seventeenth source requires thirteen; eighteen sources require fourteen. Existing recorded evidence remains saved as the quota rises. Explorers who have not committed to release must satisfy the current requirement. Completing every source, or resolving the Mother specifically, is not required.
+The next eighteenth source requires fourteen. Existing recorded evidence remains saved as the quota rises. Explorers who have not committed to release must satisfy the current requirement. Completing every source, or resolving the Mother specifically, is not required.
 
 Karen’s room is a native navigation/respawn anchor, excluded from Witness.
 
