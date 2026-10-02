@@ -48,8 +48,8 @@ public final class MarginaliaTests {
             HouseFurnishings.decorate(level,base,LabyrinthPlace.JUNCTION);
             // Serial-reader fixtures intentionally provide each thread; production density is tested separately.
             for(var thread:HouseMarginalia.Thread.values()){
-                var at=surface(thread);level.setBlock(at.below(),HouseBlocks.HOUSEHOLD_FURNITURE.get().defaultBlockState().setValue(HouseholdFurnitureBlock.KIND,HouseholdFurnitureBlock.Kind.WALNUT_DESK),LabyrinthBuilder.flags());
-                level.setBlock(at,HouseBlocks.NOTE_SURFACE.get().defaultBlockState().setValue(NoteSurfaceBlock.THREAD,thread),LabyrinthBuilder.flags());
+                var at=surface(thread);level.setBlock(at.below(),HouseBlocks.HOUSEHOLD_FURNITURE.get().defaultBlockState().setValue(HouseholdFurnitureBlock.KIND,HouseholdFurnitureBlock.Kind.WALNUT_DESK),net.minecraft.world.level.block.Block.UPDATE_CLIENTS|net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE);
+                level.setBlock(at,HouseBlocks.NOTE_SURFACE.get().defaultBlockState().setValue(NoteSurfaceBlock.THREAD,thread),net.minecraft.world.level.block.Block.UPDATE_CLIENTS|net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE);
             }
             IndianLakeRooms.keepLoaded(level,base,LabyrinthPlace.JUNCTION);
         }
