@@ -20,9 +20,20 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class LakeAmbushTests {
+    @GameTest(template="empty") public static void sceneClockBelongsToTheActualSiteAcrossNativeTimeUpdates(GameTestHelper h){
+        var origin=new BlockPos(89100,70,89100);
+        for(var site:LakeLandscape.SITES){
+            var b=LabyrinthPlaces.base(origin,site);var p=b.offset(0,0,-8);
+            for(long nativeTime:new long[]{0,6000,12000,18000,23999,24000,48001})
+                h.assertTrue(SceneClock.time(SceneClock.at(origin,p,HouseDimensions.OUTSIDE),1200,nativeTime)==18000,"the actual lake stays at dusk even without a leased cue or after a native day update");
+            h.assertTrue(SceneClock.at(origin,p,HouseDimensions.INTERIOR)==0&&SceneClock.at(origin,p,Level.OVERWORLD)==0,"matching coordinates in another dimension never inherit the lake clock");
+        }
+        var plain=LabyrinthPlaces.base(origin,LabyrinthPlace.PLAIN);h.assertTrue(SceneClock.time(SceneClock.at(origin,plain,HouseDimensions.OUTSIDE),0,21000)==6000,"a direct transition from the lake to the plain changes presentation without waiting for another packet");
+        h.assertTrue(SceneClock.time(SceneClock.at(origin,origin.offset(0,1,0),HouseDimensions.INTERIOR),0,7311)==7311,"returning to the manor restores its native time immediately");h.succeed();
+    }
     private static LakeWitchEntity witch;private static ServerPlayer target;private static BlockPos base;private static CompoundTag old;
     @AfterBatch(batch="witch_surface_0427") public static void clean(ServerLevel l){
-        if(witch!=null)witch.discard();if(target!=null)l.getServer().getPlayerList().remove(target);
+        if(witch!=null)witch.discard();if(target!=null)NativeTestPlayers.remove(target);
         if(base!=null)for(int x=(base.getX()-30)>>4;x<=(base.getX()+30)>>4;x++)for(int z=(base.getZ()-65)>>4;z<=(base.getZ()+18)>>4;z++)l.getChunkSource().removeRegionTicket(TicketType.PORTAL,new ChunkPos(x,z),3,base);
         if(old!=null)LabyrinthData.get(l.getServer()).setState(DrownedTown.ID,old);witch=null;target=null;base=null;old=null;
     }
@@ -34,9 +45,11 @@ public final class LakeAmbushTests {
             l.setBlock(base.offset(x,-1,z),(x>=-5&&x<=5?Blocks.WATER:Blocks.COARSE_DIRT).defaultBlockState(),3);
             for(int y=0;y<=3;y++)l.setBlock(base.offset(x,y,z),Blocks.AIR.defaultBlockState(),3);
         }
-        target=h.makeMockServerPlayerInLevel();target.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+        target=NativeTestPlayers.survival(h,"native_witch_target");
         target.moveTo(base.getX()+9.5,base.getY(),base.getZ()-25.5,-90,0);
+        target.setYHeadRot(-90);target.yHeadRotO=-90;
         witch=DrownedTownRegistry.LAKE_WITCH.get().create(l);witch.shore(base,1);witch.moveTo(base.getX()-8.5,base.getY(),base.getZ()-25.5);l.addFreshEntity(witch);
+        h.assertTrue(!target.isCreative()&&!target.isSpectator()&&l.players().contains(target)&&LakeWitchEntity.canAttack(witch,target),"the target has real native survival abilities and is actually eligible for the hunt");
         h.assertTrue(witch.getBbHeight()<1.0&&witch.getEyeHeight()<.8,"the native hunting collision body is low, as well as its rendered mesh");
         int[] wet={0},rush={0};double[] previous={witch.getX()};float health=target.getHealth();
         h.onEachTick(()->{

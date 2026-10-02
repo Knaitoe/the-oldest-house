@@ -1,6 +1,7 @@
 package io.github.knaitoe.theoldesthouse.client;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.labyrinth.SceneClock;
 import io.github.knaitoe.theoldesthouse.network.NovelScenePayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -18,14 +19,11 @@ public final class NovelSceneClient {
     private static boolean active(){var mc=Minecraft.getInstance();return lease>0&&mode>0&&mc.player!=null&&mc.player.isAlive()&&!mc.player.isSpectator()&&mc.level!=null&&HouseDimensions.isHouseDimension(mc.level.dimension());}
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){if(lease>0)lease--;if(captionTicks>0)captionTicks--;if(mode!=12)elapsed++;
         if(!active()){mode=0;shake=0;caption="";}}
-    /** Read-only presentation clock. Network time updates never race a local setDayTime. */
+    /** Read-only spatial clock; late packets may expire a cue, but never the scene's sky. */
     public static long sceneTime(net.minecraft.world.level.Level level,long nativeTime){
-        if(level!=Minecraft.getInstance().level||!active())return nativeTime;
-        return presentationTime(mode,elapsed,nativeTime);
+        var mc=Minecraft.getInstance();if(level!=mc.level||mc.player==null)return nativeTime;
+        return SceneClock.time(SceneClock.at(HouseSightlineState.origin(),mc.player.blockPosition(),level.dimension()),elapsed,nativeTime);
     }
-    public static long presentationTime(int mode,int elapsed,long nativeTime){return switch(mode){
-        case 1->21000;case 3,7->18000;case 4->6000;
-        case 5->18000+Math.min(6000,Math.max(0,elapsed)*6000L/3600);default->nativeTime;};}
     @SubscribeEvent public static void fog(ViewportEvent.ComputeFogColor e){if(!active())return;if(mode==5){e.setRed(.16F);e.setGreen(.12F);e.setBlue(.21F);}else if(mode==1||mode==3){e.setRed(.035F);e.setGreen(.05F);e.setBlue(.073F);}else if(mode==4){e.setRed(.76F);e.setGreen(.67F);e.setBlue(.46F);}else if(mode==12){e.setRed(0);e.setGreen(0);e.setBlue(0);}else if(mode>=10){e.setRed(.065F);e.setGreen(.059F);e.setBlue(.05F);}}
     @SubscribeEvent public static void mist(ViewportEvent.RenderFog e){
         if(active()&&mode==12&&e.getMode()==net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN){e.setNearPlaneDistance(0);e.setFarPlaneDistance(Math.max(1.2F,34-elapsed*7));e.setCanceled(true);return;}
