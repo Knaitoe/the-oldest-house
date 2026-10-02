@@ -1,5 +1,8 @@
 package io.github.knaitoe.theoldesthouse.client;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.labyrinth.*;
+import net.minecraft.core.BlockPos;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.math.Axis;
 import java.nio.file.*;
@@ -39,7 +42,8 @@ public final class CastVisualProof extends Screen {
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof CastVisualProof)||++frames<4)return;
         var effects=new HouseOutsideEffects();if(!Float.isNaN(effects.getCloudHeight())||effects.hasGround())throw new IllegalStateException("Outdoor pockets still have sea-level sky or clouds");
-        for(long time:new long[]{0,6000,12000,23999,72000})if(NovelSceneClient.presentationTime(7,0,time)!=18000)throw new IllegalStateException("A native time update can flash the lake sky");
+        var origin=new BlockPos(0,70,0);var lake=LabyrinthPlaces.base(origin,LabyrinthPlace.DROWNED_TOWN).north(8);
+        for(long time:new long[]{0,6000,12000,23999,72000})if(SceneClock.time(SceneClock.at(origin,lake,HouseDimensions.OUTSIDE),0,time)!=18000)throw new IllegalStateException("A native time update can flash the lake sky");
         Path folder=Path.of("../build/font-smoke");Files.createDirectories(folder);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve("native-cast.png"));}
         Files.writeString(folder.resolve("cast-passed.txt"),"Native remaining-cast models, memory/hunting skins and outdoor effects passed.\n");
