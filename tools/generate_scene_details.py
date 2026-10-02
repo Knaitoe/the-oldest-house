@@ -89,7 +89,12 @@ public final class SceneDetailBlock extends HorizontalDirectionalBlock {
     public static boolean supported(BlockGetter level,BlockPos at,BlockState state){
         var facing=state.getValue(FACING);var kind=state.getValue(KIND);
         BlockPos support=kind.wall()?at.relative(facing.getOpposite()):at.below();
-        return level.getBlockState(support).isFaceSturdy(level,support,kind.wall()?facing:Direction.UP);
+        var backing=level.getBlockState(support);
+        if(kind.wall())return backing.isFaceSturdy(level,support,facing);
+        // Inset dresser/bedside tops can support a small object without filling the whole block face.
+        var bounds=state.getShape(level,at).bounds();
+        var footprint=Block.box(bounds.minX*16,15.999,bounds.minZ*16,bounds.maxX*16,16,bounds.maxZ*16);
+        return !Shapes.joinIsNotEmpty(footprint,backing.getShape(level,support),BooleanOp.ONLY_FIRST);
     }
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         double[][] boxes=switch(s.getValue(KIND)) {
