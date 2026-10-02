@@ -32,7 +32,7 @@ public final class GoatmanTests {
             h.assertTrue(slot.isInside(b.offset(-23,-1,-82))&&slot.isInside(b.offset(23,13,0)),"woods and trailer fit their native slot at manor height "+y);
         }
         h.assertTrue(LabyrinthPlace.PHONE_CANOE.slot()==30&&LabyrinthPlace.GOATMAN.slot()==31&&DoorLeakKind.CANOE.ordinal()==10&&DoorLeakKind.WOODS.ordinal()==11,"the new site and sensory hint append to the existing saved layout");
-        h.assertTrue(WitnessAccount.REQUIRED==12&&WitnessAccount.Story.values().length==16,"the current sixteen playable sources require twelve personal resolutions");h.succeed();
+        h.assertTrue(WitnessAccount.REQUIRED==13&&WitnessAccount.Story.values().length==17,"the current seventeen playable sources require thirteen personal resolutions");h.succeed();
     }
     private static final class Fixture implements AutoCloseable {
         final GameTestHelper h;final net.minecraft.server.MinecraftServer server;final ServerLevel l;final BlockPos origin,b;

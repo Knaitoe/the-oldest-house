@@ -42,7 +42,7 @@ The existing finale preparation shield remains available.
   books, completed endings, actor UUIDs and companion custody remain in place.
 - Harrigan's existing native head equipment carries the appearance component, so
   vanilla tracking and saved equipment synchronize skins to late joiners. No
-  actor replacement or new network payload is required; protocol stays 23.
+  actor replacement or new appearance payload is required. Protocol 24 requires matching client/server builds for the new shared human entity.
 
 The full personal escape is the seventeenth eligible Witness source, Survival.
 The derived quota is thirteen across at least two kinds. There are three endings.

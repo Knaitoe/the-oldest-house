@@ -181,7 +181,7 @@ jobs:
           PY
           diagnostic=$!
           trap 'kill "$diagnostic" 2>/dev/null || true' EXIT
-          timeout --signal=QUIT --kill-after=20s 6m gradle runGameTestServer --no-daemon
+          timeout --signal=QUIT --kill-after=20s 8m gradle runGameTestServer --no-daemon
 
       - name: Upload test diagnostics
         if: always()

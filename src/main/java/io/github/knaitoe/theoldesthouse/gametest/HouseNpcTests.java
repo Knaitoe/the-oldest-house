@@ -68,11 +68,12 @@ public final class HouseNpcTests {
         h.assertTrue(f.own(a).getBoolean("Looted")&&!f.own(a).getBoolean("Run")&&!f.own(b).getBoolean("Looted"),"an actual normal click arms only the taker, on a future visit");
         h.assertTrue(mb.getSlot(0).getItem().isEmpty()&&a.containerMenu.getCarried().getCount()==16,"both native menus share the finite barrel while the taker has the original cursor stack");
         a.closeContainer();b.closeContainer();f.returnForHunt(a);
-        h.assertTrue(!HollowayVignette.pursued(b)&&f.actor().getUUID().equals(id)&&f.l.getEntitiesOfClass(HouseHuman.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.HOLLOWAY_CAMP)).size()==1,"a peer staying in the camp neither advances nor duplicates the shared character");
+        h.assertTrue(!HollowayVignette.pursued(b)&&f.actor().getUUID().equals(id),"a peer staying in the camp neither advances nor duplicates the shared character");
         var barrel=(BarrelBlockEntity)f.l.getBlockEntity(f.b.offset(HollowayCamp.CACHE));h.assertTrue(barrel.getItem(0).isEmpty(),"a next visit never replenishes looted supplies");
         barrel.clearContent();var late=f.player();f.click(late,HollowayCamp.JOURNAL);var survey=(HollowayVignette.SurveyMenu)late.containerMenu;
         h.assertTrue(!f.own(late).getBoolean("Looted")&&survey.clickMenuButton(late,3)&&!survey.clickMenuButton(late,3)&&f.own(late).getBoolean("Looted"),"a late explorer takes one personal survey through the native book menu, even after every shared supply is gone");
-        h.assertTrue(barrel.isEmpty(),"the late-player path never refills the shared barrel");h.succeed();
+        h.assertTrue(barrel.isEmpty(),"the late-player path never refills the shared barrel");
+        h.runAfterDelay(2,()->{h.assertTrue(f.l.getEntitiesOfClass(HouseHuman.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.HOLLOWAY_CAMP)).size()==1,"native queued registration produces exactly one shared actor");h.succeed();});
     }
     @GameTest(template="empty",batch="npc_hunt",timeoutTicks=350) public static void twoPlayersEscapeTheSharedHunterButMustEachPullTheLatch(GameTestHelper h){
         hunt=new Fixture(h,41400);var f=hunt;var a=f.player();var b=f.player();var observer=f.player();f.loot(a,0);f.loot(b,1);f.returnForHunt(a);f.returnForHunt(b);
@@ -129,6 +130,7 @@ public final class HouseNpcTests {
         var harrigan=LabyrinthPlaces.base(f.origin,LabyrinthPlace.HARRIGAN);HarriganVignette.build(f.l.getServer(),f.l,harrigan);
         var bodies=f.l.getEntitiesOfClass(ArmorStand.class,IndianLakeRooms.bounds(harrigan,LabyrinthPlace.HARRIGAN));var body=bodies.getFirst();var id=body.getUUID();
         var head=body.getItemBySlot(EquipmentSlot.HEAD).copy();head.remove(DataComponents.CUSTOM_DATA);body.setItemSlot(EquipmentSlot.HEAD,head);
+        HarriganVignette.onEntityTick(new net.neoforged.neoforge.event.tick.EntityTickEvent.Post(body));
         var prior=new CompoundTag();prior.putBoolean("TicketVisible",true);prior.putInt("Visit",1);f.data().setState(HarriganVignette.ID,prior);f.data().setBuilt(21,f.origin);
         LabyrinthBuilder.ensureBuilt(f.l.getServer());
         h.runAfterDelay(100,()->{
