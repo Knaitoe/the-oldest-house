@@ -18,8 +18,15 @@ public final class FinaleClientEvents {
     @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions event){event.registerLayerDefinition(MinotaurModel.LAYER,MinotaurModel::createBodyLayer);}
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers event){event.registerEntityRenderer(FinaleRegistry.MINOTAUR.get(),MinotaurRenderer::new);event.registerEntityRenderer(FinaleRegistry.WITNESS.get(),WitnessRenderer::new);}
     private static final class MinotaurRenderer extends MobRenderer<MinotaurEntity,MinotaurModel>{
-        MinotaurRenderer(EntityRendererProvider.Context context){super(context,new MinotaurModel(context.bakeLayer(MinotaurModel.LAYER)),.9F);}
+        private final CagedBoyRenderer boy;
+        MinotaurRenderer(EntityRendererProvider.Context context){super(context,new MinotaurModel(context.bakeLayer(MinotaurModel.LAYER)),.9F);boy=new CagedBoyRenderer(context);}
         @Override public ResourceLocation getTextureLocation(MinotaurEntity entity){return MATERIALS;}
+        @Override public void render(MinotaurEntity e,float yaw,float partial,com.mojang.blaze3d.vertex.PoseStack poses,net.minecraft.client.renderer.MultiBufferSource buffers,int light){if(e.motion()==MinotaurEntity.CAGED)boy.render(e,yaw,partial,poses,buffers,light);else super.render(e,yaw,partial,poses,buffers,light);}
+    }
+    private static final class CagedBoyRenderer extends MobRenderer<MinotaurEntity,net.minecraft.client.model.PlayerModel<MinotaurEntity>>{
+        CagedBoyRenderer(EntityRendererProvider.Context context){super(context,new net.minecraft.client.model.PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER),false),.2F);}
+        @Override public ResourceLocation getTextureLocation(MinotaurEntity e){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/lake_boy.png");}
+        @Override protected void scale(MinotaurEntity e,com.mojang.blaze3d.vertex.PoseStack poses,float partial){poses.scale(.7F,.7F,.7F);}
     }
     private static final class WitnessRenderer extends MobRenderer<FinaleWitness,WitnessModel>{
         WitnessRenderer(EntityRendererProvider.Context context){super(context,new WitnessModel(context.bakeLayer(ModelLayers.PLAYER)),.3F);}

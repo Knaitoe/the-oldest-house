@@ -6,6 +6,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CarpetBlock;
+import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredBlock;
@@ -18,6 +20,13 @@ public final class HouseBlocks {
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(TheOldestHouse.MOD_ID);
     private static final DeferredRegister<MapCodec<? extends Block>> BLOCK_TYPES =
             DeferredRegister.create(BuiltInRegistries.BLOCK_TYPE, TheOldestHouse.MOD_ID);
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<TownSignBlock>> TOWN_SIGN_TYPE=BLOCK_TYPES.register("town_sign",()->TownSignBlock.CODEC);
+    public static final DeferredBlock<TownSignBlock> TOWN_SIGN=BLOCKS.registerBlock("town_sign",TownSignBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noCollission().noOcclusion().noLootTable());
+    public static final DeferredBlock<Block> STAIRCASE_STONE=BLOCKS.registerBlock("staircase_stone",Block::new,BlockBehaviour.Properties.ofFullCopy(Blocks.POLISHED_DEEPSLATE).noLootTable());
+    public static final DeferredBlock<StairBlock> STAIRCASE_STAIRS=BLOCKS.registerBlock("staircase_stairs",p->new StairBlock(STAIRCASE_STONE.get().defaultBlockState(),p),BlockBehaviour.Properties.ofFullCopy(Blocks.POLISHED_DEEPSLATE_STAIRS).noLootTable());
+    public static final DeferredBlock<SlabBlock> STAIRCASE_SLAB=BLOCKS.registerBlock("staircase_slab",SlabBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.POLISHED_DEEPSLATE_SLAB).noLootTable());
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<RugFloorBlock>> RUG_FLOOR_TYPE=BLOCK_TYPES.register("rug_floor",()->RugFloorBlock.CODEC);
+    public static final DeferredBlock<RugFloorBlock> RUG_FLOOR=BLOCKS.registerBlock("rug_floor",RugFloorBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).noLootTable());
 
     public static final DeferredHolder<MapCodec<? extends Block>, MapCodec<WardrobeBlock>> WARDROBE_TYPE =
             BLOCK_TYPES.register("wardrobe", () -> WardrobeBlock.CODEC);

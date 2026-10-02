@@ -94,9 +94,9 @@ public final class FinaleTests {
     }
     @GameTest(template="empty") public static void greatStaircaseHasPhysicalDepthAndNoRoomSlotOverlap(GameTestHelper helper){
         BlockPos origin=new BlockPos(100,70,100);var plan=FinaleArchitecture.plan(origin);Map<BlockPos,net.minecraft.world.level.block.state.BlockState> blocks=new HashMap<>();
-        for(var p:plan){blocks.put(p.pos(),p.block());helper.assertTrue(p.pos().getY()>=-64&&p.pos().getY()<320,"geometry stays inside the dimension's real height");
+        for(var p:plan){blocks.put(p.pos(),p.block());helper.assertTrue(p.pos().getY()>=-2032&&p.pos().getY()<2032,"geometry stays inside the dimension's real height");
             helper.assertTrue(!LabyrinthPlaces.isInStack(origin,p.pos()),"the staircase does not overwrite saved vignette slots");}
-        var route=FinaleArchitecture.staircaseRoute(origin);helper.assertTrue(route.get(0).getY()-route.get(route.size()-1).getY()>=120,"this is an actual long descent");
+        var route=FinaleArchitecture.staircaseRoute(origin);helper.assertTrue(route.get(0).getY()-route.get(route.size()-1).getY()>=1280,"this is an actual long descent");
         for(int i=0;i<route.size();i++){
             helper.assertTrue(blocks.containsKey(route.get(i).below())&&!blocks.get(route.get(i).below()).isAir(),"every tread has a real block at "+i);
             var feet=blocks.get(route.get(i));var head=blocks.get(route.get(i).above());
@@ -110,11 +110,11 @@ public final class FinaleTests {
             var at=route.get(n);var next=route.get(n+1);boolean alongX=next.getX()!=at.getX();
             for(int lateral=-4;lateral<=4;lateral++){
                 var walking=at.offset(alongX?0:lateral,0,alongX?lateral:0);
-                helper.assertTrue(!blocks.get(walking.below()).isAir()&&blocks.get(walking).isAir()&&blocks.get(walking.above()).isAir(),"nine unobstructed blocks of actual walking width at tread "+n);
+                helper.assertTrue(!blocks.get(walking.below()).isAir()&&(blocks.get(walking)==null||blocks.get(walking).isAir())&&(blocks.get(walking.above())==null||blocks.get(walking.above()).isAir()),"nine unobstructed blocks of actual walking width at tread "+n);
             }
         }
         for(int x=-FinaleArchitecture.SHAFT_RADIUS;x<=FinaleArchitecture.SHAFT_RADIUS;x++)for(int z=-FinaleArchitecture.SHAFT_RADIUS;z<=FinaleArchitecture.SHAFT_RADIUS;z++)
-            helper.assertTrue(!blocks.get(FinaleArchitecture.base(origin).offset(x,FinaleArchitecture.ARENA-9,z)).isAir(),"a complete shaft floor encloses the view below the great staircase");
+            helper.assertTrue(!blocks.get(FinaleArchitecture.base(origin).offset(x,FinaleArchitecture.LOOP_BOTTOM-1,z)).isAir(),"a complete shaft floor encloses the view below the great staircase");
         helper.assertTrue(blocks.get(FinaleArchitecture.cell(origin)).is(Blocks.IRON_BARS),"the cell is physically closed before commitment");helper.succeed();
     }
     @GameTest(template="empty") public static void escapeHasConnectedFloorAndRealWrongTurns(GameTestHelper helper){

@@ -449,6 +449,7 @@ public final class MotherOfStrays {
         LAST_INTERACTION.put(player.getUUID(), now);
         MotherCollection collection = MotherCollection.get(player.server);
         if (target instanceof MotherEntity mother) {
+            if(inDen(player))VignetteGate.interaction(player,LabyrinthPlace.MOTHER_DEN);
             if(inDen(player)) {
                 MotherCollection.Entry captive=collection.all().stream()
                         .filter(e->e.livingClaim&&player.getUUID().equals(e.owner)).findFirst().orElse(null);

@@ -1,0 +1,88 @@
+{
+  "textures": {
+    "floor": "minecraft:block/spruce_planks",
+    "cloth": "minecraft:block/light_gray_wool",
+    "binding": "minecraft:block/gray_wool",
+    "particle": "minecraft:block/light_gray_wool"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#floor",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#floor",
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#floor",
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#floor",
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#floor",
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#floor",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        16.01,
+        0
+      ],
+      "to": [
+        16,
+        16.0625,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#cloth",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        16.063,
+        15
+      ],
+      "to": [
+        16,
+        16.075,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#binding"
+        }
+      }
+    }
+  ]
+}

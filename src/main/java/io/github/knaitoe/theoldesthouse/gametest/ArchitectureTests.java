@@ -46,7 +46,7 @@ public final class ArchitectureTests {
     }
     private static void exportStair(net.minecraft.server.level.ServerLevel l,BlockPos origin)throws Exception{
         BlockPos b=FinaleArchitecture.base(origin);JsonObject file=new JsonObject();file.addProperty("name","great_staircase");JsonArray palette=new JsonArray(),blocks=new JsonArray();Map<BlockState,Integer> lookup=new LinkedHashMap<>();
-        for(int x=-34;x<34;x++)for(int z=-34;z<34;z++)for(int y=FinaleArchitecture.ARENA-9;y<FinaleArchitecture.TOP+15;y++){
+        for(int x=-34;x<34;x++)for(int z=-34;z<34;z++)for(int y=FinaleArchitecture.TOP-144;y<FinaleArchitecture.TOP+15;y++){
             var s=l.getBlockState(b.offset(x,y,z));if(s.isAir()||s.is(Blocks.LIGHT))continue;
             boolean visible=false;for(var side:Direction.values())if(l.getBlockState(b.offset(x,y,z).relative(side)).isAir()){visible=true;break;}if(!visible)continue;
             Integer i=lookup.get(s);if(i==null){i=lookup.size();lookup.put(s,i);palette.add(BlockState.CODEC.encodeStart(JsonOps.INSTANCE,s).getOrThrow());}

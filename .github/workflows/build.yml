@@ -156,7 +156,7 @@ jobs:
       # architecture (sightline, enclosure, walkability, glazing). The log
       # also carries an OTH-DUMP block listing for offline rendering.
       - name: Structure game tests
-        timeout-minutes: 9
+        timeout-minutes: 15
         env:
           JAVA_TOOL_OPTIONS: -Xmx4g
         run: |
@@ -186,7 +186,7 @@ jobs:
           PY
           diagnostic=$!
           trap 'kill "$diagnostic" 2>/dev/null || true' EXIT
-          timeout --signal=QUIT --kill-after=20s 9m gradle runGameTestServer --no-daemon
+          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer --no-daemon
 
       - name: Upload test diagnostics
         if: always()

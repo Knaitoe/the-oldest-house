@@ -55,7 +55,7 @@ public final class NovelVignettes {
         return b!=null&&participant(p)&&p.level().dimension().equals(NovelRooms.dimension(place))&&IndianLakeRooms.bounds(b,place).contains(p.position());}
     public static @Nullable LabyrinthPlace current(ServerPlayer p){for(var place:PLACES)if(inside(p,place))return place;return null;}
     public static void onArrive(ServerPlayer p,LabyrinthPlace place){
-        recordVisit(p,place);if(!isNovel(place)||!participant(p))return;var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());
+        recordVisit(p,place);var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());own.remove("Cue");own.remove("CueUntil");own.remove("CuePlace");save(data,p.getUUID(),own);HousePackets.send(p,new NovelScenePayload(0,0,"",0,0));if(!isNovel(place)||!participant(p))return;
         if(place==LabyrinthPlace.BARN_WELL){BarnFarm.animals(p);cue(p,own,"The worn track leads past the barn to a covered well. The initials are below. The return door waits for you to come back up.");}
         if(place==LabyrinthPlace.ZAMPANO_COURTYARD){ensureCats(p);var c=own.getCompound("Courtyard");int visits=c.getInt("Visits")+1;c.putInt("Visits",visits);own.put("Courtyard",c);thinCats(p,visits);
             var visited=data.visited(p.getUUID()).stream().map(LabyrinthPlace::byId).filter(q->q!=null&&q.slot()>=0&&q!=place&&!q.isOneShot()).toList();
@@ -173,7 +173,7 @@ public final class NovelVignettes {
                     if(ticks==1200||ticks==2600){p.playNotifySound(NovelRegistry.RADIO_STATIC.get(),SoundSource.PLAYERS,.35F,.8F);cue(p,own,"Tom, over the radio: Is anybody there? I need—");}
                     if(ticks>=WARD_NIGHT){own.putBoolean("WardFinished",true);own.putBoolean("Alarm",false);cue(p,own,"Dawn. The alarms stop. The chart has a final page.");}
                 }
-                if(p.tickCount%20==0)HousePackets.send(p,new NovelScenePayload(PLACES.indexOf(place)+1,own.getInt("WardTicks"),own.getString("Cue"),Math.max(0,own.getInt("CueUntil")-p.tickCount),0));
+                if(p.tickCount%20==0){boolean same=place.id().equals(own.getString("CuePlace"));int remaining=same?(int)Math.max(0,own.getLong("CueUntil")-p.serverLevel().getGameTime()):0;HousePackets.send(p,new NovelScenePayload(PLACES.indexOf(place)+1,own.getInt("WardTicks"),remaining>0?own.getString("Cue"):"",remaining,0));}
             }else if(own.getInt("WardTicks")>0&&!own.getBoolean("WardFinished")){own.putInt("WardTicks",0);own.putInt("NextAlarm",0);own.putBoolean("Alarm",false);}
             var pending=PENDING_PHOTOS.get(p.getUUID());
             if(pending!=null&&p.tickCount>=pending.due()&&participant(p)){
@@ -261,12 +261,14 @@ public final class NovelVignettes {
     }
     private static void give(ServerPlayer p,ItemStack stack){if(!p.getInventory().add(stack))p.drop(stack,false);}
     private static void reward(ServerPlayer p,CompoundTag own,String key,ItemStack stack){if(own.getBoolean("Yield_"+key))return;own.putBoolean("Yield_"+key,true);give(p,stack);}
-    private static void cue(ServerPlayer p,CompoundTag own,String text){own.putString("Cue",text);own.putInt("CueUntil",p.tickCount+140);p.displayClientMessage(Component.literal(text),true);}
+    private static void cue(ServerPlayer p,CompoundTag own,String text){own.putString("Cue",text);own.putLong("CueUntil",p.serverLevel().getGameTime()+140);var place=current(p);own.putString("CuePlace",place==null?"":place.id());p.displayClientMessage(Component.literal(text),true);}
     private static void scale(ServerPlayer p,boolean on){var attr=p.getAttribute(Attributes.SCALE);if(attr==null)return;if(on){if(!attr.hasModifier(SMALL))attr.addTransientModifier(new AttributeModifier(SMALL,-.3,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));SCALED.put(p.getUUID(),p);}else{attr.removeModifier(SMALL);SCALED.remove(p.getUUID());}}
     private static void restoreScale(ServerPlayer p){scale(p,false);}
     public static boolean childScale(ServerPlayer p){return p.getAttribute(Attributes.SCALE).hasModifier(SMALL);}
     public static boolean karenBed(net.minecraft.world.level.Level level,BlockPos pos){if(!(level instanceof ServerLevel l)||!level.dimension().equals(HouseDimensions.INTERIOR))return false;var b=IndianLakeRooms.base(l.getServer(),LabyrinthPlace.KAREN_ROOM);return b!=null&&(pos.equals(b.offset(NovelRooms.BED))||pos.equals(b.offset(NovelRooms.BED).north()));}
-    @SubscribeEvent public static void respawn(PlayerEvent.PlayerRespawnEvent e){if(!(e.getEntity() instanceof ServerPlayer p)||!karenBed(p.serverLevel(),p.getRespawnPosition()==null?BlockPos.ZERO:p.getRespawnPosition()))return;
+    @SubscribeEvent public static void respawn(PlayerEvent.PlayerRespawnEvent e){if(!(e.getEntity() instanceof ServerPlayer p))return;
+        var state=personal(LabyrinthData.get(p.server),p.getUUID());state.remove("Cue");state.remove("CueUntil");state.remove("CuePlace");save(LabyrinthData.get(p.server),p.getUUID(),state);HousePackets.send(p,new NovelScenePayload(0,0,"",0,0));
+        if(!karenBed(p.serverLevel(),p.getRespawnPosition()==null?BlockPos.ZERO:p.getRespawnPosition()))return;
         var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());int wakes=own.getInt("Wakes")+1;own.putInt("Wakes",wakes);var b=IndianLakeRooms.base(p.server,LabyrinthPlace.KAREN_ROOM);
         var at=b.offset(-6,0,-11);var old=p.serverLevel().getBlockState(at);if(old.isAir()||old.is(Blocks.FLOWER_POT)||old.is(Blocks.POTTED_DEAD_BUSH))p.serverLevel().setBlock(at,(wakes%2==0?Blocks.FLOWER_POT:Blocks.POTTED_DEAD_BUSH).defaultBlockState(),F);
         if(wakes%3==0){var actor=NovelRegistry.ACTOR.get().create(p.serverLevel());if(actor!=null){actor.appearance(p.getUUID(),1);actor.moveTo(Vec3.atBottomCenterOf(b.offset(NovelRooms.BED).south(2)));actor.getPersistentData().putLong("DoubleUntil",p.serverLevel().getGameTime()+100);p.serverLevel().addFreshEntity(actor);}}

@@ -17,13 +17,16 @@ public final class VignetteArchitecture {
     private final ServerLevel l;
     private final BlockPos b;
     private final LabyrinthPlace scene;
+    private boolean rugsOnly;
     private VignetteArchitecture(ServerLevel level,BlockPos base,LabyrinthPlace place){l=level;b=base;scene=place;}
     public static boolean applies(LabyrinthPlace p){return p.isVignette()||p==LabyrinthPlace.EXPLORER_CAMP;}
     public static void decorateOnce(ServerLevel l,BlockPos origin,LabyrinthPlace p){
         if(!applies(p))return;
         var d=LabyrinthData.get(l.getServer());CompoundTag done=d.state(STATE);
-        String key=origin.asLong()+":"+p.id();if(done.getBoolean(key))return;
+        String key=origin.asLong()+":"+p.id();
         BlockPos base=LabyrinthPlaces.base(origin,p);if(base==null||l.getBlockState(base.offset(0,-1,-2)).isAir())return;
+        if(!done.getBoolean("Rugs:"+key)){var repair=new VignetteArchitecture(l,base,p);repair.rugsOnly=true;repair.dress();done.putBoolean("Rugs:"+key,true);d.setState(STATE,done);}
+        if(done.getBoolean(key))return;
         new VignetteArchitecture(l,base,p).dress();
         done.putBoolean(key,true);d.setState(STATE,done);
     }
@@ -57,6 +60,7 @@ public final class VignetteArchitecture {
         };
     }
     private void add(int x,int y,int z,BlockState s){
+        if(rugsOnly)return;
         BlockPos at=p(x,y,z);
         if(!reserved(x,y,z)&&l.getBlockState(at).isAir()&&l.getBlockEntity(at)==null
                 &&(s.getCollisionShape(l,at).isEmpty()||l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,new net.minecraft.world.phys.AABB(at)).isEmpty()))l.setBlock(at,s,F);
@@ -64,6 +68,7 @@ public final class VignetteArchitecture {
     private void add(int x,int y,int z,Block block){add(x,y,z,block.defaultBlockState());}
     /** Only authored, ordinary shell material can receive trim; functional blocks are never replaced. */
     private void trim(int x,int y,int z,Block block){
+        if(rugsOnly)return;
         BlockPos at=p(x,y,z);BlockState s=l.getBlockState(at);
         if(reserved(x,y,z)||l.getBlockEntity(at)!=null)return;
         if(s.isAir()||s.is(Blocks.SPRUCE_PLANKS)||s.is(Blocks.DARK_OAK_PLANKS)||s.is(Blocks.OAK_PLANKS)||s.is(Blocks.BIRCH_PLANKS)
@@ -81,13 +86,14 @@ public final class VignetteArchitecture {
     private void table(int x,int y,int z,SceneDetailBlock.Kind kind){furniture(x,y,z,WALNUT_DESK,Direction.SOUTH);detail(x,y+1,z,kind);}
     private void cabinet(int x,int y,int z,SceneDetailBlock.Kind kind){furniture(x,y,z,CHEST_OF_DRAWERS,Direction.SOUTH);detail(x,y+1,z,kind);}
     private void wardBed(int x,int z){
+        if(rugsOnly)return;
         var foot=p(x,0,z);var head=foot.north();
         if(l.getBlockState(foot).isAir()&&l.getBlockState(head).isAir()
                 &&l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,new net.minecraft.world.phys.AABB(foot)).isEmpty()
                 &&l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,new net.minecraft.world.phys.AABB(head)).isEmpty())LabyrinthBuilder.bed(l,foot,Direction.NORTH,Blocks.WHITE_BED);
     }
     private void rug(int x0,int x1,int z0,int z1,Block edge,Block centre){
-        for(int x=x0;x<=x1;x++)for(int z=z0;z<=z1;z++)add(x,0,z,(x==x0||x==x1||z==z0||z==z1)?edge:centre);
+        RugFloorBlock.patch(l,b,x0,x1,z0,z1,edge,centre);
     }
     private void pot(int x,int y,int z,Block plant){add(x,y,z,plant);}
     private void wainscot(int x0,int x1,int z0,int z1,int top,Block base,Block cornice){
@@ -95,6 +101,7 @@ public final class VignetteArchitecture {
         for(int x=x0;x<=x1;x++){trim(x,0,z0,base);trim(x,0,z1,base);trim(x,top,z0,cornice);trim(x,top,z1,cornice);}
     }
     private void pendant(int x,int y,int z,int ceiling){
+        if(rugsOnly)return;
         // Repair an authored floating lantern as well as adding new supported fixtures.
         if(!l.getBlockState(p(x,ceiling,z)).isSolid())return;
         for(int yy=y+1;yy<ceiling;yy++)add(x,yy,z,Blocks.CHAIN);

@@ -24,7 +24,10 @@ final class HouseTestLevel {
             Field field=MinecraftServer.class.getDeclaredField("storageSource");field.setAccessible(true);
             var storage=(LevelStorageSource.LevelStorageAccess)field.get(server);var overworld=server.overworld();
             // Use the runner's flat generator so arbitrary biome terrain cannot mask an authored-geometry test.
-            LevelStem stem=new LevelStem(overworld.dimensionTypeRegistration(),overworld.getChunkSource().getGenerator());
+            var types=server.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.DIMENSION_TYPE);
+            var key=net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION_TYPE,net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("the_oldest_house",dimension.equals(HouseDimensions.INTERIOR)?"house_interior":"outside"));
+            var nativeType=types.getHolderOrThrow(key);
+            LevelStem stem=new LevelStem(nativeType,overworld.getChunkSource().getGenerator());
             ChunkProgressListener progress=new ChunkProgressListener(){
                 public void updateSpawnPos(ChunkPos pos){}public void onStatusChange(ChunkPos pos,ChunkStatus status){}
                 public void start(){}public void stop(){}

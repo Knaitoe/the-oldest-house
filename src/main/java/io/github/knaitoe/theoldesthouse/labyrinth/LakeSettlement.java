@@ -18,12 +18,18 @@ public final class LakeSettlement {
     private LakeSettlement(ServerLevel l,BlockPos b,LabyrinthPlace site){this.l=l;this.b=b;this.site=site;}
     public static void decorateOnce(ServerLevel l,BlockPos b,LabyrinthPlace site){
         if(!LakeLandscape.isLake(site)||l.getBlockState(b.offset(0,-1,-3)).isAir())return;
+        if(site==LabyrinthPlace.DROWNED_TOWN&&IndianLakeRooms.visitors(l,b,site).isEmpty())townSign(l,b);
         var data=LabyrinthData.get(l.getServer());var state=data.state(STATE);String key=b.asLong()+":"+site.id();
         if(state.getBoolean(key))return;
         if(!IndianLakeRooms.visitors(l,b,site).isEmpty())return;
         var scene=new LakeSettlement(l,b,site);scene.removeRegularTrees();
         if(site==LabyrinthPlace.DROWNED_TOWN)scene.town();scene.forest();
         state.putBoolean(key,true);data.setState(STATE,state);
+    }
+    private static void townSign(ServerLevel l,BlockPos b){
+        var d=LabyrinthData.get(l.getServer());var state=d.state(STATE);String key="Sign:"+b.asLong();if(state.getBoolean(key))return;
+        BlockPos at=b.offset(-3,0,-10);var old=l.getBlockState(at);if(old.getBlock() instanceof SignBlock||old.isAir())l.setBlock(at,HouseBlocks.TOWN_SIGN.get().defaultBlockState(),F);
+        state.putBoolean(key,true);d.setState(STATE,state);
     }
     public static void forget(ServerLevel l,BlockPos b,LabyrinthPlace site){var d=LabyrinthData.get(l.getServer());var s=d.state(STATE);s.remove(b.asLong()+":"+site.id());d.setState(STATE,s);}
     private BlockPos p(int x,int y,int z){return b.offset(x,y,z);}

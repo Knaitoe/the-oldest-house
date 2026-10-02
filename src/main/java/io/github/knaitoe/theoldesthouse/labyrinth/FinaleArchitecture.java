@@ -14,12 +14,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.*;
 import net.minecraft.world.item.*;
 
-/** An authored 128-block descent, not a repeated room slot or a teleported stair loop. */
+/** A continuous native 1,280-block descent to the cell, with an equally deep continuation. */
 public final class FinaleArchitecture {
     public static final String ID = "great_staircase", ENTRY = "finale.entry";
-    public static final int TOP = 220, ARENA = 92, BOTTOM = 4;
+    public static final int ARENA=92, TOP=ARENA+1280, BOTTOM=4, LOOP_BOTTOM=ARENA-1280;
     private static final String STATE = "finale_architecture_049";
-    public static final int CARVE_VERSION = 427;
+    public static final int CARVE_VERSION = 428;
     public static final int STAIR_RADIUS=24, STAIR_HALF_WIDTH=4, SHAFT_RADIUS=34;
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     public record Placement(BlockPos pos, BlockState block) {}
@@ -27,23 +27,35 @@ public final class FinaleArchitecture {
     private FinaleArchitecture() {}
     public static BlockPos base(BlockPos manor) { return new BlockPos(manor.getX() + HouseLayout.CENTER_X + 512, 0, manor.getZ() + HouseLayout.CENTER_Z); }
     public static boolean contains(BlockPos manor, BlockPos pos) {
-        BlockPos b = base(manor); return pos.getX() >= b.getX()-SHAFT_RADIUS-1 && pos.getX() <= b.getX()+SHAFT_RADIUS+1
-                && pos.getZ() >= b.getZ()-SHAFT_RADIUS-1 && pos.getZ() <= b.getZ()+122 && pos.getY() >= -32 && pos.getY() <= 240;
+        BlockPos b = base(manor); return pos.getX() >= b.getX()-82 && pos.getX() <= b.getX()+82
+                && pos.getZ() >= b.getZ()-SHAFT_RADIUS-1 && pos.getZ() <= b.getZ()+122 && pos.getY() >= LOOP_BOTTOM-2 && pos.getY() <= TOP+16;
     }
     public static BlockPos entry(BlockPos manor){return base(manor).offset(0,TOP,STAIR_RADIUS+2);}
     public static BlockPos cell(BlockPos manor) { return base(manor).offset(0, ARENA, 59); }
     public static BlockPos lectern(BlockPos manor) { return base(manor).offset(-4, ARENA, 56); }
     public static BlockPos bottomStart(BlockPos manor) { return base(manor).offset(-20, BOTTOM, 76); }
     public static BlockPos exit(BlockPos manor) { return base(manor).offset(24, BOTTOM, 112); }
-    public static List<BlockPos> staircaseRoute(BlockPos manor) {
-        BlockPos b=base(manor);List<BlockPos> route=new ArrayList<>();int x=0,z=STAIR_RADIUS;Direction direction=Direction.EAST;
-        for(int n=0;n<256;n++){
-            if(x==STAIR_RADIUS&&z==STAIR_RADIUS)direction=Direction.NORTH;else if(x==STAIR_RADIUS&&z==-STAIR_RADIUS)direction=Direction.WEST;
-            else if(x==-STAIR_RADIUS&&z==-STAIR_RADIUS)direction=Direction.SOUTH;else if(x==-STAIR_RADIUS&&z==STAIR_RADIUS)direction=Direction.EAST;
-            route.add(b.offset(x,TOP-n/2,z));x+=direction.getStepX();z+=direction.getStepZ();
+    private record Step(BlockPos feet,Direction direction,int index){}
+    private static List<Step> allSteps(BlockPos manor){
+        BlockPos b=base(manor);var result=new ArrayList<Step>();int x=0,z=STAIR_RADIUS,y=TOP,descending=0;
+        Direction direction=Direction.EAST;
+        for(int n=0;y>=LOOP_BOTTOM&&n<10000;n++){
+            if(x==STAIR_RADIUS&&z==STAIR_RADIUS)direction=Direction.NORTH;
+            else if(x==STAIR_RADIUS&&z==-STAIR_RADIUS)direction=Direction.WEST;
+            else if(x==-STAIR_RADIUS&&z==-STAIR_RADIUS)direction=Direction.SOUTH;
+            else if(x==-STAIR_RADIUS&&z==STAIR_RADIUS)direction=Direction.EAST;
+            result.add(new Step(b.offset(x,y,z),direction,n));
+            // Thirteen-block flat turns keep the entire walking width joined at every corner.
+            int corner=Math.floorMod(n-STAIR_RADIUS,STAIR_RADIUS*2);
+            if(corner>6&&corner<STAIR_RADIUS*2-6&&++descending%2==0)y--;
+            x+=direction.getStepX();z+=direction.getStepZ();
         }
-        return List.copyOf(route);
+        return result;
     }
+    public static List<BlockPos> staircaseRoute(BlockPos manor){
+        var result=new ArrayList<BlockPos>();for(var step:allSteps(manor)){result.add(step.feet);if(step.feet.getY()<=ARENA)break;}return List.copyOf(result);
+    }
+    public static List<BlockPos> continuationRoute(BlockPos manor){return allSteps(manor).stream().filter(s->s.feet.getY()<=ARENA).map(Step::feet).toList();}
     public static List<BlockPos> escapeRoute(BlockPos manor) {
         BlockPos b = base(manor); List<BlockPos> path = new ArrayList<>();
         int[][] corners = {{-20,76},{-20,92},{-4,92},{-4,82},{12,82},{12,104},{-8,104},{-8,112},{24,112}};
@@ -64,20 +76,20 @@ public final class FinaleArchitecture {
         LabyrinthData data = LabyrinthData.get(server); CompoundTag state = data.state(STATE);
         if (state.contains("Origin") && state.getLong("Origin") != manor.asLong()) { boolean requested=state.getBoolean("Requested"); state = new CompoundTag(); state.putBoolean("Requested",requested); PLANS.remove(server); }
         if (!state.getBoolean("Requested")) return;
-        if(state.getBoolean("Ready") && state.getInt("CarveVersion")==CARVE_VERSION){retirePreparationShield(level,manor);FinaleCollapse.dress(level,manor);return;}
+        if(state.getBoolean("Ready") && state.getInt("CarveVersion")==CARVE_VERSION){retirePreparationShield(level,manor);connectCell(level,manor);FinaleCollapse.dress(level,manor);return;}
         // Existing explorers finish their visit before an old physical descent is replaced.
         if(state.getBoolean("Ready")&&level.players().stream().anyMatch(p->contains(manor,p.blockPosition())))return;
         if(state.getInt("PlanVersion")!=CARVE_VERSION){
             state.putBoolean("Upgrade",state.getBoolean("Ready"));state.putInt("Cursor",0);state.putInt("PlanVersion",CARVE_VERSION);PLANS.remove(server);
         }
         List<Placement> plan = PLANS.computeIfAbsent(server, ignored -> plan(manor));
-        int cursor = Math.max(0, state.getInt("Cursor")), end = Math.min(plan.size(), cursor + 1536);
+        int cursor = Math.max(0, state.getInt("Cursor")), end = Math.min(plan.size(), cursor + 8192);
         boolean upgrade=state.getBoolean("Upgrade");
         for (;cursor<end;cursor++) { Placement p=plan.get(cursor);
             // Replace only the enlarged shaft. The encounter, original cache, cell and escape retain state.
             int dx=p.pos.getX()-base(manor).getX(),dz=p.pos.getZ()-base(manor).getZ();
-            boolean shaft=Math.abs(dx)<=SHAFT_RADIUS&&dz>=-SHAFT_RADIUS&&dz<=SHAFT_RADIUS&&p.pos.getY()>=ARENA-9;
-            if((!upgrade||shaft&&!preserveUpgradeVoid(manor,p.pos)||p.block.isAir()&&!preserveUpgradeVoid(manor,p.pos))
+            boolean shaft=Math.abs(dx)<=SHAFT_RADIUS&&dz>=-SHAFT_RADIUS&&dz<=SHAFT_RADIUS&&p.pos.getY()>=LOOP_BOTTOM-1;
+            if((!upgrade||shaft&&!preserveUpgradeVoid(manor,p.pos)||StaircaseMazes.inArea(base(manor),p.pos)||p.block.isAir()&&!preserveUpgradeVoid(manor,p.pos))
                     &&!level.getBlockState(p.pos).equals(p.block)&&(!upgrade||level.getBlockEntity(p.pos)==null))level.setBlock(p.pos,p.block,FLAGS);
         }
         state.putLong("Origin",manor.asLong()); state.putInt("Cursor",cursor);
@@ -86,7 +98,7 @@ public final class FinaleArchitecture {
             data.putDoor(new LabyrinthData.Door(ENTRY,HouseDimensions.INTERIOR,entry(manor),Direction.SOUTH,LabyrinthData.RETURN,false));
         }
         data.setState(STATE,state);
-        if(state.getBoolean("Ready")){retirePreparationShield(level,manor);FinaleCollapse.dress(level,manor);}
+        if(state.getBoolean("Ready")){retirePreparationShield(level,manor);connectCell(level,manor);FinaleCollapse.dress(level,manor);}
     }
     private static boolean preserveUpgradeVoid(BlockPos manor,BlockPos pos){
         BlockPos b=base(manor);
@@ -97,51 +109,58 @@ public final class FinaleArchitecture {
     }
     public static List<Placement> plan(BlockPos manor) {
         BlockPos b=base(manor); LinkedHashMap<BlockPos,BlockState> blocks=new LinkedHashMap<>();
-        BlockState stone=Blocks.POLISHED_DEEPSLATE.defaultBlockState(), dark=Blocks.DEEPSLATE_TILES.defaultBlockState();
+        BlockState stone=HouseBlocks.STAIRCASE_STONE.get().defaultBlockState(), dark=Blocks.DEEPSLATE_TILES.defaultBlockState();
         // These coordinates belong to a generated world. Clear every intended void before authoring its shell.
-        clearVolume(blocks,b,-SHAFT_RADIUS+1,SHAFT_RADIUS-1,ARENA-8,TOP+14,-SHAFT_RADIUS+1,SHAFT_RADIUS-1);
+        clearVolume(blocks,b,-SHAFT_RADIUS+1,SHAFT_RADIUS-1,-64,320,-SHAFT_RADIUS+1,SHAFT_RADIUS-1);
         clearVolume(blocks,b,-16,16,ARENA,ARENA+12,30,68);
         clearVolume(blocks,b,-30,30,-26,22,71,120);
         // Tall black walls give scale without filling the entire shaft with blocks.
-        for(int y=ARENA-8;y<=TOP+14;y++) for(int i=-SHAFT_RADIUS;i<=SHAFT_RADIUS;i++) {
+        for(int y=LOOP_BOTTOM-1;y<=TOP+14;y++) for(int i=-SHAFT_RADIUS;i<=SHAFT_RADIUS;i++) {
             BlockState pier=Math.floorMod(i,12)==0?Blocks.CHISELED_DEEPSLATE.defaultBlockState():dark;
             put(blocks,b,i,y,-SHAFT_RADIUS,pier);put(blocks,b,i,y,SHAFT_RADIUS,pier);put(blocks,b,-SHAFT_RADIUS,y,i,pier);put(blocks,b,SHAFT_RADIUS,y,i,pier);
         }
         // Both caps are real architecture; looking or falling down cannot reveal the ordinary world.
         for(int x=-SHAFT_RADIUS;x<=SHAFT_RADIUS;x++)for(int z=-SHAFT_RADIUS;z<=SHAFT_RADIUS;z++){
-            put(blocks,b,x,TOP+15,z,dark);put(blocks,b,x,ARENA-9,z,dark);
+            put(blocks,b,x,TOP+15,z,dark);put(blocks,b,x,LOOP_BOTTOM-1,z,dark);
         }
-        for(int y=ARENA+16;y<TOP;y+=24)for(int i=-SHAFT_RADIUS+1;i<SHAFT_RADIUS;i++){
+        for(int y=LOOP_BOTTOM+16;y<TOP;y+=48)for(int i=-SHAFT_RADIUS+1;i<SHAFT_RADIUS;i++){
             put(blocks,b,i,y,-SHAFT_RADIUS+1,stone);put(blocks,b,i,y,SHAFT_RADIUS-1,stone);
             put(blocks,b,-SHAFT_RADIUS+1,y,i,stone);put(blocks,b,SHAFT_RADIUS-1,y,i,stone);
         }
-        for(int y=ARENA+18;y<TOP;y+=24)for(int[] at:new int[][]{{-33,0},{33,0},{0,-33},{0,33}}){
+        for(int y=LOOP_BOTTOM+18;y<TOP;y+=96)for(int[] at:new int[][]{{-33,0},{33,0},{0,-33},{0,33}}){
             put(blocks,b,at[0],y-1,at[1],stone);put(blocks,b,at[0],y,at[1],Blocks.SOUL_LANTERN.defaultBlockState());
         }
-        List<BlockPos> descent=new ArrayList<>(); int x=0,z=STAIR_RADIUS;Direction direction=Direction.EAST;
-        for(int n=0;n<256;n++) {
-            if(x==STAIR_RADIUS&&z==STAIR_RADIUS)direction=Direction.NORTH;
-            else if(x==STAIR_RADIUS&&z==-STAIR_RADIUS)direction=Direction.WEST;
-            else if(x==-STAIR_RADIUS&&z==-STAIR_RADIUS)direction=Direction.SOUTH;
-            else if(x==-STAIR_RADIUS&&z==STAIR_RADIUS)direction=Direction.EAST;
-            int y=TOP-1-n/2; descent.add(b.offset(x,y+1,z));
-            for(int width=-STAIR_HALF_WIDTH-1;width<=STAIR_HALF_WIDTH+1;width++) {
+        var steps=allSteps(manor);List<BlockPos> descent=staircaseRoute(manor);
+        // Full turn platforms are laid first. Flat approach/departure runs share their floor height.
+        for(var step:steps)if(Math.abs(step.feet.getX()-b.getX())==STAIR_RADIUS&&Math.abs(step.feet.getZ()-b.getZ())==STAIR_RADIUS){
+            var at=step.feet;for(int dx=-6;dx<=6;dx++)for(int dz=-6;dz<=6;dz++){
+                blocks.put(at.offset(dx,-1,dz),stone);blocks.put(at.offset(dx,-2,dz),stone);
+            }
+        }
+        for(int i=0;i<steps.size();i++){
+            var step=steps.get(i);BlockPos at=step.feet;Direction direction=step.direction;
+            int x=at.getX()-b.getX(),z=at.getZ()-b.getZ(),y=at.getY()-1;
+            boolean drops=i+1<steps.size()&&steps.get(i+1).feet.getY()<at.getY();
+            BlockState tread=drops?HouseBlocks.STAIRCASE_STAIRS.get().defaultBlockState().setValue(StairBlock.FACING,direction.getOpposite()):stone;
+            for(int width=-STAIR_HALF_WIDTH-1;width<=STAIR_HALF_WIDTH+1;width++){
                 int sx=x+(direction.getAxis()==Direction.Axis.Z?width:0),sz=z+(direction.getAxis()==Direction.Axis.X?width:0);
-                BlockState tread=(n%2==0)?stone:Blocks.POLISHED_DEEPSLATE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,direction.getOpposite());
                 put(blocks,b,sx,y,sz,tread);put(blocks,b,sx,y-1,sz,stone);
             }
-            // Widen every landing; the lower landings have no comforting rail.
-            if(n%32==0)for(int width=-6;width<=6;width++){
-                int sx=x+(direction.getAxis()==Direction.Axis.Z?width:0),sz=z+(direction.getAxis()==Direction.Axis.X?width:0);
-                put(blocks,b,sx,y,sz,stone);put(blocks,b,sx,y-1,sz,stone);
-            }
-            if(n<96)for(Direction side:List.of(direction.getClockWise(),direction.getCounterClockWise())){
+            if(at.getY()>TOP-128)for(Direction side:List.of(direction.getClockWise(),direction.getCounterClockWise())){
                 var rail=Blocks.IRON_BARS.defaultBlockState();
                 if(direction.getAxis()==Direction.Axis.X)rail=rail.setValue(BlockStateProperties.EAST,true).setValue(BlockStateProperties.WEST,true);
                 else rail=rail.setValue(BlockStateProperties.NORTH,true).setValue(BlockStateProperties.SOUTH,true);
                 put(blocks,b,x+side.getStepX()*5,y+1,z+side.getStepZ()*5,rail);
             }
-            x+=direction.getStepX();z+=direction.getStepZ();
+        }
+        // Sparse loose pages stand on solid corner landings; abandoned camps occur only every 31st turn.
+        int turn=0;for(var step:steps)if(Math.abs(step.feet.getX()-b.getX())==STAIR_RADIUS&&Math.abs(step.feet.getZ()-b.getZ())==STAIR_RADIUS){
+            BlockPos at=step.feet;int sx=Integer.signum(at.getX()-b.getX()),sz=Integer.signum(at.getZ()-b.getZ());
+            if(turn%3==1)blocks.put(at.offset(-sx*3,0,-sz*3),NoteSurfaceBlock.state(HouseMarginalia.Thread.POEMS,Direction.SOUTH));
+            if(turn%31==9){
+                blocks.put(at.offset(sx*3,0,sz*3),Blocks.CAMPFIRE.defaultBlockState().setValue(CampfireBlock.LIT,false));
+            }
+            turn++;
         }
         // Entry hall and copied vestibule open onto the first stair landing.
         boxFloor(blocks,b,-3,3,STAIR_RADIUS+1,SHAFT_RADIUS,TOP-1,stone);
@@ -154,14 +173,14 @@ public final class FinaleArchitecture {
         boxFloor(blocks,b,Math.min(lx,0)-1,Math.max(lx,0)+1,lz-1,lz+1,ARENA-1,stone);
         boxFloor(blocks,b,-1,1,lz,32,ARENA-1,stone);
         for(int xx=-1;xx<=1;xx++)for(int y=ARENA;y<ARENA+4;y++)for(int zz=26;zz<=SHAFT_RADIUS;zz++)put(blocks,b,xx,y,zz,Blocks.AIR.defaultBlockState());
-        // An arena with a scratched cell in its far wall; no creature before the cell is opened.
+        // The native cell gate is a connected bar plane; its prisoner is staged before commitment.
         boxFloor(blocks,b,-17,17,30,69,ARENA-1,stone);
         for(int y=ARENA;y<ARENA+13;y++)for(int zz=30;zz<=69;zz++){put(blocks,b,-17,y,zz,dark);put(blocks,b,17,y,zz,dark);}
         for(int xx=-17;xx<=17;xx++)for(int y=ARENA;y<ARENA+13;y++){put(blocks,b,xx,y,69,dark);if(Math.abs(xx)>1)put(blocks,b,xx,y,30,dark);}
         for(int xx=-17;xx<=17;xx++)for(int zz=30;zz<=69;zz++)put(blocks,b,xx,ARENA+13,zz,dark);
         for(int xx=-6;xx<=6;xx++)for(int y=ARENA;y<ARENA+7;y++)if(Math.abs(xx)>1)put(blocks,b,xx,y,59,Blocks.CRACKED_DEEPSLATE_BRICKS.defaultBlockState());
         for(int zz=59;zz<=69;zz++)for(int y=ARENA;y<ARENA+7;y++){put(blocks,b,-6,y,zz,stone);put(blocks,b,6,y,zz,stone);}
-        for(int xx=-1;xx<=1;xx++)for(int y=ARENA;y<ARENA+4;y++)put(blocks,b,xx,y,59,Blocks.IRON_BARS.defaultBlockState());
+        for(int xx=-1;xx<=1;xx++)for(int y=ARENA;y<ARENA+4;y++)put(blocks,b,xx,y,59,cellBars());
         // Darkness at the bottom surrounds narrow, branching physical paths over a deep drop.
         for(BlockPos p:escapeRoute(manor)) for(int dx=-1;dx<=1;dx++)for(int dz=-1;dz<=1;dz++)blocks.put(p.offset(dx,-1,dz),stone);
         boxFloor(blocks,b,-28,-20,88,90,BOTTOM-1,stone);boxFloor(blocks,b,10,26,94,96,BOTTOM-1,stone);
@@ -169,6 +188,7 @@ public final class FinaleArchitecture {
         for(int xx=-31;xx<=31;xx++)for(int zz=70;zz<=121;zz++)put(blocks,b,xx,-27,zz,dark);
         for(int y=-26;y<=22;y++)for(int i=-31;i<=31;i++){put(blocks,b,i,y,70,dark);put(blocks,b,i,y,121,dark);}
         for(int y=-26;y<=22;y++)for(int zz=70;zz<=121;zz++){put(blocks,b,-31,y,zz,dark);put(blocks,b,31,y,zz,dark);}
+        StaircaseMazes.plan(blocks,b);
         return blocks.entrySet().stream().map(e->new Placement(e.getKey(),e.getValue())).toList();
     }
     private static void put(Map<BlockPos,BlockState> plan,BlockPos base,int x,int y,int z,BlockState block){plan.put(base.offset(x,y,z),block);}
@@ -221,8 +241,14 @@ public final class FinaleArchitecture {
     public static void openCell(ServerLevel level,BlockPos manor) {
         BlockPos door=cell(manor);for(int x=-1;x<=1;x++)for(int y=0;y<4;y++)level.setBlock(door.offset(x,y,0),Blocks.AIR.defaultBlockState(),FLAGS);
     }
+    private static BlockState cellBars(){return Blocks.IRON_BARS.defaultBlockState().setValue(BlockStateProperties.EAST,true).setValue(BlockStateProperties.WEST,true);}
+    private static void connectCell(ServerLevel level,BlockPos manor){
+        var d=LabyrinthData.get(level.getServer());var s=d.state(STATE);if(s.getBoolean("ConnectedCellBars"))return;
+        var cell=cell(manor);for(int x=-1;x<=1;x++)for(int y=0;y<4;y++){var at=cell.offset(x,y,0);if(level.getBlockState(at).is(Blocks.IRON_BARS))level.setBlock(at,cellBars(),FLAGS);}
+        s.putBoolean("ConnectedCellBars",true);d.setState(STATE,s);
+    }
     public static void closeCell(ServerLevel level,BlockPos manor){
-        BlockPos door=cell(manor);for(int x=-1;x<=1;x++)for(int y=0;y<4;y++)level.setBlock(door.offset(x,y,0),Blocks.IRON_BARS.defaultBlockState(),FLAGS);
+        BlockPos door=cell(manor);for(int x=-1;x<=1;x++)for(int y=0;y<4;y++)level.setBlock(door.offset(x,y,0),cellBars(),FLAGS);
     }
     public static void clearAll(){PLANS.clear();}
 }

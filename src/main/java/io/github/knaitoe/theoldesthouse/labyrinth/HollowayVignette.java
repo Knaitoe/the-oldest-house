@@ -185,7 +185,7 @@ public final class HollowayVignette {
             if(button==3){var data=LabyrinthData.get(owner.server);var own=personal(data,owner.getUUID());if(own.getBoolean("SurveyTaken"))return false;
                 own.putBoolean("SurveyTaken",true);save(data,owner.getUUID(),own);give(owner,owned(VignetteYields.mark(HollowayCamp.journal(),ID),owner.getUUID()));looted(owner);return true;}
             if(button>=100){if(button-100>=4)return false;}else if(button==1){if(getPage()<=0)return false;}else if(button==2){if(getPage()>=3)return false;}else return false;
-            return super.clickMenuButton(p,button);
+            boolean changed=super.clickMenuButton(p,button);if(changed&&getPage()==3){var data=LabyrinthData.get(owner.server);var own=personal(data,owner.getUUID());own.putBoolean("SurveyRead",true);save(data,owner.getUUID(),own);}return changed;
         }
     }
     public static final class CacheMenu extends AbstractContainerMenu {

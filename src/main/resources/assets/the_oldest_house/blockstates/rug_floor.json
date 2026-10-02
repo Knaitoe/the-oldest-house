@@ -1,0 +1,112 @@
+{
+  "variants": {
+    "rim=center,tone=gray": {
+      "model": "the_oldest_house:block/rug_gray_center"
+    },
+    "rim=north,tone=gray": {
+      "model": "the_oldest_house:block/rug_gray_north"
+    },
+    "rim=south,tone=gray": {
+      "model": "the_oldest_house:block/rug_gray_south"
+    },
+    "rim=east,tone=gray": {
+      "model": "the_oldest_house:block/rug_gray_east"
+    },
+    "rim=west,tone=gray": {
+      "model": "the_oldest_house:block/rug_gray_west"
+    },
+    "rim=north_east,tone=gray": {
+      "model": "the_oldest_house:block/rug_gray_north_east"
+    },
+    "rim=north_west,tone=gray": {
+      "model": "the_oldest_house:block/rug_gray_north_west"
+    },
+    "rim=south_east,tone=gray": {
+      "model": "the_oldest_house:block/rug_gray_south_east"
+    },
+    "rim=south_west,tone=gray": {
+      "model": "the_oldest_house:block/rug_gray_south_west"
+    },
+    "rim=center,tone=brown": {
+      "model": "the_oldest_house:block/rug_brown_center"
+    },
+    "rim=north,tone=brown": {
+      "model": "the_oldest_house:block/rug_brown_north"
+    },
+    "rim=south,tone=brown": {
+      "model": "the_oldest_house:block/rug_brown_south"
+    },
+    "rim=east,tone=brown": {
+      "model": "the_oldest_house:block/rug_brown_east"
+    },
+    "rim=west,tone=brown": {
+      "model": "the_oldest_house:block/rug_brown_west"
+    },
+    "rim=north_east,tone=brown": {
+      "model": "the_oldest_house:block/rug_brown_north_east"
+    },
+    "rim=north_west,tone=brown": {
+      "model": "the_oldest_house:block/rug_brown_north_west"
+    },
+    "rim=south_east,tone=brown": {
+      "model": "the_oldest_house:block/rug_brown_south_east"
+    },
+    "rim=south_west,tone=brown": {
+      "model": "the_oldest_house:block/rug_brown_south_west"
+    },
+    "rim=center,tone=red": {
+      "model": "the_oldest_house:block/rug_red_center"
+    },
+    "rim=north,tone=red": {
+      "model": "the_oldest_house:block/rug_red_north"
+    },
+    "rim=south,tone=red": {
+      "model": "the_oldest_house:block/rug_red_south"
+    },
+    "rim=east,tone=red": {
+      "model": "the_oldest_house:block/rug_red_east"
+    },
+    "rim=west,tone=red": {
+      "model": "the_oldest_house:block/rug_red_west"
+    },
+    "rim=north_east,tone=red": {
+      "model": "the_oldest_house:block/rug_red_north_east"
+    },
+    "rim=north_west,tone=red": {
+      "model": "the_oldest_house:block/rug_red_north_west"
+    },
+    "rim=south_east,tone=red": {
+      "model": "the_oldest_house:block/rug_red_south_east"
+    },
+    "rim=south_west,tone=red": {
+      "model": "the_oldest_house:block/rug_red_south_west"
+    },
+    "rim=center,tone=slate": {
+      "model": "the_oldest_house:block/rug_slate_center"
+    },
+    "rim=north,tone=slate": {
+      "model": "the_oldest_house:block/rug_slate_north"
+    },
+    "rim=south,tone=slate": {
+      "model": "the_oldest_house:block/rug_slate_south"
+    },
+    "rim=east,tone=slate": {
+      "model": "the_oldest_house:block/rug_slate_east"
+    },
+    "rim=west,tone=slate": {
+      "model": "the_oldest_house:block/rug_slate_west"
+    },
+    "rim=north_east,tone=slate": {
+      "model": "the_oldest_house:block/rug_slate_north_east"
+    },
+    "rim=north_west,tone=slate": {
+      "model": "the_oldest_house:block/rug_slate_north_west"
+    },
+    "rim=south_east,tone=slate": {
+      "model": "the_oldest_house:block/rug_slate_south_east"
+    },
+    "rim=south_west,tone=slate": {
+      "model": "the_oldest_house:block/rug_slate_south_west"
+    }
+  }
+}
