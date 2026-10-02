@@ -37,7 +37,7 @@ Validation includes the full required GameTest suite, every prop's physical supp
 
 ## Lake playtest repairs
 
-A read-only scene clock replaces local world-time rewrites, preventing server time packets from flashing the lake between day and night. The outside renderer draws one complete sky rather than overlapping lower-horizon geometry. Native GPU proofs check three camera elevations.
+A read-only scene clock replaces local world-time rewrites, preventing server time packets from flashing the lake between day and night. It follows the actual scene coordinates and dimension rather than an expiring cue packet, so delayed updates cannot briefly restore the native day cycle. Leaving the scene restores native time immediately. The outside renderer draws one complete sky rather than overlapping lower-horizon geometry. Native GPU proofs check three camera elevations.
 
 Stacey’s hunting model and collision body are low on all fours. Native surface travel corrects her feet to the actual fluid height and excludes swimming drag. She starts behind the town, searches reachable occluded rear approaches, warns briefly, rushes, then withdraws after one strike. Living grass and real submersion remain refuges; the recalled human girl retains normal proportions and gravity. Native ticking tests require a water crossing and a real rear strike.
 
