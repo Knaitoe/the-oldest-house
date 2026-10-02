@@ -60,7 +60,8 @@ public final class OutdoorBounds {
 
     /** Returns true when the player was put back inside a scene. */
     public static boolean check(ServerPlayer player, BlockPos origin) {
-        if (player.isSpectator() || player.isCreative() || !player.isAlive()) return false;
+        // The game mode itself, not isCreative(): creative and spectator players fly where they like.
+        if (!player.gameMode.isSurvival() || !player.isAlive()) return false;
         Vec3 back = SAFE.get(player.getUUID());
         BlockPos home = null;
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
