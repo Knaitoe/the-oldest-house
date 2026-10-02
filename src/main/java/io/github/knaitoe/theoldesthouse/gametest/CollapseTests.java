@@ -47,13 +47,17 @@ public final class CollapseTests {
             if(stage[0]==1){if(own.getInt("CollapseTicks")<125)return;h.assertTrue(f.l.getBlockState(FinaleCollapse.breach(f.origin)).isAir(),"the visible broken wall is a real passage");h.assertTrue(f.l.getBlockState(f.b.offset(12,91,41)).isAir(),"the arena loses actual floor blocks");stage[0]=2;}
             if(stage[0]==2){double[] target=upper[point[0]];Vec3 to=new Vec3(f.b.getX()+target[0]+.5,p.getY(),f.b.getZ()+target[1]+.5);if(p.position().distanceToSqr(to)<.25){if(++point[0]==upper.length){point[0]=0;stage[0]=3;return;}}else walk(p,to,false);return;}
             if(stage[0]==3){move(p,Vec3.ZERO,false);if(own.getBoolean("Descended")){h.assertTrue(p.getHealth()>0&&p.getY()<8,"native movement falls through the continuous shaft into its water catch");stage[0]=4;point[0]=1;}return;}
-            if(stage[0]==4){if(point[0]>=route.size()-1){p.setShiftKeyDown(false);p.setForcedPose(null);p.setPose(Pose.STANDING);stage[0]=5;return;}var target=Vec3.atBottomCenterOf(route.get(point[0]));
+            if(stage[0]==4){if(point[0]>=route.size()-1){p.setShiftKeyDown(false);p.setForcedPose(null);p.setPose(Pose.STANDING);
+                    FinaleController.finish(p,false);h.assertTrue(FinaleProgress.phase(p.server,p.getUUID())==FinaleProgress.Phase.ESCAPE&&!HouseSavedData.get(p.server).isCollapsed()&&p.serverLevel()==f.l&&peer.serverLevel()==f.l,"an absent exterior landing cannot partially commit or strand either resident");
+                    var doorstep=f.origin.offset(HouseLayout.FRONT_DOOR.x(),HouseLayout.FRONT_DOOR.y()-1,HouseLayout.FRONT_DOOR.z()-2);var outside=p.server.overworld();outside.getChunkAt(doorstep);
+                    for(var ground:BlockPos.betweenClosed(doorstep.offset(-3,0,-3),doorstep.offset(3,0,0)))outside.setBlock(ground,Blocks.STONE.defaultBlockState(),3);
+                    h.assertTrue(HouseProxyEntityEvacuation.frontDoorExit(outside,f.origin)!=null,"restored native terrain supplies a real exterior landing");stage[0]=5;return;}var target=Vec3.atBottomCenterOf(route.get(point[0]));
                 if(p.position().multiply(1,0,1).distanceToSqr(target.multiply(1,0,1))<.35){point[0]++;return;}
                 boolean low=point[0]>=68&&point[0]<=77;p.setShiftKeyDown(low);p.setForcedPose(low?Pose.CROUCHING:null);p.setPose(low?Pose.CROUCHING:Pose.STANDING);
                 boolean jump=point[0]>=26&&point[0]<=31||point[0]>=106&&point[0]<=111;
                 walk(p,target,jump);return;}
             if(stage[0]==5){p.setDeltaMovement(Vec3.ZERO);if(++pullClock[0]%22!=0)return;var exit=FinaleArchitecture.exit(f.origin);var e=new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,exit,new BlockHitResult(exit.getCenter(),Direction.WEST,exit,false));NeoForge.EVENT_BUS.post(e);
-                if(FinaleProgress.phase(p.server,p.getUUID())==FinaleProgress.Phase.ESCAPED){h.assertTrue(HouseSavedData.get(p.server).isCollapsed()&&p.getInventory().countItem(Items.IRON_SWORD)==1,"the fourth actual pull reaches the empty lot with the original weapon");h.assertTrue(!FinaleProgress.terminal(FinaleProgress.phase(p.server,peer.getUUID())),"an observer inherits no personal ending");h.succeed();}}
+                if(FinaleProgress.phase(p.server,p.getUUID())==FinaleProgress.Phase.ESCAPED){h.assertTrue(HouseSavedData.get(p.server).isCollapsed()&&p.getInventory().countItem(Items.IRON_SWORD)==1&&FinaleProgress.player(p.server,p.getUUID()).getInt("DoorPulls")==4,"the fourth actual pull reaches the empty lot with the original weapon");h.assertTrue(p.serverLevel()==p.server.overworld()&&peer.serverLevel()==p.server.overworld()&&!FinaleProgress.terminal(FinaleProgress.phase(p.server,peer.getUUID())),"every resident evacuates while an observer inherits no personal ending");h.succeed();}}
         });
     }
     // Server players receive movement from clients; drive the real collision mover instead of the client-only travel path.

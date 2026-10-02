@@ -299,7 +299,7 @@ public final class FinaleController {
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void respawnPosition(PlayerRespawnPositionEvent event){
         if(event.getEntity() instanceof ServerPlayer player&&!event.isFromEndFight()&&FinaleProgress.player(player.server,player.getUUID()).getBoolean("NeedsRespawn")){
             BlockPos origin=HouseSavedData.get(player.server).housePosition().orElse(null);if(origin==null)return;
-            Vec3 at=HouseProxyEntityEvacuation.frontDoorExit(player.server.overworld(),origin);player.server.overworld().getChunkAt(BlockPos.containing(at));
+            Vec3 at=HouseProxyEntityEvacuation.frontDoorExit(player.server.overworld(),origin);if(at==null)return;player.server.overworld().getChunkAt(BlockPos.containing(at));
             event.setDimensionTransition(new DimensionTransition(player.server.overworld(),at,Vec3.ZERO,180,0,DimensionTransition.DO_NOTHING));
         }
     }
@@ -314,12 +314,17 @@ public final class FinaleController {
         UUID original=WeaponHistory.stamp(used);if(original!=null)projectile.getPersistentData().putUUID(WeaponHistory.ORIGINAL,original);
     }
     private static void outside(ServerPlayer player,BlockPos origin){
-        Vec3 at=HouseProxyEntityEvacuation.frontDoorExit(player.server.overworld(),origin);var companions=CompanionOrders.followingAll(player);
+        Vec3 at=HouseProxyEntityEvacuation.frontDoorExit(player.server.overworld(),origin);if(at!=null)outside(player,at);
+    }
+    private static void outside(ServerPlayer player,Vec3 at){
+        var companions=CompanionOrders.followingAll(player);
         player.server.overworld().getChunkAt(BlockPos.containing(at));player.stopRiding();player.teleportTo(player.server.overworld(),at.x,at.y,at.z,180,0);player.resetFallDistance();
         for(var pet:companions)CompanionOrders.followAcross(pet,player);
     }
     public static void finish(ServerPlayer player,boolean guided){
         BlockPos origin=HouseSavedData.get(player.server).houseOrigin();if(origin==null)return;
+        // Player edits can obstruct the exterior. Keep the ending retryable until every resident can land safely.
+        Vec3 landing=HouseProxyEntityEvacuation.frontDoorExit(player.server.overworld(),origin);if(landing==null)return;
         CompoundTag record=FinaleProgress.player(player.server,player.getUUID());
         if(record.hasUUID("Guide")&&player.serverLevel().getEntity(record.getUUID("Guide")) instanceof TamableAnimal pet){
             pet.getPersistentData().remove(GUIDE);pet.setOwnerUUID(player.getUUID());pet.setTame(true,false);pet.setInvulnerable(false);
@@ -330,8 +335,8 @@ public final class FinaleController {
         record.putString("Phase",FinaleProgress.Phase.ESCAPED.name());record.putBoolean("Guided",guided);record.putLong("EpilogueDue",player.server.overworld().getGameTime()+24000);
         FinaleProgress.save(player.server,player.getUUID(),record);player.removeEffect(MobEffects.DARKNESS);
         // Evacuate every resident before disabling the House's origin; no peer can be stranded.
-        for(ServerPlayer other:player.server.getPlayerList().getPlayers())if(HouseDimensions.isHouseDimension(other.serverLevel().dimension())){HouseTransitionEvents.cancelPending(other,"the House is collapsing");outside(other,origin);}
-        if(!player.serverLevel().dimension().equals(Level.OVERWORLD))outside(player,origin);
+        for(ServerPlayer other:player.server.getPlayerList().getPlayers())if(HouseDimensions.isHouseDimension(other.serverLevel().dimension())){HouseTransitionEvents.cancelPending(other,"the House is collapsing");outside(other,landing);}
+        if(!player.serverLevel().dimension().equals(Level.OVERWORLD))outside(player,landing);
         if(record.hasUUID("RecoveredGuide")){
             ServerLevel interior=player.server.getLevel(HouseDimensions.INTERIOR);
             if(interior!=null&&interior.getEntity(record.getUUID("RecoveredGuide")) instanceof TamableAnimal pet)CompanionOrders.followAcross(pet,player);
