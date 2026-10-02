@@ -105,10 +105,27 @@ public final class LakeLandscape {
         for(int y=3;y<=8;y++)for(int dx=-2;dx<=2;dx++)for(int dz=-2;dz<=2;dz++)if(Math.abs(dx)+Math.abs(dz)<=8-y)
             l.setBlock(b.offset(x+dx,y,z+dz),Blocks.SPRUCE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true),F);
     }
-    public static void upgradeWorld(MinecraftServer server,BlockPos origin){
-        var data=LabyrinthData.get(server);if(data.builtVersion()<14||!origin.equals(data.builtOrigin()))return;
-        var from=server.getLevel(HouseDimensions.INTERIOR);var to=server.getLevel(HouseDimensions.OUTSIDE);if(from==null||to==null)return;
+    public static boolean upgradeWorld(MinecraftServer server,BlockPos origin){
+        var data=LabyrinthData.get(server);if(data.builtVersion()<14||data.builtVersion()>=23||!origin.equals(data.builtOrigin()))return true;
+        var from=server.getLevel(HouseDimensions.INTERIOR);var to=server.getLevel(HouseDimensions.OUTSIDE);if(from==null||to==null)return false;
         var progress=data.state("lake_landscape_0426");
+        // Load old native entity chunks before taking the snapshot. Block-only chunk reads are insufficient.
+        boolean ready=true;
+        for(var site:SITES)if(!progress.getBoolean(site.id())){
+            var dest=LabyrinthPlaces.base(origin,site);var old=dest.offset(0,0,4096+site.slot()*192);
+            // A partial development/test layout may never have constructed this site at all.
+            boolean exists=from.getBlockState(old.offset(0,-1,-3)).is(Blocks.COARSE_DIRT)
+                    ||from.getBlockState(old.offset(0,-1,-3)).is(Blocks.DARK_OAK_PLANKS)
+                    ||from.getBlockState(old.offset(0,-1,-3)).is(Blocks.GRASS_BLOCK)
+                    ||from.getBlockState(old.offset(0,0,1)).getBlock() instanceof DoorBlock;
+            if(!exists){progress.putBoolean(site.id(),true);data.setState("lake_landscape_0426",progress);continue;}
+            IndianLakeRooms.keepLoaded(from,old,site);
+            var bounds=IndianLakeRooms.bounds(old,site);
+            for(int x=((int)bounds.minX-1)>>4;x<=((int)bounds.maxX+1)>>4;x++)for(int z=((int)bounds.minZ-1)>>4;z<=((int)bounds.maxZ+1)>>4;z++){
+                from.getChunk(x,z);ready&=from.areEntitiesLoaded(ChunkPos.asLong(x,z));
+            }
+        }
+        if(!ready)return false;
         for(var site:SITES){
             if(progress.getBoolean(site.id()))continue;
             var dest=LabyrinthPlaces.base(origin,site);var old=dest.offset(0,0,4096+site.slot()*192);var r=site.room();var delta=dest.subtract(old);
@@ -126,6 +143,7 @@ public final class LakeLandscape {
             for(Cell cell:cells)from.setBlock(cell.position(),Blocks.AIR.defaultBlockState(),F);
             progress.putBoolean(site.id(),true);data.setState("lake_landscape_0426",progress);
         }
+        return true;
     }
     @SubscribeEvent public static void login(PlayerEvent.PlayerLoggedInEvent event){
         if(!(event.getEntity() instanceof ServerPlayer p)||!p.level().dimension().equals(HouseDimensions.INTERIOR))return;

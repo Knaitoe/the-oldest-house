@@ -92,7 +92,7 @@ public final class LabyrinthBuilder {
         pending = new ArrayDeque<>();
         domesticUpgrades.clear();
         LabyrinthData data = LabyrinthData.get(server);
-        if(!force)LakeLandscape.upgradeWorld(server,origin);
+        if(!force&&!LakeLandscape.upgradeWorld(server,origin)){pending=null;pendingOrigin=null;return false;}
         legacyDomesticUpgrade=!force && data.builtVersion()<17 && origin.equals(data.builtOrigin());
         // Older structural upgrades keep their scope. 0.4.17 dresses existing halls in place.
         boolean extend = !force && data.builtVersion() >= 10 && data.builtVersion() < VERSION && origin.equals(data.builtOrigin());

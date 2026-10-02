@@ -12,6 +12,7 @@ import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.*;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.*;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.*;
@@ -177,7 +178,7 @@ public final class NovelVignettes {
             var pending=PENDING_PHOTOS.get(p.getUUID());
             if(pending!=null&&p.tickCount>=pending.due()&&participant(p)){
                 var site=pending.place();var b=LabyrinthPlaces.base(origin,site);var r=site.room();
-                var box=new AABB(b.offset(r.minX(),r.minY(),r.minZ()),b.offset(r.maxX()+1,r.maxY()+1,r.maxZ()+1));
+                var box=new AABB(Vec3.atLowerCornerOf(b.offset(r.minX(),r.minY(),r.minZ())),Vec3.atLowerCornerOf(b.offset(r.maxX()+1,r.maxY()+1,r.maxZ()+1)));
                 if(p.level().dimension().equals(NovelRooms.dimension(site))&&box.contains(p.getEyePosition())&&p.getZ()<b.getZ()-3){
                     RECORDS.put(p.getUUID(),new SceneRecord(p.serverLevel(),b.offset(r.minX(),r.minY(),r.minZ()),b.offset(r.maxX(),r.maxY(),r.maxZ()),p.getEyePosition(),p.getViewVector(1)));PENDING_PHOTOS.remove(p.getUUID());
                 }else if(p.tickCount>pending.due()+1200)PENDING_PHOTOS.remove(p.getUUID());
