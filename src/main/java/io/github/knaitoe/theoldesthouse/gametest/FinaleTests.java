@@ -102,6 +102,11 @@ public final class FinaleTests {
             var feet=blocks.get(route.get(i));var head=blocks.get(route.get(i).above());
             helper.assertTrue((feet==null||feet.isAir())&&(head==null||head.isAir()),"a landing cannot obstruct the route at tread "+i);
         }
+        var continuation=FinaleArchitecture.continuationRoute(origin);helper.assertTrue(continuation.getFirst().getY()-continuation.getLast().getY()>=1280,"the staircase physically continues equally far below the cell");
+        for(var at:continuation){
+            var floor=blocks.get(at.below());var feet=blocks.get(at);var head=blocks.get(at.above());
+            helper.assertTrue(floor!=null&&!floor.isAir()&&(feet==null||feet.isAir())&&(head==null||head.isAir()),"the lower continuation retains a connected unobstructed tread at "+at);
+        }
         for(int z=26;z<=32;z++)for(int y=FinaleArchitecture.ARENA;y<FinaleArchitecture.ARENA+3;y++){
             var opening=blocks.get(FinaleArchitecture.base(origin).offset(0,y,z));
             helper.assertTrue(opening==null||opening.isAir(),"the passage through the shaft wall really reaches the cell chamber");

@@ -80,13 +80,14 @@ public final class HouseExperience {
     }
     public static int weight(LabyrinthData d,UUID player,LabyrinthPlace place,int weight){
         var own=record(d,player);if(d.recentVisit(player,place)>=0&&d.recentVisit(player,place)<3)return weight;
-        if(own.getCompound("Retreats").getInt(place.id())>0&&!d.isCompleted(place.id()))return weight+Math.max(1,weight/2);
+        var story=WitnessAccount.Story.of(place.id());boolean finished=story!=null&&WitnessAccount.has(d,player,story);
+        if(own.getCompound("Retreats").getInt(place.id())>0&&!finished)return weight+Math.max(1,weight/2);
         if(place==LabyrinthPlace.KAREN_ROOM&&own.getInt("Returns")>=2)return weight+Math.max(1,weight/3);
         return weight;
     }
     public static List<String> traces(ServerPlayer p){
         var d=LabyrinthData.get(p.server);var own=record(d,p.getUUID());var text=new ArrayList<String>();
-        if(own.contains("Seat"))text.add("The chair you used is still upstairs. Someone has measured the space beneath it.");
+        if(own.contains("Seat"))text.add("You once sat in that chair. Someone has measured the space beneath it.");
         if(own.getInt("Sleeps")>0)text.add("You have slept in the manor. A crease in the pillow would be evidence enough, if you could find the bed again.");
         if(!own.getString("LastRetreat").isEmpty())text.add("You turned back from "+own.getString("LastRetreat").replace('_',' ')+". There was still something left to do. The page leaves a space for it.");
         if(!own.getString("WaitingName").isEmpty())text.add("You asked "+own.getString("WaitingName")+" to wait. The ink keeps the name. It does not promise the animal is still there.");

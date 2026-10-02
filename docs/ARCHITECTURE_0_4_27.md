@@ -58,6 +58,8 @@ The native child and combat creature retain one UUID. After the bars open on the
 
 Eight finite Pelafina letters develop mundane details, affection, frustration, missing answers and unreliable dates. The original THREE/ONE/TWO acrostics remain on loose final sheets; the native attic resolution and Witness quota are unchanged. Ordinary unfinished visits allow personal retreat, preserve progress and grant no credit. The departed source becomes dormant until rediscovery; peers retain access. Recent-visit spacing still limits personal affinity.
 
+Unfinished affinity ends only with that explorer's own resolution; another player's completion cannot clear it. Both halves of the great staircase are checked against the full authored plan and the collision shapes of their actual native blocks.
+
 ## Physical trials and living tree
 
 The flooded passage has a connected 110-block swimming route with eleven turns, low ceilings and three real air chimneys. Its entry/exit dive pools sit below dry floor level. Native swimmer movement, collision, air depletion and recovery are checked. Older geometry is changed only when empty; an existing native container blocks replacement. Physical trial doors receive one shared 28/35/42-percent depth-based offer, two-visit spacing and no simultaneous anomaly offer. Rest offers fall from 75 to 35 percent, preserving the six/eight/twelve/sixteen depth gates.
