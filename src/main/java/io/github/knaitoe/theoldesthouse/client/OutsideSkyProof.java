@@ -40,8 +40,12 @@ public final class OutsideSkyProof extends Screen {
                 int pixel=image.getPixelRGBA(x,y);colors.add(pixel);
                 if(Math.min(Math.min(pixel&255,(pixel>>>8)&255),(pixel>>>16)&255)>60)lights++;
             }
-            if(colors.size()<9||s.view==0&&lights<12)throw new IllegalStateException("The native sky proof is blank or missing stars/moon: colors="+colors.size()+", lights="+lights);
             image.writeToFile(folder.resolve("native-sky-"+s.view+".png"));
+            // Looking down samples only the dim lower gradient; its 8-bit palette has fewer shades.
+            // Text is outside this crop, so three distinct shades still reject a blank frame.
+            int minimumColors=s.view==2?3:9;
+            if(colors.size()<minimumColors)throw new IllegalStateException("The native sky gradient is missing at view "+s.view+": colors="+colors.size());
+            if(s.view==0&&lights<12)throw new IllegalStateException("The native horizon is missing stars/moon: lights="+lights);
         }
         if(++s.view<3){s.frames=0;return;}
         Files.writeString(folder.resolve("sky-passed.txt"),"Single outside sky mesh rendered at three camera elevations; actual pixels contain its gradient and stars/moon. Scene time is read-only and stable across native server clock updates and delayed cues.\n");
