@@ -19,7 +19,7 @@ public final class FinaleArchitecture {
     public static final String ID = "great_staircase", ENTRY = "finale.entry";
     public static final int ARENA=92, TOP=ARENA+1280, BOTTOM=4, LOOP_BOTTOM=ARENA-1280;
     private static final String STATE = "finale_architecture_049";
-    public static final int CARVE_VERSION = 428;
+    public static final int CARVE_VERSION = 429;
     public static final int STAIR_RADIUS=24, STAIR_HALF_WIDTH=4, SHAFT_RADIUS=34;
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     public record Placement(BlockPos pos, BlockState block) {}
@@ -133,25 +133,35 @@ public final class FinaleArchitecture {
         var steps=allSteps(manor);List<BlockPos> descent=staircaseRoute(manor);
         // Full turn platforms are laid first. Flat approach/departure runs share their floor height.
         for(var step:steps)if(Math.abs(step.feet.getX()-b.getX())==STAIR_RADIUS&&Math.abs(step.feet.getZ()-b.getZ())==STAIR_RADIUS){
-            var at=step.feet;for(int dx=-6;dx<=6;dx++)for(int dz=-6;dz<=6;dz++){
-                blocks.put(at.offset(dx,-1,dz),stone);blocks.put(at.offset(dx,-2,dz),stone);
+            var at=step.feet;var floor=landingMaterial(at.getY());for(int dx=-6;dx<=6;dx++)for(int dz=-6;dz<=6;dz++){
+                blocks.put(at.offset(dx,-1,dz),Math.abs(dx)==6||Math.abs(dz)==6?Blocks.POLISHED_BASALT.defaultBlockState():floor);blocks.put(at.offset(dx,-2,dz),floor);
+            }
+            Direction entry=step.direction.getClockWise().getOpposite(),exit=step.direction;
+            for(Direction side:Direction.Plane.HORIZONTAL)for(int width=-6;width<=6;width++){
+                if((side==entry||side==exit)&&Math.abs(width)<=5)continue;
+                var railAt=at.offset(side.getStepX()*6+(side.getAxis()==Direction.Axis.Z?width:0),0,side.getStepZ()*6+(side.getAxis()==Direction.Axis.X?width:0));
+                blocks.put(railAt,rail(side.getClockWise()));
+            }
+            int sx=Integer.signum(at.getX()-b.getX()),sz=Integer.signum(at.getZ()-b.getZ());
+            // Bracketed outer corners join the landings to the shaft rather than floating in it.
+            for(int i=0;i<4;i++)for(int width=-1;width<=1;width++){
+                blocks.put(at.offset(sx*(7+i),-2-i,sz*6+width),floor);
+                blocks.put(at.offset(sx*6+width,-2-i,sz*(7+i)),floor);
             }
         }
         for(int i=0;i<steps.size();i++){
             var step=steps.get(i);BlockPos at=step.feet;Direction direction=step.direction;
             int x=at.getX()-b.getX(),z=at.getZ()-b.getZ(),y=at.getY()-1;
             boolean drops=i+1<steps.size()&&steps.get(i+1).feet.getY()<at.getY();
-            BlockState tread=drops?HouseBlocks.STAIRCASE_STAIRS.get().defaultBlockState().setValue(StairBlock.FACING,direction.getOpposite()):stone;
+            BlockState floor=landingMaterial(at.getY());
+            BlockState tread=drops?stairMaterial(at.getY()).defaultBlockState().setValue(StairBlock.FACING,direction.getOpposite()):floor;
             for(int width=-STAIR_HALF_WIDTH-1;width<=STAIR_HALF_WIDTH+1;width++){
                 int sx=x+(direction.getAxis()==Direction.Axis.Z?width:0),sz=z+(direction.getAxis()==Direction.Axis.X?width:0);
-                put(blocks,b,sx,y,sz,tread);put(blocks,b,sx,y-1,sz,stone);
+                put(blocks,b,sx,y,sz,tread);put(blocks,b,sx,y-1,sz,floor);
             }
             int turnDistance=Math.floorMod(step.index-STAIR_RADIUS,STAIR_RADIUS*2);
-            if(at.getY()>TOP-128&&turnDistance>10&&turnDistance<STAIR_RADIUS*2-10)for(Direction side:List.of(direction.getClockWise(),direction.getCounterClockWise())){
-                var rail=Blocks.IRON_BARS.defaultBlockState();
-                if(direction.getAxis()==Direction.Axis.X)rail=rail.setValue(BlockStateProperties.EAST,true).setValue(BlockStateProperties.WEST,true);
-                else rail=rail.setValue(BlockStateProperties.NORTH,true).setValue(BlockStateProperties.SOUTH,true);
-                put(blocks,b,x+side.getStepX()*5,y+1,z+side.getStepZ()*5,rail);
+            if(turnDistance>6&&turnDistance<STAIR_RADIUS*2-6)for(Direction side:List.of(direction.getClockWise(),direction.getCounterClockWise())){
+                put(blocks,b,x+side.getStepX()*5,y+1,z+side.getStepZ()*5,rail(direction));
             }
         }
         // Sparse loose pages stand on solid corner landings; abandoned camps occur only every 31st turn.
@@ -192,6 +202,16 @@ public final class FinaleArchitecture {
         StaircaseMazes.plan(blocks,b);
         return blocks.entrySet().stream().map(e->new Placement(e.getKey(),e.getValue())).toList();
     }
+    private static int depthBand(int y){return Math.floorMod((TOP-y)/128,4);}
+    private static BlockState landingMaterial(int y){return switch(depthBand(y)){
+        case 1->Blocks.TUFF_BRICKS.defaultBlockState();case 2->Blocks.DEEPSLATE_BRICKS.defaultBlockState();
+        case 3->Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState();default->HouseBlocks.STAIRCASE_STONE.get().defaultBlockState();};}
+    private static Block stairMaterial(int y){return switch(depthBand(y)){
+        case 1->Blocks.TUFF_BRICK_STAIRS;case 2->Blocks.DEEPSLATE_BRICK_STAIRS;
+        case 3->Blocks.POLISHED_BLACKSTONE_BRICK_STAIRS;default->HouseBlocks.STAIRCASE_STAIRS.get();};}
+    private static BlockState rail(Direction along){var s=Blocks.IRON_BARS.defaultBlockState();return along.getAxis()==Direction.Axis.X
+        ?s.setValue(BlockStateProperties.EAST,true).setValue(BlockStateProperties.WEST,true)
+        :s.setValue(BlockStateProperties.NORTH,true).setValue(BlockStateProperties.SOUTH,true);}
     private static void put(Map<BlockPos,BlockState> plan,BlockPos base,int x,int y,int z,BlockState block){plan.put(base.offset(x,y,z),block);}
     private static void clearVolume(Map<BlockPos,BlockState> plan,BlockPos b,int minX,int maxX,int minY,int maxY,int minZ,int maxZ){
         BlockState air=Blocks.AIR.defaultBlockState();for(int y=minY;y<=maxY;y++)for(int z=minZ;z<=maxZ;z++)for(int x=minX;x<=maxX;x++)put(plan,b,x,y,z,air);

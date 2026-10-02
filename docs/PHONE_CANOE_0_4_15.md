@@ -1,5 +1,7 @@
 # The Oldest House 0.4.15
 
+> Historical 0.4.15 implementation. The current canoe uses native rowing and steering in an isolated outdoor lake; crouching permits retreat before the committed phone drop. Fixed-view tosses retain original item custody through a full inventory and native saves. Current build 0.4.29 / layout 27 / protocol 28; Witness is thirteen of seventeen across two kinds. See [DESIGN_DOCUMENT.md](DESIGN_DOCUMENT.md) and [ARCHITECTURE_0_4_29.md](ARCHITECTURE_0_4_29.md).
+
 NeoForge 1.21.1, Java 21. Install this version on both client and server; the new viewpoint payload advances network protocol to 15.
 
 ## Phone in the Canoe

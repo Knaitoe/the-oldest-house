@@ -1,5 +1,7 @@
 # Finale — 0.4.9
 
+> Historical 0.4.9 implementation. The current finale has three endings, a 1,280-block descent and an equally deep continuation, an occluded child/creature identity, an encounter-earned Holloway shield and owner-specific seal release. The preparation barrel supplies notes; it does not grant the shield. See [DESIGN_DOCUMENT.md](DESIGN_DOCUMENT.md) and [ARCHITECTURE_0_4_29.md](ARCHITECTURE_0_4_29.md).
+
 The journey can now reach either ending. Opening the scratched cell commits the explorer; finding the great staircase does not.
 
 ## Finding and preparing

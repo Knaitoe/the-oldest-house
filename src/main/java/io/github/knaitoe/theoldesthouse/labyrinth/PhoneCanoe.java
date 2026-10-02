@@ -95,7 +95,7 @@ public final class PhoneCanoe {
     }
     private static Vec3 dropPosition(CompoundTag state,BlockPos base){return state.contains("DropX")?new Vec3(state.getDouble("DropX"),state.getDouble("DropY"),state.getDouble("DropZ")):new Vec3(base.getX()+1.2,base.getY()+.15,base.getZ()-32.5);}
     public static void tick(ServerPlayer player){
-        LabyrinthData data=LabyrinthData.get(player.server);CompoundTag state=personal(data,player.getUUID());int phase=state.getInt("Phase");if(phase==0)return;
+        LabyrinthData data=LabyrinthData.get(player.server);CompoundTag state=personal(data,player.getUUID());refundTosses(player,state);int phase=state.getInt("Phase");if(phase==0)return;
         if(!IndianLakeRooms.inside(player,LabyrinthPlace.PHONE_CANOE)){interrupt(player);return;}
         BlockPos base=IndianLakeRooms.base(player.server,LabyrinthPlace.PHONE_CANOE);IndianLakeRooms.keepLoaded(player.serverLevel(),base,LabyrinthPlace.PHONE_CANOE);
         LakeCanoeEntity canoe=stage(player.serverLevel(),base);if(canoe==null)return;
@@ -164,9 +164,32 @@ public final class PhoneCanoe {
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event){if(event.getEntity() instanceof ServerPlayer player)clearCamera(player,IndianLakeRooms.base(player.server,LabyrinthPlace.PHONE_CANOE));}
     public static void onToss(ItemTossEvent event){
         if(!(event.getPlayer() instanceof ServerPlayer player))return;CompoundTag state=personal(LabyrinthData.get(player.server),player.getUUID());
-        if(bound(player)){event.setCanceled(true);player.getInventory().add(event.getEntity().getItem());return;}
+        if(bound(player)){
+            event.setCanceled(true);ItemStack original=event.getEntity().getItem();player.getInventory().add(original);
+            if(!original.isEmpty()){
+                var held=state.getList("ReturnedTosses",Tag.TAG_COMPOUND);held.add(original.save(player.registryAccess()));state.put("ReturnedTosses",held);
+                save(LabyrinthData.get(player.server),player.getUUID(),state);
+                event.getEntity().setItem(ItemStack.EMPTY);
+            }
+            player.inventoryMenu.broadcastChanges();return;
+        }
         if(!original(event.getEntity().getItem(),player.getUUID(),state))return;
         event.setCanceled(true);interrupt(player);
+    }
+    /** A canceled native toss already left the inventory. Keep its residual original until it can return. */
+    private static void refundTosses(ServerPlayer player,CompoundTag state){
+        var held=state.getList("ReturnedTosses",Tag.TAG_COMPOUND);if(held.isEmpty())return;
+        var remaining=new ListTag();
+        for(int i=0;i<held.size();i++){
+            ItemStack original=ItemStack.parseOptional(player.registryAccess(),held.getCompound(i));player.getInventory().add(original);
+            if(!original.isEmpty()){
+                if(bound(player))remaining.add(original.save(player.registryAccess()));
+                else {var item=new net.minecraft.world.entity.item.ItemEntity(player.serverLevel(),player.getX(),player.getY()+.3,player.getZ(),original);item.setTarget(player.getUUID());item.setDefaultPickUpDelay();
+                    if(!player.serverLevel().addFreshEntity(item))remaining.add(original.save(player.registryAccess()));}
+            }
+        }
+        if(remaining.isEmpty())state.remove("ReturnedTosses");else state.put("ReturnedTosses",remaining);
+        save(LabyrinthData.get(player.server),player.getUUID(),state);player.inventoryMenu.broadcastChanges();
     }
     public static void onAttack(AttackEntityEvent event){if(event.getEntity() instanceof ServerPlayer player&&bound(player))event.setCanceled(true);}
     public static void onBlock(PlayerInteractEvent.RightClickBlock event){if(event.getEntity() instanceof ServerPlayer player&&bound(player))event.setCanceled(true);}

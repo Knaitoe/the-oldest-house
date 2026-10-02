@@ -124,7 +124,7 @@ public final class LakeLandscape {
         // Load old native entity chunks before taking the snapshot. Block-only chunk reads are insufficient.
         boolean ready=true;
         for(var site:SITES)if(!progress.getBoolean(site.id())){
-            var dest=LabyrinthPlaces.base(origin,site);var old=dest.offset(0,0,4096+site.slot()*192);
+            var dest=LabyrinthPlaces.base(origin,site);var old=LabyrinthPlaces.legacyBase(origin,site).offset(0,0,4096+site.slot()*192);
             // A partial development/test layout may never have constructed this site at all.
             boolean exists=from.getBlockState(old.offset(0,-1,-3)).is(Blocks.COARSE_DIRT)
                     ||from.getBlockState(old.offset(0,-1,-3)).is(Blocks.DARK_OAK_PLANKS)
@@ -140,7 +140,7 @@ public final class LakeLandscape {
         if(!ready)return false;
         for(var site:SITES){
             if(progress.getBoolean(site.id()))continue;
-            var dest=LabyrinthPlaces.base(origin,site);var old=dest.offset(0,0,4096+site.slot()*192);var r=site.room();var delta=dest.subtract(old);
+            var dest=LabyrinthPlaces.base(origin,site);var old=LabyrinthPlaces.legacyBase(origin,site).offset(0,0,4096+site.slot()*192);var r=site.room();var delta=dest.subtract(old);
             var cells=capture(from,old.offset(r.minX(),r.minY(),r.minZ()),old.offset(r.maxX(),r.maxY(),18));
             paste(to,cells,delta,false);
             if(site==LabyrinthPlace.DROWNED_TOWN)liftSchool(to,dest);
@@ -161,7 +161,7 @@ public final class LakeLandscape {
     @SubscribeEvent public static void login(PlayerEvent.PlayerLoggedInEvent event){
         if(!(event.getEntity() instanceof ServerPlayer p)||!p.level().dimension().equals(HouseDimensions.INTERIOR))return;
         var origin=HouseSavedData.get(p.server).houseOrigin();if(origin==null)return;var state=LabyrinthData.get(p.server).state("lake_landscape_0426");
-        for(var site:SITES){var b=LabyrinthPlaces.base(origin,site);var old=b.offset(0,0,4096+site.slot()*192);if(state.getBoolean(site.id())&&IndianLakeRooms.bounds(old,site).contains(p.position())){
+        for(var site:SITES){var b=LabyrinthPlaces.base(origin,site);var old=LabyrinthPlaces.legacyBase(origin,site).offset(0,0,4096+site.slot()*192);if(state.getBoolean(site.id())&&IndianLakeRooms.bounds(old,site).contains(p.position())){
             var dest=p.server.getLevel(HouseDimensions.OUTSIDE);if(dest!=null)p.changeDimension(new DimensionTransition(dest,relocated(site,old,b,p.position()),p.getDeltaMovement(),p.getYRot(),p.getXRot(),DimensionTransition.DO_NOTHING));return;
         }}
     }

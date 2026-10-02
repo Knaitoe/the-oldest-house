@@ -42,7 +42,7 @@ public final class CompanionOrders {
         if(hillary!=null) return hillary.acknowledged() ? hillary.recipient() : null;
         return pet.isTame() ? pet.getOwnerUUID() : null;
     }
-    public static boolean supported(Entity entity) {return entity instanceof TamableAnimal;}
+    public static boolean supported(Entity entity) {return entity instanceof Cat || entity instanceof Wolf;}
     public static boolean managed(TamableAnimal pet) {return pet.getPersistentData().contains(KEY);}
     public static Order order(TamableAnimal pet) {
         int value=pet.getPersistentData().getInt(KEY);
@@ -95,7 +95,7 @@ public final class CompanionOrders {
         pet.setOrderedToSit(sit);pet.setInSittingPose(sit);pet.getNavigation().stop();
     }
     public static boolean issue(TamableAnimal pet,ServerPlayer player,Order order) {
-        if(!player.getUUID().equals(owner(pet)))return false;
+        if(!supported(pet)||!player.getUUID().equals(owner(pet)))return false;
         if((order==Order.EXIT||order==Order.DEEPER)&&!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)) {
             reassureSound(pet,false);return false;
         }

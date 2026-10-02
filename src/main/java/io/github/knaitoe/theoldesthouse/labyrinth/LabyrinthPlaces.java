@@ -35,6 +35,7 @@ public final class LabyrinthPlaces {
      * any place (and its padding) and clear of the manor's own footprint.
      */
     public static final int COLUMN_SPACING = 96;
+    public static final int OUTDOOR_SPACING = 4096;
     // Slot 32 starts a fifth column at low/common manor heights; older slots never move.
     private static final int MAX_COLUMNS = 5;
     private static final int MAX_Y = 318;
@@ -120,13 +121,18 @@ public final class LabyrinthPlaces {
      */
     @Nullable
     public static BlockPos base(BlockPos origin, LabyrinthPlace place) {
+        return baseAtSpacing(origin,place,OUTDOOR_SPACING);
+    }
+    /** Pre-0.4.29 outdoor addresses are used only to transfer existing scenes and reconnecting residents. */
+    public static BlockPos legacyBase(BlockPos origin,LabyrinthPlace place){return baseAtSpacing(origin,place,192);}
+    private static BlockPos baseAtSpacing(BlockPos origin,LabyrinthPlace place,int spacing){
         if (!fits(origin, place.slot())) {
             return null;
         }
         return new BlockPos(
                 origin.getX() + HouseLayout.CENTER_X + column(origin, place.slot()) * COLUMN_SPACING,
                 slotBottom(origin, place.slot()) + (place == LabyrinthPlace.DROWNED_TOWN || place == LabyrinthPlace.BARN_WELL ? 14 : FLOOR_IN_SLOT),
-                origin.getZ() + HouseLayout.CENTER_Z - (NovelRooms.outside(place) ? 4096 + place.slot()*192 : 0)
+                origin.getZ() + HouseLayout.CENTER_Z - (NovelRooms.outside(place) ? 4096 + place.slot()*spacing : 0)
         );
     }
 

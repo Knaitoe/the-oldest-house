@@ -93,7 +93,7 @@ public final class PlaytestRepairsTests {
         MigrationFixture(GameTestHelper h){
             server=h.getLevel().getServer();house=HouseSavedData.get(server);data=LabyrinthData.get(server);from=HouseTestLevel.get(server);to=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);origin=new BlockPos(65000,80,65000);
             var nextHouse=new HouseSavedData();nextHouse.markSpawned(origin);server.overworld().getDataStorage().set("the_oldest_house",nextHouse);var nextData=new LabyrinthData();nextData.setBuilt(22,origin);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",nextData);
-            dest=LabyrinthPlaces.base(origin,LabyrinthPlace.DROWNED_TOWN);old=dest.offset(0,0,4096+LabyrinthPlace.DROWNED_TOWN.slot()*192);IndianLakeRooms.keepLoaded(from,old,LabyrinthPlace.DROWNED_TOWN);IndianLakeRooms.keepLoaded(to,dest,LabyrinthPlace.DROWNED_TOWN);
+            dest=LabyrinthPlaces.base(origin,LabyrinthPlace.DROWNED_TOWN);old=LabyrinthPlaces.legacyBase(origin,LabyrinthPlace.DROWNED_TOWN).offset(0,0,4096+LabyrinthPlace.DROWNED_TOWN.slot()*192);IndianLakeRooms.keepLoaded(from,old,LabyrinthPlace.DROWNED_TOWN);IndianLakeRooms.keepLoaded(to,dest,LabyrinthPlace.DROWNED_TOWN);
         }
         public void close(){if(player!=null)server.getPlayerList().remove(player);for(var level:List.of(from,to))for(UUID id:actors)if(level.getEntity(id)!=null)level.getEntity(id).discard();server.overworld().getDataStorage().set("the_oldest_house",house);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);LabyrinthBuilder.clearAll();LabyrinthDoors.clearAll();}
     }

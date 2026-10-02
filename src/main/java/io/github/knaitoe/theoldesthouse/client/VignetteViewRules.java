@@ -18,14 +18,7 @@ public final class VignetteViewRules {
     private static void enforce(){var mc=Minecraft.getInstance();if(vignette()){
         if(previous==null){previous=mc.options.getCameraType();scene=mc.level;}mc.options.setCameraType(CameraType.FIRST_PERSON);
     }else if(previous!=null){mc.options.setCameraType(previous);previous=null;scene=null;}}
-    /** Outdoor scenes are separate islands of one dimension: distance haze keeps each one's horizon its own. */
-    static final float OUTSIDE_FOG_END=110F;
     @SubscribeEvent public static void fog(ViewportEvent.RenderFog e){var mc=Minecraft.getInstance();
-        if(mc.player!=null&&mc.level!=null&&mc.level.dimension().equals(HouseDimensions.OUTSIDE)&&e.getMode()==net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN){
-            // Only ever draws the haze nearer: a scene's own closer mist always wins.
-            if(e.getFarPlaneDistance()>OUTSIDE_FOG_END){e.setFarPlaneDistance(OUTSIDE_FOG_END);e.setNearPlaneDistance(Math.min(e.getNearPlaneDistance(),OUTSIDE_FOG_END*.55F));e.setCanceled(true);}
-            return;
-        }
         if(mc.player==null||mc.level==null||!mc.level.dimension().equals(HouseDimensions.INTERIOR)||e.getMode()!=net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN)return;
         var b=FinaleArchitecture.base(HouseSightlineState.origin());var p=mc.player.position();if(Math.abs(p.x-b.getX())>FinaleArchitecture.SHAFT_RADIUS||Math.abs(p.z-b.getZ())>FinaleArchitecture.SHAFT_RADIUS||p.y<FinaleArchitecture.LOOP_BOTTOM||p.y>FinaleArchitecture.TOP+15)return;
         e.setNearPlaneDistance(10);e.setFarPlaneDistance(46);e.setCanceled(true);
