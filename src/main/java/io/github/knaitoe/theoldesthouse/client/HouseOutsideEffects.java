@@ -27,6 +27,7 @@ public final class HouseOutsideEffects extends DimensionSpecialEffects {
     }
     public static void drawSky(Matrix4f view,Vec3 color,float time){
         RenderSystem.depthMask(false);RenderSystem.disableCull();RenderSystem.enableBlend();RenderSystem.defaultBlendFunc();
+        RenderSystem.setShaderColor(1,1,1,1);
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         try{
             var builder=Tesselator.getInstance().begin(VertexFormat.Mode.QUADS,DefaultVertexFormat.POSITION_COLOR);

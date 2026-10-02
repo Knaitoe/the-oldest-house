@@ -26,16 +26,25 @@ public final class OutsideSkyProof extends Screen {
         var previous=new Matrix4f(RenderSystem.getProjectionMatrix());var model=RenderSystem.getModelViewStack();model.pushMatrix();model.identity();RenderSystem.applyModelViewMatrix();
         try{
             RenderSystem.setProjectionMatrix(new Matrix4f().perspective((float)Math.toRadians(70),(float)width/height,.1F,1000),VertexSorting.DISTANCE_TO_ORIGIN);
+            RenderSystem.disableDepthTest();
             HouseOutsideEffects.drawSky(new Matrix4f().rotateX((float)Math.toRadians(new int[]{0,-45,25}[view])),new Vec3(.035,.05,.085),.5F);
-        }finally{model.popMatrix();RenderSystem.applyModelViewMatrix();RenderSystem.setProjectionMatrix(previous,VertexSorting.ORTHOGRAPHIC_Z);}
+        }finally{RenderSystem.enableDepthTest();model.popMatrix();RenderSystem.applyModelViewMatrix();RenderSystem.setProjectionMatrix(previous,VertexSorting.ORTHOGRAPHIC_Z);}
         g.drawString(font,"Native outside sky: "+new String[]{"horizon","above horizon","below horizon"}[view],12,12,0xFFE8E4D9,false);
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof OutsideSkyProof s)||++s.frames<4)return;
         Path folder=Path.of("../build/font-smoke");
-        try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve("native-sky-"+s.view+".png"));}
+        try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
+            var colors=new java.util.HashSet<Integer>();int lights=0;
+            for(int y=60;y<image.getHeight()-4;y++)for(int x=4;x<image.getWidth()-4;x++){
+                int pixel=image.getPixelRGBA(x,y);colors.add(pixel);
+                if(Math.min(Math.min(pixel&255,(pixel>>>8)&255),(pixel>>>16)&255)>60)lights++;
+            }
+            if(colors.size()<9||s.view==0&&lights<12)throw new IllegalStateException("The native sky proof is blank or missing stars/moon: colors="+colors.size()+", lights="+lights);
+            image.writeToFile(folder.resolve("native-sky-"+s.view+".png"));
+        }
         if(++s.view<3){s.frames=0;return;}
-        Files.writeString(folder.resolve("sky-passed.txt"),"Single outside sky mesh rendered at three camera elevations; scene time is read-only and stable across native server clock updates.\n");
+        Files.writeString(folder.resolve("sky-passed.txt"),"Single outside sky mesh rendered at three camera elevations; actual pixels contain its gradient and stars/moon. Scene time is read-only and stable across native server clock updates and delayed cues.\n");
         TheOldestHouse.LOGGER.info("HOUSE SKY CHECK PASSED: three native sky screenshots saved");mc.stop();
     }
 }
