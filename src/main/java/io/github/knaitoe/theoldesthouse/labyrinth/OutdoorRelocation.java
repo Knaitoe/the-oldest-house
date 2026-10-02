@@ -29,7 +29,7 @@ public final class OutdoorRelocation {
     public static AABB bounds(BlockPos base,LabyrinthPlace place){
         var r=place.room();int half=place==LabyrinthPlace.PLAIN?48:Math.max(Math.abs(r.minX()),r.maxX())+9;
         int far=place==LabyrinthPlace.PLAIN?-184:r.minZ()-9;
-        return new AABB(base.offset(-half,r.minY()-8,far),base.offset(half+1,Math.max(32,r.maxY()+10),21));
+        return new AABB(Vec3.atLowerCornerOf(base.offset(-half,r.minY()-8,far)),Vec3.atLowerCornerOf(base.offset(half+1,Math.max(32,r.maxY()+10),21)));
     }
     private static String key(BlockPos origin,LabyrinthPlace place){return origin.asLong()+":"+place.id();}
     public static boolean upgrade(MinecraftServer server,BlockPos origin){
