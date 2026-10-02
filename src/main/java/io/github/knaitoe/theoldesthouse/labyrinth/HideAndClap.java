@@ -374,14 +374,21 @@ public final class HideAndClap {
 
         Game current = game;
         ServerPlayer player = server.getPlayerList().getPlayer(current.player);
-        if (player == null || !player.isAlive()) return;
+        if (player == null || !player.isAlive()) {
+            if (!current.clock.started()) { game = null; persist(data, level); }
+            return;
+        }
+        if (!current.clock.started() && (player.serverLevel() != level || !isInRoom(base, player.position()))) {
+            departBeforeStarting(player);
+            return;
+        }
         if (current.needsSync) {
             current.needsSync = false;
             if (current.stage == Stage.ENDING) beginEnding(player, current, level, base, data, now);
             else sync(player, current, 0);
         }
-        confine(player, current, level, base);
         startIfWorn(player, current, level, data, now);
+        if (current.clock.started()) confine(player, current, level, base);
         if (current.clock.bound() && !revealed(current,now)) enforceBlindfold(player, current);
         if (current.clock.expired(now) && current.stage != Stage.ENDING) beginEnding(player, current, level, base, data, now);
         switch (current.stage) {
@@ -468,7 +475,7 @@ public final class HideAndClap {
                 if (frame.getPos().equals(base.offset(NOTE_FRAME)) && !frame.getItem().isEmpty()) frame.setItem(note(), false);
             }
             persist(data, level);
-            player.displayClientMessage(Component.literal("The door shuts. Someone is waiting for you to put the blindfold on.")
+            player.displayClientMessage(Component.literal("Someone is waiting for you to put the blindfold on. You can still turn back.")
                     .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), true);
         }
         closeEntry(level, data);
@@ -479,7 +486,17 @@ public final class HideAndClap {
         LabyrinthData data = LabyrinthData.get(player.server);
         ServerLevel level = player.server.getLevel(HouseDimensions.INTERIOR);
         if (level != null) restore(data, level);
-        return !data.isCompleted(ID) && game != null && game.player.equals(player.getUUID()) && player.isAlive();
+        return !data.isCompleted(ID) && game != null && game.clock.started() && game.player.equals(player.getUUID()) && player.isAlive();
+    }
+
+    /** Leaving before choosing the blindfold releases only the reservation, never the original props. */
+    public static void departBeforeStarting(ServerPlayer player) {
+        if (game == null || !game.player.equals(player.getUUID()) || game.clock.started()) return;
+        ServerLevel level = player.server.getLevel(HouseDimensions.INTERIOR);
+        if (level == null) return;
+        game = null;
+        persist(LabyrinthData.get(player.server), level);
+        HousePackets.send(player, new ClapGamePayload(false, 0, 0));
     }
 
     public static void confineLockedPlayer(ServerPlayer player) {
