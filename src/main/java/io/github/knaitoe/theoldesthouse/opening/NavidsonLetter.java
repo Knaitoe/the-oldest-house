@@ -31,8 +31,8 @@ public final class NavidsonLetter {
     public static final String AUTHOR = "Will Navidson";
 
     /**
-     * The mod ships this font as a plain reference to Minecraft's default, so
-     * applying it is always safe; a resource pack can replace
+     * The established id references Will's legible bitmap hand with a native
+     * fallback; a resource pack can replace
      * {@code assets/the_oldest_house/font/navidson.json} with Navidson's hand.
      */
     public static final ResourceLocation FONT = HouseWriting.WILL_FONT;

@@ -82,8 +82,8 @@ public final class OpeningTests {
     public static void writingSamplesCarryTheirOwnFonts(GameTestHelper helper) {
         List<ItemStack> samples = HouseWriting.samples();
         List<ResourceLocation> fonts = HouseWriting.sampleFonts();
-        helper.assertTrue(samples.size() == 4 && fonts.size() == 4, "expected four writing specimens");
-        helper.assertTrue(fonts.stream().distinct().count() == 4, "the writing styles must use distinct font ids");
+        helper.assertTrue(samples.size() == 6 && fonts.size() == 6, "expected six writing specimens");
+        helper.assertTrue(fonts.stream().distinct().count() == 6, "the writing styles must use distinct font ids");
         helper.assertTrue(NavidsonLetter.FONT.equals(HouseWriting.WILL_FONT), "Navidson's established font id changed");
 
         for (int i = 0; i < samples.size(); i++) {

@@ -6,6 +6,8 @@ Witness requires 75% of the playable, eligible story pool, rounded up, across at
 
 Current 0.4.23 baseline: sixteen eligible stories, twelve required resolutions, three ending options. Update these documented counts with each vignette release. Phone in the Canoe is a personal memory source. Its completed clip grants credit once; its original phone is recovered from the preserved cave.
 
+Version 0.4.24 changes typography and display-only blue House formatting, without changing vignette resolutions. Keep existing narrator/font IDs and child alternate IDs, native nine-pixel prose line spacing, punctuation fallbacks, signed chat/source immutability, styled sink indices and interactions. Verify native book wrapping and client mixin application as well as server checks. Layout remains 21, protocol 23; sixteen eligible stories require twelve across two kinds, with three endings.
+
 Version 0.4.16 changes existing companion and hide-and-clap mechanics, with living pet custody and ransom in the Mother’s den. These are not additional Witness sources; the pool remains nine and the quota seven. Review companion identity, ownership, saved orders, actual player-death capture and refusal/deadline behavior when changing pet recovery.
 
 Living offerings and vignette artifacts extend existing Mother bargains in 0.4.16. Player offerings require a real bounded enclosure and successful native death; they are not new Witness sources. Preserve sealed offered-animal identity and exclude another owner's pets and mirror projections.
