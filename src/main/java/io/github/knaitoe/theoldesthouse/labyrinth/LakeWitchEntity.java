@@ -94,7 +94,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         return fluid.is(FluidTags.WATER)?node.getY()-1+fluid.getHeight(level,node.below())+.004:base.getY();
     }
     public static double supportHeight(Level level,BlockPos base,double x,double z,double width){
-        double y=-Double.MAX_VALUE,half=width*.5-.02;
+        double y=-Double.MAX_VALUE,half=width*.5+.00001;
         for(int sx:new int[]{-1,1})for(int sz:new int[]{-1,1})y=Math.max(y,surfaceHeight(level,base,BlockPos.containing(x+sx*half,base.getY(),z+sz*half)));
         return y;
     }
@@ -122,6 +122,9 @@ public final class LakeWitchEntity extends PathfinderMob {
             if (!allowed) { movement = new Vec3(0, movement.y, 0); route.clear(); setDeltaMovement(0, getDeltaMovement().y, 0); }
         }
         super.move(type, movement);
+        // Native collision resolves Y before X/Z. Settle again after leaving a dry bank,
+        // otherwise the first full water footprint remains visibly above the surface for a tick.
+        if(shoreBase!=null&&!memory())super.move(type,new Vec3(0,net.minecraft.util.Mth.clamp(supportHeight(level(),shoreBase,getX(),getZ(),getBbWidth())-getY(),-.35,.35),0));
     }
 
     /** Four-neighbor physical surface paths detour around living grass, props and trees. */
@@ -181,17 +184,28 @@ public final class LakeWitchEntity extends PathfinderMob {
             walkAnimation.update((float)Math.sqrt((getX()-oldX)*(getX()-oldX)+(getZ()-oldZ)*(getZ()-oldZ))*4,.4F);break;
         }
     }
+    private void conceal(ServerLevel level){
+        cancelStrike();entityData.set(HUNT_PHASE,WITHDRAW);
+        if(route.isEmpty()||tickCount%40==0){
+            var observer=level.players().stream().filter(p->p.isAlive()&&!p.isSpectator()&&DrownedTown.contains(shoreBase,p.position())).min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
+            BlockPos start=BlockPos.containing(getX(),shoreBase.getY(),getZ());
+            BlockPos cover=observer==null?null:ambushGoal(level,shoreBase,start,observer,true);
+            if(cover==null)for(BlockPos at:List.of(shoreBase.offset(-24,0,-40),shoreBase.offset(25,0,-57),shoreBase.offset(-13,0,-51)))if(walkable(level,shoreBase,at)){cover=at;break;}
+            if(cover!=null&&!cover.equals(start))routeTo(cover);
+        }
+        follow(.26);
+    }
     @Override public void tick() {
         super.tick();
         if(memory()) { setAirSupply(300); Shallows.tickActor(this); return; }
         if (!(level() instanceof ServerLevel level) || shoreBase == null || !isAlive()) return;
         setAirSupply(300);move(MoverType.SELF,Vec3.ZERO);
-        if(settleTicks>0){settleTicks--;return;}
+        if(settleTicks>0){settleTicks--;if(getZ()>shoreBase.getZ()-14&&Math.abs(getX()-shoreBase.getX())<6)conceal(level);return;}
         if (cooldown > 0) cooldown--;
         ServerPlayer target = level.players().stream().filter(p -> canAttack(this, p))
                 .filter(p->p.getZ()<shoreBase.getZ()-12||Math.abs(p.getX()-shoreBase.getX())>5)
                 .min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
-        if (target == null || distanceToSqr(target) > 1600) { cancelStrike(); route.clear(); setDeltaMovement(0, getDeltaMovement().y, 0); return; }
+        if (target == null || distanceToSqr(target) > 1600) { conceal(level); return; }
         getLookControl().setLookAt(target, 30, 30);
         if (distanceToSqr(target) < 784 && getSensing().hasLineOfSight(target))
             IndianLakeProgress.hunted(LabyrinthData.get(level.getServer()), target.getUUID());
