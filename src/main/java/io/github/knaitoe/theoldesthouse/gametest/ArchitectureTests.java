@@ -162,10 +162,15 @@ public final class ArchitectureTests {
                 previous=top;
             }
         }
-        // The barn's bank carries a wood, not a flat curtain of leaves.
-        var barn=LabyrinthPlaces.base(origin,LabyrinthPlace.BARN_WELL);int curtain=0,cells=0;
-        for(int x=-23;x<=23;x++)for(int z=-45;z<=4;z++)if(Landscapes.barnEdge(x,z)>=4){cells++;if(outside.getBlockState(barn.offset(x,8,z)).getBlock() instanceof LeavesBlock)curtain++;}
-        h.assertTrue(curtain*4<cells,"the bank's skyline is broken by separate crowns: "+curtain+"/"+cells);
+        // The barn's bank carries a wood, not a flat curtain of leaves. A curtain is one flat top over every column; a wood has open sky between crowns of different heights.
+        var barn=LabyrinthPlaces.base(origin,LabyrinthPlace.BARN_WELL);int cells=0,open=0;var tops=new java.util.HashMap<Integer,Integer>();
+        for(int x=-23;x<=23;x++)for(int z=-45;z<=4;z++)if(Landscapes.barnEdge(x,z)>=4){
+            cells++;int top=Integer.MIN_VALUE;
+            for(int y=24;y>=-3;y--)if(outside.getBlockState(barn.offset(x,y,z)).getBlock() instanceof LeavesBlock){top=y;break;}
+            if(top==Integer.MIN_VALUE)open++;else tops.merge(top,1,Integer::sum);
+        }
+        int crowned=cells-open,flattest=tops.values().stream().max(Integer::compare).orElse(0);
+        h.assertTrue(open*7>=cells&&flattest*3<crowned&&tops.size()>=5,"the bank's skyline is broken by separate crowns: open "+open+"/"+cells+", commonest top "+flattest+"/"+crowned+", "+tops.size()+" heights");
         // Anyone the plain has seen inside it is returned from beyond its edge.
         var walker=h.makeMockServerPlayerInLevel();
         try{
