@@ -56,7 +56,11 @@ public final class VignetteArchitecture {
             default->false;
         };
     }
-    private void add(int x,int y,int z,BlockState s){BlockPos at=p(x,y,z);if(!reserved(x,y,z)&&l.getBlockState(at).isAir()&&l.getBlockEntity(at)==null)l.setBlock(at,s,F);}
+    private void add(int x,int y,int z,BlockState s){
+        BlockPos at=p(x,y,z);
+        if(!reserved(x,y,z)&&l.getBlockState(at).isAir()&&l.getBlockEntity(at)==null
+                &&(s.getCollisionShape(l,at).isEmpty()||l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,new net.minecraft.world.phys.AABB(at)).isEmpty()))l.setBlock(at,s,F);
+    }
     private void add(int x,int y,int z,Block block){add(x,y,z,block.defaultBlockState());}
     /** Only authored, ordinary shell material can receive trim; functional blocks are never replaced. */
     private void trim(int x,int y,int z,Block block){
@@ -192,6 +196,11 @@ public final class VignetteArchitecture {
         detail(-5,0,-18,SHOES);table(-10,0,-30,TOOLS);detail(-9,0,-30,ROPE_COIL);
     }
     private void plain(){
+        // Continuous distant ground hides the old empty seam beneath the isolated figure.
+        for(int x=-30;x<=30;x++)for(int z=-105;z<=-65;z++){
+            add(x,-1,z,Blocks.SANDSTONE);
+            if(Math.abs(x)>=28)for(int y=0;y<=1+Math.floorMod(x+z,3);y++)add(x,y,z,Blocks.SANDSTONE);
+        }
         // A used survey rest at the edge; the figure's open horizon remains the composition.
         add(-7,0,-8,Blocks.SMOOTH_SANDSTONE);add(-7,0,-9,Blocks.SMOOTH_SANDSTONE);
         detail(-7,1,-8,SATCHEL);detail(-7,1,-9,TOOLS);detail(4,0,-8,ROPE_COIL);

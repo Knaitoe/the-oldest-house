@@ -74,7 +74,12 @@ public final class ArchitectureTests {
                 if(scene!=LabyrinthPlace.RED_ROOM){h.assertTrue(count>=2,scene.id()+" has intentional, grounded ambient detail");dressed++;props+=count;}
                 for(var door:scene.doors()){
                     var at=base.offset(door.rel());h.assertTrue(level.getBlockState(at).getBlock() instanceof DoorBlock,scene.id()+" retains its actual door");
-                    var approach=at.relative(door.facing().getOpposite(),2);var shape=level.getBlockState(approach).getCollisionShape(level,approach);h.assertTrue(shape.isEmpty()||shape.max(Direction.Axis.Y)<=.125,scene.id()+" interior door approach remains open");
+                    boolean accessible=false;
+                    for(var side:List.of(door.facing(),door.facing().getOpposite())){
+                        var approach=at.relative(side,2);if(!bounds.isInside(approach.subtract(base)))continue;
+                        var shape=level.getBlockState(approach).getCollisionShape(level,approach);if(shape.isEmpty()||shape.max(Direction.Axis.Y)<=.125)accessible=true;
+                    }
+                    h.assertTrue(accessible,scene.id()+" has a usable interior door approach");
                 }
                 if(scene!=LabyrinthPlace.RED_ROOM)export(level,base,scene);
             }
@@ -86,9 +91,12 @@ public final class ArchitectureTests {
             UUID observer=UUID.randomUUID();WitnessAccount.resolve(data,observer,WitnessAccount.Story.HARRIGAN,"remembered");
             var round=new CompoundTag();round.putInt("ArchitectureRound",137);data.setState(HideAndClap.ID,round);
             // A saved prior layout must go through the builder's real in-place upgrade, never its native builders.
+            BlockPos oldDoor=LabyrinthPlaces.base(origin,LabyrinthPlace.HARRIGAN).offset(0,0,1);
+            interior.setBlock(oldDoor,Blocks.DARK_OAK_PLANKS.defaultBlockState(),2);interior.setBlock(oldDoor.above(),Blocks.DARK_OAK_PLANKS.defaultBlockState(),2);
             data.setState(VignetteArchitecture.STATE,new CompoundTag());data.setBuilt(23,origin);
             h.assertTrue(!LabyrinthBuilder.ensureBuilt(server),"the old layout schedules an in-place architectural upgrade");while(LabyrinthBuilder.isCarving())LabyrinthBuilder.tick(server);
             h.assertTrue(cache==interior.getBlockEntity(camp.offset(LabyrinthCampsite.CACHE))&&cache.getItem(0).isEmpty()&&cache.getItem(7).getCount()==3,"a emptied cache stays the same original inventory");
+            h.assertTrue(interior.getBlockState(oldDoor).getBlock() instanceof DoorBlock,"the authored wall in an older Harrigan return doorway is repaired in place");
             h.assertTrue(ids.equals(interior.getEntitiesOfClass(Entity.class,box(mother.offset(-11,-5,-26),mother.offset(11,15,1))).stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet())),"native den residents retain their original UUIDs");
             h.assertTrue(WitnessAccount.has(data,observer,WitnessAccount.Story.HARRIGAN)&&data.state(HideAndClap.ID).getInt("ArchitectureRound")==137,"personal evidence and active story state survive the architectural upgrade");
             BlockPos removed=camp.offset(4,1,-9);h.assertTrue(interior.getBlockState(removed).is(HouseBlocks.SCENE_DETAIL.get()),"the camp satchel stands on the original cache");
@@ -114,6 +122,7 @@ public final class ArchitectureTests {
         if(scene==LabyrinthPlace.MOTHER_DEN)maxY=10;
         if(scene==LabyrinthPlace.PRESERVED_CAVE)maxY=4;
         if(scene==LabyrinthPlace.WHALE)maxY=9;
+        if(scene==LabyrinthPlace.PLAIN)minZ=-105;
         for(int x=r.minX();x<=r.maxX();x++)for(int y=minY;y<=maxY;y++)for(int z=minZ;z<=maxZ;z++){
             var at=b.offset(x,y,z);var s=l.getBlockState(at);
             if(s.isAir()||s.is(Blocks.BARRIER)||s.is(Blocks.LIGHT)||s.is(Blocks.WATER))continue;
