@@ -1,5 +1,7 @@
 # Design outline for The Oldest House
 
+Current 0.4.27 design: domestic attachment, sensory limen, personal traces, finite home/Pelafina correspondence, voluntary ordinary retreat and an unwitnessed shared prisoner/creature. Layout 25 / protocol 28. The staircase descends 1,280 native blocks and continues another 1,280 below the cell. [The living design document](DESIGN_DOCUMENT.md) records the approved October 2 decisions; [the release notes](ARCHITECTURE_0_4_27.md) track implementation and native evidence.
+
 > **Historical implementation outline.** The current creative canon is [DESIGN_DOCUMENT.md](DESIGN_DOCUMENT.md), and the current opening contract is [OPENING.md](OPENING.md). Sections below remain useful as implementation history, but the retired natural-appearance roll and pre-Hillary dog concept must not be reintroduced.
 
 This file records implementation decisions so implementation history does not disappear.

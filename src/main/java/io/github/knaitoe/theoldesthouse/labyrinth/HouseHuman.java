@@ -42,6 +42,13 @@ public final class HouseHuman extends PathfinderMob {
     public boolean attackReady(){return attackClock<=0;}
     public void attacked(){attackClock=45;}
     public void blocked(){stagger=35;getNavigation().stop();}
+    public void say(String words){
+        if(!(level() instanceof net.minecraft.server.level.ServerLevel l))return;
+        var display=EntityType.TEXT_DISPLAY.create(l);if(display==null)return;
+        for(var old:l.getEntitiesOfClass(Display.TextDisplay.class,getBoundingBox().inflate(5),e->e.getTags().contains("HouseHollowaySpeech")))if(old.getPersistentData().hasUUID("Speaker")&&old.getPersistentData().getUUID("Speaker").equals(getUUID()))old.discard();
+        var data=new CompoundTag();display.saveWithoutId(data);data.putString("text",net.minecraft.network.chat.Component.Serializer.toJson(net.minecraft.network.chat.Component.literal(words),l.registryAccess()));data.putString("billboard","center");data.putInt("line_width",180);data.putInt("background",0x66000000);data.putBoolean("see_through",false);data.putInt("teleport_duration",3);display.load(data);
+        display.moveTo(getX(),getY()+2.35,getZ());display.addTag("HouseHollowaySpeech");display.getPersistentData().putUUID("Speaker",getUUID());display.getPersistentData().putLong("Until",l.getGameTime()+110);l.addFreshEntity(display);
+    }
     public void patrol(net.minecraft.core.BlockPos base,java.util.List<ServerPlayer> visitors){
         if(staggered()){getNavigation().stop();return;}
         int[][] stops={{-3,-9},{3,-6},{4,-10},{0,-16},{-6,-20},{6,-20},{0,-15}};
@@ -53,7 +60,7 @@ public final class HouseHuman extends PathfinderMob {
         }
         if(speechClock--<=0){speechClock=180+getRandom().nextInt(100);
             String[] lines={"Sixteen. There were sixteen torches.","That wall was farther away yesterday.","Don't move my things. I put them where I can see them.","I heard you before the door opened. I heard someone behind you, too.","The map isn't wrong. The rooms are wrong.","If you touch the barrel again, I will know."};
-            for(var visitor:visitors)if(distanceToSqr(visitor)<225)visitor.displayClientMessage(net.minecraft.network.chat.Component.literal("Holloway: "+lines[(patrolIndex/2)%lines.length]),false);
+            if(nearest!=null&&distanceToSqr(nearest)<225)say(lines[(patrolIndex/2)%lines.length]);
         }
     }
     @Override public void tick(){super.tick();if(!level().isClientSide){if(stagger>0)stagger--;if(attackClock>0)attackClock--;}}

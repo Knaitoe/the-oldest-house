@@ -48,7 +48,7 @@ public final class HollowayVignette {
         long now=p.serverLevel().getGameTime();if(!theft&&own.contains("TouchedAt")&&now-own.getLong("TouchedAt")<20)return;
         int suspicion=Math.min(3,own.getInt("Suspicion")+1);own.putInt("Suspicion",suspicion);own.putLong("TouchedAt",now);
         if(theft||suspicion>=3)own.putBoolean("CampAnger",true);save(data,p.getUUID(),own);
-        p.displayClientMessage(Component.literal(theft?"Holloway: Put it back. You think I didn't see?":suspicion>=3?"Holloway: I told you. Get away from my things.":"Holloway: Don't touch that. I counted everything."),false);
+        var actor=ensureActor(p.serverLevel(),base(p.server));if(actor!=null){actor.getLookControl().setLookAt(p,30,30);actor.say(theft?"Put it back. You think I didn't see?":suspicion>=3?"I told you. Get away from my things.":"Don't touch that. I counted everything.");}
     }
     public static void onArrive(ServerPlayer p,LabyrinthPlace place){if(place==LabyrinthPlace.HOLLOWAY_CAMP)enter(p);}
     public static void enter(ServerPlayer p){
@@ -82,6 +82,10 @@ public final class HollowayVignette {
     @SubscribeEvent public static void death(LivingDeathEvent e){if(e.getEntity() instanceof ServerPlayer p)depart(p);}
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         var s=e.getServer();var b=base(s);var l=s.getLevel(HouseDimensions.INTERIOR);if(b==null||l==null)return;
+        for(var speech:l.getEntitiesOfClass(net.minecraft.world.entity.Display.TextDisplay.class,new AABB(b).inflate(100),v->v.getTags().contains("HouseHollowaySpeech"))){
+            var tag=speech.getPersistentData();var actor=tag.hasUUID("Speaker")?l.getEntity(tag.getUUID("Speaker")):null;
+            if(l.getGameTime()>=tag.getLong("Until")||actor==null||!actor.isAlive())speech.discard();else speech.moveTo(actor.getX(),actor.getY()+2.35,actor.getZ());
+        }
         for(var world:s.getAllLevels())for(var p:List.copyOf(world.players()))playerTick(p);
         var visitors=IndianLakeRooms.visitors(l,b,LabyrinthPlace.HOLLOWAY_CAMP);if(visitors.isEmpty()){
             var all=LabyrinthData.get(s).state(ID);if(all.hasUUID("Actor")&&l.getEntity(all.getUUID("Actor")) instanceof HouseHuman actor){actor.pursue(null);actor.getNavigation().stop();}return;

@@ -60,8 +60,10 @@ Eight finite Pelafina letters develop mundane details, affection, frustration, m
 
 ## Physical trials and living tree
 
-The flooded passage has a connected 110-block swimming route with twelve turns, low ceilings and three real air chimneys. Its entry/exit dive pools sit below dry floor level. Native swimmer movement, collision, air depletion and recovery are checked. Older geometry is changed only when empty; an existing native container blocks replacement. Physical trial doors receive one shared 28/35/42-percent depth-based offer, two-visit spacing and no simultaneous anomaly offer. Rest offers fall from 75 to 35 percent, preserving the six/eight/twelve/sixteen depth gates.
+The flooded passage has a connected 110-block swimming route with eleven turns, low ceilings and three real air chimneys. Its entry/exit dive pools sit below dry floor level. Native swimmer movement, collision, air depletion and recovery are checked. Older geometry is changed only when empty; an existing native container blocks replacement. Physical trial doors receive one shared 28/35/42-percent depth-based offer, two-visit spacing and no simultaneous anomaly offer. Rest offers fall from 75 to 35 percent, preserving the six/eight/twelve/sixteen depth gates.
 
 The model-home tree keeps the original trunk and branch progression, with unequal limbs/crowns and three jointed bark tendrils near the window. Original logs supply collision; the small tips move through a native block-entity renderer without server movement packets or camera forcing. The next ordinary restaging clears earlier authored tendrils.
+
+Holloway's spontaneous paranoia and belonging warnings use native text displays that follow his moving body and expire, rather than chat. First-person protection also covers the finale so a third-person camera cannot observe a change hidden from the eyes.
 
 Native verification of these additions is pending the final release run; earlier architecture/lake checks are retained and rerun with the new systems.
