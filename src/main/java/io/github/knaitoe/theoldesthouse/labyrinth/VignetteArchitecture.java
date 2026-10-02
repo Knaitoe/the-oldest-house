@@ -122,6 +122,9 @@ public final class VignetteArchitecture {
         // Nothing is added to the tree's swept yard or the animated chair stack.
     }
     private void harrigan(){
+        // Earlier native builds registered this threshold but left its authored timber wall in place.
+        if(l.getBlockState(p(0,0,1)).is(Blocks.DARK_OAK_PLANKS)&&l.getBlockState(p(0,1,1)).is(Blocks.DARK_OAK_PLANKS))
+            LabyrinthBuilder.placeDoor(l,p(0,0,1),Direction.SOUTH);
         wainscot(-8,8,-25,1,5,Blocks.DARK_OAK_PLANKS,Blocks.STRIPPED_DARK_OAK_WOOD);
         table(6,0,-10,INK_PAPERS);cabinet(6,0,-4,TEA_SET);furniture(5,0,-6,FLORAL_ARMCHAIR,Direction.WEST);
         furniture(2,0,-9,FOOTSTOOL,Direction.NORTH);detail(-6,2,-2,FRAME,Direction.EAST);

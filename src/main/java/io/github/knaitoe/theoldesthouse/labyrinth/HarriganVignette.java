@@ -190,6 +190,7 @@ public final class HarriganVignette {
         level.setBlock(base.offset(0, 1, -21), Blocks.WHITE_CARPET.defaultBlockState(), flags);
 
         LabyrinthBuilder.entrance(level, base, wall, floor, ceiling);
+        LabyrinthBuilder.doors(level,base,LabyrinthPlace.HARRIGAN);
         stage(level, base, LabyrinthData.get(server), visitFor(LabyrinthData.get(server)));
     }
 
