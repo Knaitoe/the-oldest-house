@@ -36,7 +36,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 22;
+    public static final int VERSION = 23;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -92,6 +92,7 @@ public final class LabyrinthBuilder {
         pending = new ArrayDeque<>();
         domesticUpgrades.clear();
         LabyrinthData data = LabyrinthData.get(server);
+        if(!force)LakeLandscape.upgradeWorld(server,origin);
         legacyDomesticUpgrade=!force && data.builtVersion()<17 && origin.equals(data.builtOrigin());
         // Older structural upgrades keep their scope. 0.4.17 dresses existing halls in place.
         boolean extend = !force && data.builtVersion() >= 10 && data.builtVersion() < VERSION && origin.equals(data.builtOrigin());
@@ -135,6 +136,7 @@ public final class LabyrinthBuilder {
             if (domesticUpgrades.remove(place)) {
                 if(legacyDomesticUpgrade) LabyrinthDomestic.upgrade(interior, pendingOrigin, place);
                 io.github.knaitoe.theoldesthouse.house.HouseFurnishings.upgrade(interior,pendingOrigin,place);
+                io.github.knaitoe.theoldesthouse.house.HouseFurnishings.reduceNotes(interior,pendingOrigin,place);
             }
             else build(server, interior, pendingOrigin, place);
         }
@@ -143,6 +145,9 @@ public final class LabyrinthBuilder {
             LabyrinthData data = LabyrinthData.get(server);
             data.pruneDoors(server);
             data.setBuilt(VERSION, origin);
+            MotherOfStrays.upgradeDen(interior,origin);
+            ServerLevel outside=server.getLevel(HouseDimensions.OUTSIDE);
+            if(outside!=null)BarnFarm.upgrade(outside,origin);
             io.github.knaitoe.theoldesthouse.house.HouseFurnishings.upgradeManor(interior,origin);
             if (HouseSavedData.get(server).isImpossibleDoorRevealed())
                 io.github.knaitoe.theoldesthouse.house.HouseImpossibleHallway.dressDomesticApproach(interior, origin);
@@ -171,6 +176,11 @@ public final class LabyrinthBuilder {
             ServerLevel site=server.getLevel(NovelRooms.dimension(place));
             if(site!=null){NovelRooms.build(server,site,base,place);registerDoors(dataFor(server),place,base);}
             return;
+        }
+        if(LakeLandscape.isLake(place)){
+            ServerLevel site=server.getLevel(HouseDimensions.OUTSIDE);if(site==null)return;
+            switch(place){case DROWNED_TOWN->DrownedTown.build(server,site,base);case SHALLOWS->Shallows.build(server,site,base);case PHONE_CANOE->PhoneCanoe.build(server,site,base);default->{}}
+            LakeLandscape.dress(site,base,place);NovelRooms.safeApproach(site,base);registerDoors(dataFor(server),place,base);return;
         }
         LabyrinthMaze.Migration migration = LabyrinthMaze.isMaze(place) ? LabyrinthMaze.capture(level, slot, base) : null;
         fillSolid(level, slot);
@@ -236,7 +246,7 @@ public final class LabyrinthBuilder {
     public static void registerDoors(LabyrinthData data, LabyrinthPlace place, BlockPos base) {
         for (LabyrinthPlace.DoorSpec spec : place.doors()) {
             data.putDoor(new LabyrinthData.Door(
-                    place.doorId(spec), NovelVignettes.isNovel(place)?NovelRooms.dimension(place):HouseDimensions.INTERIOR, base.offset(spec.rel()), spec.facing(), spec.destination(), false));
+                    place.doorId(spec), NovelRooms.dimension(place), base.offset(spec.rel()), spec.facing(), spec.destination(), false));
         }
     }
 

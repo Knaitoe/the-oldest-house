@@ -129,6 +129,7 @@ public final class LabyrinthDoors {
             return;
         }
         if (LabyrinthData.RETURN.equals(door.destination) || LabyrinthData.HALLWAY_OR_RETURN.equals(door.destination)) {
+            if(NovelVignettes.exitLocked(player,door)){setDoorOpen(player.serverLevel(),door.lower,false,player);locked(player);return;}
             // An entry door, from inside: it just opens. Walking back out
             // through it is what takes the player back.
             setDoorOpen(player.serverLevel(), door.lower, true, player);
@@ -188,7 +189,7 @@ public final class LabyrinthDoors {
     @Nullable
     private static LabyrinthPlace placeOf(MinecraftServer server, LabyrinthData.Door door) {
         BlockPos origin = HouseSavedData.get(server).houseOrigin();
-        return origin == null || !door.dimension.equals(HouseDimensions.INTERIOR) ? null : LabyrinthPlaces.placeAt(origin, door.lower);
+        return origin == null || !io.github.knaitoe.theoldesthouse.house.HouseDimensions.isHouseDimension(door.dimension) ? null : LabyrinthPlaces.placeAt(origin, door.lower);
     }
 
     /**
@@ -270,6 +271,11 @@ public final class LabyrinthDoors {
         }
         UUID id = player.getUUID();
         double into = intoRoom(player, entry);
+        if(NovelVignettes.exitLocked(player,entry)&&INSIDE.contains(id)&&into<THRESHOLD) {
+            setDoorOpen(player.serverLevel(),entry.lower,false,player);
+            shift(player,Vec3.atBottomCenterOf(entry.lower.relative(entry.facing.getOpposite(),2)),player.getYRot());
+            return true;
+        }
         if (into >= THRESHOLD) {
             if (place == LabyrinthPlace.HIDE_AND_CLAP && !data.isCompleted(HideAndClap.ID)
                     && HideAndClap.isInRoom(LabyrinthPlaces.base(origin, place), player.position())) {
@@ -610,6 +616,7 @@ public final class LabyrinthDoors {
                 }
             }
         }
+        if(entry.dimension.equals(HouseDimensions.OUTSIDE))NovelRooms.safeApproach(toLevel,entry.lower.below(0).north());
     }
 
     static void setDoorOpen(ServerLevel level, BlockPos lower, boolean open, @Nullable ServerPlayer hearer) {

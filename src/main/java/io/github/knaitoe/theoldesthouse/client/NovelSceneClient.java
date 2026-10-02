@@ -22,7 +22,11 @@ public final class NovelSceneClient {
             clockLevel.setDayTime(mode==1?21000:mode==3?18000:mode==4?6000:18000+Math.min(6000,elapsed*6000L/3600));
         }else restoreClock();if(!active()){mode=0;shake=0;caption="";}}
     private static void restoreClock(){if(clockLevel!=null){clockLevel.setDayTime(previousTime+clockTicks);clockLevel=null;}}
-    @SubscribeEvent public static void fog(ViewportEvent.ComputeFogColor e){if(!active())return;if(mode==5){e.setRed(.16F);e.setGreen(.12F);e.setBlue(.21F);}else if(mode==1||mode==3){e.setRed(.018F);e.setGreen(.026F);e.setBlue(.04F);}else if(mode==4){e.setRed(.76F);e.setGreen(.67F);e.setBlue(.46F);}else if(mode>=10){e.setRed(.065F);e.setGreen(.059F);e.setBlue(.05F);}}
+    @SubscribeEvent public static void fog(ViewportEvent.ComputeFogColor e){if(!active())return;if(mode==5){e.setRed(.16F);e.setGreen(.12F);e.setBlue(.21F);}else if(mode==1||mode==3){e.setRed(.035F);e.setGreen(.05F);e.setBlue(.073F);}else if(mode==4){e.setRed(.76F);e.setGreen(.67F);e.setBlue(.46F);}else if(mode>=10){e.setRed(.065F);e.setGreen(.059F);e.setBlue(.05F);}}
+    @SubscribeEvent public static void mist(ViewportEvent.RenderFog e){
+        if(!active()||mode!=3||e.getMode()!=net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN||Minecraft.getInstance().player.hasEffect(net.minecraft.world.effect.MobEffects.DARKNESS))return;
+        e.setNearPlaneDistance(14);e.setFarPlaneDistance(48);e.setCanceled(true);
+    }
     @SubscribeEvent public static void camera(ViewportEvent.ComputeCameraAngles e){if(!active()||shake<=0)return;var mc=Minecraft.getInstance();float intensity=shake*(float)(double)mc.options.screenEffectScale().get();double time=mc.player.tickCount+e.getPartialTick();e.setRoll(e.getRoll()+(float)Math.sin(time*1.9)*intensity*.8F);e.setPitch(e.getPitch()+(float)Math.sin(time*2.3)*intensity*.35F);}
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
     public static final class Layers {

@@ -207,6 +207,7 @@ public final class ModelHome {
             }
         }
         stage(level, base, visitFor(data));
+        player.displayClientMessage(net.minecraft.network.chat.Component.literal(visitFor(data)>=FINAL_VISIT?"The child's door is open. Something has reached the window.":"Six chairs around the kitchen table. The television offers something else to look at."),false);
     }
 
     /** The visit the house is set for: the saved one, at least the first; the last once finished. */
@@ -675,6 +676,7 @@ public final class ModelHome {
                 if (!state.getBoolean("BeatDone")) {
                     state.putBoolean("BeatDone", true);
                     data.setState(ID, state);
+                    for(ServerPlayer visitor:visitors)visitor.displayClientMessage(net.minecraft.network.chat.Component.literal("You saw it. The doorway will remember this when you leave and return."),false);
                     TheOldestHouse.LOGGER.info("The chairs in the model home were stacked on visit {}.", visit);
                 }
             }
@@ -711,12 +713,9 @@ public final class ModelHome {
     }
 
     private static void tickLastVisit(ServerLevel level, BlockPos base, LabyrinthData data, List<ServerPlayer> visitors) {
-        if (data.isCompleted(ID)) {
-            return;
-        }
         AABB kids = kidsRoom(base);
         for (ServerPlayer player : visitors) {
-            if (kids.contains(player.position()) && HouseWatchers.isWatched(level, window(base))) {
+            if (!WitnessAccount.has(data,player.getUUID(),WitnessAccount.Story.MODEL_HOME)&&kids.contains(player.position()) && HouseWatchers.sees(player, window(base))) {
                 CompoundTag state = data.state(ID);
                 state.putBoolean("BeatDone", true);
                 data.setState(ID, state);
@@ -724,7 +723,7 @@ public final class ModelHome {
                 WitnessAccount.resolve(player,WitnessAccount.Story.MODEL_HOME,"saw_tree");
                 level.playSound(null, BlockPos.containing(window(base)), SoundEvents.AZALEA_LEAVES_STEP, SoundSource.BLOCKS, 0.8F, 0.7F);
                 TheOldestHouse.LOGGER.info("{} saw the tree in the kid's room; the model home is finished.", player.getGameProfile().getName());
-                return;
+                player.displayClientMessage(net.minecraft.network.chat.Component.literal("The tree has reached the bed. This visit is finished; the doorway is behind you."),false);
             }
         }
     }

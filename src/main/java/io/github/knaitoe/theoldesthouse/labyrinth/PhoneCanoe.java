@@ -132,7 +132,7 @@ public final class PhoneCanoe {
         WitnessAccount.resolve(player,WitnessAccount.Story.PHONE_CANOE,"lost_recording");player.displayClientMessage(Component.literal("Your hands are empty. Something wooden scrapes against stone, far away."),false);
     }
     private static void clearCamera(ServerPlayer player,BlockPos base){
-        if(base==null)return;ServerLevel level=player.server.getLevel(io.github.knaitoe.theoldesthouse.house.HouseDimensions.INTERIOR);if(level==null)return;
+        if(base==null)return;ServerLevel level=player.server.getLevel(io.github.knaitoe.theoldesthouse.house.HouseDimensions.OUTSIDE);if(level==null)return;
         for(var camera:level.getEntitiesOfClass(LakePhoneCamera.class,IndianLakeRooms.bounds(base,LabyrinthPlace.PHONE_CANOE),c->c.getTags().contains(CAMERA+player.getUUID())))camera.discard();
     }
     public static void interrupt(ServerPlayer player){
@@ -145,7 +145,7 @@ public final class PhoneCanoe {
     private static void sound(ServerPlayer player,SoundEvent sound,Vec3 at,float volume){player.connection.send(new ClientboundSoundPacket(Holder.direct(sound),SoundSource.AMBIENT,at.x,at.y,at.z,volume,1,player.getRandom().nextLong()));}
     public static void onServerTick(ServerTickEvent.Post event){
         var server=event.getServer();for(ServerLevel world:server.getAllLevels())for(ServerPlayer player:List.copyOf(world.players()))tick(player);
-        if(server.getTickCount()%20!=0)return;BlockPos base=IndianLakeRooms.base(server,LabyrinthPlace.PHONE_CANOE);ServerLevel level=server.getLevel(io.github.knaitoe.theoldesthouse.house.HouseDimensions.INTERIOR);
+        if(server.getTickCount()%20!=0)return;BlockPos base=IndianLakeRooms.base(server,LabyrinthPlace.PHONE_CANOE);ServerLevel level=server.getLevel(io.github.knaitoe.theoldesthouse.house.HouseDimensions.OUTSIDE);
         if(base==null||level==null||IndianLakeRooms.visitors(level,base,LabyrinthPlace.PHONE_CANOE).isEmpty())return;
         IndianLakeRooms.keepLoaded(level,base,LabyrinthPlace.PHONE_CANOE);LakeCanoeEntity canoe=stage(level,base);
         if(canoe!=null&&canoe.getPassengers().isEmpty())canoe.moveTo(Vec3.atBottomCenterOf(base.offset(BOAT)));

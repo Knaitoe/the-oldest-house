@@ -60,8 +60,9 @@ public final class LakeWitchEntity extends PathfinderMob {
     }
     @Override public boolean hurt(DamageSource source,float amount) { return !memory() && super.hurt(source,amount); }
     public boolean striking() { return entityData.get(STRIKING); }
-    public void shore(BlockPos base, int visit) { shoreBase = base.immutable(); this.visit = visit; }
+    public void shore(BlockPos base, int visit) { shoreBase = base.immutable(); this.visit = visit;setNoGravity(true); }
     public @Nullable BlockPos shoreBase() { return shoreBase; }
+    public void relocateLandscape(BlockPos delta){if(shoreBase!=null)shoreBase=shoreBase.offset(delta);if(memoryBase!=null)memoryBase=memoryBase.offset(delta);route.clear();routeGoal=null;}
     @Override public boolean removeWhenFarAway(double distance) { return false; }
     @Override public boolean canBeLeashed() { return false; }
 
@@ -72,11 +73,11 @@ public final class LakeWitchEntity extends PathfinderMob {
     }
     public static boolean walkable(Level level, BlockPos base, BlockPos feet) {
         int x = feet.getX() - base.getX(), z = feet.getZ() - base.getZ();
-        return feet.getY() == base.getY() && x >= -28 && x <= 28 && z >= -11 && z <= -1
+        return feet.getY() == base.getY() && x >= -28 && x <= 28 && z >= -63 && z <= -1
                 && !safeGround(level, feet)
                 && level.getBlockState(feet).getCollisionShape(level, feet).isEmpty()
                 && level.getBlockState(feet.above()).getCollisionShape(level, feet.above()).isEmpty()
-                && level.getBlockState(feet.below()).isFaceSturdy(level, feet.below(), Direction.UP);
+                && (level.getFluidState(feet.below()).is(FluidTags.WATER)||level.getBlockState(feet.below()).isFaceSturdy(level, feet.below(), Direction.UP));
     }
     public static boolean canAttack(LakeWitchEntity witch, ServerPlayer player) {
         return player.isAlive() && !player.isCreative() && !player.isSpectator() && witch.level() == player.level()
@@ -84,6 +85,7 @@ public final class LakeWitchEntity extends PathfinderMob {
                 && !safeGround(player.level(), player.blockPosition()) && !player.isInWaterOrBubble();
     }
     @Override public void move(MoverType type, Vec3 movement) {
+        if(shoreBase!=null&&!memory()){movement=new Vec3(movement.x,0,movement.z);setDeltaMovement(getDeltaMovement().x,0,getDeltaMovement().z);}
         if (!level().isClientSide() && shoreBase != null && (Math.abs(movement.x) > .00001 || Math.abs(movement.z) > .00001)) {
             double half = getBbWidth() / 2.0 + .015;
             boolean allowed = true;
@@ -104,7 +106,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         if (!walkable(level, base, start) || !walkable(level, base, goal)) return List.of();
         Map<BlockPos, BlockPos> previous = new HashMap<>(); ArrayDeque<BlockPos> open = new ArrayDeque<>();
         previous.put(start, start); open.add(start);
-        while (!open.isEmpty() && previous.size() <= 700) {
+        while (!open.isEmpty() && previous.size() <= 4000) {
             BlockPos at = open.removeFirst();
             if (at.equals(goal)) {
                 LinkedList<BlockPos> result = new LinkedList<>();
@@ -147,7 +149,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         }
         BlockPos goal = BlockPos.containing(target.getX(), shoreBase.getY(), target.getZ());
         if (!walkable(level, shoreBase, goal)) return;
-        if (tickCount % 20 == 0 || !goal.equals(routeGoal) || route.isEmpty()) {
+        if (tickCount % 20 == 0 || routeGoal==null || route.isEmpty()&&!goal.equals(routeGoal)) {
             route.clear(); routeGoal = goal;
             for (BlockPos step : shoreRoute(level, shoreBase, BlockPos.containing(getX(), shoreBase.getY(), getZ()), goal))
                 route.add(Vec3.atBottomCenterOf(step));
@@ -155,7 +157,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         if (!route.isEmpty()) {
             Vec3 step = route.peek().subtract(position()).multiply(1, 0, 1);
             if (step.lengthSqr() < .02) route.removeFirst();
-            else move(MoverType.SELF, step.normalize().scale(Math.min(.155, step.length())));
+            else move(MoverType.SELF, step.normalize().scale(Math.min(level.getFluidState(blockPosition().below()).is(FluidTags.WATER)?.32:.20, step.length())));
         }
         if (tickCount % 160 == 0 && distanceToSqr(target) < 400)
             level.playSound(null, blockPosition(), DrownedTownRegistry.WITCH_VOICE.get(), SoundSource.HOSTILE, .45F, .7F);
@@ -175,6 +177,7 @@ public final class LakeWitchEntity extends PathfinderMob {
     @Override public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag); shoreBase = tag.contains("ShoreBase") ? BlockPos.of(tag.getLong("ShoreBase")) : null;
         visit = tag.getInt("TownVisit"); cooldown = 30; cancelStrike(); route.clear();
+        if(shoreBase!=null)setNoGravity(true);
         if(tag.hasUUID("MemoryOwner")){recollection(tag.getUUID("MemoryOwner"),BlockPos.of(tag.getLong("MemoryBase")));memoryPhase(tag.getInt("MemoryPhase"));setNoGravity(memoryPhase()==1||memoryPhase()==3);}
     }
 }

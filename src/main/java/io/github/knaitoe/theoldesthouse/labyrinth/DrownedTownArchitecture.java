@@ -114,9 +114,9 @@ public final class DrownedTownArchitecture {
             level.setBlock(base.offset(x, -11, z + 1), LabyrinthBuilder.stairs(Blocks.SPRUCE_STAIRS, Direction.SOUTH).setValue(StairBlock.WATERLOGGED, true), F);
         }
         level.setBlock(base.offset(-14, -9, -34), Blocks.GREEN_CONCRETE.defaultBlockState(), F);
-        for (BlockPos paper : DrownedTown.PAPERS) level.setBlock(base.offset(paper), LabyrinthBuilder.barrel(Direction.UP), F);
-        level.setBlock(base.offset(DrownedTown.KEY_DESK), Blocks.POLISHED_ANDESITE.defaultBlockState(), F);
-        woodenDoor(level, base.offset(DrownedTown.SCHOOL_DOOR), Direction.SOUTH);
+        for (BlockPos paper : new BlockPos[]{new BlockPos(-23,-10,-33),new BlockPos(-8,-10,-28),new BlockPos(-19,-10,-24)}) level.setBlock(base.offset(paper), LabyrinthBuilder.barrel(Direction.UP), F);
+        level.setBlock(base.offset(-14,-10,-32), Blocks.POLISHED_ANDESITE.defaultBlockState(), F);
+        woodenDoor(level, base.offset(-15,-11,-22), Direction.SOUTH);
         for (int x : new int[]{-23, -20, -11, -8}) for (int y = -9; y <= -8; y++)
             level.setBlock(base.offset(x, y, -22), Blocks.GLASS.defaultBlockState(), F);
         sign(level, base.offset(-15, -8, -22), "INDIAN LAKE", "SCHOOL", "FILM STUDIES", "");

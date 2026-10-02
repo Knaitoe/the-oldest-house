@@ -45,7 +45,13 @@ public final class MarginaliaTests {
             var house=new HouseSavedData();house.markSpawned(origin);server.overworld().getDataStorage().set("the_oldest_house",house);
             var data=new LabyrinthData();data.setBuilt(LabyrinthBuilder.VERSION,origin);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);
             base=LabyrinthPlaces.base(origin,LabyrinthPlace.JUNCTION);LabyrinthBuilder.buildJunction(level,base);
-            HouseFurnishings.decorate(level,base,LabyrinthPlace.JUNCTION);IndianLakeRooms.keepLoaded(level,base,LabyrinthPlace.JUNCTION);
+            HouseFurnishings.decorate(level,base,LabyrinthPlace.JUNCTION);
+            // Serial-reader fixtures intentionally provide each thread; production density is tested separately.
+            for(var thread:HouseMarginalia.Thread.values()){
+                var at=surface(thread);level.setBlock(at.below(),HouseBlocks.HOUSEHOLD_FURNITURE.get().defaultBlockState().setValue(HouseholdFurnitureBlock.KIND,HouseholdFurnitureBlock.Kind.WALNUT_DESK),LabyrinthBuilder.flags());
+                level.setBlock(at,HouseBlocks.NOTE_SURFACE.get().defaultBlockState().setValue(NoteSurfaceBlock.THREAD,thread),LabyrinthBuilder.flags());
+            }
+            IndianLakeRooms.keepLoaded(level,base,LabyrinthPlace.JUNCTION);
         }
         LabyrinthData data(){return LabyrinthData.get(level.getServer());}
         ServerPlayer player() {var p=h.makeMockServerPlayerInLevel();p.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);

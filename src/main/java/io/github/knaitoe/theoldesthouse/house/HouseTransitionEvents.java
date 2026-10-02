@@ -88,6 +88,7 @@ public final class HouseTransitionEvents {
                 && (io.github.knaitoe.theoldesthouse.labyrinth.FinaleController.tickPlayer(player, origin) || HouseBetweenRoom.tickPocket(player, data, origin) || LabyrinthDoors.tickPlayer(player, origin))) {
             return;
         }
+        if(dimension.equals(HouseDimensions.OUTSIDE)&&LabyrinthDoors.tickPlayer(player,origin))return;
 
         if (dimension.equals(HouseDimensions.INTERIOR) && !isValidHouseInteriorSpace(data, origin, player, relX, relY, relZ)) {
             beginPendingTransition(player, classify(relX, relY, relZ), Level.OVERWORLD, HouseLayout.doorAt(relX, relY, relZ), null, null);
@@ -692,4 +693,3 @@ public final class HouseTransitionEvents {
         }
     }
 }
-

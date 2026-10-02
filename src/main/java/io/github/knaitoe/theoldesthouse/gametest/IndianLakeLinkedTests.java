@@ -66,7 +66,7 @@ public final class IndianLakeLinkedTests {
         final MinecraftServer server;final ServerLevel level;final HouseSavedData oldHouse;final LabyrinthData oldData;
         final BlockPos origin,base;final LabyrinthPlace place;final List<ServerPlayer> players=new ArrayList<>();
         Fixture(GameTestHelper h,BlockPos origin,LabyrinthPlace place){
-            server=h.getLevel().getServer();level=HouseTestLevel.get(server);this.origin=origin;this.place=place;oldHouse=HouseSavedData.get(server);oldData=LabyrinthData.get(server);
+            server=h.getLevel().getServer();level=HouseTestLevel.get(server,NovelRooms.dimension(place));this.origin=origin;this.place=place;oldHouse=HouseSavedData.get(server);oldData=LabyrinthData.get(server);
             var house=new HouseSavedData();house.markSpawned(origin);server.overworld().getDataStorage().set("the_oldest_house",house);
             var data=new LabyrinthData();data.setBuilt(LabyrinthBuilder.VERSION,origin);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);
             base=LabyrinthPlaces.base(origin,place);
@@ -137,7 +137,7 @@ public final class IndianLakeLinkedTests {
         player.moveTo(Vec3.atBottomCenterOf(f.base.offset(42,0,1)));peer.moveTo(Vec3.atBottomCenterOf(f.base.offset(42,0,3)));
         player.moveTo(Vec3.atBottomCenterOf(f.base.offset(0,0,-40)));PreservedCave.onArrive(player,LabyrinthPlace.PRESERVED_CAVE);canoe.interact(player,InteractionHand.MAIN_HAND);
         // Exercise the actual return doorway and its depart hook.
-        data.pushReturn(player.getUUID(),new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,Vec3.atBottomCenterOf(f.base.offset(42,0,1)),0,true));
+        data.pushReturn(player.getUUID(),new LabyrinthData.Waypoint(HouseDimensions.OUTSIDE,Vec3.atBottomCenterOf(f.base.offset(42,0,1)),0,true));
         player.moveTo(Vec3.atBottomCenterOf(f.base.offset(0,0,-3)));LabyrinthDoors.tickPlayer(player,f.origin);
         player.moveTo(Vec3.atBottomCenterOf(f.base.offset(0,0,3)));LabyrinthDoors.tickPlayer(player,f.origin);
         h.assertTrue(WitnessAccount.has(data,player.getUUID(),WitnessAccount.Story.PRESERVED_CAVE)&&data.isCompleted(PreservedCave.ID)&&data.returnDepth(player.getUUID())==0,"walking back completes the witnessed aftermath and consumes its real return path");
@@ -148,7 +148,7 @@ public final class IndianLakeLinkedTests {
         throwing=new Fixture(h,new BlockPos(7200,80,7200),LabyrinthPlace.SHALLOWS);Fixture f=throwing;LabyrinthData data=LabyrinthData.get(f.server);
         ServerPlayer owner=f.player("named_thrower",f.base.offset(2,0,-7)),peer=f.player("unhunted_peer",f.base.offset(4,0,-7));
         // Even a manually placed debug door must respect the hunt prerequisite.
-        var gate=new LabyrinthData.Door("hunt_gate",HouseDimensions.INTERIOR,f.base.offset(42,0,1),Direction.SOUTH,"place:shallows",true);data.putDoor(gate);
+        var gate=new LabyrinthData.Door("hunt_gate",HouseDimensions.OUTSIDE,f.base.offset(42,0,1),Direction.SOUTH,"place:shallows",true);data.putDoor(gate);
         Vec3 before=peer.position();LabyrinthDoors.use(peer,gate);h.assertTrue(peer.position().equals(before)&&data.returnDepth(peer.getUUID())==0,"command doors cannot skip the personal hunt");
         IndianLakeProgress.hunted(data,owner.getUUID());Shallows.onArrive(owner,LabyrinthPlace.SHALLOWS);LakeWitchEntity girl=Shallows.actor(owner);
         h.assertTrue(girl!=null&&!Shallows.lift(peer,girl)&&!IndianLakeProgress.hasThrown(data,owner.getUUID()),"entering does not count a throw, and peers cannot lift this owner's actor");

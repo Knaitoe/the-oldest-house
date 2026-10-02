@@ -126,7 +126,7 @@ public final class LabyrinthPlaces {
         return new BlockPos(
                 origin.getX() + HouseLayout.CENTER_X + column(origin, place.slot()) * COLUMN_SPACING,
                 slotBottom(origin, place.slot()) + (place == LabyrinthPlace.DROWNED_TOWN || place == LabyrinthPlace.BARN_WELL ? 14 : FLOOR_IN_SLOT),
-                origin.getZ() + HouseLayout.CENTER_Z - (NovelVignettes.isNovel(place) && NovelRooms.outside(place) ? 4096 + place.slot()*192 : 0)
+                origin.getZ() + HouseLayout.CENTER_Z - (NovelRooms.outside(place) ? 4096 + place.slot()*192 : 0)
         );
     }
 

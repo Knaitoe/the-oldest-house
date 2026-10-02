@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.Mirror;
@@ -14,6 +15,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /** Paper lying on an existing surface; its native book menu belongs to the individual reader. */
@@ -27,6 +29,13 @@ public final class NoteSurfaceBlock extends HorizontalDirectionalBlock {
     @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return defaultBlockState().setValue(FACING,context.getHorizontalDirection().getOpposite()); }
     @Override protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) { return PAPER; }
     @Override protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) { return Shapes.empty(); }
+    /** The whole sheet needs a flat top at block height, not just a non-air stool or slab. */
+    public static boolean supported(BlockGetter level, BlockPos pos) {
+        BlockPos below=pos.below();var shape=level.getBlockState(below).getCollisionShape(level,below);
+        if(shape.isEmpty() || shape.max(Direction.Axis.Y)<1) return false;
+        return !Shapes.joinIsNotEmpty(Block.box(2,0,2,14,16,14),shape.getFaceShape(Direction.UP),BooleanOp.ONLY_FIRST);
+    }
+    @Override protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) { return supported(level,pos); }
     @Override protected BlockState rotate(BlockState state, Rotation rotation) { return state.setValue(FACING,rotation.rotate(state.getValue(FACING))); }
     @Override protected BlockState mirror(BlockState state, Mirror mirror) { return rotate(state,mirror.getRotation(state.getValue(FACING))); }
     public static BlockState state(HouseMarginalia.Thread thread, Direction facing) { return HouseBlocks.NOTE_SURFACE.get().defaultBlockState().setValue(THREAD,thread).setValue(FACING,facing); }

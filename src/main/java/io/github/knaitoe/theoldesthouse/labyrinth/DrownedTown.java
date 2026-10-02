@@ -36,9 +36,9 @@ public final class DrownedTown {
     public static final String ID = "drowned_town";
     public static final int FINAL_VISIT = 2;
     public static final BlockPos FURNACE = new BlockPos(13, 0, -8), SUPPLIES = new BlockPos(14, 0, -8);
-    public static final BlockPos SCHOOL_DOOR = new BlockPos(-15, -11, -22);
-    public static final BlockPos[] PAPERS = {new BlockPos(-23, -10, -33), new BlockPos(-8, -10, -28), new BlockPos(-19, -10, -24)};
-    public static final BlockPos KEY_DESK = new BlockPos(-14, -10, -32);
+    public static final BlockPos SCHOOL_DOOR = new BlockPos(-15, 0, -22);
+    public static final BlockPos[] PAPERS = {new BlockPos(-23, 1, -33), new BlockPos(-8, 1, -28), new BlockPos(-19, 1, -24)};
+    public static final BlockPos KEY_DESK = new BlockPos(-14, 1, -32);
     public static final BlockPos CHURCH_DOOR = new BlockPos(15, -11, -40), ROOF_HATCH = new BlockPos(15, -4, -43);
     private static final String BODY = "the_oldest_house_indian_lake_body";
     private static final Map<UUID, BlockPos> OPEN_FURNACES = new HashMap<>();
@@ -62,6 +62,7 @@ public final class DrownedTown {
 
     public static void build(MinecraftServer server, ServerLevel level, BlockPos base) {
         DrownedTownArchitecture.build(level, base);
+        LakeLandscape.liftSchool(level,base);LakeLandscape.dress(level,base,LabyrinthPlace.DROWNED_TOWN);
         LabyrinthData data = LabyrinthData.get(server);
         CompoundTag state = data.state(ID);
         // First construction stocks finite native inventories. Ordinary arrivals never refill them.
@@ -81,10 +82,10 @@ public final class DrownedTown {
 
     public static void onArrive(ServerPlayer player, LabyrinthPlace place) {
         if (place != LabyrinthPlace.DROWNED_TOWN) return;
-        ServerLevel level = player.server.getLevel(HouseDimensions.INTERIOR); BlockPos base = base(player.server);
+        ServerLevel level = player.server.getLevel(HouseDimensions.OUTSIDE); BlockPos base = base(player.server);
         if (level == null || base == null) return;
         keepLoaded(level, base);
-        if (visitors(level, base).stream().anyMatch(other -> !other.getUUID().equals(player.getUUID()))) return;
+        if (visitors(level, base).stream().anyMatch(other -> !other.getUUID().equals(player.getUUID()))) {guidance(player);return;}
         LabyrinthData data = LabyrinthData.get(player.server); CompoundTag state = data.state(ID);
         int next = nextVisit(state.getInt("Visit"), state.getBoolean("BeatDone"));
         if (next != state.getInt("Visit")) {
@@ -94,10 +95,14 @@ public final class DrownedTown {
         }
         stage(level, base, data);
         player.displayClientMessage(Component.literal(data.isCompleted(ID) ? "The roof is open. The hymn carries over the lake."
-                : next == 1 ? "Water laps against the bank. A furnace waits on the bare dirt."
-                : "The school has remembered something. The voice beneath the steeple is still singing."), false);
+                : next == 1 ? "The school is left along the street. Find its three damp essays and dry them at the shore furnace; then leave and return."
+                : "Return to the school for the church key. The steeple is across the lake; open its door, then release a breath beneath the roof hatch."), false);
     }
 
+    public static void guidance(ServerPlayer p){
+        var state=LabyrinthData.get(p.server).state(ID);int mask=state.getInt("DryMask");
+        p.displayClientMessage(Component.literal(state.getBoolean("RoofOpened")?"The church roof is open. Follow the hymn beneath its steeple.":state.getInt("Visit")<2?"School: left of the street. Dry its three damp essays at the beach furnace ("+Integer.bitCount(mask)+"/3); then leave and return.":state.getBoolean("ChurchUnlocked")?"In the drowned church, release a breath directly beneath the roof hatch.":"The church key waits in the school. The steeple is across the lake."),false);
+    }
     /** In-place changes only: player doors, drops, furnace contents and depleted desks survive visits/restarts. */
     public static void stage(ServerLevel level, BlockPos base, LabyrinthData data) {
         CompoundTag state = data.state(ID);
@@ -128,13 +133,13 @@ public final class DrownedTown {
     private static void recordDrying(MinecraftServer server, int essay) {
         LabyrinthData data = LabyrinthData.get(server);
         if (dried(data, essay) && data.state(ID).getInt("DryMask") == 7) {
-            ServerLevel level = server.getLevel(HouseDimensions.INTERIOR); BlockPos base = base(server);
+            ServerLevel level = server.getLevel(HouseDimensions.OUTSIDE); BlockPos base = base(server);
             if (level != null && base != null) for (ServerPlayer player : visitors(level, base))
                 player.displayClientMessage(Component.literal("The last page dries. The school essay says to leave, and return."), false);
         }
     }
     public static void onSmelted(PlayerEvent.ItemSmeltedEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || !player.level().dimension().equals(HouseDimensions.INTERIOR)) return;
+        if (!(event.getEntity() instanceof ServerPlayer player) || !player.level().dimension().equals(HouseDimensions.OUTSIDE)) return;
         BlockPos base = base(player.server), opened = OPEN_FURNACES.get(player.getUUID());
         if (base != null && opened != null && opened.equals(base.offset(FURNACE)) && contains(base, player.position())
                 && player.containerMenu instanceof net.minecraft.world.inventory.FurnaceMenu)
@@ -144,7 +149,7 @@ public final class DrownedTown {
     /** The key is never consumed, and there is no native redstone shortcut into the authored gate. */
     public static boolean unlockChurch(ServerPlayer player, BlockPos at) {
         BlockPos base = base(player.server);
-        if (base == null || !player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)
+        if (base == null || !player.serverLevel().dimension().equals(HouseDimensions.OUTSIDE)
                 || (at.distManhattan(base.offset(CHURCH_DOOR)) > 1) || player.distanceToSqr(Vec3.atCenterOf(at)) > 36) return false;
         LabyrinthData data = LabyrinthData.get(player.server); CompoundTag state = data.state(ID);
         if (state.getInt("Visit") < 2 || state.getInt("DryMask") != 7) return false;
@@ -154,7 +159,7 @@ public final class DrownedTown {
     }
     public static boolean openRoof(ServerPlayer player, BlockPos at) {
         BlockPos base = base(player.server);
-        if (base == null || player.isSpectator() || !player.level().dimension().equals(HouseDimensions.INTERIOR)
+        if (base == null || player.isSpectator() || !player.level().dimension().equals(HouseDimensions.OUTSIDE)
                 || !at.equals(base.offset(ROOF_HATCH)) || player.distanceToSqr(Vec3.atCenterOf(at)) > 36) return false;
         LabyrinthData data = LabyrinthData.get(player.server); CompoundTag state = data.state(ID);
         if (state.getInt("Visit") < 2 || state.getInt("DryMask") != 7 || !state.getBoolean("ChurchUnlocked")) return false;
@@ -182,7 +187,7 @@ public final class DrownedTown {
 
     public static void onRightClick(PlayerInteractEvent.RightClickBlock event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || player.isSpectator() || event.getHand() != InteractionHand.MAIN_HAND
-                || !player.level().dimension().equals(HouseDimensions.INTERIOR)) return;
+                || !player.level().dimension().equals(HouseDimensions.OUTSIDE)) return;
         BlockPos base = base(player.server); if (base == null || !contains(base, player.position())) return;
         BlockPos at = event.getPos();
         if (at.equals(base.offset(FURNACE))) { OPEN_FURNACES.put(player.getUUID(), at.immutable()); return; }
@@ -198,7 +203,7 @@ public final class DrownedTown {
 
     /** Portable air doors/soul sand work in the lake, away from the church and authored puzzle props. */
     public static boolean allowsPlacing(Level level, BlockPos pos, BlockState state) {
-        if (!(level instanceof ServerLevel serverLevel) || !level.dimension().equals(HouseDimensions.INTERIOR)) return false;
+        if (!(level instanceof ServerLevel serverLevel) || !level.dimension().equals(HouseDimensions.OUTSIDE)) return false;
         BlockPos base = base(serverLevel.getServer()); if (base == null) return false;
         BlockPos r = pos.subtract(base);
         if (r.getX() <= -28 || r.getX() >= 28 || r.getZ() < -62 || r.getZ() > -12 || r.getY() < -11 || r.getY() > -2) return false;
@@ -215,7 +220,7 @@ public final class DrownedTown {
         state.put("PlacedAirTools", placed); data.setState(ID, state);
     }
     public static boolean canBreak(ServerLevel level, BlockPos pos) {
-        if (!level.dimension().equals(HouseDimensions.INTERIOR)) return false;
+        if (!level.dimension().equals(HouseDimensions.OUTSIDE)) return false;
         String expected = LabyrinthData.get(level.getServer()).state(ID).getCompound("PlacedAirTools").getString(Long.toString(pos.asLong()));
         return expected.equals("door") && level.getBlockState(pos).getBlock() instanceof DoorBlock
                 || expected.equals("sand") && level.getBlockState(pos).is(Blocks.SOUL_SAND);
@@ -254,7 +259,7 @@ public final class DrownedTown {
     }
     public static void onServerTick(ServerTickEvent.Post event) {
         MinecraftServer server = event.getServer(); if (server.getTickCount() % 10 != 0) return;
-        ServerLevel level = server.getLevel(HouseDimensions.INTERIOR); BlockPos base = base(server);
+        ServerLevel level = server.getLevel(HouseDimensions.OUTSIDE); BlockPos base = base(server);
         LabyrinthData data = LabyrinthData.get(server);
         if (level == null || base == null || !data.state(ID).getBoolean("Built") || visitors(level, base).isEmpty()) return;
         if (server.getTickCount() % 20 == 0) keepLoaded(level, base);
@@ -269,7 +274,7 @@ public final class DrownedTown {
     }
 
     public static boolean reset(MinecraftServer server) {
-        BlockPos base = base(server); ServerLevel level = server.getLevel(HouseDimensions.INTERIOR);
+        BlockPos base = base(server); ServerLevel level = server.getLevel(HouseDimensions.OUTSIDE);
         if (base == null || level == null) return false;
         for (Entity actor : level.getEntitiesOfClass(Entity.class, bounds(base), e -> e instanceof LakeWitchEntity || e instanceof LakeCongregantEntity)) actor.discard();
         LabyrinthData data = LabyrinthData.get(server); data.setState(ID, new CompoundTag()); data.setCompleted(ID, false);

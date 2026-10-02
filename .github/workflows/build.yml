@@ -52,14 +52,17 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.25"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.26"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               for name in ('HouseHuman', 'HollowayCamp', 'HollowayVignette', 'HarriganAppearance'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
-              for name in ('holloway', 'harrigan', 'harrigan_dead', 'finale_witness'):
+              for name in ('holloway', 'harrigan', 'harrigan_dead', 'finale_witness', 'lake_witch', 'lake_witch_memory'):
                   from PIL import Image
                   from io import BytesIO
                   skin = Image.open(BytesIO(z.read(f'assets/the_oldest_house/textures/entity/{name}.png')))
                   assert skin.size == (64, 64) and skin.mode == 'RGBA'
+              static = Image.open(BytesIO(z.read('assets/the_oldest_house/textures/block/model_home_static.png')))
+              assert static.size == (32, 384)
+              assert json.loads(z.read('assets/the_oldest_house/textures/block/model_home_static.png.mcmeta'))['animation']['frametime'] == 2
               assert 'assets/the_oldest_house/sounds/vignette/heartbeat.ogg' in z.namelist()
               assert 'vignette.heartbeat' in json.loads(z.read('assets/the_oldest_house/sounds.json'))
               for name in ('assets/the_oldest_house/textures/entity/lake_witch.png',
@@ -209,6 +212,8 @@ jobs:
           test -s build/font-smoke/native-writing.png
           test -s build/font-smoke/npcs-passed.txt
           test -s build/font-smoke/native-npcs.png
+          test -s build/font-smoke/cast-passed.txt
+          test -s build/font-smoke/native-cast.png
 
       - name: Upload native writing proof
         if: always()

@@ -27,7 +27,7 @@ public final class IndianLakeRooms {
     }
     public static boolean inside(ServerPlayer player, LabyrinthPlace place) {
         BlockPos base = base(player.server, place);
-        return base != null && player.level().dimension().equals(HouseDimensions.INTERIOR)
+        return base != null && player.level().dimension().equals(NovelRooms.dimension(place))
                 && player.isAlive() && !player.isSpectator() && bounds(base, place).contains(player.position());
     }
     public static void keepLoaded(ServerLevel level, BlockPos base, LabyrinthPlace place) {

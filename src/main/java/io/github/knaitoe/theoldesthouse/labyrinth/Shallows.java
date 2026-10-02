@@ -45,7 +45,7 @@ public final class Shallows {
     public static @Nullable LakeWitchEntity actor(ServerPlayer player){
         CompoundTag record=personal(LabyrinthData.get(player.server),player.getUUID());
         if(!record.hasUUID("Actor"))return null;
-        ServerLevel level=player.server.getLevel(HouseDimensions.INTERIOR);if(level==null)return null;
+        ServerLevel level=player.server.getLevel(HouseDimensions.OUTSIDE);if(level==null)return null;
         Entity actor=level.getEntity(record.getUUID("Actor"));
         return actor instanceof LakeWitchEntity witch&&player.getUUID().equals(witch.memoryOwner())?witch:null;
     }
@@ -169,7 +169,7 @@ public final class Shallows {
         display.moveTo(Vec3.atCenterOf(at));display.addTag(WORDS);display.getPersistentData().putLong("Until",player.serverLevel().getGameTime()+120);player.serverLevel().addFreshEntity(display);
     }
     public static void onServerTick(ServerTickEvent.Post event){
-        if(event.getServer().getTickCount()%20!=0)return;ServerLevel level=event.getServer().getLevel(HouseDimensions.INTERIOR);if(level==null)return;
+        if(event.getServer().getTickCount()%20!=0)return;ServerLevel level=event.getServer().getLevel(HouseDimensions.OUTSIDE);if(level==null)return;
         BlockPos base=IndianLakeRooms.base(event.getServer(),LabyrinthPlace.SHALLOWS);
         if(base!=null){
             var visitors=IndianLakeRooms.visitors(level,base,LabyrinthPlace.SHALLOWS);
