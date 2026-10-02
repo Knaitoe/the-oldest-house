@@ -865,7 +865,12 @@ public final class MotherOfStrays {
                 owner.displayClientMessage(Component.literal(
                         "She stands above the well with the dog. There is still time to reach her or offer something loved.")
                         .withStyle(ChatFormatting.DARK_GRAY), false);
-            }else mother.getNavigation().moveTo(target.x,target.y,target.z,1.0D);
+            }else {
+                // Coordinate moveTo uses a one-block target radius and can stop beside the ledge.
+                // Request the actual block so reaching the final gallery spot starts its clock.
+                var path=mother.getNavigation().createPath(BlockPos.containing(target),0);
+                if(path!=null)mother.getNavigation().moveTo(path,1.0D);
+            }
             // Only physically reaching the gallery spends the final intervention window.
             return;
         }
