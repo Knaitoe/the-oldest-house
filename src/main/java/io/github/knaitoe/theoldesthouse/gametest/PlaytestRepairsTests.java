@@ -59,6 +59,7 @@ public final class PlaytestRepairsTests {
     private static HouseSavedData oldHouse;private static LabyrinthData oldData;private static MotherCollection oldMother;private static ServerPlayer owner;private static MotherEntity mother;private static MotherPekingese dog;private static BlockPos den;
     @AfterBatch(batch="mother_stairs") public static void cleanup(ServerLevel l){
         var server=l.getServer();if(owner!=null)server.getPlayerList().remove(owner);if(mother!=null)mother.discard();if(dog!=null)dog.discard();
+        if(den!=null){var scene=server.getLevel(HouseDimensions.INTERIOR);if(scene!=null)scene.getEntitiesOfClass(Entity.class,IndianLakeRooms.bounds(den,LabyrinthPlace.MOTHER_DEN),e->e instanceof MotherEntity||e instanceof TamableAnimal||e instanceof net.minecraft.world.entity.decoration.ItemFrame).forEach(Entity::discard);}
         if(oldHouse!=null){server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);server.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);}owner=null;mother=null;dog=null;den=null;
     }
     @GameTest(template="empty",batch="mother_stairs",timeoutTicks=750) public static void motherPhysicallyClimbsWhileCarryingTheSameDog(GameTestHelper h){
@@ -66,21 +67,48 @@ public final class PlaytestRepairsTests {
         var origin=new BlockPos(61000,80,61000);var house=new HouseSavedData();house.markSpawned(origin);server.overworld().getDataStorage().set("the_oldest_house",house);var data=new LabyrinthData();data.setBuilt(LabyrinthBuilder.VERSION,origin);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);var collection=new MotherCollection();server.overworld().getDataStorage().set("the_oldest_house_mother",collection);
         den=LabyrinthPlaces.base(origin,LabyrinthPlace.MOTHER_DEN);MotherOfStrays.build(server,l,den);IndianLakeRooms.keepLoaded(l,den,LabyrinthPlace.MOTHER_DEN);
         owner=h.makeMockServerPlayerInLevel();owner.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);owner.teleportTo(l,den.getX()+.5,den.getY(),den.getZ()-8.5,180,0);owner.hasChangedDimension();
-        mother=MotherRegistry.MOTHER.get().create(l);mother.moveTo(Vec3.atBottomCenterOf(den.offset(-5,0,-9)));mother.galleryStep(1);l.addFreshEntity(mother);
-        dog=MotherRegistry.PEKINGESE.get().create(l);dog.addTag("the_oldest_house_bandaged_dog");dog.moveTo(mother.position());l.addFreshEntity(dog);UUID id=dog.getUUID();mother.carryDog(dog);
-        collection.beginDogThreat(owner.getUUID());collection.advance(600,false,true);
-        // Any preexisting den keeper would own the script; keep this single native actor authoritative.
-        l.getEntitiesOfClass(MotherEntity.class,IndianLakeRooms.bounds(den,LabyrinthPlace.MOTHER_DEN),e->e!=mother).forEach(Entity::discard);
-        final double[] last={mother.getY()};final boolean[] halfway={false};
+        // Use the actual constructed keeper and dog after their native entity chunks have loaded.
+        final UUID[] id={null};final double[] last={den.getY()};final boolean[] halfway={false};
+        h.runAfterDelay(20,()->{
+            var keepers=l.getEntitiesOfClass(MotherEntity.class,IndianLakeRooms.bounds(den,LabyrinthPlace.MOTHER_DEN));var dogs=l.getEntitiesOfClass(MotherPekingese.class,IndianLakeRooms.bounds(den,LabyrinthPlace.MOTHER_DEN),e->e.getTags().contains("the_oldest_house_bandaged_dog"));
+            h.assertTrue(keepers.size()==1&&dogs.size()==1,"the native den has one keeper and one original bandaged dog");mother=keepers.getFirst();dog=dogs.getFirst();id[0]=dog.getUUID();last[0]=mother.getY();
+            h.assertTrue(MotherOfStrays.inDen(owner),"the actual owner is present in the den");collection.beginDogThreat(owner.getUUID());collection.advance(600,false,true);
+        });
         h.onEachTick(()->{
             IndianLakeRooms.keepLoaded(l,den,LabyrinthPlace.MOTHER_DEN);owner.setDeltaMovement(Vec3.ZERO);
+            if(mother==null)return;
             h.assertTrue(mother.getY()-last[0]<1.6,"the climb uses physical navigation rather than jumping to the gallery");last[0]=mother.getY();halfway[0]|=mother.getY()>den.getY()+3&&mother.getY()<den.getY()+8;
-            h.assertTrue(dog.getUUID().equals(id),"carrying keeps the original living dog's UUID");
+            h.assertTrue(dog.getUUID().equals(id[0]),"carrying keeps the original living dog's UUID");
         });
         h.succeedWhen(()->{
-            h.assertTrue(collection.dogAtLedge()&&mother.getY()>den.getY()+8.6,"the real Mother reaches the gallery before the intervention clock starts: "+mother.position());
+            h.assertTrue(mother!=null&&collection.dogAtLedge()&&mother.getY()>den.getY()+8.6,"the real Mother reaches the gallery before the intervention clock starts: "+(mother==null?"loading":mother.position()+" step="+mother.galleryStep()+" ticks="+collection.dogThreatTicks()+" active="+MotherOfStrays.activeDogThreat(l)+" path="+mother.getNavigation().getPath()));
             h.assertTrue(halfway[0],"the actor passes through intermediate stair heights");h.assertTrue(dog.position().distanceToSqr(mother.position())<3,"the same dog follows her hands continuously");
             h.assertTrue(collection.dogLedgeTicks()<40,"navigation does not spend the final rescue window");
+        });
+    }
+    private static MigrationFixture migration;
+    private static final class MigrationFixture implements AutoCloseable {
+        final net.minecraft.server.MinecraftServer server;final HouseSavedData house;final LabyrinthData data;final ServerLevel from,to;final BlockPos origin,old,dest;ServerPlayer player;final List<UUID> actors=new ArrayList<>();
+        MigrationFixture(GameTestHelper h){
+            server=h.getLevel().getServer();house=HouseSavedData.get(server);data=LabyrinthData.get(server);from=HouseTestLevel.get(server);to=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);origin=new BlockPos(65000,80,65000);
+            var nextHouse=new HouseSavedData();nextHouse.markSpawned(origin);server.overworld().getDataStorage().set("the_oldest_house",nextHouse);var nextData=new LabyrinthData();nextData.setBuilt(22,origin);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",nextData);
+            dest=LabyrinthPlaces.base(origin,LabyrinthPlace.DROWNED_TOWN);old=dest.offset(0,0,4096+LabyrinthPlace.DROWNED_TOWN.slot()*192);IndianLakeRooms.keepLoaded(from,old,LabyrinthPlace.DROWNED_TOWN);IndianLakeRooms.keepLoaded(to,dest,LabyrinthPlace.DROWNED_TOWN);
+        }
+        public void close(){if(player!=null)server.getPlayerList().remove(player);for(var level:List.of(from,to))for(UUID id:actors)if(level.getEntity(id)!=null)level.getEntity(id).discard();server.overworld().getDataStorage().set("the_oldest_house",house);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);LabyrinthBuilder.clearAll();LabyrinthDoors.clearAll();}
+    }
+    @AfterBatch(batch="lake_migration") public static void cleanMigration(ServerLevel l){if(migration!=null){migration.close();migration=null;}}
+    @GameTest(template="empty",batch="lake_migration",timeoutTicks=220) public static void legacyLakeMigrationKeepsOriginalsActorsAndPersonalReturns(GameTestHelper h){
+        migration=new MigrationFixture(h);var f=migration;var data=LabyrinthData.get(f.server);var deskAt=f.old.offset(-19,-10,-28);
+        f.from.setBlock(f.old.offset(0,-1,-3),Blocks.COARSE_DIRT.defaultBlockState(),3);f.from.setBlock(deskAt,Blocks.BARREL.defaultBlockState(),3);var desk=(net.minecraft.world.level.block.entity.BarrelBlockEntity)f.from.getBlockEntity(deskAt);var original=new ItemStack(Items.DIAMOND,3);original.set(DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("The remaining original"));desk.setItem(4,original);desk.setItem(0,ItemStack.EMPTY);
+        var resident=new net.minecraft.world.entity.decoration.ArmorStand(f.from,f.old.getX()-19.5,f.old.getY()-11,f.old.getZ()-29.5);resident.setNoGravity(true);f.from.addFreshEntity(resident);f.actors.add(resident.getUUID());
+        var witch=DrownedTownRegistry.LAKE_WITCH.get().create(f.from);witch.shore(f.old,3);witch.moveTo(Vec3.atBottomCenterOf(f.old.offset(23,0,-6)));f.from.addFreshEntity(witch);f.actors.add(witch.getUUID());
+        f.player=h.makeMockServerPlayerInLevel();f.player.gameMode.changeGameModeForPlayer(GameType.CREATIVE);var p=Vec3.atBottomCenterOf(f.old.offset(-18,-11,-29));f.player.teleportTo(f.from,p.x,p.y,p.z,180,0);data.pushReturn(f.player.getUUID(),new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,p,180,true));UUID absent=UUID.randomUUID();data.pushReturn(absent,new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,p,90,true));
+        h.succeedWhen(()->{
+            h.assertTrue(LakeLandscape.upgradeWorld(f.server,f.origin),"native old entity chunks finish loading before migration");var next=(net.minecraft.world.level.block.entity.BarrelBlockEntity)f.to.getBlockEntity(f.dest.offset(-19,1,-28));
+            h.assertTrue(next!=null&&next.getItem(0).isEmpty()&&ItemStack.isSameItemSameComponents(next.getItem(4),original)&&next.getItem(4).getCount()==3,"the raised native desk keeps finite original contents without restocking");
+            var moved=f.to.getEntity(resident.getUUID());var hunter=f.to.getEntity(witch.getUUID());h.assertTrue(moved!=null&&Math.abs(moved.getY()-f.dest.getY())<.01,"the same resident is raised above the new dry ground");h.assertTrue(hunter instanceof LakeWitchEntity w&&w.shoreBase().equals(f.dest),"the same Witch retains her relocated hunting base");
+            h.assertTrue(f.player.serverLevel()==f.to&&Math.abs(f.player.getY()-f.dest.getY())<.01,"a present school visitor moves with the native room");var point=data.popReturn(f.player.getUUID());var offline=data.popReturn(absent);h.assertTrue(point!=null&&offline!=null&&point.dimension().equals(HouseDimensions.OUTSIDE)&&offline.dimension().equals(HouseDimensions.OUTSIDE)&&Math.abs(point.pos().y-f.dest.getY())<.01&&offline.yaw()==90&&offline.door(),"both present and absent players retain translated personal return waypoints");
+            h.assertTrue(f.from.getBlockState(deskAt).isAir(),"the old original is removed only after its new copy is preserved");
         });
     }
 }

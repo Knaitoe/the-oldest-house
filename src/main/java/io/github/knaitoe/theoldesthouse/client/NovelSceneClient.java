@@ -17,9 +17,9 @@ public final class NovelSceneClient {
     public static void accept(NovelScenePayload p){mode=p.mode();lease=60;elapsed=p.elapsed();caption=p.caption();captionTicks=p.captionTicks();shake=Math.max(0,Math.min(1,p.shake()));}
     private static boolean active(){var mc=Minecraft.getInstance();return lease>0&&mode>0&&mc.player!=null&&mc.player.isAlive()&&!mc.player.isSpectator()&&mc.level!=null&&HouseDimensions.isHouseDimension(mc.level.dimension());}
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){if(lease>0)lease--;if(captionTicks>0)captionTicks--;elapsed++;var mc=Minecraft.getInstance();
-        if(active()&&(mode==1||mode==3||mode==4||mode==5)){
+        if(active()&&(mode==1||mode==3||mode==4||mode==5||mode==7)){
             if(clockLevel!=mc.level){restoreClock();clockLevel=mc.level;previousTime=clockLevel.getDayTime();clockTicks=0;}clockTicks++;
-            clockLevel.setDayTime(mode==1?21000:mode==3?18000:mode==4?6000:18000+Math.min(6000,elapsed*6000L/3600));
+            clockLevel.setDayTime(mode==1?21000:mode==3||mode==7?18000:mode==4?6000:18000+Math.min(6000,elapsed*6000L/3600));
         }else restoreClock();if(!active()){mode=0;shake=0;caption="";}}
     private static void restoreClock(){if(clockLevel!=null){clockLevel.setDayTime(previousTime+clockTicks);clockLevel=null;}}
     @SubscribeEvent public static void fog(ViewportEvent.ComputeFogColor e){if(!active())return;if(mode==5){e.setRed(.16F);e.setGreen(.12F);e.setBlue(.21F);}else if(mode==1||mode==3){e.setRed(.035F);e.setGreen(.05F);e.setBlue(.073F);}else if(mode==4){e.setRed(.76F);e.setGreen(.67F);e.setBlue(.46F);}else if(mode>=10){e.setRed(.065F);e.setGreen(.059F);e.setBlue(.05F);}}

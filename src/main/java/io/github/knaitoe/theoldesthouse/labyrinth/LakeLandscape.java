@@ -18,6 +18,7 @@ import net.minecraft.world.phys.*;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /** A dry lakeside town and real outdoor memories. Migrations copy native contents, never stock rewards. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
@@ -105,6 +106,12 @@ public final class LakeLandscape {
         for(int y=3;y<=8;y++)for(int dx=-2;dx<=2;dx++)for(int dz=-2;dz<=2;dz++)if(Math.abs(dx)+Math.abs(dz)<=8-y)
             l.setBlock(b.offset(x+dx,y,z+dz),Blocks.SPRUCE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true),F);
     }
+    private static Vec3 relocated(LabyrinthPlace site,BlockPos old,BlockPos dest,Vec3 position){
+        var delta=dest.subtract(old);var relative=position.subtract(Vec3.atLowerCornerOf(old));
+        // The dry western town was raised with its school. Residents and saved arrivals must rise too.
+        boolean raised=site==LabyrinthPlace.DROWNED_TOWN&&relative.x>=-28&&relative.x<=3&&relative.z>=-63&&relative.z<=-12&&relative.y>=-12&&relative.y<0;
+        return position.add(delta.getX(),delta.getY()+(raised?11:0),delta.getZ());
+    }
     public static boolean upgradeWorld(MinecraftServer server,BlockPos origin){
         var data=LabyrinthData.get(server);if(data.builtVersion()<14||data.builtVersion()>=23||!origin.equals(data.builtOrigin()))return true;
         var from=server.getLevel(HouseDimensions.INTERIOR);var to=server.getLevel(HouseDimensions.OUTSIDE);if(from==null||to==null)return false;
@@ -133,11 +140,11 @@ public final class LakeLandscape {
             paste(to,cells,delta,false);
             if(site==LabyrinthPlace.DROWNED_TOWN)liftSchool(to,dest);
             dress(to,dest,site);LabyrinthBuilder.registerDoors(data,site,dest);
-            data.remapReturns(w->w.dimension().equals(HouseDimensions.INTERIOR)&&IndianLakeRooms.bounds(old,site).contains(w.pos())?new LabyrinthData.Waypoint(HouseDimensions.OUTSIDE,w.pos().add(delta.getX(),delta.getY(),delta.getZ()),w.yaw(),w.door()):w);
+            data.remapReturns(w->w.dimension().equals(HouseDimensions.INTERIOR)&&IndianLakeRooms.bounds(old,site).contains(w.pos())?new LabyrinthData.Waypoint(HouseDimensions.OUTSIDE,relocated(site,old,dest,w.pos()),w.yaw(),w.door()):w);
             List<Entity> roots=new ArrayList<>();for(Entity e:from.getAllEntities())if(!e.isPassenger()&&IndianLakeRooms.bounds(old,site).contains(e.position()))roots.add(e);
             for(Entity e:roots){
                 if(e instanceof LakeWitchEntity witch)witch.relocateLandscape(delta);
-                e.changeDimension(new DimensionTransition(to,e.position().add(delta.getX(),delta.getY(),delta.getZ()),e.getDeltaMovement(),e.getYRot(),e.getXRot(),DimensionTransition.DO_NOTHING));
+                e.changeDimension(new DimensionTransition(to,relocated(site,old,dest,e.position()),e.getDeltaMovement(),e.getYRot(),e.getXRot(),DimensionTransition.DO_NOTHING));
             }
             // Clear source only after preserving native inventories and actors in the destination.
             for(Cell cell:cells)from.setBlock(cell.position(),Blocks.AIR.defaultBlockState(),F);
@@ -149,7 +156,13 @@ public final class LakeLandscape {
         if(!(event.getEntity() instanceof ServerPlayer p)||!p.level().dimension().equals(HouseDimensions.INTERIOR))return;
         var origin=HouseSavedData.get(p.server).houseOrigin();if(origin==null)return;var state=LabyrinthData.get(p.server).state("lake_landscape_0426");
         for(var site:SITES){var b=LabyrinthPlaces.base(origin,site);var old=b.offset(0,0,4096+site.slot()*192);if(state.getBoolean(site.id())&&IndianLakeRooms.bounds(old,site).contains(p.position())){
-            var dest=p.server.getLevel(HouseDimensions.OUTSIDE);if(dest!=null)p.changeDimension(new DimensionTransition(dest,p.position().add(0,0,b.getZ()-old.getZ()),p.getDeltaMovement(),p.getYRot(),p.getXRot(),DimensionTransition.DO_NOTHING));return;
+            var dest=p.server.getLevel(HouseDimensions.OUTSIDE);if(dest!=null)p.changeDimension(new DimensionTransition(dest,relocated(site,old,b,p.position()),p.getDeltaMovement(),p.getYRot(),p.getXRot(),DimensionTransition.DO_NOTHING));return;
         }}
+    }
+    @SubscribeEvent public static void night(ServerTickEvent.Post event){
+        if(event.getServer().getTickCount()%20!=0)return;
+        for(ServerPlayer p:event.getServer().getPlayerList().getPlayers())for(var site:SITES)if(IndianLakeRooms.inside(p,site)){
+            io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.NovelScenePayload(7,0,"",0,0));break;
+        }
     }
 }

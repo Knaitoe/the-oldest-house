@@ -764,10 +764,16 @@ public final class LabyrinthDoors {
         if (LabyrinthData.get(server).doorAt(level.dimension(), pos) != null) {
             return true;
         }
-        if (!level.dimension().equals(HouseDimensions.INTERIOR)) {
+        BlockPos origin = HouseSavedData.get(server).houseOrigin();
+        if (origin == null) return false;
+        if (level.dimension().equals(HouseDimensions.OUTSIDE)) {
+            for (LabyrinthPlace place : LabyrinthPlace.values()) if (NovelRooms.outside(place)) {
+                BlockPos base=LabyrinthPlaces.base(origin, place);
+                if (base!=null && IndianLakeRooms.bounds(base, place).contains(Vec3.atCenterOf(pos))) return true;
+            }
             return false;
         }
-        BlockPos origin = HouseSavedData.get(server).houseOrigin();
+        if (!level.dimension().equals(HouseDimensions.INTERIOR)) return false;
         return origin != null && (LabyrinthPlaces.isInStack(origin, pos) || FinaleArchitecture.contains(origin, pos));
     }
 
