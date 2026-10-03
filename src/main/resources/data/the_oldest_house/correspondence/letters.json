@@ -1007,7 +1007,7 @@
     "style": "KAREN",
     "chain": "A",
     "installment": 5,
-    "depth": 20,
+    "depth": 16,
     "surface": "CALLS",
     "text": "Someone has written another name across this envelope.\n\nIf it is yours, fold the letter back up. I loved a particular, aggravating person. You do not become him because you are lonely.\n\nThere is a letter for you somewhere. This one cost me too much to give away."
   },
@@ -1018,7 +1018,7 @@
     "style": "PELAFINA",
     "chain": "B",
     "installment": 5,
-    "depth": 20,
+    "depth": 16,
     "surface": "CALLS",
     "text": "I called a visitor by your name. She corrected me very gently, which made it worse.\n\nShe came back today and read to me. Her name is Helen. I wrote it here so I could greet her properly.\n\nWe had a good afternoon. I still looked at the door whenever someone passed."
   },
@@ -1029,7 +1029,7 @@
     "style": "WILL",
     "chain": "C",
     "installment": 5,
-    "depth": 20,
+    "depth": 16,
     "surface": "ROOM",
     "text": "I wrote the six words again on a clean sheet and put it with the drawing. I nearly added an account of how sorry I am.\n\nI took that page out. The drawing and his sentence are in the envelope. I will leave them at your door on Friday. You can decide whether to open it."
   },
@@ -1040,7 +1040,7 @@
     "style": "ZAMPANO",
     "chain": "D",
     "installment": 5,
-    "depth": 20,
+    "depth": 16,
     "surface": "HOUSEKEEPING",
     "text": "I wrote you a good reference. Every word was true. It took fifteen minutes.\n\nI have spent the evening trying to forgive you for making it so easy."
   },
@@ -1051,7 +1051,7 @@
     "style": "KAREN",
     "chain": "E",
     "installment": 5,
-    "depth": 20,
+    "depth": 16,
     "surface": "CALLS",
     "text": "I gave your coat to the man downstairs. It fits him badly. He wears it anyway.\n\nI kept the shopping list in the pocket. You had written cherries twice.\n\nToday I bought enough for one. I ate them standing at the sink. They were good."
   },
@@ -1062,7 +1062,7 @@
     "style": "ZAMPANO",
     "chain": "F",
     "installment": 5,
-    "depth": 20,
+    "depth": 16,
     "surface": "HOUSEKEEPING",
     "text": "SIGNING OUT.\n\nRelief worker's name required. I cannot leave the line blank.\n\nMartin says he never worked here. The office says my position was discontinued in March. There is a fresh line beneath mine, with today's date.\n\nIf you sign it, please tell Maren I went home."
   },
@@ -1073,7 +1073,7 @@
     "style": "WILL",
     "chain": "G",
     "installment": 5,
-    "depth": 20,
+    "depth": 16,
     "surface": "ROOM",
     "text": "There is one box left in the attic. I could manage it. I am asking you anyway.\n\nSaturday, before lunch. Bring bread. The cupboard is empty and I am tired of arranging visits as though nobody needs to eat."
   },
@@ -1084,7 +1084,7 @@
     "style": "KAREN",
     "chain": "H",
     "installment": 5,
-    "depth": 20,
+    "depth": 16,
     "surface": "POEMS",
     "text": "Sal, I have put the bench where the tree will shade it in a few years. You say that is optimistic. I say somebody will want to sit down.\n\nIf a stranger finds this first: the plums are for anyone. Wait until they give a little under your thumb. They stain. There is no dignified way to eat them. Sit down anyway."
   },
@@ -1095,7 +1095,7 @@
     "style": "KAREN",
     "chain": "I",
     "installment": 5,
-    "depth": 20,
+    "depth": 16,
     "surface": "HOUSEKEEPING",
     "text": "Leave, then. I will put your name beneath UNGRATEFUL and make the next letter sound welcoming.\n\nThe next person will ask what happened to you. I will say I did everything I could.\n\nI have had a great deal of practice saying that."
   },
@@ -1106,7 +1106,7 @@
     "style": "WILL",
     "chain": "J",
     "installment": 5,
-    "depth": 20,
+    "depth": 16,
     "surface": "POEMS",
     "text": "I could say I hope you find someone else. I do not.\n\nI hope every room feels occupied before you enter it. I hope every laugh sounds like the end of a conversation you were too late to hear.\n\nI hope you spend the rest of your life feeling you interrupted something."
   },
@@ -1117,7 +1117,7 @@
     "style": "WILL",
     "chain": "K",
     "installment": 5,
-    "depth": 20,
+    "depth": 16,
     "surface": "ROOM",
     "text": "Read the sentence again: I held the latch until the knocking stopped.\n\nYou have given me somewhere else to put it. I have been writing to somebody who stayed long enough to hear the whole thing.\n\nI will remember you that way. You can spend as long as you like explaining what you meant by staying."
   },
@@ -1128,7 +1128,7 @@
     "style": "ZAMPANO",
     "chain": "L",
     "installment": 5,
-    "depth": 20,
+    "depth": 16,
     "surface": "ROOM",
     "text": "~~OWNER: {reader}~~\n\nNAME CLAIMED: {reader}\n\nThere. I have made the entry more accurate. You can dislike the correction as much as you like.\n\nYou have been very patient while I wrote about the missing thing. It will be interesting to see how patient you are when I write about you."
   },
@@ -1139,7 +1139,7 @@
     "style": "ZAMPANO",
     "chain": "M",
     "installment": 5,
-    "depth": 20,
+    "depth": 16,
     "surface": "HOUSEKEEPING",
     "text": "We have withdrawn the first letter's praise. It has encouraged an impression of yourself that the subsequent letters do very little to support.\n\nYou may keep the page if it comforts you. It should be enough to know how little was required to produce that comfort."
   },
@@ -1150,7 +1150,7 @@
     "style": "PELAFINA",
     "chain": "N",
     "installment": 5,
-    "depth": 20,
+    "depth": 16,
     "surface": "CALLS",
     "text": "My name is {reader}. I have been reading letters in a place I intended to leave.\n\nThat is enough for an introduction. You can cross it out. You will still know which name belongs there.\n\nYou have had quite a long time to say something else about yourself. I have made a start for you."
   },
