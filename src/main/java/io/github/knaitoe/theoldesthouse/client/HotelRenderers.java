@@ -36,8 +36,9 @@ public final class HotelRenderers {
     private static final class CastRenderer extends MobRenderer<HotelActor,CastModel>{CastRenderer(EntityRendererProvider.Context c){super(c,new CastModel(c.bakeLayer(CAST)),.2F);}@Override public ResourceLocation getTextureLocation(HotelActor a){return skin(a.role());}@Override protected boolean shouldShowName(HotelActor a){return false;}}
     public static final class HoseModel extends EntityModel<HotelHose>{private final ModelPart root;public HoseModel(ModelPart r){root=r;}
         public static LayerDefinition layer(){var m=new MeshDefinition();var r=m.getRoot();for(int i=0;i<16;i++)r.addOrReplaceChild("segment"+i,CubeListBuilder.create().texOffs(i==0?16:0,0).addBox(-1.9F,-1.8F,-1.6F,3.8F,3.6F,3.2F),PartPose.offset(0,22,i*2.6F-20));return LayerDefinition.create(m,32,16);}
-        public void pose(float time){for(int i=0;i<16;i++){var p=root.getChild("segment"+i);p.x=(float)Math.sin(time*.13-i*.38)*2.2F;p.yRot=(float)Math.cos(time*.13-i*.38)*.16F;}}
-        @Override public void setupAnim(HotelHose a,float walk,float amount,float time,float yaw,float pitch){pose(time);}
+        public void pose(float time){pose(time,2);}
+        public void pose(float time,int phase){for(int i=0;i<16;i++){var p=root.getChild("segment"+i);p.resetPose();if(phase==0){float angle=i*.65F,radius=3+i*.25F;p.x=(float)Math.sin(angle)*radius;p.z=(float)Math.cos(angle)*radius;p.yRot=angle;}else{p.x=(float)Math.sin((phase==2?time*.13:0)-i*.38)*2.2F;p.yRot=(float)Math.cos((phase==2?time*.13:0)-i*.38)*.16F;}}}
+        @Override public void setupAnim(HotelHose a,float walk,float amount,float time,float yaw,float pitch){pose(time,a.phase());}
         @Override public void renderToBuffer(PoseStack p,VertexConsumer out,int light,int overlay,int color){root.render(p,out,light,overlay,color);}}
     private static final class HoseRenderer extends MobRenderer<HotelHose,HoseModel>{HoseRenderer(EntityRendererProvider.Context c){super(c,new HoseModel(c.bakeLayer(HOSE)),.15F);}@Override public ResourceLocation getTextureLocation(HotelHose e){return rubber();}}
 }
