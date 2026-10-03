@@ -24,4 +24,15 @@ Four two-page installments trace enforced rest, monitored writing, anger and the
 
 Both complete personal resolutions are registered Witness sources: the séance is Connection and the nursery is Understanding. The pool is **nineteen**, requiring **fifteen** distinct resolutions across at least two kinds: ceil(0.75 × 19). Either séance route counts once. Existing evidence, completed endings and releases underway remain saved. There are still three endings. Ordinary retreat remains available.
 
-Slots 40 and 41 append to the existing layout. The update does not rebuild old rooms or reset their inventories, actors, original papers, staircase fire progression or companion orders. New surfaces and casts are built once. The required tests include present/offline time, native observers, actual props and menus, original custody, old-save preservation, the quota boundary and operator preparation. Client checks cover the custom cast/item/wallpaper models, all writing, both new architecture cutaways and every earlier proof. Native release evidence will be recorded after the complete run passes.
+Slots 40 and 41 append to the existing layout. The update does not rebuild old rooms or reset their inventories, actors, original papers, staircase fire progression or companion orders. New surfaces and casts are built once. The required tests include present/offline time, native observers, actual props and menus, original custody, old-save preservation, the quota boundary and operator preparation. Client checks cover the custom cast/item/wallpaper models, all writing, both new architecture cutaways and every earlier proof. Both landing connections are physically open and checked for the native player body. Wallpaper seams, wainscot, glass, bars and shutters lie on the actual shell walls rather than creating interior columns.
+
+
+## Verified release
+
+[Native build and verification](https://github.com/Knaitoe/the-oldest-house/actions/runs/37145689514), source `594eb1a8297ab3c96ee5b26dc7543c279fa512fa`, passed the complete required suite: **293 gameplay tests**, **289 native book pages** within Minecraft's 114-pixel / 14-line limits, **159 decoded PNG textures** with valid CRCs, all ten client proof checks and **twenty-four native architecture views**, including both new wings. The new tests exercise physical entrance clearance, present/away listening, actual distinct props and shutters, native observer exclusion, borrowed-book custody, a later explorer's independently examined aftermath, four personal visits, shared scars, finite originals, data reload and preservation of earlier inventories and Witness records.
+
+The runtime artifact is `the_oldest_house-0.4.34.jar`, **7,197,683 bytes**. Its ZIP entries and NeoForge mod metadata were checked after extracting it from the workflow archive. SHA-256:
+
+`4333b7e426d943dd4982948e02281830a3ac20ea72953f524f6c3fdaf7127bf7`
+
+Install this runtime JAR in the Minecraft Java 1.21.1 NeoForge mods folder on clients and server.

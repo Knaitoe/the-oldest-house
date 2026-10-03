@@ -6,9 +6,11 @@ Sep 28, 2026 · @Sean Price · revised in the repository to match decisions made
 
 ### 0.4.34: the sitting and the pattern
 
+Verified [native build](https://github.com/Knaitoe/the-oldest-house/actions/runs/37145689514), source `594eb1a8297ab3c96ee5b26dc7543c279fa512fa`: all 293 required gameplay tests, 289 native book pages, 159 PNG textures, ten client checks and twenty-four architecture views pass. Both classic entrances have explicit player clearance checks; shared outcomes and scars retain independent reader progress and finite original custody.
+
 The séance and wallpaper nursery are complete native wings at appended slots 40 and 41. Each has detailed structure and furnishings, custom native meshes/materials, original finite notes and a personal resolution. The four-person séance supports listening, actual candle/cupboard disturbances, bounded borrowed eyes, a shutter/door-gated photograph room and original source/album reading. The nursery pairs an animated creeping figure with four personally observed seams, axe peeling, successive visits and a final original reading. Native papers, actors, world scars, ownership and saved personal outcomes persist.
 
-Current build: 0.4.34, layout 30 / protocol 30. Nineteen eligible Witness sources require fifteen distinct resolutions across at least two kinds; three endings remain. All prior fire, companion, correspondence, geometry, identity and inventory repairs remain. Full native verification is in progress; see [the play instructions and evidence](CLASSICS_0_4_34.md).
+Current build: 0.4.34, layout 30 / protocol 30. Nineteen eligible Witness sources require fifteen distinct resolutions across at least two kinds; three endings remain. All prior fire, companion, correspondence, geometry, identity and inventory repairs remain. Full native verification passed; see [the play instructions and evidence](CLASSICS_0_4_34.md).
 
 ### 0.4.33: book-fed fire and companion responses
 

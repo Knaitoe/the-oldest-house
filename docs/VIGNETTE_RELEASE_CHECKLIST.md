@@ -11,7 +11,7 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 
 ## Current baseline: 0.4.34
 
-Nineteen eligible sources require **fifteen distinct personal resolutions** across at least two kinds. The game has three ending options.
+Nineteen eligible sources require **fifteen distinct personal resolutions** across at least two kinds. The game has three ending options. The [0.4.34 native run](https://github.com/Knaitoe/the-oldest-house/actions/runs/37145689514) passed all 293 required gameplay tests and the complete package/client proof suite.
 
 | Source | Kind |
 | --- | --- |
