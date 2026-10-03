@@ -192,6 +192,7 @@ public final class LabyrinthDoors {
 
     @Nullable
     private static LabyrinthPlace placeOf(MinecraftServer server, LabyrinthData.Door door) {
+        var copy=door.dimension.equals(HouseDimensions.OUTSIDE)?LiteraryCopies.placeAt(server,door.lower):null;if(copy!=null)return copy;
         BlockPos origin = HouseSavedData.get(server).houseOrigin();
         return origin == null || !io.github.knaitoe.theoldesthouse.house.HouseDimensions.isHouseDimension(door.dimension) ? null : LabyrinthPlaces.placeAt(origin, door.lower);
     }

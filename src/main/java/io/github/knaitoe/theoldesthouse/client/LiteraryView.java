@@ -16,6 +16,7 @@ public final class LiteraryView {
     private LiteraryView(){}
     public static void accept(LiteraryViewPayload payload){var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||mc.player.isSpectator())return;
         if(payload.models().contains("Models")){var list=payload.models().getList("Models",Tag.TAG_COMPOUND);if(list.size()<=3&&list.stream().allMatch(t->((CompoundTag)t).getIntArray("Blocks").length<=256)&&payload.models().hasUUID("Reader")&&payload.models().getUUID("Reader").equals(mc.player.getUUID())){models=payload.models().copy();modelWorld=mc.level;}}
+        if(payload.models().hasUUID("Reader")&&payload.models().getUUID("Reader").equals(mc.player.getUUID())&&payload.models().contains("Scar")){models=payload.models().copy();modelWorld=mc.level;}
         drowse=Math.max(0,Math.min(90,payload.drowse()));drowseLease=Math.max(0,Math.min(30,payload.ticks()));
         if(payload.actor()<0){if(payload.ticks()==0)restore();return;}var entity=mc.level.getEntity(payload.actor());if(!(entity instanceof LiteraryActor actor)||actor.role()!=LiteraryActor.CAMERA||actor.owner().isEmpty()||!actor.owner().get().equals(mc.player.getUUID()))return;restore();lease=Math.max(0,Math.min(60,payload.ticks()));cameraWorld=mc.level;mc.setCameraEntity(actor);
     }
