@@ -54,7 +54,7 @@ public final class HotelRooms {
         furniture(l,b,-19,0,-25,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);
         // Ballroom parquet, raised orchestra and a framed party photograph.
         for(int x=16;x<=24;x++)for(int z=-29;z<=-12;z++)at(l,b,x,-1,z,(x+z)%2==0?Blocks.BIRCH_PLANKS:Blocks.DARK_OAK_PLANKS);
-        box(l,b,15,0,-33,25,0,-31,Blocks.DARK_OAK_PLANKS);prop(l,b,new BlockPos(20,1,-32),HotelPropBlock.Kind.PIANO,Direction.SOUTH);
+        box(l,b,15,0,-33,25,0,-30,Blocks.DARK_OAK_PLANKS);prop(l,b,new BlockPos(20,1,-32),HotelPropBlock.Kind.PIANO,Direction.SOUTH);
         prop(l,b,PHOTO,HotelPropBlock.Kind.PHOTO,Direction.WEST);
         // Actual glass reveals contain a painted mountain diorama, never an exterior view.
         for(int x=-8;x<=-3;x++){at(l,b,x,2,-28,Blocks.GLASS);at(l,b,x,2,-29,x<-6?Blocks.WHITE_TERRACOTTA:Blocks.GRAY_TERRACOTTA);at(l,b,x,3,-29,Blocks.LIGHT_BLUE_CONCRETE);}

@@ -47,6 +47,7 @@ public final class HouseLabyrinth {
     /** Beds past the threshold do not let anyone sleep, except the Red Room's. */
     public static void onCanPlayerSleep(CanPlayerSleepEvent event) {
         ServerPlayer player = event.getEntity();
+        if(io.github.knaitoe.theoldesthouse.labyrinth.HotelVignette.hotelBed(event.getLevel(),event.getPos())){event.setProblem(null);return;}
         if (RedRoom.isRedRoomBed(event.getLevel(), event.getPos()) || io.github.knaitoe.theoldesthouse.labyrinth.NovelVignettes.karenBed(event.getLevel(),event.getPos())) {
             return;
         }

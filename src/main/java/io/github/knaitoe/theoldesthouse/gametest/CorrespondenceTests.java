@@ -132,7 +132,7 @@ public final class CorrespondenceTests {
             var ending=f.open(p,HouseMarginalia.Thread.CALLS);int count=own(f,p).getInt("ReadCount");f.end(p,ending);
             h.assertTrue(own(f,p).getInt("ReadCount")==count&&own(f,p).getCompound("Books").size()==125,"exhaustion revisits a finite saved original");
             f.reload();h.assertTrue(own(f,p).getCompound("Books").size()==125&&own(f,p).getInt("ReadCount")==125,"the whole finite catalogue survives native serialization");
-            h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0&&WitnessAccount.Story.values().length==19&&WitnessAccount.REQUIRED==15,"the new human voices do not change sources, gates or endings");h.succeed();
+            h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0&&WitnessAccount.Story.values().length==20&&WitnessAccount.REQUIRED==15,"the new human voices do not change sources, gates or endings");h.succeed();
         });
     }
 
