@@ -166,6 +166,8 @@ public final class LabyrinthDoors {
             place = door.destination.startsWith("place:") ? LabyrinthPlace.byId(door.destination.substring(6)) : null;
         }
         LabyrinthData.Door entry = place == null || place.slot() < 0 ? null : data.door(place.entryDoorId());
+        if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)entry=LiteraryCopies.prepareEntry(player,place);
+        if(place!=null&&data.state("literary_cabin_closure_0436").getString("Retired").equals(place.id())){locked(player);return;}
         if (entry == null || (place == LabyrinthPlace.RED_ROOM && !RedRoom.prepare(player))) {
             locked(player);
             return;
@@ -236,6 +238,7 @@ public final class LabyrinthDoors {
             NovelVignettes.onArrive(p,place);
             ClassicsVignettes.onArrive(p,place);
             HotelVignette.onArrive(p,place);
+            LiteraryVignettes.onArrive(p,place);
             BlindStretch.onArrive(p,place);
             MotherOfStrays.onArrive(p, place);
             WitnessAccount.onArrive(p, place);
@@ -264,7 +267,8 @@ public final class LabyrinthDoors {
             HideAndClap.confineLockedPlayer(player);
             return true;
         }
-        LabyrinthPlace place = LabyrinthPlaces.placeAt(origin, player.blockPosition());
+        LabyrinthPlace place = LiteraryCopies.placeAt(player.server,player.blockPosition());
+        if(place==null)place=LabyrinthPlaces.placeAt(origin, player.blockPosition());
         if (place == null) {
             return false;
         }
@@ -272,13 +276,13 @@ public final class LabyrinthDoors {
             return true;
         }
         LabyrinthData data = LabyrinthData.get(player.server);
-        LabyrinthData.Door entry = data.door(place.entryDoorId());
+        LabyrinthData.Door entry = place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN?LiteraryCopies.entry(player,place):data.door(place.entryDoorId());
         if (entry == null) {
             return true;
         }
         UUID id = player.getUUID();
         double into = intoRoom(player, entry);
-        if((NovelVignettes.exitLocked(player,entry)||VignetteGate.exitLocked(player,entry))&&INSIDE.contains(id)&&into<THRESHOLD) {
+        if((LiteraryVignettes.retreatLocked(player)||NovelVignettes.exitLocked(player,entry)||VignetteGate.exitLocked(player,entry))&&INSIDE.contains(id)&&into<THRESHOLD) {
             setDoorOpen(player.serverLevel(),entry.lower,false,player);
             shift(player,Vec3.atBottomCenterOf(entry.lower.relative(entry.facing.getOpposite(),2)),player.getYRot());
             return true;
@@ -495,7 +499,7 @@ public final class LabyrinthDoors {
         LabyrinthData data = LabyrinthData.get(server);
         LabyrinthPlace place = player.getRandom().nextBoolean() ? LabyrinthPlace.JUNCTION : LabyrinthPlace.GRAY_CORRIDOR;
         BlockPos base = LabyrinthPlaces.base(origin, place);
-        LabyrinthData.Door entry = data.door(place.entryDoorId());
+        LabyrinthData.Door entry = place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN?LiteraryCopies.entry(player,place):data.door(place.entryDoorId());
         ServerLevel level = entry == null ? null : server.getLevel(entry.dimension);
         if (base == null || level == null) {
             return;
@@ -788,6 +792,7 @@ public final class LabyrinthDoors {
         BlockPos origin = HouseSavedData.get(server).houseOrigin();
         if (origin == null) return false;
         if (level.dimension().equals(HouseDimensions.OUTSIDE)) {
+            if(LiteraryCopies.protectedPosition(server,pos))return true;
             for (LabyrinthPlace place : LabyrinthPlace.values()) if (NovelRooms.outside(place)) {
                 BlockPos base=LabyrinthPlaces.base(origin, place);
                 if (base!=null && IndianLakeRooms.bounds(base, place).contains(Vec3.atCenterOf(pos))) return true;
@@ -803,7 +808,8 @@ public final class LabyrinthDoors {
                 && isProtected(level, event.getPos())
                 && !TellTaleFloorboards.isLooseBoard(level, event.getPos())
                 && !DrownedTown.canBreak(level, event.getPos())
-                && !HotelVignette.mayBreakTorch(level,event.getPos(),event.getPlayer())) {
+                && !HotelVignette.mayBreakTorch(level,event.getPos(),event.getPlayer())
+                && !(event.getPlayer() instanceof ServerPlayer sp&&LiteraryVignettes.mayBreak(sp,event.getPos()))) {
             event.setCanceled(true);
         }
     }
@@ -815,7 +821,8 @@ public final class LabyrinthDoors {
                 && !LabyrinthLighting.allowsPlacing(level, event.getPos(), event.getPlacedBlock())) {
             if (!DrownedTown.allowsPlacing(level, event.getPos(), event.getPlacedBlock())
                     && !HollowayVignette.allowsPlacing(level,event.getPos(),event.getPlacedBlock())
-                    && !HotelVignette.allowsTorchPlacing(level,event.getPos(),event.getPlacedBlock())) event.setCanceled(true);
+                    && !HotelVignette.allowsTorchPlacing(level,event.getPos(),event.getPlacedBlock())
+                    && !(event.getEntity() instanceof ServerPlayer sp&&LiteraryVignettes.mayPlace(sp,event.getPos()))) event.setCanceled(true);
         }
     }
 

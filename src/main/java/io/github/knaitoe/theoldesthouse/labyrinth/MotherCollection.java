@@ -145,6 +145,17 @@ public final class MotherCollection extends SavedData {
     }
 
     /** A vignette taking leaves every original belonging, including ordinary supplies, on a real shelf. */
+    /** Cabin offerings are explicit, permanent custody, including after the keeper's peaceful outcome. */
+    public Entry sealVignetteItem(ItemStack stack,HolderLookup.Provider registries,UUID owner,long now){
+        if(stack.isEmpty()||claimOf(stack)!=null)return null;
+        Entry entry=new Entry(UUID.randomUUID(),false,loved(stack,now,owner),owner,(CompoundTag)stack.save(registries),stack.getHoverName().getString());
+        entry.sealed=true;entries.put(entry.id,entry);changed();return entry;
+    }
+    public Entry sealVignettePet(UUID original,CompoundTag contents,UUID owner,String name){
+        Entry entry=keepPet(original,contents,owner,name);if(entry==null)return null;
+        entry.sealed=true;entry.livingClaim=true;entry.offeredLife=true;changed();return entry;
+    }
+
     @Nullable public Entry keepVignetteItem(ItemStack stack,HolderLookup.Provider registries,UUID owner,long now) {
         if(stack.isEmpty()||banished)return null;
         Entry kept=keepItem(stack,registries,owner,now);if(kept!=null)return kept;

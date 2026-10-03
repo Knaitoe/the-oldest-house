@@ -36,7 +36,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 31;
+    public static final int VERSION = 32;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -110,6 +110,7 @@ public final class LabyrinthBuilder {
                     || (data.builtVersion() < 22 && place.slot() >= 39)
                     || (data.builtVersion() < 30 && place.slot() >= 40)
                     || (data.builtVersion() < 31 && place.slot() >= 42)
+                    || (data.builtVersion() < 32 && place.slot() >= 45)
                     || (data.builtVersion() < 12 && LabyrinthMaze.isMaze(place))
                     || (data.builtVersion() == 10 && place == LabyrinthPlace.MOTHER_DEN);
             boolean domestic = place == LabyrinthPlace.JUNCTION || LabyrinthHalls.isHall(place) || LabyrinthMaze.isMaze(place);
@@ -186,6 +187,7 @@ public final class LabyrinthBuilder {
         if (base == null || slot == null) {
             return;
         }
+        if(LiteraryRooms.isLiterary(place)){var site=server.getLevel(NovelRooms.dimension(place));if(site!=null){if(!LiteraryRooms.outside(place))fillSolid(site,slot);LiteraryRooms.build(site,base,place);registerDoors(dataFor(server),place,base);}return;}
         if(place==LabyrinthPlace.HOTEL_GROUNDS){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){HotelRooms.build(site,base,place);registerDoors(dataFor(server),place,base);VignetteArchitecture.forget(site,origin,place);VignetteArchitecture.decorateOnce(site,origin,place);}return;}
         if (NovelVignettes.isNovel(place)) {
             ServerLevel site=server.getLevel(NovelRooms.dimension(place));

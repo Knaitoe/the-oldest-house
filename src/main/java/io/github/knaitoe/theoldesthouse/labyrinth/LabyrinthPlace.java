@@ -201,6 +201,30 @@ public enum LabyrinthPlace {
     BLIND_STRETCH("blind_stretch",Kind.GRAY,42,new BoundingBox(-13,-1,-42,13,4,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),new DoorSpec("far",new BlockPos(0,0,-41),Direction.SOUTH,LabyrinthData.DEALT))),
     HOTEL("hotel",Kind.RECURRING,43,new BoundingBox(-29,-5,-68,29,14,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),new DoorSpec("numbers",new BlockPos(-14,0,-65),Direction.SOUTH,"place:hotel_hallway"),new DoorSpec("grounds",new BlockPos(28,0,-37),Direction.WEST,"place:hotel_grounds"))),
     HOTEL_GROUNDS("hotel_grounds",Kind.GRAY,44,new BoundingBox(-28,-3,-68,28,14,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
+    HILL_NURSERY("hill_nursery",Kind.ONE_SHOT,45,new BoundingBox(-15,-5,-44,15,12,0),literaryEntry()),
+    MINIATURES("miniatures",Kind.MULTI_VISIT,46,new BoundingBox(-15,-1,-31,15,9,0),literaryEntry()),
+    MASQUE("masque",Kind.ONE_SHOT,47,new BoundingBox(-12,-1,-78,12,11,0),literaryEntry()),
+    USHER("usher",Kind.MULTI_VISIT,48,new BoundingBox(-18,-4,-42,18,13,0),literaryEntry()),
+    WINCHESTER("winchester",Kind.ONE_SHOT,49,new BoundingBox(-31,-1,-78,31,17,0),literaryEntry()),
+    CHILD_ROOM("child_room",Kind.ONE_SHOT,50,new BoundingBox(-12,-3,-25,12,8,0),literaryEntry()),
+    CRIMSON_HALL("crimson_hall",Kind.MULTI_VISIT,51,new BoundingBox(-19,-1,-44,19,15,0),literaryEntry()),
+    BLY_ROUTE("bly_route",Kind.RECURRING,52,new BoundingBox(-13,-5,-54,13,10,0),literaryEntry()),
+    ELK_LOT("elk_lot",Kind.ONE_SHOT,53,new BoundingBox(-35,-3,-113,35,17,0),literaryEntry()),
+    ELK_FAN("elk_fan",Kind.MULTI_VISIT,54,new BoundingBox(-12,-1,-29,12,11,0),literaryEntry()),
+    MAPPING_INTERIOR("mapping_interior",Kind.MULTI_VISIT,55,new BoundingBox(-22,-6,-79,22,15,0),literaryEntry()),
+    HOLY_RABBIT("holy_rabbit",Kind.ONE_SHOT,56,new BoundingBox(-35,-5,-126,35,26,0),literaryEntry()),
+    CONFESSION("confession",Kind.MULTI_VISIT,57,new BoundingBox(-13,-1,-34,13,11,0),literaryEntry()),
+    ELK_CARCASSES("elk_carcasses",Kind.ONE_SHOT,58,new BoundingBox(-31,-4,-78,31,19,0),literaryEntry()),
+    COSTUME_NIGHT("costume_night",Kind.ONE_SHOT,59,new BoundingBox(-33,-6,-77,33,18,0),literaryEntry()),
+    MOVIE_NIGHT("movie_night",Kind.ONE_SHOT,60,new BoundingBox(-35,-12,-93,35,18,0),literaryEntry()),
+    WINTER_LAKE("winter_lake",Kind.ONE_SHOT,61,new BoundingBox(-35,-12,-87,35,18,0),literaryEntry()),
+    CAMP_BLOOD("camp_blood",Kind.ONE_SHOT,62,new BoundingBox(-33,-3,-104,33,19,0),literaryEntry()),
+    DEVILS_ROCK("devils_rock",Kind.MULTI_VISIT,63,new BoundingBox(-17,-1,-43,17,11,0),literaryEntry()),
+    WHEEL("wheel",Kind.MULTI_VISIT,64,new BoundingBox(-27,-1,-65,27,13,0),literaryEntry()),
+    GHOSTS_SET("ghosts_set",Kind.ONE_SHOT,65,new BoundingBox(-21,-1,-47,21,12,0),literaryEntry()),
+    END_WORLD_CABIN("end_world_cabin",Kind.ONE_SHOT,66,new BoundingBox(-31,-9,-81,31,19,0),literaryEntry()),
+    FAMILY_COPY("family_copy",Kind.MULTI_VISIT,67,new BoundingBox(-34,-17,-71,34,33,0),literaryEntry()),
+    OLD_CABIN("old_cabin",Kind.RECURRING,68,new BoundingBox(-12,-9,-29,12,17,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 
@@ -221,6 +245,8 @@ public enum LabyrinthPlace {
         /** Not a carved place at all. */
         HALLWAY
     }
+
+    private static List<DoorSpec> literaryEntry(){return List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN));}
 
     /**
      * A door built into a place. {@code rel} is its lower half relative to
