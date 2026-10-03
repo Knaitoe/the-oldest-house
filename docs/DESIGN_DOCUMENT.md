@@ -4,13 +4,21 @@ Sep 28, 2026 · @Sean Price · revised in the repository to match decisions made
 
 ## Revisions in this copy
 
+### 0.4.32: book-fed fire and companion responses
+
+The staircase entrance hall now offers a finite personal **House of Leaves** and striker. Five ordered native hearths consume its leaves and progressively open the next stretch; the fifth admits the complete physical descent. Unlit terrain fog and a saved server movement boundary prevent proceeding blindly while preserving retreat. Actual fires are shared; each explorer's ignition credit is private. Existing deep visits remain traversable. The once-only, visitor-delayed dressing preserves the shaft, original cache, papers, actor UUIDs and encounter state.
+
+Companions keep their saved scent/movement orders through doors. Connected waypoints extend beyond the native stopping radius; lagging guides catch up, and pets already ahead are included in a threshold crossing. Stay, native ownership and captivity remain authoritative. Petting has a visible first/third-person stroke, dog lean/wag and cat head-rub/tail-curl, synchronized to nearby observers without changing the command.
+
+Current build: 0.4.32, layout 29 / protocol 29. Seventeen Witness sources, thirteen personal resolutions across two kinds and three endings remain. Full release verification is in progress; see [the play instructions and evidence](FIRE_AND_COMPANIONS_0_4_32.md).
+
 ### 0.4.31: correspondence and personal notes
 
 The [approved correspondence](CORRESPONDENCE_0_4_31.md) adds 108 original pieces: fourteen six-letter chains, sixteen independent scraps and eight notes that respond to actual native play. Romance, family care, confession, envy, grief, shift work, money, friendship and pleasure interrupt six increasingly intrusive relationships with the reader. The final prose pass differentiates cadence and material detail while retaining the reviewed IDs, relationships and endings.
 
 Existing paper surfaces prefer their household context and interleave the writers. Each reader finds each chain in order; later installments need the earlier reading, two intervening route crossings and depths 0/6/8/12/16/20. Native last-page buttons also record reading a collected original. Reopening pages gives no additional progress or duplicate originals. Legacy discoveries retain their exact saved books. No room, inventory, actor or paper surface is reconstructed. The keeper's loss sequence freezes a real original custody record; later recovery does not rewrite the page. Companion references, route markers, safe returns, original photographs and replies remain personal native facts. These writers' accusations and appropriated signatures do not change the reader's actual books, identity, companions or progression.
 
-Current build: 0.4.31, layout 29 / protocol 28. Seventeen Witness sources, thirteen personal resolutions across two kinds and three endings remain. The [verified build](https://github.com/Knaitoe/the-oldest-house/actions/runs/37129458957) passed all 279 native GameTests, 260 real book pages including all 125 original/new writing specimens, package/texture checks and the established client/architecture proofs.
+Previous build: 0.4.31, layout 29 / protocol 28. Seventeen Witness sources, thirteen personal resolutions across two kinds and three endings remain. The [verified build](https://github.com/Knaitoe/the-oldest-house/actions/runs/37129458957) passed all 279 native GameTests, 260 real book pages including all 125 original/new writing specimens, package/texture checks and the established client/architecture proofs.
 
 ### 0.4.30: ordinary halls, personal letters, and playtest repairs
 

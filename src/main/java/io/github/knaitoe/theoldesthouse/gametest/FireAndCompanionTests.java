@@ -19,11 +19,11 @@ import net.neoforged.neoforge.gametest.*;
 @PrefixGameTestTemplate(false)
 public final class FireAndCompanionTests {
     private static final List<Entity> ROUTE_ENTITIES=new ArrayList<>();
-    private static void remove(ServerPlayer p){if(p.server.getPlayerList().getPlayers().contains(p))p.server.getPlayerList().remove(p);}
+    private static void remove(ServerPlayer p){NativeTestPlayers.remove(p);}
     @AfterBatch(batch="companion_route") public static void cleanRoute(ServerLevel level){for(var e:ROUTE_ENTITIES){if(e instanceof ServerPlayer p)remove(p);else e.discard();}ROUTE_ENTITIES.clear();}
     @GameTest(template="empty",batch="companion_route",timeoutTicks=300)
     public static void nativeGuideActuallyWalksPastStoppingRadiusAndAroundBend(GameTestHelper h){
-        var owner=h.makeMockServerPlayerInLevel();var level=owner.server.getLevel(HouseDimensions.INTERIOR);
+        var owner=NativeTestPlayers.survival(h,"walking_guide_owner");var level=HouseTestLevel.get(owner.server,HouseDimensions.INTERIOR);
         BlockPos base=new BlockPos(h.absolutePos(BlockPos.ZERO).getX()+240000,180,240000);var floor=LabyrinthHalls.floor(LabyrinthPlace.BENT_HALL);
         for(var local:floor){var at=base.offset(local);level.getChunkAt(at);level.setBlock(at.below(),Blocks.STONE.defaultBlockState(),3);for(int y=0;y<3;y++)level.setBlock(at.above(y),Blocks.AIR.defaultBlockState(),3);}
         // Real walls prevent native navigation from cutting across the empty corner.
@@ -42,7 +42,7 @@ public final class FireAndCompanionTests {
     }
     @GameTest(template="empty",batch="stair_fire",timeoutTicks=160)
     public static void fiveNativeFiresConsumeBookAndUnlockOnlyTheirReader(GameTestHelper h){
-        var p=h.makeMockServerPlayerInLevel();var peer=h.makeMockServerPlayerInLevel();var level=p.server.getLevel(HouseDimensions.INTERIOR);
+        var p=NativeTestPlayers.survival(h,"stair_fire_reader");var peer=h.makeMockServerPlayerInLevel();var level=HouseTestLevel.get(p.server,HouseDimensions.INTERIOR);
         BlockPos origin=new BlockPos(h.absolutePos(BlockPos.ZERO).getX()+220000,0,220000);
         var old=FinaleProgress.world(p.server);var fires=StaircaseFire.braziers(origin);
         try{
@@ -68,14 +68,16 @@ public final class FireAndCompanionTests {
     }
     @GameTest(template="empty",batch="stair_fire",timeoutTicks=160)
     public static void unlitDepthStopsAdvanceAndOldDeepVisitsRemainOpen(GameTestHelper h){
-        var p=h.makeMockServerPlayerInLevel();var level=p.server.getLevel(HouseDimensions.INTERIOR);
+        var p=NativeTestPlayers.survival(h,"stair_dark_walker");var level=HouseTestLevel.get(p.server,HouseDimensions.INTERIOR);
         BlockPos origin=new BlockPos(h.absolutePos(BlockPos.ZERO).getX()+230000,0,230000);
         var record=new CompoundTag();StaircaseFire.initialize(record,FinaleArchitecture.TOP);
         var safe=StaircaseFire.landings(origin).getFirst();var edge=StaircaseFire.edge(origin,record);
         level.getChunkAt(safe);level.setBlock(safe.below(),Blocks.STONE.defaultBlockState(),3);
         try{
             p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);p.teleportTo(level,edge.getX()+.5,edge.getY()-2,edge.getZ()+.5,0,0);
-            h.assertTrue(StaircaseFire.tick(p,origin,record)&&p.position().distanceToSqr(Vec3.atBottomCenterOf(safe))<1,"native movement is returned safely from the unlit edge");
+            boolean blocked=StaircaseFire.tick(p,origin,record);
+            h.assertTrue(blocked,"the native survival boundary blocks: creative="+p.isCreative()+", fires="+StaircaseFire.flames(record)+", edge="+edge+", position="+p.position());
+            h.assertTrue(p.position().distanceToSqr(Vec3.atBottomCenterOf(safe))<1,"native movement is returned safely: position="+p.position()+", safe="+safe);
             p.moveTo(safe.getX()+.5,FinaleArchitecture.TOP,safe.getZ()+.5);
             h.assertTrue(!StaircaseFire.tick(p,origin,record),"movement back toward the entry remains available");
             record.putInt("StairFires",5);p.moveTo(safe.getX()+.5,FinaleArchitecture.ARENA,safe.getZ()+.5);

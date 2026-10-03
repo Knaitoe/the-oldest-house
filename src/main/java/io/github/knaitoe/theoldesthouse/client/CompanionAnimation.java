@@ -73,7 +73,11 @@ public final class CompanionAnimation {
         float t=age(mc.player,e.getPartialTick(),false),w=weight(t);if(w==0)return;
         var renderer=mc.getEntityRenderDispatcher().getRenderer(mc.player);if(!(renderer instanceof PlayerRenderer player))return;
         var pose=e.getPoseStack();pose.pushPose();float side=mc.player.getMainArm()==HumanoidArm.RIGHT?1:-1;
-        pose.translate(side*.40,-.38-.06*Math.sin(t*.55),-.55);pose.mulPose(Axis.XP.rotationDegrees(-35));pose.mulPose(Axis.YP.rotationDegrees(side*15));
+        // Vanilla empty-arm basis keeps the shoulder offscreen; only the reach/stroke is added.
+        pose.translate(side*.44,-.50-.05*Math.sin(t*.55),-.88);
+        pose.mulPose(Axis.YP.rotationDegrees(side*45));pose.translate(-side,3.6,3.5);
+        pose.mulPose(Axis.ZP.rotationDegrees(side*120));pose.mulPose(Axis.XP.rotationDegrees(200));
+        pose.mulPose(Axis.YP.rotationDegrees(-side*135));pose.translate(side*5.6,0,0);
         if(side>0)player.renderRightHand(pose,e.getMultiBufferSource(),e.getPackedLight(),mc.player);else player.renderLeftHand(pose,e.getMultiBufferSource(),e.getPackedLight(),mc.player);
         pose.popPose();e.setCanceled(true);
     }
