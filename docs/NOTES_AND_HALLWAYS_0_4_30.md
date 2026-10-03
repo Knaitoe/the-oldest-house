@@ -4,7 +4,7 @@ Layout 28 / protocol 28. This repair release preserves the seven integrated Clau
 
 ## Implemented
 
-- Straight and bent corridors have two end doors. Cross halls keep their actual branches. Floors, height, foyers and doglegs vary with ordinary plaster, stone and timber. A loop requires twelve crossings and eight intervening visits. Retired old doors first remap saved returns; domestic fragments and block entities remain.
+- Straight and bent corridors have two end doors. Cross halls keep their actual branches. Floors, height, foyers and doglegs vary with ordinary plaster, stone and timber. A loop requires twelve crossings and eight intervening visits. Retired old doors first remap saved returns; domestic fragments and block entities remain. Living residents, including pets left on Stay, delay the migration along with visiting explorers.
 - The child's room stays closed before visit three; an explorer already inside can leave. The ordinary door resumes native use once relevant.
 - Chalk and string work outside as well as inside. Owned chalk positions include dimension identity, and string resets its segment when crossing worlds.
 - The Whale sends its finite, personal letters to empty Overworld chests. Full chests and interior caches are left alone. Its outgoing-mail plaque has a timber post and floor support.
