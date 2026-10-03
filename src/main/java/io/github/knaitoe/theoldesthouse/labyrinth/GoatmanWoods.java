@@ -60,7 +60,17 @@ public final class GoatmanWoods {
         for(int x=-7;x<=-5;x++)put(l,b,x,-1,-48,Blocks.GRAVEL.defaultBlockState());
         for(int x:new int[]{-9,-3})put(l,b,x,0,-49,Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,x==-9?Direction.EAST:Direction.WEST));
         put(l,b,7,0,-50,Blocks.BARREL.defaultBlockState());put(l,b,8,0,-50,Blocks.HAY_BLOCK.defaultBlockState());
-        supplies(l,b,5);LabyrinthBuilder.doors(l,b,LabyrinthPlace.GOATMAN);
+        supplies(l,b,5);
+        LabyrinthBuilder.entrance(l,b,Blocks.WHITE_TERRACOTTA.defaultBlockState(),Blocks.DIRT_PATH.defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState());
+        repairEntrance(l,b);LabyrinthBuilder.doors(l,b,LabyrinthPlace.GOATMAN);
+    }
+    /** Remove only the original painted horizon across the return door's actual throat. */
+    public static void repairEntrance(ServerLevel l,BlockPos b){
+        for(int x=-1;x<=1;x++)for(int y=0;y<=2;y++){
+            var at=b.offset(x,y,0);var s=l.getBlockState(at);
+            if(s.is(Blocks.ORANGE_TERRACOTTA)||s.is(Blocks.PURPLE_TERRACOTTA)||s.is(Blocks.BLUE_TERRACOTTA)||s.is(Blocks.BLACK_CONCRETE)||s.is(Blocks.WHITE_TERRACOTTA))l.setBlock(at,Blocks.AIR.defaultBlockState(),F);
+        }
+        for(int x=-1;x<=1;x++){var at=b.offset(x,-1,0);if(l.getBlockState(at).isAir())l.setBlock(at,Blocks.DIRT_PATH.defaultBlockState(),F);}
     }
     private static void trailer(ServerLevel l,BlockPos b){
         for(int x=-8;x<=8;x++)for(int z=-77;z<=-55;z++){

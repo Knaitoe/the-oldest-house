@@ -95,12 +95,26 @@ public final class NovelRooms {
     }
     public static void cover(ServerLevel l,BlockPos b,boolean closed){l.setBlock(b.offset(WELL),Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.SOUTH).setValue(TrapDoorBlock.HALF,Half.TOP).setValue(TrapDoorBlock.OPEN,!closed),F);}
     private static void plain(ServerLevel l,BlockPos b){
-        outdoor(l,b,29,65,Blocks.SANDSTONE);box(l,b,-28,-1,-64,28,-1,-1,Blocks.SAND.defaultBlockState());
+        outdoor(l,b,29,65,Blocks.SANDSTONE);
+        // A one-block sand sheet over outside air cascades into thousands of falling entities.
+        repairPlainGround(l,b);box(l,b,-28,-1,-64,28,-1,-1,Blocks.SAND.defaultBlockState());
         for(int x:new int[]{-28,28})for(int z=-2;z>=-64;z--)box(l,b,x-1,0,z,x+1,1+Math.floorMod(z,3),z,Blocks.SANDSTONE.defaultBlockState());
         // The shape remains beyond the traversable dunes: it cannot be approached.
         box(l,b,-10,-1,-104,10,-1,-78,Blocks.SANDSTONE.defaultBlockState());
         at(l,b,0,0,-93,Blocks.BLACK_CONCRETE);at(l,b,0,1,-93,Blocks.BLACK_CONCRETE);
         lectern(l,b.offset(APOLOGY),NovelTexts.apology());at(l,b,3,0,-7,Blocks.BARREL);
+    }
+    /** Back the authored walkable core first, then restore only its missing floor tiles. */
+    public static void repairPlainGround(ServerLevel l,BlockPos b){
+        for(int x=-28;x<=28;x++)for(int z=-64;z<=0;z++)for(int y=-3;y<=-2;y++){
+            var at=b.offset(x,y,z);var s=l.getBlockState(at);
+            if(s.isAir()||s.is(Blocks.SAND))l.setBlock(at,Blocks.SANDSTONE.defaultBlockState(),F);
+        }
+        for(int x=-28;x<=28;x++)for(int z=-64;z<=0;z++){
+            var at=b.offset(x,-1,z);if(l.getBlockState(at).isAir())l.setBlock(at,Blocks.SAND.defaultBlockState(),F);
+        }
+        var volume=new net.minecraft.world.phys.AABB(b.getX()-28,l.getMinBuildHeight(),b.getZ()-64,b.getX()+29,b.getY()+1,b.getZ()+1);
+        for(var debris:l.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class,volume,e->e.getBlockState().is(Blocks.SAND)))debris.discard();
     }
     private static void hospital(ServerLevel l,BlockPos b){
         room(l,b,-9,9,-23,0,0,5,NovelRegistry.INSTITUTE.get(),Blocks.WHITE_CONCRETE);door(l,b,Direction.SOUTH,Blocks.BIRCH_DOOR,true);

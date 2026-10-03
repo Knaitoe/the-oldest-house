@@ -128,7 +128,7 @@ public final class LabyrinthDomestic {
         BlockState wall = switch (f.room) {
             case KITCHEN -> Blocks.WHITE_TERRACOTTA.defaultBlockState();
             case LAUNDRY -> Blocks.LIGHT_BLUE_TERRACOTTA.defaultBlockState();
-            case BEDROOM -> Blocks.PINK_TERRACOTTA.defaultBlockState();
+            case BEDROOM -> Blocks.LIGHT_GRAY_TERRACOTTA.defaultBlockState();
             case DINING -> Blocks.YELLOW_TERRACOTTA.defaultBlockState();
         };
         for (int x = f.x0 - 1; x <= f.x1 + 1; x++) for (int z = f.z0 - 1; z <= f.z1 + 1; z++)

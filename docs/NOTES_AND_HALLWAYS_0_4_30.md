@@ -1,6 +1,6 @@
 # Notes and hallways — 0.4.30
 
-Layout 28 / protocol 28. This repair release preserves the seven integrated Claude commits, all 0.4.29 architecture and outdoor migrations, finite native originals, personal evidence, and the seventeen-source Witness pool (thirteen personal resolutions across two kinds; three endings).
+Layout 29 / protocol 28. This repair release preserves the seven integrated Claude commits, all 0.4.29 architecture and outdoor migrations, finite native originals, personal evidence, and the seventeen-source Witness pool (thirteen personal resolutions across two kinds; three endings).
 
 ## Implemented
 
@@ -14,6 +14,18 @@ Layout 28 / protocol 28. This repair release preserves the seven integrated Clau
 - Ambient livestock no longer join the interior labyrinth. Authored actors, persistent intended animals and owned pets keep their identities.
 - Player-facing entity translations replace raw registry names. The caged child has an original material-based skin and keeps the creature's UUID, hidden transformation and peaceful ending.
 
+## Additional wall notes
+
+The five screenshots in the added wall document are covered by targeted repairs:
+
+- Match the impossible entry hallway's yellow patch to its existing pale plaster, preserving changed blocks and cupboard contents.
+- Give the red-looking bedroom alcove a neutral finish. Recent ordinary corridors receive less weight; the recurring home copy has six intervening visits, with deliberate companion scent preserved. These intervals are personal and survive reload.
+- Back the plain's entire walkable sand sheet with sandstone before restoring missing floor tiles. The old floor was suspended over outside air and could cascade into thousands of native falling blocks, leaving floating furniture and producing severe lag. Remove residual sand debris only in that authored footprint. Keep the actual lectern, barrel, photograph progression and player edits.
+- Open the Goatman return door's original painted z=0 wall onto its trail. New scenes have a real approach; saved ones keep their trailer, actors, original inventory and vigil.
+- Cap the west side-maze connector one block beyond its last walking row, at z=38. Its old corridor cut through z=37, which was also the outer wall. Keep the passage open and close the actual sky-facing gap; preserve collapse geometry.
+
+These repairs have their own once-only checkpoints and wait for visitors. Native chunk tickets load old scene data between ticks before migration. They do not repeat the earlier paper/actor repair or restock stories. Five new regressions exercise actual sand ticks (with an unsupported falling control), real player collision at both entrances, finite native inventories and saved personal route memory.
+
 ## Minotaur investigation
 
 The supplied October 3 logs show death at 20:55:15 and a 2,099 ms / 41-tick server warning at 20:55:17. They contain no combat exception or profiler identifying the freeze. Two startup PNG chunk errors (the great-room rug and wardrobe side) are fixed. Every shipped texture now receives strict chunk CRC validation and full pixel decoding.
@@ -24,4 +36,4 @@ Native tests exercise the actual transformed entity, survival player, shield col
 
 ## Verification
 
-Pending native Java 21 / NeoForge build, complete GameTests, package and texture checks, native font/cast/home/Minotaur rendering, twenty-two architecture views, and three sky elevations. The matching JAR is delivered only after those complete. All twenty custom inventory items have separately generated transparent artwork, native 32×32 texture references and [asset provenance](../art/ASSETS_0_4_30.md). Native inventory rendering is included in the client proof.
+The preceding source revision [passed all 272 native GameTests and client checks](https://github.com/Knaitoe/the-oldest-house/actions/runs/37090005060). Verification of the added wall repairs is pending a native Java 21 / NeoForge build, all 277 GameTests, package and texture checks, native font/cast/home/Minotaur rendering, twenty-two architecture views, and three sky elevations. The matching JAR is delivered only after those complete. All twenty custom inventory items have separately generated transparent artwork, native 32×32 texture references and [asset provenance](../art/ASSETS_0_4_30.md). Native inventory rendering is included in the client proof.
