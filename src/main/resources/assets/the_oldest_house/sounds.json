@@ -353,5 +353,95 @@
         "stream": false
       }
     ]
+  },
+  "literary.scratch": {
+    "subtitle": "subtitles.the_oldest_house.literary.scratch",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/scratch",
+        "stream": false
+      }
+    ]
+  },
+  "literary.drip": {
+    "subtitle": "subtitles.the_oldest_house.literary.drip",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/drip",
+        "stream": false
+      }
+    ]
+  },
+  "literary.hooves": {
+    "subtitle": "subtitles.the_oldest_house.literary.hooves",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/hooves",
+        "stream": false
+      }
+    ]
+  },
+  "literary.giggle": {
+    "subtitle": "subtitles.the_oldest_house.literary.giggle",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/giggle",
+        "stream": false
+      }
+    ]
+  },
+  "literary.blizzard": {
+    "subtitle": "subtitles.the_oldest_house.literary.blizzard",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/blizzard",
+        "stream": false
+      }
+    ]
+  },
+  "literary.party": {
+    "subtitle": "subtitles.the_oldest_house.literary.party",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/party",
+        "stream": true
+      }
+    ]
+  },
+  "literary.cylinder_one": {
+    "subtitle": "subtitles.the_oldest_house.literary.cylinder_one",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cylinder_one",
+        "stream": true
+      }
+    ]
+  },
+  "literary.cylinder_two": {
+    "subtitle": "subtitles.the_oldest_house.literary.cylinder_two",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cylinder_two",
+        "stream": true
+      }
+    ]
+  },
+  "literary.cylinder_three": {
+    "subtitle": "subtitles.the_oldest_house.literary.cylinder_three",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cylinder_three",
+        "stream": true
+      }
+    ]
+  },
+  "literary.family_film": {
+    "subtitle": "subtitles.the_oldest_house.literary.family_film",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/family_film",
+        "stream": true
+      }
+    ]
   }
 }

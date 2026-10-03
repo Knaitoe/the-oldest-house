@@ -1,5 +1,6 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 import java.util.*;
+import io.github.knaitoe.theoldesthouse.house.HouseWatchers;
 import io.github.knaitoe.theoldesthouse.opening.CompanionOrders;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
