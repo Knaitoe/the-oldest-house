@@ -47,6 +47,7 @@ public final class LabyrinthDealer {
                     || place == LabyrinthPlace.TED_CAVER
                     || place == LabyrinthPlace.HOLLOWAY_CAMP
                     || (NovelVignettes.isNovel(place) && place.kind()!=LabyrinthPlace.Kind.RECURRING)
+                    || LiteraryRooms.isLiterary(place)
                     || (place.isFinishable() && data.isCompleted(place.id()))
                     || (place.needsMaking() && !data.isReady(place.id()))) {
                 continue;
@@ -59,6 +60,7 @@ public final class LabyrinthDealer {
     /** A shared ending can still be examined by an explorer who has not recorded its aftermath. */
     public static List<LabyrinthPlace> vignettesAvailable(LabyrinthData data,UUID player) {
         List<LabyrinthPlace> places=new ArrayList<>(vignettesAvailable(data));
+        for(var site:LabyrinthPlace.values())if(LiteraryVignettes.canDeal(data,player,site))places.add(site);
         if (IndianLakeProgress.canDealShallows(data, player)) places.add(LabyrinthPlace.SHALLOWS);
         if (PhoneCanoe.canDeal(data,player)) places.add(LabyrinthPlace.PHONE_CANOE);
         if (GoatmanVignette.canDeal(data,player)) places.add(LabyrinthPlace.GOATMAN);
@@ -68,11 +70,12 @@ public final class LabyrinthDealer {
         if(data.isCompleted(PreservedCave.ID)&&PreservedCave.phoneWaiting(data,player))places.add(LabyrinthPlace.PRESERVED_CAVE);
         for(LabyrinthPlace place:LabyrinthPlace.values()){
             WitnessAccount.Story story=WitnessAccount.Story.of(place.id());
-            if(story!=null&&!NovelVignettes.isNovel(place)&&place.isFinishable()&&data.isCompleted(place.id())&&!WitnessAccount.has(data,player,story)&&!places.contains(place))places.add(place);
+            if(story!=null&&!LiteraryRooms.isLiterary(place)&&!NovelVignettes.isNovel(place)&&place.isFinishable()&&data.isCompleted(place.id())&&!WitnessAccount.has(data,player,story)&&!places.contains(place))places.add(place);
         }
         // A recurring home copy needs an interval; a deliberate scent may still seek it.
         if(!data.hillaryScent(player))places.removeIf(p->p==LabyrinthPlace.RED_ROOM
                 && data.recentVisit(player,p)>=0 && data.recentVisit(player,p)<6);
+        places.removeIf(site->data.state("literary_cabin_closure_0436").getString("Retired").equals(site.id()));
         return places;
     }
 

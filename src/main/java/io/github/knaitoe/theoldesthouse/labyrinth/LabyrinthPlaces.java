@@ -37,7 +37,7 @@ public final class LabyrinthPlaces {
     public static final int COLUMN_SPACING = 96;
     public static final int OUTDOOR_SPACING = 4096;
     // Slot 32 starts a fifth column at low/common manor heights; older slots never move.
-    private static final int MAX_COLUMNS = 8;
+    private static final int MAX_COLUMNS = 10;
     private static final int MAX_Y = 318;
     private static final int MIN_Y = -60;
 
