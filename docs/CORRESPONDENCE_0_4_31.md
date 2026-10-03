@@ -6,7 +6,7 @@ Approved selection, final prose pass • 3 October 2026 • Original fictional t
 
 **New in this revision: I–N, thirty-six letters that increasingly address and pressure the reader.** Their complete text appears before the original A–H selection. All letters retain their reviewed IDs; the final pass refines cadence, detail and voice.
 
-The present pool treats “you are useless” as a dominant fixation. I would keep it as one writer's fixation and give the surrounding paper a much wider emotional life. These people want sex, company, money, sleep, recognition, forgiveness, independence, and another good afternoon. Their accusations can be perceptive, unfair, self-serving, or mistaken. Their affection can be genuine even when they are frightened or difficult.
+The expanded pool gives the House’s paper a wider emotional life. “You are useless” remains one writer’s fixation. These people want sex, company, money, sleep, recognition, forgiveness, independence, and another good afternoon. Their accusations can be perceptive, unfair, self-serving, or mistaken. Their affection can be genuine even when they are frightened or difficult.
 
 ## Literary reading and editorial choices
 
@@ -720,7 +720,7 @@ These do not share one narrator. Leave them on different kinds of paper: a recei
 
 ## Eight notes that can address the actual player
 
-These are optional variants for later implementation. Each condition must be grounded in recorded native play. The writer can interpret an action unfairly; the text must never invent a real-world childhood, relationship, bereavement, diagnosis, or private history. Keep the recipient's original page fixed after its first appearance.
+These variants appear after their conditions have been recorded through native play. The writer can interpret an action unfairly; the text must never invent a real-world childhood, relationship, bereavement, diagnosis, or private history. Keep the recipient's original page fixed after its first appearance.
 
 **P01 — Care**
 
@@ -789,4 +789,6 @@ The optional personal notes use actual native care, confirmed returns to the man
 
 Operator specimens use `/oldesthouse writing correspondence I01`, with tab completion for all 108 IDs. A specimen does not record progress; unavailable personal facts are explicitly marked as preview text only. The existing `/oldesthouse writing notes` command retains its seventeen original specimens.
 
-Native build verification is pending: 279 gameplay tests, all 125 writing specimens checked with the real client font, package/texture checks and the existing architecture/render proofs.
+[Verified build](https://github.com/Knaitoe/the-oldest-house/actions/runs/37129458957) passed all **279 native gameplay tests** and **260 real book pages** checked against the native 114-pixel / 14-line limits. The corpus includes all 125 original/new writing specimens. Package/font checks, all 146 texture CRC/decode checks, the existing character/home/Minotaur/inventory rendering, twenty-two architecture views and three sky elevations also passed.
+
+Validated source: `a853796fd84fff2e2f6d394d99f143cd39b09f59`. Runtime: `the_oldest_house-0.4.31.jar`. SHA-256: `9333d7f8c7eeb9615179a8996100d641bd3dbdb4af5e467c4f4341206722e7c2`.

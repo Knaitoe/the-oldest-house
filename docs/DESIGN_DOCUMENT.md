@@ -10,7 +10,7 @@ The [approved correspondence](CORRESPONDENCE_0_4_31.md) adds 108 original pieces
 
 Existing paper surfaces prefer their household context and interleave the writers. Each reader finds each chain in order; later installments need the earlier reading, two intervening route crossings and depths 0/6/8/12/16/20. Native last-page buttons also record reading a collected original. Reopening pages gives no additional progress or duplicate originals. Legacy discoveries retain their exact saved books. No room, inventory, actor or paper surface is reconstructed. The keeper's loss sequence freezes a real original custody record; later recovery does not rewrite the page. Companion references, route markers, safe returns, original photographs and replies remain personal native facts. These writers' accusations and appropriated signatures do not change the reader's actual books, identity, companions or progression.
 
-Current build: 0.4.31, layout 29 / protocol 28. Seventeen Witness sources, thirteen personal resolutions across two kinds and three endings remain. Native verification requires 279 GameTests, all 125 original/new writing specimens, package checks and the established client/architecture proofs.
+Current build: 0.4.31, layout 29 / protocol 28. Seventeen Witness sources, thirteen personal resolutions across two kinds and three endings remain. The [verified build](https://github.com/Knaitoe/the-oldest-house/actions/runs/37129458957) passed all 279 native GameTests, 260 real book pages including all 125 original/new writing specimens, package/texture checks and the established client/architecture proofs.
 
 ### 0.4.30: ordinary halls, personal letters, and playtest repairs
 
