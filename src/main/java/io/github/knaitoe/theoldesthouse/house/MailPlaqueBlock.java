@@ -13,8 +13,8 @@ public final class MailPlaqueBlock extends HorizontalDirectionalBlock {
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING);}
     public static void place(ServerLevel level,BlockPos base){
-        level.setBlock(base.offset(4,0,-8),Blocks.OAK_FENCE.defaultBlockState(),LabyrinthBuilder.flags());
-        level.setBlock(base.offset(4,1,-8),HouseBlocks.MAIL_PLAQUE.get().defaultBlockState(),LabyrinthBuilder.flags());
+        level.setBlock(base.offset(4,0,-8),Blocks.OAK_FENCE.defaultBlockState(),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);
+        level.setBlock(base.offset(4,1,-8),HouseBlocks.MAIL_PLAQUE.get().defaultBlockState(),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);
     }
     public static void repair(ServerLevel level,BlockPos base){
         var data=LabyrinthData.get(level.getServer());var saved=data.state("mail_plaque_0430");String key=Long.toString(base.asLong());

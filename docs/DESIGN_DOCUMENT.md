@@ -94,7 +94,7 @@ The labyrinth now takes longer to become esoteric. Its approach and first landin
 
 ## Implemented in 0.4.8
 
-The first labyrinth stretches are ordinary straight, bent and crossing hallways with multiple side doors. Impossible places use a low per-arrival roll with three subsequent visits of spacing. Quiet rooms and explorer camps punctuate pressure. Chalk, trailing string, old explorer arrows and chipped masonry provide physical navigation; unseen floor arrows and string can rarely be disturbed deeper in. Hillary and native tamed cats/wolves have a saved four-command wheel and bounded fear. Rare lost animals can replace a fallen companion; the existing Mother can make an even rarer brief, unwitnessed visit outside her den. See [EXPLORATION_0_4_8.md](EXPLORATION_0_4_8.md) for implemented controls, probabilities and upgrade behavior. This supersedes the earlier frequency and compass-only guidance description below.
+The first labyrinth stretches are ordinary straight, bent and crossing hallways with two end doors or actual branch doors. Impossible places use a low per-arrival roll with three subsequent visits of spacing. Quiet rooms and explorer camps punctuate pressure. Chalk, trailing string, old explorer arrows and chipped masonry provide physical navigation; unseen floor arrows and string can rarely be disturbed deeper in. Hillary and native tamed cats/wolves have a saved four-command wheel and bounded fear. Rare lost animals can replace a fallen companion; the existing Mother can make an even rarer brief, unwitnessed visit outside her den. See [EXPLORATION_0_4_8.md](EXPLORATION_0_4_8.md) for implemented controls, probabilities and upgrade behavior. This supersedes the earlier frequency and compass-only guidance description below.
 
 ## Implemented in 0.4.7
 
@@ -205,7 +205,7 @@ The house deals the doors: players can tilt the odds, but never summon a place o
 - A long dry spell guarantees a new door.
 - Door deals are per-player. Two people can use the same physical door and be taken somewhere different; their dry streaks and Hillary scents are separate too.
 - Gray doors may loop back to the place the player is already in. The impossible repetition is intentional, not filtered out as a bad deal.
-- The gray grows with route depth: familiar landing and halls first, the first hazard tier at six crossings, the second at ten, and the third at fourteen. Folded maze expansions have separate eight/twelve/sixteen-crossing gates; each arrival shares one low anomaly roll across all doors, with three later visits of spacing.
+- The gray grows with route depth: familiar landing and halls first, the first hazard tier at six crossings, the second at ten, and the third at fourteen. Folded maze expansions have separate eight/twelve/sixteen-crossing gates; each arrival shares one low anomaly roll across all doors, with three later visits of spacing; looping rooms additionally require twelve crossings and eight intervening visits.
 - Nothing appears on demand.
 - Zampanò's courtyard leads back to places already visited, never forward.
 

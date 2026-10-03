@@ -91,6 +91,27 @@ public final class NotesRepairTests {
             h.assertTrue(creature.hurt(level.damageSources().playerAttack(p),5)&&creature.motion()==MinotaurEntity.WOUNDED&&creature.isAlive()&&creature.getUUID().equals(id)&&FinaleProgress.phase(f.server,p.getUUID())==FinaleProgress.Phase.COLLAPSE,"the actual original weapon wounds the same living prisoner and advances the personal ending");h.succeed();
         }
     }
+    @GameTest(template="empty") public static void retiredNativeSideDoorRemapsBothExplorersAndPreservesOriginalPaperAndChest(GameTestHelper h){
+        try(var f=new Fixture(h,103000)){
+            var l=h.getLevel();var place=LabyrinthPlace.STRAIGHT_HALL;var b=h.absolutePos(BlockPos.ZERO).offset(120,8,120);LabyrinthHalls.build(l,b,place);
+            var at=b.offset(-2,0,-7);var door=new LabyrinthData.Door("straight_hall/west_near",l.dimension(),at,Direction.EAST,LabyrinthData.DEALT,false);f.data.putDoor(door);
+            l.setBlock(at,Blocks.OAK_DOOR.defaultBlockState(),2);l.setBlock(at.above(),Blocks.OAK_DOOR.defaultBlockState().setValue(DoorBlock.HALF,net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER),2);
+            UUID first=UUID.randomUUID(),second=UUID.randomUUID();var before=new LabyrinthData.Waypoint(l.dimension(),Vec3.atBottomCenterOf(at),0,true);f.data.pushReturn(first,before);f.data.pushReturn(second,before);
+            var chest=b.offset(1,0,-4);l.setBlock(chest,Blocks.CHEST.defaultBlockState(),2);var original=(net.minecraft.world.level.block.entity.ChestBlockEntity)l.getBlockEntity(chest);original.setItem(0,new ItemStack(Items.EMERALD,2));
+            var paper=b.offset(-1,0,-4);var sheet=NoteSurfaceBlock.state(HouseMarginalia.Thread.POEMS,Direction.WEST);l.setBlock(paper,sheet,2);
+            DomesticHallUpgrade.apply(l,b,place);var onward=place.doors().stream().filter(d->d.name().equals("far")).findFirst().orElseThrow();var expected=Vec3.atBottomCenterOf(b.offset(onward.rel()));
+            h.assertTrue(f.data.door(door.id)==null&&!(l.getBlockState(at).getBlock() instanceof DoorBlock)&&f.data.popReturn(first).pos().equals(expected)&&f.data.popReturn(second).pos().equals(expected),"both saved native door returns move to the usable end before the obsolete opening closes");
+            DomesticHallUpgrade.apply(l,b,place);h.assertTrue(l.getBlockEntity(chest)==original&&original.getItem(0).getCount()==2&&l.getBlockState(paper).equals(sheet),"repeat repairs keep the actual chest, finite emeralds and physical paper original");h.succeed();
+        }
+    }
+    @GameTest(template="empty") public static void loopCooldownSurvivesRestartAndCannotAppearBeforeTwelveCrossings(GameTestHelper h){
+        var data=new LabyrinthData();UUID id=UUID.randomUUID(),peer=UUID.randomUUID();
+        for(int i=0;i<11;i++)data.pushReturn(id,new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,Vec3.ZERO,0));h.assertTrue(!LabyrinthPacing.loopDue(data,id),"eleven mundane crossings cannot offer a loop");
+        data.pushReturn(id,new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,Vec3.ZERO,0));h.assertTrue(LabyrinthPacing.loopDue(data,id),"a loop first becomes possible at twelve crossings");data.visit(id,LabyrinthPlace.LONG_HALLWAY);
+        var saved=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),h.getLevel().registryAccess()),h.getLevel().registryAccess());
+        for(int i=0;i<7;i++){saved.visit(id,LabyrinthPlace.STRAIGHT_HALL);h.assertTrue(!LabyrinthPacing.loopDue(saved,id),"seven intervening visits still preserve breathing room after reload");}
+        saved.visit(id,LabyrinthPlace.BENT_HALL);h.assertTrue(LabyrinthPacing.loopDue(saved,id)&&!LabyrinthPacing.loopDue(saved,peer),"the eighth intervening visit restores only the original explorer's chance");h.succeed();
+    }
     private static Fixture tomFixture;
     private static net.minecraft.world.level.ChunkPos tomChunk;
     private static BlockPos tomTicket;
