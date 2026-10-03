@@ -50,10 +50,70 @@ public final class HotelTests {
             var original=ItemStack.parseOptional(p.registryAccess(),f.own(p).getCompound("Original_Account"));f.at(peer,3.5,0,-2);HotelVignette.readCollected(peer,original);var menu=(HotelVignette.Pages)peer.containerMenu;h.assertTrue(menu.clickMenuButton(peer,101)&&!f.own(peer).getBoolean("Read_Account")&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.HOTEL),"a borrowed closing account remains readable without assigning its reading or credit");peer.setGameMode(GameType.SPECTATOR);h.assertTrue(!HotelVignette.inside(peer,LabyrinthPlace.HOTEL),"native observer mode excludes participation");f.reload();h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.HOTEL)&&f.own(p).getBoolean("ClosedAccount"),"the actual account and Witness record survive native SavedData reload");h.succeed();});
     }
     @GameTest(template="empty",batch="hotel_property",timeoutTicks=300)
-    public static void repeatRestAndTabRecoverExactNamedEnchantedStacksWithoutRefill(GameTestHelper h){custody=new Fixture(h,48500,true);var f=custody;var p=f.player("hotel_property");var peer=f.player("hotel_other");f.at(peer,35,0,-5);f.at(p,5.5,5,-19.5);var original=new ItemStack(Items.DIAMOND_PICKAXE);original.set(DataComponents.CUSTOM_NAME,Component.literal("The tool I kept"));original.setDamageValue(83);original.enchant(p.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getOrThrow(net.minecraft.world.item.enchantment.Enchantments.UNBREAKING),2);p.getInventory().setItem(8,original.copy());f.torch(p,new BlockPos(8,5,-15),false);f.torch(p,new BlockPos(8,5,-15),false);f.torch(p,new BlockPos(8,5,-17),false);f.torch(p,new BlockPos(8,5,-19),true);f.at(peer,6.5,5,-19.5);f.torch(peer,new BlockPos(8,5,-17),false);f.at(peer,35,0,-5);h.assertTrue(HotelVignette.rest(p),"first rest begins at the actual bed");
-        h.runAfterDelay(95,()->{h.assertTrue(f.own(p).getBoolean("Rested")&&p.getInventory().items.stream().anyMatch(s->ItemStack.matches(s,original)),"sorting keeps all native components: rest="+f.own(p)+", sleeping="+p.isSleeping()+", inventory="+p.getInventory().items);h.assertTrue(p.getInventory().countItem(Items.TORCH)==1&&f.l.getBlockState(f.b.offset(8,5,-15)).isAir()&&f.l.getBlockState(f.b.offset(8,5,-17)).is(Blocks.TORCH),"housekeeping returns one original light, excludes canceled placement and leaves a peer's replacement");for(int i=0;i<p.getInventory().items.size();i++)if(p.getInventory().items.get(i).is(Items.TORCH))p.getInventory().items.set(i,ItemStack.EMPTY);h.assertTrue(HotelVignette.rest(p),"a later deliberate rest stores pockets");});
-        h.runAfterDelay(190,()->{h.assertTrue(p.getInventory().items.stream().allMatch(ItemStack::isEmpty),"a completed second rest empties only main pockets");h.assertTrue(f.own(p).getList("Drawers",Tag.TAG_COMPOUND).size()==1&&f.own(peer).getList("Drawers",Tag.TAG_COMPOUND).isEmpty(),"custody belongs only to this guest");var beforeReload=f.own(p).getList("Drawers",Tag.TAG_COMPOUND).copy();var stored=ItemStack.parseOptional(p.registryAccess(),beforeReload.getCompound(0).getCompound("Stack"));h.assertTrue(ItemStack.matches(stored,original),"custody already stores the exact native item: rows="+beforeReload+", parsed="+stored+" "+stored.getComponentsPatch()+", expected="+original+" "+original.getComponentsPatch());f.reload();h.assertTrue(beforeReload.equals(f.own(p).getList("Drawers",Tag.TAG_COMPOUND)),"SavedData reload keeps every property byte");HotelVignette.openProperty(p,true);var menu=(ChestMenu)p.containerMenu;h.assertTrue(ItemStack.matches(menu.getContainer().getItem(0),original),"native reload and menu keep the exact enchanted/damaged original: saved="+f.own(p).getList("Drawers",Tag.TAG_COMPOUND)+", actual="+menu.getContainer().getItem(0)+" "+menu.getContainer().getItem(0).getComponentsPatch()+", expected="+original.save(p.registryAccess()));menu.clicked(0,0,ClickType.QUICK_MOVE,p);p.closeContainer();h.assertTrue(p.getInventory().items.stream().anyMatch(s->ItemStack.matches(s,original))&&f.own(p).getList("Drawers",Tag.TAG_COMPOUND).isEmpty(),"native shift-click transfers custody once, without duplication");HotelVignette.openProperty(p,true);h.assertTrue(((ChestMenu)p.containerMenu).getContainer().isEmpty(),"opening again does not replenish the drawer");p.closeContainer();
-            var own=f.own(p);own.putInt("Debt",1);HotelVignette.save(f.data(),p.getUUID(),own);f.chest(p);h.assertTrue(f.own(p).getInt("Debt")==0&&p.getInventory().items.stream().allMatch(ItemStack::isEmpty),"a real chest collects exactly one stack unit into saved lost property");p.closeContainer();HotelVignette.openProperty(p,false);menu=(ChestMenu)p.containerMenu;h.assertTrue(ItemStack.matches(menu.getContainer().getItem(0),original),"lost property retains the same complete components");menu.clicked(0,0,ClickType.QUICK_MOVE,p);p.closeContainer();f.reload();h.assertTrue(f.own(p).getList("LostProperty",Tag.TAG_COMPOUND).isEmpty()&&p.getInventory().items.stream().anyMatch(s->ItemStack.matches(s,original)),"recovery, close and reload do not duplicate the original");h.succeed();});
+    public static void repeatRestAndTabRecoverExactNamedEnchantedStacksWithoutRefill(GameTestHelper h){
+        custody=new Fixture(h,48500,true);
+        var f=custody;
+        var p=f.player("hotel_property");
+        var peer=f.player("hotel_other");
+        f.at(peer,35,0,-5);
+        f.at(p,5.5,5,-19.5);
+        var tool=new ItemStack(Items.DIAMOND_PICKAXE);
+        tool.set(DataComponents.CUSTOM_NAME,Component.literal("The tool I kept"));
+        tool.setDamageValue(83);
+        tool.enchant(p.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getOrThrow(net.minecraft.world.item.enchantment.Enchantments.UNBREAKING),2);
+        p.getInventory().setItem(8,tool);
+        // Initialize the existing native carry stamp before freezing the custody baseline.
+        // Otherwise its periodic tick can legitimately add components between the two rests.
+        MotherCollection.rememberCarried(p.getInventory().getItem(8),p.getUUID(),f.l.getGameTime());
+        var handoff=p.getInventory().getItem(8).copy();
+        var carry=handoff.get(DataComponents.CUSTOM_DATA).copyTag();
+        h.assertTrue(carry.hasUUID(MotherCollection.CARRIER)&&carry.getUUID(MotherCollection.CARRIER).equals(p.getUUID())&&carry.contains(MotherCollection.CARRIED,Tag.TAG_LONG),"the exact baseline includes actual native carried-item metadata");
+        f.torch(p,new BlockPos(8,5,-15),false);
+        f.torch(p,new BlockPos(8,5,-15),false);
+        f.torch(p,new BlockPos(8,5,-17),false);
+        f.torch(p,new BlockPos(8,5,-19),true);
+        f.at(peer,6.5,5,-19.5);
+        f.torch(peer,new BlockPos(8,5,-17),false);
+        f.at(peer,35,0,-5);
+        h.assertTrue(HotelVignette.rest(p),"first rest begins at the actual bed");
+        h.runAfterDelay(95,()->{
+            h.assertTrue(f.own(p).getBoolean("Rested")&&p.getInventory().items.stream().anyMatch(s->ItemStack.matches(s,handoff)),"sorting preserves the complete named, damaged, enchanted and carry-stamped item");
+            h.assertTrue(p.getInventory().countItem(Items.TORCH)==1&&f.l.getBlockState(f.b.offset(8,5,-15)).isAir()&&f.l.getBlockState(f.b.offset(8,5,-17)).is(Blocks.TORCH),"housekeeping returns one original light, excludes canceled placement and leaves a peer's replacement");
+            for(int i=0;i<p.getInventory().items.size();i++)if(p.getInventory().items.get(i).is(Items.TORCH))p.getInventory().items.set(i,ItemStack.EMPTY);
+            h.assertTrue(HotelVignette.rest(p),"a later deliberate rest stores pockets");
+        });
+        h.runAfterDelay(190,()->{
+            h.assertTrue(p.getInventory().items.stream().allMatch(ItemStack::isEmpty),"a completed second rest empties only main pockets");
+            h.assertTrue(f.own(p).getList("Drawers",Tag.TAG_COMPOUND).size()==1&&f.own(peer).getList("Drawers",Tag.TAG_COMPOUND).isEmpty(),"custody belongs only to this guest");
+            var beforeReload=f.own(p).getList("Drawers",Tag.TAG_COMPOUND).copy();
+            var stored=ItemStack.parseOptional(p.registryAccess(),beforeReload.getCompound(0).getCompound("Stack"));
+            h.assertTrue(ItemStack.matches(stored,handoff),"drawer custody stores every component of the actual handoff item");
+            f.reload();
+            h.assertTrue(beforeReload.equals(f.own(p).getList("Drawers",Tag.TAG_COMPOUND)),"SavedData reload keeps every property byte");
+            HotelVignette.openProperty(p,true);
+            var menu=(ChestMenu)p.containerMenu;
+            h.assertTrue(ItemStack.matches(menu.getContainer().getItem(0),handoff),"native reload and menu keep the exact enchanted, damaged and carry-stamped original");
+            menu.clicked(0,0,ClickType.QUICK_MOVE,p);
+            p.closeContainer();
+            h.assertTrue(p.getInventory().items.stream().anyMatch(s->ItemStack.matches(s,handoff))&&f.own(p).getList("Drawers",Tag.TAG_COMPOUND).isEmpty(),"native shift-click transfers custody once, without duplication");
+            HotelVignette.openProperty(p,true);
+            h.assertTrue(((ChestMenu)p.containerMenu).getContainer().isEmpty(),"opening again does not replenish the drawer");
+            p.closeContainer();
+            var own=f.own(p);
+            own.putInt("Debt",1);
+            HotelVignette.save(f.data(),p.getUUID(),own);
+            f.chest(p);
+            h.assertTrue(f.own(p).getInt("Debt")==0&&p.getInventory().items.stream().allMatch(ItemStack::isEmpty),"a real chest collects exactly one stack unit into saved lost property");
+            p.closeContainer();
+            HotelVignette.openProperty(p,false);
+            menu=(ChestMenu)p.containerMenu;
+            h.assertTrue(ItemStack.matches(menu.getContainer().getItem(0),handoff),"lost property retains the same complete components");
+            menu.clicked(0,0,ClickType.QUICK_MOVE,p);
+            p.closeContainer();
+            f.reload();
+            h.assertTrue(f.own(p).getList("LostProperty",Tag.TAG_COMPOUND).isEmpty()&&p.getInventory().items.stream().anyMatch(s->ItemStack.matches(s,handoff)),"recovery, close and reload do not duplicate the original");
+            h.succeed();
+        });
     }
     @GameTest(template="empty",batch="hotel_plant",timeoutTicks=100)
     public static void boilerStartsOnDiscoveryBlowsOnceAndRestartsOnlyItsHotel(GameTestHelper h){plant=new Fixture(h,49000,true);var f=plant;var p=f.player("hotel_engineer");h.assertTrue(!f.data().state(HotelVignette.STATE).getBoolean("PlantFound"),"the empty hotel has no running boiler");f.at(p,4.5,-4,-56.5);
