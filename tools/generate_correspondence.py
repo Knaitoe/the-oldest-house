@@ -6,7 +6,7 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "docs/CORRESPONDENCE_0_4_31.md"
+SOURCE = ROOT / "docs/CORRESPONDENCE_0_4_32.md"
 DEST = ROOT / "src/main/resources/data/the_oldest_house/correspondence"
 AUTHORS = dict(zip("ABCDEFGHIJKLMN", ["Iris", "Mae", "Noel", "Ansel", "Ruth", "D. V.",
     "Paula", "June", "An unnamed host", "An admirer", "Unsigned", "Ledger copy", "Review office", "A correspondent"]))
@@ -14,7 +14,7 @@ STYLES = dict(zip("ABCDEFGHIJKLMN", ["KAREN", "PELAFINA", "WILL", "ZAMPANO", "KA
     "WILL", "KAREN", "KAREN", "WILL", "WILL", "ZAMPANO", "ZAMPANO", "PELAFINA"]))
 SURFACES = dict(zip("ABCDEFGHIJKLMN", ["CALLS", "CALLS", "ROOM", "HOUSEKEEPING", "CALLS", "HOUSEKEEPING",
     "ROOM", "POEMS", "HOUSEKEEPING", "POEMS", "ROOM", "ROOM", "HOUSEKEEPING", "CALLS"]))
-DEPTHS = [0, 6, 8, 12, 16, 20]
+DEPTHS = [0, 6, 8, 12, 16, 16]
 
 def generate():
     notes = []

@@ -35,11 +35,11 @@ public final class HouseCorrespondence {
                     HouseWriting.WritingStyle.PLAIN,"legacy_"+thread.getSerializedName(),n,gates[n],thread,""));
         return List.copyOf(all);
     }
-    public static CompoundTag record(LabyrinthData data,UUID reader){return data.state(ID).getCompound(reader.toString()).copy();}
+    public static CompoundTag record(LabyrinthData data,UUID reader){return data.stateEntry(ID,reader.toString());}
     private static void save(LabyrinthData data,UUID reader,CompoundTag own){var all=data.state(ID);all.put(reader.toString(),own);data.setState(ID,all);}
     /** Called only by actual arrival/return callbacks, never by a tick or page click. */
     public static void crossed(ServerPlayer reader){
-        if(!reader.isAlive()||reader.isSpectator())return;
+        if(!reader.isAlive()||reader.gameMode.getGameModeForPlayer()==net.minecraft.world.level.GameType.SPECTATOR)return;
         var data=LabyrinthData.get(reader.server);var own=record(data,reader.getUUID());
         own.putLong("Step",own.getLong("Step")+1);save(data,reader.getUUID(),own);
     }
@@ -94,7 +94,8 @@ public final class HouseCorrespondence {
             if(n.chain().startsWith("legacy_"))next=Math.max(next,HouseMarginalia.next(data,p.getUUID(),n.surface()));
             if(n.installment()!=next)return false;
             var steps=own.getCompound("ChainStep");
-            if(steps.contains(n.chain())&&own.getLong("Step")-steps.getLong(n.chain())<2)return false;
+            int spacing=n.installment()==5?4:2;
+            if(steps.contains(n.chain())&&own.getLong("Step")-steps.getLong(n.chain())<spacing)return false;
         }
         if(n.chain().equals("L")&&!own.getCompound("Facts").getCompound("L").contains("possession")&&lost(p)==null)return false;
         var experience=HouseExperience.record(data,p.getUUID());
@@ -116,7 +117,7 @@ public final class HouseCorrespondence {
     }
     /** The caller has completed the actual doorway move, including any cross-dimension fade. */
     public static void returnedSafely(ServerPlayer reader,String source){
-        if(!reader.isAlive()||reader.isSpectator()||source.isEmpty())return;
+        if(!reader.isAlive()||reader.gameMode.getGameModeForPlayer()==net.minecraft.world.level.GameType.SPECTATOR||source.isEmpty())return;
         var data=LabyrinthData.get(reader.server);var experience=HouseExperience.record(data,reader.getUUID());
         if(!source.equals(experience.getString("LastRetreat")))return;
         var story=WitnessAccount.Story.of(source);
@@ -196,7 +197,7 @@ public final class HouseCorrespondence {
     }
     /** Reading a collected original uses the same native page buttons as paper on a desk. */
     @SubscribeEvent public static void readOriginal(PlayerInteractEvent.RightClickItem event){
-        if(event.isCanceled()||!(event.getEntity() instanceof ServerPlayer reader)||!reader.isAlive()||reader.isSpectator())return;
+        if(event.isCanceled()||!(event.getEntity() instanceof ServerPlayer reader)||!reader.isAlive()||reader.gameMode.getGameModeForPlayer()==net.minecraft.world.level.GameType.SPECTATOR)return;
         var book=reader.getItemInHand(event.getHand());var custom=book.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag();
         if(!custom.hasUUID("CorrespondenceReader")||!reader.getUUID().equals(custom.getUUID("CorrespondenceReader")))return;
         var id=custom.getString("CorrespondenceId");var data=LabyrinthData.get(reader.server);
@@ -219,7 +220,7 @@ public final class HouseCorrespondence {
         }
         private static SimpleContainer container(ItemStack book){var display=new SimpleContainer(1);display.setItem(0,book.copy());return display;}
         @Override public boolean stillValid(Player player){
-            if(player!=reader||!reader.isAlive()||reader.isSpectator())return false;
+            if(player!=reader||!reader.isAlive()||reader.gameMode.getGameModeForPlayer()==net.minecraft.world.level.GameType.SPECTATOR)return false;
             for(int slot=0;slot<reader.getInventory().getContainerSize();slot++)
                 if(ItemStack.isSameItemSameComponents(reader.getInventory().getItem(slot),original.book()))return true;
             return false;
