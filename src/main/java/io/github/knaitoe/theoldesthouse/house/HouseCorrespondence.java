@@ -27,7 +27,7 @@ public final class HouseCorrespondence {
     private static void save(LabyrinthData data,UUID reader,CompoundTag own){var all=data.state(ID);all.put(reader.toString(),own);data.setState(ID,all);}
     /** Called only by actual arrival/return callbacks, never by a tick or page click. */
     public static void crossed(ServerPlayer reader){
-        if(!reader.isAlive()||reader.isSpectator())return;
+        if(!reader.isAlive()||reader.gameMode.getGameModeForPlayer()==net.minecraft.world.level.GameType.SPECTATOR)return;
         var data=LabyrinthData.get(reader.server);var own=record(data,reader.getUUID());
         own.putLong("Step",own.getLong("Step")+1);save(data,reader.getUUID(),own);
     }

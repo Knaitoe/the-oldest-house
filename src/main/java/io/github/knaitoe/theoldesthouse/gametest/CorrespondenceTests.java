@@ -57,7 +57,10 @@ public final class CorrespondenceTests {
             var before=own(f,p);HouseCorrespondence.samples(p);h.assertTrue(before.equals(own(f,p)),"all 108 specimens are read-only previews");
             f.reload();h.assertTrue(own(f,p).getLong("Step")==2&&own(f,p).getCompound("Next").getInt("C")==1,"native reload preserves journey and sequence");
             h.assertTrue(p.getInventory().items.stream().anyMatch(s->ItemStack.isSameItemSameComponents(s,kept)),"an early collected original is never rewritten");
-            p.gameMode.changeGameModeForPlayer(GameType.SPECTATOR);HouseCorrespondence.crossed(p);h.assertTrue(own(f,p).getLong("Step")==2&&!alias.clickMenuButton(p,101),"spectators cannot manufacture a reading or crossing");
+            p.gameMode.changeGameModeForPlayer(GameType.SPECTATOR);
+            h.assertTrue(p.gameMode.getGameModeForPlayer()==GameType.SPECTATOR,"the native game mode changed before the observer check");
+            HouseCorrespondence.crossed(p);h.assertTrue(own(f,p).getLong("Step")==2,"a spectator crossing cannot advance the saved journey");
+            h.assertTrue(!alias.clickMenuButton(p,101),"an observer cannot finish the old native reader menu");
             h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0,"hostile or tender paper confers no story resolution");h.succeed();
         });
     }
