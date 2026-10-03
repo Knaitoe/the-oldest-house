@@ -43,12 +43,12 @@ public final class WitnessTests {
         WitnessAccount.resolve(data,player,WitnessAccount.Story.HARRIGAN,"kept_phone");
         WitnessAccount.resolve(data,player,WitnessAccount.Story.DROWNED_TOWN,"opened_roof");
         WitnessAccount.resolve(data,player,WitnessAccount.Story.PRESERVED_CAVE,"crossed_congregation");
-        helper.assertTrue(WitnessAccount.count(data,player)==5&&!WitnessAccount.ready(data,player),"five distinct resolutions still fall short of thirteen");
+        helper.assertTrue(WitnessAccount.count(data,player)==5&&!WitnessAccount.ready(data,player),"five distinct resolutions still fall short of fifteen");
         ItemStack unfinished=WitnessAccount.book(data,player,"reader",false);
         helper.assertTrue(unfinished.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream()
                 .noneMatch(p->p.raw().getString().contains("Crouch and open the bars")),"the final cell directions remain absent below the threshold");
         WitnessAccount.resolve(data,player,WitnessAccount.Story.SHALLOWS,"threw_her");
-        helper.assertTrue(WitnessAccount.count(data,player)==6&&!WitnessAccount.ready(data,player),"six resolutions fall short of thirteen");
+        helper.assertTrue(WitnessAccount.count(data,player)==6&&!WitnessAccount.ready(data,player),"six resolutions fall short of fifteen");
         WitnessAccount.resolve(data,player,WitnessAccount.Story.PHONE_CANOE,"lost_recording");
         helper.assertTrue(WitnessAccount.count(data,player)==7&&!WitnessAccount.ready(data,player),"the previous seven-source account stays saved below the new boundary");
         WitnessAccount.resolve(data,player,WitnessAccount.Story.GOATMAN,"kept_door_closed");
@@ -84,17 +84,17 @@ public final class WitnessTests {
         CompoundTag world=data.state(WitnessAccount.STATE),record=world.getCompound(player.toString());
         record.putBoolean("ReadPlay",true);world.put(player.toString(),record);data.setState(WitnessAccount.STATE,world);
         var registries=helper.getLevel().registryAccess();LabyrinthData loaded=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),registries),registries);
-        helper.assertTrue(WitnessAccount.count(loaded,player)==3&&WitnessAccount.readPlay(loaded,player)&&!WitnessEnding.qualified(loaded,player),"old evidence and reading survive without bypassing thirteen resolutions");
+        helper.assertTrue(WitnessAccount.count(loaded,player)==3&&WitnessAccount.readPlay(loaded,player)&&!WitnessEnding.qualified(loaded,player),"old evidence and reading survive without bypassing fifteen resolutions");
         WitnessAccount.resolve(loaded,player,WitnessAccount.Story.CLAP,"again");
         helper.assertTrue(WitnessAccount.count(loaded,player)==3,"repeating an old scene cannot supply missing evidence");
         for(var story:List.of(WitnessAccount.Story.DROWNED_TOWN,WitnessAccount.Story.PRESERVED_CAVE,WitnessAccount.Story.SHALLOWS))WitnessAccount.resolve(loaded,player,story,"resolved");
-        helper.assertTrue(WitnessAccount.count(loaded,player)==6&&WitnessAccount.readPlay(loaded,player)&&!WitnessEnding.qualified(loaded,player),"a previously qualifying six-source reading remains saved while thirteen are now required");
+        helper.assertTrue(WitnessAccount.count(loaded,player)==6&&WitnessAccount.readPlay(loaded,player)&&!WitnessEnding.qualified(loaded,player),"a previously qualifying six-source reading remains saved while fifteen are now required");
         WitnessAccount.resolve(loaded,player,WitnessAccount.Story.PHONE_CANOE,"lost_recording");
-        helper.assertTrue(WitnessAccount.count(loaded,player)==7&&!WitnessEnding.qualified(loaded,player),"all prior evidence and deliberate reading remain, while the current thirteenth source is required");
+        helper.assertTrue(WitnessAccount.count(loaded,player)==7&&!WitnessEnding.qualified(loaded,player),"all prior evidence and deliberate reading remain, while the current fifteenth source is required");
         WitnessAccount.resolve(loaded,player,WitnessAccount.Story.GOATMAN,"kept_door_closed");
-        helper.assertTrue(WitnessAccount.count(loaded,player)==8&&!WitnessEnding.qualified(loaded,player),"the previous eight-source reading remains saved while thirteen are required");
+        helper.assertTrue(WitnessAccount.count(loaded,player)==8&&!WitnessEnding.qualified(loaded,player),"the previous eight-source reading remains saved while fifteen are required");
         WitnessAccount.resolve(loaded,player,WitnessAccount.Story.TED_CAVER,"retraced_the_squeeze");
-        helper.assertTrue(WitnessAccount.count(loaded,player)==9&&!WitnessEnding.qualified(loaded,player),"the old cave escape remains saved below the thirteen-source boundary");
+        helper.assertTrue(WitnessAccount.count(loaded,player)==9&&!WitnessEnding.qualified(loaded,player),"the old cave escape remains saved below the fifteen-source boundary");
         for(var story:List.of(WitnessAccount.Story.ZAMPANO,WitnessAccount.Story.WHALE,WitnessAccount.Story.BARN_WELL,WitnessAccount.Story.HOLLOWAY,WitnessAccount.Story.PLAIN,WitnessAccount.Story.HOSPITAL))WitnessAccount.resolve(loaded,player,story,"resolved");
         helper.assertTrue(WitnessAccount.count(loaded,player)==15&&WitnessEnding.qualified(loaded,player),"new personal resolutions qualify the preserved deliberate reading");helper.succeed();
     }
