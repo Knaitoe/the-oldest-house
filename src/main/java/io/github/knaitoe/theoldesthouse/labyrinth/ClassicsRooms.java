@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.state.properties.*;
 /** Furnished, framed wings with real supports, clear approaches and physical reading surfaces. */
 public final class ClassicsRooms {
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
-    public static final BlockPos CUPBOARD=new BlockPos(-8,0,-13),GRACE=new BlockPos(-5,0,-26),ALBUM=new BlockPos(6,0,-27),SITTING=new BlockPos(-4,0,-10),GATE=new BlockPos(5,0,-22);
+    public static final BlockPos CUPBOARD=new BlockPos(-8,0,-13),GRACE=new BlockPos(-5,0,-26),ALBUM=new BlockPos(6,0,-27),SITTING=new BlockPos(-5,0,-11),GATE=new BlockPos(5,0,-22);
     public static final List<BlockPos> CANDLES=List.of(new BlockPos(-1,1,-15),new BlockPos(0,1,-16),new BlockPos(-7,1,-19));
     public static final List<BlockPos> SHUTTERS=List.of(new BlockPos(10,2,-24),new BlockPos(10,2,-25),new BlockPos(10,2,-26));
     public static final List<BlockPos> PANELS=List.of(new BlockPos(-4,1,-28),new BlockPos(-1,1,-28),new BlockPos(2,1,-28),new BlockPos(5,1,-28));
@@ -35,7 +35,7 @@ public final class ClassicsRooms {
         for(int x=-10;x<=10;x++){at(l,b,x,0,-32,ClassicsRegistry.WAINSCOT.get());if(Math.abs(x)>3)at(l,b,x,0,-7,ClassicsRegistry.WAINSCOT.get());}
         for(int z=-31;z<=-8;z++)for(int x:new int[]{-11,11}){at(l,b,x,0,z,ClassicsRegistry.WAINSCOT.get());at(l,b,x,6,z,Blocks.DARK_OAK_PLANKS);}
         for(int z:new int[]{-10,-16,-22,-28})box(l,b,-10,6,z,10,6,z,Blocks.DARK_OAK_LOG);
-        box(l,b,-3,0,-8,3,4,-8,ClassicsRegistry.SEANCE_WALL.get());frame(l,b,0,-8,Direction.SOUTH);
+        box(l,b,-3,0,-9,3,4,-9,ClassicsRegistry.SEANCE_WALL.get());frame(l,b,0,-9,Direction.SOUTH);
         for(int x=-10;x<=10;x++)for(int y=0;y<=6;y++)at(l,b,x,y,-22,y==0?ClassicsRegistry.WAINSCOT.get():Blocks.SMOOTH_SANDSTONE);
         box(l,b,0,0,-31,0,6,-23,Blocks.DARK_OAK_PLANKS);
         frame(l,b,-5,-22,Direction.SOUTH);NovelRooms.door(l,b.offset(-5,0,-22),Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);
@@ -67,7 +67,7 @@ public final class ClassicsRooms {
     private static void nursery(ServerLevel l,BlockPos b){
         LabyrinthBuilder.room(l,b,-8,8,6,-27,-7,ClassicsRegistry.WALLPAPER.get().defaultBlockState(),Blocks.BIRCH_PLANKS.defaultBlockState(),Blocks.SMOOTH_SANDSTONE.defaultBlockState());
         LabyrinthBuilder.room(l,b,-3,3,4,-7,-1,Blocks.WHITE_TERRACOTTA.defaultBlockState(),Blocks.BIRCH_PLANKS.defaultBlockState(),Blocks.BIRCH_PLANKS.defaultBlockState());
-        box(l,b,-3,0,-7,3,4,-7,Blocks.WHITE_TERRACOTTA);frame(l,b,0,-7,Direction.SOUTH);
+        box(l,b,-3,0,-8,3,4,-8,Blocks.WHITE_TERRACOTTA);frame(l,b,0,-8,Direction.SOUTH);
         for(int z=-27;z<=-7;z++)for(int x:new int[]{-9,9}){at(l,b,x,0,z,Blocks.STRIPPED_BIRCH_WOOD);at(l,b,x,6,z,Blocks.BIRCH_PLANKS);}
         for(int x=-8;x<=8;x++){at(l,b,x,0,-28,Blocks.STRIPPED_BIRCH_WOOD);at(l,b,x,6,-28,Blocks.BIRCH_PLANKS);if(Math.abs(x)>3)at(l,b,x,0,-6,Blocks.STRIPPED_BIRCH_WOOD);}
         for(int z:new int[]{-10,-18,-25})box(l,b,-8,6,z,8,6,z,Blocks.STRIPPED_OAK_LOG);
