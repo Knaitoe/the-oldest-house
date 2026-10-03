@@ -102,7 +102,10 @@ public final class CompanionOrders {
     }
     public static boolean issue(TamableAnimal pet,ServerPlayer player,Order order) {
         if(!supported(pet)||!player.getUUID().equals(owner(pet)))return false;
-        if((order==Order.EXIT||order==Order.DEEPER)&&!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)) {
+        boolean outsideScent=order==Order.DEEPER&&Hillary.tagOf(pet)!=null
+                &&player.serverLevel().dimension().equals(net.minecraft.world.level.Level.OVERWORLD)
+                &&HouseSavedData.get(player.server).houseOrigin()!=null;
+        if((order==Order.EXIT||order==Order.DEEPER)&&!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)&&!outsideScent) {
             reassureSound(pet,false);return false;
         }
         CompoundTag data=pet.getPersistentData();
@@ -171,7 +174,13 @@ public final class CompanionOrders {
     public static int hesitationTicks(int depth) {return depth<3?0:depth<6?20:depth<10?30:40;}
     public static void guide(TamableAnimal pet,ServerPlayer player) {
         ServerLevel level=player.serverLevel();BlockPos origin=HouseSavedData.get(player.server).houseOrigin();
-        if(origin==null||!level.dimension().equals(HouseDimensions.INTERIOR))return;
+        if(origin==null)return;
+        if(level.dimension().equals(net.minecraft.world.level.Level.OVERWORLD)&&order(pet)==Order.DEEPER&&Hillary.tagOf(pet)!=null){
+            Vec3 porch=io.github.knaitoe.theoldesthouse.house.HouseProxyEntityEvacuation.frontDoorExit(level,origin);
+            if(porch==null)porch=Vec3.atBottomCenterOf(origin.offset(HouseLayout.AXIS_X,1,HouseLayout.FRONT_DOOR_Z-2));
+            HillaryPaths.lead(pet,player,BlockPos.containing(porch),null,null);return;
+        }
+        if(!level.dimension().equals(HouseDimensions.INTERIOR))return;
         LabyrinthPlace place=LabyrinthPlaces.placeAt(origin,player.blockPosition());
         BlockPos base=place==null?null:LabyrinthPlaces.base(origin,place);
         noteRoom(pet, player);
@@ -253,7 +262,9 @@ public final class CompanionOrders {
             if(order==Order.FOLLOW)return server.getGameTime()<pet.getPersistentData().getLong("CompanionFearUntil");
             if(order!=Order.EXIT&&order!=Order.DEEPER)return false;
             ServerPlayer player=id==null?null:server.getServer().getPlayerList().getPlayer(id);
-            return player!=null&&player.level()==level&&server.dimension().equals(HouseDimensions.INTERIOR);
+            boolean outsideScent=order==Order.DEEPER&&Hillary.tagOf(pet)!=null&&server.dimension().equals(net.minecraft.world.level.Level.OVERWORLD)
+                    &&HouseSavedData.get(server.getServer()).houseOrigin()!=null;
+            return player!=null&&player.level()==level&&(server.dimension().equals(HouseDimensions.INTERIOR)||outsideScent);
         }
         @Override public boolean canContinueToUse(){return canUse();}
         @Override public boolean requiresUpdateEveryTick(){return true;}

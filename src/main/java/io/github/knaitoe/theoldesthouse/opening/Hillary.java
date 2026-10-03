@@ -419,6 +419,8 @@ public final class Hillary {
             if (owner != null) { CompanionOrders.issue(wolf, owner, CompanionOrders.Order.DEEPER); return; }
         }
         SEEKING.put(wolf.getUUID(), level.getGameTime() + 2400);
+        ServerPlayer seekerPlayer=level.getServer().getPlayerList().getPlayer(seeker);
+        if(seekerPlayer!=null)CompanionOrders.issue(wolf,seekerPlayer,CompanionOrders.Order.DEEPER);
     }
 
     public static boolean isSeeking(Wolf wolf) {
