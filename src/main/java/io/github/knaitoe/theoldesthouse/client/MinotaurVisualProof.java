@@ -27,7 +27,7 @@ public final class MinotaurVisualProof extends Screen {
         for(int i=0;i<4;i++){
             int left=i*width/4+8;g.fill(left,32,left+width/4-16,height-25,0xFF3B3530);g.drawString(font,names[i],left+4,38,0xFFE4DBCB,false);g.flush();
             float scale=Math.min(45,Math.min((height-92)/4.25F,(width/4F-24)/2.7F));
-            var pose=g.pose();pose.pushPose();pose.translate(left+width/8-8,(height+28)/2F+scale*.45F,180);pose.scale(scale,scale,scale);pose.mulPose(Axis.YP.rotationDegrees(25));
+            var pose=g.pose();pose.pushPose();pose.translate(left+width/8-8,(height+28)/2F+scale*.45F,180);pose.scale(scale,scale,scale);pose.mulPose(Axis.YP.rotationDegrees(205));
             model.pose(phases[i],frames*.5F,.6F,frames,0,0);var buffers=mc.renderBuffers().bufferSource();model.renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(FinaleClientEvents.MATERIALS)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);buffers.endBatch();pose.popPose();
         }
         long cost=System.nanoTime()-start;if(frames>=4){total+=cost;max=Math.max(max,cost);}
