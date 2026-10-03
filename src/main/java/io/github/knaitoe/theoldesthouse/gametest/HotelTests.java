@@ -20,7 +20,7 @@ import net.minecraft.world.phys.*;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.gametest.*;
-@GameTestHolder(TheOldestHouse.MOD_ID)
+@GameTestHolder(TheOldestHouse.MOD_ID+"_hotel")
 @PrefixGameTestTemplate(false)
 public final class HotelTests {
     private static Fixture arc,custody,plant,blind;

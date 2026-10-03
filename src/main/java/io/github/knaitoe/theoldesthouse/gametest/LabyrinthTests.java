@@ -878,7 +878,7 @@ public final class LabyrinthTests {
             LabyrinthData.Door door = data.door(LabyrinthPlace.JUNCTION.doorId(spec));
             LabyrinthData.Deal answer = door == null ? null : data.deal(player, door);
             if (answer != null && answer.bark()) {
-                helper.assertTrue(java.util.Set.of(LabyrinthPlace.MOTHER_DEN.id(),LabyrinthPlace.HOTEL.id()).contains(answer.place()), "the scent finds an available recurring Mother or hotel anchor");
+                helper.assertTrue(LabyrinthPlace.byId(answer.place())!=null&&LabyrinthPlace.byId(answer.place()).kind()==LabyrinthPlace.Kind.RECURRING&&LabyrinthDealer.vignettesAvailable(data,player).contains(LabyrinthPlace.byId(answer.place())), "the scent finds an actually available recurring anchor");
                 motherDoors++;
             }
         }
