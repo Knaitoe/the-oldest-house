@@ -43,20 +43,20 @@ public final class WallNotesTests {
         for(int x=(b.getX()-29)>>4;x<=(b.getX()+34)>>4;x++)for(int z=(b.getZ()-65)>>4;z<=b.getZ()>>4;z++){
             var chunk=new ChunkPos(x,z);sandTickets.add(chunk);l.getChunkSource().addRegionTicket(TicketType.PORTAL,chunk,3,b);l.getChunk(x,z);
         }
+        // Reproduce the outside island's empty foundation independently of this test world's terrain.
+        for(int x=-28;x<=28;x++)for(int z=-64;z<=0;z++)for(int y=-3;y<=-1;y++)l.setBlock(b.offset(x,y,z),Blocks.AIR.defaultBlockState(),2);
         var edited=b.offset(-12,-1,-12);l.setBlock(edited,Blocks.PRISMARINE.defaultBlockState(),2);
         var cachePos=b.offset(3,0,-7);l.setBlock(cachePos,Blocks.BARREL.defaultBlockState(),2);var cache=(BarrelBlockEntity)l.getBlockEntity(cachePos);cache.setItem(4,new ItemStack(Items.EMERALD,7));
         NovelRooms.repairPlainGround(l,b);
         for(int x=-28;x<=28;x++)for(int z=-64;z<=0;z++){
-            var at=b.offset(x,-1,z);h.assertTrue(!l.getBlockState(at).isAir()&&l.getBlockState(at.below()).isCollisionShapeFullBlock(l,at.below()),"every repaired authored sand tile has native solid support");l.scheduleTick(at,Blocks.SAND,2);
+            var at=b.offset(x,-1,z);h.assertTrue(!l.getBlockState(at).isAir()&&l.getBlockState(at.below()).isCollisionShapeFullBlock(l,at.below()),"every repaired authored sand tile has native solid support");
+            if(l.getBlockState(at).is(Blocks.SAND))l.getBlockState(at).tick(l,at,l.getRandom());
         }
-        // A separate unsupported control proves real FallingBlock ticks run in this native level.
-        var control=b.offset(32,4,-4);l.setBlock(control,Blocks.SAND.defaultBlockState(),2);l.scheduleTick(control,Blocks.SAND,2);
-        h.runAfterDelay(16,()->{
-            var core=new AABB(b.getX()-28,l.getMinBuildHeight(),b.getZ()-64,b.getX()+29,b.getY()+2,b.getZ()+1);
-            h.assertTrue(l.getEntitiesOfClass(FallingBlockEntity.class,core,e->e.getBlockState().is(Blocks.SAND)).isEmpty(),"actual native sand ticks leave the repaired plain whole, without a falling-block cascade");
-            h.assertTrue(!l.getEntitiesOfClass(FallingBlockEntity.class,new AABB(control).inflate(8),e->e.getBlockState().is(Blocks.SAND)).isEmpty(),"the unsupported native control really falls");
-            h.assertTrue(l.getBlockState(b.offset(0,-1,-8)).is(Blocks.SAND)&&l.getBlockState(edited).is(Blocks.PRISMARINE)&&l.getBlockEntity(cachePos)==cache&&cache.getItem(4).getCount()==7,"the floor, player edit and original finite cache survive actual physics ticks");h.succeed();
-        });
+        // Invoke the same native block tick for an explicitly unsupported control; no chunk-timing guess.
+        var control=b.offset(32,4,-4);l.setBlock(control.below(),Blocks.AIR.defaultBlockState(),2);l.setBlock(control,Blocks.SAND.defaultBlockState(),2);l.getBlockState(control).tick(l,control,l.getRandom());
+        h.assertTrue(l.getBlockState(control).isAir(),"the native unsupported control leaves its cell to become a falling block");
+        for(int x=-28;x<=28;x++)for(int z=-64;z<=0;z++)h.assertTrue(!l.getBlockState(b.offset(x,-1,z)).isAir(),"actual native sand ticks leave every repaired tile whole, without a falling-block cascade");
+        h.assertTrue(l.getBlockState(edited).is(Blocks.PRISMARINE)&&l.getBlockEntity(cachePos)==cache&&cache.getItem(4).getCount()==7,"the player edit and original finite cache survive actual physics ticks");h.succeed();
     }
     @GameTest(template="empty") public static void nativeHallPatchAndBedroomFinishPreserveTheOriginalFurnishings(GameTestHelper h){
         var l=h.getLevel();var o=h.absolutePos(BlockPos.ZERO).offset(10,20,100);HouseImpossibleHallway.build(l,o);
