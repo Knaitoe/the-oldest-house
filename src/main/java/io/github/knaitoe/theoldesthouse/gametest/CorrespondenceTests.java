@@ -112,7 +112,7 @@ public final class CorrespondenceTests {
                     String chain=id.substring(0,1);int n=Integer.parseInt(id.substring(1));
                     h.assertTrue(n==next.getOrDefault(chain,1),"each chain reaches its actual next installment: "+id);next.put(chain,n+1);
                 }
-                f.end(p,menu);travel(p);
+                f.end(p,menu);travel(p);travel(p);
             }
             h.assertTrue(seen.size()==125&&seen.stream().filter(id->!id.startsWith("R_")).count()==108,"all 108 new pieces and all 17 original installments can be discovered");
             StringBuilder acrostic=new StringBuilder();for(String sentence:text(HouseCorrespondence.preview(p,"B04")).split("\\."))if(!sentence.isBlank())acrostic.append(sentence.strip().charAt(0));

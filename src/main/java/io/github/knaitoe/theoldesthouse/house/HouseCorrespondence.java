@@ -23,7 +23,7 @@ public final class HouseCorrespondence {
                     HouseWriting.WritingStyle.PLAIN,"legacy_"+thread.getSerializedName(),n,gates[n],thread,""));
         return List.copyOf(all);
     }
-    public static CompoundTag record(LabyrinthData data,UUID reader){return data.state(ID).getCompound(reader.toString()).copy();}
+    public static CompoundTag record(LabyrinthData data,UUID reader){return data.stateEntry(ID,reader.toString());}
     private static void save(LabyrinthData data,UUID reader,CompoundTag own){var all=data.state(ID);all.put(reader.toString(),own);data.setState(ID,all);}
     /** Called only by actual arrival/return callbacks, never by a tick or page click. */
     public static void crossed(ServerPlayer reader){
@@ -82,7 +82,8 @@ public final class HouseCorrespondence {
             if(n.chain().startsWith("legacy_"))next=Math.max(next,HouseMarginalia.next(data,p.getUUID(),n.surface()));
             if(n.installment()!=next)return false;
             var steps=own.getCompound("ChainStep");
-            if(steps.contains(n.chain())&&own.getLong("Step")-steps.getLong(n.chain())<2)return false;
+            int spacing=n.installment()==5?4:2;
+            if(steps.contains(n.chain())&&own.getLong("Step")-steps.getLong(n.chain())<spacing)return false;
         }
         if(n.chain().equals("L")&&!own.getCompound("Facts").getCompound("L").contains("possession")&&lost(p)==null)return false;
         var experience=HouseExperience.record(data,p.getUUID());
