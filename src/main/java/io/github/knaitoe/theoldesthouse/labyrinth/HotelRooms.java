@@ -17,7 +17,7 @@ public final class HotelRooms {
     private HotelRooms(){}
     public static void build(ServerLevel l,BlockPos b,LabyrinthPlace p){if(p==LabyrinthPlace.HOTEL)hotel(l,b);else grounds(l,b);}
     private static void at(ServerLevel l,BlockPos b,int x,int y,int z,Block block){l.setBlock(b.offset(x,y,z),block.defaultBlockState(),F);}
-    private static void box(ServerLevel l,BlockPos b,int x0,int y0,int z0,int x1,int y1,int z1,Block block){NovelRooms.box(l,b,x0,y0,z0,x1,y1,z1,block.defaultBlockState());}
+    private static void box(ServerLevel l,BlockPos b,int x0,int y0,int z0,int x1,int y1,int z1,Block block){NovelRooms.box(l,b,x0,y0,z0,x1,y1,z1,block instanceof LeavesBlock?block.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true):block.defaultBlockState());}
     private static void prop(ServerLevel l,BlockPos b,BlockPos p,HotelPropBlock.Kind kind,Direction facing){l.setBlock(b.offset(p),HotelRegistry.PROP.get().defaultBlockState().setValue(HotelPropBlock.KIND,kind).setValue(HotelPropBlock.FACING,facing),F);}
     private static void furniture(ServerLevel l,BlockPos b,int x,int y,int z,HouseholdFurnitureBlock.Kind kind,Direction facing){NovelRooms.furniture(l,b.offset(x,y,z),kind,facing);}
     private static void paper(ServerLevel l,BlockPos b,BlockPos p,ItemStack book){l.setBlock(b.offset(p),Blocks.LECTERN.defaultBlockState(),F);if(l.getBlockEntity(b.offset(p)) instanceof LecternBlockEntity e){e.setBook(book);e.setChanged();}}
@@ -28,7 +28,7 @@ public final class HotelRooms {
     private static void hotel(ServerLevel l,BlockPos b){
         room(l,b,-28,28,-66,-2,0,12);room(l,b,-5,5,-3,-1,0,3);
         room(l,b,-11,11,-27,-5,0,3);room(l,b,-27,-17,-27,-6,0,4);room(l,b,13,27,-34,-6,0,7);
-        room(l,b,-27,-16,-64,-40,0,4);room(l,b,-9,9,-25,-7,5,3);
+        room(l,b,-27,-17,-64,-40,0,4);room(l,b,-9,9,-25,-7,5,3);
         // Corridors are carved after partitions, with continuous supported timber floors.
         box(l,b,-15,0,-65,-13,3,-5,Blocks.AIR);box(l,b,-28,0,-38,28,3,-36,Blocks.AIR);
         box(l,b,-15,-1,-65,-13,-1,-5,Blocks.DARK_OAK_PLANKS);box(l,b,-28,-1,-38,28,-1,-36,Blocks.DARK_OAK_PLANKS);
