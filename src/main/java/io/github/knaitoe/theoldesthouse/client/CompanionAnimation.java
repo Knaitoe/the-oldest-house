@@ -57,14 +57,16 @@ public final class CompanionAnimation {
         float w=weight(t);
         head.xRot+=.18F*w;head.zRot+=(float)Math.sin(t*.18F)*.13F*w;tail.yRot=(float)Math.sin(t*.8F)*.65F*w;
     }
-    public static void cat(ModelPart root,Entity entity,float age){
+    public static void cat(ModelPart head,ModelPart tail1,ModelPart tail2,Entity entity,float age){
         float t=age(entity,age-entity.tickCount,true),w=weight(t);if(w==0)return;
-        catPose(root,t);
+        catPose(head,tail1,tail2,t);
     }
     public static void catPose(ModelPart root,float t){
-        float w=weight(t);
-        var head=root.getChild("head");head.xRot-=.18F*w;head.zRot+=(float)Math.sin(t*.17F)*.2F*w;
-        root.getChild("tail1").yRot=(float)Math.sin(t*.22F)*.22F*w;root.getChild("tail2").xRot+=.35F*w;
+        catPose(root.getChild("head"),root.getChild("tail1"),root.getChild("tail2"),t);
+    }
+    public static void catPose(ModelPart head,ModelPart tail1,ModelPart tail2,float t){
+        float w=weight(t);head.xRot-=.18F*w;head.zRot+=(float)Math.sin(t*.17F)*.2F*w;
+        tail1.yRot=(float)Math.sin(t*.22F)*.22F*w;tail2.xRot+=.35F*w;
     }
     @SubscribeEvent public static void hand(RenderHandEvent e){
         var mc=Minecraft.getInstance();if(mc.player==null||e.getHand()!=InteractionHand.MAIN_HAND||!e.getItemStack().isEmpty())return;
