@@ -1,0 +1,162 @@
+{
+  "textures": {
+    "wood": "the_oldest_house:block/literary_oak",
+    "iron": "the_oldest_house:block/literary_iron",
+    "brass": "the_oldest_house:block/literary_brass",
+    "wax": "the_oldest_house:block/literary_wax",
+    "paper": "the_oldest_house:block/literary_paper",
+    "glass": "the_oldest_house:block/literary_glass",
+    "hide": "the_oldest_house:block/literary_hide",
+    "photo": "the_oldest_house:block/literary_photo",
+    "face": "the_oldest_house:block/literary_clock_face",
+    "particle": "the_oldest_house:block/literary_oak"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        2
+      ],
+      "to": [
+        14,
+        0.25,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#paper",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#paper",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#paper",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#paper",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#paper",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#paper",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        0.25,
+        2
+      ],
+      "to": [
+        5,
+        1.5,
+        5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#paper",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#paper",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#paper",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#paper",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#paper",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#paper",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          2,
+          0.25,
+          2
+        ],
+        "axis": "z",
+        "angle": 22.5
+      }
+    }
+  ],
+  "ambientocclusion": true
+}
