@@ -45,7 +45,7 @@ public final class HouseExperience {
     }
     public static void cared(ServerPlayer p,TamableAnimal pet){
         if(!p.getUUID().equals(CompanionOrders.owner(pet))||!pet.isAlive())return;
-        var d=LabyrinthData.get(p.server);var own=record(d,p.getUUID());own.putUUID("CaredPet",pet.getUUID());own.putString("CaredName",pet.getName().getString());own.putInt("Care",own.getInt("Care")+1);save(d,p.getUUID(),own);
+        var d=LabyrinthData.get(p.server);var own=record(d,p.getUUID());own.putUUID("CaredPet",pet.getUUID());own.putString("CaredName",pet.getName().getString());own.putBoolean("CaredNamed",pet.hasCustomName());own.putInt("Care",own.getInt("Care")+1);save(d,p.getUUID(),own);
     }
     public static void ordered(ServerPlayer p,TamableAnimal pet,CompanionOrders.Order order){
         if(order!=CompanionOrders.Order.STAY||!HouseDimensions.isHouseDimension(p.level().dimension()))return;
@@ -56,6 +56,7 @@ public final class HouseExperience {
         var d=LabyrinthData.get(p.server);var own=record(d,p.getUUID());own.putLong("Preparation",be.getBlockPos().asLong());save(d,p.getUUID(),own);
     }
     public static void arrived(ServerPlayer p,LabyrinthPlace place){
+        HouseCorrespondence.crossed(p);
         var d=LabyrinthData.get(p.server);var own=record(d,p.getUUID());own.putString("CurrentPlace",place.id());own.putInt("Deepest",Math.max(own.getInt("Deepest"),d.returnDepth(p.getUUID())));
         own.remove("EchoAt");
         if(place==LabyrinthPlace.QUIET_ROOM&&d.returnDepth(p.getUUID())>=8&&own.contains("SeatState")){
@@ -70,6 +71,7 @@ public final class HouseExperience {
     }
     public static void returned(ServerPlayer p){
         var d=LabyrinthData.get(p.server);var own=record(d,p.getUUID());String id=own.getString("CurrentPlace");if(id.isEmpty())return;
+        HouseCorrespondence.crossed(p);
         var place=Arrays.stream(LabyrinthPlace.values()).filter(v->v.id().equals(id)).findFirst().orElse(null);
         own.putInt("Returns",own.getInt("Returns")+1);own.putString("LastReturn",id);
         if(place!=null&&place.isVignette()){
@@ -104,6 +106,12 @@ public final class HouseExperience {
     }
     public static void tickPlayer(ServerPlayer p){
         if(!p.isAlive()||p.isSpectator())return;var d=LabyrinthData.get(p.server);var own=record(d,p.getUUID());var origin=HouseSavedData.get(p.server).houseOrigin();if(origin==null)return;
+        boolean inManor=inManor(p,p.blockPosition());
+        if(inManor&&!own.getBoolean("AtManor")){
+            if(own.getBoolean("ManorSeen"))own.putInt("ManorReturns",own.getInt("ManorReturns")+1);
+            own.putBoolean("ManorSeen",true);
+        }
+        own.putBoolean("AtManor",inManor);
         int hush=0;BlockPos threshold=origin.offset(HouseLayout.AXIS_X,1,HouseLayout.THRESHOLD_Z);
         if(HouseSavedData.get(p.server).isImpossibleDoorRevealed()&&p.level().dimension().equals(HouseDimensions.INTERIOR)){
             Vec3 to=threshold.getCenter().subtract(p.getEyePosition());double distance=to.length();
