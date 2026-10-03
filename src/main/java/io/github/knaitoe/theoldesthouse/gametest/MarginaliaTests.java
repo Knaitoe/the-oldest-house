@@ -35,11 +35,14 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(TheOldestHouse.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class MarginaliaTests {
-    private static final class Fixture implements AutoCloseable {
+    static final class Fixture implements AutoCloseable {
         final GameTestHelper h; final ServerLevel level; final BlockPos origin,base;
         final HouseSavedData oldHouse; final LabyrinthData oldData;
         final List<ServerPlayer> players=new ArrayList<>();
-        Fixture(GameTestHelper h,int coordinate) {
+        final boolean legacy;
+        Fixture(GameTestHelper h,int coordinate) {this(h,coordinate,true);}
+        Fixture(GameTestHelper h,int coordinate,boolean legacy) {
+            this.legacy=legacy;
             this.h=h; level=HouseTestLevel.get(h.getLevel().getServer()); origin=new BlockPos(coordinate,80,coordinate);
             var server=level.getServer();oldHouse=HouseSavedData.get(server);oldData=LabyrinthData.get(server);
             var house=new HouseSavedData();house.markSpawned(origin);server.overworld().getDataStorage().set("the_oldest_house",house);
@@ -61,9 +64,22 @@ public final class MarginaliaTests {
             case HOUSEKEEPING->new BlockPos(4,1,-3);case CALLS->new BlockPos(-3,1,-12);case ROOM->new BlockPos(-2,1,-12);case POEMS->new BlockPos(-1,1,-12);});}
         HouseMarginalia.NotebookMenu open(ServerPlayer p,HouseMarginalia.Thread thread) {
             BlockPos pos=surface(thread);p.moveTo(Vec3.atBottomCenterOf(pos.below().south()));
+            // These original-release tests now also exercise upgrade adoption of exact saved pages.
+            if(legacy)seedLegacy(p,thread,pos);
             var event=new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,pos,new BlockHitResult(Vec3.atCenterOf(pos),Direction.UP,pos,false));
             NeoForge.EVENT_BUS.post(event);h.assertTrue(event.isCanceled()&&p.containerMenu instanceof HouseMarginalia.NotebookMenu,"the registered click opens a real private native book menu");
             return (HouseMarginalia.NotebookMenu)p.containerMenu;
+        }
+        void seedLegacy(ServerPlayer p,HouseMarginalia.Thread thread,BlockPos pos){
+            int band=HouseMarginalia.band(data().returnDepth(p.getUUID()));String key=pos.asLong()+":"+thread.getSerializedName()+":"+band;
+            var own=HouseMarginalia.record(data(),p.getUUID());var bindings=own.getCompound("Bindings");if(bindings.getCompound(key).contains("Book"))return;
+            int due=HouseMarginalia.next(data(),p.getUUID(),thread),available=Math.min(band,thread.chapters-1);
+            int chapter=due>available&&available==0?-1:Math.min(due,available);
+            var book=chapter<0?MarginaliaTexts.interlude(pos.asLong(),thread):MarginaliaTexts.book(p,thread,chapter);
+            var custom=new CompoundTag();custom.putUUID("MarginaliaReader",p.getUUID());custom.putString("MarginaliaBinding",key);
+            book.set(DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(custom));
+            var entry=new CompoundTag();entry.putInt("Chapter",chapter);entry.put("Book",book.save(p.registryAccess()));bindings.put(key,entry);own.put("Bindings",bindings);
+            var state=data().state(HouseMarginalia.ID);state.put(p.getUUID().toString(),own);data().setState(HouseMarginalia.ID,state);
         }
         void end(ServerPlayer p,HouseMarginalia.NotebookMenu menu) {int last=menu.book().get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()-1;
             h.assertTrue(menu.clickMenuButton(p,100+last)&&menu.getPage()==last,"the actual native page button reaches the end");}

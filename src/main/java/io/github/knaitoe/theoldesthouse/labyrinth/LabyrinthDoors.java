@@ -334,6 +334,8 @@ public final class LabyrinthDoors {
         UUID id = player.getUUID();
         setDoorOpen(player.serverLevel(), entry.lower, false, null);
         LabyrinthData.Waypoint back = data.popReturn(id);
+        String correspondenceSource=io.github.knaitoe.theoldesthouse.house.HouseExperience.record(data,id).getString("CurrentPlace");
+        Consumer<ServerPlayer> confirmedReturn=p->io.github.knaitoe.theoldesthouse.house.HouseCorrespondence.returnedSafely(p,correspondenceSource);
         if(back!=null){io.github.knaitoe.theoldesthouse.house.HouseExperience.returned(player);VignetteGate.departed(player,back,entry);}
         if (back == null) {
             // A missing return stack must never strand the player in the gray
@@ -361,7 +363,7 @@ public final class LabyrinthDoors {
         if (!back.door()) {
             // A plain spot (a bedside, or where a command took them from):
             // no door lines up with it, so the lights go out instead.
-            fadeTo(player, back, 4, 10, 24);
+            fadeTo(player, back, 4, 10, 24,confirmedReturn);
             return;
         }
         BlockPos from = BlockPos.containing(back.pos());
@@ -389,8 +391,9 @@ public final class LabyrinthDoors {
         }
         if (to == player.serverLevel()) {
             shift(player, target, yaw);
+            confirmedReturn.accept(player);
         } else {
-            HouseTransitionEvents.beginDoorTransition(player, back.dimension(), null, null, target, yaw);
+            HouseTransitionEvents.beginDoorTransition(player, back.dimension(), null, confirmedReturn, target, yaw);
         }
         // The door they came through has shut behind them.
         playTo(player, SoundEvents.WOODEN_DOOR_CLOSE, Vec3.atCenterOf(from), 0.9F, 0.9F);
@@ -466,8 +469,11 @@ public final class LabyrinthDoors {
 
     /** Fades out, moves the player while the screen is dark, and fades back in. */
     private static void fadeTo(ServerPlayer player, LabyrinthData.Waypoint target, int fadeIn, int hold, int fadeOut) {
+        fadeTo(player,target,fadeIn,hold,fadeOut,p->{ });
+    }
+    private static void fadeTo(ServerPlayer player, LabyrinthData.Waypoint target, int fadeIn, int hold, int fadeOut,Consumer<ServerPlayer> arrived) {
         HousePackets.send(player, new HouseFadePayload(fadeIn, hold, fadeOut));
-        FADING.put(player.getUUID(), new Pending(target, p -> { }, new int[]{Math.max(1, fadeIn)}));
+        FADING.put(player.getUUID(), new Pending(target, arrived, new int[]{Math.max(1, fadeIn)}));
     }
 
     /**

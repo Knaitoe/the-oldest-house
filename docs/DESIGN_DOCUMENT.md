@@ -4,6 +4,14 @@ Sep 28, 2026 · @Sean Price · revised in the repository to match decisions made
 
 ## Revisions in this copy
 
+### 0.4.31: correspondence and personal notes
+
+The [approved correspondence](CORRESPONDENCE_0_4_31.md) adds 108 original pieces: fourteen six-letter chains, sixteen independent scraps and eight notes that respond to actual native play. Romance, family care, confession, envy, grief, shift work, money, friendship and pleasure interrupt six increasingly intrusive relationships with the reader. The final prose pass differentiates cadence and material detail while retaining the reviewed IDs, relationships and endings.
+
+Existing paper surfaces prefer their household context and interleave the writers. Each reader finds each chain in order; later installments need the earlier reading, two intervening route crossings and depths 0/6/8/12/16/20. Native last-page buttons also record reading a collected original. Reopening pages gives no additional progress or duplicate originals. Legacy discoveries retain their exact saved books. No room, inventory, actor or paper surface is reconstructed. The keeper's loss sequence freezes a real original custody record; later recovery does not rewrite the page. Companion references, route markers, safe returns, original photographs and replies remain personal native facts. These writers' accusations and appropriated signatures do not change the reader's actual books, identity, companions or progression.
+
+Current build: 0.4.31, layout 29 / protocol 28. Seventeen Witness sources, thirteen personal resolutions across two kinds and three endings remain. Native verification requires 279 GameTests, all 125 original/new writing specimens, package checks and the established client/architecture proofs.
+
 ### 0.4.30: ordinary halls, personal letters, and playtest repairs
 
 See [NOTES_AND_HALLWAYS_0_4_30.md](NOTES_AND_HALLWAYS_0_4_30.md). Early straight and bent corridors have an entrance and an end door, with wider foyers, corners and landings; junctions retain doors only at their actual branches. Oak, stone and dark timber floors, pale plaster and ordinary ceilings precede the deeper gray. Loop scenes need twelve crossings and eight intervening visits; large folds retain their existing depth gates. Old door returns move safely before redundant openings are closed, and existing originals and domestic fragments remain intact.
@@ -16,7 +24,7 @@ The supplied Minotaur logs report a 2,099 ms server delay after death, without a
 
 The additional wall screenshots extend this pass: continuous pale plaster replaces the approach's yellow patch; the red-looking bedroom becomes neutral; recent ordinary routes are less repetitive and recurring home copies need six intervening visits unless deliberately scented. The plain's walkable sand floor has real sandstone backing and missing tiles are repaired without rebuilding its props. Its former unsupported sheet could collapse into thousands of falling entities. The Goatman entry clears the painted wall at z=0, and the west maze connector receives a backing at z=38 beyond its walking row. Separate visitor-delayed checkpoints preserve the earlier actor/paper migration and all finite originals.
 
-Current build: 0.4.30, layout 29, protocol 28. No Witness source or ending is added: seventeen eligible stories, thirteen personal resolutions across two kinds, three endings. The [verified build](https://github.com/Knaitoe/the-oldest-house/actions/runs/37093414011) passed all 277 native GameTests, all 146 PNG checks, package/font checks, native rendering, twenty-two architecture views and three outside-sky elevations.
+Previous build: 0.4.30, layout 29, protocol 28. No Witness source or ending is added: seventeen eligible stories, thirteen personal resolutions across two kinds, three endings. The [verified build](https://github.com/Knaitoe/the-oldest-house/actions/runs/37093414011) passed all 277 native GameTests, all 146 PNG checks, package/font checks, native rendering, twenty-two architecture views and three outside-sky elevations.
 
 ### 0.4.29: integrated architecture and dependable interaction
 
