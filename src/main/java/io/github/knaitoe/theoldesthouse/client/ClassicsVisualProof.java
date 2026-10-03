@@ -41,6 +41,6 @@ public final class ClassicsVisualProof extends Screen {
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event)throws Exception{
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof ClassicsVisualProof proof)||++proof.frames<24)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-classics.png"));}
-        Files.writeString(dir.resolve("classics-passed.txt"),"24 native frames: four registered custom cast meshes/skins, seated and panic poses, all four animated/torn wallpaper meshes and both three-dimensional keepsakes.\n");TheOldestHouse.LOGGER.info("CLASSICS CHECK PASSED: registered native cast, wallpaper and item meshes");mc.setScreen(new SceneVisualProof());
+        Files.writeString(dir.resolve("classics-passed.txt"),"24 native frames: four registered custom cast meshes/skins, seated and panic poses, all four animated/torn wallpaper meshes and both three-dimensional keepsakes.\n");TheOldestHouse.LOGGER.info("CLASSICS CHECK PASSED: registered native cast, wallpaper and item meshes");mc.setScreen(new HotelVisualProof());
     }
 }

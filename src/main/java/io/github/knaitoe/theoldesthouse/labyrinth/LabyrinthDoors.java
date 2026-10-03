@@ -115,6 +115,7 @@ public final class LabyrinthDoors {
         if (isBusy(player)) {
             return;
         }
+        var hotelRoute=HotelVignette.route(player,door);if(hotelRoute!=null)door=hotelRoute;
         MinecraftServer server = player.server;
         LabyrinthData data = LabyrinthData.get(server);
         if(VignetteGate.dormant(data,player.getUUID(),door)){setDoorOpen(player.serverLevel(),door.lower,false,player);player.displayClientMessage(Component.literal("The door is quiet. Leave its approach and find it again."),true);return;}
@@ -234,6 +235,8 @@ public final class LabyrinthDoors {
             HollowayVignette.onArrive(p,place);
             NovelVignettes.onArrive(p,place);
             ClassicsVignettes.onArrive(p,place);
+            HotelVignette.onArrive(p,place);
+            BlindStretch.onArrive(p,place);
             MotherOfStrays.onArrive(p, place);
             WitnessAccount.onArrive(p, place);
             LabyrinthEncounters.onArrive(p, place);

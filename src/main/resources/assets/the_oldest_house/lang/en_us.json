@@ -77,5 +77,11 @@
   "block.the_oldest_house.seance_table": "Marquetry table",
   "block.the_oldest_house.seance_wallpaper": "Drawing-room wallpaper",
   "block.the_oldest_house.seance_wainscot": "Paneled wainscot",
-  "entity.the_oldest_house.seance_actor": "Someone at the table"
+  "entity.the_oldest_house.seance_actor": "Someone at the table",
+  "item.the_oldest_house.hotel_master_key": "Hotel master key",
+  "item.the_oldest_house.hotel_drink": "Complimentary drink",
+  "item.the_oldest_house.hotel_photograph": "Closing-night photograph",
+  "block.the_oldest_house.hotel_prop": "Hotel fixture",
+  "entity.the_oldest_house.hotel_actor": "Hotel guest",
+  "entity.the_oldest_house.hotel_hose": "Fire hose"
 }

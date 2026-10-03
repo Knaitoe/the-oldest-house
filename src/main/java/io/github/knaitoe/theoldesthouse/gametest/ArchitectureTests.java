@@ -97,7 +97,10 @@ public final class ArchitectureTests {
                 }
                 if(scene!=LabyrinthPlace.RED_ROOM)export(level,base,scene);
             }
-            h.assertTrue(dressed==21&&props>=90,"all twenty-one authored vignettes/camps receive supported detail; the copied Red Room stays personal");
+            export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL,"hotel_upstairs");
+            export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL,"hotel_basement");
+            export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.BLIND_STRETCH),LabyrinthPlace.BLIND_STRETCH,"blind_stretch");
+            h.assertTrue(dressed==23&&props>=94,"all twenty-three authored scenes/camps receive supported detail; the copied Red Room stays personal");
             shellsAndEdges(h,server,origin,data);
             frontsAndInteriors(h,server,origin,data);
             var camp=LabyrinthPlaces.base(origin,LabyrinthPlace.EXPLORER_CAMP);var cache=(BarrelBlockEntity)interior.getBlockEntity(camp.offset(LabyrinthCampsite.CACHE));
@@ -208,7 +211,10 @@ public final class ArchitectureTests {
     }
 
     private static void export(net.minecraft.server.level.ServerLevel l,BlockPos b,LabyrinthPlace scene)throws Exception{
-        var r=scene.room();JsonObject file=new JsonObject();file.addProperty("name",scene.id());
+        export(l,b,scene,scene.id());
+    }
+    private static void export(net.minecraft.server.level.ServerLevel l,BlockPos b,LabyrinthPlace scene,String name)throws Exception{
+        var r=scene.room();JsonObject file=new JsonObject();file.addProperty("name",name);
         JsonArray palette=new JsonArray(),blocks=new JsonArray();Map<BlockState,Integer> lookup=new LinkedHashMap<>();
         int minZ=r.minZ(),maxZ=r.maxZ(),minY=Math.max(-1,r.minY()),maxY=Math.min(4,r.maxY());
         if(scene==LabyrinthPlace.GOATMAN){minZ=-79;maxZ=-45;}
@@ -219,6 +225,10 @@ public final class ArchitectureTests {
         if(scene==LabyrinthPlace.WHALE)maxY=9;
         if(scene==LabyrinthPlace.PLAIN)minZ=-105;
         if(LakeLandscape.isLake(scene))maxY=16;
+        if(scene==LabyrinthPlace.HOTEL)maxY=3;
+        if(name.equals("hotel_upstairs")){minY=4;maxY=8;}
+        if(name.equals("hotel_basement")){minY=-5;maxY=-2;}
+        if(scene==LabyrinthPlace.BLIND_STRETCH)maxY=2;
         for(int x=r.minX();x<=r.maxX();x++)for(int y=minY;y<=maxY;y++)for(int z=minZ;z<=maxZ;z++){
             var at=b.offset(x,y,z);var s=l.getBlockState(at);
             if(s.isAir()||s.is(Blocks.BARRIER)||s.is(Blocks.LIGHT))continue;
@@ -227,6 +237,8 @@ public final class ArchitectureTests {
             if(y>=0&&(x==r.maxX()||z==maxZ||(scene==LabyrinthPlace.WALLPAPER_NURSERY&&x==9)||(scene==LabyrinthPlace.SEANCE&&z==-7&&Math.abs(x)>3)||(scene==LabyrinthPlace.WALLPAPER_NURSERY&&z==-6&&Math.abs(x)>3)))continue;
             if(y>=0&&((scene==LabyrinthPlace.WHALE&&x==13)||(scene==LabyrinthPlace.HOSPITAL&&x==9)
                     ||(scene==LabyrinthPlace.KAREN_ROOM&&x==9)||(scene==LabyrinthPlace.ZAMPANO_COURTYARD&&x==12&&z<=-19)))continue;
+            if(name.equals("hotel_upstairs")&&y>=5&&(x==10||z==-6))continue;
+            if(scene==LabyrinthPlace.HOTEL&&name.equals("hotel")&&y>=0&&(x==12||z==-4))continue;
             if(y>2&&s.is(Blocks.BIRCH_PLANKS))continue;
             boolean exposed=false;for(var side:Direction.values())if(l.getBlockState(at.relative(side)).isAir()||!l.getBlockState(at.relative(side)).isSolid()){exposed=true;break;}
             if(!exposed&&y!=minY)continue;
@@ -234,6 +246,6 @@ public final class ArchitectureTests {
             JsonArray row=new JsonArray();row.add(x);row.add(y);row.add(z);row.add(index);blocks.add(row);
         }
         file.add("palette",palette);file.add("blocks",blocks);Path folder=Path.of("../build/architecture-proof");Files.createDirectories(folder);
-        Files.writeString(folder.resolve(scene.id()+".json"),new Gson().toJson(file));
+        Files.writeString(folder.resolve(name+".json"),new Gson().toJson(file));
     }
 }

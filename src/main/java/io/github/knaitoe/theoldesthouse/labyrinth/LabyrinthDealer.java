@@ -150,6 +150,7 @@ public final class LabyrinthDealer {
             gray.add(LabyrinthPlace.SPIRAL_STAIR);
             gray.add(LabyrinthPlace.FRACTURED_WALKWAY);
             gray.add(LabyrinthPlace.LIGHT_SINK);
+            gray.add(LabyrinthPlace.BLIND_STRETCH);
             gray.add(LabyrinthPlace.MOVING_THRESHOLD);
         }
         if (tier >= 3) {

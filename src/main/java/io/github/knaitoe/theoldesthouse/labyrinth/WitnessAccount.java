@@ -58,7 +58,8 @@ public final class WitnessAccount {
         SEANCE("seance","The empty chair","connection",
                 "They could hear the cupboard, but they could not see my hand. The album had names beneath its photographs. The final space had mine."),
         WALLPAPER("wallpaper_nursery","The pattern","understanding",
-                "I watched the shape cross the seams. Under four strips of paper she had kept her own words. I read the last page before I left.");
+                "I watched the shape cross the seams. Under four strips of paper she had kept her own words. I read the last page before I left."),
+        HOTEL("hotel","The closing account","understanding","I ate at the last table, slept in 217 and found myself in the party photograph. Beyond the snow I brought back a key. The caretaker had kept writing while the gauge climbed. I attended the plant, settled the tab and read my own closing account.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}

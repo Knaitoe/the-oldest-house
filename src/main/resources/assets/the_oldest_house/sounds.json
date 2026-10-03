@@ -321,5 +321,37 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.novel.collapse"
+  },
+  "hotel.piano": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:hotel/piano",
+        "stream": false
+      }
+    ]
+  },
+  "hotel.orchestra": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:hotel/orchestra",
+        "stream": false
+      }
+    ]
+  },
+  "hotel.bell": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:hotel/bell",
+        "stream": false
+      }
+    ]
+  },
+  "hotel.hose": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:hotel/hose",
+        "stream": false
+      }
+    ]
   }
 }

@@ -395,6 +395,7 @@ public final class LabyrinthLoops {
         restore(level, base, place);
         if (place == LabyrinthPlace.HOTEL_HALLWAY) {
             sendNumbers(player, base, state.laps);
+            HotelVignette.reverse(player,shift,state.laps);
         }
         Vec3 to = player.position().add(PERIOD.getX() * (double) shift, 0.0D, PERIOD.getZ() * (double) shift);
         LabyrinthDoors.shift(player, to, player.getYRot());

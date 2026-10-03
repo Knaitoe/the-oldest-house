@@ -54,13 +54,23 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.34"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.35"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               correspondence = json.loads(z.read('data/the_oldest_house/correspondence/letters.json'))
               assert len(correspondence) == 108 and len({n['id'] for n in correspondence}) == 108
               assert 'io/github/knaitoe/theoldesthouse/gametest/CollectedCorrespondenceTests.class' in z.namelist()
               for name in ('ClassicsVignettes', 'ClassicsRooms', 'ClassicsRegistry', 'ClassicsTexts', 'SeanceActor', 'WallpaperPanelBlock'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/ClassicsTests.class' in z.namelist()
+              for name in ('HotelVignette','HotelRooms','HotelRegistry','HotelTexts','HotelActor','HotelHose','HotelPropBlock','BlindStretch'):
+                  assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/gametest/HotelTests.class' in z.namelist()
+              hotel = json.loads(z.read('assets/the_oldest_house/blockstates/hotel_prop.json'))['variants']
+              assert len(hotel) == 160
+              for name in ('hotel_master_key','hotel_drink','hotel_photograph'):
+                  mesh=json.loads(z.read(f'assets/the_oldest_house/models/item/{name}.json'))
+                  assert len(mesh['elements']) >= 2 and 'display' in mesh
+              for name in ('piano','orchestra','bell','hose'):
+                  assert z.read(f'assets/the_oldest_house/sounds/hotel/{name}.ogg').startswith(b'OggS')
               for name in ('seance_planchette', 'wallpaper_folio'):
                   mesh = json.loads(z.read(f'assets/the_oldest_house/models/item/{name}.json'))
                   assert len(mesh['elements']) >= 6 and 'display' in mesh
@@ -267,6 +277,8 @@ jobs:
           test -s build/font-smoke/native-inventory.png
           test -s build/font-smoke/companions-passed.txt
           test -s build/font-smoke/native-companions.png
+          test -s build/font-smoke/hotel-passed.txt
+          test -s build/font-smoke/native-hotel.png
           test -s build/font-smoke/classics-passed.txt
           test -s build/font-smoke/native-classics.png
           test -s build/font-smoke/native-cast.png

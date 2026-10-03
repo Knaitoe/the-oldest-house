@@ -1,0 +1,154 @@
+{
+  "ambientocclusion": true,
+  "textures": {
+    "surface": "the_oldest_house:block/hotel_wood",
+    "metal": "the_oldest_house:block/hotel_brass",
+    "steel": "the_oldest_house:block/hotel_steel",
+    "rubber": "the_oldest_house:block/hotel_rubber",
+    "paper": "the_oldest_house:block/hotel_paper",
+    "keys": "the_oldest_house:block/hotel_keys",
+    "food": "the_oldest_house:block/hotel_food",
+    "patch": "the_oldest_house:block/hotel_patch",
+    "photo": "the_oldest_house:block/hotel_party",
+    "particle": "the_oldest_house:block/hotel_wood",
+    "gauge": "the_oldest_house:block/hotel_gauge_3"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        13
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#surface",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#surface",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#surface",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#surface",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#surface",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#surface",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        1,
+        12.8
+      ],
+      "to": [
+        15,
+        15,
+        13.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#photo",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#photo",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#photo",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#photo",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#photo",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#photo",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}
