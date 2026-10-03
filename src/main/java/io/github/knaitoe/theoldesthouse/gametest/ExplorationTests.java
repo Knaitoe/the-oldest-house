@@ -81,7 +81,7 @@ public final class ExplorationTests {
             helper.assertTrue(oddDoors<=1,"one discovery budget is shared by all the doors");
             if(oddDoors>0)oddArrivals++;
         }
-        helper.assertTrue(oddArrivals>20&&oddArrivals<180,"deep anomalies remain occasional: "+oddArrivals+"/1000");
+        helper.assertTrue(oddArrivals>0&&oddArrivals<60,"deep anomalies remain possible but below six percent of arrivals: "+oddArrivals+"/1000");
         helper.succeed();
     }
     @GameTest(template="empty")
