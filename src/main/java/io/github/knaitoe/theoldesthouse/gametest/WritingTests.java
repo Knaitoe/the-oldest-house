@@ -107,7 +107,9 @@ public final class WritingTests {
         var player = helper.makeMockServerPlayerInLevel();
         try {
             com.google.gson.JsonArray pages = new com.google.gson.JsonArray();
-            for (ItemStack book : io.github.knaitoe.theoldesthouse.house.HouseMarginalia.samples(player)) {
+            var specimens = new java.util.ArrayList<>(io.github.knaitoe.theoldesthouse.house.HouseMarginalia.samples(player));
+            specimens.addAll(io.github.knaitoe.theoldesthouse.house.HouseCorrespondence.samples(player));
+            for (ItemStack book : specimens) {
                 var content = book.get(DataComponents.WRITTEN_BOOK_CONTENT);
                 for (var page : content.pages()) {
                     com.google.gson.JsonObject entry = new com.google.gson.JsonObject();
@@ -118,6 +120,7 @@ public final class WritingTests {
                         segment.addProperty("text", text);
                         segment.addProperty("font", style.getFont().toString());
                         segment.addProperty("bold", style.isBold());
+                        segment.addProperty("strikethrough", style.isStrikethrough());
                         segments.add(segment);
                         return java.util.Optional.empty();
                     }, Style.EMPTY);
@@ -127,7 +130,7 @@ public final class WritingTests {
             java.nio.file.Path folder = java.nio.file.Path.of("../build/font-smoke");
             java.nio.file.Files.createDirectories(folder);
             java.nio.file.Files.writeString(folder.resolve("serial-pages.json"), pages.toString());
-            helper.assertTrue(pages.size() >= 17, "the real serial-note corpus is incomplete");
+            helper.assertTrue(specimens.size() == 125 && pages.size() >= 125, "the real original and expanded correspondence corpus is incomplete");
         } finally { helper.getLevel().getServer().getPlayerList().remove(player); }
         helper.succeed();
     }

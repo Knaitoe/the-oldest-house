@@ -53,7 +53,10 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.30"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.31"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              correspondence = json.loads(z.read('data/the_oldest_house/correspondence/letters.json'))
+              assert len(correspondence) == 108 and len({n['id'] for n in correspondence}) == 108
+              assert 'io/github/knaitoe/theoldesthouse/house/HouseCorrespondence.class' in z.namelist()
               from PIL import Image
               from io import BytesIO
               inventory = json.loads(pathlib.Path('art/inventory/assets_0430.json').read_text())['items']
