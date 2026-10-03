@@ -15,7 +15,7 @@ public final class ClassicsRooms {
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     public static final BlockPos CUPBOARD=new BlockPos(-8,0,-13),GRACE=new BlockPos(-5,0,-26),ALBUM=new BlockPos(6,0,-27),SITTING=new BlockPos(-4,0,-10),GATE=new BlockPos(5,0,-22);
     public static final List<BlockPos> CANDLES=List.of(new BlockPos(-1,1,-15),new BlockPos(0,1,-16),new BlockPos(-7,1,-19));
-    public static final List<BlockPos> SHUTTERS=List.of(new BlockPos(9,1,-24),new BlockPos(9,1,-25),new BlockPos(9,1,-26));
+    public static final List<BlockPos> SHUTTERS=List.of(new BlockPos(9,2,-24),new BlockPos(9,2,-25),new BlockPos(9,2,-26));
     public static final List<BlockPos> PANELS=List.of(new BlockPos(-4,1,-27),new BlockPos(-1,1,-27),new BlockPos(2,1,-27),new BlockPos(5,1,-27));
     public static final BlockPos NURSERY_DESK=new BlockPos(-5,0,-23);
     private ClassicsRooms(){}
@@ -53,8 +53,8 @@ public final class ClassicsRooms {
         lectern(l,b.offset(SITTING),ClassicsTexts.medium());lectern(l,b.offset(GRACE),ClassicsTexts.grace());lectern(l,b.offset(ALBUM),ClassicsTexts.album());
         furniture(l,b,-7,0,-27,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);
         box(l,b,7,0,-29,7,2,-29,Blocks.BOOKSHELF);
-        for(int z=-27;z<=-24;z++){at(l,b,10,2,z,Blocks.GLASS);at(l,b,11,2,z,Blocks.BLACK_CONCRETE);}
-        for(BlockPos shutter:SHUTTERS)l.setBlock(b.offset(shutter),Blocks.DARK_OAK_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.WEST).setValue(TrapDoorBlock.HALF,Half.TOP).setValue(TrapDoorBlock.OPEN,true),F);
+        for(int z=-26;z<=-24;z++){at(l,b,10,2,z,Blocks.GLASS);at(l,b,11,2,z,Blocks.BLACK_CONCRETE);}
+        for(BlockPos shutter:SHUTTERS)l.setBlock(b.offset(shutter),Blocks.DARK_OAK_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.EAST).setValue(TrapDoorBlock.HALF,Half.TOP).setValue(TrapDoorBlock.OPEN,false),F);
         // Both lamps are suspended from the authored ceiling, never from empty air.
         for(int z:new int[]{-6,-25}){at(l,b,0,z==-6?3:4,z,Blocks.CHAIN);l.setBlock(b.offset(0,z==-6?2:3,z),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);}
         // A fireplace with a closed iron hearth, mantel, stone jambs and soot above it.
