@@ -167,8 +167,8 @@ public final class LabyrinthTests {
             }
         }
         helper.assertTrue(LabyrinthDealer.vignetteChance(data, player) > 0
-                        && LabyrinthDealer.vignettesAvailable(data).equals(List.of(LabyrinthPlace.MOTHER_DEN,LabyrinthPlace.ZAMPANO_COURTYARD,LabyrinthPlace.KAREN_ROOM)),
-                "the recurring Mother, courtyard and room anchors stay findable when finishable stories are finished");
+                        && LabyrinthDealer.vignettesAvailable(data).equals(List.of(LabyrinthPlace.MOTHER_DEN,LabyrinthPlace.ZAMPANO_COURTYARD,LabyrinthPlace.KAREN_ROOM,LabyrinthPlace.HOTEL)),
+                "the recurring Mother, courtyard, room and hotel anchors stay findable when finishable stories are finished");
         data.setReady(RedRoom.ID, true);
         helper.assertTrue(LabyrinthDealer.vignettesAvailable(data).contains(LabyrinthPlace.RED_ROOM)
                         && LabyrinthDealer.vignettesAvailable(data).contains(LabyrinthPlace.MOTHER_DEN),
@@ -878,7 +878,7 @@ public final class LabyrinthTests {
             LabyrinthData.Door door = data.door(LabyrinthPlace.JUNCTION.doorId(spec));
             LabyrinthData.Deal answer = door == null ? null : data.deal(player, door);
             if (answer != null && answer.bark()) {
-                helper.assertTrue(LabyrinthPlace.MOTHER_DEN.id().equals(answer.place()), "the only remaining anchor is the Mother");
+                helper.assertTrue(java.util.Set.of(LabyrinthPlace.MOTHER_DEN.id(),LabyrinthPlace.HOTEL.id()).contains(answer.place()), "the scent finds an available recurring Mother or hotel anchor");
                 motherDoors++;
             }
         }
