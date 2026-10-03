@@ -17,6 +17,7 @@ public final class ClassicsTexts {
         "Ada.\n\nHer hand was cold, though the room was warm. They made her hold a book so her fingers would not show.",
         "Thomas.\n\nThe photographer asked us to stand very still. Nobody had to ask him.",
         "The last space has no photograph.\n\nA name has been pencilled beneath it. The pencil has worn through the paper."));}
+    public static ItemStack album(String name){var pages=new ArrayList<net.minecraft.network.chat.Component>(album().get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(p->p.raw()).toList());pages.add(HouseWriting.page(HouseWriting.WritingStyle.PLAIN,name+".\n\nThe handwriting is recent. There is no date beneath it."));return HouseWriting.book("Names beneath the photographs","A family album",pages);}
     public static ItemStack medium(){return HouseWriting.book("A sitting","Mrs. Vale",HouseWriting.WritingStyle.ZAMPANO,List.of(
         "The little girl asked whether a house can forget who lives in it. Her mother corrected her. I wrote the question down.",
         "A cupboard opened with nobody near it. The mother said it was the draught. The windows were nailed shut.",
@@ -29,5 +30,5 @@ public final class ClassicsTexts {
     };return HouseWriting.book("Behind the pattern "+(page+1),"An unnamed writer",HouseWriting.WritingStyle.PELAFINA,List.of(pages[Math.max(0,Math.min(3,page))]));}
     public static ItemStack folio(){var pages=new ArrayList<net.minecraft.network.chat.Component>();for(int i=0;i<4;i++)pages.addAll(wallpaper(i).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(p->p.raw()).toList());
         var book=HouseWriting.book("The pages she kept","An unnamed writer",pages);var folio=new ItemStack(ClassicsRegistry.FOLIO.get());folio.set(DataComponents.WRITTEN_BOOK_CONTENT,book.get(DataComponents.WRITTEN_BOOK_CONTENT));folio.set(DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("The pages she kept"));return folio;}
-    public static List<ItemStack> specimens(){var all=new ArrayList<ItemStack>(List.of(grace(),album(),medium(),folio()));for(int i=0;i<4;i++)all.add(wallpaper(i));return all;}
+    public static List<ItemStack> specimens(){var all=new ArrayList<ItemStack>(List.of(grace(),album("Reader_1234567890"),medium(),folio()));for(int i=0;i<4;i++)all.add(wallpaper(i));return all;}
 }
