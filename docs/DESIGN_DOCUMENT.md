@@ -16,7 +16,7 @@ The supplied Minotaur logs report a 2,099 ms server delay after death, without a
 
 The additional wall screenshots extend this pass: continuous pale plaster replaces the approach's yellow patch; the red-looking bedroom becomes neutral; recent ordinary routes are less repetitive and recurring home copies need six intervening visits unless deliberately scented. The plain's walkable sand floor has real sandstone backing and missing tiles are repaired without rebuilding its props. Its former unsupported sheet could collapse into thousands of falling entities. The Goatman entry clears the painted wall at z=0, and the west maze connector receives a backing at z=38 beyond its walking row. Separate visitor-delayed checkpoints preserve the earlier actor/paper migration and all finite originals.
 
-Current build: 0.4.30, layout 29, protocol 28. No Witness source or ending is added: seventeen eligible stories, thirteen personal resolutions across two kinds, three endings. Native build, complete GameTests, texture decoding, client rendering and visual proofs are required before delivery.
+Current build: 0.4.30, layout 29, protocol 28. No Witness source or ending is added: seventeen eligible stories, thirteen personal resolutions across two kinds, three endings. The [verified build](https://github.com/Knaitoe/the-oldest-house/actions/runs/37093414011) passed all 277 native GameTests, all 146 PNG checks, package/font checks, native rendering, twenty-two architecture views and three outside-sky elevations.
 
 ### 0.4.29: integrated architecture and dependable interaction
 
