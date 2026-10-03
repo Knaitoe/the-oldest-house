@@ -59,7 +59,18 @@ public final class CaverCave {
             barrel.setItem(2,new ItemStack(Items.TORCH,6));barrel.setItem(3,new ItemStack(Items.STRING,2));barrel.setChanged();
             state.putBoolean("Supplied",true);d.setState(CaverVignette.ID,state);
         }
+        LabyrinthBuilder.entrance(l,b,Blocks.STONE.defaultBlockState(),Blocks.STONE.defaultBlockState(),Blocks.STONE.defaultBlockState());
+        repairEntrance(l,b);
         LabyrinthBuilder.doors(l,b,LabyrinthPlace.TED_CAVER);
+    }
+    /** The original camp starts at z=-1. Its door at z=1 needs a real connecting row at z=0. */
+    public static void repairEntrance(ServerLevel l,BlockPos b){
+        var data=LabyrinthData.get(l.getServer());var state=data.state("caver_entrance_0430");String key=Long.toString(b.asLong());if(state.getBoolean(key))return;
+        for(int x=-1;x<=1;x++)for(int y=0;y<=3;y++){
+            var at=b.offset(x,y,0);var old=l.getBlockState(at);
+            if(l.getBlockEntity(at)==null&&(old.is(Blocks.STONE)||old.is(Blocks.ANDESITE)||old.is(Blocks.TUFF)||old.is(Blocks.MOSSY_COBBLESTONE)||old.is(Blocks.WHITE_TERRACOTTA)))l.setBlock(at,Blocks.AIR.defaultBlockState(),F);
+        }
+        state.putBoolean(key,true);data.setState("caver_entrance_0430",state);
     }
     private static void light(ServerLevel l,BlockPos p,int strength){l.setBlock(p,Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL,strength),F);}
     public static void aperture(ServerLevel l,BlockPos b,boolean open){l.setBlock(b.offset(APERTURE),(open?Blocks.AIR:Blocks.CRACKED_DEEPSLATE_BRICKS).defaultBlockState(),F);}

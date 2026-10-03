@@ -4,6 +4,18 @@ Sep 28, 2026 · @Sean Price · revised in the repository to match decisions made
 
 ## Revisions in this copy
 
+### 0.4.30: ordinary halls, personal letters, and playtest repairs
+
+See [NOTES_AND_HALLWAYS_0_4_30.md](NOTES_AND_HALLWAYS_0_4_30.md). Early straight and bent corridors have an entrance and an end door, with wider foyers, corners and landings; junctions retain doors only at their actual branches. Oak, stone and dark timber floors, pale plaster and ordinary ceilings precede the deeper gray. Loop scenes need twelve crossings and eight intervening visits; large folds retain their existing depth gates. Old door returns move safely before redundant openings are closed, and existing originals and domestic fragments remain intact.
+
+The model home's child's room becomes accessible on the third visit. Chalk works in the mundane house and remembers each dimension separately. Whale correspondence uses empty chests in the ordinary Overworld; occupied chests and interior caches stay intact. A timber-supported mail plaque replaces the floating sign. Stair sheets use concrete letters, distinct writer fonts and varied positions rather than repeated labels, theory paragraphs or unrelated theft summaries. Already collected signed originals remain unchanged.
+
+Holloway patrols and speaks with more varied suspicion, shows native injury and can die; only the actual killer remembers that encounter. Death grants neither the shield nor Witness: the personal ordered arenas and service latch still matter. Tom's actual actor and campfire move to a reachable floor beside the stair entrance. Caver arrivals have a clear physical doorway. Once-only repairs close exposed old finale boundaries while retaining deliberate side-maze passages and the collapsed escape. Natural livestock are excluded from the interior labyrinth; owned pets and authored actors remain. The child has a distinct cloth-covered prisoner skin and retains the creature's UUID.
+
+The supplied Minotaur logs report a 2,099 ms server delay after death, without a combat stack trace. Repeated dimension reconciliation on attack-animation changes, route allocations and full personal-state copies are removed. Native transformation/charge/shield/wound and animated render checks record timings; expensive future creature ticks log their phase. These changes need native verification and a fresh user playtest before attributing the reported freeze to a single cause.
+
+Current build: 0.4.30, layout 28, protocol 28. No Witness source or ending is added: seventeen eligible stories, thirteen personal resolutions across two kinds, three endings. Native build, complete GameTests, texture decoding, client rendering and visual proofs are required before delivery.
+
 ### 0.4.29: integrated architecture and dependable interaction
 
 Claude's seven 0.4.28 commits are retained, including the once-only room shells, physical outdoor edges, mixed forest and survival-only boundary guard. This pass completes the omitted fronts, interiors and deep stair sections. See [ARCHITECTURE_0_4_29.md](ARCHITECTURE_0_4_29.md).
@@ -15,7 +27,7 @@ Claude's seven 0.4.28 commits are retained, including the once-only room shells,
 - **Finale release:** the actual owner alone releases the shared claim and native seal. A completed prisoner's departure releases the claim before the long homeward walk. Offline combat stays paused; stale terminal claims are repaired. Personal homeward commitment and completed-ending exclusion remain intact; clearing a claim grants no ending credit.
 - **Companions and canoe custody:** only owned native cats and wolves receive the wheel. Server checks still require ownership, range, life and real custody. A canceled toss during the fixed phone view returns the original through the native inventory; residual items keep all components in saved custody until they fit, or return as one owner-targeted native drop after the binding ends.
 
-Current build: 0.4.29, layout 27, protocol 28. No Witness source or ending is added: seventeen eligible stories, thirteen personal resolutions across at least two kinds, three endings. Validation requires all 263 declared native GameTests, package/font checks, native font/NPC/cast/home rendering, twenty-two architecture views including three stair depths, and the three outside-sky elevations. [The development build report](https://github.com/Knaitoe/the-oldest-house/actions/workflows/build.yml?query=branch%3Adevelopment) records completed native results and the matching JAR.
+Previous build: 0.4.29, layout 27, protocol 28. No Witness source or ending is added: seventeen eligible stories, thirteen personal resolutions across at least two kinds, three endings. Validation requires all 263 declared native GameTests, package/font checks, native font/NPC/cast/home rendering, twenty-two architecture views including three stair depths, and the three outside-sky elevations. [The development build report](https://github.com/Knaitoe/the-oldest-house/actions/workflows/build.yml?query=branch%3Adevelopment) records completed native results and the matching JAR.
 
 ### 0.4.28: shells and edges
 
@@ -255,7 +267,7 @@ Implementation and playtest details: [MOTHER.md](MOTHER.md). This September 30 r
 ### Holloway
 
 - The player who came before. His camp is a dirt hut, torch trails, chests of ordinary gear, and signs that get stranger.
-- Between attacks he patrols the encampment, speaks beside his moving body and grows suspicious when his belongings are touched. Native crossbow arrows remain visible; injury flashes, particles and stagger show successful hits without killing the shared actor. His journal sign has a physical wall support.
+- Between attacks he patrols the encampment, speaks beside his moving body and grows suspicious when his belongings are touched. Native crossbow arrows remain visible; injury flashes, particles and stagger show successful hits. The shared actor can die; only the actual killer remembers that death, and the personal service-latch escape remains required. His journal sign has a physical wall support.
 - Actually taking a finite native cache supply or one personal survey copy arms that explorer’s next physical visit. Reading, opening and borrowing confer none; late explorers retain access when the shared barrel is empty. His shared persistent human actor hunts active looters through three connected arenas. He searches by the pursued player’s actual placed torches when native sight is lost. Native cover, a faced shield or striking him buys time.
 - Each explorer must traverse the three arenas in order, spend four present seconds in each, see the hunter and crouch to pull the service latch. Peers and borrowed items confer no credit. In-room offline time pauses; departure/death ends the attempt while preserving theft. Shared geometry, menus and actor identity stay in place for late joiners.
 - One personal escape from Holloway’s independent encounter yields the finite battered vanilla shield usable in the finale. There is no free preparation shield. He stays alive.

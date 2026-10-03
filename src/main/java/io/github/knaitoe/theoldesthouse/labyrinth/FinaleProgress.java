@@ -10,7 +10,7 @@ public final class FinaleProgress {
     public enum Phase { UNSEEN, STAIRCASE, FIGHT, COLLAPSE, ESCAPE, RELEASE, HOMEWARD, LOCKED_OUT, ESCAPED, WITNESSED }
     private FinaleProgress() {}
     public static CompoundTag world(MinecraftServer server) { return LabyrinthData.get(server).state(STATE); }
-    public static CompoundTag player(MinecraftServer server, UUID id) { return world(server).getCompound(id.toString()).copy(); }
+    public static CompoundTag player(MinecraftServer server, UUID id) { return LabyrinthData.get(server).stateEntry(STATE,id.toString()); }
     public static Phase phase(CompoundTag record) {
         try { return Phase.valueOf(record.getString("Phase")); }
         catch (IllegalArgumentException ignored) { return Phase.UNSEEN; }

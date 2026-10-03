@@ -25,7 +25,7 @@ public final class FinaleClientEvents {
     }
     private static final class CagedBoyRenderer extends MobRenderer<MinotaurEntity,net.minecraft.client.model.PlayerModel<MinotaurEntity>>{
         CagedBoyRenderer(EntityRendererProvider.Context context){super(context,new net.minecraft.client.model.PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER),false),.2F);}
-        @Override public ResourceLocation getTextureLocation(MinotaurEntity e){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/lake_boy.png");}
+        @Override public ResourceLocation getTextureLocation(MinotaurEntity e){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/caged_child.png");}
         @Override protected void scale(MinotaurEntity e,com.mojang.blaze3d.vertex.PoseStack poses,float partial){poses.scale(.7F,.7F,.7F);}
     }
     private static final class WitnessRenderer extends MobRenderer<FinaleWitness,WitnessModel>{

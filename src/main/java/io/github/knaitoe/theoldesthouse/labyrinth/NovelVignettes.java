@@ -144,12 +144,15 @@ public final class NovelVignettes {
     }
     @SubscribeEvent public static void opened(PlayerContainerEvent.Open e){
         if(!(e.getEntity() instanceof ServerPlayer p)||!participant(p)||!(e.getContainer() instanceof ChestMenu menu))return;var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());
-        if(!own.getBoolean("Correspondence")||own.getInt("Letters")>=8||p.serverLevel().getGameTime()<own.getLong("MailDue"))return;
-        var chest=menu.getContainer();for(int i=0;i<chest.getContainerSize();i++)if(chest.getItem(i).isEmpty()){
+        if(!p.serverLevel().dimension().equals(net.minecraft.world.level.Level.OVERWORLD)
+                || !own.getBoolean("Correspondence")||own.getInt("Letters")>=8||p.serverLevel().getGameTime()<own.getLong("MailDue"))return;
+        var chest=menu.getContainer();if(!chest.isEmpty())return;
+        for(int i=0;i<chest.getContainerSize();i++)if(chest.getItem(i).isEmpty()){
             int n=own.getInt("Letters");ItemStack letter=VignetteYields.mark(NovelTexts.letter(n,p.getGameProfile().getName()),LabyrinthPlace.WHALE.id());CustomData.update(DataComponents.CUSTOM_DATA,letter,t->t.putUUID("LetterTo",p.getUUID()));
             chest.setItem(i,letter);chest.setChanged();menu.broadcastChanges();own.putInt("Letters",n+1);own.putLong("MailDue",p.serverLevel().getGameTime()+MAIL_INTERVAL);save(data,p.getUUID(),own);break;}
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
+        if(e.getServer().getTickCount()%20==0){var origin=HouseSavedData.get(e.getServer()).houseOrigin();var level=e.getServer().getLevel(HouseDimensions.INTERIOR);if(origin!=null&&level!=null&&LabyrinthData.get(e.getServer()).builtVersion()>=21){var b=LabyrinthPlaces.base(origin,LabyrinthPlace.WHALE);if(b!=null&&level.hasChunkAt(b))MailPlaqueBlock.repair(level,b);}}
         var server=e.getServer();BlockPos origin=HouseSavedData.get(server).houseOrigin();if(origin==null){clearAll();return;}
         Set<UUID> small=new HashSet<>();boolean closeCover=false;
         for(ServerPlayer p:server.getPlayerList().getPlayers()){
@@ -284,7 +287,7 @@ public final class NovelVignettes {
     }
     private static void tickTom(ServerPlayer p,BlockPos origin,CompoundTag own){
         var phase=FinaleProgress.phase(p.server,p.getUUID());if(phase!=FinaleProgress.Phase.STAIRCASE||!FinaleArchitecture.contains(origin,p.blockPosition()))return;
-        var at=FinaleArchitecture.base(origin).offset(-4,FinaleArchitecture.TOP,18);if(p.distanceToSqr(at.getCenter())>500)return;
+        var at=FinaleRepairs.tom(origin);if(p.distanceToSqr(at.getCenter())>500)return;
         if(own.hasUUID("Tom")&&p.serverLevel().getEntity(own.getUUID("Tom")) instanceof NovelActor)return;
         if(own.hasUUID("Tom")){if(!own.contains("TomMissing")){own.putLong("TomMissing",p.serverLevel().getGameTime());return;}if(p.serverLevel().getGameTime()-own.getLong("TomMissing")<60)return;}
         if(p.serverLevel().getEntitiesOfClass(NovelActor.class,new AABB(at).inflate(6),a->a.role()==0&&a.owner().filter(p.getUUID()::equals).isPresent()).isEmpty()){

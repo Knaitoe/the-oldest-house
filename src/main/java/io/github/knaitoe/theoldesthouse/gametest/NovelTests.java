@@ -71,9 +71,18 @@ public final class NovelTests {
             f.reload();f.click(p,NovelRooms.ARCHIVE_DESK);h.assertTrue(!((NovelVignettes.NovelBookMenu)p.containerMenu).clickMenuButton(p,3),"native save retains finite paper");});}
     @GameTest(template="empty",batch="novel_whale",timeoutTicks=240) public static void lettersArriveInActualChestsAndPausesOpenOnlyTheReadersAttic(GameTestHelper h){
         whale=new Fixture(h,32600,LabyrinthPlace.WHALE);var f=whale;var p=f.player();var peer=f.player();var chestPos=f.b.offset(8,0,-4);f.l.setBlock(chestPos,Blocks.CHEST.defaultBlockState(),2);
-        h.runAfterDelay(8,()->{for(int n=0;n<3;n++){var own=f.own(p);own.putLong("MailDue",f.l.getGameTime());NovelVignettes.save(f.data(),p.getUUID(),own);p.openMenu((ChestBlockEntity)f.l.getBlockEntity(chestPos));p.closeContainer();}
-            h.assertTrue(f.own(p).getInt("Letters")==3&&((ChestBlockEntity)f.l.getBlockEntity(chestPos)).getItem(2).has(DataComponents.WRITTEN_BOOK_CONTENT),"registered native menu opens put successive original letters in the chest");
-            f.at(p,-3.5,8,-19.5);});
+        h.runAfterDelay(8,()->{
+            var own=f.own(p);own.putLong("MailDue",f.l.getGameTime());NovelVignettes.save(f.data(),p.getUUID(),own);p.openMenu((ChestBlockEntity)f.l.getBlockEntity(chestPos));p.closeContainer();
+            h.assertTrue(f.own(p).getInt("Letters")==0,"empty chests inside the House do not deliver ordinary-world post");
+            var outside=f.l.getServer().overworld();var ordinary=h.absolutePos(BlockPos.ZERO).offset(25,4,25);outside.setBlock(ordinary.below(),Blocks.STONE.defaultBlockState(),2);outside.setBlock(ordinary,Blocks.CHEST.defaultBlockState(),2);var chest=(ChestBlockEntity)outside.getBlockEntity(ordinary);p.teleportTo(outside,ordinary.getX()+.5,ordinary.getY(),ordinary.getZ()+1.5,180,0);p.hasChangedDimension();
+            chest.setItem(7,new ItemStack(Items.EMERALD,2));p.openMenu(chest);p.closeContainer();h.assertTrue(f.own(p).getInt("Letters")==0&&chest.getItem(7).getCount()==2,"a partly filled outside chest is left intact");chest.clearContent();
+            for(int n=0;n<3;n++){own=f.own(p);own.putLong("MailDue",outside.getGameTime());NovelVignettes.save(f.data(),p.getUUID(),own);p.openMenu(chest);
+                var letter=chest.getItem(0);h.assertTrue(letter.has(DataComponents.WRITTEN_BOOK_CONTENT)&&letter.get(DataComponents.CUSTOM_DATA).copyTag().getUUID("LetterTo").equals(p.getUUID()),"each actual outside delivery keeps the reader and original letter custody");
+                p.closeContainer();chest.clearContent();
+            }
+            h.assertTrue(f.own(p).getInt("Letters")==3,"three finite letters arrive after opening three genuinely empty outside chests");
+            p.teleportTo(f.l,f.b.getX()-3.5,f.b.getY()+8,f.b.getZ()-19.5,0,0);p.hasChangedDimension();
+        });
         int[] times={12,20,28,52,76,84};for(int t:times)h.runAfterDelay(t,()->{var at=f.b.offset(NovelRooms.ATTIC_DOOR);NeoForge.EVENT_BUS.post(new PlayerInteractEvent.LeftClickBlock(p,at,Direction.EAST,PlayerInteractEvent.LeftClickBlock.Action.START));});
         h.runAfterDelay(140,()->{h.assertTrue(f.own(p).getBoolean("AtticKnocked")&&f.l.getBlockState(f.b.offset(NovelRooms.ATTIC_DOOR)).getValue(DoorBlock.OPEN),"three, one, two with real pauses opens the middle attic");
             f.at(p,-8.5,8,-23.5);f.click(p,NovelRooms.ATTIC_DESK);h.assertTrue(((NovelVignettes.NovelBookMenu)p.containerMenu).clickMenuButton(p,101)&&WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.WHALE),"the undated final letter is the resolution");

@@ -30,7 +30,7 @@ public final class HomeDesignProof extends Screen {
         for(int i=0;i<4;i++){
             int left=8+i*width/4;g.fill(left,30,left+width/4-12,height-115,0xFF3B3530);g.drawString(font,names[i],left+5,36,0xFFE8DFC9,false);g.flush();
             var pose=g.pose();var buffers=mc.renderBuffers().bufferSource();pose.pushPose();pose.translate(left+width/8-5,i==0?61:132,150);pose.scale(68,68,68);pose.mulPose(Axis.YP.rotationDegrees(i==0?25:35));
-            if(i==0){pose.scale(.7F,.7F,.7F);new PlayerModel<>(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER),false).renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/lake_boy.png"))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);}
+            if(i==0){pose.scale(.7F,.7F,.7F);new PlayerModel<>(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER),false).renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/caged_child.png"))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);}
             else if(i<3){pose.translate(-.5,-.5,-.5);var part=mc.getEntityModels().bakeLayer(TreeTendrilRenderer.LAYER);var tree=new TreeTendrilRenderer(part);tree.renderAt(i==1?0:60,7,Direction.SOUTH,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);if(Math.abs(part.getChild("tip").xRot)<.001)throw new IllegalStateException("Tree joint did not animate");}
             else {pose.scale(1,-1,1);pose.translate(-.5,0,-.5);mc.getBlockRenderer().renderSingleBlock(HouseBlocks.HOUSEHOLD_FURNITURE.get().defaultBlockState(),pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);}
             pose.popPose();buffers.endBatch();
@@ -41,6 +41,6 @@ public final class HomeDesignProof extends Screen {
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof HomeDesignProof s)||++s.frames<4)return;
         var branch=new TreeTendrilBlockEntity(BlockPos.ZERO,HouseBlocks.TREE_TENDRIL.get().defaultBlockState());if(mc.getBlockEntityRenderDispatcher().getRenderer(branch)==null)throw new IllegalStateException("The native tendril renderer is unregistered");
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-home-design.png"));}
-        Files.writeString(dir.resolve("home-design-passed.txt"),"Native child mesh, tree renderer registration, two joint poses, household model and blue HOME typography rendered.\n");mc.setScreen(new SceneVisualProof());
+        Files.writeString(dir.resolve("home-design-passed.txt"),"Native child mesh, tree renderer registration, two joint poses, household model and blue HOME typography rendered.\n");mc.setScreen(new MinotaurVisualProof());
     }
 }

@@ -247,9 +247,10 @@ public final class LabyrinthDealer {
             case FOLDED_MAZE -> 5 + Math.min(6, Math.max(0, depth - LabyrinthPacing.STRANGE_DEPTH));
             case DEEP_MAZE -> 10 + Math.min(8, Math.max(0, depth - LabyrinthPacing.DEEP_DEPTH));
             case ABYSS_MAZE -> 18 + Math.min(12, Math.max(0, depth - LabyrinthPacing.ABYSS_DEPTH));
-            case STRAIGHT_HALL -> 24;
-            case BENT_HALL -> 18;
-            case CROSS_HALL -> 15;
+            case STRAIGHT_HALL -> 26;
+            case BENT_HALL -> 26;
+            case CROSS_HALL -> 12;
+            case LONG_HALLWAY, HOTEL_HALLWAY, SPIRAL_STAIR, DUPLICATE_PASSAGE -> 1;
             case JUNCTION -> depth >= 9 ? 4 : 8;
             case GRAY_CORRIDOR -> depth < 4 ? 0 : 2;
             case QUIET_ROOM -> 3;
@@ -320,7 +321,8 @@ public final class LabyrinthDealer {
         List<LabyrinthPlace> gray = new ArrayList<>(grayAvailable(data, player));
         // Ordinary stretches do not repeatedly lead straight back into themselves.
         if (here != null) gray.remove(here);
-        List<LabyrinthPlace> odd = gray.stream().filter(LabyrinthPacing::anomaly).toList();
+        List<LabyrinthPlace> odd = gray.stream().filter(LabyrinthPacing::anomaly)
+                .filter(p -> !LabyrinthPacing.loop(p) || LabyrinthPacing.loopDue(data, player)).toList();
         List<LabyrinthData.Door> choices = new ArrayList<>(doors);
         choices.remove(lucky);
         LabyrinthData.Door oddDoor = null;

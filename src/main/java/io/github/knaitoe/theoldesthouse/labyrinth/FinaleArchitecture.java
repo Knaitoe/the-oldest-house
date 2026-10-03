@@ -24,6 +24,9 @@ public final class FinaleArchitecture {
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     public record Placement(BlockPos pos, BlockState block) {}
     private static final Map<MinecraftServer, List<Placement>> PLANS = new WeakHashMap<>();
+    private static BlockPos routeOrigin;
+    private static List<Step> stepsCache;
+    private static List<BlockPos> descentCache,continuationCache,fullCache;
     private FinaleArchitecture() {}
     public static BlockPos base(BlockPos manor) { return new BlockPos(manor.getX() + HouseLayout.CENTER_X + 512, 0, manor.getZ() + HouseLayout.CENTER_Z); }
     public static boolean contains(BlockPos manor, BlockPos pos) {
@@ -37,6 +40,7 @@ public final class FinaleArchitecture {
     public static BlockPos exit(BlockPos manor) { return base(manor).offset(24, BOTTOM, 112); }
     private record Step(BlockPos feet,Direction direction,int index){}
     private static List<Step> allSteps(BlockPos manor){
+        if(manor.equals(routeOrigin)&&stepsCache!=null)return stepsCache;
         BlockPos b=base(manor);var result=new ArrayList<Step>();int x=0,z=STAIR_RADIUS,y=TOP,descending=0;
         Direction direction=Direction.EAST;
         for(int n=0;y>=LOOP_BOTTOM&&n<10000;n++){
@@ -50,12 +54,17 @@ public final class FinaleArchitecture {
             if(corner>6&&corner<STAIR_RADIUS*2-6&&++descending%2==0)y--;
             x+=direction.getStepX();z+=direction.getStepZ();
         }
-        return result;
+        routeOrigin=manor.immutable();stepsCache=List.copyOf(result);
+        fullCache=stepsCache.stream().map(Step::feet).toList();
+        var upper=new ArrayList<BlockPos>();for(var step:stepsCache){upper.add(step.feet);if(step.feet.getY()<=ARENA)break;}
+        descentCache=List.copyOf(upper);continuationCache=stepsCache.stream().filter(p->p.feet.getY()<=ARENA).map(Step::feet).toList();
+        return stepsCache;
     }
+    public static List<BlockPos> fullRoute(BlockPos manor){allSteps(manor);return fullCache;}
     public static List<BlockPos> staircaseRoute(BlockPos manor){
-        var result=new ArrayList<BlockPos>();for(var step:allSteps(manor)){result.add(step.feet);if(step.feet.getY()<=ARENA)break;}return List.copyOf(result);
+        allSteps(manor);return descentCache;
     }
-    public static List<BlockPos> continuationRoute(BlockPos manor){return allSteps(manor).stream().filter(s->s.feet.getY()<=ARENA).map(Step::feet).toList();}
+    public static List<BlockPos> continuationRoute(BlockPos manor){allSteps(manor);return continuationCache;}
     public static List<BlockPos> escapeRoute(BlockPos manor) {
         BlockPos b = base(manor); List<BlockPos> path = new ArrayList<>();
         int[][] corners = {{-20,76},{-20,92},{-4,92},{-4,82},{12,82},{12,104},{-8,104},{-8,112},{24,112}};
@@ -76,7 +85,7 @@ public final class FinaleArchitecture {
         LabyrinthData data = LabyrinthData.get(server); CompoundTag state = data.state(STATE);
         if (state.contains("Origin") && state.getLong("Origin") != manor.asLong()) { boolean requested=state.getBoolean("Requested"); state = new CompoundTag(); state.putBoolean("Requested",requested); PLANS.remove(server); }
         if (!state.getBoolean("Requested")) return;
-        if(state.getBoolean("Ready") && state.getInt("CarveVersion")==CARVE_VERSION){retirePreparationShield(level,manor);connectCell(level,manor);FinaleCollapse.dress(level,manor);return;}
+        if(state.getBoolean("Ready") && state.getInt("CarveVersion")==CARVE_VERSION){retirePreparationShield(level,manor);connectCell(level,manor);FinaleCollapse.dress(level,manor);FinaleRepairs.tick(level,manor);return;}
         // Existing explorers finish their visit before an old physical descent is replaced.
         if(state.getBoolean("Ready")&&level.players().stream().anyMatch(p->contains(manor,p.blockPosition())))return;
         if(state.getInt("PlanVersion")!=CARVE_VERSION){
@@ -167,7 +176,7 @@ public final class FinaleArchitecture {
         // Sparse loose pages stand on solid corner landings; abandoned camps occur only every 31st turn.
         int turn=0;for(var step:steps)if(Math.abs(step.feet.getX()-b.getX())==STAIR_RADIUS&&Math.abs(step.feet.getZ()-b.getZ())==STAIR_RADIUS){
             BlockPos at=step.feet;int sx=Integer.signum(at.getX()-b.getX()),sz=Integer.signum(at.getZ()-b.getZ());
-            if(turn%3==1)blocks.put(at.offset(-sx*3,0,-sz*3),NoteSurfaceBlock.state(HouseMarginalia.Thread.POEMS,Direction.SOUTH));
+            if(turn%3==1)blocks.put(FinaleRepairs.paper(at,b,turn),NoteSurfaceBlock.state(HouseMarginalia.Thread.POEMS,FinaleRepairs.paperFacing(turn)));
             if(turn%31==9){
                 blocks.put(at.offset(sx*3,0,sz*3),Blocks.CAMPFIRE.defaultBlockState().setValue(CampfireBlock.LIT,false));
             }
@@ -200,6 +209,7 @@ public final class FinaleArchitecture {
         for(int y=-26;y<=22;y++)for(int i=-31;i<=31;i++){put(blocks,b,i,y,70,dark);put(blocks,b,i,y,121,dark);}
         for(int y=-26;y<=22;y++)for(int zz=70;zz<=121;zz++){put(blocks,b,-31,y,zz,dark);put(blocks,b,31,y,zz,dark);}
         StaircaseMazes.plan(blocks,b);
+        FinaleRepairs.campPlan(blocks,b);
         return blocks.entrySet().stream().map(e->new Placement(e.getKey(),e.getValue())).toList();
     }
     private static int depthBand(int y){return Math.floorMod((TOP-y)/128,4);}
@@ -271,5 +281,5 @@ public final class FinaleArchitecture {
     public static void closeCell(ServerLevel level,BlockPos manor){
         BlockPos door=cell(manor);for(int x=-1;x<=1;x++)for(int y=0;y<4;y++)level.setBlock(door.offset(x,y,0),cellBars(),FLAGS);
     }
-    public static void clearAll(){PLANS.clear();}
+    public static void clearAll(){PLANS.clear();routeOrigin=null;stepsCache=null;fullCache=null;descentCache=null;continuationCache=null;}
 }

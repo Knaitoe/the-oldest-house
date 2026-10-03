@@ -148,6 +148,7 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HideAndClap::onServerStopping);
         NeoForge.EVENT_BUS.addListener(ModelHome::onServerTick);
         NeoForge.EVENT_BUS.addListener(ModelHome::onAttackEntity);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ModelHome::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onServerTick);
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onEntityTick);
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onContainerClose);

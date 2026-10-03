@@ -21,15 +21,21 @@ public final class LabyrinthHalls {
     public static Set<BlockPos> floor(LabyrinthPlace place) {
         Set<BlockPos> floor = new HashSet<>();
         switch (place) {
-            case STRAIGHT_HALL -> rectangle(floor, -1, 1, -35, 0);
+            case STRAIGHT_HALL -> {
+                rectangle(floor,-1,1,-35,0);
+                rectangle(floor,-2,2,-5,-1);
+                rectangle(floor,-2,2,-23,-20);
+            }
             case BENT_HALL -> {
                 rectangle(floor, -1, 1, -20, 0);
                 rectangle(floor, -16, 1, -20, -18);
                 rectangle(floor, -16, -14, -32, -18);
+                rectangle(floor, -16, -12, -22, -18);
             }
             case CROSS_HALL -> {
                 rectangle(floor, -1, 1, -31, 0);
                 rectangle(floor, -14, 14, -16, -14);
+                rectangle(floor, -3, 3, -18, -12);
             }
             case QUIET_ROOM -> {
                 rectangle(floor, -1, 1, -5, 0);
@@ -55,21 +61,18 @@ public final class LabyrinthHalls {
     public static void build(ServerLevel level, BlockPos base, LabyrinthPlace place) {
         Set<BlockPos> floor = floor(place);
         var box=place.room();
-        int flags=LabyrinthBuilder.flags(), height=place == LabyrinthPlace.QUIET_ROOM ? 4 : 3;
+        int flags=LabyrinthBuilder.flags(), height=height(place);
         for(int x=box.minX();x<=box.maxX();x++) for(int z=box.minZ();z<=box.maxZ();z++)
             for(int y=-1;y<=height+1;y++) {
                 boolean open=floor.contains(new BlockPos(x,0,z));
                 var state=!open ? (y==0 ? Blocks.OAK_PLANKS.defaultBlockState() : LabyrinthDomestic.WALL)
-                        : y==-1 ? LabyrinthDomestic.FLOOR
-                        : y==height+1 ? LabyrinthDomestic.CEILING : Blocks.AIR.defaultBlockState();
+                        : y==-1 ? floorState(place)
+                        : y==height+1 ? Blocks.WHITE_CONCRETE.defaultBlockState() : Blocks.AIR.defaultBlockState();
                 level.setBlock(base.offset(x,y,z),state,flags);
             }
         for(int z=-5;z>box.minZ()+3;z-=10) if(floor.contains(new BlockPos(0,0,z)))
             LabyrinthBuilder.hangLantern(level,base.offset(0,height,z),false);
-        // A chipped pillar and a dark threshold are recognizable without naming destinations.
-        int landmarkZ=place==LabyrinthPlace.STRAIGHT_HALL ? -19 : -16;
-        for(int y=0;y<=height;y++) level.setBlock(base.offset(2,y,landmarkZ),
-                (y==1 ? Blocks.CRACKED_STONE_BRICKS : Blocks.POLISHED_ANDESITE).defaultBlockState(),flags);
+        // No masonry monuments announce the first ordinary corridor.
         if(place==LabyrinthPlace.BENT_HALL) LabyrinthBuilder.hangLantern(level,base.offset(-12,3,-19),false);
         if(place==LabyrinthPlace.CROSS_HALL) {
             LabyrinthBuilder.hangLantern(level,base.offset(-9,3,-15),false);
@@ -105,5 +108,10 @@ public final class LabyrinthHalls {
         LabyrinthBuilder.entrance(level,base,LabyrinthDomestic.WALL,LabyrinthDomestic.FLOOR,LabyrinthDomestic.CEILING);
         LabyrinthDomestic.decorateHall(level,base,place);
         LabyrinthBuilder.doors(level,base,place);
+        DomesticHallUpgrade.apply(level,base,place);
+    }
+    public static int height(LabyrinthPlace place){return place==LabyrinthPlace.CROSS_HALL||place==LabyrinthPlace.QUIET_ROOM?4:3;}
+    public static net.minecraft.world.level.block.state.BlockState floorState(LabyrinthPlace place){
+        return (place==LabyrinthPlace.STRAIGHT_HALL?Blocks.OAK_PLANKS:place==LabyrinthPlace.BENT_HALL?Blocks.SMOOTH_STONE:place==LabyrinthPlace.CROSS_HALL?Blocks.DARK_OAK_PLANKS:Blocks.SPRUCE_PLANKS).defaultBlockState();
     }
 }

@@ -12,8 +12,9 @@ import net.minecraft.util.Mth;
 public final class MinotaurModel extends HierarchicalModel<MinotaurEntity> {
     public static final ModelLayerLocation LAYER=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"minotaur"),"main");
     private final ModelPart root,body,head,jaw,leftArm,rightArm,leftLeg,rightLeg;
+    private final java.util.List<ModelPart> parts;
     public MinotaurModel(ModelPart baked){root=baked.getChild("root");body=root.getChild("body");head=body.getChild("head");jaw=head.getChild("jaw");
-        leftArm=body.getChild("left_arm");rightArm=body.getChild("right_arm");leftLeg=root.getChild("left_leg");rightLeg=root.getChild("right_leg");}
+        leftArm=body.getChild("left_arm");rightArm=body.getChild("right_arm");leftLeg=root.getChild("left_leg");rightLeg=root.getChild("right_leg");parts=root.getAllParts().toList();}
     @Override public ModelPart root(){return root;}
     public static LayerDefinition createBodyLayer(){
         MeshDefinition mesh=new MeshDefinition();PartDefinition root=mesh.getRoot().addOrReplaceChild("root",CubeListBuilder.create(),PartPose.offset(0,24,0));
@@ -38,7 +39,10 @@ public final class MinotaurModel extends HierarchicalModel<MinotaurEntity> {
         return LayerDefinition.create(mesh,256,512);
     }
     @Override public void setupAnim(MinotaurEntity entity,float walk,float amount,float age,float yaw,float pitch){
-        root.getAllParts().forEach(ModelPart::resetPose);int state=entity.motion();float breath=Mth.sin(age*.08F)*.025F;
+        pose(entity.motion(),walk,amount,age,yaw,pitch);
+    }
+    public void pose(int state,float walk,float amount,float age,float yaw,float pitch){
+        parts.forEach(ModelPart::resetPose);float breath=Mth.sin(age*.08F)*.025F;
         body.xRot=.12F+breath;head.yRot=yaw*Mth.DEG_TO_RAD*.45F;head.xRot=pitch*Mth.DEG_TO_RAD*.4F; jaw.xRot=.05F+breath;
         leftLeg.xRot=Mth.cos(walk*.65F)*amount*.6F;rightLeg.xRot=Mth.cos(walk*.65F+Mth.PI)*amount*.6F;
         if(state==MinotaurEntity.WINDUP){body.xRot=.36F;head.xRot=-.25F;leftArm.xRot=rightArm.xRot=-.25F;jaw.xRot=.3F;}

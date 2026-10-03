@@ -143,27 +143,19 @@ public enum LabyrinthPlace {
             new DoorSpec("west", new BlockPos(-37, 0, -28), Direction.EAST, LabyrinthData.DEALT),
             new DoorSpec("east", new BlockPos(37, 0, -28), Direction.WEST, LabyrinthData.DEALT)
     )),
-    /** Ordinary connected hallways: several different doors along a single stretch. */
+    /** Ordinary connected hallways. Doorways belong at destinations, rather than filling every wall. */
     STRAIGHT_HALL("straight_hall", Kind.GRAY, 23, new BoundingBox(-7, -1, -36, 7, 4, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
-            new DoorSpec("west_near", new BlockPos(-2, 0, -8), Direction.EAST, LabyrinthData.DEALT),
-            new DoorSpec("east_middle", new BlockPos(2, 0, -15), Direction.WEST, LabyrinthData.DEALT),
-            new DoorSpec("west_far", new BlockPos(-2, 0, -25), Direction.EAST, LabyrinthData.DEALT),
             new DoorSpec("far", new BlockPos(0, 0, -36), Direction.SOUTH, LabyrinthData.DEALT)
     )),
     BENT_HALL("bent_hall", Kind.GRAY, 24, new BoundingBox(-17, -1, -33, 7, 4, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
-            new DoorSpec("east_near", new BlockPos(2, 0, -8), Direction.WEST, LabyrinthData.DEALT),
-            new DoorSpec("bend", new BlockPos(-8, 0, -21), Direction.SOUTH, LabyrinthData.DEALT),
-            new DoorSpec("west_far", new BlockPos(-17, 0, -27), Direction.EAST, LabyrinthData.DEALT),
             new DoorSpec("far", new BlockPos(-15, 0, -33), Direction.SOUTH, LabyrinthData.DEALT)
     )),
-    CROSS_HALL("cross_hall", Kind.GRAY, 25, new BoundingBox(-15, -1, -32, 15, 4, 0), List.of(
+    CROSS_HALL("cross_hall", Kind.GRAY, 25, new BoundingBox(-15, -1, -32, 15, 5, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
-            new DoorSpec("west_near", new BlockPos(-2, 0, -7), Direction.EAST, LabyrinthData.DEALT),
             new DoorSpec("west", new BlockPos(-15, 0, -15), Direction.EAST, LabyrinthData.DEALT),
             new DoorSpec("east", new BlockPos(15, 0, -15), Direction.WEST, LabyrinthData.DEALT),
-            new DoorSpec("east_far", new BlockPos(2, 0, -23), Direction.WEST, LabyrinthData.DEALT),
             new DoorSpec("far", new BlockPos(0, 0, -32), Direction.SOUTH, LabyrinthData.DEALT)
     )),
     /** A quiet waiting room, with chairs and a small finite cache. */

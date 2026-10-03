@@ -64,7 +64,6 @@ public final class HomeLetters {
             case 4->List.of("I wrote COME HOME, then crossed out COME.\n\nIt sounded like a command. I meant that there would be somewhere to put your coat.","The first letter says the kettle was dripping.\n\nI checked the desk. The mark is old.\n\nThe kettle is still warm.\n\nPlease read the first letter again.");
             default->List.of("I found your pages.\n\nI read them at the kitchen table with the door open.\n\nFor once I let the hallway remain unmeasured.","If you can hear me, follow the voice only as far as you know the person who made it.\n\nAfter that, turn on a light.\n\nI will leave mine on.");
         });
-        var traces=HouseExperience.traces(p);if(stage>=2&&!traces.isEmpty())pages.add("In the margin, a different hand:\n\n"+traces.get(Math.floorMod(stage,traces.size())));
         if(stage==5&&!own.getString("ReplyTitle").isEmpty())pages.add("Your answer was kept as "+own.getString("ReplyTitle")+".\n\nThe original is still in the drawer unless you took it back. I did not make another.");
         ItemStack book=HouseWriting.book("At home, "+(stage+1),"Karen Green",HouseWriting.WritingStyle.KAREN,pages);CustomData.update(DataComponents.CUSTOM_DATA,book,t->{t.putUUID("LetterTo",p.getUUID());t.putInt("HomeLetter",stage);});
         books.put(key,book.save(p.registryAccess()));own.put("HomeLetters",books);HouseExperience.save(d,p.getUUID(),own);return book;

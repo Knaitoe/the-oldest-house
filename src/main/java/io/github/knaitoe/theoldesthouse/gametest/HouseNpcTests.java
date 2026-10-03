@@ -71,7 +71,9 @@ public final class HouseNpcTests {
             f.at(p,0,-23.5);
         });
         boolean[] bolt={false};h.onEachTick(()->{if(!f.l.getEntitiesOfClass(net.minecraft.world.entity.projectile.Arrow.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.HOLLOWAY_CAMP),a->a.getOwner()==actor).isEmpty())bolt[0]=true;});
-        h.runAfterDelay(190,()->{h.assertTrue(bolt[0],"a real tracked arrow leaves the crossbow instead of invisible direct damage");h.succeed();});
+        h.runAfterDelay(190,()->{h.assertTrue(bolt[0],"a real tracked arrow leaves the crossbow instead of invisible direct damage");
+            h.assertTrue(actor.hurt(f.l.damageSources().playerAttack(p),100)&&actor.isDeadOrDying()&&f.data().state(HollowayVignette.ID).getBoolean("ActorDead")&&f.own(p).getBoolean("KilledHolloway"),"repeated real hits can kill the original human and save the actual killer's personal encounter");
+            h.assertTrue(HollowayVignette.ensureActor(f.l,f.b)==null&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.HOLLOWAY),"death cannot respawn Holloway or bypass the separate personal escape-latch resolution");h.succeed();});
     }
     @AfterBatch(batch="npc_cache") public static void c1(ServerLevel l){if(cache!=null){cache.close();cache=null;}}
     @AfterBatch(batch="npc_hunt") public static void c2(ServerLevel l){if(hunt!=null){hunt.close();hunt=null;}}
