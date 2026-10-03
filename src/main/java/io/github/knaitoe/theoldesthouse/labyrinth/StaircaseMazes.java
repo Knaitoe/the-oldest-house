@@ -27,6 +27,12 @@ public final class StaircaseMazes {
             for(int row=1;row<4;row+=2)carve(plan,b,side,47,row*6+36+shift,53,row*6+36+shift,y);
             plan.put(b.offset(side*20,y+2,entryZ),Blocks.SOUL_LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));
         }
+        connectorCap(plan,b);
+    }
+    /** The west corridor uses z=37, the old outer wall; put its backing one block farther out. */
+    public static void connectorCap(Map<BlockPos,BlockState> plan,BlockPos b){
+        for(int x=18;x<=24;x++)for(int y=FinaleArchitecture.ARENA-1;y<=FinaleArchitecture.ARENA+4;y++)
+            plan.put(b.offset(-x,y,38),Blocks.DEEPSLATE_TILES.defaultBlockState());
     }
     private static void carve(Map<BlockPos,BlockState> p,BlockPos b,int side,int x,int z,int tx,int tz,int y){
         while(true){for(int dz=0;dz<=1;dz++)for(int dx=0;dx<=1;dx++)for(int yy=y;yy<y+3;yy++)p.put(b.offset(side*(x+dx),yy,z+dz),Blocks.AIR.defaultBlockState());if(x==tx&&z==tz)break;x+=Integer.signum(tx-x);z+=Integer.signum(tz-z);}

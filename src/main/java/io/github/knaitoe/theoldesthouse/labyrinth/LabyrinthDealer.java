@@ -70,6 +70,9 @@ public final class LabyrinthDealer {
             WitnessAccount.Story story=WitnessAccount.Story.of(place.id());
             if(story!=null&&!NovelVignettes.isNovel(place)&&place.isFinishable()&&data.isCompleted(place.id())&&!WitnessAccount.has(data,player,story)&&!places.contains(place))places.add(place);
         }
+        // A recurring home copy needs an interval; a deliberate scent may still seek it.
+        if(!data.hillaryScent(player))places.removeIf(p->p==LabyrinthPlace.RED_ROOM
+                && data.recentVisit(player,p)>=0 && data.recentVisit(player,p)<6);
         return places;
     }
 
@@ -93,8 +96,8 @@ public final class LabyrinthDealer {
     public static int rememberedWeight(LabyrinthData data, UUID player, LabyrinthPlace place, int ordinaryWeight) {
         if(place==LabyrinthPlace.MOTHER_DEN&&rescueNeeded(data,player))return Math.max(1,ordinaryWeight)*96;
         boolean special = place.isVignette() || !LabyrinthPacing.ordinary(place);
-        if (!special) return ordinaryWeight * 12;
         int age = data.recentVisit(player, place);
+        if (!special) return ordinaryWeight * (age < 0 ? 12 : age < 3 ? 3 : 8);
         int factor = age < 0 ? 12 : age == 0 ? 1 : age < 3 ? 2 : age < 6 ? 4 : 8;
         return io.github.knaitoe.theoldesthouse.house.HouseExperience.weight(data,player,place,ordinaryWeight * factor);
     }

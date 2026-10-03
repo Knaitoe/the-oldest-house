@@ -36,7 +36,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 28;
+    public static final int VERSION = 29;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -128,6 +128,7 @@ public final class LabyrinthBuilder {
     /** One place per tick. */
     public static void tick(MinecraftServer server) {
         DomesticHallUpgrade.tick(server);
+        WallNotesRepairs.tick(server);
         if (pending == null || pendingOrigin == null) {
             return;
         }

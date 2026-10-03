@@ -77,7 +77,7 @@ public final class HouseImpossibleHallway {
         purgeConstructionDebris(level, origin);
     }
 
-    /** Ordinary cupboards and mismatched wall finishes precede the first dealt room. */
+    /** Ordinary cupboards and continuous plaster precede the first dealt room. */
     public static void dressDomesticApproach(ServerLevel level, BlockPos origin) {
         for (int z = START_Z_OFFSET; z < END_Z_OFFSET; z++) {
             for (int x : new int[]{LEFT_WALL_X_OFFSET, RIGHT_WALL_X_OFFSET}) {
@@ -93,8 +93,8 @@ public final class HouseImpossibleHallway {
         }
         for (int step = 26; step <= 31; step++) for (int y = 2; y <= 4; y++) {
             BlockPos pos = origin.offset(RIGHT_WALL_X_OFFSET, y, START_Z_OFFSET + step);
-            if (level.getBlockState(pos).is(Blocks.WHITE_TERRACOTTA))
-                level.setBlock(pos, Blocks.YELLOW_TERRACOTTA.defaultBlockState(), QUIET_FLAGS);
+            if (level.getBlockState(pos).is(Blocks.YELLOW_TERRACOTTA))
+                level.setBlock(pos, Blocks.WHITE_TERRACOTTA.defaultBlockState(), QUIET_FLAGS);
         }
     }
 
