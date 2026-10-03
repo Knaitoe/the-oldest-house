@@ -24,4 +24,4 @@ Native tests exercise the actual transformed entity, survival player, shield col
 
 ## Verification
 
-Pending native Java 21 / NeoForge build, complete GameTests, package and texture checks, native font/cast/home/Minotaur rendering, twenty-two architecture views, and three sky elevations. The matching JAR is delivered only after those complete. Inventory artwork is integrated as it finishes generation, with its own model references and asset provenance.
+Pending native Java 21 / NeoForge build, complete GameTests, package and texture checks, native font/cast/home/Minotaur rendering, twenty-two architecture views, and three sky elevations. The matching JAR is delivered only after those complete. All twenty custom inventory items have separately generated transparent artwork, native 32×32 texture references and [asset provenance](../art/ASSETS_0_4_30.md). Native inventory rendering is included in the client proof.

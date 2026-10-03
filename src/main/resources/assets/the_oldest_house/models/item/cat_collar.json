@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "minecraft:item/lead"
+    "layer0": "the_oldest_house:item/cat_collar"
   }
 }
