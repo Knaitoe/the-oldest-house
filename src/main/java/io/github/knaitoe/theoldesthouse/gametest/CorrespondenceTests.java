@@ -36,8 +36,8 @@ public final class CorrespondenceTests {
     public static void collectedOriginalsAdvanceOnTheirReadersLastPageAndRemainFiniteAfterReload(GameTestHelper h){
         originals=new MarginaliaTests.Fixture(h,30800,false);var f=originals;var a=f.player();var b=f.player();f.depth(a,20);f.depth(b,20);
         h.runAfterDelay(8,()->{
-            var menu=f.open(a,HouseMarginalia.Thread.CALLS);var book=menu.book();var id=book.get(DataComponents.CUSTOM_DATA).copyTag().getString("CorrespondenceId");
-            h.assertTrue(id.equals("A01")&&book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()>1,"the actual calls paper opens the first romance as readable native pages");
+            cursor(f,a,"J01");var menu=f.open(a,HouseMarginalia.Thread.POEMS);var book=menu.book();var id=book.get(DataComponents.CUSTOM_DATA).copyTag().getString("CorrespondenceId");
+            h.assertTrue(id.equals("J01")&&book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()>1,"the actual paper opens a multi-page first correspondence as readable native pages");
             h.assertTrue(menu.clickMenuButton(a,3)&&!HouseCorrespondence.record(f.data(),a.getUUID()).getCompound("Read").getBoolean(id),"taking a multi-page original alone does not claim a completed reading");a.closeContainer();
             var original=heldBook(a);for(int slot=0;slot<a.getInventory().getContainerSize();slot++)if(a.getInventory().getItem(slot)==original){a.getInventory().removeItemNoUpdate(slot);break;}b.setItemInHand(InteractionHand.MAIN_HAND,original);
             var borrowed=new PlayerInteractEvent.RightClickItem(b,InteractionHand.MAIN_HAND);NeoForge.EVENT_BUS.post(borrowed);
@@ -47,10 +47,10 @@ public final class CorrespondenceTests {
             h.assertTrue(a.containerMenu instanceof HouseCorrespondence.OriginalMenu,"native item use opens the collected original's private page menu");
             var reader=(HouseCorrespondence.OriginalMenu)a.containerMenu;int last=original.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()-1;
             h.assertTrue(!reader.clickMenuButton(a,3)&&!reader.clickMenuButton(a,999)&&reader.clickMenuButton(a,100+last),"the original cannot be duplicated or completed by an invalid page request");
-            h.assertTrue(HouseCorrespondence.record(f.data(),a.getUUID()).getCompound("Next").getInt("A")==1&&!HouseCorrespondence.available(a,"A02"),"reading records the next installment but does not immediately offer it");
-            HouseCorrespondence.crossed(a);h.assertTrue(!HouseCorrespondence.available(a,"A02"),"one crossing is insufficient separation");HouseCorrespondence.crossed(a);h.assertTrue(HouseCorrespondence.available(a,"A02"),"two actual route callbacks separate installments");
+            h.assertTrue(HouseCorrespondence.record(f.data(),a.getUUID()).getCompound("Next").getInt("J")==1&&!HouseCorrespondence.available(a,"J02"),"reading records the next installment but does not immediately offer it");
+            HouseCorrespondence.crossed(a);h.assertTrue(!HouseCorrespondence.available(a,"J02"),"one crossing is insufficient separation");HouseCorrespondence.crossed(a);h.assertTrue(HouseCorrespondence.available(a,"J02"),"two actual route callbacks separate installments");
             a.closeContainer();f.reload();h.assertTrue(ItemStack.isSameItemSameComponents(original,heldBook(a))&&HouseCorrespondence.record(f.data(),a.getUUID()).getCompound("Taken").getBoolean(id),"reload retains the exact owned original and its finite custody");
-            h.assertTrue(!f.open(a,HouseMarginalia.Thread.CALLS).book().isEmpty()&&WitnessAccount.count(f.data(),a.getUUID())==0,"expanded correspondence remains scenery without false Witness credit");h.succeed();
+            h.assertTrue(!f.open(a,HouseMarginalia.Thread.POEMS).book().isEmpty()&&WitnessAccount.count(f.data(),a.getUUID())==0,"expanded correspondence remains scenery without false Witness credit");h.succeed();
         });
     }
     @GameTest(template="empty",batch="correspondence_facts",timeoutTicks=140)
