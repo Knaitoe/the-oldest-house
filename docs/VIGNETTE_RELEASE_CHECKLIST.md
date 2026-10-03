@@ -9,9 +9,9 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current baseline: 0.4.34
+## Current baseline: 0.4.35
 
-Nineteen eligible sources require **fifteen distinct personal resolutions** across at least two kinds. The game has three ending options. The [0.4.34 native run](https://github.com/Knaitoe/the-oldest-house/actions/runs/37145689514) passed all 293 required gameplay tests and the complete package/client proof suite.
+Twenty eligible sources require **fifteen distinct personal resolutions** across at least two kinds. The game has three ending options. The [0.4.35 native run](https://github.com/Knaitoe/the-oldest-house/actions/runs/37156329228) passed all 299 required gameplay tests, the separate six-case hotel suite and the complete package/client proof suite.
 
 | Source | Kind |
 | --- | --- |
@@ -34,11 +34,14 @@ Nineteen eligible sources require **fifteen distinct personal resolutions** acro
 | Mother's peaceful resolution | Release |
 | The séance's personally examined album | Connection |
 | The nursery's four personally discovered installments and final reading | Understanding |
+| The hotel's personally completed and read closing account | Understanding |
 
-The twentieth source still requires fifteen; the twenty-first requires sixteen. Existing recorded evidence remains saved as the quota rises. Explorers who have not committed to release must satisfy the current requirement. Completing every source, or resolving the Mother specifically, is not required.
+The twenty-first source requires sixteen. Existing recorded evidence remains saved as the quota rises. Explorers who have not committed to release must satisfy the current requirement. Completing every source, or resolving the Mother specifically, is not required.
 
 Every new vignette includes authored structural generation and furnished interiors, appropriate custom native meshes/textures for props, items and cast, original integrated writing, personally earned outcomes, multiplayer/save preservation and a reviewed Witness resolution. Require the full native gameplay suite and client/package proofs, including generated architecture views and custom-asset rendering, before delivery.
 
 Karen’s room is a native navigation/respawn anchor, excluded from Witness.
 
 Version 0.4.21 serial notes, poems and furniture are scenery, excluded from the playable Witness pool. They confer no resolution credit.
+
+The blind stretch and hotel grounds are navigation/scenery; they are excluded as separate Witness sources. Only the personally completed and read hotel account supplies the hotel resolution.

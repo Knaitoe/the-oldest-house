@@ -8,7 +8,7 @@ Read the electrician's paper before entering. The six real turns have an uninter
 
 ## The hotel
 
-The hotel remains recurring after its personal ending, so maintenance and stored-property recovery remain available. One authored building contains the reception desk, closing-night dining room, bar, ballroom, upstairs 217, caretaker's quarters and boiler basement. The number-loop doorway retains the old hallway and its backward exit rule. A guest who unwinds the old loop can find the hotel without rebuilding that hallway. The office glass has a real painted-mountain backing. The original hotel carpet, wallpaper, wainscot, ceilings and plaque assets remain.
+The hotel remains recurring after its personal ending, so maintenance and stored-property recovery remain available. One authored building contains the reception desk, closing-night dining room, bar, ballroom, upstairs 217, caretaker's quarters, mountain office, linen room, repair workshop and boiler basement. The number-loop doorway retains the old hallway and its backward exit rule. A guest who unwinds the old loop can find the hotel without rebuilding that hallway. The office glass has a real painted-mountain backing. The original hotel carpet, wallpaper, wainscot, ceilings and plaque assets remain. Timber posts, cased doors, picture rails, coffer grids, fitted bar mirrors/bottle shelves, finished floor borders, stair rails and brick/copper plant work give each room a different construction. The snow-loaded garden shelter has real posts and roof support. Usable linen chests let guests settle the tab before leaving the hotel.
 
 Sit in the remaining dining chair to be served; click the meal to eat and enter one place on the tab. Speak to the bartender for a native drink. Finishing it in the bar heals and adds a place. The next ordinary native chest menu collects one item from the guest's main inventory into the desk's private lost property. The exact native components are retained. Crouch at the desk to recover them; opening a property drawer does not collect another place. A full recovery container delays collection. Shared chest contents and another guest's inventory are never the payment.
 
@@ -26,4 +26,9 @@ The guest must eat, complete a rest, drink, stand on the dance floor, find their
 
 ## Verification
 
-Native gameplay, package and client verification are pending for this source candidate. The release must pass the entire required suite, original/new page wrapping, PNG CRC/decode checks, the new native cast/hose/fixture/item proof and twenty-nine architecture views before publication.
+This pass includes twenty added UV textures, six tailored native cast skins, sixteen articulated hose parts, ten fixture types/four gauge faces, three native keepsake meshes and four original sounds. A separate six-case native hotel job complements the full suite. CI uses a three-chunk view/simulation distance to limit ephemeral-fixture chunk-save churn; item/entity/SavedData serialization and the full gameplay checks remain native. The [verified native build](https://github.com/Knaitoe/the-oldest-house/actions/runs/37156329228), source `1b36bef7f9d494d26ec6773bc1962f9eb45ee1ee`, passed all 299 required gameplay tests and the separate six-case hotel suite. All 310 real book pages fit the native 114-pixel / 14-line limits; 179 PNG textures passed CRC/decode checks. All eleven native client checks passed, including the hotel cast, hose, fixtures, keepsakes and independent blind direction cues, twenty-nine architecture views and three outside-sky elevations. The playable package was checked and the delivered JAR was extracted and independently verified.
+
+
+Runtime: Minecraft Java 1.21.1 / NeoForge 21.1.251. Install the same `the_oldest_house-0.4.35.jar` on clients and server. JAR size: 7,377,621 bytes.
+
+SHA-256: `648a53ca9edc1c9dcd74fc5b2752b7e7102e5c215613c5fe433af39ae4deddff`.
