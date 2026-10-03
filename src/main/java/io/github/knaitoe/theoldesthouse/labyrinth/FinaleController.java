@@ -83,6 +83,7 @@ public final class FinaleController {
         Vec3 destination=LabyrinthDoors.shifted(player.position(),from.lower,entry.lower,turn);
         data.pushReturn(player.getUUID(),new LabyrinthData.Waypoint(from.dimension,Vec3.atBottomCenterOf(from.lower),from.facing.toYRot(),true));
         CompoundTag record=FinaleProgress.player(player.server,player.getUUID());record.putString("Phase",FinaleProgress.Phase.STAIRCASE.name());
+        StaircaseFire.initialize(record,FinaleArchitecture.TOP);
         record.putBoolean("Discovered",true);record.putBoolean("Inside",false);FinaleProgress.save(player.server,player.getUUID(),record);
         if(player.serverLevel()==target){HouseInternalTeleport.shift(player,destination,player.getYRot()+LabyrinthDoors.angle(turn));LabyrinthDoors.setDoorOpen(target,entry.lower,true,player);}
         else HouseTransitionEvents.beginDoorTransition(player,HouseDimensions.INTERIOR,null,p->LabyrinthDoors.setDoorOpen(target,entry.lower,true,p),destination,player.getYRot()+LabyrinthDoors.angle(turn));
@@ -113,6 +114,9 @@ public final class FinaleController {
         CompoundTag record=FinaleProgress.player(player.server,player.getUUID());FinaleProgress.Phase phase=FinaleProgress.phase(record);
         if(phase==FinaleProgress.Phase.UNSEEN){record.putString("Phase",FinaleProgress.Phase.STAIRCASE.name());record.putBoolean("Discovered",true);}
         BlockPos b=FinaleArchitecture.base(origin);long now=player.serverLevel().getGameTime();
+        if(phase==FinaleProgress.Phase.STAIRCASE||phase==FinaleProgress.Phase.UNSEEN){
+            if(StaircaseFire.tick(player,origin,record)){FinaleProgress.save(player.server,player.getUUID(),record);return true;}
+        }
         if(phase==FinaleProgress.Phase.STAIRCASE||phase==FinaleProgress.Phase.UNSEEN)StaircaseMazes.tick(player,b,record);
         if(phase==FinaleProgress.Phase.STAIRCASE||phase==FinaleProgress.Phase.UNSEEN){
             double z=player.getZ()-b.getZ();
@@ -160,6 +164,7 @@ public final class FinaleController {
         world.putUUID("CagedCreature",boy.getUUID());LabyrinthData.get(level.getServer()).setState(FinaleProgress.STATE,world);CAGED.put(level.getServer(),boy);return boy;
     }
     private static void returnFromStaircase(ServerPlayer player){
+        io.github.knaitoe.theoldesthouse.network.HousePackets.send(player,new io.github.knaitoe.theoldesthouse.network.StaircaseLightPayload(false,0,32));
         LabyrinthData data=LabyrinthData.get(player.server);var back=data.popReturn(player.getUUID());
         if(back==null){BlockPos origin=HouseSavedData.get(player.server).houseOrigin();if(origin!=null)HouseInternalTeleport.shift(player,HideAndClap.manorRespawn(origin),180);}
         else {ServerLevel level=player.server.getLevel(back.dimension());if(level!=null){Vec3 to=back.door()?back.pos().add(Direction.fromYRot(back.yaw()).getStepX()*1.2,0,Direction.fromYRot(back.yaw()).getStepZ()*1.2):back.pos();

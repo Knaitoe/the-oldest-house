@@ -4,13 +4,21 @@ Sep 28, 2026 · @Sean Price · revised in the repository to match decisions made
 
 ## Revisions in this copy
 
+### 0.4.33: book-fed fire and companion responses
+
+The staircase entrance hall now offers a finite personal **House of Leaves** and striker. Five ordered native hearths consume its leaves and progressively open the next stretch; the fifth admits the complete physical descent. Unlit terrain fog and a saved server movement boundary prevent proceeding blindly while preserving retreat. Actual fires are shared; each explorer's ignition credit is private. Existing deep visits remain traversable. The once-only, visitor-delayed dressing preserves the shaft, original cache, papers, actor UUIDs and encounter state.
+
+Companions keep their saved scent/movement orders through doors. Connected waypoints extend beyond the native stopping radius; lagging guides catch up, and pets already ahead are included in a threshold crossing. Stay, native ownership and captivity remain authoritative. Petting has a visible first/third-person stroke, dog lean/wag and cat head-rub/tail-curl, synchronized to nearby observers without changing the command.
+
+Current build: 0.4.33, layout 29 / protocol 29. Seventeen Witness sources, thirteen personal resolutions across two kinds and three endings remain. Full release verification is in progress; see [the play instructions and evidence](FIRE_AND_COMPANIONS_0_4_33.md).
+
 ### 0.4.32: reachable letters and collected originals
 
 The approved 108-piece prose is retained after its final literary pass. The combined pass preserves the development branch's native reading of collected originals, confirmed safe returns, actual manor returns and named-companion wording. It also fixes a depth requirement that could strand every sixth letter: native return paths cap at sixteen, so the final installment remains at that deepest tier and requires four crossings after the fifth. Earlier installments retain the 0/6/8/12/16 gates and two intervening crossings. No saved original, signed reply, reader progress, paper surface or scene is reconstructed. The complete selection is in [CORRESPONDENCE_0_4_32.md](CORRESPONDENCE_0_4_32.md).
 
 All fourteen chains keep their reviewed trajectories and writer hands. Independent scraps provide pleasure, work, money, grief, boredom, friendship and ordinary domestic life between intrusive letters. Each accusation remains that writer's claim. Personal references require native ownership/custody, supported surviving trail marks, an original retained photo ID, a nonblank submitted reply, two actual returns into the manor, or a physically confirmed unfinished retreat. The original seventeen installments remain in the finite pool. Alternate surfaces cannot duplicate new collected originals. Collected books use native last-page menus, exclude borrowing/observation from progress and retain the player's actual reply unchanged. Observer exclusion uses the menu's authoritative game mode; personal state reads avoid copying other explorers' books.
 
-Current build: 0.4.32, layout 29 / protocol 28. Seventeen Witness sources, thirteen personal resolutions across two kinds and three endings remain. The [verified combined build](https://github.com/Knaitoe/the-oldest-house/actions/runs/37132585917) passed all 283 native gameplay tests, all 146 PNG checks, package/font checks and the complete client/architecture/sky proofs. All 260 checked book pages, including the 125 old/new writing specimens, fit the native 114-pixel, fourteen-line limits. Tested source: `1278e895ff33d460ca86b08080f1ab48c6aeddcd`.
+Previous build: 0.4.32, layout 29 / protocol 28. Seventeen Witness sources, thirteen personal resolutions across two kinds and three endings remain. The [verified combined build](https://github.com/Knaitoe/the-oldest-house/actions/runs/37132585917) passed all 283 native gameplay tests, all 146 PNG checks, package/font checks and the complete client/architecture/sky proofs. All 260 checked book pages, including the 125 old/new writing specimens, fit the native 114-pixel, fourteen-line limits. Tested source: `1278e895ff33d460ca86b08080f1ab48c6aeddcd`.
 
 ### 0.4.31: correspondence and personal notes
 

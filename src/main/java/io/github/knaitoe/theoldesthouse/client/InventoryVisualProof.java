@@ -40,6 +40,6 @@ public final class InventoryVisualProof extends Screen {
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof InventoryVisualProof p)||++p.frames<4)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage im=Screenshot.takeScreenshot(mc.getMainRenderTarget())){im.writeToFile(dir.resolve("native-inventory.png"));}
-        Files.writeString(dir.resolve("inventory-passed.txt"),"All twenty registered custom inventory items rendered with native baked models.\n");mc.setScreen(new SceneVisualProof());
+        Files.writeString(dir.resolve("inventory-passed.txt"),"All twenty registered custom inventory items rendered with native baked models.\n");mc.setScreen(new CompanionVisualProof());
     }
 }

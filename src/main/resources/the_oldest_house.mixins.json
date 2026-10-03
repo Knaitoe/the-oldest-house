@@ -3,6 +3,14 @@
   "minVersion": "0.8",
   "package": "io.github.knaitoe.theoldesthouse.client.mixin",
   "compatibilityLevel": "JAVA_21",
-  "client": ["HouseFontMixin", "HouseSceneClockMixin"],
-  "injectors": {"defaultRequire": 1}
+  "client": [
+    "HouseFontMixin",
+    "HouseSceneClockMixin",
+    "WolfPatMixin",
+    "CatPatMixin",
+    "PlayerPatMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
 }
