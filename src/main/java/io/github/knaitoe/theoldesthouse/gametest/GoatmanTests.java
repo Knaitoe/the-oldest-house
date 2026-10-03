@@ -153,10 +153,15 @@ public final class GoatmanTests {
         Wolf pet=EntityType.WOLF.create(f.l);pet.tame(a);pet.setPersistenceRequired();pet.moveTo(f.b.getX()+1.5,f.b.getY()+1,f.b.getZ()-58.5);f.l.addFreshEntity(pet);CompanionOrders.issue(pet,a,CompanionOrders.Order.FOLLOW);UUID petId=pet.getUUID();
         h.runAfterDelay(6,()->{
             a.hasChangedDimension();BlockPos door=f.b.offset(GoatmanWoods.DOOR);
+            // Native carried-time ownership stamps may arrive during these six real ticks.
+            // Compare the complete originals at the moment of taking, including those components.
+            List<ItemStack> expected=new ArrayList<>();
+            for(int i=0;i<a.getInventory().getContainerSize();i++){var stack=a.getInventory().getItem(i);if(!stack.isEmpty())expected.add(stack.copy());}
+            expected.add(a.containerMenu.getCarried().copy());h.assertTrue(expected.size()==5,"the actual opener still carries the five provisioned original stacks");
             var click=new PlayerInteractEvent.RightClickBlock(a,InteractionHand.OFF_HAND,door,new BlockHitResult(Vec3.atCenterOf(door),Direction.NORTH,door,false));NeoForge.EVENT_BUS.post(click);
             h.assertTrue(click.isCanceled()&&a.isDeadOrDying()&&a.getInventory().isEmpty()&&a.containerMenu.getCarried().isEmpty(),"a real door click causes native death and removes gear even with keepInventory");
             var collection=MotherCollection.get(f.server);var originals=collection.all().stream().filter(e->!e.pet&&a.getUUID().equals(e.owner)).map(e->ItemStack.parseOptional(f.l.registryAccess(),e.contents)).toList();
-            h.assertTrue(originals.size()==5&&originals.stream().anyMatch(s->ItemStack.isSameItemSameComponents(s,axe))&&originals.stream().anyMatch(s->s.is(Items.DIAMOND)&&s.getCount()==3)&&originals.stream().anyMatch(s->s.is(Items.BREAD)&&s.getCount()==2),"all five original stacks reach actual shelves, with components, quantities and cursor contents intact");
+            h.assertTrue(originals.size()==expected.size()&&expected.stream().allMatch(wanted->originals.stream().anyMatch(s->s.getCount()==wanted.getCount()&&ItemStack.isSameItemSameComponents(s,wanted))),"all five original stacks reach actual shelves, with every live component, quantity and cursor content intact");
             h.assertTrue(collection.all().stream().anyMatch(e->e.livingClaim&&e.contents.hasUUID("UUID")&&e.contents.getUUID("UUID").equals(petId))&&pet.isRemoved(),"the existing native death hook keeps the exact following pet in living custody");
             h.assertTrue(peer.isAlive()&&!WitnessAccount.has(LabyrinthData.get(f.server),a.getUUID(),WitnessAccount.Story.GOATMAN)&&!WitnessAccount.has(LabyrinthData.get(f.server),peer.getUUID(),WitnessAccount.Story.GOATMAN),"opening takes only the opener and awards nobody an early resolution");
             var respawn=f.server.getPlayerList().respawn(a,false,Entity.RemovalReason.KILLED);f.players.add(respawn);respawn.hasChangedDimension();
