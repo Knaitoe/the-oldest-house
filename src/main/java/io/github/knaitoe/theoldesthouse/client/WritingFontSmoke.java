@@ -37,6 +37,7 @@ public final class WritingFontSmoke {
         mc.resizeDisplay();
         List<ItemStack> books = new ArrayList<>(HouseWriting.samples());
         books.add(NavidsonLetter.createBook());
+        books.add(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseFire.book(new java.util.UUID(0,0),5));
         books.add(io.github.knaitoe.theoldesthouse.labyrinth.HollowayCamp.journal());
         books.addAll(List.of(NovelTexts.archive(), NovelTexts.whaleOpening(), NovelTexts.whaleLast(),
                 NovelTexts.well(), NovelTexts.apology(), NovelTexts.hospitalOpening(), NovelTexts.hospitalLast(), NovelTexts.karen()));
@@ -90,7 +91,7 @@ public final class WritingFontSmoke {
         @Override public void render(GuiGraphics g, int mouseX, int mouseY, float partial) {
             g.fill(0,0,width,height,0xFF211E1B);
             g.drawString(font, "The Oldest House | native writing proof", 10, 8, 0xFFEAE0D0);
-            g.drawString(font,Component.literal("HOUSE 31").withStyle(style -> style.withFont(
+            g.drawString(font,Component.literal("HOUSE 33").withStyle(style -> style.withFont(
                     net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"hotel"))),
                     width-100,8,0xFFEAE0D0,false);
             for (int i = 0; i < HouseWriting.sampleFonts().size(); i++) {

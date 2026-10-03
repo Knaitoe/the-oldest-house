@@ -7,6 +7,7 @@ import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import io.github.knaitoe.theoldesthouse.network.CompanionMenuPayload;
 import io.github.knaitoe.theoldesthouse.network.HousePackets;
+import io.github.knaitoe.theoldesthouse.network.PettingPayload;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -78,13 +79,18 @@ public final class CompanionOrders {
         if(!canCommand(player,pet))return false;
         long now=player.serverLevel().getGameTime();
         if(now<pet.getPersistentData().getLong("CompanionPatAfter"))return false;
-        pet.getPersistentData().putLong("CompanionPatAfter",now+20);
+        pet.getPersistentData().putLong("CompanionPatAfter",now+48);
+        pet.getPersistentData().putLong("CompanionPatUntil",now+44);
+        if(!managed(pet))pet.getPersistentData().putInt(KEY,Order.FOLLOW.ordinal());
+        install(pet);
         pet.getPersistentData().remove("CompanionFearUntil");
         pet.getLookControl().setLookAt(player,30,30);
         if(pet instanceof Wolf wolf) {wolf.setIsInterested(false);Hillary.confirmIntroduction(wolf,player);}
         player.serverLevel().sendParticles(net.minecraft.core.particles.ParticleTypes.HEART,
                 pet.getX(),pet.getY()+pet.getBbHeight()+.2,pet.getZ(),3,.2,.1,.2,0);
         pet.playSound(pet instanceof Cat?SoundEvents.CAT_PURR:SoundEvents.WOLF_AMBIENT,.45F,1.25F);
+        for(var viewer:player.serverLevel().players())if(viewer.distanceToSqr(pet)<4096)
+            HousePackets.send(viewer,new PettingPayload(player.getId(),pet.getId(),44));
         io.github.knaitoe.theoldesthouse.house.HouseExperience.cared(player,pet);
         return true;
     }
@@ -96,7 +102,10 @@ public final class CompanionOrders {
     }
     public static boolean issue(TamableAnimal pet,ServerPlayer player,Order order) {
         if(!supported(pet)||!player.getUUID().equals(owner(pet)))return false;
-        if((order==Order.EXIT||order==Order.DEEPER)&&!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)) {
+        boolean outsideScent=order==Order.DEEPER&&Hillary.tagOf(pet)!=null
+                &&player.serverLevel().dimension().equals(net.minecraft.world.level.Level.OVERWORLD)
+                &&HouseSavedData.get(player.server).houseOrigin()!=null;
+        if((order==Order.EXIT||order==Order.DEEPER)&&!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)&&!outsideScent) {
             reassureSound(pet,false);return false;
         }
         CompoundTag data=pet.getPersistentData();
@@ -165,7 +174,13 @@ public final class CompanionOrders {
     public static int hesitationTicks(int depth) {return depth<3?0:depth<6?20:depth<10?30:40;}
     public static void guide(TamableAnimal pet,ServerPlayer player) {
         ServerLevel level=player.serverLevel();BlockPos origin=HouseSavedData.get(player.server).houseOrigin();
-        if(origin==null||!level.dimension().equals(HouseDimensions.INTERIOR))return;
+        if(origin==null)return;
+        if(level.dimension().equals(net.minecraft.world.level.Level.OVERWORLD)&&order(pet)==Order.DEEPER&&Hillary.tagOf(pet)!=null){
+            Vec3 porch=io.github.knaitoe.theoldesthouse.house.HouseProxyEntityEvacuation.frontDoorExit(level,origin);
+            if(porch==null)porch=Vec3.atBottomCenterOf(origin.offset(HouseLayout.AXIS_X,1,HouseLayout.FRONT_DOOR_Z-2));
+            HillaryPaths.lead(pet,player,BlockPos.containing(porch),null,null);return;
+        }
+        if(!level.dimension().equals(HouseDimensions.INTERIOR))return;
         LabyrinthPlace place=LabyrinthPlaces.placeAt(origin,player.blockPosition());
         BlockPos base=place==null?null:LabyrinthPlaces.base(origin,place);
         noteRoom(pet, player);
@@ -191,7 +206,7 @@ public final class CompanionOrders {
         }
         HillaryPaths.lead(pet,player,goal,place,base);
     }
-    @Nullable private static BlockPos onward(ServerPlayer player,LabyrinthPlace place,BlockPos base) {
+    @Nullable public static BlockPos onward(ServerPlayer player,LabyrinthPlace place,BlockPos base) {
         LabyrinthData data=LabyrinthData.get(player.server);
         LabyrinthData.Door chosen=null;
         for(var spec:place.doors()) {
@@ -206,11 +221,12 @@ public final class CompanionOrders {
     }
     /** Nearby standing companions are captured before the player leaves their world. */
     public static List<TamableAnimal> followingAll(ServerPlayer player) {
-        return player.serverLevel().getEntitiesOfClass(TamableAnimal.class,player.getBoundingBox().inflate(12),
+        return player.serverLevel().getEntitiesOfClass(TamableAnimal.class,player.getBoundingBox().inflate(32),
                 pet->supported(pet)&&pet.isAlive()&&player.getUUID().equals(owner(pet))&&!pet.isOrderedToSit()
+                        &&(!managed(pet)||order(pet)!=Order.STAY)
                         &&!pet.isLeashed()&&!pet.isPassenger()&&!pet.getTags().contains(MotherOfStrays.PET)
                         &&!HouseExteriorEntityMirror.isProjection(pet)
-                        &&pet.distanceToSqr(player)<=144);
+                        &&pet.distanceToSqr(player)<=1024);
     }
     @Nullable public static TamableAnimal followAcross(TamableAnimal pet,ServerPlayer player) {
         if(pet.isRemoved())return null;
@@ -224,6 +240,9 @@ public final class CompanionOrders {
         } else pet.teleportTo(point.x,point.y,point.z);
         UUID owner=owner(pet);if(owner!=null&&pet.isTame())pet.setOwnerUUID(owner);
         pet.clearRestriction();pet.getNavigation().stop();pet.setDeltaMovement(Vec3.ZERO);pet.resetFallDistance();
+        pet.getPersistentData().remove("CompanionLastRoom");pet.getPersistentData().remove("CompanionFearUntil");
+        pet.getPersistentData().remove("CompanionPatUntil");
+        install(pet);
         return pet;
     }
     public static void clearAll(){INSTALLED.clear();}
@@ -238,11 +257,14 @@ public final class CompanionOrders {
             ServerPlayer viewer=id==null?null:server.getServer().getPlayerList().getPlayer(id);
             if(viewer!=null&&(GoatmanVignette.companionScene(viewer)||CaverVignette.companionScene(viewer)))return true;
             if(!managed(pet))return false;
+            if(server.getGameTime()<pet.getPersistentData().getLong("CompanionPatUntil"))return true;
             Order order=order(pet);
             if(order==Order.FOLLOW)return server.getGameTime()<pet.getPersistentData().getLong("CompanionFearUntil");
             if(order!=Order.EXIT&&order!=Order.DEEPER)return false;
             ServerPlayer player=id==null?null:server.getServer().getPlayerList().getPlayer(id);
-            return player!=null&&player.level()==level&&server.dimension().equals(HouseDimensions.INTERIOR);
+            boolean outsideScent=order==Order.DEEPER&&Hillary.tagOf(pet)!=null&&server.dimension().equals(net.minecraft.world.level.Level.OVERWORLD)
+                    &&HouseSavedData.get(server.getServer()).houseOrigin()!=null;
+            return player!=null&&player.level()==level&&(server.dimension().equals(HouseDimensions.INTERIOR)||outsideScent);
         }
         @Override public boolean canContinueToUse(){return canUse();}
         @Override public boolean requiresUpdateEveryTick(){return true;}
@@ -250,6 +272,9 @@ public final class CompanionOrders {
             UUID id=owner(pet);
             ServerPlayer player=id==null?null:((ServerLevel)pet.level()).getServer().getPlayerList().getPlayer(id);
             if(player!=null) {
+                if(pet.level().getGameTime()<pet.getPersistentData().getLong("CompanionPatUntil")){
+                    pet.getNavigation().stop();pet.getLookControl().setLookAt(player,30,30);return;
+                }
                 if((GoatmanVignette.companion(pet,player)||CaverVignette.companion(pet,player)))return;
                 if(order(pet)==Order.FOLLOW) {pet.getNavigation().stop();pet.getLookControl().setLookAt(player,30,30);}
                 else guide(pet,player);
