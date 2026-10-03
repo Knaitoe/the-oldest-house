@@ -4,13 +4,21 @@ Sep 28, 2026 · @Sean Price · revised in the repository to match decisions made
 
 ## Revisions in this copy
 
+### 0.4.32: reachable letters and collected originals
+
+The approved 108-piece prose is retained after its final literary pass. The combined pass preserves the development branch's native reading of collected originals, confirmed safe returns, actual manor returns and named-companion wording. It also fixes a depth requirement that could strand every sixth letter: native return paths cap at sixteen, so the final installment remains at that deepest tier and requires four crossings after the fifth. Earlier installments retain the 0/6/8/12/16 gates and two intervening crossings. No saved original, signed reply, reader progress, paper surface or scene is reconstructed. The complete selection is in [CORRESPONDENCE_0_4_32.md](CORRESPONDENCE_0_4_32.md).
+
+All fourteen chains keep their reviewed trajectories and writer hands. Independent scraps provide pleasure, work, money, grief, boredom, friendship and ordinary domestic life between intrusive letters. Each accusation remains that writer's claim. Personal references require native ownership/custody, supported surviving trail marks, an original retained photo ID, a nonblank submitted reply, two actual returns into the manor, or a physically confirmed unfinished retreat. The original seventeen installments remain in the finite pool. Alternate surfaces cannot duplicate new collected originals. Collected books use native last-page menus, exclude borrowing/observation from progress and retain the player's actual reply unchanged. Observer exclusion uses the menu's authoritative game mode; personal state reads avoid copying other explorers' books.
+
+Current build: 0.4.32, layout 29 / protocol 28. Seventeen Witness sources, thirteen personal resolutions across two kinds and three endings remain. The combined source requires all 283 native gameplay tests, the 125-specimen native writing corpus, package/font/texture checks and all established client/architecture/sky proofs. Verification is pending.
+
 ### 0.4.31: correspondence and personal notes
 
 The [approved correspondence](CORRESPONDENCE_0_4_31.md) adds 108 original pieces: fourteen six-letter chains, sixteen independent scraps and eight notes that respond to actual native play. Romance, family care, confession, envy, grief, shift work, money, friendship and pleasure interrupt six increasingly intrusive relationships with the reader. The final prose pass differentiates cadence and material detail while retaining the reviewed IDs, relationships and endings.
 
 Existing paper surfaces prefer their household context and interleave the writers. Each reader finds each chain in order; later installments need the earlier reading, two intervening route crossings and depths 0/6/8/12/16/20. Native last-page buttons also record reading a collected original. Reopening pages gives no additional progress or duplicate originals. Legacy discoveries retain their exact saved books. No room, inventory, actor or paper surface is reconstructed. The keeper's loss sequence freezes a real original custody record; later recovery does not rewrite the page. Companion references, route markers, safe returns, original photographs and replies remain personal native facts. These writers' accusations and appropriated signatures do not change the reader's actual books, identity, companions or progression.
 
-Current build: 0.4.31, layout 29 / protocol 28. Seventeen Witness sources, thirteen personal resolutions across two kinds and three endings remain. The [verified build](https://github.com/Knaitoe/the-oldest-house/actions/runs/37129458957) passed all 279 native GameTests, 260 real book pages including all 125 original/new writing specimens, package/texture checks and the established client/architecture proofs.
+Previous build: 0.4.31, layout 29 / protocol 28. Seventeen Witness sources, thirteen personal resolutions across two kinds and three endings remain. The [verified build](https://github.com/Knaitoe/the-oldest-house/actions/runs/37129458957) passed all 279 native GameTests, 260 real book pages including all 125 original/new writing specimens, package/texture checks and the established client/architecture proofs.
 
 ### 0.4.30: ordinary halls, personal letters, and playtest repairs
 

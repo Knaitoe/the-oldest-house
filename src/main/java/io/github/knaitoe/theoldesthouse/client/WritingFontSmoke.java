@@ -59,7 +59,8 @@ public final class WritingFontSmoke {
                     var part = segment.getAsJsonObject();
                     page.append(Component.literal(part.get("text").getAsString()).withStyle(style -> style
                             .withFont(net.minecraft.resources.ResourceLocation.parse(part.get("font").getAsString()))
-                            .withBold(part.get("bold").getAsBoolean())));
+                            .withBold(part.get("bold").getAsBoolean())
+                            .withStrikethrough(part.get("strikethrough").getAsBoolean())));
                 }
                 int lines = mc.font.split(page,114).size();
                 if (lines > 14) throw new IllegalStateException(object.get("title").getAsString()+" serial page wraps to "+lines+" lines");

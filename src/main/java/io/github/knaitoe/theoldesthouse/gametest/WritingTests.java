@@ -120,6 +120,7 @@ public final class WritingTests {
                         segment.addProperty("text", text);
                         segment.addProperty("font", style.getFont().toString());
                         segment.addProperty("bold", style.isBold());
+                        segment.addProperty("strikethrough", style.isStrikethrough());
                         segments.add(segment);
                         return java.util.Optional.empty();
                     }, Style.EMPTY);

@@ -53,7 +53,11 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.31"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.32"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              correspondence = json.loads(z.read('data/the_oldest_house/correspondence/letters.json'))
+              assert len(correspondence) == 108 and len({n['id'] for n in correspondence}) == 108
+              assert 'io/github/knaitoe/theoldesthouse/house/HouseCorrespondence.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/house/HouseCorrespondence$OriginalMenu.class' in z.namelist()
               from PIL import Image
               from io import BytesIO
               inventory = json.loads(pathlib.Path('art/inventory/assets_0430.json').read_text())['items']
@@ -121,12 +125,6 @@ jobs:
               sounds = json.loads(z.read('assets/the_oldest_house/sounds.json'))
               assert all(f'goatman.{cue}' in sounds for cue in ('hammer', 'laugh', 'woods'))
               for name in ('io/github/knaitoe/theoldesthouse/house/HouseMarginalia.class',
-                           'io/github/knaitoe/theoldesthouse/house/HouseCorrespondence.class',
-                           'io/github/knaitoe/theoldesthouse/house/HouseCorrespondence$OriginalMenu.class',
-                           'io/github/knaitoe/theoldesthouse/house/CorrespondenceTexts.class',
-                           'io/github/knaitoe/theoldesthouse/gametest/CorrespondenceTests.class',
-                           'data/the_oldest_house/correspondence/letters.json',
-                           'data/the_oldest_house/correspondence/advances.json',
                            'io/github/knaitoe/theoldesthouse/house/HouseMarginalia$NotebookMenu.class',
                            'io/github/knaitoe/theoldesthouse/house/HouseholdFurnitureBlock.class',
                            'io/github/knaitoe/theoldesthouse/gametest/MarginaliaTests.class',

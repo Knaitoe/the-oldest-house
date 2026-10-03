@@ -9,7 +9,7 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current baseline: 0.4.31
+## Current baseline: 0.4.32
 
 Seventeen eligible sources require **thirteen distinct personal resolutions** across at least two kinds. The game has three ending options.
 
