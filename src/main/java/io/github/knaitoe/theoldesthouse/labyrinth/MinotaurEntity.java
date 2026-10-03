@@ -52,8 +52,8 @@ public final class MinotaurEntity extends PathfinderMob {
     public void caged(){entityData.set(CHILD,true);motion(CAGED,0);}
     public void awaken(UUID owner){this.owner=owner;entityData.set(CHILD,false);motion(WATCHING,35);}
     @Override public EntityDimensions getDefaultDimensions(Pose pose){return childAppearance()?EntityDimensions.scalable(.48F,1.26F).withEyeHeight(1.12F):super.getDefaultDimensions(pose);}
-    // Phase animations do not change the collision body. Avoid repeating native
-    // free-position searches whenever the charge, windup or stagger changes.
+    // Phase animations do not change the collision body. Reconcile dimensions
+    // only for the actual child/adult change, rather than every attack phase.
     @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(CHILD.equals(key))refreshDimensions();}
     public boolean observed(){
         if(!(level() instanceof net.minecraft.server.level.ServerLevel l))return false;

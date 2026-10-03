@@ -18,7 +18,7 @@ Layout 28 / protocol 28. This repair release preserves the seven integrated Clau
 
 The supplied October 3 logs show death at 20:55:15 and a 2,099 ms / 41-tick server warning at 20:55:17. They contain no combat exception or profiler identifying the freeze. Two startup PNG chunk errors (the great-room rug and wardrobe side) are fixed. Every shipped texture now receives strict chunk CRC validation and full pixel decoding.
 
-Attack motion no longer repeats collision-size reconciliation; only the actual child/adult change refreshes dimensions. Stair route positions and native model parts are cached. Per-player finale reads no longer copy every other explorer's state. A creature tick exceeding 100 ms logs phase, position and owner with rate limiting.
+Attack motion no longer repeats collision-size reconciliation; only the actual child/adult change refreshes dimensions. Stair route positions and native model parts are cached. Per-player finale reads no longer copy every other explorer's state. The model UV dimensions now match its actual 256×256 material atlas. A creature tick exceeding 100 ms logs phase, position and owner with rate limiting.
 
 Native tests exercise the actual transformed entity, survival player, shield collision, original weapon and living wounded state; an animated client proof renders four attack poses across 64 frames. Their measured evidence belongs in the build artifacts. These are regression checks, not a reproduction on the user's hardware, and do not establish one proven cause for the reported freeze.
 
