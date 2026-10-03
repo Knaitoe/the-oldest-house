@@ -10,7 +10,7 @@ The staircase entrance hall now offers a finite personal **House of Leaves** and
 
 Companions keep their saved scent/movement orders through doors. Connected waypoints extend beyond the native stopping radius; lagging guides catch up, and pets already ahead are included in a threshold crossing. Stay, native ownership and captivity remain authoritative. Petting has a visible first/third-person stroke, dog lean/wag and cat head-rub/tail-curl, synchronized to nearby observers without changing the command.
 
-Current build: 0.4.33, layout 29 / protocol 29. Seventeen Witness sources, thirteen personal resolutions across two kinds and three endings remain. Full release verification is in progress; see [the play instructions and evidence](FIRE_AND_COMPANIONS_0_4_33.md).
+Current build: 0.4.33, layout 29 / protocol 29. Seventeen Witness sources, thirteen personal resolutions across two kinds and three endings remain. All 288 native GameTests, 262 real book pages and the complete client/package checks passed in [run 37135346455](https://github.com/Knaitoe/the-oldest-house/actions/runs/37135346455), including the new 44-frame native companion proof; see [the play instructions and evidence](FIRE_AND_COMPANIONS_0_4_33.md).
 
 ### 0.4.32: reachable letters and collected originals
 
