@@ -1,0 +1,77 @@
+package io.github.knaitoe.theoldesthouse.gametest;
+import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.house.*;
+import io.github.knaitoe.theoldesthouse.labyrinth.*;
+import java.util.*;
+import net.minecraft.core.*;
+import net.minecraft.gametest.framework.*;
+import net.minecraft.nbt.*;
+import net.minecraft.server.level.*;
+import net.minecraft.world.*;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.item.*;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.phys.*;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.gametest.*;
+
+@GameTestHolder(TheOldestHouse.MOD_ID)
+@PrefixGameTestTemplate(false)
+public final class ClassicsTests {
+    private static Fixture listening,haunting,nursery,upgrade;
+    private static final class Fixture implements AutoCloseable {
+        final GameTestHelper h;final ServerLevel l;final BlockPos origin,b;final LabyrinthPlace place;
+        final HouseSavedData oldHouse;final LabyrinthData oldData;final List<ServerPlayer> players=new ArrayList<>();
+        Fixture(GameTestHelper h,int x,LabyrinthPlace place){this.h=h;this.place=place;l=HouseTestLevel.get(h.getLevel().getServer(),HouseDimensions.INTERIOR);oldHouse=HouseSavedData.get(l.getServer());oldData=LabyrinthData.get(l.getServer());origin=new BlockPos(x,80,x);var house=new HouseSavedData();house.markSpawned(origin);l.getServer().overworld().getDataStorage().set("the_oldest_house",house);l.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",new LabyrinthData());b=LabyrinthPlaces.base(origin,place);ClassicsRooms.build(l,b,place);LabyrinthBuilder.registerDoors(data(),place,b);data().setBuilt(LabyrinthBuilder.VERSION,origin);IndianLakeRooms.keepLoaded(l,b,place);}
+        LabyrinthData data(){return LabyrinthData.get(l.getServer());}
+        CompoundTag own(ServerPlayer p){return ClassicsVignettes.personal(data(),p.getUUID());}
+        ServerPlayer player(String name){var p=NativeTestPlayers.survival(h,name);p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-11.5,180,0);p.hasChangedDimension();players.add(p);ClassicsVignettes.onArrive(p,place);return p;}
+        void at(ServerPlayer p,double x,double y,double z){p.moveTo(b.getX()+x,b.getY()+y,b.getZ()+z);p.setDeltaMovement(Vec3.ZERO);}
+        void click(ServerPlayer p,BlockPos pos){p.moveTo(b.offset(pos).getX()+.5,b.getY(),b.offset(pos).getZ()+2.5);var at=b.offset(pos);NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new BlockHitResult(at.getCenter(),Direction.SOUTH,at,false)));}
+        void read(ServerPlayer p,BlockPos pos){click(p,pos);var menu=(ClassicsVignettes.PageMenu)p.containerMenu;int count=menu.book().get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().size();h.assertTrue(menu.clickMenuButton(p,100+count-1),"the actual native last page is read");}
+        void reload(){var loaded=LabyrinthData.FACTORY.deserializer().apply(data().save(new CompoundTag(),l.registryAccess()),l.registryAccess());l.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);}
+        @Override public void close(){for(var p:players)NativeTestPlayers.remove(p);var entities=new ArrayList<Entity>();for(var e:l.getAllEntities())if(e.blockPosition().distSqr(b)<150*150&&(e instanceof SeanceActor||e instanceof Display.TextDisplay||e instanceof net.minecraft.world.entity.item.ItemEntity))entities.add(e);entities.forEach(Entity::discard);var bounds=IndianLakeRooms.bounds(b,place);for(int x=((int)bounds.minX-1)>>4;x<=((int)bounds.maxX+1)>>4;x++)for(int z=((int)bounds.minZ-1)>>4;z<=((int)bounds.maxZ+1)>>4;z++)l.getChunkSource().removeRegionTicket(TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(x,z),3,b);l.getServer().overworld().getDataStorage().set("the_oldest_house",oldHouse);l.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);LabyrinthBuilder.clearAll();}
+    }
+    @AfterBatch(batch="classic_listening") public static void c1(ServerLevel l){if(listening!=null){listening.close();listening=null;}}
+    @AfterBatch(batch="classic_haunting") public static void c2(ServerLevel l){if(haunting!=null){haunting.close();haunting=null;}}
+    @AfterBatch(batch="classic_nursery") public static void c3(ServerLevel l){if(nursery!=null){nursery.close();nursery=null;}}
+    @AfterBatch(batch="classic_upgrade") public static void c4(ServerLevel l){if(upgrade!=null){upgrade.close();upgrade=null;}}
+    @GameTest(template="empty") public static void twoCompleteSourcesAppendAndQuotaRoundsUp(GameTestHelper h){
+        h.assertTrue(LabyrinthPlace.SEANCE.slot()==40&&LabyrinthPlace.WALLPAPER_NURSERY.slot()==41&&WitnessAccount.Story.values().length==19&&WitnessAccount.REQUIRED==15,"two complete native sources append without renumbering the original places");
+        for(int y:new int[]{65,80,150,250})for(var place:List.of(LabyrinthPlace.SEANCE,LabyrinthPlace.WALLPAPER_NURSERY)){var o=new BlockPos(0,y,0);var b=LabyrinthPlaces.base(o,place);var slot=LabyrinthPlaces.slotBounds(o,place);h.assertTrue(b!=null&&slot.isInside(b.offset(place.room().minX(),-1,place.room().minZ()))&&slot.isInside(b.offset(place.room().maxX(),7,0)),"new native room and ceiling fit at manor height "+y);}
+        h.assertTrue(WitnessAccount.requiredForPoolSize(18)==14&&WitnessAccount.requiredForPoolSize(19)==15,"the new boundary still derives from seventy-five percent");h.succeed();
+    }
+    @GameTest(template="empty",batch="classic_listening",timeoutTicks=840) public static void nativeSittingPausesAwayAndRequiresPersonalFinalReading(GameTestHelper h){
+        listening=new Fixture(h,46500,LabyrinthPlace.SEANCE);var f=listening;var p=f.player("seance_listener");var peer=f.player("seance_observer");peer.setGameMode(GameType.SPECTATOR);
+        h.runAfterDelay(110,()->{h.assertTrue(f.own(p).getInt("ListenTicks")>50,"actual present native sight advances the sitting");f.at(p,30,0,-10);});
+        final int[] paused={0};h.runAfterDelay(130,()->paused[0]=f.own(p).getInt("ListenTicks"));
+        h.runAfterDelay(160,()->{h.assertTrue(f.own(p).getInt("ListenTicks")==paused[0]&&f.own(peer).getInt("ListenTicks")==0,"away and observer time cannot finish a sitting");f.at(p,.5,0,-11.5);p.setYRot(180);});
+        h.succeedWhen(()->{h.assertTrue(f.own(p).getBoolean("SeanceFinished"),"the complete present sitting finishes");h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0,"listening alone is not the inspected ending");h.assertTrue(p.getCamera()==p,"borrowed client eyes never replace the native player camera or physically move them");
+            var identities=ClassicsVignettes.cast(f.l).stream().map(Entity::getUUID).toList();h.assertTrue(identities.size()==4,"four real actors have persistent native identities");f.read(p,ClassicsRooms.ALBUM);h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.SEANCE)&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.SEANCE),"only the actual reader gets this source");
+            f.read(p,ClassicsRooms.ALBUM);h.assertTrue(p.getInventory().countItem(ClassicsRegistry.PLANCHETTE.get())==1,"the three-dimensional keepsake is finite");f.reload();h.assertTrue(f.own(p).getBoolean("SeanceFinished")&&identities.equals(ClassicsVignettes.cast(f.l).stream().map(Entity::getUUID).toList()),"saved progression does not restage the native family");});
+    }
+    @GameTest(template="empty",batch="classic_haunting",timeoutTicks=180) public static void actualDistinctDisturbancesFleeAndShuttersGateTheWing(GameTestHelper h){
+        haunting=new Fixture(h,46900,LabyrinthPlace.SEANCE);var f=haunting;var p=f.player("seance_haunter");var peer=f.player("seance_later_reader");f.at(peer,35,0,-10);
+        h.runAfterDelay(15,()->{f.click(p,ClassicsRooms.CUPBOARD);f.click(p,ClassicsRooms.CUPBOARD);h.assertTrue(Integer.bitCount(f.own(p).getInt("Disturbances"))==1,"repeated cupboard use cannot invent another disturbance");f.click(p,ClassicsRooms.CANDLES.get(0));f.click(p,ClassicsRooms.CANDLES.get(1));h.assertTrue(f.own(p).getBoolean("SeanceFinished")&&f.data().state(ClassicsVignettes.STATE).getBoolean("SittingEnded"),"two real extinguished candles and a cupboard drive the family out");
+            h.assertTrue(!ClassicsVignettes.wingReady(f.l,f.b),"the open shutters and side door block the locked wing");for(var pos:ClassicsRooms.SHUTTERS){var at=f.b.offset(pos);f.l.setBlock(at,f.l.getBlockState(at).setValue(TrapDoorBlock.OPEN,false),3);}NovelRooms.door(f.l,f.b.offset(-5,0,-22),Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);NovelRooms.door(f.l,f.b.offset(0,0,1),Direction.SOUTH,Blocks.OAK_DOOR,false);
+            f.click(p,ClassicsRooms.GATE);h.assertTrue(f.l.getBlockState(f.b.offset(ClassicsRooms.GATE)).getValue(DoorBlock.OPEN),"native closed doors and shutters permit the actual wing entrance");
+            f.read(peer,ClassicsRooms.ALBUM);h.assertTrue(!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.SEANCE),"a borrowed shared outcome and an unread sitting do not confer credit");f.read(p,ClassicsRooms.ALBUM);h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.SEANCE),"the person who haunted the family can inspect their own ending");
+            peer.setGameMode(GameType.SPECTATOR);h.assertTrue(!ClassicsVignettes.inside(peer,LabyrinthPlace.SEANCE),"observer mode is authoritative");h.succeed();});
+    }
+    @GameTest(template="empty",batch="classic_nursery",timeoutTicks=1600) public static void watchingNativePatternAndReturningExposesFourFiniteOriginals(GameTestHelper h){
+        nursery=new Fixture(h,47300,LabyrinthPlace.WALLPAPER_NURSERY);var f=nursery;var p=f.player("pattern_reader");var peer=f.player("pattern_peer");peer.setGameMode(GameType.SPECTATOR);p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.IRON_AXE));
+        h.assertTrue(!ClassicsVignettes.peel(p,0)&&f.own(p).getInt("Found")==0,"a blind guess cannot expose a page");final int[] stage={0},away={0};
+        h.onEachTick(()->{int index=stage[0];if(index>=4)return;if(away[0]>0){if(--away[0]==0){f.at(p,.5,0,-22.5);ClassicsVignettes.onArrive(p,LabyrinthPlace.WALLPAPER_NURSERY);}return;}
+            var at=f.b.offset(ClassicsRooms.PANELS.get(index));f.at(p,ClassicsRooms.PANELS.get(index).getX()+.5,0,-24.5);p.setYRot(180);p.setXRot(0);
+            if((f.own(p).getInt("Seen")&(1<<index))==0)return;h.assertTrue(ClassicsVignettes.peel(p,index),"an actual seen seam opens with the native axe");var menu=(ClassicsVignettes.PageMenu)p.containerMenu;h.assertTrue(menu.clickMenuButton(p,3),"the original page can be taken once");h.assertTrue(!menu.clickMenuButton(p,3),"the source does not refill");
+            if(index<3){h.assertTrue(!ClassicsVignettes.peel(p,index+1),"another page requires a later visit");stage[0]++;f.at(p,40,0,-5);away[0]=5;}
+            else{h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0,"taking the final page has not read its ending");h.assertTrue(menu.clickMenuButton(p,101),"the actual final native page is read");h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.WALLPAPER)&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.WALLPAPER),"all four personally seen pages resolve only their reader");h.assertTrue(p.getInventory().countItem(ClassicsRegistry.FOLIO.get())==1,"the assembled native three-dimensional folio is finite");var saved=f.own(p).getCompound("Original_Wallpaper0").copy();f.reload();h.assertTrue(f.own(p).getInt("Found")==15&&saved.equals(f.own(p).getCompound("Original_Wallpaper0")),"reload preserves the exact first original and complete personal progression");stage[0]=4;h.succeed();}
+        });
+    }
+    @GameTest(template="empty",batch="classic_upgrade",timeoutTicks=180) public static void nativeLayoutAppendPreservesOlderInventoryAndWitnessEvidence(GameTestHelper h){
+        upgrade=new Fixture(h,48100,LabyrinthPlace.SEANCE);var f=upgrade;var p=f.player("classic_upgrade_owner");var original=new ItemStack(Items.DIAMOND,3);var old=LabyrinthPlaces.base(f.origin,LabyrinthPlace.HARRIGAN);f.l.setBlock(old.offset(2,0,-4),Blocks.BARREL.defaultBlockState(),3);var barrel=(net.minecraft.world.level.block.entity.BarrelBlockEntity)f.l.getBlockEntity(old.offset(2,0,-4));barrel.setItem(0,original);WitnessAccount.resolve(f.data(),p.getUUID(),WitnessAccount.Story.HARRIGAN,"read_before_upgrade");f.at(p,50,0,-5);f.data().setBuilt(29,f.origin);LabyrinthBuilder.ensureBuilt(f.l.getServer());
+        h.succeedWhen(()->{h.assertTrue(LabyrinthBuilder.isBuilt(f.l.getServer()),"the native append finishes");h.assertTrue(f.l.getBlockEntity(old.offset(2,0,-4))==barrel&&barrel.getItem(0).getCount()==3&&WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.HARRIGAN),"previous inventories and personal evidence retain their native originals");for(var place:List.of(LabyrinthPlace.SEANCE,LabyrinthPlace.WALLPAPER_NURSERY)){var door=f.data().door(place.entryDoorId());h.assertTrue(door!=null&&f.l.getBlockState(door.lower).getBlock() instanceof DoorBlock,"each new scene has a native registered route entrance");}});
+    }
+}

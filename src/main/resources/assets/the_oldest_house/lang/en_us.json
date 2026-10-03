@@ -70,5 +70,12 @@
   "entity.the_oldest_house.finale_witness": "The old man",
   "entity.the_oldest_house.caged_child": "The boy",
   "entity.the_oldest_house.novel_double": "Your double",
-  "entity.the_oldest_house.novel_tom": "Tom"
+  "entity.the_oldest_house.novel_tom": "Tom",
+  "item.the_oldest_house.seance_planchette": "An empty sitting",
+  "item.the_oldest_house.wallpaper_folio": "The pages she kept",
+  "block.the_oldest_house.nursery_wallpaper": "Nursery wallpaper",
+  "block.the_oldest_house.seance_table": "Marquetry table",
+  "block.the_oldest_house.seance_wallpaper": "Drawing-room wallpaper",
+  "block.the_oldest_house.seance_wainscot": "Paneled wainscot",
+  "entity.the_oldest_house.seance_actor": "Someone at the table"
 }

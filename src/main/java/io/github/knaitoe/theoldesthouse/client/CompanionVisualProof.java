@@ -46,6 +46,6 @@ public final class CompanionVisualProof extends Screen {
         if(!p.movedTail||!p.movedArm)throw new IllegalStateException("Native response froze at a single pose");
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-companions.png"));}
         Files.writeString(dir.resolve("companions-passed.txt"),"44 native frames: vanilla wolf/cat/player meshes, applied pat mixins, moving wag/stroke, head rub, tail curl and matching sleeves.\n");
-        TheOldestHouse.LOGGER.info("COMPANION ANIMATION CHECK PASSED: native models and moving response");mc.setScreen(new SceneVisualProof());
+        TheOldestHouse.LOGGER.info("COMPANION ANIMATION CHECK PASSED: native models and moving response");mc.setScreen(new ClassicsVisualProof());
     }
 }

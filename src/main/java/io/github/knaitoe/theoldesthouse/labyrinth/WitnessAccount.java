@@ -54,7 +54,11 @@ public final class WitnessAccount {
         HOLLOWAY("holloway_camp","The counted lights","survival",
                 "I took supplies from the dirt hut. When I returned, someone followed the light I had left. I passed the pillars, somebody's stairs and the broken stone. Beyond the service latch I found a shield and half a map. The missing half looked safer."),
         MOTHER("mother_of_strays", "The keeper", "release",
-                "She let something go. For a moment, keeping it safe and keeping it forever were different things.");
+                "She let something go. For a moment, keeping it safe and keeping it forever were different things."),
+        SEANCE("seance","The empty chair","connection",
+                "They could hear the cupboard, but they could not see my hand. The album had names beneath its photographs. The final space had mine."),
+        WALLPAPER("wallpaper_nursery","The pattern","understanding",
+                "I watched the shape cross the seams. Under four strips of paper she had kept her own words. I read the last page before I left.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}
@@ -124,6 +128,8 @@ public final class WitnessAccount {
                         case HOSPITAL->"The chair remained beside the empty incubator.";
                         case HOLLOWAY->"The supplies had been counted. The service latch was still worn.";
                         case MOTHER->"The shelves remained, but she had stopped keeping the things upon them.";
+                        case SEANCE->"The chairs were empty. A name had been written below a photograph that was missing.";
+                        case WALLPAPER->"The plaster showed through four seams. Someone had kept the pages the room was meant to conceal.";
                     }:story.text;
             pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,story.title+"\n\n"+text));
         }

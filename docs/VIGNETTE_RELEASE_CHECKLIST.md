@@ -9,9 +9,9 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current baseline: 0.4.33
+## Current baseline: 0.4.34
 
-Seventeen eligible sources require **thirteen distinct personal resolutions** across at least two kinds. The game has three ending options.
+Nineteen eligible sources require **fifteen distinct personal resolutions** across at least two kinds. The game has three ending options.
 
 | Source | Kind |
 | --- | --- |
@@ -32,8 +32,12 @@ Seventeen eligible sources require **thirteen distinct personal resolutions** ac
 | Hospital's personal dawn chart | Understanding |
 | Holloway's personal three-arena escape and service latch | Survival |
 | Mother's peaceful resolution | Release |
+| The séance's personally examined album | Connection |
+| The nursery's four personally discovered installments and final reading | Understanding |
 
-The next eighteenth source requires fourteen. Existing recorded evidence remains saved as the quota rises. Explorers who have not committed to release must satisfy the current requirement. Completing every source, or resolving the Mother specifically, is not required.
+The twentieth source still requires fifteen; the twenty-first requires sixteen. Existing recorded evidence remains saved as the quota rises. Explorers who have not committed to release must satisfy the current requirement. Completing every source, or resolving the Mother specifically, is not required.
+
+Every new vignette includes authored structural generation and furnished interiors, appropriate custom native meshes/textures for props, items and cast, original integrated writing, personally earned outcomes, multiplayer/save preservation and a reviewed Witness resolution. Require the full native gameplay suite and client/package proofs, including generated architecture views and custom-asset rendering, before delivery.
 
 Karen’s room is a native navigation/respawn anchor, excluded from Witness.
 

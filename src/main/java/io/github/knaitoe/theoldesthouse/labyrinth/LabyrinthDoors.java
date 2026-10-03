@@ -233,6 +233,7 @@ public final class LabyrinthDoors {
             CaverVignette.onArrive(p,place);
             HollowayVignette.onArrive(p,place);
             NovelVignettes.onArrive(p,place);
+            ClassicsVignettes.onArrive(p,place);
             MotherOfStrays.onArrive(p, place);
             WitnessAccount.onArrive(p, place);
             LabyrinthEncounters.onArrive(p, place);

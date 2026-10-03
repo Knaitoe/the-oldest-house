@@ -97,7 +97,7 @@ public final class ArchitectureTests {
                 }
                 if(scene!=LabyrinthPlace.RED_ROOM)export(level,base,scene);
             }
-            h.assertTrue(dressed==19&&props>=90,"all nineteen authored vignettes/camps receive supported detail; the copied Red Room stays personal");
+            h.assertTrue(dressed==21&&props>=90,"all twenty-one authored vignettes/camps receive supported detail; the copied Red Room stays personal");
             shellsAndEdges(h,server,origin,data);
             frontsAndInteriors(h,server,origin,data);
             var camp=LabyrinthPlaces.base(origin,LabyrinthPlace.EXPLORER_CAMP);var cache=(BarrelBlockEntity)interior.getBlockEntity(camp.offset(LabyrinthCampsite.CACHE));
@@ -224,7 +224,7 @@ public final class ArchitectureTests {
             if(s.isAir()||s.is(Blocks.BARRIER)||s.is(Blocks.LIGHT))continue;
             if(s.is(Blocks.WATER)&&(!LakeLandscape.isLake(scene)||!l.getBlockState(at.above()).isAir()))continue;
             // A documented cutaway removes roofs and the near walls, not interior contents.
-            if(y>=0&&(x==r.maxX()||z==maxZ))continue;
+            if(y>=0&&(x==r.maxX()||z==maxZ||(scene==LabyrinthPlace.SEANCE&&x==10)||(scene==LabyrinthPlace.WALLPAPER_NURSERY&&x==8)))continue;
             if(y>=0&&((scene==LabyrinthPlace.WHALE&&x==13)||(scene==LabyrinthPlace.HOSPITAL&&x==9)
                     ||(scene==LabyrinthPlace.KAREN_ROOM&&x==9)||(scene==LabyrinthPlace.ZAMPANO_COURTYARD&&x==12&&z<=-19)))continue;
             if(y>2&&s.is(Blocks.BIRCH_PLANKS))continue;

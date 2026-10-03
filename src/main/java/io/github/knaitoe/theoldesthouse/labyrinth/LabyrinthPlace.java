@@ -196,6 +196,8 @@ public enum LabyrinthPlace {
     HOLLOWAY_CAMP("holloway_camp",Kind.MULTI_VISIT,39,new BoundingBox(-11,-1,-71,11,7,0),List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("service",new BlockPos(-7,0,-70),Direction.NORTH,LabyrinthData.RETURN))),
+    SEANCE("seance",Kind.ONE_SHOT,40,new BoundingBox(-11,-1,-32,11,7,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
+    WALLPAPER_NURSERY("wallpaper_nursery",Kind.MULTI_VISIT,41,new BoundingBox(-10,-1,-28,10,7,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

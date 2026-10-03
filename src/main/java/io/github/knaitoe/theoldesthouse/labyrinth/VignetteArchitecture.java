@@ -46,6 +46,8 @@ public final class VignetteArchitecture {
         case HOLLOWAY_CAMP->holloway();case GOATMAN->trailer();case TED_CAVER->caver();
         case PRESERVED_CAVE->chapel();case DROWNED_TOWN->town();case SHALLOWS->shore(false);
         case PHONE_CANOE->shore(true);
+        case SEANCE->{detail(7,3,-29,SceneDetailBlock.Kind.BOOKS,Direction.WEST);detail(7,3,-18,SceneDetailBlock.Kind.BOOKS,Direction.WEST);}
+        case WALLPAPER_NURSERY->{detail(-5,1,-23,SceneDetailBlock.Kind.BOOKS,Direction.SOUTH);detail(-5,3,-10,SceneDetailBlock.Kind.BOOKS,Direction.EAST);}
         // This room belongs to the player: its actual copied home is its architecture.
         case RED_ROOM->{ }default->{ }
     }}
