@@ -28,7 +28,7 @@ These repairs have their own once-only checkpoints and wait for visitors. Native
 
 ## Minotaur investigation
 
-The supplied October 3 logs show death at 20:55:15 and a 2,099 ms / 41-tick server warning at 20:55:17. They contain no combat exception or profiler identifying the freeze. Two startup PNG chunk errors (the great-room rug and wardrobe side) are fixed. Every shipped texture now receives strict chunk CRC validation and full pixel decoding.
+The supplied playtest logs show death at 20:55:15 and a 2,099 ms / 41-tick server warning at 20:55:17. They contain no combat exception or profiler identifying the freeze. Two startup PNG chunk errors (the great-room rug and wardrobe side) are fixed. Every shipped texture now receives strict chunk CRC validation and full pixel decoding.
 
 Attack motion no longer repeats collision-size reconciliation; only the actual child/adult change refreshes dimensions. Stair route positions and native model parts are cached. Per-player finale reads no longer copy every other explorer's state. The model UV dimensions now match its actual 256×256 material atlas. A creature tick exceeding 100 ms logs phase, position and owner with rate limiting.
 
@@ -36,4 +36,8 @@ Native tests exercise the actual transformed entity, survival player, shield col
 
 ## Verification
 
-The preceding source revision [passed all 272 native GameTests and client checks](https://github.com/Knaitoe/the-oldest-house/actions/runs/37090005060). Verification of the added wall repairs is pending a native Java 21 / NeoForge build, all 277 GameTests, package and texture checks, native font/cast/home/Minotaur rendering, twenty-two architecture views, and three sky elevations. The matching JAR is delivered only after those complete. All twenty custom inventory items have separately generated transparent artwork, native 32×32 texture references and [asset provenance](../art/ASSETS_0_4_30.md). Native inventory rendering is included in the client proof.
+[Native Java 21 / NeoForge build](https://github.com/Knaitoe/the-oldest-house/actions/runs/37093414011) passed all **277 required GameTests**, strict CRC/decode checks for all **146 PNG textures**, package and font checks, native font/NPC/cast/home/Minotaur/inventory rendering, twenty-two architecture views and three outside-sky elevations. The physics regression directly invokes Minecraft's native sand block tick on every repaired floor tile and an explicitly unsupported control. The custody regression compares all five live original stacks, including carried-time ownership components, immediately before the actual taking.
+
+Validated source: `d2969adebee3f66567a040d0b53510c20b1d86a3`. Runtime JAR: `the_oldest_house-0.4.30.jar`. SHA-256: `35108b23fb5cae182c0995a142af017397119755929148bc7102371ef55cee13`.
+
+All twenty custom inventory items have separately generated transparent artwork, native 32×32 texture references and [asset provenance](../art/ASSETS_0_4_30.md). Native inventory rendering is included in the client proof. On the CI machine, 69 warmed native combat ticks averaged 0.0383 ms (maximum 0.2327 ms); 64 rendered frames averaged 1.0267 ms of CPU submission (maximum 1.4979 ms). These isolated measurements do not reproduce an integrated world stall or measure the user's hardware. The Minotaur's native combat/render checks passed; the user's reported freeze was not reproduced and still requires a fresh playtest. Timing diagnostics are included in the build artifacts and future expensive creature ticks log their phase.
