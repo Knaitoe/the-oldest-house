@@ -12,7 +12,7 @@ public final class HotelRooms {
     public static final BlockPos DESK=new BlockPos(3,0,-2),TABLE=new BlockPos(0,0,-16),MEAL=new BlockPos(0,1,-16),
         BED=new BlockPos(5,5,-21),DRAWER=new BlockPos(-6,5,-21),PATCH=new BlockPos(0,4,-16),ROOM_DOOR=new BlockPos(0,5,-6),
         LOG=new BlockPos(-22,0,-57),TYPEWRITER=new BlockPos(-24,1,-48),GAUGE=new BlockPos(0,-3,-59),VALVE=new BlockPos(4,-3,-58),RESTART=new BlockPos(6,-3,-58),
-        PHOTO=new BlockPos(27,2,-20),KEY=new BlockPos(0,0,-39),BOILER=new BlockPos(0,-4,-60),FIRE=new BlockPos(9,0,-23);
+        PHOTO=new BlockPos(27,2,-19),KEY=new BlockPos(0,0,-39),BOILER=new BlockPos(0,-4,-60),FIRE=new BlockPos(9,0,-23);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private HotelRooms(){}
     public static void build(ServerLevel l,BlockPos b,LabyrinthPlace p){if(p==LabyrinthPlace.HOTEL)hotel(l,b);else grounds(l,b);}
@@ -80,7 +80,60 @@ public final class HotelRooms {
         detail(l,b,-19,1,-25,SceneDetailBlock.Kind.BOOKS); // Supported table added below, not an armchair.
         furniture(l,b,-19,0,-25,HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.EAST);
         furniture(l,b,-18,0,-48,HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.WEST);detail(l,b,-18,1,-48,SceneDetailBlock.Kind.BOTTLES);
+        architecturalFinish(l,b);
         LabyrinthBuilder.entrance(l,b,HouseBlocks.HOTEL_WALLPAPER.get().defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState(),HouseBlocks.HOTEL_CEILING.get().defaultBlockState());LabyrinthBuilder.doors(l,b,LabyrinthPlace.HOTEL);
+    }
+    private static boolean wallMaterial(net.minecraft.world.level.block.state.BlockState s){return s.is(HouseBlocks.HOTEL_WALLPAPER.get())||s.is(HouseBlocks.HOTEL_WAINSCOT.get())||s.is(HouseBlocks.HOTEL_CEILING.get());}
+    /** Authored construction for each actual room, rather than a veneer over the large outside shell. */
+    private static void finishRoom(ServerLevel l,BlockPos b,int x0,int x1,int z0,int z1,int y,int h){
+        for(int x=x0-1;x<=x1+1;x++)for(int z:new int[]{z0-1,z1+1})for(int dy=0;dy<=h;dy++){
+            var at=b.offset(x,y+dy,z);var s=l.getBlockState(at);if(!wallMaterial(s))continue;
+            if(x==x0-1||x==x1+1||(x-x0)%4==0)l.setBlock(at,Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState(),F);
+            else if(dy==h||dy==2)l.setBlock(at,Blocks.DARK_OAK_PLANKS.defaultBlockState(),F);
+        }
+        for(int z=z0;z<=z1;z++)for(int x:new int[]{x0-1,x1+1})for(int dy=0;dy<=h;dy++){
+            var at=b.offset(x,y+dy,z);var s=l.getBlockState(at);if(!wallMaterial(s))continue;
+            if((z-z0)%5==0)l.setBlock(at,Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState(),F);
+            else if(dy==h||dy==2)l.setBlock(at,Blocks.DARK_OAK_PLANKS.defaultBlockState(),F);
+        }
+        for(int x=x0;x<=x1;x++)for(int z=z0;z<=z1;z++){
+            var floor=b.offset(x,y-1,z);if((x==x0||x==x1||z==z0||z==z1)&&l.getBlockState(floor).is(Blocks.DARK_OAK_PLANKS))l.setBlock(floor,Blocks.STRIPPED_DARK_OAK_WOOD.defaultBlockState(),F);
+            if((x-x0)%4!=0&&(z-z0)%5!=0)continue;var ceiling=b.offset(x,y+h+1,z);if(l.getBlockState(ceiling).is(HouseBlocks.HOTEL_CEILING.get()))l.setBlock(ceiling,Blocks.DARK_OAK_PLANKS.defaultBlockState(),F);
+            var drop=b.offset(x,y+h,z);if(l.getBlockState(drop).isAir())l.setBlock(drop,Blocks.DARK_OAK_SLAB.defaultBlockState(),F);
+        }
+    }
+    private static void caseDoor(ServerLevel l,BlockPos b,int x,int y,int z,Direction facing){var across=facing.getAxis()==Direction.Axis.X?Direction.NORTH:Direction.EAST;for(int side:new int[]{-1,1})for(int dy=0;dy<3;dy++){var at=b.offset(x,y+dy,z).relative(across,side);if(wallMaterial(l.getBlockState(at)))l.setBlock(at,Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState(),F);}var top=b.offset(x,y+2,z);if(l.getBlockState(top).isAir()||wallMaterial(l.getBlockState(top)))l.setBlock(top,Blocks.DARK_OAK_PLANKS.defaultBlockState(),F);}
+    private static void architecturalFinish(ServerLevel l,BlockPos b){
+        // The rear wing is a real office with linked linen and repair rooms, not unused floor space.
+        room(l,b,13,20,-65,-50,0,3);room(l,b,22,27,-65,-50,0,3);room(l,b,13,27,-47,-41,0,3);
+        portal(l,b,18,0,-40,Direction.SOUTH);box(l,b,18,0,-49,18,2,-48,Blocks.AIR);NovelRooms.door(l,b.offset(18,0,-49),Direction.SOUTH,Blocks.DARK_OAK_DOOR,true);
+        box(l,b,24,0,-49,24,2,-48,Blocks.AIR);NovelRooms.door(l,b.offset(24,0,-49),Direction.SOUTH,Blocks.DARK_OAK_DOOR,true);
+        furniture(l,b,25,0,-43,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.WEST);detail(l,b,25,1,-43,SceneDetailBlock.Kind.FILE_TRAY);
+        furniture(l,b,23,0,-43,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);
+        for(int x:new int[]{14,16})for(int z:new int[]{-64,-58}){furniture(l,b,x,0,z,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.SOUTH);detail(l,b,x,1,z,SceneDetailBlock.Kind.TOWELS);}
+        for(int x:new int[]{15,19})l.setBlock(b.offset(x,0,-61),Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING,Direction.SOUTH),F);
+        furniture(l,b,25,0,-62,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);detail(l,b,25,1,-62,SceneDetailBlock.Kind.TOOLS);
+        furniture(l,b,25,0,-56,HouseholdFurnitureBlock.Kind.WASHING_MACHINE,Direction.WEST);at(l,b,23,0,-62,Blocks.CRAFTING_TABLE);
+        // Painted mountains sit behind actual office glass, with a timber sill and deep reveal.
+        box(l,b,14,1,-48,16,2,-48,Blocks.GLASS);for(int x=14;x<=16;x++){at(l,b,x,1,-49,x==15?Blocks.WHITE_TERRACOTTA:Blocks.GRAY_TERRACOTTA);at(l,b,x,2,-49,Blocks.LIGHT_BLUE_CONCRETE);at(l,b,x,0,-48,Blocks.DARK_OAK_PLANKS);}
+        for(var a:new int[][]{{-11,11,-27,-5,0,3},{-27,-17,-27,-6,0,4},{13,27,-34,-6,0,7},{-27,-17,-64,-40,0,4},{-9,9,-25,-7,5,3},{13,20,-65,-50,0,3},{22,27,-65,-50,0,3},{13,27,-47,-41,0,3}})finishRoom(l,b,a[0],a[1],a[2],a[3],a[4],a[5]);
+        for(var a:new int[][]{{0,0,-4,0},{-12,0,-17,1},{-16,0,-17,1},{12,0,-17,1},{-16,0,-44,1},{0,0,-35,0},{-10,5,-13,1},{0,5,-6,0},{18,0,-40,0},{18,0,-49,0},{24,0,-49,0}})caseDoor(l,b,a[0],a[1],a[2],a[3]==1?Direction.EAST:Direction.SOUTH);
+        // The bar's fitted back has a dark mirror and supported bottle shelves.
+        box(l,b,-29,1,-24,-29,3,-9,Blocks.BLACK_CONCRETE);box(l,b,-28,1,-24,-28,3,-9,Blocks.BLACK_STAINED_GLASS);
+        box(l,b,-27,0,-24,-27,1,-9,Blocks.DARK_OAK_PLANKS);for(int z:new int[]{-10,-15,-22})detail(l,b,-27,2,z,SceneDetailBlock.Kind.BOTTLES);
+        box(l,b,8,2,-24,10,2,-24,Blocks.DARK_OAK_SLAB);at(l,b,9,3,-24,Blocks.STONE_BRICKS);
+        furniture(l,b,-20,0,-52,HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR,Direction.EAST);furniture(l,b,-19,0,-52,HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.WEST);detail(l,b,-19,1,-52,SceneDetailBlock.Kind.TEA_SET);
+        furniture(l,b,8,5,-18,HouseholdFurnitureBlock.Kind.RADIATOR,Direction.WEST);detail(l,b,-6,6,-21,SceneDetailBlock.Kind.TOWELS);
+        for(int i=0;i<=4;i++)at(l,b,-16,i,-7-i,Blocks.DARK_OAK_FENCE);for(int x=-15;x<=-11;x++)at(l,b,x,5,-14,Blocks.DARK_OAK_FENCE);
+        // Foyer ribs and the corridor's structural uprights frame the long sightline.
+        for(int z=-8;z>=-62;z-=9)for(int x:new int[]{-16,-12})for(int y=1;y<=3;y++){var at=b.offset(x,y,z);if(wallMaterial(l.getBlockState(at)))l.setBlock(at,Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState(),F);}
+        for(int x:new int[]{-5,5})for(int y=0;y<=3;y++)at(l,b,x,y,-3,Blocks.STRIPPED_DARK_OAK_LOG);
+        // The heating plant belongs to masonry and copper, not the guest-room wallpaper.
+        for(int x=-10;x<=10;x++)for(int z:new int[]{-65,-48})for(int y=-4;y<=-2;y++){var at=b.offset(x,y,z);if(wallMaterial(l.getBlockState(at)))l.setBlock(at,Blocks.STONE_BRICKS.defaultBlockState(),F);}
+        for(int z=-64;z<=-49;z++)for(int x:new int[]{-10,10})for(int y=-4;y<=-2;y++){var at=b.offset(x,y,z);if(wallMaterial(l.getBlockState(at)))l.setBlock(at,Blocks.STONE_BRICKS.defaultBlockState(),F);}
+        at(l,b,-3,-4,-61,Blocks.IRON_BLOCK);detail(l,b,-3,-3,-61,SceneDetailBlock.Kind.TOOLS);at(l,b,-4,-4,-61,Blocks.CRAFTING_TABLE);
+        for(int z:new int[]{-52,-57,-62})at(l,b,-6,-3,z,Blocks.STONE_BRICK_WALL);
+        lamp(l,b,18,2,-44);lamp(l,b,17,2,-57);lamp(l,b,25,2,-59);
     }
     private static void detail(ServerLevel l,BlockPos b,int x,int y,int z,SceneDetailBlock.Kind kind){l.setBlock(b.offset(x,y,z),HouseBlocks.SCENE_DETAIL.get().defaultBlockState().setValue(SceneDetailBlock.KIND,kind).setValue(SceneDetailBlock.FACING,Direction.NORTH),F);}
     private static void grounds(ServerLevel l,BlockPos b){
@@ -99,6 +152,9 @@ public final class HotelRooms {
         for(int x:new int[]{-21,-18}){prop(l,b,new BlockPos(x,0,-60),HotelPropBlock.Kind.HEADSTONE,Direction.SOUTH);at(l,b,x,-1,-60,Blocks.GRAVEL);}
         furniture(l,b,7,0,-8,HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.WEST);detail(l,b,7,1,-8,SceneDetailBlock.Kind.ROPE_COIL);
         furniture(l,b,-7,0,-8,HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.EAST);detail(l,b,-7,1,-8,SceneDetailBlock.Kind.TOOLS);
+        for(int x:new int[]{-24,-18})for(int z:new int[]{-25,-18})box(l,b,x,0,z,x,3,z,Blocks.SPRUCE_LOG);
+        box(l,b,-25,4,-26,-17,4,-17,Blocks.SPRUCE_PLANKS);box(l,b,-25,5,-26,-17,5,-17,Blocks.SNOW);
+        furniture(l,b,-23,0,-23,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.EAST);detail(l,b,-23,1,-23,SceneDetailBlock.Kind.TOOLS);
         NovelRooms.safeApproach(l,b);LabyrinthBuilder.doors(l,b,LabyrinthPlace.HOTEL_GROUNDS);
     }
 }
