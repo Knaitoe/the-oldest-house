@@ -32,7 +32,7 @@ public final class HotelVisualProof extends Screen {
         var portrait=g.pose();portrait.pushPose();portrait.translate(width/2.+85,height-45,185);portrait.scale(32,-32,32);portrait.mulPose(Axis.YP.rotationDegrees(65));
         mc.getBlockRenderer().renderSingleBlock(print,portrait,mc.renderBuffers().bufferSource(),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
         portrait.translate(0,0,-1);var skull=net.minecraft.client.renderer.blockentity.SkullBlockRenderer.createSkullRenderers(mc.getEntityModels()).get(net.minecraft.world.level.block.SkullBlock.Types.PLAYER);
-        net.minecraft.client.renderer.blockentity.SkullBlockRenderer.renderSkull(net.minecraft.core.Direction.WEST,0,0,portrait,mc.renderBuffers().bufferSource(),LightTexture.FULL_BRIGHT,skull,RenderType.entityTranslucent(net.minecraft.client.resources.DefaultPlayerSkin.get(new java.util.UUID(0,0)).texture()));
+        net.minecraft.client.renderer.blockentity.SkullBlockRenderer.renderSkull(net.minecraft.core.Direction.WEST,net.minecraft.core.Direction.EAST.toYRot(),0,portrait,mc.renderBuffers().bufferSource(),LightTexture.FULL_BRIGHT,skull,RenderType.entityTranslucent(net.minecraft.client.resources.DefaultPlayerSkin.get(new java.util.UUID(0,0)).texture()));
         mc.renderBuffers().bufferSource().endBatch();portrait.popPose();
         var listener=net.minecraft.world.phys.Vec3.ZERO;var source=new net.minecraft.world.phys.Vec3(0,0,8);if(HotelAtmosphere.arrow(listener,source,0,false).equals(HotelAtmosphere.arrow(listener,source,0,true)))throw new IllegalStateException("Blind arrow never changes");
     }

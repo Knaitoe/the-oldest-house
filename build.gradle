@@ -49,7 +49,7 @@ neoForge {
 
         gameTestServer {
             type = "gameTestServer"
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            systemProperty 'neoforge.enabledGameTestNamespaces', providers.gradleProperty('gameTestNamespaces').getOrElse(project.mod_id + ',' + project.mod_id + '_hotel')
         }
 
         data {
