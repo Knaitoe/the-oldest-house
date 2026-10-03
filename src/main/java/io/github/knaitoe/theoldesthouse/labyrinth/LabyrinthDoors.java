@@ -802,7 +802,8 @@ public final class LabyrinthDoors {
         if (event.getLevel() instanceof ServerLevel level
                 && isProtected(level, event.getPos())
                 && !TellTaleFloorboards.isLooseBoard(level, event.getPos())
-                && !DrownedTown.canBreak(level, event.getPos())) {
+                && !DrownedTown.canBreak(level, event.getPos())
+                && !HotelVignette.mayBreakTorch(level,event.getPos(),event.getPlayer())) {
             event.setCanceled(true);
         }
     }
@@ -813,7 +814,8 @@ public final class LabyrinthDoors {
                 && !LabyrinthHazards.allowsPlacing(level, event.getPos(), event.getPlacedBlock())
                 && !LabyrinthLighting.allowsPlacing(level, event.getPos(), event.getPlacedBlock())) {
             if (!DrownedTown.allowsPlacing(level, event.getPos(), event.getPlacedBlock())
-                    && !HollowayVignette.allowsPlacing(level,event.getPos(),event.getPlacedBlock())) event.setCanceled(true);
+                    && !HollowayVignette.allowsPlacing(level,event.getPos(),event.getPlacedBlock())
+                    && !HotelVignette.allowsTorchPlacing(level,event.getPos(),event.getPlacedBlock())) event.setCanceled(true);
         }
     }
 
