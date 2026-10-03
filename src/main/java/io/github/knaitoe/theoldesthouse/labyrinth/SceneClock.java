@@ -18,11 +18,12 @@ public final class SceneClock {
             case PLAIN->4;
             case HOSPITAL->5;
             case DROWNED_TOWN,SHALLOWS,PHONE_CANOE->7;
+            case HOTEL_GROUNDS->8;
             default->0;
         };
     }
     public static long time(int mode,int elapsed,long nativeTime){return switch(mode){
-        case 1->21000;case 3,7->18000;case 4->6000;
+        case 1->21000;case 3,7,8->18000;case 4->6000;
         case 5->18000+Math.min(6000,Math.max(0,elapsed)*6000L/3600);default->nativeTime;
     };}
 }
