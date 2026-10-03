@@ -1,0 +1,227 @@
+{
+  "generator": "Built-in imagegen, one separate generation per item",
+  "shared_brief": "Single transparent inventory item; muted, chunky Minecraft pixel art; clear 32-pixel silhouette; aged everyday materials. No background or extra items.",
+  "integration": "Crop only transparent margin, center, nearest-neighbor resize to 28 pixels, pad to 32 RGBA. Item models each reference their own native texture.",
+  "items": [
+    {
+      "item": "chalk",
+      "description": "A single short cylindrical off-white CHALK STICK, chipped blunt tip, dusty powder. Clearly chalk, not a quartz crystal.",
+      "source_sha256": "15de90668557287a71af1e5ae64c725070104a69005c91e6b54e3219d72d5dcb",
+      "native_path": "src/main/resources/assets/the_oldest_house/textures/item/chalk.png",
+      "native_sha256": "61c0828bae89de469d0dd25bc9fe3eac826efa80043a3722e3cad6da6f6fe14c",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    {
+      "item": "trail_spool",
+      "description": "A squat wooden spool wound with cream cotton trail string, short loose curled end.",
+      "source_sha256": "3c67be028d525dd9ba43936fa53fa25e94bc3baf66e1082dbf45f4d874a34935",
+      "native_path": "src/main/resources/assets/the_oldest_house/textures/item/trail_spool.png",
+      "native_sha256": "58950b993026b023471a796ffb2689cc04b2a58456158c60c57c09d4905bdaf1",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    {
+      "item": "archive_key",
+      "description": "A single antique brass door key, elaborate oval bow with a small worn paper tag, one bit on the end.",
+      "source_sha256": "bf63f183ae77bdfe517bed5c4929cef41b406103ddac328a5f307f04f0d6fb3b",
+      "native_path": "src/main/resources/assets/the_oldest_house/textures/item/archive_key.png",
+      "native_sha256": "392e234a2426b103557a45397e14c0ddedd27322f800d71aab8144f3e5aacd17",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    {
+      "item": "cat_collar",
+      "description": "A small red leather cat collar loop, brass buckle and one tiny round brass bell.",
+      "source_sha256": "f5342267e67cc64c52cf17e840bd7b216626e5e2ae3204ea8ed590cfcd2f7166",
+      "native_path": "src/main/resources/assets/the_oldest_house/textures/item/cat_collar.png",
+      "native_sha256": "1b6fdb69bf34cf9fdc395850f5e0dec3f90add4c92cc245b40cde6d9070d74b4",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    {
+      "item": "well_ribbon",
+      "description": "A narrow faded blue fabric ribbon tied into a loose bow, frayed ends.",
+      "source_sha256": "0146f1e3c90953e70ed392d28cc98166eaa82a773c5c7278115e5edec98b1ac4",
+      "native_path": "src/main/resources/assets/the_oldest_house/textures/item/well_ribbon.png",
+      "native_sha256": "f148df3f57fd7adf4c6191d4274c638ccfebfd2a04ce18af0a0ae45412d208f7",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    {
+      "item": "blindfold",
+      "description": "A folded black cloth blindfold with two trailing ties; visible worn woven folds.",
+      "source_sha256": "c002a61f0e1c692e85cc06e3998bb44024aafd2c7cc726882ae9bac060300cc6",
+      "native_path": "src/main/resources/assets/the_oldest_house/textures/item/blindfold.png",
+      "native_sha256": "e19b8487e8f687ca6b0977ca13e8c30c9692e8147da02765475a17ddb21e2d59",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    {
+      "item": "church_key",
+      "description": "A dark old iron church key with a large trefoil bow and heavy rectangular bit.",
+      "source_sha256": "25a95ca3e62513f2be9c0ba306a6f01e3fd9f29e3424aceb539c213c3683aedc",
+      "native_path": "src/main/resources/assets/the_oldest_house/textures/item/church_key.png",
+      "native_sha256": "b7184c1ab3de030d1b2d804efb7724cc094314fe71363e1e95898f43406213b8",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    {
+      "item": "walkie_talkie",
+      "description": "An old olive and charcoal walkie-talkie with long black antenna, orange indicator and ribbed speaker; no text.",
+      "source_sha256": "f116504b4b9a48b22b5b3a5b346e3667c8707440757808a3f216cdab10a36b9d",
+      "native_path": "src/main/resources/assets/the_oldest_house/textures/item/walkie_talkie.png",
+      "native_sha256": "9024df57c4d0dac94d4b680e942fc6e6c60350c5a7c05a9e7c6ad11fdcb07183",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    {
+      "item": "phone",
+      "description": "An ordinary modern black phone seen slightly diagonally, screen off with a small white reflection, no symbols.",
+      "source_sha256": "d4ef1256e80a76920e22083bbc096e29cb7dfbc7a6f96f1ddde5246be112c1e2",
+      "native_path": "src/main/resources/assets/the_oldest_house/textures/item/phone.png",
+      "native_sha256": "73fb8bf005bdfd29fb1b98ab0e358de24e62b6a65e38a600a95e808e749844b0",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    {
+      "item": "harrigans_phone",
+      "description": "An old black touchscreen phone with a cracked screen and subtle warm gold edge, no lettering.",
+      "source_sha256": "460b4771b85ca88679c7f295d15dfaaf9565e3c247476d82bf001ff79fc9a767",
+      "native_path": "src/main/resources/assets/the_oldest_house/textures/item/harrigans_phone.png",
+      "native_sha256": "b7ba9562518610df7cebc31657588491d5118479df020515c666e4ea1813a601",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    {
+      "item": "lake_phone",
+      "description": "A scratched pale silver touchscreen phone with water beads, dark screen reflecting dim lake blue, no lettering.",
+      "source_sha256": "9956deb08115f818e5f74c8fe470ca3d81dbce380efa08264d8442df0f85c32d",
+      "native_path": "src/main/resources/assets/the_oldest_house/textures/item/lake_phone.png",
+      "native_sha256": "d3da786562514c75388b453250b533970495a65a8149925ad6492f26827697d5",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    {
+      "item": "scratch_ticket",
+      "description": "A folded red and cream lottery scratch ticket with three small scratched silver panels, no legible lettering.",
+      "source_sha256": "f14354e58e51d20e8a334f9c5c44a0a7a6d78c276183fadb2c6f52cc1b91fd29",
+      "native_path": "src/main/resources/assets/the_oldest_house/textures/item/scratch_ticket.png",
+      "native_sha256": "abcaa760ef6280afcb7d1c947916869e64c4a138cd31fdf6b4608d63c1841c34",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    {
+      "item": "trailer_plate",
+      "description": "A scuffed cream enamel dinner plate with blue rim and fork scratches, viewed three quarters.",
+      "source_sha256": "2e2251c06401bc68ec11615be8e057de7c0e9241096d12b69917100480166620",
+      "native_path": "src/main/resources/assets/the_oldest_house/textures/item/trailer_plate.png",
+      "native_sha256": "6f033fec676c33b99ad2701745513203d02107234c2b9ae5cc3923025776e513",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    {
+      "item": "shallows_burden",
+      "description": "A soaked folded bundle of pale cloth, tied with a dark wet strap; a quiet heavy object carried in both hands. No blood, no body parts.",
+      "source_sha256": "3051a74c228a6d7cc3ba5538c133fb710e7f2a59473ae050e88c4f89e80bae3f",
+      "native_path": "src/main/resources/assets/the_oldest_house/textures/item/shallows_burden.png",
+      "native_sha256": "9359e000aa4ac6d4782b1580b4ea6f1a042361b4d4e4fc019af0ded015898a29",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    {
+      "item": "dried_essay_one",
+      "description": "One wrinkled dried handwritten manuscript sheet, warm ivory, red teacher mark and small dark staple upper left; dark short illegible handwritten lines.",
+      "source_sha256": "a59e8e88ad5b12a54ec78934412ad5720abe6b19e2629ec70b4a4ad94da46e45",
+      "native_path": "src/main/resources/assets/the_oldest_house/textures/item/dried_essay_one.png",
+      "native_sha256": "233a253b335d3c514b63266f02751dc031e4c90be3108c890a987700eca3bfbe",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    {
+      "item": "dried_essay_two",
+      "description": "Two wrinkled dried handwritten manuscript sheets, warm ivory, blue teacher mark and small dark staple upper left; dark short illegible handwritten lines.",
+      "source_sha256": "82d705d3349a19a1545c2f10c69449ed496bab7d711e04ba5343154a161bc0a5",
+      "native_path": "src/main/resources/assets/the_oldest_house/textures/item/dried_essay_two.png",
+      "native_sha256": "25ebdb36fdb822a837317c9821033d1ac60f3bba81891c84d63e1ffdb2f87bc8",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    {
+      "item": "dried_essay_three",
+      "description": "Three wrinkled dried handwritten manuscript sheets, warm ivory, ochre teacher mark and small dark staple upper left; dark short illegible handwritten lines.",
+      "source_sha256": "9a813484544ab68d0ca9be2b86ffcae5798a60fb3f3ee905c08607357d56d57d",
+      "native_path": "src/main/resources/assets/the_oldest_house/textures/item/dried_essay_three.png",
+      "native_sha256": "d3de234c856da20ece680770dddb95abac6457cedb46552f2e35a4068609ba47",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    {
+      "item": "waterlogged_essay_one",
+      "description": "One wet handwritten manuscript sheet, pale gray blue, water stained ragged bottom, red teacher mark, small staple upper left; smeared illegible handwritten lines.",
+      "source_sha256": "5a4c8f62ffb24f5ff836c573b210d512a8f1ea3e18b8228ef669c4d8f20578a5",
+      "native_path": "src/main/resources/assets/the_oldest_house/textures/item/waterlogged_essay_one.png",
+      "native_sha256": "460b52dc35e18cc700ee9a178577f344f6164a4ee812b778a73e27dd91b44dac",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    {
+      "item": "waterlogged_essay_two",
+      "description": "Two wet handwritten manuscript sheets, pale gray blue, water stained ragged bottom, blue teacher mark, small staple upper left; smeared illegible handwritten lines.",
+      "source_sha256": "f99ffa2a5cc25e076d081507a931d22835bef7cd48fc5bd780b08c57dbb03d88",
+      "native_path": "src/main/resources/assets/the_oldest_house/textures/item/waterlogged_essay_two.png",
+      "native_sha256": "e741e073864d9e92059bada4c354ce87c39b82d1b0c1f9054b3f3fdab389fcd1",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    {
+      "item": "waterlogged_essay_three",
+      "description": "Three wet handwritten manuscript sheets, pale gray blue, water stained ragged bottom, ochre teacher mark, small staple upper left; smeared illegible handwritten lines.",
+      "source_sha256": "acef2f0e7076137ad00d3be7a99e8c5b34c4bbf75df0fe90581d5de22db636ef",
+      "native_path": "src/main/resources/assets/the_oldest_house/textures/item/waterlogged_essay_three.png",
+      "native_sha256": "a8d4fd6fda8d9c2605fd9801ce61eb4eaa9abc814fe3d2afba01debf795c00ff",
+      "dimensions": [
+        32,
+        32
+      ]
+    }
+  ]
+}

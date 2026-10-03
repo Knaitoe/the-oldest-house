@@ -36,6 +36,6 @@ public final class MinotaurVisualProof extends Screen {
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage im=Screenshot.takeScreenshot(mc.getMainRenderTarget())){im.writeToFile(dir.resolve("native-minotaur.png"));}
         double average=p.total/60_000_000.0;Files.writeString(dir.resolve("minotaur-render-passed.txt"),"64 native rendered frames / four adult attack poses.\nMean CPU render submission: "+average+" ms; maximum: "+p.max/1_000_000.0+" ms.\n");
         if(average>250)throw new IllegalStateException("Native Minotaur rendering stalls: "+average+" ms");
-        mc.setScreen(new SceneVisualProof());
+        mc.setScreen(new InventoryVisualProof());
     }
 }

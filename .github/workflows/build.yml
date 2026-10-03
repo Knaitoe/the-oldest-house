@@ -54,6 +54,17 @@ jobs:
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
               assert 'version="0.4.30"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              from PIL import Image
+              from io import BytesIO
+              inventory = json.loads(pathlib.Path('art/inventory/assets_0430.json').read_text())['items']
+              assert len(inventory) == 20
+              for item in inventory:
+                  name = item['item']
+                  model = json.loads(z.read(f'assets/the_oldest_house/models/item/{name}.json'))
+                  assert model['textures']['layer0'] == f'the_oldest_house:item/{name}'
+                  icon = Image.open(BytesIO(z.read(f'assets/the_oldest_house/textures/item/{name}.png')))
+                  icon.load()
+                  assert icon.size == (32, 32) and icon.mode == 'RGBA'
               for name in ('HouseHuman', 'HollowayCamp', 'HollowayVignette', 'HarriganAppearance'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               for name in ('holloway', 'harrigan', 'harrigan_dead', 'finale_witness', 'lake_witch', 'lake_witch_memory', 'caged_child'):
@@ -234,6 +245,8 @@ jobs:
           test -s build/font-smoke/native-home-design.png
           test -s build/font-smoke/minotaur-render-passed.txt
           test -s build/font-smoke/native-minotaur.png
+          test -s build/font-smoke/inventory-passed.txt
+          test -s build/font-smoke/native-inventory.png
           test -s build/font-smoke/native-cast.png
           test -s build/font-smoke/architecture-passed.txt
           test -s build/architecture-proof/manifest.txt
