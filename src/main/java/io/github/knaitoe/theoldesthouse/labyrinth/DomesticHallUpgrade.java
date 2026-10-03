@@ -28,7 +28,7 @@ public final class DomesticHallUpgrade {
             if(base==null||bounds==null||l.players().stream().anyMatch(p->bounds.isInside(p.blockPosition())))continue;
             // A Stay order can leave a real pet here after every explorer departs.
             // Do not close an old door around that resident's living collision body.
-            if(!l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,new net.minecraft.world.phys.AABB(bounds),e->e.isAlive()).isEmpty())continue;
+            if(!l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,new net.minecraft.world.phys.AABB(bounds.minX(),bounds.minY(),bounds.minZ(),bounds.maxX()+1,bounds.maxY()+1,bounds.maxZ()+1),e->e.isAlive()).isEmpty())continue;
             if(data.door(place.entryDoorId())==null)continue;
             apply(l,base,place);state.putBoolean(prefix+place.id(),true);data.setState(STATE,state);
         }
