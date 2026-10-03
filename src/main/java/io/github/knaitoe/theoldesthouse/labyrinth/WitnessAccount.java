@@ -59,7 +59,7 @@ public final class WitnessAccount {
                 "They could hear the cupboard, but they could not see my hand. The album had names beneath its photographs. The final space had mine."),
         WALLPAPER("wallpaper_nursery","The pattern","understanding",
                 "I watched the shape cross the seams. Under four strips of paper she had kept her own words. I read the last page before I left."),
-        HOTEL("hotel","The closing account","understanding","I ate at the last table, slept in 217 and found myself in the party photograph. Beyond the snow I brought back a key. The caretaker had kept writing while the gauge climbed. I attended the plant, settled the tab and read my own closing account.");
+        HOTEL("hotel","The closing account","understanding","I was in the photograph. I took the key from the snow, read the log and vented the plant. The desk had kept my missing things. I read the closing account before I left.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}
@@ -131,6 +131,7 @@ public final class WitnessAccount {
                         case MOTHER->"The shelves remained, but she had stopped keeping the things upon them.";
                         case SEANCE->"The chairs were empty. A name had been written below a photograph that was missing.";
                         case WALLPAPER->"The plaster showed through four seams. Someone had kept the pages the room was meant to conceal.";
+                        case HOTEL->"The second place was empty. The desk still held the missing things. The heating plant had been attended.";
                     }:story.text;
             pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,story.title+"\n\n"+text));
         }
@@ -169,10 +170,10 @@ public final class WitnessAccount {
     }
     public static void onArrive(ServerPlayer player,LabyrinthPlace place){
         LabyrinthData data=LabyrinthData.get(player.server);Story story=Story.of(place.id());
-        if(story==null||NovelVignettes.isNovel(place)||ClassicsVignettes.isClassic(place)||!data.isCompleted(place.id())||has(data,player.getUUID(),story))return;
+        if(story==null||place==LabyrinthPlace.HOTEL||NovelVignettes.isNovel(place)||ClassicsVignettes.isClassic(place)||!data.isCompleted(place.id())||has(data,player.getUUID(),story))return;
         String prop=switch(story){case FLOORBOARDS->"the exposed space beneath the loose board";
             case CLAP->"the open wardrobe";case HARRIGAN->"the casket";case MODEL_HOME->"the child's window";
-            case DROWNED_TOWN->"the church's open roof hatch";case PRESERVED_CAVE->"the canoe behind the empty pews";case SHALLOWS->"the bank";case PHONE_CANOE->"the canoe";case GOATMAN->"the trailer door";case TED_CAVER->"the cave landing";case ZAMPANO->"the survey";case WHALE->"the undated letter";case BARN_WELL->"the well";case PLAIN->"the distant shape";case HOSPITAL->"the dawn chart";case HOLLOWAY->"the service latch";case MOTHER->"the keeper's record";case SEANCE->"the family album";case WALLPAPER->"the collected pages";};
+            case DROWNED_TOWN->"the church's open roof hatch";case PRESERVED_CAVE->"the canoe behind the empty pews";case SHALLOWS->"the bank";case PHONE_CANOE->"the canoe";case GOATMAN->"the trailer door";case TED_CAVER->"the cave landing";case ZAMPANO->"the survey";case WHALE->"the undated letter";case BARN_WELL->"the well";case PLAIN->"the distant shape";case HOSPITAL->"the dawn chart";case HOLLOWAY->"the service latch";case MOTHER->"the keeper's record";case SEANCE->"the family album";case WALLPAPER->"the collected pages";case HOTEL->"the closing account";};
         player.displayClientMessage(Component.literal("Someone reached the end before you. Crouch and examine "+prop+" to record what remains."),false);
     }
     /** Later explorers must inspect a resolved room's ending prop themselves. */
