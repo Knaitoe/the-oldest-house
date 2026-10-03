@@ -3,6 +3,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.*;
 import io.github.knaitoe.theoldesthouse.network.SeanceViewPayload;
+import io.github.knaitoe.theoldesthouse.network.HousePackets;
 import java.util.*;
 import javax.annotation.Nullable;
 import net.minecraft.core.*;
@@ -63,10 +64,10 @@ public final class ClassicsVignettes {
     private static void give(ServerPlayer p,ItemStack stack){if(p.getInventory().add(stack))return;var drop=new ItemEntity(p.serverLevel(),p.getX(),p.getY()+.2,p.getZ(),stack);drop.setTarget(p.getUUID());p.serverLevel().addFreshEntity(drop);}
     private static ItemStack original(ServerPlayer p,ItemStack book,String key,LabyrinthPlace place){var marked=VignetteYields.mark(book,place.id());CustomData.update(DataComponents.CUSTOM_DATA,marked,t->{t.putUUID(OWNER,p.getUUID());t.putString(KEY,key);});return marked;}
     private static ItemStack snapshot(ServerPlayer p,CompoundTag own,String key,ItemStack book,LabyrinthPlace place){String slot="Original_"+key;if(!own.contains(slot))own.put(slot,original(p,book,key,place).save(p.registryAccess()));return ItemStack.parseOptional(p.registryAccess(),own.getCompound(slot));}
-    private static void open(ServerPlayer p,LabyrinthPlace place,String key,ItemStack book,boolean ending){var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());var saved=snapshot(p,own,key,book,place);save(data,p.getUUID(),own);p.openMenu(new SimpleMenuProvider((id,inv,who)->new PageMenu(id,p,place,saved,key,ending,true),saved.getHoverName()));}
+    private static void open(ServerPlayer p,LabyrinthPlace place,String key,ItemStack book,boolean ending){var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());var saved=snapshot(p,own,key,book,place);save(data,p.getUUID(),own);p.openMenu(new SimpleMenuProvider((id,inv,who)->new PageMenu(id,p,place,saved,key,ending,true,true),saved.getHoverName()));}
     public static void readCollected(ServerPlayer p,ItemStack stack){var custom=stack.get(DataComponents.CUSTOM_DATA);if(custom==null||!stack.has(DataComponents.WRITTEN_BOOK_CONTENT))return;var tag=custom.copyTag();String key=tag.getString(KEY);var place=key.startsWith("Wallpaper")||key.equals("Folio")?LabyrinthPlace.WALLPAPER_NURSERY:LabyrinthPlace.SEANCE;
         boolean own=tag.hasUUID(OWNER)&&tag.getUUID(OWNER).equals(p.getUUID());p.openMenu(new SimpleMenuProvider((id,inv,who)->new PageMenu(id,p,place,stack.copy(),key,key.equals("Album")||key.equals("Wallpaper3")||key.equals("Folio"),own,false),stack.getHoverName()));}
-    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void held(PlayerInteractEvent.RightClickItem event){if(!(event.getEntity() instanceof ServerPlayer p))return;var item=p.getItemInHand(event.getHand());if(item.has(DataComponents.CUSTOM_DATA)&&item.get(DataComponents.CUSTOM_DATA).copyTag().contains(KEY)){readCollected(p,item);event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);}}
+    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void held(PlayerInteractEvent.RightClickItem event){if(!(event.getEntity() instanceof ServerPlayer p))return;var item=p.getItemInHand(event.getHand());if(item.has(DataComponents.WRITTEN_BOOK_CONTENT)&&item.has(DataComponents.CUSTOM_DATA)&&item.get(DataComponents.CUSTOM_DATA).copyTag().contains(KEY)){readCollected(p,item);event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);}}
     public static final class PageMenu extends LecternMenu {
         private final ServerPlayer reader;private final LabyrinthPlace place;private final ItemStack original;private final String key;private final boolean ending,owned,surface;
         PageMenu(int id,ServerPlayer reader,LabyrinthPlace place,ItemStack original,String key,boolean ending,boolean owned,boolean surface){super(id,container(original),new SimpleContainerData(1));this.reader=reader;this.place=place;this.original=original.copy();this.key=key;this.ending=ending;this.owned=owned;this.surface=surface;}

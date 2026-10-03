@@ -46,7 +46,7 @@ public final class ClassicsRooms {
         furniture(l,b,2,0,-15,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.WEST);
         furniture(l,b,0,0,-13,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.NORTH);
         furniture(l,b,0,0,-18,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.SOUTH);
-        for(int z=-19;z<=-17;z++)furniture(l,b,7,0,z,HouseholdFurnitureBlock.Kind.BOOKCASE,Direction.WEST);
+        for(int z=-19;z<=-17;z++)box(l,b,7,0,z,7,2,z,Blocks.BOOKSHELF);
         furniture(l,b,-7,0,-19,HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.EAST);
         for(BlockPos candle:CANDLES)l.setBlock(b.offset(candle),Blocks.CANDLE.defaultBlockState().setValue(CandleBlock.LIT,true).setValue(CandleBlock.CANDLES,2),F);
         at(l,b,CUPBOARD.getX(),0,CUPBOARD.getZ(),Blocks.CHEST);
