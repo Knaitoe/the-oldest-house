@@ -168,10 +168,10 @@ public final class WitnessAccount {
     }
     public static void onArrive(ServerPlayer player,LabyrinthPlace place){
         LabyrinthData data=LabyrinthData.get(player.server);Story story=Story.of(place.id());
-        if(story==null||NovelVignettes.isNovel(place)||!data.isCompleted(place.id())||has(data,player.getUUID(),story))return;
+        if(story==null||NovelVignettes.isNovel(place)||ClassicsVignettes.isClassic(place)||!data.isCompleted(place.id())||has(data,player.getUUID(),story))return;
         String prop=switch(story){case FLOORBOARDS->"the exposed space beneath the loose board";
             case CLAP->"the open wardrobe";case HARRIGAN->"the casket";case MODEL_HOME->"the child's window";
-            case DROWNED_TOWN->"the church's open roof hatch";case PRESERVED_CAVE->"the canoe behind the empty pews";case SHALLOWS->"the bank";case PHONE_CANOE->"the canoe";case GOATMAN->"the trailer door";case TED_CAVER->"the cave landing";case ZAMPANO->"the survey";case WHALE->"the undated letter";case BARN_WELL->"the well";case PLAIN->"the distant shape";case HOSPITAL->"the dawn chart";case HOLLOWAY->"the service latch";case MOTHER->"the keeper's record";};
+            case DROWNED_TOWN->"the church's open roof hatch";case PRESERVED_CAVE->"the canoe behind the empty pews";case SHALLOWS->"the bank";case PHONE_CANOE->"the canoe";case GOATMAN->"the trailer door";case TED_CAVER->"the cave landing";case ZAMPANO->"the survey";case WHALE->"the undated letter";case BARN_WELL->"the well";case PLAIN->"the distant shape";case HOSPITAL->"the dawn chart";case HOLLOWAY->"the service latch";case MOTHER->"the keeper's record";case SEANCE->"the family album";case WALLPAPER->"the collected pages";};
         player.displayClientMessage(Component.literal("Someone reached the end before you. Crouch and examine "+prop+" to record what remains."),false);
     }
     /** Later explorers must inspect a resolved room's ending prop themselves. */
