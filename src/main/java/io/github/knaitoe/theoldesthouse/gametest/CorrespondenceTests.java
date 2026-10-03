@@ -41,21 +41,21 @@ public final class CorrespondenceTests {
 
     @GameTest(template="empty",batch="correspondence_order",timeoutTicks=130)
     public static void actualMenusRequireLastPageAndTravelAndKeepFinitePersonalOriginals(GameTestHelper h){
-        ordered=new Fixture(h,97100);var f=ordered.f;var p=f.player();var peer=f.player();var t=HouseMarginalia.Thread.CALLS;
+        ordered=new Fixture(h,97100);var f=ordered.f;var p=f.player();var peer=f.player();var t=HouseMarginalia.Thread.ROOM;
         h.runAfterDelay(8,()->{
             var first=f.open(p,t);var other=f.open(peer,t);
-            h.assertTrue(id(first.book()).equals("A01")&&first.book().get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()>1,"the early letter really requires a native page turn");
+            h.assertTrue(id(first.book()).equals("C01")&&first.book().get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()>1,"the early letter really requires a native page turn");
             h.assertTrue(!first.clickMenuButton(peer,101)&&!first.clickMenuButton(p,999),"a peer or forged page cannot finish this reader's letter");
-            h.assertTrue(first.clickMenuButton(p,3)&&own(f,p).getCompound("Next").getInt("A")==0,"collecting before reading keeps the next installment locked");
-            ItemStack kept=p.getInventory().items.stream().filter(s->id(s).equals("A01")).findFirst().orElseThrow().copy();
+            h.assertTrue(first.clickMenuButton(p,3)&&own(f,p).getCompound("Next").getInt("C")==0,"collecting before reading keeps the next installment locked");
+            ItemStack kept=p.getInventory().items.stream().filter(s->id(s).equals("C01")).findFirst().orElseThrow().copy();
             f.depth(p,24);var alias=f.open(p,t);
-            h.assertTrue(id(alias.book()).equals("A01")&&!alias.clickMenuButton(p,3),"another depth binding cannot duplicate the same original");
-            f.end(p,alias);h.assertTrue(own(f,p).getCompound("Next").getInt("A")==1&&own(f,peer).getCompound("Next").getInt("A")==0&&other.getPage()==0,"native page completion is personal");
-            h.assertTrue(!HouseCorrespondence.available(p,"A02"),"depth alone cannot rush an episode");
-            HouseExperience.arrived(p,LabyrinthPlace.JUNCTION);h.assertTrue(!HouseCorrespondence.available(p,"A02"),"one crossing is insufficient");
-            HouseExperience.returned(p);h.assertTrue(HouseCorrespondence.available(p,"A02"),"two actual arrival/return callbacks unlock the due letter");
+            h.assertTrue(id(alias.book()).equals("C01")&&!alias.clickMenuButton(p,3),"another depth binding cannot duplicate the same original");
+            f.end(p,alias);h.assertTrue(own(f,p).getCompound("Next").getInt("C")==1&&own(f,peer).getCompound("Next").getInt("C")==0&&other.getPage()==0,"native page completion is personal");
+            h.assertTrue(!HouseCorrespondence.available(p,"C02"),"depth alone cannot rush an episode");
+            HouseExperience.arrived(p,LabyrinthPlace.JUNCTION);h.assertTrue(!HouseCorrespondence.available(p,"C02"),"one crossing is insufficient");
+            HouseExperience.returned(p);h.assertTrue(HouseCorrespondence.available(p,"C02"),"two actual arrival/return callbacks unlock the due letter");
             var before=own(f,p);HouseCorrespondence.samples(p);h.assertTrue(before.equals(own(f,p)),"all 108 specimens are read-only previews");
-            f.reload();h.assertTrue(own(f,p).getLong("Step")==2&&own(f,p).getCompound("Next").getInt("A")==1,"native reload preserves journey and sequence");
+            f.reload();h.assertTrue(own(f,p).getLong("Step")==2&&own(f,p).getCompound("Next").getInt("C")==1,"native reload preserves journey and sequence");
             h.assertTrue(p.getInventory().items.stream().anyMatch(s->ItemStack.isSameItemSameComponents(s,kept)),"an early collected original is never rewritten");
             p.gameMode.changeGameModeForPlayer(GameType.SPECTATOR);HouseCorrespondence.crossed(p);h.assertTrue(own(f,p).getLong("Step")==2&&!alias.clickMenuButton(p,101),"spectators cannot manufacture a reading or crossing");
             h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0,"hostile or tender paper confers no story resolution");h.succeed();
