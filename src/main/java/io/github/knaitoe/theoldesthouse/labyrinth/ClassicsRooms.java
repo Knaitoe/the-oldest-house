@@ -15,8 +15,8 @@ public final class ClassicsRooms {
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     public static final BlockPos CUPBOARD=new BlockPos(-8,0,-13),GRACE=new BlockPos(-5,0,-26),ALBUM=new BlockPos(6,0,-27),SITTING=new BlockPos(-4,0,-10),GATE=new BlockPos(5,0,-22);
     public static final List<BlockPos> CANDLES=List.of(new BlockPos(-1,1,-15),new BlockPos(0,1,-16),new BlockPos(-7,1,-19));
-    public static final List<BlockPos> SHUTTERS=List.of(new BlockPos(9,2,-24),new BlockPos(9,2,-25),new BlockPos(9,2,-26));
-    public static final List<BlockPos> PANELS=List.of(new BlockPos(-4,1,-27),new BlockPos(-1,1,-27),new BlockPos(2,1,-27),new BlockPos(5,1,-27));
+    public static final List<BlockPos> SHUTTERS=List.of(new BlockPos(10,2,-24),new BlockPos(10,2,-25),new BlockPos(10,2,-26));
+    public static final List<BlockPos> PANELS=List.of(new BlockPos(-4,1,-28),new BlockPos(-1,1,-28),new BlockPos(2,1,-28),new BlockPos(5,1,-28));
     public static final BlockPos NURSERY_DESK=new BlockPos(-5,0,-23);
     private ClassicsRooms(){}
     public static void build(ServerLevel level,BlockPos base,LabyrinthPlace place){if(place==LabyrinthPlace.SEANCE)seance(level,base);else nursery(level,base);}
@@ -32,12 +32,12 @@ public final class ClassicsRooms {
     private static void seance(ServerLevel l,BlockPos b){
         LabyrinthBuilder.room(l,b,-10,10,6,-31,-8,ClassicsRegistry.SEANCE_WALL.get().defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState(),Blocks.STRIPPED_BIRCH_WOOD.defaultBlockState());
         LabyrinthBuilder.room(l,b,-3,3,4,-8,-1,Blocks.SMOOTH_SANDSTONE.defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState(),Blocks.BIRCH_PLANKS.defaultBlockState());
-        for(int x=-9;x<=9;x++){at(l,b,x,0,-31,ClassicsRegistry.WAINSCOT.get());at(l,b,x,0,-8,ClassicsRegistry.WAINSCOT.get());}
-        for(int z=-30;z<=-9;z++)for(int x:new int[]{-10,10}){at(l,b,x,0,z,ClassicsRegistry.WAINSCOT.get());at(l,b,x,5,z,Blocks.DARK_OAK_PLANKS);}
-        for(int z:new int[]{-10,-16,-22,-28})box(l,b,-9,5,z,9,5,z,Blocks.DARK_OAK_LOG);
-        frame(l,b,0,-8,Direction.SOUTH);
-        for(int x=-9;x<=9;x++)for(int y=0;y<5;y++)at(l,b,x,y,-22,y==0?ClassicsRegistry.WAINSCOT.get():Blocks.SMOOTH_SANDSTONE);
-        box(l,b,0,0,-30,0,5,-23,Blocks.DARK_OAK_PLANKS);
+        for(int x=-10;x<=10;x++){at(l,b,x,0,-32,ClassicsRegistry.WAINSCOT.get());if(Math.abs(x)>3)at(l,b,x,0,-7,ClassicsRegistry.WAINSCOT.get());}
+        for(int z=-31;z<=-8;z++)for(int x:new int[]{-11,11}){at(l,b,x,0,z,ClassicsRegistry.WAINSCOT.get());at(l,b,x,6,z,Blocks.DARK_OAK_PLANKS);}
+        for(int z:new int[]{-10,-16,-22,-28})box(l,b,-10,6,z,10,6,z,Blocks.DARK_OAK_LOG);
+        box(l,b,-3,0,-8,3,4,-8,ClassicsRegistry.SEANCE_WALL.get());frame(l,b,0,-8,Direction.SOUTH);
+        for(int x=-10;x<=10;x++)for(int y=0;y<=6;y++)at(l,b,x,y,-22,y==0?ClassicsRegistry.WAINSCOT.get():Blocks.SMOOTH_SANDSTONE);
+        box(l,b,0,0,-31,0,6,-23,Blocks.DARK_OAK_PLANKS);
         frame(l,b,-5,-22,Direction.SOUTH);NovelRooms.door(l,b.offset(-5,0,-22),Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);
         frame(l,b,5,-22,Direction.SOUTH);NovelRooms.door(l,b.offset(GATE),Direction.SOUTH,Blocks.IRON_DOOR,false);
         // A marquetry table sits on its own modeled legs. Candle blocks have actual support.
@@ -53,10 +53,11 @@ public final class ClassicsRooms {
         lectern(l,b.offset(SITTING),ClassicsTexts.medium());lectern(l,b.offset(GRACE),ClassicsTexts.grace());lectern(l,b.offset(ALBUM),ClassicsTexts.album());
         furniture(l,b,-7,0,-27,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);
         box(l,b,7,0,-29,7,2,-29,Blocks.BOOKSHELF);
-        for(int z=-26;z<=-24;z++){at(l,b,10,2,z,Blocks.GLASS);at(l,b,11,2,z,Blocks.BLACK_CONCRETE);}
+        for(int z=-26;z<=-24;z++){at(l,b,11,2,z,Blocks.GLASS);at(l,b,12,2,z,Blocks.BLACK_CONCRETE);}
         for(BlockPos shutter:SHUTTERS)l.setBlock(b.offset(shutter),Blocks.DARK_OAK_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.EAST).setValue(TrapDoorBlock.HALF,Half.TOP).setValue(TrapDoorBlock.OPEN,false),F);
-        // Both lamps are suspended from the authored ceiling, never from empty air.
-        for(int z:new int[]{-6,-25}){at(l,b,0,z==-6?3:4,z,Blocks.CHAIN);l.setBlock(b.offset(0,z==-6?2:3,z),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);}
+        // The landing and both rear rooms have lamps chained to their real ceilings.
+        box(l,b,0,3,-6,0,4,-6,Blocks.CHAIN);l.setBlock(b.offset(0,2,-6),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);
+        for(int x:new int[]{-5,5}){box(l,b,x,5,-25,x,6,-25,Blocks.CHAIN);l.setBlock(b.offset(x,4,-25),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);}
         // A fireplace with a closed iron hearth, mantel, stone jambs and soot above it.
         box(l,b,-9,0,-12,-7,0,-10,Blocks.POLISHED_ANDESITE);
         box(l,b,-9,1,-12,-9,3,-12,Blocks.STONE_BRICKS);box(l,b,-7,1,-12,-7,3,-12,Blocks.STONE_BRICKS);
@@ -66,14 +67,14 @@ public final class ClassicsRooms {
     private static void nursery(ServerLevel l,BlockPos b){
         LabyrinthBuilder.room(l,b,-8,8,6,-27,-7,ClassicsRegistry.WALLPAPER.get().defaultBlockState(),Blocks.BIRCH_PLANKS.defaultBlockState(),Blocks.SMOOTH_SANDSTONE.defaultBlockState());
         LabyrinthBuilder.room(l,b,-3,3,4,-7,-1,Blocks.WHITE_TERRACOTTA.defaultBlockState(),Blocks.BIRCH_PLANKS.defaultBlockState(),Blocks.BIRCH_PLANKS.defaultBlockState());
-        frame(l,b,0,-7,Direction.SOUTH);
-        for(int z=-26;z<=-8;z++)for(int x:new int[]{-8,8}){at(l,b,x,0,z,Blocks.STRIPPED_BIRCH_WOOD);at(l,b,x,5,z,Blocks.BIRCH_PLANKS);}
-        for(int x=-7;x<=7;x++){at(l,b,x,0,-27,Blocks.STRIPPED_BIRCH_WOOD);at(l,b,x,5,-27,Blocks.BIRCH_PLANKS);}
-        for(int z:new int[]{-10,-18,-25})box(l,b,-7,5,z,7,5,z,Blocks.STRIPPED_OAK_LOG);
+        box(l,b,-3,0,-7,3,4,-7,Blocks.WHITE_TERRACOTTA);frame(l,b,0,-7,Direction.SOUTH);
+        for(int z=-27;z<=-7;z++)for(int x:new int[]{-9,9}){at(l,b,x,0,z,Blocks.STRIPPED_BIRCH_WOOD);at(l,b,x,6,z,Blocks.BIRCH_PLANKS);}
+        for(int x=-8;x<=8;x++){at(l,b,x,0,-28,Blocks.STRIPPED_BIRCH_WOOD);at(l,b,x,6,-28,Blocks.BIRCH_PLANKS);if(Math.abs(x)>3)at(l,b,x,0,-6,Blocks.STRIPPED_BIRCH_WOOD);}
+        for(int z:new int[]{-10,-18,-25})box(l,b,-8,6,z,8,6,z,Blocks.STRIPPED_OAK_LOG);
         // The blocked windows have glass, deep reveals, iron bars and a real bright backing.
         for(int z:new int[]{-12,-20})for(int y=1;y<=3;y++){
-            at(l,b,-8,y,z,Blocks.GLASS);at(l,b,-9,y,z,Blocks.WHITE_CONCRETE);at(l,b,-7,y,z,Blocks.IRON_BARS);
-            at(l,b,8,y,z,Blocks.GLASS);at(l,b,9,y,z,Blocks.WHITE_CONCRETE);at(l,b,7,y,z,Blocks.IRON_BARS);
+            at(l,b,-9,y,z,Blocks.GLASS);at(l,b,-10,y,z,Blocks.WHITE_CONCRETE);at(l,b,-8,y,z,Blocks.IRON_BARS);
+            at(l,b,9,y,z,Blocks.GLASS);at(l,b,10,y,z,Blocks.WHITE_CONCRETE);at(l,b,8,y,z,Blocks.IRON_BARS);
         }
         NovelRooms.bed(l,b.offset(4,0,-24),Blocks.WHITE_BED,Direction.NORTH);
         for(int z=-25;z<=-24;z++)for(int x:new int[]{3,5})at(l,b,x,0,z,Blocks.IRON_BARS);
@@ -86,7 +87,7 @@ public final class ClassicsRooms {
         for(int z=-16;z<=-13;z++)for(int x=-3;x<=3;x++)at(l,b,x,0,z,(x==-3||x==3||z==-16||z==-13)?Blocks.BROWN_CARPET:Blocks.YELLOW_CARPET);
         // Four low seams can be watched from the floor. Ordinary wallpaper remains around them.
         for(BlockPos panel:PANELS){l.setBlock(b.offset(panel),ClassicsRegistry.WALLPAPER.get().defaultBlockState(),F);at(l,b,panel.getX(),2,panel.getZ(),ClassicsRegistry.WALLPAPER.get());}
-        for(int z:new int[]{-5,-18}){at(l,b,0,z==-5?3:4,z,Blocks.CHAIN);l.setBlock(b.offset(0,z==-5?2:3,z),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);}
+        for(int z:new int[]{-5,-18}){box(l,b,0,z==-5?3:5,z,0,z==-5?4:6,z,Blocks.CHAIN);l.setBlock(b.offset(0,z==-5?2:4,z),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);}
         LabyrinthBuilder.entrance(l,b,Blocks.WHITE_TERRACOTTA.defaultBlockState(),Blocks.BIRCH_PLANKS.defaultBlockState(),Blocks.BIRCH_PLANKS.defaultBlockState());LabyrinthBuilder.doors(l,b,LabyrinthPlace.WALLPAPER_NURSERY);
     }
 }

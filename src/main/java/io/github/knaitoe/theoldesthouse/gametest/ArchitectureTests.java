@@ -224,7 +224,7 @@ public final class ArchitectureTests {
             if(s.isAir()||s.is(Blocks.BARRIER)||s.is(Blocks.LIGHT))continue;
             if(s.is(Blocks.WATER)&&(!LakeLandscape.isLake(scene)||!l.getBlockState(at.above()).isAir()))continue;
             // A documented cutaway removes roofs and the near walls, not interior contents.
-            if(y>=0&&(x==r.maxX()||z==maxZ||(scene==LabyrinthPlace.SEANCE&&x==10)||(scene==LabyrinthPlace.WALLPAPER_NURSERY&&x==8)))continue;
+            if(y>=0&&(x==r.maxX()||z==maxZ||(scene==LabyrinthPlace.WALLPAPER_NURSERY&&x==9)||(scene==LabyrinthPlace.SEANCE&&z==-7&&Math.abs(x)>3)||(scene==LabyrinthPlace.WALLPAPER_NURSERY&&z==-6&&Math.abs(x)>3)))continue;
             if(y>=0&&((scene==LabyrinthPlace.WHALE&&x==13)||(scene==LabyrinthPlace.HOSPITAL&&x==9)
                     ||(scene==LabyrinthPlace.KAREN_ROOM&&x==9)||(scene==LabyrinthPlace.ZAMPANO_COURTYARD&&x==12&&z<=-19)))continue;
             if(y>2&&s.is(Blocks.BIRCH_PLANKS))continue;
