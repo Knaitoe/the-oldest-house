@@ -438,6 +438,20 @@ public final class ModelHome {
         level.setBlock(base.offset(KIDS_DOOR).above(), door.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER), LabyrinthBuilder.flags());
     }
 
+    /** The third visit brings the child's chair and window into the actual sequence. */
+    public static boolean kidsRoomRelevant(LabyrinthData data){return visitFor(data)>=3;}
+    public static void onRightClickBlock(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock event){
+        if(!(event.getEntity() instanceof ServerPlayer p)||!p.serverLevel().dimension().equals(HouseDimensions.INTERIOR))return;
+        BlockPos b=base(p.server);if(b==null)return;BlockPos door=b.offset(KIDS_DOOR);
+        if(!event.getPos().equals(door)&&!event.getPos().equals(door.above()))return;
+        if(kidsRoomRelevant(LabyrinthData.get(p.server)))return;
+        // An old save may put an explorer inside. Never lock their only way out.
+        if(p.getX()<b.getX()-1&&p.getZ()<b.getZ()-8)return;
+        event.setCanceled(true);event.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
+        setKidsDoor(p.serverLevel(),b,false);
+        p.serverLevel().playSound(null,door,SoundEvents.WOODEN_TRAPDOOR_CLOSE,SoundSource.BLOCKS,.35F,.8F);
+    }
+
     @Nullable
     static BlockPos base(MinecraftServer server) {
         BlockPos origin = HouseSavedData.get(server).houseOrigin();
@@ -633,6 +647,9 @@ public final class ModelHome {
         placeBinderIfLoaded(level, base, data);
         List<ServerPlayer> visitors = visitors(level, base);
         int visit = visitFor(data);
+        if(visit<3&&server.getTickCount()%20==0&&visitors.stream().noneMatch(p->p.getX()-base.getX()<-1&&p.getZ()-base.getZ()<-8)){
+            for(var at:java.util.List.of(base.offset(KIDS_DOOR),base.offset(KIDS_DOOR).above())){var door=level.getBlockState(at);if(door.getBlock() instanceof DoorBlock&&door.getValue(DoorBlock.OPEN))level.setBlock(at,door.setValue(DoorBlock.OPEN,false),LabyrinthBuilder.flags());}
+        }
         if (visitors.isEmpty()) {
             if (scene.stacked) {
                 unstack(level, base, visit);

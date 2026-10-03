@@ -28,6 +28,7 @@ public final class MinotaurEntity extends PathfinderMob {
     @Nullable private UUID owner;
     private int remaining=35;
     private Vec3 charge=Vec3.ZERO;
+    private long nextSlowReport;
     public MinotaurEntity(EntityType<? extends MinotaurEntity> type,Level level){super(type,level);setPersistenceRequired();bar.setProgress(1);}
     public static AttributeSupplier.Builder attributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,100)
             .add(Attributes.MOVEMENT_SPEED,.28).add(Attributes.FOLLOW_RANGE,48).add(Attributes.KNOCKBACK_RESISTANCE,1).add(Attributes.STEP_HEIGHT,.6);}
@@ -37,10 +38,23 @@ public final class MinotaurEntity extends PathfinderMob {
     public void owner(UUID id){owner=id;}
     public @Nullable UUID owner(){return owner;}
     public boolean childAppearance(){return entityData.get(CHILD);}
-    public void caged(){entityData.set(CHILD,true);motion(CAGED,0);refreshDimensions();}
-    public void awaken(UUID owner){this.owner=owner;entityData.set(CHILD,false);motion(WATCHING,35);refreshDimensions();}
+    @Override public Component getName(){return childAppearance()&&!hasCustomName()?Component.translatable("entity.the_oldest_house.caged_child"):super.getName();}
+    @Override protected net.minecraft.world.InteractionResult mobInteract(net.minecraft.world.entity.player.Player visitor,net.minecraft.world.InteractionHand hand){
+        if(motion()==CAGED&&visitor instanceof ServerPlayer p&&p.isAlive()&&!p.isSpectator()&&distanceToSqr(p)<25){
+            var origin=io.github.knaitoe.theoldesthouse.house.HouseSavedData.get(p.server).houseOrigin();
+            if(origin!=null&&FinaleArchitecture.contains(origin,p.blockPosition())
+                    &&p.level().dimension().equals(io.github.knaitoe.theoldesthouse.house.HouseDimensions.INTERIOR)){
+                boolean started=p.isShiftKeyDown()&&WitnessAccount.ready(LabyrinthData.get(p.server),p.getUUID())?WitnessEnding.begin(p):FinaleController.start(p);
+                if(started)return net.minecraft.world.InteractionResult.CONSUME;
+            }
+        }return super.mobInteract(visitor,hand);
+    }
+    public void caged(){entityData.set(CHILD,true);motion(CAGED,0);}
+    public void awaken(UUID owner){this.owner=owner;entityData.set(CHILD,false);motion(WATCHING,35);}
     @Override public EntityDimensions getDefaultDimensions(Pose pose){return childAppearance()?EntityDimensions.scalable(.48F,1.26F).withEyeHeight(1.12F):super.getDefaultDimensions(pose);}
-    @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(MOTION.equals(key)||CHILD.equals(key))refreshDimensions();}
+    // Phase animations do not change the collision body. Avoid repeating native
+    // free-position searches whenever the charge, windup or stagger changes.
+    @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(CHILD.equals(key))refreshDimensions();}
     public boolean observed(){
         if(!(level() instanceof net.minecraft.server.level.ServerLevel l))return false;
         for(var observer:l.players()){
@@ -62,6 +76,15 @@ public final class MinotaurEntity extends PathfinderMob {
     @Override public void startSeenByPlayer(ServerPlayer player){super.startSeenByPlayer(player);if(owner!=null&&owner.equals(player.getUUID())&&motion()!=WOUNDED&&motion()!=RELEASED)bar.addPlayer(player);}
     @Override public void stopSeenByPlayer(ServerPlayer player){super.stopSeenByPlayer(player);bar.removePlayer(player);}
     @Override public void tick(){
+        long started=System.nanoTime();try{tickEncounter();}finally{
+            long elapsed=System.nanoTime()-started;
+            if(!level().isClientSide&&elapsed>100_000_000L&&level().getGameTime()>=nextSlowReport){
+                nextSlowReport=level().getGameTime()+200;
+                io.github.knaitoe.theoldesthouse.TheOldestHouse.LOGGER.warn("Minotaur tick took {} ms: phase={}, child={}, position={}, owner={}",elapsed/1_000_000,motion(),childAppearance(),position(),owner);
+            }
+        }
+    }
+    private void tickEncounter(){
         super.tick();if(!(level() instanceof net.minecraft.server.level.ServerLevel level))return;
         ServerPlayer player=owner==null?null:level.getServer().getPlayerList().getPlayer(owner);
         if(motion()==CAGED){bar.removeAllPlayers();setDeltaMovement(Vec3.ZERO);getNavigation().stop();

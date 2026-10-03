@@ -23,7 +23,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 public final class ExplorationTests {
     private ExplorationTests() {}
     @GameTest(template="empty")
-    public static void conventionalHallsHaveSeveralDoorsAndWalkableCorners(GameTestHelper helper) {
+    public static void conventionalHallsHaveSparseDoorsAndWalkableCorners(GameTestHelper helper) {
         int index=0;
         for(var place:List.of(LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.BENT_HALL,LabyrinthPlace.CROSS_HALL,LabyrinthPlace.QUIET_ROOM)) {
             BlockPos base=helper.absolutePos(BlockPos.ZERO).offset(1250+(index++)*45,6,-80);
@@ -47,7 +47,7 @@ public final class ExplorationTests {
                         "a real path reaches every side door: "+place+"/"+door.name());
             }
             if(place!=LabyrinthPlace.QUIET_ROOM)
-                helper.assertTrue(place.doors().size()>=5,"several doors share a normal stretch");
+                helper.assertTrue(place.doors().size()==(place==LabyrinthPlace.CROSS_HALL?4:2),"ordinary corridors keep two end doors; only a real junction branches");
             helper.assertTrue(!LabyrinthPacing.anomaly(place),"ordinary corners do not fold");
         }
         helper.succeed();

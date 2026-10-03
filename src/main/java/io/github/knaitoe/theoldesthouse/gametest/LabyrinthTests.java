@@ -100,9 +100,9 @@ public final class LabyrinthTests {
         helper.assertTrue(LabyrinthSpawnRules.shouldBlock(
                         HouseDimensions.INTERIOR, origin, EntityType.CREEPER, inside, false),
                 "other vanilla monster types are rejected too");
-        helper.assertTrue(!LabyrinthSpawnRules.shouldBlock(
+        helper.assertTrue(LabyrinthSpawnRules.shouldBlock(
                         HouseDimensions.INTERIOR, origin, EntityType.COW, inside, false),
-                "non-hostile vanilla mobs are not rejected by this rule");
+                "ordinary passive spawns are rejected along with monsters");
         helper.assertTrue(!LabyrinthSpawnRules.shouldBlock(
                         Level.OVERWORLD, origin, EntityType.ZOMBIE, inside, false),
                 "the same mob remains legal outside the House dimension");

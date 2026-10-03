@@ -15,7 +15,7 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 
 /**
- * Keeps ordinary vanilla hostile spawns out of the Labyrinth.
+ * Keeps ordinary vanilla ambient spawns out of the Labyrinth.
  *
  * The House's authored encounters are responsible for anything dangerous
  * that appears here. An authored vanilla monster can explicitly opt in by
@@ -35,7 +35,11 @@ public final class LabyrinthSpawnRules {
         Entity entity = event.getEntity();
         BlockPos origin = HouseSavedData.get(level.getServer()).houseOrigin();
         if (shouldBlock(level.dimension(), origin, entity.getType(), entity.blockPosition(),
-                entity.getTags().contains(ALLOWED_TAG))) {
+                entity.getTags().contains(ALLOWED_TAG)
+                    || io.github.knaitoe.theoldesthouse.house.HouseExteriorEntityMirror.isProjection(entity)
+                    || entity instanceof net.minecraft.world.entity.Mob mob && mob.isPersistenceRequired()&&mob.getType().getCategory()!=MobCategory.MONSTER
+                    || entity instanceof net.minecraft.world.entity.TamableAnimal pet && pet.isTame()
+                    || entity.getPersistentData().getBoolean(LabyrinthEncounters.STRAY))) {
             event.setCanceled(true);
         }
     }
@@ -54,7 +58,7 @@ public final class LabyrinthSpawnRules {
         if (explicitlyAllowed
                 || houseOrigin == null
                 || !dimension.equals(HouseDimensions.INTERIOR)
-                || type.getCategory() != MobCategory.MONSTER
+                || !ambientMob(type)
                 || !isVanilla(type)) {
             return false;
         }
@@ -64,6 +68,12 @@ public final class LabyrinthSpawnRules {
     private static boolean isVanilla(EntityType<?> type) {
         ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(type);
         return key != null && "minecraft".equals(key.getNamespace());
+    }
+
+    private static boolean ambientMob(EntityType<?> type) {
+        return type.getCategory() != MobCategory.MISC || type == EntityType.VILLAGER
+                || type == EntityType.WANDERING_TRADER || type == EntityType.IRON_GOLEM
+                || type == EntityType.SNOW_GOLEM;
     }
 
     /** Mark a deliberately scripted vanilla hostile before addFreshEntity. */

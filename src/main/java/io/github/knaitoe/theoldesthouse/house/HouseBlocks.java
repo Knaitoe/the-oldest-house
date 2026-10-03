@@ -20,6 +20,8 @@ public final class HouseBlocks {
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(TheOldestHouse.MOD_ID);
     private static final DeferredRegister<MapCodec<? extends Block>> BLOCK_TYPES =
             DeferredRegister.create(BuiltInRegistries.BLOCK_TYPE, TheOldestHouse.MOD_ID);
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<MailPlaqueBlock>> MAIL_PLAQUE_TYPE=BLOCK_TYPES.register("mail_plaque",()->MailPlaqueBlock.CODEC);
+    public static final DeferredBlock<MailPlaqueBlock> MAIL_PLAQUE=BLOCKS.registerBlock("mail_plaque",MailPlaqueBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noCollission().noOcclusion().noLootTable());
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<TownSignBlock>> TOWN_SIGN_TYPE=BLOCK_TYPES.register("town_sign",()->TownSignBlock.CODEC);
     public static final DeferredBlock<TownSignBlock> TOWN_SIGN=BLOCKS.registerBlock("town_sign",TownSignBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noCollission().noOcclusion().noLootTable());
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<TreeTendrilBlock>> TREE_TENDRIL_TYPE=BLOCK_TYPES.register("tree_tendril",()->TreeTendrilBlock.CODEC);

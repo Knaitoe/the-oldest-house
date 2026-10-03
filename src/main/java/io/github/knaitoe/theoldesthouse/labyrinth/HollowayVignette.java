@@ -41,7 +41,8 @@ public final class HollowayVignette {
     private static void save(LabyrinthData data,UUID id,CompoundTag own){var all=data.state(ID);var players=all.getCompound("Players");players.put(id.toString(),own);all.put("Players",players);data.setState(ID,all);}
     public static @Nullable BlockPos base(MinecraftServer s){return IndianLakeRooms.base(s,LabyrinthPlace.HOLLOWAY_CAMP);}
     public static boolean inside(ServerPlayer p){return p.gameMode.getGameModeForPlayer()!=net.minecraft.world.level.GameType.SPECTATOR&&IndianLakeRooms.inside(p,LabyrinthPlace.HOLLOWAY_CAMP);}
-    public static boolean canDeal(LabyrinthData data,UUID id){return !personal(data,id).getBoolean("Escaped")&&!WitnessAccount.has(data,id,WitnessAccount.Story.HOLLOWAY);}
+    public static boolean canDeal(LabyrinthData data,UUID id){var own=personal(data,id);return !own.getBoolean("Escaped")&&!WitnessAccount.has(data,id,WitnessAccount.Story.HOLLOWAY)
+            &&(!data.state(ID).getBoolean("ActorDead")||own.getBoolean("KilledHolloway")||own.getBoolean("Run")&&own.getBoolean("Seen"));}
     public static boolean pursued(ServerPlayer p){var own=personal(LabyrinthData.get(p.server),p.getUUID());return inside(p)&&(own.getBoolean("Run")||own.getBoolean("CampAnger"));}
     public static void provoke(ServerPlayer p,boolean theft){
         if(!inside(p))return;enter(p);var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());
@@ -61,7 +62,7 @@ public final class HollowayVignette {
         boolean resume=own.getBoolean("InRoom");
         if(!resume){int visit=own.getInt("Visits")+1;own.putInt("Visits",visit);
             own.putBoolean("Run",own.getBoolean("Looted")&&visit>own.getInt("LootVisit")&&!own.getBoolean("Escaped"));
-            own.putInt("Arena",0);own.putInt("ArenaTicks",0);own.putBoolean("Seen",false);
+            own.putInt("Arena",0);own.putInt("ArenaTicks",0);own.putBoolean("Seen",own.getBoolean("KilledHolloway"));
         }
         own.putBoolean("InRoom",true);own.putLong("LastTick",-1);save(data,p.getUUID(),own);
         ensureActor(l,b);
@@ -107,6 +108,7 @@ public final class HollowayVignette {
     }
     public static @Nullable HouseHuman ensureActor(ServerLevel l,BlockPos b){
         var data=LabyrinthData.get(l.getServer());var all=data.state(ID);var bounds=IndianLakeRooms.bounds(b,LabyrinthPlace.HOLLOWAY_CAMP);
+        if(all.getBoolean("ActorDead"))return null;
         if(all.hasUUID("Actor")){
             UUID id=all.getUUID("Actor");var entity=l.getEntity(id);if(entity instanceof HouseHuman actor){LIVE.put(id,actor);MISSING.remove(id);return actor;}
             var queued=LIVE.get(id);if(queued!=null&&!queued.isRemoved()&&queued.level()==l){MISSING.remove(id);return queued;}
@@ -118,6 +120,17 @@ public final class HollowayVignette {
         if(existing.isEmpty()){actor.moveTo(b.getX()-3.5,b.getY(),b.getZ()-15.5,0,0);if(!l.addFreshEntity(actor))return null;}
         LIVE.put(actor.getUUID(),actor);
         all.putUUID("Actor",actor.getUUID());data.setState(ID,all);return actor;
+    }
+    /** Death is permanent. Killing him never manufactures a new actor or skips the personal three-room latch. */
+    public static void actorDied(ServerLevel l,HouseHuman actor,@Nullable ServerPlayer killer){
+        var data=LabyrinthData.get(l.getServer());var all=data.state(ID);
+        if(all.hasUUID("Actor")&&!all.getUUID("Actor").equals(actor.getUUID()))return;
+        all.putBoolean("ActorDead",true);all.putUUID("Actor",actor.getUUID());all.putLong("DeathAt",l.getGameTime());data.setState(ID,all);
+        LIVE.remove(actor.getUUID());MISSING.remove(actor.getUUID());
+        if(killer!=null&&inside(killer)){
+            enter(killer);var own=personal(data,killer.getUUID());own.putBoolean("KilledHolloway",true);own.putBoolean("Looted",true);
+            own.putInt("LootVisit",own.getInt("Visits"));own.putBoolean("Seen",true);own.putBoolean("Run",true);save(data,killer.getUUID(),own);
+        }
     }
     private static void hunt(HouseHuman actor,List<ServerPlayer> visitors,BlockPos b){
         var l=(ServerLevel)actor.level();var target=visitors.stream().filter(HollowayVignette::pursued)

@@ -382,6 +382,11 @@ public final class LabyrinthData extends SavedData {
         return tag == null ? new CompoundTag() : tag.copy();
     }
 
+    /** A personal snapshot without copying every other explorer's saved record. */
+    public CompoundTag stateEntry(String vignette,String key){
+        CompoundTag state=states.get(vignette);return state==null?new CompoundTag():state.getCompound(key).copy();
+    }
+
     public void setState(String vignette, CompoundTag tag) {
         if (tag.isEmpty()) {
             states.remove(vignette);

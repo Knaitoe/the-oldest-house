@@ -61,7 +61,7 @@ public final class NovelRooms {
         door(l,b,Direction.SOUTH,Blocks.BIRCH_DOOR,true);bed(l,b.offset(6,0,-23),Blocks.WHITE_BED,Direction.NORTH);
         furniture(l,b.offset(-7,0,-25),HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);lectern(l,b.offset(-7,1,-25),NovelTexts.whaleOpening());
         l.setBlock(b.offset(MAIL),prop(NovelPropBlock.Kind.MAIL_SLOT,Direction.WEST),F);
-        sign(l,b.offset(4,1,-8),Direction.SOUTH,new String[]{"Outgoing mail","Signed books", "may be posted", "here."});
+        MailPlaqueBlock.place(l,b);
         // The ladder joins three separate, real attics; only one opens to the knock.
         for(int y=0;y<=11;y++){at(l,b,0,y,-19,Blocks.SMOOTH_STONE);l.setBlock(b.offset(0,y,-18),Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH),F);}
         for(int y:new int[]{5,8,11}){room(l,b,-12,-5,-29,-19,y,2,NovelRegistry.INSTITUTE.get(),Blocks.DARK_OAK_PLANKS);

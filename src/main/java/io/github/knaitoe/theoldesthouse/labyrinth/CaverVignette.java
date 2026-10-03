@@ -47,6 +47,7 @@ public final class CaverVignette {
     public static void onArrive(ServerPlayer p,LabyrinthPlace place){if(place==LabyrinthPlace.TED_CAVER)enter(p);}
     public static void enter(ServerPlayer p){
         if(!inside(p))return;var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID());
+        CaverCave.repairEntrance(p.serverLevel(),base(p.server));
         if(!own.getBoolean("Active")){
             if(rel(p,base(p.server)).z> -8.5&&!own.getBoolean("Escaped")){own.putBoolean("Pursuit",false);own.putInt("ReturnCrawl",0);own.putInt("DeepTicks",0);}
             own.putBoolean("Active",true);own.putBoolean("Arrived",true);own.putLong("LastTick",-1);save(d,p.getUUID(),own);

@@ -17,6 +17,7 @@ public final class HouseHuman extends PathfinderMob {
     private static final EntityDataAccessor<Optional<UUID>> PURSUED=SynchedEntityData.defineId(HouseHuman.class,EntityDataSerializers.OPTIONAL_UUID);
     private static final EntityDataAccessor<Boolean> HUNTING=SynchedEntityData.defineId(HouseHuman.class,EntityDataSerializers.BOOLEAN);
     private int stagger,attackClock,patrolIndex,patrolClock,speechClock;
+    private String lastSpeech="";
     public HouseHuman(EntityType<? extends HouseHuman> type,Level level){
         super(type,level);setPersistenceRequired();setCanPickUpLoot(false);
         setItemSlot(EquipmentSlot.MAINHAND,new ItemStack(Items.CROSSBOW));
@@ -32,11 +33,14 @@ public final class HouseHuman extends PathfinderMob {
     @Override public boolean hurt(DamageSource source,float amount){
         if(level().isClientSide||!(source.getEntity() instanceof ServerPlayer p)||!HollowayVignette.inside(p))return false;
         HollowayVignette.provoke(p,true);stagger=40;getNavigation().stop();
-        // Native damage and red hurt animation, with the persistent encounter actor kept alive.
-        float injury=Math.min(amount,Math.max(0,getHealth()-4));boolean hurt=injury>0&&super.hurt(source,injury);
+        boolean hurt=amount>0&&super.hurt(source,amount);
         if(!hurt){hurtTime=10;hurtDuration=10;level().broadcastEntityEvent(this,(byte)2);playSound(SoundEvents.PLAYER_HURT,.7F,.8F);}
         if(level() instanceof net.minecraft.server.level.ServerLevel l)l.sendParticles(net.minecraft.core.particles.ParticleTypes.DAMAGE_INDICATOR,getX(),getY()+1,getZ(),5,.2,.25,.2,.03);
         return true;
+    }
+    @Override public void die(DamageSource source){
+        if(level() instanceof net.minecraft.server.level.ServerLevel l)HollowayVignette.actorDied(l,this,source.getEntity() instanceof ServerPlayer p?p:null);
+        super.die(source);
     }
     public boolean staggered(){return stagger>0;}
     public boolean attackReady(){return attackClock<=0;}
@@ -59,10 +63,16 @@ public final class HouseHuman extends PathfinderMob {
             getNavigation().moveTo(base.getX()+stop[0]+.5,base.getY(),base.getZ()+stop[1]+.5,.65);
         }
         if(speechClock--<=0){speechClock=180+getRandom().nextInt(100);
-            String[] lines={"Sixteen. There were sixteen torches.","That wall was farther away yesterday.","Don't move my things. I put them where I can see them.","I heard you before the door opened. I heard someone behind you, too.","The map isn't wrong. The rooms are wrong.","If you touch the barrel again, I will know."};
-            if(nearest!=null&&distanceToSqr(nearest)<225)say(lines[(patrolIndex/2)%lines.length]);
+            if(nearest!=null&&distanceToSqr(nearest)<225){
+                var own=HollowayVignette.personal(LabyrinthData.get(lserver()),nearest.getUUID());
+                String[] lines=own.getBoolean("Looted")||own.getInt("Suspicion")>0
+                        ?new String[]{"You put that back differently.","Close the lid. I can hear it from the bed.","Three pieces of bread. You heard me count them.","I won't sleep while you're here.","What did you do with the torch?", "Stay where I can see your hands.","You keep looking past me. Who is there?", "Tell me what you took. Before I check."}
+                        :new String[]{"Sixteen. Wait. Start again.","Do you have the time? Your own time.","There's a knot in the handle. That's my barrel.","I keep the boots facing the door.","Did you come alone?", "I put a stone by the bed. Don't kick it.","I heard water all night. There's no pipe in this wall.","I haven't finished that map. Leave it flat.","There's room by the fire. Not by the supplies.","I was awake when you came in. I was awake before that, too.","Keep your torch. This one is mine.","If I ask you something twice, answer twice."};
+                int choice=getRandom().nextInt(lines.length);if(lines[choice].equals(lastSpeech))choice=(choice+1)%lines.length;lastSpeech=lines[choice];say(lastSpeech);
+            }
         }
     }
+    private net.minecraft.server.MinecraftServer lserver(){return ((net.minecraft.server.level.ServerLevel)level()).getServer();}
     @Override public void tick(){super.tick();if(!level().isClientSide){if(stagger>0)stagger--;if(attackClock>0)attackClock--;}}
     @Override public void addAdditionalSaveData(CompoundTag tag){super.addAdditionalSaveData(tag);tag.putInt("Stagger",stagger);tag.putInt("AttackClock",attackClock);tag.putInt("PatrolIndex",patrolIndex);tag.putInt("SpeechClock",speechClock);}
     @Override public void readAdditionalSaveData(CompoundTag tag){super.readAdditionalSaveData(tag);stagger=tag.getInt("Stagger");attackClock=tag.getInt("AttackClock");patrolIndex=Math.max(0,tag.getInt("PatrolIndex"));speechClock=tag.getInt("SpeechClock");pursue(null);}

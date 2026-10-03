@@ -29,14 +29,12 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 /** Saved, finite, ordinary navigation tools. The House tampers only where nobody can see. */
 public final class NavigationAids {
-    private static final String STATE="navigation_marks",ACTIVE="HouseTrailActive",LAST="HouseTrailLast";
+    private static final String STATE="navigation_marks",ACTIVE="HouseTrailActive",LAST="HouseTrailLast",DIM="HouseTrailDimension";
     private static final int FLAGS=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private static final UUID EXPLORER=new UUID(0,0);
     private NavigationAids(){}
     public static boolean allowed(ServerPlayer player) {
-        BlockPos origin=HouseSavedData.get(player.server).houseOrigin();
-        return !player.isSpectator()&&origin!=null&&player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)
-                &&(LabyrinthPlaces.placeAt(origin,player.blockPosition())!=null||FinaleArchitecture.contains(origin,player.blockPosition()));
+        return player.isAlive()&&!player.isSpectator();
     }
     public static boolean placeChalk(ServerLevel level,BlockPos pos,Direction face,Direction arrow) {
         BlockState old=level.getBlockState(pos);
@@ -67,9 +65,9 @@ public final class NavigationAids {
     public static void remember(ServerLevel level,BlockPos pos,UUID owner,boolean chalk) {
         LabyrinthData data=LabyrinthData.get(level.getServer());CompoundTag state=data.state(STATE);
         ListTag marks=state.getList("Marks",Tag.TAG_COMPOUND);
-        for(int i=marks.size()-1;i>=0;i--)if(marks.getCompound(i).getLong("Pos")==pos.asLong())marks.remove(i);
+        for(int i=marks.size()-1;i>=0;i--)if(marks.getCompound(i).getLong("Pos")==pos.asLong()&&sameDimension(marks.getCompound(i),level))marks.remove(i);
         CompoundTag mark=new CompoundTag();mark.putLong("Pos",pos.asLong());mark.putUUID("Owner",owner);
-        mark.putBoolean("Chalk",chalk);marks.add(mark);
+        mark.putString("Dimension",level.dimension().location().toString());mark.putBoolean("Chalk",chalk);marks.add(mark);
         while(marks.size()>2048)marks.remove(0);
         state.put("Marks",marks);data.setState(STATE,state);
     }
@@ -78,7 +76,7 @@ public final class NavigationAids {
         ListTag marks=state.getList("Marks",Tag.TAG_COMPOUND);
         for(int i=0;i<marks.size();i++) {
             CompoundTag mark=marks.getCompound(i);
-            if(mark.getLong("Pos")==pos.asLong()&&mark.hasUUID("Owner")&&player.getUUID().equals(mark.getUUID("Owner"))) {
+            if(mark.getLong("Pos")==pos.asLong()&&sameDimension(mark,player.serverLevel())&&mark.hasUUID("Owner")&&player.getUUID().equals(mark.getUUID("Owner"))) {
                 if(player.serverLevel().getBlockState(pos).is(HouseBlocks.CHALK_MARK.get()))
                     player.serverLevel().setBlock(pos,Blocks.AIR.defaultBlockState(),FLAGS);
                 marks.remove(i);state.put("Marks",marks);data.setState(STATE,state);return true;
@@ -90,6 +88,7 @@ public final class NavigationAids {
         if(!allowed(player))return;
         boolean active=!player.getPersistentData().getBoolean(ACTIVE);
         player.getPersistentData().putBoolean(ACTIVE,active);player.getPersistentData().remove(LAST);
+        player.getPersistentData().putString(DIM,player.serverLevel().dimension().location().toString());
         player.displayClientMessage(Component.literal(active?"You knot the string.":"You wind the loose end in."),true);
     }
     public static void onRightClick(PlayerInteractEvent.RightClickBlock event) {
@@ -111,6 +110,8 @@ public final class NavigationAids {
         if(!allowed(player)) {
             player.getPersistentData().remove(ACTIVE);player.getPersistentData().remove(LAST);return;
         }
+        String dimension=player.serverLevel().dimension().location().toString();
+        if(!dimension.equals(player.getPersistentData().getString(DIM))){player.getPersistentData().remove(LAST);player.getPersistentData().putString(DIM,dimension);}
         if(player.getPersistentData().getBoolean(ACTIVE)&&player.onGround())layTrail(player);
         if(player.serverLevel().getGameTime()%400==0)maybeAlter(player);
     }
@@ -162,7 +163,7 @@ public final class NavigationAids {
         ListTag marks=state.getList("Marks",Tag.TAG_COMPOUND);
         for(int i=marks.size()-1;i>=0;i--) {
             CompoundTag mark=marks.getCompound(i);
-            if(!mark.hasUUID("Owner"))continue;
+            if(!mark.hasUUID("Owner")||!sameDimension(mark,player.serverLevel()))continue;
             UUID owner=mark.getUUID("Owner");
             if(!owner.equals(player.getUUID())&&!owner.equals(EXPLORER))continue;
             BlockPos pos=BlockPos.of(mark.getLong("Pos"));
@@ -183,5 +184,8 @@ public final class NavigationAids {
     }
     public static void explorerMark(ServerLevel level,BlockPos pos,Direction arrow) {
         if(placeChalk(level,pos,Direction.UP,arrow))remember(level,pos,EXPLORER,true);
+    }
+    private static boolean sameDimension(CompoundTag mark,ServerLevel level){
+        return mark.contains("Dimension")?mark.getString("Dimension").equals(level.dimension().location().toString()):level.dimension().equals(HouseDimensions.INTERIOR);
     }
 }

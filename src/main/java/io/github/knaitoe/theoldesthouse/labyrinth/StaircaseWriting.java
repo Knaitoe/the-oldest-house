@@ -19,34 +19,41 @@ public final class StaircaseWriting {
     }
     private static ItemStack original(ServerPlayer p,BlockPos pos){
         var data=LabyrinthData.get(p.server);var all=data.state(ID);var own=all.getCompound(p.getUUID().toString());var books=own.getCompound("Books");String key=Long.toString(pos.asLong());
-        if(books.contains(key))return ItemStack.parseOptional(p.registryAccess(),books.getCompound(key));
+        var editions=own.getCompound("Editions");
+        if(books.contains(key)&&(editions.getInt(key)>=430||own.getCompound("Taken").getBoolean(key)))return ItemStack.parseOptional(p.registryAccess(),books.getCompound(key));
         int number=Math.floorDiv(FinaleArchitecture.TOP-pos.getY(),48);String[] names={"Sabine","E. Marsh","M. L.","Ruth","A. Bell","Jonah"};
         String[] scraps={
-            "I counted the landings. I counted them again. The second number was smaller. There were more stairs.",
-            "I left my red scarf on the rail. Three hours later it was below me. I had never turned around.",
-            "Mara's brass compass. Theo's lunch tin. My brother's left boot. I wrote their names so I would know which things to leave behind.",
-            "Please do not follow the light. I put it there because I could no longer bear the dark. I am not a way out.",
-            "I sleep facing the wall. The sound stops when I turn toward the stairs. I have stopped turning.",
-            "There was a landing for rest. Then another. A place that expects you to rest expects you to wake up here.",
-            "The child below asked me to open the bars. His voice did not sound far away. I was still a day above him.",
-            "The stone is warm where a hand would rest. No hands have passed me. I keep my own against my coat.",
-            "If these words are mine, why did I find them before I wrote them? If they are yours, stop here. Stop before the door.",
-            "I have enough rope to reach the next landing. I have enough rope to reach the next landing. I have enough rope to reach—",
-            "Someone has been collecting the things we lose. That is not the same as returning them.",
-            "I can hear my name below. I can hear my name above. One voice is running out of breath."
+            "Tuesday\n\nThree tins left. I opened the peaches with the knife and lost half the juice. Tell Ruth I found her spoon. It's in my coat.",
+            "I hung the scarf out to dry at breakfast. By supper the rail had frozen. I cut the cloth away. There's a red strip still caught under the bracket.",
+            "Mara's compass is in the tin with the bandages. If she comes after us, give her the whole tin. The needle came loose yesterday.",
+            "Jonah,\n\nWe waited until four. I left the lamp burning so you'd find the landing. There was enough oil for an hour. I couldn't stay with it.",
+            "The noise at night is the buckle on my bag. It knocks against the rail when I turn over. I wrapped it in a sock. I slept.",
+            "We stopped on the wide landing. Bell boiled water; Ruth took off her boots. Nobody said we were lost until the water was ready.",
+            "I called down through the bars. A boy asked for his coat. Bell went to fetch ours. I asked his name. He asked for his coat again.",
+            "The right rail is loose at the turn. I tightened one bolt with the spoon. The other won't catch. Hold the wall when you pass it.",
+            "Ruth says the handwriting is mine. I don't use that loop on the g. I asked her to show me an old letter. She'd burned them for the tea.",
+            "Forty feet of rope. Two broken clips.\n\nI tied the ends together and tried my weight on it. The knot held. I'm still sitting here.",
+            "My boot was on the landing where we'd eaten. I had both boots on. Mara wouldn't pick it up. Neither would I.",
+            "I answered a voice below before I knew what it had said. It called again. This time I heard my mother's name for me. I haven't told Bell."
         };
-        var pages=new ArrayList<String>();pages.add("STAIR PAGE "+(number+1)+"\n\n"+scraps[Math.floorMod(number,scraps.length)]);
-        var losses=MotherCollection.get(p.server).all().stream().filter(e->p.getUUID().equals(e.owner)).map(e->e.name).distinct().limit(8).toList();
-        if(!losses.isEmpty())pages.add("Someone has written the names beneath the older ink:\n\n"+String.join("\n",losses)+"\n\nThe names were not here when the page was torn.");
-        var seen=Arrays.stream(WitnessAccount.Story.values()).filter(s->WitnessAccount.has(data,p.getUUID(),s)).toList();
-        if(!seen.isEmpty())pages.add("A second hand:\n\n"+seen.get(Math.floorMod(number,seen.size())).text+"\n\nThe stairs do not forget what came down them.");
-        if(IndianLakeProgress.hasThrown(data,p.getUUID()))pages.add("You let go at the water.\n\nThe water has not let go of you.");
-        else if(IndianLakeProgress.wasHunted(data,p.getUUID()))pages.add("You have heard something approach behind you.\n\nA railing only protects you from one direction.");
-        else pages.add("Below the bars, something is waiting to hear how you hold a weapon.\n\nDo not mistake waiting for sleep.");
-        var traces=HouseExperience.traces(p);if(!traces.isEmpty())pages.add(traces.get(Math.floorMod(number,traces.size())));
-        var rendered=new ArrayList<Component>();for(String page:pages)rendered.add(HouseWriting.page(HouseWriting.WritingStyle.PLAIN,page));rendered.addAll(ThresholdWriting.pages(number));
-        ItemStack book=HouseWriting.book("Stair page "+(number+1),names[Math.floorMod(number,names.length)],rendered);
+        HouseWriting.WritingStyle[] hands={HouseWriting.WritingStyle.KAREN,HouseWriting.WritingStyle.WILL,HouseWriting.WritingStyle.ZAMPANO};
+        var rendered=new ArrayList<Component>();rendered.add(HouseWriting.page(hands[Math.floorMod(number,hands.length)],scraps[Math.floorMod(number,scraps.length)]));
+        // One occasional annotation, tied to an actual original loss. No repeated
+        // evidence roll-call or theoretical lecture is appended to every loose page.
+        if(Math.floorMod(number,5)==3){
+            var loss=MotherCollection.get(p.server).all().stream().filter(e->p.getUUID().equals(e.owner)).findFirst();
+            if(loss.isPresent())rendered.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,loss.get().name+"\n\nI wrote it down before I forgot which shelf."));
+        }
+        ItemStack book=HouseWriting.book("A loose sheet",names[Math.floorMod(number,names.length)],rendered);
+        editions.putInt(key,430);own.put("Editions",editions);
         books.put(key,book.save(p.registryAccess()));own.put("Books",books);all.put(p.getUUID().toString(),own);data.setState(ID,all);return book;
+    }
+    public static void moved(net.minecraft.server.MinecraftServer server,BlockPos from,BlockPos to){
+        var data=LabyrinthData.get(server);var all=data.state(ID);String a=Long.toString(from.asLong()),b=Long.toString(to.asLong());
+        for(String player:new ArrayList<>(all.getAllKeys())){var own=all.getCompound(player);
+            for(String field:List.of("Books","Taken","Editions")){var tags=own.getCompound(field);if(tags.contains(a)&&!tags.contains(b)){tags.put(b,tags.get(a).copy());tags.remove(a);own.put(field,tags);}}
+            all.put(player,own);
+        }data.setState(ID,all);
     }
     private static final class PageMenu extends LecternMenu {
         private final ServerPlayer reader;private final BlockPos pos;private final ItemStack book;private final int pages;
