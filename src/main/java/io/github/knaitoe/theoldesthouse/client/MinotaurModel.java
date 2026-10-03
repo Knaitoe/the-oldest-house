@@ -36,7 +36,7 @@ public final class MinotaurModel extends HierarchicalModel<MinotaurEntity> {
             PartDefinition shin=leg.addOrReplaceChild("shin",CubeListBuilder.create().texOffs(0,0).addBox(-2.8F,0,-2,5.6F,7,5),PartPose.offset(0,8,1));
             shin.addOrReplaceChild("hoof",CubeListBuilder.create().texOffs(128,128).addBox(-3.5F,0,-5,3.2F,3,7).addBox(.3F,0,-5,3.2F,3,7),PartPose.offset(0,7,0));
         }
-        return LayerDefinition.create(mesh,256,512);
+        return LayerDefinition.create(mesh,256,256);
     }
     @Override public void setupAnim(MinotaurEntity entity,float walk,float amount,float age,float yaw,float pitch){
         pose(entity.motion(),walk,amount,age,yaw,pitch);
