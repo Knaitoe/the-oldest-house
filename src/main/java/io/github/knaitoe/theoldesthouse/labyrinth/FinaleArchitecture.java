@@ -85,7 +85,7 @@ public final class FinaleArchitecture {
         LabyrinthData data = LabyrinthData.get(server); CompoundTag state = data.state(STATE);
         if (state.contains("Origin") && state.getLong("Origin") != manor.asLong()) { boolean requested=state.getBoolean("Requested"); state = new CompoundTag(); state.putBoolean("Requested",requested); PLANS.remove(server); }
         if (!state.getBoolean("Requested")) return;
-        if(state.getBoolean("Ready") && state.getInt("CarveVersion")==CARVE_VERSION){retirePreparationShield(level,manor);connectCell(level,manor);FinaleCollapse.dress(level,manor);FinaleRepairs.tick(level,manor);return;}
+        if(state.getBoolean("Ready") && state.getInt("CarveVersion")==CARVE_VERSION){retirePreparationShield(level,manor);connectCell(level,manor);FinaleCollapse.dress(level,manor);FinaleRepairs.tick(level,manor);StaircaseFire.dress(level,manor);return;}
         // Existing explorers finish their visit before an old physical descent is replaced.
         if(state.getBoolean("Ready")&&level.players().stream().anyMatch(p->contains(manor,p.blockPosition())))return;
         if(state.getInt("PlanVersion")!=CARVE_VERSION){
@@ -107,7 +107,7 @@ public final class FinaleArchitecture {
             data.putDoor(new LabyrinthData.Door(ENTRY,HouseDimensions.INTERIOR,entry(manor),Direction.SOUTH,LabyrinthData.RETURN,false));
         }
         data.setState(STATE,state);
-        if(state.getBoolean("Ready")){retirePreparationShield(level,manor);connectCell(level,manor);FinaleCollapse.dress(level,manor);}
+        if(state.getBoolean("Ready")){retirePreparationShield(level,manor);connectCell(level,manor);FinaleCollapse.dress(level,manor);StaircaseFire.dress(level,manor);}
     }
     private static boolean preserveUpgradeVoid(BlockPos manor,BlockPos pos){
         BlockPos b=base(manor);

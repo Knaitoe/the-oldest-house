@@ -184,7 +184,7 @@ public final class Hillary {
             }
             return;
         }
-        if (recipient && stack.isEmpty()) {
+        if (recipient && stack.isEmpty()&&!CompanionOrders.managed(wolf)) {
             wolf.getPersistentData().remove("HillaryFindExit");
             SEEKING.remove(wolf.getUUID());
             if (wolf.isTame()) wolf.setOwnerUUID(tag.recipient());
@@ -395,7 +395,7 @@ public final class Hillary {
      * With nothing left in the house to find, she whines and lies down.
      */
     public static void takeScent(Wolf wolf, ServerLevel level, UUID seeker) {
-        CompanionOrders.clear(wolf);
+        // Keep a saved movement order: the threshold follower and native guide must agree.
         wolf.getPersistentData().remove("HillaryFindExit");
         wolf.playSound(SoundEvents.WOLF_PANT, 1.0F, 1.2F);
         LabyrinthDealer.Scent scent = LabyrinthDealer.giveScent(LabyrinthData.get(level.getServer()), seeker);
@@ -412,8 +412,9 @@ public final class Hillary {
         wolf.setInSittingPose(false);
         BlockPos origin = HouseSavedData.get(level.getServer()).houseOrigin();
         LabyrinthPlace place = origin == null ? null : LabyrinthPlaces.placeAt(origin, wolf.blockPosition());
-        if (level.dimension().equals(HouseDimensions.INTERIOR) && place != null) {
-            LabyrinthDealer.dealPlace(LabyrinthData.get(level.getServer()), seeker, place, wolf.getRandom());
+        if (level.dimension().equals(HouseDimensions.INTERIOR)) {
+            if(place!=null)LabyrinthDealer.dealPlace(LabyrinthData.get(level.getServer()), seeker, place, wolf.getRandom());
+            else {var door=LabyrinthData.get(level.getServer()).door("hallway_end");if(door!=null)LabyrinthDealer.deal(LabyrinthData.get(level.getServer()),seeker,java.util.List.of(door),null,wolf.getRandom());}
             ServerPlayer owner = level.getServer().getPlayerList().getPlayer(seeker);
             if (owner != null) { CompanionOrders.issue(wolf, owner, CompanionOrders.Order.DEEPER); return; }
         }
@@ -665,4 +666,3 @@ public final class Hillary {
     }
 
 }
-

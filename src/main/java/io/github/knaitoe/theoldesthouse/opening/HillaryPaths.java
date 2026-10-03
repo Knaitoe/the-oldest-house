@@ -86,7 +86,10 @@ public final class HillaryPaths {
     }
     public static void lead(TamableAnimal wolf, ServerPlayer player, BlockPos goal, @Nullable LabyrinthPlace place, @Nullable BlockPos base) {
         if (wolf.distanceToSqr(player) > 100) {
-            wolf.getNavigation().stop();
+            // A lagging guide must catch up rather than wait forever on the old side of a door.
+            Vec3 toPlayer=player.position().subtract(wolf.position());
+            Vec3 toGoal=Vec3.atBottomCenterOf(goal).subtract(wolf.position());
+            if(toPlayer.dot(toGoal)>0)wolf.getNavigation().moveTo(player,1.25);else wolf.getNavigation().stop();
             wolf.getLookControl().setLookAt(player, 30, 30);
             return;
         }
@@ -112,6 +115,17 @@ public final class HillaryPaths {
                     .collect(java.util.stream.Collectors.toSet());
             BlockPos next = nextStep(floor, wolf.blockPosition().subtract(base), goal.subtract(base));
             if (next != null) step = base.offset(next);
+        }
+        // A one-block waypoint is inside the old stopping radius. Lead a few connected tiles ahead.
+        if(base!=null&&(LabyrinthMaze.isMaze(place)||io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthHalls.isHall(place))){
+            var floor=LabyrinthMaze.isMaze(place)?LabyrinthMaze.layout(player.server,place).floor():io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthHalls.floor(place);
+            BlockPos cursor=step.subtract(base);
+            for(int n=0;n<3;n++){
+                BlockPos next=LabyrinthMaze.isMaze(place)?nextStep(LabyrinthMaze.layout(player.server,place),cursor,goal.subtract(base)):nextStep(floor,cursor,goal.subtract(base));
+                if(next==null||next.equals(cursor)||!player.level().getBlockState(base.offset(next)).getCollisionShape(player.level(),base.offset(next)).isEmpty())break;
+                cursor=next;
+            }
+            step=base.offset(cursor);
         }
         wolf.getNavigation().moveTo(step.getX() + 0.5, step.getY(), step.getZ() + 0.5, 1.15);
     }
@@ -167,7 +181,9 @@ public final class HillaryPaths {
         Vec3 side = new Vec3(forward.z, 0, -forward.x);
         for (Vec3 offset : new Vec3[]{forward.scale(0.9), side.scale(0.9), side.scale(-0.9), forward.scale(-0.9), Vec3.ZERO}) {
             Vec3 p = player.position().add(offset);
-            if (player.level().noCollision(wolf, wolf.getBoundingBox().move(p.subtract(wolf.position())))) return p;
+            BlockPos floor=BlockPos.containing(p).below();
+            if (!player.level().getBlockState(floor).getCollisionShape(player.level(),floor).isEmpty()
+                    &&player.level().noCollision(wolf, wolf.getBoundingBox().move(p.subtract(wolf.position())))) return p;
         }
         return player.position();
     }
