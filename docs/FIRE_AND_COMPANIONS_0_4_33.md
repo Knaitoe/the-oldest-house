@@ -28,4 +28,12 @@ The first-person hand reaches out and strokes. The player's native third-person 
 
 ## Verification
 
-Native build and complete gameplay/client verification are required before release. The additional server checks exercise ordered native campfire ignition and fuel consumption, personal save/reload, the unlit movement boundary and upgrade behavior, actual seamless pet transfer including a guide ahead, native walking through a physically walled bend, and both dog/cat pat cooldown and saved Stay. The client proof renders 44 frames of actual vanilla wolf, cat and player meshes with applied mixins, tests changing wag/stroke poses and matching sleeves, and saves a native screenshot. The existing full font, cast, inventory, architecture and sky proofs remain required. Release evidence is recorded after completion.
+The complete native run passed on October 3, 2026: [run 37135346455](https://github.com/Knaitoe/the-oldest-house/actions/runs/37135346455), source `bda6a39c8e40624623a9d4b31ae04caa537e452b`, tree `a724e753120895f7804a3d1980835b0f5ef35b41`. This combined build retains the separately verified 0.4.32 correspondence update.
+
+- All **288 of 288 declared native GameTests** passed. Added checks exercise ordered campfire ignition and fuel consumption, personal save/reload, the unlit movement boundary and upgrade behavior, actual door transfer including a guide ahead, native walking through a physically walled bend, and both dog/cat pat cooldown and saved Stay.
+- The native client rendered **44 companion frames** using actual vanilla wolf, cat and player meshes with applied mixins, changing wag/stroke poses, cat head rub/tail curl and matching sleeves. The native screenshot and completion marker passed.
+- All custom fonts loaded; **262 real book pages** fit native 114-pixel / 14-line limits, including the two-page fire booklet and strikethrough prose.
+- All **146 PNG textures** decoded with valid chunk CRCs. The playable package includes the full 108-piece correspondence and the required native test/client resources.
+- Existing NPC, cast, home, Minotaur, twenty-item inventory, **twenty-two architecture views** and **three sky elevations** passed. All nine native proof completion markers are present.
+
+Playable artifact: `the_oldest_house-0.4.33.jar` (7,062,064 bytes). SHA-256: `4e0c371c22f83e8cb43cf04bbe486e75b9e0d79ca460bb358ef8a2d7698a8a01`. The downloaded official artifact and JAR checksums match the completed build. Install this same version on clients and server; protocol 29 requires matching peers.
