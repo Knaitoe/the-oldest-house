@@ -56,6 +56,7 @@ public final class HouseExperience {
         var d=LabyrinthData.get(p.server);var own=record(d,p.getUUID());own.putLong("Preparation",be.getBlockPos().asLong());save(d,p.getUUID(),own);
     }
     public static void arrived(ServerPlayer p,LabyrinthPlace place){
+        HouseCorrespondence.crossed(p);
         var d=LabyrinthData.get(p.server);var own=record(d,p.getUUID());own.putString("CurrentPlace",place.id());own.putInt("Deepest",Math.max(own.getInt("Deepest"),d.returnDepth(p.getUUID())));
         own.remove("EchoAt");
         if(place==LabyrinthPlace.QUIET_ROOM&&d.returnDepth(p.getUUID())>=8&&own.contains("SeatState")){
@@ -70,6 +71,7 @@ public final class HouseExperience {
     }
     public static void returned(ServerPlayer p){
         var d=LabyrinthData.get(p.server);var own=record(d,p.getUUID());String id=own.getString("CurrentPlace");if(id.isEmpty())return;
+        HouseCorrespondence.crossed(p);
         var place=Arrays.stream(LabyrinthPlace.values()).filter(v->v.id().equals(id)).findFirst().orElse(null);
         own.putInt("Returns",own.getInt("Returns")+1);own.putString("LastReturn",id);
         if(place!=null&&place.isVignette()){

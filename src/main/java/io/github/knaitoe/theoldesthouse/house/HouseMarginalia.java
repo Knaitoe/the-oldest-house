@@ -35,7 +35,7 @@ public final class HouseMarginalia {
     public static CompoundTag record(LabyrinthData data, UUID player) { return data.state(ID).getCompound(player.toString()).copy(); }
     private static void save(LabyrinthData data, UUID player, CompoundTag own) { CompoundTag state=data.state(ID); state.put(player.toString(),own); data.setState(ID,state); }
     public static int next(LabyrinthData data, UUID player, Thread thread) { return record(data,player).getCompound("Next").getInt(thread.getSerializedName()); }
-    private static void finish(ServerPlayer player, String binding, Thread thread, int chapter) {
+    static void finishLegacy(ServerPlayer player, String binding, Thread thread, int chapter) {
         if (chapter < 0) return;
         LabyrinthData data=LabyrinthData.get(player.server); CompoundTag own=record(data,player.getUUID());
         CompoundTag bindings=own.getCompound("Bindings"), entry=bindings.getCompound(binding);
@@ -44,10 +44,15 @@ public final class HouseMarginalia {
         CompoundTag progress=own.getCompound("Next"); String key=thread.getSerializedName();
         progress.putInt(key,Math.max(progress.getInt(key),chapter+1)); own.put("Next",progress); save(data,player.getUUID(),own);
     }
+    static void takeLegacy(ServerPlayer player,String binding) {
+        var data=LabyrinthData.get(player.server);var own=record(data,player.getUUID());
+        var bindings=own.getCompound("Bindings");var entry=bindings.getCompound(binding);
+        entry.putBoolean("Taken",true);bindings.put(binding,entry);own.put("Bindings",bindings);save(data,player.getUUID(),own);
+    }
     public static void onRightClick(PlayerInteractEvent.RightClickBlock event) {
         if (event.getLevel().isClientSide() || event.getHand()!=InteractionHand.MAIN_HAND || !(event.getEntity() instanceof ServerPlayer player)
                 || !player.level().dimension().equals(HouseDimensions.INTERIOR)
-                || player.gameMode.getGameModeForPlayer()==GameType.SPECTATOR || player.distanceToSqr(event.getPos().getCenter())>25) return;
+                || !player.isAlive() || player.gameMode.getGameModeForPlayer()==GameType.SPECTATOR || player.distanceToSqr(event.getPos().getCenter())>25) return;
         var state=player.level().getBlockState(event.getPos());
         if (!(state.getBlock() instanceof NoteSurfaceBlock)) return;
         Thread thread=state.getValue(NoteSurfaceBlock.THREAD); BlockPos pos=event.getPos().immutable();
@@ -60,8 +65,7 @@ public final class HouseMarginalia {
         private final ServerPlayer reader;
         private final BlockPos surface;
         private final Thread thread;
-        private final String binding;
-        private final int chapter;
+        private final HouseCorrespondence.Encounter encountered;
         private final SimpleContainer pages;
         private boolean taken;
         public NotebookMenu(int id, ServerPlayer reader, BlockPos surface, Thread thread) {
@@ -69,23 +73,9 @@ public final class HouseMarginalia {
         }
         private NotebookMenu(int id, ServerPlayer reader, BlockPos surface, Thread thread, SimpleContainer pages, SimpleContainerData page) {
             super(id,pages,page); this.reader=reader; this.surface=surface.immutable(); this.thread=thread; this.pages=pages;
-            LabyrinthData data=LabyrinthData.get(reader.server);
-            int band=band(data.returnDepth(reader.getUUID()));
-            binding=surface.asLong()+":"+thread.getSerializedName()+":"+band;
-            CompoundTag own=record(data,reader.getUUID()), bindings=own.getCompound("Bindings"), entry=bindings.getCompound(binding);
-            if (!entry.contains("Book")) {
-                int due=next(data,reader.getUUID(),thread), available=Math.min(band,thread.chapters-1);
-                // Before the next threshold, mundane interludes keep multiple early scraps distinct.
-                chapter=due>available && available==0 ? -1 : Math.min(due,available);
-                ItemStack book=chapter<0 ? MarginaliaTexts.interlude(surface.asLong(),thread)
-                        : MarginaliaTexts.book(reader,thread,chapter);
-                CompoundTag custom=new CompoundTag(); custom.putUUID("MarginaliaReader",reader.getUUID()); custom.putString("MarginaliaBinding",binding);
-                book.set(DataComponents.CUSTOM_DATA,CustomData.of(custom));
-                entry.put("Book",book.save(reader.registryAccess())); entry.putInt("Chapter",chapter);
-                bindings.put(binding,entry); own.put("Bindings",bindings); save(data,reader.getUUID(),own);
-            } else chapter=entry.getInt("Chapter");
-            taken=entry.getBoolean("Taken"); pages.setItem(0,ItemStack.parseOptional(reader.registryAccess(),entry.getCompound("Book")));
-            if (book().get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()==1) finish(reader,binding,thread,chapter);
+            encountered=HouseCorrespondence.bind(reader,surface,thread);
+            taken=encountered.taken();pages.setItem(0,encountered.book().copy());
+            if (book().get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()==1) HouseCorrespondence.finish(reader,encountered,thread);
         }
         public ItemStack book() { return pages.getItem(0).copy(); }
         @Override public boolean stillValid(Player player) {
@@ -96,18 +86,15 @@ public final class HouseMarginalia {
             int count=book().get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size();
             if (button>=100 && (button-100<0 || button-100>=count)) return false;
             if (button==1 && getPage()<=0 || button==2 && getPage()>=count-1) return false;
-            if (button==3 && taken) return false;
+            if (button==3 && (taken||HouseCorrespondence.taken(reader,encountered))) return false;
             boolean changed=super.clickMenuButton(player,button);
             if (!changed) return false;
             if (button==3) {
-                taken=true; LabyrinthData data=LabyrinthData.get(reader.server); CompoundTag own=record(data,reader.getUUID());
-                CompoundTag bindings=own.getCompound("Bindings"), entry=bindings.getCompound(binding);
-                entry.putBoolean("Taken",true); bindings.put(binding,entry); own.put("Bindings",bindings); save(data,reader.getUUID(),own);
-                finish(reader,binding,thread,chapter);
-            } else if (getPage()>=count-1) finish(reader,binding,thread,chapter);
+                taken=true;HouseCorrespondence.take(reader,encountered,thread);
+            } else if (getPage()>=count-1) HouseCorrespondence.finish(reader,encountered,thread);
             return true;
         }
-        private boolean validSurface() { return reader.level().dimension().equals(HouseDimensions.INTERIOR)
+        private boolean validSurface() { return reader.isAlive() && reader.level().dimension().equals(HouseDimensions.INTERIOR)
                 && reader.gameMode.getGameModeForPlayer()!=GameType.SPECTATOR && reader.distanceToSqr(surface.getCenter())<=64
                 && reader.level().getBlockState(surface).getBlock() instanceof NoteSurfaceBlock; }
     }
