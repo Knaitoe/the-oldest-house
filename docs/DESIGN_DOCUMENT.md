@@ -4,13 +4,23 @@ Sep 28, 2026 · @Sean Price · revised in the repository to match decisions made
 
 ## Revisions in this copy
 
+### 0.4.35: the blind stretch and the hotel
+
+The [verified native build](https://github.com/Knaitoe/the-oldest-house/actions/runs/37156329228), source `1b36bef7f9d494d26ec6773bc1962f9eb45ee1ee`, passed all 299 required gameplay tests and the separate six-case hotel suite. All 310 real book pages fit the native 114-pixel / 14-line limits; 179 PNG textures passed CRC/decode checks. All eleven native client checks passed, including the hotel cast, hose, fixtures, keepsakes and independent blind direction cues, twenty-nine architecture views and three outside-sky elevations. The playable package was checked and the delivered JAR was extracted and independently verified.
+
+The blind stretch is a real six-turn passage with a continuous retreat floor. An opaque view and black fog require listening to honest positional bells; the separate custom direction arrows begin lying after two turns. Native saved movement determines progress. This is scenery/navigation, excluded from Witness, and the existing timed hallway is unchanged.
+
+The recurring hotel and outside grounds append at slots 43 and 44, with the blind stretch at 42. The connected building includes furnished dining, bar, ballroom, 217, caretaker, mountain office, linen room, workshop and boiler spaces. Timber framing, coffer grids, supported rails, fitted shelves, brick/copper plant work, new UV materials and a covered garden shelter finish the architecture. Native sleep, meals, drinks, exact private drawer/lost-property custody, actual-profile photographs, unseen hose/sign/topiary motion, a connected snow maze, genuine named-pet loss history and personally read original notes build one complete account. The heating plant starts on physical discovery and retains actual in-game-day pressure, venting and a native restart after neglect.
+
+Current build: 0.4.35, layout 31 / protocol 31. Twenty eligible Witness sources require fifteen distinct personal resolutions across at least two kinds; three endings remain. Prior room geometry, native identities, finite inventories, original papers, staircase fires, petting responses and companion orders remain. See [the play instructions and evidence](HOTEL_AND_BLIND_0_4_35.md).
+
 ### 0.4.34: the sitting and the pattern
 
 Verified [native build](https://github.com/Knaitoe/the-oldest-house/actions/runs/37145689514), source `594eb1a8297ab3c96ee5b26dc7543c279fa512fa`: all 293 required gameplay tests, 289 native book pages, 159 PNG textures, ten client checks and twenty-four architecture views pass. Both classic entrances have explicit player clearance checks; shared outcomes and scars retain independent reader progress and finite original custody.
 
 The séance and wallpaper nursery are complete native wings at appended slots 40 and 41. Each has detailed structure and furnishings, custom native meshes/materials, original finite notes and a personal resolution. The four-person séance supports listening, actual candle/cupboard disturbances, bounded borrowed eyes, a shutter/door-gated photograph room and original source/album reading. The nursery pairs an animated creeping figure with four personally observed seams, axe peeling, successive visits and a final original reading. Native papers, actors, world scars, ownership and saved personal outcomes persist.
 
-Current build: 0.4.34, layout 30 / protocol 30. Nineteen eligible Witness sources require fifteen distinct resolutions across at least two kinds; three endings remain. All prior fire, companion, correspondence, geometry, identity and inventory repairs remain. Full native verification passed; see [the play instructions and evidence](CLASSICS_0_4_34.md).
+Previous build: 0.4.34, layout 30 / protocol 30. Nineteen eligible Witness sources require fifteen distinct resolutions across at least two kinds; three endings remain. All prior fire, companion, correspondence, geometry, identity and inventory repairs remain. Full native verification passed; see [the play instructions and evidence](CLASSICS_0_4_34.md).
 
 ### 0.4.33: book-fed fire and companion responses
 
