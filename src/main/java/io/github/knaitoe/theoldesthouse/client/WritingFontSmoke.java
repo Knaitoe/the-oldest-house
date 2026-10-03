@@ -37,6 +37,7 @@ public final class WritingFontSmoke {
         mc.resizeDisplay();
         List<ItemStack> books = new ArrayList<>(HouseWriting.samples());
         books.add(NavidsonLetter.createBook());
+        books.addAll(io.github.knaitoe.theoldesthouse.labyrinth.ClassicsTexts.specimens());
         books.add(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseFire.book(new java.util.UUID(0,0),5));
         books.add(io.github.knaitoe.theoldesthouse.labyrinth.HollowayCamp.journal());
         books.addAll(List.of(NovelTexts.archive(), NovelTexts.whaleOpening(), NovelTexts.whaleLast(),

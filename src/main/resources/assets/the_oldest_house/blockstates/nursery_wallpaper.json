@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "figure=false,peeled=false": {
+      "model": "the_oldest_house:block/nursery_wallpaper"
+    },
+    "figure=false,peeled=true": {
+      "model": "the_oldest_house:block/nursery_wallpaper_peeled"
+    },
+    "figure=true,peeled=false": {
+      "model": "the_oldest_house:block/nursery_wallpaper_figure"
+    },
+    "figure=true,peeled=true": {
+      "model": "the_oldest_house:block/nursery_wallpaper_figure_peeled"
+    }
+  }
+}

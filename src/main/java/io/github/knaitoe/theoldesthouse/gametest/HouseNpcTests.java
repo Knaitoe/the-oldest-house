@@ -168,6 +168,6 @@ public final class HouseNpcTests {
     @GameTest(template="empty") public static void newCampFitsWithoutMovingAnyOlderSlots(GameTestHelper h){
         for(int y:new int[]{65,80,150,250}){var origin=new BlockPos(100,y,100);var b=LabyrinthPlaces.base(origin,LabyrinthPlace.HOLLOWAY_CAMP);var bounds=LabyrinthPlaces.slotBounds(origin,LabyrinthPlace.HOLLOWAY_CAMP);var room=LabyrinthPlace.HOLLOWAY_CAMP.room();
             h.assertTrue(b!=null&&bounds.isInside(b.offset(room.minX(),room.minY(),room.minZ()))&&bounds.isInside(b.offset(room.maxX(),room.maxY(),room.maxZ())),"the new native scene fits at a supported manor height "+y);}
-        h.assertTrue(LabyrinthPlace.HOLLOWAY_CAMP.slot()==39&&LabyrinthPlace.KAREN_ROOM.slot()==38&&LabyrinthPlace.HARRIGAN.slot()==9&&WitnessAccount.REQUIRED==13,"old stable scene slots remain and the seventeenth resolved source requires thirteen");h.succeed();
+        h.assertTrue(LabyrinthPlace.HOLLOWAY_CAMP.slot()==39&&LabyrinthPlace.KAREN_ROOM.slot()==38&&LabyrinthPlace.HARRIGAN.slot()==9&&WitnessAccount.REQUIRED==15,"old stable scene slots remain and the current complete pool requires fifteen");h.succeed();
     }
 }
