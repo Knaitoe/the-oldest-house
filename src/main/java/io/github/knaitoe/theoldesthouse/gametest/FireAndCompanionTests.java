@@ -19,18 +19,23 @@ import net.neoforged.neoforge.gametest.*;
 @PrefixGameTestTemplate(false)
 public final class FireAndCompanionTests {
     private static final List<Entity> ROUTE_ENTITIES=new ArrayList<>();
+    private static ServerLevel routeLevel;private static BlockPos routeTicket;
     private static void remove(ServerPlayer p){NativeTestPlayers.remove(p);}
-    @AfterBatch(batch="companion_route") public static void cleanRoute(ServerLevel level){for(var e:ROUTE_ENTITIES){if(e instanceof ServerPlayer p)remove(p);else e.discard();}ROUTE_ENTITIES.clear();}
+    @AfterBatch(batch="companion_route") public static void cleanRoute(ServerLevel level){for(var e:ROUTE_ENTITIES){if(e instanceof ServerPlayer p)remove(p);else e.discard();}ROUTE_ENTITIES.clear();if(routeLevel!=null){routeLevel.getChunkSource().removeRegionTicket(TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(routeTicket),3,routeTicket);routeLevel=null;}}
     @GameTest(template="empty",batch="companion_route",timeoutTicks=300)
     public static void nativeGuideActuallyWalksPastStoppingRadiusAndAroundBend(GameTestHelper h){
         var owner=NativeTestPlayers.survival(h,"walking_guide_owner");var level=HouseTestLevel.get(owner.server,HouseDimensions.INTERIOR);
         BlockPos base=new BlockPos(h.absolutePos(BlockPos.ZERO).getX()+240000,180,240000);var floor=LabyrinthHalls.floor(LabyrinthPlace.BENT_HALL);
+        // getChunkAt registers geometry; a portal ticket makes this remote native entity area tick.
+        routeLevel=level;routeTicket=base.offset(-8,0,-15);level.getChunkSource().addRegionTicket(TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(routeTicket),3,routeTicket);
         for(var local:floor){var at=base.offset(local);level.getChunkAt(at);level.setBlock(at.below(),Blocks.STONE.defaultBlockState(),3);for(int y=0;y<3;y++)level.setBlock(at.above(y),Blocks.AIR.defaultBlockState(),3);}
         // Real walls prevent native navigation from cutting across the empty corner.
         for(var local:floor)for(var d:Direction.Plane.HORIZONTAL)if(!floor.contains(local.relative(d)))for(int y=0;y<3;y++)level.setBlock(base.offset(local.relative(d)).above(y),Blocks.STONE.defaultBlockState(),3);
         owner.teleportTo(level,base.getX()+.5,base.getY(),base.getZ()+.5,0,0);
         var dog=EntityType.WOLF.create(level);dog.tame(owner);dog.moveTo(Vec3.atBottomCenterOf(base));level.addFreshEntity(dog);ROUTE_ENTITIES.add(owner);ROUTE_ENTITIES.add(dog);
         BlockPos goal=base.offset(-15,0,-30);
+        h.runAtTickTime(280,()->h.assertTrue(dog.getX()<base.getX()-8&&dog.getZ()<base.getZ()-17,
+                "native route did not advance: ticks="+dog.tickCount+", position="+dog.position()+", base="+base+", noAi="+dog.isNoAi()+", navigationDone="+dog.getNavigation().isDone()));
         h.onEachTick(()->{
             if(level.getEntity(dog.getUUID())!=dog)return;
             owner.moveTo(dog.position().add(0,0,2));HillaryPaths.lead(dog,owner,goal,LabyrinthPlace.BENT_HALL,base);

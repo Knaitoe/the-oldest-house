@@ -24,6 +24,7 @@ jobs:
           gradle-version: '9.2.1'
 
       - name: Build
+        id: build_mod
         run: gradle build
 
       - name: Verify writing atlas structure
@@ -238,6 +239,7 @@ jobs:
           if-no-files-found: error
 
       - name: Check native client font rendering
+        if: ${{ !cancelled() && steps.build_mod.outcome == 'success' }}
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq xvfb libgl1-mesa-dri
