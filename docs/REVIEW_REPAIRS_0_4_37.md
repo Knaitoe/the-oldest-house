@@ -23,10 +23,12 @@ Layout 32 / protocol 32. Forty-three eligible Witness sources require thirty-thr
 
 Mother PvP behavior is unchanged.
 
+The first full repair run also exposed an older hallway-period fixture inheriting unrelated terrain in corner columns that production leaves inside a uniformly filled slot. The fixture now fills that native slot before carving and retains every block comparison; production hallway behavior is unchanged.
+
 ## Native verification required
 
 All **317 declared native GameTests**, including **sixteen focused literary** and **seven hotel** cases. The expanded native cases exercise specific armor exchange plus disabled native slots, owner/peer island falls, real canoe travel/exposures/recovery, actual spectator sight, independent sealed-exit inspection, legacy closure repair, the dead-camp survey/return/ordered route/latch, sixty actual named Overworld pet deaths, supported graves and exact legacy custody reload. The complete package, every original writing page, 226 PNG checks, thirteen client checks, fifty-three architecture views and three sky elevations remain required.
 
-The package workflow derives focused counts from annotations and verifies completed native runs; a successful process exit is insufficient. The branch's matching CI run is pending. Do not use the historical 0.4.36 green run as evidence for this candidate.
+The package workflow derives focused counts from annotations and verifies completed native runs; a successful process exit is insufficient. The current branch's attached CI result is authoritative. The sixteen literary and seven hotel cases passed on source `6a69f85286cca5eeed1de8e8f9978bbaa43db368` in run 37204518959; the full suite and client proofs remain separately required. Use the complete green result for the reviewed branch HEAD before installing or merging. Do not use the historical 0.4.36 green run as evidence for this candidate.
 
 [Repair branch CI](https://github.com/Knaitoe/the-oldest-house/actions?query=branch%3Afix%2Freview-safety-0.4.37)
