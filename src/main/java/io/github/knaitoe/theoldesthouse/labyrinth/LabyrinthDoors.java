@@ -41,6 +41,7 @@ import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
@@ -83,6 +84,10 @@ public final class LabyrinthDoors {
     private static final Map<UUID, Pending> FADING = new HashMap<>();
     /** Players who have gone through an entry door into its room since arriving. */
     private static final Set<UUID> INSIDE = new HashSet<>();
+    /** The entry door already shut behind each player on this crossing; it is not shut on them again until they return to it. */
+    private static final Map<UUID, BlockPos> SHUT_FOR = new HashMap<>();
+    /** Another player this close to an entry door is using it: it is neither shut nor rebuilt around them. */
+    private static final double DOORWAY_COMPANY = 3.0D;
 
     private LabyrinthDoors() {
     }
@@ -218,14 +223,17 @@ public final class LabyrinthDoors {
         LabyrinthData data = LabyrinthData.get(server);
         Rotation turn = rotationFrom(from.facing, entry.facing);
 
-        setDoorOpen(toLevel, entry.lower, false, null);
-        copyVestibule(fromLevel, from, toLevel, entry, turn);
+        // Someone else may be standing in this entry's doorway: it stays open
+        // for them, and the copied vestibule leaves the cells they occupy.
+        if (!othersAtDoor(toLevel, entry.lower, player)) setDoorOpen(toLevel, entry.lower, false, null);
+        copyVestibule(fromLevel, from, toLevel, entry, turn, player);
         Vec3 target = shifted(player.position(), from.lower, entry.lower, turn);
         float yaw = player.getYRot() + angle(turn);
 
         data.pushReturn(player.getUUID(), new LabyrinthData.Waypoint(
                 fromLevel.dimension(), Vec3.atBottomCenterOf(from.lower), from.facing.toYRot(), true));
         INSIDE.remove(player.getUUID());
+        SHUT_FOR.remove(player.getUUID());
         Consumer<ServerPlayer> arrived = p -> {
             VignetteGate.begin(p,place);
             setDoorOpen(toLevel, entry.lower, true, p);
@@ -294,6 +302,7 @@ public final class LabyrinthDoors {
             shift(player,Vec3.atBottomCenterOf(entry.lower.relative(entry.facing.getOpposite(),2)),player.getYRot());
             return true;
         }
+        if (into < THRESHOLD) SHUT_FOR.remove(id);
         if (into >= THRESHOLD) {
             if (place == LabyrinthPlace.HIDE_AND_CLAP && !data.isCompleted(HideAndClap.ID)
                     && HideAndClap.isInRoom(LabyrinthPlaces.base(origin, place), player.position())) {
@@ -303,7 +312,11 @@ public final class LabyrinthDoors {
             }
             INSIDE.add(id);
             VignetteGate.stepped(player,place);
-            if (into >= SHUT_BEHIND) {
+            // Shut once per crossing, so a player who turns back can open it
+            // from any reach, and never on another player still in the doorway.
+            if (into >= SHUT_BEHIND && !entry.lower.equals(SHUT_FOR.get(id))
+                    && !othersAtDoor(player.serverLevel(), entry.lower, player)) {
+                SHUT_FOR.put(id, entry.lower);
                 setDoorOpen(player.serverLevel(), entry.lower, false, player);
             }
             if (LabyrinthLoops.isLoop(place)) {
@@ -347,7 +360,8 @@ public final class LabyrinthDoors {
     /** Back out through an entry door: to the same spot in front of the door they came through. */
     private static void goBack(ServerPlayer player, LabyrinthData.Door entry, LabyrinthData data) {
         UUID id = player.getUUID();
-        setDoorOpen(player.serverLevel(), entry.lower, false, null);
+        SHUT_FOR.remove(id);
+        if (!othersAtDoor(player.serverLevel(), entry.lower, player)) setDoorOpen(player.serverLevel(), entry.lower, false, null);
         LabyrinthData.Waypoint back = data.popReturn(id);
         String correspondenceSource=io.github.knaitoe.theoldesthouse.house.HouseExperience.record(data,id).getString("CurrentPlace");
         Consumer<ServerPlayer> confirmedReturn=p->io.github.knaitoe.theoldesthouse.house.HouseCorrespondence.returnedSafely(p,correspondenceSource);
@@ -623,6 +637,18 @@ public final class LabyrinthDoors {
      * side the player is on) in behind {@code entry}, turned to line up.
      */
     static void copyVestibule(ServerLevel fromLevel, LabyrinthData.Door from, ServerLevel toLevel, LabyrinthData.Door entry, Rotation turn) {
+        copyVestibule(fromLevel, from, toLevel, entry, turn, null);
+    }
+
+    /** As above, leaving every cell another player (not {@code arriving}) stands in or against untouched. */
+    public static void copyVestibule(ServerLevel fromLevel, LabyrinthData.Door from, ServerLevel toLevel, LabyrinthData.Door entry, Rotation turn,
+            @Nullable ServerPlayer arriving) {
+        List<AABB> occupied = new ArrayList<>();
+        for (ServerPlayer other : toLevel.players()) {
+            if (other != arriving && !other.isSpectator() && other.distanceToSqr(Vec3.atCenterOf(entry.lower)) < 144.0D) {
+                occupied.add(other.getBoundingBox().inflate(0.75D, 0.5D, 0.75D));
+            }
+        }
         Direction f = from.facing;
         Direction fSide = f.getClockWise();
         Direction g = entry.facing;
@@ -635,6 +661,10 @@ public final class LabyrinthDoors {
                     BlockPos dst = entry.lower.relative(g, k).relative(gSide, s).above(y);
                     if (toLevel.isOutsideBuildHeight(dst) || !fromLevel.isLoaded(src)) {
                         continue;
+                    }
+                    if (!occupied.isEmpty()) {
+                        AABB cell = new AABB(dst);
+                        if (occupied.stream().anyMatch(cell::intersects)) continue;
                     }
                     BlockState state = fromLevel.getBlockState(src).rotate(turn);
                     if(y==-1&&state.isAir()){
@@ -649,6 +679,17 @@ public final class LabyrinthDoors {
             }
         }
         if(entry.dimension.equals(HouseDimensions.OUTSIDE))NovelRooms.safeApproach(toLevel,entry.lower.below(0).north());
+    }
+
+    /** Whether a player other than {@code self} is in or just either side of this door. */
+    static boolean othersAtDoor(ServerLevel level, BlockPos lower, @Nullable ServerPlayer self) {
+        Vec3 centre = Vec3.atBottomCenterOf(lower);
+        for (ServerPlayer other : level.players()) {
+            if (other == self || other.isSpectator() || other.isRemoved()) continue;
+            double dx = other.getX() - centre.x, dz = other.getZ() - centre.z, dy = other.getY() - centre.y;
+            if (dx * dx + dz * dz <= DOORWAY_COMPANY * DOORWAY_COMPANY && dy > -2.5D && dy < 2.5D) return true;
+        }
+        return false;
     }
 
     static void setDoorOpen(ServerLevel level, BlockPos lower, boolean open, @Nullable ServerPlayer hearer) {
@@ -869,6 +910,7 @@ public final class LabyrinthDoors {
     public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         FADING.remove(event.getEntity().getUUID());
         INSIDE.remove(event.getEntity().getUUID());
+        SHUT_FOR.remove(event.getEntity().getUUID());
         LabyrinthLoops.forget(event.getEntity().getUUID());
         LabyrinthMaze.forget(event.getEntity().getUUID());
         LabyrinthLighting.clearPlayer(event.getEntity().getUUID());
@@ -877,6 +919,7 @@ public final class LabyrinthDoors {
     public static void clearAll() {
         FADING.clear();
         INSIDE.clear();
+        SHUT_FOR.clear();
         LabyrinthLoops.clearAll();
         LabyrinthMaze.clearAll();
         LabyrinthBuilder.clearAll();

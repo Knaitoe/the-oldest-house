@@ -91,8 +91,62 @@ public final class HouseTransitionEvents {
         if(dimension.equals(HouseDimensions.OUTSIDE)&&LabyrinthDoors.tickPlayer(player,origin))return;
 
         if (dimension.equals(HouseDimensions.INTERIOR) && !isValidHouseInteriorSpace(data, origin, player, relX, relY, relZ)) {
-            beginPendingTransition(player, classify(relX, relY, relZ), Level.OVERWORLD, HouseLayout.doorAt(relX, relY, relZ), null, null);
+            HouseLayout.ExteriorDoor door = HouseLayout.doorAt(relX, relY, relZ);
+            if (door == null) door = exteriorDoorNear(origin, player.getX(), player.getY(), player.getZ(), DOOR_GRACE + 1.5D);
+            HouseTransitionKind kind = door != null ? HouseTransitionKind.DOOR : classify(relX, relY, relZ);
+            if (kind == HouseTransitionKind.BREACH) {
+                // A single tick outside every valid volume is not yet leaving
+                // through a wall: a same-level shift or another player's
+                // geometry change can settle on the next tick.
+                int strikes = BREACH_STRIKES.merge(player.getUUID(), 1, Integer::sum);
+                if (strikes < BREACH_CONFIRM_TICKS) return;
+                logBreach(player, data, origin, relX, relY, relZ);
+            }
+            BREACH_STRIKES.remove(player.getUUID());
+            beginPendingTransition(player, kind, Level.OVERWORLD, door, null, null);
+            return;
         }
+        BREACH_STRIKES.remove(player.getUUID());
+    }
+
+    /** Consecutive ticks a player has spent outside every valid House volume. */
+    private static final Map<UUID, Integer> BREACH_STRIKES = new HashMap<>();
+    private static final int BREACH_CONFIRM_TICKS = 3;
+
+    /** Says exactly where a breach happened and which House volumes rejected it. */
+    private static void logBreach(ServerPlayer player, HouseSavedData data, BlockPos origin, double relX, double relY, double relZ) {
+        StringBuilder company = new StringBuilder();
+        for (ServerPlayer other : player.serverLevel().players()) {
+            if (other != player && other.distanceToSqr(player) < 256.0D) {
+                company.append(other.getGameProfile().getName()).append(String.format(" (%.1f blocks)", other.distanceTo(player))).append(' ');
+            }
+        }
+        TheOldestHouse.LOGGER.warn("The Oldest House breach for {}: rel=({}, {}, {}), domestic={}, nearDoor={}, deepHall={}, stack={}, finale={}, hallwayRevealed={}, hallway={}, place={}, nearby=[{}]",
+                player.getGameProfile().getName(),
+                String.format("%.2f", relX), String.format("%.2f", relY), String.format("%.2f", relZ),
+                HouseLayout.isInsideDomesticVolume(relX, relY, relZ),
+                nearExteriorDoor(origin, player.getX(), player.getY(), player.getZ()),
+                HouseShifts.isInDeepenedHall(origin, player.getX(), player.getY(), player.getZ()),
+                LabyrinthPlaces.isInStack(origin, player.getX(), player.getY(), player.getZ()),
+                io.github.knaitoe.theoldesthouse.labyrinth.FinaleArchitecture.contains(origin, player.blockPosition()),
+                data.isImpossibleDoorRevealed(),
+                HouseImpossibleHallway.isInsideWalkableVolume(origin, player.getX(), player.getY(), player.getZ()),
+                LabyrinthPlaces.placeAt(origin, player.blockPosition()),
+                company.toString().trim());
+    }
+
+    /** The exterior door whose centre is within {@code radius} of a position, at its height. */
+    @Nullable
+    private static HouseLayout.ExteriorDoor exteriorDoorNear(BlockPos origin, double x, double y, double z, double radius) {
+        for (HouseLayout.ExteriorDoor door : HouseLayout.EXTERIOR_DOORS) {
+            Vec3 c = doorCentre(origin, door);
+            double dx = x - c.x;
+            double dz = z - c.z;
+            if (dx * dx + dz * dz <= radius * radius && y >= c.y - 2.0D && y <= c.y + 3.0D) {
+                return door;
+            }
+        }
+        return null;
     }
 
     /**
@@ -333,6 +387,7 @@ public final class HouseTransitionEvents {
         UUID id = event.getEntity().getUUID();
         PENDING.remove(id);
         PENDING_DOOR_CLOSE.remove(id);
+        BREACH_STRIKES.remove(id);
     }
 
     /** Drops all per-player state (server stop, world reset). */
@@ -340,6 +395,7 @@ public final class HouseTransitionEvents {
         PENDING.clear();
         PENDING_DOOR_CLOSE.clear();
         DOOR_IDLE.clear();
+        BREACH_STRIKES.clear();
     }
 
     private static boolean isValidHouseInteriorSpace(
@@ -439,7 +495,25 @@ public final class HouseTransitionEvents {
             return;
         }
         PENDING_DOOR_CLOSE.remove(player.getUUID());
-        setExteriorDoor(player.getServer(), pending.origin, pending.door, false, player.serverLevel());
+        // Someone else following through the open door keeps it open; the
+        // idle closer shuts it once nobody is at it.
+        Vec3 centre = doorCentre(pending.origin, pending.door);
+        MinecraftServer server = player.getServer();
+        ServerLevel interior = server.getLevel(HouseDimensions.INTERIOR);
+        if (othersWithin(server.overworld(), centre, DOOR_GRACE, player) || interior != null && othersWithin(interior, centre, DOOR_GRACE, player)) {
+            DOOR_IDLE.remove(pending.door.name());
+            return;
+        }
+        setExteriorDoor(server, pending.origin, pending.door, false, player.serverLevel());
+    }
+
+    private static boolean othersWithin(ServerLevel level, Vec3 point, double radius, ServerPlayer self) {
+        for (ServerPlayer other : level.players()) {
+            if (other != self && !other.isSpectator() && other.distanceToSqr(point) <= radius * radius) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ------------------------------------------------------------------
