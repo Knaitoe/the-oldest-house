@@ -418,6 +418,7 @@ public final class LabyrinthDoors {
         if (to == null) {
             return;
         }
+        target = safeLanding(player, to, target, from, fromFacing, hallway != null && from.equals(hallway.lower));
         if (to == player.serverLevel()) {
             shift(player, target, yaw);
             confirmedReturn.accept(player);
@@ -426,6 +427,36 @@ public final class LabyrinthDoors {
         }
         // The door they came through has shut behind them.
         playTo(player, SoundEvents.WOODEN_DOOR_CLOSE, Vec3.atCenterOf(from), 0.9F, 0.9F);
+    }
+
+    /**
+     * The matched spot in front of the door a player returns through, unless it
+     * would put them in a wall or (for the impossible hallway) outside the
+     * hallway. An entry's vestibule is shared, so after another explorer
+     * arrived through a different door it may be wider than this player's own
+     * corridor; then they step out just in front of their door instead.
+     */
+    private static Vec3 safeLanding(ServerPlayer player, ServerLevel level, Vec3 target, BlockPos door, Direction facing, boolean hallway) {
+        if (hallway) {
+            // The hallway is three blocks wide: keep the step back along it, inside its walls.
+            Direction across = facing.getClockWise();
+            Vec3 centre = Vec3.atBottomCenterOf(door);
+            double side = (target.x - centre.x) * across.getStepX() + (target.z - centre.z) * across.getStepZ();
+            double clamped = Math.max(-1.2D, Math.min(1.2D, side));
+            target = target.add(across.getStepX() * (clamped - side), 0.0D, across.getStepZ() * (clamped - side));
+        }
+        level.getChunkAt(BlockPos.containing(target));
+        BlockPos origin = HouseSavedData.get(player.server).houseOrigin();
+        boolean inside = !hallway || origin == null
+                || io.github.knaitoe.theoldesthouse.house.HouseImpossibleHallway.isInsideWalkableVolume(origin, target.x, target.y, target.z);
+        if (inside && level.noCollision(player, player.getDimensions(player.getPose()).makeBoundingBox(target).deflate(1.0E-4D))) {
+            return target;
+        }
+        Vec3 front = Vec3.atBottomCenterOf(door.relative(facing));
+        TheOldestHouse.LOGGER.info("Returning {} in front of {} instead of the blocked matched spot ({}, {}, {}).",
+                player.getGameProfile().getName(), door.toShortString(),
+                String.format("%.2f", target.x), String.format("%.2f", target.y), String.format("%.2f", target.z));
+        return front;
     }
 
     /**

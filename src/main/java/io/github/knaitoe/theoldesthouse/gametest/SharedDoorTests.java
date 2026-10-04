@@ -94,6 +94,20 @@ public final class SharedDoorTests {
             LabyrinthDoors.tickPlayer(a, origin);
             h.assertTrue(!open(level, entry), "once the doorway is clear the door shuts behind");
 
+            // Walking back down a vestibule rebuilt wider by another explorer's
+            // corridor returns this one inside the three-wide hallway, not its wall.
+            var hallwayDoor = origin.offset(io.github.knaitoe.theoldesthouse.house.HouseLayout.AXIS_X, 1,
+                    io.github.knaitoe.theoldesthouse.house.HouseImpossibleHallway.END_Z_OFFSET);
+            data.putDoor(new LabyrinthData.Door("hallway_end", HouseDimensions.INTERIOR, hallwayDoor, Direction.NORTH,
+                    LabyrinthData.toPlace(LabyrinthPlace.JUNCTION), false));
+            data.pushReturn(a.getUUID(), new LabyrinthData.Waypoint(HouseDimensions.INTERIOR, Vec3.atBottomCenterOf(hallwayDoor),
+                    Direction.NORTH.toYRot(), true));
+            put(a, level, at(entry, -6.5, 2.6));
+            LabyrinthDoors.tickPlayer(a, origin);
+            h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseImpossibleHallway.isInsideWalkableVolume(origin, a.getX(), a.getY(), a.getZ()),
+                    "a walk-back from a wide vestibule lands inside the hallway: " + a.position());
+            put(a, level, at(entry, 4.0, 0));
+
             // A copied vestibule leaves the cells another explorer occupies.
             var mark = BlockPos.containing(at(entry, -2, 1)).above();
             var far = BlockPos.containing(at(entry, -4, -1)).above();

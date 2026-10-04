@@ -73,7 +73,8 @@ public final class HouseTransitionEvents {
         if (dimension.equals(Level.OVERWORLD)) {
             // The doorstep itself is crossed by the door's handle, not the wall.
             if (HouseLayout.isInsideDomesticVolume(relX, relY, relZ)
-                    && !nearExteriorDoor(origin, player.getX(), player.getY(), player.getZ())) {
+                    && !nearExteriorDoor(origin, player.getX(), player.getY(), player.getZ())
+                    && !justCrossed(player)) {
                 scheduleEntry(player, data, relX, relY, relZ);
             }
             return;
@@ -409,7 +410,7 @@ public final class HouseTransitionEvents {
         if (HouseLayout.isInsideDomesticVolume(relX, relY, relZ)) {
             return true;
         }
-        if (nearExteriorDoor(origin, player.getX(), player.getY(), player.getZ())) {
+        if (nearExteriorDoor(origin, player.getX(), player.getY(), player.getZ()) || justCrossed(player)) {
             // Just crossed at the door and not yet through it.
             return true;
         }
@@ -421,6 +422,16 @@ public final class HouseTransitionEvents {
         }
         return data.isImpossibleDoorRevealed()
                 && HouseImpossibleHallway.isInsideWalkableVolume(origin, player.getX(), player.getY(), player.getZ());
+    }
+
+    /**
+     * A player who crossed by a door's handle arrives where they clicked from,
+     * which may be anywhere within reach of it; until they have passed the door
+     * or walked off, that spot is part of the House they arrived in.
+     */
+    private static boolean justCrossed(ServerPlayer player) {
+        PendingDoorClose pass = PENDING_DOOR_CLOSE.get(player.getUUID());
+        return pass != null && player.distanceToSqr(doorCentre(pass.origin, pass.door)) <= 36.0D;
     }
 
     private static HouseTransitionKind classify(double relX, double relY, double relZ) {
@@ -439,11 +450,14 @@ public final class HouseTransitionEvents {
             return;
         }
 
+        HouseLayout.ExteriorDoor door = HouseLayout.doorAt(relX, relY, relZ);
+        BlockPos origin = data.houseOrigin();
+        if (door == null && origin != null) door = exteriorDoorNear(origin, player.getX(), player.getY(), player.getZ(), DOOR_GRACE + 1.5D);
         beginPendingTransition(
                 player,
-                classify(relX, relY, relZ),
+                door != null ? HouseTransitionKind.DOOR : classify(relX, relY, relZ),
                 HouseDimensions.INTERIOR,
-                HouseLayout.doorAt(relX, relY, relZ),
+                door,
                 null,
                 null
         );
@@ -500,7 +514,7 @@ public final class HouseTransitionEvents {
         Vec3 centre = doorCentre(pending.origin, pending.door);
         MinecraftServer server = player.getServer();
         ServerLevel interior = server.getLevel(HouseDimensions.INTERIOR);
-        if (othersWithin(server.overworld(), centre, DOOR_GRACE, player) || interior != null && othersWithin(interior, centre, DOOR_GRACE, player)) {
+        if (othersWithin(server.overworld(), centre, 3.0D, player) || interior != null && othersWithin(interior, centre, 3.0D, player)) {
             DOOR_IDLE.remove(pending.door.name());
             return;
         }
@@ -519,8 +533,12 @@ public final class HouseTransitionEvents {
     // ------------------------------------------------------------------
     // The front and back doors: crossing by the handle
 
-    /** How close to an exterior door a player may stand on the wrong side of the wall, having just crossed at it. */
-    private static final double DOOR_GRACE = 3.0D;
+    /**
+     * How close to an exterior door a player may stand on the wrong side of the
+     * wall, having just crossed at it: the native 4.5-block interaction reach
+     * from the eyes, plus the door's half width.
+     */
+    private static final double DOOR_GRACE = 5.25D;
     private static final int DOOR_PASS_TIMEOUT_TICKS = 200;
     private static final int DOOR_IDLE_CLOSE_TICKS = 40;
     private static final int DOOR_IDLE_INTERVAL = 10;

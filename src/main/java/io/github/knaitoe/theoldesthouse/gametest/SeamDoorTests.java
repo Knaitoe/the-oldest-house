@@ -96,6 +96,27 @@ public final class SeamDoorTests {
         });
     }
 
+    @AfterBatch(batch="seam_reach") public static void reachCleanup(ServerLevel level){cleanup();}
+
+    @GameTest(template="empty",batch="seam_reach",timeoutTicks=60)
+    public static void aDoorClickedFromFullReachIsNotUndoneOnArrival(GameTestHelper h){
+        fixture=new Fixture(h,285000);var f=fixture;
+        f.player=NativeTestPlayers.survival(h,"exit_reach");var p=f.player;p.setNoGravity(true);
+        // Native reach is 4.5 blocks from the eyes: a playtest log showed this click bounced straight back inside.
+        p.teleportTo(f.inside,f.lower.getX()+.5,f.lower.getY(),f.lower.getZ()+4.45,180,0);p.setDeltaMovement(Vec3.ZERO);
+        var click=new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,f.lower,
+                new BlockHitResult(f.lower.getCenter(),Direction.SOUTH,f.lower,false));
+        NeoForge.EVENT_BUS.post(click);h.assertTrue(click.isCanceled()&&HouseTransitionEvents.isPending(p),"the far click queues an exit");
+        h.runAfterDelay(1,()->HouseTransitionEvents.onPlayerTick(new PlayerTickEvent.Post(p)));
+        h.runAfterDelay(3,()->{
+            h.assertTrue(p.serverLevel()==f.outside,"the player crossed");
+            p.moveTo(f.lower.getX()+.5,f.lower.getY(),f.lower.getZ()+4.45);p.setDeltaMovement(Vec3.ZERO);
+            for(int i=0;i<5;i++)HouseTransitionEvents.onPlayerTick(new PlayerTickEvent.Post(p));
+            h.assertTrue(p.serverLevel()==f.outside&&!HouseTransitionEvents.isPending(p),"the arrival spot within reach of the door does not send them back");
+            h.succeed();
+        });
+    }
+
     @AfterBatch(batch="seam_follow") public static void followCleanup(ServerLevel level){
         if(follower!=null){NativeTestPlayers.remove(follower);follower=null;}cleanup();
     }
