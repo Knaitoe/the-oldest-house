@@ -85,6 +85,39 @@ final class SceneDressing {
         return false;
     }
 
+    /** Story objects, containers, readable things and anything a mechanism listens to or is worked by. */
+    private static boolean interactive(BlockState state) {
+        Block block = state.getBlock();
+        String namespace = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getNamespace();
+        return state.hasBlockEntity() || block instanceof DoorBlock || block instanceof net.minecraft.world.level.block.BedBlock
+                || block instanceof net.minecraft.world.level.block.LadderBlock || block instanceof net.minecraft.world.level.block.TrapDoorBlock
+                || block instanceof net.minecraft.world.level.block.BasePressurePlateBlock || block instanceof net.minecraft.world.level.block.TripWireBlock
+                || block instanceof net.minecraft.world.level.block.TripWireHookBlock || block instanceof net.minecraft.world.level.block.ButtonBlock
+                || block instanceof net.minecraft.world.level.block.LeverBlock || block instanceof net.minecraft.world.level.block.SculkSensorBlock
+                || block instanceof net.minecraft.world.level.block.CampfireBlock || block instanceof net.minecraft.world.level.block.CauldronBlock
+                || block instanceof net.minecraft.world.level.block.PowderSnowBlock
+                // The House's own props (not its wall, floor and panel materials, which are whole blocks).
+                || ("the_oldest_house".equals(namespace) && !state.canOcclude()
+                        && block != HouseBlocks.SCENE_DETAIL.get() && block != HouseBlocks.HOUSEHOLD_FURNITURE.get());
+    }
+
+    /** Whether anything a story or mechanism needs stands within two blocks. */
+    private static boolean nearInteractive(ServerLevel level, BlockPos pos) {
+        for (BlockPos at : BlockPos.betweenClosed(pos.offset(-2, -2, -2), pos.offset(2, 2, 2)))
+            if (interactive(level.getBlockState(at))) return true;
+        return false;
+    }
+
+    /** Carpet muffles footsteps: rooms that listen for them get no rugs. */
+    private static boolean listens(ServerLevel level, BlockPos base, BoundingBox r) {
+        for (BlockPos at : BlockPos.betweenClosed(base.offset(r.minX(), r.minY(), r.minZ()), base.offset(r.maxX(), r.maxY(), r.maxZ()))) {
+            Block block = level.getBlockState(at).getBlock();
+            if (block instanceof net.minecraft.world.level.block.SculkSensorBlock || block instanceof net.minecraft.world.level.block.TripWireBlock
+                    || block instanceof net.minecraft.world.level.block.BasePressurePlateBlock) return true;
+        }
+        return false;
+    }
+
     private static boolean storyKept(LabyrinthPlace place, BlockPos base, BlockPos pos) {
         int x = pos.getX() - base.getX(), y = pos.getY() - base.getY(), z = pos.getZ() - base.getZ();
         if (VignetteArchitecture.storyReserved(place, x, y, z)) return true;
@@ -117,7 +150,7 @@ final class SceneDressing {
         if (theme.cobwebs()) changed += cobwebs(level, base, place, floor);
         if (!theme.furnishes()) return changed;
         changed += furnish(level, base, place, theme, floor, open);
-        if (theme.rug() != null) changed += rugs(level, base, place, theme.rug(), floor, open);
+        if (theme.rug() != null && !listens(level, base, r)) changed += rugs(level, base, place, theme.rug(), floor, open);
         return changed;
     }
 
@@ -148,7 +181,7 @@ final class SceneDressing {
             if (!open.contains(cell.relative(along)) || !open.contains(cell.relative(along.getOpposite()))) continue;
             if (!wall(level, cell.relative(along).relative(toWall)) || !wall(level, cell.relative(along.getOpposite()).relative(toWall))) continue;
             if (!level.getBlockState(cell).isAir() || !level.getBlockState(cell.above()).isAir() || !level.getBlockState(cell.above(2)).isAir()) continue;
-            if (nearDoor(level, cell) || storyKept(place, base, cell)) continue;
+            if (nearDoor(level, cell) || storyKept(place, base, cell) || nearInteractive(level, cell)) continue;
             boolean crowded = false;
             for (BlockPos other : placed) if (other.distManhattan(cell) < 4) crowded = true;
             if (crowded) continue;
@@ -196,7 +229,7 @@ final class SceneDressing {
                 BlockPos near = cell.offset(dx, 0, dz);
                 inner = open.contains(near) && level.getBlockState(near).isAir();
             }
-            if (!inner || storyKept(place, base, cell) || nearDoor(level, cell)) continue;
+            if (!inner || storyKept(place, base, cell) || nearDoor(level, cell) || nearInteractive(level, cell)) continue;
             if (!level.getBlockState(cell.below()).isFaceSturdy(level, cell.below(), Direction.UP)) continue;
             level.setBlock(cell, rug.defaultBlockState(), FLAGS);
             changed++;
@@ -218,7 +251,7 @@ final class SceneDressing {
                     if (first != null && side.getAxis() != first.getAxis()) walls = 2;
                     if (first == null) first = side;
                 }
-            if (walls < 2 || hash(top, 17 + place.ordinal()) >= 400 || storyKept(place, base, top) || nearDoor(level, top)) continue;
+            if (walls < 2 || hash(top, 17 + place.ordinal()) >= 400 || storyKept(place, base, top) || nearDoor(level, top) || nearInteractive(level, top)) continue;
             level.setBlock(top, Blocks.COBWEB.defaultBlockState(), FLAGS);
             changed++;
         }
@@ -269,7 +302,7 @@ final class SceneDressing {
         int changed = 0;
         for (BlockPos ground : tops) {
             BlockPos above = ground.above();
-            if (storyKept(place, base, above) || nearDoor(level, above)) continue;
+            if (storyKept(place, base, above) || nearDoor(level, above) || nearInteractive(level, above)) continue;
             BlockState top = level.getBlockState(ground);
             int h = hash(ground, 101 + place.ordinal());
             BlockState plant = null;
