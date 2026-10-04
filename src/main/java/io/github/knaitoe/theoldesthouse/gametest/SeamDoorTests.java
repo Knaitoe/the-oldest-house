@@ -80,6 +80,9 @@ public final class SeamDoorTests {
         var click=new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,f.lower,
                 new BlockHitResult(f.lower.getCenter(),Direction.SOUTH,f.lower,false));
         NeoForge.EVENT_BUS.post(click);h.assertTrue(click.isCanceled()&&HouseTransitionEvents.isPending(p),"the real closed-door handle queues an exit");
+        // The mock connection has no client to acknowledge respawn. Drive the
+        // production player tick on the next native test tick, as other seam fixtures do.
+        h.runAfterDelay(1,()->HouseTransitionEvents.onPlayerTick(new PlayerTickEvent.Post(p)));
         h.runAfterDelay(3,()->{
             h.assertTrue(p.serverLevel()==f.outside&&!HouseTransitionEvents.isPending(p),"the actual native player crosses to the Overworld");
             f.assertDoor(h,true);
