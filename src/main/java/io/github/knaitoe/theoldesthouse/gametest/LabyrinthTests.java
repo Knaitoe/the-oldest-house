@@ -751,7 +751,8 @@ public final class LabyrinthTests {
             // Production carves these periods into a uniformly filled native slot.
             // Include the untouched corner columns, rather than inheriting prior test terrain.
             for (BlockPos at : BlockPos.betweenClosed(base.offset(-2, -1, -50), base.offset(15, 3, 1))) {
-                level.setBlock(at, LabyrinthBuilder.SOLID, LabyrinthBuilder.flags());
+                level.setBlock(at, Blocks.WHITE_TERRACOTTA.defaultBlockState(),
+                        net.minecraft.world.level.block.Block.UPDATE_CLIENTS | net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE);
             }
             LabyrinthLoops.buildHallway(level, base, place);
             for (int k = 0; k <= 1; k++) {
