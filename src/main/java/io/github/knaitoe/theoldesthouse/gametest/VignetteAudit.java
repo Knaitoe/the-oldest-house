@@ -201,6 +201,8 @@ public final class VignetteAudit {
 
         // Block light over the floor, propagated through the actual blocks (sky ignored).
         int darkPercent = (int) Math.round(100 * io.github.knaitoe.theoldesthouse.labyrinth.ScenePolish.darkFraction(level, base, scene));
+        // Count only floor a visitor can reach from a doorway.
+        if (!outdoor) floor = io.github.knaitoe.theoldesthouse.labyrinth.ScenePolish.reachableFloor(level, base, scene);
         // Outdoor edges: perimeter columns whose ground ends at the void just past the edge.
         int voidEdges = 0, perimeter = 0, holes = 0;
         if (outdoor) {

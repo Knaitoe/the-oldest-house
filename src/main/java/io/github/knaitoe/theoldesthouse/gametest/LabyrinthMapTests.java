@@ -92,4 +92,59 @@ public final class LabyrinthMapTests {
         }
         h.succeed();
     }
+
+    private static LabyrinthData.Door onlyDoor(LabyrinthData data, LabyrinthPlace place) {
+        for (var spec : place.doors()) {
+            var door = data.door(place.doorId(spec));
+            if (door != null && LabyrinthData.DEALT.equals(door.destination)) return door;
+        }
+        throw new IllegalStateException(place.id() + " has no dealt door");
+    }
+
+    @GameTest(template = "empty")
+    public static void thereIsAlwaysAWayDeeper(GameTestHelper h) {
+        LabyrinthData data = new LabyrinthData();
+        LabyrinthBuilder.registerDoors(data, LabyrinthPlace.STRAIGHT_HALL, new BlockPos(0, 64, 0));
+        UUID player = UUID.randomUUID();
+        for (int i = 0; i < 8; i++) data.pushReturn(player, new LabyrinthData.Waypoint(HouseDimensions.INTERIOR, new Vec3(i * 7, 64, 3), 0.0F, true));
+        var door = onlyDoor(data, LabyrinthPlace.STRAIGHT_HALL);
+
+        // A story behind a corridor's only door is kept; once it cannot lead on, the door is turned to a way deeper.
+        data.deal(player, door, LabyrinthPlace.HARRIGAN.id(), true);
+        h.assertTrue(!LabyrinthDealer.hasWayOn(data, player, LabyrinthPlace.STRAIGHT_HALL, null), "a story is not a way on");
+        LabyrinthDealer.openWayOn(data, player, door, LabyrinthPlace.STRAIGHT_HALL, RandomSource.create(3));
+        var opened = LabyrinthPlace.byId(data.deal(player, door).place());
+        h.assertTrue(LabyrinthDealer.onward(opened) && LabyrinthDealer.hasWayOn(data, player, LabyrinthPlace.STRAIGHT_HALL, null),
+                "the door now leads somewhere that goes on: " + opened);
+        h.assertTrue(data.node(player, data.nodeKey(player, LabyrinthPlace.STRAIGHT_HALL)).get(door.id).place().equals(opened.id()),
+                "and the map remembers it");
+
+        // A loop behind the only door is never the only way on.
+        data.deal(player, door, LabyrinthPlace.LONG_HALLWAY.id(), false);
+        var looped = new java.util.HashMap<String, LabyrinthData.Deal>();
+        looped.put(door.id, data.deal(player, door));
+        data.rememberNode(player, data.nodeKey(player, LabyrinthPlace.STRAIGHT_HALL), looped);
+        LabyrinthDealer.arriveAt(data, player, LabyrinthPlace.STRAIGHT_HALL, SALT);
+        h.assertTrue(LabyrinthDealer.wayOn(data, player, door), "arriving where only a loop would lead on opens an ordinary way deeper: "
+                + data.deal(player, door).place());
+        h.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void theGreatStaircaseWaitsInTheDeepLabyrinth(GameTestHelper h) {
+        LabyrinthData data = new LabyrinthData();
+        UUID player = UUID.randomUUID();
+        var world = new CompoundTag();
+        var record = new CompoundTag();
+        record.putBoolean("Discovered", true);
+        world.put(player.toString(), record);
+        data.setState(FinaleProgress.STATE, world);
+        h.assertTrue(FinaleController.canOffer(data, player), "a discovered staircase can be offered again");
+        for (int i = 0; i < LabyrinthPacing.STAIRCASE_DEPTH - 1; i++)
+            data.pushReturn(player, new LabyrinthData.Waypoint(HouseDimensions.INTERIOR, new Vec3(i, 64, 0), 0.0F, true));
+        h.assertTrue(!LabyrinthDealer.finaleOffered(data, player), "but not in the earlier halls");
+        data.pushReturn(player, new LabyrinthData.Waypoint(HouseDimensions.INTERIOR, new Vec3(99, 64, 0), 0.0F, true));
+        h.assertTrue(LabyrinthDealer.finaleOffered(data, player), "only deep in the labyrinth");
+        h.succeed();
+    }
 }
