@@ -154,7 +154,7 @@ public final class HotelTests {
         p.teleportTo(f.outside,f.gb.getX()+.5,f.gb.getY(),f.gb.getZ()-3,180,0);p.hasChangedDimension();p.setNoGravity(true);HotelVignette.onArrive(p,LabyrinthPlace.HOTEL_GROUNDS);
         h.runAfterDelay(30,()->{
             h.assertTrue(HotelVignette.world(f.data()).getInt("Graves")==52,"the fifty-third loss never places a grave over the void");
-            for(int plot=0;plot<52;plot++){var at=f.gb.offset(-24+(plot%13)*4,0,-59-(plot/13)*3);h.assertTrue(f.outside.getBlockState(at).is(HotelRegistry.PROP.get())&&!f.outside.getBlockState(at.below()).isAir(),"each native grave remains within the supported four rows");}
+            for(int plot=0;plot<52;plot++){var at=f.gb.offset(-24+(plot%13)*4,0,-59-(plot/13)*3);h.assertTrue(f.outside.getBlockState(at).is(HotelRegistry.PROP.get())&&!f.outside.getBlockState(at.below()).isAir()&&!f.outside.getBlockState(at.below(2)).isAir(),"native grave "+plot+" retains a real foundation within the four supported rows: "+at);}
             h.assertTrue(f.outside.getBlockState(f.gb.offset(-24,0,-71)).isAir(),"there is no fifty-third headstone beyond the actual grounds");
             var at=f.gb.offset(-24,0,-71);f.outside.setBlock(at,HotelRegistry.PROP.get().defaultBlockState().setValue(HotelPropBlock.KIND,HotelPropBlock.Kind.HEADSTONE),3);f.outside.setBlock(at.below(),Blocks.GRAVEL.defaultBlockState(),3);var overflow=EntityType.TEXT_DISPLAY.create(f.outside);overflow.moveTo(at.getX()+.5,at.getY()+1.8,at.getZ()+.5);overflow.addTag("HotelGrave");f.outside.addFreshEntity(overflow);
             h.assertTrue(overflow.isRemoved()&&f.outside.getBlockState(at).isAir()&&f.outside.getBlockState(at.below()).isAir(),"a loaded legacy overflow cleans only its own old headstone and support");
