@@ -37,6 +37,10 @@ import net.neoforged.neoforge.event.level.BlockEvent;
 public final class LiteraryCopies extends SavedData {
     public static final String PROJECTION="LiteraryCopyProjection",HEIRLOOM="LiteraryCopyHeirloom";
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
+    private static final TicketType<String> CAPTURE_TICKET=TicketType.create(TheOldestHouse.MOD_ID+"_literary_capture",String::compareTo);
+    private record CaptureLease(ServerLevel level,List<ChunkPos> chunks) {}
+    private final Map<String,CaptureLease> captureLeases=new HashMap<>();
+    private static LiteraryCopies leasedData;
     public static final Factory<LiteraryCopies> FACTORY=new Factory<>(LiteraryCopies::new,LiteraryCopies::load);
     private static final class Copy {
         final UUID reader;final LabyrinthPlace place;final int index;final BlockPos bed;final long day;RoomSnapshot snapshot;RoomSnapshot.Builder capture;int capturedColumns,buildCursor;boolean captured,built;CompoundTag meta=new CompoundTag();ListTag entities=new ListTag();
@@ -113,7 +117,7 @@ public final class LiteraryCopies extends SavedData {
     }
     public static @Nullable LabyrinthData.Door prepareEntry(ServerPlayer p,LabyrinthPlace place){var c=get(p.server).copy(p.getUUID(),place);if(c==null||!c.built||place==LabyrinthPlace.FAMILY_COPY&&p.server.overworld().getDayTime()/24000-c.day<14)return null;return LabyrinthData.get(p.server).door(c.key()+"/entry");}
     public static @Nullable LabyrinthData.Door entry(ServerPlayer p,LabyrinthPlace place){var c=get(p.server).copy(p.getUUID(),place);return c==null?null:LabyrinthData.get(p.server).door(c.key()+"/entry");}
-    public static void tick(MinecraftServer server){var data=get(server);var lab=LabyrinthData.get(server);for(var p:server.getPlayerList().getPlayers()){
+    public static void tick(MinecraftServer server){var data=get(server);if(leasedData!=data){clearAll();leasedData=data;}var lab=LabyrinthData.get(server);for(var p:server.getPlayerList().getPlayers()){
             if(!LiteraryVignettes.participant(p))continue;var own=data.readers.computeIfAbsent(p.getUUID(),id->new CompoundTag());if(HouseDimensions.isHouseDimension(p.level().dimension())||!lab.visited(p.getUUID()).isEmpty()){if(!own.getBoolean("HouseSeen")){own.putBoolean("HouseSeen",true);data.setDirty();}}
             if(!p.level().dimension().equals(Level.OVERWORLD)||!p.isSleeping()||p.getSleepingPos().isEmpty())continue;var bed=p.getSleepingPos().get();long day=server.overworld().getDayTime()/24000;boolean newNight=own.getLong("SleepDay")!=day+1;if(newNight){own.putLong("SleepDay",day+1);own.putInt("Nights",own.getInt("Nights")+1);data.setDirty();}
             if(data.copy(p.getUUID(),LabyrinthPlace.OLD_CABIN)==null){var c=new Copy(p.getUUID(),LabyrinthPlace.OLD_CABIN,data.nextIndex++,bed,day);data.copies.put(c.key(),c);data.setDirty();}
@@ -126,6 +130,16 @@ public final class LiteraryCopies extends SavedData {
         }
     }
     private int capture(MinecraftServer s,Copy c,int budget){var l=s.overworld();int half=c.place==LabyrinthPlace.FAMILY_COPY?32:8,below=c.place==LabyrinthPlace.FAMILY_COPY?16:8,height=c.place==LabyrinthPlace.FAMILY_COPY?48:24;int size=half*2;int minX=c.bed.getX()-half,minZ=c.bed.getZ()-half;int cols=((minX+size-1)>>4)-(minX>>4)+1,rows=((minZ+size-1)>>4)-(minZ>>4)+1,total=cols*rows,used=0;
+        // Entity sections become available after their block chunks. Keep the entire
+        // bounded source loaded across capture ticks so earlier sections cannot unload
+        // while the final section is still pending. Each copy owns a separate lease.
+        if(!captureLeases.containsKey(c.key())){
+            var chunks=new ArrayList<ChunkPos>();
+            for(int x=minX>>4;x<=((minX+size-1)>>4);x++)for(int z=minZ>>4;z<=((minZ+size-1)>>4);z++){
+                var chunk=new ChunkPos(x,z);l.getChunkSource().addRegionTicket(CAPTURE_TICKET,chunk,3,c.key());chunks.add(chunk);
+            }
+            captureLeases.put(c.key(),new CaptureLease(l,chunks));
+        }
         while(c.capturedColumns<total&&used<budget){int cx=(minX>>4)+c.capturedColumns%cols,cz=(minZ>>4)+c.capturedColumns/cols;l.getChunk(cx,cz);for(int x=Math.max(minX,cx*16);x<Math.min(minX+size,cx*16+16);x++)for(int z=Math.max(minZ,cz*16);z<Math.min(minZ+size,cz*16+16);z++)for(int y=c.bed.getY()-below;y<c.bed.getY()+height-below;y++){
                 var at=new BlockPos(x,y,z);var state=l.getBlockState(at);var be=l.getBlockEntity(at);CompoundTag tag=null;if(be instanceof SignBlockEntity||be instanceof BannerBlockEntity||be instanceof SkullBlockEntity)tag=be.saveWithFullMetadata(l.registryAccess());c.capture.set(at.subtract(c.bed),state,tag);
                 if(state.getBlock() instanceof DoorBlock&&state.getValue(DoorBlock.HALF)==DoubleBlockHalf.LOWER&&(!c.meta.contains("Front")||c.meta.contains("OriginalFront")&&c.meta.getLong("OriginalFront")==at.asLong())){c.meta.putLong("Front",at.subtract(c.bed).asLong());c.meta.putString("FrontFacing",state.getValue(DoorBlock.FACING).getName());}if(state.getBlock() instanceof BedBlock&&!c.meta.contains("Bedroom"))c.meta.putLong("Bedroom",at.subtract(c.bed).asLong());if(state.is(Blocks.CRAFTING_TABLE)&&!c.meta.contains("Kitchen"))c.meta.putLong("Kitchen",at.subtract(c.bed).asLong());}
@@ -134,9 +148,19 @@ public final class LiteraryCopies extends SavedData {
             boolean entitiesReady=true;
             for(int x=minX>>4;x<=((minX+size-1)>>4);x++)for(int z=minZ>>4;z<=((minZ+size-1)>>4);z++){l.getChunk(x,z);entitiesReady&=l.areEntitiesLoaded(ChunkPos.asLong(x,z));}
             if(!entitiesReady)return used;
-            c.snapshot=c.capture.build(s.overworld().getGameTime(),c.day,c.bed.asLong());if(c.place==LabyrinthPlace.FAMILY_COPY&&c.meta.contains("Front"))c.meta.putInt("SceneOffset",Math.min(-34,-14-BlockPos.of(c.meta.getLong("Front")).getZ()));c.captured=true;c.capture=null;var box=new AABB(Vec3.atLowerCornerOf(c.bed.offset(-half,-below,-half)),Vec3.atLowerCornerOf(c.bed.offset(half,height-below,half)));for(var e:l.getEntities((Entity)null,box,e->e instanceof TamableAnimal||e instanceof net.minecraft.world.entity.animal.Animal||e instanceof ItemFrame||e instanceof ArmorStand)){if(c.entities.size()>=48)break;var tag=new CompoundTag();if(e.save(tag)){tag.remove("UUID");tag.remove("Owner");tag.remove("Leash");tag.remove("Passengers");tag.putDouble("CopyX",e.getX()-c.bed.getX());tag.putDouble("CopyY",e.getY()-c.bed.getY());tag.putDouble("CopyZ",e.getZ()-c.bed.getZ());c.entities.add(tag);}}setDirty();}
+            c.snapshot=c.capture.build(s.overworld().getGameTime(),c.day,c.bed.asLong());if(c.place==LabyrinthPlace.FAMILY_COPY&&c.meta.contains("Front"))c.meta.putInt("SceneOffset",Math.min(-34,-14-BlockPos.of(c.meta.getLong("Front")).getZ()));c.captured=true;c.capture=null;var box=new AABB(Vec3.atLowerCornerOf(c.bed.offset(-half,-below,-half)),Vec3.atLowerCornerOf(c.bed.offset(half,height-below,half)));for(var e:l.getEntities((Entity)null,box,e->e instanceof TamableAnimal||e instanceof net.minecraft.world.entity.animal.Animal||e instanceof ItemFrame||e instanceof ArmorStand)){if(c.entities.size()>=48)break;var tag=new CompoundTag();if(e.save(tag)){tag.remove("UUID");tag.remove("Owner");tag.remove("Leash");tag.remove("Passengers");tag.putDouble("CopyX",e.getX()-c.bed.getX());tag.putDouble("CopyY",e.getY()-c.bed.getY());tag.putDouble("CopyZ",e.getZ()-c.bed.getZ());c.entities.add(tag);}}releaseCapture(c.key());setDirty();}
         return used;
     }
+    private void releaseCapture(String key){
+        var lease=captureLeases.remove(key);
+        if(lease!=null)for(var chunk:lease.chunks)lease.level.getChunkSource().removeRegionTicket(CAPTURE_TICKET,chunk,3,key);
+    }
+    /** Runtime leases are recreated from saved cursors and never survive a store/server reset. */
+    public static void clearAll(){
+        if(leasedData!=null)for(var key:new ArrayList<>(leasedData.captureLeases.keySet()))leasedData.releaseCapture(key);
+        leasedData=null;
+    }
+    public static int heldCaptureChunks(){return leasedData==null?0:leasedData.captureLeases.values().stream().mapToInt(lease->lease.chunks.size()).sum();}
     private static boolean hasHomeDoor(ServerLevel l,BlockPos bed){for(var at:BlockPos.betweenClosed(bed.offset(-24,-8,-24),bed.offset(24,8,24)))if(l.getBlockState(at).getBlock() instanceof DoorBlock)return true;return false;}
     /** A grey walk ends outside the captured door. It adds supports only in air and never carves originals. */
     private static void approach(ServerLevel l,BlockPos b,Copy c){var target=front(c);var face=Direction.byName(c.meta.getString("FrontFacing"));if(face==null)face=Direction.SOUTH;var destination=target.relative(face,2);if(!clear(l,b.offset(destination)))destination=target.relative(face.getOpposite(),2);var start=new BlockPos(0,0,-9);var todo=new ArrayDeque<BlockPos>();var previous=new HashMap<BlockPos,BlockPos>();todo.add(start);previous.put(start,start);int count=0;while(!todo.isEmpty()&&count++<24000){var at=todo.remove();if(at.equals(destination))break;for(var side:Direction.Plane.HORIZONTAL)for(int dy:new int[]{0,-1,1}){var next=at.relative(side).offset(0,dy,0);if(Math.abs(next.getX())>35||next.getZ()>-8||next.getZ()<c.offset()-35||next.getY()<-16||next.getY()>31||previous.containsKey(next)||!clear(l,b.offset(next)))continue;previous.put(next,at);todo.add(next);}}if(!previous.containsKey(destination))return;var at=destination;while(!at.equals(start)){var floor=b.offset(at).below();if(l.getBlockState(floor).isAir())l.setBlock(floor,Blocks.GRAY_CONCRETE.defaultBlockState(),F);at=previous.get(at);}}
