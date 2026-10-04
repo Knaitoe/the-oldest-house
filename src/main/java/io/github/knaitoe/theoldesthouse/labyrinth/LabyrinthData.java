@@ -46,7 +46,8 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class LabyrinthData extends SavedData {
     private static final String DATA_NAME = "the_oldest_house_labyrinth";
-    private static final int MAX_RETURNS = 16;
+    /** The way back is remembered this many doors deep; the great staircase waits at twenty. */
+    private static final int MAX_RETURNS = 32;
 
     public static final String DEALT = "dealt";
     public static final String RETURN = "return";

@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 32;
+    public static final int VERSION = 33;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -136,7 +136,7 @@ public final class LabyrinthBuilder {
         return switch (place) {
             case FOLDED_MAZE -> LabyrinthPacing.STRANGE_DEPTH;
             case SPIRAL_STAIR, FRACTURED_WALKWAY, LIGHT_SINK, BLIND_STRETCH, MOVING_THRESHOLD -> 10;
-            case DEEP_MAZE -> LabyrinthPacing.DEEP_DEPTH;
+            case DEEP_MAZE, STONE_GALLERY, STONE_CROSSING, STONE_DESCENT -> LabyrinthPacing.DEEP_DEPTH;
             case HOTEL_HALLWAY, COMPRESSION_PASSAGE, GRAVITY_DRIFT, DUPLICATE_PASSAGE, HOTEL, HOTEL_GROUNDS -> 14;
             case ABYSS_MAZE -> LabyrinthPacing.ABYSS_DEPTH;
             default -> LabyrinthPacing.STORY_DEPTH;
@@ -224,6 +224,7 @@ public final class LabyrinthBuilder {
                     || (data.builtVersion() < 30 && place.slot() >= 40)
                     || (data.builtVersion() < 31 && place.slot() >= 42)
                     || (data.builtVersion() < 32 && place.slot() >= 45)
+                    || (data.builtVersion() < 33 && place.slot() >= 69)
                     || (data.builtVersion() < 12 && LabyrinthMaze.isMaze(place))
                     || (data.builtVersion() == 10 && place == LabyrinthPlace.MOTHER_DEN);
             boolean domestic = place == LabyrinthPlace.JUNCTION || LabyrinthHalls.isHall(place) || LabyrinthMaze.isMaze(place);
@@ -546,6 +547,7 @@ public final class LabyrinthBuilder {
             case GRAVITY_DRIFT -> LabyrinthHazards.buildGravityDrift(level, base);
             case EXPLORER_CAMP -> LabyrinthCampsite.build(server, level, base);
             case MOTHER_DEN -> MotherOfStrays.build(server, level, base);
+            case STONE_GALLERY, STONE_CROSSING, STONE_DESCENT -> StoneHalls.build(level, base, place);
             default -> {
             }
         }

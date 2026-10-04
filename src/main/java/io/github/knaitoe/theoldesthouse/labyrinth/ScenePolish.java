@@ -64,7 +64,8 @@ public final class ScenePolish {
             LabyrinthPlace.MOVING_THRESHOLD, LabyrinthPlace.DUPLICATE_PASSAGE, LabyrinthPlace.GRAVITY_DRIFT, LabyrinthPlace.FRACTURED_WALKWAY,
             LabyrinthPlace.LONG_HALLWAY, LabyrinthPlace.HOTEL_HALLWAY, LabyrinthPlace.SPIRAL_STAIR, LabyrinthPlace.MOTHER_DEN,
             LabyrinthPlace.GOATMAN, LabyrinthPlace.SEANCE, LabyrinthPlace.CRIMSON_HALL, LabyrinthPlace.USHER, LabyrinthPlace.CHILD_ROOM,
-            LabyrinthPlace.GHOSTS_SET, LabyrinthPlace.CONFESSION, LabyrinthPlace.GRAY_CORRIDOR, LabyrinthPlace.WHALE);
+            LabyrinthPlace.GHOSTS_SET, LabyrinthPlace.CONFESSION, LabyrinthPlace.GRAY_CORRIDOR, LabyrinthPlace.WHALE,
+            LabyrinthPlace.STONE_GALLERY, LabyrinthPlace.STONE_CROSSING, LabyrinthPlace.STONE_DESCENT);
     /** The mazes keep most of their dark, with a lamp often enough to read the walls by. */
     private static final Set<LabyrinthPlace> SPARSE = EnumSet.of(LabyrinthPlace.FOLDED_MAZE, LabyrinthPlace.DEEP_MAZE, LabyrinthPlace.ABYSS_MAZE);
     private static final int BORDER = 12;
