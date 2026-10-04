@@ -1,9 +1,12 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Ordered construction commands, executed only on the server thread in bounded slices. */
@@ -47,9 +50,43 @@ public final class BuildBlocks {
     public static final class Plan {
         private final ServerLevel level;
         private final List<Command> commands = new ArrayList<>();
+        /**
+         * Recording happens synchronously, so later authored reads must not walk the
+         * entire construction plan. Keep only block-affecting commands indexed by
+         * chunk; command order inside each bucket is still the original authoring order.
+         */
+        private final Map<Long, List<Command>> stateIndex = new HashMap<>();
         private int cursor;
         private int lastVisits;
         private Plan(ServerLevel level) { this.level = level; }
+
+        private void add(Command command, BlockPos a, BlockPos b) {
+            commands.add(command);
+            int minChunkX = Math.min(a.getX(), b.getX()) >> 4;
+            int maxChunkX = Math.max(a.getX(), b.getX()) >> 4;
+            int minChunkZ = Math.min(a.getZ(), b.getZ()) >> 4;
+            int maxChunkZ = Math.max(a.getZ(), b.getZ()) >> 4;
+            for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
+                for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
+                    stateIndex.computeIfAbsent(ChunkPos.asLong(chunkX, chunkZ), ignored -> new ArrayList<>()).add(command);
+                }
+            }
+        }
+
+        private void add(Command command) {
+            commands.add(command);
+        }
+
+        private BlockState authoredStateAt(BlockPos pos) {
+            List<Command> local = stateIndex.get(ChunkPos.asLong(pos.getX() >> 4, pos.getZ() >> 4));
+            if (local == null) return null;
+            for (int i = local.size() - 1; i >= 0; i--) {
+                BlockState state = local.get(i).stateAt(pos);
+                if (state != null) return state;
+            }
+            return null;
+        }
+
         /** A hard position limit also bounds slices on faster machines. */
         public boolean tick() {
             lastVisits = 0;
@@ -74,7 +111,8 @@ public final class BuildBlocks {
 
     public static void box(ServerLevel level, BlockPos a, BlockPos b, BlockState state, int flags) {
         if (recording != null && recording.level == level) {
-            recording.commands.add(new Fill(a, b, state, flags));
+            Fill fill = new Fill(a, b, state, flags);
+            recording.add(fill, fill.low, fill.high);
         } else {
             for (BlockPos pos : BlockPos.betweenClosed(a, b)) level.setBlock(pos, state, flags);
         }
@@ -87,10 +125,8 @@ public final class BuildBlocks {
     /** Read earlier authored commands when a later prop depends on them. */
     public static BlockState state(ServerLevel level, BlockPos pos) {
         if (recording != null && recording.level == level) {
-            for (int i = recording.commands.size() - 1; i >= 0; i--) {
-                BlockState state = recording.commands.get(i).stateAt(pos);
-                if (state != null) return state;
-            }
+            BlockState state = recording.authoredStateAt(pos);
+            if (state != null) return state;
         }
         return level.getBlockState(pos);
     }
@@ -98,7 +134,7 @@ public final class BuildBlocks {
     /** Native books, sign text and actors are installed once, after their supporting blocks. */
     public static void after(ServerLevel level, Runnable action) {
         if (recording != null && recording.level == level) {
-            recording.commands.add(new Command() {
+            recording.add(new Command() {
                 public boolean step(ServerLevel ignored) { action.run(); return true; }
             });
         } else action.run();
