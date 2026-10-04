@@ -88,11 +88,12 @@ public final class LiteraryRooms {
             if(flight<15){for(int zz=z-1;zz>=z-3;zz--)for(int x=turn-1;x<=turn+1;x++){box(l,b,x,y,zz,x,y+3,zz,Blocks.AIR);l.setBlock(b.offset(x,y,zz),Blocks.OAK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,type),F);}}
             for(int x=-21;x<=21;x++)at(l,b,x,y+1,z-1,Blocks.DARK_OAK_FENCE);
         }
-        box(l,b,-25,-1,-8,-22,-1,-3,Blocks.OAK_PLANKS);box(l,b,-25,0,-8,-22,3,-3,Blocks.AIR);
+        box(l,b,-25,-1,-8,-22,-1,-3,Blocks.OAK_PLANKS);box(l,b,-25,0,-7,-22,3,-3,Blocks.AIR);
         box(l,b,-24,7,-73,28,7,-70,Blocks.OAK_PLANKS);box(l,b,-24,8,-73,28,10,-70,Blocks.AIR);
-        steps(l,b,-10,-5,0,6,false);box(l,b,-11,5,-10,-9,7,-10,Blocks.OAK_PLANKS);
+        box(l,b,-24,7,-70,-22,10,-69,Blocks.AIR);box(l,b,-24,7,-70,-22,7,-69,Blocks.OAK_PLANKS);
+        steps(l,b,-28,-5,0,6,false);box(l,b,-29,5,-10,-27,7,-10,Blocks.OAK_PLANKS);
         box(l,b,24,7,-74,28,7,-63,Blocks.DARK_OAK_PLANKS);door(l,b,25,8,-63,Direction.SOUTH,true);box(l,b,24,0,-62,28,8,-59,Blocks.AIR);box(l,b,24,-1,-62,28,-1,-59,Blocks.HAY_BLOCK);
-        desk(l,b,26,8,-70);for(int z:new int[]{-8,-26,-44,-60})light(l,b,0,11,z);NovelRooms.sign(l,b.offset(-10,5,-9),Direction.SOUTH,new String[]{"ATTIC","Continue upward","",""});
+        desk(l,b,26,8,-70);for(int z:new int[]{-8,-26,-44,-60})light(l,b,0,11,z);NovelRooms.sign(l,b.offset(-28,5,-9),Direction.SOUTH,new String[]{"ATTIC","Continue upward","",""});
     }
     private static void child(ServerLevel l,BlockPos b){
         room(l,b,-11,11,-24,0,0,6,Blocks.CALCITE,Blocks.BIRCH_PLANKS);door(l,b,-11,0,-11,Direction.EAST,false);door(l,b,11,0,-17,Direction.WEST,false);box(l,b,-4,2,-24,4,3,-24,Blocks.GLASS);

@@ -10,6 +10,7 @@ import java.util.*;
 import net.minecraft.core.*;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.*;
@@ -102,6 +103,7 @@ public final class ArchitectureTests {
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL,"hotel_upstairs");
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL,"hotel_basement");
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.BLIND_STRETCH),LabyrinthPlace.BLIND_STRETCH,"blind_stretch");
+            literaryRoutes(h,interior,LabyrinthPlaces.base(origin,LabyrinthPlace.WINCHESTER));
             h.assertTrue(dressed==23&&props>=94,"all twenty-three authored scenes/camps receive supported detail; the copied Red Room stays personal");
             shellsAndEdges(h,server,origin,data);
             frontsAndInteriors(h,server,origin,data);
@@ -132,6 +134,20 @@ public final class ArchitectureTests {
             }
             server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);server.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);LabyrinthBuilder.clearAll();LabyrinthDoors.clearAll();
         }
+    }
+    private static void literaryRoutes(GameTestHelper h,ServerLevel level,BlockPos b){
+        // The slow stair rises eight blocks through sixteen long flights and fifteen connected turns.
+        for(int flight=0;flight<16;flight++){int layer=flight/2,z=-8-flight*4;double feet=layer+(flight%2==0?.5:1);
+            for(int x=-23;x<=23;x++)supportedBody(h,level,b,x,feet,z,"Winchester flight "+flight);
+            if(flight<15){int turn=flight%2==0?23:-23;for(int dz=1;dz<4;dz++)supportedBody(h,level,b,turn,feet,z-dz,"Winchester turn "+flight);}
+        }
+        for(int z=-69;z>=-72;z--)supportedBody(h,level,b,-23,8,z,"Winchester upper landing");
+        for(int x=-23;x<=25;x++)supportedBody(h,level,b,x,8,-72,"Winchester ledger approach");
+        h.assertTrue(level.getBlockState(b.offset(26,9,-70)).is(LiteraryRegistry.PROP.get())&&level.getBlockState(b.offset(25,-1,-60)).is(Blocks.HAY_BLOCK),"the real upper ledger and survivable drop remain in the authored wing");
+    }
+    private static void supportedBody(GameTestHelper h,ServerLevel level,BlockPos b,int x,double feet,int z,String route){double xx=b.getX()+x,yy=b.getY()+feet,zz=b.getZ()+z;
+        h.assertTrue(level.noCollision(null,new AABB(xx+.2,yy+.01,zz+.2,xx+.8,yy+1.8,zz+.8)),route+" clears a native player body at "+x+","+feet+","+z);
+        h.assertTrue(!level.noCollision(null,new AABB(xx+.2,yy-.04,zz+.2,xx+.8,yy-.01,zz+.8)),route+" has an actual supporting tread at "+x+","+feet+","+z);
     }
     private static void frontsAndInteriors(GameTestHelper h,net.minecraft.server.MinecraftServer server,BlockPos origin,LabyrinthData data){
         for(var scene:List.of(LabyrinthPlace.DROWNED_TOWN,LabyrinthPlace.GOATMAN,LabyrinthPlace.HOLLOWAY_CAMP,LabyrinthPlace.ZAMPANO_COURTYARD))h.assertTrue(data.state(SceneExteriors.STATE).getBoolean(origin.asLong()+":"+scene.id()),scene.id()+" has a finite exterior checkpoint");
