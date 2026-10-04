@@ -76,6 +76,8 @@ public final class LabyrinthDealer {
         if(!data.hillaryScent(player))places.removeIf(p->p==LabyrinthPlace.RED_ROOM
                 && data.recentVisit(player,p)>=0 && data.recentVisit(player,p)<6);
         places.removeIf(site->data.state("literary_cabin_closure_0436").getString("Retired").equals(site.id()));
+        // Only places that already stand can be dealt; deeper ones are still being built ahead of explorers.
+        places.removeIf(site->site!=LabyrinthPlace.FAMILY_COPY&&site!=LabyrinthPlace.OLD_CABIN&&!LabyrinthBuilder.isPlaceReady(data,site));
         return places;
     }
 
@@ -162,6 +164,7 @@ public final class LabyrinthDealer {
             gray.add(LabyrinthPlace.GRAVITY_DRIFT);
             gray.add(LabyrinthPlace.DUPLICATE_PASSAGE);
         }
+        gray.removeIf(place -> !LabyrinthBuilder.isPlaceReady(data, place));
         return gray;
     }
 

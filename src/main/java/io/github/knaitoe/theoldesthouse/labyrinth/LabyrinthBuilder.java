@@ -59,6 +59,21 @@ public final class LabyrinthBuilder {
     private static final Set<LabyrinthPlace> architecturalUpgrades = new HashSet<>();
     private static boolean legacyDomesticUpgrade;
     private static boolean fixtureDrain;
+    /** Places queued for construction (not upgrades of standing places), built on demand by depth. */
+    private static final Set<LabyrinthPlace> structuralPending = new HashSet<>();
+    /** Set when a caller needs every place (commands, rebuilds); ordinary play builds only what is near. */
+    private static boolean demandAll;
+    /** False while the queue waits for an explorer to go deeper. */
+    private static boolean active = true;
+    @Nullable private static Boolean gatingOverride;
+    /** Whether the current construction is depth-gated (always in play; GameTests opt in). */
+    private static boolean gatingActive;
+    /** Saved construction progress, so a restart never rebuilds a place that already stands. */
+    public static final String PROGRESS = "labyrinth_carve_0440";
+    /** Places are built this many crossings ahead of the deepest explorer. */
+    public static final int LEAD = 3;
+    public static final List<LabyrinthPlace> CORE = List.of(LabyrinthPlace.JUNCTION, LabyrinthPlace.GRAY_CORRIDOR,
+            LabyrinthPlace.STRAIGHT_HALL, LabyrinthPlace.BENT_HALL, LabyrinthPlace.CROSS_HALL, LabyrinthPlace.QUIET_ROOM);
     @Nullable private static BuildBlocks.Plan geometry;
     private static ServerLevel preparationLevel;
     private static final List<ChunkPos> preparationChunks = new ArrayList<>();
@@ -85,7 +100,79 @@ public final class LabyrinthBuilder {
             return true;
         }
         start(server, false);
+        demandAll = true;
         return false;
+    }
+
+    /**
+     * Starts carving if needed and returns true once the ordinary halls past the
+     * hallway stand. Deeper places follow in the background as explorers approach them.
+     */
+    public static boolean ensureReachable(MinecraftServer server) {
+        if (isBuilt(server)) {
+            return true;
+        }
+        start(server, false);
+        if (!gatingActive) return false;
+        LabyrinthData data = LabyrinthData.get(server);
+        for (LabyrinthPlace place : CORE) {
+            if (!isPlaceReady(data, place)) return false;
+        }
+        return true;
+    }
+
+    public static boolean isPlaceReady(MinecraftServer server, LabyrinthPlace place) {
+        return isPlaceReady(LabyrinthData.get(server), place);
+    }
+
+    /** A place can be dealt and entered unless it is still queued for construction. */
+    public static boolean isPlaceReady(LabyrinthData data, LabyrinthPlace place) {
+        return place.slot() < 0 || pending == null || !gatingActive || !structuralPending.contains(place);
+    }
+
+    /** The route depth at which explorers can first be dealt a place. */
+    public static int requiredDepth(LabyrinthPlace place) {
+        if (CORE.contains(place)) return 0;
+        return switch (place) {
+            case FOLDED_MAZE -> LabyrinthPacing.STRANGE_DEPTH;
+            case SPIRAL_STAIR, FRACTURED_WALKWAY, LIGHT_SINK, BLIND_STRETCH, MOVING_THRESHOLD -> 10;
+            case DEEP_MAZE -> LabyrinthPacing.DEEP_DEPTH;
+            case HOTEL_HALLWAY, COMPRESSION_PASSAGE, GRAVITY_DRIFT, DUPLICATE_PASSAGE, HOTEL, HOTEL_GROUNDS -> 14;
+            case ABYSS_MAZE -> LabyrinthPacing.ABYSS_DEPTH;
+            default -> LabyrinthPacing.STORY_DEPTH;
+        };
+    }
+
+    private static boolean gated(MinecraftServer server) {
+        if (gatingOverride != null) return gatingOverride;
+        return !(server instanceof net.minecraft.gametest.framework.GameTestServer);
+    }
+
+    private static int deepest(MinecraftServer server) {
+        LabyrinthData data = LabyrinthData.get(server);
+        int depth = 0;
+        for (var player : server.getPlayerList().getPlayers()) depth = Math.max(depth, data.returnDepth(player.getUUID()));
+        return depth;
+    }
+
+    private static boolean due(MinecraftServer server, LabyrinthPlace place) {
+        if (!structuralPending.contains(place) || demandAll || !gated(server)) return true;
+        return requiredDepth(place) <= deepest(server) + LEAD;
+    }
+
+    private static void recordBuilt(MinecraftServer server, LabyrinthPlace place) {
+        if (!structuralPending.remove(place) || pendingOrigin == null) return;
+        LabyrinthData data = LabyrinthData.get(server);
+        var progress = data.state(PROGRESS);
+        if (progress.getLong("Origin") != pendingOrigin.asLong() || progress.getInt("Version") != VERSION) {
+            progress = new net.minecraft.nbt.CompoundTag();
+            progress.putLong("Origin", pendingOrigin.asLong());
+            progress.putInt("Version", VERSION);
+        }
+        var built = progress.getList("Built", net.minecraft.nbt.Tag.TAG_STRING);
+        built.add(net.minecraft.nbt.StringTag.valueOf(place.id()));
+        progress.put("Built", built);
+        data.setState(PROGRESS, progress);
     }
 
     /** Carves every place again, from the beginning. */
@@ -107,12 +194,24 @@ public final class LabyrinthBuilder {
         geometry = null;
         domesticUpgrades.clear();
         architecturalUpgrades.clear();
+        structuralPending.clear();
+        active = true;
+        gatingActive = gated(server);
         LabyrinthData data = LabyrinthData.get(server);
+        if (force) {
+            data.setState(PROGRESS, new net.minecraft.nbt.CompoundTag());
+            demandAll = true;
+        }
+        var progress = data.state(PROGRESS);
+        Set<String> alreadyBuilt = new HashSet<>();
+        if (progress.getLong("Origin") == origin.asLong() && progress.getInt("Version") == VERSION)
+            for (var tag : progress.getList("Built", net.minecraft.nbt.Tag.TAG_STRING)) alreadyBuilt.add(tag.getAsString());
         if(!force&&!LakeLandscape.upgradeWorld(server,origin)){pending=null;pendingOrigin=null;return false;}
         if(!force&&!OutdoorRelocation.upgrade(server,origin)){pending=null;pendingOrigin=null;return false;}
         legacyDomesticUpgrade=!force && data.builtVersion()<17 && origin.equals(data.builtOrigin());
         // Older structural upgrades keep their scope. 0.4.17 dresses existing halls in place.
         boolean extend = !force && data.builtVersion() >= 10 && data.builtVersion() < VERSION && origin.equals(data.builtOrigin());
+        List<LabyrinthPlace> queue = new ArrayList<>();
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
             boolean structural = !extend || (data.builtVersion() < 13 && place.slot() >= 23)
                     || (data.builtVersion() < 14 && place.slot() >= 27)
@@ -129,17 +228,25 @@ public final class LabyrinthBuilder {
                     || (data.builtVersion() == 10 && place == LabyrinthPlace.MOTHER_DEN);
             boolean domestic = place == LabyrinthPlace.JUNCTION || LabyrinthHalls.isHall(place) || LabyrinthMaze.isMaze(place);
             boolean architecture=VignetteArchitecture.applies(place);
+            if (structural && alreadyBuilt.contains(place.id())) continue;
             if (place.slot() >= 0 && (structural || domestic || architecture)) {
-                pending.add(place);
-                if (!structural) {if(architecture)architecturalUpgrades.add(place);else domesticUpgrades.add(place);}
+                queue.add(place);
+                if (structural) structuralPending.add(place);
+                else {if(architecture)architecturalUpgrades.add(place);else domesticUpgrades.add(place);}
             }
         }
+        // Upgrades of standing places first, then construction in the order explorers can reach it.
+        queue.sort(Comparator.comparingInt((LabyrinthPlace p) -> structuralPending.contains(p) ? requiredDepth(p) : -1)
+                .thenComparingInt(p -> p == LabyrinthPlace.MOTHER_DEN ? 0 : 1)
+                .thenComparingInt(LabyrinthPlace::slot));
+        pending.addAll(queue);
         pendingOrigin = origin;
         return true;
     }
 
+    /** True while construction is actually working, not while it waits for explorers to go deeper. */
     public static boolean isCarving() {
-        return pending != null;
+        return pending != null && active;
     }
 
     /** One place per tick. */
@@ -155,9 +262,15 @@ public final class LabyrinthBuilder {
             return;
         }
         LabyrinthPlace place = pending.peek();
+        if (place != null && geometry == null && !due(server, place)) {
+            active = false;
+            return;
+        }
+        active = true;
         if (place != null && geometry != null) {
             if (!geometry.tick()) return;
             registerDoors(dataFor(server), place, LabyrinthPlaces.base(pendingOrigin, place));
+            recordBuilt(server, place);
             geometry = null;
             pending.poll();
             releasePreparation();
@@ -187,7 +300,10 @@ public final class LabyrinthBuilder {
                 io.github.knaitoe.theoldesthouse.house.HouseFurnishings.upgrade(interior,pendingOrigin,place);
                 io.github.knaitoe.theoldesthouse.house.HouseFurnishings.reduceNotes(interior,pendingOrigin,place);
             }
-            else build(server, interior, pendingOrigin, place);
+            else {
+                build(server, interior, pendingOrigin, place);
+                recordBuilt(server, place);
+            }
             long millis = (System.nanoTime() - started) / 1_000_000L;
             if (millis > 100) TheOldestHouse.LOGGER.info("Carving {} took {} ms in one tick.", place.id(), millis);
         }
@@ -201,6 +317,10 @@ public final class LabyrinthBuilder {
             LabyrinthData data = LabyrinthData.get(server);
             data.pruneDoors(server);
             data.setBuilt(VERSION, origin);
+            data.setState(PROGRESS, new net.minecraft.nbt.CompoundTag());
+            demandAll = false;
+            active = true;
+            structuralPending.clear();
             MotherOfStrays.upgradeDen(interior,origin);
             ServerLevel outside=server.getLevel(HouseDimensions.OUTSIDE);
             if(outside!=null)BarnFarm.upgrade(outside,origin);
@@ -328,7 +448,24 @@ public final class LabyrinthBuilder {
         try { while (isCarving()) tick(server); } finally { fixtureDrain = false; }
     }
 
+    /** Fixture-only: build whatever is due now, synchronously, and stop where construction would wait for depth. */
+    public static void drainDueGameTest(MinecraftServer server) {
+        if (!(server instanceof net.minecraft.gametest.framework.GameTestServer))
+            throw new IllegalStateException("Only native GameTest fixtures may drain construction");
+        fixtureDrain = true;
+        try { while (pending != null) { tick(server); if (!active) break; } } finally { fixtureDrain = false; }
+    }
+
+    /** Fixture-only: exercise depth gating on the GameTest server, or restore its default (null). */
+    public static void gateForGameTest(@Nullable Boolean gating) {
+        gatingOverride = gating;
+    }
+
     public static void clearAll() {
+        gatingActive = false;
+        structuralPending.clear();
+        demandAll = false;
+        active = true;
         releasePreparation();
         geometry = null;
         preparing = null;

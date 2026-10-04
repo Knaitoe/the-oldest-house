@@ -104,7 +104,7 @@ public final class LabyrinthHazards {
         route.add(base.offset(0,-1,-27));return List.copyOf(route);
     }
     public static void upgradeFlooded(ServerLevel level,BlockPos origin){
-        if(!LabyrinthBuilder.isBuilt(level.getServer()))return;var base=LabyrinthPlaces.base(origin,LabyrinthPlace.FLOODED_PASSAGE);if(base==null)return;
+        if(!LabyrinthBuilder.isPlaceReady(level.getServer(),LabyrinthPlace.FLOODED_PASSAGE))return;var base=LabyrinthPlaces.base(origin,LabyrinthPlace.FLOODED_PASSAGE);if(base==null)return;
         var d=LabyrinthData.get(level.getServer());if(d.state("water_trial_0427").getBoolean(Long.toString(base.asLong())))return;
         if(level.players().stream().anyMatch(p->new AABB(Vec3.atLowerCornerOf(base.offset(-9,-3,-30)),Vec3.atLowerCornerOf(base.offset(9,8,2))).contains(p.position())))return;
         // Preserve a player-authored container instead of replacing its identity during a scenery upgrade.

@@ -779,7 +779,7 @@ public final class MotherOfStrays {
                 }
             }
         }
-        if (level == null || base == null || !LabyrinthBuilder.isBuilt(server)) return;
+        if (level == null || base == null || !LabyrinthBuilder.isPlaceReady(server, LabyrinthPlace.MOTHER_DEN)) return;
         AABB bounds = box(base.offset(-11, -4, -26), base.offset(12, 14, 1));
         if (level.players().stream().noneMatch(p -> bounds.contains(p.position()))) return;
         MotherEntity keeper = collection.banished() ? null : ensureKeeper(level, base);
