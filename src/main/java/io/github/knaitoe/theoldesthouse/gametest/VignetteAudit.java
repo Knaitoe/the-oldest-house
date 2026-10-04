@@ -199,19 +199,8 @@ public final class VignetteAudit {
             }
         }
 
-        // Estimated block light on the floor (occlusion ignored), interiors only.
-        int dark = 0;
-        for (BlockPos cell : floor) {
-            int best = 0;
-            for (int i = 0; i < emitters.size(); i++) {
-                BlockPos e = emitters.get(i);
-                int d = Math.abs(e.getX() - cell.getX()) + Math.abs(e.getY() - cell.getY()) + Math.abs(e.getZ() - cell.getZ());
-                best = Math.max(best, emission.get(i) - d);
-                if (best >= 8) break;
-            }
-            if (best <= 3) dark++;
-        }
-
+        // Block light over the floor, propagated through the actual blocks (sky ignored).
+        int darkPercent = (int) Math.round(100 * io.github.knaitoe.theoldesthouse.labyrinth.ScenePolish.darkFraction(level, base, scene));
         // Outdoor edges: perimeter columns whose ground ends at the void just past the edge.
         int voidEdges = 0, perimeter = 0, holes = 0;
         if (outdoor) {
@@ -233,7 +222,7 @@ public final class VignetteAudit {
         out.append("## ").append(scene.id()).append(outdoor ? " [outdoor " : " [").append(sx).append('x').append(sy).append('x').append(sz).append("] ");
         out.append("floor=").append(floor.size()).append(" detail/floor=").append(floor.isEmpty() ? "-" : String.format("%.2f", detail / (double) floor.size()));
         out.append(" materials=").append(materials.size()).append(" lights=").append(emitters.size());
-        if (!outdoor) out.append(" darkFloor=").append(floor.isEmpty() ? "-" : (100 * dark / floor.size()) + "%");
+        if (!outdoor) out.append(" darkFloor=").append(floor.isEmpty() ? "-" : darkPercent + "%");
         if (outdoor) out.append(" voidEdge=").append(voidEdges).append('/').append(perimeter).append(" voidColumns=").append(holes);
         out.append('\n');
         if (!unsupported.isEmpty()) out.append("  unsupported:").append(unsupported.render()).append('\n');
