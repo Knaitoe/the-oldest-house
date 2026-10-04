@@ -154,8 +154,8 @@ public final class HouseTransitionClient {
         @Override
         public void removed() {
             super.removed();
-            TheOldestHouse.LOGGER.info("House client transition {}: held frame released after {} ms",
-                    transitionToken, (System.nanoTime() - openedAt) / 1_000_000L);
+            TheOldestHouse.LOGGER.info("House client transition {}: held frame released after {} ms ({} live section buffers)",
+                    transitionToken, (System.nanoTime() - openedAt) / 1_000_000L, LazySectionBuffers.live());
             HouseTransitionMotion.beginPost(transitionToken);
             if (capturedFrame != null) {
                 capturedFrame.close();

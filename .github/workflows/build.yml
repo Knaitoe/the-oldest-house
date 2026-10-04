@@ -54,7 +54,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.39"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.40"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               correspondence = json.loads(z.read('data/the_oldest_house/correspondence/letters.json'))
               assert len(correspondence) == 108 and len({n['id'] for n in correspondence}) == 108
@@ -455,7 +455,7 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.39"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.40"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
           jar.with_name(jar.name+'.sha256').write_text(hashlib.sha256(jar.read_bytes()).hexdigest()+'  '+jar.name+'\n')
           print(f'All {declared} native seam cases passed. This candidate still requires the complete suite and client proofs.')
@@ -471,6 +471,6 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.39.jar
-            build/libs/the_oldest_house-0.4.39.jar.sha256
+            build/libs/the_oldest_house-0.4.40.jar
+            build/libs/the_oldest_house-0.4.40.jar.sha256
           if-no-files-found: error
