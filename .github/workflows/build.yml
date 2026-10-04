@@ -264,18 +264,22 @@ jobs:
           import re
           log = Path('build/native-gametest.log')
           if not log.exists():
+              print('::error title=Failed game test::no game test log was written')
               raise SystemExit(0)
           lines = log.read_text(errors='replace').splitlines()
-          seen = []
+          keys = re.compile(r'(failed|FAILED|Exception|exception|Error|required tests|timed out|Caused by)')
+          picked = []
           for i, line in enumerate(lines):
-              if ' failed!' in line or 'GameTestAssert' in line or 'Exception in' in line:
-                  text = re.sub(r'^\[[^]]*\] \[[^]]*\] \[[^]]*\]: ', '', line)
-                  detail = ' | '.join(l.strip() for l in lines[i + 1:i + 4])
-                  entry = (text + ' :: ' + detail)[:1500]
-                  if entry not in seen:
-                      seen.append(entry)
-          for entry in seen[:10]:
+              if keys.search(line) and 'Node.js' not in line:
+                  text = re.sub(r'^\[[^]]*\] \[[^]]*\] \[[^]]*\]: ', '', line).strip()
+                  detail = ' | '.join(l.strip() for l in lines[i + 1:i + 3])
+                  entry = (text + ' :: ' + detail)[:900]
+                  if entry not in picked:
+                      picked.append(entry)
+          tail = ' | '.join(l.strip() for l in lines[-12:])[:3000]
+          for entry in picked[:9]:
               print('::error title=Failed game test::' + entry.replace('%', '%25'))
+          print('::error title=Game test log tail::' + tail.replace('%', '%25'))
           PY
 
       - name: Publish vignette audit

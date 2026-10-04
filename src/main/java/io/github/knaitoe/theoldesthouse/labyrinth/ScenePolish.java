@@ -56,7 +56,9 @@ public final class ScenePolish {
     /** Darkness is the point of these. */
     private static final Set<LabyrinthPlace> DARK_BY_DESIGN = EnumSet.of(LabyrinthPlace.LIGHT_SINK, LabyrinthPlace.BLIND_STRETCH,
             LabyrinthPlace.PRESERVED_CAVE,
-            LabyrinthPlace.TED_CAVER, LabyrinthPlace.FLOODED_PASSAGE, LabyrinthPlace.HIDE_AND_CLAP);
+            LabyrinthPlace.TED_CAVER, LabyrinthPlace.FLOODED_PASSAGE, LabyrinthPlace.HIDE_AND_CLAP,
+            // The night vigil and the torch-marked hunt are played in the dark.
+            LabyrinthPlace.GOATMAN, LabyrinthPlace.HOLLOWAY_CAMP);
     /** Floating fragments are the anomaly here. */
     private static final Set<LabyrinthPlace> FLOATING_BY_DESIGN = EnumSet.of(LabyrinthPlace.GRAVITY_DRIFT, LabyrinthPlace.FRACTURED_WALKWAY);
     /** Uneasy places stay dim: about half their floor may stay in shadow. */
