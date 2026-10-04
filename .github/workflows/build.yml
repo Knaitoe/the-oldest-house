@@ -256,6 +256,29 @@ jobs:
           print(f'Native gameplay verified: {passed[-1]} completed tests, {declared} declared.')
           PY
 
+      - name: Publish vignette audit
+        if: always()
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          report = Path('build/vignette-audit.txt')
+          if not report.exists():
+              print('::warning title=Vignette audit::No audit report was written.')
+              raise SystemExit(0)
+          text = report.read_text()
+          print(text)
+          chunks, current = [], ''
+          for line in text.splitlines(keepends=True):
+              if len(current) + len(line) > 3800:
+                  chunks.append(current); current = ''
+              current += line
+          if current: chunks.append(current)
+          kinds = ['notice'] * 10 + ['warning'] * 10 + ['error'] * 10
+          for i, chunk in enumerate(chunks[:30]):
+              body = chunk.replace('%', '%25').replace('\r', '').replace('\n', '%0A')
+              print(f'::{kinds[i]} title=Vignette audit {i + 1}/{len(chunks)}::{body}')
+          PY
+
       - name: Upload test diagnostics
         if: always()
         uses: actions/upload-artifact@v4
