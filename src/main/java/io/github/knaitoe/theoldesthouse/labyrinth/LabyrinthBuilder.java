@@ -5,6 +5,9 @@ import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Comparator;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -55,6 +58,12 @@ public final class LabyrinthBuilder {
     private static final Set<LabyrinthPlace> domesticUpgrades = new HashSet<>();
     private static final Set<LabyrinthPlace> architecturalUpgrades = new HashSet<>();
     private static boolean legacyDomesticUpgrade;
+    private static boolean fixtureDrain;
+    @Nullable private static BuildBlocks.Plan geometry;
+    private static ServerLevel preparationLevel;
+    private static final List<ChunkPos> preparationChunks = new ArrayList<>();
+    private static final TicketType<ChunkPos> CARVE_TICKET = TicketType.create(
+            TheOldestHouse.MOD_ID + "_carve", Comparator.comparingLong(ChunkPos::toLong));
 
     private LabyrinthBuilder() {
     }
@@ -93,7 +102,9 @@ public final class LabyrinthBuilder {
             return true;
         }
         pending = new ArrayDeque<>();
+        releasePreparation();
         preparing = null;
+        geometry = null;
         domesticUpgrades.clear();
         architecturalUpgrades.clear();
         LabyrinthData data = LabyrinthData.get(server);
@@ -144,8 +155,26 @@ public final class LabyrinthBuilder {
             return;
         }
         LabyrinthPlace place = pending.peek();
+        if (place != null && geometry != null) {
+            if (!geometry.tick()) return;
+            registerDoors(dataFor(server), place, LabyrinthPlaces.base(pendingOrigin, place));
+            geometry = null;
+            pending.poll();
+            releasePreparation();
+            finishIfEmpty(server, interior);
+            return;
+        }
         if (place != null && !prepared(server, place)) {
             return;
+        }
+        if (place != null && LiteraryRooms.isLiterary(place)
+                && !architecturalUpgrades.contains(place) && !domesticUpgrades.contains(place)) {
+            ServerLevel site = server.getLevel(NovelRooms.dimension(place));
+            if (site != null) {
+                BlockPos base = LabyrinthPlaces.base(pendingOrigin, place);
+                geometry = BuildBlocks.record(site, () -> LiteraryRooms.build(site, base, place));
+                return;
+            }
         }
         pending.poll();
         long started = System.nanoTime();
@@ -162,6 +191,11 @@ public final class LabyrinthBuilder {
             long millis = (System.nanoTime() - started) / 1_000_000L;
             if (millis > 100) TheOldestHouse.LOGGER.info("Carving {} took {} ms in one tick.", place.id(), millis);
         }
+        releasePreparation();
+        finishIfEmpty(server, interior);
+    }
+
+    private static void finishIfEmpty(MinecraftServer server, ServerLevel interior) {
         if (pending.isEmpty()) {
             BlockPos origin = pendingOrigin;
             LabyrinthData data = LabyrinthData.get(server);
@@ -172,8 +206,8 @@ public final class LabyrinthBuilder {
             if(outside!=null)BarnFarm.upgrade(outside,origin);
             FinaleArchitecture.retirePreparationShield(interior,origin);
             io.github.knaitoe.theoldesthouse.house.HouseFurnishings.upgradeManor(interior,origin);
-            if (HouseSavedData.get(server).isImpossibleDoorRevealed())
-                io.github.knaitoe.theoldesthouse.house.HouseImpossibleHallway.dressDomesticApproach(interior, origin);
+            // WallNotesRepairs dresses the revealed approach after the hallway is vacant.
+            // Finishing an append must never rewrite the corridor around its waiting player.
             pending = null;
             pendingOrigin = null;
             domesticUpgrades.clear();
@@ -191,34 +225,25 @@ public final class LabyrinthBuilder {
     // server for tens of seconds, so each place first waits for its chunks to
     // load off the main thread, then fills its slot a slice per tick.
 
-    /** Ticks a place waits for its chunks before it is built anyway. */
-    private static final int MAX_PREPARE_WAIT = 400;
     /** Main-thread time one tick may spend filling a slot. */
     private static final long FILL_BUDGET_NANOS = 8_000_000L;
     @Nullable private static LabyrinthPlace preparing;
-    private static int prepareWaits;
     private static int fillColumn;
-    private static long lastPrepareTick = Long.MIN_VALUE;
 
     private static boolean prepared(MinecraftServer server, LabyrinthPlace place) {
         if (preparing != place) {
             preparing = place;
-            prepareWaits = 0;
             fillColumn = 0;
         }
-        // A second call within one server tick means a caller is driving the
-        // carve itself and nothing can load in between: build synchronously.
-        long now = server.getTickCount();
-        boolean synchronous = now == lastPrepareTick;
-        lastPrepareTick = now;
+        boolean synchronous = fixtureDrain;
         ServerLevel level = server.getLevel(NovelRooms.dimension(place));
         BlockPos base = LabyrinthPlaces.base(pendingOrigin, place);
         if (level == null || base == null) {
             return true;
         }
-        if (!synchronous && prepareWaits < MAX_PREPARE_WAIT && !chunksReady(level, place, base)) {
-            prepareWaits++;
-            return false;
+        if (!chunksReady(level, place, base)) {
+            if (!synchronous) return false;
+            for (ChunkPos chunk : preparationChunks) level.getChunk(chunk.x, chunk.z);
         }
         boolean upgrade = architecturalUpgrades.contains(place) || domesticUpgrades.contains(place);
         if (!upgrade && prefills(place)) {
@@ -246,12 +271,16 @@ public final class LabyrinthBuilder {
             if (slot == null) return true;
             minX = slot.minX(); maxX = slot.maxX(); minZ = slot.minZ(); maxZ = slot.maxZ();
         }
+        if (preparationLevel == null) preparationLevel = level;
         boolean ready = true;
         for (int x = minX >> 4; x <= maxX >> 4; x++) {
             for (int z = minZ >> 4; z <= maxZ >> 4; z++) {
                 ChunkPos chunk = new ChunkPos(x, z);
-                level.getChunkSource().addRegionTicket(TicketType.PORTAL, chunk, 1, base);
-                ready &= level.getChunkSource().hasChunk(x, z);
+                if (!preparationChunks.contains(chunk)) {
+                    level.getChunkSource().addRegionTicket(CARVE_TICKET, chunk, 1, chunk);
+                    preparationChunks.add(chunk);
+                }
+                ready &= level.getChunkSource().getChunkNow(x, z) != null;
             }
         }
         return ready;
@@ -275,14 +304,33 @@ public final class LabyrinthBuilder {
                 }
             }
             fillColumn++;
-            if (!synchronous && (fillColumn & 63) == 0 && System.nanoTime() > deadline) {
+            if (!synchronous && (fillColumn & 3) == 0 && System.nanoTime() > deadline) {
                 return fillColumn >= columns;
             }
         }
         return true;
     }
 
+    private static void releasePreparation() {
+        if (preparationLevel != null) {
+            for (ChunkPos chunk : preparationChunks)
+                preparationLevel.getChunkSource().removeRegionTicket(CARVE_TICKET, chunk, 1, chunk);
+        }
+        preparationChunks.clear();
+        preparationLevel = null;
+    }
+
+    /** Fixture-only drain; production never falls back to synchronous generation. */
+    public static void finishGameTest(MinecraftServer server) {
+        if (!(server instanceof net.minecraft.gametest.framework.GameTestServer))
+            throw new IllegalStateException("Only native GameTest fixtures may drain construction");
+        fixtureDrain = true;
+        try { while (isCarving()) tick(server); } finally { fixtureDrain = false; }
+    }
+
     public static void clearAll() {
+        releasePreparation();
+        geometry = null;
         preparing = null;
         pending = null;
         pendingOrigin = null;
@@ -360,6 +408,8 @@ public final class LabyrinthBuilder {
     private static LabyrinthData dataFor(MinecraftServer server){return LabyrinthData.get(server);}
 
     private static void fillSolid(ServerLevel level, BoundingBox slot) {
+        // The paced prefill already completed this slot. Do not scan it again.
+        if (preparing != null && prefills(preparing) && preparationLevel == level) return;
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int minY = Math.max(slot.minY(), level.getMinBuildHeight());
         int maxY = Math.min(slot.maxY(), level.getMaxBuildHeight() - 1);

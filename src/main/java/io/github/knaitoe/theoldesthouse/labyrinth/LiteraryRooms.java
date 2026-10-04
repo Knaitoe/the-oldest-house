@@ -25,15 +25,14 @@ public final class LiteraryRooms {
         var r=p.room();box(l,b,r.minX(),r.minY(),r.minZ(),r.maxX(),r.maxY(),r.maxZ(),Blocks.AIR);
         switch(p){case HILL_NURSERY->hill(l,b);case MINIATURES->miniatures(l,b);case MASQUE->masque(l,b);case USHER->usher(l,b);case WINCHESTER->winchester(l,b);case CHILD_ROOM->child(l,b);case CRIMSON_HALL->crimson(l,b);case BLY_ROUTE->bly(l,b);case ELK_LOT->lot(l,b);case ELK_FAN->fan(l,b);case MAPPING_INTERIOR->mapping(l,b);case HOLY_RABBIT->rabbit(l,b);case CONFESSION->confession(l,b);case ELK_CARCASSES->carcasses(l,b);case COSTUME_NIGHT,MOVIE_NIGHT,WINTER_LAKE->lake(l,b,p);case CAMP_BLOOD->camp(l,b);case DEVILS_ROCK->diary(l,b);case WHEEL->wheel(l,b);case GHOSTS_SET->set(l,b);case END_WORLD_CABIN->endCabin(l,b);case FAMILY_COPY,OLD_CABIN->copyLanding(l,b,p);default->throw new IllegalArgumentException(p.id());}
         // Papers are original scene-specific texts; reading surfaces generate immutable reader originals.
-        var note=source(p);if(note.getY()>0&&l.getBlockState(b.offset(note.below())).isAir())furniture(l,b,note.getX(),note.getY()-1,note.getZ(),HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);paper(l,b,note,LiteraryTexts.source(p));
-        if(p!=LabyrinthPlace.OLD_CABIN&&p!=LabyrinthPlace.FAMILY_COPY){var end=ending(p);if(end.getY()>0&&l.getBlockState(b.offset(end.below())).isAir())furniture(l,b,end.getX(),end.getY()-1,end.getZ(),HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);prop(l,b,end,LiteraryPropBlock.Kind.LEDGER,Direction.SOUTH);}
-        NovelRooms.safeApproach(l,b);LabyrinthBuilder.entrance(l,b,wall(p).defaultBlockState(),floor(p).defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState());
-        LabyrinthBuilder.doors(l,b,p);
+        var note=source(p);if(note.getY()>0&&BuildBlocks.state(l,b.offset(note.below())).isAir())furniture(l,b,note.getX(),note.getY()-1,note.getZ(),HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);paper(l,b,note,LiteraryTexts.source(p));
+        if(p!=LabyrinthPlace.OLD_CABIN&&p!=LabyrinthPlace.FAMILY_COPY){var end=ending(p);if(end.getY()>0&&BuildBlocks.state(l,b.offset(end.below())).isAir())furniture(l,b,end.getX(),end.getY()-1,end.getZ(),HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);prop(l,b,end,LiteraryPropBlock.Kind.LEDGER,Direction.SOUTH);}
+        BuildBlocks.after(l,()->{NovelRooms.safeApproach(l,b);LabyrinthBuilder.entrance(l,b,wall(p).defaultBlockState(),floor(p).defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState());LabyrinthBuilder.doors(l,b,p);});
     }
     public static void box(ServerLevel l,BlockPos b,int x0,int y0,int z0,int x1,int y1,int z1,Block block){NovelRooms.box(l,b,x0,y0,z0,x1,y1,z1,block instanceof LeavesBlock?block.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true):block.defaultBlockState());}
-    public static void at(ServerLevel l,BlockPos b,int x,int y,int z,Block block){l.setBlock(b.offset(x,y,z),block.defaultBlockState(),F);}
-    public static void prop(ServerLevel l,BlockPos b,BlockPos rel,LiteraryPropBlock.Kind kind,Direction facing){l.setBlock(b.offset(rel),LiteraryRegistry.PROP.get().defaultBlockState().setValue(LiteraryPropBlock.KIND,kind).setValue(LiteraryPropBlock.FACING,facing),F);}
-    public static void paper(ServerLevel l,BlockPos b,BlockPos rel,ItemStack book){l.setBlock(b.offset(rel),Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.HAS_BOOK,true),F);if(l.getBlockEntity(b.offset(rel)) instanceof LecternBlockEntity d){d.setBook(book);d.setChanged();}}
+    public static void at(ServerLevel l,BlockPos b,int x,int y,int z,Block block){BuildBlocks.set(l,b.offset(x,y,z),block.defaultBlockState(),F);}
+    public static void prop(ServerLevel l,BlockPos b,BlockPos rel,LiteraryPropBlock.Kind kind,Direction facing){BuildBlocks.set(l,b.offset(rel),LiteraryRegistry.PROP.get().defaultBlockState().setValue(LiteraryPropBlock.KIND,kind).setValue(LiteraryPropBlock.FACING,facing),F);}
+    public static void paper(ServerLevel l,BlockPos b,BlockPos rel,ItemStack book){BuildBlocks.set(l,b.offset(rel),Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.HAS_BOOK,true),F);BuildBlocks.after(l,()->{if(l.getBlockEntity(b.offset(rel)) instanceof LecternBlockEntity d){d.setBook(book);d.setChanged();}});}
     private static Block wall(LabyrinthPlace p){return switch(p){case USHER->Blocks.DEEPSLATE_BRICKS;case MAPPING_INTERIOR->LiteraryRegistry.SIDING.get();case CRIMSON_HALL->Blocks.POLISHED_BLACKSTONE_BRICKS;case MINIATURES,DEVILS_ROCK,GHOSTS_SET,WHEEL->Blocks.CALCITE;default->LiteraryRegistry.DARK_PANEL.get();};}
     private static Block floor(LabyrinthPlace p){return switch(p){case USHER->Blocks.POLISHED_DEEPSLATE;case CRIMSON_HALL->LiteraryRegistry.RED_FLOOR.get();case MAPPING_INTERIOR->Blocks.BIRCH_PLANKS;default->Blocks.DARK_OAK_PLANKS;};}
     private static void room(ServerLevel l,BlockPos b,int x0,int x1,int z0,int z1,int y,int h,Block walls,Block flooring){
@@ -44,21 +43,21 @@ public final class LiteraryRooms {
         for(int x=x0+1;x<x1;x++)for(int z=z0+1;z<z1;z++)if((x-x0)%5==0||(z-z0)%5==0)at(l,b,x,y+h,z,Blocks.DARK_OAK_PLANKS);
         for(int z=z0+1;z<z1;z++)for(int x:new int[]{x0,x1})at(l,b,x,y,z,Blocks.DARK_OAK_PLANKS);
     }
-    private static void door(ServerLevel l,BlockPos b,int x,int y,int z,Direction f,boolean open){box(l,b,x,y,z,x,y+2,z,Blocks.AIR);NovelRooms.door(l,b.offset(x,y,z),f,Blocks.DARK_OAK_DOOR,open);var across=f.getAxis()==Direction.Axis.X?Direction.NORTH:Direction.EAST;for(int a:new int[]{-1,1})for(int dy=0;dy<3;dy++)l.setBlock(b.offset(x,y+dy,z).relative(across,a),Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState(),F);}
+    private static void door(ServerLevel l,BlockPos b,int x,int y,int z,Direction f,boolean open){box(l,b,x,y,z,x,y+2,z,Blocks.AIR);NovelRooms.door(l,b.offset(x,y,z),f,Blocks.DARK_OAK_DOOR,open);var across=f.getAxis()==Direction.Axis.X?Direction.NORTH:Direction.EAST;for(int a:new int[]{-1,1})for(int dy=0;dy<3;dy++)BuildBlocks.set(l,b.offset(x,y+dy,z).relative(across,a),Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState(),F);}
     private static void furniture(ServerLevel l,BlockPos b,int x,int y,int z,HouseholdFurnitureBlock.Kind k,Direction f){NovelRooms.furniture(l,b.offset(x,y,z),k,f);}
     private static void desk(ServerLevel l,BlockPos b,int x,int y,int z){furniture(l,b,x,y,z,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);furniture(l,b,x,y,z+2,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.NORTH);}
-    private static void light(ServerLevel l,BlockPos b,int x,int y,int z){at(l,b,x,y+1,z,Blocks.CHAIN);l.setBlock(b.offset(x,y,z),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);}
-    private static void steps(ServerLevel l,BlockPos b,int x,int z,int y,int count,boolean down){for(int i=0;i<count;i++){int yy=y+(down?-i:i);box(l,b,x-1,yy-2,z-i,x+1,yy-1,z-i,Blocks.STONE_BRICKS);box(l,b,x-1,yy,z-i,x+1,yy+2,z-i,Blocks.AIR);for(int xx=x-1;xx<=x+1;xx++)l.setBlock(b.offset(xx,yy-1,z-i),Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,down?Direction.SOUTH:Direction.NORTH),F);}}
+    private static void light(ServerLevel l,BlockPos b,int x,int y,int z){at(l,b,x,y+1,z,Blocks.CHAIN);BuildBlocks.set(l,b.offset(x,y,z),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);}
+    private static void steps(ServerLevel l,BlockPos b,int x,int z,int y,int count,boolean down){for(int i=0;i<count;i++){int yy=y+(down?-i:i);box(l,b,x-1,yy-2,z-i,x+1,yy-1,z-i,Blocks.STONE_BRICKS);box(l,b,x-1,yy,z-i,x+1,yy+2,z-i,Blocks.AIR);for(int xx=x-1;xx<=x+1;xx++)BuildBlocks.set(l,b.offset(xx,yy-1,z-i),Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,down?Direction.SOUTH:Direction.NORTH),F);}}
     private static void hill(ServerLevel l,BlockPos b){
         room(l,b,-3,3,-43,0,0,5,Blocks.CALCITE,Blocks.DARK_OAK_PLANKS);
         for(int side:new int[]{-1,1}){room(l,b,side<0?-14:4,side<0?-4:14,-24,-10,0,6,Blocks.CALCITE,Blocks.DARK_OAK_PLANKS);door(l,b,side*4,0,-16,side<0?Direction.EAST:Direction.WEST,true);NovelRooms.bed(l,b.offset(side*10,0,-22),Blocks.WHITE_BED,Direction.NORTH);furniture(l,b,side*11,0,-12,HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR,Direction.SOUTH);box(l,b,side*14,2,-22,side*14,3,-19,Blocks.BLACK_STAINED_GLASS);}
         box(l,b,-4,-1,-16,-4,2,-16,Blocks.POWDER_SNOW);door(l,b,-4,0,-16,Direction.EAST,true);
         room(l,b,-13,13,-42,-30,-4,3,Blocks.MOSSY_STONE_BRICKS,Blocks.STONE_BRICKS);steps(l,b,0,-25,0,5,true);box(l,b,-1,-4,-33,1,-2,-30,Blocks.AIR);box(l,b,-1,-5,-33,1,-5,-30,Blocks.STONE_BRICKS);
-        prop(l,b,HILL_WALL,LiteraryPropBlock.Kind.PHOTO,Direction.EAST);l.setBlock(b.offset(HILL_WALL),l.getBlockState(b.offset(HILL_WALL)).setValue(LiteraryPropBlock.STAGE,3),F);at(l,b,-10,-4,-36,Blocks.CHISELED_STONE_BRICKS);desk(l,b,8,0,-36);light(l,b,0,3,-8);light(l,b,0,3,-36);
+        prop(l,b,HILL_WALL,LiteraryPropBlock.Kind.PHOTO,Direction.EAST);BuildBlocks.set(l,b.offset(HILL_WALL),BuildBlocks.state(l,b.offset(HILL_WALL)).setValue(LiteraryPropBlock.STAGE,3),F);at(l,b,-10,-4,-36,Blocks.CHISELED_STONE_BRICKS);desk(l,b,8,0,-36);light(l,b,0,3,-8);light(l,b,0,3,-36);
     }
     private static void miniatures(ServerLevel l,BlockPos b){
         room(l,b,-14,14,-30,0,0,7,Blocks.CALCITE,Blocks.BIRCH_PLANKS);
-        for(int x:new int[]{-8,0,8}){furniture(l,b,x,0,-18,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);prop(l,b,new BlockPos(x,1,-18),LiteraryPropBlock.Kind.MINIATURE,Direction.SOUTH);l.setBlock(b.offset(x,1,-18),l.getBlockState(b.offset(x,1,-18)).setValue(LiteraryPropBlock.STAGE,x<0?0:x==0?1:2),F);furniture(l,b,x,0,-15,HouseholdFurnitureBlock.Kind.KITCHEN_STOOL,Direction.NORTH);light(l,b,x,4,-18);}
+        for(int x:new int[]{-8,0,8}){furniture(l,b,x,0,-18,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);prop(l,b,new BlockPos(x,1,-18),LiteraryPropBlock.Kind.MINIATURE,Direction.SOUTH);BuildBlocks.set(l,b.offset(x,1,-18),BuildBlocks.state(l,b.offset(x,1,-18)).setValue(LiteraryPropBlock.STAGE,x<0?0:x==0?1:2),F);furniture(l,b,x,0,-15,HouseholdFurnitureBlock.Kind.KITCHEN_STOOL,Direction.NORTH);light(l,b,x,4,-18);}
         for(int z=-26;z<=-7;z+=4){at(l,b,13,0,z,Blocks.BARREL);at(l,b,13,1,z,Blocks.BOOKSHELF);furniture(l,b,-12,0,z,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.EAST);}
         desk(l,b,0,0,-25);box(l,b,-8,2,-30,8,4,-30,Blocks.GLASS);box(l,b,-8,2,-31,8,4,-31,Blocks.LIGHT_GRAY_CONCRETE);
     }
@@ -84,12 +83,12 @@ public final class LiteraryRooms {
         // Long opposing flights gain half a block at each turn, not a full floor per flight.
         for(int flight=0;flight<16;flight++){int y=flight/2,z=-8-flight*4;var type=flight%2==0?SlabType.BOTTOM:SlabType.TOP;int turn=flight%2==0?23:-23;
             box(l,b,-24,y-1,z,24,y-1,z,Blocks.OAK_PLANKS);box(l,b,-24,y,z-1,24,y+2,z+1,Blocks.AIR);
-            for(int x=-23;x<=23;x++)l.setBlock(b.offset(x,y,z),Blocks.OAK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,type),F);
-            if(flight<15){for(int zz=z-1;zz>=z-3;zz--)for(int x=turn-1;x<=turn+1;x++){box(l,b,x,y,zz,x,y+3,zz,Blocks.AIR);l.setBlock(b.offset(x,y,zz),Blocks.OAK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,type),F);}}
+            for(int x=-23;x<=23;x++)BuildBlocks.set(l,b.offset(x,y,z),Blocks.OAK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,type),F);
+            if(flight<15){for(int zz=z-1;zz>=z-3;zz--)for(int x=turn-1;x<=turn+1;x++){box(l,b,x,y,zz,x,y+3,zz,Blocks.AIR);BuildBlocks.set(l,b.offset(x,y,zz),Blocks.OAK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,type),F);}}
             for(int x=-21;x<=21;x++)at(l,b,x,y+1,z-1,Blocks.DARK_OAK_FENCE);
         }
         // The following flight's clearance cuts reach the preceding turn: lay every turn last.
-        for(int flight=0;flight<15;flight++){int y=flight/2,z=-8-flight*4,turn=flight%2==0?23:-23;var type=flight%2==0?SlabType.BOTTOM:SlabType.TOP;for(int zz=z-1;zz>=z-3;zz--)for(int x=turn-1;x<=turn+1;x++){box(l,b,x,y,zz,x,y+3,zz,Blocks.AIR);l.setBlock(b.offset(x,y,zz),Blocks.OAK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,type),F);}}
+        for(int flight=0;flight<15;flight++){int y=flight/2,z=-8-flight*4,turn=flight%2==0?23:-23;var type=flight%2==0?SlabType.BOTTOM:SlabType.TOP;for(int zz=z-1;zz>=z-3;zz--)for(int x=turn-1;x<=turn+1;x++){box(l,b,x,y,zz,x,y+3,zz,Blocks.AIR);BuildBlocks.set(l,b.offset(x,y,zz),Blocks.OAK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,type),F);}}
         box(l,b,-25,-1,-8,-22,-1,-3,Blocks.OAK_PLANKS);box(l,b,-25,0,-7,-22,3,-3,Blocks.AIR);
         box(l,b,-24,7,-73,28,7,-70,Blocks.OAK_PLANKS);box(l,b,-24,8,-73,28,10,-70,Blocks.AIR);
         box(l,b,-24,7,-70,-22,10,-69,Blocks.AIR);box(l,b,-24,7,-70,-22,7,-69,Blocks.OAK_PLANKS);
@@ -129,11 +128,11 @@ public final class LiteraryRooms {
     private static void tree(ServerLevel l,BlockPos b,int x,int y,int z,int height){box(l,b,x,y,z,x,y+height,z,Blocks.SPRUCE_LOG);for(int h=2;h<=height+2;h++){int w=Math.max(1,(height+3-h)/2);box(l,b,x-w,y+h,z-w,x+w,y+h,z+w,Blocks.SPRUCE_LEAVES);}}
     private static void roof(ServerLevel l,BlockPos b,int x0,int x1,int z0,int z1,int eaves){
         box(l,b,x0-1,-2,z0-1,x1+1,-1,z1+1,Blocks.STONE_BRICKS);
-        int mid=(x0+x1)/2;for(int x=x0-1;x<=x1+1;x++){int y=eaves+Math.min(x-x0+1,x1+1-x)/2;for(int z=z0-1;z<=z1+1;z++)l.setBlock(b.offset(x,y,z),Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,x<=mid?Direction.EAST:Direction.WEST),F);if(x>=x0&&x<=x1)for(int zz:new int[]{z0,z1})box(l,b,x,eaves,zz,x,y-1,zz,Blocks.SPRUCE_PLANKS);}
+        int mid=(x0+x1)/2;for(int x=x0-1;x<=x1+1;x++){int y=eaves+Math.min(x-x0+1,x1+1-x)/2;for(int z=z0-1;z<=z1+1;z++)BuildBlocks.set(l,b.offset(x,y,z),Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,x<=mid?Direction.EAST:Direction.WEST),F);if(x>=x0&&x<=x1)for(int zz:new int[]{z0,z1})box(l,b,x,eaves,zz,x,y-1,zz,Blocks.SPRUCE_PLANKS);}
         for(int z=z0-1;z<=z1+1;z++)at(l,b,mid,eaves+(x1-x0)/4+1,z,Blocks.DARK_OAK_SLAB);
     }
     private static void window(ServerLevel l,BlockPos b,int x,int z,boolean east){
-        for(int w=-2;w<=2;w++)for(int y=1;y<=4;y++){var at=east?b.offset(x,y,z+w):b.offset(x+w,y,z);l.setBlock(at,(Math.abs(w)==2||y==1||y==4?Blocks.STRIPPED_SPRUCE_LOG:Blocks.GLASS_PANE).defaultBlockState(),F);}
+        for(int w=-2;w<=2;w++)for(int y=1;y<=4;y++){var at=east?b.offset(x,y,z+w):b.offset(x+w,y,z);BuildBlocks.set(l,at,(Math.abs(w)==2||y==1||y==4?Blocks.STRIPPED_SPRUCE_LOG:Blocks.GLASS_PANE).defaultBlockState(),F);}
     }
     private static void truck(ServerLevel l,BlockPos b,int x,int z){box(l,b,x-1,0,z-3,x+1,0,z+3,Blocks.GRAY_CONCRETE);box(l,b,x-1,1,z-1,x+1,2,z+1,Blocks.RED_TERRACOTTA);box(l,b,x-1,2,z-1,x+1,2,z-1,Blocks.BLACK_STAINED_GLASS);for(int xx:new int[]{x-2,x+2})for(int zz:new int[]{z-2,z+2})at(l,b,xx,0,zz,Blocks.BLACK_CONCRETE);box(l,b,x-1,1,z+2,x+1,1,z+3,Blocks.IRON_BARS);}
     private static void lot(ServerLevel l,BlockPos b){
@@ -141,13 +140,13 @@ public final class LiteraryRooms {
         roof(l,b,-23,-7,-24,-5,6);window(l,b,-23,-14,true);window(l,b,-16,-5,false);for(int x:new int[]{-1,9,21})truck(l,b,x,-24);for(int z=-46;z>-105;z-=7)for(int x=-22;x<=22;x+=4)at(l,b,x,0,z,Blocks.TALL_GRASS);NovelRooms.sign(l,b.offset(-7,2,-8),Direction.EAST,new String[]{"LAST STOP","Open late","",""});
     }
     private static void fan(ServerLevel l,BlockPos b){
-        room(l,b,-11,11,-28,0,0,9,LiteraryRegistry.SIDING.get(),Blocks.BIRCH_PLANKS);prop(l,b,FAN,LiteraryPropBlock.Kind.FAN,Direction.SOUTH);for(int y=0;y<4;y++){at(l,b,0,y,-18,Blocks.DARK_OAK_PLANKS);l.setBlock(b.offset(0,y,-17),Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH),F);}
+        room(l,b,-11,11,-28,0,0,9,LiteraryRegistry.SIDING.get(),Blocks.BIRCH_PLANKS);prop(l,b,FAN,LiteraryPropBlock.Kind.FAN,Direction.SOUTH);for(int y=0;y<4;y++){at(l,b,0,y,-18,Blocks.DARK_OAK_PLANKS);BuildBlocks.set(l,b.offset(0,y,-17),Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH),F);}
         box(l,b,-4,-1,-21,4,-1,-12,Blocks.GRAY_WOOL);box(l,b,6,0,-23,9,2,-23,Blocks.STONE_BRICKS);at(l,b,7,0,-22,Blocks.CAMPFIRE);furniture(l,b,-7,0,-21,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);furniture(l,b,-7,0,-13,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.EAST);box(l,b,6,2,-28,9,4,-28,Blocks.BLACK_STAINED_GLASS);
     }
     private static void mapping(ServerLevel l,BlockPos b){
         terrain(l,b,LabyrinthPlace.MAPPING_INTERIOR,Blocks.GRASS_BLOCK);room(l,b,-13,13,-36,-8,0,5,LiteraryRegistry.SIDING.get(),Blocks.BIRCH_PLANKS);door(l,b,0,0,-8,Direction.SOUTH,true);box(l,b,0,-1,-8,0,-1,0,Blocks.GRAVEL);
         box(l,b,-12,0,-24,12,3,-24,Blocks.CALCITE);door(l,b,0,0,-24,Direction.SOUTH,true);door(l,b,7,0,-24,Direction.SOUTH,true);NovelRooms.bed(l,b.offset(6,0,-32),Blocks.BLUE_BED,Direction.NORTH);furniture(l,b,-8,0,-19,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);furniture(l,b,-9,0,-29,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.EAST);at(l,b,-11,0,-33,Blocks.FURNACE);
-        box(l,b,-1,-6,-76,1,-6,-18,Blocks.DIRT);box(l,b,-1,-5,-76,1,-5,-18,Blocks.AIR);box(l,b,-1,-4,-76,1,-2,-18,Blocks.DIRT);box(l,b,0,-5,-17,0,0,-17,Blocks.AIR);for(int y=-5;y<=-1;y++)l.setBlock(b.offset(0,y,-17),Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH),F);prop(l,b,PILE,LiteraryPropBlock.Kind.BELONGINGS,Direction.SOUTH);light(l,b,0,3,-12);light(l,b,0,-4,-41);roof(l,b,-13,13,-36,-8,5);window(l,b,-13,-18,true);window(l,b,13,-30,true);for(int x:new int[]{-9,9})window(l,b,x,-8,false);box(l,b,-4,-1,-7,4,-1,-4,Blocks.SPRUCE_PLANKS);for(int x:new int[]{-4,4})box(l,b,x,0,-4,x,4,-4,Blocks.STRIPPED_SPRUCE_LOG);
+        box(l,b,-1,-6,-76,1,-6,-18,Blocks.DIRT);box(l,b,-1,-5,-76,1,-5,-18,Blocks.AIR);box(l,b,-1,-4,-76,1,-2,-18,Blocks.DIRT);box(l,b,0,-5,-17,0,0,-17,Blocks.AIR);for(int y=-5;y<=-1;y++)BuildBlocks.set(l,b.offset(0,y,-17),Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH),F);prop(l,b,PILE,LiteraryPropBlock.Kind.BELONGINGS,Direction.SOUTH);light(l,b,0,3,-12);light(l,b,0,-4,-41);roof(l,b,-13,13,-36,-8,5);window(l,b,-13,-18,true);window(l,b,13,-30,true);for(int x:new int[]{-9,9})window(l,b,x,-8,false);box(l,b,-4,-1,-7,4,-1,-4,Blocks.SPRUCE_PLANKS);for(int x:new int[]{-4,4})box(l,b,x,0,-4,x,4,-4,Blocks.STRIPPED_SPRUCE_LOG);
     }
     private static void rabbit(ServerLevel l,BlockPos b){
         terrain(l,b,LabyrinthPlace.HOLY_RABBIT,Blocks.SNOW_BLOCK);tree(l,b,0,0,-25,19);box(l,b,-5,0,-29,5,4,-20,Blocks.SPRUCE_LEAVES);box(l,b,-3,0,-28,3,0,-21,Blocks.AIR);box(l,b,-3,-1,-28,3,-1,-21,Blocks.PODZOL);box(l,b,-2,0,-20,2,2,-18,Blocks.AIR);
@@ -168,7 +167,7 @@ public final class LiteraryRooms {
         terrain(l,b,p,Blocks.SAND);var r=p.room();box(l,b,-28,-11,-72,28,-1,-13,Blocks.WATER);box(l,b,-29,-12,-73,29,-12,-12,Blocks.CLAY);
         // The far bank is reached by real rowing/swimming rather than an arrival trigger.
         box(l,b,-28,-1,r.minZ()+4,28,-1,-73,Blocks.GRASS_BLOCK);for(int x=-26;x<=26;x+=5){tree(l,b,x,0,r.minZ()+5,5);}
-        if(p==LabyrinthPlace.COSTUME_NIGHT){box(l,b,-28,-1,-48,28,-1,-13,Blocks.SAND);for(int i=0;i<9;i++){var stand=new ArmorStand(l,b.getX()+(i%3-1)*12+.5,b.getY(),b.getZ()-18-(i/3)*11+.5);stand.setNoGravity(true);stand.setInvulnerable(true);stand.setItemSlot(EquipmentSlot.HEAD,new ItemStack(Items.CARVED_PUMPKIN));stand.setItemSlot(EquipmentSlot.CHEST,new ItemStack(Items.LEATHER_CHESTPLATE));stand.addTag("HouseCostume");l.addFreshEntity(stand);}box(l,b,-28,-1,-74,28,-1,-55,Blocks.GRASS_BLOCK);}
+        if(p==LabyrinthPlace.COSTUME_NIGHT){box(l,b,-28,-1,-48,28,-1,-13,Blocks.SAND);for(int i=0;i<9;i++){var stand=new ArmorStand(l,b.getX()+(i%3-1)*12+.5,b.getY(),b.getZ()-18-(i/3)*11+.5);stand.setNoGravity(true);stand.setInvulnerable(true);stand.setItemSlot(EquipmentSlot.HEAD,new ItemStack(Items.CARVED_PUMPKIN));stand.setItemSlot(EquipmentSlot.CHEST,new ItemStack(Items.LEATHER_CHESTPLATE));stand.addTag("HouseCostume");BuildBlocks.after(l,()->l.addFreshEntity(stand));}box(l,b,-28,-1,-74,28,-1,-55,Blocks.GRASS_BLOCK);}
         if(p==LabyrinthPlace.WINTER_LAKE){box(l,b,-28,-1,-72,28,-1,-13,Blocks.ICE);box(l,b,-28,0,-12,28,0,-1,Blocks.SNOW);box(l,b,-28,0,-83,28,0,-73,Blocks.SNOW);for(int z=-70;z<-15;z+=7)for(int x=-24;x<=24;x+=7)at(l,b,x,0,z,Blocks.SNOW);}
         if(p==LabyrinthPlace.MOVIE_NIGHT){box(l,b,-4,-1,-87,4,-1,-73,Blocks.OAK_PLANKS);box(l,b,-1,-1,-14,1,-1,-3,Blocks.OAK_PLANKS);}
         desk(l,b,4,0,-6);light(l,b,7,4,-5);

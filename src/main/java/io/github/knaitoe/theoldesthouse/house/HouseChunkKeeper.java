@@ -45,7 +45,8 @@ public final class HouseChunkKeeper {
             release(server);
             return;
         }
-        boolean near = anyoneNear(server.overworld(), origin) || anyoneNear(interior, origin);
+        boolean near = anyoneNear(server.overworld(), origin, false)
+                || anyoneNear(interior, origin, data.isImpossibleDoorRevealed());
         if (near && !holding) {
             hold(server, origin);
         } else if (!near && holding) {
@@ -53,13 +54,15 @@ public final class HouseChunkKeeper {
         }
     }
 
-    private static boolean anyoneNear(ServerLevel level, BlockPos origin) {
+    private static boolean anyoneNear(ServerLevel level, BlockPos origin, boolean hallway) {
         double cx = origin.getX() + HouseLayout.CENTER_X + 0.5D;
         double cz = origin.getZ() + HouseLayout.CENTER_Z + 0.5D;
         for (ServerPlayer player : level.players()) {
             double dx = player.getX() - cx;
             double dz = player.getZ() - cz;
-            if (dx * dx + dz * dz <= NEAR * NEAR) {
+            if (dx * dx + dz * dz <= NEAR * NEAR
+                    || hallway && HouseImpossibleHallway.isInsideWalkableVolume(origin,
+                            player.getX(), player.getY(), player.getZ())) {
                 return true;
             }
         }
