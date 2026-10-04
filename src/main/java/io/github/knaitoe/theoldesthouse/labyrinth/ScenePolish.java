@@ -214,13 +214,27 @@ public final class ScenePolish {
                     changed++;
                 }
             }
-            // A nursery door cannot stand on powder snow: the cold spot moves just inside.
+            // A nursery door cannot stand on powder snow: the cold spot moves just inside. And the
+            // corridor's wall behind each nursery door is opened, or the nurseries are sealed.
             case HILL_NURSERY -> {
+                for (int x : new int[]{-3, 3})
+                    for (int y = 0; y <= 1; y++) {
+                        BlockPos gap = base.offset(x, y, -16);
+                        if (!level.getBlockState(gap).isAir() && !level.getBlockState(gap).hasBlockEntity()) changed += set(level, gap, Blocks.AIR.defaultBlockState());
+                    }
                 BlockPos sill = base.offset(-4, -1, -16), inside = base.offset(-5, -1, -16);
                 if (level.getBlockState(sill).is(Blocks.POWDER_SNOW)) {
                     level.setBlock(sill, Blocks.DARK_OAK_PLANKS.defaultBlockState(), FLAGS);
                     if (level.getBlockState(inside).is(Blocks.DARK_OAK_PLANKS)) level.setBlock(inside, Blocks.POWDER_SNOW.defaultBlockState(), FLAGS);
                     changed += 2;
+                }
+            }
+            // The attic ladder runs unbroken past each landing.
+            case WHALE -> {
+                for (int y : new int[]{4, 7, 10}) {
+                    BlockPos rung = base.offset(0, y, -18);
+                    if (level.getBlockState(rung).is(Blocks.SMOOTH_STONE))
+                        changed += set(level, rung, Blocks.LADDER.defaultBlockState().setValue(net.minecraft.world.level.block.LadderBlock.FACING, Direction.SOUTH));
                 }
             }
             // The cell wall's gouged block reaches the floor.
