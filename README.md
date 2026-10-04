@@ -3,6 +3,8 @@
 
 A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
+Version `0.4.39` repairs the house exit: the held transition frame has a working 1.5-second deadline once the destination exists; the door remains open during passage; copying its halves no longer triggers temporary support/shape breakage. Client capture/hold and server sync/move timings are logged. All 0.4.38 construction, inventory and progression repairs remain. See [the exit repair](docs/SEAM_EXIT_0_4_39.md). Complete verification requires all 323 native cases, including two new seam regressions, the focused hallway/literary/hotel suites and all existing client/package proofs.
+
 The 0.4.38 construction recorder also indexes authored state by chunk. Private home capture keeps its bounded source loaded until original entity data is ready and releases those temporary tickets after capture or reset. The complete native suite still verifies original actor/container identity, private-copy property and every existing architecture view.
 
 Version `0.4.38` extends the impossible hallway through its far door cell and paces cold chunk preparation, interior prefills and all twenty-four literary structures. The far-door waiting position no longer triggers an Overworld breach. Main-thread scene writes use bounded ordered slices; original geometry, notes, props, actors and Witness counts remain. Hallway dressing waits for vacancy. See [the hallway repair](docs/HALLWAY_CARVE_0_4_38.md). This candidate requires all 321 native cases, three focused hallway regressions, sixteen literary and seven hotel cases, plus the complete existing client/package proofs. Verification is pending the exact branch HEAD's complete CI result.

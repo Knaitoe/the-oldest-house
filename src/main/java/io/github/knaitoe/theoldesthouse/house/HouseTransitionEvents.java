@@ -128,10 +128,12 @@ public final class HouseTransitionEvents {
         }
 
         try {
+            long started = System.nanoTime();
             pending.phase = Phase.SYNCING;
             HouseSavedData data = HouseSavedData.get(player.getServer());
             BlockPos origin = data.houseOrigin();
             syncBeforeMove(player, pending, destination, data, origin);
+            long synced = System.nanoTime();
 
             pending.phase = Phase.MOVING;
             move(player, pending, destination);
@@ -139,6 +141,10 @@ public final class HouseTransitionEvents {
             PENDING.remove(player.getUUID());
 
             settle(player, pending, origin);
+            TheOldestHouse.LOGGER.info("Completed House transition {} for {} ({} -> {}): sync={} ms, move={} ms",
+                    pending.token, player.getGameProfile().getName(), pending.from.location(),
+                    pending.destination.location(), (synced - started) / 1_000_000L,
+                    (System.nanoTime() - synced) / 1_000_000L);
         } catch (RuntimeException e) {
             TheOldestHouse.LOGGER.error("The Oldest House transition {} for {} threw during {}",
                     pending.token, player.getGameProfile().getName(), pending.phase, e);
@@ -225,6 +231,7 @@ public final class HouseTransitionEvents {
         if (pending.door != null && origin != null) {
             // The door shuts once they are a block past it on the far side.
             PENDING_DOOR_CLOSE.put(player.getUUID(), new PendingDoorClose(origin, pending.door, pending.isEntering() ? -1.0D : 1.0D));
+            DOOR_IDLE.remove(pending.door.name());
         }
         if (pending.isEntering()) {
             OpeningSequence.onEnteredHouse(player);
@@ -508,6 +515,13 @@ public final class HouseTransitionEvents {
             return;
         }
         for (HouseLayout.ExteriorDoor door : HouseLayout.EXTERIOR_DOORS) {
+            // A player can click from almost three blocks away. Do not let the
+            // two-block idle radius close the door during their actual passage.
+            if (PENDING_DOOR_CLOSE.values().stream().anyMatch(pass ->
+                    pass.origin.equals(origin) && pass.door.equals(door))) {
+                DOOR_IDLE.remove(door.name());
+                continue;
+            }
             BlockPos lower = origin.offset(door.x(), door.y(), door.z());
             if (!interior.isLoaded(lower)) {
                 continue;
