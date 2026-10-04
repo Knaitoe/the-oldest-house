@@ -153,6 +153,7 @@ public final class ScenePolish {
     /** Applies every rule to one scene. Returns how many blocks it changed. */
     public static int apply(ServerLevel level, BlockPos base, LabyrinthPlace place) {
         int changed = 0;
+        changed += specifics(level, base, place);
         changed += foliageAndFittings(level, base, place);
         changed += lanterns(level, base, place);
         if (!FLOATING_BY_DESIGN.contains(place)) changed += floatingTrees(level, base, place);
@@ -166,6 +167,95 @@ public final class ScenePolish {
             changed += light(level, base, place, SPARSE.contains(place) ? 0.6D : DIM.contains(place) ? 0.45D : 0.2D);
         }
         return changed;
+    }
+
+    // ------------------------------------------------------------------
+    // Supports a few authored props were built without.
+
+    private static boolean emptyOrWater(ServerLevel level, BlockPos at) {
+        BlockState state = level.getBlockState(at);
+        return state.isAir() || state.is(Blocks.WATER);
+    }
+
+    private static int support(ServerLevel level, BlockPos at, BlockState state) {
+        if (!emptyOrWater(level, at)) return 0;
+        level.setBlock(at, state, FLAGS);
+        return 1;
+    }
+
+    private static int specifics(ServerLevel level, BlockPos base, LabyrinthPlace place) {
+        int changed = 0;
+        switch (place) {
+            // The drowned bell tower gets the beam its bell hangs from.
+            case PHONE_CANOE -> changed += support(level, base.offset(0, -1, -37), Blocks.DEEPSLATE_BRICKS.defaultBlockState());
+            // The boiler room's two levers stand on a control plinth.
+            case HOTEL -> {
+                for (int x : new int[]{4, 6}) changed += support(level, base.offset(x, -4, -58), Blocks.POLISHED_ANDESITE.defaultBlockState());
+            }
+            // The last chamber's red light stands on a post.
+            case MASQUE -> changed += support(level, base.offset(0, 0, -77), Blocks.POLISHED_BLACKSTONE_BRICK_WALL.defaultBlockState());
+            // The cabin television stands on a cabinet.
+            case END_WORLD_CABIN -> {
+                BlockPos under = base.offset(7, 0, -24);
+                if (level.getBlockState(under).isAir()) {
+                    level.setBlock(under, io.github.knaitoe.theoldesthouse.house.HouseBlocks.HOUSEHOLD_FURNITURE.get().defaultBlockState()
+                            .setValue(io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.KIND,
+                                    io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS)
+                            .setValue(io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.FACING, Direction.SOUTH), FLAGS);
+                    changed++;
+                }
+            }
+            // The ceiling fan hangs on a rod.
+            case ELK_FAN -> {
+                for (int y = 8; y < 12 && level.getBlockState(base.offset(0, y, -17)).isAir(); y++) {
+                    level.setBlock(base.offset(0, y, -17), Blocks.CHAIN.defaultBlockState(), FLAGS);
+                    changed++;
+                }
+            }
+            // A nursery door cannot stand on powder snow: the cold spot moves just inside.
+            case HILL_NURSERY -> {
+                BlockPos sill = base.offset(-4, -1, -16), inside = base.offset(-5, -1, -16);
+                if (level.getBlockState(sill).is(Blocks.POWDER_SNOW)) {
+                    level.setBlock(sill, Blocks.DARK_OAK_PLANKS.defaultBlockState(), FLAGS);
+                    if (level.getBlockState(inside).is(Blocks.DARK_OAK_PLANKS)) level.setBlock(inside, Blocks.POWDER_SNOW.defaultBlockState(), FLAGS);
+                    changed += 2;
+                }
+            }
+            // The cell wall's gouged block reaches the floor.
+            case ZAMPANO_COURTYARD -> changed += support(level, base.offset(5, 0, -33), Blocks.DEEPSLATE_TILES.defaultBlockState());
+            // The stair railings rest on a ledge along each flight instead of hanging in the air.
+            case WINCHESTER -> {
+                BoundingBox r = place.room();
+                for (BlockPos at : BlockPos.betweenClosed(base.offset(r.minX(), r.minY(), r.minZ()), base.offset(r.maxX(), r.maxY(), r.maxZ()))) {
+                    if (!level.getBlockState(at).is(Blocks.DARK_OAK_FENCE) || !level.getBlockState(at.below()).isAir()) continue;
+                    BlockPos ledge = at.below();
+                    boolean beside = false;
+                    for (Direction side : Direction.Plane.HORIZONTAL) beside |= !level.getBlockState(ledge.relative(side)).isAir();
+                    if (!beside) continue;
+                    level.setBlock(ledge, Blocks.DARK_OAK_SLAB.defaultBlockState()
+                            .setValue(net.minecraft.world.level.block.SlabBlock.TYPE, net.minecraft.world.level.block.state.properties.SlabType.TOP), FLAGS);
+                    changed++;
+                }
+            }
+            // The garden pool is a basin with walls, not water hanging over the space under the floor.
+            case BLY_ROUTE -> {
+                for (int y = -4; y <= -2; y++)
+                    for (int x = -2; x <= 2; x++)
+                        for (int z = -51; z <= -40; z++)
+                            if (Math.abs(x) == 2 || z == -51 || z == -40) {
+                                BlockPos at = base.offset(x, y, z);
+                                if (level.getBlockState(at).isAir() || level.getBlockState(at).is(Blocks.WATER) && (Math.abs(x) == 2 || z == -51 || z == -40))
+                                    changed += set(level, at, Blocks.STONE_BRICKS.defaultBlockState());
+                            }
+            }
+            default -> { }
+        }
+        return changed;
+    }
+
+    private static int set(ServerLevel level, BlockPos at, BlockState state) {
+        level.setBlock(at, state, FLAGS);
+        return 1;
     }
 
     private static boolean reserved(LabyrinthPlace place, int x, int y, int z) {
@@ -414,8 +504,6 @@ public final class ScenePolish {
                 base.getX() + r.maxX() + 1, base.getY() + r.maxY() + 1, base.getZ() + r.maxZ() + 1);
         for (Mob mob : level.getEntitiesOfClass(Mob.class, box, Mob::isInWall)) {
             BlockPos from = mob.blockPosition();
-            // Captives the story keeps (the Mother's den) stay where they are held.
-            if (reserved(place, from.getX() - base.getX(), from.getY() - base.getY(), from.getZ() - base.getZ())) continue;
             search:
             for (int d = 1; d <= 3; d++)
                 for (BlockPos to : BlockPos.betweenClosed(from.offset(-d, -1, -d), from.offset(d, d, d))) {

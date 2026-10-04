@@ -220,6 +220,11 @@ public final class MotherOfStrays {
                 Cat cat = EntityType.CAT.create(level);
                 if (cat == null) continue;
                 cat.moveTo(base.getX() - 3.5D + i * 3.0D, base.getY(), base.getZ() - 16.5D, 0.0F, 0.0F);
+                // The den's furnishings may stand where a cat was meant to sit: it sits beside them instead.
+                for (int step = 1; step <= 3 && !level.noCollision(cat); step++)
+                    for (Direction side : Direction.Plane.HORIZONTAL)
+                        if (!level.noCollision(cat)) cat.moveTo(base.getX() - 3.5D + i * 3.0D + side.getStepX() * step, base.getY(),
+                                base.getZ() - 16.5D + side.getStepZ() * step, 0.0F, 0.0F);
                 cat.setCustomName(Component.literal(new String[] {"A cat with no caller", "A cat from the courtyard", "A cat nobody counted"}[i]));
                 prepareKeptPet(cat);
                 level.addFreshEntity(cat);
