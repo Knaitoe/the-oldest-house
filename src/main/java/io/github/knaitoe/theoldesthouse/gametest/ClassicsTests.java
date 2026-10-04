@@ -40,7 +40,7 @@ public final class ClassicsTests {
     @AfterBatch(batch="classic_nursery") public static void c3(ServerLevel l){if(nursery!=null){nursery.close();nursery=null;}}
     @AfterBatch(batch="classic_upgrade") public static void c4(ServerLevel l){if(upgrade!=null){upgrade.close();upgrade=null;}}
     @GameTest(template="empty") public static void twoCompleteSourcesAppendAndQuotaRoundsUp(GameTestHelper h){
-        h.assertTrue(LabyrinthPlace.SEANCE.slot()==40&&LabyrinthPlace.WALLPAPER_NURSERY.slot()==41&&WitnessAccount.Story.values().length==20&&WitnessAccount.REQUIRED==15,"two complete native sources append without renumbering the original places");
+        h.assertTrue(LabyrinthPlace.SEANCE.slot()==40&&LabyrinthPlace.WALLPAPER_NURSERY.slot()==41&&WitnessAccount.Story.values().length==43&&WitnessAccount.REQUIRED==33,"two complete native sources append without renumbering the original places");
         for(int y:new int[]{65,80,150,250})for(var place:List.of(LabyrinthPlace.SEANCE,LabyrinthPlace.WALLPAPER_NURSERY)){var o=new BlockPos(0,y,0);var b=LabyrinthPlaces.base(o,place);var slot=LabyrinthPlaces.slotBounds(o,place);h.assertTrue(b!=null&&slot.isInside(b.offset(place.room().minX(),-1,place.room().minZ()))&&slot.isInside(b.offset(place.room().maxX(),7,0)),"new native room and ceiling fit at manor height "+y);}
         h.assertTrue(WitnessAccount.requiredForPoolSize(18)==14&&WitnessAccount.requiredForPoolSize(19)==15,"the new boundary still derives from seventy-five percent");h.succeed();
     }

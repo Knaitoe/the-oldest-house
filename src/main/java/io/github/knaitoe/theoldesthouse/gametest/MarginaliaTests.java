@@ -115,7 +115,7 @@ public final class MarginaliaTests {
             ItemStack notebook=last.book();f.end(p,last);f.reload();var restored=f.open(p,t);
             h.assertTrue(ItemStack.isSameItemSameComponents(notebook,restored.book())&&HouseMarginalia.next(f.data(),p.getUUID(),t)==4,"saved reload preserves the exact discovered text and completed serial");
             h.assertTrue(p.getInventory().items.stream().anyMatch(s->ItemStack.isSameItemSameComponents(s,kept)),"earlier collected pages are never rewritten in the inventory");
-            h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0&&WitnessAccount.Story.values().length==20&&WitnessAccount.REQUIRED==15,"reading scenery cannot alter the Witness pool or grant an ending");h.succeed();
+            h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0&&WitnessAccount.Story.values().length==43&&WitnessAccount.REQUIRED==33,"reading scenery cannot alter the Witness pool or grant an ending");h.succeed();
         });
     }
     @GameTest(template="empty",batch="marginalia_personal",timeoutTicks=140)

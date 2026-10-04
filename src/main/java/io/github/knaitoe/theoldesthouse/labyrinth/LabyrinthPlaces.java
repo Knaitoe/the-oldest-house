@@ -36,6 +36,9 @@ public final class LabyrinthPlaces {
      */
     public static final int COLUMN_SPACING = 96;
     public static final int OUTDOOR_SPACING = 4096;
+    /** New interior columns stand north of the saved rooms and the fixed staircase. */
+    private static final int APPENDED_INTERIOR_FIRST_SLOT = 45;
+    private static final int APPENDED_INTERIOR_NORTH = 1024;
     // Slot 32 starts a fifth column at low/common manor heights; older slots never move.
     private static final int MAX_COLUMNS = 10;
     private static final int MAX_Y = 318;
@@ -132,7 +135,8 @@ public final class LabyrinthPlaces {
         return new BlockPos(
                 origin.getX() + HouseLayout.CENTER_X + column(origin, place.slot()) * COLUMN_SPACING,
                 slotBottom(origin, place.slot()) + (place == LabyrinthPlace.DROWNED_TOWN || place == LabyrinthPlace.BARN_WELL ? 14 : FLOOR_IN_SLOT),
-                origin.getZ() + HouseLayout.CENTER_Z - (NovelRooms.outside(place) ? 4096 + place.slot()*spacing : 0)
+                origin.getZ() + HouseLayout.CENTER_Z - (NovelRooms.outside(place) ? 4096 + place.slot()*spacing
+                        : place.slot() >= APPENDED_INTERIOR_FIRST_SLOT ? APPENDED_INTERIOR_NORTH : 0)
         );
     }
 
