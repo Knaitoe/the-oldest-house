@@ -96,4 +96,21 @@ public final class HallwayShieldTests {
             storage.set("the_oldest_house", old);
         }
     }
+
+    @GameTest(template = "empty")
+    public static void ordinaryMonstersStayOutOfTheManorAndHallway(GameTestHelper h) {
+        var server = h.getLevel().getServer();
+        var interior = HouseTestLevel.get(server, HouseDimensions.INTERIOR);
+        var origin = new BlockPos(65000, 80, 65000);
+        double hallX = origin.getX() + HouseLayout.AXIS_X + 0.5, y = origin.getY() + 1;
+        h.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthSpawnRules.insideTheHouse(interior, origin, hallX, y, origin.getZ() + HouseLayout.FRONT_DOOR_Z + 3.5),
+                "the manor's hall is the House's own");
+        h.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthSpawnRules.insideTheHouse(interior, origin, hallX, y, origin.getZ() + HouseImpossibleHallway.START_Z_OFFSET + 10.5),
+                "so is the impossible hallway");
+        h.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthSpawnRules.insideTheHouse(h.getLevel(), origin, hallX, y, origin.getZ() + HouseLayout.FRONT_DOOR_Z + 3.5)
+                == h.getLevel().dimension().equals(Level.OVERWORLD), "the Overworld shell keeps them out too");
+        h.assertTrue(!io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthSpawnRules.insideTheHouse(interior, origin, hallX, y, origin.getZ() - 30.5),
+                "the yard outside is ordinary ground");
+        h.succeed();
+    }
 }

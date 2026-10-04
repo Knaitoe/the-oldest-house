@@ -41,7 +41,27 @@ public final class LabyrinthSpawnRules {
                     || entity instanceof net.minecraft.world.entity.TamableAnimal pet && pet.isTame()
                     || entity.getPersistentData().getBoolean(LabyrinthEncounters.STRAY))) {
             event.setCanceled(true);
+            return;
         }
+        if (origin != null && entity.getType().getCategory() == MobCategory.MONSTER && isVanilla(entity.getType())
+                && !entity.getTags().contains(ALLOWED_TAG)
+                && !io.github.knaitoe.theoldesthouse.house.HouseExteriorEntityMirror.isProjection(entity)
+                && insideTheHouse(level, origin, entity.getX(), entity.getY(), entity.getZ())) {
+            event.setCanceled(true);
+        }
+    }
+
+    /**
+     * The manor's rooms and the impossible hallway are the House's own: an
+     * ordinary night's zombie or creeper does not wander into them, in either
+     * copy of the house.
+     */
+    public static boolean insideTheHouse(ServerLevel level, BlockPos origin, double x, double y, double z) {
+        ResourceKey<Level> dimension = level.dimension();
+        if (!dimension.equals(HouseDimensions.INTERIOR) && !dimension.equals(Level.OVERWORLD)) return false;
+        if (io.github.knaitoe.theoldesthouse.house.HouseLayout.isInsideDomesticVolume(x - origin.getX(), y - origin.getY(), z - origin.getZ())) return true;
+        return dimension.equals(HouseDimensions.INTERIOR)
+                && io.github.knaitoe.theoldesthouse.house.HouseImpossibleHallway.isInsideWalkableVolume(origin, x, y, z);
     }
 
     /**
