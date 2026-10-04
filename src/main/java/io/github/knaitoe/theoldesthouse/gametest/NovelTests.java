@@ -126,11 +126,18 @@ public final class NovelTests {
     @GameTest(template="empty",batch="novel_upgrade",timeoutTicks=2400) public static void layoutTwentyAppendsNovelPlacesWithoutRebuildingEarlierRooms(GameTestHelper h){
         upgrade=new Fixture(h,34700,LabyrinthPlace.KAREN_ROOM);var f=upgrade;HouseTestLevel.get(f.l.getServer(),HouseDimensions.OUTSIDE);
         var old=LabyrinthPlaces.base(f.origin,LabyrinthPlace.HARRIGAN);f.chunks.hold(f.l,IndianLakeRooms.bounds(old,LabyrinthPlace.HARRIGAN));var at=old.offset(2,0,-4);f.l.setBlock(at,Blocks.BARREL.defaultBlockState(),2);var barrel=(BarrelBlockEntity)f.l.getBlockEntity(at);barrel.setItem(0,new ItemStack(Items.DIAMOND,3));
-        NovelRooms.box(f.l,old,-3,-1,-5,3,-1,-1,Blocks.SMOOTH_STONE.defaultBlockState());var actor=FinaleRegistry.WITNESS.get().create(f.l);actor.moveTo(Vec3.atBottomCenterOf(old.north(3)));h.assertTrue(f.l.addFreshEntity(actor),"the preserved fixture actor is actually added");f.extra.add(actor);var identity=actor.getUUID();
-        var scene=new CompoundTag();scene.putBoolean("ReadingFinished",true);f.data().setState(HarriganVignette.ID,scene);var id=UUID.randomUUID();WitnessAccount.resolve(f.data(),id,WitnessAccount.Story.HARRIGAN,"buried_phone");
-        f.data().setBuilt(20,f.origin);LabyrinthBuilder.ensureBuilt(f.l.getServer());
-        h.succeedWhen(()->{h.assertTrue(LabyrinthBuilder.isBuilt(f.l.getServer()),"the appended layout finishes");h.assertTrue(f.l.getBlockEntity(at)==barrel&&barrel.getItem(0).getCount()==3&&actor.getUUID().equals(identity)&&actor.isAlive(),"earlier native containers and actors retain identity; same barrel="+(f.l.getBlockEntity(at)==barrel)+" count="+barrel.getItem(0).getCount()+" alive="+actor.isAlive()+" actor="+actor.position());
+        NovelRooms.box(f.l,old,-3,-1,-5,3,-1,-1,Blocks.SMOOTH_STONE.defaultBlockState());
+        var id=UUID.randomUUID();final Entity[] original={null};final UUID[] identity={null};final boolean[] checked={false};
+        h.onEachTick(()->{
+            if(original[0]==null){
+                if(!f.chunks.ready())return;
+                var actor=FinaleRegistry.WITNESS.get().create(f.l);actor.moveTo(Vec3.atBottomCenterOf(old.north(3)));h.assertTrue(f.l.addFreshEntity(actor),"the preserved fixture actor is actually added");f.extra.add(actor);original[0]=actor;identity[0]=actor.getUUID();
+                var scene=new CompoundTag();scene.putBoolean("ReadingFinished",true);f.data().setState(HarriganVignette.ID,scene);WitnessAccount.resolve(f.data(),id,WitnessAccount.Story.HARRIGAN,"buried_phone");
+                f.data().setBuilt(20,f.origin);LabyrinthBuilder.ensureBuilt(f.l.getServer());LabyrinthBuilder.finishGameTest(f.l.getServer());return;
+            }
+            if(checked[0])return;checked[0]=true;var actor=original[0];
+            h.assertTrue(LabyrinthBuilder.isBuilt(f.l.getServer()),"the appended layout finishes");h.assertTrue(f.l.getBlockEntity(at)==barrel&&barrel.getItem(0).getCount()==3&&actor.getUUID().equals(identity[0])&&actor.isAlive(),"earlier native containers and actors retain identity; same barrel="+(f.l.getBlockEntity(at)==barrel)+" count="+barrel.getItem(0).getCount()+" alive="+actor.isAlive()+" actor="+actor.position());
             h.assertTrue(f.data().state(HarriganVignette.ID).getBoolean("ReadingFinished")&&WitnessAccount.has(f.data(),id,WitnessAccount.Story.HARRIGAN),"saved reading and personal evidence remain");
-            for(var place:NovelVignettes.PLACES){var door=f.data().door(place.entryDoorId());var level=f.l.getServer().getLevel(NovelRooms.dimension(place));h.assertTrue(door!=null&&level.getBlockState(door.lower).getBlock() instanceof DoorBlock,"the appended site has an actual entrance in its own dimension");}});}
+            for(var place:NovelVignettes.PLACES){var door=f.data().door(place.entryDoorId());var level=f.l.getServer().getLevel(NovelRooms.dimension(place));h.assertTrue(door!=null&&level.getBlockState(door.lower).getBlock() instanceof DoorBlock,"the appended site has an actual entrance in its own dimension");}h.succeed();});}
 
 }

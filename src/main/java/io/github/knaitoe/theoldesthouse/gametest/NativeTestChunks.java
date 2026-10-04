@@ -33,6 +33,13 @@ final class NativeTestChunks implements AutoCloseable {
         }
     }
 
+    /** Full block chunks can arrive before their native entity sections. */
+    boolean ready() {
+        for (var lease : held)
+            if (!lease.level.areEntitiesLoaded(lease.chunk.toLong())) return false;
+        return true;
+    }
+
     @Override public void close() {
         for (var lease : held)
             lease.level.getChunkSource().removeRegionTicket(TICKET, lease.chunk, 3, key);

@@ -149,16 +149,26 @@ public final class HouseNpcTests {
     }
     @GameTest(template="empty",batch="npc_upgrade",timeoutTicks=2400) public static void layoutTwentyOneAppendsTheCampWithoutRefillingOrReplacingOldScenes(GameTestHelper h){
         upgrade=new Fixture(h,43000);var f=upgrade;var old=f.b.offset(30,0,0);f.chunks.hold(f.l,new AABB(old).inflate(1));f.l.setBlock(old,Blocks.BARREL.defaultBlockState(),3);var container=f.l.getBlockEntity(old);((BarrelBlockEntity)container).setItem(0,new ItemStack(Items.DIAMOND,3));
-        var harrigan=LabyrinthPlaces.base(f.origin,LabyrinthPlace.HARRIGAN);f.chunks.hold(f.l,IndianLakeRooms.bounds(harrigan,LabyrinthPlace.HARRIGAN));HarriganVignette.build(f.l.getServer(),f.l,harrigan);
-        var reader=f.player();reader.moveTo(harrigan.getX()-2.5,harrigan.getY(),harrigan.getZ()-5.5);
-        var bodies=f.l.getEntitiesOfClass(ArmorStand.class,IndianLakeRooms.bounds(harrigan,LabyrinthPlace.HARRIGAN));var body=bodies.getFirst();var id=body.getUUID();
-        var head=body.getItemBySlot(EquipmentSlot.HEAD).copy();head.remove(DataComponents.CUSTOM_DATA);body.setItemSlot(EquipmentSlot.HEAD,head);
-        HarriganVignette.onEntityTick(new net.neoforged.neoforge.event.tick.EntityTickEvent.Post(body));
-        var prior=new CompoundTag();prior.putBoolean("TicketVisible",true);prior.putBoolean("ReadingFinished",true);prior.putInt("Visit",1);f.data().setState(HarriganVignette.ID,prior);f.data().setBuilt(21,f.origin);
-        LabyrinthBuilder.ensureBuilt(f.l.getServer());
-        // The append is paced by native chunk loading; check once it has finished.
-        final boolean[] checked={false};
-        h.onEachTick(()->{if(checked[0]||LabyrinthBuilder.isCarving())return;checked[0]=true;
+        var harrigan=LabyrinthPlaces.base(f.origin,LabyrinthPlace.HARRIGAN);f.chunks.hold(f.l,IndianLakeRooms.bounds(harrigan,LabyrinthPlace.HARRIGAN));
+        var prior=new CompoundTag();prior.putBoolean("TicketVisible",true);prior.putBoolean("ReadingFinished",true);prior.putInt("Visit",1);
+        final List<ArmorStand> bodies=new ArrayList<>();final ArmorStand[] original={null};final UUID[] identity={null};final int[] stage={0};
+        h.onEachTick(()->{
+            if(stage[0]==0){
+                if(!f.chunks.ready())return;
+                HarriganVignette.build(f.l.getServer(),f.l,harrigan);
+                var reader=f.player();reader.moveTo(harrigan.getX()-2.5,harrigan.getY(),harrigan.getZ()-5.5);stage[0]=1;return;
+            }
+            if(stage[0]==1){
+                var tracked=f.l.getEntitiesOfClass(ArmorStand.class,IndianLakeRooms.bounds(harrigan,LabyrinthPlace.HARRIGAN));if(tracked.isEmpty())return;
+                bodies.addAll(tracked);var body=tracked.getFirst();original[0]=body;identity[0]=body.getUUID();
+                var head=body.getItemBySlot(EquipmentSlot.HEAD).copy();head.remove(DataComponents.CUSTOM_DATA);body.setItemSlot(EquipmentSlot.HEAD,head);
+                HarriganVignette.onEntityTick(new net.neoforged.neoforge.event.tick.EntityTickEvent.Post(body));
+                f.data().setState(HarriganVignette.ID,prior);f.data().setBuilt(21,f.origin);LabyrinthBuilder.ensureBuilt(f.l.getServer());
+                // This case tests preservation; the hallway cases independently test paced construction.
+                LabyrinthBuilder.finishGameTest(f.l.getServer());stage[0]=2;return;
+            }
+            if(stage[0]!=2)return;stage[0]=3;var body=original[0];var id=identity[0];
+            h.assertTrue(LabyrinthBuilder.isBuilt(f.l.getServer()),"the actual native append finishes");
             h.assertTrue(f.data().builtVersion()==LabyrinthBuilder.VERSION&&f.l.getBlockEntity(old)==container&&((BarrelBlockEntity)container).getItem(0).getCount()==3,"an append preserves existing container identity and contents");
             h.assertTrue(body.isAlive()&&body.getUUID().equals(id)&&HarriganAppearance.variant(body)==1&&f.data().state(HarriganVignette.ID).equals(prior),"legacy seated identity/dialogue: alive="+body.isAlive()+", appearance="+HarriganAppearance.variant(body)+", state="+f.data().state(HarriganVignette.ID));
             var saved=body.saveWithoutId(new CompoundTag());var restored=new ArmorStand(f.l,body.getX(),body.getY(),body.getZ());restored.load(saved);
