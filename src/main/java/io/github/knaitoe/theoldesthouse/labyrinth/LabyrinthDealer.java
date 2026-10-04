@@ -1,7 +1,9 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.util.RandomSource;
@@ -185,7 +187,7 @@ public final class LabyrinthDealer {
         return Scent.SEEKING;
     }
 
-    public static void dealPlace(LabyrinthData data, UUID player, LabyrinthPlace place, RandomSource random) {
+    private static List<LabyrinthData.Door> dealtDoors(LabyrinthData data, LabyrinthPlace place) {
         List<LabyrinthData.Door> doors = new ArrayList<>();
         for (LabyrinthPlace.DoorSpec spec : place.doors()) {
             LabyrinthData.Door door = data.door(place.doorId(spec));
@@ -193,6 +195,52 @@ public final class LabyrinthDealer {
                 doors.add(door);
             }
         }
+        return doors;
+    }
+
+    /**
+     * Arriving through a door: a place reached by the same route as before
+     * keeps what lies behind its doors, so the labyrinth can be mapped and
+     * returned to. Somewhere new is dealt from its route, so explorers who
+     * take the same doors from the same hallway find the same halls. Only a
+     * door whose story has closed to this player, or a hunt for a story or a
+     * lost pet, deals afresh.
+     */
+    public static void arriveAt(LabyrinthData data, UUID player, LabyrinthPlace place, long salt) {
+        List<LabyrinthData.Door> doors = dealtDoors(data, place);
+        if (doors.isEmpty()) return;
+        long key = data.nodeKey(player, place);
+        Map<String, LabyrinthData.Deal> remembered = data.node(player, key);
+        RandomSource random = RandomSource.create(key ^ salt);
+        if (remembered == null || data.hillaryScent(player) || rescueNeeded(data, player)) {
+            dealPlace(data, player, place, random);
+        } else {
+            List<LabyrinthData.Door> closed = new ArrayList<>();
+            for (LabyrinthData.Door door : doors) {
+                LabyrinthData.Deal deal = remembered.get(door.id);
+                if (deal == null || !stillDealable(data, player, deal.place())) closed.add(door);
+                else data.deal(player, door, deal.place(), deal.leak(), false);
+            }
+            if (!closed.isEmpty()) deal(data, player, closed, place, random);
+        }
+        Map<String, LabyrinthData.Deal> now = new LinkedHashMap<>();
+        for (LabyrinthData.Door door : doors) {
+            LabyrinthData.Deal deal = data.deal(player, door);
+            if (deal != null) now.put(door.id, deal);
+        }
+        data.rememberNode(player, key, now);
+    }
+
+    /** Whether a remembered destination can still be found behind its door by this player. */
+    private static boolean stillDealable(LabyrinthData data, UUID player, String id) {
+        if (FinaleArchitecture.ID.equals(id)) return FinaleController.canOffer(data, player);
+        LabyrinthPlace place = LabyrinthPlace.byId(id);
+        if (place == null || !LabyrinthBuilder.isPlaceReady(data, place)) return false;
+        return !place.isVignette() || vignettesAvailable(data, player).contains(place);
+    }
+
+    public static void dealPlace(LabyrinthData data, UUID player, LabyrinthPlace place, RandomSource random) {
+        List<LabyrinthData.Door> doors = dealtDoors(data, place);
         if (place == LabyrinthPlace.DUPLICATE_PASSAGE) {
             dealDuplicatePassage(data, player, doors, random);
             return;
@@ -329,8 +377,11 @@ public final class LabyrinthDealer {
         }
 
         List<LabyrinthPlace> gray = new ArrayList<>(grayAvailable(data, player));
-        // Ordinary stretches do not repeatedly lead straight back into themselves.
+        // Ordinary stretches do not repeatedly lead straight back into themselves,
+        // nor ping-pong back into the hall the explorer has just come from.
         if (here != null) gray.remove(here);
+        if (gray.stream().filter(p -> data.recentVisit(player, p) != 1).count() >= 2)
+            gray.removeIf(p -> data.recentVisit(player, p) == 1);
         List<LabyrinthPlace> odd = gray.stream().filter(LabyrinthPacing::anomaly)
                 .filter(p -> !LabyrinthPacing.loop(p) || LabyrinthPacing.loopDue(data, player)).toList();
         List<LabyrinthData.Door> choices = new ArrayList<>(doors);

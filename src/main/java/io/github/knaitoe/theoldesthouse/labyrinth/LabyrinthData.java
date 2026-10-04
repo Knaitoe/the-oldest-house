@@ -119,7 +119,12 @@ public final class LabyrinthData extends SavedData {
         final Deque<String> recent = new ArrayDeque<>();
         int dryDeals;
         boolean hillaryScent;
+        /** The doors of each place this player has stood in, keyed by the way they came: their map of the labyrinth. */
+        final LinkedHashMap<Long, Map<String, Deal>> nodes = new LinkedHashMap<>(16, 0.75F, true);
     }
+
+    /** Places remembered per player before the oldest is forgotten. */
+    public static final int MAX_NODES = 1024;
 
     private final Map<String, Door> doors = new LinkedHashMap<>();
     private final Map<GlobalPos, String> index = new HashMap<>();
@@ -239,6 +244,52 @@ public final class LabyrinthData extends SavedData {
     public void deal(UUID player, Door door, String place, boolean leak, boolean bark) {
         VignetteGate.redealt(this,player,door);
         playerDealer(player).deals.put(door.id, new Deal(place, leak, bark));
+        setDirty();
+    }
+
+    /**
+     * Identifies a place as reached by this route: the doors on the player's
+     * way back, in order, and the place itself. The same doors taken from the
+     * same hallway always name the same spot, whoever takes them.
+     */
+    public long nodeKey(UUID player, LabyrinthPlace place) {
+        long hash = 0xcbf29ce484222325L;
+        Deque<Waypoint> stack = returns.get(player);
+        if (stack != null) {
+            var it = stack.descendingIterator();
+            while (it.hasNext()) {
+                Waypoint point = it.next();
+                hash = mix(hash, point.dimension().location().toString());
+                hash = mix(hash, Long.toString(BlockPos.containing(point.pos()).asLong()));
+            }
+        }
+        return mix(hash, place.id());
+    }
+
+    private static long mix(long hash, String text) {
+        for (int i = 0; i < text.length(); i++) {
+            hash ^= text.charAt(i);
+            hash *= 0x100000001b3L;
+        }
+        hash ^= '|';
+        return hash * 0x100000001b3L;
+    }
+
+    /** What this player found behind each door of a remembered place, or null for somewhere new. */
+    @Nullable
+    public Map<String, Deal> node(UUID player, long key) {
+        PlayerDealer state = playerDealers.get(player);
+        return state == null ? null : state.nodes.get(key);
+    }
+
+    public void rememberNode(UUID player, long key, Map<String, Deal> deals) {
+        PlayerDealer state = playerDealer(player);
+        state.nodes.put(key, Map.copyOf(deals));
+        while (state.nodes.size() > MAX_NODES) {
+            var oldest = state.nodes.keySet().iterator();
+            oldest.next();
+            oldest.remove();
+        }
         setDirty();
     }
 
@@ -460,7 +511,7 @@ public final class LabyrinthData extends SavedData {
         return ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(id));
     }
 
-    private static LabyrinthData load(CompoundTag tag, HolderLookup.Provider registries) {
+    public static LabyrinthData load(CompoundTag tag, HolderLookup.Provider registries) {
         LabyrinthData data = new LabyrinthData();
         ListTag doorList = tag.getList("Doors", Tag.TAG_COMPOUND);
         for (int i = 0; i < doorList.size(); i++) {
@@ -527,6 +578,18 @@ public final class LabyrinthData extends SavedData {
             data.playerDealers.put(p.getUUID("Player"), state);
             ListTag recent = p.getList("Recent", Tag.TAG_STRING);
             for (int j = 0; j < Math.min(8, recent.size()); j++) state.recent.addLast(recent.getString(j));
+            ListTag nodes = p.getList("Nodes", Tag.TAG_COMPOUND);
+            for (int j = 0; j < nodes.size(); j++) {
+                CompoundTag n = nodes.getCompound(j);
+                Map<String, Deal> remembered = new LinkedHashMap<>();
+                ListTag doorsTag = n.getList("Doors", Tag.TAG_COMPOUND);
+                for (int k = 0; k < doorsTag.size(); k++) {
+                    CompoundTag d = doorsTag.getCompound(k);
+                    if (!d.getString("Door").isEmpty() && !d.getString("Place").isEmpty())
+                        remembered.put(d.getString("Door"), new Deal(d.getString("Place"), d.getBoolean("Leak"), false));
+                }
+                state.nodes.put(n.getLong("Key"), remembered);
+            }
         }
 
         data.builtVersion = tag.getInt("BuiltVersion");
@@ -600,6 +663,22 @@ public final class LabyrinthData extends SavedData {
             ListTag recent = new ListTag();
             for (String place : state.recent) recent.add(StringTag.valueOf(place));
             p.put("Recent", recent);
+            ListTag nodes = new ListTag();
+            for (Map.Entry<Long, Map<String, Deal>> node : state.nodes.entrySet()) {
+                CompoundTag n = new CompoundTag();
+                n.putLong("Key", node.getKey());
+                ListTag doorsTag = new ListTag();
+                for (Map.Entry<String, Deal> dealt : node.getValue().entrySet()) {
+                    CompoundTag d = new CompoundTag();
+                    d.putString("Door", dealt.getKey());
+                    d.putString("Place", dealt.getValue().place());
+                    d.putBoolean("Leak", dealt.getValue().leak());
+                    doorsTag.add(d);
+                }
+                n.put("Doors", doorsTag);
+                nodes.add(n);
+            }
+            p.put("Nodes", nodes);
             playerDealerList.add(p);
         }
         tag.put("PlayerDealers", playerDealerList);
