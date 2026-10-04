@@ -206,6 +206,14 @@ public final class HotelVignette {
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void graveLoaded(net.neoforged.neoforge.event.entity.EntityJoinLevelEvent e){if(!e.isCanceled()){boundGrave(e.getEntity());if(e.getEntity().getTags().contains("HotelGrave")&&e.getEntity().isRemoved())e.setCanceled(true);}}
     private static void garden(ServerPlayer p,BlockPos b){
         var d=LabyrinthData.get(p.server);var world=world(d);var l=p.serverLevel();
+        if(!world.getBoolean("GraveFoundation0437")){
+            // The saved grounds include z=-68, one row beyond the original dirt fill.
+            // Fill only that missing foundation; keep old grave positions and scenery.
+            for(int x=-27;x<=27;x++)for(int y=-3;y<=-1;y++){
+                var at=b.offset(x,y,-68);if(l.getBlockState(at).isAir())l.setBlock(at,Blocks.DIRT.defaultBlockState(),F);
+            }
+            world.putBoolean("GraveFoundation0437",true);saveWorld(d,world);
+        }
         int[][] form={{0,0,0},{1,0,0},{2,0,0},{0,-1,0},{2,-1,0},{2,1,0},{3,1,0}};
         for(int group=0;group<4;group++)for(int part=0;part<form.length;part++){
             String key="Topiary"+group+"_"+part;if(world.hasUUID(key))continue;var display=EntityType.BLOCK_DISPLAY.create(l);if(display==null)continue;

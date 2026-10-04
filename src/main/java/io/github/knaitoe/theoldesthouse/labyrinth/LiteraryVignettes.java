@@ -65,7 +65,7 @@ public final class LiteraryVignettes {
             save(d, p.getUUID(), place, own);
         }
         if (place == LabyrinthPlace.CHILD_ROOM && !own.getBoolean("ExitProof0437")) {
-            if (!own.getBoolean("Completed")) own.putBoolean("Ready", false);
+            if (!own.getBoolean("Completed") && !WitnessAccount.has(d,p.getUUID(),WitnessAccount.Story.CHILD_ROOM)) own.putBoolean("Ready", false);
             own.putBoolean("ExitProof0437", true);
             own.putInt("ExitsAtArrival", shared(d, place).getInt("LostExits"));
             save(d, p.getUUID(), place, own);
