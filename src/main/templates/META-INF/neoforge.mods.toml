@@ -14,6 +14,9 @@ A slow-burn architectural horror mod centered on a singular impossible house.
 [[mixins]]
 config="the_oldest_house.mixins.json"
 
+[[mixins]]
+config="the_oldest_house.common.mixins.json"
+
 [[dependencies.${mod_id}]]
     modId="neoforge"
     type="required"
