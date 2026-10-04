@@ -6,6 +6,8 @@ Sep 28, 2026 · @Sean Price · revised in the repository to match decisions made
 
 ### 0.4.38: safe far-door waiting and paced literary construction
 
+Construction's authored-state lookup is indexed by chunk without changing write order. A native home capture holds its bounded source until every original entity section is ready, then releases its temporary tickets. Saved cursors resume after reload; shutdown/store replacement releases runtime leases. Native append fixtures use explicit lifetime leases so a long paced build cannot invalidate the existing actor/container identities they inspect.
+
 A closed north-facing far door has its panel at the rear of its cell. The impossible hallway's valid space includes that cell, so pressing against a stuck door does not count as breaching the House. The approach retains the manor/junction chunk lease for its full length. Fresh construction waits for native asynchronous chunk tickets, fills interior slots in timed slices and places the twenty-four literary sites in ordered, capped slices. Their actual architecture, discovery books, prop states, signs and actor identities are unchanged. Doors are registered only after a scene is complete. Native GameTest fixtures have a separate explicit drain, unavailable to ordinary servers. Finishing the builder leaves occupied hallway dressing to the existing vacant-area repair. Layout 32 / protocol 32, forty-three sources / thirty-three personal resolutions and three endings remain. See [HALLWAY_CARVE_0_4_38.md](HALLWAY_CARVE_0_4_38.md). Exact-head verification remains required.
 
 ### 0.4.37: review repairs and independent aftermath

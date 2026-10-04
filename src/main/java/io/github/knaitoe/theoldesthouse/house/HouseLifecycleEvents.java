@@ -79,6 +79,7 @@ public final class HouseLifecycleEvents {
      * same game session (single-player).
      */
     public static void onServerStopped(ServerStoppedEvent event) {
+        io.github.knaitoe.theoldesthouse.labyrinth.LiteraryCopies.clearAll();
         HouseMirrorSyncEvents.clearPending();
         HouseInteriorInitializer.cancel();
         HouseTransitionEvents.clearAll();

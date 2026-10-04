@@ -28,7 +28,7 @@ import net.neoforged.neoforge.gametest.*;
 public final class HouseNpcTests {
     private static final class Fixture implements AutoCloseable {
         final GameTestHelper h;final ServerLevel l;final BlockPos origin,b;final HouseSavedData oldHouse;final LabyrinthData oldData;
-        final List<ServerPlayer> players=new ArrayList<>();
+        final List<ServerPlayer> players=new ArrayList<>();final NativeTestChunks chunks=new NativeTestChunks();
         Fixture(GameTestHelper h,int coordinate){this.h=h;var s=h.getLevel().getServer();l=HouseTestLevel.get(s);origin=new BlockPos(coordinate,80,coordinate);
             oldHouse=HouseSavedData.get(s);oldData=LabyrinthData.get(s);var house=new HouseSavedData();house.markSpawned(origin);
             s.overworld().getDataStorage().set("the_oldest_house",house);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",new LabyrinthData());
@@ -51,7 +51,7 @@ public final class HouseNpcTests {
         @Override public void close(){HollowayVignette.clearAll();LabyrinthBuilder.clearAll();for(var p:players){p.closeContainer();if(l.getServer().getPlayerList().getPlayers().contains(p))l.getServer().getPlayerList().remove(p);else p.discard();}
             for(var entity:List.copyOf(l.getEntitiesOfClass(Entity.class,IndianLakeRooms.bounds(b,LabyrinthPlace.HOLLOWAY_CAMP))))entity.discard();
             var bounds=IndianLakeRooms.bounds(b,LabyrinthPlace.HOLLOWAY_CAMP);for(int x=((int)bounds.minX)>>4;x<=((int)bounds.maxX)>>4;x++)for(int z=((int)bounds.minZ)>>4;z<=((int)bounds.maxZ)>>4;z++)l.getChunkSource().removeRegionTicket(TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(x,z),3,b);
-            var s=l.getServer();s.overworld().getDataStorage().set("the_oldest_house",oldHouse);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);}
+            chunks.close();var s=l.getServer();s.overworld().getDataStorage().set("the_oldest_house",oldHouse);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);}
     }
     private static Fixture cache,hunt,resume,torches,guards,upgrade,activity,aftermath;
     @AfterBatch(batch="npc_activity") public static void activityCleanup(ServerLevel l){if(activity!=null){activity.close();activity=null;}}
@@ -148,9 +148,8 @@ public final class HouseNpcTests {
         h.assertTrue(!f.own(a).getBoolean("Run")&&f.own(a).getBoolean("Looted")&&!WitnessAccount.has(f.data(),a.getUUID(),WitnessAccount.Story.HOLLOWAY),"death ends the attempt while preserving the theft that arms another visit");h.succeed();
     }
     @GameTest(template="empty",batch="npc_upgrade",timeoutTicks=2400) public static void layoutTwentyOneAppendsTheCampWithoutRefillingOrReplacingOldScenes(GameTestHelper h){
-        upgrade=new Fixture(h,43000);var f=upgrade;var old=f.b.offset(30,0,0);f.l.setBlock(old,Blocks.BARREL.defaultBlockState(),3);var container=f.l.getBlockEntity(old);((BarrelBlockEntity)container).setItem(0,new ItemStack(Items.DIAMOND,3));
-        var harrigan=LabyrinthPlaces.base(f.origin,LabyrinthPlace.HARRIGAN);HarriganVignette.build(f.l.getServer(),f.l,harrigan);
-        IndianLakeRooms.keepLoaded(f.l,harrigan,LabyrinthPlace.HARRIGAN);
+        upgrade=new Fixture(h,43000);var f=upgrade;var old=f.b.offset(30,0,0);f.chunks.hold(f.l,new AABB(old).inflate(1));f.l.setBlock(old,Blocks.BARREL.defaultBlockState(),3);var container=f.l.getBlockEntity(old);((BarrelBlockEntity)container).setItem(0,new ItemStack(Items.DIAMOND,3));
+        var harrigan=LabyrinthPlaces.base(f.origin,LabyrinthPlace.HARRIGAN);f.chunks.hold(f.l,IndianLakeRooms.bounds(harrigan,LabyrinthPlace.HARRIGAN));HarriganVignette.build(f.l.getServer(),f.l,harrigan);
         var reader=f.player();reader.moveTo(harrigan.getX()-2.5,harrigan.getY(),harrigan.getZ()-5.5);
         var bodies=f.l.getEntitiesOfClass(ArmorStand.class,IndianLakeRooms.bounds(harrigan,LabyrinthPlace.HARRIGAN));var body=bodies.getFirst();var id=body.getUUID();
         var head=body.getItemBySlot(EquipmentSlot.HEAD).copy();head.remove(DataComponents.CUSTOM_DATA);body.setItemSlot(EquipmentSlot.HEAD,head);
