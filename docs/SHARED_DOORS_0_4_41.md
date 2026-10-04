@@ -26,6 +26,31 @@ players were still reported as teleported outside.
 - Walking out of an open exterior door, the crossing is classified DOOR (using
   the nearest door within 4.5 blocks) instead of BREACH.
 
+## From the playtest log (0.4.40 server, four players)
+
+- **Clicking a front door from full reach was undone.** Bug8735 crossed in from
+  4.1 blocks outside and Proud_Badger crossed out from 4.45 blocks inside. Each
+  arrived at the same spot on the other side, which was outside the old
+  three-block door grace. Within 50 ms each was sent back as a BREACH (log
+  tokens 13 to 14 and 20 to 21). This was the "door has to be opened several
+  times" report.
+  - The grace is now 5.25 blocks: the native 4.5-block interaction reach plus
+    half a door.
+  - A player who crossed by the handle also stays valid within six blocks until
+    they pass the door or walk off.
+- **Hallway breaches with several players.** Every one of tokens 9, 12, 18 and
+  19 landed in the impossible hallway at manor-relative z≈77 and x≈12.9–14.0.
+  That is inside the hallway's west wall.
+  - These were walk-backs from the junction vestibule.
+  - The vestibule is shared, and another explorer's arrival had rebuilt it as
+    their own, wider corridor.
+  - Six blocks back and two or three to the side mapped into the three-wide
+    hallway's wall.
+  - Returns to the hallway now keep the step back but clamp the sideways offset
+    inside its walls.
+  - Any return whose matched spot would collide, or leave the hallway, lands
+    just in front of the player's own door, with a log line.
+
 ## Breaches
 
 - A BREACH now needs three consecutive ticks outside every valid House volume,
@@ -45,6 +70,12 @@ players were still reported as teleported outside.
   clears, and a vestibule copy that leaves an occupant's cells.
 - `SeamDoorTests.aDoorStaysOpenForTheNextPlayerAndShutsOnceNobodyIsAtIt` covers
   the front door: it stays open for a follower and the idle closer shuts it once
-  both players leave. The focused seam namespace now declares three cases.
+  both players leave.
+- `SeamDoorTests.aDoorClickedFromFullReachIsNotUndoneOnArrival` reproduces the
+  4.45-block exit from the log. The focused seam namespace now declares four
+  cases.
+- `SharedDoorTests` also reproduces the logged walk-back: six and a half blocks
+  back and 2.6 to the side in the junction vestibule must land inside the
+  hallway.
 
 Layout 32 / protocol 32 are unchanged.
