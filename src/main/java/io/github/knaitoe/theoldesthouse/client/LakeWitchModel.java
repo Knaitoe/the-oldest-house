@@ -13,7 +13,14 @@ public final class LakeWitchModel extends PlayerModel<LakeWitchEntity> {
     @Override public void setupAnim(LakeWitchEntity e,float walk,float speed,float age,float yaw,float pitch){
         resetBody();super.setupAnim(e,walk,speed,age,yaw,pitch);
         if(e.memory()){leftArm.xRot=-.2F;rightArm.xRot=-.25F;head.xRot=.25F;copyClothes();}
-        else huntPose(walk,speed,age,e.striking());
+        else {
+            huntPose(walk,speed,age,e.striking());
+            // The claw swipe of an actual hit, and a recoil when she is wounded.
+            float swipe=(float)Math.sin(Math.sqrt(attackTime)*Math.PI);
+            if(attackTime>0){rightArm.xRot-=swipe*1.7F;rightArm.zRot+=swipe*.45F;leftArm.xRot-=swipe*.6F;}
+            if(e.hurtTime>0){float recoil=e.hurtTime/10F;head.xRot-=recoil*.7F;body.xRot-=recoil*.25F;leftArm.xRot+=recoil*.9F;rightArm.xRot+=recoil*.9F;}
+            copyClothes();
+        }
     }
     private void resetBody(){for(var part:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg,jacket,leftSleeve,rightSleeve,leftPants,rightPants})part.resetPose();}
     public void huntPose(float walk,float speed,float age,boolean striking){
@@ -22,6 +29,8 @@ public final class LakeWitchModel extends PlayerModel<LakeWitchEntity> {
         head.setPos(0,16,-9);head.xRot=striking?-.18F:.08F;head.zRot=(float)Math.sin(age*.045F)*.025F;
         leftArm.setPos(5,14,-6);rightArm.setPos(-5,14,-6);
         leftArm.xRot=stride;rightArm.xRot=-stride;leftArm.zRot=-.12F;rightArm.zRot=.12F;
+        // Winding up and lunging, both claws reach for the throat.
+        if(striking){leftArm.xRot=-1.15F+stride*.3F;rightArm.xRot=-1.25F-stride*.3F;leftArm.zRot=-.3F;rightArm.zRot=.3F;}
         leftLeg.setPos(2.8F,14,6);rightLeg.setPos(-2.8F,14,6);
         leftLeg.xRot=.58F-stride;rightLeg.xRot=.58F+stride;leftLeg.zRot=-.09F;rightLeg.zRot=.09F;
         copyClothes();
