@@ -71,6 +71,66 @@ public final class VignetteAudit {
         }
     }
 
+    /** Story props, containers, readables, beds, doors and controls: what a visitor works a vignette through. */
+    private static boolean worked(BlockState state) {
+        var block = state.getBlock();
+        String namespace = BuiltInRegistries.BLOCK.getKey(block).getNamespace();
+        if (block instanceof DoorBlock || block instanceof net.minecraft.world.level.block.BedBlock || block instanceof net.minecraft.world.level.block.LeverBlock
+                || block instanceof net.minecraft.world.level.block.ButtonBlock || block instanceof net.minecraft.world.level.block.BellBlock
+                || block instanceof net.minecraft.world.level.block.LecternBlock || block instanceof net.minecraft.world.level.block.BarrelBlock
+                || block instanceof net.minecraft.world.level.block.ChestBlock || block instanceof net.minecraft.world.level.block.FurnaceBlock) return true;
+        return "the_oldest_house".equals(namespace) && !state.canOcclude()
+                && !(block instanceof io.github.knaitoe.theoldesthouse.house.SceneDetailBlock)
+                && !(block instanceof io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock);
+    }
+
+    private static boolean passable(ServerLevel level, BlockPos at) {
+        BlockState state = level.getBlockState(at);
+        return state.getCollisionShape(level, at).isEmpty() || state.getBlock() instanceof DoorBlock
+                || state.getBlock() instanceof net.minecraft.world.level.block.TrapDoorBlock
+                || state.getBlock() instanceof net.minecraft.world.level.block.FenceGateBlock;
+    }
+
+    private static boolean climbable(ServerLevel level, BlockPos at) {
+        BlockState state = level.getBlockState(at);
+        return state.is(net.minecraft.tags.BlockTags.CLIMBABLE) || !level.getFluidState(at).isEmpty();
+    }
+
+    /** Where a visitor can stand: walking with one-block steps, climbing ladders and swimming, from the doorways. */
+    private static java.util.Set<BlockPos> walkable(ServerLevel level, BlockPos base, LabyrinthPlace scene, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+        java.util.Set<BlockPos> seen = new java.util.HashSet<>();
+        java.util.ArrayDeque<BlockPos> queue = new java.util.ArrayDeque<>();
+        for (var door : scene.doors())
+            for (Direction side : new Direction[]{door.facing(), door.facing().getOpposite()}) {
+                BlockPos start = base.offset(door.rel()).relative(side);
+                if (passable(level, start) && passable(level, start.above()) && seen.add(start)) queue.add(start);
+            }
+        while (!queue.isEmpty() && seen.size() < 400000) {
+            BlockPos at = queue.poll();
+            boolean supported = !level.getBlockState(at.below()).getCollisionShape(level, at.below()).isEmpty() || climbable(level, at) || climbable(level, at.below());
+            for (Direction side : Direction.values()) {
+                for (int dy = -1; dy <= 1; dy++) {
+                    if (side.getAxis().isVertical() && dy != 0) continue;
+                    BlockPos next = at.relative(side).above(dy);
+                    if (next.getX() - base.getX() < minX - 1 || next.getX() - base.getX() > maxX + 1 || next.getZ() - base.getZ() < minZ - 1
+                            || next.getZ() - base.getZ() > maxZ + 1 || next.getY() - base.getY() < minY - 1 || next.getY() - base.getY() > maxY + 1) continue;
+                    if (seen.contains(next) || !passable(level, next) || !passable(level, next.above())) continue;
+                    if (side == Direction.UP && !(climbable(level, at) || climbable(level, next))) continue;
+                    if (side == Direction.DOWN) { /* dropping is always possible */ }
+                    else if (side.getAxis().isHorizontal()) {
+                        if (!supported) continue;
+                        if (dy == 1 && !passable(level, at.above(2))) continue;
+                    }
+                    seen.add(next);
+                    queue.add(next);
+                }
+            }
+        }
+        // Standing places are those with something under them, or in water or on a ladder.
+        seen.removeIf(cell -> level.getBlockState(cell.below()).getCollisionShape(level, cell.below()).isEmpty() && !climbable(level, cell) && !climbable(level, cell.below()));
+        return seen;
+    }
+
     public static void write(MinecraftServer server, BlockPos origin) {
         StringBuilder report = new StringBuilder();
         report.append("Vignette audit (rel coords x,y,z from each scene base)\n");
@@ -220,6 +280,25 @@ public final class VignetteAudit {
             }
         }
 
+        // Reachability: everything a story is worked through must be within reach of somewhere a visitor can stand.
+        Tally unreachable = new Tally();
+        java.util.Set<BlockPos> stand = walkable(level, base, scene, minX, minY, minZ, maxX, maxY, maxZ);
+        for (int x = minX; x <= maxX; x++) for (int y = minY; y <= maxY; y++) for (int z = minZ; z <= maxZ; z++) {
+            BlockPos at = base.offset(x, y, z);
+            BlockState state = level.getBlockState(at);
+            if (!worked(state)) continue;
+            boolean near = false;
+            for (BlockPos cell : BlockPos.betweenClosed(at.offset(-4, -5, -4), at.offset(4, 3, 4))) {
+                if (!stand.contains(cell)) continue;
+                double dx = cell.getX() + 0.5 - (at.getX() + 0.5), dy = cell.getY() + 1.62 - (at.getY() + 0.5), dz = cell.getZ() + 0.5 - (at.getZ() + 0.5);
+                if (dx * dx + dy * dy + dz * dz <= 4.5 * 4.5) {
+                    near = true;
+                    break;
+                }
+            }
+            if (!near) unreachable.add(id(state), rel(base, at));
+        }
+
         StringBuilder out = new StringBuilder();
         out.append("## ").append(scene.id()).append(outdoor ? " [outdoor " : " [").append(sx).append('x').append(sy).append('x').append(sz).append("] ");
         out.append("floor=").append(floor.size()).append(" detail/floor=").append(floor.isEmpty() ? "-" : String.format("%.2f", detail / (double) floor.size()));
@@ -231,6 +310,7 @@ public final class VignetteAudit {
         if (!doors.isEmpty()) out.append("  doors:").append(doors.render()).append('\n');
         if (detached > 0) out.append("  detached(").append(detached).append("):").append(floating.render()).append('\n');
         if (!entities.isEmpty()) out.append("  entities:").append(entities.render()).append('\n');
+        if (!unreachable.isEmpty()) out.append("  unreachable(stand=").append(stand.size()).append("):").append(unreachable.render()).append('\n');
         if (!census.isEmpty()) out.append("  census: ").append(census).append('\n');
         return out.toString();
     }

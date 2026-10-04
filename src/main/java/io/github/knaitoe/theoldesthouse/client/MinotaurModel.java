@@ -40,6 +40,8 @@ public final class MinotaurModel extends HierarchicalModel<MinotaurEntity> {
     }
     @Override public void setupAnim(MinotaurEntity entity,float walk,float amount,float age,float yaw,float pitch){
         pose(entity.motion(),walk,amount,age,yaw,pitch);
+        // A blow lands: the head snaps back and the arms come up.
+        if(entity.hurtTime>0&&entity.motion()!=MinotaurEntity.WOUNDED){float recoil=entity.hurtTime/10F;head.xRot-=recoil*.45F;jaw.xRot+=recoil*.25F;leftArm.xRot-=recoil*.5F;rightArm.xRot-=recoil*.5F;}
     }
     public void pose(int state,float walk,float amount,float age,float yaw,float pitch){
         parts.forEach(ModelPart::resetPose);float breath=Mth.sin(age*.08F)*.025F;

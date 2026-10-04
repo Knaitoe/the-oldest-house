@@ -70,7 +70,19 @@ public final class LakeWitchEntity extends PathfinderMob {
         }
         return super.mobInteract(player,hand);
     }
-    @Override public boolean hurt(DamageSource source,float amount) { return !memory() && super.hurt(source,amount); }
+    @Override public boolean hurt(DamageSource source,float amount) {
+        if (memory() || !super.hurt(source, amount)) return false;
+        // A wound breaks the strike: she recoils and withdraws before coming again.
+        if (!level().isClientSide()) {
+            cancelStrike();
+            cooldown = Math.max(cooldown, 40);
+            entityData.set(HUNT_PHASE, WITHDRAW);
+            route.clear();
+        }
+        return true;
+    }
+    @Override protected net.minecraft.sounds.SoundEvent getHurtSound(DamageSource source) { return memory() ? null : DrownedTownRegistry.WITCH_VOICE.get(); }
+    @Override public float getVoicePitch() { return 0.8F + getRandom().nextFloat() * 0.2F; }
     public boolean striking() { return entityData.get(STRIKING); }
     public void shore(BlockPos base, int visit) { shoreBase = base.immutable(); this.visit = visit;settleTicks=60;setNoGravity(true); }
     public @Nullable BlockPos shoreBase() { return shoreBase; }
@@ -222,6 +234,7 @@ public final class LakeWitchEntity extends PathfinderMob {
             follow(.62);
             closestRush=Math.min(closestRush,distanceToSqr(target));
             if(canAttack(this,target)&&distanceToSqr(target)<3.8&&getSensing().hasLineOfSight(target)){
+                swing(net.minecraft.world.InteractionHand.MAIN_HAND);
                 strikeAttempts++;lastStrikeAccepted=target.hurt(damageSources().mobAttack(this),6);Vec3 away=target.position().subtract(position()).multiply(1,0,1).normalize();
                 target.setDeltaMovement(away.scale(.3).add(0,.12,0));target.hurtMarked=true;
                 cancelStrike();cooldown=75;entityData.set(HUNT_PHASE,WITHDRAW);route.clear();

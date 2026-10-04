@@ -41,6 +41,10 @@ public final class SeanceRenderers {
         FamilyRenderer(EntityRendererProvider.Context context){super(context,new FamilyModel(context.bakeLayer(LAYER)),.2F);}
         @Override protected void scale(SeanceActor actor,PoseStack poses,float partial){if(actor.role()==3)poses.scale(.72F,.72F,.72F);}
         @Override public ResourceLocation getTextureLocation(SeanceActor actor){return skin(actor.role());}
+        /** Seated, the hips rest on the seat rather than the feet: the model sits down by its leg length. */
+        @Override public net.minecraft.world.phys.Vec3 getRenderOffset(SeanceActor actor,float partial){
+            return actor.seated()?new net.minecraft.world.phys.Vec3(0,-.6*(actor.role()==3?.72:1),0):super.getRenderOffset(actor,partial);
+        }
         @Override protected boolean shouldShowName(SeanceActor actor){return false;}
         @Override public boolean shouldRender(SeanceActor actor,Frustum frustum,double x,double y,double z){return !SeanceView.emptyRoom()&&super.shouldRender(actor,frustum,x,y,z);}
     }
