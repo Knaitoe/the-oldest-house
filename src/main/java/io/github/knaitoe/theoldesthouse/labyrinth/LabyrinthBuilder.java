@@ -253,6 +253,7 @@ public final class LabyrinthBuilder {
     public static void tick(MinecraftServer server) {
         DomesticHallUpgrade.tick(server);
         WallNotesRepairs.tick(server);
+        ScenePolish.tick(server);
         if (pending == null || pendingOrigin == null) {
             return;
         }
@@ -270,6 +271,8 @@ public final class LabyrinthBuilder {
         if (place != null && geometry != null) {
             if (!geometry.tick()) return;
             registerDoors(dataFor(server), place, LabyrinthPlaces.base(pendingOrigin, place));
+            ServerLevel site = server.getLevel(NovelRooms.dimension(place));
+            if (site != null) ScenePolish.polishOnce(site, pendingOrigin, place);
             recordBuilt(server, place);
             geometry = null;
             pending.poll();
@@ -285,6 +288,7 @@ public final class LabyrinthBuilder {
             ServerLevel site = server.getLevel(NovelRooms.dimension(place));
             if (site != null) {
                 BlockPos base = LabyrinthPlaces.base(pendingOrigin, place);
+                ScenePolish.forget(server, pendingOrigin, place);
                 geometry = BuildBlocks.record(site, () -> LiteraryRooms.build(site, base, place));
                 return;
             }
@@ -476,6 +480,13 @@ public final class LabyrinthBuilder {
     }
 
     private static void build(MinecraftServer server, ServerLevel level, BlockPos origin, LabyrinthPlace place) {
+        ScenePolish.forget(server, origin, place);
+        buildScene(server, level, origin, place);
+        ServerLevel site = server.getLevel(NovelRooms.dimension(place));
+        if (site != null) ScenePolish.polishOnce(site, origin, place);
+    }
+
+    private static void buildScene(MinecraftServer server, ServerLevel level, BlockPos origin, LabyrinthPlace place) {
         BlockPos base = LabyrinthPlaces.base(origin, place);
         BoundingBox slot = LabyrinthPlaces.slotBounds(origin, place);
         if (base == null || slot == null) {
