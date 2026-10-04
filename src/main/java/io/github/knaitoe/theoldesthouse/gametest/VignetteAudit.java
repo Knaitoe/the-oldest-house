@@ -284,19 +284,19 @@ public final class VignetteAudit {
         Tally unreachable = new Tally();
         java.util.Set<BlockPos> stand = walkable(level, base, scene, minX, minY, minZ, maxX, maxY, maxZ);
         for (int x = minX; x <= maxX; x++) for (int y = minY; y <= maxY; y++) for (int z = minZ; z <= maxZ; z++) {
-            BlockPos at = base.offset(x, y, z);
-            BlockState state = level.getBlockState(at);
-            if (!worked(state)) continue;
+            BlockPos spot = base.offset(x, y, z);
+            BlockState worn = level.getBlockState(spot);
+            if (!worked(worn)) continue;
             boolean near = false;
-            for (BlockPos cell : BlockPos.betweenClosed(at.offset(-4, -5, -4), at.offset(4, 3, 4))) {
+            for (BlockPos cell : BlockPos.betweenClosed(spot.offset(-4, -5, -4), spot.offset(4, 3, 4))) {
                 if (!stand.contains(cell)) continue;
-                double dx = cell.getX() + 0.5 - (at.getX() + 0.5), dy = cell.getY() + 1.62 - (at.getY() + 0.5), dz = cell.getZ() + 0.5 - (at.getZ() + 0.5);
+                double dx = cell.getX() + 0.5 - (spot.getX() + 0.5), dy = cell.getY() + 1.62 - (spot.getY() + 0.5), dz = cell.getZ() + 0.5 - (spot.getZ() + 0.5);
                 if (dx * dx + dy * dy + dz * dz <= 4.5 * 4.5) {
                     near = true;
                     break;
                 }
             }
-            if (!near) unreachable.add(id(state), rel(base, at));
+            if (!near) unreachable.add(id(worn), rel(base, spot));
         }
 
         StringBuilder out = new StringBuilder();
