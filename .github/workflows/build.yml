@@ -431,6 +431,29 @@ jobs:
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused native literary cases passed; the complete suite remains required.')
           PY
+      - name: Publish failed literary tests
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          log = Path('build/literary-native.log')
+          if not log.exists():
+              print('::error title=Failed literary test::no log was written')
+              raise SystemExit(0)
+          lines = log.read_text(errors='replace').splitlines()
+          keys = re.compile(r'(failed at|required tests failed|Exception|Caused by|assert)')
+          picked = []
+          for i, line in enumerate(lines):
+              if keys.search(line) and 'Node.js' not in line:
+                  text = re.sub(r'^\[[^]]*\] \[[^]]*\] \[[^]]*\]: ', '', line).strip()
+                  entry = (text + ' :: ' + ' | '.join(l.strip() for l in lines[i + 1:i + 3]))[:900]
+                  if entry not in picked:
+                      picked.append(entry)
+          for entry in picked[:9]:
+              print('::error title=Failed literary test::' + entry.replace('%', '%25'))
+          PY
+
       - name: Upload literary diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -466,6 +489,29 @@ jobs:
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused native hallway cases passed; the complete suite remains required.')
           PY
+      - name: Publish failed hallway tests
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          log = Path('build/hallway-native.log')
+          if not log.exists():
+              print('::error title=Failed hallway test::no log was written')
+              raise SystemExit(0)
+          lines = log.read_text(errors='replace').splitlines()
+          keys = re.compile(r'(failed at|required tests failed|Exception|Caused by|assert)')
+          picked = []
+          for i, line in enumerate(lines):
+              if keys.search(line) and 'Node.js' not in line:
+                  text = re.sub(r'^\[[^]]*\] \[[^]]*\] \[[^]]*\]: ', '', line).strip()
+                  entry = (text + ' :: ' + ' | '.join(l.strip() for l in lines[i + 1:i + 3]))[:900]
+                  if entry not in picked:
+                      picked.append(entry)
+          for entry in picked[:9]:
+              print('::error title=Failed hallway test::' + entry.replace('%', '%25'))
+          PY
+
       - name: Upload hallway diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -509,6 +555,29 @@ jobs:
           jar.with_name(jar.name+'.sha256').write_text(hashlib.sha256(jar.read_bytes()).hexdigest()+'  '+jar.name+'\n')
           print(f'All {declared} native seam cases passed. This candidate still requires the complete suite and client proofs.')
           PY
+      - name: Publish failed seam tests
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          log = Path('build/seam-native.log')
+          if not log.exists():
+              print('::error title=Failed seam test::no log was written')
+              raise SystemExit(0)
+          lines = log.read_text(errors='replace').splitlines()
+          keys = re.compile(r'(failed at|required tests failed|Exception|Caused by|assert)')
+          picked = []
+          for i, line in enumerate(lines):
+              if keys.search(line) and 'Node.js' not in line:
+                  text = re.sub(r'^\[[^]]*\] \[[^]]*\] \[[^]]*\]: ', '', line).strip()
+                  entry = (text + ' :: ' + ' | '.join(l.strip() for l in lines[i + 1:i + 3]))[:900]
+                  if entry not in picked:
+                      picked.append(entry)
+          for entry in picked[:9]:
+              print('::error title=Failed seam test::' + entry.replace('%', '%25'))
+          PY
+
       - name: Upload seam diagnostics
         if: always()
         uses: actions/upload-artifact@v4

@@ -52,6 +52,8 @@ public final class LiteraryRooms {
         room(l,b,-3,3,-43,0,0,5,Blocks.CALCITE,Blocks.DARK_OAK_PLANKS);
         for(int side:new int[]{-1,1}){room(l,b,side<0?-14:4,side<0?-4:14,-24,-10,0,6,Blocks.CALCITE,Blocks.DARK_OAK_PLANKS);door(l,b,side*4,0,-16,side<0?Direction.EAST:Direction.WEST,true);NovelRooms.bed(l,b.offset(side*10,0,-22),Blocks.WHITE_BED,Direction.NORTH);furniture(l,b,side*11,0,-12,HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR,Direction.SOUTH);box(l,b,side*14,2,-22,side*14,3,-19,Blocks.BLACK_STAINED_GLASS);}
         box(l,b,-4,-1,-16,-4,2,-16,Blocks.POWDER_SNOW);door(l,b,-4,0,-16,Direction.EAST,true);
+        // The corridor's own wall stands behind each nursery door: open it, or the nurseries are sealed.
+        for(int x:new int[]{-3,3})box(l,b,x,0,-16,x,1,-16,Blocks.AIR);
         room(l,b,-13,13,-42,-30,-4,3,Blocks.MOSSY_STONE_BRICKS,Blocks.STONE_BRICKS);steps(l,b,0,-25,0,5,true);box(l,b,-1,-4,-33,1,-2,-30,Blocks.AIR);box(l,b,-1,-5,-33,1,-5,-30,Blocks.STONE_BRICKS);
         prop(l,b,HILL_WALL,LiteraryPropBlock.Kind.PHOTO,Direction.EAST);BuildBlocks.set(l,b.offset(HILL_WALL),BuildBlocks.state(l,b.offset(HILL_WALL)).setValue(LiteraryPropBlock.STAGE,3),F);at(l,b,-10,-4,-36,Blocks.CHISELED_STONE_BRICKS);desk(l,b,8,0,-36);light(l,b,0,3,-8);light(l,b,0,3,-36);
     }

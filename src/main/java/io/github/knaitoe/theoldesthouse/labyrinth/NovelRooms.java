@@ -68,7 +68,8 @@ public final class NovelRooms {
             box(l,b,-4,y,-21,-1,y-1,-17,Blocks.SMOOTH_STONE.defaultBlockState());door(l,b.offset(-5,y,-20),Direction.EAST,Blocks.IRON_DOOR,false);}
         // Leave a supported landing beside each door, with two blocks of headroom.
         for(int y:new int[]{5,8,11})box(l,b,-4,y,-21,-1,y+2,-17,Blocks.AIR.defaultBlockState());
-        for(int y:new int[]{5,8,11})box(l,b,-4,y-1,-20,0,y-1,-17,Blocks.SMOOTH_STONE.defaultBlockState());
+        // The landings stop beside the ladder; laid across it they would cut the climb.
+        for(int y:new int[]{5,8,11})box(l,b,-4,y-1,-20,-1,y-1,-17,Blocks.SMOOTH_STONE.defaultBlockState());
         for(int y=0;y<=13;y++){at(l,b,0,y,-19,Blocks.SMOOTH_STONE);BuildBlocks.set(l,b.offset(0,y,-18),Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH),F);}
         lectern(l,b.offset(ATTIC_DESK),NovelTexts.whaleLast());
         for(int z:new int[]{-5,-15,-26})at(l,b,8,4,z,Blocks.LANTERN);
