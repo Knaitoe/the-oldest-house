@@ -41,8 +41,7 @@ public final class HollowayVignette {
     private static void save(LabyrinthData data,UUID id,CompoundTag own){var all=data.state(ID);var players=all.getCompound("Players");players.put(id.toString(),own);all.put("Players",players);data.setState(ID,all);}
     public static @Nullable BlockPos base(MinecraftServer s){return IndianLakeRooms.base(s,LabyrinthPlace.HOLLOWAY_CAMP);}
     public static boolean inside(ServerPlayer p){return p.gameMode.getGameModeForPlayer()!=net.minecraft.world.level.GameType.SPECTATOR&&IndianLakeRooms.inside(p,LabyrinthPlace.HOLLOWAY_CAMP);}
-    public static boolean canDeal(LabyrinthData data,UUID id){var own=personal(data,id);return !own.getBoolean("Escaped")&&!WitnessAccount.has(data,id,WitnessAccount.Story.HOLLOWAY)
-            &&(!data.state(ID).getBoolean("ActorDead")||own.getBoolean("KilledHolloway")||own.getBoolean("Run")&&own.getBoolean("Seen"));}
+    public static boolean canDeal(LabyrinthData data,UUID id){var own=personal(data,id);return !own.getBoolean("Escaped")&&!WitnessAccount.has(data,id,WitnessAccount.Story.HOLLOWAY);}
     public static boolean pursued(ServerPlayer p){var own=personal(LabyrinthData.get(p.server),p.getUUID());return inside(p)&&(own.getBoolean("Run")||own.getBoolean("CampAnger"));}
     public static void provoke(ServerPlayer p,boolean theft){
         if(!inside(p))return;enter(p);var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());
@@ -66,7 +65,7 @@ public final class HollowayVignette {
         }
         own.putBoolean("InRoom",true);own.putLong("LastTick",-1);save(data,p.getUUID(),own);
         ensureActor(l,b);
-        p.displayClientMessage(Component.literal(own.getBoolean("Run")?"Boots scrape beyond the hut. Three rooms north; the service latch is on the left.":"A dirt hut. A field survey by the bed. Someone has counted the supplies."),false);
+        p.displayClientMessage(Component.literal(own.getBoolean("Run")?(data.state(ID).getBoolean("ActorDead")?"The camp is empty. The survey describes three rooms north and a service latch on the left.":"Boots scrape beyond the hut. Three rooms north; the service latch is on the left."):"A dirt hut. A field survey by the bed. Someone has counted the supplies."),false);
     }
     /** Called only by the native source slot's onTake, never by opening or receiving a borrowed item. */
     private static void looted(ServerPlayer p){
@@ -170,14 +169,15 @@ public final class HollowayVignette {
         if(!inside(p)||!at.equals(base(p.server).offset(HollowayCamp.LATCH))||p.distanceToSqr(at.getCenter())>16)return false;
         var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());
         if(own.getBoolean("Escaped"))return true;
-        if(!own.getBoolean("Run")||own.getInt("Arena")!=3||own.getInt("ArenaTicks")<ARENA_TICKS||!own.getBoolean("Seen")){
+        boolean aftermath=data.state(ID).getBoolean("ActorDead")&&own.getBoolean("SurveyRead")&&own.getBoolean("AftermathInspected");
+        if(!own.getBoolean("Run")||own.getInt("Arena")!=3||own.getInt("ArenaTicks")<ARENA_TICKS||!(own.getBoolean("Seen")||aftermath)){
             p.displayClientMessage(Component.literal("The service latch is stiff. The survey describes three rooms on the way here."),true);return true;
         }
         if(!p.isShiftKeyDown()){p.displayClientMessage(Component.literal("Crouch and pull the service latch."),true);return true;}
         own.putBoolean("Escaped",true);own.putBoolean("Run",false);own.putBoolean("CampAnger",false);own.putBoolean("Rewarded",true);save(data,p.getUUID(),own);
         var shield=owned(VignetteYields.mark(new ItemStack(Items.SHIELD),ID),p.getUUID());shield.set(DataComponents.CUSTOM_NAME,Component.literal("Holloway's battered shield"));
         give(p,shield);give(p,owned(wrongMap(p.serverLevel()),p.getUUID()));
-        WitnessAccount.resolve(p,WitnessAccount.Story.HOLLOWAY,"three_rooms_and_service_latch");
+        WitnessAccount.resolve(p,WitnessAccount.Story.HOLLOWAY,aftermath&&!own.getBoolean("Seen")?"aftermath":"three_rooms_and_service_latch");
         p.displayClientMessage(Component.literal("The latch yields. A shield and a folded survey were wedged behind it. The service door leads back."),false);return true;
     }
     private static ItemStack owned(ItemStack stack,UUID id){CustomData.update(DataComponents.CUSTOM_DATA,stack,tag->tag.putUUID(REWARD_OWNER,id));return stack;}
@@ -202,7 +202,7 @@ public final class HollowayVignette {
             if(button==3){var data=LabyrinthData.get(owner.server);var own=personal(data,owner.getUUID());if(own.getBoolean("SurveyTaken"))return false;
                 own.putBoolean("SurveyTaken",true);save(data,owner.getUUID(),own);give(owner,owned(VignetteYields.mark(HollowayCamp.journal(),ID),owner.getUUID()));looted(owner);return true;}
             if(button>=100){if(button-100>=4)return false;}else if(button==1){if(getPage()<=0)return false;}else if(button==2){if(getPage()>=3)return false;}else return false;
-            boolean changed=super.clickMenuButton(p,button);if(changed&&getPage()==3){var data=LabyrinthData.get(owner.server);var own=personal(data,owner.getUUID());own.putBoolean("SurveyRead",true);save(data,owner.getUUID(),own);}return changed;
+            boolean changed=super.clickMenuButton(p,button);if(changed&&getPage()==3){var data=LabyrinthData.get(owner.server);var own=personal(data,owner.getUUID());own.putBoolean("SurveyRead",true);if(data.state(ID).getBoolean("ActorDead"))own.putBoolean("AftermathInspected",true);save(data,owner.getUUID(),own);}return changed;
         }
     }
     public static final class CacheMenu extends AbstractContainerMenu {

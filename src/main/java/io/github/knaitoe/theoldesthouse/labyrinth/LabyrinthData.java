@@ -388,6 +388,22 @@ public final class LabyrinthData extends SavedData {
         CompoundTag state=states.get(vignette);return state==null?new CompoundTag():state.getCompound(key).copy();
     }
 
+    /** Replace one record without copying other readers' books and private inventories. */
+    public void setStateEntry(String vignette, String key, CompoundTag tag) {
+        CompoundTag state = states.computeIfAbsent(vignette, ignored -> new CompoundTag());
+        if (tag.isEmpty()) state.remove(key);
+        else state.put(key, tag.copy());
+        if (state.isEmpty()) states.remove(vignette);
+        setDirty();
+    }
+
+    /** Includes offline explorers, whose unfinished visits must remain reachable. */
+    public Set<UUID> visitorsTo(LabyrinthPlace place) {
+        Set<UUID> readers = new HashSet<>();
+        playerDealers.forEach((id, dealer) -> { if (dealer.visited.contains(place.id())) readers.add(id); });
+        return Set.copyOf(readers);
+    }
+
     public void setState(String vignette, CompoundTag tag) {
         if (tag.isEmpty()) {
             states.remove(vignette);

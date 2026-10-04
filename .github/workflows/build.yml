@@ -54,7 +54,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.36"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.37"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               correspondence = json.loads(z.read('data/the_oldest_house/correspondence/letters.json'))
               assert len(correspondence) == 108 and len({n['id'] for n in correspondence}) == 108
               assert 'io/github/knaitoe/theoldesthouse/gametest/CollectedCorrespondenceTests.class' in z.namelist()
@@ -342,8 +342,9 @@ jobs:
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/hotel-native.log').read_text())
-          assert completed and int(completed[-1])==6, completed
-          print('All six native hotel gameplay cases passed; the full suite remains independently required.')
+          declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/HotelTests.java').read_text()))
+          assert completed and int(completed[-1])==declared, (completed,declared)
+          print(f'All {declared} native hotel gameplay cases passed; the full suite remains independently required.')
           PY
       - name: Upload focused hotel diagnostics
         if: always()
