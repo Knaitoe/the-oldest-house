@@ -229,11 +229,69 @@ public final class LabyrinthDealer {
             if (deal != null) now.put(door.id, deal);
         }
         data.rememberNode(player, key, now);
+        // A remembered map never strands anyone: if nothing here leads on, an ordinary door does.
+        if (!hasWayOn(data, player, place, null)) {
+            for (LabyrinthData.Door door : doors) {
+                LabyrinthData.Deal deal = data.deal(player, door);
+                LabyrinthPlace dealt = deal == null ? null : LabyrinthPlace.byId(deal.place());
+                if (deal != null && FinaleArchitecture.ID.equals(deal.place())) continue;
+                if (dealt != null && dealt.isVignette()) continue; // a story behind the only door is kept; its door leads on afterwards
+                if (VignetteGate.dormant(data, player, door)) continue;
+                openWayOn(data, player, door, place, random);
+                break;
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // The way on: exploring deeper is never left to chance.
+
+    /** Whether a place has doors of its own that lead further in. Loops only lead on slowly, so they do not count. */
+    public static boolean onward(LabyrinthPlace place) {
+        if (LabyrinthPacing.loop(place)) return false;
+        for (LabyrinthPlace.DoorSpec spec : place.doors()) if (LabyrinthData.DEALT.equals(spec.destination())) return true;
+        return false;
+    }
+
+    /** Whether this door, for this player, leads somewhere they can go on from. The great staircase is the deepest way on. */
+    public static boolean wayOn(LabyrinthData data, UUID player, LabyrinthData.Door door) {
+        LabyrinthData.Deal deal = data.deal(player, door);
+        if (deal == null || VignetteGate.dormant(data, player, door)) return false;
+        if (FinaleArchitecture.ID.equals(deal.place())) return finaleOffered(data, player);
+        LabyrinthPlace place = LabyrinthPlace.byId(deal.place());
+        return place != null && onward(place) && LabyrinthBuilder.isPlaceReady(data, place);
+    }
+
+    /** Whether any of a place's dealt doors (but {@code except}) leads on for this player. */
+    public static boolean hasWayOn(LabyrinthData data, UUID player, LabyrinthPlace place, @Nullable LabyrinthData.Door except) {
+        for (LabyrinthData.Door door : dealtDoors(data, place)) if (door != except && wayOn(data, player, door)) return true;
+        return false;
+    }
+
+    /** Turns one door of the place the player is in into an ordinary way on, and remembers it there. */
+    public static void openWayOn(LabyrinthData data, UUID player, LabyrinthData.Door door, LabyrinthPlace here, RandomSource random) {
+        List<LabyrinthPlace> gray = new ArrayList<>(grayAvailable(data, player));
+        gray.remove(here);
+        gray.removeIf(p -> !onward(p) || LabyrinthPacing.anomaly(p) || LabyrinthPacing.physicalTrial(p));
+        LabyrinthPlace next = gray.isEmpty() ? LabyrinthPlace.JUNCTION : weightedGray(gray, data, player, random);
+        data.deal(player, door, next.id(), false);
+        long key = data.nodeKey(player, here);
+        Map<String, LabyrinthData.Deal> now = new LinkedHashMap<>();
+        for (LabyrinthData.Door each : dealtDoors(data, here)) {
+            LabyrinthData.Deal deal = data.deal(player, each);
+            if (deal != null) now.put(each.id, deal);
+        }
+        data.rememberNode(player, key, now);
+    }
+
+    /** The great staircase waits in the deep labyrinth, never in its early halls. */
+    public static boolean finaleOffered(LabyrinthData data, UUID player) {
+        return data.returnDepth(player) >= LabyrinthPacing.STAIRCASE_DEPTH && FinaleController.canOffer(data, player);
     }
 
     /** Whether a remembered destination can still be found behind its door by this player. */
     private static boolean stillDealable(LabyrinthData data, UUID player, String id) {
-        if (FinaleArchitecture.ID.equals(id)) return FinaleController.canOffer(data, player);
+        if (FinaleArchitecture.ID.equals(id)) return finaleOffered(data, player);
         LabyrinthPlace place = LabyrinthPlace.byId(id);
         if (place == null || !LabyrinthBuilder.isPlaceReady(data, place)) return false;
         return !place.isVignette() || vignettesAvailable(data, player).contains(place);
@@ -413,7 +471,7 @@ public final class LabyrinthDealer {
                 data.deal(player, door, pickGray(gray, data, player, random).id(), lyingLeak(data, player, random));
             }
         }
-        if (!LabyrinthPacing.domestic(data.returnDepth(player)) && FinaleController.canOffer(data, player) && random.nextInt(100) < 18) {
+        if (finaleOffered(data, player) && random.nextInt(100) < 18) {
             LabyrinthData.Door vignetteDoor = lucky;
             List<LabyrinthData.Door> finaleDoors = doors.stream().filter(d -> d != vignetteDoor).toList();
             if (!finaleDoors.isEmpty()) data.deal(player, finaleDoors.get(random.nextInt(finaleDoors.size())), FinaleArchitecture.ID, false);

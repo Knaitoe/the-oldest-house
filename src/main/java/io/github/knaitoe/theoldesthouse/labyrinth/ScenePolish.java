@@ -553,6 +553,13 @@ public final class ScenePolish {
                 }
             }
             spread(queue, light, opaque, sx, sy, sz);
+            // Only floor a visitor can actually reach from a doorway counts: not the sealed
+            // space above a roof, nor the inside of a wall.
+            BitSet reachable = reachable(level, base, place, r, sx, sy, sz);
+            floor.removeIf(cell -> {
+                int x = cell.getX() - base.getX() - r.minX(), y = cell.getY() - base.getY() - r.minY(), z = cell.getZ() - base.getZ() - r.minZ();
+                return !reachable.get((x * sy + y) * sz + z);
+            });
         }
 
         int at(BlockPos cell) {
@@ -574,6 +581,50 @@ public final class ScenePolish {
             for (BlockPos cell : floor) if (at(cell) <= 3) dark++;
             return dark / (double) floor.size();
         }
+    }
+
+    private static boolean passable(ServerLevel level, BlockPos pos, BlockState state) {
+        Block block = state.getBlock();
+        return state.getCollisionShape(level, pos).isEmpty() || block instanceof DoorBlock
+                || block instanceof net.minecraft.world.level.block.TrapDoorBlock || block instanceof net.minecraft.world.level.block.FenceGateBlock;
+    }
+
+    /** Open space connected to the scene's doorways, through open doors and gates. */
+    private static BitSet reachable(ServerLevel level, BlockPos base, LabyrinthPlace place, BoundingBox r, int sx, int sy, int sz) {
+        BitSet seen = new BitSet(sx * sy * sz);
+        ArrayDeque<int[]> queue = new ArrayDeque<>();
+        for (var door : place.doors())
+            for (Direction side : new Direction[]{door.facing(), door.facing().getOpposite()})
+                for (int up = 0; up <= 1; up++) {
+                    BlockPos start = base.offset(door.rel()).relative(side).above(up);
+                    int x = start.getX() - base.getX() - r.minX(), y = start.getY() - base.getY() - r.minY(), z = start.getZ() - base.getZ() - r.minZ();
+                    if (x < 0 || y < 0 || z < 0 || x >= sx || y >= sy || z >= sz) continue;
+                    int i = (x * sy + y) * sz + z;
+                    if (!seen.get(i) && passable(level, start, level.getBlockState(start))) {
+                        seen.set(i);
+                        queue.add(new int[]{x, y, z});
+                    }
+                }
+        BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos();
+        while (!queue.isEmpty()) {
+            int[] c = queue.poll();
+            int[][] n = {{c[0] + 1, c[1], c[2]}, {c[0] - 1, c[1], c[2]}, {c[0], c[1] + 1, c[2]}, {c[0], c[1] - 1, c[2]}, {c[0], c[1], c[2] + 1}, {c[0], c[1], c[2] - 1}};
+            for (int[] p : n) {
+                if (p[0] < 0 || p[1] < 0 || p[2] < 0 || p[0] >= sx || p[1] >= sy || p[2] >= sz) continue;
+                int k = (p[0] * sy + p[1]) * sz + p[2];
+                if (seen.get(k)) continue;
+                at.set(base.getX() + r.minX() + p[0], base.getY() + r.minY() + p[1], base.getZ() + r.minZ() + p[2]);
+                if (!passable(level, at, level.getBlockState(at))) continue;
+                seen.set(k);
+                queue.add(p);
+            }
+        }
+        return seen;
+    }
+
+    /** Walkable floor a visitor can reach from the scene's doorways. */
+    public static List<BlockPos> reachableFloor(ServerLevel level, BlockPos base, LabyrinthPlace place) {
+        return new Lighting(level, base, place).floor;
     }
 
     /** The share of a scene's walkable floor left in darkness (block light three or less). */

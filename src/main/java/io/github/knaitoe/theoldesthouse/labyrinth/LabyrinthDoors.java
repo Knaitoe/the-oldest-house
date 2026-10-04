@@ -123,7 +123,7 @@ public final class LabyrinthDoors {
         var hotelRoute=HotelVignette.route(player,door);if(hotelRoute!=null)door=hotelRoute;
         MinecraftServer server = player.server;
         LabyrinthData data = LabyrinthData.get(server);
-        if(VignetteGate.dormant(data,player.getUUID(),door)){setDoorOpen(player.serverLevel(),door.lower,false,player);player.displayClientMessage(Component.literal("The door is quiet. Leave its approach and find it again."),true);return;}
+        if(VignetteGate.dormant(data,player.getUUID(),door)){if(reroute(player,door))return;setDoorOpen(player.serverLevel(),door.lower,false,player);player.displayClientMessage(Component.literal("The door is quiet. Leave its approach and find it again."),true);return;}
         if (HideAndClap.isLocked(player)) {
             locked(player);
             return;
@@ -173,28 +173,53 @@ public final class LabyrinthDoors {
         // Deeper places are built as explorers approach them; one still under construction holds its door.
         if (place != null && place != LabyrinthPlace.FAMILY_COPY && place != LabyrinthPlace.OLD_CABIN
                 && !LabyrinthBuilder.isPlaceReady(server, place)) {
+            if (reroute(player, door)) return;
             player.displayClientMessage(Component.literal("The door sticks."), true);
             return;
         }
         LabyrinthData.Door entry = place == null || place.slot() < 0 ? null : data.door(place.entryDoorId());
         if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)entry=LiteraryCopies.prepareEntry(player,place);
-        if(place!=null&&data.state("literary_cabin_closure_0436").getString("Retired").equals(place.id())){locked(player);return;}
+        if(place!=null&&data.state("literary_cabin_closure_0436").getString("Retired").equals(place.id())){if(reroute(player,door))return;locked(player);return;}
         if (entry == null || (place == LabyrinthPlace.RED_ROOM && !RedRoom.prepare(player))) {
-            locked(player);
+            if(reroute(player,door))return;locked(player);
             return;
         }
         if (place == LabyrinthPlace.HIDE_AND_CLAP && !HideAndClap.canEnter(player)) {
-            locked(player);
+            if(reroute(player,door))return;locked(player);
             return;
         }
         if (place == LabyrinthPlace.SHALLOWS && !IndianLakeProgress.canDealShallows(data, player.getUUID())) {
-            locked(player);
+            if(reroute(player,door))return;locked(player);
             return;
         }
-        if(place==LabyrinthPlace.PHONE_CANOE&&!PhoneCanoe.canDeal(data,player.getUUID())){locked(player);return;}
-        if(place==LabyrinthPlace.GOATMAN&&!GoatmanVignette.canEnter(player)){locked(player);return;}
-        if(place==LabyrinthPlace.TED_CAVER&&!CaverVignette.canDeal(data,player.getUUID())){locked(player);return;}
+        if(place==LabyrinthPlace.PHONE_CANOE&&!PhoneCanoe.canDeal(data,player.getUUID())){if(reroute(player,door))return;locked(player);return;}
+        if(place==LabyrinthPlace.GOATMAN&&!GoatmanVignette.canEnter(player)){if(reroute(player,door))return;locked(player);return;}
+        if(place==LabyrinthPlace.TED_CAVER&&!CaverVignette.canDeal(data,player.getUUID())){if(reroute(player,door))return;locked(player);return;}
         arrive(player, door, entry, place);
+    }
+
+    private static boolean rerouting;
+
+    /**
+     * A dealt door that cannot take this player anywhere (a quiet source, a
+     * story closed to them, a place still being built) in a place with no other
+     * way on opens onto an ordinary way on instead, so going deeper never
+     * depends on luck. Returns true when it took them through.
+     */
+    private static boolean reroute(ServerPlayer player, LabyrinthData.Door door) {
+        if (rerouting || !LabyrinthData.DEALT.equals(door.destination)) return false;
+        LabyrinthData data = LabyrinthData.get(player.server);
+        LabyrinthPlace here = placeOf(player.server, door);
+        if (here == null || here == LabyrinthPlace.FAMILY_COPY || here == LabyrinthPlace.OLD_CABIN
+                || LabyrinthDealer.hasWayOn(data, player.getUUID(), here, door)) return false;
+        LabyrinthDealer.openWayOn(data, player.getUUID(), door, here, player.getRandom());
+        rerouting = true;
+        try {
+            use(player, door);
+        } finally {
+            rerouting = false;
+        }
+        return true;
     }
 
     private static void locked(ServerPlayer player) {

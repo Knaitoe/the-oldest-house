@@ -328,6 +328,9 @@ public final class LabyrinthBuilder {
             MotherOfStrays.upgradeDen(interior,origin);
             ServerLevel outside=server.getLevel(HouseDimensions.OUTSIDE);
             if(outside!=null)BarnFarm.upgrade(outside,origin);
+            // Those finishing upgrades dress two scenes once more: finish them again.
+            ScenePolish.forget(server,origin,LabyrinthPlace.MOTHER_DEN);ScenePolish.polishOnce(interior,origin,LabyrinthPlace.MOTHER_DEN);
+            if(outside!=null){ScenePolish.forget(server,origin,LabyrinthPlace.BARN_WELL);ScenePolish.polishOnce(outside,origin,LabyrinthPlace.BARN_WELL);}
             FinaleArchitecture.retirePreparationShield(interior,origin);
             io.github.knaitoe.theoldesthouse.house.HouseFurnishings.upgradeManor(interior,origin);
             // WallNotesRepairs dresses the revealed approach after the hallway is vacant.
