@@ -96,6 +96,37 @@ public final class SeamDoorTests {
         });
     }
 
+    @AfterBatch(batch="seam_follow") public static void followCleanup(ServerLevel level){
+        if(follower!=null){NativeTestPlayers.remove(follower);follower=null;}cleanup();
+    }
+    private static ServerPlayer follower;
+
+    @GameTest(template="empty",batch="seam_follow",timeoutTicks=200)
+    public static void aDoorStaysOpenForTheNextPlayerAndShutsOnceNobodyIsAtIt(GameTestHelper h){
+        fixture=new Fixture(h,283000);var f=fixture;
+        f.player=NativeTestPlayers.survival(h,"exit_leader");var p=f.player;p.setNoGravity(true);
+        follower=NativeTestPlayers.survival(h,"exit_follower");var q=follower;q.setNoGravity(true);
+        p.teleportTo(f.inside,f.lower.getX()+.5,f.lower.getY(),f.lower.getZ()+3.35,180,0);p.setDeltaMovement(Vec3.ZERO);
+        q.teleportTo(f.inside,f.lower.getX()+.5,f.lower.getY(),f.lower.getZ()+1.6,180,0);q.setDeltaMovement(Vec3.ZERO);
+        var click=new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,f.lower,
+                new BlockHitResult(f.lower.getCenter(),Direction.SOUTH,f.lower,false));
+        NeoForge.EVENT_BUS.post(click);h.assertTrue(click.isCanceled()&&HouseTransitionEvents.isPending(p),"the leader's click queues an exit");
+        h.runAfterDelay(1,()->HouseTransitionEvents.onPlayerTick(new PlayerTickEvent.Post(p)));
+        h.runAfterDelay(5,()->{
+            h.assertTrue(p.serverLevel()==f.outside,"the leader crosses");
+            p.moveTo(f.lower.getX()+.5,f.lower.getY(),f.lower.getZ()-1.25);p.setDeltaMovement(Vec3.ZERO);
+            HouseTransitionEvents.onPlayerTick(new PlayerTickEvent.Post(p));
+            f.assertDoor(h,true);
+            h.assertTrue(q.serverLevel()==f.inside&&!HouseTransitionEvents.isPending(q),"the follower in the doorway is still inside and not ejected");
+        });
+        h.runAfterDelay(60,()->{
+            f.assertDoor(h,true);
+            NativeTestPlayers.remove(q);follower=null;
+            p.moveTo(f.lower.getX()+.5,f.lower.getY(),f.lower.getZ()-7);p.setDeltaMovement(Vec3.ZERO);
+        });
+        h.runAfterDelay(130,()->{f.assertDoor(h,false);h.succeed();});
+    }
+
     @GameTest(template="empty",batch="seam_copy",timeoutTicks=40)
     public static void nativeMirroredDoorHalvesSurviveAnIncompleteCopyWithoutDrops(GameTestHelper h){
         fixture=new Fixture(h,281400);var f=fixture;f.door(f.inside,true);
