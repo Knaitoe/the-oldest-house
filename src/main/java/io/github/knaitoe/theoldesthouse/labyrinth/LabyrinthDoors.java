@@ -142,7 +142,7 @@ public final class LabyrinthDoors {
             locked(player);
             return;
         }
-        if (!LabyrinthBuilder.ensureBuilt(server)) {
+        if (!LabyrinthBuilder.ensureReachable(server)) {
             player.displayClientMessage(Component.literal("The door sticks."), true);
             return;
         }
@@ -164,6 +164,12 @@ public final class LabyrinthDoors {
             place = dealt == null ? null : LabyrinthPlace.byId(dealt.place());
         } else {
             place = door.destination.startsWith("place:") ? LabyrinthPlace.byId(door.destination.substring(6)) : null;
+        }
+        // Deeper places are built as explorers approach them; one still under construction holds its door.
+        if (place != null && place != LabyrinthPlace.FAMILY_COPY && place != LabyrinthPlace.OLD_CABIN
+                && !LabyrinthBuilder.isPlaceReady(server, place)) {
+            player.displayClientMessage(Component.literal("The door sticks."), true);
+            return;
         }
         LabyrinthData.Door entry = place == null || place.slot() < 0 ? null : data.door(place.entryDoorId());
         if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)entry=LiteraryCopies.prepareEntry(player,place);
@@ -524,7 +530,7 @@ public final class LabyrinthDoors {
 
     /** Takes a player to the junction from wherever they are, remembering where that was. */
     public static boolean goToJunction(ServerPlayer player) {
-        if (!LabyrinthBuilder.ensureBuilt(player.server) || isBusy(player)) {
+        if (!LabyrinthBuilder.ensureReachable(player.server) || isBusy(player)) {
             return false;
         }
         LabyrinthData data = LabyrinthData.get(player.server);
@@ -721,7 +727,7 @@ public final class LabyrinthDoors {
             syncSealedDoors(server);
             TheOldestHouse.LOGGER.info("The impossible hallway's far wall now has a door.");
         }
-        LabyrinthBuilder.ensureBuilt(server);
+        LabyrinthBuilder.ensureReachable(server);
     }
 
     // ------------------------------------------------------------------
