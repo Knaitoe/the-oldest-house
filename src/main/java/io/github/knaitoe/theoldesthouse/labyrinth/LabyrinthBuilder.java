@@ -441,8 +441,8 @@ public final class LabyrinthBuilder {
         hangLantern(level, base.offset(0, 4, -3), false);
         hangLantern(level, base.offset(0, 4, -9), false);
         // A single bench against the west wall, facing nothing.
-        level.setBlock(base.offset(-4, 0, -9), stairs(Blocks.STONE_STAIRS, Direction.WEST), FLAGS);
-        level.setBlock(base.offset(-4, 0, -10), stairs(Blocks.STONE_STAIRS, Direction.WEST), FLAGS);
+        BuildBlocks.set(level,base.offset(-4, 0, -9), stairs(Blocks.STONE_STAIRS, Direction.WEST), FLAGS);
+        BuildBlocks.set(level,base.offset(-4, 0, -10), stairs(Blocks.STONE_STAIRS, Direction.WEST), FLAGS);
         entrance(level, base, LabyrinthDomestic.WALL, LabyrinthDomestic.FLOOR, LabyrinthDomestic.CEILING);
         LabyrinthDomestic.decorateJunction(level, base);
         doors(level, base, LabyrinthPlace.JUNCTION);
@@ -477,7 +477,7 @@ public final class LabyrinthBuilder {
                     } else {
                         state = Blocks.AIR.defaultBlockState();
                     }
-                    level.setBlock(base.offset(x, y, z), state, FLAGS);
+                    BuildBlocks.set(level,base.offset(x, y, z), state, FLAGS);
                 }
             }
         }
@@ -500,8 +500,8 @@ public final class LabyrinthBuilder {
     /** As above; without {@code carveOpening} the room's own doorway at z 0 is left as it is. */
     static void entrance(ServerLevel level, BlockPos base, BlockState wall, BlockState floor, BlockState ceiling, boolean carveOpening) {
         if (carveOpening) {
-            level.setBlock(base.offset(0, 0, 0), Blocks.AIR.defaultBlockState(), FLAGS);
-            level.setBlock(base.offset(0, 1, 0), Blocks.AIR.defaultBlockState(), FLAGS);
+            BuildBlocks.set(level,base.offset(0, 0, 0), Blocks.AIR.defaultBlockState(), FLAGS);
+            BuildBlocks.set(level,base.offset(0, 1, 0), Blocks.AIR.defaultBlockState(), FLAGS);
         }
         BoundingBox vestibule = LabyrinthPlaces.localVestibule();
         for (int x = vestibule.minX(); x <= vestibule.maxX(); x++) {
@@ -517,7 +517,7 @@ public final class LabyrinthBuilder {
                     if (z == 1) {
                         state = wall;
                     }
-                    level.setBlock(base.offset(x, y, z), state, FLAGS);
+                    BuildBlocks.set(level,base.offset(x, y, z), state, FLAGS);
                 }
             }
         }
@@ -538,13 +538,13 @@ public final class LabyrinthBuilder {
                 .setValue(DoorBlock.FACING, facing)
                 .setValue(DoorBlock.HINGE, DoorHingeSide.LEFT)
                 .setValue(DoorBlock.OPEN, false);
-        level.setBlock(lower, door.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER), FLAGS);
-        level.setBlock(lower.above(), door.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER), FLAGS);
+        BuildBlocks.set(level,lower, door.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER), FLAGS);
+        BuildBlocks.set(level,lower.above(), door.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER), FLAGS);
     }
 
     static void hangLantern(ServerLevel level, BlockPos pos, boolean soul) {
         Block lantern = soul ? Blocks.SOUL_LANTERN : Blocks.LANTERN;
-        level.setBlock(pos, lantern.defaultBlockState().setValue(LanternBlock.HANGING, true), FLAGS);
+        BuildBlocks.set(level,pos, lantern.defaultBlockState().setValue(LanternBlock.HANGING, true), FLAGS);
     }
 
     static BlockState stairs(Block block, Direction back) {
@@ -553,8 +553,8 @@ public final class LabyrinthBuilder {
 
     static void bed(ServerLevel level, BlockPos foot, Direction toHead, Block bed) {
         BlockState state = bed.defaultBlockState().setValue(BedBlock.FACING, toHead);
-        level.setBlock(foot, state.setValue(BedBlock.PART, BedPart.FOOT), FLAGS);
-        level.setBlock(foot.relative(toHead), state.setValue(BedBlock.PART, BedPart.HEAD), FLAGS);
+        BuildBlocks.set(level,foot, state.setValue(BedBlock.PART, BedPart.FOOT), FLAGS);
+        BuildBlocks.set(level,foot.relative(toHead), state.setValue(BedBlock.PART, BedPart.HEAD), FLAGS);
     }
 
     static BlockState barrel(Direction facing) {

@@ -27,7 +27,7 @@ public final class LiteraryRooms {
         // Papers are original scene-specific texts; reading surfaces generate immutable reader originals.
         var note=source(p);if(note.getY()>0&&BuildBlocks.state(l,b.offset(note.below())).isAir())furniture(l,b,note.getX(),note.getY()-1,note.getZ(),HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);paper(l,b,note,LiteraryTexts.source(p));
         if(p!=LabyrinthPlace.OLD_CABIN&&p!=LabyrinthPlace.FAMILY_COPY){var end=ending(p);if(end.getY()>0&&BuildBlocks.state(l,b.offset(end.below())).isAir())furniture(l,b,end.getX(),end.getY()-1,end.getZ(),HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);prop(l,b,end,LiteraryPropBlock.Kind.LEDGER,Direction.SOUTH);}
-        BuildBlocks.after(l,()->{NovelRooms.safeApproach(l,b);LabyrinthBuilder.entrance(l,b,wall(p).defaultBlockState(),floor(p).defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState());LabyrinthBuilder.doors(l,b,p);});
+        NovelRooms.safeApproach(l,b);LabyrinthBuilder.entrance(l,b,wall(p).defaultBlockState(),floor(p).defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState());LabyrinthBuilder.doors(l,b,p);
     }
     public static void box(ServerLevel l,BlockPos b,int x0,int y0,int z0,int x1,int y1,int z1,Block block){NovelRooms.box(l,b,x0,y0,z0,x1,y1,z1,block instanceof LeavesBlock?block.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true):block.defaultBlockState());}
     public static void at(ServerLevel l,BlockPos b,int x,int y,int z,Block block){BuildBlocks.set(l,b.offset(x,y,z),block.defaultBlockState(),F);}
@@ -116,7 +116,7 @@ public final class LiteraryRooms {
         for(int z:new int[]{-9,-20,-31})for(int x:new int[]{-6,6}){room(l,b,x-2,x+2,z-3,z+2,0,3,Blocks.DARK_OAK_PLANKS,Blocks.DARK_OAK_PLANKS);door(l,b,x+(x<0?2:-2),0,z,Direction.EAST,false);furniture(l,b,x,0,z-2,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.SOUTH);}
         for(int z:new int[]{-6,-17,-28})light(l,b,0,4,z);desk(l,b,8,0,-38);box(l,b,8,2,-53,10,4,-53,Blocks.BLACK_STAINED_GLASS);
     }
-    private static void terrain(ServerLevel l,BlockPos b,LabyrinthPlace p,Block ground){var r=p.room();box(l,b,r.minX(),-3,r.minZ(),r.maxX(),-1,0,ground);for(int x=r.minX()+1;x<r.maxX();x+=6)for(int z=r.minZ()+3;z<-10;z+=9){if(Math.abs(x)<9)continue;int ox=Math.floorMod(x*31+z*17,5)-2,oz=Math.floorMod(x*13-z*7,5)-2;if(buildingClearing(p,x+ox,z+oz))continue;tree(l,b,x+ox,0,z+oz,4+(Math.abs(x+z)%3));}}
+    private static void terrain(ServerLevel l,BlockPos b,LabyrinthPlace p,Block ground){var r=p.room();if(ground==Blocks.SAND)box(l,b,r.minX(),-4,r.minZ(),r.maxX(),-4,0,Blocks.SANDSTONE);box(l,b,r.minX(),-3,r.minZ(),r.maxX(),-1,0,ground);for(int x=r.minX()+1;x<r.maxX();x+=6)for(int z=r.minZ()+3;z<-10;z+=9){if(Math.abs(x)<9)continue;int ox=Math.floorMod(x*31+z*17,5)-2,oz=Math.floorMod(x*13-z*7,5)-2;if(buildingClearing(p,x+ox,z+oz))continue;tree(l,b,x+ox,0,z+oz,4+(Math.abs(x+z)%3));}}
     /** Reserve the whole canopy around roofs and walls before planting the forest. */
     private static boolean buildingClearing(LabyrinthPlace p,int x,int z){return switch(p){
         case CAMP_BLOOD->{boolean cabin=false;for(int cx:new int[]{-20,20})for(int cz:new int[]{-26,-57,-83})if(Math.abs(x-cx)<=12&&Math.abs(z-cz)<=11)cabin=true;yield cabin;}
