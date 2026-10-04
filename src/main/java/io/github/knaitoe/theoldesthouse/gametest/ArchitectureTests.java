@@ -98,7 +98,7 @@ public final class ArchitectureTests {
                 }
                 if(scene!=LabyrinthPlace.RED_ROOM)export(level,base,scene);
             }
-            for(var scene:LabyrinthPlace.values())if(LiteraryRooms.isLiterary(scene)){var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var base=LabyrinthPlaces.base(origin,scene);h.assertTrue(level.getBlockEntity(base.offset(LiteraryRooms.source(scene))) instanceof LecternBlockEntity,scene.id()+" has a supported native discovery paper");var entrance=base.offset(0,0,-3);h.assertTrue(level.noCollision(null,new AABB(entrance.getX()+.2,entrance.getY()+.01,entrance.getZ()+.2,entrance.getX()+.8,entrance.getY()+1.8,entrance.getZ()+.8)),scene.id()+" clears the actual entrance body");export(level,base,scene);}
+            for(var scene:LabyrinthPlace.values())if(LiteraryRooms.isLiterary(scene)){var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var base=LabyrinthPlaces.base(origin,scene);h.assertTrue(level.getBlockEntity(base.offset(LiteraryRooms.source(scene))) instanceof LecternBlockEntity,scene.id()+" has a supported native discovery paper");var entrance=base.offset(0,0,-3);h.assertTrue(level.noCollision(null,new AABB(entrance.getX()+.2,entrance.getY()+.01,entrance.getZ()+.2,entrance.getX()+.8,entrance.getY()+1.8,entrance.getZ()+.8)),scene.id()+" clears the actual entrance body");if(scene!=LabyrinthPlace.FAMILY_COPY&&scene!=LabyrinthPlace.OLD_CABIN)export(level,base,scene);}
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL,"hotel_upstairs");
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL,"hotel_basement");
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.BLIND_STRETCH),LabyrinthPlace.BLIND_STRETCH,"blind_stretch");
@@ -126,7 +126,7 @@ public final class ArchitectureTests {
             Files.writeString(Path.of("../build/architecture-proof/manifest.txt"),"Native generated scenes: "+dressed+"\nSupported ambient details: "+props+"\nOld inventories, actors, evidence and story state preserved.\n");
             h.succeed();
         }finally{
-            for(var scene:LabyrinthPlace.values())if(VignetteArchitecture.applies(scene)){
+            for(var scene:LabyrinthPlace.values())if(VignetteArchitecture.applies(scene)||LiteraryRooms.isLiterary(scene)){
                 var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var base=LabyrinthPlaces.base(origin,scene);var r=scene.room();
                 for(var e:level.getEntitiesOfClass(Entity.class,box(base.offset(r.minX()-1,r.minY()-1,r.minZ()-1),base.offset(r.maxX()+1,r.maxY()+2,r.maxZ()+2))))e.discard();
             }
@@ -232,7 +232,7 @@ public final class ArchitectureTests {
         if(name.equals("hotel_basement")){minY=-5;maxY=-2;}
         if(scene==LabyrinthPlace.BLIND_STRETCH)maxY=2;if(LiteraryRooms.isLiterary(scene)){minY=Math.max(scene.room().minY(),-6);maxY=NovelRooms.outside(scene)?Math.min(7,scene.room().maxY()):Math.min(4,scene.room().maxY());if(scene==LabyrinthPlace.WINCHESTER)maxY=10;}
         for(int x=r.minX();x<=r.maxX();x++)for(int y=minY;y<=maxY;y++)for(int z=minZ;z<=maxZ;z++){
-            var at=b.offset(x,y,z);var s=l.getBlockState(at);
+            var at=b.offset(x,y,z);var s=l.getBlockState(at);if(s.is(LiteraryRegistry.FROZEN.get()))s=LiteraryFrozenBlock.original(l,at);
             if(s.isAir()||s.is(Blocks.BARRIER)||s.is(Blocks.LIGHT))continue;
             if(s.is(Blocks.WATER)&&(!LakeLandscape.isLake(scene)&&!LiteraryRooms.outside(scene)||!l.getBlockState(at.above()).isAir()))continue;
             // A documented cutaway removes roofs and the near walls, not interior contents.
