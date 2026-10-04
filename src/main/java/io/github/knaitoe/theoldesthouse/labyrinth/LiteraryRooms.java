@@ -88,6 +88,8 @@ public final class LiteraryRooms {
             if(flight<15){for(int zz=z-1;zz>=z-3;zz--)for(int x=turn-1;x<=turn+1;x++){box(l,b,x,y,zz,x,y+3,zz,Blocks.AIR);l.setBlock(b.offset(x,y,zz),Blocks.OAK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,type),F);}}
             for(int x=-21;x<=21;x++)at(l,b,x,y+1,z-1,Blocks.DARK_OAK_FENCE);
         }
+        // The following flight's clearance cuts reach the preceding turn: lay every turn last.
+        for(int flight=0;flight<15;flight++){int y=flight/2,z=-8-flight*4,turn=flight%2==0?23:-23;var type=flight%2==0?SlabType.BOTTOM:SlabType.TOP;for(int zz=z-1;zz>=z-3;zz--)for(int x=turn-1;x<=turn+1;x++){box(l,b,x,y,zz,x,y+3,zz,Blocks.AIR);l.setBlock(b.offset(x,y,zz),Blocks.OAK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,type),F);}}
         box(l,b,-25,-1,-8,-22,-1,-3,Blocks.OAK_PLANKS);box(l,b,-25,0,-7,-22,3,-3,Blocks.AIR);
         box(l,b,-24,7,-73,28,7,-70,Blocks.OAK_PLANKS);box(l,b,-24,8,-73,28,10,-70,Blocks.AIR);
         box(l,b,-24,7,-70,-22,10,-69,Blocks.AIR);box(l,b,-24,7,-70,-22,7,-69,Blocks.OAK_PLANKS);

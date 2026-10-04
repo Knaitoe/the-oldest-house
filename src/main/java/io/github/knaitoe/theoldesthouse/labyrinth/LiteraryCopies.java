@@ -44,7 +44,7 @@ public final class LiteraryCopies extends SavedData {
     private final Map<String,Copy> copies=new LinkedHashMap<>();private final Map<UUID,CompoundTag> readers=new LinkedHashMap<>();private int nextIndex;
     public static LiteraryCopies get(MinecraftServer s){return s.overworld().getDataStorage().computeIfAbsent(FACTORY,"the_oldest_house_literary_copies");}
     private Copy copy(UUID reader,LabyrinthPlace p){return copies.get(reader+"/"+p.id());}
-    private static BlockPos address(MinecraftServer s,Copy c){var o=HouseSavedData.get(s).houseOrigin();if(o==null)return null;var b=LabyrinthPlaces.base(o,c.place);return b==null?null:b.offset(4096+c.index*256,0,0);}
+    private static BlockPos address(MinecraftServer s,Copy c){var o=HouseSavedData.get(s).houseOrigin();if(o==null)return null;var b=LabyrinthPlaces.base(o,c.place);return b==null?null:new BlockPos(b.getX()+4096+c.index*256,80,b.getZ());}
     public static @Nullable BlockPos base(MinecraftServer s,UUID reader,LabyrinthPlace p){var c=get(s).copy(reader,p);return c==null||!c.built?null:address(s,c);}
     public static @Nullable LabyrinthPlace placeAt(MinecraftServer s,BlockPos at){for(var c:get(s).copies.values()){var b=address(s,c);if(b!=null&&c.built&&bounds(b,c).contains(Vec3.atCenterOf(at)))return c.place;}return null;}
     private static AABB bounds(BlockPos b,Copy c){var min=c.snapshot==null?new BlockPos(-34,-17,-34):c.snapshot.min();var max=c.snapshot==null?new BlockPos(34,33,34):c.snapshot.max();return new AABB(b.getX()+min.getX()-3,b.getY()+min.getY()-3,b.getZ()+min.getZ()+c.offset()-3,b.getX()+max.getX()+4,b.getY()+max.getY()+4,b.getZ()+10);}

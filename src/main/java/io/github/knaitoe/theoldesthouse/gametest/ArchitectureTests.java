@@ -137,7 +137,7 @@ public final class ArchitectureTests {
             server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);server.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);LabyrinthBuilder.clearAll();LabyrinthDoors.clearAll();
         }
     }
-    private static void literaryRoutes(GameTestHelper h,ServerLevel level,BlockPos b){
+    public static void literaryRoutes(GameTestHelper h,ServerLevel level,BlockPos b){
         // The slow stair rises eight blocks through sixteen long flights and fifteen connected turns.
         for(int flight=0;flight<16;flight++){int layer=flight/2,z=-8-flight*4;double feet=layer+(flight%2==0?.5:1);
             for(int x=-23;x<=23;x++)supportedBody(h,level,b,x,feet,z,"Winchester flight "+flight);
