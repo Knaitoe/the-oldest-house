@@ -99,7 +99,7 @@ public final class LiteraryVignettes {
             case GHOSTS_SET->{if(rel.equals(LiteraryRooms.BOOTH)){own.putBoolean("Booth",true);if(p.isShiftKeyDown()&&!own.contains("Confession"))own.putString("Confession","I chose to let the tape run in silence.");p.displayClientMessage(Component.literal("The booth is recording. Type your own words in chat, or crouch and touch the receiver to leave silence."),false);handled=true;}}
             case CONFESSION->{if(rel.equals(new BlockPos(10,1,-29))&&own.getInt("Visit")>own.getInt("SealedVisit")&&own.contains("SignedJournal")){open(p,place,own,"Journal",ItemStack.parseOptional(p.registryAccess(),own.getCompound("SignedJournal")),e.getPos());handled=true;}}
             case END_WORLD_CABIN->{if(rel.equals(LiteraryRooms.TV)){LiteraryCabinChoices.open(p);handled=true;}}
-            case FAMILY_COPY,OLD_CABIN->{handled=LiteraryCopies.click(p,place,e.getPos(),own);}
+            case FAMILY_COPY,OLD_CABIN->{if(p.serverLevel().getBlockEntity(e.getPos()) instanceof net.minecraft.world.Container||p.serverLevel().getBlockState(e.getPos()).is(Blocks.ENDER_CHEST)){p.displayClientMessage(Component.literal("Every compartment is empty. None of the latches will open."),true);handled=true;}else handled=LiteraryCopies.click(p,place,e.getPos(),own);}
             default->{}
         }
         save(d,p.getUUID(),place,own);if(handled){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);}

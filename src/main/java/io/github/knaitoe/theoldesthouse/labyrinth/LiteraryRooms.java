@@ -115,7 +115,15 @@ public final class LiteraryRooms {
         for(int z:new int[]{-9,-20,-31})for(int x:new int[]{-6,6}){room(l,b,x-2,x+2,z-3,z+2,0,3,Blocks.DARK_OAK_PLANKS,Blocks.DARK_OAK_PLANKS);door(l,b,x+(x<0?2:-2),0,z,Direction.EAST,false);furniture(l,b,x,0,z-2,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.SOUTH);}
         for(int z:new int[]{-6,-17,-28})light(l,b,0,4,z);desk(l,b,8,0,-38);box(l,b,8,2,-53,10,4,-53,Blocks.BLACK_STAINED_GLASS);
     }
-    private static void terrain(ServerLevel l,BlockPos b,LabyrinthPlace p,Block ground){var r=p.room();box(l,b,r.minX(),-3,r.minZ(),r.maxX(),-1,0,ground);for(int x=r.minX()+1;x<r.maxX();x+=6)for(int z=r.minZ()+3;z<-10;z+=9){if(Math.abs(x)<9)continue;int ox=Math.floorMod(x*31+z*17,5)-2,oz=Math.floorMod(x*13-z*7,5)-2;tree(l,b,x+ox,0,z+oz,4+(Math.abs(x+z)%3));}}
+    private static void terrain(ServerLevel l,BlockPos b,LabyrinthPlace p,Block ground){var r=p.room();box(l,b,r.minX(),-3,r.minZ(),r.maxX(),-1,0,ground);for(int x=r.minX()+1;x<r.maxX();x+=6)for(int z=r.minZ()+3;z<-10;z+=9){if(Math.abs(x)<9)continue;int ox=Math.floorMod(x*31+z*17,5)-2,oz=Math.floorMod(x*13-z*7,5)-2;if(buildingClearing(p,x+ox,z+oz))continue;tree(l,b,x+ox,0,z+oz,4+(Math.abs(x+z)%3));}}
+    /** Reserve the whole canopy around roofs and walls before planting the forest. */
+    private static boolean buildingClearing(LabyrinthPlace p,int x,int z){return switch(p){
+        case CAMP_BLOOD->{boolean cabin=false;for(int cx:new int[]{-20,20})for(int cz:new int[]{-26,-57,-83})if(Math.abs(x-cx)<=12&&Math.abs(z-cz)<=11)cabin=true;yield cabin;}
+        case MAPPING_INTERIOR->Math.abs(x)<=17&&z>=-41&&z<=-3;
+        case END_WORLD_CABIN->Math.abs(x)<=17&&z>=-40&&z<=-8;
+        case ELK_LOT->(x>=-27&&x<=-3&&z>=-28&&z<=0)||((Math.abs(x-9)<=6||Math.abs(x-21)<=6)&&z>=-33&&z<=-16);
+        default->false;
+    };}
     private static void tree(ServerLevel l,BlockPos b,int x,int y,int z,int height){box(l,b,x,y,z,x,y+height,z,Blocks.SPRUCE_LOG);for(int h=2;h<=height+2;h++){int w=Math.max(1,(height+3-h)/2);box(l,b,x-w,y+h,z-w,x+w,y+h,z+w,Blocks.SPRUCE_LEAVES);}}
     private static void roof(ServerLevel l,BlockPos b,int x0,int x1,int z0,int z1,int eaves){
         box(l,b,x0-1,-2,z0-1,x1+1,-1,z1+1,Blocks.STONE_BRICKS);
