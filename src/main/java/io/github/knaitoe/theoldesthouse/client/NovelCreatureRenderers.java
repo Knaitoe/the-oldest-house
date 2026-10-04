@@ -25,7 +25,10 @@ public final class NovelCreatureRenderers {
             r.addOrReplaceChild("neck",CubeListBuilder.create().texOffs(0,256).addBox(-1,-1,-7,2,3,4).texOffs(128,0).addBox(-.7F,0,-9,1.4F,1,2),PartPose.ZERO);
             r.addOrReplaceChild("left",CubeListBuilder.create().texOffs(0,128).addBox(0,-.5F,-3,18,1,7),PartPose.offset(2,-1,0));r.addOrReplaceChild("right",CubeListBuilder.create().texOffs(0,128).addBox(-18,-.5F,-3,18,1,7),PartPose.offset(-2,-1,0));
             r.addOrReplaceChild("tail",CubeListBuilder.create().texOffs(128,128).addBox(-3,-.5F,5,6,1,7),PartPose.ZERO);return LayerDefinition.create(m,256,512);}
-        @Override public void setupAnim(NovelVulture e,float walk,float amount,float age,float yaw,float pitch){root.getAllParts().forEach(ModelPart::resetPose);root.zRot=.18F;left.zRot=(float)Math.sin(age*.025)*.025F;right.zRot=-left.zRot;}}
+        @Override public void setupAnim(NovelVulture e,float walk,float amount,float age,float yaw,float pitch){root.getAllParts().forEach(ModelPart::resetPose);root.zRot=.18F;
+            // Long glides, banked into the circle, broken now and then by a few slow wingbeats.
+            float cycle=age%140F,flap=cycle<24?(float)Math.sin(cycle*.52F)*.55F:0;
+            left.zRot=(float)Math.sin(age*.025)*.025F+flap;right.zRot=-left.zRot;}}
     private static final class ActorRenderer extends MobRenderer<NovelActor,PlayerModel<NovelActor>>{
         private final PlayerModel<NovelActor> standard,slim;
         ActorRenderer(EntityRendererProvider.Context c){super(c,new PlayerModel<>(c.bakeLayer(ModelLayers.PLAYER),false),.3F);standard=model;slim=new PlayerModel<>(c.bakeLayer(ModelLayers.PLAYER_SLIM),true);}
