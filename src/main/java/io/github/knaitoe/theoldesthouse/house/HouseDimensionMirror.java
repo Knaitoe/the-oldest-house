@@ -27,7 +27,8 @@ public final class HouseDimensionMirror {
     public static final int VIEW_ABOVE_FLOOR = 24;
 
     /** Client updates only: no neighbour cascades, no drops. */
-    static final int MIRROR_FLAGS = Block.UPDATE_CLIENTS;
+    static final int MIRROR_FLAGS = Block.UPDATE_CLIENTS
+            | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS;
 
     private HouseDimensionMirror() {
     }

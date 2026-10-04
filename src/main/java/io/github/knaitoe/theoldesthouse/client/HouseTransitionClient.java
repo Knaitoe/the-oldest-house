@@ -78,7 +78,11 @@ public final class HouseTransitionClient {
             boolean entering
     ) {
         int token = HouseTransitionContextState.peekToken();
-        return new StillFrameScreen(ready, reason, token, CapturedFrame.capture(token));
+        long openedAt = System.nanoTime();
+        CapturedFrame frame = CapturedFrame.capture(token);
+        TheOldestHouse.LOGGER.info("House client transition {}: frame capture took {} ms",
+                token, (System.nanoTime() - openedAt) / 1_000_000L);
+        return new StillFrameScreen(ready, reason, token, frame, openedAt);
     }
 
     /**
@@ -93,15 +97,21 @@ public final class HouseTransitionClient {
 
         private final int transitionToken;
         private final CapturedFrame capturedFrame;
-
-        private StillFrameScreen(BooleanSupplier ready, Reason reason, int token, CapturedFrame frame) {
-            this(ready, reason, token, frame, System.nanoTime());
-        }
+        private final long openedAt;
 
         private StillFrameScreen(BooleanSupplier ready, Reason reason, int token, CapturedFrame frame, long openedAt) {
-            super(() -> ready.getAsBoolean() && (surroundingsDrawn() || System.nanoTime() - openedAt > HOLD_LIMIT_NANOS), reason);
+            super(() -> (ready.getAsBoolean() && surroundingsDrawn())
+                    || (System.nanoTime() - openedAt > HOLD_LIMIT_NANOS && destinationPresent()), reason);
             this.transitionToken = token;
             this.capturedFrame = frame;
+            this.openedAt = openedAt;
+        }
+
+        /** A late vanilla loading signal must not defeat the held frame's deadline. */
+        private static boolean destinationPresent() {
+            Minecraft minecraft = Minecraft.getInstance();
+            return minecraft.level != null && minecraft.player != null
+                    && minecraft.player.level() == minecraft.level;
         }
 
         /** The player's section and its neighbours are meshed, so lifting the frame shows a finished view. */
@@ -144,6 +154,8 @@ public final class HouseTransitionClient {
         @Override
         public void removed() {
             super.removed();
+            TheOldestHouse.LOGGER.info("House client transition {}: held frame released after {} ms",
+                    transitionToken, (System.nanoTime() - openedAt) / 1_000_000L);
             HouseTransitionMotion.beginPost(transitionToken);
             if (capturedFrame != null) {
                 capturedFrame.close();
