@@ -53,7 +53,7 @@ public final class HouseNpcTests {
             var bounds=IndianLakeRooms.bounds(b,LabyrinthPlace.HOLLOWAY_CAMP);for(int x=((int)bounds.minX)>>4;x<=((int)bounds.maxX)>>4;x++)for(int z=((int)bounds.minZ)>>4;z<=((int)bounds.maxZ)>>4;z++)l.getChunkSource().removeRegionTicket(TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(x,z),3,b);
             var s=l.getServer();s.overworld().getDataStorage().set("the_oldest_house",oldHouse);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);}
     }
-    private static Fixture cache,hunt,resume,torches,guards,upgrade,activity;
+    private static Fixture cache,hunt,resume,torches,guards,upgrade,activity,aftermath;
     @AfterBatch(batch="npc_activity") public static void activityCleanup(ServerLevel l){if(activity!=null){activity.close();activity=null;}}
     @GameTest(template="empty",batch="npc_activity",timeoutTicks=260)
     public static void nativePatrolBelongingWarningsVisibleBoltsAndHurtFeedback(GameTestHelper h){
@@ -170,4 +170,24 @@ public final class HouseNpcTests {
             h.assertTrue(b!=null&&bounds.isInside(b.offset(room.minX(),room.minY(),room.minZ()))&&bounds.isInside(b.offset(room.maxX(),room.maxY(),room.maxZ())),"the new native scene fits at a supported manor height "+y);}
         h.assertTrue(LabyrinthPlace.HOLLOWAY_CAMP.slot()==39&&LabyrinthPlace.KAREN_ROOM.slot()==38&&LabyrinthPlace.HARRIGAN.slot()==9&&WitnessAccount.REQUIRED==33,"old stable scene slots remain and the current complete pool requires thirty-three");h.succeed();
     }
+
+    @GameTest(template="empty",batch="npc_aftermath",timeoutTicks=350)
+    public static void aLateReaderEarnsTheShieldThroughTheDeadCampsOwnSurveyAndThreeRooms(GameTestHelper h){
+        aftermath=new Fixture(h,44200);var f=aftermath;var killer=f.player();var actor=f.actor();UUID original=actor.getUUID();
+        h.assertTrue(actor.hurt(f.l.damageSources().playerAttack(killer),1000),"the original native human actually dies");
+        var late=f.player();h.assertTrue(HollowayVignette.canDeal(f.data(),late.getUUID())&&!f.own(late).getBoolean("KilledHolloway")&&!WitnessAccount.has(f.data(),late.getUUID(),WitnessAccount.Story.HOLLOWAY),"permanent shared death leaves a personal route without transferring the killing or any credit");
+        f.click(late,HollowayCamp.JOURNAL);var survey=(HollowayVignette.SurveyMenu)late.containerMenu;
+        h.assertTrue(survey.clickMenuButton(late,103)&&survey.clickMenuButton(late,3)&&!survey.clickMenuButton(late,3),"the late reader personally reads and takes one finite native survey");late.closeContainer();f.returnForHunt(late);f.at(late,0,-18);
+        int[] clock={0};h.onEachTick(()->{clock[0]++;HollowayVignette.playerTick(late);
+            if(clock[0]==90){h.assertTrue(f.own(late).getInt("ArenaTicks")==80,"the empty camp still requires actual time in the first arena");f.at(late,0,-32);}
+            if(clock[0]==180)f.at(late,-7,-58);
+            if(clock[0]==275){h.assertTrue(f.own(late).getInt("Arena")==3&&f.own(late).getInt("ArenaTicks")==80&&!f.own(late).getBoolean("Seen")&&f.own(late).getBoolean("AftermathInspected"),"all three rooms and the inspected aftermath are personal facts, without inventing a sighting of the dead hunter");
+                late.setShiftKeyDown(true);f.click(late,HollowayCamp.LATCH);
+                h.assertTrue(late.getInventory().countItem(Items.SHIELD)==1&&WitnessAccount.has(f.data(),late.getUUID(),WitnessAccount.Story.HOLLOWAY)&&!WitnessAccount.has(f.data(),killer.getUUID(),WitnessAccount.Story.HOLLOWAY),"the actual late latch grants one earned shield and only that explorer's Witness");
+                f.click(late,HollowayCamp.LATCH);f.reload();h.assertTrue(late.getInventory().countItem(Items.SHIELD)==1&&HollowayVignette.ensureActor(f.l,f.b)==null&&f.data().state(HollowayVignette.ID).getUUID("Actor").equals(original),"rereading, reload and repeat pulls neither respawn the original nor refill rewards");h.succeed();
+            }
+        });
+    }
+    @AfterBatch(batch="npc_aftermath") public static void aftermathDone(ServerLevel l){if(aftermath!=null){aftermath.close();aftermath=null;}}
+
 }

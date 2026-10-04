@@ -64,6 +64,22 @@ public final class OutdoorBounds {
         if (!player.gameMode.isSurvival() || !player.isAlive()) return false;
         Vec3 back = SAFE.get(player.getUUID());
         BlockPos home = null;
+        for (var area : LiteraryCopies.outdoorAreas(player.server)) {
+            if (insideCopy(area, player.position())) {
+                if (player.onGround() || player.isInWater() || player.isPassenger()) SAFE.put(player.getUUID(), player.position());
+                return false;
+            }
+            if (back != null && insideCopy(area, back)
+                    && player.getX() >= area.minX - NEIGHBOURHOOD && player.getX() <= area.maxX + NEIGHBOURHOOD
+                    && player.getZ() >= area.minZ - NEIGHBOURHOOD && player.getZ() <= area.maxZ + NEIGHBOURHOOD) {
+                if (player.isPassenger()) player.stopRiding();
+                player.teleportTo(back.x, back.y, back.z);
+                player.setDeltaMovement(Vec3.ZERO);
+                player.resetFallDistance();
+                player.hurtMarked = true;
+                return true;
+            }
+        }
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
             if (!NovelRooms.outside(place)) continue;
             BlockPos base = LabyrinthPlaces.base(origin, place);
@@ -84,6 +100,10 @@ public final class OutdoorBounds {
         player.resetFallDistance();
         player.hurtMarked = true;
         return true;
+    }
+
+    private static boolean insideCopy(net.minecraft.world.phys.AABB area, Vec3 point) {
+        return point.x >= area.minX && point.x < area.maxX && point.z >= area.minZ && point.z < area.maxZ && point.y >= area.minY;
     }
 
     private static boolean near(Area area, double x, double z) {

@@ -33,11 +33,38 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class HotelVignette {
     public static final String STATE="hotel_0435",OWNER="HotelGuest",PAPER="HotelPaper";
+    public static final String WORLD_STATE="hotel_world_0437";
+    public static final int DEATH_HISTORY=16,PET_HISTORY=52,GRAVE_LIMIT=52;
     public static final int REST_TICKS=80;public static final long BOILER_LIMIT=72000;
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private HotelVignette(){}
-    public static CompoundTag personal(LabyrinthData d,UUID id){return d.stateEntry(STATE,id.toString());}
-    public static void save(LabyrinthData d,UUID id,CompoundTag t){var all=d.state(STATE);all.put(id.toString(),t.copy());d.setState(STATE,all);}
+    public static CompoundTag personal(LabyrinthData d,UUID id){
+        var own=d.stateEntry(STATE,id.toString());
+        boolean changed=trimHistory(own,"Deaths",DEATH_HISTORY)|trimHistory(own,"LostPets",PET_HISTORY);
+        if(changed)d.setStateEntry(STATE,id.toString(),own);return own;
+    }
+    private static boolean trimHistory(CompoundTag own,String key,int limit){
+        var list=own.getList(key,Tag.TAG_COMPOUND);int before=list.size();
+        if(before<=limit)return false;
+        own.putLong(key+"Total",Math.max(own.getLong(key+"Total"),before));
+        while(list.size()>limit)list.remove(0);own.put(key,list);return true;
+    }
+    public static void save(LabyrinthData d,UUID id,CompoundTag t){d.setStateEntry(STATE,id.toString(),t);}
+    /** Move shared scenery away from every guest's exact saved belongings, once per world. */
+    public static CompoundTag world(LabyrinthData d){
+        var world=d.state(WORLD_STATE);if(world.getBoolean("Migrated"))return world;
+        var legacy=d.state(STATE);
+        for(var key:new ArrayList<>(legacy.getAllKeys())){
+            try{UUID.fromString(key);continue;}catch(IllegalArgumentException ignored){}
+            world.put(key,legacy.get(key).copy());legacy.remove(key);
+        }
+        if(world.getInt("Graves")>=GRAVE_LIMIT){
+            world.putInt("Graves",GRAVE_LIMIT);
+            for(var key:new ArrayList<>(world.getAllKeys()))if(key.startsWith("Grave_"))world.remove(key);
+        }
+        world.putBoolean("Migrated",true);d.setState(STATE,legacy);saveWorld(d,world);return world;
+    }
+    public static void saveWorld(LabyrinthData d,CompoundTag world){d.setState(WORLD_STATE,world);}
     private static boolean participant(ServerPlayer p){return p.isAlive()&&p.gameMode.getGameModeForPlayer()!=GameType.SPECTATOR&&!FinaleProgress.terminal(FinaleProgress.phase(p.server,p.getUUID()));}
     public static boolean inside(ServerPlayer p,LabyrinthPlace place){var b=IndianLakeRooms.base(p.server,place);return participant(p)&&b!=null&&p.level().dimension().equals(NovelRooms.dimension(place))&&IndianLakeRooms.bounds(b,place).contains(p.position());}
     public static @Nullable LabyrinthPlace current(ServerPlayer p){for(var place:List.of(LabyrinthPlace.HOTEL,LabyrinthPlace.HOTEL_GROUNDS,LabyrinthPlace.HOTEL_HALLWAY))if(inside(p,place))return place;return null;}
@@ -52,6 +79,10 @@ public final class HotelVignette {
     private static void reward(ServerPlayer p,CompoundTag own,String key,ItemStack s){if(own.getBoolean("Given_"+key))return;own.putBoolean("Given_"+key,true);give(p,snapshot(p,own,key,s));}
     public static boolean ready(CompoundTag t){return t.getBoolean("Dinner")&&t.getBoolean("Rested")&&t.getBoolean("Drank")&&t.getBoolean("Photographed")&&t.getBoolean("MasterKey")&&t.getBoolean("Read_Log")&&t.getBoolean("Read_Housekeeping")&&t.getBoolean("Maintained")&&t.getInt("Debt")==0;}
     private static void openPaper(ServerPlayer p,String key,ItemStack book,boolean ending){var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID());var original=snapshot(p,own,key,book);save(d,p.getUUID(),own);p.openMenu(new SimpleMenuProvider((id,inv,who)->new Pages(id,p,original,key,ending,true,true),original.getHoverName()));}
+    private static void openCemetery(ServerPlayer p,CompoundTag own,ItemStack current){
+        var d=LabyrinthData.get(p.server);snapshot(p,own,"Cemetery",current);save(d,p.getUUID(),own);
+        p.openMenu(new SimpleMenuProvider((id,inv,who)->new Pages(id,p,marked(p,current,"Cemetery"),"Cemetery",false,true,true),current.getHoverName()));
+    }
     public static void readCollected(ServerPlayer p,ItemStack original){var data=original.get(DataComponents.CUSTOM_DATA);if(data==null||!original.has(DataComponents.WRITTEN_BOOK_CONTENT))return;var tag=data.copyTag();boolean owned=tag.hasUUID(OWNER)&&tag.getUUID(OWNER).equals(p.getUUID());String key=tag.getString(PAPER);p.openMenu(new SimpleMenuProvider((id,inv,who)->new Pages(id,p,original.copy(),key,key.equals("Account"),owned,false),original.getHoverName()));}
     public static final class Pages extends LecternMenu {
         private final ServerPlayer reader;private final ItemStack original;private final String key;private final boolean ending,owned,surface;
@@ -59,7 +90,7 @@ public final class HotelVignette {
         private static Container bookContainer(ItemStack s){var c=new SimpleContainer(1);c.setItem(0,s.copy());return c;}
         public ItemStack book(){return original.copy();}
         @Override public boolean clickMenuButton(Player player,int button){if(player!=reader||!participant(reader)||(surface&&current(reader)==null))return false;var d=LabyrinthData.get(reader.server);var own=personal(d,reader.getUUID());
-            if(button==3){if(!owned||!surface||own.getBoolean("Taken_"+key))return false;own.putBoolean("Taken_"+key,true);save(d,reader.getUUID(),own);give(reader,original.copy());return true;}
+            if(button==3){if(!owned||!surface||own.getBoolean("Taken_"+key))return false;own.putBoolean("Taken_"+key,true);save(d,reader.getUUID(),own);give(reader,key.equals("Cemetery")?ItemStack.parseOptional(reader.registryAccess(),own.getCompound("Original_Cemetery")):original.copy());return true;}
             if(!super.clickMenuButton(player,button))return false;if(owned&&getPage()==original.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()-1){own.putBoolean("Read_"+key,true);if(ending&&inside(reader,LabyrinthPlace.HOTEL)&&ready(own)){WitnessAccount.resolve(reader,WitnessAccount.Story.HOTEL,"read_the_settled_account");d.setCompleted("hotel",true);own.putBoolean("ClosedAccount",true);}save(d,reader.getUUID(),own);}return true;
         }
     }
@@ -81,7 +112,7 @@ public final class HotelVignette {
             property.setItem(free,one);property.persist();s.shrink(1);p.getInventory().setChanged();own=personal(d,p.getUUID());own.putInt("Debt",Math.max(0,own.getInt("Debt")-1));save(d,p.getUUID(),own);p.displayClientMessage(Component.literal("One place on the hotel tab is settled. The desk holds the missing item."),false);return true;}
         return false;
     }
-    public static boolean drink(ServerPlayer p){if(!inside(p,LabyrinthPlace.HOTEL))return false;var b=IndianLakeRooms.base(p.server,LabyrinthPlace.HOTEL);if(p.getX()>b.getX()-16||p.getZ()<b.getZ()-29)return false;var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID());if(own.getInt("Debt")>=256)return false;own.putInt("Debt",own.getInt("Debt")+1);own.putBoolean("Drank",true);save(d,p.getUUID(),own);var world=d.state(STATE);world.putBoolean("GuestsArrived",true);d.setState(STATE,world);p.heal(4);p.getFoodData().eat(2,.2F);return true;}
+    public static boolean drink(ServerPlayer p){if(!inside(p,LabyrinthPlace.HOTEL))return false;var b=IndianLakeRooms.base(p.server,LabyrinthPlace.HOTEL);if(p.getX()>b.getX()-16||p.getZ()<b.getZ()-29)return false;var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID());if(own.getInt("Debt")>=256)return false;own.putInt("Debt",own.getInt("Debt")+1);own.putBoolean("Drank",true);save(d,p.getUUID(),own);var world=world(d);world.putBoolean("GuestsArrived",true);saveWorld(d,world);p.heal(4);p.getFoodData().eat(2,.2F);return true;}
     public static void talk(ServerPlayer p,HotelActor actor){if(!inside(p,LabyrinthPlace.HOTEL)||p.distanceToSqr(actor)>36)return;var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID());
         if(actor.role()==0){p.displayClientMessage(Component.literal("The desk: Your property is labelled. Crouch at the desk to collect it. Otherwise, read your account."),false);return;}
         if(actor.role()==1){long now=p.serverLevel().getGameTime();if(now-own.getLong("LastDrink")<40&&own.contains("LastDrink"))return;own.putLong("LastDrink",now);give(p,new ItemStack(HotelRegistry.DRINK.get()));save(d,p.getUUID(),own);p.displayClientMessage(Component.literal("The bartender: Complimentary. Drink here; it goes on your tab."),false);return;}
@@ -89,9 +120,9 @@ public final class HotelVignette {
             else{var death=deaths.getCompound(deaths.size()-1);p.displayClientMessage(Component.literal("The scarred guest: They say "+death.getString("Name")+" died from "+death.getString("Cause")+". I heard it was "+(actor.role()==2?"a fall from the bandstand":"a walk into the frozen hedges")+". They always change the room."),false);}return;}
         p.displayClientMessage(Component.literal(actor.role()==3?"The pianist: The second place has been kept all season.":"The dancer's hand passes through yours. The music continues."),false);
     }
-    public static boolean hotelBed(Level level,BlockPos at){if(!level.dimension().equals(HouseDimensions.INTERIOR)||level.getServer()==null)return false;var b=IndianLakeRooms.base(level.getServer(),LabyrinthPlace.HOTEL);return b!=null&&(at.equals(b.offset(HotelRooms.BED))||at.equals(b.offset(HotelRooms.BED.relative(Direction.NORTH))))&&level.getBlockState(at).getBlock() instanceof BedBlock&&!LabyrinthData.get(level.getServer()).state(STATE).getBoolean("Cold");}
+    public static boolean hotelBed(Level level,BlockPos at){if(!level.dimension().equals(HouseDimensions.INTERIOR)||level.getServer()==null)return false;var b=IndianLakeRooms.base(level.getServer(),LabyrinthPlace.HOTEL);return b!=null&&(at.equals(b.offset(HotelRooms.BED))||at.equals(b.offset(HotelRooms.BED.relative(Direction.NORTH))))&&level.getBlockState(at).getBlock() instanceof BedBlock&&!world(LabyrinthData.get(level.getServer())).getBoolean("Cold");}
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p){var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID());if(own.getInt("RestTicks")>0){own.remove("RestTicks");save(d,p.getUUID(),own);if(p.isSleeping())p.stopSleepInBed(true,false);}}}
-    public static boolean rest(ServerPlayer p){if(!inside(p,LabyrinthPlace.HOTEL))return false;var b=IndianLakeRooms.base(p.server,LabyrinthPlace.HOTEL);if(p.distanceToSqr(b.offset(HotelRooms.BED).getCenter())>16)return false;var d=LabyrinthData.get(p.server);if(d.state(STATE).getBoolean("Cold")){p.displayClientMessage(Component.literal("The sheets are freezing. Restart the heating plant."),true);return false;}
+    public static boolean rest(ServerPlayer p){if(!inside(p,LabyrinthPlace.HOTEL))return false;var b=IndianLakeRooms.base(p.server,LabyrinthPlace.HOTEL);if(p.distanceToSqr(b.offset(HotelRooms.BED).getCenter())>16)return false;var d=LabyrinthData.get(p.server);if(world(d).getBoolean("Cold")){p.displayClientMessage(Component.literal("The sheets are freezing. Restart the heating plant."),true);return false;}
         var own=personal(d,p.getUUID());if(!own.getString("Here").equals("hotel")){onArrive(p,LabyrinthPlace.HOTEL);own=personal(d,p.getUUID());}if(own.getBoolean("Rested")){var c=new Property(p,"Drawers");int empty=0,occupied=0;for(int i=0;i<54;i++)if(c.getItem(i).isEmpty())empty++;for(var s:p.getInventory().items)if(!s.isEmpty())occupied++;if(empty<occupied){p.displayClientMessage(Component.literal("Empty enough drawer space before resting again."),true);return false;}}
         var head=b.offset(HotelRooms.BED.relative(Direction.NORTH));if(p.serverLevel().players().stream().anyMatch(other->other!=p&&other.isSleeping()&&other.getSleepingPos().filter(head::equals).isPresent()))return false;
         if(p.startSleepInBed(head).left().isPresent())return false;
@@ -103,35 +134,35 @@ public final class HotelVignette {
         else{var items=new ArrayList<ItemStack>(p.getInventory().items);items.sort(java.util.Comparator.comparing((ItemStack s)->s.isEmpty()?"~":net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(s.getItem()).toString()).thenComparing(s->s.getHoverName().getString()));for(int i=0;i<items.size();i++)p.getInventory().items.set(i,items.get(i));}
         p.getInventory().setChanged();var d=LabyrinthData.get(p.server);own=personal(d,p.getUUID());own.putBoolean("Rested",true);own.remove("RestTicks");save(d,p.getUUID(),own);
         var b=IndianLakeRooms.base(p.server,LabyrinthPlace.HOTEL);var candle=p.serverLevel().getBlockState(b.offset(7,6,-23));if(candle.is(Blocks.CANDLE))p.serverLevel().setBlock(b.offset(7,6,-23),candle.setValue(CandleBlock.LIT,false),F);
-        var placements=own.getList("Torches",Tag.TAG_COMPOUND);var returnedPositions=new HashSet<BlockPos>();var world=d.state(STATE);var owners=world.getCompound("TorchOwners");int returned=0;
+        var placements=own.getList("Torches",Tag.TAG_COMPOUND);var returnedPositions=new HashSet<BlockPos>();var world=world(d);var owners=world.getCompound("TorchOwners");int returned=0;
         for(var raw:placements){var row=(CompoundTag)raw;var at=BlockPos.of(row.getLong("At"));String key=Long.toString(at.asLong());var s=p.serverLevel().getBlockState(at);
             if(owners.hasUUID(key)&&owners.getUUID(key).equals(p.getUUID())){owners.remove(key);if(returnedPositions.add(at)&&isTorch(s)){p.serverLevel().setBlock(at,Blocks.AIR.defaultBlockState(),F);returned++;}}}
-        world.put("TorchOwners",owners);d.setState(STATE,world);own.remove("Torches");save(d,p.getUUID(),own);if(returned>0)give(p,new ItemStack(Items.TORCH,returned));p.displayClientMessage(Component.literal("The bed is made. Check your pockets and your drawers."),false);
+        world.put("TorchOwners",owners);saveWorld(d,world);own.remove("Torches");save(d,p.getUUID(),own);if(returned>0)give(p,new ItemStack(Items.TORCH,returned));p.displayClientMessage(Component.literal("The bed is made. Check your pockets and your drawers."),false);
     }
     private static boolean isTorch(net.minecraft.world.level.block.state.BlockState s){return s.is(Blocks.TORCH)||s.is(Blocks.WALL_TORCH);}
     public static boolean allowsTorchPlacing(Level l,BlockPos at,net.minecraft.world.level.block.state.BlockState s){if(l.getServer()==null||!l.dimension().equals(HouseDimensions.INTERIOR)||!isTorch(s))return false;var b=IndianLakeRooms.base(l.getServer(),LabyrinthPlace.HOTEL);if(b==null)return false;var r=at.subtract(b);return r.getY()>=5&&r.getY()<=8&&Math.abs(r.getX())<=9&&r.getZ()>=-25&&r.getZ()<=-7;}
-    public static boolean mayBreakTorch(ServerLevel l,BlockPos at,Player p){if(!allowsTorchPlacing(l,at,l.getBlockState(at)))return false;var owners=LabyrinthData.get(l.getServer()).state(STATE).getCompound("TorchOwners");String key=Long.toString(at.asLong());return owners.hasUUID(key)&&owners.getUUID(key).equals(p.getUUID());}
-    @SubscribeEvent(priority=EventPriority.LOWEST) public static void broken(BlockEvent.BreakEvent e){if(e.isCanceled()||!(e.getLevel() instanceof ServerLevel l)||!allowsTorchPlacing(l,e.getPos(),e.getState()))return;var d=LabyrinthData.get(l.getServer());var world=d.state(STATE);var owners=world.getCompound("TorchOwners");owners.remove(Long.toString(e.getPos().asLong()));world.put("TorchOwners",owners);d.setState(STATE,world);}
+    public static boolean mayBreakTorch(ServerLevel l,BlockPos at,Player p){if(!allowsTorchPlacing(l,at,l.getBlockState(at)))return false;var owners=world(LabyrinthData.get(l.getServer())).getCompound("TorchOwners");String key=Long.toString(at.asLong());return owners.hasUUID(key)&&owners.getUUID(key).equals(p.getUUID());}
+    @SubscribeEvent(priority=EventPriority.LOWEST) public static void broken(BlockEvent.BreakEvent e){if(e.isCanceled()||!(e.getLevel() instanceof ServerLevel l)||!allowsTorchPlacing(l,e.getPos(),e.getState()))return;var d=LabyrinthData.get(l.getServer());var world=world(d);var owners=world.getCompound("TorchOwners");owners.remove(Long.toString(e.getPos().asLong()));world.put("TorchOwners",owners);saveWorld(d,world);}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void placed(BlockEvent.EntityPlaceEvent e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!inside(p,LabyrinthPlace.HOTEL)||!allowsTorchPlacing(p.serverLevel(),e.getPos(),e.getPlacedBlock()))return;
-        var d=LabyrinthData.get(p.server);var world=d.state(STATE);var owners=world.getCompound("TorchOwners");owners.putUUID(Long.toString(e.getPos().asLong()),p.getUUID());world.put("TorchOwners",owners);d.setState(STATE,world);
+        var d=LabyrinthData.get(p.server);var world=world(d);var owners=world.getCompound("TorchOwners");owners.putUUID(Long.toString(e.getPos().asLong()),p.getUUID());world.put("TorchOwners",owners);saveWorld(d,world);
         var own=personal(d,p.getUUID());var list=own.getList("Torches",Tag.TAG_COMPOUND);for(int i=list.size()-1;i>=0;i--)if(list.getCompound(i).getLong("At")==e.getPos().asLong())list.remove(i);var row=new CompoundTag();row.putLong("At",e.getPos().asLong());list.add(row);own.put("Torches",list);save(d,p.getUUID(),own);
     }
     public static int pressure(CompoundTag world,long now){return !world.getBoolean("PlantFound")||world.getBoolean("Cold")?0:(int)Math.min(3,Math.max(0,now-world.getLong("VentedAt"))/24000);}
-    public static void maintain(ServerPlayer p,boolean restart){if(!inside(p,LabyrinthPlace.HOTEL))return;var b=IndianLakeRooms.base(p.server,LabyrinthPlace.HOTEL);if(p.distanceToSqr(b.offset(restart?HotelRooms.RESTART:HotelRooms.VALVE).getCenter())>36)return;var d=LabyrinthData.get(p.server);var world=d.state(STATE);if(!world.getBoolean("PlantFound"))return;if(world.getBoolean("Cold")&&!restart)return;world.putBoolean("Cold",false);world.putLong("VentedAt",p.serverLevel().getGameTime());d.setState(STATE,world);var own=personal(d,p.getUUID());own.putBoolean("Maintained",true);save(d,p.getUUID(),own);p.serverLevel().playSound(null,b.offset(HotelRooms.BOILER),SoundEvents.FIRE_EXTINGUISH,SoundSource.BLOCKS,.8F,.55F);p.serverLevel().setBlock(b.offset(HotelRooms.FIRE),Blocks.CAMPFIRE.defaultBlockState(),F);}
-    public static void plantTick(ServerLevel l,BlockPos b,long now){var d=LabyrinthData.get(l.getServer());var world=d.state(STATE);if(!world.getBoolean("PlantFound"))return;int pressure=pressure(world,now);var at=b.offset(HotelRooms.GAUGE);var s=l.getBlockState(at);if(s.is(HotelRegistry.PROP.get())&&s.getValue(HotelPropBlock.PRESSURE)!=pressure)l.setBlock(at,s.setValue(HotelPropBlock.PRESSURE,pressure),F);
-        if(world.getBoolean("Cold")||now-world.getLong("VentedAt")<BOILER_LIMIT)return;world.putBoolean("Cold",true);world.putInt("Blasts",world.getInt("Blasts")+1);d.setState(STATE,world);var fire=b.offset(HotelRooms.FIRE);if(l.getBlockState(fire).is(Blocks.CAMPFIRE))l.setBlock(fire,l.getBlockState(fire).setValue(CampfireBlock.LIT,false),F);
+    public static void maintain(ServerPlayer p,boolean restart){if(!inside(p,LabyrinthPlace.HOTEL))return;var b=IndianLakeRooms.base(p.server,LabyrinthPlace.HOTEL);if(p.distanceToSqr(b.offset(restart?HotelRooms.RESTART:HotelRooms.VALVE).getCenter())>36)return;var d=LabyrinthData.get(p.server);var world=world(d);if(!world.getBoolean("PlantFound"))return;if(world.getBoolean("Cold")&&!restart)return;world.putBoolean("Cold",false);world.putLong("VentedAt",p.serverLevel().getGameTime());saveWorld(d,world);var own=personal(d,p.getUUID());own.putBoolean("Maintained",true);save(d,p.getUUID(),own);p.serverLevel().playSound(null,b.offset(HotelRooms.BOILER),SoundEvents.FIRE_EXTINGUISH,SoundSource.BLOCKS,.8F,.55F);p.serverLevel().setBlock(b.offset(HotelRooms.FIRE),Blocks.CAMPFIRE.defaultBlockState(),F);}
+    public static void plantTick(ServerLevel l,BlockPos b,long now){var d=LabyrinthData.get(l.getServer());var world=world(d);if(!world.getBoolean("PlantFound"))return;int pressure=pressure(world,now);var at=b.offset(HotelRooms.GAUGE);var s=l.getBlockState(at);if(s.is(HotelRegistry.PROP.get())&&s.getValue(HotelPropBlock.PRESSURE)!=pressure)l.setBlock(at,s.setValue(HotelPropBlock.PRESSURE,pressure),F);
+        if(world.getBoolean("Cold")||now-world.getLong("VentedAt")<BOILER_LIMIT)return;world.putBoolean("Cold",true);world.putInt("Blasts",world.getInt("Blasts")+1);saveWorld(d,world);var fire=b.offset(HotelRooms.FIRE);if(l.getBlockState(fire).is(Blocks.CAMPFIRE))l.setBlock(fire,l.getBlockState(fire).setValue(CampfireBlock.LIT,false),F);
         var room=new AABB(Vec3.atLowerCornerOf(b.offset(-9,-5,-64)),Vec3.atLowerCornerOf(b.offset(10,-1,-49)));for(var item:l.getEntitiesOfClass(ItemEntity.class,room))item.setRemainingFireTicks(100);for(var p:l.players())if(room.contains(p.position())&&participant(p)){p.hurt(l.damageSources().hotFloor(),4);p.setRemainingFireTicks(40);}l.playSound(null,b.offset(HotelRooms.BOILER),SoundEvents.GENERIC_EXPLODE.value(),SoundSource.BLOCKS,1,.55F);
     }
-    private static void cast(ServerLevel l,BlockPos b){var d=LabyrinthData.get(l.getServer());var all=d.state(STATE);int[][] positions={{4,-1},{-26,-18},{-19,-23},{-6,-25},{20,-30},{-21,-12}};for(int i=0;i<6;i++){if(i==3)continue;if((i==2||i==5)&&!all.getBoolean("GuestsArrived"))continue;if(i==4&&!all.getBoolean("DancersMade"))continue;String key="Actor"+i;if(all.hasUUID(key))continue;var actor=HotelRegistry.ACTOR.get().create(l);if(actor==null)return;actor.appearance(i==4?3:i==5?4:i,false);actor.moveTo(b.getX()+positions[i][0]+.5,b.getY()+(i==4?1:0),b.getZ()+positions[i][1]+.5,i==4?180:i==1?-90:90,0);if(l.addFreshEntity(actor)){all.putUUID(key,actor.getUUID());d.setState(STATE,all);}}
-        if(!all.hasUUID("Hose")){var hose=HotelRegistry.HOSE.get().create(l);if(hose!=null){hose.moveTo(b.getX()+1.5,b.getY()+5,b.getZ()-5.5,180,0);if(l.addFreshEntity(hose)){all.putUUID("Hose",hose.getUUID());d.setState(STATE,all);}}}
+    private static void cast(ServerLevel l,BlockPos b){var d=LabyrinthData.get(l.getServer());var all=world(d);int[][] positions={{4,-1},{-26,-18},{-19,-23},{-6,-25},{20,-30},{-21,-12}};for(int i=0;i<6;i++){if(i==3)continue;if((i==2||i==5)&&!all.getBoolean("GuestsArrived"))continue;if(i==4&&!all.getBoolean("DancersMade"))continue;String key="Actor"+i;if(all.hasUUID(key))continue;var actor=HotelRegistry.ACTOR.get().create(l);if(actor==null)return;actor.appearance(i==4?3:i==5?4:i,false);actor.moveTo(b.getX()+positions[i][0]+.5,b.getY()+(i==4?1:0),b.getZ()+positions[i][1]+.5,i==4?180:i==1?-90:90,0);if(l.addFreshEntity(actor)){all.putUUID(key,actor.getUUID());saveWorld(d,all);}}
+        if(!all.hasUUID("Hose")){var hose=HotelRegistry.HOSE.get().create(l);if(hose!=null){hose.moveTo(b.getX()+1.5,b.getY()+5,b.getZ()-5.5,180,0);if(l.addFreshEntity(hose)){all.putUUID("Hose",hose.getUUID());saveWorld(d,all);}}}
     }
     public static void photograph(ServerPlayer p){if(!inside(p,LabyrinthPlace.HOTEL))return;var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID());if(own.getBoolean("Photographed"))return;var b=IndianLakeRooms.base(p.server,LabyrinthPlace.HOTEL);var rel=p.position().subtract(Vec3.atLowerCornerOf(b));if(rel.x<16||rel.x>25||rel.z<-29||rel.z>-12||rel.y>2)return;own.putBoolean("Photographed",true);var card=new ItemStack(HotelRegistry.PHOTOGRAPH.get());card.set(DataComponents.PROFILE,new ResolvableProfile(p.getGameProfile()));card.set(DataComponents.CUSTOM_NAME,Component.literal("Closing night — "+p.getGameProfile().getName()));reward(p,own,"Photo",card);save(d,p.getUUID(),own);
         var at=b.offset(27,2,-20);p.serverLevel().setBlock(at,Blocks.PLAYER_WALL_HEAD.defaultBlockState().setValue(WallSkullBlock.FACING,Direction.WEST),F);if(p.serverLevel().getBlockEntity(at) instanceof SkullBlockEntity skull)skull.setOwner(new ResolvableProfile(p.getGameProfile()));
-        var world=d.state(STATE);if(!world.getBoolean("DancersMade")){for(int i=0;i<6;i++){var actor=HotelRegistry.ACTOR.get().create(p.serverLevel());if(actor!=null){actor.appearance(4+i%2,true);actor.moveTo(b.getX()+17+(i%3)*3,b.getY(),b.getZ()-24+(i/3)*5,i%2==0?90:-90,0);if(p.serverLevel().addFreshEntity(actor))world.putUUID("Dancer"+i,actor.getUUID());}}world.putBoolean("DancersMade",true);d.setState(STATE,world);}HousePackets.send(p,new HotelAtmospherePayload(0,b.offset(HotelRooms.PHOTO),false,8));
+        var world=world(d);if(!world.getBoolean("DancersMade")){for(int i=0;i<6;i++){var actor=HotelRegistry.ACTOR.get().create(p.serverLevel());if(actor!=null){actor.appearance(4+i%2,true);actor.moveTo(b.getX()+17+(i%3)*3,b.getY(),b.getZ()-24+(i/3)*5,i%2==0?90:-90,0);if(p.serverLevel().addFreshEntity(actor))world.putUUID("Dancer"+i,actor.getUUID());}}world.putBoolean("DancersMade",true);saveWorld(d,world);}HousePackets.send(p,new HotelAtmospherePayload(0,b.offset(HotelRooms.PHOTO),false,8));
     }
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void click(PlayerInteractEvent.RightClickBlock e){if(!(e.getEntity() instanceof ServerPlayer p)||e.getHand()!=InteractionHand.MAIN_HAND)return;var place=current(p);if(place==null||p.distanceToSqr(e.getPos().getCenter())>36)return;var b=IndianLakeRooms.base(p.server,place);var rel=e.getPos().subtract(b);boolean handled=false;var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID());
         if(place==LabyrinthPlace.HOTEL_GROUNDS){if(rel.equals(HotelRooms.KEY.below())){own.putBoolean("MasterKey",true);reward(p,own,"Key",new ItemStack(HotelRegistry.MASTER_KEY.get()));save(d,p.getUUID(),own);p.displayClientMessage(Component.literal("The master key was warm under the snow."),false);handled=true;}
-            else if(e.getLevel().getBlockState(e.getPos()).is(HotelRegistry.PROP.get())&&e.getLevel().getBlockState(e.getPos()).getValue(HotelPropBlock.KIND)==HotelPropBlock.Kind.HEADSTONE){var pages=new ArrayList<String>();for(var raw:own.getList("LostPets",Tag.TAG_COMPOUND))pages.add(((CompoundTag)raw).getString("Name"));if(pages.isEmpty())pages.add("No name of a lost tamed companion has been entered for this guest.");openPaper(p,"Cemetery_"+own.getList("LostPets",Tag.TAG_COMPOUND).size(),HouseWriting.book("Names in the snow","The groundskeeper",HouseWriting.WritingStyle.PLAIN,pages),false);handled=true;}}
+            else if(e.getLevel().getBlockState(e.getPos()).is(HotelRegistry.PROP.get())&&e.getLevel().getBlockState(e.getPos()).getValue(HotelPropBlock.KIND)==HotelPropBlock.Kind.HEADSTONE){var pages=new ArrayList<String>();for(var raw:own.getList("LostPets",Tag.TAG_COMPOUND))pages.add(((CompoundTag)raw).getString("Name"));if(pages.isEmpty())pages.add("No name of a lost tamed companion has been entered for this guest.");openCemetery(p,own,HouseWriting.book("Names in the snow","The groundskeeper",HouseWriting.WritingStyle.PLAIN,pages));handled=true;}}
         else if(place==LabyrinthPlace.HOTEL){
             if(rel.equals(HotelRooms.DESK)){if(p.isShiftKeyDown())openProperty(p,false);else{boolean ready=ready(own);openPaper(p,ready?"Account":"AccountPreview",HotelTexts.account(p.getGameProfile().getName(),own.getInt("Debt"),ready),ready);}handled=true;}
             else if(rel.equals(HotelRooms.DRAWER)){openProperty(p,true);handled=true;}
@@ -148,41 +179,66 @@ public final class HotelVignette {
             else if(rel.equals(HotelRooms.PATCH)){p.serverLevel().setBlock(e.getPos(),Blocks.AIR.defaultBlockState(),F);handled=true;}
         }if(handled){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);}
     }
-    @SubscribeEvent(priority=EventPriority.LOWEST) public static void death(LivingDeathEvent e){if(!(e.getEntity().level() instanceof ServerLevel l))return;UUID id=null;String key=null;if(e.getEntity() instanceof ServerPlayer p){id=p.getUUID();key="Deaths";}else if(e.getEntity() instanceof TamableAnimal t&&t.isTame()&&t.getOwnerUUID()!=null&&!t.getTags().contains(MotherOfStrays.PET)){id=t.getOwnerUUID();key="LostPets";}if(id==null)return;var d=LabyrinthData.get(l.getServer());var own=personal(d,id);var list=own.getList(key,Tag.TAG_COMPOUND);var row=new CompoundTag();row.putUUID("Entity",e.getEntity().getUUID());row.putString("Name",e.getEntity().getName().getString());row.putString("Cause",e.getSource().getMsgId());row.putLong("At",l.getGameTime());list.add(row);own.put(key,list);save(d,id,own);}
+    @SubscribeEvent(priority=EventPriority.LOWEST) public static void death(LivingDeathEvent e){
+        if(e.isCanceled()||!(e.getEntity().level() instanceof ServerLevel l)||e.getEntity().getTags().contains(LiteraryCopies.PROJECTION))return;
+        UUID id=null;String key=null;
+        if(e.getEntity() instanceof ServerPlayer p){id=p.getUUID();key="Deaths";}
+        else if(e.getEntity() instanceof TamableAnimal t&&t.isTame()&&t.getOwnerUUID()!=null&&!t.getTags().contains(MotherOfStrays.PET)){id=t.getOwnerUUID();key="LostPets";}
+        if(id==null)return;var d=LabyrinthData.get(l.getServer());var own=personal(d,id);var list=own.getList(key,Tag.TAG_COMPOUND);
+        var row=new CompoundTag();row.putUUID("Entity",e.getEntity().getUUID());row.putString("Name",e.getEntity().getName().getString());row.putString("Cause",e.getSource().getMsgId());row.putLong("At",l.getGameTime());list.add(row);
+        own.putLong(key+"Total",Math.max(own.getLong(key+"Total"),list.size()-1L)+1);
+        while(list.size()>(key.equals("Deaths")?DEATH_HISTORY:PET_HISTORY))list.remove(0);
+        own.put(key,list);save(d,id,own);
+    }
+    /** Legacy overflow labels clean up only their own loaded headstone and support. */
+    private static void boundGrave(Entity label){
+        if(!label.getTags().contains("HotelGrave")||!(label.level() instanceof ServerLevel level)||!level.dimension().equals(HouseDimensions.OUTSIDE))return;
+        var b=IndianLakeRooms.base(level.getServer(),LabyrinthPlace.HOTEL_GROUNDS);if(b==null)return;
+        var rel=label.position().subtract(Vec3.atLowerCornerOf(b));
+        if(rel.x>=-23.5&&rel.x<=24.5&&rel.z>=-67.5&&rel.z<=-58.5)return;
+        var at=BlockPos.containing(label.getX(),label.getY()-1.8,label.getZ());var state=level.getBlockState(at);
+        if(state.is(HotelRegistry.PROP.get())&&state.getValue(HotelPropBlock.KIND)==HotelPropBlock.Kind.HEADSTONE){
+            level.setBlock(at,Blocks.AIR.defaultBlockState(),F);
+            if(level.getBlockState(at.below()).is(Blocks.GRAVEL))level.setBlock(at.below(),Blocks.AIR.defaultBlockState(),F);
+        }
+        label.discard();
+    }
+    @SubscribeEvent(priority=EventPriority.LOWEST) public static void graveLoaded(net.neoforged.neoforge.event.entity.EntityJoinLevelEvent e){if(!e.isCanceled()){boundGrave(e.getEntity());if(e.getEntity().getTags().contains("HotelGrave")&&e.getEntity().isRemoved())e.setCanceled(true);}}
     private static void garden(ServerPlayer p,BlockPos b){
-        var d=LabyrinthData.get(p.server);var world=d.state(STATE);var l=p.serverLevel();
+        var d=LabyrinthData.get(p.server);var world=world(d);var l=p.serverLevel();
         int[][] form={{0,0,0},{1,0,0},{2,0,0},{0,-1,0},{2,-1,0},{2,1,0},{3,1,0}};
         for(int group=0;group<4;group++)for(int part=0;part<form.length;part++){
             String key="Topiary"+group+"_"+part;if(world.hasUUID(key))continue;var display=EntityType.BLOCK_DISPLAY.create(l);if(display==null)continue;
             var tag=new CompoundTag();display.saveWithoutId(tag);tag.put("block_state",NbtUtils.writeBlockState(Blocks.OAK_LEAVES.defaultBlockState()));display.load(tag);
             display.moveTo(b.getX()+17+(group%2)*5+form[part][0],b.getY()+1+form[part][1],b.getZ()-12-(group/2)*10);display.addTag("HotelTopiary");
-            if(l.addFreshEntity(display)){world.putUUID(key,display.getUUID());d.setState(STATE,world);}
+            if(l.addFreshEntity(display)){world.putUUID(key,display.getUUID());saveWorld(d,world);}
         }
         if(l.getGameTime()%80==0)for(int group=0;group<4;group++){
             var pieces=new ArrayList<Entity>();for(int part=0;part<form.length;part++){String key="Topiary"+group+"_"+part;if(world.hasUUID(key)&&l.getEntity(world.getUUID(key))!=null)pieces.add(l.getEntity(world.getUUID(key)));}
             boolean seen=l.players().stream().filter(Player::isAlive).anyMatch(w->pieces.stream().anyMatch(a->HouseWatchers.sees(w,a.position().add(.5,.5,.5))));
-            if(!seen){boolean turn=!world.getBoolean("TopiaryPose"+group);for(int part=0;part<pieces.size();part++){var a=pieces.get(part);double x=b.getX()+17+(group%2)*5+(turn?3-form[part][0]:form[part][0]);a.moveTo(x,b.getY()+1+form[part][1],b.getZ()-12-(group/2)*10+(turn?1:0));}world.putBoolean("TopiaryPose"+group,turn);d.setState(STATE,world);}
+            if(!seen){boolean turn=!world.getBoolean("TopiaryPose"+group);for(int part=0;part<pieces.size();part++){var a=pieces.get(part);double x=b.getX()+17+(group%2)*5+(turn?3-form[part][0]:form[part][0]);a.moveTo(x,b.getY()+1+form[part][1],b.getZ()-12-(group/2)*10+(turn?1:0));}world.putBoolean("TopiaryPose"+group,turn);saveWorld(d,world);}
         }
-        var own=personal(d,p.getUUID());int plot=world.getInt("Graves");
+        if(l.getGameTime()%20==0)for(var entity:List.copyOf(l.getEntitiesOfClass(Display.TextDisplay.class,new AABB(b).inflate(256),a->a.getTags().contains("HotelGrave"))))boundGrave(entity);
+        var own=personal(d,p.getUUID());int plot=Math.min(GRAVE_LIMIT,world.getInt("Graves"));
         for(var raw:own.getList("LostPets",Tag.TAG_COMPOUND)){
-            var pet=(CompoundTag)raw;String key="Grave_"+pet.getUUID("Entity");if(world.getBoolean(key))continue;
+            if(plot>=GRAVE_LIMIT)break;var pet=(CompoundTag)raw;String key="Grave_"+pet.getUUID("Entity");if(world.getBoolean(key))continue;
             int x=-24+(plot%13)*4,z=-59-(plot/13)*3;var at=b.offset(x,0,z);
             l.setBlock(at.below(),Blocks.GRAVEL.defaultBlockState(),F);l.setBlock(at,HotelRegistry.PROP.get().defaultBlockState().setValue(HotelPropBlock.KIND,HotelPropBlock.Kind.HEADSTONE),F);
             var name=EntityType.TEXT_DISPLAY.create(l);if(name!=null){var tag=new CompoundTag();name.saveWithoutId(tag);tag.putString("text",Component.Serializer.toJson(Component.literal(pet.getString("Name")),l.registryAccess()));tag.putString("billboard","center");tag.putInt("background",0);tag.putInt("line_width",90);name.load(tag);name.moveTo(at.getX()+.5,at.getY()+1.8,at.getZ()+.5);name.addTag("HotelGrave");if(l.addFreshEntity(name))world.putUUID(key+"Label",name.getUUID());}
-            world.putBoolean(key,true);world.putInt("Graves",++plot);d.setState(STATE,world);
+            world.putBoolean(key,true);world.putInt("Graves",++plot);saveWorld(d,world);
         }
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){var server=e.getServer();var origin=HouseSavedData.get(server).houseOrigin();if(origin==null)return;var l=server.getLevel(HouseDimensions.INTERIOR);if(l==null)return;var b=LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL);var d=LabyrinthData.get(server);
         for(var p:server.getPlayerList().getPlayers()){var place=current(p);var own=personal(d,p.getUUID());if(place==null){if(!own.getString("Here").isEmpty()){if(own.getInt("RestTicks")>0&&p.isSleeping())p.stopSleepInBed(true,false);own.remove("Here");own.remove("RestTicks");save(d,p.getUUID(),own);}continue;}if(!place.id().equals(own.getString("Here"))){onArrive(p,place);own=personal(d,p.getUUID());}
             if(place==LabyrinthPlace.HOTEL_GROUNDS){var gb=IndianLakeRooms.base(server,place);IndianLakeRooms.keepLoaded(p.serverLevel(),gb,place);HousePackets.send(p,new HotelAtmospherePayload(2,gb,false,0));garden(p,gb);continue;}if(place!=LabyrinthPlace.HOTEL)continue;
             IndianLakeRooms.keepLoaded(l,b,place);cast(l,b);
-            var castState=d.state(STATE);if(castState.hasUUID("Hose")&&l.getEntity(castState.getUUID("Hose")) instanceof HotelHose hose){int next=Math.min(2,Math.max(0,own.getInt("Visits")-1));if(next>hose.phase()&&l.players().stream().filter(Player::isAlive).noneMatch(w->HouseWatchers.sees(w,hose.position().add(0,.2,0))))hose.phase(next);}
+            var castState=world(d);if(castState.hasUUID("Hose")&&l.getEntity(castState.getUUID("Hose")) instanceof HotelHose hose){int next=Math.min(2,Math.max(0,own.getInt("Visits")-1));if(next>hose.phase()&&l.players().stream().filter(Player::isAlive).noneMatch(w->HouseWatchers.sees(w,hose.position().add(0,.2,0))))hose.phase(next);}
             var rel=p.position().subtract(Vec3.atLowerCornerOf(b));
             if(p.isPassenger()&&Math.abs(rel.x)<1.5&&rel.z>-20&&rel.z<-12&&!own.getBoolean("Dinner")){own.putBoolean("MealServed",true);l.setBlock(b.offset(HotelRooms.MEAL),HotelRegistry.PROP.get().defaultBlockState().setValue(HotelPropBlock.KIND,HotelPropBlock.Kind.MEAL),F);}
-            if(own.getInt("RestTicks")>0){if(!p.isSleeping()||p.distanceToSqr(b.offset(HotelRooms.BED).getCenter())>36||d.state(STATE).getBoolean("Cold")){own.remove("RestTicks");if(p.isSleeping())p.stopSleepInBed(true,false);}else{own.putInt("RestTicks",own.getInt("RestTicks")-1);save(d,p.getUUID(),own);if(own.getInt("RestTicks")==0){finishRest(p,own);own=personal(d,p.getUUID());}}}
-            if(rel.y<-2&&rel.z<-48){var world=d.state(STATE);if(!world.getBoolean("PlantFound")){world.putBoolean("PlantFound",true);world.putLong("VentedAt",l.getGameTime());d.setState(STATE,world);}}
+            if(own.getInt("RestTicks")>0){if(!p.isSleeping()||p.distanceToSqr(b.offset(HotelRooms.BED).getCenter())>36||world(d).getBoolean("Cold")){own.remove("RestTicks");if(p.isSleeping())p.stopSleepInBed(true,false);}else{own.putInt("RestTicks",own.getInt("RestTicks")-1);save(d,p.getUUID(),own);if(own.getInt("RestTicks")==0){finishRest(p,own);own=personal(d,p.getUUID());}}}
+            if(rel.y<-2&&rel.z<-48){var world=world(d);if(!world.getBoolean("PlantFound")){world.putBoolean("PlantFound",true);world.putLong("VentedAt",l.getGameTime());saveWorld(d,world);}}
             var plaque=b.offset(2,6,-5);if(rel.y>4&&HouseWatchers.sees(p,plaque.getCenter()))own.putBoolean("Saw217",true);
-            if(own.getBoolean("Saw217")&&!d.state(STATE).getBoolean("NumberTurned")&&l.players().stream().filter(Player::isAlive).noneMatch(w->HouseWatchers.sees(w,plaque.getCenter()))){NovelRooms.sign(l,plaque,Direction.SOUTH,new String[]{"237","","",""});var world=d.state(STATE);world.putBoolean("NumberTurned",true);d.setState(STATE,world);}
+            if(own.getBoolean("Saw217")&&!world(d).getBoolean("NumberTurned")&&l.players().stream().filter(Player::isAlive).noneMatch(w->HouseWatchers.sees(w,plaque.getCenter()))){NovelRooms.sign(l,plaque,Direction.SOUTH,new String[]{"237","","",""});var world=world(d);world.putBoolean("NumberTurned",true);saveWorld(d,world);}
             save(d,p.getUUID(),own);photograph(p);
             if(server.getTickCount()%80==0){p.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(HotelRegistry.ORCHESTRA,SoundSource.RECORDS,b.getX()-6.5,b.getY()+1,b.getZ()-24.5,.4F,1,p.getRandom().nextLong()));p.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(HotelRegistry.PIANO,SoundSource.RECORDS,b.getX()+20.5,b.getY()+2,b.getZ()-31.5,.45F,1,p.getRandom().nextLong()));}
         }if(server.getTickCount()%20==0)plantTick(l,b,l.getGameTime());

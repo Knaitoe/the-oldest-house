@@ -28,6 +28,9 @@ import net.minecraft.world.phys.*;
 import net.neoforged.bus.api.*;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 /** Private frozen native homes. Capture and construction resume from saved cursors; originals never refill. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
@@ -50,6 +53,64 @@ public final class LiteraryCopies extends SavedData {
     private static AABB bounds(BlockPos b,Copy c){var min=c.snapshot==null?new BlockPos(-34,-17,-34):c.snapshot.min();var max=c.snapshot==null?new BlockPos(34,33,34):c.snapshot.max();return new AABB(b.getX()+min.getX()-3,b.getY()+min.getY()-3,b.getZ()+min.getZ()+c.offset()-3,b.getX()+max.getX()+4,b.getY()+max.getY()+4,b.getZ()+10);}
     public static boolean contains(MinecraftServer s,UUID reader,LabyrinthPlace place,Vec3 point){var c=get(s).copy(reader,place);var b=c==null?null:address(s,c);return c!=null&&c.built&&b!=null&&bounds(b,c).contains(point);}
     public static boolean protectedPosition(MinecraftServer s,BlockPos at){for(var c:get(s).copies.values()){var b=address(s,c);if(b!=null&&bounds(b,c).contains(Vec3.atCenterOf(at)))return true;}return false;}
+    public static List<AABB> outdoorAreas(MinecraftServer server) {
+        List<AABB> areas = new ArrayList<>();
+        for (var copy : get(server).copies.values()) {
+            var base = address(server, copy);
+            if (copy.built && base != null) areas.add(bounds(base, copy));
+        }
+        return areas;
+    }
+
+    private static void markProjectionItem(ItemStack item){
+        CustomData.update(DataComponents.CUSTOM_DATA,item,tag->{tag.remove(WeaponHistory.ORIGINAL);tag.putBoolean(WeaponHistory.COPY,true);});
+    }
+
+    /** Native equipment stays visible, but neither interaction packet can exchange it. */
+    private static void freezeProjection(Entity entity) {
+        entity.setInvulnerable(true);
+        if (entity instanceof LivingEntity living) {
+            for (var slot : EquipmentSlot.values()) {
+                var item = living.getItemBySlot(slot);
+                if (!item.isEmpty()) markProjectionItem(item);
+            }
+        }
+        if (entity instanceof ItemFrame frame) {
+            if (!frame.getItem().isEmpty()) markProjectionItem(frame.getItem());
+            fixFrame(frame);
+        }
+        if (entity instanceof ArmorStand stand) {
+            stand.setNoGravity(true);
+            var tag = new CompoundTag();
+            stand.saveWithoutId(tag);
+            tag.putInt("DisabledSlots", 0x7fffffff);
+            stand.readAdditionalSaveData(tag);
+        }
+    }
+
+    @SubscribeEvent(priority=EventPriority.LOWEST)
+    public static void repairProjection(EntityJoinLevelEvent event) {
+        if (!event.isCanceled() && event.getLevel() instanceof ServerLevel
+                && event.getEntity().getTags().contains(PROJECTION)) freezeProjection(event.getEntity());
+    }
+
+    @SubscribeEvent(priority=EventPriority.HIGHEST)
+    public static void specificProjection(PlayerInteractEvent.EntityInteractSpecific event) {
+        if (event.getTarget().getTags().contains(PROJECTION)) {
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.FAIL);
+        }
+    }
+
+    @SubscribeEvent(priority=EventPriority.HIGHEST)
+    public static void projectionAttack(AttackEntityEvent event) {
+        if (event.getTarget().getTags().contains(PROJECTION)) event.setCanceled(true);
+    }
+
+    @SubscribeEvent(priority=EventPriority.HIGHEST)
+    public static void projectionDrops(LivingDropsEvent event) {
+        if (event.getEntity().getTags().contains(PROJECTION)) { event.getDrops().clear(); event.setCanceled(true); }
+    }
     public static @Nullable LabyrinthData.Door prepareEntry(ServerPlayer p,LabyrinthPlace place){var c=get(p.server).copy(p.getUUID(),place);if(c==null||!c.built||place==LabyrinthPlace.FAMILY_COPY&&p.server.overworld().getDayTime()/24000-c.day<14)return null;return LabyrinthData.get(p.server).door(c.key()+"/entry");}
     public static @Nullable LabyrinthData.Door entry(ServerPlayer p,LabyrinthPlace place){var c=get(p.server).copy(p.getUUID(),place);return c==null?null:LabyrinthData.get(p.server).door(c.key()+"/entry");}
     public static void tick(MinecraftServer server){var data=get(server);var lab=LabyrinthData.get(server);for(var p:server.getPlayerList().getPlayers()){
@@ -81,7 +142,7 @@ public final class LiteraryCopies extends SavedData {
     private int construct(MinecraftServer s,Copy c,int budget){var b=address(s,c);var l=s.getLevel(HouseDimensions.OUTSIDE);if(b==null||l==null)return 0;var min=c.snapshot.min();var max=c.snapshot.max();int sx=max.getX()-min.getX()+1,sz=max.getZ()-min.getZ()+1,used=0;int offset=c.offset();
         while(c.buildCursor<c.snapshot.blockCount()&&used<budget){int i=c.buildCursor++;var rel=new BlockPos(min.getX()+i%sx,min.getY()+i/(sx*sz),min.getZ()+(i/sx)%sz);var at=b.offset(rel).offset(0,0,offset);var state=c.snapshot.stateAt(rel);boolean frozen=LiteraryFrozenBlock.freezes(state);l.setBlock(at,frozen?LiteraryRegistry.FROZEN.get().defaultBlockState():freeze(state),F);if(frozen&&l.getBlockEntity(at) instanceof LiteraryModelBlockEntity display){var nativeState=new CompoundTag();nativeState.put("FrozenState",NbtUtils.writeBlockState(state));display.display(nativeState);}var tag=c.snapshot.blockEntityAt(rel);var be=l.getBlockEntity(at);if(!frozen&&tag!=null&&be!=null){tag=tag.copy();tag.putInt("x",at.getX());tag.putInt("y",at.getY());tag.putInt("z",at.getZ());be.loadWithComponents(tag,l.registryAccess());be.setChanged();}if(be instanceof net.minecraft.world.Container container)container.clearContent();used++;}setDirty();
         if(c.buildCursor>=c.snapshot.blockCount()){
-            for(int i=0;i<c.entities.size();i++){var tag=c.entities.getCompound(i).copy();tag.putUUID("UUID",UUID.randomUUID());var target=BlockPos.containing(b.getX()+tag.getDouble("CopyX"),b.getY()+tag.getDouble("CopyY"),b.getZ()+offset+tag.getDouble("CopyZ"));if(tag.contains("TileX")){tag.putInt("TileX",target.getX());tag.putInt("TileY",target.getY());tag.putInt("TileZ",target.getZ());}var e=EntityType.loadEntityRecursive(tag,l,entity->entity);if(e==null)continue;e.moveTo(b.getX()+tag.getDouble("CopyX"),b.getY()+tag.getDouble("CopyY"),b.getZ()+offset+tag.getDouble("CopyZ"),e.getYRot(),e.getXRot());e.addTag(PROJECTION);e.setInvulnerable(true);if(e instanceof Mob mob){mob.setNoAi(true);mob.setPersistenceRequired();}if(e instanceof TamableAnimal tame)tame.setOwnerUUID(null);if(e instanceof ItemFrame frame){var item=frame.getItem();if(WeaponHistory.weapon(item))WeaponHistory.markCopy(item);frame.setItem(item,false);fixFrame(frame);}if(e instanceof ArmorStand stand){stand.setNoGravity(true);for(var slot:EquipmentSlot.values()){var item=stand.getItemBySlot(slot);if(WeaponHistory.weapon(item))WeaponHistory.markCopy(item);}}l.addFreshEntity(e);}
+            for(int i=0;i<c.entities.size();i++){var tag=c.entities.getCompound(i).copy();tag.putUUID("UUID",UUID.randomUUID());var target=BlockPos.containing(b.getX()+tag.getDouble("CopyX"),b.getY()+tag.getDouble("CopyY"),b.getZ()+offset+tag.getDouble("CopyZ"));if(tag.contains("TileX")){tag.putInt("TileX",target.getX());tag.putInt("TileY",target.getY());tag.putInt("TileZ",target.getZ());}var e=EntityType.loadEntityRecursive(tag,l,entity->entity);if(e==null)continue;e.moveTo(b.getX()+tag.getDouble("CopyX"),b.getY()+tag.getDouble("CopyY"),b.getZ()+offset+tag.getDouble("CopyZ"),e.getYRot(),e.getXRot());e.addTag(PROJECTION);e.setInvulnerable(true);if(e instanceof Mob mob){mob.setNoAi(true);mob.setPersistenceRequired();}if(e instanceof TamableAnimal tame)tame.setOwnerUUID(null);if(e instanceof ItemFrame frame){var item=frame.getItem();if(WeaponHistory.weapon(item))markProjectionItem(item);frame.setItem(item,false);fixFrame(frame);}if(e instanceof ArmorStand stand){stand.setNoGravity(true);for(var slot:EquipmentSlot.values()){var item=stand.getItemBySlot(slot);if(WeaponHistory.weapon(item))markProjectionItem(item);}}freezeProjection(e);l.addFreshEntity(e);}
             LiteraryRooms.box(l,b,-4,-1,-9,4,-1,4,Blocks.SMOOTH_STONE);LiteraryRooms.box(l,b,-4,0,-8,4,3,-1,Blocks.AIR);NovelRooms.safeApproach(l,b);LabyrinthBuilder.entrance(l,b,Blocks.GRAY_TERRACOTTA.defaultBlockState(),Blocks.SMOOTH_STONE.defaultBlockState(),Blocks.GRAY_TERRACOTTA.defaultBlockState());NovelRooms.door(l,b.offset(0,0,1),Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);
             LiteraryRooms.paper(l,b,LiteraryRooms.SOURCE,LiteraryTexts.source(c.place));LiteraryRooms.prop(l,b,LiteraryRooms.ending(c.place),LiteraryPropBlock.Kind.LEDGER,Direction.SOUTH);
             LabyrinthData.get(s).putDoor(new LabyrinthData.Door(c.key()+"/entry",HouseDimensions.OUTSIDE,b.offset(0,0,1),Direction.SOUTH,LabyrinthData.RETURN,false));if(c.place==LabyrinthPlace.FAMILY_COPY)approach(l,b,c);c.built=true;setDirty();

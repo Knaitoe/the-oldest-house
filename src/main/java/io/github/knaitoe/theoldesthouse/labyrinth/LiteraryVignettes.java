@@ -28,6 +28,7 @@ import net.minecraft.world.phys.*;
 import net.neoforged.bus.api.*;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.ServerChatEvent;
 import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.neoforge.event.entity.player.*;
@@ -44,9 +45,9 @@ public final class LiteraryVignettes {
     private LiteraryVignettes(){}
     private static String state(LabyrinthPlace place){return "literary_0436_"+place.id();}
     public static CompoundTag personal(LabyrinthData d,UUID p,LabyrinthPlace place){return d.stateEntry(state(place),p.toString());}
-    public static void save(LabyrinthData d,UUID p,LabyrinthPlace place,CompoundTag own){var all=d.state(state(place));all.put(p.toString(),own.copy());d.setState(state(place),all);}
+    public static void save(LabyrinthData d,UUID p,LabyrinthPlace place,CompoundTag own){d.setStateEntry(state(place),p.toString(),own);}
     public static CompoundTag shared(LabyrinthData d,LabyrinthPlace place){return d.stateEntry(state(place),"World");}
-    public static void shared(LabyrinthData d,LabyrinthPlace place,CompoundTag s){var all=d.state(state(place));all.put("World",s.copy());d.setState(state(place),all);}
+    public static void shared(LabyrinthData d,LabyrinthPlace place,CompoundTag s){d.setStateEntry(state(place),"World",s);}
     public static boolean participant(ServerPlayer p){return p.isAlive()&&p.gameMode.getGameModeForPlayer()!=GameType.SPECTATOR&&!FinaleProgress.terminal(FinaleProgress.phase(p.server,p.getUUID()));}
     public static @Nullable BlockPos base(ServerPlayer p,LabyrinthPlace place){if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)return LiteraryCopies.base(p.server,p.getUUID(),place);var o=HouseSavedData.get(p.server).houseOrigin();return o==null?null:LabyrinthPlaces.base(o,place);}
     public static boolean inside(ServerPlayer p,LabyrinthPlace place){var b=base(p,place);return participant(p)&&b!=null&&p.level().dimension().equals(NovelRooms.dimension(place))&&(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN?LiteraryCopies.contains(p.server,p.getUUID(),place,p.position()):IndianLakeRooms.bounds(b,place).contains(p.position()));}
@@ -59,7 +60,17 @@ public final class LiteraryVignettes {
     public static void onArrive(ServerPlayer p,LabyrinthPlace place){if(!LiteraryRooms.isLiterary(place)||!participant(p))return;var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);
         int visit=own.getInt("Visit");if(visit==0||own.getInt("Beat")>=visit)own.putInt("Visit",visit+1);own.putBoolean("Here",true);own.putInt("Present",0);own.putInt("ThisVisitTicks",0);own.putInt("ExamineTicks",0);own.putInt("FanTicks",0);own.putInt("StillTicks",0);own.putBoolean("Betrayed",false);own.remove("LastPosition");own.remove("CameraLease");own.putBoolean("Interrupted",false);
         save(d,p.getUUID(),place,own);if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)LiteraryCopies.arrived(p,place);
-        if(place==LabyrinthPlace.HOLY_RABBIT){p.stopRiding();p.getFoodData().setFoodLevel(Math.min(6,p.getFoodData().getFoodLevel()));own.putBoolean("Committed",true);save(d,p.getUUID(),place,own);}
+        if (place == LabyrinthPlace.HOLY_RABBIT && !rabbitCommitted(own)) {
+            own.putBoolean("Committed", false);
+            save(d, p.getUUID(), place, own);
+        }
+        if (place == LabyrinthPlace.CHILD_ROOM && !own.getBoolean("ExitProof0437")) {
+            if (!own.getBoolean("Completed")) own.putBoolean("Ready", false);
+            own.putBoolean("ExitProof0437", true);
+            own.putInt("ExitsAtArrival", shared(d, place).getInt("LostExits"));
+            save(d, p.getUUID(), place, own);
+        }
+        if (place == LabyrinthPlace.MOVIE_NIGHT) ensureMovieCanoe(p, base(p, place));
     }
     public static ItemStack mark(ServerPlayer p,LabyrinthPlace place,String key,ItemStack item){var s=VignetteYields.mark(item.copy(),place.id());CustomData.update(DataComponents.CUSTOM_DATA,s,t->{t.putUUID(OWNER,p.getUUID());t.putString(KEY,key);t.putString(PLACE,place.id());});return s;}
     public static void give(ServerPlayer p,ItemStack s){if(p.getInventory().add(s))return;var e=new ItemEntity(p.serverLevel(),p.getX(),p.getY()+.2,p.getZ(),s);e.setTarget(p.getUUID());p.serverLevel().addFreshEntity(e);}
@@ -123,14 +134,23 @@ public final class LiteraryVignettes {
     private static void chooseLid(ServerPlayer p,CompoundTag own){var place=LabyrinthPlace.USHER;var d=LabyrinthData.get(p.server);if(own.getBoolean("LidChosen"))return;boolean close=p.isShiftKeyDown();var world=shared(d,place);if(!world.contains("LidClosed")){world.putBoolean("LidClosed",close);world.putInt("ChoiceVisit",own.getInt("Visit"));shared(d,place,world);}close=world.getBoolean("LidClosed");own.putBoolean("LidChosen",true);own.putBoolean("LidClosed",close);own.putInt("ChoiceVisit",own.getInt("Visit"));own.putInt("Beat",own.getInt("Visit"));var b=base(p,place);for(var rel:List.of(LiteraryRooms.COFFIN,LiteraryRooms.COFFIN.north())){var s=p.serverLevel().getBlockState(b.offset(rel));if(s.is(LiteraryRegistry.PROP.get()))p.serverLevel().setBlock(b.offset(rel),s.setValue(LiteraryPropBlock.STAGE,close?1:0),F);}p.displayClientMessage(Component.literal(close?"The lid has closed. Return and listen.":"The lid stays open. Return to the wing."),false);}
     public static void elkWound(ServerPlayer p){var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),LabyrinthPlace.ELK_LOT);own.putBoolean("ElkWounded",true);save(d,p.getUUID(),LabyrinthPlace.ELK_LOT,own);}
     public static void ate(ServerPlayer p,ItemStack s){var custom=s.get(DataComponents.CUSTOM_DATA);if(custom==null)return;var t=custom.copyTag();if(!t.hasUUID(OWNER)||!t.getUUID(OWNER).equals(p.getUUID()))return;var place=current(p);if(place==null)return;var own=personal(LabyrinthData.get(p.server),p.getUUID(),place);
-        if(place==LabyrinthPlace.HOLY_RABBIT&&s.is(LiteraryRegistry.MEAL.get())&&t.getInt("Night")==own.getInt("Night")&&own.getInt("AteNight")!=own.getInt("Night")&&t.hasUUID("MealToken")&&own.hasUUID("MealToken")&&t.getUUID("MealToken").equals(own.getUUID("MealToken"))&&p.distanceToSqr(base(p,place).offset(0,0,-24).getCenter())<64){own.putInt("Meals",own.getInt("Meals")+1);own.putInt("AteNight",own.getInt("Night"));own.putInt("Drowse",0);}
+        if(place==LabyrinthPlace.HOLY_RABBIT&&s.is(LiteraryRegistry.MEAL.get())&&t.getInt("Night")==own.getInt("Night")&&own.getInt("AteNight")!=own.getInt("Night")&&t.hasUUID("MealToken")&&own.hasUUID("MealToken")&&t.getUUID("MealToken").equals(own.getUUID("MealToken"))&&p.distanceToSqr(base(p,place).offset(0,0,-24).getCenter())<64){own.putBoolean("Committed",true);own.putString("CommitAction","ate_an_owned_meal");own.putInt("Meals",own.getInt("Meals")+1);own.putInt("AteNight",own.getInt("Night"));own.putInt("Drowse",0);}
         if(place==LabyrinthPlace.FAMILY_COPY&&s.is(LiteraryRegistry.STEW.get())&&own.getInt("Visit")==4&&t.hasUUID("MealToken")&&own.hasUUID("MealToken")&&t.getUUID("MealToken").equals(own.getUUID("MealToken"))){own.putBoolean("DinnerEaten",true);own.putInt("Beat",4);}
         save(LabyrinthData.get(p.server),p.getUUID(),place,own);
     }
     public static void talk(ServerPlayer p,LiteraryActor actor){var place=current(p);if(place==null||!actor.scene().equals(place.id())||p.distanceToSqr(actor)>36||actor.owner().isPresent()&&!actor.owner().get().equals(p.getUUID()))return;var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);
         if(place==LabyrinthPlace.END_WORLD_CABIN)LiteraryCabinChoices.open(p);
         else if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)LiteraryCopies.talk(p,place,actor,own);
-        else if(place==LabyrinthPlace.HOLY_RABBIT&&actor.role()==LiteraryActor.FATHER){actor.say(own.contains("RabbitName")?"It is still out there. "+own.getString("RabbitName")+". Alive.":"Stay awake. Take what I brought.");}
+        else if (place == LabyrinthPlace.HOLY_RABBIT && actor.role() == LiteraryActor.FATHER) {
+            if (!rabbitCommitted(own) && !own.getBoolean("Ready")) {
+                var icons = new HashMap<Integer, ItemStack>();
+                icons.put(0, LiteraryChoiceMenu.icon(Items.CAMPFIRE, "Stay with Father through the cold nights"));
+                icons.put(8, LiteraryChoiceMenu.icon(Items.OAK_DOOR, "Leave the choice for now"));
+                LiteraryChoiceMenu.open(p, "Stay through the nights?", icons,
+                        () -> inside(p, place) && p.distanceToSqr(actor) <= 36,
+                        slot -> slot == 8 || slot == 0 && commitRabbit(p));
+            } else actor.say(own.contains("RabbitName") ? "It is still out there. " + own.getString("RabbitName") + ". Alive." : "Stay awake. Take what I brought.");
+        }
         else if(place==LabyrinthPlace.CONFESSION)actor.say("Bring a blank book. Sit where you can hear me.");
         save(d,p.getUUID(),place,own);
     }
@@ -144,18 +164,36 @@ public final class LiteraryVignettes {
         var a=LiteraryRegistry.ACTOR.get().create(p.serverLevel());if(a==null)return null;a.bind(place,privateActor?p.getUUID():null);a.appearance(role,0);a.moveTo(Vec3.atBottomCenterOf(base(p,place).offset(relative)));a.setYRot(0);if(!p.serverLevel().addFreshEntity(a))return null;s.putUUID(id,a.getUUID());shared(d,place,s);return a;
     }
     public static boolean watched(ServerLevel l,Vec3 point){for(var p:l.players()){if(!p.isAlive()||p.isSleeping())continue;var delta=point.subtract(p.getEyePosition());double dist=delta.length();if(dist>48||dist>1.5&&p.getLookAngle().dot(delta.normalize())<.26)continue;var hit=l.clip(new ClipContext(p.getEyePosition(),point,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p));if(hit.getType()==HitResult.Type.MISS||hit.getBlockPos().distManhattan(BlockPos.containing(point))<=1)return true;}return false;}
-    public static boolean retreatLocked(ServerPlayer p){return inside(p,LabyrinthPlace.HOLY_RABBIT)&&personal(LabyrinthData.get(p.server),p.getUUID(),LabyrinthPlace.HOLY_RABBIT).getBoolean("Committed")&&!personal(LabyrinthData.get(p.server),p.getUUID(),LabyrinthPlace.HOLY_RABBIT).getBoolean("Ready");}
+    private static boolean rabbitCommitted(CompoundTag own) {
+        return own.getBoolean("Committed") && (own.contains("CommitAction") || own.getInt("Meals") > 0);
+    }
+    private static boolean commitRabbit(ServerPlayer p) {
+        if (!inside(p, LabyrinthPlace.HOLY_RABBIT)) return false;
+        var d = LabyrinthData.get(p.server);
+        var own = personal(d, p.getUUID(), LabyrinthPlace.HOLY_RABBIT);
+        if (rabbitCommitted(own) || own.getBoolean("Ready")) return false;
+        own.putBoolean("Committed", true);
+        own.putString("CommitAction", "agreed_to_stay_with_father");
+        p.getFoodData().setFoodLevel(Math.min(6, p.getFoodData().getFoodLevel()));
+        save(d, p.getUUID(), LabyrinthPlace.HOLY_RABBIT, own);
+        return true;
+    }
+    public static boolean retreatLocked(ServerPlayer p) {
+        if (!inside(p, LabyrinthPlace.HOLY_RABBIT)) return false;
+        var own = personal(LabyrinthData.get(p.server), p.getUUID(), LabyrinthPlace.HOLY_RABBIT);
+        return rabbitCommitted(own) && !own.getBoolean("Ready");
+    }
     private static void scale(ServerPlayer p,boolean child){var a=p.getAttribute(Attributes.SCALE);if(a==null)return;if(child&&!a.hasModifier(CHILD))a.addTransientModifier(new AttributeModifier(CHILD,-.46,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));else if(!child)a.removeModifier(CHILD);}
     private static void crawl(ServerPlayer p,boolean active){var c=CRAWLS.get(p.getUUID());if(c!=null&&c.p()!=p){restore(c);CRAWLS.remove(p.getUUID());c=null;}if(active&&c==null){CRAWLS.put(p.getUUID(),new Crawl(p,p.getForcedPose(),p.getPose()));p.setForcedPose(Pose.SWIMMING);p.setPose(Pose.SWIMMING);p.refreshDimensions();}else if(!active&&c!=null){restore(c);CRAWLS.remove(p.getUUID());}}
     private static void restore(Crawl c){c.p().setForcedPose(c.forced());c.p().setPose(c.forced()==null?c.displayed():c.forced());c.p().refreshDimensions();}
-    public static void clearAll(){for(var c:CRAWLS.values())restore(c);CRAWLS.clear();}
+    public static void clearAll(){for(var c:CRAWLS.values())restore(c);CRAWLS.clear();MOVIE_CANOES.clear();}
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p){crawl(p,false);scale(p,false);}}
-    @SubscribeEvent(priority=EventPriority.LOWEST) public static void frozenFood(LivingEntityUseItemEvent.Start e){if(!(e.getEntity() instanceof ServerPlayer p)||!inside(p,LabyrinthPlace.HOLY_RABBIT))return;var s=e.getItem();if(s.is(Items.SNOWBALL)&&s.has(DataComponents.FOOD))return;if(s.is(LiteraryRegistry.MEAL.get())){var t=s.get(DataComponents.CUSTOM_DATA);if(t!=null&&t.copyTag().hasUUID(OWNER)&&t.copyTag().getUUID(OWNER).equals(p.getUUID()))return;}if(s.has(DataComponents.FOOD)||s.is(Items.POTION)||s.is(Items.MILK_BUCKET)){e.setCanceled(true);p.displayClientMessage(Component.literal("It is frozen hard. He is bringing something down to you."),true);}}
+    @SubscribeEvent(priority=EventPriority.LOWEST) public static void frozenFood(LivingEntityUseItemEvent.Start e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!retreatLocked(p))return;var s=e.getItem();if(s.is(Items.SNOWBALL)&&s.has(DataComponents.FOOD))return;if(s.is(LiteraryRegistry.MEAL.get())){var t=s.get(DataComponents.CUSTOM_DATA);if(t!=null&&t.copyTag().hasUUID(OWNER)&&t.copyTag().getUUID(OWNER).equals(p.getUUID()))return;}if(s.has(DataComponents.FOOD)){e.setCanceled(true);p.displayClientMessage(Component.literal("It is frozen hard. He is bringing something down to you."),true);}}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void snowNibble(PlayerInteractEvent.RightClickItem e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!inside(p,LabyrinthPlace.HOLY_RABBIT)||!p.getItemInHand(e.getHand()).is(Items.SNOWBALL))return;var snow=p.getItemInHand(e.getHand());snow.set(DataComponents.FOOD,new net.minecraft.world.food.FoodProperties.Builder().nutrition(0).saturationModifier(0).alwaysEdible().build());p.startUsingItem(e.getHand());e.setCanceled(true);e.setCancellationResult(InteractionResult.CONSUME);}
-    @SubscribeEvent public static void pearl(EntityJoinLevelEvent e){if(e.getEntity() instanceof ThrownEnderpearl pearl&&pearl.getOwner() instanceof ServerPlayer p&&inside(p,LabyrinthPlace.HOLY_RABBIT)){e.setCanceled(true);pearl.discard();}}
+    @SubscribeEvent public static void pearl(EntityJoinLevelEvent e){if(e.getEntity() instanceof ThrownEnderpearl pearl&&pearl.getOwner() instanceof ServerPlayer p&&retreatLocked(p)){e.setCanceled(true);pearl.discard();}}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void chat(ServerChatEvent e){var p=e.getPlayer();var place=current(p);if(place==LabyrinthPlace.GHOSTS_SET&&p.distanceToSqr(base(p,place).offset(LiteraryRooms.BOOTH).getCenter())<36){var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);if(own.getBoolean("Booth")&&!own.contains("Confession")){own.putString("Confession",e.getRawText().substring(0,Math.min(512,e.getRawText().length())));save(d,p.getUUID(),place,own);}}else if(place==LabyrinthPlace.OLD_CABIN)LiteraryCopies.nameSpoken(p,e.getRawText());}
-    @SubscribeEvent public static void travel(net.neoforged.neoforge.event.tick.PlayerTickEvent.Pre e){if(e.getEntity() instanceof ServerPlayer p&&inside(p,LabyrinthPlace.HOLY_RABBIT)){p.stopFallFlying();p.stopRiding();}}
-    @SubscribeEvent public static void tick(ServerTickEvent.Post event){var server=event.getServer();LiteraryCopies.tick(server);if(server.getTickCount()%5!=0)return;
+    @SubscribeEvent public static void travel(net.neoforged.neoforge.event.tick.PlayerTickEvent.Pre e){if(e.getEntity() instanceof ServerPlayer p&&retreatLocked(p)){p.stopFallFlying();p.stopRiding();}}
+    @SubscribeEvent public static void tick(ServerTickEvent.Post event){var server=event.getServer();LiteraryCopies.tick(server);LiteraryCabinChoices.reconcileClosure(server);if(server.getTickCount()%5!=0)return;
         for(var p:server.getPlayerList().getPlayers()){var place=current(p);if(place==null){crawl(p,false);scale(p,false);continue;}var d=LabyrinthData.get(server);var own=personal(d,p.getUUID(),place);if(!own.getBoolean("Here"))continue;var b=base(p,place);IndianLakeRooms.keepLoaded(p.serverLevel(),b,place);own.putInt("Present",Math.min(72000,own.getInt("Present")+5));own.putInt("ThisVisitTicks",Math.min(72000,own.getInt("ThisVisitTicks")+5));
             boolean child=place==LabyrinthPlace.CHILD_ROOM||place==LabyrinthPlace.HOLY_RABBIT||(place==LabyrinthPlace.WHEEL&&own.getBoolean("Memory"));scale(p,child);crawl(p,(place==LabyrinthPlace.MAPPING_INTERIOR&&p.getY()<b.getY()-2)||(place==LabyrinthPlace.CHILD_ROOM&&p.getY()<b.getY()-1));
             if(!own.getBoolean("Interrupted"))switch(place){case HILL_NURSERY->hill(p,b,own);case MINIATURES->miniatures(p,b,own);case MASQUE->masque(p,b,own);case USHER->usher(p,b,own);case WINCHESTER->{if(p.getY()>=b.getY()+7&&p.getZ()<b.getZ()-65&&own.getInt("Present")>=100)ready(p,place,own,"reached_the_upper_construction_ledger");}case CHILD_ROOM->child(p,b,own);case CRIMSON_HALL->crimson(p,b,own);case BLY_ROUTE->bly(p,b,own);case ELK_LOT->lot(p,b,own);case ELK_FAN->fan(p,b,own);case MAPPING_INTERIOR->mapping(p,b,own);case HOLY_RABBIT->rabbit(p,b,own);case CONFESSION->confession(p,b,own);case ELK_CARCASSES->carcasses(p,b,own);case COSTUME_NIGHT,MOVIE_NIGHT,WINTER_LAKE,CAMP_BLOOD->hunt(p,b,place,own);case DEVILS_ROCK->diary(p,b,own);case WHEEL->{var mother=actor(p,place,"Mother",LiteraryActor.MOTHER,new BlockPos(14,0,-59),true);if(own.getBoolean("ReachedMother")&&mother!=null&&p.distanceToSqr(mother)<36&&HouseWatchers.sees(p,mother.getEyePosition())){own.putBoolean("LeftMother",true);mother.say("You can leave now. The door will open.");}if(own.getBoolean("LeftMother")&&p.getZ()>b.getZ()-6){own.putBoolean("Memory",false);ready(p,place,own,"left_after_finding_mothers_room");}}case GHOSTS_SET->set(p,b,own);case END_WORLD_CABIN->LiteraryCabinChoices.tick(p,own);case FAMILY_COPY,OLD_CABIN->LiteraryCopies.sceneTick(p,place,own);default->{}}
@@ -191,9 +229,44 @@ public final class LiteraryVignettes {
         else if(own.getInt("Visit")>own.getInt("ChoiceVisit")&&own.getBoolean("LidChosen")&&!watched(p.serverLevel(),woman.position().add(0,1,0))&&!watched(p.serverLevel(),b.offset(12,0,-34).getCenter())){woman.moveTo(Vec3.atBottomCenterOf(b.offset(12,0,-34)));woman.appearance(LiteraryActor.COFFIN_WOMAN,0);world.putBoolean("WomanLeft",true);shared(d,place,world);}
         if(own.getBoolean("LidChosen")&&own.getInt("Visit")>own.getInt("ChoiceVisit")){boolean seen=world.getBoolean("LidClosed")?p.distanceToSqr(b.offset(LiteraryRooms.COFFIN).getCenter())<36:world.getBoolean("WomanLeft")&&HouseWatchers.sees(p,woman.getEyePosition());if(seen&&own.getInt("Present")>120)ready(p,place,own,world.getBoolean("LidClosed")?"returned_to_the_closed_lid":"found_her_outside_the_open_coffin");}
     }
-    private static void child(ServerPlayer p,BlockPos b,CompoundTag own){var place=LabyrinthPlace.CHILD_ROOM;var d=LabyrinthData.get(p.server);var world=shared(d,place);List<BlockPos> exits=List.of(new BlockPos(-11,0,-11),new BlockPos(11,0,-17),new BlockPos(-4,2,-24),new BlockPos(0,2,-24),new BlockPos(4,2,-24));int mask=world.getInt("LostExits");if(own.getInt("Present")%60==0)for(int i=0;i<exits.size();i++){var at=b.offset(exits.get(i));if((mask&(1<<i))!=0||watched(p.serverLevel(),at.getCenter())||watched(p.serverLevel(),at.above().getCenter()))continue;LiteraryRooms.box(p.serverLevel(),at,0,0,0,0,1,0,Blocks.CALCITE);mask|=1<<i;world.putInt("LostExits",mask);shared(d,place,world);break;}
-        if(mask==31&&p.getY()<b.getY()-1&&p.getZ()<b.getZ()-21){own.putBoolean("CrawledUnderBed",true);ready(p,place,own,"crawled_below_the_last_exit");}
-        var toy=actor(p,place,"CeilingToy",LiteraryActor.FAMILY_CHILD,new BlockPos(7,4,-16),false);if(toy!=null){toy.setNoGravity(true);toy.setCustomName(Component.literal("Dinnerbone"));toy.setCustomNameVisible(false);}
+    private static void child(ServerPlayer p, BlockPos b, CompoundTag own) {
+        var place = LabyrinthPlace.CHILD_ROOM;
+        var d = LabyrinthData.get(p.server);
+        var world = shared(d, place);
+        List<BlockPos> exits = List.of(new BlockPos(-11,0,-11), new BlockPos(11,0,-17),
+                new BlockPos(-4,2,-24), new BlockPos(0,2,-24), new BlockPos(4,2,-24));
+        int mask = world.getInt("LostExits");
+        if (own.getInt("Present") % 60 == 0) {
+            for (int i = 0; i < exits.size(); i++) {
+                var at = b.offset(exits.get(i));
+                if ((mask & (1 << i)) != 0 || watched(p.serverLevel(), at.getCenter())
+                        || watched(p.serverLevel(), at.above().getCenter())) continue;
+                LiteraryRooms.box(p.serverLevel(), at, 0,0,0,0,1,0, Blocks.CALCITE);
+                mask |= 1 << i;
+                world.putInt("LostExits", mask);
+                shared(d, place, world);
+                break;
+            }
+        }
+        int examined = own.getInt("ExaminedLostExits");
+        for (int i = 0; i < exits.size(); i++) {
+            var at = b.offset(exits.get(i));
+            if ((mask & (1 << i)) == 0 || !own.getBoolean("Read_Source")
+                    || p.distanceToSqr(at.getCenter()) > 100 || !HouseWatchers.sees(p, at.getCenter())) continue;
+            String key = "ExitExamineTicks" + i;
+            int ticks = Math.min(20, own.getInt(key) + 5);
+            own.putInt(key, ticks);
+            if (ticks >= 20) examined |= 1 << i;
+        }
+        own.putInt("ExaminedLostExits", examined);
+        if (mask == 31 && examined == 31 && p.getY() < b.getY()-1 && p.getZ() < b.getZ()-21) {
+            own.putBoolean("CrawledUnderBed", true);
+            ready(p, place, own, own.getInt("ExitsAtArrival") == 0
+                    ? "examined_the_lost_exits_and_crawled_below_the_bed"
+                    : "examined_the_sealed_thresholds_and_found_the_remaining_crawl");
+        }
+        var toy = actor(p, place, "CeilingToy", LiteraryActor.FAMILY_CHILD, new BlockPos(7,4,-16), false);
+        if (toy != null) { toy.setNoGravity(true); toy.setCustomName(Component.literal("Dinnerbone")); toy.setCustomNameVisible(false); }
     }
     private static void crimson(ServerPlayer p,BlockPos b,CompoundTag own){var place=LabyrinthPlace.CRIMSON_HALL;var d=LabyrinthData.get(p.server);var world=shared(d,place);int layers=Math.min(5,own.getInt("Visit"));if(layers>world.getInt("SnowVisit")){for(int x=-3;x<=3;x++)for(int z=-27;z<=-21;z++){var at=b.offset(x,0,z);var s=p.serverLevel().getBlockState(at);if(s.isAir()||s.is(Blocks.SNOW))p.serverLevel().setBlock(at,Blocks.SNOW.defaultBlockState().setValue(SnowLayerBlock.LAYERS,layers),F);}world.putInt("SnowVisit",layers);shared(d,place,world);}
         if(p.serverLevel().getBlockEntity(b.offset(0,0,-30)) instanceof JukeboxBlockEntity box){ItemStack disc=box.getItem(0);int index=disc.is(LiteraryRegistry.CYLINDER_ONE.get())?0:disc.is(LiteraryRegistry.CYLINDER_TWO.get())?1:disc.is(LiteraryRegistry.CYLINDER_THREE.get())?2:-1;
@@ -221,7 +294,12 @@ public final class LiteraryVignettes {
         if(brother!=null){brother.appearance(LiteraryActor.BROTHER,own.getBoolean("PileBroken")?0:Math.min(3,visit));if(own.getBoolean("PileChosen")&&visit>own.getInt("ChoiceVisit")&&p.distanceToSqr(brother)<25&&HouseWatchers.sees(p,brother.getEyePosition()))ready(p,place,own,own.getBoolean("PileBroken")?"broke_the_fathers_things_and_returned_to_the_brother":"kept_the_fathers_things_and_saw_the_brother_fade");}
         if(own.getBoolean("SilhouetteSeen")&&p.getY()<b.getY()-2&&p.getZ()<b.getZ()-39){own.putBoolean("BeyondRoof",true);own.putInt("Beat",visit);}
     }
-    private static void rabbit(ServerPlayer p,BlockPos b,CompoundTag own){var place=LabyrinthPlace.HOLY_RABBIT;p.stopRiding();p.stopFallFlying();boolean sheltered=Math.abs(p.getX()-b.getX())<3.5&&p.getZ()<b.getZ()-20&&p.getZ()>b.getZ()-29;if(!sheltered)p.setTicksFrozen(Math.min(150,p.getTicksFrozen()+15));int night=own.getInt("Night");if(night==0){night=1;own.putInt("Night",1);own.putInt("NightTicks",0);}int ticks=own.getInt("NightTicks")+5;own.putInt("NightTicks",ticks);int drowse=own.getInt("Drowse")+5;own.putInt("Drowse",drowse);HousePackets.send(p,new LiteraryViewPayload(-1,20,Math.min(90,drowse/4),new CompoundTag()));
+    private static void rabbit(ServerPlayer p,BlockPos b,CompoundTag own){var place=LabyrinthPlace.HOLY_RABBIT;
+        if (!rabbitCommitted(own) || own.getBoolean("Ready")) {
+            actor(p, place, "Father", LiteraryActor.FATHER, new BlockPos(3, 0, -22), true);
+            return;
+        }
+        p.stopRiding();p.stopFallFlying();boolean sheltered=Math.abs(p.getX()-b.getX())<3.5&&p.getZ()<b.getZ()-20&&p.getZ()>b.getZ()-29;if(!sheltered)p.setTicksFrozen(Math.min(150,p.getTicksFrozen()+15));int night=own.getInt("Night");if(night==0){night=1;own.putInt("Night",1);own.putInt("NightTicks",0);}int ticks=own.getInt("NightTicks")+5;own.putInt("NightTicks",ticks);int drowse=own.getInt("Drowse")+5;own.putInt("Drowse",drowse);HousePackets.send(p,new LiteraryViewPayload(-1,20,Math.min(90,drowse/4),new CompoundTag()));
         var father=actor(p,place,"Father",LiteraryActor.FATHER,new BlockPos(3,0,-22),true);if(father!=null){father.appearance(LiteraryActor.FATHER,night>=2?2:0);if(drowse>=320&&father.distanceToSqr(p)<36&&p.hurt(p.damageSources().mobAttack(father),1)){own.putInt("Drowse",0);father.say("Stay with me.");}if(ticks>100&&ticks<200){father.moveTo(b.getX()+6.5,b.getY(),b.getZ()-29.5,0,0);}else if(ticks>=200)father.moveTo(b.getX()+3.5,b.getY(),b.getZ()-22.5,0,0);}
         var d=LabyrinthData.get(p.server);var world=shared(d,place);String rabbitKey="Rabbit_"+p.getUUID();Rabbit rabbit=null;if(world.hasUUID(rabbitKey)&&p.serverLevel().getEntity(world.getUUID(rabbitKey)) instanceof Rabbit r)rabbit=r;else if(!world.hasUUID(rabbitKey)){rabbit=EntityType.RABBIT.create(p.serverLevel());if(rabbit!=null){rabbit.setVariant(Rabbit.Variant.WHITE);rabbit.setNoAi(true);rabbit.setInvulnerable(true);rabbit.setPersistenceRequired();rabbit.addTag("HolyRabbit");rabbit.moveTo(Vec3.atBottomCenterOf(b.offset(5,0,-23)));if(p.serverLevel().addFreshEntity(rabbit)){world.putUUID(rabbitKey,rabbit.getUUID());shared(d,place,world);}}}
         if(rabbit!=null){double a=p.serverLevel().getGameTime()*.012;rabbit.moveTo(b.getX()+.5+Math.cos(a)*7,b.getY(),b.getZ()-25.5+Math.sin(a)*6,0,0);if(rabbit.hasCustomName())own.putString("RabbitName",rabbit.getCustomName().getString());if(ticks<100&&HouseWatchers.sees(p,rabbit.getEyePosition()))own.putInt("RabbitMornings",own.getInt("RabbitMornings")|(1<<Math.min(7,night)));}
@@ -259,8 +337,82 @@ public final class LiteraryVignettes {
             if(own.getBoolean("Rowed")&&own.getDouble("RowDistance")>=45&&own.getInt("Flashes")>=2&&p.getZ()<b.getZ()-79){if(p.getVehicle()!=null)p.stopRiding();ready(p,place,own,"rowed_to_the_far_pier_between_firework_exposures");}}
         if(witch.distanceToSqr(p)<4&&!water&&!(place==LabyrinthPlace.COSTUME_NIGHT&&grass))p.hurt(p.damageSources().mobAttack(witch),4);
     }
-    private static void ensureMovieCanoe(ServerPlayer p,BlockPos b){var d=LabyrinthData.get(p.server);var world=shared(d,LabyrinthPlace.MOVIE_NIGHT);if(world.hasUUID("Canoe"))return;var c=DrownedTownRegistry.CAVE_CANOE.get().create(p.serverLevel());if(c==null)return;c.addTag("LiteraryMovieCanoe");c.mobile(true);c.moveTo(b.getX()+.5,b.getY()-.4,b.getZ()-15.5,180,0);if(p.serverLevel().addFreshEntity(c)){world.putUUID("Canoe",c.getUUID());shared(d,LabyrinthPlace.MOVIE_NIGHT,world);}}
-    public static boolean boardMovie(ServerPlayer p,LakeCanoeEntity canoe){return inside(p,LabyrinthPlace.MOVIE_NIGHT)&&canoe.getTags().contains("LiteraryMovieCanoe")&&p.getMainHandItem().isEmpty()&&p.distanceToSqr(canoe)<25&&canoe.getPassengers().isEmpty()&&p.startRiding(canoe,true);}
+    private static final Map<UUID,LakeCanoeEntity> MOVIE_CANOES=new HashMap<>();
+    private static void ensureMovieCanoe(ServerPlayer p, BlockPos b) {
+        var place = LabyrinthPlace.MOVIE_NIGHT;
+        var d = LabyrinthData.get(p.server);
+        var world = shared(d, place);
+        var level = p.serverLevel();
+        LakeCanoeEntity canoe = world.hasUUID("Canoe") && level.getEntity(world.getUUID("Canoe")) instanceof LakeCanoeEntity c ? c : null;
+        if(canoe==null&&world.hasUUID("Canoe")){
+            var queued=MOVIE_CANOES.get(world.getUUID("Canoe"));
+            if(queued!=null&&!queued.isRemoved()&&queued.level()==level)canoe=queued;
+        }
+        if (canoe == null && world.hasUUID("Canoe") && !world.getBoolean("CanoeRemoved")) {
+            // Absence in an unloaded entity chunk is not evidence of a lost canoe.
+            var bounds = IndianLakeRooms.bounds(b, place);
+            for (int x = ((int) bounds.minX) >> 4; x <= ((int) bounds.maxX) >> 4; x++) {
+                for (int z = ((int) bounds.minZ) >> 4; z <= ((int) bounds.maxZ) >> 4; z++) {
+                    level.getChunk(x, z);
+                    if (!level.areEntitiesLoaded(ChunkPos.asLong(x, z))) return;
+                }
+            }
+            if (world.contains("CanoePosition")) {
+                var at = BlockPos.of(world.getLong("CanoePosition"));
+                level.getChunk(at);
+                if (!level.areEntitiesLoaded(new ChunkPos(at).toLong())) return;
+            }
+            if (level.getEntity(world.getUUID("Canoe")) instanceof LakeCanoeEntity found) canoe = found;
+        }
+        if (canoe == null) {
+            canoe = DrownedTownRegistry.CAVE_CANOE.get().create(level);
+            if (canoe == null) return;
+            canoe.addTag("LiteraryMovieCanoe");
+            canoe.mobile(true);
+            canoe.moveTo(b.getX()+.5, b.getY()-.4, b.getZ()-15.5, 180, 0);
+            if (!level.addFreshEntity(canoe)) return;
+            MOVIE_CANOES.put(canoe.getUUID(),canoe);
+            world.putUUID("Canoe", canoe.getUUID());
+            world.remove("CanoeRemoved");
+            world.remove("CanoeClaim");
+        }
+        ServerPlayer claimant = world.hasUUID("CanoeClaim") ? p.server.getPlayerList().getPlayer(world.getUUID("CanoeClaim")) : null;
+        boolean active = claimant != null && inside(claimant, place) && !personal(d, claimant.getUUID(), place).getBoolean("Ready");
+        if (canoe.getPassengers().isEmpty() && !active) {
+            var start = new Vec3(b.getX()+.5, b.getY()-.4, b.getZ()-15.5);
+            if (canoe.position().distanceToSqr(start) > 16) {
+                canoe.moveTo(start.x, start.y, start.z, 180, 0);
+                canoe.setDeltaMovement(Vec3.ZERO);
+            }
+            world.remove("CanoeClaim");
+        }
+        world.putLong("CanoePosition", canoe.blockPosition().asLong());
+        shared(d, place, world);
+    }
+
+    @SubscribeEvent public static void movieCanoeRemoved(EntityLeaveLevelEvent event) {
+        var entity = event.getEntity();
+        MOVIE_CANOES.remove(entity.getUUID());
+        if (!(event.getLevel() instanceof ServerLevel level) || !entity.getTags().contains("LiteraryMovieCanoe")) return;
+        var d = LabyrinthData.get(level.getServer());
+        var world = shared(d, LabyrinthPlace.MOVIE_NIGHT);
+        if (!world.hasUUID("Canoe") || !world.getUUID("Canoe").equals(entity.getUUID())) return;
+        world.putLong("CanoePosition", entity.blockPosition().asLong());
+        var reason = entity.getRemovalReason();
+        if (reason == Entity.RemovalReason.KILLED || reason == Entity.RemovalReason.DISCARDED) world.putBoolean("CanoeRemoved", true);
+        shared(d, LabyrinthPlace.MOVIE_NIGHT, world);
+    }
+
+    public static boolean boardMovie(ServerPlayer p, LakeCanoeEntity canoe) {
+        if (!inside(p, LabyrinthPlace.MOVIE_NIGHT) || !canoe.getTags().contains("LiteraryMovieCanoe")
+                || !p.getMainHandItem().isEmpty() || p.distanceToSqr(canoe) >= 25 || !canoe.getPassengers().isEmpty()) return false;
+        var d = LabyrinthData.get(p.server);
+        var world = shared(d, LabyrinthPlace.MOVIE_NIGHT);
+        if (!world.hasUUID("Canoe") || !world.getUUID("Canoe").equals(canoe.getUUID()) || !p.startRiding(canoe, true)) return false;
+        world.putUUID("CanoeClaim", p.getUUID());
+        shared(d, LabyrinthPlace.MOVIE_NIGHT, world);
+        return true;
+    }
     public static BlockPos diaryPosition(int i){return new BlockPos(new int[]{-9,7,-6,10,-11,5,12,-3}[i],0,new int[]{-12,-23,-30,-9,-36,-34,-29,-37}[i]);}
     private static int diaryIndex(BlockPos rel){for(int i=0;i<8;i++)if(rel.equals(diaryPosition(i)))return i;return -1;}
     private static void diary(ServerPlayer p,BlockPos b,CompoundTag own){var place=LabyrinthPlace.DEVILS_ROCK;int target=Math.min(8,own.getInt("Visit")*3);if(own.getInt("ThisVisitTicks")>=100){for(int i=0;i<target;i++){if((own.getInt("DiaryPlaced")&(1<<i))!=0)continue;var at=b.offset(diaryPosition(i));if(watched(p.serverLevel(),at.getCenter())||watched(p.serverLevel(),at.above().getCenter()))continue;LiteraryRooms.prop(p.serverLevel(),b,diaryPosition(i),LiteraryPropBlock.Kind.PAGE,Direction.SOUTH);own.putInt("DiaryPlaced",own.getInt("DiaryPlaced")|(1<<i));own.putLong("ArrivalTime"+i,p.serverLevel().getGameTime());var plate=b.offset(i%2==0?-5:5,0,-14);var ps=p.serverLevel().getBlockState(plate);if(ps.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.POWERED)){p.serverLevel().setBlock(plate,ps.setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.POWERED,true),3);p.serverLevel().scheduleTick(plate,ps.getBlock(),20);}sound(p,SoundEvents.STONE_PRESSURE_PLATE_CLICK_ON,plate,.35F,1);p.serverLevel().sendParticles(net.minecraft.core.particles.ParticleTypes.SCULK_CHARGE_POP,at.getX()+.5,at.getY()+.1,at.getZ()+.5,3,.1,.1,.1,0);break;}}
