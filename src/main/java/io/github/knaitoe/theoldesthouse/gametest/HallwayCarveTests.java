@@ -91,7 +91,7 @@ public final class HallwayCarveTests {
             if (!done) return;
             var note=level.getBlockEntity(base.offset(LiteraryRooms.source(place)));
             h.assertTrue(note instanceof LecternBlockEntity desk && !desk.getBook().isEmpty(),"the authored original is on its native lectern");
-            h.assertTrue(level.getBlockState(base).getBlock() instanceof DoorBlock,"the finished entrance is a real native door");
+            h.assertTrue(level.getBlockState(base.offset(0,0,1)).getBlock() instanceof DoorBlock,"the finished entrance is a real native door");
             h.assertTrue(level.getBlockState(base.offset(0,0,-8)).is(Blocks.OAK_SLAB)
                     && level.getBlockState(base.offset(0,7,-68)).is(Blocks.OAK_SLAB),"both ends of the original switchback staircase survive ordered slicing");
             h.succeed();
