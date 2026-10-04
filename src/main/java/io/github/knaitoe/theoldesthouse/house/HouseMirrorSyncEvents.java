@@ -72,6 +72,7 @@ public final class HouseMirrorSyncEvents {
 
         List<BlockPos> affected = event.getAffectedBlocks();
         affected.removeIf(pos -> protectsImpossibleStructure(level, data, origin, pos)
+                || HouseImpossibleHallway.isShielded(level, pos)
                 || isProtectedOverworldProxy(level, origin, pos));
 
         // Detonate fires before the affected blocks are removed. Queue them
@@ -79,6 +80,11 @@ public final class HouseMirrorSyncEvents {
         for (BlockPos pos : affected) {
             queue(level, origin, pos);
         }
+    }
+
+    /** Withers, dragons and other block-breaking creatures leave the impossible hallway standing. */
+    public static void onMobDestroy(net.neoforged.neoforge.event.entity.living.LivingDestroyBlockEvent event) {
+        if (HouseImpossibleHallway.isShielded(event.getEntity().level(), event.getPos())) event.setCanceled(true);
     }
 
     public static void onPiston(PistonEvent.Pre event) {

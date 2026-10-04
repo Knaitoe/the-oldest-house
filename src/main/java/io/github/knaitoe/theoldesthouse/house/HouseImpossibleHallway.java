@@ -112,6 +112,60 @@ public final class HouseImpossibleHallway {
         level.getEntitiesOfClass(FallingBlockEntity.class, bounds).forEach(FallingBlockEntity::discard);
     }
 
+    private static final int REPAIR_INTERVAL = 200;
+
+    /** Every ten seconds, a loaded revealed hallway mends any shell cell that burned or was blown away. */
+    public static void onServerTick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) {
+        var server = event.getServer();
+        // GameTest fixtures share one saved House; they call repairShell directly.
+        if (server.getTickCount() % REPAIR_INTERVAL != 0 || server instanceof net.minecraft.gametest.framework.GameTestServer) return;
+        HouseSavedData data = HouseSavedData.get(server);
+        BlockPos origin = data.houseOrigin();
+        ServerLevel level = server.getLevel(HouseDimensions.INTERIOR);
+        if (origin == null || level == null || !data.isImpossibleDoorRevealed()) return;
+        int mended = repairShell(level, origin);
+        if (mended > 0) io.github.knaitoe.theoldesthouse.TheOldestHouse.LOGGER.info("The impossible hallway mended {} burnt or broken block(s).", mended);
+    }
+
+    /**
+     * Restores shell cells (floor, ceiling, walls) that are now air or fire to
+     * the hallway's own materials. Anything else standing there is left alone,
+     * as is the far door's cell, and unloaded stretches wait for a visitor.
+     */
+    public static int repairShell(ServerLevel level, BlockPos origin) {
+        int mended = 0;
+        for (int z = START_Z_OFFSET; z <= END_Z_OFFSET; z++) {
+            if (!level.isLoaded(origin.offset(HouseLayout.AXIS_X, 0, z))) continue;
+            for (int x = LEFT_WALL_X_OFFSET; x <= RIGHT_WALL_X_OFFSET; x++) {
+                for (int y = 0; y <= 5; y++) {
+                    BlockPos pos = origin.offset(x, y, z);
+                    if (!isProtectedStructureBlock(origin, pos)) continue;
+                    if (z == END_Z_OFFSET && x == HouseLayout.AXIS_X && (y == 1 || y == 2)) continue;
+                    var state = level.getBlockState(pos);
+                    if (!state.isAir() && !(state.getBlock() instanceof net.minecraft.world.level.block.BaseFireBlock)) continue;
+                    var material = y == 0 ? Blocks.SPRUCE_PLANKS.defaultBlockState()
+                            : y == 5 ? Blocks.SPRUCE_SLAB.defaultBlockState()
+                            : y == 1 && z < END_Z_OFFSET ? Blocks.SPRUCE_PLANKS.defaultBlockState()
+                            : Blocks.WHITE_TERRACOTTA.defaultBlockState();
+                    level.setBlock(pos, material, QUIET_FLAGS);
+                    mended++;
+                }
+            }
+        }
+        return mended;
+    }
+
+    /**
+     * A block of the revealed impossible hallway, walls to dressing: nothing
+     * outside it may burn it or blow it apart.
+     */
+    public static boolean isShielded(net.minecraft.world.level.Level level, BlockPos pos) {
+        if (!(level instanceof ServerLevel server) || !server.dimension().equals(HouseDimensions.INTERIOR)) return false;
+        HouseSavedData data = HouseSavedData.get(server.getServer());
+        BlockPos origin = data.houseOrigin();
+        return origin != null && data.isImpossibleDoorRevealed() && isInteriorOnlyPosition(origin, pos);
+    }
+
     public static boolean isInteriorOnlyPosition(BlockPos origin, BlockPos pos) {
         int relX = pos.getX() - origin.getX();
         int relY = pos.getY() - origin.getY();

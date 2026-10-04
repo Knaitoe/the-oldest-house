@@ -79,3 +79,28 @@ players were still reported as teleported outside.
   hallway.
 
 Layout 32 / protocol 32 are unchanged.
+
+## The impossible hallway is shielded (playtest: one hallway burned)
+
+- **Fire.** `FireBlockMixin` is the first server-side mixin, in a new
+  `the_oldest_house.common.mixins.json`.
+  - Fire next to the revealed hallway cannot burn any block of it
+    (`checkBurnOut`).
+  - A fire inside the hallway's box goes out on its first tick.
+- **Explosions.** Creepers, TNT and fireballs now spare the hallway's whole box:
+  walls, floor, ceiling and everything inside it. Previously only the shell was
+  spared.
+- **Block-breaking creatures.** Withers and dragons are stopped by
+  `LivingDestroyBlockEvent`.
+- **Self-repair.** Every ten seconds, a loaded revealed hallway restores any
+  shell cell that is now air or fire to its own material: planks floor, slab
+  ceiling, plank and terracotta walls.
+  - Nothing else is overwritten, the far door's cell is skipped, and unloaded
+    stretches wait.
+  - This mends hallways that burned before the protection existed.
+- `HallwayShieldTests` covers:
+  - 400 fire ticks against a hallway wall;
+  - a fire lit inside the hallway going out;
+  - a TNT-strength blast beside the hallway that spares its wall and lantern
+    but destroys outside blocks;
+  - the shell repair.
