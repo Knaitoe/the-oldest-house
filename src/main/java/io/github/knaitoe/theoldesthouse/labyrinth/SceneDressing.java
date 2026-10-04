@@ -80,7 +80,8 @@ final class SceneDressing {
     }
 
     private static boolean nearDoor(ServerLevel level, BlockPos pos) {
-        for (BlockPos at : BlockPos.betweenClosed(pos.offset(-3, -1, -3), pos.offset(3, 2, 3)))
+        // Doorways and their approaches stay entirely clear, rugs included.
+        for (BlockPos at : BlockPos.betweenClosed(pos.offset(-4, -1, -4), pos.offset(4, 2, 4)))
             if (level.getBlockState(at).getBlock() instanceof DoorBlock) return true;
         return false;
     }
