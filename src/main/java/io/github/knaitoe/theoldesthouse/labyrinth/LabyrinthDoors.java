@@ -239,7 +239,8 @@ public final class LabyrinthDoors {
             setDoorOpen(toLevel, entry.lower, true, p);
             data.visit(p.getUUID(), place);
             io.github.knaitoe.theoldesthouse.house.HouseExperience.arrived(p,place);
-            LabyrinthDealer.dealPlace(data, p.getUUID(), place, p.getRandom());
+            BlockPos manor = HouseSavedData.get(server).houseOrigin();
+            LabyrinthDealer.arriveAt(data, p.getUUID(), place, manor == null ? 0L : manor.asLong());
             RedRoom.prepareIfDealt(p, place);
             ModelHome.onArrive(p, place);
             HarriganVignette.onArrive(p, place);
