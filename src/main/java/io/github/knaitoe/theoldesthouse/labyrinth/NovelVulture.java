@@ -14,7 +14,7 @@ public final class NovelVulture extends PathfinderMob {
     public NovelVulture(EntityType<? extends NovelVulture> t,Level l){super(t,l);setNoAi(true);setNoGravity(true);setPersistenceRequired();}
     public static AttributeSupplier.Builder attributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,10).add(Attributes.MOVEMENT_SPEED,0);}
     public void circle(BlockPos at){center=at;}
-    @Override public void tick(){super.tick();if(level().isClientSide)return;angle+=.009;moveTo(center.getX()+Math.cos(angle)*7,center.getY()+9+Math.sin(angle*.4)*.3,center.getZ()+Math.sin(angle)*7,(float)(-angle*180/Math.PI),0);}
+    @Override public void tick(){super.tick();if(level().isClientSide)return;angle+=.009;float heading=(float)(angle*180/Math.PI);moveTo(center.getX()+Math.cos(angle)*7,center.getY()+9+Math.sin(angle*.4)*.3,center.getZ()+Math.sin(angle)*7,heading,0);setYHeadRot(heading);setYBodyRot(heading);}
     @Override public boolean hurt(DamageSource s,float n){return false;}
     @Override public boolean removeWhenFarAway(double d){return false;}
     @Override public void addAdditionalSaveData(CompoundTag t){super.addAdditionalSaveData(t);t.putLong("Circle",center.asLong());t.putDouble("Angle",angle);}
