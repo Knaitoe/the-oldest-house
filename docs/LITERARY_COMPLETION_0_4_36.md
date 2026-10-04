@@ -1,6 +1,6 @@
 # Remaining literary stories — 0.4.36
 
-The approved design has twenty-four remaining story sites. This pass completes their authored structures, native mechanics, appropriate custom cast/meshes/UV materials, original papers, finite yields, save/multiplayer behavior and personal endings. It does not add further connective spatial-horror rooms or rewrite the shipped scenes. The 0.4.35 build remains the published baseline until the complete native suite and all client/package checks pass.
+Version 0.4.36 completes the approved twenty-four remaining story sites: authored structures, native mechanics, appropriate custom cast/meshes/UV materials, original papers, finite yields, save/multiplayer behavior and personal endings. All earlier connective rooms, the blind stretch, hotel, companion repairs and story progress are retained. The complete native gameplay, client and package checks passed for this release.
 
 | Slot | Story site | Actual personal resolution |
 | --- | --- | --- |
@@ -33,7 +33,15 @@ Each of the twenty-three new resolvable stories counts once. The cabin anchor do
 
 Original prose borrows human dramas and structures from the approved design. The Jones confession does not lift the Marias Massacre history or invent a Blackfeet identity. Its accounting reads actual native statistics. Snapshots only describe observed native history; an upgrade must not invent an earlier first bed or refill player property.
 
-Verification is pending. This document records the working scope, not a delivered build. Require the full native gameplay suite, focused story cases, every old render proof, new cast/props/keepsake/miniature/fan/camera proof, complete original-page wrapping, PNG CRC/decode checks, connected supported architecture, outside-sky/clock checks and exact package verification before publishing.
+Tested source: `3c324aef78aea325f40961171958208226ea3faf`, [native run 37168605798](https://github.com/Knaitoe/the-oldest-house/actions/runs/37168605798). All 312 required gameplay tests, thirteen focused literary cases, six focused hotel cases and the complete native client/package proof suite passed. The delivered JAR comes from this exact tested commit; the following documentation-only commit changes no compiled code or assets.
+
+## Playing and discovering the stories
+
+Install the same `the_oldest_house-0.4.36.jar` on Minecraft 1.21.1 clients and server with Java 21 and NeoForge 21.1.251 or the declared compatible range. Read each site's supported discovery paper by interacting with it. Native page menus preserve a finite original for that reader; collected originals remain readable. The source's last page, the actual scene actions and the reader's own closing record are required for a resolution. An ending paper becomes available after the authored beats; read its final page before leaving.
+
+Return through physical doors between installments. Merely reopening a paper cannot advance visits. Some scenes need several returns: the miniatures, fan, confession, diary, wheel and copied family deliberately develop over time. Crouching chooses a closed coffin lid; ordinary interaction leaves it open. The fan needs a real placed reach and actual light repair. Crimson hall's recordings must play through their native jukebox endings with the reader present. The ghost set's booth accepts the player's actual chat words, or crouched interaction records deliberate silence.
+
+The end-of-world cabin presents an explicit offering/refusal menu based on the actual held item or a reachable owned pet. Its consequence and personal account persist. The family snapshot needs actual Overworld home history: recorded bed/door use, followed by two in-game weeks. The old-man cabin starts from the first bed this version actually records, rather than reconstructing unrecorded history. Existing characters, papers, custody, staircase fires, companion orders and completed endings are retained on an in-place upgrade.
 
 ## Structures, materials and discovery
 
@@ -47,4 +55,8 @@ The family copy requires an actual Overworld bed and nearby home door, followed 
 
 ## Validation record
 
-The candidate is still under native validation. The prior focused run passed ten of eleven cases, including real home capture, original property preservation, native cylinder playback, cold corridor knocks, coffin identity, the crawlspace choice, fan returns, food tokens and finite reader-owned originals. Its remaining journal-return failure has been corrected. The expanded thirteen-case focused run and full 312-case suite remain required, together with thirteen native client checks, fifty-three architecture views, all original page wrapping, PNG decoding and package checks.
+The full native server completed **all 312 declared and required tests**. The separate focused literary run passed **all thirteen required cases**, including actual eight-visit quill writing and journal return, finite native cylinder playback, private full-height home capture, frozen machinery meshes, locked copied containers for owners and visiting peers, reader-owned originals and every Winchester stair/landing support and body-clearance probe. The separate six-case hotel suite also passed.
+
+All **434 real book pages** fit the native 114-pixel / fourteen-line limits. **226 PNG textures** passed decoding and chunk CRC checks. All **thirteen native client checks** passed, including the new cast/elk/prop/keepsake and miniature/fan/television effects proofs. **Fifty-three generated architecture views** and **three outside-sky elevations** rendered successfully. The architecture views are actual generated native geometry; the two home-copy views use captured test-built homes, while each player's game captures their own recorded home.
+
+The extracted playable JAR was independently decoded and checked for version, classes, all 288 prop variants, textures, ten Ogg assets, native song durations and package integrity. File: `the_oldest_house-0.4.36.jar`, **7,886,801 bytes**. SHA-256: `2961d71948159a65f707abfe460ba19fe182a5b60145b01b4c7e8a8cce3c3907`.

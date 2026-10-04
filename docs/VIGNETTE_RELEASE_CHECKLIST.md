@@ -9,9 +9,9 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current baseline: 0.4.35
+## Current baseline: 0.4.36
 
-Twenty eligible sources require **fifteen distinct personal resolutions** across at least two kinds. The game has three ending options. The [0.4.35 native run](https://github.com/Knaitoe/the-oldest-house/actions/runs/37156329228) passed all 299 required gameplay tests, the separate six-case hotel suite and the complete package/client proof suite.
+Forty-three eligible sources require **thirty-three distinct personal resolutions** across at least two kinds. The game has three ending options. The [0.4.36 native run](https://github.com/Knaitoe/the-oldest-house/actions/runs/37168605798), source `3c324aef78aea325f40961171958208226ea3faf`, passed all 312 required gameplay tests, the thirteen-case literary and six-case hotel suites, and complete writing/texture/package/client proofs, including fifty-three architecture views. Older recorded evidence and completed endings remain saved.
 
 | Source | Kind |
 | --- | --- |
@@ -35,12 +35,37 @@ Twenty eligible sources require **fifteen distinct personal resolutions** across
 | The séance's personally examined album | Connection |
 | The nursery's four personally discovered installments and final reading | Understanding |
 | The hotel's personally completed and read closing account | Understanding |
+| Hill House's cold nursery and returned cellar knocks | Understanding |
+| Miniatures of personally visited rooms | Memory |
+| Masque's seven rooms and stopped clock | Release |
+| Usher's personally chosen lid and inspected consequence | Understanding |
+| Winchester's physical upper route and ledger | Understanding |
+| The child's disappearing exits and actual crawl out | Survival |
+| Crimson hall's three played recordings and original account | Connection |
+| The Lady's route, refuge and lake-room aftermath | Survival |
+| The elk lot's personal escape and named clipping | Survival |
+| The fan's repaired reach, image and later tooth | Understanding |
+| Mapping's crawlspace, belongings choice and brother's consequence | Connection |
+| Holy Rabbit's actual meals, mornings and dragging trail | Survival |
+| The confession's own signed, sealed and read journal | Understanding |
+| The elk hides' still vigil and service escape | Survival |
+| Costume night's observed movement and grass refuge | Survival |
+| Movie night's actual canoe route through firework exposures | Survival |
+| Winter lake's broken ice, real submersion and return | Survival |
+| Camp Blood's personal survival and service-route escape | Survival |
+| Devil's Rock's eight discovered pages and final reading | Memory |
+| The wheel's actual numbered route and front-door return | Memory |
+| The ghost set's performed marks and personal transcript | Connection |
+| The cabin's explicit offering/refusal and read choice record | Release |
+| The copied family's visits, actual heirloom and personal account | Memory |
 
-The twenty-first source requires sixteen. Existing recorded evidence remains saved as the quota rises. Explorers who have not committed to release must satisfy the current requirement. Completing every source, or resolving the Mother specifically, is not required.
+The forty-fourth source still requires thirty-three. Existing recorded evidence remains saved as the quota rises. Explorers who have not committed to release must satisfy the current requirement. Completing every source, or resolving the Mother specifically, is not required.
 
 Every new vignette includes authored structural generation and furnished interiors, appropriate custom native meshes/textures for props, items and cast, original integrated writing, personally earned outcomes, multiplayer/save preservation and a reviewed Witness resolution. Require the full native gameplay suite and client/package proofs, including generated architecture views and custom-asset rendering, before delivery.
 
 Karen’s room is a native navigation/respawn anchor, excluded from Witness.
+
+The old-man cabin is recurring guidance and a private first-recorded-bed snapshot, excluded from Witness.
 
 Version 0.4.21 serial notes, poems and furniture are scenery, excluded from the playable Witness pool. They confer no resolution credit.
 
