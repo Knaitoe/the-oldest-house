@@ -54,7 +54,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.37"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.38"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               correspondence = json.loads(z.read('data/the_oldest_house/correspondence/letters.json'))
               assert len(correspondence) == 108 and len({n['id'] for n in correspondence}) == 108
               assert 'io/github/knaitoe/theoldesthouse/gametest/CollectedCorrespondenceTests.class' in z.namelist()
@@ -387,3 +387,38 @@ jobs:
         with:
           name: literary-diagnostics-${{ github.sha }}
           path: build/literary-native.log
+
+  hallway-carve:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Focused native hallway carve
+        timeout-minutes: 15
+        env:
+          JAVA_TOOL_OPTIONS: -Xmx4g
+        run: |
+          mkdir -p build run
+          printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_doors --no-daemon 2>&1 | tee build/hallway-native.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          completed=re.findall(r'All (\d+) required tests passed',Path('build/hallway-native.log').read_text())
+          declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/HallwayCarveTests.java').read_text()))
+          assert completed and int(completed[-1])==declared, (completed,declared)
+          print(f'All {declared} focused native hallway cases passed; the complete suite remains required.')
+          PY
+      - name: Upload hallway diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hallway-diagnostics-${{ github.sha }}
+          path: build/hallway-native.log

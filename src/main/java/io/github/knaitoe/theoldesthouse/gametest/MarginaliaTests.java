@@ -149,7 +149,7 @@ public final class MarginaliaTests {
         CompoundTag harrigan=data.state(HarriganVignette.ID);harrigan.putBoolean("ReadingFinished",true);data.setState(HarriganVignette.ID,harrigan);
         CompoundTag goat=data.state(GoatmanVignette.ID);goat.putUUID("UnchangedRun",UUID.randomUUID());data.setState(GoatmanVignette.ID,goat);
         var before=HouseMarginalia.record(data,p.getUUID());data.setBuilt(18,f.origin);
-        h.assertTrue(!LabyrinthBuilder.ensureBuilt(f.level.getServer()),"the established layout starts a decoration upgrade");while(LabyrinthBuilder.isCarving())LabyrinthBuilder.tick(f.level.getServer());
+        h.assertTrue(!LabyrinthBuilder.ensureBuilt(f.level.getServer()),"the established layout starts a decoration upgrade");LabyrinthBuilder.finishGameTest(f.level.getServer());
         h.assertTrue(data.builtVersion()==LabyrinthBuilder.VERSION&&f.level.getBlockEntity(changed)==chest&&((net.minecraft.world.Container)chest).getItem(0).getCount()==5,"older domestic fragments are not reconstructed over player storage");
         h.assertTrue(f.level.getBlockEntity(f.base.offset(LabyrinthLighting.TOM_CACHE))==cache&&cache.getItem(0).isEmpty()&&cache.getItem(4).getCount()==3&&f.level.getBlockState(lamp).is(Blocks.TORCH),"finite caches and placed lights survive the decoration pass");
         h.assertTrue(before.equals(HouseMarginalia.record(data,p.getUUID()))&&WitnessAccount.has(data,p.getUUID(),WitnessAccount.Story.HARRIGAN)

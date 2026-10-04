@@ -9,9 +9,9 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.37
+## Current candidate: 0.4.38
 
-The 0.4.37 review repair adds no new source and retains layout 32 / protocol 32. Require all 317 declared native tests, sixteen focused literary and seven hotel cases plus all existing native client/package proofs. Use the reviewed branch HEAD's complete green CI result as patch verification. The following 0.4.36 evidence is historical and belongs to its exact stated source.
+The 0.4.38 hallway repair retains the 0.4.37 review repairs, adds no new source and keeps layout 32 / protocol 32. Require all 321 declared native tests, three focused hallway cases, sixteen literary and seven hotel cases plus all existing native client/package proofs. Use the reviewed branch HEAD's complete green CI result as patch verification. The following 0.4.36 evidence is historical and belongs to its exact stated source.
 
 Forty-three eligible sources require **thirty-three distinct personal resolutions** across at least two kinds. The game has three ending options. The [0.4.36 native run](https://github.com/Knaitoe/the-oldest-house/actions/runs/37168605798), source `3c324aef78aea325f40961171958208226ea3faf`, passed all 312 required gameplay tests, the thirteen-case literary and six-case hotel suites, and complete writing/texture/package/client proofs, including fifty-three architecture views. Older recorded evidence and completed endings remain saved.
 

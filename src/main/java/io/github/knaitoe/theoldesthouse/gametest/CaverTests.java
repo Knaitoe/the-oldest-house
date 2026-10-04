@@ -141,7 +141,7 @@ public final class CaverTests {
         var random=new CompoundTag();random.putUUID("SavedRound",UUID.randomUUID());d.setState(GoatmanVignette.ID,random);
         WitnessAccount.resolve(d,p.getUUID(),WitnessAccount.Story.HARRIGAN,"kept_phone");var paper=new CompoundTag();paper.putString("Original","kept");d.setState(HouseMarginalia.ID,paper);
         d.setState(CaverVignette.ID,new CompoundTag());d.setBuilt(19,f.origin);
-        h.assertTrue(!LabyrinthBuilder.ensureBuilt(f.l.getServer()),"the existing version-19 world begins an append upgrade");while(LabyrinthBuilder.isCarving())LabyrinthBuilder.tick(f.l.getServer());
+        h.assertTrue(!LabyrinthBuilder.ensureBuilt(f.l.getServer()),"the existing version-19 world begins an append upgrade");LabyrinthBuilder.finishGameTest(f.l.getServer());
         h.assertTrue(d.builtVersion()==LabyrinthBuilder.VERSION&&d.door(LabyrinthPlace.TED_CAVER.entryDoorId())!=null&&f.l.getBlockState(f.b.offset(CaverCave.APERTURE)).is(Blocks.CRACKED_DEEPSLATE_BRICKS),"the new physical cave and its return door are appended");
         h.assertTrue(f.l.getBlockEntity(old)==cache&&cache.getItem(0).isEmpty()&&cache.getItem(4).getCount()==3&&read.equals(d.state(HarriganVignette.ID))&&random.equals(d.state(GoatmanVignette.ID))&&paper.equals(d.state(HouseMarginalia.ID))&&WitnessAccount.has(d,p.getUUID(),WitnessAccount.Story.HARRIGAN),"old storage identity, finite cache, reading, run and personal evidence remain");h.succeed();
     }

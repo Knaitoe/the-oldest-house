@@ -133,7 +133,7 @@ public final class PhoneCanoeTests {
         var desk=(BarrelBlockEntity)f.level.getBlockEntity(town.offset(DrownedTown.PAPERS[0]));desk.setItem(0,ItemStack.EMPTY);desk.setItem(3,new ItemStack(Items.DIAMOND));
         var before=caveLevel.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(cave,LabyrinthPlace.PRESERVED_CAVE)).getFirst();
         CompoundTag state=data.state(PreservedCave.ID);state.putInt("Visit",3);state.putDouble("Voices",6);data.setState(PreservedCave.ID,state);data.setBuilt(15,f.origin);
-        h.assertTrue(!LabyrinthBuilder.ensureBuilt(f.server),"a version fifteen world begins the native incremental upgrade");while(LabyrinthBuilder.isCarving())LabyrinthBuilder.tick(f.server);
+        h.assertTrue(!LabyrinthBuilder.ensureBuilt(f.server),"a version fifteen world begins the native incremental upgrade");LabyrinthBuilder.finishGameTest(f.server);
         h.assertTrue(data.builtVersion()==LabyrinthBuilder.VERSION&&data.door(LabyrinthPlace.PHONE_CANOE.entryDoorId())!=null,"new native room and return door are appended");
         h.assertTrue(f.level.getBlockEntity(town.offset(DrownedTown.PAPERS[0]))==desk&&desk.getItem(0).isEmpty()&&desk.getItem(3).is(Items.DIAMOND),"finite school supplies are not restocked or replaced");
         h.assertTrue(!before.isRemoved()&&data.state(PreservedCave.ID).getInt("Visit")==3&&data.state(PreservedCave.ID).getDouble("Voices")==6,"existing physical cave canoe and visit noise are untouched");h.succeed();
@@ -153,7 +153,7 @@ public final class PhoneCanoeTests {
         CompoundTag round=data.state(HideAndClap.ID);round.putInt("UpgradeRound",137);data.setState(HideAndClap.ID,round);
         data.setCompleted(HarriganVignette.ID,true);WitnessAccount.resolve(data,player,WitnessAccount.Story.HARRIGAN,"remembered");data.setBuilt(16,f.origin);
         h.assertTrue(!LabyrinthBuilder.ensureBuilt(f.server),"version sixteen starts an in-place upgrade");
-        while(LabyrinthBuilder.isCarving())LabyrinthBuilder.tick(f.server);
+        LabyrinthBuilder.finishGameTest(f.server);
         h.assertTrue(data.builtVersion()==LabyrinthBuilder.VERSION&&interior.getBlockState(landing.offset(0,-1,-3)).is(net.minecraft.world.level.block.Blocks.SPRUCE_PLANKS),"the landing is dressed and layout version advances");
         h.assertTrue(cache==interior.getBlockEntity(landing.offset(LabyrinthLighting.TOM_CACHE))&&cache.getItem(0).isEmpty()&&cache.getItem(5).getCount()==3,"native upgrade neither replaces nor refills the finite cache");
         h.assertTrue(f.level.getBlockState(marker).is(net.minecraft.world.level.block.Blocks.DIAMOND_BLOCK)&&!canoe.isRemoved()&&canoe.getUUID().equals(canoeId),"the recording room and its native canoe are never rebuilt");

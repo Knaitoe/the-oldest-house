@@ -86,7 +86,7 @@ public final class ArchitectureTests {
         server.overworld().getDataStorage().set("the_oldest_house",house);
         var data=new LabyrinthData();server.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);server.overworld().getDataStorage().set("the_oldest_house_mother",new MotherCollection());
         try{
-            LabyrinthBuilder.clearAll();LabyrinthBuilder.rebuild(server);while(LabyrinthBuilder.isCarving())LabyrinthBuilder.tick(server);
+            LabyrinthBuilder.clearAll();LabyrinthBuilder.rebuild(server);LabyrinthBuilder.finishGameTest(server);
             int dressed=0,props=0;
             for(var scene:LabyrinthPlace.values()){
                 if(!VignetteArchitecture.applies(scene))continue;
@@ -128,7 +128,7 @@ public final class ArchitectureTests {
             BlockPos oldDoor=LabyrinthPlaces.base(origin,LabyrinthPlace.HARRIGAN).offset(0,0,1);
             interior.setBlock(oldDoor,Blocks.DARK_OAK_PLANKS.defaultBlockState(),2);interior.setBlock(oldDoor.above(),Blocks.DARK_OAK_PLANKS.defaultBlockState(),2);
             data.setState(VignetteArchitecture.STATE,new CompoundTag());data.setBuilt(23,origin);
-            h.assertTrue(!LabyrinthBuilder.ensureBuilt(server),"the old layout schedules an in-place architectural upgrade");while(LabyrinthBuilder.isCarving())LabyrinthBuilder.tick(server);
+            h.assertTrue(!LabyrinthBuilder.ensureBuilt(server),"the old layout schedules an in-place architectural upgrade");LabyrinthBuilder.finishGameTest(server);
             h.assertTrue(cache==interior.getBlockEntity(camp.offset(LabyrinthCampsite.CACHE))&&cache.getItem(0).isEmpty()&&cache.getItem(7).getCount()==3,"a emptied cache stays the same original inventory");
             h.assertTrue(interior.getBlockState(oldDoor).getBlock() instanceof DoorBlock,"the authored wall in an older Harrigan return doorway is repaired in place");
             h.assertTrue(ids.equals(interior.getEntitiesOfClass(Entity.class,box(mother.offset(-11,-5,-26),mother.offset(11,15,1))).stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet())),"native den residents retain their original UUIDs");
