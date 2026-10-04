@@ -8,7 +8,8 @@
     "HouseSceneClockMixin",
     "WolfPatMixin",
     "CatPatMixin",
-    "PlayerPatMixin"
+    "PlayerPatMixin",
+    "LazySectionBuffersMixin"
   ],
   "injectors": {
     "defaultRequire": 1

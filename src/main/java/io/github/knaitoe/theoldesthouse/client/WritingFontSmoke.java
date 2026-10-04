@@ -33,6 +33,7 @@ public final class WritingFontSmoke {
         Minecraft mc = Minecraft.getInstance();
         if (mc.getOverlay() != null || mc.screen == null) return;
         started = true;
+        LazySectionBuffers.verifyInstalled();
         mc.options.guiScale().set(2);
         mc.resizeDisplay();
         List<ItemStack> books = new ArrayList<>(HouseWriting.samples());
