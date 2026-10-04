@@ -87,6 +87,7 @@ public final class ArchitectureTests {
         var data=new LabyrinthData();server.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);server.overworld().getDataStorage().set("the_oldest_house_mother",new MotherCollection());
         try{
             LabyrinthBuilder.clearAll();LabyrinthBuilder.rebuild(server);LabyrinthBuilder.finishGameTest(server);
+            VignetteAudit.write(server,origin);
             int dressed=0,props=0;
             for(var scene:LabyrinthPlace.values()){
                 if(!VignetteArchitecture.applies(scene))continue;
