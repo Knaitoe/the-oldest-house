@@ -26,6 +26,7 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class WitnessTests {
+    private static void fillCurrentQuota(LabyrinthData data,UUID player){for(var story:WitnessAccount.Story.values())if(WitnessAccount.count(data,player)<WitnessAccount.REQUIRED&&story!=WitnessAccount.Story.MOTHER&&story!=WitnessAccount.Story.FLOORBOARDS)WitnessAccount.resolve(data,player,story,"personally_resolved");}
     @GameTest(template="empty") public static void roomVisitsWorldFlagsAndTradedBooksDoNotUnlockAnEnding(GameTestHelper helper){
         LabyrinthData data=new LabyrinthData();UUID a=UUID.randomUUID(),b=UUID.randomUUID();
         for(var place:List.of(LabyrinthPlace.FLOORBOARDS,LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.HARRIGAN)){data.visit(a,place);data.setCompleted(place.id(),true);}
@@ -56,6 +57,7 @@ public final class WitnessTests {
         WitnessAccount.resolve(data,player,WitnessAccount.Story.TED_CAVER,"retraced_the_squeeze");
         helper.assertTrue(!WitnessAccount.ready(data,player),"all nine older resolutions are retained below the new quota");
         for(var story:List.of(WitnessAccount.Story.ZAMPANO,WitnessAccount.Story.WHALE,WitnessAccount.Story.BARN_WELL,WitnessAccount.Story.HOLLOWAY,WitnessAccount.Story.PLAIN,WitnessAccount.Story.HOSPITAL))WitnessAccount.resolve(data,player,story,"resolved");
+        helper.assertTrue(!WitnessAccount.ready(data,player),"fifteen preserved sources stay below the expanded quota");fillCurrentQuota(data,player);
         helper.assertTrue(WitnessAccount.ready(data,player)&&!WitnessAccount.has(data,player,WitnessAccount.Story.MOTHER)
                 &&!WitnessAccount.has(data,player,WitnessAccount.Story.FLOORBOARDS),"fifteen different resolutions permit four missed stories, without a mandatory Mother outcome");
         ItemStack complete=WitnessAccount.book(data,player,"reader",false);
@@ -63,8 +65,8 @@ public final class WitnessTests {
                 .anyMatch(p->p.raw().getString().contains("Crouch and open the bars")),"the fifteenth resolution restores the actual cell directions");helper.succeed();
     }
     @GameTest(template="empty") public static void witnessQuotaTracksSeventyFivePercentOfTheEligiblePool(GameTestHelper helper){
-        helper.assertTrue(WitnessAccount.Story.values().length==20&&WitnessAccount.REQUIRED==15,"the twenty playable sources currently require fifteen resolutions");
-        for(int[] quota:new int[][]{{5,4},{6,5},{7,6},{8,6},{9,7},{10,8},{11,9},{12,9},{13,10},{16,12},{17,13},{18,14},{19,15},{20,15}})
+        helper.assertTrue(WitnessAccount.Story.values().length==43&&WitnessAccount.REQUIRED==33,"the forty-three playable sources currently require thirty-three resolutions");
+        for(int[] quota:new int[][]{{5,4},{6,5},{7,6},{8,6},{9,7},{10,8},{11,9},{12,9},{13,10},{16,12},{17,13},{18,14},{19,15},{20,15},{43,33}})
             helper.assertTrue(WitnessAccount.requiredForPoolSize(quota[0])==quota[1],"the Witness quota rounds 75 percent upward for a pool of "+quota[0]);
         helper.succeed();
     }
@@ -73,9 +75,9 @@ public final class WitnessTests {
         for(var story:List.of(WitnessAccount.Story.FLOORBOARDS,WitnessAccount.Story.CLAP,WitnessAccount.Story.HARRIGAN,
                 WitnessAccount.Story.DROWNED_TOWN,WitnessAccount.Story.PRESERVED_CAVE,WitnessAccount.Story.SHALLOWS,WitnessAccount.Story.PHONE_CANOE,WitnessAccount.Story.GOATMAN,WitnessAccount.Story.TED_CAVER))WitnessAccount.resolve(data,player,story,"resolved");
         for(var story:List.of(WitnessAccount.Story.ZAMPANO,WitnessAccount.Story.WHALE,WitnessAccount.Story.BARN_WELL,WitnessAccount.Story.HOLLOWAY,WitnessAccount.Story.PLAIN,WitnessAccount.Story.HOSPITAL))WitnessAccount.resolve(data,player,story,"resolved");
-        helper.assertTrue(!WitnessEnding.qualified(data,player),"a complete account still requires reading the cell's passage");WitnessAccount.markRead(data,player);
+        fillCurrentQuota(data,player);helper.assertTrue(!WitnessEnding.qualified(data,player),"a complete account still requires reading the cell's passage");WitnessAccount.markRead(data,player);
         var registries=helper.getLevel().registryAccess();LabyrinthData loaded=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),registries),registries);
-        helper.assertTrue(WitnessAccount.count(loaded,player)==15&&WitnessEnding.qualified(loaded,player),"the chosen reading and distinct outcomes persist independently of player cloning");helper.succeed();
+        helper.assertTrue(WitnessAccount.count(loaded,player)==WitnessAccount.REQUIRED&&WitnessEnding.qualified(loaded,player),"the chosen reading and distinct outcomes persist independently of player cloning");helper.succeed();
     }
     @GameTest(template="empty") public static void olderAccountsKeepTheirEvidenceUnderTheHigherQuota(GameTestHelper helper){
         LabyrinthData data=new LabyrinthData();UUID player=UUID.randomUUID();
@@ -96,7 +98,7 @@ public final class WitnessTests {
         WitnessAccount.resolve(loaded,player,WitnessAccount.Story.TED_CAVER,"retraced_the_squeeze");
         helper.assertTrue(WitnessAccount.count(loaded,player)==9&&!WitnessEnding.qualified(loaded,player),"the old cave escape remains saved below the fifteen-source boundary");
         for(var story:List.of(WitnessAccount.Story.ZAMPANO,WitnessAccount.Story.WHALE,WitnessAccount.Story.BARN_WELL,WitnessAccount.Story.HOLLOWAY,WitnessAccount.Story.PLAIN,WitnessAccount.Story.HOSPITAL))WitnessAccount.resolve(loaded,player,story,"resolved");
-        helper.assertTrue(WitnessAccount.count(loaded,player)==15&&WitnessEnding.qualified(loaded,player),"new personal resolutions qualify the preserved deliberate reading");helper.succeed();
+        fillCurrentQuota(loaded,player);helper.assertTrue(WitnessAccount.count(loaded,player)==WitnessAccount.REQUIRED&&WitnessEnding.qualified(loaded,player),"new personal resolutions qualify the preserved deliberate reading");helper.succeed();
     }
     @GameTest(template="empty",batch="witness_quota_fixture") public static void operatorReadyCommandMeetsTheCurrentQuotaWithoutDuplicateCredit(GameTestHelper helper) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         var server=helper.getLevel().getServer();

@@ -59,7 +59,30 @@ public final class WitnessAccount {
                 "They could hear the cupboard, but they could not see my hand. The album had names beneath its photographs. The final space had mine."),
         WALLPAPER("wallpaper_nursery","The pattern","understanding",
                 "I watched the shape cross the seams. Under four strips of paper she had kept her own words. I read the last page before I left."),
-        HOTEL("hotel","The closing account","understanding","I was in the photograph. I took the key from the snow, read the log and vented the plant. The desk had kept my missing things. I read the closing account before I left.");
+        HOTEL("hotel","The closing account","understanding","I was in the photograph. I took the key from the snow, read the log and vented the plant. The desk had kept my missing things. I read the closing account before I left."),
+        HILL_NURSERY("hill_nursery","The returned knocks","understanding","The cellar returned every knock I made. Upstairs, my name had been written beside the cold door."),
+        MINIATURES("miniatures","The little rooms","memory","I recognized the rooms on the tables. The latest figure wore my face; another figure stood behind it."),
+        MASQUE("masque","The last clock","release","I crossed seven colored rooms and put my hand on the clock. The next chime never came."),
+        USHER("usher","The coffin lid","understanding","I returned to the consequence of the lid I had chosen. The sound had followed the stone."),
+        WINCHESTER("winchester","The upper ledger","understanding","A long stair had gained one floor. The ledger at its end bought another day of construction."),
+        CHILD_ROOM("child_room","The disappearing exits","survival","I crawled below the bed after the windows and doors had gone. I found a floor that still led somewhere."),
+        CRIMSON_HALL("crimson_hall","The recorded voices","connection","I played all three voices through their endings. Beneath the snow, the floor was red."),
+        BLY_ROUTE("bly_route","The wet boards","survival","I waited in a shut cupboard until the footsteps reached the lake room. Then I came out."),
+        ELK_LOT("elk_lot","The looping field","survival","The field turned back upon itself. The clipping at the parking lot had my name and an ending I had not seen."),
+        ELK_FAN("elk_fan","The broken light","understanding","I repaired the light above the carpet. On later returns the shape became tape, then a tooth."),
+        MAPPING_INTERIOR("mapping_interior","The crawl beyond the roof","connection","The passage under the house ran farther than the roof. I returned to the boy after choosing what to do with his father's things."),
+        HOLY_RABBIT("holy_rabbit","The food in the hollow","survival","The rabbit lived through each morning. I ate what he brought and followed the line his leg had left in the snow."),
+        CONFESSION("confession","The listener's signature","understanding","I wrote until the speaker began counting the listener. The journal sealed in the wall carried my name."),
+        ELK_CARCASSES("elk_carcasses","The passing boots","survival","I held still beneath the hides while the boots passed. When the search ended, I took the service path."),
+        COSTUME_NIGHT("costume_night","The coats on the beach","survival","One costume moved when nobody watched it. I reached the living grass and kept it in sight."),
+        MOVIE_NIGHT("movie_night","The flashes over water","survival","Each firework found it closer to the canoe. I kept rowing until the pier was beneath my hands."),
+        WINTER_LAKE("winter_lake","The broken ice","survival","I broke a hole and waited beneath the ice. After she passed, I came up and crossed to the bank."),
+        CAMP_BLOOD("camp_blood","The service road","survival","The essay had remembered an ordinary summer. I escaped beyond the last cabin before that summer returned."),
+        DEVILS_ROCK("devils_rock","The eight loose pages","memory","I read the eight pages in order. The last one reached this room without a person bringing it."),
+        WHEEL("wheel","The numbered doors","memory","I found Mother beyond the numbered doors. The front door finally opened onto an outside where I could stand up."),
+        GHOSTS_SET("ghosts_set","The light and the marks","connection","The lit family kept repeating its lines. I stepped off the mark and left an account in the booth."),
+        END_WORLD_CABIN("end_world_cabin","The visitors at dusk","release","I answered the visitors for myself. The screen held the consequence after my answer."),
+        FAMILY_COPY("family_copy","The house they remembered","memory","They welcomed me into a house I had actually lived in. I returned until their welcome ended.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}
@@ -132,6 +155,7 @@ public final class WitnessAccount {
                         case SEANCE->"The chairs were empty. A name had been written below a photograph that was missing.";
                         case WALLPAPER->"The plaster showed through four seams. Someone had kept the pages the room was meant to conceal.";
                         case HOTEL->"The second place was empty. The desk still held the missing things. The heating plant had been attended.";
+                        default->story.text;
                     }:story.text;
             pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,story.title+"\n\n"+text));
         }
@@ -170,10 +194,10 @@ public final class WitnessAccount {
     }
     public static void onArrive(ServerPlayer player,LabyrinthPlace place){
         LabyrinthData data=LabyrinthData.get(player.server);Story story=Story.of(place.id());
-        if(story==null||place==LabyrinthPlace.HOTEL||NovelVignettes.isNovel(place)||ClassicsVignettes.isClassic(place)||!data.isCompleted(place.id())||has(data,player.getUUID(),story))return;
+        if(story==null||LiteraryRooms.isLiterary(place)||place==LabyrinthPlace.HOTEL||NovelVignettes.isNovel(place)||ClassicsVignettes.isClassic(place)||!data.isCompleted(place.id())||has(data,player.getUUID(),story))return;
         String prop=switch(story){case FLOORBOARDS->"the exposed space beneath the loose board";
             case CLAP->"the open wardrobe";case HARRIGAN->"the casket";case MODEL_HOME->"the child's window";
-            case DROWNED_TOWN->"the church's open roof hatch";case PRESERVED_CAVE->"the canoe behind the empty pews";case SHALLOWS->"the bank";case PHONE_CANOE->"the canoe";case GOATMAN->"the trailer door";case TED_CAVER->"the cave landing";case ZAMPANO->"the survey";case WHALE->"the undated letter";case BARN_WELL->"the well";case PLAIN->"the distant shape";case HOSPITAL->"the dawn chart";case HOLLOWAY->"the service latch";case MOTHER->"the keeper's record";case SEANCE->"the family album";case WALLPAPER->"the collected pages";case HOTEL->"the closing account";};
+            case DROWNED_TOWN->"the church's open roof hatch";case PRESERVED_CAVE->"the canoe behind the empty pews";case SHALLOWS->"the bank";case PHONE_CANOE->"the canoe";case GOATMAN->"the trailer door";case TED_CAVER->"the cave landing";case ZAMPANO->"the survey";case WHALE->"the undated letter";case BARN_WELL->"the well";case PLAIN->"the distant shape";case HOSPITAL->"the dawn chart";case HOLLOWAY->"the service latch";case MOTHER->"the keeper's record";case SEANCE->"the family album";case WALLPAPER->"the collected pages";case HOTEL->"the closing account";default->"the closing account";};
         player.displayClientMessage(Component.literal("Someone reached the end before you. Crouch and examine "+prop+" to record what remains."),false);
     }
     /** Later explorers must inspect a resolved room's ending prop themselves. */
