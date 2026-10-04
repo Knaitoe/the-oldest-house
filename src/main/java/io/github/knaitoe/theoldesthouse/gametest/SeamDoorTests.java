@@ -75,7 +75,7 @@ public final class SeamDoorTests {
         var barrel=f.lower.offset(2,0,4);
         for(var level:new ServerLevel[]{f.inside,f.outside})level.setBlock(barrel,Blocks.BARREL.defaultBlockState(),FLAGS);
         ((BarrelBlockEntity)f.inside.getBlockEntity(barrel)).setItem(0,new ItemStack(Items.DIAMOND,5));
-        f.player=NativeTestPlayers.survival(h,"seam_exit_waiting");var p=f.player;p.setNoGravity(true);
+        f.player=NativeTestPlayers.survival(h,"exit_waiting");var p=f.player;p.setNoGravity(true);
         p.teleportTo(f.inside,f.lower.getX()+.5,f.lower.getY(),f.lower.getZ()+3.35,180,0);p.setDeltaMovement(Vec3.ZERO);
         var click=new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,f.lower,
                 new BlockHitResult(f.lower.getCenter(),Direction.SOUTH,f.lower,false));
