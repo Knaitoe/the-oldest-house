@@ -163,7 +163,10 @@ public final class HouseImpossibleHallway {
         // Starts inside the threshold doorway so it overlaps the hall's own
         // volume: there is never a gap that would count as leaving the house.
         double minZ = origin.getZ() + HouseLayout.THRESHOLD_Z - 0.25D;
-        double maxZ = origin.getZ() + END_Z_OFFSET - 0.25D;
+        // Runs through the far door's own cell. A closed north-facing door keeps its
+        // panel at the back of that cell, so a player pressed against it stands
+        // about half a block past the wall line and is still in the hallway.
+        double maxZ = origin.getZ() + END_Z_OFFSET + 0.95D;
 
         return x >= minX && x <= maxX
                 && y >= minY && y <= maxY

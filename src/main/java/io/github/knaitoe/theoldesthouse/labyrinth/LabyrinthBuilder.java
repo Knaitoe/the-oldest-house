@@ -12,6 +12,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.TicketType;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.BedBlock;
@@ -91,6 +93,7 @@ public final class LabyrinthBuilder {
             return true;
         }
         pending = new ArrayDeque<>();
+        preparing = null;
         domesticUpgrades.clear();
         architecturalUpgrades.clear();
         LabyrinthData data = LabyrinthData.get(server);
@@ -140,7 +143,12 @@ public final class LabyrinthBuilder {
             pending = null;
             return;
         }
-        LabyrinthPlace place = pending.poll();
+        LabyrinthPlace place = pending.peek();
+        if (place != null && !prepared(server, place)) {
+            return;
+        }
+        pending.poll();
+        long started = System.nanoTime();
         if (place != null) {
             if (architecturalUpgrades.remove(place)) {
                 ServerLevel site=server.getLevel(NovelRooms.dimension(place));
@@ -151,6 +159,8 @@ public final class LabyrinthBuilder {
                 io.github.knaitoe.theoldesthouse.house.HouseFurnishings.reduceNotes(interior,pendingOrigin,place);
             }
             else build(server, interior, pendingOrigin, place);
+            long millis = (System.nanoTime() - started) / 1_000_000L;
+            if (millis > 100) TheOldestHouse.LOGGER.info("Carving {} took {} ms in one tick.", place.id(), millis);
         }
         if (pending.isEmpty()) {
             BlockPos origin = pendingOrigin;
@@ -174,7 +184,106 @@ public final class LabyrinthBuilder {
         }
     }
 
+    // ------------------------------------------------------------------
+    // Pacing. A fresh world has never generated the chunks a place stands in,
+    // and the largest slots hold a few hundred thousand blocks. Loading those
+    // chunks synchronously and filling a whole slot in one tick stalls the
+    // server for tens of seconds, so each place first waits for its chunks to
+    // load off the main thread, then fills its slot a slice per tick.
+
+    /** Ticks a place waits for its chunks before it is built anyway. */
+    private static final int MAX_PREPARE_WAIT = 400;
+    /** Main-thread time one tick may spend filling a slot. */
+    private static final long FILL_BUDGET_NANOS = 8_000_000L;
+    @Nullable private static LabyrinthPlace preparing;
+    private static int prepareWaits;
+    private static int fillColumn;
+    private static long lastPrepareTick = Long.MIN_VALUE;
+
+    private static boolean prepared(MinecraftServer server, LabyrinthPlace place) {
+        if (preparing != place) {
+            preparing = place;
+            prepareWaits = 0;
+            fillColumn = 0;
+        }
+        // A second call within one server tick means a caller is driving the
+        // carve itself and nothing can load in between: build synchronously.
+        long now = server.getTickCount();
+        boolean synchronous = now == lastPrepareTick;
+        lastPrepareTick = now;
+        ServerLevel level = server.getLevel(NovelRooms.dimension(place));
+        BlockPos base = LabyrinthPlaces.base(pendingOrigin, place);
+        if (level == null || base == null) {
+            return true;
+        }
+        if (!synchronous && prepareWaits < MAX_PREPARE_WAIT && !chunksReady(level, place, base)) {
+            prepareWaits++;
+            return false;
+        }
+        boolean upgrade = architecturalUpgrades.contains(place) || domesticUpgrades.contains(place);
+        if (!upgrade && prefills(place)) {
+            BoundingBox slot = LabyrinthPlaces.slotBounds(pendingOrigin, place);
+            if (slot != null && !fillSlice(level, slot, synchronous)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Interior places whose build begins by filling their whole slot (mazes capture their old paths first). */
+    private static boolean prefills(LabyrinthPlace place) {
+        return !NovelRooms.outside(place) && !NovelVignettes.isNovel(place) && !LabyrinthMaze.isMaze(place);
+    }
+
+    private static boolean chunksReady(ServerLevel level, LabyrinthPlace place, BlockPos base) {
+        int minX, maxX, minZ, maxZ;
+        if (NovelRooms.outside(place)) {
+            AABB box = OutdoorRelocation.bounds(base, place);
+            minX = (int) Math.floor(box.minX); maxX = (int) Math.ceil(box.maxX);
+            minZ = (int) Math.floor(box.minZ); maxZ = (int) Math.ceil(box.maxZ);
+        } else {
+            BoundingBox slot = LabyrinthPlaces.slotBounds(pendingOrigin, place);
+            if (slot == null) return true;
+            minX = slot.minX(); maxX = slot.maxX(); minZ = slot.minZ(); maxZ = slot.maxZ();
+        }
+        boolean ready = true;
+        for (int x = minX >> 4; x <= maxX >> 4; x++) {
+            for (int z = minZ >> 4; z <= maxZ >> 4; z++) {
+                ChunkPos chunk = new ChunkPos(x, z);
+                level.getChunkSource().addRegionTicket(TicketType.PORTAL, chunk, 1, base);
+                ready &= level.getChunkSource().hasChunk(x, z);
+            }
+        }
+        return ready;
+    }
+
+    /** Fills the next columns of a slot; true once the whole slot is solid. */
+    private static boolean fillSlice(ServerLevel level, BoundingBox slot, boolean synchronous) {
+        int width = slot.maxX() - slot.minX() + 1;
+        int columns = width * (slot.maxZ() - slot.minZ() + 1);
+        int minY = Math.max(slot.minY(), level.getMinBuildHeight());
+        int maxY = Math.min(slot.maxY(), level.getMaxBuildHeight() - 1);
+        long deadline = System.nanoTime() + FILL_BUDGET_NANOS;
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        while (fillColumn < columns) {
+            int x = slot.minX() + fillColumn % width;
+            int z = slot.minZ() + fillColumn / width;
+            for (int y = minY; y <= maxY; y++) {
+                pos.set(x, y, z);
+                if (level.getBlockState(pos) != SOLID) {
+                    level.setBlock(pos, SOLID, FLAGS);
+                }
+            }
+            fillColumn++;
+            if (!synchronous && (fillColumn & 63) == 0 && System.nanoTime() > deadline) {
+                return fillColumn >= columns;
+            }
+        }
+        return true;
+    }
+
     public static void clearAll() {
+        preparing = null;
         pending = null;
         pendingOrigin = null;
         domesticUpgrades.clear();

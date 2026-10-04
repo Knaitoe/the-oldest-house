@@ -23,6 +23,15 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class ArchitectureTests {
+    /** A player pressed into the closed far door's cell is still in the hallway, never ejected through the wall. */
+    @GameTest(template="empty") public static void pressingTheHallwayDoorStaysInsideTheHouse(GameTestHelper h){
+        var origin=new BlockPos(0,80,0);double x=HouseLayout.AXIS_X+.5,y=origin.getY()+1,door=HouseImpossibleHallway.END_Z_OFFSET;
+        h.assertTrue(HouseImpossibleHallway.isInsideWalkableVolume(origin,x,y,door-.3),"standing before the far door is inside");
+        h.assertTrue(HouseImpossibleHallway.isInsideWalkableVolume(origin,x,y,door+.51),"pressed against the closed door's back panel is inside");
+        h.assertTrue(!HouseImpossibleHallway.isInsideWalkableVolume(origin,x,y,door+1.2),"past the door's cell is outside");
+        h.succeed();
+    }
+
     private static AABB box(BlockPos a,BlockPos b){return new AABB(a.getX(),a.getY(),a.getZ(),b.getX(),b.getY(),b.getZ());}
     @GameTest(template="empty",batch="architecture_stair",timeoutTicks=200)
     public static void nativeGreatStaircaseUpgradeWaitsForResidentsAndPreservesEncounter(GameTestHelper h)throws Exception{

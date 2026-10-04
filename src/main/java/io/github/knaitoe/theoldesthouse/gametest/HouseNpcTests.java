@@ -147,7 +147,7 @@ public final class HouseNpcTests {
         a.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);f.at(a,0,-3);HollowayVignette.enter(a);HollowayVignette.death(new net.neoforged.neoforge.event.entity.living.LivingDeathEvent(a,f.l.damageSources().generic()));
         h.assertTrue(!f.own(a).getBoolean("Run")&&f.own(a).getBoolean("Looted")&&!WitnessAccount.has(f.data(),a.getUUID(),WitnessAccount.Story.HOLLOWAY),"death ends the attempt while preserving the theft that arms another visit");h.succeed();
     }
-    @GameTest(template="empty",batch="npc_upgrade",timeoutTicks=150) public static void layoutTwentyOneAppendsTheCampWithoutRefillingOrReplacingOldScenes(GameTestHelper h){
+    @GameTest(template="empty",batch="npc_upgrade",timeoutTicks=2400) public static void layoutTwentyOneAppendsTheCampWithoutRefillingOrReplacingOldScenes(GameTestHelper h){
         upgrade=new Fixture(h,43000);var f=upgrade;var old=f.b.offset(30,0,0);f.l.setBlock(old,Blocks.BARREL.defaultBlockState(),3);var container=f.l.getBlockEntity(old);((BarrelBlockEntity)container).setItem(0,new ItemStack(Items.DIAMOND,3));
         var harrigan=LabyrinthPlaces.base(f.origin,LabyrinthPlace.HARRIGAN);HarriganVignette.build(f.l.getServer(),f.l,harrigan);
         IndianLakeRooms.keepLoaded(f.l,harrigan,LabyrinthPlace.HARRIGAN);
@@ -157,7 +157,9 @@ public final class HouseNpcTests {
         HarriganVignette.onEntityTick(new net.neoforged.neoforge.event.tick.EntityTickEvent.Post(body));
         var prior=new CompoundTag();prior.putBoolean("TicketVisible",true);prior.putBoolean("ReadingFinished",true);prior.putInt("Visit",1);f.data().setState(HarriganVignette.ID,prior);f.data().setBuilt(21,f.origin);
         LabyrinthBuilder.ensureBuilt(f.l.getServer());
-        h.runAfterDelay(100,()->{
+        // The append is paced by native chunk loading; check once it has finished.
+        final boolean[] checked={false};
+        h.onEachTick(()->{if(checked[0]||LabyrinthBuilder.isCarving())return;checked[0]=true;
             h.assertTrue(f.data().builtVersion()==LabyrinthBuilder.VERSION&&f.l.getBlockEntity(old)==container&&((BarrelBlockEntity)container).getItem(0).getCount()==3,"an append preserves existing container identity and contents");
             h.assertTrue(body.isAlive()&&body.getUUID().equals(id)&&HarriganAppearance.variant(body)==1&&f.data().state(HarriganVignette.ID).equals(prior),"legacy seated identity/dialogue: alive="+body.isAlive()+", appearance="+HarriganAppearance.variant(body)+", state="+f.data().state(HarriganVignette.ID));
             var saved=body.saveWithoutId(new CompoundTag());var restored=new ArmorStand(f.l,body.getX(),body.getY(),body.getZ());restored.load(saved);
