@@ -55,7 +55,7 @@ public final class ScenePolish {
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     /** Darkness is the point of these. */
     private static final Set<LabyrinthPlace> DARK_BY_DESIGN = EnumSet.of(LabyrinthPlace.LIGHT_SINK, LabyrinthPlace.BLIND_STRETCH,
-            LabyrinthPlace.FOLDED_MAZE, LabyrinthPlace.DEEP_MAZE, LabyrinthPlace.ABYSS_MAZE, LabyrinthPlace.PRESERVED_CAVE,
+            LabyrinthPlace.PRESERVED_CAVE,
             LabyrinthPlace.TED_CAVER, LabyrinthPlace.FLOODED_PASSAGE, LabyrinthPlace.HIDE_AND_CLAP);
     /** Floating fragments are the anomaly here. */
     private static final Set<LabyrinthPlace> FLOATING_BY_DESIGN = EnumSet.of(LabyrinthPlace.GRAVITY_DRIFT, LabyrinthPlace.FRACTURED_WALKWAY);
@@ -65,6 +65,8 @@ public final class ScenePolish {
             LabyrinthPlace.LONG_HALLWAY, LabyrinthPlace.HOTEL_HALLWAY, LabyrinthPlace.SPIRAL_STAIR, LabyrinthPlace.MOTHER_DEN,
             LabyrinthPlace.GOATMAN, LabyrinthPlace.SEANCE, LabyrinthPlace.CRIMSON_HALL, LabyrinthPlace.USHER, LabyrinthPlace.CHILD_ROOM,
             LabyrinthPlace.GHOSTS_SET, LabyrinthPlace.CONFESSION, LabyrinthPlace.GRAY_CORRIDOR, LabyrinthPlace.WHALE);
+    /** The mazes keep most of their dark, with a lamp often enough to read the walls by. */
+    private static final Set<LabyrinthPlace> SPARSE = EnumSet.of(LabyrinthPlace.FOLDED_MAZE, LabyrinthPlace.DEEP_MAZE, LabyrinthPlace.ABYSS_MAZE);
     private static final int BORDER = 12;
 
     private ScenePolish() {}
@@ -154,8 +156,14 @@ public final class ScenePolish {
         changed += lanterns(level, base, place);
         if (!FLOATING_BY_DESIGN.contains(place)) changed += floatingTrees(level, base, place);
         unbury(level, base, place);
-        if (NovelRooms.outside(place)) changed += border(level, base, place);
-        else if (!DARK_BY_DESIGN.contains(place)) changed += light(level, base, place, DIM.contains(place) ? 0.45D : 0.2D);
+        if (NovelRooms.outside(place)) {
+            changed += SceneDressing.groundCover(level, base, place);
+            changed += border(level, base, place);
+        }
+        else if (!DARK_BY_DESIGN.contains(place)) {
+            changed += SceneDressing.apply(level, base, place, new Lighting(level, base, place).floor);
+            changed += light(level, base, place, SPARSE.contains(place) ? 0.6D : DIM.contains(place) ? 0.45D : 0.2D);
+        }
         return changed;
     }
 
