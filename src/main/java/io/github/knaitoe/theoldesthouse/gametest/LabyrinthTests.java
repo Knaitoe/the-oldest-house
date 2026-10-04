@@ -748,6 +748,11 @@ public final class LabyrinthTests {
         ServerLevel level = helper.getLevel();
         for (LabyrinthPlace place : List.of(LabyrinthPlace.LONG_HALLWAY, LabyrinthPlace.HOTEL_HALLWAY)) {
             BlockPos base = helper.absolutePos(BlockPos.ZERO).offset(place == LabyrinthPlace.LONG_HALLWAY ? -300 : -340, 6, 40);
+            // Production carves these periods into a uniformly filled native slot.
+            // Include the untouched corner columns, rather than inheriting prior test terrain.
+            for (BlockPos at : BlockPos.betweenClosed(base.offset(-2, -1, -50), base.offset(15, 3, 1))) {
+                level.setBlock(at, LabyrinthBuilder.SOLID, LabyrinthBuilder.flags());
+            }
             LabyrinthLoops.buildHallway(level, base, place);
             for (int k = 0; k <= 1; k++) {
                 BlockPos a = base.offset(LabyrinthLoops.periodOrigin(k));
