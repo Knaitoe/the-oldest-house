@@ -1,4 +1,4 @@
-# Remaining literary stories — 0.4.36 working pass
+# Remaining literary stories — 0.4.36
 
 The approved design has twenty-four remaining story sites. This pass completes their authored structures, native mechanics, appropriate custom cast/meshes/UV materials, original papers, finite yields, save/multiplayer behavior and personal endings. It does not add further connective spatial-horror rooms or rewrite the shipped scenes. The 0.4.35 build remains the published baseline until the complete native suite and all client/package checks pass.
 
@@ -29,8 +29,22 @@ The approved design has twenty-four remaining story sites. This pass completes t
 | 67 | We Used to Live Here base copy | Complete the family visits in a frozen personal native snapshot and examine the actual copied heirloom |
 | 68 | Old man's cabin | Recurring original/copy witness and first-recorded-bed snapshot; an anchor, excluded from Witness |
 
-Each of the twenty-three new resolvable stories counts once. The cabin anchor does not count. Once they are fully playable, the pool becomes forty-three and the derived quota becomes thirty-three across at least two kinds. The three endings remain. Taking a borrowed paper, observing, arriving or inheriting another player's/world's completion never awards a resolution. Existing source records and completed endings remain saved.
+Each of the twenty-three new resolvable stories counts once. The cabin anchor does not count. The registered pool is forty-three and the derived quota is thirty-three across at least two kinds. The three endings remain. Taking a borrowed paper, observing, arriving or inheriting another player's/world's completion never awards a resolution. Existing source records and completed endings remain saved.
 
 Original prose borrows human dramas and structures from the approved design. The Jones confession does not lift the Marias Massacre history or invent a Blackfeet identity. Its accounting reads actual native statistics. Snapshots only describe observed native history; an upgrade must not invent an earlier first bed or refill player property.
 
 Verification is pending. This document records the working scope, not a delivered build. Require the full native gameplay suite, focused story cases, every old render proof, new cast/props/keepsake/miniature/fan/camera proof, complete original-page wrapping, PNG CRC/decode checks, connected supported architecture, outside-sky/clock checks and exact package verification before publishing.
+
+## Structures, materials and discovery
+
+Every site has its own supported native discovery paper and personal closing record. The rooms use original paneling, siding, stonework, red floor, drag-marked snow and wear textures; timber bays, window casings, roof ridges and porches; furnished bedrooms, desks, kitchen tables, film booths, lofts, cellars, truck sheds and physical stairs. Existing geometry stays in place. New indoor addresses stand 1,024 blocks north of the saved stack so they cannot reach into the fixed deep staircase.
+
+The cast includes sixteen tailored roles with masked, veiled, bandaged and changed-family appearances, plus a jointed antlerless elk. Eighteen native prop types have 288 facing/stage variants. Eleven keepsakes have actual three-dimensional inventory meshes. Mono original effects, three voiced wax recordings and the family film are packaged with the native song durations.
+
+The miniature tables render bounded samples of actual visited rooms, with the most recent first, the native player skin and a figure behind it; occasional later models show an available unvisited room. The ceiling fan has four rotating blades and a first-person floor image, carrying only the examining reader's wound. The cabin television saves a bounded view of the actual selected or visited room. Refusal closes at most one optional story, preserves all saved returns and occupied rooms, and turns that screen dark.
+
+The family copy requires an actual Overworld bed and nearby home door, followed by two in-game weeks. Capture and construction resume from saved cursors. The older cabin is based on the first bed actually recorded by this version; an upgrade does not invent forgotten history. Original chests remain untouched, copied containers are empty, machinery and farms use inactive native meshes, and projected pets remain unowned. The confession preserves the same carried blank quill across eight visits, then seals the exact own transcript and native statistics; its later reading and closing account are required.
+
+## Validation record
+
+The candidate is still under native validation. The prior focused run passed ten of eleven cases, including real home capture, original property preservation, native cylinder playback, cold corridor knocks, coffin identity, the crawlspace choice, fan returns, food tokens and finite reader-owned originals. Its remaining journal-return failure has been corrected. The expanded twelve-case focused run and full 311-case suite remain required, together with thirteen native client checks, fifty-three architecture views, all original page wrapping, PNG decoding and package checks.

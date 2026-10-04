@@ -64,6 +64,21 @@ jobs:
               for name in ('HotelVignette','HotelRooms','HotelRegistry','HotelTexts','HotelActor','HotelHose','HotelPropBlock','BlindStretch'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/HotelTests.class' in z.namelist()
+              for name in ('LiteraryVignettes','LiteraryRooms','LiteraryRegistry','LiteraryTexts','LiteraryActor','LiteraryElk','LiteraryCopies','LiteraryCabinChoices','LiteraryFrozenBlock','LiteraryModelBlockEntity'):
+                  assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
+              for name in ('LiteraryTests',):
+                  assert f'io/github/knaitoe/theoldesthouse/gametest/{name}.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/client/LiteraryEffectsVisualProof.class' in z.namelist()
+              literary = json.loads(z.read('assets/the_oldest_house/blockstates/literary_prop.json'))['variants']
+              assert len(literary) == 288
+              for name in ('elk_tooth','wheel_house_key','father_knife','grasshopper_jar','literary_photograph','family_film','father_meal','family_stew','wax_cylinder_one','wax_cylinder_two','wax_cylinder_three'):
+                  mesh=json.loads(z.read(f'assets/the_oldest_house/models/item/{name}.json'))
+                  assert len(mesh['elements']) >= 2 and 'display' in mesh
+              for name in ('cylinder_one','cylinder_two','cylinder_three','family_film','party','blizzard','drip','giggle','scratch','hooves'):
+                  assert z.read(f'assets/the_oldest_house/sounds/literary/{name}.ogg').startswith(b'OggS')
+              for name in ('wax_cylinder_1','wax_cylinder_2','wax_cylinder_3','family_film'):
+                  song=json.loads(z.read(f'data/the_oldest_house/jukebox_song/{name}.json'))
+                  assert song['length_in_seconds'] > 0
               hotel = json.loads(z.read('assets/the_oldest_house/blockstates/hotel_prop.json'))['variants']
               assert len(hotel) == 160
               for name in ('hotel_master_key','hotel_drink','hotel_photograph'):
@@ -283,6 +298,8 @@ jobs:
           test -s build/font-smoke/native-hotel.png
           test -s build/font-smoke/literary-passed.txt
           test -s build/font-smoke/native-literary.png
+          test -s build/font-smoke/literary-effects-passed.txt
+          test -s build/font-smoke/native-literary-effects.png
           test -s build/font-smoke/classics-passed.txt
           test -s build/font-smoke/native-classics.png
           test -s build/font-smoke/native-cast.png
