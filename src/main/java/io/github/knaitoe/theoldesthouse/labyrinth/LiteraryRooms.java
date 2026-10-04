@@ -16,7 +16,7 @@ public final class LiteraryRooms {
         PILE=new BlockPos(0,-5,-71),JOURNAL=new BlockPos(-8,1,-25),CAMERA=new BlockPos(0,0,-28),BOOTH=new BlockPos(15,0,-37),TV=new BlockPos(7,1,-24);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private LiteraryRooms(){}
-    public static boolean isLiterary(LabyrinthPlace p){return p!=null&&p.slot()>=45;}
+    public static boolean isLiterary(LabyrinthPlace p){return p!=null&&p.slot()>=45&&p.slot()<=68;}
     public static boolean outside(LabyrinthPlace p){return switch(p){case ELK_LOT,MAPPING_INTERIOR,HOLY_RABBIT,ELK_CARCASSES,COSTUME_NIGHT,MOVIE_NIGHT,WINTER_LAKE,CAMP_BLOOD,END_WORLD_CABIN,FAMILY_COPY,OLD_CABIN->true;default->false;};}
     public static BlockPos source(LabyrinthPlace p){return switch(p){
         case HILL_NURSERY->new BlockPos(11,1,-21);case MINIATURES->new BlockPos(-12,1,-25);case MASQUE->new BlockPos(7,1,-4);case USHER->new BlockPos(-12,1,-34);case WINCHESTER->new BlockPos(-26,1,-9);case CHILD_ROOM->new BlockPos(6,1,-20);case CRIMSON_HALL->new BlockPos(10,1,-12);case BLY_ROUTE->new BlockPos(8,1,-36);case ELK_LOT->new BlockPos(-18,1,-12);case ELK_FAN->new BlockPos(-7,1,-13);case MAPPING_INTERIOR->new BlockPos(-9,1,-29);case HOLY_RABBIT->new BlockPos(2,0,-22);case CONFESSION->JOURNAL;case ELK_CARCASSES->new BlockPos(5,0,-10);case COSTUME_NIGHT,MOVIE_NIGHT,WINTER_LAKE->new BlockPos(4,1,-6);case CAMP_BLOOD->new BlockPos(-20,1,-23);case DEVILS_ROCK->new BlockPos(-8,1,-21);case WHEEL->new BlockPos(-14,1,-43);case GHOSTS_SET->new BlockPos(17,1,-9);case END_WORLD_CABIN->new BlockPos(-9,1,-9);default->SOURCE;};}

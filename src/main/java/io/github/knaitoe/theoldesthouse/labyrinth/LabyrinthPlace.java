@@ -225,6 +225,24 @@ public enum LabyrinthPlace {
     END_WORLD_CABIN("end_world_cabin",Kind.ONE_SHOT,66,new BoundingBox(-31,-9,-81,31,19,0),literaryEntry()),
     FAMILY_COPY("family_copy",Kind.MULTI_VISIT,67,new BoundingBox(-34,-17,-71,34,33,0),literaryEntry()),
     OLD_CABIN("old_cabin",Kind.RECURRING,68,new BoundingBox(-12,-9,-29,12,17,0),literaryEntry()),
+    /** The deep tier turns to stone: a long vaulted gallery with a side way. */
+    STONE_GALLERY("stone_gallery", Kind.GRAY, 69, new BoundingBox(-5, -1, -42, 5, 7, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
+            new DoorSpec("side", new BlockPos(4, 0, -21), Direction.WEST, LabyrinthData.DEALT),
+            new DoorSpec("far", new BlockPos(0, 0, -42), Direction.SOUTH, LabyrinthData.DEALT)
+    )),
+    /** A pillared stone crossing around a dry fountain. */
+    STONE_CROSSING("stone_crossing", Kind.GRAY, 70, new BoundingBox(-12, -1, -26, 12, 8, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
+            new DoorSpec("west", new BlockPos(-12, 0, -13), Direction.EAST, LabyrinthData.DEALT),
+            new DoorSpec("east", new BlockPos(12, 0, -13), Direction.WEST, LabyrinthData.DEALT),
+            new DoorSpec("far", new BlockPos(0, 0, -26), Direction.SOUTH, LabyrinthData.DEALT)
+    )),
+    /** A stone stair that physically descends before the way goes on. */
+    STONE_DESCENT("stone_descent", Kind.GRAY, 71, new BoundingBox(-4, -5, -34, 4, 6, 0), List.of(
+            new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
+            new DoorSpec("far", new BlockPos(0, -4, -34), Direction.SOUTH, LabyrinthData.DEALT)
+    )),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

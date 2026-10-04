@@ -100,8 +100,31 @@ Dormancy and rediscovery are unchanged wherever another way on exists.
 
 ## The great staircase
 
-The great staircase is offered only at depth 14 or more (`STAIRCASE_DEPTH`),
+The great staircase is offered only at depth 20 or more (`STAIRCASE_DEPTH`),
 including after its discovery. Previously a discovered staircase could reappear
-from depth 6. First eligibility is unchanged: depth 12 and two stories.
+from depth 6. First eligibility is unchanged: depth 12 and two stories. The way
+back is now remembered 32 doors deep (it was 16), so depth 20 can be reached and
+counted. The correspondence gates (0/6/8/12/16/16) are unaffected.
 
-Layout 32 / protocol 32 are unchanged.
+## The deep tier is stone
+
+Three stone halls are appended at slots 69–71 (`StoneHalls`). This is layout
+33; existing worlds build the new slots in place and leave every older slot
+untouched.
+- **Stone gallery:** a long vaulted gallery. Chiselled pilasters carry ribs
+  across the vault, cloister benches sit in the bays, and a side way branches
+  off. It has two ways on.
+- **Stone crossing:** four pillars with chiselled bases and capitals, around a
+  dry fountain, on a floor laid in rings. It has three ways on.
+- **Stone descent:** a stair that steps down four levels, each with a rising
+  step so the climb back needs no jump, into a lower hall. It has one way on.
+
+All three are laid in aged masonry with cracked and mossy courses, and every
+lamp hangs from the vault.
+
+From depth 12 they are dealt as the ordinary ways on, with their own build tier.
+The domestic straight, bent and cross halls fade out at depth 12 and are gone by
+depth 14; the junction becomes rare. `LiteraryRooms.isLiterary` now covers slots
+45–68 only.
+
+Protocol 32 is unchanged.

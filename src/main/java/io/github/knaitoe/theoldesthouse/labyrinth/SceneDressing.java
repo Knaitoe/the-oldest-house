@@ -69,6 +69,7 @@ final class SceneDressing {
             case KAREN_ROOM -> new Theme(Blocks.LIGHT_GRAY_CARPET, List.of(DRAWERS, BEDSIDE), List.of(VASE, BOOKS, LAMP), List.of(FRAME), false, false, false);
             case WHALE -> new Theme(Blocks.BROWN_CARPET, List.of(DRAWERS), List.of(BOOKS, INK, BOTTLES), List.of(FRAME, CLOCK), true, false, false);
             case FOLDED_MAZE, DEEP_MAZE, ABYSS_MAZE, GRAY_CORRIDOR -> new Theme(null, List.of(), List.of(), List.of(), false, true, true);
+            case STONE_GALLERY, STONE_CROSSING, STONE_DESCENT -> new Theme(null, List.of(), List.of(), List.of(), false, true, false);
             default -> null;
         };
     }

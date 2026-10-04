@@ -10,13 +10,13 @@ public final class LabyrinthPacing {
     public static final int DEEP_DEPTH = 12;
     public static final int ABYSS_DEPTH = 16;
     /** The great staircase is only found this deep. */
-    public static final int STAIRCASE_DEPTH = 14;
+    public static final int STAIRCASE_DEPTH = 20;
     private LabyrinthPacing() {}
     public static boolean domestic(int depth) { return depth < STORY_DEPTH; }
     public static boolean ordinary(LabyrinthPlace place) {
         return place==LabyrinthPlace.JUNCTION || place==LabyrinthPlace.GRAY_CORRIDOR
                 || place==LabyrinthPlace.STRAIGHT_HALL || place==LabyrinthPlace.BENT_HALL
-                || place==LabyrinthPlace.CROSS_HALL;
+                || place==LabyrinthPlace.CROSS_HALL || StoneHalls.isStone(place);
     }
     public static boolean quiet(LabyrinthPlace place) {
         return place==LabyrinthPlace.QUIET_ROOM || place==LabyrinthPlace.EXPLORER_CAMP;
