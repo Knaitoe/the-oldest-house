@@ -563,8 +563,29 @@ public final class SceneCraft {
     /**
      * A fireplace against a wall: a chimney breast to the ceiling, a lit grate,
      * a hearthstone in front, a mantel shelf with candles and a picture above it.
+     * It is tried along the wall either side of where it was asked for; if every
+     * place is taken, the generic pass's ornaments and themed furniture make way.
      */
     private boolean fireplace(int x, int z, Direction out, int y, int top, Block breast, Block hearth) {
+        Direction along = out.getClockWise();
+        for (boolean displace : new boolean[]{false, true})
+            for (int shift : new int[]{0, 1, -1, 2, -2, 3, -3, 4, -4})
+                if (hearth(x + along.getStepX() * shift, z + along.getStepZ() * shift, out, y, top, breast, hearth, displace)) return true;
+        return false;
+    }
+
+    /** What the generic dressing pass put down, which a composed fitting may move aside. */
+    private boolean displaceable(BlockPos at) {
+        BlockState s = l.getBlockState(at);
+        if (l.getBlockEntity(at) != null) return false;
+        if (s.is(HouseBlocks.SCENE_DETAIL.get()) || s.is(Blocks.COBWEB)) return true;
+        var theme = SceneDressing.theme(scene);
+        if (theme == null) return false;
+        if (s.is(HouseBlocks.HOUSEHOLD_FURNITURE.get())) return theme.furniture().contains(s.getValue(HouseholdFurnitureBlock.KIND));
+        return theme.shelves() && s.is(Blocks.BOOKSHELF);
+    }
+
+    private boolean hearth(int x, int z, Direction out, int y, int top, Block breast, Block hearth, boolean displace) {
         if (!solid(x - out.getStepX(), y + 1, z - out.getStepZ())) return false;
         Direction along = out.getClockWise();
         int ax = along.getStepX(), az = along.getStepZ(), mx = x + out.getStepX(), mz = z + out.getStepZ();
@@ -577,7 +598,16 @@ public final class SceneCraft {
         plan.add(x, y, z, Blocks.CAMPFIRE.defaultBlockState().setValue(CampfireBlock.LIT, true).setValue(CampfireBlock.FACING, out));
         for (int a = -1; a <= 1; a++) plan.add(mx + ax * a, y + 2, mz + az * a, slab(Blocks.DARK_OAK_SLAB, SlabType.TOP));
         boolean[] built = {false};
-        guard(() -> built[0] = plan.place());
+        guard(() -> {
+            int mark = journal.size();
+            if (displace)
+                for (BlockPos cell : plan.cells)
+                    if (!free(cell) && displaceable(cell) && !kept(cell.getX() - b.getX(), cell.getY() - b.getY(), cell.getZ() - b.getZ())) set(cell, AIR);
+            BlockPos opening = p(x, y + 1, z);
+            if (displace && displaceable(opening)) set(opening, AIR);
+            built[0] = free(opening) && plan.place();
+            if (!built[0]) undo(mark);
+        });
         if (!built[0]) return false;
         for (int a = -1; a <= 1; a++) floor(mx + ax * a, y, mz + az * a, hearth.defaultBlockState());
         for (int a : new int[]{-1, 1}) put(mx + ax * a, y + 3, mz + az * a, candle(a < 0 ? 2 : 3));
@@ -1014,7 +1044,7 @@ public final class SceneCraft {
                 fellGrid();
                 beach();
                 shores();
-                woods(5, scene == LabyrinthPlace.WINTER_LAKE ? new int[]{90, 10, 0, 0, 0} : new int[]{40, 0, 35, 25, 0}, scene == LabyrinthPlace.WINTER_LAKE);
+                woods(4, scene == LabyrinthPlace.WINTER_LAKE ? new int[]{90, 10, 0, 0, 0} : new int[]{40, 0, 35, 25, 0}, scene == LabyrinthPlace.WINTER_LAKE);
                 undergrowth();
                 reeds();
             }
@@ -1583,22 +1613,29 @@ public final class SceneCraft {
      * wall of leaves: they are regraded to a smooth rise, and the leaf wall is
      * replaced with a close wood and undergrowth on the bank.
      */
+    private static boolean earth(BlockState s) {
+        return s.is(Blocks.PODZOL) || s.is(Blocks.DIRT) || s.is(Blocks.COARSE_DIRT) || s.is(Blocks.GRASS_BLOCK) || s.is(Blocks.ROOTED_DIRT);
+    }
+
     private void banks() {
         int seed = 113 + scene.ordinal();
+        // Why each bank column was left alone, reported once per scene so a skipped bank is explained.
+        int[] tally = new int[6]; // trunk/story, no earth top, built under, unchanged, regraded, considered
         for (int x = r.minX() - 4; x <= r.maxX() + 4; x++)
             for (int z = r.minZ() - 4; z <= -2; z++) {
                 int edge = Math.max(Math.max(r.minX() + 2 - x, x - r.maxX() + 2), r.minZ() + 2 - z);
-                if (edge < 1 || nearLog(x, z) || VignetteArchitecture.storyReserved(scene, x, 0, z)) continue;
+                if (edge < 1) continue;
+                tally[5]++;
+                if (nearLog(x, z) || VignetteArchitecture.storyReserved(scene, x, 0, z)) { tally[0]++; continue; }
                 int top = Integer.MIN_VALUE;
                 for (int y = 8; y >= -3; y--) {
                     BlockState s = at(x, y, z);
-                    if (s.is(Blocks.PODZOL)) { top = y; break; }
+                    if (earth(s)) { top = y; break; }
                     if (!s.isAir() && !(s.getBlock() instanceof LeavesBlock) && !plant(s)) break;
                 }
-                if (top == Integer.MIN_VALUE) continue;
-                boolean dirtBelow = true;
-                for (int y = top - 1; y >= -3 && dirtBelow; y--) dirtBelow = at(x, y, z).is(Blocks.DIRT);
-                if (!dirtBelow) continue;
+                if (top == Integer.MIN_VALUE) { tally[1]++; continue; }
+                // Earth at least two deep: a bank, not a floor laid over something built.
+                if (!earth(at(x, top - 1, z)) || !earth(at(x, top - 2, z))) { tally[2]++; continue; }
                 if (edge >= 4) for (int y = top + 1; y <= 9; y++) if (at(x, y, z).is(Blocks.SPRUCE_LEAVES)) remove(p(x, y, z));
                 int target = Math.max(0, Math.min(6, (int) Math.round(edge * 0.6 + Landscapes.noise(x, z, seed) * 1.1)));
                 // Never raised into a crown that overhangs the column.
@@ -1607,11 +1644,14 @@ public final class SceneCraft {
                         target = y - 1;
                         break;
                     }
-                if (target == top) continue;
+                if (target == top) { tally[3]++; continue; }
+                tally[4]++;
                 if (plant(at(x, top + 1, z))) remove(p(x, top + 1, z));
                 for (int y = Math.min(top, target); y <= Math.max(top, target); y++)
                     set(p(x, y, z), y < target ? Blocks.DIRT.defaultBlockState() : y == target ? Blocks.PODZOL.defaultBlockState() : AIR);
             }
+        TheOldestHouse.LOGGER.info("Regraded {} bank: {} columns, {} regraded, {} already in grade, {} by a trunk or story, {} without earth on top, {} over built ground.",
+                scene.id(), tally[5], tally[4], tally[3], tally[0], tally[1], tally[2]);
         // A close wood on the bank beyond the walkable rim.
         woods(r.minX() - 4, r.maxX() + 4, r.minZ() - 4, -3, 3, new int[]{60, 10, 20, 10, 0}, false,
                 (x, z) -> Math.max(Math.max(r.minX() + 2 - x, x - r.maxX() + 2), r.minZ() + 2 - z) < 3);
