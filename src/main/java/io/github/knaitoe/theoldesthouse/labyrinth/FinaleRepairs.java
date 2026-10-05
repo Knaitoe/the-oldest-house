@@ -5,6 +5,7 @@ import java.util.*;
 import net.minecraft.core.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
@@ -45,7 +46,7 @@ public final class FinaleRepairs {
         if(level.players().stream().anyMatch(p->area.intersects(p.getBoundingBox())))return;
         for(int x=(b.getX()-16)>>4;x<=(b.getX()+7)>>4;x++)
             for(int z=(b.getZ()+18)>>4;z<=(b.getZ()+34)>>4;z++)
-                if(!level.hasChunkAt(new BlockPos(x<<4,top,z<<4)))return;
+                if(!level.hasChunkAt(new BlockPos(x<<4,top,z<<4))||!level.areEntitiesLoaded(new ChunkPos(x,z).toLong()))return;
         var camp=new LinkedHashMap<BlockPos,BlockState>();campPlan(camp,b);
         camp.forEach((at,block)->{var old=level.getBlockState(at);if(level.getBlockEntity(at)==null
                 &&(old.isAir()||old.is(Blocks.DEEPSLATE_TILES)||old.is(Blocks.DARK_OAK_PLANKS)))level.setBlock(at,block,F);});
