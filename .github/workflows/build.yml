@@ -363,6 +363,30 @@ jobs:
           test -s build/font-smoke/sky-passed.txt
           test -s build/font-smoke/native-sky-2.png
 
+      - name: Publish native views to the log
+        if: ${{ !cancelled() && steps.build_mod.outcome == 'success' }}
+        run: |
+          # Artifacts are not reachable from every review environment, so the native
+          # scene and cast screenshots are also written to this log as small JPEGs.
+          python3 -m pip install --quiet --disable-pip-version-check pillow || exit 0
+          python3 - <<'PY'
+          import base64, io
+          from pathlib import Path
+          from PIL import Image
+          shots = sorted(Path('build/font-smoke/scenes').glob('*.png')) + sorted(Path('build/font-smoke').glob('native-*.png'))
+          for png in shots:
+              image = Image.open(png).convert('RGB')
+              image.thumbnail((760, 760))
+              out = io.BytesIO()
+              image.save(out, 'JPEG', quality=68, optimize=True)
+              data = base64.b64encode(out.getvalue()).decode()
+              print(f'VIEW-BEGIN {png.stem} {image.width}x{image.height} {len(data)}')
+              for i in range(0, len(data), 3800):
+                  print('VIEW-DATA ' + data[i:i + 3800])
+              print(f'VIEW-END {png.stem}')
+          print(f'VIEW-COUNT {len(shots)}')
+          PY
+
       - name: Upload native writing proof
         if: always()
         uses: actions/upload-artifact@v4
