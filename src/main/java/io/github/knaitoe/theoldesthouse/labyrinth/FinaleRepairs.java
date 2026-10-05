@@ -5,6 +5,7 @@ import java.util.*;
 import net.minecraft.core.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
@@ -68,14 +69,25 @@ public final class FinaleRepairs {
         if(level.players().stream().anyMatch(p->area.intersects(p.getBoundingBox())))return;
         for(int x=(b.getX()-16)>>4;x<=b.getX()>>4;x++)
             for(int z=(b.getZ()+14)>>4;z<=(b.getZ()+FinaleArchitecture.SHAFT_RADIUS)>>4;z++)
-                if(!level.hasChunkAt(new BlockPos(x<<4,top,z<<4)))return;
+                if(!level.hasChunkAt(new BlockPos(x<<4,top,z<<4))||!level.areEntitiesLoaded(new ChunkPos(x,z).toLong()))return;
         var supports=new LinkedHashMap<BlockPos,BlockState>();supportPlan(supports,b);
-        supports.forEach((at,block)->{if(level.getBlockState(at).isAir())level.setBlock(at,block,F);});
+        var changes=new LinkedHashMap<BlockPos,BlockState>();
+        supports.forEach((at,block)->{if(level.getBlockState(at).isAir())changes.put(at,block);});
         // The 0.4.23 open platform north of the walkway was left floating when its camp moved.
         // Lift only its own planks and wool; the camp, the walkway and anything else stay.
         var keep=new HashSet<BlockPos>();var camp=new LinkedHashMap<BlockPos,BlockState>();campPlan(camp,b);keep.addAll(camp.keySet());
-        for(int x=-8;x<=-4;x++)for(int z=15;z<=22;z++){var at=b.offset(x,top-1,z);if(!keep.contains(at)&&level.getBlockState(at).is(Blocks.DARK_OAK_PLANKS))level.setBlock(at,Blocks.AIR.defaultBlockState(),F);}
-        for(int z=15;z<=22;z++){var at=b.offset(-8,top,z);if(!keep.contains(at)&&level.getBlockState(at).is(Blocks.WHITE_WOOL))level.setBlock(at,Blocks.AIR.defaultBlockState(),F);}
+        for(int x=-8;x<=-4;x++)for(int z=15;z<=22;z++){var at=b.offset(x,top-1,z);if(!keep.contains(at)&&level.getBlockState(at).is(Blocks.DARK_OAK_PLANKS))changes.put(at,Blocks.AIR.defaultBlockState());}
+        for(int z=15;z<=22;z++){var at=b.offset(-8,top,z);if(!keep.contains(at)&&level.getBlockState(at).is(Blocks.WHITE_WOOL))changes.put(at,Blocks.AIR.defaultBlockState());}
+        // A Stay companion remains here when its owner leaves. Check the whole repair before
+        // changing anything, including the space supported by a floor we would remove.
+        // Tom on the retained camp floor does not prevent unrelated supports being repaired.
+        var residents=level.getEntitiesOfClass(LivingEntity.class,area,LivingEntity::isAlive);
+        for(var change:changes.entrySet()){
+            var affected=new AABB(change.getKey());
+            if(change.getValue().isAir())affected=affected.expandTowards(0,2,0);
+            for(var resident:residents)if(affected.intersects(resident.getBoundingBox()))return;
+        }
+        changes.forEach((at,block)->level.setBlock(at,block,F));
         state.putBoolean(key,true);data.setState(SUPPORTS,state);
     }
     /** Only this small entrance waits for visitors; an explorer far down the shaft cannot starve its repair. */

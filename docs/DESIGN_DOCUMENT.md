@@ -1,3 +1,5 @@
+0.4.47 review repairs: native companions retain their floor during platform cleanup; already composed 0.4.46 scenes receive missed structural repairs through a separate checkpoint; new accounts state lifetime totals and independently recorded Overworld work accurately. Finite property, original pages, routes, progress and native identities remain. See [REVIEW_SAFETY_0_4_47.md](REVIEW_SAFETY_0_4_47.md).
+
 # The Oldest House: Design Document
 
 Sep 28, 2026 · @Sean Price · revised in the repository to match decisions made since
