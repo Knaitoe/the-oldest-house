@@ -50,6 +50,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import static io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.*;
 import static io.github.knaitoe.theoldesthouse.house.RugFloorBlock.Tone.*;
@@ -79,7 +80,7 @@ public final class SceneCraft {
     static final Set<LabyrinthPlace> GROUNDS = EnumSet.of(LabyrinthPlace.ELK_LOT, LabyrinthPlace.MAPPING_INTERIOR, LabyrinthPlace.HOLY_RABBIT,
             LabyrinthPlace.ELK_CARCASSES, LabyrinthPlace.COSTUME_NIGHT, LabyrinthPlace.MOVIE_NIGHT, LabyrinthPlace.WINTER_LAKE,
             LabyrinthPlace.CAMP_BLOOD, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.SHALLOWS, LabyrinthPlace.PHONE_CANOE,
-            LabyrinthPlace.DROWNED_TOWN, LabyrinthPlace.HOTEL_GROUNDS);
+            LabyrinthPlace.DROWNED_TOWN, LabyrinthPlace.HOTEL_GROUNDS, LabyrinthPlace.BARN_WELL, LabyrinthPlace.GOATMAN);
     /** How far outside its room box a scene's banks and woods reach. */
     private static final int REACH = 6;
 
@@ -1071,6 +1072,8 @@ public final class SceneCraft {
             }
             case SHALLOWS, PHONE_CANOE, DROWNED_TOWN -> banks();
             case HOTEL_GROUNDS -> hotelGrounds();
+            case BARN_WELL -> barn();
+            case GOATMAN -> thicket();
             default -> { }
         }
     }
@@ -1368,6 +1371,7 @@ public final class SceneCraft {
             pole.add(x, 6, -34, fence(Blocks.SPRUCE_FENCE, Direction.NORTH)).add(x, 5, -34, lantern(true));
             pole.place();
         }
+        roof(-23, -7, -24, -5, 6, Blocks.DARK_OAK_SLAB, Blocks.DARK_OAK_PLANKS, Blocks.STRIPPED_DARK_OAK_LOG);
         for (int[] corner : new int[][]{{-23, -24}, {-7, -24}, {-23, -5}, {-7, -5}})
             for (int y = 0; y <= 5; y++) wallTrim(corner[0], y, corner[1], log(Blocks.STRIPPED_SPRUCE_LOG, Direction.Axis.Y), LiteraryRegistry.SIDING.get());
     }
@@ -1449,6 +1453,7 @@ public final class SceneCraft {
         chimney.add(-11, 11, -38, Blocks.CAMPFIRE.defaultBlockState().setValue(CampfireBlock.LIT, true)).add(-10, 11, -38, slab(Blocks.BRICK_SLAB, SlabType.BOTTOM));
         chimney.place();
         woodpile(14, -14, -10);
+        roof(-13, 13, -36, -8, 5, Blocks.SPRUCE_SLAB, Blocks.SPRUCE_PLANKS, Blocks.STRIPPED_SPRUCE_LOG);
         for (int[] corner : new int[][]{{-13, -36}, {13, -36}, {-13, -8}, {13, -8}})
             for (int y = 0; y <= 4; y++) wallTrim(corner[0], y, corner[1], log(Blocks.STRIPPED_SPRUCE_LOG, Direction.Axis.Y), LiteraryRegistry.SIDING.get());
     }
@@ -1478,6 +1483,9 @@ public final class SceneCraft {
         shutters(1, -36, Direction.NORTH, 2, 3, Blocks.DARK_OAK_TRAPDOOR);
         shutters(7, -36, Direction.NORTH, 2, 3, Blocks.DARK_OAK_TRAPDOOR);
         woodpile(-13, -18, -15);
+        roof(-12, 12, -35, -13, 6, Blocks.DARK_OAK_SLAB, Blocks.SPRUCE_PLANKS, Blocks.STRIPPED_DARK_OAK_LOG);
+        // The porch roof keeps every slab of its plate where the old eave had cut into it.
+        for (int x = -12; x <= 12; x++) for (int z = -12; z <= -8; z++) cover(x, 6, z, slab(Blocks.SPRUCE_SLAB, SlabType.BOTTOM));
         for (int[] corner : new int[][]{{-12, -35}, {12, -35}, {-12, -13}, {12, -13}})
             for (int y = 0; y <= 5; y++) wallTrim(corner[0], y, corner[1], log(Blocks.STRIPPED_SPRUCE_LOG, Direction.Axis.Y), Blocks.SPRUCE_PLANKS);
         // A jetty out over the lake on pilings.
@@ -1515,21 +1523,181 @@ public final class SceneCraft {
                     for (int y = 0; y <= 4; y++) wallTrim(x, y, z, log(Blocks.SPRUCE_LOG, Direction.Axis.Y), Blocks.SPRUCE_PLANKS);
                 for (int x = cx - 8; x <= cx + 8; x++) for (int z = cz - 7; z <= cz + 7; z++)
                     if (x == cx - 8 || x == cx + 8 || z == cz - 7 || z == cz + 7) wallTrim(x, 0, z, (n % 2 == 0 ? Blocks.MOSSY_COBBLESTONE : Blocks.COBBLESTONE).defaultBlockState(), Blocks.SPRUCE_PLANKS, Blocks.DARK_OAK_PLANKS);
-                if (n == 2 || n == 5) reroof(cx, cz);
+                Block[] boards = {Blocks.SPRUCE_PLANKS, Blocks.DARK_OAK_PLANKS, Blocks.BIRCH_PLANKS};
+                roof(cx - 8, cx + 8, cz - 7, cz + 7, 5, n % 2 == 1 ? Blocks.DARK_OAK_SLAB : Blocks.SPRUCE_SLAB, boards[n % 3], Blocks.STRIPPED_SPRUCE_LOG);
+                if (n == 1 || n == 4) chimney(cx - 1, cz + 8, 13, Blocks.COBBLESTONE, Blocks.COBBLESTONE_WALL);
+                if (n == 3 || n == 6) woodshed(cx - 8 * s, cz, -s);
             }
     }
 
-    /** Re-covers one cabin's roof in spruce, keeping every stair's shape exactly. */
-    private void reroof(int cx, int cz) {
-        for (int x = cx - 9; x <= cx + 9; x++)
-            for (int z = cz - 8; z <= cz + 8; z++)
-                for (int y = 5; y <= 13; y++) {
+    /**
+     * Takes down a roof laid by the generic builder (stairs side by side at the same height,
+     * found again by the formula that placed them) and covers the building properly: a smooth
+     * half-pitch roof of alternating slabs over an overhanging eave, boarded gables, and a
+     * ridge beam. The ceiling and everything under it stay as they are.
+     */
+    private void roof(int x0, int x1, int z0, int z1, int eaves, Block slab, Block boards, Block ridge) {
+        for (int x = x0 - 1; x <= x1 + 1; x++) {
+            int y = eaves + Math.min(x - x0 + 1, x1 + 1 - x) / 2;
+            for (int z = z0 - 1; z <= z1 + 1; z++) {
+                BlockState old = at(x, y, z);
+                if (old.is(Blocks.DARK_OAK_STAIRS) || old.is(Blocks.SPRUCE_STAIRS))
+                    set(p(x, y, z), (x == x0 || x == x1) && y == eaves && z >= z0 && z <= z1 ? boards.defaultBlockState() : AIR);
+            }
+            if (x >= x0 && x <= x1) for (int zz : new int[]{z0, z1}) for (int yy = eaves + 1; yy < y; yy++) if (at(x, yy, zz).is(Blocks.SPRUCE_PLANKS)) set(p(x, yy, zz), AIR);
+        }
+        int mid = (x0 + x1) / 2, oldRidge = eaves + (x1 - x0) / 4 + 1;
+        for (int z = z0 - 1; z <= z1 + 1; z++) {
+            BlockState old = at(mid, oldRidge, z);
+            if (old.is(Blocks.DARK_OAK_SLAB) || old.is(Blocks.SPRUCE_SLAB)) set(p(mid, oldRidge, z), AIR);
+        }
+        int lo = x0 - 1, hi = x1 + 1;
+        for (int x = lo; x <= hi; x++) {
+            int d = Math.min(x - lo, hi - x);
+            boolean centre = x - lo == hi - x;
+            int y = d % 2 == 0 ? eaves + d / 2 : eaves + 1 + (d - 1) / 2;
+            BlockState cover = centre ? log(ridge, Direction.Axis.Z) : slab(slab, d % 2 == 0 ? SlabType.TOP : SlabType.BOTTOM);
+            for (int z = z0 - 1; z <= z1 + 1; z++) {
+                if ((z == z0 || z == z1) && x >= x0 && x <= x1) {
+                    for (int yy = eaves + 1; yy < y; yy++) cover(x, yy, z, boards.defaultBlockState());
+                    cover(x, y, z, !centre && d % 2 == 0 ? boards.defaultBlockState() : cover);
+                } else cover(x, y, z, cover);
+            }
+        }
+    }
+
+    /** Roofing goes only where nothing else already stands: chimneys and porches keep their place. */
+    private void cover(int x, int y, int z, BlockState s) {
+        if (at(x, y, z).isAir()) set(p(x, y, z), s);
+    }
+
+    /** A stone chimney stack against a gable, through the eave, capped. */
+    private void chimney(int x, int z, int top, Block body, Block cap) {
+        for (int dx = 0; dx <= 1; dx++)
+            for (int y = 0; y < top; y++) {
+                BlockState old = at(x + dx, y, z);
+                if (old.isAir() || plant(old) || old.getBlock() instanceof SlabBlock || old.is(BlockTags.LOGS)) set(p(x + dx, y, z), body.defaultBlockState());
+            }
+        for (int dx = 0; dx <= 1; dx++) cover(x + dx, top, z, cap.defaultBlockState());
+    }
+
+    /** An open woodshed against a back wall: posts, a lean-to roof and split logs stacked under it. */
+    private void woodshed(int wallX, int cz, int dir) {
+        for (int z : new int[]{cz - 2, cz + 2}) for (int y = 0; y <= 1; y++) put(wallX + 3 * dir, y, z, Blocks.SPRUCE_FENCE);
+        for (int z = cz - 2; z <= cz + 2; z++) {
+            put(wallX + dir, 3, z, slab(Blocks.SPRUCE_SLAB, SlabType.TOP));
+            put(wallX + 2 * dir, 3, z, slab(Blocks.SPRUCE_SLAB, SlabType.BOTTOM));
+            put(wallX + 3 * dir, 2, z, slab(Blocks.SPRUCE_SLAB, SlabType.TOP));
+        }
+        for (int z = cz - 1; z <= cz + 1; z++) for (int i = 1; i <= 2; i++) for (int y = 0; y <= (i == 1 ? 1 : 0); y++) put(wallX + i * dir, y, z, log(Blocks.OAK_LOG, Direction.Axis.Z));
+    }
+
+    /**
+     * The barn's low saw-toothed stair roof becomes a gambrel: steep lower slopes, shallow upper
+     * ones and a ridge beam, with boarded gables, a hayloft door and a hoist beam over the doors.
+     */
+    private void barn() {
+        for (int x = 4; x <= 16; x++) {
+            int y = 4 + Math.min(x - 4, 16 - x) / 2;
+            for (int z = -35; z <= -16; z++)
+                if (at(x, y, z).is(Blocks.SPRUCE_STAIRS))
+                    set(p(x, y, z), (x == 5 || x == 15) && y == 4 && z >= -34 && z <= -17 ? Blocks.SPRUCE_PLANKS.defaultBlockState() : AIR);
+        }
+        for (int x = 4; x <= 16; x++) {
+            int d = Math.min(x - 4, 16 - x);
+            boolean centre = x == 10;
+            int y = centre ? 8 : d <= 2 ? 4 + d : 7 + (d - 3) / 2;
+            BlockState cover = centre ? log(Blocks.DARK_OAK_LOG, Direction.Axis.Z) : d <= 2 ? stairs(Blocks.DARK_OAK_STAIRS, x < 10 ? Direction.EAST : Direction.WEST)
+                    : slab(Blocks.DARK_OAK_SLAB, (d - 3) % 2 == 0 ? SlabType.BOTTOM : SlabType.TOP);
+            boolean topSlab = !centre && d > 2 && (d - 3) % 2 == 1;
+            for (int z = -35; z <= -16; z++) {
+                if ((z == -34 || z == -17) && x >= 5 && x <= 15) {
+                    for (int yy = 4; yy < y; yy++) cover(x, yy, z, Blocks.SPRUCE_PLANKS.defaultBlockState());
+                    cover(x, y, z, topSlab ? Blocks.SPRUCE_PLANKS.defaultBlockState() : cover);
+                } else cover(x, y, z, cover);
+            }
+        }
+        for (int x = 9; x <= 10; x++) for (int y = 5; y <= 6; y++)
+            put(x, y, -16, Blocks.DARK_OAK_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING, Direction.SOUTH).setValue(TrapDoorBlock.OPEN, true));
+        if (put(10, 7, -16, log(Blocks.DARK_OAK_LOG, Direction.Axis.Z)) && put(10, 7, -15, log(Blocks.DARK_OAK_LOG, Direction.Axis.Z))) put(10, 6, -15, Blocks.CHAIN);
+    }
+
+    /**
+     * Goatman's thicket stays a wall the trail cannot be left through, but no longer reads as
+     * a hedge with a lattice of identical trees on it: the lattice comes down, the thicket is
+     * mixed and uneven, trunks break its face along the trail, and trees of different kinds
+     * and heights rise out of it at irregular spacing.
+     */
+    private void thicket() {
+        BlockState dark = leaves(Blocks.DARK_OAK_LEAVES);
+        for (int x = -22; x <= 22; x++)
+            for (int z = -81; z <= -1; z++) {
+                // The lattice's crowns overhung the trail too: they come down everywhere.
+                for (int y = 4; y <= 12; y++) {
                     BlockState s = at(x, y, z);
-                    if (s.is(Blocks.DARK_OAK_STAIRS))
-                        set(p(x, y, z), Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, s.getValue(StairBlock.FACING))
-                                .setValue(StairBlock.HALF, s.getValue(StairBlock.HALF)).setValue(StairBlock.SHAPE, s.getValue(StairBlock.SHAPE)));
-                    else if (s.is(Blocks.DARK_OAK_SLAB)) set(p(x, y, z), Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, s.getValue(SlabBlock.TYPE)));
+                    if (s.is(Blocks.DARK_OAK_LOG) || s.is(Blocks.DARK_OAK_LEAVES)) remove(p(x, y, z));
                 }
+                if (!trail(x, z)) for (int y = 0; y <= 3; y++) if (at(x, y, z).is(Blocks.DARK_OAK_LOG)) set(p(x, y, z), dark);
+            }
+        for (int x = -22; x <= 22; x++)
+            for (int z = -81; z <= -1; z++) {
+                if (trail(x, z) || !at(x, 0, z).is(Blocks.DARK_OAK_LEAVES)) continue;
+                double n = Landscapes.noise(x, z, 7), m = Landscapes.noise(x * 2, z * 2, 19);
+                Block kind = n > 0.45 ? Blocks.SPRUCE_LEAVES : n < -0.5 ? Blocks.OAK_LEAVES : m > 0.6 ? Blocks.AZALEA_LEAVES : Blocks.DARK_OAK_LEAVES;
+                boolean edge = false;
+                for (Direction d : Direction.Plane.HORIZONTAL) edge |= trail(x + d.getStepX(), z + d.getStepZ());
+                for (int y = 0; y <= 3; y++) {
+                    if (!at(x, y, z).is(Blocks.DARK_OAK_LEAVES)) continue;
+                    Block here = edge && y <= 1 && hash(x, z + y, 811) % 7 == 0 ? Blocks.FLOWERING_AZALEA_LEAVES : kind;
+                    if (here != Blocks.DARK_OAK_LEAVES) set(p(x, y, z), leaves(here));
+                }
+                int rise = Landscapes.noise(x, z, 29) > 0.15 ? 1 + hash(x, z, 31) % 2 : 0;
+                for (int y = 4; y < 4 + rise; y++) if (at(x, y, z).isAir()) set(p(x, y, z), leaves(kind));
+                // Trunks along the trail make its edge a wood, not a wall.
+                if (edge && hash(x, z, 37) % 6 == 0)
+                    for (int y = 0; y <= 3 + rise; y++) set(p(x, y, z), (kind == Blocks.SPRUCE_LEAVES ? Blocks.SPRUCE_LOG : Blocks.DARK_OAK_LOG).defaultBlockState());
+            }
+        List<int[]> roots = new ArrayList<>();
+        for (int gx = -21; gx <= 21; gx += 5)
+            for (int gz = -80; gz <= -2; gz += 5) {
+                int h = hash(gx, gz, 43);
+                if (h % 100 < 15) continue;
+                int x = gx + h % 5, z = gz + (h >> 5) % 5;
+                if (x > 21 || z > -2 || !at(x, 0, z).is(BlockTags.LEAVES) || nearTrail(x, z, 2)) continue;
+                boolean crowded = false;
+                for (int[] root : roots) crowded |= (root[0] - x) * (root[0] - x) + (root[1] - z) * (root[1] - z) < 9;
+                if (crowded) continue;
+                roots.add(new int[]{x, z});
+                boolean spruce = h % 4 == 0;
+                int height = (spruce ? 8 : 6) + (h >> 9) % 4;
+                Block trunk = spruce ? Blocks.SPRUCE_LOG : h % 7 == 0 ? Blocks.BIRCH_LOG : Blocks.DARK_OAK_LOG;
+                Block leaf = spruce ? Blocks.SPRUCE_LEAVES : trunk == Blocks.BIRCH_LOG ? Blocks.BIRCH_LEAVES : Blocks.DARK_OAK_LEAVES;
+                for (int y = 0; y <= height; y++) {
+                    BlockState here = at(x, y, z);
+                    if (here.isAir() || here.is(BlockTags.LEAVES)) set(p(x, y, z), trunk.defaultBlockState());
+                }
+                for (int y = Math.max(4, height - (spruce ? 5 : 2)); y <= Math.min(12, height + 1); y++) {
+                    int radius = spruce ? Math.max(0, (height + 1 - y + 1) / 2) : y == height + 1 ? 1 : 2 + (y == height - 1 ? 1 : 0);
+                    for (int dx = -radius; dx <= radius; dx++)
+                        for (int dz = -radius; dz <= radius; dz++) {
+                            int d2 = dx * dx + dz * dz;
+                            if (d2 > radius * radius + 1 || d2 >= radius * radius && Math.floorMod(h + dx * 5 + dz * 11 + y, 3) == 0) continue;
+                            int px = x + dx, pz = z + dz;
+                            if (Math.abs(px) > 22 || pz > -1 || pz < -81) continue;
+                            if (at(px, y, pz).isAir()) set(p(px, y, pz), leaves(leaf));
+                        }
+                }
+            }
+    }
+
+    private static boolean trail(int x, int z) {
+        Vec3 at = new Vec3(x + .5, 0, z + .5);
+        return GoatmanWoods.clearing(at) || GoatmanWoods.project(at).distance() < 1.6;
+    }
+
+    private static boolean nearTrail(int x, int z, int radius) {
+        for (int dx = -radius; dx <= radius; dx++) for (int dz = -radius; dz <= radius; dz++) if (trail(x + dx, z + dz)) return true;
+        return false;
     }
 
     /** The camp's fire ring with log benches, a picnic table, a sign at the gate and lamps along the road. */
