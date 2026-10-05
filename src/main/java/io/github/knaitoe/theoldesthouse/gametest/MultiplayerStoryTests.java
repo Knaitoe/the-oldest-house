@@ -126,11 +126,11 @@ public final class MultiplayerStoryTests {
 
     @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=1200)
     public static void ALeafComesLooseOnlyInOrderIntoItsCarriedBindingAndTheDarkHoldsTheNext(GameTestHelper h) { run(h,521500,MultiplayerStoryTests::holdLeaves,f->{
-        layLeaves(f);var p=f.player(h,"leaf_order");ready(p,f);
+        StaircaseFire.dress(f.level,f.origin);layLeaves(f);var p=f.player(h,"leaf_order");ready(p,f);
         h.assertTrue(StaircaseStory.leafState(p,0)==StaircaseStory.Take.NO_BINDING&&!find(p,f,0),"a leaf stays blank until the reader has their binding");
-        var book=issued(p);p.getInventory().add(book);
+        p.getInventory().add(issued(p));
         h.assertTrue(StaircaseStory.leafState(p,1)==StaircaseStory.Take.EARLIER&&!find(p,f,1),"a later flight's leaf waits for the earlier one");
-        held(p);h.assertTrue(StaircaseStory.leafState(p,0)==StaircaseStory.Take.NOT_CARRIED&&!find(p,f,0),"a leaf does not come loose without the binding to hold it");
+        var book=held(p);h.assertTrue(StaircaseStory.leafState(p,0)==StaircaseStory.Take.NOT_CARRIED&&!find(p,f,0),"a leaf does not come loose without the binding to hold it");
         p.setItemInHand(InteractionHand.OFF_HAND,book);
         h.assertTrue(find(p,f,0)&&StaircaseStory.leafState(p,0)==StaircaseStory.Take.TAKEN&&!find(p,f,0),"each reader binds a flight's leaf once");
         var leaf=StaircaseLeaves.positions(f.origin).get(1);var record=FinaleProgress.player(p.server,p.getUUID());
@@ -143,7 +143,7 @@ public final class MultiplayerStoryTests {
 
     @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=1200)
     public static void ALostBindingIsBoundAgainWithoutRefillingAndTheOldCopyGoesCold(GameTestHelper h) { run(h,522000,MultiplayerStoryTests::holdLeaves,f->{
-        layLeaves(f);var p=f.player(h,"leaf_lost");ready(p,f);var book=issued(p);p.setItemInHand(InteractionHand.OFF_HAND,book);
+        StaircaseFire.dress(f.level,f.origin);layLeaves(f);var p=f.player(h,"leaf_lost");ready(p,f);var book=issued(p);p.setItemInHand(InteractionHand.OFF_HAND,book);
         h.assertTrue(find(p,f,0)&&burn(p,f,0)&&find(p,f,1),"the reader burns the first leaf and binds the second");
         var lost=book.copy();p.setItemInHand(InteractionHand.OFF_HAND,ItemStack.EMPTY);var own=f.data().stateEntry(StaircaseStory.STATE,p.getUUID().toString());
         h.assertTrue(StaircaseStory.shelf(p)==StaircaseStory.Shelf.REBOUND,"the camp shelf binds a lost story again");
