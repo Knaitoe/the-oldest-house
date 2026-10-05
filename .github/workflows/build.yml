@@ -589,8 +589,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.42.jar
-            build/libs/the_oldest_house-0.4.42.jar.sha256
+            build/libs/the_oldest_house-0.4.43.jar
+            build/libs/the_oldest_house-0.4.43.jar.sha256
           if-no-files-found: error
 
 
