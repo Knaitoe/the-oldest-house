@@ -27,6 +27,9 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID+"_multiplayer")
 @PrefixGameTestTemplate(false)
 public final class MultiplayerStoryTests {
+    @GameTest(template="empty",batch="multiplayer_cave_return",timeoutTicks=1200)
+    public static void NativeCaveCreditWaitsForTheActualReturnAndSurvivesACanceledAttempt(GameTestHelper h){IndianLakeLinkedTests.nativeQuietSoundsOccupiedVisitsRoofAndCanoePreserveTheSequence(h);}
+    @AfterBatch(batch="multiplayer_cave_return") public static void caveCleanup(ServerLevel level){IndianLakeLinkedTests.cleanCave(level);}
     private static void run(GameTestHelper h,int at,java.util.function.Consumer<StaircaseAccessTests.Fixture> test) { StaircaseAccessTests.run(h,at,test); }
     private static ItemStack issued(ServerPlayer p) {
         if(!StaircaseFire.take(p))throw new IllegalStateException("original was not issued");
@@ -52,11 +55,13 @@ public final class MultiplayerStoryTests {
         var p=f.player(h,"story_road");var peer=f.player(h,"story_care");
         p.awardStat(Stats.WALK_ONE_CM,123400);p.awardStat(Stats.DEATHS,2);p.awardStat(Stats.ITEM_CRAFTED.get(Items.BREAD),7);
         var facts=new CompoundTag();facts.putInt("Care",1);facts.putString("CaredName","Juniper");HouseExperience.save(f.data(),peer.getUUID(),facts);
+        peer.awardStat(Stats.DEATHS,1);peer.awardStat(Stats.SLEEP_IN_BED,1);
         var letter=new CompoundTag();letter.putString("SafeRetreat",LabyrinthPlace.TED_CAVER.id());f.data().setStateEntry(HouseCorrespondence.ID,p.getUUID().toString(),letter);
         var first=issued(p);var second=issued(peer);
         h.assertTrue(pages(first).size()==5&&pages(second).size()==5,"the native originals have five actual written pages");
         h.assertTrue(text(first).contains("1234 metres")&&text(first).contains("2 times")&&text(first).contains("7 loaves")&&text(first).contains("caver"),"one player's native stats and confirmed personal retreat form their story");
         h.assertTrue(text(second).contains("Juniper")&&!text(first).contains("Juniper")&&!text(second).contains("1234 metres"),"a shared shelf never borrows the peer's biography");
+        h.assertTrue(text(second).contains("1 time;")&&text(second).contains("1 time."),"one recorded death and bed rest use singular narrative wording");
         var before=first.copy();p.awardStat(Stats.DEATHS,1);f.reload();
         h.assertTrue(ItemStack.isSameItemSameComponents(before,first)&&f.data().stateEntry(StaircaseStory.STATE,p.getUUID().toString()).getList("Pages",8).size()==5,"issued pages and their saved snapshot remain unchanged as play continues");
     }); }

@@ -63,9 +63,11 @@ public final class IndianLakeLinkedTests {
     }
 
     private static final class Fixture implements AutoCloseable {
+        final GameTestHelper helper;
         final MinecraftServer server;final ServerLevel level;final HouseSavedData oldHouse;final LabyrinthData oldData;
         final BlockPos origin,base;final LabyrinthPlace place;final List<ServerPlayer> players=new ArrayList<>();
         Fixture(GameTestHelper h,BlockPos origin,LabyrinthPlace place){
+            helper=h;
             server=h.getLevel().getServer();level=HouseTestLevel.get(server,NovelRooms.dimension(place));this.origin=origin;this.place=place;oldHouse=HouseSavedData.get(server);oldData=LabyrinthData.get(server);
             var house=new HouseSavedData();house.markSpawned(origin);server.overworld().getDataStorage().set("the_oldest_house",house);
             var data=new LabyrinthData();data.setBuilt(LabyrinthBuilder.VERSION,origin);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);
@@ -80,8 +82,11 @@ public final class IndianLakeLinkedTests {
             ServerPlayer p=FakePlayerFactory.get(level,new GameProfile(UUID.randomUUID(),name));p.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
             p.moveTo(Vec3.atBottomCenterOf(at));level.addNewPlayer(p);players.add(p);return p;
         }
+        ServerPlayer realPlayer(String name,BlockPos at){
+            var p=NativeTestPlayers.survival(helper,name);p.teleportTo(level,at.getX()+.5,at.getY(),at.getZ()+.5,0,0);p.hasChangedDimension();p.setNoGravity(true);players.add(p);return p;
+        }
         public void close(){
-            for(ServerPlayer player:players){if(place==LabyrinthPlace.SHALLOWS)Shallows.onDepart(player);player.discard();}
+            for(ServerPlayer player:players){if(place==LabyrinthPlace.SHALLOWS)Shallows.onDepart(player);if(player instanceof net.neoforged.neoforge.common.util.FakePlayer)player.discard();else NativeTestPlayers.remove(player);}
             for(var p:List.of(LabyrinthPlace.PRESERVED_CAVE,LabyrinthPlace.SHALLOWS,LabyrinthPlace.DROWNED_TOWN)){
                 BlockPos b=LabyrinthPlaces.base(origin,p);AABB box=IndianLakeRooms.bounds(b,p);
                 for(Entity e:level.getEntitiesOfClass(Entity.class,box,e->e instanceof LakeCongregantEntity||e instanceof LakeWitchEntity||e instanceof LakeCanoeEntity||e.getTags().contains(Shallows.WORDS)))e.discard();
@@ -98,7 +103,7 @@ public final class IndianLakeLinkedTests {
     @GameTest(template="empty",batch="lake_cave",timeoutTicks=200)
     public static void nativeQuietSoundsOccupiedVisitsRoofAndCanoePreserveTheSequence(GameTestHelper h){
         cave=new Fixture(h,new BlockPos(6800,80,6800),LabyrinthPlace.PRESERVED_CAVE);Fixture f=cave;var data=LabyrinthData.get(f.server);
-        ServerPlayer player=f.player("quiet_explorer",f.base.offset(0,0,-12));PreservedCave.onArrive(player,LabyrinthPlace.PRESERVED_CAVE);
+        ServerPlayer player=f.realPlayer("quiet_explorer",f.base.offset(0,0,-12));PreservedCave.onArrive(player,LabyrinthPlace.PRESERVED_CAVE);
         var bodies=f.level.getEntitiesOfClass(LakeCongregantEntity.class,IndianLakeRooms.bounds(f.base,f.place),e->e.getTags().contains(PreservedCave.BODY));
         h.assertTrue(bodies.size()==24&&bodies.stream().allMatch(LakeCongregantEntity::seated),"six rows hold actual seated preserved bodies");
         for(int z=-12;z>=-39;z--)h.assertTrue(f.level.noCollision(player,new AABB(f.base.getX()+.2,f.base.getY(),f.base.getZ()+z+.2,f.base.getX()+.8,f.base.getY()+1.8,f.base.getZ()+z+.8)),"the central aisle can actually be walked");
@@ -113,7 +118,7 @@ public final class IndianLakeLinkedTests {
         for(int i=0;i<15;i++)f.level.gameEvent(GameEvent.STEP,player.position(),GameEvent.Context.of(player));
         h.assertTrue(bodies.stream().noneMatch(LakeCongregantEntity::seated),"all eight voices raise the full congregation");
         // A second arrival cannot reset a room somebody is still crossing.
-        ServerPlayer peer=f.player("later_explorer",f.base.offset(0,0,3));PreservedCave.onArrive(peer,LabyrinthPlace.PRESERVED_CAVE);
+        ServerPlayer peer=f.realPlayer("later_explorer",f.base.offset(0,0,3));PreservedCave.onArrive(peer,LabyrinthPlace.PRESERVED_CAVE);
         h.assertTrue(data.state(PreservedCave.ID).getInt("Visit")==1&&data.state(PreservedCave.ID).getDouble("Voices")==8,"occupied arrivals preserve the current hymn");
         CompoundTag roof=data.state(DrownedTown.ID);roof.putBoolean("RoofOpened",true);data.setState(DrownedTown.ID,roof);
         PreservedCave.onArrive(peer,LabyrinthPlace.PRESERVED_CAVE);h.assertTrue(!IndianLakeProgress.deadOnShore(data),"opening the roof does not erase an occupied cave");
@@ -137,11 +142,19 @@ public final class IndianLakeLinkedTests {
         player.moveTo(Vec3.atBottomCenterOf(f.base.offset(42,0,1)));peer.moveTo(Vec3.atBottomCenterOf(f.base.offset(42,0,3)));
         player.moveTo(Vec3.atBottomCenterOf(f.base.offset(0,0,-40)));PreservedCave.onArrive(player,LabyrinthPlace.PRESERVED_CAVE);canoe.interact(player,InteractionHand.MAIN_HAND);
         // Exercise the actual return doorway and its depart hook.
+        var destination=HouseTestLevel.get(f.server,HouseDimensions.OUTSIDE);
         data.pushReturn(player.getUUID(),new LabyrinthData.Waypoint(HouseDimensions.OUTSIDE,Vec3.atBottomCenterOf(f.base.offset(42,0,1)),0,true));
         player.moveTo(Vec3.atBottomCenterOf(f.base.offset(0,0,-3)));LabyrinthDoors.tickPlayer(player,f.origin);
         player.moveTo(Vec3.atBottomCenterOf(f.base.offset(0,0,3)));LabyrinthDoors.tickPlayer(player,f.origin);
-        h.assertTrue(WitnessAccount.has(data,player.getUUID(),WitnessAccount.Story.PRESERVED_CAVE)&&data.isCompleted(PreservedCave.ID)&&data.returnDepth(player.getUUID())==0,"walking back completes the witnessed aftermath and consumes its real return path");
-        h.succeed();
+        h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents.isPending(player)&&data.returnDepth(player.getUUID())==1&&!WitnessAccount.has(data,player.getUUID(),WitnessAccount.Story.PRESERVED_CAVE),"a prepared return retains its exact route and grants no premature ending credit");
+        io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents.cancelPending(player,"native cave retry");
+        h.assertTrue(data.returnDepth(player.getUUID())==1&&!WitnessAccount.has(data,player.getUUID(),WitnessAccount.Story.PRESERVED_CAVE),"canceling the return cannot discard the route or grant its ending");
+        player.moveTo(Vec3.atBottomCenterOf(f.base.offset(0,0,-3)));LabyrinthDoors.tickPlayer(player,f.origin);
+        player.moveTo(Vec3.atBottomCenterOf(f.base.offset(0,0,3)));LabyrinthDoors.tickPlayer(player,f.origin);
+        peer.moveTo(bodies.getFirst().position());NeoForge.EVENT_BUS.post(new AttackEntityEvent(peer,bodies.getFirst()));
+        h.assertTrue(data.state(PreservedCave.ID).getBoolean("Cold"),"a peer can alter the shared room while this reader's actual return is pending");
+        h.runAfterDelay(1,()->io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents.onPlayerTick(new net.neoforged.neoforge.event.tick.PlayerTickEvent.Post(player)));
+        h.runAfterDelay(3,()->{h.assertTrue(player.serverLevel()==destination&&WitnessAccount.has(data,player.getUUID(),WitnessAccount.Story.PRESERVED_CAVE)&&data.isCompleted(PreservedCave.ID)&&data.returnDepth(player.getUUID())==0,"the actual native arrival grants the personally witnessed aftermath and consumes its real return path once");h.succeed();});
     }
     @GameTest(template="empty",batch="lake_throw",timeoutTicks=450)
     public static void nativeCarryChargedThrowAndSplashNameOnlyItsOwner(GameTestHelper h){
