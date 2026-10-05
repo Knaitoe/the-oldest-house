@@ -45,7 +45,7 @@ public final class MultiplayerStoryTests {
         var at=StaircaseFire.braziers(f.origin).get(i);p.teleportTo(f.level,at.getX()+1.5,at.getY(),at.getZ()+.5,0,0);
         return StaircaseFire.ignite(p,f.origin,at);
     }
-    private static void serverTick(StaircaseAccessTests.Fixture f) { LabyrinthDoors.onServerTick(new ServerTickEvent.Post(f.level.getServer())); }
+    private static void serverTick(StaircaseAccessTests.Fixture f) { LabyrinthDoors.onServerTick(new ServerTickEvent.Post(()->true,f.level.getServer())); }
 
     @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=1200)
     public static void twoNativeExplorersGetTheirOwnRecordedLivesAndImmutableSavedPages(GameTestHelper h) { run(h,520000,f->{
@@ -153,10 +153,10 @@ public final class MultiplayerStoryTests {
     public static void AnActualOverworldBreakBelongsToItsMinerAndCanceledWorkAddsNoMemory(GameTestHelper h) { run(h,524500,f->{
         var p=f.player(h,"world_miner");var peer=f.player(h,"world_peer");var world=p.server.overworld();var at=new BlockPos(524500,80,524500);
         f.chunks.hold(world,new net.minecraft.world.phys.AABB(at).inflate(2));f.put(world,at,Blocks.STONE.defaultBlockState());p.teleportTo(world,at.getX()+.5,at.getY()+1,at.getZ()+.5,0,0);p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.IRON_PICKAXE));
-        h.assertTrue(p.gameMode.destroyBlock(at),"native survival mining actually removes the Overworld block");StaircaseStory.tick(new ServerTickEvent.Post(p.server));
+        h.assertTrue(p.gameMode.destroyBlock(at),"native survival mining actually removes the Overworld block");StaircaseStory.tick(new ServerTickEvent.Post(()->true,p.server));
         h.assertTrue(text(issued(p)).contains("broke Stone in the Overworld")&&!text(issued(peer)).contains("broke Stone in the Overworld"),"the completed native mining stat gives only the miner a dimension-specific memory");
         var other=f.player(h,"canceled_miner");other.teleportTo(world,at.getX()+.5,at.getY()+1,at.getZ()+.5,0,0);f.put(world,at,Blocks.GOLD_BLOCK.defaultBlockState());
-        var canceled=new BlockEvent.BreakEvent(world,at,world.getBlockState(at),other);canceled.setCanceled(true);NeoForge.EVENT_BUS.post(canceled);StaircaseStory.tick(new ServerTickEvent.Post(other.server));
+        var canceled=new BlockEvent.BreakEvent(world,at,world.getBlockState(at),other);canceled.setCanceled(true);NeoForge.EVENT_BUS.post(canceled);StaircaseStory.tick(new ServerTickEvent.Post(()->true,other.server));
         h.assertTrue(!text(issued(other)).contains("Gold")&&world.getBlockState(at).is(Blocks.GOLD_BLOCK),"a canceled native break cannot become a recorded action");
     }); }
 
