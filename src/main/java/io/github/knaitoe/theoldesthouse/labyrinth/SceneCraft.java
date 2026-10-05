@@ -698,8 +698,29 @@ public final class SceneCraft {
         }
         if (scene != LabyrinthPlace.MASQUE) for (Rect room : rooms()) sconces(room);
         before = null;
-        // Whatever the composed lighting leaves too dark is lit as before.
-        changed += ScenePolish.light(l, b, scene, ScenePolish.darkAllowed(scene));
+        relight();
+    }
+
+    /**
+     * Rooms still darker than their target get chandeliers on their own grid,
+     * evenly spaced from the room's middle, rather than pendants wherever a dark
+     * patch happens to be; only what that leaves is lit as the polish lit it.
+     */
+    private void relight() {
+        double allowed = ScenePolish.darkAllowed(scene);
+        if (ScenePolish.darkFraction(l, b, scene) <= allowed) return;
+        Block metal = scene == LabyrinthPlace.USHER || scene == LabyrinthPlace.CRIMSON_HALL ? Blocks.IRON_BARS : Blocks.DARK_OAK_FENCE;
+        for (Rect room : rooms()) {
+            if (room.h() < 5) continue;
+            int nx = Math.max(1, (int) Math.round((room.x1() - room.x0()) / 8.0)), nz = Math.max(1, (int) Math.round((room.z1() - room.z0()) / 8.0));
+            for (int i = 0; i < nx; i++)
+                for (int k = 0; k < nz; k++) {
+                    int x = room.x0() + (int) Math.round((i + 0.5) * (room.x1() - room.x0()) / nx);
+                    int z = room.z0() + (int) Math.round((k + 0.5) * (room.z1() - room.z0()) / nz);
+                    if (chandelier(x, z, room.y(), metal) && ScenePolish.darkFraction(l, b, scene) <= allowed) return;
+                }
+        }
+        changed += ScenePolish.light(l, b, scene, allowed);
     }
 
     /**
