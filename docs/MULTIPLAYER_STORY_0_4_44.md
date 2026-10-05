@@ -4,7 +4,7 @@ The House of Leaves now holds five actual native written-book pages. The road, w
 
 Taking the original snapshots the account. Subsequent play does not rewrite its surviving chapters. Each hearth consumes the next page of the held original; the remaining written pages, custom name and unrelated components survive. A saved original UUID and page cursor prevent borrowed, native copied and replayed books from buying personal progress. Burning never subtracts Minecraft statistics or earns Witness credit. Ordinary paper still feeds the fires but does not erase an unread chapter. The five-hearth order and personal light boundary remain independent for every explorer, including when another reader already lit the physical campfire.
 
-Existing tutorial originals acquire only their remaining chapters on their next valid burn. Their held components and finite leaf count are preserved; the shelf cannot refill a previously issued supply. Existing deep visits, native Tom identities, original lecterns, containers, completed endings and the actual staircase architecture remain saved.
+Existing tutorial originals acquire only their remaining chapters while in their reader's inventory, before the next burn. Their held components and finite leaf count are preserved; the shelf cannot refill a previously issued supply. Existing deep visits, native Tom identities, original lecterns, containers, completed endings and the actual staircase architecture remain saved.
 
 ## Multiplayer review
 

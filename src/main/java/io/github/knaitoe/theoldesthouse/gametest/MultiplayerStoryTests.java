@@ -106,7 +106,9 @@ public final class MultiplayerStoryTests {
     public static void ExistingTutorialLeavesBecomeTheirRemainingChaptersWithoutRefilling(GameTestHelper h) { run(h,522000,f->{
         StaircaseFire.dress(f.level,f.origin);var p=f.player(h,"legacy_leaf");ready(p,f);var old=StaircaseFire.book(p.getUUID(),3);old.set(DataComponents.CUSTOM_NAME,Component.literal("An old original"));
         var rec=FinaleProgress.player(p.server,p.getUUID());rec.putBoolean("StairBookTaken",true);rec.putInt("StairFires",2);FinaleProgress.save(p.server,p.getUUID(),rec);
-        p.setItemInHand(InteractionHand.OFF_HAND,old);h.assertTrue(burn(p,f,2)&&pages(old).size()==2&&text(old).startsWith("IV."),"three old leaves migrate to chapters three through five, then the next actual page burns");
+        p.setItemInHand(InteractionHand.OFF_HAND,old);p.tickCount=20;StaircaseStory.tick(new ServerTickEvent.Post(()->true,p.server));
+        h.assertTrue(pages(old).size()==3&&text(old).startsWith("III.")&&StaircaseFire.leaves(old,p.getUUID())==3,"the native held original exposes all remaining story chapters before its first upgraded burn");
+        h.assertTrue(burn(p,f,2)&&pages(old).size()==2&&text(old).startsWith("IV."),"the next actual page burns without refilling three old leaves");
         h.assertTrue(old.get(DataComponents.CUSTOM_NAME).getString().equals("An old original")&&StaircaseFire.leaves(old,p.getUUID())==2&&!StaircaseFire.take(p),"migration preserves naming and finite custody without issuing another book");
         f.reload();h.assertTrue(burn(p,f,3)&&burn(p,f,4)&&old.isEmpty(),"the remaining legacy original can finish after save/reload");
     }); }

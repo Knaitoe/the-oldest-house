@@ -65,6 +65,8 @@ public final class StaircaseStory {
             if(now<=w.before())continue;
             var own=record(p);own.putString(w.built()?"Built":"Broke",w.block().getName().getString());save(p,own);
         }
+        for(var p:e.getServer().getPlayerList().getPlayers())if(p.tickCount%20==0&&participant(p))
+            for(int slot=0;slot<p.getInventory().getContainerSize();slot++)prepare(p,p.getInventory().getItem(slot));
     }
 
     /** Five short native pages, built from recorded facts rather than an invented biography. */
@@ -84,7 +86,7 @@ public final class StaircaseStory {
         String house=!letters.getString("SafeRetreat").isEmpty()?"You returned from "+placeName(letters.getString("SafeRetreat"))+" with its account unfinished. The doorway let you leave a sentence open.":home.getInt("Sleeps")>0?"You slept inside the manor. This house has held you still as well as moved you.":home.getInt("Deepest")>0?"You reached "+quantity(home.getInt("Deepest"),"door","doors")+" deep. Your own record keeps the depth; another explorer's footsteps do not add to it.":"The House has not yet recorded a deeper journey for you. The page will not mistake a stranger's arrival for yours.";
         int read=(int)letters.getCompound("Read").getAllKeys().stream().filter(k->letters.getCompound("Read").getBoolean(k)).count();
         String reading=read>0?" You read "+read+" of its letters. For a moment, the House had to address a reader.":" There are sentences here you have not yet read.";
-        String last="These leaves were written when you took the book. Your life keeps moving beyond their ink.\n\nFire takes one page at a time. It cannot take the facts from you.\n\nYou may still go back.";
+        String last="These leaves remember your life as their ink found it. Your life keeps moving.\n\nFire takes one page at a time. It cannot take the facts from you.\n\nYou may still go back.";
         return List.of("I. The road\n\n"+road+made,"II. What you kept\n\n"+care+sleep,
                 "III. What was lost\n\n"+loss+damage,"IV. The house\n\n"+house+reading,"V. The unwritten\n\n"+last);
     }
@@ -121,6 +123,24 @@ public final class StaircaseStory {
     public static ItemStack issue(ServerPlayer p) { return original(p,snapshot(p,0)); }
     public static Component leafName(int count) { return HouseText.color(Component.literal("House of Leaves ("+count+" leaves)")); }
 
+    /** Upgrade the actual held legacy original before its reader opens or burns it. */
+    public static boolean prepare(ServerPlayer p,ItemStack book){
+        if(!participant(p)||!book.is(Items.WRITTEN_BOOK)||book.getCount()!=1)return false;
+        int leaves=StaircaseFire.leaves(book,p.getUUID());
+        if(leaves<1||leaves>StaircaseFire.REQUIRED)return false;
+        var tag=book.get(DataComponents.CUSTOM_DATA).copyTag();
+        if(tag.hasUUID("StairStory")||tag.contains("StairPage"))return false;
+        var content=book.get(DataComponents.WRITTEN_BOOK_CONTENT);
+        if(content==null||content.generation()!=0||content.pages().size()!=2)return false;
+        var legacy=StaircaseFire.book(p.getUUID(),leaves).get(DataComponents.WRITTEN_BOOK_CONTENT);
+        if(!content.pages().equals(legacy.pages()))return false;
+        var own=snapshot(p,StaircaseFire.REQUIRED-leaves);
+        if(leaves!=StaircaseFire.REQUIRED-own.getInt("Burned"))return false;
+        book.set(DataComponents.WRITTEN_BOOK_CONTENT,original(p,own).get(DataComponents.WRITTEN_BOOK_CONTENT));
+        tag.putUUID("StairStory",own.getUUID("Original"));tag.putInt("StairPage",own.getInt("Burned"));
+        book.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));return true;
+    }
+
     /** Reject copies/replayed leaves. Upgrade an existing finite tutorial original without refilling it. */
     public static boolean burn(ServerPlayer p,ItemStack book) {
         if(!participant(p)||!book.is(Items.WRITTEN_BOOK)||book.getCount()!=1)return false;
@@ -129,18 +149,11 @@ public final class StaircaseStory {
         if(content==null||content.generation()!=0||leaves<1||leaves>StaircaseFire.REQUIRED)return false;
         var tag=book.get(DataComponents.CUSTOM_DATA).copyTag();
         if(!tag.hasUUID("StairStory")) {
-            if(content.pages().size()!=2||tag.contains("StairPage"))return false;
-            var legacy=StaircaseFire.book(p.getUUID(),leaves).get(DataComponents.WRITTEN_BOOK_CONTENT);
-            if(!content.pages().equals(legacy.pages()))return false;
+            if(!prepare(p,book))return false;
+            tag=book.get(DataComponents.CUSTOM_DATA).copyTag();content=book.get(DataComponents.WRITTEN_BOOK_CONTENT);
         }
-        var own=snapshot(p,StaircaseFire.REQUIRED-leaves);int cursor=own.getInt("Burned");
+        var own=record(p);if(!own.hasUUID("Original"))return false;int cursor=own.getInt("Burned");
         if(leaves!=StaircaseFire.REQUIRED-cursor)return false;
-        if(!tag.hasUUID("StairStory")) {
-            // Only the old two-page tutorial shape is migratable. An ordinary
-            // copied book or a removed story identity cannot become another original.
-            content=original(p,own).get(DataComponents.WRITTEN_BOOK_CONTENT);
-            tag.putUUID("StairStory",own.getUUID("Original"));tag.putInt("StairPage",cursor);
-        }
         if(!own.getUUID("Original").equals(tag.getUUID("StairStory"))||tag.getInt("StairPage")!=cursor)return false;
         var expected=original(p,own).get(DataComponents.WRITTEN_BOOK_CONTENT);
         if(!content.pages().equals(expected.pages()))return false;
