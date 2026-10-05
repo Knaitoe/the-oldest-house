@@ -213,6 +213,10 @@ public final class ArchitectureTests {
         var camp=LabyrinthPlaces.base(origin,LabyrinthPlace.CAMP_BLOOD);var cr=LabyrinthPlace.CAMP_BLOOD.room();var kinds=new HashMap<Block,Integer>();
         for(var at:BlockPos.betweenClosed(camp.offset(cr.minX(),0,cr.minZ()),camp.offset(cr.maxX(),0,cr.maxZ()))){var s=outside.getBlockState(at);if(s.is(net.minecraft.tags.BlockTags.LOGS)&&!outside.getBlockState(at.below()).is(net.minecraft.tags.BlockTags.LOGS))kinds.merge(s.getBlock(),1,Integer::sum);}
         h.assertTrue(kinds.getOrDefault(Blocks.OAK_LOG,0)>=3&&kinds.getOrDefault(Blocks.BIRCH_LOG,0)>=3&&kinds.getOrDefault(Blocks.SPRUCE_LOG,0)>=3,"the camp stands in a mixed wood: "+kinds);
+        // The barn is open to a gambrel's rafters, with no flat birch lid left over it.
+        var barnBase=LabyrinthPlaces.base(origin,LabyrinthPlace.BARN_WELL);int lid=0;
+        for(int x=5;x<=15;x++)for(int z=-34;z<=-17;z++)if(outside.getBlockState(barnBase.offset(x,7,z)).is(Blocks.BIRCH_PLANKS))lid++;
+        h.assertTrue(lid==0&&outside.getBlockState(barnBase.offset(10,8,-25)).is(Blocks.DARK_OAK_LOG),"the barn has a gambrel ridge and no flat lid: "+lid+" lid blocks, ridge "+outside.getBlockState(barnBase.offset(10,8,-25)));
         for(var scene:List.of(LabyrinthPlace.COSTUME_NIGHT,LabyrinthPlace.MOVIE_NIGHT,LabyrinthPlace.WINTER_LAKE,LabyrinthPlace.END_WORLD_CABIN)){
             var b=LabyrinthPlaces.base(origin,scene);var r=scene.room();int afloat=0;
             for(var at:BlockPos.betweenClosed(b.offset(r.minX(),0,r.minZ()),b.offset(r.maxX(),0,r.maxZ()))){var below=outside.getBlockState(at.below());if(outside.getBlockState(at).is(net.minecraft.tags.BlockTags.LOGS)&&(below.is(Blocks.WATER)||below.is(Blocks.ICE)))afloat++;}
