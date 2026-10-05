@@ -64,7 +64,7 @@ The dressing above furnishes buildings and rooms. These changes rebuild their st
   - The camp cabins, the lodge, the end-of-the-world cabin and the bar each lose that roof. It is removed by the builder's own formula, so nothing else is touched.
   - Each gets a half-pitch slab roof instead: a block of overhang at the eaves, boarded gables, and a log ridge.
   - The cabins vary between dark oak and spruce roofs and spruce, dark oak and birch gables. Two have stone chimneys and two have lean-to woodsheds.
-- **The barn** loses its sawtooth stair roof for a dark oak gambrel, steep below and shallow above. It has hayloft doors in the gable and a hoist beam with a chain over them.
+- **The barn** loses its sawtooth stair roof, and the flat birch ceiling its first box left above that roof, for a dark oak gambrel, steep below and shallow above. It is open to the rafters inside. It has hayloft doors in the gable and a hoist beam with a chain over them; a ceiling block that something hangs from becomes dark oak instead of being removed.
 - **Goatman's woods** were a flat wall of leaves with trunks hidden inside. They become a thicket:
   - mixed leaves, with flowering azalea at the trail's edge;
   - an uneven hedge top;
@@ -124,6 +124,7 @@ The dressing above furnishes buildings and rooms. These changes rebuild their st
 - the camp stands in a mixed wood;
 - no tree grows out of a lake;
 - the shallows bank rises smoothly;
+- the barn has its gambrel ridge and no flat lid;
 - a completed composition is not restaged.
 
 The architecture views publish the composed scenes to the build log. Five full-height exterior views show the re-roofed buildings: the camp, the lodge, the end-of-the-world cabin, the bar and the barn. Woods' crowns are left out of these views so they do not hide the buildings. That brings the native client's architecture views to fifty-eight.

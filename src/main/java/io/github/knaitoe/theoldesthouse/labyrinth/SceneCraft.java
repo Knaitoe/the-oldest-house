@@ -1722,6 +1722,16 @@ public final class SceneCraft {
                 if (at(x, y, z).is(Blocks.SPRUCE_STAIRS))
                     set(p(x, y, z), (x == 5 || x == 15) && y == 4 && z >= -34 && z <= -17 ? Blocks.SPRUCE_PLANKS.defaultBlockState() : AIR);
         }
+        // The barn's first box kept its flat birch ceiling above that roof, a pale lid over it all.
+        // The barn opens to its rafters instead; a ceiling block something hangs from turns dark oak.
+        for (int x = 5; x <= 15; x++)
+            for (int z = -34; z <= -17; z++) {
+                if (!at(x, 7, z).is(Blocks.BIRCH_PLANKS)) continue;
+                BlockState below = at(x, 6, z);
+                boolean hung = below.is(Blocks.CHAIN) || below.getBlock() instanceof LanternBlock || below.getBlock() instanceof SceneDetailBlock
+                        || l.getBlockEntity(p(x, 6, z)) != null;
+                set(p(x, 7, z), hung ? Blocks.DARK_OAK_PLANKS.defaultBlockState() : AIR);
+            }
         for (int x = 4; x <= 16; x++) {
             int d = Math.min(x - 4, 16 - x);
             boolean centre = x == 10;
