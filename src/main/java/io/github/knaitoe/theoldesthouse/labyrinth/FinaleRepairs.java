@@ -41,7 +41,7 @@ public final class FinaleRepairs {
         var data=LabyrinthData.get(level.getServer());var state=data.state(ENTRANCE);String key=Long.toString(origin.asLong());
         if(state.getBoolean(key))return;
         var b=FinaleArchitecture.base(origin);int top=FinaleArchitecture.TOP;
-        var area=new AABB(b.offset(-16,top-2,18),b.offset(8,top+7,35));
+        var area=new AABB(b.getX()-16,top-2,b.getZ()+18,b.getX()+8,top+7,b.getZ()+35);
         if(level.players().stream().anyMatch(p->area.intersects(p.getBoundingBox())))return;
         for(int x=(b.getX()-16)>>4;x<=(b.getX()+7)>>4;x++)
             for(int z=(b.getZ()+18)>>4;z<=(b.getZ()+34)>>4;z++)
