@@ -79,14 +79,14 @@ public final class FinaleController {
         LabyrinthData data=LabyrinthData.get(player.server);LabyrinthData.Door entry=data.door(FinaleArchitecture.ENTRY);
         ServerLevel target=player.server.getLevel(HouseDimensions.INTERIOR);if(entry==null||target==null)return;
         var turn=LabyrinthDoors.rotationFrom(from.facing,entry.facing);
-        LabyrinthDoors.copyVestibule(player.serverLevel(),from,target,entry,turn);
+        LabyrinthDoors.copyVestibule(player.serverLevel(),from,target,entry,turn,player);
         Vec3 destination=LabyrinthDoors.shifted(player.position(),from.lower,entry.lower,turn);
         data.pushReturn(player.getUUID(),new LabyrinthData.Waypoint(from.dimension,Vec3.atBottomCenterOf(from.lower),from.facing.toYRot(),true));
         CompoundTag record=FinaleProgress.player(player.server,player.getUUID());record.putString("Phase",FinaleProgress.Phase.STAIRCASE.name());
         StaircaseFire.initialize(record,FinaleArchitecture.TOP);
         record.putBoolean("Discovered",true);record.putBoolean("Inside",false);FinaleProgress.save(player.server,player.getUUID(),record);
-        if(player.serverLevel()==target){HouseInternalTeleport.shift(player,destination,player.getYRot()+LabyrinthDoors.angle(turn));LabyrinthDoors.setDoorOpen(target,entry.lower,true,player);}
-        else HouseTransitionEvents.beginDoorTransition(player,HouseDimensions.INTERIOR,null,p->LabyrinthDoors.setDoorOpen(target,entry.lower,true,p),destination,player.getYRot()+LabyrinthDoors.angle(turn));
+        if(player.serverLevel()==target){HouseInternalTeleport.shift(player,destination,player.getYRot()+LabyrinthDoors.angle(turn));LabyrinthDoors.setDoorOpen(target,entry.lower,true,player);NovelVignettes.staircaseArrival(player);}
+        else HouseTransitionEvents.beginDoorTransition(player,HouseDimensions.INTERIOR,null,p->{LabyrinthDoors.setDoorOpen(target,entry.lower,true,p);NovelVignettes.staircaseArrival(p);},destination,player.getYRot()+LabyrinthDoors.angle(turn));
         ensureWitness(target,HouseSavedData.get(player.server).houseOrigin());
     }
     /** Must run before manor auto-entry, including a pending transition saved by another controller. */
@@ -121,7 +121,8 @@ public final class FinaleController {
         if(phase==FinaleProgress.Phase.STAIRCASE||phase==FinaleProgress.Phase.UNSEEN){
             double z=player.getZ()-b.getZ();
             if(player.getY()>FinaleArchitecture.TOP-2&&z<FinaleArchitecture.STAIR_RADIUS+1)record.putBoolean("Inside",true);
-            if(player.getY()>FinaleArchitecture.TOP-2&&z>FinaleArchitecture.STAIR_RADIUS+2.7&&record.getBoolean("Inside")){FinaleProgress.save(player.server,player.getUUID(),record);returnFromStaircase(player);return true;}
+            if(player.getY()>FinaleArchitecture.TOP-2&&Math.abs(player.getX()-b.getX())<=3
+                    &&z>FinaleArchitecture.STAIR_RADIUS+2.7&&record.getBoolean("Inside")){FinaleProgress.save(player.server,player.getUUID(),record);returnFromStaircase(player);return true;}
             if(player.tickCount%40==0){ensureWitness(player.serverLevel(),origin);if(player.getY()<FinaleArchitecture.ARENA+16)ensureCaged(player.serverLevel(),origin);}
             if(player.getY()<FinaleArchitecture.ARENA+4&&z>31&&!record.getBoolean("Warned")){
                 record.putBoolean("Warned",true);words(player,b.offset(0,FinaleArchitecture.ARENA+2,35),"Use the bars to open the cell. The stairs still lead back. The cell does not.");

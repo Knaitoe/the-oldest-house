@@ -285,9 +285,14 @@ public final class NovelVignettes {
         if(own.getList("Record",Tag.TAG_COMPOUND).isEmpty())p.displayClientMessage(Component.literal("No photographs yet. Spend a moment inside another room, then return."),true);
         p.playNotifySound(SoundEvents.LEVER_CLICK,SoundSource.BLOCKS,.3F,.7F);
     }
+    public static void staircaseArrival(ServerPlayer p){
+        var origin=HouseSavedData.get(p.server).houseOrigin();if(origin==null||!participant(p))return;
+        var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());tickTom(p,origin,own);save(data,p.getUUID(),own);
+    }
     private static void tickTom(ServerPlayer p,BlockPos origin,CompoundTag own){
         var phase=FinaleProgress.phase(p.server,p.getUUID());if(phase!=FinaleProgress.Phase.STAIRCASE||!FinaleArchitecture.contains(origin,p.blockPosition()))return;
         var at=FinaleRepairs.tom(origin);if(p.distanceToSqr(at.getCenter())>500)return;
+        if(!p.serverLevel().hasChunkAt(at)||p.serverLevel().getBlockState(at.below()).getCollisionShape(p.serverLevel(),at.below()).isEmpty())return;
         if(own.hasUUID("Tom")&&p.serverLevel().getEntity(own.getUUID("Tom")) instanceof NovelActor)return;
         if(own.hasUUID("Tom")){if(!own.contains("TomMissing")){own.putLong("TomMissing",p.serverLevel().getGameTime());return;}if(p.serverLevel().getGameTime()-own.getLong("TomMissing")<60)return;}
         if(p.serverLevel().getEntitiesOfClass(NovelActor.class,new AABB(at).inflate(6),a->a.role()==0&&a.owner().filter(p.getUUID()::equals).isPresent()).isEmpty()){

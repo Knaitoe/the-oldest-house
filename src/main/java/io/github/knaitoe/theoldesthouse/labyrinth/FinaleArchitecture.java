@@ -85,7 +85,7 @@ public final class FinaleArchitecture {
         LabyrinthData data = LabyrinthData.get(server); CompoundTag state = data.state(STATE);
         if (state.contains("Origin") && state.getLong("Origin") != manor.asLong()) { boolean requested=state.getBoolean("Requested"); state = new CompoundTag(); state.putBoolean("Requested",requested); PLANS.remove(server); }
         if (!state.getBoolean("Requested")) return;
-        if(state.getBoolean("Ready") && state.getInt("CarveVersion")==CARVE_VERSION){retirePreparationShield(level,manor);connectCell(level,manor);FinaleCollapse.dress(level,manor);FinaleRepairs.tick(level,manor);StaircaseFire.dress(level,manor);return;}
+        if(state.getBoolean("Ready") && state.getInt("CarveVersion")==CARVE_VERSION){retirePreparationShield(level,manor);connectCell(level,manor);FinaleCollapse.dress(level,manor);FinaleRepairs.repairEntrance(level,manor);FinaleRepairs.tick(level,manor);StaircaseFire.dress(level,manor);return;}
         // Existing explorers finish their visit before an old physical descent is replaced.
         if(state.getBoolean("Ready")&&level.players().stream().anyMatch(p->contains(manor,p.blockPosition())))return;
         if(state.getInt("PlanVersion")!=CARVE_VERSION){
@@ -107,7 +107,7 @@ public final class FinaleArchitecture {
             data.putDoor(new LabyrinthData.Door(ENTRY,HouseDimensions.INTERIOR,entry(manor),Direction.SOUTH,LabyrinthData.RETURN,false));
         }
         data.setState(STATE,state);
-        if(state.getBoolean("Ready")){retirePreparationShield(level,manor);connectCell(level,manor);FinaleCollapse.dress(level,manor);StaircaseFire.dress(level,manor);}
+        if(state.getBoolean("Ready")){retirePreparationShield(level,manor);connectCell(level,manor);FinaleCollapse.dress(level,manor);FinaleRepairs.repairEntrance(level,manor);StaircaseFire.dress(level,manor);}
     }
     private static boolean preserveUpgradeVoid(BlockPos manor,BlockPos pos){
         BlockPos b=base(manor);
@@ -182,12 +182,7 @@ public final class FinaleArchitecture {
             }
             turn++;
         }
-        // Entry hall and copied vestibule open onto the first stair landing.
-        boxFloor(blocks,b,-3,3,STAIR_RADIUS+1,SHAFT_RADIUS,TOP-1,stone);
-        for(int y=TOP;y<TOP+4;y++)for(int zz=STAIR_RADIUS+2;zz<=SHAFT_RADIUS;zz++){put(blocks,b,-3,y,zz,dark);put(blocks,b,3,y,zz,dark);}
-        for(int xx=-3;xx<=3;xx++)for(int zz=STAIR_RADIUS+2;zz<=SHAFT_RADIUS;zz++)put(blocks,b,xx,TOP+4,zz,dark);
-        put(blocks,b,0,TOP,STAIR_RADIUS+2,Blocks.DARK_OAK_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.SOUTH));
-        put(blocks,b,0,TOP+1,STAIR_RADIUS+2,Blocks.DARK_OAK_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));
+        for(var placement:entrancePlan(manor))blocks.put(placement.pos(),placement.block());
         // The last stair ends in an actual corridor to the preparation chamber.
         BlockPos last=descent.get(descent.size()-1);int lx=last.getX()-b.getX(),lz=last.getZ()-b.getZ();
         boxFloor(blocks,b,Math.min(lx,0)-1,Math.max(lx,0)+1,lz-1,lz+1,ARENA-1,stone);
@@ -209,6 +204,18 @@ public final class FinaleArchitecture {
         for(int y=-26;y<=22;y++)for(int i=-31;i<=31;i++){put(blocks,b,i,y,70,dark);put(blocks,b,i,y,121,dark);}
         for(int y=-26;y<=22;y++)for(int zz=70;zz<=121;zz++){put(blocks,b,-31,y,zz,dark);put(blocks,b,31,y,zz,dark);}
         StaircaseMazes.plan(blocks,b);
+        return blocks.entrySet().stream().map(e->new Placement(e.getKey(),e.getValue())).toList();
+    }
+    /** The exact authored entrance used by the builder and native arrival checks. */
+    public static List<Placement> entrancePlan(BlockPos manor){
+        var b=base(manor);var blocks=new LinkedHashMap<BlockPos,BlockState>();
+        var stone=HouseBlocks.STAIRCASE_STONE.get().defaultBlockState();var dark=Blocks.DEEPSLATE_TILES.defaultBlockState();
+        boxFloor(blocks,b,-3,3,STAIR_RADIUS+1,SHAFT_RADIUS,TOP-1,stone);
+        put(blocks,b,0,TOP-1,STAIR_RADIUS,stone);
+        for(int y=TOP;y<TOP+4;y++)for(int z=STAIR_RADIUS+2;z<=SHAFT_RADIUS;z++){put(blocks,b,-3,y,z,dark);put(blocks,b,3,y,z,dark);}
+        for(int x=-3;x<=3;x++)for(int z=STAIR_RADIUS+2;z<=SHAFT_RADIUS;z++)put(blocks,b,x,TOP+4,z,dark);
+        put(blocks,b,0,TOP,STAIR_RADIUS+2,Blocks.DARK_OAK_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.SOUTH));
+        put(blocks,b,0,TOP+1,STAIR_RADIUS+2,Blocks.DARK_OAK_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));
         FinaleRepairs.campPlan(blocks,b);
         return blocks.entrySet().stream().map(e->new Placement(e.getKey(),e.getValue())).toList();
     }

@@ -97,6 +97,10 @@ public final class FinaleTests {
         for(var p:plan){blocks.put(p.pos(),p.block());helper.assertTrue(p.pos().getY()>=-2032&&p.pos().getY()<2032,"geometry stays inside the dimension's real height");
             helper.assertTrue(!LabyrinthPlaces.isInStack(origin,p.pos()),"the staircase does not overwrite saved vignette slots");}
         var route=FinaleArchitecture.staircaseRoute(origin);helper.assertTrue(route.get(0).getY()-route.get(route.size()-1).getY()>=1280,"this is an actual long descent");
+        for(int x=0;x>=-13;x--){var at=FinaleArchitecture.base(origin).offset(x,FinaleArchitecture.TOP,24);
+            helper.assertTrue(blocks.get(at.below())!=null&&!blocks.get(at.below()).isAir()&&(blocks.get(at)==null||blocks.get(at).isAir())&&(blocks.get(at.above())==null||blocks.get(at.above()).isAir()),"the full authored plan joins Tom's camp to the actual first tread at "+x);}
+        for(var at:StaircaseFire.braziers(origin))helper.assertTrue(blocks.get(at.below())!=null&&!blocks.get(at.below()).isAir(),"each of the five hearths stands on the actual authored landing");
+        helper.assertTrue(blocks.get(StaircaseFire.shelf(origin).below()).is(Blocks.DARK_OAK_PLANKS),"the supply shelf has native camp support outside the arrival copy");
         for(int i=0;i<route.size();i++){
             helper.assertTrue(blocks.containsKey(route.get(i).below())&&!blocks.get(route.get(i).below()).isAir(),"every tread has a real block at "+i);
             var feet=blocks.get(route.get(i));var head=blocks.get(route.get(i).above());
