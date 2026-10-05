@@ -24,6 +24,8 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
  * a thread dump only shows that the server thread is going round that loop,
  * not why. The report runs on the server thread itself: the loop polls
  * queued tasks between its turns, so nothing is read while it is changing.
+ * When the thread is held inside one turn and never polls, the report is read
+ * from the watch thread instead, with every other busy thread's stack.
  *
  * Does nothing outside the GameTest server.
  */
@@ -73,7 +75,10 @@ public final class ShutdownWatch {
             try {
                 if (!reported.await(5L, TimeUnit.SECONDS) && !stopped) {
                     TheOldestHouse.LOGGER.warn("OTH shutdown watch: still stopping after {}s, and the server thread is not "
-                            + "taking tasks: it is blocked, not looping. Its stack is above.", at / 1000L);
+                            + "taking tasks: it is held inside one turn of its loop (stack above). Reading its chunk maps "
+                            + "from this thread instead, so counts may be a moment apart.", at / 1000L);
+                    report(server, at);
+                    others(server);
                 }
             } catch (InterruptedException e) {
                 return;
@@ -89,6 +94,27 @@ public final class ShutdownWatch {
             trace.append("\n    at ").append(frame);
         }
         TheOldestHouse.LOGGER.warn("OTH shutdown watch: server thread after {}s is {}:{}", after / 1000L, thread.getState(), trace);
+    }
+
+    /** Every other live thread in the server's JVM that is doing something, and where. */
+    private static void others(MinecraftServer server) {
+        Thread main = server.getRunningThread();
+        for (Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
+            Thread thread = entry.getKey();
+            StackTraceElement[] frames = entry.getValue();
+            if (thread == main || thread == Thread.currentThread() || frames.length == 0) {
+                continue;
+            }
+            String top = frames[0].toString();
+            boolean idle = thread.getState() != Thread.State.RUNNABLE
+                    && (top.contains("Unsafe.park") || top.contains("Object.wait") || top.contains("Thread.sleep"));
+            StringBuilder trace = new StringBuilder();
+            for (int i = 0; i < Math.min(frames.length, idle ? 4 : 18); i++) {
+                trace.append("\n    at ").append(frames[i]);
+            }
+            TheOldestHouse.LOGGER.warn("OTH shutdown watch: thread \"{}\" is {}{}:{}", thread.getName(), thread.getState(),
+                    idle ? " (idle)" : "", trace);
+        }
     }
 
     private static void report(MinecraftServer server, long after) {
@@ -138,6 +164,35 @@ public final class ShutdownWatch {
                 TheOldestHouse.LOGGER.warn("  unloading {}", holder(holder));
             }
         }
+        // The unloads waiting to run: each is vanilla's scheduleUnload lambda, with the chunk
+        // and holder it captured. One that keeps coming back names the chunk that will not settle.
+        Object queue = read(map, "unloadQueue");
+        if (queue instanceof Collection<?> waiting) {
+            shown = 0;
+            for (Object run : waiting) {
+                if (shown++ == 4) {
+                    break;
+                }
+                Object fn = read(run, "fn");
+                StringBuilder captured = new StringBuilder();
+                if (fn != null && !(fn instanceof String)) {
+                    for (Field field : fn.getClass().getDeclaredFields()) {
+                        try {
+                            field.setAccessible(true);
+                            Object value = field.get(fn);
+                            captured.append(' ').append(field.getName()).append('=')
+                                    .append(value instanceof Long packed ? new ChunkPos(packed).toString()
+                                            : value != null && value.getClass().getSimpleName().endsWith("ChunkHolder") ? holder(value)
+                                            : value instanceof java.util.concurrent.CompletableFuture<?> future ? future(future)
+                                            : value == map ? "the chunk map" : String.valueOf(value));
+                        } catch (ReflectiveOperationException | RuntimeException e) {
+                            captured.append(' ').append(field.getName()).append("=<").append(e).append('>');
+                        }
+                    }
+                }
+                TheOldestHouse.LOGGER.warn("  queued unload {}:{}", fn == null ? run : fn.getClass().getSimpleName(), captured);
+            }
+        }
         shown = 0;
         if (toDrop instanceof Collection<?> dropping && updating instanceof Map<?, ?> byChunk) {
             for (Object key : dropping) {
@@ -166,8 +221,15 @@ public final class ShutdownWatch {
     }
 
     private static String holder(Object holder) {
+        Object saveSync = read(holder, "saveSync");
         return call(holder, "getPos") + " level " + call(holder, "getTicketLevel") + " generation refs "
-                + call(holder, "getGenerationRefCount") + " status " + call(holder, "getLatestStatus");
+                + call(holder, "getGenerationRefCount") + " status " + call(holder, "getLatestStatus")
+                + " save sync " + (saveSync instanceof java.util.concurrent.CompletableFuture<?> future ? future(future) : saveSync)
+                + " task " + read(holder, "task");
+    }
+
+    private static String future(java.util.concurrent.CompletableFuture<?> future) {
+        return "#" + Integer.toHexString(System.identityHashCode(future)) + (future.isDone() ? " (done)" : " (pending)");
     }
 
     private static String chunk(Object key) {
