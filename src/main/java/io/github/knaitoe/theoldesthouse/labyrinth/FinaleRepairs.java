@@ -61,9 +61,13 @@ public final class FinaleRepairs {
                 level.removeBlockEntity(from);level.setBlock(from,Blocks.AIR.defaultBlockState(),F);
             }
         }
-        for(var old:List.of(b.offset(-4,top,18),b.offset(-6,top,30)))
-            for(var actor:level.getEntitiesOfClass(NovelActor.class,new AABB(old).inflate(2),a->a.role()==0))
+        var novel=data.state(NovelVignettes.STATE);
+        for(var entity:level.getAllEntities())if(entity instanceof NovelActor actor&&actor.role()==0){
+            var own=actor.owner().map(id->novel.getCompound(id.toString())).orElseGet(CompoundTag::new);
+            // A saved Tom can have fallen below a damaged old platform; keep that actual UUID.
+            if(FinaleArchitecture.contains(origin,actor.blockPosition())||own.hasUUID("Tom")&&own.getUUID("Tom").equals(actor.getUUID()))
                 actor.moveTo(Vec3.atBottomCenterOf(tom(origin)));
+        }
         state.putBoolean(key,true);data.setState(ENTRANCE,state);
     }
     public static void tick(ServerLevel level,BlockPos origin){

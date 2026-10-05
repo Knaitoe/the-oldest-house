@@ -85,10 +85,11 @@ public final class StaircaseAccessTests {
         var original=StaircaseFire.book(p.getUUID(),3);original.set(DataComponents.CUSTOM_NAME,Component.literal("Kept original"));
         ((LecternBlockEntity)f.level.getBlockEntity(old)).setBook(original.copy());
         var fire=f.base.offset(-7,FinaleArchitecture.TOP,32);f.put(f.level,fire,Blocks.CAMPFIRE.defaultBlockState().setValue(CampfireBlock.LIT,true));
-        var actor=NovelRegistry.ACTOR.get().create(f.level);h.assertTrue(actor!=null,"native Tom exists");actor.appearance(p.getUUID(),0);actor.moveTo(Vec3.atBottomCenterOf(f.base.offset(-6,FinaleArchitecture.TOP,30)));f.level.addFreshEntity(actor);var uuid=actor.getUUID();
+        var actor=NovelRegistry.ACTOR.get().create(f.level);h.assertTrue(actor!=null,"native Tom exists");actor.appearance(p.getUUID(),0);actor.moveTo(Vec3.atBottomCenterOf(f.base.offset(-6,FinaleArchitecture.LOOP_BOTTOM-20,30)));f.level.addFreshEntity(actor);var uuid=actor.getUUID();
+        var personal=new CompoundTag();personal.putUUID("Tom",uuid);NovelVignettes.save(f.data(),p.getUUID(),personal);
         FinaleRepairs.repairEntrance(f.level,f.origin);
         h.assertTrue(f.level.getBlockState(old).isAir()&&ItemStack.isSameItemSameComponents(original,f.lectern().getBook()),"migration moves the actual written original without changing its components");
-        h.assertTrue(actor.getUUID().equals(uuid)&&actor.blockPosition().equals(FinaleRepairs.tom(f.origin)),"the existing owner and native actor UUID move together");
+        h.assertTrue(actor.getUUID().equals(uuid)&&actor.blockPosition().equals(FinaleRepairs.tom(f.origin))&&NovelVignettes.personal(f.data(),p.getUUID()).getUUID("Tom").equals(uuid),"a saved Tom below the damaged platform is recovered with the same owner and actual actor UUID");
         h.assertTrue(f.level.getBlockState(f.base.offset(-13,FinaleArchitecture.TOP,24)).getValue(CampfireBlock.LIT),"the camp's actual lit state survives");
         var lectern=f.lectern();f.enter(p);f.enter(p);
         h.assertTrue(f.lectern()==lectern&&ItemStack.isSameItemSameComponents(original,lectern.getBook()),"two production arrival copies retain the same lectern and original");
