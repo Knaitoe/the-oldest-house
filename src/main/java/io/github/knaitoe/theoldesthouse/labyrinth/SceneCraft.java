@@ -72,6 +72,9 @@ import static io.github.knaitoe.theoldesthouse.house.RugFloorBlock.Tone.*;
  */
 public final class SceneCraft {
     public static final String STATE = "scene_craft_0446";
+    public static final String REPAIR_STATE = "scene_craft_repairs_0447";
+    private static final Set<LabyrinthPlace> REPAIR_PLACES = EnumSet.of(LabyrinthPlace.ELK_LOT, LabyrinthPlace.MAPPING_INTERIOR,
+            LabyrinthPlace.CAMP_BLOOD, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.BARN_WELL, LabyrinthPlace.GOATMAN);
     private static final int F = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
     static final Set<LabyrinthPlace> ROOMS = EnumSet.of(LabyrinthPlace.HILL_NURSERY, LabyrinthPlace.MINIATURES, LabyrinthPlace.MASQUE,
@@ -101,7 +104,10 @@ public final class SceneCraft {
         if (!applies(place)) return;
         LabyrinthData data = LabyrinthData.get(level.getServer());
         CompoundTag done = data.state(STATE);
-        if (done.getBoolean(key(origin, place))) return;
+        if (done.getBoolean(key(origin, place))) {
+            repairOnce(level, origin, place);
+            return;
+        }
         BlockPos base = LabyrinthPlaces.base(origin, place);
         if (base == null) return;
         AABB area = area(base, place);
@@ -109,15 +115,40 @@ public final class SceneCraft {
         apply(level, base, place);
         done.putBoolean(key(origin, place), true);
         data.setState(STATE, done);
+        markRepaired(data, origin, place);
+    }
+
+    private static void markRepaired(LabyrinthData data, BlockPos origin, LabyrinthPlace place) {
+        if (!REPAIR_PLACES.contains(place)) return;
+        CompoundTag repaired = data.state(REPAIR_STATE);
+        repaired.putBoolean(key(origin, place), true);
+        data.setState(REPAIR_STATE, repaired);
+    }
+
+    /** Late 0.4.46 structural fixes for scenes whose original composition was already saved. */
+    public static void repairOnce(ServerLevel level, BlockPos origin, LabyrinthPlace place) {
+        if (!REPAIR_PLACES.contains(place)) return;
+        LabyrinthData data = LabyrinthData.get(level.getServer());
+        if (!done(level.getServer(), origin, place) || data.state(REPAIR_STATE).getBoolean(key(origin, place))) return;
+        BlockPos base = LabyrinthPlaces.base(origin, place);
+        if (base == null) return;
+        AABB area = area(base, place);
+        if (level.players().stream().anyMatch(p -> area.intersects(p.getBoundingBox())) || !loaded(level, area, base)) return;
+        SceneCraft craft = new SceneCraft(level, base, place);
+        if (craft.structureOccupied(area)) return;
+        craft.repairStructures();
+        markRepaired(data, origin, place);
     }
 
     /** An explicit rebuild authors the room again, so it is composed again. */
     public static void forget(MinecraftServer server, BlockPos origin, LabyrinthPlace place) {
         LabyrinthData data = LabyrinthData.get(server);
         CompoundTag done = data.state(STATE);
-        if (!done.contains(key(origin, place))) return;
         done.remove(key(origin, place));
         data.setState(STATE, done);
+        CompoundTag repaired = data.state(REPAIR_STATE);
+        repaired.remove(key(origin, place));
+        data.setState(REPAIR_STATE, repaired);
     }
 
     /** Existing worlds: one polished, empty, loaded scene at a time. */
@@ -128,9 +159,11 @@ public final class SceneCraft {
         if (origin == null) return;
         LabyrinthData data = LabyrinthData.get(server);
         if (!origin.equals(data.builtOrigin())) return;
-        CompoundTag done = data.state(STATE), polished = data.state(ScenePolish.STATE);
+        CompoundTag done = data.state(STATE), polished = data.state(ScenePolish.STATE), repaired = data.state(REPAIR_STATE);
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
-            if (!applies(place) || done.getBoolean(key(origin, place)) || !polished.getBoolean(key(origin, place))) continue;
+            boolean composed = done.getBoolean(key(origin, place));
+            if (!applies(place) || !polished.getBoolean(key(origin, place))
+                    || composed && (!REPAIR_PLACES.contains(place) || repaired.getBoolean(key(origin, place)))) continue;
             if (data.door(place.entryDoorId()) == null || !LabyrinthBuilder.isPlaceReady(data, place)) continue;
             ServerLevel level = server.getLevel(NovelRooms.dimension(place));
             BlockPos base = LabyrinthPlaces.base(origin, place);
@@ -139,10 +172,9 @@ public final class SceneCraft {
             if (level.players().stream().anyMatch(p -> area.intersects(p.getBoundingBox()))) continue;
             if (!loaded(level, area, base)) return;
             long started = System.nanoTime();
-            apply(level, base, place);
-            done.putBoolean(key(origin, place), true);
-            data.setState(STATE, done);
-            TheOldestHouse.LOGGER.info("Composed {} in place ({} ms).", place.id(), (System.nanoTime() - started) / 1_000_000L);
+            if (composed && new SceneCraft(level, base, place).structureOccupied(area)) continue;
+            craftOnce(level, origin, place);
+            TheOldestHouse.LOGGER.info("{} {} in place ({} ms).", composed ? "Repaired" : "Composed", place.id(), (System.nanoTime() - started) / 1_000_000L);
             return;
         }
     }
@@ -1649,6 +1681,81 @@ public final class SceneCraft {
             }
     }
 
+    private record Roof(int x0, int x1, int z0, int z1, int eaves, Block slab, Block boards, Block ridge) {}
+
+    private List<Roof> repairRoofs() {
+        return switch (scene) {
+            case ELK_LOT -> List.of(new Roof(-23, -7, -24, -5, 6, Blocks.DARK_OAK_SLAB, Blocks.DARK_OAK_PLANKS, Blocks.STRIPPED_DARK_OAK_LOG));
+            case MAPPING_INTERIOR -> List.of(new Roof(-13, 13, -36, -8, 5, Blocks.SPRUCE_SLAB, Blocks.SPRUCE_PLANKS, Blocks.STRIPPED_SPRUCE_LOG));
+            case END_WORLD_CABIN -> List.of(new Roof(-12, 12, -35, -13, 6, Blocks.DARK_OAK_SLAB, Blocks.SPRUCE_PLANKS, Blocks.STRIPPED_DARK_OAK_LOG));
+            case CAMP_BLOOD -> {
+                List<Roof> roofs = new ArrayList<>();
+                Block[] boards = {Blocks.SPRUCE_PLANKS, Blocks.DARK_OAK_PLANKS, Blocks.BIRCH_PLANKS};
+                int n = 0;
+                for (int cx : new int[]{-20, 20}) for (int cz : new int[]{-26, -57, -83}) {
+                    n++;
+                    roofs.add(new Roof(cx - 8, cx + 8, cz - 7, cz + 7, 5, n % 2 == 1 ? Blocks.DARK_OAK_SLAB : Blocks.SPRUCE_SLAB, boards[n % 3], Blocks.STRIPPED_SPRUCE_LOG));
+                }
+                yield roofs;
+            }
+            default -> List.of();
+        };
+    }
+
+    /** Check living bodies in the structural work, not permanent cast safely beneath it. */
+    private boolean structureOccupied(AABB area) {
+        for (LivingEntity resident : l.getEntitiesOfClass(LivingEntity.class, area, LivingEntity::isAlive)) {
+            AABB body = resident.getBoundingBox();
+            for (Roof roof : repairRoofs())
+                if (body.intersects(new AABB(p(roof.x0 - 1, roof.eaves - 1, roof.z0 - 1),
+                        p(roof.x1 + 2, roof.eaves + (roof.x1 - roof.x0) / 4 + 3, roof.z1 + 2)))) return true;
+            if (scene == LabyrinthPlace.BARN_WELL && body.intersects(new AABB(p(4, 3, -35), p(17, 10, -15)))) return true;
+            if (scene == LabyrinthPlace.GOATMAN) {
+                if (body.maxY > b.getY() + 4) return true;
+                for (int x = (int) Math.floor(body.minX) - b.getX(); x <= (int) Math.floor(body.maxX) - b.getX(); x++)
+                    for (int z = (int) Math.floor(body.minZ) - b.getZ(); z <= (int) Math.floor(body.maxZ) - b.getZ(); z++)
+                        if (x >= -22 && x <= 22 && z >= -81 && z <= -1 && !trail(x, z)) return true;
+            }
+        }
+        return false;
+    }
+
+    /** Repair only recognizable old structures; a finished roof or removed prop is left alone. */
+    private void repairStructures() {
+        for (Roof roof : repairRoofs()) {
+            boolean legacy = false;
+            for (int x = roof.x0 - 1; x <= roof.x1 + 1; x++) {
+                int y = roof.eaves + Math.min(x - roof.x0 + 1, roof.x1 + 1 - x) / 2;
+                for (int z = roof.z0 - 1; z <= roof.z1 + 1; z++)
+                    legacy |= at(x, y, z).is(Blocks.DARK_OAK_STAIRS) || at(x, y, z).is(Blocks.SPRUCE_STAIRS);
+            }
+            if (legacy) roof(roof.x0, roof.x1, roof.z0, roof.z1, roof.eaves, roof.slab, roof.boards, roof.ridge);
+        }
+        if (scene == LabyrinthPlace.BARN_WELL) {
+            boolean legacy = false;
+            for (int x = 4; x <= 16; x++) for (int z = -35; z <= -16; z++)
+                legacy |= at(x, 4 + Math.min(x - 4, 16 - x) / 2, z).is(Blocks.SPRUCE_STAIRS);
+            int lid = 0;
+            for (int x = 5; x <= 15; x++) for (int z = -34; z <= -17; z++) if (at(x, 7, z).is(Blocks.BIRCH_PLANKS)) lid++;
+            if (legacy || lid >= 16) barnRoof();
+        }
+        if (scene == LabyrinthPlace.GOATMAN && legacyThicket()) thicket();
+    }
+
+    private boolean legacyThicket() {
+        int mixed = 0, grid = 0;
+        for (int x = -22; x <= 22; x++) for (int z = -81; z <= -1; z++) {
+            if (trail(x, z)) continue;
+            BlockState ground = at(x, 0, z);
+            if (ground.is(BlockTags.LEAVES) && !ground.is(Blocks.DARK_OAK_LEAVES) && ++mixed >= 16) return false;
+            if (Math.floorMod(x * 17 + z * 13, 7) != 0 || !ground.is(Blocks.DARK_OAK_LOG)) continue;
+            boolean trunk = true;
+            for (int y = 1; y <= 8; y++) trunk &= at(x, y, z).is(Blocks.DARK_OAK_LOG);
+            if (trunk) grid++;
+        }
+        return grid >= 4;
+    }
+
     /**
      * Takes down a roof laid by the generic builder (stairs side by side at the same height,
      * found again by the formula that placed them) and covers the building properly: a smooth
@@ -1716,22 +1823,20 @@ public final class SceneCraft {
      * ones and a ridge beam, with boarded gables, a hayloft door and a hoist beam over the doors.
      */
     private void barn() {
+        barnRoof();
+        for (int x = 9; x <= 10; x++) for (int y = 5; y <= 6; y++)
+            put(x, y, -16, Blocks.DARK_OAK_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING, Direction.SOUTH).setValue(TrapDoorBlock.OPEN, true));
+        if (put(10, 7, -16, log(Blocks.DARK_OAK_LOG, Direction.Axis.Z)) && put(10, 7, -15, log(Blocks.DARK_OAK_LOG, Direction.Axis.Z))) put(10, 6, -15, Blocks.CHAIN);
+    }
+
+    private void barnRoof() {
         for (int x = 4; x <= 16; x++) {
             int y = 4 + Math.min(x - 4, 16 - x) / 2;
             for (int z = -35; z <= -16; z++)
                 if (at(x, y, z).is(Blocks.SPRUCE_STAIRS))
                     set(p(x, y, z), (x == 5 || x == 15) && y == 4 && z >= -34 && z <= -17 ? Blocks.SPRUCE_PLANKS.defaultBlockState() : AIR);
         }
-        // The barn's first box kept its flat birch ceiling above that roof, a pale lid over it all.
-        // The barn opens to its rafters instead; a ceiling block something hangs from turns dark oak.
-        for (int x = 5; x <= 15; x++)
-            for (int z = -34; z <= -17; z++) {
-                if (!at(x, 7, z).is(Blocks.BIRCH_PLANKS)) continue;
-                BlockState below = at(x, 6, z);
-                boolean hung = below.is(Blocks.CHAIN) || below.getBlock() instanceof LanternBlock || below.getBlock() instanceof SceneDetailBlock
-                        || l.getBlockEntity(p(x, 6, z)) != null;
-                set(p(x, 7, z), hung ? Blocks.DARK_OAK_PLANKS.defaultBlockState() : AIR);
-            }
+        removeBarnLid();
         for (int x = 4; x <= 16; x++) {
             int d = Math.min(x - 4, 16 - x);
             boolean centre = x == 10;
@@ -1746,9 +1851,17 @@ public final class SceneCraft {
                 } else cover(x, y, z, cover);
             }
         }
-        for (int x = 9; x <= 10; x++) for (int y = 5; y <= 6; y++)
-            put(x, y, -16, Blocks.DARK_OAK_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING, Direction.SOUTH).setValue(TrapDoorBlock.OPEN, true));
-        if (put(10, 7, -16, log(Blocks.DARK_OAK_LOG, Direction.Axis.Z)) && put(10, 7, -15, log(Blocks.DARK_OAK_LOG, Direction.Axis.Z))) put(10, 6, -15, Blocks.CHAIN);
+    }
+
+    private void removeBarnLid() {
+        // A ceiling block something hangs from remains a real support.
+        for (int x = 5; x <= 15; x++) for (int z = -34; z <= -17; z++) {
+            if (!at(x, 7, z).is(Blocks.BIRCH_PLANKS)) continue;
+            BlockState below = at(x, 6, z);
+            boolean hung = below.is(Blocks.CHAIN) || below.getBlock() instanceof LanternBlock || below.getBlock() instanceof SceneDetailBlock
+                    || l.getBlockEntity(p(x, 6, z)) != null;
+            set(p(x, 7, z), hung ? Blocks.DARK_OAK_PLANKS.defaultBlockState() : AIR);
+        }
     }
 
     /**
