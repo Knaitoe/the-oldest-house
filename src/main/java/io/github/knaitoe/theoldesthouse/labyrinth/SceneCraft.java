@@ -80,7 +80,7 @@ public final class SceneCraft {
     static final Set<LabyrinthPlace> GROUNDS = EnumSet.of(LabyrinthPlace.ELK_LOT, LabyrinthPlace.MAPPING_INTERIOR, LabyrinthPlace.HOLY_RABBIT,
             LabyrinthPlace.ELK_CARCASSES, LabyrinthPlace.COSTUME_NIGHT, LabyrinthPlace.MOVIE_NIGHT, LabyrinthPlace.WINTER_LAKE,
             LabyrinthPlace.CAMP_BLOOD, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.SHALLOWS, LabyrinthPlace.PHONE_CANOE,
-            LabyrinthPlace.DROWNED_TOWN, LabyrinthPlace.HOTEL_GROUNDS, LabyrinthPlace.BARN_WELL, LabyrinthPlace.GOATMAN);
+            LabyrinthPlace.DROWNED_TOWN, LabyrinthPlace.HOTEL_GROUNDS, LabyrinthPlace.BARN_WELL, LabyrinthPlace.GOATMAN, LabyrinthPlace.EXPLORER_CAMP);
     /** How far outside its room box a scene's banks and woods reach. */
     private static final int REACH = 6;
 
@@ -636,6 +636,123 @@ public final class SceneCraft {
     // ------------------------------------------------------------------
     // Interiors.
 
+    /**
+     * The rooms' walls are given the build of a real room: a panelled dado and rail
+     * along the floor, a cornice under taller ceilings, and recessed windows (dark,
+     * as the rooms' own windows are) between the posts where the wall backs onto
+     * solid fill. Posts, doors, glass, block entities and story cells are left alone.
+     */
+    private void structure() {
+        switch (scene) {
+            case HILL_NURSERY -> {
+                for (Rect room : rooms()) if (room.y() == 0) panel(room, Blocks.SPRUCE_PLANKS, Blocks.STRIPPED_DARK_OAK_WOOD, Blocks.STRIPPED_DARK_OAK_WOOD);
+                windows(rooms().get(1), 2, 3, false, true, false, false);
+                windows(rooms().get(2), 2, 3, false, true, false, false);
+            }
+            case MINIATURES -> { panel(rooms().get(0), Blocks.OAK_PLANKS, Blocks.STRIPPED_OAK_WOOD, Blocks.STRIPPED_OAK_WOOD); windows(rooms().get(0), 2, 4, false, true, false, false); }
+            case USHER -> { panel(rooms().get(0), Blocks.POLISHED_DEEPSLATE, Blocks.DEEPSLATE_TILES, Blocks.POLISHED_DEEPSLATE); windows(rooms().get(0), 2, 6, false, false, true, true); }
+            case WINCHESTER -> { panel(rooms().get(0), Blocks.DARK_OAK_PLANKS, Blocks.STRIPPED_DARK_OAK_WOOD, Blocks.STRIPPED_DARK_OAK_WOOD); windows(rooms().get(0), 2, 4, false, false, true, true); }
+            case CRIMSON_HALL -> { panel(rooms().get(0), Blocks.DARK_OAK_PLANKS, Blocks.STRIPPED_DARK_OAK_WOOD, Blocks.POLISHED_BLACKSTONE); windows(rooms().get(0), 2, 4, false, false, true, true); }
+            case BLY_ROUTE -> { panel(rooms().get(0), Blocks.DARK_OAK_PLANKS, Blocks.STRIPPED_DARK_OAK_WOOD, Blocks.STRIPPED_DARK_OAK_WOOD); windows(rooms().get(0), 2, 4, false, false, true, true); }
+            case DEVILS_ROCK -> { for (Rect room : rooms()) panel(room, Blocks.BIRCH_PLANKS, Blocks.STRIPPED_BIRCH_WOOD, null); windows(rooms().get(0), 2, 4, false, false, true, true); }
+            case WHEEL -> { panel(rooms().get(0), Blocks.SPRUCE_PLANKS, Blocks.STRIPPED_SPRUCE_WOOD, Blocks.STRIPPED_SPRUCE_WOOD); windows(rooms().get(0), 2, 4, false, false, true, true); }
+            case ELK_FAN -> windows(rooms().get(0), 2, 4, false, false, true, true);
+            default -> { }
+        }
+    }
+
+    private boolean wallMaterial(BlockState s) {
+        return s.is(Blocks.CALCITE) || s.is(LiteraryRegistry.DARK_PANEL.get()) || s.is(Blocks.DEEPSLATE_BRICKS) || s.is(Blocks.POLISHED_BLACKSTONE_BRICKS)
+                || s.is(Blocks.RED_TERRACOTTA) || s.is(LiteraryRegistry.SIDING.get()) || s.is(Blocks.DARK_OAK_PLANKS);
+    }
+
+    /** A dado two blocks high, a rail above it and, under ceilings of six or more, a cornice, in the room's own wall plane. */
+    private void panel(Rect room, Block dado, Block rail, Block cornice) {
+        for (int x = room.x0(); x <= room.x1(); x++)
+            for (int z = room.z0(); z <= room.z1(); z++) {
+                boolean xWall = x == room.x0() || x == room.x1(), zWall = z == room.z0() || z == room.z1();
+                if (xWall == zWall) continue; // interior cells and corners
+                for (int y = room.y(); y < room.y() + room.h(); y++) {
+                    Block want = y <= room.y() + 1 ? dado : y == room.y() + 2 ? rail : cornice != null && room.h() >= 6 && y == room.y() + room.h() - 1 ? cornice : null;
+                    if (want == null) continue;
+                    BlockPos at = p(x, y, z);
+                    BlockState old = l.getBlockState(at);
+                    if (!wallMaterial(old) || l.getBlockEntity(at) != null || kept(x, y, z)) continue;
+                    set(at, want.defaultBlockState());
+                }
+            }
+    }
+
+    /**
+     * Recessed windows in every other bay between a room's posts, on the chosen walls (north,
+     * south, east, west): the wall is opened and dark glass set one block behind it, only where
+     * that block and the one beyond it are solid fill and the room side of the opening is clear.
+     */
+    private void windows(Rect room, int bottom, int top, boolean north, boolean south, boolean east, boolean west) {
+        List<int[]> walls = new ArrayList<>(); // wall coordinate, fixed axis is x (0) or z (1), outward step
+        if (west) walls.add(new int[]{room.x0(), 0, -1});
+        if (east) walls.add(new int[]{room.x1(), 0, 1});
+        if (north) walls.add(new int[]{room.z0(), 1, -1});
+        if (south) walls.add(new int[]{room.z1(), 1, 1});
+        for (int[] wall : walls) {
+            boolean alongZ = wall[1] == 0;
+            int from = alongZ ? room.z0() : room.x0(), to = alongZ ? room.z1() : room.x1();
+            for (int bay = 0, start = from + 4; start + 1 < to; bay++, start += 5) {
+                if (bay % 2 != 0) continue;
+                boolean ok = true;
+                for (int a = start; a <= start + 1 && ok; a++)
+                    for (int y = room.y() + bottom; y <= room.y() + top && ok; y++) {
+                        int wx = alongZ ? wall[0] : a, wz = alongZ ? a : wall[0];
+                        int ix = alongZ ? wall[0] - wall[2] : a, iz = alongZ ? a : wall[0] - wall[2];
+                        int ox = alongZ ? wall[0] + wall[2] : a, oz = alongZ ? a : wall[0] + wall[2];
+                        BlockPos outer = p(ox, y, oz), beyond = p(alongZ ? ox + wall[2] : a, y, alongZ ? a : oz + wall[2]);
+                        ok = wallMaterial(at(wx, y, wz)) && l.getBlockEntity(p(wx, y, wz)) == null && !kept(wx, y, wz) && !clearZone(ix, y, iz)
+                                && at(ix, y, iz).isAir() && l.getBlockState(outer).isSolidRender(l, outer) && l.getBlockEntity(outer) == null && !insideAny(ox, y, oz)
+                                && l.getBlockState(beyond).isSolidRender(l, beyond); // never a pane onto a passage behind
+                    }
+                if (!ok) continue;
+                for (int a = start; a <= start + 1; a++)
+                    for (int y = room.y() + bottom; y <= room.y() + top; y++) {
+                        set(p(alongZ ? wall[0] : a, y, alongZ ? a : wall[0]), AIR);
+                        set(p(alongZ ? wall[0] + wall[2] : a, y, alongZ ? a : wall[0] + wall[2]), Blocks.BLACK_STAINED_GLASS.defaultBlockState());
+                    }
+            }
+        }
+    }
+
+    /**
+     * The explorers' camp was a box cut into the labyrinth's fill. Its faces become hewn rock,
+     * its floor trodden earth and gravel, and timber shoring frames carry its ceiling, with a
+     * lamp under each.
+     */
+    private void camp() {
+        Block[] rock = {Blocks.TUFF, Blocks.ANDESITE, Blocks.STONE, Blocks.COBBLED_DEEPSLATE, Blocks.TUFF, Blocks.DEEPSLATE};
+        for (BlockPos pos : BlockPos.betweenClosed(p(r.minX(), r.minY(), r.minZ()), p(r.maxX(), r.maxY(), r.maxZ()))) {
+            BlockState s = l.getBlockState(pos);
+            if (!(s.is(Blocks.WHITE_TERRACOTTA) || s.is(Blocks.LIGHT_GRAY_TERRACOTTA) || s.is(Blocks.STONE) || s.is(Blocks.SMOOTH_STONE))) continue;
+            boolean face = false;
+            for (Direction d : Direction.values()) face |= l.getBlockState(pos.relative(d)).isAir() && r.isInside(pos.relative(d).subtract(b));
+            int x = pos.getX() - b.getX(), y = pos.getY() - b.getY(), z = pos.getZ() - b.getZ();
+            if (!face || kept(x, y, z)) continue;
+            int h = hash(x * 7 + y, z, 911);
+            if (s.is(Blocks.SMOOTH_STONE) && y == -1)
+                set(pos.immutable(), (h % 5 == 0 ? Blocks.GRAVEL : h % 5 == 1 ? Blocks.COARSE_DIRT : h % 5 == 2 ? Blocks.PACKED_MUD : Blocks.STONE).defaultBlockState());
+            else if (!s.is(Blocks.SMOOTH_STONE)) set(pos.immutable(), rock[Math.floorMod((int) Math.round(Landscapes.noise(x * 3, z * 3 + y * 5, 13) * 3) + h % 2, rock.length)].defaultBlockState());
+        }
+        int top = -1;
+        for (int y = 1; y <= r.maxY(); y++) if (!at(0, y, -5).isAir()) { top = y; break; }
+        if (top < 4) return;
+        for (int z : new int[]{-5, -12}) {
+            int zz = z, beam = top - 1;
+            guard(() -> {
+                Plan frame = new Plan();
+                for (int y = 0; y < beam; y++) for (int x : new int[]{-5, 5}) frame.add(x, y, zz, Blocks.SPRUCE_LOG);
+                for (int x = -5; x <= 5; x++) frame.add(x, beam, zz, log(Blocks.SPRUCE_LOG, Direction.Axis.X));
+                if (frame.place()) put(0, beam - 1, zz, lantern(true));
+            });
+        }
+    }
+
     private List<Rect> rooms() {
         return switch (scene) {
             case HILL_NURSERY -> List.of(new Rect(-3, 3, -43, 0, 0, 5), new Rect(-14, -4, -24, -10, 0, 6), new Rect(4, 14, -24, -10, 0, 6), new Rect(-13, 13, -42, -30, -4, 3));
@@ -697,6 +814,7 @@ public final class SceneCraft {
             case GHOSTS_SET -> studio();
             default -> { }
         }
+        structure();
         if (scene != LabyrinthPlace.MASQUE) for (Rect room : rooms()) sconces(room);
         before = null;
         relight();
@@ -1074,6 +1192,7 @@ public final class SceneCraft {
             case HOTEL_GROUNDS -> hotelGrounds();
             case BARN_WELL -> barn();
             case GOATMAN -> thicket();
+            case EXPLORER_CAMP -> camp();
             default -> { }
         }
     }
