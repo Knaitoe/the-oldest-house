@@ -255,6 +255,7 @@ public final class LabyrinthBuilder {
         DomesticHallUpgrade.tick(server);
         WallNotesRepairs.tick(server);
         ScenePolish.tick(server);
+        SceneCraft.tick(server);
         if (pending == null || pendingOrigin == null) {
             return;
         }

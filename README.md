@@ -3,7 +3,9 @@
 
 A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
-Version `0.4.45` lights the great staircase only with your own House of Leaves. The camp shelf gives its binding; one personal leaf waits in the dark on each of the first five flights, and each burned leaf opens the next flight. Accounts now vary in narrator, hand, chosen facts and phrasing. The camp is carried on beams and chains, and staircase arrivals no longer overwrite the walkway. [Release notes](docs/STAIRCASE_LEAVES_0_4_45.md).
+Version `0.4.46` composes the literary rooms and outdoor scenes to the manor's standard, once and in place. Rooms get hearths, built-in shelving, laid rugs under real seating groups, and chandeliers and bracket lamps instead of scattered pendants and checkerboard carpet. Outdoor scenes get mixed woods instead of planted grids, natural shorelines and banks, and porches, shutters and chimneys on their buildings. The Hill nursery's unreachable ending ledger moves into its cellar. [Release notes](docs/COMPOSED_SCENES_0_4_46.md).
+
+Previous version `0.4.45` lights the great staircase only with your own House of Leaves. The camp shelf gives its binding; one personal leaf waits in the dark on each of the first five flights, and each burned leaf opens the next flight. Accounts now vary in narrator, hand, chosen facts and phrasing. The camp is carried on beams and chains, and staircase arrivals no longer overwrite the walkway. [Release notes](docs/STAIRCASE_LEAVES_0_4_45.md).
 
 Version `0.4.44` makes staircase fuel a personal five-page story from recorded Minecraft stats, confirmed Overworld work, care and House experiences. Each burn removes the next actual page. Multiplayer crossings preserve return routes until arrival, stale fades cannot move a dead or reconnected player, and forced fades carry only owned following companions. [Release review](docs/MULTIPLAYER_STORY_0_4_44.md).
 

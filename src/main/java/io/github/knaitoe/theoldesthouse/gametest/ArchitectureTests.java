@@ -118,6 +118,7 @@ public final class ArchitectureTests {
             for(int x:new int[]{-20,20})for(int z:new int[]{-26,-57,-83})for(var at:BlockPos.betweenClosed(newCamp.offset(x-7,0,z-6),newCamp.offset(x+7,10,z+6)))h.assertTrue(!woods.getBlockState(at).is(Blocks.SPRUCE_LEAVES)&&!woods.getBlockState(at).is(Blocks.SPRUCE_LOG),"the camp's forest cannot grow through a furnished cabin or roof");
             h.assertTrue(dressed==23&&props>=94,"all twenty-three authored scenes/camps receive supported detail; the copied Red Room stays personal");
             shellsAndEdges(h,server,origin,data);
+            composition(h,server,origin,data);
             frontsAndInteriors(h,server,origin,data);
             var camp=LabyrinthPlaces.base(origin,LabyrinthPlace.EXPLORER_CAMP);var cache=(BarrelBlockEntity)interior.getBlockEntity(camp.offset(LabyrinthCampsite.CACHE));
             cache.clearContent();cache.setItem(7,new ItemStack(Items.DIAMOND,3));
@@ -173,6 +174,78 @@ public final class ArchitectureTests {
         h.assertTrue(town.getBlockState(archive.offset(3,3,-18)).is(Blocks.STONE_BRICKS)&&town.getBlockState(archive.offset(0,9,-25)).is(Blocks.LIGHT_GRAY_STAINED_GLASS),"the archive has projecting pilasters and glazed rooflights");
         var removed=archive.offset(0,9,-25);town.setBlock(removed,Blocks.AIR.defaultBlockState(),2);SceneExteriors.decorateOnce(town,origin,LabyrinthPlace.ZAMPANO_COURTYARD);h.assertTrue(town.getBlockState(removed).isAir(),"completed exterior upgrades do not replenish removed scenery");
     }
+    /** 0.4.46: literary rooms and outdoor scenes are composed once, in place, and the generic pass's defects are gone. */
+    private static void composition(GameTestHelper h,net.minecraft.server.MinecraftServer server,BlockPos origin,LabyrinthData data){
+        var craft=data.state(SceneCraft.STATE);
+        for(var scene:LabyrinthPlace.values())if(SceneCraft.applies(scene))h.assertTrue(craft.getBoolean(origin.asLong()+":"+scene.id()),scene.id()+" records its one-time composition");
+        for(var scene:LabyrinthPlace.values()){
+            if(!LiteraryRooms.isLiterary(scene)||NovelRooms.outside(scene))continue;
+            var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var b=LabyrinthPlaces.base(origin,scene);var r=scene.room();int rugs=0,squares=0;
+            for(var at:BlockPos.betweenClosed(b.offset(r.minX(),r.minY(),r.minZ()),b.offset(r.maxX(),r.maxY(),r.maxZ()))){
+                var s=level.getBlockState(at);
+                if(s.is(HouseBlocks.RUG_FLOOR.get()))rugs++;
+                if(scene!=LabyrinthPlace.MASQUE&&s.is(net.minecraft.tags.BlockTags.WOOL_CARPETS)&&!level.getBlockState(at.below()).is(Blocks.SCULK_SENSOR)){
+                    boolean alone=true;for(int dx=-1;dx<=1;dx++)for(int dz=-1;dz<=1;dz++)if((dx!=0||dz!=0)&&level.getBlockState(at.offset(dx,0,dz)).is(s.getBlock()))alone=false;
+                    if(alone)squares++;
+                }
+            }
+            h.assertTrue(squares==0,scene.id()+" keeps no lattice of lone carpet squares: "+squares);
+            if(scene!=LabyrinthPlace.WINCHESTER&&scene!=LabyrinthPlace.MASQUE)h.assertTrue(rugs>=9,scene.id()+" has a laid rug: "+rugs);
+            // The discovery paper and the ending can both be reached from the entrance.
+            var reached=reachable(level,b,scene);
+            for(var paper:List.of(LiteraryRooms.source(scene),LiteraryRooms.ending(scene))){
+                boolean near=false;for(var d:Direction.values())near|=reached.contains(b.offset(paper).relative(d));
+                h.assertTrue(near,scene.id()+" can be reached at "+paper);
+            }
+        }
+        for(var scene:List.of(LabyrinthPlace.MINIATURES,LabyrinthPlace.USHER,LabyrinthPlace.CRIMSON_HALL,LabyrinthPlace.BLY_ROUTE,LabyrinthPlace.CONFESSION)){
+            var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var b=LabyrinthPlaces.base(origin,scene);var r=scene.room();int hearths=0;
+            for(var at:BlockPos.betweenClosed(b.offset(r.minX(),r.minY(),r.minZ()),b.offset(r.maxX(),r.maxY(),r.maxZ())))if(level.getBlockState(at).is(Blocks.CAMPFIRE))hearths++;
+            h.assertTrue(hearths==1,scene.id()+" has one hearth: "+hearths);
+        }
+        var hill=LabyrinthPlaces.base(origin,LabyrinthPlace.HILL_NURSERY);var interior=HouseTestLevel.get(server);
+        h.assertTrue(interior.getBlockState(hill.offset(LiteraryRooms.ending(LabyrinthPlace.HILL_NURSERY))).is(LiteraryRegistry.PROP.get())&&interior.getBlockState(hill.offset(8,1,-36)).isAir(),"the nursery's ending ledger stands in the cellar, not on its roof");
+        // Outdoors: mixed woods instead of planted rows, nothing growing out of the lakes, banks without battlements.
+        var outside=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);
+        var camp=LabyrinthPlaces.base(origin,LabyrinthPlace.CAMP_BLOOD);var cr=LabyrinthPlace.CAMP_BLOOD.room();var kinds=new HashMap<Block,Integer>();
+        for(var at:BlockPos.betweenClosed(camp.offset(cr.minX(),0,cr.minZ()),camp.offset(cr.maxX(),0,cr.maxZ()))){var s=outside.getBlockState(at);if(s.is(net.minecraft.tags.BlockTags.LOGS)&&!outside.getBlockState(at.below()).is(net.minecraft.tags.BlockTags.LOGS))kinds.merge(s.getBlock(),1,Integer::sum);}
+        h.assertTrue(kinds.getOrDefault(Blocks.OAK_LOG,0)>=3&&kinds.getOrDefault(Blocks.BIRCH_LOG,0)>=3&&kinds.getOrDefault(Blocks.SPRUCE_LOG,0)>=3,"the camp stands in a mixed wood: "+kinds);
+        for(var scene:List.of(LabyrinthPlace.COSTUME_NIGHT,LabyrinthPlace.MOVIE_NIGHT,LabyrinthPlace.WINTER_LAKE,LabyrinthPlace.END_WORLD_CABIN)){
+            var b=LabyrinthPlaces.base(origin,scene);var r=scene.room();int afloat=0;
+            for(var at:BlockPos.betweenClosed(b.offset(r.minX(),0,r.minZ()),b.offset(r.maxX(),0,r.maxZ()))){var below=outside.getBlockState(at.below());if(outside.getBlockState(at).is(net.minecraft.tags.BlockTags.LOGS)&&(below.is(Blocks.WATER)||below.is(Blocks.ICE)))afloat++;}
+            h.assertTrue(afloat==0,scene.id()+" grows no tree out of its lake: "+afloat);
+        }
+        var shallows=LabyrinthPlaces.base(origin,LabyrinthPlace.SHALLOWS);var sr=LabyrinthPlace.SHALLOWS.room();int steps=0,runs=0,previous=Integer.MIN_VALUE;
+        for(int z=sr.minZ()+4;z<=-6;z++){
+            int top=Integer.MIN_VALUE;for(int y=8;y>=-3;y--)if(outside.getBlockState(shallows.offset(sr.minX(),y,z)).is(Blocks.PODZOL)){top=y;break;}
+            if(top==Integer.MIN_VALUE){previous=Integer.MIN_VALUE;continue;}
+            if(previous!=Integer.MIN_VALUE){runs++;if(top!=previous)steps++;}
+            previous=top;
+        }
+        h.assertTrue(runs>=8&&steps*2<runs,"the shallows bank rises smoothly rather than in a checkerboard: "+steps+"/"+runs);
+        // A completed composition is never restaged.
+        var miniatures=LabyrinthPlaces.base(origin,LabyrinthPlace.MINIATURES);var grate=miniatures.offset(11,0,-29);
+        h.assertTrue(interior.getBlockState(grate).is(Blocks.CAMPFIRE),"the workshop has its hearth");
+        interior.setBlock(grate,Blocks.AIR.defaultBlockState(),2);SceneCraft.craftOnce(interior,origin,LabyrinthPlace.MINIATURES);
+        h.assertTrue(interior.getBlockState(grate).isAir(),"a completed composition does not rebuild what was taken away");
+    }
+
+    /** Open space connected to a scene's doorways, through its doors. */
+    private static Set<BlockPos> reachable(net.minecraft.server.level.ServerLevel level,BlockPos b,LabyrinthPlace scene){
+        var r=scene.room();var seen=new HashSet<BlockPos>();var todo=new ArrayDeque<BlockPos>();
+        for(var door:scene.doors())for(int up=0;up<=1;up++){var start=b.offset(door.rel()).relative(door.facing().getOpposite()).above(up);if(r.isInside(start.subtract(b))&&seen.add(start))todo.add(start);}
+        while(!todo.isEmpty()){
+            var at=todo.poll();
+            for(var d:Direction.values()){
+                var next=at.relative(d);if(!r.isInside(next.subtract(b))||seen.contains(next))continue;
+                var s=level.getBlockState(next);
+                if(!s.getCollisionShape(level,next).isEmpty()&&!(s.getBlock() instanceof DoorBlock)&&!(s.getBlock() instanceof TrapDoorBlock))continue;
+                seen.add(next);todo.add(next);
+            }
+        }
+        return seen;
+    }
+
     /** 0.4.28: indoor shells read as built rooms, and the outdoor scenes end in land, not invisible walls. */
     private static void shellsAndEdges(GameTestHelper h,net.minecraft.server.MinecraftServer server,BlockPos origin,LabyrinthData data){
         var shells=data.state(SceneShells.STATE);
