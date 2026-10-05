@@ -126,7 +126,7 @@ public final class DrownedTownArchitecture {
     private static void church(ServerLevel level, BlockPos base) {
         shell(level, base, 8, 22, -58, -41, -11, -5, Blocks.MOSSY_STONE_BRICKS.defaultBlockState());
         for (int z = -51; z <= -44; z += 3) for (int x : new int[]{10, 11, 12, 18, 19, 20})
-            level.setBlock(base.offset(x, -11, z), LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, Direction.NORTH).setValue(StairBlock.WATERLOGGED, true), F);
+            level.setBlock(base.offset(x, -11, z), LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH).setValue(StairBlock.WATERLOGGED, true), F);
         level.setBlock(base.offset(15, -11, -55), Blocks.POLISHED_BLACKSTONE.defaultBlockState(), F);
         level.setBlock(base.offset(15, -10, -55), Blocks.POLISHED_BLACKSTONE_SLAB.defaultBlockState().setValue(SlabBlock.WATERLOGGED, true), F);
         BlockState gate = Blocks.IRON_DOOR.defaultBlockState().setValue(DoorBlock.FACING, Direction.SOUTH);

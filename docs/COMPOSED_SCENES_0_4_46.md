@@ -56,6 +56,21 @@ There are thirteen literary rooms. Each gets a composition of its own, built fro
   - The bar gets a door canopy and lamp, painted parking bays, a dumpster and street lights.
   - The camp gets a fire ring with log benches, a picnic table, a gate sign and road lamps.
 
+## The cast
+
+- **The drowned church's congregation** sat a block above the floor, a row behind its pews. The pews also faced away from the pulpit.
+  - The pews now face the preacher; existing churches are turned in place, and keep their water.
+  - Each body sits on its pew at floor level.
+  - The preacher stands on the floor behind the pulpit.
+- **Literary actors placed in a chair now sit in it:** hips on the seat, legs forward, facing the way the chair faces. The confession room's visitor had been standing inside its armchair.
+- **The lake witch's hunting body was one dark tone**, so in the dark it read as a box. It now has:
+  - pale, bruised skin and blackened claws;
+  - wet hair, threaded with weed, hanging over the face, and pinpoint eyes;
+  - a torn, sodden dress.
+
+  Her human memory keeps its own skin.
+- **Cast proof framing:** the native cast proof no longer cuts off the Mother of Strays' head behind the panel title.
+
 ## What it never does
 
 - It only adds blocks into empty space. It replaces only ordinary floor, wall and natural-ground material.

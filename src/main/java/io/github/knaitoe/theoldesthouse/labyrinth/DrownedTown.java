@@ -269,14 +269,21 @@ public final class DrownedTown {
     }
     private static void ensureBodies(ServerLevel level, BlockPos base, LabyrinthData data) {
         boolean shore = IndianLakeProgress.deadOnShore(data);
+        // The pews were built with their backs to the pulpit: turn them to face it, keeping their water.
+        for (int z = -51; z <= -45; z += 3) for (int x : new int[]{10, 11, 12, 18, 19, 20}) {
+            BlockPos pew = base.offset(x, -11, z); BlockState state = level.getBlockState(pew);
+            if (state.is(Blocks.DARK_OAK_STAIRS) && state.getValue(StairBlock.FACING) == net.minecraft.core.Direction.NORTH)
+                level.setBlock(pew, state.setValue(StairBlock.FACING, net.minecraft.core.Direction.SOUTH), LabyrinthBuilder.flags());
+        }
         List<LakeCongregantEntity> bodies = level.getEntitiesOfClass(LakeCongregantEntity.class, bounds(base), b -> b.getTags().contains(BODY));
         for (int index = 0; index < 7; index++) {
             String tag = BODY + "_" + index; LakeCongregantEntity body = bodies.stream().filter(b -> b.getTags().contains(tag)).findFirst().orElse(null);
             boolean preacher = index == 0;
             if (body == null) { body = DrownedTownRegistry.CONGREGANT.get().create(level); if (body == null) continue; body.addTag(BODY); body.addTag(tag); }
-            BlockPos at = preacher ? base.offset(15, -10, -56)
+            // The preacher stands on the floor behind the pulpit; the congregation sits in the pews facing it.
+            BlockPos at = preacher ? base.offset(15, -11, -56)
                     : shore ? base.offset(-16 + index * 5, 0, -10)
-                    : base.offset(index % 2 == 0 ? 12 : 18, -10, -44 - (index - 1) / 2 * 3);
+                    : base.offset(index % 2 == 0 ? 12 : 18, -11, -45 - (index - 1) / 2 * 3);
             body.pose(preacher, !preacher && !shore);
             body.moveTo(at.getX() + .5, at.getY(), at.getZ() + .5, preacher ? 0 : shore ? 0 : 180, 0);
             if (!bodies.contains(body)) level.addFreshEntity(body);
