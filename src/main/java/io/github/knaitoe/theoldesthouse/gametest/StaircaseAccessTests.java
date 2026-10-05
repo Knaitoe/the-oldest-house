@@ -16,6 +16,7 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.*;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.*;
 import net.neoforged.neoforge.gametest.*;
 
@@ -39,6 +40,9 @@ public final class StaircaseAccessTests {
             for(var at:StaircaseFire.braziers(origin))chunks.hold(level,new AABB(at).inflate(2));
             for(var p:FinaleArchitecture.entrancePlan(origin))put(level,p.pos(),p.block());
             for(var at:StaircaseFire.braziers(origin)){put(level,at.below(),Blocks.STONE.defaultBlockState());put(level,at,Blocks.AIR.defaultBlockState());}
+            for(int x=-7;x<=7;x++)for(int z=0;z<=16;z++)put(level,source.offset(x,-1,z),Blocks.DARK_OAK_PLANKS.defaultBlockState());
+            var door=Blocks.SPRUCE_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.OPEN,true);
+            put(level,source,door);put(level,source.above(),door.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));
         }
         void start(){
             var server=level.getServer();oldHouse=HouseSavedData.get(server);oldData=LabyrinthData.get(server);started=true;
@@ -119,6 +123,7 @@ public final class StaircaseAccessTests {
     @GameTest(template="empty",batch="staircase_access",timeoutTicks=240)
     public static void campVisitKeepsTheRetreatStackButCrossingTheActualDoorReturns(GameTestHelper h){run(h,513500,f->{
         var p=f.player(h,"camp_retreat");f.enter(p);var record=FinaleProgress.player(p.server,p.getUUID());record.putBoolean("Inside",true);record.putInt("StairFires",5);FinaleProgress.save(p.server,p.getUUID(),record);p.tickCount=1;
+        h.assertTrue(f.level.getBlockState(FinaleArchitecture.entry(f.origin)).is(Blocks.SPRUCE_DOOR)&&f.level.getBlockState(FinaleArchitecture.entry(f.origin)).getValue(DoorBlock.OPEN),"the production arrival retains a real open native door");
         p.moveTo(Vec3.atBottomCenterOf(FinaleRepairs.tom(f.origin)));FinaleController.tickPlayer(p,f.origin);
         h.assertTrue(f.data().returnDepth(p.getUUID())==1,"the connected camp remains part of the staircase visit");
         p.moveTo(Vec3.atBottomCenterOf(f.base.offset(-6,FinaleArchitecture.TOP,30)));FinaleController.tickPlayer(p,f.origin);
