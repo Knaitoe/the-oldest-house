@@ -11,6 +11,7 @@ Existing tutorial originals acquire only their remaining chapters on their next 
 | System | Finding and action |
 | --- | --- |
 | Arrival and return routes | Door arrivals, staircase entry/retreat, sleep relocation and junction travel previously updated routes or phase before a deferred crossing succeeded. Commit those records only after actual native arrival. A return consumes only its expected top waypoint. |
+| Cave return credit | Capture this reader's witnessed aftermath when preparing the return; award it only after native arrival. A canceled return earns nothing, and a peer changing the shared room during the handoff cannot erase the reader's observed ending. |
 | Queued fades | A UUID alone could address a new player entity after death/respawn/reconnect. Bind the move to the original living entity and source dimension, and verify its destination before invoking arrival callbacks. Canceled moves leave their return waypoint intact. |
 | Forced companion movement | Forced fades previously moved the player without the normal companion transfer. Use the existing native owned-follower path; retain health, identity and orders, excluding Stay, leashed, projected, captive and foreign pets. |
 | Shared door occupancy | Preserve existing native doorway clearance, body-aware vestibule copying, once-per-crossing close and guarded hallway return. Keep a shared entry open when another explorer occupies it, including a sleep relocation. |
@@ -20,9 +21,9 @@ Existing tutorial originals acquire only their remaining chapters on their next 
 
 ## Verification requirement
 
-Thirteen new native multiplayer tests supplement the existing 341: distinct truthful lives, two readers at all five shared hearths, surviving components and save/reload, borrowed/copied/replayed originals, paper and spectators, finite legacy migration, independent canceled entry, failed return and retry, death during a fade, same-UUID reconnect and native respawn, owned followers, confirmed/canceled Overworld mining and stable saved hallway maps.
+Fourteen new native multiplayer tests supplement the existing 341: distinct truthful lives, two readers at all five shared hearths, surviving components and save/reload, borrowed/copied/replayed originals, paper and spectators, finite legacy migration, independent canceled entry, failed return and retry, death during a fade, same-UUID reconnect and native respawn, owned followers, confirmed/canceled Overworld mining and stable saved hallway maps, and an actual cave return/retry while a peer changes its shared aftermath.
 
-Require all 354 gameplay tests, the separate thirteen-case multiplayer suite, five staircase tests and all existing literary/hotel/hallway/seam suites. The native client checks also consume twenty-five new narrative specimen pages, including long names and maximum native counter values, at the real 114-pixel/14-line book limits. Existing package, texture, writing, client and fifty-three architecture proofs remain required. Verification results must belong to the exact delivered source.
+Require all 355 gameplay tests, the separate fourteen-case multiplayer suite, five staircase tests and all existing literary/hotel/hallway/seam suites. The native client checks also consume twenty-five new narrative specimen pages, including long names and maximum native counter values, at the real 114-pixel/14-line book limits. Existing package, texture, writing, client and fifty-three architecture proofs remain required. Verification results must belong to the exact delivered source.
 
 Layout 33 and protocol 33 remain unchanged. Forty-three eligible Witness sources require thirty-three personal resolutions across at least two kinds; the three endings remain unchanged. These pages enrich an existing mechanic and add no Witness source.
 

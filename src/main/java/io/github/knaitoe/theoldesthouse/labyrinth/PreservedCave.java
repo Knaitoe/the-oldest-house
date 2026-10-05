@@ -109,11 +109,17 @@ public final class PreservedCave {
                 :"Water has gathered in the canoe. It has not touched the faces behind you."),false);
     }
     public static void onDepart(ServerPlayer player){
+        departure(player).accept(player);
+    }
+    /** Keep this explorer's observed aftermath while their physical return is pending. */
+    public static java.util.function.Consumer<ServerPlayer> departure(ServerPlayer player){
         LabyrinthData data=LabyrinthData.get(player.server);CompoundTag state=data.state(ID);
-        if(!state.getBoolean("Cold")&&state.getCompound("Reached").getBoolean(player.getUUID().toString())){
-            WitnessAccount.resolve(player,WitnessAccount.Story.PRESERVED_CAVE,IndianLakeProgress.deadOnShore(data)?"empty_pews":"crossed_congregation");
-            if(IndianLakeProgress.deadOnShore(data))data.setCompleted(ID,true);
-        }
+        boolean earned=!state.getBoolean("Cold")&&state.getCompound("Reached").getBoolean(player.getUUID().toString());
+        boolean empty=IndianLakeProgress.deadOnShore(data);
+        return p->{if(earned&&p.isAlive()&&p.gameMode.getGameModeForPlayer()!=net.minecraft.world.level.GameType.SPECTATOR){
+            var current=LabyrinthData.get(p.server);WitnessAccount.resolve(p,WitnessAccount.Story.PRESERVED_CAVE,empty?"empty_pews":"crossed_congregation");
+            if(empty)current.setCompleted(ID,true);
+        }};
     }
     /** The filming encounter stores the original stack here. Its owner alone can retrieve it. */
     public static void rememberDroppedPhone(ServerPlayer owner,ItemStack phone){

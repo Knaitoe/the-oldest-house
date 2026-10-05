@@ -362,7 +362,6 @@ public final class LabyrinthDoors {
                     HarriganVignette.onDepart(player);
                 }
                 if (place == LabyrinthPlace.HIDE_AND_CLAP) HideAndClap.departBeforeStarting(player);
-                if (place == LabyrinthPlace.PRESERVED_CAVE) PreservedCave.onDepart(player);
                 if (place == LabyrinthPlace.SHALLOWS) Shallows.onDepart(player);
                 if (place == LabyrinthPlace.PHONE_CANOE) PhoneCanoe.interrupt(player);
                 if (place == LabyrinthPlace.GOATMAN) GoatmanVignette.depart(player);
@@ -390,9 +389,11 @@ public final class LabyrinthDoors {
         SHUT_FOR.remove(id);
         if (!othersAtDoor(player.serverLevel(), entry.lower, player)) setDoorOpen(player.serverLevel(), entry.lower, false, null);
         LabyrinthData.Waypoint back = data.peekReturn(id);
+        Consumer<ServerPlayer> caveDeparture=entry.id.equals(LabyrinthPlace.PRESERVED_CAVE.entryDoorId())?PreservedCave.departure(player):p->{};
         String correspondenceSource=io.github.knaitoe.theoldesthouse.house.HouseExperience.record(data,id).getString("CurrentPlace");
         Consumer<ServerPlayer> confirmedReturn=p->{
             if(!LabyrinthData.get(p.server).consumeReturn(p.getUUID(),back))return;
+            caveDeparture.accept(p);
             INSIDE.remove(p.getUUID());
             io.github.knaitoe.theoldesthouse.house.HouseExperience.returned(p);
             VignetteGate.departed(p,back,entry);
