@@ -35,7 +35,7 @@ public final class StaircaseAccessTests {
         Fixture(GameTestHelper h,int coordinate){
             level=HouseTestLevel.get(h.getLevel().getServer());outside=HouseTestLevel.get(level.getServer(),HouseDimensions.OUTSIDE);
             origin=new BlockPos(coordinate,0,coordinate);base=FinaleArchitecture.base(origin);source=FinaleArchitecture.entry(origin).east(100);
-            chunks.hold(level,new AABB(base.offset(-17,FinaleArchitecture.TOP-2,18),base.offset(8,FinaleArchitecture.TOP+8,44)));
+            chunks.hold(level,new AABB(base.getX()-17,FinaleArchitecture.TOP-2,base.getZ()+18,base.getX()+8,FinaleArchitecture.TOP+8,base.getZ()+44));
             chunks.hold(level,new AABB(source).inflate(18));
             for(var at:StaircaseFire.braziers(origin))chunks.hold(level,new AABB(at).inflate(2));
             for(var p:FinaleArchitecture.entrancePlan(origin))put(level,p.pos(),p.block());
@@ -135,7 +135,7 @@ public final class StaircaseAccessTests {
     @GameTest(template="empty",batch="staircase_access",timeoutTicks=300)
     public static void alreadyPolishedWorldReceivesTargetedRepairsOnceWithoutRestaging(GameTestHelper h){run(h,514000,f->{
         var b=LabyrinthPlaces.base(f.origin,LabyrinthPlace.END_WORLD_CABIN);var r=LabyrinthPlace.END_WORLD_CABIN.room();
-        f.chunks.hold(f.outside,new AABB(b.offset(r.minX()-14,r.minY()-2,r.minZ()-14),b.offset(r.maxX()+15,r.maxY()+3,r.maxZ()+15)));
+        f.chunks.hold(f.outside,new AABB(b.getX()+r.minX()-14,b.getY()+r.minY()-2,b.getZ()+r.minZ()-14,b.getX()+r.maxX()+15,b.getY()+r.maxY()+3,b.getZ()+r.maxZ()+15));
     },f->{
         var place=LabyrinthPlace.END_WORLD_CABIN;var b=LabyrinthPlaces.base(f.origin,place);var cabinet=b.offset(7,0,-24);var tv=cabinet.above();var barrel=b.offset(-8,0,-25);var removed=b.offset(6,0,-29);
         f.put(f.outside,tv,LiteraryRegistry.PROP.get().defaultBlockState().setValue(LiteraryPropBlock.KIND,LiteraryPropBlock.Kind.TELEVISION));
