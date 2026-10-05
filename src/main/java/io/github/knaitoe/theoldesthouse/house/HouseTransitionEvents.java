@@ -163,7 +163,7 @@ public final class HouseTransitionEvents {
      * respawn packet the move sends. Nothing waits on the client.
      */
     private static void tickPendingTransition(ServerPlayer player, PendingTransition pending) {
-        if (player.isRemoved() || player.isDeadOrDying()) {
+        if (player != pending.source || player.isRemoved() || player.isDeadOrDying()) {
             fail(player, pending, "the player is no longer there to move");
             return;
         }
@@ -486,7 +486,7 @@ public final class HouseTransitionEvents {
                 String.format("%.2f", player.getZ())
         );
 
-        PENDING.put(player.getUUID(), new PendingTransition(player.serverLevel().dimension(), destination, token, door, before, after));
+        PENDING.put(player.getUUID(), new PendingTransition(player, player.serverLevel().dimension(), destination, token, door, before, after));
         HousePackets.send(player, new HouseTransitionContextPayload(kind, token));
     }
 
@@ -742,6 +742,7 @@ public final class HouseTransitionEvents {
 
     /** Mutable: updated in place every tick rather than re-allocated. */
     private static final class PendingTransition {
+        final ServerPlayer source;
         final ResourceKey<Level> from;
         final ResourceKey<Level> destination;
         final int token;
@@ -760,6 +761,7 @@ public final class HouseTransitionEvents {
         boolean arrived;
 
         PendingTransition(
+                ServerPlayer source,
                 ResourceKey<Level> from,
                 ResourceKey<Level> destination,
                 int token,
@@ -767,6 +769,7 @@ public final class HouseTransitionEvents {
                 @Nullable Consumer<ServerPlayer> before,
                 @Nullable Consumer<ServerPlayer> after
         ) {
+            this.source = source;
             this.from = from;
             this.destination = destination;
             this.token = token;

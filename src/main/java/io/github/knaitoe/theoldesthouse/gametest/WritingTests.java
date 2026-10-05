@@ -109,6 +109,8 @@ public final class WritingTests {
             com.google.gson.JsonArray pages = new com.google.gson.JsonArray();
             var specimens = new java.util.ArrayList<>(io.github.knaitoe.theoldesthouse.house.HouseMarginalia.samples(player));
             specimens.addAll(io.github.knaitoe.theoldesthouse.house.HouseCorrespondence.samples(player));
+            helper.assertTrue(specimens.size()==125,"the complete original correspondence corpus is required");
+            specimens.addAll(staircaseSpecimens(player));
             for (ItemStack book : specimens) {
                 var content = book.get(DataComponents.WRITTEN_BOOK_CONTENT);
                 for (var page : content.pages()) {
@@ -130,8 +132,28 @@ public final class WritingTests {
             java.nio.file.Path folder = java.nio.file.Path.of("../build/font-smoke");
             java.nio.file.Files.createDirectories(folder);
             java.nio.file.Files.writeString(folder.resolve("serial-pages.json"), pages.toString());
-            helper.assertTrue(specimens.size() == 125 && pages.size() >= 125, "the real original and expanded correspondence corpus is incomplete");
+            helper.assertTrue(specimens.size() == 130 && pages.size() >= 150, "the real correspondence and personal staircase corpus is incomplete");
         } finally { helper.getLevel().getServer().getPlayerList().remove(player); }
         helper.succeed();
+    }
+    private static List<ItemStack> staircaseSpecimens(net.minecraft.server.level.ServerPlayer p) {
+        var d=io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData.get(p.server);
+        var id=p.getUUID().toString();var story=io.github.knaitoe.theoldesthouse.labyrinth.StaircaseStory.STATE;
+        var experience=io.github.knaitoe.theoldesthouse.house.HouseExperience.ID;
+        var correspondence=io.github.knaitoe.theoldesthouse.house.HouseCorrespondence.ID;
+        var oldStory=d.stateEntry(story,id);var oldHome=d.stateEntry(experience,id);var oldLetters=d.stateEntry(correspondence,id);
+        var books=new ArrayList<ItemStack>();
+        try {
+            d.setStateEntry(story,id,new net.minecraft.nbt.CompoundTag());d.setStateEntry(experience,id,new net.minecraft.nbt.CompoundTag());d.setStateEntry(correspondence,id,new net.minecraft.nbt.CompoundTag());
+            for(int i=0;i<5;i++) {
+                if(i==1){p.awardStat(net.minecraft.stats.Stats.WALK_ONE_CM,Integer.MAX_VALUE);p.awardStat(net.minecraft.stats.Stats.DEATHS,Integer.MAX_VALUE);p.awardStat(net.minecraft.stats.Stats.ITEM_CRAFTED.get(net.minecraft.world.item.Items.BREAD),Integer.MAX_VALUE);}
+                if(i==2){var facts=new net.minecraft.nbt.CompoundTag();facts.putString("Broke","WWWWWWWWWWWWWWWWWWWWWWWW");facts.putString("Built","WWWWWWWWWWWWWWWWWWWWWWWW");d.setStateEntry(story,id,facts);
+                    var home=new net.minecraft.nbt.CompoundTag();home.putInt("Care",1);home.putString("CaredName","WWWWWWWWWWWWWWWWWWWWWWWW");home.putInt("Sleeps",1);d.setStateEntry(experience,id,home);p.awardStat(net.minecraft.stats.Stats.SLEEP_IN_BED,Integer.MAX_VALUE);}
+                if(i==3){d.setStateEntry(experience,id,new net.minecraft.nbt.CompoundTag());p.awardStat(net.minecraft.stats.Stats.ANIMALS_BRED,Integer.MAX_VALUE);var letters=new net.minecraft.nbt.CompoundTag();letters.putString("SafeRetreat","WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");d.setStateEntry(correspondence,id,letters);}
+                if(i==4){p.getStats().setValue(p,net.minecraft.stats.Stats.CUSTOM.get(net.minecraft.stats.Stats.ANIMALS_BRED),0);p.awardStat(net.minecraft.stats.Stats.TRADED_WITH_VILLAGER,Integer.MAX_VALUE);p.awardStat(net.minecraft.stats.Stats.MOB_KILLS,Integer.MAX_VALUE);d.setStateEntry(story,id,new net.minecraft.nbt.CompoundTag());d.setStateEntry(correspondence,id,new net.minecraft.nbt.CompoundTag());var home=new net.minecraft.nbt.CompoundTag();home.putInt("Deepest",32);d.setStateEntry(experience,id,home);}
+                books.add(HouseWriting.book("Staircase narrative proof "+i,"Native recorded facts",HouseWriting.WritingStyle.WILL,io.github.knaitoe.theoldesthouse.labyrinth.StaircaseStory.account(p)));
+            }
+        } finally {d.setStateEntry(story,id,oldStory);d.setStateEntry(experience,id,oldHome);d.setStateEntry(correspondence,id,oldLetters);}
+        return books;
     }
 }
