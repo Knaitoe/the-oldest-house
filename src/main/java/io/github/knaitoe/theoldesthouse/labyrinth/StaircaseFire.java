@@ -20,11 +20,12 @@ import net.neoforged.bus.api.*;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
-/** Five actual fires consume five leaves. The unlit descent remains impassable per explorer. */
+/** Five actual fires each take one leaf of the explorer's own story. The unlit descent remains impassable per explorer. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class StaircaseFire {
     public static final int REQUIRED=5;
-    private static final String DRESS="staircase_fire_0433", LEAVES="StaircaseLeaves";
+    private static final String DRESS="staircase_fire_0433";
+    public static final String LEAVES="StaircaseLeaves";
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private StaircaseFire(){}
     public static BlockPos shelf(BlockPos origin){return FinaleArchitecture.base(origin).offset(-10,FinaleArchitecture.TOP,20);}
@@ -69,9 +70,11 @@ public final class StaircaseFire {
                 "The light does not reach the bottom.\n\nIt reaches the next fire.\n\nWhen all five are burning, the stairs keep their length.\n\nYou may still go back."));
         CompoundTag tag=new CompoundTag();tag.putUUID("StairReader",reader);tag.putInt(LEAVES,leaves);
         book.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));
-        book.set(DataComponents.CUSTOM_NAME,HouseText.color(Component.literal("House of Leaves ("+leaves+" leaves)")));
+        book.set(DataComponents.CUSTOM_NAME,legacyName(leaves));
         return book;
     }
+    /** The name tutorial books carried before leaves were scattered on the flights. */
+    public static Component legacyName(int leaves){return HouseText.color(Component.literal("House of Leaves ("+leaves+" leaves)"));}
     public static int leaves(ItemStack book,UUID reader){
         var data=book.get(DataComponents.CUSTOM_DATA);if(data==null)return 0;
         var tag=data.copyTag();return tag.hasUUID("StairReader")&&reader.equals(tag.getUUID("StairReader"))?Math.max(0,tag.getInt(LEAVES)):0;
@@ -99,20 +102,22 @@ public final class StaircaseFire {
         if(!(level.getBlockEntity(at) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity))complete=false;
         if(complete){state.putBoolean(key,true);data.setState(DRESS,state);}
     }
+    /** The shelf gives a binding once, and binds the same story again only when its original is lost. */
     public static boolean take(ServerPlayer player){
-        if(!player.isAlive()||player.gameMode.getGameModeForPlayer()==net.minecraft.world.level.GameType.SPECTATOR)return false;
-        var record=FinaleProgress.player(player.server,player.getUUID());if(record.getBoolean("StairBookTaken"))return false;
-        record.putBoolean("StairBookTaken",true);give(player,StaircaseStory.issue(player));give(player,new ItemStack(Items.FLINT_AND_STEEL));
-        FinaleProgress.save(player.server,player.getUUID(),record);return true;
+        var result=StaircaseStory.shelf(player);return result==StaircaseStory.Shelf.ISSUED||result==StaircaseStory.Shelf.REBOUND;
     }
-    private static void give(ServerPlayer player,ItemStack stack){if(!stack.isEmpty()&&!player.getInventory().add(stack)){var drop=player.drop(stack,false);if(drop!=null)drop.setTarget(player.getUUID());}}
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void interact(PlayerInteractEvent.RightClickBlock event){
         if(!(event.getEntity() instanceof ServerPlayer player)||event.getHand()!=InteractionHand.MAIN_HAND
                 ||!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)||player.isSpectator())return;
         BlockPos origin=HouseSavedData.get(player.server).houseOrigin();if(origin==null||!FinaleArchitecture.contains(origin,player.blockPosition()))return;
         if(event.getPos().equals(shelf(origin))){
             event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);
-            if(!take(player))player.displayClientMessage(Component.literal("The shelf is empty. Ordinary paper can feed the remaining hearths."),true);
+            player.displayClientMessage(Component.literal(switch(StaircaseStory.shelf(player)){
+                case ISSUED->"Your House of Leaves. Its five leaves are loose on the stairs below, one on each flight.";
+                case REBOUND->"The shelf binds your story again, as far as you had found it.";
+                case CARRIED->"Your House of Leaves is already with you. Its leaves are on the stairs below.";
+                case FINISHED->"Your story has already burned. The stairs are open.";
+                case REFUSED->"The shelf is empty.";}),true);
         }else if(braziers(origin).contains(event.getPos())){
             event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);
             ignite(player,origin,event.getPos());
@@ -123,19 +128,25 @@ public final class StaircaseFire {
                 ||player.distanceToSqr(at.getCenter())>36||!player.getMainHandItem().is(Items.FLINT_AND_STEEL))return false;
         var phase=FinaleProgress.phase(player.server,player.getUUID());if(phase!=FinaleProgress.Phase.STAIRCASE&&phase!=FinaleProgress.Phase.UNSEEN)return false;
         var record=FinaleProgress.player(player.server,player.getUUID());int index=braziers(origin).indexOf(at);
-        if(index<0||index!=flames(record)||!player.serverLevel().getBlockState(at).is(Blocks.CAMPFIRE))return false;
-        ItemStack fuel=player.getOffhandItem();int leaves=leaves(fuel,player.getUUID());
-        if(leaves==0&&!fuel.is(Items.PAPER)){
-            player.displayClientMessage(Component.literal("Hold the House of Leaves in your off hand. Paper will also burn."),true);return false;
+        if(index<0||!player.serverLevel().getBlockState(at).is(Blocks.CAMPFIRE))return false;
+        if(index<flames(record)){player.displayClientMessage(Component.literal("This fire already burns for you."),true);return false;}
+        if(index>flames(record)){player.displayClientMessage(Component.literal("An earlier fire is still cold for you."),true);return false;}
+        // Only the explorer's own story burns here: no paper, no copy, no one else's leaves.
+        StaircaseStory.sync(player);ItemStack fuel=player.getOffhandItem();
+        if(!StaircaseStory.isCurrent(player,fuel)){
+            player.displayClientMessage(Component.literal(StaircaseStory.foreign(player,fuel)?"Another reader's story will not catch for you."
+                    :"Only your own House of Leaves will catch. Hold it in your off hand."),true);return false;
         }
-        if(leaves>0){if(!StaircaseStory.burn(player,fuel)){player.displayClientMessage(Component.literal("The fire needs your original's next unburned page. Ordinary paper will also burn."),true);return false;}}
-        else fuel.shrink(1);
+        if(!StaircaseStory.ready(player,index)){
+            player.displayClientMessage(Component.literal("Your House of Leaves has no unburned leaf. This flight's leaf is somewhere in the dark above."),true);return false;
+        }
+        if(!StaircaseStory.burn(player,fuel,index))return false;
         player.getMainHandItem().hurtAndBreak(1,player,EquipmentSlot.MAINHAND);
         player.serverLevel().setBlock(at,player.serverLevel().getBlockState(at).setValue(CampfireBlock.LIT,true),F);
         record.putInt("StairFires",index+1);record.putBoolean("StairFireVersion",true);
         FinaleProgress.save(player.server,player.getUUID(),record);
         player.serverLevel().playSound(null,at,SoundEvents.FIRECHARGE_USE,SoundSource.BLOCKS,.65F,.85F);
-        player.displayClientMessage(Component.literal(index+1==REQUIRED?"The dark gives way. The whole staircase is there.":"A leaf burns. Another stretch of stairs holds."),true);
+        player.displayClientMessage(Component.literal(index+1==REQUIRED?"The dark gives way. The whole staircase is there.":"A leaf burns. The next flight comes out of the dark."),true);
         return true;
     }
     /** A saved visit already deep in the old staircase stays traversable on upgrade. */
@@ -151,9 +162,10 @@ public final class StaircaseFire {
         if(blocked){
             BlockPos safe=record.contains("StairLastSafe")?BlockPos.of(record.getLong("StairLastSafe")):landings(origin).get(fires);
             HouseInternalTeleport.shift(player,Vec3.atBottomCenterOf(safe),player.getYRot());player.setDeltaMovement(Vec3.ZERO);
-            if(player.tickCount%20==0)player.displayClientMessage(Component.literal("The stairs vanish into the dark. Feed the next fire."),true);
+            if(player.tickCount%20==0)player.displayClientMessage(Component.literal("The stairs vanish into the dark. Bind this flight's leaf, then feed the fire."),true);
         }else if(!open(record)&&player.tickCount%5==0&&player.onGround()&&player.getY()>edge.getY()+1)
             record.putLong("StairLastSafe",player.blockPosition().asLong());
+        StaircaseLeaves.cue(player,origin,fires);
         if(player.tickCount%10==0){
             float sight=open(record)?32:Math.max(1.2F,Math.min(12,(float)(player.getY()-edge.getY())+2));
             HousePackets.send(player,new StaircaseLightPayload(true,fires,sight));

@@ -79,7 +79,8 @@ public final class FinaleController {
         LabyrinthData data=LabyrinthData.get(player.server);LabyrinthData.Door entry=data.door(FinaleArchitecture.ENTRY);
         ServerLevel target=player.server.getLevel(HouseDimensions.INTERIOR);if(entry==null||target==null)return;
         var turn=LabyrinthDoors.rotationFrom(from.facing,entry.facing);
-        LabyrinthDoors.copyVestibule(player.serverLevel(),from,target,entry,turn,player);
+        LabyrinthDoors.copyVestibule(player.serverLevel(),from,target,entry,turn,player,FinaleArchitecture.HALL_HALF_WIDTH);
+        BlockPos manor=HouseSavedData.get(player.server).houseOrigin();if(manor!=null)FinaleArchitecture.closeHall(target,manor);
         Vec3 destination=LabyrinthDoors.shifted(player.position(),from.lower,entry.lower,turn);
         var back=new LabyrinthData.Waypoint(from.dimension,Vec3.atBottomCenterOf(from.lower),from.facing.toYRot(),true);
         java.util.function.Consumer<ServerPlayer> arrived=p->{
@@ -173,7 +174,9 @@ public final class FinaleController {
         if(LabyrinthDoors.isBusy(player))return;
         LabyrinthData data=LabyrinthData.get(player.server);var back=data.peekReturn(player.getUUID());
         java.util.function.Consumer<ServerPlayer> returned=p->{
-            if(back!=null&&!LabyrinthData.get(p.server).consumeReturn(p.getUUID(),back))return;
+            // Arrival means the explorer has left the shaft: lift its darkness even if another
+            // crossing replaced the waypoint meanwhile, and spend only the route actually used.
+            if(back!=null)LabyrinthData.get(p.server).consumeReturn(p.getUUID(),back);
             io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.StaircaseLightPayload(false,0,32));
             FinaleProgress.phase(p.server,p.getUUID(),FinaleProgress.Phase.UNSEEN);
         };

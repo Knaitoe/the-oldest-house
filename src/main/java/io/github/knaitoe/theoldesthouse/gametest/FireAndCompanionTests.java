@@ -67,7 +67,7 @@ public final class FireAndCompanionTests {
             var data=LabyrinthData.get(p.server);var loaded=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),level.registryAccess()),level.registryAccess());
             h.assertTrue(StaircaseFire.open(loaded.state(FinaleProgress.STATE).getCompound(p.getUUID().toString()))
                     &&!StaircaseFire.open(loaded.state(FinaleProgress.STATE).getCompound(peer.getUUID().toString())),"reload preserves personal light; a peer cannot borrow it");
-            h.assertTrue(StaircaseFire.take(p)&&!StaircaseFire.take(p),"the native personal supply is finite");
+            h.assertTrue(!StaircaseFire.take(p)&&!StaircaseFire.take(p),"a story that has fully burned is not bound again");
         }finally{LabyrinthData.get(p.server).setState(FinaleProgress.STATE,old);for(var at:fires){level.setBlock(at,Blocks.AIR.defaultBlockState(),3);level.setBlock(at.below(),Blocks.AIR.defaultBlockState(),3);}remove(p);remove(peer);}
         h.succeed();
     }

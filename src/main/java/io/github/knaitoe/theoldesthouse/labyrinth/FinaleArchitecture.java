@@ -21,6 +21,8 @@ public final class FinaleArchitecture {
     private static final String STATE = "finale_architecture_049";
     public static final int CARVE_VERSION = 429;
     public static final int STAIR_RADIUS=24, STAIR_HALF_WIDTH=4, SHAFT_RADIUS=34;
+    /** The walled entry hall; arrival copies stay inside it, clear of the camp and the first tread. */
+    public static final int HALL_HALF_WIDTH=3;
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     public record Placement(BlockPos pos, BlockState block) {}
     private static final Map<MinecraftServer, List<Placement>> PLANS = new WeakHashMap<>();
@@ -85,7 +87,7 @@ public final class FinaleArchitecture {
         LabyrinthData data = LabyrinthData.get(server); CompoundTag state = data.state(STATE);
         if (state.contains("Origin") && state.getLong("Origin") != manor.asLong()) { boolean requested=state.getBoolean("Requested"); state = new CompoundTag(); state.putBoolean("Requested",requested); PLANS.remove(server); }
         if (!state.getBoolean("Requested")) return;
-        if(state.getBoolean("Ready") && state.getInt("CarveVersion")==CARVE_VERSION){retirePreparationShield(level,manor);connectCell(level,manor);FinaleCollapse.dress(level,manor);FinaleRepairs.repairEntrance(level,manor);FinaleRepairs.tick(level,manor);StaircaseFire.dress(level,manor);return;}
+        if(state.getBoolean("Ready") && state.getInt("CarveVersion")==CARVE_VERSION){retirePreparationShield(level,manor);connectCell(level,manor);FinaleCollapse.dress(level,manor);FinaleRepairs.repairEntrance(level,manor);FinaleRepairs.repairSupports(level,manor);FinaleRepairs.tick(level,manor);StaircaseFire.dress(level,manor);StaircaseLeaves.dress(level,manor);return;}
         // Existing explorers finish their visit before an old physical descent is replaced.
         if(state.getBoolean("Ready")&&level.players().stream().anyMatch(p->contains(manor,p.blockPosition())))return;
         if(state.getInt("PlanVersion")!=CARVE_VERSION){
@@ -107,7 +109,7 @@ public final class FinaleArchitecture {
             data.putDoor(new LabyrinthData.Door(ENTRY,HouseDimensions.INTERIOR,entry(manor),Direction.SOUTH,LabyrinthData.RETURN,false));
         }
         data.setState(STATE,state);
-        if(state.getBoolean("Ready")){retirePreparationShield(level,manor);connectCell(level,manor);FinaleCollapse.dress(level,manor);FinaleRepairs.repairEntrance(level,manor);StaircaseFire.dress(level,manor);}
+        if(state.getBoolean("Ready")){retirePreparationShield(level,manor);connectCell(level,manor);FinaleCollapse.dress(level,manor);FinaleRepairs.repairEntrance(level,manor);FinaleRepairs.repairSupports(level,manor);StaircaseFire.dress(level,manor);StaircaseLeaves.dress(level,manor);}
     }
     private static boolean preserveUpgradeVoid(BlockPos manor,BlockPos pos){
         BlockPos b=base(manor);
@@ -210,14 +212,29 @@ public final class FinaleArchitecture {
     public static List<Placement> entrancePlan(BlockPos manor){
         var b=base(manor);var blocks=new LinkedHashMap<BlockPos,BlockState>();
         var stone=HouseBlocks.STAIRCASE_STONE.get().defaultBlockState();var dark=Blocks.DEEPSLATE_TILES.defaultBlockState();
-        boxFloor(blocks,b,-3,3,STAIR_RADIUS+1,SHAFT_RADIUS,TOP-1,stone);
+        int w=HALL_HALF_WIDTH;
+        boxFloor(blocks,b,-w,w,STAIR_RADIUS+1,SHAFT_RADIUS,TOP-1,stone);
         put(blocks,b,0,TOP-1,STAIR_RADIUS,stone);
-        for(int y=TOP;y<TOP+4;y++)for(int z=STAIR_RADIUS+2;z<=SHAFT_RADIUS;z++){put(blocks,b,-3,y,z,dark);put(blocks,b,3,y,z,dark);}
-        for(int x=-3;x<=3;x++)for(int z=STAIR_RADIUS+2;z<=SHAFT_RADIUS;z++)put(blocks,b,x,TOP+4,z,dark);
+        for(int y=TOP;y<TOP+4;y++)for(int z=STAIR_RADIUS+2;z<=SHAFT_RADIUS;z++){put(blocks,b,-w,y,z,dark);put(blocks,b,w,y,z,dark);}
+        for(int x=-w;x<=w;x++)for(int z=STAIR_RADIUS+2;z<=SHAFT_RADIUS;z++)put(blocks,b,x,TOP+4,z,dark);
         put(blocks,b,0,TOP,STAIR_RADIUS+2,Blocks.DARK_OAK_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.SOUTH));
         put(blocks,b,0,TOP+1,STAIR_RADIUS+2,Blocks.DARK_OAK_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));
         FinaleRepairs.campPlan(blocks,b);
         return blocks.entrySet().stream().map(e->new Placement(e.getKey(),e.getValue())).toList();
+    }
+    /**
+     * The arrival copy reproduces the source room inside the entry hall. A wide source room has
+     * no wall where the hall's sides stand, so the hall's own walls are restored after every copy
+     * (never in a cell someone occupies): the shaft is never one step to either side of the door.
+     */
+    public static void closeHall(ServerLevel level,BlockPos manor){
+        BlockPos b=base(manor);var dark=Blocks.DEEPSLATE_TILES.defaultBlockState();
+        for(int z=STAIR_RADIUS+2;z<=SHAFT_RADIUS;z++)for(int y=TOP;y<TOP+4;y++)for(int x:new int[]{-HALL_HALF_WIDTH,HALL_HALF_WIDTH}){
+            var at=b.offset(x,y,z);
+            if(!level.getBlockState(at).getCollisionShape(level,at).isEmpty())continue;
+            if(level.players().stream().anyMatch(p->p.getBoundingBox().intersects(new net.minecraft.world.phys.AABB(at))))continue;
+            level.setBlock(at,dark,FLAGS);
+        }
     }
     private static int depthBand(int y){return Math.floorMod((TOP-y)/128,4);}
     private static BlockState landingMaterial(int y){return switch(depthBand(y)){
@@ -288,5 +305,5 @@ public final class FinaleArchitecture {
     public static void closeCell(ServerLevel level,BlockPos manor){
         BlockPos door=cell(manor);for(int x=-1;x<=1;x++)for(int y=0;y<4;y++)level.setBlock(door.offset(x,y,0),cellBars(),FLAGS);
     }
-    public static void clearAll(){PLANS.clear();routeOrigin=null;stepsCache=null;fullCache=null;descentCache=null;continuationCache=null;}
+    public static void clearAll(){StaircaseLeaves.clearCache();PLANS.clear();routeOrigin=null;stepsCache=null;fullCache=null;descentCache=null;continuationCache=null;}
 }

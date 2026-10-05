@@ -14,6 +14,7 @@ import net.minecraft.world.phys.*;
 public final class FinaleRepairs {
     private static final String STATE="finale_repairs_0430";
     private static final String ENTRANCE="staircase_entrance_0443";
+    private static final String SUPPORTS="staircase_supports_0445";
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private FinaleRepairs(){}
     public static BlockPos tom(BlockPos origin){return FinaleArchitecture.base(origin).offset(-12,FinaleArchitecture.TOP,22);}
@@ -30,12 +31,52 @@ public final class FinaleRepairs {
             for(int y=top;y<=top+4;y++)plan.put(b.offset(x,y,z),x==-15||z==19||z==26||y==top+4
                     ||x==-8&&(z<23||z>25)?wall:Blocks.AIR.defaultBlockState());
         }
-        // Join the camp to the actual first tread, on the staircase side of the copied vestibule.
+        // Join the camp to the actual first tread. The hall's own door row (|x| <= the hall
+        // half-width at z=26) belongs to the arrival copy; the walkway and its rail stay outside it.
+        int hall=FinaleArchitecture.HALL_HALF_WIDTH;
         for(int x=-7;x<=-1;x++)for(int z=22;z<=26;z++){
             plan.put(b.offset(x,top-1,z),Blocks.DARK_OAK_PLANKS.defaultBlockState());
+            if(z==26&&x>=-hall)continue;
             for(int y=top;y<=top+3;y++)plan.put(b.offset(x,y,z),y==top&&(z==22||z==26)
                     ?Blocks.IRON_BARS.defaultBlockState():Blocks.AIR.defaultBlockState());
         }
+        supportPlan(plan,b);
+    }
+    /**
+     * The camp hangs in the open shaft, so it is carried like one: two beams under its floor
+     * run back to the south shaft wall on corbels, a cross-beam closes the north end, and
+     * four chains tie the roof corners to the shaft cap. Nothing enters a walking cell.
+     */
+    public static void supportPlan(Map<BlockPos,BlockState> plan,BlockPos b){
+        int top=FinaleArchitecture.TOP,wall=FinaleArchitecture.SHAFT_RADIUS;
+        var beam=Blocks.DEEPSLATE_TILES.defaultBlockState();
+        for(int x:new int[]{-14,-9}){
+            for(int z=19;z<wall;z++)plan.put(b.offset(x,top-2,z),beam);
+            plan.put(b.offset(x,top-3,wall-1),Blocks.DEEPSLATE_TILE_STAIRS.defaultBlockState()
+                    .setValue(StairBlock.FACING,Direction.SOUTH).setValue(StairBlock.HALF,net.minecraft.world.level.block.state.properties.Half.TOP));
+        }
+        for(int x=-15;x<=-8;x++)plan.put(b.offset(x,top-2,19),beam);
+        for(int x:new int[]{-15,-8})for(int z:new int[]{19,26})
+            for(int y=top+5;y<top+15;y++)plan.put(b.offset(x,y,z),Blocks.CHAIN.defaultBlockState());
+    }
+    /** Existing worlds that already moved their camp gain only the supports, once, into empty cells. */
+    public static void repairSupports(ServerLevel level,BlockPos origin){
+        var data=LabyrinthData.get(level.getServer());var state=data.state(SUPPORTS);String key=Long.toString(origin.asLong());
+        if(state.getBoolean(key)||!data.state(ENTRANCE).getBoolean(key))return;
+        var b=FinaleArchitecture.base(origin);int top=FinaleArchitecture.TOP;
+        var area=new AABB(b.getX()-16,top-4,b.getZ()+14,b.getX(),top+16,b.getZ()+FinaleArchitecture.SHAFT_RADIUS);
+        if(level.players().stream().anyMatch(p->area.intersects(p.getBoundingBox())))return;
+        for(int x=(b.getX()-16)>>4;x<=b.getX()>>4;x++)
+            for(int z=(b.getZ()+14)>>4;z<=(b.getZ()+FinaleArchitecture.SHAFT_RADIUS)>>4;z++)
+                if(!level.hasChunkAt(new BlockPos(x<<4,top,z<<4)))return;
+        var supports=new LinkedHashMap<BlockPos,BlockState>();supportPlan(supports,b);
+        supports.forEach((at,block)->{if(level.getBlockState(at).isAir())level.setBlock(at,block,F);});
+        // The 0.4.23 open platform north of the walkway was left floating when its camp moved.
+        // Lift only its own planks and wool; the camp, the walkway and anything else stay.
+        var keep=new HashSet<BlockPos>();var camp=new LinkedHashMap<BlockPos,BlockState>();campPlan(camp,b);keep.addAll(camp.keySet());
+        for(int x=-8;x<=-4;x++)for(int z=15;z<=22;z++){var at=b.offset(x,top-1,z);if(!keep.contains(at)&&level.getBlockState(at).is(Blocks.DARK_OAK_PLANKS))level.setBlock(at,Blocks.AIR.defaultBlockState(),F);}
+        for(int z=15;z<=22;z++){var at=b.offset(-8,top,z);if(!keep.contains(at)&&level.getBlockState(at).is(Blocks.WHITE_WOOL))level.setBlock(at,Blocks.AIR.defaultBlockState(),F);}
+        state.putBoolean(key,true);data.setState(SUPPORTS,state);
     }
     /** Only this small entrance waits for visitors; an explorer far down the shaft cannot starve its repair. */
     public static void repairEntrance(ServerLevel level,BlockPos origin){

@@ -62,9 +62,8 @@ public final class FinaleCollapse {
         var data=LabyrinthData.get(l.getServer());var all=data.state("finale_dressing_0423");if(all.getLong("Origin")==origin.asLong()&&all.getBoolean("Done"))return;
         var cell=FinaleArchitecture.cell(origin);for(int x:new int[]{-5,-4,4,5})for(int y=0;y<4;y++){var at=cell.offset(x,y,0);if(l.getBlockState(at).is(Blocks.CRACKED_DEEPSLATE_BRICKS))l.setBlock(at,NovelRegistry.GOUGES.get().defaultBlockState(),F);}
         var b=FinaleArchitecture.base(origin);for(int z=16;z<=20;z++)for(int y=FinaleArchitecture.TOP;y<FinaleArchitecture.TOP+3;y++){var at=b.offset(-3,y,z);if(l.getBlockState(at).is(Blocks.DEEPSLATE_TILES))l.setBlock(at,Blocks.AIR.defaultBlockState(),F);}
-        for(int x=-8;x<-3;x++)for(int z=15;z<=22;z++){var floor=b.offset(x,FinaleArchitecture.TOP-1,z);if(l.getBlockState(floor).isAir())l.setBlock(floor,Blocks.DARK_OAK_PLANKS.defaultBlockState(),F);}
-        for(int z=15;z<=22;z++){var at=b.offset(-8,FinaleArchitecture.TOP,z);if(l.getBlockState(at).isAir())l.setBlock(at,Blocks.WHITE_WOOL.defaultBlockState(),F);}
-        var fire=b.offset(-6,FinaleArchitecture.TOP,20);if(l.getBlockState(fire).isAir())l.setBlock(fire,Blocks.CAMPFIRE.defaultBlockState(),F);
+        // The camp's fire stands inside the walled camp; the old open platform beside the shaft is no longer laid.
+        var fire=b.offset(-13,FinaleArchitecture.TOP,24);if(l.getBlockState(fire).isAir()&&!l.getBlockState(fire.below()).isAir())l.setBlock(fire,Blocks.CAMPFIRE.defaultBlockState(),F);
         all.putLong("Origin",origin.asLong());all.putBoolean("Done",true);data.setState("finale_dressing_0423",all);
     }
     private static void obstruct(ServerLevel l,List<BlockPos> path,int index,boolean low){var at=path.get(index);var direction=Direction.getNearest(path.get(index+1).getX()-at.getX(),0,path.get(index+1).getZ()-at.getZ());
