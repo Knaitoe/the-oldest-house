@@ -88,8 +88,17 @@ public final class ScenePolish {
         return origin.asLong() + ":" + place.id();
     }
 
-    /** Polishes a freshly built scene and records it, so the in-place pass leaves it alone. */
+    /**
+     * Polishes a freshly built scene and records it, so the in-place pass leaves it alone,
+     * then hands a polished scene on to its composition (0.4.46).
+     */
     public static void polishOnce(ServerLevel level, BlockPos origin, LabyrinthPlace place) {
+        polish(level, origin, place);
+        if (applies(place) && LabyrinthData.get(level.getServer()).state(STATE).getBoolean(key(origin, place)))
+            SceneCraft.craftOnce(level, origin, place);
+    }
+
+    private static void polish(ServerLevel level, BlockPos origin, LabyrinthPlace place) {
         if (!applies(place)) return;
         LabyrinthData data = LabyrinthData.get(level.getServer());
         CompoundTag done = data.state(STATE);
@@ -109,8 +118,9 @@ public final class ScenePolish {
         data.setState(REPAIR_STATE, repaired);
     }
 
-    /** An explicit rebuild authors the room again, so it is polished again. */
+    /** An explicit rebuild authors the room again, so it is polished (and composed) again. */
     public static void forget(MinecraftServer server, BlockPos origin, LabyrinthPlace place) {
+        SceneCraft.forget(server, origin, place);
         LabyrinthData data = LabyrinthData.get(server);
         CompoundTag done = data.state(STATE);
         if (done.contains(key(origin, place))) {
@@ -198,7 +208,7 @@ public final class ScenePolish {
         }
         else if (!DARK_BY_DESIGN.contains(place)) {
             changed += SceneDressing.apply(level, base, place, new Lighting(level, base, place).floor);
-            changed += light(level, base, place, SPARSE.contains(place) ? 0.6D : DIM.contains(place) ? 0.45D : 0.2D);
+            changed += light(level, base, place, darkAllowed(place));
         }
         return changed;
     }
@@ -769,7 +779,12 @@ public final class ScenePolish {
         return new Lighting(level, base, place).dark();
     }
 
-    private static int light(ServerLevel level, BlockPos base, LabyrinthPlace place, double darkAllowed) {
+    /** The share of a scene's floor that may stay dark. */
+    static double darkAllowed(LabyrinthPlace place) {
+        return SPARSE.contains(place) ? 0.6D : DIM.contains(place) ? 0.45D : 0.2D;
+    }
+
+    static int light(ServerLevel level, BlockPos base, LabyrinthPlace place, double darkAllowed) {
         Lighting map = new Lighting(level, base, place);
         List<BlockPos> floor = map.floor;
         int changed = 0, lamps = 0;
