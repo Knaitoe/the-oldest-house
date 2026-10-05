@@ -50,11 +50,39 @@ There are thirteen literary rooms. Each gets a composition of its own, built fro
 - **Indian Lake banks:** the checkerboard of single steps is regraded to a smooth rise. The flat wall of leaves behind it is replaced by a close wood with undergrowth.
 - **The hotel grounds:** smooth snow drifts replace the stepped terraces, with snowy spruces on them. The novel's hedge animals stand by the maze, and lamps line the approach.
 - **Buildings:**
-  - The camp cabins each get a porch on posts, a number board, shutters, corner posts and a stone base course. Two are re-roofed in spruce.
+  - The camp cabins each get a porch on posts, a number board, shutters, corner posts and a stone base course.
   - The lodge gets a porch roof and railing, a chair and lamp, shutters, a brick chimney and a woodpile.
   - The end-of-the-world cabin gets porch posts and railings, rocking chairs, a lamp, shutters, a woodpile and a jetty on pilings.
   - The bar gets a door canopy and lamp, painted parking bays, a dumpster and street lights.
   - The camp gets a fire ring with log benches, a picnic table, a gate sign and road lamps.
+
+## Structure
+
+The dressing above furnishes buildings and rooms. These changes rebuild their structure.
+
+- **Roofs.** The generic builders roofed every cabin with a staircase of stair blocks, one step per block, which read as a stepped pyramid.
+  - The camp cabins, the lodge, the end-of-the-world cabin and the bar each lose that roof. It is removed by the builder's own formula, so nothing else is touched.
+  - Each gets a half-pitch slab roof instead: a block of overhang at the eaves, boarded gables, and a log ridge.
+  - The cabins vary between dark oak and spruce roofs and spruce, dark oak and birch gables. Two have stone chimneys and two have lean-to woodsheds.
+- **The barn** loses its sawtooth stair roof for a dark oak gambrel, steep below and shallow above. It has hayloft doors in the gable and a hoist beam with a chain over them.
+- **Goatman's woods** were a flat wall of leaves with trunks hidden inside. They become a thicket:
+  - mixed leaves, with flowering azalea at the trail's edge;
+  - an uneven hedge top;
+  - trunks showing along the trail;
+  - separate trees of dark oak, spruce and birch, with broken crowns.
+
+  The trail itself stays clear, and nothing grows across it.
+- **Literary interiors** were boxes with posts. Each room's own wall plane gets:
+  - a panelled dado, two blocks high;
+  - a rail above the dado;
+  - a cornice under ceilings of six blocks or more.
+
+  Posts, doors, glass, block entities and story cells are left as they are.
+- **Recessed windows** appear in alternate bays between the posts, with dark glass set a block back like the rooms' own windows. A window is cut only where solid fill lies two blocks deep behind the wall, so none opens onto a passage.
+- **The explorers' camp** was a pale box cut into the labyrinth fill. Now it has:
+  - hewn rock faces;
+  - a floor of trodden earth and gravel;
+  - two timber shoring frames carrying the ceiling, with a lamp under each.
 
 ## The cast
 
@@ -98,6 +126,6 @@ There are thirteen literary rooms. Each gets a composition of its own, built fro
 - the shallows bank rises smoothly;
 - a completed composition is not restaged.
 
-The architecture views publish the composed scenes to the build log.
+The architecture views publish the composed scenes to the build log. Five full-height exterior views show the re-roofed buildings: the camp, the lodge, the end-of-the-world cabin, the bar and the barn. Woods' crowns are left out of these views so they do not hide the buildings. That brings the native client's architecture views to fifty-eight.
 
 Verification status: pending the complete CI run for this version.

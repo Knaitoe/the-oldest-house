@@ -113,6 +113,9 @@ public final class ArchitectureTests {
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL,"hotel_upstairs");
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL,"hotel_basement");
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.BLIND_STRETCH),LabyrinthPlace.BLIND_STRETCH,"blind_stretch");
+            // The composed buildings from outside, roofs and all, without the woods' crowns in front of them.
+            for(var scene:List.of(LabyrinthPlace.CAMP_BLOOD,LabyrinthPlace.MAPPING_INTERIOR,LabyrinthPlace.END_WORLD_CABIN,LabyrinthPlace.ELK_LOT,LabyrinthPlace.BARN_WELL))
+                export(HouseTestLevel.get(server,NovelRooms.dimension(scene)),LabyrinthPlaces.base(origin,scene),scene,scene.id()+"_exterior");
             literaryRoutes(h,interior,LabyrinthPlaces.base(origin,LabyrinthPlace.WINCHESTER));
             var newCamp=LabyrinthPlaces.base(origin,LabyrinthPlace.CAMP_BLOOD);var woods=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);
             for(int x:new int[]{-20,20})for(int z:new int[]{-26,-57,-83})for(var at:BlockPos.betweenClosed(newCamp.offset(x-7,0,z-6),newCamp.offset(x+7,10,z+6)))h.assertTrue(!woods.getBlockState(at).is(Blocks.SPRUCE_LEAVES)&&!woods.getBlockState(at).is(Blocks.SPRUCE_LOG),"the camp's forest cannot grow through a furnished cabin or roof");
@@ -333,17 +336,19 @@ public final class ArchitectureTests {
         if(name.equals("hotel_upstairs")){minY=4;maxY=8;}
         if(name.equals("hotel_basement")){minY=-5;maxY=-2;}
         if(scene==LabyrinthPlace.BLIND_STRETCH)maxY=2;if(LiteraryRooms.isLiterary(scene)){minY=Math.max(scene.room().minY(),-6);maxY=NovelRooms.outside(scene)?Math.min(7,scene.room().maxY()):Math.min(4,scene.room().maxY());if(scene==LabyrinthPlace.WINCHESTER)maxY=10;}
+        boolean exterior=name.endsWith("_exterior");if(exterior){minY=-1;maxY=Math.min(14,r.maxY());}
         for(int x=r.minX();x<=r.maxX();x++)for(int y=minY;y<=maxY;y++)for(int z=minZ;z<=maxZ;z++){
             var at=b.offset(x,y,z);var s=l.getBlockState(at);if(s.is(LiteraryRegistry.FROZEN.get()))s=LiteraryFrozenBlock.original(l,at);
             if(s.isAir()||s.is(Blocks.BARRIER)||s.is(Blocks.LIGHT))continue;
             if(s.is(Blocks.WATER)&&(!LakeLandscape.isLake(scene)&&!LiteraryRooms.outside(scene)||!l.getBlockState(at.above()).isAir()))continue;
+            if(exterior&&s.is(net.minecraft.tags.BlockTags.LEAVES))continue;
             // A documented cutaway removes roofs and the near walls, not interior contents.
-            if(y>=0&&(x==r.maxX()||z==maxZ||(scene==LabyrinthPlace.WALLPAPER_NURSERY&&x==9)||(scene==LabyrinthPlace.SEANCE&&z==-7&&Math.abs(x)>3)||(scene==LabyrinthPlace.WALLPAPER_NURSERY&&z==-6&&Math.abs(x)>3)))continue;
+            if(!exterior&&y>=0&&(x==r.maxX()||z==maxZ||(scene==LabyrinthPlace.WALLPAPER_NURSERY&&x==9)||(scene==LabyrinthPlace.SEANCE&&z==-7&&Math.abs(x)>3)||(scene==LabyrinthPlace.WALLPAPER_NURSERY&&z==-6&&Math.abs(x)>3)))continue;
             if(y>=0&&((scene==LabyrinthPlace.WHALE&&x==13)||(scene==LabyrinthPlace.HOSPITAL&&x==9)
                     ||(scene==LabyrinthPlace.KAREN_ROOM&&x==9)||(scene==LabyrinthPlace.ZAMPANO_COURTYARD&&x==12&&z<=-19)))continue;
             if(name.equals("hotel_upstairs")&&y>=5&&(x==10||z==-6))continue;
             if(scene==LabyrinthPlace.HOTEL&&name.equals("hotel")&&y>=0&&(x==12||z==-4))continue;
-            if(y>2&&s.is(Blocks.BIRCH_PLANKS))continue;
+            if(!exterior&&y>2&&s.is(Blocks.BIRCH_PLANKS))continue;
             boolean exposed=false;for(var side:Direction.values())if(l.getBlockState(at.relative(side)).isAir()||!l.getBlockState(at.relative(side)).isSolid()){exposed=true;break;}
             if(!exposed&&y!=minY)continue;
             Integer index=lookup.get(s);if(index==null){index=lookup.size();lookup.put(s,index);palette.add(BlockState.CODEC.encodeStart(JsonOps.INSTANCE,s).getOrThrow());}
