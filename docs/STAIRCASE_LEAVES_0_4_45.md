@@ -61,3 +61,5 @@ Require all 359 declared native gameplay tests. That includes eight focused stai
 The native client width check also consumes every leaf the writer can produce at its widest, through all four narrators.
 
 Layout 33 and protocol 32 remain unchanged. No network message is added. Forty-three eligible Witness sources require thirty-three personal resolutions across at least two kinds; the three endings remain. Burning adds no Witness source.
+
+Verified source `eef5d85fde7288ad295f53a2c25e28235d5b8033`, run 37303487827: all 359 declared native gameplay tests (the complete suite), the eight focused staircase and fifteen multiplayer cases, the literary, hotel, hallway and seam suites, the package checks and the native client width check (every widest leaf through all four narrators within 114 px / 14 lines) passed.
