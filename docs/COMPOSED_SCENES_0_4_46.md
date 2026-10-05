@@ -129,4 +129,8 @@ The dressing above furnishes buildings and rooms. These changes rebuild their st
 
 The architecture views publish the composed scenes to the build log. Five full-height exterior views show the re-roofed buildings: the camp, the lodge, the end-of-the-world cabin, the bar and the barn. Woods' crowns are left out of these views so they do not hide the buildings. That brings the native client's architecture views to fifty-eight.
 
-Verification status: pending the complete CI run for this version.
+Verified source cc0a4f2578463e329efe9e202632df3129629e5a, run 37359541865. It passed:
+
+- all 359 native gameplay tests;
+- the multiplayer, staircase, hallway, hotel, literary and seam suites;
+- the native client checks, including all fifty-eight architecture views.
