@@ -3,6 +3,8 @@
 
 A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
+Version `0.4.45` lights the great staircase only with your own House of Leaves. The camp shelf gives its binding; one personal leaf waits in the dark on each of the first five flights, and each burned leaf opens the next flight. Accounts now vary in narrator, hand, chosen facts and phrasing. The camp is carried on beams and chains, and staircase arrivals no longer overwrite the walkway. [Release notes](docs/STAIRCASE_LEAVES_0_4_45.md).
+
 Version `0.4.44` makes staircase fuel a personal five-page story from recorded Minecraft stats, confirmed Overworld work, care and House experiences. Each burn removes the next actual page. Multiplayer crossings preserve return routes until arrival, stale fades cannot move a dead or reconnected player, and forced fades carry only owned following companions. [Release review](docs/MULTIPLAYER_STORY_0_4_44.md).
 
 Version `0.4.39` repairs the house exit: the held transition frame has a working 1.5-second deadline once the destination exists; the door remains open during passage; copying its halves no longer triggers temporary support/shape breakage. Client capture/hold and server sync/move timings are logged. All 0.4.38 construction, inventory and progression repairs remain. See [the exit repair](docs/SEAM_EXIT_0_4_39.md). Complete verification requires all 323 native cases, including two new seam regressions, the focused hallway/literary/hotel suites and all existing client/package proofs.

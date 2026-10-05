@@ -2,6 +2,8 @@
 
 Sep 28, 2026 · @Sean Price · revised in the repository to match decisions made since
 
+0.4.45 staircase leaves: the hearths take only the explorer's own House of Leaves. Its five story leaves lie one to a flight in the dark, are bound in order, and each burned leaf opens the next flight. Accounts vary by narrator, hand, chosen facts and phrasing, always from recorded facts. See [STAIRCASE_LEAVES_0_4_45.md](STAIRCASE_LEAVES_0_4_45.md).
+
 0.4.43 entrance repair: Tom and the House of Leaves supply stand in a supported camp outside the staircase arrival copy. Upgrades move original books, campfire state and actor UUIDs once the entrance is vacant; distant explorers do not block it. Per-cell hearth retries preserve emptied originals. Scene support corrections have their own upgrade checkpoint and do not repeat general scenery. See [STAIRCASE_ACCESS_0_4_43.md](STAIRCASE_ACCESS_0_4_43.md).
 
 ## Revisions in this copy

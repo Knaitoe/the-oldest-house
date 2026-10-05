@@ -18,26 +18,39 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
-/** A finite, owner-bound original. Burning changes the book, never the player's statistics. */
+/**
+ * One explorer's House of Leaves. The shelf gives its binding and title leaf; the five story
+ * leaves lie loose on the five flights, one to each, and are bound in as they are found. Only
+ * the next bound leaf of the explorer's own living original feeds the next hearth. The saved
+ * record, not any copy of the book, is what decides which leaf is next.
+ */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class StaircaseStory {
     public static final String STATE="staircase_story_0444";
+    /** Bindings from this edition on gather their leaves on the flights. */
+    public static final int EDITION=445;
     private record Work(ServerPlayer player, BlockPos at, Block block, boolean built, int before) {}
     private static final Deque<Work> WORK=new ArrayDeque<>();
     private StaircaseStory() {}
 
-    private static boolean participant(ServerPlayer p) {
+    static boolean participant(ServerPlayer p) {
         return p.isAlive() && p.gameMode.getGameModeForPlayer()!=net.minecraft.world.level.GameType.SPECTATOR;
     }
-    private static CompoundTag record(ServerPlayer p) {
+    public static CompoundTag record(ServerPlayer p) {
         return LabyrinthData.get(p.server).stateEntry(STATE,p.getUUID().toString());
     }
     private static void save(ServerPlayer p,CompoundTag own) {
         LabyrinthData.get(p.server).setStateEntry(STATE,p.getUUID().toString(),own);
     }
-    private static int stat(ServerPlayer p,net.minecraft.resources.ResourceLocation id) {
-        return p.getStats().getValue(Stats.CUSTOM.get(id));
+    public static boolean exists(CompoundTag own) { return own.hasUUID("Original"); }
+    public static int burned(CompoundTag own) { return Math.max(0,Math.min(StaircaseFire.REQUIRED,own.getInt("Burned"))); }
+    /** Leaves bound so far. An account written before leaves were scattered already holds all five. */
+    public static int found(CompoundTag own) {
+        int found=own.contains("Found")?own.getInt("Found"):exists(own)?StaircaseFire.REQUIRED:0;
+        return Math.max(burned(own),Math.min(StaircaseFire.REQUIRED,found));
     }
+
+    // ------------------------------------------------------------------ Overworld work
 
     // Events precede the native stat award. Verify that award after the tick so a
     // protected/canceled block, or a peer's action, never becomes this player's memory.
@@ -63,108 +76,163 @@ public final class StaircaseStory {
             if(p.server.getPlayerList().getPlayer(p.getUUID())!=p || !participant(p))continue;
             int now=w.built()?p.getStats().getValue(Stats.ITEM_USED.get(w.block().asItem())):p.getStats().getValue(Stats.BLOCK_MINED.get(w.block()));
             if(now<=w.before())continue;
-            var own=record(p);own.putString(w.built()?"Built":"Broke",w.block().getName().getString());save(p,own);
+            var own=record(p);own.putString(w.built()?"Built":"Broke",StaircaseAccount.blockName(w.block()));save(p,own);
         }
-        for(var p:e.getServer().getPlayerList().getPlayers())if(p.tickCount%20==0&&participant(p))
-            for(int slot=0;slot<p.getInventory().getContainerSize();slot++)prepare(p,p.getInventory().getItem(slot));
+        for(var p:e.getServer().getPlayerList().getPlayers())if(p.tickCount%20==0&&participant(p))sync(p);
     }
 
-    /** Five short native pages, built from recorded facts rather than an invented biography. */
-    public static List<String> account(ServerPlayer p) {
-        var d=LabyrinthData.get(p.server);var work=record(p);
-        var home=HouseExperience.record(d,p.getUUID());var letters=HouseCorrespondence.record(d,p.getUUID());
-        long steps=stat(p,Stats.WALK_ONE_CM)/100L;
-        int deaths=stat(p,Stats.DEATHS),nights=stat(p,Stats.SLEEP_IN_BED),bred=stat(p,Stats.ANIMALS_BRED);
-        int bread=p.getStats().getValue(Stats.ITEM_CRAFTED.get(Items.BREAD));
-        int trades=stat(p,Stats.TRADED_WITH_VILLAGER),kills=stat(p,Stats.MOB_KILLS);
-        String road=steps>0?"Your record keeps "+quantity(steps,"metre","metres")+" walked. The road was a habit before the staircase asked why.":"The record has no full metre to offer. This page will not invent a road for you.";
-        String made=!work.getString("Built").isEmpty()?" In the Overworld you placed "+shortName(work.getString("Built"))+". Here, even what you put down follows.":bread>0?" You made "+quantity(bread,"loaf","loaves")+" of bread. Your hands knew work that could keep you alive.":" The page leaves room for work it did not witness.";
-        String care=home.getInt("Care")>0&&!home.getString("CaredName").isEmpty()?"You put your hand on "+shortName(home.getString("CaredName"))+". The ink keeps that touch; it cannot say where the animal is now.":bred>0?"You bred animals "+quantity(bred,"time","times")+". There were lives in your record that began with care.":trades>0?"You traded with villagers "+quantity(trades,"time","times")+". For a while, what changed hands had an agreed value.":"There is no recorded touch here to borrow. The page will not give somebody else's companion your name.";
-        String sleep=nights>0?" You slept in a bed "+quantity(nights,"time","times")+". Not every darkness needed a fire.":" No bed-sleep is recorded. This is an absence in the record, not a claim that you never rested.";
-        String loss=deaths>0?"You died "+quantity(deaths,"time","times")+"; the record continued. It keeps a count where you might remember the cost of returning.":"No death is recorded. The blank is only a blank; the House cannot make it a promise.";
-        String damage=!work.getString("Broke").isEmpty()?" You broke "+shortName(work.getString("Broke"))+" in the Overworld. Your work left a space where something stood.":kills>0?" Your record also counts "+quantity(kills,"creature","creatures")+" killed. It does not write a reason beside them.":" The ink refuses to turn silence into a confession.";
-        String house=!letters.getString("SafeRetreat").isEmpty()?"You returned from "+placeName(letters.getString("SafeRetreat"))+" with its account unfinished. The doorway let you leave a sentence open.":home.getInt("Sleeps")>0?"You slept inside the manor. This house has held you still as well as moved you.":home.getInt("Deepest")>0?"You reached "+quantity(home.getInt("Deepest"),"door","doors")+" deep. Your own record keeps the depth; another explorer's footsteps do not add to it.":"The House has not yet recorded a deeper journey for you. The page will not mistake a stranger's arrival for yours.";
-        int read=(int)letters.getCompound("Read").getAllKeys().stream().filter(k->letters.getCompound("Read").getBoolean(k)).count();
-        String reading=read>0?" You read "+read+" of its letters. For a moment, the House had to address a reader.":" There are sentences here you have not yet read.";
-        String last="These leaves remember your life as their ink found it. Your life keeps moving.\n\nFire takes one page at a time. It cannot take the facts from you.\n\nYou may still go back.";
-        return List.of("I. The road\n\n"+road+made,"II. What you kept\n\n"+care+sleep,
-                "III. What was lost\n\n"+loss+damage,"IV. The house\n\n"+house+reading,"V. The unwritten\n\n"+last);
-    }
-    private static String quantity(long count,String singular,String plural){return count+" "+(count==1?singular:plural);}
-    private static String shortName(String text) {
-        String clean=text.replaceAll("[\\p{Cntrl}]","").trim();
-        int end=clean.offsetByCodePoints(0,Math.min(24,clean.codePointCount(0,clean.length())));
-        return clean.substring(0,end);
-    }
-    private static String placeName(String id) {
-        return id.replace('_',' ').replace(':',' ').substring(0,Math.min(32,id.length()));
-    }
-    private static CompoundTag snapshot(ServerPlayer p,int alreadyBurned) {
-        var own=record(p);
-        if(!own.hasUUID("Original")) {
-            own.putUUID("Original",UUID.randomUUID());own.putInt("Burned",alreadyBurned);
-            var pages=new ListTag();for(String page:account(p))pages.add(StringTag.valueOf(page));own.put("Pages",pages);
-            save(p,own);
-        }
+    // ------------------------------------------------------------------ the account
+
+    private static int flames(ServerPlayer p) { return StaircaseFire.flames(FinaleProgress.player(p.server,p.getUUID())); }
+    /** A hearth lit before this edition (by paper, or an old visit) has used its flight's leaf. */
+    private static CompoundTag reconcile(ServerPlayer p,CompoundTag own) {
+        if(!exists(own))return own;
+        int fires=flames(p),burned=Math.max(burned(own),fires),found=Math.max(found(own),burned);
+        if(burned!=own.getInt("Burned")||found!=own.getInt("Found")||!own.contains("Found")){own.putInt("Burned",burned);own.putInt("Found",found);save(p,own);}
         return own;
     }
-    private static List<String> pages(CompoundTag own,int from) {
-        var all=own.getList("Pages",Tag.TAG_STRING);var text=new ArrayList<String>();
-        for(int i=from;i<all.size();i++)text.add(all.getString(i));return text;
+    /** Writes the account once, the first time this explorer takes their House of Leaves. */
+    private static CompoundTag snapshot(ServerPlayer p,int burned,int found) {
+        var own=record(p);
+        if(exists(own))return reconcile(p,own);
+        var original=UUID.randomUUID();long seed=p.getUUID().getMostSignificantBits()^original.getLeastSignificantBits();
+        var story=StaircaseAccount.write(p,own,seed);
+        own.putUUID("Original",original);own.putLong("Seed",seed);own.putString("Voice",story.voice().name());own.putString("Hand",story.voice().hand);
+        own.putString("Front",story.front());
+        var pages=new ListTag();for(String page:story.leaves())pages.add(StringTag.valueOf(page));own.put("Pages",pages);
+        own.putInt("Burned",burned);own.putInt("Found",Math.max(burned,found));own.putInt("Edition",EDITION);
+        save(p,own);return reconcile(p,own);
     }
-    private static ItemStack original(ServerPlayer p,CompoundTag own) {
-        int burned=Math.max(0,Math.min(StaircaseFire.REQUIRED,own.getInt("Burned")));
-        if(burned==StaircaseFire.REQUIRED)return ItemStack.EMPTY;
-        ItemStack book=HouseWriting.book("House of Leaves",p.getGameProfile().getName(),HouseWriting.WritingStyle.WILL,pages(own,burned));
-        var tag=new CompoundTag();tag.putUUID("StairReader",p.getUUID());tag.putUUID("StairStory",own.getUUID("Original"));
-        tag.putInt("StairPage",burned);tag.putInt("StaircaseLeaves",StaircaseFire.REQUIRED-burned);
-        book.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));book.set(DataComponents.CUSTOM_NAME,leafName(StaircaseFire.REQUIRED-burned));return book;
+    private static HouseWriting.WritingStyle hand(CompoundTag own) { return StaircaseAccount.hand(own.contains("Hand")?own.getString("Hand"):"WILL"); }
+    private static String front(ServerPlayer p,CompoundTag own) { return own.contains("Front")?own.getString("Front"):StaircaseProse.legacyFront(p.getGameProfile().getName()); }
+    /** The text of one story leaf, as its finder will read it. */
+    public static String leaf(CompoundTag own,int index) { var all=own.getList("Pages",Tag.TAG_STRING);return index<all.size()?all.getString(index):""; }
+    public static Component leafPage(CompoundTag own,int index) { return HouseWriting.page(hand(own),leaf(own,index)); }
+    public static Component leafName(int count) {
+        return HouseText.color(Component.literal(count<=0?"House of Leaves":"House of Leaves ("+count+(count==1?" leaf)":" leaves)")));
     }
-    public static ItemStack issue(ServerPlayer p) { return original(p,snapshot(p,0)); }
-    public static Component leafName(int count) { return HouseText.color(Component.literal("House of Leaves ("+count+" leaves)")); }
-
-    /** Upgrade the actual held legacy original before its reader opens or burns it. */
-    public static boolean prepare(ServerPlayer p,ItemStack book){
-        if(!participant(p)||!book.is(Items.WRITTEN_BOOK)||book.getCount()!=1)return false;
-        int leaves=StaircaseFire.leaves(book,p.getUUID());
-        if(leaves<1||leaves>StaircaseFire.REQUIRED)return false;
-        var tag=book.get(DataComponents.CUSTOM_DATA).copyTag();
-        if(tag.hasUUID("StairStory")||tag.contains("StairPage"))return false;
+    private static boolean autoName(Component name) {
+        if(name==null)return true;
+        for(int i=0;i<=StaircaseFire.REQUIRED;i++)if(leafName(i).equals(name)||StaircaseFire.legacyName(i).equals(name))return true;
+        return false;
+    }
+    /** The written content of this explorer's binding: its title leaf, then every bound leaf not yet burned. */
+    private static WrittenBookContent content(ServerPlayer p,CompoundTag own) {
+        var pages=new ArrayList<String>();pages.add(front(p,own));
+        for(int i=burned(own);i<found(own);i++)pages.add(leaf(own,i));
+        return HouseWriting.book("House of Leaves",p.getGameProfile().getName(),hand(own),pages).get(DataComponents.WRITTEN_BOOK_CONTENT);
+    }
+    /** Bring a held binding up to date with the record, keeping every unrelated component. */
+    private static void bind(ServerPlayer p,CompoundTag own,ItemStack book) {
+        var data=book.get(DataComponents.CUSTOM_DATA);var tag=data==null?new CompoundTag():data.copyTag();
+        int ready=found(own)-burned(own);
+        tag.putUUID("StairReader",p.getUUID());tag.putUUID("StairStory",own.getUUID("Original"));tag.putInt("StairPage",burned(own));
+        tag.putInt(StaircaseFire.LEAVES,ready);tag.putInt("StairBinding",EDITION);
+        var content=content(p,own);
+        if(!content.equals(book.get(DataComponents.WRITTEN_BOOK_CONTENT)))book.set(DataComponents.WRITTEN_BOOK_CONTENT,content);
+        if(data==null||!data.copyTag().equals(tag))book.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));
+        if(autoName(book.get(DataComponents.CUSTOM_NAME)))book.set(DataComponents.CUSTOM_NAME,leafName(ready));
+    }
+    private static ItemStack binding(ServerPlayer p,CompoundTag own) {
+        if(burned(own)>=StaircaseFire.REQUIRED)return ItemStack.EMPTY;
+        var book=new ItemStack(Items.WRITTEN_BOOK);bind(p,own,book);return book;
+    }
+    /** This explorer's living original: their own, uncopied, the binding the record names. */
+    public static boolean isCurrent(ServerPlayer p,ItemStack book) { return isCurrent(p,book,record(p)); }
+    private static boolean isCurrent(ServerPlayer p,ItemStack book,CompoundTag own) {
+        if(!exists(own)||!book.is(Items.WRITTEN_BOOK)||book.getCount()!=1)return false;
+        var content=book.get(DataComponents.WRITTEN_BOOK_CONTENT);var data=book.get(DataComponents.CUSTOM_DATA);
+        if(content==null||content.generation()!=0||data==null)return false;
+        var tag=data.copyTag();
+        return tag.hasUUID("StairReader")&&tag.getUUID("StairReader").equals(p.getUUID())&&tag.hasUUID("StairStory")&&tag.getUUID("StairStory").equals(own.getUUID("Original"));
+    }
+    /** Another reader's House of Leaves, recognised only so the fire can refuse it plainly. */
+    public static boolean foreign(ServerPlayer p,ItemStack book) {
+        var data=book.get(DataComponents.CUSTOM_DATA);if(data==null)return false;var tag=data.copyTag();
+        return tag.hasUUID("StairReader")&&!tag.getUUID("StairReader").equals(p.getUUID());
+    }
+    public static boolean carries(ServerPlayer p) {
+        var own=record(p);var inv=p.getInventory();
+        for(int i=0;i<inv.getContainerSize();i++)if(isCurrent(p,inv.getItem(i),own))return true;
+        return false;
+    }
+    private static boolean legacy(ServerPlayer p,ItemStack book) {
+        if(!book.is(Items.WRITTEN_BOOK)||book.getCount()!=1)return false;
+        int leaves=StaircaseFire.leaves(book,p.getUUID());if(leaves<1||leaves>StaircaseFire.REQUIRED)return false;
+        var tag=book.get(DataComponents.CUSTOM_DATA).copyTag();if(tag.hasUUID("StairStory"))return false;
         var content=book.get(DataComponents.WRITTEN_BOOK_CONTENT);
-        if(content==null||content.generation()!=0||content.pages().size()!=2)return false;
-        var legacy=StaircaseFire.book(p.getUUID(),leaves).get(DataComponents.WRITTEN_BOOK_CONTENT);
-        if(!content.pages().equals(legacy.pages()))return false;
-        var own=snapshot(p,StaircaseFire.REQUIRED-leaves);
-        if(leaves!=StaircaseFire.REQUIRED-own.getInt("Burned"))return false;
-        book.set(DataComponents.WRITTEN_BOOK_CONTENT,original(p,own).get(DataComponents.WRITTEN_BOOK_CONTENT));
-        tag.putUUID("StairStory",own.getUUID("Original"));tag.putInt("StairPage",own.getInt("Burned"));
-        book.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));return true;
+        return content!=null&&content.generation()==0&&content.pages().equals(StaircaseFire.book(p.getUUID(),leaves).get(DataComponents.WRITTEN_BOOK_CONTENT).pages());
+    }
+    /**
+     * Keep every House of Leaves this explorer carries truthful: the living original shows its
+     * title leaf and its bound, unburned leaves. An old tutorial book (0.4.33-0.4.43) becomes the
+     * explorer's account still holding the leaves it had; nothing is refilled.
+     */
+    public static void sync(ServerPlayer p) {
+        if(!participant(p))return;
+        var inv=p.getInventory();var own=record(p);
+        for(int i=0;i<inv.getContainerSize();i++){
+            var book=inv.getItem(i);if(book.isEmpty()||!book.is(Items.WRITTEN_BOOK))continue;
+            if(!exists(own)&&legacy(p,book)){
+                int leaves=StaircaseFire.leaves(book,p.getUUID());
+                own=snapshot(p,Math.max(StaircaseFire.REQUIRED-leaves,flames(p)),StaircaseFire.REQUIRED);
+                bind(p,own,book);continue;
+            }
+            if(exists(own)&&isCurrent(p,book,own)){
+                own=reconcile(p,own);
+                if(burned(own)>=StaircaseFire.REQUIRED){inv.setItem(i,ItemStack.EMPTY);continue;}
+                bind(p,own,book);
+            }
+        }
     }
 
-    /** Reject copies/replayed leaves. Upgrade an existing finite tutorial original without refilling it. */
-    public static boolean burn(ServerPlayer p,ItemStack book) {
-        if(!participant(p)||!book.is(Items.WRITTEN_BOOK)||book.getCount()!=1)return false;
-        var content=book.get(DataComponents.WRITTEN_BOOK_CONTENT);
-        int leaves=StaircaseFire.leaves(book,p.getUUID());
-        if(content==null||content.generation()!=0||leaves<1||leaves>StaircaseFire.REQUIRED)return false;
-        var tag=book.get(DataComponents.CUSTOM_DATA).copyTag();
-        if(!tag.hasUUID("StairStory")) {
-            if(!prepare(p,book))return false;
-            tag=book.get(DataComponents.CUSTOM_DATA).copyTag();content=book.get(DataComponents.WRITTEN_BOOK_CONTENT);
-        }
-        var own=record(p);if(!own.hasUUID("Original"))return false;int cursor=own.getInt("Burned");
-        if(leaves!=StaircaseFire.REQUIRED-cursor)return false;
-        if(!own.getUUID("Original").equals(tag.getUUID("StairStory"))||tag.getInt("StairPage")!=cursor)return false;
-        var expected=original(p,own).get(DataComponents.WRITTEN_BOOK_CONTENT);
-        if(!content.pages().equals(expected.pages()))return false;
-        own.putInt("Burned",cursor+1);save(p,own);
-        if(leaves==1)book.shrink(1);
-        else {
-            book.set(DataComponents.WRITTEN_BOOK_CONTENT,new WrittenBookContent(content.title(),content.author(),content.generation(),List.copyOf(content.pages().subList(1,content.pages().size())),content.resolved()));
-            tag.putInt("StairPage",cursor+1);tag.putInt("StaircaseLeaves",leaves-1);
-            book.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));
-            if(leafName(leaves).equals(book.get(DataComponents.CUSTOM_NAME)))book.set(DataComponents.CUSTOM_NAME,leafName(leaves-1));
-        }
+    // ------------------------------------------------------------------ shelf, leaves, fire
+
+    public enum Shelf { ISSUED, REBOUND, CARRIED, FINISHED, REFUSED }
+    /** The camp shelf: the first binding, or the same story bound again if the original is lost. */
+    public static Shelf shelf(ServerPlayer p) {
+        if(!participant(p))return Shelf.REFUSED;
+        sync(p);
+        var record=FinaleProgress.player(p.server,p.getUUID());boolean first=!record.getBoolean("StairBookTaken");
+        if(first){record.putBoolean("StairBookTaken",true);FinaleProgress.save(p.server,p.getUUID(),record);}
+        var own=record(p);boolean existed=exists(own);
+        own=existed?reconcile(p,own):snapshot(p,flames(p),flames(p));
+        if(burned(own)>=StaircaseFire.REQUIRED)return Shelf.FINISHED;
+        if(carries(p))return Shelf.CARRIED;
+        // A lost original is bound again from the record; the copy left behind goes cold.
+        if(!first&&existed){own.putUUID("Original",UUID.randomUUID());save(p,own);}
+        give(p,binding(p,own));
+        if(first||!p.getInventory().hasAnyMatching(s->s.is(Items.FLINT_AND_STEEL)))give(p,new ItemStack(Items.FLINT_AND_STEEL));
+        return first?Shelf.ISSUED:Shelf.REBOUND;
+    }
+    private static void give(ServerPlayer p,ItemStack stack){if(!stack.isEmpty()&&!p.getInventory().add(stack)){var drop=p.drop(stack,false);if(drop!=null)drop.setTarget(p.getUUID());}}
+
+    public enum Take { BOUND, NO_BINDING, NOT_CARRIED, TAKEN, EARLIER, FINISHED, REFUSED }
+    /** Where this explorer stands with the leaf on one flight. */
+    public static Take leafState(ServerPlayer p,int index) {
+        if(!participant(p))return Take.REFUSED;
+        var own=record(p);if(!exists(own))return Take.NO_BINDING;own=reconcile(p,own);
+        if(burned(own)>=StaircaseFire.REQUIRED)return Take.FINISHED;
+        if(index<found(own))return Take.TAKEN;
+        if(index>found(own))return Take.EARLIER;
+        return carries(p)?Take.BOUND:Take.NOT_CARRIED;
+    }
+    /** Bind the next loose leaf into the carried original. Only the leaf for the explorer's next flight comes loose. */
+    public static Take takeLeaf(ServerPlayer p,int index) {
+        var state=leafState(p,index);if(state!=Take.BOUND)return state;
+        var own=record(p);own.putInt("Found",index+1);save(p,own);sync(p);p.inventoryMenu.broadcastChanges();
+        return Take.BOUND;
+    }
+    /** The next bound leaf of the explorer's own living original, for the hearth that matches it. */
+    public static boolean ready(ServerPlayer p,int hearth) {
+        var own=reconcile(p,record(p));return exists(own)&&hearth==burned(own)&&found(own)>burned(own);
+    }
+    public static boolean burn(ServerPlayer p,ItemStack book,int hearth) {
+        if(!participant(p))return false;
+        var own=reconcile(p,record(p));
+        if(!isCurrent(p,book,own)||hearth!=burned(own)||found(own)<=burned(own))return false;
+        own.putInt("Burned",burned(own)+1);save(p,own);
+        if(burned(own)>=StaircaseFire.REQUIRED)book.shrink(1);else bind(p,own,book);
         return true;
     }
 }

@@ -110,7 +110,7 @@ public final class WritingTests {
             var specimens = new java.util.ArrayList<>(io.github.knaitoe.theoldesthouse.house.HouseMarginalia.samples(player));
             specimens.addAll(io.github.knaitoe.theoldesthouse.house.HouseCorrespondence.samples(player));
             helper.assertTrue(specimens.size()==125,"the complete original correspondence corpus is required");
-            specimens.addAll(staircaseSpecimens(player));
+            var staircase=staircaseSpecimens(player);specimens.addAll(staircase);
             for (ItemStack book : specimens) {
                 var content = book.get(DataComponents.WRITTEN_BOOK_CONTENT);
                 for (var page : content.pages()) {
@@ -132,28 +132,25 @@ public final class WritingTests {
             java.nio.file.Path folder = java.nio.file.Path.of("../build/font-smoke");
             java.nio.file.Files.createDirectories(folder);
             java.nio.file.Files.writeString(folder.resolve("serial-pages.json"), pages.toString());
-            helper.assertTrue(specimens.size() == 130 && pages.size() >= 150, "the real correspondence and personal staircase corpus is incomplete");
+            helper.assertTrue(staircase.size() >= 16 && specimens.size() == 125 + staircase.size() && pages.size() >= 700, "the real correspondence and personal staircase corpus is incomplete");
         } finally { helper.getLevel().getServer().getPlayerList().remove(player); }
         helper.succeed();
     }
+    /**
+     * Every staircase leaf the writer can produce at its widest (longest names and places, counts
+     * at the native maximum, every narrator, phrasing and frame line), plus real accounts written
+     * from a native player's record through every narrator.
+     */
     private static List<ItemStack> staircaseSpecimens(net.minecraft.server.level.ServerPlayer p) {
-        var d=io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData.get(p.server);
-        var id=p.getUUID().toString();var story=io.github.knaitoe.theoldesthouse.labyrinth.StaircaseStory.STATE;
-        var experience=io.github.knaitoe.theoldesthouse.house.HouseExperience.ID;
-        var correspondence=io.github.knaitoe.theoldesthouse.house.HouseCorrespondence.ID;
-        var oldStory=d.stateEntry(story,id);var oldHome=d.stateEntry(experience,id);var oldLetters=d.stateEntry(correspondence,id);
-        var books=new ArrayList<ItemStack>();
-        try {
-            d.setStateEntry(story,id,new net.minecraft.nbt.CompoundTag());d.setStateEntry(experience,id,new net.minecraft.nbt.CompoundTag());d.setStateEntry(correspondence,id,new net.minecraft.nbt.CompoundTag());
-            for(int i=0;i<5;i++) {
-                if(i==1){p.awardStat(net.minecraft.stats.Stats.WALK_ONE_CM,Integer.MAX_VALUE);p.awardStat(net.minecraft.stats.Stats.DEATHS,Integer.MAX_VALUE);p.awardStat(net.minecraft.stats.Stats.ITEM_CRAFTED.get(net.minecraft.world.item.Items.BREAD),Integer.MAX_VALUE);}
-                if(i==2){var facts=new net.minecraft.nbt.CompoundTag();facts.putString("Broke","WWWWWWWWWWWWWWWWWWWWWWWW");facts.putString("Built","WWWWWWWWWWWWWWWWWWWWWWWW");d.setStateEntry(story,id,facts);
-                    var home=new net.minecraft.nbt.CompoundTag();home.putInt("Care",1);home.putString("CaredName","WWWWWWWWWWWWWWWWWWWWWWWW");home.putInt("Sleeps",1);d.setStateEntry(experience,id,home);p.awardStat(net.minecraft.stats.Stats.SLEEP_IN_BED,Integer.MAX_VALUE);}
-                if(i==3){d.setStateEntry(experience,id,new net.minecraft.nbt.CompoundTag());p.awardStat(net.minecraft.stats.Stats.ANIMALS_BRED,Integer.MAX_VALUE);var letters=new net.minecraft.nbt.CompoundTag();letters.putString("SafeRetreat","WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");d.setStateEntry(correspondence,id,letters);}
-                if(i==4){p.getStats().setValue(p,net.minecraft.stats.Stats.CUSTOM.get(net.minecraft.stats.Stats.ANIMALS_BRED),0);p.awardStat(net.minecraft.stats.Stats.TRADED_WITH_VILLAGER,Integer.MAX_VALUE);p.awardStat(net.minecraft.stats.Stats.MOB_KILLS,Integer.MAX_VALUE);d.setStateEntry(story,id,new net.minecraft.nbt.CompoundTag());d.setStateEntry(correspondence,id,new net.minecraft.nbt.CompoundTag());var home=new net.minecraft.nbt.CompoundTag();home.putInt("Deepest",32);d.setStateEntry(experience,id,home);}
-                books.add(HouseWriting.book("Staircase narrative proof "+i,"Native recorded facts",HouseWriting.WritingStyle.WILL,io.github.knaitoe.theoldesthouse.labyrinth.StaircaseStory.account(p)));
-            }
-        } finally {d.setStateEntry(story,id,oldStory);d.setStateEntry(experience,id,oldHome);d.setStateEntry(correspondence,id,oldLetters);}
+        var books=new ArrayList<ItemStack>();var voices=io.github.knaitoe.theoldesthouse.labyrinth.StaircaseProse.Voice.values();var all=io.github.knaitoe.theoldesthouse.labyrinth.StaircaseProse.specimens();
+        for(int v=0;v<voices.length;v++){var pages=all.get(v);var hand=io.github.knaitoe.theoldesthouse.labyrinth.StaircaseAccount.hand(voices[v].hand);
+            for(int from=0;from<pages.size();from+=50)books.add(HouseWriting.book("Staircase leaf proof "+voices[v]+" "+from,"Widest recorded facts",hand,pages.subList(from,Math.min(pages.size(),from+50))));}
+        var seen=new java.util.HashSet<io.github.knaitoe.theoldesthouse.labyrinth.StaircaseProse.Voice>();
+        for(long seed=1;seen.size()<voices.length&&seed<400;seed++){
+            var story=io.github.knaitoe.theoldesthouse.labyrinth.StaircaseAccount.write(p,new net.minecraft.nbt.CompoundTag(),seed);if(!seen.add(story.voice()))continue;
+            var pages=new ArrayList<String>();pages.add(story.front());pages.addAll(story.leaves());
+            books.add(HouseWriting.book("Staircase account "+story.voice(),"Native recorded facts",io.github.knaitoe.theoldesthouse.labyrinth.StaircaseAccount.hand(story.voice().hand),pages));
+        }
         return books;
     }
 }

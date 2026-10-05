@@ -15,6 +15,7 @@ public final class StaircaseWriting {
     private StaircaseWriting(){}
     public static boolean open(ServerPlayer p,BlockPos pos){
         BlockPos origin=HouseSavedData.get(p.server).houseOrigin();if(origin==null||!FinaleArchitecture.contains(origin,pos))return false;
+        if(StaircaseLeaves.open(p,pos))return true;
         p.openMenu(new SimpleMenuProvider((id,inv,player)->new PageMenu(id,p,pos),Component.literal("A page on the stairs")));return true;
     }
     private static ItemStack original(ServerPlayer p,BlockPos pos){

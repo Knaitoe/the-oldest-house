@@ -54,10 +54,12 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.44"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.45"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseStory.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseLeaves.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseProse.class' in z.namelist()
               assert 'data/the_oldest_house_multiplayer/structure/empty.nbt' in z.namelist()
               correspondence = json.loads(z.read('data/the_oldest_house/correspondence/letters.json'))
               assert len(correspondence) == 108 and len({n['id'] for n in correspondence}) == 108
@@ -553,10 +555,12 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.44"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.45"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseStory.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseLeaves.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseProse.class' in z.namelist()
               assert 'data/the_oldest_house_multiplayer/structure/empty.nbt' in z.namelist()
           jar.with_name(jar.name+'.sha256').write_text(hashlib.sha256(jar.read_bytes()).hexdigest()+'  '+jar.name+'\n')
           print(f'All {declared} native seam cases passed. This candidate still requires the complete suite and client proofs.')
@@ -595,8 +599,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.44.jar
-            build/libs/the_oldest_house-0.4.44.jar.sha256
+            build/libs/the_oldest_house-0.4.45.jar
+            build/libs/the_oldest_house-0.4.45.jar.sha256
           if-no-files-found: error
 
 
@@ -625,7 +629,7 @@ jobs:
           from pathlib import Path
           declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/StaircaseAccessTests.java').read_text()))
           completed=re.findall(r'All (\d+) required tests passed',Path('build/staircase-native.log').read_text())
-          assert declared==5 and completed and int(completed[-1])==declared, (completed,declared)
+          assert declared==8 and completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} native staircase entrance cases passed.')
           PY_CHECK
       - name: Upload staircase diagnostics

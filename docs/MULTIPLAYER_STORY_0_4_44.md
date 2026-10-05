@@ -25,6 +25,6 @@ Fourteen new native multiplayer tests supplement the existing 341: distinct trut
 
 Require all 355 gameplay tests, the separate fourteen-case multiplayer suite, five staircase tests and all existing literary/hotel/hallway/seam suites. The native client checks also consume twenty-five new narrative specimen pages, including long names and maximum native counter values, at the real 114-pixel/14-line book limits. Existing package, texture, writing, client and fifty-three architecture proofs remain required. Verification results must belong to the exact delivered source.
 
-Layout 33 and protocol 33 remain unchanged. Forty-three eligible Witness sources require thirty-three personal resolutions across at least two kinds; the three endings remain unchanged. These pages enrich an existing mechanic and add no Witness source.
+Layout 33 and protocol 32 remain unchanged. Forty-three eligible Witness sources require thirty-three personal resolutions across at least two kinds; the three endings remain unchanged. These pages enrich an existing mechanic and add no Witness source.
 
 Native automated multiplayer fixtures exercise real server players and worlds with mock connections. They do not replace a live two-client playthrough or measure real network latency.

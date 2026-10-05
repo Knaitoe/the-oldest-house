@@ -703,6 +703,12 @@ public final class LabyrinthDoors {
     /** As above, leaving every cell another player (not {@code arriving}) stands in or against untouched. */
     public static void copyVestibule(ServerLevel fromLevel, LabyrinthData.Door from, ServerLevel toLevel, LabyrinthData.Door entry, Rotation turn,
             @Nullable ServerPlayer arriving) {
+        copyVestibule(fromLevel, from, toLevel, entry, turn, arriving, LabyrinthPlaces.VESTIBULE_HALF_WIDTH);
+    }
+
+    /** As above, copying only the columns within {@code halfWidth} of the door (a walled entry hall needs no more). */
+    public static void copyVestibule(ServerLevel fromLevel, LabyrinthData.Door from, ServerLevel toLevel, LabyrinthData.Door entry, Rotation turn,
+            @Nullable ServerPlayer arriving, int halfWidth) {
         List<AABB> occupied = new ArrayList<>();
         for (ServerPlayer other : toLevel.players()) {
             if (other != arriving && !other.isSpectator() && other.distanceToSqr(Vec3.atCenterOf(entry.lower)) < 144.0D) {
@@ -714,7 +720,7 @@ public final class LabyrinthDoors {
         Direction g = entry.facing;
         Direction gSide = g.getClockWise();
         BoundingBox v = LabyrinthPlaces.localVestibule();
-        for (int s = v.minX(); s <= v.maxX(); s++) {
+        for (int s = Math.max(v.minX(), -halfWidth); s <= Math.min(v.maxX(), halfWidth); s++) {
             for (int y = v.minY(); y <= v.maxY(); y++) {
                 for (int k = 0; k <= v.maxZ() - v.minZ(); k++) {
                     BlockPos src = from.lower.relative(f, k).relative(fSide, s).above(y);

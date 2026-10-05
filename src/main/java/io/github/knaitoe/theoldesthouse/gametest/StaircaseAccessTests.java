@@ -70,7 +70,7 @@ public final class StaircaseAccessTests {
             chunks.close();if(started){var storage=level.getServer().overworld().getDataStorage();storage.set("the_oldest_house",oldHouse);storage.set("the_oldest_house_labyrinth",oldData);started=false;}
         }
     }
-    private static void run(GameTestHelper h,int coordinate,Consumer<Fixture> setup,Consumer<Fixture> test){
+    static void run(GameTestHelper h,int coordinate,Consumer<Fixture> setup,Consumer<Fixture> test){
         var f=new Fixture(h,coordinate);ACTIVE.add(f);setup.accept(f);
         h.onEachTick(()->{if(f.finished||!f.chunks.ready())return;f.finished=true;
             try{f.start();test.accept(f);}finally{f.close();ACTIVE.remove(f);}h.succeed();});
@@ -150,5 +150,61 @@ public final class StaircaseAccessTests {
         h.assertTrue(f.outside.getBlockEntity(tv)==originalTv&&f.outside.getBlockEntity(barrel)==originalBarrel&&ItemStack.isSameItemSameComponents(original,((BarrelBlockEntity)originalBarrel).getItem(0))&&f.outside.getBlockState(removed).isAir(),"the upgrade retains original entities and player property without rebuilding removed scenery");
         f.reload();f.outside.setBlock(cabinet,Blocks.AIR.defaultBlockState(),F);ScenePolish.polishOnce(f.outside,f.origin,place);
         h.assertTrue(f.outside.getBlockState(cabinet).isAir()&&f.data().state(ScenePolish.REPAIR_STATE).getBoolean(key),"the saved repair checkpoint prevents later restaging");
+    });}
+
+    @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
+    public static void theCampIsCarriedByBeamsAndChainsAndArrivalsCopyOnlyTheirHall(GameTestHelper h){run(h,514500,f->{
+        int top=FinaleArchitecture.TOP,wall=FinaleArchitecture.SHAFT_RADIUS;var supports=new LinkedHashMap<BlockPos,BlockState>();FinaleRepairs.supportPlan(supports,f.base);
+        var entrance=new HashMap<BlockPos,BlockState>();for(var placement:FinaleArchitecture.entrancePlan(f.origin))entrance.put(placement.pos(),placement.block());
+        for(int x:new int[]{-14,-9}){
+            for(int z=19;z<wall;z++)h.assertTrue(supports.get(f.base.offset(x,top-2,z))!=null&&supports.get(f.base.offset(x,top-2,z)).isSolid(),"a beam runs under the camp to the shaft wall at "+x+","+z);
+            h.assertTrue(entrance.get(f.base.offset(x,top-1,22)).is(Blocks.DARK_OAK_PLANKS)&&supports.get(f.base.offset(x,top-3,wall-1)).is(Blocks.DEEPSLATE_TILE_STAIRS),"the beam carries the camp floor and rests on a corbel");
+        }
+        for(int x:new int[]{-15,-8})for(int z:new int[]{19,26}){
+            h.assertTrue(entrance.get(f.base.offset(x,top+4,z)).is(Blocks.DEEPSLATE_TILES),"the camp roof corner exists");
+            for(int y=top+5;y<top+15;y++)h.assertTrue(supports.get(f.base.offset(x,y,z)).is(Blocks.CHAIN),"a chain runs from the roof corner to the shaft cap");
+        }
+        for(int x=-7;x<=-4;x++)h.assertTrue(entrance.get(f.base.offset(x,top,26)).is(Blocks.IRON_BARS),"the walkway's south rail stands outside the hall at "+x);
+        var sentinel=f.base.offset(5,top+1,27);f.put(f.level,sentinel,Blocks.GLOWSTONE.defaultBlockState());
+        var p=f.player(h,"hall_copy");f.enter(p);
+        for(int x=-7;x<=-4;x++)h.assertTrue(f.level.getBlockState(f.base.offset(x,top,26)).is(Blocks.IRON_BARS),"a production arrival copy leaves the walkway rail at "+x);
+        h.assertTrue(f.level.getBlockState(sentinel).is(Blocks.GLOWSTONE)&&f.level.getBlockState(FinaleArchitecture.entry(f.origin)).is(Blocks.SPRUCE_DOOR),"the copy fills the entry hall's door and stops at its walls");
+        for(int z=27;z<=FinaleArchitecture.SHAFT_RADIUS;z++)for(int x:new int[]{-3,3}){var wall=f.base.offset(x,top+1,z);
+            h.assertTrue(!f.level.getBlockState(wall).getCollisionShape(f.level,wall).isEmpty(),"a wide, wall-less source room cannot open the hall onto the shaft at "+x+","+z);}
+    });}
+
+    @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
+    public static void oneLeafLiesOnALevelTreadOfEachFlightBeyondThePreviousFiresReach(GameTestHelper h){run(h,515000,f->{
+        var route=FinaleArchitecture.staircaseRoute(f.origin);var leaves=StaircaseLeaves.positions(f.origin);var fires=StaircaseFire.braziers(f.origin);
+        h.assertTrue(leaves.size()==StaircaseFire.REQUIRED&&new HashSet<>(leaves).size()==leaves.size(),"five distinct leaves, one per hearth");
+        for(int k=0;k<leaves.size();k++){
+            var leaf=leaves.get(k);int step=-1;
+            for(int i=0;i+1<route.size();i++)if(route.get(i).getY()==leaf.getY()&&route.get(i).distManhattan(leaf)==3){step=i;break;}
+            h.assertTrue(step>=0&&route.get(step+1).getY()==route.get(step).getY(),"leaf "+k+" lies three blocks aside on a level, full tread");
+            h.assertTrue(!fires.contains(leaf)&&!StaircaseFire.landings(f.origin).contains(leaf),"leaf "+k+" lies on the flight, not at a hearth");
+            var lit=new CompoundTag();lit.putInt("StairFires",k);
+            h.assertTrue(leaf.getY()>=StaircaseFire.edge(f.origin,lit).getY()-.75,"leaf "+k+" is reachable once "+k+" fires burn");
+            if(k>0){var before=new CompoundTag();before.putInt("StairFires",k-1);
+                h.assertTrue(leaf.getY()<StaircaseFire.edge(f.origin,before).getY()-.75,"leaf "+k+" lies beyond the reach of the fire before it");}
+            int landing=route.indexOf(StaircaseFire.landings(f.origin).get(k));
+            h.assertTrue(step<landing,"leaf "+k+" lies above its own hearth's landing");
+        }
+    });}
+
+    @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
+    public static void anExistingCampGainsItsSupportsOnceAndLosesOnlyTheOldFloatingPlatform(GameTestHelper h){run(h,515500,
+            f->f.chunks.hold(f.level,new AABB(f.base.getX()-17,FinaleArchitecture.TOP-4,f.base.getZ()+13,f.base.getX()+1,FinaleArchitecture.TOP+16,f.base.getZ()+FinaleArchitecture.SHAFT_RADIUS+1)),f->{
+        int top=FinaleArchitecture.TOP;var done=new CompoundTag();done.putBoolean(Long.toString(f.origin.asLong()),true);f.data().setState("staircase_entrance_0443",done);
+        var plank=f.base.offset(-6,top-1,17);var wool=f.base.offset(-8,top,16);var walkway=f.base.offset(-6,top-1,23);
+        f.put(f.level,plank,Blocks.DARK_OAK_PLANKS.defaultBlockState());f.put(f.level,wool,Blocks.WHITE_WOOL.defaultBlockState());
+        var supports=new LinkedHashMap<BlockPos,BlockState>();FinaleRepairs.supportPlan(supports,f.base);for(var at:supports.keySet())f.put(f.level,at,Blocks.AIR.defaultBlockState());
+        var p=f.player(h,"camp_sitter");p.teleportTo(f.level,f.base.getX()-11.5,top,f.base.getZ()+22.5,0,0);
+        FinaleRepairs.repairSupports(f.level,f.origin);
+        h.assertTrue(f.level.getBlockState(f.base.offset(-14,top-2,30)).isAir()&&f.level.getBlockState(plank).is(Blocks.DARK_OAK_PLANKS),"nothing changes while an explorer is in the camp");
+        p.teleportTo(f.level,f.source.getX()+.5,f.source.getY(),f.source.getZ()+.5,0,0);FinaleRepairs.repairSupports(f.level,f.origin);
+        h.assertTrue(supports.entrySet().stream().allMatch(e->f.level.getBlockState(e.getKey()).equals(e.getValue())),"the beams, corbels and chains are added");
+        h.assertTrue(f.level.getBlockState(plank).isAir()&&f.level.getBlockState(wool).isAir()&&f.level.getBlockState(walkway).is(Blocks.DARK_OAK_PLANKS),"only the old floating platform is lifted; the walkway stays");
+        f.level.setBlock(f.base.offset(-14,top-2,30),Blocks.AIR.defaultBlockState(),F);FinaleRepairs.repairSupports(f.level,f.origin);
+        h.assertTrue(f.level.getBlockState(f.base.offset(-14,top-2,30)).isAir(),"the saved checkpoint keeps the pass from running again");
     });}
 }
