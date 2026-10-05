@@ -30,7 +30,7 @@ public final class CastVisualProof extends Screen {
         String[] titles={"Lake witch","Her memory","Mother of Strays","Trailer cousin"};String[] textures={"lake_witch","lake_witch_memory","mother_of_strays","trailer_child_2"};
         for(int i=0;i<4;i++){
             int left=10+i*width/4;g.fill(left,32,left+width/4-18,height-24,0xFF39332D);g.drawString(font,titles[i],left+6,40,0xFFE6DFCF,false);
-            g.flush();var pose=g.pose();pose.pushPose();pose.translate(left+width/8-8,75,100);pose.scale(78,78,78);pose.mulPose(Axis.YP.rotationDegrees(i==1?150:170));
+            g.flush();var pose=g.pose();pose.pushPose();pose.translate(left+width/8-8,i==2?96:75,100);pose.scale(78,78,78);pose.mulPose(Axis.YP.rotationDegrees(i==1?150:170));
             var buffers=mc.renderBuffers().bufferSource();var consumer=buffers.getBuffer(RenderType.entityCutoutNoCull(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/"+textures[i]+".png")));
             if(i==2)new MotherModel(mc.getEntityModels().bakeLayer(MotherModel.LAYER)).renderToBuffer(pose,consumer,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);
             else if(i==3)new GoatmanChildModel(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER)).renderToBuffer(pose,consumer,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);

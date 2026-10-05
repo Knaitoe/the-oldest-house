@@ -9,6 +9,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import net.minecraft.gametest.framework.GameTestServer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
@@ -27,7 +28,7 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
  * Does nothing outside the GameTest server.
  */
 public final class ShutdownWatch {
-    private static final long[] REPORT_AFTER_MS = {20_000L, 50_000L};
+    private static final long[] REPORT_AFTER_MS = {20_000L, 50_000L, 120_000L};
     private static final int SHOWN = 12;
     private static volatile boolean stopped;
 
@@ -61,22 +62,33 @@ public final class ShutdownWatch {
             if (stopped) {
                 return;
             }
+            stack(server, at);
+            // The server is already marked stopped while it shuts down, so execute() would run the
+            // report here, off its thread. Queue it instead: the shutdown loop drains queued tasks.
             CountDownLatch reported = new CountDownLatch(1);
-            server.execute(() -> {
-                if (server.isSameThread()) {
-                    report(server, at);
-                }
+            server.tell(new TickTask(server.getTickCount(), () -> {
+                report(server, at);
                 reported.countDown();
-            });
+            }));
             try {
                 if (!reported.await(5L, TimeUnit.SECONDS) && !stopped) {
                     TheOldestHouse.LOGGER.warn("OTH shutdown watch: still stopping after {}s, and the server thread is not "
-                            + "taking tasks: it is blocked, not looping. See the thread dump.", at / 1000L);
+                            + "taking tasks: it is blocked, not looping. Its stack is above.", at / 1000L);
                 }
             } catch (InterruptedException e) {
                 return;
             }
         }
+    }
+
+    /** Where the server thread is right now, read from this thread. */
+    private static void stack(MinecraftServer server, long after) {
+        Thread thread = server.getRunningThread();
+        StringBuilder trace = new StringBuilder();
+        for (StackTraceElement frame : thread.getStackTrace()) {
+            trace.append("\n    at ").append(frame);
+        }
+        TheOldestHouse.LOGGER.warn("OTH shutdown watch: server thread after {}s is {}:{}", after / 1000L, thread.getState(), trace);
     }
 
     private static void report(MinecraftServer server, long after) {

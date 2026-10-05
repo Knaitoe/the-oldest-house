@@ -1588,7 +1588,7 @@ public final class SceneCraft {
         for (int x = r.minX() - 4; x <= r.maxX() + 4; x++)
             for (int z = r.minZ() - 4; z <= -2; z++) {
                 int edge = Math.max(Math.max(r.minX() + 2 - x, x - r.maxX() + 2), r.minZ() + 2 - z);
-                if (edge < 1 || nearLog(x, z)) continue;
+                if (edge < 1 || nearLog(x, z) || VignetteArchitecture.storyReserved(scene, x, 0, z)) continue;
                 int top = Integer.MIN_VALUE;
                 for (int y = 8; y >= -3; y--) {
                     BlockState s = at(x, y, z);
