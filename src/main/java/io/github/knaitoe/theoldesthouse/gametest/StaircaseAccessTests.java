@@ -78,7 +78,9 @@ public final class StaircaseAccessTests {
     private static void run(GameTestHelper h,int coordinate,Consumer<Fixture> test){run(h,coordinate,f->{},test);}
     @AfterBatch(batch="staircase_access") public static void cleanup(ServerLevel level){for(var f:ACTIVE)f.close();ACTIVE.clear();}
 
-    @GameTest(template="empty",batch="staircase_access",timeoutTicks=240)
+    // The complete suite loads several native dimensions before this batch. Allow its
+    // asynchronous entity-section preparation to finish; every gameplay assertion remains required.
+    @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
     public static void upgradeMovesOriginalShelfFireAndTomBeyondTheRealArrivalCopy(GameTestHelper h){run(h,512000,f->{
         var p=f.player(h,"entrance_original");var old=f.base.offset(2,FinaleArchitecture.TOP,32);
         f.put(f.level,old,Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.HAS_BOOK,true));
@@ -95,7 +97,7 @@ public final class StaircaseAccessTests {
         h.assertTrue(f.lectern()==lectern&&ItemStack.isSameItemSameComponents(original,lectern.getBook()),"two production arrival copies retain the same lectern and original");
     });}
 
-    @GameTest(template="empty",batch="staircase_access",timeoutTicks=240)
+    @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
     public static void twoRealArrivalsKeepTheCampWalkableAndGiveEachExplorerTheirOwnTom(GameTestHelper h){run(h,512500,f->{
         StaircaseFire.dress(f.level,f.origin);var shelf=f.lectern();var original=shelf.getBook().copy();
         var p=f.player(h,"tom_first");var peer=f.player(h,"tom_second");f.enter(p);p.moveTo(Vec3.atBottomCenterOf(FinaleRepairs.tom(f.origin).south(2)));f.enter(peer);
@@ -110,7 +112,7 @@ public final class StaircaseAccessTests {
         f.reload();h.assertTrue(NovelVignettes.personal(f.data(),p.getUUID()).hasUUID("Tom")&&NovelVignettes.personal(f.data(),peer.getUUID()).hasUUID("Tom"),"both native actor identities survive saved-data reload");
     });}
 
-    @GameTest(template="empty",batch="staircase_access",timeoutTicks=240)
+    @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
     public static void deepVisitorsDoNotStarveHearthPlacementAndRetriesDoNotRefillOriginals(GameTestHelper h){run(h,513000,f->{
         var deep=f.player(h,"deep_stair_peer");deep.teleportTo(f.level,f.base.getX()+.5,FinaleArchitecture.TOP-200,f.base.getZ()+.5,0,0);
         var local=f.player(h,"occupied_hearth");var first=StaircaseFire.braziers(f.origin).getFirst();local.teleportTo(f.level,first.getX()+.5,first.getY(),first.getZ()+.5,0,0);
@@ -121,7 +123,7 @@ public final class StaircaseAccessTests {
         h.assertTrue(StaircaseFire.braziers(f.origin).stream().allMatch(at->f.level.getBlockState(at).is(Blocks.CAMPFIRE))&&!f.lectern().hasBook(),"the retry completes the five native hearths without replenishing the removed original");
     });}
 
-    @GameTest(template="empty",batch="staircase_access",timeoutTicks=240)
+    @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
     public static void campVisitKeepsTheRetreatStackButCrossingTheActualDoorReturns(GameTestHelper h){run(h,513500,f->{
         var p=f.player(h,"camp_retreat");f.enter(p);var record=FinaleProgress.player(p.server,p.getUUID());record.putBoolean("Inside",true);record.putInt("StairFires",5);FinaleProgress.save(p.server,p.getUUID(),record);p.tickCount=1;
         h.assertTrue(f.level.getBlockState(FinaleArchitecture.entry(f.origin)).is(Blocks.SPRUCE_DOOR)&&f.level.getBlockState(FinaleArchitecture.entry(f.origin)).getValue(DoorBlock.OPEN),"the production arrival retains a real open native door");
@@ -133,7 +135,7 @@ public final class StaircaseAccessTests {
         h.assertTrue(f.data().returnDepth(p.getUUID())==0&&p.position().distanceToSqr(Vec3.atBottomCenterOf(f.source))<4,"crossing the real entry corridor returns to the exact saved source door");
     });}
 
-    @GameTest(template="empty",batch="staircase_access",timeoutTicks=300)
+    @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
     public static void alreadyPolishedWorldReceivesTargetedRepairsOnceWithoutRestaging(GameTestHelper h){run(h,514000,f->{
         var b=LabyrinthPlaces.base(f.origin,LabyrinthPlace.END_WORLD_CABIN);var r=LabyrinthPlace.END_WORLD_CABIN.room();
         f.chunks.hold(f.outside,new AABB(b.getX()+r.minX()-14,b.getY()+r.minY()-2,b.getZ()+r.minZ()-14,b.getX()+r.maxX()+15,b.getY()+r.maxY()+3,b.getZ()+r.maxZ()+15));
