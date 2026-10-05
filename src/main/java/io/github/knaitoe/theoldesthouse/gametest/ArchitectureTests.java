@@ -224,8 +224,9 @@ public final class ArchitectureTests {
         }
         h.assertTrue(runs>=8&&steps*2<runs,"the shallows bank rises smoothly rather than in a checkerboard: "+steps+"/"+runs);
         // A completed composition is never restaged.
-        var miniatures=LabyrinthPlaces.base(origin,LabyrinthPlace.MINIATURES);var grate=miniatures.offset(11,0,-29);
-        h.assertTrue(interior.getBlockState(grate).is(Blocks.CAMPFIRE),"the workshop has its hearth");
+        var miniatures=LabyrinthPlaces.base(origin,LabyrinthPlace.MINIATURES);var mr=LabyrinthPlace.MINIATURES.room();BlockPos grate=null;
+        for(var at:BlockPos.betweenClosed(miniatures.offset(mr.minX(),mr.minY(),mr.minZ()),miniatures.offset(mr.maxX(),mr.maxY(),mr.maxZ())))if(interior.getBlockState(at).is(Blocks.CAMPFIRE))grate=at.immutable();
+        h.assertTrue(grate!=null,"the workshop has its hearth");
         interior.setBlock(grate,Blocks.AIR.defaultBlockState(),2);SceneCraft.craftOnce(interior,origin,LabyrinthPlace.MINIATURES);
         h.assertTrue(interior.getBlockState(grate).isAir(),"a completed composition does not rebuild what was taken away");
     }
