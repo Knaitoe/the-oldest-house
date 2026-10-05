@@ -169,8 +169,8 @@ public final class StaircaseAccessTests {
         var p=f.player(h,"hall_copy");f.enter(p);
         for(int x=-7;x<=-4;x++)h.assertTrue(f.level.getBlockState(f.base.offset(x,top,26)).is(Blocks.IRON_BARS),"a production arrival copy leaves the walkway rail at "+x);
         h.assertTrue(f.level.getBlockState(sentinel).is(Blocks.GLOWSTONE)&&f.level.getBlockState(FinaleArchitecture.entry(f.origin)).is(Blocks.SPRUCE_DOOR),"the copy fills the entry hall's door and stops at its walls");
-        for(int z=27;z<=FinaleArchitecture.SHAFT_RADIUS;z++)for(int x:new int[]{-3,3}){var wall=f.base.offset(x,top+1,z);
-            h.assertTrue(!f.level.getBlockState(wall).getCollisionShape(f.level,wall).isEmpty(),"a wide, wall-less source room cannot open the hall onto the shaft at "+x+","+z);}
+        for(int z=27;z<=FinaleArchitecture.SHAFT_RADIUS;z++)for(int x:new int[]{-3,3}){var side=f.base.offset(x,top+1,z);
+            h.assertTrue(!f.level.getBlockState(side).getCollisionShape(f.level,side).isEmpty(),"a wide, wall-less source room cannot open the hall onto the shaft at "+x+","+z);}
     });}
 
     @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
