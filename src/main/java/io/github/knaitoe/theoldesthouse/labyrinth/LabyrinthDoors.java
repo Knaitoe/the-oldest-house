@@ -78,7 +78,8 @@ public final class LabyrinthDoors {
     private static final double WANDER = 6.0D;
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
-    private record Pending(LabyrinthData.Waypoint target, Consumer<ServerPlayer> arrived, int[] ticks) {
+    private record Pending(ServerPlayer source, net.minecraft.resources.ResourceKey<Level> dimension,
+                           LabyrinthData.Waypoint target, Consumer<ServerPlayer> arrived, int[] ticks) {
     }
 
     private static final Map<UUID, Pending> FADING = new HashMap<>();
@@ -117,7 +118,7 @@ public final class LabyrinthDoors {
 
     /** Where a door takes this player, and goes there. */
     public static void use(ServerPlayer player, LabyrinthData.Door door) {
-        if (isBusy(player)) {
+        if (!player.isAlive() || isBusy(player)) {
             return;
         }
         var hotelRoute=HotelVignette.route(player,door);if(hotelRoute!=null)door=hotelRoute;
@@ -255,17 +256,18 @@ public final class LabyrinthDoors {
         Vec3 target = shifted(player.position(), from.lower, entry.lower, turn);
         float yaw = player.getYRot() + angle(turn);
 
-        data.pushReturn(player.getUUID(), new LabyrinthData.Waypoint(
-                fromLevel.dimension(), Vec3.atBottomCenterOf(from.lower), from.facing.toYRot(), true));
-        INSIDE.remove(player.getUUID());
-        SHUT_FOR.remove(player.getUUID());
+        var returnTo = new LabyrinthData.Waypoint(fromLevel.dimension(), Vec3.atBottomCenterOf(from.lower), from.facing.toYRot(), true);
         Consumer<ServerPlayer> arrived = p -> {
-            VignetteGate.begin(p,place);
+            var current = LabyrinthData.get(p.server);
+            current.pushReturn(p.getUUID(), returnTo);
+            INSIDE.remove(p.getUUID());
+            SHUT_FOR.remove(p.getUUID());
             setDoorOpen(toLevel, entry.lower, true, p);
-            data.visit(p.getUUID(), place);
-            io.github.knaitoe.theoldesthouse.house.HouseExperience.arrived(p,place);
             BlockPos manor = HouseSavedData.get(server).houseOrigin();
-            LabyrinthDealer.arriveAt(data, p.getUUID(), place, manor == null ? 0L : manor.asLong());
+            if(p.gameMode.getGameModeForPlayer()!=net.minecraft.world.level.GameType.SPECTATOR){current.visit(p.getUUID(),place);io.github.knaitoe.theoldesthouse.house.HouseExperience.arrived(p,place);}
+            LabyrinthDealer.arriveAt(current, p.getUUID(), place, manor == null ? 0L : manor.asLong());
+            if(p.gameMode.getGameModeForPlayer()==net.minecraft.world.level.GameType.SPECTATOR){LabyrinthMaze.forget(p.getUUID());LabyrinthDoorLeaks.send(p);return;}
+            VignetteGate.begin(p,place);
             RedRoom.prepareIfDealt(p, place);
             ModelHome.onArrive(p, place);
             HarriganVignette.onArrive(p, place);
@@ -388,10 +390,15 @@ public final class LabyrinthDoors {
         UUID id = player.getUUID();
         SHUT_FOR.remove(id);
         if (!othersAtDoor(player.serverLevel(), entry.lower, player)) setDoorOpen(player.serverLevel(), entry.lower, false, null);
-        LabyrinthData.Waypoint back = data.popReturn(id);
+        LabyrinthData.Waypoint back = data.peekReturn(id);
         String correspondenceSource=io.github.knaitoe.theoldesthouse.house.HouseExperience.record(data,id).getString("CurrentPlace");
-        Consumer<ServerPlayer> confirmedReturn=p->io.github.knaitoe.theoldesthouse.house.HouseCorrespondence.returnedSafely(p,correspondenceSource);
-        if(back!=null){io.github.knaitoe.theoldesthouse.house.HouseExperience.returned(player);VignetteGate.departed(player,back,entry);}
+        Consumer<ServerPlayer> confirmedReturn=p->{
+            if(!LabyrinthData.get(p.server).consumeReturn(p.getUUID(),back))return;
+            INSIDE.remove(p.getUUID());
+            io.github.knaitoe.theoldesthouse.house.HouseExperience.returned(p);
+            VignetteGate.departed(p,back,entry);
+            io.github.knaitoe.theoldesthouse.house.HouseCorrespondence.returnedSafely(p,correspondenceSource);
+        };
         if (back == null) {
             // A missing return stack must never strand the player in the gray
             // once the House has a real labyrinth entrance. The impossible
@@ -529,12 +536,11 @@ public final class LabyrinthDoors {
      * Used when a vignette throws them out.
      */
     public static void sendBack(ServerPlayer player, int fadeIn, int hold, int fadeOut) {
-        if (isBusy(player)) {
+        if (!player.isAlive() || isBusy(player)) {
             return;
         }
         LabyrinthData data = LabyrinthData.get(player.server);
-        LabyrinthData.Waypoint back = data.popReturn(player.getUUID());
-        INSIDE.remove(player.getUUID());
+        LabyrinthData.Waypoint back = data.peekReturn(player.getUUID());
         LabyrinthData.Waypoint target;
         if (back == null) {
             LabyrinthData.Door junction = data.door(LabyrinthPlace.JUNCTION.entryDoorId());
@@ -550,7 +556,10 @@ public final class LabyrinthDoors {
         } else {
             target = back;
         }
-        fadeTo(player, target, fadeIn, hold, fadeOut);
+        fadeTo(player, target, fadeIn, hold, fadeOut,p->{
+            if(back!=null)LabyrinthData.get(p.server).consumeReturn(p.getUUID(),back);
+            INSIDE.remove(p.getUUID());
+        });
     }
 
     /** Fades out, moves the player while the screen is dark, and fades back in. */
@@ -559,7 +568,7 @@ public final class LabyrinthDoors {
     }
     private static void fadeTo(ServerPlayer player, LabyrinthData.Waypoint target, int fadeIn, int hold, int fadeOut,Consumer<ServerPlayer> arrived) {
         HousePackets.send(player, new HouseFadePayload(fadeIn, hold, fadeOut));
-        FADING.put(player.getUUID(), new Pending(target, arrived, new int[]{Math.max(1, fadeIn)}));
+        FADING.put(player.getUUID(), new Pending(player, player.serverLevel().dimension(), target, arrived, new int[]{Math.max(1, fadeIn)}));
     }
 
     /**
@@ -582,21 +591,16 @@ public final class LabyrinthDoors {
         if (base == null || level == null) {
             return;
         }
-        data.pushReturn(player.getUUID(), new LabyrinthData.Waypoint(
-                player.serverLevel().dimension(), player.position(), player.getYRot(), false));
-        setDoorOpen(level, entry.lower, false, null);
-        data.visit(player.getUUID(), place);
-        LabyrinthDealer.dealPlace(data, player.getUUID(), place, player.getRandom());
-        INSIDE.add(player.getUUID());
-
+        var back = new LabyrinthData.Waypoint(player.serverLevel().dimension(), player.position(), player.getYRot(), false);
         HousePackets.send(player, new HouseFadePayload(0, 40, 60));
         Vec3 to = Vec3.atBottomCenterOf(base.offset(0, 0, place == LabyrinthPlace.JUNCTION ? -9 : -21));
-        player.stopRiding();
-        player.teleportTo(level, to.x, to.y, to.z, Direction.NORTH.toYRot(), 0.0F);
-        player.setDeltaMovement(Vec3.ZERO);
-        player.resetFallDistance();
-        RedRoom.prepareIfDealt(player, place);
-        LabyrinthLighting.onArrive(player, place);
+        travelAbsolute(player,new LabyrinthData.Waypoint(level.dimension(),to,Direction.NORTH.toYRot(),false),p->{
+            var current=LabyrinthData.get(p.server);current.pushReturn(p.getUUID(),back);
+            if(!othersAtDoor(level,entry.lower,p))setDoorOpen(level,entry.lower,false,null);
+            if(p.gameMode.getGameModeForPlayer()!=net.minecraft.world.level.GameType.SPECTATOR)current.visit(p.getUUID(),place);
+            LabyrinthDealer.dealPlace(current,p.getUUID(),place,p.getRandom());INSIDE.add(p.getUUID());
+            RedRoom.prepareIfDealt(p,place);LabyrinthLighting.onArrive(p,place);
+        });
     }
 
     /** Takes a player to the junction from wherever they are, remembering where that was. */
@@ -609,11 +613,8 @@ public final class LabyrinthDoors {
         if (junction == null) {
             return false;
         }
-        data.pushReturn(player.getUUID(), new LabyrinthData.Waypoint(
-                player.serverLevel().dimension(), player.position(), player.getYRot(), false));
-        travelAbsolute(player, insideRoom(junction));
-        INSIDE.add(player.getUUID());
-        return true;
+        var back = new LabyrinthData.Waypoint(player.serverLevel().dimension(), player.position(), player.getYRot(), false);
+        return travelAbsolute(player, insideRoom(junction),p->{LabyrinthData.get(p.server).pushReturn(p.getUUID(),back);INSIDE.add(p.getUUID());});
     }
 
     /** Two blocks inside a place from its entry door, facing into the room. */
@@ -622,15 +623,17 @@ public final class LabyrinthDoors {
         return new LabyrinthData.Waypoint(entry.dimension, Vec3.atBottomCenterOf(entry.lower.relative(toRoom, 2)), toRoom.toYRot(), false);
     }
 
-    private static void travelAbsolute(ServerPlayer player, LabyrinthData.Waypoint target) {
+    private static boolean travelAbsolute(ServerPlayer player, LabyrinthData.Waypoint target,Consumer<ServerPlayer> arrived) {
         ServerLevel to = player.server.getLevel(target.dimension());
-        if (to == null) {
-            return;
+        if (to == null || !player.isAlive()) {
+            return false;
         }
         if (to == player.serverLevel()) {
             shift(player, target.pos(), target.yaw());
+            arrived.accept(player);
+            return true;
         } else {
-            HouseTransitionEvents.beginDoorTransition(player, target.dimension(), null, null, target.pos(), target.yaw());
+            return HouseTransitionEvents.beginDoorTransition(player, target.dimension(), null, arrived, target.pos(), target.yaw());
         }
     }
 
@@ -782,14 +785,18 @@ public final class LabyrinthDoors {
                 it.remove();
                 ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
                 ServerLevel level = server.getLevel(pending.target().dimension());
-                if (player == null || level == null) {
+                if (player != pending.source() || !player.isAlive() || player.isRemoved() || level == null
+                        || !player.serverLevel().dimension().equals(pending.dimension()) || HouseTransitionEvents.isPending(player)) {
                     continue;
                 }
                 Vec3 pos = pending.target().pos();
+                var companions = io.github.knaitoe.theoldesthouse.opening.CompanionOrders.followingAll(player);
                 player.stopRiding();
                 player.teleportTo(level, pos.x, pos.y, pos.z, pending.target().yaw(), 0.0F);
+                if(player.serverLevel()!=level || player.position().distanceToSqr(pos)>0.01D)continue;
                 player.setDeltaMovement(Vec3.ZERO);
                 player.resetFallDistance();
+                for(var companion:companions)io.github.knaitoe.theoldesthouse.opening.CompanionOrders.followAcross(companion,player);
                 pending.arrived().accept(player);
             }
         }

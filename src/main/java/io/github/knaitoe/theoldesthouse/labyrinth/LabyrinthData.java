@@ -368,6 +368,19 @@ public final class LabyrinthData extends SavedData {
     }
 
     @Nullable
+    public Waypoint peekReturn(UUID player) {
+        Deque<Waypoint> stack = returns.get(player);
+        return stack == null ? null : stack.peek();
+    }
+
+    /** A completed crossing consumes only the route it actually used. */
+    public boolean consumeReturn(UUID player, Waypoint expected) {
+        if (expected == null || !expected.equals(peekReturn(player))) return false;
+        popReturn(player);
+        return true;
+    }
+
+    @Nullable
     public Waypoint popReturn(UUID player) {
         Deque<Waypoint> stack = returns.get(player);
         if (stack == null || stack.isEmpty()) {

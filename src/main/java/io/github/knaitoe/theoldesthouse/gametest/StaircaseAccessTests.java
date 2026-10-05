@@ -25,7 +25,7 @@ import net.neoforged.neoforge.gametest.*;
 public final class StaircaseAccessTests {
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     private static final List<Fixture> ACTIVE=new ArrayList<>();
-    private static final class Fixture implements AutoCloseable {
+    static final class Fixture implements AutoCloseable {
         final ServerLevel level,outside;
         final BlockPos origin,base,source;
         final NativeTestChunks chunks=new NativeTestChunks();
@@ -63,7 +63,7 @@ public final class StaircaseAccessTests {
         LecternBlockEntity lectern(){return (LecternBlockEntity)level.getBlockEntity(StaircaseFire.shelf(origin));}
         void reload(){var loaded=LabyrinthData.FACTORY.deserializer().apply(data().save(new CompoundTag(),level.registryAccess()),level.registryAccess());level.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);}
         @Override public void close(){
-            for(var p:players)NativeTestPlayers.remove(p);players.clear();
+            for(var p:players){HouseTransitionEvents.cancelPending(p,"fixture closed");LabyrinthDoors.onPlayerLoggedOut(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p));NativeTestPlayers.remove(p);}players.clear();
             var remove=new ArrayList<Entity>();for(var e:level.getAllEntities())if(FinaleArchitecture.contains(origin,e.blockPosition())&&(e instanceof NovelActor||e instanceof FinaleWitness))remove.add(e);
             for(var e:remove)e.discard();
             for(var entry:touched.entrySet())for(var at:entry.getValue())entry.getKey().setBlock(at,Blocks.AIR.defaultBlockState(),F);
@@ -73,9 +73,9 @@ public final class StaircaseAccessTests {
     private static void run(GameTestHelper h,int coordinate,Consumer<Fixture> setup,Consumer<Fixture> test){
         var f=new Fixture(h,coordinate);ACTIVE.add(f);setup.accept(f);
         h.onEachTick(()->{if(f.finished||!f.chunks.ready())return;f.finished=true;
-            try{f.start();test.accept(f);h.succeed();}finally{f.close();ACTIVE.remove(f);}});
+            try{f.start();test.accept(f);}finally{f.close();ACTIVE.remove(f);}h.succeed();});
     }
-    private static void run(GameTestHelper h,int coordinate,Consumer<Fixture> test){run(h,coordinate,f->{},test);}
+    static void run(GameTestHelper h,int coordinate,Consumer<Fixture> test){run(h,coordinate,f->{},test);}
     @AfterBatch(batch="staircase_access") public static void cleanup(ServerLevel level){for(var f:ACTIVE)f.close();ACTIVE.clear();}
 
     // The complete suite loads several native dimensions before this batch. Allow its

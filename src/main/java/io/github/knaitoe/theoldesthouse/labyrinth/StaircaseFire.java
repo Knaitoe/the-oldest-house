@@ -100,11 +100,12 @@ public final class StaircaseFire {
         if(complete){state.putBoolean(key,true);data.setState(DRESS,state);}
     }
     public static boolean take(ServerPlayer player){
+        if(!player.isAlive()||player.gameMode.getGameModeForPlayer()==net.minecraft.world.level.GameType.SPECTATOR)return false;
         var record=FinaleProgress.player(player.server,player.getUUID());if(record.getBoolean("StairBookTaken"))return false;
-        record.putBoolean("StairBookTaken",true);give(player,book(player.getUUID(),REQUIRED));give(player,new ItemStack(Items.FLINT_AND_STEEL));
+        record.putBoolean("StairBookTaken",true);give(player,StaircaseStory.issue(player));give(player,new ItemStack(Items.FLINT_AND_STEEL));
         FinaleProgress.save(player.server,player.getUUID(),record);return true;
     }
-    private static void give(ServerPlayer player,ItemStack stack){if(!player.getInventory().add(stack)){var drop=player.drop(stack,false);if(drop!=null)drop.setTarget(player.getUUID());}}
+    private static void give(ServerPlayer player,ItemStack stack){if(!stack.isEmpty()&&!player.getInventory().add(stack)){var drop=player.drop(stack,false);if(drop!=null)drop.setTarget(player.getUUID());}}
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void interact(PlayerInteractEvent.RightClickBlock event){
         if(!(event.getEntity() instanceof ServerPlayer player)||event.getHand()!=InteractionHand.MAIN_HAND
                 ||!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)||player.isSpectator())return;
@@ -127,7 +128,8 @@ public final class StaircaseFire {
         if(leaves==0&&!fuel.is(Items.PAPER)){
             player.displayClientMessage(Component.literal("Hold the House of Leaves in your off hand. Paper will also burn."),true);return false;
         }
-        if(leaves>1)player.setItemInHand(InteractionHand.OFF_HAND,book(player.getUUID(),leaves-1));else fuel.shrink(1);
+        if(leaves>0){if(!StaircaseStory.burn(player,fuel)){player.displayClientMessage(Component.literal("The fire needs your original's next unburned page. Ordinary paper will also burn."),true);return false;}}
+        else fuel.shrink(1);
         player.getMainHandItem().hurtAndBreak(1,player,EquipmentSlot.MAINHAND);
         player.serverLevel().setBlock(at,player.serverLevel().getBlockState(at).setValue(CampfireBlock.LIT,true),F);
         record.putInt("StairFires",index+1);record.putBoolean("StairFireVersion",true);

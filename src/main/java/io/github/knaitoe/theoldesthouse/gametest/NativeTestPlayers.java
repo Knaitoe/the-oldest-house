@@ -19,7 +19,10 @@ final class NativeTestPlayers {
     private static final Map<UUID,Connection> CONNECTIONS=new HashMap<>();
     private NativeTestPlayers(){}
     static ServerPlayer survival(GameTestHelper h,String name){
-        var cookie=CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(),name),false);
+        return survival(h,name,UUID.randomUUID());
+    }
+    static ServerPlayer survival(GameTestHelper h,String name,UUID id){
+        var cookie=CommonListenerCookie.createInitial(new GameProfile(id,name),false);
         var p=new ServerPlayer(h.getLevel().getServer(),h.getLevel(),cookie.gameProfile(),cookie.clientInformation());
         var connection=new Connection(PacketFlow.SERVERBOUND){@Override public boolean isMemoryConnection(){return true;}};
         new EmbeddedChannel(connection);NetworkRegistry.configureMockConnection(connection);

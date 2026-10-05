@@ -75,19 +75,24 @@ public final class FinaleController {
                 &&(record.getBoolean("Discovered")||FinaleProgress.eligible(data,player));
     }
     public static void enter(ServerPlayer player,LabyrinthData.Door from){
-        if(lockedOut(player)||!FinaleArchitecture.ready(player.server))return;
+        if(!player.isAlive()||LabyrinthDoors.isBusy(player)||FinaleProgress.committed(FinaleProgress.phase(player.server,player.getUUID()))||lockedOut(player)||!FinaleArchitecture.ready(player.server))return;
         LabyrinthData data=LabyrinthData.get(player.server);LabyrinthData.Door entry=data.door(FinaleArchitecture.ENTRY);
         ServerLevel target=player.server.getLevel(HouseDimensions.INTERIOR);if(entry==null||target==null)return;
         var turn=LabyrinthDoors.rotationFrom(from.facing,entry.facing);
         LabyrinthDoors.copyVestibule(player.serverLevel(),from,target,entry,turn,player);
         Vec3 destination=LabyrinthDoors.shifted(player.position(),from.lower,entry.lower,turn);
-        data.pushReturn(player.getUUID(),new LabyrinthData.Waypoint(from.dimension,Vec3.atBottomCenterOf(from.lower),from.facing.toYRot(),true));
-        CompoundTag record=FinaleProgress.player(player.server,player.getUUID());record.putString("Phase",FinaleProgress.Phase.STAIRCASE.name());
-        StaircaseFire.initialize(record,FinaleArchitecture.TOP);
-        record.putBoolean("Discovered",true);record.putBoolean("Inside",false);FinaleProgress.save(player.server,player.getUUID(),record);
-        if(player.serverLevel()==target){HouseInternalTeleport.shift(player,destination,player.getYRot()+LabyrinthDoors.angle(turn));LabyrinthDoors.setDoorOpen(target,entry.lower,true,player);NovelVignettes.staircaseArrival(player);}
-        else HouseTransitionEvents.beginDoorTransition(player,HouseDimensions.INTERIOR,null,p->{LabyrinthDoors.setDoorOpen(target,entry.lower,true,p);NovelVignettes.staircaseArrival(p);},destination,player.getYRot()+LabyrinthDoors.angle(turn));
-        ensureWitness(target,HouseSavedData.get(player.server).houseOrigin());
+        var back=new LabyrinthData.Waypoint(from.dimension,Vec3.atBottomCenterOf(from.lower),from.facing.toYRot(),true);
+        java.util.function.Consumer<ServerPlayer> arrived=p->{
+            LabyrinthData.get(p.server).pushReturn(p.getUUID(),back);
+            CompoundTag record=FinaleProgress.player(p.server,p.getUUID());record.putString("Phase",FinaleProgress.Phase.STAIRCASE.name());
+            StaircaseFire.initialize(record,FinaleArchitecture.TOP);
+            if(p.gameMode.getGameModeForPlayer()!=net.minecraft.world.level.GameType.SPECTATOR)record.putBoolean("Discovered",true);
+            record.putBoolean("Inside",false);FinaleProgress.save(p.server,p.getUUID(),record);
+            LabyrinthDoors.setDoorOpen(target,entry.lower,true,p);NovelVignettes.staircaseArrival(p);
+            ensureWitness(target,HouseSavedData.get(p.server).houseOrigin());
+        };
+        if(player.serverLevel()==target){HouseInternalTeleport.shift(player,destination,player.getYRot()+LabyrinthDoors.angle(turn));arrived.accept(player);}
+        else HouseTransitionEvents.beginDoorTransition(player,HouseDimensions.INTERIOR,null,arrived,destination,player.getYRot()+LabyrinthDoors.angle(turn));
     }
     /** Must run before manor auto-entry, including a pending transition saved by another controller. */
     public static boolean enforceExclusion(ServerPlayer player){
@@ -165,12 +170,16 @@ public final class FinaleController {
         world.putUUID("CagedCreature",boy.getUUID());LabyrinthData.get(level.getServer()).setState(FinaleProgress.STATE,world);CAGED.put(level.getServer(),boy);return boy;
     }
     private static void returnFromStaircase(ServerPlayer player){
-        io.github.knaitoe.theoldesthouse.network.HousePackets.send(player,new io.github.knaitoe.theoldesthouse.network.StaircaseLightPayload(false,0,32));
-        LabyrinthData data=LabyrinthData.get(player.server);var back=data.popReturn(player.getUUID());
-        if(back==null){BlockPos origin=HouseSavedData.get(player.server).houseOrigin();if(origin!=null)HouseInternalTeleport.shift(player,HideAndClap.manorRespawn(origin),180);}
+        if(LabyrinthDoors.isBusy(player))return;
+        LabyrinthData data=LabyrinthData.get(player.server);var back=data.peekReturn(player.getUUID());
+        java.util.function.Consumer<ServerPlayer> returned=p->{
+            if(back!=null&&!LabyrinthData.get(p.server).consumeReturn(p.getUUID(),back))return;
+            io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.StaircaseLightPayload(false,0,32));
+            FinaleProgress.phase(p.server,p.getUUID(),FinaleProgress.Phase.UNSEEN);
+        };
+        if(back==null){BlockPos origin=HouseSavedData.get(player.server).houseOrigin();if(origin!=null){HouseInternalTeleport.shift(player,HideAndClap.manorRespawn(origin),180);returned.accept(player);}}
         else {ServerLevel level=player.server.getLevel(back.dimension());if(level!=null){Vec3 to=back.door()?back.pos().add(Direction.fromYRot(back.yaw()).getStepX()*1.2,0,Direction.fromYRot(back.yaw()).getStepZ()*1.2):back.pos();
-            if(level==player.serverLevel())HouseInternalTeleport.shift(player,to,back.yaw());else HouseTransitionEvents.beginDoorTransition(player,back.dimension(),null,null,to,back.yaw());}}
-        FinaleProgress.phase(player.server,player.getUUID(),FinaleProgress.Phase.UNSEEN);
+            if(level==player.serverLevel()){HouseInternalTeleport.shift(player,to,back.yaw());returned.accept(player);}else HouseTransitionEvents.beginDoorTransition(player,back.dimension(),null,returned,to,back.yaw());}}
     }
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void interact(PlayerInteractEvent.RightClickBlock event){
         if(!(event.getEntity() instanceof ServerPlayer player)||event.getHand()!=InteractionHand.MAIN_HAND)return;

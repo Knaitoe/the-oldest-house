@@ -49,7 +49,7 @@ neoForge {
 
         gameTestServer {
             type = "gameTestServer"
-            systemProperty 'neoforge.enabledGameTestNamespaces', providers.gradleProperty('gameTestNamespaces').getOrElse(project.mod_id + ',' + project.mod_id + '_hotel,' + project.mod_id + '_literary,' + project.mod_id + '_doors,' + project.mod_id + '_seam,' + project.mod_id + '_staircase')
+            systemProperty 'neoforge.enabledGameTestNamespaces', providers.gradleProperty('gameTestNamespaces').getOrElse(project.mod_id + ',' + project.mod_id + '_hotel,' + project.mod_id + '_literary,' + project.mod_id + '_doors,' + project.mod_id + '_seam,' + project.mod_id + '_staircase,' + project.mod_id + '_multiplayer')
         }
 
         data {
