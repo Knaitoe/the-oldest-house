@@ -287,7 +287,7 @@ public final class StaircaseAccessTests {
             // The intermediate build already had its gambrel, but still kept the birch lid.
             String barnKey=f.origin.asLong()+":"+LabyrinthPlace.BARN_WELL.id();repaired=f.data().state(SceneCraft.REPAIR_STATE);repaired.remove(barnKey);f.data().setState(SceneCraft.REPAIR_STATE,repaired);
             for(int x=5;x<=15;x++)for(int z=-34;z<=-17;z++)f.outside.setBlock(barn.offset(x,7,z),Blocks.BIRCH_PLANKS.defaultBlockState(),F);
-            var lid=barn.offset(7,7,-25);SceneCraft.craftOnce(f.outside,f.origin,LabyrinthPlace.BARN_WELL);
+            var lid=barn.offset(9,7,-25);SceneCraft.craftOnce(f.outside,f.origin,LabyrinthPlace.BARN_WELL);
             h.assertTrue(f.outside.getBlockState(lid).isAir()&&f.outside.getBlockState(barn.offset(8,7,-25)).is(Blocks.DARK_OAK_SLAB)
                     &&f.outside.getBlockState(barn.offset(10,8,-25)).is(Blocks.DARK_OAK_LOG),"the intermediate gambrel loses its old lid and fills only the roof cells that lid had blocked");
             SceneCraft.forget(f.level.getServer(),f.origin,LabyrinthPlace.BARN_WELL);
