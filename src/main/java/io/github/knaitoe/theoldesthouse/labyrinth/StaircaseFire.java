@@ -27,7 +27,25 @@ public final class StaircaseFire {
     private static final String DRESS="staircase_fire_0433", LEAVES="StaircaseLeaves";
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private StaircaseFire(){}
-    public static BlockPos shelf(BlockPos origin){return FinaleArchitecture.base(origin).offset(2,FinaleArchitecture.TOP,32);}
+    public static BlockPos shelf(BlockPos origin){return FinaleArchitecture.base(origin).offset(-10,FinaleArchitecture.TOP,20);}
+    /** Move the original lectern and its components outside the arrival copy; a missing authored display is repaired once. */
+    public static boolean moveShelf(ServerLevel level,BlockPos origin){
+        BlockPos from=FinaleArchitecture.base(origin).offset(2,FinaleArchitecture.TOP,32),to=shelf(origin);
+        if(level.getBlockState(to).is(Blocks.LECTERN))return true;
+        if(!level.getBlockState(to).isAir()||!Blocks.LECTERN.defaultBlockState().canSurvive(level,to))return false;
+        if(level.getBlockEntity(from) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity old){
+            var saved=old.saveWithFullMetadata(level.registryAccess());var block=level.getBlockState(from);
+            level.setBlock(to,block,F);saved.putInt("x",to.getX());saved.putInt("y",to.getY());saved.putInt("z",to.getZ());
+            if(level.getBlockEntity(to)!=null)level.getBlockEntity(to).loadWithComponents(saved,level.registryAccess());
+            level.removeBlockEntity(from);level.setBlock(from,Blocks.AIR.defaultBlockState(),F);
+        }else{
+            level.setBlock(to,Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.FACING,Direction.EAST),F);
+            if(level.getBlockEntity(to) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity lectern){
+                lectern.setBook(book(new UUID(0,0),REQUIRED));level.setBlock(to,level.getBlockState(to).setValue(LecternBlock.HAS_BOOK,true),F);
+            }
+        }
+        return level.getBlockEntity(to) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity;
+    }
     public static List<BlockPos> landings(BlockPos origin){
         var route=FinaleArchitecture.staircaseRoute(origin);var b=FinaleArchitecture.base(origin);
         return route.stream().filter(p->Math.abs(p.getX()-b.getX())==FinaleArchitecture.STAIR_RADIUS
@@ -61,19 +79,24 @@ public final class StaircaseFire {
     /** Adding props never rebuilds the shaft, refills a cache or replaces an attached original. */
     public static void dress(ServerLevel level,BlockPos origin){
         var data=LabyrinthData.get(level.getServer());var state=data.state(DRESS);String key=Long.toString(origin.asLong());
-        if(state.getBoolean(key)||level.players().stream().anyMatch(p->FinaleArchitecture.contains(origin,p.blockPosition())))return;
+        if(state.getBoolean(key))return;
         boolean complete=true;
         for(var at:braziers(origin)){
+            if(level.players().stream().anyMatch(p->p.getBoundingBox().intersects(new net.minecraft.world.phys.AABB(at)))){complete=false;continue;}
             if(level.getBlockState(at).isAir()&&!level.getBlockState(at.below()).getCollisionShape(level,at.below()).isEmpty())
                 level.setBlock(at,Blocks.CAMPFIRE.defaultBlockState().setValue(CampfireBlock.LIT,false),F);
             if(!level.getBlockState(at).is(Blocks.CAMPFIRE))complete=false;
         }
         BlockPos at=shelf(origin);
-        if(level.getBlockState(at).isAir())level.setBlock(at,Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.FACING,Direction.WEST),F);
-        if(level.getBlockEntity(at) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity lectern){
-            if(!lectern.hasBook())lectern.setBook(book(new UUID(0,0),REQUIRED));
-            level.setBlock(at,level.getBlockState(at).setValue(LecternBlock.HAS_BOOK,true),F);
-        }else complete=false;
+        if(level.getBlockState(at).isAir()&&!level.players().stream().anyMatch(p->p.getBoundingBox().intersects(new net.minecraft.world.phys.AABB(at)))
+                &&!level.getBlockState(at.below()).getCollisionShape(level,at.below()).isEmpty()){
+            level.setBlock(at,Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.FACING,Direction.EAST),F);
+            if(level.getBlockEntity(at) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity lectern){
+                lectern.setBook(book(new UUID(0,0),REQUIRED));
+                level.setBlock(at,level.getBlockState(at).setValue(LecternBlock.HAS_BOOK,true),F);
+            }
+        }
+        if(!(level.getBlockEntity(at) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity))complete=false;
         if(complete){state.putBoolean(key,true);data.setState(DRESS,state);}
     }
     public static boolean take(ServerPlayer player){

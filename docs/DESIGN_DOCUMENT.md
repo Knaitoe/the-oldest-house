@@ -2,6 +2,8 @@
 
 Sep 28, 2026 · @Sean Price · revised in the repository to match decisions made since
 
+0.4.43 entrance repair: Tom and the House of Leaves supply stand in a supported camp outside the staircase arrival copy. Upgrades move original books, campfire state and actor UUIDs once the entrance is vacant; distant explorers do not block it. Per-cell hearth retries preserve emptied originals. Scene support corrections have their own upgrade checkpoint and do not repeat general scenery. See [STAIRCASE_ACCESS_0_4_43.md](STAIRCASE_ACCESS_0_4_43.md).
+
 ## Revisions in this copy
 
 ### 0.4.38: safe far-door waiting and paced literary construction
