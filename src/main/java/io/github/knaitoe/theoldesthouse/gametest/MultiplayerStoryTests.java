@@ -146,10 +146,11 @@ public final class MultiplayerStoryTests {
         StaircaseFire.dress(f.level,f.origin);layLeaves(f);var p=f.player(h,"leaf_lost");ready(p,f);var book=issued(p);p.setItemInHand(InteractionHand.OFF_HAND,book);
         h.assertTrue(find(p,f,0)&&burn(p,f,0)&&find(p,f,1),"the reader burns the first leaf and binds the second");
         var lost=book.copy();p.setItemInHand(InteractionHand.OFF_HAND,ItemStack.EMPTY);var own=f.data().stateEntry(StaircaseStory.STATE,p.getUUID().toString());
+        int strikers=p.getInventory().countItem(Items.FLINT_AND_STEEL);
         h.assertTrue(StaircaseStory.shelf(p)==StaircaseStory.Shelf.REBOUND,"the camp shelf binds a lost story again");
         var again=held(p);
         h.assertTrue(pages(again).size()==2&&pages(again).get(1).raw().getString().equals(StaircaseStory.leaf(own,1)),"the new binding holds exactly the found, unburned leaf; nothing burned is refilled");
-        h.assertTrue(!StaircaseStory.isCurrent(p,lost)&&p.getInventory().countItem(Items.FLINT_AND_STEEL)==1,"the old binding goes cold and no extra striker is given while one is held");
+        h.assertTrue(!StaircaseStory.isCurrent(p,lost)&&p.getInventory().countItem(Items.FLINT_AND_STEEL)==strikers,"the old binding goes cold and no extra striker is given while one is held");
         p.setItemInHand(InteractionHand.OFF_HAND,lost);h.assertTrue(!burn(p,f,1),"the cold copy cannot burn");
         p.setItemInHand(InteractionHand.OFF_HAND,again);h.assertTrue(burn(p,f,1)&&StaircaseStory.shelf(p)==StaircaseStory.Shelf.CARRIED,"the rebound original burns and the shelf gives nothing more while it is carried");
     }); }
