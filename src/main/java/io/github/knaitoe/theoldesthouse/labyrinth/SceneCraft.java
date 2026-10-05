@@ -1707,9 +1707,9 @@ public final class SceneCraft {
         for (LivingEntity resident : l.getEntitiesOfClass(LivingEntity.class, area, LivingEntity::isAlive)) {
             AABB body = resident.getBoundingBox();
             for (Roof roof : repairRoofs())
-                if (body.intersects(new AABB(p(roof.x0 - 1, roof.eaves - 1, roof.z0 - 1),
-                        p(roof.x1 + 2, roof.eaves + (roof.x1 - roof.x0) / 4 + 3, roof.z1 + 2)))) return true;
-            if (scene == LabyrinthPlace.BARN_WELL && body.intersects(new AABB(p(4, 3, -35), p(17, 10, -15)))) return true;
+                if (body.intersects(new AABB(Vec3.atLowerCornerOf(p(roof.x0 - 1, roof.eaves - 1, roof.z0 - 1)),
+                        Vec3.atLowerCornerOf(p(roof.x1 + 2, roof.eaves + (roof.x1 - roof.x0) / 4 + 3, roof.z1 + 2))))) return true;
+            if (scene == LabyrinthPlace.BARN_WELL && body.intersects(new AABB(Vec3.atLowerCornerOf(p(4, 3, -35)), Vec3.atLowerCornerOf(p(17, 10, -15))))) return true;
             if (scene == LabyrinthPlace.GOATMAN) {
                 if (body.maxY > b.getY() + 4) return true;
                 for (int x = (int) Math.floor(body.minX) - b.getX(); x <= (int) Math.floor(body.maxX) - b.getX(); x++)
