@@ -72,7 +72,7 @@ public final class StaircaseLeakRooms {
             var bed=Blocks.WHITE_BED.defaultBlockState().setValue(BedBlock.FACING,Direction.NORTH);p.put(-2,0,-4,bed);p.put(-2,0,-5,bed.setValue(BedBlock.PART,BedPart.HEAD));p.prop(-2,1,-4,LAUNDRY);p.prop(-2,1,-5,SHIRTS);p.prop(-1,0,-6,TROUSERS);
             p.box(2,0,-6,3,0,-6,Blocks.SPRUCE_PLANKS.defaultBlockState());p.prop(2,1,-6,LIST_SPOT);p.put(3,0,-2,Blocks.COMPOSTER.defaultBlockState());
         }else{
-            p.put(-2,0,-5,StaircaseLeakProps.state(DRAWER).setValue(BlockStateProperties.HORIZONTAL_FACING,Direction.SOUTH));p.prop(-2,1,-5,CANDLE);p.prop(0,2,-6,CLOCK);
+            p.put(-2,0,-5,StaircaseLeakProps.state(DRAWER).setValue(BlockStateProperties.HORIZONTAL_FACING,Direction.SOUTH));p.prop(-2,1,-5,CANDLE);p.prop(-4,2,-6,CLOCK);
             p.put(-2,0,-2,Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST));p.put(2,0,-2,Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.WEST));p.put(3,0,-2,Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP));p.prop(3,1,-2,CUP_CREAM);
             p.box(2,1,0,3,2,0,Blocks.GLASS.defaultBlockState());car(p,4,6);
         }

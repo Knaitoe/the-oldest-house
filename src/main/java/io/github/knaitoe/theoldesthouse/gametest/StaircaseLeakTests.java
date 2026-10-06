@@ -33,7 +33,7 @@ public final class StaircaseLeakTests {
     private static void read(StaircaseAccessTests.Fixture f,ServerPlayer p,int index){
         var at=paper(f);f.put(f.level,at,NoteSurfaceBlock.state(HouseMarginalia.Thread.HOUSEKEEPING,Direction.NORTH));
         for(int x=-2;x<=2;x++)for(int z=-2;z<=3;z++)f.put(f.level,at.offset(x,-1,z),Blocks.STONE.defaultBlockState());
-        p.teleportTo(f.level,at.getX()+.5,at.getY(),at.getZ()+1.5,37,11);p.connection.resetPosition();p.setDeltaMovement(Vec3.ZERO);
+        p.teleportTo(f.level,at.getX()+.5,at.getY(),at.getZ()+1.5,37,11);p.hasChangedDimension();p.connection.resetPosition();p.setDeltaMovement(Vec3.ZERO);
         FinaleProgress.phase(p.server,p.getUUID(),FinaleProgress.Phase.STAIRCASE);
         var own=f.data().stateEntry(StaircaseWriting.ID,p.getUUID().toString());var books=own.getCompound("Books");var indices=own.getCompound("Indices");var key=Long.toString(at.asLong());
         books.put(key,StaircaseNotes.specimen(index).save(p.registryAccess()));indices.putInt(key,index);own.put("Books",books);own.put("Indices",indices);f.data().setStateEntry(StaircaseWriting.ID,p.getUUID().toString(),own);
