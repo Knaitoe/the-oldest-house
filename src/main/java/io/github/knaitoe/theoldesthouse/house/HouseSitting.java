@@ -28,7 +28,8 @@ public final class HouseSitting {
     public static boolean isSeat(BlockState state) {
         return state.getBlock() instanceof StairBlock && state.getValue(StairBlock.HALF) == Half.BOTTOM
                 || state.getBlock() instanceof CarpetBlock
-                || state.getBlock() instanceof HouseholdFurnitureBlock && state.getValue(HouseholdFurnitureBlock.KIND).seat;
+                || state.getBlock() instanceof HouseholdFurnitureBlock && state.getValue(HouseholdFurnitureBlock.KIND).seat
+                || state.is(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLeakRegistry.PROP.get())&&state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLeakProps.KIND)==io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLeakProps.Kind.CAR_SEAT;
     }
     public static boolean sit(ServerPlayer player, BlockPos pos) {
         BlockState state = player.level().getBlockState(pos);

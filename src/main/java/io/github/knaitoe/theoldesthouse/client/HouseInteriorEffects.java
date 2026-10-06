@@ -44,6 +44,6 @@ public final class HouseInteriorEffects extends DimensionSpecialEffects {
     }
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void color(ViewportEvent.ComputeFogColor e){
         // A scene that authors its own fog colour (the Goatman vigil and dawn, the hospital, the side mazes) keeps it.
-        if(black()&&e.getCamera().getFluidInCamera()==FogType.NONE&&!GoatmanClient.authorsFog()&&!NovelSceneClient.authorsFog()){e.setRed(0);e.setGreen(0);e.setBlue(0);}
+        if(black()&&e.getCamera().getFluidInCamera()==FogType.NONE&&!GoatmanClient.authorsFog()&&!NovelSceneClient.authorsFog()&&!StaircaseLeakClient.active()&&StaircaseLeakClient.returnLight()==0){e.setRed(0);e.setGreen(0);e.setBlue(0);}
     }
 }

@@ -17,6 +17,6 @@ public final class StaircaseDarkness {
     private static boolean active(){var mc=Minecraft.getInstance();return lease>0&&mc.level!=null&&mc.player!=null&&mc.player.isAlive()&&!mc.player.isSpectator()&&!mc.player.isCreative()
             &&mc.level.dimension().equals(HouseDimensions.INTERIOR)&&HouseSightlineState.origin()!=null&&FinaleArchitecture.contains(HouseSightlineState.origin(),mc.player.blockPosition());}
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){if(lease>0)lease--;if(!active())lease=0;}
-    @SubscribeEvent public static void color(ViewportEvent.ComputeFogColor e){if(active()&&fires<5){e.setRed(0);e.setGreen(0);e.setBlue(0);}}
+    @SubscribeEvent public static void color(ViewportEvent.ComputeFogColor e){if(active()&&fires<5&&!StaircaseLeakClient.active()&&StaircaseLeakClient.returnLight()==0){e.setRed(0);e.setGreen(0);e.setBlue(0);}}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void fog(ViewportEvent.RenderFog e){if(active()&&fires<5&&e.getMode()==net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN){e.setNearPlaneDistance(.15F);e.setFarPlaneDistance(sight);e.setCanceled(true);}}
 }

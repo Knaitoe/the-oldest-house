@@ -58,15 +58,17 @@ public final class StaircaseWriting {
     }
     private static final class PageMenu extends LecternMenu {
         private final ServerPlayer reader;private final BlockPos pos;private final ItemStack book;private final int pages;
+        private long lastPageAt;
         PageMenu(int id,ServerPlayer p,BlockPos pos){this(id,p,pos,new SimpleContainer(1));}
-        PageMenu(int id,ServerPlayer p,BlockPos pos,SimpleContainer display){super(id,display,new SimpleContainerData(1));reader=p;this.pos=pos.immutable();book=original(p,pos);display.setItem(0,book.copy());pages=book.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().size();}
+        PageMenu(int id,ServerPlayer p,BlockPos pos,SimpleContainer display){super(id,display,new SimpleContainerData(1));reader=p;this.pos=pos.immutable();book=original(p,pos);display.setItem(0,book.copy());pages=book.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().size();lastPageAt=pages==1?p.serverLevel().getGameTime():-1;}
+        @Override public void removed(Player p){boolean full=p==reader&&stillValid(p)&&getPage()==pages-1&&lastPageAt>=0&&reader.serverLevel().getGameTime()-lastPageAt>=20;super.removed(p);if(full)StaircaseLeaks.offer(reader,pos,book);}
         @Override public boolean stillValid(Player p){return p==reader&&reader.isAlive()&&reader.distanceToSqr(pos.getCenter())<25&&reader.level().getBlockState(pos).is(HouseBlocks.NOTE_SURFACE.get());}
         @Override public boolean clickMenuButton(Player p,int button){
             if(!stillValid(p))return false;
             if(button==3){if(reader.isSpectator())return false;var data=LabyrinthData.get(reader.server);var own=data.stateEntry(ID,reader.getUUID().toString());var taken=own.getCompound("Taken");String key=Long.toString(pos.asLong());if(taken.getBoolean(key))return false;
                 taken.putBoolean(key,true);own.put("Taken",taken);data.setStateEntry(ID,reader.getUUID().toString(),own);var item=book.copy();if(!reader.getInventory().add(item))reader.drop(item,false);reader.inventoryMenu.broadcastChanges();return true;}
             if(button>=100){if(button-100>=pages)return false;}else if(button==1){if(getPage()<=0)return false;}else if(button==2){if(getPage()>=pages-1)return false;}else return false;
-            return super.clickMenuButton(p,button);
+            boolean result=super.clickMenuButton(p,button);if(result)lastPageAt=getPage()==pages-1?reader.serverLevel().getGameTime():-1;return result;
         }
     }
 }

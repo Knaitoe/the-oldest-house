@@ -62,6 +62,7 @@ public final class TheOldestHouse {
         MotherRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.FinaleRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.NovelRegistry.register(modEventBus);
+        io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLeakRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.ClassicsRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.HotelRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.register(modEventBus);

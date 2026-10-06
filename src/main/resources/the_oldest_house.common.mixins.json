@@ -4,7 +4,8 @@
   "package": "io.github.knaitoe.theoldesthouse.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "FireBlockMixin"
+    "FireBlockMixin",
+    "StaircaseSpectateMixin"
   ],
   "injectors": {
     "defaultRequire": 1

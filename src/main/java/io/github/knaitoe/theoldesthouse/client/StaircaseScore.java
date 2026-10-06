@@ -32,20 +32,20 @@ public final class StaircaseScore {
     private static int retry;
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){
         var mc=Minecraft.getInstance();
-        if(sound!=null&&(!inside()||mc.level!=sound.world||mc.player!=sound.reader)){mc.getSoundManager().stop(sound);sound=null;}
+        if(sound!=null&&((!inside()&&!StaircaseLeakClient.active())||mc.level!=sound.world||mc.player!=sound.reader||sound.finished)){mc.getSoundManager().stop(sound);sound=null;}
         // The engine can drop the score (music muted and restored, a sound reload); start it again once it can be heard.
         if(sound!=null&&!mc.getSoundManager().isActive(sound)&&++retry>=40){retry=0;sound=null;}
         if(sound==null&&inside()&&mc.options.getSoundSourceVolume(SoundSource.MUSIC)>0&&mc.options.getSoundSourceVolume(SoundSource.MASTER)>0){
             retry=0;mc.getMusicManager().stopPlaying();sound=new Score(mc.level,mc.player);mc.getSoundManager().play(sound);}
     }
     /** No game music starts over the score while the listener is in the shaft. */
-    @SubscribeEvent public static void music(net.neoforged.neoforge.client.event.SelectMusicEvent e){if(inside())e.setMusic(null);}
+    @SubscribeEvent public static void music(net.neoforged.neoforge.client.event.SelectMusicEvent e){if(inside()||StaircaseLeakClient.active())e.setMusic(null);}
     private static final class Score extends AbstractTickableSoundInstance {
-        final ClientLevel world;final LocalPlayer reader;
+        final ClientLevel world;final LocalPlayer reader;boolean finished;
         Score(ClientLevel world,LocalPlayer reader){super(LabyrinthRegistry.STAIRCASE_SCORE.get(),SoundSource.MUSIC,RandomSource.create());
             this.world=world;this.reader=reader;looping=true;delay=0;relative=true;attenuation=Attenuation.NONE;volume=.28F;x=y=z=0;
         }
         @Override public boolean canPlaySound(){return reader.isAlive();}
-        @Override public void tick(){if(!inside()||Minecraft.getInstance().level!=world||Minecraft.getInstance().player!=reader)stop();}
+        @Override public void tick(){if(Minecraft.getInstance().level!=world||Minecraft.getInstance().player!=reader){finished=true;stop();return;}if(inside())volume=Math.min(.28F,volume+.028F);else if(StaircaseLeakClient.active()){volume=Math.max(0,volume-.028F);if(volume==0){finished=true;stop();}}else{finished=true;stop();}}
     }
 }

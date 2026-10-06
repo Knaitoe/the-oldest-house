@@ -25,8 +25,15 @@ public final class HouseInternalTeleport {
 
     /** Move to an absolute point in the player's current dimension. */
     public static void shift(ServerPlayer player, Vec3 to, float yaw) {
+        shift(player,to,yaw,player.getXRot(),true);
+    }
+
+    /** Personal scenery leaves every following companion at the actual source tread. */
+    public static void shiftPlayerOnly(ServerPlayer player,Vec3 to,float yaw,float pitch){shift(player,to,yaw,pitch,false);}
+
+    private static void shift(ServerPlayer player,Vec3 to,float yaw,float pitch,boolean carryCompanions){
         ServerLevel level = player.serverLevel();
-        var companions = io.github.knaitoe.theoldesthouse.opening.CompanionOrders.followingAll(player);
+        var companions = carryCompanions?io.github.knaitoe.theoldesthouse.opening.CompanionOrders.followingAll(player):java.util.List.<net.minecraft.world.entity.animal.TamableAnimal>of();
 
         // Do the potentially visible/loading work before the client is moved.
         // Once the teleport packet is sent, the destination must already be a
@@ -34,7 +41,6 @@ public final class HouseInternalTeleport {
         level.getChunkAt(BlockPos.containing(to));
 
         Vec3 movement = player.getDeltaMovement();
-        float pitch = player.getXRot();
         Vec3 from = player.position();
 
         player.stopRiding();
