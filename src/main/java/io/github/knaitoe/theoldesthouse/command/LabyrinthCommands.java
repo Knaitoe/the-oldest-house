@@ -263,7 +263,7 @@ public final class LabyrinthCommands {
         return growl;
     }
 
-    private static int placeDoor(CommandSourceStack source, String destination) throws CommandSyntaxException {
+    public static int placeDoor(CommandSourceStack source, String destination) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
         if (HouseSavedData.get(source.getServer()).houseOrigin() == null) {
             source.sendFailure(Component.literal("The Navidsons' house must exist first (/oldesthouse opening house, or /oldesthouse spawn)."));
@@ -284,7 +284,7 @@ public final class LabyrinthCommands {
         return 1;
     }
 
-    private static int removeDoor(CommandSourceStack source) throws CommandSyntaxException {
+    public static int removeDoor(CommandSourceStack source) throws CommandSyntaxException {
         String removed = LabyrinthDoors.removeCommandDoor(source.getPlayerOrException());
         if (removed == null) {
             source.sendFailure(Component.literal("No test door within eight blocks."));
