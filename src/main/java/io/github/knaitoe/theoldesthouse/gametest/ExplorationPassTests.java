@@ -58,7 +58,7 @@ public final class ExplorationPassTests {
         var l=h.getLevel();var b=h.absolutePos(BlockPos.ZERO).offset(3450,8,500);
         l.setBlock(b.west(),Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState(),2);l.setBlock(b.east(2),Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState(),2);
         BuildBlocks.box(l,b,b.east(),Blocks.GLASS_PANE.defaultBlockState(),18);
-        for(var at:List.of(b,b.east())){var joined=ScenePlaytestRepairs.connected(l,at);h.assertTrue(joined.getValue(IronBarsBlock.WEST)&&joined.getValue(IronBarsBlock.EAST),"each native pane joins both its neighbour and frame");}
+        for(var at:List.of(b,b.east())){var joined=l.getBlockState(at);h.assertTrue(joined.getValue(IronBarsBlock.WEST)&&joined.getValue(IronBarsBlock.EAST)&&joined.equals(ScenePlaytestRepairs.connected(l,at)),"each placed native pane already joins both its neighbour and frame");}
         h.assertTrue(l.getBlockState(b.west()).is(Blocks.STRIPPED_SPRUCE_LOG),"joining panes preserves the existing window frame");h.succeed();
     }
     @GameTest(template="empty")
