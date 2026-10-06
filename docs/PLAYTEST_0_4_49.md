@@ -2,7 +2,7 @@
 
 Status: candidate; exact-head native verification pending.
 
-The attached staircase playtest and multiplayer requirements authorize this pass. Claude's two 0.4.48 repair commits are included, with actual-camera vacancy checks and a per-server stair-wear cache correction. The later staircase leaks design remains a proposal, not a feature in this release. Its pocket allocation, spectator proxy, edit restoration, cancel/return transaction and reconnect handling need a separate design review before implementation.
+The attached staircase playtest and multiplayer requirements authorize this pass. Claude's two 0.4.48 repair commits are included, with actual-camera vacancy checks and a per-server stair-wear cache correction. The user also authorized Claude's five note-triggered staircase scenes and custom assets. Their personal rooms, waiting reader bodies, saved template restoration, interruption returns and reconnect recovery are implemented and included in the verification contract below.
 
 Internal doorway shifts send authoritative landing coordinates, preserve view and stride with native rotation/motion packets, and reset the connection's movement baseline immediately. Two-client runs exposed inconsistent predicted landings and a return consumed before vanilla's movement guard corrected the player back into the destination hallway. The live proof requires both physical returns and clean native movement validation across the crossings.
 
