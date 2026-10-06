@@ -339,6 +339,7 @@ public final class ArchitectureTests {
         if(scene==LabyrinthPlace.HOTEL)maxY=3;
         if(name.equals("hotel_upstairs")){minY=4;maxY=8;}
         if(name.equals("hotel_basement")){minY=-5;maxY=-2;}
+        if(HallVariations.added(scene))maxY=HallVariations.domestic(scene)?4:scene==LabyrinthPlace.STONE_BEND?5:6;
         if(scene==LabyrinthPlace.BLIND_STRETCH)maxY=2;if(LiteraryRooms.isLiterary(scene)){minY=Math.max(scene.room().minY(),-6);maxY=NovelRooms.outside(scene)?Math.min(7,scene.room().maxY()):Math.min(4,scene.room().maxY());if(scene==LabyrinthPlace.WINCHESTER)maxY=10;}
         boolean exterior=name.endsWith("_exterior");if(exterior){minY=-1;maxY=Math.min(14,r.maxY());}
         for(int x=r.minX();x<=r.maxX();x++)for(int y=minY;y<=maxY;y++)for(int z=minZ;z<=maxZ;z++){

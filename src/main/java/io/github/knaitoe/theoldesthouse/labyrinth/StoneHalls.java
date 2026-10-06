@@ -20,7 +20,8 @@ public final class StoneHalls {
     private StoneHalls() {}
 
     public static boolean isStone(LabyrinthPlace place) {
-        return place == LabyrinthPlace.STONE_GALLERY || place == LabyrinthPlace.STONE_CROSSING || place == LabyrinthPlace.STONE_DESCENT;
+        return place == LabyrinthPlace.STONE_GALLERY || place == LabyrinthPlace.STONE_CROSSING || place == LabyrinthPlace.STONE_DESCENT
+                || place == LabyrinthPlace.STONE_ARCADE || place == LabyrinthPlace.STONE_BEND || place == LabyrinthPlace.STONE_LANDING;
     }
 
     private static final BlockState BRICK = Blocks.STONE_BRICKS.defaultBlockState();
@@ -48,6 +49,7 @@ public final class StoneHalls {
             case STONE_GALLERY -> gallery(level, base);
             case STONE_CROSSING -> crossing(level, base);
             case STONE_DESCENT -> descent(level, base);
+            case STONE_ARCADE, STONE_BEND, STONE_LANDING -> HallVariations.buildStone(level,base,place);
             default -> throw new IllegalArgumentException(place.id());
         }
         LabyrinthBuilder.entrance(level, base, BRICK, POLISHED, BRICK);

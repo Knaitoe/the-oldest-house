@@ -1,0 +1,66 @@
+"""CI proof: a loopback dedicated server, two real clients, then the same B profile reconnects."""
+from pathlib import Path
+import os
+import signal
+import subprocess
+import time
+
+ROOT = Path(__file__).resolve().parents[1]
+os.chdir(ROOT)
+report = ROOT / "build/live-proof"
+report.mkdir(parents=True, exist_ok=True)
+server = ROOT / "run-live/server"
+server.mkdir(parents=True, exist_ok=True)
+(server / "eula.txt").write_text("eula=true\n")
+(server / "server.properties").write_text("server-ip=127.0.0.1\nserver-port=25578\nonline-mode=false\nview-distance=3\nsimulation-distance=3\nspawn-protection=0\nmax-players=3\nlevel-type=minecraft:flat\ngenerate-structures=false\nsync-chunk-writes=false\n")
+for role in ("a", "b"):
+    folder = ROOT / "run-live" / role
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / "options.txt").write_text("pauseOnLostFocus:false\nrenderDistance:3\nsimulationDistance:3\nmaxFps:30\nenableVsync:false\nguiScale:2\ntutorialStep:none\n")
+
+processes = []
+logs = []
+def launch(task, name):
+    log = open(report / f"{name}.log", "w")
+    logs.append(log)
+    p = subprocess.Popen(["gradle", task, "--no-daemon", "--max-workers=1", "-Dorg.gradle.jvmargs=-Xmx256m"], stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+    processes.append(p)
+    return p
+
+def wait_for(check, seconds, context):
+    deadline = time.monotonic() + seconds
+    while time.monotonic() < deadline:
+        if check():
+            return
+        for p in processes:
+            if p.poll() is not None and p.returncode != 0:
+                raise RuntimeError(f"Native process failed during {context}: {p.returncode}")
+        time.sleep(2)
+    raise RuntimeError(f"Timed out waiting for {context}")
+
+try:
+    subprocess.run(["gradle", "classes", "prepareProofServerRun", "prepareProofARun", "prepareProofBRun", "--no-daemon", "--max-workers=2"], check=True)
+    host = launch("runProofServer", "server")
+    wait_for(lambda: "Done (" in (server / "logs/latest.log").read_text(errors="replace") if (server / "logs/latest.log").exists() else False, 180, "dedicated server startup")
+    first = launch("runProofA", "client-a")
+    second = launch("runProofB", "client-b-first")
+    wait_for(lambda: (report / "restart-b.txt").exists() and second.poll() is not None, 360, "both clients' first expedition and native logout")
+    reconnected = launch("runProofB", "client-b-reconnected")
+    wait_for(lambda: (report / "passed.txt").exists() and (report / "B-reconnected.png").exists(), 180, "same-profile reconnect, personal burn and rendered proof")
+    for p in processes:
+        p.wait(timeout=90)
+        assert p.returncode == 0, p.returncode
+    for shot in ("A-first.png", "B-first.png", "A-embers.png", "B-embers-reconnected.png", "B-reconnected.png"):
+        assert (report / shot).stat().st_size > 10000, shot
+    print((report / "passed.txt").read_text(), flush=True)
+finally:
+    for p in processes:
+        if p.poll() is None:
+            os.killpg(p.pid, signal.SIGTERM)
+    for log in logs:
+        log.close()
+    for name in ("server", "client-a", "client-b-first", "client-b-reconnected"):
+        log = report / f"{name}.log"
+        if log.exists():
+            selected = [line for line in log.read_text(errors="replace").splitlines() if any(word in line for word in ("LIVE EXPEDITION", "Exception", "Caused by", "ERROR", "FAILED"))]
+            print(f"{name}:\n" + "\n".join(selected[-25:]), flush=True)

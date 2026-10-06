@@ -61,7 +61,8 @@ public final class TieredCarveTests {
             h.assertTrue(!LabyrinthDealer.vignettesAvailable(data, someone).contains(LabyrinthPlace.HARRIGAN), "an unbuilt story is never dealt");
             h.assertTrue(LabyrinthDealer.grayAvailable(data, someone).stream().allMatch(place -> LabyrinthBuilder.isPlaceReady(data, place)),
                     "only standing halls are dealt");
-            h.assertTrue(data.state(LabyrinthBuilder.PROGRESS).getList("Built", 8).size() == LabyrinthBuilder.CORE.size(),
+            long initial=java.util.Arrays.stream(LabyrinthPlace.values()).filter(p->p.slot()>=0&&LabyrinthBuilder.requiredDepth(p)==0).count();
+            h.assertTrue(data.state(LabyrinthBuilder.PROGRESS).getList("Built", 8).size() == initial,
                     "construction progress is saved place by place");
 
             // A restart resumes from the saved progress without rebuilding what already stands.

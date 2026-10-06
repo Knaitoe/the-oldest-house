@@ -463,6 +463,27 @@ public final class LabyrinthData extends SavedData {
         setDirty();
     }
 
+    /** Bounded shared discovery cache; personal saved routes remain authoritative after eviction. */
+    public void setBoundedStateEntry(String name, String key, CompoundTag tag, int limit) {
+        if (limit < 1) throw new IllegalArgumentException("limit");
+        CompoundTag state = states.computeIfAbsent(name, ignored -> new CompoundTag());
+        CompoundTag entry = tag.copy();
+        if (state.contains(key)) entry.putLong("__order", state.getCompound(key).getLong("__order"));
+        else {
+            long order = state.getLong("__sequence") + 1;
+            state.putLong("__sequence", order); entry.putLong("__order", order);
+            if (state.getAllKeys().size() > limit) {
+                String oldest = null; long first = Long.MAX_VALUE;
+                for (String candidate : state.getAllKeys()) if (!candidate.equals("__sequence")) {
+                    long seen = state.getCompound(candidate).getLong("__order");
+                    if (seen < first) { first = seen; oldest = candidate; }
+                }
+                if (oldest != null) state.remove(oldest);
+            }
+        }
+        state.put(key, entry); setDirty();
+    }
+
     /** Includes offline explorers, whose unfinished visits must remain reachable. */
     public Set<UUID> visitorsTo(LabyrinthPlace place) {
         Set<UUID> readers = new HashSet<>();

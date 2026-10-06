@@ -1,6 +1,7 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import java.util.UUID;
+import io.github.knaitoe.theoldesthouse.house.HouseConfig;
 
 /** Budget unsettling discoveries per arrival, rather than independently for every door. */
 public final class LabyrinthPacing {
@@ -16,7 +17,8 @@ public final class LabyrinthPacing {
     public static boolean ordinary(LabyrinthPlace place) {
         return place==LabyrinthPlace.JUNCTION || place==LabyrinthPlace.GRAY_CORRIDOR
                 || place==LabyrinthPlace.STRAIGHT_HALL || place==LabyrinthPlace.BENT_HALL
-                || place==LabyrinthPlace.CROSS_HALL || StoneHalls.isStone(place);
+                || place==LabyrinthPlace.CROSS_HALL || place==LabyrinthPlace.ALCOVE_HALL
+                || place==LabyrinthPlace.OFFSET_HALL || place==LabyrinthPlace.SERVICE_LANDING || StoneHalls.isStone(place);
     }
     public static boolean quiet(LabyrinthPlace place) {
         return place==LabyrinthPlace.QUIET_ROOM || place==LabyrinthPlace.EXPLORER_CAMP;
@@ -24,8 +26,15 @@ public final class LabyrinthPacing {
     public static boolean physicalTrial(LabyrinthPlace place){return place==LabyrinthPlace.FLOODED_PASSAGE||place==LabyrinthPlace.FRACTURED_WALKWAY||place==LabyrinthPlace.LIGHT_SINK;}
     public static int trialChance(LabyrinthData data,UUID player){
         int depth=data.returnDepth(player);if(domestic(depth))return 0;
-        for(var place:LabyrinthPlace.values()){int age=data.recentVisit(player,place);if(physicalTrial(place)&&age>=0&&age<2)return 0;}
-        return depth<10?28:depth<16?35:42;
+        for(var place:LabyrinthPlace.values()){int age=data.recentVisit(player,place);if(physicalTrial(place)&&age>=0&&age<HouseConfig.setting(HouseConfig.HAZARD_SPACING))return 0;}
+        return HouseConfig.setting(depth<10?HouseConfig.HAZARD_EARLY_CHANCE:depth<16?HouseConfig.HAZARD_MIDDLE_CHANCE:HouseConfig.HAZARD_DEEP_CHANCE);
+    }
+    public static boolean storyDue(LabyrinthData data, UUID player) {
+        for (var place : LabyrinthPlace.values()) {
+            int age = data.recentVisit(player, place);
+            if (place.isVignette() && age >= 0 && age < HouseConfig.setting(HouseConfig.STORY_SPACING)) return false;
+        }
+        return true;
     }
     public static boolean anomaly(LabyrinthPlace place) {
         return switch(place) {

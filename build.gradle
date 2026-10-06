@@ -47,9 +47,36 @@ neoForge {
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
+        proofServer {
+            server()
+            gameDirectory = project.file('run-live/server')
+            programArgument '--nogui'
+            jvmArgument '-Xmx1400m'
+            systemProperty 'the_oldest_house.liveProof', 'true'
+            systemProperty 'the_oldest_house.liveProofDir', project.file('build/live-proof').absolutePath
+        }
+        proofA {
+            client()
+            gameDirectory = project.file('run-live/a')
+            jvmArgument '-Xmx1100m'
+            systemProperty 'the_oldest_house.liveProof', 'true'
+            systemProperty 'the_oldest_house.liveProofRole', 'A'
+            systemProperty 'the_oldest_house.liveProofDir', project.file('build/live-proof').absolutePath
+            programArguments.addAll '--username', 'OTHProofA', '--quickPlayMultiplayer', '127.0.0.1:25578', '--width', '960', '--height', '640'
+        }
+        proofB {
+            client()
+            gameDirectory = project.file('run-live/b')
+            jvmArgument '-Xmx1100m'
+            systemProperty 'the_oldest_house.liveProof', 'true'
+            systemProperty 'the_oldest_house.liveProofRole', 'B'
+            systemProperty 'the_oldest_house.liveProofDir', project.file('build/live-proof').absolutePath
+            programArguments.addAll '--username', 'OTHProofB', '--quickPlayMultiplayer', '127.0.0.1:25578', '--width', '960', '--height', '640'
+        }
+
         gameTestServer {
             type = "gameTestServer"
-            systemProperty 'neoforge.enabledGameTestNamespaces', providers.gradleProperty('gameTestNamespaces').getOrElse(project.mod_id + ',' + project.mod_id + '_hotel,' + project.mod_id + '_literary,' + project.mod_id + '_doors,' + project.mod_id + '_seam,' + project.mod_id + '_staircase,' + project.mod_id + '_multiplayer')
+            systemProperty 'neoforge.enabledGameTestNamespaces', providers.gradleProperty('gameTestNamespaces').getOrElse(project.mod_id + ',' + project.mod_id + '_hotel,' + project.mod_id + '_literary,' + project.mod_id + '_doors,' + project.mod_id + '_seam,' + project.mod_id + '_staircase,' + project.mod_id + '_multiplayer,' + project.mod_id + '_exploration')
         }
 
         data {

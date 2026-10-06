@@ -54,11 +54,16 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.47"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.48"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseStory.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseLeaves.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/labyrinth/HallVariations.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/network/BurnEmbersPayload.class' in z.namelist()
+              assert 'data/the_oldest_house_exploration/structure/empty.nbt' in z.namelist()
+              for cue in ('pipes','stone','settle'):
+                  assert z.read(f'assets/the_oldest_house/sounds/hall/{cue}.ogg').startswith(b'OggS')
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/SceneCraft.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseProse.class' in z.namelist()
               assert 'data/the_oldest_house_multiplayer/structure/empty.nbt' in z.namelist()
@@ -339,6 +344,8 @@ jobs:
           LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 5m gradle runClient -PfontSmoke --no-daemon
           test -s build/font-smoke/passed.txt
           test -s build/font-smoke/native-writing.png
+          test -s build/font-smoke/embers-passed.txt
+          test -s build/font-smoke/native-embers.png
           test -s build/font-smoke/npcs-passed.txt
           test -s build/font-smoke/native-npcs.png
           test -s build/font-smoke/cast-passed.txt
@@ -580,11 +587,16 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.47"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.48"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseStory.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseLeaves.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/labyrinth/HallVariations.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/network/BurnEmbersPayload.class' in z.namelist()
+              assert 'data/the_oldest_house_exploration/structure/empty.nbt' in z.namelist()
+              for cue in ('pipes','stone','settle'):
+                  assert z.read(f'assets/the_oldest_house/sounds/hall/{cue}.ogg').startswith(b'OggS')
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/SceneCraft.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseProse.class' in z.namelist()
               assert 'data/the_oldest_house_multiplayer/structure/empty.nbt' in z.namelist()
@@ -699,3 +711,64 @@ jobs:
         with:
           name: multiplayer-diagnostics-${{ github.sha }}
           path: build/multiplayer-native.log
+
+
+  exploration-pass:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Native exploration, shared routes and old-save append
+        timeout-minutes: 10
+        env:
+          JAVA_TOOL_OPTIONS: -Xmx4g
+        run: |
+          mkdir -p run build
+          printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 8m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_exploration --no-daemon 2>&1 | tee build/exploration-native.log
+          python3 - <<'PYTHON'
+          import re
+          from pathlib import Path
+          declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/ExplorationPassTests.java').read_text()))
+          passed=re.findall(r'All (\d+) required tests passed',Path('build/exploration-native.log').read_text())
+          assert passed and int(passed[-1])==declared, (passed,declared)
+          print(f'All {declared} native exploration cases passed.')
+          PYTHON
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exploration-diagnostics-${{ github.sha }}
+          path: build/exploration-native.log
+
+  live-multiplayer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Two actual clients, native packets, movement and reconnect
+        timeout-minutes: 16
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri
+          LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a python3 tools/run_live_expedition.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-multiplayer-${{ github.sha }}
+          path: |
+            build/live-proof/
+            run-live/*/logs/latest.log
+            run-live/*/crash-reports/

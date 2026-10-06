@@ -443,5 +443,32 @@
         "stream": true
       }
     ]
+  },
+  "hall.pipes": {
+    "subtitle": "subtitles.the_oldest_house.hall.pipes",
+    "sounds": [
+      {
+        "name": "the_oldest_house:hall/pipes",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "hall.stone": {
+    "subtitle": "subtitles.the_oldest_house.hall.stone",
+    "sounds": [
+      {
+        "name": "the_oldest_house:hall/stone",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "hall.settle": {
+    "subtitle": "subtitles.the_oldest_house.hall.settle",
+    "sounds": [
+      {
+        "name": "the_oldest_house:hall/settle",
+        "attenuation_distance": 24
+      }
+    ]
   }
 }
