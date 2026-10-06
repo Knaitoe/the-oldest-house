@@ -112,5 +112,15 @@
   "subtitles.the_oldest_house.hall.stone": "Stone echoes",
   "subtitles.the_oldest_house.hall.settle": "Wood settles",
   "item.the_oldest_house.holloway_shield": "Holloway's battered shield",
-  "item.the_oldest_house.lighter": "Tom's lighter"
+  "item.the_oldest_house.lighter": "Tom's lighter",
+  "block.the_oldest_house.leak_wallpaper": "Faded Leaf Wallpaper",
+  "block.the_oldest_house.leak_prop": "A Household Object",
+  "entity.the_oldest_house.staircase_reader": "Reader",
+  "item.the_oldest_house.leak_reading_sheet": "A Loose Sheet",
+  "item.the_oldest_house.leak_sock_blue": "Blue Sock",
+  "item.the_oldest_house.leak_sock_ochre": "Ochre Sock",
+  "item.the_oldest_house.leak_sock_grey": "Grey Sock",
+  "item.the_oldest_house.leak_sock_green": "Green Sock",
+  "item.the_oldest_house.leak_sock_red": "Red Sock",
+  "item.the_oldest_house.leak_sock_single": "Unmatched Sock"
 }

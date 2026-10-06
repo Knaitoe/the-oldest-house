@@ -230,6 +230,7 @@ public final class CompanionOrders {
     }
     @Nullable public static TamableAnimal followAcross(TamableAnimal pet,ServerPlayer player) {
         if(pet.isRemoved())return null;
+        if(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLeaks.active(player))return pet;
         Vec3 point=HillaryPaths.safeBeside(pet,player);
         player.serverLevel().getChunkAt(BlockPos.containing(point));
         if(pet.level()!=player.level()) {

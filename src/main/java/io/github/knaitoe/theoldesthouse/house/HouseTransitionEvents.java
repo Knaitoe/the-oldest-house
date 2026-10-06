@@ -46,6 +46,7 @@ public final class HouseTransitionEvents {
             return;
         }
 
+        if (io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLeaks.guardTick(player)) return;
         if (io.github.knaitoe.theoldesthouse.labyrinth.FinaleController.enforceExclusion(player)) return;
         tickPendingDoorClose(player);
 

@@ -478,5 +478,30 @@
         "stream": true
       }
     ]
+  },
+  "leak.drip": {
+    "sounds": [
+      "the_oldest_house:leak/drip"
+    ]
+  },
+  "leak.clock": {
+    "sounds": [
+      "the_oldest_house:leak/clock"
+    ]
+  },
+  "leak.rain": {
+    "sounds": [
+      "the_oldest_house:leak/rain"
+    ]
+  },
+  "leak.radio": {
+    "sounds": [
+      "the_oldest_house:leak/radio"
+    ]
+  },
+  "leak.bag": {
+    "sounds": [
+      "the_oldest_house:leak/bag"
+    ]
   }
 }
