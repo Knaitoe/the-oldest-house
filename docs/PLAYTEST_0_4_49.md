@@ -57,4 +57,12 @@ Growls now arrive every sixty to thirty occupied seconds as the reader approache
 - The flooded passage's route has two blocks of swimming headroom and a protected dry arrival.
 - Existing scenes receive small saved corrections with loaded native entity sections, camera exclusion, body checks and bounded read/write slices. Containers, papers, actor identities and personal progress are not reconstructed. Stray slot fill outside authored outdoor scenery is removed without touching the copied arrival vestibule or authored story volume. Explicit rebuilds forget the repair checkpoint.
 
-Layout 34, protocol 33, source/resolution counts and all three endings remain unchanged. Verification must cover every declared native case and focused suite, full writing/model/package proofs, sixty-four architecture views, and two real NeoForge clients with an actual reconnect.
+Layout 35 / protocol 34; source/resolution counts and all three endings remain unchanged. Verification must cover every declared native case and focused suite, full writing/model/package proofs, sixty-nine architecture views, and two real NeoForge clients with two actual reconnects including one from a private note scene.
+
+## Note-triggered domestic scenes
+
+Five original staircase sheets open personal scenes: kitchen (0), laundry bedroom (12), parked car (6), drawer repair (9), and the same kitchen later (32). Read the final page, close the sheet, and stay still for three seconds. Movement, damage, combat and a nearby hostile cancel the offer before entry. Each selected sheet is once per reader. Carried copies and borrowed books do not trigger it.
+
+The chores use virtual cups, socks, a shopping list, radio, candle and drawer. Native menus prevent transfers to the real inventory. Readers keep inventory components, health, food, effects, XP, phase and their exact return pose. Waiting pets retain their UUID, health and wheel order. Each reader has separate saved room templates, restored after leaving; doorway exits, damage, disconnects, active-save reload and reconnect return to the stairs. Spectator cameras and uninvited readers stay outside personal rooms. These scenes add no Witness sources, rewards, leaves or fires.
+
+The wallpaper, 35 supported prop meshes, seven item meshes and five original quiet cues are packaged with the mod. The kitchen’s cup arrangement carries into its later scene. The descent score fades out for the room and returns afterward. [Design](STAIRCASE_LEAKS_DESIGN.md) / [asset provenance](STAIRCASE_LEAK_ASSETS.md).

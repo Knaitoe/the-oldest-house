@@ -19,7 +19,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public final class StaircaseLeakProps extends Block {
     public enum Kind implements StringRepresentable {
         CUP_BLUE,CUP_CREAM,CUP_RED,HOOK,CUP_HUNG_BLUE,CUP_HUNG_CREAM,CUP_HUNG_RED,
-        TOWEL,PLATE,GERANIUM,GERANIUM_PLATE,SINK_FULL,SINK_EMPTY,SINK_CLEAN,
+        TOWEL,WASHING,PLATE,GERANIUM,GERANIUM_PLATE,SINK_FULL,SINK_EMPTY,SINK_CLEAN,
         LAUNDRY,SOCK_SINGLE,SHIRTS,TROUSERS,LIST_SPOT,LIST,
         RADIO,RADIO_OFF,BREAD_BAG,CAR_SEAT,BELT,
         DRAWER,DRAWER_OPEN,CANDLE,BUTTON_TIN,CLOCK,APRON,LIGHT,LIGHT_OFF,SMALL_LIGHT;
@@ -30,7 +30,7 @@ public final class StaircaseLeakProps extends Block {
     public static BlockState state(Kind kind){return StaircaseLeakRegistry.PROP.get().defaultBlockState().setValue(KIND,kind);}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(KIND,BlockStateProperties.HORIZONTAL_FACING);}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return box(1,0,1,15,15,15);}
-    @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return Shapes.empty();}
+    @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return s.getValue(KIND)==Kind.DRAWER||s.getValue(KIND)==Kind.DRAWER_OPEN?box(1,0,1,15,16,15):Shapes.empty();}
     @Override protected BlockState rotate(BlockState s,Rotation r){return s.setValue(BlockStateProperties.HORIZONTAL_FACING,r.rotate(s.getValue(BlockStateProperties.HORIZONTAL_FACING)));}
     @Override protected BlockState mirror(BlockState s,Mirror m){return rotate(s,m.getRotation(s.getValue(BlockStateProperties.HORIZONTAL_FACING)));}
 }

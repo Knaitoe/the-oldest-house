@@ -33,13 +33,14 @@ public final class LiveExpeditionProof {
     private static final Set<String> ACKS=new HashSet<>();
     private static int phase,changed;private static boolean restarted;private static UUID secondId;
     private static CompoundTag secondStory;private static Map<String,String> firstMap;
+    private static final Map<UUID,Vec3> leakReturns=new HashMap<>();private static boolean leakRestarted;
     private LiveExpeditionProof() {}
     private static ServerPlayer player(MinecraftServer s,String role){return s.getPlayerList().getPlayers().stream().filter(p->p.getGameProfile().getName().equals("OTHProof"+role)).findFirst().orElse(null);}
     private static String role(ServerPlayer p){return p.getGameProfile().getName().equals("OTHProofA")?"A":p.getGameProfile().getName().equals("OTHProofB")?"B":"";}
     private static void require(boolean okay,String message){if(!okay)throw new IllegalStateException("LIVE EXPEDITION: "+message);}
     @SubscribeEvent public static void commands(RegisterCommandsEvent e) {
         if(!enabled())return;
-        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,9)).executes(c->{
+        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,13)).executes(c->{
             var p=c.getSource().getPlayerOrException();if(!role(p).isEmpty()&&IntegerArgumentType.getInteger(c,"step")==phase)ACKS.add(role(p));return 1;
         })));
     }
@@ -129,11 +130,27 @@ public final class LiveExpeditionProof {
                 marker(b,8,StaircaseFire.braziers(ORIGIN).getFirst());restarted=true;
             }
             if(ACKS.contains("B")) {
-                require(StaircaseStory.burned(StaircaseStory.record(b))==1,"reconnected owner can burn their own leaf at the shared fire");step(s,9,StaircaseFire.braziers(ORIGIN).getFirst());
-                write("passed.txt","Two actual NeoForge socket clients: negotiated channels; concurrent hallway arrival; independent native return stacks; shared door held for a peer; actual client movement back to source; native sheet menus and finite originals; owner-private ember delivery; same-profile reconnect and own burn.\n");
-                TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: two real clients and one reconnect");
+                require(StaircaseStory.burned(StaircaseStory.record(b))==1,"reconnected owner can burn their own leaf at the shared fire");
+                var note=FinaleArchitecture.base(ORIGIN).offset(3,FinaleArchitecture.TOP,24);var l=s.getLevel(HouseDimensions.INTERIOR);
+                for(int x=-3;x<=3;x++)for(int z=-2;z<=4;z++)for(int y=-1;y<=2;y++)l.setBlock(note.offset(x,y,z),(y==-1?Blocks.STONE:Blocks.AIR).defaultBlockState(),18);
+                l.setBlock(note,NoteSurfaceBlock.state(HouseMarginalia.Thread.HOUSEKEEPING,Direction.NORTH),18);
+                for(var p:List.of(a,b)){var record=d.stateEntry(StaircaseWriting.ID,p.getUUID().toString());var books=record.getCompound("Books");var indices=record.getCompound("Indices");var key=Long.toString(note.asLong());books.put(key,StaircaseNotes.specimen(9).save(p.registryAccess()));indices.putInt(key,9);record.put("Books",books);record.put("Indices",indices);d.setStateEntry(StaircaseWriting.ID,p.getUUID().toString(),record);at(p,note.south(2),180,p==a?-.65:.65);}
+                step(s,9,note);
             }
-        }else if(phase==9&&s.getTickCount()-changed>100)s.halt(false);
+        }else if(phase==9&&a!=null&&b!=null&&StaircaseLeaks.active(a)&&StaircaseLeaks.active(b)){
+            require(!StaircaseLeaks.activeBase(a).equals(StaircaseLeaks.activeBase(b)),"the two socket readers enter independent native pocket rooms");
+            for(var p:List.of(a,b)){var back=d.stateEntry(StaircaseLeaks.STATE,p.getUUID().toString()).getCompound("Active").getCompound("Return");leakReturns.put(p.getUUID(),new Vec3(back.getDouble("X"),back.getDouble("Y"),back.getDouble("Z")));}
+            step(s,10,StaircaseLeaks.activeBase(a));marker(b,10,StaircaseLeaks.activeBase(b));
+        }else if(phase==10&&a!=null&&b!=null&&StaircaseLeaks.progress(a).getBoolean("Waxed")&&StaircaseLeaks.progress(b).getBoolean("Waxed")&&ACKS.size()==2){
+            step(s,11,StaircaseLeaks.activeBase(a));marker(b,11,StaircaseLeaks.activeBase(b));
+        }else if(phase==11&&b==null&&a!=null&&!StaircaseLeaks.active(a)){
+            require(a.position().distanceToSqr(leakReturns.get(a.getUUID()))<.01,"the first real client walks out to its exact saved tread");
+            phase=12;changed=s.getTickCount();ACKS.clear();write("restart-b-leak.txt","Reconnect the same profile after leaving during a personal note scene.\n");marker(a,12,a.blockPosition());
+        }else if(phase==12&&a!=null&&b!=null&&!StaircaseLeaks.active(b)){
+            require(b.getUUID().equals(secondId)&&b.position().distanceToSqr(leakReturns.get(b.getUUID()))<.01,"logout inside a leak restores the actual reconnected socket reader to their own tread");
+            require(StaircaseStory.isCurrent(b,b.getOffhandItem())&&StaircaseStory.burned(StaircaseStory.record(b))==1,"scene recovery preserves the living book and personal burned cursor");
+            if(!leakRestarted){step(s,13,b.blockPosition());leakRestarted=true;write("passed.txt","Two actual NeoForge socket clients: shared physical hallway entry and return; owner-private leaves and burn; same-profile reconnect; two native original note menus, distinct personal rooms, real candle/drawer interactions, actual doorway exit, and a second same-profile reconnect after disconnecting inside a leak. No native movement corrections.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: two real clients, private note scenes and two reconnects");}
+        }else if(phase==13&&s.getTickCount()-changed>100)s.halt(false);
     }
     private static void write(String name,String text) {
         try{Files.createDirectories(folder());Files.writeString(folder().resolve(name),text);}catch(Exception e){throw new IllegalStateException(e);}

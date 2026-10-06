@@ -52,17 +52,21 @@ try:
     second = launch("runProofB", "client-b-first")
     wait_for(lambda: (report / "restart-b.txt").exists() and second.poll() is not None, 360, "both clients' first expedition and native logout")
     reconnected = launch("runProofB", "client-b-reconnected")
-    wait_for(lambda: (report / "passed.txt").exists() and (report / "B-reconnected.png").exists(), 180, "same-profile reconnect, personal burn and rendered proof")
+    wait_for(lambda: (report / "restart-b-leak.txt").exists() and reconnected.poll() is not None, 240, "personal burn, two note rooms and logout inside a leak")
+    recovered = launch("runProofB", "client-b-leak-reconnected")
+    wait_for(lambda: (report / "passed.txt").exists() and (report / "B-reconnected.png").exists(), 180, "same-profile leak recovery and rendered proof")
     for p in processes:
         p.wait(timeout=90)
         assert p.returncode == 0, p.returncode
-    for shot in ("A-first.png", "B-first.png", "A-embers.png", "B-embers-reconnected.png", "B-reconnected.png"):
+    for shot in ("A-first.png", "B-first.png", "A-embers.png", "B-embers-reconnected.png", "B-reconnected.png", "A-leak.png", "B-leak.png", "B-leak-first.png"):
         assert (report / shot).stat().st_size > 10000, shot
     # Require clean native movement validation during the actual crossing
     # and return, even when a later correction would recover a bad packet.
     native_log = (server / "logs/latest.log").read_text(errors="replace")
     crossing = native_log.split("LIVE EXPEDITION phase 2", 1)[1].split("LIVE EXPEDITION phase 5", 1)[0]
     assert "moved too quickly!" not in crossing and "moved wrongly!" not in crossing, crossing
+    leaks = native_log.split("LIVE EXPEDITION phase 9",1)[1]
+    assert "moved too quickly!" not in leaks and "moved wrongly!" not in leaks, leaks
     print((report / "passed.txt").read_text(), flush=True)
 finally:
     for p in processes:
@@ -70,7 +74,7 @@ finally:
             os.killpg(p.pid, signal.SIGTERM)
     for log in logs:
         log.close()
-    for name in ("server", "client-a", "client-b-first", "client-b-reconnected"):
+    for name in ("server", "client-a", "client-b-first", "client-b-reconnected", "client-b-leak-reconnected"):
         log = report / f"{name}.log"
         if log.exists():
             selected = [line for line in log.read_text(errors="replace").splitlines() if any(word in line for word in ("LIVE EXPEDITION", "Exception", "Caused by", "ERROR", "FAILED"))]

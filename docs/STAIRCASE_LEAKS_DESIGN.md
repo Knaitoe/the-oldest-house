@@ -1,6 +1,6 @@
-# Staircase leaks — design proposal
+# Staircase leaks — implemented design
 
-Status: **proposal, not implemented.** This note covers a possible feature for a release after 0.4.48. It changes no code, layout or protocol.
+Status: **implemented for 0.4.49; exact-head verification pending.** Layout 35 / protocol 34. The server’s own surface-reader menu triggers a scene after its final page has been visible for one second, the menu closes, and the reader remains still for three seconds. Ordinary carried copies and borrowed books do not trigger scenes. Room work waits for native chunk and entity readiness and runs in bounded slices. Successful chores reopen the original sheet; early exits, damage and disconnects return without forcing a reading menu.
 
 ## The idea
 

@@ -19,7 +19,7 @@ public final class StaircaseLeakRegistry {
     private static final DeferredRegister<EntityType<?>> ENTITIES=DeferredRegister.create(Registries.ENTITY_TYPE,TheOldestHouse.MOD_ID);
     private static final DeferredRegister<SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
     public static final DeferredBlock<Block> WALLPAPER=BLOCKS.register("leak_wallpaper",()->new Block(BlockBehaviour.Properties.of().strength(.8F)));
-    public static final DeferredBlock<StaircaseLeakProps> PROP=BLOCKS.register("leak_prop",()->new StaircaseLeakProps(BlockBehaviour.Properties.of().noOcclusion().noCollission().noLootTable().strength(.4F)
+    public static final DeferredBlock<StaircaseLeakProps> PROP=BLOCKS.register("leak_prop",()->new StaircaseLeakProps(BlockBehaviour.Properties.of().noOcclusion().noLootTable().strength(.4F)
             .lightLevel(s->switch(s.getValue(StaircaseLeakProps.KIND)){case LIGHT->14;case SMALL_LIGHT->6;default->0;})));
     public static final DeferredItem<Item> SHEET=ITEMS.registerSimpleItem("leak_reading_sheet");
     public static final List<DeferredItem<Item>> SOCKS=List.of(ITEMS.registerSimpleItem("leak_sock_blue"),ITEMS.registerSimpleItem("leak_sock_ochre"),ITEMS.registerSimpleItem("leak_sock_grey"),ITEMS.registerSimpleItem("leak_sock_green"),ITEMS.registerSimpleItem("leak_sock_red"),ITEMS.registerSimpleItem("leak_sock_single"));

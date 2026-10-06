@@ -62,7 +62,31 @@ public final class LiveExpeditionClient {
                 if(BurnEmbersClient.showing())throw new IllegalStateException("LIVE EXPEDITION another reader's private smoke reached peer");ack(mc,step);
             }
         }
-        if(step==7||step==9){mc.options.keyUp.setDown(false);if(ticks>20){shot=role+(step==7?"-first":"-reconnected");stopping=true;}}
+        if(step==7){mc.options.keyUp.setDown(false);if(ticks==21){shot=role+"-first";stopping=role.equals("B");}}
+        if(step==9){
+            mc.options.keyUp.setDown(false);
+            if(mc.screen instanceof LecternScreen){
+                var book=mc.player.containerMenu.getSlot(0).getItem().get(DataComponents.WRITTEN_BOOK_CONTENT);
+                if(book!=null&&ticks==45&&book.pages().size()>1)mc.gameMode.handleInventoryButtonClick(mc.player.containerMenu.containerId,100+book.pages().size()-1);
+                if(ticks==80)mc.player.closeContainer();
+            }else if(ticks<70&&mc.screen==null)click(mc,target,ticks);
+        }
+        if(step==10){
+            mc.options.keyUp.setDown(false);
+            if(ticks==30)click(mc,target.offset(-2,1,-5),ticks);
+            if(ticks==65)click(mc,target.offset(-2,0,-5),ticks);
+            if(ticks>95&&mc.level.getBlockState(target.offset(-2,0,-5)).is(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLeakRegistry.PROP.get())
+                    &&mc.level.getBlockState(target.offset(-2,0,-5)).getValue(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLeakProps.KIND)==io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLeakProps.Kind.DRAWER_OPEN){
+                if(!StaircaseLeakClient.active())throw new IllegalStateException("LIVE EXPEDITION private scene lease missing");
+                if(ack!=10){shot=role+"-leak";ack(mc,10);}
+            }
+        }
+        if(step==11){
+            if(role.equals("A")){if(mc.player.distanceToSqr(target.getCenter())<100){if(!open(block))click(mc,target,ticks);walk(mc,target.south(3));}else mc.options.keyUp.setDown(false);}
+            else{mc.options.keyUp.setDown(false);if(ticks==25){shot="B-leak-first";stopping=true;}}
+        }
+        if(step==12)mc.options.keyUp.setDown(false);
+        if(step==13){mc.options.keyUp.setDown(false);if(ticks==30){if(StaircaseLeakClient.active())throw new IllegalStateException("LIVE EXPEDITION scene lease survived return");shot=role+"-reconnected";stopping=true;}}
     }
     private static boolean open(net.minecraft.world.level.block.state.BlockState s){return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}
     private static void walk(Minecraft mc,BlockPos target) {
