@@ -46,7 +46,7 @@ Enclosed interiors and the great staircase suppress the outdoor sky and use blac
 
 The descent has an original 96-second sparse score on the native Music channel. Each client plays one instance and stops it on departure, death or level/profile change. It uses no borrowed recording. Sparse edge holes and rail breaks leave seven central walking columns, turn landings and original-leaf/hearth approaches intact. Existing shafts receive only three-cell changes at each planned edge, after native block/entity loading and vacancy checks, including actual spectator cameras and living Stay pets. Player-edited blocks are retained.
 
-Loose stair sheets use 64 distinct domestic scenes, including washing dishes, sorting laundry and car journeys. New originals do not repeat across the authored landings; taking remains finite and personal. Every saved original keeps its exact prior words and components on reload. These are readable slice-of-life scenes; optional playable side rooms remain a separate design task. The family cast's seated render offset follows the actual native furniture height, including the child's scale.
+Loose stair sheets use 64 distinct domestic scenes, including washing dishes, sorting laundry and car journeys. New originals do not repeat across the authored landings; taking remains finite and personal. Every saved original keeps its exact prior words and components on reload. These are readable slice-of-life scenes; optional playable side rooms remain a separate design task. The family cast's seated render offset follows the actual native furniture height, including the child's scale. The Usher corpse renders face up within its existing two-block casket; the actor, location and lid/story state stay intact.
 
 ## Required validation
 

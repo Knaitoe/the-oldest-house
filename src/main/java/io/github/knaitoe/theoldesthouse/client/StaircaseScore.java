@@ -7,6 +7,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -20,8 +21,14 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 public final class StaircaseScore {
     private static Score sound;
     private StaircaseScore(){}
+    public static boolean at(BlockPos origin,BlockPos listener){
+        if(origin==null||listener==null||!FinaleArchitecture.contains(origin,listener))return false;
+        var base=FinaleArchitecture.base(origin);
+        return Math.abs(listener.getX()-base.getX())<=FinaleArchitecture.SHAFT_RADIUS
+                &&Math.abs(listener.getZ()-base.getZ())<=FinaleArchitecture.SHAFT_RADIUS;
+    }
     private static boolean inside(){var mc=Minecraft.getInstance();return mc.level!=null&&mc.player!=null&&mc.player.isAlive()&&!mc.player.isSpectator()
-            &&mc.level.dimension().equals(HouseDimensions.INTERIOR)&&FinaleArchitecture.contains(HouseSightlineState.origin(),mc.player.blockPosition());}
+            &&mc.level.dimension().equals(HouseDimensions.INTERIOR)&&at(HouseSightlineState.origin(),mc.player.blockPosition());}
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){
         var mc=Minecraft.getInstance();
         if(sound!=null&&(!inside()||mc.level!=sound.world||mc.player!=sound.reader)){mc.getSoundManager().stop(sound);sound=null;}

@@ -31,7 +31,7 @@ public final class NovelSceneClient {
         e.setNearPlaneDistance(14);e.setFarPlaneDistance(48);e.setCanceled(true);
     }
     @SubscribeEvent public static void camera(ViewportEvent.ComputeCameraAngles e){if(!active()||shake<=0)return;var mc=Minecraft.getInstance();
-        if(mode==13&&(!mc.level.dimension().equals(HouseDimensions.INTERIOR)||!io.github.knaitoe.theoldesthouse.labyrinth.FinaleArchitecture.contains(HouseSightlineState.origin(),mc.player.blockPosition())))return;
+        if(mode==13&&(!mc.level.dimension().equals(HouseDimensions.INTERIOR)||HouseSightlineState.origin()==null||!io.github.knaitoe.theoldesthouse.labyrinth.FinaleArchitecture.contains(HouseSightlineState.origin(),mc.player.blockPosition())))return;
         float intensity=shake*(float)(double)mc.options.screenEffectScale().get();double time=mc.player.tickCount+e.getPartialTick();e.setRoll(e.getRoll()+(float)Math.sin(time*1.9)*intensity*.8F);e.setPitch(e.getPitch()+(float)Math.sin(time*2.3)*intensity*.35F);}
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
     public static final class Layers {
