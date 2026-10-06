@@ -16,10 +16,12 @@ public final class LabyrinthHalls {
     private LabyrinthHalls() {}
     public static boolean isHall(LabyrinthPlace place) {
         return place == LabyrinthPlace.STRAIGHT_HALL || place == LabyrinthPlace.BENT_HALL
-                || place == LabyrinthPlace.CROSS_HALL || place == LabyrinthPlace.QUIET_ROOM;
+                || place == LabyrinthPlace.CROSS_HALL || place == LabyrinthPlace.QUIET_ROOM
+                || HallVariations.domestic(place);
     }
     public static Set<BlockPos> floor(LabyrinthPlace place) {
         Set<BlockPos> floor = new HashSet<>();
+        if (HallVariations.added(place)) return HallVariations.floor(place);
         switch (place) {
             case STRAIGHT_HALL -> {
                 rectangle(floor,-1,1,-35,0);
@@ -59,6 +61,7 @@ public final class LabyrinthHalls {
         for (int x=x0;x<=x1;x++) for(int z=z0;z<=z1;z++) floor.add(new BlockPos(x,0,z));
     }
     public static void build(ServerLevel level, BlockPos base, LabyrinthPlace place) {
+        if(HallVariations.domestic(place)){HallVariations.buildDomestic(level,base,place);return;}
         Set<BlockPos> floor = floor(place);
         var box=place.room();
         int flags=LabyrinthBuilder.flags(), height=height(place);
@@ -110,7 +113,7 @@ public final class LabyrinthHalls {
         LabyrinthBuilder.doors(level,base,place);
         DomesticHallUpgrade.apply(level,base,place);
     }
-    public static int height(LabyrinthPlace place){return place==LabyrinthPlace.CROSS_HALL||place==LabyrinthPlace.QUIET_ROOM?4:3;}
+    public static int height(LabyrinthPlace place){return place==LabyrinthPlace.CROSS_HALL||place==LabyrinthPlace.QUIET_ROOM||HallVariations.domestic(place)?4:3;}
     public static net.minecraft.world.level.block.state.BlockState floorState(LabyrinthPlace place){
         return (place==LabyrinthPlace.STRAIGHT_HALL?Blocks.OAK_PLANKS:place==LabyrinthPlace.BENT_HALL?Blocks.SMOOTH_STONE:place==LabyrinthPlace.CROSS_HALL?Blocks.DARK_OAK_PLANKS:Blocks.SPRUCE_PLANKS).defaultBlockState();
     }

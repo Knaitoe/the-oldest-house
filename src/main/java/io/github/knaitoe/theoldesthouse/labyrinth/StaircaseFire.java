@@ -140,11 +140,13 @@ public final class StaircaseFire {
         if(!StaircaseStory.ready(player,index)){
             player.displayClientMessage(Component.literal("Your House of Leaves has no unburned leaf. This flight's leaf is somewhere in the dark above."),true);return false;
         }
+        var embers=BurnEmbers.excerpt(StaircaseStory.record(player),index,at);
         if(!StaircaseStory.burn(player,fuel,index))return false;
         player.getMainHandItem().hurtAndBreak(1,player,EquipmentSlot.MAINHAND);
         player.serverLevel().setBlock(at,player.serverLevel().getBlockState(at).setValue(CampfireBlock.LIT,true),F);
         record.putInt("StairFires",index+1);record.putBoolean("StairFireVersion",true);
         FinaleProgress.save(player.server,player.getUUID(),record);
+        HousePackets.send(player,embers);
         player.serverLevel().playSound(null,at,SoundEvents.FIRECHARGE_USE,SoundSource.BLOCKS,.65F,.85F);
         player.displayClientMessage(Component.literal(index+1==REQUIRED?"The dark gives way. The whole staircase is there.":"A leaf burns. The next flight comes out of the dark."),true);
         return true;

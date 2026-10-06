@@ -16,6 +16,10 @@ public final class LabyrinthRegistry {
     private static final DeferredRegister<SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
     public static final ResourceLocation HEARTBEAT_ID=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"vignette.heartbeat");
     public static final DeferredHolder<SoundEvent,SoundEvent> FLOORBOARD_HEARTBEAT=SOUNDS.register("vignette.heartbeat",()->SoundEvent.createVariableRangeEvent(HEARTBEAT_ID));
+    public static final DeferredHolder<SoundEvent,SoundEvent> HALL_PIPES=sound("hall.pipes"), HALL_STONE=sound("hall.stone"), HALL_SETTLE=sound("hall.settle");
+    private static DeferredHolder<SoundEvent,SoundEvent> sound(String id) {
+        return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));
+    }
 
     public static final DeferredItem<BlindfoldItem> BLINDFOLD =
             ITEMS.register("blindfold", () -> new BlindfoldItem(new Item.Properties().stacksTo(1)));

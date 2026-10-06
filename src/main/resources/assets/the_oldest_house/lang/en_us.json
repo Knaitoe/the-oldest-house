@@ -107,5 +107,8 @@
   "item.the_oldest_house.wax_cylinder_three": "Wax cylinder three",
   "block.the_oldest_house.literary_prop": "A fixture left in the room",
   "entity.the_oldest_house.literary_actor": "Someone in the room",
-  "entity.the_oldest_house.literary_elk": "Cow elk"
+  "entity.the_oldest_house.literary_elk": "Cow elk",
+  "subtitles.the_oldest_house.hall.pipes": "Pipes knock",
+  "subtitles.the_oldest_house.hall.stone": "Stone echoes",
+  "subtitles.the_oldest_house.hall.settle": "Wood settles"
 }

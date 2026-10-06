@@ -243,6 +243,28 @@ public enum LabyrinthPlace {
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(0, -4, -34), Direction.SOUTH, LabyrinthData.DEALT)
     )),
+    /** Familiar additions keep their own physical addresses; existing halls are never rebuilt. */
+    ALCOVE_HALL("alcove_hall", Kind.GRAY, 72, new BoundingBox(-8,-1,-42,8,6,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("side",new BlockPos(-8,0,-17),Direction.EAST,LabyrinthData.DEALT),
+            new DoorSpec("far",new BlockPos(0,0,-42),Direction.SOUTH,LabyrinthData.DEALT))),
+    OFFSET_HALL("offset_hall", Kind.GRAY, 73, new BoundingBox(-5,-1,-40,10,6,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(4,0,-40),Direction.SOUTH,LabyrinthData.DEALT))),
+    SERVICE_LANDING("service_landing", Kind.GRAY, 74, new BoundingBox(-11,-1,-31,11,6,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("side",new BlockPos(-11,0,-16),Direction.EAST,LabyrinthData.DEALT),
+            new DoorSpec("far",new BlockPos(0,0,-31),Direction.SOUTH,LabyrinthData.DEALT))),
+    STONE_ARCADE("stone_arcade", Kind.GRAY, 75, new BoundingBox(-6,-1,-40,6,8,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(0,0,-40),Direction.SOUTH,LabyrinthData.DEALT))),
+    STONE_BEND("stone_bend", Kind.GRAY, 76, new BoundingBox(-12,-1,-36,6,7,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(-9,0,-36),Direction.SOUTH,LabyrinthData.DEALT))),
+    STONE_LANDING("stone_landing", Kind.GRAY, 77, new BoundingBox(-12,-1,-28,12,8,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("side",new BlockPos(12,0,-16),Direction.WEST,LabyrinthData.DEALT),
+            new DoorSpec("far",new BlockPos(0,0,-28),Direction.SOUTH,LabyrinthData.DEALT))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 
