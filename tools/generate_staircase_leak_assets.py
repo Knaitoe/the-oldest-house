@@ -65,7 +65,7 @@ def cloth(color, y=0):
     return [box(2, y, 4, 14, y+1, 12, color), box(3, y+1, 5, 13, y+2, 11, color)]
 
 def drawer(opened=False):
-    a = [box(1, 0, 1, 15, 13, 15, 'spruce_planks'), box(0, 13, 0, 16, 15, 16, 'stripped_spruce_log'),
+    a = [box(1, 0, 1, 15, 13, 15, 'spruce_planks'), box(0, 13, 0, 16, 16, 16, 'stripped_spruce_log'),
          box(3, 0, 2, 5, 2, 4, 'spruce_log'), box(11, 0, 12, 13, 2, 14, 'spruce_log')]
     z = 13 if not opened else 20
     a += [box(2, 7, z, 14, 12, z+1, 'oak_planks'), box(7, 9, z+1, 9, 10, z+2, 'iron_block')]
@@ -83,6 +83,7 @@ def generate():
         props['cup_'+name], props['cup_hung_'+name] = cup(color), cup(color, True)
     props['hook'] = hook()
     props['towel'] = [box(3, 14, 0, 13, 15, 3, 'spruce_planks'), box(4, 1, 1, 12, 15, 2, 'white_wool')]
+    props['washing'] = [box(3, 15, 7, 13, 17, 9, 'white_wool'), box(3, 0, 7, 13, 15, 8, 'white_wool')]
     props['plate'] = [box(3, 0, 3, 13, .5, 13, 'white_concrete'), box(9, .5, 10, 12, .6, 11, 'gray_concrete')]
     props['geranium'], props['geranium_plate'] = geranium(), geranium(True)
     props['sink_full'], props['sink_empty'], props['sink_clean'] = sink(True), sink(), sink(clean=True)

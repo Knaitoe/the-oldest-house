@@ -33,7 +33,7 @@ public final class HouseInternalTeleport {
 
     private static void shift(ServerPlayer player,Vec3 to,float yaw,float pitch,boolean carryCompanions){
         ServerLevel level = player.serverLevel();
-        var companions = carryCompanions?io.github.knaitoe.theoldesthouse.opening.CompanionOrders.followingAll(player):java.util.List.<net.minecraft.world.entity.animal.TamableAnimal>of();
+        var companions = carryCompanions?io.github.knaitoe.theoldesthouse.opening.CompanionOrders.followingAll(player):java.util.List.<net.minecraft.world.entity.TamableAnimal>of();
 
         // Do the potentially visible/loading work before the client is moved.
         // Once the teleport packet is sent, the destination must already be a

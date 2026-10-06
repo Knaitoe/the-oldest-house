@@ -139,6 +139,7 @@ public final class CompanionOrders {
         if((pet.getPersistentData().getBoolean("HouseStray")||pet.getTags().contains(MotherOfStrays.RELEASED))&&pet.isTame()&&!managed(pet))
             pet.getPersistentData().putInt(KEY,Order.FOLLOW.ordinal());
         UUID sceneOwner=owner(pet);ServerPlayer scenePlayer=sceneOwner==null?null:level.getServer().getPlayerList().getPlayer(sceneOwner);
+        if(scenePlayer!=null&&io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLeaks.active(scenePlayer)){pet.getNavigation().stop();return;}
         if(scenePlayer!=null&&(GoatmanVignette.companion(pet,scenePlayer)||CaverVignette.companion(pet,scenePlayer))){install(pet);return;}
         if(!managed(pet))return;
         install(pet);

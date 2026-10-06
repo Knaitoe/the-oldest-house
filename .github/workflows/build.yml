@@ -384,6 +384,7 @@ jobs:
           test -s build/font-smoke/native-sky-2.png
           test -s build/font-smoke/staircase-dark-passed.txt
           test -s build/font-smoke/native-staircase-dark.png
+          for scene in kitchen laundry car repair late_kitchen; do test -s build/font-smoke/scenes/staircase_leak_$scene.png; done
 
       - name: Publish native views to the log
         if: ${{ !cancelled() && steps.build_mod.outcome == 'success' }}
@@ -718,7 +719,7 @@ jobs:
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/multiplayer-native.log').read_text())
-          declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.java').read_text()))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('MultiplayerStoryTests.java','StaircaseLeakTests.java'))
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused native multiplayer cases passed; the complete suite remains required.')
           PY

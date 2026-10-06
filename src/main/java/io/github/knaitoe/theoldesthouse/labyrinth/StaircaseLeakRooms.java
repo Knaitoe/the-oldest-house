@@ -52,11 +52,11 @@ public final class StaircaseLeakRooms {
     }
     public static Template authored(Kind kind,int[] kitchenCups){
         var p=new Plan();var dark=Blocks.DEEPSLATE_TILES.defaultBlockState();var wood=Blocks.OAK_PLANKS.defaultBlockState();var paper=StaircaseLeakRegistry.WALLPAPER.get().defaultBlockState();
-        p.box(-12,-3,-20,12,-1,11,Blocks.DIRT.defaultBlockState());p.box(-11,-1,-19,11,-1,10,Blocks.GRASS_BLOCK.defaultBlockState());
+        p.box(-12,-3,-20,12,-1,11,Blocks.DIRT.defaultBlockState());p.box(-11,-1,-19,11,-1,10,Blocks.MOSS_BLOCK.defaultBlockState());
         p.box(-12,0,-20,-12,8,11,dark);p.box(12,0,-20,12,8,11,dark);p.box(-12,0,-20,12,8,-20,dark);p.box(-12,0,11,12,8,11,dark);p.box(-12,8,-20,12,8,11,dark);
         // The same yard, washing line and unoccupied street recur through the windows.
         p.box(-8,0,-16,8,0,-16,Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.WEST,true).setValue(FenceBlock.EAST,true));p.box(-5,0,-13,-5,2,-13,Blocks.OAK_FENCE.defaultBlockState());p.box(5,0,-13,5,2,-13,Blocks.OAK_FENCE.defaultBlockState());p.box(-4,2,-13,4,2,-13,Blocks.TRIPWIRE.defaultBlockState().setValue(TripWireBlock.WEST,true).setValue(TripWireBlock.EAST,true));
-        for(int x:new int[]{-3,1,3})p.prop(x,1,-13,TOWEL);
+        for(int x:new int[]{-3,1,3})p.prop(x,1,-13,WASHING);
         for(int x:new int[]{-8,-3,2,7}){p.box(x,0,-19,x+3,5,-17,Blocks.BRICKS.defaultBlockState());p.box(x,3,-17,x+1,4,-17,Blocks.GLASS.defaultBlockState());}
         p.box(-8,0,5,8,0,9,Blocks.STONE_BRICKS.defaultBlockState());p.put(-5,0,7,Blocks.STRIPPED_OAK_LOG.defaultBlockState());
         if(kind==Kind.CAR){car(p,0,0);p.prop(0,1,-1,RADIO);p.prop(1,0,-1,BREAD_BAG);p.prop(-1,1,0,BELT);p.prop(1,0,0,CAR_SEAT);p.put(0,5,0,Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL,10));return p.done();}

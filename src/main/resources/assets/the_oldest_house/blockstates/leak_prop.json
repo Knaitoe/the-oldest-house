@@ -128,6 +128,22 @@
       "model": "the_oldest_house:block/leak/towel",
       "y": 270
     },
+    "kind=washing,facing=north": {
+      "model": "the_oldest_house:block/leak/washing",
+      "y": 0
+    },
+    "kind=washing,facing=east": {
+      "model": "the_oldest_house:block/leak/washing",
+      "y": 90
+    },
+    "kind=washing,facing=south": {
+      "model": "the_oldest_house:block/leak/washing",
+      "y": 180
+    },
+    "kind=washing,facing=west": {
+      "model": "the_oldest_house:block/leak/washing",
+      "y": 270
+    },
     "kind=plate,facing=north": {
       "model": "the_oldest_house:block/leak/plate",
       "y": 0

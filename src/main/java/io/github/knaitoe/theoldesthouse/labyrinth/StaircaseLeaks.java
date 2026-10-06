@@ -122,12 +122,12 @@ public final class StaircaseLeaks {
     }
     private static void restore(ServerPlayer p,CompoundTag s){
         p.getInventory().load(s.getList("Inventory",Tag.TAG_COMPOUND));p.getFoodData().readAdditionalSaveData(s.getCompound("Food"));p.removeAllEffects();
-        for(var tag:s.getList("Effects",Tag.TAG_COMPOUND)){var effect=MobEffectInstance.load(tag);if(effect!=null)p.addEffect(effect);}
+        for(var tag:s.getList("Effects",Tag.TAG_COMPOUND)){var effect=MobEffectInstance.load((CompoundTag)tag);if(effect!=null)p.addEffect(effect);}
         p.setHealth(s.getFloat("Health"));p.setAbsorptionAmount(s.getFloat("Absorption"));p.getInventory().selected=s.getInt("Selected");p.connection.send(new ClientboundSetCarriedItemPacket(p.getInventory().selected));p.experienceLevel=s.getInt("Level");p.totalExperience=s.getInt("Experience");p.experienceProgress=s.getFloat("Progress");
         p.inventoryMenu.broadcastChanges();p.connection.send(new ClientboundSetHealthPacket(p.getHealth(),p.getFoodData().getFoodLevel(),p.getFoodData().getSaturationLevel()));p.connection.send(new ClientboundSetExperiencePacket(p.experienceProgress,p.totalExperience,p.experienceLevel));
     }
     private static void enter(ServerPlayer p,Offer offer,Room room){
-        var e=engine(p.server);var s=new CompoundTag();s.putInt("Index",offer.index);s.putInt("Slot",room.slot);s.putLong("RoomBase",room.base.asLong());s.put("Return",snapshot(p));s.putLong("Started",p.serverLevel().getGameTime());s.put("Chore",new CompoundTag());
+        var e=engine(p.server);var s=new CompoundTag();s.putInt("Index",offer.index);s.putLong("Paper",offer.paper.asLong());s.putInt("Slot",room.slot);s.putLong("RoomBase",room.base.asLong());s.put("Return",snapshot(p));s.putLong("Started",p.serverLevel().getGameTime());s.put("Chore",new CompoundTag());
         var waits=new ListTag();for(var pet:CompanionOrders.followingAll(p)){var tag=new CompoundTag();tag.putUUID("Id",pet.getUUID());tag.putBoolean("NoAI",pet.isNoAi());waits.add(tag);pet.getNavigation().stop();pet.getPersistentData().putUUID(WAITING,p.getUUID());pet.getPersistentData().putBoolean(WAITING+"NoAI",pet.isNoAi());pet.setNoAi(true);}
         s.put("Pets",waits);e.sources.put(p.getUUID(),new Lease(p.serverLevel(),p.getBoundingBox().inflate(34,5,34)));e.sessions.put(p.getUUID(),s);persist(p,s);
         var echo=StaircaseLeakRegistry.READER.get().create(p.serverLevel());if(echo!=null){echo.reader(p);echo.moveTo(p.position());echo.setYRot(p.getYRot());echo.setYHeadRot(p.getYHeadRot());if(p.serverLevel().addFreshEntity(echo))s.putUUID("Echo",echo.getUUID());}
@@ -150,6 +150,7 @@ public final class StaircaseLeaks {
         if(s.getInt("Index")==0&&s.getCompound("Chore").getInt("Cups")==3)record.putIntArray("KitchenCups",s.getCompound("Chore").getIntArray("HookColors"));record.remove("Active");save(p,record);p.getPersistentData().remove(BACKUP);e.sessions.remove(p.getUUID());
         var room=request(e,s.getInt("Slot"));if(room!=null){room.record.putBoolean("Dirty",true);room.record.putInt("Cursor",0);e.data.setStateEntry(ROOMS,Integer.toString(room.slot),room.record);}var held=e.sources.remove(p.getUUID());if(held!=null)held.close();
         HousePackets.send(p,new StaircaseLeakPayload(false,0,s.getInt("Index")==32?200:0));HousePackets.send(p,new HouseFadePayload(0,1,12));
+        if(s.contains("Closing")&&!s.getBoolean("Recovering")&&p.isAlive()&&!p.isSpectator()&&p.server.getPlayerList().getPlayer(p.getUUID())==p){var paper=BlockPos.of(s.getLong("Paper"));if(p.serverLevel().getBlockState(paper).is(HouseBlocks.NOTE_SURFACE.get())&&StaircaseWriting.open(p,paper)){var book=p.containerMenu.getSlot(0).getItem().get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT);if(book!=null&&book.pages().size()>1)p.containerMenu.clickMenuButton(p,100+book.pages().size()-1);}}
     }
     private static void cleanupSource(ServerPlayer p,CompoundTag s){
         var l=p.server.getLevel(HouseDimensions.INTERIOR);if(l==null)return;
@@ -211,10 +212,10 @@ public final class StaircaseLeaks {
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void death(LivingDeathEvent event){if(event.getEntity() instanceof ServerPlayer p&&active(p)){event.setCanceled(true);p.setHealth(Math.max(1,session(p).getCompound("Return").getFloat("Health")));returnNow(p);}}
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void login(PlayerEvent.PlayerLoggedInEvent event){if(event.getEntity() instanceof ServerPlayer p){var s=session(p);if(s!=null){s.putBoolean("Recovering",true);HousePackets.send(p,new HouseFadePayload(1,20,12));returnNow(p);}}}
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void respawn(PlayerEvent.PlayerRespawnEvent event){if(event.getEntity() instanceof ServerPlayer p){var s=session(p);if(s!=null){s.putBoolean("Recovering",true);returnNow(p);}}}
-    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void logout(PlayerEvent.PlayerLoggedOutEvent event){if(event.getEntity() instanceof ServerPlayer p){var e=engine(p.server);e.offers.remove(p.getUUID());var s=session(p);if(s!=null){s.putBoolean("Recovering",true);persist(p,s);returnNow(p);if(session(p)!=null){cleanupSource(p,s);var held=e.sources.remove(p.getUUID());if(held!=null)held.close();}}}}
+    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void logout(PlayerEvent.PlayerLoggedOutEvent event){if(event.getEntity() instanceof ServerPlayer p){var e=engine(p.server);e.offers.remove(p.getUUID());var s=session(p);if(s!=null){s.putBoolean("Recovering",true);persist(p,s);returnNow(p);if(session(p)!=null){cleanupSource(p,s);var room=request(e,s.getInt("Slot"));if(room!=null){room.record.putBoolean("Dirty",true);room.record.putInt("Cursor",0);e.data.setStateEntry(ROOMS,Integer.toString(room.slot),room.record);}e.sessions.remove(p.getUUID());var held=e.sources.remove(p.getUUID());if(held!=null)held.close();}}}}
     @SubscribeEvent public static void join(EntityJoinLevelEvent event){if(!(event.getLevel() instanceof ServerLevel l))return;
         var entity=event.getEntity();if(entity instanceof Mob mob&&mob.getPersistentData().hasUUID(WAITING)&&!active(l.getServer(),mob.getPersistentData().getUUID(WAITING))){mob.setNoAi(mob.getPersistentData().getBoolean(WAITING+"NoAI"));mob.getPersistentData().remove(WAITING);mob.getPersistentData().remove(WAITING+"NoAI");}
         if(entity instanceof ItemEntity||entity instanceof ExperienceOrb)for(var session:engine(l.getServer()).sessions.values())if(StaircaseLeakRooms.bounds(BlockPos.of(session.getLong("RoomBase"))).contains(entity.position())){entity.getPersistentData().putBoolean(VIRTUAL,true);break;}
     }
-    @SubscribeEvent public static void stopping(ServerStoppingEvent event){for(var p:new ArrayList<>(event.getServer().getPlayerList().getPlayers()))if(active(p))returnNow(p);clearForServer(event.getServer());}
+    @SubscribeEvent public static void stopping(ServerStoppingEvent event){for(var p:new ArrayList<>(event.getServer().getPlayerList().getPlayers()))if(active(p))logout(new PlayerEvent.PlayerLoggedOutEvent(p));clearForServer(event.getServer());}
 }
