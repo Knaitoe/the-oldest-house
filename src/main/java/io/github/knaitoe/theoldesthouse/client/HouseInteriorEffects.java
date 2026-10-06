@@ -26,8 +26,12 @@ public final class HouseInteriorEffects extends DimensionSpecialEffects {
         var place=LabyrinthPlaces.placeAt(origin,camera);
         return place!=null&&NovelRooms.dimension(place).equals(HouseDimensions.INTERIOR);
     }
-    private static boolean black(){var mc=Minecraft.getInstance();return mc.level!=null&&mc.level.dimension().equals(HouseDimensions.INTERIOR)
-            &&blackAt(HouseSightlineState.origin(),BlockPos.containing(mc.gameRenderer.getMainCamera().getPosition()));}
+    // black() is asked several times a frame; the place lookup only changes with the camera's block or the origin.
+    private static BlockPos cachedCamera,cachedOrigin;private static boolean cachedBlack;
+    private static boolean black(){var mc=Minecraft.getInstance();if(mc.level==null||!mc.level.dimension().equals(HouseDimensions.INTERIOR))return false;
+        var camera=BlockPos.containing(mc.gameRenderer.getMainCamera().getPosition());var origin=HouseSightlineState.origin();
+        if(!camera.equals(cachedCamera)||!java.util.Objects.equals(origin,cachedOrigin)){cachedCamera=camera;cachedOrigin=origin;cachedBlack=blackAt(origin,camera);}
+        return cachedBlack;}
     @Override public Vec3 getBrightnessDependentFogColor(Vec3 color,float daylight){return black()?Vec3.ZERO:color.multiply(daylight*.94F+.06F,daylight*.94F+.06F,daylight*.91F+.09F);}
     @Override public boolean isFoggyAt(int x,int z){return false;}
     /** The same decision is used by the real dimension renderer and native pixel proof. */
@@ -39,6 +43,7 @@ public final class HouseInteriorEffects extends DimensionSpecialEffects {
         drawSkyAt(HouseSightlineState.origin(),camera.getBlockPosition(),view,level.getSkyColor(camera.getPosition(),partial),level.getTimeOfDay(partial));return true;
     }
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void color(ViewportEvent.ComputeFogColor e){
-        if(black()&&e.getCamera().getFluidInCamera()==FogType.NONE){e.setRed(0);e.setGreen(0);e.setBlue(0);}
+        // A scene that authors its own fog colour (the Goatman vigil and dawn, the hospital, the side mazes) keeps it.
+        if(black()&&e.getCamera().getFluidInCamera()==FogType.NONE&&!GoatmanClient.authorsFog()&&!NovelSceneClient.authorsFog()){e.setRed(0);e.setGreen(0);e.setBlue(0);}
     }
 }

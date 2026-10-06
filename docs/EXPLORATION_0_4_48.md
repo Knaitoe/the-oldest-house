@@ -48,6 +48,18 @@ The descent has an original 96-second sparse score on the native Music channel. 
 
 Loose stair sheets use 64 distinct domestic scenes, including washing dishes, sorting laundry and car journeys. New originals do not repeat across the authored landings; taking remains finite and personal. Every saved original keeps its exact prior words and components on reload. These are readable slice-of-life scenes; optional playable side rooms remain a separate design task. The family cast's seated render offset follows the actual native furniture height, including the child's scale. The Usher corpse renders face up within its existing two-block casket; the actor, location and lid/story state stay intact.
 
+## Review repairs
+
+- **Scene fog.** The black interior fog no longer covers scenes that set their own fog colour: the Goatman vigil and dawn, the hospital and the side mazes keep their tints.
+- **Staircase shake.** The staircase's dust shake has its own short client lease. It no longer replaces a side maze's blackout, mist or caption.
+- **Shared halls.** Spectators keep a personal map, but their arrivals never write the shared hall discovery cache, so an observer cannot decide the halls dealt to explorers.
+- **Stair wear.** Edge breaks wait until every camera, spectators included, is at least 72 blocks away, which is wider than the open shaft. The bars either side of a rail break stop at the gap instead of pointing into it. A world whose wear is finished stops checking for it.
+- **Descent score.** The score starts again if the sound engine drops it, for example when music is muted and restored. No game music starts over it while the listener is in the shaft.
+- **Hall cues.** Each occupant hears a room's cue from the fixed landmark nearest them, placed every sixteen blocks down the hall, so the far end of a long hall is not silent. Spectators hear cues but never run a room's clock.
+- **Landing bench.** The service landing's bench has its back to its own wall.
+- **Loose sheets.** Each sheet is signed by a writer the scene does not mention. Saved originals keep their exact words and signatures.
+- **Shared helpers.** The quiet chair and the stair wear share one vacancy check, and the room clocks share one counter.
+
 ## Required validation
 
 Release remains pending until the exact candidate passes all **376** declared native cases, the staircase/multiplayer/hotel/literary/hallway/seam suites, fifteen exploration cases, the package/font/226-texture checks, full native book wrapping, four native ember hands, a native black-staircase pixel check and all **64** architecture views. The additional dedicated-server proof uses two actual Minecraft clients with socket connections and a same-profile reconnect. It exercises real interaction and movement packets, independent return stacks, a shared open door, native leaf menus, personal ember delivery and retained originals after native logout.

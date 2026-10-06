@@ -16,6 +16,8 @@ public final class GoatmanClient {
     private static int phase,lease,demand,remaining;
     private GoatmanClient(){}
     public static void accept(GoatmanScenePayload p){phase=p.phase();lease=60;demand=p.demand();remaining=p.remaining();}
+    /** The vigil sets its own night and dawn fog colour, which the interior's black must not cover. */
+    public static boolean authorsFog(){return active();}
     private static boolean active(){var mc=Minecraft.getInstance();return lease>0&&phase>0&&mc.player!=null&&mc.player.isAlive()&&mc.level!=null&&mc.level.dimension().equals(HouseDimensions.INTERIOR);}
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){if(lease>0)lease--;if(remaining>0)remaining--;if(!active()){phase=0;demand=0;}}
     @SubscribeEvent public static void fog(ViewportEvent.ComputeFogColor e){

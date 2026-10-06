@@ -74,9 +74,18 @@ public final class StaircaseNotes {
         "Before we moved on\n\nI dried the last cup against my sleeve. Mara waited while I put it away. Nobody called this delay. We were still together."
     );
     public static ItemStack specimen(int index){
-        String[] names={"Ruth","E. Marsh","Mara","A. Bell","Jonah","Sabine"};
         var hands=new HouseWriting.WritingStyle[]{HouseWriting.WritingStyle.KAREN,HouseWriting.WritingStyle.WILL,HouseWriting.WritingStyle.ZAMPANO};
-        return HouseWriting.book("A loose sheet",names[Math.floorMod(index,names.length)],hands[Math.floorMod(index,hands.length)],List.of(TEXTS.get(index)));
+        return HouseWriting.book("A loose sheet",signer(index),hands[Math.floorMod(index,hands.length)],List.of(TEXTS.get(index)));
+    }
+    private static final String[] NAMES={"Ruth","E. Marsh","Mara","A. Bell","Jonah","Sabine"};
+    /** The sheet's writer is the "I" of its scene, never someone the scene speaks of. */
+    public static String signer(int index){
+        String text=TEXTS.get(index);
+        for(int step=0;step<NAMES.length;step++){
+            String name=NAMES[Math.floorMod(index+step,NAMES.length)];String surname=name.substring(name.lastIndexOf(' ')+1);
+            if(!java.util.regex.Pattern.compile("\\b"+surname+"\\b").matcher(text).find())return name;
+        }
+        return NAMES[1];
     }
     public static List<ItemStack> specimens(){var out=new ArrayList<ItemStack>();for(int i=0;i<TEXTS.size();i++)out.add(specimen(i));return List.copyOf(out);}
 }

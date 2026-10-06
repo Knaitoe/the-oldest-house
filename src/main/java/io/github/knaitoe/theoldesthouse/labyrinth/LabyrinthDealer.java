@@ -28,8 +28,6 @@ import net.minecraft.util.RandomSource;
  * can still find its story without waiting for the ordinary approach.
  */
 public final class LabyrinthDealer {
-    public static final int VIGNETTE_BASE_CHANCE = 16;
-    public static final int VIGNETTE_CHANCE_STEP = 7;
     /** Percent of gray doors that leak anyway. */
     public static final int LYING_LEAK_CHANCE = 15;
     /** How much likelier a begun, unfinished multi-visit vignette is than any other vignette. */
@@ -220,6 +218,11 @@ public final class LabyrinthDealer {
      * lost pet, deals afresh.
      */
     public static void arriveAt(LabyrinthData data, UUID player, LabyrinthPlace place, long salt) {
+        arriveAt(data, player, place, salt, true);
+    }
+
+    /** As above. A spectator ({@code participant} false) keeps a personal map but never writes the shared hall cache. */
+    public static void arriveAt(LabyrinthData data, UUID player, LabyrinthPlace place, long salt, boolean participant) {
         List<LabyrinthData.Door> doors = dealtDoors(data, place);
         if (doors.isEmpty()) return;
         long key = data.nodeKey(player, place);
@@ -243,7 +246,7 @@ public final class LabyrinthDealer {
             LabyrinthData.Deal deal = data.deal(player, door);
             if (deal != null) now.put(door.id, deal);
         }
-        if (fresh && !searching) {
+        if (fresh && !searching && participant) {
             var shared = data.stateEntry("shared_halls_0448", Long.toUnsignedString(key ^ salt));
             for (var door : doors) {
                 var own = now.get(door.id);

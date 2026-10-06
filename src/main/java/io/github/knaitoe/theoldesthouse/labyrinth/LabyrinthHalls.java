@@ -57,7 +57,7 @@ public final class LabyrinthHalls {
         }
         return Set.copyOf(floor);
     }
-    private static void rectangle(Set<BlockPos> floor, int x0, int x1, int z0, int z1) {
+    static void rectangle(Set<BlockPos> floor, int x0, int x1, int z0, int z1) {
         for (int x=x0;x<=x1;x++) for(int z=z0;z<=z1;z++) floor.add(new BlockPos(x,0,z));
     }
     public static void build(ServerLevel level, BlockPos base, LabyrinthPlace place) {
