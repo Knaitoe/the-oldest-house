@@ -38,7 +38,7 @@ public final class StaircaseWear {
             for(var at:mark.cells())if(blocks.containsKey(at))blocks.put(at,Blocks.AIR.defaultBlockState());
             // The bars either side of the break stop at it instead of reaching into the gap.
             for(var side:Direction.Plane.HORIZONTAL){var next=mark.rail().relative(side);var bars=blocks.get(next);
-                if(bars!=null&&bars.getBlock() instanceof IronBarsBlock)blocks.put(next,bars.setValue(CrossCollisionBlock.PROPERTY_BY_DIRECTION.get(side.getOpposite()),false));}
+                if(bars!=null&&bars.getBlock() instanceof IronBarsBlock)blocks.put(next,bars.setValue(PipeBlock.PROPERTY_BY_DIRECTION.get(side.getOpposite()),false));}
         }
     }
     private static boolean authored(BlockState s){return s.isAir()||s.is(Blocks.IRON_BARS)||s.is(HouseBlocks.STAIRCASE_STONE.get())||s.is(HouseBlocks.STAIRCASE_STAIRS.get())
@@ -56,7 +56,7 @@ public final class StaircaseWear {
         for(var at:mark.cells())if(level.getBlockEntity(at)!=null||!authored(level.getBlockState(at)))return true;
         for(var at:mark.cells())level.setBlock(at,Blocks.AIR.defaultBlockState(),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);
         for(var side:Direction.Plane.HORIZONTAL){var next=mark.rail().relative(side);var bars=level.getBlockState(next);
-            if(bars.getBlock() instanceof IronBarsBlock)level.setBlock(next,bars.setValue(CrossCollisionBlock.PROPERTY_BY_DIRECTION.get(side.getOpposite()),false),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);}
+            if(bars.getBlock() instanceof IronBarsBlock)level.setBlock(next,bars.setValue(PipeBlock.PROPERTY_BY_DIRECTION.get(side.getOpposite()),false),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);}
         return true;
     }
     // The marks follow from the origin alone; worlds whose wear is finished stop looking.
