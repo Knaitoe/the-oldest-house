@@ -12,7 +12,9 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.*;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.entity.BedBlockEntity;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -39,8 +41,11 @@ public final class BedVisualProof extends Screen {
         g.drawString(font,"Native brother pose / above the mattress, face up",12,12,0xFFE8DDC5,false);g.flush();
         var p=g.pose();p.pushPose();p.translate(width/2,height*.67,160);p.scale(85,-85,85);p.mulPose(Axis.XP.rotationDegrees(22));p.mulPose(Axis.YP.rotationDegrees(-30));
         var buffers=mc.renderBuffers().bufferSource();
-        p.pushPose();p.translate(.5,.28125,0);p.mulPose(Axis.YP.rotationDegrees(180));
-        mc.getItemRenderer().renderStatic(new ItemStack(Items.BLUE_BED),ItemDisplayContext.FIXED,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,p,buffers,mc.level,0);buffers.endBatch();p.popPose();
+        p.pushPose();p.translate(1,0,0);p.mulPose(Axis.YP.rotationDegrees(180));
+        var bed=(BedBlockEntity)((BedBlock)Blocks.BLUE_BED).newBlockEntity(BlockPos.ZERO,Blocks.BLUE_BED.defaultBlockState());
+        var renderer=mc.getBlockEntityRenderDispatcher().getRenderer(bed);
+        if(renderer==null)throw new IllegalStateException("Native bed renderer is unregistered");
+        renderer.render(bed,0,p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);buffers.endBatch();p.popPose();
         p.translate(.5,0,.5);pose(p);var model=new LiteraryRenderers.CastModel(mc.getEntityModels().bakeLayer(LiteraryRenderers.CAST));model.pose(LiteraryActor.BROTHER,1,frames);
         model.renderToBuffer(p,buffers.getBuffer(RenderType.entityCutoutNoCull(LiteraryRenderers.skin(LiteraryActor.BROTHER,1))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);buffers.endBatch();p.popPose();
     }
