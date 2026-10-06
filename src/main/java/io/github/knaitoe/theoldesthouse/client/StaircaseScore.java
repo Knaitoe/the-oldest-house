@@ -29,11 +29,17 @@ public final class StaircaseScore {
     }
     private static boolean inside(){var mc=Minecraft.getInstance();return mc.level!=null&&mc.player!=null&&mc.player.isAlive()&&!mc.player.isSpectator()
             &&mc.level.dimension().equals(HouseDimensions.INTERIOR)&&at(HouseSightlineState.origin(),mc.player.blockPosition());}
+    private static int retry;
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){
         var mc=Minecraft.getInstance();
         if(sound!=null&&(!inside()||mc.level!=sound.world||mc.player!=sound.reader)){mc.getSoundManager().stop(sound);sound=null;}
-        if(sound==null&&inside()){sound=new Score(mc.level,mc.player);mc.getSoundManager().play(sound);}
+        // The engine can drop the score (music muted and restored, a sound reload); start it again once it can be heard.
+        if(sound!=null&&!mc.getSoundManager().isActive(sound)&&++retry>=40){retry=0;sound=null;}
+        if(sound==null&&inside()&&mc.options.getSoundSourceVolume(SoundSource.MUSIC)>0&&mc.options.getSoundSourceVolume(SoundSource.MASTER)>0){
+            retry=0;mc.getMusicManager().stopPlaying();sound=new Score(mc.level,mc.player);mc.getSoundManager().play(sound);}
     }
+    /** No game music starts over the score while the listener is in the shaft. */
+    @SubscribeEvent public static void music(net.neoforged.neoforge.client.event.SelectMusicEvent e){if(inside())e.setMusic(null);}
     private static final class Score extends AbstractTickableSoundInstance {
         final ClientLevel world;final LocalPlayer reader;
         Score(ClientLevel world,LocalPlayer reader){super(LabyrinthRegistry.STAIRCASE_SCORE.get(),SoundSource.MUSIC,RandomSource.create());

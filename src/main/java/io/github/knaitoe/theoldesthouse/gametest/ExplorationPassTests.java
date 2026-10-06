@@ -92,6 +92,9 @@ public final class ExplorationPassTests {
         var d=new LabyrinthData();var room=LabyrinthPlace.CROSS_HALL;LabyrinthBuilder.registerDoors(d,room,new BlockPos(400,80,0));
         var a=UUID.randomUUID();var b=UUID.randomUUID();var c=UUID.randomUUID();
         for(var hall:HALLS)d.visit(a,hall);d.visit(b,LabyrinthPlace.BENT_HALL);d.visit(b,LabyrinthPlace.STRAIGHT_HALL);
+        // A spectator taking the route first keeps a personal map but writes nothing the explorers will share.
+        var watcher=UUID.randomUUID();depth(d,watcher,2);d.visit(watcher,room);LabyrinthDealer.arriveAt(d,watcher,room,17,false);
+        h.assertTrue(d.stateEntry("shared_halls_0448",Long.toUnsignedString(d.nodeKey(watcher,room)^17)).isEmpty(),"a spectator's arrival does not decide the shared halls");
         for(var p:List.of(a,b,c)){depth(d,p,2);d.visit(p,room);LabyrinthDealer.arriveAt(d,p,room,17);}
         h.assertTrue(map(d,a,room).equals(map(d,b,room))&&map(d,a,room).equals(map(d,c,room)),"three explorers taking the same new route share its halls despite different recent visits");
         int dry=d.dryDeals(b);var before=map(d,b,room);var key=d.nodeKey(b,room);
@@ -262,7 +265,10 @@ public final class ExplorationPassTests {
                 h.assertTrue(!StaircaseWear.apply(l,mark),"an actual spectator camera prevents visible structural change");p.teleportTo(l,at.getX()+100,at.getY(),at.getZ(),0,0);
                 h.assertTrue(!StaircaseWear.apply(l,mark)&&cat.getUUID().equals(id)&&cat.getHealth()==5&&cat.isOrderedToSit(),"a living Stay pet blocks the planned edge change without losing identity or orders");cat.moveTo(at.getX()+100,at.getY(),at.getZ());
                 l.setBlock(mark.hole(),Blocks.DIAMOND_BLOCK.defaultBlockState(),2);h.assertTrue(StaircaseWear.apply(l,mark)&&l.getBlockState(mark.hole()).is(Blocks.DIAMOND_BLOCK)&&l.getBlockState(mark.rail()).is(Blocks.IRON_BARS),"player-edited flooring is retained together with its rail");
-                l.setBlock(mark.hole(),Blocks.DEEPSLATE_BRICKS.defaultBlockState(),2);h.assertTrue(StaircaseWear.apply(l,mark)&&mark.cells().stream().allMatch(cell->l.getBlockState(cell).isAir()),"a vacant, native-loaded authored edge receives only the three planned changes");h.succeed();
+                l.setBlock(mark.hole(),Blocks.DEEPSLATE_BRICKS.defaultBlockState(),2);
+                var beside=mark.rail().north();l.setBlock(beside,Blocks.IRON_BARS.defaultBlockState().setValue(net.minecraft.world.level.block.IronBarsBlock.SOUTH,true).setValue(net.minecraft.world.level.block.IronBarsBlock.NORTH,true),2);
+                h.assertTrue(StaircaseWear.apply(l,mark)&&mark.cells().stream().allMatch(cell->l.getBlockState(cell).isAir()),"a vacant, native-loaded authored edge receives only the three planned changes");
+                h.assertTrue(!l.getBlockState(beside).getValue(net.minecraft.world.level.block.IronBarsBlock.SOUTH)&&l.getBlockState(beside).getValue(net.minecraft.world.level.block.IronBarsBlock.NORTH),"the rail beside the break stops at it instead of reaching into the gap");h.succeed();
             }finally{cat.discard();NativeTestPlayers.remove(p);lease.close();}
         });
     }

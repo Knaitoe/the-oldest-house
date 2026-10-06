@@ -13,11 +13,18 @@ import net.neoforged.neoforge.client.event.*;
 /** Gentle dust shake scales to the user's screen effects setting; no camera lock. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class NovelSceneClient {
-    private static int mode,lease,elapsed,captionTicks;private static float shake;private static String caption="";
+    /** The staircase's dust shake (mode 13) keeps its own lease, so it never replaces a scene's mode, fog or caption. */
+    private static final int STAIR_SHAKE=13;
+    private static int mode,lease,elapsed,captionTicks,stairLease;private static float shake,stairShake;private static String caption="";
     private NovelSceneClient(){}
-    public static void accept(NovelScenePayload p){mode=p.mode();lease=60;elapsed=p.elapsed();caption=p.caption();captionTicks=p.captionTicks();shake=Math.max(0,Math.min(1,p.shake()));}
+    public static void accept(NovelScenePayload p){if(p.mode()==STAIR_SHAKE){stairLease=60;stairShake=Math.max(0,Math.min(1,p.shake()));return;}mode=p.mode();lease=60;elapsed=p.elapsed();caption=p.caption();captionTicks=p.captionTicks();shake=Math.max(0,Math.min(1,p.shake()));}
     private static boolean active(){var mc=Minecraft.getInstance();return lease>0&&mode>0&&mc.player!=null&&mc.player.isAlive()&&!mc.player.isSpectator()&&mc.level!=null&&HouseDimensions.isHouseDimension(mc.level.dimension());}
-    @SubscribeEvent public static void tick(ClientTickEvent.Post e){if(lease>0)lease--;if(captionTicks>0)captionTicks--;if(mode!=12)elapsed++;
+    /** Scene modes that set their own fog colour, which the interior's black must not cover. */
+    public static boolean authorsFog(){return active()&&(mode==1||mode==3||mode==4||mode==5||mode>=10);}
+    private static boolean stairActive(){var mc=Minecraft.getInstance();return stairLease>0&&stairShake>0&&mc.player!=null&&mc.player.isAlive()&&!mc.player.isSpectator()&&mc.level!=null
+            &&mc.level.dimension().equals(HouseDimensions.INTERIOR)&&HouseSightlineState.origin()!=null
+            &&io.github.knaitoe.theoldesthouse.labyrinth.FinaleArchitecture.contains(HouseSightlineState.origin(),mc.player.blockPosition());}
+    @SubscribeEvent public static void tick(ClientTickEvent.Post e){if(lease>0)lease--;if(stairLease>0)stairLease--;else stairShake=0;if(captionTicks>0)captionTicks--;if(mode!=12)elapsed++;
         if(!active()){mode=0;shake=0;caption="";}}
     /** Read-only spatial clock; late packets may expire a cue, but never the scene's sky. */
     public static long sceneTime(net.minecraft.world.level.Level level,long nativeTime){
@@ -30,9 +37,8 @@ public final class NovelSceneClient {
         if(!active()||mode!=3||e.getMode()!=net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN||Minecraft.getInstance().player.hasEffect(net.minecraft.world.effect.MobEffects.DARKNESS))return;
         e.setNearPlaneDistance(14);e.setFarPlaneDistance(48);e.setCanceled(true);
     }
-    @SubscribeEvent public static void camera(ViewportEvent.ComputeCameraAngles e){if(!active()||shake<=0)return;var mc=Minecraft.getInstance();
-        if(mode==13&&(!mc.level.dimension().equals(HouseDimensions.INTERIOR)||HouseSightlineState.origin()==null||!io.github.knaitoe.theoldesthouse.labyrinth.FinaleArchitecture.contains(HouseSightlineState.origin(),mc.player.blockPosition())))return;
-        float intensity=shake*(float)(double)mc.options.screenEffectScale().get();double time=mc.player.tickCount+e.getPartialTick();e.setRoll(e.getRoll()+(float)Math.sin(time*1.9)*intensity*.8F);e.setPitch(e.getPitch()+(float)Math.sin(time*2.3)*intensity*.35F);}
+    @SubscribeEvent public static void camera(ViewportEvent.ComputeCameraAngles e){float amount=Math.max(active()?shake:0,stairActive()?stairShake:0);if(amount<=0)return;var mc=Minecraft.getInstance();
+        float intensity=amount*(float)(double)mc.options.screenEffectScale().get();double time=mc.player.tickCount+e.getPartialTick();e.setRoll(e.getRoll()+(float)Math.sin(time*1.9)*intensity*.8F);e.setPitch(e.getPitch()+(float)Math.sin(time*2.3)*intensity*.35F);}
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
     public static final class Layers {
         @SubscribeEvent public static void overlay(RegisterGuiLayersEvent e){e.registerAboveAll(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"novel_caption"),(g,delta)->{

@@ -265,7 +265,8 @@ public final class LabyrinthDoors {
             setDoorOpen(toLevel, entry.lower, true, p);
             BlockPos manor = HouseSavedData.get(server).houseOrigin();
             if(p.gameMode.getGameModeForPlayer()!=net.minecraft.world.level.GameType.SPECTATOR){VignetteGate.begin(p,place);current.visit(p.getUUID(),place);io.github.knaitoe.theoldesthouse.house.HouseExperience.arrived(p,place);}
-            LabyrinthDealer.arriveAt(current, p.getUUID(), place, manor == null ? 0L : manor.asLong());
+            LabyrinthDealer.arriveAt(current, p.getUUID(), place, manor == null ? 0L : manor.asLong(),
+                    p.gameMode.getGameModeForPlayer() != net.minecraft.world.level.GameType.SPECTATOR);
             if(p.gameMode.getGameModeForPlayer()==net.minecraft.world.level.GameType.SPECTATOR){LabyrinthMaze.forget(p.getUUID());LabyrinthDoorLeaks.send(p);return;}
             RedRoom.prepareIfDealt(p, place);
             ModelHome.onArrive(p, place);

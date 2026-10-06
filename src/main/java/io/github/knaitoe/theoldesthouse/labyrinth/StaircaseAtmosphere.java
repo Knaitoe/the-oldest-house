@@ -21,7 +21,7 @@ public final class StaircaseAtmosphere {
     public static final String STATE="staircase_atmosphere_0448";
     private StaircaseAtmosphere(){}
     public static boolean occupiedSecond(CompoundTag clock,int period){
-        int seconds=clock.getInt("Seconds")+1;boolean cue=seconds>=period;clock.putInt("Seconds",cue?0:seconds);return cue;
+        return HallAtmosphere.period(clock,period);
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         var server=e.getServer();if(server.getTickCount()%20!=0)return;

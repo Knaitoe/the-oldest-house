@@ -17,35 +17,32 @@ public final class HallVariations {
         return p==LabyrinthPlace.ALCOVE_HALL||p==LabyrinthPlace.OFFSET_HALL||p==LabyrinthPlace.SERVICE_LANDING;
     }
     public static boolean added(LabyrinthPlace p) { return domestic(p)||p==LabyrinthPlace.STONE_ARCADE||p==LabyrinthPlace.STONE_BEND||p==LabyrinthPlace.STONE_LANDING; }
-    private static void rectangle(Set<BlockPos> out,int x0,int x1,int z0,int z1) {
-        for(int x=x0;x<=x1;x++)for(int z=z0;z<=z1;z++)out.add(new BlockPos(x,0,z));
-    }
     public static Set<BlockPos> floor(LabyrinthPlace p) {
         Set<BlockPos> out=new HashSet<>();
         switch(p) {
             case ALCOVE_HALL -> {
-                rectangle(out,-1,1,-41,0); rectangle(out,-4,4,-21,-13);
-                rectangle(out,-7,-3,-18,-16); rectangle(out,-3,3,-33,-29);
+                LabyrinthHalls.rectangle(out,-1,1,-41,0); LabyrinthHalls.rectangle(out,-4,4,-21,-13);
+                LabyrinthHalls.rectangle(out,-7,-3,-18,-16); LabyrinthHalls.rectangle(out,-3,3,-33,-29);
             }
             case OFFSET_HALL -> {
-                rectangle(out,-1,1,-17,0); rectangle(out,-1,5,-18,-14);
-                rectangle(out,3,5,-39,-16); rectangle(out,3,8,-28,-23);
+                LabyrinthHalls.rectangle(out,-1,1,-17,0); LabyrinthHalls.rectangle(out,-1,5,-18,-14);
+                LabyrinthHalls.rectangle(out,3,5,-39,-16); LabyrinthHalls.rectangle(out,3,8,-28,-23);
             }
             case SERVICE_LANDING -> {
-                rectangle(out,-1,1,-30,0); rectangle(out,-8,8,-22,-10);
-                rectangle(out,-10,-7,-17,-15);
+                LabyrinthHalls.rectangle(out,-1,1,-30,0); LabyrinthHalls.rectangle(out,-8,8,-22,-10);
+                LabyrinthHalls.rectangle(out,-10,-7,-17,-15);
             }
             case STONE_ARCADE -> {
-                rectangle(out,-2,2,-39,0);
-                for(int z=-10;z>=-34;z-=8)rectangle(out,-4,4,z-2,z+2);
+                LabyrinthHalls.rectangle(out,-2,2,-39,0);
+                for(int z=-10;z>=-34;z-=8)LabyrinthHalls.rectangle(out,-4,4,z-2,z+2);
             }
             case STONE_BEND -> {
-                rectangle(out,-2,2,-20,0); rectangle(out,-11,2,-21,-17);
-                rectangle(out,-11,-7,-35,-18);
+                LabyrinthHalls.rectangle(out,-2,2,-20,0); LabyrinthHalls.rectangle(out,-11,2,-21,-17);
+                LabyrinthHalls.rectangle(out,-11,-7,-35,-18);
             }
             case STONE_LANDING -> {
-                rectangle(out,-2,2,-27,0); rectangle(out,-10,10,-23,-8);
-                rectangle(out,9,11,-18,-14);
+                LabyrinthHalls.rectangle(out,-2,2,-27,0); LabyrinthHalls.rectangle(out,-10,10,-23,-8);
+                LabyrinthHalls.rectangle(out,9,11,-18,-14);
             }
             default -> throw new IllegalArgumentException(p.id());
         }
@@ -108,8 +105,9 @@ public final class HallVariations {
         }
         if(p==LabyrinthPlace.SERVICE_LANDING||p==LabyrinthPlace.STONE_LANDING) {
             // Seating is supported at the side of a broad landing, with no new supplies.
-            int x=p==LabyrinthPlace.SERVICE_LANDING?7:-9;
-            for(int z=-12;z>=-15;z--)set(l,b.offset(x,0,z),LabyrinthBuilder.stairs(stone?Blocks.STONE_BRICK_STAIRS:Blocks.SPRUCE_STAIRS,Direction.WEST));
+            // Each bench's back is to its own wall, so it seats people facing into the landing.
+            int x=p==LabyrinthPlace.SERVICE_LANDING?7:-9;Direction back=x>0?Direction.EAST:Direction.WEST;
+            for(int z=-12;z>=-15;z--)set(l,b.offset(x,0,z),LabyrinthBuilder.stairs(stone?Blocks.STONE_BRICK_STAIRS:Blocks.SPRUCE_STAIRS,back));
         }
     }
     private static boolean nearDoor(LabyrinthPlace p,BlockPos cell) {
