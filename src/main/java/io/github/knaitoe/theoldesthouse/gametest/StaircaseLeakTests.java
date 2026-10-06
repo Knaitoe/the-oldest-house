@@ -31,8 +31,9 @@ public final class StaircaseLeakTests {
     private static StaircaseAccessTests.Fixture current;
     private static BlockPos paper(StaircaseAccessTests.Fixture f){return f.base.offset(3,FinaleArchitecture.TOP,24);}
     private static void read(StaircaseAccessTests.Fixture f,ServerPlayer p,int index){
-        var at=paper(f);f.put(f.level,at,NoteSurfaceBlock.state(HouseMarginalia.Thread.HOUSEKEEPING,Direction.NORTH));
-        for(int x=-2;x<=2;x++)for(int z=-2;z<=3;z++)f.put(f.level,at.offset(x,-1,z),Blocks.STONE.defaultBlockState());
+        var at=paper(f);
+        for(int x=-3;x<=3;x++)for(int z=-2;z<=3;z++)for(int y=-1;y<=2;y++)f.put(f.level,at.offset(x,y,z),(y==-1?Blocks.STONE:Blocks.AIR).defaultBlockState());
+        f.put(f.level,at,NoteSurfaceBlock.state(HouseMarginalia.Thread.HOUSEKEEPING,Direction.NORTH));
         p.teleportTo(f.level,at.getX()+.5+Math.max(0,f.players.indexOf(p))*1.2,at.getY(),at.getZ()+1.5,37,11);p.hasChangedDimension();p.connection.resetPosition();p.setDeltaMovement(Vec3.ZERO);
         FinaleProgress.phase(p.server,p.getUUID(),FinaleProgress.Phase.STAIRCASE);
         var own=f.data().stateEntry(StaircaseWriting.ID,p.getUUID().toString());var books=own.getCompound("Books");var indices=own.getCompound("Indices");var key=Long.toString(at.asLong());
@@ -60,7 +61,7 @@ public final class StaircaseLeakTests {
             long now=f.level.getGameTime();
             if(s[0]==0){
                 p[0]=f.player(h,"leak_owner");p[1]=f.player(h,"leak_peer");p[2]=f.player(h,"leak_observer");read(f,p[0],9);read(f,p[1],9);p[2].teleportTo(f.level,p[0].getX()+2,p[0].getY(),p[0].getZ(),0,0);p[2].setGameMode(GameType.SPECTATOR);
-                pet[0]=EntityType.WOLF.create(f.level);pet[0].setTame(true,true);pet[0].setOwnerUUID(p[0].getUUID());pet[0].moveTo(p[0].position().add(-1,0,0));pet[0].setHealth(13);f.level.addFreshEntity(pet[0]);CompanionOrders.issue(pet[0],p[0],CompanionOrders.Order.FOLLOW);
+                pet[0]=EntityType.WOLF.create(f.level);pet[0].setTame(true,true);pet[0].setOwnerUUID(p[0].getUUID());pet[0].moveTo(p[0].position().add(-1,0,0));pet[0].setHealth(13);pet[0].setNoGravity(true);f.level.addFreshEntity(pet[0]);CompanionOrders.issue(pet[0],p[0],CompanionOrders.Order.FOLLOW);
                 kept[0]=new ItemStack(Items.DIAMOND_AXE);kept[0].set(DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("Kept axe"));kept[0].setDamageValue(17);p[0].getInventory().setItem(2,kept[0].copy());p[0].getInventory().selected=2;p[0].setHealth(15);p[0].getFoodData().setFoodLevel(14);p[0].addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST,900,1));
                 born[0]=now;s[0]=1;return;
             }
@@ -68,7 +69,7 @@ public final class StaircaseLeakTests {
             if(s[0]==2&&now-born[0]>=3){h.assertTrue(!StaircaseLeaks.offered(p[0])&&!StaircaseLeaks.active(p[0]),"moving cancels silently before any scene is consumed");h.assertTrue(!StaircaseLeaks.active(p[2]),"spectators receive no offer or progress");read(f,p[0],9);born[0]=now;s[0]=3;return;}
             if(s[0]==3&&now-born[0]>=22){p[0].closeContainer();source[0]=p[0].position();source[1]=p[1].position();born[0]=now;s[0]=4;return;}
             if(s[0]==4){if(now-born[0]<60)h.assertTrue(!StaircaseLeaks.active(p[0]),"closing the native reader still requires three occupied seconds");if(!StaircaseLeaks.active(p[0])||!StaircaseLeaks.active(p[1]))return;
-                snapshot[0]=f.data().stateEntry(StaircaseLeaks.STATE,p[0].getUUID().toString()).getCompound("Active").getCompound("Return").copy();var a=StaircaseLeaks.activeBase(p[0]);var b=StaircaseLeaks.activeBase(p[1]);h.assertTrue(!a.equals(b)&&p[0].position().distanceToSqr(p[1].position())>1000,"neighbors on one tread receive separate native rooms");h.assertTrue(pet[0].isNoAi()&&pet[0].position().distanceToSqr(source[0])<36&&pet[0].getHealth()==13,"the same companion waits on the stairs with its health");h.assertTrue(CompanionOrders.followAcross(pet[0],p[0])==pet[0]&&pet[0].position().distanceToSqr(source[0])<36,"normal companion migration cannot follow into a leak");
+                snapshot[0]=f.data().stateEntry(StaircaseLeaks.STATE,p[0].getUUID().toString()).getCompound("Active").getCompound("Return").copy();var a=StaircaseLeaks.activeBase(p[0]);var b=StaircaseLeaks.activeBase(p[1]);h.assertTrue(!a.equals(b)&&p[0].position().distanceToSqr(p[1].position())>1000,"neighbors on one tread receive separate native rooms");h.assertTrue(pet[0].isNoAi(),"the waiting companion is paused: "+pet[0].position()+" health="+pet[0].getHealth());h.assertTrue(pet[0].position().distanceToSqr(source[0])<36,"the same companion stays on the source tread: "+pet[0].position()+" / "+source[0]);h.assertTrue(pet[0].getHealth()==13,"the waiting companion keeps its health: "+pet[0].getHealth());h.assertTrue(CompanionOrders.followAcross(pet[0],p[0])==pet[0]&&pet[0].position().distanceToSqr(source[0])<36,"normal companion migration cannot follow into a leak");
                 p[2].setCamera(p[0]);born[0]=now;s[0]=5;return;
             }
             if(s[0]==5&&now-born[0]>=2){h.assertTrue(p[2].getCamera()==p[2]&&p[2].position().distanceToSqr(source[0])<4,"even a directly attached spectator returns its camera to the stairs");
