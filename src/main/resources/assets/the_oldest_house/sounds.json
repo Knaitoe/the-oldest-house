@@ -470,5 +470,13 @@
         "attenuation_distance": 24
       }
     ]
+  },
+  "staircase.descent": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:staircase/descent",
+        "stream": true
+      }
+    ]
   }
 }

@@ -205,4 +205,65 @@ public final class ExplorationPassTests {
             }finally{cat.discard();lease.close();LabyrinthBuilder.gateForGameTest(null);LabyrinthBuilder.clearAll();store.set("the_oldest_house",oldHouse);store.set("the_oldest_house_labyrinth",oldData);}
         });
     }
+    @GameTest(template="empty",batch="exploration_notes")
+    public static void actualLooseNotesAreUniquePrivateFiniteAndKeepLegacyOriginalsAfterReload(GameTestHelper h){
+        var server=h.getLevel().getServer();var l=HouseTestLevel.get(server);var store=server.overworld().getDataStorage();
+        var oldHouse=HouseSavedData.get(server);var oldData=LabyrinthData.get(server);var origin=new BlockPos(640000,80,640000);
+        var a=NativeTestPlayers.survival(h,"stair_notes_a");var b=NativeTestPlayers.survival(h,"stair_notes_b");
+        try{
+            var house=new HouseSavedData();house.markSpawned(origin);store.set("the_oldest_house",house);var d=new LabyrinthData();store.set("the_oldest_house_labyrinth",d);
+            var positions=StaircaseWriting.positions(origin);h.assertTrue(!positions.isEmpty()&&positions.size()<=StaircaseNotes.TEXTS.size(),"the complete two-part physical descent has a distinct authored sheet for every landing");
+            Set<String> texts=new HashSet<>();ItemStack first=null;
+            for(var at:positions){
+                l.setBlock(at.below(),Blocks.STONE.defaultBlockState(),2);l.setBlock(at,NoteSurfaceBlock.state(HouseMarginalia.Thread.POEMS,Direction.WEST),2);
+                a.teleportTo(l,at.getX()+1.5,at.getY(),at.getZ()+.5,0,0);a.hasChangedDimension();
+                h.assertTrue(StaircaseWriting.open(a,at),"a real stair sheet opens the native reader");var menu=(net.minecraft.world.inventory.LecternMenu)a.containerMenu;
+                var book=menu.getSlot(0).getItem().copy();String text=book.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().getFirst().raw().getString();
+                h.assertTrue(texts.add(text),"no two authored landings repeat their sheet");
+                if(first==null){first=book;h.assertTrue(menu.clickMenuButton(a,3)&&!menu.clickMenuButton(a,3),"the shared surface yields one finite original to its own reader");}
+                a.closeContainer();
+            }
+            var at=positions.getFirst();b.teleportTo(l,at.getX()+1.5,at.getY(),at.getZ()+.5,0,0);b.hasChangedDimension();StaircaseWriting.open(b,at);
+            h.assertTrue(((net.minecraft.world.inventory.LecternMenu)b.containerMenu).clickMenuButton(b,3),"a peer has an independent finite collection, not the first reader's taken bit");b.closeContainer();
+            var own=d.stateEntry(StaircaseWriting.ID,a.getUUID().toString());var books=own.getCompound("Books");var legacy=HouseWriting.book("A saved sheet","Ruth",HouseWriting.WritingStyle.KAREN,List.of("These exact words were already here."));
+            books.put(Long.toString(at.asLong()),legacy.save(a.registryAccess()));own.put("Books",books);var editions=own.getCompound("Editions");editions.putInt(Long.toString(at.asLong()),427);own.put("Editions",editions);d.setStateEntry(StaircaseWriting.ID,a.getUUID().toString(),own);
+            var loaded=LabyrinthData.load(d.save(new CompoundTag(),a.registryAccess()),a.registryAccess());store.set("the_oldest_house_labyrinth",loaded);
+            a.teleportTo(l,at.getX()+1.5,at.getY(),at.getZ()+.5,0,0);StaircaseWriting.open(a,at);var menu=(net.minecraft.world.inventory.LecternMenu)a.containerMenu;
+            h.assertTrue(ItemStack.isSameItemSameComponents(legacy,menu.getSlot(0).getItem())&&!menu.clickMenuButton(a,3),"an older read/taken original keeps its exact components and cannot refill after reload");a.closeContainer();
+            h.succeed();
+        }finally{a.closeContainer();b.closeContainer();NativeTestPlayers.remove(a);NativeTestPlayers.remove(b);store.set("the_oldest_house",oldHouse);store.set("the_oldest_house_labyrinth",oldData);}
+    }
+    @GameTest(template="empty")
+    public static void staircasePulsesPauseOfflineAndRemainOneOccupiedSectionClock(GameTestHelper h){
+        var clock=new CompoundTag();for(int i=0;i<54;i++)h.assertTrue(!StaircaseAtmosphere.occupiedSecond(clock,55),"a section's cue cannot arrive early");
+        var d=new LabyrinthData();d.setStateEntry(StaircaseAtmosphere.STATE,"section",clock);var loaded=LabyrinthData.load(d.save(new CompoundTag(),h.getLevel().registryAccess()),h.getLevel().registryAccess());
+        clock=loaded.stateEntry(StaircaseAtmosphere.STATE,"section");h.assertTrue(StaircaseAtmosphere.occupiedSecond(clock,55)&&clock.getInt("Seconds")==0,"one occupied second after reload yields one cue, without offline catch-up");h.succeed();
+    }
+    @GameTest(template="empty")
+    public static void stairDamageStaysAwayFromLandingsSourcesAndTheCentralRoute(GameTestHelper h){
+        var origin=new BlockPos(0,80,0);var marks=StaircaseWear.marks(origin);var base=FinaleArchitecture.base(origin);
+        h.assertTrue(!marks.isEmpty()&&marks.size()<20,"the long two-part descent has sparse, recognizable edge damage");
+        for(var mark:marks){
+            h.assertTrue(Math.abs(mark.hole().getX()-mark.route().getX())+Math.abs(mark.hole().getZ()-mark.route().getZ())==4,"a hole is on the edge, outside the seven central columns");
+            h.assertTrue(Math.min(Math.abs(mark.route().getX()-base.getX()),Math.abs(mark.route().getZ()-base.getZ()))<=15,"turn platforms remain whole");
+            for(var p:StaircaseFire.braziers(origin))h.assertTrue(p.distSqr(mark.hole())>=100,"canonical hearth approaches remain clear");
+            for(var p:StaircaseLeaves.positions(origin))h.assertTrue(p.distSqr(mark.hole())>=100,"canonical original leaves stay on supported accessible treads");
+        }h.succeed();
+    }
+    @GameTest(template="empty",batch="exploration_wear",timeoutTicks=1200)
+    public static void oldStairWearWaitsForRealCamerasAndStayPetsAndHonorsPlayerEdits(GameTestHelper h){
+        var l=HouseTestLevel.get(h.getLevel().getServer());var at=h.absolutePos(BlockPos.ZERO).offset(3400,10,3400);
+        var mark=new StaircaseWear.Mark(at,at.east(4).below(),at.east(5));var lease=new NativeTestChunks();lease.hold(l,new AABB(mark.hole()).inflate(7,9,7));
+        for(var cell:mark.cells())l.setBlock(cell,Blocks.DEEPSLATE_BRICKS.defaultBlockState(),2);l.setBlock(mark.rail(),Blocks.IRON_BARS.defaultBlockState(),2);
+        var p=NativeTestPlayers.survival(h,"stair_wear_camera");p.setGameMode(GameType.SPECTATOR);p.teleportTo(l,at.getX()+10,at.getY(),at.getZ(),0,0);
+        var cat=EntityType.CAT.create(l);cat.moveTo(Vec3.atBottomCenterOf(mark.hole().above()));cat.setTame(true,true);cat.setOwnerUUID(p.getUUID());cat.setOrderedToSit(true);cat.setHealth(5);l.addFreshEntity(cat);var id=cat.getUUID();boolean[] done={false};
+        h.onEachTick(()->{if(done[0]||!lease.ready())return;done[0]=true;
+            try{
+                h.assertTrue(!StaircaseWear.apply(l,mark),"an actual spectator camera prevents visible structural change");p.teleportTo(l,at.getX()+100,at.getY(),at.getZ(),0,0);
+                h.assertTrue(!StaircaseWear.apply(l,mark)&&cat.getUUID().equals(id)&&cat.getHealth()==5&&cat.isOrderedToSit(),"a living Stay pet blocks the planned edge change without losing identity or orders");cat.moveTo(at.getX()+100,at.getY(),at.getZ());
+                l.setBlock(mark.hole(),Blocks.DIAMOND_BLOCK.defaultBlockState(),2);h.assertTrue(StaircaseWear.apply(l,mark)&&l.getBlockState(mark.hole()).is(Blocks.DIAMOND_BLOCK)&&l.getBlockState(mark.rail()).is(Blocks.IRON_BARS),"player-edited flooring is retained together with its rail");
+                l.setBlock(mark.hole(),Blocks.DEEPSLATE_BRICKS.defaultBlockState(),2);h.assertTrue(StaircaseWear.apply(l,mark)&&mark.cells().stream().allMatch(cell->l.getBlockState(cell).isAir()),"a vacant, native-loaded authored edge receives only the three planned changes");h.succeed();
+            }finally{cat.discard();NativeTestPlayers.remove(p);lease.close();}
+        });
+    }
 }

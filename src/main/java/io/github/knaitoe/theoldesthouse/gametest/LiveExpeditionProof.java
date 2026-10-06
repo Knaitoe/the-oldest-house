@@ -77,7 +77,10 @@ public final class LiveExpeditionProof {
             firstMap=doors(d,a,LabyrinthPlace.ALCOVE_HALL);require(firstMap.equals(doors(d,b,LabyrinthPlace.ALCOVE_HALL)),"shared native starting routes agree");
             secondId=b.getUUID();step(s,1,base);return;
         }
-        if(s.getTickCount()-changed>2400){s.halt(false);throw new IllegalStateException("LIVE EXPEDITION timed out at phase "+phase);}
+        if(s.getTickCount()-changed>2400){
+            String detail="LIVE EXPEDITION timed out at phase "+phase+": A="+location(a)+", B="+location(b);
+            write("failed.txt",detail+"\n");s.halt(false);throw new IllegalStateException(detail);
+        }
         var d=LabyrinthData.get(s);var base=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.OFFSET_HALL);
         if(phase==1&&ACKS.size()==2) {
             var source=d.door("alcove_hall/far");require(source!=null,"real source door registered");
@@ -91,7 +94,8 @@ public final class LiveExpeditionProof {
         }else if(phase==3&&ACKS.size()==2) {
             var door=d.door(LabyrinthPlace.OFFSET_HALL.entryDoorId());require(s.getLevel(door.dimension).getBlockState(door.lower).getValue(DoorBlock.OPEN),"shared entry stays open with a real peer in its approach");
             step(s,4,door.lower);
-        }else if(phase==4&&a!=null&&b!=null&&d.returnDepth(a.getUUID())==0&&d.returnDepth(b.getUUID())==0) {
+        }else if(phase==4&&a!=null&&b!=null&&d.returnDepth(a.getUUID())==0&&d.returnDepth(b.getUUID())==0
+                &&LabyrinthPlaces.placeAt(ORIGIN,a.blockPosition())==LabyrinthPlace.ALCOVE_HALL&&LabyrinthPlaces.placeAt(ORIGIN,b.blockPosition())==LabyrinthPlace.ALCOVE_HALL) {
             require(LabyrinthPlaces.placeAt(ORIGIN,a.blockPosition())==LabyrinthPlace.ALCOVE_HALL&&LabyrinthPlaces.placeAt(ORIGIN,b.blockPosition())==LabyrinthPlace.ALCOVE_HALL,"both clients really walk back to the source hall without outside ejection");
             var l=s.getLevel(HouseDimensions.INTERIOR);var arch=new CompoundTag();arch.putBoolean("Ready",true);arch.putInt("CarveVersion",FinaleArchitecture.CARVE_VERSION);d.setState("finale_architecture_049",arch);
             for(var block:FinaleArchitecture.entrancePlan(ORIGIN))l.setBlock(block.pos(),block.block(),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);
@@ -129,4 +133,5 @@ public final class LiveExpeditionProof {
     private static void write(String name,String text) {
         try{Files.createDirectories(folder());Files.writeString(folder().resolve(name),text);}catch(Exception e){throw new IllegalStateException(e);}
     }
+    private static String location(ServerPlayer p){return p==null?"offline":p.level().dimension().location()+" "+p.position()+" returns="+LabyrinthData.get(p.server).returnDepth(p.getUUID());}
 }

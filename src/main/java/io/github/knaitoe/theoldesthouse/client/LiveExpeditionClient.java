@@ -41,7 +41,12 @@ public final class LiveExpeditionClient {
             mc.options.keyUp.setDown(false);if(role.equals("A")&&!open(block))click(mc,target,ticks);
             if(ticks>35&&open(block))ack(mc,3);
         }
-        if(step==4) {walk(mc,target.south(7));}
+        if(step==4) {
+            // Stop real input once the native return packet puts us on the source floor.
+            // The other reader may still be crossing; their progress cannot restart our walk.
+            if(Math.abs(mc.player.getY()-target.getY())>2)mc.options.keyUp.setDown(false);
+            else walk(mc,target.south(7));
+        }
         if(step==5) {
             mc.options.keyUp.setDown(false);
             if(mc.screen instanceof LecternScreen)mc.gameMode.handleInventoryButtonClick(mc.player.containerMenu.containerId,3);

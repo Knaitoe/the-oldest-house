@@ -111,6 +111,11 @@ public final class FinaleTests {
             var floor=blocks.get(at.below());var feet=blocks.get(at);var head=blocks.get(at.above());
             helper.assertTrue(floor!=null&&!floor.isAir()&&(feet==null||feet.isAir())&&(head==null||head.isAir()),"the lower continuation retains a connected unobstructed tread at "+at);
         }
+        for(var mark:StaircaseWear.marks(origin)){
+            for(var at:mark.cells())helper.assertTrue(blocks.get(at)!=null&&blocks.get(at).isAir(),"sparse wear is real edge damage, with an actual rail break");
+            var at=mark.route();var after=FinaleArchitecture.fullRoute(origin).get(FinaleArchitecture.fullRoute(origin).indexOf(at)+1);boolean alongX=after.getX()!=at.getX();
+            for(int side=-3;side<=3;side++)helper.assertTrue(!blocks.get(at.offset(alongX?0:side,-1,alongX?side:0)).isAir(),"wear retains seven continuous central walking columns for shared exploration");
+        }
         for(int z=26;z<=32;z++)for(int y=FinaleArchitecture.ARENA;y<FinaleArchitecture.ARENA+3;y++){
             var opening=blocks.get(FinaleArchitecture.base(origin).offset(0,y,z));
             helper.assertTrue(opening==null||opening.isAir(),"the passage through the shaft wall really reaches the cell chamber");
