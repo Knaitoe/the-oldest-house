@@ -45,7 +45,12 @@ public final class MultiplayerStoryTests {
     });}
     @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=1200)
     public static void tomHandsOnlyHisOwnNearbyExplorerOneNativeLighter(GameTestHelper h){run(h,527500,f->{
-        var p=f.player(h,"lighter_owner");var peer=f.player(h,"lighter_peer");var tom=new NovelActor(NovelRegistry.ACTOR.get(),f.level);tom.appearance(p.getUUID(),0);
+        var p=f.player(h,"lighter_owner");var peer=f.player(h,"lighter_peer");
+        // Keep both actual bodies and Tom in this fixture's held House
+        // chunks, rather than using the test-world spawn across dimensions.
+        p.teleportTo(f.level,f.source.getX()+.5,f.source.getY(),f.source.getZ()+3.5,0,0);
+        peer.teleportTo(f.level,p.getX(),p.getY(),p.getZ(),0,0);
+        var tom=new NovelActor(NovelRegistry.ACTOR.get(),f.level);tom.appearance(p.getUUID(),0);
         tom.setNoGravity(true);tom.moveTo(p.position());f.level.addFreshEntity(tom);
         try{
             h.assertTrue(StaircaseFire.take(p)&&p.getInventory().countItem(NovelRegistry.LIGHTER.get())==0&&p.getInventory().countItem(Items.FLINT_AND_STEEL)==0,"the shelf issues only the binding, without automatically handing out fire");
