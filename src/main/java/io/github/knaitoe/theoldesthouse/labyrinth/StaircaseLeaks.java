@@ -56,7 +56,8 @@ public final class StaircaseLeaks {
     }
     private static final class Engine {
         final MinecraftServer server;final LabyrinthData data;final Map<UUID,Offer> offers=new HashMap<>();final Map<UUID,CompoundTag> sessions=new HashMap<>();final Map<UUID,Lease> sources=new HashMap<>();final Map<Integer,Room> work=new LinkedHashMap<>();
-        Engine(MinecraftServer server){this.server=server;data=LabyrinthData.get(server);}
+        final ArrayDeque<String> savedWork=new ArrayDeque<>();
+        Engine(MinecraftServer server){this.server=server;data=LabyrinthData.get(server);for(var key:data.stateKeys(ROOMS))if(!key.equals("meta"))savedWork.add(key);}
         void close(){for(var lease:sources.values())lease.close();for(var room:work.values())room.close();offers.clear();sessions.clear();sources.clear();work.clear();}
     }
     private static Engine engine(MinecraftServer server){var e=ENGINES.get(server);if(e==null||e.data!=LabyrinthData.get(server)){if(e!=null)e.close();e=new Engine(server);ENGINES.put(server,e);}return e;}
@@ -101,6 +102,8 @@ public final class StaircaseLeaks {
     }
     private static Room request(Engine e,int slot){var old=e.work.get(slot);if(old!=null)return old;var level=e.server.getLevel(HouseDimensions.INTERIOR);var record=e.data.stateEntry(ROOMS,Integer.toString(slot));if(level==null||record.isEmpty())return null;var room=new Room(level,slot,record);e.work.put(slot,room);return room;}
     private static void build(Engine e){
+        // Restart unfinished restoration after a save reload, one saved record at a time.
+        if(e.work.size()<2&&!e.savedWork.isEmpty()){var key=e.savedWork.removeFirst();var saved=e.data.stateEntry(ROOMS,key);if(saved.getBoolean("Dirty"))request(e,Integer.parseInt(key));}
         for(var room:new ArrayList<>(e.work.values())){
             if(!room.lease.ready())continue;
             if(!room.record.getBoolean("Dirty"))continue;
@@ -207,15 +210,16 @@ public final class StaircaseLeaks {
     public static void caption(ServerPlayer p,String text){p.displayClientMessage(Component.literal(text),true);}
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void use(PlayerInteractEvent.RightClickBlock event){if(event.getLevel().isClientSide()||event.getHand()!=InteractionHand.MAIN_HAND||!(event.getEntity() instanceof ServerPlayer p)||!active(p))return;StaircaseLeakChores.interact(p,event.getPos());event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);}
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void item(PlayerInteractEvent.RightClickItem event){if(event.getEntity() instanceof ServerPlayer p&&active(p)){event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);}}
-    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void pickup(ItemEntityPickupEvent.Pre event){if(event.getPlayer() instanceof ServerPlayer p&&active(p))event.setCanPickup(net.neoforged.neoforge.common.util.TriState.FALSE);}
-    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void damage(LivingIncomingDamageEvent event){if(event.getEntity() instanceof ServerPlayer p){engine(p.server).offers.remove(p.getUUID());if(active(p)){event.setCanceled(true);returnNow(p);}}}
+    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void pickup(ItemEntityPickupEvent.Pre event){if(event.getItemEntity().getPersistentData().getBoolean(VIRTUAL)||event.getPlayer() instanceof ServerPlayer p&&active(p))event.setCanPickup(net.neoforged.neoforge.common.util.TriState.FALSE);}
+    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void attack(AttackEntityEvent event){if(event.getEntity() instanceof ServerPlayer p)engine(p.server).offers.remove(p.getUUID());}
+    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void damage(LivingIncomingDamageEvent event){if(event.getSource().getEntity() instanceof ServerPlayer attacker)engine(attacker.server).offers.remove(attacker.getUUID());if(event.getEntity() instanceof ServerPlayer p){engine(p.server).offers.remove(p.getUUID());if(active(p)){event.setCanceled(true);returnNow(p);}}}
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void death(LivingDeathEvent event){if(event.getEntity() instanceof ServerPlayer p&&active(p)){event.setCanceled(true);p.setHealth(Math.max(1,session(p).getCompound("Return").getFloat("Health")));returnNow(p);}}
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void login(PlayerEvent.PlayerLoggedInEvent event){if(event.getEntity() instanceof ServerPlayer p){var s=session(p);if(s!=null){s.putBoolean("Recovering",true);HousePackets.send(p,new HouseFadePayload(1,20,12));returnNow(p);}}}
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void respawn(PlayerEvent.PlayerRespawnEvent event){if(event.getEntity() instanceof ServerPlayer p){var s=session(p);if(s!=null){s.putBoolean("Recovering",true);returnNow(p);}}}
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void logout(PlayerEvent.PlayerLoggedOutEvent event){if(event.getEntity() instanceof ServerPlayer p){var e=engine(p.server);e.offers.remove(p.getUUID());var s=session(p);if(s!=null){s.putBoolean("Recovering",true);persist(p,s);returnNow(p);if(session(p)!=null){cleanupSource(p,s);var room=request(e,s.getInt("Slot"));if(room!=null){room.record.putBoolean("Dirty",true);room.record.putInt("Cursor",0);e.data.setStateEntry(ROOMS,Integer.toString(room.slot),room.record);}e.sessions.remove(p.getUUID());var held=e.sources.remove(p.getUUID());if(held!=null)held.close();}}}}
     @SubscribeEvent public static void join(EntityJoinLevelEvent event){if(!(event.getLevel() instanceof ServerLevel l))return;
         var entity=event.getEntity();if(entity instanceof Mob mob&&mob.getPersistentData().hasUUID(WAITING)&&!active(l.getServer(),mob.getPersistentData().getUUID(WAITING))){mob.setNoAi(mob.getPersistentData().getBoolean(WAITING+"NoAI"));mob.getPersistentData().remove(WAITING);mob.getPersistentData().remove(WAITING+"NoAI");}
-        if(entity instanceof ItemEntity||entity instanceof ExperienceOrb)for(var session:engine(l.getServer()).sessions.values())if(StaircaseLeakRooms.bounds(BlockPos.of(session.getLong("RoomBase"))).contains(entity.position())){entity.getPersistentData().putBoolean(VIRTUAL,true);break;}
+        if(entity instanceof ItemEntity||entity instanceof ExperienceOrb)for(var session:engine(l.getServer()).sessions.values())if(StaircaseLeakRooms.bounds(BlockPos.of(session.getLong("RoomBase"))).contains(entity.position())){entity.getPersistentData().putBoolean(VIRTUAL,true);if(entity instanceof ExperienceOrb){event.setCanceled(true);entity.discard();}break;}
     }
     @SubscribeEvent public static void stopping(ServerStoppingEvent event){for(var p:new ArrayList<>(event.getServer().getPlayerList().getPlayers()))if(active(p))logout(new PlayerEvent.PlayerLoggedOutEvent(p));clearForServer(event.getServer());}
 }

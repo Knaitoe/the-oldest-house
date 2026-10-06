@@ -454,6 +454,11 @@ public final class LabyrinthData extends SavedData {
         CompoundTag state=states.get(vignette);return state==null?new CompoundTag():state.getCompound(key).copy();
     }
 
+    /** Index saved work without copying other readers' inventories or room palettes. */
+    public Set<String> stateKeys(String name){
+        var state=states.get(name);return state==null?Set.of():Set.copyOf(state.getAllKeys());
+    }
+
     /** Replace one record without copying other readers' books and private inventories. */
     public void setStateEntry(String vignette, String key, CompoundTag tag) {
         CompoundTag state = states.computeIfAbsent(vignette, ignored -> new CompoundTag());
