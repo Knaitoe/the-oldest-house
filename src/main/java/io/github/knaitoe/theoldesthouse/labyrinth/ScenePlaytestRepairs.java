@@ -40,6 +40,12 @@ public final class ScenePlaytestRepairs {
         for(var d:Direction.Plane.HORIZONTAL)s=s.updateShape(d,level.getBlockState(at.relative(d)),level,at,at.relative(d));
         return s;
     }
+    /** Same full-block collision and native return geometry; the outdoor arrival is a timber annex. */
+    public static BlockState arrivalSkin(BlockPos rel,BlockState state){
+        if(!state.is(Blocks.WHITE_TERRACOTTA)||!LabyrinthPlaces.localVestibule().isInside(rel))return state;
+        boolean lining=rel.getZ()>=2&&Math.abs(rel.getX())<=2&&rel.getY()>=-1&&rel.getY()<=4;
+        return lining?state:rel.getY()<0?Blocks.STONE_BRICKS.defaultBlockState():LiteraryRegistry.SIDING.get().defaultBlockState();
+    }
     /** The dry vestibule is retained; the actual swimming channel has headroom. */
     public static void flooded(ServerLevel level,BlockPos base){
         for(var feet:LabyrinthHazards.floodRoute(base)){
@@ -87,7 +93,14 @@ public final class ScenePlaytestRepairs {
     }
     public static BuildBlocks.Plan plan(ServerLevel l,BlockPos b,LabyrinthPlace p){return BuildBlocks.record(l,()->{
         if(p==LabyrinthPlace.MAPPING_INTERIOR)cabin(l,b);if(p==LabyrinthPlace.FLOODED_PASSAGE)flooded(l,b);
+        if(NovelRooms.outside(p))arrivalGround(l,b);
     });}
+    public static void arrivalGround(ServerLevel l,BlockPos b){
+        var near=BuildBlocks.state(l,b.offset(10,-1,-1));var surface=near.is(Blocks.SNOW_BLOCK)?Blocks.SNOW_BLOCK:near.is(Blocks.SAND)?Blocks.SAND:near.is(Blocks.PODZOL)?Blocks.PODZOL:Blocks.GRASS_BLOCK;
+        for(int x=-10;x<=10;x++)for(int z=0;z<=18;z++)for(int y=-3;y<=-1;y++){
+            var at=b.offset(x,y,z);if(BuildBlocks.state(l,at).isAir())BuildBlocks.set(l,at,(y==-1?surface:Blocks.DIRT).defaultBlockState(),F);
+        }
+    }
     /** Never delete authoring inside a story or the copied arrival vestibule. */
     public static boolean strayFill(LabyrinthPlace place,BlockPos rel,BlockState state){
         if(!NovelRooms.outside(place)||!state.is(Blocks.WHITE_TERRACOTTA)||rel.getY()<0)return false;
@@ -120,7 +133,9 @@ public final class ScenePlaytestRepairs {
             if(visible()){close();return false;}if(!loaded())return false;
             var bodies=level.getEntitiesOfClass(LivingEntity.class,area,LivingEntity::isAlive);
             // A Stay pet over the hatch prevents opening it; existing actors retain their identity and position.
-            if(!prepared||plan!=null){if(place==LabyrinthPlace.MAPPING_INTERIOR&&bodies.stream().anyMatch(e->new AABB(base.offset(0,-2,-17)).expandTowards(0,3,0).intersects(e.getBoundingBox()))){close();return true;}
+            if(!prepared||plan!=null){
+                if(NovelRooms.outside(place)&&bodies.stream().anyMatch(e->new AABB(base.getX()-10,base.getY()-3,base.getZ(),base.getX()+11,base.getY(),base.getZ()+19).intersects(e.getBoundingBox()))){close();return true;}
+                if(place==LabyrinthPlace.MAPPING_INTERIOR&&bodies.stream().anyMatch(e->new AABB(base.offset(0,-2,-17)).expandTowards(0,3,0).intersects(e.getBoundingBox()))){close();return true;}
                 if(place==LabyrinthPlace.MAPPING_INTERIOR)for(var rel:List.of(new BlockPos(-11,0,-12),new BlockPos(-10,0,-12),new BlockPos(5,0,-13),new BlockPos(5,0,-11),new BlockPos(7,0,-13)))
                     if(bodies.stream().anyMatch(e->new AABB(base.offset(rel)).expandTowards(0,1,0).intersects(e.getBoundingBox()))){close();return true;}
                 if(place==LabyrinthPlace.FLOODED_PASSAGE&&bodies.stream().anyMatch(e->new AABB(base.offset(0,0,-2)).expandTowards(1,2,0).intersects(e.getBoundingBox()))){close();return true;}
@@ -131,6 +146,7 @@ public final class ScenePlaytestRepairs {
             while(cursor<total&&visited++<4096&&System.nanoTime()-started<6_000_000L){
                 int n=cursor++;var rel=new BlockPos(box.minX()+n%width,box.minY()+n/(width*depth),box.minZ()+(n/width)%depth);var at=base.offset(rel);
                 var before=level.getBlockState(at);var next=connected(level,at);
+                if(NovelRooms.outside(place))next=arrivalSkin(rel,next);
                 if(strayFill(place,rel,before))next=Blocks.AIR.defaultBlockState();
                 if(!next.equals(before)&&level.getBlockEntity(at)==null){if(safe(at,next,bodies))level.setBlock(at,next,F);else deferred=true;}
             }
