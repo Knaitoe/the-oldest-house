@@ -108,7 +108,7 @@ public final class HouseNpcTests {
                 h.assertTrue(f.own(a).getInt("Arena")==3&&f.own(a).getInt("ArenaTicks")==80&&f.own(a).getBoolean("Seen")&&f.own(b).getBoolean("Seen"),"each has personally traversed all three arenas and seen the shared native hunter");
                 f.at(a,-7,-66);a.setShiftKeyDown(true);f.click(a,HollowayCamp.LATCH);
                 h.assertTrue(WitnessAccount.has(f.data(),a.getUUID(),WitnessAccount.Story.HOLLOWAY)&&!WitnessAccount.has(f.data(),b.getUUID(),WitnessAccount.Story.HOLLOWAY),"one latch pull credits only its own explorer");
-                var shield=a.getInventory().items.stream().filter(s->s.is(Items.SHIELD)).findFirst().orElseThrow();b.getInventory().add(shield.copy());
+                var shield=a.getInventory().items.stream().filter(s->s.is(NovelRegistry.HOLLOWAY_SHIELD.get())).findFirst().orElseThrow();b.getInventory().add(shield.copy());
                 h.assertTrue(!WitnessAccount.has(f.data(),b.getUUID(),WitnessAccount.Story.HOLLOWAY),"borrowing the shield cannot borrow the resolution");
                 int items=a.getInventory().items.stream().mapToInt(ItemStack::getCount).sum();f.click(a,HollowayCamp.LATCH);
                 h.assertTrue(items==a.getInventory().items.stream().mapToInt(ItemStack::getCount).sum(),"repeat latch pulls do not refill personal rewards");
@@ -142,7 +142,7 @@ public final class HouseNpcTests {
     }
     @GameTest(template="empty",batch="npc_guards") public static void observersEarlyLatchPullsAndDeathsCannotResolveTheHunt(GameTestHelper h){
         guards=new Fixture(h,42600);var f=guards;var a=f.player();f.loot(a,0);f.returnForHunt(a);a.setShiftKeyDown(true);f.click(a,HollowayCamp.LATCH);
-        h.assertTrue(!WitnessAccount.has(f.data(),a.getUUID(),WitnessAccount.Story.HOLLOWAY)&&a.getInventory().items.stream().noneMatch(s->s.is(Items.SHIELD)),"skipping the native arenas cannot take a reward");
+        h.assertTrue(!WitnessAccount.has(f.data(),a.getUUID(),WitnessAccount.Story.HOLLOWAY)&&a.getInventory().items.stream().noneMatch(s->s.is(NovelRegistry.HOLLOWAY_SHIELD.get())),"skipping the native arenas cannot take a reward");
         a.gameMode.changeGameModeForPlayer(GameType.SPECTATOR);HollowayVignette.playerTick(a);h.assertTrue(!HollowayVignette.pursued(a),"an observer is excluded from pursuit and progression");
         a.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);f.at(a,0,-3);HollowayVignette.enter(a);HollowayVignette.death(new net.neoforged.neoforge.event.entity.living.LivingDeathEvent(a,f.l.damageSources().generic()));
         h.assertTrue(!f.own(a).getBoolean("Run")&&f.own(a).getBoolean("Looted")&&!WitnessAccount.has(f.data(),a.getUUID(),WitnessAccount.Story.HOLLOWAY),"death ends the attempt while preserving the theft that arms another visit");h.succeed();
@@ -194,8 +194,8 @@ public final class HouseNpcTests {
             if(clock[0]==180)f.at(late,-7,-58);
             if(clock[0]==275){h.assertTrue(f.own(late).getInt("Arena")==3&&f.own(late).getInt("ArenaTicks")==80&&!f.own(late).getBoolean("Seen")&&f.own(late).getBoolean("AftermathInspected"),"all three rooms and the inspected aftermath are personal facts, without inventing a sighting of the dead hunter");
                 late.setShiftKeyDown(true);f.click(late,HollowayCamp.LATCH);
-                h.assertTrue(late.getInventory().countItem(Items.SHIELD)==1&&WitnessAccount.has(f.data(),late.getUUID(),WitnessAccount.Story.HOLLOWAY)&&!WitnessAccount.has(f.data(),killer.getUUID(),WitnessAccount.Story.HOLLOWAY),"the actual late latch grants one earned shield and only that explorer's Witness");
-                f.click(late,HollowayCamp.LATCH);f.reload();h.assertTrue(late.getInventory().countItem(Items.SHIELD)==1&&HollowayVignette.ensureActor(f.l,f.b)==null&&f.data().state(HollowayVignette.ID).getUUID("Actor").equals(original),"rereading, reload and repeat pulls neither respawn the original nor refill rewards");h.succeed();
+                h.assertTrue(late.getInventory().countItem(NovelRegistry.HOLLOWAY_SHIELD.get())==1&&WitnessAccount.has(f.data(),late.getUUID(),WitnessAccount.Story.HOLLOWAY)&&!WitnessAccount.has(f.data(),killer.getUUID(),WitnessAccount.Story.HOLLOWAY),"the actual late latch grants one earned shield and only that explorer's Witness");
+                f.click(late,HollowayCamp.LATCH);f.reload();h.assertTrue(late.getInventory().countItem(NovelRegistry.HOLLOWAY_SHIELD.get())==1&&HollowayVignette.ensureActor(f.l,f.b)==null&&f.data().state(HollowayVignette.ID).getUUID("Actor").equals(original),"rereading, reload and repeat pulls neither respawn the original nor refill rewards");h.succeed();
             }
         });
     }

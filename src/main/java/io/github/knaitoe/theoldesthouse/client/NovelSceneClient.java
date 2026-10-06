@@ -38,7 +38,7 @@ public final class NovelSceneClient {
         e.setNearPlaneDistance(14);e.setFarPlaneDistance(48);e.setCanceled(true);
     }
     @SubscribeEvent public static void camera(ViewportEvent.ComputeCameraAngles e){float amount=Math.max(active()?shake:0,stairActive()?stairShake:0);if(amount<=0)return;var mc=Minecraft.getInstance();
-        float intensity=amount*(float)(double)mc.options.screenEffectScale().get();double time=mc.player.tickCount+e.getPartialTick();e.setRoll(e.getRoll()+(float)Math.sin(time*1.9)*intensity*.8F);e.setPitch(e.getPitch()+(float)Math.sin(time*2.3)*intensity*.35F);}
+        float intensity=amount*(float)(double)mc.options.screenEffectScale().get();double time=mc.player.tickCount+e.getPartialTick();e.setRoll(e.getRoll()+(float)Math.sin(time*1.9)*intensity*2.1F);e.setPitch(e.getPitch()+(float)Math.sin(time*2.3)*intensity*.65F);}
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
     public static final class Layers {
         @SubscribeEvent public static void overlay(RegisterGuiLayersEvent e){e.registerAboveAll(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"novel_caption"),(g,delta)->{

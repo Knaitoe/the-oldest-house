@@ -12,7 +12,7 @@ public final class StaircaseNotes {
         "A blue sock\n\nThe washing was warm when we tipped it out. Jonah matched the socks by size; I matched them by wear. We made different pairs. Nobody complained.",
         "On the way home\n\nMara drove with one hand resting on the gear stick. I held the paper bag between my knees. At every turn the bread tapped the door.",
         "Breakfast\n\nThe kettle stopped before anyone noticed. Bell poured his tea anyway. I opened the window to hear the man unloading bottles in the street.",
-        "Thursday\n\nI swept under the dresser. A button came out with the dust. Ruth kept it in her palm while I fetched the little tin. She knew which coat it was from.",
+        "Thursday\n\nA button rolled out from under the dresser. Ruth fetched her blue coat and pushed it through the empty hole. I held the cloth flat while she threaded the needle.",
         "After the rain\n\nJonah held the pegs in his mouth. I hung the shirts by their shoulders. We argued about this every week. The wind settled it for us.",
         "The passenger seat\n\nThere was no reason to hurry. We let the bus pull out. Mara turned the radio down to tell me which house used to have the pear tree.",
         "For tomorrow\n\nI peeled one extra potato. Bell said he would be late. I wrapped his plate and wrote his name on the paper, though no one else would have taken it.",

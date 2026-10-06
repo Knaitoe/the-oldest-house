@@ -108,7 +108,7 @@ public final class LiveExpeditionProof {
             for(var p:List.of(a,b)) {
                 FinaleProgress.phase(s,p.getUUID(),FinaleProgress.Phase.STAIRCASE);StaircaseStory.shelf(p);
                 for(int i=0;i<8;i++)if(StaircaseStory.isCurrent(p,p.getInventory().getItem(i))){var book=p.getInventory().getItem(i);p.getInventory().setItem(i,ItemStack.EMPTY);p.setItemInHand(InteractionHand.OFF_HAND,book);break;}
-                p.getInventory().selected=0;p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.FLINT_AND_STEEL));at(p,sheet.south(2),180,p==a?-.65:.65);
+                p.getInventory().selected=0;p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(NovelRegistry.LIGHTER.get()));at(p,sheet.south(2),180,p==a?-.65:.65);
             }
             step(s,5,sheet);
         }else if(phase==5&&a!=null&&b!=null&&StaircaseStory.found(StaircaseStory.record(a))==1&&StaircaseStory.found(StaircaseStory.record(b))==1) {

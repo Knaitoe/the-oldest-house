@@ -22,6 +22,60 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID+"_exploration")
 @PrefixGameTestTemplate(false)
 public final class ExplorationPassTests {
+    @GameTest(template="empty")
+    public static void sevenForwardPassesOfferOnlyStoneOrdinaryHallsAndRetainDrawnMaps(GameTestHelper h){
+        var d=new LabyrinthData();var room=LabyrinthPlace.CROSS_HALL;LabyrinthBuilder.registerDoors(d,room,new BlockPos(0,80,0));
+        for(int at:new int[]{7,12,20}){
+            var p=UUID.randomUUID();depth(d,p,at);
+            for(int seed=0;seed<300;seed++){
+                d.setDryDeals(p,0);LabyrinthDealer.dealPlace(d,p,room,RandomSource.create(seed));
+                for(var id:map(d,p,room).values()){var destination=LabyrinthPlace.byId(id);
+                    if(LabyrinthPacing.ordinary(destination))h.assertTrue(StoneHalls.isStone(destination),"new ordinary halls are stone at depth "+at+": "+id);
+                }
+            }
+        }
+        var early=UUID.randomUUID();depth(d,early,6);int wooden=0;
+        for(int seed=0;seed<100;seed++){LabyrinthDealer.dealPlace(d,early,room,RandomSource.create(seed));for(var id:map(d,early,room).values())if(LabyrinthPacing.ordinary(LabyrinthPlace.byId(id)))wooden++;}
+        h.assertTrue(wooden>0&&!LabyrinthDealer.grayAvailable(d,early).stream().anyMatch(StoneHalls::isStone),"the approach still has domestic halls before seven forward passes");
+        for(var p:LabyrinthPlace.values())if(StoneHalls.isStone(p))h.assertTrue(LabyrinthBuilder.requiredDepth(p)<=7,"stone construction happens ahead of its availability");
+        h.succeed();
+    }
+    @GameTest(template="empty")
+    public static void legacyCabinRepairOpensTheLadderAndPreservesItsNativeContents(GameTestHelper h){
+        var l=h.getLevel();var b=h.absolutePos(BlockPos.ZERO).offset(3400,8,500);
+        for(int y=-5;y<=-1;y++){l.setBlock(b.offset(0,y,-18),Blocks.DIRT.defaultBlockState(),2);l.setBlock(b.offset(0,y,-17),Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH),2);}
+        l.setBlock(b.offset(0,-2,-17),Blocks.STONE_BRICKS.defaultBlockState(),2);l.setBlock(b.offset(0,-1,-17),Blocks.STONE_BRICKS.defaultBlockState(),2);
+        var chest=b.offset(11,0,-10);l.setBlock(chest,Blocks.BARREL.defaultBlockState(),2);
+        var inventory=(net.minecraft.world.level.block.entity.BarrelBlockEntity)l.getBlockEntity(chest);inventory.setItem(0,new ItemStack(Items.PAPER,3));
+        var edit=b.offset(-6,-1,-18);l.setBlock(edit,Blocks.DIAMOND_BLOCK.defaultBlockState(),2);
+        ScenePlaytestRepairs.cabin(l,b);ScenePlaytestRepairs.cabin(l,b);
+        for(int y=-5;y<=-1;y++)h.assertTrue(l.getBlockState(b.offset(0,y,-17)).is(Blocks.LADDER)&&l.getBlockState(b.offset(0,y,-17)).canSurvive(l,b.offset(0,y,-17)),"the full cellar ladder has native support at "+y);
+        h.assertTrue(l.getBlockState(b.offset(0,4,-24)).is(Blocks.CALCITE)&&!l.getBlockState(b.offset(0,2,-24)).isAir(),"the cabin partition meets its ceiling and each door has a header");
+        h.assertTrue(l.getBlockEntity(chest)==inventory&&inventory.getItem(0).getCount()==3&&l.getBlockState(edit).is(Blocks.DIAMOND_BLOCK),"targeted retries keep native containers, finite contents and player edits");h.succeed();
+    }
+    @GameTest(template="empty")
+    public static void nativePanesJoinTheirFrameWithoutRebuildingIt(GameTestHelper h){
+        var l=h.getLevel();var b=h.absolutePos(BlockPos.ZERO).offset(3450,8,500);
+        l.setBlock(b.west(),Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState(),2);l.setBlock(b.east(2),Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState(),2);
+        BuildBlocks.box(l,b,b.east(),Blocks.GLASS_PANE.defaultBlockState(),18);
+        for(var at:List.of(b,b.east())){var joined=ScenePlaytestRepairs.connected(l,at);h.assertTrue(joined.getValue(IronBarsBlock.WEST)&&joined.getValue(IronBarsBlock.EAST),"each native pane joins both its neighbour and frame");}
+        h.assertTrue(l.getBlockState(b.west()).is(Blocks.STRIPPED_SPRUCE_LOG),"joining panes preserves the existing window frame");h.succeed();
+    }
+    @GameTest(template="empty")
+    public static void swimmingChannelHasTwoBlockHeadroomAndDryArrival(GameTestHelper h){
+        var l=h.getLevel();var b=h.absolutePos(BlockPos.ZERO).offset(3550,8,500);LabyrinthHazards.buildFloodedPassage(l,b);
+        for(var feet:LabyrinthHazards.floodRoute(b)){
+            var body=new AABB(feet.getX()+.2,feet.getY()+.01,feet.getZ()+.2,feet.getX()+.8,feet.getY()+1.81,feet.getZ()+.8);
+            h.assertTrue(l.noCollision(null,body),"the submerged route has native body clearance at "+feet);
+        }
+        h.runAfterDelay(40,()->{h.assertTrue(l.getBlockState(b.offset(0,0,0)).getFluidState().isEmpty(),"the source-water channel cannot flood the arrival doorway");h.succeed();});
+    }
+    @GameTest(template="empty")
+    public static void childDistanceMakesTheSavedOccupiedClockGrowlAndShakeMoreOften(GameTestHelper h){
+        h.assertTrue(StaircaseAtmosphere.growlPeriod(0)==8&&StaircaseAtmosphere.growlPeriod(1280)==30&&StaircaseAtmosphere.shakePeriod(0)==4&&StaircaseAtmosphere.shakePeriod(1280)==12,"both clocks become faster near the cage");
+        var clock=new CompoundTag();int pulses=0;for(int i=0;i<24;i++)if(StaircaseAtmosphere.occupiedSecond(clock,8))pulses++;
+        h.assertTrue(pulses==3&&StaircaseAtmosphere.growlVolume(0)>StaircaseAtmosphere.growlVolume(1280),"occupied seconds, rather than the number of peers, govern a louder nearby growl");h.succeed();
+    }
     private static final List<LabyrinthPlace> HALLS=List.of(LabyrinthPlace.ALCOVE_HALL,LabyrinthPlace.OFFSET_HALL,LabyrinthPlace.SERVICE_LANDING,
             LabyrinthPlace.STONE_ARCADE,LabyrinthPlace.STONE_BEND,LabyrinthPlace.STONE_LANDING);
     private static Set<BlockPos> walk(ServerLevel l,BlockPos start) {
@@ -144,7 +198,7 @@ public final class ExplorationPassTests {
             }
             h.assertTrue(events<=1,"one new route cannot stack a story and a hazard across its different doors");
         }
-        h.assertTrue(stories>80&&stories<240&&hazards>100&&hazards<280&&quiet>2400,"configured deep offers leave most doors ordinary: stories="+stories+", hazards="+hazards+", ordinary="+quiet);
+        h.assertTrue(stories>300&&stories<480&&hazards>200&&hazards<440&&quiet>1800,"configured deep offers leave most doors ordinary: stories="+stories+", hazards="+hazards+", ordinary="+quiet);
         h.succeed();
     }
     @GameTest(template="empty")

@@ -17,10 +17,10 @@ public final class SceneVacancy {
 
     public static boolean ready(ServerLevel level, AABB area, double cameraMargin) {
         AABB watched = area.inflate(cameraMargin);
-        for (var player : level.players()) if (watched.intersects(player.getBoundingBox())) return false;
+        for (var player : level.players()) if (watched.intersects(player.getCamera().getBoundingBox())) return false;
         int y = (int) Math.floor(area.minY);
-        for (int x = ((int) Math.floor(area.minX)) >> 4; x <= ((int) Math.floor(area.maxX)) >> 4; x++)
-            for (int z = ((int) Math.floor(area.minZ)) >> 4; z <= ((int) Math.floor(area.maxZ)) >> 4; z++)
+        for (int x = ((int) Math.floor(area.minX)) >> 4; x <= ((int) Math.ceil(area.maxX) - 1) >> 4; x++)
+            for (int z = ((int) Math.floor(area.minZ)) >> 4; z <= ((int) Math.ceil(area.maxZ) - 1) >> 4; z++)
                 if (!level.isLoaded(new BlockPos(x << 4, y, z << 4)) || !level.areEntitiesLoaded(ChunkPos.asLong(x, z))) return false;
         return level.getEntitiesOfClass(LivingEntity.class, area, LivingEntity::isAlive).isEmpty();
     }

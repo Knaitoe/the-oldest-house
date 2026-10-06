@@ -53,6 +53,6 @@ public final class CoffinVisualProof extends Screen {
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-coffin.png"));}
         Files.writeString(dir.resolve("coffin-passed.txt"),"Native two-block coffin and original corpse mesh rendered; transformed head, arms, gown and feet bounds fit the casket footprint with face up.\n");
-        TheOldestHouse.LOGGER.info("COFFIN CHECK PASSED: native original-body transform fits the casket");mc.setScreen(new LiteraryEffectsVisualProof());
+        TheOldestHouse.LOGGER.info("COFFIN CHECK PASSED: native original-body transform fits the casket");mc.setScreen(new BedVisualProof());
     }
 }

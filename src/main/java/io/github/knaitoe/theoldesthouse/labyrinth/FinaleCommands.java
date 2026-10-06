@@ -25,6 +25,11 @@ public final class FinaleCommands {
     }
     public static LiteralArgumentBuilder<CommandSourceStack> build(){
         return Commands.literal("finale")
+            .then(Commands.literal("rewrite").executes(c->{
+                boolean changed=StaircaseStory.rewrite(c.getSource().getPlayerOrException());
+                if(changed)c.getSource().sendSuccess(()->Component.literal("The carried original now has the revised account. Bound leaves and burned fires are retained; the previous words remain in the record."),false);
+                else c.getSource().sendFailure(Component.literal("Carry your own unfinished House of Leaves first."));return changed?1:0;
+            }))
             .then(Commands.literal("prepare").executes(c->{FinaleArchitecture.request(c.getSource().getServer());c.getSource().sendSuccess(()->Component.literal("The staircase is being built in bounded batches. Use /oldesthouse finale go once ready."),false);return 1;}))
             .then(Commands.literal("go").executes(c->{var source=c.getSource();var player=source.getPlayerOrException();var origin=HouseSavedData.get(source.getServer()).houseOrigin();
                 FinaleArchitecture.request(source.getServer());if(origin==null||!FinaleArchitecture.ready(source.getServer())){source.sendFailure(Component.literal("Spawn the House and prepare the finale first."));return 0;}

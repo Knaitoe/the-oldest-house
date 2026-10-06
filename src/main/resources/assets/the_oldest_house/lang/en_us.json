@@ -110,5 +110,7 @@
   "entity.the_oldest_house.literary_elk": "Cow elk",
   "subtitles.the_oldest_house.hall.pipes": "Pipes knock",
   "subtitles.the_oldest_house.hall.stone": "Stone echoes",
-  "subtitles.the_oldest_house.hall.settle": "Wood settles"
+  "subtitles.the_oldest_house.hall.settle": "Wood settles",
+  "item.the_oldest_house.holloway_shield": "Holloway's battered shield",
+  "item.the_oldest_house.lighter": "Tom's lighter"
 }

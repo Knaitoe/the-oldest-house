@@ -226,47 +226,69 @@ public final class StaircaseProse {
         return clean.substring(0, end);
     }
 
-    /** Writes the account. The same name, facts and seed always yield the same leaves. */
+    /** Five linked chapters. Counts choose memories; the prose does not reproduce a statistics screen. */
     public static Story compose(String name, List<Fact> facts, long seed) {
-        seed = mix(seed);
-        var rng = new Random(seed);
-        Voice voice = Voice.values()[rng.nextInt(Voice.values().length)];
-        // Weigh each fact by how much of this explorer's life it holds, with a seeded tilt
-        // so two similar records still lean toward different leaves.
-        var weight = new HashMap<Fact, Double>();
-        for (var f : facts) weight.put(f, f.kind.base * (1 + Math.min(1.0, f.count / f.kind.typical)) + rng.nextDouble() * 1.1);
-        var house = new ArrayList<Fact>(); var world = new ArrayList<Fact>();
-        for (var f : facts) (f.kind.group.equals("house") ? house : world).add(f);
-        Comparator<Fact> heavier = Comparator.comparingDouble((Fact f) -> weight.get(f)).reversed();
-        house.sort(heavier); world.sort(heavier);
-        Fact last = house.isEmpty() ? null : house.removeFirst();
-        world.addAll(house); world.sort(heavier);
-        int perLeaf = voice == Voice.LEDGER ? 2 : 1;
-        var chosen = diverse(world, 4 * perLeaf);
-        // One of three arcs orders the leaves, so stories do not all walk the same path.
-        String[][] arcs = {{"move","make","trade","care","play","rest","house","harm","loss"},
-            {"loss","harm","rest","care","play","house","make","trade","move"},
-            {"care","play","move","house","make","trade","rest","harm","loss"}};
-        var arc = List.of(arcs[rng.nextInt(arcs.length)]);
-        chosen.sort(Comparator.comparingInt(f -> arc.indexOf(f.kind.group)));
-        var quiet = shuffled(QUIET, rng); int quietNext = 0;
-        var leaves = new ArrayList<String>();
-        var closers = shuffled(switch (voice) { case WITNESS -> WITNESS_CLOSE; case LETTER -> LETTER_CLOSE; case SURVEY -> SURVEY_NOTE; case LEDGER -> LEDGER_NOTE; }, rng);
-        var openers = shuffled(LETTER_OPEN, rng);
-        for (int leaf = 0; leaf < 4; leaf++) {
-            var mine = new ArrayList<Fact>();
-            for (int i = leaf * perLeaf; i < Math.min(chosen.size(), (leaf + 1) * perLeaf); i++) mine.add(chosen.get(i));
-            String body;
-            String group = mine.isEmpty() ? "quiet" : mine.getFirst().kind.group;
-            if (voice == Voice.LEDGER) body = mine.isEmpty() ? "No entries." : String.join("\n", mine.stream().map(f -> fill(f.kind.ledger, f, name)).toList());
-            else body = mine.isEmpty() ? quiet.get(quietNext++ % quiet.size()) : sentence(mine.getFirst(), seed, name);
-            leaves.add(frame(voice, leaf, group, body, closers.get(leaf % closers.size()), openers.get(leaf % openers.size()), name, rng));
+        var rng=new Random(mix(seed));Voice voice=Voice.values()[rng.nextInt(Voice.values().length)];
+        var remaining=new ArrayList<>(facts);
+        remaining.sort(Comparator.comparingDouble((Fact f)->f.kind.base*(1+Math.min(1,f.count/f.kind.typical))).reversed());
+        String[][] groups={{"move"},{"make","care","play","trade"},{"loss","harm","rest"},{"house"}};
+        String[] titles={"I. Outside","II. The hands","III. What happened","IV. The door","V. Below"};
+        String[] opening={"The first sheet catches on the cover.","The corner you folded is still warm.","There is a thumbprint beside the next line.","The writing reaches the fold.","A line continues onto the back of the sheet."};
+        String[] quiet={"No place has been written beside your name. The stairs have room for it.",
+            "Here the writer leaves a space for what your hands have done. It has not been filled.",
+            "This part has been left unwritten. I cannot give you a grief because I need one.",
+            "You are here now. The page has caught up with the person carrying it."};
+        String[] close={"You lift the caught corner and go on.","You flatten it with the same hand.","You turn the sheet without covering the print.","The next word is underneath your thumb."};
+        var leaves=new ArrayList<String>();
+        for(int i=0;i<4;i++){
+            final int chapter=i;
+            Fact chosen=remaining.stream().filter(f->List.of(groups[chapter]).contains(f.kind.group)).findFirst().orElse(null);
+            if(chosen==null&&i<3)chosen=remaining.stream().filter(f->!f.kind.group.equals("house")).findFirst().orElse(null);
+            String memory=chosen==null?quiet[i]:memory(chosen);if(chosen!=null)remaining.remove(chosen);
+            String line=switch(voice){case WITNESS->opening[i];case LETTER->i==0?"Dear "+name+",":opening[i];case SURVEY->i==0?"The name on the cover is "+name+".":opening[i];case LEDGER->i==0?"I entered your name: "+name+".":opening[i];};
+            leaves.add(titles[i]+"\n\n"+line+" "+memory+"\n\n"+close[i]);
         }
-        String lastBody = last == null ? quiet.get(quietNext % quiet.size())
-            : voice == Voice.LEDGER ? fill(last.kind.ledger, last, name) : sentence(last, seed, name);
-        String ending = pick(switch (voice) { case WITNESS -> WITNESS_END; case LETTER -> LETTER_END; case SURVEY -> SURVEY_END; case LEDGER -> LEDGER_END; }, rng);
-        leaves.add(frame(voice, 4, last == null ? "quiet" : "house", lastBody, ending, openers.get(4 % openers.size()), name, rng));
-        return new Story(voice, front(voice, name), List.copyOf(leaves));
+        String ending=switch(voice){
+            case WITNESS->"The lower corner is gone. You turn the paper and find the thumbprint coming through. You have carried it down with you. The last word was under it: return.";
+            case LETTER->"I nearly wrote come home. I do not know where that is for you. The corner has burned through; your thumb shows behind the paper. Come back to whoever is holding it.";
+            case SURVEY->"The fold has opened. On its other side the writer drew a hand, then rubbed it out. Your own hand fills the space. Above you, the staircase still has a way back.";
+            case LEDGER->"I left room for a final entry. The paper split along the fold before I could make it. Through the slit I can see your hand. You are still carrying the book.";};
+        leaves.add(titles[4]+"\n\n"+ending);
+        return new Story(voice,front(voice,name),List.copyOf(leaves));
+    }
+    private static String memory(Fact f){
+        String value=f.value;
+        return switch(f.kind.id){
+            case "walked"->"You have travelled on foot. Here your boots bring you round the same open shaft.";
+            case "sprinted"->"You have run. Here the rail bends ahead of you, and the next landing stays below.";
+            case "swum"->"You have swum. The page has no water on it, but your fingers hesitate at the dark edge.";
+            case "boated"->"You have travelled by boat. You turn the paper sideways, as if its narrow fold might hold a seat.";
+            case "rode"->"You have ridden a horse. Here you have to carry your own weight down every tread.";
+            case "flew"->"You have flown. There is enough empty air here to make that a difficult thing to remember.";
+            case "fell"->"You have fallen. Your hand settles over the split in the paper.";
+            case "climbed"->"You have climbed. You look up at the way you came; the rail runs out of sight.";
+            case "deaths"->f.count==1?"You died, and returned. The writer crossed out the word final.":"You have died and returned. The writer keeps crossing out the word final.";
+            case "kills"->"You have killed. A blot obscures what was written after that. You hold the page to the light.";
+            case "broke"->"The last Overworld block you broke was "+value+". The writer has shaded its empty square.";
+            case "built"->"You placed "+value+" in the Overworld. The writer drew its edges before drawing this staircase.";
+            case "bread"->"You have made bread. Beside the line is a small oval, cut down the middle.";
+            case "enchanted"->"You have laid an enchantment on something. Here you keep the written side away from the flame.";
+            case "bred"->"You have bred animals. The writer began a second name beneath the first, and stopped.";
+            case "cared"->"You stopped for "+value+". That name is written carefully. There is no blot beside it.";
+            case "fish"->"You have caught fish. A curved stroke hangs from the margin like a hook.";
+            case "cake"->"You have eaten cake. The writer drew a plate and left a piece on it.";
+            case "flowers"->"You have potted flowers. There is a pot in the margin; the stem runs into the next line.";
+            case "music"->"You have played music. Here you pause over a line of notes with no instrument named.";
+            case "bells"->"You have rung a bell. The writer pressed so hard on that word that you can feel it on the back.";
+            case "traded"->"You have traded with villagers. Two hands meet at the fold. Neither has been drawn empty.";
+            case "slept"->"You have slept in a bed. The writer left the blanket open on one side.";
+            case "hours"->"You have spent time in this world. It takes you less than a minute to turn this page.";
+            case "lost"->"The Mother still holds "+value+". The name runs off the page. You unfold the corner to read it.";
+            case "retreat"->"You returned safely from "+value+". The line that led there has been drawn back toward you.";
+            case "manor"->"You have slept in the manor. The bed in the margin has a door beside it, standing open.";
+            case "letters"->"You have read the House's letters. A sentence on this page has been copied in a different hand.";
+            case "deepest"->"You have gone farther into the House. The writer has run out of room and turned the paper.";
+            default->"The page has room for a memory that has not been written.";};
     }
 
     private static String frame(Voice voice, int leaf, String group, String body, String close, String opener, String name, Random rng) {
@@ -278,12 +300,7 @@ public final class StaircaseProse {
         };
     }
     private static String front(Voice voice, String name) {
-        return switch (voice) {
-            case WITNESS -> "HOUSE OF LEAVES\n\nas found by " + name + "\n\nIts five leaves are loose on the stairs below, one to a flight. Bind each here, then give it to the next fire.";
-            case LETTER -> "HOUSE OF LEAVES\n\nfor " + name + "\n\nI wrote you five pages and lost them on the stairs, one to a flight. Find them in the dark. Feed them to the fires.";
-            case SURVEY -> "HOUSE OF LEAVES\n\nThe " + name + " survey\n\nFive leaves, one on each flight below. Bind each here before its fire. [Hold this in the off hand.]";
-            case LEDGER -> "HOUSE OF LEAVES\n\nAccount of " + name + "\n\nFive leaves outstanding, one on each flight below. Bind each here. Each fire settles one.";
-        };
+        return "HOUSE OF LEAVES\n\n"+name+"\n\nA strip of paper remains in the stitching. On its scorched edge someone wrote: I kept the cover.";
     }
     /** The title leaf for an account written before narrators varied. */
     public static String legacyFront(String name) { return front(Voice.WITNESS, name); }
@@ -347,6 +364,14 @@ public final class StaircaseProse {
                 }
             }
             for (String q : QUIET) for (String end : ends) pages.add(frame(voice, 4, "quiet", q, end, opener, name, rng));
+            books.add(pages);
+        }
+        // New accounts, including every factual branch, use the same native book-width proof.
+        for(Voice voice:Voice.values()){
+            var pages=new ArrayList<String>();
+            for(Kind kind:KINDS){var f=new Fact(kind,max,kind.id.equals("retreat")?longPlace:wide);
+                pages.add("IV. The door\n\nThe writing reaches the fold. "+memory(f)+"\n\nThe next word is underneath your thumb.");}
+            for(long seed=0;seed<24;seed++){var account=compose(name,List.of(),seed);if(account.voice==voice){pages.add(account.front);pages.addAll(account.leaves);break;}}
             books.add(pages);
         }
         return books;

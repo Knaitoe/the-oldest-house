@@ -7,6 +7,7 @@ import io.github.knaitoe.theoldesthouse.house.HouseConfig;
 public final class LabyrinthPacing {
     /** Crossings from the hallway root. Shared story progress never shortens this approach. */
     public static final int STORY_DEPTH = 6;
+    public static final int STONE_DEPTH = 7;
     public static final int STRANGE_DEPTH = 8;
     public static final int DEEP_DEPTH = 12;
     public static final int ABYSS_DEPTH = 16;

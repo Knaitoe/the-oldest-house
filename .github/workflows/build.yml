@@ -54,7 +54,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.48"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.49"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseStory.class' in z.namelist()
@@ -63,6 +63,11 @@ jobs:
               assert 'io/github/knaitoe/theoldesthouse/network/BurnEmbersPayload.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/client/HouseInteriorEffects.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseNotes.class' in z.namelist()
+              for name in ('holloway_shield', 'holloway_shield_blocking', 'lighter'):
+                  assert f'assets/the_oldest_house/models/item/{name}.json' in z.namelist()
+              for name in ('holloway_shield', 'lighter'):
+                  assert f'assets/the_oldest_house/textures/item/{name}.png' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/client/ExpeditionItemModels.class' in z.namelist()
               assert z.read('assets/the_oldest_house/sounds/staircase/descent.ogg').startswith(b'OggS')
               assert 'data/the_oldest_house_exploration/structure/empty.nbt' in z.namelist()
               for cue in ('pipes','stone','settle'):
@@ -366,6 +371,8 @@ jobs:
           test -s build/font-smoke/native-literary.png
           test -s build/font-smoke/coffin-passed.txt
           test -s build/font-smoke/native-coffin.png
+          test -s build/font-smoke/bed-passed.txt
+          test -s build/font-smoke/native-bed.png
           test -s build/font-smoke/literary-effects-passed.txt
           test -s build/font-smoke/native-literary-effects.png
           test -s build/font-smoke/classics-passed.txt
@@ -594,7 +601,7 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.48"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.49"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseStory.class' in z.namelist()
@@ -647,8 +654,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.48.jar
-            build/libs/the_oldest_house-0.4.48.jar.sha256
+            build/libs/the_oldest_house-0.4.49.jar
+            build/libs/the_oldest_house-0.4.49.jar.sha256
           if-no-files-found: error
 
 

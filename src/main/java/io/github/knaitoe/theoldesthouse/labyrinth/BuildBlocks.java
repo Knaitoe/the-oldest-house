@@ -110,6 +110,9 @@ public final class BuildBlocks {
     }
 
     public static void box(ServerLevel level, BlockPos a, BlockPos b, BlockState state, int flags) {
+        // Panes need native neighbour shapes; known-shape placement leaves separate glass posts.
+        if(state.getBlock() instanceof net.minecraft.world.level.block.IronBarsBlock&&!state.is(net.minecraft.world.level.block.Blocks.IRON_BARS))
+            flags &= ~net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE;
         if (recording != null && recording.level == level) {
             Fill fill = new Fill(a, b, state, flags);
             recording.add(fill, fill.low, fill.high);

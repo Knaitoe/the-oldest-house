@@ -31,7 +31,7 @@ public final class NovelCreatureRenderers {
             left.zRot=(float)Math.sin(age*.025)*.025F+flap;right.zRot=-left.zRot;}}
     private static final class ActorRenderer extends MobRenderer<NovelActor,PlayerModel<NovelActor>>{
         private final PlayerModel<NovelActor> standard,slim;
-        ActorRenderer(EntityRendererProvider.Context c){super(c,new PlayerModel<>(c.bakeLayer(ModelLayers.PLAYER),false),.3F);standard=model;slim=new PlayerModel<>(c.bakeLayer(ModelLayers.PLAYER_SLIM),true);}
+        ActorRenderer(EntityRendererProvider.Context c){super(c,new PlayerModel<>(c.bakeLayer(ModelLayers.PLAYER),false),.3F);standard=model;slim=new PlayerModel<>(c.bakeLayer(ModelLayers.PLAYER_SLIM),true);addLayer(new net.minecraft.client.renderer.entity.layers.ItemInHandLayer<>(this,c.getItemInHandRenderer()));}
         private net.minecraft.client.resources.PlayerSkin skin(NovelActor e){var mc=Minecraft.getInstance();var info=mc.getConnection()==null?null:e.owner().map(mc.getConnection()::getPlayerInfo).orElse(null);return info!=null?info.getSkin():net.minecraft.client.resources.DefaultPlayerSkin.get(e.owner().orElse(new java.util.UUID(0,0)));}
         @Override public void render(NovelActor e,float yaw,float partial,com.mojang.blaze3d.vertex.PoseStack poses,net.minecraft.client.renderer.MultiBufferSource buffers,int light){model=skin(e).model()==net.minecraft.client.resources.PlayerSkin.Model.SLIM?slim:standard;super.render(e,yaw,partial,poses,buffers,light);}
         @Override public boolean shouldRender(NovelActor e,Frustum f,double x,double y,double z){var p=Minecraft.getInstance().player;return p!=null&&e.owner().filter(p.getUUID()::equals).isPresent()&&super.shouldRender(e,f,x,y,z);}

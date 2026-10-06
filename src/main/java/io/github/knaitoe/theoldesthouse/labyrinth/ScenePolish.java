@@ -121,6 +121,7 @@ public final class ScenePolish {
     /** An explicit rebuild authors the room again, so it is polished (and composed) again. */
     public static void forget(MinecraftServer server, BlockPos origin, LabyrinthPlace place) {
         SceneCraft.forget(server, origin, place);
+        ScenePlaytestRepairs.forget(server, origin, place);
         LabyrinthData data = LabyrinthData.get(server);
         CompoundTag done = data.state(STATE);
         if (done.contains(key(origin, place))) {

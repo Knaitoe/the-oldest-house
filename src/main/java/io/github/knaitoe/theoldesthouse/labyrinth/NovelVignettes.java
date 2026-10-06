@@ -298,10 +298,13 @@ public final class NovelVignettes {
         if(p.serverLevel().getEntitiesOfClass(NovelActor.class,new AABB(at).inflate(6),a->a.role()==0&&a.owner().filter(p.getUUID()::equals).isPresent()).isEmpty()){
             var actor=NovelRegistry.ACTOR.get().create(p.serverLevel());if(actor!=null){actor.appearance(p.getUUID(),0);actor.moveTo(Vec3.atBottomCenterOf(at));p.serverLevel().addFreshEntity(actor);own.putUUID("Tom",actor.getUUID());own.remove("TomMissing");}}
     }
-    public static void meetTom(ServerPlayer p,NovelActor actor){if(actor.role()!=0)return;var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());reward(p,own,"Radio",new ItemStack(NovelRegistry.RADIO.get()));cue(p,own,"Tom: I'll stay by the entrance. Call when you can still hear me.");save(data,p.getUUID(),own);}
+    public static void meetTom(ServerPlayer p,NovelActor actor){if(actor.role()!=0||!participant(p)||actor.owner().filter(p.getUUID()::equals).isEmpty()||p.distanceToSqr(actor)>36)return;var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());reward(p,own,"Radio",new ItemStack(NovelRegistry.RADIO.get()));
+        boolean handed=!own.getBoolean("Lighter");reward(p,own,"Lighter",new ItemStack(NovelRegistry.LIGHTER.get()));
+        if(handed)actor.swing(InteractionHand.MAIN_HAND);
+        cue(p,own,handed?"Tom: Here. Keep your thumb over the lid. It opens in my pocket.":"Tom: I'll stay here. Leave the radio on.");save(data,p.getUUID(),own);}
     public static void radio(ServerPlayer p){var own=personal(LabyrinthData.get(p.server),p.getUUID());String line;
         var phase=FinaleProgress.phase(p.server,p.getUUID());if(phase==FinaleProgress.Phase.COLLAPSE||phase==FinaleProgress.Phase.ESCAPE)line="Tom: The landing's moving. Find the water below the broken wall. Keep—";
-        else if(LabyrinthData.get(p.server).returnDepth(p.getUUID())>=12){p.displayClientMessage(Component.literal("T m: ").append(Component.literal("come back by the same doors").withStyle(s->s.withObfuscated(true))),true);p.playNotifySound(NovelRegistry.RADIO_STATIC.get(),SoundSource.PLAYERS,.35F,.8F);return;}
+        else if(LabyrinthData.get(p.server).returnDepth(p.getUUID())>=12)line="Tom: ...same doors. I can still hear you.";
         else line="Tom: The numbers change. Your way back still runs through the doors you opened.";cue(p,own,line);save(LabyrinthData.get(p.server),p.getUUID(),own);p.playNotifySound(NovelRegistry.RADIO_STATIC.get(),SoundSource.PLAYERS,.2F,1);
     }
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p){restoreScale(p);RECORDS.remove(p.getUUID());PENDING_PHOTOS.remove(p.getUUID());LAST_TICK.remove(p.getUUID());}}

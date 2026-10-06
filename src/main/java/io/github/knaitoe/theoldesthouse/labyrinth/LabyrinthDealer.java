@@ -149,8 +149,8 @@ public final class LabyrinthDealer {
         if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.add(LabyrinthPlace.FOLDED_MAZE);
         if (depth >= LabyrinthPacing.DEEP_DEPTH) gray.add(LabyrinthPlace.DEEP_MAZE);
         if (depth >= LabyrinthPacing.ABYSS_DEPTH) gray.add(LabyrinthPlace.ABYSS_MAZE);
-        // The deep tier is built in stone.
-        if (depth >= LabyrinthPacing.DEEP_DEPTH) {
+        // After seven forward crossings, newly discovered ordinary halls are stone.
+        if (depth >= LabyrinthPacing.STONE_DEPTH) {
             gray.add(LabyrinthPlace.STONE_GALLERY);
             gray.add(LabyrinthPlace.STONE_CROSSING);
             gray.add(LabyrinthPlace.STONE_DESCENT);
@@ -396,19 +396,18 @@ public final class LabyrinthDealer {
             case FOLDED_MAZE -> 5 + Math.min(6, Math.max(0, depth - LabyrinthPacing.STRANGE_DEPTH));
             case DEEP_MAZE -> 10 + Math.min(8, Math.max(0, depth - LabyrinthPacing.DEEP_DEPTH));
             case ABYSS_MAZE -> 18 + Math.min(12, Math.max(0, depth - LabyrinthPacing.ABYSS_DEPTH));
-            // Deeper than twelve doors the domestic halls give way to stone, and are gone by fourteen.
-            case STRAIGHT_HALL, BENT_HALL -> depth >= 14 ? 0 : depth >= LabyrinthPacing.DEEP_DEPTH ? 8 : 26;
-            case CROSS_HALL -> depth >= 14 ? 0 : depth >= LabyrinthPacing.DEEP_DEPTH ? 4 : 12;
-            case ALCOVE_HALL, OFFSET_HALL -> depth >= 14 ? 0 : depth >= LabyrinthPacing.DEEP_DEPTH ? 8 : 22;
-            case SERVICE_LANDING -> depth >= 14 ? 0 : 12;
-            case STONE_GALLERY -> depth < LabyrinthPacing.DEEP_DEPTH ? 0 : 26;
-            case STONE_CROSSING -> depth < LabyrinthPacing.DEEP_DEPTH ? 0 : 14;
-            case STONE_DESCENT -> depth < LabyrinthPacing.DEEP_DEPTH ? 0 : 16;
-            case STONE_ARCADE, STONE_BEND -> depth < LabyrinthPacing.DEEP_DEPTH ? 0 : 22;
-            case STONE_LANDING -> depth < LabyrinthPacing.DEEP_DEPTH ? 0 : 12;
+            case STRAIGHT_HALL, BENT_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 26;
+            case CROSS_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 12;
+            case ALCOVE_HALL, OFFSET_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 22;
+            case SERVICE_LANDING -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 12;
+            case STONE_GALLERY -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : 26;
+            case STONE_CROSSING -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : 14;
+            case STONE_DESCENT -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : 16;
+            case STONE_ARCADE, STONE_BEND -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : 22;
+            case STONE_LANDING -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : 12;
             case LONG_HALLWAY, HOTEL_HALLWAY, SPIRAL_STAIR, DUPLICATE_PASSAGE -> 1;
-            case JUNCTION -> depth >= 14 ? 1 : depth >= 9 ? 4 : 8;
-            case GRAY_CORRIDOR -> depth < 4 ? 0 : 2;
+            case JUNCTION -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 8;
+            case GRAY_CORRIDOR -> depth < 4 || depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 2;
             case QUIET_ROOM -> 3;
             case EXPLORER_CAMP -> depth < 3 ? 0 : 2;
             default -> depth < 4 ? 0 : place.grayWeight();
