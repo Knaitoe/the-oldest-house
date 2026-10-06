@@ -28,10 +28,12 @@ import net.neoforged.neoforge.gametest.*;
 @PrefixGameTestTemplate(false)
 public final class MultiplayerStoryTests {
     @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=1200)
-    public static void anExplicitRewriteKeepsBoundLeavesFiresComponentsAndThePeersOriginal(GameTestHelper h){run(h,524500,MultiplayerStoryTests::holdLeaves,f->{
+    public static void anExplicitRewriteKeepsBoundLeavesFiresComponentsAndThePeersOriginal(GameTestHelper h){run(h,527000,MultiplayerStoryTests::holdLeaves,f->{
         StaircaseFire.dress(f.level,f.origin);layLeaves(f);var p=f.player(h,"rewrite_owner");var peer=f.player(h,"rewrite_peer");ready(p,f);ready(peer,f);
         var mine=issued(p);var theirs=issued(peer);p.setItemInHand(InteractionHand.OFF_HAND,mine);peer.setItemInHand(InteractionHand.OFF_HAND,theirs);
-        h.assertTrue(find(p,f,0)&&burn(p,f,0)&&find(p,f,1),"the original has one burned leaf and the next real leaf bound");
+        h.assertTrue(find(p,f,0),"the original binds its first real leaf");
+        h.assertTrue(burn(p,f,0),"the first bound chapter lights the first native hearth");
+        h.assertTrue(find(p,f,1),"the next real leaf binds after the first has burned");
         mine.set(DataComponents.CUSTOM_NAME,Component.literal("Kept cover"));var tag=mine.get(DataComponents.CUSTOM_DATA).copyTag();tag.putString("Kept","same");mine.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));
         var oldCopy=mine.copy();var before=f.data().stateEntry(StaircaseStory.STATE,p.getUUID().toString()).copy();var peerBefore=theirs.copy();String peerWords=story(f,peer);
         h.assertTrue(StaircaseStory.rewrite(p),"an unfinished carried original can be explicitly rebound to the revised account");
@@ -42,7 +44,7 @@ public final class MultiplayerStoryTests {
         f.reload();h.assertTrue(StaircaseStory.isCurrent(p,mine)&&burn(p,f,1),"the next bound chapter still lights the correct hearth after a native reload");
     });}
     @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=1200)
-    public static void tomHandsOnlyHisOwnNearbyExplorerOneNativeLighter(GameTestHelper h){run(h,525000,f->{
+    public static void tomHandsOnlyHisOwnNearbyExplorerOneNativeLighter(GameTestHelper h){run(h,527500,f->{
         var p=f.player(h,"lighter_owner");var peer=f.player(h,"lighter_peer");var tom=new NovelActor(NovelRegistry.ACTOR.get(),f.level);tom.appearance(p.getUUID(),0);
         tom.setNoGravity(true);tom.moveTo(p.position());f.level.addFreshEntity(tom);
         try{

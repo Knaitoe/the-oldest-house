@@ -74,17 +74,17 @@ public final class StoneHallTests {
     }
 
     @GameTest(template = "empty")
-    public static void theDeepTierIsStone(GameTestHelper h) {
+    public static void theSeventhPassStartsTheStoneTier(GameTestHelper h) {
         LabyrinthData data = new LabyrinthData();
         UUID player = UUID.randomUUID();
         for (int depth = 1; depth <= 16; depth++) {
             data.pushReturn(player, new LabyrinthData.Waypoint(io.github.knaitoe.theoldesthouse.house.HouseDimensions.INTERIOR, new Vec3(depth, 64, 0), 0.0F, true));
-            boolean stone = data.returnDepth(player) >= LabyrinthPacing.DEEP_DEPTH;
+            boolean stone = data.returnDepth(player) >= LabyrinthPacing.STONE_DEPTH;
             for (LabyrinthPlace hall : HALLS)
-                h.assertTrue(LabyrinthDealer.grayAvailable(data, player).contains(hall) == stone, hall.id() + " belongs to the deep tier only (depth " + depth + ")");
+                h.assertTrue(LabyrinthDealer.grayAvailable(data, player).contains(hall) == stone, hall.id() + " enters the middle at seven forward passes (depth " + depth + ")");
         }
-        h.assertTrue(LabyrinthDealer.grayWeight(LabyrinthPlace.STRAIGHT_HALL, 14) == 0 && LabyrinthDealer.grayWeight(LabyrinthPlace.STONE_GALLERY, 14) > 0,
-                "at fourteen doors the ordinary way on is stone");
+        h.assertTrue(LabyrinthDealer.grayWeight(LabyrinthPlace.STRAIGHT_HALL, 7) == 0 && LabyrinthDealer.grayWeight(LabyrinthPlace.STONE_GALLERY, 7) > 0,
+                "at seven passes the newly discovered ordinary way on is stone");
         for (int depth = 17; depth <= LabyrinthPacing.STAIRCASE_DEPTH; depth++)
             data.pushReturn(player, new LabyrinthData.Waypoint(io.github.knaitoe.theoldesthouse.house.HouseDimensions.INTERIOR, new Vec3(depth, 64, 0), 0.0F, true));
         h.assertTrue(data.returnDepth(player) == LabyrinthPacing.STAIRCASE_DEPTH, "the way back is remembered as deep as the great staircase");
