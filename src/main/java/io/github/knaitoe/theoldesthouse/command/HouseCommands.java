@@ -370,6 +370,7 @@ public final class HouseCommands {
     private static int reset(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
         HouseSavedData data = HouseSavedData.get(source.getServer());
+        PlaytestCommands.clear(source.getServer());
         for(var player:source.getServer().getPlayerList().getPlayers())io.github.knaitoe.theoldesthouse.labyrinth.PhoneCanoe.interrupt(player);
         data.reset();
         LabyrinthData.get(source.getServer()).setState(io.github.knaitoe.theoldesthouse.labyrinth.PhoneCanoe.ID,new net.minecraft.nbt.CompoundTag());

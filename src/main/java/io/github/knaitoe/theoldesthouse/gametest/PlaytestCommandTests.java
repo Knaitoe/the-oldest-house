@@ -162,7 +162,7 @@ public final class PlaytestCommandTests {
             var cursor=new ItemStack(Items.DIAMOND,2);p.containerMenu.setCarried(cursor);var peerAt=peer.position();peer.getInventory().setItem(3,new ItemStack(Items.EMERALD,7));
             h.assertTrue(command(d,p,"ending defeat")==1,"defeat shortcut is explicit");PlaytestCommands.tick(p.server);
             var collection=MotherCollection.get(p.server);
-            h.assertTrue(!p.isAlive()&&FinaleProgress.phase(p.server,p.getUUID())==FinaleProgress.Phase.LOCKED_OUT&&FinaleProgress.player(p.server,p.getUUID()).getBoolean("NeedsRespawn"),"actual native death invokes the existing permanent defeat and respawn pipeline");
+            h.assertTrue(!p.isAlive()&&FinaleProgress.phase(p.server,p.getUUID())==FinaleProgress.Phase.LOCKED_OUT&&FinaleProgress.player(p.server,p.getUUID()).getBoolean("NeedsRespawn"),"actual native death invokes the existing permanent defeat and respawn pipeline: alive="+p.isAlive()+" phase="+FinaleProgress.phase(p.server,p.getUUID())+" health="+p.getHealth());
             h.assertTrue(collection.all().stream().anyMatch(e->e.sealed&&e.owner.equals(p.getUUID())&&ItemStack.isSameItemSameComponents(e.item(p.registryAccess()),before))&&collection.all().stream().anyMatch(e->e.sealed&&e.item(p.registryAccess()).is(Items.DIAMOND)&&e.item(p.registryAccess()).getCount()==2),"inventory and actual cursor components enter sealed native custody");
             h.assertTrue(peer.isAlive()&&peer.position().equals(peerAt)&&peer.getInventory().countItem(Items.EMERALD)==7&&FinaleProgress.phase(p.server,peer.getUUID())==FinaleProgress.Phase.UNSEEN&&!FinaleProgress.world(p.server).hasUUID("Owner"),"the peer keeps their life, position, property and ending, and the selected claim releases");
         } finally {p.server.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);}return true;
@@ -177,6 +177,11 @@ public final class PlaytestCommandTests {
         PlaytestCommands.logout(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p));PlaytestCommands.tick(p.server);
         h.assertTrue(p.isAlive()&&p.position().equals(at)&&command(d,p,"cancel")==0,"logout removes the exact pending entity before an ending can fire");
         h.assertTrue(command(d,p,"minotaur")==1,"a final request can be queued");p.teleportTo(h.getLevel(),0.5,100,0.5,0,0);PlaytestCommands.tick(p.server);
-        h.assertTrue(p.serverLevel()==h.getLevel()&&FinaleProgress.phase(p.server,p.getUUID())==FinaleProgress.Phase.UNSEEN&&command(d,p,"cancel")==0,"an unrelated dimension change cancels without dragging the reader back");return true;
+        h.assertTrue(p.serverLevel()==h.getLevel()&&FinaleProgress.phase(p.server,p.getUUID())==FinaleProgress.Phase.UNSEEN&&command(d,p,"cancel")==0,"an unrelated dimension change cancels without dragging the reader back");
+        h.assertTrue(command(d,p,"ending defeat")==1,"a request can wait before a world reset");
+        try {d.execute("oldesthouse reset",p.createCommandSourceStack().withPermission(2));}catch(Exception e){throw new IllegalStateException(e);}
+        HouseSavedData.get(p.server).markSpawned(f.origin);
+        PlaytestCommands.tick(p.server);
+        h.assertTrue(p.isAlive()&&command(d,p,"cancel")==0&&FinaleProgress.phase(p.server,p.getUUID())==FinaleProgress.Phase.UNSEEN,"reset cancels even when a House immediately respawns at exactly the same coordinates");return true;
     });}
 }

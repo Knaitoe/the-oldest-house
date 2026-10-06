@@ -160,6 +160,9 @@ public final class PlaytestCommands {
                     var cursor = player.containerMenu.getCarried(); player.containerMenu.setCarried(ItemStack.EMPTY);
                     player.closeContainer(); player.inventoryMenu.setCarried(cursor);
                 }
+                if (pending.start == Start.WITNESS && (error = witnessSpace(player, pending.origin)) != null) {
+                    fail(pending.source, error); continue;
+                }
                 player.stopRiding();
                 player.teleportTo(pending.level, at.getX() + .5, at.getY(), at.getZ() + .5, 0, 0);
                 player.connection.resetPosition(); player.setDeltaMovement(Vec3.ZERO); player.resetFallDistance();
@@ -174,7 +177,14 @@ public final class PlaytestCommands {
                     beginWitness(player, pending.origin, actor);
                     pending.source.sendSuccess(() -> Component.literal("Peaceful release started with a personal operator test account. Stand aside, then follow the real stairs home."), false);
                 } else if (FinaleController.start(player)) {
-                    if (pending.start == Start.DEFEAT) player.hurt(player.damageSources().genericKill(), Float.MAX_VALUE);
+                    if (pending.start == Start.DEFEAT) {
+                        // This explicit forced-death fixture must work even before the client
+                        // acknowledges the dimension change. Native portal invulnerability
+                        // would otherwise leave the player alive in a committed fight.
+                        player.hasChangedDimension();
+                        if (!player.hurt(player.damageSources().genericKill(), Float.MAX_VALUE))
+                            fail(pending.source, "Native death was refused. The finale is committed; check /oldesthouse finale status.");
+                    }
                     else {
                         var record = FinaleProgress.player(server, player.getUUID());
                         if (FinaleProgress.phase(record) != FinaleProgress.Phase.COLLAPSE) FinaleController.wound(player, actor);
