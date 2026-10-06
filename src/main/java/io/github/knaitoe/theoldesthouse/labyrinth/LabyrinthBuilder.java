@@ -73,7 +73,8 @@ public final class LabyrinthBuilder {
     /** Places are built this many crossings ahead of the deepest explorer. */
     public static final int LEAD = 3;
     public static final List<LabyrinthPlace> CORE = List.of(LabyrinthPlace.JUNCTION, LabyrinthPlace.GRAY_CORRIDOR,
-            LabyrinthPlace.STRAIGHT_HALL, LabyrinthPlace.BENT_HALL, LabyrinthPlace.CROSS_HALL, LabyrinthPlace.QUIET_ROOM);
+            LabyrinthPlace.STRAIGHT_HALL, LabyrinthPlace.BENT_HALL, LabyrinthPlace.CROSS_HALL, LabyrinthPlace.QUIET_ROOM,
+            LabyrinthPlace.STONE_GALLERY);
     @Nullable private static BuildBlocks.Plan geometry;
     private static ServerLevel preparationLevel;
     private static final List<ChunkPos> preparationChunks = new ArrayList<>();
@@ -136,7 +137,8 @@ public final class LabyrinthBuilder {
         return switch (place) {
             case FOLDED_MAZE -> LabyrinthPacing.STRANGE_DEPTH;
             case SPIRAL_STAIR, FRACTURED_WALKWAY, LIGHT_SINK, BLIND_STRETCH, MOVING_THRESHOLD -> 10;
-            case DEEP_MAZE, STONE_GALLERY, STONE_CROSSING, STONE_DESCENT, STONE_ARCADE, STONE_BEND, STONE_LANDING -> LabyrinthPacing.DEEP_DEPTH;
+            case DEEP_MAZE -> LabyrinthPacing.DEEP_DEPTH;
+            case STONE_GALLERY, STONE_CROSSING, STONE_DESCENT, STONE_ARCADE, STONE_BEND, STONE_LANDING -> LabyrinthPacing.STONE_DEPTH;
             case ALCOVE_HALL, OFFSET_HALL, SERVICE_LANDING -> 0;
             case HOTEL_HALLWAY, COMPRESSION_PASSAGE, GRAVITY_DRIFT, DUPLICATE_PASSAGE, HOTEL, HOTEL_GROUNDS -> 14;
             case ABYSS_MAZE -> LabyrinthPacing.ABYSS_DEPTH;

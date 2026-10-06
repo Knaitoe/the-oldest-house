@@ -27,6 +27,34 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID+"_multiplayer")
 @PrefixGameTestTemplate(false)
 public final class MultiplayerStoryTests {
+    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=1200)
+    public static void anExplicitRewriteKeepsBoundLeavesFiresComponentsAndThePeersOriginal(GameTestHelper h){run(h,524500,MultiplayerStoryTests::holdLeaves,f->{
+        StaircaseFire.dress(f.level,f.origin);layLeaves(f);var p=f.player(h,"rewrite_owner");var peer=f.player(h,"rewrite_peer");ready(p,f);ready(peer,f);
+        var mine=issued(p);var theirs=issued(peer);p.setItemInHand(InteractionHand.OFF_HAND,mine);peer.setItemInHand(InteractionHand.OFF_HAND,theirs);
+        h.assertTrue(find(p,f,0)&&burn(p,f,0)&&find(p,f,1),"the original has one burned leaf and the next real leaf bound");
+        mine.set(DataComponents.CUSTOM_NAME,Component.literal("Kept cover"));var tag=mine.get(DataComponents.CUSTOM_DATA).copyTag();tag.putString("Kept","same");mine.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));
+        var oldCopy=mine.copy();var before=f.data().stateEntry(StaircaseStory.STATE,p.getUUID().toString()).copy();var peerBefore=theirs.copy();String peerWords=story(f,peer);
+        h.assertTrue(StaircaseStory.rewrite(p),"an unfinished carried original can be explicitly rebound to the revised account");
+        var after=f.data().stateEntry(StaircaseStory.STATE,p.getUUID().toString());
+        h.assertTrue(after.getInt("Burned")==1&&after.getInt("Found")==2&&StaircaseFire.flames(FinaleProgress.player(p.server,p.getUUID()))==1&&pages(mine).size()==2,"rewriting neither restores burned leaves nor grants new leaves or fires");
+        h.assertTrue(after.getCompound("PreviousWords").getList("Pages",8).equals(before.getList("Pages",8))&&!StaircaseStory.isCurrent(p,oldCopy)&&StaircaseStory.isCurrent(p,mine),"the previous words are archived exactly and the old replay becomes cold");
+        h.assertTrue(mine.get(DataComponents.CUSTOM_NAME).getString().equals("Kept cover")&&mine.get(DataComponents.CUSTOM_DATA).copyTag().getString("Kept").equals("same")&&ItemStack.isSameItemSameComponents(theirs,peerBefore)&&peerWords.equals(story(f,peer)),"the same carried book keeps its unrelated components and never changes the peer's original");
+        f.reload();h.assertTrue(StaircaseStory.isCurrent(p,mine)&&burn(p,f,1),"the next bound chapter still lights the correct hearth after a native reload");
+    });}
+    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=1200)
+    public static void tomHandsOnlyHisOwnNearbyExplorerOneNativeLighter(GameTestHelper h){run(h,525000,f->{
+        var p=f.player(h,"lighter_owner");var peer=f.player(h,"lighter_peer");var tom=new NovelActor(NovelRegistry.ACTOR.get(),f.level);tom.appearance(p.getUUID(),0);
+        tom.setNoGravity(true);tom.moveTo(p.position());f.level.addFreshEntity(tom);
+        try{
+            h.assertTrue(StaircaseFire.take(p)&&p.getInventory().countItem(NovelRegistry.LIGHTER.get())==0&&p.getInventory().countItem(Items.FLINT_AND_STEEL)==0,"the shelf issues only the binding, without automatically handing out fire");
+            peer.teleportTo(f.level,p.getX(),p.getY(),p.getZ(),0,0);NovelVignettes.meetTom(peer,tom);
+            h.assertTrue(peer.getInventory().countItem(NovelRegistry.LIGHTER.get())==0,"another explorer cannot take this Tom's finite lighter");
+            NovelVignettes.meetTom(p,tom);NovelVignettes.meetTom(p,tom);f.reload();NovelVignettes.meetTom(p,tom);
+            h.assertTrue(p.getInventory().countItem(NovelRegistry.LIGHTER.get())==1&&tom.getMainHandItem().is(NovelRegistry.LIGHTER.get()),"Tom holds the registered lighter and hands one to his own explorer across repeated visits and reload");
+            p.gameMode.changeGameModeForPlayer(GameType.SPECTATOR);NovelVignettes.meetTom(p,tom);
+            h.assertTrue(p.getInventory().countItem(NovelRegistry.LIGHTER.get())==1,"spectator interaction cannot repeat the handoff");
+        }finally{tom.discard();}
+    });}
     @GameTest(template="empty",batch="multiplayer_cave_return",timeoutTicks=1200)
     public static void NativeCaveCreditWaitsForTheActualReturnAndSurvivesACanceledAttempt(GameTestHelper h){IndianLakeLinkedTests.nativeQuietSoundsOccupiedVisitsRoofAndCanoePreserveTheSequence(h);}
     @AfterBatch(batch="multiplayer_cave_return") public static void caveCleanup(ServerLevel level){IndianLakeLinkedTests.cleanCave(level);}
@@ -81,9 +109,9 @@ public final class MultiplayerStoryTests {
         h.assertTrue(pages(first).size()==1&&pages(second).size()==1&&StaircaseFire.leaves(first,p.getUUID())==0&&pages(first).getFirst().raw().getString().contains("story_road"),"the shelf gives only the binding and this reader's title leaf; the story leaves are on the flights");
         String mine=story(f,p),theirs=story(f,peer);
         h.assertTrue(f.data().stateEntry(StaircaseStory.STATE,p.getUUID().toString()).getList("Pages",8).size()==5,"five story leaves are written for the five flights");
-        h.assertTrue(mine.contains("1,234 metres")&&mine.contains("twice")&&(mine.contains("7 loaves")||mine.contains("7 times"))&&mine.contains("the narrow cave")&&!mine.contains("ted_caver")&&!mine.contains("ted caver"),"one player's native stats and confirmed retreat, by its prose name, form their story: "+mine);
+        h.assertTrue(mine.contains("travelled on foot")&&mine.contains("died and returned")&&mine.contains("made bread")&&mine.contains("the narrow cave")&&!mine.contains("ted_caver")&&!mine.contains("1,234")&&!mine.contains("Walked:"),"one player's native facts and confirmed retreat become connected scenes rather than a statistics ledger: "+mine);
         h.assertTrue(theirs.contains("Juniper")&&!mine.contains("Juniper")&&!theirs.contains("1,234"),"a shared shelf never borrows the peer's biography");
-        h.assertTrue(theirs.contains("once")&&!theirs.contains("1 times")&&!theirs.contains("1 nights"),"one recorded death and bed rest use singular wording");
+        h.assertTrue(theirs.contains("You died, and returned.")&&!theirs.contains("keeps crossing out")&&!theirs.contains("made bread"),"the peer's single death is distinct and cannot borrow the first reader's bread-making");
         var before=mine;p.awardStat(Stats.DEATHS,1);f.reload();
         h.assertTrue(before.equals(story(f,p)),"the written leaves remain unchanged as play continues");
     }); }

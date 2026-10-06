@@ -19,7 +19,7 @@ public final class NovelActor extends PathfinderMob {
     public static AttributeSupplier.Builder attributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,20).add(Attributes.MOVEMENT_SPEED,0);}
     @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(OWNER,Optional.empty());b.define(ROLE,0);}
     public Optional<UUID> owner(){return entityData.get(OWNER);}public int role(){return entityData.get(ROLE);}
-    public void appearance(UUID id,int role){entityData.set(OWNER,Optional.of(id));entityData.set(ROLE,role);}
+    public void appearance(UUID id,int role){entityData.set(OWNER,Optional.of(id));entityData.set(ROLE,role);if(role==0)setItemSlot(EquipmentSlot.MAINHAND,new net.minecraft.world.item.ItemStack(NovelRegistry.LIGHTER.get()));}
     @Override public net.minecraft.network.chat.Component getName(){return hasCustomName()?super.getName():net.minecraft.network.chat.Component.translatable(role()==0?"entity.the_oldest_house.novel_tom":"entity.the_oldest_house.novel_double");}
     @Override protected InteractionResult mobInteract(Player p,InteractionHand hand){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND&&owner().filter(s.getUUID()::equals).isPresent())NovelVignettes.meetTom(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}
     @Override public boolean hurt(DamageSource s,float n){return false;}

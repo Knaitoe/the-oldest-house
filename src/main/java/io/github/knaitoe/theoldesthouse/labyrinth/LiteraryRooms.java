@@ -43,7 +43,7 @@ public final class LiteraryRooms {
         for(int x=x0+1;x<x1;x++)for(int z=z0+1;z<z1;z++)if((x-x0)%5==0||(z-z0)%5==0)at(l,b,x,y+h,z,Blocks.DARK_OAK_PLANKS);
         for(int z=z0+1;z<z1;z++)for(int x:new int[]{x0,x1})at(l,b,x,y,z,Blocks.DARK_OAK_PLANKS);
     }
-    private static void door(ServerLevel l,BlockPos b,int x,int y,int z,Direction f,boolean open){box(l,b,x,y,z,x,y+2,z,Blocks.AIR);NovelRooms.door(l,b.offset(x,y,z),f,Blocks.DARK_OAK_DOOR,open);var across=f.getAxis()==Direction.Axis.X?Direction.NORTH:Direction.EAST;for(int a:new int[]{-1,1})for(int dy=0;dy<3;dy++)BuildBlocks.set(l,b.offset(x,y+dy,z).relative(across,a),Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState(),F);}
+    private static void door(ServerLevel l,BlockPos b,int x,int y,int z,Direction f,boolean open){box(l,b,x,y,z,x,y+1,z,Blocks.AIR);at(l,b,x,y+2,z,Blocks.STRIPPED_DARK_OAK_LOG);NovelRooms.door(l,b.offset(x,y,z),f,Blocks.DARK_OAK_DOOR,open);var across=f.getAxis()==Direction.Axis.X?Direction.NORTH:Direction.EAST;for(int a:new int[]{-1,1})for(int dy=0;dy<3;dy++)BuildBlocks.set(l,b.offset(x,y+dy,z).relative(across,a),Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState(),F);}
     private static void furniture(ServerLevel l,BlockPos b,int x,int y,int z,HouseholdFurnitureBlock.Kind k,Direction f){NovelRooms.furniture(l,b.offset(x,y,z),k,f);}
     private static void desk(ServerLevel l,BlockPos b,int x,int y,int z){furniture(l,b,x,y,z,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);furniture(l,b,x,y,z+2,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.NORTH);}
     private static void light(ServerLevel l,BlockPos b,int x,int y,int z){at(l,b,x,y+1,z,Blocks.CHAIN);BuildBlocks.set(l,b.offset(x,y,z),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);}
@@ -129,7 +129,9 @@ public final class LiteraryRooms {
     };}
     private static void tree(ServerLevel l,BlockPos b,int x,int y,int z,int height){box(l,b,x,y,z,x,y+height,z,Blocks.SPRUCE_LOG);for(int h=2;h<=height+2;h++){int w=Math.max(1,(height+3-h)/2);box(l,b,x-w,y+h,z-w,x+w,y+h,z+w,Blocks.SPRUCE_LEAVES);}}
     private static void roof(ServerLevel l,BlockPos b,int x0,int x1,int z0,int z1,int eaves){
-        box(l,b,x0-1,-2,z0-1,x1+1,-1,z1+1,Blocks.STONE_BRICKS);
+        // Foundations skirt the building. They must not overwrite its floor or cellar ladder.
+        for(int x=x0-1;x<=x1+1;x++)for(int z=z0-1;z<=z1+1;z++)if(x<x0||x>x1||z<z0||z>z1)
+            box(l,b,x,-2,z,x,-1,z,Blocks.STONE_BRICKS);
         int mid=(x0+x1)/2;for(int x=x0-1;x<=x1+1;x++){int y=eaves+Math.min(x-x0+1,x1+1-x)/2;for(int z=z0-1;z<=z1+1;z++)BuildBlocks.set(l,b.offset(x,y,z),Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,x<=mid?Direction.EAST:Direction.WEST),F);if(x>=x0&&x<=x1)for(int zz:new int[]{z0,z1})box(l,b,x,eaves,zz,x,y-1,zz,Blocks.SPRUCE_PLANKS);}
         for(int z=z0-1;z<=z1+1;z++)at(l,b,mid,eaves+(x1-x0)/4+1,z,Blocks.DARK_OAK_SLAB);
     }
@@ -147,8 +149,9 @@ public final class LiteraryRooms {
     }
     private static void mapping(ServerLevel l,BlockPos b){
         terrain(l,b,LabyrinthPlace.MAPPING_INTERIOR,Blocks.GRASS_BLOCK);room(l,b,-13,13,-36,-8,0,5,LiteraryRegistry.SIDING.get(),Blocks.BIRCH_PLANKS);door(l,b,0,0,-8,Direction.SOUTH,true);box(l,b,0,-1,-8,0,-1,0,Blocks.GRAVEL);
-        box(l,b,-12,0,-24,12,3,-24,Blocks.CALCITE);door(l,b,0,0,-24,Direction.SOUTH,true);door(l,b,7,0,-24,Direction.SOUTH,true);NovelRooms.bed(l,b.offset(6,0,-32),Blocks.BLUE_BED,Direction.NORTH);furniture(l,b,-8,0,-19,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);furniture(l,b,-9,0,-29,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.EAST);at(l,b,-11,0,-33,Blocks.FURNACE);
+        box(l,b,-12,0,-24,12,4,-24,Blocks.CALCITE);door(l,b,0,0,-24,Direction.SOUTH,true);door(l,b,7,0,-24,Direction.SOUTH,true);NovelRooms.bed(l,b.offset(6,0,-32),Blocks.BLUE_BED,Direction.NORTH);furniture(l,b,-8,0,-19,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);furniture(l,b,-9,0,-29,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.EAST);at(l,b,-11,0,-33,Blocks.FURNACE);
         box(l,b,-1,-6,-76,1,-6,-18,Blocks.DIRT);box(l,b,-1,-5,-76,1,-5,-18,Blocks.AIR);box(l,b,-1,-4,-76,1,-2,-18,Blocks.DIRT);box(l,b,0,-5,-17,0,0,-17,Blocks.AIR);for(int y=-5;y<=-1;y++)BuildBlocks.set(l,b.offset(0,y,-17),Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH),F);prop(l,b,PILE,LiteraryPropBlock.Kind.BELONGINGS,Direction.SOUTH);light(l,b,0,3,-12);light(l,b,0,-4,-41);roof(l,b,-13,13,-36,-8,5);window(l,b,-13,-18,true);window(l,b,13,-30,true);for(int x:new int[]{-9,9})window(l,b,x,-8,false);box(l,b,-4,-1,-7,4,-1,-4,Blocks.SPRUCE_PLANKS);for(int x:new int[]{-4,4})box(l,b,x,0,-4,x,4,-4,Blocks.STRIPPED_SPRUCE_LOG);
+        ScenePlaytestRepairs.cabin(l,b);
     }
     private static void rabbit(ServerLevel l,BlockPos b){
         terrain(l,b,LabyrinthPlace.HOLY_RABBIT,Blocks.SNOW_BLOCK);tree(l,b,0,0,-25,19);box(l,b,-5,0,-29,5,4,-20,Blocks.SPRUCE_LEAVES);box(l,b,-3,0,-28,3,0,-21,Blocks.AIR);box(l,b,-3,-1,-28,3,-1,-21,Blocks.PODZOL);box(l,b,-2,0,-20,2,2,-18,Blocks.AIR);

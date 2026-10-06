@@ -60,12 +60,12 @@ public final class StaircaseWear {
         return true;
     }
     // The marks follow from the origin alone; worlds whose wear is finished stop looking.
-    private static BlockPos cachedOrigin;private static List<Mark> cachedMarks=List.of();private static boolean finished;
+    private static BlockPos cachedOrigin;private static net.minecraft.server.MinecraftServer cachedServer;private static List<Mark> cachedMarks=List.of();private static boolean finished;
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         var server=e.getServer();if(server.getTickCount()%20!=0)return;
         var origin=HouseSavedData.get(server).houseOrigin();var level=server.getLevel(HouseDimensions.INTERIOR);if(origin==null||level==null)return;
-        var data=LabyrinthData.get(server);if(!data.state("finale_architecture_049").getBoolean("Ready"))return;
-        if(!origin.equals(cachedOrigin)){cachedOrigin=origin;cachedMarks=marks(origin);finished=false;}
+        var data=LabyrinthData.get(server);if(!data.state("finale_architecture_049").getBoolean("Ready")){finished=false;return;}
+        if(server!=cachedServer||!origin.equals(cachedOrigin)){cachedServer=server;cachedOrigin=origin;cachedMarks=marks(origin);finished=false;}
         if(finished)return;
         String key=Long.toString(origin.asLong());var own=data.stateEntry(STATE,key);boolean pending=false;
         for(var mark:cachedMarks){

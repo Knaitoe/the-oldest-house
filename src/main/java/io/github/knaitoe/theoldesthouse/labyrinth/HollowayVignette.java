@@ -175,7 +175,7 @@ public final class HollowayVignette {
         }
         if(!p.isShiftKeyDown()){p.displayClientMessage(Component.literal("Crouch and pull the service latch."),true);return true;}
         own.putBoolean("Escaped",true);own.putBoolean("Run",false);own.putBoolean("CampAnger",false);own.putBoolean("Rewarded",true);save(data,p.getUUID(),own);
-        var shield=owned(VignetteYields.mark(new ItemStack(Items.SHIELD),ID),p.getUUID());shield.set(DataComponents.CUSTOM_NAME,Component.literal("Holloway's battered shield"));
+        var shield=owned(VignetteYields.mark(new ItemStack(NovelRegistry.HOLLOWAY_SHIELD.get()),ID),p.getUUID());shield.set(DataComponents.CUSTOM_NAME,Component.literal("Holloway's battered shield"));
         give(p,shield);give(p,owned(wrongMap(p.serverLevel()),p.getUUID()));
         WitnessAccount.resolve(p,WitnessAccount.Story.HOLLOWAY,aftermath&&!own.getBoolean("Seen")?"aftermath":"three_rooms_and_service_latch");
         p.displayClientMessage(Component.literal("The latch yields. A shield and a folded survey were wedged behind it. The service door leads back."),false);return true;

@@ -73,7 +73,7 @@ public final class NotesRepairTests {
         try(var f=new Fixture(h,102600)){
             var level=h.getLevel();var at=h.absolutePos(BlockPos.ZERO).offset(70,8,70);
             for(int x=-3;x<=14;x++)for(int z=-4;z<=4;z++){level.setBlock(at.offset(x,-1,z),Blocks.STONE.defaultBlockState(),2);for(int y=0;y<=5;y++)level.setBlock(at.offset(x,y,z),Blocks.AIR.defaultBlockState(),2);}
-            var p=f.player(h,level,Vec3.atBottomCenterOf(at));p.setYRot(-90);p.setYHeadRot(-90);p.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(Items.SHIELD));p.startUsingItem(InteractionHand.OFF_HAND);
+            var p=f.player(h,level,Vec3.atBottomCenterOf(at));p.setYRot(-90);p.setYHeadRot(-90);p.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(NovelRegistry.HOLLOWAY_SHIELD.get()));p.startUsingItem(InteractionHand.OFF_HAND);
             for(int i=0;i<8;i++)p.doTick();h.assertTrue(p.isBlocking(),"the actual survival player raises a native shield before the charge");
             var weapon=new ItemStack(Items.IRON_SWORD);p.setItemInHand(InteractionHand.MAIN_HAND,weapon);WeaponHistory.record(p,weapon,1);var own=new CompoundTag();own.putString("Phase",FinaleProgress.Phase.FIGHT.name());own.putUUID("Weapon",WeaponHistory.identity(weapon));FinaleProgress.save(f.server,p.getUUID(),own);
             var creature=FinaleRegistry.MINOTAUR.get().create(level);f.entities.add(creature);creature.caged();creature.moveTo(Vec3.atBottomCenterOf(at.offset(10,0,0)));level.addFreshEntity(creature);UUID id=creature.getUUID();creature.awaken(p.getUUID());

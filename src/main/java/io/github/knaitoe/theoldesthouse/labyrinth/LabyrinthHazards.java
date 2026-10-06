@@ -78,22 +78,24 @@ public final class LabyrinthHazards {
 
     public static void buildFloodedPassage(ServerLevel level, BlockPos base) {
         LabyrinthBuilder.room(level, base, -7, 7, 5, -27, -1, WALL, FLOOR, CEILING);
-        for(int x=-7;x<=7;x++)for(int z=-26;z<=-3;z++)for(int y=-2;y<=4;y++)level.setBlock(base.offset(x,y,z),y==-2?FLOOR:WALL,FLAGS);
+        for(int x=-7;x<=7;x++)for(int z=-26;z<=-3;z++)for(int y=-2;y<=4;y++)BuildBlocks.set(level,base.offset(x,y,z),y==-2?FLOOR:WALL,FLAGS);
         for(BlockPos feet:floodRoute(base)){
-            level.setBlock(feet,Blocks.WATER.defaultBlockState(),FLAGS);
-            level.setBlock(feet.below(),Math.floorMod(feet.getZ(),7)==0?Blocks.MOSSY_STONE_BRICKS.defaultBlockState():FLOOR,FLAGS);
+            BuildBlocks.set(level,feet,Blocks.WATER.defaultBlockState(),FLAGS);
+            if(feet.getZ()!=base.getZ()-27)BuildBlocks.set(level,feet.above(),Blocks.WATER.defaultBlockState(),FLAGS);
+            BuildBlocks.set(level,feet.below(),Math.floorMod(feet.getZ(),7)==0?Blocks.MOSSY_STONE_BRICKS.defaultBlockState():FLOOR,FLAGS);
         }
         // The channels sit below the dry vestibule, so source water cannot wash through a door.
         for(int z:new int[]{-3,-27})for(int x=0;x<=1;x++){
-            level.setBlock(base.offset(x,-3,z),FLOOR,FLAGS);
-            for(int y=-2;y<=3;y++)level.setBlock(base.offset(x,y,z),y<0?Blocks.WATER.defaultBlockState():Blocks.AIR.defaultBlockState(),FLAGS);
+            BuildBlocks.set(level,base.offset(x,-3,z),FLOOR,FLAGS);
+            for(int y=-2;y<=3;y++)BuildBlocks.set(level,base.offset(x,y,z),y<0?Blocks.WATER.defaultBlockState():Blocks.AIR.defaultBlockState(),FLAGS);
         }
         for(BlockPos pocket:floodAir(base)){
-            for(int x=0;x<=1;x++)for(int z=0;z<=1;z++)for(int y=-1;y<=4;y++)level.setBlock(pocket.offset(x,y,z),y<2?Blocks.WATER.defaultBlockState():Blocks.AIR.defaultBlockState(),FLAGS);
+            for(int x=0;x<=1;x++)for(int z=0;z<=1;z++)for(int y=-1;y<=4;y++)BuildBlocks.set(level,pocket.offset(x,y,z),y<2?Blocks.WATER.defaultBlockState():Blocks.AIR.defaultBlockState(),FLAGS);
             LabyrinthBuilder.hangLantern(level,pocket.above(5),true);
         }
         LabyrinthBuilder.entrance(level, base, WALL, FLOOR, CEILING);
         LabyrinthBuilder.doors(level, base, LabyrinthPlace.FLOODED_PASSAGE);
+        ScenePlaytestRepairs.flooded(level,base);
         var d=LabyrinthData.get(level.getServer());var state=d.state("water_trial_0427");state.putBoolean(Long.toString(base.asLong()),true);d.setState("water_trial_0427",state);
     }
     public static List<BlockPos> floodAir(BlockPos base){return List.of(base.offset(-6,0,-24),base.offset(0,0,-14),base.offset(6,0,-17));}

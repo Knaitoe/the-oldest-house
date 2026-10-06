@@ -7,6 +7,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
  * first visit. Mornings here are the House's perceived age: one per dawn
  * after somebody has entered the manor.
  */
+@net.neoforged.fml.common.EventBusSubscriber(modid=io.github.knaitoe.theoldesthouse.TheOldestHouse.MOD_ID,bus=net.neoforged.fml.common.EventBusSubscriber.Bus.MOD)
 public final class HouseConfig {
     public static final ModConfigSpec SPEC;
 
@@ -70,17 +71,29 @@ public final class HouseConfig {
                         "A player name consumes that day's call, but does not add a friendly-mob strike.")
                 .define("harriganPlayerTargets", false);
         builder.push("exploration");
-        STORY_EARLY_CHANCE = builder.comment("Chance of offering a story on a new route at depths 6-9. Remembered routes never reroll.").defineInRange("storyEarlyChance", 8, 0, 100);
-        STORY_BASE_CHANCE = builder.comment("Story chance on a new route at depth 10 or more.").defineInRange("storyBaseChance", 16, 0, 100);
-        STORY_CHANCE_STEP = builder.comment("Added chance per eligible new route without a story; backtracking adds nothing.").defineInRange("storyChanceStep", 7, 0, 100);
-        STORY_SPACING = builder.comment("Ordinary visits between stories. Deliberate scent and a living-pet rescue bypass this interval.").defineInRange("storySpacing", 3, 0, 8);
-        STORY_DRY_GUARANTEE = builder.comment("Guarantee a story after this many eligible dry deals, once the spacing is satisfied.").defineInRange("storyDryGuarantee", 12, 1, 100);
-        HAZARD_EARLY_CHANCE = builder.comment("Physical-hazard chance at depths 6-9, only when this arrival offers no story or anomaly.").defineInRange("hazardEarlyChance", 10, 0, 100);
-        HAZARD_MIDDLE_CHANCE = builder.comment("Physical-hazard chance at depths 10-15.").defineInRange("hazardMiddleChance", 16, 0, 100);
-        HAZARD_DEEP_CHANCE = builder.comment("Physical-hazard chance at depth 16 or more.").defineInRange("hazardDeepChance", 22, 0, 100);
-        HAZARD_SPACING = builder.comment("Visits separating physical hazards.").defineInRange("hazardSpacing", 3, 0, 8);
+        STORY_EARLY_CHANCE = builder.comment("Chance of offering a story on a new route at depths 6-9. Remembered routes never reroll.").defineInRange("storyEarlyChance", 22, 0, 100);
+        STORY_BASE_CHANCE = builder.comment("Story chance on a new route at depth 10 or more.").defineInRange("storyBaseChance", 38, 0, 100);
+        STORY_CHANCE_STEP = builder.comment("Added chance per eligible new route without a story; backtracking adds nothing.").defineInRange("storyChanceStep", 12, 0, 100);
+        STORY_SPACING = builder.comment("Ordinary visits between stories. Deliberate scent and a living-pet rescue bypass this interval.").defineInRange("storySpacing", 2, 0, 8);
+        STORY_DRY_GUARANTEE = builder.comment("Guarantee a story after this many eligible dry deals, once the spacing is satisfied.").defineInRange("storyDryGuarantee", 6, 1, 100);
+        HAZARD_EARLY_CHANCE = builder.comment("Physical-hazard chance at depths 6-9, only when this arrival offers no story or anomaly.").defineInRange("hazardEarlyChance", 24, 0, 100);
+        HAZARD_MIDDLE_CHANCE = builder.comment("Physical-hazard chance at depths 10-15.").defineInRange("hazardMiddleChance", 36, 0, 100);
+        HAZARD_DEEP_CHANCE = builder.comment("Physical-hazard chance at depth 16 or more.").defineInRange("hazardDeepChance", 48, 0, 100);
+        HAZARD_SPACING = builder.comment("Visits separating physical hazards.").defineInRange("hazardSpacing", 2, 0, 8);
         builder.pop();
         SPEC = builder.build();
+    }
+
+    /** Upgrade only the complete previous default preset; deliberate server tuning stays exact. */
+    @net.neoforged.bus.api.SubscribeEvent
+    public static void loaded(net.neoforged.fml.event.config.ModConfigEvent.Loading event) {
+        if(event.getConfig().getSpec()!=SPEC)return;
+        var values=java.util.List.of(STORY_EARLY_CHANCE,STORY_BASE_CHANCE,STORY_CHANCE_STEP,STORY_SPACING,STORY_DRY_GUARANTEE,
+                HAZARD_EARLY_CHANCE,HAZARD_MIDDLE_CHANCE,HAZARD_DEEP_CHANCE,HAZARD_SPACING);
+        int[] before={8,16,7,3,12,10,16,22,3};
+        for(int i=0;i<values.size();i++)if(values.get(i).get()!=before[i])return;
+        for(var value:values)value.set(value.getDefault());
+        SPEC.save();
     }
 
     private HouseConfig() {

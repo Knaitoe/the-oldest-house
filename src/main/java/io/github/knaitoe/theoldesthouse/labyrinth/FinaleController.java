@@ -195,7 +195,7 @@ public final class FinaleController {
         }
         if(!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)||!FinaleArchitecture.contains(origin,player.blockPosition()))return;
         var phase=FinaleProgress.phase(player.server,player.getUUID());
-        if(phase==FinaleProgress.Phase.ESCAPE&&player.getMainHandItem().is(Items.FLINT_AND_STEEL)&&burnable(player.getOffhandItem())){
+        if(phase==FinaleProgress.Phase.ESCAPE&&player.getMainHandItem().getItem() instanceof net.minecraft.world.item.FlintAndSteelItem&&burnable(player.getOffhandItem())){
             event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);burn(player);return;
         }
         if(phase==FinaleProgress.Phase.ESCAPE&&event.getPos().distManhattan(FinaleArchitecture.exit(origin))<=1&&player.distanceToSqr(event.getPos().getCenter())<20){
@@ -210,7 +210,7 @@ public final class FinaleController {
     }
     @SubscribeEvent public static void burnAir(PlayerInteractEvent.RightClickItem event){
         if(event.getEntity() instanceof ServerPlayer player&&event.getHand()==InteractionHand.MAIN_HAND
-                &&FinaleProgress.phase(player.server,player.getUUID())==FinaleProgress.Phase.ESCAPE&&event.getItemStack().is(Items.FLINT_AND_STEEL)&&burnable(player.getOffhandItem())){
+                &&FinaleProgress.phase(player.server,player.getUUID())==FinaleProgress.Phase.ESCAPE&&event.getItemStack().getItem() instanceof net.minecraft.world.item.FlintAndSteelItem&&burnable(player.getOffhandItem())){
             event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);burn(player);
         }
     }

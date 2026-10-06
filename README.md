@@ -3,6 +3,8 @@
 
 A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
+Version `0.4.49` increases story and hazard encounters, brings new stone halls forward to seven crossings, repairs the uploaded cabin/window/water notes, registers Holloway's shield and Tom's lighter, and gives new burn books a connected personal account. Existing maps, finite supplies and other players' progress are retained. Layout 34 / protocol 33; use matching server and client JARs. [Details and validation](docs/PLAYTEST_0_4_49.md).
+
 Version `0.4.48` appends six ordinary halls with subtle changes of width, alignment and ceiling rhythm, slows and exposes exploration pacing in the server config, shares fresh ordinary routes between explorers, and adds restrained positional room sounds and owner-private handwriting in burning-page smoke. Existing maps, doors, finite supplies and personal progression are retained. Layout 34 / protocol 33; matching client and server JARs are required. [Details and validation requirements](docs/EXPLORATION_0_4_48.md).
 
 Version `0.4.47` makes the staircase platform cleanup wait for parked companions, delivers missed roof and thicket repairs to earlier `0.4.46` saves through a separate checkpoint, and corrects the timing and location claimed by newly written personal accounts. Native identities, finite property and saved book pages are preserved. [Repair details](docs/REVIEW_SAFETY_0_4_47.md). Release verification requires the complete CI result for this exact source.

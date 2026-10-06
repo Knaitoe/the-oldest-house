@@ -28,7 +28,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class StaircaseStory {
     public static final String STATE="staircase_story_0444";
     /** Bindings from this edition on gather their leaves on the flights. */
-    public static final int EDITION=445;
+    public static final int EDITION=449;
     private record Work(ServerPlayer player, BlockPos at, Block block, boolean built, int before) {}
     private static final Deque<Work> WORK=new ArrayDeque<>();
     private StaircaseStory() {}
@@ -137,6 +137,19 @@ public final class StaircaseStory {
         if(burned(own)>=StaircaseFire.REQUIRED)return ItemStack.EMPTY;
         var book=new ItemStack(Items.WRITTEN_BOOK);bind(p,own,book);return book;
     }
+    /** Explicit operator request: retain the previous words and all finite progress, update the carried original once. */
+    public static boolean rewrite(ServerPlayer p){
+        if(!participant(p))return false;var own=reconcile(p,record(p));
+        if(!exists(own)||burned(own)>=StaircaseFire.REQUIRED)return false;
+        ItemStack held=null;for(int i=0;i<p.getInventory().getContainerSize();i++){var stack=p.getInventory().getItem(i);if(isCurrent(p,stack,own)){held=stack;break;}}
+        if(held==null)return false;
+        var previous=own.copy();previous.remove("PreviousWords");
+        var story=StaircaseAccount.write(p,own,own.getLong("Seed"));
+        own.put("PreviousWords",previous);own.putUUID("Original",UUID.randomUUID());
+        own.putString("Voice",story.voice().name());own.putString("Hand",story.voice().hand);own.putString("Front",story.front());
+        var pages=new ListTag();for(var page:story.leaves())pages.add(StringTag.valueOf(page));own.put("Pages",pages);own.putInt("Edition",EDITION);
+        save(p,own);bind(p,own,held);p.getInventory().setChanged();return true;
+    }
     /** This explorer's living original: their own, uncopied, the binding the record names. */
     public static boolean isCurrent(ServerPlayer p,ItemStack book) { return isCurrent(p,book,record(p)); }
     private static boolean isCurrent(ServerPlayer p,ItemStack book,CompoundTag own) {
@@ -202,7 +215,6 @@ public final class StaircaseStory {
         // A lost original is bound again from the record; the copy left behind goes cold.
         if(!first&&existed){own.putUUID("Original",UUID.randomUUID());save(p,own);}
         give(p,binding(p,own));
-        if(first||!p.getInventory().hasAnyMatching(s->s.is(Items.FLINT_AND_STEEL)))give(p,new ItemStack(Items.FLINT_AND_STEEL));
         return first?Shelf.ISSUED:Shelf.REBOUND;
     }
     private static void give(ServerPlayer p,ItemStack stack){if(!stack.isEmpty()&&!p.getInventory().add(stack)){var drop=p.drop(stack,false);if(drop!=null)drop.setTarget(p.getUUID());}}
