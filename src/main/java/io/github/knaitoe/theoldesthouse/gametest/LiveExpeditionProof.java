@@ -60,6 +60,10 @@ public final class LiveExpeditionProof {
     private static void at(ServerPlayer p,BlockPos pos,float yaw,double side) {
         var l=p.server.getLevel(HouseDimensions.INTERIOR);p.setGameMode(GameType.SURVIVAL);
         p.teleportTo(l,pos.getX()+.5+side,pos.getY(),pos.getZ()+.5,yaw,0);p.hasChangedDimension();
+        // Fixture staging occurs in ServerTick.Post, after connection.tick.
+        // Give its absolute teleport the same fresh movement baseline as a
+        // real House crossing; the next input still uses native packets.
+        p.connection.resetPosition();
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e) {
         if(!enabled())return;var s=e.getServer();var a=player(s,"A");var b=player(s,"B");

@@ -1,6 +1,9 @@
 package io.github.knaitoe.theoldesthouse.house;
 
+import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import java.util.Set;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.RelativeMovement;
@@ -32,6 +35,7 @@ public final class HouseInternalTeleport {
 
         Vec3 movement = player.getDeltaMovement();
         float pitch = player.getXRot();
+        Vec3 from = player.position();
 
         player.stopRiding();
         player.connection.teleport(
@@ -40,7 +44,7 @@ public final class HouseInternalTeleport {
                 to.z,
                 yaw,
                 pitch,
-                RelativeMovement.ALL
+                Set.of(RelativeMovement.Y_ROT, RelativeMovement.X_ROT)
         );
 
         // A doorway can move us after the listener has taken this tick's
@@ -53,7 +57,15 @@ public final class HouseInternalTeleport {
         // Be explicit rather than depending on packet-relative velocity
         // behavior. The House changes adjacency, not the player's stride.
         player.setDeltaMovement(movement);
+        // Relative XYZ packets add an offset to the client's predicted
+        // position, which can already differ while two arrivals load chunks.
+        // Use the authoritative landing and restore stride through vanilla's
+        // motion packet instead of making position depend on that prediction.
+        player.connection.send(new ClientboundSetEntityMotionPacket(player));
         player.resetFallDistance();
+        if (Boolean.getBoolean("the_oldest_house.liveProof"))
+            TheOldestHouse.LOGGER.info("LIVE EXPEDITION native shift {}: {} -> {} movement={}",
+                    player.getGameProfile().getName(), from, player.position(), movement);
         for (var companion : companions) io.github.knaitoe.theoldesthouse.opening.CompanionOrders.followAcross(companion, player);
     }
 
