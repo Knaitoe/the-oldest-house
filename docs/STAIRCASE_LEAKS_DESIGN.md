@@ -134,7 +134,7 @@ Doors that would lead between rooms are always closed and do not open. The only 
 ## Multiplayer
 
 - Two readers can leak at the same time; each has their own instance.
-- If one reader is mid-leak, others on the stairs see them standing with a page open. Approaching them or hitting them does not interrupt the leak; any damage cancels it and returns them first.
+- If one reader is mid-leak, others on the stairs see them standing with a page open. Approaching them does not interrupt it. Hitting the waiting body returns the reader first, then applies the damage on the stairs.
 - A reader in a leak is not counted as present on the stairs for the shared occupied clock. Growls and dust only reach those still in the shaft.
 - A reconnecting reader is always placed back on their tread, never in a pocket room.
 
@@ -149,7 +149,7 @@ Doors that would lead between rooms are always closed and do not open. The only 
   - The pocket island is appended (a layout bump).
   - The client needs one new payload, to fade the score and change the return fog (a protocol bump).
 
-## Tests to add
+## Verification contract
 
 1. Only the reader's own full reading starts a leak. Copies, borrowed originals and spectator readings do not.
 2. Moving, damage or a hostile nearby before the three seconds are up cancels the leak, and the leak stays available.
