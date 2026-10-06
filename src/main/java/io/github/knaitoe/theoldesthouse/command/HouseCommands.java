@@ -85,6 +85,7 @@ public final class HouseCommands {
                                         .executes(context -> reveal(context.getSource(), "hallway"))))
                         .then(shiftCommand())
                         .then(LabyrinthCommands.door())
+                        .then(PlaytestCommands.build())
                         .then(LabyrinthCommands.labyrinth())
                         .then(LabyrinthCommands.vignette())
                         .then(LabyrinthCommands.growl())

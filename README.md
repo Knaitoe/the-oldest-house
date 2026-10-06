@@ -1,3 +1,7 @@
+## 0.4.50 testing shortcuts
+
+`/oldesthouse test` lists the operator controls: `vignette <id>` puts any scene behind a real door (Tab lists IDs); `minotaur` or `boy` goes directly to the closed cell; `ending defeat|escape|witness` starts each real ending. Cell preparation/loading waits asynchronously, and another player's finale claim remains protected, including while offline. Use a **world copy** for endings; defeat seals belongings and completing escape removes the shared House. See [the command reference](docs/TEST_COMMANDS_0_4_50.md) for aliases, equipment and prerequisite details.
+
 <!-- Current architectural build also repairs the outside clock/sky, native water-running all-fours ambush, distinct lakeside streets/beach/trees, finite canoe and shore casualty, and encounter-earned shield. -->
 # The Oldest House
 

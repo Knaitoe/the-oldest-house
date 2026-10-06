@@ -158,6 +158,11 @@ public final class StaircaseFire {
         record.putBoolean("StairFireVersion",true);
     }
     public static boolean tick(ServerPlayer player,BlockPos origin,CompoundTag record){
+        if(record.getBoolean("OperatorCellVisit")){
+            var base=FinaleArchitecture.base(origin);
+            if(player.getY()>=FinaleArchitecture.ARENA-1&&player.getY()<=FinaleArchitecture.ARENA+16&&Math.abs(player.getX()-base.getX())<=16&&player.getZ()>=base.getZ()+30&&player.getZ()<=base.getZ()+73)return false;
+            record.remove("OperatorCellVisit");
+        }
         initialize(record,player.getY());if(player.isCreative())return false;
         int fires=flames(record);BlockPos edge=edge(origin,record);
         boolean blocked=!open(record)&&player.getY()<edge.getY()-.75;
