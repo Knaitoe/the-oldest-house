@@ -165,7 +165,7 @@ public final class ExplorationPassTests {
     @GameTest(template="empty",batch="exploration_quiet",timeoutTicks=1200)
     public static void unseenChairWaitsForSpectatorsAndLivingStayPetsWithoutTouchingTheCache(GameTestHelper h) {
         var l=h.getLevel();var b=h.absolutePos(BlockPos.ZERO).offset(2700,6,350);var lease=new NativeTestChunks();
-        lease.hold(l,new AABB(b.offset(-8,-1,-17),b.offset(8,8,18)));LabyrinthHalls.build(l,b,LabyrinthPlace.QUIET_ROOM);HouseFurnishings.decorate(l,b,LabyrinthPlace.QUIET_ROOM);
+        lease.hold(l,new AABB(Vec3.atLowerCornerOf(b.offset(-8,-1,-17)),Vec3.atLowerCornerOf(b.offset(8,8,18))));LabyrinthHalls.build(l,b,LabyrinthPlace.QUIET_ROOM);HouseFurnishings.decorate(l,b,LabyrinthPlace.QUIET_ROOM);
         var chair=b.offset(-4,0,-8);var original=l.getBlockState(chair);var cache=(net.minecraft.world.Container)l.getBlockEntity(b.offset(LabyrinthHalls.QUIET_CACHE));cache.setItem(0,ItemStack.EMPTY);cache.setItem(4,new ItemStack(Items.DIAMOND,3));
         var p=NativeTestPlayers.survival(h,"quiet_camera");p.gameMode.changeGameModeForPlayer(GameType.SPECTATOR);p.teleportTo(l,b.getX()+30,b.getY()+2,b.getZ()-8,0,0);
         var cat=EntityType.CAT.create(l);cat.moveTo(Vec3.atBottomCenterOf(b.offset(-3,0,-8)));cat.setTame(true,false);cat.setOwnerUUID(p.getUUID());cat.setOrderedToSit(true);cat.setHealth(5);l.addFreshEntity(cat);var uuid=cat.getUUID();final boolean[] done={false};
@@ -184,7 +184,7 @@ public final class ExplorationPassTests {
     public static void layoutThirtyThreeAppendsOnlyNewHallsAndKeepsExistingDoorsUsable(GameTestHelper h) {
         var server=h.getLevel().getServer();var l=HouseTestLevel.get(server);var store=server.overworld().getDataStorage();
         var oldHouse=HouseSavedData.get(server);var oldData=LabyrinthData.get(server);var origin=new BlockPos(590000,80,590000);
-        var b=LabyrinthPlaces.base(origin,LabyrinthPlace.STRAIGHT_HALL);var lease=new NativeTestChunks();lease.hold(l,new AABB(b.offset(-8,-1,-38),b.offset(8,8,18)));
+        var b=LabyrinthPlaces.base(origin,LabyrinthPlace.STRAIGHT_HALL);var lease=new NativeTestChunks();lease.hold(l,new AABB(Vec3.atLowerCornerOf(b.offset(-8,-1,-38)),Vec3.atLowerCornerOf(b.offset(8,8,18))));
         LabyrinthHalls.build(l,b,LabyrinthPlace.STRAIGHT_HALL);var at=b.offset(-1,0,-7);l.setBlock(at,Blocks.BARREL.defaultBlockState(),3);
         var cache=(net.minecraft.world.Container)l.getBlockEntity(at);cache.setItem(0,new ItemStack(Items.DIAMOND,7));
         var cat=EntityType.CAT.create(l);cat.moveTo(Vec3.atBottomCenterOf(b.offset(1,0,-4)));cat.setTame(true,true);cat.setOwnerUUID(UUID.randomUUID());cat.setOrderedToSit(true);cat.setHealth(5);l.addFreshEntity(cat);var id=cat.getUUID();
