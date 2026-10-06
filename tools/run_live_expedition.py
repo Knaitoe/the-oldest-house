@@ -5,6 +5,8 @@ import signal
 import subprocess
 import time
 
+os.environ.setdefault("ALSOFT_DRIVERS", "null")
+
 ROOT = Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
 report = ROOT / "build/live-proof"
@@ -12,11 +14,11 @@ report.mkdir(parents=True, exist_ok=True)
 server = ROOT / "run-live/server"
 server.mkdir(parents=True, exist_ok=True)
 (server / "eula.txt").write_text("eula=true\n")
-(server / "server.properties").write_text("server-ip=127.0.0.1\nserver-port=25578\nonline-mode=false\nview-distance=3\nsimulation-distance=3\nspawn-protection=0\nmax-players=3\nlevel-type=minecraft:flat\ngenerate-structures=false\nsync-chunk-writes=false\n")
+(server / "server.properties").write_text('server-ip=127.0.0.1\nserver-port=25578\nonline-mode=false\nview-distance=3\nsimulation-distance=3\nspawn-protection=0\nmax-players=3\nlevel-type=minecraft:flat\ngenerator-settings={"layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:dirt","height":2},{"block":"minecraft:grass_block","height":1}],"biome":"minecraft:plains"}\ngenerate-structures=false\nsync-chunk-writes=false\n')
 for role in ("a", "b"):
     folder = ROOT / "run-live" / role
     folder.mkdir(parents=True, exist_ok=True)
-    (folder / "options.txt").write_text("pauseOnLostFocus:false\nrenderDistance:3\nsimulationDistance:3\nmaxFps:30\nenableVsync:false\nguiScale:2\ntutorialStep:none\n")
+    (folder / "options.txt").write_text("pauseOnLostFocus:false\nrenderDistance:3\nsimulationDistance:5\nmaxFps:30\nenableVsync:false\nguiScale:2\ntutorialStep:none\n")
 
 processes = []
 logs = []
@@ -35,6 +37,10 @@ def wait_for(check, seconds, context):
         for p in processes:
             if p.poll() is not None and p.returncode != 0:
                 raise RuntimeError(f"Native process failed during {context}: {p.returncode}")
+        if (report / "failed.txt").exists():
+            raise RuntimeError((report / "failed.txt").read_text())
+        if host.poll() is not None and not (report / "passed.txt").exists():
+            raise RuntimeError(f"Dedicated server stopped before proof completion during {context}")
         time.sleep(2)
     raise RuntimeError(f"Timed out waiting for {context}")
 

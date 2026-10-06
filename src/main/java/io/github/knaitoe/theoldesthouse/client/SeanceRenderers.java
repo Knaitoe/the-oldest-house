@@ -43,7 +43,12 @@ public final class SeanceRenderers {
         @Override public ResourceLocation getTextureLocation(SeanceActor actor){return skin(actor.role());}
         /** Seated, the hips rest on the seat rather than the feet: the model sits down by its leg length. */
         @Override public net.minecraft.world.phys.Vec3 getRenderOffset(SeanceActor actor,float partial){
-            return actor.seated()?new net.minecraft.world.phys.Vec3(0,-.6*(actor.role()==3?.72:1),0):super.getRenderOffset(actor,partial);
+            if(!actor.seated())return super.getRenderOffset(actor,partial);
+            var at=actor.blockPosition();var state=actor.level().getBlockState(at);double seat=.5;
+            if(state.getBlock() instanceof io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock)
+                seat=state.getValue(io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.KIND).seatHeight/16D;
+            double scale=actor.role()==3?.72:1;
+            return new net.minecraft.world.phys.Vec3(0,at.getY()+seat-actor.getY()-.751*scale,0);
         }
         @Override protected boolean shouldShowName(SeanceActor actor){return false;}
         @Override public boolean shouldRender(SeanceActor actor,Frustum frustum,double x,double y,double z){return !SeanceView.emptyRoom()&&super.shouldRender(actor,frustum,x,y,z);}

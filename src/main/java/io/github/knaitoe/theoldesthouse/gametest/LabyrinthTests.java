@@ -216,10 +216,13 @@ public final class LabyrinthTests {
         UUID player = UUID.randomUUID();
 
         List<LabyrinthPlace> start = LabyrinthDealer.grayAvailable(data, player);
-        helper.assertTrue(start.size() == 6 && start.contains(LabyrinthPlace.JUNCTION)
+        helper.assertTrue(start.size() == 9 && start.contains(LabyrinthPlace.JUNCTION)
                         && start.contains(LabyrinthPlace.STRAIGHT_HALL)
                         && start.contains(LabyrinthPlace.BENT_HALL) && start.contains(LabyrinthPlace.CROSS_HALL)
-                        && start.contains(LabyrinthPlace.QUIET_ROOM),
+                        && start.contains(LabyrinthPlace.QUIET_ROOM)
+                        && start.contains(LabyrinthPlace.ALCOVE_HALL)
+                        && start.contains(LabyrinthPlace.OFFSET_HALL)
+                        && start.contains(LabyrinthPlace.SERVICE_LANDING),
                 "the opening pool contains familiar halls and a quiet place");
 
         data.visit(player, LabyrinthPlace.FLOORBOARDS);

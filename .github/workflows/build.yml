@@ -61,6 +61,9 @@ jobs:
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseLeaves.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/HallVariations.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/network/BurnEmbersPayload.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/client/HouseInteriorEffects.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseNotes.class' in z.namelist()
+              assert z.read('assets/the_oldest_house/sounds/staircase/descent.ogg').startswith(b'OggS')
               assert 'data/the_oldest_house_exploration/structure/empty.nbt' in z.namelist()
               for cue in ('pipes','stone','settle'):
                   assert z.read(f'assets/the_oldest_house/sounds/hall/{cue}.ogg').startswith(b'OggS')
@@ -341,7 +344,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq xvfb libgl1-mesa-dri
-          LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 5m gradle runClient -PfontSmoke --no-daemon
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 5m gradle runClient -PfontSmoke --no-daemon
           test -s build/font-smoke/passed.txt
           test -s build/font-smoke/native-writing.png
           test -s build/font-smoke/embers-passed.txt
@@ -370,6 +373,8 @@ jobs:
           test -s build/architecture-proof/manifest.txt
           test -s build/font-smoke/sky-passed.txt
           test -s build/font-smoke/native-sky-2.png
+          test -s build/font-smoke/staircase-dark-passed.txt
+          test -s build/font-smoke/native-staircase-dark.png
 
       - name: Publish native views to the log
         if: ${{ !cancelled() && steps.build_mod.outcome == 'success' }}
@@ -594,6 +599,9 @@ jobs:
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseLeaves.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/HallVariations.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/network/BurnEmbersPayload.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/client/HouseInteriorEffects.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseNotes.class' in z.namelist()
+              assert z.read('assets/the_oldest_house/sounds/staircase/descent.ogg').startswith(b'OggS')
               assert 'data/the_oldest_house_exploration/structure/empty.nbt' in z.namelist()
               for cue in ('pipes','stone','settle'):
                   assert z.read(f'assets/the_oldest_house/sounds/hall/{cue}.ogg').startswith(b'OggS')
@@ -637,8 +645,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.47.jar
-            build/libs/the_oldest_house-0.4.47.jar.sha256
+            build/libs/the_oldest_house-0.4.48.jar
+            build/libs/the_oldest_house-0.4.48.jar.sha256
           if-no-files-found: error
 
 

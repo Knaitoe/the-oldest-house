@@ -206,6 +206,7 @@ public final class FinaleArchitecture {
         for(int y=-26;y<=22;y++)for(int i=-31;i<=31;i++){put(blocks,b,i,y,70,dark);put(blocks,b,i,y,121,dark);}
         for(int y=-26;y<=22;y++)for(int zz=70;zz<=121;zz++){put(blocks,b,-31,y,zz,dark);put(blocks,b,31,y,zz,dark);}
         StaircaseMazes.plan(blocks,b);
+        StaircaseWear.decoratePlan(manor,blocks);
         return blocks.entrySet().stream().map(e->new Placement(e.getKey(),e.getValue())).toList();
     }
     /** The exact authored entrance used by the builder and native arrival checks. */
