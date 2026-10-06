@@ -23,6 +23,17 @@ import net.neoforged.neoforge.gametest.*;
 @PrefixGameTestTemplate(false)
 public final class ExplorationPassTests {
     @GameTest(template="empty")
+    public static void outdoorArrivalHasGroundAndKeepsItsNativeReturnCollision(GameTestHelper h){
+        var l=h.getLevel();var b=h.absolutePos(BlockPos.ZERO).offset(3700,8,500);
+        for(var rel:List.of(new BlockPos(-7,0,10),new BlockPos(7,7,16))){
+            var old=Blocks.WHITE_TERRACOTTA.defaultBlockState();var next=ScenePlaytestRepairs.arrivalSkin(rel,old);
+            h.assertTrue(next.is(LiteraryRegistry.SIDING.get())&&old.getCollisionShape(l,b.offset(rel)).equals(next.getCollisionShape(l,b.offset(rel))),"the exposed white shell becomes siding with the same native full-block collision");
+        }
+        var protectedWall=new BlockPos(2,2,10);h.assertTrue(ScenePlaytestRepairs.arrivalSkin(protectedWall,Blocks.WHITE_TERRACOTTA.defaultBlockState()).is(Blocks.WHITE_TERRACOTTA),"the central copied return passage remains exact");
+        var edit=b.offset(9,-1,9);l.setBlock(edit,Blocks.DIAMOND_BLOCK.defaultBlockState(),2);ScenePlaytestRepairs.arrivalGround(l,b);
+        h.assertTrue(l.getBlockState(b.offset(8,-1,9)).isCollisionShapeFullBlock(l,b.offset(8,-1,9))&&l.getBlockState(b.offset(8,-2,9)).is(Blocks.DIRT)&&l.getBlockState(edit).is(Blocks.DIAMOND_BLOCK),"the gap beside the arrival has rooted ground and retains player edits");h.succeed();
+    }
+    @GameTest(template="empty")
     public static void sevenForwardPassesOfferOnlyStoneOrdinaryHallsAndRetainDrawnMaps(GameTestHelper h){
         var d=new LabyrinthData();var room=LabyrinthPlace.CROSS_HALL;LabyrinthBuilder.registerDoors(d,room,new BlockPos(0,80,0));
         for(int at:new int[]{7,12,20}){

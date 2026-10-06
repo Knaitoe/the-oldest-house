@@ -680,6 +680,7 @@ public final class LabyrinthBuilder {
                     if (z == 1) {
                         state = wall;
                     }
+                    if(level.dimension().equals(HouseDimensions.OUTSIDE))state=ScenePlaytestRepairs.arrivalSkin(new BlockPos(x,y,z),state);
                     BuildBlocks.set(level,base.offset(x, y, z), state, FLAGS);
                 }
             }

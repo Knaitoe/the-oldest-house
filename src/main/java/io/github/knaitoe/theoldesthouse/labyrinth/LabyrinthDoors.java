@@ -734,6 +734,7 @@ public final class LabyrinthDoors {
                         if (occupied.stream().anyMatch(cell::intersects)) continue;
                     }
                     BlockState state = fromLevel.getBlockState(src).rotate(turn);
+                    if(entry.dimension.equals(HouseDimensions.OUTSIDE))state=ScenePlaytestRepairs.arrivalSkin(new BlockPos(s,y,k+v.minZ()),state);
                     if(y==-1&&state.isAir()){
                         // A missing source threshold cannot erase the destination's supporting floor.
                         if(!toLevel.getBlockState(dst).isAir())continue;

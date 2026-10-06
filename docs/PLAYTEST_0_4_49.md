@@ -51,6 +51,7 @@ Growls accelerate from thirty to eight occupied seconds and dust/shake from twel
 
 - The mapping cabin's roof foundation no longer seals its cellar ladder or replaces its indoor wood floor. Its partition reaches the ceiling and doors have headers. Rugs and supported furniture give the front room a usable arrangement. The silhouette follows a slow, bounded circuit; the brother rests above the mattress, face up.
 - Native glass panes join their neighbours and frames.
+- The outdoor arrival vestibule loses its exposed white slot-fill appearance: siding retains the exact full-block return geometry, with rooted ground beside the annex. The central copied passage, doors, nonwhite blocks and player edits are retained.
 - The flooded passage's route has two blocks of swimming headroom and a protected dry arrival.
 - Existing scenes receive small saved corrections with loaded native entity sections, camera exclusion, body checks and bounded read/write slices. Containers, papers, actor identities and personal progress are not reconstructed. Stray slot fill outside authored outdoor scenery is removed without touching the copied arrival vestibule or authored story volume. Explicit rebuilds forget the repair checkpoint.
 
