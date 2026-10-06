@@ -16,6 +16,12 @@ public final class BuildBlocks {
     private static Plan recording;
     private BuildBlocks() {}
 
+    private static BlockState nativeShape(ServerLevel level,BlockPos at,BlockState state){
+        if(state.getBlock() instanceof net.minecraft.world.level.block.IronBarsBlock&&!state.is(net.minecraft.world.level.block.Blocks.IRON_BARS))
+            for(var side:net.minecraft.core.Direction.Plane.HORIZONTAL){var next=at.relative(side);state=state.updateShape(side,level.getBlockState(next),level,at,next);}
+        return state;
+    }
+
     private interface Command {
         boolean step(ServerLevel level);
         default BlockState stateAt(BlockPos pos) { return null; }
@@ -37,7 +43,8 @@ public final class BuildBlocks {
         public boolean step(ServerLevel level) {
             long column = cursor / width;
             BlockPos pos = low.offset((int)(cursor % width), (int)(column / depth), (int)(column % depth));
-            if (!level.getBlockState(pos).equals(state)) level.setBlock(pos, state, flags);
+            var shaped=nativeShape(level,pos,state);
+            if (!level.getBlockState(pos).equals(shaped)) level.setBlock(pos, shaped, flags);
             return ++cursor == size;
         }
         public BlockState stateAt(BlockPos pos) {
@@ -117,7 +124,7 @@ public final class BuildBlocks {
             Fill fill = new Fill(a, b, state, flags);
             recording.add(fill, fill.low, fill.high);
         } else {
-            for (BlockPos pos : BlockPos.betweenClosed(a, b)) level.setBlock(pos, state, flags);
+            for (BlockPos pos : BlockPos.betweenClosed(a, b)) level.setBlock(pos, nativeShape(level,pos,state), flags);
         }
     }
 
