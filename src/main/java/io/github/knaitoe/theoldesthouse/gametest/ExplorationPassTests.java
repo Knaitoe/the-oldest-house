@@ -83,9 +83,36 @@ public final class ExplorationPassTests {
     }
     @GameTest(template="empty")
     public static void childDistanceMakesTheSavedOccupiedClockGrowlAndShakeMoreOften(GameTestHelper h){
-        h.assertTrue(StaircaseAtmosphere.growlPeriod(0)==8&&StaircaseAtmosphere.growlPeriod(1280)==30&&StaircaseAtmosphere.shakePeriod(0)==4&&StaircaseAtmosphere.shakePeriod(1280)==12,"both clocks become faster near the cage");
-        var clock=new CompoundTag();int pulses=0;for(int i=0;i<24;i++)if(StaircaseAtmosphere.occupiedSecond(clock,8))pulses++;
+        h.assertTrue(StaircaseAtmosphere.growlPeriod(0)==30&&StaircaseAtmosphere.growlPeriod(1280)==60&&StaircaseAtmosphere.shakePeriod(0)==30&&StaircaseAtmosphere.shakePeriod(1280)==60,"growls are slower and the shake uses the same cue");
+        var clock=new CompoundTag();int pulses=0;for(int i=0;i<90;i++)if(StaircaseAtmosphere.occupiedSecond(clock,30))pulses++;
         h.assertTrue(pulses==3&&StaircaseAtmosphere.growlVolume(0)>StaircaseAtmosphere.growlVolume(1280),"occupied seconds, rather than the number of peers, govern a louder nearby growl");h.succeed();
+    }
+    @GameTest(template="empty",batch="staircase_debris",timeoutTicks=400)
+    public static void neighboringReadersShareOneNativeFallingBlockWithoutOpeningTheShaft(GameTestHelper h){
+        var l=HouseTestLevel.get(h.getLevel().getServer());var origin=new BlockPos(610000,0,610000);var base=FinaleArchitecture.base(origin);var at=base.offset(24,FinaleArchitecture.TOP-128,0);
+        var lease=new NativeTestChunks();lease.hold(l,new AABB(at).inflate(15,12,6));
+        var a=NativeTestPlayers.survival(h,"debris_a");var b=NativeTestPlayers.survival(h,"debris_b");var observer=NativeTestPlayers.survival(h,"debris_observer");observer.setGameMode(GameType.SPECTATOR);
+        var walls=new ArrayList<BlockPos>();var touched=new HashSet<BlockPos>();
+        Runnable cleanup=()->{l.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class,new AABB(at).inflate(20),e->e.getTags().contains(StaircaseDebris.TAG)).forEach(net.minecraft.world.entity.item.FallingBlockEntity::discard);for(var cell:touched)l.setBlock(cell,Blocks.AIR.defaultBlockState(),2);NativeTestPlayers.remove(a);NativeTestPlayers.remove(b);NativeTestPlayers.remove(observer);lease.close();};
+        net.minecraft.world.entity.item.FallingBlockEntity[] piece={null};long[] started={-1};boolean[] motion={false},done={false};double[] initialY={0};
+        h.runAfterDelay(399,()->{if(!done[0]){done[0]=true;cleanup.run();}});
+        h.onEachTick(()->{if(done[0]||!lease.ready())return;
+            try{
+                if(started[0]<0){
+                    for(int y=3;y<=8;y++)for(int z=-2;z<=2;z++){var wall=base.offset(34,at.getY()+y,z);walls.add(wall);touched.add(wall);touched.add(wall.east());l.setBlock(wall,Blocks.DEEPSLATE_TILES.defaultBlockState(),2);}
+                    for(int x=22;x<=35;x++)for(int z=-3;z<=3;z++){var floor=base.offset(x,at.getY()-2,z);touched.add(floor);l.setBlock(floor,Blocks.STONE.defaultBlockState(),2);}
+                    for(var p:List.of(a,b,observer)){p.teleportTo(l,at.getX()+.5,at.getY()+(p==b?1:0),at.getZ()+.5,0,0);p.connection.resetPosition();}
+                    h.assertTrue(StaircaseDebris.fallForPlayers(l,origin,List.of(a,b,observer))==1,"two living neighbors across the clock boundary share one block; observers add none");
+                    var falling=l.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class,new AABB(at).inflate(20),e->e.getTags().contains(StaircaseDebris.TAG));h.assertTrue(falling.size()==1,"one authoritative native falling entity is visible to both readers");piece[0]=falling.getFirst();initialY[0]=piece[0].getY();
+                    var broken=walls.stream().filter(cell->l.getBlockState(cell).isAir()).toList();h.assertTrue(broken.size()==1&&l.getBlockState(broken.getFirst().east()).isCollisionShapeFullBlock(l,broken.getFirst().east()),"one real wall cell breaks and a solid backing retains the enclosure");started[0]=l.getGameTime();return;
+                }
+                if(l.getGameTime()-started[0]>=6&&!motion[0]){h.assertTrue(!piece[0].isRemoved()&&piece[0].getY()<initialY[0]&&piece[0].getDeltaMovement().y<0,"the native block actually falls clear of the wall face");motion[0]=true;}
+                if(l.getGameTime()-started[0]>=40){
+                    h.assertTrue(piece[0].isRemoved()&&l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new AABB(at).inflate(20)).isEmpty(),"landing does not place an obstruction or create free drops");h.assertTrue(a.getHealth()==20&&b.getHealth()==20,"debris does not hurt either reader");
+                    for(var wall:walls)l.setBlock(wall,Blocks.DIAMOND_BLOCK.defaultBlockState(),2);h.assertTrue(StaircaseDebris.fallForPlayers(l,origin,List.of(a,b,observer))==0&&walls.stream().allMatch(cell->l.getBlockState(cell).is(Blocks.DIAMOND_BLOCK)),"player-edited walls cannot become debris");done[0]=true;cleanup.run();h.succeed();
+                }
+            }catch(RuntimeException|Error failure){done[0]=true;cleanup.run();throw failure;}
+        });
     }
     private static final List<LabyrinthPlace> HALLS=List.of(LabyrinthPlace.ALCOVE_HALL,LabyrinthPlace.OFFSET_HALL,LabyrinthPlace.SERVICE_LANDING,
             LabyrinthPlace.STONE_ARCADE,LabyrinthPlace.STONE_BEND,LabyrinthPlace.STONE_LANDING);

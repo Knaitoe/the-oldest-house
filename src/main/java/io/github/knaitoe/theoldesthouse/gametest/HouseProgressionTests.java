@@ -489,29 +489,45 @@ public final class HouseProgressionTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty", timeoutTicks = 400)
+    @GameTest(template = "empty", batch = "hall_paintings", timeoutTicks = 400)
     public static void copyingTheHallNeverDoublesItsPaintings(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        // Right by the test, where its chunks (and their entities) stay loaded.
-        BlockPos origin = helper.absolutePos(BlockPos.ZERO).offset(2, -2, 2);
+        // The copied hall extends beyond the empty template. Hold its actual
+        // entity sections and keep its walls clear of neighboring test resets.
+        BlockPos origin = new BlockPos(608_000, 64, 608_000);
         int dy = HouseBetweenRoom.pocketDy(origin);
-        // A painting on the hall's east wall, and the wall's copy above.
-        level.setBlock(origin.offset(17, 2, 10), Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
-        level.setBlock(origin.offset(17, 2 + dy, 10), Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
+        NativeTestChunks chunks = new NativeTestChunks();
+        chunks.hold(level, new AABB(origin.offset(-1, -2, -2).getCenter(), origin.offset(30, dy + 9, 16).getCenter()));
+        helper.runAfterDelay(399, chunks::close);
         var variants = level.registryAccess().registryOrThrow(Registries.PAINTING_VARIANT);
-        level.addFreshEntity(new Painting(level, origin.offset(16, 2, 10), Direction.WEST, variants.getHolderOrThrow(PaintingVariants.KEBAB)));
         AABB pocket = new AABB(origin.offset(13, dy, 5).getCenter(), origin.offset(18, dy + 5, 14).getCenter()).inflate(1.0D);
-        long start = level.getGameTime();
+        long[] start = {-1};
+        Painting[] source = {null};
 
         // Copy again every tick, as if someone kept going through the door,
         // and wait long enough for any doubled painting to pop off its wall.
         helper.succeedWhen(() -> {
+            helper.assertTrue(chunks.ready(), "the hall and its copy need loaded native entity sections");
+            if (start[0] < 0) {
+                level.setBlock(origin.offset(17, 2, 10), Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
+                level.setBlock(origin.offset(17, 2 + dy, 10), Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
+                source[0] = new Painting(level, origin.offset(16, 2, 10), Direction.WEST, variants.getHolderOrThrow(PaintingVariants.KEBAB));
+                helper.assertTrue(source[0].survives(), "the source painting must have native wall support");
+                helper.assertTrue(level.addFreshEntity(source[0]), "the loaded source painting must enter the level");
+                start[0] = level.getGameTime();
+            }
+            helper.assertTrue(source[0].isAlive(), "the real hallway painting must remain attached");
             HouseBetweenRoom.copyPaintings(level, origin);
             int copies = level.getEntitiesOfClass(Painting.class, pocket).size();
             helper.assertTrue(copies == 1, "the copy should hang exactly one painting, had " + copies);
             helper.assertTrue(level.getEntitiesOfClass(ItemEntity.class, pocket.inflate(4.0D)).isEmpty(),
                     "nothing should have dropped off the copied walls");
-            helper.assertTrue(level.getGameTime() - start >= 120, "still watching for drops");
+            helper.assertTrue(level.getGameTime() - start[0] >= 120, "still watching for drops");
+            source[0].discard();
+            level.getEntitiesOfClass(Painting.class, pocket).forEach(Painting::discard);
+            level.setBlock(origin.offset(17, 2, 10), Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+            level.setBlock(origin.offset(17, 2 + dy, 10), Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+            chunks.close();
         });
     }
 }

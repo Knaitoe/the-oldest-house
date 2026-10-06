@@ -47,7 +47,7 @@ To revise a previously issued unfinished original in a test world, carry your ow
 
 The previous words are archived exactly. Found leaves, burned chapters, personal fire count, remaining finite inventory and unrelated item components stay unchanged. The carried book receives a new original identity so old copies cannot replay it. Other readers' books stay unchanged. Upgrading does not silently rewrite old originals or loose sheets.
 
-Growls accelerate from thirty to eight occupied seconds and dust/shake from twelve to four as the reader approaches the child. Nearby growls are louder and the camera shake is stronger; the user's screen-effect scale is respected. Shared section clocks pause without living participants and do not run faster for extra peers. Unrelated vanilla weather, music and ambient loops are suppressed inside the shaft while footsteps and gameplay actions remain audible.
+Growls now arrive every sixty to thirty occupied seconds as the reader approaches the child; shake and dust accompany that same cue. A real masonry block dislodges and falls for each group of living readers within twelve blocks, with nearby readers across vertical section boundaries sharing the same clock. The backing keeps the shaft enclosed, and falling rubble neither hurts players nor leaves drops or walking-route obstructions. Nearby growls are louder and the camera shake is stronger; the user's screen-effect scale is respected. Shared section clocks pause without living participants and do not run faster for extra peers. Unrelated vanilla weather, music and ambient loops are suppressed inside the shaft while footsteps and gameplay actions remain audible.
 
 ## Placement repairs
 
