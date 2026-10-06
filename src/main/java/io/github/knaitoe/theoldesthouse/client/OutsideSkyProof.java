@@ -28,6 +28,8 @@ public final class OutsideSkyProof extends Screen {
             RenderSystem.setProjectionMatrix(new Matrix4f().perspective((float)Math.toRadians(70),(float)width/height,.1F,1000),VertexSorting.DISTANCE_TO_ORIGIN);
             RenderSystem.disableDepthTest();
             if(view==3){var origin=new net.minecraft.core.BlockPos(0,70,0);
+                if(StaircaseScore.at(null,origin)||!StaircaseScore.at(origin,io.github.knaitoe.theoldesthouse.labyrinth.FinaleArchitecture.entry(origin))
+                        ||StaircaseScore.at(origin,io.github.knaitoe.theoldesthouse.labyrinth.FinaleArchitecture.cell(origin)))throw new IllegalStateException("The descent score must wait for origin sync and stop outside the stair shaft");
                 HouseInteriorEffects.drawSkyAt(origin,io.github.knaitoe.theoldesthouse.labyrinth.FinaleArchitecture.entry(origin),new Matrix4f(),new Vec3(.7,.8,1),.25F);
             }else HouseOutsideEffects.drawSky(new Matrix4f().rotateX((float)Math.toRadians(new int[]{0,-45,25}[view])),new Vec3(.035,.05,.085),.5F);
         }finally{RenderSystem.enableDepthTest();model.popMatrix();RenderSystem.applyModelViewMatrix();RenderSystem.setProjectionMatrix(previous,VertexSorting.ORTHOGRAPHIC_Z);}

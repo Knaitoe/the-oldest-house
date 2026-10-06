@@ -82,15 +82,16 @@ public final class LiveExpeditionProof {
             write("failed.txt",detail+"\n");s.halt(false);throw new IllegalStateException(detail);
         }
         var d=LabyrinthData.get(s);var base=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.OFFSET_HALL);
+        if((phase==2||phase==4)&&s.getTickCount()%100==0)TheOldestHouse.LOGGER.info("LIVE EXPEDITION positions phase {}: A={}, B={}",phase,location(a),location(b));
         if(phase==1&&ACKS.size()==2) {
             var source=d.door("alcove_hall/far");require(source!=null,"real source door registered");
-            for(var p:List.of(a,b)){d.deal(p.getUUID(),source,LabyrinthPlace.OFFSET_HALL.id(),false);at(p,source.lower.south(2),180,p==a?-.65:.65);}
+            for(var p:List.of(a,b)){d.deal(p.getUUID(),source,LabyrinthPlace.OFFSET_HALL.id(),false);at(p,source.lower.south(p==a?2:3),180,0);}
             step(s,2,source.lower);
         }else if(phase==2&&a!=null&&b!=null&&LabyrinthPlaces.placeAt(ORIGIN,a.blockPosition())==LabyrinthPlace.OFFSET_HALL&&LabyrinthPlaces.placeAt(ORIGIN,b.blockPosition())==LabyrinthPlace.OFFSET_HALL
                 &&a.getZ()<base.getZ()-2&&b.getZ()<base.getZ()-2) {
             require(d.returnDepth(a.getUUID())==1&&d.returnDepth(b.getUUID())==1,"both actual door packets commit one independent return route");
             require(doors(d,a,LabyrinthPlace.OFFSET_HALL).equals(doors(d,b,LabyrinthPlace.OFFSET_HALL)),"native multiplayer arrivals share new onward halls");
-            at(a,base.offset(0,0,-2),0,-.65);at(b,base,0,.65);step(s,3,d.door(LabyrinthPlace.OFFSET_HALL.entryDoorId()).lower);
+            at(a,base.offset(0,0,-2),0,0);at(b,base,0,0);step(s,3,d.door(LabyrinthPlace.OFFSET_HALL.entryDoorId()).lower);
         }else if(phase==3&&ACKS.size()==2) {
             var door=d.door(LabyrinthPlace.OFFSET_HALL.entryDoorId());require(s.getLevel(door.dimension).getBlockState(door.lower).getValue(DoorBlock.OPEN),"shared entry stays open with a real peer in its approach");
             step(s,4,door.lower);
@@ -133,5 +134,5 @@ public final class LiveExpeditionProof {
     private static void write(String name,String text) {
         try{Files.createDirectories(folder());Files.writeString(folder().resolve(name),text);}catch(Exception e){throw new IllegalStateException(e);}
     }
-    private static String location(ServerPlayer p){return p==null?"offline":p.level().dimension().location()+" "+p.position()+" returns="+LabyrinthData.get(p.server).returnDepth(p.getUUID());}
+    private static String location(ServerPlayer p){return p==null?"offline":p.level().dimension().location()+" "+p.position()+" returns="+LabyrinthData.get(p.server).returnDepth(p.getUUID())+" onGround="+p.onGround()+" below="+p.serverLevel().getBlockState(p.blockPosition().below());}
 }

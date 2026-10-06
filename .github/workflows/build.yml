@@ -364,6 +364,8 @@ jobs:
           test -s build/font-smoke/native-hotel.png
           test -s build/font-smoke/literary-passed.txt
           test -s build/font-smoke/native-literary.png
+          test -s build/font-smoke/coffin-passed.txt
+          test -s build/font-smoke/native-coffin.png
           test -s build/font-smoke/literary-effects-passed.txt
           test -s build/font-smoke/native-literary-effects.png
           test -s build/font-smoke/classics-passed.txt
