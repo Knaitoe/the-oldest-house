@@ -59,7 +59,7 @@ public final class StaircaseLeakRooms {
         for(int x:new int[]{-3,1,3})p.prop(x,1,-13,WASHING);
         for(int x:new int[]{-8,-3,2,7}){p.box(x,0,-19,x+3,5,-17,Blocks.BRICKS.defaultBlockState());p.box(x,3,-17,x+1,4,-17,Blocks.GLASS.defaultBlockState());}
         p.box(-8,0,5,8,0,9,Blocks.STONE_BRICKS.defaultBlockState());p.put(-5,0,7,Blocks.STRIPPED_OAK_LOG.defaultBlockState());
-        if(kind==Kind.CAR){car(p,0,0);p.prop(0,1,-1,RADIO);p.prop(1,0,-1,BREAD_BAG);p.prop(-1,1,0,BELT);p.prop(1,0,0,CAR_SEAT);p.put(0,5,0,Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL,10));return p.done();}
+        if(kind==Kind.CAR){car(p,0,0);p.put(0,0,-1,Blocks.LIGHT_BLUE_TERRACOTTA.defaultBlockState());p.prop(0,1,-1,RADIO);p.prop(1,0,-1,BREAD_BAG);p.prop(-1,1,0,BELT);p.prop(1,0,0,CAR_SEAT);p.put(0,5,0,Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL,10));return p.done();}
         boolean kitchen=kind==Kind.KITCHEN||kind==Kind.LATE_KITCHEN;int half=kind==Kind.REPAIR?4:3,back=kitchen?-6:-7;
         p.box(-half-1,-1,back,half+1,-1,0,wood);p.box(-half-1,0,back,-half-1,3,0,paper);p.box(half+1,0,back,half+1,3,0,paper);p.box(-half-1,0,back,half+1,3,back,paper);p.box(-half-1,0,0,half+1,3,0,paper);p.box(-half-1,4,back,half+1,4,0,Blocks.BIRCH_PLANKS.defaultBlockState());p.door(0,0,false);
         p.box(-1,1,back,1,2,back,Blocks.GLASS.defaultBlockState());p.prop(0,3,-3,LIGHT);
