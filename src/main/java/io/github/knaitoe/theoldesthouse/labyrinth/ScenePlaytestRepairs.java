@@ -131,6 +131,8 @@ public final class ScenePlaytestRepairs {
         }
         boolean step(){
             if(visible()){close();return false;}if(!loaded())return false;
+            var entry=LabyrinthData.get(server).door(place.entryDoorId());
+            if(entry==null||!(level.getBlockState(entry.lower).getBlock() instanceof DoorBlock)){close();return true;}
             var bodies=level.getEntitiesOfClass(LivingEntity.class,area,LivingEntity::isAlive);
             // A Stay pet over the hatch prevents opening it; existing actors retain their identity and position.
             if(!prepared||plan!=null){
@@ -161,7 +163,7 @@ public final class ScenePlaytestRepairs {
         if(LabyrinthBuilder.isCarving())return;
         if(work!=null){if(work.step())work=null;return;}
         if(s.getTickCount()%40!=31)return;var data=LabyrinthData.get(s);
-        var places=LabyrinthPlace.values();for(int i=0;i<places.length;i++){int index=(nextPlace+i)%places.length;var p=places[index];if(applies(p)&&LabyrinthBuilder.isPlaceReady(data,p)&&s.getLevel(NovelRooms.dimension(p))!=null
+        var places=LabyrinthPlace.values();for(int i=0;i<places.length;i++){int index=(nextPlace+i)%places.length;var p=places[index];if(applies(p)&&data.door(p.entryDoorId())!=null&&LabyrinthBuilder.isPlaceReady(data,p)&&s.getLevel(NovelRooms.dimension(p))!=null
             &&!data.stateEntry(STATE,origin.asLong()+":"+p.id()).getBoolean("Done")){
             var candidate=new Work(s,origin,p);if(!candidate.visible()){work=candidate;nextPlace=(index+1)%places.length;return;}
         }}
