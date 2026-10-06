@@ -4,6 +4,8 @@ Status: candidate; exact-head native verification pending.
 
 The attached staircase playtest and multiplayer requirements authorize this pass. Claude's two 0.4.48 repair commits are included, with actual-camera vacancy checks and a per-server stair-wear cache correction. The later staircase leaks design remains a proposal, not a feature in this release. Its pocket allocation, spectator proxy, edit restoration, cancel/return transaction and reconnect handling need a separate design review before implementation.
 
+Internal doorway shifts reset the native connection's movement baseline immediately. A two-client run exposed a return consumed before vanilla's movement guard corrected the player back into the destination hallway. The live proof requires both physical returns and clean native movement validation across the crossings.
+
 ## Encounters and exploration
 
 New ordinary hall discoveries use the six stone layouts from return depth seven. Existing drawn maps and shared discoveries are retained. One stone gallery builds with the core to keep a standing stone route available; the other five build three crossings ahead of their eligibility. Impossible anomalies keep their separate gates.

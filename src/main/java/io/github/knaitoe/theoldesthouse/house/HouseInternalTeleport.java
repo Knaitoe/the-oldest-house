@@ -43,6 +43,13 @@ public final class HouseInternalTeleport {
                 RelativeMovement.ALL
         );
 
+        // A doorway can move us after the listener has taken this tick's
+        // movement baseline. Its next packet must be checked against the new
+        // location, including when the client acknowledges and walks before
+        // the next listener tick. Otherwise vanilla can undo a real return
+        // after its personal route has already been consumed.
+        player.connection.resetPosition();
+
         // Be explicit rather than depending on packet-relative velocity
         // behavior. The House changes adjacency, not the player's stride.
         player.setDeltaMovement(movement);

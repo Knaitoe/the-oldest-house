@@ -58,6 +58,11 @@ try:
         assert p.returncode == 0, p.returncode
     for shot in ("A-first.png", "B-first.png", "A-embers.png", "B-embers-reconnected.png", "B-reconnected.png"):
         assert (report / shot).stat().st_size > 10000, shot
+    # Require clean native movement validation during the actual crossing
+    # and return, even when a later correction would recover a bad packet.
+    native_log = (server / "logs/latest.log").read_text(errors="replace")
+    crossing = native_log.split("LIVE EXPEDITION phase 2", 1)[1].split("LIVE EXPEDITION phase 5", 1)[0]
+    assert "moved too quickly!" not in crossing and "moved wrongly!" not in crossing, crossing
     print((report / "passed.txt").read_text(), flush=True)
 finally:
     for p in processes:
