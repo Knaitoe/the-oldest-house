@@ -368,11 +368,10 @@ public final class StaircaseProse {
         }
         // New accounts, including every factual branch, use the same native book-width proof.
         for(Voice voice:Voice.values()){
-            var pages=new ArrayList<String>();
+            var pages=books.get(voice.ordinal());
             for(Kind kind:KINDS){var f=new Fact(kind,max,kind.id.equals("retreat")?longPlace:wide);
                 pages.add("IV. The door\n\nThe writing reaches the fold. "+memory(f)+"\n\nThe next word is underneath your thumb.");}
             for(long seed=0;seed<24;seed++){var account=compose(name,List.of(),seed);if(account.voice==voice){pages.add(account.front);pages.addAll(account.leaves);break;}}
-            books.add(pages);
         }
         return books;
     }
