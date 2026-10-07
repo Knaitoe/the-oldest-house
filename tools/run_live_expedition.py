@@ -14,7 +14,7 @@ report.mkdir(parents=True, exist_ok=True)
 server = ROOT / "run-live/server"
 server.mkdir(parents=True, exist_ok=True)
 (server / "eula.txt").write_text("eula=true\n")
-(server / "server.properties").write_text('server-ip=127.0.0.1\nserver-port=25578\nonline-mode=false\nview-distance=3\nsimulation-distance=3\nspawn-protection=0\nmax-players=3\nlevel-type=minecraft:flat\ngenerator-settings={"layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:dirt","height":2},{"block":"minecraft:grass_block","height":1}],"biome":"minecraft:plains"}\ngenerate-structures=false\nsync-chunk-writes=false\n')
+(server / "server.properties").write_text('server-ip=127.0.0.1\nserver-port=25578\nonline-mode=false\nview-distance=3\nsimulation-distance=3\nspawn-protection=0\nspawn-monsters=false\nmax-players=3\nlevel-type=minecraft:flat\ngenerator-settings={"layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:dirt","height":2},{"block":"minecraft:grass_block","height":1}],"biome":"minecraft:plains"}\ngenerate-structures=false\nsync-chunk-writes=false\n')
 for role in ("a", "b"):
     folder = ROOT / "run-live" / role
     folder.mkdir(parents=True, exist_ok=True)
