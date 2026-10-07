@@ -96,6 +96,7 @@ public final class ScenePolish {
         polish(level, origin, place);
         if (applies(place) && LabyrinthData.get(level.getServer()).state(STATE).getBoolean(key(origin, place)))
             SceneCraft.craftOnce(level, origin, place);
+        SceneSupportRepairs.repairOnce(level,origin,place);
     }
 
     private static void polish(ServerLevel level, BlockPos origin, LabyrinthPlace place) {
@@ -122,6 +123,7 @@ public final class ScenePolish {
     public static void forget(MinecraftServer server, BlockPos origin, LabyrinthPlace place) {
         SceneCraft.forget(server, origin, place);
         ScenePlaytestRepairs.forget(server, origin, place);
+        SceneSupportRepairs.forget(server,origin,place);
         LabyrinthData data = LabyrinthData.get(server);
         CompoundTag done = data.state(STATE);
         if (done.contains(key(origin, place))) {
