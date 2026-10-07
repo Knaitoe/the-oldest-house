@@ -22,8 +22,8 @@ public final class SceneSupportRepairs {
     private SceneSupportRepairs(){}
     private static boolean applies(LabyrinthPlace p){return p==LabyrinthPlace.TED_CAVER||p==LabyrinthPlace.BARN_WELL;}
     public static AABB area(BlockPos b,LabyrinthPlace p){
-        return p==LabyrinthPlace.TED_CAVER?new AABB(b.offset(-9,-4,-47),b.offset(0,5,-35))
-                :new AABB(b.offset(3,-1,-36),b.offset(18,5,-3));
+        return p==LabyrinthPlace.TED_CAVER?new AABB(net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(-9,-4,-47)),net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(0,5,-35)))
+                :new AABB(net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(3,-1,-36)),net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(18,5,-3)));
     }
     private static boolean safe(ServerLevel l,BlockPos at,BlockState before,BlockState next,List<LivingEntity> bodies){
         var added=Shapes.joinUnoptimized(next.getCollisionShape(l,at),before.getCollisionShape(l,at),BooleanOp.ONLY_FIRST);
