@@ -328,7 +328,8 @@
         "name": "the_oldest_house:hotel/piano",
         "stream": false
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.piano"
   },
   "hotel.orchestra": {
     "sounds": [
@@ -336,7 +337,8 @@
         "name": "the_oldest_house:hotel/orchestra",
         "stream": false
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.dance_band"
   },
   "hotel.bell": {
     "sounds": [
@@ -344,7 +346,8 @@
         "name": "the_oldest_house:hotel/bell",
         "stream": false
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.bell"
   },
   "hotel.hose": {
     "sounds": [
@@ -352,7 +355,8 @@
         "name": "the_oldest_house:hotel/hose",
         "stream": false
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.hose"
   },
   "literary.scratch": {
     "subtitle": "subtitles.the_oldest_house.literary.scratch",
@@ -477,31 +481,37 @@
         "name": "the_oldest_house:staircase/descent",
         "stream": true
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.descent_score"
   },
   "leak.drip": {
     "sounds": [
       "the_oldest_house:leak/drip"
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.tap_drip"
   },
   "leak.clock": {
     "sounds": [
       "the_oldest_house:leak/clock"
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.clock_tick"
   },
   "leak.rain": {
     "sounds": [
       "the_oldest_house:leak/rain"
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.rain_glass"
   },
   "leak.radio": {
     "sounds": [
       "the_oldest_house:leak/radio"
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.radio_murmur"
   },
   "leak.bag": {
     "sounds": [
       "the_oldest_house:leak/bag"
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.paper_bag"
   }
 }
