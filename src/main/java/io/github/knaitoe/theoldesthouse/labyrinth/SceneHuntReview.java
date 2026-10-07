@@ -191,6 +191,13 @@ public final class SceneHuntReview {
         if(!d.state(SceneReview.STATE).getBoolean(key(origin,p))||!loaded(l,area)||!vacant(l,area))return;
         if(apply(l,origin,p))BuildBlocks.after(l,()->{var done=d.state(STATE);done.putBoolean(key(origin,p),true);d.setState(STATE,done);});
     }
+    /** A new scene's final dressing uses the builder's bounded slices before its arrival becomes ready. */
+    public static BuildBlocks.Plan prepareFresh(ServerLevel l,BlockPos origin,LabyrinthPlace p){
+        if(!applies(p))return null;var d=LabyrinthData.get(l.getServer());var tag=d.state(STATE);if(tag.getBoolean(key(origin,p)))return null;
+        var area=SceneReview.area(LabyrinthPlaces.base(origin,p),p);if(!loaded(l,area)||!vacant(l,area)||!d.state(SceneReview.STATE).getBoolean(key(origin,p)))return null;
+        boolean[] ready={true};var plan=BuildBlocks.record(l,()->{ready[0]=apply(l,origin,p);if(ready[0])BuildBlocks.after(l,()->{
+            var done=d.state(STATE);done.putBoolean(key(origin,p),true);d.setState(STATE,done);});});return ready[0]?plan:null;
+    }
     public static void forget(net.minecraft.server.MinecraftServer s,BlockPos o,LabyrinthPlace p){var d=LabyrinthData.get(s);var tag=d.state(STATE);tag.remove(key(o,p));d.setState(STATE,tag);
         var sources=d.state("scene_source_originals_0455");sources.remove(key(o,p));d.setState("scene_source_originals_0455",sources);if(work!=null&&work.origin.equals(o)&&work.place==p)work=null;}
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){var s=e.getServer();if(s instanceof net.minecraft.gametest.framework.GameTestServer||LabyrinthBuilder.isCarving())return;
