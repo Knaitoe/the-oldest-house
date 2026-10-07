@@ -48,6 +48,7 @@ public final class BarnFarm {
         // 0.4.28: a mixed wood on the bank, in place of a flat leaf curtain and evenly spaced spruces.
         Landscapes.barnForest(l,b);
         NovelRooms.safeApproach(l,b);
+        SceneSupportRepairs.barn(l,b);
     }
     public static void upgrade(ServerLevel l,BlockPos origin){
         var data=LabyrinthData.get(l.getServer());var state=data.state("barn_farm_0426");

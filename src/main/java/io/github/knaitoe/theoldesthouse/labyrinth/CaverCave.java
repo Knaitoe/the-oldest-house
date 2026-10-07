@@ -54,6 +54,7 @@ public final class CaverCave {
         var d=LabyrinthData.get(s);var state=d.state(CaverVignette.ID);
         if(l.getBlockEntity(b.offset(JOURNAL)) instanceof LecternBlockEntity lectern){lectern.setBook(CaverVignette.journal(d,new java.util.UUID(0,0)));lectern.setChanged();}
         aperture(l,b,state.getInt("Work")>=CaverVignette.STROKES);stone(l,b,state.getBoolean("StoneMoved"));
+        SceneSupportRepairs.cave(l,b);
         if(!state.getBoolean("Supplied")&&l.getBlockEntity(b.offset(CACHE)) instanceof BarrelBlockEntity barrel){
             barrel.setItem(0,new ItemStack(Items.IRON_PICKAXE));barrel.setItem(1,new ItemStack(Items.BREAD,3));
             barrel.setItem(2,new ItemStack(Items.TORCH,6));barrel.setItem(3,new ItemStack(Items.STRING,2));barrel.setChanged();

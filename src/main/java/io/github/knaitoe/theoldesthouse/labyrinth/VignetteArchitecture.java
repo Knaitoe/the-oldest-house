@@ -31,6 +31,8 @@ public final class VignetteArchitecture {
         var shells=d.state(SceneShells.STATE);
         if(!shells.getBoolean(key)){SceneShells.apply(l,base,p);shells.putBoolean(key,true);d.setState(SceneShells.STATE,shells);}
         SceneExteriors.decorateOnce(l,origin,p);
+        if(p==LabyrinthPlace.TED_CAVER)SceneSupportRepairs.cave(l,base);
+        if(p==LabyrinthPlace.BARN_WELL)SceneSupportRepairs.barn(l,base);
     }
     /** Explicit structural rebuilds can dress their newly authored room again. */
     static void forget(ServerLevel l,BlockPos origin,LabyrinthPlace p){
