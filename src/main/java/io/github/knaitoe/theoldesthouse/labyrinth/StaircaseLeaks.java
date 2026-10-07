@@ -164,6 +164,7 @@ public final class StaircaseLeaks {
         HouseInternalTeleport.shiftPlayerOnly(p,StaircaseLeakRooms.spawn(room.base,room.kind),180,0);p.setDeltaMovement(Vec3.ZERO);p.connection.send(new ClientboundSetEntityMotionPacket(p));
         if(room.kind==StaircaseLeakRooms.Kind.CAR){HouseSitting.sit(p,room.base.offset(1,0,0));if(p.getVehicle()!=null){p.getVehicle().getPersistentData().putBoolean(VIRTUAL,true);s.putUUID("Seat",p.getVehicle().getUUID());}}
         persist(p,s);HousePackets.send(p,new StaircaseLeakPayload(true,room.kind.ordinal(),0));
+        io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(p,"note_scene_enter","index",offer.index);
         // One faint call through the floorboards; this is not a second staircase quake clock.
         p.playNotifySound(SoundEvent.createVariableRangeEvent(Growl.Kind.BELOW.sound()),SoundSource.AMBIENT,.16F,.68F);
     }
@@ -175,6 +176,7 @@ public final class StaircaseLeaks {
         p.closeContainer();p.stopRiding();
         if(p.serverLevel()==level)HouseInternalTeleport.shiftPlayerOnly(p,pos,source.getFloat("Yaw"),source.getFloat("Pitch"));else{p.teleportTo(level,pos.x,pos.y,pos.z,source.getFloat("Yaw"),source.getFloat("Pitch"));p.connection.resetPosition();}
         restore(p,source);p.setDeltaMovement(new Vec3(source.getDouble("Vx"),source.getDouble("Vy"),source.getDouble("Vz")));p.connection.send(new ClientboundSetEntityMotionPacket(p));p.resetFallDistance();
+        io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(p,"note_scene_leave","index",s.getInt("Index"),"finished",s.contains("Closing"),"recovered",s.getBoolean("Recovering"),"seconds",(p.serverLevel().getGameTime()-s.getLong("Started"))/20);
         cleanupSource(p,s);var record=own(p);var done=record.getCompound("Done");done.putBoolean(Integer.toString(s.getInt("Index")),true);record.put("Done",done);
         if(s.getInt("Index")==0&&s.getCompound("Chore").getInt("Cups")==3){
             record.putIntArray("KitchenCups",s.getCompound("Chore").getIntArray("HookColors"));

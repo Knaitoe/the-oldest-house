@@ -127,6 +127,7 @@ public final class LabyrinthDoors {
         if(VignetteGate.dormant(data,player.getUUID(),door)){if(reroute(player,door))return;setDoorOpen(player.serverLevel(),door.lower,false,player);quiet(player,VignetteGate.dormantPlace(data,player.getUUID(),door));return;}
         if (HideAndClap.isLocked(player)) {
             player.displayClientMessage(Component.literal("The door won't open until the game is over."), true);
+            io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player, "door_clap_game");
             return;
         }
 
@@ -240,6 +241,7 @@ public final class LabyrinthDoors {
         player.displayClientMessage(Component.literal(run[1] >= 3
                 ? "It will give. Try another door, or come back to this one in a minute."
                 : "The door sticks. Something is still settling behind it."), true);
+        io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player, "door_sticks");
     }
     /**
      * A story the player stepped back out of. It wakes again once they have been well away from the
@@ -249,6 +251,7 @@ public final class LabyrinthDoors {
         var story = WitnessAccount.Story.of(placeId);
         String room = story == null ? "The room" : story.title;
         player.displayClientMessage(Component.literal(room + " is quiet behind this door. Walk a little way off, then come back."), true);
+        io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player, "door_quiet:" + placeId);
     }
 
     @Nullable
@@ -289,7 +292,8 @@ public final class LabyrinthDoors {
             STUCK.remove(p.getUUID());
             setDoorOpen(toLevel, entry.lower, true, p);
             BlockPos manor = HouseSavedData.get(server).houseOrigin();
-            if(p.gameMode.getGameModeForPlayer()!=net.minecraft.world.level.GameType.SPECTATOR){VignetteGate.begin(p,place);current.visit(p.getUUID(),place);io.github.knaitoe.theoldesthouse.house.HouseExperience.arrived(p,place);}
+            if(p.gameMode.getGameModeForPlayer()!=net.minecraft.world.level.GameType.SPECTATOR){VignetteGate.begin(p,place);current.visit(p.getUUID(),place);io.github.knaitoe.theoldesthouse.house.HouseExperience.arrived(p,place);
+                io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(p,"arrive","place",place.id(),"kind",place.kind().name().toLowerCase(java.util.Locale.ROOT),"story",place.isVignette(),"depth",current.returnDepth(p.getUUID()));}
             LabyrinthDealer.arriveAt(current, p.getUUID(), place, manor == null ? 0L : manor.asLong(),
                     p.gameMode.getGameModeForPlayer() != net.minecraft.world.level.GameType.SPECTATOR);
             if(p.gameMode.getGameModeForPlayer()==net.minecraft.world.level.GameType.SPECTATOR){LabyrinthMaze.forget(p.getUUID());LabyrinthDoorLeaks.send(p);return;}

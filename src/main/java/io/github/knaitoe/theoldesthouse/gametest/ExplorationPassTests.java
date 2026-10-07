@@ -73,6 +73,26 @@ public final class ExplorationPassTests {
         h.assertTrue(l.getBlockState(b.west()).is(Blocks.STRIPPED_SPRUCE_LOG),"joining panes preserves the existing window frame");h.succeed();
     }
     @GameTest(template="empty")
+    public static void playtestLogIsOptInLocalAndHidesPlayerIds(GameTestHelper h){
+        var p=NativeTestPlayers.survival(h,"playtest_reader");java.nio.file.Path file=null;
+        try{
+            h.assertTrue(!io.github.knaitoe.theoldesthouse.house.PlaytestLog.enabled(),"the playtest log is off unless the server asks for it");
+            file=java.nio.file.Files.createTempFile("playtest-log",".jsonl");io.github.knaitoe.theoldesthouse.house.PlaytestLog.overrideForTesting(file);
+            io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(p,"door_sticks");
+            io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(p,"arrive","place","playtest_marker","depth",3,"story",false);
+            io.github.knaitoe.theoldesthouse.house.PlaytestLog.flush();
+            var lines=java.nio.file.Files.readAllLines(file);String raw=p.getUUID().toString();
+            h.assertTrue(lines.stream().noneMatch(line->line.contains(raw)),"player UUIDs are replaced by one-way hashes");
+            var arrive=lines.stream().map(line->com.google.gson.JsonParser.parseString(line).getAsJsonObject())
+                    .filter(o->"playtest_marker".equals(o.has("place")?o.get("place").getAsString():"")).findFirst().orElse(null);
+            h.assertTrue(arrive!=null&&"arrive".equals(arrive.get("event").getAsString())&&arrive.get("depth").getAsInt()==3&&!arrive.get("story").getAsBoolean()
+                    &&arrive.has("time")&&arrive.has("gameTime")&&arrive.get("player").getAsString().length()==12,"each event is one JSON line with times, a hashed player and typed fields: "+lines);
+            h.assertTrue(lines.stream().anyMatch(line->line.contains("\"refused\"")&&line.contains("\"door_sticks\"")),"refusals record their gate");
+            h.succeed();
+        }catch(java.io.IOException e){throw new RuntimeException(e);}
+        finally{io.github.knaitoe.theoldesthouse.house.PlaytestLog.overrideForTesting(null);NativeTestPlayers.remove(p);if(file!=null)try{java.nio.file.Files.deleteIfExists(file);}catch(java.io.IOException ignored){}}
+    }
+    @GameTest(template="empty")
     public static void swimmingChannelHasTwoBlockHeadroomAndDryArrival(GameTestHelper h){
         var l=h.getLevel();var b=h.absolutePos(BlockPos.ZERO).offset(3550,8,500);LabyrinthHazards.buildFloodedPassage(l,b);
         for(var feet:LabyrinthHazards.floodRoute(b)){

@@ -113,6 +113,9 @@ public final class WitnessAccount {
         if(player.isSpectator()||FinaleProgress.terminal(FinaleProgress.phase(player.server,player.getUUID())))return;
         LabyrinthData data=LabyrinthData.get(player.server);
         if(resolve(data,player.getUUID(),story,outcome)){
+            CompoundTag stories=record(data,player.getUUID()).getCompound("Stories");Set<String> kinds=new HashSet<>();
+            for(Story s:Story.values())if(stories.contains(s.id))kinds.add(s.kind);
+            io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(player,"story_resolve","story",story.id,"kind",story.kind,"outcome",outcome,"count",count(data,player.getUUID()),"kinds",kinds.size(),"ready",ready(data,player.getUUID()));
             updateBook(player,true);
             player.displayClientMessage(Component.literal(ready(data,player.getUUID())
                     ?"A passage in your account is readable now. It describes a cell."

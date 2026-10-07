@@ -127,7 +127,8 @@ public final class StaircaseFire {
         if(player.isSpectator()||!player.isAlive()||!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)
                 ||player.distanceToSqr(at.getCenter())>36)return false;
         if(!(player.getMainHandItem().getItem() instanceof net.minecraft.world.item.FlintAndSteelItem)){
-            player.displayClientMessage(Component.literal("The hearth needs a flame. Tom carries a lighter."),true);return false;}
+            player.displayClientMessage(Component.literal("The hearth needs a flame. Tom carries a lighter."),true);
+            io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"hearth_no_flame");return false;}
         var phase=FinaleProgress.phase(player.server,player.getUUID());if(phase!=FinaleProgress.Phase.STAIRCASE&&phase!=FinaleProgress.Phase.UNSEEN)return false;
         var record=FinaleProgress.player(player.server,player.getUUID());int index=braziers(origin).indexOf(at);
         if(index<0||!player.serverLevel().getBlockState(at).is(Blocks.CAMPFIRE))return false;
@@ -147,6 +148,7 @@ public final class StaircaseFire {
         player.getMainHandItem().hurtAndBreak(1,player,EquipmentSlot.MAINHAND);
         player.serverLevel().setBlock(at,player.serverLevel().getBlockState(at).setValue(CampfireBlock.LIT,true),F);
         record.putInt("StairFires",index+1);record.putBoolean("StairFireVersion",true);
+        io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(player,"fire_lit","index",index);
         FinaleProgress.save(player.server,player.getUUID(),record);
         HousePackets.send(player,embers);
         player.serverLevel().playSound(null,at,SoundEvents.FIRECHARGE_USE,SoundSource.BLOCKS,.65F,.85F);

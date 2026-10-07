@@ -200,6 +200,7 @@ public final class DrownedTown {
                 player.displayClientMessage(Component.literal(st.getInt("Visit") < 2 || st.getInt("DryMask") != 7
                         ? "The church door won't move yet. The school's essays come first."
                         : "The church door needs its key. The school kept it."), true);
+                io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player, "church_door");
             }
             event.setCanceled(true); event.setCancellationResult(InteractionResult.SUCCESS);
         } else if (at.equals(base.offset(ROOF_HATCH))) {
