@@ -118,7 +118,7 @@ public final class SceneReviewTests {
     @GameTest(template="empty",batch="review_witch",timeoutTicks=1600)
     public static void oneNativeCostumeWitchStrikesRecoilAndReloadPreserveIdentityAndPeerSafety(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,553000,f->{
         for(int x=-6;x<=7;x++)for(int z=-47;z<=-35;z++)f.put(x,-1,z,Blocks.SANDSTONE);
-        var owner=f.player("review_witch_owner");var peer=f.player("review_witch_peer");f.at(owner,2,0,-40.5);f.at(peer,5,0,-40.5);owner.getFoodData().setFoodLevel(0);peer.getFoodData().setFoodLevel(0);
+        var owner=f.player("review_witch_owner");var peer=f.player("review_witch_peer");f.at(owner,2,0,-40.5);f.at(peer,5,0,-40.5);owner.getFoodData().setFoodLevel(6);peer.getFoodData().setFoodLevel(6);
         f.look(owner,new BlockPos(9,1,-35));f.look(peer,new BlockPos(10,1,-35));
         // Native newly joined players keep their own spawn protection; let it expire before testing damage.
         h.startSequence().thenIdle(70).thenExecute(()->{
@@ -199,7 +199,7 @@ public final class SceneReviewTests {
     @GameTest(template="empty",batch="review_witch_interval",timeoutTicks=1600)
     public static void lookingAtTheNativeApproachMakesHerWithdrawAndThreeHeartsMakesHerRush(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,555500,f->{
         for(int x=-18;x<=18;x++)for(int z=-63;z<=-12;z++)f.put(x,-1,z,Blocks.SANDSTONE);
-        var owner=f.player("review_witch_glance_reader");f.at(owner,.5,0,-38.5);owner.getFoodData().setFoodLevel(0);f.look(owner,new BlockPos(0,1,-41));
+        var owner=f.player("review_witch_glance_reader");f.at(owner,.5,0,-38.5);owner.getFoodData().setFoodLevel(6);f.look(owner,new BlockPos(0,1,-41));
         var witch=LiteraryVignettes.huntBody(owner,f.place,new BlockPos(0,0,-41));var id=witch.getUUID();var start=witch.position();
         h.startSequence().thenIdle(35).thenExecute(()->{
             h.assertTrue(owner.getHealth()==20&&witch.attackCooldown()>=160&&witch.attackCooldown()<=300&&witch.huntPhase()==LakeWitchEntity.WITHDRAW,"the actual player's gaze interrupts the approach for a ten-to-fifteen-second interval");
@@ -223,11 +223,13 @@ public final class SceneReviewTests {
 
     @GameTest(template="empty",batch="review_live_collision_guard",timeoutTicks=1600)
     public static void aResidentEnteringAfterRecordingDefersTheActualCollisionWrite(GameTestHelper h){run(h,LabyrinthPlace.ELK_FAN,556500,f->{
-        f.put(0,-1,-12,Blocks.STONE);f.put(3,-1,-12,Blocks.STONE);var at=f.base.offset(0,0,-12);
+        f.put(0,-1,-12,Blocks.STONE);f.put(3,-1,-12,Blocks.STONE);f.put(0,0,-12,Blocks.AIR);var at=f.base.offset(0,0,-12);
         var plan=BuildBlocks.record(f.level,()->BuildBlocks.guardedSet(f.level,at,Blocks.STONE.defaultBlockState(),F,()->f.level.getEntitiesOfClass(LivingEntity.class,new AABB(at).inflate(.02),e->e.isAlive()).isEmpty()));
-        var cat=EntityType.CAT.create(f.level);cat.setNoAi(true);cat.setNoGravity(true);cat.setOrderedToSit(true);cat.moveTo(Vec3.atBottomCenterOf(at));f.level.addFreshEntity(cat);var id=cat.getUUID();
-        h.assertTrue(!plan.tick()&&f.level.getBlockState(at).isAir()&&cat.isAlive()&&cat.getUUID().equals(id),"a living native resident arriving between recording and execution postpones new collision");
-        cat.moveTo(Vec3.atBottomCenterOf(at.east(3)));h.assertTrue(plan.tick()&&f.level.getBlockState(at).is(Blocks.STONE)&&cat.getUUID().equals(id)&&cat.isOrderedToSit(),"the same guarded plan resumes after vacancy without replacing the resident");f.done();
+        var cat=EntityType.CAT.create(f.level);cat.setNoAi(true);cat.setNoGravity(true);cat.setPersistenceRequired();cat.setOrderedToSit(true);cat.moveTo(Vec3.atBottomCenterOf(at));f.level.addFreshEntity(cat);var id=cat.getUUID();
+        h.startSequence().thenIdle(2).thenExecute(()->{
+        int residents=f.level.getEntitiesOfClass(LivingEntity.class,new AABB(at).inflate(.02),e->e.isAlive()).size();boolean finished=plan.tick();
+        h.assertTrue(!finished&&f.level.getBlockState(at).isAir()&&cat.isAlive()&&cat.getUUID().equals(id),"a living native resident arriving between recording and execution postpones new collision: residents="+residents+", finished="+finished+", block="+f.level.getBlockState(at)+", catAlive="+cat.isAlive());
+        cat.moveTo(Vec3.atBottomCenterOf(at.east(3)));h.assertTrue(plan.tick()&&f.level.getBlockState(at).is(Blocks.STONE)&&cat.getUUID().equals(id)&&cat.isOrderedToSit(),"the same guarded plan resumes after vacancy without replacing the resident");f.done();});
     });}
 
 }
