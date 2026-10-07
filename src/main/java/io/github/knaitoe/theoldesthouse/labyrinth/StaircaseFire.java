@@ -125,7 +125,9 @@ public final class StaircaseFire {
     }
     public static boolean ignite(ServerPlayer player,BlockPos origin,BlockPos at){
         if(player.isSpectator()||!player.isAlive()||!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)
-                ||player.distanceToSqr(at.getCenter())>36||!(player.getMainHandItem().getItem() instanceof net.minecraft.world.item.FlintAndSteelItem))return false;
+                ||player.distanceToSqr(at.getCenter())>36)return false;
+        if(!(player.getMainHandItem().getItem() instanceof net.minecraft.world.item.FlintAndSteelItem)){
+            player.displayClientMessage(Component.literal("The hearth needs a flame. Tom carries a lighter."),true);return false;}
         var phase=FinaleProgress.phase(player.server,player.getUUID());if(phase!=FinaleProgress.Phase.STAIRCASE&&phase!=FinaleProgress.Phase.UNSEEN)return false;
         var record=FinaleProgress.player(player.server,player.getUUID());int index=braziers(origin).indexOf(at);
         if(index<0||!player.serverLevel().getBlockState(at).is(Blocks.CAMPFIRE))return false;

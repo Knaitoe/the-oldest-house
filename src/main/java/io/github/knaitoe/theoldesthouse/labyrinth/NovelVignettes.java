@@ -299,7 +299,12 @@ public final class NovelVignettes {
             var actor=NovelRegistry.ACTOR.get().create(p.serverLevel());if(actor!=null){actor.appearance(p.getUUID(),0);actor.moveTo(Vec3.atBottomCenterOf(at));p.serverLevel().addFreshEntity(actor);own.putUUID("Tom",actor.getUUID());own.remove("TomMissing");}}
     }
     public static void meetTom(ServerPlayer p,NovelActor actor){if(actor.role()!=0||!participant(p)||actor.owner().filter(p.getUUID()::equals).isEmpty()||p.distanceToSqr(actor)>36)return;var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());reward(p,own,"Radio",new ItemStack(NovelRegistry.RADIO.get()));
-        boolean handed=!own.getBoolean("Lighter");reward(p,own,"Lighter",new ItemStack(NovelRegistry.LIGHTER.get()));
+        boolean handed=!own.getBoolean("Yield_Lighter");reward(p,own,"Lighter",new ItemStack(NovelRegistry.LIGHTER.get()));
+        // The lighter is the only flame the House gives. A reader who has lost theirs, carries no other,
+        // and still has a cold hearth ahead gets one more from Tom, so no fire is ever out of reach.
+        if(!handed&&StaircaseFire.flames(FinaleProgress.player(p.server,p.getUUID()))<StaircaseFire.REQUIRED
+                &&!p.getInventory().hasAnyMatching(stack->stack.getItem() instanceof net.minecraft.world.item.FlintAndSteelItem)){
+            own.putInt("LighterReplaced",own.getInt("LighterReplaced")+1);give(p,new ItemStack(NovelRegistry.LIGHTER.get()));handed=true;}
         if(handed)actor.swing(InteractionHand.MAIN_HAND);
         cue(p,own,handed?"Tom: Here. Keep your thumb over the lid. It opens in my pocket.":"Tom: I'll stay here. Leave the radio on.");save(data,p.getUUID(),own);}
     public static void radio(ServerPlayer p){var own=personal(LabyrinthData.get(p.server),p.getUUID());String line;

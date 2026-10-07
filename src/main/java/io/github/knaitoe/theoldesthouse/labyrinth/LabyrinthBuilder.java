@@ -68,6 +68,8 @@ public final class LabyrinthBuilder {
     @Nullable private static Boolean gatingOverride;
     /** Whether the current construction is depth-gated (always in play; GameTests opt in). */
     private static boolean gatingActive;
+    /** Whether the running queue extends an existing world rather than carving a new one. */
+    private static boolean upgrading;
     /** Saved construction progress, so a restart never rebuilds a place that already stands. */
     public static final String PROGRESS = "labyrinth_carve_0440";
     /** Places are built this many crossings ahead of the deepest explorer. */
@@ -117,6 +119,9 @@ public final class LabyrinthBuilder {
         if (!gatingActive) return false;
         LabyrinthData data = LabyrinthData.get(server);
         for (LabyrinthPlace place : CORE) {
+            // In an upgraded world the standing core is reachable already; a core room this layout adds
+            // (the stone gallery) is carved in the queue without holding every existing door shut.
+            if (upgrading && structuralPending.contains(place)) continue;
             if (!isPlaceReady(data, place)) return false;
         }
         return true;
@@ -167,11 +172,12 @@ public final class LabyrinthBuilder {
         if (!structuralPending.remove(place) || pendingOrigin == null) return;
         LabyrinthData data = LabyrinthData.get(server);
         var progress = data.state(PROGRESS);
-        if (progress.getLong("Origin") != pendingOrigin.asLong() || progress.getInt("Version") != VERSION) {
+        if (progress.getLong("Origin") != pendingOrigin.asLong() || progress.getInt("Version") > VERSION) {
             progress = new net.minecraft.nbt.CompoundTag();
             progress.putLong("Origin", pendingOrigin.asLong());
-            progress.putInt("Version", VERSION);
         }
+        // Places built under an earlier layout still stand; their record carries into this one.
+        progress.putInt("Version", VERSION);
         var built = progress.getList("Built", net.minecraft.nbt.Tag.TAG_STRING);
         built.add(net.minecraft.nbt.StringTag.valueOf(place.id()));
         progress.put("Built", built);
@@ -207,13 +213,16 @@ public final class LabyrinthBuilder {
         }
         var progress = data.state(PROGRESS);
         Set<String> alreadyBuilt = new HashSet<>();
-        if (progress.getLong("Origin") == origin.asLong() && progress.getInt("Version") == VERSION)
+        // A layout bump never discards the record of places already carved for this origin: they stand,
+        // with their contents and player edits, and are not carved again.
+        if (progress.getLong("Origin") == origin.asLong() && progress.getInt("Version") <= VERSION)
             for (var tag : progress.getList("Built", net.minecraft.nbt.Tag.TAG_STRING)) alreadyBuilt.add(tag.getAsString());
         if(!force&&!LakeLandscape.upgradeWorld(server,origin)){pending=null;pendingOrigin=null;return false;}
         if(!force&&!OutdoorRelocation.upgrade(server,origin)){pending=null;pendingOrigin=null;return false;}
         legacyDomesticUpgrade=!force && data.builtVersion()<17 && origin.equals(data.builtOrigin());
         // Older structural upgrades keep their scope. 0.4.17 dresses existing halls in place.
         boolean extend = !force && data.builtVersion() >= 10 && data.builtVersion() < VERSION && origin.equals(data.builtOrigin());
+        upgrading = extend;
         List<LabyrinthPlace> queue = new ArrayList<>();
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
             boolean structural = !extend || (data.builtVersion() < 13 && place.slot() >= 23)

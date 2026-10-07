@@ -56,6 +56,18 @@ public final class ScenePlaytestRepairs {
             var sill=base.offset(x,0,-2);var old=BuildBlocks.state(level,sill);
             if(old.isAir()||old.is(Blocks.WATER))BuildBlocks.set(level,sill,Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH),F);
         }
+        // Headroom water along the two dry rows (z=-3 beside the arrival, z=-26 beside the far landing),
+        // and the two surfacing wells it spills into, would otherwise run out over the dry floor. Each open
+        // dry cell beside them gets a low kerb that water cannot enter and walkers step over.
+        var wet=new java.util.HashSet<BlockPos>();
+        for(var feet:LabyrinthHazards.floodRoute(base))if(BuildBlocks.state(level,feet.above()).is(Blocks.WATER))wet.add(feet.above().immutable());
+        for(int z:new int[]{-3,-27})for(int x=0;x<=1;x++)wet.add(base.offset(x,0,z));
+        for(var cell:wet)for(var side:Direction.Plane.HORIZONTAL){
+            var dry=cell.relative(side);if(wet.contains(dry))continue;
+            var old=BuildBlocks.state(level,dry);
+            if(old.isAir()||old.is(Blocks.WATER)&&!old.getFluidState().isSource())
+                BuildBlocks.set(level,dry,Blocks.STONE_BRICK_SLAB.defaultBlockState(),F);
+        }
     }
     private static boolean originalFloor(BlockState s){return s.is(Blocks.STONE_BRICKS)||s.is(Blocks.BIRCH_PLANKS)||s.is(Blocks.SPRUCE_PLANKS);}
     /** Contains no actor construction, paper, inventory, reward or personal progress. */
@@ -114,7 +126,10 @@ public final class ScenePlaytestRepairs {
             var r=p.room();int margin=NovelRooms.outside(p)?8:1;
             box=new BoundingBox(r.minX()-margin,Math.max(-12,r.minY()),r.minZ()-margin,r.maxX()+margin,NovelRooms.outside(p)?96:r.maxY()+1,Math.max(r.maxZ()+margin,20));
             area=new AABB(base.offset(box.minX(),box.minY(),box.minZ())).minmax(new AABB(base.offset(box.maxX(),box.maxY(),box.maxZ())));
-            cursor=LabyrinthData.get(s).stateEntry(STATE,key).getInt("Cursor");
+            var saved=LabyrinthData.get(s).stateEntry(STATE,key);cursor=saved.getInt("Cursor");
+            // The construction stage runs once. A deferred sweep or a restart resumes only the sweep, so
+            // anything a player has since removed from the new partition, furniture or ground stays removed.
+            prepared=saved.getBoolean("Planned");
         }
         boolean visible(){for(var p:level.players())if(area.inflate(16).intersects(p.getCamera().getBoundingBox()))return true;return false;}
         boolean loaded(){boolean ready=true;
@@ -143,7 +158,7 @@ public final class ScenePlaytestRepairs {
                 if(place==LabyrinthPlace.FLOODED_PASSAGE&&bodies.stream().anyMatch(e->new AABB(base.offset(0,0,-2)).expandTowards(1,2,0).intersects(e.getBoundingBox()))){close();return true;}
                 if(!prepared){plan=plan(level,base,place);prepared=true;}}
             // Construction and the large read sweep get separate ticks, each with its own bounded slice.
-            if(plan!=null){if(plan.tick())plan=null;return false;}
+            if(plan!=null){if(plan.tick()){plan=null;var own=LabyrinthData.get(server).stateEntry(STATE,key);own.putBoolean("Planned",true);LabyrinthData.get(server).setStateEntry(STATE,key,own);}return false;}
             int width=box.getXSpan(),depth=box.getZSpan(),total=width*depth*box.getYSpan(),visited=0;long started=System.nanoTime();
             while(cursor<total&&visited++<4096&&System.nanoTime()-started<6_000_000L){
                 int n=cursor++;var rel=new BlockPos(box.minX()+n%width,box.minY()+n/(width*depth),box.minZ()+(n/width)%depth);var at=base.offset(rel);
@@ -152,7 +167,7 @@ public final class ScenePlaytestRepairs {
                 if(strayFill(place,rel,before))next=Blocks.AIR.defaultBlockState();
                 if(!next.equals(before)&&level.getBlockEntity(at)==null){if(safe(at,next,bodies))level.setBlock(at,next,F);else deferred=true;}
             }
-            var own=new CompoundTag();boolean done=cursor>=total&&!deferred;own.putInt("Cursor",cursor>=total?0:cursor);own.putBoolean("Done",done);
+            var own=new CompoundTag();boolean done=cursor>=total&&!deferred;own.putInt("Cursor",cursor>=total?0:cursor);own.putBoolean("Done",done);own.putBoolean("Planned",true);
             LabyrinthData.get(server).setStateEntry(STATE,key,own);
             if(cursor>=total){close();return true;}return false;
         }

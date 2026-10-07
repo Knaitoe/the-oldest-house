@@ -79,7 +79,11 @@ public final class ExplorationPassTests {
             var body=new AABB(feet.getX()+.2,feet.getY()+.01,feet.getZ()+.2,feet.getX()+.8,feet.getY()+1.81,feet.getZ()+.8);
             h.assertTrue(l.noCollision(null,body),"the submerged route has native body clearance at "+feet);
         }
-        h.runAfterDelay(40,()->{h.assertTrue(l.getBlockState(b.offset(0,0,0)).getFluidState().isEmpty(),"the source-water channel cannot flood the arrival doorway");h.succeed();});
+        h.runAfterDelay(40,()->{h.assertTrue(l.getBlockState(b.offset(0,0,0)).getFluidState().isEmpty(),"the source-water channel cannot flood the arrival doorway");
+            for(int x=-7;x<=7;x++){
+                for(int z=-2;z<=-1;z++)h.assertTrue(l.getBlockState(b.offset(x,0,z)).getFluidState().isEmpty(),"the dry arrival stays dry at "+x+","+z);
+                if(x<0||x>1)h.assertTrue(l.getBlockState(b.offset(x,0,-27)).getFluidState().isEmpty(),"the far landing stays dry at "+x);
+            }h.succeed();});
     }
     @GameTest(template="empty")
     public static void childDistanceMakesTheSavedOccupiedClockGrowlAndShakeMoreOften(GameTestHelper h){
