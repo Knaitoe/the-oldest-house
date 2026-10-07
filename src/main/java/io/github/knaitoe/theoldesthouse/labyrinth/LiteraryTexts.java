@@ -40,7 +40,7 @@ public final class LiteraryTexts {
             "Two drinks. One broken headlamp. Someone went out to move the trucks and left the till open.",
             "The light found an eye above the hood. Everybody had a reason to shout. Nobody had a reason to listen.\n\nThe field begins beyond the parked pickups.");
         case ELK_FAN->book("An unfinished repair","The tenant",
-            "The light flickers at the same point in each turn. The ladder is two rungs short. Bring ordinary blocks to make a platform; keep the blades above your hands.",
+            "The light flickers at the same point in each turn. The ladder is two rungs short. There are boards beside the tools; they might give me the reach I need. I keep my hands below the blades.",
             "From up there you can see the carpet between the blades. Do not stay under them.\n\nCome back twice after the repair. The outline will change before the tooth appears.");
         case MAPPING_INTERIOR->book("A floor plan","The older brother",
             "The trailer ends at the back bedroom. I know because I have walked around it. Under the hatch, the dirt keeps going.\n\nMy brother sleeps through breakfast now.",

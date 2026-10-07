@@ -23,7 +23,7 @@ import static io.github.knaitoe.theoldesthouse.house.VignetteDetailBlock.Kind.*;
 public final class SceneReview {
     public static final String STATE="scene_review_0454",COSTUME="HouseCostumeSkin";
     public static final BlockPos BOOK_TRAY=new BlockPos(1,0,-20),BLANK_SHELF=new BlockPos(-11,0,-22);
-    public static final List<BlockPos> DRAFTS=List.of(new BlockPos(-3,1,-27),new BlockPos(2,1,-27),new BlockPos(-3,1,-33));
+    public static final List<BlockPos> DRAFTS=List.of(new BlockPos(-3,1,-27),new BlockPos(2,1,-27),new BlockPos(-3,1,-33),new BlockPos(3,1,-33),new BlockPos(-7,1,-34),new BlockPos(-10,1,-24),new BlockPos(8,1,-37),new BlockPos(7,1,-37));
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private static Work work;private static int cursor;
     private record Work(ServerLevel level,BlockPos origin,LabyrinthPlace place,BuildBlocks.Plan plan){}
@@ -43,7 +43,7 @@ public final class SceneReview {
         for(var box:affected.toAabbs())if(!l.getEntitiesOfClass(LivingEntity.class,box.move(at).inflate(.02,.09,.02),e->e.isAlive()&&!e.isSpectator()).isEmpty())return false;
         return true;
     }
-    private static boolean set(ServerLevel l,BlockPos at,BlockState next){if(BuildBlocks.state(l,at).equals(next))return true;if(!safe(l,at,next))return false;BuildBlocks.set(l,at,next,F);return true;}
+    private static boolean set(ServerLevel l,BlockPos at,BlockState next){if(BuildBlocks.state(l,at).equals(next))return true;if(!safe(l,at,next))return false;return BuildBlocks.guardedSet(l,at,next,F,()->safe(l,at,next));}
     private static boolean add(ServerLevel l,BlockPos at,BlockState next){return !BuildBlocks.state(l,at).isAir()||set(l,at,next);}
     private static void detail(ServerLevel l,BlockPos b,int x,int y,int z,VignetteDetailBlock.Kind kind,Direction face){
         var at=b.offset(x,y,z);if(BuildBlocks.state(l,at.below()).getShape(l,at.below()).isEmpty())return;

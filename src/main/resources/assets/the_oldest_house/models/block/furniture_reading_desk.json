@@ -1,9 +1,9 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "walnut": "the_oldest_house:block/review_reading_wood",
-    "particle": "the_oldest_house:block/review_reading_wood",
-    "front": "the_oldest_house:block/review_reading_wood"
+    "walnut": "the_oldest_house:block/hunt_fan_oak",
+    "particle": "the_oldest_house:block/hunt_fan_oak",
+    "front": "the_oldest_house:block/hunt_fan_oak"
   },
   "elements": [
     {

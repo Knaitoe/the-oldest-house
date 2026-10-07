@@ -132,6 +132,18 @@ public final class BuildBlocks {
         box(level, pos, pos, state, flags);
     }
 
+    /** Recheck real bodies at execution, since a companion can enter a recorded edit between slices. */
+    public static boolean guardedSet(ServerLevel level,BlockPos pos,BlockState state,int flags,java.util.function.BooleanSupplier guard){
+        if(recording!=null&&recording.level==level){
+            var before=state(level,pos);
+            recording.add(new Command(){
+                public boolean step(ServerLevel ignored){var actual=level.getBlockState(pos);if(!actual.equals(before)&&!actual.equals(state))return true;if(!guard.getAsBoolean())return false;if(!actual.equals(state))level.setBlock(pos,state,flags);return true;}
+                public BlockState stateAt(BlockPos at){return pos.equals(at)?state:null;}
+            },pos,pos);return true;
+        }
+        if(!guard.getAsBoolean())return false;if(!level.getBlockState(pos).equals(state))level.setBlock(pos,state,flags);return true;
+    }
+
     /** Read earlier authored commands when a later prop depends on them. */
     public static BlockState state(ServerLevel level, BlockPos pos) {
         if (recording != null && recording.level == level) {

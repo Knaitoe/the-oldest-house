@@ -80,7 +80,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         // A wound breaks the strike: she recoils and withdraws before coming again.
         if (!level().isClientSide()) {
             cancelStrike();
-            cooldown = Math.max(cooldown, 40);
+            cooldown = Math.max(cooldown, source.getEntity() instanceof ServerPlayer p && p.getHealth()<=6 ? 20 : 220);
             entityData.set(HUNT_PHASE, WITHDRAW);
             route.clear();
         }
@@ -91,7 +91,7 @@ public final class LakeWitchEntity extends PathfinderMob {
     public boolean striking() { return entityData.get(STRIKING); }
     public void shore(BlockPos base, int visit) { shoreBase = base.immutable(); this.visit = visit;settleTicks=60;setNoGravity(true); }
     public @Nullable BlockPos shoreBase() { return shoreBase; }
-    public void relocateLandscape(BlockPos delta){if(shoreBase!=null)shoreBase=shoreBase.offset(delta);if(memoryBase!=null)memoryBase=memoryBase.offset(delta);route.clear();routeGoal=null;}
+    public void relocateLandscape(BlockPos delta){if(shoreBase!=null)shoreBase=shoreBase.offset(delta);if(memoryBase!=null)memoryBase=memoryBase.offset(delta);if(literaryBase!=null)literaryBase=literaryBase.offset(delta);route.clear();routeGoal=null;}
     @Override public boolean removeWhenFarAway(double distance) { return false; }
     @Override public boolean canBeLeashed() { return false; }
 
@@ -109,7 +109,7 @@ public final class LakeWitchEntity extends PathfinderMob {
                 && (level.getFluidState(feet.below()).is(FluidTags.WATER)||level.getBlockState(feet.below()).isFaceSturdy(level, feet.below(), Direction.UP));
     }
     /** Native travel must not apply swimming drag or gravity to the surface hunter. Memory keeps normal physics. */
-    @Override public void travel(Vec3 input){if(shoreBase!=null&&!memory()){setDeltaMovement(Vec3.ZERO);return;}super.travel(input);}
+    @Override public void travel(Vec3 input){if((shoreBase!=null||literaryBase!=null)&&!memory()){setDeltaMovement(Vec3.ZERO);return;}super.travel(input);}
     public static double surfaceHeight(Level level,BlockPos base,BlockPos node){
         var fluid=level.getFluidState(node.below());
         return fluid.is(FluidTags.WATER)?node.getY()-1+fluid.getHeight(level,node.below())+.004:base.getY();
@@ -231,11 +231,16 @@ public final class LakeWitchEntity extends PathfinderMob {
         getLookControl().setLookAt(target, 30, 30);
         if (distanceToSqr(target) < 784 && getSensing().hasLineOfSight(target))
             IndianLakeProgress.hunted(LabyrinthData.get(level.getServer()), target.getUUID());
+        boolean critical=target.getHealth()<=6;if(critical&&cooldown>20)cooldown=20;
+        boolean observed=level.players().stream().filter(p->canAttack(this,p)).anyMatch(p->inView(p,getEyePosition()));
+        if(!critical&&observed&&(huntPhase()==LUNGE||cooldown==0&&distanceToSqr(target)<72)){
+            cancelStrike();cooldown=retreatDelay(target);entityData.set(HUNT_PHASE,WITHDRAW);route.clear();
+        }
         if(windup>0){windup--;return;}
         BlockPos goal = BlockPos.containing(target.getX(), shoreBase.getY(), target.getZ());
         if(!walkable(level,shoreBase,goal)){cancelStrike();return;}
         if(huntPhase()==LUNGE){
-            if(--lungeTicks<=0){cancelStrike();cooldown=65;entityData.set(HUNT_PHASE,WITHDRAW);route.clear();return;}
+            if(--lungeTicks<=0){cancelStrike();cooldown=retreatDelay(target);entityData.set(HUNT_PHASE,WITHDRAW);route.clear();return;}
             if(routeGoal==null||!goal.equals(routeGoal)||route.isEmpty())routeTo(goal);
             follow(.62);
             closestRush=Math.min(closestRush,distanceToSqr(target));
@@ -243,12 +248,12 @@ public final class LakeWitchEntity extends PathfinderMob {
                 swing(net.minecraft.world.InteractionHand.MAIN_HAND);
                 strikeAttempts++;lastStrikeAccepted=target.hurt(damageSources().mobAttack(this),6);Vec3 away=target.position().subtract(position()).multiply(1,0,1).normalize();
                 target.setDeltaMovement(away.scale(.3).add(0,.12,0));target.hurtMarked=true;
-                cancelStrike();cooldown=75;entityData.set(HUNT_PHASE,WITHDRAW);route.clear();
+                cancelStrike();cooldown=retreatDelay(target);entityData.set(HUNT_PHASE,WITHDRAW);route.clear();
             }return;
         }
         boolean watched=inView(target,position().add(0,.6,0));
         if(cooldown==0&&distanceToSqr(target)<72&&getSensing().hasLineOfSight(target)
-                &&(!watched||behindScore(target,position())>.25||distanceToSqr(target)<5)){
+                &&(!observed||critical)){
             entityData.set(HUNT_PHASE,LUNGE);entityData.set(STRIKING,true);windup=4;lungeTicks=24;routeTo(goal);
             level.playSound(null,blockPosition(),DrownedTownRegistry.WITCH_VOICE.get(),SoundSource.HOSTILE,.55F,1.2F);return;
         }
@@ -258,42 +263,85 @@ public final class LakeWitchEntity extends PathfinderMob {
             if(cover!=null)routeTo(cover);
             else if(!watched||distanceToSqr(target)<100)routeTo(goal);
         }
-        follow(withdraw?.34:.24);
+        follow(withdraw?.34:critical?.34:.24);
     }
     private void cancelStrike() { windup = 0;lungeTicks=0;entityData.set(STRIKING, false);entityData.set(HUNT_PHASE,STALK); }
-    /** One native actor clock and one target, regardless of how many readers share the lake. */
+    public int attackCooldown(){return cooldown;}
+    private int retreatDelay(ServerPlayer target){return target.getHealth()<=6?20:200+getRandom().nextInt(101);}
+    private boolean literaryWalkable(BlockPos node){
+        var r=literaryPlace.room();int x=node.getX()-literaryBase.getX(),z=node.getZ()-literaryBase.getZ();
+        if(x<=r.minX()+2||x>=r.maxX()-2||z<=r.minZ()+2||z>=-10)return false;
+        double half=getBbWidth()*.5+.015;
+        for(int sx:new int[]{-1,1})for(int sz:new int[]{-1,1}){
+            var feet=BlockPos.containing(node.getX()+.5+sx*half,literaryBase.getY(),node.getZ()+.5+sz*half);
+            if(literaryPlace==LabyrinthPlace.COSTUME_NIGHT&&level().getBlockState(feet.below()).is(Blocks.GRASS_BLOCK))return false;
+            if(!level().getFluidState(feet.below()).is(FluidTags.WATER)&&level().getBlockState(feet.below()).getCollisionShape(level(),feet.below()).isEmpty())return false;
+        }
+        return level().noCollision(this,new net.minecraft.world.phys.AABB(node.getX()+.5-half,literaryBase.getY(),node.getZ()+.5-half,node.getX()+.5+half,literaryBase.getY()+getBbHeight(),node.getZ()+.5+half));
+    }
+    private void literaryRoute(BlockPos goal){
+        route.clear();routeGoal=goal;var start=BlockPos.containing(getX(),literaryBase.getY(),getZ());
+        if(!literaryWalkable(start))return;
+        if(!literaryWalkable(goal)){
+            BlockPos nearest=null;double distance=Double.MAX_VALUE;
+            for(var candidate:BlockPos.betweenClosed(goal.offset(-1,0,-1),goal.offset(1,0,1)))
+                if(literaryWalkable(candidate)&&candidate.distSqr(start)<distance){distance=candidate.distSqr(start);nearest=candidate.immutable();}
+            if(nearest==null)return;goal=nearest;
+        }
+        var open=new ArrayDeque<BlockPos>();var prev=new HashMap<BlockPos,BlockPos>();open.add(start);prev.put(start,start);
+        while(!open.isEmpty()&&prev.size()<7000){var n=open.removeFirst();if(n.equals(goal)){
+            var path=new LinkedList<Vec3>();while(!n.equals(start)){path.addFirst(Vec3.atBottomCenterOf(n));n=prev.get(n);}route.addAll(path);return;}
+            for(var side:Direction.Plane.HORIZONTAL){var next=n.relative(side);if(!prev.containsKey(next)&&literaryWalkable(next)){prev.put(next,n);open.add(next);}}
+        }
+    }
+    private BlockPos literaryCover(ServerLevel l,ServerPlayer target){
+        BlockPos best=null;double score=-Double.MAX_VALUE;
+        for(int radius:new int[]{7,11,15})for(int i=0;i<12;i++){
+            double angle=i*Math.PI/6;var n=BlockPos.containing(target.getX()+Math.sin(angle)*radius,literaryBase.getY(),target.getZ()+Math.cos(angle)*radius);
+            if(!literaryWalkable(n))continue;var point=Vec3.atBottomCenterOf(n).add(0,.45,0);
+            boolean seen=l.players().stream().filter(p->LiteraryVignettes.inside(p,literaryPlace)).anyMatch(p->inView(p,point));
+            double value=(seen?-90:50)+behindScore(target,point)*12-l.getBrightness(LightLayer.BLOCK,n)-position().distanceTo(point)*.4;
+            if(value>score){score=value;best=n;}
+        }return best;
+    }
+    /** Physical approach, one swipe, retreat to cover for ten to fifteen seconds; low health breaks her caution. */
     private void tickLiterary(){
         if(!(level() instanceof ServerLevel level)||!isAlive())return;setAirSupply(300);
-        if(cooldown>0)cooldown--;
         var target=level.players().stream().filter(p->LiteraryVignettes.inside(p,literaryPlace)&&!p.isCreative())
                 .filter(p->!(p.isUnderWater()&&p.getY()+p.getBbHeight()<literaryBase.getY()))
-                .filter(p->literaryPlace!=LabyrinthPlace.COSTUME_NIGHT||!safeGround(level,p.blockPosition()))
+                .filter(p->literaryPlace!=LabyrinthPlace.COSTUME_NIGHT||!level.getBlockState(p.blockPosition().below()).is(Blocks.GRASS_BLOCK))
                 .min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
-        if(target==null||distanceToSqr(target)>1600){cancelStrike();return;}
-        getLookControl().setLookAt(target,30,30);
-        if(windup>0){windup--;return;}
-        if(cooldown==0&&distanceToSqr(target)<8&&getSensing().hasLineOfSight(target)&&huntPhase()!=LUNGE){
-            entityData.set(HUNT_PHASE,LUNGE);entityData.set(STRIKING,true);windup=4;lungeTicks=14;return;
-        }
+        if(target==null||distanceToSqr(target)>3600){cancelStrike();route.clear();return;}
+        if(cooldown>0)cooldown--;
+        boolean critical=target.getHealth()<=6;if(critical&&cooldown>20)cooldown=20;
         boolean watched=level.players().stream().filter(p->LiteraryVignettes.inside(p,literaryPlace)).anyMatch(p->inView(p,getEyePosition()));
-        if(huntPhase()!=LUNGE&&(watched&&literaryPlace==LabyrinthPlace.COSTUME_NIGHT||cooldown>0)){
-            entityData.set(HUNT_PHASE,cooldown>0?WITHDRAW:STALK);return;}
-        Vec3 delta=target.position().subtract(position()).multiply(1,0,1);double speed=huntPhase()==LUNGE?.38:.19;
-        if(delta.lengthSqr()>.01){var step=delta.normalize().scale(Math.min(speed,delta.length()));
-            var next=BlockPos.containing(getX()+step.x,literaryBase.getY(),getZ()+step.z);
-            if(literaryPlace!=LabyrinthPlace.COSTUME_NIGHT||!safeGround(level,next)){
-                double ox=getX(),oz=getZ();move(MoverType.SELF,step);setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));yBodyRot=getYRot();
-                walkAnimation.update((float)Math.sqrt((getX()-ox)*(getX()-ox)+(getZ()-oz)*(getZ()-oz))*4,.4F);
-                var node=BlockPos.containing(getX(),literaryBase.getY()-1,getZ());var floor=level.getBlockState(node);
-                double surface=floor.is(Blocks.WATER)?node.getY()+floor.getFluidState().getHeight(level,node):literaryBase.getY();
-                super.move(MoverType.SELF,new Vec3(0,net.minecraft.util.Mth.clamp(surface-getY(),-.25,.25),0));
-            }
-        }
+        if(!critical&&watched&&(huntPhase()==LUNGE||cooldown==0&&distanceToSqr(target)<72)){
+            cancelStrike();cooldown=retreatDelay(target);entityData.set(HUNT_PHASE,WITHDRAW);route.clear();}
+        if(windup>0){windup--;return;}
+        var goal=BlockPos.containing(target.getX(),literaryBase.getY(),target.getZ());
         if(huntPhase()==LUNGE){
-            if(distanceToSqr(target)<4&&getSensing().hasLineOfSight(target)){
+            if(routeGoal==null||!routeGoal.equals(goal)||tickCount%8==0)literaryRoute(goal);
+            literaryFollow(.46);
+            if(distanceToSqr(target)<3.8&&getSensing().hasLineOfSight(target)){
                 swing(net.minecraft.world.InteractionHand.MAIN_HAND);strikeAttempts++;lastStrikeAccepted=target.hurt(damageSources().mobAttack(this),4);
-                cancelStrike();cooldown=65;entityData.set(HUNT_PHASE,WITHDRAW);
-            }else if(--lungeTicks<=0){cancelStrike();cooldown=35;}
+                cancelStrike();cooldown=retreatDelay(target);entityData.set(HUNT_PHASE,WITHDRAW);route.clear();
+            }else if(--lungeTicks<=0){cancelStrike();cooldown=retreatDelay(target);entityData.set(HUNT_PHASE,WITHDRAW);route.clear();}return;
+        }
+        if(cooldown==0&&distanceToSqr(target)<72&&getSensing().hasLineOfSight(target)&&(!watched||critical)){
+            entityData.set(HUNT_PHASE,LUNGE);entityData.set(STRIKING,true);windup=critical?2:6;lungeTicks=30;literaryRoute(goal);return;}
+        boolean withdraw=cooldown>0&&!critical;entityData.set(HUNT_PHASE,withdraw?WITHDRAW:STALK);
+        if(tickCount%20==0||routeGoal==null){var cover=withdraw?literaryCover(level,target):goal;if(cover!=null)literaryRoute(cover);}
+        literaryFollow(withdraw?.34:critical?.32:.19);
+    }
+    private void literaryFollow(double speed){
+        while(!route.isEmpty()){
+            var point=route.peekFirst();var delta=point.subtract(position()).multiply(1,0,1);
+            if(delta.lengthSqr()<.04){route.removeFirst();continue;}
+            var step=delta.normalize().scale(Math.min(speed,delta.length()));var node=BlockPos.containing(getX()+step.x,literaryBase.getY(),getZ()+step.z);
+            if(!literaryWalkable(node)){route.clear();return;}
+            var before=position();move(MoverType.SELF,step);setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));yBodyRot=getYRot();
+            super.move(MoverType.SELF,new Vec3(0,net.minecraft.util.Mth.clamp(supportHeight(level(),literaryBase,getX(),getZ(),getBbWidth())-getY(),-.25,.25),0));
+            walkAnimation.update((float)position().distanceTo(before)*4,.4F);return;
         }
     }
     @Override public void die(DamageSource source) {
@@ -304,13 +352,13 @@ public final class LakeWitchEntity extends PathfinderMob {
         super.die(source);
     }
     @Override public void addAdditionalSaveData(CompoundTag tag) {
-        super.addAdditionalSaveData(tag); if (shoreBase != null) tag.putLong("ShoreBase", shoreBase.asLong()); tag.putInt("TownVisit", visit);
+        super.addAdditionalSaveData(tag); if (shoreBase != null) tag.putLong("ShoreBase", shoreBase.asLong()); tag.putInt("TownVisit", visit);tag.putInt("HuntCooldown",cooldown);
         if(literaryBase!=null&&literaryPlace!=null){tag.putLong("LiteraryBase",literaryBase.asLong());tag.putString("LiteraryScene",literaryPlace.id());}
         if(memoryOwner!=null&&memoryBase!=null){tag.putUUID("MemoryOwner",memoryOwner);tag.putLong("MemoryBase",memoryBase.asLong());tag.putInt("MemoryPhase",memoryPhase());}
     }
     @Override public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag); shoreBase = tag.contains("ShoreBase") ? BlockPos.of(tag.getLong("ShoreBase")) : null;
-        visit = tag.getInt("TownVisit"); cooldown = 30; cancelStrike(); route.clear();
+        visit = tag.getInt("TownVisit"); cooldown = tag.contains("HuntCooldown")?tag.getInt("HuntCooldown"):30; cancelStrike(); route.clear();
         if(shoreBase!=null){setNoGravity(true);settleTicks=40;}
         if(tag.contains("LiteraryBase")){var place=LabyrinthPlace.byId(tag.getString("LiteraryScene"));if(place!=null)literaryHunt(BlockPos.of(tag.getLong("LiteraryBase")),place);}
         if(tag.hasUUID("MemoryOwner")){recollection(tag.getUUID("MemoryOwner"),BlockPos.of(tag.getLong("MemoryBase")));memoryPhase(tag.getInt("MemoryPhase"));setNoGravity(memoryPhase()==1||memoryPhase()==3);}

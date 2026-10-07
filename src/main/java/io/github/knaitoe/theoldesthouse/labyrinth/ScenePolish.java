@@ -98,6 +98,7 @@ public final class ScenePolish {
             SceneCraft.craftOnce(level, origin, place);
         SceneSupportRepairs.repairOnce(level,origin,place);
         SceneReview.fresh(level,origin,place);
+        SceneHuntReview.fresh(level,origin,place);
     }
 
     private static void polish(ServerLevel level, BlockPos origin, LabyrinthPlace place) {
@@ -126,6 +127,7 @@ public final class ScenePolish {
         ScenePlaytestRepairs.forget(server, origin, place);
         SceneSupportRepairs.forget(server,origin,place);
         SceneReview.forget(server,origin,place);
+        SceneHuntReview.forget(server,origin,place);
         LabyrinthData data = LabyrinthData.get(server);
         CompoundTag done = data.state(STATE);
         if (done.contains(key(origin, place))) {
