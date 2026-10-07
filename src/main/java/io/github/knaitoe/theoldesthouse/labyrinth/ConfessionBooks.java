@@ -34,6 +34,7 @@ public final class ConfessionBooks {
         CustomData.update(DataComponents.CUSTOM_DATA,original,t->t.putUUID(LiteraryVignettes.OWNER,p.getUUID()));
         var at=LiteraryVignettes.base(p,LabyrinthPlace.CONFESSION).offset(SceneReview.BOOK_TRAY);
         var laid=new ItemEntity(p.serverLevel(),at.getX()+.5,at.getY()+1.02,at.getZ()+.5,original);
+        laid.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
         laid.setNoGravity(true);laid.setInvulnerable(true);laid.setUnlimitedLifetime();laid.setPickUpDelay(32767);laid.setTarget(p.getUUID());
         if(!p.serverLevel().addFreshEntity(laid))return;
         held.shrink(1);own.putUUID("TableJournal",laid.getUUID());

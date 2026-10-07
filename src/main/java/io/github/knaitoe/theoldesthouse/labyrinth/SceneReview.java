@@ -59,7 +59,7 @@ public final class SceneReview {
     public static VignetteDetailBlock.Kind readingKind(LabyrinthPlace p){return switch(p){
         case COSTUME_NIGHT,MOVIE_NIGHT,WINTER_LAKE,BLY_ROUTE,MAPPING_INTERIOR,WINCHESTER->MAP_BOARD;
         case CAMP_BLOOD,DEVILS_ROCK,GHOSTS_SET,ELK_LOT->NOTICE_BOARD;
-        case USHER,MASQUE,HOLY_RABBIT,CRIMSON_HALL,CONFESSION->BOOK_TRAY;
+        case USHER,MASQUE,HOLY_RABBIT,CRIMSON_HALL,CONFESSION->VignetteDetailBlock.Kind.BOOK_TRAY;
         case CHILD_ROOM,HILL_NURSERY,ELK_FAN,MINIATURES->FIELD_NOTEBOOK;
         case ELK_CARCASSES->MISSING_NOTICE;
         case WHEEL,END_WORLD_CABIN->DIARY_STACK;
@@ -123,7 +123,7 @@ public final class SceneReview {
             detail(l,b,-7,0,-21,TOY_BLOCKS,Direction.SOUTH);detail(l,b,10,1,-7,DOLL,Direction.WEST);
             for(int z:new int[]{-8,-13,-18})add(l,b.offset(-10,2,z),VignetteDetailBlock.state(CHILD_WALL,Direction.EAST));
         }
-        if(p==LabyrinthPlace.CONFESSION){detail(l,b,1,0,-20,BOOK_TRAY,Direction.NORTH);detail(l,b,-10,1,-22,FIELD_NOTEBOOK,Direction.EAST);}
+        if(p==LabyrinthPlace.CONFESSION){detail(l,b,1,0,-20,VignetteDetailBlock.Kind.BOOK_TRAY,Direction.NORTH);detail(l,b,-10,1,-22,FIELD_NOTEBOOK,Direction.EAST);}
         if(p==LabyrinthPlace.DEVILS_ROCK){
             piece(l,b,14,-30,HouseholdFurnitureBlock.Kind.BLUE_SOFA,null,Direction.WEST);
             piece(l,b,14,-31,HouseholdFurnitureBlock.Kind.BLUE_SOFA,null,Direction.WEST);
