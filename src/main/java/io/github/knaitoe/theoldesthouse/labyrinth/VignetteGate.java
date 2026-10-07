@@ -28,6 +28,8 @@ public final class VignetteGate {
         var h=HollowayVignette.personal(d,p.getUUID());return h.getBoolean("Run")&&!h.getBoolean("Escaped");
     }
     public static boolean dormant(LabyrinthData d,UUID id,LabyrinthData.Door door){return own(d,id).getCompound("Dormant").contains(door.id);}
+    /** The story place a dormant door leads back to, or an empty string. */
+    public static String dormantPlace(LabyrinthData d,UUID id,LabyrinthData.Door door){return own(d,id).getCompound("Dormant").getString(door.id);}
     public static void redealt(LabyrinthData d,UUID id,LabyrinthData.Door door){var o=own(d,id);var dormant=o.getCompound("Dormant");if(!dormant.contains(door.id))return;dormant.remove(door.id);o.put("Dormant",dormant);save(d,id,o);}
     public static void departed(ServerPlayer p,LabyrinthData.Waypoint back,LabyrinthData.Door entry){
         var d=LabyrinthData.get(p.server);var o=own(d,p.getUUID());var place=LabyrinthPlace.byId(o.getString("Place"));if(place==null||!place.isVignette()||!entry.id.equals(place.entryDoorId()))return;

@@ -124,16 +124,16 @@ public final class LabyrinthDoors {
         var hotelRoute=HotelVignette.route(player,door);if(hotelRoute!=null)door=hotelRoute;
         MinecraftServer server = player.server;
         LabyrinthData data = LabyrinthData.get(server);
-        if(VignetteGate.dormant(data,player.getUUID(),door)){if(reroute(player,door))return;setDoorOpen(player.serverLevel(),door.lower,false,player);player.displayClientMessage(Component.literal("The door is quiet. Leave its approach and find it again."),true);return;}
+        if(VignetteGate.dormant(data,player.getUUID(),door)){if(reroute(player,door))return;setDoorOpen(player.serverLevel(),door.lower,false,player);quiet(player,VignetteGate.dormantPlace(data,player.getUUID(),door));return;}
         if (HideAndClap.isLocked(player)) {
-            locked(player);
+            player.displayClientMessage(Component.literal("The door won't open until the game is over."), true);
             return;
         }
 
         if (LabyrinthData.LOCKED.equals(door.destination)) {
             // Somebody's room. It rattles in its frame and stays shut.
             player.serverLevel().playSound(null, door.lower, SoundEvents.WOODEN_TRAPDOOR_CLOSE, SoundSource.BLOCKS, 0.5F, 0.6F);
-            locked(player);
+            player.displayClientMessage(Component.literal("The door is locked. Someone lives here."), true);
             return;
         }
         if (LabyrinthData.RETURN.equals(door.destination) || LabyrinthData.HALLWAY_OR_RETURN.equals(door.destination)) {
@@ -149,7 +149,7 @@ public final class LabyrinthDoors {
             return;
         }
         if (!LabyrinthBuilder.ensureReachable(server)) {
-            player.displayClientMessage(Component.literal("The door sticks."), true);
+            sticks(player);
             return;
         }
 
@@ -175,7 +175,7 @@ public final class LabyrinthDoors {
         if (place != null && place != LabyrinthPlace.FAMILY_COPY && place != LabyrinthPlace.OLD_CABIN
                 && !LabyrinthBuilder.isPlaceReady(server, place)) {
             if (reroute(player, door)) return;
-            player.displayClientMessage(Component.literal("The door sticks."), true);
+            sticks(player);
             return;
         }
         LabyrinthData.Door entry = place == null || place.slot() < 0 ? null : data.door(place.entryDoorId());
@@ -226,6 +226,30 @@ public final class LabyrinthDoors {
     private static void locked(ServerPlayer player) {
         player.displayClientMessage(Component.literal("The door is locked."), true);
     }
+    /** Refusals at a stuck door, per player: game time of the first in the current run, and the count. */
+    private static final Map<UUID, long[]> STUCK = new HashMap<>();
+    /**
+     * The House is still carving what lies behind: the player should wait, not give up on the door.
+     * A third try within a minute adds the concrete advice.
+     */
+    private static void sticks(ServerPlayer player) {
+        long now = player.serverLevel().getGameTime();
+        long[] run = STUCK.computeIfAbsent(player.getUUID(), ignored -> new long[]{now, 0});
+        if (now - run[0] > 1200) { run[0] = now; run[1] = 0; }
+        run[1]++;
+        player.displayClientMessage(Component.literal(run[1] >= 3
+                ? "It will give. Try another door, or come back to this one in a minute."
+                : "The door sticks. Something is still settling behind it."), true);
+    }
+    /**
+     * A story the player stepped back out of. It wakes again once they have been well away from the
+     * door (VignetteGate), so say which room it is and what brings it back, without spoiling it.
+     */
+    private static void quiet(ServerPlayer player, String placeId) {
+        var story = WitnessAccount.Story.of(placeId);
+        String room = story == null ? "The room" : story.title;
+        player.displayClientMessage(Component.literal(room + " is quiet behind this door. Walk a little way off, then come back."), true);
+    }
 
     @Nullable
     private static LabyrinthPlace placeOf(MinecraftServer server, LabyrinthData.Door door) {
@@ -262,6 +286,7 @@ public final class LabyrinthDoors {
             current.pushReturn(p.getUUID(), returnTo);
             INSIDE.remove(p.getUUID());
             SHUT_FOR.remove(p.getUUID());
+            STUCK.remove(p.getUUID());
             setDoorOpen(toLevel, entry.lower, true, p);
             BlockPos manor = HouseSavedData.get(server).houseOrigin();
             if(p.gameMode.getGameModeForPlayer()!=net.minecraft.world.level.GameType.SPECTATOR){VignetteGate.begin(p,place);current.visit(p.getUUID(),place);io.github.knaitoe.theoldesthouse.house.HouseExperience.arrived(p,place);}
