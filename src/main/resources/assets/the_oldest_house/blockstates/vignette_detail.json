@@ -1,0 +1,260 @@
+{
+  "variants": {
+    "facing=north,kind=bear": {
+      "model": "the_oldest_house:block/review_bear",
+      "y": 0
+    },
+    "facing=east,kind=bear": {
+      "model": "the_oldest_house:block/review_bear",
+      "y": 90
+    },
+    "facing=south,kind=bear": {
+      "model": "the_oldest_house:block/review_bear",
+      "y": 180
+    },
+    "facing=west,kind=bear": {
+      "model": "the_oldest_house:block/review_bear",
+      "y": 270
+    },
+    "facing=north,kind=train": {
+      "model": "the_oldest_house:block/review_train",
+      "y": 0
+    },
+    "facing=east,kind=train": {
+      "model": "the_oldest_house:block/review_train",
+      "y": 90
+    },
+    "facing=south,kind=train": {
+      "model": "the_oldest_house:block/review_train",
+      "y": 180
+    },
+    "facing=west,kind=train": {
+      "model": "the_oldest_house:block/review_train",
+      "y": 270
+    },
+    "facing=north,kind=toy_blocks": {
+      "model": "the_oldest_house:block/review_toy_blocks",
+      "y": 0
+    },
+    "facing=east,kind=toy_blocks": {
+      "model": "the_oldest_house:block/review_toy_blocks",
+      "y": 90
+    },
+    "facing=south,kind=toy_blocks": {
+      "model": "the_oldest_house:block/review_toy_blocks",
+      "y": 180
+    },
+    "facing=west,kind=toy_blocks": {
+      "model": "the_oldest_house:block/review_toy_blocks",
+      "y": 270
+    },
+    "facing=north,kind=doll": {
+      "model": "the_oldest_house:block/review_doll",
+      "y": 0
+    },
+    "facing=east,kind=doll": {
+      "model": "the_oldest_house:block/review_doll",
+      "y": 90
+    },
+    "facing=south,kind=doll": {
+      "model": "the_oldest_house:block/review_doll",
+      "y": 180
+    },
+    "facing=west,kind=doll": {
+      "model": "the_oldest_house:block/review_doll",
+      "y": 270
+    },
+    "facing=north,kind=chess": {
+      "model": "the_oldest_house:block/review_chess",
+      "y": 0
+    },
+    "facing=east,kind=chess": {
+      "model": "the_oldest_house:block/review_chess",
+      "y": 90
+    },
+    "facing=south,kind=chess": {
+      "model": "the_oldest_house:block/review_chess",
+      "y": 180
+    },
+    "facing=west,kind=chess": {
+      "model": "the_oldest_house:block/review_chess",
+      "y": 270
+    },
+    "facing=north,kind=notice_board": {
+      "model": "the_oldest_house:block/review_notice_board",
+      "y": 0
+    },
+    "facing=east,kind=notice_board": {
+      "model": "the_oldest_house:block/review_notice_board",
+      "y": 90
+    },
+    "facing=south,kind=notice_board": {
+      "model": "the_oldest_house:block/review_notice_board",
+      "y": 180
+    },
+    "facing=west,kind=notice_board": {
+      "model": "the_oldest_house:block/review_notice_board",
+      "y": 270
+    },
+    "facing=north,kind=map_board": {
+      "model": "the_oldest_house:block/review_map_board",
+      "y": 0
+    },
+    "facing=east,kind=map_board": {
+      "model": "the_oldest_house:block/review_map_board",
+      "y": 90
+    },
+    "facing=south,kind=map_board": {
+      "model": "the_oldest_house:block/review_map_board",
+      "y": 180
+    },
+    "facing=west,kind=map_board": {
+      "model": "the_oldest_house:block/review_map_board",
+      "y": 270
+    },
+    "facing=north,kind=missing_notice": {
+      "model": "the_oldest_house:block/review_missing_notice",
+      "y": 0
+    },
+    "facing=east,kind=missing_notice": {
+      "model": "the_oldest_house:block/review_missing_notice",
+      "y": 90
+    },
+    "facing=south,kind=missing_notice": {
+      "model": "the_oldest_house:block/review_missing_notice",
+      "y": 180
+    },
+    "facing=west,kind=missing_notice": {
+      "model": "the_oldest_house:block/review_missing_notice",
+      "y": 270
+    },
+    "facing=north,kind=diary_stack": {
+      "model": "the_oldest_house:block/review_diary_stack",
+      "y": 0
+    },
+    "facing=east,kind=diary_stack": {
+      "model": "the_oldest_house:block/review_diary_stack",
+      "y": 90
+    },
+    "facing=south,kind=diary_stack": {
+      "model": "the_oldest_house:block/review_diary_stack",
+      "y": 180
+    },
+    "facing=west,kind=diary_stack": {
+      "model": "the_oldest_house:block/review_diary_stack",
+      "y": 270
+    },
+    "facing=north,kind=field_notebook": {
+      "model": "the_oldest_house:block/review_field_notebook",
+      "y": 0
+    },
+    "facing=east,kind=field_notebook": {
+      "model": "the_oldest_house:block/review_field_notebook",
+      "y": 90
+    },
+    "facing=south,kind=field_notebook": {
+      "model": "the_oldest_house:block/review_field_notebook",
+      "y": 180
+    },
+    "facing=west,kind=field_notebook": {
+      "model": "the_oldest_house:block/review_field_notebook",
+      "y": 270
+    },
+    "facing=north,kind=flashlight": {
+      "model": "the_oldest_house:block/review_flashlight",
+      "y": 0
+    },
+    "facing=east,kind=flashlight": {
+      "model": "the_oldest_house:block/review_flashlight",
+      "y": 90
+    },
+    "facing=south,kind=flashlight": {
+      "model": "the_oldest_house:block/review_flashlight",
+      "y": 180
+    },
+    "facing=west,kind=flashlight": {
+      "model": "the_oldest_house:block/review_flashlight",
+      "y": 270
+    },
+    "facing=north,kind=cassette": {
+      "model": "the_oldest_house:block/review_cassette",
+      "y": 0
+    },
+    "facing=east,kind=cassette": {
+      "model": "the_oldest_house:block/review_cassette",
+      "y": 90
+    },
+    "facing=south,kind=cassette": {
+      "model": "the_oldest_house:block/review_cassette",
+      "y": 180
+    },
+    "facing=west,kind=cassette": {
+      "model": "the_oldest_house:block/review_cassette",
+      "y": 270
+    },
+    "facing=north,kind=sealed_box": {
+      "model": "the_oldest_house:block/review_sealed_box",
+      "y": 0
+    },
+    "facing=east,kind=sealed_box": {
+      "model": "the_oldest_house:block/review_sealed_box",
+      "y": 90
+    },
+    "facing=south,kind=sealed_box": {
+      "model": "the_oldest_house:block/review_sealed_box",
+      "y": 180
+    },
+    "facing=west,kind=sealed_box": {
+      "model": "the_oldest_house:block/review_sealed_box",
+      "y": 270
+    },
+    "facing=north,kind=book_tray": {
+      "model": "the_oldest_house:block/review_book_tray",
+      "y": 0
+    },
+    "facing=east,kind=book_tray": {
+      "model": "the_oldest_house:block/review_book_tray",
+      "y": 90
+    },
+    "facing=south,kind=book_tray": {
+      "model": "the_oldest_house:block/review_book_tray",
+      "y": 180
+    },
+    "facing=west,kind=book_tray": {
+      "model": "the_oldest_house:block/review_book_tray",
+      "y": 270
+    },
+    "facing=north,kind=shadow": {
+      "model": "the_oldest_house:block/review_shadow",
+      "y": 0
+    },
+    "facing=east,kind=shadow": {
+      "model": "the_oldest_house:block/review_shadow",
+      "y": 90
+    },
+    "facing=south,kind=shadow": {
+      "model": "the_oldest_house:block/review_shadow",
+      "y": 180
+    },
+    "facing=west,kind=shadow": {
+      "model": "the_oldest_house:block/review_shadow",
+      "y": 270
+    },
+    "facing=north,kind=child_wall": {
+      "model": "the_oldest_house:block/review_child_wall",
+      "y": 0
+    },
+    "facing=east,kind=child_wall": {
+      "model": "the_oldest_house:block/review_child_wall",
+      "y": 90
+    },
+    "facing=south,kind=child_wall": {
+      "model": "the_oldest_house:block/review_child_wall",
+      "y": 180
+    },
+    "facing=west,kind=child_wall": {
+      "model": "the_oldest_house:block/review_child_wall",
+      "y": 270
+    }
+  }
+}

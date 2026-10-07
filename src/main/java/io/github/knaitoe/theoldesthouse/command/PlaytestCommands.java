@@ -151,6 +151,7 @@ public final class PlaytestCommands {
                 fail(pending.source, error); remove(pending); continue;
             }
             try {
+                io.github.knaitoe.theoldesthouse.network.HousePackets.send(player,new io.github.knaitoe.theoldesthouse.network.HouseSightlineStatePayload(pending.origin,HouseSavedData.get(server).isImpossibleDoorRevealed()));
                 var at = FinaleArchitecture.cell(pending.origin).north(pending.start == Start.CELL ? 6 : 3);
                 if (player.containerMenu != player.inventoryMenu) {
                     var cursor = player.containerMenu.getCarried(); player.containerMenu.setCarried(ItemStack.EMPTY);

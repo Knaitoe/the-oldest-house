@@ -30,6 +30,8 @@ public final class LakeWitchEntity extends PathfinderMob {
     @Nullable private UUID memoryOwner;
     @Nullable private BlockPos memoryBase;
     @Nullable private BlockPos shoreBase;
+    @Nullable private BlockPos literaryBase;
+    @Nullable private LabyrinthPlace literaryPlace;
     private final Deque<Vec3> route = new ArrayDeque<>();
     @Nullable private BlockPos routeGoal;
     private int windup, cooldown, visit, lungeTicks, settleTicks;
@@ -55,6 +57,9 @@ public final class LakeWitchEntity extends PathfinderMob {
     public int memoryPhase() { return entityData.get(MEMORY_PHASE); }
     public void memoryPhase(int phase) { entityData.set(MEMORY_PHASE, phase);refreshDimensions(); }
     public int huntPhase(){return entityData.get(HUNT_PHASE);}
+    public void literaryHunt(BlockPos base,LabyrinthPlace place){
+        literaryBase=base.immutable();literaryPlace=place;setNoGravity(true);setInvulnerable(false);
+    }
     @Override public EntityDimensions getDefaultDimensions(Pose pose){return memory()?EntityDimensions.scalable(.6F,1.8F).withEyeHeight(1.6F):super.getDefaultDimensions(pose);}
     @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(MEMORY_PHASE.equals(key))refreshDimensions();}
     public @Nullable UUID memoryOwner() { return memoryOwner; }
@@ -214,6 +219,7 @@ public final class LakeWitchEntity extends PathfinderMob {
     @Override public void tick() {
         super.tick();
         if(memory()) { setAirSupply(300); Shallows.tickActor(this); return; }
+        if(literaryBase!=null&&literaryPlace!=null){tickLiterary();return;}
         if (!(level() instanceof ServerLevel level) || shoreBase == null || !isAlive()) return;
         setAirSupply(300);move(MoverType.SELF,Vec3.ZERO);
         if(settleTicks>0){settleTicks--;if(getZ()>shoreBase.getZ()-14&&Math.abs(getX()-shoreBase.getX())<6)conceal(level);return;}
@@ -255,8 +261,43 @@ public final class LakeWitchEntity extends PathfinderMob {
         follow(withdraw?.34:.24);
     }
     private void cancelStrike() { windup = 0;lungeTicks=0;entityData.set(STRIKING, false);entityData.set(HUNT_PHASE,STALK); }
+    /** One native actor clock and one target, regardless of how many readers share the lake. */
+    private void tickLiterary(){
+        if(!(level() instanceof ServerLevel level)||!isAlive())return;setAirSupply(300);
+        if(cooldown>0)cooldown--;
+        var target=level.players().stream().filter(p->LiteraryVignettes.inside(p,literaryPlace)&&!p.isCreative())
+                .filter(p->!(p.isUnderWater()&&p.getY()+p.getBbHeight()<literaryBase.getY()))
+                .filter(p->literaryPlace!=LabyrinthPlace.COSTUME_NIGHT||!safeGround(level,p.blockPosition()))
+                .min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
+        if(target==null||distanceToSqr(target)>1600){cancelStrike();return;}
+        getLookControl().setLookAt(target,30,30);
+        if(windup>0){windup--;return;}
+        if(cooldown==0&&distanceToSqr(target)<8&&getSensing().hasLineOfSight(target)&&huntPhase()!=LUNGE){
+            entityData.set(HUNT_PHASE,LUNGE);entityData.set(STRIKING,true);windup=4;lungeTicks=14;return;
+        }
+        boolean watched=level.players().stream().filter(p->LiteraryVignettes.inside(p,literaryPlace)).anyMatch(p->inView(p,getEyePosition()));
+        if(huntPhase()!=LUNGE&&(watched&&literaryPlace==LabyrinthPlace.COSTUME_NIGHT||cooldown>0)){
+            entityData.set(HUNT_PHASE,cooldown>0?WITHDRAW:STALK);return;}
+        Vec3 delta=target.position().subtract(position()).multiply(1,0,1);double speed=huntPhase()==LUNGE?.38:.19;
+        if(delta.lengthSqr()>.01){var step=delta.normalize().scale(Math.min(speed,delta.length()));
+            var next=BlockPos.containing(getX()+step.x,literaryBase.getY(),getZ()+step.z);
+            if(literaryPlace!=LabyrinthPlace.COSTUME_NIGHT||!safeGround(level,next)){
+                double ox=getX(),oz=getZ();move(MoverType.SELF,step);setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));yBodyRot=getYRot();
+                walkAnimation.update((float)Math.sqrt((getX()-ox)*(getX()-ox)+(getZ()-oz)*(getZ()-oz))*4,.4F);
+                var node=BlockPos.containing(getX(),literaryBase.getY()-1,getZ());var floor=level.getBlockState(node);
+                double surface=floor.is(Blocks.WATER)?node.getY()+floor.getFluidState().getHeight(level,node):literaryBase.getY();
+                super.move(MoverType.SELF,new Vec3(0,net.minecraft.util.Mth.clamp(surface-getY(),-.25,.25),0));
+            }
+        }
+        if(huntPhase()==LUNGE){
+            if(distanceToSqr(target)<4&&getSensing().hasLineOfSight(target)){
+                swing(net.minecraft.world.InteractionHand.MAIN_HAND);strikeAttempts++;lastStrikeAccepted=target.hurt(damageSources().mobAttack(this),4);
+                cancelStrike();cooldown=65;entityData.set(HUNT_PHASE,WITHDRAW);
+            }else if(--lungeTicks<=0){cancelStrike();cooldown=35;}
+        }
+    }
     @Override public void die(DamageSource source) {
-        if (!memory() && level() instanceof ServerLevel level) {
+        if (!memory() && literaryBase==null && level() instanceof ServerLevel level) {
             LabyrinthData data = LabyrinthData.get(level.getServer()); CompoundTag state = data.state(DrownedTown.ID);
             state.putInt("WitchDefeatedVisit", visit); data.setState(DrownedTown.ID, state);
         }
@@ -264,12 +305,14 @@ public final class LakeWitchEntity extends PathfinderMob {
     }
     @Override public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag); if (shoreBase != null) tag.putLong("ShoreBase", shoreBase.asLong()); tag.putInt("TownVisit", visit);
+        if(literaryBase!=null&&literaryPlace!=null){tag.putLong("LiteraryBase",literaryBase.asLong());tag.putString("LiteraryScene",literaryPlace.id());}
         if(memoryOwner!=null&&memoryBase!=null){tag.putUUID("MemoryOwner",memoryOwner);tag.putLong("MemoryBase",memoryBase.asLong());tag.putInt("MemoryPhase",memoryPhase());}
     }
     @Override public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag); shoreBase = tag.contains("ShoreBase") ? BlockPos.of(tag.getLong("ShoreBase")) : null;
         visit = tag.getInt("TownVisit"); cooldown = 30; cancelStrike(); route.clear();
         if(shoreBase!=null){setNoGravity(true);settleTicks=40;}
+        if(tag.contains("LiteraryBase")){var place=LabyrinthPlace.byId(tag.getString("LiteraryScene"));if(place!=null)literaryHunt(BlockPos.of(tag.getLong("LiteraryBase")),place);}
         if(tag.hasUUID("MemoryOwner")){recollection(tag.getUUID("MemoryOwner"),BlockPos.of(tag.getLong("MemoryBase")));memoryPhase(tag.getInt("MemoryPhase"));setNoGravity(memoryPhase()==1||memoryPhase()==3);}
     }
 }

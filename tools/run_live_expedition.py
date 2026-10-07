@@ -49,6 +49,10 @@ try:
     host = launch("runProofServer", "server")
     wait_for(lambda: "Done (" in (server / "logs/latest.log").read_text(errors="replace") if (server / "logs/latest.log").exists() else False, 180, "dedicated server startup")
     first = launch("runProofA", "client-a")
+    # Each JVM extracts LWJGL natives during first window startup. Let A reach
+    # its real socket login before B starts extracting the same native libraries.
+    # The expedition itself still requires both live clients together.
+    wait_for(lambda: "joined the game" in (server / "logs/latest.log").read_text(errors="replace"), 180, "first native client window and socket login")
     second = launch("runProofB", "client-b-first")
     wait_for(lambda: (report / "restart-b.txt").exists() and second.poll() is not None, 360, "both clients' first expedition and native logout")
     reconnected = launch("runProofB", "client-b-reconnected")
