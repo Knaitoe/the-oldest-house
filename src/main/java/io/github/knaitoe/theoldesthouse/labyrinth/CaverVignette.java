@@ -50,7 +50,8 @@ public final class CaverVignette {
     private static Vec3 rel(ServerPlayer p,BlockPos b){return p.position().subtract(b.getX(),b.getY(),b.getZ());}
     private static boolean reach(ServerPlayer p,BlockPos at){return p.distanceToSqr(at.getCenter())<=25;}
     private static boolean editable(ServerPlayer p,BlockPos at){
-        if(!p.isAlive()||!inside(p)||!reach(p,at))return false;
+        // Native placement/mining packets already enforce Minecraft's eye-based interaction range.
+        if(!p.isAlive()||!inside(p))return false;
         var r=at.subtract(base(p.server));var room=LabyrinthPlace.TED_CAVER.room();
         return r.getX()>room.minX()&&r.getX()<room.maxX()&&r.getY()>room.minY()&&r.getY()<room.maxY()
                 &&r.getZ()>room.minZ()&&r.getZ()<room.maxZ();
