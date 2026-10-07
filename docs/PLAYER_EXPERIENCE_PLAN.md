@@ -311,40 +311,45 @@ Interaction handlers that `return false` without a message when the player has c
 
 ## Appendix B: playtest event log
 
+**Status: implemented** (`house/PlaytestLog.java`, `tools/summarize_playtest_log.py`).
+
 **Purpose.** Measure the journey without guessing.
 
-**Switch.** Server config `playtestLog`, off by default. When it is on, the server appends one JSON object per line to `<world>/the_oldest_house/playtest-log.jsonl`. Nothing is ever sent anywhere.
+**Switching it on.** In the server config file `the_oldest_house-house-server.toml`, section `[playtest]`, set `playtestLog = true`. It is off by default. The server then appends one JSON object per line to `<world>/the_oldest_house/playtest-log.jsonl`, on its own thread. Nothing is ever sent anywhere, and nothing in play depends on the log. `playtestLogHashIds` (on by default) replaces player UUIDs with a short one-way hash, so a log can be shared.
 
-**Every event records:**
+**Reading it.** `python3 tools/summarize_playtest_log.py <world>/the_oldest_house/playtest-log.jsonl` prints, per player, in minutes of actual play (time logged out does not count):
 
-- wall-clock time;
-- game time;
-- the player's UUID;
-- the event name;
-- a few fields per event.
+- when each opening stage, the first labyrinth arrival, the first story room and the first resolution happened;
+- arrivals, story rooms entered and stories resolved per hour of labyrinth play;
+- the longest stretch without a story or note scene;
+- retreats from unfinished stories, by place;
+- deaths, by place and cause;
+- refusals by gate, and repeated-refusal loops (the same gate three or more times within a minute);
+- note scenes finished or left;
+- where sessions ended.
 
-Player names are omitted. A setting hashes UUIDs for sharing.
+**Every event records** wall-clock time, game time, the player (hashed by default) and the event name, plus:
 
 | Event | Fields |
 |---|---|
-| `session_start` / `session_end` | dimension, place, depth |
-| `opening_stage` | stage |
-| `manor_morning` | House morning, what changed |
-| `arrive` | place, kind (ordinary, quiet, story, hazard, staircase), depth, fresh or remembered |
-| `story_begin` / `story_resolve` | story id, outcome, kinds resolved, count |
-| `retreat` | from place, depth |
+| `session_start` / `session_end` | place, depth |
+| `opening_stage` | stage, written when it changes |
+| `arrive` | place, kind, story (true for a Witness story room), depth |
+| `story_leave` | place, resolved, depth: leaving a story room by its entry door; unresolved means a retreat |
+| `story_resolve` | story, kind, outcome, count, kinds, ready (Witness requirement met) |
 | `death` | place, cause, depth |
-| `refused` | gate id (Appendix A), place |
-| `fire_lit` / `leaf_bound` | index |
-| `note_scene` | index, completed or left early |
-| `ending` | which |
+| `refused` | gate (`door_sticks`, `door_quiet:<place>`, `door_clap_game`, `hearth_no_flame`, `church_door`), place |
+| `fire_lit` | index |
+| `note_scene_enter` / `note_scene_leave` | index; on leaving: finished, recovered, seconds |
+| `phase` | finale phase, written when it changes (this includes the endings: `locked_out`, `escaped`, `witnessed`) |
 
-A small script in `tools/` summarizes a log into the [measures](#measures).
+**Not yet logged:** manor mornings and shifts, leaf binding, and refusals at other gates. Add each as the friction audit reaches it, through `PlaytestLog.refused(player, gate)`.
 
 ## Appendix C: playtest kit
 
 ### Who and how
 
+- Before the session, set `playtestLog = true` on the test server ([Appendix B](#appendix-b-playtest-event-log)). Afterwards, run the summarizer and keep its output with the recording and questionnaires.
 - Two or three people who have not seen the mod. One plays solo, then two play together.
 - Record the screen and voice. Thinking aloud is welcome, but not required.
 - **Before:** explain only how to install the mod, and that it is a slow horror story about a house.

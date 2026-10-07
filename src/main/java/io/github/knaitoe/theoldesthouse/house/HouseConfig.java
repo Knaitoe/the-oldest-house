@@ -28,6 +28,8 @@ public final class HouseConfig {
     public static final ModConfigSpec.IntValue HAZARD_EARLY_CHANCE, HAZARD_MIDDLE_CHANCE, HAZARD_DEEP_CHANCE, HAZARD_SPACING;
     /** The encounter preset this file has been reviewed against, so an old preset is upgraded once only. */
     public static final ModConfigSpec.IntValue PRESET_VERSION;
+    /** Playtesting: a local, opt-in event log of the journey (PlaytestLog). Off by default. */
+    public static final ModConfigSpec.BooleanValue PLAYTEST_LOG, PLAYTEST_LOG_HASH_IDS;
     private static final int CURRENT_PRESET = 49;
 
     static {
@@ -85,6 +87,13 @@ public final class HouseConfig {
         HAZARD_SPACING = builder.comment("Visits separating physical hazards.").defineInRange("hazardSpacing", 2, 0, 8);
         PRESET_VERSION = builder.comment("Bookkeeping: the encounter preset version this file was last checked against. Leave it as it is.")
                 .defineInRange("presetVersion", 0, 0, 10_000);
+        builder.pop();
+        builder.push("playtest");
+        PLAYTEST_LOG = builder.comment("Write a local playtest log of the journey (arrivals, stories, retreats, deaths, refused doors)",
+                        "to <world>/the_oldest_house/playtest-log.jsonl. Nothing is sent anywhere. Off by default.")
+                .define("playtestLog", false);
+        PLAYTEST_LOG_HASH_IDS = builder.comment("Replace player UUIDs in the playtest log with short one-way hashes, so a log can be shared.")
+                .define("playtestLogHashIds", true);
         builder.pop();
         SPEC = builder.build();
     }
