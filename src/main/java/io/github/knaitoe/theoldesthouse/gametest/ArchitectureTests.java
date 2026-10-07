@@ -87,7 +87,7 @@ public final class ArchitectureTests {
         var data=new LabyrinthData();server.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);server.overworld().getDataStorage().set("the_oldest_house_mother",new MotherCollection());
         try{
             LabyrinthBuilder.clearAll();LabyrinthBuilder.rebuild(server);LabyrinthBuilder.finishGameTest(server);
-            for(var scene:LabyrinthPlace.values())if(SceneHuntReview.applies(scene)){var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));h.assertTrue(SceneHuntReview.apply(level,origin,scene),scene.id()+" completes its actual playtest dressing");}
+            for(var scene:LabyrinthPlace.values())if(SceneHuntReview.applies(scene)){var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var base=LabyrinthPlaces.base(origin,scene);var hide=scene==LabyrinthPlace.ELK_CARCASSES?level.getBlockEntity(base.offset(-2,0,-37)):null;h.assertTrue(SceneHuntReview.apply(level,origin,scene),scene.id()+" completes its actual playtest dressing");if(scene==LabyrinthPlace.ELK_CARCASSES)h.assertTrue(hide!=null&&level.getBlockEntity(base.offset(-2,0,-37))==hide,"the actual original carcass block entity survives its visual and forest upgrade");}
             VignetteAudit.write(server,origin);
             int dressed=0,props=0;
             for(var scene:LabyrinthPlace.values()){

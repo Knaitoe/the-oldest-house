@@ -36,6 +36,8 @@ def run(sheet):
         elements=[{'from':b[:3],'to':b[3:],'faces':{f:{'uv':[0,0,16,16],'texture':'#'+m} for f in ['north','south','east','west','up','down']}} for m,b in cubes]
         model={'ambientocclusion':True,'textures':dict(textures,particle=next(iter(textures.values()))),'elements':elements}
         (ASSET/f'models/block/hunt_{name}.json').write_text(json.dumps(model,indent=2)+'\n')
+        if name=='carcass':
+            for stage in range(4):(ASSET/f'models/block/literary_elk_hide_{stage}.json').write_text(json.dumps(model,indent=2)+'\n')
         entries.append('            case '+name.upper()+' -> new double[][]{'+','.join('{'+','.join(str(v) for v in b)+'}' for _,b in cubes)+'};')
     source=source.replace('        };VoxelShape shape=', '\n'.join(entries)+'\n        };VoxelShape shape=')
     (ROOT/'src/main/java/io/github/knaitoe/theoldesthouse/house/VignetteDetailBlock.java').write_text(source)

@@ -1,221 +1,146 @@
 {
+  "ambientocclusion": true,
   "textures": {
-    "wood": "the_oldest_house:block/literary_oak",
-    "iron": "the_oldest_house:block/literary_iron",
-    "brass": "the_oldest_house:block/literary_brass",
-    "wax": "the_oldest_house:block/literary_wax",
-    "paper": "the_oldest_house:block/literary_paper",
-    "glass": "the_oldest_house:block/literary_glass",
-    "hide": "the_oldest_house:block/literary_hide",
-    "photo": "the_oldest_house:block/literary_photo",
-    "face": "the_oldest_house:block/literary_clock_face",
-    "particle": "the_oldest_house:block/literary_oak"
+    "hide": "the_oldest_house:block/hunt_hide",
+    "hunter_canvas": "the_oldest_house:block/hunt_hunter_canvas",
+    "particle": "the_oldest_house:block/hunt_hide"
   },
   "elements": [
     {
       "from": [
+        1,
         0,
-        0,
-        0
+        1
       ],
       "to": [
-        16,
-        4,
-        16
+        15,
+        5,
+        15
       ],
       "faces": {
         "north": {
-          "texture": "#hide",
           "uv": [
             0,
             0,
             16,
             16
-          ]
+          ],
+          "texture": "#hide"
         },
         "south": {
-          "texture": "#hide",
           "uv": [
             0,
             0,
             16,
             16
-          ]
+          ],
+          "texture": "#hide"
         },
         "east": {
-          "texture": "#hide",
           "uv": [
             0,
             0,
             16,
             16
-          ]
+          ],
+          "texture": "#hide"
         },
         "west": {
-          "texture": "#hide",
           "uv": [
             0,
             0,
             16,
             16
-          ]
+          ],
+          "texture": "#hide"
         },
         "up": {
-          "texture": "#hide",
           "uv": [
             0,
             0,
             16,
             16
-          ]
+          ],
+          "texture": "#hide"
         },
         "down": {
-          "texture": "#hide",
           "uv": [
             0,
             0,
             16,
             16
-          ]
+          ],
+          "texture": "#hide"
         }
       }
     },
     {
       "from": [
         3,
-        4,
-        2
+        5,
+        4
       ],
       "to": [
         13,
         7,
-        14
+        12
       ],
       "faces": {
         "north": {
-          "texture": "#hide",
           "uv": [
             0,
             0,
             16,
             16
-          ]
+          ],
+          "texture": "#hunter_canvas"
         },
         "south": {
-          "texture": "#hide",
           "uv": [
             0,
             0,
             16,
             16
-          ]
+          ],
+          "texture": "#hunter_canvas"
         },
         "east": {
-          "texture": "#hide",
           "uv": [
             0,
             0,
             16,
             16
-          ]
+          ],
+          "texture": "#hunter_canvas"
         },
         "west": {
-          "texture": "#hide",
           "uv": [
             0,
             0,
             16,
             16
-          ]
+          ],
+          "texture": "#hunter_canvas"
         },
         "up": {
-          "texture": "#hide",
           "uv": [
             0,
             0,
             16,
             16
-          ]
+          ],
+          "texture": "#hunter_canvas"
         },
         "down": {
-          "texture": "#hide",
           "uv": [
             0,
             0,
             16,
             16
-          ]
-        }
-      }
-    },
-    {
-      "from": [
-        12,
-        3,
-        1
-      ],
-      "to": [
-        16,
-        6,
-        6
-      ],
-      "faces": {
-        "north": {
-          "texture": "#hide",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
-        },
-        "south": {
-          "texture": "#hide",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
-        },
-        "east": {
-          "texture": "#hide",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
-        },
-        "west": {
-          "texture": "#hide",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
-        },
-        "up": {
-          "texture": "#hide",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
-        },
-        "down": {
-          "texture": "#hide",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
+          ],
+          "texture": "#hunter_canvas"
         }
       }
     }
-  ],
-  "ambientocclusion": true
+  ]
 }
