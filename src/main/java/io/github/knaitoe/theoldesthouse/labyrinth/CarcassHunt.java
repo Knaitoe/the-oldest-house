@@ -29,6 +29,8 @@ public final class CarcassHunt {
         return false;
     }
     public static boolean sees(LiteraryActor a,ServerPlayer p){
+        var origin=io.github.knaitoe.theoldesthouse.house.HouseSavedData.get(p.server).houseOrigin();
+        if(origin!=null&&a.distanceToSqr(p)>9&&concealed(p,LabyrinthPlaces.base(origin,LabyrinthPlace.ELK_CARCASSES)))return false;
         return a.distanceToSqr(p)<42*42&&a.level().clip(new ClipContext(a.getEyePosition(),p.getEyePosition(),
                 ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,a)).getType()==HitResult.Type.MISS;
     }
@@ -66,6 +68,7 @@ public final class CarcassHunt {
     public void tick(LiteraryActor a){
         if(!(a.level() instanceof ServerLevel l)||!a.isAlive())return;var origin=io.github.knaitoe.theoldesthouse.house.HouseSavedData.get(l.getServer()).houseOrigin();
         if(origin==null)return;var b=LabyrinthPlaces.base(origin,LabyrinthPlace.ELK_CARCASSES);
+        a.setPose(l.getBlockState(a.blockPosition().above()).is(HouseBlocks.FOREST_COVER.get())?Pose.CROUCHING:Pose.STANDING);a.refreshDimensions();
         var readers=l.players().stream().filter(CarcassHunt::eligible).toList();
         lastPositions.keySet().retainAll(readers.stream().map(ServerPlayer::getUUID).toList());
         if(readers.isEmpty()){route.clear();return;}

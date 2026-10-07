@@ -276,9 +276,10 @@ public final class LabyrinthBuilder {
         active = true;
         if (place != null && geometry != null) {
             if (!geometry.tick()) return;
-            registerDoors(dataFor(server), place, LabyrinthPlaces.base(pendingOrigin, place));
             ServerLevel site = server.getLevel(NovelRooms.dimension(place));
             if (site != null) ScenePolish.polishOnce(site, pendingOrigin, place);
+            if(site!=null){var dressing=SceneHuntReview.prepareFresh(site,pendingOrigin,place);if(dressing!=null){geometry=dressing;return;}}
+            registerDoors(dataFor(server), place, LabyrinthPlaces.base(pendingOrigin, place));
             recordBuilt(server, place);
             geometry = null;
             pending.poll();
@@ -317,6 +318,9 @@ public final class LabyrinthBuilder {
             }
             else {
                 build(server, interior, pendingOrigin, place);
+                ServerLevel site=server.getLevel(NovelRooms.dimension(place));
+                var dressing=site==null?null:SceneHuntReview.prepareFresh(site,pendingOrigin,place);
+                if(dressing!=null){pending.addFirst(place);geometry=dressing;return;}
                 recordBuilt(server, place);
             }
             long millis = (System.nanoTime() - started) / 1_000_000L;

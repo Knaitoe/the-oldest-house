@@ -54,7 +54,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.54"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.55"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
@@ -62,6 +62,10 @@ jobs:
               assert 'io/github/knaitoe/theoldesthouse/gametest/SceneReviewTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/SceneReview.class' in z.namelist()
               assert 'assets/the_oldest_house/blockstates/vignette_detail.json' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/labyrinth/CarcassHunt.class' in z.namelist()
+              assert 'assets/the_oldest_house/blockstates/forest_cover.json' in z.namelist()
+              for i in range(16):
+                  assert f'assets/the_oldest_house/textures/block/zampano_scribble_{i}.png' in z.namelist()
               assert 'assets/the_oldest_house/textures/entity/costume_scarecrow.png' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/SceneSupportRepairs.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/command/PlaytestCommands.class' in z.namelist()
@@ -616,7 +620,7 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.54"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.55"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
@@ -624,6 +628,10 @@ jobs:
               assert 'io/github/knaitoe/theoldesthouse/gametest/SceneReviewTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/SceneReview.class' in z.namelist()
               assert 'assets/the_oldest_house/blockstates/vignette_detail.json' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/labyrinth/CarcassHunt.class' in z.namelist()
+              assert 'assets/the_oldest_house/blockstates/forest_cover.json' in z.namelist()
+              for i in range(16):
+                  assert f'assets/the_oldest_house/textures/block/zampano_scribble_{i}.png' in z.namelist()
               assert 'assets/the_oldest_house/textures/entity/costume_scarecrow.png' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/SceneSupportRepairs.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/command/PlaytestCommands.class' in z.namelist()
@@ -679,8 +687,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.54.jar
-            build/libs/the_oldest_house-0.4.54.jar.sha256
+            build/libs/the_oldest_house-0.4.55.jar
+            build/libs/the_oldest_house-0.4.55.jar.sha256
           if-no-files-found: error
 
 

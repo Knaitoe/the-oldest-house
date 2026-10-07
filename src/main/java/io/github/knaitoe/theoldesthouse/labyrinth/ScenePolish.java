@@ -98,7 +98,6 @@ public final class ScenePolish {
             SceneCraft.craftOnce(level, origin, place);
         SceneSupportRepairs.repairOnce(level,origin,place);
         SceneReview.fresh(level,origin,place);
-        SceneHuntReview.fresh(level,origin,place);
     }
 
     private static void polish(ServerLevel level, BlockPos origin, LabyrinthPlace place) {

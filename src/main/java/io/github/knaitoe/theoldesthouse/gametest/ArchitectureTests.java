@@ -87,6 +87,7 @@ public final class ArchitectureTests {
         var data=new LabyrinthData();server.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);server.overworld().getDataStorage().set("the_oldest_house_mother",new MotherCollection());
         try{
             LabyrinthBuilder.clearAll();LabyrinthBuilder.rebuild(server);LabyrinthBuilder.finishGameTest(server);
+            for(var scene:LabyrinthPlace.values())if(SceneHuntReview.applies(scene)){var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));h.assertTrue(SceneHuntReview.apply(level,origin,scene),scene.id()+" completes its actual playtest dressing");}
             VignetteAudit.write(server,origin);
             int dressed=0,props=0;
             for(var scene:LabyrinthPlace.values()){
@@ -109,7 +110,7 @@ public final class ArchitectureTests {
                 }
                 if(scene!=LabyrinthPlace.RED_ROOM)export(level,base,scene);
             }
-            for(var scene:LabyrinthPlace.values())if(LiteraryRooms.isLiterary(scene)){var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var base=LabyrinthPlaces.base(origin,scene);h.assertTrue(level.getBlockEntity(base.offset(LiteraryRooms.source(scene))) instanceof LecternBlockEntity,scene.id()+" has a supported native discovery paper");var entrance=base.offset(0,0,-3);h.assertTrue(level.noCollision(null,new AABB(entrance.getX()+.2,entrance.getY()+.01,entrance.getZ()+.2,entrance.getX()+.8,entrance.getY()+1.8,entrance.getZ()+.8)),scene.id()+" clears the actual entrance body");if(scene!=LabyrinthPlace.FAMILY_COPY&&scene!=LabyrinthPlace.OLD_CABIN)export(level,base,scene);}
+            for(var scene:LabyrinthPlace.values())if(LiteraryRooms.isLiterary(scene)){var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var base=LabyrinthPlaces.base(origin,scene);h.assertTrue(scene==LabyrinthPlace.FAMILY_COPY||scene==LabyrinthPlace.OLD_CABIN?level.getBlockEntity(base.offset(LiteraryRooms.source(scene))) instanceof LecternBlockEntity:level.getBlockState(base.offset(LiteraryRooms.source(scene))).is(HouseBlocks.VIGNETTE_DETAIL.get())&&!SceneHuntReview.sourceBook(level,base,scene).isEmpty(),scene.id()+" has a native themed discovery surface and its preserved original");var entrance=base.offset(0,0,-3);h.assertTrue(level.noCollision(null,new AABB(entrance.getX()+.2,entrance.getY()+.01,entrance.getZ()+.2,entrance.getX()+.8,entrance.getY()+1.8,entrance.getZ()+.8)),scene.id()+" clears the actual entrance body");if(scene!=LabyrinthPlace.FAMILY_COPY&&scene!=LabyrinthPlace.OLD_CABIN)export(level,base,scene);}
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL,"hotel_upstairs");
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL,"hotel_basement");
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.BLIND_STRETCH),LabyrinthPlace.BLIND_STRETCH,"blind_stretch");
