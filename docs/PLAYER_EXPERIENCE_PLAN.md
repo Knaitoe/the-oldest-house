@@ -208,7 +208,7 @@ Each workstream gives the problem, the evidence, the proposals, how we'll know i
 
 **Proposals.**
 
-1. **Subtitles for every cue.** Each subtitle is written to describe what is heard, not what it means ("Distant piano", not "The ghost plays"). A CI check fails when a sound event has none. (S; work begins with this plan)
+1. **Subtitles for every cue.** Each subtitle is written to describe what is heard, not what it means ("Distant piano", not "The ghost plays"). A CI check fails when a sound event has none. (S; **done**: the ten missing subtitles are written and the package check enforces it. The blind stretch's bells now show their true direction in subtitles, like their positional audio.)
 2. **A darkness check.** Review the darkest scenes (the staircase, the blind stretch, the Goatman vigil) at Minecraft's default brightness. Then decide whether to offer a client "low vision" option that raises the black fog's minimum slightly without lighting the scene. (S, plus a decision)
 3. **Flashes and fades.** List every flash, fade and flicker (screen fades, caption flicker, the glitched "don't"), and make sure each respects the screen-effects setting. (S)
 4. **Readable writing.** The handwriting fonts are part of the fiction, but long letters are hard to read for some players. A client option could render books in a plain font, keeping the colours and layout. (M)

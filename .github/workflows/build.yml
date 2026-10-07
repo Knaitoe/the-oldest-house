@@ -176,6 +176,10 @@ jobs:
                   assert f'assets/the_oldest_house/textures/entity/trailer_child_{i}.png' in z.namelist()
               sounds = json.loads(z.read('assets/the_oldest_house/sounds.json'))
               assert all(f'goatman.{cue}' in sounds for cue in ('hammer', 'laugh', 'woods'))
+              # Every cue is subtitled, so the game is playable without sound.
+              english = json.loads(z.read('assets/the_oldest_house/lang/en_us.json'))
+              unsubtitled = sorted(k for k, v in sounds.items() if v.get('subtitle') not in english)
+              assert not unsubtitled, f'sound events without an English subtitle: {unsubtitled}'
               for name in ('io/github/knaitoe/theoldesthouse/house/HouseMarginalia.class',
                            'io/github/knaitoe/theoldesthouse/house/HouseCorrespondence.class',
                            'io/github/knaitoe/theoldesthouse/house/HouseCorrespondence$OriginalMenu.class',
