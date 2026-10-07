@@ -41,6 +41,11 @@ public final class CaverInteractionTests {
             CaverVignette.onServerTick(new ServerTickEvent.Post(()->true,p.server));
             h.assertTrue(f.data().state(CaverVignette.ID).getInt("Work")==CaverVignette.STROKES&&CaverVignette.personal(f.data(),p.getUUID()).getBoolean("Worked"),"confirmed native removal opens the saved crawl gate and records the real miner");
             h.assertTrue(!CaverVignette.personal(f.data(),peer.getUUID()).getBoolean("Worked")&&WitnessAccount.count(f.data(),p.getUUID())==0&&WitnessAccount.count(f.data(),peer.getUUID())==0,"shared excavation transfers no journal work or ending credit to the peer");
+            f.at(peer,.5,-3,-21.5);peer.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.TORCH,2));
+            h.assertTrue(place(peer,at.below(),Direction.UP).consumesAction()&&f.l.getBlockState(at).is(Blocks.TORCH),"a peer can spend a torch in the already opened passage");
+            h.assertTrue(peer.gameMode.destroyBlock(at)&&f.l.getBlockState(at).isAir(),"that same peer can recover the passage torch");
+            CaverVignette.onServerTick(new ServerTickEvent.Post(()->true,p.server));
+            h.assertTrue(!CaverVignette.personal(f.data(),peer.getUUID()).getBoolean("Worked")&&f.data().state(CaverVignette.ID).getInt("Work")==CaverVignette.STROKES,"removing a torch at the crack's coordinates cannot impersonate the original excavation");
             f.reload();h.assertTrue(f.data().state(CaverVignette.ID).getInt("Work")==CaverVignette.STROKES,"native excavation survives SavedData reload");
             var cache=f.l.getBlockEntity(f.b.offset(CaverCave.CACHE));h.assertTrue(cache instanceof net.minecraft.world.level.block.entity.BarrelBlockEntity barrel&&barrel.getItem(0).is(Items.IRON_PICKAXE)&&barrel.getItem(2).getCount()==6,"mining leaves the finite physical cache intact");h.succeed();
         });

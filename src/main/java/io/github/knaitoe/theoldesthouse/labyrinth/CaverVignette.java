@@ -66,7 +66,8 @@ public final class CaverVignette {
     }
     /** The break event precedes native removal. Record work only after the real aperture has gone. */
     public static void onBreak(BlockEvent.BreakEvent e){
-        if(e.isCanceled()||!(e.getPlayer() instanceof ServerPlayer p)||!mayBreak(p,e.getPos())
+        if(e.isCanceled()||!e.getState().is(Blocks.CRACKED_DEEPSLATE_BRICKS)
+                ||!(e.getPlayer() instanceof ServerPlayer p)||!mayBreak(p,e.getPos())
                 ||!e.getPos().equals(base(p.server).offset(CaverCave.APERTURE)))return;
         EXCAVATIONS.put(p.server,new Excavation(p,p.serverLevel(),base(p.server),e.getPos().immutable()));
     }
