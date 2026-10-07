@@ -929,6 +929,7 @@ public final class LabyrinthDoors {
                 && !TellTaleFloorboards.isLooseBoard(level, event.getPos())
                 && !DrownedTown.canBreak(level, event.getPos())
                 && !HotelVignette.mayBreakTorch(level,event.getPos(),event.getPlayer())
+                && !(event.getPlayer() instanceof ServerPlayer sp&&CaverVignette.mayBreak(sp,event.getPos()))
                 && !(event.getPlayer() instanceof ServerPlayer sp&&LiteraryVignettes.mayBreak(sp,event.getPos()))) {
             event.setCanceled(true);
         }
@@ -942,6 +943,7 @@ public final class LabyrinthDoors {
             if (!DrownedTown.allowsPlacing(level, event.getPos(), event.getPlacedBlock())
                     && !HollowayVignette.allowsPlacing(level,event.getPos(),event.getPlacedBlock())
                     && !HotelVignette.allowsTorchPlacing(level,event.getPos(),event.getPlacedBlock())
+                    && !(event.getEntity() instanceof ServerPlayer sp&&CaverVignette.allowsPlacing(sp,event.getPos(),event.getPlacedBlock()))
                     && !(event.getEntity() instanceof ServerPlayer sp&&LiteraryVignettes.mayPlace(sp,event.getPos()))) event.setCanceled(true);
         }
     }

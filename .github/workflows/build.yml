@@ -54,11 +54,13 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.50"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.51"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/command/PlaytestCommands.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/gametest/CaverInteractionTests.class' in z.namelist()
+              assert 'data/the_oldest_house_caver/structure/empty.nbt' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseStory.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseLeaves.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/HallVariations.class' in z.namelist()
@@ -604,11 +606,13 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.50"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.51"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/command/PlaytestCommands.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/gametest/CaverInteractionTests.class' in z.namelist()
+              assert 'data/the_oldest_house_caver/structure/empty.nbt' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseStory.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseLeaves.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/HallVariations.class' in z.namelist()
@@ -659,8 +663,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.50.jar
-            build/libs/the_oldest_house-0.4.50.jar.sha256
+            build/libs/the_oldest_house-0.4.51.jar
+            build/libs/the_oldest_house-0.4.51.jar.sha256
           if-no-files-found: error
 
 
@@ -794,3 +798,38 @@ jobs:
             build/live-proof/
             run-live/*/logs/latest.log
             run-live/*/crash-reports/
+
+  caver-gameplay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Native cave mining, torches and personal escape
+        timeout-minutes: 9
+        env:
+          JAVA_TOOL_OPTIONS: -Xmx4g
+        run: |
+          mkdir -p build run
+          printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 8m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_caver --no-daemon 2>&1 | tee build/caver-native.log
+          python3 - <<'PY_CHECK'
+          from pathlib import Path
+          import re
+          completed=re.findall(r'All (\d+) required tests passed',Path('build/caver-native.log').read_text())
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('CaverTests.java','CaverInteractionTests.java'))
+          assert completed and int(completed[-1])==declared, (completed,declared)
+          print(f'All {declared} native caver cases passed; the complete suite remains required.')
+          PY_CHECK
+      - name: Upload caver diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: caver-diagnostics-${{ github.sha }}
+          path: build/caver-native.log

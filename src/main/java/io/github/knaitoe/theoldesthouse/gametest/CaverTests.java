@@ -22,10 +22,10 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.*;
 import net.neoforged.neoforge.gametest.*;
 
-@GameTestHolder(TheOldestHouse.MOD_ID)
+@GameTestHolder(TheOldestHouse.MOD_ID+"_caver")
 @PrefixGameTestTemplate(false)
 public final class CaverTests {
-    private static final class Fixture implements AutoCloseable {
+    static final class Fixture implements AutoCloseable {
         final GameTestHelper h;final ServerLevel l;final BlockPos origin,b;
         final HouseSavedData oldHouse;final LabyrinthData oldData;final MotherCollection oldMother;
         final List<ServerPlayer> players=new ArrayList<>();
@@ -65,8 +65,7 @@ public final class CaverTests {
         work=new Fixture(h,30800);var f=work;var p=f.player();f.at(p,.5,-3,-21.5);var at=f.b.offset(CaverCave.APERTURE);
         h.runAfterDelay(8,()->{f.click(p,CaverCave.APERTURE);h.assertTrue(f.data().state(CaverVignette.ID).getInt("Work")==0&&!f.l.getBlockState(at).isAir(),"bare hands cannot remove the aperture");p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.IRON_PICKAXE));});
         for(int i=0;i<CaverVignette.STROKES;i++)h.runAfterDelay(10+i*CaverVignette.STROKE_INTERVAL,()->{
-            var event=new PlayerInteractEvent.LeftClickBlock(p,at,Direction.SOUTH,PlayerInteractEvent.LeftClickBlock.Action.START);NeoForge.EVENT_BUS.post(event);
-            h.assertTrue(event.isCanceled(),"native mining is replaced with an authored stroke");int count=f.data().state(CaverVignette.ID).getInt("Work");
+            f.click(p,CaverCave.APERTURE);int count=f.data().state(CaverVignette.ID).getInt("Work");
             f.click(p,CaverCave.APERTURE);h.assertTrue(f.data().state(CaverVignette.ID).getInt("Work")==count,"same-tick right/left spam cannot accelerate work");
         });
         h.runAfterDelay(620,()->{h.assertTrue(f.data().state(CaverVignette.ID).getInt("Work")==24&&f.l.getBlockState(at).isAir(),"timed native work opens the actual one-block passage");

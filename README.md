@@ -1,3 +1,7 @@
+## 0.4.51 cave interaction repair
+
+Ted’s cave accepts ordinary and soul torches on the floor and walls, and those torches can be recovered. Hold normal mining with a pickaxe to remove its cracked passage block; timed right-click chipping still works. Shared excavation does not grant another player journal work or ending credit. The testing commands from 0.4.50 remain available. Verification is pending on the review branch.
+
 ## 0.4.50 testing shortcuts
 
 `/oldesthouse test` lists the operator controls: `vignette <id>` puts any scene behind a real door (Tab lists IDs); `minotaur` or `boy` goes directly to the closed cell; `ending defeat|escape|witness` starts each real ending. Cell preparation/loading waits asynchronously, and another player's finale claim remains protected, including while offline. Use a **world copy** for endings; defeat seals belongings and completing escape removes the shared House. See [the command reference](docs/TEST_COMMANDS_0_4_50.md) for aliases, equipment and prerequisite details.
