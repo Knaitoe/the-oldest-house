@@ -54,7 +54,7 @@ public final class SceneReviewTests {
             if(started){for(var at:BlockPos.betweenClosed(BlockPos.containing(area.minX,area.minY,area.minZ),BlockPos.containing(area.maxX,area.maxY,area.maxZ)))level.setBlock(at,Blocks.AIR.defaultBlockState(),F);
                 var store=level.getServer().overworld().getDataStorage();store.set("the_oldest_house",oldHouse);store.set("the_oldest_house_labyrinth",oldData);}chunks.close();active=null;}
     }
-    private static void run(GameTestHelper h,LabyrinthPlace p,int coordinate,Consumer<Fixture> check){var f=new Fixture(h,p,coordinate);h.onEachTick(()->{if(f.ready||!f.chunks.ready())return;f.ready=true;f.start();check.accept(f);});}
+    private static void run(GameTestHelper h,LabyrinthPlace p,int coordinate,Consumer<Fixture> check){var f=new Fixture(h,p,coordinate);h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"wait for actual native chunk and entity readiness")).thenExecute(()->{f.ready=true;f.start();check.accept(f);});}
     private static void cleanup(){if(active!=null)active.close();}
     @AfterBatch(batch="review_books") public static void booksDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="review_well") public static void wellDone(ServerLevel l){cleanup();}
@@ -76,13 +76,13 @@ public final class SceneReviewTests {
         f.click(spectator,SceneReview.BLANK_SHELF);h.assertTrue(spectator.getInventory().countItem(Items.WRITABLE_BOOK)==0,"a spectator cannot supply a journal");
         var quill=owner.getInventory().removeItemNoUpdate(0);quill.set(DataComponents.CUSTOM_NAME,Component.literal("Original shelf quill"));peer.setItemInHand(InteractionHand.MAIN_HAND,quill);f.away(owner);
         f.at(peer,1.5,0,-18);LiteraryVignettes.onArrive(peer,f.place);f.source(peer);f.at(peer,1.5,0,-18);f.look(peer,new BlockPos(1,1,-22));
-        h.runAfterDelay(50,()->{
+        h.startSequence().thenIdle(50).thenExecute(()->{
             h.assertTrue(!f.own(peer).hasUUID("Journal")&&f.own(peer).getInt("Chapter")==0,"carrying another reader's actual quill cannot start a transcript");
             var original=peer.getMainHandItem().copy();peer.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);f.away(peer);
             owner.setItemInHand(InteractionHand.MAIN_HAND,original);f.click(owner,SceneReview.BOOK_TRAY);var laid=ConfessionBooks.tableBook(owner,f.own(owner));h.assertTrue(laid!=null&&owner.getMainHandItem().isEmpty(),"the native original actually leaves the hand and rests on the shared table");var id=laid.getUUID();
             spectator.setGameMode(GameType.SURVIVAL);spectator.setShiftKeyDown(true);f.click(spectator,SceneReview.BOOK_TRAY);h.assertTrue(laid.isAlive()&&spectator.getInventory().countItem(Items.WRITABLE_BOOK)==0,"another reader cannot recover the owner's table original");f.away(spectator);
             f.at(owner,1.5,0,-18);f.look(owner,new BlockPos(1,1,-22));
-            h.runAfterDelay(70,()->{
+            h.startSequence().thenIdle(70).thenExecute(()->{
                 var own=f.own(owner);var same=ConfessionBooks.tableBook(owner,own);h.assertTrue(same!=null&&same.getUUID().equals(id)&&own.hasUUID("Journal")&&!own.getString("JournalText").isBlank(),"actual speech writes into the same native laid quill");
                 var components=same.getItem().copy();owner.setShiftKeyDown(true);f.click(owner,SceneReview.BOOK_TRAY);
                 var recovered=owner.getInventory().items.stream().filter(s->s.is(Items.WRITABLE_BOOK)).findFirst().orElseThrow();
@@ -96,20 +96,20 @@ public final class SceneReviewTests {
     public static void coveredWaitAndOneSilhouetteFollowActualSharedLidWithoutPeerCredit(GameTestHelper h){run(h,LabyrinthPlace.BARN_WELL,552500,f->{
         NovelRooms.build(f.level.getServer(),f.level,f.base,f.place);var owner=f.player("review_well_owner");var peer=f.player("review_well_peer");var observer=f.player("review_well_observer");observer.setGameMode(GameType.SPECTATOR);
         f.at(owner,.5,-12,-22.5);f.at(peer,4.5,0,-20.5);f.at(observer,.5,-12,-22.5);
-        h.runAfterDelay(30,()->{
+        h.startSequence().thenIdle(30).thenExecute(()->{
             var own=NovelVignettes.personal(f.data(),owner.getUUID());h.assertTrue(NovelVignettes.coveredWait(owner,own)&&!NovelVignettes.coveredWait(peer,NovelVignettes.personal(f.data(),peer.getUUID()))&&!NovelVignettes.coveredWait(observer,NovelVignettes.personal(f.data(),observer.getUUID())),"the native covered wait selects only its actual living reader");
             var lid=f.level.getBlockState(f.base.offset(NovelRooms.WELL));h.assertTrue(!lid.getValue(TrapDoorBlock.OPEN)&&f.level.getBlockState(f.base.offset(0,2,-24)).is(HouseBlocks.VIGNETTE_DETAIL.get()),"one closed native cover owns the silhouette on the real rim");
             own.putInt("WellTicks",NovelVignettes.WELL_WAIT-1);NovelVignettes.save(f.data(),owner.getUUID(),own);f.at(peer,.5,-12,-22.5);
         });
-        h.runAfterDelay(50,()->{
+        h.startSequence().thenIdle(50).thenExecute(()->{
             h.assertTrue(!NovelVignettes.coveredWait(owner,NovelVignettes.personal(f.data(),owner.getUUID()))&&NovelVignettes.coveredWait(peer,NovelVignettes.personal(f.data(),peer.getUUID()))&&!f.level.getBlockState(f.base.offset(NovelRooms.WELL)).getValue(TrapDoorBlock.OPEN),"a peer's physical vigil retains the shared cover after the first reader finishes");
             var own=NovelVignettes.personal(f.data(),peer.getUUID());own.putInt("WellTicks",NovelVignettes.WELL_WAIT-1);NovelVignettes.save(f.data(),peer.getUUID(),own);
         });
-        h.runAfterDelay(70,()->{
+        h.startSequence().thenIdle(70).thenExecute(()->{
             h.assertTrue(f.level.getBlockState(f.base.offset(NovelRooms.WELL)).getValue(TrapDoorBlock.OPEN)&&f.level.getBlockState(f.base.offset(0,2,-24)).isAir(),"the native shaft really opens and the only shadow disappears");
             owner.move(MoverType.SELF,new Vec3(0,13,0));
         });
-        h.runAfterDelay(85,()->{
+        h.startSequence().thenIdle(85).thenExecute(()->{
             h.assertTrue(WitnessAccount.has(f.data(),owner.getUUID(),WitnessAccount.Story.BARN_WELL)&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.BARN_WELL)&&!WitnessAccount.has(f.data(),observer.getUUID(),WitnessAccount.Story.BARN_WELL),"only actual native ascent resolves the well; waiting/observing a peer never does");
             h.assertTrue(SceneClock.time(3,900,6000)==12500&&f.level.getBlockState(f.base.offset(NovelRooms.CARVING)).is(NovelRegistry.CARVINGS.get()),"dusk and new initials art retain the original interaction block");f.done();
         });
@@ -121,7 +121,7 @@ public final class SceneReviewTests {
         var owner=f.player("review_witch_owner");var peer=f.player("review_witch_peer");f.at(owner,2,0,-40.5);f.at(peer,5,0,-40.5);owner.getFoodData().setFoodLevel(0);peer.getFoodData().setFoodLevel(0);
         f.look(owner,new BlockPos(9,1,-35));f.look(peer,new BlockPos(10,1,-35));
         // Native newly joined players keep their own spawn protection; let it expire before testing damage.
-        h.runAfterDelay(70,()->{
+        h.startSequence().thenIdle(70).thenExecute(()->{
         var witch=LiteraryVignettes.huntBody(owner,f.place,new BlockPos(0,0,-41));h.assertTrue(witch!=null&&!witch.isInvulnerable()&&LiteraryVignettes.huntBody(peer,f.place,new BlockPos(0,0,-41))==witch,"both readers share the same native, woundable actor");var id=witch.getUUID();float peerHealth=peer.getHealth();var before=f.data().state(DrownedTown.ID);boolean[] strike={false},checked={false};
         h.onEachTick(()->{if(active==f&&witch.striking())strike[0]=true;});
         h.onEachTick(()->{if(active!=f||checked[0]||witch.tickCount<22)return;checked[0]=true;
@@ -132,7 +132,7 @@ public final class SceneReviewTests {
             h.assertTrue(witch.getUUID().equals(id)&&witch.getHealth()==wounded&&f.level.getEntity(id)==witch&&!witch.isInvulnerable(),"native save/reload keeps the same wounded original");
             for(int x=4;x<=7;x++)for(int z=-44;z<=-38;z++)f.put(x,-1,z,Blocks.GRASS_BLOCK);
             f.at(owner,5.5,0,-41.5);f.at(peer,6.5,0,-42.5);float a=owner.getHealth(),b=peer.getHealth();
-            h.runAfterDelay(45,()->{h.assertTrue(owner.getHealth()==a&&peer.getHealth()==b&&f.data().state(DrownedTown.ID).equals(before)&&WitnessAccount.count(f.data(),peer.getUUID())==0,"real living grass protects both readers and the literary wound cannot alter the town's shared state or grant evidence");f.done();});
+            h.startSequence().thenIdle(45).thenExecute(()->{h.assertTrue(owner.getHealth()==a&&peer.getHealth()==b&&f.data().state(DrownedTown.ID).equals(before)&&WitnessAccount.count(f.data(),peer.getUUID())==0,"real living grass protects both readers and the literary wound cannot alter the town's shared state or grant evidence");f.done();});
         });});
     });}
 
@@ -185,14 +185,14 @@ public final class SceneReviewTests {
         for(int x=-1;x<=1;x++)for(int z=-42;z<=-40;z++)f.put(new BlockPos(x,1,z),HouseBlocks.FOREST_COVER.get().defaultBlockState());
         var owner=f.player("review_hidden_hunter_reader");var peer=f.player("review_hidden_hunter_peer");f.at(owner,.5,0,-40.5);f.at(peer,10.5,0,-39.5);owner.setShiftKeyDown(true);owner.setForcedPose(Pose.CROUCHING);owner.setPose(Pose.CROUCHING);owner.refreshDimensions();
         LiteraryVignettes.onArrive(owner,f.place);LiteraryVignettes.onArrive(peer,f.place);
-        h.runAfterDelay(15,()->{
+        h.startSequence().thenIdle(15).thenExecute(()->{
             var world=LiteraryVignettes.shared(f.data(),f.place);var hunter=(LiteraryActor)f.level.getEntity(world.getUUID("Killer"));
             h.assertTrue(hunter!=null&&!CarcassHunt.sees(hunter,owner)&&!CarcassHunt.sees(hunter,peer),"the native first hunter starts behind real occlusion");
             h.assertTrue(f.level.noCollision(owner,owner.getDimensions(Pose.CROUCHING).makeBoundingBox(owner.position()))&&!f.level.noCollision(owner,owner.getDimensions(Pose.STANDING).makeBoundingBox(owner.position())),"crouching really fits under the leafy half block while the standing body does not");
             h.assertTrue(f.level.noCollision(hunter,hunter.getDefaultDimensions(Pose.CROUCHING).makeBoundingBox(owner.position())),"the hunter's actual crouched collision body fits the same shelter");
             var id=hunter.getUUID();CarcassHunt.noise(owner,owner.blockPosition());h.assertTrue(CarcassHunt.tracks(hunter,owner.getUUID())&&CarcassHunt.searchPoint(hunter).equals(owner.blockPosition()),"noise behind the wall stores an actual sound position, without sight");
             var tag=new CompoundTag();hunter.saveWithoutId(tag);hunter.load(tag);h.assertTrue(hunter.getUUID().equals(id)&&CarcassHunt.tracks(hunter,owner.getUUID()),"native save/reload retains the original hunter and sound memory");
-            h.runAfterDelay(240,()->{h.assertTrue(!CarcassHunt.tracks(hunter,owner.getUUID())&&f.own(owner).getBoolean("Pursued")&&!f.own(peer).getBoolean("Pursued")&&WitnessAccount.count(f.data(),peer.getUUID())==0,"a stationary hidden reader loses the search after the real memory interval; a peer gains no pursuit or evidence");f.done();});
+            h.startSequence().thenIdle(240).thenExecute(()->{h.assertTrue(!CarcassHunt.tracks(hunter,owner.getUUID())&&f.own(owner).getBoolean("Pursued")&&!f.own(peer).getBoolean("Pursued")&&WitnessAccount.count(f.data(),peer.getUUID())==0,"a stationary hidden reader loses the search after the real memory interval; a peer gains no pursuit or evidence");f.done();});
         });
     });}
 
@@ -201,7 +201,7 @@ public final class SceneReviewTests {
         for(int x=-18;x<=18;x++)for(int z=-63;z<=-12;z++)f.put(x,-1,z,Blocks.SANDSTONE);
         var owner=f.player("review_witch_glance_reader");f.at(owner,.5,0,-38.5);owner.getFoodData().setFoodLevel(0);f.look(owner,new BlockPos(0,1,-41));
         var witch=LiteraryVignettes.huntBody(owner,f.place,new BlockPos(0,0,-41));var id=witch.getUUID();var start=witch.position();
-        h.runAfterDelay(35,()->{
+        h.startSequence().thenIdle(35).thenExecute(()->{
             h.assertTrue(owner.getHealth()==20&&witch.attackCooldown()>=160&&witch.attackCooldown()<=300&&witch.huntPhase()==LakeWitchEntity.WITHDRAW,"the actual player's gaze interrupts the approach for a ten-to-fifteen-second interval");
             h.assertTrue(witch.position().distanceToSqr(start)>.25,"withdrawal is real native movement away from the approach");
             var tag=new CompoundTag();witch.saveWithoutId(tag);int delay=witch.attackCooldown();witch.load(tag);h.assertTrue(witch.getUUID().equals(id)&&witch.attackCooldown()==delay,"reload preserves the actual attack interval");
