@@ -41,7 +41,7 @@ public final class SceneReviewTests {
         void put(BlockPos rel,net.minecraft.world.level.block.state.BlockState state){level.setBlock(base.offset(rel),state,F);}
         void put(int x,int y,int z,Block b){put(new BlockPos(x,y,z),b.defaultBlockState());}
         ServerPlayer player(String name){var p=NativeTestPlayers.survival(h,name);p.setNoGravity(true);players.add(p);return p;}
-        void at(ServerPlayer p,double x,double y,double z){p.teleportTo(level,base.getX()+x,base.getY()+y,base.getZ()+z,180,0);p.connection.resetPosition();p.setDeltaMovement(Vec3.ZERO);}
+        void at(ServerPlayer p,double x,double y,double z){p.teleportTo(level,base.getX()+x,base.getY()+y,base.getZ()+z,180,0);p.connection.resetPosition();p.hasChangedDimension();p.setDeltaMovement(Vec3.ZERO);}
         void look(ServerPlayer p,BlockPos rel){p.lookAt(EntityAnchorArgument.Anchor.EYES,base.offset(rel).getCenter());}
         void click(ServerPlayer p,BlockPos rel){at(p,rel.getX()+.5,rel.getY(),rel.getZ()+2.5);look(p,rel);var at=base.offset(rel);NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new BlockHitResult(at.getCenter(),Direction.SOUTH,at,false)));}
         CompoundTag own(ServerPlayer p){return LiteraryVignettes.personal(data(),p.getUUID(),place);}
@@ -114,10 +114,10 @@ public final class SceneReviewTests {
     public static void oneNativeCostumeWitchStrikesRecoilAndReloadPreserveIdentityAndPeerSafety(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,553000,f->{
         for(int x=-6;x<=7;x++)for(int z=-47;z<=-35;z++)f.put(x,-1,z,Blocks.SANDSTONE);
         var owner=f.player("review_witch_owner");var peer=f.player("review_witch_peer");f.at(owner,2,0,-40.5);f.at(peer,5,0,-40.5);owner.getFoodData().setFoodLevel(0);peer.getFoodData().setFoodLevel(0);
-        var witch=LiteraryVignettes.huntBody(owner,f.place,new BlockPos(0,0,-41));h.assertTrue(witch!=null&&!witch.isInvulnerable()&&LiteraryVignettes.huntBody(peer,f.place,new BlockPos(0,0,-41))==witch,"both readers share the same native, woundable actor");var id=witch.getUUID();float peerHealth=peer.getHealth();var before=f.data().state(DrownedTown.ID);boolean[] strike={false};
+        var witch=LiteraryVignettes.huntBody(owner,f.place,new BlockPos(0,0,-41));h.assertTrue(witch!=null&&!witch.isInvulnerable()&&LiteraryVignettes.huntBody(peer,f.place,new BlockPos(0,0,-41))==witch,"both readers share the same native, woundable actor");var id=witch.getUUID();float peerHealth=peer.getHealth();var before=f.data().state(DrownedTown.ID);boolean[] strike={false},checked={false};
         h.onEachTick(()->{if(active==f&&witch.striking())strike[0]=true;});
-        h.runAfterDelay(22,()->{
-            h.assertTrue(strike[0]&&owner.getHealth()<20&&peer.getHealth()==peerHealth,"one actual lunge has a synced attack state and hurts only its nearest vulnerable reader");
+        h.onEachTick(()->{if(active!=f||checked[0]||witch.tickCount<22)return;checked[0]=true;
+            h.assertTrue(strike[0]&&owner.getHealth()<20&&peer.getHealth()==peerHealth,"one actual lunge has a synced attack state and hurts only its nearest vulnerable reader: actorTicks="+witch.tickCount+", strike="+strike[0]+", ownerHealth="+owner.getHealth()+", peerHealth="+peer.getHealth()+", changingDimension="+owner.isChangingDimension()+", inside="+LiteraryVignettes.inside(owner,f.place)+", "+witch.huntDiagnostic());
             var health=witch.getHealth();owner.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.IRON_SWORD));owner.attack(witch);
             h.assertTrue(witch.getHealth()<health&&witch.hurtTime>0&&witch.huntPhase()==LakeWitchEntity.WITHDRAW&&!witch.striking(),"a real native sword wound cancels the strike and exposes recoil");
             float wounded=witch.getHealth();var tag=new CompoundTag();witch.saveWithoutId(tag);witch.load(tag);
@@ -132,8 +132,8 @@ public final class SceneReviewTests {
     public static void nativeCostumeBayAndSwimmingStepsRetainResidentsAndOriginalStand(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,553500,f->{
         for(int x=-28;x<=28;x++)for(int z=-58;z<=-35;z++)for(int y=-5;y<=-1;y++)f.put(x,y,z,z<=-55?(y==-1?Blocks.GRASS_BLOCK:Blocks.DIRT):z<=-49?Blocks.WATER:y==-1?Blocks.SAND:Blocks.SANDSTONE);
         var owner=f.player("review_shore_owner");var peer=f.player("review_shore_peer");
-        var cat=EntityType.CAT.create(f.level);cat.setNoAi(true);cat.setNoGravity(true);cat.setTame(true,false);cat.setOwnerUUID(owner.getUUID());cat.setOrderedToSit(true);cat.moveTo(Vec3.atBottomCenterOf(f.base.offset(20,0,-40)));f.level.addFreshEntity(cat);var id=cat.getUUID();
-        h.assertTrue(!SceneReview.shore(f.level,f.base)&&f.level.getBlockState(f.base.offset(20,-1,-40)).is(Blocks.SAND)&&cat.getUUID().equals(id),"the new bay cannot remove the real sitting companion's support");cat.moveTo(Vec3.atBottomCenterOf(f.base.offset(0,0,-40)));
+        var cat=EntityType.CAT.create(f.level);cat.setNoAi(true);cat.setNoGravity(true);cat.setTame(true,false);cat.setOwnerUUID(owner.getUUID());cat.setOrderedToSit(true);cat.moveTo(Vec3.atBottomCenterOf(f.base.offset(21,0,-40)));f.level.addFreshEntity(cat);var id=cat.getUUID();
+        h.assertTrue(!SceneReview.shore(f.level,f.base)&&f.level.getBlockState(f.base.offset(21,-1,-40)).is(Blocks.SAND)&&cat.getUUID().equals(id),"the new bay cannot remove the real sitting companion's support");cat.moveTo(Vec3.atBottomCenterOf(f.base.offset(0,0,-40)));
         h.assertTrue(SceneReview.shore(f.level,f.base)&&f.level.getBlockState(f.base.offset(20,-4,-45)).is(Blocks.WATER),"the empty bay has genuine swimming depth rather than a thin water sheet");
         var stand=new ArmorStand(f.level,f.base.getX()+20.5,f.base.getY(),f.base.getZ()-44.5);stand.setNoGravity(true);stand.setInvulnerable(true);stand.addTag("HouseCostume");var shirt=new ItemStack(Items.LEATHER_CHESTPLATE);shirt.set(DataComponents.CUSTOM_NAME,Component.literal("Original costume"));stand.setItemSlot(EquipmentSlot.CHEST,shirt);f.level.addFreshEntity(stand);var standId=stand.getUUID();
         SceneReview.dressCostume(f.level,f.base);var water=f.base.offset(20,-1,-45);
