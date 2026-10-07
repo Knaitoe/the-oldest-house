@@ -66,8 +66,8 @@ public final class SceneHuntReview {
             if(!safe(l,at,next,true))return false;
             if(l.getBlockEntity(at) instanceof LecternBlockEntity lectern){
                 var book=lectern.getBook().copy();if(!book.isEmpty())BuildBlocks.after(l,()->{
-                    var d=LabyrinthData.get(l.getServer());var archive=d.state("scene_source_originals_0455");
-                    if(!archive.contains(key(origin,p)))archive.put(key(origin,p),book.save(l.registryAccess()));d.setState("scene_source_originals_0455",archive);});
+                    var d=LabyrinthData.get(l.getServer());var originals=d.state("scene_source_originals_0455");
+                    if(!originals.contains(key(origin,p)))originals.put(key(origin,p),book.save(l.registryAccess()));d.setState("scene_source_originals_0455",originals);});
             }
             BuildBlocks.guardedSet(l,at,next,F,()->safe(l,at,next,true));
         }else if(old.isAir()){
