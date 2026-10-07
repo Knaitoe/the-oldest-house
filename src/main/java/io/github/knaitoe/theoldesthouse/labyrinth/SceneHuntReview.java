@@ -127,13 +127,10 @@ public final class SceneHuntReview {
                 ready&=set(l,at,(y==-1?(Math.floorMod(x*7+z*11,17)<3?Blocks.COARSE_DIRT:Blocks.PODZOL):Blocks.DIRT).defaultBlockState());}
         }
         // Low cover at arrival hides the visitor from the first clearing without obstructing the door.
+        for(int side:new int[]{-2,2})for(int z=-9;z<=-4;z++)for(int y=0;y<=2;y++)
+            ready&=add(l,b.offset(side,y,z),Blocks.BIRCH_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true));
         for(int[] node:new int[][]{{-4,-8},{4,-8},{-18,-46},{-8,-24},{10,-29},{-20,-65},{27,-81},{-33,-103},{16,-111}})ready&=cover(l,b,node[0],node[1]);
-        // Uneven low carcasses replace the old stacked wooden-looking pile, on its own coordinates.
-        for(int x=-2;x<=2;x++)for(int z=-37;z<=-31;z++){
-            var at=b.offset(x,0,z);var s=BuildBlocks.state(l,at);
-            if(s.is(LiteraryRegistry.PROP.get())&&s.getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.ELK_HIDE)
-                ready&=set(l,at,VignetteDetailBlock.state(CARCASS,Math.floorMod(x+z,2)==0?Direction.NORTH:Direction.SOUTH));
-        }
+        // ELK_HIDE owns a native block entity: its new low hide mesh changes presentation, retaining that original.
         for(int x=-1;x<=1;x++)for(int z=-34;z<=-33;z++){
             var at=b.offset(x,1,z);if(BuildBlocks.state(l,at).is(Blocks.SPRUCE_TRAPDOOR))ready&=set(l,at,HouseBlocks.FOREST_COVER.get().defaultBlockState());
         }
