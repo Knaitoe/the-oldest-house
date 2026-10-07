@@ -282,10 +282,11 @@ This lists what the first pass found. The full audit in workstream B completes i
 
 | Situation | Today | Proposed |
 |---|---|---|
-| The labyrinth core is still being carved | "The door sticks." | "The door sticks. Something is still settling behind it." Add a stone-grinding cue, so the player knows to wait. |
-| The destination place is still being carved | "The door sticks." (unless rerouted) | Same as above, and reroute where any other onward door exists. |
-| A dormant story door | "The door is quiet. Leave its approach and find it again." | Name the story's place without spoiling it: "The wardrobe room is quiet. Come back to it later." |
-| A locked door | "The door is locked." | Say what opens it, when the game knows: a key, a story step or the finale. |
+| The labyrinth core is still being carved | "The door sticks." | **Done:** "The door sticks. Something is still settling behind it." A third try within a minute says "It will give. Try another door, or come back to this one in a minute." |
+| The destination place is still being carved | "The door sticks." (unless rerouted) | **Done:** the same messages; rerouting is unchanged. |
+| A dormant story door | "The door is quiet. Leave its approach and find it again." | **Done:** names the room without spoiling it, and says what wakes it: "The wardrobe is quiet behind this door. Walk a little way off, then come back." |
+| A locked door during hide-and-clap | "The door is locked." | **Done:** "The door won't open until the game is over." |
+| Somebody's room (a permanently locked door) | "The door is locked." | **Done:** "The door is locked. Someone lives here." |
 
 ### Stories and items
 
@@ -293,7 +294,7 @@ This lists what the first pass found. The full audit in workstream B completes i
 |---|---|---|
 | Caver crack | "The crack needs a pickaxe. There is one in the camp barrel." | That any pickaxe works, and that the barrel's single pickaxe taken by one player does not block another. |
 | Hotel service door | "The service door needs the master key from the maze." | That the key has a recovery path if lost. |
-| Drowned Town church | "The church door needs its key. The school kept it." | That the key has a recovery path if lost. |
+| Drowned Town church | "The church door needs its key. The school kept it." — shown even when the player holds the key but the essays are not yet dried. | **Done:** before the second visit and the three dried essays, it now says "The church door won't move yet. The school's essays come first." **Found:** the key is placed on the school desk once (`KeyPlaced`). A key lost before the church is unlocked has no recovery path. The church is shared state, so the fix (re-placing the key when the desk is empty and the church is still sealed) needs an owner decision. |
 | Harrigan's phone | "No answer." once a day | That the player understands the daily limit. |
 | Staircase hearth without a flame | (fixed) "The hearth needs a flame. Tom carries a lighter." | — |
 | Lost lighter | (fixed) Tom replaces it while a cold hearth remains | — |
