@@ -106,7 +106,7 @@ public final class NovelVignettes {
                 NovelRooms.door(p.serverLevel(),b.offset(NovelRooms.ARCHIVE_DOOR),Direction.SOUTH,Blocks.IRON_DOOR,true);all.putBoolean("ArchiveOpen",true);data.setState(STATE,all);
             }else p.displayClientMessage(Component.literal("The cat is sitting over something on the mat."),true);
         }else if(place==LabyrinthPlace.ZAMPANO_COURTYARD&&rel.equals(NovelRooms.ARCHIVE_DESK)){
-            if(data.state(STATE).getBoolean("ArchiveOpen"))open(p,place,NovelTexts.archive(),"ArchiveBook",true,own);else handled=false;
+            if(data.state(STATE).getBoolean("ArchiveOpen"))open(p,place,SceneHuntReview.sourceBook(p.serverLevel(),b,place),"ArchiveBook",true,own);else handled=false;
         }else if(place==LabyrinthPlace.ZAMPANO_COURTYARD&&SceneReview.DRAFTS.contains(rel)&&p.serverLevel().getBlockState(e.getPos()).is(HouseBlocks.VIGNETTE_DETAIL.get())){
             int index=SceneReview.DRAFTS.indexOf(rel);open(p,place,NovelTexts.archiveDraft(index),"ArchiveDraft"+index,false,own);
         }else if(place==LabyrinthPlace.WHALE&&rel.equals(NovelRooms.MAIL)){

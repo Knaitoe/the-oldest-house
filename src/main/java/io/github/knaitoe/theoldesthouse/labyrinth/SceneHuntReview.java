@@ -57,10 +57,11 @@ public final class SceneHuntReview {
     private static boolean surface(ServerLevel l,BlockPos b,int x,int y,int z,VignetteDetailBlock.Kind kind,Direction face){return detail(l,b,new BlockPos(x,y,z),kind,face);}
     /** The exact former native source is archived once, before its reading surface changes. */
     private static boolean source(ServerLevel l,BlockPos origin,BlockPos b,LabyrinthPlace p){
-        if(!LiteraryRooms.isLiterary(p)||p==LabyrinthPlace.FAMILY_COPY||p==LabyrinthPlace.OLD_CABIN)return true;
-        var rel=LiteraryRooms.source(p);var at=b.offset(rel);var old=BuildBlocks.state(l,at);
+        boolean archive=p==LabyrinthPlace.ZAMPANO_COURTYARD;
+        if(!archive&&(!LiteraryRooms.isLiterary(p)||p==LabyrinthPlace.FAMILY_COPY||p==LabyrinthPlace.OLD_CABIN))return true;
+        var rel=archive?NovelRooms.ARCHIVE_DESK:LiteraryRooms.source(p);var at=b.offset(rel);var old=BuildBlocks.state(l,at);
         var kind=SceneReview.readingKind(p);if(rel.getY()>0&&kind==BOOK_TRAY)kind=FIELD_NOTEBOOK;
-        var next=VignetteDetailBlock.state(kind,Direction.SOUTH);
+        var next=archive?HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.READING_DESK,Direction.SOUTH):VignetteDetailBlock.state(kind,Direction.SOUTH);
         if(old.is(Blocks.LECTERN)){
             if(!safe(l,at,next,true))return false;
             if(l.getBlockEntity(at) instanceof LecternBlockEntity lectern){
@@ -69,7 +70,11 @@ public final class SceneHuntReview {
                     if(!archive.contains(key(origin,p)))archive.put(key(origin,p),book.save(l.registryAccess()));d.setState("scene_source_originals_0455",archive);});
             }
             BuildBlocks.guardedSet(l,at,next,F,()->safe(l,at,next,true));
-        }else if(old.isAir())detail(l,b,rel,kind,Direction.SOUTH);
+        }else if(old.isAir()){
+            if(archive){var floor=at.below();if(!BuildBlocks.state(l,floor).getShape(l,floor).isEmpty())set(l,at,next);}
+            else detail(l,b,rel,kind,Direction.SOUTH);
+        }
+        if(archive)return detail(l,b,rel.above(),SCRIBBLE_7,Direction.SOUTH);
         // Remove only the redundant alternate object authored by 0.4.54.
         var alias=b.offset(SceneReview.readingSurface(p));var s=BuildBlocks.state(l,alias);
         if(!alias.equals(at)&&s.is(HouseBlocks.VIGNETTE_DETAIL.get())&&s.getValue(VignetteDetailBlock.KIND)==SceneReview.readingKind(p))
@@ -78,8 +83,8 @@ public final class SceneHuntReview {
     public static ItemStack sourceBook(ServerLevel l,BlockPos b,LabyrinthPlace p){
         var origin=HouseSavedData.get(l.getServer()).houseOrigin();var d=LabyrinthData.get(l.getServer());
         if(origin!=null){var all=d.state("scene_source_originals_0455");if(all.contains(key(origin,p)))return ItemStack.parseOptional(l.registryAccess(),all.getCompound(key(origin,p)));}
-        if(l.getBlockEntity(b.offset(LiteraryRooms.source(p))) instanceof LecternBlockEntity lectern&&!lectern.getBook().isEmpty())return lectern.getBook().copy();
-        return LiteraryTexts.source(p);
+        if(l.getBlockEntity(b.offset(p==LabyrinthPlace.ZAMPANO_COURTYARD?NovelRooms.ARCHIVE_DESK:LiteraryRooms.source(p))) instanceof LecternBlockEntity lectern&&!lectern.getBook().isEmpty())return lectern.getBook().copy();
+        return p==LabyrinthPlace.ZAMPANO_COURTYARD?NovelTexts.archive():LiteraryTexts.source(p);
     }
     private static boolean fan(ServerLevel l,BlockPos b){boolean ready=true;
         // A smaller drawing room and three-wide connecting hall retain every interaction address.
