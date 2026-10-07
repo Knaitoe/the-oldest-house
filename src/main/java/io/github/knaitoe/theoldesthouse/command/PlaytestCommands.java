@@ -91,7 +91,7 @@ public final class PlaytestCommands {
         if (PENDING.containsKey(player.getUUID())) return fail(source, "A shortcut is already waiting. Use /oldesthouse test cancel first.");
         FinaleArchitecture.request(player.server);
         PENDING.put(player.getUUID(), new Pending(source, player, start));
-        source.sendSuccess(() -> Component.literal("Preparing the cell asynchronously. You will move when its blocks and entities are loaded. /oldesthouse test cancel stops the wait."
+        source.sendSuccess(() -> Component.literal("Preparing the complete staircase and escape hallway asynchronously. You will move when the route's blocks and entities are loaded. /oldesthouse test cancel stops the wait."
                 + (start == Start.CELL ? "" : " This will start the real " + start.name().toLowerCase(Locale.ROOT) + " ending in this world.")), false);
         return 1;
     }
@@ -114,12 +114,7 @@ public final class PlaytestCommands {
             if (level == null) {
                 level = player.server.getLevel(HouseDimensions.INTERIOR);
                 if (level == null) return false;
-                chunks.addAll(WitnessEnding.releaseChunks(origin));
-                // Include the cell's rear, chamber seal, collapse chute and physical escape route.
-                var base = FinaleArchitecture.base(origin);
-                for (int x = (base.getX() - 27) >> 4; x <= (base.getX() + 27) >> 4; x++)
-                    for (int z = (base.getZ() + 27) >> 4; z <= (base.getZ() + 115) >> 4; z++)
-                        chunks.add(new ChunkPos(x, z));
+                chunks.addAll(FinaleArchitecture.routeChunks(origin));
                 for (var chunk : chunks) level.getChunkSource().addRegionTicket(TICKET, chunk, 3, ticket);
             }
             return chunks.stream().allMatch(c -> level.hasChunk(c.x, c.z) && level.areEntitiesLoaded(c.toLong()));
@@ -141,9 +136,10 @@ public final class PlaytestCommands {
             String error = blocked(player, pending.start);
             if (error == null && (player.serverLevel() != pending.from || !pending.origin.equals(HouseSavedData.get(server).houseOrigin())))
                 error = "The player or House moved before the shortcut was ready. Run the command again.";
-            if (error == null && ++pending.ticks > 1200) error = "The cell did not become ready within sixty seconds. Preparation continues; retry when /oldesthouse finale go is available.";
+            if (error == null && ++pending.ticks > 1200) error = "The complete finale route did not become ready within sixty seconds. Preparation continues; retry when /oldesthouse finale go is available.";
             if (error != null) { fail(pending.source, error); remove(pending); continue; }
             if (!pending.loaded() || !FinaleArchitecture.ready(server)) continue;
+            if (!FinaleArchitecture.prepareTestEscape(pending.level,pending.origin)) continue;
             var world = FinaleProgress.world(server);
             UUID actorId = world.hasUUID("WoundedCreature") ? world.getUUID("WoundedCreature")
                     : world.hasUUID("CagedCreature") ? world.getUUID("CagedCreature") : null;

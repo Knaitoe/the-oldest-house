@@ -14,11 +14,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.*;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.phys.*;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.gametest.*;
 
 @GameTestHolder(TheOldestHouse.MOD_ID + "_multiplayer")
@@ -35,8 +40,8 @@ public final class PlaytestCommandTests {
     }
     private static void run(GameTestHelper h, int coordinate, Check check) {
         var f = new StaircaseAccessTests.Fixture(h, coordinate); ACTIVE.add(f);
-        var b = f.base; f.chunks.hold(f.level, new AABB(b.getX()-27, 0, b.getZ()+27, b.getX()+27, 160, b.getZ()+115));
-        for (var chunk : WitnessEnding.releaseChunks(f.origin)) f.chunks.hold(f.level, new AABB(chunk.getWorldPosition()).inflate(1));
+        var b = f.base;
+        for (var chunk : FinaleArchitecture.routeChunks(f.origin)) f.chunks.hold(f.level, new AABB(chunk.getWorldPosition()).inflate(1));
         for (int x=-16; x<=16; x++) for (int z=30; z<=70; z++)
             f.put(f.level, b.offset(x, FinaleArchitecture.ARENA-1, z), Blocks.DEEPSLATE_TILES.defaultBlockState());
         for (int x=-1; x<=1; x++) for (int y=0; y<4; y++)
@@ -48,7 +53,8 @@ public final class PlaytestCommandTests {
                 f.start(); f.data().setBuilt(LabyrinthBuilder.VERSION, f.origin);
                 var architecture=f.data().state("finale_architecture_049"); architecture.putLong("Origin",f.origin.asLong());
                 f.data().setState("finale_architecture_049",architecture);
-                // These fixtures exercise commands, not a second composition of the complete escape course.
+                // Small command cases keep their saved dressing; the traversal case removes this
+                // checkpoint and requires the command itself to prepare the complete real course.
                 var geometry=new net.minecraft.nbt.CompoundTag(); geometry.putLong("Origin",f.origin.asLong());
                 f.data().setState("collapse_geometry_0423",geometry);
             }
@@ -62,7 +68,7 @@ public final class PlaytestCommandTests {
             f.level.getChunkSource().removeRegionTicket(TicketType.PORTAL,chunk,3,chunk.getWorldPosition());
         var entities=new ArrayList<Entity>();
         for(var e:f.level.getAllEntities()) if(FinaleArchitecture.contains(f.origin,e.blockPosition())
-                &&(e instanceof MinotaurEntity||e instanceof ItemEntity||e.getTags().contains("HouseFinaleWords"))) entities.add(e);
+                &&(e instanceof MinotaurEntity||e instanceof ItemEntity||e.getTags().contains("HouseFinaleWords")||e.getTags().contains("HouseCollapseDebris"))) entities.add(e);
         entities.forEach(Entity::discard); f.close(); ACTIVE.remove(f);
     }
     private static void cleanup() { for(var f:new ArrayList<>(ACTIVE)) close(f); }
@@ -73,6 +79,8 @@ public final class PlaytestCommandTests {
     @AfterBatch(batch="test_command_witness") public static void witnessCleanup(ServerLevel l){cleanup();}
     @AfterBatch(batch="test_command_defeat") public static void defeatCleanup(ServerLevel l){cleanup();}
     @AfterBatch(batch="test_command_cancel") public static void cancelCleanup(ServerLevel l){cleanup();}
+    @AfterBatch(batch="test_command_escape_route") public static void escapeRouteCleanup(ServerLevel l){cleanup();}
+    @AfterBatch(batch="test_command_route_peer") public static void routePeerCleanup(ServerLevel l){cleanup();}
     private static ServerPlayer source(GameTestHelper h, StaircaseAccessTests.Fixture f, String name) {
         var p=f.player(h,name); p.teleportTo(f.level,f.source.getX()+.5,f.source.getY(),f.source.getZ()+4.5,0,0);
         p.connection.resetPosition(); return p;
@@ -132,6 +140,100 @@ public final class PlaytestCommandTests {
         h.assertTrue(FinaleProgress.phase(record)==FinaleProgress.Phase.COLLAPSE&&record.getInt("CollapseTicks")==0&&id.equals(record.getUUID("Creature"))&&id.equals(FinaleProgress.world(p.server).getUUID("WoundedCreature")),"native commitment and the first real collapse beat retain one actor identity");
         h.assertTrue(actor.isAlive()&&actor.motion()==MinotaurEntity.WOUNDED&&actor.getHealth()==actor.getMaxHealth()&&ItemStack.isSameItemSameComponents(before,p.getMainHandItem()),"the actual prisoner crawls alive and no weapon is copied or consumed");
         h.assertTrue(peer.position().equals(peerAt)&&FinaleProgress.phase(p.server,peer.getUUID())==FinaleProgress.Phase.UNSEEN&&WitnessAccount.count(f.data(),peer.getUUID())==0&&!FinaleProgress.world(p.server).getBoolean("Ended"),"starting collapse neither completes demolition nor changes the peer's journey");return true;
+    });}
+
+    @GameTest(template="empty",batch="test_command_escape_route",timeoutTicks=2400)
+    public static void escapeCommandPreparesTheMissingHallwayAndReachesTheRealExterior(GameTestHelper h){
+        ServerPlayer[] players=new ServerPlayer[2];UUID[] prisoner={null};BarrelBlockEntity[] cache={null};
+        int[] stage={0},point={0},pullClock={0};var oldDay=h.getLevel().getServer().overworld().getDayTime();
+        run(h,543500,(f,t)->{
+            var route=FinaleArchitecture.escapeRoute(f.origin);
+            if(t==0){
+                var p=players[0]=source(h,f,"complete_escape_owner");players[1]=source(h,f,"complete_escape_peer");p.setNoGravity(false);
+                prisoner[0]=prisoner(f).getUUID();
+                // A ready cell from an older save must not stand in for an unbuilt lower hallway.
+                for(var placement:FinaleArchitecture.escapeFloorPlan(f.origin))f.put(f.level,placement.pos(),Blocks.AIR.defaultBlockState());
+                h.assertTrue(f.level.getBlockState(route.get(90).below()).isAir(),"the later hallway really is absent before the command");
+                f.data().setState("collapse_geometry_0423",new net.minecraft.nbt.CompoundTag());
+                for(int z=63;z<=67;z++)f.put(f.level,f.base.offset(-17,FinaleArchitecture.ARENA-1,z),Blocks.DEEPSLATE_TILES.defaultBlockState());
+                var supplies=FinaleCollapse.cache(f.origin);f.put(f.level,supplies,Blocks.BARREL.defaultBlockState());
+                cache[0]=(BarrelBlockEntity)f.level.getBlockEntity(supplies);cache[0].clearContent();
+                // Track command-authored geometry for native fixture teardown, without prebuilding it.
+                var touched=f.touched.computeIfAbsent(f.level,k->new HashSet<>());
+                for(var at:BlockPos.betweenClosed(f.base.offset(-25,2,63),f.base.offset(29,FinaleArchitecture.ARENA+5,120)))
+                    if(at.getY()<=12||at.getX()<=f.base.getX()-17)touched.add(at.immutable());
+                var outside=p.server.overworld();var doorstep=f.origin.offset(HouseLayout.FRONT_DOOR.x(),HouseLayout.FRONT_DOOR.y()-1,HouseLayout.FRONT_DOOR.z()-2);
+                outside.getChunkAt(doorstep);
+                for(var at:BlockPos.betweenClosed(doorstep.offset(-3,0,-3),doorstep.offset(3,0,0)))f.put(outside,at,Blocks.STONE.defaultBlockState());
+                var original=new ItemStack(Items.IRON_SWORD);original.setDamageValue(63);WeaponHistory.record(p,original,12);p.setItemInHand(InteractionHand.MAIN_HAND,original);
+                h.assertTrue(command(commands(),p,"ending collapse")==1,"the real collapse alias queues the full course");PlaytestCommands.tick(p.server);
+                h.assertTrue(FinaleProgress.phase(p.server,p.getUUID())==FinaleProgress.Phase.COLLAPSE,"the clock starts only after route preparation");
+                for(int i=4;i<route.size();i++)h.assertTrue(!f.level.getBlockState(route.get(i).below()).getCollisionShape(f.level,route.get(i).below()).isEmpty(),"every later hallway segment has a real support: "+i);
+                h.assertTrue(f.level.getBlockState(FinaleArchitecture.bottomStart(f.origin).below()).is(Blocks.WATER)&&f.level.getBlockState(FinaleArchitecture.exit(f.origin)).getBlock() instanceof DoorBlock,"the physical landing and final native door are already prepared");
+                h.assertTrue(f.level.getBlockEntity(supplies)==cache[0]&&cache[0].isEmpty(),"preparing the hallway retains the depleted original cache");
+                return false;
+            }
+            var p=players[0];var peer=players[1];p.baseTick();FinaleController.tickPlayer(p,f.origin);
+            var own=FinaleProgress.player(p.server,p.getUUID());
+            h.assertTrue(p.isAlive(),"the command's complete course is survivable at stage="+stage[0]+" point="+point[0]+" position="+p.position());
+            h.assertTrue(f.level.getEntity(prisoner[0]) instanceof MinotaurEntity actor&&actor.isAlive()&&actor.motion()==MinotaurEntity.WOUNDED,"the same wounded prisoner survives the entire native escape");
+            if(stage[0]==0){
+                if(own.getInt("CollapseTicks")<125)return false;
+                h.assertTrue(f.level.getBlockState(FinaleCollapse.breach(f.origin)).isAir(),"the real collapse opens the west wall");stage[0]=1;
+            }
+            if(stage[0]==1){
+                double[][] turns={{-14,56},{-14,65},{-20,65},{-20,76}};var turn=turns[point[0]];
+                var target=new Vec3(f.base.getX()+turn[0]+.5,p.getY(),f.base.getZ()+turn[1]+.5);
+                if(p.position().distanceToSqr(target)<.25){if(++point[0]==turns.length){stage[0]=2;point[0]=0;}}
+                else walk(p,target,false);return false;
+            }
+            if(stage[0]==2){
+                move(p,Vec3.ZERO,false);
+                if(own.getBoolean("Descended")){h.assertTrue(p.getY()<8,"native collision movement falls into the water without another teleport");stage[0]=3;point[0]=1;}
+                return false;
+            }
+            if(stage[0]==3){
+                if(point[0]>=route.size()-1){p.setShiftKeyDown(false);p.setForcedPose(null);p.setPose(Pose.STANDING);stage[0]=4;return false;}
+                var target=Vec3.atBottomCenterOf(route.get(point[0]));
+                if(p.position().multiply(1,0,1).distanceToSqr(target.multiply(1,0,1))<.35){point[0]++;return false;}
+                boolean low=point[0]>=68&&point[0]<=77;p.setShiftKeyDown(low);p.setForcedPose(low?Pose.CROUCHING:null);p.setPose(low?Pose.CROUCHING:Pose.STANDING);
+                walk(p,target,point[0]>=26&&point[0]<=31||point[0]>=106&&point[0]<=111);return false;
+            }
+            p.setDeltaMovement(Vec3.ZERO);if(++pullClock[0]%22!=0)return false;
+            var exit=FinaleArchitecture.exit(f.origin);
+            NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,exit,new BlockHitResult(exit.getCenter(),net.minecraft.core.Direction.WEST,exit,false)));
+            if(FinaleProgress.phase(p.server,p.getUUID())!=FinaleProgress.Phase.ESCAPED)return false;
+            h.assertTrue(own.getBoolean("Passed0")&&own.getBoolean("Passed1")&&own.getBoolean("Passed2")&&FinaleProgress.player(p.server,p.getUUID()).getInt("DoorPulls")==4,"the actual jump/crouch checkpoints and four timed pulls complete the ending");
+            h.assertTrue(p.serverLevel()==p.server.overworld()&&peer.serverLevel()==p.server.overworld()&&FinaleProgress.phase(p.server,peer.getUUID())==FinaleProgress.Phase.UNSEEN,"the owner fully escapes and the peer evacuates without inheriting an ending");
+            h.assertTrue(p.getMainHandItem().is(Items.IRON_SWORD)&&p.getMainHandItem().getDamageValue()==63&&cache[0].isEmpty(),"the native original weapon and depleted cache remain exact");
+            p.server.overworld().setDayTime(oldDay);return true;
+        });
+    }
+
+    private static void walk(ServerPlayer p,Vec3 target,boolean jump){
+        var d=target.subtract(p.position()).multiply(1,0,1);p.setYRot((float)(Math.atan2(d.z,d.x)*180/Math.PI)-90);
+        move(p,d.lengthSqr()<.0256?d:d.normalize().scale(.16),jump);
+    }
+    private static void move(ServerPlayer p,Vec3 horizontal,boolean jump){
+        double vertical=p.getDeltaMovement().y;
+        if(p.isInWater())vertical=p.horizontalCollision?.3:Math.min(.12,Math.max(0,vertical)+.03);
+        else if(p.onGround())vertical=jump?.42:0;else vertical=(vertical-.08)*.98;
+        var velocity=new Vec3(horizontal.x,vertical,horizontal.z);p.setDeltaMovement(velocity);p.move(MoverType.SELF,velocity);
+        if(p.verticalCollision)p.setDeltaMovement(horizontal.x,0,horizontal.z);
+    }
+
+    @GameTest(template="empty",batch="test_command_route_peer",timeoutTicks=1200)
+    public static void preparingAnAbsentSupportWaitsForTheActualPeerWithoutStartingAnEnding(GameTestHelper h){run(h,544000,(f,t)->{
+        var p=source(h,f,"route_wait_owner");var peer=source(h,f,"route_wait_peer");var actor=prisoner(f);var id=actor.getUUID();
+        var hole=FinaleArchitecture.escapeRoute(f.origin).get(90).below();f.put(f.level,hole,Blocks.AIR.defaultBlockState());
+        peer.teleportTo(f.level,hole.getX()+.5,hole.getY(),hole.getZ()+.5,0,0);peer.connection.resetPosition();var peerAt=peer.position();var ownerAt=p.position();
+        var kept=new ItemStack(Items.DIAMOND,3);peer.setItemInHand(InteractionHand.OFF_HAND,kept);
+        h.assertTrue(command(commands(),p,"minotaur")==1,"cell inspection also prepares the complete route");PlaytestCommands.tick(p.server);
+        h.assertTrue(f.level.getBlockState(hole).isAir()&&peer.position().equals(peerAt)&&peer.getOffhandItem()==kept&&p.position().equals(ownerAt),"the command waits rather than placing stone inside a native peer or moving either player");
+        h.assertTrue(FinaleProgress.phase(p.server,p.getUUID())==FinaleProgress.Phase.UNSEEN&&!FinaleProgress.world(p.server).hasUUID("Owner"),"waiting grants no phase or shared finale claim");
+        peer.teleportTo(f.level,hole.getX()+.5,hole.getY()+2,hole.getZ()+.5,0,0);peer.connection.resetPosition();PlaytestCommands.tick(p.server);
+        h.assertTrue(!f.level.getBlockState(hole).isAir()&&FinaleProgress.phase(p.server,p.getUUID())==FinaleProgress.Phase.STAIRCASE&&id.equals(FinaleProgress.world(p.server).getUUID("CagedCreature"))&&actor.motion()==MinotaurEntity.CAGED,"native preparation resumes after the peer clears the missing support, retaining the original prisoner");
+        h.assertTrue(FinaleProgress.phase(p.server,peer.getUUID())==FinaleProgress.Phase.UNSEEN&&peer.getOffhandItem()==kept,"the peer receives no testing progress and keeps the original carried item");return true;
     });}
 
     @GameTest(template="empty",batch="test_command_witness",timeoutTicks=1200)
