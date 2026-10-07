@@ -26,6 +26,9 @@ public final class HouseConfig {
     public static final ModConfigSpec.IntValue STORY_EARLY_CHANCE, STORY_BASE_CHANCE, STORY_CHANCE_STEP;
     public static final ModConfigSpec.IntValue STORY_SPACING, STORY_DRY_GUARANTEE;
     public static final ModConfigSpec.IntValue HAZARD_EARLY_CHANCE, HAZARD_MIDDLE_CHANCE, HAZARD_DEEP_CHANCE, HAZARD_SPACING;
+    /** The encounter preset this file has been reviewed against, so an old preset is upgraded once only. */
+    public static final ModConfigSpec.IntValue PRESET_VERSION;
+    private static final int CURRENT_PRESET = 49;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -80,19 +83,26 @@ public final class HouseConfig {
         HAZARD_MIDDLE_CHANCE = builder.comment("Physical-hazard chance at depths 10-15.").defineInRange("hazardMiddleChance", 36, 0, 100);
         HAZARD_DEEP_CHANCE = builder.comment("Physical-hazard chance at depth 16 or more.").defineInRange("hazardDeepChance", 48, 0, 100);
         HAZARD_SPACING = builder.comment("Visits separating physical hazards.").defineInRange("hazardSpacing", 2, 0, 8);
+        PRESET_VERSION = builder.comment("Bookkeeping: the encounter preset version this file was last checked against. Leave it as it is.")
+                .defineInRange("presetVersion", 0, 0, 10_000);
         builder.pop();
         SPEC = builder.build();
     }
 
-    /** Upgrade only the complete previous default preset; deliberate server tuning stays exact. */
+    /**
+     * Upgrade only the complete previous default preset, and only once: the file then records that it was
+     * checked, so an operator who later chooses the old values on purpose keeps them. Deliberate server
+     * tuning stays exact.
+     */
     @net.neoforged.bus.api.SubscribeEvent
     public static void loaded(net.neoforged.fml.event.config.ModConfigEvent.Loading event) {
-        if(event.getConfig().getSpec()!=SPEC)return;
+        if(event.getConfig().getSpec()!=SPEC||PRESET_VERSION.get()>=CURRENT_PRESET)return;
         var values=java.util.List.of(STORY_EARLY_CHANCE,STORY_BASE_CHANCE,STORY_CHANCE_STEP,STORY_SPACING,STORY_DRY_GUARANTEE,
                 HAZARD_EARLY_CHANCE,HAZARD_MIDDLE_CHANCE,HAZARD_DEEP_CHANCE,HAZARD_SPACING);
         int[] before={8,16,7,3,12,10,16,22,3};
-        for(int i=0;i<values.size();i++)if(values.get(i).get()!=before[i])return;
-        for(var value:values)value.set(value.getDefault());
+        boolean old=true;for(int i=0;i<values.size();i++)if(values.get(i).get()!=before[i])old=false;
+        if(old)for(var value:values)value.set(value.getDefault());
+        PRESET_VERSION.set(CURRENT_PRESET);
         SPEC.save();
     }
 

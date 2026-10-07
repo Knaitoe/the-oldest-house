@@ -302,8 +302,13 @@ public final class StaircaseProse {
     private static String front(Voice voice, String name) {
         return "HOUSE OF LEAVES\n\n"+name+"\n\nA strip of paper remains in the stitching. On its scorched edge someone wrote: I kept the cover.";
     }
-    /** The title leaf for an account written before narrators varied. */
-    public static String legacyFront(String name) { return front(Voice.WITNESS, name); }
+    /**
+     * The title leaf for an account saved before its title was stored. Those books have always shown
+     * these exact words; a saved original keeps them, whatever new books now say.
+     */
+    public static String legacyFront(String name) {
+        return "HOUSE OF LEAVES\n\nas found by " + name + "\n\nIts five leaves are loose on the stairs below, one to a flight. Bind each here, then give it to the next fire.";
+    }
 
     private static List<Fact> diverse(List<Fact> sorted, int wanted) {
         var picked = new ArrayList<Fact>(); var groups = new HashSet<String>();

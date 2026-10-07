@@ -55,19 +55,37 @@ public final class StaircaseLeaks {
         void close(){lease.close();}
     }
     private static final class Engine {
-        final MinecraftServer server;final LabyrinthData data;final Map<UUID,Offer> offers=new HashMap<>();final Map<UUID,CompoundTag> sessions=new HashMap<>();final Map<UUID,Lease> sources=new HashMap<>();final Map<Integer,Room> work=new LinkedHashMap<>();
+        final MinecraftServer server;final LabyrinthData data;final Map<UUID,Offer> offers=new HashMap<>();final Map<UUID,CompoundTag> sessions=new HashMap<>();final Set<UUID> idle=new HashSet<>();final Map<UUID,Lease> sources=new HashMap<>();final Map<Integer,Room> work=new LinkedHashMap<>();
         final ArrayDeque<String> savedWork=new ArrayDeque<>();
         Engine(MinecraftServer server){this.server=server;data=LabyrinthData.get(server);for(var key:data.stateKeys(ROOMS))if(!key.equals("meta"))savedWork.add(key);}
-        void close(){for(var lease:sources.values())lease.close();for(var room:work.values())room.close();offers.clear();sessions.clear();sources.clear();work.clear();}
+        void close(){for(var lease:sources.values())lease.close();for(var room:work.values())room.close();offers.clear();sessions.clear();idle.clear();sources.clear();work.clear();}
     }
     private static Engine engine(MinecraftServer server){var e=ENGINES.get(server);if(e==null||e.data!=LabyrinthData.get(server)){if(e!=null)e.close();e=new Engine(server);ENGINES.put(server,e);}return e;}
     public static void clearForServer(MinecraftServer server){var e=ENGINES.remove(server);if(e!=null)e.close();}
     private static CompoundTag own(ServerPlayer p){return LabyrinthData.get(p.server).stateEntry(STATE,p.getUUID().toString());}
     private static void save(ServerPlayer p,CompoundTag own){LabyrinthData.get(p.server).setStateEntry(STATE,p.getUUID().toString(),own);}
+    /**
+     * The player's own saved copy decides whether they are in a scene: it is saved with their position
+     * and inventory, so it can never be older than them. The world's copy is only a mirror. A reader with
+     * no scene is remembered as such, so the hot paths (every tick, pet tick and damage event) do not
+     * copy saved records.
+     */
     private static CompoundTag session(ServerPlayer p){
-        var e=engine(p.server);var cached=e.sessions.get(p.getUUID());if(cached!=null)return cached;
-        var record=own(p);var active=record.getCompound("Active");if(active.isEmpty()&&p.getPersistentData().contains(BACKUP))active=p.getPersistentData().getCompound(BACKUP).copy();
-        if(active.isEmpty())return null;e.sessions.put(p.getUUID(),active);return active;
+        var e=engine(p.server);var id=p.getUUID();var cached=e.sessions.get(id);if(cached!=null)return cached;
+        if(e.idle.contains(id))return null;
+        if(!p.getPersistentData().contains(BACKUP)){e.idle.add(id);return null;}
+        var active=p.getPersistentData().getCompound(BACKUP).copy();e.sessions.put(id,active);return active;
+    }
+    /**
+     * A world record of a scene that the player's own data no longer has is stale: the world was saved
+     * mid-scene, the player returned and was saved afterwards, and the server stopped before the world
+     * saved again. The player is already where they belong, so they are not moved; the record is cleared,
+     * waiting pets and the reader's echo are released, and the room is queued for restoration.
+     */
+    private static void dropStale(ServerPlayer p){
+        if(p.getPersistentData().contains(BACKUP))return;var record=own(p);var stale=record.getCompound("Active");if(stale.isEmpty())return;
+        var e=engine(p.server);cleanupSource(p,stale);record.remove("Active");save(p,record);
+        var room=request(e,stale.getInt("Slot"));if(room!=null){room.record.putBoolean("Dirty",true);room.record.putInt("Cursor",0);e.data.setStateEntry(ROOMS,Integer.toString(room.slot),room.record);}
     }
     public static boolean active(ServerPlayer p){return session(p)!=null;}
     public static boolean active(MinecraftServer server,UUID id){var p=server.getPlayerList().getPlayer(id);return p!=null&&session(p)!=null&&!session(p).getBoolean("Recovering");}
@@ -76,7 +94,7 @@ public final class StaircaseLeaks {
     public static int activeIndex(ServerPlayer p){var s=session(p);return s==null?-1:s.getInt("Index");}
     public static CompoundTag progress(ServerPlayer p){var s=session(p);return s==null?new CompoundTag():s.getCompound("Chore");}
     public static void progress(ServerPlayer p,CompoundTag chore){var s=session(p);if(s==null)return;s.put("Chore",chore.copy());persist(p,s);}
-    private static void persist(ServerPlayer p,CompoundTag session){var record=own(p);record.put("Active",session.copy());save(p,record);p.getPersistentData().put(BACKUP,session.copy());}
+    private static void persist(ServerPlayer p,CompoundTag session){var record=own(p);record.put("Active",session.copy());save(p,record);p.getPersistentData().put(BACKUP,session.copy());engine(p.server).idle.remove(p.getUUID());}
 
     /** Only the server's personal surface-reader menu calls this; normal book copies send no offer. */
     static void offer(ServerPlayer p,BlockPos paper,ItemStack original){
@@ -96,7 +114,7 @@ public final class StaircaseLeaks {
         var e=engine(p.server);var record=own(p);var slots=record.getCompound("Slots");String key=Integer.toString(index);
         if(slots.contains(key))return slots.getInt(key);
         var meta=e.data.stateEntry(ROOMS,"meta");int slot=meta.getInt("Next");meta.putInt("Next",slot+1);e.data.setStateEntry(ROOMS,"meta",meta);
-        var room=new CompoundTag();room.putUUID("Owner",p.getUUID());room.putInt("Index",index);room.putLong("Base",StaircaseLeakRooms.base(HouseSavedData.get(p.server).houseOrigin(),slot).asLong());room.putBoolean("Dirty",true);room.putInt("Cursor",0);room.put("Source",snapshot(p));
+        var room=new CompoundTag();room.putUUID("Owner",p.getUUID());room.putInt("Index",index);room.putLong("Base",StaircaseLeakRooms.base(HouseSavedData.get(p.server).houseOrigin(),slot).asLong());room.putBoolean("Dirty",true);room.putInt("Cursor",0);room.put("Source",pose(p));
         room.put("Template",StaircaseLeakRooms.authored(StaircaseLeakRooms.kind(index),record.getIntArray("KitchenCups")).save());e.data.setStateEntry(ROOMS,Integer.toString(slot),room);
         slots.putInt(key,slot);record.put("Slots",slots);save(p,record);request(e,slot);return slot;
     }
@@ -116,6 +134,14 @@ public final class StaircaseLeaks {
             room.record.putInt("Cursor",cursor);if(cursor==StaircaseLeakRooms.CELLS){room.record.putBoolean("Dirty",false);room.record.putBoolean("Ready",true);}
             e.data.setStateEntry(ROOMS,Integer.toString(room.slot),room.record);return;
         }
+    }
+    /** Where a stray visitor to a room is sent back to; nothing else of theirs is kept with the room. */
+    private static CompoundTag pose(ServerPlayer p){var s=new CompoundTag();s.putDouble("X",p.getX());s.putDouble("Y",p.getY());s.putDouble("Z",p.getZ());s.putFloat("Yaw",p.getYRot());s.putFloat("Pitch",p.getXRot());return s;}
+    /** A room whose authored template has changed is rebuilt from it before its next visit. */
+    private static void retemplate(Engine e,int slot,StaircaseLeakRooms.Template template){
+        var record=e.data.stateEntry(ROOMS,Integer.toString(slot));if(record.isEmpty())return;
+        record.put("Template",template.save());record.putBoolean("Dirty",true);record.remove("Ready");record.putInt("Cursor",0);e.data.setStateEntry(ROOMS,Integer.toString(slot),record);
+        var old=e.work.remove(slot);if(old!=null)old.close();
     }
     private static CompoundTag snapshot(ServerPlayer p){
         var s=new CompoundTag();s.put("Inventory",p.getInventory().save(new ListTag()));var food=new CompoundTag();p.getFoodData().addAdditionalSaveData(food);s.put("Food",food);
@@ -150,7 +176,13 @@ public final class StaircaseLeaks {
         if(p.serverLevel()==level)HouseInternalTeleport.shiftPlayerOnly(p,pos,source.getFloat("Yaw"),source.getFloat("Pitch"));else{p.teleportTo(level,pos.x,pos.y,pos.z,source.getFloat("Yaw"),source.getFloat("Pitch"));p.connection.resetPosition();}
         restore(p,source);p.setDeltaMovement(new Vec3(source.getDouble("Vx"),source.getDouble("Vy"),source.getDouble("Vz")));p.connection.send(new ClientboundSetEntityMotionPacket(p));p.resetFallDistance();
         cleanupSource(p,s);var record=own(p);var done=record.getCompound("Done");done.putBoolean(Integer.toString(s.getInt("Index")),true);record.put("Done",done);
-        if(s.getInt("Index")==0&&s.getCompound("Chore").getInt("Cups")==3)record.putIntArray("KitchenCups",s.getCompound("Chore").getIntArray("HookColors"));record.remove("Active");save(p,record);p.getPersistentData().remove(BACKUP);e.sessions.remove(p.getUUID());
+        if(s.getInt("Index")==0&&s.getCompound("Chore").getInt("Cups")==3){
+            record.putIntArray("KitchenCups",s.getCompound("Chore").getIntArray("HookColors"));
+            // A late kitchen allocated before this one was finished is rebuilt with the cups where they now hang.
+            var slots=record.getCompound("Slots");if(slots.contains("32")&&!record.getCompound("Done").getBoolean("32"))
+                retemplate(e,slots.getInt("32"),StaircaseLeakRooms.authored(StaircaseLeakRooms.Kind.LATE_KITCHEN,record.getIntArray("KitchenCups")));
+        }
+        record.remove("Active");save(p,record);p.getPersistentData().remove(BACKUP);e.sessions.remove(p.getUUID());
         var room=request(e,s.getInt("Slot"));if(room!=null){room.record.putBoolean("Dirty",true);room.record.putInt("Cursor",0);e.data.setStateEntry(ROOMS,Integer.toString(room.slot),room.record);}var held=e.sources.remove(p.getUUID());if(held!=null)held.close();
         HousePackets.send(p,new StaircaseLeakPayload(false,0,s.getInt("Index")==32?200:0));HousePackets.send(p,new HouseFadePayload(0,1,12));
         if(s.contains("Closing")&&!s.getBoolean("Recovering")&&p.isAlive()&&!p.isSpectator()&&p.server.getPlayerList().getPlayer(p.getUUID())==p){var paper=BlockPos.of(s.getLong("Paper"));if(p.serverLevel().getBlockState(paper).is(HouseBlocks.NOTE_SURFACE.get())&&StaircaseWriting.open(p,paper)){var book=p.containerMenu.getSlot(0).getItem().get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT);if(book!=null&&book.pages().size()>1)p.containerMenu.clickMenuButton(p,100+book.pages().size()-1);}}
@@ -208,18 +240,25 @@ public final class StaircaseLeaks {
         for(var it=e.work.entrySet().iterator();it.hasNext();){var room=it.next().getValue();if(!room.record.getBoolean("Dirty")&&e.sessions.values().stream().noneMatch(s->s.getInt("Slot")==room.slot)&&e.offers.values().stream().noneMatch(o->o.slot==room.slot)){room.close();it.remove();}}
     }
     public static void caption(ServerPlayer p,String text){p.displayClientMessage(Component.literal(text),true);}
-    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void use(PlayerInteractEvent.RightClickBlock event){if(event.getLevel().isClientSide()||event.getHand()!=InteractionHand.MAIN_HAND||!(event.getEntity() instanceof ServerPlayer p)||!active(p))return;StaircaseLeakChores.interact(p,event.getPos());event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);}
+    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void use(PlayerInteractEvent.RightClickBlock event){if(event.getLevel().isClientSide()||!(event.getEntity() instanceof ServerPlayer p)||!active(p))return;
+        // The main hand does the chore; nothing either hand holds is used or placed in the room.
+        if(event.getHand()==InteractionHand.MAIN_HAND)StaircaseLeakChores.interact(p,event.getPos());event.setCanceled(true);event.setCancellationResult(event.getHand()==InteractionHand.MAIN_HAND?InteractionResult.SUCCESS:InteractionResult.FAIL);}
+    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void hit(PlayerInteractEvent.LeftClickBlock event){if(event.getEntity() instanceof ServerPlayer p&&active(p))event.setCanceled(true);}
+    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void mine(net.neoforged.neoforge.event.level.BlockEvent.BreakEvent event){if(event.getPlayer() instanceof ServerPlayer p&&active(p))event.setCanceled(true);}
+    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void place(net.neoforged.neoforge.event.level.BlockEvent.EntityPlaceEvent event){if(event.getEntity() instanceof ServerPlayer p&&active(p))event.setCanceled(true);}
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void item(PlayerInteractEvent.RightClickItem event){if(event.getEntity() instanceof ServerPlayer p&&active(p)){event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);}}
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void pickup(ItemEntityPickupEvent.Pre event){if(event.getItemEntity().getPersistentData().getBoolean(VIRTUAL)||event.getPlayer() instanceof ServerPlayer p&&active(p))event.setCanPickup(net.neoforged.neoforge.common.util.TriState.FALSE);}
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void attack(AttackEntityEvent event){if(event.getEntity() instanceof ServerPlayer p)engine(p.server).offers.remove(p.getUUID());}
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void damage(LivingIncomingDamageEvent event){if(event.getSource().getEntity() instanceof ServerPlayer attacker)engine(attacker.server).offers.remove(attacker.getUUID());if(event.getEntity() instanceof ServerPlayer p){engine(p.server).offers.remove(p.getUUID());if(active(p)){event.setCanceled(true);returnNow(p);}}}
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void death(LivingDeathEvent event){if(event.getEntity() instanceof ServerPlayer p&&active(p)){event.setCanceled(true);p.setHealth(Math.max(1,session(p).getCompound("Return").getFloat("Health")));returnNow(p);}}
-    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void login(PlayerEvent.PlayerLoggedInEvent event){if(event.getEntity() instanceof ServerPlayer p){var s=session(p);if(s!=null){s.putBoolean("Recovering",true);HousePackets.send(p,new HouseFadePayload(1,20,12));returnNow(p);}}}
+    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void login(PlayerEvent.PlayerLoggedInEvent event){if(event.getEntity() instanceof ServerPlayer p){var e=engine(p.server);e.idle.remove(p.getUUID());e.sessions.remove(p.getUUID());dropStale(p);var s=session(p);if(s!=null){s.putBoolean("Recovering",true);HousePackets.send(p,new HouseFadePayload(1,20,12));returnNow(p);}}}
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void respawn(PlayerEvent.PlayerRespawnEvent event){if(event.getEntity() instanceof ServerPlayer p){var s=session(p);if(s!=null){s.putBoolean("Recovering",true);returnNow(p);}}}
-    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void logout(PlayerEvent.PlayerLoggedOutEvent event){if(event.getEntity() instanceof ServerPlayer p){var e=engine(p.server);e.offers.remove(p.getUUID());var s=session(p);if(s!=null){s.putBoolean("Recovering",true);persist(p,s);returnNow(p);if(session(p)!=null){cleanupSource(p,s);var room=request(e,s.getInt("Slot"));if(room!=null){room.record.putBoolean("Dirty",true);room.record.putInt("Cursor",0);e.data.setStateEntry(ROOMS,Integer.toString(room.slot),room.record);}e.sessions.remove(p.getUUID());var held=e.sources.remove(p.getUUID());if(held!=null)held.close();}}}}
+    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void logout(PlayerEvent.PlayerLoggedOutEvent event){if(event.getEntity() instanceof ServerPlayer p){var e=engine(p.server);e.offers.remove(p.getUUID());e.idle.remove(p.getUUID());var s=session(p);if(s!=null){s.putBoolean("Recovering",true);persist(p,s);returnNow(p);if(session(p)!=null){cleanupSource(p,s);var room=request(e,s.getInt("Slot"));if(room!=null){room.record.putBoolean("Dirty",true);room.record.putInt("Cursor",0);e.data.setStateEntry(ROOMS,Integer.toString(room.slot),room.record);}e.sessions.remove(p.getUUID());var held=e.sources.remove(p.getUUID());if(held!=null)held.close();}}}}
     @SubscribeEvent public static void join(EntityJoinLevelEvent event){if(!(event.getLevel() instanceof ServerLevel l))return;
         var entity=event.getEntity();if(entity instanceof Mob mob&&mob.getPersistentData().hasUUID(WAITING)&&!active(l.getServer(),mob.getPersistentData().getUUID(WAITING))){mob.setNoAi(mob.getPersistentData().getBoolean(WAITING+"NoAI"));mob.getPersistentData().remove(WAITING);mob.getPersistentData().remove(WAITING+"NoAI");}
         if(entity instanceof ItemEntity||entity instanceof ExperienceOrb)for(var session:engine(l.getServer()).sessions.values())if(StaircaseLeakRooms.bounds(BlockPos.of(session.getLong("RoomBase"))).contains(entity.position())){entity.getPersistentData().putBoolean(VIRTUAL,true);if(entity instanceof ExperienceOrb){event.setCanceled(true);entity.discard();}break;}
     }
     @SubscribeEvent public static void stopping(ServerStoppingEvent event){for(var p:new ArrayList<>(event.getServer().getPlayerList().getPlayers()))if(active(p))logout(new PlayerEvent.PlayerLoggedOutEvent(p));clearForServer(event.getServer());}
+    /** Late logouts during shutdown can recreate the engine; drop it again so it cannot hold the stopped server. */
+    @SubscribeEvent public static void stopped(ServerStoppedEvent event){clearForServer(event.getServer());}
 }
