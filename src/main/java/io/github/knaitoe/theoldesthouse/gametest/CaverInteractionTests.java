@@ -79,6 +79,10 @@ public final class CaverInteractionTests {
             f.at(peer,-3.5,0,-3.5);peer.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.SOUL_TORCH,4));
             var wall=f.b.offset(-5,1,-3);h.assertTrue(place(peer,wall.west(),Direction.EAST).consumesAction()&&f.l.getBlockState(wall).is(Blocks.SOUL_WALL_TORCH)&&peer.getMainHandItem().getCount()==3,"a second native player spends a real wall torch without a shared-placement conflict");
             h.assertTrue(p.gameMode.destroyBlock(floor)&&peer.gameMode.destroyBlock(wall)&&f.l.getBlockState(floor).isAir()&&f.l.getBlockState(wall).isAir(),"the players can mine and recover spent torches normally");
+            f.at(peer,-1.5,0,-3.5);var high=f.b.offset(-2,5,-3);
+            h.assertTrue(peer.getEyePosition().distanceToSqr(high.getCenter())<4.5*4.5&&peer.distanceToSqr(high.getCenter())>25,"the high wall is genuinely within native eye reach but beyond the old feet-based prop distance");
+            h.assertTrue(place(peer,high.west(),Direction.EAST).consumesAction()&&f.l.getBlockState(high).is(Blocks.SOUL_WALL_TORCH)&&peer.getMainHandItem().getCount()==2,"native reach also permits an ordinarily reachable high wall torch");
+            h.assertTrue(peer.gameMode.destroyBlock(high)&&f.l.getBlockState(high).isAir(),"the high wall torch is recoverable through the native mining path");
             h.assertTrue(!p.gameMode.destroyBlock(f.b.offset(CaverCave.JOURNAL))&&!p.gameMode.destroyBlock(f.b.offset(CaverCave.CACHE)),"original notebook and finite supplies stay protected");
             p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.COBBLESTONE,2));
             h.assertTrue(!place(p,floor.below(),Direction.UP).consumesAction()&&f.l.getBlockState(floor).isAir()&&p.getMainHandItem().getCount()==2,"arbitrary building is refused with the actual block and item restored");
