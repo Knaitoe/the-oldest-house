@@ -23,7 +23,7 @@ public final class VignetteArchitecture {
     public static void decorateOnce(ServerLevel l,BlockPos origin,LabyrinthPlace p){
         if(!applies(p))return;
         var d=LabyrinthData.get(l.getServer());CompoundTag done=d.state(STATE);
-        String key=origin.asLong()+":"+p.id();
+        String key=origin.asLong()+":"+p.id();boolean fresh=!done.getBoolean(key);
         BlockPos base=LabyrinthPlaces.base(origin,p);if(base==null||l.getBlockState(base.offset(0,-1,-2)).isAir())return;
         if(!done.getBoolean("Rugs:"+key)){var repair=new VignetteArchitecture(l,base,p);repair.rugsOnly=true;repair.dress();done.putBoolean("Rugs:"+key,true);d.setState(STATE,done);}
         if(!done.getBoolean(key)){new VignetteArchitecture(l,base,p).dress();done.putBoolean(key,true);d.setState(STATE,done);}
@@ -31,8 +31,9 @@ public final class VignetteArchitecture {
         var shells=d.state(SceneShells.STATE);
         if(!shells.getBoolean(key)){SceneShells.apply(l,base,p);shells.putBoolean(key,true);d.setState(SceneShells.STATE,shells);}
         SceneExteriors.decorateOnce(l,origin,p);
-        if(p==LabyrinthPlace.TED_CAVER)SceneSupportRepairs.cave(l,base);
-        if(p==LabyrinthPlace.BARN_WELL)SceneSupportRepairs.barn(l,base);
+        SceneReview.fresh(l,origin,p);
+        if(fresh&&p==LabyrinthPlace.TED_CAVER)SceneSupportRepairs.cave(l,base);
+        if(fresh&&p==LabyrinthPlace.BARN_WELL)SceneSupportRepairs.barn(l,base);
     }
     /** Explicit structural rebuilds can dress their newly authored room again. */
     static void forget(ServerLevel l,BlockPos origin,LabyrinthPlace p){

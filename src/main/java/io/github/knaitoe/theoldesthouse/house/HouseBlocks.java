@@ -46,6 +46,10 @@ public final class HouseBlocks {
             "scene_detail", SceneDetailBlock::new,
             BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noCollission().noOcclusion().noLootTable()
                     .lightLevel(s -> s.getValue(SceneDetailBlock.KIND) == SceneDetailBlock.Kind.TABLE_LAMP ? 9 : 0));
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<VignetteDetailBlock>> VIGNETTE_DETAIL_TYPE =
+            BLOCK_TYPES.register("vignette_detail",()->VignetteDetailBlock.CODEC);
+    public static final DeferredBlock<VignetteDetailBlock> VIGNETTE_DETAIL = BLOCKS.registerBlock(
+            "vignette_detail",VignetteDetailBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noCollission().noOcclusion().noLootTable());
     public static final DeferredBlock<HouseholdFurnitureBlock> HOUSEHOLD_FURNITURE = BLOCKS.registerBlock(
             "household_furniture", HouseholdFurnitureBlock::new,
             BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion().noLootTable());

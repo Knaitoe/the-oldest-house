@@ -7,6 +7,10 @@ import net.minecraft.world.item.ItemStack;
 
 /** Original adaptations, not transcriptions of the novel. Short pages fit native books. */
 public final class NovelTexts {
+    public static ItemStack archiveDraft(int index){return HouseWriting.book(new String[]{"A chair left out of the survey","The reader's corrections","The width of the gouges"}[Math.floorMod(index,3)],"Zampano",HouseWriting.WritingStyle.ZAMPANO,switch(Math.floorMod(index,3)){
+        case 0->List.of("The chair faces the wrong window in the drawing. Beatrice turned it toward the table before she began.\n\nI left the drawing as it was.","The board has thirty-two squares of each colour. I can count them by touch.\n\nThe piece she moved did not make a sound.","Reader's note: the chair was empty when I arrived.\n\nThe survey gives my arrival a different date.");
+        case 1->List.of("Leonie read the same paragraph on Tuesday and Thursday. On Thursday she stopped after the word north.\n\nShe asked whose direction I had used.","I put her correction in the margin. The margin was already full.\n\nFor a week I could not find the word she had meant.","A second hand has copied the correction beneath the table of measurements.\n\nIt has left the figures alone.");
+        default->List.of("Three cuts begin at the edge of the trunk. A fourth reaches the floor.\n\nI asked for a ruler. Helen brought a piece of string.","The string was folded when she returned it.\n\nShe said the floor would be easier to describe without the trunk on it.","The drawing shows the trunk.\n\nBelow it, a space wide enough for the string.\n\nI have not written a number there.");});}
     private NovelTexts(){}
     public static ItemStack archive(){return HouseWriting.book("The unfinished survey","Zampano",HouseWriting.WritingStyle.ZAMPANO,List.of(
         "The windows were sealed before the measurements began.\n\nA reader described the sky to me. I asked her to start again.",

@@ -111,6 +111,7 @@ public final class WritingTests {
             specimens.addAll(io.github.knaitoe.theoldesthouse.house.HouseCorrespondence.samples(player));
             helper.assertTrue(specimens.size()==125,"the complete original correspondence corpus is required");
             var staircase=staircaseSpecimens(player);specimens.addAll(staircase);
+            for(int draft=0;draft<3;draft++)specimens.add(io.github.knaitoe.theoldesthouse.labyrinth.NovelTexts.archiveDraft(draft));
             for (ItemStack book : specimens) {
                 var content = book.get(DataComponents.WRITTEN_BOOK_CONTENT);
                 for (var page : content.pages()) {
@@ -132,7 +133,7 @@ public final class WritingTests {
             java.nio.file.Path folder = java.nio.file.Path.of("../build/font-smoke");
             java.nio.file.Files.createDirectories(folder);
             java.nio.file.Files.writeString(folder.resolve("serial-pages.json"), pages.toString());
-            helper.assertTrue(staircase.size() >= 16 && specimens.size() == 125 + staircase.size() && pages.size() >= 700, "the real correspondence and personal staircase corpus is incomplete");
+            helper.assertTrue(staircase.size() >= 16 && specimens.size() == 128 + staircase.size() && pages.size() >= 700, "the real correspondence and personal staircase corpus is incomplete");
         } finally { helper.getLevel().getServer().getPlayerList().remove(player); }
         helper.succeed();
     }

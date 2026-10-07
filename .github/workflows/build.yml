@@ -54,11 +54,15 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.53"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.54"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/SceneSupportTests.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/gametest/SceneReviewTests.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/labyrinth/SceneReview.class' in z.namelist()
+              assert 'assets/the_oldest_house/blockstates/vignette_detail.json' in z.namelist()
+              assert 'assets/the_oldest_house/textures/entity/costume_scarecrow.png' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/SceneSupportRepairs.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/command/PlaytestCommands.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/CaverInteractionTests.class' in z.namelist()
@@ -220,7 +224,7 @@ jobs:
                       if texture.startswith('the_oldest_house:'):
                           assert z.read('assets/the_oldest_house/textures/'+texture.split(':',1)[1]+'.png').startswith(b'\x89PNG\r\n\x1a\n')
               furniture=json.loads(z.read('assets/the_oldest_house/blockstates/household_furniture.json'))['variants']
-              assert len(furniture)==48
+              assert len(furniture)==52
               for variant in furniture.values():
                   name=variant['model'].split(':',1)[1]
                   model=json.loads(z.read(f'assets/the_oldest_house/models/{name}.json'))
@@ -236,9 +240,9 @@ jobs:
       # architecture (sightline, enclosure, walkability, glazing). The log
       # also carries an OTH-DUMP block listing for offline rendering.
       - name: Structure game tests
-        timeout-minutes: 31
+        timeout-minutes: 42
         env:
-          JAVA_TOOL_OPTIONS: -Xmx4g
+          JAVA_TOOL_OPTIONS: -Xmx5g
         run: |
           mkdir -p run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
@@ -269,7 +273,7 @@ jobs:
           diagnostic=$!
           trap 'kill "$diagnostic" 2>/dev/null || true' EXIT
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 30m gradle runGameTestServer --no-daemon 2>&1 | tee build/native-gametest.log
+          timeout --signal=QUIT --kill-after=20s 40m gradle runGameTestServer --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/native-gametest.log
           python3 - <<'PY'
           import re
           from pathlib import Path
@@ -390,6 +394,10 @@ jobs:
           test -s build/font-smoke/native-sky-2.png
           test -s build/font-smoke/staircase-dark-passed.txt
           test -s build/font-smoke/native-staircase-dark.png
+          test -s build/font-smoke/well-dark-passed.txt
+          test -s build/font-smoke/native-covered-well-dark.png
+          test -s build/font-smoke/reviewed-assets-passed.txt
+          test -s build/font-smoke/native-reviewed-assets.png
           for scene in kitchen laundry car repair late_kitchen; do test -s build/font-smoke/scenes/staircase_leak_$scene.png; done
 
       - name: Publish native views to the log
@@ -608,11 +616,15 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.53"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.54"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/SceneSupportTests.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/gametest/SceneReviewTests.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/labyrinth/SceneReview.class' in z.namelist()
+              assert 'assets/the_oldest_house/blockstates/vignette_detail.json' in z.namelist()
+              assert 'assets/the_oldest_house/textures/entity/costume_scarecrow.png' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/SceneSupportRepairs.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/command/PlaytestCommands.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/CaverInteractionTests.class' in z.namelist()
@@ -667,8 +679,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.53.jar
-            build/libs/the_oldest_house-0.4.53.jar.sha256
+            build/libs/the_oldest_house-0.4.54.jar
+            build/libs/the_oldest_house-0.4.54.jar.sha256
           if-no-files-found: error
 
 
@@ -731,7 +743,7 @@ jobs:
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/multiplayer-native.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('MultiplayerStoryTests.java','StaircaseLeakTests.java','PlaytestCommandTests.java','SceneSupportTests.java'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('MultiplayerStoryTests.java','StaircaseLeakTests.java','PlaytestCommandTests.java','SceneSupportTests.java','SceneReviewTests.java'))
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused native multiplayer cases passed; the complete suite remains required.')
           PY

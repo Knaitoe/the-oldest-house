@@ -239,6 +239,26 @@
       "model": "the_oldest_house:block/furniture_blue_sofa",
       "y": 270,
       "uvlock": false
+    },
+    "facing=north,kind=reading_desk": {
+      "model": "the_oldest_house:block/furniture_reading_desk",
+      "y": 0,
+      "uvlock": false
+    },
+    "facing=east,kind=reading_desk": {
+      "model": "the_oldest_house:block/furniture_reading_desk",
+      "y": 90,
+      "uvlock": false
+    },
+    "facing=south,kind=reading_desk": {
+      "model": "the_oldest_house:block/furniture_reading_desk",
+      "y": 180,
+      "uvlock": false
+    },
+    "facing=west,kind=reading_desk": {
+      "model": "the_oldest_house:block/furniture_reading_desk",
+      "y": 270,
+      "uvlock": false
     }
   }
 }

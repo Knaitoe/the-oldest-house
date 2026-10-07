@@ -106,29 +106,31 @@ public final class NovelVignettes {
                 NovelRooms.door(p.serverLevel(),b.offset(NovelRooms.ARCHIVE_DOOR),Direction.SOUTH,Blocks.IRON_DOOR,true);all.putBoolean("ArchiveOpen",true);data.setState(STATE,all);
             }else p.displayClientMessage(Component.literal("The cat is sitting over something on the mat."),true);
         }else if(place==LabyrinthPlace.ZAMPANO_COURTYARD&&rel.equals(NovelRooms.ARCHIVE_DESK)){
-            if(data.state(STATE).getBoolean("ArchiveOpen"))open(p,place,NovelTexts.archive(),"ArchiveBook",true);else handled=false;
+            if(data.state(STATE).getBoolean("ArchiveOpen"))open(p,place,NovelTexts.archive(),"ArchiveBook",true,own);else handled=false;
+        }else if(place==LabyrinthPlace.ZAMPANO_COURTYARD&&SceneReview.DRAFTS.contains(rel)&&p.serverLevel().getBlockState(e.getPos()).is(HouseBlocks.VIGNETTE_DETAIL.get())){
+            int index=SceneReview.DRAFTS.indexOf(rel);open(p,place,NovelTexts.archiveDraft(index),"ArchiveDraft"+index,false,own);
         }else if(place==LabyrinthPlace.WHALE&&rel.equals(NovelRooms.MAIL)){
             var book=p.getMainHandItem().get(DataComponents.WRITTEN_BOOK_CONTENT);if(book!=null){
                 String text=book.pages().stream().map(q->q.raw().getString()).reduce("",(a,q)->a+" "+q).toLowerCase(Locale.ROOT);String keyword=text.contains("cat")?"the cat":text.contains("home")?"home":text.contains("door")?"the door":"waiting";
                 ListTag posted=own.getList("PostedBooks",Tag.TAG_COMPOUND);if(posted.size()<8){posted.add(p.getMainHandItem().copyWithCount(1).save(p.registryAccess()));own.put("PostedBooks",posted);p.getMainHandItem().shrink(1);give(p,VignetteYields.mark(NovelTexts.reply(keyword),place.id()));}
-            }else open(p,place,NovelTexts.whaleOpening(),"WhaleOpening",false);
+            }else open(p,place,NovelTexts.whaleOpening(),"WhaleOpening",false,own);
         }else if(place==LabyrinthPlace.WHALE&&rel.equals(NovelRooms.ATTIC_DESK)){
-            if(own.getBoolean("AtticKnocked")&&own.getInt("Letters")>=3)open(p,place,NovelTexts.whaleLast(),"WhaleLast",true);else cue(p,own,"The letter has no address for you yet.");
-        }else if(place==LabyrinthPlace.WHALE&&rel.equals(new BlockPos(-7,1,-25)))open(p,place,NovelTexts.whaleOpening(),"WhaleOpening",false);
+            if(own.getBoolean("AtticKnocked")&&own.getInt("Letters")>=3)open(p,place,NovelTexts.whaleLast(),"WhaleLast",true,own);else cue(p,own,"The letter has no address for you yet.");
+        }else if(place==LabyrinthPlace.WHALE&&rel.equals(new BlockPos(-7,1,-25)))open(p,place,NovelTexts.whaleOpening(),"WhaleOpening",false,own);
         else if(place==LabyrinthPlace.BARN_WELL&&rel.equals(NovelRooms.WELL)){
             if(waitingBelow(p.server))cue(p,own,"The cover will not lift. Someone remains above the shaft.");
             else NovelRooms.cover(p.serverLevel(),b,false);
         }else if(place==LabyrinthPlace.BARN_WELL&&rel.equals(NovelRooms.CARVING)){own.putBoolean("Initials",true);cue(p,own,"K. G. / D. G. Two pairs of cuts, low on the wood.");}
         else if(place==LabyrinthPlace.BARN_WELL&&rel.equals(NovelRooms.RIBBON)){if(own.getBoolean("WellReturned"))reward(p,own,"Ribbon",VignetteYields.mark(new ItemStack(NovelRegistry.RIBBON.get()),place.id()));}
-        else if(place==LabyrinthPlace.BARN_WELL&&rel.equals(new BlockPos(-4,0,-17)))open(p,place,NovelTexts.well(),"WellBook",false);
-        else if(place==LabyrinthPlace.PLAIN&&rel.equals(NovelRooms.APOLOGY))open(p,place,NovelTexts.apology(),"Apology",false);
+        else if(place==LabyrinthPlace.BARN_WELL&&rel.equals(new BlockPos(-4,0,-17)))open(p,place,NovelTexts.well(),"WellBook",false,own);
+        else if(place==LabyrinthPlace.PLAIN&&rel.equals(NovelRooms.APOLOGY))open(p,place,NovelTexts.apology(),"Apology",false,own);
         else if(place==LabyrinthPlace.PLAIN&&rel.equals(new BlockPos(3,0,-7)))reward(p,own,"Spyglass",new ItemStack(Items.SPYGLASS));
         else if(place==LabyrinthPlace.HOSPITAL&&rel.equals(NovelRooms.BUTTON)){
             if(own.getBoolean("Alarm")){own.putBoolean("Alarm",false);own.putInt("WardCalls",own.getInt("WardCalls")+1);cue(p,own,"The button clicks. No footsteps follow.");}
         }else if(place==LabyrinthPlace.HOSPITAL&&rel.equals(NovelRooms.WARD_NOTE)){
-            open(p,place,own.getBoolean("WardFinished")?NovelTexts.hospitalLast():NovelTexts.hospitalOpening(),own.getBoolean("WardFinished")?"WardLast":"WardOpening",own.getBoolean("WardFinished"));
+            open(p,place,own.getBoolean("WardFinished")?NovelTexts.hospitalLast():NovelTexts.hospitalOpening(),own.getBoolean("WardFinished")?"WardLast":"WardOpening",own.getBoolean("WardFinished"),own);
         }else if(place==LabyrinthPlace.KAREN_ROOM&&rel.equals(NovelRooms.PROJECTOR)){if(p.isShiftKeyDown())SecretPhotographs.open(p);else{own.putInt("Projection",own.getInt("Projection")+1);showRecord(p,own);}}
-        else if(place==LabyrinthPlace.KAREN_ROOM&&rel.equals(new BlockPos(6,1,-11)))open(p,place,NovelTexts.karen(),"KarenBook",false);
+        else if(place==LabyrinthPlace.KAREN_ROOM&&rel.equals(new BlockPos(6,1,-11)))open(p,place,NovelTexts.karen(),"KarenBook",false,own);
         else handled=false;
         if(handled){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);save(data,p.getUUID(),own);}
         trackPhotoStore(p,e.getPos(),own);
@@ -163,7 +165,7 @@ public final class NovelVignettes {
                     boolean shaft=Math.abs(p.getX()-b.getX()-.5)<.6 && Math.abs(p.getZ()-b.getZ()+22.5)<.6;
                     if(shaft&&y< -10.5)own.putBoolean("WellEntered",true);
                     if(shaft&&y<1&&own.getBoolean("WellEntered")&&own.getInt("WellTicks")<WELL_WAIT){int ticks=Math.min(WELL_WAIT,own.getInt("WellTicks")+1);own.putInt("WellTicks",ticks);if(ticks<WELL_WAIT)closeCover=true;
-                        if(ticks==1)cue(p,own,"The cover shuts. Someone remains above you.");if(ticks<WELL_WAIT&&ticks%20==0)p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS,50,0,false,false));
+                        if(ticks==1){cue(p,own,"The cover shuts. Someone remains above you.");HousePackets.send(p,new NovelScenePayload(14,ticks,own.getString("Cue"),140,0));}if(ticks<WELL_WAIT&&ticks%20==0)p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS,50,0,false,false));
                         if(ticks==WELL_WAIT){p.removeEffect(net.minecraft.world.effect.MobEffects.DARKNESS);cue(p,own,"Light reaches the initials. The cover has opened.");}}
                     if(own.getBoolean("WellEntered")&&own.getInt("WellTicks")>=WELL_WAIT&&y>=-.2&&!own.getBoolean("WellReturned")){own.putBoolean("WellReturned",true);WitnessAccount.resolve(p,WitnessAccount.Story.BARN_WELL,"waited_and_climbed_out");data.setCompleted(LabyrinthPlace.BARN_WELL.id(),true);cue(p,own,"A ribbon catches on the barrel beside the well.");}
                 }else if(place==LabyrinthPlace.WHALE&&own.contains("LastKnock")&&now-own.getLong("LastKnock")>=40){
@@ -176,7 +178,8 @@ public final class NovelVignettes {
                     if(ticks==1200||ticks==2600){p.playNotifySound(NovelRegistry.RADIO_STATIC.get(),SoundSource.PLAYERS,.35F,.8F);cue(p,own,"Tom, over the radio: Is anybody there? I need—");}
                     if(ticks>=WARD_NIGHT){own.putBoolean("WardFinished",true);own.putBoolean("Alarm",false);cue(p,own,"Dawn. The alarms stop. The chart has a final page.");}
                 }
-                if(p.tickCount%20==0){boolean same=place.id().equals(own.getString("CuePlace"));int remaining=same?(int)Math.max(0,own.getLong("CueUntil")-p.serverLevel().getGameTime()):0;HousePackets.send(p,new NovelScenePayload(PLACES.indexOf(place)+1,own.getInt("WardTicks"),remaining>0?own.getString("Cue"):"",remaining,0));}
+                if(p.tickCount%20==0){boolean same=place.id().equals(own.getString("CuePlace"));int remaining=same?(int)Math.max(0,own.getLong("CueUntil")-p.serverLevel().getGameTime()):0;boolean covered=place==LabyrinthPlace.BARN_WELL&&coveredWait(p,own);
+                    HousePackets.send(p,new NovelScenePayload(covered?14:PLACES.indexOf(place)+1,covered?own.getInt("WellTicks"):own.getInt("WardTicks"),remaining>0?own.getString("Cue"):"",remaining,0));}
             }else if(own.getInt("WardTicks")>0&&!own.getBoolean("WardFinished")){own.putInt("WardTicks",0);own.putInt("NextAlarm",0);own.putBoolean("Alarm",false);}
             var pending=PENDING_PHOTOS.get(p.getUUID());
             if(pending!=null&&p.tickCount>=pending.due()&&participant(p)){
@@ -194,7 +197,7 @@ public final class NovelVignettes {
         List<Entity> doubles=new ArrayList<>();for(var level:server.getAllLevels())for(Entity entity:level.getAllEntities())if(entity instanceof NovelActor a&&a.role()==1){
             var viewer=a.owner().map(server.getPlayerList()::getPlayer).orElse(null);if(viewer==null||viewer.level()!=level||level.getGameTime()>=a.getPersistentData().getLong("DoubleUntil")||viewer.position().distanceToSqr(a.position())>16)doubles.add(a);
         }doubles.forEach(Entity::discard);
-        var outside=server.getLevel(HouseDimensions.OUTSIDE);var well=LabyrinthPlaces.base(origin,LabyrinthPlace.BARN_WELL);if(outside!=null&&well!=null)NovelRooms.cover(outside,well,closeCover);
+        var outside=server.getLevel(HouseDimensions.OUTSIDE);var well=LabyrinthPlaces.base(origin,LabyrinthPlace.BARN_WELL);if(outside!=null&&well!=null){NovelRooms.cover(outside,well,closeCover);SceneReview.wellShadow(outside,well,closeCover);}
     }
     public static boolean waitingBelow(MinecraftServer server) {
         var level=server.getLevel(HouseDimensions.OUTSIDE);var origin=HouseSavedData.get(server).houseOrigin();
@@ -203,6 +206,12 @@ public final class NovelVignettes {
             return participant(p)&&inside(p,LabyrinthPlace.BARN_WELL)&&p.getY()<b.getY()+1
                     &&Math.abs(p.getX()-b.getX()-.5)<.6&&Math.abs(p.getZ()-b.getZ()+22.5)<.6
                     &&own.getBoolean("WellEntered")&&own.getInt("WellTicks")<WELL_WAIT;});
+    }
+    public static boolean coveredWait(ServerPlayer p,CompoundTag own){
+        var b=IndianLakeRooms.base(p.server,LabyrinthPlace.BARN_WELL);
+        return b!=null&&inside(p,LabyrinthPlace.BARN_WELL)&&p.getY()<b.getY()+1
+                &&Math.abs(p.getX()-b.getX()-.5)<.6&&Math.abs(p.getZ()-b.getZ()+22.5)<.6
+                &&own.getBoolean("WellEntered")&&own.getInt("WellTicks")<WELL_WAIT;
     }
     public static boolean exitLocked(ServerPlayer p,LabyrinthData.Door door) {
         return participant(p)&&door.id.equals(LabyrinthPlace.BARN_WELL.entryDoorId())
@@ -245,8 +254,10 @@ public final class NovelVignettes {
             if(level.getBlockEntity(at) instanceof Container c){for(int i=0;i<c.getContainerSize();i++)if(photo(c.getItem(i),p.getUUID()))c.setItem(i,ItemStack.EMPTY);c.setChanged();}}
         give(p,ItemStack.parseOptional(p.registryAccess(),own.getCompound("Photo")));cue(p,own,"The photograph is back. It has not become easier to look at.");
     }
-    private static void open(ServerPlayer p,LabyrinthPlace place,ItemStack book,String key,boolean ending){
-        p.openMenu(new SimpleMenuProvider((id,inv,who)->new NovelBookMenu(id,p,place,book,key,ending),Component.literal(book.getHoverName().getString())));
+    private static void open(ServerPlayer p,LabyrinthPlace place,ItemStack book,String key,boolean ending,CompoundTag own){
+        var data=LabyrinthData.get(p.server);String slot="Original_"+key;
+        if(!own.contains(slot))own.put(slot,book.save(p.registryAccess()));var original=ItemStack.parseOptional(p.registryAccess(),own.getCompound(slot));save(data,p.getUUID(),own);
+        p.openMenu(new SimpleMenuProvider((id,inv,who)->new NovelBookMenu(id,p,place,original,key,ending),Component.literal(original.getHoverName().getString())));
     }
     public static final class NovelBookMenu extends LecternMenu {
         private final ServerPlayer reader;private final LabyrinthPlace place;private final ItemStack original;private final String key;private final boolean ending;private int page;

@@ -21,10 +21,14 @@ import org.joml.Matrix4f;
 public final class HouseInteriorEffects extends DimensionSpecialEffects {
     public HouseInteriorEffects(){super(Float.NaN,false,SkyType.NORMAL,false,false);}
     public static boolean blackAt(BlockPos origin,BlockPos camera){
-        if(origin==null)return false;
+        if(origin==null)return true;
         if(FinaleArchitecture.contains(origin,camera))return true;
         var place=LabyrinthPlaces.placeAt(origin,camera);
-        return place!=null&&NovelRooms.dimension(place).equals(HouseDimensions.INTERIOR);
+        if(place!=null&&NovelRooms.dimension(place).equals(HouseDimensions.INTERIOR))return true;
+        // Only the copied domestic surroundings have outdoor sky here. Unknown
+        // origin/late packets and the deep void must never expose an Overworld sky.
+        return Math.abs((long)camera.getX()-origin.getX())>128||Math.abs((long)camera.getZ()-origin.getZ())>128
+                ||camera.getY()<origin.getY()-128||camera.getY()>origin.getY()+128;
     }
     // black() is asked several times a frame; the place lookup only changes with the camera's block or the origin.
     private static BlockPos cachedCamera,cachedOrigin;private static boolean cachedBlack;

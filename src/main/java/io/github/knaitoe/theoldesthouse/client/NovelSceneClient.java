@@ -17,8 +17,12 @@ public final class NovelSceneClient {
     private static final int STAIR_SHAKE=13;
     private static int mode,lease,elapsed,captionTicks,stairLease;private static float shake,stairShake;private static String caption="";
     private NovelSceneClient(){}
+    public static void drawCoveredDarkness(net.minecraft.client.gui.GuiGraphics g){g.fill(0,0,g.guiWidth(),g.guiHeight(),0xFF000000);}
     public static void accept(NovelScenePayload p){if(p.mode()==STAIR_SHAKE){stairLease=60;stairShake=Math.max(0,Math.min(1,p.shake()));return;}mode=p.mode();lease=60;elapsed=p.elapsed();caption=p.caption();captionTicks=p.captionTicks();shake=Math.max(0,Math.min(1,p.shake()));}
-    private static boolean active(){var mc=Minecraft.getInstance();return lease>0&&mode>0&&mc.player!=null&&mc.player.isAlive()&&!mc.player.isSpectator()&&mc.level!=null&&HouseDimensions.isHouseDimension(mc.level.dimension());}
+    private static boolean wellBelow(){var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||!mc.level.dimension().equals(HouseDimensions.OUTSIDE))return false;
+        var b=io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlaces.base(HouseSightlineState.origin(),io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace.BARN_WELL);
+        return b!=null&&mc.player.getY()<b.getY()+1&&Math.abs(mc.player.getX()-b.getX()-.5)<.7&&Math.abs(mc.player.getZ()-b.getZ()+22.5)<.7;}
+    private static boolean active(){var mc=Minecraft.getInstance();return (mode!=14||wellBelow())&&lease>0&&mode>0&&mc.player!=null&&mc.player.isAlive()&&!mc.player.isSpectator()&&mc.level!=null&&HouseDimensions.isHouseDimension(mc.level.dimension());}
     /** Scene modes that set their own fog colour, which the interior's black must not cover. */
     public static boolean authorsFog(){return active()&&(mode==1||mode==3||mode==4||mode==5||mode>=10);}
     private static boolean stairActive(){var mc=Minecraft.getInstance();return stairLease>0&&stairShake>0&&mc.player!=null&&mc.player.isAlive()&&!mc.player.isSpectator()&&mc.level!=null
@@ -31,8 +35,9 @@ public final class NovelSceneClient {
         var mc=Minecraft.getInstance();if(level!=mc.level||mc.player==null)return nativeTime;
         return SceneClock.time(SceneClock.at(HouseSightlineState.origin(),mc.player.blockPosition(),level.dimension()),elapsed,nativeTime);
     }
-    @SubscribeEvent public static void fog(ViewportEvent.ComputeFogColor e){if(!active())return;if(mode==5){e.setRed(.16F);e.setGreen(.12F);e.setBlue(.21F);}else if(mode==1||mode==3){e.setRed(.035F);e.setGreen(.05F);e.setBlue(.073F);}else if(mode==4){e.setRed(.76F);e.setGreen(.67F);e.setBlue(.46F);}else if(mode==12){e.setRed(0);e.setGreen(0);e.setBlue(0);}else if(mode>=10){e.setRed(.065F);e.setGreen(.059F);e.setBlue(.05F);}}
+    @SubscribeEvent public static void fog(ViewportEvent.ComputeFogColor e){if(!active())return;if(mode==5){e.setRed(.16F);e.setGreen(.12F);e.setBlue(.21F);}else if(mode==1||mode==3){e.setRed(.035F);e.setGreen(.05F);e.setBlue(.073F);}else if(mode==4){e.setRed(.76F);e.setGreen(.67F);e.setBlue(.46F);}else if(mode==12||mode==14){e.setRed(0);e.setGreen(0);e.setBlue(0);}else if(mode>=10){e.setRed(.065F);e.setGreen(.059F);e.setBlue(.05F);}}
     @SubscribeEvent public static void mist(ViewportEvent.RenderFog e){
+        if(active()&&mode==14&&e.getMode()==net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN){e.setNearPlaneDistance(0);e.setFarPlaneDistance(.05F);e.setCanceled(true);return;}
         if(active()&&mode==12&&e.getMode()==net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN){e.setNearPlaneDistance(0);e.setFarPlaneDistance(Math.max(1.2F,34-elapsed*7));e.setCanceled(true);return;}
         if(!active()||mode!=3||e.getMode()!=net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN||Minecraft.getInstance().player.hasEffect(net.minecraft.world.effect.MobEffects.DARKNESS))return;
         e.setNearPlaneDistance(14);e.setFarPlaneDistance(48);e.setCanceled(true);
@@ -42,6 +47,7 @@ public final class NovelSceneClient {
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
     public static final class Layers {
         @SubscribeEvent public static void overlay(RegisterGuiLayersEvent e){e.registerAboveAll(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"novel_caption"),(g,delta)->{
+            if(active()&&mode==14)drawCoveredDarkness(g);
             if(active()&&mode==12&&elapsed>=5)g.fill(0,0,g.guiWidth(),g.guiHeight(),0xF8000000);
             if(!active()||captionTicks<=0||caption.isEmpty())return;var mc=Minecraft.getInstance();var lines=mc.font.split(net.minecraft.network.chat.Component.literal(caption),Math.min(380,g.guiWidth()-32));int y=g.guiHeight()-72-lines.size()*10;
             for(var line:lines){int width=mc.font.width(line);g.fill((g.guiWidth()-width)/2-5,y-2,(g.guiWidth()+width)/2+5,y+10,0x88000000);g.drawString(mc.font,line,(g.guiWidth()-width)/2,y,0xFFE8DED1);y+=11;}

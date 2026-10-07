@@ -52,7 +52,7 @@ public final class LiteraryTexts {
             "Stay awake. Eat what he brings, or wait for another night. When the trail opens, follow it quickly.\n\nThe white rabbit is still outside every morning.");
         case CONFESSION->book("Terms of the interview","The listener",
             "He asked for a chair and a book with blank pages. He did not ask for forgiveness. I thought this meant the account would be easier to take down.",
-            "He stops when I leave. When I return, he finds the exact word.\n\nCarry a book and quill. The final chapter counts what the listener has actually done.");
+            "He stops when I leave. When I return, he finds the exact word.\n\nThere are clean books on the low shelf. I put one on the table between our chairs. By the time I reached the last page, I recognised the handwriting.");
         case ELK_CARCASSES->book("The gap between hides","A camp worker",
             "There was no room left in the freezer. We laid the carcasses beyond the trees. By dusk someone was walking between the cabins.",
             "Under the pile there is a hollow. Watch the boots through the gap. Do not move until they are gone.\n\nThe service path continues beyond the pile.");
