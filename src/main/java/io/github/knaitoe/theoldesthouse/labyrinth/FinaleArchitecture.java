@@ -76,6 +76,35 @@ public final class FinaleArchitecture {
         }
         path.add(exit(manor)); return List.copyOf(path);
     }
+    /** The same supported paths used in new construction and an explicitly prepared test escape. */
+    public static List<Placement> escapeFloorPlan(BlockPos manor) {
+        var blocks=new LinkedHashMap<BlockPos,BlockState>();var b=base(manor);
+        var stone=HouseBlocks.STAIRCASE_STONE.get().defaultBlockState();
+        for(BlockPos p:escapeRoute(manor))for(int dx=-1;dx<=1;dx++)for(int dz=-1;dz<=1;dz++)blocks.put(p.offset(dx,-1,dz),stone);
+        boxFloor(blocks,b,-28,-20,88,90,BOTTOM-1,stone);boxFloor(blocks,b,10,26,94,96,BOTTOM-1,stone);
+        boxFloor(blocks,b,-10,-8,104,119,BOTTOM-1,stone);boxFloor(blocks,b,20,28,110,114,BOTTOM-1,stone);
+        return blocks.entrySet().stream().map(e->new Placement(e.getKey(),e.getValue())).toList();
+    }
+    /** Chunk columns for the whole ascent, chamber, fall and last escape hallway. */
+    public static Set<net.minecraft.world.level.ChunkPos> routeChunks(BlockPos manor) {
+        var b=base(manor);var chunks=new HashSet<net.minecraft.world.level.ChunkPos>();
+        for(int x=(b.getX()-SHAFT_RADIUS-1)>>4;x<=(b.getX()+SHAFT_RADIUS+1)>>4;x++)
+            for(int z=(b.getZ()-SHAFT_RADIUS-1)>>4;z<=(b.getZ()+122)>>4;z++)
+                chunks.add(new net.minecraft.world.level.ChunkPos(x,z));
+        return chunks;
+    }
+    /** Explicit operator preparation repairs absent supports; surviving blocks and containers stay native. */
+    public static boolean prepareTestEscape(ServerLevel level,BlockPos manor) {
+        boolean ready=true;
+        for(var placement:escapeFloorPlan(manor)) {
+            var at=placement.pos();if(!level.getBlockState(at).isAir())continue;
+            // A peer can already be exploring this shared route. Do not place stone inside them.
+            if(!level.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,new net.minecraft.world.phys.AABB(at),e->e.isAlive()&&!e.isSpectator()).isEmpty()){ready=false;continue;}
+            level.setBlock(at,placement.block(),FLAGS);
+        }
+        if(ready)FinaleCollapse.ensure(level,manor);
+        return ready;
+    }
     public static void request(MinecraftServer server) {
         LabyrinthData data = LabyrinthData.get(server); CompoundTag state = data.state(STATE);
         if (!state.getBoolean("Requested")) { state.putBoolean("Requested", true); data.setState(STATE, state); }
@@ -199,9 +228,7 @@ public final class FinaleArchitecture {
         for(int zz=59;zz<=69;zz++)for(int y=ARENA;y<ARENA+7;y++){put(blocks,b,-6,y,zz,stone);put(blocks,b,6,y,zz,stone);}
         for(int xx=-1;xx<=1;xx++)for(int y=ARENA;y<ARENA+4;y++)put(blocks,b,xx,y,59,cellBars());
         // Darkness at the bottom surrounds narrow, branching physical paths over a deep drop.
-        for(BlockPos p:escapeRoute(manor)) for(int dx=-1;dx<=1;dx++)for(int dz=-1;dz<=1;dz++)blocks.put(p.offset(dx,-1,dz),stone);
-        boxFloor(blocks,b,-28,-20,88,90,BOTTOM-1,stone);boxFloor(blocks,b,10,26,94,96,BOTTOM-1,stone);
-        boxFloor(blocks,b,-10,-8,104,119,BOTTOM-1,stone);boxFloor(blocks,b,20,28,110,114,BOTTOM-1,stone);
+        for(var placement:escapeFloorPlan(manor))blocks.put(placement.pos(),placement.block());
         for(int xx=-31;xx<=31;xx++)for(int zz=70;zz<=121;zz++)put(blocks,b,xx,-27,zz,dark);
         for(int y=-26;y<=22;y++)for(int i=-31;i<=31;i++){put(blocks,b,i,y,70,dark);put(blocks,b,i,y,121,dark);}
         for(int y=-26;y<=22;y++)for(int zz=70;zz<=121;zz++){put(blocks,b,-31,y,zz,dark);put(blocks,b,31,y,zz,dark);}
