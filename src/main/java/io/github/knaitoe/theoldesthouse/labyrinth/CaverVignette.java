@@ -21,13 +21,16 @@ import net.minecraft.world.*;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.inventory.*;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.player.*;
+import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /** Inspired by Ted the Caver: the work earns a passage, and the passage earns a return. */
@@ -36,6 +39,8 @@ public final class CaverVignette {
     public static final int STROKES=24,STROKE_INTERVAL=25,CRAWL_TICKS=40,DEEP_TICKS=80;
     private record Crawl(ServerPlayer player,@Nullable Pose forced,Pose displayed){}
     private static final Map<UUID,Crawl> CRAWLING=new HashMap<>();
+    private record Excavation(ServerPlayer miner,ServerLevel level,BlockPos base,BlockPos aperture){}
+    private static final Map<MinecraftServer,Excavation> EXCAVATIONS=new HashMap<>();
     private CaverVignette(){}
     public static CompoundTag personal(LabyrinthData d,UUID id){return d.state(ID).getCompound("Players").getCompound(id.toString()).copy();}
     private static void save(LabyrinthData d,UUID id,CompoundTag own){var all=d.state(ID);var people=all.getCompound("Players");people.put(id.toString(),own);all.put("Players",people);d.setState(ID,all);}
@@ -44,6 +49,34 @@ public final class CaverVignette {
     public static boolean inside(ServerPlayer p){return p.gameMode.getGameModeForPlayer()!=GameType.SPECTATOR&&IndianLakeRooms.inside(p,LabyrinthPlace.TED_CAVER);}
     private static Vec3 rel(ServerPlayer p,BlockPos b){return p.position().subtract(b.getX(),b.getY(),b.getZ());}
     private static boolean reach(ServerPlayer p,BlockPos at){return p.distanceToSqr(at.getCenter())<=25;}
+    private static boolean editable(ServerPlayer p,BlockPos at){
+        if(!p.isAlive()||!inside(p)||!reach(p,at))return false;
+        var r=at.subtract(base(p.server));var room=LabyrinthPlace.TED_CAVER.room();
+        return r.getX()>room.minX()&&r.getX()<room.maxX()&&r.getY()>room.minY()&&r.getY()<room.maxY()
+                &&r.getZ()>room.minZ()&&r.getZ()<room.maxZ();
+    }
+    private static boolean torch(BlockState state){return state.is(Blocks.TORCH)||state.is(Blocks.WALL_TORCH)
+            ||state.is(Blocks.SOUL_TORCH)||state.is(Blocks.SOUL_WALL_TORCH);}
+    public static boolean allowsPlacing(ServerPlayer p,BlockPos at,BlockState state){return editable(p,at)&&torch(state);}
+    /** Only spent torches and the authored cracked aperture are mineable, never the cave shell or props. */
+    public static boolean mayBreak(ServerPlayer p,BlockPos at){
+        if(!editable(p,at))return false;var state=p.serverLevel().getBlockState(at);
+        return torch(state)||at.equals(base(p.server).offset(CaverCave.APERTURE))
+                &&state.is(Blocks.CRACKED_DEEPSLATE_BRICKS)&&p.getMainHandItem().is(ItemTags.PICKAXES);
+    }
+    /** The break event precedes native removal. Record work only after the real aperture has gone. */
+    public static void onBreak(BlockEvent.BreakEvent e){
+        if(e.isCanceled()||!(e.getPlayer() instanceof ServerPlayer p)||!mayBreak(p,e.getPos())
+                ||!e.getPos().equals(base(p.server).offset(CaverCave.APERTURE)))return;
+        EXCAVATIONS.put(p.server,new Excavation(p,p.serverLevel(),base(p.server),e.getPos().immutable()));
+    }
+    private static void confirmExcavation(MinecraftServer server){
+        var dig=EXCAVATIONS.remove(server);if(dig==null||!dig.base().equals(base(server))
+                ||!dig.level().hasChunkAt(dig.aperture())||!dig.level().getBlockState(dig.aperture()).isAir())return;
+        var d=LabyrinthData.get(server);var state=d.state(ID);state.putInt("Work",STROKES);state.remove("NextStroke");d.setState(ID,state);
+        var p=dig.miner();var own=personal(d,p.getUUID());own.putBoolean("Worked",true);save(d,p.getUUID(),own);updateJournal(p);
+        p.displayClientMessage(Component.literal("The opening will take your shoulders. Crouch at its mouth to crawl through."),false);
+    }
     public static void onArrive(ServerPlayer p,LabyrinthPlace place){if(place==LabyrinthPlace.TED_CAVER)enter(p);}
     public static void enter(ServerPlayer p){
         if(!inside(p))return;var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID());
@@ -110,7 +143,7 @@ public final class CaverVignette {
     public static boolean crawling(ServerPlayer p){var own=CRAWLING.get(p.getUUID());return own!=null&&own.player()==p;}
     public static void depart(ServerPlayer p){crawl(p,false);var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID());
         if(own.getBoolean("Active")){own.putBoolean("Active",false);save(d,p.getUUID(),own);}}
-    public static void clearAll(){for(var old:CRAWLING.values())restore(old);CRAWLING.clear();}
+    public static void clearAll(){for(var server:List.copyOf(EXCAVATIONS.keySet()))confirmExcavation(server);for(var old:CRAWLING.values())restore(old);CRAWLING.clear();}
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p)depart(p);}
     public static void onDeath(LivingDeathEvent e){if(e.getEntity() instanceof ServerPlayer p){
         var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID());
@@ -119,6 +152,7 @@ public final class CaverVignette {
     }}
     private static void sendCrawl(ServerPlayer p,boolean active){var b=base(p.server);if(b!=null)HousePackets.send(p,new CaverCrawlPayload(active,b.getX(),b.getY(),b.getZ()));}
     public static void onServerTick(ServerTickEvent.Post e){
+        confirmExcavation(e.getServer());
         for(var l:e.getServer().getAllLevels())for(var p:List.copyOf(l.players()))playerTick(p);
     }
     public static void playerTick(ServerPlayer p){
@@ -186,7 +220,7 @@ public final class CaverVignette {
         var own=personal(d,id);var pages=new ArrayList<Component>();
         String[] entries={
             "FIELD NOTEBOOK\n\nR. / Miles\n\nCheck lamps. Leave the line tied. Three sandwiches, two gloves. Miles says a spare glove is a strange thing to count.",
-            "FIRST SURVEY\n\nDown the ladder, follow the draught. Work the cracked block with a pickaxe, one blow at a time. Crouch at the opening to crawl. Keep the line tied.",
+            "FIRST SURVEY\n\nDown the ladder, follow the draught. The cracked stone gives under a pickaxe. I left spare torches in the barrel. Crouch at the opening to crawl. Keep the line tied.",
             "WORKING DAY\n\nI wait for the grit after each blow. A hand would fit behind the crack. The air comes out in bursts.\n\nMiles has stopped counting.",
             "THROUGH\n\nThe squeeze goes farther than the light. I kept my arms in front of me. There was space at the end to stand. I heard my own clothing stop scraping before I stopped moving.",
             "THE CUTS\n\nA shape lies under the crust. I tried drawing it. Each version looks like a different part of a person.\n\nA smooth stone sits opposite. Air comes from behind it.",
@@ -228,9 +262,14 @@ public final class CaverVignette {
         if(e.getHand()!=InteractionHand.MAIN_HAND)return;
         if(journal){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);
             p.openMenu(new SimpleMenuProvider((id,inventory,reader)->new JournalMenu(id,p,e.getPos()),Component.literal("Field notebook")));}
-        else if(chip(p,e.getPos())||examine(p,e.getPos())){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);}
+        else if(!(p.getItemInHand(e.getHand()).getItem() instanceof BlockItem item&&torch(item.getBlock().defaultBlockState()))
+                &&(chip(p,e.getPos())||examine(p,e.getPos()))){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);}
     }
     public static void onLeftClick(PlayerInteractEvent.LeftClickBlock e){
-        if(e.getAction()==PlayerInteractEvent.LeftClickBlock.Action.START&&e.getEntity() instanceof ServerPlayer p&&chip(p,e.getPos()))e.setCanceled(true);
+        if(e.getAction()==PlayerInteractEvent.LeftClickBlock.Action.START&&e.getEntity() instanceof ServerPlayer p
+                &&inside(p)&&reach(p,e.getPos())&&e.getPos().equals(base(p.server).offset(CaverCave.APERTURE))
+                &&!p.getMainHandItem().is(ItemTags.PICKAXES)){
+            e.setCanceled(true);p.displayClientMessage(Component.literal("The crack needs a pickaxe. There is one in the camp barrel."),true);
+        }
     }
 }
