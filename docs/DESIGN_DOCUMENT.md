@@ -1058,3 +1058,8 @@ The remaining twenty-four sites append at slots 45–68 in layout 32 / protocol 
 ### 0.4.48 exploration implementation
 
 Six ordinary hall variants append at slots 72–77, with layout 34 / protocol 33. Server pacing and stable fresh shared hall links leave more room for mapping, while personal saved routes, stories and all previous authority remain. Quiet positional sounds use physical occupied-room clocks; one familiar chair may turn only in a loaded, vacant, unobserved room. A successful own-leaf burn presents its saved words briefly through Minecraft’s native font renderer above the fire, privately and with depth testing. No extra framebuffer, shader hook or progression signal is involved. Witness remains forty-three / thirty-three across two kinds / three endings. Scope, knobs, migration and exact-source proof requirements are in [EXPLORATION_0_4_48.md](EXPLORATION_0_4_48.md).
+
+
+### 0.4.55 uploaded playtest completion
+
+The source-level scene, hunting and manuscript repairs are documented in [SCENE_HUNT_REVIEW_0_4_55.md](SCENE_HUNT_REVIEW_0_4_55.md). They preserve layout 35 / protocol 34, all forty-three sources / thirty-three personal resolutions across two kinds / three endings, native identities, finite original custody and completed progress. Zampanò's papers are an obsessive blind writer's scribbles and fragments. Exact-source release verification is pending.

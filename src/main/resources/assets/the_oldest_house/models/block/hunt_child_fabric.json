@@ -1,0 +1,77 @@
+{
+  "ambientocclusion": true,
+  "textures": {
+    "child_fabric": "the_oldest_house:block/hunt_child_fabric",
+    "particle": "the_oldest_house:block/hunt_child_fabric"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        15.8
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#child_fabric"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#child_fabric"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#child_fabric"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#child_fabric"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#child_fabric"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#child_fabric"
+        }
+      }
+    }
+  ]
+}

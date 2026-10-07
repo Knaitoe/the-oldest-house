@@ -50,6 +50,10 @@ public final class HouseBlocks {
             BLOCK_TYPES.register("vignette_detail",()->VignetteDetailBlock.CODEC);
     public static final DeferredBlock<VignetteDetailBlock> VIGNETTE_DETAIL = BLOCKS.registerBlock(
             "vignette_detail",VignetteDetailBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noCollission().noOcclusion().noLootTable());
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<ForestCoverBlock>> FOREST_COVER_TYPE =
+            BLOCK_TYPES.register("forest_cover",()->ForestCoverBlock.CODEC);
+    public static final DeferredBlock<ForestCoverBlock> FOREST_COVER = BLOCKS.registerBlock(
+            "forest_cover",ForestCoverBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_LEAVES).noOcclusion().noLootTable());
     public static final DeferredBlock<HouseholdFurnitureBlock> HOUSEHOLD_FURNITURE = BLOCKS.registerBlock(
             "household_furniture", HouseholdFurnitureBlock::new,
             BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion().noLootTable());

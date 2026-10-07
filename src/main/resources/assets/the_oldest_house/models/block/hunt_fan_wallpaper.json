@@ -1,0 +1,77 @@
+{
+  "ambientocclusion": true,
+  "textures": {
+    "fan_wallpaper": "the_oldest_house:block/hunt_fan_wallpaper",
+    "particle": "the_oldest_house:block/hunt_fan_wallpaper"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        15.8
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fan_wallpaper"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fan_wallpaper"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fan_wallpaper"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fan_wallpaper"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fan_wallpaper"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fan_wallpaper"
+        }
+      }
+    }
+  ]
+}

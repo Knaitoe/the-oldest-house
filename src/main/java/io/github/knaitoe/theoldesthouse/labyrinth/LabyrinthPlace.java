@@ -214,7 +214,7 @@ public enum LabyrinthPlace {
     MAPPING_INTERIOR("mapping_interior",Kind.MULTI_VISIT,55,new BoundingBox(-22,-6,-79,22,15,0),literaryEntry()),
     HOLY_RABBIT("holy_rabbit",Kind.ONE_SHOT,56,new BoundingBox(-35,-5,-126,35,26,0),literaryEntry()),
     CONFESSION("confession",Kind.MULTI_VISIT,57,new BoundingBox(-13,-1,-34,13,11,0),literaryEntry()),
-    ELK_CARCASSES("elk_carcasses",Kind.ONE_SHOT,58,new BoundingBox(-31,-4,-78,31,19,0),literaryEntry()),
+    ELK_CARCASSES("elk_carcasses",Kind.ONE_SHOT,58,new BoundingBox(-56,-4,-132,56,19,0),literaryEntry()),
     COSTUME_NIGHT("costume_night",Kind.ONE_SHOT,59,new BoundingBox(-33,-6,-77,33,18,0),literaryEntry()),
     MOVIE_NIGHT("movie_night",Kind.ONE_SHOT,60,new BoundingBox(-35,-12,-93,35,18,0),literaryEntry()),
     WINTER_LAKE("winter_lake",Kind.ONE_SHOT,61,new BoundingBox(-35,-12,-87,35,18,0),literaryEntry()),

@@ -61,6 +61,11 @@ public final class SceneReviewTests {
     @AfterBatch(batch="review_witch") public static void witchDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="review_shore") public static void shoreDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="review_archive") public static void archiveDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="review_fan") public static void fanDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="review_hunter_cover") public static void hunterCoverDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="review_witch_interval") public static void witchIntervalDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="review_source_custody") public static void sourceCustodyDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="review_live_collision_guard") public static void collisionGuardDone(ServerLevel l){cleanup();}
 
     @GameTest(template="empty",batch="review_books",timeoutTicks=1600)
     public static void realShelfQuillAndLaidOriginalRemainPrivateThroughSpeechAndRecovery(GameTestHelper h){run(h,LabyrinthPlace.CONFESSION,552000,f->{
@@ -114,6 +119,9 @@ public final class SceneReviewTests {
     public static void oneNativeCostumeWitchStrikesRecoilAndReloadPreserveIdentityAndPeerSafety(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,553000,f->{
         for(int x=-6;x<=7;x++)for(int z=-47;z<=-35;z++)f.put(x,-1,z,Blocks.SANDSTONE);
         var owner=f.player("review_witch_owner");var peer=f.player("review_witch_peer");f.at(owner,2,0,-40.5);f.at(peer,5,0,-40.5);owner.getFoodData().setFoodLevel(0);peer.getFoodData().setFoodLevel(0);
+        f.look(owner,new BlockPos(9,1,-35));f.look(peer,new BlockPos(10,1,-35));
+        // Native newly joined players keep their own spawn protection; let it expire before testing damage.
+        h.runAfterDelay(70,()->{
         var witch=LiteraryVignettes.huntBody(owner,f.place,new BlockPos(0,0,-41));h.assertTrue(witch!=null&&!witch.isInvulnerable()&&LiteraryVignettes.huntBody(peer,f.place,new BlockPos(0,0,-41))==witch,"both readers share the same native, woundable actor");var id=witch.getUUID();float peerHealth=peer.getHealth();var before=f.data().state(DrownedTown.ID);boolean[] strike={false},checked={false};
         h.onEachTick(()->{if(active==f&&witch.striking())strike[0]=true;});
         h.onEachTick(()->{if(active!=f||checked[0]||witch.tickCount<22)return;checked[0]=true;
@@ -125,7 +133,7 @@ public final class SceneReviewTests {
             for(int x=4;x<=7;x++)for(int z=-44;z<=-38;z++)f.put(x,-1,z,Blocks.GRASS_BLOCK);
             f.at(owner,5.5,0,-41.5);f.at(peer,6.5,0,-42.5);float a=owner.getHealth(),b=peer.getHealth();
             h.runAfterDelay(45,()->{h.assertTrue(owner.getHealth()==a&&peer.getHealth()==b&&f.data().state(DrownedTown.ID).equals(before)&&WitnessAccount.count(f.data(),peer.getUUID())==0,"real living grass protects both readers and the literary wound cannot alter the town's shared state or grant evidence");f.done();});
-        });
+        });});
     });}
 
     @GameTest(template="empty",batch="review_shore",timeoutTicks=1600)
@@ -157,4 +165,69 @@ public final class SceneReviewTests {
         h.assertTrue(ItemStack.isSameItemSameComponents(((NovelVignettes.NovelBookMenu)owner.containerMenu).book(),text)&&!((NovelVignettes.NovelBookMenu)owner.containerMenu).clickMenuButton(owner,3),"native reload and rereading retain the same finite words/components");
         h.assertTrue(f.level.getBlockEntity(f.base.offset(originalAt))==cache&&cache.getItem(0).isEmpty()&&ItemStack.isSameItemSameComponents(cache.getItem(4),original)&&WitnessAccount.count(f.data(),owner.getUUID())==0&&WitnessAccount.count(f.data(),peer.getUUID())==0,"new scenery and drafts never restock the old container or grant a story resolution");f.done();
     });}
+
+    @GameTest(template="empty",batch="review_fan_supply",timeoutTicks=1600)
+    public static void compactFanRoomOffersFiniteBoardsAndItsOriginalReadingThroughACustomSurface(GameTestHelper h){run(h,LabyrinthPlace.ELK_FAN,554500,f->{
+        LiteraryRooms.build(f.level,f.base,f.place);SceneReview.apply(f.level,f.base,f.place);SceneHuntReview.apply(f.level,f.origin,f.place);
+        var owner=f.player("review_fan_builder");var peer=f.player("review_fan_peer");LiteraryVignettes.onArrive(owner,f.place);
+        f.click(owner,SceneHuntReview.TOOLS);f.click(owner,SceneHuntReview.TOOLS);
+        h.assertTrue(owner.getInventory().countItem(Items.OAK_PLANKS)==8,"the real tool tray gives eight original boards once");
+        owner.getInventory().clearContent();f.click(owner,SceneHuntReview.TOOLS);
+        h.assertTrue(owner.getInventory().countItem(Items.OAK_PLANKS)==0,"depleting the original boards cannot refill the tray");
+        h.assertTrue(f.level.getBlockState(f.base.offset(-9,2,-19)).is(LiteraryRegistry.SIDING.get())&&f.level.getBlockState(f.base.offset(LiteraryRooms.FAN)).is(LiteraryRegistry.PROP.get()),"the new compact wall preserves the actual fan interaction address");
+        f.source(owner);h.assertTrue(f.own(owner).getBoolean("Read_Source")&&!f.own(peer).getBoolean("Read_Source")&&WitnessAccount.count(f.data(),owner.getUUID())==0,"the themed source still opens the personal original and arrival supplies confer no resolution");f.done();
+    });}
+
+    @GameTest(template="empty",batch="review_hunter_cover",timeoutTicks=1600)
+    public static void bothNativeBodiesFitBelowRealCoverAndSoundSearchExpiresBehindOcclusion(GameTestHelper h){run(h,LabyrinthPlace.ELK_CARCASSES,555000,f->{
+        for(int x=-24;x<=12;x++)for(int z=-53;z<=-15;z++)f.put(x,-1,z,Blocks.PODZOL);
+        for(int z=-132;z<=-7;z++)for(int y=0;y<=3;y++)f.put(-10,y,z,Blocks.STONE);
+        for(int x=-1;x<=1;x++)for(int z=-42;z<=-40;z++)f.put(new BlockPos(x,1,z),HouseBlocks.FOREST_COVER.get().defaultBlockState());
+        var owner=f.player("review_hidden_hunter_reader");var peer=f.player("review_hidden_hunter_peer");f.at(owner,.5,0,-40.5);f.at(peer,10.5,0,-39.5);owner.setShiftKeyDown(true);owner.setForcedPose(Pose.CROUCHING);owner.setPose(Pose.CROUCHING);owner.refreshDimensions();
+        LiteraryVignettes.onArrive(owner,f.place);LiteraryVignettes.onArrive(peer,f.place);
+        h.runAfterDelay(15,()->{
+            var world=LiteraryVignettes.shared(f.data(),f.place);var hunter=(LiteraryActor)f.level.getEntity(world.getUUID("Killer"));
+            h.assertTrue(hunter!=null&&!CarcassHunt.sees(hunter,owner)&&!CarcassHunt.sees(hunter,peer),"the native first hunter starts behind real occlusion");
+            h.assertTrue(f.level.noCollision(owner,owner.getDimensions(Pose.CROUCHING).makeBoundingBox(owner.position()))&&!f.level.noCollision(owner,owner.getDimensions(Pose.STANDING).makeBoundingBox(owner.position())),"crouching really fits under the leafy half block while the standing body does not");
+            h.assertTrue(f.level.noCollision(hunter,hunter.getDefaultDimensions(Pose.CROUCHING).makeBoundingBox(owner.position())),"the hunter's actual crouched collision body fits the same shelter");
+            var id=hunter.getUUID();CarcassHunt.noise(owner,owner.blockPosition());h.assertTrue(CarcassHunt.tracks(hunter,owner.getUUID())&&CarcassHunt.searchPoint(hunter).equals(owner.blockPosition()),"noise behind the wall stores an actual sound position, without sight");
+            var tag=new CompoundTag();hunter.saveWithoutId(tag);hunter.load(tag);h.assertTrue(hunter.getUUID().equals(id)&&CarcassHunt.tracks(hunter,owner.getUUID()),"native save/reload retains the original hunter and sound memory");
+            h.runAfterDelay(240,()->{h.assertTrue(!CarcassHunt.tracks(hunter,owner.getUUID())&&f.own(owner).getBoolean("Pursued")&&!f.own(peer).getBoolean("Pursued")&&WitnessAccount.count(f.data(),peer.getUUID())==0,"a stationary hidden reader loses the search after the real memory interval; a peer gains no pursuit or evidence");f.done();});
+        });
+    });}
+
+    @GameTest(template="empty",batch="review_witch_interval",timeoutTicks=1600)
+    public static void lookingAtTheNativeApproachMakesHerWithdrawAndThreeHeartsMakesHerRush(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,555500,f->{
+        for(int x=-18;x<=18;x++)for(int z=-63;z<=-12;z++)f.put(x,-1,z,Blocks.SANDSTONE);
+        var owner=f.player("review_witch_glance_reader");f.at(owner,.5,0,-38.5);owner.getFoodData().setFoodLevel(0);f.look(owner,new BlockPos(0,1,-41));
+        var witch=LiteraryVignettes.huntBody(owner,f.place,new BlockPos(0,0,-41));var id=witch.getUUID();var start=witch.position();
+        h.runAfterDelay(35,()->{
+            h.assertTrue(owner.getHealth()==20&&witch.attackCooldown()>=160&&witch.attackCooldown()<=300&&witch.huntPhase()==LakeWitchEntity.WITHDRAW,"the actual player's gaze interrupts the approach for a ten-to-fifteen-second interval");
+            h.assertTrue(witch.position().distanceToSqr(start)>.25,"withdrawal is real native movement away from the approach");
+            var tag=new CompoundTag();witch.saveWithoutId(tag);int delay=witch.attackCooldown();witch.load(tag);h.assertTrue(witch.getUUID().equals(id)&&witch.attackCooldown()==delay,"reload preserves the actual attack interval");
+            owner.setHealth(6);f.at(owner,witch.getX()-f.base.getX()+1.5,0,witch.getZ()-f.base.getZ());owner.lookAt(EntityAnchorArgument.Anchor.EYES,witch.getEyePosition());
+            boolean[] done={false};h.onEachTick(()->{if(active==f&&!done[0]&&owner.getHealth()<6){done[0]=true;h.assertTrue(witch.getUUID().equals(id)&&witch.attackCooldown()<=20,"the same actor physically strikes despite the player's gaze at three hearts");f.done();}});
+        });
+    });}
+
+    @GameTest(template="empty",batch="review_source_custody",timeoutTicks=1600)
+    public static void replacingARepeatedLecternRetainsExactOriginalWordsComponentsAndPrivateReads(GameTestHelper h){run(h,LabyrinthPlace.DEVILS_ROCK,556000,f->{
+        for(int x=-16;x<=16;x++)for(int z=-42;z<=-2;z++)f.put(x,-1,z,Blocks.OAK_PLANKS);
+        var rel=LiteraryRooms.source(f.place);f.put(rel.below(),HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH));f.put(rel,Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.HAS_BOOK,true));
+        var original=LiteraryTexts.source(f.place);original.set(DataComponents.CUSTOM_NAME,Component.literal("The actual found original"));((LecternBlockEntity)f.level.getBlockEntity(f.base.offset(rel))).setBook(original.copy());
+        h.assertTrue(SceneHuntReview.apply(f.level,f.origin,f.place)&&!f.level.getBlockState(f.base.offset(rel)).is(Blocks.LECTERN)&&ItemStack.isSameItemSameComponents(original,SceneHuntReview.sourceBook(f.level,f.base,f.place)),"the actual native source survives replacement by the scene's unique reading object");
+        var owner=f.player("review_source_owner");var peer=f.player("review_source_peer");f.source(owner);
+        var save=f.data().save(new CompoundTag(),f.level.registryAccess());f.level.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",LabyrinthData.FACTORY.deserializer().apply(save,f.level.registryAccess()));
+        h.assertTrue(ItemStack.isSameItemSameComponents(original,SceneHuntReview.sourceBook(f.level,f.base,f.place))&&f.own(owner).getBoolean("Read_Source")&&!f.own(peer).getBoolean("Read_Source")&&WitnessAccount.count(f.data(),owner.getUUID())==0,"native reload preserves exact source components and each reader's own progress");f.done();
+    });}
+
+    @GameTest(template="empty",batch="review_live_collision_guard",timeoutTicks=1600)
+    public static void aResidentEnteringAfterRecordingDefersTheActualCollisionWrite(GameTestHelper h){run(h,LabyrinthPlace.ELK_FAN,556500,f->{
+        f.put(0,-1,-12,Blocks.STONE);f.put(3,-1,-12,Blocks.STONE);var at=f.base.offset(0,0,-12);
+        var plan=BuildBlocks.record(f.level,()->BuildBlocks.guardedSet(f.level,at,Blocks.STONE.defaultBlockState(),F,()->f.level.getEntitiesOfClass(LivingEntity.class,new AABB(at).inflate(.02),e->e.isAlive()).isEmpty()));
+        var cat=EntityType.CAT.create(f.level);cat.setNoAi(true);cat.setNoGravity(true);cat.setOrderedToSit(true);cat.moveTo(Vec3.atBottomCenterOf(at));f.level.addFreshEntity(cat);var id=cat.getUUID();
+        h.assertTrue(!plan.tick()&&f.level.getBlockState(at).isAir()&&cat.isAlive()&&cat.getUUID().equals(id),"a living native resident arriving between recording and execution postpones new collision");
+        cat.moveTo(Vec3.atBottomCenterOf(at.east(3)));h.assertTrue(plan.tick()&&f.level.getBlockState(at).is(Blocks.STONE)&&cat.getUUID().equals(id)&&cat.isOrderedToSit(),"the same guarded plan resumes after vacancy without replacing the resident");f.done();
+    });}
+
 }

@@ -42,7 +42,7 @@ public final class LiteraryRenderers {
             if(role==LiteraryActor.FATHER&&phase>=2){leftLeg.xRot=.25F;leftLeg.zRot=.06F;body.zRot=-.06F;rightArm.zRot=.2F;}
             if(role==LiteraryActor.BROTHER&&phase>0){leftArm.xRot=rightArm.xRot=-.18F;head.xRot=.4F;}
         }
-        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){head.getAllParts().forEach(ModelPart::resetPose);body.getAllParts().forEach(ModelPart::resetPose);leftLeg.getAllParts().forEach(ModelPart::resetPose);rightLeg.resetPose();leftArm.resetPose();rightArm.resetPose();super.setupAnim(a,walk,amount,age,yaw,pitch);pose(a.role(),a.phase(),age);
+        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){head.getAllParts().forEach(ModelPart::resetPose);body.getAllParts().forEach(ModelPart::resetPose);leftLeg.getAllParts().forEach(ModelPart::resetPose);rightLeg.resetPose();leftArm.resetPose();rightArm.resetPose();crouching=a.getPose()==net.minecraft.world.entity.Pose.CROUCHING;super.setupAnim(a,walk,amount,age,yaw,pitch);pose(a.role(),a.phase(),age);
             // An actor placed in a chair sits in it: hips on the seat, legs forward.
             var chair=seat(a);if(chair!=null){float lower=12-chair.seatHeight;for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=lower;leftLeg.xRot=rightLeg.xRot=-1.45F;leftLeg.yRot=.1F;rightLeg.yRot=-.1F;leftArm.xRot=rightArm.xRot=-.35F;hat.copyFrom(head);}}
     }
