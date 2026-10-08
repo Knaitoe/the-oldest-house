@@ -34,7 +34,7 @@ public final class WitnessEnding {
         if(!qualified(data,player.getUUID())){
             ExpeditionRhythm.refuse(player,cell,"witness_passage",WitnessAccount.ready(data,player.getUUID())
                     ?"Read your passage at the lectern before returning to the cell."
-                    :WitnessAccount.milestone(data,player.getUUID())+" Hear more rooms to their end.");return false;
+                    :WitnessAccount.progress(data,player.getUUID())+" Hear more rooms to their end.");return false;
         }
         if(!player.isShiftKeyDown()||!player.getMainHandItem().isEmpty()||!player.getOffhandItem().isEmpty()){
             FinaleController.words(player,cell.above(),"Both hands empty. Bow your head. Leave the door open.");return false;
