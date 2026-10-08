@@ -81,6 +81,7 @@ public final class StaircaseLeaves {
             case REFUSED->"";
             default->null;};
         if(refusal!=null){if(!refusal.isEmpty())p.displayClientMessage(Component.literal(refusal),true);return true;}
+        if(state==StaircaseStory.Take.NOT_CARRIED)ExpeditionRhythm.refuse(p,pos,"leaf_binding","Bring your own House of Leaves to bind this leaf. The camp shelf can rebind it.");
         p.openMenu(new SimpleMenuProvider((id,inv,player)->new LeafMenu(id,p,pos,k),Component.literal("A loose leaf")));return true;
     }
 
@@ -98,8 +99,14 @@ public final class StaircaseLeaves {
             if(!stillValid(p))return false;
             if(button==3){
                 var result=StaircaseStory.takeLeaf(reader,index);
-                reader.displayClientMessage(Component.literal(result==StaircaseStory.Take.BOUND?"You bind the leaf into your House of Leaves."
-                        :result==StaircaseStory.Take.NOT_CARRIED?"The leaf will not come loose without your House of Leaves to hold it.":"The leaf stays where it is."),true);
+                String text=switch(result){case BOUND->"You bind the leaf into your House of Leaves.";
+                    case NOT_CARRIED->"Bring your own House of Leaves. The camp shelf can rebind it.";
+                    case NO_BINDING->"Your House of Leaves is on the camp shelf above.";
+                    case EARLIER->"Find and bind your earlier loose leaf first.";
+                    case TAKEN->"You have already bound this leaf.";
+                    case FINISHED->"Your story has already burned.";default->"The leaf stays where it is.";};
+                if(result==StaircaseStory.Take.BOUND)reader.displayClientMessage(Component.literal(text),true);
+                else ExpeditionRhythm.refuse(reader,pos,"leaf_binding",text);
                 if(result==StaircaseStory.Take.BOUND)reader.closeContainer();
                 return result==StaircaseStory.Take.BOUND;
             }

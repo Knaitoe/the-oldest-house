@@ -86,6 +86,7 @@ public final class HallAtmosphere {
             key=origin.asLong()+":"+place.id();own=data.stateEntry(STATE,key);
             if(own.getBoolean("Occupied")){own.putBoolean("Occupied",false);data.setStateEntry(STATE,key,own);}
         }
+        HallChanges.tick(l,origin,data);
     }
     /** The cue's fixed sources: down the hall's axis every sixteen blocks from z=-10; the nearest one serves a listener. */
     static BlockPos landmark(LabyrinthPlace place,BlockPos base,BlockPos listener) {

@@ -103,7 +103,7 @@ public final class NavigationAids {
         if(placeChalk(player.serverLevel(),floor,Direction.UP,player.getDirection())) {
             remember(player.serverLevel(),floor,player.getUUID(),true);
             held.hurtAndBreak(1,player,EquipmentSlot.MAINHAND);
-        }
+        }else ExpeditionRhythm.refuse(player,floor,"chalk_surface","There is no clear floor for the mark. Try the wall beside the door.");
     }
     public static void onPlayerTick(PlayerTickEvent.Post event) {
         if(!(event.getEntity() instanceof ServerPlayer player)||player.serverLevel().getGameTime()%5!=0)return;

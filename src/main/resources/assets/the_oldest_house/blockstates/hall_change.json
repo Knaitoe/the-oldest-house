@@ -1,0 +1,100 @@
+{
+  "variants": {
+    "kind=picture,facing=north": {
+      "model": "the_oldest_house:block/hall_picture",
+      "y": 0
+    },
+    "kind=picture,facing=east": {
+      "model": "the_oldest_house:block/hall_picture",
+      "y": 90
+    },
+    "kind=picture,facing=south": {
+      "model": "the_oldest_house:block/hall_picture",
+      "y": 180
+    },
+    "kind=picture,facing=west": {
+      "model": "the_oldest_house:block/hall_picture",
+      "y": 270
+    },
+    "kind=picture_turned,facing=north": {
+      "model": "the_oldest_house:block/hall_picture_turned",
+      "y": 0
+    },
+    "kind=picture_turned,facing=east": {
+      "model": "the_oldest_house:block/hall_picture_turned",
+      "y": 90
+    },
+    "kind=picture_turned,facing=south": {
+      "model": "the_oldest_house:block/hall_picture_turned",
+      "y": 180
+    },
+    "kind=picture_turned,facing=west": {
+      "model": "the_oldest_house:block/hall_picture_turned",
+      "y": 270
+    },
+    "kind=rug,facing=north": {
+      "model": "the_oldest_house:block/hall_rug",
+      "y": 0
+    },
+    "kind=rug,facing=east": {
+      "model": "the_oldest_house:block/hall_rug",
+      "y": 90
+    },
+    "kind=rug,facing=south": {
+      "model": "the_oldest_house:block/hall_rug",
+      "y": 180
+    },
+    "kind=rug,facing=west": {
+      "model": "the_oldest_house:block/hall_rug",
+      "y": 270
+    },
+    "kind=rug_folded,facing=north": {
+      "model": "the_oldest_house:block/hall_rug_folded",
+      "y": 0
+    },
+    "kind=rug_folded,facing=east": {
+      "model": "the_oldest_house:block/hall_rug_folded",
+      "y": 90
+    },
+    "kind=rug_folded,facing=south": {
+      "model": "the_oldest_house:block/hall_rug_folded",
+      "y": 180
+    },
+    "kind=rug_folded,facing=west": {
+      "model": "the_oldest_house:block/hall_rug_folded",
+      "y": 270
+    },
+    "kind=lamp,facing=north": {
+      "model": "the_oldest_house:block/hall_lamp",
+      "y": 0
+    },
+    "kind=lamp,facing=east": {
+      "model": "the_oldest_house:block/hall_lamp",
+      "y": 90
+    },
+    "kind=lamp,facing=south": {
+      "model": "the_oldest_house:block/hall_lamp",
+      "y": 180
+    },
+    "kind=lamp,facing=west": {
+      "model": "the_oldest_house:block/hall_lamp",
+      "y": 270
+    },
+    "kind=lamp_off,facing=north": {
+      "model": "the_oldest_house:block/hall_lamp_off",
+      "y": 0
+    },
+    "kind=lamp_off,facing=east": {
+      "model": "the_oldest_house:block/hall_lamp_off",
+      "y": 90
+    },
+    "kind=lamp_off,facing=south": {
+      "model": "the_oldest_house:block/hall_lamp_off",
+      "y": 180
+    },
+    "kind=lamp_off,facing=west": {
+      "model": "the_oldest_house:block/hall_lamp_off",
+      "y": 270
+    }
+  }
+}
