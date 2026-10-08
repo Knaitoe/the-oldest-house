@@ -217,7 +217,16 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             f.at(p,place,ElkCarcassMap.ENDING.getX()+.5,ElkCarcassMap.GATE_Y,ElkCarcassMap.ENDING.getZ()+1.5);p.setOnGround(true);
             h.runAfterDelay(15,()->{h.assertTrue(f.own(p,place).getBoolean("Ready"),"the crew's gate holds the last account");
                 f.read(p,place,LiteraryRooms.ending(place));
-                h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.ELK_CARCASSES),"only the whole personal account resolves the source");h.succeed();});
+                h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.ELK_CARCASSES),"only the whole personal account resolves the source");
+                var gate=f.data().door(place.id()+"/service");h.assertTrue(gate!=null,"the crew's return gate is registered");
+                // A same-dimension native source makes the complete callback observable in this fixture.
+                var back=b.offset(12,ElkCarcassMap.GATE_Y,-208);f.out.setBlock(back.below(),Blocks.STONE.defaultBlockState(),3);
+                f.data().pushReturn(p.getUUID(),new LabyrinthData.Waypoint(f.out.dimension(),Vec3.atBottomCenterOf(back),0,true));
+                VignetteGate.begin(p,place);HouseExperience.arrived(p,place);
+                p.moveTo(Vec3.atBottomCenterOf(gate.lower.relative(gate.facing.getOpposite(),2)));LabyrinthDoors.tickPlayer(p,f.origin);
+                LabyrinthDoors.use(p,gate);h.assertTrue(f.out.getBlockState(gate.lower).getValue(DoorBlock.OPEN),"the actual completed gate opens");
+                p.moveTo(Vec3.atBottomCenterOf(gate.lower.relative(gate.facing,2)));LabyrinthDoors.tickPlayer(p,f.origin);
+                h.assertTrue(f.data().returnDepth(p.getUUID())==0&&p.position().distanceToSqr(back.getCenter())<16&&!HouseTransitionEvents.isPending(p),"walking through the crew's gate completes the personal return");h.succeed();});
         });
     }
     @AfterBatch(batch="literary_elk_journey") public static void elkJourneyDone(ServerLevel l){close();}

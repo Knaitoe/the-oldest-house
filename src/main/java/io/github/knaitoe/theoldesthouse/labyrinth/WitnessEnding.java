@@ -57,7 +57,7 @@ public final class WitnessEnding {
         FinaleProgress.save(player.server,player.getUUID(),record);
         keepSceneLoaded(player,origin);
         FinaleArchitecture.seal(player.serverLevel(),origin,true);FinaleArchitecture.openCell(player.serverLevel(),origin);
-        FinaleController.words(player,cell.above(),"There is someone inside.");return true;
+        FinaleController.words(player,cell.above(),"You put the weapon down. Something shifts behind the bars.");return true;
     }
     public static List<BlockPos> releaseRoute(BlockPos origin){
         BlockPos b=FinaleArchitecture.base(origin),cell=FinaleArchitecture.cell(origin);

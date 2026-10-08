@@ -26,9 +26,9 @@ public final class StaircaseWriting {
         var indices=own.getCompound("Indices");var used=own.getCompound("Used");int number=ordinal(HouseSavedData.get(p.server).houseOrigin(),pos);
         int chosen=Math.floorMod(number,StaircaseNotes.TEXTS.size());
         for(int n=0;n<StaircaseNotes.TEXTS.size()&&used.getBoolean(Integer.toString(chosen));n++)chosen=(chosen+1)%StaircaseNotes.TEXTS.size();
-        // Only an unbound final landing can receive this new original. Every saved sheet wins above.
-        var papers=positions(HouseSavedData.get(p.server).houseOrigin());
-        boolean panther=!papers.isEmpty()&&pos.equals(papers.getLast())&&!used.getBoolean(Integer.toString(StaircaseNotes.TEXTS.size()));
+        // The last paper ABOVE the chamber anticipates the prisoner. The shaft continues below it.
+        // Saved lower-shaft editions remain exact and cannot mint a second copy here.
+        boolean panther=pos.equals(pantherLanding(HouseSavedData.get(p.server).houseOrigin()))&&!used.getBoolean(Integer.toString(StaircaseNotes.TEXTS.size()));
         if(panther)chosen=StaircaseNotes.TEXTS.size();
         ItemStack book=panther?StaircaseNotes.panther():StaircaseNotes.specimen(chosen);var content=book.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT);
         var rendered=new ArrayList<Component>();for(var page:content.pages())rendered.add(page.raw());
@@ -48,6 +48,10 @@ public final class StaircaseWriting {
         for(var at:FinaleArchitecture.fullRoute(origin))if(Math.abs(at.getX()-b.getX())==FinaleArchitecture.STAIR_RADIUS&&Math.abs(at.getZ()-b.getZ())==FinaleArchitecture.STAIR_RADIUS){
             if(turn%3==1)out.add(FinaleRepairs.paper(at,b,turn));turn++;
         }return List.copyOf(out);
+    }
+    public static BlockPos pantherLanding(BlockPos origin){
+        return positions(origin).stream().filter(p->p.getY()>FinaleArchitecture.ARENA+3)
+                .min(java.util.Comparator.comparingInt(BlockPos::getY)).orElseThrow();
     }
     public static int ordinal(BlockPos origin,BlockPos pos){
         var papers=positions(origin);int nearest=0;double best=Double.MAX_VALUE;

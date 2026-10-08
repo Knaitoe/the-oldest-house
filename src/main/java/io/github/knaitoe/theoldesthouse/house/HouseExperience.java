@@ -57,6 +57,7 @@ public final class HouseExperience {
     }
     public static void arrived(ServerPlayer p,LabyrinthPlace place){
         HouseCorrespondence.crossed(p);
+        LabyrinthLoops.arrive(p,place);
         var d=LabyrinthData.get(p.server);var own=record(d,p.getUUID());own.putString("CurrentPlace",place.id());own.putInt("Deepest",Math.max(own.getInt("Deepest"),d.returnDepth(p.getUUID())));
         own.remove("EchoAt");
         if(place==LabyrinthPlace.QUIET_ROOM&&d.returnDepth(p.getUUID())>=8&&own.contains("SeatState")){

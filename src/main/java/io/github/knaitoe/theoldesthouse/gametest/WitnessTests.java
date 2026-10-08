@@ -150,7 +150,9 @@ public final class WitnessTests {
         LabyrinthData data=new LabyrinthData();UUID player=UUID.randomUUID();WitnessAccount.resolve(data,player,WitnessAccount.Story.HARRIGAN,"buried_phone");
         ItemStack book=WitnessAccount.book(data,player,"reader",true);var pages=book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages();
         helper.assertTrue(pages.stream().anyMatch(p->p.raw().getString().contains("The study"))
-                &&pages.get(pages.size()-1).raw().getString().contains("From inside the cell"),"the epilogue preserves personal evidence and adds the prisoner's account");helper.succeed();
+                &&pages.get(pages.size()-1).raw().getString().contains("From inside the cell")
+                &&pages.get(pages.size()-1).raw().getString().contains("No signature follows")
+                &&pages.get(pages.size()-2).raw().getString().contains("cannot say what the House is"),"the epilogue preserves personal evidence without certifying the identity of its last writer");helper.succeed();
     }
     /** These fixtures replace, then restore, the world-owned objects rather than mutating a live save. */
     private static final class Fixture implements AutoCloseable {
