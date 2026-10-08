@@ -32,13 +32,17 @@ public final class StaceyCover {
         var box=new AABB(at);if(!l.getEntitiesOfClass(LivingEntity.class,box.inflate(.02),LivingEntity::isAlive).isEmpty())return false;
         return l.players().stream().noneMatch(p->box.inflate(48).intersects(p.getCamera().getBoundingBox()));
     }
-    private static boolean add(ServerLevel l,BlockPos at,BlockState next){
+    private static boolean add(ServerLevel l,BlockPos at,BlockState next,boolean checking){
         var before=BuildBlocks.state(l,at);if(!before.isAir()&&!before.is(Blocks.WATER))return true;
         if(l.getBlockEntity(at)!=null)return true;
+        if(checking)return safe(l,at,before);
         return BuildBlocks.guardedSet(l,at,next,LabyrinthBuilder.flags(),()->l.getBlockState(at).equals(next)||safe(l,at,before));
     }
     /** Leaves a two-wide open pocket and two ways around the rock; the central route and grass refuges stay clear. */
     public static boolean build(ServerLevel l,BlockPos b,LabyrinthPlace p){
+        return build(l,b,p,false);
+    }
+    private static boolean build(ServerLevel l,BlockPos b,LabyrinthPlace p,boolean checking){
         if(!SITES.contains(p))return true;boolean complete=true;
         for(var relative:centers(p)){
             var center=b.offset(relative);var support=BuildBlocks.state(l,center.below());
@@ -49,25 +53,37 @@ public final class StaceyCover {
                 if(ground.is(Blocks.WATER)){
                     int floor=-1;while(floor>-12&&BuildBlocks.state(l,foot.offset(0,floor,0)).is(Blocks.WATER))floor--;
                     if(BuildBlocks.state(l,foot.offset(0,floor,0)).getCollisionShape(l,foot.offset(0,floor,0)).isEmpty())continue;
-                    for(int y=floor+1;y<0;y++)complete&=add(l,foot.offset(0,y,0),Blocks.MOSSY_COBBLESTONE.defaultBlockState());
+                    for(int y=floor+1;y<0;y++)complete&=add(l,foot.offset(0,y,0),Blocks.MOSSY_COBBLESTONE.defaultBlockState(),checking);
                 }else if(!ground.isCollisionShapeFullBlock(l,foot.below()))continue;
                 for(int y=0;y<=2;y++){
                     var rock=(dx==-1&&dz==0?Blocks.STRIPPED_SPRUCE_WOOD:y==2&&dx==1?Blocks.MOSSY_COBBLESTONE_SLAB:Blocks.MOSSY_COBBLESTONE).defaultBlockState();
-                    complete&=add(l,foot.above(y),rock);
+                    complete&=add(l,foot.above(y),rock,checking);
                 }
             }
-            var branch=center.offset(-1,3,1);complete&=add(l,branch,Blocks.SPRUCE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true));
-            complete&=add(l,branch.east(),Blocks.SPRUCE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true));
+            var branch=center.offset(-1,3,1);complete&=add(l,branch,Blocks.SPRUCE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true),checking);
+            complete&=add(l,branch.east(),Blocks.SPRUCE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true),checking);
         }
         return complete;
     }
     public static void fresh(ServerLevel l,BlockPos b,LabyrinthPlace p){
         if(!SITES.contains(p))return;
-        if(build(l,b,p))BuildBlocks.after(l,()->{var d=LabyrinthData.get(l.getServer());var own=d.state(STATE);own.putBoolean(key(b,p),true);d.setState(STATE,own);});
+        // This optional dressing must not hold mandatory scene construction while
+        // native entity sections catch up. The same guarded upgrade retries later.
+        BuildBlocks.after(l,()->upgrade(l,b,p));
+    }
+    private static boolean ready(ServerLevel l,BlockPos b,LabyrinthPlace p){
+        var bounds=area(b,p);var watched=bounds.inflate(48);
+        if(l.players().stream().anyMatch(reader->watched.intersects(reader.getCamera().getBoundingBox())))return false;
+        for(int x=((int)Math.floor(bounds.minX))>>4;x<=((int)Math.ceil(bounds.maxX)-1)>>4;x++)
+            for(int z=((int)Math.floor(bounds.minZ))>>4;z<=((int)Math.ceil(bounds.maxZ)-1)>>4;z++)
+                if(!l.isLoaded(new BlockPos(x<<4,b.getY(),z<<4))||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(x,z)))return false;
+        // A distant original hunter or pet can remain in the scene. Only actual
+        // new block volumes must be vacant; check the whole edit before writing.
+        return build(l,b,p,true);
     }
     public static boolean upgrade(ServerLevel l,BlockPos b,LabyrinthPlace p){
         if(!SITES.contains(p))return false;var d=LabyrinthData.get(l.getServer());var own=d.state(STATE);
-        if(own.getBoolean(key(b,p))||!SceneVacancy.ready(l,area(b,p),48))return false;
+        if(own.getBoolean(key(b,p))||!ready(l,b,p))return false;
         if(!build(l,b,p))return false;own.putBoolean(key(b,p),true);d.setState(STATE,own);return true;
     }
     public static void forget(ServerLevel l,BlockPos b,LabyrinthPlace p){var d=LabyrinthData.get(l.getServer());var own=d.state(STATE);own.remove(key(b,p));d.setState(STATE,own);}

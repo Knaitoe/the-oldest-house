@@ -60,6 +60,7 @@ public final class StaceyTests {
     @AfterBatch(batch="stacey_squeeze") public static void squeezeDone(ServerLevel l){clean();}
     @AfterBatch(batch="stacey_shore_squeeze") public static void shoreSqueezeDone(ServerLevel l){clean();}
     @AfterBatch(batch="stacey_passing_hide") public static void passingHideDone(ServerLevel l){clean();}
+    @AfterBatch(batch="stacey_open_squeeze") public static void openSqueezeDone(ServerLevel l){clean();}
 
     @GameTest(template="empty",batch="stacey_no_cover",timeoutTicks=1800)
     public static void failedCoverCommitsOneSharedBodyToPursuitWithinFiveSecondsAndSurvivesReload(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,1250000,f->{
@@ -123,6 +124,8 @@ public final class StaceyTests {
     public static void detailedCoverWaitsForCamerasAndLivingPetsAndNeverRefillsRemovedPieces(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,1252500,f->{
         for(var center:StaceyCover.centers(f.place))for(int x=-2;x<=2;x++)for(int z=-2;z<=3;z++){var at=f.base.offset(center).offset(x,-1,z);f.l.setBlock(at,Blocks.SAND.defaultBlockState(),3);}
         var center=f.base.offset(StaceyCover.centers(f.place).getFirst());var camera=f.player("stacey_cover_camera",center.getX()-f.base.getX()+.5,center.getZ()-f.base.getZ()+.5);camera.setGameMode(GameType.SPECTATOR);
+        var fresh=BuildBlocks.record(f.l,()->StaceyCover.fresh(f.l,f.base,f.place));
+        h.assertTrue(fresh.tick()&&f.l.getBlockState(center.offset(-1,0,0)).isAir(),"optional fresh cover must not block core scene construction or appear through a live camera");
         h.assertTrue(!StaceyCover.upgrade(f.l,f.base,f.place),"a spectator camera prevents the saved scene change");camera.teleportTo(f.l,f.base.getX()+150,f.base.getY(),f.base.getZ(),0,0);
         var cat=EntityType.CAT.create(f.l);cat.moveTo(center.getX()-.5,center.getY(),center.getZ()+.5);cat.setTame(true,false);cat.setOwnerUUID(camera.getUUID());cat.setOrderedToSit(true);cat.setHealth(5);f.l.addFreshEntity(cat);f.bodies.add(cat);var id=cat.getUUID();
         h.assertTrue(!StaceyCover.upgrade(f.l,f.base,f.place),"a living Stay pet prevents masonry appearing around its body");cat.moveTo(f.base.getX()+150,f.base.getY(),f.base.getZ());
@@ -142,6 +145,7 @@ public final class StaceyTests {
         f.squeeze();var p=f.player("stacey_squeeze_reader",6.5,-28.5);p.setHealth(6);p.setInvulnerable(true);
         var w=f.witch(.54,-41.58);var id=w.getUUID();var previous=new Vec3[]{w.position()};boolean[] low={false},turned={false};
         h.onEachTick(()->{if(active!=f)return;double moved=w.position().subtract(previous[0]).multiply(1,0,1).length();previous[0]=w.position();
+            h.assertTrue(w.tickCount<=400,"loaded squeeze pursuit has a bounded physical movement and door-breaking clock: "+w.huntDiagnostic());
             h.assertTrue(moved<=1.25,"a tight turn spends the same native movement budget without teleporting");
             h.assertTrue(f.l.noCollision(w,w.getBoundingBox()),"the actual crawling body never cuts through the alley walls or low ceiling: "+w.position());
             if(w.getZ()>f.base.getZ()-40.8&&w.getZ()<f.base.getZ()-38)low[0]=true;
@@ -153,17 +157,30 @@ public final class StaceyTests {
                     "both actual squeezes and the native door break preserve the original body and health");f.done();
         });
     });}
-    @GameTest(template="empty",batch="stacey_squeeze",timeoutTicks=1800)
+    @GameTest(template="empty",batch="stacey_squeeze",timeoutTicks=4000)
     public static void literaryHuntCrawlsLowOneBlockTurnsAndBreaksTheDoorWithoutClipping(GameTestHelper h){squeeze(h,LabyrinthPlace.COSTUME_NIGHT,1253500);}
-    @GameTest(template="empty",batch="stacey_shore_squeeze",timeoutTicks=1800)
+    @GameTest(template="empty",batch="stacey_shore_squeeze",timeoutTicks=4000)
     public static void townHunterUsesHerActualLowBodyInTheSameOneBlockSqueeze(GameTestHelper h){squeeze(h,LabyrinthPlace.DROWNED_TOWN,1254000);}
+    @GameTest(template="empty",batch="stacey_open_squeeze",timeoutTicks=4000)
+    public static void anAlreadyOpenDoorHasARealOffsetPassageRatherThanAnInvisibleBarrier(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,1255000,f->{
+        f.corridor();for(int x:new int[]{-1,1})for(int z=-45;z<=-27;z++)for(int y=0;y<=3;y++)f.put(x,y,z,Blocks.STONE);
+        var door=f.base.offset(0,0,-35);f.door(new BlockPos(0,0,-35),Blocks.SPRUCE_DOOR);
+        f.l.setBlock(door,f.l.getBlockState(door).setValue(DoorBlock.OPEN,true),3);f.l.setBlock(door.above(),f.l.getBlockState(door.above()).setValue(DoorBlock.OPEN,true),3);
+        var p=f.player("stacey_open_squeeze_reader",.5,-30.5);p.setHealth(6);p.setInvulnerable(true);var w=f.witch(.5,-41.5);var id=w.getUUID();
+        h.onEachTick(()->{if(active==f)h.assertTrue(w.tickCount<=400&&f.l.noCollision(w,w.getBoundingBox()),"the open-door squeeze stays physically bounded without clipping: "+w.huntDiagnostic());});
+        h.startSequence().thenWaitUntil(()->h.assertTrue(w.getZ()>f.base.getZ()-33,"the native body must clear the open door's actual side leaf: "+w.huntDiagnostic())).thenExecute(()->{
+            h.assertTrue(w.getUUID().equals(id)&&f.l.getBlockState(door).is(Blocks.SPRUCE_DOOR)&&f.l.getBlockState(door).getValue(DoorBlock.OPEN)&&w.doorBreakTicks()==0,"she walks through an open doorway without destroying its intact leaf");f.done();
+        });
+    });}
     @GameTest(template="empty",batch="stacey_passing_hide",timeoutTicks=1800)
     public static void retreatSwipesInPassingPausesOnlyOneToThreeOccupiedSecondsAndRushesPastTwoGazes(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,1254500,f->{
         f.corridor();var a=f.player("stacey_passing_reader",.5,-36.5);var b=f.player("stacey_passing_peer",1.4,-36.5);b.setInvulnerable(true);
+        // Let the real newly connected readers' native spawn protection expire.
+        h.startSequence().thenIdle(70).thenExecute(()->{
         var w=f.witch(.5,-38.5);var id=w.getUUID();f.look(a,w);f.look(b,w);int[] delay={0},resume={0};Vec3[] hidden={null};boolean[] gaze={false};
         h.onEachTick(()->{if(active==f&&gaze[0]){f.look(a,w);f.look(b,w);}});
         h.startSequence().thenWaitUntil(()->h.assertTrue(w.hiding(),"the passing retreat must reach real cover: "+w.huntDiagnostic())).thenExecute(()->{
-            h.assertTrue(a.getHealth()==16&&w.huntPhase()==LakeWitchEntity.WITHDRAW,"one native passing swipe hurts the reader without stopping the retreat");
+            h.assertTrue(a.getHealth()==16&&!w.biting()&&w.huntPhase()==LakeWitchEntity.WITHDRAW,"one native passing hand swipe hurts the reader without stopping the retreat: health="+a.getHealth()+", "+w.huntDiagnostic());
             delay[0]=w.attackCooldown();hidden[0]=w.position();h.assertTrue(delay[0]>=20&&delay[0]<=60,"one to three seconds begin only after reaching cover");
             var tag=new CompoundTag();w.saveWithoutId(tag);int swipe=w.passingSwipeCooldown();w.load(tag);
             h.assertTrue(w.hiding()&&w.attackCooldown()==delay[0]&&w.passingSwipeCooldown()==swipe&&w.getUUID().equals(id),"reload preserves the hidden interval and passing-strike clock on the same actor");
@@ -176,6 +193,7 @@ public final class StaceyTests {
         }).thenWaitUntil(()->h.assertTrue(w.position().distanceToSqr(a.position())<hidden[0].distanceToSqr(a.position())-2,
                 "the same body must actually scurry back toward the reader after hiding: "+w.huntDiagnostic())).thenExecute(()->{
             h.assertTrue(w.getUUID().equals(id)&&WitnessAccount.count(LabyrinthData.get(f.l.getServer()),b.getUUID())==0,"a passing strike and shared hunt cannot grant a peer's story progress");f.done();
+        });
         });
     });}
 }
