@@ -47,6 +47,7 @@ public final class SlasherTests {
     @AfterBatch(batch="slasher_blocked") public static void blockedDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="slasher_observers") public static void observersDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="slasher_griefing") public static void griefingDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="slasher_crawl_foliage") public static void crawlFoliageDone(ServerLevel l){cleanup();}
 
     @GameTest(template="empty",batch="slasher_clearance",timeoutTicks=1800)
     public static void crouchingReaderActuallyMovesUnderNativeLeavesWithStandingClearanceBlocked(GameTestHelper h){run(h,1260000,f->{
@@ -87,5 +88,16 @@ public final class SlasherTests {
         f.corridor();f.barrier(Blocks.SPRUCE_LEAVES);f.l.getGameRules().getRule(GameRules.RULE_MOBGRIEFING).set(false,f.l.getServer());
         var p=f.player("slasher_rule_reader",.5,-30.5);f.hide(p);var a=f.actor(.5,-41.5);CarcassHunt.noise(p,p.blockPosition());
         h.startSequence().thenIdle(82).thenExecute(()->{h.assertTrue(f.l.getBlockState(f.base.offset(0,0,-35)).is(Blocks.SPRUCE_LEAVES)&&a.getPersistentData().getCompound("CarcassSearch0455").getInt("Memory")==0,"native griefing permissions preserve leaves while the bounded search recovers");f.done();});
+    });}
+    @GameTest(template="empty",batch="slasher_crawl_foliage",timeoutTicks=1800)
+    public static void crouchingSlasherKeepsLeavesAboveHisActualBodyIntactUnderASolidLowRoof(GameTestHelper h){run(h,1262500,f->{
+        f.corridor();for(int z=-42;z<=-34;z++)f.l.setBlock(f.base.offset(0,1,z),Blocks.STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,net.minecraft.world.level.block.state.properties.SlabType.TOP),3);
+        for(int z=-42;z<=-38;z++)f.l.setBlock(f.base.offset(1,1,z),HouseBlocks.FOREST_COVER.get().defaultBlockState(),3);
+        var p=f.player("slasher_roof_reader",.5,-30.5);f.hide(p);var a=f.actor(.95,-41.5);a.setPose(Pose.CROUCHING);a.refreshDimensions();var id=a.getUUID();
+        h.assertTrue(f.l.noCollision(a,a.getBoundingBox()),"the original native crouching body fits beneath the solid slab roof");CarcassHunt.noise(p,p.blockPosition());
+        h.startSequence().thenWaitUntil(()->h.assertTrue(a.getZ()>f.base.getZ()-38.5,"the physical hunter must crawl forward under the low roof")).thenExecute(()->{
+            h.assertTrue(a.getUUID().equals(id)&&a.getPose()==Pose.CROUCHING&&f.l.noCollision(a,a.getBoundingBox()),"the same hunter travels using his actual low body");
+            for(int z=-42;z<=-38;z++)h.assertTrue(f.l.getBlockState(f.base.offset(1,1,z)).is(HouseBlocks.FOREST_COVER.get()),"a crouching passage does not break branches above the body at "+z);f.done();
+        });
     });}
 }

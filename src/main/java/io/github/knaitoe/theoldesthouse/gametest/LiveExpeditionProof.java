@@ -36,6 +36,7 @@ public final class LiveExpeditionProof {
     private static final Map<UUID,Vec3> leakReturns=new HashMap<>();private static boolean leakRestarted;
     private static LakeWitchEntity stacy;private static LiteraryActor slasher;private static UUID stacyId,slasherId;private static int crackStarted=-1;
     private static Vec3 lastHunterPosition;
+    private static final NativeTestChunks huntChunks=new NativeTestChunks();
     private LiveExpeditionProof() {}
     private static ServerPlayer player(MinecraftServer s,String role){return s.getPlayerList().getPlayers().stream().filter(p->p.getGameProfile().getName().equals("OTHProof"+role)).findFirst().orElse(null);}
     private static String role(ServerPlayer p){return p.getGameProfile().getName().equals("OTHProofA")?"A":p.getGameProfile().getName().equals("OTHProofB")?"B":"";}
@@ -153,7 +154,8 @@ public final class LiveExpeditionProof {
             require(StaircaseStory.isCurrent(b,b.getOffhandItem())&&StaircaseStory.burned(StaircaseStory.record(b))==1,"scene recovery preserves the living book and personal burned cursor");
             if(!leakRestarted){step(s,13,b.blockPosition());leakRestarted=true;}
         }else if(phase==13&&ACKS.size()==2){
-            var l=s.getLevel(HouseDimensions.OUTSIDE);var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.COSTUME_NIGHT);huntFloor(l,site);
+            var l=s.getLevel(HouseDimensions.OUTSIDE);var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.COSTUME_NIGHT);
+            holdHunt(l,site);if(!huntChunks.ready())return;huntFloor(l,site);
             for(int x:new int[]{-1,1})for(int y=0;y<=3;y++)l.setBlock(site.offset(x,y,-35),Blocks.STONE.defaultBlockState(),3);
             var lower=Blocks.SPRUCE_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.NORTH).setValue(DoorBlock.HALF,net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER);
             l.setBlock(site.offset(0,0,-35),lower,3);l.setBlock(site.offset(0,1,-35),lower.setValue(DoorBlock.HALF,net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER),3);
@@ -169,7 +171,8 @@ public final class LiveExpeditionProof {
                 require(stacy.getUUID().equals(stacyId)&&l.getEntitiesOfClass(LakeWitchEntity.class,new net.minecraft.world.phys.AABB(Vec3.atLowerCornerOf(site.offset(-4,0,-46)),Vec3.atLowerCornerOf(site.offset(5,5,-27)))).size()==1,"both clients observe the original shared Stacy body");step(s,15,stacy.blockPosition());
             }
         }else if(phase==15&&ACKS.size()==2){
-            stacy.discard();var l=s.getLevel(HouseDimensions.OUTSIDE);var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.ELK_CARCASSES);huntFloor(l,site);
+            var l=s.getLevel(HouseDimensions.OUTSIDE);var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.ELK_CARCASSES);
+            holdHunt(l,site);if(!huntChunks.ready())return;stacy.discard();huntFloor(l,site);
             for(int x=-1;x<=1;x++)for(int y=0;y<=2;y++){l.setBlock(site.offset(x,y,-44),Blocks.STONE.defaultBlockState(),3);l.setBlock(site.offset(x,y,-43),Blocks.SPRUCE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true),3);}
             for(int x=-1;x<=1;x++)for(int z=-38;z<=-34;z++)l.setBlock(site.offset(x,1,z),HouseBlocks.FOREST_COVER.get().defaultBlockState(),3);
             for(var p:List.of(a,b)){outside(p,site.offset(p==a?-1:1,0,-40),0);var own=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.ELK_CARCASSES);own.putBoolean("Here",true);LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.ELK_CARCASSES,own);}
@@ -177,6 +180,8 @@ public final class LiveExpeditionProof {
             require(LiteraryVignettes.shared(d,LabyrinthPlace.ELK_CARCASSES).getUUID("Killer").equals(slasherId),"both sockets use the registered shared body");step(s,16,site.offset(-1,0,-36));marker(b,16,site.offset(1,0,-36));
         }else if(phase==16&&a!=null&&b!=null&&ACKS.size()==2){
             var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.ELK_CARCASSES);for(var p:List.of(a,b))require(p.isShiftKeyDown()&&p.getPose()==net.minecraft.world.entity.Pose.CROUCHING&&CarcassHunt.concealed(p,site)&&p.serverLevel().noCollision(p,p.getBoundingBox())&&!CarcassHunt.sees(slasher,p),"both real clients physically crouch under native leaves and are concealed");
+            var registered=LiteraryVignettes.shared(d,LabyrinthPlace.ELK_CARCASSES).getUUID("Killer");
+            require(registered.equals(slasherId)&&a.serverLevel().getEntity(registered)==slasher,"native entity sections retain the registered shared slasher: original="+slasherId+", registered="+registered+", loaded="+a.serverLevel().getEntity(registered)+", body="+slasher.position());
             for(int x=-1;x<=1;x++)for(int y=0;y<=2;y++)a.serverLevel().setBlock(site.offset(x,y,-44),Blocks.AIR.defaultBlockState(),3);
             CarcassHunt.noise(a,a.blockPosition());require(CarcassHunt.tracks(slasher,a.getUUID()),"actual native noise must start the shared search before physical leaf pursuit: phase="+FinaleProgress.phase(s,a.getUUID())+", inside="+LiteraryVignettes.inside(a,LabyrinthPlace.ELK_CARCASSES)+", own="+LiteraryVignettes.personal(d,a.getUUID(),LabyrinthPlace.ELK_CARCASSES));step(s,17,site.offset(0,0,-43));
         }else if(phase==17&&a!=null&&b!=null){
@@ -188,7 +193,10 @@ public final class LiveExpeditionProof {
                 require(WitnessAccount.count(d,a.getUUID())==0&&WitnessAccount.count(d,b.getUUID())==0,"shared pursuit grants no ending credit");
                 step(s,18,slasher.blockPosition());write("passed.txt","Two actual NeoForge socket clients: all original shared doors, personal leaves/burns/note scenes and two same-profile reconnects; one Stacy body and one three-second wooden-door break; both readers walk crouched under native leaf cover; one physical slasher tears through leaves with no teleport or doubled peer clock.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: shared hunts, native crouching, leaf breaking and two reconnects");
             }
-        }else if(phase==18&&s.getTickCount()-changed>100)s.halt(false);
+        }else if(phase==18&&s.getTickCount()-changed>100){huntChunks.close();s.halt(false);}
+    }
+    private static void holdHunt(net.minecraft.server.level.ServerLevel l,BlockPos site){
+        huntChunks.hold(l,new net.minecraft.world.phys.AABB(Vec3.atLowerCornerOf(site.offset(-6,-3,-55)),Vec3.atLowerCornerOf(site.offset(7,6,-23))));
     }
     private static void huntFloor(net.minecraft.server.level.ServerLevel l,BlockPos site){
         for(int x=-2;x<=2;x++)for(int z=-51;z<=-27;z++)for(int y=-1;y<=3;y++)l.setBlock(site.offset(x,y,z),(y==-1?Blocks.PODZOL:x==-2||x==2||z==-51||z==-27?Blocks.STONE:Blocks.AIR).defaultBlockState(),3);
