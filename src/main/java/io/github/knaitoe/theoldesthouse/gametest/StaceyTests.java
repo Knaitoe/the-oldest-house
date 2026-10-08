@@ -55,8 +55,8 @@ public final class StaceyTests {
 
     @GameTest(template="empty",batch="stacey_no_cover",timeoutTicks=1800)
     public static void failedCoverCommitsOneSharedBodyToPursuitWithinFiveSecondsAndSurvivesReload(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,1250000,f->{
-        f.corridor();var a=f.player("stacey_front_reader",.5,-30.5);var b=f.player("stacey_back_reader",.5,-42.5);a.setInvulnerable(true);b.setInvulnerable(true);
-        var w=f.witch(.5,-36.5);var id=w.getUUID();f.look(a,w);f.look(b,w);
+        f.corridor();for(int x=-1;x<=1;x++)for(int z=-45;z<=-27;z++)if(z<-38||z>-36)for(int y=0;y<=3;y++)f.put(x,y,z,Blocks.STONE);var a=f.player("stacey_front_reader",.5,-35.5);var b=f.player("stacey_back_reader",.5,-37.5);a.setInvulnerable(true);b.setInvulnerable(true);
+        var w=f.witch(.5,-36.5);var id=w.getUUID();f.look(a,w);f.look(b,w);h.assertTrue(LakeWitchEntity.inView(a,w.getEyePosition())&&LakeWitchEntity.inView(b,w.getEyePosition()),"both native watchers actually face the trapped body");
         h.onEachTick(()->{if(active==f){f.look(a,w);f.look(b,w);}});
         h.startSequence().thenIdle(100).thenExecute(()->{
             h.assertTrue(w.exposedHunt()&&w.failedCoverTicks()==LakeWitchEntity.COVER_SEARCH_LIMIT,"no unseen reachable cover ends the shared search after four occupied seconds: "+w.huntDiagnostic());
