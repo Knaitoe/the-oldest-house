@@ -35,7 +35,7 @@ public final class StaceyTests {
         void corridor(){for(int x=-2;x<=2;x++)for(int z=-45;z<=-27;z++){put(x,-1,z,Blocks.COARSE_DIRT);for(int y=0;y<=3;y++)put(x,y,z,(x==-2||x==2||z==-45||z==-27)?Blocks.STONE:Blocks.AIR);}}
         ServerPlayer player(String name,double x,double z){var p=NativeTestPlayers.survival(h,name);players.add(p);p.setNoGravity(true);p.getFoodData().setFoodLevel(6);
             p.teleportTo(l,base.getX()+x,base.getY(),base.getZ()+z,180,0);p.connection.resetPosition();p.hasChangedDimension();return p;}
-        void look(ServerPlayer p,Entity body){p.lookAt(EntityAnchorArgument.Anchor.EYES,body.getEyePosition());}
+        void look(ServerPlayer p,Entity body){var delta=body.getEyePosition().subtract(p.getEyePosition());p.setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));p.setXRot((float)-Math.toDegrees(Math.atan2(delta.y,Math.sqrt(delta.x*delta.x+delta.z*delta.z))));p.setYHeadRot(p.getYRot());p.yRotO=p.getYRot();p.xRotO=p.getXRot();}
         LakeWitchEntity witch(double x,double z){var w=DrownedTownRegistry.LAKE_WITCH.get().create(l);w.moveTo(base.getX()+x,base.getY(),base.getZ()+z);
             if(place==LabyrinthPlace.DROWNED_TOWN)w.shore(base,1);else w.literaryHunt(base,place);w.setNoAi(true);l.addFreshEntity(w);bodies.add(w);return w;}
         void door(BlockPos rel,Block block){var lower=block.defaultBlockState().setValue(DoorBlock.FACING,Direction.NORTH).setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER);
@@ -88,7 +88,7 @@ public final class StaceyTests {
             h.assertTrue(first[0]>=0&&w.tickCount-first[0]>=LakeWitchEntity.DOOR_BREAK_TICKS-1&&f.l.getBlockState(door.above()).isAir(),"one three-second cracking action removes the two native halves");
             int drops=f.l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new AABB(door).inflate(4),e->e.getItem().is(Items.SPRUCE_DOOR)).stream().mapToInt(e->e.getItem().getCount()).sum();
             h.assertTrue(drops==1&&w.getUUID().equals(id),"the original shared body drops one real door item");a.setInvulnerable(false);b.setInvulnerable(false);
-        }).thenWaitUntil(()->h.assertTrue(a.getHealth()<20||b.getHealth()<20,"the opened passage permits a real pursuit and strike")).thenExecute(f::done);
+        }).thenWaitUntil(()->h.assertTrue(a.getHealth()<20||b.getHealth()<20,"the opened passage permits a real pursuit and strike: "+w.huntDiagnostic()+"")).thenExecute(f::done);
     });}
     @GameTest(template="empty",batch="stacey_protected",timeoutTicks=1800)
     public static void doorOpeningIronAndAuthoredConnectionGatesRemainAuthoritative(GameTestHelper h){run(h,LabyrinthPlace.DROWNED_TOWN,1251500,f->{
