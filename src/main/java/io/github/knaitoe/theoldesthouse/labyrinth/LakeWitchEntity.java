@@ -118,11 +118,22 @@ public final class LakeWitchEntity extends PathfinderMob {
     }
     public static boolean walkable(Level level, BlockPos base, BlockPos feet) {
         int x = feet.getX() - base.getX(), z = feet.getZ() - base.getZ();
+        var point=crawlPoint(level,feet,.78,.94);
         return feet.getY() == base.getY() && x >= -28 && x <= 28 && z >= -63 && z <= -1
                 && !safeGround(level, feet)
-                && level.noCollision(new AABB(feet.getX()+.095,feet.getY(),feet.getZ()+.095,
-                        feet.getX()+.905,feet.getY()+.94,feet.getZ()+.905))
+                && level.noCollision(crawlBox(point,.78,.94))
                 && (level.getFluidState(feet.below()).is(FluidTags.WATER)||level.getBlockState(feet.below()).isFaceSturdy(level, feet.below(), Direction.UP));
+    }
+    private static AABB crawlBox(Vec3 point,double width,double height){
+        double half=width*.5+.015;return new AABB(point.x-half,point.y,point.z-half,point.x+half,point.y+height,point.z+half);
+    }
+    /** The open door leaf occupies three pixels of the cell; aim at the remaining opening. */
+    private static Vec3 crawlPoint(Level l,BlockPos node,double width,double height){
+        var center=Vec3.atBottomCenterOf(node);var state=l.getBlockState(node);
+        if(state.getBlock() instanceof DoorBlock&&state.getValue(DoorBlock.OPEN)){
+            for(var point:List.of(center,center.add(-.09375,0,0),center.add(.09375,0,0),center.add(0,0,-.09375),center.add(0,0,.09375)))
+                if(l.noCollision(crawlBox(point,width,height)))return point;
+        }return center;
     }
     /** Doors on the hunt's ground are traversable search nodes, but never traversed until physically broken. */
     private boolean huntWalkable(BlockPos feet){
@@ -169,7 +180,12 @@ public final class LakeWitchEntity extends PathfinderMob {
     }
     private boolean doorOnStep(BlockPos node){
         if(breakableDoor(node))return workDoor(node);
-        if(breakingDoor!=null)clearDoorBreak();return false;
+        if(breakingDoor!=null){
+            // A replan may prepend the current cell's center. That centering node
+            // must not erase work on the same closed door still ahead in this route.
+            if(route.stream().anyMatch(point->BlockPos.containing(point).equals(breakingDoor)))return workDoor(breakingDoor);
+            clearDoorBreak();
+        }return false;
     }
     /** No hiding place for four occupied seconds commits this body to pursuit, including under a gaze. */
     private void coverAttempt(boolean reachableCover){
@@ -192,7 +208,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         if(coverPause&&cooldown==0){coverPause=false;emerging=true;route.clear();routeGoal=null;}
     }
     private void coverProgress(boolean watched,Vec3 before){
-        boolean reached=coverReachable&&routeGoal!=null&&position().subtract(Vec3.atBottomCenterOf(routeGoal)).multiply(1,0,1).lengthSqr()<.0064;
+        boolean reached=coverReachable&&routeGoal!=null&&position().subtract(crawlPoint(level(),routeGoal,getBbWidth(),getBbHeight())).multiply(1,0,1).lengthSqr()<.0064;
         if(reached&&!watched){coverPause=true;failedCoverTicks=0;route.clear();clearDoorBreak();return;}
         coverAttempt(coverReachable&&position().distanceToSqr(before)>.0004);
     }
@@ -320,8 +336,8 @@ public final class LakeWitchEntity extends PathfinderMob {
         if(nodes.isEmpty()&&!start.equals(goal))return;
         // Center the current cell before entering the next one. At a one-block corner a
         // skipped .2-block waypoint is enough to pin the .78-block body against the wall.
-        route.add(Vec3.atBottomCenterOf(start));
-        for(var node:nodes)route.add(Vec3.atBottomCenterOf(node));
+        route.add(crawlPoint(level(),start,getBbWidth(),getBbHeight()));
+        for(var node:nodes)route.add(crawlPoint(level(),node,getBbWidth(),getBbHeight()));
     }
     private List<BlockPos> physicalRoute(BlockPos start,BlockPos goal,boolean literary){
         java.util.function.Predicate<BlockPos> open=at->level().hasChunkAt(at)&&(literary?literaryWalkable(at):huntWalkable(at));
@@ -410,10 +426,10 @@ public final class LakeWitchEntity extends PathfinderMob {
     private boolean literaryWalkable(BlockPos node){
         var r=literaryPlace.room();int x=node.getX()-literaryBase.getX(),z=node.getZ()-literaryBase.getZ();
         if(x<=r.minX()+2||x>=r.maxX()-2||z<=r.minZ()+2||z>=-10)return false;
-        double half=getBbWidth()*.5+.015;
-        if(!supportedFootprint(literaryBase,node.getX()+.5,node.getZ()+.5,true))return false;
-        double y=supportHeight(level(),literaryBase,node.getX()+.5,node.getZ()+.5,getBbWidth());
-        return breakableDoor(node)||level().noCollision(this,new AABB(node.getX()+.5-half,y,node.getZ()+.5-half,node.getX()+.5+half,y+getBbHeight(),node.getZ()+.5+half));
+        var point=crawlPoint(level(),node,getBbWidth(),getBbHeight());
+        if(!supportedFootprint(literaryBase,point.x,point.z,true))return false;
+        double y=supportHeight(level(),literaryBase,point.x,point.z,getBbWidth());
+        return breakableDoor(node)||level().noCollision(this,crawlBox(new Vec3(point.x,y,point.z),getBbWidth(),getBbHeight()));
     }
     private void literaryRoute(BlockPos goal){
         route.clear();routeGoal=goal;var start=BlockPos.containing(getX(),literaryBase.getY(),getZ());

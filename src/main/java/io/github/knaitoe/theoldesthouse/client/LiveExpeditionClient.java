@@ -75,7 +75,7 @@ public final class LiveExpeditionClient {
             mc.options.keyUp.setDown(false);
             if(ticks==30)click(mc,target.offset(-2,1,-5),ticks);
             if(ticks==65)click(mc,target.offset(-2,0,-5),ticks);
-            if(ticks>95&&mc.level.getBlockState(target.offset(-2,0,-5)).is(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLeakRegistry.PROP.get())
+            if(ack!=10&&ticks>95&&mc.level.getBlockState(target.offset(-2,0,-5)).is(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLeakRegistry.PROP.get())
                     &&mc.level.getBlockState(target.offset(-2,0,-5)).getValue(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLeakProps.KIND)==io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLeakProps.Kind.DRAWER_OPEN){
                 if(!StaircaseLeakClient.active())throw new IllegalStateException("LIVE EXPEDITION private scene lease missing");
                 if(ack!=10){shot=role+"-leak";ack(mc,10);}
