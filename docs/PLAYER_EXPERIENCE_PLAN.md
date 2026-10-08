@@ -1,6 +1,6 @@
 # The player experience plan
 
-Status: **0.4.56 is verified; the next clarity and rhythm pass is implemented in the 0.4.57 candidate.** This is the same plan originally written after 0.4.49, rebased onto the current scenes. See [the first integration](PLAYER_EXPERIENCE_INTEGRATION_0_4_56.md) and [the next four additions](CLARITY_AND_RHYTHM_0_4_57.md). Exact-source validation of 0.4.57 is required before release. Unimplemented proposals remain below; established-rule changes are listed under [Decisions for the owner](#decisions-for-the-owner).
+Status: **0.4.56 is verified; the next clarity and rhythm pass is implemented in the 0.4.57 candidate.** This is the same plan originally written after 0.4.49, rebased onto the current scenes. See [the first integration](PLAYER_EXPERIENCE_INTEGRATION_0_4_56.md) and [the next four additions](CLARITY_AND_RHYTHM_0_4_57.md). Exact-source validation of 0.4.57 is required before release. Unimplemented proposals remain below. The owner has confirmed the existing Witness quota and opening wait; ordinary visibility and interaction cues may improve while deliberately dark mechanics remain. See [the recorded decisions](#decisions-for-the-owner).
 
 ## Why this plan exists
 
@@ -158,7 +158,7 @@ Each workstream gives the problem, the evidence, the proposals, how we'll know i
    **0.4.57 source:** three fixed ordinary halls have a supported picture, lamp or rug. After staging and two further occupied returns, each changes once, away from all cameras and living residents. Removed or edited pieces stay edited after restart. Existing quiet-chair behavior remains; doors are not altered.
 3. **Callbacks.** After a player resolves a story, a quiet echo of it can appear in a later ordinary hall, for that player only. These are scenery and never items: the cracked plate on a sideboard, a single sock on a radiator. The House remembering you is the strongest horror this game has. (M)
 4. **Session escalation.** Within one expedition the House grows more active (more cues, more strangenesses); returning to the manor resets it. This gives each trip an arc and makes the manor a real refuge. (M)
-5. **Time to the labyrinth.** Shorten the opening's minimum wait so a new player reaches the hallway in one or two evenings of play, not a week. See [Decisions](#decisions-for-the-owner). (S to tune)
+5. **Time to the labyrinth.** The earlier proposal to shorten the opening wait is not accepted. Keep the existing settling-in period and manor stages so players first know their world. Improve the clarity of the journey without accelerating it. See [the recorded decision](#decisions-for-the-owner).
 
 **Done when:** logs show a story or strangeness at least every ten minutes of labyrinth play, and no hazard straight after a story; playtesters describe expeditions as having a beginning, middle and end.
 
@@ -231,11 +231,11 @@ Each workstream gives the problem, the evidence, the proposals, how we'll know i
 |---|---|---|
 | 0.4.56 verified | **Stability, clarity and personal progress** | Integrate the reviewed save-preservation repairs, all subtitles, first door/hearth messages, corrected opt-in logging and measurements, and the account's count, unfinished entries, milestones and kind hint. |
 | 0.4.57 candidate | **Clarity and expedition rhythm** | Remaining leaf/chore/finale/companion/chalk guidance, truthful one-time retreat explanation, saved completion breathers and three unseen hallway changes. |
-| Next audit/playtest pass | **Recovery and measured play** | Complete item-custody/recovery decisions and remaining gate inventory; review fresh solo/duo playtests. Decide quota/opening changes from measured play. |
+| Next audit/playtest pass | **Recovery and measured play** | Complete item-custody/recovery decisions and remaining gate inventory; review fresh solo/duo playtests. Use measured play to improve orientation and recovery while retaining the agreed quota and opening wait. |
 | Later rhythm pass | **Extend expedition shape** | Personal callbacks, session escalation and more small changes; tune from reliable logs and a second playtest round. |
 | Later shared/home pass | **Together and home** | Optional co-op moments, keeping shelf/manor responses, survey map and reading/accessibility options, preserving solo paths and established scene darkness. |
 
-Future release numbers depend on playtest findings. A content freeze and changes to quota, opening wait or darkness remain owner decisions.
+Future release numbers depend on playtest findings. A content freeze remains a proposal. The owner has confirmed the quota and opening wait, and the direction for visibility described below.
 
 ## Measures
 
@@ -259,17 +259,12 @@ The playtest log yields these, per player and per session:
 
 ## Decisions for the owner
 
-These change established rules or the game's intent. Nothing changes until they are decided.
+Owner direction recorded on 7 October 2026. The existing quota and opening wait are intentional; they are not pending tuning decisions. Remaining proposals are identified below.
 
-1. **The Witness quota.** Today it is 75% of the pool, rounded up: 33 of 43.
-   - (a) Keep it.
-   - (b) Lower it to 60% (26 of 43).
-   - (c) Keep 75%, but count each of the five kinds separately with a lower per-kind floor.
-
-   I recommend deciding after playtest round 1 shows real hours per resolution.
-2. **The opening wait.** Today it is three days since joining and two nights slept, then several mornings in the manor. Option: one day and one night, with the manor steps unchanged.
+1. **The Witness quota — keep the current rule.** Witness is designed to be the hardest ending to achieve. Retain 75% of the eligible pool, rounded up (currently 33 of 43), across at least two kinds. The earlier suggestions to lower it to 60% or change the per-kind requirement are not accepted. Playtesting should improve the journey toward this ending while keeping that challenge.
+2. **The opening wait — keep the current rule.** Retain three in-game days since joining and two completed sleeps before eligibility, then the next-morning letter and existing manor stages. The player should first become familiar with their world before the strange thing occurs. The earlier one-day/one-sleep proposal is not accepted.
 3. **The content freeze.** Two releases with no new stories, as proposed. Agree, shorten or lengthen.
-4. **A darkness floor.** Whether to offer a client low-vision option that softens the black fog.
+4. **Visibility — preserve deliberate darkness.** Improve ordinary visibility and interaction cues. Preserve the covered well, blind stretch and book-lit staircase's deliberately dark mechanics. A blanket black-fog brightness floor is not the agreed direction. Specific ordinary-room or low-vision adjustments remain future implementation work.
 5. **Optional co-op beats.** Agree that two-person beats are never required for credit. This plan assumes they are not.
 
 ## Constraints every change must keep
