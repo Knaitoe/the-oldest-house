@@ -45,7 +45,7 @@ public final class CorrespondenceTexts {
         for (var fact:facts.entrySet()) text=text.replace("{"+fact.getKey()+"}",fact.getValue());
         if (text.contains("{reader}") || text.contains("{possession}") || text.contains("{companion}"))
             throw new IllegalArgumentException("Missing actual personal fact for "+note.id());
-        return HouseWriting.book(note.title(),note.author(),pages(note.style(),text));
+        return HouseWriting.book(note.title(),note.author(),pages(note.style(),text,NovelCorrespondence.contains(note.id())));
     }
     private static int advance(HouseWriting.WritingStyle style,int cp) {
         var table=ADVANCES.getAsJsonObject(style.name());
@@ -53,7 +53,7 @@ public final class CorrespondenceTexts {
         // Unknown Unicode and the one plain-font memo use a conservative native glyph bound.
         return table!=null&&table.has(glyph)?table.get(glyph).getAsInt():cp==' '?4:cp<128?8:16;
     }
-    private static List<Component> pages(HouseWriting.WritingStyle style,String text) {
+    private static List<Component> pages(HouseWriting.WritingStyle style,String text,boolean source) {
         var glyphs=new ArrayList<Glyph>();boolean erased=false;
         for(int offset=0;offset<text.length();) {
             if(text.startsWith("~~",offset)){erased=!erased;offset+=2;continue;}
@@ -64,6 +64,10 @@ public final class CorrespondenceTexts {
             var g=glyphs.get(at);
             if(g.codePoint()=='\n'){lines.add(List.copyOf(line));line.clear();width=0;at++;continue;}
             if(g.codePoint()==' '){
+                // A source separator must become either a space or a line break. Dropping it
+                // near the width limit can join dots, short words or cipher initials.
+                // Retain the old authored pagination path; already saved books are immutable.
+                if(source&&!line.isEmpty()&&width+4>100){trim(line);lines.add(List.copyOf(line));line.clear();width=0;}
                 if(!line.isEmpty()&&width+4<=100){line.add(g);width+=4;}at++;continue;
             }
             int end=at,wordWidth=0;
