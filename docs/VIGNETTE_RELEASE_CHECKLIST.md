@@ -21,6 +21,8 @@ The resolution is still personal and still needs the note and the ending ledger 
 
 Layout 36 / protocol 34. Saved worlds at layouts 32 to 35 carve the scene again only once it is empty. Readers' records, the scene killer's identity, pets and dropped items are kept. See [ELK_CARCASSES_0_4_50.md](ELK_CARCASSES_0_4_50.md). Require the complete suite, including the three new literary elk cases, seventy-one architecture views and the native elk cast proof.
 
+Verified source 72c2e7f2d27cf5f71e51b2cf71019e4f37765f92, run 37814930708: all 392 native gameplay tests (including the three elk cases), the literary, hotel, hallway, seam, staircase, multiplayer-story and exploration suites, the two-client live expedition, the native elk cast proof and all seventy-one architecture views passed.
+
 ## Earlier candidate: 0.4.38
 
 The 0.4.38 hallway repair retains the 0.4.37 review repairs, adds no new source and keeps layout 32 / protocol 32. Require all 321 declared native tests, three focused hallway cases, sixteen literary and seven hotel cases plus all existing native client/package proofs. Use the reviewed branch HEAD's complete green CI result as patch verification. The following 0.4.36 evidence is historical and belongs to its exact stated source.

@@ -1,6 +1,6 @@
 # The elk carcasses in two stages (0.4.50)
 
-Status: **implemented for 0.4.50; exact-head verification pending.** Layout 36 / protocol 34 (unchanged). The owner asked for this rework: the earlier scene was a single field of spruce over a five-by-seven grid of identical hide blocks. It is replaced by two stages, after the passage in *My Heart Is a Chainsaw* where the girls escape the yacht, are pursued, and hide in a pile of elk carcasses that also hides the construction crew's bodies.
+Status: **implemented for 0.4.50.** Verified source 72c2e7f2d27cf5f71e51b2cf71019e4f37765f92, run 37814930708: all 392 native gameplay tests (including the three elk cases), the literary, hotel, hallway, seam, staircase, multiplayer-story and exploration suites, the two-client live expedition, the native elk cast proof and all seventy-one architecture views passed. Layout 36 / protocol 34 (unchanged). The owner asked for this rework: the earlier scene was a single field of spruce over a five-by-seven grid of identical hide blocks. It is replaced by two stages, after the passage in *My Heart Is a Chainsaw* where the girls escape the yacht, are pursued, and hide in a pile of elk carcasses that also hides the construction crew's bodies.
 
 No Witness source is added or removed. The story keeps its id (`elk_carcasses`), kind (survival), account text and saved outcome, so the pool stays forty-three eligible sources / thirty-three required / two kinds / three endings.
 
