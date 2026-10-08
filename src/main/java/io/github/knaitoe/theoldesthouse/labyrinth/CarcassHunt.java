@@ -88,7 +88,7 @@ public final class CarcassHunt {
     /** Native destruction happens only in the body's next physical step, once per actor tick. */
     private static void clearLeaves(LiteraryActor a,Vec3 step){
         if(!(a.level() instanceof ServerLevel l)||!l.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING))return;
-        var body=box(a.position(),a.getDimensions(Pose.STANDING).height());var sweep=body.minmax(body.move(step));int removed=0;
+        var body=a.getBoundingBox();var sweep=body.minmax(body.move(step));if(!fits(a,sweep))return;int removed=0;
         for(var at:BlockPos.betweenClosed(BlockPos.containing(sweep.minX,sweep.minY,sweep.minZ),BlockPos.containing(sweep.maxX-.0001,sweep.maxY-.0001,sweep.maxZ-.0001))){
             var s=l.getBlockState(at);if(removed>=4||!l.hasChunkAt(at)||!foliage(s)||l.getBlockEntity(at)!=null)continue;
             if(s.getCollisionShape(l,at).toAabbs().stream().noneMatch(shape->shape.move(at).intersects(sweep)))continue;
@@ -121,9 +121,9 @@ public final class CarcassHunt {
         while(!route.isEmpty()&&a.position().distanceToSqr(Vec3.atBottomCenterOf(route.peekFirst()))<.12)route.removeFirst();
         var before=a.position();
         if(!route.isEmpty()){var next=route.peekFirst();var delta=Vec3.atBottomCenterOf(next).subtract(before).multiply(1,0,1);
-            if(delta.lengthSqr()>.001){var movement=delta.normalize().scale(Math.min(chasing?.23:.12,delta.length()));clearLeaves(a,movement);
-                var destination=before.add(movement);boolean low=!l.noCollision(a,box(before,a.getDimensions(Pose.STANDING).height()))||!l.noCollision(a,box(destination,a.getDimensions(Pose.STANDING).height()));
-                a.setPose(low?Pose.CROUCHING:Pose.STANDING);a.refreshDimensions();a.move(MoverType.SELF,movement);
+            if(delta.lengthSqr()>.001){var movement=delta.normalize().scale(Math.min(chasing?.23:.12,delta.length()));
+                var standing=box(before,a.getDimensions(Pose.STANDING).height());boolean low=!fits(a,standing.minmax(standing.move(movement)));
+                a.setPose(low?Pose.CROUCHING:Pose.STANDING);a.refreshDimensions();clearLeaves(a,movement);a.move(MoverType.SELF,movement);
                 a.setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));a.yBodyRot=a.getYRot();a.walkAnimation.update((float)a.position().distanceTo(before)*4,.4F);}}
         boolean blocked=!arrived&&a.position().distanceToSqr(before)<.0001;
         int failures=blocked?s.getInt("BlockedTicks0459")+1:0;s.putInt("BlockedTicks0459",failures);
