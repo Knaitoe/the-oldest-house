@@ -55,6 +55,7 @@ public final class LakeWitchModel extends PlayerModel<LakeWitchEntity> {
     }
     /** Native swing progress drives either a hand rake or a braced, opening-jaw head thrust. */
     public void attackPose(float progress,boolean bite,boolean winding){
+        if(progress<=0&&!winding)return;
         float strike=(float)Math.sin(Math.sqrt(Math.max(0,progress))*Math.PI);
         if(bite){
             jaw.xRot=(winding?.35F:0)+strike*.75F;head.z-=strike*5;head.y-=strike*.8F;head.xRot-=strike*.45F;body.z-=strike*1.4F;
