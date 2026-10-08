@@ -179,12 +179,13 @@ public final class SceneReviewTests {
     });}
 
     @GameTest(template="empty",batch="review_hunter_cover",timeoutTicks=1600)
-    public static void bothNativeBodiesFitBelowRealCoverAndSoundSearchExpiresBehindOcclusion(GameTestHelper h){run(h,LabyrinthPlace.ELK_CARCASSES,555000,f->{
+    public static void bothNativeBodiesFitBelowRealCoverAndSoundSearchExpiresBehindOcclusion(GameTestHelper h){run(h,LabyrinthPlace.CAMP_BLOOD,555000,f->{
         for(int x=-24;x<=12;x++)for(int z=-53;z<=-15;z++)f.put(x,-1,z,Blocks.PODZOL);
         for(int z=-132;z<=-7;z++)for(int y=0;y<=3;y++)f.put(-10,y,z,Blocks.STONE);
         for(int x=-1;x<=1;x++)for(int z=-42;z<=-40;z++)f.put(new BlockPos(x,1,z),HouseBlocks.FOREST_COVER.get().defaultBlockState());
         var owner=f.player("review_hidden_hunter_reader");var peer=f.player("review_hidden_hunter_peer");f.at(owner,.5,0,-40.5);f.at(peer,10.5,0,-39.5);owner.setShiftKeyDown(true);owner.setForcedPose(Pose.CROUCHING);owner.setPose(Pose.CROUCHING);owner.refreshDimensions();
         LiteraryVignettes.onArrive(owner,f.place);LiteraryVignettes.onArrive(peer,f.place);
+        var body=LiteraryVignettes.actor(owner,f.place,"Killer",LiteraryActor.KILLER,CarcassHunt.START,false);body.setNoGravity(true);
         h.startSequence().thenIdle(15).thenExecute(()->{
             var world=LiteraryVignettes.shared(f.data(),f.place);var hunter=(LiteraryActor)f.level.getEntity(world.getUUID("Killer"));
             h.assertTrue(hunter!=null&&!CarcassHunt.sees(hunter,owner)&&!CarcassHunt.sees(hunter,peer),"the native first hunter starts behind real occlusion");

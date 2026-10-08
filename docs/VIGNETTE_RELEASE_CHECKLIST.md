@@ -9,7 +9,23 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.38
+## Current candidate: 0.4.60
+
+This combines Claude's elk rework with verified Stacy/slasher 0.4.59 and all intervening repairs. Require all 452 native cases, every focused suite, 60 multiplayer cases, the complete native client/package/writing/71-view architecture proofs and both actual socket clients with shared/private ownership checks. The old elk branch verification below is historical; combined exact-head validation remains pending. See [INTEGRATED_HUNTS_0_4_60.md](INTEGRATED_HUNTS_0_4_60.md).
+
+The elk carcasses become two stages: the yacht escape, then the stream woods, the cave and the crew's gate. This changes one source's progression, not the pool. Its story id, kind, account and saved outcome are unchanged, so the pool stays forty-three eligible sources / thirty-three required / two kinds / three endings.
+
+The resolution is still personal and still needs the note and the ending ledger read by the reader. The reader must have:
+
+- held still in the hollow through the search;
+- seen the boots through the gap;
+- reached the gate.
+
+Layout 36 / protocol 34. Saved worlds at layouts 32 to 35 carve the scene again only once it is empty. Readers' records, the scene killer's identity, pets and dropped items are kept. See [ELK_CARCASSES_0_4_50.md](ELK_CARCASSES_0_4_50.md). Require the complete suite, including the three new literary elk cases, seventy-one architecture views and the native elk cast proof.
+
+Verified source 72c2e7f2d27cf5f71e51b2cf71019e4f37765f92, run 37814930708: all 392 native gameplay tests (including the three elk cases), the literary, hotel, hallway, seam, staircase, multiplayer-story and exploration suites, the two-client live expedition, the native elk cast proof and all seventy-one architecture views passed.
+
+## Earlier candidate: 0.4.38
 
 The 0.4.38 hallway repair retains the 0.4.37 review repairs, adds no new source and keeps layout 32 / protocol 32. Require all 321 declared native tests, three focused hallway cases, sixteen literary and seven hotel cases plus all existing native client/package proofs. Use the reviewed branch HEAD's complete green CI result as patch verification. The following 0.4.36 evidence is historical and belongs to its exact stated source.
 
@@ -50,7 +66,7 @@ Forty-three eligible sources require **thirty-three distinct personal resolution
 | Mapping's crawlspace, belongings choice and brother's consequence | Connection |
 | Holy Rabbit's actual meals, mornings and dragging trail | Survival |
 | The confession's own signed, sealed and read journal | Understanding |
-| The elk hides' still vigil and service escape | Survival |
+| The elk carcasses: the yacht escape, the still vigil under the pile and the crew's gate (two stages since 0.4.50) | Survival |
 | Costume night's observed movement and grass refuge | Survival |
 | Movie night's actual canoe route through firework exposures | Survival |
 | Winter lake's broken ice, real submersion and return | Survival |

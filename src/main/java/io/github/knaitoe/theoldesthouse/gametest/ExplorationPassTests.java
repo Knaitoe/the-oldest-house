@@ -415,6 +415,9 @@ public final class ExplorationPassTests {
                 LabyrinthBuilder.ensureBuilt(server);LabyrinthBuilder.finishGameTest(server);
                 for(var hall:HALLS)h.assertTrue(d.door(hall.entryDoorId())!=null&&l.getBlockState(d.door(hall.entryDoorId()).lower).getBlock() instanceof DoorBlock,"all six appended rooms finish with real registered doors");
                 h.assertTrue(d.builtVersion()==LabyrinthBuilder.VERSION&&cache==l.getBlockEntity(at)&&cache.getItem(0).getCount()==7&&cache.getItem(1).isEmpty(),"the native append keeps original container identity and finite contents");
+                // 0.4.50: the saved world's elk scene is carved again as its two stages, with the crew's gate as a second way back.
+                var elk=LabyrinthPlace.ELK_CARCASSES;var elkBase=LabyrinthPlaces.base(origin,elk);var service=elk.doors().stream().filter(door->door.name().equals("service")).findFirst().orElseThrow();
+                h.assertTrue(HouseTestLevel.get(server,HouseDimensions.OUTSIDE).getBlockState(elkBase.offset(9,1,-10)).is(LiteraryRegistry.YACHT_PORTHOLE.get())&&d.door(elk.doorId(service))!=null&&LabyrinthBuilder.isPlaceReady(d,elk),"the elk scene is rebuilt in place and dealt again only once it stands");
                 h.assertTrue(cat.isAlive()&&cat.getUUID().equals(id)&&cat.getHealth()==5&&cat.isOrderedToSit()&&d.returnDepth(reader)==1&&d.stateEntry(StaircaseStory.STATE,reader.toString()).equals(keep),"native pet identity, Stay, health, saved retreat and personal burned pages survive");h.succeed();
             }finally{cat.discard();lease.close();LabyrinthBuilder.gateForGameTest(null);LabyrinthBuilder.clearAll();store.set("the_oldest_house",oldHouse);store.set("the_oldest_house_labyrinth",oldData);}
         });

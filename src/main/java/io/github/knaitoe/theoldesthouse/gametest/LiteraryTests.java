@@ -177,4 +177,95 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
     }
     @AfterBatch(batch="literary_closure_repair") public static void closureRepairDone(ServerLevel l){close();}
 
+    // ------------------------------------------------------------------
+    // 0.4.50: the elk carcasses in two stages.
+
+    private static LiteraryActor elkKiller(Fixture f,ServerPlayer p){var id=LiteraryVignettes.shared(f.data(),LabyrinthPlace.ELK_CARCASSES).hasUUID("Killer_"+p.getUUID())?LiteraryVignettes.shared(f.data(),LabyrinthPlace.ELK_CARCASSES).getUUID("Killer_"+p.getUUID()):null;return id!=null&&f.out.getEntity(id) instanceof LiteraryActor a?a:null;}
+    private static void elkStage(Fixture f,ServerPlayer p,int stage){var own=f.own(p,LabyrinthPlace.ELK_CARCASSES);own.putInt("ElkStage",stage);LiteraryVignettes.save(f.data(),p.getUUID(),LabyrinthPlace.ELK_CARCASSES,own);}
+    @GameTest(template="empty",batch="literary_elk_journey",timeoutTicks=2600)
+    public static void elkReaderWakesAboardEscapesHidesUnderTheCarcassesAndLeavesByTheGate(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("elk_reader",place);var b=f.base(place);
+        h.assertTrue(f.out.getBlockState(b.offset(0,-1,-3)).is(LiteraryRegistry.YACHT_CARPET.get()),"the reader comes through the door into the yacht's cabin");
+        f.source(p,place);
+        f.at(p,place,.5,0,-2.5);f.look(p,b.offset(ElkCarcassMap.GUESTS.get(0)));
+        // Up on the aft deck, where the party was: two more of them, in plain sight.
+        h.runAfterDelay(10,()->{f.at(p,place,3.5,ElkCarcassMap.MAIN,-6.5);f.look(p,b.offset(ElkCarcassMap.GUESTS.get(6)));});
+        h.runAfterDelay(20,()->{f.at(p,place,-4.5,ElkCarcassMap.MAIN,-4.5);f.look(p,b.offset(ElkCarcassMap.GUESTS.get(5)));});
+        h.runAfterDelay(30,()->{var own=f.own(p,place);h.assertTrue(Integer.bitCount(own.getInt("ElkSeenVisit"))>=3&&own.getInt("ElkStage")==ElkHunt.ABOARD,"three of the dead are actually seen, and he still waits below: "+own);
+            var killer=elkKiller(f,p);h.assertTrue(killer!=null&&killer.owner().isPresent()&&killer.owner().get().equals(p.getUUID())&&!killer.isNoAi(),"the reader has their own killer, waiting below");});
+        h.runAfterDelay(225,()->{h.assertTrue(f.own(p,place).getInt("ElkStage")==ElkHunt.HUNTED,"he comes for them once they have found the dead");
+            // Over the side, into the lake, away from the hull.
+            f.at(p,place,24.5,-1.6,-20.5);});
+        h.runAfterDelay(240,()->{h.assertTrue(f.own(p,place).getInt("ElkStage")==ElkHunt.IN_WATER,"the water is the way off the yacht");
+            var killer=elkKiller(f,p);h.assertTrue(killer!=null&&ElkCarcassMap.aboard(killer.position().subtract(b.getX(),b.getY(),b.getZ())),"he does not swim after them");
+            var shore=ElkCarcassMap.standAt(-50,-100);f.at(p,place,shore.getX()+.5,shore.getY(),shore.getZ()+.5);p.setOnGround(true);});
+        h.runAfterDelay(255,()->{var own=f.own(p,place);h.assertTrue(own.getInt("ElkStage")==ElkHunt.ASHORE&&own.getBoolean("EscapedYacht"),"ashore in the woods, the second stage begins");
+            // Under the carcasses, in the hollow, facing the gap.
+            f.at(p,place,-22.5,ElkCarcassMap.CAVE_Y,-191.5);f.look(p,b.offset(-22,ElkCarcassMap.CAVE_Y,-186));});
+        h.runAfterDelay(275,()->h.assertTrue(p.getForcedPose()==Pose.SWIMMING&&ElkHunt.hidden(p,b),"the reader is down in the hollow under the hides"));
+        final boolean[] done={false};
+        h.onEachTick(()->{
+            if(done[0])return;var own=f.own(p,place);
+            if(own.getInt("ElkStage")==ElkHunt.SEARCH||own.getInt("ElkStage")==ElkHunt.ASHORE&&own.getInt("ElkClock")<10){
+                // Keep looking out through the gap.
+                if(h.getTick()%10==0)f.look(p,b.offset(-22,ElkCarcassMap.CAVE_Y,-186));
+            }
+            if(!own.getBoolean("PassedSearch"))return;
+            done[0]=true;
+            h.assertTrue(own.getBoolean("BootsSeen")&&own.getInt("ElkStage")==ElkHunt.SPENT,"he searched the cave, his boots passed the gap and he left: "+own);
+            h.assertTrue(own.getInt("ElkPasses")>=2,"his boots passed the opening twice: "+own.getInt("ElkPasses"));
+            f.at(p,place,ElkCarcassMap.ENDING.getX()+.5,ElkCarcassMap.GATE_Y,ElkCarcassMap.ENDING.getZ()+1.5);p.setOnGround(true);
+            h.runAfterDelay(15,()->{h.assertTrue(f.own(p,place).getBoolean("Ready"),"the crew's gate holds the last account");
+                f.read(p,place,LiteraryRooms.ending(place));
+                h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.ELK_CARCASSES),"only the whole personal account resolves the source");h.succeed();});
+        });
+    }
+    @AfterBatch(batch="literary_elk_journey") public static void elkJourneyDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="literary_elk_betrayal",timeoutTicks=500)
+    public static void elkKillersArePrivateAndMovingUnderThePileGivesTheReaderAway(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("elk_hider",place);var peer=f.player("elk_peer",place);var b=f.base(place);
+        h.runAfterDelay(10,()->{var mine=elkKiller(f,p);var theirs=elkKiller(f,peer);
+            h.assertTrue(mine!=null&&theirs!=null&&!mine.getUUID().equals(theirs.getUUID())&&mine.owner().get().equals(p.getUUID())&&theirs.owner().get().equals(peer.getUUID()),"each reader is hunted by their own killer");
+            var own=f.own(p,place);own.putInt("ElkStage",ElkHunt.ASHORE);own.putBoolean("ElkLanded",true);own.putBoolean("EscapedYacht",true);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+            mine.moveTo(Vec3.atBottomCenterOf(b.offset(ElkCarcassMap.CAVE_ENTRY)));
+            f.at(p,place,-22.5,ElkCarcassMap.CAVE_Y,-191.5);f.look(p,b.offset(-22,ElkCarcassMap.CAVE_Y,-186));});
+        h.runAfterDelay(100,()->{var own=f.own(p,place);h.assertTrue(own.getInt("ElkStage")==ElkHunt.SEARCH,"held still under the pile, the search begins: "+own.getInt("ElkStage"));
+            elkKiller(f,p).moveTo(Vec3.atBottomCenterOf(b.offset(ElkCarcassMap.PEER)));});
+        h.runAfterDelay(110,()->f.at(p,place,-23.4,ElkCarcassMap.CAVE_Y,-191.5));
+        h.runAfterDelay(125,()->{var own=f.own(p,place);h.assertTrue(own.getInt("ElkStage")==ElkHunt.ASHORE&&own.getBoolean("ElkFound")&&!own.getBoolean("PassedSearch"),"moving while he is at the pile gives the reader away: "+own);
+            h.assertTrue(f.own(peer,place).getInt("ElkStage")==ElkHunt.ABOARD&&!f.own(peer,place).getBoolean("ElkFound"),"another reader's crossing is untouched");});
+        h.runAfterDelay(240,()->{h.assertTrue(p.getHealth()<p.getMaxHealth(),"found under the hides, he reaches in");
+            var peerKiller=elkKiller(f,peer);h.assertTrue(peer.getHealth()==peer.getMaxHealth()&&peerKiller.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(ElkCarcassMap.KILLER_START)))<4,"the peer's killer still waits below their own yacht deck");h.succeed();});
+    }
+    @AfterBatch(batch="literary_elk_betrayal") public static void elkBetrayalDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="literary_elk_upgrade",timeoutTicks=200)
+    public static void elkRebuildKeepsTheSceneKillerPetsAndDroppedThings(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;f.build(place);var b=f.base(place);var l=f.out;
+        h.assertTrue(ElkUpgrade.rebuilds(32)&&ElkUpgrade.rebuilds(35)&&!ElkUpgrade.rebuilds(31)&&!ElkUpgrade.rebuilds(36),"only a saved layout with the earlier elk scene carves it again");
+        // The earlier scene's shared killer, a pet left sitting, and a dropped original, as a saved world would hold them.
+        var legacy=LiteraryRegistry.ACTOR.get().create(l);legacy.bind(place,null);legacy.appearance(LiteraryActor.KILLER,0);legacy.moveTo(Vec3.atBottomCenterOf(b.offset(7,0,-43)));l.addFreshEntity(legacy);f.extras.add(legacy);
+        var world=LiteraryVignettes.shared(f.data(),place);world.putUUID("Killer",legacy.getUUID());LiteraryVignettes.shared(f.data(),place,world);
+        var wolf=EntityType.WOLF.create(l);wolf.moveTo(Vec3.atBottomCenterOf(b.offset(30,ElkCarcassMap.surface(30,-150)-2,-150)));wolf.setTame(true,true);wolf.setOwnerUUID(UUID.randomUUID());wolf.setOrderedToSit(true);l.addFreshEntity(wolf);f.extras.add(wolf);
+        var item=new net.minecraft.world.entity.item.ItemEntity(l,b.getX()+20.5,b.getY()-4,b.getZ()-20.5,new ItemStack(Items.WRITTEN_BOOK));item.setNoGravity(true);l.addFreshEntity(item);f.extras.add(item);
+        var ids=List.of(legacy.getUUID(),wolf.getUUID(),item.getUUID());
+        var visitor=NativeTestPlayers.survival(h,"elk_visitor");f.players.add(visitor);visitor.teleportTo(l,b.getX()+.5,b.getY()+4,b.getZ()-60.5,0,0);
+        h.assertTrue(!ElkUpgrade.vacant(l,b,true),"the old scene is not taken down around anyone in it");
+        visitor.teleportTo(f.in,b.getX()+.5,200,b.getZ()+.5,0,0);
+        h.assertTrue(ElkUpgrade.vacant(l,b,true),"empty, it may be carved again");
+        wolf.setHealth(11);var owner=wolf.getOwnerUUID();var itemData=new CompoundTag();item.saveWithoutId(itemData);itemData.putShort("Age",(short)37);item.load(itemData);
+        ElkUpgrade.protectResidents(l,b);var savedPet=new CompoundTag();wolf.saveWithoutId(savedPet);wolf.load(savedPet);
+        h.assertTrue(wolf.isNoAi()&&wolf.isInvulnerable()&&wolf.isNoGravity()&&!wolf.hurt(wolf.damageSources().inWall(),4)&&wolf.getHealth()==11,"the actual pet cannot suffocate or fall during bounded carving, including reload");
+        ElkUpgrade.settle(l,b);
+        item.saveWithoutId(itemData);h.assertTrue(wolf.getHealth()==11&&owner.equals(wolf.getOwnerUUID())&&!wolf.isNoAi()&&!wolf.isInvulnerable()&&!wolf.isNoGravity()&&itemData.getShort("Age")==37&&item.isNoGravity()&&!item.isInvulnerable(),"settling restores health, ownership, physics, native AI and the original finite item age");
+        h.assertTrue(legacy.isAlive()&&legacy.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(ElkCarcassMap.KILLER_START)))<1,"the scene's own killer keeps his identity and waits below decks");
+        h.assertTrue(wolf.isAlive()&&wolf.isOrderedToSit()&&l.noCollision(wolf,wolf.getBoundingBox())&&!wolf.isInWater(),"a buried pet is set down on the new ground with its orders");
+        h.assertTrue(item.isAlive()&&!ElkUpgrade.stranded(l,item),"a dropped original is kept, set on dry ground");
+        for(var id:ids)h.assertTrue(l.getEntity(id)!=null,"identity kept: "+id);
+        var reader=f.player("elk_adopter",place);
+        h.runAfterDelay(10,()->{var shared=LiteraryVignettes.shared(f.data(),place);
+            h.assertTrue(shared.hasUUID("Killer_"+reader.getUUID())&&shared.getUUID("Killer_"+reader.getUUID()).equals(legacy.getUUID())&&!shared.hasUUID("Killer"),"the next reader inherits the scene's killer rather than a new one");
+            h.assertTrue(legacy.owner().isPresent()&&legacy.owner().get().equals(reader.getUUID())&&!legacy.isNoAi(),"he is now that reader's alone");h.succeed();});
+    }
+    @AfterBatch(batch="literary_elk_upgrade") public static void elkUpgradeDone(ServerLevel l){close();}
+
 }

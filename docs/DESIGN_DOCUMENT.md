@@ -1,3 +1,5 @@
+0.4.60 combined hunts: Claude's two-stage yacht/cave elk scene coexists with the verified Stacy scrabbling/hand-jaw attacks, shared Camp Blood movement, native foliage passage and private hunt ownership. A saved rebuild protects actual pets and finite originals through every slice. Layout 36 / protocol 34; 43 sources / 33 resolutions across two kinds / three endings. Opening timing and deliberate darkness keep the owner's decisions. Exact-head verification pending; see [INTEGRATED_HUNTS_0_4_60.md](INTEGRATED_HUNTS_0_4_60.md).
+
 0.4.47 review repairs: native companions retain their floor during platform cleanup; already composed 0.4.46 scenes receive missed structural repairs through a separate checkpoint; new accounts state lifetime totals and independently recorded Overworld work accurately. Finite property, original pages, routes, progress and native identities remain. See [REVIEW_SAFETY_0_4_47.md](REVIEW_SAFETY_0_4_47.md).
 
 # The Oldest House: Design Document
@@ -796,11 +798,12 @@ First playable site in 0.4.11: [DROWNED_TOWN_0_4_11.md](DROWNED_TOWN_0_4_11.md).
 
 ### Indian Lake: the elk carcasses
 
-*One-shot · verb: hiding*
+*One-shot · verbs: escaping, then hiding*
 
-- The Camp Blood killer searches the woods above the lake. A pile of elk carcasses is the only cover. Burrow in and watch its footsteps through a gap between hides.
-- Moving shifts and creaks the pile. Staying still is the only defense.
-- This uses the document's Camp Blood killer; the earlier pitch's unnamed connection to The Only Good Indians is superseded.
+- **Two stages (0.4.50),** after *My Heart Is a Chainsaw*. First, the reader wakes in a guest cabin of a yacht moored under a bluff, the morning after its party, among murdered passengers. The man who killed them is still aboard, and the only way off is over the side. Second, across the lake, he hunts them through a stream valley between two woods. The cave the road crew used for their elk carcasses is on the outer edge of the larger wood, found by exploring or by following the crew's drag trail. The crew themselves are hidden in the pile.
+- Crawl into the hollow under the carcasses and watch his boots pass the gap. Moving gives you away. When the search ends, the crew's path leads to their gate, which is also a door back.
+- Each reader is hunted by their own killer. He does not swim, cannot be stopped by blows, and is seen only by his reader.
+- Canon: [ELK_CARCASSES_0_4_50.md](ELK_CARCASSES_0_4_50.md). The earlier single-field version, where the reader burrowed into a grid of hide blocks, is superseded; saved worlds are carved again once the old scene is empty.
 
 ### Indian Lake: the phone in the canoe
 

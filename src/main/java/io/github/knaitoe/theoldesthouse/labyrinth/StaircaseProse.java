@@ -201,7 +201,7 @@ public final class StaircaseProse {
             {"masque","the seven rooms"},{"usher","the Usher vault"},{"winchester","the Winchester wing"},{"child_room","the child's room"},
             {"crimson_hall","the crimson hall"},{"bly_route","the Lady's route"},{"elk_lot","the roadside lot"},
             {"elk_fan","the room with the fan"},{"mapping_interior","the crawlspace house"},{"holy_rabbit","the rabbit's house"},
-            {"confession","the confession"},{"elk_carcasses","the field of carcasses"},{"costume_night","costume night"},
+            {"confession","the confession"},{"elk_carcasses","the cut under the ridge"},{"costume_night","costume night"},
             {"movie_night","movie night"},{"winter_lake","the frozen lake"},{"camp_blood","Camp Blood"},
             {"devils_rock","the diary room"},{"wheel","the wheel of rooms"},{"ghosts_set","the haunted set"},
             {"end_world_cabin","the cabin at the end"},{"family_copy","your family's copied home"},{"old_cabin","the old man's cabin"},

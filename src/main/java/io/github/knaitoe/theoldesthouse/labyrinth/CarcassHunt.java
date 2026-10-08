@@ -30,14 +30,15 @@ public final class CarcassHunt {
         for(int y=1;y<=2;y++)if(foliage(p.level().getBlockState(p.blockPosition().above(y))))return true;
         return false;
     }
+    private static LabyrinthPlace scene(LiteraryActor a){return a.scene().equals(LabyrinthPlace.CAMP_BLOOD.id())?LabyrinthPlace.CAMP_BLOOD:LabyrinthPlace.ELK_CARCASSES;}
     public static boolean sees(LiteraryActor a,ServerPlayer p){
         var origin=io.github.knaitoe.theoldesthouse.house.HouseSavedData.get(p.server).houseOrigin();
-        if(origin!=null&&a.distanceToSqr(p)>9&&concealed(p,LabyrinthPlaces.base(origin,LabyrinthPlace.ELK_CARCASSES)))return false;
+        if(origin!=null&&a.distanceToSqr(p)>9&&concealed(p,LabyrinthPlaces.base(origin,scene(a))))return false;
         return a.distanceToSqr(p)<42*42&&a.level().clip(new ClipContext(a.getEyePosition(),p.getEyePosition(),
                 ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,a)).getType()==HitResult.Type.MISS;
     }
-    private static boolean eligible(ServerPlayer p){return p.isAlive()&&!p.isSpectator()&&!p.isCreative()&&LiteraryVignettes.inside(p,LabyrinthPlace.ELK_CARCASSES)
-            &&LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LabyrinthPlace.ELK_CARCASSES).getBoolean("Here");}
+    private static boolean eligible(ServerPlayer p,LabyrinthPlace scene){return p.isAlive()&&!p.isSpectator()&&!p.isCreative()&&LiteraryVignettes.inside(p,scene)
+            &&LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),scene).getBoolean("Here");}
     private static CompoundTag state(LiteraryActor a){return a.getPersistentData().getCompound(STATE);}
     public static boolean tracks(LiteraryActor a,UUID id){var s=state(a);return s.getInt("Memory")>0&&s.hasUUID("Reader")&&s.getUUID("Reader").equals(id);}
     public static BlockPos searchPoint(LiteraryActor a){var s=state(a);return s.contains("Point")?BlockPos.of(s.getLong("Point")):null;}
@@ -45,19 +46,19 @@ public final class CarcassHunt {
     private static void remember(LiteraryActor a,ServerPlayer p){
         var s=state(a);s.putUUID("Reader",p.getUUID());s.putLong("Point",p.blockPosition().asLong());s.putInt("Memory",220);
         a.getPersistentData().put(STATE,s);
-        var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.ELK_CARCASSES);
-        own.putBoolean("Pursued",true);LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.ELK_CARCASSES,own);
+        var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),scene(a));
+        own.putBoolean("Pursued",true);LiteraryVignettes.save(d,p.getUUID(),scene(a),own);
     }
     /** Loud interactions remain positional; they never give the hunter an invisible live target. */
     public static void noise(ServerPlayer p,BlockPos at){
-        if(!eligible(p))return;var world=LiteraryVignettes.shared(LabyrinthData.get(p.server),LabyrinthPlace.ELK_CARCASSES);
+        var scene=LiteraryVignettes.current(p);if(scene==LabyrinthPlace.ELK_CARCASSES){ElkHunt.noise(p,at);return;}if(scene!=LabyrinthPlace.CAMP_BLOOD||!eligible(p,scene))return;var world=LiteraryVignettes.shared(LabyrinthData.get(p.server),scene);
         if(world.hasUUID("Killer")&&p.serverLevel().getEntity(world.getUUID("Killer")) instanceof LiteraryActor a
                 &&a.position().distanceToSqr(at.getCenter())<32*32){remember(a,p);var s=state(a);s.putLong("Point",at.asLong());a.getPersistentData().put(STATE,s);}
     }
     private static boolean foliage(BlockState s){return s.is(HouseBlocks.FOREST_COVER.get())||s.getBlock() instanceof LeavesBlock;}
     private static AABB box(Vec3 foot,double height){return new AABB(foot.x-.3,foot.y,foot.z-.3,foot.x+.3,foot.y+height,foot.z+.3);}
     /** Check the actual body shape; only leaves can be cleared, and only when native griefing permits it. */
-    private static boolean fits(LiteraryActor a,AABB body){
+    static boolean fits(LiteraryActor a,AABB body){
         boolean breakLeaves=a.level() instanceof ServerLevel l&&l.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
         for(var at:BlockPos.betweenClosed(BlockPos.containing(body.minX,body.minY,body.minZ),BlockPos.containing(body.maxX-.0001,body.maxY-.0001,body.maxZ-.0001))){
             if(!a.level().hasChunkAt(at))return false;var s=a.level().getBlockState(at);
@@ -65,28 +66,30 @@ public final class CarcassHunt {
             for(var shape:s.getCollisionShape(a.level(),at).toAabbs())if(shape.move(at).intersects(body))return false;
         }return true;
     }
-    private static boolean walkable(LiteraryActor a,BlockPos b,BlockPos n){
-        int x=n.getX()-b.getX(),z=n.getZ()-b.getZ();if(Math.abs(x)>52||z< -127||z> -7||n.getY()!=b.getY()||!a.level().hasChunkAt(n))return false;
+    private static boolean walkable(LiteraryActor a,BlockPos b,BlockPos n){return walkable(a,b,n,b.getY());}
+    private static boolean walkable(LiteraryActor a,BlockPos b,BlockPos n,int plane){
+        var bounds=scene(a).room();int x=n.getX()-b.getX(),z=n.getZ()-b.getZ();if(x<bounds.minX()+1||x>bounds.maxX()-1||z<bounds.minZ()+1||z>bounds.maxZ()-1||n.getY()!=plane||!a.level().hasChunkAt(n))return false;
         var floor=a.level().getBlockState(n.below());if(foliage(floor)||floor.getCollisionShape(a.level(),n.below()).isEmpty())return false;
         var foot=Vec3.atBottomCenterOf(n);return fits(a,box(foot,a.getDimensions(Pose.STANDING).height()))||fits(a,box(foot,1.3));
     }
     private record Node(BlockPos pos,int cost,int score){}
     private static int distance(BlockPos a,BlockPos b){return Math.abs(a.getX()-b.getX())+Math.abs(a.getZ()-b.getZ());}
     /** Directed bounded search reaches distant trails without scanning the entire forest first. */
-    private static List<BlockPos> path(LiteraryActor a,BlockPos b,BlockPos start,BlockPos goal){
-        if(!walkable(a,b,start)||!walkable(a,b,goal))return List.of();
+    private static List<BlockPos> path(LiteraryActor a,BlockPos b,BlockPos start,BlockPos goal){return pathOnPlane(a,b,start,goal,b.getY());}
+    static List<BlockPos> pathOnPlane(LiteraryActor a,BlockPos b,BlockPos start,BlockPos goal,int plane){
+        if(!walkable(a,b,start,plane)||!walkable(a,b,goal,plane))return List.of();
         var open=new PriorityQueue<Node>(Comparator.comparingInt(Node::score).thenComparingInt(Node::cost));
         var prev=new HashMap<BlockPos,BlockPos>();var costs=new HashMap<BlockPos,Integer>();var clear=new HashMap<BlockPos,Boolean>();
         open.add(new Node(start,0,distance(start,goal)));prev.put(start,start);costs.put(start,0);int examined=0;
         while(!open.isEmpty()&&examined++<8500){var node=open.remove();var n=node.pos();if(node.cost()!=costs.get(n))continue;
             if(n.equals(goal)){var result=new LinkedList<BlockPos>();while(!n.equals(start)){result.addFirst(n);n=prev.get(n);}return result;}
             for(var d:Direction.Plane.HORIZONTAL){var next=n.relative(d);int cost=node.cost()+1;
-                if(cost<costs.getOrDefault(next,Integer.MAX_VALUE)&&clear.computeIfAbsent(next,p->walkable(a,b,p))){
+                if(cost<costs.getOrDefault(next,Integer.MAX_VALUE)&&clear.computeIfAbsent(next,p->walkable(a,b,p,plane))){
                     prev.put(next,n);costs.put(next,cost);open.add(new Node(next,cost,cost+distance(next,goal)));}}
         }return List.of();
     }
     /** Native destruction happens only in the body's next physical step, once per actor tick. */
-    private static void clearLeaves(LiteraryActor a,Vec3 step){
+    static void clearLeaves(LiteraryActor a,Vec3 step){
         if(!(a.level() instanceof ServerLevel l)||!l.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING))return;
         var body=a.getBoundingBox();var sweep=body.minmax(body.move(step));if(!fits(a,sweep))return;int removed=0;
         for(var at:BlockPos.betweenClosed(BlockPos.containing(sweep.minX,sweep.minY,sweep.minZ),BlockPos.containing(sweep.maxX-.0001,sweep.maxY-.0001,sweep.maxZ-.0001))){
@@ -97,8 +100,8 @@ public final class CarcassHunt {
     }
     public void tick(LiteraryActor a){
         if(!(a.level() instanceof ServerLevel l)||!a.isAlive())return;var origin=io.github.knaitoe.theoldesthouse.house.HouseSavedData.get(l.getServer()).houseOrigin();
-        if(origin==null)return;var b=LabyrinthPlaces.base(origin,LabyrinthPlace.ELK_CARCASSES);
-        var readers=l.players().stream().filter(CarcassHunt::eligible).toList();lastPositions.keySet().retainAll(readers.stream().map(ServerPlayer::getUUID).toList());
+        if(origin==null)return;var b=LabyrinthPlaces.base(origin,scene(a));
+        var readers=l.players().stream().filter(p->eligible(p,scene(a))).toList();lastPositions.keySet().retainAll(readers.stream().map(ServerPlayer::getUUID).toList());
         if(readers.isEmpty()){route.clear();routeGoal=null;return;}
         var s=state(a);if(s.getInt("AttackDelay")>0)s.putInt("AttackDelay",s.getInt("AttackDelay")-1);
         if(s.getInt("AvoidTicks0459")>0)s.putInt("AvoidTicks0459",s.getInt("AvoidTicks0459")-1);a.getPersistentData().put(STATE,s);
@@ -108,7 +111,7 @@ public final class CarcassHunt {
             boolean rejected=s.getInt("AvoidTicks0459")>0&&s.contains("RejectedPoint0459")&&p.blockPosition().distSqr(BlockPos.of(s.getLong("RejectedPoint0459")))<=4;
             if(!rejected&&(sees(a,p)||heard)&&a.distanceToSqr(p)<nearest){found=p;nearest=a.distanceToSqr(p);}}
         if(found!=null){remember(a,found);s=state(a);}else if(s.getInt("Memory")>0)s.putInt("Memory",s.getInt("Memory")-1);
-        boolean chasing=s.getInt("Memory")>0&&s.contains("Point");int stop=Math.floorMod(s.getInt("Patrol"),PATROL.size());
+        boolean chasing=s.getInt("Memory")>0&&s.contains("Point");a.appearance(LiteraryActor.KILLER,chasing?ElkHunt.RUN:ElkHunt.WALK);int stop=Math.floorMod(s.getInt("Patrol"),PATROL.size());
         var goal=chasing?new BlockPos(BlockPos.of(s.getLong("Point")).getX(),b.getY(),BlockPos.of(s.getLong("Point")).getZ()):b.offset(PATROL.get(stop));
         if(!walkable(a,b,goal)){double best=Double.MAX_VALUE;BlockPos fallback=null;
             for(var n:BlockPos.betweenClosed(goal.offset(-3,0,-3),goal.offset(3,0,3)))if(walkable(a,b,n)&&n.distSqr(goal)<best){best=n.distSqr(goal);fallback=n.immutable();}

@@ -105,7 +105,7 @@ public final class ScenePlaytestRepairs {
     }
     public static BuildBlocks.Plan plan(ServerLevel l,BlockPos b,LabyrinthPlace p){return BuildBlocks.record(l,()->{
         if(p==LabyrinthPlace.MAPPING_INTERIOR)cabin(l,b);if(p==LabyrinthPlace.FLOODED_PASSAGE)flooded(l,b);
-        if(NovelRooms.outside(p))arrivalGround(l,b);
+        if(NovelRooms.outside(p)&&p!=LabyrinthPlace.ELK_CARCASSES)arrivalGround(l,b);
     });}
     public static void arrivalGround(ServerLevel l,BlockPos b){
         var near=BuildBlocks.state(l,b.offset(10,-1,-1));var surface=near.is(Blocks.SNOW_BLOCK)?Blocks.SNOW_BLOCK:near.is(Blocks.SAND)?Blocks.SAND:near.is(Blocks.PODZOL)?Blocks.PODZOL:Blocks.GRASS_BLOCK;

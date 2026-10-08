@@ -81,7 +81,6 @@ base={
  'cylinder':[cube([4,0,4],[12,1,12],'brass'),cube([5,1,5],[11,10,11],'wax'),cube([4,10,4],[12,11,12],'brass'),cube([5,4,4.8],[11,7,5],'paper')],
  'photo':[cube([0,0,13],[16,16,16]),cube([1,1,12.8],[15,15,13],'photo')],
  'trunk_mark':[cube([1,1,14],[15,15,16],'hide')],
- 'elk_hide':[cube([0,0,0],[16,4,16],'hide'),cube([3,4,2],[13,7,14],'hide'),cube([12,3,1],[16,6,6],'hide')],
  'television':[cube([1,0,4],[15,12,15]),cube([2,2,3.7],[12,10,4],'iron'),cube([12,3,3.5],[14,5,4],'brass'),cube([12,7,3.5],[14,9,4],'brass'),cube([5,12,8],[11,14,11],'iron')],
  'receiver':[cube([2,0,3],[14,3,13],'iron'),cube([3,3,5],[13,6,11],'iron'),cube([5,3,3],[11,4,6],'brass'),cube([3,5,6],[5,7,10],'paper'),cube([11,5,6],[13,7,10],'paper')],
  'page':[cube([2,0,2],[14,.25,14],'paper'),cube([2,.25,2],[5,1.5,5],'paper',rot={'origin':[2,.25,2],'axis':'z','angle':22.5})],
@@ -94,6 +93,10 @@ for kind,els in base.items():
   if kind=='coffin':elements.append(cube([1,8,0],[15,9,16],rot=None if stage else {'origin':[1,8,0],'axis':'z','angle':-45}))
   model={'textures':tex,'elements':elements,'ambientocclusion':True};name='literary_'+kind+'_'+str(stage);write('models/block/'+name+'.json',model)
   for facing,rot in [('north',0),('east',90),('south',180),('west',270)]:variants[f'facing={facing},kind={kind},stage={stage}']={'model':'the_oldest_house:block/'+name,'y':rot}
+# Kinds authored elsewhere (the elk hide, carcasses, bodies and evidence: tools/generate_elk_yacht_assets.py) are kept.
+_prop=A/'blockstates/literary_prop.json'
+if _prop.exists():
+ for key,value in json.loads(_prop.read_text())['variants'].items():variants.setdefault(key,value)
 write('blockstates/literary_prop.json',{'variants':variants})
 display={'gui':{'rotation':[25,-35,0],'translation':[0,0,0],'scale':[.9,.9,.9]},'ground':{'translation':[0,2,0],'scale':[.5,.5,.5]},'thirdperson_righthand':{'rotation':[0,0,0],'translation':[0,2,0],'scale':[.65,.65,.65]},'firstperson_righthand':{'rotation':[0,-45,15],'translation':[0,2,0],'scale':[.75,.75,.75]}}
 items={'elk_tooth':[cube([6,1,7],[10,3,9],'paper'),cube([5,3,7],[11,9,9],'paper'),cube([6,9,7],[10,14,9],'paper'),cube([7,14,7],[9,16,9],'paper')],
