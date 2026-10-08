@@ -166,7 +166,7 @@ public final class LiveExpeditionProof {
             if(crackStarted>=0&&!l.getBlockState(door).isAir())require(stacy.doorBreakTicks()<=stacy.tickCount-crackStarted+1,"two socket readers cannot multiply Stacy's cracking clock");
             if(l.getBlockState(door).isAir()){
                 require(crackStarted>=0&&stacy.tickCount-crackStarted>=LakeWitchEntity.DOOR_BREAK_TICKS-1&&l.getBlockState(door.above()).isAir(),"one physical three-second door break opens both native halves");
-                require(stacy.getUUID().equals(stacyId)&&l.getEntitiesOfClass(LakeWitchEntity.class,new net.minecraft.world.phys.AABB(site.offset(-4,0,-46),site.offset(5,5,-27))).size()==1,"both clients observe the original shared Stacy body");step(s,15,stacy.blockPosition());
+                require(stacy.getUUID().equals(stacyId)&&l.getEntitiesOfClass(LakeWitchEntity.class,new net.minecraft.world.phys.AABB(Vec3.atLowerCornerOf(site.offset(-4,0,-46)),Vec3.atLowerCornerOf(site.offset(5,5,-27)))).size()==1,"both clients observe the original shared Stacy body");step(s,15,stacy.blockPosition());
             }
         }else if(phase==15&&ACKS.size()==2){
             stacy.discard();var l=s.getLevel(HouseDimensions.OUTSIDE);var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.ELK_CARCASSES);huntFloor(l,site);
