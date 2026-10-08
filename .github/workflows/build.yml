@@ -90,7 +90,7 @@ jobs:
                   assert f'io/github/knaitoe/theoldesthouse/gametest/{name}.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/client/LiteraryEffectsVisualProof.class' in z.namelist()
               literary = json.loads(z.read('assets/the_oldest_house/blockstates/literary_prop.json'))['variants']
-              assert len(literary) == 288
+              assert len(literary) == 384
               for name in ('elk_tooth','wheel_house_key','father_knife','grasshopper_jar','literary_photograph','family_film','father_meal','family_stew','wax_cylinder_one','wax_cylinder_two','wax_cylinder_three'):
                   mesh=json.loads(z.read(f'assets/the_oldest_house/models/item/{name}.json'))
                   assert len(mesh['elements']) >= 2 and 'display' in mesh
