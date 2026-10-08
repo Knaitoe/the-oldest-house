@@ -113,16 +113,21 @@ public final class CorrespondenceTests {
         h.runAfterDelay(8,()->{
             sourceFacts(f,p);var drawer=(BarrelBlockEntity)f.level.getBlockEntity(f.origin.offset(8,1,22));ItemStack reply=drawer.getItem(0).copy();
             var seen=new HashSet<String>();var next=new HashMap<String,Integer>();
-            for(int iteration=0;iteration<125;iteration++){
+            int total=125+NovelCorrespondence.halls().size();
+            for(int iteration=0;iteration<total;iteration++){
                 var menu=f.open(p,HouseMarginalia.Thread.values()[iteration%4]);String id=id(menu.book());
                 h.assertTrue(seen.add(id),"the expanded pool is reachable without repeated filler: "+id);
                 if(id.matches("[A-N]\\d{2}")){
                     String chain=id.substring(0,1);int n=Integer.parseInt(id.substring(1));
                     h.assertTrue(n==next.getOrDefault(chain,1),"each chain reaches its actual next installment: "+id);next.put(chain,n+1);
                 }
+                if(id.startsWith("HOL_P")){
+                    int n=Integer.parseInt(id.substring(5));h.assertTrue(n==next.getOrDefault(NovelCorrespondence.PELAFINA_CHAIN,1),"dated source letters stay ordered: "+id);next.put(NovelCorrespondence.PELAFINA_CHAIN,n+1);
+                }
                 f.end(p,menu);travel(p);travel(p);
             }
-            h.assertTrue(seen.size()==125&&seen.stream().filter(id->!id.startsWith("R_")).count()==108,"all 108 new pieces and all 17 original installments can be discovered");
+            h.assertTrue(seen.size()==total&&seen.stream().filter(id->!id.startsWith("R_")&&!NovelCorrespondence.contains(id)).count()==108&&seen.stream().filter(NovelCorrespondence::contains).count()==45,"all 108 authored pieces, 17 legacy installments and 45 new hall source papers can be discovered");
+            h.assertTrue(own(f,p).getCompound("Next").getInt(NovelCorrespondence.PELAFINA_CHAIN)==7&&!seen.contains(NovelCorrespondence.PANTHER),"the full dated chain is reachable; the Panther belongs on the staircase");
             StringBuilder acrostic=new StringBuilder();for(String sentence:text(HouseCorrespondence.preview(p,"B04")).split("\\."))if(!sentence.isBlank())acrostic.append(sentence.strip().charAt(0));
             h.assertTrue(acrostic.toString().equals("LETMEOUT"),"native pagination preserves the maternal letter's optional acrostic");
             boolean[] erased={false};for(var page:HouseCorrespondence.preview(p,"L06").get(DataComponents.WRITTEN_BOOK_CONTENT).pages())page.raw().visit((style,words)->{if(style.isStrikethrough())erased[0]=true;return Optional.empty();},net.minecraft.network.chat.Style.EMPTY);
@@ -130,8 +135,8 @@ public final class CorrespondenceTests {
             for(char chain='A';chain<='N';chain++)h.assertTrue(own(f,p).getCompound("Next").getInt(String.valueOf(chain))==6,"the complete six-letter sequence was read: "+chain);
             h.assertTrue(ItemStack.isSameItemSameComponents(reply,drawer.getItem(0)),"appropriating prose never changes the submitted player's original reply");
             var ending=f.open(p,HouseMarginalia.Thread.CALLS);int count=own(f,p).getInt("ReadCount");f.end(p,ending);
-            h.assertTrue(own(f,p).getInt("ReadCount")==count&&own(f,p).getCompound("Books").size()==125,"exhaustion revisits a finite saved original");
-            f.reload();h.assertTrue(own(f,p).getCompound("Books").size()==125&&own(f,p).getInt("ReadCount")==125,"the whole finite catalogue survives native serialization");
+            h.assertTrue(own(f,p).getInt("ReadCount")==count&&own(f,p).getCompound("Books").size()==total,"exhaustion revisits a finite saved original");
+            f.reload();h.assertTrue(own(f,p).getCompound("Books").size()==total&&own(f,p).getInt("ReadCount")==total,"the whole finite catalogue survives native serialization");
             h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0&&WitnessAccount.Story.values().length==43&&WitnessAccount.REQUIRED==33,"the new human voices do not change sources, gates or endings");h.succeed();
         });
     }

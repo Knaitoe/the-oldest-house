@@ -42,7 +42,7 @@ def generate():
     # Interleave the chains with loose notes; matching a surface is a preference, never an access gate.
     notes.sort(key=lambda n: (n['installment'] if n['chain'] else int(n['id'][1:]) % 6, n['id']))
     widths = {}
-    for font in ('karen', 'will', 'zampano', 'pelafina'):
+    for font in ('karen', 'will', 'zampano', 'pelafina', 'johnny'):
         spec = json.loads((ROOT / f'src/main/resources/assets/the_oldest_house/font/{font}.json').read_text())
         bitmap = next(p for p in spec['providers'] if p['type'] == 'bitmap')
         im = Image.open(ROOT / f'src/main/resources/assets/the_oldest_house/textures/font/{font}.png').convert('RGBA')

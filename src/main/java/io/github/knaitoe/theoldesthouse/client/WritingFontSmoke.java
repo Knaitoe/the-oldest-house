@@ -87,7 +87,7 @@ public final class WritingFontSmoke {
         }
         Files.writeString(folder.resolve("passed.txt"), "Loaded all custom fonts; native book wrapping and String/Component/sequence rendering passed.\n");
         TheOldestHouse.LOGGER.info("WRITING FONT CHECK PASSED: native screenshot saved");
-        mc.setScreen(new BurnEmbersVisualProof());
+        mc.setScreen(new NovelPapersVisualProof());
     }
 
     private static final class ProofScreen extends Screen {

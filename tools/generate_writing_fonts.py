@@ -92,6 +92,8 @@ def make(name):
         pattern = GLYPHS[source]
         if name in ('will','child') and source == 'a': pattern='0000/0000/0110/1001/1001/1001/0111'
         if name in ('karen','pelafina') and source == 'l': pattern='10/10/10/10/10/10/11'
+        if name == 'johnny' and source == 'a': pattern='0000/0000/0110/0001/0111/1001/0111'
+        if name == 'johnny' and source == 'l': pattern='10/10/10/10/10/10/01'
         x0,y0=i%16*cell_w,i//16*cell_h
         for y,row in enumerate(pattern.split('/')):
             # Every stroke stays connected. A half-pixel slant keeps hand identities.
@@ -99,6 +101,7 @@ def make(name):
             if name == 'child': slant = (1 if y < 3 else 0) if (ord(source)+max(0,alternate))%3 else 0
             if name in ('karen','pelafina'): slant = 1 if y < 2 else 0
             if name == 'claw': slant = 1 if y in (0,3,6) else 0
+            if name == 'johnny': slant = 1 if y >= 4 else 0
             for x,bit in enumerate(row):
                 if bit == '1':
                     draw.rectangle((x0+x*2+slant,y0+y*2,x0+x*2+slant+1,y0+y*2+1),fill=(255,255,255,255))
@@ -143,6 +146,6 @@ def preview(path):
 
 if __name__ == '__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--preview');args=parser.parse_args()
-    for name in ('will','karen','zampano','child','pelafina','claw','hotel'):make(name)
+    for name in ('will','karen','zampano','child','pelafina','claw','hotel','johnny'):make(name)
     if args.preview:preview(args.preview)
-    print('Seven opaque atlases; nine-pixel prose, explicit spaces, fixed punctuation, native fallback.')
+    print('Eight opaque atlases; nine-pixel prose, explicit spaces, fixed punctuation, native fallback.')

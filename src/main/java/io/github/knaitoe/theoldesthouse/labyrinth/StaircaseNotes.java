@@ -87,5 +87,6 @@ public final class StaircaseNotes {
         }
         return NAMES[1];
     }
-    public static List<ItemStack> specimens(){var out=new ArrayList<ItemStack>();for(int i=0;i<TEXTS.size();i++)out.add(specimen(i));return List.copyOf(out);}
+    public static ItemStack panther(){return io.github.knaitoe.theoldesthouse.house.CorrespondenceTexts.book(io.github.knaitoe.theoldesthouse.house.NovelCorrespondence.panther(),Map.of());}
+    public static List<ItemStack> specimens(){var out=new ArrayList<ItemStack>();for(int i=0;i<TEXTS.size();i++)out.add(specimen(i));out.add(panther());return List.copyOf(out);}
 }

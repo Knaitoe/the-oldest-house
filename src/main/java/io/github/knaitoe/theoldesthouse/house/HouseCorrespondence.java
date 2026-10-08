@@ -26,14 +26,16 @@ public final class HouseCorrespondence {
     public static final String ID="house_correspondence_0431";
     public record Encounter(String binding,String note,String legacy,int chapter,ItemStack book,boolean taken) {}
     private static final List<CorrespondenceTexts.Note> CATALOGUE=catalogue();
+    private static final int ORIGINAL_COUNT=CATALOGUE.size()-NovelCorrespondence.halls().size();
     private HouseCorrespondence() {}
     private static List<CorrespondenceTexts.Note> catalogue() {
-        var all=new ArrayList<>(CorrespondenceTexts.all());
+        var all=new ArrayList<>(CorrespondenceTexts.originals());
         int[] gates={0,6,8,12,16};
         for(var thread:HouseMarginalia.Thread.values())for(int n=0;n<thread.chapters;n++)
             all.add(new CorrespondenceTexts.Note("R_"+thread.getSerializedName()+"_"+n,"","",
                     HouseWriting.WritingStyle.PLAIN,"legacy_"+thread.getSerializedName(),n,gates[n],thread,""));
-        return List.copyOf(all);
+        // Append after all 125 old positions: saved cursors and legacy IDs keep their meaning.
+        all.addAll(NovelCorrespondence.halls());return List.copyOf(all);
     }
     public static CompoundTag record(LabyrinthData data,UUID reader){return data.stateEntry(ID,reader.toString());}
     private static void save(LabyrinthData data,UUID reader,CompoundTag own){var all=data.state(ID);all.put(reader.toString(),own);data.setState(ID,all);}
@@ -73,18 +75,27 @@ public final class HouseCorrespondence {
         return new Encounter(key,id,legacy,entry.getInt("Chapter"),ItemStack.parseOptional(reader.registryAccess(),stored),taken);
     }
     private static CorrespondenceTexts.Note choose(ServerPlayer reader,CompoundTag own,HouseMarginalia.Thread surface){
-        int cursor=Math.floorMod(own.getInt("Cursor"),CATALOGUE.size());
+        // A source find may share every fourth completed reading, without consuming the old cursor.
+        // Historical poems and letters are optional and never a new progression checklist.
+        if(Math.floorMod(own.getInt("ReadCount"),4)==3){var source=source(reader,own,surface,true);if(source!=null)return source;}
+        int cursor=Math.floorMod(own.getInt("Cursor"),ORIGINAL_COUNT);
         CorrespondenceTexts.Note chosen=null;int best=Integer.MAX_VALUE;
-        for(int i=0;i<CATALOGUE.size();i++){
+        for(int i=0;i<ORIGINAL_COUNT;i++){
             var n=CATALOGUE.get(i);if(!eligible(reader,own,n))continue;
-            int score=Math.floorMod(i-cursor,CATALOGUE.size())+(n.surface()==surface?0:14);
+            int score=Math.floorMod(i-cursor,ORIGINAL_COUNT)+(n.surface()==surface?0:14);
             if(score<best){best=score;chosen=n;}
         }
         if(chosen!=null)return chosen;
+        var source=source(reader,own,surface,false);if(source!=null)return source;
         // Revisit an existing original when the next installments are not yet due. Never mint filler.
         var books=own.getCompound("Books");
         for(int i=0;i<CATALOGUE.size();i++){var n=CATALOGUE.get((cursor+i)%CATALOGUE.size());if(books.contains(n.id()))return n;}
         throw new IllegalStateException("No mundane first letter available");
+    }
+    private static CorrespondenceTexts.Note source(ServerPlayer p,CompoundTag own,HouseMarginalia.Thread surface,boolean match){
+        var sources=NovelCorrespondence.halls();int cursor=Math.floorMod(own.getInt("NovelCursor"),sources.size());
+        for(int step=0;step<sources.size();step++){var n=sources.get((cursor+step)%sources.size());if((!match||n.surface()==surface)&&eligible(p,own,n))return n;}
+        return null;
     }
     private static boolean eligible(ServerPlayer p,CompoundTag own,CorrespondenceTexts.Note n){
         var data=LabyrinthData.get(p.server);
@@ -174,7 +185,9 @@ public final class HouseCorrespondence {
             var read=own.getCompound("Read");if(read.getBoolean(encountered.note()))return;
             read.putBoolean(encountered.note(),true);own.put("Read",read);own.putInt("ReadCount",own.getInt("ReadCount")+1);
             for(int i=0;i<CATALOGUE.size();i++)if(CATALOGUE.get(i).id().equals(encountered.note())){
-                var n=CATALOGUE.get(i);own.putInt("Cursor",(i+1)%CATALOGUE.size());
+                var n=CATALOGUE.get(i);
+                if(i<ORIGINAL_COUNT)own.putInt("Cursor",(i+1)%ORIGINAL_COUNT);
+                else own.putInt("NovelCursor",(i-ORIGINAL_COUNT+1)%NovelCorrespondence.halls().size());
                 if(!n.chain().isEmpty()){
                     var next=own.getCompound("Next");next.putInt(n.chain(),Math.max(next.getInt(n.chain()),n.installment()+1));own.put("Next",next);
                     var steps=own.getCompound("ChainStep");steps.putLong(n.chain(),own.getLong("Step"));own.put("ChainStep",steps);
