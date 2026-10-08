@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 import net.minecraft.gametest.framework.GameTestServer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.TickTask;
@@ -27,11 +28,21 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
  * When the thread is held inside one turn and never polls, the report is read
  * from the watch thread instead, with every other busy thread's stack.
  *
+ * That held turn is vanilla's unload loop (ChunkMap.processUnloads), which at
+ * shutdown runs with unlimited time: an unload whose chunk still lends itself
+ * to a neighbour's generation reschedules itself there, and the generation
+ * needs that same thread's turn to finish, so the loop never ends. Fixtures
+ * that load a chunk area and release it at once can leave such generation
+ * under way when the last test passes. So before the shutdown begins, the
+ * server thread first runs its chunk tasks until no generation is left
+ * (bounded; shutdown then goes on exactly as before).
+ *
  * Does nothing outside the GameTest server.
  */
 public final class ShutdownWatch {
     private static final long[] REPORT_AFTER_MS = {20_000L, 50_000L, 120_000L};
     private static final int SHOWN = 12;
+    private static final long SETTLE_SECONDS = 30L;
     private static volatile boolean stopped;
 
     private ShutdownWatch() {
@@ -42,10 +53,56 @@ public final class ShutdownWatch {
             return;
         }
         MinecraftServer server = event.getServer();
+        if (server.isSameThread()) {
+            settle(server);
+        }
         stopped = false;
         Thread watch = new Thread(() -> watch(server), "The Oldest House shutdown watch");
         watch.setDaemon(true);
         watch.start();
+    }
+
+    /** Runs the levels' chunk tasks until no chunk generation is under way, or for at most thirty seconds. */
+    private static void settle(MinecraftServer server) {
+        long started = System.nanoTime();
+        long deadline = started + TimeUnit.SECONDS.toNanos(SETTLE_SECONDS);
+        int before = generating(server);
+        int left = before;
+        while (left > 0 && System.nanoTime() < deadline) {
+            boolean ran = false;
+            for (ServerLevel level : server.getAllLevels()) {
+                for (int i = 0; i < 4096 && level.getChunkSource().pollTask(); i++) {
+                    ran = true;
+                }
+            }
+            if (!ran) {
+                LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(2));
+            }
+            left = generating(server);
+        }
+        if (before > 0) {
+            TheOldestHouse.LOGGER.info("OTH shutdown watch: {} chunks were still generating as the tests ended; {} after {} ms",
+                    before, left == 0 ? "all settled" : left + " still are", TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started));
+        }
+    }
+
+    /** Generation tasks queued, plus chunks still lending themselves to a neighbour's generation. */
+    private static int generating(MinecraftServer server) {
+        int count = 0;
+        for (ServerLevel level : server.getAllLevels()) {
+            ChunkMap map = level.getChunkSource().chunkMap;
+            if (read(map, "pendingGenerationTasks") instanceof Collection<?> tasks) {
+                count += tasks.size();
+            }
+            if (read(map, "updatingChunkMap") instanceof Map<?, ?> holders) {
+                for (Object holder : holders.values()) {
+                    if (call(holder, "getGenerationRefCount") instanceof Integer refs && refs > 0) {
+                        count++;
+                    }
+                }
+            }
+        }
+        return count;
     }
 
     public static void onServerStopped(ServerStoppedEvent event) {

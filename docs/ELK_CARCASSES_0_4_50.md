@@ -192,3 +192,8 @@ Elsewhere:
   - the new classes, atlases, rail blockstate and porthole model;
   - every literary prop variant's textures;
   - 384 prop variants.
+
+## Test harness repairs in this release
+
+- **Two-client proof.** The two proof clients each extract LWJGL's native libraries to their own folder, so starting them together cannot load a half-written library. The first client's return from its note scene is checked on the tick the return lands. Before, it was checked a second later, after the restored stride and the test client's held walk key had carried it on.
+- **GameTest shutdown.** The intermittent stall that `ShutdownWatch` caught in `ChunkMap.processUnloads` came back on the staircase suite, after all its cases had passed. That suite's fixtures load chunk areas around each hearth and release them at once, so generation can still be under way when the last case passes. At shutdown, vanilla's unload loop runs with unlimited time, and an unload whose chunk is still lending itself to a neighbour's generation reschedules itself there. That generation needs the same thread to finish. Before shutdown begins, the GameTest server now runs its chunk tasks until no generation is left (at most thirty seconds), then shuts down as before. Production servers are unchanged.
