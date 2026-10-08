@@ -125,26 +125,30 @@ public final class StaircaseFire {
     }
     public static boolean ignite(ServerPlayer player,BlockPos origin,BlockPos at){
         if(player.isSpectator()||!player.isAlive()||!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)
-                ||player.distanceToSqr(at.getCenter())>36||!(player.getMainHandItem().getItem() instanceof net.minecraft.world.item.FlintAndSteelItem))return false;
+                ||player.distanceToSqr(at.getCenter())>36)return false;
         var phase=FinaleProgress.phase(player.server,player.getUUID());if(phase!=FinaleProgress.Phase.STAIRCASE&&phase!=FinaleProgress.Phase.UNSEEN)return false;
         var record=FinaleProgress.player(player.server,player.getUUID());int index=braziers(origin).indexOf(at);
         if(index<0||!player.serverLevel().getBlockState(at).is(Blocks.CAMPFIRE))return false;
-        if(index<flames(record)){player.displayClientMessage(Component.literal("This fire already burns for you."),true);return false;}
-        if(index>flames(record)){player.displayClientMessage(Component.literal("An earlier fire is still cold for you."),true);return false;}
+        if(index<flames(record)){player.displayClientMessage(Component.literal("This fire already burns for you."),true);io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"hearth_already_lit",at);return false;}
+        if(index>flames(record)){player.displayClientMessage(Component.literal("An earlier fire is still cold for you."),true);io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"hearth_earlier_cold",at);return false;}
+        if(!(player.getMainHandItem().getItem() instanceof net.minecraft.world.item.FlintAndSteelItem)){
+            player.displayClientMessage(Component.literal("The hearth needs a flame. Tom carries a lighter."),true);
+            io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"hearth_no_flame",at);return false;}
         // Only the explorer's own story burns here: no paper, no copy, no one else's leaves.
         StaircaseStory.sync(player);ItemStack fuel=player.getOffhandItem();
         if(!StaircaseStory.isCurrent(player,fuel)){
             player.displayClientMessage(Component.literal(StaircaseStory.foreign(player,fuel)?"Another reader's story will not catch for you."
-                    :"Only your own House of Leaves will catch. Hold it in your off hand."),true);return false;
+                    :"Only your own House of Leaves will catch. Hold it in your off hand."),true);io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"hearth_own_book",at);return false;
         }
         if(!StaircaseStory.ready(player,index)){
-            player.displayClientMessage(Component.literal("Your House of Leaves has no unburned leaf. This flight's leaf is somewhere in the dark above."),true);return false;
+            player.displayClientMessage(Component.literal("Your House of Leaves has no unburned leaf. This flight's leaf is somewhere in the dark above."),true);io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"hearth_missing_leaf",at);return false;
         }
         var embers=BurnEmbers.excerpt(StaircaseStory.record(player),index,at);
         if(!StaircaseStory.burn(player,fuel,index))return false;
         player.getMainHandItem().hurtAndBreak(1,player,EquipmentSlot.MAINHAND);
         player.serverLevel().setBlock(at,player.serverLevel().getBlockState(at).setValue(CampfireBlock.LIT,true),F);
         record.putInt("StairFires",index+1);record.putBoolean("StairFireVersion",true);
+        io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(player,"fire_lit","index",index);
         FinaleProgress.save(player.server,player.getUUID(),record);
         HousePackets.send(player,embers);
         player.serverLevel().playSound(null,at,SoundEvents.FIRECHARGE_USE,SoundSource.BLOCKS,.65F,.85F);

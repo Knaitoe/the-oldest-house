@@ -73,13 +73,117 @@ public final class ExplorationPassTests {
         h.assertTrue(l.getBlockState(b.west()).is(Blocks.STRIPPED_SPRUCE_LOG),"joining panes preserves the existing window frame");h.succeed();
     }
     @GameTest(template="empty")
+    public static void playtestLogIsOptInLocalAndHidesPlayerIds(GameTestHelper h){
+        var p=NativeTestPlayers.survival(h,"playtest_reader");java.nio.file.Path file=null;
+        try{
+            h.assertTrue(!io.github.knaitoe.theoldesthouse.house.PlaytestLog.enabled(),"the playtest log is off unless the server asks for it");
+            file=java.nio.file.Files.createTempFile("playtest-log",".jsonl");io.github.knaitoe.theoldesthouse.house.PlaytestLog.overrideForTesting(file);
+            io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(p,"door_sticks");
+            io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(p,"arrive","place","playtest_marker","depth",3,"story",false);
+            io.github.knaitoe.theoldesthouse.house.PlaytestLog.flush();
+            var lines=java.nio.file.Files.readAllLines(file);String raw=p.getUUID().toString();
+            h.assertTrue(lines.stream().noneMatch(line->line.contains(raw)),"player UUIDs are replaced by one-way hashes");
+            var arrive=lines.stream().map(line->com.google.gson.JsonParser.parseString(line).getAsJsonObject())
+                    .filter(o->"playtest_marker".equals(o.has("place")?o.get("place").getAsString():"")).findFirst().orElse(null);
+            h.assertTrue(arrive!=null&&"arrive".equals(arrive.get("event").getAsString())&&arrive.get("depth").getAsInt()==3&&!arrive.get("story").getAsBoolean()
+                    &&arrive.has("time")&&arrive.has("gameTime")&&arrive.get("player").getAsString().length()==12,"each event is one JSON line with times, a hashed player and typed fields: "+lines);
+            h.assertTrue(lines.stream().anyMatch(line->line.contains("\"refused\"")&&line.contains("\"door_sticks\"")),"refusals record their gate");
+            h.assertTrue(arrive.get("dimension").getAsString().equals(p.serverLevel().dimension().location().toString())
+                    &&arrive.has("inLabyrinth")&&arrive.has("activity")&&arrive.has("session"),"dimension, occupancy and connection identity accompany every event");
+            String connection=arrive.get("session").getAsString();
+            io.github.knaitoe.theoldesthouse.house.PlaytestLog.logout(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p));
+            io.github.knaitoe.theoldesthouse.house.PlaytestLog.login(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(p));
+            io.github.knaitoe.theoldesthouse.house.PlaytestLog.flush();
+            var starts=java.nio.file.Files.readAllLines(file).stream().map(line->com.google.gson.JsonParser.parseString(line).getAsJsonObject())
+                    .filter(o->"session_start".equals(o.get("event").getAsString())).toList();
+            h.assertTrue(starts.size()==2&&!starts.get(1).get("session").getAsString().equals(connection),"the same player reconnects with a distinct connection boundary");
+            h.assertTrue("overworld".equals(io.github.knaitoe.theoldesthouse.house.PlaytestLog.place(p))
+                    &&!io.github.knaitoe.theoldesthouse.house.PlaytestLog.inLabyrinth(p),"Overworld coordinates cannot masquerade as an interior story room");
+
+            h.succeed();
+        }catch(java.io.IOException e){throw new RuntimeException(e);}
+        finally{io.github.knaitoe.theoldesthouse.house.PlaytestLog.overrideForTesting(null);NativeTestPlayers.remove(p);if(file!=null)try{java.nio.file.Files.deleteIfExists(file);}catch(java.io.IOException ignored){}}
+    }
+    private static String accountText(LabyrinthData data,UUID player){
+        return WitnessAccount.book(data,player,"reader",false).get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT)
+                .pages().stream().map(page->page.raw().getString()).collect(java.util.stream.Collectors.joining("\n"));
+    }
+    @GameTest(template="empty")
+    public static void witnessAccountKeepsPersonalBeginningsAndMutableProgressWithoutCredit(GameTestHelper h){
+        var p=NativeTestPlayers.survival(h,"account_reader");var peer=NativeTestPlayers.survival(h,"account_peer");
+        var spectator=NativeTestPlayers.survival(h,"account_camera");spectator.setGameMode(GameType.SPECTATOR);
+        try{
+            var data=LabyrinthData.get(p.server);
+            VignetteGate.begin(p,LabyrinthPlace.HIDE_AND_CLAP);VignetteGate.begin(peer,LabyrinthPlace.HARRIGAN);
+            VignetteGate.begin(spectator,LabyrinthPlace.ELK_FAN);VignetteGate.begin(p,LabyrinthPlace.KAREN_ROOM);
+            h.assertTrue(WitnessAccount.count(data,p.getUUID())==0&&!WitnessAccount.ready(data,p.getUUID()),"a beginning never grants a resolution or unlock");
+            h.assertTrue(WitnessAccount.begun(data,p.getUUID(),WitnessAccount.Story.CLAP)
+                    &&!WitnessAccount.begun(data,peer.getUUID(),WitnessAccount.Story.CLAP)
+                    &&!WitnessAccount.begun(data,spectator.getUUID(),WitnessAccount.Story.ELK_FAN),"beginnings are personal and observers earn none");
+            data.visit(p.getUUID(),LabyrinthPlace.MINIATURES);for(int i=0;i<9;i++)data.visit(p.getUUID(),LabyrinthPlace.CROSS_HALL);
+            h.assertTrue(WitnessAccount.begun(data,p.getUUID(),WitnessAccount.Story.MINIATURES),"actual older discoveries survive the last-eight-crossings cache");
+            String unfinished=accountText(data,p.getUUID());
+            h.assertTrue(unfinished.contains("The wardrobe")&&unfinished.contains("The little rooms")&&unfinished.contains("unfinished")
+                    &&!unfinished.contains("The study")&&!unfinished.contains("karen_room"),"unfinished prose names only this reader's actual Witness beginnings");
+            WitnessAccount.resolve(p,WitnessAccount.Story.FLOORBOARDS,"read");
+            String first=accountText(data,p.getUUID());
+            h.assertTrue(first.contains("one room to the end")&&first.contains("OTHER ENDINGS"),"a prose count and another-kind hint come from real resolutions");
+            WitnessAccount.resolve(p,WitnessAccount.Story.HARRIGAN,"listened");
+            String second=accountText(data,p.getUUID());
+            h.assertTrue(second.contains("two rooms to the end")&&!second.contains("OTHER ENDINGS")
+                    &&second.contains("The wardrobe")&&WitnessAccount.count(data,peer.getUUID())==0,"the mutable account advances without crediting a peer or dropping unfinished entries");
+            var traded=WitnessAccount.book(data,p.getUUID(),"reader",false);peer.getInventory().setItem(0,traded.copy());WitnessAccount.updateBook(peer,false);
+            h.assertTrue(ItemStack.isSameItemSameComponents(traded,peer.getInventory().getItem(0)),"a borrowed account keeps its owner's components");
+            var loaded=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),h.getLevel().registryAccess()),h.getLevel().registryAccess());
+            h.assertTrue(second.equals(accountText(loaded,p.getUUID())),"native save/reload preserves evidence and beginnings");
+            h.succeed();
+        }finally{NativeTestPlayers.remove(p);NativeTestPlayers.remove(peer);NativeTestPlayers.remove(spectator);}
+    }
+    @GameTest(template="empty")
+    public static void witnessProgressMilestonesFollowTheDerivedQuotaAndKeepTheFinalGate(GameTestHelper h){
+        var data=new LabyrinthData();var id=UUID.randomUUID();int needed=WitnessAccount.REQUIRED;
+        for(int i=0;i<needed-1;i++)WitnessAccount.resolve(data,id,WitnessAccount.Story.values()[i],"heard");
+        String near=accountText(data,id);
+        h.assertTrue(near.contains("Only a few gaps remain")&&!near.contains("Crouch and open the bars")
+                &&!WitnessAccount.ready(data,id),"near-completion prose never unlocks the cell early");
+        WitnessAccount.resolve(data,id,WitnessAccount.Story.values()[needed-1],"heard");
+        String ready=accountText(data,id);
+        h.assertTrue(WitnessAccount.ready(data,id)&&ready.contains("The account holds together")
+                &&ready.contains("Crouch and open the bars"),"the original derived quota and real kinds still govern the final passage");
+        h.assertTrue(WitnessAccount.Story.values().length==43&&needed==33,"this presentation pass adds no sources and changes no quota");h.succeed();
+    }
+    @GameTest(template="empty")
+    public static void tomKeepsOneFiniteOriginalWhenItsReaderStoresOrTradesTheLighter(GameTestHelper h){
+        var p=NativeTestPlayers.survival(h,"lighter_reader");var peer=NativeTestPlayers.survival(h,"lighter_peer");
+        var actor=NovelRegistry.ACTOR.get().create(p.serverLevel());
+        try{
+            h.assertTrue(actor!=null,"Tom is a native actor");actor.appearance(p.getUUID(),0);actor.moveTo(p.position());p.serverLevel().addFreshEntity(actor);
+            NovelVignettes.meetTom(p,actor);
+            ItemStack original=ItemStack.EMPTY;
+            for(int i=0;i<p.getInventory().getContainerSize();i++)if(p.getInventory().getItem(i).is(NovelRegistry.LIGHTER.get())){
+                original=p.getInventory().getItem(i).copy();p.getInventory().setItem(i,ItemStack.EMPTY);break;
+            }
+            h.assertTrue(!original.isEmpty(),"the actual handoff gives the one original lighter");
+            peer.getInventory().setItem(0,original.copy());for(int i=0;i<4;i++)NovelVignettes.meetTom(p,actor);
+            h.assertTrue(!p.getInventory().hasAnyMatching(stack->stack.is(NovelRegistry.LIGHTER.get()))
+                    &&ItemStack.isSameItemSameComponents(original,peer.getInventory().getItem(0)),"an empty carried inventory does not mint replacements while a peer holds the original");
+            var dropped=peer.drop(peer.getInventory().getItem(0).copy(),false);peer.getInventory().setItem(0,ItemStack.EMPTY);NovelVignettes.meetTom(p,actor);
+            h.assertTrue(dropped!=null&&!p.getInventory().hasAnyMatching(stack->stack.is(NovelRegistry.LIGHTER.get()))
+                    &&ItemStack.isSameItemSameComponents(original,dropped.getItem()),"the dropped original remains real and no duplicate appears");dropped.discard();h.succeed();
+        }finally{if(actor!=null)actor.discard();NativeTestPlayers.remove(p);NativeTestPlayers.remove(peer);}
+    }
+    @GameTest(template="empty")
     public static void swimmingChannelHasTwoBlockHeadroomAndDryArrival(GameTestHelper h){
         var l=h.getLevel();var b=h.absolutePos(BlockPos.ZERO).offset(3550,8,500);LabyrinthHazards.buildFloodedPassage(l,b);
         for(var feet:LabyrinthHazards.floodRoute(b)){
             var body=new AABB(feet.getX()+.2,feet.getY()+.01,feet.getZ()+.2,feet.getX()+.8,feet.getY()+1.81,feet.getZ()+.8);
             h.assertTrue(l.noCollision(null,body),"the submerged route has native body clearance at "+feet);
         }
-        h.runAfterDelay(40,()->{h.assertTrue(l.getBlockState(b.offset(0,0,0)).getFluidState().isEmpty(),"the source-water channel cannot flood the arrival doorway");h.succeed();});
+        h.runAfterDelay(40,()->{h.assertTrue(l.getBlockState(b.offset(0,0,0)).getFluidState().isEmpty(),"the source-water channel cannot flood the arrival doorway");
+            for(int x=-7;x<=7;x++){
+                for(int z=-2;z<=-1;z++)h.assertTrue(l.getBlockState(b.offset(x,0,z)).getFluidState().isEmpty(),"the dry arrival stays dry at "+x+","+z);
+                if(x<0||x>1)h.assertTrue(l.getBlockState(b.offset(x,0,-27)).getFluidState().isEmpty(),"the far landing stays dry at "+x);
+            }h.succeed();});
     }
     @GameTest(template="empty")
     public static void childDistanceMakesTheSavedOccupiedClockGrowlAndShakeMoreOften(GameTestHelper h){

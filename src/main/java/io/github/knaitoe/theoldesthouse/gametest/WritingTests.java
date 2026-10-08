@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.ClickEvent;
@@ -112,6 +113,7 @@ public final class WritingTests {
             helper.assertTrue(specimens.size()==125,"the complete original correspondence corpus is required");
             var staircase=staircaseSpecimens(player);specimens.addAll(staircase);
             for(int draft=0;draft<3;draft++)specimens.add(io.github.knaitoe.theoldesthouse.labyrinth.NovelTexts.archiveDraft(draft));
+            var progress=accountSpecimens();specimens.addAll(progress);
             for (ItemStack book : specimens) {
                 var content = book.get(DataComponents.WRITTEN_BOOK_CONTENT);
                 for (var page : content.pages()) {
@@ -133,7 +135,7 @@ public final class WritingTests {
             java.nio.file.Path folder = java.nio.file.Path.of("../build/font-smoke");
             java.nio.file.Files.createDirectories(folder);
             java.nio.file.Files.writeString(folder.resolve("serial-pages.json"), pages.toString());
-            helper.assertTrue(staircase.size() >= 16 && specimens.size() == 128 + staircase.size() && pages.size() >= 700, "the real correspondence and personal staircase corpus is incomplete");
+            helper.assertTrue(staircase.size() >= 16 && specimens.size() == 128 + staircase.size() + progress.size() && pages.size() >= 700, "the real correspondence and personal staircase corpus is incomplete");
         } finally { helper.getLevel().getServer().getPlayerList().remove(player); }
         helper.succeed();
     }
@@ -142,6 +144,26 @@ public final class WritingTests {
      * at the native maximum, every narrator, phrasing and frame line), plus real accounts written
      * from a native player's record through every narrator.
      */
+    /** Render every new account page, including the widest counts, kind hints and unfinished entries. */
+    private static java.util.List<ItemStack> accountSpecimens(){
+        var books=new java.util.ArrayList<ItemStack>();
+        for(int count:new int[]{0,11,43}){
+            var data=new io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData();var id=java.util.UUID.randomUUID();
+            var own=new CompoundTag();var begun=new CompoundTag();
+            for(var story:io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount.Story.values())begun.putBoolean(story.id,true);
+            own.put("Begun",begun);data.setStateEntry(io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount.STATE,id.toString(),own);
+            int added=0;
+            for(var story:io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount.Story.values()){
+                if(added>=count)break;if(count==11&&!story.kind.equals("survival"))continue;
+                io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount.resolve(data,id,story,"heard");added++;
+            }
+            var account=io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount.book(data,id,"reader",false);
+            var pages=account.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page->page.raw())
+                    .filter(page->{String text=page.getString();return text.contains("THE ACCOUNT SO FAR")||text.contains("OTHER ENDINGS")||text.contains("left this part unfinished");}).toList();
+            books.add(io.github.knaitoe.theoldesthouse.house.HouseWriting.book("An account","reader",pages));
+        }
+        return books;
+    }
     private static List<ItemStack> staircaseSpecimens(net.minecraft.server.level.ServerPlayer p) {
         var books=new ArrayList<ItemStack>();var voices=io.github.knaitoe.theoldesthouse.labyrinth.StaircaseProse.Voice.values();var all=io.github.knaitoe.theoldesthouse.labyrinth.StaircaseProse.specimens();
         for(int v=0;v<voices.length;v++){var pages=all.get(v);var hand=io.github.knaitoe.theoldesthouse.labyrinth.StaircaseAccount.hand(voices[v].hand);

@@ -66,3 +66,25 @@ Five original staircase sheets open personal scenes: kitchen (0), laundry bedroo
 The chores use virtual cups, socks, a shopping list, radio, candle and drawer. Native menus prevent transfers to the real inventory. Readers keep inventory components, health, food, effects, XP, phase and their exact return pose. Waiting pets retain their UUID, health and wheel order. Each reader has separate saved room templates, restored after leaving; doorway exits, damage, disconnects, active-save reload and reconnect return to the stairs. Spectator cameras and uninvited readers stay outside personal rooms. These scenes add no Witness sources, rewards, leaves or fires.
 
 The wallpaper, 35 supported prop meshes, seven item meshes and five original quiet cues are packaged with the mod. The kitchen’s cup arrangement carries into its later scene. The descent score fades out for the room and returns afterward. [Design](STAIRCASE_LEAKS_DESIGN.md) / [asset provenance](STAIRCASE_LEAK_ASSETS.md).
+
+## Review repairs
+
+- **Flooded passage.** The swimming channel keeps its two blocks of headroom. A low stone-brick kerb now edges the dry arrival and the far landing wherever the channel or a surfacing well meets open floor, so water cannot run out over the dry rows. Walkers step over the kerb.
+- **Note scenes, room protection.** Nothing can be placed, used, broken or struck in a private room. The main hand still does the chore; the off hand, left clicks, block breaking and placement are refused.
+- **Note scenes, saves.** The player's own saved copy decides whether they are in a scene. If the world was saved mid-scene but the player was saved after returning, the leftover world record is cleared at login without moving the player or touching their inventory, and the room is restored.
+- **Note scenes, details.**
+  - A late kitchen allocated before the first kitchen was finished is rebuilt with the cups where they now hang.
+  - A room keeps only the visitor's return pose, not their inventory.
+  - Readers with no scene are remembered as such, so the hot paths no longer copy saved records.
+  - The scene engine is dropped again after the server stops.
+- **Tom and the lighter.**
+  - Tom's "Leave the radio on" line now plays after the handoff.
+  - The proposed lost-lighter replacement is not integrated in 0.4.56: storing, dropping or trading the original must not cause Tom to mint unlimited replacements. The finite handoff remains.
+  - A hearth clicked without a flame says so.
+- **Shaft sound and stone.** Creatures' own idle voices stay audible in the shaft; only ambient loops, weather, music and block ambience are suppressed. Masonry never falls where something is mounted on it or hangs from it.
+- **Saved originals.** A House of Leaves record saved before titles were stored keeps exactly the title page it always showed.
+- **Encounter preset.** The previous default preset is upgraded once, and the file records that it was checked. An operator who later chooses the old values keeps them.
+- **Repairs and layout.**
+  - The cabin, arrival-ground and sill construction stage runs once; deferred sweeps and restarts resume only the sweep, so player removals stay removed.
+  - A layout bump keeps the record of places already carved, so standing halls are not carved again.
+  - In an upgraded world, existing doors do not wait for a newly added core room that is still queued.

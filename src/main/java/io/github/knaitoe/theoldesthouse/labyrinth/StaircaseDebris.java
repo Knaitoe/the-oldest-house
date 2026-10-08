@@ -34,6 +34,17 @@ public final class StaircaseDebris {
     private record Piece(BlockPos source,BlockPos backing){}
     private static boolean masonry(BlockState s){return s.is(Blocks.DEEPSLATE_TILES)||s.is(Blocks.CHISELED_DEEPSLATE);}
     private static boolean loaded(ServerLevel level,BlockPos p){return level.hasChunkAt(p)&&level.areEntitiesLoaded(new ChunkPos(p).toLong());}
+    /**
+     * Whether something may hang on this stone: a torch, ladder, sign, lantern, chain or anything else
+     * that is not open air or solid stone. Such a fragment stays, so nothing a player mounted pops off.
+     */
+    private static boolean carries(ServerLevel level,BlockPos at,BlockPos back){
+        for(var side:net.minecraft.core.Direction.values()){
+            var next=at.relative(side);if(next.equals(back))continue;var s=level.getBlockState(next);
+            if(!s.isAir()&&!s.isCollisionShapeFullBlock(level,next))return true;
+        }
+        return false;
+    }
     private static boolean dislodge(ServerLevel level,BlockPos origin,Vec3 viewer){
         var base=FinaleArchitecture.base(origin);int radius=FinaleArchitecture.SHAFT_RADIUS;
         int px=(int)Math.floor(viewer.x),py=(int)Math.floor(viewer.y),pz=(int)Math.floor(viewer.z);
@@ -55,7 +66,7 @@ public final class StaircaseDebris {
             var at=piece.source();var back=piece.backing();
             if(!loaded(level,at)||!loaded(level,back)||level.getBlockEntity(at)!=null||level.getBlockEntity(back)!=null)continue;
             var state=level.getBlockState(at);var behind=level.getBlockState(back);
-            if(!masonry(state)||!behind.isAir()&&!behind.isCollisionShapeFullBlock(level,back))continue;
+            if(!masonry(state)||!behind.isAir()&&!behind.isCollisionShapeFullBlock(level,back)||carries(level,at,back))continue;
             // Removing the inner face never opens the black shell to the world.
             if(behind.isAir()&&!level.setBlock(back,state,FLAGS))continue;
             FallingBlockEntity debris=FallingBlockEntity.fall(level,at,state);
