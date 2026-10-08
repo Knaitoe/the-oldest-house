@@ -49,7 +49,7 @@ public enum LabyrinthPlace {
     HIDE_AND_CLAP("hide_and_clap", Kind.ONE_SHOT, 4, new BoundingBox(-6, -1, -13, 6, 4, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
     )),
-    /** The Five and a Half Minute Hallway: a seamless loop that ends only when its time is up (see {@link LabyrinthLoops}). */
+    /** The long hallway: a testable seamless loop with a bounded occupied-time fallback (see {@link LabyrinthLoops}). */
     LONG_HALLWAY("long_hallway", Kind.GRAY, 5, new BoundingBox(-2, -1, -49, 14, 3, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(12, 0, -45), Direction.SOUTH, LabyrinthData.DEALT)
