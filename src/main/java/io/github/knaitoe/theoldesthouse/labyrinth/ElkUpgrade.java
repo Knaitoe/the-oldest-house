@@ -2,12 +2,10 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.TicketType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -45,15 +43,7 @@ public final class ElkUpgrade {
         AABB area = area(base);
         for (var player : level.players())
             if (area.intersects(player.getBoundingBox()) || area.inflate(32).intersects(player.getCamera().getBoundingBox())) return false;
-        if (fixture) return true;
-        boolean ready = true;
-        for (int x = ((int) Math.floor(area.minX)) >> 4; x <= ((int) Math.ceil(area.maxX) - 1) >> 4; x++)
-            for (int z = ((int) Math.floor(area.minZ)) >> 4; z <= ((int) Math.ceil(area.maxZ) - 1) >> 4; z++) {
-                var chunk = new ChunkPos(x, z);
-                level.getChunkSource().addRegionTicket(TicketType.PORTAL, chunk, 3, base);
-                ready &= level.isLoaded(new BlockPos(x << 4, base.getY(), z << 4)) && level.areEntitiesLoaded(chunk.toLong());
-            }
-        return ready;
+        return fixture || ScenePolish.loaded(level, area, base);
     }
 
     /**

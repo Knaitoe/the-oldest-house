@@ -75,8 +75,6 @@ public final class LabyrinthBuilder {
     private static boolean gatingActive;
     /** Whether the running queue extends an existing world rather than carving a new one. */
     private static boolean upgrading;
-    /** True while the elk scene of a saved world is being carved again in place (0.4.50). */
-    private static boolean elkRebuild;
     /** Saved construction progress, so a restart never rebuilds a place that already stands. */
     public static final String PROGRESS = "labyrinth_carve_0440";
     /** Places are built this many crossings ahead of the deepest explorer. */
@@ -300,9 +298,8 @@ public final class LabyrinthBuilder {
             if (!geometry.tick()) return;
             registerDoors(dataFor(server), place, LabyrinthPlaces.base(pendingOrigin, place));
             ServerLevel site = server.getLevel(NovelRooms.dimension(place));
-            if (site != null && place == LabyrinthPlace.ELK_CARCASSES && elkRebuild) ElkUpgrade.settle(site, LabyrinthPlaces.base(pendingOrigin, place));
-            elkRebuild = false;
-            rebuildUpgrades.remove(place);
+            // A scene carved again in place settles what its new ground displaced.
+            if (rebuildUpgrades.remove(place) && site != null) ElkUpgrade.settle(site, LabyrinthPlaces.base(pendingOrigin, place));
             if (site != null) ScenePolish.polishOnce(site, pendingOrigin, place);
             recordBuilt(server, place);
             geometry = null;
@@ -325,9 +322,7 @@ public final class LabyrinthBuilder {
             if (site != null) {
                 BlockPos base = LabyrinthPlaces.base(pendingOrigin, place);
                 // A saved world's old elk scene is only taken down once nobody is in it or can see it.
-                boolean rebuild = rebuildUpgrades.contains(place);
-                if (rebuild && !ElkUpgrade.vacant(site, base, fixtureDrain)) { active = false; return; }
-                elkRebuild = rebuild;
+                if (rebuildUpgrades.contains(place) && !ElkUpgrade.vacant(site, base, fixtureDrain)) { active = false; return; }
                 ScenePolish.forget(server, pendingOrigin, place);
                 geometry = BuildBlocks.record(site, () -> LiteraryRooms.build(site, base, place));
                 if (place == LabyrinthPlace.ELK_CARCASSES) TheOldestHouse.LOGGER.info("Recorded {}: {}", place.id(), geometry.describe());
@@ -519,7 +514,6 @@ public final class LabyrinthBuilder {
         preparing = null;
         pending = null;
         pendingOrigin = null;
-        elkRebuild = false;
         rebuildUpgrades.clear();
         domesticUpgrades.clear();
         architecturalUpgrades.clear();

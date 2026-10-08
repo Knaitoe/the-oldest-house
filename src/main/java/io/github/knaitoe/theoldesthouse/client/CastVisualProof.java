@@ -10,6 +10,9 @@ import net.minecraft.client.*;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.geom.ModelPart;
+import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Vector3f;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
@@ -34,10 +37,41 @@ public final class CastVisualProof extends Screen {
             var buffers=mc.renderBuffers().bufferSource();var consumer=buffers.getBuffer(RenderType.entityCutoutNoCull(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/"+textures[i]+".png")));
             if(i==2)new MotherModel(mc.getEntityModels().bakeLayer(MotherModel.LAYER)).renderToBuffer(pose,consumer,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);
             else if(i==3)new GoatmanChildModel(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER)).renderToBuffer(pose,consumer,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);
-            else {var model=new LakeWitchModel(mc.getEntityModels().bakeLayer(LakeWitchModel.LAYER));if(i==0){model.huntPose(0,.5F,0,false);if(model.body.xRot<1.5F||model.head.y<15)throw new IllegalStateException("Hunt model is not on all fours");}model.renderToBuffer(pose,consumer,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);}
+            else {var model=new LakeWitchModel(mc.getEntityModels().bakeLayer(LakeWitchModel.LAYER));if(i==0){grounded(model);model.huntPose(0,.5F,0,LakeWitchEntity.STALK,false);if(model.body.xRot<1.5F||model.head.y<15)throw new IllegalStateException("Hunt model is not on all fours");}model.renderToBuffer(pose,consumer,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);}
             buffers.endBatch();pose.popPose();
         }
         g.drawString(font,"Native UVs / original appearance IDs / ordinary clothing, changed by wear and the lake.",10,height-14,0xFFE6DFCF,false);
+    }
+    private static float[][] corners(float x0,float y0,float z0,float x1,float y1,float z1){
+        float[][] out=new float[8][];int i=0;
+        for(float x:new float[]{x0,x1})for(float y:new float[]{y0,y1})for(float z:new float[]{z0,z1})out[i++]=new float[]{x/16F,y/16F,z/16F};
+        return out;
+    }
+    /** The lowest point of a limb's box in model space (y grows downward; the ground is 1.5). */
+    private static float lowest(ModelPart limb,float[][] box){
+        var pose=new PoseStack();limb.translateAndRotate(pose);var m=pose.last().pose();float low=-Float.MAX_VALUE;
+        for(float[] c:box)low=Math.max(low,m.transformPosition(new Vector3f(c[0],c[1],c[2])).y);
+        return low;
+    }
+    /** Her hands and feet meet the ground: through a whole stride of each hunt phase nothing sinks more than two pixels, and at rest nothing hangs. */
+    private static void grounded(LakeWitchModel model){
+        float[][] arm=corners(-2,-2,-2,2,10,2),leg=corners(-2,0,-2,2,12,2);float ground=1.5F;
+        for(int phase:new int[]{LakeWitchEntity.STALK,LakeWitchEntity.WITHDRAW,LakeWitchEntity.LUNGE}){
+            boolean lunge=phase==LakeWitchEntity.LUNGE;
+            for(int k=0;k<=8;k++){
+                model.huntPose(k*(float)(2*Math.PI/1.4/8),1,0,phase,lunge);
+                for(var limb:new ModelPart[]{model.leftArm,model.rightArm,model.leftLeg,model.rightLeg}){
+                    float low=lowest(limb,limb==model.leftLeg||limb==model.rightLeg?leg:arm);
+                    if(low>ground+2/16F)throw new IllegalStateException("A hunting limb sinks through the ground: phase "+phase+" step "+k+" "+low);
+                }
+            }
+            model.huntPose(0,0,0,phase,lunge);
+            for(var limb:new ModelPart[]{model.leftArm,model.rightArm,model.leftLeg,model.rightLeg}){
+                boolean legPart=limb==model.leftLeg||limb==model.rightLeg;if(lunge&&!legPart)continue; // the claws are raised
+                float low=lowest(limb,legPart?leg:arm);
+                if(Math.abs(low-ground)>1/16F)throw new IllegalStateException("A resting limb is off the ground: phase "+phase+" "+low);
+            }
+        }
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof CastVisualProof)||++frames<4)return;

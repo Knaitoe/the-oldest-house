@@ -217,7 +217,15 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             f.at(p,place,ElkCarcassMap.ENDING.getX()+.5,ElkCarcassMap.GATE_Y,ElkCarcassMap.ENDING.getZ()+1.5);p.setOnGround(true);
             h.runAfterDelay(15,()->{h.assertTrue(f.own(p,place).getBoolean("Ready"),"the crew's gate holds the last account");
                 f.read(p,place,LiteraryRooms.ending(place));
-                h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.ELK_CARCASSES),"only the whole personal account resolves the source");h.succeed();});
+                h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.ELK_CARCASSES),"only the whole personal account resolves the source");
+                // The crew's gate is a real way back: walking out through it takes the reader to the hall they came from.
+                var gate=f.data().door(place.doorId(place.doors().stream().filter(s->s.name().equals("service")).findFirst().orElseThrow()));
+                f.data().pushReturn(p.getUUID(),new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,Vec3.atBottomCenterOf(f.origin.offset(0,0,24)),0,true));
+                p.moveTo(Vec3.atBottomCenterOf(gate.lower.south(2)));LabyrinthDoors.tickPlayer(p,f.origin);LabyrinthDoors.use(p,gate);
+                h.assertTrue(f.out.getBlockState(gate.lower).getValue(DoorBlock.OPEN),"the gate's door opens from inside");
+                p.moveTo(Vec3.atBottomCenterOf(gate.lower.north(2)));LabyrinthDoors.tickPlayer(p,f.origin);
+                h.assertTrue(HouseTransitionEvents.isPending(p)&&f.data().returnDepth(p.getUUID())==1,"walking out through the crew's gate takes the reader back the way they came");
+                HouseTransitionEvents.cancelPending(p,"gate proven");h.succeed();});
         });
     }
     @AfterBatch(batch="literary_elk_journey") public static void elkJourneyDone(ServerLevel l){close();}

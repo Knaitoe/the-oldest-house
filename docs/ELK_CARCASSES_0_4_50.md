@@ -204,6 +204,27 @@ The scene is large, so its construction is kept lean. The same blocks still stan
 - **Native suite time limit.** The structure suite builds this scene in its upgrade fixtures, so its time limit rises from thirty to forty minutes, as it has before when the suite grew.
 - **Logged sizes.** The builder logs the elk plan's size when it is recorded, and the GameTest server logs the elk polish time, the heap in use and the loaded chunks once a minute.
 
+## Review repairs
+
+A review of the rework found these, all repaired in this release:
+
+- **The gate is now an actual way back.** Until now only a scene's entry door was watched for a walk-out, so the crew's gate (and Holloway's service door, registered the same way in 0.4.25) opened but led nowhere. `LabyrinthDoors` now treats every return door of a scene as a way back, under the same locks and departure hooks as its entry: Holloway's pursuit still holds the service door shut until the latch yields, and a scene's departure bookkeeping runs whichever door is used. The elk journey case walks out through the gate and proves the return.
+- **The site trench had no way out.** The safety fence ringed it; its ends are open where the earth steps come up.
+- **The drag's stains never showed.** They were placed and then cleared as growth in the same pass; they go down after the clearing.
+- **The gate fence floated** beyond the levelled pad; it follows the ground.
+- **The anchor chain** cut an air pocket through the lake; it is waterlogged below the surface.
+- **The search skipped its first leg** when a pause from the patrol was still counting; a stage change clears the previous stage's pause, leg and stuck clock.
+- **Construction bookkeeping.** The rebuild flag is the rebuild set; the rebuild waits on the same loaded test as the polish; an unused seeded random and dead parameters are gone.
+
+### Stacey Graves
+
+The lake witch's hunt (0.4.27) was reviewed with it. Her model is a player model on all fours; the repairs are to how it moves, not what it is.
+
+- **She looks at you.** The all-fours pose reset the head after the look control had turned it, so she stared straight ahead while flanking. The head now takes the server's look, within her neck's reach.
+- **Three hunts read differently.** The synced stalk, lunge and withdraw phases were drawn alike. Stalking she is lower and looks up from under her brow; withdrawing she goes head-down at a longer scurry; lunging she rises onto reaching claws.
+- **A hit rakes.** The claw used to fly up over her head at a hit; it rakes down and across, and her head drives in.
+- **Her limbs meet the ground.** The pivots sit on her back line so hands and feet stay on the surface through the stride. The native cast proof now measures every limb over a whole stride of each phase and fails if one sinks more than two pixels or hangs at rest.
+
 ## Test harness repairs in this release
 
 - **Two-client proof.** The two proof clients each extract LWJGL's native libraries to their own folder, so starting them together cannot load a half-written library. The first client's return from its note scene is checked on the tick the return lands. Before, it was checked a second later, after the restored stride and the test client's held walk key had carried it on.
