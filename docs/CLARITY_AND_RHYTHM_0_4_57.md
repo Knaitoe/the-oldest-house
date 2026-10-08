@@ -15,7 +15,7 @@ The opt-in local log adds `hazard_resolve`, `retreat_guidance` and actual-site r
 
 Layout 35 / protocol 34; matching 0.4.57 client and server JARs. The pool remains forty-three eligible sources, thirty-three personal resolutions across two kinds, and three endings. Original actor and companion identity, health, orders, finite supplies, exact books, personal progression, completed endings and established darkness remain.
 
-The full custody/recovery audit, solo/duo human playtests, survey, keeping shelf, personal callbacks, session escalation and optional cooperative moments remain in the plan. Opening pace, quota and darkness changes remain decisions informed by playtests. This pass does not replenish lost finite items.
+The full custody/recovery audit, solo/duo human playtests, survey, keeping shelf, personal callbacks, session escalation and optional cooperative moments remain in the plan. The owner has confirmed the existing opening wait and Witness quota: settling into the world and the hardest ending are intentional. Future visibility work should improve ordinary rooms and interaction cues while preserving deliberately dark mechanics. This pass does not replenish lost finite items.
 
 ## Required evidence
 
