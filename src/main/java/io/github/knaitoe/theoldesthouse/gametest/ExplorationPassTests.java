@@ -430,6 +430,7 @@ public final class ExplorationPassTests {
         try{
             var house=new HouseSavedData();house.markSpawned(origin);store.set("the_oldest_house",house);var d=new LabyrinthData();store.set("the_oldest_house_labyrinth",d);
             var positions=StaircaseWriting.positions(origin);h.assertTrue(!positions.isEmpty()&&positions.size()<=StaircaseNotes.TEXTS.size(),"the complete two-part physical descent has a distinct authored sheet for every landing");
+            h.assertTrue(StaircaseWriting.pantherLanding(origin).getY()>FinaleArchitecture.ARENA && positions.getLast().getY()<FinaleArchitecture.ARENA,"the poem anticipates the cell rather than lying beyond it in the lower shaft");
             Set<String> texts=new HashSet<>();ItemStack first=null;
             for(var at:positions){
                 l.setBlock(at.below(),Blocks.STONE.defaultBlockState(),2);l.setBlock(at,NoteSurfaceBlock.state(HouseMarginalia.Thread.POEMS,Direction.WEST),2);
@@ -437,9 +438,9 @@ public final class ExplorationPassTests {
                 h.assertTrue(StaircaseWriting.open(a,at),"a real stair sheet opens the native reader");var menu=(net.minecraft.world.inventory.LecternMenu)a.containerMenu;
                 var book=menu.getSlot(0).getItem().copy();String text=book.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().getFirst().raw().getString();
                 h.assertTrue(texts.add(text),"no two authored landings repeat their sheet");
-                if(at.equals(positions.getLast())){
+                if(at.equals(StaircaseWriting.pantherLanding(origin))){
                     var content=book.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT);
-                    h.assertTrue(content.title().raw().equals("The Panther")&&content.author().equals("Zampanò")&&content.pages().size()>1,"the new unbound final landing carries the complete source poem in its own hand");
+                    h.assertTrue(content.title().raw().equals("The Panther")&&content.author().equals("Zampanò")&&content.pages().size()>1,"the last landing above the prisoner carries the complete source poem in its own hand");
                     h.assertTrue(menu.clickMenuButton(a,3)&&!menu.clickMenuButton(a,3),"the final-approach source is one finite personal original");
                 }
                 if(first==null){first=book;h.assertTrue(menu.clickMenuButton(a,3)&&!menu.clickMenuButton(a,3),"the shared surface yields one finite original to its own reader");}
@@ -449,11 +450,11 @@ public final class ExplorationPassTests {
             h.assertTrue(((net.minecraft.world.inventory.LecternMenu)b.containerMenu).clickMenuButton(b,3),"a peer has an independent finite collection, not the first reader's taken bit");b.closeContainer();
             var own=d.stateEntry(StaircaseWriting.ID,a.getUUID().toString());var books=own.getCompound("Books");var legacy=HouseWriting.book("A saved sheet","Ruth",HouseWriting.WritingStyle.KAREN,List.of("These exact words were already here."));
             books.put(Long.toString(at.asLong()),legacy.save(a.registryAccess()));own.put("Books",books);var editions=own.getCompound("Editions");editions.putInt(Long.toString(at.asLong()),427);own.put("Editions",editions);d.setStateEntry(StaircaseWriting.ID,a.getUUID().toString(),own);
-            var peer=d.stateEntry(StaircaseWriting.ID,b.getUUID().toString());var peerBooks=peer.getCompound("Books");String finalKey=Long.toString(positions.getLast().asLong());peerBooks.put(finalKey,legacy.save(b.registryAccess()));peer.put("Books",peerBooks);var peerTaken=peer.getCompound("Taken");peerTaken.putBoolean(finalKey,true);peer.put("Taken",peerTaken);d.setStateEntry(StaircaseWriting.ID,b.getUUID().toString(),peer);
+            var peer=d.stateEntry(StaircaseWriting.ID,b.getUUID().toString());var peerBooks=peer.getCompound("Books");String finalKey=Long.toString(StaircaseWriting.pantherLanding(origin).asLong());peerBooks.put(finalKey,legacy.save(b.registryAccess()));peer.put("Books",peerBooks);var peerTaken=peer.getCompound("Taken");peerTaken.putBoolean(finalKey,true);peer.put("Taken",peerTaken);d.setStateEntry(StaircaseWriting.ID,b.getUUID().toString(),peer);
             var loaded=LabyrinthData.load(d.save(new CompoundTag(),a.registryAccess()),a.registryAccess());store.set("the_oldest_house_labyrinth",loaded);
             a.teleportTo(l,at.getX()+1.5,at.getY(),at.getZ()+.5,0,0);StaircaseWriting.open(a,at);var menu=(net.minecraft.world.inventory.LecternMenu)a.containerMenu;
             h.assertTrue(ItemStack.isSameItemSameComponents(legacy,menu.getSlot(0).getItem())&&!menu.clickMenuButton(a,3),"an older read/taken original keeps its exact components and cannot refill after reload");a.closeContainer();
-            var last=positions.getLast();b.teleportTo(l,last.getX()+1.5,last.getY(),last.getZ()+.5,0,0);StaircaseWriting.open(b,last);var kept=(net.minecraft.world.inventory.LecternMenu)b.containerMenu;
+            var last=StaircaseWriting.pantherLanding(origin);b.teleportTo(l,last.getX()+1.5,last.getY(),last.getZ()+.5,0,0);StaircaseWriting.open(b,last);var kept=(net.minecraft.world.inventory.LecternMenu)b.containerMenu;
             h.assertTrue(ItemStack.isSameItemSameComponents(legacy,kept.getSlot(0).getItem())&&!kept.clickMenuButton(b,3),"an already saved final-approach sheet wins over the Panther and retains finite custody");b.closeContainer();
             h.succeed();
         }finally{a.closeContainer();b.closeContainer();NativeTestPlayers.remove(a);NativeTestPlayers.remove(b);store.set("the_oldest_house",oldHouse);store.set("the_oldest_house_labyrinth",oldData);}

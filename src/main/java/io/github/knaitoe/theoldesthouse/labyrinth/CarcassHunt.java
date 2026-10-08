@@ -95,6 +95,10 @@ public final class CarcassHunt {
         for(var at:BlockPos.betweenClosed(BlockPos.containing(sweep.minX,sweep.minY,sweep.minZ),BlockPos.containing(sweep.maxX-.0001,sweep.maxY-.0001,sweep.maxZ-.0001))){
             var s=l.getBlockState(at);if(removed>=4||!l.hasChunkAt(at)||!foliage(s)||l.getBlockEntity(at)!=null)continue;
             if(s.getCollisionShape(l,at).toAabbs().stream().noneMatch(shape->shape.move(at).intersects(sweep)))continue;
+            // A private sighting cannot tear away another reader's occupied cover.
+            // The shared Camp Blood actor remains visible and physical for everyone.
+            if(a.owner().isPresent()&&l.players().stream().anyMatch(p->p.isAlive()&&!p.isSpectator()
+                    &&!p.getUUID().equals(a.owner().get())&&p.getBoundingBox().inflate(2,2,2).intersects(new AABB(at))))continue;
             if(EventHooks.onEntityDestroyBlock(a,at,s)&&l.destroyBlock(at,true,a))removed++;
         }
     }

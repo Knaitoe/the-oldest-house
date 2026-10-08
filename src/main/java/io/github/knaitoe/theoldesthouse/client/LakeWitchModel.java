@@ -45,9 +45,15 @@ public final class LakeWitchModel extends PlayerModel<LakeWitchEntity> {
         resetBody();super.setupAnim(e,walk,speed,age,yaw,pitch);
         if(e.memory()){leftArm.xRot=-.2F;rightArm.xRot=-.25F;head.xRot=.25F;copyClothes();return;}
         huntPose(walk,speed,age,e.striking());
+        lookPose(yaw,pitch);
         attackPose(attackTime,e.biting(),e.striking());
         if(e.hurtTime>0){float recoil=e.hurtTime/10F;head.xRot-=recoil*.7F;body.xRot-=recoil*.25F;leftArm.xRot+=recoil*.9F;rightArm.xRot+=recoil*.9F;leftElbow.xRot+=recoil*.8F;rightElbow.xRot+=recoil*.8F;}
         copyClothes();
+    }
+    /** Reapply native look direction after the low hunting pose resets the model. */
+    public void lookPose(float yaw,float pitch){
+        head.yRot+=net.minecraft.util.Mth.clamp(yaw,-70F,70F)*(float)Math.PI/180F;
+        head.xRot+=net.minecraft.util.Mth.clamp(pitch,-30F,45F)*(float)Math.PI/180F*.6F;
     }
     public void resetBody(){
         for(var part:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg,jacket,leftSleeve,rightSleeve,leftPants,rightPants,

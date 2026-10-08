@@ -51,6 +51,21 @@ public final class SlasherTests {
     }
     @AfterBatch(batch="elk_private_foliage") public static void privateLeavesDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="elk_private_clock") public static void privateClockDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="elk_peer_cover") public static void peerCoverDone(ServerLevel l){cleanup();}
+    @GameTest(template="empty",batch="elk_peer_cover",timeoutTicks=1800)
+    public static void twoHidingReadersKeepTheirCoverFromTheOthersInvisibleHunter(GameTestHelper h){privateRun(h,1264000,f->{
+        f.corridor();f.barrier(Blocks.SPRUCE_LEAVES);var p=f.player("cover_owner",.5,-33.5);var peer=f.player("cover_peer",1.3,-33.5);f.hide(p);f.hide(peer);
+        var a=privateActor(f,p);var id=a.getUUID();KillerNavigation.request(a,Vec3.atBottomCenterOf(f.base.offset(0,0,-30)),1.0);
+        h.startSequence().thenIdle(170).thenExecute(()->{
+            h.assertTrue(CarcassHunt.concealed(p,f.base)&&CarcassHunt.concealed(peer,f.base),"both readers are physically crouched in the same cover");
+            h.assertTrue(f.l.getBlockState(f.base.offset(0,0,-35)).is(Blocks.SPRUCE_LEAVES)&&f.l.getBlockState(f.base.offset(0,1,-35)).is(Blocks.SPRUCE_LEAVES),"an invisible private hunter cannot tear away the peer's occupied foliage");
+            h.assertTrue(a.getUUID().equals(id)&&a.getZ()<f.base.getZ()-35&&WitnessAccount.count(LabyrinthData.get(f.l.getServer()),peer.getUUID())==0,"blocked movement neither teleports nor grants the peer evidence");
+            peer.teleportTo(f.l,f.base.getX()+1.3,f.base.getY(),f.base.getZ()-28.5,0,0);peer.connection.resetPosition();
+            KillerNavigation.request(a,Vec3.atBottomCenterOf(f.base.offset(0,0,-30)),1.0);
+        }).thenWaitUntil(()->h.assertTrue(a.getZ()>f.base.getZ()-34.5,"the same native actor can clear the physical passage once the peer leaves its cover")).thenExecute(()->{
+            h.assertTrue(f.l.getBlockState(f.base.offset(0,0,-35)).isAir()&&a.getUUID().equals(id),"owner-only foliage breaking and actor identity remain intact");f.done();
+        });
+    });}
     @GameTest(template="empty",batch="elk_private_foliage",timeoutTicks=1800)
     public static void privateElkKillerUsesPhysicalLeafClearanceWithoutASecondSharedBrain(GameTestHelper h){privateRun(h,1263000,f->{
         f.corridor();f.barrier(Blocks.SPRUCE_LEAVES);var p=f.player("private_leaf_owner",.5,-30.5);f.hide(p);var peer=f.player("private_leaf_peer",1.3,-30.5);f.hide(peer);

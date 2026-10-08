@@ -7,7 +7,7 @@ import java.util.*;
 
 /** Source transcriptions from the owner's scanned edition. These are historical papers, not replies to the player. */
 public final class NovelCorrespondence {
-    public static final String PELAFINA_CHAIN="HOL_PELAFINA",PANTHER="HOL_Z04";
+    public static final String PELAFINA_CHAIN="HOL_PELAFINA",PANTHER="HOL_Z04",ROOTS="HOL_Z03";
     private static final List<CorrespondenceTexts.Note> NOTES=load();
     private NovelCorrespondence(){}
     private static List<CorrespondenceTexts.Note> load(){

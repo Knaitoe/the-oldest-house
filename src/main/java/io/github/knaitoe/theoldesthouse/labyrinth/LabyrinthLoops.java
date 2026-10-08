@@ -38,10 +38,9 @@ import net.minecraft.world.phys.Vec3;
  * that isn't.
  *
  * <ul>
- *   <li><b>The Five and a Half Minute Hallway.</b> A gray corridor that jogs
- *   aside every twelve blocks. Walking on loops back a period until five and
- *   a half minutes have passed since entering; only then does the far door
- *   come. Sprinting, speed and ender pearls change nothing. Walking back
+ *   <li><b>The long hallway.</b> A gray corridor that jogs aside every twelve
+ *   blocks. Two forward repeats and a reversed repeat allow the far door;
+ *   otherwise the repetition ends after ninety occupied seconds. Walking back
  *   unwinds only the laps already walked, so the space is always
  *   consistent. Anything placed in it or dropped in it is gone on the next
  *   pass.</li>
@@ -58,8 +57,9 @@ import net.minecraft.world.phys.Vec3;
  * All three are gray places, dealt like the junction and the corridor.
  */
 public final class LabyrinthLoops {
-    /** Five and a half minutes. */
-    public static final long LONG_HALLWAY_TICKS = 330L * 20L;
+    /** A fallback, not a required wait: testing the repetition can end it sooner. */
+    public static final long LONG_HALLWAY_TICKS = 90L * 20L;
+    private static final String PROGRESS="long_hallway_0461";
     /** How many extra turns climbing the spiral takes. */
     public static final int SPIRAL_EXTRA_TURNS = 4;
     /** One period of a jogging hallway: twelve blocks on, three aside. */
@@ -85,6 +85,8 @@ public final class LabyrinthLoops {
         int laps;
         int last;
         long seen;
+        long occupied;
+        int forward, backward;
 
         State(LabyrinthPlace place, long now, int where) {
             this.place = place;
@@ -95,6 +97,21 @@ public final class LabyrinthLoops {
     }
 
     private static final Map<UUID, State> STATES = new HashMap<>();
+
+    public static void arrive(ServerPlayer player,LabyrinthPlace place){
+        if(place!=LabyrinthPlace.LONG_HALLWAY||player.isSpectator())return;
+        LabyrinthData.get(player.server).setStateEntry(PROGRESS,player.getUUID().toString(),new net.minecraft.nbt.CompoundTag());
+        STATES.remove(player.getUUID());
+        player.displayClientMessage(net.minecraft.network.chat.Component.literal("The bends repeat. Walk back to check them. Crouch and use a wall with an empty hand to record what you find."),false);
+    }
+    public static net.minecraft.nbt.CompoundTag observations(ServerPlayer player){
+        return LabyrinthData.get(player.server).stateEntry(PROGRESS,player.getUUID().toString());
+    }
+    private static void remember(ServerPlayer player,State state){
+        if(state.place!=LabyrinthPlace.LONG_HALLWAY)return;
+        var own=observations(player);own.putLong("Occupied",state.occupied);own.putInt("Forward",state.forward);own.putInt("Backward",state.backward);own.putInt("Laps",state.laps);
+        LabyrinthData.get(player.server).setStateEntry(PROGRESS,player.getUUID().toString(),own);
+    }
 
     private LabyrinthLoops() {
     }
@@ -358,27 +375,31 @@ public final class LabyrinthLoops {
 
     /** Each tick for a player well inside a loop place. */
     static void tick(ServerPlayer player, LabyrinthPlace place, BlockPos base) {
+        if(!player.isAlive()||player.isSpectator())return;
         long now = player.serverLevel().getGameTime();
         boolean spiral = place == LabyrinthPlace.SPIRAL_STAIR;
         int where = spiral ? turnOf(base, player.getY()) : periodOf(base, player.getZ());
         State state = STATES.get(player.getUUID());
         if (state == null || state.place != place || now - state.seen > 40L) {
             state = new State(place, now, where);
+            if(place==LabyrinthPlace.LONG_HALLWAY){var saved=observations(player);state.occupied=saved.getLong("Occupied");state.forward=saved.getInt("Forward");state.backward=saved.getInt("Backward");state.laps=saved.getInt("Laps");}
             STATES.put(player.getUUID(), state);
             if (place == LabyrinthPlace.HOTEL_HALLWAY) {
                 sendNumbers(player, base, 0);
             }
         }
+        if(now>state.seen)state.occupied++;
         state.seen = now;
         if (spiral) {
             tickSpiral(player, base, state, where);
         } else {
             tickHallway(player, base, place, state, where, now);
         }
+        remember(player,state);
     }
 
     private static void tickHallway(ServerPlayer player, BlockPos base, LabyrinthPlace place, State state, int k, long now) {
-        boolean goesOn = place == LabyrinthPlace.HOTEL_HALLWAY || now - state.enteredAt < LONG_HALLWAY_TICKS;
+        boolean goesOn = place == LabyrinthPlace.HOTEL_HALLWAY || state.occupied < LONG_HALLWAY_TICKS && !(state.forward>=2&&state.backward>=1);
         int shift = 0;
         if (k >= 2 && state.last <= 1 && goesOn) {
             shift = -(k - 1);
@@ -390,6 +411,12 @@ public final class LabyrinthLoops {
             return;
         }
         state.laps -= shift;
+        if(place==LabyrinthPlace.LONG_HALLWAY){
+            if(shift<0)state.forward++;else state.backward++;
+            if(state.forward==1&&shift<0)player.displayClientMessage(net.minecraft.network.chat.Component.literal("The same seam, just beyond the bend. Does it repeat coming back?"),true);
+            if(state.forward>=2&&state.backward==1)player.displayClientMessage(net.minecraft.network.chat.Component.literal("You have followed this bend both ways. Farther on, a latch clicks."),true);
+            io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(player,"hallway_test","forward",state.forward,"backward",state.backward,"occupied",state.occupied);
+        }
         state.last = k + shift;
         ServerLevel level = player.serverLevel();
         restore(level, base, place);
@@ -471,7 +498,8 @@ public final class LabyrinthLoops {
         }
         return switch (state.place) {
             case LONG_HALLWAY -> "In the long hallway: " + state.laps + " lap(s) on, "
-                    + Math.max(0L, (LONG_HALLWAY_TICKS - (now - state.enteredAt)) / 20L) + " s until it ends.";
+                    + state.forward + " forward checks, " + state.backward + " reverse checks; "
+                    + Math.max(0L, (LONG_HALLWAY_TICKS - state.occupied) / 20L) + " occupied s to the fallback.";
             case HOTEL_HALLWAY -> "In the hotel hallway: " + state.laps + " lap(s) on.";
             case SPIRAL_STAIR -> "On the spiral stair: " + state.laps + " extra turn(s) climbed.";
             default -> null;

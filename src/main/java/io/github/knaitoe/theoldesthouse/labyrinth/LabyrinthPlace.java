@@ -370,6 +370,12 @@ public enum LabyrinthPlace {
         return id + "/entry";
     }
 
+    /** Every authored return, including a service exit, belongs to this visit. */
+    public boolean isReturnDoor(String doorId) {
+        return doors.stream().anyMatch(d -> (id + "/" + d.name()).equals(doorId)
+                && LabyrinthData.RETURN.equals(d.destination()));
+    }
+
     /** How often the dealer picks this gray place relative to the others: the plain gray most, the loops less. */
     public int grayWeight() {
         if (this == JUNCTION || this == GRAY_CORRIDOR) {

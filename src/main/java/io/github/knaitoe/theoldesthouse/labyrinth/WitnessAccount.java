@@ -229,9 +229,9 @@ public final class WitnessAccount {
         }
         if(epilogue){
             pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,
-                    "I returned with the things I carried. The day was still the same day.\n\nI have left a space here for what passed me on the stairs."));
+                    "I returned with what I carried.\n\nI left space for what passed me on the stairs. I can say what I did. I cannot say what the House is."));
             pages.add(HouseWriting.page(HouseWriting.WritingStyle.ZAMPANO,
-                    "From inside the cell\n\nI heard "+name+" put the weapon down.\n\nThe door opened. For once, there was someone on the other side who had stayed to listen."));
+                    "From inside the cell\n\n[A different hand. No signature follows.]\n\nA door opens. Someone stays to listen.\n\n[Below: Who wrote this? No answer.]"));
         }
         ItemStack book=HouseWriting.book(epilogue?"The completed account":"An account",name,pages);
         CustomData.update(DataComponents.CUSTOM_DATA,book,tag->tag.putUUID(BOOK_OWNER,player));return book;

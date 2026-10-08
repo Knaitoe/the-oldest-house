@@ -9,7 +9,11 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.60
+## Current candidate: 0.4.61
+
+The novel-informed review adds no eligible story: the optional hallway investigation, all source poems/letters and the revised long hallway remain outside Witness. Existing 43 sources / 33 resolutions / two kinds / three endings remain. Require 457 native cases, 65 multiplayer, every focused suite, complete writing/client/71-view architecture checks and both actual socket clients with two reconnects. See [the implementation and playtest route](NOVEL_REVIEW_0_4_61.md).
+
+## Verified baseline: 0.4.60
 
 This combines Claude's elk rework with verified Stacy/slasher 0.4.59 and all intervening repairs. Require all 452 native cases, every focused suite, 60 multiplayer cases, the complete native client/package/writing/71-view architecture proofs and both actual socket clients with shared/private ownership checks. The old elk branch verification below is historical; combined exact-head validation remains pending. See [INTEGRATED_HUNTS_0_4_60.md](INTEGRATED_HUNTS_0_4_60.md).
 

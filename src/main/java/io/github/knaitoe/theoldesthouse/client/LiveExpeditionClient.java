@@ -88,7 +88,23 @@ public final class LiveExpeditionClient {
         if(step==12)mc.options.keyUp.setDown(false);
         if(step==13){mc.options.keyUp.setDown(false);if(ticks==30){if(StaircaseLeakClient.active())throw new IllegalStateException("LIVE EXPEDITION scene lease survived return");shot=role+"-reconnected";ack(mc,13);}}
         if(step==14||step==15){mc.options.keyUp.setDown(false);if(ticks>15){double dx=target.getX()+.5-mc.player.getX(),dz=target.getZ()+.5-mc.player.getZ();mc.player.setYRot((float)Math.toDegrees(Math.atan2(-dx,dz)));mc.player.setXRot(0);}
-            if(step==15&&ticks==40){shot=role+"-stacy-door";ack(mc,15);}}
+            if(step==15&&ticks==40){
+                var witch=io.github.knaitoe.theoldesthouse.labyrinth.DrownedTownRegistry.LAKE_WITCH.get().create(mc.level);
+                if(witch==null)throw new IllegalStateException("Native Stacy model fixture missing");
+                var model=new LakeWitchModel(mc.getEntityModels().bakeLayer(LakeWitchModel.LAYER));
+                for(float yaw:new float[]{-120,-35,35,120}){
+                    model.setupAnim(witch,1,.7F,12,yaw,80);
+                    float expected=net.minecraft.util.Mth.clamp(yaw,-70,70)*(float)Math.PI/180;
+                    if(Math.abs(model.head.yRot-expected)>.001||Math.abs(model.hat.yRot-expected)>.001||Math.abs(model.leftKnee.xRot)<.1F)
+                        throw new IllegalStateException("Native setupAnim lost bounded tracking, hat alignment or folded joints");
+                    model.attackTime=.25F;model.setupAnim(witch,1,.7F,12,yaw,-80);
+                    if(Math.abs(model.head.yRot-expected)>.001||model.rightArm.yRot>-.4F)throw new IllegalStateException("Look tracking erases the claw attack");
+                    model.attackTime=0;
+                }
+                witch.memoryPhase(0);model.setupAnim(witch,0,0,0,35,0);
+                if(model.jaw.xRot!=0||model.leftKnee.xRot!=0)throw new IllegalStateException("Hunt joints leak into standing memory");
+                shot=role+"-stacy-door";ack(mc,15);
+            }}
         if(step==16){mc.options.keyShift.setDown(true);if(mc.player.position().distanceToSqr(net.minecraft.world.phys.Vec3.atBottomCenterOf(target))>.16)walk(mc,target);
             else{mc.options.keyUp.setDown(false);if(ticks>25&&ack!=16){shot=role+"-leaf-cover";ack(mc,16);}}}
         if(step==17){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(true);double dx=target.getX()+.5-mc.player.getX(),dz=target.getZ()+.5-mc.player.getZ();mc.player.setYRot((float)Math.toDegrees(Math.atan2(-dx,dz)));mc.player.setXRot(0);}
@@ -100,6 +116,7 @@ public final class LiveExpeditionClient {
                 if(visible!=1)throw new IllegalStateException("LIVE EXPEDITION each socket must render exactly its own elk killer");double dx=target.getX()+.5-mc.player.getX(),dz=target.getZ()+.5-mc.player.getZ();mc.player.setYRot((float)Math.toDegrees(Math.atan2(-dx,dz)));mc.player.setXRot(0);shot=role+"-private-elk";ack(mc,19);
             }
         }
+        if(step==22){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(true);if(ticks>30&&mc.player.isCrouching()&&ack!=22)ack(mc,22);}
         if(step==20){mc.options.keyUp.setDown(false);double dx=target.getX()+.5-mc.player.getX(),dz=target.getZ()+.5-mc.player.getZ();mc.player.setYRot((float)Math.toDegrees(Math.atan2(-dx,dz)));mc.player.setXRot(0);}
         if(step==21&&ticks==30){mc.options.keyUp.setDown(false);shot=role+"-private-leaves";stopping=true;}
     }

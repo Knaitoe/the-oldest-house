@@ -75,6 +75,9 @@ public final class HouseCorrespondence {
         return new Encounter(key,id,legacy,entry.getInt("Chapter"),ItemStack.parseOptional(reader.registryAccess(),stored),taken);
     }
     private static CorrespondenceTexts.Note choose(ServerPlayer reader,CompoundTag own,HouseMarginalia.Thread surface){
+        // A return gives this poem its setting. Existing bindings and originals still win in bind().
+        var roots=CorrespondenceTexts.find(NovelCorrespondence.ROOTS);
+        if(surface==HouseMarginalia.Thread.ROOM&&eligible(reader,own,roots))return roots;
         // A source find may share every fourth completed reading, without consuming the old cursor.
         // Historical poems and letters are optional and never a new progression checklist.
         if(Math.floorMod(own.getInt("ReadCount"),4)==3){var source=source(reader,own,surface,true);if(source!=null)return source;}
@@ -99,7 +102,9 @@ public final class HouseCorrespondence {
     }
     private static boolean eligible(ServerPlayer p,CompoundTag own,CorrespondenceTexts.Note n){
         var data=LabyrinthData.get(p.server);
-        if(own.getCompound("Read").getBoolean(n.id())||data.returnDepth(p.getUUID())<n.depth())return false;
+        if(own.getCompound("Read").getBoolean(n.id()))return false;
+        if(n.id().equals(NovelCorrespondence.ROOTS))return HouseExperience.record(data,p.getUUID()).getInt("Returns")>0;
+        if(data.returnDepth(p.getUUID())<n.depth())return false;
         if(!n.chain().isEmpty()){
             int next=own.getCompound("Next").getInt(n.chain());
             if(n.chain().startsWith("legacy_"))next=Math.max(next,HouseMarginalia.next(data,p.getUUID(),n.surface()));

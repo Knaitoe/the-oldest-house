@@ -87,6 +87,8 @@ public final class LabyrinthDoors {
     private static final Set<UUID> INSIDE = new HashSet<>();
     /** The entry door already shut behind each player on this crossing; it is not shut on them again until they return to it. */
     private static final Map<UUID, BlockPos> SHUT_FOR = new HashMap<>();
+    private record DoorStep(LabyrinthPlace place, net.minecraft.resources.ResourceKey<Level> dimension, Vec3 pos) {}
+    private static final Map<UUID, DoorStep> STEPS = new HashMap<>();
     /** Another player this close to an entry door is using it: it is neither shut nor rebuilt around them. */
     private static final double DOORWAY_COMPANY = 3.0D;
 
@@ -291,6 +293,7 @@ public final class LabyrinthDoors {
             current.pushReturn(p.getUUID(), returnTo);
             INSIDE.remove(p.getUUID());
             SHUT_FOR.remove(p.getUUID());
+            STEPS.remove(p.getUUID());
             STUCK.remove(p.getUUID());
             setDoorOpen(toLevel, entry.lower, true, p);
             BlockPos manor = HouseSavedData.get(server).houseOrigin();
@@ -345,9 +348,11 @@ public final class LabyrinthDoors {
         LabyrinthPlace place = LiteraryCopies.placeAt(player.server,player.blockPosition());
         if(place==null)place=LabyrinthPlaces.placeAt(origin, player.blockPosition());
         if (place == null) {
+            STEPS.remove(player.getUUID());
             return false;
         }
         if (isBusy(player)) {
+            STEPS.remove(player.getUUID());
             return true;
         }
         LabyrinthData data = LabyrinthData.get(player.server);
@@ -356,6 +361,20 @@ public final class LabyrinthDoors {
             return true;
         }
         UUID id = player.getUUID();
+        DoorStep previous = STEPS.put(id, new DoorStep(place, player.level().dimension(), player.position()));
+        LabyrinthData.Door gate = INSIDE.contains(id) ? crossedReturn(player, place, data, previous) : null;
+        if (gate != null) {
+            if (LiteraryVignettes.retreatLocked(player) || NovelVignettes.exitLocked(player, gate) || VignetteGate.exitLocked(player, gate)) {
+                setDoorOpen(player.serverLevel(), gate.lower, false, player);
+                shift(player, Vec3.atBottomCenterOf(gate.lower.relative(gate.facing.getOpposite(), 2)), player.getYRot());
+                STEPS.remove(id);
+                return true;
+            }
+            INSIDE.remove(id);
+            depart(player, place);
+            goBack(player, gate, data);
+            return true;
+        }
         double into = intoRoom(player, entry);
         if((LiteraryVignettes.retreatLocked(player)||NovelVignettes.exitLocked(player,entry)||VignetteGate.exitLocked(player,entry))&&INSIDE.contains(id)&&into<THRESHOLD) {
             setDoorOpen(player.serverLevel(),entry.lower,false,player);
@@ -391,22 +410,44 @@ public final class LabyrinthDoors {
         if (into <= -THRESHOLD) {
             boolean through = INSIDE.remove(id);
             if (through || into <= -WANDER) {
-                if (place == LabyrinthPlace.HARRIGAN) {
-                    HarriganVignette.onDepart(player);
-                }
-                if (place == LabyrinthPlace.HIDE_AND_CLAP) HideAndClap.departBeforeStarting(player);
-                if (place == LabyrinthPlace.SHALLOWS) Shallows.onDepart(player);
-                if (place == LabyrinthPlace.PHONE_CANOE) PhoneCanoe.interrupt(player);
-                if (place == LabyrinthPlace.GOATMAN) GoatmanVignette.depart(player);
-                if (place == LabyrinthPlace.TED_CAVER) CaverVignette.depart(player);
-                if (place == LabyrinthPlace.HOLLOWAY_CAMP) HollowayVignette.depart(player);
-                if (place == LabyrinthPlace.MOTHER_DEN) {
-                    MotherCollection.get(player.server).presence(player.getUUID(), false);
-                }
+                depart(player, place);
                 goBack(player, entry, data);
             }
         }
         return true;
+    }
+
+    private static void depart(ServerPlayer player, LabyrinthPlace place) {
+        if (place == LabyrinthPlace.HARRIGAN) HarriganVignette.onDepart(player);
+        if (place == LabyrinthPlace.HIDE_AND_CLAP) HideAndClap.departBeforeStarting(player);
+        if (place == LabyrinthPlace.SHALLOWS) Shallows.onDepart(player);
+        if (place == LabyrinthPlace.PHONE_CANOE) PhoneCanoe.interrupt(player);
+        if (place == LabyrinthPlace.GOATMAN) GoatmanVignette.depart(player);
+        if (place == LabyrinthPlace.TED_CAVER) CaverVignette.depart(player);
+        if (place == LabyrinthPlace.HOLLOWAY_CAMP) HollowayVignette.depart(player);
+        if (place == LabyrinthPlace.MOTHER_DEN) MotherCollection.get(player.server).presence(player.getUUID(), false);
+    }
+
+    /** A real crossing of an open service doorway, not its infinite plane beside or above the room. */
+    private static @Nullable LabyrinthData.Door crossedReturn(ServerPlayer player, LabyrinthPlace place, LabyrinthData data, @Nullable DoorStep previous) {
+        if (previous == null || previous.place != place || !previous.dimension.equals(player.level().dimension())) return null;
+        for (var spec : place.doors()) {
+            String name = place.id() + "/" + spec.name();
+            if (name.equals(place.entryDoorId()) || !LabyrinthData.RETURN.equals(spec.destination())) continue;
+            var gate = data.door(name);
+            if (gate == null || !gate.dimension.equals(player.level().dimension())) continue;
+            var state = player.serverLevel().getBlockState(gate.lower);
+            if (!(state.getBlock() instanceof DoorBlock) || !state.getValue(DoorBlock.OPEN)) continue;
+            Direction inward = gate.facing.getOpposite(), across = inward.getClockWise();
+            Vec3 center = Vec3.atBottomCenterOf(gate.lower), before = previous.pos.subtract(center), after = player.position().subtract(center);
+            double a = before.x * inward.getStepX() + before.z * inward.getStepZ();
+            double b = after.x * inward.getStepX() + after.z * inward.getStepZ();
+            if (a <= -THRESHOLD || b > -THRESHOLD || a > 3 || b < -3) continue;
+            Vec3 crossing = before.lerp(after, (a + THRESHOLD) / (a - b));
+            if (Math.abs(crossing.x * across.getStepX() + crossing.z * across.getStepZ()) <= .8
+                    && crossing.y >= -.5 && crossing.y < 2) return gate;
+        }
+        return null;
     }
 
     /** How far the player is past an entry door into its room (negative: out in the vestibule). */
@@ -419,6 +460,7 @@ public final class LabyrinthDoors {
     /** Back out through an entry door: to the same spot in front of the door they came through. */
     private static void goBack(ServerPlayer player, LabyrinthData.Door entry, LabyrinthData data) {
         UUID id = player.getUUID();
+        STEPS.remove(id);
         SHUT_FOR.remove(id);
         if (!othersAtDoor(player.serverLevel(), entry.lower, player)) setDoorOpen(player.serverLevel(), entry.lower, false, null);
         LabyrinthData.Waypoint back = data.peekReturn(id);
@@ -1018,6 +1060,7 @@ public final class LabyrinthDoors {
         FADING.remove(event.getEntity().getUUID());
         INSIDE.remove(event.getEntity().getUUID());
         SHUT_FOR.remove(event.getEntity().getUUID());
+        STEPS.remove(event.getEntity().getUUID());
         LabyrinthLoops.forget(event.getEntity().getUUID());
         LabyrinthMaze.forget(event.getEntity().getUUID());
         LabyrinthLighting.clearPlayer(event.getEntity().getUUID());
@@ -1028,6 +1071,7 @@ public final class LabyrinthDoors {
         FADING.clear();
         INSIDE.clear();
         SHUT_FOR.clear();
+        STEPS.clear();
         LabyrinthLoops.clearAll();
         LabyrinthMaze.clearAll();
         LabyrinthBuilder.clearAll();

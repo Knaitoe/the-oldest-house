@@ -27,6 +27,8 @@ public final class StaceyScrabbleVisualProof extends Screen {
         for(int i=0;i<8;i++){int left=10+(i%4)*width/4,top=30+(i/4)*(height-48)/2,cellH=(height-48)/2;
             g.fill(left,top,left+width/4-18,top+cellH-8,0xFF354039);g.drawString(font,names[i],left+4,top+6,0xFFE6DFCF,false);g.flush();
             var model=new LakeWitchModel(mc.getEntityModels().bakeLayer(LakeWitchModel.LAYER));model.huntPose(cycles[i]/.23F,.7F,12,i==4||i==5);
+            model.lookPose(i%2==0?40:-40,i<4?-15:20);
+            if(Math.abs(model.head.yRot)<.6F)throw new IllegalStateException("Hunting look direction was reset");
             if(i<4&&(Math.abs(model.leftKnee.xRot)<.1F||Math.abs(model.rightElbow.xRot-model.leftElbow.xRot)<.02F))throw new IllegalStateException("Stacy joints or uneven claw cycle are absent");
             if(i<4){float elbow=model.rightElbow.xRot;model.attackPose(0,true,false);if(model.rightElbow.xRot!=elbow)throw new IllegalStateException("An old bite freezes the next scrabbling cycle");}
             if(i==4){model.attackPose(.25F,false,false);if(model.rightArm.yRot>-.4F)throw new IllegalStateException("The native hand attack has no sideways rake");}

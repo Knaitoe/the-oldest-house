@@ -1,3 +1,5 @@
+October 8 update: the owner approved the full novel-informed review. [0.4.61](NOVEL_REVIEW_0_4_61.md) implements one recurring optional investigation, a testable and shorter long hallway, relational poem placement, qualified finale framing, secondary return gates, Stacy tracking and multiplayer occupied-cover protection. The wider survey/map/desk prototype is not merged wholesale. Preserve the confirmed Witness quota, opening wait and deliberate darkness. Exact-source validation is pending.
+
 # The player experience plan
 
 Status: **0.4.56 is verified; the next clarity and rhythm pass is implemented in the 0.4.57 candidate.** This is the same plan originally written after 0.4.49, rebased onto the current scenes. See [the first integration](PLAYER_EXPERIENCE_INTEGRATION_0_4_56.md) and [the next four additions](CLARITY_AND_RHYTHM_0_4_57.md). Exact-source validation of 0.4.57 is required before release. Unimplemented proposals remain below. The owner has confirmed the existing Witness quota and opening wait; ordinary visibility and interaction cues may improve while deliberately dark mechanics remain. See [the recorded decisions](#decisions-for-the-owner).

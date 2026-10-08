@@ -208,7 +208,15 @@ public final class LiveExpeditionProof {
             step(s,19,privateA.blockPosition());marker(b,19,privateB.blockPosition());
         }else if(phase==19&&a!=null&&b!=null&&ACKS.size()==2){
             require(privateA.owner().orElseThrow().equals(a.getUUID())&&privateB.owner().orElseThrow().equals(b.getUUID()),"native private actor ownership matches each socket");
-            var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.ELK_CARCASSES);privateA.moveTo(site.getX()+.5,site.getY(),site.getZ()-48.5);KillerNavigation.request(privateA,Vec3.atBottomCenterOf(site.offset(0,0,-35)),1.0);lastHunterPosition=privateA.position();step(s,20,site.offset(0,0,-43));
+            var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.ELK_CARCASSES);
+            for(var p:List.of(a,b)){var cover=site.offset(p==a?0:1,0,-41);outside(p,cover,180);p.serverLevel().setBlock(cover.above(),HouseBlocks.FOREST_COVER.get().defaultBlockState(),3);}
+            privateA.moveTo(site.getX()+.5,site.getY(),site.getZ()-48.5);KillerNavigation.request(privateA,Vec3.atBottomCenterOf(site.offset(0,0,-35)),1.0);lastHunterPosition=privateA.position();step(s,22,site.offset(0,0,-43));
+        }else if(phase==22&&a!=null&&b!=null&&ACKS.size()==2&&s.getTickCount()-changed>140){
+            var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.ELK_CARCASSES);
+            require(CarcassHunt.concealed(a,site)&&CarcassHunt.concealed(b,site),"both real socket players actively hide beneath the same cover");
+            require(a.serverLevel().getBlockState(site.offset(0,0,-43)).is(Blocks.SPRUCE_LEAVES)&&a.serverLevel().getBlockState(site.offset(0,1,-43)).is(Blocks.SPRUCE_LEAVES),"a private invisible hunter cannot destroy its peer's occupied foliage");
+            for(var p:List.of(a,b))outside(p,site.offset(p==a?-1:1,0,-31),0);
+            KillerNavigation.request(privateA,Vec3.atBottomCenterOf(site.offset(0,0,-35)),1.0);lastHunterPosition=privateA.position();step(s,20,site.offset(0,0,-43));
         }else if(phase==20&&a!=null&&b!=null){
             var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.ELK_CARCASSES);
             require(privateA.position().distanceTo(lastHunterPosition)<.45,"the private hunter has one physical driver and no teleport recovery");lastHunterPosition=privateA.position();
@@ -217,7 +225,7 @@ public final class LiveExpeditionProof {
                 require(!privateA.getPersistentData().contains("CarcassSearch0455")&&!privateB.getPersistentData().contains("CarcassSearch0455"),"private actors never run the shared Camp Blood controller");
                 require(a.serverLevel().getBlockState(site.offset(0,0,-43)).isAir()&&a.serverLevel().getBlockState(site.offset(0,1,-43)).isAir()&&a.serverLevel().getBlockState(site.offset(1,0,-43)).is(Blocks.SPRUCE_LEAVES),"private hunter clears only the native physical leaf passage");
                 require(WitnessAccount.count(d,a.getUUID())==0&&WitnessAccount.count(d,b.getUUID())==0,"neither socket gains a personal ending from another hunter's world changes");
-                step(s,21,privateA.blockPosition());write("passed.txt","Two actual NeoForge socket clients: all original shared doors, personal leaves/burns/note scenes and two same-profile reconnects; one Stacy body and one three-second wooden-door break; both readers walk crouched under native leaf cover; one shared Camp Blood hunter and two private elk killers use physical movement and leaf breaking; native client renderers exclude each peer's private killer; no doubled clocks or transferred ending credit.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: shared and private hunts, native ownership rendering, leaf breaking and two reconnects");
+                step(s,21,privateA.blockPosition());write("passed.txt","Two actual NeoForge socket clients: all original shared doors, personal leaves/burns/note scenes and two same-profile reconnects; one Stacy body and one three-second wooden-door break; both readers walk crouched under native leaf cover; one shared Camp Blood hunter and two private elk killers use physical movement and leaf breaking; native client renderers exclude each peer's private killer; two actively hiding peers keep their cover from invisible hunters; native Stacy look tracking; no doubled clocks or transferred ending credit.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: shared and private hunts, native ownership rendering, leaf breaking and two reconnects");
             }
         }else if(phase==21&&s.getTickCount()-changed>100){huntChunks.close();s.halt(false);}
     }
