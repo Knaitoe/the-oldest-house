@@ -194,7 +194,14 @@ public final class DrownedTown {
         BlockPos at = event.getPos();
         if (at.equals(base.offset(FURNACE))) { OPEN_FURNACES.put(player.getUUID(), at.immutable()); return; }
         if (at.equals(base.offset(CHURCH_DOOR)) || at.equals(base.offset(CHURCH_DOOR).above())) {
-            if (!unlockChurch(player, at)) player.displayClientMessage(Component.literal("The church door needs its key. The school kept it."), true);
+            if (!unlockChurch(player, at)) {
+                // Say what actually holds the door: the school's essays come before the key does.
+                var st = LabyrinthData.get(player.server).state(ID);
+                player.displayClientMessage(Component.literal(st.getInt("Visit") < 2 || st.getInt("DryMask") != 7
+                        ? "The church door won't move yet. The school's essays come first."
+                        : "The church door needs its key. The school kept it."), true);
+                io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player, "church_door",base.offset(CHURCH_DOOR));
+            }
             event.setCanceled(true); event.setCancellationResult(InteractionResult.SUCCESS);
         } else if (at.equals(base.offset(ROOF_HATCH))) {
             boolean wasOpen = LabyrinthData.get(player.server).state(ID).getBoolean("RoofOpened");

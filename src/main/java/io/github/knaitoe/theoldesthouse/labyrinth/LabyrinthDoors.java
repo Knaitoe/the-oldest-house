@@ -124,16 +124,18 @@ public final class LabyrinthDoors {
         var hotelRoute=HotelVignette.route(player,door);if(hotelRoute!=null)door=hotelRoute;
         MinecraftServer server = player.server;
         LabyrinthData data = LabyrinthData.get(server);
-        if(VignetteGate.dormant(data,player.getUUID(),door)){if(reroute(player,door))return;setDoorOpen(player.serverLevel(),door.lower,false,player);player.displayClientMessage(Component.literal("The door is quiet. Leave its approach and find it again."),true);return;}
+        if(VignetteGate.dormant(data,player.getUUID(),door)){if(reroute(player,door))return;setDoorOpen(player.serverLevel(),door.lower,false,player);quiet(player,VignetteGate.dormantPlace(data,player.getUUID(),door),door.lower);return;}
         if (HideAndClap.isLocked(player)) {
-            locked(player);
+            player.displayClientMessage(Component.literal("The door won't open until the game is over."), true);
+            io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player, "door_clap_game",door.lower);
             return;
         }
 
         if (LabyrinthData.LOCKED.equals(door.destination)) {
             // Somebody's room. It rattles in its frame and stays shut.
             player.serverLevel().playSound(null, door.lower, SoundEvents.WOODEN_TRAPDOOR_CLOSE, SoundSource.BLOCKS, 0.5F, 0.6F);
-            locked(player);
+            player.displayClientMessage(Component.literal("The door is locked. Someone lives here."), true);
+            io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"door_resident",door.lower);
             return;
         }
         if (LabyrinthData.RETURN.equals(door.destination) || LabyrinthData.HALLWAY_OR_RETURN.equals(door.destination)) {
@@ -149,7 +151,7 @@ public final class LabyrinthDoors {
             return;
         }
         if (!LabyrinthBuilder.ensureReachable(server)) {
-            player.displayClientMessage(Component.literal("The door sticks."), true);
+            sticks(player,door);
             return;
         }
 
@@ -175,7 +177,7 @@ public final class LabyrinthDoors {
         if (place != null && place != LabyrinthPlace.FAMILY_COPY && place != LabyrinthPlace.OLD_CABIN
                 && !LabyrinthBuilder.isPlaceReady(server, place)) {
             if (reroute(player, door)) return;
-            player.displayClientMessage(Component.literal("The door sticks."), true);
+            sticks(player,door);
             return;
         }
         LabyrinthData.Door entry = place == null || place.slot() < 0 ? null : data.door(place.entryDoorId());
@@ -226,6 +228,30 @@ public final class LabyrinthDoors {
     private static void locked(ServerPlayer player) {
         player.displayClientMessage(Component.literal("The door is locked."), true);
     }
+    /** Repeated tries belong to one physical gate and one connection, measured in real time. */
+    private record Stuck(String gate,long began,int count){}
+    private static final Map<UUID,Stuck> STUCK=new HashMap<>();
+    private static void sticks(ServerPlayer player,LabyrinthData.Door door){
+        long now=System.nanoTime();String gate=door.dimension.location()+":"+door.id;
+        Stuck before=STUCK.get(player.getUUID());
+        Stuck run=before==null||!gate.equals(before.gate)||now-before.began>60_000_000_000L
+                ?new Stuck(gate,now,1):new Stuck(gate,before.began,before.count+1);
+        STUCK.put(player.getUUID(),run);
+        player.displayClientMessage(Component.literal(run.count>=3
+                ?"It will give. Try another door, or come back to this one in a minute."
+                :"The door sticks. Something is still settling behind it."),true);
+        io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"door_sticks",door.lower);
+    }
+    /**
+     * A story the player stepped back out of. It wakes again once they have been well away from the
+     * door (VignetteGate), so say which room it is and what brings it back, without spoiling it.
+     */
+    private static void quiet(ServerPlayer player, String placeId,BlockPos at) {
+        var story = WitnessAccount.Story.of(placeId);
+        String room = story == null ? "The room" : story.title;
+        player.displayClientMessage(Component.literal(room + " is quiet behind this door. Walk a little way off, then come back."), true);
+        io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player, "door_quiet:" + placeId,at);
+    }
 
     @Nullable
     private static LabyrinthPlace placeOf(MinecraftServer server, LabyrinthData.Door door) {
@@ -262,9 +288,11 @@ public final class LabyrinthDoors {
             current.pushReturn(p.getUUID(), returnTo);
             INSIDE.remove(p.getUUID());
             SHUT_FOR.remove(p.getUUID());
+            STUCK.remove(p.getUUID());
             setDoorOpen(toLevel, entry.lower, true, p);
             BlockPos manor = HouseSavedData.get(server).houseOrigin();
-            if(p.gameMode.getGameModeForPlayer()!=net.minecraft.world.level.GameType.SPECTATOR){VignetteGate.begin(p,place);current.visit(p.getUUID(),place);io.github.knaitoe.theoldesthouse.house.HouseExperience.arrived(p,place);}
+            if(p.gameMode.getGameModeForPlayer()!=net.minecraft.world.level.GameType.SPECTATOR){VignetteGate.begin(p,place);current.visit(p.getUUID(),place);io.github.knaitoe.theoldesthouse.house.HouseExperience.arrived(p,place);
+                io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(p,"arrive","place",place.id(),"kind",place.kind().name().toLowerCase(java.util.Locale.ROOT),"story",WitnessAccount.Story.of(place.id())!=null,"depth",current.returnDepth(p.getUUID()));}
             LabyrinthDealer.arriveAt(current, p.getUUID(), place, manor == null ? 0L : manor.asLong(),
                     p.gameMode.getGameModeForPlayer() != net.minecraft.world.level.GameType.SPECTATOR);
             if(p.gameMode.getGameModeForPlayer()==net.minecraft.world.level.GameType.SPECTATOR){LabyrinthMaze.forget(p.getUUID());LabyrinthDoorLeaks.send(p);return;}
@@ -982,6 +1010,7 @@ public final class LabyrinthDoors {
     }
 
     public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        STUCK.remove(event.getEntity().getUUID());
         FADING.remove(event.getEntity().getUUID());
         INSIDE.remove(event.getEntity().getUUID());
         SHUT_FOR.remove(event.getEntity().getUUID());
@@ -991,6 +1020,7 @@ public final class LabyrinthDoors {
     }
 
     public static void clearAll() {
+        STUCK.clear();
         FADING.clear();
         INSIDE.clear();
         SHUT_FOR.clear();

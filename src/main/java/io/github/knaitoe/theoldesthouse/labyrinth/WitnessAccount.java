@@ -90,14 +90,46 @@ public final class WitnessAccount {
     private WitnessAccount(){}
     /** Seventy-five percent of shipped Witness stories, rounded up as the pool grows. */
     public static int requiredForPoolSize(int availableStories){return (3*availableStories+3)/4;}
-    public static CompoundTag record(LabyrinthData data,UUID player){return data.state(STATE).getCompound(player.toString()).copy();}
+    public static CompoundTag record(LabyrinthData data,UUID player){return data.stateEntry(STATE,player.toString());}
     private static void save(LabyrinthData data,UUID player,CompoundTag record){
-        CompoundTag world=data.state(STATE);world.put(player.toString(),record.copy());data.setState(STATE,world);
+        data.setStateEntry(STATE,player.toString(),record);
     }
     public static boolean has(LabyrinthData data,UUID player,Story story){return record(data,player).getCompound("Stories").contains(story.id);}
     public static int count(LabyrinthData data,UUID player){
         CompoundTag stories=record(data,player).getCompound("Stories");int count=0;
         for(Story story:Story.values())if(stories.contains(story.id))count++;return count;
+    }
+    /** Arrival records a beginning only for this actual participant, never a resolution. */
+    public static void begin(ServerPlayer player,LabyrinthPlace place){
+        Story story=Story.of(place.id());
+        if(story==null||player.isSpectator()||!player.isAlive()||FinaleProgress.terminal(FinaleProgress.phase(player.server,player.getUUID())))return;
+        LabyrinthData data=LabyrinthData.get(player.server);CompoundTag own=record(data,player.getUUID()),begun=own.getCompound("Begun");
+        if(begun.getBoolean(story.id)||has(data,player.getUUID(),story))return;
+        begun.putBoolean(story.id,true);own.put("Begun",begun);save(data,player.getUUID(),own);updateBook(player,false);
+    }
+    public static boolean begun(LabyrinthData data,UUID player,Story story){
+        LabyrinthPlace place=LabyrinthPlace.byId(story.id);
+        return record(data,player).getCompound("Begun").getBoolean(story.id)
+                ||place!=null&&data.visited(player).contains(place.id())
+                ||HouseExperience.record(data,player).getCompound("Retreats").getInt(story.id)>0;
+    }
+    private static Set<String> kinds(LabyrinthData data,UUID player){
+        Set<String> kinds=new HashSet<>();CompoundTag stories=record(data,player).getCompound("Stories");
+        for(Story story:Story.values())if(stories.contains(story.id))kinds.add(story.kind);return kinds;
+    }
+    private static String words(int n){
+        String[] small={"no","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"};
+        if(n<20)return small[n];String[] tens={"","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"};
+        if(n>=100)return Integer.toString(n);return tens[n/10]+(n%10==0?"":"-"+small[n%10]);
+    }
+    private static String progress(LabyrinthData data,UUID player){
+        int n=count(data,player);
+        if(ready(data,player))return "The account holds together. The passage at the cell can be read.";
+        if(n>=REQUIRED)return "Enough rooms have ended. Their endings are too much alike.";
+        if(n*10>=REQUIRED*9)return "Only a few gaps remain.";
+        if(n*3>=REQUIRED*2)return "Most of the account is here.";
+        if(n*3>=REQUIRED)return "The account is taking shape.";
+        return "Much of the account is still unwritten.";
     }
     public static boolean ready(LabyrinthData data,UUID player){
         CompoundTag stories=record(data,player).getCompound("Stories");Set<String> kinds=new HashSet<>();int count=0;
@@ -113,6 +145,9 @@ public final class WitnessAccount {
         if(player.isSpectator()||FinaleProgress.terminal(FinaleProgress.phase(player.server,player.getUUID())))return;
         LabyrinthData data=LabyrinthData.get(player.server);
         if(resolve(data,player.getUUID(),story,outcome)){
+            CompoundTag stories=record(data,player.getUUID()).getCompound("Stories");Set<String> kinds=new HashSet<>();
+            for(Story s:Story.values())if(stories.contains(s.id))kinds.add(s.kind);
+            io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(player,"story_resolve","story",story.id,"kind",story.kind,"outcome",outcome,"count",count(data,player.getUUID()),"kinds",kinds.size(),"ready",ready(data,player.getUUID()));
             updateBook(player,true);
             player.displayClientMessage(Component.literal(ready(data,player.getUUID())
                     ?"A passage in your account is readable now. It describes a cell."
@@ -131,6 +166,18 @@ public final class WitnessAccount {
         List<Component> pages=new ArrayList<>();
         pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,
                 "AN ACCOUNT\n\nI am writing down what I saw, before I begin remembering something else.\n\nThere are still gaps."));
+        int resolved=count(data,player);
+        pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,"THE ACCOUNT SO FAR\n\nI have heard "+words(resolved)
+                +(resolved==1?" room":" rooms")+" to the end.\n\n"+progress(data,player)));
+        Set<String> kinds=kinds(data,player);
+        if(kinds.size()==1){String missing=switch(kinds.iterator().next()){
+            case "survival"->"Everything here ends with me surviving.";
+            case "understanding"->"Everything here ends with me understanding something.";
+            case "memory"->"Everything here ends with something remembered.";
+            case "connection"->"Everything here ends with someone answering.";
+            default->"Everything here ends with something let go.";};
+            pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,"OTHER ENDINGS\n\n"+missing+"\n\nThe account needs another kind of ending."));
+        }
         CompoundTag stories=record(data,player).getCompound("Stories");
         for(Story story:Story.values())if(stories.contains(story.id)){
             String text=stories.getString(story.id).equals("aftermath")
@@ -159,7 +206,13 @@ public final class WitnessAccount {
                     }:story.text;
             pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,story.title+"\n\n"+text));
         }
-        int n=count(data,player);
+        for(Story story:Story.values())if(!stories.contains(story.id)&&begun(data,player,story)){
+            boolean left=HouseExperience.record(data,player).getCompound("Retreats").getInt(story.id)>0;
+            pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,story.title+"\n\n"
+                    +(left?"I left before I heard the end.":"I crossed its threshold. I have not heard how it ends.")
+                    +"\n\nI have left this part unfinished."));
+        }
+        int n=resolved;
         pages.add(HouseWriting.page(HouseWriting.WritingStyle.ZAMPANO,
                 "A PLAY WITHOUT AN AUDIENCE\n\nTHE PRISONER: They draw a monster so that nobody will ask who locked the door.\n\nTHE KEEPER: ")
                 .copy().append(Component.literal("There is no one inside.").withStyle(s->s.withColor(0xA52A2A).withStrikethrough(true))));
@@ -184,13 +237,19 @@ public final class WitnessAccount {
         CustomData.update(DataComponents.CUSTOM_DATA,book,tag->tag.putUUID(BOOK_OWNER,player));return book;
     }
     public static void updateBook(ServerPlayer player,boolean give){
-        ItemStack book=book(LabyrinthData.get(player.server),player.getUUID(),player.getGameProfile().getName(),false);boolean found=false;
-        for(int i=0;i<player.getInventory().getContainerSize();i++)if(ownedBook(player.getInventory().getItem(i),player.getUUID())){
-            player.getInventory().setItem(i,book.copy());found=true;
-        }
-        if(ownedBook(player.containerMenu.getCarried(),player.getUUID())){player.containerMenu.setCarried(book.copy());found=true;}
+        List<Integer> slots=new ArrayList<>();
+        for(int i=0;i<player.getInventory().getContainerSize();i++)if(ownedBook(player.getInventory().getItem(i),player.getUUID()))slots.add(i);
+        boolean cursor=ownedBook(player.containerMenu.getCarried(),player.getUUID()),found=!slots.isEmpty()||cursor;
+        if(!give&&!found)return;
+        ItemStack book=book(LabyrinthData.get(player.server),player.getUUID(),player.getGameProfile().getName(),false);
+        for(int slot:slots)player.getInventory().setItem(slot,book.copy());
+        if(cursor)player.containerMenu.setCarried(book.copy());
         if(give&&!found&&!player.getInventory().add(book))player.drop(book,false);
         player.inventoryMenu.broadcastChanges();
+    }
+    @SubscribeEvent public static void login(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event){
+        if(event.getEntity() instanceof ServerPlayer player&&!player.isSpectator()
+                &&!FinaleProgress.terminal(FinaleProgress.phase(player.server,player.getUUID())))updateBook(player,false);
     }
     public static void onArrive(ServerPlayer player,LabyrinthPlace place){
         LabyrinthData data=LabyrinthData.get(player.server);Story story=Story.of(place.id());

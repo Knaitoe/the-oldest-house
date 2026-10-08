@@ -33,6 +33,9 @@ jobs:
           python3 tools/verify_writing_fonts.py
           python3 tools/verify_textures.py
 
+      - name: Verify playtest journey measurements
+        run: python3 -m unittest discover -s tools -p test_summarize_playtest_log.py -v
+
       - name: Verify playable package
         run: |
           python3 - <<'PY'
@@ -54,7 +57,8 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.55"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.56"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'io/github/knaitoe/theoldesthouse/house/PlaytestLog.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
@@ -190,6 +194,10 @@ jobs:
                   assert f'assets/the_oldest_house/textures/entity/trailer_child_{i}.png' in z.namelist()
               sounds = json.loads(z.read('assets/the_oldest_house/sounds.json'))
               assert all(f'goatman.{cue}' in sounds for cue in ('hammer', 'laugh', 'woods'))
+              # Every cue is subtitled, so the game is playable without sound.
+              english = json.loads(z.read('assets/the_oldest_house/lang/en_us.json'))
+              unsubtitled = sorted(k for k, v in sounds.items() if v.get('subtitle') not in english)
+              assert not unsubtitled, f'sound events without an English subtitle: {unsubtitled}'
               for name in ('io/github/knaitoe/theoldesthouse/house/HouseMarginalia.class',
                            'io/github/knaitoe/theoldesthouse/house/HouseCorrespondence.class',
                            'io/github/knaitoe/theoldesthouse/house/HouseCorrespondence$OriginalMenu.class',
@@ -620,7 +628,7 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.55"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.56"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
@@ -687,8 +695,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.55.jar
-            build/libs/the_oldest_house-0.4.55.jar.sha256
+            build/libs/the_oldest_house-0.4.56.jar
+            build/libs/the_oldest_house-0.4.56.jar.sha256
           if-no-files-found: error
 
 

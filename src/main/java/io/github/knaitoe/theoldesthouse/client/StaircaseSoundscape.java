@@ -19,7 +19,9 @@ public final class StaircaseSoundscape {
                 ||!StaircaseScore.at(HouseSightlineState.origin(),mc.player.blockPosition()))return;
         var id=sound.getLocation();if(!id.getNamespace().equals("minecraft")||id.getPath().endsWith(".step"))return;
         var source=sound.getSource();
+        // Creatures' own idle voices (entity.*.ambient) are gameplay warnings and companions: they stay.
+        String path=id.getPath();if(path.startsWith("entity."))return;
         if(source==SoundSource.AMBIENT||source==SoundSource.WEATHER||source==SoundSource.MUSIC
-                ||id.getPath().contains(".ambient")||id.getPath().endsWith(".loop"))event.setSound(null);
+                ||path.startsWith("ambient.")||path.startsWith("block.")&&path.contains(".ambient")||path.endsWith(".loop"))event.setSound(null);
     }
 }

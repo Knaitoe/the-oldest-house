@@ -17,7 +17,7 @@ public final class VignetteGate {
     private VignetteGate(){}
     private static CompoundTag own(LabyrinthData d,UUID id){return d.state(ID).getCompound(id.toString()).copy();}
     private static void save(LabyrinthData d,UUID id,CompoundTag own){var all=d.state(ID);all.put(id.toString(),own);d.setState(ID,all);}
-    public static void begin(ServerPlayer p,LabyrinthPlace place){if(!place.isVignette())return;var d=LabyrinthData.get(p.server);var o=own(d,p.getUUID());o.putString("Place",place.id());o.putBoolean("Inside",false);o.putBoolean("VisitInteraction",false);o.putLong("Began",p.serverLevel().getGameTime());save(d,p.getUUID(),o);}
+    public static void begin(ServerPlayer p,LabyrinthPlace place){if(p.isSpectator()||!place.isVignette())return;WitnessAccount.begin(p,place);var d=LabyrinthData.get(p.server);var o=own(d,p.getUUID());o.putString("Place",place.id());o.putBoolean("Inside",false);o.putBoolean("VisitInteraction",false);o.putLong("Began",p.serverLevel().getGameTime());save(d,p.getUUID(),o);}
     public static void stepped(ServerPlayer p,LabyrinthPlace place){if(!place.isVignette())return;var d=LabyrinthData.get(p.server);var o=own(d,p.getUUID());if(place.id().equals(o.getString("Place"))&&!o.getBoolean("Inside")){o.putBoolean("Inside",true);save(d,p.getUUID(),o);}}
     public static void interaction(ServerPlayer p,LabyrinthPlace place){var d=LabyrinthData.get(p.server);var o=own(d,p.getUUID());if(place.id().equals(o.getString("Place"))){o.putBoolean("VisitInteraction",true);save(d,p.getUUID(),o);}}
     public static boolean exitLocked(ServerPlayer p,LabyrinthData.Door door){
@@ -28,9 +28,13 @@ public final class VignetteGate {
         var h=HollowayVignette.personal(d,p.getUUID());return h.getBoolean("Run")&&!h.getBoolean("Escaped");
     }
     public static boolean dormant(LabyrinthData d,UUID id,LabyrinthData.Door door){return own(d,id).getCompound("Dormant").contains(door.id);}
+    /** The story place a dormant door leads back to, or an empty string. */
+    public static String dormantPlace(LabyrinthData d,UUID id,LabyrinthData.Door door){return own(d,id).getCompound("Dormant").getString(door.id);}
     public static void redealt(LabyrinthData d,UUID id,LabyrinthData.Door door){var o=own(d,id);var dormant=o.getCompound("Dormant");if(!dormant.contains(door.id))return;dormant.remove(door.id);o.put("Dormant",dormant);save(d,id,o);}
     public static void departed(ServerPlayer p,LabyrinthData.Waypoint back,LabyrinthData.Door entry){
         var d=LabyrinthData.get(p.server);var o=own(d,p.getUUID());var place=LabyrinthPlace.byId(o.getString("Place"));if(place==null||!place.isVignette()||!entry.id.equals(place.entryDoorId()))return;
+        var story=WitnessAccount.Story.of(place.id());
+        if(story!=null&&!p.isSpectator())io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(p,"story_leave","place",place.id(),"resolved",story!=null&&WitnessAccount.has(d,p.getUUID(),story),"depth",d.returnDepth(p.getUUID()));
         if(back.door()){var source=d.doorAt(back.dimension(),BlockPos.containing(back.pos()));if(source!=null&&!source.command){var dormant=o.getCompound("Dormant");dormant.putString(source.id,place.id());o.put("Dormant",dormant);var away=o.getCompound("Away");away.remove(source.id);o.put("Away",away);}}
         o.remove("Place");o.putBoolean("Inside",false);save(d,p.getUUID(),o);
     }
