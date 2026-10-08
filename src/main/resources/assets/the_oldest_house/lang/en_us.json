@@ -132,5 +132,20 @@
   "item.the_oldest_house.leak_sock_grey": "Grey Sock",
   "item.the_oldest_house.leak_sock_green": "Green Sock",
   "item.the_oldest_house.leak_sock_red": "Red Sock",
-  "item.the_oldest_house.leak_sock_single": "Unmatched Sock"
+  "item.the_oldest_house.leak_sock_single": "Unmatched Sock",
+  "block.the_oldest_house.yacht_hull": "Yacht hull",
+  "block.the_oldest_house.yacht_hull_stripe": "Yacht boot stripe",
+  "block.the_oldest_house.yacht_boot": "Yacht waterline",
+  "block.the_oldest_house.yacht_antifoul": "Antifouling",
+  "block.the_oldest_house.yacht_teak": "Teak deck",
+  "block.the_oldest_house.yacht_salon_panel": "Salon panelling",
+  "block.the_oldest_house.yacht_carpet": "Salon carpet",
+  "block.the_oldest_house.yacht_cushion": "Deck cushion",
+  "block.the_oldest_house.yacht_canvas": "Bimini canvas",
+  "block.the_oldest_house.yacht_window": "Tinted saloon glass",
+  "block.the_oldest_house.yacht_porthole": "Porthole",
+  "block.the_oldest_house.yacht_rail": "Stainless rail",
+  "block.the_oldest_house.site_siding": "Site trailer siding",
+  "block.the_oldest_house.safety_fence": "Safety fence",
+  "block.the_oldest_house.cave_drag_mud": "Dragged mud"
 }

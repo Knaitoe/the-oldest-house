@@ -214,7 +214,10 @@ public enum LabyrinthPlace {
     MAPPING_INTERIOR("mapping_interior",Kind.MULTI_VISIT,55,new BoundingBox(-22,-6,-79,22,15,0),literaryEntry()),
     HOLY_RABBIT("holy_rabbit",Kind.ONE_SHOT,56,new BoundingBox(-35,-5,-126,35,26,0),literaryEntry()),
     CONFESSION("confession",Kind.MULTI_VISIT,57,new BoundingBox(-13,-1,-34,13,11,0),literaryEntry()),
-    ELK_CARCASSES("elk_carcasses",Kind.ONE_SHOT,58,new BoundingBox(-31,-4,-78,31,19,0),literaryEntry()),
+    /** Two stages (0.4.50): the yacht moored under the bluff, then the stream woods and the cave of carcasses; the crew's gate leads back. */
+    ELK_CARCASSES("elk_carcasses",Kind.ONE_SHOT,58,new BoundingBox(-64,-9,-250,64,24,0),List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("service",new BlockPos(44,11,-247),Direction.NORTH,LabyrinthData.RETURN))),
     COSTUME_NIGHT("costume_night",Kind.ONE_SHOT,59,new BoundingBox(-33,-6,-77,33,18,0),literaryEntry()),
     MOVIE_NIGHT("movie_night",Kind.ONE_SHOT,60,new BoundingBox(-35,-12,-93,35,18,0),literaryEntry()),
     WINTER_LAKE("winter_lake",Kind.ONE_SHOT,61,new BoundingBox(-35,-12,-87,35,18,0),literaryEntry()),

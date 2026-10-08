@@ -26,10 +26,13 @@ public final class SceneVisualProof extends Screen {
     private final List<Path> files;
     private final List<Voxel> voxels=new ArrayList<>();
     private int index,frames;private String name;private double cx,cz,cy,span;
+    private final LiteraryRenderers.CastModel body;private final LiteraryRenderers.ElkModel elk;
+    private static boolean dead(BlockState s){if(!s.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.PROP.get()))return false;var k=s.getValue(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.KIND);return k==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.Kind.CARCASS||k==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.Kind.GUEST_BODY||k==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.Kind.CREW_BODY;}
     public SceneVisualProof()throws Exception{
         super(Component.literal("Native scene architecture"));
+        var models=Minecraft.getInstance().getEntityModels();body=new LiteraryRenderers.CastModel(models.bakeLayer(LiteraryRenderers.CAST));elk=new LiteraryRenderers.ElkModel(models.bakeLayer(LiteraryRenderers.ELK));
         try(var stream=Files.list(Path.of("../build/architecture-proof"))){files=stream.filter(p->p.toString().endsWith(".json")).sorted().toList();}
-        if(files.size()!=69)throw new IllegalStateException("Expected sixty-nine generated architecture views, found "+files.size());load();
+        if(files.size()!=71)throw new IllegalStateException("Expected seventy-one generated architecture views, found "+files.size());load();
     }
     private void load()throws Exception{
         var json=JsonParser.parseString(Files.readString(files.get(index))).getAsJsonObject();name=json.get("name").getAsString();
@@ -42,13 +45,17 @@ public final class SceneVisualProof extends Screen {
     }
     @Override public void renderBackground(GuiGraphics g,int x,int y,float delta){}
     @Override public void render(GuiGraphics g,int x,int y,float delta){
-        var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xFF292723);g.drawString(font,"THE OLDEST HOUSE / 0.4.49",16,12,0xFFE0D5BF,false);
+        var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xFF292723);g.drawString(font,"THE OLDEST HOUSE / 0.4.50",16,12,0xFFE0D5BF,false);
         g.drawString(font,name.replace('_',' '),16,29,0xFFF3EEE3,false);g.drawString(font,"Native geometry view / interiors cut away / actors omitted",16,height-19,0xFFD4C8B3,false);g.flush();
         var pose=g.pose();pose.pushPose();pose.translate(width/2.,height/2.+12,200);float scale=(float)Math.min((width-40)/span,(height-85)/(span*.62));
         pose.scale(scale,-scale,scale);pose.mulPose(Axis.XP.rotationDegrees(32));pose.mulPose(Axis.YP.rotationDegrees(-45));pose.translate(-cx,-cy,-cz);
         var buffers=mc.renderBuffers().bufferSource();
         for(var v:voxels){pose.pushPose();pose.translate(v.x,v.y,v.z);
-            if(v.state.is(net.minecraft.world.level.block.Blocks.WATER))water(pose,buffers,v.state);else if(v.state.getBlock() instanceof net.minecraft.world.level.block.BedBlock bed){if(v.state.getValue(net.minecraft.world.level.block.BedBlock.PART)==net.minecraft.world.level.block.state.properties.BedPart.FOOT){var entity=(net.minecraft.world.level.block.entity.BedBlockEntity)bed.newBlockEntity(net.minecraft.core.BlockPos.ZERO,v.state);mc.getBlockEntityRenderDispatcher().getRenderer(entity).render(entity,0,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);}}else mc.getBlockRenderer().renderSingleBlock(v.state,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();}
+            if(v.state.is(net.minecraft.world.level.block.Blocks.WATER))water(pose,buffers,v.state);else if(v.state.getBlock() instanceof net.minecraft.world.level.block.BedBlock bed){if(v.state.getValue(net.minecraft.world.level.block.BedBlock.PART)==net.minecraft.world.level.block.state.properties.BedPart.FOOT){var entity=(net.minecraft.world.level.block.entity.BedBlockEntity)bed.newBlockEntity(net.minecraft.core.BlockPos.ZERO,v.state);mc.getBlockEntityRenderDispatcher().getRenderer(entity).render(entity,0,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);}}else if(dead(v.state)){var kind=v.state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.KIND);long seed=net.minecraft.util.Mth.getSeed(v.x,v.y,v.z);
+                // The carcasses and the dead are drawn by their block entity renderer in play; draw them the same way here.
+                if(kind==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.Kind.CARCASS)LiteraryRenderers.ModelRenderer.carcass(elk,v.state,seed,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
+                else LiteraryRenderers.ModelRenderer.corpse(body,v.state,seed,kind==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.Kind.CREW_BODY,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
+            }else mc.getBlockRenderer().renderSingleBlock(v.state,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();}
         buffers.endBatch();pose.popPose();
     }
     private static void water(com.mojang.blaze3d.vertex.PoseStack pose,MultiBufferSource buffers,BlockState state){
@@ -62,8 +69,8 @@ public final class SceneVisualProof extends Screen {
         Path folder=Path.of("../build/font-smoke/scenes");Files.createDirectories(folder);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(s.name+".png"));}
         if(++s.index<s.files.size())s.load();else{
-            Files.writeString(Path.of("../build/font-smoke/architecture-passed.txt"),"All sixty-nine native generated architecture views rendered successfully.\n");
-            TheOldestHouse.LOGGER.info("HOUSE ARCHITECTURE CHECK PASSED: sixty-nine native architecture screenshots saved");mc.setScreen(new OutsideSkyProof());
+            Files.writeString(Path.of("../build/font-smoke/architecture-passed.txt"),"All seventy-one native generated architecture views rendered successfully.\n");
+            TheOldestHouse.LOGGER.info("HOUSE ARCHITECTURE CHECK PASSED: seventy-one native architecture screenshots saved");mc.setScreen(new OutsideSkyProof());
         }
     }
 }
