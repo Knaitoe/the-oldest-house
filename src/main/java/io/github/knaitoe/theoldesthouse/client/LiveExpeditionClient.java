@@ -25,7 +25,7 @@ public final class LiveExpeditionClient {
         if(!LiveExpeditionProof.enabled())return;var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.gameMode==null)return;
         var component=mc.player.getInventory().getItem(8).get(DataComponents.CUSTOM_DATA);if(component==null)return;
         var data=component.copyTag();int step=data.getInt("Step");if(step<1)return;String role=System.getProperty("the_oldest_house.liveProofRole","");
-        if(previous!=step){previous=step;ticks=0;clicked=-100;ack=-1;mc.options.keyUp.setDown(false);}ticks++;
+        if(previous!=step){previous=step;ticks=0;clicked=-100;ack=-1;mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);}ticks++;
         BlockPos target=BlockPos.of(data.getLong("Target"));var block=mc.level.getBlockState(target);
         if(step==1&&ticks>30&&mc.level.players().size()>=2)ack(mc,1);
         if(step==2) {
@@ -86,7 +86,13 @@ public final class LiveExpeditionClient {
             else{mc.options.keyUp.setDown(false);if(ticks==25){shot="B-leak-first";stopping=true;}}
         }
         if(step==12)mc.options.keyUp.setDown(false);
-        if(step==13){mc.options.keyUp.setDown(false);if(ticks==30){if(StaircaseLeakClient.active())throw new IllegalStateException("LIVE EXPEDITION scene lease survived return");shot=role+"-reconnected";stopping=true;}}
+        if(step==13){mc.options.keyUp.setDown(false);if(ticks==30){if(StaircaseLeakClient.active())throw new IllegalStateException("LIVE EXPEDITION scene lease survived return");shot=role+"-reconnected";ack(mc,13);}}
+        if(step==14||step==15){mc.options.keyUp.setDown(false);if(ticks>15){double dx=target.getX()+.5-mc.player.getX(),dz=target.getZ()+.5-mc.player.getZ();mc.player.setYRot((float)Math.toDegrees(Math.atan2(-dx,dz)));mc.player.setXRot(0);}
+            if(step==15&&ticks==40){shot=role+"-stacy-door";ack(mc,15);}}
+        if(step==16){mc.options.keyShift.setDown(true);if(mc.player.position().distanceToSqr(net.minecraft.world.phys.Vec3.atBottomCenterOf(target))>.16)walk(mc,target);
+            else{mc.options.keyUp.setDown(false);if(ticks>25&&ack!=16){shot=role+"-leaf-cover";ack(mc,16);}}}
+        if(step==17){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(true);double dx=target.getX()+.5-mc.player.getX(),dz=target.getZ()+.5-mc.player.getZ();mc.player.setYRot((float)Math.toDegrees(Math.atan2(-dx,dz)));mc.player.setXRot(0);}
+        if(step==18){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(true);if(ticks==30){shot=role+"-slasher-leaves";stopping=true;}}
     }
     private static boolean open(net.minecraft.world.level.block.state.BlockState s){return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}
     private static void walk(Minecraft mc,BlockPos target) {

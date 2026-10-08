@@ -54,7 +54,7 @@ public final class LakeAmbushTests {
         int[] wet={0},rush={0};double[] previous={witch.getX()};float health=target.getHealth();
         h.onEachTick(()->{
             IndianLakeRooms.keepLoaded(l,base,LabyrinthPlace.DROWNED_TOWN);target.setDeltaMovement(Vec3.ZERO);
-            h.assertTrue(Math.abs(witch.getX()-previous[0])<.7,"the ambush follows a physical route rather than teleporting");previous[0]=witch.getX();
+            h.assertTrue(Math.abs(witch.getX()-previous[0])<1.3,"the doubled-speed ambush follows a physical route rather than teleporting");previous[0]=witch.getX();
             var node=BlockPos.containing(witch.getX(),base.getY(),witch.getZ());
             if(l.getFluidState(node.below()).is(net.minecraft.tags.FluidTags.WATER)){
                 wet[0]++;h.assertTrue(Math.abs(witch.getY()-LakeWitchEntity.supportHeight(l,base,witch.getX(),witch.getZ(),witch.getBbWidth()))<.02,"the actual ticking actor rests on the fluid surface or the bank supporting its footprint: y="+witch.getY());

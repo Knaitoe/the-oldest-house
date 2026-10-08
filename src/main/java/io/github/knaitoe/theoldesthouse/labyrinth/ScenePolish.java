@@ -127,6 +127,8 @@ public final class ScenePolish {
         SceneSupportRepairs.forget(server,origin,place);
         SceneReview.forget(server,origin,place);
         SceneHuntReview.forget(server,origin,place);
+        var coverLevel=server.getLevel(io.github.knaitoe.theoldesthouse.house.HouseDimensions.OUTSIDE);
+        if(coverLevel!=null&&StaceyCover.SITES.contains(place))StaceyCover.forget(coverLevel,LabyrinthPlaces.base(origin,place),place);
         LabyrinthData data = LabyrinthData.get(server);
         CompoundTag done = data.state(STATE);
         if (done.contains(key(origin, place))) {

@@ -74,3 +74,5 @@ Version 0.4.21 serial notes, poems and furniture are scenery, excluded from the 
 Version 0.4.58's forty-six novel-source poem and letter finds, including the final-staircase Panther and Pelafina's optional cipher, are historical writing and scenery. Reading, decoding and collecting them confer no Witness resolution. The playable pool remains forty-three sources, thirty-three resolutions across two kinds, and three endings.
 
 The blind stretch and hotel grounds are navigation/scenery; they are excluded as separate Witness sources. Only the personally completed and read hotel account supplies the hotel resolution.
+
+Version 0.4.59 repairs the existing Stacy/slasher hunts and physical foliage only. It adds no playable story or Witness source; the separate evidence-expedition prototype remains excluded.
