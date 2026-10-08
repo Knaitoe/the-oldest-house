@@ -97,9 +97,10 @@ public final class LiteraryRenderers {
             if(crouching){body.xRot=.5F;rightArm.xRot+=.4F;leftArm.xRot+=.4F;rightLeg.z=4.0F;leftLeg.z=4.0F;rightLeg.y=12.2F;leftLeg.y=12.2F;head.y=4.2F;body.y=3.2F;leftArm.y=5.2F;rightArm.y=5.2F;}
             killer(phase,age);}
         /** A body left where it fell: on its back (0), face down (1), slumped in a chair (2) or curled on its side (3). */
+        /** Drawn by the block entity renderer, never by an entity renderer, so it resets the adult pose itself (a model is born young). */
         public void corpse(boolean crew,int variant,int stage){
             for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.getAllParts().forEach(ModelPart::resetPose);
-            attackTime=0;crouching=false;dress(-1,0);hat.visible=false;gown.visible=!crew&&variant==1;hardHat.visible=crew&&variant!=2;
+            attackTime=0;crouching=false;young=false;riding=false;dress(-1,0);hat.visible=false;gown.visible=!crew&&variant==1;hardHat.visible=crew&&variant!=2;
             switch(stage){
                 case 0->{leftArm.zRot=-.42F;rightArm.zRot=.3F;rightArm.xRot=-.2F;leftLeg.zRot=-.08F;rightLeg.zRot=.1F;head.yRot=.55F;head.xRot=-.2F;}
                 case 1->{rightArm.xRot=-2.9F;rightArm.zRot=.12F;leftArm.zRot=-.15F;head.yRot=-.7F;leftLeg.xRot=.12F;rightLeg.zRot=.08F;}

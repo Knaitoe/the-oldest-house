@@ -87,14 +87,14 @@ public final class ElkVisualProof extends Screen {
         g.flush();
         var buffers = mc.renderBuffers().bufferSource();
         var model = new LiteraryRenderers.CastModel(mc.getEntityModels().bakeLayer(LiteraryRenderers.CAST));
-        float[][] states = {{ElkHunt.WATCH, 0, 0, 0}, {ElkHunt.WALK, frames * .5F, .8F, 0}, {ElkHunt.RUN, frames * .9F, 1, 0}, {ElkHunt.PEER, 0, 0, 0}, {ElkHunt.RUN, 0, 0, Math.min(.95F, frames / 24F)}};
+        float[][] states = {{ElkHunt.WATCH, 0, 0, 0}, {ElkHunt.WALK, frames * .5F, .8F, 0}, {ElkHunt.RUN, frames * .9F, 1, 0}, {ElkHunt.PEER, 0, 0, 0}, {ElkHunt.RUN, 0, 0, .15F}}; // the strike at its wind-up, axe over the head
         for (int i = 0; i < states.length; i++) {
             float[] s = states[i];
             model.animateKiller((int) s[0], s[1], s[2], frames, s[3]);
             var p = g.pose();
             p.pushPose();
-            p.translate(45 + i * (width - 70) / 5F, 34, 180);
-            p.scale(46, 46, 46);
+            p.translate(45 + i * (width - 70) / 5F, 52, 180);
+            p.scale(36, 36, 36);
             p.mulPose(Axis.YP.rotationDegrees(i == 3 ? 120 : 150));
             model.renderToBuffer(p, buffers.getBuffer(RenderType.entityCutoutNoCull(texture("killer"))), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
             buffers.endBatch();
@@ -125,6 +125,8 @@ public final class ElkVisualProof extends Screen {
             buffers.endBatch();
             p.popPose();
         }
+        // A block entity renderer never resets the model's age; a body left young draws at a child's size.
+        if (body.young) throw new IllegalStateException("A body renders at a child's size");
     }
 
     @SubscribeEvent
