@@ -33,7 +33,7 @@ public final class LiveExpeditionProof {
     private static final Set<String> ACKS=new HashSet<>();
     private static int phase,changed;private static boolean restarted;private static UUID secondId;
     private static CompoundTag secondStory;private static Map<String,String> firstMap;
-    private static final Map<UUID,Vec3> leakReturns=new HashMap<>();private static boolean leakRestarted;
+    private static final Map<UUID,Vec3> leakReturns=new HashMap<>();private static boolean leakRestarted,firstReturned;
     private LiveExpeditionProof() {}
     private static ServerPlayer player(MinecraftServer s,String role){return s.getPlayerList().getPlayers().stream().filter(p->p.getGameProfile().getName().equals("OTHProof"+role)).findFirst().orElse(null);}
     private static String role(ServerPlayer p){return p.getGameProfile().getName().equals("OTHProofA")?"A":p.getGameProfile().getName().equals("OTHProofB")?"B":"";}
@@ -68,6 +68,11 @@ public final class LiveExpeditionProof {
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e) {
         if(!enabled())return;var s=e.getServer();var a=player(s,"A");var b=player(s,"B");
+        // Read on the tick the native return lands, before the reader's restored stride or the test
+        // client's still-held walk key carries them on along the tread.
+        if(phase==11&&a!=null&&!firstReturned&&!StaircaseLeaks.active(a)){
+            require(a.position().distanceToSqr(leakReturns.get(a.getUUID()))<.01,"the first real client walks out to its exact saved tread");firstReturned=true;
+        }
         if(phase==0) {
             if(a==null||b==null)return;
             var l=s.getLevel(HouseDimensions.INTERIOR);require(l!=null,"native House dimension loaded");
@@ -143,8 +148,7 @@ public final class LiveExpeditionProof {
             step(s,10,StaircaseLeaks.activeBase(a));marker(b,10,StaircaseLeaks.activeBase(b));
         }else if(phase==10&&a!=null&&b!=null&&StaircaseLeaks.progress(a).getBoolean("Waxed")&&StaircaseLeaks.progress(b).getBoolean("Waxed")&&ACKS.size()==2){
             step(s,11,StaircaseLeaks.activeBase(a));marker(b,11,StaircaseLeaks.activeBase(b));
-        }else if(phase==11&&b==null&&a!=null&&!StaircaseLeaks.active(a)){
-            require(a.position().distanceToSqr(leakReturns.get(a.getUUID()))<.01,"the first real client walks out to its exact saved tread");
+        }else if(phase==11&&b==null&&a!=null&&firstReturned){
             phase=12;changed=s.getTickCount();ACKS.clear();write("restart-b-leak.txt","Reconnect the same profile after leaving during a personal note scene.\n");marker(a,12,a.blockPosition());
         }else if(phase==12&&a!=null&&b!=null&&!StaircaseLeaks.active(b)){
             require(b.getUUID().equals(secondId)&&b.position().distanceToSqr(leakReturns.get(b.getUUID()))<.01,"logout inside a leak restores the actual reconnected socket reader to their own tread");
