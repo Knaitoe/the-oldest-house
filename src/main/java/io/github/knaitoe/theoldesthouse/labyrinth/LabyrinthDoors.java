@@ -229,15 +229,18 @@ public final class LabyrinthDoors {
         player.displayClientMessage(Component.literal("The door is locked."), true);
     }
     /** Repeated tries belong to one physical gate and one connection, measured in real time. */
-    private record Stuck(String gate,long began,int count){}
+    private record Stuck(String gate,java.util.ArrayDeque<Long> attempts){}
     private static final Map<UUID,Stuck> STUCK=new HashMap<>();
+    /** Monotonic nanoseconds; retain all attempts in the rolling minute at this actual gate. */
+    public static int constructionAttempts(UUID player,String gate,long now){
+        Stuck run=STUCK.get(player);
+        if(run==null||!gate.equals(run.gate)){run=new Stuck(gate,new java.util.ArrayDeque<>());STUCK.put(player,run);}
+        while(!run.attempts.isEmpty()&&now-run.attempts.peekFirst()>60_000_000_000L)run.attempts.removeFirst();
+        run.attempts.addLast(now);return run.attempts.size();
+    }
     private static void sticks(ServerPlayer player,LabyrinthData.Door door){
-        long now=System.nanoTime();String gate=door.dimension.location()+":"+door.id;
-        Stuck before=STUCK.get(player.getUUID());
-        Stuck run=before==null||!gate.equals(before.gate)||now-before.began>60_000_000_000L
-                ?new Stuck(gate,now,1):new Stuck(gate,before.began,before.count+1);
-        STUCK.put(player.getUUID(),run);
-        player.displayClientMessage(Component.literal(run.count>=3
+        int attempts=constructionAttempts(player.getUUID(),door.dimension.location()+":"+door.id,System.nanoTime());
+        player.displayClientMessage(Component.literal(attempts>=3
                 ?"It will give. Try another door, or come back to this one in a minute."
                 :"The door sticks. Something is still settling behind it."),true);
         io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"door_sticks",door.lower);

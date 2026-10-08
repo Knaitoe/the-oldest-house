@@ -109,6 +109,21 @@ public final class ExplorationPassTests {
                 .pages().stream().map(page->page.raw().getString()).collect(java.util.stream.Collectors.joining("\n"));
     }
     @GameTest(template="empty")
+    public static void doorHelpUsesARollingRealMinuteAndResetsAcrossGatesAndLogout(GameTestHelper h){
+        var p=NativeTestPlayers.survival(h,"door_hint_reader");
+        try{
+            var id=p.getUUID();
+            h.assertTrue(LabyrinthDoors.constructionAttempts(id,"door_a",0)==1
+                    &&LabyrinthDoors.constructionAttempts(id,"door_a",59_000_000_000L)==2
+                    &&LabyrinthDoors.constructionAttempts(id,"door_a",60_100_000_000L)==2
+                    &&LabyrinthDoors.constructionAttempts(id,"door_a",61_000_000_000L)==3,
+                    "three attempts at 59, 60.1 and 61 seconds still earn help across the first-minute boundary");
+            h.assertTrue(LabyrinthDoors.constructionAttempts(id,"door_b",62_000_000_000L)==1,"another physical door starts its own run");
+            LabyrinthDoors.onPlayerLoggedOut(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p));
+            h.assertTrue(LabyrinthDoors.constructionAttempts(id,"door_b",63_000_000_000L)==1,"logout clears this connection's attempts");h.succeed();
+        }finally{LabyrinthDoors.onPlayerLoggedOut(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p));NativeTestPlayers.remove(p);}
+    }
+    @GameTest(template="empty")
     public static void witnessAccountKeepsPersonalBeginningsAndMutableProgressWithoutCredit(GameTestHelper h){
         var p=NativeTestPlayers.survival(h,"account_reader");var peer=NativeTestPlayers.survival(h,"account_peer");
         var spectator=NativeTestPlayers.survival(h,"account_camera");spectator.setGameMode(GameType.SPECTATOR);
