@@ -370,10 +370,29 @@ public final class ElkCarcassMap {
                         set(x, bed, z, n < .45 ? Blocks.CLAY : n < .7 ? Blocks.GRAVEL : n < .9 ? Blocks.SAND : Blocks.MUD);
                         continue;
                     }
-                    fill(x, -9, z, x, h - 3, z, Blocks.STONE);
-                    fill(x, Math.max(-9, h - 2), z, x, h - 1, z, rock ? Blocks.STONE : Blocks.DIRT);
+                    // Rock only as deep as any face of it lies open: to the lowest neighbouring
+                    // ground, stream bed or lake bed, and down past the cave under the knoll.
+                    int open = h;
+                    for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) open = Math.min(open, exposed(x + dx, z + dz));
+                    int bottom = Math.max(-9, Math.min(h - 4, open - 1));
+                    if (underKnoll(x, z)) bottom = Math.min(bottom, CAVE_Y - 3);
+                    fill(x, bottom, z, x, h - 3, z, Blocks.STONE);
+                    fill(x, Math.max(bottom, h - 2), z, x, h - 1, z, rock ? Blocks.STONE : Blocks.DIRT);
                     set(x, h, z, topsoil(x, z, h));
                 }
+        }
+
+        /** The lowest level open to air or water in a column, before buildings and the cave are cut. */
+        int exposed(int x, int z) {
+            if (z >= 19) return Integer.MAX_VALUE; // the bluff is built whole
+            if (lakeWater(x, z)) return bed(x, z);
+            if (stream(x, z)) return streamLevel(along(x, z)) - 1;
+            return surface(x, z);
+        }
+
+        /** The knoll's rock around the cave mouth, passage and chamber. */
+        boolean underKnoll(int x, int z) {
+            return x >= -36 && x <= -2 && z >= -202 && z <= -168;
         }
 
         void lakeAndStream() {
