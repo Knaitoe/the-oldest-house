@@ -139,7 +139,7 @@ public final class WitnessAccount {
     public static boolean resolve(LabyrinthData data,UUID player,Story story,String outcome){
         if(has(data,player,story))return false;
         CompoundTag record=record(data,player),stories=record.getCompound("Stories");
-        stories.putString(story.id,outcome);record.put("Stories",stories);save(data,player,record);return true;
+        stories.putString(story.id,outcome);record.put("Stories",stories);save(data,player,record);ExpeditionRhythm.request(data,player);return true;
     }
     public static void resolve(ServerPlayer player,Story story,String outcome){
         if(player.isSpectator()||FinaleProgress.terminal(FinaleProgress.phase(player.server,player.getUUID())))return;
@@ -279,6 +279,9 @@ public final class WitnessAccount {
                 ||!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR))return;
         BlockPos origin=HouseSavedData.get(player.server).houseOrigin();if(origin==null)return;
         LabyrinthData data=LabyrinthData.get(player.server);
+        if(event.getPos().equals(FinaleArchitecture.lectern(origin))&&!FinaleProgress.committed(FinaleProgress.phase(player.server,player.getUUID()))&&!ready(data,player.getUUID())){
+            ExpeditionRhythm.refuse(player,event.getPos(),"witness_lectern",milestone(data,player.getUUID())+" Hear more rooms to their end.");
+        }
         if(event.getPos().equals(FinaleArchitecture.lectern(origin))
                 &&!FinaleProgress.committed(FinaleProgress.phase(player.server,player.getUUID()))
                 &&player.serverLevel().getBlockEntity(event.getPos()) instanceof LecternBlockEntity desk){

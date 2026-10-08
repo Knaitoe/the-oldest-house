@@ -1,6 +1,6 @@
 # The player experience plan
 
-Status: **partly integrated in the 0.4.56 candidate.** The original proposal followed 0.4.49; its release assignments have been rebased after 0.4.55. Implemented source work is recorded below and in [the integration record](PLAYER_EXPERIENCE_INTEGRATION_0_4_56.md). Exact-head validation is required before release. Where it proposes changing an established rule, the change is listed under [Decisions for the owner](#decisions-for-the-owner) and nothing changes until it is decided.
+Status: **0.4.56 is verified; the next clarity and rhythm pass is implemented in the 0.4.57 candidate.** This is the same plan originally written after 0.4.49, rebased onto the current scenes. See [the first integration](PLAYER_EXPERIENCE_INTEGRATION_0_4_56.md) and [the next four additions](CLARITY_AND_RHYTHM_0_4_57.md). Exact-source validation of 0.4.57 is required before release. Unimplemented proposals remain below; established-rule changes are listed under [Decisions for the owner](#decisions-for-the-owner).
 
 ## Why this plan exists
 
@@ -106,6 +106,8 @@ Each workstream gives the problem, the evidence, the proposals, how we'll know i
    - a voice that fits the fiction.
 
    [Appendix A](#appendix-a-friction-inventory-first-pass) starts the inventory. (M)
+
+   **0.4.57 source:** loose-leaf binding, note-scene task gates, finale prerequisites, companion reach/routes and failed chalk now give actionable reasons and log actual-site refusals. Existing permission, original-item and reading rules remain. The complete recovery audit and human refusal-loop review are still open.
 2. **Message style.** Messages go on the action bar, use about 80 characters at most, and are written in the second person, present tense. Diegetic first ("Something is still settling behind it"), with an actionable clause where the player can act ("Tom carries a lighter"). Never name internal systems.
 3. **A soft-lock catalogue.** Every item a story or the staircase needs must have a recovery path or a substitute:
    - lighter: Tom's one-time handoff flag is repaired. Replacement is deferred until original custody and remaining uses can be preserved;
@@ -143,6 +145,8 @@ Each workstream gives the problem, the evidence, the proposals, how we'll know i
 **Proposals.**
 
 1. **Breathers.** After a story or hazard resolves, the next fresh deal prefers a quiet room or a short hall. The note scenes, the quiet chair and the hall sounds already belong here. (S)
+
+   **0.4.57 source:** a new personal resolution or successful physical-hazard far-door crossing queues one saved calm deal. It waits for a fresh ordinary/quiet arrival without a prior shared discovery; known maps, shared discoveries, scent and pet rescue keep priority. All its new choices are calm, favouring short halls. Retreat, observers and repeated story credit confer none.
 2. **Small strangenesses in ordinary halls.** Build a library of cheap, unseen changes, each like the quiet chair:
    - a painting turned to the wall;
    - a door now ajar;
@@ -150,6 +154,8 @@ Each workstream gives the problem, the evidence, the proposals, how we'll know i
    - a light that was on is off.
 
    They happen roughly once in three ordinary halls. Each is vacancy-gated, waits until no camera is within 48 blocks, honours player edits and never refills. (M)
+
+   **0.4.57 source:** three fixed ordinary halls have a supported picture, lamp or rug. After staging and two further occupied returns, each changes once, away from all cameras and living residents. Removed or edited pieces stay edited after restart. Existing quiet-chair behavior remains; doors are not altered.
 3. **Callbacks.** After a player resolves a story, a quiet echo of it can appear in a later ordinary hall, for that player only. These are scenery and never items: the cracked plate on a sideboard, a single sock on a radiator. The House remembering you is the strongest horror this game has. (M)
 4. **Session escalation.** Within one expedition the House grows more active (more cues, more strangenesses); returning to the manor resets it. This gives each trip an arc and makes the manor a real refuge. (M)
 5. **Time to the labyrinth.** Shorten the opening's minimum wait so a new player reaches the hallway in one or two evenings of play, not a week. See [Decisions](#decisions-for-the-owner). (S to tune)
@@ -167,6 +173,8 @@ Each workstream gives the problem, the evidence, the proposals, how we'll know i
 **Proposals.**
 
 1. **Make retreat a known choice.** The first time a player is in a story room, a single line tells them they can still leave. After that, nothing. (S)
+
+   **0.4.57 source:** one saved line per living explorer, near an actual story entry with an available retreat. It checks existing locks and private copied-home entries; committed or held encounters cannot promise an open exit. No progress is granted.
 2. **A scare budget.** Count active scares per expedition (growls, lunges, darkness events) and space them. Prefer sound first, sight second. (M, after the log exists)
 3. **Light as a resource that matters.** Light matters in the labyrinth's dark stretches and the staircase: a few places where carrying light is the decision, not decoration. (M)
 
@@ -221,9 +229,10 @@ Each workstream gives the problem, the evidence, the proposals, how we'll know i
 
 | Release | Theme | Contents |
 |---|---|---|
-| 0.4.56 candidate | **Stability, clarity and personal progress** | Integrate the reviewed save-preservation repairs, all subtitles, first door/hearth messages, corrected opt-in logging and measurements, and the account's count, unfinished entries, milestones and kind hint. |
-| Next clarity pass | **Finish the friction audit** | Complete item-custody/recovery decisions, remaining silent gates and retreat explanation; review the first fresh solo/duo playtest round. Decide quota/opening changes from measured play. |
-| Later rhythm pass | **Give expeditions a shape** | Breathers, small unseen changes, callbacks and session escalation; tune from reliable logs and a second playtest round. |
+| 0.4.56 verified | **Stability, clarity and personal progress** | Integrate the reviewed save-preservation repairs, all subtitles, first door/hearth messages, corrected opt-in logging and measurements, and the account's count, unfinished entries, milestones and kind hint. |
+| 0.4.57 candidate | **Clarity and expedition rhythm** | Remaining leaf/chore/finale/companion/chalk guidance, truthful one-time retreat explanation, saved completion breathers and three unseen hallway changes. |
+| Next audit/playtest pass | **Recovery and measured play** | Complete item-custody/recovery decisions and remaining gate inventory; review fresh solo/duo playtests. Decide quota/opening changes from measured play. |
+| Later rhythm pass | **Extend expedition shape** | Personal callbacks, session escalation and more small changes; tune from reliable logs and a second playtest round. |
 | Later shared/home pass | **Together and home** | Optional co-op moments, keeping shelf/manor responses, survey map and reading/accessibility options, preserving solo paths and established scene darkness. |
 
 Future release numbers depend on playtest findings. A content freeze and changes to quota, opening wait or darkness remain owner decisions.
@@ -303,13 +312,15 @@ This lists what the first pass found. The full audit in workstream B completes i
 
 ### Silent refusals to find
 
-Interaction handlers that `return false` without a message when the player has clearly tried something. Candidates:
+**Addressed in 0.4.57 source:**
 
-- staircase leaf binding;
-- note-scene chores;
-- finale lectern steps;
-- companion commands;
-- chalk on unsupported surfaces.
+- staircase leaf binding: own carried original, rebind shelf, earlier leaves and already bound/burned state; read-only previews remain;
+- note-scene chores: cup/towel/plate, socks/list, candle/drawer and final rinse prerequisites;
+- finale lectern and Witness approach: personal readiness versus unread passage, preserving reading and encounter gates;
+- companion commands: nearby ownership and route availability, preserving chosen orders and native health;
+- chalk: supported clear placement and own-mark erasure, with no cost on refusal.
+
+This completes these listed candidates; the full gate and finite-item recovery audit remains open.
 
 ## Appendix B: playtest event log
 
@@ -343,12 +354,14 @@ Additional fields:
 | `story_leave` | place, resolved, depth: leaving a story room by its entry door; unresolved means a retreat |
 | `story_resolve` | story, kind, outcome, count, kinds, ready (Witness requirement met) |
 | `death` | place, cause, depth |
-| `refused` | gate and actual site (dimension plus coordinates where known); includes construction/dormant/held/resident doors, hearth refusals and the church |
+| `refused` | gate and actual site (dimension plus coordinates where known); includes construction/dormant/held/resident doors, hearths, church, leaf binding, note chores, finale, companion and chalk refusals |
+| `hazard_resolve` | physical trial place; only after successful far-door movement |
+| `retreat_guidance` | story place; once per player when retreat is available |
 | `fire_lit` | index |
 | `note_scene_enter` / `note_scene_leave` | index; on leaving: finished, recovered, seconds |
 | `phase` | finale phase, written when it changes (this includes the endings: `locked_out`, `escaped`, `witnessed`) |
 
-**Not yet logged:** manor mornings and shifts, leaf binding, newly perceived strangenesses, and refusals at other gates. Add each as the friction audit reaches it, through `PlaytestLog.refused(player, gate)`.
+**Not yet logged:** manor mornings and shifts, successful leaf binding, newly perceived strangenesses, and refusals at gates beyond this audit. Add each as the friction audit reaches it, through `PlaytestLog.refused(player, gate)`.
 
 ## Appendix C: playtest kit
 

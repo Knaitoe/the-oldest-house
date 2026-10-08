@@ -71,7 +71,9 @@ public final class CompanionOrders {
     public static boolean command(ServerPlayer player,int entityId,int value) {
         if(value<0||value>PET_ACTION)return false;
         Entity entity=player.serverLevel().getEntity(entityId);
-        if(!(entity instanceof TamableAnimal pet)||!canCommand(player,pet))return false;
+        if(!(entity instanceof TamableAnimal pet)||!canCommand(player,pet)){
+            if(!player.isSpectator()&&player.isAlive())ExpeditionRhythm.refuse(player,player.blockPosition(),"companion_reach","Stand close to your own cat or dog to give it an order.");return false;
+        }
         return value==PET_ACTION ? pet(pet,player) : issue(pet,player,Order.values()[value]);
     }
     /** A pat never replaces the stored movement order. Repeated packets cannot spam hearts. */
@@ -106,7 +108,7 @@ public final class CompanionOrders {
                 &&player.serverLevel().dimension().equals(net.minecraft.world.level.Level.OVERWORLD)
                 &&HouseSavedData.get(player.server).houseOrigin()!=null;
         if((order==Order.EXIT||order==Order.DEEPER)&&!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)&&!outsideScent) {
-            reassureSound(pet,false);return false;
+            reassureSound(pet,false);ExpeditionRhythm.refuse(player,pet.blockPosition(),"companion_route","Your companion cannot find that route here. Try inside the House.");return false;
         }
         CompoundTag data=pet.getPersistentData();
         data.putInt(KEY,order.ordinal());data.remove("CompanionFearUntil");data.remove("CompanionLastRoom");

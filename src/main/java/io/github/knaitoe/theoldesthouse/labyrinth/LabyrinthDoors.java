@@ -294,6 +294,7 @@ public final class LabyrinthDoors {
             STUCK.remove(p.getUUID());
             setDoorOpen(toLevel, entry.lower, true, p);
             BlockPos manor = HouseSavedData.get(server).houseOrigin();
+            ExpeditionRhythm.crossedHazard(p,from);
             if(p.gameMode.getGameModeForPlayer()!=net.minecraft.world.level.GameType.SPECTATOR){VignetteGate.begin(p,place);current.visit(p.getUUID(),place);io.github.knaitoe.theoldesthouse.house.HouseExperience.arrived(p,place);
                 io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(p,"arrive","place",place.id(),"kind",place.kind().name().toLowerCase(java.util.Locale.ROOT),"story",WitnessAccount.Story.of(place.id())!=null,"depth",current.returnDepth(p.getUUID()));}
             LabyrinthDealer.arriveAt(current, p.getUUID(), place, manor == null ? 0L : manor.asLong(),

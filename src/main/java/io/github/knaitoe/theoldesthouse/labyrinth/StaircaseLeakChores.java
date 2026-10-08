@@ -23,6 +23,7 @@ public final class StaircaseLeakChores {
     private static void put(ServerPlayer p,BlockPos at,StaircaseLeakProps.Kind kind){var old=p.serverLevel().getBlockState(at);var s=StaircaseLeakProps.state(kind);if(old.hasProperty(BlockStateProperties.HORIZONTAL_FACING))s=s.setValue(BlockStateProperties.HORIZONTAL_FACING,old.getValue(BlockStateProperties.HORIZONTAL_FACING));p.serverLevel().setBlock(at,s,Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);}
     private static void remove(ServerPlayer p,BlockPos at){p.serverLevel().setBlock(at,Blocks.AIR.defaultBlockState(),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);}
     private static void cue(ServerPlayer p,String text){StaircaseLeaks.caption(p,text);p.playNotifySound(SoundEvents.WOOL_PLACE,SoundSource.BLOCKS,.18F,1);}
+    private static void blocked(ServerPlayer p,BlockPos at,String text){ExpeditionRhythm.refuse(p,at,"note_scene_chore",text);p.playNotifySound(SoundEvents.WOOL_PLACE,SoundSource.BLOCKS,.18F,1);}
     public static boolean interact(ServerPlayer p,BlockPos at){
         if(!StaircaseLeaks.active(p)||p.isSpectator()||p.distanceToSqr(at.getCenter())>36)return false;
         var b=StaircaseLeaks.activeBase(p);var state=p.serverLevel().getBlockState(at);var own=StaircaseLeaks.progress(p);int index=StaircaseLeaks.activeIndex(p);
@@ -35,29 +36,29 @@ public final class StaircaseLeakChores {
             case 0->{
                 if(kind==TOWEL){own.putBoolean("Towel",true);cue(p,"The cotton is warm, wet at one end.");}
                 else if(kind==CUP_BLUE||kind==CUP_CREAM||kind==CUP_RED){
-                    if(!own.getBoolean("Towel")){cue(p,"The rim is still wet. The towel is on the rail.");break;}
-                    if(own.contains("HeldCup")){cue(p,"There is a cup in your other hand.");break;}
+                    if(!own.getBoolean("Towel")){blocked(p,at,"The rim is still wet. The towel is on the rail.");break;}
+                    if(own.contains("HeldCup")){blocked(p,at,"There is a cup in your other hand.");break;}
                     int color=kind==CUP_BLUE?0:kind==CUP_CREAM?1:2;own.putInt("HeldCup",color);remove(p,at);cue(p,"The last drop catches in the towel.");
                 }else if(kind==HOOK){
-                    if(!own.contains("HeldCup")){cue(p,"An empty hook.");break;}int color=own.getInt("HeldCup");put(p,at,new StaircaseLeakProps.Kind[]{CUP_HUNG_BLUE,CUP_HUNG_CREAM,CUP_HUNG_RED}[color]);own.remove("HeldCup");own.putInt("Cups",own.getInt("Cups")+1);
+                    if(!own.contains("HeldCup")){blocked(p,at,"An empty hook.");break;}int color=own.getInt("HeldCup");put(p,at,new StaircaseLeakProps.Kind[]{CUP_HUNG_BLUE,CUP_HUNG_CREAM,CUP_HUNG_RED}[color]);own.remove("HeldCup");own.putInt("Cups",own.getInt("Cups")+1);
                     int[] colors=own.getIntArray("HookColors");if(colors.length!=3)colors=new int[]{0,1,2};int hook=at.getX()-b.getX()+2;if(hook>=0&&hook<3)colors[hook]=color;own.putIntArray("HookColors",colors);cue(p,"The cup taps the wood.");
-                }else if(kind==PLATE){if(own.getInt("Cups")!=3){cue(p,"The cups need their hooks first.");break;}own.putBoolean("Plate",true);remove(p,at);cue(p,"There is no hook for the cracked plate.");}
-                else if(kind==GERANIUM&&own.getBoolean("Plate")){put(p,at,GERANIUM_PLATE);cue(p,"It fits beneath the pot. The tap keeps dripping.");StaircaseLeaks.progress(p,own);StaircaseLeaks.returnAfterBeat(p,20);return true;}
+                }else if(kind==PLATE){if(own.getInt("Cups")!=3){blocked(p,at,"The cups need their hooks first.");break;}own.putBoolean("Plate",true);remove(p,at);cue(p,"There is no hook for the cracked plate.");}
+                else if(kind==GERANIUM){if(!own.getBoolean("Plate")){blocked(p,at,"Hang the cups, then set the cracked plate beneath the pot.");break;}put(p,at,GERANIUM_PLATE);cue(p,"It fits beneath the pot. The tap keeps dripping.");StaircaseLeaks.progress(p,own);StaircaseLeaks.returnAfterBeat(p,20);return true;}
             }
             case 12->{
                 if(kind==LAUNDRY||kind==SOCK_SINGLE){p.openMenu(new SimpleMenuProvider((id,inv,reader)->new SockMenu(id,p,at),Component.literal("Saturday washing")));return true;}
-                if(kind==TROUSERS){if(own.getInt("Pairs")<5){cue(p,"Five pairs are still warm from the line.");break;}own.putBoolean("ListHeld",true);cue(p,"From the landing: We forgot the matches.");StaircaseLeaks.progress(p,own);readList(p);return true;}
-                if(kind==LIST_SPOT&&own.getBoolean("ListHeld")){put(p,at,LIST);cue(p,"The list lies flat. One sock is left over.");StaircaseLeaks.progress(p,own);StaircaseLeaks.returnAfterBeat(p,20);return true;}
+                if(kind==TROUSERS){if(own.getInt("Pairs")<5){blocked(p,at,"Five pairs are still warm from the line.");break;}own.putBoolean("ListHeld",true);cue(p,"From the landing: We forgot the matches.");StaircaseLeaks.progress(p,own);readList(p);return true;}
+                if(kind==LIST_SPOT){if(!own.getBoolean("ListHeld")){blocked(p,at,"Pair the socks, then check the trouser pocket for the list.");break;}put(p,at,LIST);cue(p,"The list lies flat. One sock is left over.");StaircaseLeaks.progress(p,own);StaircaseLeaks.returnAfterBeat(p,20);return true;}
             }
             case 6->{if(kind==RADIO){put(p,at,RADIO_OFF);own.putBoolean("RadioOff",true);cue(p,"That was the pear tree. Its roots were lifting the pavement.");p.playNotifySound(StaircaseLeakRegistry.BAG.get(),SoundSource.BLOCKS,.22F,1);StaircaseLeaks.progress(p,own);StaircaseLeaks.returnAfterBeat(p,60);return true;}}
             case 9->{
                 if(kind==CANDLE){own.putBoolean("Candle",true);cue(p,"The end of the candle is soft.");}
-                if(kind==DRAWER||kind==DRAWER_OPEN){if(!own.getBoolean("Waxed")&&!own.getBoolean("Candle")){cue(p,"The drawer stops halfway.");break;}
+                if(kind==DRAWER||kind==DRAWER_OPEN){if(!own.getBoolean("Waxed")&&!own.getBoolean("Candle")){blocked(p,at,"The runner sticks. Take the candle from the table.");break;}
                     own.putBoolean("Waxed",true);boolean open=kind==DRAWER;put(p,at,open?DRAWER_OPEN:DRAWER);cue(p,open?"Wax along the runner. A tin of spare buttons.":"The drawer closes without a sound.");}
             }
             case 32->{
                 if(kind==SINK_EMPTY){put(p,at,SINK_CLEAN);own.putBoolean("Rinsed",true);cue(p,"A little water takes the last mark away.");}
-                if(kind==LIGHT){if(!own.getBoolean("Rinsed")){cue(p,"The sink needs one last rinse.");break;}put(p,at,LIGHT_OFF);cue(p,"Only the light over the cooker remains.");StaircaseLeaks.progress(p,own);StaircaseLeaks.returnAfterBeat(p,25);return true;}
+                if(kind==LIGHT){if(!own.getBoolean("Rinsed")){blocked(p,at,"The sink needs one last rinse.");break;}put(p,at,LIGHT_OFF);cue(p,"Only the light over the cooker remains.");StaircaseLeaks.progress(p,own);StaircaseLeaks.returnAfterBeat(p,25);return true;}
             }
             default->{return false;}
         }

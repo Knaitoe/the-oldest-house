@@ -57,8 +57,13 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.56"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.57"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/house/PlaytestLog.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
+              hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
+              assert len(hall) == 24
+              for mesh in ('picture','picture_turned','rug','rug_folded','lamp','lamp_off'):
+                  assert len(json.loads(z.read(f'assets/the_oldest_house/models/block/hall_{mesh}.json'))['elements']) >= 4
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
@@ -410,6 +415,8 @@ jobs:
           test -s build/font-smoke/native-covered-well-dark.png
           test -s build/font-smoke/reviewed-assets-passed.txt
           test -s build/font-smoke/native-reviewed-assets.png
+          test -s build/font-smoke/hall-changes-passed.txt
+          test -s build/font-smoke/native-hall-changes.png
           for scene in kitchen laundry car repair late_kitchen; do test -s build/font-smoke/scenes/staircase_leak_$scene.png; done
 
       - name: Publish native views to the log
@@ -628,7 +635,7 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.56"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.57"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
@@ -695,8 +702,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.56.jar
-            build/libs/the_oldest_house-0.4.56.jar.sha256
+            build/libs/the_oldest_house-0.4.57.jar
+            build/libs/the_oldest_house-0.4.57.jar.sha256
           if-no-files-found: error
 
 
@@ -794,7 +801,7 @@ jobs:
           python3 - <<'PYTHON'
           import re
           from pathlib import Path
-          declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/ExplorationPassTests.java').read_text()))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('ExplorationPassTests.java','RhythmTests.java'))
           passed=re.findall(r'All (\d+) required tests passed',Path('build/exploration-native.log').read_text())
           assert passed and int(passed[-1])==declared, (passed,declared)
           print(f'All {declared} native exploration cases passed.')

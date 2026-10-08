@@ -58,6 +58,7 @@ public final class TheOldestHouse {
         HouseBlocks.register(modEventBus);
         HouseBlockEntities.register(modEventBus);
         LabyrinthRegistry.register(modEventBus);
+        io.github.knaitoe.theoldesthouse.labyrinth.HallChangeRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.DrownedTownRegistry.register(modEventBus);
         MotherRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.FinaleRegistry.register(modEventBus);

@@ -32,7 +32,9 @@ public final class WitnessEnding {
         LabyrinthData data=LabyrinthData.get(player.server);CompoundTag world=FinaleProgress.world(player.server);
         if(world.getBoolean("Ended")||world.hasUUID("Owner")&&!world.getUUID("Owner").equals(player.getUUID()))return false;
         if(!qualified(data,player.getUUID())){
-            FinaleController.words(player,cell.above(),"The passage outside the cell is still unread.");return false;
+            ExpeditionRhythm.refuse(player,cell,"witness_passage",WitnessAccount.ready(data,player.getUUID())
+                    ?"Read your passage at the lectern before returning to the cell."
+                    :WitnessAccount.milestone(data,player.getUUID())+" Hear more rooms to their end.");return false;
         }
         if(!player.isShiftKeyDown()||!player.getMainHandItem().isEmpty()||!player.getOffhandItem().isEmpty()){
             FinaleController.words(player,cell.above(),"Both hands empty. Bow your head. Leave the door open.");return false;

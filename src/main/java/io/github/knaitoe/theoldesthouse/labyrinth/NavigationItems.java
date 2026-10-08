@@ -20,7 +20,7 @@ public final class NavigationItems {
             if(!NavigationAids.allowed(player))return InteractionResult.PASS;
             var clicked=context.getClickedPos();
             if(player.isShiftKeyDown()&&player.serverLevel().getBlockState(clicked).is(HouseBlocks.CHALK_MARK.get())) {
-                NavigationAids.erase(player,clicked);return InteractionResult.CONSUME;
+                if(!NavigationAids.erase(player,clicked))ExpeditionRhythm.refuse(player,clicked,"chalk_owner","You can only rub out your own chalk mark.");return InteractionResult.CONSUME;
             }
             var pos=clicked.relative(context.getClickedFace());
             if(NavigationAids.placeChalk(player.serverLevel(),pos,context.getClickedFace(),player.getDirection())) {
@@ -28,7 +28,7 @@ public final class NavigationItems {
                 context.getItemInHand().hurtAndBreak(1,player,context.getHand()==InteractionHand.MAIN_HAND?EquipmentSlot.MAINHAND:EquipmentSlot.OFFHAND);
                 return InteractionResult.CONSUME;
             }
-            return InteractionResult.FAIL;
+            ExpeditionRhythm.refuse(player,pos,"chalk_surface","The chalk needs a solid surface and room for its mark.");return InteractionResult.FAIL;
         }
     }
     public static final class Spool extends Item {

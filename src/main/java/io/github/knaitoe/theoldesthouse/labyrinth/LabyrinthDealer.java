@@ -230,8 +230,11 @@ public final class LabyrinthDealer {
         boolean fresh = remembered == null;
         boolean searching = data.hillaryScent(player) || rescueNeeded(data, player);
         RandomSource random = RandomSource.create(key ^ salt);
+        // Existing shared discoveries and personal maps remain exact. Searches take priority.
+        boolean breathe=fresh&&participant&&!searching&&(LabyrinthPacing.ordinary(place)||LabyrinthPacing.quiet(place))
+                &&ExpeditionRhythm.pending(data,player)&&data.stateEntry("shared_halls_0448",Long.toUnsignedString(key^salt)).isEmpty();
         if (remembered == null || data.hillaryScent(player) || rescueNeeded(data, player)) {
-            dealPlace(data, player, place, random);
+            if(!breathe||!ExpeditionRhythm.deal(data,player,doors,place,random)){breathe=false;dealPlace(data, player, place, random);}
         } else {
             List<LabyrinthData.Door> closed = new ArrayList<>();
             for (LabyrinthData.Door door : doors) {
@@ -262,6 +265,7 @@ public final class LabyrinthDealer {
             data.setBoundedStateEntry("shared_halls_0448", Long.toUnsignedString(key ^ salt), shared, 2048);
         }
         data.rememberNode(player, key, now);
+        if(breathe)ExpeditionRhythm.consumed(data,player);
         // A remembered map never strands anyone: if nothing here leads on, an ordinary door does.
         if (!hasWayOn(data, player, place, null)) {
             for (LabyrinthData.Door door : doors) {
