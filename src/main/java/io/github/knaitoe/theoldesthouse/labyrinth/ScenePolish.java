@@ -111,7 +111,12 @@ public final class ScenePolish {
             AABB area = repairArea(base, place);
             if (level.players().stream().anyMatch(p -> area.intersects(p.getBoundingBox())) || !loaded(level, area, base)) return;
             repairs(level, base, place);
-        } else apply(level, base, place);
+        } else {
+            long started = System.nanoTime();
+            apply(level, base, place);
+            if (place == LabyrinthPlace.ELK_CARCASSES)
+                TheOldestHouse.LOGGER.info("Polished {} ({} ms).", place.id(), (System.nanoTime() - started) / 1_000_000L);
+        }
         done.putBoolean(key(origin, place), true);
         data.setState(STATE, done);
         repaired.putBoolean(key(origin, place), true);

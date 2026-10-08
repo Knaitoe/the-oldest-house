@@ -330,6 +330,7 @@ public final class LabyrinthBuilder {
                 elkRebuild = rebuild;
                 ScenePolish.forget(server, pendingOrigin, place);
                 geometry = BuildBlocks.record(site, () -> LiteraryRooms.build(site, base, place));
+                if (place == LabyrinthPlace.ELK_CARCASSES) TheOldestHouse.LOGGER.info("Recorded {}: {}", place.id(), geometry.describe());
                 return;
             }
         }

@@ -26,7 +26,7 @@ The way off the yacht is over the side: every rail can be jumped, and the sun de
 
 ## Stage two: the stream woods and the cave
 
-The second stage is laid out from the owner's sketch, and is about four times the area of the old scene. Across the lake, a stream runs from the south-west to the north-east between two wedges of woods:
+The second stage is laid out from the owner's sketch, and covers about six and a half times the old scene's area: 129 by 251 blocks, against 63 by 79. Across the lake, a stream runs from the south-west to the north-east between two wedges of woods:
 
 - the larger wedge is west of the stream;
 - a smaller one is east of it;
@@ -192,6 +192,15 @@ Elsewhere:
   - the new classes, atlases, rail blockstate and porthole model;
   - every literary prop variant's textures;
   - 384 prop variants.
+
+## Construction cost
+
+The scene is large, so its construction is kept lean. The same blocks still stand where anyone can see them.
+
+- **Ground.** Ground is rock only as deep as any face of it lies open (the lowest neighbouring ground, stream bed or lake bed), and never less than four blocks, as in the other outdoor scenes. Under the knoll the rock goes down past the cave.
+- **Clearing to air.** A large box cleared to air (`BuildBlocks`) goes a chunk section at a time. A section that is already empty is one visit instead of 4,096. This is what makes a fresh outdoor scene, or the rebuild over the old elk scene, quick in bounded slices.
+- **Single blocks.** These are recorded as a lighter command than a one-block box.
+- **Logged sizes.** The builder logs the elk plan's size when it is recorded, and the GameTest server logs the elk polish time, the heap in use and the loaded chunks once a minute.
 
 ## Test harness repairs in this release
 
