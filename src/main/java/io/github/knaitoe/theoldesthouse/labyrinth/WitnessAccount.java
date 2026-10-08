@@ -122,7 +122,7 @@ public final class WitnessAccount {
         if(n<20)return small[n];String[] tens={"","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"};
         if(n>=100)return Integer.toString(n);return tens[n/10]+(n%10==0?"":"-"+small[n%10]);
     }
-    private static String progress(LabyrinthData data,UUID player){
+    static String progress(LabyrinthData data,UUID player){
         int n=count(data,player);
         if(ready(data,player))return "The account holds together. The passage at the cell can be read.";
         if(n>=REQUIRED)return "Enough rooms have ended. Their endings are too much alike.";
@@ -280,7 +280,7 @@ public final class WitnessAccount {
         BlockPos origin=HouseSavedData.get(player.server).houseOrigin();if(origin==null)return;
         LabyrinthData data=LabyrinthData.get(player.server);
         if(event.getPos().equals(FinaleArchitecture.lectern(origin))&&!FinaleProgress.committed(FinaleProgress.phase(player.server,player.getUUID()))&&!ready(data,player.getUUID())){
-            ExpeditionRhythm.refuse(player,event.getPos(),"witness_lectern",milestone(data,player.getUUID())+" Hear more rooms to their end.");
+            ExpeditionRhythm.refuse(player,event.getPos(),"witness_lectern",progress(data,player.getUUID())+" Hear more rooms to their end.");
         }
         if(event.getPos().equals(FinaleArchitecture.lectern(origin))
                 &&!FinaleProgress.committed(FinaleProgress.phase(player.server,player.getUUID()))
