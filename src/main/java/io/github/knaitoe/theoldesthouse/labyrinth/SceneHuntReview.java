@@ -30,7 +30,7 @@ public final class SceneHuntReview {
     private record Work(ServerLevel level,BlockPos origin,LabyrinthPlace place,BuildBlocks.Plan plan){}
     private SceneHuntReview(){}
     private static String key(BlockPos origin,LabyrinthPlace place){return origin.asLong()+":"+place.id();}
-    public static boolean applies(LabyrinthPlace p){return SceneReview.applies(p);}
+    public static boolean applies(LabyrinthPlace p){return p!=LabyrinthPlace.ELK_CARCASSES&&SceneReview.applies(p);}
     private static boolean loaded(ServerLevel l,AABB a){
         for(int x=(int)Math.floor(a.minX)>>4;x<=((int)Math.ceil(a.maxX)-1)>>4;x++)
             for(int z=(int)Math.floor(a.minZ)>>4;z<=((int)Math.ceil(a.maxZ)-1)>>4;z++)
@@ -166,8 +166,9 @@ public final class SceneHuntReview {
         }
         BuildBlocks.after(l,()->SceneReview.dressCostume(l,b));return ready;
     }
-    public static boolean apply(ServerLevel l,BlockPos origin,LabyrinthPlace p){var b=LabyrinthPlaces.base(origin,p);boolean ready=true;
+    public static boolean apply(ServerLevel l,BlockPos origin,LabyrinthPlace p){if(p==LabyrinthPlace.ELK_CARCASSES)return true;var b=LabyrinthPlaces.base(origin,p);boolean ready=true;
         if(p==LabyrinthPlace.ELK_FAN)ready&=fan(l,b);
+        if(p==LabyrinthPlace.CAMP_BLOOD)for(int[] node:new int[][]{{-4,-8},{4,-8},{10,-29},{27,-81},{-27,-77}})ready&=cover(l,b,node[0],node[1]);
         if(p==LabyrinthPlace.ELK_CARCASSES)ready&=forest(l,b);
         if(p==LabyrinthPlace.COSTUME_NIGHT)ready&=costumeLake(l,b);
         if(p==LabyrinthPlace.ZAMPANO_COURTYARD){

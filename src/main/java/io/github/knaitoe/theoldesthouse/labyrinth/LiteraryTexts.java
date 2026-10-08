@@ -53,9 +53,11 @@ public final class LiteraryTexts {
         case CONFESSION->book("Terms of the interview","The listener",
             "He asked for a chair and a book with blank pages. He did not ask for forgiveness. I thought this meant the account would be easier to take down.",
             "He stops when I leave. When I return, he finds the exact word.\n\nThere are clean books on the low shelf. I put one on the table between our chairs. By the time I reached the last page, I recognised the handwriting.");
-        case ELK_CARCASSES->book("The gap between hides","A camp worker",
-            "There was no room left in the freezer. We laid the carcasses beyond the trees. By dusk someone was walking between the cabins.",
-            "Under the pile there is a hollow. Watch the boots through the gap. Do not move until they are gone.\n\nThe service path continues beyond the pile.");
+        // 0.4.50: found aboard the yacht. Readers who took the earlier note keep their own saved original.
+        case ELK_CARCASSES->book("Morning aboard","A deckhand",
+            "Nobody rang for breakfast. The party was still on the tables, and the doors below stood open. Nobody answered from any of them.",
+            "He is still aboard. Do not wait for the boat. Go over the side and make for the trees.",
+            "The road crew dragged their elk to a cut under the ridge. There is a hollow under the pile. Watch the boots through the gap and do not move until they are gone.\n\nThe crew's path runs on from the cut to their gate.");
         case COSTUME_NIGHT->book("Costume inventory","The camp office",
             "Nine stands. Nine coats. We counted them before we turned out the lights.\n\nOne of the coats is not where its stand was.",
             "Walk toward the far grass. Watch what follows you. Living grass ends the chase. Sand does not.");

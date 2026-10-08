@@ -92,7 +92,16 @@ public final class LiveExpeditionClient {
         if(step==16){mc.options.keyShift.setDown(true);if(mc.player.position().distanceToSqr(net.minecraft.world.phys.Vec3.atBottomCenterOf(target))>.16)walk(mc,target);
             else{mc.options.keyUp.setDown(false);if(ticks>25&&ack!=16){shot=role+"-leaf-cover";ack(mc,16);}}}
         if(step==17){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(true);double dx=target.getX()+.5-mc.player.getX(),dz=target.getZ()+.5-mc.player.getZ();mc.player.setYRot((float)Math.toDegrees(Math.atan2(-dx,dz)));mc.player.setXRot(0);}
-        if(step==18){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(true);if(ticks==30){shot=role+"-slasher-leaves";stopping=true;}}
+        if(step==18){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(true);if(ticks==30){shot=role+"-slasher-leaves";ack(mc,18);}}
+        if(step==19&&ticks>30&&ack!=19){
+            mc.options.keyUp.setDown(false);var actors=mc.level.getEntitiesOfClass(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor.class,mc.player.getBoundingBox().inflate(32),a->a.role()==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor.KILLER&&a.owner().isPresent());
+            if(actors.size()==2){var frustum=new net.minecraft.client.renderer.culling.Frustum(new org.joml.Matrix4f(),new org.joml.Matrix4f().ortho(-64,64,-64,64,-64,64));var camera=mc.gameRenderer.getMainCamera().getPosition();frustum.prepare(camera.x,camera.y,camera.z);
+                int visible=0;for(var a:actors){boolean mine=a.owner().orElseThrow().equals(mc.player.getUUID());boolean rendered=mc.getEntityRenderDispatcher().getRenderer(a).shouldRender(a,frustum,camera.x,camera.y,camera.z);if(rendered!=mine)throw new IllegalStateException("LIVE EXPEDITION native private actor renderer leaked or hid the wrong socket's killer");if(rendered)visible++;}
+                if(visible!=1)throw new IllegalStateException("LIVE EXPEDITION each socket must render exactly its own elk killer");double dx=target.getX()+.5-mc.player.getX(),dz=target.getZ()+.5-mc.player.getZ();mc.player.setYRot((float)Math.toDegrees(Math.atan2(-dx,dz)));mc.player.setXRot(0);shot=role+"-private-elk";ack(mc,19);
+            }
+        }
+        if(step==20){mc.options.keyUp.setDown(false);double dx=target.getX()+.5-mc.player.getX(),dz=target.getZ()+.5-mc.player.getZ();mc.player.setYRot((float)Math.toDegrees(Math.atan2(-dx,dz)));mc.player.setXRot(0);}
+        if(step==21&&ticks==30){mc.options.keyUp.setDown(false);shot=role+"-private-leaves";stopping=true;}
     }
     private static boolean open(net.minecraft.world.level.block.state.BlockState s){return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}
     private static void walk(Minecraft mc,BlockPos target) {

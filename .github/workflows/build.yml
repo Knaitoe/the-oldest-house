@@ -57,7 +57,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.59"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.60"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/house/PlaytestLog.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
               hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
@@ -118,7 +118,7 @@ jobs:
                   assert f'io/github/knaitoe/theoldesthouse/gametest/{name}.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/client/LiteraryEffectsVisualProof.class' in z.namelist()
               literary = json.loads(z.read('assets/the_oldest_house/blockstates/literary_prop.json'))['variants']
-              assert len(literary) == 288
+              assert len(literary) == 384
               for name in ('elk_tooth','wheel_house_key','father_knife','grasshopper_jar','literary_photograph','family_film','father_meal','family_stew','wax_cylinder_one','wax_cylinder_two','wax_cylinder_three'):
                   mesh=json.loads(z.read(f'assets/the_oldest_house/models/item/{name}.json'))
                   assert len(mesh['elements']) >= 2 and 'display' in mesh
@@ -238,8 +238,23 @@ jobs:
                            'assets/the_oldest_house/blockstates/novel_prop.json',
                            'assets/the_oldest_house/models/item/walkie_talkie.json',
                            'assets/the_oldest_house/font/pelafina.json',
-                           'assets/the_oldest_house/sounds/novel/collapse.ogg'):
+                           'assets/the_oldest_house/sounds/novel/collapse.ogg',
+                           'io/github/knaitoe/theoldesthouse/labyrinth/ElkCarcassMap.class',
+                           'io/github/knaitoe/theoldesthouse/labyrinth/ElkHunt.class',
+                           'io/github/knaitoe/theoldesthouse/client/ElkVisualProof.class',
+                           'assets/the_oldest_house/textures/entity/literary_killer.png',
+                           'assets/the_oldest_house/textures/entity/literary_elk_carcass.png',
+                           'assets/the_oldest_house/textures/entity/literary_crew_0.png',
+                           'assets/the_oldest_house/textures/entity/literary_guest_0.png',
+                           'assets/the_oldest_house/blockstates/yacht_rail.json',
+                           'assets/the_oldest_house/models/block/yacht_porthole.json'):
                   assert name in z.namelist(), name
+              for variant in json.loads(z.read('assets/the_oldest_house/blockstates/literary_prop.json'))['variants'].values():
+                  model=json.loads(z.read('assets/the_oldest_house/models/'+variant['model'].split(':',1)[1]+'.json'))
+                  for texture in model['textures'].values():
+                      if texture.startswith('the_oldest_house:'):
+                          assert z.read('assets/the_oldest_house/textures/'+texture.split(':',1)[1]+'.png').startswith(b'\x89PNG\r\n\x1a\n')
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/literary_prop.json'))['variants'])==384
               for variant in json.loads(z.read('assets/the_oldest_house/blockstates/novel_prop.json'))['variants'].values():
                   model=json.loads(z.read('assets/the_oldest_house/models/'+variant['model'].split(':',1)[1]+'.json'))
                   for texture in model['textures'].values():
@@ -405,6 +420,8 @@ jobs:
           test -s build/font-smoke/native-hotel.png
           test -s build/font-smoke/literary-passed.txt
           test -s build/font-smoke/native-literary.png
+          test -s build/font-smoke/elk-passed.txt
+          test -s build/font-smoke/native-elk.png
           test -s build/font-smoke/coffin-passed.txt
           test -s build/font-smoke/native-coffin.png
           test -s build/font-smoke/bed-passed.txt
@@ -644,7 +661,7 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.59"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.60"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
@@ -711,8 +728,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.59.jar
-            build/libs/the_oldest_house-0.4.59.jar.sha256
+            build/libs/the_oldest_house-0.4.60.jar
+            build/libs/the_oldest_house-0.4.60.jar.sha256
           if-no-files-found: error
 
 

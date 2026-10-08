@@ -80,8 +80,9 @@ public final class SceneCraft {
     static final Set<LabyrinthPlace> ROOMS = EnumSet.of(LabyrinthPlace.HILL_NURSERY, LabyrinthPlace.MINIATURES, LabyrinthPlace.MASQUE,
             LabyrinthPlace.USHER, LabyrinthPlace.WINCHESTER, LabyrinthPlace.CHILD_ROOM, LabyrinthPlace.CRIMSON_HALL, LabyrinthPlace.BLY_ROUTE,
             LabyrinthPlace.ELK_FAN, LabyrinthPlace.CONFESSION, LabyrinthPlace.DEVILS_ROCK, LabyrinthPlace.WHEEL, LabyrinthPlace.GHOSTS_SET);
+    // The elk carcasses (0.4.50) author their own two-stage woods, stream and shore: nothing generic is planted over them.
     static final Set<LabyrinthPlace> GROUNDS = EnumSet.of(LabyrinthPlace.ELK_LOT, LabyrinthPlace.MAPPING_INTERIOR, LabyrinthPlace.HOLY_RABBIT,
-            LabyrinthPlace.ELK_CARCASSES, LabyrinthPlace.COSTUME_NIGHT, LabyrinthPlace.MOVIE_NIGHT, LabyrinthPlace.WINTER_LAKE,
+            LabyrinthPlace.COSTUME_NIGHT, LabyrinthPlace.MOVIE_NIGHT, LabyrinthPlace.WINTER_LAKE,
             LabyrinthPlace.CAMP_BLOOD, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.SHALLOWS, LabyrinthPlace.PHONE_CANOE,
             LabyrinthPlace.DROWNED_TOWN, LabyrinthPlace.HOTEL_GROUNDS, LabyrinthPlace.BARN_WELL, LabyrinthPlace.GOATMAN, LabyrinthPlace.EXPLORER_CAMP);
     /** How far outside its room box a scene's banks and woods reach. */
@@ -1209,7 +1210,6 @@ public final class SceneCraft {
             case ELK_LOT -> { fellGrid(); meadow(); woods(5, new int[]{70, 0, 0, 30, 0}, false); undergrowth(); bar(); }
             case MAPPING_INTERIOR -> { fellGrid(); woods(5, new int[]{60, 20, 0, 20, 0}, false); undergrowth(); lodge(); }
             case HOLY_RABBIT -> { fellGrid(); woods(5, new int[]{75, 20, 0, 0, 5}, true); undergrowth(); }
-            case ELK_CARCASSES -> { fellGrid(); woods(4, new int[]{65, 20, 0, 0, 15}, false); undergrowth(); }
             case CAMP_BLOOD -> { fellGrid(); woods(5, new int[]{30, 0, 40, 30, 0}, false); undergrowth(); cabins(); campGround(); }
             case END_WORLD_CABIN -> { fellGrid(); woods(5, new int[]{55, 10, 10, 25, 0}, false); undergrowth(); endCabin(); }
             case COSTUME_NIGHT, MOVIE_NIGHT, WINTER_LAKE -> {
@@ -1243,7 +1243,6 @@ public final class SceneCraft {
         return switch (scene) {
             case ELK_LOT -> z >= -38 || Math.abs(x) <= 18 && z >= -102;
             case HOLY_RABBIT -> Math.abs(x) <= 12 && z >= -42 && z <= -8;
-            case ELK_CARCASSES -> Math.abs(x) <= 12 && z >= -50 && z <= -18 || Math.abs(x) <= 4 && z <= -60;
             case CAMP_BLOOD -> Math.abs(x - 6) <= 5 && Math.abs(z + 45) <= 5 || Math.abs(x - 12) <= 4 && Math.abs(z + 40) <= 4;
             case END_WORLD_CABIN -> x >= 3 && x <= 10 && z <= -38 && z >= -52;
             default -> false;

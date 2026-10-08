@@ -110,7 +110,8 @@ public final class ArchitectureTests {
                 }
                 if(scene!=LabyrinthPlace.RED_ROOM)export(level,base,scene);
             }
-            for(var scene:LabyrinthPlace.values())if(LiteraryRooms.isLiterary(scene)){var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var base=LabyrinthPlaces.base(origin,scene);h.assertTrue(scene==LabyrinthPlace.FAMILY_COPY||scene==LabyrinthPlace.OLD_CABIN?level.getBlockEntity(base.offset(LiteraryRooms.source(scene))) instanceof LecternBlockEntity:level.getBlockState(base.offset(LiteraryRooms.source(scene))).is(HouseBlocks.VIGNETTE_DETAIL.get())&&!SceneHuntReview.sourceBook(level,base,scene).isEmpty(),scene.id()+" has a native themed discovery surface and its preserved original");var entrance=base.offset(0,0,-3);h.assertTrue(level.noCollision(null,new AABB(entrance.getX()+.2,entrance.getY()+.01,entrance.getZ()+.2,entrance.getX()+.8,entrance.getY()+1.8,entrance.getZ()+.8)),scene.id()+" clears the actual entrance body");if(scene!=LabyrinthPlace.FAMILY_COPY&&scene!=LabyrinthPlace.OLD_CABIN)export(level,base,scene);}
+            for(var scene:LabyrinthPlace.values())if(LiteraryRooms.isLiterary(scene)){var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var base=LabyrinthPlaces.base(origin,scene);h.assertTrue(scene==LabyrinthPlace.FAMILY_COPY||scene==LabyrinthPlace.OLD_CABIN||scene==LabyrinthPlace.ELK_CARCASSES?level.getBlockEntity(base.offset(LiteraryRooms.source(scene))) instanceof LecternBlockEntity:level.getBlockState(base.offset(LiteraryRooms.source(scene))).is(HouseBlocks.VIGNETTE_DETAIL.get())&&!SceneHuntReview.sourceBook(level,base,scene).isEmpty(),scene.id()+" has a native themed discovery surface and its preserved original");var entrance=base.offset(0,0,-3);h.assertTrue(level.noCollision(null,new AABB(entrance.getX()+.2,entrance.getY()+.01,entrance.getZ()+.2,entrance.getX()+.8,entrance.getY()+1.8,entrance.getZ()+.8)),scene.id()+" clears the actual entrance body");if(scene!=LabyrinthPlace.FAMILY_COPY&&scene!=LabyrinthPlace.OLD_CABIN)export(level,base,scene);}
+            elkStages(h,HouseTestLevel.get(server,HouseDimensions.OUTSIDE),LabyrinthPlaces.base(origin,LabyrinthPlace.ELK_CARCASSES));
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL,"hotel_upstairs");
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL,"hotel_basement");
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.BLIND_STRETCH),LabyrinthPlace.BLIND_STRETCH,"blind_stretch");
@@ -322,13 +323,34 @@ public final class ArchitectureTests {
         }finally{server.getPlayerList().remove(walker);}
     }
 
+    /** 0.4.50: the elk scene is two stages: an enclosed yacht afloat, then woods, a stream and an actual cave under a knoll. */
+    private static void elkStages(GameTestHelper h,net.minecraft.server.level.ServerLevel l,BlockPos b)throws Exception{
+        h.assertTrue(l.getBlockState(b.offset(9,1,-10)).is(LiteraryRegistry.YACHT_PORTHOLE.get())&&l.getBlockState(b.offset(0,-1,-3)).is(LiteraryRegistry.YACHT_CARPET.get()),"the reader arrives in a yacht cabin with portholes");
+        h.assertTrue(l.getBlockState(b.offset(0,-1,-50)).is(Blocks.WATER)&&l.getBlockState(b.offset(14,-1,-10)).is(Blocks.WATER),"the yacht stands in the lake, not on land");
+        for(int x=-9;x<=9;x++)for(int y=-1;y<=3;y++)h.assertTrue(!l.getBlockState(b.offset(x,y,0)).is(Blocks.WATER),"no lake water inside the hull at "+x+","+y);
+        var door=b.offset(ElkCarcassMap.SERVICE_DOOR);h.assertTrue(l.getBlockState(door).getBlock() instanceof DoorBlock,"the crew's gate is a real return door");
+        h.assertTrue(l.getBlockState(b.offset(LiteraryRooms.ending(LabyrinthPlace.ELK_CARCASSES))).is(LiteraryRegistry.PROP.get()),"the ending ledger waits at the gate");
+        for(int x=ElkCarcassMap.HOLLOW_X0;x<=ElkCarcassMap.HOLLOW_X1;x++)for(int z=ElkCarcassMap.HOLLOW_Z0;z<=ElkCarcassMap.HOLLOW_Z1;z++){
+            var cell=b.offset(x,ElkCarcassMap.CAVE_Y,z);var roof=cell.above();
+            h.assertTrue(l.getBlockState(cell).isAir()&&l.getBlockState(roof).is(LiteraryRegistry.PROP.get())&&l.getBlockState(roof).getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.CARCASS,"the hollow is one high under the carcasses at "+x+","+z);
+        }
+        int crew=0,carcasses=0;for(var at:BlockPos.betweenClosed(b.offset(-30,ElkCarcassMap.CAVE_Y,-196),b.offset(-12,ElkCarcassMap.CAVE_Y+4,-182))){var s=l.getBlockState(at);if(!s.is(LiteraryRegistry.PROP.get()))continue;if(s.getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.CREW_BODY)crew++;if(s.getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.CARCASS)carcasses++;}
+        h.assertTrue(crew>=3&&carcasses>=30,"the cave holds the crew among the carcasses: "+crew+" / "+carcasses);
+        var chamber=b.offset(ElkCarcassMap.CHAMBER);int roofed=0;for(int dx=-6;dx<=6;dx+=3)for(int dz=-3;dz<=3;dz+=3){var top=chamber.offset(dx,0,dz);while((l.getBlockState(top).isAir()||l.getBlockState(top).is(LiteraryRegistry.PROP.get())||l.getBlockState(top).is(Blocks.HANGING_ROOTS)||l.getBlockState(top).is(Blocks.POINTED_DRIPSTONE))&&top.getY()<b.getY()+20)top=top.above();if(l.getBlockState(top).isCollisionShapeFullBlock(l,top)&&top.getY()<b.getY()+18)roofed++;}
+        h.assertTrue(roofed>=13,"the chamber is an actual cave under rock: "+roofed);
+        h.assertTrue(Math.abs(ElkCarcassMap.MOUTH.getX())>=8&&ElkCarcassMap.MOUTH.getZ()<-150&&!ElkCarcassMap.wooded(ElkCarcassMap.MOUTH.getX()-8,ElkCarcassMap.MOUTH.getZ()-8),"the cave is off-centre on the outer edge of the western wood");
+        int water=0;for(int z=-240;z<=-80;z+=8){double t=ElkCarcassMap.along(0,z);for(int x=-40;x<=60;x++)if(ElkCarcassMap.stream(x,z)&&l.getBlockState(b.offset(x,ElkCarcassMap.streamLevel(ElkCarcassMap.along(x,z)),z)).is(Blocks.WATER)){water++;break;}}
+        h.assertTrue(water>=18,"a stream runs the length of the valley: "+water);
+        export(l,b,LabyrinthPlace.ELK_CARCASSES,"elk_yacht");
+        export(l,b,LabyrinthPlace.ELK_CARCASSES,"elk_cave");
+    }
     public static void export(net.minecraft.server.level.ServerLevel l,BlockPos b,LabyrinthPlace scene)throws Exception{
         export(l,b,scene,scene.id());
     }
     private static void export(net.minecraft.server.level.ServerLevel l,BlockPos b,LabyrinthPlace scene,String name)throws Exception{
         var r=scene.room();JsonObject file=new JsonObject();file.addProperty("name",name);
         JsonArray palette=new JsonArray(),blocks=new JsonArray();Map<BlockState,Integer> lookup=new LinkedHashMap<>();
-        int minZ=r.minZ(),maxZ=r.maxZ(),minY=Math.max(-1,r.minY()),maxY=Math.min(4,r.maxY());
+        int minX=r.minX(),maxX=r.maxX(),minZ=r.minZ(),maxZ=r.maxZ(),minY=Math.max(-1,r.minY()),maxY=Math.min(4,r.maxY());
         if(scene==LabyrinthPlace.GOATMAN){minZ=-79;maxZ=-45;}
         if(scene==LabyrinthPlace.HOLLOWAY_CAMP)minZ=-24;
         if(scene==LabyrinthPlace.TED_CAVER){minZ=-8;minY=-1;}
@@ -343,13 +365,16 @@ public final class ArchitectureTests {
         if(HallVariations.added(scene))maxY=HallVariations.domestic(scene)?4:scene==LabyrinthPlace.STONE_BEND?5:6;
         if(scene==LabyrinthPlace.BLIND_STRETCH)maxY=2;if(LiteraryRooms.isLiterary(scene)){minY=Math.max(scene.room().minY(),-6);maxY=NovelRooms.outside(scene)?Math.min(7,scene.room().maxY()):Math.min(4,scene.room().maxY());if(scene==LabyrinthPlace.WINCHESTER)maxY=10;}
         boolean exterior=name.endsWith("_exterior");if(exterior){minY=-1;maxY=Math.min(14,r.maxY());}
-        for(int x=r.minX();x<=r.maxX();x++)for(int y=minY;y<=maxY;y++)for(int z=minZ;z<=maxZ;z++){
+        // The yacht in section along its keel, decks and hull; the cave sliced through its chamber.
+        if(name.equals("elk_yacht")){minX=-12;maxX=0;minZ=-46;maxZ=19;minY=-9;maxY=13;}
+        if(name.equals("elk_cave")){minX=-36;maxX=-2;minZ=-202;maxZ=-168;minY=2;maxY=8;}
+        for(int x=minX;x<=maxX;x++)for(int y=minY;y<=maxY;y++)for(int z=minZ;z<=maxZ;z++){
             var at=b.offset(x,y,z);var s=l.getBlockState(at);if(s.is(LiteraryRegistry.FROZEN.get()))s=LiteraryFrozenBlock.original(l,at);
             if(s.isAir()||s.is(Blocks.BARRIER)||s.is(Blocks.LIGHT))continue;
             if(s.is(Blocks.WATER)&&(!LakeLandscape.isLake(scene)&&!LiteraryRooms.outside(scene)||!l.getBlockState(at.above()).isAir()))continue;
             if(exterior&&s.is(net.minecraft.tags.BlockTags.LEAVES))continue;
             // A documented cutaway removes roofs and the near walls, not interior contents.
-            if(!exterior&&y>=0&&(x==r.maxX()||z==maxZ||(scene==LabyrinthPlace.WALLPAPER_NURSERY&&x==9)||(scene==LabyrinthPlace.SEANCE&&z==-7&&Math.abs(x)>3)||(scene==LabyrinthPlace.WALLPAPER_NURSERY&&z==-6&&Math.abs(x)>3)))continue;
+            if(!exterior&&y>=0&&(x==maxX||z==maxZ||(scene==LabyrinthPlace.WALLPAPER_NURSERY&&x==9)||(scene==LabyrinthPlace.SEANCE&&z==-7&&Math.abs(x)>3)||(scene==LabyrinthPlace.WALLPAPER_NURSERY&&z==-6&&Math.abs(x)>3)))continue;
             if(y>=0&&((scene==LabyrinthPlace.WHALE&&x==13)||(scene==LabyrinthPlace.HOSPITAL&&x==9)
                     ||(scene==LabyrinthPlace.KAREN_ROOM&&x==9)||(scene==LabyrinthPlace.ZAMPANO_COURTYARD&&x==12&&z<=-19)))continue;
             if(name.equals("hotel_upstairs")&&y>=5&&(x==10||z==-6))continue;

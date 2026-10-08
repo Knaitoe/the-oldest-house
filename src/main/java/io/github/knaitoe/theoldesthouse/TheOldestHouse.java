@@ -85,6 +85,7 @@ public final class TheOldestHouse {
         // Only on the GameTest server: explains a shutdown that stalls.
         NeoForge.EVENT_BUS.addListener(ShutdownWatch::onServerStopping);
         NeoForge.EVENT_BUS.addListener(ShutdownWatch::onServerStopped);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.gametest.SuiteMemory::onServerTick);
         NeoForge.EVENT_BUS.addListener(HouseTransitionEvents::onPlayerTick);
         // The manor's doors are crossed by the handle, before anything else sees the click.
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, HouseTransitionEvents::onRightClickBlock);
