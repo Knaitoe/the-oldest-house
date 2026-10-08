@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.*;
@@ -17,6 +18,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.HitResult;
@@ -27,6 +30,8 @@ public final class LakeWitchEntity extends PathfinderMob {
     private static final EntityDataAccessor<Integer> MEMORY_PHASE = SynchedEntityData.defineId(LakeWitchEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> HUNT_PHASE = SynchedEntityData.defineId(LakeWitchEntity.class, EntityDataSerializers.INT);
     public static final int STALK=0, LUNGE=1, WITHDRAW=2;
+    public static final double HUNT_SPEED_FACTOR=2;
+    public static final int COVER_SEARCH_LIMIT=80, DOOR_BREAK_TICKS=60;
     @Nullable private UUID memoryOwner;
     @Nullable private BlockPos memoryBase;
     @Nullable private BlockPos shoreBase;
@@ -38,7 +43,13 @@ public final class LakeWitchEntity extends PathfinderMob {
     private double closestRush=Double.MAX_VALUE;
     private int strikeAttempts;
     private boolean lastStrikeAccepted;
-    public String huntDiagnostic(){return "closestRush="+closestRush+", attempts="+strikeAttempts+", accepted="+lastStrikeAccepted+", route="+route.size()+", node="+routeGoal;}
+    private int failedCoverTicks, doorBreakTicks, lastDoorTick=-1;
+    private boolean exposedHunt;
+    @Nullable private BlockPos breakingDoor;
+    public String huntDiagnostic(){return "closestRush="+closestRush+", attempts="+strikeAttempts+", accepted="+lastStrikeAccepted+", route="+route.size()+", node="+routeGoal+", failedCover="+failedCoverTicks+", exposed="+exposedHunt+", doorTicks="+doorBreakTicks;}
+    public int failedCoverTicks(){return failedCoverTicks;}
+    public boolean exposedHunt(){return exposedHunt;}
+    public int doorBreakTicks(){return doorBreakTicks;}
 
     public LakeWitchEntity(EntityType<? extends LakeWitchEntity> type, Level level) {
         super(type, level);
@@ -48,7 +59,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         setPathfindingMalus(PathType.BREACH, -1);
     }
     public static AttributeSupplier.Builder attributes() {
-        return createMobAttributes().add(Attributes.MAX_HEALTH, 36).add(Attributes.MOVEMENT_SPEED, .25)
+        return createMobAttributes().add(Attributes.MAX_HEALTH, 36).add(Attributes.MOVEMENT_SPEED, .5)
                 .add(Attributes.ATTACK_DAMAGE, 6).add(Attributes.FOLLOW_RANGE, 40).add(Attributes.KNOCKBACK_RESISTANCE, .65);
     }
     @Override protected void registerGoals() {}
@@ -83,6 +94,7 @@ public final class LakeWitchEntity extends PathfinderMob {
             cooldown = Math.max(cooldown, source.getEntity() instanceof ServerPlayer p && p.getHealth()<=6 ? 20 : 220);
             entityData.set(HUNT_PHASE, WITHDRAW);
             route.clear();
+            routeGoal=null;failedCoverTicks=0;exposedHunt=false;clearDoorBreak();
         }
         return true;
     }
@@ -108,6 +120,62 @@ public final class LakeWitchEntity extends PathfinderMob {
                 && level.getBlockState(feet.above()).getCollisionShape(level, feet.above()).isEmpty()
                 && (level.getFluidState(feet.below()).is(FluidTags.WATER)||level.getBlockState(feet.below()).isFaceSturdy(level, feet.below(), Direction.UP));
     }
+    /** Doors on the hunt's ground are traversable search nodes, but never traversed until physically broken. */
+    private boolean huntWalkable(BlockPos feet){
+        if(shoreBase!=null&&walkable(level(),shoreBase,feet))return true;
+        if(shoreBase==null||!breakableDoor(feet))return false;
+        int x=feet.getX()-shoreBase.getX(),z=feet.getZ()-shoreBase.getZ();
+        return feet.getY()==shoreBase.getY()&&x>=-28&&x<=28&&z>=-63&&z<=-1&&!safeGround(level(),feet)
+                &&level().getBlockState(feet.below()).isFaceSturdy(level(),feet.below(),Direction.UP);
+    }
+    public boolean breakableDoor(BlockPos at){
+        if(memory()||!(level() instanceof ServerLevel l)||!l.hasChunkAt(at)||!l.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_MOBGRIEFING))return false;
+        var s=l.getBlockState(at);if(!(s.getBlock() instanceof DoorBlock)||!s.is(BlockTags.WOODEN_DOORS)||s.getValue(DoorBlock.OPEN))return false;
+        var lower=s.getValue(DoorBlock.HALF)==DoubleBlockHalf.UPPER?at.below():at;
+        var upper=l.getBlockState(lower.above());if(!upper.is(s.getBlock())||upper.getValue(DoorBlock.HALF)!=DoubleBlockHalf.UPPER)return false;
+        if(LabyrinthData.get(l.getServer()).doorAt(l.dimension(),lower)!=null)return false;
+        if(shoreBase!=null){
+            if(lower.equals(shoreBase.offset(DrownedTown.CHURCH_DOOR)))return false;
+            int x=lower.getX()-shoreBase.getX(),z=lower.getZ()-shoreBase.getZ();
+            return lower.getY()==shoreBase.getY()&&x>=-28&&x<=28&&z>=-63&&z<=-12;
+        }
+        if(literaryBase!=null&&literaryPlace!=null){var r=literaryPlace.room();int x=lower.getX()-literaryBase.getX(),z=lower.getZ()-literaryBase.getZ();
+            return lower.getY()==literaryBase.getY()&&x>r.minX()+2&&x<r.maxX()-2&&z>r.minZ()+2&&z<-10;
+        }
+        return false;
+    }
+    private void clearDoorBreak(){
+        if(breakingDoor!=null&&level() instanceof ServerLevel l)l.destroyBlockProgress(getId(),breakingDoor,-1);
+        breakingDoor=null;doorBreakTicks=0;lastDoorTick=-1;
+    }
+    /** One native actor advances one cracking clock. Cancellation, opening or leaving cancels the attempt. */
+    public boolean workDoor(BlockPos at){
+        if(!breakableDoor(at)){clearDoorBreak();return false;}
+        var s=level().getBlockState(at);var lower=s.getValue(DoorBlock.HALF)==DoubleBlockHalf.UPPER?at.below():at;
+        if(distanceToSqr(lower.getCenter())>5){clearDoorBreak();return false;}
+        if(!lower.equals(breakingDoor)){clearDoorBreak();breakingDoor=lower.immutable();}
+        if(lastDoorTick==tickCount)return true;lastDoorTick=tickCount;
+        var l=(ServerLevel)level();doorBreakTicks++;
+        if(doorBreakTicks%20==1){swing(net.minecraft.world.InteractionHand.MAIN_HAND);l.levelEvent(1019,lower,0);}
+        l.destroyBlockProgress(getId(),lower,Math.min(9,doorBreakTicks*10/DOOR_BREAK_TICKS));
+        if(doorBreakTicks<DOOR_BREAK_TICKS)return true;
+        var before=l.getBlockState(lower);
+        if(net.neoforged.neoforge.event.EventHooks.onEntityDestroyBlock(this,lower,before)&&l.destroyBlock(lower,true,this))l.levelEvent(1021,lower,0);
+        clearDoorBreak();routeGoal=null;return true;
+    }
+    private boolean doorOnStep(BlockPos node){
+        if(breakableDoor(node))return workDoor(node);
+        if(breakingDoor!=null)clearDoorBreak();return false;
+    }
+    /** No hiding place for four occupied seconds commits this body to pursuit, including under a gaze. */
+    private void coverAttempt(boolean reachableCover){
+        if(reachableCover){failedCoverTicks=0;return;}
+        if(++failedCoverTicks>=COVER_SEARCH_LIMIT){
+            failedCoverTicks=COVER_SEARCH_LIMIT;exposedHunt=true;cooldown=Math.min(cooldown,20);routeGoal=null;
+        }
+    }
+    private boolean withdrawing(){return cooldown>0&&!exposedHunt;}
+    private boolean coverReachable;
     /** Native travel must not apply swimming drag or gravity to the surface hunter. Memory keeps normal physics. */
     @Override public void travel(Vec3 input){if((shoreBase!=null||literaryBase!=null)&&!memory()){setDeltaMovement(Vec3.ZERO);return;}super.travel(input);}
     public static double surfaceHeight(Level level,BlockPos base,BlockPos node){
@@ -179,6 +247,7 @@ public final class LakeWitchEntity extends PathfinderMob {
     /** One reachable search favors the back of the player, occlusion and genuinely unlit ground. */
     public static BlockPos ambushGoal(Level level,BlockPos base,BlockPos start,ServerPlayer target,boolean withdraw){
         var open=new ArrayDeque<BlockPos>();var seen=new HashSet<BlockPos>();open.add(start);seen.add(start);
+        var watchers=level instanceof ServerLevel l?l.players().stream().filter(p->p.isAlive()&&!p.isCreative()&&!p.isSpectator()&&DrownedTown.contains(base,p.position())).toList():List.<ServerPlayer>of();
         BlockPos best=null;double score=-Double.MAX_VALUE;
         while(!open.isEmpty()&&seen.size()<4000){
             BlockPos at=open.removeFirst();Vec3 point=Vec3.atBottomCenterOf(at).add(0,.6,0);double distance=point.distanceTo(target.position());
@@ -186,7 +255,7 @@ public final class LakeWitchEntity extends PathfinderMob {
                 boolean visible=inView(target,point);double value=behindScore(target,point)*12+(visible?-32:18)
                         -Math.abs(distance-(withdraw?12:6))*2-level.getBrightness(LightLayer.BLOCK,at)*1.5
                         -Math.sqrt(at.distSqr(start))*.22;
-                if(value>score){score=value;best=at;}
+                if((!withdraw||!visible&&watchers.stream().noneMatch(p->inView(p,point)))&&value>score){score=value;best=at;}
             }
             for(Direction side:Direction.Plane.HORIZONTAL){BlockPos next=at.relative(side);if(seen.add(next)&&walkable(level,base,next))open.add(next);}
         }
@@ -194,15 +263,28 @@ public final class LakeWitchEntity extends PathfinderMob {
     }
     private void routeTo(BlockPos goal){
         route.clear();routeGoal=goal;
-        for(BlockPos node:shoreRoute(level(),shoreBase,BlockPos.containing(getX(),shoreBase.getY(),getZ()),goal))route.add(Vec3.atBottomCenterOf(node));
+        var start=BlockPos.containing(getX(),shoreBase.getY(),getZ());
+        for(BlockPos node:physicalRoute(start,goal,false))route.add(Vec3.atBottomCenterOf(node));
+    }
+    private List<BlockPos> physicalRoute(BlockPos start,BlockPos goal,boolean literary){
+        java.util.function.Predicate<BlockPos> open=at->level().hasChunkAt(at)&&(literary?literaryWalkable(at):huntWalkable(at));
+        if(!open.test(start)||!open.test(goal))return List.of();
+        var queue=new ArrayDeque<BlockPos>();var prev=new HashMap<BlockPos,BlockPos>();queue.add(start);prev.put(start,start);
+        while(!queue.isEmpty()&&prev.size()<7000){var at=queue.removeFirst();if(at.equals(goal)){
+            var out=new LinkedList<BlockPos>();while(!at.equals(start)){out.addFirst(at);at=prev.get(at);}return out;}
+            for(var side:Direction.Plane.HORIZONTAL){var next=at.relative(side);if(!prev.containsKey(next)&&open.test(next)){prev.put(next,at);queue.add(next);}}
+        }return List.of();
     }
     private void follow(double speed){
-        while(!route.isEmpty()){
+        double remaining=speed*HUNT_SPEED_FACTOR;int nodes=0;
+        while(!route.isEmpty()&&remaining>.001&&nodes++<5){
             Vec3 toward=route.peek().subtract(position()).multiply(1,0,1);
             if(toward.lengthSqr()<.025){route.removeFirst();continue;}
-            double oldX=getX(),oldZ=getZ();move(MoverType.SELF,toward.normalize().scale(Math.min(speed,toward.length())));
+            if(doorOnStep(BlockPos.containing(route.peek())))return;
+            double oldX=getX(),oldZ=getZ();move(MoverType.SELF,toward.normalize().scale(Math.min(remaining,toward.length())));
             setYRot((float)(Math.atan2(getZ()-oldZ,getX()-oldX)*180/Math.PI)-90);yBodyRot=getYRot();
-            walkAnimation.update((float)Math.sqrt((getX()-oldX)*(getX()-oldX)+(getZ()-oldZ)*(getZ()-oldZ))*4,.4F);break;
+            double travelled=Math.sqrt((getX()-oldX)*(getX()-oldX)+(getZ()-oldZ)*(getZ()-oldZ));
+            walkAnimation.update((float)travelled*4,.4F);remaining-=travelled;if(travelled<.001)return;
         }
     }
     private void conceal(ServerLevel level){
@@ -223,22 +305,22 @@ public final class LakeWitchEntity extends PathfinderMob {
         if (!(level() instanceof ServerLevel level) || shoreBase == null || !isAlive()) return;
         setAirSupply(300);move(MoverType.SELF,Vec3.ZERO);
         if(settleTicks>0){settleTicks--;if(getZ()>shoreBase.getZ()-14&&Math.abs(getX()-shoreBase.getX())<6)conceal(level);return;}
-        if (cooldown > 0) cooldown--;
         ServerPlayer target = level.players().stream().filter(p -> canAttack(this, p))
                 .filter(p->p.getZ()<shoreBase.getZ()-12||Math.abs(p.getX()-shoreBase.getX())>5)
                 .min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
-        if (target == null || distanceToSqr(target) > 1600) { conceal(level); return; }
+        if (target == null || distanceToSqr(target) > 1600) { cancelStrike();route.clear();routeGoal=null;clearDoorBreak();coverReachable=false;return; }
+        if(cooldown>0)cooldown--;
         getLookControl().setLookAt(target, 30, 30);
         if (distanceToSqr(target) < 784 && getSensing().hasLineOfSight(target))
             IndianLakeProgress.hunted(LabyrinthData.get(level.getServer()), target.getUUID());
         boolean critical=target.getHealth()<=6;if(critical&&cooldown>20)cooldown=20;
         boolean observed=level.players().stream().filter(p->canAttack(this,p)).anyMatch(p->inView(p,getEyePosition()));
-        if(!critical&&observed&&(huntPhase()==LUNGE||cooldown==0&&distanceToSqr(target)<72)){
-            cancelStrike();cooldown=retreatDelay(target);entityData.set(HUNT_PHASE,WITHDRAW);route.clear();
+        if(!critical&&!exposedHunt&&observed&&(huntPhase()==LUNGE||cooldown==0&&distanceToSqr(target)<72)){
+            cancelStrike();cooldown=retreatDelay(target);entityData.set(HUNT_PHASE,WITHDRAW);route.clear();routeGoal=null;coverReachable=false;failedCoverTicks=0;
         }
         if(windup>0){windup--;return;}
         BlockPos goal = BlockPos.containing(target.getX(), shoreBase.getY(), target.getZ());
-        if(!walkable(level,shoreBase,goal)){cancelStrike();return;}
+        if(!huntWalkable(goal)){cancelStrike();clearDoorBreak();return;}
         if(huntPhase()==LUNGE){
             if(--lungeTicks<=0){cancelStrike();cooldown=retreatDelay(target);entityData.set(HUNT_PHASE,WITHDRAW);route.clear();return;}
             if(routeGoal==null||!goal.equals(routeGoal)||route.isEmpty())routeTo(goal);
@@ -253,17 +335,21 @@ public final class LakeWitchEntity extends PathfinderMob {
         }
         boolean watched=inView(target,position().add(0,.6,0));
         if(cooldown==0&&distanceToSqr(target)<72&&getSensing().hasLineOfSight(target)
-                &&(!observed||critical)){
+                &&(!observed||critical||exposedHunt)){
             entityData.set(HUNT_PHASE,LUNGE);entityData.set(STRIKING,true);windup=4;lungeTicks=24;routeTo(goal);
             level.playSound(null,blockPosition(),DrownedTownRegistry.WITCH_VOICE.get(),SoundSource.HOSTILE,.55F,1.2F);return;
         }
-        boolean withdraw=cooldown>0;entityData.set(HUNT_PHASE,withdraw?WITHDRAW:STALK);
+        boolean withdraw=withdrawing();entityData.set(HUNT_PHASE,withdraw?WITHDRAW:STALK);
         if(tickCount%24==0||routeGoal==null||route.isEmpty()){
-            BlockPos cover=ambushGoal(level,shoreBase,BlockPos.containing(getX(),shoreBase.getY(),getZ()),target,withdraw);
-            if(cover!=null)routeTo(cover);
-            else if(!watched||distanceToSqr(target)<100)routeTo(goal);
+            BlockPos cover=exposedHunt?null:ambushGoal(level,shoreBase,BlockPos.containing(getX(),shoreBase.getY(),getZ()),target,withdraw);
+            if(cover!=null){routeTo(cover);coverReachable=!route.isEmpty()||blockPosition().equals(cover);}
+            else {coverReachable=false;routeTo(goal);}
         }
+        var beforeCover=position();
         follow(withdraw?.34:critical?.34:.24);
+        if(withdraw)coverAttempt(coverReachable&&(position().distanceToSqr(beforeCover)>.0004
+                ||routeGoal!=null&&distanceToSqr(Vec3.atBottomCenterOf(routeGoal))<.5&&!observed));
+        else if(!getSensing().hasLineOfSight(target))coverAttempt(position().distanceToSqr(beforeCover)>.0004);
     }
     private void cancelStrike() { windup = 0;lungeTicks=0;entityData.set(STRIKING, false);entityData.set(HUNT_PHASE,STALK); }
     public int attackCooldown(){return cooldown;}
@@ -277,7 +363,7 @@ public final class LakeWitchEntity extends PathfinderMob {
             if(literaryPlace==LabyrinthPlace.COSTUME_NIGHT&&level().getBlockState(feet.below()).is(Blocks.GRASS_BLOCK))return false;
             if(!level().getFluidState(feet.below()).is(FluidTags.WATER)&&level().getBlockState(feet.below()).getCollisionShape(level(),feet.below()).isEmpty())return false;
         }
-        return level().noCollision(this,new net.minecraft.world.phys.AABB(node.getX()+.5-half,literaryBase.getY(),node.getZ()+.5-half,node.getX()+.5+half,literaryBase.getY()+getBbHeight(),node.getZ()+.5+half));
+        return breakableDoor(node)||level().noCollision(this,new net.minecraft.world.phys.AABB(node.getX()+.5-half,literaryBase.getY(),node.getZ()+.5-half,node.getX()+.5+half,literaryBase.getY()+getBbHeight(),node.getZ()+.5+half));
     }
     private void literaryRoute(BlockPos goal){
         route.clear();routeGoal=goal;var start=BlockPos.containing(getX(),literaryBase.getY(),getZ());
@@ -288,35 +374,34 @@ public final class LakeWitchEntity extends PathfinderMob {
                 if(literaryWalkable(candidate)&&candidate.distSqr(start)<distance){distance=candidate.distSqr(start);nearest=candidate.immutable();}
             if(nearest==null)return;goal=nearest;
         }
-        var open=new ArrayDeque<BlockPos>();var prev=new HashMap<BlockPos,BlockPos>();open.add(start);prev.put(start,start);
-        while(!open.isEmpty()&&prev.size()<7000){var n=open.removeFirst();if(n.equals(goal)){
-            var path=new LinkedList<Vec3>();while(!n.equals(start)){path.addFirst(Vec3.atBottomCenterOf(n));n=prev.get(n);}route.addAll(path);return;}
-            for(var side:Direction.Plane.HORIZONTAL){var next=n.relative(side);if(!prev.containsKey(next)&&literaryWalkable(next)){prev.put(next,n);open.add(next);}}
-        }
+        for(var at:physicalRoute(start,goal,true))route.add(Vec3.atBottomCenterOf(at));
     }
     private BlockPos literaryCover(ServerLevel l,ServerPlayer target){
         BlockPos best=null;double score=-Double.MAX_VALUE;
-        for(int radius:new int[]{7,11,15})for(int i=0;i<12;i++){
-            double angle=i*Math.PI/6;var n=BlockPos.containing(target.getX()+Math.sin(angle)*radius,literaryBase.getY(),target.getZ()+Math.cos(angle)*radius);
-            if(!literaryWalkable(n))continue;var point=Vec3.atBottomCenterOf(n).add(0,.45,0);
-            boolean seen=l.players().stream().filter(p->LiteraryVignettes.inside(p,literaryPlace)).anyMatch(p->inView(p,point));
-            double value=(seen?-90:50)+behindScore(target,point)*12-l.getBrightness(LightLayer.BLOCK,n)-position().distanceTo(point)*.4;
-            if(value>score){score=value;best=n;}
+        var start=BlockPos.containing(getX(),literaryBase.getY(),getZ());
+        var queue=new ArrayDeque<BlockPos>();var visited=new HashSet<BlockPos>();queue.add(start);visited.add(start);
+        var readers=l.players().stream().filter(p->p.isAlive()&&!p.isCreative()&&!p.isSpectator()&&LiteraryVignettes.inside(p,literaryPlace)).toList();
+        while(!queue.isEmpty()&&visited.size()<4000){var n=queue.removeFirst();var point=Vec3.atBottomCenterOf(n).add(0,.45,0);double distance=point.distanceTo(target.position());
+            if(distance>4&&distance<17&&!breakableDoor(n)&&readers.stream().noneMatch(p->inView(p,point))){
+                double value=behindScore(target,point)*12-l.getBrightness(LightLayer.BLOCK,n)-position().distanceTo(point)*.4;
+                if(value>score){score=value;best=n;}
+            }
+            for(var side:Direction.Plane.HORIZONTAL){var next=n.relative(side);if(!visited.contains(next)&&l.hasChunkAt(next)&&literaryWalkable(next)){visited.add(next);queue.add(next);}}
         }return best;
     }
     /** Physical approach, one swipe, retreat to cover for ten to fifteen seconds; low health breaks her caution. */
     private void tickLiterary(){
         if(!(level() instanceof ServerLevel level)||!isAlive())return;setAirSupply(300);
-        var target=level.players().stream().filter(p->LiteraryVignettes.inside(p,literaryPlace)&&!p.isCreative())
+        var target=level.players().stream().filter(p->p.isAlive()&&!p.isSpectator()&&LiteraryVignettes.inside(p,literaryPlace)&&!p.isCreative())
                 .filter(p->!(p.isUnderWater()&&p.getY()+p.getBbHeight()<literaryBase.getY()))
                 .filter(p->literaryPlace!=LabyrinthPlace.COSTUME_NIGHT||!level.getBlockState(p.blockPosition().below()).is(Blocks.GRASS_BLOCK))
                 .min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
-        if(target==null||distanceToSqr(target)>3600){cancelStrike();route.clear();return;}
+        if(target==null||distanceToSqr(target)>3600){cancelStrike();route.clear();routeGoal=null;clearDoorBreak();coverReachable=false;return;}
         if(cooldown>0)cooldown--;
         boolean critical=target.getHealth()<=6;if(critical&&cooldown>20)cooldown=20;
-        boolean watched=level.players().stream().filter(p->LiteraryVignettes.inside(p,literaryPlace)).anyMatch(p->inView(p,getEyePosition()));
-        if(!critical&&watched&&(huntPhase()==LUNGE||cooldown==0&&distanceToSqr(target)<72)){
-            cancelStrike();cooldown=retreatDelay(target);entityData.set(HUNT_PHASE,WITHDRAW);route.clear();}
+        boolean watched=level.players().stream().filter(p->p.isAlive()&&!p.isSpectator()&&!p.isCreative()&&LiteraryVignettes.inside(p,literaryPlace)).anyMatch(p->inView(p,getEyePosition()));
+        if(!critical&&!exposedHunt&&watched&&(huntPhase()==LUNGE||cooldown==0&&distanceToSqr(target)<72)){
+            cancelStrike();cooldown=retreatDelay(target);entityData.set(HUNT_PHASE,WITHDRAW);route.clear();routeGoal=null;coverReachable=false;failedCoverTicks=0;}
         if(windup>0){windup--;return;}
         var goal=BlockPos.containing(target.getX(),literaryBase.getY(),target.getZ());
         if(huntPhase()==LUNGE){
@@ -327,24 +412,32 @@ public final class LakeWitchEntity extends PathfinderMob {
                 cancelStrike();cooldown=retreatDelay(target);entityData.set(HUNT_PHASE,WITHDRAW);route.clear();
             }else if(--lungeTicks<=0){cancelStrike();cooldown=retreatDelay(target);entityData.set(HUNT_PHASE,WITHDRAW);route.clear();}return;
         }
-        if(cooldown==0&&distanceToSqr(target)<72&&getSensing().hasLineOfSight(target)&&(!watched||critical)){
+        if(cooldown==0&&distanceToSqr(target)<72&&getSensing().hasLineOfSight(target)&&(!watched||critical||exposedHunt)){
             entityData.set(HUNT_PHASE,LUNGE);entityData.set(STRIKING,true);windup=critical?2:6;lungeTicks=30;literaryRoute(goal);return;}
-        boolean withdraw=cooldown>0&&!critical;entityData.set(HUNT_PHASE,withdraw?WITHDRAW:STALK);
-        if(tickCount%20==0||routeGoal==null){var cover=withdraw?literaryCover(level,target):goal;if(cover!=null)literaryRoute(cover);}
+        boolean withdraw=withdrawing()&&!critical;entityData.set(HUNT_PHASE,withdraw?WITHDRAW:STALK);
+        if(tickCount%20==0||routeGoal==null){var cover=withdraw?literaryCover(level,target):goal;
+            coverReachable=cover!=null;if(cover!=null){literaryRoute(cover);coverReachable=!route.isEmpty()||blockPosition().equals(cover);}else literaryRoute(goal);}
+        var beforeCover=position();
         literaryFollow(withdraw?.34:critical?.32:.19);
+        if(withdraw)coverAttempt(coverReachable&&(position().distanceToSqr(beforeCover)>.0004
+                ||routeGoal!=null&&distanceToSqr(Vec3.atBottomCenterOf(routeGoal))<.5&&!watched));
+        else if(!getSensing().hasLineOfSight(target))coverAttempt(position().distanceToSqr(beforeCover)>.0004);
     }
     private void literaryFollow(double speed){
-        while(!route.isEmpty()){
+        double remaining=speed*HUNT_SPEED_FACTOR;int nodes=0;
+        while(!route.isEmpty()&&remaining>.001&&nodes++<5){
             var point=route.peekFirst();var delta=point.subtract(position()).multiply(1,0,1);
             if(delta.lengthSqr()<.04){route.removeFirst();continue;}
-            var step=delta.normalize().scale(Math.min(speed,delta.length()));var node=BlockPos.containing(getX()+step.x,literaryBase.getY(),getZ()+step.z);
+            if(doorOnStep(BlockPos.containing(point)))return;
+            var step=delta.normalize().scale(Math.min(remaining,delta.length()));var node=BlockPos.containing(getX()+step.x,literaryBase.getY(),getZ()+step.z);
             if(!literaryWalkable(node)){route.clear();return;}
             var before=position();move(MoverType.SELF,step);setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));yBodyRot=getYRot();
             super.move(MoverType.SELF,new Vec3(0,net.minecraft.util.Mth.clamp(supportHeight(level(),literaryBase,getX(),getZ(),getBbWidth())-getY(),-.25,.25),0));
-            walkAnimation.update((float)position().distanceTo(before)*4,.4F);return;
+            double travelled=position().subtract(before).multiply(1,0,1).length();walkAnimation.update((float)travelled*4,.4F);remaining-=travelled;if(travelled<.001)return;
         }
     }
     @Override public void die(DamageSource source) {
+        clearDoorBreak();
         if (!memory() && literaryBase==null && level() instanceof ServerLevel level) {
             LabyrinthData data = LabyrinthData.get(level.getServer()); CompoundTag state = data.state(DrownedTown.ID);
             state.putInt("WitchDefeatedVisit", visit); data.setState(DrownedTown.ID, state);
@@ -353,12 +446,14 @@ public final class LakeWitchEntity extends PathfinderMob {
     }
     @Override public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag); if (shoreBase != null) tag.putLong("ShoreBase", shoreBase.asLong()); tag.putInt("TownVisit", visit);tag.putInt("HuntCooldown",cooldown);
+        tag.putInt("FailedCoverTicks0459",failedCoverTicks);tag.putBoolean("ExposedHunt0459",exposedHunt);
         if(literaryBase!=null&&literaryPlace!=null){tag.putLong("LiteraryBase",literaryBase.asLong());tag.putString("LiteraryScene",literaryPlace.id());}
         if(memoryOwner!=null&&memoryBase!=null){tag.putUUID("MemoryOwner",memoryOwner);tag.putLong("MemoryBase",memoryBase.asLong());tag.putInt("MemoryPhase",memoryPhase());}
     }
     @Override public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag); shoreBase = tag.contains("ShoreBase") ? BlockPos.of(tag.getLong("ShoreBase")) : null;
         visit = tag.getInt("TownVisit"); cooldown = tag.contains("HuntCooldown")?tag.getInt("HuntCooldown"):30; cancelStrike(); route.clear();
+        failedCoverTicks=Math.min(COVER_SEARCH_LIMIT,Math.max(0,tag.getInt("FailedCoverTicks0459")));exposedHunt=tag.getBoolean("ExposedHunt0459");clearDoorBreak();
         if(shoreBase!=null){setNoGravity(true);settleTicks=40;}
         if(tag.contains("LiteraryBase")){var place=LabyrinthPlace.byId(tag.getString("LiteraryScene"));if(place!=null)literaryHunt(BlockPos.of(tag.getLong("LiteraryBase")),place);}
         if(tag.hasUUID("MemoryOwner")){recollection(tag.getUUID("MemoryOwner"),BlockPos.of(tag.getLong("MemoryBase")));memoryPhase(tag.getInt("MemoryPhase"));setNoGravity(memoryPhase()==1||memoryPhase()==3);}

@@ -1,39 +1,87 @@
 package io.github.knaitoe.theoldesthouse.client;
+
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.LakeWitchEntity;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.*;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.resources.ResourceLocation;
-/** The remembered girl stands; the hunting body runs low on its hands and feet. */
+
+/** The remembered girl stands; the same skin's hunting body scrabbles on jointed hands and feet. */
 public final class LakeWitchModel extends PlayerModel<LakeWitchEntity> {
     public static final ModelLayerLocation LAYER=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"lake_witch"),"main");
-    public LakeWitchModel(ModelPart root){super(root,true);}
-    public static LayerDefinition createBodyLayer(){return LayerDefinition.create(PlayerModel.createMesh(CubeDeformation.NONE,true),64,64);}
+    public final ModelPart leftElbow,rightElbow,leftKnee,rightKnee;
+    private final ModelPart leftCuff,rightCuff,leftShinCloth,rightShinCloth;
+    public LakeWitchModel(ModelPart root){
+        super(root,true);leftElbow=leftArm.getChild("elbow");rightElbow=rightArm.getChild("elbow");
+        leftKnee=leftLeg.getChild("knee");rightKnee=rightLeg.getChild("knee");
+        leftCuff=leftSleeve.getChild("elbow");rightCuff=rightSleeve.getChild("elbow");
+        leftShinCloth=leftPants.getChild("knee");rightShinCloth=rightPants.getChild("knee");
+    }
+    private static void arm(PartDefinition root,String name,int u,int v,boolean left,CubeDeformation inflate){
+        float x=left?-1:-2;
+        var upper=root.addOrReplaceChild(name,CubeListBuilder.create().texOffs(u,v).addBox(x,-2,-2,3,6,4,inflate),PartPose.offset(left?5:-5,2.5F,0));
+        upper.addOrReplaceChild("elbow",CubeListBuilder.create().texOffs(u,v+6).addBox(x,0,-2,3,6,4,inflate),PartPose.offset(0,4,0));
+    }
+    private static void leg(PartDefinition root,String name,int u,int v,boolean left,CubeDeformation inflate){
+        var upper=root.addOrReplaceChild(name,CubeListBuilder.create().texOffs(u,v).addBox(-2,0,-2,4,6,4,inflate),PartPose.offset(left?1.9F:-1.9F,12,0));
+        upper.addOrReplaceChild("knee",CubeListBuilder.create().texOffs(u,v+6).addBox(-2,0,-2,4,6,4,inflate),PartPose.offset(0,6,0));
+    }
+    public static LayerDefinition createBodyLayer(){
+        var mesh=PlayerModel.createMesh(CubeDeformation.NONE,true);var root=mesh.getRoot();var outer=new CubeDeformation(.25F);
+        arm(root,"right_arm",40,16,false,CubeDeformation.NONE);arm(root,"left_arm",32,48,true,CubeDeformation.NONE);
+        arm(root,"right_sleeve",40,32,false,outer);arm(root,"left_sleeve",48,48,true,outer);
+        leg(root,"right_leg",0,16,false,CubeDeformation.NONE);leg(root,"left_leg",16,48,true,CubeDeformation.NONE);
+        leg(root,"right_pants",0,32,false,outer);leg(root,"left_pants",0,48,true,outer);
+        return LayerDefinition.create(mesh,64,64);
+    }
     @Override public void setupAnim(LakeWitchEntity e,float walk,float speed,float age,float yaw,float pitch){
         resetBody();super.setupAnim(e,walk,speed,age,yaw,pitch);
-        if(e.memory()){leftArm.xRot=-.2F;rightArm.xRot=-.25F;head.xRot=.25F;copyClothes();}
-        else {
-            huntPose(walk,speed,age,e.striking());
-            // The claw swipe of an actual hit, and a recoil when she is wounded.
-            float swipe=(float)Math.sin(Math.sqrt(attackTime)*Math.PI);
-            if(attackTime>0){rightArm.xRot-=swipe*1.7F;rightArm.zRot+=swipe*.45F;leftArm.xRot-=swipe*.6F;}
-            if(e.hurtTime>0){float recoil=e.hurtTime/10F;head.xRot-=recoil*.7F;body.xRot-=recoil*.25F;leftArm.xRot+=recoil*.9F;rightArm.xRot+=recoil*.9F;}
-            copyClothes();
-        }
-    }
-    private void resetBody(){for(var part:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg,jacket,leftSleeve,rightSleeve,leftPants,rightPants})part.resetPose();}
-    public void huntPose(float walk,float speed,float age,boolean striking){
-        resetBody();float stride=(float)Math.cos(walk*1.4F)*Math.min(.24F,Math.max(.025F,speed*.4F));
-        body.setPos(0,15,-6);body.xRot=(float)Math.PI/2;
-        head.setPos(0,16,-9);head.xRot=striking?-.18F:.08F;head.zRot=(float)Math.sin(age*.045F)*.025F;
-        leftArm.setPos(5,14,-6);rightArm.setPos(-5,14,-6);
-        leftArm.xRot=stride;rightArm.xRot=-stride;leftArm.zRot=-.12F;rightArm.zRot=.12F;
-        // Winding up and lunging, both claws reach for the throat.
-        if(striking){leftArm.xRot=-1.15F+stride*.3F;rightArm.xRot=-1.25F-stride*.3F;leftArm.zRot=-.3F;rightArm.zRot=.3F;}
-        leftLeg.setPos(2.8F,14,6);rightLeg.setPos(-2.8F,14,6);
-        leftLeg.xRot=.58F-stride;rightLeg.xRot=.58F+stride;leftLeg.zRot=-.09F;rightLeg.zRot=.09F;
+        if(e.memory()){leftArm.xRot=-.2F;rightArm.xRot=-.25F;head.xRot=.25F;copyClothes();return;}
+        huntPose(walk,speed,age,e.striking());
+        float swipe=(float)Math.sin(Math.sqrt(attackTime)*Math.PI);
+        if(attackTime>0){rightArm.xRot-=swipe*1.7F;rightArm.zRot+=swipe*.45F;rightElbow.xRot-=swipe*.65F;leftArm.xRot-=swipe*.6F;}
+        if(e.hurtTime>0){float recoil=e.hurtTime/10F;head.xRot-=recoil*.7F;body.xRot-=recoil*.25F;leftArm.xRot+=recoil*.9F;rightArm.xRot+=recoil*.9F;leftElbow.xRot+=recoil*.8F;rightElbow.xRot+=recoil*.8F;}
         copyClothes();
     }
-    private void copyClothes(){hat.copyFrom(head);jacket.copyFrom(body);leftSleeve.copyFrom(leftArm);rightSleeve.copyFrom(rightArm);leftPants.copyFrom(leftLeg);rightPants.copyFrom(rightLeg);}
+    public void resetBody(){
+        for(var part:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg,jacket,leftSleeve,rightSleeve,leftPants,rightPants,
+                leftElbow,rightElbow,leftKnee,rightKnee,leftCuff,rightCuff,leftShinCloth,rightShinCloth})part.resetPose();
+    }
+    private static float phase(float value){return value-(float)Math.floor(value);}
+    /** Abrupt reach, scraping pull, short plant, folded recovery; unequal offsets avoid a walking pendulum. */
+    private static void claw(ModelPart upper,ModelPart elbow,float cycle,float amount,boolean left){
+        float shoulder,bend;
+        if(cycle<.14F){shoulder=-1.05F;bend=.15F;}
+        else if(cycle<.46F){float drag=(cycle-.14F)/.32F;shoulder=-1.05F+drag*1.48F;bend=.15F-drag*.6F;}
+        else if(cycle<.67F){shoulder=.43F;bend=-.45F;}
+        else {shoulder=-.25F;bend=1.55F;}
+        upper.xRot=shoulder*amount;elbow.xRot=bend*amount;
+        upper.zRot=(left?-1:1)*(.16F+Math.max(0,cycle-.67F)*.6F*amount);
+        elbow.yRot=(left?-1:1)*.08F*amount;
+    }
+    private static void hind(ModelPart thigh,ModelPart knee,float cycle,float amount,boolean left){
+        boolean folded=cycle>.62F;
+        thigh.xRot=.65F+(folded?.58F:-cycle*.25F)*amount;
+        knee.xRot=-(folded?1.65F:.85F)*amount;
+        thigh.zRot=(left?-1:1)*(.13F+(folded?.16F:0)*amount);
+        knee.yRot=(left?-1:1)*.08F*amount;
+    }
+    public void huntPose(float walk,float speed,float age,boolean striking){
+        resetBody();float moving=Math.min(1,Math.max(0,speed*1.7F));float cycle=phase(walk*.23F);
+        float hitch=((int)Math.floor(age/3)%5-2)*.025F;
+        body.setPos(moving>0?(cycle<.14F?.2F:-.15F):0,15+(cycle>.67F?.3F:0)*moving,-6);
+        body.xRot=(float)Math.PI/2;body.zRot=(cycle<.46F?-.045F:.065F)*moving;
+        head.setPos(0,16,-9);head.xRot=striking?-.18F:.08F+hitch;head.zRot=hitch*1.5F;
+        leftArm.setPos(5,14,-6);rightArm.setPos(-5,14,-6);
+        claw(leftArm,leftElbow,cycle,moving,true);claw(rightArm,rightElbow,phase(cycle+.43F),moving,false);
+        leftLeg.setPos(2.8F,14,6);rightLeg.setPos(-2.8F,14,6);
+        hind(leftLeg,leftKnee,phase(cycle+.19F),moving,true);hind(rightLeg,rightKnee,phase(cycle+.77F),moving,false);
+        if(striking){leftArm.xRot=-1.2F;rightArm.xRot=-1.35F;leftElbow.xRot=.15F;rightElbow.xRot=.25F;leftArm.zRot=-.3F;rightArm.zRot=.3F;}
+        copyClothes();
+    }
+    private void copyClothes(){
+        hat.copyFrom(head);jacket.copyFrom(body);leftSleeve.copyFrom(leftArm);rightSleeve.copyFrom(rightArm);leftPants.copyFrom(leftLeg);rightPants.copyFrom(rightLeg);
+        leftCuff.copyFrom(leftElbow);rightCuff.copyFrom(rightElbow);leftShinCloth.copyFrom(leftKnee);rightShinCloth.copyFrom(rightKnee);
+    }
 }

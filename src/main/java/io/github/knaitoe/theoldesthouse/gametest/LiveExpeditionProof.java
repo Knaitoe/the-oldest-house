@@ -34,13 +34,15 @@ public final class LiveExpeditionProof {
     private static int phase,changed;private static boolean restarted;private static UUID secondId;
     private static CompoundTag secondStory;private static Map<String,String> firstMap;
     private static final Map<UUID,Vec3> leakReturns=new HashMap<>();private static boolean leakRestarted;
+    private static LakeWitchEntity stacy;private static LiteraryActor slasher;private static UUID stacyId,slasherId;private static int crackStarted=-1;
+    private static Vec3 lastHunterPosition;
     private LiveExpeditionProof() {}
     private static ServerPlayer player(MinecraftServer s,String role){return s.getPlayerList().getPlayers().stream().filter(p->p.getGameProfile().getName().equals("OTHProof"+role)).findFirst().orElse(null);}
     private static String role(ServerPlayer p){return p.getGameProfile().getName().equals("OTHProofA")?"A":p.getGameProfile().getName().equals("OTHProofB")?"B":"";}
     private static void require(boolean okay,String message){if(!okay)throw new IllegalStateException("LIVE EXPEDITION: "+message);}
     @SubscribeEvent public static void commands(RegisterCommandsEvent e) {
         if(!enabled())return;
-        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,13)).executes(c->{
+        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,18)).executes(c->{
             var p=c.getSource().getPlayerOrException();if(!role(p).isEmpty()&&IntegerArgumentType.getInteger(c,"step")==phase)ACKS.add(role(p));return 1;
         })));
     }
@@ -149,8 +151,49 @@ public final class LiveExpeditionProof {
         }else if(phase==12&&a!=null&&b!=null&&!StaircaseLeaks.active(b)){
             require(b.getUUID().equals(secondId)&&b.position().distanceToSqr(leakReturns.get(b.getUUID()))<.01,"logout inside a leak restores the actual reconnected socket reader to their own tread");
             require(StaircaseStory.isCurrent(b,b.getOffhandItem())&&StaircaseStory.burned(StaircaseStory.record(b))==1,"scene recovery preserves the living book and personal burned cursor");
-            if(!leakRestarted){step(s,13,b.blockPosition());leakRestarted=true;write("passed.txt","Two actual NeoForge socket clients: shared physical hallway entry and return; owner-private leaves and burn; same-profile reconnect; two native original note menus, distinct personal rooms, real candle/drawer interactions, actual doorway exit, and a second same-profile reconnect after disconnecting inside a leak. No native movement corrections.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: two real clients, private note scenes and two reconnects");}
-        }else if(phase==13&&s.getTickCount()-changed>100)s.halt(false);
+            if(!leakRestarted){step(s,13,b.blockPosition());leakRestarted=true;}
+        }else if(phase==13&&ACKS.size()==2){
+            var l=s.getLevel(HouseDimensions.OUTSIDE);var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.COSTUME_NIGHT);huntFloor(l,site);
+            for(int x:new int[]{-1,1})for(int y=0;y<=3;y++)l.setBlock(site.offset(x,y,-35),Blocks.STONE.defaultBlockState(),3);
+            var lower=Blocks.SPRUCE_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.NORTH).setValue(DoorBlock.HALF,net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER);
+            l.setBlock(site.offset(0,0,-35),lower,3);l.setBlock(site.offset(0,1,-35),lower.setValue(DoorBlock.HALF,net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER),3);
+            for(var p:List.of(a,b))outside(p,site.offset(0,0,-30),p==a?-.4:.4);
+            stacy=DrownedTownRegistry.LAKE_WITCH.get().create(l);stacy.moveTo(site.getX()+.5,site.getY(),site.getZ()-41.5);stacy.literaryHunt(site,LabyrinthPlace.COSTUME_NIGHT);stacy.setNoAi(true);l.addFreshEntity(stacy);stacyId=stacy.getUUID();
+            step(s,14,site.offset(0,0,-35));
+        }else if(phase==14&&a!=null&&b!=null){
+            var l=s.getLevel(HouseDimensions.OUTSIDE);var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.COSTUME_NIGHT);var door=site.offset(0,0,-35);
+            if(stacy.doorBreakTicks()>0&&crackStarted<0)crackStarted=stacy.tickCount;
+            if(crackStarted>=0&&!l.getBlockState(door).isAir())require(stacy.doorBreakTicks()<=stacy.tickCount-crackStarted+1,"two socket readers cannot multiply Stacy's cracking clock");
+            if(l.getBlockState(door).isAir()){
+                require(crackStarted>=0&&stacy.tickCount-crackStarted>=LakeWitchEntity.DOOR_BREAK_TICKS-1&&l.getBlockState(door.above()).isAir(),"one physical three-second door break opens both native halves");
+                require(stacy.getUUID().equals(stacyId)&&l.getEntitiesOfClass(LakeWitchEntity.class,new net.minecraft.world.phys.AABB(site.offset(-4,0,-46),site.offset(5,5,-27))).size()==1,"both clients observe the original shared Stacy body");step(s,15,stacy.blockPosition());
+            }
+        }else if(phase==15&&ACKS.size()==2){
+            stacy.discard();var l=s.getLevel(HouseDimensions.OUTSIDE);var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.ELK_CARCASSES);huntFloor(l,site);
+            for(int x=-1;x<=1;x++)for(int y=0;y<=2;y++){l.setBlock(site.offset(x,y,-44),Blocks.STONE.defaultBlockState(),3);l.setBlock(site.offset(x,y,-43),Blocks.SPRUCE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true),3);}
+            for(int x=-1;x<=1;x++)for(int z=-38;z<=-34;z++)l.setBlock(site.offset(x,1,z),HouseBlocks.FOREST_COVER.get().defaultBlockState(),3);
+            for(var p:List.of(a,b)){outside(p,site.offset(p==a?-1:1,0,-40),0);var own=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.ELK_CARCASSES);own.putBoolean("Here",true);LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.ELK_CARCASSES,own);}
+            slasher=LiteraryRegistry.ACTOR.get().create(l);slasher.bind(LabyrinthPlace.ELK_CARCASSES,null);slasher.appearance(LiteraryActor.KILLER,0);slasher.moveTo(site.getX()+.5,site.getY(),site.getZ()-48.5);slasher.setNoGravity(true);l.addFreshEntity(slasher);slasherId=slasher.getUUID();lastHunterPosition=slasher.position();
+            var world=LiteraryVignettes.shared(d,LabyrinthPlace.ELK_CARCASSES);world.putUUID("Killer",slasherId);LiteraryVignettes.shared(d,LabyrinthPlace.ELK_CARCASSES,world);step(s,16,site.offset(-1,0,-36));marker(b,16,site.offset(1,0,-36));
+        }else if(phase==16&&a!=null&&b!=null&&ACKS.size()==2){
+            var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.ELK_CARCASSES);for(var p:List.of(a,b))require(p.isShiftKeyDown()&&p.getPose()==net.minecraft.world.entity.Pose.CROUCHING&&CarcassHunt.concealed(p,site)&&p.serverLevel().noCollision(p,p.getBoundingBox())&&!CarcassHunt.sees(slasher,p),"both real clients physically crouch under native leaves and are concealed");
+            for(int x=-1;x<=1;x++)for(int y=0;y<=2;y++)a.serverLevel().setBlock(site.offset(x,y,-44),Blocks.AIR.defaultBlockState(),3);
+            CarcassHunt.noise(a,a.blockPosition());step(s,17,site.offset(0,0,-43));
+        }else if(phase==17&&a!=null&&b!=null){
+            require(slasher.getUUID().equals(slasherId)&&slasher.position().distanceTo(lastHunterPosition)<=.24,"one native slasher advances once per physical tick without teleporting");lastHunterPosition=slasher.position();
+            var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.ELK_CARCASSES);if(slasher.getZ()>site.getZ()-42.5){
+                boolean torn=false;for(int x=-1;x<=1;x++)torn|=a.serverLevel().getBlockState(site.offset(x,0,-43)).isAir()&&a.serverLevel().getBlockState(site.offset(x,1,-43)).isAir();
+                require(torn,"the actual slasher physically tears a passage through the leaf barrier");
+                require(WitnessAccount.count(d,a.getUUID())==0&&WitnessAccount.count(d,b.getUUID())==0,"shared pursuit grants no ending credit");
+                step(s,18,slasher.blockPosition());write("passed.txt","Two actual NeoForge socket clients: all original shared doors, personal leaves/burns/note scenes and two same-profile reconnects; one Stacy body and one three-second wooden-door break; both readers walk crouched under native leaf cover; one physical slasher tears through leaves with no teleport or doubled peer clock.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: shared hunts, native crouching, leaf breaking and two reconnects");
+            }
+        }else if(phase==18&&s.getTickCount()-changed>100)s.halt(false);
+    }
+    private static void huntFloor(net.minecraft.server.level.ServerLevel l,BlockPos site){
+        for(int x=-2;x<=2;x++)for(int z=-51;z<=-27;z++)for(int y=-1;y<=3;y++)l.setBlock(site.offset(x,y,z),(y==-1?Blocks.PODZOL:x==-2||x==2||z==-51||z==-27?Blocks.STONE:Blocks.AIR).defaultBlockState(),3);
+    }
+    private static void outside(ServerPlayer p,BlockPos pos,double side){
+        p.setGameMode(GameType.SURVIVAL);p.setInvulnerable(true);p.setNoGravity(false);p.getFoodData().setFoodLevel(6);p.teleportTo(p.server.getLevel(HouseDimensions.OUTSIDE),pos.getX()+.5+side,pos.getY(),pos.getZ()+.5,0,0);p.hasChangedDimension();p.connection.resetPosition();
     }
     private static void write(String name,String text) {
         try{Files.createDirectories(folder());Files.writeString(folder().resolve(name),text);}catch(Exception e){throw new IllegalStateException(e);}

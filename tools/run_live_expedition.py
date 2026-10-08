@@ -58,11 +58,11 @@ try:
     reconnected = launch("runProofB", "client-b-reconnected")
     wait_for(lambda: (report / "restart-b-leak.txt").exists() and reconnected.poll() is not None, 240, "personal burn, two note rooms and logout inside a leak")
     recovered = launch("runProofB", "client-b-leak-reconnected")
-    wait_for(lambda: (report / "passed.txt").exists() and (report / "B-reconnected.png").exists(), 180, "same-profile leak recovery and rendered proof")
+    wait_for(lambda: (report / "passed.txt").exists() and (report / "B-reconnected.png").exists(), 300, "same-profile recovery, native shared hunts and rendered proof")
     for p in processes:
         p.wait(timeout=90)
         assert p.returncode == 0, p.returncode
-    for shot in ("A-first.png", "B-first.png", "A-embers.png", "B-embers-reconnected.png", "B-reconnected.png", "A-leak.png", "B-leak.png", "B-leak-first.png"):
+    for shot in ("A-first.png", "B-first.png", "A-embers.png", "B-embers-reconnected.png", "B-reconnected.png", "A-leak.png", "B-leak.png", "B-leak-first.png", "A-stacy-door.png", "B-stacy-door.png", "A-leaf-cover.png", "B-leaf-cover.png", "A-slasher-leaves.png", "B-slasher-leaves.png"):
         assert (report / shot).stat().st_size > 10000, shot
     # Require clean native movement validation during the actual crossing
     # and return, even when a later correction would recover a bad packet.

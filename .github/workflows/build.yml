@@ -57,7 +57,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.58"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.59"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/house/PlaytestLog.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
               hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
@@ -391,6 +391,8 @@ jobs:
           test -s build/font-smoke/npcs-passed.txt
           test -s build/font-smoke/native-npcs.png
           test -s build/font-smoke/cast-passed.txt
+          test -s build/font-smoke/stacey-scrabble-passed.txt
+          test -s build/font-smoke/native-stacey-scrabble.png
           test -s build/font-smoke/home-design-passed.txt
           test -s build/font-smoke/native-home-design.png
           test -s build/font-smoke/minotaur-render-passed.txt
@@ -642,7 +644,7 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.58"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.59"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
@@ -709,8 +711,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.58.jar
-            build/libs/the_oldest_house-0.4.58.jar.sha256
+            build/libs/the_oldest_house-0.4.59.jar
+            build/libs/the_oldest_house-0.4.59.jar.sha256
           if-no-files-found: error
 
 
@@ -773,7 +775,7 @@ jobs:
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/multiplayer-native.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('MultiplayerStoryTests.java','StaircaseLeakTests.java','PlaytestCommandTests.java','SceneSupportTests.java','SceneReviewTests.java'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('MultiplayerStoryTests.java','StaircaseLeakTests.java','PlaytestCommandTests.java','SceneSupportTests.java','SceneReviewTests.java','StaceyTests.java','SlasherTests.java'))
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused native multiplayer cases passed; the complete suite remains required.')
           PY

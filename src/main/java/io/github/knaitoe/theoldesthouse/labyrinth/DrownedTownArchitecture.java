@@ -89,6 +89,7 @@ public final class DrownedTownArchitecture {
         for (int x = -24; x <= 24; x += 12) light(level, base.offset(x, 7, -52 - Math.floorMod(x, 9)), 5);
         LabyrinthBuilder.entrance(level, base, NIGHT, Blocks.COARSE_DIRT.defaultBlockState(), NIGHT);
         LabyrinthBuilder.doors(level, base, LabyrinthPlace.DROWNED_TOWN);
+        StaceyCover.fresh(level,base,LabyrinthPlace.DROWNED_TOWN);
     }
 
     public static boolean isGrassPatch(int x, int z) {
