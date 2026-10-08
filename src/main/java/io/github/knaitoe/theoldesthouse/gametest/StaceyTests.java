@@ -140,7 +140,7 @@ public final class StaceyTests {
     });}
     private static void squeeze(GameTestHelper h,LabyrinthPlace place,int coordinate){run(h,place,coordinate,f->{
         f.squeeze();var p=f.player("stacey_squeeze_reader",6.5,-28.5);p.setHealth(6);p.setInvulnerable(true);
-        var w=f.witch(.54,-41.82);var id=w.getUUID();var previous=new Vec3[]{w.position()};boolean[] low={false},turned={false};
+        var w=f.witch(.54,-41.58);var id=w.getUUID();var previous=new Vec3[]{w.position()};boolean[] low={false},turned={false};
         h.onEachTick(()->{if(active!=f)return;double moved=w.position().subtract(previous[0]).multiply(1,0,1).length();previous[0]=w.position();
             h.assertTrue(moved<=1.25,"a tight turn spends the same native movement budget without teleporting");
             h.assertTrue(f.l.noCollision(w,w.getBoundingBox()),"the actual crawling body never cuts through the alley walls or low ceiling: "+w.position());
