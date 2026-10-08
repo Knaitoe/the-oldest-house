@@ -22,7 +22,7 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID+"_multiplayer") @PrefixGameTestTemplate(false)
 public final class ReviewIntegrationTests {
     private static final LabyrinthPlace HALL=LabyrinthPlace.LONG_HALLWAY;
-    private static void holdHall(StaircaseAccessTests.Fixture f){var b=LabyrinthPlaces.base(f.origin,HALL);f.chunks.hold(f.level,new AABB(b.offset(-5,-2,-52),b.offset(18,6,5)));}
+    private static void holdHall(StaircaseAccessTests.Fixture f){var b=LabyrinthPlaces.base(f.origin,HALL);f.chunks.hold(f.level,new AABB(Vec3.atLowerCornerOf(b.offset(-5,-2,-52)),Vec3.atLowerCornerOf(b.offset(18,6,5))));}
     private static void buildHall(StaircaseAccessTests.Fixture f){var b=LabyrinthPlaces.base(f.origin,HALL);LabyrinthLoops.buildHallway(f.level,b,HALL);LabyrinthBuilder.registerDoors(f.data(),HALL,b);}
     private static void at(StaircaseAccessTests.Fixture f,ServerPlayer p,Vec3 at){p.teleportTo(f.level,at.x,at.y,at.z,0,0);p.hasChangedDimension();p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();}
     private static void period(StaircaseAccessTests.Fixture f,ServerPlayer p,int k){at(f,p,Vec3.atBottomCenterOf(LabyrinthPlaces.base(f.origin,HALL).offset(LabyrinthLoops.periodOrigin(k))));LabyrinthDoors.tickPlayer(p,f.origin);}
@@ -89,7 +89,7 @@ public final class ReviewIntegrationTests {
     }
     @GameTest(template="empty",timeoutTicks=800)
     public static void serviceReturnsRequireAnActualDoorwayCrossingAndKeepEachReadersLockAndRoute(GameTestHelper h){
-        StaircaseAccessTests.run(h,1312000,f->{var b=LabyrinthPlaces.base(f.origin,LabyrinthPlace.HOLLOWAY_CAMP);f.chunks.hold(f.level,new AABB(b.offset(-13,-2,-74),b.offset(13,5,4)));},f->{
+        StaircaseAccessTests.run(h,1312000,f->{var b=LabyrinthPlaces.base(f.origin,LabyrinthPlace.HOLLOWAY_CAMP);f.chunks.hold(f.level,new AABB(Vec3.atLowerCornerOf(b.offset(-13,-2,-74)),Vec3.atLowerCornerOf(b.offset(13,5,4))));},f->{
             var place=LabyrinthPlace.HOLLOWAY_CAMP;var b=LabyrinthPlaces.base(f.origin,place);LabyrinthBuilder.registerDoors(f.data(),place,b);
             var gate=f.data().door(place.id()+"/service");var entry=f.data().door(place.entryDoorId());door(f,gate,true);door(f,entry,true);
             var p=f.player(h,"service_locked");var peer=f.player(h,"service_free");
