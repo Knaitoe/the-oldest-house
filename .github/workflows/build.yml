@@ -57,7 +57,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.57"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.58"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/house/PlaytestLog.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
               hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
@@ -100,6 +100,11 @@ jobs:
               assert 'data/the_oldest_house_multiplayer/structure/empty.nbt' in z.namelist()
               correspondence = json.loads(z.read('data/the_oldest_house/correspondence/letters.json'))
               assert len(correspondence) == 108 and len({n['id'] for n in correspondence}) == 108
+              sources = json.loads(z.read('data/the_oldest_house/correspondence/novel_sources.json'))
+              assert len(sources) == 46 and len({n['id'] for n in sources}) == 46
+              assert 'io/github/knaitoe/theoldesthouse/house/NovelCorrespondence.class' in z.namelist()
+              assert 'assets/the_oldest_house/font/johnny.json' in z.namelist()
+              assert 'assets/the_oldest_house/textures/font/johnny.png' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/CollectedCorrespondenceTests.class' in z.namelist()
               for name in ('ClassicsVignettes', 'ClassicsRooms', 'ClassicsRegistry', 'ClassicsTexts', 'SeanceActor', 'WallpaperPanelBlock'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
@@ -379,6 +384,8 @@ jobs:
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 5m gradle runClient -PfontSmoke --no-daemon
           test -s build/font-smoke/passed.txt
           test -s build/font-smoke/native-writing.png
+          test -s build/font-smoke/native-novel-papers.png
+          test -s build/font-smoke/novel-papers-passed.txt
           test -s build/font-smoke/embers-passed.txt
           test -s build/font-smoke/native-embers.png
           test -s build/font-smoke/npcs-passed.txt
@@ -635,7 +642,7 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.57"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.58"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
@@ -702,8 +709,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.57.jar
-            build/libs/the_oldest_house-0.4.57.jar.sha256
+            build/libs/the_oldest_house-0.4.58.jar
+            build/libs/the_oldest_house-0.4.58.jar.sha256
           if-no-files-found: error
 
 

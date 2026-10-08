@@ -26,17 +26,21 @@ public final class StaircaseWriting {
         var indices=own.getCompound("Indices");var used=own.getCompound("Used");int number=ordinal(HouseSavedData.get(p.server).houseOrigin(),pos);
         int chosen=Math.floorMod(number,StaircaseNotes.TEXTS.size());
         for(int n=0;n<StaircaseNotes.TEXTS.size()&&used.getBoolean(Integer.toString(chosen));n++)chosen=(chosen+1)%StaircaseNotes.TEXTS.size();
-        ItemStack book=StaircaseNotes.specimen(chosen);var content=book.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT);
+        // Only an unbound final landing can receive this new original. Every saved sheet wins above.
+        var papers=positions(HouseSavedData.get(p.server).houseOrigin());
+        boolean panther=!papers.isEmpty()&&pos.equals(papers.getLast())&&!used.getBoolean(Integer.toString(StaircaseNotes.TEXTS.size()));
+        if(panther)chosen=StaircaseNotes.TEXTS.size();
+        ItemStack book=panther?StaircaseNotes.panther():StaircaseNotes.specimen(chosen);var content=book.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT);
         var rendered=new ArrayList<Component>();for(var page:content.pages())rendered.add(page.raw());
         // One occasional annotation, tied to an actual original loss. No repeated
         // evidence roll-call or theoretical lecture is appended to every loose page.
-        if(Math.floorMod(number,5)==3&&!own.getBoolean("LossNoted")){
+        if(!panther&&Math.floorMod(number,5)==3&&!own.getBoolean("LossNoted")){
             var loss=MotherCollection.get(p.server).all().stream().filter(e->p.getUUID().equals(e.owner)).findFirst();
             if(loss.isPresent()){rendered.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,loss.get().name+"\n\nI wrote it down before I forgot which shelf."));own.putBoolean("LossNoted",true);}
         }
-        book=HouseWriting.book("A loose sheet",content.author(),rendered);
+        book=HouseWriting.book(content.title().raw(),content.author(),rendered);
         indices.putInt(key,chosen);used.putBoolean(Integer.toString(chosen),true);own.put("Indices",indices);own.put("Used",used);
-        editions.putInt(key,448);own.put("Editions",editions);
+        editions.putInt(key,panther?458:448);own.put("Editions",editions);
         books.put(key,book.save(p.registryAccess()));own.put("Books",books);data.setStateEntry(ID,p.getUUID().toString(),own);return book;
     }
     public static List<BlockPos> positions(BlockPos origin){

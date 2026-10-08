@@ -35,8 +35,11 @@ public final class CorrespondenceTexts {
             throw new IllegalStateException("The approved correspondence must contain 108 distinct notes");
         return List.copyOf(result);
     }
-    public static List<Note> all() { return NOTES; }
-    public static Note find(String id) { return NOTES.stream().filter(n->n.id().equals(id)).findFirst().orElse(null); }
+    public static List<Note> originals() { return NOTES; }
+    public static List<Note> all() {
+        var all=new ArrayList<>(NOTES);all.addAll(NovelCorrespondence.all());return List.copyOf(all);
+    }
+    public static Note find(String id) { return all().stream().filter(n->n.id().equals(id)).findFirst().orElse(null); }
     public static ItemStack book(Note note, Map<String,String> facts) {
         String text=note.text();
         for (var fact:facts.entrySet()) text=text.replace("{"+fact.getKey()+"}",fact.getValue());

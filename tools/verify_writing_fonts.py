@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PREFIX = 'assets/the_oldest_house/'
 
 def verify(read):
-    for name in ('will','karen','zampano','child','pelafina','claw','hotel'):
+    for name in ('will','karen','zampano','child','pelafina','claw','hotel','johnny'):
         definition = json.loads(read(PREFIX+f'font/{name}.json'))
         providers = definition['providers']
         assert providers[0] == {'type':'space','advances':{' ':4.0}}, name
@@ -45,7 +45,7 @@ def verify(read):
                 if name != 'hotel': assert bbox[3]*provider['height']/h<=8, (name,'overlaps next book line')
         if name=='child': assert set(map(chr,range(0xE100,0xE120))) <= set(mapped), 'lost old child alternates'
         assert provider['height']==(16 if name=='hotel' else 9), name
-    print('PASS: seven font grids, 94 ASCII glyphs each, story punctuation, old child variants, spacing, opaque ink and fallbacks')
+    print('PASS: eight font grids, 94 ASCII glyphs each, story punctuation, old child variants, spacing, opaque ink and fallbacks')
 
 if __name__=='__main__':
     verify(lambda p:(ROOT/'src/main/resources'/p).read_bytes())
