@@ -390,9 +390,12 @@ public final class ElkCarcassMap {
             return surface(x, z);
         }
 
-        /** The knoll's rock around the cave mouth, passage and chamber. */
+        /** The knoll's rock around the cave chamber, and under the passage from the mouth. */
         boolean underKnoll(int x, int z) {
-            return x >= -36 && x <= -2 && z >= -202 && z <= -168;
+            if (chamber(x, z) < 2.4) return true;
+            double ax = x - MOUTH.getX() - .5, az = z - MOUTH.getZ() - .5;
+            double in = ax * -0.706 + az * -0.708, across = Math.abs(ax * -0.708 - az * -0.706);
+            return in > -3 && in < 14 && across < 6 + in * .3;
         }
 
         void lakeAndStream() {
@@ -436,6 +439,8 @@ public final class ElkCarcassMap {
                     double chance = border ? .95 : wood ? .82 : bank ? .55 : wooded(x + 4, z) || wooded(x - 4, z) || wooded(x, z + 4) || wooded(x, z - 4) ? .22 : .035;
                     if (n > chance || clearing(x, z) && !border || lakeWater(x, z) || stream(x, z) || Builder.vestibule(x, 0, z)) continue;
                     if (z >= 17 || Math.abs(x) <= 12 && z > -46) continue; // nothing over the yacht or the bluff
+                    // Beyond where anyone can walk, the undergrowth wall and the polish's border close the view.
+                    if (Math.abs(x) > MAX_X + 2 || z < MIN_Z - 2) continue;
                     int y = surface(x, z) + 1;
                     double kind = (h >>> 20 & 1023) / 1023.0;
                     if (kind < .62) spruce(x, y, z, 8 + (int) (h >>> 32 & 7), h);

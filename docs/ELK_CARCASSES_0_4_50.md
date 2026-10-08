@@ -149,7 +149,7 @@ A saved world at layout 32 to 35 has the earlier scene, and the builder carves t
 
 The Camp Blood killer shares the model and wears the same coat.
 
-**Bodies and carcasses.** The carcass, guest and crew atlases are new: four of each body. The carcasses and bodies render through the literary prop block entity renderer, out to 48 blocks. Their block models are empty, so nothing blocky shows under them.
+**Bodies and carcasses.** The carcass, guest and crew atlases are new: four of each body. The carcasses and bodies render through the literary prop block entity renderer, out to 48 blocks, at adult size. A block entity renderer never resets a model's age, so the corpse pose does it itself, and the native proof fails if a body is left young. Their block models are empty, so nothing blocky shows under them.
 
 ## Verification contract
 
@@ -200,6 +200,8 @@ The scene is large, so its construction is kept lean. The same blocks still stan
 - **Ground.** Ground is rock only as deep as any face of it lies open (the lowest neighbouring ground, stream bed or lake bed), and never less than four blocks, as in the other outdoor scenes. Under the knoll the rock goes down past the cave.
 - **Clearing to air.** A large box cleared to air (`BuildBlocks`) goes a chunk section at a time. A section that is already empty is one visit instead of 4,096. This is what makes a fresh outdoor scene, or the rebuild over the old elk scene, quick in bounded slices.
 - **Single blocks.** These are recorded as a lighter command than a one-block box.
+- **Trees.** None stand beyond two blocks past the walkable edge. There the undergrowth wall and the generic polish's wooded border close the view; trees were nearly three fifths of the scene's blocks, most of them in that border.
+- **Native suite time limit.** The structure suite builds this scene in its upgrade fixtures, so its time limit rises from thirty to forty minutes, as it has before when the suite grew.
 - **Logged sizes.** The builder logs the elk plan's size when it is recorded, and the GameTest server logs the elk polish time, the heap in use and the loaded chunks once a minute.
 
 ## Test harness repairs in this release
