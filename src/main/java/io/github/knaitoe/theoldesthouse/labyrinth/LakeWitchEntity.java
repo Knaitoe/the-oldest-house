@@ -311,7 +311,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         if (target == null || distanceToSqr(target) > 1600) { cancelStrike();route.clear();routeGoal=null;clearDoorBreak();coverReachable=false;return; }
         if(cooldown>0)cooldown--;
         getLookControl().setLookAt(target, 30, 30);
-        if (distanceToSqr(target) < 784 && getSensing().hasLineOfSight(target))
+        if (distanceToSqr(target) < 784 && hasLineOfSight(target))
             IndianLakeProgress.hunted(LabyrinthData.get(level.getServer()), target.getUUID());
         boolean critical=target.getHealth()<=6;if(critical&&cooldown>20)cooldown=20;
         boolean observed=level.players().stream().filter(p->canAttack(this,p)).anyMatch(p->inView(p,getEyePosition()));
@@ -326,7 +326,7 @@ public final class LakeWitchEntity extends PathfinderMob {
             if(routeGoal==null||!goal.equals(routeGoal)||route.isEmpty())routeTo(goal);
             follow(.62);
             closestRush=Math.min(closestRush,distanceToSqr(target));
-            if(canAttack(this,target)&&distanceToSqr(target)<3.8&&getSensing().hasLineOfSight(target)){
+            if(canAttack(this,target)&&distanceToSqr(target)<3.8&&hasLineOfSight(target)){
                 swing(net.minecraft.world.InteractionHand.MAIN_HAND);
                 strikeAttempts++;lastStrikeAccepted=target.hurt(damageSources().mobAttack(this),6);Vec3 away=target.position().subtract(position()).multiply(1,0,1).normalize();
                 target.setDeltaMovement(away.scale(.3).add(0,.12,0));target.hurtMarked=true;
@@ -334,7 +334,7 @@ public final class LakeWitchEntity extends PathfinderMob {
             }return;
         }
         boolean watched=inView(target,position().add(0,.6,0));
-        if(cooldown==0&&distanceToSqr(target)<72&&getSensing().hasLineOfSight(target)
+        if(cooldown==0&&distanceToSqr(target)<72&&hasLineOfSight(target)
                 &&(!observed||critical||exposedHunt)){
             entityData.set(HUNT_PHASE,LUNGE);entityData.set(STRIKING,true);windup=4;lungeTicks=24;routeTo(goal);
             level.playSound(null,blockPosition(),DrownedTownRegistry.WITCH_VOICE.get(),SoundSource.HOSTILE,.55F,1.2F);return;
@@ -349,7 +349,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         follow(withdraw?.34:critical?.34:.24);
         if(withdraw)coverAttempt(coverReachable&&(position().distanceToSqr(beforeCover)>.0004
                 ||routeGoal!=null&&distanceToSqr(Vec3.atBottomCenterOf(routeGoal))<.5&&!observed));
-        else if(!getSensing().hasLineOfSight(target))coverAttempt(position().distanceToSqr(beforeCover)>.0004);
+        else if(!hasLineOfSight(target))coverAttempt(position().distanceToSqr(beforeCover)>.0004);
     }
     private void cancelStrike() { windup = 0;lungeTicks=0;entityData.set(STRIKING, false);entityData.set(HUNT_PHASE,STALK); }
     public int attackCooldown(){return cooldown;}
@@ -407,12 +407,12 @@ public final class LakeWitchEntity extends PathfinderMob {
         if(huntPhase()==LUNGE){
             if(routeGoal==null||!routeGoal.equals(goal)||tickCount%8==0)literaryRoute(goal);
             literaryFollow(.46);
-            if(distanceToSqr(target)<3.8&&getSensing().hasLineOfSight(target)){
+            if(distanceToSqr(target)<3.8&&hasLineOfSight(target)){
                 swing(net.minecraft.world.InteractionHand.MAIN_HAND);strikeAttempts++;lastStrikeAccepted=target.hurt(damageSources().mobAttack(this),4);
                 cancelStrike();cooldown=retreatDelay(target);entityData.set(HUNT_PHASE,WITHDRAW);route.clear();
             }else if(--lungeTicks<=0){cancelStrike();cooldown=retreatDelay(target);entityData.set(HUNT_PHASE,WITHDRAW);route.clear();}return;
         }
-        if(cooldown==0&&distanceToSqr(target)<72&&getSensing().hasLineOfSight(target)&&(!watched||critical||exposedHunt)){
+        if(cooldown==0&&distanceToSqr(target)<72&&hasLineOfSight(target)&&(!watched||critical||exposedHunt)){
             entityData.set(HUNT_PHASE,LUNGE);entityData.set(STRIKING,true);windup=critical?2:6;lungeTicks=30;literaryRoute(goal);return;}
         boolean withdraw=withdrawing()&&!critical;entityData.set(HUNT_PHASE,withdraw?WITHDRAW:STALK);
         if(tickCount%20==0||routeGoal==null){var cover=withdraw?literaryCover(level,target):goal;
@@ -421,7 +421,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         literaryFollow(withdraw?.34:critical?.32:.19);
         if(withdraw)coverAttempt(coverReachable&&(position().distanceToSqr(beforeCover)>.0004
                 ||routeGoal!=null&&distanceToSqr(Vec3.atBottomCenterOf(routeGoal))<.5&&!watched));
-        else if(!getSensing().hasLineOfSight(target))coverAttempt(position().distanceToSqr(beforeCover)>.0004);
+        else if(!hasLineOfSight(target))coverAttempt(position().distanceToSqr(beforeCover)>.0004);
     }
     private void literaryFollow(double speed){
         double remaining=speed*HUNT_SPEED_FACTOR;int nodes=0;
