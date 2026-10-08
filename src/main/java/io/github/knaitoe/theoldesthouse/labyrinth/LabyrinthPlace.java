@@ -370,6 +370,12 @@ public enum LabyrinthPlace {
         return id + "/entry";
     }
 
+    /** Whether this door of the place leads back the way the player came: its entry, or another return door such as a crew's gate. */
+    public boolean isReturnDoor(String doorId) {
+        for (DoorSpec spec : doors) if (LabyrinthData.RETURN.equals(spec.destination()) && doorId(spec).equals(doorId)) return true;
+        return false;
+    }
+
     /** How often the dealer picks this gray place relative to the others: the plain gray most, the loops less. */
     public int grayWeight() {
         if (this == JUNCTION || this == GRAY_CORRIDOR) {

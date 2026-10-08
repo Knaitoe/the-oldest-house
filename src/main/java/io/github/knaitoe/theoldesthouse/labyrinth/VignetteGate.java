@@ -24,7 +24,7 @@ public final class VignetteGate {
         if(p.isCreative()||p.isSpectator()||!p.isAlive())return false;var d=LabyrinthData.get(p.server);var o=own(d,p.getUUID());var place=LabyrinthPlace.byId(o.getString("Place"));
         // Ordinary unfinished visits allow retreat. Existing controllers own the closed-well
         // vigil, Goatman door and phone drop; only an armed Holloway pursuit commits here.
-        if(place!=LabyrinthPlace.HOLLOWAY_CAMP||!o.getBoolean("Inside")||!door.id.equals(place.entryDoorId()))return false;
+        if(place!=LabyrinthPlace.HOLLOWAY_CAMP||!o.getBoolean("Inside")||!place.isReturnDoor(door.id))return false;
         var h=HollowayVignette.personal(d,p.getUUID());return h.getBoolean("Run")&&!h.getBoolean("Escaped");
     }
     public static boolean dormant(LabyrinthData d,UUID id,LabyrinthData.Door door){return own(d,id).getCompound("Dormant").contains(door.id);}
@@ -32,7 +32,7 @@ public final class VignetteGate {
     public static String dormantPlace(LabyrinthData d,UUID id,LabyrinthData.Door door){return own(d,id).getCompound("Dormant").getString(door.id);}
     public static void redealt(LabyrinthData d,UUID id,LabyrinthData.Door door){var o=own(d,id);var dormant=o.getCompound("Dormant");if(!dormant.contains(door.id))return;dormant.remove(door.id);o.put("Dormant",dormant);save(d,id,o);}
     public static void departed(ServerPlayer p,LabyrinthData.Waypoint back,LabyrinthData.Door entry){
-        var d=LabyrinthData.get(p.server);var o=own(d,p.getUUID());var place=LabyrinthPlace.byId(o.getString("Place"));if(place==null||!place.isVignette()||!entry.id.equals(place.entryDoorId()))return;
+        var d=LabyrinthData.get(p.server);var o=own(d,p.getUUID());var place=LabyrinthPlace.byId(o.getString("Place"));if(place==null||!place.isVignette()||!place.isReturnDoor(entry.id))return;
         var story=WitnessAccount.Story.of(place.id());
         io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(p,"story_leave","place",place.id(),"resolved",story!=null&&WitnessAccount.has(d,p.getUUID(),story),"depth",d.returnDepth(p.getUUID()));
         if(back.door()){var source=d.doorAt(back.dimension(),BlockPos.containing(back.pos()));if(source!=null&&!source.command){var dormant=o.getCompound("Dormant");dormant.putString(source.id,place.id());o.put("Dormant",dormant);var away=o.getCompound("Away");away.remove(source.id);o.put("Away",away);}}

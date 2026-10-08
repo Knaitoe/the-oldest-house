@@ -359,6 +359,19 @@ public final class LabyrinthDoors {
             shift(player,Vec3.atBottomCenterOf(entry.lower.relative(entry.facing.getOpposite(),2)),player.getYRot());
             return true;
         }
+        // A scene's other return door (the crew's gate, Holloway's service door) is a way back too, under the same locks as its entry.
+        LabyrinthData.Door gate = INSIDE.contains(id) ? leftThrough(player, place, data) : null;
+        if (gate != null) {
+            if (LiteraryVignettes.retreatLocked(player) || NovelVignettes.exitLocked(player, gate) || VignetteGate.exitLocked(player, gate)) {
+                setDoorOpen(player.serverLevel(), gate.lower, false, player);
+                shift(player, Vec3.atBottomCenterOf(gate.lower.relative(gate.facing.getOpposite(), 2)), player.getYRot());
+                return true;
+            }
+            INSIDE.remove(id);
+            depart(player, place);
+            goBack(player, gate, data);
+            return true;
+        }
         if (into < THRESHOLD) SHUT_FOR.remove(id);
         if (into >= THRESHOLD) {
             if (place == LabyrinthPlace.HIDE_AND_CLAP && !data.isCompleted(HideAndClap.ID)
@@ -388,22 +401,40 @@ public final class LabyrinthDoors {
         if (into <= -THRESHOLD) {
             boolean through = INSIDE.remove(id);
             if (through || into <= -WANDER) {
-                if (place == LabyrinthPlace.HARRIGAN) {
-                    HarriganVignette.onDepart(player);
-                }
-                if (place == LabyrinthPlace.HIDE_AND_CLAP) HideAndClap.departBeforeStarting(player);
-                if (place == LabyrinthPlace.SHALLOWS) Shallows.onDepart(player);
-                if (place == LabyrinthPlace.PHONE_CANOE) PhoneCanoe.interrupt(player);
-                if (place == LabyrinthPlace.GOATMAN) GoatmanVignette.depart(player);
-                if (place == LabyrinthPlace.TED_CAVER) CaverVignette.depart(player);
-                if (place == LabyrinthPlace.HOLLOWAY_CAMP) HollowayVignette.depart(player);
-                if (place == LabyrinthPlace.MOTHER_DEN) {
-                    MotherCollection.get(player.server).presence(player.getUUID(), false);
-                }
+                depart(player, place);
                 goBack(player, entry, data);
             }
         }
         return true;
+    }
+
+    /** What a scene does as its reader leaves it, by whichever of its return doors. */
+    private static void depart(ServerPlayer player, LabyrinthPlace place) {
+        if (place == LabyrinthPlace.HARRIGAN) HarriganVignette.onDepart(player);
+        if (place == LabyrinthPlace.HIDE_AND_CLAP) HideAndClap.departBeforeStarting(player);
+        if (place == LabyrinthPlace.SHALLOWS) Shallows.onDepart(player);
+        if (place == LabyrinthPlace.PHONE_CANOE) PhoneCanoe.interrupt(player);
+        if (place == LabyrinthPlace.GOATMAN) GoatmanVignette.depart(player);
+        if (place == LabyrinthPlace.TED_CAVER) CaverVignette.depart(player);
+        if (place == LabyrinthPlace.HOLLOWAY_CAMP) HollowayVignette.depart(player);
+        if (place == LabyrinthPlace.MOTHER_DEN) MotherCollection.get(player.server).presence(player.getUUID(), false);
+    }
+
+    /**
+     * A return door of the scene other than its entry that the player has just walked out
+     * through: a step past it, within its frame's width. Null when they have not.
+     */
+    private static LabyrinthData.Door leftThrough(ServerPlayer player, LabyrinthPlace place, LabyrinthData data) {
+        for (LabyrinthPlace.DoorSpec spec : place.doors()) {
+            String doorId = place.doorId(spec);
+            if (!LabyrinthData.RETURN.equals(spec.destination()) || doorId.equals(place.entryDoorId())) continue;
+            LabyrinthData.Door door = data.door(doorId);
+            if (door == null || intoRoom(player, door) > -THRESHOLD) continue;
+            double beside = door.facing.getAxis() == Direction.Axis.Z
+                    ? player.getX() - (door.lower.getX() + 0.5D) : player.getZ() - (door.lower.getZ() + 0.5D);
+            if (Math.abs(beside) <= 1.5D) return door;
+        }
+        return null;
     }
 
     /** How far the player is past an entry door into its room (negative: out in the vestibule). */
