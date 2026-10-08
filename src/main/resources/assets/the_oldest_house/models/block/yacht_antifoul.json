@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "the_oldest_house:block/yacht_antifoul"
+  }
+}

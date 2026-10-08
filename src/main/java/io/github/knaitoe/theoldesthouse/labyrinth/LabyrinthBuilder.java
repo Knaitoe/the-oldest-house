@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 35;
+    public static final int VERSION = 36;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -57,6 +57,11 @@ public final class LabyrinthBuilder {
     private static BlockPos pendingOrigin;
     private static final Set<LabyrinthPlace> domesticUpgrades = new HashSet<>();
     private static final Set<LabyrinthPlace> architecturalUpgrades = new HashSet<>();
+    /**
+     * Standing scenes the owner asked to have authored again (0.4.50: the elk carcasses' two stages).
+     * Carved last, once nobody is in the old one or can see it; until then the old scene is not dealt.
+     */
+    private static final Set<LabyrinthPlace> rebuildUpgrades = new HashSet<>();
     private static boolean legacyDomesticUpgrade;
     private static boolean fixtureDrain;
     /** Places queued for construction (not upgrades of standing places), built on demand by depth. */
@@ -70,6 +75,8 @@ public final class LabyrinthBuilder {
     private static boolean gatingActive;
     /** Whether the running queue extends an existing world rather than carving a new one. */
     private static boolean upgrading;
+    /** True while the elk scene of a saved world is being carved again in place (0.4.50). */
+    private static boolean elkRebuild;
     /** Saved construction progress, so a restart never rebuilds a place that already stands. */
     public static final String PROGRESS = "labyrinth_carve_0440";
     /** Places are built this many crossings ahead of the deepest explorer. */
@@ -133,7 +140,7 @@ public final class LabyrinthBuilder {
 
     /** A place can be dealt and entered unless it is still queued for construction. */
     public static boolean isPlaceReady(LabyrinthData data, LabyrinthPlace place) {
-        return place.slot() < 0 || pending == null || !gatingActive || !structuralPending.contains(place);
+        return place.slot() < 0 || pending == null || !rebuildUpgrades.contains(place) && (!gatingActive || !structuralPending.contains(place));
     }
 
     /** The route depth at which explorers can first be dealt a place. */
@@ -203,6 +210,7 @@ public final class LabyrinthBuilder {
         geometry = null;
         domesticUpgrades.clear();
         architecturalUpgrades.clear();
+        rebuildUpgrades.clear();
         structuralPending.clear();
         active = true;
         gatingActive = gated(server);
@@ -243,6 +251,11 @@ public final class LabyrinthBuilder {
             boolean domestic = place == LabyrinthPlace.JUNCTION || LabyrinthHalls.isHall(place) || LabyrinthMaze.isMaze(place);
             boolean architecture=VignetteArchitecture.applies(place);
             if (structural && alreadyBuilt.contains(place.id())) continue;
+            if (!structural && extend && place == LabyrinthPlace.ELK_CARCASSES && ElkUpgrade.rebuilds(data.builtVersion())) {
+                queue.add(place);
+                rebuildUpgrades.add(place);
+                continue;
+            }
             if (place.slot() >= 0 && (structural || domestic || architecture)) {
                 queue.add(place);
                 if (structural) structuralPending.add(place);
@@ -250,7 +263,7 @@ public final class LabyrinthBuilder {
             }
         }
         // Upgrades of standing places first, then construction in the order explorers can reach it.
-        queue.sort(Comparator.comparingInt((LabyrinthPlace p) -> structuralPending.contains(p) ? requiredDepth(p) : -1)
+        queue.sort(Comparator.comparingInt((LabyrinthPlace p) -> rebuildUpgrades.contains(p) ? Integer.MAX_VALUE : structuralPending.contains(p) ? requiredDepth(p) : -1)
                 .thenComparingInt(p -> p == LabyrinthPlace.MOTHER_DEN ? 0 : 1)
                 .thenComparingInt(LabyrinthPlace::slot));
         pending.addAll(queue);
@@ -287,6 +300,9 @@ public final class LabyrinthBuilder {
             if (!geometry.tick()) return;
             registerDoors(dataFor(server), place, LabyrinthPlaces.base(pendingOrigin, place));
             ServerLevel site = server.getLevel(NovelRooms.dimension(place));
+            if (site != null && place == LabyrinthPlace.ELK_CARCASSES && elkRebuild) ElkUpgrade.settle(site, LabyrinthPlaces.base(pendingOrigin, place));
+            elkRebuild = false;
+            rebuildUpgrades.remove(place);
             if (site != null) ScenePolish.polishOnce(site, pendingOrigin, place);
             recordBuilt(server, place);
             geometry = null;
@@ -308,6 +324,10 @@ public final class LabyrinthBuilder {
             ServerLevel site = server.getLevel(NovelRooms.dimension(place));
             if (site != null) {
                 BlockPos base = LabyrinthPlaces.base(pendingOrigin, place);
+                // A saved world's old elk scene is only taken down once nobody is in it or can see it.
+                boolean rebuild = rebuildUpgrades.contains(place);
+                if (rebuild && !ElkUpgrade.vacant(site, base, fixtureDrain)) { active = false; return; }
+                elkRebuild = rebuild;
                 ScenePolish.forget(server, pendingOrigin, place);
                 geometry = BuildBlocks.record(site, () -> LiteraryRooms.build(site, base, place));
                 return;
@@ -498,6 +518,8 @@ public final class LabyrinthBuilder {
         preparing = null;
         pending = null;
         pendingOrigin = null;
+        elkRebuild = false;
+        rebuildUpgrades.clear();
         domesticUpgrades.clear();
         architecturalUpgrades.clear();
     }
