@@ -23,7 +23,7 @@ public final class SlasherTests {
         final GameTestHelper h;final ServerLevel l;final BlockPos origin,base;final NativeTestChunks chunks=new NativeTestChunks();
         final List<ServerPlayer> players=new ArrayList<>();LiteraryActor actor;HouseSavedData oldHouse;LabyrinthData oldData;boolean started,oldGriefing;
         Fixture(GameTestHelper h,int coordinate){this.h=h;l=HouseTestLevel.get(h.getLevel().getServer(),HouseDimensions.OUTSIDE);origin=new BlockPos(coordinate,80,coordinate);
-            base=LabyrinthPlaces.base(origin,LabyrinthPlace.ELK_CARCASSES);chunks.hold(l,new AABB(base.offset(-55,-3,-132),base.offset(56,5,1)));active=this;}
+            base=LabyrinthPlaces.base(origin,LabyrinthPlace.ELK_CARCASSES);chunks.hold(l,new AABB(Vec3.atLowerCornerOf(base.offset(-55,-3,-132)),Vec3.atLowerCornerOf(base.offset(56,5,1))));active=this;}
         void start(){oldHouse=HouseSavedData.get(l.getServer());oldData=LabyrinthData.get(l.getServer());oldGriefing=l.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
             var house=new HouseSavedData();house.markSpawned(origin);house.markInteriorInitialized();var d=new LabyrinthData();d.setBuilt(LabyrinthBuilder.VERSION,origin);
             l.getServer().overworld().getDataStorage().set("the_oldest_house",house);l.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",d);started=true;}
