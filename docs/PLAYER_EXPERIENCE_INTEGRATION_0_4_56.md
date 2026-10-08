@@ -22,7 +22,7 @@ Quota, opening wait, content freeze and darkness changes remain undecided. The c
 
 ## Validation required on the exact candidate
 
-- All 416 declared native gameplay cases and every focused suite, including 26 exploration, 41 multiplayer, nine cave and ten staircase cases.
+- All 417 declared native gameplay cases and every focused suite, including 27 exploration, 41 multiplayer, nine cave and ten staircase cases.
 - Seventeen journey-metric regressions, including all five defects reproduced in the review.
 - Native rendering/wrapping of the new count, kind and unfinished account pages; all prior writing, atlas, texture, package, model and architecture proofs.
 - All 69 architecture views, previous scene/hunt assets and absolute covered-well black-pixel proof.
