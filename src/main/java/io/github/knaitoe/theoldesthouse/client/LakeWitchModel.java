@@ -10,13 +10,15 @@ import net.minecraft.resources.ResourceLocation;
 /** The remembered girl stands; the same skin's hunting body scrabbles on jointed hands and feet. */
 public final class LakeWitchModel extends PlayerModel<LakeWitchEntity> {
     public static final ModelLayerLocation LAYER=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"lake_witch"),"main");
-    public final ModelPart leftElbow,rightElbow,leftKnee,rightKnee;
+    public final ModelPart leftElbow,rightElbow,leftKnee,rightKnee,jaw;
     private final ModelPart leftCuff,rightCuff,leftShinCloth,rightShinCloth;
+    private final ModelPart jawOverlay;
     public LakeWitchModel(ModelPart root){
         super(root,true);leftElbow=leftArm.getChild("elbow");rightElbow=rightArm.getChild("elbow");
         leftKnee=leftLeg.getChild("knee");rightKnee=rightLeg.getChild("knee");
         leftCuff=leftSleeve.getChild("elbow");rightCuff=rightSleeve.getChild("elbow");
         leftShinCloth=leftPants.getChild("knee");rightShinCloth=rightPants.getChild("knee");
+        jaw=head.getChild("jaw");jawOverlay=hat.getChild("jaw");
     }
     private static void arm(PartDefinition root,String name,int u,int v,boolean left,CubeDeformation inflate){
         float x=left?-1:-2;
@@ -29,6 +31,10 @@ public final class LakeWitchModel extends PlayerModel<LakeWitchEntity> {
     }
     public static LayerDefinition createBodyLayer(){
         var mesh=PlayerModel.createMesh(CubeDeformation.NONE,true);var root=mesh.getRoot();var outer=new CubeDeformation(.25F);
+        var head=root.addOrReplaceChild("head",CubeListBuilder.create().texOffs(0,0).addBox(-4,-8,-4,8,6,8),PartPose.ZERO);
+        head.addOrReplaceChild("jaw",CubeListBuilder.create().texOffs(0,6).addBox(-4,0,-7,8,2,8),PartPose.offset(0,-2,3));
+        var hat=root.addOrReplaceChild("hat",CubeListBuilder.create().texOffs(32,0).addBox(-4,-8,-4,8,6,8,new CubeDeformation(.5F)),PartPose.ZERO);
+        hat.addOrReplaceChild("jaw",CubeListBuilder.create().texOffs(32,6).addBox(-4,0,-7,8,2,8,new CubeDeformation(.5F)),PartPose.offset(0,-2,3));
         arm(root,"right_arm",40,16,false,CubeDeformation.NONE);arm(root,"left_arm",32,48,true,CubeDeformation.NONE);
         arm(root,"right_sleeve",40,32,false,outer);arm(root,"left_sleeve",48,48,true,outer);
         leg(root,"right_leg",0,16,false,CubeDeformation.NONE);leg(root,"left_leg",16,48,true,CubeDeformation.NONE);
@@ -39,14 +45,25 @@ public final class LakeWitchModel extends PlayerModel<LakeWitchEntity> {
         resetBody();super.setupAnim(e,walk,speed,age,yaw,pitch);
         if(e.memory()){leftArm.xRot=-.2F;rightArm.xRot=-.25F;head.xRot=.25F;copyClothes();return;}
         huntPose(walk,speed,age,e.striking());
-        float swipe=(float)Math.sin(Math.sqrt(attackTime)*Math.PI);
-        if(attackTime>0){rightArm.xRot-=swipe*1.7F;rightArm.zRot+=swipe*.45F;rightElbow.xRot-=swipe*.65F;leftArm.xRot-=swipe*.6F;}
+        attackPose(attackTime,e.biting(),e.striking());
         if(e.hurtTime>0){float recoil=e.hurtTime/10F;head.xRot-=recoil*.7F;body.xRot-=recoil*.25F;leftArm.xRot+=recoil*.9F;rightArm.xRot+=recoil*.9F;leftElbow.xRot+=recoil*.8F;rightElbow.xRot+=recoil*.8F;}
         copyClothes();
     }
     public void resetBody(){
         for(var part:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg,jacket,leftSleeve,rightSleeve,leftPants,rightPants,
-                leftElbow,rightElbow,leftKnee,rightKnee,leftCuff,rightCuff,leftShinCloth,rightShinCloth})part.resetPose();
+                leftElbow,rightElbow,leftKnee,rightKnee,leftCuff,rightCuff,leftShinCloth,rightShinCloth,jaw,jawOverlay})part.resetPose();
+    }
+    /** Native swing progress drives either a hand rake or a braced, opening-jaw head thrust. */
+    public void attackPose(float progress,boolean bite,boolean winding){
+        float strike=(float)Math.sin(Math.sqrt(Math.max(0,progress))*Math.PI);
+        if(bite){
+            jaw.xRot=(winding?.35F:0)+strike*.75F;head.z-=strike*5;head.y-=strike*.8F;head.xRot-=strike*.45F;body.z-=strike*1.4F;
+            leftArm.xRot=-.35F-strike*.45F;rightArm.xRot=-.5F-strike*.35F;leftElbow.xRot=-.25F;rightElbow.xRot=-.35F;
+        }else if(progress>0){
+            rightArm.xRot-=strike*1.7F;rightArm.zRot+=strike*.75F;rightArm.yRot-=strike*.6F;
+            rightElbow.xRot-=strike*.65F;leftArm.xRot-=strike*.6F;body.zRot-=strike*.12F;
+        }
+        copyClothes();
     }
     private static float phase(float value){return value-(float)Math.floor(value);}
     /** Abrupt reach, scraping pull, short plant, folded recovery; unequal offsets avoid a walking pendulum. */
@@ -83,5 +100,6 @@ public final class LakeWitchModel extends PlayerModel<LakeWitchEntity> {
     private void copyClothes(){
         hat.copyFrom(head);jacket.copyFrom(body);leftSleeve.copyFrom(leftArm);rightSleeve.copyFrom(rightArm);leftPants.copyFrom(leftLeg);rightPants.copyFrom(rightLeg);
         leftCuff.copyFrom(leftElbow);rightCuff.copyFrom(rightElbow);leftShinCloth.copyFrom(leftKnee);rightShinCloth.copyFrom(rightKnee);
+        jawOverlay.copyFrom(jaw);
     }
 }

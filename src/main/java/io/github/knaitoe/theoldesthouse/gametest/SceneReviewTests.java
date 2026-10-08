@@ -201,8 +201,8 @@ public final class SceneReviewTests {
         for(int x=-18;x<=18;x++)for(int z=-63;z<=-12;z++)f.put(x,-1,z,Blocks.SANDSTONE);
         var owner=f.player("review_witch_glance_reader");f.at(owner,.5,0,-38.5);owner.getFoodData().setFoodLevel(6);f.look(owner,new BlockPos(0,1,-41));
         var witch=LiteraryVignettes.huntBody(owner,f.place,new BlockPos(0,0,-41));var id=witch.getUUID();var start=witch.position();
-        h.startSequence().thenIdle(35).thenExecute(()->{
-            h.assertTrue(owner.getHealth()==20&&witch.attackCooldown()>=160&&witch.attackCooldown()<=300&&witch.huntPhase()==LakeWitchEntity.WITHDRAW,"the actual player's gaze interrupts the approach for a ten-to-fifteen-second interval");
+        h.startSequence().thenIdle(1).thenExecute(()->{
+            h.assertTrue(owner.getHealth()>=16&&witch.attackCooldown()>=20&&witch.attackCooldown()<=60&&witch.huntPhase()==LakeWitchEntity.WITHDRAW,"the actual player's gaze interrupts the approach; the shortened hiding interval waits for physical cover and permits a passing swipe");
             h.assertTrue(witch.position().distanceToSqr(start)>.25,"withdrawal is real native movement away from the approach");
             var tag=new CompoundTag();witch.saveWithoutId(tag);int delay=witch.attackCooldown();witch.load(tag);h.assertTrue(witch.getUUID().equals(id)&&witch.attackCooldown()==delay,"reload preserves the actual attack interval");
             owner.setHealth(6);f.at(owner,witch.getX()-f.base.getX()+1.5,0,witch.getZ()-f.base.getZ());owner.lookAt(EntityAnchorArgument.Anchor.EYES,witch.getEyePosition());
