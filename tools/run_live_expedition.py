@@ -81,5 +81,5 @@ finally:
     for name in ("server", "client-a", "client-b-first", "client-b-reconnected", "client-b-leak-reconnected"):
         log = report / f"{name}.log"
         if log.exists():
-            selected = [line for line in log.read_text(errors="replace").splitlines() if any(word in line for word in ("LIVE EXPEDITION", "Exception", "Caused by", "ERROR", "FAILED"))]
+            selected = [line for line in log.read_text(errors="replace").splitlines() if any(word in line for word in ("LIVE EXPEDITION", "LIVE PORTHOLE", "Exception", "Caused by", "ERROR", "FAILED"))]
             print(f"{name}:\n" + "\n".join(selected[-25:]), flush=True)

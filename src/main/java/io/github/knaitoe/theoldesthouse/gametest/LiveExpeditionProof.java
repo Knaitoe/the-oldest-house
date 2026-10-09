@@ -55,6 +55,7 @@ public final class LiveExpeditionProof {
     }
     private static void marker(ServerPlayer p,int step,BlockPos target) {
         var tag=new CompoundTag();tag.putInt("Step",step);tag.putLong("Target",target.asLong());
+        if(step==23)tag.putBoolean("MineTurn",role(p).equals("A")||ACKS.contains("A"));
         if(step==6||step==8)tag.putString("Expected",BurnEmbers.excerpt(StaircaseStory.record(p),0,target).text());
         var stack=new ItemStack(Items.STICK);stack.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));p.getInventory().setItem(8,stack);p.inventoryMenu.broadcastChanges();
     }
@@ -235,6 +236,9 @@ public final class LiveExpeditionProof {
         }else if(phase==23&&a!=null&&b!=null){
             for(var p:List.of(a,b))if(p.getForcedPose()==net.minecraft.world.entity.Pose.SWIMMING&&p.getBbHeight()<.7)PORTHOLE_CRAWLERS.add(role(p));
             var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.ELK_CARCASSES);
+            // Both sockets remain connected. A physical desktop has one focused mining window.
+            var bMarker=b.getInventory().getItem(8).get(DataComponents.CUSTOM_DATA);
+            if(ACKS.contains("A")&&bMarker!=null&&!bMarker.copyTag().getBoolean("MineTurn"))marker(b,23,site.offset(9,1,-3));
             if(s.getTickCount()%100==0)TheOldestHouse.LOGGER.info("LIVE PORTHOLE server A={} forced={} window={} allowed={} B={} forced={} window={} allowed={} crawlers={}",location(a),a.getForcedPose(),a.serverLevel().getBlockState(site.offset(-9,1,-3)),LiteraryVignettes.mayBreak(a,site.offset(-9,1,-3)),location(b),b.getForcedPose(),b.serverLevel().getBlockState(site.offset(9,1,-3)),LiteraryVignettes.mayBreak(b,site.offset(9,1,-3)),PORTHOLE_CRAWLERS);
             if(ACKS.size()==2&&a.getX()<site.getX()-9.8&&b.getX()>site.getX()+10.3){
                 require(PORTHOLE_CRAWLERS.size()==2,"both socket players use their real native crawl collision bodies");
