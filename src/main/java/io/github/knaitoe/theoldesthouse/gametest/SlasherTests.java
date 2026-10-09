@@ -78,14 +78,62 @@ public final class SlasherTests {
         });
     });}
     @GameTest(template="empty",batch="elk_private_clock",timeoutTicks=1800)
-    public static void privateBlockedRoutePausesForObserversSurvivesReloadAndEndsInFourSeconds(GameTestHelper h){privateRun(h,1263500,f->{
+    public static void privateBlockedRoutePausesForObserversSurvivesReloadAndEndsInThreeSeconds(GameTestHelper h){privateRun(h,1263500,f->{
         f.corridor();f.barrier(Blocks.STONE);var p=f.player("private_clock_owner",.5,-30.5);f.hide(p);var peer=f.player("private_clock_observer",1.3,-30.5);peer.setGameMode(GameType.SPECTATOR);
         var a=privateActor(f,p);var id=a.getUUID();var before=a.position();KillerNavigation.request(a,p.position(),1.0);
         h.startSequence().thenIdle(10).thenExecute(()->{var saved=new CompoundTag();a.saveWithoutId(saved);a.load(saved);p.setGameMode(GameType.SPECTATOR);
         }).thenIdle(40).thenExecute(()->{int blocked=a.getPersistentData().getCompound("ElkMovement0460").getInt("Blocked");h.assertTrue(blocked>=9&&blocked<=11&&a.position().equals(before),"native observers cannot advance the saved private failed-route clock");p.setGameMode(GameType.SURVIVAL);f.hide(p);
-        }).thenIdle(72).thenExecute(()->{h.assertTrue(KillerNavigation.failed(a)&&a.getUUID().equals(id)&&a.position().distanceTo(before)<.6&&f.l.getBlockState(f.base.offset(0,0,-35)).is(Blocks.STONE),"eighty occupied native ticks end the route without replacing, relocating or breaking a solid wall");f.done();});
+        }).thenIdle(52).thenExecute(()->{h.assertTrue(KillerNavigation.failed(a)&&KillerNavigation.recoveries(a)==1&&a.getUUID().equals(id)&&a.position().distanceTo(before)<.6&&f.l.getBlockState(f.base.offset(0,0,-35)).is(Blocks.STONE),"sixty occupied native ticks replan the route before rejecting an unreachable solid wall");f.done();});
     });}
     private static void cleanup(){if(active!=null)active.close();}
+    @AfterBatch(batch="elk_dynamic_route") public static void dynamicRouteDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="elk_door_ambush") public static void doorAmbushDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="elk_door_open") public static void openDoorDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="elk_door_protection") public static void protectedDoorDone(ServerLevel l){cleanup();}
+    @GameTest(template="empty",batch="elk_dynamic_route",timeoutTicks=1800)
+    public static void privateKillerReplansAroundANewObstacleAfterThreeSecondsAtBoundedSprintPace(GameTestHelper h){privateRun(h,1264500,f->{
+        f.corridor();var p=f.player("route_owner",.5,-30.5);f.hide(p);var peer=f.player("route_peer",1.3,-30.5);peer.setGameMode(GameType.SPECTATOR);
+        var a=privateActor(f,p);var id=a.getUUID();var previous=new Vec3[]{a.position()};KillerNavigation.request(a,p.position(),1.35);
+        h.onEachTick(()->{if(active==f){double movement=a.position().subtract(previous[0]).multiply(1,0,1).length();h.assertTrue(movement<=KillerNavigation.CHASE_STEP+.001,"all native pursuit movement stays just below player sprint speed without teleporting");previous[0]=a.position();}});
+        h.startSequence().thenIdle(4).thenExecute(()->{for(int y=0;y<=2;y++)f.put(0,y,-38,Blocks.STONE);})
+                .thenWaitUntil(()->h.assertTrue(KillerNavigation.recoveries(a)==1,"sixty blocked occupied ticks trigger an actual alternate route"))
+                .thenWaitUntil(()->h.assertTrue(a.getZ()>f.base.getZ()-34.5,"the same body physically diverts around the new object"))
+                .thenExecute(()->{h.assertTrue(a.getUUID().equals(id)&&f.l.getBlockState(f.base.offset(0,0,-38)).is(Blocks.STONE)&&WitnessAccount.count(LabyrinthData.get(f.l.getServer()),peer.getUUID())==0,"route recovery preserves the object, identity and peer's personal evidence");f.done();});
+    });}
+    private static BlockPos huntDoor(Fixture f,Block block){
+        f.barrier(Blocks.STONE);var at=f.base.offset(0,0,-35);NovelRooms.door(f.l,at,net.minecraft.core.Direction.NORTH,block,false);return at;
+    }
+    @GameTest(template="empty",batch="elk_door_ambush",timeoutTicks=1800)
+    public static void watchedDoorAmbushMovesAsidePausesForObserversAndBreaksBothHalvesAfterTenSeconds(GameTestHelper h){privateRun(h,1265000,f->{
+        f.corridor();var at=huntDoor(f,Blocks.DARK_OAK_DOOR);var p=f.player("door_owner",.5,-30.5);p.setYRot(180);var peer=f.player("door_camera",1.3,-30.5);peer.setGameMode(GameType.SPECTATOR);
+        var a=privateActor(f,p);a.moveTo(f.base.getX()+.5,f.base.getY(),f.base.getZ()-37.5);var id=a.getUUID();KillerNavigation.request(a,p.position(),1.35);final int[] held={0};
+        h.startSequence().thenIdle(35).thenExecute(()->{
+            h.assertTrue(KillerDoors.waitTicks(a)>=34&&KillerDoors.waitTicks(a)<=36&&Math.abs(a.getX()-(f.base.getX()+.5))>.7,"a watched door has one clock and the hunter physically hides beside the frame");
+            var saved=new CompoundTag();a.saveWithoutId(saved);a.load(saved);held[0]=KillerDoors.waitTicks(a);p.setGameMode(GameType.SPECTATOR);
+        }).thenIdle(40).thenExecute(()->{h.assertTrue(KillerDoors.waitTicks(a)==held[0]&&f.l.getBlockState(at).is(Blocks.DARK_OAK_DOOR),"saved waiting survives reload and observer-only time does not count");p.setGameMode(GameType.SURVIVAL);})
+                .thenWaitUntil(()->h.assertTrue(KillerDoors.waitTicks(a)>=195,"the door gets a full ten occupied seconds, including the final cracking animation"))
+                .thenExecute(()->h.assertTrue(f.l.getBlockState(at).is(Blocks.DARK_OAK_DOOR)&&f.l.getBlockState(at.above()).is(Blocks.DARK_OAK_DOOR),"both original door halves remain until the deadline"))
+                .thenIdle(8).thenExecute(()->{h.assertTrue(f.l.getBlockState(at).isAir()&&f.l.getBlockState(at.above()).isAir()&&a.getUUID().equals(id),"the one original hunter physically destroys both halves at the deadline");f.done();});
+    });}
+    @GameTest(template="empty",batch="elk_door_open",timeoutTicks=1800)
+    public static void openingTheAmbushDoorCancelsDemolitionAndTheSameKillerComesThrough(GameTestHelper h){privateRun(h,1265500,f->{
+        f.corridor();var at=huntDoor(f,Blocks.DARK_OAK_DOOR);var p=f.player("opening_owner",.5,-30.5);p.setYRot(180);
+        var a=privateActor(f,p);a.moveTo(f.base.getX()+.5,f.base.getY(),f.base.getZ()-37.5);var id=a.getUUID();KillerNavigation.request(a,p.position(),1.35);
+        h.startSequence().thenIdle(40).thenExecute(()->{h.assertTrue(KillerDoors.active(a),"the native hunter is waiting at the actual closed door");var state=f.l.getBlockState(at);((DoorBlock)state.getBlock()).setOpen(p,f.l,state,at,true);})
+                .thenWaitUntil(()->h.assertTrue(a.getZ()>f.base.getZ()-33.5,"opening the native door resumes physical pursuit through its actual gap"))
+                .thenExecute(()->{h.assertTrue(!KillerDoors.active(a)&&f.l.getBlockState(at).is(Blocks.DARK_OAK_DOOR)&&f.l.getBlockState(at).getValue(DoorBlock.OPEN)&&a.getUUID().equals(id),"opening cancels the demolition without replacing the door or actor");f.done();});
+    });}
+    @GameTest(template="empty",batch="elk_door_protection",timeoutTicks=1800)
+    public static void ironRegisteredAndGriefingProtectedDoorsCannotBeDemolishedByPrivateHunters(GameTestHelper h){privateRun(h,1266000,f->{
+        f.corridor();var at=huntDoor(f,Blocks.IRON_DOOR);var p=f.player("protected_owner",.5,-30.5);var a=privateActor(f,p);
+        h.assertTrue(!KillerDoors.breakable(a,at),"iron doors remain authoritative");
+        NovelRooms.door(f.l,at,net.minecraft.core.Direction.NORTH,Blocks.DARK_OAK_DOOR,false);
+        var data=LabyrinthData.get(f.l.getServer());data.putDoor(new LabyrinthData.Door("elk_test_gate",f.l.dimension(),at,net.minecraft.core.Direction.NORTH,"test",false));
+        h.assertTrue(!KillerDoors.breakable(a,at),"registered story thresholds are never demolished");
+        var ordinary=f.base.offset(0,0,-37);NovelRooms.door(f.l,ordinary,net.minecraft.core.Direction.NORTH,Blocks.DARK_OAK_DOOR,false);
+        f.l.getGameRules().getRule(GameRules.RULE_MOBGRIEFING).set(false,f.l.getServer());KillerNavigation.request(a,p.position(),1.35);
+        h.startSequence().thenIdle(210).thenExecute(()->{h.assertTrue(!KillerDoors.active(a)&&f.l.getBlockState(at).is(Blocks.DARK_OAK_DOOR)&&f.l.getBlockState(ordinary).is(Blocks.DARK_OAK_DOOR)&&f.l.getBlockState(ordinary.above()).is(Blocks.DARK_OAK_DOOR),"native griefing protection and registered doors survive longer than the whole ambush deadline");f.done();});
+    });}
     @AfterBatch(batch="slasher_clearance") public static void clearanceDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="slasher_leaves") public static void leavesDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="slasher_blocked") public static void blockedDone(ServerLevel l){cleanup();}

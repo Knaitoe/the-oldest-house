@@ -34,6 +34,7 @@ public final class ElkHunt {
     public static final int ABOARD = 0, HUNTED = 1, IN_WATER = 2, ASHORE = 3, SEARCH = 4, SPENT = 5;
     /** Watching, searching, running, crouched at the pile: the killer's model phases. */
     public static final int WATCH = 0, WALK = 1, RUN = 2, PEER = 3;
+    public static final int ATTACK_DELAY=30;
     private static final double SEARCH_SPEED = .75, CHASE_SPEED = 1.35;
     private static final int[][] LANDINGS = {{30, -60, 36, -65}, {-26, -58, -32, -64}, {10, -64, 10, -72}};
     private static final LabyrinthPlace PLACE = LabyrinthPlace.ELK_CARCASSES;
@@ -94,8 +95,11 @@ public final class ElkHunt {
     /** The reader gets down to crawl in front of the pile (by crouching), and stays down beneath it. */
     public static boolean crawl(ServerPlayer p, BlockPos b, boolean crawling) {
         var r = rel(p, b);
-        if (!ElkCarcassMap.crawlZone(r)) return false;
-        return crawling || p.isShiftKeyDown() || ElkCarcassMap.inHollow(r);
+        if(ElkCarcassMap.crawlZone(r))return crawling||p.isShiftKeyDown()||ElkCarcassMap.inHollow(r);
+        if(!ElkCarcassMap.nearPorthole(r)||(!crawling&&!p.isShiftKeyDown()))return false;
+        int x=r.x<0?-9:9;
+        for(int z:new int[]{-1,-3,-5,-10,-16})if(Math.abs(r.z-(z+.5))<.85&&p.serverLevel().getBlockState(b.offset(x,1,z)).isAir())return true;
+        return false;
     }
 
     public static void tick(ServerPlayer p, BlockPos b, CompoundTag own) {
@@ -234,7 +238,7 @@ public final class ElkHunt {
 
     private static boolean strike(ServerPlayer p, LiteraryActor killer, CompoundTag own) {
         long now = p.serverLevel().getGameTime();
-        if (killer.distanceToSqr(p) > 3.4 || now - own.getLong("ElkStrikeAt") < 25 || !LiteraryVignettes.participant(p)
+        if (KillerDoors.active(killer)||killer.distanceToSqr(p) > 3.4 || now - own.getLong("ElkStrikeAt") < ATTACK_DELAY || !LiteraryVignettes.participant(p)
                 || killer.level().clip(new net.minecraft.world.level.ClipContext(killer.getEyePosition(),p.getEyePosition(),net.minecraft.world.level.ClipContext.Block.COLLIDER,net.minecraft.world.level.ClipContext.Fluid.NONE,killer)).getType()!=net.minecraft.world.phys.HitResult.Type.MISS) return false;
         own.putLong("ElkStrikeAt", now);
         killer.swing(InteractionHand.MAIN_HAND);
@@ -287,9 +291,7 @@ public final class ElkHunt {
             own.putInt("ElkLand", own.getInt("ElkLand") + 5);
             killer.appearance(LiteraryActor.KILLER, WATCH);
             killer.getLookControl().setLookAt(p, 20, 20);
-            boolean watched = HouseWatchers.sees(p, killer.getEyePosition()) && p.distanceTo(killer) < 40;
-            if (own.getInt("ElkLand") >= 100 && (!watched || own.getInt("ElkLand") >= 600)) land(p, b, killer, own);
-            else if (!hidden(p, b)) return;
+            if (own.getInt("ElkLand") < 40 || !land(p,b,killer,own)) return;
         }
         if (hidden(p, b) && own.getBoolean("ElkFound")) {
             // Found: he crouches at the gap and reaches in under the hides until the reader gets out.
@@ -300,7 +302,7 @@ public final class ElkHunt {
                 killer.appearance(LiteraryActor.KILLER, PEER);
                 killer.getLookControl().setLookAt(p, 30, 30);
                 long now = level.getGameTime();
-                if (now - own.getLong("ElkStrikeAt") >= 30) {
+                if (now - own.getLong("ElkStrikeAt") >= ATTACK_DELAY) {
                     own.putLong("ElkStrikeAt", now);
                     killer.swing(InteractionHand.MAIN_HAND);
                     p.hurt(p.damageSources().mobAttack(killer), 3);
@@ -318,12 +320,13 @@ public final class ElkHunt {
                 setStage(own, SEARCH);
                 own.putInt("ElkRoute", 0);
                 own.putInt("ElkPasses", 0);
-                if (!own.getBoolean("ElkLanded")) land(p, b, killer, own);
                 // A long walk is cut short out of sight: the reader is in the dark under the pile.
                 if (killer.position().distanceToSqr(at(b, ElkCarcassMap.MOUTH)) > 70 * 70) {
                     var near = ElkCarcassMap.standAt(2, -167);
-                    KillerNavigation.stop(killer);
-                    killer.moveTo(at(b, near));
+                    var point=at(b,near);
+                    if(!watched(level,killer,killer.position())&&!watched(level,killer,point)&&level.noCollision(killer,killer.getBoundingBox().move(point.subtract(killer.position())))){
+                        KillerNavigation.stop(killer);killer.moveTo(point);
+                    }
                 }
             }
             return;
@@ -352,23 +355,41 @@ public final class ElkHunt {
         patrol(p, b, killer, own);
     }
 
-    /** Into the lake out of the reader's sight, then up out of it on the shore farthest from them. */
-    private static void land(ServerPlayer p, BlockPos b, LiteraryActor killer, CompoundTag own) {
-        var level = p.serverLevel();
-        int[] best = LANDINGS[0];
-        double far = -1;
-        for (int[] l : LANDINGS) {
-            double d = p.position().distanceToSqr(at(b, new BlockPos(l[2], 0, l[3])));
-            if (d > far) { far = d; best = l; }
+    /** Every actual camera, including spectators, protects a visible body from relocation. */
+    private static boolean watched(ServerLevel level,LiteraryActor killer,Vec3 feet){
+        for(var reader:level.players()){
+            if(reader.isSleeping())continue;
+            for(double height:new double[]{.2,killer.getEyeHeight(),killer.getBbHeight()-.1}){
+                var point=feet.add(0,height,0);var to=point.subtract(reader.getEyePosition());double distance=to.length();
+                if(distance>HouseWatchers.RANGE)continue;
+                if(distance>1.5&&reader.getLookAngle().dot(to.scale(1/distance))<.26)continue;
+                var hit=level.clip(new net.minecraft.world.level.ClipContext(reader.getEyePosition(),point,net.minecraft.world.level.ClipContext.Block.VISUAL,net.minecraft.world.level.ClipContext.Fluid.NONE,reader){
+                    @Override public net.minecraft.world.phys.shapes.VoxelShape getBlockShape(net.minecraft.world.level.block.state.BlockState block,net.minecraft.world.level.BlockGetter world,BlockPos pos){
+                        if(block.is(LiteraryRegistry.YACHT_WINDOW.get())||block.is(LiteraryRegistry.YACHT_PORTHOLE.get())||block.getBlock() instanceof net.minecraft.world.level.block.AbstractGlassBlock||block.getBlock() instanceof net.minecraft.world.level.block.StainedGlassPaneBlock||block.is(net.minecraft.world.level.block.Blocks.GLASS_PANE))return net.minecraft.world.phys.shapes.Shapes.empty();
+                        return super.getBlockShape(block,world,pos);
+                    }
+                });
+                if(hit.getType()==net.minecraft.world.phys.HitResult.Type.MISS||hit.getBlockPos().distManhattan(net.minecraft.core.BlockPos.containing(point))<=1)return true;
+            }
+        }return false;
+    }
+    /** The original killer reaches dry, rooted tree cover only while both ends are unseen. */
+    public static boolean land(ServerPlayer p,BlockPos b,LiteraryActor killer,CompoundTag own){
+        var level=p.serverLevel();if(watched(level,killer,killer.position()))return false;
+        var r=rel(p,b);Vec3 best=null;double score=Double.MAX_VALUE;
+        for(int z=Math.max(-230,(int)r.z-32);z<=Math.min(-82,(int)r.z+32);z+=3)for(int x=Math.max(-56,(int)r.x-32);x<=Math.min(56,(int)r.x+32);x+=3){
+            if(!ElkCarcassMap.wooded(x,z)||ElkCarcassMap.lakeWater(x,z)||ElkCarcassMap.stream(x,z))continue;
+            var at=b.offset(ElkCarcassMap.standAt(x,z));if(!level.hasChunkAt(at)||!level.getFluidState(at).isEmpty()||level.getBlockState(at.below()).getCollisionShape(level,at.below()).isEmpty())continue;
+            var point=Vec3.atBottomCenterOf(at);double distance=point.distanceTo(p.position());if(distance<12||distance>45)continue;
+            boolean cover=false;
+            for(var branch:BlockPos.betweenClosed(at.offset(-3,0,-3),at.offset(3,3,3)))if(level.getBlockState(branch).is(net.minecraft.tags.BlockTags.LOGS)||level.getBlockState(branch).is(net.minecraft.tags.BlockTags.LEAVES)){cover=true;break;}
+            if(!cover||!level.noCollision(killer,killer.getBoundingBox().move(point.subtract(killer.position())))||watched(level,killer,point))continue;
+            double value=Math.abs(distance-24);if(value<score){score=value;best=point;}
         }
-        level.playSound(null, b.offset(0, 0, -38), SoundEvents.GENERIC_SPLASH, SoundSource.HOSTILE, 2F, .7F);
-        var water = new BlockPos(best[0], ElkCarcassMap.stand(best[0], best[1]), best[1]);
-        KillerNavigation.stop(killer);
-        killer.moveTo(at(b, water));
-        var shore = ElkCarcassMap.standAt(best[2], best[3]);
-        KillerNavigation.request(killer,new Vec3(b.getX() + shore.getX() + .5, b.getY() + shore.getY(), b.getZ() + shore.getZ() + .5), SEARCH_SPEED);
-        own.putBoolean("ElkLanded", true);
-        own.putInt("ElkWaypoint", -1);
+        if(best==null)return false;
+        KillerNavigation.stop(killer);killer.setNoGravity(false);killer.moveTo(best);killer.appearance(LiteraryActor.KILLER,WATCH);
+        own.putBoolean("ElkLanded",true);own.putInt("ElkWaypoint",-1);own.putInt("ElkPause",30);
+        return true;
     }
 
     private static void patrol(ServerPlayer p, BlockPos b, LiteraryActor killer, CompoundTag own) {

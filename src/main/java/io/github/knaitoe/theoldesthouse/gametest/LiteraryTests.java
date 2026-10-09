@@ -182,6 +182,54 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
 
     private static LiteraryActor elkKiller(Fixture f,ServerPlayer p){var id=LiteraryVignettes.shared(f.data(),LabyrinthPlace.ELK_CARCASSES).hasUUID("Killer_"+p.getUUID())?LiteraryVignettes.shared(f.data(),LabyrinthPlace.ELK_CARCASSES).getUUID("Killer_"+p.getUUID()):null;return id!=null&&f.out.getEntity(id) instanceof LiteraryActor a?a:null;}
     private static void elkStage(Fixture f,ServerPlayer p,int stage){var own=f.own(p,LabyrinthPlace.ELK_CARCASSES);own.putInt("ElkStage",stage);LiteraryVignettes.save(f.data(),p.getUUID(),LabyrinthPlace.ELK_CARCASSES,own);}
+    @GameTest(template="empty",batch="literary_elk_porthole",timeoutTicks=250)
+    public static void nativePortholeBreakAdmitsARealCrawlingEscapeWithoutHullMiningOrPeerCredit(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("porthole_reader",place);var b=f.base(place);var at=b.offset(-9,1,-3);
+        f.at(p,place,-7.5,1,-2.5);p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
+        h.assertTrue(f.out.getBlockState(at).is(LiteraryRegistry.YACHT_PORTHOLE.get())&&p.gameMode.destroyBlock(at)&&f.out.getBlockState(at).isAir(),"native survival mining removes the actual authored porthole");
+        h.assertTrue(!p.gameMode.destroyBlock(at.above())&&f.out.getBlockState(at.above()).is(LiteraryRegistry.YACHT_HULL.get()),"the surrounding hull stays protected");
+        var observer=NativeTestPlayers.survival(h,"porthole_camera");f.players.add(observer);observer.teleportTo(f.out,b.getX()+7.5,b.getY()+1,b.getZ()-2.5,0,0);observer.setGameMode(GameType.SPECTATOR);
+        var untouched=b.offset(9,1,-3);var attempt=new BlockEvent.BreakEvent(f.out,untouched,f.out.getBlockState(untouched),observer);NeoForge.EVENT_BUS.post(attempt);
+        h.assertTrue(attempt.isCanceled()&&!LiteraryVignettes.mayBreak(observer,untouched),"an actual observer cannot use the new mining exception");
+        p.setShiftKeyDown(true);
+        h.startSequence().thenIdle(7).thenExecute(()->{
+            h.assertTrue(p.getForcedPose()==Pose.SWIMMING&&p.getBbHeight()<.7,"crouching at the broken window gives a real crawl body");
+            for(int i=0;i<25;i++)p.move(MoverType.SELF,new Vec3(-.12,0,0));
+            h.assertTrue(p.getX()<b.getX()-9.8&&f.out.noCollision(p,p.getBoundingBox())&&!ElkCarcassMap.aboard(p.position().subtract(b.getX(),b.getY(),b.getZ())),"the body physically passes through the one-block opening into the lake exterior");
+            f.reload();h.assertTrue(f.out.getBlockState(at).isAir()&&f.out.getBlockState(untouched).is(LiteraryRegistry.YACHT_PORTHOLE.get())&&WitnessAccount.count(f.data(),p.getUUID())==0&&WitnessAccount.count(f.data(),observer.getUUID())==0,"a reload keeps the hole and the finite untouched windows without granting an ending");h.succeed();
+        });
+    }
+    @AfterBatch(batch="literary_elk_porthole") public static void portholeDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="literary_elk_landing",timeoutTicks=200)
+    public static void theOriginalKillerLeavesTheBoatOnlyUnseenAndLurksOnDryGroundAmongRealTrees(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("shore_reader",place);var b=f.base(place);
+        h.startSequence().thenIdle(10).thenExecute(()->{
+            var a=elkKiller(f,p);h.assertTrue(a!=null,"the original private yacht killer exists");var id=a.getUUID();a.moveTo(b.getX()+.5,b.getY()+ElkCarcassMap.MAIN,b.getZ()-3.5);a.setNoGravity(true);
+            var shore=ElkCarcassMap.standAt(-32,-100);f.at(p,place,shore.getX()+.5,shore.getY(),shore.getZ()+.5);p.setOnGround(true);p.setYRot(180);
+            var camera=NativeTestPlayers.survival(h,"shore_camera");f.players.add(camera);camera.teleportTo(f.out,b.getX()+.5,b.getY()+ElkCarcassMap.MAIN+1,b.getZ()-.5,180,0);camera.setNoGravity(true);camera.setGameMode(GameType.SPECTATOR);camera.lookAt(EntityAnchorArgument.Anchor.EYES,a.getEyePosition());
+            var before=a.position();var own=f.own(p,place);
+            h.assertTrue(!ElkHunt.land(p,b,a,own)&&a.position().equals(before)&&!own.getBoolean("ElkLanded"),"even a native spectator's camera prevents a visible departure from the boat");
+            camera.setYRot(0);camera.setXRot(0);
+            h.assertTrue(ElkHunt.land(p,b,a,own),"turning the actual camera away permits an unseen shore pursuit");
+            var r=a.position().subtract(b.getX(),b.getY(),b.getZ());
+            h.assertTrue(a.getUUID().equals(id)&&a.owner().orElseThrow().equals(p.getUUID())&&ElkCarcassMap.wooded(r.x,r.z)&&f.out.getFluidState(a.blockPosition()).isEmpty()&&!f.out.getBlockState(a.blockPosition().below()).getCollisionShape(f.out,a.blockPosition().below()).isEmpty(),"the original body is on real dry wooded terrain, never visibly swimming or replaced");
+            h.assertTrue(a.distanceTo(p)>=12&&WitnessAccount.count(f.data(),p.getUUID())==0&&WitnessAccount.count(f.data(),camera.getUUID())==0,"shore arrival starts from cover without close-range popping or transferred personal evidence");h.succeed();
+        });
+    }
+    @AfterBatch(batch="literary_elk_landing") public static void shoreLandingDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="literary_elk_attack_delay",timeoutTicks=200)
+    public static void nativeBoatAttacksKeepABriefSavedDelayAndNeverStrikeAnotherReadersBody(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("attack_reader",place);var peer=f.player("attack_peer",place);
+        final long[] last={-1};final int[] swings={0};final boolean[] ready={false};
+        h.startSequence().thenIdle(10).thenExecute(()->{
+            var own=f.own(p,place);own.putInt("ElkStage",ElkHunt.HUNTED);own.putBoolean("ElkResetPending",false);own.putInt("ElkEmerge",0);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+            p.setInvulnerable(false);peer.setInvulnerable(false);ready[0]=true;
+        }).thenIdle(85).thenExecute(()->{h.assertTrue(swings[0]>=2&&p.getHealth()<p.getMaxHealth()&&peer.getHealth()==peer.getMaxHealth(),"native swings deal actual owner damage with breathing room and leave the other reader unharmed");h.succeed();});
+        h.onEachTick(()->{if(!ready[0])return;var a=elkKiller(f,p);if(a==null)return;var b=f.base(place);f.at(p,place,.5,0,-21.5);f.at(peer,place,1.5,0,-21.5);a.moveTo(b.getX()+.5,b.getY(),b.getZ()-22.5);a.setDeltaMovement(Vec3.ZERO);a.setNoGravity(true);
+            long stamp=f.own(p,place).getLong("ElkStrikeAt");if(stamp>0&&stamp!=last[0]){if(last[0]>0)h.assertTrue(stamp-last[0]>=ElkHunt.ATTACK_DELAY,"every physical axe swing observes the saved one-and-a-half-second recovery");last[0]=stamp;swings[0]++;}
+        });
+    }
+    @AfterBatch(batch="literary_elk_attack_delay") public static void attackDelayDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_elk_journey",timeoutTicks=2600)
     public static void elkReaderWakesAboardEscapesHidesUnderTheCarcassesAndLeavesByTheGate(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("elk_reader",place);var b=f.base(place);

@@ -209,7 +209,7 @@ public final class LiveExpeditionProof {
         }else if(phase==19&&a!=null&&b!=null&&ACKS.size()==2){
             require(privateA.owner().orElseThrow().equals(a.getUUID())&&privateB.owner().orElseThrow().equals(b.getUUID()),"native private actor ownership matches each socket");
             var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.ELK_CARCASSES);
-            for(var p:List.of(a,b)){var cover=site.offset(p==a?0:1,0,-41);outside(p,cover,180);p.serverLevel().setBlock(cover.above(),HouseBlocks.FOREST_COVER.get().defaultBlockState(),3);}
+            for(var p:List.of(a,b)){var cover=site.offset(p==a?0:1,0,-41);outside(p,cover,0);p.setYRot(180);p.serverLevel().setBlock(cover.above(),HouseBlocks.FOREST_COVER.get().defaultBlockState(),3);}
             privateA.moveTo(site.getX()+.5,site.getY(),site.getZ()-48.5);KillerNavigation.request(privateA,Vec3.atBottomCenterOf(site.offset(0,0,-35)),1.0);lastHunterPosition=privateA.position();step(s,22,site.offset(0,0,-43));
         }else if(phase==22&&a!=null&&b!=null&&ACKS.size()==2&&s.getTickCount()-changed>140){
             var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.ELK_CARCASSES);
