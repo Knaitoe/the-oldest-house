@@ -152,6 +152,8 @@ Seventeen original installments in four writing threads develop from mundane hou
 
 Anansi's Goatman is a personal survival encounter. The latecomer enters enclosed dusk woods in a child's body, following a private backward-walking girl who holds a fixed trail distance and disappears behind its last bend. Companions will not lead. The trailer holds five shared human cousins, ordinary fireside activity, a kitchenette and supper. Supplies include real players while preserving one extra child. Each run saves one randomly chosen wrong cousin, distinct ordinary skins and two or three subtle tells. No dialogue, nametag or accusation interface identifies it. Night closes the door; original mono hammering, door particles and localized subtitles demand entry. The extra cousin may still be inside, or absent. A cousin approaches the door, but cannot open it. Opening takes only the opener through native death and manor respawn, transfers original inventory/cursor contents to the Mother and uses existing following-pet custody. Keeping the door closed for a full occupied minute credits each actual participant personally. Offline time pauses an empty scene; leaving and mere observation confer no credit. Transient child scale ends on departure, logout, death and respawn. Layout 18 appends the woods and preserves all earlier physical rooms, supplies and evidence. The playable Witness pool is ten sources, with eight required across at least two kinds and three ending options. See [GOATMAN_0_4_20.md](GOATMAN_0_4_20.md).
 
+0.4.53 (owner request, after a playtest and the original story): the night is a puzzle. A pan of brats holds one for every child who should be there, and one more child sits down to it. A real cousin goes for gas at dusk and comes back knocking in his own voice before the woods go quiet; let him in. The one that doesn't belong stands by the fire with its back to the trailer and comes for the door only while nobody watches; keep it out by the door and the bathroom window, which is left open. At night it knocks in the cousin's words without his voice. A night done right resolves the story (`counted_right`) and gives the tally counter. A night it gets into, or one that leaves the cousin outside, sends it home with every child there, and opening the door at night takes the opener out with it: no death, nothing taken, a private haunting (it eats one food a day, is glimpsed in its own goat-headed form, tries their door on some nights) that ends when that reader gets a night right. Canon: [GOATMAN_0_4_53.md](GOATMAN_0_4_53.md).
+
 ## Implemented in 0.4.19
 
 Harrigan's reading has saved started, highest-page and finished states. Responses follow the actual forward pages rather than a looping count. Backtracking does not repeat them; an early close pauses without a ticket, and closing after the final page delivers one dismissal and the finite ticket. Once reading starts, idle remarks cease. Older visible-ticket/completed-reading states already count as finished, preserving their rewards and evidence without another closing line. Study dialogue identifies the two phones. Acquisition and funeral cues explain the clock, keeping his phone versus placing it in the casket, and using your connected phone outside the House with a chat name, once per day. Both item tooltips retain the instructions, including the bed-based dawn effect and the cost of naming harmless lives. The phone IDs, native effects, saved owners, funeral choices, seated actor and meat taming are unchanged. Witness remains seven of nine across at least two kinds, with three endings and layout version 17. See [HARRIGAN_DIALOGUE_0_4_19.md](HARRIGAN_DIALOGUE_0_4_19.md).
@@ -869,12 +871,19 @@ First playable site in 0.4.11: [DROWNED_TOWN_0_4_11.md](DROWNED_TOWN_0_4_11.md).
 
 ### The Cabin at the End of the World: the cabin
 
-*One-shot · verb: giving something up*
+*One-shot · verb: giving yourself up*
 
-- A lake cabin at dusk, with a jar of grasshoppers on the porch. Four polite strangers knock and ask you to choose something to give up: a named item, a pet, an enchanted tool.
-- Refuse, and one of them walks into the lake and a vignette door closes forever. The cabin's TV shows which place just went dark.
-- Agree, and the thing goes to the Mother, where you can see it but never have it back.
-- Yields: the jar. Assets: four stranger skins, jar item, TV.
+- A lake cabin at dusk, with a jar of grasshoppers on the porch. Every visit begins waking in a bed that is not yours. Four polite strangers, private to each reader, knock at the front door until it is answered, and tell the reader their world will end. Then they tell them it is *their* world that will end, and only the reader can stop it. The only way out is a shed at the edge of the yard.
+- They ask in a fixed order, and every gift is permanent:
+  - Leonard asks for the reader's life, and it costs a heart;
+  - Adriane asks for "More.", and it costs another;
+  - Sabrina, a nurse, asks for something real, "something… handy": the arm of the off hand.
+- The arm is taken in a held scene: a cord tied above the elbow, the blow, black, the floor. The reader never holds anything in that hand again and is drawn without it, with a bandaged stump, for every viewer. Rare phantom pain follows them. The arm goes to the Mother's shelf.
+- A storm, the reader's own, rises with every ask. It breaks when everything has been given.
+- The source is the cabin's guest book, written by earlier guests: it foreshadows (four strangers on the beach, a knock nobody answered, wet prints out along the jetty) and explains nothing.
+- Refuse at any ask, and the one who asked walks down the jetty into the lake. One unfinished room of the reader's own goes dark for them alone. Nothing already given comes back.
+- The cabin's TV shows the reader's home from high above, or the room going dark. Watching it makes the account readable. Both answers resolve the story.
+- Yields: a whole snow globe for the reader who gave everything (it will not let them die, once a day), or a cracked one for the reader who refused (once, ever). Assets: four stranger skins, the globes, the given arm, the stump bandage, a TV and nine original cues. Canon: [CABIN_BARGAIN_0_4_51.md](CABIN_BARGAIN_0_4_51.md).
 
 ## The finale and the endings
 

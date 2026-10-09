@@ -9,5 +9,5 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class PlayerPatMixin implements CompanionAnimation.PatModel {
     @Override public void oldestHousePat(float age){CompanionAnimation.playerPose((PlayerModel<?>)(Object)this,net.minecraft.world.entity.HumanoidArm.RIGHT,age);}
     @Inject(method="setupAnim(Lnet/minecraft/world/entity/LivingEntity;FFFFF)V",at=@At("TAIL"))
-    private void pat(LivingEntity entity,float walk,float amount,float age,float yaw,float pitch,CallbackInfo ci){CompanionAnimation.player((PlayerModel<?>)(Object)this,entity,age);}
+    private void pat(LivingEntity entity,float walk,float amount,float age,float yaw,float pitch,CallbackInfo ci){CompanionAnimation.player((PlayerModel<?>)(Object)this,entity,age);io.github.knaitoe.theoldesthouse.client.BodyLossClient.pose((PlayerModel<?>)(Object)this,entity);}
 }

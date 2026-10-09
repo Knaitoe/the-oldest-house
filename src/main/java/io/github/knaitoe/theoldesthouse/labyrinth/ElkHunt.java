@@ -179,6 +179,10 @@ public final class ElkHunt {
     private static void setStage(CompoundTag own, int stage) {
         own.putInt("ElkStage", stage);
         own.putInt("ElkClock", 0);
+        // A pause or a leg of the stage before is not served as this one's.
+        own.putInt("ElkPause", 0);
+        own.putInt("ElkStuck", 0);
+        own.putInt("ElkWaypoint", -1);
     }
 
     /** Horizontal movement since the last look, from positions, not the client-driven velocity. */

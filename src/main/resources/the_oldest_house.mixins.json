@@ -6,6 +6,8 @@
   "client": [
     "HouseFontMixin",
     "HouseSceneClockMixin",
+    "CabinStormLevelMixin",
+    "CabinStormBiomeMixin",
     "WolfPatMixin",
     "CatPatMixin",
     "PlayerPatMixin",

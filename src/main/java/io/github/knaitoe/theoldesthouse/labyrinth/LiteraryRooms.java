@@ -14,13 +14,16 @@ public final class LiteraryRooms {
     public static final BlockPos SOURCE=new BlockPos(3,0,-4),HILL_KNOCK=new BlockPos(-10,-4,-36),HILL_WALL=new BlockPos(-14,2,-17),
         TABLE=new BlockPos(0,0,-18),CLOCK=new BlockPos(0,0,-75),COFFIN=new BlockPos(0,-3,-29),FAN=new BlockPos(0,7,-17),FAN_REACH=new BlockPos(0,4,-17),
         PILE=new BlockPos(0,-5,-71),JOURNAL=new BlockPos(-8,1,-25),CAMERA=new BlockPos(0,0,-28),BOOTH=new BlockPos(15,0,-37),TV=new BlockPos(7,1,-24);
+    /** The cabin (0.4.52): its front door, the two beds a reader wakes in (heads), and the shed door that is the only way out. */
+    public static final BlockPos CABIN_DOOR=new BlockPos(0,0,-13),SHED_DOOR=new BlockPos(0,0,-4);
+    public static final List<BlockPos> CABIN_BEDS=List.of(new BlockPos(-10,0,-34),new BlockPos(-6,0,-34));
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private LiteraryRooms(){}
     public static boolean isLiterary(LabyrinthPlace p){return p!=null&&p.slot()>=45&&p.slot()<=68;}
     public static boolean outside(LabyrinthPlace p){return switch(p){case ELK_LOT,MAPPING_INTERIOR,HOLY_RABBIT,ELK_CARCASSES,COSTUME_NIGHT,MOVIE_NIGHT,WINTER_LAKE,CAMP_BLOOD,END_WORLD_CABIN,FAMILY_COPY,OLD_CABIN->true;default->false;};}
     public static BlockPos source(LabyrinthPlace p){return switch(p){
-        case HILL_NURSERY->new BlockPos(11,1,-21);case MINIATURES->new BlockPos(-12,1,-25);case MASQUE->new BlockPos(7,1,-4);case USHER->new BlockPos(-12,1,-34);case WINCHESTER->new BlockPos(-26,1,-9);case CHILD_ROOM->new BlockPos(6,1,-20);case CRIMSON_HALL->new BlockPos(10,1,-12);case BLY_ROUTE->new BlockPos(8,1,-36);case ELK_LOT->new BlockPos(-18,1,-12);case ELK_FAN->new BlockPos(-7,1,-13);case MAPPING_INTERIOR->new BlockPos(-9,1,-29);case HOLY_RABBIT->new BlockPos(2,0,-22);case CONFESSION->JOURNAL;case ELK_CARCASSES->ElkCarcassMap.SOURCE;case COSTUME_NIGHT,MOVIE_NIGHT,WINTER_LAKE->new BlockPos(4,1,-6);case CAMP_BLOOD->new BlockPos(-20,1,-23);case DEVILS_ROCK->new BlockPos(-8,1,-21);case WHEEL->new BlockPos(-14,1,-43);case GHOSTS_SET->new BlockPos(17,1,-9);case END_WORLD_CABIN->new BlockPos(-9,1,-9);default->SOURCE;};}
-    public static BlockPos ending(LabyrinthPlace p){return switch(p){case HILL_NURSERY->new BlockPos(8,-3,-36);case MINIATURES->new BlockPos(0,1,-25);case MASQUE->new BlockPos(5,0,-73);case USHER->new BlockPos(12,1,-34);case WINCHESTER->new BlockPos(26,9,-70);case CHILD_ROOM->new BlockPos(0,-2,-23);case CRIMSON_HALL->new BlockPos(0,1,-39);case BLY_ROUTE->new BlockPos(8,1,-38);case ELK_LOT->new BlockPos(0,0,-5);case ELK_FAN->new BlockPos(0,0,-17);case MAPPING_INTERIOR->new BlockPos(6,0,-20);case HOLY_RABBIT->new BlockPos(0,0,-120);case CONFESSION->new BlockPos(10,0,-28);case ELK_CARCASSES->ElkCarcassMap.ENDING;case COSTUME_NIGHT->new BlockPos(0,0,-67);case MOVIE_NIGHT->new BlockPos(0,0,-85);case WINTER_LAKE->new BlockPos(0,0,-78);case CAMP_BLOOD->new BlockPos(0,0,-97);case DEVILS_ROCK->new BlockPos(9,0,-36);case WHEEL->new BlockPos(0,0,-4);case GHOSTS_SET->new BlockPos(15,0,-39);case END_WORLD_CABIN->new BlockPos(-7,0,-24);case FAMILY_COPY->new BlockPos(0,0,-5);case OLD_CABIN->new BlockPos(0,0,-5);default->throw new IllegalArgumentException(p.id());};}
+        case HILL_NURSERY->new BlockPos(11,1,-21);case MINIATURES->new BlockPos(-12,1,-25);case MASQUE->new BlockPos(7,1,-4);case USHER->new BlockPos(-12,1,-34);case WINCHESTER->new BlockPos(-26,1,-9);case CHILD_ROOM->new BlockPos(6,1,-20);case CRIMSON_HALL->new BlockPos(10,1,-12);case BLY_ROUTE->new BlockPos(8,1,-36);case ELK_LOT->new BlockPos(-18,1,-12);case ELK_FAN->new BlockPos(-7,1,-13);case MAPPING_INTERIOR->new BlockPos(-9,1,-29);case HOLY_RABBIT->new BlockPos(2,0,-22);case CONFESSION->JOURNAL;case ELK_CARCASSES->ElkCarcassMap.SOURCE;case COSTUME_NIGHT,MOVIE_NIGHT,WINTER_LAKE->new BlockPos(4,1,-6);case CAMP_BLOOD->new BlockPos(-20,1,-23);case DEVILS_ROCK->new BlockPos(-8,1,-21);case WHEEL->new BlockPos(-14,1,-43);case GHOSTS_SET->new BlockPos(17,1,-9);case END_WORLD_CABIN->new BlockPos(-8,0,-31);default->SOURCE;};}
+    public static BlockPos ending(LabyrinthPlace p){return switch(p){case HILL_NURSERY->new BlockPos(8,-3,-36);case MINIATURES->new BlockPos(0,1,-25);case MASQUE->new BlockPos(5,0,-73);case USHER->new BlockPos(12,1,-34);case WINCHESTER->new BlockPos(26,9,-70);case CHILD_ROOM->new BlockPos(0,-2,-23);case CRIMSON_HALL->new BlockPos(0,1,-39);case BLY_ROUTE->new BlockPos(8,1,-38);case ELK_LOT->new BlockPos(0,0,-5);case ELK_FAN->new BlockPos(0,0,-17);case MAPPING_INTERIOR->new BlockPos(6,0,-20);case HOLY_RABBIT->new BlockPos(0,0,-120);case CONFESSION->new BlockPos(10,0,-28);case ELK_CARCASSES->ElkCarcassMap.ENDING;case COSTUME_NIGHT->new BlockPos(0,0,-67);case MOVIE_NIGHT->new BlockPos(0,0,-85);case WINTER_LAKE->new BlockPos(0,0,-78);case CAMP_BLOOD->new BlockPos(0,0,-97);case DEVILS_ROCK->new BlockPos(9,0,-36);case WHEEL->new BlockPos(0,0,-4);case GHOSTS_SET->new BlockPos(15,0,-39);case END_WORLD_CABIN->new BlockPos(2,1,-30);case FAMILY_COPY->new BlockPos(0,0,-5);case OLD_CABIN->new BlockPos(0,0,-5);default->throw new IllegalArgumentException(p.id());};}
     public static void build(ServerLevel l,BlockPos b,LabyrinthPlace p){
         var r=p.room();box(l,b,r.minX(),r.minY(),r.minZ(),r.maxX(),r.maxY(),r.maxZ(),Blocks.AIR);
         switch(p){case HILL_NURSERY->hill(l,b);case MINIATURES->miniatures(l,b);case MASQUE->masque(l,b);case USHER->usher(l,b);case WINCHESTER->winchester(l,b);case CHILD_ROOM->child(l,b);case CRIMSON_HALL->crimson(l,b);case BLY_ROUTE->bly(l,b);case ELK_LOT->lot(l,b);case ELK_FAN->fan(l,b);case MAPPING_INTERIOR->mapping(l,b);case HOLY_RABBIT->rabbit(l,b);case CONFESSION->confession(l,b);case ELK_CARCASSES->carcasses(l,b);case COSTUME_NIGHT,MOVIE_NIGHT,WINTER_LAKE->lake(l,b,p);case CAMP_BLOOD->camp(l,b);case DEVILS_ROCK->diary(l,b);case WHEEL->wheel(l,b);case GHOSTS_SET->set(l,b);case END_WORLD_CABIN->endCabin(l,b);case FAMILY_COPY,OLD_CABIN->copyLanding(l,b,p);default->throw new IllegalArgumentException(p.id());}
@@ -195,10 +198,64 @@ public final class LiteraryRooms {
         prop(l,b,CAMERA,LiteraryPropBlock.Kind.TRIPOD,Direction.SOUTH);for(int x:new int[]{-17,17})for(int z:new int[]{-9,-25})prop(l,b,new BlockPos(x,0,z),LiteraryPropBlock.Kind.LIGHT_STAND,Direction.SOUTH);
         for(int x:new int[]{-5,0,5})prop(l,b,new BlockPos(x,0,-20),LiteraryPropBlock.Kind.TAPE_X,Direction.SOUTH);furniture(l,b,-8,0,-30,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);furniture(l,b,2,0,-35,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.SOUTH);NovelRooms.bed(l,b.offset(5,0,-34),Blocks.WHITE_BED,Direction.NORTH);prop(l,b,BOOTH,LiteraryPropBlock.Kind.RECEIVER,Direction.SOUTH);light(l,b,0,5,-8);
     }
+    /**
+     * A lake cabin at dusk (0.4.52). A front door onto a deep porch; a bedroom with two beds against the lake; a kitchen;
+     * a living room with the television, the hearth and the dining table where the account will lie; windows on every
+     * side, so the storm is always in view. A small shed stands at the edge of the yard: its door is the only way out.
+     */
     private static void endCabin(ServerLevel l,BlockPos b){
-        terrain(l,b,LabyrinthPlace.END_WORLD_CABIN,Blocks.GRASS_BLOCK);box(l,b,-27,-8,-76,27,-1,-42,Blocks.WATER);box(l,b,-28,-9,-77,28,-9,-41,Blocks.GRAVEL);room(l,b,-12,12,-35,-13,0,6,Blocks.SPRUCE_PLANKS,Blocks.SPRUCE_PLANKS);door(l,b,0,0,-13,Direction.SOUTH,false);
+        terrain(l,b,LabyrinthPlace.END_WORLD_CABIN,Blocks.GRASS_BLOCK);box(l,b,-27,-8,-76,27,-1,-42,Blocks.WATER);box(l,b,-28,-9,-77,28,-9,-41,Blocks.GRAVEL);
+        room(l,b,-12,12,-35,-13,0,6,Blocks.SPRUCE_PLANKS,Blocks.SPRUCE_PLANKS);door(l,b,0,0,-13,Direction.SOUTH,false);
+        // Bedroom (north-west): two beds under the lake window, a lamp between them, the visitors' request on its stand.
+        box(l,b,-4,0,-34,-4,5,-25,Blocks.SPRUCE_PLANKS);box(l,b,-11,0,-25,-4,5,-25,Blocks.SPRUCE_PLANKS);for(int y=0;y<=5;y++){at(l,b,-4,y,-25,Blocks.STRIPPED_SPRUCE_LOG);at(l,b,-4,y,-34,Blocks.STRIPPED_SPRUCE_LOG);}
+        box(l,b,-4,0,-29,-4,1,-29,Blocks.AIR);NovelRooms.door(l,b.offset(-4,0,-29),Direction.EAST,Blocks.SPRUCE_DOOR,false);at(l,b,-4,2,-29,Blocks.STRIPPED_SPRUCE_LOG);
+        NovelRooms.bed(l,b.offset(-10,0,-33),Blocks.WHITE_BED,Direction.NORTH);NovelRooms.bed(l,b.offset(-6,0,-33),Blocks.LIGHT_GRAY_BED,Direction.NORTH);
+        furniture(l,b,-8,0,-34,HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);
+        furniture(l,b,-11,0,-27,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.EAST);light(l,b,-8,4,-29);
+        // Kitchen (south-west), open to the living room.
+        BuildBlocks.set(l,b.offset(-11,0,-23),Blocks.SMOKER.defaultBlockState().setValue(AbstractFurnaceBlock.FACING,Direction.EAST),F);at(l,b,-11,0,-22,Blocks.CAULDRON);
+        for(int z=-21;z<=-15;z++){at(l,b,-11,0,z,Blocks.SPRUCE_PLANKS);BuildBlocks.set(l,b.offset(-11,3,z),Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP),F);}
+        for(int z:new int[]{-20,-16})at(l,b,-11,1,z,Blocks.FLOWER_POT);
+        furniture(l,b,-8,0,-18,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.SOUTH);furniture(l,b,-8,0,-17,HouseholdFurnitureBlock.Kind.KITCHEN_STOOL,Direction.NORTH);furniture(l,b,-8,0,-19,HouseholdFurnitureBlock.Kind.KITCHEN_STOOL,Direction.SOUTH);light(l,b,-8,4,-19);
+        // Living room: the television on its cabinet, seats facing it, the hearth, and the dining table.
+        furniture(l,b,7,0,-24,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.SOUTH);prop(l,b,TV,LiteraryPropBlock.Kind.TELEVISION,Direction.SOUTH);
+        furniture(l,b,5,0,-20,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.NORTH);furniture(l,b,7,0,-20,HouseholdFurnitureBlock.Kind.BLUE_SOFA,Direction.NORTH);furniture(l,b,9,0,-20,HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR,Direction.NORTH);furniture(l,b,7,0,-22,HouseholdFurnitureBlock.Kind.FOOTSTOOL,Direction.NORTH);
+        furniture(l,b,2,0,-30,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.SOUTH);furniture(l,b,2,0,-29,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.NORTH);furniture(l,b,2,0,-31,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.SOUTH);
+        furniture(l,b,1,0,-30,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.EAST);furniture(l,b,3,0,-30,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.WEST);
+        box(l,b,10,0,-34,11,11,-33,Blocks.BRICKS);box(l,b,9,0,-32,11,2,-32,Blocks.BRICKS);at(l,b,10,0,-32,Blocks.CAMPFIRE);at(l,b,10,1,-32,Blocks.AIR);
+        for(int x=9;x<=11;x++)BuildBlocks.set(l,b.offset(x,3,-32),Blocks.DARK_OAK_SLAB.defaultBlockState(),F);
+        light(l,b,2,4,-30);light(l,b,7,4,-21);light(l,b,0,4,-17);
+        // Windows on every side: the lake behind, the porch in front, the woods either side.
+        glaze(l,b,true,-35,-9,-7);glaze(l,b,true,-35,1,7);glaze(l,b,false,-12,-31,-28);glaze(l,b,false,-12,-21,-18);
+        glaze(l,b,false,12,-29,-26);glaze(l,b,false,12,-21,-17);glaze(l,b,true,-13,-8,-6);glaze(l,b,true,-13,4,8);
+        // The porch, deep and roofed, with the jar of grasshoppers still on it.
         box(l,b,-12,-1,-12,12,-1,-8,Blocks.SPRUCE_PLANKS);for(int x:new int[]{-12,12})box(l,b,x,0,-8,x,5,-8,Blocks.SPRUCE_LOG);box(l,b,-12,6,-12,12,6,-8,Blocks.SPRUCE_SLAB);prop(l,b,new BlockPos(-7,0,-9),LiteraryPropBlock.Kind.JAR,Direction.SOUTH);
-        prop(l,b,TV,LiteraryPropBlock.Kind.TELEVISION,Direction.SOUTH);furniture(l,b,0,0,-25,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.SOUTH);NovelRooms.bed(l,b.offset(-8,0,-30),Blocks.WHITE_BED,Direction.NORTH);furniture(l,b,6,0,-29,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.WEST);light(l,b,0,4,-21);roof(l,b,-12,12,-35,-13,6);window(l,b,-12,-27,true);window(l,b,4,-35,false);box(l,b,10,0,-33,11,11,-32,Blocks.BRICKS);box(l,b,9,0,-31,11,2,-31,Blocks.BRICKS);at(l,b,10,0,-30,Blocks.CAMPFIRE);
+        roof(l,b,-12,12,-35,-13,6);
+        // A trodden path from the porch to the shed.
+        for(int z=-7;z<=-5;z++)for(int x=-1;x<=1;x++)at(l,b,x,-1,z,Blocks.DIRT_PATH);
+        shed(l,b);
+    }
+    /** Glass panes from {@code from} to {@code to} along a wall, three high, in a stripped spruce frame. */
+    private static void glaze(ServerLevel l,BlockPos b,boolean alongX,int wall,int from,int to){
+        for(int a=from-1;a<=to+1;a++)for(int y=0;y<=4;y++){boolean frame=a<from||a>to||y==0||y==4;var at=alongX?b.offset(a,y,wall):b.offset(wall,y,a);
+            if(frame){if(y>0)BuildBlocks.set(l,at,Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState(),F);}else BuildBlocks.set(l,at,Blocks.GLASS_PANE.defaultBlockState(),F);}
+    }
+    /** The way out: a small shed at the edge of the yard, built against the House's own door at its back. */
+    private static void shed(ServerLevel l,BlockPos b){
+        box(l,b,-3,-1,-4,3,-1,0,Blocks.SPRUCE_PLANKS);box(l,b,-3,0,-4,3,3,0,Blocks.AIR);
+        for(int z=-4;z<=0;z++)for(int x:new int[]{-3,3})box(l,b,x,0,z,x,3,z,Blocks.SPRUCE_PLANKS);box(l,b,-3,0,-4,3,3,-4,Blocks.SPRUCE_PLANKS);
+        for(int x:new int[]{-3,3})box(l,b,x,0,-4,x,3,-4,Blocks.STRIPPED_SPRUCE_LOG);box(l,b,-2,4,-4,2,4,-4,Blocks.SPRUCE_PLANKS);box(l,b,-1,5,-4,1,5,-4,Blocks.SPRUCE_PLANKS);
+        box(l,b,0,0,-4,0,1,-4,Blocks.AIR);NovelRooms.door(l,b.offset(0,0,-4),Direction.NORTH,Blocks.SPRUCE_DOOR,false);
+        for(int z=-5;z<=0;z++){
+            for(int x:new int[]{-4,-3})BuildBlocks.set(l,b.offset(x,x==-4?3:4,z),Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST),F);
+            for(int x:new int[]{3,4})BuildBlocks.set(l,b.offset(x,x==4?3:4,z),Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.WEST),F);
+            for(int x:new int[]{-2,-1})BuildBlocks.set(l,b.offset(x,5,z),Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST),F);
+            for(int x:new int[]{1,2})BuildBlocks.set(l,b.offset(x,5,z),Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.WEST),F);
+            BuildBlocks.set(l,b.offset(0,6,z),Blocks.DARK_OAK_SLAB.defaultBlockState(),F);
+        }
+        for(int x:new int[]{-3,3})BuildBlocks.set(l,b.offset(x,1,-2),Blocks.GLASS_PANE.defaultBlockState(),F);
+        at(l,b,-2,0,-1,Blocks.CRAFTING_TABLE);at(l,b,2,0,-1,Blocks.OAK_LOG);at(l,b,2,1,-1,Blocks.OAK_LOG);at(l,b,-2,0,-3,Blocks.COMPOSTER);
+        at(l,b,0,5,-2,Blocks.CHAIN);at(l,b,0,4,-2,Blocks.CHAIN);BuildBlocks.set(l,b.offset(0,3,-2),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);
     }
     private static void copyLanding(ServerLevel l,BlockPos b,LabyrinthPlace p){box(l,b,-5,-1,-8,5,-1,0,Blocks.SMOOTH_STONE);room(l,b,-5,5,-8,0,0,5,Blocks.GRAY_TERRACOTTA,Blocks.SMOOTH_STONE);}
 }

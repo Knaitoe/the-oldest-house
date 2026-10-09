@@ -28,6 +28,16 @@ import net.neoforged.neoforge.gametest.*;
 @PrefixGameTestTemplate(false)
 public final class MultiplayerStoryTests {
     @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=1200)
+    public static void aCabinGiverBurnsTheirOwnLeavesWithTheKeptHandAndAPackedLighter(GameTestHelper h){run(h,528000,MultiplayerStoryTests::holdLeaves,f->{
+        StaircaseFire.dress(f.level,f.origin);layLeaves(f);var p=f.player(h,"one_hand_reader");var peer=f.player(h,"two_hand_reader");ready(p,f);ready(peer,f);
+        var book=issued(p);p.setItemInHand(InteractionHand.OFF_HAND,book);h.assertTrue(find(p,f,0),"the first real leaf binds before the gift");
+        var lighter=p.getMainHandItem();h.assertTrue(BodyLoss.takeArm(p),"the cabin takes the off-hand arm");
+        p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);p.getInventory().add(lighter);p.setItemInHand(InteractionHand.MAIN_HAND,held(p));
+        h.assertTrue(p.getOffhandItem().isEmpty()&&burn(p,f,0)&&lighter.getDamageValue()==1,"the kept hand holds the original and the native lighter in the pack lights the hearth");
+        h.assertTrue(!BodyLoss.oneArmed(peer)&&StaircaseFire.flames(FinaleProgress.player(peer.server,peer.getUUID()))==0,"a peer keeps both hands and their own cold fires");
+        f.reload();BodyLoss.apply(p);h.assertTrue(BodyLoss.oneArmed(p)&&find(p,f,1)&&burn(p,f,1)&&lighter.getDamageValue()==2,"the second bound leaf burns after a saved-data reload without restoring the missing hand");
+    });}
+    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=1200)
     public static void anExplicitRewriteKeepsBoundLeavesFiresComponentsAndThePeersOriginal(GameTestHelper h){run(h,527000,MultiplayerStoryTests::holdLeaves,f->{
         StaircaseFire.dress(f.level,f.origin);layLeaves(f);var p=f.player(h,"rewrite_owner");var peer=f.player(h,"rewrite_peer");ready(p,f);ready(peer,f);
         var mine=issued(p);var theirs=issued(peer);p.setItemInHand(InteractionHand.OFF_HAND,mine);peer.setItemInHand(InteractionHand.OFF_HAND,theirs);

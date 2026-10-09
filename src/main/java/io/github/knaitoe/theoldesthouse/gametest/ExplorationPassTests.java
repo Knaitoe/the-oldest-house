@@ -421,6 +421,8 @@ public final class ExplorationPassTests {
                 for(var p:LabyrinthPlace.values())if(p.slot()>=0&&p.slot()<72)LabyrinthBuilder.registerDoors(d,p,LabyrinthPlaces.base(origin,p));
                 var reader=UUID.randomUUID();d.pushReturn(reader,new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,Vec3.atBottomCenterOf(b),0,true));
                 var keep=new CompoundTag();keep.putInt("Burned",3);keep.putString("Front","my saved words");d.setStateEntry(StaircaseStory.STATE,reader.toString(),keep);
+                var goat=new CompoundTag();var goatPlayers=new CompoundTag();var mine=new CompoundTag();mine.putBoolean("Haunted",true);mine.putInt("Hauntings",2);goatPlayers.put(reader.toString(),mine);goat.put("Players",goatPlayers);
+                var oldRun=new CompoundTag();oldRun.putInt("Phase",GoatmanVignette.VIGIL);goat.put("Run",oldRun);d.setState(GoatmanVignette.ID,goat);
                 LabyrinthBuilder.clearAll();LabyrinthBuilder.gateForGameTest(true);
                 h.assertTrue(LabyrinthBuilder.ensureReachable(server),"standing 0.4.47 doors stay usable immediately while new halls wait for carving");
                 h.assertTrue(!LabyrinthBuilder.isPlaceReady(d,LabyrinthPlace.ALCOVE_HALL),"a new hall cannot be dealt before native construction finishes");
@@ -430,6 +432,10 @@ public final class ExplorationPassTests {
                 // 0.4.50: the saved world's elk scene is carved again as its two stages, with the crew's gate as a second way back.
                 var elk=LabyrinthPlace.ELK_CARCASSES;var elkBase=LabyrinthPlaces.base(origin,elk);var service=elk.doors().stream().filter(door->door.name().equals("service")).findFirst().orElseThrow();
                 h.assertTrue(HouseTestLevel.get(server,HouseDimensions.OUTSIDE).getBlockState(elkBase.offset(9,1,-10)).is(LiteraryRegistry.YACHT_PORTHOLE.get())&&d.door(elk.doorId(service))!=null&&LabyrinthBuilder.isPlaceReady(d,elk),"the elk scene is rebuilt in place and dealt again only once it stands");
+                // 0.4.53: the saved world's trailer is carved again with its seats, lamps, bathroom window and shed; every child's own record stays.
+                var trailer=LabyrinthPlaces.base(origin,LabyrinthPlace.GOATMAN);
+                h.assertTrue(l.getBlockState(trailer.offset(GoatmanWoods.WINDOW)).getBlock() instanceof net.minecraft.world.level.block.TrapDoorBlock&&l.getBlockState(trailer.offset(0,4,-62)).is(Blocks.LANTERN)&&l.getBlockState(trailer.offset(11,0,-62)).getBlock() instanceof DoorBlock,"the trailer is rebuilt with its bathroom window, lamps and the generator shed");
+                h.assertTrue(GoatmanVignette.personal(d,reader).getBoolean("Haunted")&&GoatmanVignette.personal(d,reader).getInt("Hauntings")==2&&!d.state(GoatmanVignette.ID).contains("Run"),"a haunted reader stays haunted while the old evening is forgotten");
                 h.assertTrue(cat.isAlive()&&cat.getUUID().equals(id)&&cat.getHealth()==5&&cat.isOrderedToSit()&&d.returnDepth(reader)==1&&d.stateEntry(StaircaseStory.STATE,reader.toString()).equals(keep),"native pet identity, Stay, health, saved retreat and personal burned pages survive");h.succeed();
             }finally{cat.discard();lease.close();LabyrinthBuilder.gateForGameTest(null);LabyrinthBuilder.clearAll();store.set("the_oldest_house",oldHouse);store.set("the_oldest_house_labyrinth",oldData);}
         });

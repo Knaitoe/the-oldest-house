@@ -1,11 +1,13 @@
 package io.github.knaitoe.theoldesthouse.client;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.LakeWitchEntity;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.*;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.resources.ResourceLocation;
+import org.joml.Vector3f;
 
 /** The remembered girl stands; the same skin's hunting body scrabbles on jointed hands and feet. */
 public final class LakeWitchModel extends PlayerModel<LakeWitchEntity> {
@@ -44,7 +46,7 @@ public final class LakeWitchModel extends PlayerModel<LakeWitchEntity> {
     @Override public void setupAnim(LakeWitchEntity e,float walk,float speed,float age,float yaw,float pitch){
         resetBody();super.setupAnim(e,walk,speed,age,yaw,pitch);
         if(e.memory()){leftArm.xRot=-.2F;rightArm.xRot=-.25F;head.xRot=.25F;copyClothes();return;}
-        huntPose(walk,speed,age,e.striking());
+        huntPose(walk,speed,age,e.huntPhase(),e.striking());
         lookPose(yaw,pitch);
         attackPose(attackTime,e.biting(),e.striking());
         if(e.hurtTime>0){float recoil=e.hurtTime/10F;head.xRot-=recoil*.7F;body.xRot-=recoil*.25F;leftArm.xRot+=recoil*.9F;rightArm.xRot+=recoil*.9F;leftElbow.xRot+=recoil*.8F;rightElbow.xRot+=recoil*.8F;}
@@ -92,17 +94,38 @@ public final class LakeWitchModel extends PlayerModel<LakeWitchEntity> {
         knee.yRot=(left?-1:1)*.08F*amount;
     }
     public void huntPose(float walk,float speed,float age,boolean striking){
+        huntPose(walk,speed,age,LakeWitchEntity.STALK,striking);
+    }
+    public void huntPose(float walk,float speed,float age,int huntPhase,boolean striking){
+        boolean lunge=striking||huntPhase==LakeWitchEntity.LUNGE,withdraw=!lunge&&huntPhase==LakeWitchEntity.WITHDRAW;
+        float crouch=!lunge&&!withdraw?1:0;
         resetBody();float moving=Math.min(1,Math.max(0,speed*1.7F));float cycle=phase(walk*.23F);
         float hitch=((int)Math.floor(age/3)%5-2)*.025F;
-        body.setPos(moving>0?(cycle<.14F?.2F:-.15F):0,15+(cycle>.67F?.3F:0)*moving,-6);
+        body.setPos(moving>0?(cycle<.14F?.2F:-.15F):0,15+crouch+(cycle>.67F?.3F:0)*moving,-6);
         body.xRot=(float)Math.PI/2;body.zRot=(cycle<.46F?-.045F:.065F)*moving;
-        head.setPos(0,16,-9);head.xRot=striking?-.18F:.08F+hitch;head.zRot=hitch*1.5F;
-        leftArm.setPos(5,14,-6);rightArm.setPos(-5,14,-6);
+        head.setPos(0,16+crouch*.6F,-9);head.xRot=lunge?-.22F:withdraw?.38F:-.04F+hitch;head.zRot=hitch*1.5F;
+        leftArm.setPos(5,13.5F+crouch*.3F,-6);rightArm.setPos(-5,13.5F+crouch*.3F,-6);
         claw(leftArm,leftElbow,cycle,moving,true);claw(rightArm,rightElbow,phase(cycle+.43F),moving,false);
-        leftLeg.setPos(2.8F,14,6);rightLeg.setPos(-2.8F,14,6);
+        leftLeg.setPos(2.8F,13+crouch*.9F,6);rightLeg.setPos(-2.8F,13+crouch*.9F,6);
         hind(leftLeg,leftKnee,phase(cycle+.19F),moving,true);hind(rightLeg,rightKnee,phase(cycle+.77F),moving,false);
-        if(striking){leftArm.xRot=-1.2F;rightArm.xRot=-1.35F;leftElbow.xRot=.15F;rightElbow.xRot=.25F;leftArm.zRot=-.3F;rightArm.zRot=.3F;}
+        if(lunge){leftArm.xRot=-1.2F;rightArm.xRot=-1.35F;leftElbow.xRot=.15F;rightElbow.xRot=.25F;leftArm.zRot=-.3F;rightArm.zRot=.3F;}
+        plant(leftArm,leftElbow,false,moving==0&&!lunge);plant(rightArm,rightElbow,false,moving==0&&!lunge);
+        plant(leftLeg,leftKnee,true,moving==0);plant(rightLeg,rightKnee,true,moving==0);
         copyClothes();
+    }
+    /** Keep jointed limbs above the floor; at rest the hands and feet actually carry her. */
+    private void plant(ModelPart upper,ModelPart joint,boolean leg,boolean resting){
+        var pose=new PoseStack();upper.translateAndRotate(pose);
+        float x0=leg?-2:upper==leftArm?-1:-2,x1=leg?2:x0+3;
+        float low=bottom(pose,x0,leg?0:-2,x1,leg?6:4);
+        joint.translateAndRotate(pose);low=Math.max(low,bottom(pose,x0,0,x1,6));
+        upper.y+=resting?24-low:Math.min(0,24-low);
+    }
+    private static float bottom(PoseStack pose,float x0,float y0,float x1,float y1){
+        float low=-Float.MAX_VALUE;
+        for(float x:new float[]{x0,x1})for(float y:new float[]{y0,y1})for(float z:new float[]{-2,2})
+            low=Math.max(low,pose.last().pose().transformPosition(new Vector3f(x/16,y/16,z/16)).y*16);
+        return low;
     }
     private void copyClothes(){
         hat.copyFrom(head);jacket.copyFrom(body);leftSleeve.copyFrom(leftArm);rightSleeve.copyFrom(rightArm);leftPants.copyFrom(leftLeg);rightPants.copyFrom(rightLeg);
