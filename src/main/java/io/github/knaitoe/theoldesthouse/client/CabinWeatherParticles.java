@@ -27,8 +27,9 @@ public final class CabinWeatherParticles {
         @Override public void tick(){
             xo=x;yo=y;zo=z;
             if(age++>=lifetime){remove();return;}
-            move(xd,yd,zd);
-            if(onGround||stoppedByCollision){if(random.nextInt(3)==0)level.addParticle(ParticleTypes.RAIN,x,y+.05,z,0,0,0);remove();}
+            double ex=x+xd,ey=y+yd,ez=z+zd;move(xd,yd,zd);
+            // Wherever it was stopped short, it struck something.
+            if(onGround||Math.abs(x-ex)>1e-4||Math.abs(y-ey)>1e-4||Math.abs(z-ez)>1e-4){if(random.nextInt(3)==0)level.addParticle(ParticleTypes.RAIN,x,y+.05,z,0,0,0);remove();}
         }
         @Override public ParticleRenderType getRenderType(){return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;}
     }
