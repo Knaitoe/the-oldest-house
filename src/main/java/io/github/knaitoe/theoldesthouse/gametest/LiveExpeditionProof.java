@@ -235,6 +235,7 @@ public final class LiveExpeditionProof {
         }else if(phase==23&&a!=null&&b!=null){
             for(var p:List.of(a,b))if(p.getForcedPose()==net.minecraft.world.entity.Pose.SWIMMING&&p.getBbHeight()<.7)PORTHOLE_CRAWLERS.add(role(p));
             var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.ELK_CARCASSES);
+            if(s.getTickCount()%100==0)TheOldestHouse.LOGGER.info("LIVE PORTHOLE server A={} forced={} window={} allowed={} B={} forced={} window={} allowed={} crawlers={}",location(a),a.getForcedPose(),a.serverLevel().getBlockState(site.offset(-9,1,-3)),LiteraryVignettes.mayBreak(a,site.offset(-9,1,-3)),location(b),b.getForcedPose(),b.serverLevel().getBlockState(site.offset(9,1,-3)),LiteraryVignettes.mayBreak(b,site.offset(9,1,-3)),PORTHOLE_CRAWLERS);
             if(ACKS.size()==2&&a.getX()<site.getX()-9.8&&b.getX()>site.getX()+10.3){
                 require(PORTHOLE_CRAWLERS.size()==2,"both socket players use their real native crawl collision bodies");
                 require(a.serverLevel().getBlockState(site.offset(-9,1,-3)).isAir()&&a.serverLevel().getBlockState(site.offset(9,1,-3)).isAir(),"both native client mining actions break their actual portholes");

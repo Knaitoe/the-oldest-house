@@ -25,7 +25,7 @@ public final class LiveExpeditionClient {
         if(!LiveExpeditionProof.enabled())return;var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.gameMode==null)return;
         var component=mc.player.getInventory().getItem(8).get(DataComponents.CUSTOM_DATA);if(component==null)return;
         var data=component.copyTag();int step=data.getInt("Step");if(step<1)return;String role=System.getProperty("the_oldest_house.liveProofRole","");
-        if(previous!=step){previous=step;ticks=0;clicked=-100;ack=-1;portholePoseSeen=false;mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);}ticks++;
+        if(previous!=step){previous=step;ticks=0;clicked=-100;ack=-1;portholePoseSeen=false;mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);}ticks++;
         BlockPos target=BlockPos.of(data.getLong("Target"));var block=mc.level.getBlockState(target);
         if(step==1&&ticks>30&&mc.level.players().size()>=2)ack(mc,1);
         if(step==2) {
@@ -124,9 +124,12 @@ public final class LiveExpeditionClient {
             if(!block.isAir()){
                 mc.options.keyUp.setDown(false);var to=target.getCenter().subtract(mc.player.getEyePosition());
                 mc.player.setYRot((float)Math.toDegrees(Math.atan2(-to.x,to.z)));mc.player.setXRot((float)-Math.toDegrees(Math.atan2(to.y,Math.hypot(to.x,to.z))));
-                if(ticks%20==1)mc.gameMode.startDestroyBlock(target,left?Direction.EAST:Direction.WEST);
-                else mc.gameMode.continueDestroyBlock(target,left?Direction.EAST:Direction.WEST);
+                // Holding the actual attack input lets Minecraft retain its native mining progress.
+                // Direct post-tick mining calls are canceled by the next tick's released input.
+                if(!mc.mouseHandler.isMouseGrabbed())mc.mouseHandler.grabMouse();
+                mc.options.keyAttack.setDown(true);
             }else{
+                mc.options.keyAttack.setDown(false);
                 if(mc.player.getForcedPose()==net.minecraft.world.entity.Pose.SWIMMING)portholePoseSeen=true;
                 if(!portholePoseSeen)return;
                 if(left?mc.player.getX()<target.getX()-.8:mc.player.getX()>target.getX()+1.3){
@@ -134,7 +137,8 @@ public final class LiveExpeditionClient {
                 }else walk(mc,left?target.west(3):target.east(3));
             }
         }
-        if(step==24&&ticks==30){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.stop();}
+        if(step==23&&ticks%100==0)TheOldestHouse.LOGGER.info("LIVE PORTHOLE socket={} position={} target={} block={} pose={} forced={} origin={} crawlSeen={} mouseGrabbed={}",role,mc.player.position(),target,block,mc.player.getPose(),mc.player.getForcedPose(),HouseSightlineState.origin(),portholePoseSeen,mc.mouseHandler.isMouseGrabbed());
+        if(step==24&&ticks==30){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);mc.stop();}
     }
     private static boolean open(net.minecraft.world.level.block.state.BlockState s){return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}
     private static void walk(Minecraft mc,BlockPos target) {
