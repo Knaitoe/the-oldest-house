@@ -125,9 +125,82 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
     @GameTest(template="empty",batch="literary_stairs",timeoutTicks=200)
     public static void everyNativeWinchesterFlightAndTurnSupportsTheActualPlayerBody(GameTestHelper h){var f=new Fixture(h);f.build(LabyrinthPlace.WINCHESTER);ArchitectureTests.literaryRoutes(h,f.in,f.base(LabyrinthPlace.WINCHESTER));h.succeed();}
     @AfterBatch(batch="literary_stairs") public static void stairsDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="literary_cabin",timeoutTicks=300)
-    public static void theActualNamedOfferingIsSealedOnceAndTheOwnTelevisionAccountMustBeRead(GameTestHelper h){var f=new Fixture(h);var place=LabyrinthPlace.END_WORLD_CABIN;var p=f.player("cabin_reader",place);var peer=f.player("cabin_peer",place);f.build(LabyrinthPlace.HILL_NURSERY);f.data().visit(p.getUUID(),LabyrinthPlace.HILL_NURSERY);f.source(p,place);f.at(peer,place,0,0,-5);var offering=new ItemStack(Items.COMPASS,2);offering.set(DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("The last way home"));net.minecraft.world.item.component.CustomData.update(DataComponents.CUSTOM_DATA,offering,t->t.putInt("Original",173));var expected=offering.copyWithCount(1);p.getInventory().selected=8;p.setItemInHand(InteractionHand.MAIN_HAND,offering);f.click(p,place,LiteraryRooms.TV);h.assertTrue(p.containerMenu instanceof LiteraryChoiceMenu,"the actual television opens an explicit native offering dialogue");p.containerMenu.clicked(0,0,net.minecraft.world.inventory.ClickType.PICKUP,p);var own=f.own(p,place);h.assertTrue(own.getBoolean("Offered")&&p.getMainHandItem().getCount()==1,"only the explicitly offered native item is consumed");var kept=MotherCollection.get(p.server).entry(own.getUUID("Offering"));h.assertTrue(kept!=null&&kept.sealed&&ItemStack.matches(expected,ItemStack.parseOptional(p.registryAccess(),kept.contents)),"permanent custody retains every original native component");h.assertTrue(own.getIntArray("Screen").length==384&&own.getString("ScreenRoom").equals("hill_nursery"),"the television keeps a bounded actual view of this reader's visited room");h.assertTrue(!LiteraryCabinChoices.choose(p,0,null)&&p.getMainHandItem().getCount()==1,"the choice cannot consume a second original");f.at(p,place,7,0,-21);f.look(p,f.base(place).offset(LiteraryRooms.TV));h.runAfterDelay(220,()->{h.assertTrue(f.own(p,place).getBoolean("Ready")&&!f.own(peer,place).getBoolean("ChoiceMade"),"only the chooser's actual screen examination earns an ending");f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.END_WORLD_CABIN)&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.END_WORLD_CABIN),"reading the owned choice record resolves only its reader");h.succeed();});}
+    @GameTest(template="empty",batch="literary_cabin",timeoutTicks=900)
+    public static void theVisitorsAskInAFixedOrderAndEverythingGivenIsKeptForGood(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.END_WORLD_CABIN;var p=f.player("cabin_giver",place);var peer=f.player("cabin_peer",place);f.at(peer,place,-9,0,-2);f.source(p,place);
+        double health=p.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH);var kept=p.getMainArm();
+        f.at(p,place,1.5,0,-1.5);f.look(p,f.base(place).offset(1,1,-6));
+        h.runAfterDelay(15,()->{var own=f.own(p,place);
+            h.assertTrue(own.getBoolean("Met")&&own.getString("Speech").equals("meet")&&!f.own(peer,place).getBoolean("Met"),"meeting Leonard starts only this reader's first speech");
+            var shared=LiteraryVignettes.shared(f.data(),place);for(int i=0;i<4;i++){var visitor=shared.hasUUID("Visitor"+i+"_"+p.getUUID())?f.out.getEntity(shared.getUUID("Visitor"+i+"_"+p.getUUID())):null;
+                h.assertTrue(visitor instanceof LiteraryActor a&&a.owner().isPresent()&&a.owner().get().equals(p.getUUID()),"each of the four visitors is this reader's own");}
+            CabinBargain.open(p);h.assertTrue(!(p.containerMenu instanceof LiteraryChoiceMenu),"nothing can be answered before they have asked");CabinBargain.hurry(p);});
+        h.runAfterDelay(30,()->{h.assertTrue(f.own(p,place).getBoolean("Asking"),"after the first speech Leonard waits for an answer");CabinBargain.open(p);h.assertTrue(p.containerMenu instanceof LiteraryChoiceMenu,"speaking to them opens the native answer");
+            p.containerMenu.clicked(0,0,net.minecraft.world.inventory.ClickType.PICKUP,p);var own=f.own(p,place);
+            h.assertTrue(BodyLoss.hearts(p.server,p.getUUID())==1&&p.getMaxHealth()==health-2&&own.getInt("Given")==1&&own.getString("Speech").equals("ask2"),"one heart is given and Adriane is next");CabinBargain.hurry(p);});
+        h.runAfterDelay(45,()->{CabinBargain.open(p);p.containerMenu.clicked(0,0,net.minecraft.world.inventory.ClickType.PICKUP,p);
+            h.assertTrue(BodyLoss.hearts(p.server,p.getUUID())==2&&p.getMaxHealth()==health-4&&f.own(p,place).getString("Speech").equals("ask3"),"another heart, then Sabrina");CabinBargain.hurry(p);});
+        h.runAfterDelay(60,()->{p.setItemSlot(EquipmentSlot.OFFHAND,new ItemStack(Items.TORCH,3));CabinBargain.open(p);p.containerMenu.clicked(0,0,net.minecraft.world.inventory.ClickType.PICKUP,p);
+            h.assertTrue(f.own(p,place).getBoolean("Confirm")&&!BodyLoss.oneArmed(p),"the arm is asked for twice before it is taken");});
+        h.runAfterDelay(66,()->{h.assertTrue(p.containerMenu instanceof LiteraryChoiceMenu,"the second question is its own native dialogue");p.containerMenu.clicked(2,0,net.minecraft.world.inventory.ClickType.PICKUP,p);var own=f.own(p,place);
+            h.assertTrue(BodyLoss.oneArmed(p)&&BodyLoss.missing(p)==kept.getOpposite()&&p.getMainArm()==kept&&CabinBargain.held(p)&&own.getBoolean("Sacrificed"),"the off-hand arm is given and the reader is held for the scene");
+            h.assertTrue(p.getOffhandItem().isEmpty()&&p.getInventory().items.stream().anyMatch(s->s.is(Items.TORCH)&&s.getCount()==3),"what the hand held goes back into the pack, whole");
+            var arm=MotherCollection.get(p.server).entry(own.getUUID("Offering"));h.assertTrue(arm!=null&&arm.sealed&&arm.item(p.registryAccess()).is(LiteraryRegistry.GIVEN_ARM.get()),"the keeper holds the arm, sealed");
+            h.assertTrue(!f.own(peer,place).getBoolean("Met")&&!BodyLoss.oneArmed(peer)&&BodyLoss.hearts(p.server,peer.getUUID())==0,"nothing is taken from the peer");});
+        h.runAfterDelay(66+CabinBargain.DONE+15,()->{var own=f.own(p,place);h.assertTrue(!CabinBargain.held(p)&&own.getBoolean("CutDone")&&own.getString("Speech").equals("after"),"the scene ends and the four speak once more");
+            p.setItemSlot(EquipmentSlot.OFFHAND,new ItemStack(Items.SHIELD));NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.tick.PlayerTickEvent.Post(p));
+            h.assertTrue(p.getOffhandItem().isEmpty()&&p.getInventory().items.stream().anyMatch(s->s.is(Items.SHIELD)),"nothing stays in a hand that is not there");
+            p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.BREAD));var swap=new net.neoforged.neoforge.event.entity.living.LivingSwapItemsEvent.Hands(p);NeoForge.EVENT_BUS.post(swap);h.assertTrue(swap.isCanceled(),"there is no other hand to pass it to");
+            var modifier=p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH);modifier.removeModifier(BodyLoss.HEARTS);BodyLoss.apply(p);h.assertTrue(p.getMaxHealth()==health-4,"the hearts are restored from the saved record after any fresh body");
+            CabinBargain.hurry(p);});
+        h.runAfterDelay(66+CabinBargain.DONE+60,()->{var own=f.own(p,place);var b=f.base(place);var shared=LiteraryVignettes.shared(f.data(),place);var leonard=f.out.getEntity(shared.getUUID("Visitor0_"+p.getUUID()));
+            h.assertTrue(own.contains("Walk0")&&(leonard==null||Math.abs(leonard.getX()-b.getX()-1.6)>.5||Math.abs(leonard.getZ()-b.getZ()+5.5)>.5),"after the gift the four go to the lake");
+            f.at(p,place,7,0,-21);f.look(p,b.offset(LiteraryRooms.TV));});
+        h.runAfterDelay(66+CabinBargain.DONE+420,()->{var own=f.own(p,place);h.assertTrue(own.getIntArray(CabinScreen.HOME).length==CabinScreen.PIXELS&&own.getBoolean("Ready"),"the reader's home, pictured without loading anything, is watched on the television");
+            f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.END_WORLD_CABIN)&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.END_WORLD_CABIN),"giving everything resolves only the giver's story");
+            var globe=SnowGlobeItem.carried(p);h.assertTrue(globe!=null&&globe.is(LiteraryRegistry.SNOW_GLOBE.get()),"the whole globe is left for the reader who gave everything");
+            var death=new net.neoforged.neoforge.event.entity.living.LivingDeathEvent(p,p.damageSources().generic());NeoForge.EVENT_BUS.post(death);
+            h.assertTrue(death.isCanceled()&&p.getHealth()==2&&f.own(p,place).contains("GlobeFell"),"once a day the globe will not let its keeper die");
+            var again=new net.neoforged.neoforge.event.entity.living.LivingDeathEvent(p,p.damageSources().generic());NeoForge.EVENT_BUS.post(again);h.assertTrue(!again.isCanceled(),"until the snow settles, it cannot catch them again");
+            h.succeed();});
+    }
     @AfterBatch(batch="literary_cabin") public static void cabinDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="literary_cabin_refusal",timeoutTicks=500)
+    public static void refusingKeepsWhatWasGivenAndClosesOnlyTheReadersOwnRoom(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.END_WORLD_CABIN;var p=f.player("cabin_refuser",place);var peer=f.player("cabin_onlooker",place);f.at(peer,place,-9,0,-2);
+        f.build(LabyrinthPlace.HILL_NURSERY);f.data().visit(p.getUUID(),LabyrinthPlace.HILL_NURSERY);f.data().visit(peer.getUUID(),LabyrinthPlace.HILL_NURSERY);f.source(p,place);
+        f.at(p,place,1.5,0,-1.5);f.look(p,f.base(place).offset(1,1,-6));
+        h.runAfterDelay(15,()->CabinBargain.hurry(p));
+        h.runAfterDelay(30,()->{CabinBargain.open(p);p.containerMenu.clicked(0,0,net.minecraft.world.inventory.ClickType.PICKUP,p);CabinBargain.hurry(p);});
+        h.runAfterDelay(45,()->{CabinBargain.open(p);p.containerMenu.clicked(4,0,net.minecraft.world.inventory.ClickType.PICKUP,p);var own=f.own(p,place);var d=f.data();
+            h.assertTrue(own.getBoolean("Refused")&&own.getInt("RefusedAt")==1&&BodyLoss.hearts(p.server,p.getUUID())==1,"a refusal is an answer; the heart already given stays given");
+            h.assertTrue(own.getString("ClosedRoom").equals(LabyrinthPlace.HILL_NURSERY.id())&&LiteraryCabinChoices.closed(d,p.getUUID(),LabyrinthPlace.HILL_NURSERY)&&!LiteraryCabinChoices.closed(d,peer.getUUID(),LabyrinthPlace.HILL_NURSERY),"the unfinished room the reader left goes dark for that reader alone");
+            h.assertTrue(!LiteraryVignettes.canDeal(d,p.getUUID(),LabyrinthPlace.HILL_NURSERY)&&LiteraryVignettes.canDeal(d,peer.getUUID(),LabyrinthPlace.HILL_NURSERY),"the House deals the closed room to everyone else");
+            h.assertTrue(own.getString("Speech").equals("refuse1"),"Adriane answers the refusal");CabinBargain.hurry(p);});
+        h.runAfterDelay(110,()->{var b=f.base(place);var shared=LiteraryVignettes.shared(f.data(),place);var adriane=f.out.getEntity(shared.getUUID("Visitor1_"+p.getUUID()));var leonard=f.out.getEntity(shared.getUUID("Visitor0_"+p.getUUID()));
+            h.assertTrue(adriane!=null&&adriane.getX()-b.getX()>2&&leonard!=null&&Math.abs(leonard.getX()-b.getX()-1.6)<.1,"only the one who asked walks toward the lake");
+            f.at(p,place,7,0,-21);f.look(p,b.offset(LiteraryRooms.TV));});
+        h.runAfterDelay(320,()->{var own=f.own(p,place);h.assertTrue(own.getIntArray(CabinScreen.ROOM).length==CabinScreen.PIXELS&&own.getBoolean("Ready"),"the closed room is pictured and watched going dark");
+            f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.END_WORLD_CABIN),"refusing, read on the screen, resolves the story too");
+            var globe=SnowGlobeItem.carried(p);h.assertTrue(globe!=null&&globe.is(LiteraryRegistry.CRACKED_GLOBE.get()),"the cracked globe is left for the reader who refused");
+            var death=new net.neoforged.neoforge.event.entity.living.LivingDeathEvent(p,p.damageSources().generic());NeoForge.EVENT_BUS.post(death);
+            h.assertTrue(death.isCanceled()&&SnowGlobeItem.dry(globe)&&f.own(p,place).getBoolean("CrackedSpent"),"the cracked globe catches its keeper once");
+            var again=new net.neoforged.neoforge.event.entity.living.LivingDeathEvent(p,p.damageSources().generic());NeoForge.EVENT_BUS.post(again);h.assertTrue(!again.isCanceled(),"then it is dry for good");
+            h.succeed();});
+    }
+    @AfterBatch(batch="literary_cabin_refusal") public static void cabinRefusalDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="literary_closure_personal",timeoutTicks=100)
+    public static void anEarlierWorldClosureNowBelongsOnlyToTheReaderWhoChoseIt(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.END_WORLD_CABIN;var p=f.player("old_chooser",place);var other=f.player("later_reader",place);f.build(LabyrinthPlace.HILL_NURSERY);
+        var own=f.own(p,place);own.putBoolean("ChoiceMade",true);own.putBoolean("Refused",true);own.putString("ClosedRoom",LabyrinthPlace.HILL_NURSERY.id());LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+        var closure=new CompoundTag();closure.putString("Retired",LabyrinthPlace.HILL_NURSERY.id());closure.putUUID("Chooser",p.getUUID());closure.putBoolean("Safety0437",true);f.data().setState(LiteraryCabinChoices.CLOSURE,closure);
+        LiteraryCabinChoices.reconcileClosure(p.server);var d=f.data();
+        h.assertTrue(d.state(LiteraryCabinChoices.CLOSURE).getString("Retired").isEmpty()&&LiteraryCabinChoices.closed(d,p.getUUID(),LabyrinthPlace.HILL_NURSERY)&&!LiteraryCabinChoices.closed(d,other.getUUID(),LabyrinthPlace.HILL_NURSERY),"the earlier refusal stays the chooser's own and the room reopens for everyone else");
+        h.assertTrue(CabinBargain.legacy(f.own(p,place))&&!CabinBargain.legacy(f.own(other,place)),"the earlier answer is kept as it was given; a new reader meets the visitors");
+        f.reload();h.assertTrue(f.data().state(LiteraryCabinChoices.CLOSURE).getBoolean("Personal0451")&&LiteraryCabinChoices.closed(f.data(),p.getUUID(),LabyrinthPlace.HILL_NURSERY),"the migration persists through native SavedData reload");
+        h.succeed();
+    }
+    @AfterBatch(batch="literary_closure_personal") public static void closurePersonalDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_confession",timeoutTicks=3500)
     public static void theActualCarriedQuillResumesAcrossVisitsAndTheSealedJournalIsReadPersonally(GameTestHelper h){var f=new Fixture(h);var place=LabyrinthPlace.CONFESSION;var p=f.player("quill_reader",place);f.source(p,place);p.getInventory().add(new ItemStack(Items.WRITABLE_BOOK));f.at(p,place,1,0,-18);f.look(p,f.base(place).offset(1,1,-22));journalChapter(h,f,p,0);}
     private static void journalChapter(GameTestHelper h,Fixture f,ServerPlayer p,int chapter){h.runAfterDelay(360,()->{var place=LabyrinthPlace.CONFESSION;var own=f.own(p,place);h.assertTrue(own.getInt("Chapter")==chapter+1,"actual present speech advances one complete chapter, then waits for a return");if(chapter<7){h.assertTrue(p.getInventory().countItem(Items.WRITABLE_BOOK)==1,"the same carried native quill remains through the spoken chapters");f.arrive(p,place);f.at(p,place,1,0,-18);f.look(p,f.base(place).offset(1,1,-22));journalChapter(h,f,p,chapter+1);}else{h.assertTrue(p.getInventory().countItem(Items.WRITABLE_BOOK)==0&&own.contains("SignedJournal")&&!own.getBoolean("Ready"),"the actual quill is sealed once, without earning an unread ending");f.arrive(p,place);f.read(p,place,new BlockPos(10,1,-29));h.runAfterDelay(10,()->{h.assertTrue(f.own(p,place).getBoolean("Read_Journal")&&f.own(p,place).getBoolean("Ready"),"personally reading the exact sealed journal resolves the later return");f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.CONFESSION),"the owned final account yields this one source");h.succeed();});}});}

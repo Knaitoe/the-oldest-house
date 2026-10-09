@@ -126,8 +126,10 @@ public final class StaircaseFire {
     public static boolean ignite(ServerPlayer player,BlockPos origin,BlockPos at){
         if(player.isSpectator()||!player.isAlive()||!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)
                 ||player.distanceToSqr(at.getCenter())>36)return false;
-        if(!(player.getMainHandItem().getItem() instanceof net.minecraft.world.item.FlintAndSteelItem)){
-            player.displayClientMessage(Component.literal("The hearth needs a flame. Tom carries a lighter."),true);
+        // A reader who gave an arm at the cabin holds the book in the hand they kept and strikes a lighter from the pack.
+        boolean oneHand=BodyLoss.oneArmed(player);ItemStack flame=oneHand?lighter(player):player.getMainHandItem();
+        if(!(flame.getItem() instanceof net.minecraft.world.item.FlintAndSteelItem)){
+            player.displayClientMessage(Component.literal(oneHand?"The hearth needs a flame. Keep a lighter in your pack and the book in your hand.":"The hearth needs a flame. Tom carries a lighter."),true);
             io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"hearth_no_flame");return false;}
         var phase=FinaleProgress.phase(player.server,player.getUUID());if(phase!=FinaleProgress.Phase.STAIRCASE&&phase!=FinaleProgress.Phase.UNSEEN)return false;
         var record=FinaleProgress.player(player.server,player.getUUID());int index=braziers(origin).indexOf(at);
@@ -135,17 +137,17 @@ public final class StaircaseFire {
         if(index<flames(record)){player.displayClientMessage(Component.literal("This fire already burns for you."),true);return false;}
         if(index>flames(record)){player.displayClientMessage(Component.literal("An earlier fire is still cold for you."),true);return false;}
         // Only the explorer's own story burns here: no paper, no copy, no one else's leaves.
-        StaircaseStory.sync(player);ItemStack fuel=player.getOffhandItem();
+        StaircaseStory.sync(player);ItemStack fuel=oneHand?player.getMainHandItem():player.getOffhandItem();
         if(!StaircaseStory.isCurrent(player,fuel)){
             player.displayClientMessage(Component.literal(StaircaseStory.foreign(player,fuel)?"Another reader's story will not catch for you."
-                    :"Only your own House of Leaves will catch. Hold it in your off hand."),true);return false;
+                    :oneHand?"Only your own House of Leaves will catch. Hold it in your hand.":"Only your own House of Leaves will catch. Hold it in your off hand."),true);return false;
         }
         if(!StaircaseStory.ready(player,index)){
             player.displayClientMessage(Component.literal("Your House of Leaves has no unburned leaf. This flight's leaf is somewhere in the dark above."),true);return false;
         }
         var embers=BurnEmbers.excerpt(StaircaseStory.record(player),index,at);
         if(!StaircaseStory.burn(player,fuel,index))return false;
-        player.getMainHandItem().hurtAndBreak(1,player,EquipmentSlot.MAINHAND);
+        if(oneHand)flame.hurtAndBreak(1,player.serverLevel(),player,item->{});else player.getMainHandItem().hurtAndBreak(1,player,EquipmentSlot.MAINHAND);
         player.serverLevel().setBlock(at,player.serverLevel().getBlockState(at).setValue(CampfireBlock.LIT,true),F);
         record.putInt("StairFires",index+1);record.putBoolean("StairFireVersion",true);
         io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(player,"fire_lit","index",index);
@@ -154,6 +156,12 @@ public final class StaircaseFire {
         player.serverLevel().playSound(null,at,SoundEvents.FIRECHARGE_USE,SoundSource.BLOCKS,.65F,.85F);
         player.displayClientMessage(Component.literal(index+1==REQUIRED?"The dark gives way. The whole staircase is there.":"A leaf burns. The next flight comes out of the dark."),true);
         return true;
+    }
+    /** The first flint and steel (Tom's lighter included) anywhere in the pack. */
+    private static ItemStack lighter(ServerPlayer player){
+        if(player.getMainHandItem().getItem() instanceof net.minecraft.world.item.FlintAndSteelItem)return player.getMainHandItem();
+        for(var stack:player.getInventory().items)if(stack.getItem() instanceof net.minecraft.world.item.FlintAndSteelItem)return stack;
+        return ItemStack.EMPTY;
     }
     /** A saved visit already deep in the old staircase stays traversable on upgrade. */
     public static void initialize(CompoundTag record,double y){
