@@ -63,6 +63,6 @@ public final class OutsideSkyProof extends Screen {
         Files.writeString(folder.resolve("staircase-dark-passed.txt"),"The shipped interior renderer suppresses outdoor sky; native staircase background pixels are black.\n");
         Files.writeString(folder.resolve("well-dark-passed.txt"),"The shipped covered-well compositor renders actual black pixels over a bright input frame.\n");
         TheOldestHouse.LOGGER.info("WELL DARK CHECK PASSED: covered wait compositor is opaque black");
-        TheOldestHouse.LOGGER.info("HOUSE SKY CHECK PASSED: three native sky screenshots and black staircase background saved");mc.stop();
+        TheOldestHouse.LOGGER.info("HOUSE SKY CHECK PASSED: three native sky screenshots and black staircase background saved");mc.setScreen(new WellVisualProof());
     }
 }

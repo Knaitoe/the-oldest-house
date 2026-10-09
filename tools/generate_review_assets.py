@@ -55,9 +55,9 @@ def run(sheet):
  for key,v in list(j['variants'].items()):
   if 'kind=walnut_desk' in key: j['variants'][key.replace('kind=walnut_desk','kind=reading_desk')]=dict(v,model='the_oldest_house:block/furniture_reading_desk')
  p.write_text(json.dumps(j,indent=2)+'\n')
- # The carving is the same full wall block at its old interaction coordinate.
- p=ASSET/'models/block/well_carvings.json';j=json.loads(p.read_text())
- j['textures']={k:'the_oldest_house:block/review_well_initials' for k in j['textures']};p.write_text(json.dumps(j,indent=2)+'\n')
+ # The well's new native stone model supersedes the old wooden material sheet.
+ from generate_well_model import write_model
+ write_model(ASSET)
  # Native player-model UV skin for the original ArmorStand, not a new actor.
  skin=Image.new('RGBA',(64,64),(0,0,0,0))
  for rect,material in [((0,0,32,16),'scarecrow_face'),((16,16,40,32),'scarecrow_cloth'),((40,16,56,32),'straw'),((0,16,16,32),'pier'),((16,48,32,64),'pier'),((32,48,48,64),'straw')]:

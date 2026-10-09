@@ -359,6 +359,18 @@ public final class ExplorationPassTests {
         h.succeed();
     }
     @GameTest(template="empty")
+    public static void modestEncounterPresetShortensDryRoutesWithoutRerollingMaps(GameTestHelper h){
+        var d=new LabyrinthData();UUID p=UUID.randomUUID(),peer=UUID.randomUUID();var room=LabyrinthPlace.CROSS_HALL;
+        LabyrinthBuilder.registerDoors(d,room,new BlockPos(0,80,0));depth(d,p,12);depth(d,peer,12);
+        h.assertTrue(HouseConfig.STORY_EARLY_CHANCE.getDefault()==28&&HouseConfig.STORY_BASE_CHANCE.getDefault()==44
+                &&HouseConfig.HAZARD_EARLY_CHANCE.getDefault()==28&&HouseConfig.HAZARD_MIDDLE_CHANCE.getDefault()==42&&HouseConfig.HAZARD_DEEP_CHANCE.getDefault()==54,"the modest preset increases eligible offers while keeping most individual doors ordinary");
+        d.setDryDeals(p,5);h.assertTrue(LabyrinthDealer.vignetteChance(d,p)==100&&LabyrinthDealer.vignetteChance(d,peer)==44,"five eligible empty routes guarantee an offer only for that reader");
+        LabyrinthDealer.arriveAt(d,p,room,62);var before=map(d,p,room);int dry=d.dryDeals(p);
+        var loaded=LabyrinthData.load(d.save(new CompoundTag(),h.getLevel().registryAccess()),h.getLevel().registryAccess());
+        LabyrinthDealer.arriveAt(loaded,p,room,62);h.assertTrue(before.equals(map(loaded,p,room))&&loaded.dryDeals(p)==dry,"returning after reload keeps the map and cannot manufacture extra offers");
+        loaded.visit(p,LabyrinthPlace.HARRIGAN);h.assertTrue(LabyrinthDealer.vignetteChance(loaded,p)==0,"ordinary spacing after a story remains authoritative");h.succeed();
+    }
+    @GameTest(template="empty")
     public static void emberExcerptUsesTheSavedHandAndNeverChangesTheOriginal(GameTestHelper h) {
         var own=new CompoundTag();own.putUUID("Original",UUID.randomUUID());own.putString("Hand","KAREN");
         var pages=new net.minecraft.nbt.ListTag();pages.add(net.minecraft.nbt.StringTag.valueOf("I walked 1,234 metres before the House. The second sentence is deliberately longer than the smoke should ever carry."));own.put("Pages",pages);

@@ -30,7 +30,7 @@ public final class HouseConfig {
     public static final ModConfigSpec.IntValue PRESET_VERSION;
     /** Playtesting: a local, opt-in event log of the journey (PlaytestLog). Off by default. */
     public static final ModConfigSpec.BooleanValue PLAYTEST_LOG, PLAYTEST_LOG_HASH_IDS;
-    private static final int CURRENT_PRESET = 49;
+    private static final int CURRENT_PRESET = 62;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -76,14 +76,14 @@ public final class HouseConfig {
                         "A player name consumes that day's call, but does not add a friendly-mob strike.")
                 .define("harriganPlayerTargets", false);
         builder.push("exploration");
-        STORY_EARLY_CHANCE = builder.comment("Chance of offering a story on a new route at depths 6-9. Remembered routes never reroll.").defineInRange("storyEarlyChance", 22, 0, 100);
-        STORY_BASE_CHANCE = builder.comment("Story chance on a new route at depth 10 or more.").defineInRange("storyBaseChance", 38, 0, 100);
+        STORY_EARLY_CHANCE = builder.comment("Chance of offering a story on a new route at depths 6-9. Remembered routes never reroll.").defineInRange("storyEarlyChance", 28, 0, 100);
+        STORY_BASE_CHANCE = builder.comment("Story chance on a new route at depth 10 or more.").defineInRange("storyBaseChance", 44, 0, 100);
         STORY_CHANCE_STEP = builder.comment("Added chance per eligible new route without a story; backtracking adds nothing.").defineInRange("storyChanceStep", 12, 0, 100);
         STORY_SPACING = builder.comment("Ordinary visits between stories. Deliberate scent and a living-pet rescue bypass this interval.").defineInRange("storySpacing", 2, 0, 8);
-        STORY_DRY_GUARANTEE = builder.comment("Guarantee a story after this many eligible dry deals, once the spacing is satisfied.").defineInRange("storyDryGuarantee", 6, 1, 100);
-        HAZARD_EARLY_CHANCE = builder.comment("Physical-hazard chance at depths 6-9, only when this arrival offers no story or anomaly.").defineInRange("hazardEarlyChance", 24, 0, 100);
-        HAZARD_MIDDLE_CHANCE = builder.comment("Physical-hazard chance at depths 10-15.").defineInRange("hazardMiddleChance", 36, 0, 100);
-        HAZARD_DEEP_CHANCE = builder.comment("Physical-hazard chance at depth 16 or more.").defineInRange("hazardDeepChance", 48, 0, 100);
+        STORY_DRY_GUARANTEE = builder.comment("Guarantee a story after this many eligible dry deals, once the spacing is satisfied.").defineInRange("storyDryGuarantee", 5, 1, 100);
+        HAZARD_EARLY_CHANCE = builder.comment("Physical-hazard chance at depths 6-9, only when this arrival offers no story or anomaly.").defineInRange("hazardEarlyChance", 28, 0, 100);
+        HAZARD_MIDDLE_CHANCE = builder.comment("Physical-hazard chance at depths 10-15.").defineInRange("hazardMiddleChance", 42, 0, 100);
+        HAZARD_DEEP_CHANCE = builder.comment("Physical-hazard chance at depth 16 or more.").defineInRange("hazardDeepChance", 54, 0, 100);
         HAZARD_SPACING = builder.comment("Visits separating physical hazards.").defineInRange("hazardSpacing", 2, 0, 8);
         PRESET_VERSION = builder.comment("Bookkeeping: the encounter preset version this file was last checked against. Leave it as it is.")
                 .defineInRange("presetVersion", 0, 0, 10_000);
@@ -108,8 +108,9 @@ public final class HouseConfig {
         if(event.getConfig().getSpec()!=SPEC||PRESET_VERSION.get()>=CURRENT_PRESET)return;
         var values=java.util.List.of(STORY_EARLY_CHANCE,STORY_BASE_CHANCE,STORY_CHANCE_STEP,STORY_SPACING,STORY_DRY_GUARANTEE,
                 HAZARD_EARLY_CHANCE,HAZARD_MIDDLE_CHANCE,HAZARD_DEEP_CHANCE,HAZARD_SPACING);
-        int[] before={8,16,7,3,12,10,16,22,3};
-        boolean old=true;for(int i=0;i<values.size();i++)if(values.get(i).get()!=before[i])old=false;
+        int[][] presets={{8,16,7,3,12,10,16,22,3},{22,38,12,2,6,24,36,48,2}};
+        boolean old=false;
+        for(var before:presets){boolean matches=true;for(int i=0;i<values.size();i++)if(values.get(i).get()!=before[i])matches=false;old|=matches;}
         if(old)for(var value:values)value.set(value.getDefault());
         PRESET_VERSION.set(CURRENT_PRESET);
         SPEC.save();

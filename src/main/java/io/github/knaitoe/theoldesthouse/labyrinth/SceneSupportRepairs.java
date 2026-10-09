@@ -23,7 +23,7 @@ public final class SceneSupportRepairs {
     private static boolean applies(LabyrinthPlace p){return p==LabyrinthPlace.TED_CAVER||p==LabyrinthPlace.BARN_WELL;}
     public static AABB area(BlockPos b,LabyrinthPlace p){
         return p==LabyrinthPlace.TED_CAVER?new AABB(net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(-9,-4,-47)),net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(0,5,-35)))
-                :new AABB(net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(3,-1,-36)),net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(18,5,-3)));
+                :new AABB(net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(-18,-1,-40)),net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(18,5,0)));
     }
     private static boolean safe(ServerLevel l,BlockPos at,BlockState before,BlockState next,List<LivingEntity> bodies){
         var added=Shapes.joinUnoptimized(next.getCollisionShape(l,at),before.getCollisionShape(l,at),BooleanOp.ONLY_FIRST);
@@ -34,7 +34,7 @@ public final class SceneSupportRepairs {
     public static boolean barn(ServerLevel l,BlockPos b){
         var bodies=l.getEntitiesOfClass(LivingEntity.class,area(b,LabyrinthPlace.BARN_WELL),e->e.isAlive()&&!e.isSpectator());
         boolean ready=true;
-        for(int x=4;x<=16;x++)for(int y=0;y<=3;y++)for(int z=-35;z<=-5;z++){
+        for(int x=-17;x<=17;x++)for(int y=0;y<=3;y++)for(int z=-39;z<=-1;z++){
             var at=b.offset(x,y,z);var old=BuildBlocks.state(l,at);
             if(!(old.getBlock() instanceof FenceBlock)&&!(old.getBlock() instanceof FenceGateBlock))continue;
             var next=old;

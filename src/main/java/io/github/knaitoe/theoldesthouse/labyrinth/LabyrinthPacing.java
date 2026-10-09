@@ -63,7 +63,7 @@ public final class LabyrinthPacing {
             int age=data.recentVisit(player,place);
             if(anomaly(place) && age>=0 && age<3) return 0;
         }
-        return depth<DEEP_DEPTH ? 2 : depth<ABYSS_DEPTH ? 3 : depth<24 ? 4 : 5;
+        return depth<DEEP_DEPTH ? 3 : depth<ABYSS_DEPTH ? 4 : depth<24 ? 5 : 6;
     }
     public static boolean restDue(LabyrinthData data, UUID player) {
         if (domestic(data.returnDepth(player))) return false;

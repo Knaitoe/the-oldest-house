@@ -38,7 +38,7 @@ public final class NovelTexts {
         "There is no next date.\n\nPlease leave that space.\n\nI have spent so long being told what belongs there."));}
     public static ItemStack well(){return HouseWriting.book("The cover","Karen Green",HouseWriting.WritingStyle.KAREN,List.of(
         "There was a barn. There was a well.\n\nThere were two of us.\n\nThat is the part I can put in order.",
-        "At the bottom, the initials are low enough for a child to reach.\n\nThe cover opens from above.\n\nI remember waiting more clearly than I remember the hands."));}
+        "At the bottom, two pairs of initials are cut into the stone facing the ladder. I had to look up.\n\nThe cover opens from above.\n\nI remember waiting more clearly than I remember the hands."));}
     public static ItemStack apology(){return HouseWriting.book("What the frame kept","Will Navidson",HouseWriting.WritingStyle.WILL,List.of(
         "I found the angle before I found the words.\n\nThat sounds like an excuse.\n\nIt is one.",
         "The bird circles something beyond the dunes.\n\nUse the spyglass. Hold the shape in its centre.\n\nA picture is easier to carry than the thing it leaves out."));}

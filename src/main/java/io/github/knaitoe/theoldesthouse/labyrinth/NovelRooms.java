@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.state.properties.*;
 public final class NovelRooms {
     public static final BlockPos ARCHIVE_DOOR=new BlockPos(0,0,-19),ARCHIVE_DESK=new BlockPos(-5,0,-30),MAT=new BlockPos(0,0,-16),
         MAIL=new BlockPos(5,0,-8),ATTIC_DOOR=new BlockPos(-5,8,-20),ATTIC_DESK=new BlockPos(-9,8,-25),
-        WELL=new BlockPos(0,0,-23),CARVING=new BlockPos(0,-12,-24),RIBBON=new BlockPos(2,0,-25),
+        WELL=new BlockPos(0,0,-23),CARVING=new BlockPos(0,-10,-22),OLD_CARVING=new BlockPos(0,-12,-24),RIBBON=new BlockPos(2,0,-25),
         APOLOGY=new BlockPos(-4,0,-7),FIGURE=new BlockPos(0,0,-93),BUTTON=new BlockPos(5,1,-14),WARD_NOTE=new BlockPos(-4,0,-15),
         BED=new BlockPos(4,0,-10),PROJECTOR=new BlockPos(0,1,-6);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
@@ -80,11 +80,12 @@ public final class NovelRooms {
         for(int y=-12;y<=1;y++)for(int dx=-1;dx<=1;dx++)for(int dz=-1;dz<=1;dz++){
             if(dx==0&&dz==0)at(l,b,dx,y,-23+dz,Blocks.AIR);else at(l,b,dx,y,-23+dz,Blocks.MOSSY_COBBLESTONE);}
         for(int y=-12;y<=1;y++)BuildBlocks.set(l,b.offset(0,y,-23),Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH),F);
-        at(l,b,0,-13,-23,Blocks.MOSSY_COBBLESTONE);at(l,b,0,-12,-24,NovelRegistry.CARVINGS.get());
+        at(l,b,0,-13,-23,Blocks.MOSSY_COBBLESTONE);BuildBlocks.set(l,b.offset(CARVING),NovelRegistry.CARVINGS.get().defaultBlockState(),F);
         cover(l,b,false);lectern(l,b.offset(-4,0,-17),NovelTexts.well());
         at(l,b,2,0,-25,Blocks.BARREL);
         for(int z=-4;z>=-33;z-=6)for(int x:new int[]{-13,16}){box(l,b,x,0,z,x,5,z,Blocks.SPRUCE_LOG.defaultBlockState());box(l,b,x-1,4,z-1,x+1,7,z+1,Blocks.SPRUCE_LEAVES.defaultBlockState());}
         BarnFarm.dress(l,b);
+        Farmstead.layout(l,b);
     }
     /** A copied return vestibule must never open onto unsupported outside air. */
     public static void safeApproach(ServerLevel l,BlockPos b){
@@ -94,7 +95,12 @@ public final class NovelRooms {
             if(BuildBlocks.state(l,b.offset(x,5,z)).isAir())at(l,b,x,5,z,Blocks.DARK_OAK_PLANKS);
         }
     }
-    public static void cover(ServerLevel l,BlockPos b,boolean closed){BuildBlocks.set(l,b.offset(WELL),Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.SOUTH).setValue(TrapDoorBlock.HALF,Half.TOP).setValue(TrapDoorBlock.OPEN,!closed),F);}
+    public static void cover(ServerLevel l,BlockPos b,boolean closed){
+        var at=b.offset(WELL);var state=BuildBlocks.state(l,at);
+        if(state.is(NovelRegistry.WELL_COVER.get()))return; // the occupied controller owns an installed lid
+        if(state.is(Blocks.SPRUCE_TRAPDOOR)||state.is(Blocks.LADDER)||state.isAir())
+            BuildBlocks.set(l,at,NovelRegistry.WELL_COVER.get().defaultBlockState().setValue(WellCoverBlock.OPEN,!closed),F);
+    }
     private static void plain(ServerLevel l,BlockPos b){
         outdoor(l,b,29,65,Blocks.SANDSTONE);
         // A one-block sand sheet over outside air cascades into thousands of falling entities.

@@ -15,6 +15,7 @@ public final class BuildBlocks {
     private static final long BUDGET_NANOS = 6_000_000L;
     private static Plan recording;
     private BuildBlocks() {}
+    public static boolean isRecording(ServerLevel level){return recording!=null&&recording.level==level;}
 
     private static BlockState nativeShape(ServerLevel level,BlockPos at,BlockState state){
         if(state.getBlock() instanceof net.minecraft.world.level.block.IronBarsBlock&&!state.is(net.minecraft.world.level.block.Blocks.IRON_BARS))

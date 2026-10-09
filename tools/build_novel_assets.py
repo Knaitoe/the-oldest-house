@@ -11,6 +11,8 @@ def cube(bounds,texture):
 for name in ['cell_gouges','sealed_window','institute_paint','collapse_plaster','well_carvings','archive_paper']:
  write(f'blockstates/{name}.json',{'variants':{'':{'model':f'the_oldest_house:block/{name}'}}})
  write(f'models/block/{name}.json',{'parent':'minecraft:block/cube_all','textures':{'all':f'the_oldest_house:block/{name}'}})
+from generate_well_model import write_model
+write_model(A)
 props={
  'projector':([([2,0,3,14,3,13],'case'),([3,3,4,13,11,13],'case'),([6,5,1,10,9,4],'lens'),([3,11,5,5,14,11],'reel'),([10,11,5,12,14,11],'reel')],{'case':'the_oldest_house:block/enamel','lens':'minecraft:block/black_concrete','reel':'minecraft:block/gray_concrete'}),
  'incubator':([([1,0,1,15,2,15],'frame'),([2,2,2,14,4,14],'fabric'),([1,4,1,15,5,15],'frame'),([1,5,1,2,14,15],'glass'),([14,5,1,15,14,15],'glass'),([2,5,1,14,14,2],'glass'),([2,5,14,14,14,15],'glass'),([1,14,1,15,15,15],'glass')],{'frame':'the_oldest_house:block/enamel','glass':'minecraft:block/glass','fabric':'the_oldest_house:block/ward_fabric'}),

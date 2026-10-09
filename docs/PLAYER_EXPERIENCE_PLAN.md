@@ -1,3 +1,5 @@
+October 9 farm/well pass: the owner approved a modest encounter increase, a coherent farm, contained stock and finite pets/food, slow visible well closure with personal breathing, and claustrophobia on descent. The initials move to matching stone above the head on the wall facing the ladder. [0.4.62](FARM_AND_WELL_0_4_62.md) implements this with per-reader waits, one shared lid, guarded save migration and no water-mechanics change. Exact-source validation pending.
+
 October 9 approved boat playtest additions are implemented in the active 0.4.61 candidate: three-second obstruction replanning, slightly slower pursuit, brief attack recovery, watched door ambushes with a ten-second break deadline, porthole escape and unseen dry wooded pursuit. See [the implementation and validation route](NOVEL_REVIEW_0_4_61.md).
 
 October 8 update: the owner approved the full novel-informed review. [0.4.61](NOVEL_REVIEW_0_4_61.md) implements one recurring optional investigation, a testable and shorter long hallway, relational poem placement, qualified finale framing, secondary return gates, Stacy tracking and multiplayer occupied-cover protection. The wider survey/map/desk prototype is not merged wholesale. Preserve the confirmed Witness quota, opening wait and deliberate darkness. Exact-source validation is pending.
@@ -34,8 +36,8 @@ These facts come from the code (configuration defaults in `HouseConfig`, `Openin
 1. **Settling in.** The opening becomes eligible once a player has played for at least three days and slept at least two nights. Navidson's letter arrives the next morning; Hillary and the House follow.
 2. **The manor.** The room between rooms can first appear on the House's third morning. It has a 50% chance, plus 25% for each morning it does not appear, and needs two mornings after the rugs change. Two subtle shifts must then happen before the impossible hallway can open, again at 50% plus 25% a morning.
 3. **The labyrinth.** No story is offered in the first six crossings (`STORY_DEPTH = 6`).
-   - **Story chance:** 22% per fresh route at depths 6–9, then 38%, plus 12% per dry deal. A story is guaranteed after six dry deals, and stories are at least two visits apart.
-   - **Hazards:** 24%, 36% and 48% by depth.
+   - **Story chance:** 28% per fresh route at depths 6–9, then 44%, plus 12% per dry deal. A story is guaranteed after five eligible dry deals, and stories are at least two visits apart.
+   - **Hazards:** 28%, 42% and 54% by depth.
 4. **The staircase.** It is offered from depth 20 (`STAIRCASE_DEPTH`) and descends through five book-fed hearths.
 5. **The endings.**
    - **Witness:** needs 33 of the 43 personal resolutions, across at least two kinds. The pool has five kinds: survival (14 stories), understanding (12), memory (8), connection (6) and release (3).
