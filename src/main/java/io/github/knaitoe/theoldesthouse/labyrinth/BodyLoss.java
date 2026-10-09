@@ -128,6 +128,6 @@ public final class BodyLoss {
             return switch(pick){case 0->"Your "+side+" fingers curl. You can feel each one.";case 1->"You go to scratch your "+side+" wrist.";case 2->"For a moment you are sure you are holding something in your "+side+" hand.";default->"The arm aches in the weather. It is not there to ache.";};
         }
         if(p.getHealth()<=6)return "Your heart stumbles and catches. It has done that since the cabin.";
-        return pick%2==0?"You count your heartbeat. It comes up short.":"Your heart skips. Leonard said it would not hurt. It doesn't, exactly.";
+        return pick%2==0?"You count your heartbeat. It comes up short.":"Your heart skips. It doesn't hurt, exactly.";
     }
 }

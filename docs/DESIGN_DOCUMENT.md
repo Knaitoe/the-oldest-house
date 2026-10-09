@@ -869,11 +869,12 @@ First playable site in 0.4.11: [DROWNED_TOWN_0_4_11.md](DROWNED_TOWN_0_4_11.md).
 
 - A lake cabin at dusk, with a jar of grasshoppers on the porch. Every visit begins waking in a bed that is not yours. Four polite strangers, private to each reader, knock at the front door until it is answered, and tell the reader their world will end. Then they tell them it is *their* world that will end, and only the reader can stop it. The only way out is a shed at the edge of the yard.
 - They ask in a fixed order, and every gift is permanent:
-  - Leonard asks for one heart of the reader's life;
-  - Adriane asks for another;
+  - Leonard asks for the reader's life, and it costs a heart;
+  - Adriane asks for it again, and it costs another;
   - Sabrina, a nurse, asks for something real, "something… handy": the arm of the off hand.
 - The arm is taken in a held scene: a cord tied above the elbow, the blow, black, the floor. The reader never holds anything in that hand again and is drawn without it, with a bandaged stump, for every viewer. Rare phantom pain follows them. The arm goes to the Mother's shelf.
 - A storm, the reader's own, rises with every ask. It breaks when everything has been given.
+- The source is the cabin's guest book, written by earlier guests: it foreshadows (four strangers on the beach, a knock nobody answered, wet prints out along the jetty) and explains nothing.
 - Refuse at any ask, and the one who asked walks down the jetty into the lake. One unfinished room of the reader's own goes dark for them alone. Nothing already given comes back.
 - The cabin's TV shows the reader's home from high above, or the room going dark. Watching it makes the account readable. Both answers resolve the story.
 - Yields: a whole snow globe for the reader who gave everything (it will not let them die, once a day), or a cracked one for the reader who refused (once, ever). Assets: four stranger skins, the globes, the given arm, the stump bandage, a TV and nine original cues. Canon: [CABIN_BARGAIN_0_4_51.md](CABIN_BARGAIN_0_4_51.md).

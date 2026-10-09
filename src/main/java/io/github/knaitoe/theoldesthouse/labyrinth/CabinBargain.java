@@ -45,7 +45,7 @@ import org.joml.Vector3f;
 
 /**
  * The cabin at the end of the world (0.4.51). Four visitors wait outside a reader's door at dusk, private to that reader.
- * They ask three times, in a fixed order: Leonard for one heart of the reader's life, Adriane for another, Sabrina for
+ * They ask three times, in a fixed order: Leonard for the reader's life (it costs a heart), Adriane again, Sabrina for
  * the arm of the off hand. Each gift is permanent. A storm rises with every ask. Refusing at any point is an answer too:
  * the one who asked walks into the lake, a room of the reader's own goes dark for them, and nothing already given comes
  * back. Giving everything breaks the storm; the four go into the lake together, and the television shows the reader's
@@ -98,28 +98,28 @@ public final class CabinBargain {
                 new Line(LEONARD,"We saw your world end, "+name+". The water came up over "+home+". Over everything you built."),
                 new Line(REDMOND,"Tell them the rest."),
                 new Line(LEONARD,deaths>0?"You've died "+deaths+(deaths==1?" time":" times")+" and got up again. That costs you nothing, so it doesn't count. It wants something that does."
-                        :"You've never died. Good. Then you know what a life is worth. It wants some of yours."),
-                new Line(LEONARD,"It asks for your life. Not all of it. One heart of it. We can't take it from you. You have to give it."),
+                        :"You've never died. Good. Then you know what a life is worth."),
+                new Line(LEONARD,"It asks for your life. We can't take it from you. You have to give it."),
                 new Line(LEONARD,"The television inside will show you, if you need to see it first. When you're ready, tell me."));
             case "ask2"->List.of(
                 new Line(ADRIANE,"Thank you. I'm Adriane."),
                 new Line(ADRIANE,"It wasn't enough. I'm so sorry. Listen to it. The storm is still coming."),
                 new Line(ADRIANE,days+(days==1?" day":" days")+" you've lived there. "+(slept>0?"You slept in that bed "+slept+(slept==1?" night.":" nights."):"You never once slept through a night.")),
                 new Line(ADRIANE,"And it isn't only yours that ends. I have a boy. Where we come from, the sea is already in the streets."),
-                new Line(ADRIANE,"Only you can stop it. Another heart. Please."));
+                new Line(ADRIANE,"It still asks for your life. Only you can stop it. Please."));
             case "ask3"->List.of(
                 new Line(SABRINA,"My name is Sabrina. I'm a nurse. If this is going to be done, I'd rather be the one who does it properly."),
                 new Line(SABRINA,"It wants something real now. Something... handy."),
                 new Line(SABRINA,"Your "+side+" arm. I'll tie it off first. I've done this before, for people who never got to choose."),
                 new Line(REDMOND,"It's our world that ends tonight if you don't. Not yours. Ours. You'd go home with both hands."),
-                new Line(SABRINA,"Say no, and I'll walk into the lake, and that will be the end of it. Say yes, and everyone gets to go home."));
+                new Line(SABRINA,"Say no, and that will be the end of it. Say yes, and everyone gets to go home."));
             case "after"->List.of(
                 new Line(REDMOND,"It was ours, you know. The world. We let you think it was yours."),
                 new Line(LEONARD,"Thank you, "+name+". Go home. It's still there. Look at the television."),
                 new Line(ADRIANE,"The storm's going. Do you hear it?"),
                 new Line(SABRINA,"Keep it clean and dry. You'll feel the hand for a long time. That's normal."));
             case "refuse0"->List.of(new Line(LEONARD,"All right. That's all right. It was always your answer to give."),new Line(LEONARD,"It ends for us, then. Not for you. Never for you."));
-            case "refuse1"->List.of(new Line(ADRIANE,"You already gave one. I know what it cost."),new Line(ADRIANE,"Look after the heart you have left."));
+            case "refuse1"->List.of(new Line(ADRIANE,"You already gave one. I know what it cost."),new Line(ADRIANE,"Look after what you have left."));
             case "refuse2"->List.of(new Line(SABRINA,"I understand. I wouldn't either."),new Line(SABRINA,"Keep your hands. Both of them."));
             default->List.of();
         };
@@ -263,7 +263,7 @@ public final class CabinBargain {
     }
     static void woke(ServerPlayer p,CompoundTag own,long now){
         SLEEPERS.remove(p.getUUID());own.putLong("AwakeAt",now);own.putLong("KnockAt",now+60);
-        if(!own.getBoolean("Woke")){own.putBoolean("Woke",true);p.sendSystemMessage(Component.literal("You wake in a bed that is not yours. Outside, the light is going. On a stand by the beds there is a note.").withStyle(ChatFormatting.ITALIC));}
+        if(!own.getBoolean("Woke")){own.putBoolean("Woke",true);p.sendSystemMessage(Component.literal("You wake in a bed that is not yours. Outside, the light is going. Someone has left a guest book by the beds.").withStyle(ChatFormatting.ITALIC));}
         else p.displayClientMessage(Component.literal("You wake in the cabin again."),true);
     }
     /** For the native tests: the reader wakes now, as they would after their moment's sleep. */
@@ -292,9 +292,9 @@ public final class CabinBargain {
         if(!own.getBoolean("Asking")){p.displayClientMessage(Component.literal("Let them finish."),true);return;}
         int ask=Math.min(2,own.getInt("Ask"));String asker=NAMES[ASKER[ask]];
         var icons=new HashMap<Integer,ItemStack>();
-        if(ask<2)icons.put(0,icon(Items.RED_DYE,ask==0?"Give Leonard one heart":"Give Adriane another heart","Your greatest health falls by one heart, forever.","Dying will not bring it back. No door will."));
-        else icons.put(0,icon(Items.IRON_AXE,"Give Sabrina your "+own.getString("ArmSide")+" arm","You will never hold anything in your "+own.getString("ArmSide")+" hand again.","This is permanent. You will be asked once more."));
-        icons.put(4,icon(Items.BARRIER,"Refuse",asker+" will walk into the lake.","One unfinished room of yours goes dark, for you alone.",own.getInt("Given")>0?"What you have given stays given.":"You keep your whole life."));
+        if(ask<2)icons.put(0,icon(Items.RED_DYE,"Give "+asker+" your life","There is no taking it back."));
+        else icons.put(0,icon(Items.IRON_AXE,"Give Sabrina your "+own.getString("ArmSide")+" arm","There is no taking it back."));
+        icons.put(4,icon(Items.BARRIER,"Refuse"));
         icons.put(8,icon(Items.OAK_DOOR,"Not yet","They will wait for you."));
         LiteraryChoiceMenu.open(p,asker+" is asking",icons,()->LiteraryVignettes.inside(p,PLACE),slot->answer(p,ask,slot));
     }
@@ -313,7 +313,7 @@ public final class CabinBargain {
     static void confirm(ServerPlayer p){
         var own=own(p);own.remove("Confirm");save(p,own);if(answered(own)||!own.getBoolean("Asking")||own.getInt("Ask")!=2)return;
         var icons=new HashMap<Integer,ItemStack>();String side=own.getString("ArmSide");
-        icons.put(2,icon(Items.IRON_AXE,"Yes. Take it.","Your "+side+" arm, for good.","You will hold nothing in that hand again."));
+        icons.put(2,icon(Items.IRON_AXE,"Yes. Take it.","Your "+side+" arm."));
         icons.put(6,icon(Items.OAK_DOOR,"No. Not yet.","Sabrina will wait."));
         LiteraryChoiceMenu.open(p,"Are you sure?",icons,()->LiteraryVignettes.inside(p,PLACE),slot->{if(slot==6)return true;if(slot!=2)return false;var now=own(p);if(answered(now)||!now.getBoolean("Asking")||now.getInt("Ask")!=2)return true;giveArm(p,now);return true;});
     }

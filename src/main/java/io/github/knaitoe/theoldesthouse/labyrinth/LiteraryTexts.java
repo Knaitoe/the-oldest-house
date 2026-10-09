@@ -79,10 +79,10 @@ public final class LiteraryTexts {
         case GHOSTS_SET->book("Call sheet","The producer",
             "Family scene. Interior. Keep the camera off the loose boards. The marks are on the carpet. The lamps should come up when the guest reaches an X.",
             "Off the mark, the camera sees nothing useful.\n\nThe booth records the words you actually type. Read the transcript after the performance. Take the disc if you want to hear the room again.");
-        case END_WORLD_CABIN->book("A polite request","The visitors",
-            "There are four of us. We did not know one another before tonight. Each of us was shown the same thing: a storm, a lake, and your door.",
-            "We will ask you for something, and then for more. We cannot take it. You have to give it.",
-            "You may say no at any time. If you do, one of us walks into the lake, and one of your rooms in the House goes dark for you.\n\nNothing you have already given comes back.");
+        case END_WORLD_CABIN->book("Guest book","Those who stayed",
+            "June\n\nLoons at dusk. A storm sat on the far shore all week and never crossed. The kids counted four people down on the beach at sundown. Nobody we'd seen in town. They waved as if they knew us.",
+            "August\n\nLovely week. Someone knocked the last night, late, and kept on. We didn't answer. In the morning there were wet footprints out along the jetty, and none coming back.",
+            "No date\n\nThe storm is on this side of the lake now. They were very polite. They said it had to be my choice, and it was.\n\nI kept everything I came with. I can't stop looking at the jetty.");
         case FAMILY_COPY->book("A familiar address","The visitor",
             "I remembered putting that window in. I also remembered taking it out. It was there when the father answered the door.",
             "There are eight visits in the family's welcome. Knock, ask to enter, and learn how they remember the rooms. The house itself is a frozen copy of somewhere you actually slept.");
@@ -121,10 +121,10 @@ public final class LiteraryTexts {
     static ItemStack cabin(String name,CompoundTag own){
         int given=own.getInt("Given");String room=own.getString("ClosedRoom");
         if(own.getBoolean("Sacrificed"))return book("An account of the visitors",name,
-            "Leonard asked for one heart of my life, and I gave it. Adriane asked for another. Sabrina tied a cord above my elbow and told me to look at her, not at it.",
+            "Leonard asked for my life, and I gave it. It cost a heart. Adriane asked again, and it cost another. Sabrina tied a cord above my elbow and told me to look at her, not at it.",
             "I looked at her.\n\nWhen I could see again, the rain had stopped. They walked down the jetty together, and the lake closed over them like a door.",
             "On the screen my roof was dry.\n\nThe world in the glass did not end. It is still snowing in it, a little.");
-        String asked=given==0?"Leonard asked for one heart of my life. I said no. Leonard said that was all right,":given==1?"I gave Leonard one heart. When Adriane asked for another, I said no. Adriane told me to look after the heart I had left,":"I gave two hearts. When Sabrina asked for my arm, I said no. Sabrina told me to keep my hands,";
+        String asked=given==0?"Leonard asked for my life. I said no. Leonard said that was all right,":given==1?"Leonard asked for my life, and I gave it. It cost a heart. When Adriane asked again, I said no. Adriane told me to look after what I had left,":"I gave two hearts. When Sabrina asked for my arm, I said no. Sabrina told me to keep my hands,";
         return book("An account of the visitors",name,
             asked+" walked down the jetty in the rain, and did not stop at the end.",
             (room.isEmpty()?"On the screen a room went dark.":"On the screen, "+StaircaseProse.place(room)+" went dark. I will not find it again.")+(given==0?" I still have every heart.":" What I gave stays given."),

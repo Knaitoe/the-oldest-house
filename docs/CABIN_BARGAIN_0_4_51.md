@@ -6,12 +6,19 @@ Status: verified. Verified source 9c8cf8bda4c92894ac195b79942cb955fcd0714c, run 
 
 ## 0.4.52: the cabin, waking, the door and the storm
 
-Playtest repairs and rework, at the owner's request. Status: released. Verified source a039e9315fd0418653873f4ff5090d0e753f16df, run 37954228601: all 394 native gameplay tests (including the three cabin cases with waking, knocking and answering), the literary, hotel, hallway, seam, staircase, multiplayer-story and exploration suites, the two-client live expedition, the native client proofs and all seventy-one architecture views passed.
+Playtest repairs and rework, at the owner's request. Status: owner revision implemented; exact-head verification pending. The rework before the revision passed every job on a039e9315fd0418653873f4ff5090d0e753f16df, run 37954228601: all 394 native gameplay tests, every focused suite, the two-client live expedition, the native client proofs and all seventy-one architecture views.
+
+- **Owner revision: foreshadowing, not instructions.** A vignette is a puzzle: the reader should not know what is coming, though some foresight is welcome.
+  - **The source.** The visitors' own letter, which laid out the whole bargain, is gone. In its place is the cabin's guest book: three entries by earlier guests. Four strangers on the beach at sundown, a knock nobody answered and wet prints going out along the jetty with none coming back, and a last undated entry: "They said it had to be my choice, and it was. I kept everything I came with."
+  - **The asks.** Leonard and Adriane ask for the reader's *life*. Neither names a heart. The heart is only what it costs, and the reader learns that by giving. Sabrina still asks for the arm, but no longer says she will walk into the lake on a refusal.
+  - **The menu.** Giving reads "Give Leonard your life" (or Adriane, or Sabrina's arm) with one line: "There is no taking it back." Refusing carries no lore at all.
+  - **The account.** It now tells what was asked and what it cost: "Leonard asked for my life, and I gave it. It cost a heart."
+  - **Waking.** "Someone has left a guest book by the beds."
 
 - **Waking.** Every arrival begins inside: the screen goes black and the reader is laid in the first free bed of two in the bedroom. They sleep for three seconds (a native bed, so the bed view and getting up are the game's own), then wake: "You wake in a bed that is not yours." With both beds taken, a third reader wakes standing beside them. Sleeping here never sets a respawn point. A NeoForge `CanContinueSleepingEvent` listener, registered reflectively because the event's package moved between versions, keeps the reader asleep for their moment even by day.
 - **The knock.** Once awake, the reader hears three slow knocks at the front door every eight seconds. Opening it answers them (so does speaking to them, or stepping out within six blocks of Leonard and seeing him). The visitors must be answered again on each visit; the speech resumes where it stopped. Three wait on the porch, clear of the door, and Redmond waits on the grass.
 - **Pacing.** Each line waits 3 to 7.5 seconds by its length, plus 1.5 seconds when the speaker changes. A speech starts two seconds after the door opens, and the next asker waits 4.5 seconds after a gift.
-- **The account.** It now lies on the dining table, where the visitors say it is. When it is readable, the reader is told "It lies on the dining table, by the window", and it glimmers for that reader alone until read. The visitors' request, "A polite request", stands by the beds. Reading any literary account before its source now says so ("This account answers 'A polite request'. Read that first"); before, it silently did not count, which is why the playtest's account gave no globe.
+- **The account.** It now lies on the dining table, where the visitors say it is. When it is readable, the reader is told "It lies on the dining table, by the window", and it glimmers for that reader alone until read. The guest book (the source) stands by the beds. Reading any literary account before its source now says so ("This account answers 'Guest book'. Read that first"); before, it silently did not count, which is why the playtest's account gave no globe.
 - **The cabin.** The shell is the same: 25 by 23, the slab roof, the porch. Inside it is rebuilt:
   - a bedroom with two beds under the lake window, a lamp table and a chest of drawers, behind its own door;
   - a kitchen with a stove, sink, counter, shelf and table;
@@ -32,8 +39,8 @@ Four visitors wait on the grass on either side of the path to the porch steps, f
 
 | Order | Visitor | Asks for | Permanent effect |
 | --- | --- | --- | --- |
-| 1 | Leonard | One heart of the reader's life | −2 maximum health |
-| 2 | Adriane | Another heart | −2 maximum health (−4 in all) |
+| 1 | Leonard | The reader's life (it costs one heart) | −2 maximum health |
+| 2 | Adriane | The reader's life, again (another heart) | −2 maximum health (−4 in all) |
 | 3 | Sabrina, a nurse | The arm of the off hand ("something… handy") | No off hand, ever |
 | — | Redmond | Nothing; he speaks for "our" world | — |
 
@@ -47,10 +54,10 @@ Four visitors wait on the grass on either side of the path to the porch steps, f
   They begin with *your* world ending ("The water came up over the bed you made in the plains"). Adriane and Redmond turn it toward *theirs* ("I have a boy. Where we come from, the sea is already in the streets"). Redmond's last word after the sacrifice keeps it open: "It was ours, you know. The world. We let you think it was yours."
 - **Answering.** Speaking to any visitor (or touching the television) during an ask opens a native nine-slot dialogue. It offers three choices:
   - give;
-  - refuse, with what it costs in the lore;
+  - refuse (since the owner revision, with no lore);
   - not yet.
 
-  Every icon states the permanence: "Dying will not bring it back. No door will." The arm is asked for twice: the second dialogue, "Are you sure?", opens on the next tick. "Not yet" and leaving are always allowed. Hearts already given stay given, and the reader resumes at the next ask on a later visit.
+  Since the owner revision, a gift says only "There is no taking it back." The arm is asked for twice: the second dialogue, "Are you sure?", opens on the next tick. "Not yet" and leaving are always allowed. Hearts already given stay given, and the reader resumes at the next ask on a later visit.
 - **No silent failures.** Every refused action says why:
   - asking early ("Let them finish.");
   - not yet met ("Go out to them.");
