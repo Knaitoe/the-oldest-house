@@ -227,6 +227,16 @@ public final class ElkCarcassMap {
         if (z > 18.5 || z < -42.5 || rel.y < -1.5) return false;
         return Math.abs(rel.x) <= halfBeam((int) Math.floor(z)) + .7;
     }
+    /** Only the ten authored lower-deck glass openings are escape windows. */
+    public static boolean porthole(BlockPos rel){
+        return Math.abs(rel.getX())==9&&rel.getY()==1
+                &&(rel.getZ()==-1||rel.getZ()==-3||rel.getZ()==-5||rel.getZ()==-10||rel.getZ()==-16);
+    }
+    public static boolean nearPorthole(Vec3 rel){
+        if(Math.abs(rel.x)<7.2||Math.abs(rel.x)>11.3||rel.y<-.2||rel.y>2.1)return false;
+        for(int z:new int[]{-1,-3,-5,-10,-16})if(Math.abs(rel.z-(z+.5))<.85)return true;
+        return false;
+    }
 
     public static int halfBeam(int z) {
         if (z > 18 || z < -42) return -1;

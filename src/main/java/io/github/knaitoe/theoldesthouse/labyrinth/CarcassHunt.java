@@ -68,23 +68,42 @@ public final class CarcassHunt {
     }
     private static boolean walkable(LiteraryActor a,BlockPos b,BlockPos n){return walkable(a,b,n,b.getY());}
     private static boolean walkable(LiteraryActor a,BlockPos b,BlockPos n,int plane){
+        return walkable(a,b,n,plane,false);
+    }
+    private static boolean planningFits(LiteraryActor a,AABB body,boolean doors){
+        if(!doors&&a.owner().isEmpty())return fits(a,body);
+        for(var at:BlockPos.betweenClosed(BlockPos.containing(body.minX,body.minY,body.minZ),BlockPos.containing(body.maxX-.0001,body.maxY-.0001,body.maxZ-.0001))){
+            if(!a.level().hasChunkAt(at))return false;var s=a.level().getBlockState(at);
+            if(doors&&KillerDoors.breakable(a,at))continue;
+            if(a.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)&&foliage(s)&&a.level().getBlockEntity(at)==null&&!occupiedPeerCover(a,at))continue;
+            for(var shape:s.getCollisionShape(a.level(),at).toAabbs())if(shape.move(at).intersects(body))return false;
+        }return true;
+    }
+    private static boolean occupiedPeerCover(LiteraryActor a,BlockPos at){
+        return a.owner().isPresent()&&a.level() instanceof ServerLevel l&&l.players().stream().anyMatch(p->p.isAlive()&&!p.isSpectator()
+                &&!p.getUUID().equals(a.owner().get())&&p.getBoundingBox().inflate(2,2,2).intersects(new AABB(at)));
+    }
+    private static boolean walkable(LiteraryActor a,BlockPos b,BlockPos n,int plane,boolean doors){
         var bounds=scene(a).room();int x=n.getX()-b.getX(),z=n.getZ()-b.getZ();if(x<bounds.minX()+1||x>bounds.maxX()-1||z<bounds.minZ()+1||z>bounds.maxZ()-1||n.getY()!=plane||!a.level().hasChunkAt(n))return false;
         var floor=a.level().getBlockState(n.below());if(foliage(floor)||floor.getCollisionShape(a.level(),n.below()).isEmpty())return false;
-        var foot=Vec3.atBottomCenterOf(n);return fits(a,box(foot,a.getDimensions(Pose.STANDING).height()))||fits(a,box(foot,1.3));
+        var foot=Vec3.atBottomCenterOf(n);return planningFits(a,box(foot,a.getDimensions(Pose.STANDING).height()),doors)||planningFits(a,box(foot,1.3),doors);
     }
     private record Node(BlockPos pos,int cost,int score){}
     private static int distance(BlockPos a,BlockPos b){return Math.abs(a.getX()-b.getX())+Math.abs(a.getZ()-b.getZ());}
     /** Directed bounded search reaches distant trails without scanning the entire forest first. */
     private static List<BlockPos> path(LiteraryActor a,BlockPos b,BlockPos start,BlockPos goal){return pathOnPlane(a,b,start,goal,b.getY());}
     static List<BlockPos> pathOnPlane(LiteraryActor a,BlockPos b,BlockPos start,BlockPos goal,int plane){
-        if(!walkable(a,b,start,plane)||!walkable(a,b,goal,plane))return List.of();
+        return pathOnPlane(a,b,start,goal,plane,false,null);
+    }
+    static List<BlockPos> pathOnPlane(LiteraryActor a,BlockPos b,BlockPos start,BlockPos goal,int plane,boolean doors,BlockPos avoid){
+        if(!walkable(a,b,goal,plane,doors))return List.of();
         var open=new PriorityQueue<Node>(Comparator.comparingInt(Node::score).thenComparingInt(Node::cost));
         var prev=new HashMap<BlockPos,BlockPos>();var costs=new HashMap<BlockPos,Integer>();var clear=new HashMap<BlockPos,Boolean>();
         open.add(new Node(start,0,distance(start,goal)));prev.put(start,start);costs.put(start,0);int examined=0;
         while(!open.isEmpty()&&examined++<8500){var node=open.remove();var n=node.pos();if(node.cost()!=costs.get(n))continue;
             if(n.equals(goal)){var result=new LinkedList<BlockPos>();while(!n.equals(start)){result.addFirst(n);n=prev.get(n);}return result;}
             for(var d:Direction.Plane.HORIZONTAL){var next=n.relative(d);int cost=node.cost()+1;
-                if(cost<costs.getOrDefault(next,Integer.MAX_VALUE)&&clear.computeIfAbsent(next,p->walkable(a,b,p,plane))){
+                if(!next.equals(avoid)&&cost<costs.getOrDefault(next,Integer.MAX_VALUE)&&clear.computeIfAbsent(next,p->walkable(a,b,p,plane,doors))){
                     prev.put(next,n);costs.put(next,cost);open.add(new Node(next,cost,cost+distance(next,goal)));}}
         }return List.of();
     }
@@ -97,8 +116,7 @@ public final class CarcassHunt {
             if(s.getCollisionShape(l,at).toAabbs().stream().noneMatch(shape->shape.move(at).intersects(sweep)))continue;
             // A private sighting cannot tear away another reader's occupied cover.
             // The shared Camp Blood actor remains visible and physical for everyone.
-            if(a.owner().isPresent()&&l.players().stream().anyMatch(p->p.isAlive()&&!p.isSpectator()
-                    &&!p.getUUID().equals(a.owner().get())&&p.getBoundingBox().inflate(2,2,2).intersects(new AABB(at))))continue;
+            if(occupiedPeerCover(a,at))continue;
             if(EventHooks.onEntityDestroyBlock(a,at,s)&&l.destroyBlock(at,true,a))removed++;
         }
     }

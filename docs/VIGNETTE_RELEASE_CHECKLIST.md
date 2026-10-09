@@ -11,7 +11,7 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 
 ## Current candidate: 0.4.61
 
-The novel-informed review adds no eligible story: the optional hallway investigation, all source poems/letters and the revised long hallway remain outside Witness. Existing 43 sources / 33 resolutions / two kinds / three endings remain. Require 457 native cases, 65 multiplayer, every focused suite, complete writing/client/71-view architecture checks and both actual socket clients with two reconnects. See [the implementation and playtest route](NOVEL_REVIEW_0_4_61.md).
+The novel-informed review adds no eligible story: the optional hallway investigation, all source poems/letters and the revised long hallway remain outside Witness. Existing 43 sources / 33 resolutions / two kinds / three endings remain. Require 464 native cases, 69 multiplayer, 22 literary, every focused suite, complete writing/client/71-view architecture checks and both actual socket clients with two reconnects. See [the implementation and playtest route](NOVEL_REVIEW_0_4_61.md).
 
 ## Verified baseline: 0.4.60
 

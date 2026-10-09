@@ -1,3 +1,5 @@
+October 9 approved boat playtest additions are implemented in the active 0.4.61 candidate: three-second obstruction replanning, slightly slower pursuit, brief attack recovery, watched door ambushes with a ten-second break deadline, porthole escape and unseen dry wooded pursuit. See [the implementation and validation route](NOVEL_REVIEW_0_4_61.md).
+
 October 8 update: the owner approved the full novel-informed review. [0.4.61](NOVEL_REVIEW_0_4_61.md) implements one recurring optional investigation, a testable and shorter long hallway, relational poem placement, qualified finale framing, secondary return gates, Stacy tracking and multiplayer occupied-cover protection. The wider survey/map/desk prototype is not merged wholesale. Preserve the confirmed Witness quota, opening wait and deliberate darkness. Exact-source validation is pending.
 
 # The player experience plan

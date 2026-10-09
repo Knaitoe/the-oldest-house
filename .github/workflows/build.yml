@@ -792,7 +792,7 @@ jobs:
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/multiplayer-native.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('MultiplayerStoryTests.java','StaircaseLeakTests.java','PlaytestCommandTests.java','SceneSupportTests.java','SceneReviewTests.java','StaceyTests.java','SlasherTests.java'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('MultiplayerStoryTests.java','StaircaseLeakTests.java','PlaytestCommandTests.java','SceneSupportTests.java','SceneReviewTests.java','StaceyTests.java','SlasherTests.java','ReviewIntegrationTests.java'))
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused native multiplayer cases passed; the complete suite remains required.')
           PY

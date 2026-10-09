@@ -125,6 +125,7 @@ public final class LiteraryVignettes {
     }
     public static boolean mayBreak(ServerPlayer p,BlockPos pos){var place=current(p);if(place==null)return false;var b=base(p,place);var s=p.serverLevel().getBlockState(pos);return (place==LabyrinthPlace.WINTER_LAKE&&s.is(Blocks.ICE)&&pos.getY()==b.getY()-1&&Math.abs(pos.getX()-b.getX())<=28&&pos.getZ()<b.getZ()-12&&pos.getZ()>b.getZ()-73)
         ||(place==LabyrinthPlace.CRIMSON_HALL&&s.is(Blocks.SNOW)&&p.getMainHandItem().getItem() instanceof ShovelItem)
+        ||(place==LabyrinthPlace.ELK_CARCASSES&&participant(p)&&ElkCarcassMap.porthole(pos.subtract(b))&&s.is(LiteraryRegistry.YACHT_PORTHOLE.get()))
         ||(place==LabyrinthPlace.MAPPING_INTERIOR&&pos.equals(b.offset(LiteraryRooms.PILE))&&s.is(LiteraryRegistry.PROP.get())&&personal(LabyrinthData.get(p.server),p.getUUID(),place).getBoolean("BeyondRoof"))
         ||(place==LabyrinthPlace.ELK_FAN&&personal(LabyrinthData.get(p.server),p.getUUID(),place).getList("Platforms",Tag.TAG_LONG).stream().anyMatch(t->((LongTag)t).getAsLong()==pos.asLong()));}
     public static boolean mayPlace(ServerPlayer p,BlockPos pos){if(!inside(p,LabyrinthPlace.ELK_FAN))return false;var b=base(p,LabyrinthPlace.ELK_FAN);var rel=pos.subtract(b);return rel.getX()>=-2&&rel.getX()<=2&&rel.getZ()>=-18&&rel.getZ()<=-15&&rel.getY()>=0&&rel.getY()<=4;}
