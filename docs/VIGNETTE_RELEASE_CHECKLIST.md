@@ -15,7 +15,9 @@ The cabin at the end of the world becomes the body bargain: two hearts and the o
 
 The resolution is still personal: the reader must answer for themselves, then watch their own television for the established time and read the account. Readers who answered before 0.4.51 keep their answer, screen and account. The earlier world-wide closure becomes the chooser's own.
 
-Layout 36 / protocol 35. See [CABIN_BARGAIN_0_4_51.md](CABIN_BARGAIN_0_4_51.md). Require the complete suite, the three new literary cabin cases, the native one-arm model and armour proof and the new keepsake meshes. Exact-head verification pending.
+Layout 36 / protocol 35. See [CABIN_BARGAIN_0_4_51.md](CABIN_BARGAIN_0_4_51.md). Require the complete suite, the three new literary cabin cases, the native one-arm model and armour proof and the new keepsake meshes.
+
+Verified source 9c8cf8bda4c92894ac195b79942cb955fcd0714c, run 37945073729: all 394 native gameplay tests (including the three cabin cases), the literary, hotel, hallway, seam, staircase, multiplayer-story and exploration suites, the two-client live expedition, the native client proofs (including the one-arm model and armour proof and the three new keepsake meshes) and all seventy-one architecture views passed.
 
 ## Earlier candidate: 0.4.50
 
