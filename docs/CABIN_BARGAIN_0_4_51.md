@@ -4,6 +4,28 @@ Owner-requested rework of the Cabin at the End of the World (`END_WORLD_CABIN`, 
 
 Status: verified. Verified source 9c8cf8bda4c92894ac195b79942cb955fcd0714c, run 37945073729: all 394 native gameplay tests (including the three cabin cases), the literary, hotel, hallway, seam, staircase, multiplayer-story and exploration suites, the two-client live expedition, the native client proofs (including the one-arm model and armour proof and the three new keepsake meshes) and all seventy-one architecture views passed.
 
+## 0.4.52: the cabin, waking, the door and the storm
+
+Playtest repairs and rework, at the owner's request. Status: implementation complete; exact-head verification pending.
+
+- **Waking.** Every arrival begins inside: the screen goes black and the reader is laid in the first free bed of two in the bedroom. They sleep for three seconds (a native bed, so the bed view and getting up are the game's own), then wake: "You wake in a bed that is not yours." With both beds taken, a third reader wakes standing beside them. Sleeping here never sets a respawn point. A NeoForge `CanContinueSleepingEvent` listener, registered reflectively because the event's package moved between versions, keeps the reader asleep for their moment even by day.
+- **The knock.** Once awake, the reader hears three slow knocks at the front door every eight seconds. Opening it answers them (so does speaking to them, or stepping out within six blocks of Leonard and seeing him). The visitors must be answered again on each visit; the speech resumes where it stopped. Three wait on the porch, clear of the door, and Redmond waits on the grass.
+- **Pacing.** Each line waits 3 to 7.5 seconds by its length, plus 1.5 seconds when the speaker changes. A speech starts two seconds after the door opens, and the next asker waits 4.5 seconds after a gift.
+- **The account.** It now lies on the dining table, where the visitors say it is. When it is readable, the reader is told "It lies on the dining table, by the window", and it glimmers for that reader alone until read. The visitors' request, "A polite request", stands by the beds. Reading any literary account before its source now says so ("This account answers 'A polite request'. Read that first"); before, it silently did not count, which is why the playtest's account gave no globe.
+- **The cabin.** The shell is the same: 25 by 23, the slab roof, the porch. Inside it is rebuilt:
+  - a bedroom with two beds under the lake window, a lamp table and a chest of drawers, behind its own door;
+  - a kitchen with a stove, sink, counter, shelf and table;
+  - a living room with the television on its cabinet, an armchair, sofa and footstool facing it, a brick hearth with a mantel, and the dining table;
+  - eight framed windows on every side (the lake, the porch, both woods), with open shutters outside.
+- **The way out.** A small spruce shed now stands at the edge of the yard, at the end of a trodden path, with a window, a workbench and a lantern. Its door leads in, and the House's door is at its back: it is the only way out. The visitors' walk to the lake now leaves the porch by its steps.
+- **The storm.** It is still the reader's alone, and now unmistakable:
+  - **Rain.** Custom slanted rain streaks fall wherever the sky is open, splashing where they land, up to eighty per tick at full strength (reduced by the particle setting).
+  - **Leaves.** Wind-torn leaves are driven across the yard once the storm is past a third.
+  - **Lightning.** Real lightning bolts strike the lake and woods, client-only, so they have no fire, no damage and nobody else sees them. The game draws them, flashes the sky and plays its crack and thunder. They come every few seconds at the height of the storm, and a near one strikes at each gift and each visitor going under.
+  - **Wind.** A heavy looping gale (fourteen seconds, seamless) runs under everything at the storm's strength, with gusts swelling over it.
+  - **The rest.** The vanilla rain, the darkened sky and fog all remain.
+- **Saved worlds.** Layout 37. Worlds at layouts 32 to 36 carve the cabin again, last and only when it is empty and loaded (`ElkUpgrade.rebuilds(place, version)`, generalized from the elk scene). Displaced animals and items go to the porch. Every personal record, the visitors' identities and the readers' answers are kept.
+
 ## The sequence
 
 Four visitors wait on the grass on either side of the path to the porch steps, facing the door. They are **private to each reader**: every reader has their own four (actor keys `Visitor0..3_<reader>`), visible and audible only to that reader. The earlier shared strangers (`Stranger0..3`) are discarded the first time they load.

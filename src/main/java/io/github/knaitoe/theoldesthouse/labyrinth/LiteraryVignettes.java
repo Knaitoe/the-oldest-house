@@ -72,6 +72,7 @@ public final class LiteraryVignettes {
         }
         if (place == LabyrinthPlace.MOVIE_NIGHT) ensureMovieCanoe(p, base(p, place));
         if (place == LabyrinthPlace.ELK_CARCASSES) { ElkHunt.arrive(p, own); save(d, p.getUUID(), place, own); }
+        if (place == LabyrinthPlace.END_WORLD_CABIN) { CabinBargain.arrive(p, own); save(d, p.getUUID(), place, own); }
     }
     public static ItemStack mark(ServerPlayer p,LabyrinthPlace place,String key,ItemStack item){var s=VignetteYields.mark(item.copy(),place.id());CustomData.update(DataComponents.CUSTOM_DATA,s,t->{t.putUUID(OWNER,p.getUUID());t.putString(KEY,key);t.putString(PLACE,place.id());});return s;}
     public static void give(ServerPlayer p,ItemStack s){if(p.getInventory().add(s))return;var e=new ItemEntity(p.serverLevel(),p.getX(),p.getY()+.2,p.getZ(),s);e.setTarget(p.getUUID());p.serverLevel().addFreshEntity(e);}
@@ -89,6 +90,9 @@ public final class LiteraryVignettes {
         @Override public boolean clickMenuButton(Player who,int button){if(who!=reader||!participant(reader)||(surface&&(!inside(reader,place)||reader.distanceToSqr(at.getCenter())>36)))return false;var d=LabyrinthData.get(reader.server);var own=personal(d,reader.getUUID(),place);
             if(button==3){if(!surface||!owned||own.getBoolean("Taken_"+key))return false;own.putBoolean("Taken_"+key,true);save(d,reader.getUUID(),place,own);give(reader,book.copy());return true;}
             if(!super.clickMenuButton(who,button))return false;int pages=book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size();if(owned&&getPage()==pages-1){own.putBoolean("Read_"+key,true);if(key.startsWith("Diary")){int index=Integer.parseInt(key.substring(5));own.putInt("DiaryRead",own.getInt("DiaryRead")|(1<<index));if(own.getInt("DiaryRead")==255)ready(reader,place,own,"read_all_eight_original_pages");}
+                // An account answers its source: said aloud, rather than silently not counting.
+                if(key.equals("Ending")&&own.getBoolean("Ready")&&!own.getBoolean("Read_Source")&&!own.getBoolean("Completed")){var source=LiteraryTexts.source(place).get(DataComponents.WRITTEN_BOOK_CONTENT);
+                    reader.displayClientMessage(Component.literal("This account answers \""+(source==null?"the first paper":source.title().raw())+"\". Read that first, then read this again."),false);}
                 if(key.equals("Ending")&&inside(reader,place)&&own.getBoolean("Read_Source")&&own.getBoolean("Ready")&&!own.getBoolean("Completed")){var story=WitnessAccount.Story.of(place.id());if(story!=null){WitnessAccount.resolve(reader,story,own.getString("Outcome"));own.putBoolean("Completed",true);d.setCompleted(place.id(),true);finishReward(reader,place,own);}}
                 save(d,reader.getUUID(),place,own);
             }return true;}
@@ -110,7 +114,7 @@ public final class LiteraryVignettes {
             case WHEEL->{handled=wheelDoor(p,own,rel);}
             case GHOSTS_SET->{if(rel.equals(LiteraryRooms.BOOTH)){own.putBoolean("Booth",true);if(p.isShiftKeyDown()&&!own.contains("Confession"))own.putString("Confession","I chose to let the tape run in silence.");p.displayClientMessage(Component.literal("The booth is recording. Type your own words in chat, or crouch and touch the receiver to leave silence."),false);handled=true;}}
             case CONFESSION->{if(rel.equals(new BlockPos(10,1,-29))&&own.getInt("Visit")>own.getInt("SealedVisit")&&own.contains("SignedJournal")){open(p,place,own,"Journal",ItemStack.parseOptional(p.registryAccess(),own.getCompound("SignedJournal")),e.getPos());handled=true;}}
-            case END_WORLD_CABIN->{if(rel.equals(LiteraryRooms.TV)){CabinBargain.open(p);handled=true;}}
+            case END_WORLD_CABIN->{if(rel.equals(LiteraryRooms.TV)){CabinBargain.open(p);handled=true;}else if(rel.equals(LiteraryRooms.CABIN_DOOR)||rel.equals(LiteraryRooms.CABIN_DOOR.above()))CabinBargain.answer(p,own);}
             case FAMILY_COPY,OLD_CABIN->{if(p.serverLevel().getBlockEntity(e.getPos()) instanceof net.minecraft.world.Container||p.serverLevel().getBlockState(e.getPos()).is(Blocks.ENDER_CHEST)){p.displayClientMessage(Component.literal("Every compartment is empty. None of the latches will open."),true);handled=true;}else handled=LiteraryCopies.click(p,place,e.getPos(),own);}
             default->{}
         }

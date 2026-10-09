@@ -26,7 +26,9 @@ public final class CabinStormClient {
     public static final int HEART=1,ARM=2,BREAKING=3;
     /** The arm: the cord, the blow, black until waking, then the floor (the server's timeline). */
     static final int BLOW=io.github.knaitoe.theoldesthouse.labyrinth.CabinBargain.BLOW,WAKE=io.github.knaitoe.theoldesthouse.labyrinth.CabinBargain.WAKE,DONE=io.github.knaitoe.theoldesthouse.labyrinth.CabinBargain.DONE;
-    private static int lease,scene,sceneTicks,flash,thunderIn,nextBolt=200;private static float target,storm,oStorm;private static ClientLevel world;
+    private static int lease,scene,sceneTicks,flash,nextBolt=200,nextGust=120,boltId=-20_000_000;private static float target,storm,oStorm;private static ClientLevel world;private static Gale gale;
+    /** The wind comes off the lake, from the north and a little west. */
+    private static final double WIND_X=.34,WIND_Z=.94;
     private CabinStormClient(){}
     public static void accept(CabinStormPayload p){var mc=Minecraft.getInstance();if(mc.level==null)return;world=mc.level;lease=30;target=Mth.clamp(p.storm()/100F,0,1);
         if(p.scene()!=scene||Math.abs(p.sceneTicks()-sceneTicks)>6)sceneTicks=p.sceneTicks();scene=p.scene();if(p.flash()>0)bolt(mc,true);}
@@ -40,12 +42,40 @@ public final class CabinStormClient {
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){var mc=Minecraft.getInstance();
         if(lease>0)lease--;if(!active()){if(lease<=0){scene=0;target=0;}oStorm=storm;storm=Math.max(0,storm-.02F);flash=Math.max(0,flash-1);return;}
         oStorm=storm;storm+=Mth.clamp(target-storm,-.012F,.012F);if(scene!=0)sceneTicks++;if(flash>0)flash--;
-        if(thunderIn>0&&--thunderIn==0)mc.level.playLocalSound(mc.player.getX(),mc.player.getY()+12,mc.player.getZ(),SoundEvents.LIGHTNING_BOLT_THUNDER,SoundSource.WEATHER,1.4F+storm,.75F+mc.level.random.nextFloat()*.2F,false);
-        // Lightning comes more often as the storm grows; it never strikes anything.
-        if(storm>.5F&&--nextBolt<=0){bolt(mc,false);nextBolt=(int)(110+mc.level.random.nextInt(240)*(1.6F-storm));}
-        if(storm>.15F&&mc.player.tickCount%100==0)mc.level.playLocalSound(mc.player.getX(),mc.player.getY()+2,mc.player.getZ(),LiteraryRegistry.CABIN_WIND.get(),SoundSource.WEATHER,.25F+storm*.6F,.9F+storm*.15F,false);
+        weather(mc);
+        // Real bolts, more often and nearer as the storm grows: the crack, then the thunder. They strike nothing.
+        if(storm>.3F&&--nextBolt<=0){bolt(mc,false);nextBolt=(int)(50+mc.level.random.nextInt(220)*(1.25F-storm));}
+        // Under everything, the gale; over it, gusts that swell and pass.
+        if(gale==null&&storm>.06F&&mc.options.getSoundSourceVolume(SoundSource.WEATHER)>0){gale=new Gale(mc.level);mc.getSoundManager().play(gale);}
+        if(storm>.35F&&--nextGust<=0){nextGust=60+mc.level.random.nextInt(120);mc.level.playLocalSound(mc.player.getX()-WIND_X*6,mc.player.getY()+2,mc.player.getZ()-WIND_Z*6,LiteraryRegistry.CABIN_WIND.get(),SoundSource.WEATHER,.4F+storm*.7F,.85F+mc.level.random.nextFloat()*.3F,false);}
     }
-    private static void bolt(Minecraft mc,boolean near){if(!mc.options.hideLightningFlash().get()){mc.level.setSkyFlashTime(2);flash=near?7:4;}thunderIn=near?3:12+mc.level.random.nextInt(30);}
+    /** Rain where the sky is open, heavier with the storm; leaves torn off and driven before the wind. */
+    private static void weather(Minecraft mc){
+        if(storm<.05F)return;var l=mc.level;var cam=mc.gameRenderer.getMainCamera().getPosition();var r=l.random;
+        var setting=mc.options.particles().get();float share=setting==net.minecraft.client.ParticleStatus.MINIMAL?.25F:setting==net.minecraft.client.ParticleStatus.DECREASED?.55F:1;
+        double gust=.65+.35*Math.sin(mc.player.tickCount*.05);double wind=(.08+.32*storm)*gust;
+        int drops=(int)(storm*storm*80*share);
+        for(int i=0;i<drops;i++){
+            double x=cam.x+(r.nextDouble()-.5)*40,z=cam.z+(r.nextDouble()-.5)*40,y=cam.y+4+r.nextDouble()*12;
+            if(l.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,(int)Math.floor(x),(int)Math.floor(z))>y)continue;
+            l.addParticle(LiteraryRegistry.CABIN_RAIN.get(),x-WIND_X*wind*4,y,z-WIND_Z*wind*4,WIND_X*wind,-1.1-storm*.7,WIND_Z*wind);
+        }
+        int leaves=storm<.3F?0:(int)Math.ceil((storm-.3F)*5*share);
+        for(int i=0;i<leaves;i++){
+            double x=cam.x-WIND_X*14+(r.nextDouble()-.5)*24,z=cam.z-WIND_Z*14+(r.nextDouble()-.5)*24;int top=l.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,(int)Math.floor(x),(int)Math.floor(z));
+            if(top>cam.y+6)continue;double speed=wind*(1.4+r.nextDouble());
+            l.addParticle(LiteraryRegistry.CABIN_LEAF.get(),x,top+.3+r.nextDouble()*3,z,WIND_X*speed,.02+r.nextDouble()*.05,WIND_Z*speed);
+        }
+    }
+    /** A client-only bolt (no fire, no damage, nobody else sees it): vanilla draws it, flashes the sky and plays its crack and thunder. */
+    private static void bolt(Minecraft mc,boolean near){
+        var l=mc.level;var r=l.random;var me=mc.player.position();
+        double angle=near?Math.atan2(-WIND_Z,-WIND_X)+(r.nextDouble()-.5)*1.2:r.nextDouble()*Math.PI*2,distance=near?14+r.nextDouble()*12:24+r.nextDouble()*(70-storm*40);
+        double x=me.x+Math.cos(angle)*distance,z=me.z+Math.sin(angle)*distance;int y=l.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,(int)Math.floor(x),(int)Math.floor(z));
+        var strike=net.minecraft.world.entity.EntityType.LIGHTNING_BOLT.create(l);if(strike==null)return;
+        strike.moveTo(x,y,z);strike.setVisualOnly(true);strike.setId(boltId--);l.addEntity(strike);
+        if(near&&!mc.options.hideLightningFlash().get())flash=7;
+    }
     @SubscribeEvent public static void fogColor(ViewportEvent.ComputeFogColor e){if(!active()||storm<=0)return;float s=level((float)e.getPartialTick())*.7F;
         e.setRed(Mth.lerp(s,e.getRed(),.09F));e.setGreen(Mth.lerp(s,e.getGreen(),.1F));e.setBlue(Mth.lerp(s,e.getBlue(),.12F));}
     @SubscribeEvent public static void fog(ViewportEvent.RenderFog e){if(!active()||storm<=.05F||e.getMode()!=net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN)return;float s=level((float)e.getPartialTick());
@@ -78,5 +108,16 @@ public final class CabinStormClient {
         private static void edges(net.minecraft.client.gui.GuiGraphics g,int w,int h,int alpha,int rgb){alpha=Mth.clamp(alpha,0,255);int band=Math.max(8,Math.min(w,h)/5);
             for(int i=0;i<band;i+=2){int a=(int)(alpha*(1-i/(float)band));int c=(a<<24)|rgb;g.fill(0,i,w,i+2,c);g.fill(0,h-i-2,w,h-i,c);g.fill(i,0,i+2,h,c);g.fill(w-i-2,0,w-i,h,c);}}
     }
-    @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut e){lease=0;scene=0;storm=0;oStorm=0;target=0;flash=0;world=null;}
+    @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut e){lease=0;scene=0;storm=0;oStorm=0;target=0;flash=0;world=null;if(gale!=null){Minecraft.getInstance().getSoundManager().stop(gale);gale=null;}}
+    /** The storm's wind, looped under everything at the storm's own strength; it dies away when the storm does. */
+    private static final class Gale extends net.minecraft.client.resources.sounds.AbstractTickableSoundInstance {
+        private final ClientLevel level;
+        Gale(ClientLevel level){super(LiteraryRegistry.CABIN_GALE.get(),SoundSource.WEATHER,net.minecraft.util.RandomSource.create());this.level=level;looping=true;delay=0;relative=true;attenuation=Attenuation.NONE;volume=.01F;x=y=z=0;}
+        @Override public boolean canStartSilent(){return true;}
+        @Override public void tick(){
+            var mc=Minecraft.getInstance();if(mc.level!=level){stop();gale=null;return;}
+            float want=active()?Mth.clamp(storm*1.15F,0,1):0;volume+=Mth.clamp(want-volume,-.02F,.02F);pitch=.82F+storm*.25F;
+            if(!active()&&volume<=.01F){stop();gale=null;}
+        }
+    }
 }

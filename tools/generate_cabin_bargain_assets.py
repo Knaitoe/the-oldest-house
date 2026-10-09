@@ -34,9 +34,10 @@ def env(t, start, attack, decay):
     return np.where(age < 0, 0, np.minimum(1, age / max(attack, 1e-4)) * np.exp(-decay * np.maximum(age, 0)))
 
 
-def write(name, signal, peak=.8):
-    fade = np.minimum(1, np.arange(len(signal)) / (RATE * .01)) * np.minimum(1, np.arange(len(signal))[::-1] / (RATE * .06))
-    signal = signal * fade
+def write(name, signal, peak=.8, looped=False):
+    if not looped:
+        fade = np.minimum(1, np.arange(len(signal)) / (RATE * .01)) * np.minimum(1, np.arange(len(signal))[::-1] / (RATE * .06))
+        signal = signal * fade
     signal = signal / max(1e-6, np.max(np.abs(signal))) * peak
     out = A / 'sounds/literary' / (name + '.ogg')
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -148,6 +149,26 @@ def cracked(rng):
     return slosh + buzz * .25 + drip
 
 
+def gale(rng):
+    """A storm wind for looping under everything else: a deep roar that gusts and moans, with rain hiss.
+
+    The last two seconds are crossfaded into the first, so the loop has no seam."""
+    total, fade = 14.0, 2.0
+    t = seconds(total + fade)
+    gust = .5 + .32 * np.sin(2 * np.pi * .09 * t + .4) + .18 * np.sin(2 * np.pi * .23 * t + 1.7)
+    roar = band(rng.uniform(-1, 1, len(t)), 40, 300) * gust * 1.3
+    body = band(rng.uniform(-1, 1, len(t)), 250, 900) * gust ** 2 * .55
+    moan = sum(np.sin(2 * np.pi * (f + 25 * np.sin(2 * np.pi * r * t)) * t) * a for f, r, a in ((180, .07, .07), (265, .11, .05), (390, .05, .03))) * gust ** 3
+    hiss = band(rng.uniform(-1, 1, len(t)), 2200, 7000) * (.22 + .12 * gust)
+    signal = roar + body + moan + hiss
+    n, m = int(RATE * total), int(RATE * fade)
+    head, tail = signal[:m], signal[n:n + m]
+    w = np.linspace(0, 1, m)
+    loop = signal[:n].copy()
+    loop[:m] = head * w + tail * (1 - w)
+    return loop
+
+
 CUES = {
     'cabin_knock': (knock, 'Someone knocks at the cabin door'),
     'cabin_heart': (heart, 'Your heartbeat stumbles'),
@@ -158,7 +179,9 @@ CUES = {
     'cabin_wind': (wind, 'Rain and wind batter the cabin'),
     'globe_shake': (globe, 'Snow swirls in a glass globe'),
     'globe_cracked': (cracked, 'Water leaks from a cracked globe'),
+    'cabin_gale': (gale, 'Wind howls around the cabin'),
 }
+LOOPED = {'cabin_gale'}
 
 
 # ---------------------------------------------------------------------------------------------------- art
@@ -235,6 +258,34 @@ def textures():
     save('textures/entity/arm_stump_bandage.png', bandage)
 
 
+def particles():
+    """Rain streaks (two lengths) and four wind-torn leaves, with their particle definitions."""
+    rng = random.Random(4520)
+    for i, length in enumerate((12, 8)):
+        im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+        for y in range(16 - length, 16):
+            k = (y - (16 - length)) / length
+            im.putpixel((7, y), (196, 210, 226, int(60 + 150 * k)))
+            if y % 3 == 0:
+                im.putpixel((8, y), (160, 178, 196, int(30 + 70 * k)))
+        save(f'textures/particle/cabin_rain_{i}.png', im)
+    shades = [(96, 112, 46), (128, 104, 40), (82, 92, 40), (140, 70, 34)]
+    shapes = [[(6, 4), (5, 5), (6, 5), (7, 5), (5, 6), (6, 6), (7, 6), (8, 6), (6, 7), (7, 7), (8, 7), (7, 8)],
+              [(5, 5), (6, 5), (6, 6), (7, 6), (8, 6), (7, 7), (8, 7), (9, 7), (8, 8)],
+              [(7, 4), (6, 5), (7, 5), (8, 5), (6, 6), (7, 6), (8, 6), (7, 7), (7, 8)],
+              [(5, 6), (6, 6), (7, 6), (8, 6), (9, 6), (6, 7), (7, 7), (8, 7), (7, 5)]]
+    for i, (shade, shape) in enumerate(zip(shades, shapes)):
+        im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+        for x, y in shape:
+            n = rng.randrange(-10, 11)
+            im.putpixel((x, y), tuple(max(0, min(255, c + n)) for c in shade) + (255,))
+        save(f'textures/particle/cabin_leaf_{i}.png', im)
+    for name, count in (('cabin_rain', 2), ('cabin_leaf', 4)):
+        p = A / 'particles' / f'{name}.json'
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(json.dumps({'textures': [f'the_oldest_house:{name}_{i}' for i in range(count)]}, indent=2) + '\n')
+
+
 def models():
     tex = {'glass': 'the_oldest_house:item/cabin_globe_glass', 'base': 'the_oldest_house:item/cabin_globe_base',
            'scene': 'the_oldest_house:item/cabin_globe_scene'}
@@ -292,8 +343,9 @@ def registry(lengths):
 def main():
     lengths = {}
     for i, (name, (make, _)) in enumerate(CUES.items()):
-        lengths[name] = round(write(name, make(np.random.default_rng(4510 + i))), 3)
+        lengths[name] = round(write(name, make(np.random.default_rng(4510 + i)), looped=name in LOOPED), 3)
     textures()
+    particles()
     models()
     registry(lengths)
     print(json.dumps(lengths))

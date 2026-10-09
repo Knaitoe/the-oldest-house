@@ -29,6 +29,44 @@ public final class ElkUpgrade {
         return builtVersion >= FIRST_LAYOUT && builtVersion < REBUILT_IN;
     }
 
+    /** The cabin at the end of the world is carved again too (layout 37): its new rooms, windows and exit shed. */
+    static final int CABIN_REBUILT_IN = 37;
+
+    /** Whether an upgrade from this saved layout carves this scene again. */
+    public static boolean rebuilds(LabyrinthPlace place, int builtVersion) {
+        if (place == LabyrinthPlace.ELK_CARCASSES) return rebuilds(builtVersion);
+        return place == LabyrinthPlace.END_WORLD_CABIN && builtVersion >= FIRST_LAYOUT && builtVersion < CABIN_REBUILT_IN;
+    }
+
+    static AABB area(BlockPos base, LabyrinthPlace place) {
+        if (place == LabyrinthPlace.ELK_CARCASSES) return area(base);
+        var r = place.room();
+        return new AABB(base.getX() + r.minX() - 1, base.getY() + r.minY() - 2, base.getZ() + r.minZ() - 1,
+                base.getX() + r.maxX() + 2, base.getY() + r.maxY() + 2, base.getZ() + r.maxZ() + 2);
+    }
+
+    public static boolean vacant(ServerLevel level, BlockPos base, LabyrinthPlace place, boolean fixture) {
+        if (place == LabyrinthPlace.ELK_CARCASSES) return vacant(level, base, fixture);
+        AABB area = area(base, place);
+        for (var player : level.players())
+            if (area.intersects(player.getBoundingBox()) || area.inflate(32).intersects(player.getCamera().getBoundingBox())) return false;
+        return fixture || ScenePolish.loaded(level, area, base);
+    }
+
+    /** After the carve: the cabin's visitors are placed by their own scene; anything else displaced goes to the porch. */
+    public static void settle(ServerLevel level, BlockPos base, LabyrinthPlace place) {
+        if (place == LabyrinthPlace.ELK_CARCASSES) { settle(level, base); return; }
+        Vec3 porch = Vec3.atBottomCenterOf(base.offset(-6, 0, -10));
+        for (Entity e : level.getEntitiesOfClass(Entity.class, area(base, place), e -> e instanceof LivingEntity || e instanceof ItemEntity)) {
+            if (e instanceof Player || !e.isAlive() || e instanceof LiteraryActor) continue;
+            if (!stranded(level, e)) continue;
+            if (e.isPassenger()) e.stopRiding();
+            e.teleportTo(porch.x + (e.getId() % 5) * .7 - 1.4, porch.y, porch.z - (e.getId() % 3) * .6);
+            e.setDeltaMovement(Vec3.ZERO);
+            e.resetFallDistance();
+        }
+    }
+
     static AABB area(BlockPos base) {
         return new AABB(base.getX() - ElkCarcassMap.SKIRT_X, base.getY() - 12, base.getZ() + ElkCarcassMap.SKIRT_NORTH,
                 base.getX() + ElkCarcassMap.SKIRT_X + 1, base.getY() + 40, base.getZ() + ElkCarcassMap.SKIRT_SOUTH + 1);

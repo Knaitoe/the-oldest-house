@@ -594,5 +594,14 @@
         "stream": false
       }
     ]
+  },
+  "literary.cabin_gale": {
+    "subtitle": "subtitles.the_oldest_house.literary.cabin_gale",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cabin_gale",
+        "stream": false
+      }
+    ]
   }
 }
