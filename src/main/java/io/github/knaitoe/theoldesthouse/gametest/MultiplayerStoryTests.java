@@ -32,8 +32,8 @@ public final class MultiplayerStoryTests {
         StaircaseFire.dress(f.level,f.origin);layLeaves(f);var p=f.player(h,"one_hand_reader");var peer=f.player(h,"two_hand_reader");ready(p,f);ready(peer,f);
         var book=issued(p);p.setItemInHand(InteractionHand.OFF_HAND,book);h.assertTrue(find(p,f,0),"the first real leaf binds before the gift");
         var lighter=p.getMainHandItem();h.assertTrue(BodyLoss.takeArm(p),"the cabin takes the off-hand arm");
-        p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);p.getInventory().add(lighter);
-        var packed=p.getInventory().items.stream().filter(s->s.getItem() instanceof FlintAndSteelItem).findFirst().orElseThrow();p.setItemInHand(InteractionHand.MAIN_HAND,held(p));
+        p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);p.setItemInHand(InteractionHand.MAIN_HAND,held(p));p.getInventory().add(lighter);
+        var packed=p.getInventory().items.stream().filter(s->s.getItem() instanceof FlintAndSteelItem).findFirst().orElseThrow();
         boolean lit=burn(p,f,0);h.assertTrue(p.getOffhandItem().isEmpty()&&lit&&packed.getDamageValue()==1,"the kept hand holds the original and the native lighter in the pack lights the hearth: oneHand="+BodyLoss.oneArmed(p)+", lit="+lit+", damage="+packed.getDamageValue());
         h.assertTrue(!BodyLoss.oneArmed(peer)&&StaircaseFire.flames(FinaleProgress.player(peer.server,peer.getUUID()))==0,"a peer keeps both hands and their own cold fires");
         f.reload();BodyLoss.apply(p);h.assertTrue(BodyLoss.oneArmed(p)&&find(p,f,1)&&burn(p,f,1)&&packed.getDamageValue()==2,"the second bound leaf burns after a saved-data reload without restoring the missing hand");
