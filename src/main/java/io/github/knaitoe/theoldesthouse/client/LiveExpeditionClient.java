@@ -1,4 +1,5 @@
 package io.github.knaitoe.theoldesthouse.client;
+import io.github.knaitoe.theoldesthouse.labyrinth.YachtGlazingBlock;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.gametest.LiveExpeditionProof;
