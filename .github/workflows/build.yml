@@ -57,7 +57,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.61"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.62"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/house/PlaytestLog.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
               hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
@@ -70,6 +70,14 @@ jobs:
               assert 'io/github/knaitoe/theoldesthouse/gametest/SceneSupportTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/SceneReviewTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/SceneReview.class' in z.namelist()
+              for name in ('Farmstead','WellSequence','WellCoverBlock','WellCoverBlockEntity'):
+                  assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
+              for name in ('WellCoverRenderer','WellBreathing','WellVisualProof'):
+                  assert f'io/github/knaitoe/theoldesthouse/client/{name}.class' in z.namelist()
+              assert z.read('assets/the_oldest_house/sounds/well/breath.ogg').startswith(b'OggS')
+              assert 'the_oldest_house:well_cover' in json.loads(z.read('data/minecraft/tags/block/climbable.json'))['values']
+              stone = json.loads(z.read('assets/the_oldest_house/models/block/well_carvings.json'))
+              assert stone['textures']['stone'] == 'minecraft:block/mossy_cobblestone' and len(stone['elements']) > 30
               assert 'assets/the_oldest_house/blockstates/vignette_detail.json' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/CarcassHunt.class' in z.namelist()
               assert 'assets/the_oldest_house/blockstates/forest_cover.json' in z.namelist()
@@ -439,6 +447,8 @@ jobs:
           test -s build/font-smoke/native-staircase-dark.png
           test -s build/font-smoke/well-dark-passed.txt
           test -s build/font-smoke/native-covered-well-dark.png
+          test -s build/font-smoke/well-design-passed.txt
+          for view in lid-open lid-quarter lid-three-quarter lid-closed stone-initials fade-start fade-middle fade-dark lid-from-below; do test -s build/font-smoke/native-well-$view.png; done
           test -s build/font-smoke/reviewed-assets-passed.txt
           test -s build/font-smoke/native-reviewed-assets.png
           test -s build/font-smoke/hall-changes-passed.txt
@@ -661,13 +671,21 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.61"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.62"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/SceneSupportTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/SceneReviewTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/SceneReview.class' in z.namelist()
+              for name in ('Farmstead','WellSequence','WellCoverBlock','WellCoverBlockEntity'):
+                  assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
+              for name in ('WellCoverRenderer','WellBreathing','WellVisualProof'):
+                  assert f'io/github/knaitoe/theoldesthouse/client/{name}.class' in z.namelist()
+              assert z.read('assets/the_oldest_house/sounds/well/breath.ogg').startswith(b'OggS')
+              assert 'the_oldest_house:well_cover' in json.loads(z.read('data/minecraft/tags/block/climbable.json'))['values']
+              stone = json.loads(z.read('assets/the_oldest_house/models/block/well_carvings.json'))
+              assert stone['textures']['stone'] == 'minecraft:block/mossy_cobblestone' and len(stone['elements']) > 30
               assert 'assets/the_oldest_house/blockstates/vignette_detail.json' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/CarcassHunt.class' in z.namelist()
               assert 'assets/the_oldest_house/blockstates/forest_cover.json' in z.namelist()
@@ -728,8 +746,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.61.jar
-            build/libs/the_oldest_house-0.4.61.jar.sha256
+            build/libs/the_oldest_house-0.4.62.jar
+            build/libs/the_oldest_house-0.4.62.jar.sha256
           if-no-files-found: error
 
 

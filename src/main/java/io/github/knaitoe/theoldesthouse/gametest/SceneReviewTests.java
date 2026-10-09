@@ -49,7 +49,7 @@ public final class SceneReviewTests {
         void source(ServerPlayer p){click(p,LiteraryRooms.source(place));var menu=(LiteraryVignettes.Pages)p.containerMenu;menu.clickMenuButton(p,100+menu.original().get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()-1);p.closeContainer();}
         void away(ServerPlayer p){p.teleportTo(h.getLevel(),.5,100,.5,0,0);p.connection.resetPosition();}
         void done(){close();h.succeed();}
-        @Override public void close(){if(active!=this)return;players.forEach(NativeTestPlayers::remove);LiteraryVignettes.clearAll();NovelVignettes.clearAll();
+        @Override public void close(){if(active!=this)return;players.forEach(NativeTestPlayers::remove);LiteraryVignettes.clearAll();NovelVignettes.clearAll();if(started&&place==LabyrinthPlace.BARN_WELL)Farmstead.forget(level.getServer(),origin);
             var area=SceneReview.area(base,place);for(var e:level.getEntitiesOfClass(Entity.class,area))e.discard();
             if(started){for(var at:BlockPos.betweenClosed(BlockPos.containing(area.minX,area.minY,area.minZ),BlockPos.containing(area.maxX,area.maxY,area.maxZ)))level.setBlock(at,Blocks.AIR.defaultBlockState(),F);
                 var store=level.getServer().overworld().getDataStorage();store.set("the_oldest_house",oldHouse);store.set("the_oldest_house_labyrinth",oldData);}chunks.close();active=null;}
@@ -66,6 +66,9 @@ public final class SceneReviewTests {
     @AfterBatch(batch="review_witch_interval") public static void witchIntervalDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="review_source_custody") public static void sourceCustodyDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="review_live_collision_guard") public static void collisionGuardDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="review_farm_stock") public static void farmStockDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="review_farm_migration") public static void farmMigrationDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="review_well_pause") public static void wellPauseDone(ServerLevel l){cleanup();}
 
     @GameTest(template="empty",batch="review_books",timeoutTicks=1600)
     public static void realShelfQuillAndLaidOriginalRemainPrivateThroughSpeechAndRecovery(GameTestHelper h){run(h,LabyrinthPlace.CONFESSION,552000,f->{
@@ -96,23 +99,97 @@ public final class SceneReviewTests {
     public static void coveredWaitAndOneSilhouetteFollowActualSharedLidWithoutPeerCredit(GameTestHelper h){run(h,LabyrinthPlace.BARN_WELL,552500,f->{
         NovelRooms.build(f.level.getServer(),f.level,f.base,f.place);var owner=f.player("review_well_owner");var peer=f.player("review_well_peer");var observer=f.player("review_well_observer");observer.setGameMode(GameType.SPECTATOR);
         f.at(owner,.5,-12,-22.5);f.at(peer,4.5,0,-20.5);f.at(observer,.5,-12,-22.5);
+        var lid=(WellCoverBlockEntity)f.level.getBlockEntity(f.base.offset(NovelRooms.WELL));
         h.startSequence().thenIdle(30).thenExecute(()->{
-            var own=NovelVignettes.personal(f.data(),owner.getUUID());h.assertTrue(NovelVignettes.coveredWait(owner,own)&&!NovelVignettes.coveredWait(peer,NovelVignettes.personal(f.data(),peer.getUUID()))&&!NovelVignettes.coveredWait(observer,NovelVignettes.personal(f.data(),observer.getUUID())),"the native covered wait selects only its actual living reader");
-            var lid=f.level.getBlockState(f.base.offset(NovelRooms.WELL));h.assertTrue(!lid.getValue(TrapDoorBlock.OPEN)&&f.level.getBlockState(f.base.offset(0,2,-24)).is(HouseBlocks.VIGNETTE_DETAIL.get()),"one closed native cover owns the silhouette on the real rim");
-            own.putInt("WellTicks",NovelVignettes.WELL_WAIT-1);NovelVignettes.save(f.data(),owner.getUUID(),own);f.at(peer,.5,-12,-22.5);
+            var own=NovelVignettes.personal(f.data(),owner.getUUID());h.assertTrue(NovelVignettes.coveredWait(owner,own)&&!NovelVignettes.coveredWait(peer,NovelVignettes.personal(f.data(),peer.getUUID()))&&!NovelVignettes.coveredWait(observer,NovelVignettes.personal(f.data(),observer.getUUID())),"only the actual living reader enters the personal wait");
+            h.assertTrue(lid.progress()>0&&lid.progress()<WellCoverBlockEntity.CLOSE_TICKS&&f.level.getBlockState(lid.getBlockPos()).getValue(WellCoverBlock.OPEN),"the single lid moves slowly before sealing, irrespective of observers");
         });
-        h.startSequence().thenIdle(50).thenExecute(()->{
-            h.assertTrue(!NovelVignettes.coveredWait(owner,NovelVignettes.personal(f.data(),owner.getUUID()))&&NovelVignettes.coveredWait(peer,NovelVignettes.personal(f.data(),peer.getUUID()))&&!f.level.getBlockState(f.base.offset(NovelRooms.WELL)).getValue(TrapDoorBlock.OPEN),"a peer's physical vigil retains the shared cover after the first reader finishes");
-            var own=NovelVignettes.personal(f.data(),peer.getUUID());own.putInt("WellTicks",NovelVignettes.WELL_WAIT-1);NovelVignettes.save(f.data(),peer.getUUID(),own);
+        h.startSequence().thenIdle(190).thenExecute(()->{
+            h.assertTrue(!f.level.getBlockState(lid.getBlockPos()).getValue(WellCoverBlock.OPEN)&&lid.closure(0)==1,"occupied time finally seals the native lid");
+            var own=NovelVignettes.personal(f.data(),owner.getUUID());own.putInt("WellTicks",NovelVignettes.WELL_WAIT-1);NovelVignettes.save(f.data(),owner.getUUID(),own);f.at(peer,.5,-12,-22.5);
         });
-        h.startSequence().thenIdle(70).thenExecute(()->{
-            h.assertTrue(f.level.getBlockState(f.base.offset(NovelRooms.WELL)).getValue(TrapDoorBlock.OPEN)&&f.level.getBlockState(f.base.offset(0,2,-24)).isAir(),"the native shaft really opens and the only shadow disappears");
-            owner.move(MoverType.SELF,new Vec3(0,13,0));
+        h.startSequence().thenIdle(215).thenExecute(()->{
+            h.assertTrue(!NovelVignettes.coveredWait(owner,NovelVignettes.personal(f.data(),owner.getUUID()))&&NovelVignettes.coveredWait(peer,NovelVignettes.personal(f.data(),peer.getUUID()))&&!f.level.getBlockState(lid.getBlockPos()).getValue(WellCoverBlock.OPEN),"the second reader continues their own occupied wait");
+            f.at(owner,.5,-2,-22.5);
         });
-        h.startSequence().thenIdle(85).thenExecute(()->{
-            h.assertTrue(WitnessAccount.has(f.data(),owner.getUUID(),WitnessAccount.Story.BARN_WELL)&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.BARN_WELL)&&!WitnessAccount.has(f.data(),observer.getUUID(),WitnessAccount.Story.BARN_WELL),"only actual native ascent resolves the well; waiting/observing a peer never does");
-            h.assertTrue(SceneClock.time(3,900,6000)==12500&&f.level.getBlockState(f.base.offset(NovelRooms.CARVING)).is(NovelRegistry.CARVINGS.get()),"dusk and new initials art retain the original interaction block");f.done();
+        h.startSequence().thenIdle(265).thenExecute(()->{
+            h.assertTrue(f.level.getBlockState(lid.getBlockPos()).getValue(WellCoverBlock.OPEN)&&NovelVignettes.coveredWait(peer,NovelVignettes.personal(f.data(),peer.getUUID())),"a completed reader can leave without ending or resetting a peer's wait");
+            owner.move(MoverType.SELF,new Vec3(0,4,0));
         });
+        h.startSequence().thenIdle(280).thenExecute(()->{
+            h.assertTrue(WitnessAccount.has(f.data(),owner.getUUID(),WitnessAccount.Story.BARN_WELL)&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.BARN_WELL)&&!WitnessAccount.has(f.data(),observer.getUUID(),WitnessAccount.Story.BARN_WELL),"only physical ascent resolves; another player's open lid and spectators confer no credit");
+            h.assertTrue(SceneClock.time(3,900,6000)==12500&&f.level.getBlockState(f.base.offset(NovelRooms.CARVING)).is(NovelRegistry.CARVINGS.get()),"the original dusk and initials remain exact");f.done();
+        });
+    });}
+
+    @GameTest(template="empty",batch="review_farm_stock",timeoutTicks=1600)
+    public static void nativeFarmPensContainStockAndSharedFinitePetsAndFoodSurviveReload(GameTestHelper h){run(h,LabyrinthPlace.BARN_WELL,557000,f->{
+        NovelRooms.build(f.level.getServer(),f.level,f.base,f.place);Farmstead.fresh(f.level,f.origin);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(Farmstead.ready(f.data(),f.origin),"the actual bounded farm layout finishes")).thenExecute(()->{
+            var owner=f.player("farm_food_owner");var peer=f.player("farm_pet_peer");f.at(owner,4.5,0,-14.5);f.at(peer,4.5,0,-12.5);
+            NovelVignettes.onArrive(owner,f.place);NovelVignettes.onArrive(peer,f.place);
+            var animals=f.level.getEntitiesOfClass(Mob.class,Farmstead.area(f.base),m->m.getPersistentData().getBoolean("HouseBarnAnimal"));
+            h.assertTrue(animals.size()==7,"two actual cows, two sheep and three chickens spawn once");
+            for(var a:animals){a.setNoAi(true);a.move(MoverType.SELF,new Vec3(9,0,0));h.assertTrue(a.getX()<f.base.getX()+(a instanceof net.minecraft.world.entity.animal.Chicken?15:8.7),"native collision holds livestock inside the closed barn pens");}
+            f.at(owner,6.5,0,-24.5);owner.move(MoverType.SELF,new Vec3(5,0,0));h.assertTrue(owner.getX()<f.base.getX()+8.6,"a real survival body cannot pass the closed pen gate");
+            var left=f.level.getBlockState(f.base.offset(-16,0,-28));h.assertTrue(left.is(Blocks.SPRUCE_FENCE)&&left.getValue(FenceBlock.NORTH)&&left.getValue(FenceBlock.SOUTH),"the previously omitted left field has continuous native rails");
+            var cache=(BarrelBlockEntity)f.level.getBlockEntity(f.base.offset(Farmstead.FOOD));h.assertTrue(cache.getItem(0).is(Items.BREAD)&&cache.getItem(0).getCount()==6&&cache.getItem(2).getCount()==2,"the finite native feed barrel contains actual edible food and pet meat");
+            var pets=f.level.getEntitiesOfClass(TamableAnimal.class,Farmstead.area(f.base),a->a.getPersistentData().getBoolean("HouseFarmPet"));h.assertTrue(pets.size()==2,"one native dog and one native cat are shared");
+            for(int i=0;i<2;i++){var pet=pets.get(i);var reader=i==0?owner:peer;pet.setNoAi(true);pet.setNoGravity(true);reader.teleportTo(f.level,pet.getX(),pet.getY(),pet.getZ()+1,0,0);reader.connection.resetPosition();reader.hasChangedDimension();reader.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.COOKED_BEEF));
+                h.assertTrue(LabyrinthEncounters.feedStray(reader,pet,InteractionHand.MAIN_HAND)&&reader.getMainHandItem().isEmpty(),"native one-meat taming consumes food and keeps the actual pet");
+                h.assertTrue(io.github.knaitoe.theoldesthouse.opening.CompanionOrders.issue(pet,reader,io.github.knaitoe.theoldesthouse.opening.CompanionOrders.Order.STAY),"the real owner can issue Stay");pet.setHealth(7);
+            }
+            cache.clearContent();var animalIds=animals.stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet());var petIds=pets.stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet());
+            var save=f.data().save(new CompoundTag(),f.level.registryAccess());f.level.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",LabyrinthData.FACTORY.deserializer().apply(save,f.level.registryAccess()));
+            Farmstead.stock(owner);Farmstead.stock(peer);BarnFarm.animals(owner);Farmstead.fresh(f.level,f.origin);
+            h.assertTrue(cache.isEmpty()&&f.level.getEntitiesOfClass(Mob.class,Farmstead.area(f.base),m->m.getPersistentData().getBoolean("HouseBarnAnimal")).stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet()).equals(animalIds),"native reload and a peer arrival never replenish food or recreate livestock");
+            h.assertTrue(pets.stream().allMatch(a->a.isAlive()&&a.getHealth()==7&&a.isOrderedToSit()&&petIds.contains(a.getUUID())),"both original owned Stay pets retain native health and identity");
+            for(var pet:pets)pet.discard();Farmstead.stock(owner);Farmstead.stock(peer);
+            h.assertTrue(f.level.getEntitiesOfClass(TamableAnimal.class,Farmstead.area(f.base),a->a.getPersistentData().getBoolean("HouseFarmPet")).isEmpty()&&WitnessAccount.count(f.data(),owner.getUUID())==0&&WitnessAccount.count(f.data(),peer.getUUID())==0,"dead or removed pets stay gone, and food/taming confer no ending credit");f.done();
+        });
+    });}
+
+    @GameTest(template="empty",batch="review_farm_migration",timeoutTicks=1600)
+    public static void savedFarmWaitsForCamerasAndRealStayBodiesThenMovesOnlyOriginalStockAndInitials(GameTestHelper h){run(h,LabyrinthPlace.BARN_WELL,557500,f->{
+        NovelRooms.build(f.level.getServer(),f.level,f.base,f.place);Farmstead.forget(f.level.getServer(),f.origin);
+        f.put(NovelRooms.CARVING,Blocks.MOSSY_COBBLESTONE.defaultBlockState());f.put(NovelRooms.OLD_CARVING,NovelRegistry.CARVINGS.get().defaultBlockState());
+        f.put(NovelRooms.WELL,Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.OPEN,true).setValue(TrapDoorBlock.HALF,net.minecraft.world.level.block.state.properties.Half.TOP));
+        var original=(LecternBlockEntity)f.level.getBlockEntity(f.base.offset(-4,0,-17));var book=original.getBook().copy();var ribbon=(BarrelBlockEntity)f.level.getBlockEntity(f.base.offset(NovelRooms.RIBBON));ribbon.clearContent();
+        var edited=(BarrelBlockEntity)f.level.getBlockEntity(f.base.offset(Farmstead.FOOD));var gem=new ItemStack(Items.DIAMOND);gem.set(DataComponents.CUSTOM_NAME,Component.literal("Kept farm property"));edited.setItem(6,gem.copy());
+        var owner=f.player("farm_upgrade_owner");var observer=f.player("farm_upgrade_camera");observer.setGameMode(GameType.SPECTATOR);f.at(observer,-10.5,1,-12.5);
+        var own=NovelVignettes.personal(f.data(),owner.getUUID());own.putBoolean("Initials",true);own.putInt("WellTicks",381);NovelVignettes.save(f.data(),owner.getUUID(),own);
+        var animal=EntityType.COW.create(f.level);animal.setNoAi(true);animal.setPersistenceRequired();animal.setHealth(8);animal.getPersistentData().putBoolean("HouseBarnAnimal",true);animal.moveTo(Vec3.atBottomCenterOf(f.base.offset(-4,0,-18)));f.level.addFreshEntity(animal);var id=animal.getUUID();var pos=animal.position();
+        f.put(-12,0,-12,Blocks.AIR);var pet=EntityType.CAT.create(f.level);pet.setNoAi(true);pet.setNoGravity(true);pet.setTame(true,false);pet.setOwnerUUID(owner.getUUID());pet.setOrderedToSit(true);pet.setHealth(5);pet.moveTo(Vec3.atBottomCenterOf(f.base.offset(-12,0,-12)));f.level.addFreshEntity(pet);var petId=pet.getUUID();
+        Farmstead.fresh(f.level,f.origin);h.assertTrue(animal.position().equals(pos)&&!Farmstead.ready(f.data(),f.origin),"an actual spectator camera prevents layout work and animal relocation");f.away(observer);Farmstead.fresh(f.level,f.origin);
+        h.startSequence().thenIdle(100).thenExecute(()->{
+            h.assertTrue(!Farmstead.ready(f.data(),f.origin)&&f.level.getBlockState(f.base.offset(-12,0,-12)).isAir()&&pet.isAlive()&&pet.getUUID().equals(petId)&&pet.getHealth()==5,"bounded execution waits rather than flooring through the actual sitting cat");
+            pet.moveTo(Vec3.atBottomCenterOf(f.base.offset(3,0,-12)));
+        });
+        h.startSequence().thenIdle(160).thenWaitUntil(()->h.assertTrue(Farmstead.ready(f.data(),f.origin),"the same layout resumes after the resident clears its footprint")).thenExecute(()->{
+            h.assertTrue(animal.getUUID().equals(id)&&animal.getHealth()==8&&animal.isAlive()&&animal.getX()>f.base.getX()+5&&animal.getX()<f.base.getX()+8,"the original wounded native stock is rehomed into the pen");
+            h.assertTrue(f.level.getBlockEntity(f.base.offset(-4,0,-17))==original&&ItemStack.isSameItemSameComponents(original.getBook(),book)&&f.level.getBlockEntity(f.base.offset(NovelRooms.RIBBON))==ribbon&&ribbon.isEmpty()&&ItemStack.isSameItemSameComponents(edited.getItem(6),gem),"original native books, barrels, depleted rewards and edited property survive");
+            h.assertTrue(f.level.getBlockState(f.base.offset(NovelRooms.OLD_CARVING)).is(Blocks.MOSSY_COBBLESTONE)&&f.level.getBlockState(f.base.offset(NovelRooms.CARVING)).is(NovelRegistry.CARVINGS.get())&&f.level.getBlockState(f.base.offset(NovelRooms.WELL)).is(NovelRegistry.WELL_COVER.get()),"only the authored initials move above the head to the facing stone wall, and the native lid upgrades");
+            h.assertTrue(pet.getUUID().equals(petId)&&pet.getHealth()==5&&pet.isOrderedToSit()&&pet.getOwnerUUID().equals(owner.getUUID())&&NovelVignettes.personal(f.data(),owner.getUUID()).getInt("WellTicks")==381&&NovelVignettes.personal(f.data(),owner.getUUID()).getBoolean("Initials"),"ownership, Stay, health and personal well history remain exact");
+            f.put(-16,0,-28,Blocks.AIR);var save=f.data().save(new CompoundTag(),f.level.registryAccess());f.level.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",LabyrinthData.FACTORY.deserializer().apply(save,f.level.registryAccess()));Farmstead.fresh(f.level,f.origin);
+            h.assertTrue(f.level.getBlockState(f.base.offset(-16,0,-28)).isAir(),"the saved checkpoint does not reconstruct a later removed rail");f.done();
+        });
+    });}
+
+    @GameTest(template="empty",batch="review_well_pause",timeoutTicks=1600)
+    public static void oneNativeLidPausesAbsentAcrossBlockEntityReloadAndCannotSealThroughACamera(GameTestHelper h){run(h,LabyrinthPlace.BARN_WELL,558000,f->{
+        NovelRooms.build(f.level.getServer(),f.level,f.base,f.place);var owner=f.player("lid_pause_owner");var peer=f.player("lid_pause_peer");var camera=f.player("lid_pause_camera");camera.setGameMode(GameType.SPECTATOR);f.away(camera);f.at(owner,.5,-12,-22.5);f.at(peer,.5,-12,-22.5);
+        var lid=(WellCoverBlockEntity)f.level.getBlockEntity(f.base.offset(NovelRooms.WELL));int[] progress={0};
+        h.startSequence().thenIdle(35).thenExecute(()->{
+            progress[0]=lid.progress();h.assertTrue(progress[0]>0&&progress[0]<50,"two actual readers do not multiply the physical lid's occupied clock");f.away(owner);f.away(peer);
+            var saved=lid.saveWithFullMetadata(f.level.registryAccess());lid.loadWithComponents(saved,f.level.registryAccess());
+        });
+        h.startSequence().thenIdle(80).thenExecute(()->{
+            h.assertTrue(lid.progress()==progress[0]&&NovelVignettes.personal(f.data(),owner.getUUID()).getInt("WellTicks")<50,"native block-entity reload and absent time advance neither lid nor personal waits");f.at(owner,.5,-12,-22.5);f.at(camera,.5,.84,-22.5);
+        });
+        h.startSequence().thenIdle(260).thenExecute(()->{
+            h.assertTrue(lid.progress()==WellCoverBlockEntity.CLOSE_TICKS-1&&f.level.getBlockState(lid.getBlockPos()).getValue(WellCoverBlock.OPEN),"the final collision plate waits for an actual spectator camera body");f.away(camera);
+        });
+        h.startSequence().thenIdle(270).thenExecute(()->{h.assertTrue(lid.progress()==WellCoverBlockEntity.CLOSE_TICKS&&!f.level.getBlockState(lid.getBlockPos()).getValue(WellCoverBlock.OPEN)&&NovelVignettes.personal(f.data(),peer.getUUID()).getInt("WellTicks")<50,"vacancy finishes the one physical lid without advancing an absent peer");f.done();});
     });}
 
     @GameTest(template="empty",batch="review_witch",timeoutTicks=1600)

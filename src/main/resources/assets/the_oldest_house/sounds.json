@@ -513,5 +513,14 @@
       "the_oldest_house:leak/bag"
     ],
     "subtitle": "subtitles.the_oldest_house.paper_bag"
+  },
+  "well.breath": {
+    "subtitle": "subtitles.the_oldest_house.well.breath",
+    "sounds": [
+      {
+        "name": "the_oldest_house:well/breath",
+        "stream": false
+      }
+    ]
   }
 }

@@ -19,9 +19,13 @@ public final class NovelRegistry {
     private static final DeferredRegister<MapCodec<? extends Block>> CODECS=DeferredRegister.create(BuiltInRegistries.BLOCK_TYPE,TheOldestHouse.MOD_ID);
     private static final DeferredRegister<EntityType<?>> TYPES=DeferredRegister.create(Registries.ENTITY_TYPE,TheOldestHouse.MOD_ID);
     private static final DeferredRegister<SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
+    private static final DeferredRegister<net.minecraft.world.level.block.entity.BlockEntityType<?>> BLOCK_ENTITIES=DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE,TheOldestHouse.MOD_ID);
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<WellCoverBlock>> WELL_COVER_CODEC=CODECS.register("well_cover",()->WellCoverBlock.CODEC);
+    public static final DeferredBlock<WellCoverBlock> WELL_COVER=BLOCKS.registerBlock("well_cover",WellCoverBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_TRAPDOOR).noOcclusion().noLootTable());
+    public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,net.minecraft.world.level.block.entity.BlockEntityType<WellCoverBlockEntity>> WELL_COVER_ENTITY=BLOCK_ENTITIES.register("well_cover",()->net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(WellCoverBlockEntity::new,WELL_COVER.get()).build(null));
     public static final DeferredBlock<Block> GOUGES=material("cell_gouges",Blocks.DEEPSLATE_TILES),SEALED_WINDOW=material("sealed_window",Blocks.DARK_OAK_PLANKS),
         INSTITUTE=material("institute_paint",Blocks.WHITE_TERRACOTTA),PLASTER=material("collapse_plaster",Blocks.WHITE_TERRACOTTA),
-        CARVINGS=material("well_carvings",Blocks.OAK_PLANKS),PAPER=material("archive_paper",Blocks.WHITE_TERRACOTTA);
+        CARVINGS=material("well_carvings",Blocks.MOSSY_COBBLESTONE),PAPER=material("archive_paper",Blocks.WHITE_TERRACOTTA);
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<NovelPropBlock>> PROP_TYPE=CODECS.register("novel_prop",()->NovelPropBlock.CODEC);
     public static final DeferredBlock<NovelPropBlock> PROP=BLOCKS.registerBlock("novel_prop",NovelPropBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable());
     public static final DeferredItem<Item> COLLAR=ITEMS.registerSimpleItem("cat_collar",new Item.Properties().stacksTo(1)),RIBBON=ITEMS.registerSimpleItem("well_ribbon",new Item.Properties().stacksTo(1)),
@@ -33,9 +37,10 @@ public final class NovelRegistry {
     public static final DeferredHolder<EntityType<?>,EntityType<NovelActor>> ACTOR=TYPES.register("novel_actor",()->EntityType.Builder.<NovelActor>of(NovelActor::new,MobCategory.MISC).sized(.6F,1.8F).clientTrackingRange(12).updateInterval(2).build("novel_actor"));
     public static final DeferredHolder<EntityType<?>,EntityType<HouseHuman>> HUMAN=TYPES.register("house_human",()->EntityType.Builder.<HouseHuman>of(HouseHuman::new,MobCategory.MISC).sized(.6F,1.8F).clientTrackingRange(16).updateInterval(2).build("house_human"));
     public static final DeferredHolder<SoundEvent,SoundEvent> MONITOR=sound("novel.monitor"),SHUTTER=sound("novel.shutter"),RADIO_STATIC=sound("novel.radio"),COLLAPSE=sound("novel.collapse");
+    public static final DeferredHolder<SoundEvent,SoundEvent> WELL_BREATH=sound("well.breath");
     private static DeferredBlock<Block> material(String id,Block base){return BLOCKS.registerBlock(id,Block::new,BlockBehaviour.Properties.ofFullCopy(base).noLootTable());}
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     private NovelRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);TYPES.register(bus);SOUNDS.register(bus);bus.addListener(NovelRegistry::attributes);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BLOCK_ENTITIES.register(bus);ITEMS.register(bus);TYPES.register(bus);SOUNDS.register(bus);bus.addListener(NovelRegistry::attributes);}
     private static void attributes(EntityAttributeCreationEvent e){e.put(VULTURE.get(),NovelVulture.attributes().build());e.put(ACTOR.get(),NovelActor.attributes().build());e.put(HUMAN.get(),HouseHuman.attributes().build());}
 }

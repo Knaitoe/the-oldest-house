@@ -9,7 +9,11 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.61
+## Current candidate: 0.4.62
+
+The farm/well repair and modest encounter increase add no eligible source: 43 sources / 33 resolutions / two kinds / three endings remain. Require 468 native cases, 72 multiplayer, 39 exploration, every focused suite, complete writing/client/71-view architecture checks, nine native well mesh/fade views and both actual socket clients with two reconnects. Layout 36 / protocol 35. See [the implementation and saved-world/multiplayer checks](FARM_AND_WELL_0_4_62.md).
+
+## Verified baseline: 0.4.61
 
 The novel-informed review adds no eligible story: the optional hallway investigation, all source poems/letters and the revised long hallway remain outside Witness. Existing 43 sources / 33 resolutions / two kinds / three endings remain. Require 464 native cases, 69 multiplayer, 22 literary, every focused suite, complete writing/client/71-view architecture checks and both actual socket clients with two reconnects. See [the implementation and playtest route](NOVEL_REVIEW_0_4_61.md).
 

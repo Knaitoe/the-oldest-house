@@ -61,7 +61,7 @@ public final class BarnFarm {
         var b=IndianLakeRooms.base(p.server,LabyrinthPlace.BARN_WELL);if(b==null)return;
         for(int i=0;i<7;i++){
             Mob animal=(i<2?EntityType.COW:i<4?EntityType.SHEEP:EntityType.CHICKEN).create(p.serverLevel());if(animal==null)continue;
-            animal.moveTo(b.getX()+7.5+i%3*2,b.getY(),b.getZ()-27.5-i/3*2,90,0);animal.setPersistenceRequired();animal.getPersistentData().putBoolean("HouseBarnAnimal",true);
+            animal.moveTo(Farmstead.animalPosition(b,i));animal.setPersistenceRequired();animal.getPersistentData().putBoolean("HouseBarnAnimal",true);
             if(i==1&&animal instanceof AgeableMob calf)calf.setBaby(true);p.serverLevel().addFreshEntity(animal);
         }
         state.putBoolean("AnimalsMade",true);data.setState("barn_farm_0426",state);
