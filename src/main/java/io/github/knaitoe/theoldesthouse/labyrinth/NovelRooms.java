@@ -86,6 +86,7 @@ public final class NovelRooms {
         for(int z=-4;z>=-33;z-=6)for(int x:new int[]{-13,16}){box(l,b,x,0,z,x,5,z,Blocks.SPRUCE_LOG.defaultBlockState());box(l,b,x-1,4,z-1,x+1,7,z+1,Blocks.SPRUCE_LEAVES.defaultBlockState());}
         BarnFarm.dress(l,b);
         Farmstead.layout(l,b);
+        Farmstead.built(l,b);
     }
     /** A copied return vestibule must never open onto unsupported outside air. */
     public static void safeApproach(ServerLevel l,BlockPos b){

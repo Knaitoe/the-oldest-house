@@ -124,8 +124,8 @@ public final class SceneReviewTests {
 
     @GameTest(template="empty",batch="review_farm_stock",timeoutTicks=1600)
     public static void nativeFarmPensContainStockAndSharedFinitePetsAndFoodSurviveReload(GameTestHelper h){run(h,LabyrinthPlace.BARN_WELL,557000,f->{
-        NovelRooms.build(f.level.getServer(),f.level,f.base,f.place);Farmstead.fresh(f.level,f.origin);
-        h.startSequence().thenWaitUntil(()->h.assertTrue(Farmstead.ready(f.data(),f.origin),"the actual bounded farm layout finishes")).thenExecute(()->{
+        NovelRooms.build(f.level.getServer(),f.level,f.base,f.place);
+            h.assertTrue(!Farmstead.ready(f.data(),f.origin),"the first native visit precedes any vacant saved-farm upgrade");
             var owner=f.player("farm_food_owner");var peer=f.player("farm_pet_peer");f.at(owner,4.5,0,-14.5);f.at(peer,4.5,0,-12.5);
             NovelVignettes.onArrive(owner,f.place);NovelVignettes.onArrive(peer,f.place);
             var animals=f.level.getEntitiesOfClass(Mob.class,Farmstead.area(f.base),m->m.getPersistentData().getBoolean("HouseBarnAnimal"));
@@ -148,7 +148,6 @@ public final class SceneReviewTests {
             h.assertTrue(pets.stream().allMatch(a->a.isAlive()&&a.getHealth()==7&&a.isOrderedToSit()&&petIds.contains(a.getUUID())),"both original owned Stay pets retain native health and identity");
             for(var pet:pets)pet.discard();Farmstead.stock(owner);Farmstead.stock(peer);
             h.assertTrue(f.level.getEntitiesOfClass(TamableAnimal.class,Farmstead.area(f.base),a->a.getPersistentData().getBoolean("HouseFarmPet")).isEmpty()&&WitnessAccount.count(f.data(),owner.getUUID())==0&&WitnessAccount.count(f.data(),peer.getUUID())==0,"dead or removed pets stay gone, and food/taming confer no ending credit");f.done();
-        });
     });}
 
     @GameTest(template="empty",batch="review_farm_migration",timeoutTicks=1600)

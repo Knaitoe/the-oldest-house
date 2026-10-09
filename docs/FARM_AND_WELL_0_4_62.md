@@ -25,7 +25,7 @@ The main track bends toward the barn and its feed aisle. A small timber farmhous
 
 The barn has two closed native livestock pens around its central aisle. Hay bedding lies below the animals' feet rather than forming a jump step beside the rails. The original two cows, two sheep and three chickens are penned; saved animals retain their native UUID, health and state. Opening or breaking a gate remains an actual player action.
 
-One shared barrel holds six bread, four baked potatoes, two cooked beef, two cod and three bones. One actual wolf and one cat can be tamed through the existing native bone/fish or House one-meat interactions and retain normal companion ownership/orders. Food, livestock and pets are finite: a peer, restart, death or depleted cache cannot replenish them. Existing edited food containers are not overwritten.
+One shared barrel holds six bread, four baked potatoes, two cooked beef, two cod and three bones. One actual wolf and one cat can be tamed through the existing native bone/fish or House one-meat interactions and retain normal companion ownership/orders. New farms expose these on the first visit once their native chunks are ready; a later vacant dressing checkpoint cannot delay them. Food, livestock and pets are finite: a peer, restart, death or depleted cache cannot replenish them. Existing edited food containers are not overwritten.
 
 ## Well descent and closing cover
 

@@ -90,7 +90,7 @@ public final class Farmstead {
         for(int x:new int[]{6,14})for(int z:new int[]{-32,-28,-23})put(l,b,x,-1,z,Blocks.HAY_BLOCK);
         put(l,b,14,0,-31,Blocks.WATER_CAULDRON);put(l,b,6,0,-19,Blocks.HAY_BLOCK);put(l,b,6,1,-19,Blocks.HAY_BLOCK);
         put(l,b,13,0,-19,Blocks.HAY_BLOCK);
-        if(BuildBlocks.state(l,b.offset(FOOD)).isAir())BuildBlocks.set(l,b.offset(FOOD),Blocks.BARREL.defaultBlockState(),F);
+        var food=b.offset(FOOD);if(BuildBlocks.state(l,food).isAir())BuildBlocks.guardedSet(l,food,Blocks.BARREL.defaultBlockState(),F,()->bodyClear(l,food,Blocks.BARREL.defaultBlockState()));
         // Low stone curb, timber uprights, pitched canopy, winding spindle and chain.
         // Retain the shaft, ladder and finite ribbon barrel. Move only the authored initials to the facing wall.
         var oldCarving=b.offset(NovelRooms.OLD_CARVING);var carving=b.offset(NovelRooms.CARVING);
@@ -117,13 +117,16 @@ public final class Farmstead {
     private static void penExisting(ServerLevel l,BlockPos b){int i=0;for(var mob:l.getEntitiesOfClass(Mob.class,area(b),m->m.isAlive()&&m.getPersistentData().getBoolean("HouseBarnAnimal")))
         mob.moveTo(animalPosition(b,i++%7));}
     public static boolean ready(LabyrinthData d,BlockPos o){return d.stateEntry(STATE,key(o)).getBoolean("Layout");}
+    /** A new farm's core is already composed before its first visitor. Later dressing need not delay finite stock. */
+    public static void built(ServerLevel l,BlockPos b){BuildBlocks.after(l,()->{var o=HouseSavedData.get(l.getServer()).houseOrigin();
+        if(o==null||!b.equals(LabyrinthPlaces.base(o,LabyrinthPlace.BARN_WELL)))return;var d=LabyrinthData.get(l.getServer());var t=d.stateEntry(STATE,key(o));t.putBoolean("FreshGeometry",true);d.setStateEntry(STATE,key(o),t);});}
     private static boolean loaded(ServerLevel l,BlockPos b){var a=area(b);for(int x=(int)Math.floor(a.minX)>>4;x<=((int)Math.ceil(a.maxX)-1)>>4;x++)for(int z=(int)Math.floor(a.minZ)>>4;z<=((int)Math.ceil(a.maxZ)-1)>>4;z++)if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(x,z)))return false;return true;}
     private static boolean unseen(ServerLevel l,BlockPos b){return l.players().stream().noneMatch(p->area(b).inflate(24).intersects(p.getCamera().getBoundingBox()));}
     public static void fresh(ServerLevel l,BlockPos o){var d=LabyrinthData.get(l.getServer());if(ready(d,o))return;var b=LabyrinthPlaces.base(o,LabyrinthPlace.BARN_WELL);if(!loaded(l,b)||!unseen(l,b))return;
         if(!BuildBlocks.isRecording(l)){if(work==null){penExisting(l,b);workingOrigin=o;work=BuildBlocks.record(l,()->layout(l,b));}return;}
         penExisting(l,b);
         layout(l,b);BuildBlocks.after(l,()->{var t=d.stateEntry(STATE,key(o));t.putBoolean("Layout",true);d.setStateEntry(STATE,key(o),t);});}
-    public static void stock(ServerPlayer p){var o=HouseSavedData.get(p.server).houseOrigin();if(o==null||p.isSpectator()||!NovelVignettes.inside(p,LabyrinthPlace.BARN_WELL))return;var d=LabyrinthData.get(p.server);if(!ready(d,o))return;
+    public static void stock(ServerPlayer p){var o=HouseSavedData.get(p.server).houseOrigin();if(o==null||p.isSpectator()||!NovelVignettes.inside(p,LabyrinthPlace.BARN_WELL))return;var d=LabyrinthData.get(p.server);if(!ready(d,o)&&!d.stateEntry(STATE,key(o)).getBoolean("FreshGeometry"))return;
         var b=LabyrinthPlaces.base(o,LabyrinthPlace.BARN_WELL);var l=p.serverLevel();if(!loaded(l,b))return;var t=d.stateEntry(STATE,key(o));
         if(!t.getBoolean("FoodIssued")){
             if(l.getBlockEntity(b.offset(FOOD)) instanceof net.minecraft.world.Container c&&c.isEmpty()){
@@ -138,9 +141,9 @@ public final class Farmstead {
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){var s=e.getServer();if(LabyrinthBuilder.isCarving())return;var o=HouseSavedData.get(s).houseOrigin();if(o==null)return;var l=s.getLevel(HouseDimensions.OUTSIDE);var d=LabyrinthData.get(s);var b=LabyrinthPlaces.base(o,LabyrinthPlace.BARN_WELL);if(l==null||b==null)return;
         if(work!=null){if(!o.equals(workingOrigin)||!loaded(l,b)||!unseen(l,b)){work=null;return;}if(work.tick()){var t=d.stateEntry(STATE,key(o));t.putBoolean("Layout",true);d.setStateEntry(STATE,key(o),t);work=null;}return;}
         if(s.getTickCount()%40!=29)return;
-        if(ready(d,o)){for(var p:l.players())if(NovelVignettes.inside(p,LabyrinthPlace.BARN_WELL)){stock(p);break;}return;}
+        if(ready(d,o)||d.stateEntry(STATE,key(o)).getBoolean("FreshGeometry")){for(var p:l.players())if(NovelVignettes.inside(p,LabyrinthPlace.BARN_WELL)){stock(p);break;}if(ready(d,o))return;}
         if(d.door(LabyrinthPlace.BARN_WELL.entryDoorId())==null||!LabyrinthBuilder.isPlaceReady(d,LabyrinthPlace.BARN_WELL)||!loaded(l,b)||!unseen(l,b))return;
         penExisting(l,b);workingOrigin=o;work=BuildBlocks.record(l,()->layout(l,b));
     }
-    public static void forget(net.minecraft.server.MinecraftServer s,BlockPos o){var d=LabyrinthData.get(s);var t=d.stateEntry(STATE,key(o));t.remove("Layout");d.setStateEntry(STATE,key(o),t);work=null;}
+    public static void forget(net.minecraft.server.MinecraftServer s,BlockPos o){var d=LabyrinthData.get(s);var t=d.stateEntry(STATE,key(o));t.remove("Layout");t.remove("FreshGeometry");d.setStateEntry(STATE,key(o),t);work=null;}
 }
