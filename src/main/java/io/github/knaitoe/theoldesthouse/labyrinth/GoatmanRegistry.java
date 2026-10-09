@@ -19,6 +19,7 @@ public final class GoatmanRegistry {
     private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
     private static final DeferredRegister<ParticleType<?>> PARTICLES=DeferredRegister.create(Registries.PARTICLE_TYPE,TheOldestHouse.MOD_ID);
     public static final DeferredItem<Item> PLATE=ITEMS.registerSimpleItem("trailer_plate",new Item.Properties().stacksTo(1));
+    public static final DeferredItem<FranksPackageItem> FRANKS=ITEMS.registerItem("franks_package",FranksPackageItem::new,new Item.Properties().stacksTo(1));
     /** 0.4.53: one each, from the pan on the stove. */
     public static final DeferredItem<Item> BRAT=ITEMS.registerSimpleItem("goatman_brat",new Item.Properties().food(new FoodProperties.Builder().nutrition(6).saturationModifier(.6F).build()));
     /** 0.4.53: what the reader who counted right takes home. */

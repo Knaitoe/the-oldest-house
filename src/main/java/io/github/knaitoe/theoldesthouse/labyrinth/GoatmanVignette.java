@@ -48,7 +48,7 @@ public final class GoatmanVignette {
     public static final int PATH=1,GATHERING=2,VIGIL=3,DAWN=4,MAX_PLAYERS=16,VERSION=453;
     public static final int GATHER_TICKS=1800,VIGIL_TICKS=1600;
     /** The evening, by the gathering clock. */
-    public static final int WINDOW_HINT=200,RUNNER_LEAVES=360,SUPPER=600,GRUMBLE=1000,EXTRA_OUT=1100,RUNNER_BACK=1300,SILENCE=1500;
+    public static final int WINDOW_HINT=880,RUNNER_LEAVES=360,SUPPER=600,GRUMBLE=1000,EXTRA_OUT=1100,RUNNER_BACK=1300,SILENCE=1500;
     /** The night, by the vigil clock. */
     public static final int KNOCK_FROM=60,KNOCK_UNTIL=1150,WINDOW_TRY=700,CHECK=720,BEDTIME=1000,KEEN=1250;
     public static final int FACE=1,SILENT=2,LATE_LAUGH=4,STILL=8,FIRELIGHT=16,HEAD=32,PET=64;
@@ -62,12 +62,13 @@ public final class GoatmanVignette {
     private static final double WALK=.075,RUN=.18,CREEP=.06;
     /** For the native tests: the cousins cover their routes at once, through every arrival, as though they had walked. */
     private static boolean hurried;
+    public static int count(CompoundTag r){return r.contains("Cousins0464")?Math.max(5,Math.min(8,r.getInt("Cousins0464"))):5;}
     private GoatmanVignette(){}
 
     // ------------------------------------------------------------------------------------------------ state
     public static CompoundTag run(LabyrinthData d){return d.state(ID).getCompound("Run").copy();}
     public static CompoundTag personal(LabyrinthData d,UUID id){return d.state(ID).getCompound("Players").getCompound(id.toString()).copy();}
-    private static void saveRun(LabyrinthData d,CompoundTag r){CompoundTag all=d.state(ID);all.put("Run",r);d.setState(ID,all);}
+    static void saveRun(LabyrinthData d,CompoundTag r){CompoundTag all=d.state(ID);all.put("Run",r);d.setState(ID,all);}
     static void savePersonal(LabyrinthData d,UUID id,CompoundTag p){CompoundTag all=d.state(ID),players=all.getCompound("Players");players.put(id.toString(),p);all.put("Players",players);d.setState(ID,all);}
     /** A trailer carved again starts its next evening from nothing; every child's own record stays. */
     public static void forgetRun(MinecraftServer s){LabyrinthData d=LabyrinthData.get(s);CompoundTag all=d.state(ID);if(!all.contains("Run"))return;all.remove("Run");d.setState(ID,all);}
@@ -85,15 +86,16 @@ public final class GoatmanVignette {
         boolean empty=b==null||l==null||visitors(l,b).isEmpty();
         if(!empty&&!r.getCompound("Cohort").contains(p.getUUID().toString())&&r.getCompound("Cohort").getAllKeys().size()>=MAX_PLAYERS)return false;
         CompoundTag own=r.getCompound("Cohort").getCompound(p.getUUID().toString());
+        if(own.isEmpty()&&r.getInt("Phase")==GATHERING&&r.getInt("Clock")>=SUPPER)return false;
         if(r.getInt("Phase")==DAWN)return empty;
         return r.getInt("Phase")!=VIGIL||empty||own.getBoolean("Active")&&!own.getBoolean("Failed");
     }
     private static CompoundTag newRun(ServerPlayer p){
         CompoundTag r=new CompoundTag();r.putUUID("Id",UUID.randomUUID());r.putInt("Phase",PATH);r.putInt("Version",VERSION);
-        int wrong=p.getRandom().nextInt(5),runner=(wrong+1+p.getRandom().nextInt(4))%5;r.putInt("Wrong",wrong);r.putInt("Runner",runner);
+        r.putInt("Cousins0464",8);r.putBoolean("PlayerServes0464",true);int wrong=p.getRandom().nextInt(8),runner=(wrong+1+p.getRandom().nextInt(7))%8;r.putInt("Wrong",wrong);r.putInt("Runner",runner);
         List<Integer> tells=new ArrayList<>(List.of(FACE,SILENT,LATE_LAUGH,STILL,FIRELIGHT,HEAD,PET));
         Collections.shuffle(tells,new Random(p.getRandom().nextLong()));int mask=0,n=2+p.getRandom().nextInt(2);for(int tell:tells){if(tell==HEAD&&(mask&FACE)!=0||tell==FACE&&(mask&HEAD)!=0)continue;mask|=tell;if(Integer.bitCount(mask)==n)break;}r.putInt("Tells",mask);
-        List<Integer> skins=new ArrayList<>(List.of(0,1,2,3,4));Collections.shuffle(skins,new Random(p.getRandom().nextLong()));for(int i=0;i<5;i++)r.putInt("Skin"+i,skins.get(i));
+        List<Integer> skins=new ArrayList<>(List.of(0,1,2,3,4,6,7,8));Collections.shuffle(skins,new Random(p.getRandom().nextLong()));for(int i=0;i<count(r);i++)r.putInt("Skin"+i,skins.get(i));
         return r;
     }
     public static void onArrive(ServerPlayer p,LabyrinthPlace place){if(place==LabyrinthPlace.GOATMAN)enter(p);}
@@ -107,13 +109,13 @@ public final class GoatmanVignette {
         if(r.getInt("Phase")==0||r.getInt("Version")!=VERSION&&!other||r.getInt("Phase")==DAWN&&!other||!other&&(!member||cohort.getCompound(p.getUUID().toString()).getBoolean("Failed")||!cohort.getCompound(p.getUUID().toString()).getBoolean("Active"))){
             r=newRun(p);cohort=new CompoundTag();member=false;reset(l,b);
         }
-        if(!member&&(r.getInt("Phase")==VIGIL||r.getInt("Phase")==DAWN||cohort.getAllKeys().size()>=MAX_PLAYERS))return false;
+        if(!member&&(r.getInt("Phase")==VIGIL||r.getInt("Phase")==DAWN||r.getInt("Phase")==GATHERING&&r.getInt("Clock")>=SUPPER||cohort.getAllKeys().size()>=MAX_PLAYERS))return false;
         CompoundTag own=cohort.getCompound(p.getUUID().toString());
         if(!member){own.putBoolean("Active",true);own.putDouble("Progress",0);own.putInt("Vigil",0);own.putBoolean("Arrived",false);}
         own.putBoolean("Active",true);cohort.put(p.getUUID().toString(),own);r.put("Cohort",cohort);saveRun(d,r);
         if(!member)p.displayClientMessage(Component.literal("You're late. Your cousins are already at the trailer."),false);
         scale(p,true);IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.GOATMAN);stage(l,b,r);
-        GoatmanWoods.supplies(l,b,4+cohort.getAllKeys().size());return true;
+        GoatmanWoods.supplies(l,b,count(r)-1+cohort.getAllKeys().size());return true;
     }
     /** A fresh evening: no actors, day, the door open, the bathroom window propped, the porch light on, the pan and the plates empty. */
     private static void reset(ServerLevel l,BlockPos b){
@@ -139,11 +141,11 @@ public final class GoatmanVignette {
 
     // ------------------------------------------------------------------------------------------------ where they go
     private record Spot(Vec3 at,float yaw,boolean inside,int pose,Vec3[] access,@Nullable BlockPos bed){}
-    static final int STAND=0,SIT=1,LIE=2;
+    static final int STAND=0,SIT=1,LIE=2,COWER=3;
     static final Vec3 YARD=new Vec3(-1.5,0,-49.5),ENTRY=new Vec3(.5,1,-57);
     /** From the yard up the porch, the step and through the door. */
     static final Vec3[] UP={new Vec3(.5,0,-50.5),new Vec3(.5,0,-51.5),new Vec3(.5,.5,-52.6),new Vec3(.5,1,-53.8),new Vec3(.5,1,-54.5)};
-    static final String[] ACTIVITY={"fireW","fireE","fireN","kitchen","shed"};
+    static final String[] ACTIVITY={"fireW","fireE","fireN","kitchen","shed","fireS","firelight","step"};
     private static final Map<String,Spot> SPOTS=new HashMap<>();
     private static void spot(String key,Vec3 at,float yaw,boolean inside,int pose,Vec3... access){SPOTS.put(key,new Spot(at,yaw,inside,pose,access,null));}
     static{
@@ -154,10 +156,13 @@ public final class GoatmanVignette {
         spot("byFire",new Vec3(-6,0,-49.6),0,false,STAND,new Vec3(-4.5,0,-49.6));
         spot("firelight",new Vec3(7.5,0,-48.5),90,false,STAND,new Vec3(3.5,0,-48.5));
         spot("shed",new Vec3(10.5,0,-62.5),270,false,STAND,new Vec3(3.5,0,-48.5),new Vec3(10.5,0,-48.5));
+        spot("windowRunE",new Vec3(9.5,1,-58.5),270,false,STAND,new Vec3(9.5,0,-49.5));
+        spot("windowRunBack",new Vec3(9.5,1,-66.5),270,false,STAND,new Vec3(9.5,0,-49.5));
         spot("step",new Vec3(.5,1,-53.8),180,false,STAND,UP[0],UP[1],UP[2]);
         spot("kitchen",new Vec3(-4.5,1,-74.5),180,true,STAND,new Vec3(-3,1,-57.5),new Vec3(-3,1,-72.5));
         spot("floor",new Vec3(.5,1.05,-58.5),0,true,LIE);
         spot("checkDoor",new Vec3(.5,1,-56.2),0,true,STAND);
+        for(int i=0;i<8;i++)spot("cower"+i,new Vec3(i%2==0?-3.8:4.8,1,-65.5-(i/2)*2),180,true,COWER,new Vec3(i%2==0?-3:4,1,-57.5),new Vec3(i%2==0?-3:4,1,-65.5-(i/2)*2));
         for(int s=0;s<10;s++){boolean west=s%2==0;double z=GoatmanWoods.CHAIR_Z[s/2]+.5;
             spot("seat"+s,new Vec3(west?-1.25:2.25,1.5,z),west?270:90,true,SIT,new Vec3(west?-3:4,1,-57.5),new Vec3(west?-3:4,1,z));}
         for(int k=0;k<10;k++){var foot=GoatmanWoods.bunk(k);if(foot.getY()!=1)continue;boolean west=k%2==0;double z=foot.getZ()+.5;
@@ -166,6 +171,7 @@ public final class GoatmanVignette {
     /** Points to walk from one spot to another, through the yard or the door as needed. */
     private static List<Vec3> route(String from,String to){
         Spot a=SPOTS.get(from),z=SPOTS.get(to);List<Vec3> out=new ArrayList<>();if(z==null)return out;
+        if(from.startsWith("windowRun")&&to.startsWith("windowRun")){out.add(z.at());return out;}
         if(a!=null){for(int i=a.access().length-1;i>=0;i--)out.add(a.access()[i]);
             if(a.inside()!=z.inside()){
                 if(a.inside()){out.add(ENTRY);for(int i=UP.length-1;i>=0;i--)out.add(UP[i]);out.add(YARD);}
@@ -177,7 +183,7 @@ public final class GoatmanVignette {
     private static void setRoute(GoatmanChild c,List<Vec3> points,String goal){
         ListTag list=new ListTag();for(Vec3 v:points){CompoundTag t=new CompoundTag();t.putDouble("X",v.x);t.putDouble("Y",v.y);t.putDouble("Z",v.z);list.add(t);}
         c.getPersistentData().put("Route",list);c.getPersistentData().putString("Goal",goal);
-        if(c.isSleeping())c.stopSleeping();if(c.hasPose(Pose.SLEEPING))c.setPose(Pose.STANDING);c.pose(false);
+        if(c.isSleeping())c.stopSleeping();if(c.hasPose(Pose.SLEEPING))c.setPose(Pose.STANDING);c.pose(false);c.cower(false);
     }
     private static String at(GoatmanChild c){return c.getPersistentData().getString("At");}
     private static String goal(GoatmanChild c){return c.getPersistentData().getString("Goal");}
@@ -187,7 +193,7 @@ public final class GoatmanVignette {
         Vec3 at=abs(s.at(),b);
         if(s.pose()==LIE&&s.bed()!=null){c.startSleeping(b.offset(s.bed()));}
         else{c.moveTo(at.x,at.y,at.z,s.yaw(),0);c.setYHeadRot(s.yaw());c.yBodyRot=s.yaw();if(s.pose()==LIE)c.setPose(Pose.SLEEPING);}
-        c.pose(s.pose()==SIT);
+        c.pose(s.pose()==SIT);c.cower(s.pose()==COWER);
     }
     /** Every cousin walks the rest of its way now (native tests only); watching still stops the one that only moves unwatched. */
     public static void hurry(ServerLevel l,BlockPos b){
@@ -223,22 +229,22 @@ public final class GoatmanVignette {
         if(i==wrong){
             return switch(r.getInt("ExtraState")){
                 case X_ACTIVITY->(r.getInt("Tells")&FIRELIGHT)!=0?"firelight":ACTIVITY[i];
-                case X_SUPPER,X_INSIDE->"seat"+i;case X_FIRE->"byFire";case X_APPROACH,X_DOOR->"step";default->"floor";
+                case X_SUPPER,X_INSIDE->"seat"+i;case X_FIRE->clock>=RUNNER_BACK&&clock<SILENCE?(clock<RUNNER_BACK+130?"windowRunE":"windowRunBack"):"byFire";case X_APPROACH,X_DOOR->"step";default->"floor";
             };
         }
         if(i==runner&&r.getInt("RunnerState")!=R_HOME&&r.getInt("RunnerState")!=R_INSIDE)return "step";
-        if(phase==VIGIL&&clock>=BEDTIME)return "bunk"+i;
+        if(phase==VIGIL&&clock>=BEDTIME)return "cower"+i;
         if(phase==VIGIL&&i==checker(r)&&clock>=CHECK&&clock<CHECK+260)return "checkDoor";
         if(phase>=VIGIL||clock>=SUPPER)return "seat"+i;
         return ACTIVITY[i];
     }
     /** The cousin who wants to check the door: the first who is neither the runner nor the thing. */
-    static int checker(CompoundTag r){for(int i=0;i<5;i++)if(i!=r.getInt("Wrong")&&i!=r.getInt("Runner"))return i;return 0;}
+    static int checker(CompoundTag r){for(int i=0;i<count(r);i++)if(i!=r.getInt("Wrong")&&i!=r.getInt("Runner"))return i;return 0;}
 
     public static void stage(ServerLevel l,BlockPos b,CompoundTag r){
         if(!r.hasUUID("Id"))return;List<GoatmanChild> children=actors(l,b);
         for(var c:children)if(!c.getTags().contains("TrailerWalk")&&(!c.getPersistentData().hasUUID(ROUND)||!c.getPersistentData().getUUID(ROUND).equals(r.getUUID("Id"))))c.discard();
-        for(int i=0;i<5;i++){
+        for(int i=0;i<count(r);i++){
             boolean away=i==r.getInt("Runner")&&(r.getInt("RunnerState")==R_AWAY||r.getInt("RunnerState")==R_LOST)||i==r.getInt("Wrong")&&r.getInt("Phase")==DAWN;
             final int index=i;var matches=children.stream().filter(c->!c.isRemoved()&&!c.girl()&&c.getPersistentData().getInt(INDEX)==index).toList();
             if(away){matches.forEach(Entity::discard);continue;}
@@ -297,7 +303,7 @@ public final class GoatmanVignette {
         int phase=r.getInt("Phase"),clock=r.getInt("Clock"),wrong=r.getInt("Wrong"),runner=r.getInt("Runner");
         boolean open=GoatmanWoods.doorOpen(l,b);
         for(var c:cousinsOf(l,b)){
-            int i=c.getPersistentData().getInt(INDEX);if(i>=5)continue;
+            int i=c.getPersistentData().getInt(INDEX);if(i>=count(r))continue;
             String want=place(i,r);double speed=WALK;
             if(i==runner){int rs=r.getInt("RunnerState");
                 if(rs==R_LEAVING){if(!goal(c).equals("_trail")&&!at(c).equals("_trail")){List<Vec3> out=toYard(at(c));
@@ -307,6 +313,7 @@ public final class GoatmanVignette {
                 if(rs==R_KNOCKING){face(c,abs(new Vec3(.5,1,-55.5),b));c.pose(false);if(open){r.putInt("RunnerState",R_INSIDE);setRoute(c,inFrom("step",i),"seat"+i);}continue;}
             }
             if(i==wrong){int xs=r.getInt("ExtraState");
+                if(xs==X_FIRE&&phase==GATHERING&&clock>=RUNNER_BACK&&clock<SILENCE)speed=RUN;
                 if(xs==X_APPROACH){
                     // It comes only while nobody is looking at it.
                     if(!goal(c).equals("step"))setRoute(c,route(at(c),"step"),"step");
@@ -340,7 +347,7 @@ public final class GoatmanVignette {
     private static void arrive(GoatmanChild c,BlockPos b,CompoundTag r,ServerLevel l,String key){
         settle(c,b,key);int i=c.getPersistentData().getInt(INDEX);
         // Each cousin who sits down to supper takes a brat from the pan, the one who doesn't belong included.
-        if(key.startsWith("seat")&&r.getInt("Phase")==GATHERING&&(r.getInt("Served")&(1<<i))==0){
+        if(!r.getBoolean("PlayerServes0464")&&key.startsWith("seat")&&r.getInt("Phase")==GATHERING&&(r.getInt("Served")&(1<<i))==0){
             r.putInt("Served",r.getInt("Served")|(1<<i));
             if(r.getInt("Pan")>0){r.putInt("Pan",r.getInt("Pan")-1);GoatmanWoods.pan(l,b,r.getInt("Pan"));GoatmanWoods.served(l,b,i,true);}
             else if(i==r.getInt("Runner"))say(visitors(l,b),"A cousin: Y'all ate mine?");
@@ -375,7 +382,7 @@ public final class GoatmanVignette {
         if(r.getInt("Phase")==0||r.getInt("Version")!=VERSION)return;CompoundTag cohort=r.getCompound("Cohort");int phase=r.getInt("Phase");
         List<ServerPlayer> enrolled=present.stream().filter(p->cohort.contains(p.getUUID().toString())&&!cohort.getCompound(p.getUUID().toString()).getBoolean("Failed")).toList();
         if(enrolled.isEmpty())return;
-        if(phase<VIGIL&&r.getInt("Expected")!=4+enrolled.size()){r.putInt("Expected",4+enrolled.size());GoatmanWoods.supplies(l,b,4+enrolled.size());}
+        if(phase<VIGIL&&r.getInt("Expected")!=count(r)-1+enrolled.size()){r.putInt("Expected",count(r)-1+enrolled.size());GoatmanWoods.supplies(l,b,count(r)-1+enrolled.size());}
         boolean arrived=true;int clock=r.getInt("Clock");
         for(ServerPlayer p:enrolled){
             String key=p.getUUID().toString();CompoundTag own=cohort.getCompound(key);scale(p,true);
@@ -390,9 +397,9 @@ public final class GoatmanVignette {
             cohort.put(key,own);
         }
         r.put("Cohort",cohort);
-        if(phase==PATH&&arrived){phase=GATHERING;clock=0;r.putInt("Phase",phase);r.putInt("Pan",4+enrolled.size());r.putInt("PanFor",4+enrolled.size());GoatmanWoods.pan(l,b,r.getInt("Pan"));}
+        if(phase==PATH&&arrived){phase=GATHERING;clock=0;r.putInt("Phase",phase);r.putInt("Pan",r.getBoolean("PlayerServes0464")?0:count(r)-1+enrolled.size());r.putInt("PanFor",count(r)-1+enrolled.size());GoatmanWoods.pan(l,b,r.getInt("Pan"));}
         if(phase==PATH)clock++;
-        else if(phase==GATHERING){if(arrived){clock++;evening(l,b,r,enrolled,clock);if(clock>=GATHER_TICKS){nightfall(l,b,r,enrolled);phase=VIGIL;clock=0;}}}
+        else if(phase==GATHERING){clock++;evening(l,b,r,enrolled,clock);if(clock>=GATHER_TICKS){nightfall(l,b,r,enrolled);phase=VIGIL;clock=0;}}
         else if(phase==VIGIL){clock++;night(l,b,r,enrolled,clock);if(clock>=VIGIL_TICKS){r.putInt("Clock",clock);dawn(l,b,r,enrolled,d);phase=DAWN;}}
         r.putInt("Clock",clock);
         // Restore saved actors, never reroll a tell or duplicate a cousin after a restart.
@@ -403,10 +410,12 @@ public final class GoatmanVignette {
     }
     private static void evening(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> enrolled,int clock){
         // Late joiners before supper get a brat counted for them; nobody gets one counted after.
-        if(clock<SUPPER&&r.getInt("PanFor")!=r.getInt("Expected")){r.putInt("Pan",r.getInt("Pan")+r.getInt("Expected")-r.getInt("PanFor"));r.putInt("PanFor",r.getInt("Expected"));GoatmanWoods.pan(l,b,r.getInt("Pan"));}
-        if(clock==WINDOW_HINT)say(enrolled,"A cousin: Somebody shut the bathroom window. Bugs are getting in.");
+        if(!r.getBoolean("PlayerServes0464")&&clock<SUPPER&&r.getInt("PanFor")!=r.getInt("Expected")){r.putInt("Pan",r.getInt("Pan")+r.getInt("Expected")-r.getInt("PanFor"));r.putInt("PanFor",r.getInt("Expected"));GoatmanWoods.pan(l,b,r.getInt("Pan"));}
+        if(clock==120)say(enrolled,"A cousin: Four in each pack. We counted enough for everybody. Could you put them out when they're ready?");
+        if(clock==WINDOW_HINT)say(enrolled,"A cousin: Is anyone else getting cold back there?");
         if(clock==RUNNER_LEAVES&&r.getInt("RunnerState")==R_HOME){r.putInt("RunnerState",R_LEAVING);say(enrolled,"A cousin: Generator's out of gas. I'll run get some from the truck. Back before dark.");}
         if(clock==SUPPER){if(r.getInt("ExtraState")==X_ACTIVITY)r.putInt("ExtraState",X_SUPPER);GoatmanWoods.door(l,b,true);say(enrolled,"A cousin: Food's on the table. Come inside before it gets cold.");}
+        if(clock>=RUNNER_BACK&&clock<SILENCE&&clock%50==0){var at=b.offset(8,2,clock<RUNNER_BACK+130?-59:-67);l.playSound(null,at,GoatmanRegistry.CLAW.get(),SoundSource.BLOCKS,.35F,1.35F);}
         if(clock==GRUMBLE)say(enrolled,"A cousin: Who had two? There was one for everybody.");
         if(clock==EXTRA_OUT&&r.getInt("ExtraState")==X_SUPPER)r.putInt("ExtraState",X_FIRE);
         if(clock>=RUNNER_BACK&&clock<SILENCE&&r.getInt("RunnerState")==R_AWAY){
@@ -564,6 +573,7 @@ public final class GoatmanVignette {
         if(!(e.getEntity() instanceof ServerPlayer p)||!inside(p))return;
         if(openDoor(p,e.getPos())){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);return;}
         BlockPos b=base(p.server);
+        if(GoatmanSupper.interact(p,e))return;
         // The bathroom window is an ordinary awning window; anyone may prop it or shut it.
         if(e.getPos().equals(b.offset(GoatmanWoods.WINDOW)))return;
         if(e.getPos().equals(b.offset(GoatmanWoods.STOVE))||e.getPos().equals(b.offset(GoatmanWoods.PAN))){takeBrat(p,b);e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);return;}
