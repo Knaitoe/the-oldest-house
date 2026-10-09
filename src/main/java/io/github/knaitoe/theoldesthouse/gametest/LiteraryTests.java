@@ -209,6 +209,9 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             var camera=NativeTestPlayers.survival(h,"shore_camera");f.players.add(camera);camera.teleportTo(f.out,b.getX()+.5,b.getY()+ElkCarcassMap.MAIN+1,b.getZ()-.5,180,0);camera.setNoGravity(true);camera.setGameMode(GameType.SPECTATOR);camera.lookAt(EntityAnchorArgument.Anchor.EYES,a.getEyePosition());
             var before=a.position();var own=f.own(p,place);
             h.assertTrue(!ElkHunt.land(p,b,a,own)&&a.position().equals(before)&&!own.getBoolean("ElkLanded"),"even a native spectator's camera prevents a visible departure from the boat");
+            camera.moveTo(b.getX()+.5,b.getY()+ElkCarcassMap.MAIN+1,b.getZ()-63.5);camera.lookAt(EntityAnchorArgument.Anchor.EYES,a.getEyePosition());
+            h.assertTrue(camera.distanceTo(a)>48&&!ElkHunt.land(p,b,a,own)&&a.position().equals(before),"a camera sixty blocks away still protects the visible original boat body");
+            camera.moveTo(b.getX()+.5,b.getY()+ElkCarcassMap.MAIN+1,b.getZ()-.5);
             camera.setYRot(0);camera.setXRot(0);
             h.assertTrue(ElkHunt.land(p,b,a,own),"turning the actual camera away permits an unseen shore pursuit");
             var r=a.position().subtract(b.getX(),b.getY(),b.getZ());
@@ -225,7 +228,8 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             var own=f.own(p,place);own.putInt("ElkStage",ElkHunt.HUNTED);own.putBoolean("ElkResetPending",false);own.putInt("ElkEmerge",0);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
             p.hasChangedDimension();peer.hasChangedDimension();p.connection.resetPosition();peer.connection.resetPosition();p.setInvulnerable(false);peer.setInvulnerable(false);ready[0]=true;
         }).thenIdle(85).thenExecute(()->{h.assertTrue(swings[0]>=2&&p.getHealth()<p.getMaxHealth()&&peer.getHealth()==peer.getMaxHealth(),"native swings deal actual owner damage with breathing room and leave the other reader unharmed: swings="+swings[0]+", ownerHealth="+p.getHealth()+", peerHealth="+peer.getHealth()+", own="+f.own(p,place));h.succeed();});
-        h.onEachTick(()->{if(!ready[0])return;var a=elkKiller(f,p);if(a==null)return;var b=f.base(place);f.at(p,place,.5,0,-21.5);f.at(peer,place,1.5,0,-21.5);a.moveTo(b.getX()+.5,b.getY(),b.getZ()-22.5);a.setDeltaMovement(Vec3.ZERO);a.setNoGravity(true);
+        h.onEachTick(()->{if(!ready[0])return;var a=elkKiller(f,p);if(a==null)return;var b=f.base(place);f.at(p,place,.5,0,-8.5);f.at(peer,place,1.5,0,-8.5);a.moveTo(b.getX()+.5,b.getY(),b.getZ()-9.5);a.setDeltaMovement(Vec3.ZERO);a.setNoGravity(true);
+            h.assertTrue(f.out.noCollision(p,p.getBoundingBox())&&f.out.noCollision(a,a.getBoundingBox()),"the axe test uses the real clear cabin corridor, outside the companionway stairs");
             long stamp=f.own(p,place).getLong("ElkStrikeAt");if(stamp>0&&stamp!=last[0]){if(last[0]>0)h.assertTrue(stamp-last[0]>=ElkHunt.ATTACK_DELAY,"every physical axe swing observes the saved one-and-a-half-second recovery");last[0]=stamp;swings[0]++;}
         });
     }
