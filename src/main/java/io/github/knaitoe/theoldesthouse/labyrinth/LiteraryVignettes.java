@@ -81,7 +81,7 @@ public final class LiteraryVignettes {
     public static void open(ServerPlayer p,LabyrinthPlace place,String key,ItemStack book,BlockPos surface){open(p,place,personal(LabyrinthData.get(p.server),p.getUUID(),place),key,book,surface);}
     private static void open(ServerPlayer p,LabyrinthPlace place,CompoundTag own,String key,ItemStack book,BlockPos surface){if(!inside(p,place)||p.distanceToSqr(surface.getCenter())>36)return;var d=LabyrinthData.get(p.server);String slot="Original_"+key;
         if(!own.contains(slot))own.put(slot,mark(p,place,key,book).save(p.registryAccess()));var original=ItemStack.parseOptional(p.registryAccess(),own.getCompound(slot));save(d,p.getUUID(),place,own);
-        p.openMenu(new SimpleMenuProvider((id,inv,who)->new Pages(id,p,place,key,original,true,true,surface),original.getHoverName()));if(p.containerMenu instanceof Pages pages)pages.opened();}
+        p.openMenu(new SimpleMenuProvider((id,inv,who)->new Pages(id,p,place,key,original,true,true,surface),original.getHoverName()));if(p.containerMenu instanceof Pages pages)pages.opened(own);}
     public static final class Pages extends LecternMenu {
         private final ServerPlayer reader;private final LabyrinthPlace place;private final String key;private final ItemStack book;private final boolean owned,surface;private final BlockPos at;
         Pages(int id,ServerPlayer p,LabyrinthPlace place,String key,ItemStack book,boolean owned,boolean surface,BlockPos at){super(id,container(book),new SimpleContainerData(1));this.reader=p;this.place=place;this.key=key;this.book=book.copy();this.owned=owned;this.surface=surface;this.at=at;}
@@ -91,7 +91,9 @@ public final class LiteraryVignettes {
             if(button==3){if(!surface||!owned||own.getBoolean("Taken_"+key))return false;own.putBoolean("Taken_"+key,true);save(d,reader.getUUID(),place,own);give(reader,book.copy());return true;}
             if(!super.clickMenuButton(who,button))return false;if(getPage()==book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()-1)reached(d,own);return true;}
         /** A one-page paper has no page to turn to, and the lectern sends nothing for it: opening it is reading it to the end. */
-        public void opened(){if(book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()>1||!participant(reader)||surface&&(!inside(reader,place)||reader.distanceToSqr(at.getCenter())>36))return;var d=LabyrinthData.get(reader.server);reached(d,personal(d,reader.getUUID(),place));}
+        public void opened(){opened(personal(LabyrinthData.get(reader.server),reader.getUUID(),place));}
+        /** Marks the record the caller still holds and will save, so the read is not lost to a stale copy. */
+        void opened(CompoundTag own){if(book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()>1||!participant(reader)||surface&&(!inside(reader,place)||reader.distanceToSqr(at.getCenter())>36))return;reached(LabyrinthData.get(reader.server),own);}
         private void reached(LabyrinthData d,CompoundTag own){if(owned){own.putBoolean("Read_"+key,true);if(key.startsWith("Diary")){int index=Integer.parseInt(key.substring(5));own.putInt("DiaryRead",own.getInt("DiaryRead")|(1<<index));if(own.getInt("DiaryRead")==255)ready(reader,place,own,"read_all_eight_original_pages");}
                 // An account answers its source: said aloud, rather than silently not counting.
                 if(key.equals("Ending")&&own.getBoolean("Ready")&&!own.getBoolean("Read_Source")&&!own.getBoolean("Completed")){var source=LiteraryTexts.source(place).get(DataComponents.WRITTEN_BOOK_CONTENT);
