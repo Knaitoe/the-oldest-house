@@ -121,11 +121,13 @@ public final class LiveExpeditionClient {
         if(step==21&&ticks==30){mc.options.keyUp.setDown(false);shot=role+"-private-leaves";ack(mc,21);}
         if(step==23){
             mc.options.keyShift.setDown(true);boolean left=role.equals("A");
+            if(!data.getBoolean("MineTurn")){mc.options.keyUp.setDown(false);mc.options.keyAttack.setDown(false);return;}
             if(!block.isAir()){
                 mc.options.keyUp.setDown(false);var to=target.getCenter().subtract(mc.player.getEyePosition());
                 mc.player.setYRot((float)Math.toDegrees(Math.atan2(-to.x,to.z)));mc.player.setXRot((float)-Math.toDegrees(Math.atan2(to.y,Math.hypot(to.x,to.z))));
                 // Holding the actual attack input lets Minecraft retain its native mining progress.
                 // Direct post-tick mining calls are canceled by the next tick's released input.
+                if(!mc.isWindowActive())org.lwjgl.glfw.GLFW.glfwFocusWindow(mc.getWindow().getWindow());
                 if(!mc.mouseHandler.isMouseGrabbed())mc.mouseHandler.grabMouse();
                 mc.options.keyAttack.setDown(true);
             }else{
