@@ -151,15 +151,15 @@ public final class GoatmanWoods {
         put(l,b,12,0,-63,Blocks.RED_TERRACOTTA);put(l,b,13,0,-61,Blocks.BARREL);
     }
     private static void door(ServerLevel l,BlockPos b,BlockPos at,Direction facing,boolean open){
-        var state=Blocks.OAK_DOOR.defaultBlockState().setValue(DoorBlock.FACING,facing).setValue(DoorBlock.HINGE,DoorHingeSide.LEFT).setValue(DoorBlock.OPEN,open);
+        var state=Blocks.SPRUCE_DOOR.defaultBlockState().setValue(DoorBlock.FACING,facing).setValue(DoorBlock.HINGE,DoorHingeSide.LEFT).setValue(DoorBlock.OPEN,open);
         BuildBlocks.set(l,b.offset(at),state.setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER),F);BuildBlocks.set(l,b.offset(at).above(),state.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER),F);
     }
     private static void doorBlocks(ServerLevel l,BlockPos b,boolean open){
-        var state=Blocks.OAK_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.OPEN,open);
+        var state=Blocks.SPRUCE_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.OPEN,open);
         BuildBlocks.set(l,b.offset(DOOR),state.setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER),F);BuildBlocks.set(l,b.offset(DOOR).above(),state.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER),F);
     }
     public static void door(ServerLevel l,BlockPos b,boolean open){
-        var state=Blocks.OAK_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.OPEN,open);
+        var state=Blocks.SPRUCE_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.OPEN,open);
         l.setBlock(b.offset(DOOR),state.setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER),F);l.setBlock(b.offset(DOOR).above(),state.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER),F);
     }
     public static boolean doorOpen(ServerLevel l,BlockPos b){var s=l.getBlockState(b.offset(DOOR));return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}
@@ -188,8 +188,8 @@ public final class GoatmanWoods {
     public static Vec3 panSpot(int i){return new Vec3(-5.8+(i%6)*.5,2.1,-75.25-(i/6)*.45);}
     public static void supplies(ServerLevel l,BlockPos b,int count){
         // Supply changes follow actual arrivals; they are scenery, never renewable item rewards.
-        count=Math.max(5,Math.min(20,count));
-        for(int i=0;i<20;i++){
+        count=Math.max(5,Math.min(24,count));
+        for(int i=0;i<24;i++){
             BlockPos bed=b.offset(bunk(i));
             if(i<count){var s=Blocks.RED_BED.defaultBlockState().setValue(BedBlock.FACING,Direction.EAST);
                 l.setBlock(bed,s.setValue(BedBlock.PART,BedPart.FOOT),F);l.setBlock(bed.east(),s.setValue(BedBlock.PART,BedPart.HEAD),F);

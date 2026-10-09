@@ -29,6 +29,25 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class GoatmanTests {
+    private static Fixture supper;
+    @GameTest(template="empty",batch="goat_supper",timeoutTicks=100)
+    public static void freshPacketsOpenIntoFourFiniteFranksAndPlayersServeWithoutFreezingAnEvening(GameTestHelper h){
+        supper=new Fixture(h,28600);var f=supper;var p=f.player();h.assertTrue(GoatmanVignette.enter(p),"the child joins a fresh evening");
+        var r=f.run();h.assertTrue(GoatmanVignette.count(r)==8,"a fresh round stages eight apparent cousins");
+        r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.SUPPER+20);r.putInt("Expected",8);r.putInt("Pan",0);f.cohort(r,List.of(p),0);f.run(r);
+        p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);f.click(p,GoatmanWoods.STOVE);
+        h.assertTrue(p.getMainHandItem().is(GoatmanRegistry.FRANKS.get())&&f.run().getInt("PacketsIssued0464")==1,"a real stove interaction gives one finite unopened pack");
+        f.click(p,GoatmanWoods.STOVE);h.assertTrue(p.getMainHandItem().is(GoatmanRegistry.BRAT.get())&&p.getMainHandItem().getCount()==4,"opening the held pack produces exactly four franks in that hand");
+        f.click(p,new BlockPos(-1,1,-61));f.click(p,new BlockPos(-1,1,-61));
+        h.assertTrue(p.getMainHandItem().getCount()==3&&Integer.bitCount(f.run().getInt("Plated0464"))==1,"serving consumes one frank; clicking the same plate cannot double serve it");
+        f.click(p,GoatmanWoods.STOVE);p.getInventory().selected=1;h.assertTrue(p.getMainHandItem().is(GoatmanRegistry.FRANKS.get()),"the second pack is still unopened");f.click(p,GoatmanWoods.STOVE);
+        h.assertTrue(p.getInventory().countItem(GoatmanRegistry.BRAT.get())==7,"two opened packs contain eight total franks including the plated one");
+        f.click(p,GoatmanWoods.STOVE);h.assertTrue(f.run().getInt("PacketsIssued0464")==2&&p.getInventory().countItem(GoatmanRegistry.FRANKS.get())==0,"the wrappers cannot replenish supplies");
+        GoatmanVignette.hurry(f.l,f.b);h.assertTrue(Integer.bitCount(f.run().getInt("Plated0464"))==1,"cousin arrivals never serve food for the player");
+        r=f.run();r.putInt("Clock",200);f.run(r);var late=f.player();h.assertTrue(GoatmanVignette.enter(late),"an early latecomer can still join");
+        GoatmanVignette.tick(f.server);h.assertTrue(f.run().getInt("Clock")>200,"an evening already underway advances while an early latecomer walks the path");h.succeed();
+    }
+    @AfterBatch(batch="goat_supper") public static void supperDone(ServerLevel level){if(supper!=null){supper.close();supper=null;}}
     @GameTest(template="empty") public static void woodsAppendWithoutMovingOldRoomsOrReinterpretingLeaks(GameTestHelper h){
         for(int y:new int[]{65,80,150,250}){
             var origin=new BlockPos(100,y,100);var b=LabyrinthPlaces.base(origin,LabyrinthPlace.GOATMAN);var slot=LabyrinthPlaces.slotBounds(origin,LabyrinthPlace.GOATMAN);
@@ -65,7 +84,7 @@ public final class GoatmanTests {
         }
         /** Dusk at the given clock: everyone has arrived, the pan was filled for them, and the cousin who went for gas is gone. */
         void evening(List<ServerPlayer> participants,int clock){
-            var r=run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",clock);int pan=4+participants.size();
+            var r=run();r.remove("Cousins0464");r.remove("PlayerServes0464");r.putInt("Wrong",r.getInt("Wrong")%5);r.putInt("Runner",(r.getInt("Wrong")+1)%5);cousins().forEach(Entity::discard);r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",clock);int pan=4+participants.size();
             r.putInt("Expected",pan);r.putInt("Pan",pan);r.putInt("PanFor",pan);r.putInt("RunnerState",clock>GoatmanVignette.RUNNER_LEAVES?GoatmanVignette.R_AWAY:GoatmanVignette.R_HOME);
             cohort(r,participants,0);run(r);GoatmanVignette.stage(l,b,r);GoatmanWoods.pan(l,b,pan);
         }
@@ -106,7 +125,7 @@ public final class GoatmanTests {
         h.onEachTick(()->{
             tick[0]++;double progress=tick[0]<=10?0:tick[0]<=30?(tick[0]-10)*.12:tick[0]<=50?2.4+(tick[0]-30)*.4:tick[0]<=70?10.4:Math.min(73,10.4+(tick[0]-70)*.6);f.at(p,progress);
         });
-        h.runAfterDelay(8,()->h.assertTrue(f.cousins().size()==5&&f.children().stream().filter(GoatmanChild::girl).count()==1,"five real shared cousins and the private path girl are staged"));
+        h.runAfterDelay(8,()->h.assertTrue(f.cousins().size()==8&&f.children().stream().filter(GoatmanChild::girl).count()==1,"eight shared apparent cousins and the private path girl are staged"));
         h.runAfterDelay(45,()->{
             var girl=f.children().stream().filter(GoatmanChild::girl).findFirst().orElseThrow();var own=GoatmanVignette.run(LabyrinthData.get(f.server)).getCompound("Cohort").getCompound(p.getUUID().toString());
             double girlProgress=GoatmanWoods.project(f.rel(girl)).progress();
