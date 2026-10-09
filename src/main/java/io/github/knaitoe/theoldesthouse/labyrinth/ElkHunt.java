@@ -20,7 +20,7 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>Aboard: he waits below until the reader has found enough of the dead (or long enough has
  * passed), then comes for them; the only way off is over the side. He will not swim after them:
- * he watches from the rail, and goes into the lake only once the reader is ashore. In the woods
+ * he watches from the rail, then reappears unseen in dry tree cover once the reader is ashore. In the woods
  * he walks a search, runs at anyone he sees, and loses them behind trees and undergrowth. A
  * reader who lies still in the hollow under the carcasses brings him into the cave; he passes the
  * gap twice, crouches at the pile, and leaves. Moving while he is near gives them away. Only a
@@ -37,6 +37,8 @@ public final class ElkHunt {
     public static final int WATCH = 0, WALK = 1, RUN = 2, PEER = 3;
     public static final int ATTACK_DELAY=30;
     private static final double SEARCH_SPEED = .75, CHASE_SPEED = 1.35;
+    /** Cover the visible body beyond the House's short-range scenery observation rule. */
+    private static final double RELOCATION_VIEW_RANGE=128;
     private static final int[][] LANDINGS = {{30, -60, 36, -65}, {-26, -58, -32, -64}, {10, -64, 10, -72}};
     private static final LabyrinthPlace PLACE = LabyrinthPlace.ELK_CARCASSES;
 
@@ -362,7 +364,7 @@ public final class ElkHunt {
             if(reader.isSleeping())continue;
             for(double height:new double[]{.2,killer.getEyeHeight(),killer.getBbHeight()-.1}){
                 var point=feet.add(0,height,0);var to=point.subtract(reader.getEyePosition());double distance=to.length();
-                if(distance>HouseWatchers.RANGE)continue;
+                if(distance>RELOCATION_VIEW_RANGE)continue;
                 if(distance>1.5&&reader.getLookAngle().dot(to.scale(1/distance))<.26)continue;
                 var hit=level.clip(new net.minecraft.world.level.ClipContext(reader.getEyePosition(),point,net.minecraft.world.level.ClipContext.Block.VISUAL,net.minecraft.world.level.ClipContext.Fluid.NONE,reader){
                     @Override public net.minecraft.world.phys.shapes.VoxelShape getBlockShape(net.minecraft.world.level.block.state.BlockState block,net.minecraft.world.level.BlockGetter world,BlockPos pos){
