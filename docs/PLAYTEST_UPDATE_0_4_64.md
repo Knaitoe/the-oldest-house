@@ -42,7 +42,7 @@ A review of the candidate found these, now repaired:
 - **Glazing.** Portholes keep glass sounds but return to the approved break time (about nine seconds, tool or not). Shattered and whole panes each draw their shared faces.
 - **Tests and tools.**
   - The rail-hop case restores the corridor and deck it builds outside the elk room after its batch.
-  - The tests that hold all five staircase leaves wait longer for cold entity sections in the complete suite.
+  - The multiplayer-story cases, whose held sections load one after another, wait two minutes before starting instead of one. The assertions are unchanged.
   - `build_novel_assets.py` no longer overwrites the 0.4.64 window, paper, key and ribbon art.
   - `generate_playtest_assets.py` draws the franks package sprite.
 
