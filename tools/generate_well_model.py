@@ -31,7 +31,7 @@ def write_model(asset=ASSET):
                              'faces': {'north': {'texture': '#cut', 'uv': [4, 4, 8, 8]}}})
     model = {'parent': 'minecraft:block/block', 'ambientocclusion': True,
              'textures': {'stone': 'minecraft:block/mossy_cobblestone',
-                          'cut': 'minecraft:block/blackstone', 'particle': 'minecraft:block/mossy_cobblestone'},
+                          'cut': 'minecraft:block/black_concrete', 'particle': 'minecraft:block/mossy_cobblestone'},
              'elements': elements}
     (asset / 'models/block/well_carvings.json').write_text(json.dumps(model, indent=2) + '\n')
 

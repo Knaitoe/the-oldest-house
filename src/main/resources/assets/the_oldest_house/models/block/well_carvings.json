@@ -3,7 +3,7 @@
   "ambientocclusion": true,
   "textures": {
     "stone": "minecraft:block/mossy_cobblestone",
-    "cut": "minecraft:block/blackstone",
+    "cut": "minecraft:block/black_concrete",
     "particle": "minecraft:block/mossy_cobblestone"
   },
   "elements": [
