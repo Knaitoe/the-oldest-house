@@ -59,7 +59,7 @@ public final class Farmstead {
         for(int x=-7;x<=11;x++)for(int z=-18;z<=-16;z++)put(l,b,x,-1,z,Math.floorMod(x+z,7)==0?Blocks.COARSE_DIRT:Blocks.DIRT_PATH);
         for(int z=-19;z>=-21;z--)for(int x=-1;x<=1;x++)put(l,b,x,-1,z,Blocks.GRAVEL);
         // A little farmhouse/tool shed opposite the barn; a garden is behind it.
-        clear(l,b,-16,-7,-16,-6,8);
+        clear(l,b,-16,-7,-16,-6,12);
         for(int x=-15;x<=-8;x++)for(int z=-15;z<=-7;z++){
             boolean wall=x==-15||x==-8||z==-15||z==-7;
             put(l,b,x,-2,z,Blocks.COBBLESTONE);put(l,b,x,-1,z,wall?Blocks.COBBLESTONE:Blocks.OAK_PLANKS);if(wall)put(l,b,x,0,z,Blocks.STRIPPED_OAK_LOG);
@@ -75,7 +75,7 @@ public final class Farmstead {
         put(l,b,-12,3,-12,Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));put(l,b,-12,4,-12,Blocks.DARK_OAK_PLANKS);
         put(l,b,-14,1,-13,Blocks.DARK_OAK_SLAB);put(l,b,-14,0,-13,Blocks.SPRUCE_PLANKS);
         // Long furrows, hydrated soil, a stone-edged irrigation channel and a gated field boundary.
-        clear(l,b,-16,-7,-37,-21,5);rail(l,b,-16,-7,-38,-20);
+        clear(l,b,-16,-7,-37,-21,12);rail(l,b,-16,-7,-38,-20);
         put(l,b,-7,0,-24,Blocks.SPRUCE_FENCE_GATE.defaultBlockState().setValue(FenceGateBlock.FACING,Direction.EAST));
         for(int x=-15;x<=-8;x++)for(int z=-36;z<=-22;z++){
             if(x==-11){put(l,b,x,-2,z,Blocks.COBBLESTONE);put(l,b,x,-1,z,Blocks.WATER);continue;}
