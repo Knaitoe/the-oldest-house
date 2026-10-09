@@ -11,7 +11,7 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 
 ## Current candidate: 0.4.63
 
-Combine Claude's cabin, Goatman, return and hunt updates with the complete farm/well pass. No new eligible source: 43 sources / 33 resolutions / two kinds / three endings. Require 475 native cases, 73 multiplayer, 25 literary, 39 exploration, all nine Goatman cases, every focused suite, 17 playtest-log regressions, all 330 PNGs/eight fonts/full writing, all 71 architecture views and 105 native screenshots, plus both actual socket clients/two reconnects. Native coverage includes jointed limb grounding, missing-arm rendering/armour, owner-bound globes, gradual well closure/darkness, one-handed hearth use and resident preservation in both new rebuilds. Layout 38 / protocol 37. See [the integration record](COMBINED_UPDATE_0_4_63.md).
+Combine Claude's cabin, Goatman, return and hunt updates with the complete farm/well pass. No new eligible source: 43 sources / 33 resolutions / two kinds / three endings. Require 476 native cases, 74 multiplayer, 25 literary, 39 exploration, all nine Goatman cases, every focused suite, 17 playtest-log regressions, all 330 PNGs/eight fonts/full writing, all 71 architecture views and 105 native screenshots, plus both actual socket clients/two reconnects. Native coverage includes jointed limb grounding, missing-arm rendering/armour, owner-bound globes, gradual well closure/darkness, one-handed hearth use and resident preservation in both new rebuilds, and the separate saved already-upgraded farm rail/ground repair with camera/body guards and no restocking. Layout 38 / protocol 37. See [the integration record](COMBINED_UPDATE_0_4_63.md).
 
 ## Prior candidate: 0.4.62
 

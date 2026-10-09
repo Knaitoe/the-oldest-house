@@ -22,6 +22,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class Farmstead {
     public static final String STATE="farmstead_0462";
+    private static final String EDGES="Edges0463";
     public static final BlockPos FOOD=new BlockPos(7,0,-18);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private static BuildBlocks.Plan work;private static BlockPos workingOrigin;
@@ -52,8 +53,31 @@ public final class Farmstead {
                     .setValue(FenceBlock.WEST,x>x0).setValue(FenceBlock.EAST,x<x1);put(l,b,x,0,z,s);
         }
     }
+    private static void connectRails(ServerLevel l,BlockPos b,int x0,int x1,int z0,int z1){
+        for(int x=x0;x<=x1;x++)for(int z=z0;z<=z1;z++)for(int y=0;y<=3;y++){
+            var at=b.offset(x,y,z);var old=BuildBlocks.state(l,at);
+            if(!(old.getBlock() instanceof FenceBlock)&&!(old.getBlock() instanceof FenceGateBlock))continue;
+            var next=old;for(var side:Direction.Plane.HORIZONTAL)next=next.updateShape(side,BuildBlocks.state(l,at.relative(side)),l,at,at.relative(side));
+            put(l,b,x,y,z,next);
+        }
+    }
+    /** Separate checkpoint for old farms that already received their composition and finite stock. */
+    private static void edges(ServerLevel l,BlockPos b){
+        // The old architecture put these yard posts three blocks apart. Native side updates cannot bridge air.
+        rail(l,b,11,15,-14,-5);
+        put(l,b,11,0,-10,Blocks.SPRUCE_FENCE_GATE.defaultBlockState().setValue(FenceGateBlock.FACING,Direction.EAST));
+        connectRails(l,b,11,15,-14,-5);
+        // Back the authored farm ground, retaining the one-block shaft, crops/water and every existing tile.
+        for(int x=-17;x<=17;x++)for(int z=-39;z<=-1;z++){
+            if(x==0&&z==-23)continue;
+            for(int y=-2;y<=-1;y++)if(BuildBlocks.state(l,b.offset(x,y,z)).isAir())
+                put(l,b,x,y,z,y==-2?Blocks.DIRT:Blocks.GRASS_BLOCK);
+        }
+        if(BuildBlocks.state(l,b.offset(0,-13,-23)).isAir())put(l,b,0,-13,-23,Blocks.MOSSY_COBBLESTONE);
+    }
     /** Old and new farms receive the same composition after the older dressing passes. */
     public static void layout(ServerLevel l,BlockPos b){
+        edges(l,b);
         // The yard turns right to the barn. The well is reached by a short side spur, not a central avenue.
         for(int z=-2;z>=-17;z--){int centre=Math.min(9,Math.max(0,(-z-4)*2/3));for(int dx=-1;dx<=1;dx++)put(l,b,centre+dx,-1,z,Blocks.DIRT_PATH);}
         for(int x=-7;x<=11;x++)for(int z=-18;z<=-16;z++)put(l,b,x,-1,z,Math.floorMod(x+z,7)==0?Blocks.COARSE_DIRT:Blocks.DIRT_PATH);
@@ -106,26 +130,23 @@ public final class Farmstead {
         put(l,b,0,1,-24,Blocks.MOSSY_COBBLESTONE); // native support for the ladder above the open mouth
         put(l,b,-2,1,-24,Blocks.CHAIN);put(l,b,-2,0,-24,Blocks.CAULDRON);
         var cover=b.offset(NovelRooms.WELL);if(BuildBlocks.state(l,cover).is(Blocks.SPRUCE_TRAPDOOR))BuildBlocks.guardedSet(l,cover,NovelRegistry.WELL_COVER.get().defaultBlockState(),F,()->bodyClear(l,cover,NovelRegistry.WELL_COVER.get().defaultBlockState()));
-        for(int x=-17;x<=17;x++)for(int z=-39;z<=-1;z++)for(int y=0;y<=3;y++){
-            var at=b.offset(x,y,z);var old=BuildBlocks.state(l,at);
-            if(!(old.getBlock() instanceof FenceBlock)&&!(old.getBlock() instanceof FenceGateBlock))continue;
-            var next=old;for(var side:Direction.Plane.HORIZONTAL)next=next.updateShape(side,BuildBlocks.state(l,at.relative(side)),l,at,at.relative(side));
-            put(l,b,x,y,z,next);
-        }
+        connectRails(l,b,-17,17,-39,-1);
     }
     public static Vec3 animalPosition(BlockPos b,int i){return Vec3.atBottomCenterOf(b.offset(i<4?6:13,0,i<4?-29+i*2:-32+(i-4)*4));}
     private static void penExisting(ServerLevel l,BlockPos b){int i=0;for(var mob:l.getEntitiesOfClass(Mob.class,area(b),m->m.isAlive()&&m.getPersistentData().getBoolean("HouseBarnAnimal")))
         mob.moveTo(animalPosition(b,i++%7));}
     public static boolean ready(LabyrinthData d,BlockPos o){return d.stateEntry(STATE,key(o)).getBoolean("Layout");}
+    public static boolean edgesReady(LabyrinthData d,BlockPos o){return d.stateEntry(STATE,key(o)).getBoolean(EDGES);}
     /** A new farm's core is already composed before its first visitor. Later dressing need not delay finite stock. */
     public static void built(ServerLevel l,BlockPos b){BuildBlocks.after(l,()->{var o=HouseSavedData.get(l.getServer()).houseOrigin();
         if(o==null||!b.equals(LabyrinthPlaces.base(o,LabyrinthPlace.BARN_WELL)))return;var d=LabyrinthData.get(l.getServer());var t=d.stateEntry(STATE,key(o));t.putBoolean("FreshGeometry",true);d.setStateEntry(STATE,key(o),t);});}
     private static boolean loaded(ServerLevel l,BlockPos b){var a=area(b);for(int x=(int)Math.floor(a.minX)>>4;x<=((int)Math.ceil(a.maxX)-1)>>4;x++)for(int z=(int)Math.floor(a.minZ)>>4;z<=((int)Math.ceil(a.maxZ)-1)>>4;z++)if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(x,z)))return false;return true;}
     private static boolean unseen(ServerLevel l,BlockPos b){return l.players().stream().noneMatch(p->area(b).inflate(24).intersects(p.getCamera().getBoundingBox()));}
-    public static void fresh(ServerLevel l,BlockPos o){var d=LabyrinthData.get(l.getServer());if(ready(d,o))return;var b=LabyrinthPlaces.base(o,LabyrinthPlace.BARN_WELL);if(!loaded(l,b)||!unseen(l,b))return;
-        if(!BuildBlocks.isRecording(l)){if(work==null){penExisting(l,b);workingOrigin=o;work=BuildBlocks.record(l,()->layout(l,b));}return;}
-        penExisting(l,b);
-        layout(l,b);BuildBlocks.after(l,()->{var t=d.stateEntry(STATE,key(o));t.putBoolean("Layout",true);d.setStateEntry(STATE,key(o),t);});}
+    public static void fresh(ServerLevel l,BlockPos o){var d=LabyrinthData.get(l.getServer());if(ready(d,o)&&edgesReady(d,o))return;var b=LabyrinthPlaces.base(o,LabyrinthPlace.BARN_WELL);if(!loaded(l,b)||!unseen(l,b))return;
+        boolean full=!ready(d,o);
+        if(!BuildBlocks.isRecording(l)){if(work==null){if(full)penExisting(l,b);workingOrigin=o;work=BuildBlocks.record(l,()->{if(full)layout(l,b);else edges(l,b);});}return;}
+        if(full){penExisting(l,b);layout(l,b);}else edges(l,b);
+        BuildBlocks.after(l,()->{var t=d.stateEntry(STATE,key(o));t.putBoolean("Layout",true);t.putBoolean(EDGES,true);d.setStateEntry(STATE,key(o),t);});}
     public static void stock(ServerPlayer p){var o=HouseSavedData.get(p.server).houseOrigin();if(o==null||p.isSpectator()||!NovelVignettes.inside(p,LabyrinthPlace.BARN_WELL))return;var d=LabyrinthData.get(p.server);if(!ready(d,o)&&!d.stateEntry(STATE,key(o)).getBoolean("FreshGeometry"))return;
         var b=LabyrinthPlaces.base(o,LabyrinthPlace.BARN_WELL);var l=p.serverLevel();if(!loaded(l,b))return;var t=d.stateEntry(STATE,key(o));
         if(!t.getBoolean("FoodIssued")){
@@ -139,11 +160,11 @@ public final class Farmstead {
         }
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){var s=e.getServer();if(LabyrinthBuilder.isCarving())return;var o=HouseSavedData.get(s).houseOrigin();if(o==null)return;var l=s.getLevel(HouseDimensions.OUTSIDE);var d=LabyrinthData.get(s);var b=LabyrinthPlaces.base(o,LabyrinthPlace.BARN_WELL);if(l==null||b==null)return;
-        if(work!=null){if(!o.equals(workingOrigin)||!loaded(l,b)||!unseen(l,b)){work=null;return;}if(work.tick()){var t=d.stateEntry(STATE,key(o));t.putBoolean("Layout",true);d.setStateEntry(STATE,key(o),t);work=null;}return;}
+        if(work!=null){if(!o.equals(workingOrigin)||!loaded(l,b)||!unseen(l,b)){work=null;return;}if(work.tick()){var t=d.stateEntry(STATE,key(o));t.putBoolean("Layout",true);t.putBoolean(EDGES,true);d.setStateEntry(STATE,key(o),t);work=null;}return;}
         if(s.getTickCount()%40!=29)return;
-        if(ready(d,o)||d.stateEntry(STATE,key(o)).getBoolean("FreshGeometry")){for(var p:l.players())if(NovelVignettes.inside(p,LabyrinthPlace.BARN_WELL)){stock(p);break;}if(ready(d,o))return;}
+        if(ready(d,o)||d.stateEntry(STATE,key(o)).getBoolean("FreshGeometry")){for(var p:l.players())if(NovelVignettes.inside(p,LabyrinthPlace.BARN_WELL)){stock(p);break;}if(ready(d,o)&&edgesReady(d,o))return;}
         if(d.door(LabyrinthPlace.BARN_WELL.entryDoorId())==null||!LabyrinthBuilder.isPlaceReady(d,LabyrinthPlace.BARN_WELL)||!loaded(l,b)||!unseen(l,b))return;
-        penExisting(l,b);workingOrigin=o;work=BuildBlocks.record(l,()->layout(l,b));
+        fresh(l,o);
     }
-    public static void forget(net.minecraft.server.MinecraftServer s,BlockPos o){var d=LabyrinthData.get(s);var t=d.stateEntry(STATE,key(o));t.remove("Layout");t.remove("FreshGeometry");d.setStateEntry(STATE,key(o),t);work=null;}
+    public static void forget(net.minecraft.server.MinecraftServer s,BlockPos o){var d=LabyrinthData.get(s);var t=d.stateEntry(STATE,key(o));t.remove("Layout");t.remove("FreshGeometry");t.remove(EDGES);d.setStateEntry(STATE,key(o),t);work=null;}
 }
