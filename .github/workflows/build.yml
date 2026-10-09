@@ -662,7 +662,7 @@ jobs:
           timeout --signal=QUIT --kill-after=20s 7m gradle build runGameTestServer -PgameTestNamespaces=the_oldest_house_seam --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/seam-native.log
           python3 - <<'PY'
           from pathlib import Path
-          import hashlib, re, zipfile
+          import hashlib, json, re, zipfile
           completed=re.findall(r'All (\d+) required tests passed',Path('build/seam-native.log').read_text())
           declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.java').read_text()))
           assert declared==4 and completed and int(completed[-1])==declared, (completed,declared)

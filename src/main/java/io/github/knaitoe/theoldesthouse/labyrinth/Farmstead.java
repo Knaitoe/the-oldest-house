@@ -61,7 +61,8 @@ public final class Farmstead {
         // A little farmhouse/tool shed opposite the barn; a garden is behind it.
         clear(l,b,-16,-7,-16,-6,8);
         for(int x=-15;x<=-8;x++)for(int z=-15;z<=-7;z++){
-            put(l,b,x,-1,z,Blocks.COBBLESTONE);put(l,b,x,0,z,(x==-15||x==-8||z==-15||z==-7)?Blocks.STRIPPED_OAK_LOG:Blocks.OAK_PLANKS.defaultBlockState().getBlock());
+            boolean wall=x==-15||x==-8||z==-15||z==-7;
+            put(l,b,x,-2,z,Blocks.COBBLESTONE);put(l,b,x,-1,z,wall?Blocks.COBBLESTONE:Blocks.OAK_PLANKS);if(wall)put(l,b,x,0,z,Blocks.STRIPPED_OAK_LOG);
             for(int y=1;y<=3;y++)if(x==-15||x==-8||z==-15||z==-7)put(l,b,x,y,z,Blocks.STRIPPED_OAK_LOG);
         }
         for(int z=-16;z<=-6;z++)for(int x=-16;x<=-7;x++){
@@ -77,7 +78,7 @@ public final class Farmstead {
         clear(l,b,-16,-7,-37,-21,5);rail(l,b,-16,-7,-38,-20);
         put(l,b,-7,0,-24,Blocks.SPRUCE_FENCE_GATE.defaultBlockState().setValue(FenceGateBlock.FACING,Direction.EAST));
         for(int x=-15;x<=-8;x++)for(int z=-36;z<=-22;z++){
-            if(x==-11){put(l,b,x,-1,z,Blocks.WATER);continue;}
+            if(x==-11){put(l,b,x,-2,z,Blocks.COBBLESTONE);put(l,b,x,-1,z,Blocks.WATER);continue;}
             put(l,b,x,-1,z,Blocks.FARMLAND.defaultBlockState().setValue(FarmBlock.MOISTURE,7));
             put(l,b,x,0,z,(x<-11?Blocks.WHEAT.defaultBlockState().setValue(CropBlock.AGE,5):Blocks.CARROTS.defaultBlockState().setValue(CropBlock.AGE,5)));
         }
