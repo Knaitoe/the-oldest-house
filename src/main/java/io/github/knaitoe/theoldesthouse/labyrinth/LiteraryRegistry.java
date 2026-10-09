@@ -26,6 +26,7 @@ public final class LiteraryRegistry {
         CABIN_LEAF=PARTICLES.register("cabin_leaf",()->new net.minecraft.core.particles.SimpleParticleType(false));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<LiteraryPropBlock>> PROP_TYPE=CODECS.register("literary_prop",()->LiteraryPropBlock.CODEC);
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<LiteraryFrozenBlock>> FROZEN_TYPE=CODECS.register("literary_frozen",()->LiteraryFrozenBlock.CODEC);
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<YachtGlazingBlock>> GLAZING_TYPE=CODECS.register("yacht_glazing",()->YachtGlazingBlock.CODEC);
     public static final DeferredBlock<LiteraryFrozenBlock> FROZEN=BLOCKS.registerBlock("literary_frozen",LiteraryFrozenBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).dynamicShape().noOcclusion().noLootTable());
     public static final DeferredBlock<LiteraryPropBlock> PROP=BLOCKS.registerBlock("literary_prop",LiteraryPropBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable());
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<LiteraryModelBlockEntity>> MODEL=BES.register("literary_model",()->BlockEntityType.Builder.of(LiteraryModelBlockEntity::new,PROP.get(),FROZEN.get()).build(null));
@@ -34,8 +35,8 @@ public final class LiteraryRegistry {
     public static final DeferredBlock<Block> YACHT_HULL=material("yacht_hull",Blocks.WHITE_CONCRETE),YACHT_STRIPE=material("yacht_hull_stripe",Blocks.WHITE_CONCRETE),YACHT_BOOT=material("yacht_boot",Blocks.BLUE_CONCRETE),YACHT_ANTIFOUL=material("yacht_antifoul",Blocks.RED_TERRACOTTA),
         YACHT_TEAK=material("yacht_teak",Blocks.OAK_PLANKS),YACHT_PANEL=material("yacht_salon_panel",Blocks.DARK_OAK_PLANKS),YACHT_CARPET=material("yacht_carpet",Blocks.WHITE_WOOL),YACHT_CUSHION=material("yacht_cushion",Blocks.WHITE_WOOL),YACHT_CANVAS=material("yacht_canvas",Blocks.BLUE_WOOL),
         SITE_SIDING=material("site_siding",Blocks.IRON_BLOCK),DRAG_MUD=material("cave_drag_mud",Blocks.PACKED_MUD);
-    public static final DeferredBlock<TransparentBlock> YACHT_WINDOW=BLOCKS.registerBlock("yacht_window",TransparentBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS).noLootTable()),
-        YACHT_PORTHOLE=BLOCKS.registerBlock("yacht_porthole",TransparentBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_CONCRETE).noOcclusion().noLootTable());
+    public static final DeferredBlock<YachtGlazingBlock> YACHT_WINDOW=BLOCKS.registerBlock("yacht_window",YachtGlazingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS).noOcclusion().noLootTable()),
+        YACHT_PORTHOLE=BLOCKS.registerBlock("yacht_porthole",YachtGlazingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS).noOcclusion().noLootTable());
     public static final DeferredBlock<IronBarsBlock> YACHT_RAIL=BLOCKS.registerBlock("yacht_rail",IronBarsBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noLootTable()),
         SAFETY_FENCE=BLOCKS.registerBlock("safety_fence",IronBarsBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).sound(net.minecraft.world.level.block.SoundType.WOOL).noLootTable());
     public static final DeferredItem<Item> TOOTH=item("elk_tooth"),KEY=item("wheel_house_key"),KNIFE=item("father_knife"),JAR=item("grasshopper_jar"),PHOTOGRAPH=item("literary_photograph"),FILM=item("family_film");

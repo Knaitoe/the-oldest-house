@@ -101,7 +101,7 @@ public final class ElkHunt {
         if(ElkCarcassMap.crawlZone(r))return crawling||p.isShiftKeyDown()||ElkCarcassMap.inHollow(r);
         if(!ElkCarcassMap.nearPorthole(r)||(!crawling&&!p.isShiftKeyDown()))return false;
         int x=r.x<0?-9:9;
-        for(int z:new int[]{-1,-3,-5,-10,-16})if(Math.abs(r.z-(z+.5))<.85&&p.serverLevel().getBlockState(b.offset(x,1,z)).isAir())return true;
+        for(int z:new int[]{-1,-3,-5,-10,-16})if(Math.abs(r.z-(z+.5))<.85&&YachtGlazingBlock.opening(p.serverLevel().getBlockState(b.offset(x,1,z))))return true;
         return false;
     }
 

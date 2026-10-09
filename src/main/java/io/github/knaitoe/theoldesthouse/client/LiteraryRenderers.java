@@ -163,7 +163,10 @@ public final class LiteraryRenderers {
         public static void screen(int[] pixels,boolean dark,PoseStack pose,MultiBufferSource out){screen(pixels,dark,0,pose,out);}
         /** The picture under the reader's own storm: darker, bluer, with rain running down the glass as it grows. */
         public static int stormed(int rgb,int i,int storm,long time){if(storm<=0)return rgb;float k=Math.min(1,storm/100F)*.62F;int r=(int)((rgb>>16&255)*(1-k)+26*k),g=(int)((rgb>>8&255)*(1-k)+33*k),b=(int)((rgb&255)*(1-k)+44*k);
-            int x=i%24,y=i/24;if(storm>35&&Math.floorMod(x*7+y-(int)(time/2)*(1+x%3),11)==0){r=Math.min(255,r+40);g=Math.min(255,g+44);b=Math.min(255,b+52);}return r<<16|g<<8|b;}
+            int x=i%24,y=i/24;
+            int waterline=16-Math.max(0,storm-28)*12/72;
+            if(storm>28&&y>=waterline){int ripple=Math.floorMod(x+(int)(time/5)+y*3,7);r=23+ripple*2;g=56+ripple*3;b=79+ripple*4;}
+            else if(storm>35&&Math.floorMod(x*7+y-(int)(time/2)*(1+x%3),11)==0){r=Math.min(255,r+40);g=Math.min(255,g+44);b=Math.min(255,b+52);}return r<<16|g<<8|b;}
         public static void screen(int[] pixels,boolean dark,int storm,PoseStack pose,MultiBufferSource out){if(pixels.length!=384)return;var vertices=out.getBuffer(RenderType.entityCutoutNoCull(ResourceLocation.withDefaultNamespace("textures/block/white_concrete.png")));var matrix=pose.last().pose();long time=Minecraft.getInstance().level==null?0:Minecraft.getInstance().level.getGameTime();for(int i=0;i<384;i++){int rgb=dark?0x080a0b:stormed(pixels[i],i,storm,time);float x=.125F+(i%24)*(.625F/24),y=.125F+(15-i/24)*(.5F/16),right=x+.625F/24,top=y+.5F/16;for(var pt:new float[][]{{x,y},{right,y},{right,top},{x,top}})vertices.addVertex(matrix,pt[0],pt[1],.775F).setColor(rgb>>16&255,rgb>>8&255,rgb&255,255).setUv(.5F,.5F).setOverlay(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(0,0,1);}}
         @Override public boolean shouldRenderOffScreen(LiteraryModelBlockEntity e){return e.getBlockState().is(LiteraryRegistry.PROP.get())&&switch(e.getBlockState().getValue(LiteraryPropBlock.KIND)){case FAN,CARCASS,GUEST_BODY,CREW_BODY->true;default->false;};}
         @Override public int getViewDistance(){return 48;}

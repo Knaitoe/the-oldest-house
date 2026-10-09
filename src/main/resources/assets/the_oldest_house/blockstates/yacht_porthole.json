@@ -1,7 +1,10 @@
 {
   "variants": {
-    "": {
+    "broken=false": {
       "model": "the_oldest_house:block/yacht_porthole"
+    },
+    "broken=true": {
+      "model": "the_oldest_house:block/yacht_porthole_broken"
     }
   }
 }

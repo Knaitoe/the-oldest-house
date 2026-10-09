@@ -122,7 +122,7 @@ public final class LiveExpeditionClient {
         if(step==23){
             mc.options.keyShift.setDown(true);boolean left=role.equals("A");
             if(!data.getBoolean("MineTurn")){mc.options.keyUp.setDown(false);mc.options.keyAttack.setDown(false);return;}
-            if(!block.isAir()){
+            if(!YachtGlazingBlock.opening(block)){
                 mc.options.keyUp.setDown(false);var to=target.getCenter().subtract(mc.player.getEyePosition());
                 mc.player.setYRot((float)Math.toDegrees(Math.atan2(-to.x,to.z)));mc.player.setXRot((float)-Math.toDegrees(Math.atan2(to.y,Math.hypot(to.x,to.z))));
                 // Holding the actual attack input lets Minecraft retain its native mining progress.
