@@ -101,6 +101,8 @@ public final class LabyrinthDealer {
 
     public static int rememberedWeight(LabyrinthData data, UUID player, LabyrinthPlace place, int ordinaryWeight) {
         if(place==LabyrinthPlace.MOTHER_DEN&&rescueNeeded(data,player))return Math.max(1,ordinaryWeight)*96;
+        // 0.4.53: what followed a reader home from the trailer keeps the trailer near; the way to be rid of it is there.
+        if(place==LabyrinthPlace.GOATMAN&&GoatmanHaunt.haunted(data,player))return Math.max(1,ordinaryWeight)*24;
         boolean special = place.isVignette() || !LabyrinthPacing.ordinary(place);
         int age = data.recentVisit(player, place);
         if (!special) return ordinaryWeight * (age < 0 ? 12 : age < 3 ? 3 : 8);

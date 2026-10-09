@@ -1,4 +1,15 @@
-Current 0.4.52: owner playtest of the cabin.
+Current 0.4.53: owner-requested rework of Anansi's Goatman (slot 31) into a puzzle from the original story, with the owner's notes repaired.
+
+- **The night.** Nothing explains it. A pan of brats holds one for every child who should be there, and one more sits down to it ("Who had two?"). A real cousin goes for gas at dusk and comes back knocking in his own voice before the woods go quiet: let him in. The one that doesn't belong stands by the fire, back to the trailer, and comes for the door only while nobody watches: keep it out, by the door and the bathroom window (left open). At night it knocks in the cousin's words without his voice; opening to it is the fail state.
+- **Outcomes.** Right (cousin in, it kept out): every child who sat out the whole night resolves (`counted_right`, same source) and takes home the tally counter once. Wrong: it comes home with every child there; opening at night takes the opener out with it. No death, nothing taken: a private haunting (one food a day eaten, glimpses of its own goat-headed form, its knocking at their door some nights) that ends with a night done right, when it walks out with them and goes into the trees. The dealer weights the trailer for a haunted reader. Legacy pre-0.4.53 failures keep their one manor wake.
+- **The counter.** Only its reader's. Inside the House: counts what is really there, shows what is hiding or pretending (never players), clicks when something hostile is behind. Outside: counts hostiles near; wakes its sleeping keeper when one comes close and shows it.
+- **Repairs.** Door words only at night (they showed from the trail). Real seats (chairs turned to the table, sitters on the seat at seat height), real routes (no gliding through props, no sliding idle), no spot inside a prop, warm lamps everywhere a cousin can be (the darkness floor unchanged). Two hollows on the trail hold the thing facing away.
+- **Assets.** The Goatman's own model and skin (horns, muzzle, beard, ears, hooves, emissive eyes), the counter, the brat, copper motes, and four subtitled cues (click, claw, crickets, a scream in the woods); native Goatman client proof.
+- **Saved worlds and protocol.** Layout 38 / protocol 36. Worlds at layouts 18 to 37 carve the trailer again only when empty and loaded; the old evening is forgotten and every personal record kept. Forty-three sources / thirty-three resolutions / two kinds / three endings unchanged.
+- **Verification.** Exact-head verification pending.
+- **Canon:** docs/GOATMAN_0_4_53.md.
+
+Previous 0.4.52: owner playtest of the cabin.
 
 - **Waking and the door.** Every visit begins waking in one of two bedroom beds (a native sleep of three seconds that never sets a respawn point). The visitors knock until the reader opens the front door, again on each visit.
 - **Pacing and the account.** Dialogue is paced by line length and speaker. The account lies on the dining table and glimmers for its reader once readable. Any literary account read before its source now says so, where before it silently did not count.

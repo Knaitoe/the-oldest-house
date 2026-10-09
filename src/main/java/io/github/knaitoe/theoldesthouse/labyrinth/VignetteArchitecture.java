@@ -295,15 +295,13 @@ public final class VignetteArchitecture {
         pendant(4,3,-8,5);
     }
     private void trailer(){
-        // Peripheral cupboards and external chassis, outside the dynamic family seating/bunks.
+        // Trim and chassis outside; inside only the counter, the door and the end wall, clear of the bunks, the table and the bathroom (0.4.53).
         for(int x=-7;x<=7;x++){add(x,6,-78,Blocks.SMOOTH_QUARTZ_SLAB);add(x,6,-54,Blocks.SMOOTH_QUARTZ_SLAB);}
         for(int z:new int[]{-60,-72})for(int x:new int[]{-7,7})add(x,0,z,Blocks.POLISHED_BLACKSTONE);
-        for(int x:new int[]{-6,-4,4,6})furniture(x,1,-76,CHEST_OF_DRAWERS,Direction.SOUTH);
-        detail(-4,2,-76,DISH_RACK);detail(4,2,-76,CROCK);detail(6,2,-76,TEA_SET);
-        detail(7,3,-75,CLOCK,Direction.WEST);detail(-7,3,-56,COAT,Direction.EAST);
+        furniture(6,1,-57,CHEST_OF_DRAWERS,Direction.WEST);
+        detail(-4,2,-76,DISH_RACK);detail(-3,2,-76,CROCK);detail(-7,2,-76,TEA_SET);
+        detail(7,3,-57,CLOCK,Direction.WEST);detail(-7,3,-56,COAT,Direction.EAST);
         detail(6,0,-51,FEED_SACK);detail(9,0,-50,CRATE);
-        for(int z:new int[]{-63,-71}){add(0,5,z,Blocks.SEA_LANTERN);add(-1,5,z,Blocks.IRON_TRAPDOOR);add(1,5,z,Blocks.IRON_TRAPDOOR);}
-        detail(7,1,-76,BLANKET);
     }
     private void caver(){
         detail(3,1,-4,TOOLS);detail(-4,0,-3,SATCHEL);detail(-4,0,-5,ROPE_COIL);

@@ -9,7 +9,13 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.52
+## Current candidate: 0.4.53
+
+Anansi's Goatman becomes a puzzle from the original story: the count at supper (a pan of brats for everyone who should be there), a cousin who goes for gas and comes back knocking in his own voice before the woods go quiet, the one that doesn't belong standing by the fire and coming for the door only while nobody watches, a bathroom window left open, and its knocking in the cousin's words without his voice. A night done right resolves the story and gives the tally counter (inside the House it counts what is really there, shows what is pretending and clicks when something is behind its keeper; outside it keeps watch over its sleeping keeper). Getting it wrong is no death and takes nothing: it comes home with the reader (eats one food a day, is glimpsed, tries their door) until they get a night right. Real seats, real walking, warm lamps, door words only at night, the Goatman's own model and skin.
+
+Layout 38 / protocol 36. Worlds at layouts 18 to 37 carve the trailer again when it is empty and loaded, keeping every personal record. See [GOATMAN_0_4_53.md](GOATMAN_0_4_53.md). Require the complete suite with the nine Goatman cases, the old-save re-carve assertions, the native Goatman proof and the architecture views. Exact-head verification pending.
+
+## Earlier candidate: 0.4.52
 
 The cabin is rebuilt (bedroom, kitchen, living room, windows on every side) with an exit shed; every visit begins waking in a bed, the visitors knock until the door is answered, the account lies on the dining table, and the storm has its own rain, leaves, real client-only lightning and a heavy gale. The source, outcomes and pool are unchanged: forty-three eligible sources / thirty-three required / two kinds / three endings. Reading an account before its source now says so in every literary scene.
 

@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 37;
+    public static final int VERSION = 38;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -299,7 +299,11 @@ public final class LabyrinthBuilder {
             registerDoors(dataFor(server), place, LabyrinthPlaces.base(pendingOrigin, place));
             ServerLevel site = server.getLevel(NovelRooms.dimension(place));
             // A scene carved again in place settles what its new ground displaced.
-            if (rebuildUpgrades.remove(place) && site != null) ElkUpgrade.settle(site, LabyrinthPlaces.base(pendingOrigin, place), place);
+            if (rebuildUpgrades.remove(place) && site != null) {
+                ElkUpgrade.settle(site, LabyrinthPlaces.base(pendingOrigin, place), place);
+                // The trailer's own furnishing and exterior passes dress the new carve, as they dress a fresh one.
+                if (place == LabyrinthPlace.GOATMAN) { VignetteArchitecture.forget(site, pendingOrigin, place); VignetteArchitecture.decorateOnce(site, pendingOrigin, place); }
+            }
             if (site != null) ScenePolish.polishOnce(site, pendingOrigin, place);
             recordBuilt(server, place);
             geometry = null;
@@ -328,6 +332,17 @@ public final class LabyrinthBuilder {
                 if (place == LabyrinthPlace.ELK_CARCASSES) TheOldestHouse.LOGGER.info("Recorded {}: {}", place.id(), geometry.describe());
                 return;
             }
+        }
+        // 0.4.53: a saved world's old trailer is taken down only once nobody is in the woods or can see them, then carved again in slices.
+        if (place == LabyrinthPlace.GOATMAN && rebuildUpgrades.contains(place)) {
+            BlockPos base = LabyrinthPlaces.base(pendingOrigin, place);
+            if (!ElkUpgrade.vacant(interior, base, place, fixtureDrain)) { active = false; return; }
+            ScenePolish.forget(server, pendingOrigin, place);
+            for (var e : interior.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, IndianLakeRooms.bounds(base, place),
+                    e -> e instanceof GoatmanChild || e instanceof net.minecraft.world.entity.Display.ItemDisplay d && d.getTags().contains(GoatmanWoods.PLATE))) e.discard();
+            GoatmanVignette.forgetRun(server);
+            geometry = BuildBlocks.record(interior, () -> GoatmanVignette.build(server, interior, base));
+            return;
         }
         pending.poll();
         long started = System.nanoTime();
