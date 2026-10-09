@@ -1,4 +1,16 @@
-Current 0.4.50: owner-requested rework of the elk carcasses (slot 58) into two stages, after My Heart Is a Chainsaw.
+Current 0.4.51: owner-requested rework of the Cabin at the End of the World (slot 66) into a body bargain.
+
+- **The asks.** Four visitors, private to each reader, ask in a fixed order: Leonard for one heart of the reader's life, Adriane for another, Sabrina (a nurse) for the off-hand arm. Each gift is permanent: a saved maximum-health modifier and a sealed off hand. The arm is drawn as missing for every viewer, with a bandaged stump, and kept on the Mother's shelf. They speak as if the reader's world will end, then their own.
+- **The storm.** A personal storm rises with every ask and breaks when everything is given.
+- **Refusing.** Refusing at any ask is an answer: the asker walks into the lake, one unfinished room of the reader's own goes dark for them alone, and nothing given comes back.
+- **The television and rewards.** The television shows the reader's home or the closed room; pictures are taken without synchronous loads. Both answers resolve the same source. The rewards are a whole snow globe (one death averted per in-game day) or a cracked one (once, ever), each only for its reader.
+- **Counts.** Still forty-three sources / thirty-three resolutions / two kinds / three endings.
+- **Saved worlds and protocol.** Layout 36 / protocol 35. Earlier answers are kept exactly. The world-wide closure of 0.4.36 becomes its chooser's own.
+- **One hand elsewhere.** The staircase hearths take the book in the kept hand and a lighter from the pack; the collapse burns loose paper from the pack.
+- **Verification.** Exact-head verification pending.
+- **Canon:** docs/CABIN_BARGAIN_0_4_51.md.
+
+Previous 0.4.50: owner-requested rework of the elk carcasses (slot 58) into two stages, after My Heart Is a Chainsaw.
 
 - **First stage.** A yacht moored under a bluff, the morning after its party, with the murdered passengers aboard. The reader's own killer waits below until they have seen the dead, then hunts them. The only way off is the water; he watches from the rail and never swims.
 - **Second stage.** A stream valley laid out from the owner's sketch: the stream runs south-west to north-east between two wedges of woods, with the crew's site east of them. The cave is off-centre on the outer north-western edge of the larger wood. It has an actual chamber with the carcass pile and the construction crew's bodies, and a one-high hollow under it.

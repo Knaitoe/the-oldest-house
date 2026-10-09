@@ -513,5 +513,86 @@
       "the_oldest_house:leak/bag"
     ],
     "subtitle": "subtitles.the_oldest_house.paper_bag"
+  },
+  "literary.cabin_knock": {
+    "subtitle": "subtitles.the_oldest_house.literary.cabin_knock",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cabin_knock",
+        "stream": false
+      }
+    ]
+  },
+  "literary.cabin_heart": {
+    "subtitle": "subtitles.the_oldest_house.literary.cabin_heart",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cabin_heart",
+        "stream": false
+      }
+    ]
+  },
+  "literary.cabin_cord": {
+    "subtitle": "subtitles.the_oldest_house.literary.cabin_cord",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cabin_cord",
+        "stream": false
+      }
+    ]
+  },
+  "literary.cabin_chop": {
+    "subtitle": "subtitles.the_oldest_house.literary.cabin_chop",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cabin_chop",
+        "stream": false
+      }
+    ]
+  },
+  "literary.cabin_wet": {
+    "subtitle": "subtitles.the_oldest_house.literary.cabin_wet",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cabin_wet",
+        "stream": false
+      }
+    ]
+  },
+  "literary.cabin_ring": {
+    "subtitle": "subtitles.the_oldest_house.literary.cabin_ring",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cabin_ring",
+        "stream": false
+      }
+    ]
+  },
+  "literary.cabin_wind": {
+    "subtitle": "subtitles.the_oldest_house.literary.cabin_wind",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cabin_wind",
+        "stream": false
+      }
+    ]
+  },
+  "literary.globe_shake": {
+    "subtitle": "subtitles.the_oldest_house.literary.globe_shake",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/globe_shake",
+        "stream": false
+      }
+    ]
+  },
+  "literary.globe_cracked": {
+    "subtitle": "subtitles.the_oldest_house.literary.globe_cracked",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/globe_cracked",
+        "stream": false
+      }
+    ]
   }
 }

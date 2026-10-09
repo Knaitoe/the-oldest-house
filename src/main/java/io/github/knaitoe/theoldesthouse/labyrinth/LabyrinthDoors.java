@@ -181,7 +181,7 @@ public final class LabyrinthDoors {
         }
         LabyrinthData.Door entry = place == null || place.slot() < 0 ? null : data.door(place.entryDoorId());
         if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)entry=LiteraryCopies.prepareEntry(player,place);
-        if(place!=null&&data.state("literary_cabin_closure_0436").getString("Retired").equals(place.id())){if(reroute(player,door))return;locked(player);return;}
+        if(place!=null&&LiteraryCabinChoices.closed(data,player.getUUID(),place)){if(reroute(player,door))return;locked(player);return;}
         if (entry == null || (place == LabyrinthPlace.RED_ROOM && !RedRoom.prepare(player))) {
             if(reroute(player,door))return;locked(player);
             return;

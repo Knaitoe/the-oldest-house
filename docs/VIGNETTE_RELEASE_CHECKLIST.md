@@ -9,7 +9,15 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.50
+## Current candidate: 0.4.51
+
+The cabin at the end of the world becomes the body bargain: two hearts and the off-hand arm, in a fixed order, each permanent; a refusal at any ask closes one of the reader's own rooms for them alone. This changes one source's progression, not the pool. Its story id, kind and account entry are unchanged, and both answers resolve it, so the pool stays forty-three eligible sources / thirty-three required / two kinds / three endings.
+
+The resolution is still personal: the reader must answer for themselves, then watch their own television for the established time and read the account. Readers who answered before 0.4.51 keep their answer, screen and account. The earlier world-wide closure becomes the chooser's own.
+
+Layout 36 / protocol 35. See [CABIN_BARGAIN_0_4_51.md](CABIN_BARGAIN_0_4_51.md). Require the complete suite, the three new literary cabin cases, the native one-arm model and armour proof and the new keepsake meshes. Exact-head verification pending.
+
+## Earlier candidate: 0.4.50
 
 The elk carcasses become two stages: the yacht escape, then the stream woods, the cave and the crew's gate. This changes one source's progression, not the pool. Its story id, kind, account and saved outcome are unchanged, so the pool stays forty-three eligible sources / thirty-three required / two kinds / three endings.
 
