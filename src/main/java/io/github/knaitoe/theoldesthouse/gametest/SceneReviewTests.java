@@ -68,6 +68,7 @@ public final class SceneReviewTests {
     @AfterBatch(batch="review_live_collision_guard") public static void collisionGuardDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="review_farm_stock") public static void farmStockDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="review_farm_migration") public static void farmMigrationDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="review_farm_edges") public static void farmEdgesDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="review_well_pause") public static void wellPauseDone(ServerLevel l){cleanup();}
 
     @GameTest(template="empty",batch="review_books",timeoutTicks=1600)
@@ -173,6 +174,40 @@ public final class SceneReviewTests {
             h.assertTrue(pet.getUUID().equals(petId)&&pet.getHealth()==5&&pet.isOrderedToSit()&&pet.getOwnerUUID().equals(owner.getUUID())&&NovelVignettes.personal(f.data(),owner.getUUID()).getInt("WellTicks")==381&&NovelVignettes.personal(f.data(),owner.getUUID()).getBoolean("Initials"),"ownership, Stay, health and personal well history remain exact");
             f.put(-16,0,-28,Blocks.AIR);var save=f.data().save(new CompoundTag(),f.level.registryAccess());f.level.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",LabyrinthData.FACTORY.deserializer().apply(save,f.level.registryAccess()));Farmstead.fresh(f.level,f.origin);
             h.assertTrue(f.level.getBlockState(f.base.offset(-16,0,-28)).isAir(),"the saved checkpoint does not reconstruct a later removed rail");f.done();
+        });
+    });}
+
+    @GameTest(template="empty",batch="review_farm_edges",timeoutTicks=1600)
+    public static void anAlreadyUpgradedFarmRepairsTheBrokenYardAndVoidWithoutRestockingOrMovingResidents(GameTestHelper h){run(h,LabyrinthPlace.BARN_WELL,558500,f->{
+        NovelRooms.build(f.level.getServer(),f.level,f.base,f.place);
+        var state=f.data().stateEntry(Farmstead.STATE,Long.toString(f.origin.asLong()));
+        state.putBoolean("Layout",true);state.remove("Edges0463");state.putBoolean("FoodIssued",true);state.putBoolean("DogIssued",true);state.putBoolean("CatIssued",true);
+        f.data().setStateEntry(Farmstead.STATE,Long.toString(f.origin.asLong()),state);
+        for(int x:new int[]{11,15})for(int z=-14;z<=-5;z++)f.put(x,0,z,Math.floorMod(z+14,3)==0?Blocks.OAK_FENCE:Blocks.AIR);
+        for(int x=2;x<=3;x++)for(int z=-24;z<=-23;z++){f.put(x,-1,z,Blocks.AIR);f.put(x,-2,z,Blocks.AIR);}
+        f.put(0,-13,-23,Blocks.AIR);f.put(12,-1,-24,Blocks.AIR);f.put(4,-1,-23,Blocks.IRON_BLOCK);
+        var original=(LecternBlockEntity)f.level.getBlockEntity(f.base.offset(-4,0,-17));var book=original.getBook().copy();
+        var food=(BarrelBlockEntity)f.level.getBlockEntity(f.base.offset(Farmstead.FOOD));food.clearContent();
+        var ribbon=(BarrelBlockEntity)f.level.getBlockEntity(f.base.offset(NovelRooms.RIBBON));ribbon.clearContent();
+        var lid=f.level.getBlockEntity(f.base.offset(NovelRooms.WELL));
+        var owner=f.player("farm_edges_owner");var observer=f.player("farm_edges_camera");observer.setGameMode(GameType.SPECTATOR);f.at(observer,2.5,0,-23.5);f.away(owner);
+        var own=NovelVignettes.personal(f.data(),owner.getUUID());own.putBoolean("Initials",true);own.putInt("WellTicks",381);NovelVignettes.save(f.data(),owner.getUUID(),own);
+        var pet=EntityType.CAT.create(f.level);pet.setNoAi(true);pet.setNoGravity(true);pet.setTame(true,false);pet.setOwnerUUID(owner.getUUID());pet.setOrderedToSit(true);pet.setHealth(5);pet.moveTo(Vec3.atBottomCenterOf(f.base.offset(12,-1,-24)));f.level.addFreshEntity(pet);var id=pet.getUUID();
+        Farmstead.fresh(f.level,f.origin);h.assertTrue(f.level.getBlockState(f.base.offset(2,-1,-23)).isAir()&&!Farmstead.edgesReady(f.data(),f.origin),"the observer's real camera prevents the separate saved-farm patch");f.away(observer);Farmstead.fresh(f.level,f.origin);
+        h.startSequence().thenIdle(100).thenExecute(()->{
+            h.assertTrue(!Farmstead.edgesReady(f.data(),f.origin)&&f.level.getBlockState(f.base.offset(12,-1,-24)).isAir()&&pet.isAlive()&&pet.getHealth()==5,"native floor collision cannot grow through an actual Stay cat in the hole");
+            pet.moveTo(Vec3.atBottomCenterOf(f.base.offset(3,0,-12)));
+        });
+        h.startSequence().thenIdle(160).thenWaitUntil(()->h.assertTrue(Farmstead.edgesReady(f.data(),f.origin),"the separate repair completes after the resident moves")).thenExecute(()->{
+            for(int x:new int[]{11,15})for(int z=-13;z<=-6;z++){var rail=f.level.getBlockState(f.base.offset(x,0,z));
+                if(x==11&&z==-10){h.assertTrue(rail.is(Blocks.SPRUCE_FENCE_GATE)&&!rail.getValue(FenceGateBlock.OPEN),"the yard has one real closed gate");continue;}
+                h.assertTrue(rail.is(Blocks.SPRUCE_FENCE)&&rail.getValue(FenceBlock.NORTH)&&rail.getValue(FenceBlock.SOUTH),"every formerly three-spaced yard post has continuous native rails");}
+            for(int x=2;x<=3;x++)for(int z=-24;z<=-23;z++)h.assertTrue(f.level.getBlockState(f.base.offset(x,-1,z)).is(Blocks.GRASS_BLOCK)&&f.level.getBlockState(f.base.offset(x,-2,z)).is(Blocks.DIRT),"the apron is actual supported ground above the outside void");
+            h.assertTrue(f.level.getBlockState(f.base.offset(0,-13,-23)).is(Blocks.MOSSY_COBBLESTONE)&&f.level.getBlockState(f.base.offset(0,-2,-23)).is(Blocks.LADDER)&&f.level.getBlockState(f.base.offset(4,-1,-23)).is(Blocks.IRON_BLOCK),"the shaft has a stone bottom, keeps its ladder and preserves edited ground");
+            h.assertTrue(f.level.getBlockEntity(f.base.offset(NovelRooms.WELL))==lid&&original==f.level.getBlockEntity(f.base.offset(-4,0,-17))&&ItemStack.isSameItemSameComponents(book,original.getBook())&&food.isEmpty()&&ribbon.isEmpty(),"the lid, exact original and depleted finite caches are never reconstructed");
+            h.assertTrue(pet.getUUID().equals(id)&&pet.getHealth()==5&&pet.isNoAi()&&pet.isNoGravity()&&pet.isOrderedToSit()&&pet.getOwnerUUID().equals(owner.getUUID())&&NovelVignettes.personal(f.data(),owner.getUUID()).getInt("WellTicks")==381,"the same native pet and reader's ongoing vigil survive the small patch");
+            f.put(2,-1,-23,Blocks.AIR);f.put(15,0,-12,Blocks.AIR);var save=f.data().save(new CompoundTag(),f.level.registryAccess());f.level.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",LabyrinthData.FACTORY.deserializer().apply(save,f.level.registryAccess()));Farmstead.fresh(f.level,f.origin);
+            h.assertTrue(f.level.getBlockState(f.base.offset(2,-1,-23)).isAir()&&f.level.getBlockState(f.base.offset(15,0,-12)).isAir(),"the saved patch never restores later player removals");f.done();
         });
     });}
 

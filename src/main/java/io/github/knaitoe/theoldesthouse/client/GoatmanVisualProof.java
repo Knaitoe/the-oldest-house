@@ -44,7 +44,7 @@ public final class GoatmanVisualProof extends Screen {
         float[][] views={{180,0,0,0},{140,0,0,0},{90,0,0,0},{0,0,0,0},{150,frames*.6F,1,0},{170,0,0,1}};
         for(int i=0;i<views.length;i++){
             float[] v=views[i];model.pose(frames,v[1],v[2],v[3]>0,0,0);
-            var p=g.pose();p.pushPose();p.translate(48+i*(width-80)/6F,height-90,150);p.scale(48,48,48);p.mulPose(Axis.XP.rotationDegrees(180));p.mulPose(Axis.YP.rotationDegrees(v[0]));p.translate(0,-1.5,0);
+            var p=g.pose();p.pushPose();p.translate(48+i*(width-80)/6F,height-90,150);p.scale(48,48,48);p.mulPose(Axis.YP.rotationDegrees(v[0]));p.translate(0,-1.5,0);
             model.renderToBuffer(p,buffers.getBuffer(RenderType.entityCutoutNoCull(GoatmanFigureRenderer.SKIN)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);
             model.renderToBuffer(p,buffers.getBuffer(RenderType.eyes(GoatmanFigureRenderer.EYES)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);
             buffers.endBatch();p.popPose();

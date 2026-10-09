@@ -309,7 +309,7 @@ jobs:
       - name: Structure game tests
         timeout-minutes: 42
         env:
-          JAVA_TOOL_OPTIONS: -Xmx5g
+          JAVA_TOOL_OPTIONS: -Xmx6g
         run: |
           mkdir -p run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
@@ -346,6 +346,7 @@ jobs:
           from pathlib import Path
           log = Path('build/native-gametest.log').read_text()
           passed = re.findall(r'All (\d+) required tests passed', log)
+          assert 'OutOfMemoryError' not in log, 'The native test server exhausted its heap; failed native chunk saves are not valid verification.'
           declared = sum(len(re.findall(r'@GameTest\s*\(', p.read_text())) for p in Path('src/main/java').rglob('*.java'))
           assert passed, 'The native server never completed its required tests; a successful process exit is insufficient.'
           assert int(passed[-1]) >= declared, f'Only {passed[-1]} native tests completed; {declared} are declared.'
