@@ -293,6 +293,22 @@ public final class SceneReviewTests {
         f.source(owner);h.assertTrue(f.own(owner).getBoolean("Read_Source")&&!f.own(peer).getBoolean("Read_Source")&&WitnessAccount.count(f.data(),owner.getUUID())==0,"the themed source still opens the personal original and arrival supplies confer no resolution");f.done();
     });}
 
+    @GameTest(template="empty",batch="review_cabin_surface",timeoutTicks=1600)
+    public static void raisedCabinSurfaceKeepsTheOriginalAndWaitsForALivingStayPet(GameTestHelper h){run(h,LabyrinthPlace.END_WORLD_CABIN,557640,f->{
+        var low=new BlockPos(-8,0,-31);var high=low.above();f.put(low.below(),Blocks.OAK_PLANKS.defaultBlockState());f.put(low,Blocks.LECTERN.defaultBlockState());
+        var original=LiteraryTexts.source(f.place);original.set(DataComponents.CUSTOM_NAME,Component.literal("The exact saved note"));((LecternBlockEntity)f.level.getBlockEntity(f.base.offset(low))).setBook(original.copy());
+        var owner=f.player("cabin_surface_reader");var cat=EntityType.CAT.create(f.level);h.assertTrue(cat!=null,"the repair has a real living resident");cat.setTame(true,true);cat.setOwnerUUID(owner.getUUID());cat.setOrderedToSit(true);cat.setNoGravity(true);cat.setHealth(5);
+        cat.moveTo(f.base.getX()-7.8,f.base.getY()+.2,f.base.getZ()-30.8);f.level.addFreshEntity(cat);var id=cat.getUUID();
+        h.assertTrue(!PlaytestSceneReview.apply(f.level,f.origin,f.place)&&f.level.getBlockState(f.base.offset(low)).is(Blocks.LECTERN),"nightstand collision cannot be inserted through the existing Stay cat");
+        cat.moveTo(f.base.getX()-3.5,f.base.getY(),f.base.getZ()-30.5);
+        h.assertTrue(PlaytestSceneReview.apply(f.level,f.origin,f.place)&&f.level.getBlockState(f.base.offset(low)).getValue(HouseholdFurnitureBlock.KIND)==HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE&&f.level.getBlockState(f.base.offset(high)).getValue(VignetteDetailBlock.KIND)==VignetteDetailBlock.Kind.DIARY_STACK,"the original surface rises onto its nightstand only after the living body leaves");
+        h.assertTrue(ItemStack.isSameItemSameComponents(original,SceneHuntReview.sourceBook(f.level,f.base,f.place)),"raising the surface retains every component of the archived physical original");
+        f.click(owner,high);var pages=(LiteraryVignettes.Pages)owner.containerMenu;h.assertTrue(Objects.equals(original.get(DataComponents.WRITTEN_BOOK_CONTENT),pages.original().get(DataComponents.WRITTEN_BOOK_CONTENT)),"the new personal reading menu contains the exact saved words, title and author");
+        h.assertTrue(pages.clickMenuButton(owner,3)&&!pages.clickMenuButton(owner,3)&&WitnessAccount.count(f.data(),owner.getUUID())==0,"the raised paper yields one personal original without a resolution");owner.closeContainer();
+        f.put(high,Blocks.AIR.defaultBlockState());h.assertTrue(PlaytestSceneReview.apply(f.level,f.origin,f.place)&&f.level.getBlockState(f.base.offset(high)).isAir(),"a later removed paper stays removed");
+        h.assertTrue(cat.isAlive()&&cat.getUUID().equals(id)&&cat.isOrderedToSit()&&cat.getHealth()==5,"the original pet keeps its identity, health and Stay order");f.done();
+    });}
+
     @GameTest(template="empty",batch="review_hunter_cover",timeoutTicks=1600)
     public static void bothNativeBodiesFitBelowRealCoverAndSoundSearchExpiresBehindOcclusion(GameTestHelper h){run(h,LabyrinthPlace.CAMP_BLOOD,555000,f->{
         for(int x=-24;x<=12;x++)for(int z=-53;z<=-15;z++)f.put(x,-1,z,Blocks.PODZOL);

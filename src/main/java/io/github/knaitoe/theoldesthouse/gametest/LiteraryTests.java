@@ -305,10 +305,13 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         h.runAfterDelay(100,()->{
             h.assertTrue(a.getX()<rail.getX()&&a.getY()<b.getY()+9.1,"a full hull wall cannot be vaulted: "+a.position());
             KillerNavigation.stop(a);a.moveTo(b.getX()-1.5,b.getY()+9,b.getZ()+6.5);a.setDeltaMovement(Vec3.ZERO);a.setOnGround(true);before[0]=a.position();
-            f.out.setBlock(rail,LiteraryRegistry.YACHT_RAIL.get().defaultBlockState(),3);f.out.setBlock(rail.above(),Blocks.AIR.defaultBlockState(),3);f.out.setBlock(b.offset(0,8,6),Blocks.AIR.defaultBlockState(),3);
-            KillerNavigation.request(a,new Vec3(b.getX()+2.5,b.getY()+9,b.getZ()+6.5),1);
+            f.out.setBlock(rail,LiteraryRegistry.YACHT_RAIL.get().defaultBlockState(),3);f.out.setBlock(rail.above(),Blocks.AIR.defaultBlockState(),3);
+            // Remove the lower authored yacht decks as well: a one-tile recess has a safe
+            // vanilla step-down and is not an unsupported landing.
+            for(int x=0;x<=2;x++)for(int y=-10;y<=8;y++)f.out.setBlock(b.offset(x,y,6),Blocks.AIR.defaultBlockState(),3);
+            KillerNavigation.request(a,new Vec3(b.getX()+3.5,b.getY()+9,b.getZ()+6.5),1);
         });
-        h.runAfterDelay(135,()->{h.assertTrue(a.getX()<rail.getX()&&a.getY()<b.getY()+9.1,"the killer stays behind a rail with no supported landing");h.succeed();});
+        h.runAfterDelay(135,()->{h.assertTrue(a.getX()<b.getX()-.05&&!a.getPersistentData().contains("YachtVault0464"),"the original killer does not take the custom hop across an actual unsupported gap: "+a.position());h.succeed();});
     }
     @AfterBatch(batch="literary_elk_rail") public static void railDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_elk_landing",timeoutTicks=200)

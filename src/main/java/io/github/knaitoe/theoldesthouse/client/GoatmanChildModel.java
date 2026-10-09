@@ -20,9 +20,7 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
             head.y=hat.y=body.y=5;leftArm.y=rightArm.y=7;leftLeg.y=rightLeg.y=17;
             leftLeg.xRot=rightLeg.xRot=-1.45F;leftLeg.yRot=.12F;rightLeg.yRot=-.12F;leftArm.xRot=-.6F;rightArm.xRot=-.5F;
         }else{head.y=hat.y=body.y=0;leftArm.y=rightArm.y=2;leftLeg.y=rightLeg.y=12;}
-        if(e.cowering()){
-            body.xRot=.45F;head.xRot=.4F;leftArm.xRot=rightArm.xRot=-2.3F;leftArm.zRot=-.25F;rightArm.zRot=.25F;leftLeg.xRot=rightLeg.xRot=-.55F;
-        }
+        if(e.cowering())cowerPose();
         if(e.heaving()){
             // Laughing with no sound coming out: the shoulders and head jerk together.
             float h=Mth.abs(Mth.sin(age*.9F))*Mth.abs(Mth.sin(age*.37F));
@@ -30,4 +28,5 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
         }
         hat.copyFrom(head);
     }
+    public void cowerPose(){body.xRot=.45F;head.xRot=.4F;leftArm.xRot=rightArm.xRot=-2.3F;leftArm.zRot=-.25F;rightArm.zRot=.25F;leftLeg.xRot=rightLeg.xRot=-.55F;hat.copyFrom(head);}
 }

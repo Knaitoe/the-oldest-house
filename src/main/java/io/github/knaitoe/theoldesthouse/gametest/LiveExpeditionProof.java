@@ -44,7 +44,7 @@ public final class LiveExpeditionProof {
     private static void require(boolean okay,String message){if(!okay)throw new IllegalStateException("LIVE EXPEDITION: "+message);}
     @SubscribeEvent public static void commands(RegisterCommandsEvent e) {
         if(!enabled())return;
-        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,27)).executes(c->{
+        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,30)).executes(c->{
             var p=c.getSource().getPlayerOrException();if(!role(p).isEmpty()&&IntegerArgumentType.getInteger(c,"step")==phase)ACKS.add(role(p));return 1;
         })));
     }
@@ -252,9 +252,11 @@ public final class LiveExpeditionProof {
             huntChunks.hold(l,new net.minecraft.world.phys.AABB(Vec3.atLowerCornerOf(site.offset(-30,-5,-106)),Vec3.atLowerCornerOf(site.offset(31,12,6))));if(!huntChunks.ready())return;
             privateA.discard();privateB.discard();NovelRooms.build(s,l,site,LabyrinthPlace.PLAIN);
             for(var p:List.of(a,b)){var previous=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.ELK_CARCASSES);previous.putBoolean("Here",false);LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.ELK_CARCASSES,previous);
-                p.stopUsingItem();outside(p,site.offset(p==a?-8:8,0,-30),180);p.getInventory().setItem(0,new ItemStack(NovelRegistry.CAMERA.get()));NovelVignettes.onArrive(p,LabyrinthPlace.PLAIN);}
+                p.stopUsingItem();outside(p,site.offset(p==a?-8:8,0,-30),0);p.getInventory().setItem(0,new ItemStack(NovelRegistry.CAMERA.get()));NovelVignettes.onArrive(p,LabyrinthPlace.PLAIN);}
             step(s,25,site.offset(NovelRooms.FIGURE));
-        }else if(phase==25&&a!=null&&b!=null&&ACKS.size()==2){
+        }else if(phase==25&&a!=null&&b!=null){
+            if(s.getTickCount()%100==0)TheOldestHouse.LOGGER.info("LIVE CAMERA A={} aim={} photo={} B={} aim={} photo={}",location(a),NovelVignettes.personal(d,a.getUUID()).getInt("Aim"),NovelVignettes.personal(d,a.getUUID()).contains("Photo"),location(b),NovelVignettes.personal(d,b.getUUID()).getInt("Aim"),NovelVignettes.personal(d,b.getUUID()).contains("Photo"));
+            if(ACKS.size()!=2)return;
             var left=NovelVignettes.personal(d,a.getUUID());var right=NovelVignettes.personal(d,b.getUUID());
             require(left.contains("Photo")&&right.contains("Photo"),"both actual camera clients returned their exposure");
             var photoA=ItemStack.parseOptional(a.registryAccess(),left.getCompound("Photo"));var photoB=ItemStack.parseOptional(b.registryAccess(),right.getCompound("Photo"));
@@ -266,8 +268,25 @@ public final class LiveExpeditionProof {
             require(WitnessAccount.has(d,a.getUUID(),WitnessAccount.Story.PLAIN)&&WitnessAccount.has(d,b.getUUID(),WitnessAccount.Story.PLAIN)&&WitnessAccount.count(d,a.getUUID())==1&&WitnessAccount.count(d,b.getUUID())==1,"both real exposures earn only their own Plains memory");
             write("camera-maps.txt","Two locked native originals, each developed from its own connected client's composed framebuffer. Map IDs: "+mapA+", "+mapB+". Both differ from the legacy illustration.\n");step(s,26,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.PLAIN).offset(NovelRooms.FIGURE));
         }else if(phase==26&&a!=null&&b!=null&&ACKS.size()==2){
-            step(s,27,a.blockPosition());write("passed.txt","Two actual NeoForge socket clients: all original shared doors, personal leaves/burns/note scenes and two same-profile reconnects; one Stacy body and one three-second wooden-door break; both readers walk crouched under native leaf cover; one shared Camp Blood hunter and two private elk killers use physical movement and leaf breaking; native renderers exclude each peer's private killer; two actively hiding peers keep their cover; both real clients mine and crawl through persistent shattered portholes with protected hull; both use the new camera, send real rendered exposures, receive different locked native maps and independently earn their own Plains memory; native map and viewfinder screenshots saved; no doubled clocks or transferred ending credit.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: shared and private hunts, persistent shattered portholes, two actual camera exposures and two reconnects");
-        }else if(phase==27&&s.getTickCount()-changed>100){huntChunks.close();s.halt(false);}
+            var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.END_WORLD_CABIN);var l=a.serverLevel();huntChunks.hold(l,SceneReview.area(site,LabyrinthPlace.END_WORLD_CABIN));if(!huntChunks.ready())return;
+            // A bounded native table fixture at the actual cabin interaction address.
+            // The personal Ready state is explicit test staging; collection uses native packets.
+            for(int x=-1;x<=5;x++)for(int z=-34;z<=-25;z++)l.setBlock(site.offset(x,-1,z),Blocks.OAK_PLANKS.defaultBlockState(),3);
+            var end=site.offset(LiteraryRooms.ending(LabyrinthPlace.END_WORLD_CABIN));l.setBlock(end.below(),HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH),3);
+            LiteraryRooms.prop(l,site,LiteraryRooms.ending(LabyrinthPlace.END_WORLD_CABIN),LiteraryPropBlock.Kind.LEDGER,Direction.SOUTH);
+            for(var p:List.of(a,b)){p.stopUsingItem();outside(p,site.offset(p==a?1:3,0,-27),0);p.getInventory().setItem(7,ItemStack.EMPTY);
+                var own=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.END_WORLD_CABIN);own.putBoolean("Here",true);own.putBoolean("Interrupted",true);own.putBoolean("Ready",false);LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.END_WORLD_CABIN,own);}
+            step(s,27,end);
+        }else if(phase==27&&a!=null&&b!=null&&ACKS.size()==2){
+            var own=LiteraryVignettes.personal(d,a.getUUID(),LabyrinthPlace.END_WORLD_CABIN);LiteraryVignettes.ready(a,LabyrinthPlace.END_WORLD_CABIN,own,"native_visibility_fixture");LiteraryVignettes.save(d,a.getUUID(),LabyrinthPlace.END_WORLD_CABIN,own);
+            step(s,28,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.END_WORLD_CABIN).offset(LiteraryRooms.ending(LabyrinthPlace.END_WORLD_CABIN)));
+        }else if(phase==28&&a!=null&&b!=null&&ACKS.size()==2){
+            step(s,29,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.END_WORLD_CABIN).offset(LiteraryRooms.ending(LabyrinthPlace.END_WORLD_CABIN)));
+        }else if(phase==29&&a!=null&&b!=null&&ACKS.size()==2){
+            require(LiteraryVignettes.personal(d,a.getUUID(),LabyrinthPlace.END_WORLD_CABIN).getBoolean("Taken_Ending")&&!LiteraryVignettes.personal(d,b.getUUID(),LabyrinthPlace.END_WORLD_CABIN).getBoolean("Taken_Ending"),"one native account collection does not change its peer's custody");
+            require(WitnessAccount.count(d,a.getUUID())==1&&WitnessAccount.count(d,b.getUUID())==1,"visibility and collection alone confer no additional ending credit");
+            step(s,30,a.blockPosition());write("passed.txt","Two actual NeoForge socket clients: all original shared doors, personal leaves/burns/note scenes and two same-profile reconnects; one Stacy body and one three-second wooden-door break; real shared/private physical hunts, protected hiding peers and renderer ownership; both mine and crawl through persistent shattered portholes with protected hull; both use cameras, return actual rendered exposures, receive distinct locked native maps and independently earn their own Plains memory; a shared native ledger remains hidden for both, appears for the sole eligible reader and disappears after native menu collection without appearing for the peer; native screenshots saved; no doubled clocks or transferred ending credit.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: persistent shattered portholes, two actual camera exposures, independent ending-book visibility and two reconnects");
+        }else if(phase==30&&s.getTickCount()-changed>100){huntChunks.close();s.halt(false);}
     }
 
     private static void holdHunt(net.minecraft.server.level.ServerLevel l,BlockPos site){

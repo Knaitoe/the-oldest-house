@@ -151,10 +151,22 @@ public final class LiveExpeditionClient {
             var to=target.getCenter().subtract(mc.player.getEyePosition());mc.player.setYRot((float)Math.toDegrees(Math.atan2(-to.x,to.z)));mc.player.setXRot((float)-Math.toDegrees(Math.atan2(to.y,Math.hypot(to.x,to.z))));
             mc.player.getInventory().selected=0;mc.options.keyUse.setDown(true);if(!mc.player.isUsingItem())mc.gameMode.useItem(mc.player,InteractionHand.MAIN_HAND);
             for(int i=0;i<mc.player.getInventory().getContainerSize();i++){var photo=mc.player.getInventory().getItem(i);if(photo.is(net.minecraft.world.item.Items.FILLED_MAP)&&photo.has(DataComponents.MAP_ID)){
-                var custom=photo.get(DataComponents.CUSTOM_DATA);if(custom!=null&&custom.copyTag().hasUUID(io.github.knaitoe.theoldesthouse.labyrinth.NovelVignettes.PHOTO_OWNER)&&custom.copyTag().getUUID(io.github.knaitoe.theoldesthouse.labyrinth.NovelVignettes.PHOTO_OWNER).equals(mc.player.getUUID())){shot=role+"-camera-view";ack(mc,25);break;}}}
+                var custom=photo.get(DataComponents.CUSTOM_DATA);if(custom!=null&&custom.copyTag().hasUUID(io.github.knaitoe.theoldesthouse.labyrinth.NovelVignettes.PHOTO_OWNER)&&custom.copyTag().getUUID(io.github.knaitoe.theoldesthouse.labyrinth.NovelVignettes.PHOTO_OWNER).equals(mc.player.getUUID())){if(ack!=25){shot=role+"-camera-view";ack(mc,25);}break;}}}
         }
-        if(step==26&&ticks>20){mc.options.keyUse.setDown(false);for(int i=0;i<9;i++){var photo=mc.player.getInventory().getItem(i);if(photo.is(net.minecraft.world.item.Items.FILLED_MAP)&&photo.has(DataComponents.MAP_ID)&&mc.level.getMapData(photo.get(DataComponents.MAP_ID))!=null){mc.player.getInventory().selected=i;shot=role+"-developed-frame";ack(mc,26);break;}}}
-        if(step==27&&ticks==30){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);mc.options.keyUse.setDown(false);mc.stop();}
+        if(step==26&&ticks>5){mc.options.keyUse.setDown(false);for(int i=0;i<9;i++){var photo=mc.player.getInventory().getItem(i);if(photo.is(net.minecraft.world.item.Items.FILLED_MAP)&&photo.has(DataComponents.MAP_ID)){mc.player.getInventory().selected=i;if(ticks>30&&mc.level.getMapData(photo.get(DataComponents.MAP_ID))!=null&&ack!=26){shot=role+"-developed-frame";ack(mc,26);}break;}}}
+        if(step>=27&&step<=29){mc.options.keyUse.setDown(false);mc.player.getInventory().selected=7;
+            var to=target.getCenter().add(0,-.45,0).subtract(mc.player.getEyePosition());mc.player.setYRot((float)Math.toDegrees(Math.atan2(-to.x,to.z)));mc.player.setXRot((float)-Math.toDegrees(Math.atan2(to.y,Math.hypot(to.x,to.z))));
+            if(ticks>20&&EndingBookClient.hasView(target)){
+                if(step==27&&!EndingBookClient.visible(target)&&ack!=27){shot=role+"-ending-hidden";ack(mc,27);}
+                if(step==28&&EndingBookClient.visible(target)==role.equals("A")&&ack!=28){shot=role+"-ending-personal";ack(mc,28);}
+                if(step==29){
+                    if(role.equals("A")&&EndingBookClient.visible(target)){
+                        if(mc.screen instanceof LecternScreen){mc.gameMode.handleInventoryButtonClick(mc.player.containerMenu.containerId,3);mc.player.closeContainer();}else click(mc,target,ticks);
+                    }else if(!EndingBookClient.visible(target)&&ack!=29){shot=role+"-ending-collected";ack(mc,29);}
+                }
+            }
+        }
+        if(step==30&&ticks==30){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);mc.options.keyUse.setDown(false);mc.stop();}
     }
     private static boolean open(net.minecraft.world.level.block.state.BlockState s){return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}
     private static void walk(Minecraft mc,BlockPos target) {

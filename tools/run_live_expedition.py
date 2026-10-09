@@ -14,11 +14,11 @@ report.mkdir(parents=True, exist_ok=True)
 server = ROOT / "run-live/server"
 server.mkdir(parents=True, exist_ok=True)
 (server / "eula.txt").write_text("eula=true\n")
-(server / "server.properties").write_text('server-ip=127.0.0.1\nserver-port=25578\nonline-mode=false\nview-distance=3\nsimulation-distance=3\nspawn-protection=0\nspawn-monsters=false\nmax-players=3\nlevel-type=minecraft:flat\ngenerator-settings={"layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:dirt","height":2},{"block":"minecraft:grass_block","height":1}],"biome":"minecraft:plains"}\ngenerate-structures=false\nsync-chunk-writes=false\n')
+(server / "server.properties").write_text('server-ip=127.0.0.1\nserver-port=25578\nonline-mode=false\nview-distance=6\nsimulation-distance=3\nspawn-protection=0\nspawn-monsters=false\nmax-players=3\nlevel-type=minecraft:flat\ngenerator-settings={"layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:dirt","height":2},{"block":"minecraft:grass_block","height":1}],"biome":"minecraft:plains"}\ngenerate-structures=false\nsync-chunk-writes=false\n')
 for role in ("a", "b"):
     folder = ROOT / "run-live" / role
     folder.mkdir(parents=True, exist_ok=True)
-    (folder / "options.txt").write_text("pauseOnLostFocus:false\nrenderDistance:3\nsimulationDistance:5\nmaxFps:30\nenableVsync:false\nguiScale:2\ntutorialStep:none\n")
+    (folder / "options.txt").write_text("pauseOnLostFocus:false\nrenderDistance:6\nsimulationDistance:5\nmaxFps:30\nenableVsync:false\nguiScale:2\ntutorialStep:none\n")
 
 processes = []
 logs = []
@@ -64,6 +64,10 @@ try:
         assert p.returncode == 0, p.returncode
     for shot in ("A-first.png", "B-first.png", "A-embers.png", "B-embers-reconnected.png", "B-reconnected.png", "A-leak.png", "B-leak.png", "B-leak-first.png", "A-stacy-door.png", "B-stacy-door.png", "A-leaf-cover.png", "B-leaf-cover.png", "A-slasher-leaves.png", "B-slasher-leaves.png", "A-private-elk.png", "B-private-elk.png", "A-private-leaves.png", "B-private-leaves.png", "A-porthole.png", "B-porthole.png"):
         assert (report / shot).stat().st_size > 10000, shot
+    for role in ("A", "B"):
+        for view in ("actual-exposure", "camera-view", "developed-frame", "ending-hidden", "ending-personal", "ending-collected"):
+            assert (report / f"{role}-{view}.png").stat().st_size > 500, (role, view)
+    assert (report / "camera-maps.txt").is_file()
     # Require clean native movement validation during the actual crossing
     # and return, even when a later correction would recover a bad packet.
     native_log = (server / "logs/latest.log").read_text(errors="replace")

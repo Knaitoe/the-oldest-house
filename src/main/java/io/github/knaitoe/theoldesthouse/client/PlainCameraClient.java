@@ -24,6 +24,8 @@ public final class PlainCameraClient {
     @SubscribeEvent public static void capture(RenderFrameEvent.Post e){
         if(pending==null)return;var mc=Minecraft.getInstance();
         if(mc.level!=world||!active()){pending=null;return;}if(++frames<2)return;
+        boolean boy=false;for(var entity:mc.level.entitiesForRendering())if(entity instanceof io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor actor&&actor.role()==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor.SILHOUETTE&&actor.phase()==4&&actor.owner().filter(mc.player.getUUID()::equals).isPresent()){boy=true;break;}
+        if(!boy)return; // Allow the actual distant body to arrive with its native chunk packets.
         UUID nonce=pending;pending=null;
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
             if(io.github.knaitoe.theoldesthouse.gametest.LiveExpeditionProof.enabled()){

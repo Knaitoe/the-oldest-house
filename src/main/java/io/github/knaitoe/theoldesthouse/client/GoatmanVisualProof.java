@@ -58,6 +58,6 @@ public final class GoatmanVisualProof extends Screen {
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-goatman.png"));}
         Files.writeString(dir.resolve("goatman-passed.txt"),"24 native frames: the Goatman's mesh (horns, muzzle, beard, ears) and skin in six views with its glowing eyes, and the counter and brat items.\n");
         TheOldestHouse.LOGGER.info("GOATMAN CHECK PASSED: the thing itself, its eyes, the counter and the brat rendered");
-        mc.setScreen(new CoffinVisualProof());
+        mc.setScreen(new PlaytestVisualProof());
     }
 }

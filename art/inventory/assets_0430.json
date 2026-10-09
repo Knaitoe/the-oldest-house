@@ -30,11 +30,13 @@
       "description": "A single antique brass door key, elaborate oval bow with a small worn paper tag, one bit on the end.",
       "source_sha256": "bf63f183ae77bdfe517bed5c4929cef41b406103ddac328a5f307f04f0d6fb3b",
       "native_path": "src/main/resources/assets/the_oldest_house/textures/item/archive_key.png",
-      "native_sha256": "392e234a2426b103557a45397e14c0ddedd27322f800d71aab8144f3e5aacd17",
+      "native_sha256": "0bd66da685dcf97f5fcdcfa94d8a50fde257336d5421a1d5cfe1b3e959f81105",
       "dimensions": [
-        32,
-        32
-      ]
+        16,
+        16
+      ],
+      "previous_native_sha256": "392e234a2426b103557a45397e14c0ddedd27322f800d71aab8144f3e5aacd17",
+      "native_redraw": "0.4.64: tools/generate_playtest_assets.py, crisp native pixels"
     },
     {
       "item": "cat_collar",
@@ -52,11 +54,13 @@
       "description": "A narrow faded blue fabric ribbon tied into a loose bow, frayed ends.",
       "source_sha256": "0146f1e3c90953e70ed392d28cc98166eaa82a773c5c7278115e5edec98b1ac4",
       "native_path": "src/main/resources/assets/the_oldest_house/textures/item/well_ribbon.png",
-      "native_sha256": "f148df3f57fd7adf4c6191d4274c638ccfebfd2a04ce18af0a0ae45412d208f7",
+      "native_sha256": "a65275710d65db877d297e09038f01ec34c32971f81945cf8b1e28e4b95924e0",
       "dimensions": [
-        32,
-        32
-      ]
+        16,
+        16
+      ],
+      "previous_native_sha256": "f148df3f57fd7adf4c6191d4274c638ccfebfd2a04ce18af0a0ae45412d208f7",
+      "native_redraw": "0.4.64: tools/generate_playtest_assets.py, crisp native pixels"
     },
     {
       "item": "blindfold",
@@ -74,11 +78,13 @@
       "description": "A dark old iron church key with a large trefoil bow and heavy rectangular bit.",
       "source_sha256": "25a95ca3e62513f2be9c0ba306a6f01e3fd9f29e3424aceb539c213c3683aedc",
       "native_path": "src/main/resources/assets/the_oldest_house/textures/item/church_key.png",
-      "native_sha256": "b7184c1ab3de030d1b2d804efb7724cc094314fe71363e1e95898f43406213b8",
+      "native_sha256": "e8abc2f77047ef57ac213a5369e8b7b61205f68d9bd98557c3e9de46e4aca686",
       "dimensions": [
-        32,
-        32
-      ]
+        16,
+        16
+      ],
+      "previous_native_sha256": "b7184c1ab3de030d1b2d804efb7724cc094314fe71363e1e95898f43406213b8",
+      "native_redraw": "0.4.64: tools/generate_playtest_assets.py, crisp native pixels"
     },
     {
       "item": "walkie_talkie",
