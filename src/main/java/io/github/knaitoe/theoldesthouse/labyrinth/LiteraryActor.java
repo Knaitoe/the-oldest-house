@@ -22,7 +22,7 @@ public final class LiteraryActor extends PathfinderMob {
     public static AttributeSupplier.Builder attributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,40).add(Attributes.MOVEMENT_SPEED,.24).add(Attributes.SCALE,1);}
     @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(ROLE,0);b.define(PHASE,0);b.define(OWNER,Optional.empty());}
     public int role(){return entityData.get(ROLE);}public int phase(){return entityData.get(PHASE);}public Optional<UUID> owner(){return entityData.get(OWNER);}public String scene(){return scene;}
-    public void appearance(int role,int phase){entityData.set(ROLE,role);entityData.set(PHASE,phase);boolean now=role==BROTHER||role==FAMILY_CHILD;if(now!=small){small=now;getAttribute(Attributes.SCALE).setBaseValue(now?.58:1);refreshDimensions();}}
+    public void appearance(int role,int phase){entityData.set(ROLE,role);entityData.set(PHASE,phase);boolean now=role==BROTHER||role==FAMILY_CHILD||role==SILHOUETTE&&phase==4;if(now!=small){small=now;getAttribute(Attributes.SCALE).setBaseValue(now?.58:1);refreshDimensions();}}
     public void bind(LabyrinthPlace p,UUID owner){scene=p.id();entityData.set(OWNER,Optional.ofNullable(owner));}
     public void say(String text){setCustomName(Component.literal(text));setCustomNameVisible(true);}
     @Override public void tick(){

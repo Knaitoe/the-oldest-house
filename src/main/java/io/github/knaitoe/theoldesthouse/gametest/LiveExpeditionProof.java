@@ -44,7 +44,7 @@ public final class LiveExpeditionProof {
     private static void require(boolean okay,String message){if(!okay)throw new IllegalStateException("LIVE EXPEDITION: "+message);}
     @SubscribeEvent public static void commands(RegisterCommandsEvent e) {
         if(!enabled())return;
-        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,24)).executes(c->{
+        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,27)).executes(c->{
             var p=c.getSource().getPlayerOrException();if(!role(p).isEmpty()&&IntegerArgumentType.getInteger(c,"step")==phase)ACKS.add(role(p));return 1;
         })));
     }
@@ -245,9 +245,29 @@ public final class LiveExpeditionProof {
                 require(YachtGlazingBlock.shattered(a.serverLevel().getBlockState(site.offset(-9,1,-3)))&&YachtGlazingBlock.shattered(a.serverLevel().getBlockState(site.offset(9,1,-3))),"both native client mining actions break their actual portholes");
                 require(a.serverLevel().getBlockState(site.offset(-9,2,-3)).is(LiteraryRegistry.YACHT_HULL.get())&&a.serverLevel().getBlockState(site.offset(9,2,-3)).is(LiteraryRegistry.YACHT_HULL.get()),"the surrounding yacht hull remains intact");
                 require(WitnessAccount.count(d,a.getUUID())==0&&WitnessAccount.count(d,b.getUUID())==0,"physical porthole escape gives neither socket personal ending credit");
-                step(s,24,site.offset(0,1,-3));write("passed.txt","Two actual NeoForge socket clients: all original shared doors, personal leaves/burns/note scenes and two same-profile reconnects; one Stacy body and one three-second wooden-door break; both readers walk crouched under native leaf cover; one shared Camp Blood hunter and two private elk killers use physical movement and leaf breaking; native client renderers exclude each peer's private killer; two actively hiding peers keep their cover from invisible hunters; native Stacy look tracking; both real clients mine portholes and crawl physically through while holding crouch, with matching native collision bodies and protected hull; no doubled clocks or transferred ending credit.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: shared and private hunts, native ownership rendering, porthole mining/crawling and two reconnects");
+                step(s,24,site.offset(0,1,-3));
             }
-        }else if(phase==24&&s.getTickCount()-changed>100){huntChunks.close();s.halt(false);}
+        }else if(phase==24&&a!=null&&b!=null&&ACKS.size()==2){
+            var l=s.getLevel(HouseDimensions.OUTSIDE);var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.PLAIN);
+            huntChunks.hold(l,new net.minecraft.world.phys.AABB(Vec3.atLowerCornerOf(site.offset(-30,-5,-106)),Vec3.atLowerCornerOf(site.offset(31,12,6))));if(!huntChunks.ready())return;
+            privateA.discard();privateB.discard();NovelRooms.build(l,site,LabyrinthPlace.PLAIN);
+            for(var p:List.of(a,b)){var previous=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.ELK_CARCASSES);previous.putBoolean("Here",false);LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.ELK_CARCASSES,previous);
+                p.stopUsingItem();outside(p,site.offset(p==a?-8:8,0,-30),180);p.getInventory().setItem(0,new ItemStack(NovelRegistry.CAMERA.get()));NovelVignettes.onArrive(p,LabyrinthPlace.PLAIN);}
+            step(s,25,site.offset(NovelRooms.FIGURE));
+        }else if(phase==25&&a!=null&&b!=null&&ACKS.size()==2){
+            var left=NovelVignettes.personal(d,a.getUUID());var right=NovelVignettes.personal(d,b.getUUID());
+            require(left.contains("Photo")&&right.contains("Photo"),"both actual camera clients returned their exposure");
+            var photoA=ItemStack.parseOptional(a.registryAccess(),left.getCompound("Photo"));var photoB=ItemStack.parseOptional(b.registryAccess(),right.getCompound("Photo"));
+            var mapA=photoA.get(DataComponents.MAP_ID);var mapB=photoB.get(DataComponents.MAP_ID);
+            require(mapA!=null&&mapB!=null&&!mapA.equals(mapB),"two camera users receive distinct native map originals");
+            var frameA=a.serverLevel().getMapData(mapA);var frameB=b.serverLevel().getMapData(mapB);
+            require(frameA!=null&&frameB!=null&&frameA.locked&&frameB.locked&&!Arrays.equals(frameA.colors,NovelVignettes.plainPixels())&&!Arrays.equals(frameB.colors,NovelVignettes.plainPixels()),"developed maps contain actual rendered views instead of the former stock drawing");
+            require(left.hasUUID("PlainBoy0464")&&right.hasUUID("PlainBoy0464")&&!left.getUUID("PlainBoy0464").equals(right.getUUID("PlainBoy0464")),"each camera sees an independently owned distant boy");
+            require(WitnessAccount.has(d,a.getUUID(),WitnessAccount.Story.PLAIN)&&WitnessAccount.has(d,b.getUUID(),WitnessAccount.Story.PLAIN)&&WitnessAccount.count(d,a.getUUID())==1&&WitnessAccount.count(d,b.getUUID())==1,"both real exposures earn only their own Plains memory");
+            write("camera-maps.txt","Two locked native originals, each developed from its own connected client's composed framebuffer. Map IDs: "+mapA+", "+mapB+". Both differ from the legacy illustration.\n");step(s,26,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.PLAIN).offset(NovelRooms.FIGURE));
+        }else if(phase==26&&a!=null&&b!=null&&ACKS.size()==2){
+            step(s,27,a.blockPosition());write("passed.txt","Two actual NeoForge socket clients: all original shared doors, personal leaves/burns/note scenes and two same-profile reconnects; one Stacy body and one three-second wooden-door break; both readers walk crouched under native leaf cover; one shared Camp Blood hunter and two private elk killers use physical movement and leaf breaking; native renderers exclude each peer's private killer; two actively hiding peers keep their cover; both real clients mine and crawl through persistent shattered portholes with protected hull; both use the new camera, send real rendered exposures, receive different locked native maps and independently earn their own Plains memory; native map and viewfinder screenshots saved; no doubled clocks or transferred ending credit.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: shared and private hunts, persistent shattered portholes, two actual camera exposures and two reconnects");
+        }else if(phase==27&&s.getTickCount()-changed>100){huntChunks.close();s.halt(false);}
     }
 
     private static void holdHunt(net.minecraft.server.level.ServerLevel l,BlockPos site){

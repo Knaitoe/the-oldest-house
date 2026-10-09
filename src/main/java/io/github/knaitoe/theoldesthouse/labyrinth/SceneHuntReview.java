@@ -84,6 +84,7 @@ public final class SceneHuntReview {
         var origin=HouseSavedData.get(l.getServer()).houseOrigin();var d=LabyrinthData.get(l.getServer());
         if(origin!=null){var all=d.state("scene_source_originals_0455");if(all.contains(key(origin,p)))return ItemStack.parseOptional(l.registryAccess(),all.getCompound(key(origin,p)));}
         if(l.getBlockEntity(b.offset(p==LabyrinthPlace.ZAMPANO_COURTYARD?NovelRooms.ARCHIVE_DESK:LiteraryRooms.source(p))) instanceof LecternBlockEntity lectern&&!lectern.getBook().isEmpty())return lectern.getBook().copy();
+        if(p==LabyrinthPlace.END_WORLD_CABIN&&l.getBlockEntity(b.offset(-8,0,-31)) instanceof LecternBlockEntity old&&!old.getBook().isEmpty())return old.getBook().copy();
         return p==LabyrinthPlace.ZAMPANO_COURTYARD?NovelTexts.archive():LiteraryTexts.source(p);
     }
     private static boolean fan(ServerLevel l,BlockPos b){boolean ready=true;

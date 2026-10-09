@@ -45,7 +45,8 @@ public final class NovelRooms {
         box(l,b,-1,0,0,1,2,0,Blocks.AIR.defaultBlockState());
     }
     private static void courtyard(ServerLevel l,BlockPos b){
-        outdoor(l,b,15,41,Blocks.MOSSY_STONE_BRICKS);room(l,b,-12,12,-39,-19,0,7,NovelRegistry.PAPER.get(),Blocks.DARK_OAK_PLANKS);
+        outdoor(l,b,15,41,Blocks.MOSSY_STONE_BRICKS);room(l,b,-12,12,-39,-19,0,7,NovelRegistry.PLASTER.get(),Blocks.DARK_OAK_PLANKS);
+        for(int x=-11;x<=11;x++)for(int y=2;y<=4;y++)if(PlaytestSceneReview.paperPatch(x,y,-39))at(l,b,x,y,-39,NovelRegistry.PAPER.get());
         door(l,b.offset(ARCHIVE_DOOR),Direction.SOUTH,Blocks.IRON_DOOR,false);
         for(int x:new int[]{-12,12})for(int z:new int[]{-23,-29,-35})for(int y=1;y<=3;y++)at(l,b,x,y,z,NovelRegistry.SEALED_WINDOW.get());
         for(int z=-3;z>=-15;z-=3)for(int x:new int[]{-10,10}){at(l,b,x,0,z,Blocks.MOSS_BLOCK);at(l,b,x,1,z,Blocks.AZALEA);}
@@ -109,7 +110,7 @@ public final class NovelRooms {
         for(int x:new int[]{-28,28})for(int z=-2;z>=-64;z--)box(l,b,x-1,0,z,x+1,1+Math.floorMod(z,3),z,Blocks.SANDSTONE.defaultBlockState());
         // The shape remains beyond the traversable dunes: it cannot be approached.
         box(l,b,-10,-1,-104,10,-1,-78,Blocks.SANDSTONE.defaultBlockState());
-        at(l,b,0,0,-93,Blocks.BLACK_CONCRETE);at(l,b,0,1,-93,Blocks.BLACK_CONCRETE);
+        // The distant boy is a reader-owned native silhouette, restored by the scene tick.
         lectern(l,b.offset(APOLOGY),NovelTexts.apology());at(l,b,3,0,-7,Blocks.BARREL);
     }
     /** Back the authored walkable core first, then restore only its missing floor tiles. */

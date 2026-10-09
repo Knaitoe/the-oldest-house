@@ -65,6 +65,7 @@ public final class SceneReview {
         case WHEEL,END_WORLD_CABIN->DIARY_STACK;
         default->FIELD_NOTEBOOK;};}
     public static boolean readingAlias(ServerLevel l,BlockPos b,LabyrinthPlace p,BlockPos rel){
+        if(p==LabyrinthPlace.END_WORLD_CABIN&&rel.equals(new BlockPos(-8,0,-31))){var old=l.getBlockState(b.offset(rel));if(old.is(Blocks.LECTERN)||old.is(HouseBlocks.HOUSEHOLD_FURNITURE.get())||old.is(HouseBlocks.VIGNETTE_DETAIL.get()))return true;}
         if(!LiteraryRooms.isLiterary(p)||p==LabyrinthPlace.FAMILY_COPY||p==LabyrinthPlace.OLD_CABIN||!rel.equals(readingSurface(p)))return false;
         var s=l.getBlockState(b.offset(rel));return s.is(HouseBlocks.VIGNETTE_DETAIL.get())&&s.getValue(VignetteDetailBlock.KIND)==readingKind(p);
     }
@@ -92,12 +93,13 @@ public final class SceneReview {
                 ready&=set(l,chair,s.setValue(HouseholdFurnitureBlock.FACING,Direction.NORTH));
             var desk=b.offset(x,0,-12);s=BuildBlocks.state(l,desk);
             if(s.is(HouseBlocks.HOUSEHOLD_FURNITURE.get())&&Set.of(HouseholdFurnitureBlock.Kind.WALNUT_DESK,HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,HouseholdFurnitureBlock.Kind.FORMICA_TABLE).contains(s.getValue(HouseholdFurnitureBlock.KIND)))
-                ready&=set(l,desk,HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.READING_DESK,Direction.SOUTH));
+                ready&=set(l,desk,HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.CHESS_TABLE,Direction.SOUTH));
             var top=desk.above();s=BuildBlocks.state(l,top);
             if(s.is(HouseBlocks.SCENE_DETAIL.get())&&s.getValue(SceneDetailBlock.KIND)==SceneDetailBlock.Kind.VASE)
                 ready&=set(l,top,VignetteDetailBlock.state(CHESS,Direction.NORTH));
             else if(s.isAir()&&BuildBlocks.state(l,desk).is(HouseBlocks.HOUSEHOLD_FURNITURE.get()))detail(l,b,x,1,-12,CHESS,Direction.NORTH);
         }
+        ready&=PlaytestSceneReview.courtyard(l,b);
         for(var rel:DRAFTS){var at=b.offset(rel);var s=BuildBlocks.state(l,at);if(s.is(HouseBlocks.SCENE_DETAIL.get())&&Set.of(SceneDetailBlock.Kind.INK_PAPERS,SceneDetailBlock.Kind.FILE_TRAY,SceneDetailBlock.Kind.BOOKS).contains(s.getValue(SceneDetailBlock.KIND)))set(l,at,VignetteDetailBlock.state(FIELD_NOTEBOOK,Direction.SOUTH));}
         return ready;
     }
