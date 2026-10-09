@@ -45,7 +45,7 @@ import org.joml.Vector3f;
 
 /**
  * The cabin at the end of the world (0.4.51). Four visitors wait outside a reader's door at dusk, private to that reader.
- * They ask three times, in a fixed order: Leonard for the reader's life (it costs a heart), Adriane again, Sabrina for
+ * They ask three times, in a fixed order: Leonard for the reader's life (it costs a heart), Adriane for more, Sabrina for
  * the arm of the off hand. Each gift is permanent. A storm rises with every ask. Refusing at any point is an answer too:
  * the one who asked walks into the lake, a room of the reader's own goes dark for them, and nothing already given comes
  * back. Giving everything breaks the storm; the four go into the lake together, and the television shows the reader's
@@ -106,7 +106,7 @@ public final class CabinBargain {
                 new Line(ADRIANE,"It wasn't enough. I'm so sorry. Listen to it. The storm is still coming."),
                 new Line(ADRIANE,days+(days==1?" day":" days")+" you've lived there. "+(slept>0?"You slept in that bed "+slept+(slept==1?" night.":" nights."):"You never once slept through a night.")),
                 new Line(ADRIANE,"And it isn't only yours that ends. I have a boy. Where we come from, the sea is already in the streets."),
-                new Line(ADRIANE,"It still asks for your life. Only you can stop it. Please."));
+                new Line(ADRIANE,"More. Only you can stop it. Please."));
             case "ask3"->List.of(
                 new Line(SABRINA,"My name is Sabrina. I'm a nurse. If this is going to be done, I'd rather be the one who does it properly."),
                 new Line(SABRINA,"It wants something real now. Something... handy."),
