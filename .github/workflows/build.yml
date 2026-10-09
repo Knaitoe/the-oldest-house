@@ -234,8 +234,20 @@ jobs:
                            'assets/the_oldest_house/models/item/trailer_plate.json',
                            'assets/the_oldest_house/textures/item/trailer_plate.png' ):
                   assert name in z.namelist(), name
-              for i in range(6):
-                  assert f'assets/the_oldest_house/textures/entity/trailer_child_{i}.png' in z.namelist()
+              original_cousin_skins = (
+                  'a191ea11a9a8b9dfe285be1935a70655996272a17a3f1a84bdafb72a5455c5e5',
+                  '887a4648b0bb82e95e45e0fb19fc31151ec49789ef0584a8e4330b55ad3eb2af',
+                  'ca0c98977e4c3a680db466385d3e44627914cbae878ebb1abf47012a6dee7bb3',
+                  'ec06fb327630e31891ef46fe37e49d2bfa5eabaa635a0d8e5218eac697ce5c4f',
+                  '3be2a189d532408feffb802567405a168203f2ece8834f6f04eccf2efd70266e',
+                  'cf068c8fef23d5487f8e1947cce722d05d9c712ce7b485be1ca0f4de8702824b',
+              )
+              for i, digest in enumerate(original_cousin_skins):
+                  original = z.read(f'assets/the_oldest_house/textures/entity/trailer_child_{i}.png')
+                  assert hashlib.sha256(original).hexdigest() == digest, f'changed original cousin skin {i}'
+              for i in range(6, 9):
+                  skin = Image.open(BytesIO(z.read(f'assets/the_oldest_house/textures/entity/trailer_child_{i}.png')))
+                  assert skin.size == (64, 64) and skin.mode == 'RGBA', i
               sounds = json.loads(z.read('assets/the_oldest_house/sounds.json'))
               assert all(f'goatman.{cue}' in sounds for cue in ('hammer', 'laugh', 'woods'))
               # Every cue is subtitled, so the game is playable without sound.
@@ -295,13 +307,16 @@ jobs:
                       if texture.startswith('the_oldest_house:'):
                           assert z.read('assets/the_oldest_house/textures/'+texture.split(':',1)[1]+'.png').startswith(b'\x89PNG\r\n\x1a\n')
               furniture=json.loads(z.read('assets/the_oldest_house/blockstates/household_furniture.json'))['variants']
-              assert len(furniture)==52
+              assert len(furniture)==56, 'four directions for all fourteen furniture kinds'
               for variant in furniture.values():
                   name=variant['model'].split(':',1)[1]
                   model=json.loads(z.read(f'assets/the_oldest_house/models/{name}.json'))
                   for texture in model['textures'].values():
-                      asset=texture.split(':',1)[1]
-                      assert z.read(f'assets/the_oldest_house/textures/{asset}.png').startswith(b'\x89PNG\r\n\x1a\n')
+                      if texture.startswith('the_oldest_house:'):
+                          asset=texture.split(':',1)[1]
+                          assert z.read(f'assets/the_oldest_house/textures/{asset}.png').startswith(b'\x89PNG\r\n\x1a\n')
+                      else:
+                          assert texture in ('minecraft:block/oak_planks','minecraft:block/stripped_dark_oak_log'), texture
           digest = hashlib.sha256(jar.read_bytes()).hexdigest()
           jar.with_suffix('.jar.sha256').write_text(f'{digest}  {jar.name}\n')
           print(f'Playable package: {jar.name}; SHA-256 {digest}')
