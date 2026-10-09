@@ -250,7 +250,7 @@ public final class LiveExpeditionProof {
         }else if(phase==24&&a!=null&&b!=null&&ACKS.size()==2){
             var l=s.getLevel(HouseDimensions.OUTSIDE);var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.PLAIN);
             huntChunks.hold(l,new net.minecraft.world.phys.AABB(Vec3.atLowerCornerOf(site.offset(-30,-5,-106)),Vec3.atLowerCornerOf(site.offset(31,12,6))));if(!huntChunks.ready())return;
-            privateA.discard();privateB.discard();NovelRooms.build(l,site,LabyrinthPlace.PLAIN);
+            privateA.discard();privateB.discard();NovelRooms.build(s,l,site,LabyrinthPlace.PLAIN);
             for(var p:List.of(a,b)){var previous=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.ELK_CARCASSES);previous.putBoolean("Here",false);LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.ELK_CARCASSES,previous);
                 p.stopUsingItem();outside(p,site.offset(p==a?-8:8,0,-30),180);p.getInventory().setItem(0,new ItemStack(NovelRegistry.CAMERA.get()));NovelVignettes.onArrive(p,LabyrinthPlace.PLAIN);}
             step(s,25,site.offset(NovelRooms.FIGURE));

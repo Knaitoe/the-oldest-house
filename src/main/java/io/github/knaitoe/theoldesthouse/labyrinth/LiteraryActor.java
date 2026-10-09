@@ -24,6 +24,7 @@ public final class LiteraryActor extends PathfinderMob {
     public int role(){return entityData.get(ROLE);}public int phase(){return entityData.get(PHASE);}public Optional<UUID> owner(){return entityData.get(OWNER);}public String scene(){return scene;}
     public void appearance(int role,int phase){entityData.set(ROLE,role);entityData.set(PHASE,phase);boolean now=role==BROTHER||role==FAMILY_CHILD||role==SILHOUETTE&&phase==4;if(now!=small){small=now;getAttribute(Attributes.SCALE).setBaseValue(now?.58:1);refreshDimensions();}}
     public void bind(LabyrinthPlace p,UUID owner){scene=p.id();entityData.set(OWNER,Optional.ofNullable(owner));}
+    @Override public boolean shouldRenderAtSqrDistance(double distance){return role()==SILHOUETTE&&phase()==4?distance<192D*192D:super.shouldRenderAtSqrDistance(distance);}
     public void say(String text){setCustomName(Component.literal(text));setCustomNameVisible(true);}
     @Override public void tick(){
         boolean privateKiller=!level().isClientSide&&role()==KILLER&&scene.equals(LabyrinthPlace.ELK_CARCASSES.id())&&owner().isPresent();

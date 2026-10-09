@@ -120,7 +120,7 @@ public final class GoatmanVignette {
     /** A fresh evening: no actors, day, the door open, the bathroom window propped, the porch light on, the pan and the plates empty. */
     private static void reset(ServerLevel l,BlockPos b){
         removeActors(l,b);GoatmanWoods.atmosphere(l,b,false);GoatmanWoods.door(l,b,true);GoatmanWoods.setWindow(l,b,false);GoatmanWoods.bathroomDoor(l,b,false);GoatmanWoods.porchLight(l,b,true);
-        GoatmanWoods.pan(l,b,0);for(int s=0;s<10;s++)GoatmanWoods.served(l,b,s,false);
+        GoatmanWoods.pan(l,b,0);for(int s=0;s<24;s++)GoatmanWoods.served(l,b,s,false);
     }
     private static void scale(ServerPlayer p,boolean active){
         var attribute=p.getAttribute(Attributes.SCALE);if(attribute==null)return;
@@ -369,7 +369,7 @@ public final class GoatmanVignette {
 
     // ------------------------------------------------------------------------------------------------ the evening and the night
     /** Includes every enrolled real child, rather than treating multiplayer visitors as spectators. */
-    public static int expectedCount(CompoundTag r){return r.contains("Expected")?r.getInt("Expected"):4+r.getCompound("Cohort").getAllKeys().size();}
+    public static int expectedCount(CompoundTag r){return r.contains("Expected")?r.getInt("Expected"):count(r)-1+r.getCompound("Cohort").getAllKeys().size();}
     public static int presentCount(ServerLevel l,BlockPos b){return cousinsOf(l,b).size()+(int)visitors(l,b).stream().filter(p->GoatmanWoods.clearing(rel(p,b))).count();}
     public static void onServerTick(ServerTickEvent.Post event){tick(event.getServer());}
     public static void tick(MinecraftServer server){

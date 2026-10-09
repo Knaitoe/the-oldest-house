@@ -90,7 +90,8 @@ public final class GoatmanTests {
         }
         /** Night at the given clock, the thing at the door and the cousin who went for gas in. */
         void night(List<ServerPlayer> participants,int clock,boolean windowShut){
-            var r=run();r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",clock);r.putInt("ExtraState",GoatmanVignette.X_DOOR);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);r.putInt("Expected",4+participants.size());
+            var r=run();if(r.contains("Cousins0464")){r.remove("Cousins0464");r.remove("PlayerServes0464");r.putInt("Wrong",r.getInt("Wrong")%5);r.putInt("Runner",(r.getInt("Wrong")+1)%5);cousins().forEach(Entity::discard);}
+            r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",clock);r.putInt("ExtraState",GoatmanVignette.X_DOOR);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);r.putInt("Expected",4+participants.size());
             cohort(r,participants,clock);run(r);GoatmanWoods.atmosphere(l,b,true);GoatmanWoods.door(l,b,false);GoatmanWoods.setWindow(l,b,windowShut);GoatmanVignette.stage(l,b,r);
         }
         void click(ServerPlayer p,BlockPos rel){BlockPos at=b.offset(rel);NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new BlockHitResult(Vec3.atCenterOf(at),Direction.SOUTH,at,false)));}
@@ -118,7 +119,7 @@ public final class GoatmanTests {
     public static void nativeBackwardGirlAndTheShapesInTheHollowsMeetTheLatecomerThenLeave(GameTestHelper h){
         path=new Fixture(h,28000);var f=path;var p=f.player();p.getAttribute(Attributes.SCALE).setBaseValue(1.2);h.assertTrue(GoatmanVignette.enter(p),"the actual latecomer enrolls");
         var data=LabyrinthData.get(f.server);CompoundTag original=GoatmanVignette.run(data);UUID round=original.getUUID("Id");int wrong=original.getInt("Wrong"),tells=original.getInt("Tells"),runner=original.getInt("Runner");
-        h.assertTrue(Integer.bitCount(tells)>=2&&Integer.bitCount(tells)<=3&&wrong>=0&&wrong<5&&runner!=wrong&&runner>=0&&runner<5,"one cousin receives two or three tells, and a different real cousin will go for gas");
+        h.assertTrue(Integer.bitCount(tells)>=2&&Integer.bitCount(tells)<=3&&wrong>=0&&wrong<8&&runner!=wrong&&runner>=0&&runner<8,"one cousin receives two or three tells, and a different real cousin will go for gas");
         h.assertTrue(Math.abs(p.getAttributeValue(Attributes.SCALE)-.84)<.001,"child view multiplies the existing scale instead of destroying it");
         var pet=EntityType.WOLF.create(f.l);pet.tame(p);pet.setPersistenceRequired();pet.moveTo(GoatmanWoods.path(4).add(f.b.getX(),f.b.getY(),f.b.getZ()));f.l.addFreshEntity(pet);CompanionOrders.issue(pet,p,CompanionOrders.Order.DEEPER);
         int[] tick={0};float[] stopped={0};
@@ -146,7 +147,7 @@ public final class GoatmanTests {
             var r=GoatmanVignette.run(LabyrinthData.get(f.server));h.assertTrue(r.getUUID("Id").equals(round)&&r.getInt("Wrong")==wrong&&r.getInt("Tells")==tells&&r.getInt("Runner")==runner,"saved reload never rerolls the identity, tells or the cousin who goes for gas");
             h.assertTrue(r.getCompound("Cohort").getCompound(p.getUUID().toString()).getBoolean("Arrived")&&f.children().stream().noneMatch(GoatmanChild::girl),"the trail reaches the clearing after the apparition disappears around its bend");
             h.assertTrue(f.l.getEntitiesOfClass(GoatmanFigure.class,p.getBoundingBox().inflate(80),s->s.viewer().filter(p.getUUID()::equals).isPresent()).isEmpty(),"both shapes are gone once the latecomer is past them");
-            h.assertTrue(GoatmanVignette.expectedCount(r)==5&&GoatmanVignette.presentCount(f.l,f.b)==6&&!WitnessAccount.has(LabyrinthData.get(f.server),p.getUUID(),WitnessAccount.Story.GOATMAN),"arrival presents the discrepancy without resolution credit");
+            h.assertTrue(GoatmanVignette.expectedCount(r)==8&&GoatmanVignette.presentCount(f.l,f.b)==9&&!WitnessAccount.has(LabyrinthData.get(f.server),p.getUUID(),WitnessAccount.Story.GOATMAN),"arrival presents the larger cast's discrepancy without resolution credit");
             h.assertTrue(CompanionOrders.order(pet)==CompanionOrders.Order.DEEPER&&pet.getOwnerUUID().equals(p.getUUID()),"temporary refusal preserves the native pet and saved order");
             p.teleportTo(f.server.overworld(),100,80,100,0,0);p.hasChangedDimension();GoatmanVignette.tick(f.server);h.assertTrue(Math.abs(p.getAttributeValue(Attributes.SCALE)-1.2)<.001,"leaving restores the pre-existing scale");h.succeed();
         });
