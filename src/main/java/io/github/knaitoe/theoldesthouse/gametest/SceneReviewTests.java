@@ -177,7 +177,9 @@ public final class SceneReviewTests {
         });
     });}
 
-    @GameTest(template="empty",batch="review_farm_edges",timeoutTicks=1600)
+    // The native GameTest clock can advance thousands of ticks while cold entity-section IO is still pending.
+    // Retain the real readiness/collision checks and allow that asynchronous fixture setup to finish.
+    @GameTest(template="empty",batch="review_farm_edges",timeoutTicks=12000)
     public static void anAlreadyUpgradedFarmRepairsTheBrokenYardAndVoidWithoutRestockingOrMovingResidents(GameTestHelper h){run(h,LabyrinthPlace.BARN_WELL,558500,f->{
         NovelRooms.build(f.level.getServer(),f.level,f.base,f.place);
         var state=f.data().stateEntry(Farmstead.STATE,Long.toString(f.origin.asLong()));
