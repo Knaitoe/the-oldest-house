@@ -413,6 +413,8 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         var f=new Fixture(h);f.build(LabyrinthPlace.END_WORLD_CABIN);
         var animals=new java.util.ArrayList<net.minecraft.world.entity.animal.Wolf>();var originals=new java.util.ArrayList<net.minecraft.world.entity.item.ItemEntity>();
         var scenes=List.of(LabyrinthPlace.END_WORLD_CABIN,LabyrinthPlace.GOATMAN);
+        for(var place:scenes){var r=place.room();var b=f.base(place);f.chunks.hold(f.level(place),new AABB(b.getX()+r.minX()-1,b.getY()+r.minY()-2,b.getZ()+r.minZ()-1,b.getX()+r.maxX()+2,b.getY()+r.maxY()+2,b.getZ()+r.maxZ()+2));}
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native source and landing entity sections are ready before the rebuild starts")).thenExecute(()->{
         for(var place:scenes){var l=f.level(place);var b=f.base(place);f.built.add(place);
             for(int x=-4;x<=3;x++)for(int z=place==LabyrinthPlace.GOATMAN?-50:-13;z<=(place==LabyrinthPlace.GOATMAN?-45:-9);z++)l.setBlock(b.offset(x,-1,z),Blocks.STONE.defaultBlockState(),3);
             var wolf=new net.minecraft.world.entity.animal.Wolf(EntityType.WOLF,l);wolf.setTame(true,true);wolf.setOwnerUUID(java.util.UUID.randomUUID());wolf.setOrderedToSit(true);wolf.setHealth(7);wolf.moveTo(Vec3.atBottomCenterOf(b.offset(0,0,-12)));l.addFreshEntity(wolf);f.extras.add(wolf);animals.add(wolf);
@@ -422,9 +424,10 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         h.runAfterDelay(15,()->{for(int i=0;i<scenes.size();i++){var place=scenes.get(i);var l=f.level(place);var b=f.base(place);var wolf=animals.get(i);var item=originals.get(i);var wolfId=wolf.getUUID();var owner=wolf.getOwnerUUID();var itemId=item.getUUID();
             h.assertTrue(wolf.isNoAi()&&wolf.isInvulnerable()&&wolf.getHealth()==7&&item.getItem().getCount()==3,"a sliced scene rebuild protects its wounded native resident and finite original across entity reload");
             l.setBlock(wolf.blockPosition(),Blocks.STONE.defaultBlockState(),3);l.setBlock(item.blockPosition(),Blocks.STONE.defaultBlockState(),3);ElkUpgrade.settle(l,b,place);
-            h.assertTrue(l.getEntity(wolfId)==wolf&&l.getEntity(itemId)==item&&wolf.getOwnerUUID().equals(owner)&&wolf.isOrderedToSit()&&wolf.getHealth()==7,"settling preserves exact bodies, ownership, orders and health");
+            h.assertTrue(l.getEntity(wolfId)==wolf&&l.getEntity(itemId)==item&&wolf.getOwnerUUID().equals(owner)&&wolf.isOrderedToSit()&&wolf.getHealth()==7,"settling preserves exact bodies, ownership, orders and health: "+place+", wolf="+(l.getEntity(wolfId)==wolf)+", item="+(l.getEntity(itemId)==item)+", owner="+wolf.getOwnerUUID()+", sit="+wolf.isOrderedToSit()+", health="+wolf.getHealth());
             h.assertTrue(!wolf.isNoAi()&&!wolf.isInvulnerable()&&!wolf.isNoGravity()&&item.isNoGravity()&&item.getItem().getCount()==3&&!ElkUpgrade.stranded(l,wolf)&&!ElkUpgrade.stranded(l,item),"the original native physics return on safe ground without replenishing the item");
         }h.succeed();});
+        });
     }
     @AfterBatch(batch="literary_scene_upgrade") public static void sceneUpgradeDone(ServerLevel l){close();}
 
