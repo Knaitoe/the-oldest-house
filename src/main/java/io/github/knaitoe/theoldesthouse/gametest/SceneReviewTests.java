@@ -159,10 +159,10 @@ public final class SceneReviewTests {
         var owner=f.player("farm_upgrade_owner");var observer=f.player("farm_upgrade_camera");observer.setGameMode(GameType.SPECTATOR);f.at(observer,-10.5,1,-12.5);
         var own=NovelVignettes.personal(f.data(),owner.getUUID());own.putBoolean("Initials",true);own.putInt("WellTicks",381);NovelVignettes.save(f.data(),owner.getUUID(),own);
         var animal=EntityType.COW.create(f.level);animal.setNoAi(true);animal.setPersistenceRequired();animal.setHealth(8);animal.getPersistentData().putBoolean("HouseBarnAnimal",true);animal.moveTo(Vec3.atBottomCenterOf(f.base.offset(-4,0,-18)));f.level.addFreshEntity(animal);var id=animal.getUUID();var pos=animal.position();
-        f.put(-12,0,-12,Blocks.AIR);var pet=EntityType.CAT.create(f.level);pet.setNoAi(true);pet.setNoGravity(true);pet.setTame(true,false);pet.setOwnerUUID(owner.getUUID());pet.setOrderedToSit(true);pet.setHealth(5);pet.moveTo(Vec3.atBottomCenterOf(f.base.offset(-12,0,-12)));f.level.addFreshEntity(pet);var petId=pet.getUUID();
+        f.put(-8,0,-12,Blocks.AIR);var pet=EntityType.CAT.create(f.level);pet.setNoAi(true);pet.setNoGravity(true);pet.setTame(true,false);pet.setOwnerUUID(owner.getUUID());pet.setOrderedToSit(true);pet.setHealth(5);pet.moveTo(Vec3.atBottomCenterOf(f.base.offset(-8,0,-12)));f.level.addFreshEntity(pet);var petId=pet.getUUID();
         Farmstead.fresh(f.level,f.origin);h.assertTrue(animal.position().equals(pos)&&!Farmstead.ready(f.data(),f.origin),"an actual spectator camera prevents layout work and animal relocation");f.away(observer);Farmstead.fresh(f.level,f.origin);
         h.startSequence().thenIdle(100).thenExecute(()->{
-            h.assertTrue(!Farmstead.ready(f.data(),f.origin)&&f.level.getBlockState(f.base.offset(-12,0,-12)).isAir()&&pet.isAlive()&&pet.getUUID().equals(petId)&&pet.getHealth()==5,"bounded execution waits rather than flooring through the actual sitting cat");
+            h.assertTrue(!Farmstead.ready(f.data(),f.origin)&&f.level.getBlockState(f.base.offset(-8,0,-12)).isAir()&&pet.isAlive()&&pet.getUUID().equals(petId)&&pet.getHealth()==5,"bounded execution waits rather than building a wall through the actual sitting cat");
             pet.moveTo(Vec3.atBottomCenterOf(f.base.offset(3,0,-12)));
         });
         h.startSequence().thenIdle(160).thenWaitUntil(()->h.assertTrue(Farmstead.ready(f.data(),f.origin),"the same layout resumes after the resident clears its footprint")).thenExecute(()->{
