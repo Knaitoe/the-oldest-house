@@ -130,7 +130,9 @@ public final class SceneReviewTests {
             NovelVignettes.onArrive(owner,f.place);NovelVignettes.onArrive(peer,f.place);
             var animals=f.level.getEntitiesOfClass(Mob.class,Farmstead.area(f.base),m->m.getPersistentData().getBoolean("HouseBarnAnimal"));
             h.assertTrue(animals.size()==7,"two actual cows, two sheep and three chickens spawn once");
-            for(var a:animals){a.setNoAi(true);a.move(MoverType.SELF,new Vec3(9,0,0));h.assertTrue(a.getX()<f.base.getX()+(a instanceof net.minecraft.world.entity.animal.Chicken?15:8.7),"native collision holds livestock inside the closed barn pens");}
+            for(var a:animals){a.setNoAi(true);var rail=new BlockPos(f.base.getX()+(a instanceof net.minecraft.world.entity.animal.Chicken?15:8),f.base.getY(),a.blockPosition().getZ());
+                double edge=rail.getX()+f.level.getBlockState(rail).getCollisionShape(f.level,rail).bounds().minX;a.move(MoverType.SELF,new Vec3(9,0,0));
+                h.assertTrue(a.getBoundingBox().maxX<=edge+.002,"native collision holds livestock inside the closed barn pens: type="+a.getType()+", body="+a.getBoundingBox()+", fence="+f.level.getBlockState(rail)+", edge="+edge);}
             f.at(owner,6.5,0,-24.5);owner.move(MoverType.SELF,new Vec3(5,0,0));h.assertTrue(owner.getX()<f.base.getX()+8.6,"a real survival body cannot pass the closed pen gate");
             var left=f.level.getBlockState(f.base.offset(-16,0,-28));h.assertTrue(left.is(Blocks.SPRUCE_FENCE)&&left.getValue(FenceBlock.NORTH)&&left.getValue(FenceBlock.SOUTH),"the previously omitted left field has continuous native rails");
             var cache=(BarrelBlockEntity)f.level.getBlockEntity(f.base.offset(Farmstead.FOOD));h.assertTrue(cache.getItem(0).is(Items.BREAD)&&cache.getItem(0).getCount()==6&&cache.getItem(2).getCount()==2,"the finite native feed barrel contains actual edible food and pet meat");
