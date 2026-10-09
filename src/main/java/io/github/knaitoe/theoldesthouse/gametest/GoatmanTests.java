@@ -59,7 +59,7 @@ public final class GoatmanTests {
     private static final class Fixture implements AutoCloseable {
         final GameTestHelper h;final net.minecraft.server.MinecraftServer server;final ServerLevel l;final BlockPos origin,b;
         final HouseSavedData oldHouse;final LabyrinthData oldData;final MotherCollection oldMother;final boolean keep;
-        final List<ServerPlayer> players=new ArrayList<>();
+        final List<ServerPlayer> players=new ArrayList<>();final NativeTestChunks chunks=new NativeTestChunks();
         Fixture(GameTestHelper h,int coordinate){
             this.h=h;server=h.getLevel().getServer();l=HouseTestLevel.get(server);origin=new BlockPos(coordinate,80,coordinate);
             oldHouse=HouseSavedData.get(server);oldData=LabyrinthData.get(server);oldMother=MotherCollection.get(server);keep=l.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY);
@@ -98,6 +98,7 @@ public final class GoatmanTests {
         /** The whole native interaction: the event, then the block's own use. */
         void use(ServerPlayer p,BlockPos rel){BlockPos at=b.offset(rel);p.gameMode.useItemOn(p,l,ItemStack.EMPTY,InteractionHand.MAIN_HAND,new BlockHitResult(Vec3.atCenterOf(at),Direction.WEST,at,false));}
         public void close(){
+            chunks.close();
             for(var p:players){GoatmanHaunt.leave(p);GoatmanHaunt.vanish(p,null);GoatmanVignette.depart(p);TallyCounterItem.forget(p.getUUID());if(server.getPlayerList().getPlayers().contains(p))server.getPlayerList().remove(p);else p.discard();}
             AABB bounds=IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN);for(var e:l.getEntitiesOfClass(Entity.class,bounds,e->e instanceof GoatmanChild||e instanceof GoatmanFigure||e instanceof Display||e instanceof Wolf||e instanceof Zombie||e instanceof net.minecraft.world.entity.item.ItemEntity))e.discard();
             for(int x=((int)bounds.minX-1)>>4;x<=((int)bounds.maxX+1)>>4;x++)for(int z=((int)bounds.minZ-1)>>4;z<=((int)bounds.maxZ+1)>>4;z++)l.getChunkSource().removeRegionTicket(TicketType.PORTAL,new ChunkPos(x,z),3,b);
@@ -222,7 +223,7 @@ public final class GoatmanTests {
         });
     }
 
-    @GameTest(template="empty",batch="goat_taken",timeoutTicks=200)
+    @GameTest(template="empty",batch="goat_taken",timeoutTicks=600)
     public static void openingTheDoorAtNightTakesTheOpenerAliveAndWholeAndItComesHomeWithThem(GameTestHelper h){
         taken=new Fixture(h,28600);var f=taken;var a=f.player();var peer=f.player();GoatmanVignette.enter(a);GoatmanVignette.enter(peer);f.night(List.of(a,peer),200,true);
         f.l.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(false,f.server);
@@ -236,16 +237,20 @@ public final class GoatmanTests {
             // At home: the next day it has eaten with them, and it is seen standing off to one side.
             var floor=a.blockPosition().offset(-20,-1,-20);for(var at:BlockPos.betweenClosed(floor,floor.offset(40,0,40)))f.l.setBlock(at,Blocks.STONE.defaultBlockState(),2);
             for(var at:BlockPos.betweenClosed(floor.above(),floor.offset(40,4,40)))if(!f.l.getBlockState(at).isAir())f.l.setBlock(at,Blocks.AIR.defaultBlockState(),2);
-            var own=GoatmanVignette.personal(data,a.getUUID());own.putLong("HauntDay",f.server.overworld().getDayTime()/24000-1);own.putLong("NextGlimpse",0);
-            CompoundTag all=data.state(GoatmanVignette.ID),players=all.getCompound("Players");players.put(a.getUUID().toString(),own);all.put("Players",players);data.setState(GoatmanVignette.ID,all);
+            // A glimpse stands only where entities are loaded, so the floor's native sections are held and awaited first.
+            f.chunks.hold(f.l,new AABB(floor.getX(),floor.getY(),floor.getZ(),floor.getX()+41,floor.getY()+5,floor.getZ()+41));
+            h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the home floor's native sections are loaded")).thenExecute(()->{
+                var own=GoatmanVignette.personal(data,a.getUUID());own.putLong("HauntDay",f.server.overworld().getDayTime()/24000-1);own.putLong("NextGlimpse",0);
+                CompoundTag all=data.state(GoatmanVignette.ID),players=all.getCompound("Players");players.put(a.getUUID().toString(),own);all.put("Players",players);data.setState(GoatmanVignette.ID,all);
+            }).thenIdle(26).thenExecute(()->home(h,f,a));
         });
-        h.runAfterDelay(30,()->{
-            h.assertTrue(a.getInventory().countItem(Items.BREAD)==2,"one piece of food is gone from the pack for the day: "+a.getInventory().countItem(Items.BREAD));
-            var seen=f.l.getEntitiesOfClass(GoatmanFigure.class,a.getBoundingBox().inflate(20),s->s.viewer().filter(a.getUUID()::equals).isPresent());
-            h.assertTrue(seen.size()==1&&seen.getFirst().distanceTo(a)>9&&seen.getFirst().purpose.equals("glimpse"),"the thing itself is glimpsed, ten or more blocks off, by them alone");
-            var look=a.getLookAngle();var to=seen.getFirst().position().subtract(a.position()).normalize();h.assertTrue(look.dot(to)<.6,"it stands off to one side of where they look, not in front of them");
-            h.assertTrue(GoatmanRegistry.FIGURE.get().getDimensions().height()>2,"it is taller than a man");h.succeed();
-        });
+    }
+    private static void home(GameTestHelper h,Fixture f,ServerPlayer a){
+        h.assertTrue(a.getInventory().countItem(Items.BREAD)==2,"one piece of food is gone from the pack for the day: "+a.getInventory().countItem(Items.BREAD));
+        var seen=f.l.getEntitiesOfClass(GoatmanFigure.class,a.getBoundingBox().inflate(20),s->s.viewer().filter(a.getUUID()::equals).isPresent());
+        h.assertTrue(seen.size()==1&&seen.getFirst().distanceTo(a)>9&&seen.getFirst().purpose.equals("glimpse"),"the thing itself is glimpsed, ten or more blocks off, by them alone");
+        var look=a.getLookAngle();var to=seen.getFirst().position().subtract(a.position()).normalize();h.assertTrue(look.dot(to)<.6,"it stands off to one side of where they look, not in front of them");
+        h.assertTrue(GoatmanRegistry.FIGURE.get().getDimensions().height()>2,"it is taller than a man");h.succeed();
     }
 
     @GameTest(template="empty",batch="goat_window",timeoutTicks=200)
