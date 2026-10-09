@@ -178,7 +178,11 @@ jobs:
                   assert model['textures']['layer0'] == f'the_oldest_house:item/{name}'
                   icon = Image.open(BytesIO(z.read(f'assets/the_oldest_house/textures/item/{name}.png')))
                   icon.load()
-                  assert icon.size == (32, 32) and icon.mode == 'RGBA'
+                  expected_size = (16, 16) if name in ('church_key','archive_key','well_ribbon') else (32, 32)
+                  assert icon.size == expected_size and icon.mode == 'RGBA', (name, icon.size, icon.mode)
+              for name in ('plain_camera','archive_key','church_key','well_ribbon','franks_package'):
+                  icon = Image.open(BytesIO(z.read(f'assets/the_oldest_house/textures/item/{name}.png')))
+                  assert icon.size == (16, 16) and icon.mode == 'RGBA', name
               for name in ('HouseHuman', 'HollowayCamp', 'HollowayVignette', 'HarriganAppearance'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               for name in ('holloway', 'harrigan', 'harrigan_dead', 'finale_witness', 'lake_witch', 'lake_witch_memory', 'caged_child'):
@@ -454,6 +458,8 @@ jobs:
           test -s build/font-smoke/elk-passed.txt
           test -s build/font-smoke/native-elk.png
           test -s build/font-smoke/goatman-passed.txt
+          test -s build/font-smoke/playtest-assets-passed.txt
+          test -s build/font-smoke/native-playtest-0464.png
           test -s build/font-smoke/native-goatman.png
           test -s build/font-smoke/coffin-passed.txt
           test -s build/font-smoke/native-coffin.png

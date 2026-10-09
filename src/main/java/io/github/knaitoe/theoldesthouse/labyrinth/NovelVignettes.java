@@ -227,7 +227,7 @@ public final class NovelVignettes {
         distantBoy(p,b,own);
         if(own.contains("Photo"))return;Vec3 look=target.getCenter().subtract(p.getEyePosition());
         boolean aim=p.isUsingItem()&&(p.getUseItem().getItem() instanceof PlainCameraItem||p.getUseItem().is(Items.SPYGLASS))&&look.lengthSqr()>400&&p.getViewVector(1).dot(look.normalize())>.997;
-        int ticks=aim?own.getInt("Aim")+1:0;own.putInt("Aim",ticks);if(ticks<40)return;
+        int ticks=aim?own.getInt("Aim")+1:0;own.putInt("Aim",ticks);if(ticks<40){if(!aim){own.remove("PlainExposure0464");own.remove("PlainExposureAt0464");}return;}
         long now=p.server.overworld().getGameTime();
         if(!own.hasUUID("PlainExposure0464")||now-own.getLong("PlainExposureAt0464")>200){
             UUID nonce=UUID.randomUUID();own.putUUID("PlainExposure0464",nonce);own.putLong("PlainExposureAt0464",now);

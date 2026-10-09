@@ -20,6 +20,6 @@ Preparation branch: `feat/playtest-0.4.64`, based on the fully verified 0.4.63 s
 
 ## Validation
 
-Candidate validation is pending. Required checks include the full native gameplay suite, focused literary and multiplayer suites, two actual clients mining/crawling through persistent shattered frames, native rail-vault motion, two actual clients developing their independently captured camera frames, all resource PNG/JSON checks, complete writing and native visual proofs. The existing Elk visual proof includes intact and shattered variants of both yacht glazing blocks.
+Candidate validation is pending. The full suite now has 479 native cases. Required checks include the full native gameplay suite, focused literary and multiplayer suites, two actual clients mining/crawling through persistent shattered frames, native rail-vault motion, two actual clients developing their independently captured camera frames, all resource PNG/JSON checks, client book-visibility and native collection checks, complete writing and native visual proofs. The existing Elk visual proof includes intact and shattered variants of both yacht glazing blocks.
 
 Layout remains **38**. Network protocol is **38**; use matching **0.4.64** clients and server. The quota remains **43 sources / 33 personal resolutions across two kinds**, with three endings and the original opening pace.
