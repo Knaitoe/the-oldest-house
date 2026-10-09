@@ -60,10 +60,15 @@ public final class CabinBargain {
     public static final int[] ASKER={LEONARD,ADRIANE,SABRINA};
     /** The arm: the cord, the blow, black until waking, then the floor, then up. */
     public static final int BLOW=90,WAKE=170,DONE=230;
-    /** Where they wait: on the grass either side of the path to the porch steps, facing the door. */
-    static final double[][] WAIT={{1.6,-5.5},{-1.6,-5.5},{4.4,-5.0},{-4.4,-5.0}};
+    /** Where they wait (0.4.52): three on the porch, facing the door they knock at, clear of it; Redmond on the grass. */
+    static final double[][] WAIT={{0.5,-10.2},{-2.6,-10.8},{3.4,-10.8},{3.8,-6.2}};
+    /** Off the porch by its steps. */
+    static final double[][] STEPS={{0.5,-9.2},{0.6,-6.6}};
     /** Around the east side of the cabin, down the jetty and off its end. */
-    static final double[][] ROUTE={{14.5,-6.5},{14.5,-39.5},{7.0,-41.8},{7.0,-48.6},{7.0,-49.4}};
+    static final double[][] ROUTE={{14.5,-6.4},{14.5,-39.5},{7.0,-41.8},{7.0,-48.6},{7.0,-49.4}};
+    /** A reader sleeps this long on arriving before they wake; the visitors knock this often until answered. */
+    public static final int SLEEP=60,KNOCK_EVERY=160;
+    private static final Map<UUID,Long> SLEEPERS=new HashMap<>();
     /** The jetty's far edge: past it there is only the lake. */
     static final double JETTY_END=-49.0;
     static final double WALK_SPEED=.11;static final int SINK=60,STAGGER=30;
@@ -155,14 +160,13 @@ public final class CabinBargain {
     }
     /** Where a walker is, a pure function of how long it has walked: the route, then the step off the jetty and under. */
     static @Nullable Vec3 walk(ServerLevel l,BlockPos b,int i,double ticks,double previousY){
-        var points=new ArrayList<double[]>();points.add(WAIT[i]);points.addAll(Arrays.asList(ROUTE));double left=ticks*WALK_SPEED;
+        var points=new ArrayList<double[]>();points.add(WAIT[i]);if(i!=REDMOND)points.addAll(Arrays.asList(STEPS));points.addAll(Arrays.asList(ROUTE));double left=ticks*WALK_SPEED;
         for(int k=1;k<points.size();k++){var a=points.get(k-1);var c=points.get(k);double len=Math.hypot(c[0]-a[0],c[1]-a[1]);
             if(left<=len){double f=left/len,x=a[0]+(c[0]-a[0])*f,z=a[1]+(c[1]-a[1])*f;double y=ground(l,b,x,z);if(!Double.isNaN(previousY))y=previousY+Math.max(-.35,Math.min(.35,y-previousY));return new Vec3(b.getX()+x,y,b.getZ()+z);}
             left-=len;}
         double sink=left/WALK_SPEED;if(sink>SINK)return null;double f=sink/SINK;var end=ROUTE[ROUTE.length-1];
         return new Vec3(b.getX()+end[0],b.getY()-7*f*f,b.getZ()+end[1]-2.5*f);
     }
-    static double routeTicks(int i){double len=0;double[] a=WAIT[i];for(var c:ROUTE){len+=Math.hypot(c[0]-a[0],c[1]-a[1]);a=c;}return len/WALK_SPEED;}
 
     // ------------------------------------------------------------------------------------------------ each five ticks
     public static void tick(ServerPlayer p,BlockPos b,CompoundTag own){
@@ -170,13 +174,18 @@ public final class CabinBargain {
         if(legacy(own)){LiteraryCabinChoices.legacyTick(p,b,own);return;}
         own.putBoolean("Bargain0451",true);var cast=cast(p,own);int present=own.getInt("Present");long now=p.server.overworld().getGameTime();
         var name=p.getGameProfile().getName();
-        if(!own.getBoolean("Met")){
-            var leonard=cast[LEONARD];boolean inside=Math.abs(p.getZ()-b.getZ()+24)<11&&Math.abs(p.getX()-b.getX())<12;
-            if(leonard!=null&&p.distanceToSqr(leonard)<64&&HouseWatchers.sees(p,leonard.getEyePosition())){
-                own.putBoolean("Met",true);facts(p,own);startSpeech(own,"meet",present+10);CabinScreen.requestHome(p);PlaytestLog.event(p,"cabin_met");
-            }else if(inside&&present-own.getInt("KnockAt")>=300){own.putInt("KnockAt",present);sound(p,LiteraryRegistry.CABIN_KNOCK.get(),b.offset(0,1,-13).getCenter(),1,1);p.displayClientMessage(Component.literal("Someone is knocking at the cabin door."),true);}
+        // Asleep, nothing happens yet. Awake, they knock until the reader answers the door (each visit).
+        if(own.getBoolean("WakePending")||SLEEPERS.containsKey(p.getUUID())){display(p,own,now);return;}
+        if(!own.getBoolean("Answered")&&!answered(own)){
+            var leonard=cast[LEONARD];boolean outdoors=p.getZ()>b.getZ()-12.5;
+            if(outdoors&&leonard!=null&&p.distanceToSqr(leonard)<36&&HouseWatchers.sees(p,leonard.getEyePosition()))answer(p,own);
+            else if(own.contains("AwakeAt")&&now>=own.getLong("KnockAt")){
+                own.putLong("KnockAt",now+KNOCK_EVERY);int knocks=own.getInt("Knocks")+1;own.putInt("Knocks",knocks);
+                sound(p,LiteraryRegistry.CABIN_KNOCK.get(),b.offset(LiteraryRooms.CABIN_DOOR).above().getCenter(),1.2F,1);
+                p.displayClientMessage(Component.literal(knocks==1?"Three slow knocks at the front door.":"They knock again. Someone is waiting on the porch."),knocks>1);
+            }
         }
-        runSpeech(p,own,cast,name,present);
+        if(own.getBoolean("Answered")||answered(own))runSpeech(p,own,cast,name,present);
         if(own.getBoolean("Asking")&&present-own.getInt("HintAt")>=160){own.putInt("HintAt",present);int asker=ASKER[Math.min(2,own.getInt("Ask"))];
             p.displayClientMessage(Component.literal(NAMES[asker]+" is waiting for your answer. Speak to "+NAMES[asker]+"."),true);}
         // The one asking, and anyone speaking, looks at the reader.
@@ -187,9 +196,11 @@ public final class CabinBargain {
             if(pictured&&settled){own.putInt("ChoiceTicks",own.getInt("ChoiceTicks")+5);
                 var tv=b.offset(LiteraryRooms.TV).getCenter();
                 if(!own.getBoolean("Ready")&&present-own.getInt("TvHintAt")>=200){own.putInt("TvHintAt",present);p.displayClientMessage(Component.literal("The television inside is showing something. Watch it."),true);}
-                if(own.getInt("ChoiceTicks")>=200&&p.distanceToSqr(tv)<49&&HouseWatchers.sees(p,tv))
+                if(own.getInt("ChoiceTicks")>=200&&p.distanceToSqr(tv)<49&&HouseWatchers.sees(p,tv)){boolean was=own.getBoolean("Ready");
                     LiteraryVignettes.ready(p,PLACE,own,own.getBoolean("Sacrificed")?"gave_two_hearts_and_an_arm":"refused_the_visitors_after_"+own.getInt("Given")+"_gifts");
+                    if(!was&&own.getBoolean("Ready"))p.displayClientMessage(Component.literal("It lies on the dining table, by the window."),false);}
             }
+            if(own.getBoolean("Ready")&&!own.getBoolean("Completed")&&present%40==0){var ledger=b.offset(LiteraryRooms.ending(PLACE)).getCenter();p.serverLevel().sendParticles(p,ParticleTypes.ENCHANT,true,ledger.x,ledger.y+.3,ledger.z,8,.3,.2,.3,.02);}
             if(own.getBoolean("Sacrificed")&&own.getIntArray(CabinScreen.HOME).length!=CabinScreen.PIXELS&&!CabinScreen.pending(p.getUUID(),CabinScreen.HOME))CabinScreen.requestHome(p);
             if(own.getBoolean("Refused")&&own.getIntArray(CabinScreen.ROOM).length!=CabinScreen.PIXELS&&!CabinScreen.pending(p.getUUID(),CabinScreen.ROOM)){var room=LabyrinthPlace.byId(own.getString("ClosedRoom"));if(room==null||!CabinScreen.requestRoom(p,room,CabinScreen.ROOM))own.putIntArray(CabinScreen.ROOM,CabinScreen.blank());}
         }
@@ -215,7 +226,9 @@ public final class CabinBargain {
     static void startSpeech(CompoundTag own,String id,int at){own.putString("Speech",id);own.putInt("Line",0);own.putInt("LineAt",at);}
     static void runSpeech(ServerPlayer p,CompoundTag own,LiteraryActor[] cast,String name,int present){
         String id=own.getString("Speech");if(id.isEmpty()||present<own.getInt("LineAt"))return;var lines=speech(id,own,name);int line=own.getInt("Line");
-        if(line<lines.size()){var next=lines.get(line);say(p,cast,next);own.putInt("Line",line+1);own.putInt("LineAt",present+40+Math.min(60,next.text().length()/2));return;}
+        if(line<lines.size()){var next=lines.get(line);say(p,cast,next);own.putInt("Line",line+1);
+            int pause=Math.max(60,Math.min(150,50+next.text().length()*7/10));if(line+1<lines.size()&&lines.get(line+1).who()!=next.who())pause+=30;
+            own.putInt("LineAt",present+pause);return;}
         own.remove("Speech");
         switch(id){
             case "meet","ask2","ask3"->{own.putBoolean("Asking",true);own.putInt("HintAt",present);int asker=ASKER[Math.min(2,own.getInt("Ask"))];p.displayClientMessage(Component.literal(NAMES[asker]+" is waiting for your answer. Speak to "+NAMES[asker]+"."),true);}
@@ -225,12 +238,57 @@ public final class CabinBargain {
         }
     }
 
+    // ------------------------------------------------------------------------------------------------ waking and the door
+    /** Every arrival begins in a bed in the cabin; the visitors must be answered again on each visit. */
+    public static void arrive(ServerPlayer p,CompoundTag own){
+        own.putBoolean("WakePending",true);own.putBoolean("Answered",false);own.remove("AwakeAt");own.putLong("KnockAt",0);own.putInt("Knocks",0);
+        if(!own.getString("Speech").isEmpty())own.putInt("LineAt",0);
+    }
+    /** Opening the front door (or speaking to them) answers it: the speech begins, or picks up where it stopped. */
+    public static void answer(ServerPlayer p,CompoundTag own){
+        if(legacy(own)||own.getBoolean("Answered")||own.getBoolean("WakePending")||SLEEPERS.containsKey(p.getUUID()))return;
+        own.putBoolean("Answered",true);int present=own.getInt("Present");
+        if(!own.getBoolean("Met")){own.putBoolean("Met",true);facts(p,own);startSpeech(own,"meet",present+40);CabinScreen.requestHome(p);PlaytestLog.event(p,"cabin_met");}
+        else if(!own.getString("Speech").isEmpty())own.putInt("LineAt",present+40);
+        else if(own.getBoolean("Asking"))own.putInt("HintAt",present-120);
+    }
+    /** Fade to black, into the first free bed, asleep for a moment; or, both beds taken, standing beside them. */
+    static void wake(ServerPlayer p,CompoundTag own,long now){
+        own.putBoolean("WakePending",false);var b=LiteraryVignettes.base(p,PLACE);var l=p.serverLevel();if(b==null)return;
+        BlockPos head=null;for(var rel:LiteraryRooms.CABIN_BEDS){var at=b.offset(rel);var s=l.getBlockState(at);
+            if(s.getBlock() instanceof net.minecraft.world.level.block.BedBlock&&s.getValue(net.minecraft.world.level.block.BedBlock.PART)==net.minecraft.world.level.block.state.properties.BedPart.HEAD&&!s.getValue(net.minecraft.world.level.block.BedBlock.OCCUPIED)){head=at;break;}}
+        HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.HouseFadePayload(1,SLEEP/2,40));p.stopRiding();
+        if(head!=null){p.teleportTo(l,head.getX()+.5,head.getY()+.6,head.getZ()+.5,180,0);p.startSleeping(head);SLEEPERS.put(p.getUUID(),now+SLEEP);}
+        else{p.teleportTo(l,b.getX()-7.5,b.getY(),b.getZ()-29.5,180,10);woke(p,own,now);}
+    }
+    static void woke(ServerPlayer p,CompoundTag own,long now){
+        SLEEPERS.remove(p.getUUID());own.putLong("AwakeAt",now);own.putLong("KnockAt",now+60);
+        if(!own.getBoolean("Woke")){own.putBoolean("Woke",true);p.sendSystemMessage(Component.literal("You wake in a bed that is not yours. Outside, the light is going. On a stand by the beds there is a note.").withStyle(ChatFormatting.ITALIC));}
+        else p.displayClientMessage(Component.literal("You wake in the cabin again."),true);
+    }
+    /** For the native tests: the reader wakes now, as they would after their moment's sleep. */
+    public static void awaken(ServerPlayer p){
+        var own=own(p);long now=p.server.overworld().getGameTime();if(own.getBoolean("WakePending"))wake(p,own,now);
+        if(SLEEPERS.containsKey(p.getUUID())){if(p.isSleeping())p.stopSleepInBed(false,true);woke(p,own,now);}save(p,own);
+    }
+    public static boolean asleep(ServerPlayer p){return SLEEPERS.containsKey(p.getUUID());}
+    static{
+        // A reader asleep in the cabin stays asleep for their moment even by day; the event's package moved between NeoForge versions.
+        for(String name:new String[]{"net.neoforged.neoforge.event.entity.living.CanContinueSleepingEvent","net.neoforged.neoforge.event.entity.player.CanContinueSleepingEvent"}){
+            try{@SuppressWarnings("unchecked") var type=(Class<net.neoforged.bus.api.Event>)Class.forName(name);var allow=type.getMethod("setContinueSleeping",boolean.class);
+                net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOW,false,type,event->{
+                    if(event instanceof net.neoforged.neoforge.event.entity.living.LivingEvent living&&living.getEntity() instanceof ServerPlayer p&&SLEEPERS.containsKey(p.getUUID()))
+                        try{allow.invoke(event,true);}catch(ReflectiveOperationException ignored){}});
+                break;}catch(ReflectiveOperationException|ClassCastException ignored){}
+        }
+    }
+
     // ------------------------------------------------------------------------------------------------ answering
     /** Speaking to any of them, or touching the television, during an ask. */
     public static void open(ServerPlayer p){
         if(!LiteraryVignettes.inside(p,PLACE))return;var own=own(p);
-        if(legacy(own)||answered(own)){p.displayClientMessage(Component.literal(own.getBoolean("Ready")?"They have heard your answer. Your account is on the table inside.":"They have heard your answer. Watch the television inside."),true);return;}
-        if(!own.getBoolean("Met")){p.displayClientMessage(Component.literal("Go out to them. They are waiting in front of the porch."),true);return;}
+        if(legacy(own)||answered(own)){p.displayClientMessage(Component.literal(own.getBoolean("Ready")?"They have heard your answer. Your account is on the dining table inside.":"They have heard your answer. Watch the television inside."),true);return;}
+        if(!own.getBoolean("Answered")){if(own.getBoolean("WakePending")||SLEEPERS.containsKey(p.getUUID()))return;answer(p,own);save(p,own);return;}
         if(!own.getBoolean("Asking")){p.displayClientMessage(Component.literal("Let them finish."),true);return;}
         int ask=Math.min(2,own.getInt("Ask"));String asker=NAMES[ASKER[ask]];
         var icons=new HashMap<Integer,ItemStack>();
@@ -335,7 +393,10 @@ public final class CabinBargain {
         var server=e.getServer();long now=server.overworld().getGameTime();
         for(var p:server.getPlayerList().getPlayers()){
             var cut=CUTS.get(p.getUUID());if(cut!=null){if(!p.isAlive()||!LiteraryVignettes.inside(p,PLACE))finish(p);else cutTick(p,cut,now);}
-            if(!LiteraryVignettes.inside(p,PLACE))continue;var own=own(p);if(legacy(own)||!own.getBoolean("Bargain0451"))continue;
+            if(!LiteraryVignettes.inside(p,PLACE)){SLEEPERS.remove(p.getUUID());continue;}var own=own(p);
+            if(own.getBoolean("WakePending")&&!io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents.isPending(p)){wake(p,own,now);save(p,own);}
+            Long until=SLEEPERS.get(p.getUUID());if(until!=null&&(now>=until||!p.isSleeping())){if(p.isSleeping())p.stopSleepInBed(false,true);woke(p,own,now);save(p,own);}
+            if(legacy(own)||!own.getBoolean("Bargain0451"))continue;
             if(own.getBoolean("Confirm")){confirm(p);own=own(p);}
             stage(p,own,now);
         }
@@ -364,6 +425,6 @@ public final class CabinBargain {
     @SubscribeEvent public static void login(PlayerEvent.PlayerLoggedInEvent e){
         if(!(e.getEntity() instanceof ServerPlayer p))return;var own=own(p);if(own.contains("CutStart")&&!own.getBoolean("CutDone"))finish(p);
     }
-    @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p&&CUTS.remove(p.getUUID())!=null){LAST.remove(p.getUUID());hold(p,false);}}
-    @SubscribeEvent public static void stopped(ServerStoppedEvent e){CUTS.clear();LAST.clear();}
+    @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(!(e.getEntity() instanceof ServerPlayer p))return;SLEEPERS.remove(p.getUUID());if(CUTS.remove(p.getUUID())!=null){LAST.remove(p.getUUID());hold(p,false);}}
+    @SubscribeEvent public static void stopped(ServerStoppedEvent e){CUTS.clear();LAST.clear();SLEEPERS.clear();}
 }

@@ -1,4 +1,15 @@
-Current 0.4.51: owner-requested rework of the Cabin at the End of the World (slot 66) into a body bargain.
+Current 0.4.52: owner playtest of the cabin.
+
+- **Waking and the door.** Every visit begins waking in one of two bedroom beds (a native sleep of three seconds that never sets a respawn point). The visitors knock until the reader opens the front door, again on each visit.
+- **Pacing and the account.** Dialogue is paced by line length and speaker. The account lies on the dining table and glimmers for its reader once readable. Any literary account read before its source now says so, where before it silently did not count.
+- **Architecture and the exit.** The cabin is rebuilt inside its old shell: bedroom, kitchen, living room, eight framed windows and open shutters. A shed at the yard's edge holds the only way out.
+- **The storm.** It has its own rain and leaf particles, real client-only lightning bolts (crack and thunder, no fire, private) and a heavy looping gale.
+- **Saved worlds.** Layout 37 / protocol 35: worlds at layouts 32 to 36 carve the cabin again only when it is empty and loaded, keeping every personal record.
+- **Counts.** Forty-three sources / thirty-three resolutions / two kinds / three endings unchanged.
+- **Verification.** Exact-head verification pending.
+- **Canon:** docs/CABIN_BARGAIN_0_4_51.md (the 0.4.52 section).
+
+Previous 0.4.51: owner-requested rework of the Cabin at the End of the World (slot 66) into a body bargain.
 
 - **The asks.** Four visitors, private to each reader, ask in a fixed order: Leonard for one heart of the reader's life, Adriane for another, Sabrina (a nurse) for the off-hand arm. Each gift is permanent: a saved maximum-health modifier and a sealed off hand. The arm is drawn as missing for every viewer, with a bandaged stump, and kept on the Mother's shelf. They speak as if the reader's world will end, then their own.
 - **The storm.** A personal storm rises with every ask and breaks when everything is given.

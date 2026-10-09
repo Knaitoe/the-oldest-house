@@ -867,7 +867,7 @@ First playable site in 0.4.11: [DROWNED_TOWN_0_4_11.md](DROWNED_TOWN_0_4_11.md).
 
 *One-shot · verb: giving yourself up*
 
-- A lake cabin at dusk, with a jar of grasshoppers on the porch. Four polite strangers, private to each reader, wait outside the door and tell the reader their world will end. Then they tell them it is *their* world that will end, and only the reader can stop it.
+- A lake cabin at dusk, with a jar of grasshoppers on the porch. Every visit begins waking in a bed that is not yours. Four polite strangers, private to each reader, knock at the front door until it is answered, and tell the reader their world will end. Then they tell them it is *their* world that will end, and only the reader can stop it. The only way out is a shed at the edge of the yard.
 - They ask in a fixed order, and every gift is permanent:
   - Leonard asks for one heart of the reader's life;
   - Adriane asks for another;

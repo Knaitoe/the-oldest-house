@@ -9,7 +9,13 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.51
+## Current candidate: 0.4.52
+
+The cabin is rebuilt (bedroom, kitchen, living room, windows on every side) with an exit shed; every visit begins waking in a bed, the visitors knock until the door is answered, the account lies on the dining table, and the storm has its own rain, leaves, real client-only lightning and a heavy gale. The source, outcomes and pool are unchanged: forty-three eligible sources / thirty-three required / two kinds / three endings. Reading an account before its source now says so in every literary scene.
+
+Layout 37 / protocol 35. Worlds at layouts 32 to 36 carve the cabin again when it is empty and loaded. See [CABIN_BARGAIN_0_4_51.md](CABIN_BARGAIN_0_4_51.md). Require the complete suite, the three literary cabin cases (now waking, knocking and answering), the architecture views and the native client proofs. Exact-head verification pending.
+
+## Earlier candidate: 0.4.51
 
 The cabin at the end of the world becomes the body bargain: two hearts and the off-hand arm, in a fixed order, each permanent; a refusal at any ask closes one of the reader's own rooms for them alone. This changes one source's progression, not the pool. Its story id, kind and account entry are unchanged, and both answers resolve it, so the pool stays forty-three eligible sources / thirty-three required / two kinds / three endings.
 

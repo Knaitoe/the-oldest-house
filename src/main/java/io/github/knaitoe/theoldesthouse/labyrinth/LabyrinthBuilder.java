@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 36;
+    public static final int VERSION = 37;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -249,7 +249,7 @@ public final class LabyrinthBuilder {
             boolean domestic = place == LabyrinthPlace.JUNCTION || LabyrinthHalls.isHall(place) || LabyrinthMaze.isMaze(place);
             boolean architecture=VignetteArchitecture.applies(place);
             if (structural && alreadyBuilt.contains(place.id())) continue;
-            if (!structural && extend && place == LabyrinthPlace.ELK_CARCASSES && ElkUpgrade.rebuilds(data.builtVersion())) {
+            if (!structural && extend && ElkUpgrade.rebuilds(place, data.builtVersion())) {
                 queue.add(place);
                 rebuildUpgrades.add(place);
                 continue;
@@ -299,7 +299,7 @@ public final class LabyrinthBuilder {
             registerDoors(dataFor(server), place, LabyrinthPlaces.base(pendingOrigin, place));
             ServerLevel site = server.getLevel(NovelRooms.dimension(place));
             // A scene carved again in place settles what its new ground displaced.
-            if (rebuildUpgrades.remove(place) && site != null) ElkUpgrade.settle(site, LabyrinthPlaces.base(pendingOrigin, place));
+            if (rebuildUpgrades.remove(place) && site != null) ElkUpgrade.settle(site, LabyrinthPlaces.base(pendingOrigin, place), place);
             if (site != null) ScenePolish.polishOnce(site, pendingOrigin, place);
             recordBuilt(server, place);
             geometry = null;
@@ -322,7 +322,7 @@ public final class LabyrinthBuilder {
             if (site != null) {
                 BlockPos base = LabyrinthPlaces.base(pendingOrigin, place);
                 // A saved world's old elk scene is only taken down once nobody is in it or can see it.
-                if (rebuildUpgrades.contains(place) && !ElkUpgrade.vacant(site, base, fixtureDrain)) { active = false; return; }
+                if (rebuildUpgrades.contains(place) && !ElkUpgrade.vacant(site, base, place, fixtureDrain)) { active = false; return; }
                 ScenePolish.forget(server, pendingOrigin, place);
                 geometry = BuildBlocks.record(site, () -> LiteraryRooms.build(site, base, place));
                 if (place == LabyrinthPlace.ELK_CARCASSES) TheOldestHouse.LOGGER.info("Recorded {}: {}", place.id(), geometry.describe());

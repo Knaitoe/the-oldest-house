@@ -54,7 +54,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.51"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.52"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseStory.class' in z.namelist()
@@ -97,13 +97,16 @@ jobs:
               for name in ('cylinder_one','cylinder_two','cylinder_three','family_film','party','blizzard','drip','giggle','scratch','hooves'):
                   assert z.read(f'assets/the_oldest_house/sounds/literary/{name}.ogg').startswith(b'OggS')
               # The cabin bargain (0.4.51): original cues, the two globes, the given arm and the stump's bandage.
-              for name in ('cabin_knock','cabin_heart','cabin_cord','cabin_chop','cabin_wet','cabin_ring','cabin_wind','globe_shake','globe_cracked'):
+              for name in ('cabin_knock','cabin_heart','cabin_cord','cabin_chop','cabin_wet','cabin_ring','cabin_wind','globe_shake','globe_cracked','cabin_gale'):
                   assert z.read(f'assets/the_oldest_house/sounds/literary/{name}.ogg').startswith(b'OggS')
               for name in ('cabin_snow_globe','cabin_cracked_snow_globe','cabin_given_arm'):
                   mesh=json.loads(z.read(f'assets/the_oldest_house/models/item/{name}.json'))
                   assert len(mesh['elements']) >= 2 and 'display' in mesh
               assert z.read('assets/the_oldest_house/textures/entity/arm_stump_bandage.png').startswith(b'\x89PNG')
-              for name in ('BodyLossClient','CabinStormClient'):
+              # The cabin storm (0.4.52): its rain and leaves are particles of its own.
+              for name in ('cabin_rain','cabin_leaf'):
+                  assert json.loads(z.read(f'assets/the_oldest_house/particles/{name}.json'))['textures']
+              for name in ('BodyLossClient','CabinStormClient','CabinWeatherParticles'):
                   assert f'io/github/knaitoe/theoldesthouse/client/{name}.class' in z.namelist()
               for name in ('wax_cylinder_1','wax_cylinder_2','wax_cylinder_3','family_film'):
                   song=json.loads(z.read(f'data/the_oldest_house/jukebox_song/{name}.json'))
@@ -632,7 +635,7 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.51"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.52"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/StaircaseStory.class' in z.namelist()
@@ -685,8 +688,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.51.jar
-            build/libs/the_oldest_house-0.4.51.jar.sha256
+            build/libs/the_oldest_house-0.4.52.jar
+            build/libs/the_oldest_house-0.4.52.jar.sha256
           if-no-files-found: error
 
 
