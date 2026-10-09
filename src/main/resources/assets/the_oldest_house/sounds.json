@@ -603,5 +603,41 @@
         "stream": false
       }
     ]
+  },
+  "goatman.click": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:goatman/click",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.goatman_click"
+  },
+  "goatman.claw": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:goatman/claw",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.goatman_claw"
+  },
+  "goatman.crickets": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:goatman/crickets",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.goatman_crickets"
+  },
+  "goatman.keen": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:goatman/keen",
+        "attenuation_distance": 48
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.goatman_keen"
   }
 }

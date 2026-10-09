@@ -20,6 +20,11 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
             head.y=hat.y=body.y=5;leftArm.y=rightArm.y=7;leftLeg.y=rightLeg.y=17;
             leftLeg.xRot=rightLeg.xRot=-1.45F;leftLeg.yRot=.12F;rightLeg.yRot=-.12F;leftArm.xRot=-.6F;rightArm.xRot=-.5F;
         }else{head.y=hat.y=body.y=0;leftArm.y=rightArm.y=2;leftLeg.y=rightLeg.y=12;}
+        if(e.heaving()){
+            // Laughing with no sound coming out: the shoulders and head jerk together.
+            float h=Mth.abs(Mth.sin(age*.9F))*Mth.abs(Mth.sin(age*.37F));
+            body.xRot+=.1F+.16F*h;head.xRot+=.22F*h;head.y+=1.1F*h;hat.y=head.y;leftArm.y+=1.2F*h;rightArm.y+=1.2F*h;
+        }
         hat.copyFrom(head);
     }
 }

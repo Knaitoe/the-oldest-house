@@ -138,7 +138,7 @@ public final class SceneShells {
             case MODEL_HOME -> x <= -9 || (x <= -4 && z >= -16 && z <= -10)
                     || (x >= 2 && x <= 7 && z >= -16 && z <= -10 && y >= 1);
             // Bunks rise in both side bays as the gathering grows.
-            case GOATMAN -> y >= 1 && (x <= -4 || x >= 4) && z >= -74 && z <= -56;
+            case GOATMAN -> y >= 1 && ((x <= -4 || x >= 4) && z >= -74 && z <= -56 || x >= 3 && z <= -73);
             case HOSPITAL -> Math.abs(x) <= 2 && z >= -16 && z <= -12;
             // The funeral doorway is restaged in planks on every visit.
             case HARRIGAN -> z == -13 && Math.abs(x) <= 1;
