@@ -128,8 +128,13 @@ public final class LiveExpeditionClient {
                 // Holding the actual attack input lets Minecraft retain its native mining progress.
                 // Direct post-tick mining calls are canceled by the next tick's released input.
                 if(!mc.isWindowActive())org.lwjgl.glfw.GLFW.glfwFocusWindow(mc.getWindow().getWindow());
-                if(!mc.mouseHandler.isMouseGrabbed())mc.mouseHandler.grabMouse();
-                mc.options.keyAttack.setDown(true);
+                if(!mc.mouseHandler.isMouseGrabbed()){
+                    mc.mouseHandler.grabMouse();
+                    // Grabbing the mouse suppresses attacks until Minecraft processes a
+                    // released attack tick. Do that before holding the native mining key.
+                    mc.options.keyAttack.setDown(false);return;
+                }
+                mc.options.keyAttack.setDown(mc.hitResult instanceof BlockHitResult hit&&hit.getBlockPos().equals(target));
             }else{
                 mc.options.keyAttack.setDown(false);
                 if(mc.player.getForcedPose()==net.minecraft.world.entity.Pose.SWIMMING)portholePoseSeen=true;
@@ -139,7 +144,7 @@ public final class LiveExpeditionClient {
                 }else walk(mc,left?target.west(3):target.east(3));
             }
         }
-        if(step==23&&ticks%100==0)TheOldestHouse.LOGGER.info("LIVE PORTHOLE socket={} position={} target={} block={} pose={} forced={} origin={} crawlSeen={} mouseGrabbed={}",role,mc.player.position(),target,block,mc.player.getPose(),mc.player.getForcedPose(),HouseSightlineState.origin(),portholePoseSeen,mc.mouseHandler.isMouseGrabbed());
+        if(step==23&&ticks%100==0)TheOldestHouse.LOGGER.info("LIVE PORTHOLE socket={} position={} target={} block={} pose={} forced={} origin={} crawlSeen={} mouseGrabbed={} focused={} attackHeld={} hit={} screen={}",role,mc.player.position(),target,block,mc.player.getPose(),mc.player.getForcedPose(),HouseSightlineState.origin(),portholePoseSeen,mc.mouseHandler.isMouseGrabbed(),mc.isWindowActive(),mc.options.keyAttack.isDown(),mc.hitResult instanceof BlockHitResult hit?hit.getBlockPos():mc.hitResult,mc.screen);
         if(step==24&&ticks==30){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);mc.stop();}
     }
     private static boolean open(net.minecraft.world.level.block.state.BlockState s){return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}
