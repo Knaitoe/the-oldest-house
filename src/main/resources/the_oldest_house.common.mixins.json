@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "FireBlockMixin",
-    "StaircaseSpectateMixin"
+    "StaircaseSpectateMixin",
+    "PortholeCrawlMixin"
   ],
   "injectors": {
     "defaultRequire": 1

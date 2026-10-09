@@ -18,7 +18,7 @@ public final class NovelSceneClient {
     private static int mode,lease,elapsed,captionTicks,stairLease;private static float shake,stairShake;private static String caption="";
     private NovelSceneClient(){}
     public static void drawCoveredDarkness(net.minecraft.client.gui.GuiGraphics g){g.fill(0,0,g.guiWidth(),g.guiHeight(),0xFF000000);}
-    public static void accept(NovelScenePayload p){if(p.mode()==STAIR_SHAKE){stairLease=60;stairShake=Math.max(0,Math.min(1,p.shake()));return;}mode=p.mode();lease=60;elapsed=p.elapsed();caption=p.caption();captionTicks=p.captionTicks();shake=Math.max(0,Math.min(1,p.shake()));}
+    public static void accept(NovelScenePayload p){if(p.mode()==16||p.mode()==17){LiteraryCrawlClient.accept(p.mode()==16);return;}if(p.mode()==STAIR_SHAKE){stairLease=60;stairShake=Math.max(0,Math.min(1,p.shake()));return;}mode=p.mode();lease=60;elapsed=p.elapsed();caption=p.caption();captionTicks=p.captionTicks();shake=Math.max(0,Math.min(1,p.shake()));}
     private static boolean wellBelow(){var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||!mc.level.dimension().equals(HouseDimensions.OUTSIDE))return false;
         var b=io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlaces.base(HouseSightlineState.origin(),io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace.BARN_WELL);
         return b!=null&&mc.player.getY()<b.getY()+1&&Math.abs(mc.player.getX()-b.getX()-.5)<.7&&Math.abs(mc.player.getZ()-b.getZ()+22.5)<.7;}

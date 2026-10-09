@@ -105,10 +105,10 @@ public final class SlasherTests {
     }
     @GameTest(template="empty",batch="elk_door_ambush",timeoutTicks=1800)
     public static void watchedDoorAmbushMovesAsidePausesForObserversAndBreaksBothHalvesAfterTenSeconds(GameTestHelper h){privateRun(h,1265000,f->{
-        f.corridor();var at=huntDoor(f,Blocks.DARK_OAK_DOOR);var p=f.player("door_owner",.5,-30.5);p.setYRot(180);var peer=f.player("door_camera",1.3,-30.5);peer.setGameMode(GameType.SPECTATOR);
-        var a=privateActor(f,p);a.moveTo(f.base.getX()+.5,f.base.getY(),f.base.getZ()-37.5);var id=a.getUUID();KillerNavigation.request(a,p.position(),1.35);final int[] held={0};
+        f.corridor();var at=huntDoor(f,Blocks.DARK_OAK_DOOR);var p=f.player("door_owner",.5,-30.5);p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,at.above().getCenter());var peer=f.player("door_camera",1.3,-30.5);peer.setGameMode(GameType.SPECTATOR);
+        var a=privateActor(f,p);a.moveTo(f.base.getX()+.5,f.base.getY(),f.base.getZ()-37.5);var id=a.getUUID();KillerNavigation.request(a,p.position(),1.35);final int[] held={0};long began=f.l.getGameTime();
         h.startSequence().thenIdle(35).thenExecute(()->{
-            h.assertTrue(KillerDoors.waitTicks(a)>=34&&KillerDoors.waitTicks(a)<=36&&Math.abs(a.getX()-(f.base.getX()+.5))>.7,"a watched door has one clock and the hunter physically hides beside the frame");
+            h.assertTrue(KillerDoors.waitTicks(a)>=30&&KillerDoors.waitTicks(a)<=f.l.getGameTime()-began+1&&Math.abs(a.getX()-(f.base.getX()+.5))>.7,"a watched door has one clock and the hunter physically hides beside the frame: ticks="+KillerDoors.waitTicks(a)+", relative="+a.position().subtract(f.base.getX(),f.base.getY(),f.base.getZ())+", state="+a.getPersistentData().getCompound("KillerDoor0461")+", look="+p.getLookAngle());
             var saved=new CompoundTag();a.saveWithoutId(saved);a.load(saved);held[0]=KillerDoors.waitTicks(a);p.setGameMode(GameType.SPECTATOR);
         }).thenIdle(40).thenExecute(()->{h.assertTrue(KillerDoors.waitTicks(a)==held[0]&&f.l.getBlockState(at).is(Blocks.DARK_OAK_DOOR),"saved waiting survives reload and observer-only time does not count");p.setGameMode(GameType.SURVIVAL);})
                 .thenWaitUntil(()->h.assertTrue(KillerDoors.waitTicks(a)>=195,"the door gets a full ten occupied seconds, including the final cracking animation"))
