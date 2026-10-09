@@ -299,12 +299,13 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         h.runAfterDelay(65,()->{
             h.assertTrue(a.getUUID().equals(id)&&a.getX()>rail.getX()+1&&peak[0]>b.getY()+10&&f.out.getBlockState(rail).is(LiteraryRegistry.YACHT_RAIL.get()),"the original killer clears the rail through gravity and collision without removing it: "+a.position()+" peak="+peak[0]);
             KillerNavigation.stop(a);a.moveTo(b.getX()-1.5,b.getY()+9,b.getZ()+6.5);a.setDeltaMovement(Vec3.ZERO);a.setOnGround(true);before[0]=a.position();
-            f.out.setBlock(rail,LiteraryRegistry.YACHT_HULL.get().defaultBlockState(),3);KillerNavigation.request(a,new Vec3(b.getX()+2.5,b.getY()+9,b.getZ()+6.5),1);
+            // A hull wall is two blocks tall. Vanilla navigation may jump a one-block step.
+            f.out.setBlock(rail,LiteraryRegistry.YACHT_HULL.get().defaultBlockState(),3);f.out.setBlock(rail.above(),LiteraryRegistry.YACHT_HULL.get().defaultBlockState(),3);KillerNavigation.request(a,new Vec3(b.getX()+2.5,b.getY()+9,b.getZ()+6.5),1);
         });
         h.runAfterDelay(100,()->{
-            h.assertTrue(a.getX()<rail.getX()&&a.getY()<b.getY()+9.1,"a solid hull wall cannot be vaulted");
+            h.assertTrue(a.getX()<rail.getX()&&a.getY()<b.getY()+9.1,"a full hull wall cannot be vaulted: "+a.position());
             KillerNavigation.stop(a);a.moveTo(b.getX()-1.5,b.getY()+9,b.getZ()+6.5);a.setDeltaMovement(Vec3.ZERO);a.setOnGround(true);before[0]=a.position();
-            f.out.setBlock(rail,LiteraryRegistry.YACHT_RAIL.get().defaultBlockState(),3);f.out.setBlock(b.offset(0,8,6),Blocks.AIR.defaultBlockState(),3);
+            f.out.setBlock(rail,LiteraryRegistry.YACHT_RAIL.get().defaultBlockState(),3);f.out.setBlock(rail.above(),Blocks.AIR.defaultBlockState(),3);f.out.setBlock(b.offset(0,8,6),Blocks.AIR.defaultBlockState(),3);
             KillerNavigation.request(a,new Vec3(b.getX()+2.5,b.getY()+9,b.getZ()+6.5),1);
         });
         h.runAfterDelay(135,()->{h.assertTrue(a.getX()<rail.getX()&&a.getY()<b.getY()+9.1,"the killer stays behind a rail with no supported landing");h.succeed();});

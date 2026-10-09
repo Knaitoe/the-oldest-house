@@ -124,7 +124,7 @@ public final class NovelVignettes {
         else if(place==LabyrinthPlace.BARN_WELL&&rel.equals(NovelRooms.RIBBON)){if(own.getBoolean("WellReturned"))reward(p,own,"Ribbon",VignetteYields.mark(new ItemStack(NovelRegistry.RIBBON.get()),place.id()));}
         else if(place==LabyrinthPlace.BARN_WELL&&rel.equals(new BlockPos(-4,0,-17)))open(p,place,NovelTexts.well(),"WellBook",false,own);
         else if(place==LabyrinthPlace.PLAIN&&rel.equals(NovelRooms.APOLOGY))open(p,place,NovelTexts.apology(),"Apology",false,own);
-        else if(place==LabyrinthPlace.PLAIN&&rel.equals(new BlockPos(3,0,-7)))reward(p,own,"Spyglass",new ItemStack(Items.SPYGLASS));
+        else if(place==LabyrinthPlace.PLAIN&&rel.equals(new BlockPos(3,0,-7)))reward(p,own,"Camera0464",new ItemStack(NovelRegistry.CAMERA.get()));
         else if(place==LabyrinthPlace.HOSPITAL&&rel.equals(NovelRooms.BUTTON)){
             if(own.getBoolean("Alarm")){own.putBoolean("Alarm",false);own.putInt("WardCalls",own.getInt("WardCalls")+1);cue(p,own,"The button clicks. No footsteps follow.");}
         }else if(place==LabyrinthPlace.HOSPITAL&&rel.equals(NovelRooms.WARD_NOTE)){
@@ -224,12 +224,35 @@ public final class NovelVignettes {
     private static void tickPlain(ServerPlayer p,BlockPos b,CompoundTag own){
         BlockPos target=b.offset(NovelRooms.FIGURE);p.serverLevel().getChunkAt(target);p.serverLevel().getChunkSource().addRegionTicket(TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(target),3,target);
         var birds=p.serverLevel().getEntitiesOfClass(NovelVulture.class,new AABB(target).inflate(18));if(birds.isEmpty()&&p.tickCount%40==0){var v=NovelRegistry.VULTURE.get().create(p.serverLevel());if(v!=null){v.circle(target);v.moveTo(target.getX()+7,target.getY()+9,target.getZ());p.serverLevel().addFreshEntity(v);}}
-        if(own.contains("Photo"))return;Vec3 look=target.getCenter().subtract(p.getEyePosition());boolean aim=p.isUsingItem()&&p.getUseItem().is(Items.SPYGLASS)&&look.lengthSqr()>400&&p.getViewVector(1).dot(look.normalize())>.997;
+        distantBoy(p,b,own);
+        if(own.contains("Photo"))return;Vec3 look=target.getCenter().subtract(p.getEyePosition());
+        boolean aim=p.isUsingItem()&&(p.getUseItem().getItem() instanceof PlainCameraItem||p.getUseItem().is(Items.SPYGLASS))&&look.lengthSqr()>400&&p.getViewVector(1).dot(look.normalize())>.997;
         int ticks=aim?own.getInt("Aim")+1:0;own.putInt("Aim",ticks);if(ticks<40)return;
-        byte[] pixels=plainPixels();var photo=io.github.knaitoe.theoldesthouse.opening.NavidsonLetter.createSnapshot(p.serverLevel(),pixels);VignetteYields.mark(photo,LabyrinthPlace.PLAIN.id());
+        long now=p.server.overworld().getGameTime();
+        if(!own.hasUUID("PlainExposure0464")||now-own.getLong("PlainExposureAt0464")>200){
+            UUID nonce=UUID.randomUUID();own.putUUID("PlainExposure0464",nonce);own.putLong("PlainExposureAt0464",now);
+            HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.PlainExposurePayload(nonce));
+        }
+    }
+    private static void distantBoy(ServerPlayer p,BlockPos b,CompoundTag own){
+        for(int y=0;y<=1;y++){var at=b.offset(NovelRooms.FIGURE).above(y);if(p.serverLevel().getBlockState(at).is(Blocks.BLACK_CONCRETE))p.serverLevel().setBlock(at,Blocks.AIR.defaultBlockState(),3);}
+        if(own.hasUUID("PlainBoy0464"))return;
+        var boy=LiteraryRegistry.ACTOR.get().create(p.serverLevel());if(boy==null)return;
+        boy.appearance(LiteraryActor.SILHOUETTE,4);boy.bind(LabyrinthPlace.PLAIN,p.getUUID());boy.setNoGravity(true);
+        boy.moveTo(b.getX()+.5,b.getY(),b.getZ()-92.5,0,0);p.serverLevel().addFreshEntity(boy);own.putUUID("PlainBoy0464",boy.getUUID());
+    }
+    /** Only the original requester, still composing that distant view, can develop this one frame. */
+    public static boolean capturePlainFrame(ServerPlayer p,io.github.knaitoe.theoldesthouse.network.PlainFramePayload frame){
+        if(!participant(p)||!inside(p,LabyrinthPlace.PLAIN)||frame.pixels().length!=16384)return false;
+        var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());
+        if(own.contains("Photo")||!own.hasUUID("PlainExposure0464")||!frame.nonce().equals(own.getUUID("PlainExposure0464"))||p.server.overworld().getGameTime()-own.getLong("PlainExposureAt0464")>200||own.getInt("Aim")<40)return false;
+        var b=IndianLakeRooms.base(p.server,LabyrinthPlace.PLAIN);if(b==null||!p.isUsingItem())return false;
+        var look=b.offset(NovelRooms.FIGURE).getCenter().subtract(p.getEyePosition());
+        if(!(p.getUseItem().getItem() instanceof PlainCameraItem||p.getUseItem().is(Items.SPYGLASS))||look.lengthSqr()<=400||p.getViewVector(1).dot(look.normalize())<=.997)return false;
+        var photo=io.github.knaitoe.theoldesthouse.opening.NavidsonLetter.createSnapshot(p.serverLevel(),frame.pixels());VignetteYields.mark(photo,LabyrinthPlace.PLAIN.id());
         UUID id=UUID.randomUUID();CustomData.update(DataComponents.CUSTOM_DATA,photo,t->{t.putUUID(PHOTO_OWNER,p.getUUID());t.putUUID(PHOTO_ID,id);});photo.set(DataComponents.CUSTOM_NAME,Component.literal("The distant frame"));
-        own.put("Photo",photo.save(p.registryAccess()));own.putLong("PhotoDay",p.server.overworld().getDayTime()/24000);give(p,photo);p.playNotifySound(NovelRegistry.SHUTTER.get(),SoundSource.PLAYERS,.8F,1);
-        WitnessAccount.resolve(p,WitnessAccount.Story.PLAIN,"held_the_distant_frame");LabyrinthData.get(p.server).setCompleted(LabyrinthPlace.PLAIN.id(),true);cue(p,own,"The frame is in your hand. The distance has not changed.");
+        own.put("Photo",photo.save(p.registryAccess()));own.remove("PlainExposure0464");own.putLong("PhotoDay",p.server.overworld().getDayTime()/24000);give(p,photo);p.playNotifySound(NovelRegistry.SHUTTER.get(),SoundSource.PLAYERS,.8F,1);
+        WitnessAccount.resolve(p,WitnessAccount.Story.PLAIN,"held_the_distant_frame");data.setCompleted(LabyrinthPlace.PLAIN.id(),true);cue(p,own,"The frame is in your hand. The distance has not changed.");save(data,p.getUUID(),own);return true;
     }
     /** Original silhouette map art. It deliberately refuses a detailed face or close-up. */
     public static byte[] plainPixels(){byte[] pixels=new byte[128*128];for(int y=0;y<128;y++)for(int x=0;x<128;x++){

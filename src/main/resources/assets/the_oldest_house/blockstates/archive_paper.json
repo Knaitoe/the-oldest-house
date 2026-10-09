@@ -1,7 +1,18 @@
 {
   "variants": {
-    "": {
-      "model": "the_oldest_house:block/archive_paper"
-    }
+    "": [
+      {
+        "model": "the_oldest_house:block/archive_paper_0"
+      },
+      {
+        "model": "the_oldest_house:block/archive_paper_1"
+      },
+      {
+        "model": "the_oldest_house:block/archive_paper_2"
+      },
+      {
+        "model": "the_oldest_house:block/archive_paper_3"
+      }
+    ]
   }
 }

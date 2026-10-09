@@ -31,6 +31,7 @@ public final class NovelRegistry {
     public static final DeferredItem<Item> COLLAR=ITEMS.registerSimpleItem("cat_collar",new Item.Properties().stacksTo(1)),RIBBON=ITEMS.registerSimpleItem("well_ribbon",new Item.Properties().stacksTo(1)),
         ARCHIVE_KEY=ITEMS.registerSimpleItem("archive_key",new Item.Properties().stacksTo(1));
     public static final DeferredItem<ShieldItem> HOLLOWAY_SHIELD=ITEMS.register("holloway_shield",()->new ShieldItem(new Item.Properties().durability(336)));
+    public static final DeferredItem<PlainCameraItem> CAMERA=ITEMS.registerItem("plain_camera",PlainCameraItem::new,new Item.Properties().stacksTo(1));
     public static final DeferredItem<FlintAndSteelItem> LIGHTER=ITEMS.register("lighter",()->new FlintAndSteelItem(new Item.Properties().durability(64)));
     public static final DeferredItem<WalkieTalkieItem> RADIO=ITEMS.register("walkie_talkie",()->new WalkieTalkieItem(new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<EntityType<?>,EntityType<NovelVulture>> VULTURE=TYPES.register("vulture",()->EntityType.Builder.<NovelVulture>of(NovelVulture::new,MobCategory.MISC).sized(.9F,.45F).clientTrackingRange(16).updateInterval(2).build("vulture"));

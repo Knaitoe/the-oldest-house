@@ -1,6 +1,3 @@
 {
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "the_oldest_house:block/archive_paper"
-  }
+  "parent": "the_oldest_house:block/archive_paper_0"
 }

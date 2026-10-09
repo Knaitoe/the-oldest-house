@@ -36,7 +36,13 @@ final class NativeTestChunks implements AutoCloseable {
     /** Full block chunks can arrive before their native entity sections. */
     boolean ready() {
         for (var lease : held)
-            if (!lease.level.areEntitiesLoaded(lease.chunk.toLong())) return false;
+            if (!lease.level.areEntitiesLoaded(lease.chunk.toLong())) {
+                // GameTest can consume 1,200 ticks in under a second. Give the native disk
+                // worker time to return entity sections before exhausting a fixture's clock.
+                // This is test-host pacing only; loaded-section checks remain mandatory.
+                java.util.concurrent.locks.LockSupport.parkNanos(5_000_000L);
+                return false;
+            }
         return true;
     }
 

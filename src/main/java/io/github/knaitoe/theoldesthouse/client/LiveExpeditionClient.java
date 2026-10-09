@@ -26,7 +26,7 @@ public final class LiveExpeditionClient {
         if(!LiveExpeditionProof.enabled())return;var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.gameMode==null)return;
         var component=mc.player.getInventory().getItem(8).get(DataComponents.CUSTOM_DATA);if(component==null)return;
         var data=component.copyTag();int step=data.getInt("Step");if(step<1)return;String role=System.getProperty("the_oldest_house.liveProofRole","");
-        if(previous!=step){previous=step;ticks=0;clicked=-100;ack=-1;portholePoseSeen=false;mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);}ticks++;
+        if(previous!=step){previous=step;ticks=0;clicked=-100;ack=-1;portholePoseSeen=false;mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);mc.options.keyUse.setDown(false);}ticks++;
         BlockPos target=BlockPos.of(data.getLong("Target"));var block=mc.level.getBlockState(target);
         if(step==1&&ticks>30&&mc.level.players().size()>=2)ack(mc,1);
         if(step==2) {
@@ -146,7 +146,15 @@ public final class LiveExpeditionClient {
             }
         }
         if(step==23&&ticks%100==0)TheOldestHouse.LOGGER.info("LIVE PORTHOLE socket={} position={} target={} block={} pose={} forced={} origin={} crawlSeen={} mouseGrabbed={} focused={} attackHeld={} hit={} screen={}",role,mc.player.position(),target,block,mc.player.getPose(),mc.player.getForcedPose(),HouseSightlineState.origin(),portholePoseSeen,mc.mouseHandler.isMouseGrabbed(),mc.isWindowActive(),mc.options.keyAttack.isDown(),mc.hitResult instanceof BlockHitResult hit?hit.getBlockPos():mc.hitResult,mc.screen);
-        if(step==24&&ticks==30){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);mc.stop();}
+        if(step==24&&ticks>10)ack(mc,24);
+        if(step==25&&ticks>15){
+            var to=target.getCenter().subtract(mc.player.getEyePosition());mc.player.setYRot((float)Math.toDegrees(Math.atan2(-to.x,to.z)));mc.player.setXRot((float)-Math.toDegrees(Math.atan2(to.y,Math.hypot(to.x,to.z))));
+            mc.player.getInventory().selected=0;mc.options.keyUse.setDown(true);if(!mc.player.isUsingItem())mc.gameMode.useItem(mc.player,InteractionHand.MAIN_HAND);
+            for(int i=0;i<mc.player.getInventory().getContainerSize();i++){var photo=mc.player.getInventory().getItem(i);if(photo.is(net.minecraft.world.item.Items.FILLED_MAP)&&photo.has(DataComponents.MAP_ID)){
+                var custom=photo.get(DataComponents.CUSTOM_DATA);if(custom!=null&&custom.copyTag().hasUUID(io.github.knaitoe.theoldesthouse.labyrinth.NovelVignettes.PHOTO_OWNER)&&custom.copyTag().getUUID(io.github.knaitoe.theoldesthouse.labyrinth.NovelVignettes.PHOTO_OWNER).equals(mc.player.getUUID())){shot=role+"-camera-view";ack(mc,25);break;}}}
+        }
+        if(step==26&&ticks>20){mc.options.keyUse.setDown(false);for(int i=0;i<9;i++){var photo=mc.player.getInventory().getItem(i);if(photo.is(net.minecraft.world.item.Items.FILLED_MAP)&&photo.has(DataComponents.MAP_ID)&&mc.level.getMapData(photo.get(DataComponents.MAP_ID))!=null){mc.player.getInventory().selected=i;shot=role+"-developed-frame";ack(mc,26);break;}}}
+        if(step==27&&ticks==30){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);mc.options.keyUse.setDown(false);mc.stop();}
     }
     private static boolean open(net.minecraft.world.level.block.state.BlockState s){return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}
     private static void walk(Minecraft mc,BlockPos target) {

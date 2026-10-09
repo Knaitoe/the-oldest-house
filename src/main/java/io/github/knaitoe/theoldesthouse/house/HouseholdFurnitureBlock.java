@@ -25,7 +25,7 @@ public final class HouseholdFurnitureBlock extends HorizontalDirectionalBlock {
     public enum Kind implements StringRepresentable {
         CANE_CHAIR(true, 8), KITCHEN_STOOL(true, 8), GREEN_ARMCHAIR(true, 8), FLORAL_ARMCHAIR(true, 8),
         BLUE_SOFA(true, 8), FOOTSTOOL(true, 6), WALNUT_DESK(false, 0), FORMICA_TABLE(false, 0),
-        BEDSIDE_TABLE(false, 0), CHEST_OF_DRAWERS(false, 0), RADIATOR(false, 0), WASHING_MACHINE(false, 0), READING_DESK(false, 0);
+        BEDSIDE_TABLE(false, 0), CHEST_OF_DRAWERS(false, 0), RADIATOR(false, 0), WASHING_MACHINE(false, 0), READING_DESK(false, 0), CHESS_TABLE(false, 0);
         public final boolean seat;
         public final int seatHeight;
         Kind(boolean seat, int height) { this.seat = seat; this.seatHeight = height; }
@@ -42,7 +42,7 @@ public final class HouseholdFurnitureBlock extends HorizontalDirectionalBlock {
                 case BLUE_SOFA -> new double[][]{{0,2,2,16,8,14},{0,8,11,16,15,15},{1,0,3,3,2,5},{13,0,3,15,2,5},{1,0,12,3,2,14},{13,0,12,15,2,14}};
                 case FOOTSTOOL -> new double[][]{{2,3,2,14,7,14},{3,0,3,5,3,5},{11,0,3,13,3,5},{3,0,11,5,3,13},{11,0,11,13,3,13}};
                 case WALNUT_DESK, READING_DESK -> new double[][]{{0,14,0,16,16,16},{1,0,2,7,14,14},{12,0,2,14,14,4},{12,0,12,14,14,14},{7,11,11,14,14,14}};
-                case FORMICA_TABLE -> new double[][]{{0,14,0,16,16,16},{2,0,2,4,14,4},{12,0,2,14,14,4},{2,0,12,4,14,14},{12,0,12,14,14,14}};
+                case FORMICA_TABLE, CHESS_TABLE -> new double[][]{{0,14,0,16,16,16},{2,0,2,4,14,4},{12,0,2,14,14,4},{2,0,12,4,14,14},{12,0,12,14,14,14}};
                 case BEDSIDE_TABLE -> new double[][]{{2,0,2,4,5,4},{12,0,2,14,5,4},{2,0,12,4,5,14},{12,0,12,14,5,14},{1,5,1,15,16,15}};
                 case CHEST_OF_DRAWERS -> new double[][]{{1,0,1,15,16,15}};
                 case RADIATOR -> new double[][]{{1,2,11,15,14,15},{2,0,12,4,2,15},{12,0,12,14,2,15}};
