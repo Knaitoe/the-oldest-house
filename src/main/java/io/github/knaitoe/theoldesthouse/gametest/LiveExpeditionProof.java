@@ -31,6 +31,7 @@ public final class LiveExpeditionProof {
     public static Path folder(){return Path.of(System.getProperty("the_oldest_house.liveProofDir","build/live-proof"));}
     private static final BlockPos ORIGIN=new BlockPos(6000,80,6000);
     private static final Set<String> ACKS=new HashSet<>();
+    private static final Set<String> PORTHOLE_CRAWLERS=new HashSet<>();
     private static int phase,changed;private static boolean restarted;private static UUID secondId;
     private static CompoundTag secondStory;private static Map<String,String> firstMap;
     private static final Map<UUID,Vec3> leakReturns=new HashMap<>();private static boolean leakRestarted,firstReturned;
@@ -43,7 +44,7 @@ public final class LiveExpeditionProof {
     private static void require(boolean okay,String message){if(!okay)throw new IllegalStateException("LIVE EXPEDITION: "+message);}
     @SubscribeEvent public static void commands(RegisterCommandsEvent e) {
         if(!enabled())return;
-        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,21)).executes(c->{
+        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,24)).executes(c->{
             var p=c.getSource().getPlayerOrException();if(!role(p).isEmpty()&&IntegerArgumentType.getInteger(c,"step")==phase)ACKS.add(role(p));return 1;
         })));
     }
@@ -225,13 +226,36 @@ public final class LiveExpeditionProof {
                 require(!privateA.getPersistentData().contains("CarcassSearch0455")&&!privateB.getPersistentData().contains("CarcassSearch0455"),"private actors never run the shared Camp Blood controller");
                 require(a.serverLevel().getBlockState(site.offset(0,0,-43)).isAir()&&a.serverLevel().getBlockState(site.offset(0,1,-43)).isAir()&&a.serverLevel().getBlockState(site.offset(1,0,-43)).is(Blocks.SPRUCE_LEAVES),"private hunter clears only the native physical leaf passage");
                 require(WitnessAccount.count(d,a.getUUID())==0&&WitnessAccount.count(d,b.getUUID())==0,"neither socket gains a personal ending from another hunter's world changes");
-                step(s,21,privateA.blockPosition());write("passed.txt","Two actual NeoForge socket clients: all original shared doors, personal leaves/burns/note scenes and two same-profile reconnects; one Stacy body and one three-second wooden-door break; both readers walk crouched under native leaf cover; one shared Camp Blood hunter and two private elk killers use physical movement and leaf breaking; native client renderers exclude each peer's private killer; two actively hiding peers keep their cover from invisible hunters; native Stacy look tracking; no doubled clocks or transferred ending credit.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: shared and private hunts, native ownership rendering, leaf breaking and two reconnects");
+                step(s,21,privateA.blockPosition());
             }
-        }else if(phase==21&&s.getTickCount()-changed>100){huntChunks.close();s.halt(false);}
+        }else if(phase==21&&a!=null&&b!=null&&ACKS.size()==2){
+            var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.ELK_CARCASSES);portholeFrame(a.serverLevel(),site,-1);portholeFrame(a.serverLevel(),site,1);
+            outside(a,site.offset(-8,1,-3),0);outside(b,site.offset(7,1,-3),0);PORTHOLE_CRAWLERS.clear();
+            step(s,23,site.offset(-9,1,-3));marker(b,23,site.offset(9,1,-3));
+        }else if(phase==23&&a!=null&&b!=null){
+            for(var p:List.of(a,b))if(p.getForcedPose()==net.minecraft.world.entity.Pose.SWIMMING&&p.getBbHeight()<.7)PORTHOLE_CRAWLERS.add(role(p));
+            var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.ELK_CARCASSES);
+            if(ACKS.size()==2&&a.getX()<site.getX()-9.8&&b.getX()>site.getX()+10.3){
+                require(PORTHOLE_CRAWLERS.size()==2,"both socket players use their real native crawl collision bodies");
+                require(a.serverLevel().getBlockState(site.offset(-9,1,-3)).isAir()&&a.serverLevel().getBlockState(site.offset(9,1,-3)).isAir(),"both native client mining actions break their actual portholes");
+                require(a.serverLevel().getBlockState(site.offset(-9,2,-3)).is(LiteraryRegistry.YACHT_HULL.get())&&a.serverLevel().getBlockState(site.offset(9,2,-3)).is(LiteraryRegistry.YACHT_HULL.get()),"the surrounding yacht hull remains intact");
+                require(WitnessAccount.count(d,a.getUUID())==0&&WitnessAccount.count(d,b.getUUID())==0,"physical porthole escape gives neither socket personal ending credit");
+                step(s,24,site.offset(0,1,-3));write("passed.txt","Two actual NeoForge socket clients: all original shared doors, personal leaves/burns/note scenes and two same-profile reconnects; one Stacy body and one three-second wooden-door break; both readers walk crouched under native leaf cover; one shared Camp Blood hunter and two private elk killers use physical movement and leaf breaking; native client renderers exclude each peer's private killer; two actively hiding peers keep their cover from invisible hunters; native Stacy look tracking; both real clients mine portholes and crawl physically through while holding crouch, with matching native collision bodies and protected hull; no doubled clocks or transferred ending credit.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: shared and private hunts, native ownership rendering, porthole mining/crawling and two reconnects");
+            }
+        }else if(phase==24&&s.getTickCount()-changed>100){huntChunks.close();s.halt(false);}
     }
 
     private static void holdHunt(net.minecraft.server.level.ServerLevel l,BlockPos site){
-        huntChunks.hold(l,new net.minecraft.world.phys.AABB(Vec3.atLowerCornerOf(site.offset(-6,-3,-55)),Vec3.atLowerCornerOf(site.offset(7,6,-23))));
+        huntChunks.hold(l,new net.minecraft.world.phys.AABB(Vec3.atLowerCornerOf(site.offset(-13,-5,-55)),Vec3.atLowerCornerOf(site.offset(14,6,4))));
+    }
+    private static void portholeFrame(net.minecraft.server.level.ServerLevel l,BlockPos site,int side){
+        int window=side*9;
+        for(int x=side<0?-12:6;x<=(side<0?-6:12);x++)for(int z=-4;z<=-2;z++)for(int y=-4;y<=3;y++){
+            boolean outer=side<0?x<-9:x>9;
+            var block=x==window?LiteraryRegistry.YACHT_HULL.get():y==-4||(!outer&&y==0)?Blocks.PODZOL:outer&&y<=0?Blocks.WATER:Blocks.AIR;
+            l.setBlock(site.offset(x,y,z),block.defaultBlockState(),3);
+        }
+        l.setBlock(site.offset(window,1,-3),LiteraryRegistry.YACHT_PORTHOLE.get().defaultBlockState(),3);
     }
     private static void huntFloor(net.minecraft.server.level.ServerLevel l,BlockPos site){
         for(int x=-2;x<=2;x++)for(int z=-51;z<=-27;z++)for(int y=-1;y<=3;y++)l.setBlock(site.offset(x,y,z),(y==-1?Blocks.PODZOL:x==-2||x==2||z==-51||z==-27?Blocks.STONE:Blocks.AIR).defaultBlockState(),3);

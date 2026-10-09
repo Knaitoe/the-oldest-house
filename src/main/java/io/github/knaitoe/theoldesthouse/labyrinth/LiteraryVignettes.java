@@ -191,7 +191,10 @@ public final class LiteraryVignettes {
         return rabbitCommitted(own) && !own.getBoolean("Ready");
     }
     private static void scale(ServerPlayer p,boolean child){var a=p.getAttribute(Attributes.SCALE);if(a==null)return;if(child&&!a.hasModifier(CHILD))a.addTransientModifier(new AttributeModifier(CHILD,-.46,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));else if(!child)a.removeModifier(CHILD);}
-    private static void crawl(ServerPlayer p,boolean active){var c=CRAWLS.get(p.getUUID());if(c!=null&&c.p()!=p){restore(c);CRAWLS.remove(p.getUUID());c=null;}if(active&&c==null){CRAWLS.put(p.getUUID(),new Crawl(p,p.getForcedPose(),p.getPose()));p.setForcedPose(Pose.SWIMMING);p.setPose(Pose.SWIMMING);p.refreshDimensions();}else if(!active&&c!=null){restore(c);CRAWLS.remove(p.getUUID());}}
+    private static void crawl(ServerPlayer p,boolean active){var c=CRAWLS.get(p.getUUID());if(c!=null&&c.p()!=p){restore(c);CRAWLS.remove(p.getUUID());c=null;}if(active&&c==null){CRAWLS.put(p.getUUID(),new Crawl(p,p.getForcedPose(),p.getPose()));p.setForcedPose(Pose.SWIMMING);p.setPose(Pose.SWIMMING);p.refreshDimensions();}else if(!active&&c!=null){restore(c);CRAWLS.remove(p.getUUID());}
+        if(active&&inside(p,LabyrinthPlace.ELK_CARCASSES))HousePackets.send(p,new NovelScenePayload(16,0,"",0,0));
+        else if(!active&&c!=null)HousePackets.send(p,new NovelScenePayload(17,0,"",0,0));
+    }
     private static void restore(Crawl c){c.p().setForcedPose(c.forced());c.p().setPose(c.forced()==null?c.displayed():c.forced());c.p().refreshDimensions();}
     public static void clearAll(){for(var c:CRAWLS.values())restore(c);CRAWLS.clear();MOVIE_CANOES.clear();}
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p){crawl(p,false);scale(p,false);}}

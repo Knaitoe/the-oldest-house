@@ -195,7 +195,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         h.startSequence().thenIdle(7).thenExecute(()->{
             h.assertTrue(p.getForcedPose()==Pose.SWIMMING&&p.getBbHeight()<.7,"crouching at the broken window gives a real crawl body");
             for(int i=0;i<25;i++)p.move(MoverType.SELF,new Vec3(-.12,0,0));
-            h.assertTrue(p.getX()<b.getX()-9.8&&f.out.noCollision(p,p.getBoundingBox())&&!ElkCarcassMap.aboard(p.position().subtract(b.getX(),b.getY(),b.getZ())),"the body physically passes through the one-block opening into the lake exterior");
+            h.assertTrue(p.getX()<b.getX()-9.8&&f.out.noCollision(p,p.getBoundingBox())&&!ElkCarcassMap.aboard(p.position().subtract(b.getX(),b.getY(),b.getZ())),"the body physically passes through the one-block opening into the lake exterior: relative="+p.position().subtract(b.getX(),b.getY(),b.getZ())+", body="+p.getBoundingBox()+", pose="+p.getPose()+", clear="+f.out.noCollision(p,p.getBoundingBox()));
             f.reload();h.assertTrue(f.out.getBlockState(at).isAir()&&f.out.getBlockState(untouched).is(LiteraryRegistry.YACHT_PORTHOLE.get())&&WitnessAccount.count(f.data(),p.getUUID())==0&&WitnessAccount.count(f.data(),observer.getUUID())==0,"a reload keeps the hole and the finite untouched windows without granting an ending");h.succeed();
         });
     }
@@ -223,8 +223,8 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         final long[] last={-1};final int[] swings={0};final boolean[] ready={false};
         h.startSequence().thenIdle(10).thenExecute(()->{
             var own=f.own(p,place);own.putInt("ElkStage",ElkHunt.HUNTED);own.putBoolean("ElkResetPending",false);own.putInt("ElkEmerge",0);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
-            p.setInvulnerable(false);peer.setInvulnerable(false);ready[0]=true;
-        }).thenIdle(85).thenExecute(()->{h.assertTrue(swings[0]>=2&&p.getHealth()<p.getMaxHealth()&&peer.getHealth()==peer.getMaxHealth(),"native swings deal actual owner damage with breathing room and leave the other reader unharmed");h.succeed();});
+            p.hasChangedDimension();peer.hasChangedDimension();p.connection.resetPosition();peer.connection.resetPosition();p.setInvulnerable(false);peer.setInvulnerable(false);ready[0]=true;
+        }).thenIdle(85).thenExecute(()->{h.assertTrue(swings[0]>=2&&p.getHealth()<p.getMaxHealth()&&peer.getHealth()==peer.getMaxHealth(),"native swings deal actual owner damage with breathing room and leave the other reader unharmed: swings="+swings[0]+", ownerHealth="+p.getHealth()+", peerHealth="+peer.getHealth()+", own="+f.own(p,place));h.succeed();});
         h.onEachTick(()->{if(!ready[0])return;var a=elkKiller(f,p);if(a==null)return;var b=f.base(place);f.at(p,place,.5,0,-21.5);f.at(peer,place,1.5,0,-21.5);a.moveTo(b.getX()+.5,b.getY(),b.getZ()-22.5);a.setDeltaMovement(Vec3.ZERO);a.setNoGravity(true);
             long stamp=f.own(p,place).getLong("ElkStrikeAt");if(stamp>0&&stamp!=last[0]){if(last[0]>0)h.assertTrue(stamp-last[0]>=ElkHunt.ATTACK_DELAY,"every physical axe swing observes the saved one-and-a-half-second recovery");last[0]=stamp;swings[0]++;}
         });

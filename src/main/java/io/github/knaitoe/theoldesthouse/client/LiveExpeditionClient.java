@@ -20,12 +20,12 @@ import net.neoforged.neoforge.client.event.*;
 /** Opt-in actual native input/menu/payload proof; never runs in user sessions. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class LiveExpeditionClient {
-    private static int previous,ticks,clicked=-100,ack=-1;private static String shot;private static boolean stopping;
+    private static int previous,ticks,clicked=-100,ack=-1;private static String shot;private static boolean stopping,portholePoseSeen;
     @SubscribeEvent public static void tick(ClientTickEvent.Post e) {
         if(!LiveExpeditionProof.enabled())return;var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.gameMode==null)return;
         var component=mc.player.getInventory().getItem(8).get(DataComponents.CUSTOM_DATA);if(component==null)return;
         var data=component.copyTag();int step=data.getInt("Step");if(step<1)return;String role=System.getProperty("the_oldest_house.liveProofRole","");
-        if(previous!=step){previous=step;ticks=0;clicked=-100;ack=-1;mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);}ticks++;
+        if(previous!=step){previous=step;ticks=0;clicked=-100;ack=-1;portholePoseSeen=false;mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);}ticks++;
         BlockPos target=BlockPos.of(data.getLong("Target"));var block=mc.level.getBlockState(target);
         if(step==1&&ticks>30&&mc.level.players().size()>=2)ack(mc,1);
         if(step==2) {
@@ -118,7 +118,23 @@ public final class LiveExpeditionClient {
         }
         if(step==22){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(true);if(ticks>30&&mc.player.isCrouching()&&ack!=22)ack(mc,22);}
         if(step==20){mc.options.keyUp.setDown(false);double dx=target.getX()+.5-mc.player.getX(),dz=target.getZ()+.5-mc.player.getZ();mc.player.setYRot((float)Math.toDegrees(Math.atan2(-dx,dz)));mc.player.setXRot(0);}
-        if(step==21&&ticks==30){mc.options.keyUp.setDown(false);shot=role+"-private-leaves";stopping=true;}
+        if(step==21&&ticks==30){mc.options.keyUp.setDown(false);shot=role+"-private-leaves";ack(mc,21);}
+        if(step==23){
+            mc.options.keyShift.setDown(true);boolean left=role.equals("A");
+            if(!block.isAir()){
+                mc.options.keyUp.setDown(false);var to=target.getCenter().subtract(mc.player.getEyePosition());
+                mc.player.setYRot((float)Math.toDegrees(Math.atan2(-to.x,to.z)));mc.player.setXRot((float)-Math.toDegrees(Math.atan2(to.y,Math.hypot(to.x,to.z))));
+                if(ticks%20==1)mc.gameMode.startDestroyBlock(target,left?Direction.EAST:Direction.WEST);
+                else mc.gameMode.continueDestroyBlock(target,left?Direction.EAST:Direction.WEST);
+            }else{
+                if(mc.player.getForcedPose()==net.minecraft.world.entity.Pose.SWIMMING)portholePoseSeen=true;
+                if(!portholePoseSeen)return;
+                if(left?mc.player.getX()<target.getX()-.8:mc.player.getX()>target.getX()+1.3){
+                    mc.options.keyUp.setDown(false);if(ack!=23){shot=role+"-porthole";ack(mc,23);}
+                }else walk(mc,left?target.west(3):target.east(3));
+            }
+        }
+        if(step==24&&ticks==30){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.stop();}
     }
     private static boolean open(net.minecraft.world.level.block.state.BlockState s){return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}
     private static void walk(Minecraft mc,BlockPos target) {
