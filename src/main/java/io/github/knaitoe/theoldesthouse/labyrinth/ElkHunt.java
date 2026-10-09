@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -365,7 +366,7 @@ public final class ElkHunt {
                 if(distance>1.5&&reader.getLookAngle().dot(to.scale(1/distance))<.26)continue;
                 var hit=level.clip(new net.minecraft.world.level.ClipContext(reader.getEyePosition(),point,net.minecraft.world.level.ClipContext.Block.VISUAL,net.minecraft.world.level.ClipContext.Fluid.NONE,reader){
                     @Override public net.minecraft.world.phys.shapes.VoxelShape getBlockShape(net.minecraft.world.level.block.state.BlockState block,net.minecraft.world.level.BlockGetter world,BlockPos pos){
-                        if(block.is(LiteraryRegistry.YACHT_WINDOW.get())||block.is(LiteraryRegistry.YACHT_PORTHOLE.get())||block.getBlock() instanceof net.minecraft.world.level.block.AbstractGlassBlock||block.getBlock() instanceof net.minecraft.world.level.block.StainedGlassPaneBlock||block.is(net.minecraft.world.level.block.Blocks.GLASS_PANE))return net.minecraft.world.phys.shapes.Shapes.empty();
+                        if(block.is(LiteraryRegistry.YACHT_WINDOW.get())||block.is(LiteraryRegistry.YACHT_PORTHOLE.get())||block.is(net.minecraft.world.level.block.Blocks.GLASS)||block.getBlock() instanceof net.minecraft.world.level.block.StainedGlassBlock||block.getBlock() instanceof net.minecraft.world.level.block.StainedGlassPaneBlock||block.is(net.minecraft.world.level.block.Blocks.GLASS_PANE))return net.minecraft.world.phys.shapes.Shapes.empty();
                         return super.getBlockShape(block,world,pos);
                     }
                 });
