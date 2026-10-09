@@ -104,7 +104,11 @@ public final class CarcassHunt {
             if(n.equals(goal)){var result=new LinkedList<BlockPos>();while(!n.equals(start)){result.addFirst(n);n=prev.get(n);}return result;}
             for(var d:Direction.Plane.HORIZONTAL){var next=n.relative(d);int cost=node.cost()+1;
                 if(!next.equals(avoid)&&cost<costs.getOrDefault(next,Integer.MAX_VALUE)&&clear.computeIfAbsent(next,p->walkable(a,b,p,plane,doors))){
-                    prev.put(next,n);costs.put(next,cost);open.add(new Node(next,cost,cost+distance(next,goal)));}}
+                    prev.put(next,n);costs.put(next,cost);open.add(new Node(next,cost,cost+distance(next,goal)));}
+                var landing=n.relative(d,2);int jumpCost=node.cost()+3;
+                if(!next.equals(avoid)&&!landing.equals(avoid)&&jumpCost<costs.getOrDefault(landing,Integer.MAX_VALUE)
+                        &&clear.computeIfAbsent(landing,p->walkable(a,b,p,plane,doors))&&YachtRailVault.canCross(a,n,landing)){
+                    prev.put(landing,n);costs.put(landing,jumpCost);open.add(new Node(landing,jumpCost,jumpCost+distance(landing,goal)));}}
         }return List.of();
     }
     /** Native destruction happens only in the body's next physical step, once per actor tick. */

@@ -22,7 +22,7 @@ public final class PortholeCrawl {
         }else base=LOCAL.get(p);
         if(base==null)return false;var r=p.position().subtract(base.getX(),base.getY(),base.getZ());if(!ElkCarcassMap.nearPorthole(r))return false;
         int x=r.x<0?-9:9;
-        for(int z:new int[]{-1,-3,-5,-10,-16})if(Math.abs(r.z-(z+.5))<.85&&p.level().getBlockState(base.offset(x,1,z)).isAir())return true;
+        for(int z:new int[]{-1,-3,-5,-10,-16})if(Math.abs(r.z-(z+.5))<.85&&YachtGlazingBlock.opening(p.level().getBlockState(base.offset(x,1,z))))return true;
         return false;
     }
 }

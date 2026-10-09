@@ -166,6 +166,8 @@ public final class NovelVignettes {
                     if(shaft&&y< -10.5)own.putBoolean("WellEntered",true);
                     if(shaft&&y<1&&own.getBoolean("WellEntered")&&own.getInt("WellTicks")<WELL_WAIT){int ticks=Math.min(WELL_WAIT,own.getInt("WellTicks")+1);own.putInt("WellTicks",ticks);
                         if(ticks==1){cue(p,own,"Wood scrapes overhead. A hand reaches across the opening.");HousePackets.send(p,new NovelScenePayload(14,ticks,own.getString("Cue"),140,0));}if(ticks>=WellSequence.DARK_END&&ticks<WELL_WAIT&&ticks%20==0)p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS,50,0,false,false));
+                        if(ticks==380)cue(p,own,"A voice above the boards: Who would know where to look?");
+                        if(ticks==780)cue(p,own,"The voice comes again, farther away: They will stop asking.");
                         if(ticks==WELL_WAIT){p.removeEffect(net.minecraft.world.effect.MobEffects.DARKNESS);cue(p,own,"The waiting loosens. Climb toward the cover.");}}
                     if(own.getBoolean("WellEntered")&&own.getInt("WellTicks")>=WELL_WAIT&&y>=-.2&&!own.getBoolean("WellReturned")){own.putBoolean("WellReturned",true);WitnessAccount.resolve(p,WitnessAccount.Story.BARN_WELL,"waited_and_climbed_out");data.setCompleted(LabyrinthPlace.BARN_WELL.id(),true);cue(p,own,"A ribbon catches on the barrel beside the well.");}
                 }else if(place==LabyrinthPlace.WHALE&&own.contains("LastKnock")&&now-own.getLong("LastKnock")>=40){

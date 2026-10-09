@@ -265,7 +265,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
     public static void nativePortholeBreakAdmitsARealCrawlingEscapeWithoutHullMiningOrPeerCredit(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("porthole_reader",place);var b=f.base(place);var at=b.offset(-9,1,-3);
         f.at(p,place,-7.5,1,-2.5);p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
-        h.assertTrue(f.out.getBlockState(at).is(LiteraryRegistry.YACHT_PORTHOLE.get())&&p.gameMode.destroyBlock(at)&&f.out.getBlockState(at).isAir(),"native survival mining removes the actual authored porthole");
+        h.assertTrue(f.out.getBlockState(at).is(LiteraryRegistry.YACHT_PORTHOLE.get())&&p.gameMode.destroyBlock(at)&&YachtGlazingBlock.shattered(f.out.getBlockState(at)),"native survival mining leaves the shattered porthole frame");
         h.assertTrue(!p.gameMode.destroyBlock(at.above())&&f.out.getBlockState(at.above()).is(LiteraryRegistry.YACHT_HULL.get()),"the surrounding hull stays protected");
         var observer=NativeTestPlayers.survival(h,"porthole_camera");f.players.add(observer);observer.teleportTo(f.out,b.getX()+7.5,b.getY()+1,b.getZ()-2.5,0,0);observer.setGameMode(GameType.SPECTATOR);
         var untouched=b.offset(9,1,-3);var attempt=new BlockEvent.BreakEvent(f.out,untouched,f.out.getBlockState(untouched),observer);NeoForge.EVENT_BUS.post(attempt);
@@ -275,10 +275,41 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             h.assertTrue(p.getForcedPose()==Pose.SWIMMING&&p.getBbHeight()<.7,"crouching at the broken window gives a real crawl body");
             for(int i=0;i<25;i++)p.move(MoverType.SELF,new Vec3(-.12,0,0));
             h.assertTrue(p.getX()<b.getX()-9.8&&f.out.noCollision(p,p.getBoundingBox())&&!ElkCarcassMap.aboard(p.position().subtract(b.getX(),b.getY(),b.getZ())),"the body physically passes through the one-block opening into the lake exterior: relative="+p.position().subtract(b.getX(),b.getY(),b.getZ())+", body="+p.getBoundingBox()+", pose="+p.getPose()+", clear="+f.out.noCollision(p,p.getBoundingBox()));
-            f.reload();h.assertTrue(f.out.getBlockState(at).isAir()&&f.out.getBlockState(untouched).is(LiteraryRegistry.YACHT_PORTHOLE.get())&&WitnessAccount.count(f.data(),p.getUUID())==0&&WitnessAccount.count(f.data(),observer.getUUID())==0,"a reload keeps the hole and the finite untouched windows without granting an ending");h.succeed();
+            f.reload();h.assertTrue(YachtGlazingBlock.shattered(f.out.getBlockState(at))&&f.out.getBlockState(untouched).is(LiteraryRegistry.YACHT_PORTHOLE.get())&&WitnessAccount.count(f.data(),p.getUUID())==0&&WitnessAccount.count(f.data(),observer.getUUID())==0,"a reload keeps the shattered frame and the finite untouched windows without granting an ending");h.succeed();
         });
     }
     @AfterBatch(batch="literary_elk_porthole") public static void portholeDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="literary_elk_rail",timeoutTicks=180)
+    public static void privateKillerPhysicallyHopsYachtRailAndRejectsWallsAndMissingLandings(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("rail_reader",place);var b=f.base(place);
+        f.at(p,place,3.5,9,6.5);
+        // A deck corridor prevents walking around the railing. Its floor and roof are real blocks.
+        for(int x=-4;x<=4;x++)for(int z=5;z<=7;z++){
+            f.out.setBlock(b.offset(x,8,z),LiteraryRegistry.YACHT_TEAK.get().defaultBlockState(),3);
+            for(int y=9;y<=12;y++)f.out.setBlock(b.offset(x,y,z),z==6?Blocks.AIR.defaultBlockState():LiteraryRegistry.YACHT_HULL.get().defaultBlockState(),3);
+            f.out.setBlock(b.offset(x,12,z),LiteraryRegistry.YACHT_HULL.get().defaultBlockState(),3);
+        }
+        var rail=b.offset(-1,9,6);f.out.setBlock(rail,LiteraryRegistry.YACHT_RAIL.get().defaultBlockState(),3);
+        var a=LiteraryRegistry.ACTOR.get().create(f.out);h.assertTrue(a!=null,"the killer has a native body");
+        a.appearance(LiteraryActor.KILLER,ElkHunt.RUN);a.bind(place,p.getUUID());a.setNoAi(false);a.moveTo(b.getX()-1.5,b.getY()+9,b.getZ()+6.5);a.setOnGround(true);f.out.addFreshEntity(a);f.extras.add(a);
+        var id=a.getUUID();var before=new Vec3[]{a.position()};var peak=new double[]{a.getY()};
+        KillerNavigation.request(a,new Vec3(b.getX()+2.5,b.getY()+9,b.getZ()+6.5),1);
+        h.onEachTick(()->{peak[0]=Math.max(peak[0],a.getY());double step=a.position().subtract(before[0]).multiply(1,0,1).length();
+            h.assertTrue(step<=KillerNavigation.CHASE_STEP+.001,"the hop keeps native horizontal pursuit speed: "+step);before[0]=a.position();});
+        h.runAfterDelay(65,()->{
+            h.assertTrue(a.getUUID().equals(id)&&a.getX()>rail.getX()+1&&peak[0]>b.getY()+10&&f.out.getBlockState(rail).is(LiteraryRegistry.YACHT_RAIL.get()),"the original killer clears the rail through gravity and collision without removing it: "+a.position()+" peak="+peak[0]);
+            KillerNavigation.stop(a);a.moveTo(b.getX()-1.5,b.getY()+9,b.getZ()+6.5);a.setDeltaMovement(Vec3.ZERO);a.setOnGround(true);
+            f.out.setBlock(rail,LiteraryRegistry.YACHT_HULL.get().defaultBlockState(),3);KillerNavigation.request(a,new Vec3(b.getX()+2.5,b.getY()+9,b.getZ()+6.5),1);
+        });
+        h.runAfterDelay(100,()->{
+            h.assertTrue(a.getX()<rail.getX()&&a.getY()<b.getY()+9.1,"a solid hull wall cannot be vaulted");
+            KillerNavigation.stop(a);a.moveTo(b.getX()-1.5,b.getY()+9,b.getZ()+6.5);a.setDeltaMovement(Vec3.ZERO);a.setOnGround(true);
+            f.out.setBlock(rail,LiteraryRegistry.YACHT_RAIL.get().defaultBlockState(),3);f.out.setBlock(b.offset(0,8,6),Blocks.AIR.defaultBlockState(),3);
+            KillerNavigation.request(a,new Vec3(b.getX()+2.5,b.getY()+9,b.getZ()+6.5),1);
+        });
+        h.runAfterDelay(135,()->{h.assertTrue(a.getX()<rail.getX()&&a.getY()<b.getY()+9.1,"the killer stays behind a rail with no supported landing");h.succeed();});
+    }
+    @AfterBatch(batch="literary_elk_rail") public static void railDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_elk_landing",timeoutTicks=200)
     public static void theOriginalKillerLeavesTheBoatOnlyUnseenAndLurksOnDryGroundAmongRealTrees(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("shore_reader",place);var b=f.base(place);

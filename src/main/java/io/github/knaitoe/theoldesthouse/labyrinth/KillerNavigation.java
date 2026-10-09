@@ -35,6 +35,7 @@ public final class KillerNavigation {
     public static void stop(LiteraryActor a){
         a.getNavigation().stop();a.setDeltaMovement(a.getDeltaMovement().multiply(0,1,0));
         KillerDoors.clear(a);
+        YachtRailVault.cancel(a);
         var s=state(a);s.putBoolean("Moving",false);s.putInt("Blocked",0);a.getPersistentData().put(STATE,s);
     }
     public static boolean failed(LiteraryActor a){var s=state(a);if(!s.getBoolean("Failed"))return false;s.putBoolean("Failed",false);a.getPersistentData().put(STATE,s);return true;}
@@ -67,10 +68,14 @@ public final class KillerNavigation {
         if(!s.getBoolean("Moving")){route.clear();goal=null;KillerDoors.clear(a);return true;}
         var next=target(s);
         if(goal==null||goal.distanceToSqr(next)>.01){goal=next;route.clear();plannedAt=-20;}
+        if(YachtRailVault.active(a)){YachtRailVault.prepare(a);return true;}
         if(a.position().distanceToSqr(goal)<.16){stop(a);route.clear();return true;}
         if((route.isEmpty()&&a.getNavigation().isDone()&&a.tickCount-plannedAt>=20)||plannedAt==-20)plan(a,s,null);
         var door=KillerDoors.approach(a,goal);
         if(door!=null&&KillerDoors.work(a,door,java.util.List.of(owner)))return true;
+        if(!route.isEmpty()&&a.onGround()&&YachtRailVault.canCross(a,a.blockPosition(),route.peekFirst())){
+            YachtRailVault.begin(a,route.peekFirst());YachtRailVault.prepare(a);return true;
+        }
         Vec3 aim=null;
         if(!route.isEmpty())aim=Vec3.atBottomCenterOf(route.peekFirst());
         else{var path=a.getNavigation().getPath();if(path!=null&&!path.isDone())aim=path.getNextEntityPos(a);}
@@ -84,6 +89,7 @@ public final class KillerNavigation {
     }
     public void tick(LiteraryActor a,Vec3 before){
         var s=state(a);if(!s.getBoolean("Moving"))return;
+        if(YachtRailVault.active(a)){s.putInt("Blocked",0);a.getPersistentData().put(STATE,s);return;}
         if(KillerDoors.active(a)){s.putInt("Blocked",0);a.getPersistentData().put(STATE,s);return;}
         while(!route.isEmpty()&&a.position().distanceToSqr(Vec3.atBottomCenterOf(route.peekFirst()))<.12)route.removeFirst();
         if(!route.isEmpty()){

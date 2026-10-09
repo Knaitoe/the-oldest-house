@@ -1,7 +1,10 @@
 {
   "variants": {
-    "": {
+    "broken=false": {
       "model": "the_oldest_house:block/yacht_window"
+    },
+    "broken=true": {
+      "model": "the_oldest_house:block/yacht_window_broken"
     }
   }
 }

@@ -194,7 +194,7 @@ def canvas():
     return im
 
 
-def window():
+def window(broken=False):
     im, r = tex16('yacht_window')
     for y in range(16):
         for x in range(16):
@@ -203,11 +203,13 @@ def window():
                 c, a = (84, 104, 122), 206
             if y in (0, 15):
                 c, a = (180, 184, 186), 255
+            if broken and 1 < y < 14 and 1 < x < 14 and not (x+y in (4, 5, 25, 26) or x-y in (-10, 11)):
+                c, a = (0, 0, 0), 0
             px(im, x, y, c, a)
     return im
 
 
-def porthole():
+def porthole(broken=False):
     im, r = tex16('yacht_porthole')
     for y in range(16):
         for x in range(16):
@@ -216,7 +218,11 @@ def porthole():
         for x in range(16):
             d = math.hypot(x - 7.5, y - 7.5)
             if d < 4.6:
-                im.putpixel((x, y), (0, 0, 0, 0))
+                if broken:
+                    shard = d > 3.2 and (x+2*y) % 5 < 2
+                    im.putpixel((x, y), (118, 155, 172, 255) if shard else (0, 0, 0, 0))
+                else:
+                    px(im, x, y, (76, 102, 117), 100 if (x+y) % 7 > 1 else 170)
             elif d < 6.6:
                 lit = (x - 7.5) + (y - 7.5) < 0
                 px(im, x, y, (222, 224, 226) if lit and d > 5.4 else (124, 128, 132) if not lit and d < 5.4 else (178, 182, 186))
@@ -631,6 +637,19 @@ def cube(a, b, tex, uv=(0, 0, 16, 16), rot=None, faces_=None):
     return e
 
 
+def glazing():
+    for name, paint in (('yacht_window', window), ('yacht_porthole', porthole)):
+        variants = {}
+        for broken in (False, True):
+            model = name + ('_broken' if broken else '')
+            save('textures/block/%s.png' % model, paint(broken))
+            write('models/block/%s.json' % model, {'parent': 'minecraft:block/cube_all',
+                  'render_type': 'minecraft:cutout' if broken else 'minecraft:translucent',
+                  'textures': {'all': '%s:block/%s' % (MOD, model)}})
+            variants['broken=%s' % str(broken).lower()] = {'model': '%s:block/%s' % (MOD, model)}
+        write('blockstates/%s.json' % name, {'variants': variants})
+
+
 def blocks():
     simple = {'yacht_hull': hull, 'yacht_hull_stripe': stripe, 'yacht_boot': boot, 'yacht_antifoul': antifoul, 'yacht_teak': teak,
               'yacht_salon_panel': panel, 'yacht_carpet': carpet, 'yacht_cushion': cushion, 'yacht_canvas': canvas,
@@ -639,12 +658,7 @@ def blocks():
         save('textures/block/%s.png' % name, fn())
         write('blockstates/%s.json' % name, {'variants': {'': {'model': '%s:block/%s' % (MOD, name)}}})
         write('models/block/%s.json' % name, {'parent': 'minecraft:block/cube_all', 'textures': {'all': '%s:block/%s' % (MOD, name)}})
-    save('textures/block/yacht_window.png', window())
-    write('blockstates/yacht_window.json', {'variants': {'': {'model': '%s:block/yacht_window' % MOD}}})
-    write('models/block/yacht_window.json', {'parent': 'minecraft:block/cube_all', 'render_type': 'minecraft:translucent', 'textures': {'all': '%s:block/yacht_window' % MOD}})
-    save('textures/block/yacht_porthole.png', porthole())
-    write('blockstates/yacht_porthole.json', {'variants': {'': {'model': '%s:block/yacht_porthole' % MOD}}})
-    write('models/block/yacht_porthole.json', {'parent': 'minecraft:block/cube_all', 'render_type': 'minecraft:cutout', 'textures': {'all': '%s:block/yacht_porthole' % MOD}})
+    glazing()
     save('textures/block/yacht_rail.png', stainless())
     save('textures/block/safety_fence.png', safety())
     pane('yacht_rail', post=[cube([7.5, 0, 7.5], [8.5, 15, 8.5], 'rail'), cube([7, 15, 7], [9, 16, 9], 'rail')],

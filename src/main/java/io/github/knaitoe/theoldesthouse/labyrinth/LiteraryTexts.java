@@ -65,8 +65,7 @@ public final class LiteraryTexts {
             "We put the screen on the bank and the speakers in the trees. The fireworks were meant for the end. They are still going off, though there is nobody left to watch them.",
             "Take the canoe toward the far pier. Each flash shows the water for a moment. Keep rowing between flashes.\n\nThe bank is real.");
         case WINTER_LAKE->book("An ice report","The groundskeeper",
-            "Snow covers the grass. The surface will bear her weight wherever it bears yours.\n\nA patch of open water would be a better place to wait.",
-            "Break actual ice, go below the surface and let her pass. Then reach the far bank.\n\nDo not mistake a shallow hole for being submerged.");
+            "Snow covers the grass. The surface will bear her weight wherever it bears yours.\n\nA patch of open water would be a better place to wait.");
         case CAMP_BLOOD->book("Last camp essay","J.",
             "A cabin is safe only while you know where its doors are. A path through the woods is safe only while somebody else is willing to be first.",
             "The killer follows noise and the last place he saw you. Put timber between you and him. Keep moving when he loses the line.\n\nThe service road is behind the last cabins.");

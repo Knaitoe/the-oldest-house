@@ -12,17 +12,18 @@ TARGET = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_ol
 
 
 def generate():
-    rate, duration = 22050, 3.6
-    rng, slow, air = random.Random(462), 0.0, 0.0
+    rate, duration = 22050, 4.8
+    rng, slow, air = random.Random(464), 0.0, 0.0
     samples = bytearray()
     for i in range(round(rate * duration)):
         t, noise = i / rate, rng.uniform(-1, 1)
-        slow = .93 * slow + .07 * noise
-        air = .42 * air + .58 * (noise - slow)
-        inhale = math.sin(math.pi * (t - .25) / 1.15) ** 2 if .25 < t < 1.4 else 0
-        exhale = math.sin(math.pi * (t - 1.65) / 1.55) ** 2 if 1.65 < t < 3.2 else 0
-        envelope = .22 * inhale + .29 * exhale
-        value = envelope * (air * .7 + slow * 2.2)
+        slow = .975 * slow + .025 * noise
+        air = .82 * air + .18 * (noise - slow)
+        inhale = math.sin(math.pi * (t - .3) / 1.6) ** 1.4 if .3 < t < 1.9 else 0
+        exhale = math.sin(math.pi * (t - 2.2) / 2.2) ** 1.8 if 2.2 < t < 4.4 else 0
+        envelope = .24 * inhale + .34 * exhale
+        throat = math.sin(2 * math.pi * (112 + 4 * math.sin(t * 2)) * t) * .06
+        value = envelope * (air * 1.1 + slow * 2.7 + throat)
         samples.extend(struct.pack('<h', round(max(-.8, min(.8, value)) * 32767)))
     TARGET.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='well-breath-') as temporary:

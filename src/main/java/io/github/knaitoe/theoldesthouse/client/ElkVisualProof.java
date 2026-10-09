@@ -126,6 +126,13 @@ public final class ElkVisualProof extends Screen {
             p.popPose();
         }
         // A block entity renderer never resets the model's age; a body left young draws at a child's size.
+        g.drawString(font,"Yacht glass: intact / shattered frames",10,height/2-51,0xFFEEE0C4,false);
+        int glass=0;for(var block:new YachtGlazingBlock[]{LiteraryRegistry.YACHT_WINDOW.get(),LiteraryRegistry.YACHT_PORTHOLE.get()})for(boolean broken:new boolean[]{false,true}){
+            var state=block.defaultBlockState().setValue(YachtGlazingBlock.BROKEN,broken);
+            if(mc.getBlockRenderer().getBlockModel(state)==mc.getModelManager().getMissingModel())throw new IllegalStateException("Missing yacht glazing state "+state);
+            var pose=g.pose();pose.pushPose();pose.translate(310+(glass++)*60,height/2-13,180);pose.scale(28,-28,28);pose.mulPose(Axis.YP.rotationDegrees(-18));
+            mc.getBlockRenderer().renderSingleBlock(state,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);buffers.endBatch();pose.popPose();
+        }
         if (body.young) throw new IllegalStateException("A body renders at a child's size");
     }
 
