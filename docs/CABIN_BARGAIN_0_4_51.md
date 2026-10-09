@@ -10,7 +10,7 @@ Playtest repairs and rework, at the owner's request. Status: owner revision impl
 
 - **Owner revision: foreshadowing, not instructions.** A vignette is a puzzle: the reader should not know what is coming, though some foresight is welcome.
   - **The source.** The visitors' own letter, which laid out the whole bargain, is gone. In its place is the cabin's guest book: three entries by earlier guests. Four strangers on the beach at sundown, a knock nobody answered and wet prints going out along the jetty with none coming back, and a last undated entry: "They said it had to be my choice, and it was. I kept everything I came with."
-  - **The asks.** Leonard and Adriane ask for the reader's *life*. Neither names a heart. The heart is only what it costs, and the reader learns that by giving. Sabrina still asks for the arm, but no longer says she will walk into the lake on a refusal.
+  - **The asks.** Leonard asks for the reader's *life*; Adriane says only "More." Neither names a heart. The heart is only what it costs, and the reader learns that by giving. Sabrina still asks for the arm, but no longer says she will walk into the lake on a refusal.
   - **The menu.** Giving reads "Give Leonard your life" (or Adriane, or Sabrina's arm) with one line: "There is no taking it back." Refusing carries no lore at all.
   - **The account.** It now tells what was asked and what it cost: "Leonard asked for my life, and I gave it. It cost a heart."
   - **Waking.** "Someone has left a guest book by the beds."
@@ -40,7 +40,7 @@ Four visitors wait on the grass on either side of the path to the porch steps, f
 | Order | Visitor | Asks for | Permanent effect |
 | --- | --- | --- | --- |
 | 1 | Leonard | The reader's life (it costs one heart) | −2 maximum health |
-| 2 | Adriane | The reader's life, again (another heart) | −2 maximum health (−4 in all) |
+| 2 | Adriane | "More." (another heart) | −2 maximum health (−4 in all) |
 | 3 | Sabrina, a nurse | The arm of the off hand ("something… handy") | No off hand, ever |
 | — | Redmond | Nothing; he speaks for "our" world | — |
 

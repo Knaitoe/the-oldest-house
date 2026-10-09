@@ -121,10 +121,10 @@ public final class LiteraryTexts {
     static ItemStack cabin(String name,CompoundTag own){
         int given=own.getInt("Given");String room=own.getString("ClosedRoom");
         if(own.getBoolean("Sacrificed"))return book("An account of the visitors",name,
-            "Leonard asked for my life, and I gave it. It cost a heart. Adriane asked again, and it cost another. Sabrina tied a cord above my elbow and told me to look at her, not at it.",
+            "Leonard asked for my life, and I gave it. It cost a heart. Adriane asked for more, and it cost another. Sabrina tied a cord above my elbow and told me to look at her, not at it.",
             "I looked at her.\n\nWhen I could see again, the rain had stopped. They walked down the jetty together, and the lake closed over them like a door.",
             "On the screen my roof was dry.\n\nThe world in the glass did not end. It is still snowing in it, a little.");
-        String asked=given==0?"Leonard asked for my life. I said no. Leonard said that was all right,":given==1?"Leonard asked for my life, and I gave it. It cost a heart. When Adriane asked again, I said no. Adriane told me to look after what I had left,":"I gave two hearts. When Sabrina asked for my arm, I said no. Sabrina told me to keep my hands,";
+        String asked=given==0?"Leonard asked for my life. I said no. Leonard said that was all right,":given==1?"Leonard asked for my life, and I gave it. It cost a heart. When Adriane asked for more, I said no. Adriane told me to look after what I had left,":"I gave two hearts. When Sabrina asked for my arm, I said no. Sabrina told me to keep my hands,";
         return book("An account of the visitors",name,
             asked+" walked down the jetty in the rain, and did not stop at the end.",
             (room.isEmpty()?"On the screen a room went dark.":"On the screen, "+StaircaseProse.place(room)+" went dark. I will not find it again.")+(given==0?" I still have every heart.":" What I gave stays given."),
