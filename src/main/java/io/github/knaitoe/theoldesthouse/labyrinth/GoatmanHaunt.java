@@ -164,13 +164,17 @@ public final class GoatmanHaunt {
         }
         if(changed)save(p,own);
     }
-    /** Ten to fourteen blocks off, well to one side of where they are looking, on ground they could stand on. */
+    /**
+     * Ten to fourteen blocks off, well to one side of where they are looking, on ground they could stand on, in a chunk whose
+     * entities are loaded: a figure placed in a section still loading would be there but never seen, and never sent away.
+     */
     static boolean glimpse(ServerPlayer p){
         var l=p.serverLevel();Vec3 look=p.getLookAngle().multiply(1,0,1);if(look.lengthSqr()<1e-4)look=new Vec3(0,0,1);look=look.normalize();
-        for(int attempt=0;attempt<6;attempt++){
+        for(int attempt=0;attempt<12;attempt++){
             double angle=Math.toRadians((p.getRandom().nextBoolean()?1:-1)*(62+p.getRandom().nextInt(22)));double distance=10+p.getRandom().nextDouble()*4;
             Vec3 dir=new Vec3(look.x*Math.cos(angle)-look.z*Math.sin(angle),0,look.x*Math.sin(angle)+look.z*Math.cos(angle));
             Vec3 spot=p.position().add(dir.scale(distance));BlockPos column=BlockPos.containing(spot);
+            if(!l.hasChunkAt(column)||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(column)))continue;
             for(int dy=3;dy>=-4;dy--){
                 BlockPos feet=column.above(dy);
                 if(l.getBlockState(feet.below()).isFaceSturdy(l,feet.below(),net.minecraft.core.Direction.UP)&&l.getBlockState(feet).getCollisionShape(l,feet).isEmpty()
