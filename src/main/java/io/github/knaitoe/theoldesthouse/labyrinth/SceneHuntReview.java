@@ -37,7 +37,11 @@ public final class SceneHuntReview {
                 if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(ChunkPos.asLong(x,z)))return false;return true;
     }
     private static boolean vacant(ServerLevel l,AABB a){return l.players().stream().noneMatch(p->a.inflate(24).intersects(p.getCamera().getBoundingBox()));}
-    private static boolean safe(ServerLevel l,BlockPos at,BlockState next,boolean source){
+    /** A lectern replaced while it holds a book drops that book; the original is archived first, so it is emptied in place. */
+    static void emptyLectern(ServerLevel l,BlockPos at){var s=l.getBlockState(at);if(!s.is(Blocks.LECTERN))return;
+        if(l.getBlockEntity(at) instanceof LecternBlockEntity lectern)lectern.clearContent();
+        if(s.getValue(LecternBlock.HAS_BOOK))l.setBlock(at,s.setValue(LecternBlock.HAS_BOOK,false),Block.UPDATE_CLIENTS);}
+    static boolean safe(ServerLevel l,BlockPos at,BlockState next,boolean source){
         if(l.getBlockEntity(at)!=null&&!(source&&l.getBlockEntity(at) instanceof LecternBlockEntity))return false;
         var old=l.getBlockState(at).getCollisionShape(l,at);var fresh=next.getCollisionShape(l,at);
         var changed=Shapes.joinUnoptimized(old,fresh,BooleanOp.NOT_SAME);
@@ -69,7 +73,7 @@ public final class SceneHuntReview {
                     var d=LabyrinthData.get(l.getServer());var originals=d.state("scene_source_originals_0455");
                     if(!originals.contains(key(origin,p)))originals.put(key(origin,p),book.save(l.registryAccess()));d.setState("scene_source_originals_0455",originals);});
             }
-            BuildBlocks.guardedSet(l,at,next,F,()->safe(l,at,next,true));
+            BuildBlocks.guardedSet(l,at,next,F,()->{if(!safe(l,at,next,true))return false;emptyLectern(l,at);return true;});
         }else if(old.isAir()){
             if(archive){var floor=at.below();if(!BuildBlocks.state(l,floor).getShape(l,floor).isEmpty())set(l,at,next);}
             else detail(l,b,rel,kind,Direction.SOUTH);

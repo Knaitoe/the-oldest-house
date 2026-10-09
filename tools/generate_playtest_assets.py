@@ -50,6 +50,14 @@ def ribbon(d):
     d.line((10, 3, 11, 3), fill='#c67a61ff');d.point((8, 12), fill='#c67a61ff')
     d.rectangle((7, 4, 9, 5), fill='#6d312fff');d.point((7, 4), fill='#ad5e50ff')
 
+def franks_package(d):
+    # The trailer's supper: a shrink-wrapped tray of four, its label band above and the sausages showing through.
+    d.rectangle((2, 4, 13, 4), fill='#798077ff')
+    d.rectangle((2, 5, 13, 12), fill='#bbb9a7ff');d.rectangle((3, 5, 12, 11), fill='#e4e1cfff')
+    d.rectangle((4, 6, 11, 10), fill='#994d2eff')
+    for x in (4, 6, 8, 10):d.point((x, 6), fill='#c56b41ff')
+    d.rectangle((3, 12, 12, 12), fill='#747566ff')
+
 def furniture():
     model = json.loads((A / 'models/block/furniture_formica_table.json').read_text())
     model['textures'] = {'formica': 'minecraft:block/oak_planks', 'metal_legs': 'minecraft:block/stripped_dark_oak_log', 'particle': 'minecraft:block/oak_planks'}
@@ -108,5 +116,5 @@ def boy():
     save_image('textures/entity/literary_plain_boy.png',image)
 
 if __name__=='__main__':
-    sprite('plain_camera',camera);sprite('archive_key',lambda d:key(d,False));sprite('church_key',lambda d:key(d,True));sprite('well_ribbon',ribbon)
+    sprite('plain_camera',camera);sprite('archive_key',lambda d:key(d,False));sprite('church_key',lambda d:key(d,True));sprite('well_ribbon',ribbon);sprite('franks_package',franks_package)
     furniture();papers();boarded_window();boy()
