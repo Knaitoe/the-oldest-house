@@ -37,5 +37,4 @@ public final class WellCoverBlockEntity extends BlockEntity {
     @Override public CompoundTag getUpdateTag(HolderLookup.Provider r){var t=new CompoundTag();saveAdditional(t,r);t.putInt("Direction",direction);return t;}
     @Override public void handleUpdateTag(CompoundTag t,HolderLookup.Provider r){loadAdditional(t,r);direction=Mth.clamp(t.getInt("Direction"),-4,1);receivedAt=level==null?0:level.getGameTime();}
     @Override public ClientboundBlockEntityDataPacket getUpdatePacket(){return ClientboundBlockEntityDataPacket.create(this);}
-    @Override public AABB getRenderBoundingBox(){return new AABB(worldPosition).inflate(1,3,1);}
 }

@@ -53,4 +53,5 @@ public final class WellCoverRenderer implements BlockEntityRenderer<WellCoverBlo
         }
     }
     @Override public int getViewDistance(){return 64;}
+    @Override public boolean shouldRenderOffScreen(WellCoverBlockEntity lid){return true;}
 }
