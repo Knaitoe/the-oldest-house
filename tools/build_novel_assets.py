@@ -8,7 +8,8 @@ def write(path,data):
  p=A/path;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(data,indent=2)+'\n')
 def cube(bounds,texture):
  return {'from':bounds[:3],'to':bounds[3:],'faces':{face:{'texture':'#'+texture} for face in ['up','down','north','south','east','west']}}
-for name in ['cell_gouges','sealed_window','institute_paint','collapse_plaster','well_carvings','archive_paper']:
+# sealed_window, archive_paper and the archive key and ribbon sprites belong to generate_playtest_assets.py (0.4.64).
+for name in ['cell_gouges','institute_paint','collapse_plaster','well_carvings']:
  write(f'blockstates/{name}.json',{'variants':{'':{'model':f'the_oldest_house:block/{name}'}}})
  write(f'models/block/{name}.json',{'parent':'minecraft:block/cube_all','textures':{'all':f'the_oldest_house:block/{name}'}})
 from generate_well_model import write_model
@@ -25,7 +26,7 @@ for kind,(parts,textures) in props.items():
  write(f'models/block/novel_{kind}.json',model)
  for facing,angle in [('north',0),('east',90),('south',180),('west',270)]:variants[f'facing={facing},kind={kind}']={'model':f'the_oldest_house:block/novel_{kind}','y':angle}
 write('blockstates/novel_prop.json',{'variants':variants})
-for name,texture in [('cat_collar','minecraft:item/lead'),('well_ribbon','minecraft:item/string'),('archive_key','minecraft:item/tripwire_hook')]:write(f'models/item/{name}.json',{'parent':'minecraft:item/generated','textures':{'layer0':texture}})
+for name,texture in [('cat_collar','minecraft:item/lead')]:write(f'models/item/{name}.json',{'parent':'minecraft:item/generated','textures':{'layer0':texture}})
 write('models/item/walkie_talkie.json',{'parent':'minecraft:block/block','textures':{'case':'minecraft:block/gray_concrete','metal':'minecraft:block/iron_block','particle':'minecraft:block/gray_concrete'},'elements':[cube([4,2,5,12,13,11],'case'),cube([5,13,7,6,20,8],'metal'),cube([5,8,4.6,11,12,5],'metal')],'display':{'gui':{'rotation':[20,35,0],'translation':[0,-2,0],'scale':[.85,.85,.85]},'firstperson_righthand':{'rotation':[0,-45,0],'translation':[1,3,0],'scale':[.5,.5,.5]}}})
 # A distinct compressed bitmap provider in the established handwriting system.
 from generate_writing_fonts import make as make_font

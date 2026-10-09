@@ -44,6 +44,13 @@ public final class LiteraryTests {
     private static void close(){if(active!=null){active.close();active=null;}}
     @GameTest(template="empty",batch="literary_papers",timeoutTicks=300)
     public static void discoveryOriginalsAreFiniteReaderOwnedAndImmutableAcrossReload(GameTestHelper h){var f=new Fixture(h);var place=LabyrinthPlace.HILL_NURSERY;var p=f.player("literary_reader",place);var peer=f.player("literary_peer",place);f.at(peer,place,0,0,-6);f.source(p,place);var snapshot=f.own(p,place).getCompound("Original_Source").copy();h.assertTrue(!snapshot.isEmpty(),"opening the note persists its exact original instead of overwriting it with pre-menu state");f.click(p,place,LiteraryRooms.source(place));var menu=(LiteraryVignettes.Pages)p.containerMenu;h.assertTrue(menu.clickMenuButton(p,3)&&!menu.clickMenuButton(p,3),"the native paper may be taken once");p.closeContainer();f.reload();f.source(p,place);h.assertTrue(snapshot.equals(f.own(p,place).getCompound("Original_Source")),"native SavedData reload and rereading preserve the original bytes");h.assertTrue(!f.own(peer,place).getBoolean("Read_Source")&&!f.own(peer,place).getBoolean("Taken_Source"),"one explorer's source is not another's discovery");peer.setGameMode(GameType.SPECTATOR);h.assertTrue(!LiteraryVignettes.inside(peer,place),"native observers have no participation authority");h.succeed();}
+    @GameTest(template="empty",batch="literary_one_page",timeoutTicks=300)
+    public static void aOnePageSourceIsReadByOpeningItAsTheNativeLecternAllows(GameTestHelper h){var f=new Fixture(h);var place=LabyrinthPlace.WINTER_LAKE;var p=f.player("one_page_reader",place);var peer=f.player("one_page_peer",place);f.at(peer,place,0,0,-6);
+        h.assertTrue(LiteraryTexts.source(place).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()==1,"the frozen-lake source keeps only its atmospheric page");
+        // The native lectern screen shows no page buttons for one page, so no button is pressed here.
+        f.click(p,place,LiteraryRooms.source(place));h.assertTrue(p.containerMenu instanceof LiteraryVignettes.Pages,"the actual source surface opens its native private paper");
+        h.assertTrue(f.own(p,place).getBoolean("Read_Source"),"opening a one-page paper reads it to the end");h.assertTrue(!f.own(peer,place).getBoolean("Read_Source"),"one reader's opening is not another's");
+        p.closeContainer();h.succeed();}
     @AfterBatch(batch="literary_papers") public static void papersDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_hill",timeoutTicks=200)
     public static void actualColdDoorNameAndCountedKnocksEarnOnlyTheReadersAccount(GameTestHelper h){var f=new Fixture(h);var place=LabyrinthPlace.HILL_NURSERY;var p=f.player("hill_reader",place);f.source(p,place);f.at(p,place,-9.5,0,-17);f.look(p,f.base(place).offset(LiteraryRooms.HILL_WALL));h.runAfterDelay(10,()->{h.assertTrue(f.own(p,place).getBoolean("ColdDoor")&&f.own(p,place).getBoolean("NameSeen"),"native doorway presence and line of sight are required");f.at(p,place,-9.5,-4,-34);for(int i=0;i<3;i++)NeoForge.EVENT_BUS.post(new PlayerInteractEvent.LeftClickBlock(p,f.base(place).offset(LiteraryRooms.HILL_KNOCK),Direction.SOUTH,PlayerInteractEvent.LeftClickBlock.Action.START));});h.runAfterDelay(50,()->{h.assertTrue(f.own(p,place).getInt("Knocks")==3&&f.own(p,place).getInt("Echoes")==3&&f.own(p,place).getBoolean("Ready"),"each actual knock returns once at its cellar source");f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.HILL_NURSERY),"reading the own ending grants one eligible source");h.succeed();});}
@@ -283,6 +290,8 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
     public static void privateKillerPhysicallyHopsYachtRailAndRejectsWallsAndMissingLandings(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("rail_reader",place);var b=f.base(place);
         f.at(p,place,3.5,9,6.5);
+        // This corridor and the cleared deck lie outside the room box a rebuild clears, so they are put back after the batch.
+        railSaved=new HashMap<>();for(var at:BlockPos.betweenClosed(b.offset(-4,-10,5),b.offset(4,12,7)))railSaved.put(at.immutable(),f.out.getBlockState(at));
         // A deck corridor prevents walking around the railing. Its floor and roof are real blocks.
         for(int x=-4;x<=4;x++)for(int z=5;z<=7;z++){
             f.out.setBlock(b.offset(x,8,z),LiteraryRegistry.YACHT_TEAK.get().defaultBlockState(),3);
@@ -313,7 +322,8 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         });
         h.runAfterDelay(135,()->{h.assertTrue(a.getX()<b.getX()-.05&&!a.getPersistentData().contains("YachtVault0464"),"the original killer does not take the custom hop across an actual unsupported gap: "+a.position());h.succeed();});
     }
-    @AfterBatch(batch="literary_elk_rail") public static void railDone(ServerLevel l){close();}
+    private static Map<BlockPos,net.minecraft.world.level.block.state.BlockState> railSaved;
+    @AfterBatch(batch="literary_elk_rail") public static void railDone(ServerLevel l){if(railSaved!=null&&active!=null)railSaved.forEach((at,state)->active.out.setBlock(at,state,Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE));railSaved=null;close();}
     @GameTest(template="empty",batch="literary_elk_landing",timeoutTicks=200)
     public static void theOriginalKillerLeavesTheBoatOnlyUnseenAndLurksOnDryGroundAmongRealTrees(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("shore_reader",place);var b=f.base(place);

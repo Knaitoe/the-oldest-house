@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -25,6 +26,10 @@ public final class YachtGlazingBlock extends TransparentBlock {
     public static boolean shattered(BlockState state){return state.getBlock() instanceof YachtGlazingBlock&&state.getValue(BROKEN);}
     /** Old saves can already contain mined-out portholes. They remain usable. */
     public static boolean opening(BlockState state){return state.isAir()||shattered(state);}
+    /** Glass culls glass, but a shattered pane's frame and its whole neighbours must each still draw their shared faces. */
+    @Override protected boolean skipRendering(BlockState state,BlockState adjacent,Direction side){
+        return adjacent.is(this)?adjacent.getValue(BROKEN)==state.getValue(BROKEN):super.skipRendering(state,adjacent,side);
+    }
     @Override protected VoxelShape getCollisionShape(BlockState state,BlockGetter level,BlockPos pos,CollisionContext context){return shattered(state)?Shapes.empty():Shapes.block();}
     @Override public boolean onDestroyedByPlayer(BlockState state,Level level,BlockPos pos,Player player,boolean willHarvest,FluidState fluid){
         if(shattered(state))return false;

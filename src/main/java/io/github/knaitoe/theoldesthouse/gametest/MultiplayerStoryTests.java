@@ -27,7 +27,7 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID+"_multiplayer")
 @PrefixGameTestTemplate(false)
 public final class MultiplayerStoryTests {
-    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=1200)
+    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
     public static void aCabinGiverBurnsTheirOwnLeavesWithTheKeptHandAndAPackedLighter(GameTestHelper h){run(h,528000,MultiplayerStoryTests::holdLeaves,f->{
         StaircaseFire.dress(f.level,f.origin);layLeaves(f);var p=f.player(h,"one_hand_reader");var peer=f.player(h,"two_hand_reader");ready(p,f);ready(peer,f);
         var book=issued(p);p.setItemInHand(InteractionHand.OFF_HAND,book);h.assertTrue(find(p,f,0),"the first real leaf binds before the gift");
@@ -38,7 +38,7 @@ public final class MultiplayerStoryTests {
         h.assertTrue(!BodyLoss.oneArmed(peer)&&StaircaseFire.flames(FinaleProgress.player(peer.server,peer.getUUID()))==0,"a peer keeps both hands and their own cold fires");
         f.reload();BodyLoss.apply(p);h.assertTrue(BodyLoss.oneArmed(p)&&find(p,f,1)&&burn(p,f,1)&&packed.getDamageValue()==2,"the second bound leaf burns after a saved-data reload without restoring the missing hand");
     });}
-    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=1200)
+    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
     public static void anExplicitRewriteKeepsBoundLeavesFiresComponentsAndThePeersOriginal(GameTestHelper h){run(h,527000,MultiplayerStoryTests::holdLeaves,f->{
         StaircaseFire.dress(f.level,f.origin);layLeaves(f);var p=f.player(h,"rewrite_owner");var peer=f.player(h,"rewrite_peer");ready(p,f);ready(peer,f);
         var mine=issued(p);var theirs=issued(peer);p.setItemInHand(InteractionHand.OFF_HAND,mine);peer.setItemInHand(InteractionHand.OFF_HAND,theirs);
@@ -102,6 +102,8 @@ public final class MultiplayerStoryTests {
         return StaircaseFire.ignite(p,f.origin,at);
     }
     /** Hold the chunks of every flight's leaf before the fixture starts. */
+    // Five leaves lie a whole flight apart. After the complete suite's earlier batches their cold native entity sections can take
+    // longer than a minute to load, so the tests that hold all five wait longer before starting; every assertion is unchanged.
     static void holdLeaves(StaircaseAccessTests.Fixture f) { for(var at:StaircaseLeaves.positions(f.origin))f.chunks.hold(f.level,new net.minecraft.world.phys.AABB(at).inflate(2)); }
     /** The sheets on their level treads, as the staircase lays them. */
     static void layLeaves(StaircaseAccessTests.Fixture f) {
@@ -134,7 +136,7 @@ public final class MultiplayerStoryTests {
         h.assertTrue(before.equals(story(f,p)),"the written leaves remain unchanged as play continues");
     }); }
 
-    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=1200)
+    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
     public static void eachExplorerFindsTheirOwnLeafOnEveryFlightAndBurnsItAtTheSharedHearths(GameTestHelper h) { run(h,520500,MultiplayerStoryTests::holdLeaves,f->{
         StaircaseFire.dress(f.level,f.origin);layLeaves(f);var p=f.player(h,"burn_first");var peer=f.player(h,"burn_peer");ready(p,f);ready(peer,f);
         var first=issued(p);var second=issued(peer);p.setItemInHand(InteractionHand.OFF_HAND,first);peer.setItemInHand(InteractionHand.OFF_HAND,second);
@@ -153,7 +155,7 @@ public final class MultiplayerStoryTests {
         f.reload();h.assertTrue(StaircaseFire.open(FinaleProgress.player(p.server,p.getUUID()))&&StaircaseFire.open(FinaleProgress.player(peer.server,peer.getUUID()))&&!StaircaseFire.take(p),"both personal descents survive native saved-data reload without another binding");
     }); }
 
-    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=1200)
+    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
     public static void OnlyTheExplorersOwnBoundLeafCanLightTheirFire(GameTestHelper h) { run(h,521000,MultiplayerStoryTests::holdLeaves,f->{
         StaircaseFire.dress(f.level,f.origin);layLeaves(f);var p=f.player(h,"leaf_owner");var peer=f.player(h,"leaf_borrower");ready(p,f);ready(peer,f);var book=issued(p);
         p.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(Items.PAPER,4));
@@ -170,7 +172,7 @@ public final class MultiplayerStoryTests {
         h.assertTrue(find(p,f,1)&&burn(p,f,1)&&StaircaseFire.flames(FinaleProgress.player(p.server,p.getUUID()))==2,"the held original continues after native saved-data reload");
     }); }
 
-    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=1200)
+    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
     public static void ALeafComesLooseOnlyInOrderIntoItsCarriedBindingAndTheDarkHoldsTheNext(GameTestHelper h) { run(h,521500,MultiplayerStoryTests::holdLeaves,f->{
         StaircaseFire.dress(f.level,f.origin);layLeaves(f);var p=f.player(h,"leaf_order");ready(p,f);
         h.assertTrue(StaircaseStory.leafState(p,0)==StaircaseStory.Take.NO_BINDING&&!find(p,f,0),"a leaf stays blank until the reader has their binding");
@@ -187,7 +189,7 @@ public final class MultiplayerStoryTests {
         h.assertTrue(!StaircaseFire.tick(p,f.origin,record)&&find(p,f,1),"the lit hearth lets the reader down to the next flight's leaf");
     }); }
 
-    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=1200)
+    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
     public static void ALostBindingIsBoundAgainWithoutRefillingAndTheOldCopyGoesCold(GameTestHelper h) { run(h,522000,MultiplayerStoryTests::holdLeaves,f->{
         StaircaseFire.dress(f.level,f.origin);layLeaves(f);var p=f.player(h,"leaf_lost");ready(p,f);var book=issued(p);p.setItemInHand(InteractionHand.OFF_HAND,book);
         h.assertTrue(find(p,f,0)&&burn(p,f,0)&&find(p,f,1),"the reader burns the first leaf and binds the second");

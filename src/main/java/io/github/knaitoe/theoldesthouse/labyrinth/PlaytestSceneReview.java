@@ -5,11 +5,9 @@ import io.github.knaitoe.theoldesthouse.house.*;
 import java.util.Set;
 import net.minecraft.core.*;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.LecternBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.shapes.*;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -22,12 +20,9 @@ public final class PlaytestSceneReview {
     private record Work(ServerLevel level,BlockPos origin,LabyrinthPlace place,BuildBlocks.Plan plan){}
     private static Work work;
     private static String key(BlockPos o,LabyrinthPlace p){return o.asLong()+":"+p.id();}
+    /** The 0.4.55 guards (block entities, living bodies, costume stands and the lake witch), only on loaded native sections. */
     private static boolean safe(ServerLevel l,BlockPos at,BlockState next,boolean lectern){
-        if(!l.hasChunkAt(at)||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(at.getX()>>4,at.getZ()>>4)))return false;
-        if(l.getBlockEntity(at)!=null&&!(lectern&&l.getBlockEntity(at) instanceof LecternBlockEntity))return false;
-        var old=BuildBlocks.state(l,at);var difference=Shapes.joinUnoptimized(old.getCollisionShape(l,at),next.getCollisionShape(l,at),BooleanOp.NOT_SAME);
-        for(var box:difference.toAabbs())if(!l.getEntitiesOfClass(LivingEntity.class,box.move(at).inflate(.02,.09,.02),e->e.isAlive()&&!e.isSpectator()).isEmpty())return false;
-        return true;
+        return l.hasChunkAt(at)&&l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(at.getX()>>4,at.getZ()>>4))&&SceneHuntReview.safe(l,at,next,lectern);
     }
     private static boolean set(ServerLevel l,BlockPos at,BlockState next){return BuildBlocks.state(l,at).equals(next)||safe(l,at,next,false)&&BuildBlocks.guardedSet(l,at,next,F,()->safe(l,at,next,false));}
     public static boolean courtyard(ServerLevel l,BlockPos b){boolean ready=true;
@@ -51,17 +46,18 @@ public final class PlaytestSceneReview {
         return ready;
     }
     public static boolean paperPatch(int x,int y,int z){return z==-39&&y>=2&&y<=4&&(x>=-8&&x<=-5||x>=-1&&x<=2||x>=6&&x<=8);}
+    private static boolean diaries(BlockState s){return s.is(HouseBlocks.VIGNETTE_DETAIL.get())&&s.getValue(VignetteDetailBlock.KIND)==VignetteDetailBlock.Kind.DIARY_STACK;}
     public static boolean cabin(ServerLevel l,BlockPos origin,BlockPos b){
         var low=b.offset(-8,0,-31);var high=low.above();var old=BuildBlocks.state(l,low);var top=BuildBlocks.state(l,high);
-        boolean paper=old.is(HouseBlocks.VIGNETTE_DETAIL.get())&&old.getValue(VignetteDetailBlock.KIND)==VignetteDetailBlock.Kind.DIARY_STACK;
-        if(!paper&&!old.is(Blocks.LECTERN))return true;
-        if(!top.isAir()||!safe(l,low,HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH),true)
-                ||!safe(l,high,VignetteDetailBlock.state(VignetteDetailBlock.Kind.DIARY_STACK,Direction.SOUTH),false))return false;
+        var table=HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);var notes=VignetteDetailBlock.state(VignetteDetailBlock.Kind.DIARY_STACK,Direction.SOUTH);
+        if(!diaries(old)&&!old.is(Blocks.LECTERN))return true;
+        // The 0.4.55 pass, run after the address moved up, lays the notes on top of the old lectern itself.
+        if(!top.isAir()&&!diaries(top)||!safe(l,low,table,true)||!safe(l,high,notes,false))return false;
         if(l.getBlockEntity(low) instanceof LecternBlockEntity lectern){var book=lectern.getBook().copy();if(!book.isEmpty())BuildBlocks.after(l,()->{
             var d=LabyrinthData.get(l.getServer());var originals=d.state("scene_source_originals_0455");String k=key(origin,LabyrinthPlace.END_WORLD_CABIN);
             if(!originals.contains(k))originals.put(k,book.save(l.registryAccess()));d.setState("scene_source_originals_0455",originals);});}
-        boolean done=BuildBlocks.guardedSet(l,low,HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH),F,()->safe(l,low,HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH),true));
-        return done&&set(l,high,VignetteDetailBlock.state(VignetteDetailBlock.Kind.DIARY_STACK,Direction.SOUTH));
+        boolean done=BuildBlocks.guardedSet(l,low,table,F,()->{if(!safe(l,low,table,true))return false;SceneHuntReview.emptyLectern(l,low);return true;});
+        return done&&set(l,high,notes);
     }
     public static boolean apply(ServerLevel l,BlockPos origin,LabyrinthPlace p){var b=LabyrinthPlaces.base(origin,p);return p==LabyrinthPlace.ZAMPANO_COURTYARD?courtyard(l,b):p!=LabyrinthPlace.END_WORLD_CABIN||cabin(l,origin,b);}
     private static boolean available(ServerLevel l,BlockPos o,LabyrinthPlace p){var a=SceneReview.area(LabyrinthPlaces.base(o,p),p);

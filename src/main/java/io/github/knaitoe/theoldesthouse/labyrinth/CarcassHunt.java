@@ -56,7 +56,7 @@ public final class CarcassHunt {
                 &&a.position().distanceToSqr(at.getCenter())<32*32){remember(a,p);var s=state(a);s.putLong("Point",at.asLong());a.getPersistentData().put(STATE,s);}
     }
     private static boolean foliage(BlockState s){return s.is(HouseBlocks.FOREST_COVER.get())||s.getBlock() instanceof LeavesBlock;}
-    private static AABB box(Vec3 foot,double height){return new AABB(foot.x-.3,foot.y,foot.z-.3,foot.x+.3,foot.y+height,foot.z+.3);}
+    static AABB box(Vec3 foot,double height){return new AABB(foot.x-.3,foot.y,foot.z-.3,foot.x+.3,foot.y+height,foot.z+.3);}
     /** Check the actual body shape; only leaves can be cleared, and only when native griefing permits it. */
     static boolean fits(LiteraryActor a,AABB body){
         boolean breakLeaves=a.level() instanceof ServerLevel l&&l.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);

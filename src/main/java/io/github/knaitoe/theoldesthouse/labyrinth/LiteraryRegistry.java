@@ -36,7 +36,8 @@ public final class LiteraryRegistry {
         YACHT_TEAK=material("yacht_teak",Blocks.OAK_PLANKS),YACHT_PANEL=material("yacht_salon_panel",Blocks.DARK_OAK_PLANKS),YACHT_CARPET=material("yacht_carpet",Blocks.WHITE_WOOL),YACHT_CUSHION=material("yacht_cushion",Blocks.WHITE_WOOL),YACHT_CANVAS=material("yacht_canvas",Blocks.BLUE_WOOL),
         SITE_SIDING=material("site_siding",Blocks.IRON_BLOCK),DRAG_MUD=material("cave_drag_mud",Blocks.PACKED_MUD);
     public static final DeferredBlock<YachtGlazingBlock> YACHT_WINDOW=BLOCKS.registerBlock("yacht_window",YachtGlazingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS).noOcclusion().noLootTable()),
-        YACHT_PORTHOLE=BLOCKS.registerBlock("yacht_porthole",YachtGlazingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS).noOcclusion().noLootTable());
+        // Glass to hear and see, but as slow to break out as the approved concrete porthole: about nine seconds, tool or not.
+        YACHT_PORTHOLE=BLOCKS.registerBlock("yacht_porthole",YachtGlazingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS).strength(1.8F).requiresCorrectToolForDrops().noOcclusion().noLootTable());
     public static final DeferredBlock<IronBarsBlock> YACHT_RAIL=BLOCKS.registerBlock("yacht_rail",IronBarsBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noLootTable()),
         SAFETY_FENCE=BLOCKS.registerBlock("safety_fence",IronBarsBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).sound(net.minecraft.world.level.block.SoundType.WOOL).noLootTable());
     public static final DeferredItem<Item> TOOTH=item("elk_tooth"),KEY=item("wheel_house_key"),KNIFE=item("father_knife"),JAR=item("grasshopper_jar"),PHOTOGRAPH=item("literary_photograph"),FILM=item("family_film");

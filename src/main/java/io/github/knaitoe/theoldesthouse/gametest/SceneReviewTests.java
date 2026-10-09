@@ -295,13 +295,16 @@ public final class SceneReviewTests {
 
     @GameTest(template="empty",batch="review_cabin_surface",timeoutTicks=1600)
     public static void raisedCabinSurfaceKeepsTheOriginalAndWaitsForALivingStayPet(GameTestHelper h){run(h,LabyrinthPlace.END_WORLD_CABIN,557640,f->{
-        var low=new BlockPos(-8,0,-31);var high=low.above();f.put(low.below(),Blocks.OAK_PLANKS.defaultBlockState());f.put(low,Blocks.LECTERN.defaultBlockState());
+        var low=new BlockPos(-8,0,-31);var high=low.above();f.put(low.below(),Blocks.OAK_PLANKS.defaultBlockState());f.put(low,Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.HAS_BOOK,true));
+        // The 0.4.55 pass runs first, at the raised address, and lays its notes on top of the old lectern.
+        f.put(high,VignetteDetailBlock.state(VignetteDetailBlock.Kind.DIARY_STACK,Direction.SOUTH));
         var original=LiteraryTexts.source(f.place);original.set(DataComponents.CUSTOM_NAME,Component.literal("The exact saved note"));((LecternBlockEntity)f.level.getBlockEntity(f.base.offset(low))).setBook(original.copy());
         var owner=f.player("cabin_surface_reader");var cat=EntityType.CAT.create(f.level);h.assertTrue(cat!=null,"the repair has a real living resident");cat.setTame(true,true);cat.setOwnerUUID(owner.getUUID());cat.setOrderedToSit(true);cat.setNoGravity(true);cat.setHealth(5);
         cat.moveTo(f.base.getX()-7.8,f.base.getY()+.2,f.base.getZ()-30.8);f.level.addFreshEntity(cat);var id=cat.getUUID();
         h.assertTrue(!PlaytestSceneReview.apply(f.level,f.origin,f.place)&&f.level.getBlockState(f.base.offset(low)).is(Blocks.LECTERN),"nightstand collision cannot be inserted through the existing Stay cat");
         cat.moveTo(f.base.getX()-3.5,f.base.getY(),f.base.getZ()-30.5);
         h.assertTrue(PlaytestSceneReview.apply(f.level,f.origin,f.place)&&f.level.getBlockState(f.base.offset(low)).getValue(HouseholdFurnitureBlock.KIND)==HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE&&f.level.getBlockState(f.base.offset(high)).getValue(VignetteDetailBlock.KIND)==VignetteDetailBlock.Kind.DIARY_STACK,"the original surface rises onto its nightstand only after the living body leaves");
+        h.assertTrue(f.level.getEntitiesOfClass(ItemEntity.class,new AABB(f.base.offset(low)).inflate(3),e->e.getItem().is(Items.WRITTEN_BOOK)).isEmpty(),"the booked lectern is emptied in place, so its original is archived without a dropped duplicate");
         h.assertTrue(ItemStack.isSameItemSameComponents(original,SceneHuntReview.sourceBook(f.level,f.base,f.place)),"raising the surface retains every component of the archived physical original");
         f.click(owner,high);var pages=(LiteraryVignettes.Pages)owner.containerMenu;h.assertTrue(Objects.equals(original.get(DataComponents.WRITTEN_BOOK_CONTENT),pages.original().get(DataComponents.WRITTEN_BOOK_CONTENT)),"the new personal reading menu contains the exact saved words, title and author");
         h.assertTrue(pages.clickMenuButton(owner,3)&&!pages.clickMenuButton(owner,3)&&WitnessAccount.count(f.data(),owner.getUUID())==0,"the raised paper yields one personal original without a resolution");owner.closeContainer();

@@ -231,7 +231,8 @@ public final class NovelVignettes {
         long now=p.server.overworld().getGameTime();
         if(!own.hasUUID("PlainExposure0464")||now-own.getLong("PlainExposureAt0464")>200){
             UUID nonce=UUID.randomUUID();own.putUUID("PlainExposure0464",nonce);own.putLong("PlainExposureAt0464",now);
-            HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.PlainExposurePayload(nonce));
+            var boy=own.hasUUID("PlainBoy0464")?p.serverLevel().getEntity(own.getUUID("PlainBoy0464")):null;Vec3 feet=boy!=null?boy.position():new Vec3(b.getX()+.5,b.getY(),b.getZ()-92.5);
+            HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.PlainExposurePayload(nonce,feet.x,feet.y,feet.z));
         }
     }
     private static void distantBoy(ServerPlayer p,BlockPos b,CompoundTag own){
