@@ -57,7 +57,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.62"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.63"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/house/PlaytestLog.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
               hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
@@ -120,7 +120,7 @@ jobs:
               for name in ('HotelVignette','HotelRooms','HotelRegistry','HotelTexts','HotelActor','HotelHose','HotelPropBlock','BlindStretch'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/HotelTests.class' in z.namelist()
-              for name in ('LiteraryVignettes','LiteraryRooms','LiteraryRegistry','LiteraryTexts','LiteraryActor','LiteraryElk','LiteraryCopies','LiteraryCabinChoices','LiteraryFrozenBlock','LiteraryModelBlockEntity'):
+              for name in ('LiteraryVignettes','LiteraryRooms','LiteraryRegistry','LiteraryTexts','LiteraryActor','LiteraryElk','LiteraryCopies','LiteraryCabinChoices','LiteraryFrozenBlock','LiteraryModelBlockEntity','CabinBargain','CabinScreen','BodyLoss','SnowGlobeItem','GoatmanHaunt','TallyCounterItem'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               for name in ('LiteraryTests',):
                   assert f'io/github/knaitoe/theoldesthouse/gametest/{name}.class' in z.namelist()
@@ -132,6 +132,28 @@ jobs:
                   assert len(mesh['elements']) >= 2 and 'display' in mesh
               for name in ('cylinder_one','cylinder_two','cylinder_three','family_film','party','blizzard','drip','giggle','scratch','hooves'):
                   assert z.read(f'assets/the_oldest_house/sounds/literary/{name}.ogg').startswith(b'OggS')
+              # The cabin bargain (0.4.51): original cues, the two globes, the given arm and the stump's bandage.
+              for name in ('cabin_knock','cabin_heart','cabin_cord','cabin_chop','cabin_wet','cabin_ring','cabin_wind','globe_shake','globe_cracked','cabin_gale'):
+                  assert z.read(f'assets/the_oldest_house/sounds/literary/{name}.ogg').startswith(b'OggS')
+              for name in ('cabin_snow_globe','cabin_cracked_snow_globe','cabin_given_arm'):
+                  mesh=json.loads(z.read(f'assets/the_oldest_house/models/item/{name}.json'))
+                  assert len(mesh['elements']) >= 2 and 'display' in mesh
+              assert z.read('assets/the_oldest_house/textures/entity/arm_stump_bandage.png').startswith(b'\x89PNG')
+              # The cabin storm (0.4.52): its rain and leaves are particles of its own.
+              for name in ('cabin_rain','cabin_leaf'):
+                  assert json.loads(z.read(f'assets/the_oldest_house/particles/{name}.json'))['textures']
+              for name in ('BodyLossClient','CabinStormClient','CabinWeatherParticles'):
+                  assert f'io/github/knaitoe/theoldesthouse/client/{name}.class' in z.namelist()
+              # The Goatman's night (0.4.53): the counter, the brat, copper motes, the thing itself and four cues.
+              for name in ('click','claw','crickets','keen','hammer','laugh','woods'):
+                  assert z.read(f'assets/the_oldest_house/sounds/goatman/{name}.ogg').startswith(b'OggS')
+              for name in ('textures/item/tally_counter.png','textures/item/goatman_brat.png','textures/entity/goatman.png','textures/entity/goatman_eyes.png','textures/particle/goatman_copper_0.png'):
+                  assert z.read(f'assets/the_oldest_house/{name}').startswith(b'\x89PNG')
+              assert json.loads(z.read('assets/the_oldest_house/particles/goatman_copper.json'))['textures']
+              for name in ('tally_counter','goatman_brat'):
+                  assert json.loads(z.read(f'assets/the_oldest_house/models/item/{name}.json'))['textures']['layer0']
+              for name in ('GoatmanFigureModel','GoatmanFigureRenderer','GoatmanParticles'):
+                  assert f'io/github/knaitoe/theoldesthouse/client/{name}.class' in z.namelist()
               for name in ('wax_cylinder_1','wax_cylinder_2','wax_cylinder_3','family_film'):
                   song=json.loads(z.read(f'data/the_oldest_house/jukebox_song/{name}.json'))
                   assert song['length_in_seconds'] > 0
@@ -430,6 +452,8 @@ jobs:
           test -s build/font-smoke/native-literary.png
           test -s build/font-smoke/elk-passed.txt
           test -s build/font-smoke/native-elk.png
+          test -s build/font-smoke/goatman-passed.txt
+          test -s build/font-smoke/native-goatman.png
           test -s build/font-smoke/coffin-passed.txt
           test -s build/font-smoke/native-coffin.png
           test -s build/font-smoke/bed-passed.txt
@@ -671,7 +695,7 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.62"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.63"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
@@ -746,8 +770,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.62.jar
-            build/libs/the_oldest_house-0.4.62.jar.sha256
+            build/libs/the_oldest_house-0.4.63.jar
+            build/libs/the_oldest_house-0.4.63.jar.sha256
           if-no-files-found: error
 
 

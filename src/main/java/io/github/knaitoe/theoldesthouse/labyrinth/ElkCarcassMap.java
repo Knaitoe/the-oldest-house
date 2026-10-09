@@ -3,7 +3,6 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 import io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -280,7 +279,6 @@ public final class ElkCarcassMap {
     private static final class Builder {
         final ServerLevel l;
         final BlockPos b;
-        final Random random = new Random(0x0450E1CL);
 
         Builder(ServerLevel l, BlockPos b) {
             this.l = l;
@@ -356,7 +354,7 @@ public final class ElkCarcassMap {
             return ridge && noise(x, z) < .75 || chamber(x, z) < 2.2 && noise(x, z) < .85;
         }
 
-        BlockState topsoil(int x, int z, int h) {
+        BlockState topsoil(int x, int z) {
             double n = noise(x, z);
             double m = lake(x, z);
             if (m < 1.12 && z > -80) return st(n < .6 ? Blocks.SAND : n < .85 ? Blocks.GRAVEL : Blocks.COARSE_DIRT);
@@ -388,7 +386,7 @@ public final class ElkCarcassMap {
                     if (underKnoll(x, z)) bottom = Math.min(bottom, CAVE_Y - 3);
                     fill(x, bottom, z, x, h - 3, z, Blocks.STONE);
                     fill(x, Math.max(bottom, h - 2), z, x, h - 1, z, rock ? Blocks.STONE : Blocks.DIRT);
-                    set(x, h, z, topsoil(x, z, h));
+                    set(x, h, z, topsoil(x, z));
                 }
         }
 
@@ -453,10 +451,10 @@ public final class ElkCarcassMap {
                     if (Math.abs(x) > MAX_X + 2 || z < MIN_Z - 2) continue;
                     int y = surface(x, z) + 1;
                     double kind = (h >>> 20 & 1023) / 1023.0;
-                    if (kind < .62) spruce(x, y, z, 8 + (int) (h >>> 32 & 7), h);
-                    else if (kind < .84) birch(x, y, z, 6 + (int) (h >>> 32 & 3), h);
+                    if (kind < .62) spruce(x, y, z, 8 + (int) (h >>> 32 & 7));
+                    else if (kind < .84) birch(x, y, z, 6 + (int) (h >>> 32 & 3));
                     else if (kind < .92 && wood) snag(x, y, z, 5 + (int) (h >>> 32 & 3));
-                    else bigSpruce(x, y, z, 13 + (int) (h >>> 32 & 5), h);
+                    else bigSpruce(x, y, z, 13 + (int) (h >>> 32 & 5));
                 }
             // Undergrowth and fallen timber.
             for (int z = SKIRT_NORTH; z <= 16; z++)
@@ -496,7 +494,7 @@ public final class ElkCarcassMap {
             set(x, y + 1, z, block.defaultBlockState().setValue(DoublePlantBlock.HALF, DoubleBlockHalf.UPPER));
         }
 
-        void spruce(int x, int y, int z, int height, long h) {
+        void spruce(int x, int y, int z, int height) {
             fill(x, y, z, x, y + height - 1, z, Blocks.SPRUCE_LOG);
             BlockState leaves = st(Blocks.SPRUCE_LEAVES);
             for (int k = 0; k <= height - 2; k++) {
@@ -513,7 +511,7 @@ public final class ElkCarcassMap {
             set(x, y + height, z, leaves);
         }
 
-        void bigSpruce(int x, int y, int z, int height, long h) {
+        void bigSpruce(int x, int y, int z, int height) {
             fill(x, y, z, x + 1, y + height - 1, z + 1, Blocks.SPRUCE_LOG);
             BlockState leaves = st(Blocks.SPRUCE_LEAVES);
             for (int k = 0; k <= height - 4; k++) {
@@ -529,7 +527,7 @@ public final class ElkCarcassMap {
             }
         }
 
-        void birch(int x, int y, int z, int height, long h) {
+        void birch(int x, int y, int z, int height) {
             fill(x, y, z, x, y + height - 1, z, Blocks.BIRCH_LOG);
             BlockState leaves = st(Blocks.BIRCH_LEAVES);
             for (int yy = y + height - 3; yy <= y + height; yy++) {
@@ -624,16 +622,18 @@ public final class ElkCarcassMap {
                         if (onRoad(x, z, 1.6)) { set(x, Math.max(w + 2, h), z, Blocks.SPRUCE_PLANKS); }
                         continue;
                     }
-                    if (onTrail(x, z, 1.1) && !passage(x, z) && !(x >= 39 && x <= 45 && z >= -145 && z <= -139)) {
-                        set(x, h, z, LiteraryRegistry.DRAG_MUD.get().defaultBlockState());
-                        if ((hash(x, z) & 31) == 0) prop(x, h + 1, z, LiteraryPropBlock.Kind.STAIN, Direction.from2DDataValue((int) (hash(x, z) >>> 6 & 3)), 1);
-                    } else if (onPath(x, z, .8)) set(x, h, z, Blocks.DIRT_PATH);
+                    boolean trail = onTrail(x, z, 1.1) && !passage(x, z) && !(x >= 39 && x <= 45 && z >= -145 && z <= -139);
+                    if (trail) set(x, h, z, LiteraryRegistry.DRAG_MUD.get().defaultBlockState());
+                    else if (onPath(x, z, .8)) set(x, h, z, Blocks.DIRT_PATH);
                     else if (onRoad(x, z, 1.6)) set(x, h, z, (hash(x, z) & 3) == 0 ? Blocks.COARSE_DIRT : Blocks.GRAVEL);
                     else continue;
-                    if (Math.abs(x - 49) < 14 && Math.abs(z + 142) < 21) continue; // the site's own things stand on it
-                    // Nothing growing on the walked ground.
-                    set(x, h + 1, z, Blocks.AIR);
-                    set(x, h + 2, z, Blocks.AIR);
+                    // Nothing growing on the walked ground; the site's own things stand on its pad.
+                    if (!(Math.abs(x - 49) < 14 && Math.abs(z + 142) < 21)) {
+                        set(x, h + 1, z, Blocks.AIR);
+                        set(x, h + 2, z, Blocks.AIR);
+                    }
+                    // The drag's stains go down after the clearing, so they stay.
+                    if (trail && (hash(x, z) & 31) == 0) prop(x, h + 1, z, LiteraryPropBlock.Kind.STAIN, Direction.from2DDataValue((int) (hash(x, z) >>> 6 & 3)), 1);
                 }
             prop(2, surface(2, -167) + 1, -166, LiteraryPropBlock.Kind.HARD_HAT, Direction.WEST, 1);
             prop(-7, surface(-7, -176) + 1, -174, LiteraryPropBlock.Kind.STAIN, Direction.NORTH, 3);
@@ -681,7 +681,8 @@ public final class ElkCarcassMap {
             fill(40, SITE_TOP - 2, -131, 52, SITE_TOP - 2, -129, Blocks.MUD);
             for (int x : new int[]{40, 52}) fill(x, SITE_TOP - 1, -131, x, SITE_TOP - 1, -129, Blocks.DIRT);
             for (int x = 39; x <= 53; x++) for (int z : new int[]{-132, -128}) set(x, y, z, LiteraryRegistry.SAFETY_FENCE.get().defaultBlockState());
-            for (int z = -131; z <= -129; z++) for (int x : new int[]{39, 53}) set(x, y, z, LiteraryRegistry.SAFETY_FENCE.get().defaultBlockState());
+            // The ends stay open where the steps come up, so nobody is kept in the cut.
+            for (int z : new int[]{-131, -129}) for (int x : new int[]{39, 53}) set(x, y, z, LiteraryRegistry.SAFETY_FENCE.get().defaultBlockState());
             // A small skid steer, parked where it stopped, bucket down.
             fill(46, y, -158, 48, y, -156, Blocks.BLACK_CONCRETE);
             fill(46, y + 1, -158, 48, y + 2, -157, Blocks.YELLOW_CONCRETE);
@@ -708,7 +709,7 @@ public final class ElkCarcassMap {
             int g = GATE_Y - 1;
             for (int x = 30; x <= 58; x++) {
                 if (stream(x, -247) || Math.abs(x - SERVICE_DOOR.getX()) <= 1) continue;
-                int top = Math.max(surface(x, -247), g);
+                int top = surface(x, -247); // the fence follows the ground; the pad is level where it meets the door
                 set(x, top + 1, -247, LiteraryRegistry.SAFETY_FENCE.get().defaultBlockState());
                 if (x % 4 == 0) fill(x, top + 1, -247, x, top + 2, -247, Blocks.SPRUCE_FENCE);
             }
@@ -864,7 +865,7 @@ public final class ElkCarcassMap {
             sunDeck();
             rails();
             // Anchor chain over the bow, and a boarding ladder amidships to port.
-            for (int y = -8; y <= 3; y++) set(0, y, -43, Blocks.CHAIN.defaultBlockState());
+            for (int y = -8; y <= 3; y++) set(0, y, -43, Blocks.CHAIN.defaultBlockState().setValue(BlockStateProperties.WATERLOGGED, y <= -1));
             set(0, 4, -41, Blocks.IRON_BLOCK);
             for (int y = -1; y <= 3; y++) set(-10, y, -12, Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.WEST));
             set(-9, 4, -12, Blocks.AIR);

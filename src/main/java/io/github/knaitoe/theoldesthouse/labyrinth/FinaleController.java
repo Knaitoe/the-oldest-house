@@ -195,7 +195,7 @@ public final class FinaleController {
         }
         if(!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)||!FinaleArchitecture.contains(origin,player.blockPosition()))return;
         var phase=FinaleProgress.phase(player.server,player.getUUID());
-        if(phase==FinaleProgress.Phase.ESCAPE&&player.getMainHandItem().getItem() instanceof net.minecraft.world.item.FlintAndSteelItem&&burnable(player.getOffhandItem())){
+        if(phase==FinaleProgress.Phase.ESCAPE&&player.getMainHandItem().getItem() instanceof net.minecraft.world.item.FlintAndSteelItem&&!fuel(player).isEmpty()){
             event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);burn(player);return;
         }
         if(phase==FinaleProgress.Phase.ESCAPE&&event.getPos().distManhattan(FinaleArchitecture.exit(origin))<=1&&player.distanceToSqr(event.getPos().getCenter())<20){
@@ -210,15 +210,22 @@ public final class FinaleController {
     }
     @SubscribeEvent public static void burnAir(PlayerInteractEvent.RightClickItem event){
         if(event.getEntity() instanceof ServerPlayer player&&event.getHand()==InteractionHand.MAIN_HAND
-                &&FinaleProgress.phase(player.server,player.getUUID())==FinaleProgress.Phase.ESCAPE&&event.getItemStack().getItem() instanceof net.minecraft.world.item.FlintAndSteelItem&&burnable(player.getOffhandItem())){
+                &&FinaleProgress.phase(player.server,player.getUUID())==FinaleProgress.Phase.ESCAPE&&event.getItemStack().getItem() instanceof net.minecraft.world.item.FlintAndSteelItem){
+            if(fuel(player).isEmpty()){if(BodyLoss.oneArmed(player))player.displayClientMessage(Component.literal("With one hand, keep loose paper in your pack to burn."),true);return;}
             event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);burn(player);
         }
     }
     private static boolean burnable(ItemStack stack){return stack.is(Items.PAPER)||stack.has(DataComponents.WRITTEN_BOOK_CONTENT)||VignetteYields.of(stack)!=null;}
+    /** What burns: the off hand's paper, or, for a reader who gave that arm at the cabin, loose paper from the pack (never a book or a keepsake). */
+    private static ItemStack fuel(ServerPlayer player){
+        if(!BodyLoss.oneArmed(player))return burnable(player.getOffhandItem())?player.getOffhandItem():ItemStack.EMPTY;
+        for(var stack:player.getInventory().items)if(stack.is(Items.PAPER))return stack;
+        return ItemStack.EMPTY;
+    }
     private static void burn(ServerPlayer player){
         CompoundTag record=FinaleProgress.player(player.server,player.getUUID());long now=player.serverLevel().getGameTime();if(now<record.getLong("LightUntil"))return;
         BlockPos pos=player.blockPosition().above();if(!player.serverLevel().getBlockState(pos).isAir())return;
-        player.getOffhandItem().shrink(1);player.getMainHandItem().hurtAndBreak(1,player,EquipmentSlot.MAINHAND);
+        var fuel=fuel(player);if(fuel.isEmpty())return;fuel.shrink(1);player.getMainHandItem().hurtAndBreak(1,player,EquipmentSlot.MAINHAND);
         player.serverLevel().setBlock(pos,Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL,12),FLAGS);
         record.putLong("Light",pos.asLong());record.putLong("LightUntil",now+120);FinaleProgress.save(player.server,player.getUUID(),record);
         player.serverLevel().sendParticles(net.minecraft.core.particles.ParticleTypes.FLAME,player.getX(),player.getY()+1,player.getZ(),14,.1,.2,.1,.01);

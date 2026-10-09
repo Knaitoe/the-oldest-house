@@ -3,13 +3,11 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.TicketType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -34,6 +32,50 @@ public final class ElkUpgrade {
         return builtVersion >= FIRST_LAYOUT && builtVersion < REBUILT_IN;
     }
 
+    /** The cabin at the end of the world is carved again too (layout 37): its new rooms, windows and exit shed. */
+    static final int CABIN_REBUILT_IN = 37;
+
+    /** The Goatman's trailer and camp are carved again too (layout 38): real seats, lamps, the bathroom window, the shed, the hollows. Layout 18 first built it. */
+    static final int GOATMAN_FIRST = 18, GOATMAN_REBUILT_IN = 38;
+
+    /** Whether an upgrade from this saved layout carves this scene again. */
+    public static boolean rebuilds(LabyrinthPlace place, int builtVersion) {
+        if (place == LabyrinthPlace.ELK_CARCASSES) return rebuilds(builtVersion);
+        if (place == LabyrinthPlace.GOATMAN) return builtVersion >= GOATMAN_FIRST && builtVersion < GOATMAN_REBUILT_IN;
+        return place == LabyrinthPlace.END_WORLD_CABIN && builtVersion >= FIRST_LAYOUT && builtVersion < CABIN_REBUILT_IN;
+    }
+
+    static AABB area(BlockPos base, LabyrinthPlace place) {
+        if (place == LabyrinthPlace.ELK_CARCASSES) return area(base);
+        var r = place.room();
+        return new AABB(base.getX() + r.minX() - 1, base.getY() + r.minY() - 2, base.getZ() + r.minZ() - 1,
+                base.getX() + r.maxX() + 2, base.getY() + r.maxY() + 2, base.getZ() + r.maxZ() + 2);
+    }
+
+    public static boolean vacant(ServerLevel level, BlockPos base, LabyrinthPlace place, boolean fixture) {
+        if (place == LabyrinthPlace.ELK_CARCASSES) return vacant(level, base, fixture);
+        AABB area = area(base, place);
+        for (var player : level.players())
+            if (area.intersects(player.getBoundingBox()) || area.inflate(32).intersects(player.getCamera().getBoundingBox())) return false;
+        return fixture || ScenePolish.loaded(level, area, base);
+    }
+
+    /** After the carve: the cabin's visitors are placed by their own scene; anything else displaced goes to the porch (the trailer's yard for the Goatman). */
+    public static void settle(ServerLevel level, BlockPos base, LabyrinthPlace place) {
+        if (place == LabyrinthPlace.ELK_CARCASSES) { settle(level, base); return; }
+        Vec3 porch = Vec3.atBottomCenterOf(place == LabyrinthPlace.GOATMAN ? base.offset(-1, 0, -47) : base.offset(-6, 0, -10));
+        for (Entity e : level.getEntitiesOfClass(Entity.class, area(base, place), e -> e instanceof LivingEntity || e instanceof ItemEntity)) {
+            if (e instanceof Player || !e.isAlive()) continue;
+            restoreResident(e);
+            if(e instanceof LiteraryActor || e instanceof GoatmanChild || e instanceof GoatmanFigure)continue;
+            if (!stranded(level, e)) continue;
+            if (e.isPassenger()) e.stopRiding();
+            e.teleportTo(porch.x + (e.getId() % 5) * .7 - 1.4, porch.y, porch.z - (e.getId() % 3) * .6);
+            e.setDeltaMovement(Vec3.ZERO);
+            e.resetFallDistance();
+        }
+    }
+
     static AABB area(BlockPos base) {
         return new AABB(base.getX() - ElkCarcassMap.SKIRT_X, base.getY() - 12, base.getZ() + ElkCarcassMap.SKIRT_NORTH,
                 base.getX() + ElkCarcassMap.SKIRT_X + 1, base.getY() + 40, base.getZ() + ElkCarcassMap.SKIRT_SOUTH + 1);
@@ -48,20 +90,15 @@ public final class ElkUpgrade {
         AABB area = area(base);
         for (var player : level.players())
             if (area.intersects(player.getBoundingBox()) || area.inflate(32).intersects(player.getCamera().getBoundingBox())) return false;
-        if (fixture) return true;
-        boolean ready = true;
-        for (int x = ((int) Math.floor(area.minX)) >> 4; x <= ((int) Math.ceil(area.maxX) - 1) >> 4; x++)
-            for (int z = ((int) Math.floor(area.minZ)) >> 4; z <= ((int) Math.ceil(area.maxZ) - 1) >> 4; z++) {
-                var chunk = new ChunkPos(x, z);
-                level.getChunkSource().addRegionTicket(TicketType.PORTAL, chunk, 3, base);
-                ready &= level.isLoaded(new BlockPos(x << 4, base.getY(), z << 4)) && level.areEntitiesLoaded(chunk.toLong());
-            }
-        return ready;
+        return fixture || ScenePolish.loaded(level, area, base);
     }
 
     /** Keep actual residents safe through a sliced carve, including a save/reload midway. */
     public static void protectResidents(ServerLevel level,BlockPos base){
-        for(Entity e:level.getEntitiesOfClass(Entity.class,area(base),e->e instanceof LivingEntity||e instanceof ItemEntity)){
+        protectResidents(level,base,LabyrinthPlace.ELK_CARCASSES);
+    }
+    public static void protectResidents(ServerLevel level,BlockPos base,LabyrinthPlace place){
+        for(Entity e:level.getEntitiesOfClass(Entity.class,area(base,place),e->e instanceof LivingEntity||e instanceof ItemEntity)){
             if(e instanceof Player||!e.isAlive()||e.getPersistentData().contains(FROZEN))continue;
             var original=new CompoundTag();original.putBoolean("NoGravity",e.isNoGravity());original.putBoolean("Invulnerable",e.isInvulnerable());
             if(e instanceof Mob mob){original.putBoolean("NoAI",mob.isNoAi());mob.getNavigation().stop();mob.setNoAi(true);}

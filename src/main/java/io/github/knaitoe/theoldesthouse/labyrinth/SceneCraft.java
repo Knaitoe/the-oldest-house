@@ -1624,15 +1624,16 @@ public final class SceneCraft {
         }
         for (int x = -11; x <= 11; x++) if (Math.abs(x) > 1 && Math.abs(x) != 5) rail(x, 0, -8, Blocks.SPRUCE_FENCE);
         join(-11, 11, 0, -8, -8);
-        put(-4, 0, -10, HouseholdFurnitureBlock.state(CANE_CHAIR, Direction.SOUTH));
-        put(4, 0, -10, HouseholdFurnitureBlock.state(CANE_CHAIR, Direction.SOUTH));
-        put(5, 0, -10, HouseholdFurnitureBlock.state(BEDSIDE_TABLE, Direction.SOUTH));
+        // Chairs at the porch's ends, clear of the door and of where the visitors stand (0.4.52).
+        put(-10, 0, -10, HouseholdFurnitureBlock.state(CANE_CHAIR, Direction.SOUTH));
+        put(10, 0, -10, HouseholdFurnitureBlock.state(CANE_CHAIR, Direction.SOUTH));
+        put(-9, 0, -11, HouseholdFurnitureBlock.state(BEDSIDE_TABLE, Direction.SOUTH));
         put(0, 5, -10, lantern(true));
-        shutters(-13, -30, Direction.WEST, 2, 3, Blocks.DARK_OAK_TRAPDOOR);
-        shutters(-13, -24, Direction.WEST, 2, 3, Blocks.DARK_OAK_TRAPDOOR);
-        shutters(1, -36, Direction.NORTH, 2, 3, Blocks.DARK_OAK_TRAPDOOR);
-        shutters(7, -36, Direction.NORTH, 2, 3, Blocks.DARK_OAK_TRAPDOOR);
-        woodpile(-13, -18, -15);
+        // Open shutters either side of each window, which stay open to the storm.
+        for (int z : new int[]{-33, -26, -23, -16}) shutters(-13, z, Direction.WEST, 1, 3, Blocks.DARK_OAK_TRAPDOOR);
+        for (int x : new int[]{-11, -5, -1, 9}) shutters(x, -36, Direction.NORTH, 1, 3, Blocks.DARK_OAK_TRAPDOOR);
+        for (int z : new int[]{-31, -24, -15}) shutters(13, z, Direction.EAST, 1, 3, Blocks.DARK_OAK_TRAPDOOR);
+        woodpile(13, -34, -32);
         roof(-12, 12, -35, -13, 6, Blocks.DARK_OAK_SLAB, Blocks.SPRUCE_PLANKS, Blocks.STRIPPED_DARK_OAK_LOG);
         // The porch roof keeps every slab of its plate where the old eave had cut into it.
         for (int x = -12; x <= 12; x++) for (int z = -12; z <= -8; z++) cover(x, 6, z, slab(Blocks.SPRUCE_SLAB, SlabType.BOTTOM));

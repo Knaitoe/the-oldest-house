@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 36;
+    public static final int VERSION = 38;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -75,8 +75,6 @@ public final class LabyrinthBuilder {
     private static boolean gatingActive;
     /** Whether the running queue extends an existing world rather than carving a new one. */
     private static boolean upgrading;
-    /** True while the elk scene of a saved world is being carved again in place (0.4.50). */
-    private static boolean elkRebuild;
     /** Saved construction progress, so a restart never rebuilds a place that already stands. */
     public static final String PROGRESS = "labyrinth_carve_0440";
     /** Places are built this many crossings ahead of the deepest explorer. */
@@ -251,7 +249,7 @@ public final class LabyrinthBuilder {
             boolean domestic = place == LabyrinthPlace.JUNCTION || LabyrinthHalls.isHall(place) || LabyrinthMaze.isMaze(place);
             boolean architecture=VignetteArchitecture.applies(place);
             if (structural && alreadyBuilt.contains(place.id())) continue;
-            if (!structural && extend && place == LabyrinthPlace.ELK_CARCASSES && ElkUpgrade.rebuilds(data.builtVersion())) {
+            if (!structural && extend && ElkUpgrade.rebuilds(place, data.builtVersion())) {
                 queue.add(place);
                 rebuildUpgrades.add(place);
                 continue;
@@ -297,12 +295,15 @@ public final class LabyrinthBuilder {
         }
         active = true;
         if (place != null && geometry != null) {
-            if(elkRebuild){var level=server.getLevel(NovelRooms.dimension(place));if(level==null||!ElkUpgrade.vacant(level,LabyrinthPlaces.base(pendingOrigin,place),fixtureDrain)){active=false;return;}}
+            if(rebuildUpgrades.contains(place)){var level=server.getLevel(NovelRooms.dimension(place));if(level==null||!ElkUpgrade.vacant(level,LabyrinthPlaces.base(pendingOrigin,place),place,fixtureDrain)){active=false;return;}}
             if (!geometry.tick()) return;
             ServerLevel site = server.getLevel(NovelRooms.dimension(place));
-            if (site != null && place == LabyrinthPlace.ELK_CARCASSES) ElkUpgrade.settle(site, LabyrinthPlaces.base(pendingOrigin, place));
-            elkRebuild = false;
-            rebuildUpgrades.remove(place);
+            // A scene carved again in place settles what its new ground displaced.
+            if (rebuildUpgrades.remove(place) && site != null) {
+                ElkUpgrade.settle(site, LabyrinthPlaces.base(pendingOrigin, place), place);
+                // The trailer's own furnishing and exterior passes dress the new carve, as they dress a fresh one.
+                if (place == LabyrinthPlace.GOATMAN) { VignetteArchitecture.forget(site, pendingOrigin, place); VignetteArchitecture.decorateOnce(site, pendingOrigin, place); }
+            }
             if (site != null) ScenePolish.polishOnce(site, pendingOrigin, place);
             if(site!=null){var dressing=SceneHuntReview.prepareFresh(site,pendingOrigin,place);if(dressing!=null){geometry=dressing;return;}}
             registerDoors(dataFor(server), place, LabyrinthPlaces.base(pendingOrigin, place));
@@ -327,15 +328,25 @@ public final class LabyrinthBuilder {
             if (site != null) {
                 BlockPos base = LabyrinthPlaces.base(pendingOrigin, place);
                 // A saved world's old elk scene is only taken down once nobody is in it or can see it.
-                boolean rebuild = rebuildUpgrades.contains(place);
-                if (rebuild && !ElkUpgrade.vacant(site, base, fixtureDrain)) { active = false; return; }
-                elkRebuild = rebuild;
-                if(rebuild)ElkUpgrade.protectResidents(site,base);
+                if (rebuildUpgrades.contains(place) && !ElkUpgrade.vacant(site, base, place, fixtureDrain)) { active = false; return; }
+                if(rebuildUpgrades.contains(place))ElkUpgrade.protectResidents(site,base,place);
                 ScenePolish.forget(server, pendingOrigin, place);
                 geometry = BuildBlocks.record(site, () -> LiteraryRooms.build(site, base, place));
                 if (place == LabyrinthPlace.ELK_CARCASSES) TheOldestHouse.LOGGER.info("Recorded {}: {}", place.id(), geometry.describe());
                 return;
             }
+        }
+        // 0.4.53: a saved world's old trailer is taken down only once nobody is in the woods or can see them, then carved again in slices.
+        if (place == LabyrinthPlace.GOATMAN && rebuildUpgrades.contains(place)) {
+            BlockPos base = LabyrinthPlaces.base(pendingOrigin, place);
+            if (!ElkUpgrade.vacant(interior, base, place, fixtureDrain)) { active = false; return; }
+            ElkUpgrade.protectResidents(interior,base,place);
+            ScenePolish.forget(server, pendingOrigin, place);
+            for (var e : interior.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, IndianLakeRooms.bounds(base, place),
+                    e -> e instanceof GoatmanChild || e instanceof net.minecraft.world.entity.Display.ItemDisplay d && d.getTags().contains(GoatmanWoods.PLATE))) e.discard();
+            GoatmanVignette.forgetRun(server);
+            geometry = BuildBlocks.record(interior, () -> GoatmanVignette.build(server, interior, base));
+            return;
         }
         pending.poll();
         long started = System.nanoTime();
@@ -525,7 +536,6 @@ public final class LabyrinthBuilder {
         preparing = null;
         pending = null;
         pendingOrigin = null;
-        elkRebuild = false;
         rebuildUpgrades.clear();
         domesticUpgrades.clear();
         architecturalUpgrades.clear();

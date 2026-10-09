@@ -74,7 +74,7 @@ public final class LabyrinthDealer {
         // A recurring home copy needs an interval; a deliberate scent may still seek it.
         if(!data.hillaryScent(player))places.removeIf(p->p==LabyrinthPlace.RED_ROOM
                 && data.recentVisit(player,p)>=0 && data.recentVisit(player,p)<6);
-        places.removeIf(site->data.state("literary_cabin_closure_0436").getString("Retired").equals(site.id()));
+        places.removeIf(site->LiteraryCabinChoices.closed(data,player,site));
         // Only places that already stand can be dealt; deeper ones are still being built ahead of explorers.
         places.removeIf(site->site!=LabyrinthPlace.FAMILY_COPY&&site!=LabyrinthPlace.OLD_CABIN&&!LabyrinthBuilder.isPlaceReady(data,site));
         return places;
@@ -101,6 +101,8 @@ public final class LabyrinthDealer {
 
     public static int rememberedWeight(LabyrinthData data, UUID player, LabyrinthPlace place, int ordinaryWeight) {
         if(place==LabyrinthPlace.MOTHER_DEN&&rescueNeeded(data,player))return Math.max(1,ordinaryWeight)*96;
+        // 0.4.53: what followed a reader home from the trailer keeps the trailer near; the way to be rid of it is there.
+        if(place==LabyrinthPlace.GOATMAN&&GoatmanHaunt.haunted(data,player))return Math.max(1,ordinaryWeight)*24;
         boolean special = place.isVignette() || !LabyrinthPacing.ordinary(place);
         int age = data.recentVisit(player, place);
         if (!special) return ordinaryWeight * (age < 0 ? 12 : age < 3 ? 3 : 8);

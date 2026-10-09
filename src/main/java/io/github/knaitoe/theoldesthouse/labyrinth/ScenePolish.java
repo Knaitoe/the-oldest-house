@@ -195,8 +195,8 @@ public final class ScenePolish {
         if (place == LabyrinthPlace.MOTHER_DEN) unbury(level, base, place);
     }
 
-    /** Tickets let chunks load between ticks; a scene is never pulled in synchronously. */
-    private static boolean loaded(ServerLevel level, AABB area, BlockPos ticket) {
+    /** Tickets let chunks load between ticks; a scene is never pulled in synchronously. The elk rebuild waits on the same test. */
+    static boolean loaded(ServerLevel level, AABB area, BlockPos ticket) {
         boolean ready = true;
         for (int x = ((int) Math.floor(area.minX)) >> 4; x <= ((int) Math.ceil(area.maxX) - 1) >> 4; x++)
             for (int z = ((int) Math.floor(area.minZ)) >> 4; z <= ((int) Math.ceil(area.maxZ) - 1) >> 4; z++) {

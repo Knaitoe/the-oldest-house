@@ -148,9 +148,12 @@ public final class SceneExteriors {
         for(int x=-7;x<=7;x++)for(int z=-77;z<=-55;z++)set(x,Math.abs(x)>5?6:7,z,Blocks.SMOOTH_STONE_SLAB);
         for(int x:new int[]{-8,8})for(int z:new int[]{-77,-55})for(int y=1;y<=5;y++)set(x,y,z,Blocks.IRON_BLOCK);
         for(int side:new int[]{-1,1})for(int z:new int[]{-59,-67,-73}){
+            // 0.4.53: the east wall's last window became the bathroom's small awning window, framed by a sill alone.
+            if(side>0&&z==-73)continue;
             for(int zz=z-1;zz<=z+1;zz++){add(side*9,1,zz,Blocks.SMOOTH_STONE_SLAB);add(side*9,4,zz,Blocks.SMOOTH_STONE_SLAB);}
             for(int zz:new int[]{z-1,z+1})for(int y=2;y<=3;y++)add(side*9,y,zz,Blocks.IRON_BARS.defaultBlockState().setValue(BlockStateProperties.NORTH,true).setValue(BlockStateProperties.SOUTH,true));
         }
+        add(9,2,-75,Blocks.SMOOTH_STONE_SLAB);
         for(int z:new int[]{-59,-73}){
             for(int x=-9;x<=9;x++)set(x,-1,z,Blocks.POLISHED_BASALT.defaultBlockState().setValue(RotatedPillarBlock.AXIS,Direction.Axis.X));
             for(int x:new int[]{-9,9}){set(x,0,z,Blocks.BLACK_CONCRETE);set(x,0,z-1,Blocks.BLACK_CONCRETE);add(x,1,z,Blocks.POLISHED_BLACKSTONE_SLAB);}
@@ -159,6 +162,8 @@ public final class SceneExteriors {
         for(int x=-3;x<=3;x++)for(int z=-54;z<=-52;z++)if(x!=0){set(x,0,z,Blocks.SPRUCE_SLAB);set(x,-1,z,Blocks.SPRUCE_LOG);}
         for(int x:new int[]{-3,3}){for(int y=1;y<=3;y++)add(x,y,-53,Blocks.SPRUCE_FENCE);}
         for(int x=-3;x<=3;x++)for(int z=-55;z<=-52;z++)add(x,4,z,Blocks.SPRUCE_SLAB);
+        // The porch light, which goes out when the woods go quiet.
+        add(0,3,-53,Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));
         for(int z=-54;z<=-51;z++)add(5,0,z,Blocks.IRON_BARS.defaultBlockState().setValue(BlockStateProperties.NORTH,true).setValue(BlockStateProperties.SOUTH,true));
         add(5,-1,-51,Blocks.STONE_BRICK_WALL);prop(-4,0,-52,SceneDetailBlock.Kind.SHOES,Direction.NORTH);
         prop(6,0,-53,SceneDetailBlock.Kind.CRATE,Direction.NORTH);

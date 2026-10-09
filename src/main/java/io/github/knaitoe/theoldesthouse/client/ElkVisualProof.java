@@ -140,6 +140,6 @@ public final class ElkVisualProof extends Screen {
         }
         Files.writeString(dir.resolve("elk-passed.txt"), "24 native frames: the retextured killer in five motions, four carcasses and eight bodies; every lying body and carcass rests on its floor.\n");
         TheOldestHouse.LOGGER.info("ELK CAST CHECK PASSED: killer motions, carcasses and bodies rendered and grounded");
-        mc.setScreen(new CoffinVisualProof());
+        mc.setScreen(new GoatmanVisualProof());
     }
 }

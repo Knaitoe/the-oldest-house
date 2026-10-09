@@ -9,7 +9,11 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.62
+## Current candidate: 0.4.63
+
+Combine Claude's cabin, Goatman, return and hunt updates with the complete farm/well pass. No new eligible source: 43 sources / 33 resolutions / two kinds / three endings. Require 475 native cases, 73 multiplayer, 25 literary, 39 exploration, all nine Goatman cases, every focused suite, 17 playtest-log regressions, all 330 PNGs/eight fonts/full writing, all 71 architecture views and 105 native screenshots, plus both actual socket clients/two reconnects. Native coverage includes jointed limb grounding, missing-arm rendering/armour, owner-bound globes, gradual well closure/darkness, one-handed hearth use and resident preservation in both new rebuilds. Layout 38 / protocol 37. See [the integration record](COMBINED_UPDATE_0_4_63.md).
+
+## Prior candidate: 0.4.62
 
 The farm/well repair and modest encounter increase add no eligible source: 43 sources / 33 resolutions / two kinds / three endings remain. Require 468 native cases, 72 multiplayer, 39 exploration, every focused suite, complete writing/client/71-view architecture checks, nine native well mesh/fade views and both actual socket clients with two reconnects. Layout 36 / protocol 35. See [the implementation and saved-world/multiplayer checks](FARM_AND_WELL_0_4_62.md).
 

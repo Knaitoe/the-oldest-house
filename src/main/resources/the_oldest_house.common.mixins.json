@@ -6,7 +6,8 @@
   "mixins": [
     "FireBlockMixin",
     "StaircaseSpectateMixin",
-    "PortholeCrawlMixin"
+    "PortholeCrawlMixin",
+    "OneArmMixin"
   ],
   "injectors": {
     "defaultRequire": 1
