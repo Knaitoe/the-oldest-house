@@ -6,7 +6,7 @@ Status: verified. Verified source 9c8cf8bda4c92894ac195b79942cb955fcd0714c, run 
 
 ## 0.4.52: the cabin, waking, the door and the storm
 
-Playtest repairs and rework, at the owner's request. Status: implementation complete; exact-head verification pending.
+Playtest repairs and rework, at the owner's request. Status: released. Verified source a039e9315fd0418653873f4ff5090d0e753f16df, run 37954228601: all 394 native gameplay tests (including the three cabin cases with waking, knocking and answering), the literary, hotel, hallway, seam, staircase, multiplayer-story and exploration suites, the two-client live expedition, the native client proofs and all seventy-one architecture views passed.
 
 - **Waking.** Every arrival begins inside: the screen goes black and the reader is laid in the first free bed of two in the bedroom. They sleep for three seconds (a native bed, so the bed view and getting up are the game's own), then wake: "You wake in a bed that is not yours." With both beds taken, a third reader wakes standing beside them. Sleeping here never sets a respawn point. A NeoForge `CanContinueSleepingEvent` listener, registered reflectively because the event's package moved between versions, keeps the reader asleep for their moment even by day.
 - **The knock.** Once awake, the reader hears three slow knocks at the front door every eight seconds. Opening it answers them (so does speaking to them, or stepping out within six blocks of Leonard and seeing him). The visitors must be answered again on each visit; the speech resumes where it stopped. Three wait on the porch, clear of the door, and Redmond waits on the grass.

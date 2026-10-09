@@ -13,7 +13,7 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 
 The cabin is rebuilt (bedroom, kitchen, living room, windows on every side) with an exit shed; every visit begins waking in a bed, the visitors knock until the door is answered, the account lies on the dining table, and the storm has its own rain, leaves, real client-only lightning and a heavy gale. The source, outcomes and pool are unchanged: forty-three eligible sources / thirty-three required / two kinds / three endings. Reading an account before its source now says so in every literary scene.
 
-Layout 37 / protocol 35. Worlds at layouts 32 to 36 carve the cabin again when it is empty and loaded. See [CABIN_BARGAIN_0_4_51.md](CABIN_BARGAIN_0_4_51.md). Require the complete suite, the three literary cabin cases (now waking, knocking and answering), the architecture views and the native client proofs. Exact-head verification pending.
+Layout 37 / protocol 35. Worlds at layouts 32 to 36 carve the cabin again when it is empty and loaded. See [CABIN_BARGAIN_0_4_51.md](CABIN_BARGAIN_0_4_51.md). Require the complete suite, the three literary cabin cases (now waking, knocking and answering), the architecture views and the native client proofs. Verified source a039e9315fd0418653873f4ff5090d0e753f16df, run 37954228601: all 394 native gameplay tests (including the three cabin cases with waking, knocking and answering), the literary, hotel, hallway, seam, staircase, multiplayer-story and exploration suites, the two-client live expedition, the native client proofs and all seventy-one architecture views passed.
 
 ## Earlier candidate: 0.4.51
 

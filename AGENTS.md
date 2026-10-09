@@ -6,7 +6,7 @@ Current 0.4.52: owner playtest of the cabin.
 - **The storm.** It has its own rain and leaf particles, real client-only lightning bolts (crack and thunder, no fire, private) and a heavy looping gale.
 - **Saved worlds.** Layout 37 / protocol 35: worlds at layouts 32 to 36 carve the cabin again only when it is empty and loaded, keeping every personal record.
 - **Counts.** Forty-three sources / thirty-three resolutions / two kinds / three endings unchanged.
-- **Verification.** Exact-head verification pending.
+- **Verification.** Verified source a039e9315fd0418653873f4ff5090d0e753f16df, run 37954228601: all 394 native gameplay tests (including the three cabin cases with waking, knocking and answering), the literary, hotel, hallway, seam, staircase, multiplayer-story and exploration suites, the two-client live expedition, the native client proofs and all seventy-one architecture views passed.
 - **Canon:** docs/CABIN_BARGAIN_0_4_51.md (the 0.4.52 section).
 
 Previous 0.4.51: owner-requested rework of the Cabin at the End of the World (slot 66) into a body bargain.
