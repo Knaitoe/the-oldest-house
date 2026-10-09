@@ -7,7 +7,7 @@ Current 0.4.51: owner-requested rework of the Cabin at the End of the World (slo
 - **Counts.** Still forty-three sources / thirty-three resolutions / two kinds / three endings.
 - **Saved worlds and protocol.** Layout 36 / protocol 35. Earlier answers are kept exactly. The world-wide closure of 0.4.36 becomes its chooser's own.
 - **One hand elsewhere.** The staircase hearths take the book in the kept hand and a lighter from the pack; the collapse burns loose paper from the pack.
-- **Verification.** Exact-head verification pending.
+- **Verification.** Verified source 9c8cf8bda4c92894ac195b79942cb955fcd0714c, run 37945073729: all 394 native gameplay tests (including the three cabin cases), the literary, hotel, hallway, seam, staircase, multiplayer-story and exploration suites, the two-client live expedition, the native client proofs (including the one-arm model and armour proof and the three new keepsake meshes) and all seventy-one architecture views passed.
 - **Canon:** docs/CABIN_BARGAIN_0_4_51.md.
 
 Previous 0.4.50: owner-requested rework of the elk carcasses (slot 58) into two stages, after My Heart Is a Chainsaw.

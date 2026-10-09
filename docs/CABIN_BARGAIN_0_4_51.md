@@ -2,7 +2,7 @@
 
 Owner-requested rework of the Cabin at the End of the World (`END_WORLD_CABIN`, slot 66). The visitors no longer ask for an object or a pet. They ask for the reader's body, in a fixed order, and every gift is permanent. Either answer resolves the story.
 
-Status: implementation complete; exact-head verification pending.
+Status: verified. Verified source 9c8cf8bda4c92894ac195b79942cb955fcd0714c, run 37945073729: all 394 native gameplay tests (including the three cabin cases), the literary, hotel, hallway, seam, staircase, multiplayer-story and exploration suites, the two-client live expedition, the native client proofs (including the one-arm model and armour proof and the three new keepsake meshes) and all seventy-one architecture views passed.
 
 ## The sequence
 
