@@ -55,7 +55,7 @@ public final class ScenePolish {
     public static final String REPAIR_STATE = "scene_polish_repairs_0443";
     private static final Set<LabyrinthPlace> REPAIR_PLACES = EnumSet.of(LabyrinthPlace.PHONE_CANOE, LabyrinthPlace.HOTEL,
             LabyrinthPlace.MASQUE, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.ELK_FAN, LabyrinthPlace.HILL_NURSERY,
-            LabyrinthPlace.WHALE, LabyrinthPlace.ZAMPANO_COURTYARD, LabyrinthPlace.WINCHESTER, LabyrinthPlace.BLY_ROUTE,
+            LabyrinthPlace.ZAMPANO_COURTYARD, LabyrinthPlace.WINCHESTER, LabyrinthPlace.BLY_ROUTE,
             LabyrinthPlace.MOTHER_DEN);
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     /** Darkness is the point of these. */
@@ -285,14 +285,6 @@ public final class ScenePolish {
                     level.setBlock(sill, Blocks.DARK_OAK_PLANKS.defaultBlockState(), FLAGS);
                     if (level.getBlockState(inside).is(Blocks.DARK_OAK_PLANKS)) level.setBlock(inside, Blocks.POWDER_SNOW.defaultBlockState(), FLAGS);
                     changed += 2;
-                }
-            }
-            // The attic ladder runs unbroken past each landing.
-            case WHALE -> {
-                for (int y : new int[]{4, 7, 10}) {
-                    BlockPos rung = base.offset(0, y, -18);
-                    if (level.getBlockState(rung).is(Blocks.SMOOTH_STONE))
-                        changed += set(level, rung, Blocks.LADDER.defaultBlockState().setValue(net.minecraft.world.level.block.LadderBlock.FACING, Direction.SOUTH));
                 }
             }
             // The cell wall's gouged block reaches the floor.

@@ -47,7 +47,11 @@ public final class WritingFontSmoke {
         books.add(io.github.knaitoe.theoldesthouse.labyrinth.HollowayCamp.journal());
         books.addAll(List.of(NovelTexts.archive(), NovelTexts.whaleOpening(), NovelTexts.whaleLast(),
                 NovelTexts.well(), NovelTexts.apology(), NovelTexts.hospitalOpening(), NovelTexts.hospitalLast(), NovelTexts.karen()));
-        for (int n = 0; n < 4; n++) books.add(NovelTexts.letter(n, "Explorer"));
+        // Each answer at its widest: a sixteen-letter name and the longest first sentence the slot will quote.
+        for (int n = 1; n <= 3; n++) {
+            books.add(NovelTexts.whaleReply(n, "WWWWWWWWWWWWWWWW", "Mmm, I measured the hallway again this morning and..."));
+            books.add(NovelTexts.whaleReply(n, "Explorer", ""));
+        }
         int pages = 0;
         for (ItemStack book : books) {
             var content = book.get(DataComponents.WRITTEN_BOOK_CONTENT);

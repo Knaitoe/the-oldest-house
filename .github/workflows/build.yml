@@ -57,7 +57,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.65"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.66"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/house/PlaytestLog.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
               hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
@@ -154,6 +154,14 @@ jobs:
                   assert json.loads(z.read(f'assets/the_oldest_house/models/item/{name}.json'))['textures']['layer0']
               for name in ('GoatmanFigureModel','GoatmanFigureRenderer','GoatmanParticles'):
                   assert f'io/github/knaitoe/theoldesthouse/client/{name}.class' in z.namelist()
+              # The Whalestoe institute (0.4.66): twelve numbered pigeonholes and the self-addressed envelope.
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/pigeonhole.json'))['variants']) == 48
+              for n in range(1, 13):
+                  assert z.read(f'assets/the_oldest_house/textures/block/pigeonhole_{n}.png').startswith(b'\x89PNG')
+                  assert json.loads(z.read(f'assets/the_oldest_house/models/block/pigeonhole_{n}.json'))['textures']['front'] == f'the_oldest_house:block/pigeonhole_{n}'
+              assert json.loads(z.read('assets/the_oldest_house/models/item/self_addressed_envelope.json'))['textures']['layer0']
+              for name in ('WhaleInstitute','PigeonholeBlock','SelfAddressedEnvelopeItem'):
+                  assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               for name in ('wax_cylinder_1','wax_cylinder_2','wax_cylinder_3','family_film'):
                   song=json.loads(z.read(f'data/the_oldest_house/jukebox_song/{name}.json'))
                   assert song['length_in_seconds'] > 0
@@ -721,7 +729,7 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.65"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.66"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
@@ -796,8 +804,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.65.jar
-            build/libs/the_oldest_house-0.4.65.jar.sha256
+            build/libs/the_oldest_house-0.4.66.jar
+            build/libs/the_oldest_house-0.4.66.jar.sha256
           if-no-files-found: error
 
 

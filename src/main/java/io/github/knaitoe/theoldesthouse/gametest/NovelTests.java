@@ -69,24 +69,73 @@ public final class NovelTests {
             h.assertTrue(menu.clickMenuButton(p,102)&&WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.ZAMPANO),"the native final page records a personal understanding");
             h.assertTrue(!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.ZAMPANO)&&p.getInventory().countItem(NovelRegistry.COLLAR.get())==1,"the collar is finite and a peer borrows no evidence");
             f.reload();f.click(p,NovelRooms.ARCHIVE_DESK);h.assertTrue(!((NovelVignettes.NovelBookMenu)p.containerMenu).clickMenuButton(p,3),"native save retains finite paper");});}
-    @GameTest(template="empty",batch="novel_whale",timeoutTicks=240) public static void lettersArriveInActualChestsAndPausesOpenOnlyTheReadersAttic(GameTestHelper h){
-        whale=new Fixture(h,32600,LabyrinthPlace.WHALE);var f=whale;var p=f.player();var peer=f.player();var chestPos=f.b.offset(8,0,-4);f.l.setBlock(chestPos,Blocks.CHEST.defaultBlockState(),2);
+    private static ItemStack letter(ServerPlayer p,String text){
+        var book=new ItemStack(Items.WRITTEN_BOOK);book.set(DataComponents.WRITTEN_BOOK_CONTENT,new net.minecraft.world.item.component.WrittenBookContent(net.minecraft.server.network.Filterable.passThrough("A letter"),p.getGameProfile().getName(),0,
+            List.of(net.minecraft.server.network.Filterable.passThrough(net.minecraft.network.chat.Component.literal(text))),true));return book;}
+    private static String page(ItemStack book,int index){return book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().get(index).raw().getString();}
+    @GameTest(template="empty",batch="novel_whale",timeoutTicks=240) public static void postedLettersAreAnsweredBeforeTheyArriveAndComeHomeToHerBox(GameTestHelper h){
+        whale=new Fixture(h,32600,LabyrinthPlace.WHALE);var f=whale;var p=f.player();var peer=f.player();
         h.runAfterDelay(8,()->{
-            var own=f.own(p);own.putLong("MailDue",f.l.getGameTime());NovelVignettes.save(f.data(),p.getUUID(),own);p.openMenu((ChestBlockEntity)f.l.getBlockEntity(chestPos));p.closeContainer();
-            h.assertTrue(f.own(p).getInt("Letters")==0,"empty chests inside the House do not deliver ordinary-world post");
-            var outside=f.l.getServer().overworld();var ordinary=h.absolutePos(BlockPos.ZERO).offset(25,4,25);outside.setBlock(ordinary.below(),Blocks.STONE.defaultBlockState(),2);outside.setBlock(ordinary,Blocks.CHEST.defaultBlockState(),2);var chest=(ChestBlockEntity)outside.getBlockEntity(ordinary);p.teleportTo(outside,ordinary.getX()+.5,ordinary.getY(),ordinary.getZ()+1.5,180,0);p.hasChangedDimension();
-            chest.setItem(7,new ItemStack(Items.EMERALD,2));p.openMenu(chest);p.closeContainer();h.assertTrue(f.own(p).getInt("Letters")==0&&chest.getItem(7).getCount()==2,"a partly filled outside chest is left intact");chest.clearContent();
-            for(int n=0;n<3;n++){own=f.own(p);own.putLong("MailDue",outside.getGameTime());NovelVignettes.save(f.data(),p.getUUID(),own);p.openMenu(chest);
-                var letter=chest.getItem(0);h.assertTrue(letter.has(DataComponents.WRITTEN_BOOK_CONTENT)&&letter.get(DataComponents.CUSTOM_DATA).copyTag().getUUID("LetterTo").equals(p.getUUID()),"each actual outside delivery keeps the reader and original letter custody");
-                p.closeContainer();chest.clearContent();
-            }
-            h.assertTrue(f.own(p).getInt("Letters")==3,"three finite letters arrive after opening three genuinely empty outside chests");
-            p.teleportTo(f.l,f.b.getX()-3.5,f.b.getY()+8,f.b.getZ()-19.5,0,0);p.hasChangedDimension();
-        });
-        int[] times={12,20,28,52,76,84};for(int t:times)h.runAfterDelay(t,()->{var at=f.b.offset(NovelRooms.ATTIC_DOOR);NeoForge.EVENT_BUS.post(new PlayerInteractEvent.LeftClickBlock(p,at,Direction.EAST,PlayerInteractEvent.LeftClickBlock.Action.START));});
-        h.runAfterDelay(140,()->{h.assertTrue(f.own(p).getBoolean("AtticKnocked")&&f.l.getBlockState(f.b.offset(NovelRooms.ATTIC_DOOR)).getValue(DoorBlock.OPEN),"three, one, two with real pauses opens the middle attic");
-            f.at(p,-8.5,8,-23.5);f.click(p,NovelRooms.ATTIC_DESK);h.assertTrue(((NovelVignettes.NovelBookMenu)p.containerMenu).clickMenuButton(p,101)&&WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.WHALE),"the undated final letter is the resolution");
-            f.at(peer,-8.5,8,-23.5);f.click(peer,NovelRooms.ATTIC_DESK);h.assertTrue(!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.WHALE),"a shared open attic does not grant a second reader the correspondence");f.reload();h.assertTrue(f.own(p).getInt("Letters")==3&&f.own(p).getBoolean("AtticKnocked"),"native reload keeps correspondence and the actual knock");h.succeed();});}
+            for(int n=1;n<=12;n++){var st=f.l.getBlockState(f.b.offset(WhaleInstitute.pigeonhole(n)));
+                h.assertTrue(st.is(NovelRegistry.PIGEONHOLE.get())&&st.getValue(PigeonholeBlock.NUMBER)==n&&WhaleInstitute.pigeonholeAt(WhaleInstitute.pigeonhole(n))==n,"pigeonhole "+n+" is a real numbered box on the post room wall");}
+            h.assertTrue(f.l.getBlockState(f.b.offset(WhaleInstitute.HER_DOOR)).getBlock() instanceof DoorBlock&&f.l.getBlockEntity(f.b.offset(1,2,-22)) instanceof SignBlockEntity sign&&!sign.getFrontText().getMessage(1,false).getString().contains("7"),"her door is real and its number has been taken off");
+            // Paper from her desk, one sheet at a time; an unsigned sheet does not go.
+            f.at(p,7.5,0,-22.5);f.click(p,WhaleInstitute.DESK);f.click(p,WhaleInstitute.DESK);
+            h.assertTrue(p.getInventory().countItem(Items.WRITABLE_BOOK)==1&&p.getMainHandItem().is(Items.WRITABLE_BOOK),"the desk gives one blank letter at a time");
+            f.at(p,5.5,0,-7.5);f.click(p,WhaleInstitute.OUTGOING);
+            h.assertTrue(f.own(p).getCompound(WhaleInstitute.KEY).getInt("Sent")==0&&p.getMainHandItem().is(Items.WRITABLE_BOOK),"the slot refuses an unsigned letter and leaves it in hand");
+            String[] said={"I keep the window open now. The hall is longer at night.","Nobody here knows my name yet. They will.","Is it Thursday where you are?"};
+            String[] heard={"I keep the window open now.","Nobody here knows my name yet.","Is it Thursday where you are?"};
+            List<ItemStack> mine=new ArrayList<>();
+            for(int n=1;n<=3;n++){var sent=letter(p,said[n-1]);mine.add(sent.copy());p.setItemInHand(InteractionHand.MAIN_HAND,sent);f.click(p,WhaleInstitute.OUTGOING);
+                var reply=p.getMainHandItem();var content=reply.get(DataComponents.WRITTEN_BOOK_CONTENT);
+                h.assertTrue(f.own(p).getCompound(WhaleInstitute.KEY).getInt("Sent")==n&&content!=null&&content.author().equals("Pelafina"),"letter "+n+" goes, and the hand that let it go already holds her answer");
+                h.assertTrue(page(reply,0).contains(heard[n-1])&&page(reply,0).contains(p.getGameProfile().getName()),"the answer quotes the letter it has not yet received: "+page(reply,0));
+                var initials=new StringBuilder();for(var line:page(reply,2).split("\n"))initials.append(line.charAt(0));
+                h.assertTrue(initials.toString().equals("SEVEN")&&!page(reply,0).contains("Room 7"),"each answer is headed from the wrong room and its lines begin with the right one: "+initials);}
+            var fourth=letter(p,"One more.");p.setItemInHand(InteractionHand.MAIN_HAND,fourth);f.click(p,WhaleInstitute.OUTGOING);
+            h.assertTrue(f.own(p).getCompound(WhaleInstitute.KEY).getInt("Sent")==3&&p.getMainHandItem().is(Items.WRITTEN_BOOK)&&page(p.getMainHandItem(),0).equals("One more."),"the slot takes three letters and no more");
+            p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
+            // Only her box holds anything, only for its writer, and only once.
+            f.at(p,10.5,0,-4.5);f.click(p,WhaleInstitute.pigeonhole(3));f.at(peer,10.5,0,-4.5);f.click(peer,WhaleInstitute.pigeonhole(WhaleInstitute.ROOM));
+            h.assertTrue(!f.own(p).getCompound(WhaleInstitute.KEY).getBoolean("Returned")&&peer.getInventory().countItem(Items.WRITTEN_BOOK)==0,"a wrong box is empty, and her box is empty for a reader who wrote nothing");
+            int before=p.getInventory().countItem(Items.WRITTEN_BOOK);f.click(p,WhaleInstitute.pigeonhole(WhaleInstitute.ROOM));f.click(p,WhaleInstitute.pigeonhole(WhaleInstitute.ROOM));
+            h.assertTrue(f.own(p).getCompound(WhaleInstitute.KEY).getBoolean("Returned")&&p.getInventory().countItem(Items.WRITTEN_BOOK)==before+3,"her box holds the three letters that were sent, once");
+            h.assertTrue(WhaleInstitute.calendarLines(3)[3].getString().equals("today")&&WhaleInstitute.calendarLines(1)[0].getStyle().isStrikethrough(),"her calendar is crossed out again after each letter");
+            for(var original:mine){boolean found=false;for(var stack:p.getInventory().items)found|=ItemStack.isSameItemSameComponents(stack,original);h.assertTrue(found,"what came back is exactly what was written: "+page(original,0));}
+            // Read anywhere else it is only a letter; read in her room, it is the end.
+            int slot=-1;for(int i=0;i<p.getInventory().items.size()&&slot<0;i++)if(ItemStack.isSameItemSameComponents(p.getInventory().items.get(i),mine.get(0)))slot=i;
+            p.getInventory().selected=slot;var read=new PlayerInteractEvent.RightClickItem(p,InteractionHand.MAIN_HAND);NeoForge.EVENT_BUS.post(read);
+            h.assertTrue(!(p.containerMenu instanceof NovelVignettes.NovelBookMenu)&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.WHALE),"reading it in the post room changes nothing");
+            f.at(p,8.5,0,-22.5);read=new PlayerInteractEvent.RightClickItem(p,InteractionHand.MAIN_HAND);NeoForge.EVENT_BUS.post(read);
+            h.assertTrue(read.isCanceled()&&p.containerMenu instanceof NovelVignettes.NovelBookMenu menu&&!menu.clickMenuButton(p,3),"in her room it opens as her reading, and nothing can be taken from it");
+            h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.WHALE)&&p.getInventory().countItem(NovelRegistry.ENVELOPE.get())==1&&p.getInventory().countItem(Items.WRITTEN_BOOK)==before+3,"a one-page letter read where it was going resolves the institute and leaves an envelope, keeping the letter");
+            h.assertTrue(!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.WHALE),"a peer borrows nothing");
+            p.closeContainer();f.reload();var w=f.own(p).getCompound(WhaleInstitute.KEY);
+            h.assertTrue(w.getInt("Sent")==3&&w.getBoolean("Returned")&&w.getList("Posted",Tag.TAG_COMPOUND).size()==3&&f.own(p).getBoolean("Yield_Envelope"),"native reload keeps the posted letters, the returned bundle and the finite envelope");
+            // The envelope never takes its sender out of a room; from the manor's hall it returns them, once a day.
+            ItemStack envelope=ItemStack.EMPTY;for(var stack:p.getInventory().items)if(stack.is(NovelRegistry.ENVELOPE.get()))envelope=stack;
+            p.getInventory().selected=p.getInventory().items.indexOf(envelope);var room=p.position();p.getMainHandItem().use(f.l,p,InteractionHand.MAIN_HAND);
+            h.assertTrue(p.position().equals(room)&&!SelfAddressedEnvelopeItem.record(p).contains("RecallDay"),"inside the institute it will not go");
+            var manor=HideAndClap.manorRespawn(f.origin);p.teleportTo(f.l,manor.x+3,manor.y,manor.z,0,0);f.data().pushReturn(p.getUUID(),new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,manor,0,true));
+            p.getMainHandItem().use(f.l,p,InteractionHand.MAIN_HAND);
+            h.assertTrue(p.position().distanceToSqr(manor)<1&&f.data().returnDepth(p.getUUID())==0&&SelfAddressedEnvelopeItem.record(p).contains("RecallDay"),"returned to sender: the manor, and the way back spent");
+            p.teleportTo(f.l,manor.x+3,manor.y,manor.z,0,0);p.getMainHandItem().use(f.l,p,InteractionHand.MAIN_HAND);
+            h.assertTrue(p.position().distanceToSqr(manor)>4,"only once a day");
+            // Outside it seals one stack; dying away from the House, it is waiting on waking.
+            var outside=f.l.getServer().overworld();var spot=h.absolutePos(BlockPos.ZERO).offset(25,4,25);outside.setBlock(spot.below(),Blocks.STONE.defaultBlockState(),2);
+            p.teleportTo(outside,spot.getX()+.5,spot.getY(),spot.getZ()+.5,0,0);p.hasChangedDimension();
+            p.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(Items.DIAMOND,5));p.getMainHandItem().use(outside,p,InteractionHand.MAIN_HAND);
+            h.assertTrue(p.getOffhandItem().isEmpty()&&p.getMainHandItem().get(DataComponents.CUSTOM_DATA).copyTag().contains(SelfAddressedEnvelopeItem.SEALED),"one stack is sealed inside");
+            var drops=new ArrayList<net.minecraft.world.entity.item.ItemEntity>();drops.add(new net.minecraft.world.entity.item.ItemEntity(outside,p.getX(),p.getY(),p.getZ(),p.getMainHandItem().copy()));drops.add(new net.minecraft.world.entity.item.ItemEntity(outside,p.getX(),p.getY(),p.getZ(),new ItemStack(Items.BREAD)));
+            p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
+            SelfAddressedEnvelopeItem.drops(new net.neoforged.neoforge.event.entity.living.LivingDropsEvent(p,p.damageSources().generic(),drops,false));
+            h.assertTrue(drops.size()==1&&drops.get(0).getItem().is(Items.BREAD),"only the sealed envelope stays out of the death drops");
+            SelfAddressedEnvelopeItem.respawn(new PlayerEvent.PlayerRespawnEvent(p,false));
+            ItemStack back=ItemStack.EMPTY;for(var stack:p.getInventory().items)if(stack.is(NovelRegistry.ENVELOPE.get()))back=stack;
+            h.assertTrue(!back.isEmpty()&&!back.get(DataComponents.CUSTOM_DATA).copyTag().contains(SelfAddressedEnvelopeItem.SEALED)&&p.getInventory().countItem(Items.DIAMOND)==5,"on waking the envelope and what it held are back, opened, to be sealed again");
+            h.succeed();
+        });}
     @GameTest(template="empty",batch="novel_well",timeoutTicks=360) public static void nativeWellWaitReopensCoverAndClimbingOutRestoresHeight(GameTestHelper h){
         well=new Fixture(h,32900,LabyrinthPlace.BARN_WELL);var f=well;var p=f.player();var peer=f.player();f.at(p,.5,-12,-22.5);int[] stage={0};
         h.runAfterDelay(30,()->{h.assertTrue(NovelVignettes.childScale(p)&&f.l.getBlockState(f.b.offset(NovelRooms.WELL)).getValue(TrapDoorBlock.OPEN)&&((WellCoverBlockEntity)f.l.getBlockEntity(f.b.offset(NovelRooms.WELL))).progress()>0,"child height accompanies a slowly moving cover, with time to look up");f.at(p,.5,-2,-22.5);f.click(p,NovelRooms.WELL);h.assertTrue(f.own(p).getInt("WellTicks")<NovelVignettes.WELL_WAIT,"using the moving cover cannot shorten the personal vigil");});

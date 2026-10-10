@@ -423,6 +423,7 @@ public final class ExplorationPassTests {
                 var keep=new CompoundTag();keep.putInt("Burned",3);keep.putString("Front","my saved words");d.setStateEntry(StaircaseStory.STATE,reader.toString(),keep);
                 var goat=new CompoundTag();var goatPlayers=new CompoundTag();var mine=new CompoundTag();mine.putBoolean("Haunted",true);mine.putInt("Hauntings",2);goatPlayers.put(reader.toString(),mine);goat.put("Players",goatPlayers);
                 var oldRun=new CompoundTag();oldRun.putInt("Phase",GoatmanVignette.VIGIL);goat.put("Run",oldRun);d.setState(GoatmanVignette.ID,goat);
+                var letters=new CompoundTag();letters.putInt("Letters",3);letters.putBoolean("AtticKnocked",true);NovelVignettes.save(d,reader,letters);WitnessAccount.resolve(d,reader,WitnessAccount.Story.WHALE,"read_the_final_page");
                 LabyrinthBuilder.clearAll();LabyrinthBuilder.gateForGameTest(true);
                 h.assertTrue(LabyrinthBuilder.ensureReachable(server),"standing 0.4.47 doors stay usable immediately while new halls wait for carving");
                 h.assertTrue(!LabyrinthBuilder.isPlaceReady(d,LabyrinthPlace.ALCOVE_HALL),"a new hall cannot be dealt before native construction finishes");
@@ -435,6 +436,10 @@ public final class ExplorationPassTests {
                 // 0.4.53: the saved world's trailer is carved again with its seats, lamps, bathroom window and shed; every child's own record stays.
                 var trailer=LabyrinthPlaces.base(origin,LabyrinthPlace.GOATMAN);
                 h.assertTrue(l.getBlockState(trailer.offset(GoatmanWoods.WINDOW)).is(GoatmanRegistry.WINDOW.get())&&l.getBlockState(trailer.offset(GoatmanWoods.TOILET)).is(GoatmanRegistry.TOILET.get())&&l.getBlockState(trailer.offset(GoatmanWoods.SINK)).is(GoatmanRegistry.SINK.get())&&l.getBlockState(trailer.offset(0,4,-62)).is(Blocks.LANTERN)&&l.getBlockState(trailer.offset(11,0,-62)).getBlock() instanceof DoorBlock,"the trailer is rebuilt with its actual bathroom fixtures, lamps and the generator shed");
+                // 0.4.66: the saved world's institute is carved again around its post room; an earlier reader's letters and ending stay theirs.
+                var institute=LabyrinthPlaces.base(origin,LabyrinthPlace.WHALE);var box=l.getBlockState(institute.offset(WhaleInstitute.pigeonhole(WhaleInstitute.ROOM)));
+                h.assertTrue(box.is(NovelRegistry.PIGEONHOLE.get())&&box.getValue(PigeonholeBlock.NUMBER)==WhaleInstitute.ROOM&&l.getBlockState(institute.offset(WhaleInstitute.DESK)).is(HouseBlocks.HOUSEHOLD_FURNITURE.get())&&LabyrinthBuilder.isPlaceReady(d,LabyrinthPlace.WHALE),"the institute is rebuilt in place with its numbered boxes and her desk");
+                h.assertTrue(NovelVignettes.personal(d,reader).getInt("Letters")==3&&WitnessAccount.has(d,reader,WitnessAccount.Story.WHALE),"an earlier reader's correspondence and resolution survive the carve");
                 h.assertTrue(GoatmanVignette.personal(d,reader).getBoolean("Haunted")&&GoatmanVignette.personal(d,reader).getInt("Hauntings")==2&&!d.state(GoatmanVignette.ID).contains("Run"),"a haunted reader stays haunted while the old evening is forgotten");
                 h.assertTrue(cat.isAlive()&&cat.getUUID().equals(id)&&cat.getHealth()==5&&cat.isOrderedToSit()&&d.returnDepth(reader)==1&&d.stateEntry(StaircaseStory.STATE,reader.toString()).equals(keep),"native pet identity, Stay, health, saved retreat and personal burned pages survive");h.succeed();
             }finally{cat.discard();lease.close();LabyrinthBuilder.gateForGameTest(null);LabyrinthBuilder.clearAll();store.set("the_oldest_house",oldHouse);store.set("the_oldest_house_labyrinth",oldData);}

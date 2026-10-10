@@ -21,20 +21,33 @@ public final class NovelTexts {
         "The windows were sealed before the measurements began.\n\nA reader described the sky to me. I asked her to start again.",
         "Seven appointments. Seven voices.\n\nThe cats knew which chair was empty before I did.",
         "The gouges are beside the trunk. The manuscript calls them damage to the floor.\n\nNo one has measured their spacing.\n\n[Someone has counted them.]"));}
-    public static ItemStack whaleOpening(){return HouseWriting.book("The address on the envelope","Pelafina",HouseWriting.WritingStyle.PELAFINA,List.of(
-        "My dear child,\n\nThere are three attics. They insist there have always been three.\n\nI remember a room without a roof. I remember you asking if the rain could come in.",
-        "I will write when they bring the post. Leave a little room in a chest for me.\n\nThe last loose sheets have beginnings I could not say aloud. Count them. Leave a pause between each number at the middle attic."));}
-    public static ItemStack letter(int n,String name){return HouseWriting.book("Letter, "+new String[]{"7 April","8 April","14 April","undated","16 April","9 April?","Tuesday","after your letter"}[Math.min(7,n)],"Pelafina",HouseWriting.WritingStyle.PELAFINA,switch(n){
-        case 0->List.of("My dear "+name+",\n\nThey brought an orange with breakfast. I saved the peel because it made the drawer smell like somewhere with a kitchen.\n\nI hope you are eating properly.","I folded this three times before I remembered the envelope.\n\nDo you still open letters with your thumb? I used to worry you would cut yourself.\n\nThere is a loose sheet behind this one.","The bell rings.\n\nHands fold.\n\nRooms settle.\n\nEvery door waits.\n\nExcept mine.");
-        case 1->List.of("I have not had an answer.\n\nPerhaps you wrote and it was put in the wrong drawer. I prefer that explanation today.\n\nI moved the orange peel. It had begun to dry.","They say the windows open.\n\nToday I counted the coats of paint over their catches.\n\nThe afternoon was warm. I thought of your coat hanging over a chair.","Only the post knows where you are.\n\nNobody will give me the address.\n\nEven so, I write.");
-        case 2->List.of("The dates are no longer consecutive.\n\nI asked the nurse what happened to the missing morning. She brought tea.\n\nI thanked her. I had been rude about the dates.","I am irritated that I have to keep writing into silence.\n\nThen I imagine you carrying these pages around, and I am ashamed of the irritation.\n\nNeither feeling stays long enough to be useful.","The third stair creaks.\n\nWait before the next knock.\n\nOnly the middle door listens.");
-        case 3->List.of("I have left a page upstairs.\n\nI wanted to write something ordinary on it. A shopping list. A reminder to mend a cuff.\n\nI could not remember what you needed.","The beginnings of the loose sheets make three numbers. The middle attic listens to the pauses.\n\nThere is a gap where the next date should be.\n\nDo not fill it in for me.");
-        case 4->List.of("I read the first letter again.\n\nThe drawer I described is here. The kitchen I imagined is not.\n\nI was trying to bring the smell of one room into another.","Someone has underlined the word SAVE.\n\nI meant the peel.\n\nI think I meant the peel.\n\nPlease keep the earlier page.");
-        case 5->List.of("The date on this one goes backward.\n\nI have left it. You will know I was here on the morning I wrote it, even if you cannot place that morning.","I thought I heard you in the hall.\n\nI did not ask you to come in. I listened until the footsteps reached a door I could not see.\n\nIt was kinder than being certain.");
-        case 6->List.of("I am writing because the afternoon is quiet.\n\nNothing happened that needs an account.\n\nI wish we had more letters like that.","There is a clean cup beside mine.\n\nI put it there myself.\n\nThat is not evidence. It is an invitation.");
-        default->List.of("I do not know whether the answer in the drawer arrived before this letter.\n\nI read what was there.\n\nFor a while I could imagine someone reading back.","You do not have to solve every sentence to remain with me.\n\nLeave the blank date blank. Keep the ordinary details.\n\nThey were the things I was trying to send.");});}
+    public static ItemStack whaleOpening(){return HouseWriting.book("Before the post","Pelafina",HouseWriting.WritingStyle.PELAFINA,List.of(
+        "My dear child,\n\nThey say the post goes out at no particular hour. I write anyway.\n\nThere is paper in the desk. There is always paper in the desk.",
+        "Write to me, and sign it, or they will not take it.\n\nI will answer before you ask. I always have.\n\nThey took the number off my door. I count the others."));}
+    /**
+     * The answer already in the hand that posted letter n (1 to 3). Each is headed from a room she does not live in, quotes the
+     * letter it has not yet received, and keeps five lines on its third page whose first letters agree with one another.
+     */
+    public static ItemStack whaleReply(int n,String name,String quote){
+        int i=Math.max(1,Math.min(3,n))-1;
+        String heard=quote.isEmpty()?"You sent a page with nothing on it. I have read it more than once.":"You wrote: \u201c"+quote+"\u201d";
+        String head=new String[]{"Whalestoe, Room 2","Whalestoe, Room 11","Whalestoe, Room 4"}[i]+"\n\nMy dear "+name+",\n\n"+heard;
+        String answer=new String[]{
+            "I am answering before your letter came. They tell me that is impolite.\n\nThe calendar in my room has been crossed out again.",
+            "Your letter of the 14th reached me on the 2nd. I have stopped asking the nurses to explain it.\n\nThey put the answer in my hand before I had finished the question.",
+            "I keep everything you send. I keep it in my box, with my number on it, where they cannot lose it.\n\nThey lose the number. They never lose the box."}[i];
+        String lines=new String[]{
+            "Snow again, out of season.\nEvery clock keeps its own hour.\nVisiting day came. Nobody came.\nEven the nurse read it first.\nNot one date will hold still.",
+            "Someone turned my chair to the wall.\nEach morning the post comes early.\nVery little changes but the dates.\nEver since, I answer the next one.\nNobody says which room is mine.",
+            "Strange, your hand has become mine.\nEverything you send, I remember.\nVoices read the doors and skip one.\nEventually the post comes home.\nNumbers come off doors here."}[i];
+        String close=new String[]{
+            "Write again. I will have answered by the time you do.\n\nP.",
+            "Write again, if only so I know which day it is.\n\nP.",
+            "Don't write again. You already have.\n\nP."}[i];
+        return HouseWriting.book("Letter, "+new String[]{"9 March","2 March","undated"}[i],"Pelafina",HouseWriting.WritingStyle.PELAFINA,List.of(head,answer,lines,close));
+    }
     public static ItemStack whaleLast(){return HouseWriting.book("The undated letter","Pelafina",HouseWriting.WritingStyle.PELAFINA,List.of(
-        "You heard the pauses.\n\nI tried to make a door out of them.\n\nThey told me this attic was empty.",
+        "They count the rooms aloud on their rounds and skip one.\n\nI have stopped correcting them. It only makes the count longer.",
         "There is no next date.\n\nPlease leave that space.\n\nI have spent so long being told what belongs there."));}
     public static ItemStack well(){return HouseWriting.book("The cover","Karen Green",HouseWriting.WritingStyle.KAREN,List.of(
         "There was a barn. There was a well.\n\nThere were two of us.\n\nThat is the part I can put in order.",
@@ -51,7 +64,4 @@ public final class NovelTexts {
     public static ItemStack karen(){return HouseWriting.book("A room to come back to","Karen Green",HouseWriting.WritingStyle.KAREN,List.of(
         "This bed remembers you.\n\nSleep here to set a place inside the House. It is the only bed beyond the hall that does.",
         "The projector keeps pictures of the rooms you reached. Click it to change the frame.\n\nWhen you wake, count what is on the table.\n\nI do."));}
-    public static ItemStack reply(String keyword){return HouseWriting.book("A reply without a date","Pelafina",HouseWriting.WritingStyle.PELAFINA,List.of(
-        "You wrote about "+keyword+".\n\nI read that part twice.\n\nThe first time I imagined a window. The second time I imagined the window opening.",
-        "Your book is safe in the drawer.\n\nYou may write again.\n\nI cannot make the dates behave."));}
 }

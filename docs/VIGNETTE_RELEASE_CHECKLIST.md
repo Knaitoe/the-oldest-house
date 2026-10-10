@@ -9,7 +9,11 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.63
+## Current candidate: 0.4.66
+
+The Whalestoe institute is redesigned in its existing slot. WHALE stays one eligible source with a new personal resolution: the writer's own returned letter, read in her room (`returned_to_sender`). Earlier attic resolutions keep their evidence and words. Still 43 sources / 33 resolutions / two kinds / three endings. Native coverage includes private posting and replies, the SEVEN cipher, the exact returned originals, peer exclusion, reload, the owner-bound envelope's refusals, daily recall, sealing and death return, and the saved-world re-carve. Layout 39 / protocol 40. See [the institute record](WHALE_INSTITUTE_0_4_66.md).
+
+## Earlier candidate: 0.4.63
 
 Combine Claude's cabin, Goatman, return and hunt updates with the complete farm/well pass. No new eligible source: 43 sources / 33 resolutions / two kinds / three endings. Require 476 native cases, 74 multiplayer, 25 literary, 39 exploration, all nine Goatman cases, every focused suite, 17 playtest-log regressions, all 330 PNGs/eight fonts/full writing, all 71 architecture views and 105 native screenshots, plus both actual socket clients/two reconnects. Native coverage includes jointed limb grounding, missing-arm rendering/armour, owner-bound globes, gradual well closure/darkness, one-handed hearth use and resident preservation in both new rebuilds, and the separate saved already-upgraded farm rail/ground repair with camera/body guards and no restocking. Layout 38 / protocol 37. See [the integration record](COMBINED_UPDATE_0_4_63.md).
 

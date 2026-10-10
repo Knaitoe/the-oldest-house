@@ -91,13 +91,6 @@ public final class SceneShells {
                     Blocks.DARK_OAK_PLANKS, null, null,
                     Blocks.DARK_OAK_SLAB, Blocks.GLASS_PANE, Blocks.GRAY_WOOL, Blocks.DEEPSLATE_BRICKS,
                     Blocks.POLISHED_BLACKSTONE_BRICKS, 2, true, 4));
-            // An institution's common room: pilasters, a bumper rail, frosted panes, a tiled ceiling.
-            case WHALE -> new Spec(-12, 0, -31, 12, 4, -1, new Palette(
-                    Blocks.STONE_BRICKS, null, Blocks.POLISHED_ANDESITE, 1, null,
-                    Blocks.SMOOTH_STONE, 3, true, false, Blocks.WHITE_CONCRETE,
-                    Blocks.POLISHED_ANDESITE, null, null,
-                    Blocks.SMOOTH_STONE_SLAB, Blocks.WHITE_STAINED_GLASS_PANE, null, Blocks.WHITE_CONCRETE,
-                    null, 0, true, 6));
             // A ward: white pilasters, grey bumper rail, chequered tiles, a grid of ceiling panels.
             case HOSPITAL -> new Spec(-8, 0, -22, 8, 4, -1, new Palette(
                     Blocks.WHITE_CONCRETE, null, Blocks.LIGHT_GRAY_CONCRETE, 1, null,
