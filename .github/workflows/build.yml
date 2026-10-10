@@ -162,6 +162,13 @@ jobs:
               assert json.loads(z.read('assets/the_oldest_house/models/item/self_addressed_envelope.json'))['textures']['layer0']
               for name in ('WhaleInstitute','PigeonholeBlock','SelfAddressedEnvelopeItem'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
+              # Hospital furnishings and private writing (0.4.70).
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/institute_fixture.json'))['variants']) == 80
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/institute_notebook.json'))['variants']) == 8
+              for name in ('paint','peel','damp','ivory','dado','floor_ivory','floor_gray','ceiling','enamel','steel','vinyl','ceramic','cabinet','laminate','glass','diffuser'):
+                  assert z.read(f'assets/the_oldest_house/textures/block/ward/{name}.png').startswith(b'\x89PNG')
+              for name in ('WhaleHospital','WhaleWriting','InstituteFixtureBlock','InstituteCabinetBlock','InstituteCabinetBlockEntity','InstituteNotebookBlock','InstituteNotebookBlockEntity'):
+                  assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               # Proofrock (0.4.67): the town's signboards and school fittings, and the teachers' desks.
               assert len(json.loads(z.read('assets/the_oldest_house/blockstates/town_fixture.json'))['variants']) == 256
               assert len(json.loads(z.read('assets/the_oldest_house/blockstates/streetlight.json'))['variants']) == 40
@@ -517,6 +524,8 @@ jobs:
           test -s build/font-smoke/native-streetlights-0469.png
           test -s build/font-smoke/playtest-0468-passed.txt
           for page in 4 5 6; do test -s build/font-smoke/native-playtest-0468-$page.png; done
+          test -s build/font-smoke/institute-0470-passed.txt
+          for page in 0 1; do test -s build/font-smoke/native-institute-0470-$page.png; done
           test -s build/font-smoke/native-goatman.png
           test -s build/font-smoke/coffin-passed.txt
           test -s build/font-smoke/native-coffin.png
@@ -994,6 +1003,8 @@ jobs:
           test -s build/font-smoke/native-streetlights-0469.png
           test -s build/font-smoke/playtest-0468-passed.txt
           for page in 4 5 6; do test -s build/font-smoke/native-playtest-0468-$page.png; done
+          test -s build/font-smoke/institute-0470-passed.txt
+          for page in 0 1; do test -s build/font-smoke/native-institute-0470-$page.png; done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -1005,6 +1016,8 @@ jobs:
             build/font-smoke/playtest-0468-passed.txt
             build/font-smoke/native-streetlights-0469.png
             build/font-smoke/streetlights-0469-passed.txt
+            build/font-smoke/native-institute-0470-*.png
+            build/font-smoke/institute-0470-passed.txt
             run/logs/latest.log
             run/crash-reports/
 
