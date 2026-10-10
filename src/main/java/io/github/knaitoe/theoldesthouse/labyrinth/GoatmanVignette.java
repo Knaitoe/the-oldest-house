@@ -292,7 +292,10 @@ public final class GoatmanVignette {
             GoatmanChild c=GoatmanRegistry.CHILD.get().create(l);if(c==null)continue;
             c.addTag(ACTOR);c.getPersistentData().putUUID(ROUND,r.getUUID("Id"));c.getPersistentData().putInt(INDEX,i);
             c.appearance(r.getInt("Skin"+i),i==r.getInt("Wrong")?r.getInt("Tells"):0,null);
-            l.addFreshEntity(c);settle(c,b,place(i,r));
+            // Native spawn callbacks and the first tracking packet must see the campsite,
+            // rather than the new entity's default position in chunk zero.
+            settle(c,b,place(i,r));
+            if(!l.addFreshEntity(c))io.github.knaitoe.theoldesthouse.TheOldestHouse.LOGGER.warn("Could not stage trailer cousin {} for round {} at {}; retrying",i,r.getUUID("Id"),c.position());
         }
     }
     private static GoatmanChild girl(ServerPlayer p,BlockPos b,CompoundTag r){

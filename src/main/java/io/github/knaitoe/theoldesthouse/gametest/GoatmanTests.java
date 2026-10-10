@@ -130,7 +130,25 @@ public final class GoatmanTests {
             server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);server.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);LabyrinthBuilder.clearAll();LabyrinthDoors.clearAll();
         }
     }
-    private static Fixture stalking,disguises,fixtures,sharedSupper;
+    private static Fixture stalking,disguises,fixtures,sharedSupper,spawn;
+    @AfterBatch(batch="goat_spawn0469") public static void cleanSpawn(ServerLevel l){if(spawn!=null){spawn.close();spawn=null;}}
+    @GameTest(template="empty",batch="goat_spawn0469",timeoutTicks=1200)
+    public static void freshCousinsJoinAtTheirActualCampPositionsAndKeepIdentityOnRestaging(GameTestHelper h){
+        spawn=new Fixture(h,31000);var f=spawn;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the fresh scene's native entity sections are ready")).thenExecute(()->{
+            var joined=new LinkedHashMap<UUID,Vec3>();
+            java.util.function.Consumer<net.neoforged.neoforge.event.entity.EntityJoinLevelEvent> observe=e->{
+                if(e.getLevel()==f.l&&e.getEntity() instanceof GoatmanChild c&&c.getTags().contains(GoatmanVignette.ACTOR))joined.put(c.getUUID(),c.position());
+            };
+            NeoForge.EVENT_BUS.addListener(observe);
+            try{h.assertTrue(GoatmanVignette.enter(p),"the fresh latecomer enrolls through the normal arrival path");}finally{NeoForge.EVENT_BUS.unregister(observe);}
+            h.assertTrue(joined.size()==8&&joined.values().stream().allMatch(IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN)::contains),"every cousin's native join event starts at the campsite, never chunk zero: "+joined.values());
+            var ids=f.cousins().stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet());
+            h.assertTrue(ids.equals(joined.keySet()),"all eight joined bodies are actually present in the scene");
+            var r=f.run();UUID round=r.getUUID("Id");GoatmanVignette.stage(f.l,f.b,r);GoatmanVignette.stage(f.l,f.b,r);
+            h.assertTrue(ids.equals(f.cousins().stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet()))&&f.run().getUUID("Id").equals(round),"restaging preserves the same native bodies and saved round");h.succeed();
+        });
+    }
     @AfterBatch(batch="goat_shared_supper0465") public static void cleanSharedSupper(ServerLevel l){if(sharedSupper!=null){sharedSupper.close();sharedSupper=null;}}
     @GameTest(template="empty",batch="goat_shared_supper0465",timeoutTicks=2400)
     public static void twoPlayersShareOneCookingClockAndFiniteSavedPackets(GameTestHelper h){
