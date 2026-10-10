@@ -201,16 +201,23 @@ public final class GoatmanTests {
             if(r.getInt("Clock")<120)h.assertTrue(GoatmanFear.stage(r)==0&&packet.cousinLine()==0&&f.cousins().stream().noneMatch(GoatmanChild::cowering),"the occupied night is ordinary until an actual audible disturbance");
         });
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native collision and entity sections are ready")).thenExecute(()->{
-            GoatmanVignette.enter(p);var r=f.run();r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",0);r.putInt("ExtraState",GoatmanVignette.X_DOOR);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);f.cohort(r,List.of(p),0);f.run(r);GoatmanWoods.door(f.l,f.b,false);GoatmanWoods.setWindow(f.l,f.b,true);GoatmanVignette.stage(f.l,f.b,r);
+            GoatmanVignette.enter(p);var r=f.run();r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",0);r.putInt("ExtraState",GoatmanVignette.X_DOOR);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);f.cohort(r,List.of(p),0);f.run(r);GoatmanWoods.door(f.l,f.b,false);GoatmanWoods.setWindow(f.l,f.b,false);GoatmanVignette.stage(f.l,f.b,r);
             var it=f.cousin(r.getInt("Wrong")).orElseThrow();body[0]=it.getUUID();var cell=f.b.offset(-6,0,-50);it.moveTo(cell.getX()+.5,cell.getY(),cell.getZ()+.5);
             for(int x=-1;x<=1;x++)for(int z=-1;z<=1;z++)if(Math.abs(x)==1||Math.abs(z)==1)for(int y=0;y<4;y++){var at=cell.offset(x,y,z);barriers.put(at,f.l.getBlockState(at));f.l.setBlockAndUpdate(at,Blocks.OBSIDIAN.defaultBlockState());}begun[0]=true;
         }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Clock")>135,"the first spatial cue has sounded")).thenExecute(()->{
             h.assertTrue(GoatmanFear.stage(f.run())==GoatmanFear.CONFUSION&&f.run().getInt("PressureCues0472")==1&&f.run().getInt("StalkLeg0465")==0,"a real collision stall cannot suppress the first knock or confused response");
         }).thenWaitUntil(()->h.assertTrue(f.run().getBoolean("AssaultDone0465"),"all seven audible demands finish on their own occupied clock")).thenExecute(()->{
             var r=f.run();h.assertTrue(demands.size()==7&&r.getInt("PressureCues0472")==7&&r.getInt("FinalBlows0465")>=12&&r.getInt("StalkLeg0465")==0&&r.getInt("StalkWindowLeg0465")==0,"words, surrounding cues and hard blows remain present without skipping any blocked circuit leg");
+        }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Clock")>=GoatmanVignette.VIGIL0465+200,"the physical obstruction remains beyond the original dawn time")).thenExecute(()->{
+            var r=f.run();h.assertTrue(r.getInt("Phase")==GoatmanVignette.VIGIL&&r.getInt("ExtraState")==GoatmanVignette.X_DOOR&&!r.contains("NightWindowAt0472")&&r.getInt("StalkLeg0465")==0,"neither an already open window nor the dawn deadline can skip the stalled circuit");
+            var d=LabyrinthData.get(f.server);var loaded=LabyrinthData.FACTORY.deserializer().apply(d.save(new CompoundTag(),f.l.registryAccess()),f.l.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);
             barriers.forEach(f.l::setBlockAndUpdate);
         }).thenWaitUntil(()->h.assertTrue(GoatmanStalking.circuitDone(f.run())&&f.run().getInt("StalkWindowLeg0465")==4,"after the obstruction clears, the original native body completes all circuit legs before its full window approach: leg="+f.run().getInt("StalkLeg0465")+" window="+f.run().getInt("StalkWindowLeg0465")+" clock="+f.run().getInt("Clock"))).thenExecute(()->{
-            h.assertTrue(f.cousin(f.run().getInt("Wrong")).orElseThrow().getUUID().equals(body[0]),"independent cue timing never replaces or teleports the original Goatman body");h.succeed();
+            h.assertTrue(f.cousin(f.run().getInt("Wrong")).orElseThrow().getUUID().equals(body[0]),"independent cue timing never replaces or teleports the original Goatman body");
+        }).thenWaitUntil(()->h.assertTrue(f.run().getInt("ExtraState")==GoatmanVignette.X_WINDOW,"the already open window admits the same body only after its complete physical approach")).thenExecute(()->{
+            var r=f.run();h.assertTrue(r.getInt("Phase")==GoatmanVignette.VIGIL&&r.getInt("NightWindowAt0472")>=GoatmanVignette.VIGIL0465+200,"the delayed native window attempt keeps its original response time before dawn");
+        }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Phase")==GoatmanVignette.DAWN,"the delayed night still reaches its ordinary morning outcome")).thenExecute(()->{
+            var r=f.run();var d=LabyrinthData.get(f.server);h.assertTrue(r.getInt("Clock")>=r.getInt("NightWindowAt0472")+400&&!r.getBoolean("Right")&&GoatmanHaunt.haunted(d,p.getUUID())&&!WitnessAccount.has(d,p.getUUID(),WitnessAccount.Story.GOATMAN),"the open window preserves its original haunting outcome and cannot award a successful vigil");h.succeed();
         });
     }
     private static Fixture stalking,disguises,fixtures,sharedSupper,spawn;
