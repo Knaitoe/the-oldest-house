@@ -141,7 +141,8 @@ public final class DrownedTownTests {
         helper.assertTrue(level.getBlockState(base.offset(DrownedTown.SCHOOL_DOOR)).getBlock() instanceof DoorBlock&&level.getBlockState(base.offset(DrownedTown.SCHOOL_DOOR)).getFluidState().isEmpty(), "the high school's front door stands on dry ground");
         for(var desk:DrownedTown.PAPERS)helper.assertTrue(level.getBlockEntity(base.offset(desk)) instanceof net.minecraft.world.Container drawer&&drawer.getItem(0).getItem()!=Items.AIR, "each essay is in a real teacher's desk");
         // An ordinary return threshold in the same level exercises the actual labyrinth graph hooks.
-        BlockPos source=base.offset(42,0,1);for(int x=-7;x<=7;x++)for(int z=0;z<=17;z++)level.setBlock(source.offset(x,-1,z),Blocks.STONE.defaultBlockState(),3);
+        // Beyond Proofrock's east edge (x 64), so leaving through it really leaves the town.
+        BlockPos source=base.offset(80,0,1);for(int x=-7;x<=7;x++)for(int z=0;z<=17;z++)level.setBlock(source.offset(x,-1,z),Blocks.STONE.defaultBlockState(),3);
         var entrance=new LabyrinthData.Door("drowned_fixture",HouseDimensions.OUTSIDE,source,Direction.SOUTH,"place:drowned_town",true);data.putDoor(entrance);
         sequencePlayer=helper.makeMockServerPlayerInLevel();ServerPlayer player=sequencePlayer;player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
         Vec3 start=Vec3.atBottomCenterOf(source.south(2));player.teleportTo(level,start.x,start.y,start.z,180,0);LabyrinthDoors.use(player,entrance);
