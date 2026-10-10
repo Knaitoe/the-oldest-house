@@ -4,7 +4,7 @@ Preparation branch: `feat/trailer-cast-0.4.65`, based on Claude's latest 0.4.64 
 
 ## Cast and movement
 
-- Ship the approved 61 entity atlases and six Minecraft-style fixture/item atlases. Their exact hashes, dimensions and retained entity UV alpha footprints are recorded in `art/inventory/cast_0465.json`. The Mother of Strays is unchanged.
+- Ship the approved 61 entity atlases and six Minecraft-style fixture/item atlases. Their exact hashes, dimensions and retained entity UV alpha footprints are recorded in `art/inventory/cast_0465.json`. Existing asset generators preserve approved files. The Mother of Strays is unchanged.
 - Cousins use full alternating leg/arm strides, a forward running lean and grounded bob. The other vignette children animate from actual client-visible travel, including scripted movement. Seated, laughing, cowering and leaning poses inherit a connected hip/torso/neck/shoulder transform; clothes inherit their corresponding limbs.
 - The returning runner follows the actual exterior/door/interior route and hurries indoors when the door opens. Its saved identity remains fixed.
 
@@ -16,7 +16,7 @@ Preparation branch: `feat/trailer-cast-0.4.65`, based on Claude's latest 0.4.64 
 
 ## Physical stalking
 
-- The original impostor circles both sides and the back of the trailer using native collision, then settles at the door. Window and wall blows originate where that actor stands. No replacement body is spawned for a disguise.
+- The original impostor circles both sides and the back of the trailer using native collision, then settles at the door. At the tire-backed windows it climbs the actual existing tires, so a child disguise reaches a visible height. Window and wall blows originate where that actor stands. No replacement body is spawned for a disguise.
 - Appearance changes wait until all nearby actual cameras, including spectators, cannot see the actor. A saved shuffled deck alternates the Goatman with previously unused child skins; no child repeats. Real cousins retain their own saved skins.
 - The demands occur in this exact order: `let me in`; `let. me. in`; `seriously i'm not playing`; `i'm not fucking playing let me in`; `i'm not fucking playing`; `let me in`; `let me in let me in let me in let me in`.
 - The final demand accompanies rapid hard blows, wood particles, latch/rattle sounds and saved door stress. The native spruce-door mesh recoils and develops bounded stress seams while its latch, open state and collision remain authoritative. An unsecured bathroom sash still admits the actor through its real opening, with a low crawling body and matching rendered pose.
@@ -29,7 +29,7 @@ Preparation branch: `feat/trailer-cast-0.4.65`, based on Claude's latest 0.4.64 
 
 ## Validation
 
-Candidate validation is pending. The native suite has **484** cases, including real cooking/plating and empty-scene persistence, two-reader cooking/counts, the entire physical circuit and seven demand stages, saved nonrepeating disguises (including observation through clear glass), and fixture upgrade/removal preservation. The native fixture case also checks a real block-entity packet preserves active door recoil while disk reload retains stress without replaying motion. All Goatman cases run in the full suite and an additional focused `the_oldest_house_goatman` namespace. Required evidence includes all eleven workflow jobs, full writing/package checks, all **346** PNG CRCs and eight fonts, all existing architecture/client proofs, and four new native trailer GPU captures with numerical checks of the rendered hip, shoulder and neck pivots.
+Candidate validation is pending. The native suite has **484** cases, including real cooking/plating and empty-scene persistence, two-reader cooking/counts, the entire physical circuit and seven demand stages, saved nonrepeating disguises (including observation through clear glass), and fixture upgrade/removal preservation. The native fixture case also checks a real block-entity packet preserves active door recoil while disk reload retains stress without replaying motion. All Goatman cases run in the full suite and an additional focused `the_oldest_house_goatman` namespace. Required evidence includes all twelve workflow jobs, full writing/package checks, all **346** PNG CRCs and eight fonts, all existing architecture/client proofs, and four new native trailer GPU captures with numerical checks of the rendered hip, shoulder and neck pivots. `-PtrailerSmoke` runs those same four captures directly; the complete writing/architecture/client proof chain remains independently required.
 
 The actual two-socket-client expedition and both same-profile reconnects must pass on this exact source, including native persistent porthole mining/crawling, both camera framebuffer exposures and independent ending-book visibility and collection. An earlier candidate's test results do not verify this build.
 

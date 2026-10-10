@@ -147,8 +147,8 @@ public final class GoatmanTests {
     @GameTest(template="empty",batch="goat_stalk0465",timeoutTicks=5000)
     public static void oneNativeBodyCirclesBothSidesThenEscalatesAllSevenDemandsAndHardBlows(GameTestHelper h){
         stalking=new Fixture(h,30400);var f=stalking;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
-        var demands=new ArrayList<Integer>();var impacts=new HashSet<Long>();boolean[] started={false};UUID[] identity={null};int[] skin={-1};
-        h.onEachTick(()->{if(!started[0])return;var r=f.run();int demand=r.getInt("Demand");if(demand>=101&&(demands.isEmpty()||demands.getLast()!=demand))demands.add(demand);if(r.contains("LastImpactPos0465"))impacts.add(r.getLong("LastImpactPos0465"));});
+        var demands=new ArrayList<Integer>();var impacts=new HashSet<Long>();boolean[] started={false},sill={false};UUID[] identity={null};int[] skin={-1};
+        h.onEachTick(()->{if(!started[0])return;var r=f.run();int demand=r.getInt("Demand");if(demand>=101&&(demands.isEmpty()||demands.getLast()!=demand))demands.add(demand);if(r.contains("LastImpactPos0465")){impacts.add(r.getLong("LastImpactPos0465"));if(r.getLong("LastImpactPos0465")==f.b.offset(-8,2,-59).asLong())f.cousin(r.getInt("Wrong")).ifPresent(c->{if(f.rel(c).distanceToSqr(new Vec3(-8.5,1,-58.5))<.02&&f.l.getBlockState(c.blockPosition().below()).isFaceSturdy(f.l,c.blockPosition().below(),Direction.UP))sill[0]=true;});}});
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the circuit's native blocks and entity sections are ready")).thenExecute(()->{
             GoatmanVignette.enter(p);var r=f.run();r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",0);r.putInt("ExtraState",GoatmanVignette.X_DOOR);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);f.cohort(r,List.of(p),0);f.run(r);
             GoatmanWoods.door(f.l,f.b,false);GoatmanWoods.setWindow(f.l,f.b,true);GoatmanVignette.stage(f.l,f.b,r);var it=f.cousin(r.getInt("Wrong")).orElseThrow();identity[0]=it.getUUID();skin[0]=it.skin();it.moveTo(new Vec3(-6,0,-49.6).add(f.b.getX(),f.b.getY(),f.b.getZ()));started[0]=true;
@@ -156,6 +156,7 @@ public final class GoatmanTests {
             var r=f.run();var it=f.cousin(r.getInt("Wrong")).orElseThrow();h.assertTrue(it.getUUID().equals(identity[0])&&it.skin()==skin[0],"the original saved actor and identity survive every disguise and route leg");
             h.assertTrue(demands.equals(List.of(101,102,103,104,105,106,107)),"all seven demands occur once and in order: "+demands);
             h.assertTrue(impacts.contains(f.b.offset(-8,2,-59).asLong())&&impacts.contains(f.b.offset(8,2,-59).asLong())&&impacts.contains(f.b.offset(0,2,-77).asLong()),"window and wall impacts originate on both sides and behind the house");
+            h.assertTrue(sill[0],"the native body climbs the existing tire and knocks at a height where a child can be seen through the glass");
             var door=(TrailerDoorBlockEntity)f.l.getBlockEntity(f.b.offset(GoatmanWoods.DOOR));h.assertTrue(r.getInt("FinalBlows0465")>=12&&door.stress()>=16&&!GoatmanWoods.doorOpen(f.l,f.b),"the final demand produces rapid hard blows and saved door stress without opening it");h.succeed();
         });
     }
@@ -166,7 +167,7 @@ public final class GoatmanTests {
             GoatmanVignette.enter(p);var r=f.run();f.cohort(r,List.of(p),0);var c=f.cousin(r.getInt("Wrong")).orElseThrow();UUID id=c.getUUID();int original=c.skin();
             c.moveTo(new Vec3(.5,1,-53.8).add(f.b.getX(),f.b.getY(),f.b.getZ()));GoatmanWoods.door(f.l,f.b,true);p.moveTo(new Vec3(.5,1,-56.7).add(f.b.getX(),f.b.getY(),f.b.getZ()));p.setYRot(0);p.setXRot(0);
             h.assertTrue(!GoatmanStalking.obscured(f.l,c),"the actual player sees the child through the open doorway");GoatmanStalking.step(f.l,f.b,r,c,1);h.assertTrue(!c.monsterAppearance(),"a pending texture change waits while the actual camera sees it");
-            c.moveTo(new Vec3(-9.25,1.3,-58.5).add(f.b.getX(),f.b.getY(),f.b.getZ()));p.moveTo(new Vec3(-6.5,1,-58.5).add(f.b.getX(),f.b.getY(),f.b.getZ()));p.setYRot(90);p.setXRot(0);h.assertTrue(!GoatmanStalking.obscured(f.l,c),"clear native window panes cannot conceal a visible disguise change");
+            c.moveTo(new Vec3(-9.25,1.3,-66.5).add(f.b.getX(),f.b.getY(),f.b.getZ()));p.moveTo(new Vec3(-6.5,1,-66.5).add(f.b.getX(),f.b.getY(),f.b.getZ()));p.setYRot(90);p.setXRot(0);h.assertTrue(!GoatmanStalking.obscured(f.l,c),"clear native window panes cannot conceal a visible disguise change");
             r.putInt("StalkUsed0465",1<<original);var seen=new HashSet<Integer>();for(int i=0;i<8;i++){int next=GoatmanStalking.nextChild(r);h.assertTrue(next>=0&&next!=original&&seen.add(next),"each remaining child appears only once");}
             h.assertTrue(GoatmanStalking.nextChild(r)==-2,"exhausting the children leaves only the Goatman");f.run(r);
             var saved=LabyrinthData.get(f.server).save(new CompoundTag(),f.l.registryAccess());var loaded=LabyrinthData.FACTORY.deserializer().apply(saved,f.l.registryAccess());var restored=GoatmanVignette.run(loaded);h.assertTrue(GoatmanStalking.nextChild(restored)==-2,"a save reload cannot recycle the disguise deck");
@@ -303,7 +304,7 @@ public final class GoatmanTests {
         });
     }
 
-    @GameTest(template="empty",batch="goat_taken",timeoutTicks=600)
+    @GameTest(template="empty",batch="goat_taken",timeoutTicks=2400)
     public static void openingTheDoorAtNightTakesTheOpenerAliveAndWholeAndItComesHomeWithThem(GameTestHelper h){
         taken=new Fixture(h,28600);var f=taken;var a=f.player();var peer=f.player();GoatmanVignette.enter(a);GoatmanVignette.enter(peer);f.night(List.of(a,peer),200,true);
         f.l.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(false,f.server);

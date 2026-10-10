@@ -26,6 +26,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 /** Four native GPU views of all cousins, complete strides, connected fear/laughter and the actual fixtures. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class TrailerVisualProof extends Screen {
+    private static boolean started;
     private int page,frames;
     public TrailerVisualProof(){super(Component.literal("Trailer update"));}
     @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){}
@@ -51,7 +52,7 @@ public final class TrailerVisualProof extends Screen {
         };
         for(int i=0;i<states.length;i++){
             if(mc.getBlockRenderer().getBlockModel(states[i])==mc.getModelManager().getMissingModel())throw new IllegalStateException("Missing trailer fixture "+states[i]);
-            var p=g.pose();p.pushPose();p.translate(12+i*(width-32F)/5,height*.48F,150);p.scale(48,-48,48);p.mulPose(Axis.XP.rotationDegrees(20));p.mulPose(Axis.YP.rotationDegrees(140));mc.getBlockRenderer().renderSingleBlock(states[i],p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.popPose();
+            var p=g.pose();p.pushPose();p.translate(8+(i+.5F)*(width-16F)/5,height*.53F,150);p.scale(48,-48,48);p.mulPose(Axis.XP.rotationDegrees(20));p.mulPose(Axis.YP.rotationDegrees(140));p.translate(-.5,0,-.5);mc.getBlockRenderer().renderSingleBlock(states[i],p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.popPose();
         }
         var door=GoatmanRegistry.DOOR.get().defaultBlockState().setValue(DoorBlock.FACING,Direction.SOUTH);
         for(int i=0;i<2;i++){var p=g.pose();p.pushPose();p.translate(width-108+i*52,height-20,150);p.scale(38,-38,38);p.mulPose(Axis.YP.rotationDegrees(155));TrailerDoorRenderer.draw(door,i==0?0:1.8F,i==0?0:20,p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.popPose();}out.endBatch();
@@ -67,9 +68,11 @@ public final class TrailerVisualProof extends Screen {
         }
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
-        var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof TrailerVisualProof proof)||++proof.frames<16)return;
+        var mc=Minecraft.getInstance();boolean focused=Boolean.getBoolean("the_oldest_house.trailerSmoke");
+        if(focused&&!started&&mc.screen instanceof net.minecraft.client.gui.screens.TitleScreen){started=true;mc.setScreen(new TrailerVisualProof());return;}
+        if(!focused&&!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof TrailerVisualProof proof)||++proof.frames<16)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage im=Screenshot.takeScreenshot(mc.getMainRenderTarget())){im.writeToFile(dir.resolve("native-trailer-0465-"+proof.page+".png"));}
         proof.frames=0;if(++proof.page<4)return;
-        Files.writeString(dir.resolve("trailer-0465-passed.txt"),"All nine native cousin atlases; eight walking/running stride poses; connected hips, shoulders and neck in fear/laughter/seating; actual toilet, sink states, sash states, raw/cooked food and door stress rendered in four GPU views.\n");mc.setScreen(new CoffinVisualProof());
+        Files.writeString(dir.resolve("trailer-0465-passed.txt"),"All nine native cousin atlases; eight walking/running stride poses; connected hips, shoulders and neck in fear/laughter/seating; actual toilet, sink states, sash states, raw/cooked food and door stress rendered in four GPU views.\n");if(focused)mc.stop();else mc.setScreen(new CoffinVisualProof());
     }
 }

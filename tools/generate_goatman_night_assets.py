@@ -13,11 +13,17 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 A = ROOT / 'src/main/resources/assets/the_oldest_house'
+MANIFEST = ROOT / 'art/inventory/cast_0465.json'
+APPROVED = {entry['path'] for entry in json.loads(MANIFEST.read_text())['approved_textures']} if MANIFEST.exists() else set()
 RATE = 22050
 
 
 def save(path, image):
     out = A / path
+    if out.relative_to(ROOT).as_posix() in APPROVED:
+        if not out.is_file():
+            raise FileNotFoundError(f'Restore the approved texture from git: {path}')
+        return
     out.parent.mkdir(parents=True, exist_ok=True)
     image.save(out)
 
