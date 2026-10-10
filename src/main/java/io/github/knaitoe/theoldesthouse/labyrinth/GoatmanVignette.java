@@ -468,7 +468,7 @@ public final class GoatmanVignette {
         ambience(l,b,r,enrolled,server.getTickCount());
     }
     private static void evening(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> enrolled,int clock){
-        int supper=supperAt(r),leaves=fresh(r)?LEAVES0465:RUNNER_LEAVES,back=fresh(r)?BACK0465:RUNNER_BACK,silence=fresh(r)?SILENCE0465:SILENCE;
+        int supper=supperAt(r),leaves=fresh(r)?LEAVES0465:RUNNER_LEAVES,backAt=fresh(r)?BACK0465:RUNNER_BACK,silence=fresh(r)?SILENCE0465:SILENCE;
         if(fresh(r)){
             if(clock==220)say(enrolled,"A cousin: You should've heard his story. The scary part was how long it took.");
             if(clock==520)say(enrolled,"A cousin: Can somebody pass the plates? We brought enough for all of us.");
@@ -485,7 +485,7 @@ public final class GoatmanVignette {
         if(clock==supper){if(r.getInt("ExtraState")==X_ACTIVITY)r.putInt("ExtraState",X_SUPPER);GoatmanWoods.door(l,b,true);say(enrolled,"A cousin: Food's on the table. Come inside before it gets cold.");}
         if(!fresh(r)&&clock==GRUMBLE)say(enrolled,"A cousin: Who had two? There was one for everybody.");
         if(clock==(fresh(r)?2250:EXTRA_OUT)&&r.getInt("ExtraState")==X_SUPPER)r.putInt("ExtraState",X_FIRE);
-        if(clock>=back&&clock<silence&&r.getInt("RunnerState")==R_AWAY){
+        if(clock>=backAt&&clock<silence&&r.getInt("RunnerState")==R_AWAY){
             Vec3 at=abs(GoatmanWoods.path(27),b);GoatmanChild c=GoatmanRegistry.CHILD.get().create(l);
             if(c!=null){int i=r.getInt("Runner");c.addTag(ACTOR);c.getPersistentData().putUUID(ROUND,r.getUUID("Id"));c.getPersistentData().putInt(INDEX,i);c.appearance(r.getInt("Skin"+i),0,null);
                 c.moveTo(at.x,at.y,at.z);l.addFreshEntity(c);List<Vec3> back=new ArrayList<>();for(double s:new double[]{30,33,37,41,43,48,53,58,63,66})back.add(GoatmanWoods.path(s));back.addAll(List.of(UP[0],UP[1],UP[2],UP[3]));
