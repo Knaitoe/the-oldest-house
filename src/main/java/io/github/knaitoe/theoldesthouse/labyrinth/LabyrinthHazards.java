@@ -106,11 +106,17 @@ public final class LabyrinthHazards {
         route.add(base.offset(0,-1,-27));return List.copyOf(route);
     }
     public static void upgradeFlooded(ServerLevel level,BlockPos origin){
-        if(!LabyrinthBuilder.isPlaceReady(level.getServer(),LabyrinthPlace.FLOODED_PASSAGE))return;var base=LabyrinthPlaces.base(origin,LabyrinthPlace.FLOODED_PASSAGE);if(base==null)return;
+        if(LabyrinthBuilder.isCarving()||!LabyrinthBuilder.isPlaceReady(level.getServer(),LabyrinthPlace.FLOODED_PASSAGE))return;var base=LabyrinthPlaces.base(origin,LabyrinthPlace.FLOODED_PASSAGE);if(base==null)return;
         var d=LabyrinthData.get(level.getServer());if(d.state("water_trial_0427").getBoolean(Long.toString(base.asLong())))return;
-        if(level.players().stream().anyMatch(p->new AABB(Vec3.atLowerCornerOf(base.offset(-9,-3,-30)),Vec3.atLowerCornerOf(base.offset(9,8,2))).contains(p.position())))return;
+        var bounds=LabyrinthPlaces.placeBounds(origin,LabyrinthPlace.FLOODED_PASSAGE);if(bounds==null)return;
+        var first=new BlockPos(bounds.minX()-1,bounds.minY()-1,bounds.minZ()-1);var last=new BlockPos(bounds.maxX()+1,bounds.maxY()+1,bounds.maxZ()+1);
+        var area=new AABB(Vec3.atLowerCornerOf(first),Vec3.atLowerCornerOf(last.offset(1,1,1)));
+        // The entrance includes the full copied vestibule. A routine tick must never force cold
+        // chunks onto the main thread, or mistake unloaded original residents for an empty room.
+        for(int x=first.getX()>>4;x<=last.getX()>>4;x++)for(int z=first.getZ()>>4;z<=last.getZ()>>4;z++)if(!level.hasChunk(x,z)||!level.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(x,z)))return;
+        if(level.players().stream().anyMatch(p->area.inflate(48).intersects(p.getCamera().getBoundingBox()))||!level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class,area).isEmpty())return;
         // Preserve a player-authored container instead of replacing its identity during a scenery upgrade.
-        for(BlockPos pos:BlockPos.betweenClosed(base.offset(-8,-2,-27),base.offset(8,5,-1)))if(level.getBlockEntity(pos)!=null)return;
+        for(BlockPos pos:BlockPos.betweenClosed(first,last))if(level.getBlockEntity(pos)!=null)return;
         buildFloodedPassage(level,base);
     }
 
