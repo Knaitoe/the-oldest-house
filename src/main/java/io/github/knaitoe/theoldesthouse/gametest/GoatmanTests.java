@@ -37,7 +37,7 @@ public final class GoatmanTests {
         h.assertTrue(GoatmanVignette.enter(p),"the child joins a fresh evening");
         var r=f.run();h.assertTrue(GoatmanVignette.count(r)==8&&GoatmanVignette.fresh(r),"a fresh round stages eight apparent cousins with the new evening");
         r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.SUPPER0465-1);r.putInt("Expected",8);r.putInt("Pan",0);f.cohort(r,List.of(p),0);f.run(r);
-        GoatmanVignette.stage(f.l,f.b,r);for(var c:f.cousins())h.assertTrue(!c.getBoundingBox().intersects(new AABB(f.b.offset(-1,1,-56),f.b.offset(2,4,-52))),"no starting cousin blocks the actual trailer doorway");
+        GoatmanVignette.stage(f.l,f.b,r);for(var c:f.cousins())h.assertTrue(!c.getBoundingBox().intersects(new AABB(Vec3.atLowerCornerOf(f.b.offset(-1,1,-56)),Vec3.atLowerCornerOf(f.b.offset(2,4,-52)))),"no starting cousin blocks the actual trailer doorway");
         h.assertTrue(f.l.getBlockState(f.b.offset(GoatmanWoods.COOLER)).is(GoatmanRegistry.COOLER.get()),"a real cooler stands beside the kitchen counter");
         p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);f.click(p,GoatmanWoods.STOVE);h.assertTrue(p.getMainHandItem().isEmpty()&&f.run().getInt("PacketsIssued0464")==0,"the empty stove directs the player to the cooler");f.click(p,GoatmanWoods.COOLER);
         h.assertTrue(p.getMainHandItem().is(GoatmanRegistry.FRANKS.get())&&f.run().getInt("PacketsIssued0464")==1,"one finite unopened pack is a real held object");
