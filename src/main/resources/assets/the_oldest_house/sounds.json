@@ -648,5 +648,53 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.goatman_keen"
+  },
+  "caver.exhale": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:caver/exhale"
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.caver.exhale"
+  },
+  "caver.inhale": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:caver/inhale"
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.caver.inhale"
+  },
+  "caver.scrape": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:caver/scrape"
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.caver.scrape"
+  },
+  "caver.line_taut": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:caver/line_taut"
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.caver.line_taut"
+  },
+  "caver.stone_roll": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:caver/stone_roll"
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.caver.stone_roll"
+  },
+  "caver.chisel": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:caver/chisel"
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.caver.chisel"
   }
 }
