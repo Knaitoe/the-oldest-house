@@ -166,13 +166,14 @@ public final class CaverVignette {
                 own.putBoolean("MarkRead",true);save(d,p.getUUID(),own);updateJournal(p);
                 p.displayClientMessage(Component.literal("The cuts go beneath the mineral crust. One looks almost like a shoulder."),false);
                 privateSound(p,LabyrinthRegistry.CAVER_CHISEL,Vec3.atCenterOf(b.offset(5,-3,-48)),.4F,.85F);
-            }return true;
+            }else p.displayClientMessage(Component.literal("Cuts under the crust. The smooth stone opposite does not match the wall."),true);
+            return true;
         }
         var local=at.subtract(b);
         if(local.getZ()==-43&&local.getX()>=4&&local.getX()<=6&&local.getY()>=-3&&local.getY()<=-2){
             if(!own.getBoolean("MarkRead")){p.displayClientMessage(Component.literal("Marks on the opposite wall catch what little light there is."),true);return true;}
-            if(own.getBoolean("StoneSeen"))return true;
             var state=d.state(ID);
+            if(own.getBoolean("StoneSeen")){p.displayClientMessage(Component.literal("The passage behind the stone is low."),true);return true;}
             if(!state.getBoolean("StoneMoved")){
                 // It sits in its seat while the cave breathes out, and gives only while it draws in.
                 int breath=breathing(p.server);
@@ -393,13 +394,24 @@ public final class CaverVignette {
                 &&e.getPos().equals(base(observer.server).offset(CaverCave.JOURNAL))){e.setCanceled(true);return;}
         if(!(e.getEntity() instanceof ServerPlayer p)||!inside(p)||!reach(p,e.getPos()))return;
         var b=base(p.server);boolean journal=e.getPos().equals(b.offset(CaverCave.JOURNAL));
-        if(e.getHand()!=InteractionHand.MAIN_HAND)return;
+        // The marks, the stone and the front of the rubble answer whatever is in the reader's hands. The client also tries
+        // the off hand after an empty main hand; that try must not set a torch on the prop that was just examined.
+        if(e.getHand()!=InteractionHand.MAIN_HAND){if(journal||prop(p,e.getPos())){e.setCanceled(true);e.setCancellationResult(InteractionResult.FAIL);resync(p);}return;}
         if(journal){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);
             p.openMenu(new SimpleMenuProvider((id,inventory,reader)->new JournalMenu(id,p,e.getPos()),Component.literal("Field notebook")));}
         else if(p.getMainHandItem().is(Items.STRING)&&anchor(b,e.getPos())){if(tie(p,e.getPos())){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);}}
-        else if(!(p.getItemInHand(e.getHand()).getItem() instanceof BlockItem item&&torch(item.getBlock().defaultBlockState()))
-                &&(chip(p,e.getPos())||examine(p,e.getPos()))){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);}
+        else if((prop(p,e.getPos())||!(p.getItemInHand(e.getHand()).getItem() instanceof BlockItem item&&torch(item.getBlock().defaultBlockState())))
+                &&(chip(p,e.getPos())||examine(p,e.getPos()))){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);resync(p);}
     }
+    /** The authored things a reader examines or works: the marks, the stone and its seat, and the front of the packed run. */
+    static boolean prop(ServerPlayer p,BlockPos at){
+        var b=base(p.server);var r=at.subtract(b);
+        if(r.equals(CaverCave.MARK))return true;
+        if(r.getZ()==-43&&r.getX()>=4&&r.getX()<=6&&r.getY()>=-3&&r.getY()<=-2)return true;
+        int front=CaverCave.front(p.serverLevel(),b);return front>=0&&r.equals(CaverCave.rubbleCell(front));
+    }
+    /** A held torch the client already showed being placed on a prop is put back as the server holds it. */
+    private static void resync(ServerPlayer p){if(p.getMainHandItem().getItem() instanceof BlockItem||p.getOffhandItem().getItem() instanceof BlockItem)p.inventoryMenu.sendAllDataToRemote();}
     public static void onLeftClick(PlayerInteractEvent.LeftClickBlock e){
         if(e.getAction()!=PlayerInteractEvent.LeftClickBlock.Action.START||!(e.getEntity() instanceof ServerPlayer p)||!inside(p)||!reach(p,e.getPos()))return;
         var state=p.serverLevel().getBlockState(e.getPos());

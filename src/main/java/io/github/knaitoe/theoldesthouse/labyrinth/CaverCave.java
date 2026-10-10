@@ -62,7 +62,7 @@ public final class CaverCave {
         hollow(l,b,2,-3,-57,7,-3,-51);
         for(int x=2;x<=7;x++)for(int z=-57;z<=-51;z++)put(l,b,x,-2,z,ceiling());
         for(int z=-55;z>=-57;z--)for(int x=3;x<=6;x++)put(l,b,x,-4,z,Blocks.CALCITE.defaultBlockState());
-        put(l,b,-4,-2,-40,Blocks.CHISELED_DEEPSLATE.defaultBlockState());
+        put(l,b,-4,-2,-40,LabyrinthRegistry.CAVE_MARKS.get().defaultBlockState());
         put(l,b,-5,-3,-42,Blocks.POINTED_DRIPSTONE.defaultBlockState());
         put(l,b,2,-3,-38,Blocks.POINTED_DRIPSTONE.defaultBlockState());
         put(l,b,-3,0,-4,Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.HAS_BOOK,true));
@@ -96,6 +96,8 @@ public final class CaverCave {
         state.putBoolean(key,true);data.setState("caver_entrance_0430",state);
     }
     private static void light(ServerLevel l,BlockPos p,int strength){l.setBlock(p,Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL,strength),F);}
+    /** The marked rock, or the dressed block older caves used for it. */
+    public static boolean isMark(BlockState state){return state.is(LabyrinthRegistry.CAVE_MARKS.get())||state.is(Blocks.CHISELED_DEEPSLATE);}
     /** Packed rubble, or an older cave's single cracked block, still filling part of the squeeze. */
     public static boolean isRubble(BlockState state){return state.is(LabyrinthRegistry.CAVE_RUBBLE.get())||state.is(Blocks.CRACKED_DEEPSLATE_BRICKS);}
     /** Sets the run to match saved work: each full five strokes is one block taken out, from the mouth inward. */

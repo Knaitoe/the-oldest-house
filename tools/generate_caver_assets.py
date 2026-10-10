@@ -43,6 +43,60 @@ def rubble_texture():
     image.save(path)
 
 
+def marks_texture():
+    """0.4.72: the marked rock. Cave stone with old cuts in it, half under a pale mineral crust; it should read as wall."""
+    rng = random.Random(472)
+    size = 16
+    image = Image.new('RGBA', (size, size))
+    base = []
+    for y in range(size):
+        row = []
+        for x in range(size):
+            v = 118 + rng.randint(-14, 12)
+            if rng.random() < 0.12:
+                v -= 22  # pits in the stone
+            row.append(v)
+        base.append(row)
+    # Three tool cuts and a curved one that might be the line of a shoulder, cut deeper at the bottom edge of each stroke.
+    cuts = set()
+    for x0, y0, length in ((3, 3, 7), (6, 2, 8), (9, 4, 6)):
+        for i in range(length):
+            cuts.add((x0 + i // 3, y0 + i))
+    for i in range(7):
+        cuts.add((10 + round(2.2 * math.sin(i / 2.2)), 7 + i))
+    # The crust: a pale calcite-coloured skin over the upper part, thin and broken where the cuts run under it.
+    crust = set()
+    for x in range(size):
+        edge = 5 + round(2.5 * math.sin(x / 2.6 + 1.0)) + rng.randint(0, 1)
+        for y in range(edge):
+            if rng.random() < 0.86:
+                crust.add((x, y))
+    for y in range(size):
+        for x in range(size):
+            v = base[y][x]
+            r, g, b = v, v, v + 2
+            if (x, y) in cuts:
+                r, g, b = v - 52, v - 52, v - 48
+                if (x, y + 1) not in cuts:
+                    r, g, b = v - 64, v - 64, v - 60
+            elif (x - 1, y) in cuts:
+                r, g, b = v + 14, v + 14, v + 12  # the lit lip of a cut
+            if (x, y) in crust:
+                mix = 0.55 if (x, y) in cuts else 0.72
+                cr, cg, cb = 214, 206, 190
+                r, g, b = (round(r * (1 - mix) + cr * mix), round(g * (1 - mix) + cg * mix), round(b * (1 - mix) + cb * mix))
+            image.putpixel((x, y), tuple(max(0, min(255, c)) for c in (r, g, b)) + (255,))
+    path = ASSETS / 'textures/block/cave_marks.png'
+    image.save(path)
+    (ASSETS / 'blockstates/cave_marks.json').write_text(json.dumps({'variants': {'': {'model': 'the_oldest_house:block/cave_marks'}}}, indent=2) + '\n')
+    (ASSETS / 'models/block/cave_marks.json').write_text(json.dumps({'parent': 'minecraft:block/cube_all', 'textures': {'all': 'the_oldest_house:block/cave_marks'}}, indent=2) + '\n')
+    path = ASSETS / 'lang/en_us.json'
+    original = path.read_text()
+    lang = json.loads(original)
+    lang['block.the_oldest_house.cave_marks'] = 'Marked rock'
+    write_json(path, lang, original)
+
+
 def noise(seconds, seed):
     return np.random.default_rng(seed).uniform(-1, 1, round(RATE * seconds))
 
@@ -183,6 +237,11 @@ def lang_and_block():
 
 
 if __name__ == '__main__':
-    rubble_texture()
-    sounds()
-    lang_and_block()
+    import sys
+    if sys.argv[1:] == ['marks']:
+        marks_texture()  # 0.4.72 only; leaves the 0.4.71 files exactly as they are
+    else:
+        rubble_texture()
+        sounds()
+        lang_and_block()
+        marks_texture()

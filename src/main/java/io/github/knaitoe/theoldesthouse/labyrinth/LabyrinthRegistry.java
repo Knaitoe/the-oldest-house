@@ -23,6 +23,9 @@ public final class LabyrinthRegistry {
     /** The caver's packed crack (0.4.71): slow, honest pickaxe work, one block at a time, and nothing to carry away. */
     public static final DeferredBlock<Block> CAVE_RUBBLE=BLOCKS.registerSimpleBlock("cave_rubble",
             BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).strength(15F,6F).sound(SoundType.DEEPSLATE).requiresCorrectToolForDrops().noLootTable());
+    /** The cuts under the mineral crust (0.4.72): cave rock, not a dressed block, so the mark reads as part of the wall. */
+    public static final DeferredBlock<Block> CAVE_MARKS=BLOCKS.registerSimpleBlock("cave_marks",
+            BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(1.5F,6F).sound(SoundType.STONE).requiresCorrectToolForDrops().noLootTable());
     public static final ResourceLocation HEARTBEAT_ID=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"vignette.heartbeat");
     public static final DeferredHolder<SoundEvent,SoundEvent> FLOORBOARD_HEARTBEAT=SOUNDS.register("vignette.heartbeat",()->SoundEvent.createVariableRangeEvent(HEARTBEAT_ID));
     public static final DeferredHolder<SoundEvent,SoundEvent> HALL_PIPES=sound("hall.pipes"), HALL_STONE=sound("hall.stone"), HALL_SETTLE=sound("hall.settle");

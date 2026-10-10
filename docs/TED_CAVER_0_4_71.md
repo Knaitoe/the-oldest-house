@@ -122,3 +122,14 @@ The caver namespace now has 13 native cases (`CaverTests` and `CaverInteractionT
 - **The line.** One reader's string ties only their line, and it pays out only behind the reader who walks. The draught values (gentle, dragging, held, and none after escape) are checked, and the line survives reload.
 - **The full escape.** Tie the line, crawl in, read the marks, move the stone on the in-breath, wait the real 25 seconds, check the held drag, crawl back and climb. Only the explorer is credited. Six later arrivals add nothing, and the seventh adds the last page.
 - **Saved-cave reshaping.** An actual older cave, which could be walked round its stone, waits for a reader in the deep cave and for a body in the chamber, then reshapes all at once. A torch goes back to the barrel. Twelve saved strokes keep two blocks out. The stone becomes the only way on. The checkpoint survives reload, and an already opened crack stays open.
+
+## 0.4.72: the marks and the stone answer a torch-holding hand
+
+A playtest found nothing in the bowl past the squeeze would respond. A reader exploring a dark cave holds a torch, and the cave's right-click handler stepped aside for anyone holding one so that torches could be set on the walls. The marks and the stone therefore never answered: the click set a torch instead, or did nothing. The playtester also read the dressed chiseled deepslate of the marks as a placed device ("a sculk sensor?") rather than cuts in the rock.
+
+- **Props first.** The marks, the stone (and the cell it rolls into) and the front block of rubble now answer whatever the reader holds. Torches still go anywhere else in the cave.
+- **No torch from the other hand.** After an empty main hand the client also tries the off hand; that try is refused on a prop, so no torch appears on the marks just read. The held stack is resynchronised so a ghost placement never costs a torch.
+- **No silent second look.** Looking at the marks again says "Cuts under the crust. The smooth stone opposite does not match the wall."; the moved stone says "The passage behind the stone is low."
+- **The marks are rock.** A new `cave_marks` block, "Marked rock": cave stone with old cuts in it, half under a pale mineral crust (`tools/generate_caver_assets.py marks`). New caves build it. Saved caves swap the dressed block once (checkpoint `caver_marks_0472`), only while the cave is loaded and no camera is in the deep cave; it is the same full block, so nothing else moves.
+
+Protocol 46, layout 40. Still 43 sources / 33 resolutions / two kinds / three endings. Native coverage: a real use with a torch in the main hand reads the marks and moves nothing onto them; the following off-hand try is refused with the stack intact; the stone answers a torch-holding hand; the saved swap waits for a camera, runs once and survives reload. Validation pending.
