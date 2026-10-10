@@ -130,6 +130,44 @@ public final class GoatmanTests {
             server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);server.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);LabyrinthBuilder.clearAll();LabyrinthDoors.clearAll();
         }
     }
+    private static Fixture fearNight;
+    @AfterBatch(batch="goat_fear0472") public static void cleanFearNight(ServerLevel l){if(fearNight!=null){fearNight.close();fearNight=null;}}
+    @GameTest(template="empty",batch="goat_fear0472",timeoutTicks=5000)
+    public static void actualNightfallKeepsDistinctCousinsMovingAndGivesTheOutsideVoicePriority(GameTestHelper h){
+        fearNight=new Fixture(h,31600);var f=fearNight;var p=f.player();var q=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        var demands=new HashSet<Integer>();var lines=new HashSet<Integer>();var ids=new HashSet<UUID>();var paced=new ArrayList<Vec3>();boolean[] begun={false};
+        h.onEachTick(()->{
+            if(!begun[0])return;var r=f.run();var packet=GoatmanVignette.scenePayload(r);
+            if(packet.demand()>=101){demands.add(packet.demand());h.assertTrue(packet.cousinLine()==0&&packet.cousinRemaining()==0,"the Goatman voice has exclusive subtitle priority");}
+            if(packet.cousinLine()>0)lines.add(packet.cousinLine());
+            f.cousins().stream().filter(c->c.fear()==GoatmanFear.PACE).findFirst().ifPresent(c->{if(r.getInt("Clock")%120==0)paced.add(c.position());});
+        });
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the complete actual scene is natively loaded")).thenExecute(()->{
+            GoatmanVignette.enter(p);GoatmanVignette.enter(q);var r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.GATHER0465-1);r.putInt("ExtraState",GoatmanVignette.X_FIRE);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);f.cohort(r,List.of(p,q),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);
+            GoatmanWoods.door(f.l,f.b,true);GoatmanVignette.hurry(f.l,f.b);ids.addAll(f.cousins().stream().map(Entity::getUUID).toList());GoatmanWoods.setWindow(f.l,f.b,true);GoatmanWoods.door(f.l,f.b,false);begun[0]=true;
+        }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Clock")>800&&f.run().getInt("Phase")==GoatmanVignette.VIGIL,"the normal evening transition reaches the occupied vigil")).thenExecute(()->{
+            var roles=f.cousins().stream().map(GoatmanChild::fear).filter(role->role>0).collect(java.util.stream.Collectors.toSet());
+            h.assertTrue(roles.size()==7&&f.cousins().stream().filter(GoatmanChild::cowering).count()==1,"seven real cousins have distinct reactions; they do not form cowering ranks: "+roles);
+            h.assertTrue(paced.size()>2&&paced.stream().anyMatch(at->at.distanceToSqr(paced.getFirst())>4),"the frightened pacer keeps physically moving in the clear aisle");
+            h.assertTrue(ids.equals(f.cousins().stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet())),"the entire sequence preserves all eight original cast UUIDs");
+            var shivering=f.cousins().stream().filter(c->c.fear()==GoatmanFear.TREMBLE).findFirst().orElseThrow();var saved=shivering.saveWithoutId(new CompoundTag());var restored=GoatmanRegistry.CHILD.get().create(f.l);restored.load(saved);
+            h.assertTrue(restored.fear()==shivering.fear()&&restored.skin()==shivering.skin()&&restored.getUUID().equals(shivering.getUUID()),"native actor serialization keeps its own fear gesture and identity");
+        }).thenWaitUntil(()->h.assertTrue(f.run().getBoolean("AssaultDone0465"),"all physical wall knocks and the door assault finish from normal nightfall")).thenExecute(()->{
+            h.assertTrue(demands.size()==7&&lines.size()>=5,"all seven priority demands and continued distinct cousin dialogue reach the real scene packets: "+demands+" / "+lines);
+            h.assertTrue(f.run().getInt("ImpactSerial0472")>=20&&f.run().getInt("FinalBlows0465")>=12,"the one native body produces the surrounding knocks and final hard impacts");
+            h.assertTrue(!WitnessAccount.has(LabyrinthData.get(f.server),p.getUUID(),WitnessAccount.Story.GOATMAN),"fear and dialogue do not award the unfinished vigil");h.succeed();
+        });
+    }
+    @GameTest(template="empty")
+    public static void deferredCousinWordsSurviveAPriorityDemandAndTheActualPacketCodec(GameTestHelper h){
+        var r=new CompoundTag();r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",110);r.putInt("Demand",104);r.putInt("DemandAt",100);r.putInt("FearLine0472",7);r.putInt("FearAt0472",105);
+        GoatmanFear.tick(r,List.of(),110);var priority=GoatmanVignette.scenePayload(r);
+        h.assertTrue(priority.demand()==104&&priority.cousinLine()==0&&r.getInt("FearPending0472")==7,"a demand suppresses and queues the interrupted cousin's actual words");
+        var saved=r.copy();saved.putInt("Clock",201);GoatmanFear.tick(saved,List.of(),201);var resumed=GoatmanVignette.scenePayload(saved);
+        h.assertTrue(resumed.demand()==0&&resumed.cousinLine()==7&&resumed.cousinRemaining()==GoatmanFear.LINE_TICKS,"the queued cousin resumes after the voice, including after saved-state reload");
+        var buffer=io.netty.buffer.Unpooled.buffer();try{io.github.knaitoe.theoldesthouse.network.GoatmanScenePayload.STREAM_CODEC.encode(buffer,resumed);h.assertTrue(resumed.equals(io.github.knaitoe.theoldesthouse.network.GoatmanScenePayload.STREAM_CODEC.decode(buffer)),"the native packet codec carries both priority and cousin subtitle leases exactly");}finally{buffer.release();}
+        h.succeed();
+    }
     private static Fixture stalking,disguises,fixtures,sharedSupper,spawn;
     private static java.util.function.Consumer<net.neoforged.neoforge.event.entity.EntityJoinLevelEvent> spawnObserver;
     @AfterBatch(batch="goat_spawn0469") public static void cleanSpawn(ServerLevel l){if(spawnObserver!=null){NeoForge.EVENT_BUS.unregister(spawnObserver);spawnObserver=null;}if(spawn!=null){spawn.close();spawn=null;}}

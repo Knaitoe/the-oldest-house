@@ -58,7 +58,7 @@ try:
     reconnected = launch("runProofB", "client-b-reconnected")
     wait_for(lambda: (report / "restart-b-leak.txt").exists() and reconnected.poll() is not None, 240, "personal burn, two note rooms and logout inside a leak")
     recovered = launch("runProofB", "client-b-leak-reconnected")
-    wait_for(lambda: (report / "passed.txt").exists() and (report / "B-reconnected.png").exists(), 300, "same-profile recovery, native shared hunts and rendered proof")
+    wait_for(lambda: (report / "passed.txt").exists() and (report / "B-reconnected.png").exists(), 420, "same-profile recovery, native shared hunts and rendered proof")
     for p in processes:
         p.wait(timeout=90)
         assert p.returncode == 0, p.returncode
@@ -69,10 +69,13 @@ try:
             assert (report / f"{role}-{view}.png").stat().st_size > 500, (role, view)
     assert (report / "camera-maps.txt").is_file()
     for role in ("A", "B"):
-        for view in ("trailer-arrival", "trailer-camp"):
+        for view in ("trailer-arrival", "trailer-camp", "trailer-fear", "trailer-voice"):
             assert (report / f"{role}-{view}.png").stat().st_size > 10000, (role, view)
     assert (report / "trailer-arrival.txt").is_file()
     assert (report / "trailer-camp.txt").is_file()
+    assert (report / "trailer-night.txt").is_file()
+    for role in ("A", "B"):
+        assert (report / f"{role}-trailer-sounds.txt").stat().st_size>100
     # Require clean native movement validation during the actual crossing
     # and return, even when a later correction would recover a bad packet.
     native_log = (server / "logs/latest.log").read_text(errors="replace")

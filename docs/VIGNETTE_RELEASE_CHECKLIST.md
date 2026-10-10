@@ -9,13 +9,21 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.70
+## Current candidate: 0.4.72
+
+Combine the repaired ward build, Claude's cave redesign and the Goatman scene repairs. Keep the existing eligible pool and private resolutions. Require complete physical-circuit, spatial-knock, individual-child and subtitle-priority regressions, all twelve exact-source jobs, native visual proofs and actual multiplayer/reconnects. Layout 40 / protocol 46.
+
+## Earlier candidate: 0.4.70
 
 Whalestoe receives native hospital materials, furniture and readable bedside notebooks, preserving source letters and finite storage. Optional prose starters and bounded other-hand continuations leave existing writing intact. The four sheets, signed posting, SEVEN, returned originals and personal `returned_to_sender` resolution remain. No new Witness source: 43 / 33 / two kinds / three endings. Require 492 native cases, every focused/socket/reconnect check, 71 architecture views, complete writing/eight fonts, 460 PNGs and two additional institute GPU views. Layout 40 / protocol 44. See [the hospital record](WHALE_HOSPITAL_0_4_70.md).
 
+## Earlier candidate: 0.4.71
+
+Ted the Caver is reworked in its existing slot. TED_CAVER stays one eligible source with the same personal resolution (`retraced_the_squeeze`): still 43 sources / 33 resolutions / two kinds / three endings. Native coverage includes a walking-route search proving the stone is the only way on, front-block-only rubble mining and strokes, per-placer torch ownership, the shared breath clock and its inhale-only stone, each reader's own line, the 25-second low-chamber stay and full escape, later-arrival echoes and the guarded saved-cave reshaping with kept work and refunded torches. Layout 40 / protocol 45. See [the caver record](TED_CAVER_0_4_71.md).
+
 ## Earlier candidate: 0.4.69
 
-Fresh trailer actors must register at their native camp positions, wait for loaded entity sections and retain saved identities. Require actual door crossings, private path-girl visibility, native walking to camp and all eight shared renderers on both connected clients. Proofrock streetlights retain their original addresses, brightness and submerged water; the guarded saved repair preserves originals, edits and later removals. Require 488 native cases, all twelve exact-source jobs, 444 PNGs, eight trailer/fixture views, all 71 architecture views, complete writing/eight fonts and two actual clients/two reconnects. Layout 40 / protocol 43. See [the update record](CHILDREN_AND_STREETLIGHTS_0_4_69.md).
+Fresh trailer actors must register at their native camp positions, wait for loaded entity sections and retain saved identities. Require actual door crossings, private path-girl visibility, native walking to camp and all eight shared renderers on both connected clients. Proofrock streetlights retain their original addresses, brightness and submerged water; the guarded saved repair preserves originals, edits and later removals. Require 489 native cases, all twelve exact-source jobs, 444 PNGs, eight trailer/fixture views, all 71 architecture views, complete writing/eight fonts and two actual clients/two reconnects. Layout 40 / protocol 43. See [the update record](CHILDREN_AND_STREETLIGHTS_0_4_69.md).
 
 ## Previous verified: 0.4.68
 

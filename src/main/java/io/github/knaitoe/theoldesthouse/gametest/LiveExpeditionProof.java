@@ -44,7 +44,7 @@ public final class LiveExpeditionProof {
     private static void require(boolean okay,String message){if(!okay)throw new IllegalStateException("LIVE EXPEDITION: "+message);}
     @SubscribeEvent public static void commands(RegisterCommandsEvent e) {
         if(!enabled())return;
-        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,34)).executes(c->{
+        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,36)).executes(c->{
             var p=c.getSource().getPlayerOrException();if(!role(p).isEmpty()&&IntegerArgumentType.getInteger(c,"step")==phase)ACKS.add(role(p));return 1;
         })));
     }
@@ -305,7 +305,15 @@ public final class LiveExpeditionProof {
             if(cohort.getCompound(a.getUUID().toString()).getBoolean("Arrived")&&cohort.getCompound(b.getUUID().toString()).getBoolean("Arrived"))step(s,34,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN));
         }else if(phase==34&&a!=null&&b!=null&&ACKS.size()==2){
             write("trailer-camp.txt","Both real clients walked the authored woodland trail with native movement and reached the campsite, where all eight original shared children are visible with their registered skins.\n");
-            step(s,30,a.blockPosition());write("passed.txt","Two actual NeoForge socket clients: all original shared doors, personal leaves/burns/note scenes and two same-profile reconnects; one Stacy body and one three-second wooden-door break; real shared/private physical hunts, protected hiding peers and renderer ownership; both mine and crawl through persistent shattered portholes with protected hull; both use cameras, return actual rendered exposures, receive distinct locked native maps and independently earn their own Plains memory; a shared native ledger remains hidden for both, appears for the sole eligible reader and disappears after native menu collection without appearing for the peer; fresh trailer door arrivals track eight shared cousins and each private path girl; native screenshots saved; no doubled clocks or transferred ending credit.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: persistent shattered portholes, two actual camera exposures, independent ending-book visibility, fresh trailer children and two reconnects");
+            var camp=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN);var run=GoatmanVignette.run(d);
+            run.putInt("Phase",GoatmanVignette.GATHERING);run.putInt("Clock",GoatmanVignette.GATHER0465-800);run.putInt("ExtraState",GoatmanVignette.X_FIRE);run.putInt("RunnerState",GoatmanVignette.R_INSIDE);
+            var cohort=run.getCompound("Cohort");for(var p:List.of(a,b)){var own=cohort.getCompound(p.getUUID().toString());own.putInt("Vigil",0);cohort.put(p.getUUID().toString(),own);at(p,camp.offset(0,1,-59),180,p==a?-.6:.6);}
+            run.put("Cohort",cohort);var all=d.state(GoatmanVignette.ID);all.put("Run",run);d.setState(GoatmanVignette.ID,all);GoatmanWoods.door(a.serverLevel(),camp,true);GoatmanWoods.setWindow(a.serverLevel(),camp,true);step(s,35,camp);
+        }else if(phase==35&&a!=null&&b!=null&&ACKS.size()==2){
+            var run=GoatmanVignette.run(d);require(run.getInt("Phase")==GoatmanVignette.VIGIL,"both real clients reached the normal shared night transition");step(s,36,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN));
+        }else if(phase==36&&a!=null&&b!=null&&ACKS.size()==2){
+            write("trailer-night.txt","Both actual clients tracked seven distinct frightened cousins, received native knocks from the west, east and rear of the trailer, and rendered a real priority Goatman demand with the cousin subtitle suppressed.\n");
+            step(s,30,a.blockPosition());write("passed.txt","Two actual NeoForge socket clients: all original shared doors, personal leaves/burns/note scenes and two same-profile reconnects; one Stacy body and one three-second wooden-door break; real shared/private physical hunts, protected hiding peers and renderer ownership; both mine and crawl through persistent shattered portholes with protected hull; both use cameras, return actual rendered exposures, receive distinct locked native maps and independently earn their own Plains memory; a shared native ledger remains hidden for both, appears for the sole eligible reader and disappears after native menu collection without appearing for the peer; fresh trailer door arrivals track eight shared cousins and each private path girl; both clients render distinct fear and priority night dialogue and receive spatial knock events; native screenshots saved; no doubled clocks or transferred ending credit.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: persistent shattered portholes, two actual camera exposures, independent ending-book visibility, fresh trailer children and two reconnects");
         }else if(phase==30&&s.getTickCount()-changed>100){huntChunks.close();s.halt(false);}
     }
 

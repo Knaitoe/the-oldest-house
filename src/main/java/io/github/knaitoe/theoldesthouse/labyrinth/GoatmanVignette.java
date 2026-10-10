@@ -180,6 +180,13 @@ public final class GoatmanVignette {
         spot("cupboard",new Vec3(4,1,-70.5),270,true,STAND,new Vec3(4,1,-57.5),new Vec3(4,1,-70.5));
         spot("floor",new Vec3(.5,1.05,-58.5),0,true,LIE);
         spot("checkDoor",new Vec3(.5,1,-56.2),0,true,STAND);
+        spot("fearDoor",new Vec3(.5,1,-56.6),0,true,STAND);
+        spot("fearWindow",new Vec3(-3.75,1,-58.75),90,true,STAND,new Vec3(-3,1,-57.5));
+        spot("fearPaceA",new Vec3(-3,1,-61.5),180,true,STAND,new Vec3(-3,1,-57.5));
+        spot("fearPaceB",new Vec3(-3,1,-70.5),0,true,STAND,new Vec3(-3,1,-57.5));
+        spot("fearComfort",new Vec3(4,1,-66.5),90,true,STAND,new Vec3(4,1,-57.5));
+        spot("fearEars",new Vec3(4.7,1,-71.5),180,true,COWER,new Vec3(4,1,-57.5),new Vec3(4,1,-71.5));
+        spot("fearStartle",new Vec3(4.5,1,-59.5),0,true,STAND,new Vec3(4,1,-57.5));
         for(int i=0;i<8;i++)spot("cower"+i,new Vec3(i%2==0?-3.8:4.8,1,-65.5-(i/2)*2),180,true,COWER,new Vec3(i%2==0?-3:4,1,-57.5),new Vec3(i%2==0?-3:4,1,-65.5-(i/2)*2));
         for(int s=0;s<10;s++){boolean west=s%2==0;double z=GoatmanWoods.CHAIR_Z[s/2]+.5;
             spot("seat"+s,new Vec3(west?-1.25:2.25,1.5,z),west?270:90,true,SIT,new Vec3(west?-3:4,1,-57.5),new Vec3(west?-3:4,1,z));}
@@ -269,12 +276,11 @@ public final class GoatmanVignette {
             };
         }
         if(i==runner&&r.getInt("RunnerState")!=R_HOME&&r.getInt("RunnerState")!=R_INSIDE)return "step";
-        if(phase==VIGIL&&clock>=BEDTIME)return "cower"+i;
-        if(phase==VIGIL&&i==checker(r)&&clock>=CHECK&&clock<CHECK+260)return "checkDoor";
+        if(phase==VIGIL)return GoatmanFear.destination(i,r);
         if(phase>=VIGIL||clock>=supperAt(r))return seatName(i,r);
         return ACTIVITY[i];
     }
-    private static String seatName(int i,CompoundTag r){
+    static String seatName(int i,CompoundTag r){
         if(!fresh(r))return "seat"+i;int real=i==r.getInt("Wrong")?r.getInt("Runner"):i;
         return "seat"+(real<r.getInt("Wrong")?real:real-1);
     }
@@ -361,6 +367,7 @@ public final class GoatmanVignette {
             int i=c.getPersistentData().getInt(INDEX);if(i>=count(r))continue;
             if(fresh(r)&&phase==VIGIL&&i==wrong&&outside(r)){GoatmanStalking.step(l,b,r,c,clock);continue;}
             if(!outside(r)&&c.stalkingAppearance()&&GoatmanStalking.obscured(l,c))c.disguise(-1);
+            if(phase==VIGIL&&i!=wrong)GoatmanFear.pose(c,r);else c.fear(0);
             String want=place(i,r);double speed=WALK;
             if(i==runner){int rs=r.getInt("RunnerState");
                 if(rs==R_LEAVING){if(!goal(c).equals("_trail")&&!at(c).equals("_trail")){List<Vec3> out=toYard(at(c));
@@ -401,6 +408,7 @@ public final class GoatmanVignette {
             if(!at(c).equals(want)){arrive(c,b,r,l,want);continue;}
             if(phase==GATHERING&&clock>=supperAt(r)&&GoatmanSupper.eat(l,b,r,c,i,clock))say(present,"A cousin: Who had two? There was one for everybody.");
             idle(c,r,present,clock,i);
+            if(phase==VIGIL&&i!=wrong){GoatmanFear.pose(c,r);if(c.fear()==GoatmanFear.WATCH)face(c,abs(new Vec3(-8,2,-59),b));}
         }
     }
     /** From wherever a spot is, out to the yard. */
@@ -477,8 +485,9 @@ public final class GoatmanVignette {
         r.putInt("Clock",clock);
         // Restore saved actors, never reroll a tell or duplicate a cousin after a restart.
         if(server.getTickCount()%20==0||r.getBoolean("StagePending0469"))r.putBoolean("StagePending0469",!stage(l,b,r));cousins(l,b,r,enrolled);
+        if(phase==VIGIL)GoatmanFear.tick(r,cousinsOf(l,b),clock);
         saveRun(d,r);
-        if(server.getTickCount()%20==0)for(var p:enrolled)scene(p,r);
+        if(server.getTickCount()%20==0||speaking(r)||clock==r.getInt("FearAt0472"))for(var p:enrolled)scene(p,r);
         ambience(l,b,r,enrolled,server.getTickCount());
     }
     private static void evening(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> enrolled,int clock){
@@ -552,7 +561,7 @@ public final class GoatmanVignette {
             }
             if(clock==KEEN)for(var p:enrolled)p.connection.send(new ClientboundSoundPacket(Holder.direct(GoatmanRegistry.KEEN.get()),SoundSource.AMBIENT,b.getX()+19.5,b.getY()+3,b.getZ()-70.5,1.2F,1,p.getRandom().nextLong()));
         }
-        if(clock==CHECK)say(enrolled,"A cousin: Maybe we ought to check.");
+        if(clock==CHECK&&r.getInt("FearPending0472")==0)r.putInt("FearPending0472",21);
         if(clock==BEDTIME&&r.getInt("ExtraState")==X_INSIDE)r.putInt("ExtraState",X_FLOOR);
         // Copper motes where the smell is strongest: the door, and the window it tries.
         if(outside(r)&&clock%10==0){Vec3 at=Vec3.atCenterOf(b.offset(GoatmanWoods.DOOR));l.sendParticles(GoatmanRegistry.COPPER.get(),at.x,at.y+.3,at.z-.4,3,.5,.6,.2,.002);}
@@ -595,11 +604,15 @@ public final class GoatmanVignette {
             l.sendParticles(ParticleTypes.SMOKE,f.x,f.y+.4,f.z,2,.15,.1,.15,.01);}
     }
     /** What a child's client shows: the phase, a line at the door, and whether the woods have gone quiet. */
-    private static void scene(ServerPlayer p,CompoundTag r){
+    public static int speechTicks(int demand){return demand>=107?150:demand>=101?100:60;}
+    public static boolean speaking(CompoundTag r){int demand=r.getInt("Demand"),since=r.getInt("Clock")-r.getInt("DemandAt");return demand!=0&&since>=0&&since<speechTicks(demand);}
+    public static GoatmanScenePayload scenePayload(CompoundTag r){
         int clock=r.getInt("Clock"),demand=r.getInt("Demand"),since=clock-r.getInt("DemandAt");
-        boolean speaking=demand!=0&&since>=0&&since<60;
-        HousePackets.send(p,new GoatmanScenePayload(r.getInt("Phase"),speaking?demand:0,speaking?60-since:0,r.getBoolean("Silence")?1:0));
+        boolean voice=speaking(r);int childSince=clock-r.getInt("FearAt0472"),child=r.getInt("FearLine0472");
+        boolean childSpeaking=!voice&&child>0&&childSince>=0&&childSince<GoatmanFear.LINE_TICKS;
+        return new GoatmanScenePayload(r.getInt("Phase"),voice?demand:0,voice?speechTicks(demand)-since:0,r.getBoolean("Silence")?1:0,childSpeaking?child:0,childSpeaking?GoatmanFear.LINE_TICKS-childSince:0);
     }
+    private static void scene(ServerPlayer p,CompoundTag r){HousePackets.send(p,scenePayload(r));}
     private static void say(List<ServerPlayer> players,String line){for(var p:players)p.displayClientMessage(Component.literal(line),false);}
     /** A real knock: knuckles, an ordinary rhythm. */
     private static void knock(ServerLevel l,BlockPos b,List<ServerPlayer> players){

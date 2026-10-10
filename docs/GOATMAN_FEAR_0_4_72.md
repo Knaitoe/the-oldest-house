@@ -1,0 +1,15 @@
+# Goatman fear and combined update 0.4.72
+
+Combines the hospital source from 0.4.70 with Claude's completed cave redesign at `6f4c10db1a1cbd0166bb514fc1ef1f063113f9e9`, including all later child and streetlight fixes from `f44ede1`. The previous hospital branch failed Java compilation; this update corrects its native AABB, container-name and lectern test API calls. Hospital materials, native cabinet/source custody, optional editable letter starters and finite supplies remain included.
+
+The seven real cousins have distinct saved reactions: bracing the door, watching a window, pacing the aisle, comforting a cousin, trembling at the table, covering their ears and startling near the entrance. They move to separate authored positions and continue speaking throughout the occupied night. The original cast UUIDs, skins, shared evening clock and private records remain authoritative.
+
+The outside voice owns the center of the screen. Its seven original demands remain exact, with longer readable leases, native wrapping, a faint echo and restrained one-pixel motion at the later stages. Cousin replies sit lower on the screen between demands. A demand interrupts and queues a cousin's words; the reply survives saved-state reload and resumes after the outside voice. Observer and absent clients cannot advance the evening.
+
+The same impostor physically circles the trailer faster, with shorter pauses. The original native tire climb and glass sightings remain. A blocked rising wheel approach can rise physically before its next horizontal step; there is no teleport or duplicate body. Wall, rear and window knocks use their actual world positions and a range that carries across the trailer. The closed door retains real collision, recoil and saved stress. The count, the cousin's return, the window puzzle, the haunting and full-night resolution remain unchanged.
+
+Native regression coverage follows the normal evening-to-night transition with two participants, seven distinct fear states, continuing pacing and dialogue, all seven priority demand packets, surrounding impacts, saved actor identity and deferred words through the native codec. Existing full physical circuit and unseen-disguise regressions remain. Three added GPU views show connected fear gestures, the priority centered voice and the continuing cousin subtitle. The actual two-socket expedition now continues into the night, tracks all seven frightened real cousins, observes native west/east/rear knock events on both clients and captures both clients' real priority dialogue.
+
+Layout 40 / protocol 46. Use matching 0.4.72 clients and server. Still 43 eligible sources, 33 resolutions across two kinds and three endings. No new credit is granted by fear, dialogue or scenery.
+
+Validation pending on the exact combined source. Required: 499 native cases, 461 PNG textures, all twelve workflow jobs, complete writing/eight fonts, 71 architecture views, all prior GPU proofs plus the two ward and three fear views, and actual two-client multiplayer with both reconnects and night captures.

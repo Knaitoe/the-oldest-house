@@ -25,8 +25,13 @@ public final class StreetlightUpgrade {
         if(wet)return kind==TownStreetlightBlock.Kind.HEAD?old.is(Blocks.LIGHT)&&old.getValue(LightBlock.WATERLOGGED)&&old.getValue(LightBlock.LEVEL)==9:old.is(Blocks.IRON_BARS)&&old.getValue(IronBarsBlock.WATERLOGGED);
         boolean pier=at.getZ()==b.getZ()-110;
         if(kind==TownStreetlightBlock.Kind.HEAD)return old.is(Blocks.LANTERN)&&old.getValue(LanternBlock.HANGING)!=pier;
-        var facing=next.getValue(TownStreetlightBlock.FACING);
-        return old.equals(ProofrockTown.fence(pier?Blocks.SPRUCE_FENCE:Blocks.DARK_OAK_FENCE,kind==TownStreetlightBlock.Kind.TOP?facing:kind==TownStreetlightBlock.Kind.ARM?facing.getOpposite():null));
+        // Vanilla updates recompute fence sides when a nearby block is edited.
+        // Those connection bits do not make an authored pole a different original.
+        if(old.is(pier?Blocks.SPRUCE_FENCE:Blocks.DARK_OAK_FENCE)&&!old.getValue(FenceBlock.WATERLOGGED))return true;
+        var rel=at.subtract(b);
+        if(kind==TownStreetlightBlock.Kind.POLE&&rel.getY()==3&&(rel.getX()==-5&&(rel.getZ()==-9||rel.getZ()==-23)||rel.getX()==5&&(rel.getZ()==-9||rel.getZ()==-23||rel.getZ()==-47||rel.getZ()==-68||rel.getZ()==-79)))
+            return old.equals(Blocks.DARK_OAK_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.HALF,net.minecraft.world.level.block.state.properties.Half.TOP));
+        return kind==TownStreetlightBlock.Kind.BASE&&rel.equals(new BlockPos(-36,0,-24))&&old.is(Blocks.SHORT_GRASS);
     }
     public static boolean apply(ServerLevel l,BlockPos b){
         var data=LabyrinthData.get(l.getServer());var done=data.state(STATE);String key=Long.toString(b.asLong());if(done.getBoolean(key))return true;

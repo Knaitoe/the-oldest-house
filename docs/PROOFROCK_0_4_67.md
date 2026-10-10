@@ -8,7 +8,7 @@ Based on the 0.4.66 Whalestoe head (`5cedea9`). The owner asked for Drowned Town
 
 New textures could be made as needed. The plan below was approved before implementation.
 
-There is no new eligible source: 43 sources / 33 resolutions / two kinds / three endings. The two-visit story, the church roof resolution and every rule of the hunt are unchanged. Layout 40 / protocol 41. Validation pending.
+There is no new eligible source: 43 sources / 33 resolutions / two kinds / three endings. The two-visit story, the church roof resolution and every rule of the hunt are unchanged. Layout 40 / protocol 41. Verified source 3ffcff14d87b9f4c48381e2af22e9639f0b2b327, run 38059068194: all twelve jobs and 484 native cases passed.
 
 ## The town
 
