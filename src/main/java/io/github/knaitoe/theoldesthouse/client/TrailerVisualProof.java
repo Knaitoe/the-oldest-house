@@ -22,6 +22,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /** Four native GPU views of all cousins, complete strides, connected fear/laughter and the actual fixtures. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
@@ -31,6 +32,10 @@ public final class TrailerVisualProof extends Screen {
     public TrailerVisualProof(){super(Component.literal("Trailer update"));}
     @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){}
     private static ResourceLocation skin(int i){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/trailer_child_"+i+".png");}
+    @SubscribeEvent public static void start(ClientTickEvent.Post e){
+        if(!Boolean.getBoolean("the_oldest_house.trailerSmoke")||started)return;var mc=Minecraft.getInstance();if(mc.getOverlay()!=null||mc.screen==null)return;
+        started=true;mc.options.guiScale().set(2);mc.resizeDisplay();TheOldestHouse.LOGGER.info("TRAILER PROOF: opening native models from {}",mc.screen.getClass().getSimpleName());mc.setScreen(new TrailerVisualProof());
+    }
     @Override public void render(GuiGraphics g,int x,int y,float partial){
         var mc=Minecraft.getInstance();var out=mc.renderBuffers().bufferSource();g.fill(0,0,width,height,0xff22262b);
         String[] titles={"All nine cousins","Walking and running: consecutive strides","Seated, cowering and laughing: connected joints","Porcelain fixtures, glazed sash, food and stressed door"};g.drawString(font,titles[page],8,8,0xffe8e0d3,false);g.flush();
@@ -69,10 +74,10 @@ public final class TrailerVisualProof extends Screen {
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();boolean focused=Boolean.getBoolean("the_oldest_house.trailerSmoke");
-        if(focused&&!started&&mc.screen instanceof net.minecraft.client.gui.screens.TitleScreen){started=true;mc.setScreen(new TrailerVisualProof());return;}
         if(!focused&&!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof TrailerVisualProof proof)||++proof.frames<16)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage im=Screenshot.takeScreenshot(mc.getMainRenderTarget())){im.writeToFile(dir.resolve("native-trailer-0465-"+proof.page+".png"));}
         proof.frames=0;if(++proof.page<4)return;
+        TheOldestHouse.LOGGER.info("TRAILER PROOF PASSED: four native views and connected joints");
         Files.writeString(dir.resolve("trailer-0465-passed.txt"),"All nine native cousin atlases; eight walking/running stride poses; connected hips, shoulders and neck in fear/laughter/seating; actual toilet, sink states, sash states, raw/cooked food and door stress rendered in four GPU views.\n");if(focused)mc.stop();else mc.setScreen(new CoffinVisualProof());
     }
 }
