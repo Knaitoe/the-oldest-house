@@ -72,15 +72,18 @@ public final class GoatmanStalking {
         boolean window=r.getBoolean("AssaultDone0465")&&clock>=1900;
         if(!window&&r.getInt("StalkLeg0465")>=CIRCUIT.length){
             c.pose(false);face(c,abs(b,new Vec3(.5,2,-55)));
-            if(clock>=600&&!r.contains("AssaultAt0465"))r.putInt("AssaultAt0465",clock+1);
+            if(clock>=450&&!r.contains("AssaultAt0465"))r.putInt("AssaultAt0465",clock+1);
             return;
         }
         int leg=r.getInt(window?"StalkWindowLeg0465":"StalkLeg0465");Vec3[] route=window?TO_WINDOW:CIRCUIT;
         if(leg>=route.length){c.pose(false);face(c,Vec3.atCenterOf(b.offset(GoatmanWoods.WINDOW)));return;}
         if(clock<r.getInt("StalkPause0465")){c.pose(false);return;}
         Vec3 target=abs(b,route[leg]),delta=target.subtract(c.position());double length=delta.length();
-        Vec3 movement=length<=.25?delta:delta.scale(.25/length);var before=c.position();
+        double speed=r.getInt("DemandStage0465")>=4?.52:.42;
+        Vec3 movement=length<=speed?delta:delta.scale(speed/length);var before=c.position();
         c.setOnGround(true);c.move(net.minecraft.world.entity.MoverType.SELF,movement);c.setDeltaMovement(Vec3.ZERO);
+        // A wheel approach rises physically before the next horizontal step; collision never teleports the body.
+        if(c.position().distanceToSqr(before)<.000004&&delta.y>.03)c.move(net.minecraft.world.entity.MoverType.SELF,new Vec3(0,Math.min(.08,delta.y),0));
         float yaw=length>.01?(float)(Math.atan2(delta.z,delta.x)*180/Math.PI)-90:c.getYRot();
         c.setYRot(yaw);c.setYHeadRot(yaw);c.yBodyRot=yaw;c.animate(c.position().distanceTo(before),false,false);
         if(c.position().distanceToSqr(target)>.012)return;
@@ -88,7 +91,7 @@ public final class GoatmanStalking {
         if(window&&leg==route.length-1){impact(l,b,r,c,GoatmanWoods.WINDOW,2);return;}
         if(!window){
             BlockPos hit=switch(leg){case 2->new BlockPos(-8,2,-59);case 3->new BlockPos(-8,2,-67);case 4->new BlockPos(-8,2,-73);case 6->new BlockPos(0,2,-77);case 8->GoatmanWoods.WINDOW;case 9->new BlockPos(8,2,-67);case 10->new BlockPos(8,2,-59);default->null;};
-            if(hit!=null){face(c,Vec3.atCenterOf(b.offset(hit)));impact(l,b,r,c,hit,leg%3==0?2:1);r.putInt("StalkPause0465",clock+20+leg%3*5);r.putBoolean("StalkChange0465",true);}
+            if(hit!=null){face(c,Vec3.atCenterOf(b.offset(hit)));impact(l,b,r,c,hit,leg%3==0?2:1);r.putInt("StalkPause0465",clock+12+leg%3*4);r.putBoolean("StalkChange0465",true);}
         }
     }
     private static void face(GoatmanChild c,Vec3 p){var d=p.subtract(c.position());float yaw=(float)(Math.atan2(d.z,d.x)*180/Math.PI)-90;c.setYRot(yaw);c.setYHeadRot(yaw);c.yBodyRot=yaw;}
@@ -110,10 +113,10 @@ public final class GoatmanStalking {
         var toward=c.position().subtract(center);double x=center.x,z=center.z;
         if(Math.abs(toward.x)>Math.abs(toward.z))x+=Math.signum(toward.x)*.49;else z+=Math.signum(toward.z)*.49;
         double y=center.y+(door?.55:0);
-        l.playSound(null,x,y,z,force==1?LiteraryRegistry.CABIN_KNOCK.get():force==2?GoatmanRegistry.CLAW.get():GoatmanRegistry.HAMMER.get(),SoundSource.BLOCKS,.65F+force*.22F,force==1?1.08F:.9F);
+        l.playSound(null,x,y,z,force==1?LiteraryRegistry.CABIN_KNOCK.get():force==2?GoatmanRegistry.CLAW.get():GoatmanRegistry.HAMMER.get(),SoundSource.BLOCKS,2.2F+force*.18F,force==1?1.08F:.9F);
         if(force>=2)l.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK,state),x,y,z,force==3?12:5,.22,.28,.035,.012);
         if(force==3){l.sendParticles(ParticleTypes.POOF,x,y,z,3,.18,.25,.05,.008);l.playSound(null,x,y,z,SoundEvents.IRON_TRAPDOOR_CLOSE,SoundSource.BLOCKS,.24F,.65F);}
         if(door&&l.getBlockEntity(at) instanceof TrailerDoorBlockEntity frame)frame.impact(force);
-        c.swing(InteractionHand.MAIN_HAND);r.putLong("LastImpact0465",l.getGameTime());r.putLong("LastImpactPos0465",at.asLong());
+        c.swing(InteractionHand.MAIN_HAND);r.putInt("ImpactClock0472",r.getInt("Clock"));r.putInt("ImpactSerial0472",r.getInt("ImpactSerial0472")+1);r.putLong("LastImpact0465",l.getGameTime());r.putLong("LastImpactPos0465",at.asLong());
     }
 }

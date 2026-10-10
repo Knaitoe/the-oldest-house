@@ -19,6 +19,7 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
             var at=Minecraft.getInstance().player.position().subtract(e.position());
             head.yRot=Mth.wrapDegrees((float)(Math.atan2(at.z,at.x)*180/Math.PI)-90-e.yBodyRot)*Mth.DEG_TO_RAD;
         }
+        animateFear(e.fear(),age+e.skin()*17);
         limitLook();HumanoidMotion.connect(this);
     }
     /** Also used by native visual proofs, with the same joints as the live renderer. */
@@ -41,6 +42,21 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
         if(attackTime>0&&!seated&&!cower)rightArm.xRot=-1.8F-Mth.sin(attackTime*Mth.PI)*.65F;
     }
     public void cowerPose(){pose(0,0,0,false,true,false);}
+    private void animateFear(int role,float age){
+        float tremor=Mth.sin(age*.83F)*.025F;
+        switch(role){
+            case GoatmanFear.BRACE->{body.xRot=.12F;leftArm.xRot=rightArm.xRot=-1.5F;leftArm.zRot=-.28F;rightArm.zRot=.28F;}
+            case GoatmanFear.WATCH->{head.xRot=-.08F;leftArm.xRot=-.45F;rightArm.xRot=-.25F;}
+            case GoatmanFear.PACE->{body.xRot=.1F;head.xRot=.16F;}
+            case GoatmanFear.COMFORT->{body.xRot=.22F;leftArm.xRot=-.9F;rightArm.xRot=-.5F;head.xRot=.18F;}
+            case GoatmanFear.TREMBLE->{body.zRot=tremor;head.zRot=-tremor;leftArm.xRot=-.8F+tremor;rightArm.xRot=-.8F-tremor;}
+            case GoatmanFear.EARS->{body.xRot=.3F;head.xRot=.3F;leftArm.xRot=rightArm.xRot=-2.1F;leftArm.zRot=-.6F;rightArm.zRot=.6F;}
+            case GoatmanFear.STARTLE->{body.xRot=.15F;leftArm.xRot=-.55F;rightArm.xRot=-.3F;head.xRot=.05F;head.yRot+=Mth.sin(age*.06F)*.1F;}
+            default->{}
+        }
+    }
+    /** The proof uses the same connected joints and fear gestures as the tracked actor. */
+    public void fearPose(int role,float phase,float speed,float age){HumanoidMotion.reset(this);young=false;animatePose(phase,speed,age,role==GoatmanFear.TREMBLE,role==GoatmanFear.EARS,false,false);animateFear(role,age);limitLook();HumanoidMotion.connect(this);}
     private void limitLook(){head.yRot=Mth.clamp(Mth.wrapDegrees(head.yRot*Mth.RAD_TO_DEG),-75,75)*Mth.DEG_TO_RAD;head.xRot=Mth.clamp(head.xRot,-60*Mth.DEG_TO_RAD,60*Mth.DEG_TO_RAD);}
     /** Exercise the same bounded look and torso composition in the native client proof. */
     public void lookPose(float yaw,float pitch,boolean cower){HumanoidMotion.reset(this);young=false;animatePose(0,0,0,false,cower,false,false);head.yRot=yaw*Mth.DEG_TO_RAD;head.xRot=pitch*Mth.DEG_TO_RAD;limitLook();HumanoidMotion.connect(this);}

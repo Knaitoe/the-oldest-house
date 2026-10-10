@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.entity.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.*;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -30,7 +31,7 @@ public final class WhaleHospital {
     public static boolean apply(ServerLevel l,BlockPos b){return refit(l,b,true);}
     private static boolean refit(ServerLevel l,BlockPos b,boolean guarded){
         var d=LabyrinthData.get(l.getServer());var all=d.state(STATE);String key=key(b);var saved=all.getCompound(key);if(guarded&&saved.getBoolean("Done"))return true;
-        var area=new AABB(b.offset(-15,-1,-34),b.offset(16,12,2));
+        var area=new AABB(Vec3.atLowerCornerOf(b.offset(-15,-1,-34)),Vec3.atLowerCornerOf(b.offset(16,12,2)));
         if(guarded){
             for(int x=(int)Math.floor(area.minX)>>4;x<=(int)Math.floor(area.maxX)>>4;x++)for(int z=(int)Math.floor(area.minZ)>>4;z<=(int)Math.floor(area.maxZ)>>4;z++)if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(ChunkPos.asLong(x,z)))return false;
             if(l.players().stream().anyMatch(p->area.inflate(48).intersects(p.getCamera().getBoundingBox()))||!l.getEntitiesOfClass(LivingEntity.class,area).isEmpty())return false;

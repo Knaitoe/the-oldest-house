@@ -66,6 +66,9 @@ public final class ProofrockTown {
         shopsWest();shopsEast();houses();garage();motel();green();beach();
         IndianLakeHigh.build(l,b);
         drowned();
+        // Shop awnings and the lane's lawn are authored after the roads. Install
+        // the complete fitted lamps last so neither replaces a section of a post.
+        for(var e:streetlights(b).entrySet())BuildBlocks.set(l,e.getKey(),e.getValue(),F);
         street();
         LabyrinthBuilder.entrance(l,b,Blocks.BLACK_CONCRETE.defaultBlockState(),Blocks.COARSE_DIRT.defaultBlockState(),Blocks.BLACK_CONCRETE.defaultBlockState());
         LabyrinthBuilder.doors(l,b,LabyrinthPlace.DROWNED_TOWN);

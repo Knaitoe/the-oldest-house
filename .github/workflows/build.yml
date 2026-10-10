@@ -57,7 +57,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.69"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.71"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/house/PlaytestLog.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
               hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
@@ -194,6 +194,15 @@ jobs:
               assert json.loads(z.read('assets/the_oldest_house/models/block/school_desk.json'))['textures']
               for name in ('ProofrockTown','IndianLakeHigh','TownFixtureBlock','SchoolDeskBlock','SchoolDeskBlockEntity','TownCarry'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
+              # Ted the Caver (0.4.71): the packed rubble, a pickaxe can mine it, six subtitled cave sounds and the saved-cave reshaping.
+              assert json.loads(z.read('assets/the_oldest_house/blockstates/cave_rubble.json'))['variants']['']['model'] == 'the_oldest_house:block/cave_rubble'
+              assert z.read('assets/the_oldest_house/textures/block/cave_rubble.png').startswith(b'\x89PNG')
+              assert 'the_oldest_house:cave_rubble' in json.loads(z.read('data/minecraft/tags/block/mineable/pickaxe.json'))['values']
+              caver_sounds = json.loads(z.read('assets/the_oldest_house/sounds.json'))
+              for cue in ('exhale', 'inhale', 'scrape', 'line_taut', 'stone_roll', 'chisel'):
+                  assert z.read(f'assets/the_oldest_house/sounds/caver/{cue}.ogg').startswith(b'OggS')
+                  assert caver_sounds[f'caver.{cue}']['subtitle'] == f'subtitles.the_oldest_house.caver.{cue}'
+              assert 'io/github/knaitoe/theoldesthouse/labyrinth/CaverRedesign.class' in z.namelist()
               for name in ('wax_cylinder_1','wax_cylinder_2','wax_cylinder_3','family_film'):
                   song=json.loads(z.read(f'data/the_oldest_house/jukebox_song/{name}.json'))
                   assert song['length_in_seconds'] > 0
@@ -525,6 +534,10 @@ jobs:
           test -s build/font-smoke/playtest-0468-passed.txt
           for page in 4 5 6; do test -s build/font-smoke/native-playtest-0468-$page.png; done
           test -s build/font-smoke/institute-0470-passed.txt
+          test -s build/font-smoke/native-goatman-fear0472-0.png
+          test -s build/font-smoke/native-goatman-fear0472-1.png
+          test -s build/font-smoke/native-goatman-fear0472-2.png
+          test -s build/font-smoke/goatman-fear0472-passed.txt
           for page in 0 1; do test -s build/font-smoke/native-institute-0470-$page.png; done
           test -s build/font-smoke/native-goatman.png
           test -s build/font-smoke/coffin-passed.txt
@@ -768,7 +781,7 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.69"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.71"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
@@ -843,8 +856,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.69.jar
-            build/libs/the_oldest_house-0.4.69.jar.sha256
+            build/libs/the_oldest_house-0.4.71.jar
+            build/libs/the_oldest_house-0.4.71.jar.sha256
           if-no-files-found: error
 
 
@@ -1004,6 +1017,10 @@ jobs:
           test -s build/font-smoke/playtest-0468-passed.txt
           for page in 4 5 6; do test -s build/font-smoke/native-playtest-0468-$page.png; done
           test -s build/font-smoke/institute-0470-passed.txt
+          test -s build/font-smoke/native-goatman-fear0472-0.png
+          test -s build/font-smoke/native-goatman-fear0472-1.png
+          test -s build/font-smoke/native-goatman-fear0472-2.png
+          test -s build/font-smoke/goatman-fear0472-passed.txt
           for page in 0 1; do test -s build/font-smoke/native-institute-0470-$page.png; done
       - uses: actions/upload-artifact@v4
         if: always()
@@ -1018,6 +1035,8 @@ jobs:
             build/font-smoke/streetlights-0469-passed.txt
             build/font-smoke/native-institute-0470-*.png
             build/font-smoke/institute-0470-passed.txt
+            build/font-smoke/native-goatman-fear0472-*.png
+            build/font-smoke/goatman-fear0472-passed.txt
             run/logs/latest.log
             run/crash-reports/
 
@@ -1032,7 +1051,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
-      - name: Native trailer cooking, physical stalking, disguises and fixture packets
+      - name: Native trailer cooking, physical stalking, disguises and streetlights
         timeout-minutes: 12
         env:
           JAVA_TOOL_OPTIONS: -Xmx6g
@@ -1045,7 +1064,7 @@ jobs:
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/goatman-native.log').read_text())
-          declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/GoatmanTests.java').read_text()))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('GoatmanTests.java','StreetlightTests.java'))
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused native Goatman cases passed; the complete suite remains required.')
           PY

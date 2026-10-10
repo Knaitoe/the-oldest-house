@@ -65,11 +65,11 @@ public final class NovelTests {
     }
     @GameTest(template="empty",batch="novel_hospital_save0470",timeoutTicks=2400)
     public static void hospitalRefitWaitsForNativeResidentsAndKeepsExactOriginalsWithoutRestocking(GameTestHelper h){
-        hospitalSave=new Fixture(h,35600,LabyrinthPlace.WHALE);var f=hospitalSave;var p=f.player();f.chunks.hold(f.l,new AABB(f.b.offset(-16,-1,-35),f.b.offset(17,13,3)));
+        hospitalSave=new Fixture(h,35600,LabyrinthPlace.WHALE);var f=hospitalSave;var p=f.player();f.chunks.hold(f.l,new AABB(Vec3.atLowerCornerOf(f.b.offset(-16,-1,-35)),Vec3.atLowerCornerOf(f.b.offset(17,13,3))));
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"all ward entity sections are native and ready")).thenExecute(()->{
             WhaleHospital.forget(f.l.getServer(),f.origin);var at=f.b.offset(-9,0,-18);f.l.setBlock(at,Blocks.BARREL.defaultBlockState(),2);
-            var original=letter(p,"Keep this sentence exactly.");original.set(DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("My actual stored letter"));var old=(BarrelBlockEntity)f.l.getBlockEntity(at);old.setItem(26,original.copy());old.setCustomName(net.minecraft.network.chat.Component.literal("Custom ward drawer"));
-            var source=letter(p,"This is the actual lectern original, not the default text.");NovelRooms.lectern(f.l,f.b.offset(WhaleInstitute.LECTERN),source);
+            var original=letter(p,"Keep this sentence exactly.");original.set(DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("My actual stored letter"));var old=(BarrelBlockEntity)f.l.getBlockEntity(at);old.setItem(26,original.copy());var named=old.saveWithFullMetadata(f.l.registryAccess());named.putString("CustomName",net.minecraft.network.chat.Component.Serializer.toJson(net.minecraft.network.chat.Component.literal("Custom ward drawer"),f.l.registryAccess()));old.loadWithComponents(named,f.l.registryAccess());
+            var source=letter(p,"This is the actual lectern original, not the default text.");var sourceAt=f.b.offset(WhaleInstitute.LECTERN);f.l.setBlock(sourceAt,Blocks.LECTERN.defaultBlockState(),2);((LecternBlockEntity)f.l.getBlockEntity(sourceAt)).setBook(source);
             var own=f.own(p);var sent=new CompoundTag();sent.putInt("Sent",2);sent.putString("Exact","An earlier private exchange");own.put(WhaleInstitute.KEY,sent);NovelVignettes.save(f.data(),p.getUUID(),own);
             h.assertTrue(!WhaleHospital.apply(f.l,f.b),"a camera in the institute holds the whole in-place repair");p.moveTo(100,80,100);
             var cat=EntityType.CAT.create(f.l);cat.setNoAi(true);cat.moveTo(f.b.getX()+4.5,f.b.getY(),f.b.getZ()-22.5);cat.setOwnerUUID(p.getUUID());cat.setHealth(4);f.l.addFreshEntity(cat);f.extra.add(cat);var id=cat.getUUID();
@@ -84,7 +84,7 @@ public final class NovelTests {
     }
     @GameTest(template="empty",batch="novel_hospital_interrupted0470",timeoutTicks=2400)
     public static void interruptedHospitalCustodyFinishesWithoutReplacingTheSavedOriginalWithAnEmptyBarrel(GameTestHelper h){
-        hospitalInterrupted=new Fixture(h,36000,LabyrinthPlace.WHALE);var f=hospitalInterrupted;var p=f.player();f.chunks.hold(f.l,new AABB(f.b.offset(-16,-1,-35),f.b.offset(17,13,3)));
+        hospitalInterrupted=new Fixture(h,36000,LabyrinthPlace.WHALE);var f=hospitalInterrupted;var p=f.player();f.chunks.hold(f.l,new AABB(Vec3.atLowerCornerOf(f.b.offset(-16,-1,-35)),Vec3.atLowerCornerOf(f.b.offset(17,13,3))));
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the interrupted ward's native sections are ready")).thenExecute(()->{
             WhaleHospital.forget(f.l.getServer(),f.origin);var at=f.b.offset(-9,0,-18);f.l.setBlock(at,Blocks.BARREL.defaultBlockState(),2);var old=(BarrelBlockEntity)f.l.getBlockEntity(at);var original=letter(p,"Already in saved custody.");old.setItem(11,original.copy());
             var containers=new CompoundTag();containers.put(Long.toString(at.asLong()),old.saveWithFullMetadata(f.l.registryAccess()));var pending=new CompoundTag();pending.put("Containers",containers);var checkpoint=f.data().state(WhaleHospital.STATE);checkpoint.put(Long.toString(f.b.asLong()),pending);f.data().setState(WhaleHospital.STATE,checkpoint);
