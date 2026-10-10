@@ -242,15 +242,18 @@ public final class GoatmanTests {
             h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the home floor's native sections are loaded")).thenExecute(()->{
                 var own=GoatmanVignette.personal(data,a.getUUID());own.putLong("HauntDay",f.server.overworld().getDayTime()/24000-1);own.putLong("NextGlimpse",0);
                 CompoundTag all=data.state(GoatmanVignette.ID),players=all.getCompound("Players");players.put(a.getUUID().toString(),own);all.put("Players",players);data.setState(GoatmanVignette.ID,all);
-            }).thenIdle(26).thenExecute(()->home(h,f,a));
+            }).thenWaitUntil(()->home(h,f,a)).thenExecute(h::succeed);
         });
     }
+    /** Checked each tick until it holds: the haunting runs on its own once-a-second clock. Failures say what was there instead. */
     private static void home(GameTestHelper h,Fixture f,ServerPlayer a){
         h.assertTrue(a.getInventory().countItem(Items.BREAD)==2,"one piece of food is gone from the pack for the day: "+a.getInventory().countItem(Items.BREAD));
         var seen=f.l.getEntitiesOfClass(GoatmanFigure.class,a.getBoundingBox().inflate(20),s->s.viewer().filter(a.getUUID()::equals).isPresent());
-        h.assertTrue(seen.size()==1&&seen.getFirst().distanceTo(a)>9&&seen.getFirst().purpose.equals("glimpse"),"the thing itself is glimpsed, ten or more blocks off, by them alone");
+        var any=f.l.getEntitiesOfClass(GoatmanFigure.class,a.getBoundingBox().inflate(64),s->true).stream().map(s->s.purpose+"@"+s.blockPosition().toShortString()+" for "+s.viewer().map(id->id.equals(a.getUUID())?"them":"another").orElse("nobody")).toList();
+        var own=GoatmanVignette.personal(LabyrinthData.get(f.server),a.getUUID());
+        h.assertTrue(seen.size()==1&&seen.getFirst().distanceTo(a)>9&&seen.getFirst().purpose.equals("glimpse"),"the thing itself is glimpsed, ten or more blocks off, by them alone: at "+a.blockPosition().toShortString()+" figures "+any+" next glimpse "+own.getLong("NextGlimpse")+" now "+f.server.overworld().getGameTime());
         var look=a.getLookAngle();var to=seen.getFirst().position().subtract(a.position()).normalize();h.assertTrue(look.dot(to)<.6,"it stands off to one side of where they look, not in front of them");
-        h.assertTrue(GoatmanRegistry.FIGURE.get().getDimensions().height()>2,"it is taller than a man");h.succeed();
+        h.assertTrue(GoatmanRegistry.FIGURE.get().getDimensions().height()>2,"it is taller than a man");
     }
 
     @GameTest(template="empty",batch="goat_window",timeoutTicks=200)

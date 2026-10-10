@@ -37,6 +37,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class GoatmanHaunt {
     /** A glimpse every three to seven minutes; it lasts five seconds, or until it is looked at. */
     public static final int GLIMPSE_MIN=3600,GLIMPSE_SPREAD=4800,GLIMPSE_LIFE=100,WALK_LIFE=2400;
+    /** A glimpse with nowhere to stand (walls all round, or ground still loading) is tried again soon, not skipped for minutes. */
+    static final int GLIMPSE_RETRY=200;
     private record Walk(UUID follower,boolean cure,long started){}
     private static final Map<UUID,Walk> WALKS=new HashMap<>();
     /** Every appearance of the thing that is still standing somewhere, by level. */
@@ -152,7 +154,7 @@ public final class GoatmanHaunt {
         }
         // It is seen at the edge of their sight.
         if(now>=own.getLong("NextGlimpse")){
-            own.putLong("NextGlimpse",now+GLIMPSE_MIN+p.getRandom().nextInt(GLIMPSE_SPREAD));changed=true;glimpse(p);
+            boolean shown=glimpse(p);own.putLong("NextGlimpse",now+(shown?GLIMPSE_MIN+p.getRandom().nextInt(GLIMPSE_SPREAD):GLIMPSE_RETRY));changed=true;
         }
         // Some nights it tries a door they are standing by.
         long night=p.server.overworld().getDayTime()/24000;long time=p.server.overworld().getDayTime()%24000;

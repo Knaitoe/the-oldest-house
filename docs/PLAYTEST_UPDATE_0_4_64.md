@@ -40,6 +40,7 @@ A review of the candidate found these, now repaired:
   - The killer stands again when a hop ends or is cancelled.
   - The rail is checked first, before the pathfinder's support reads.
 - **Glazing.** Portholes keep glass sounds but return to the approved break time (about nine seconds, tool or not). Shattered and whole panes each draw their shared faces.
+- **The haunting glimpse.** It stands only on loaded ground. With nowhere to stand, it tries again ten seconds later instead of waiting out the three to seven minutes. Its native case waits for the glimpse and, if it fails, reports what it found.
 - **Tests and tools.**
   - The rail-hop case restores the corridor and deck it builds outside the elk room after its batch.
   - The multiplayer-story cases, whose held sections load one after another, wait two minutes before starting instead of one. The assertions are unchanged.
