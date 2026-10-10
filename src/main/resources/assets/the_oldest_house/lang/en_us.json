@@ -170,8 +170,15 @@
   "subtitles.the_oldest_house.goatman_crickets": "Crickets",
   "subtitles.the_oldest_house.goatman_keen": "Something screams in the woods",
   "item.the_oldest_house.tally_counter": "Tally counter",
-  "item.the_oldest_house.goatman_brat": "Brat",
+  "item.the_oldest_house.goatman_brat": "Cooked Frank",
   "entity.the_oldest_house.goatman": "Something in the woods",
   "item.the_oldest_house.franks_package": "Pack of franks",
-  "item.the_oldest_house.plain_camera": "Camera"
+  "item.the_oldest_house.plain_camera": "Camera",
+  "item.the_oldest_house.raw_frank": "Raw Frank",
+  "item.the_oldest_house.franks_package.quantity": "packaged in 4",
+  "item.the_oldest_house.franks_package.open": "Use to open",
+  "block.the_oldest_house.trailer_toilet": "Trailer Toilet",
+  "block.the_oldest_house.trailer_sink": "Trailer Sink",
+  "block.the_oldest_house.trailer_bathroom_window": "Bathroom Awning Window",
+  "block.the_oldest_house.trailer_door": "Trailer Door"
 }

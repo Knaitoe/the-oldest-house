@@ -1,0 +1,920 @@
+{
+  "approved_textures": [
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_stranger_0.png",
+      "sha256": "7fe9516ce1ddf84602b8b53f8201cda43b180b9084f0efdb1aaeb955658f282f",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_stranger_1.png",
+      "sha256": "466639cd6b6c275a5db01bbd9d146c0123a3a0a95e91a388f33fa7f77eab55c6",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_stranger_2.png",
+      "sha256": "27eb691109fb1f957e46dd84205179c1a6895b697173c8dd50e0292325ff56c7",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_stranger_3.png",
+      "sha256": "a4317fa3a3f40007680bda9746be865601303c5908e50acfa1cfb35e3ccff1d0",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/caged_child.png",
+      "sha256": "5c5d79604142278079b6fb17b1fd3756e7fdd887c79e056cf3e879c07aaa3ce6",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "60c5d91d6774e4b64336d9804b857bc759d3db59dc0dbeb219c8da879ca5d0a9",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/finale_witness.png",
+      "sha256": "0cbae63b1775816c76fcd4fd18766d22ce61f4aaebc9d46bcc851fa62996814f",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "60c5d91d6774e4b64336d9804b857bc759d3db59dc0dbeb219c8da879ca5d0a9",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/harrigan.png",
+      "sha256": "03501a01a69a43f84819bd0a0cf09c103bf4940d0e260b214e139ac2c6b82bb1",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "60c5d91d6774e4b64336d9804b857bc759d3db59dc0dbeb219c8da879ca5d0a9",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/harrigan_dead.png",
+      "sha256": "7f0acd6b8cd7674f947347821818ad36f416f67dff9afe359c04ba52f22ce826",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "60c5d91d6774e4b64336d9804b857bc759d3db59dc0dbeb219c8da879ca5d0a9",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/holloway.png",
+      "sha256": "23908b7aacb72201d942b850b497c332041cabc3e417bef6d42e818da533030f",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "60c5d91d6774e4b64336d9804b857bc759d3db59dc0dbeb219c8da879ca5d0a9",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/hotel_bartender.png",
+      "sha256": "31d881d9c0223b1c2f4c5f08a049e6f4a8f46198462ccb7be4be3329dd5fe7ac",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "b5a41c3758763bbec72769fab4a2533bf2db0b6312d93d25a695f9e4b9e02260",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/hotel_dancer.png",
+      "sha256": "e3edf850a32ce0f236f4d02a85c3167f80ff18a849d3f54fc439b78b3d5ddae5",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "b5a41c3758763bbec72769fab4a2533bf2db0b6312d93d25a695f9e4b9e02260",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/hotel_dancer_dress.png",
+      "sha256": "7bdc5c6c8a38a610413b7f79ab376932689f3f672d3bb9608a1f2b75fd0cbc81",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "b5a41c3758763bbec72769fab4a2533bf2db0b6312d93d25a695f9e4b9e02260",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/hotel_pianist.png",
+      "sha256": "2d6f5588be8601bea13b3ab287096da0ea45c835eeadc8bd61a6ec66736f2e5c",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "b5a41c3758763bbec72769fab4a2533bf2db0b6312d93d25a695f9e4b9e02260",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/hotel_porter.png",
+      "sha256": "7d06b8181826c77f1e5bbba5fdd5a75d171a3dd81f5c5a710b8a88e8253d9000",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "b5a41c3758763bbec72769fab4a2533bf2db0b6312d93d25a695f9e4b9e02260",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/hotel_scarred_guest.png",
+      "sha256": "8527219b703961dea7d1e4b8d977a37e6b3b93182663ae4f14f15a4a5877b5d9",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "b5a41c3758763bbec72769fab4a2533bf2db0b6312d93d25a695f9e4b9e02260",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_boy.png",
+      "sha256": "7c41529313c73f87f4c7a184f1c377e2f2f22907aea01f608aa277630977c82d",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "37d457b2bc23afdce70a0d6db79c7304da9641600ff3deafa209e4724b369c31",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_congregant.png",
+      "sha256": "d09867959cf9666237e6a29b9d9ed162baf3e097fbb1c6d47215cd7a59d77b50",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "37d457b2bc23afdce70a0d6db79c7304da9641600ff3deafa209e4724b369c31",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_congregant_1.png",
+      "sha256": "b83537c29b32ec8c045d40077e35a5ca694d3739c1d22b48d3df2497b7507e7b",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "37d457b2bc23afdce70a0d6db79c7304da9641600ff3deafa209e4724b369c31",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_congregant_2.png",
+      "sha256": "7fdf4127ce4e0d95360454683ee3a23550ee309bb05e56c5697fc1a37ff02b83",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "37d457b2bc23afdce70a0d6db79c7304da9641600ff3deafa209e4724b369c31",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_congregant_3.png",
+      "sha256": "21f1caf06f6232124a5133bb864037e21d8daf5ba85fd8ec2da758a157949a92",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "37d457b2bc23afdce70a0d6db79c7304da9641600ff3deafa209e4724b369c31",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_preacher.png",
+      "sha256": "2d0ed24790839b6e9b12d0c11496c77ec153c642a6be6a72f3408750b5e7f808",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "37d457b2bc23afdce70a0d6db79c7304da9641600ff3deafa209e4724b369c31",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_witch.png",
+      "sha256": "125527faf29e462858b6c17558186cf15a639b00d34415089970e5d067fa5b0e",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "4f043f15c8018c6dcd0b3cfd0b2bd938a00c6435ab4e47e112bb9ad259de444b",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_witch_memory.png",
+      "sha256": "865f7afd77b85a26997971563bdcdf35938983a2400e32a26bbc3fabcf29e86d",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "c67a3a3b5d4a36280087b408563e63ba0ca6c22e7a5d97df7db1ca9db50033ee",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_brother.png",
+      "sha256": "e6e9573595f44ded8dd020c3aed3c2ecc057d07c021905f733d9cfd9b97186b4",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_coffin_woman.png",
+      "sha256": "bf0942728168f1033a442ad7f8ea9a9e2412d4e6e23c2c2609cbdacc9a0c802c",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_crew_0.png",
+      "sha256": "da91c2ea715a2010685e11451983fc77fb7d75fa32b9e55ceb9de31265142569",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "e15b127297cc44dceb0482923d76ac41289b698be93739c17a5af699845a4092",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_crew_1.png",
+      "sha256": "b300c8538d0839c5cb9448f815d1a9dd4d42d81535cb3e6430921ecf2534170a",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "e15b127297cc44dceb0482923d76ac41289b698be93739c17a5af699845a4092",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_crew_2.png",
+      "sha256": "05b48439947c339852c2d902d2cfdaf88bb41acb670c65b36ca639da9d061333",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "e15b127297cc44dceb0482923d76ac41289b698be93739c17a5af699845a4092",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_crew_3.png",
+      "sha256": "969092021f9da9b1ed3a145705e05f1337af17466fbef81fa2f72700d3c1dc7c",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "e15b127297cc44dceb0482923d76ac41289b698be93739c17a5af699845a4092",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_dancer.png",
+      "sha256": "5b06cebd27c1e20e57cc1db21a7cd0c173c2df1cbd92e11186449b31955412d7",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_family_child.png",
+      "sha256": "6a25f8333a67d6e6ef4bf39888d3daf8c737e4ed66d3a2747daa82ccadead4db",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_family_child_changed.png",
+      "sha256": "8effae86f08c96d12d7217da7eb95fdba00bad80d82743dbe3063e8fc5e30069",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_family_father.png",
+      "sha256": "b45d614742db0cd4485de8e165c7d30e786935dd24b9b323b7479d481e95f79f",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_family_father_changed.png",
+      "sha256": "e431ce9260a81f424bad9b91a25f3700e68c7c3fc29a368242337a4a4f4f35b4",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_family_mother.png",
+      "sha256": "e0276d1afa64587d8b22056c34d8fd6ed0f1e792aadb1a3a19a80e00a479468f",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_family_mother_changed.png",
+      "sha256": "955ef27d339b06d46af3c235198f9164d929e50a6b52b1a1aa73912b077b9748",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_father.png",
+      "sha256": "d3cb66a94152211359671970f745d6b32a1e8868fcb1eba6d29e1b22f1602524",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_father_bandaged.png",
+      "sha256": "d4d012dbfdb66f35703dd3ddb0bd228a7d2a299bb3e369bd14a22971ca35834e",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "5a1b34aa67cb2c9aacbcae0c8a071d1ea870eacda09422ccceb1a1fbbc2df271",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_guest_0.png",
+      "sha256": "2b78e0be2d578ce8c10e8d1cf25af79ed7ada2106f1018f04c9e2daf194f69c8",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "1d3371d6bf3842254740717fb5544a5b09e50fad747763bcb223cad5b47545f4",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_guest_1.png",
+      "sha256": "f523e80bb67b5b0cf73e8cebaba9436d0ff27e55fc62c481f00e43459b3acdac",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "396432d57008bff7774c69df450dfe4512373dd47793bc17e7814c9ac95c621b",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_guest_2.png",
+      "sha256": "90ebfd58f7706510dd45c3ac7005a1e57e62d9dcaad6487e094bd04f794673a4",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "1d3371d6bf3842254740717fb5544a5b09e50fad747763bcb223cad5b47545f4",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_guest_3.png",
+      "sha256": "6a90cbc23b1b230dfaaca1b0af21160581b17377f2d7f9f9ab4de9ce7f43d790",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "1d3371d6bf3842254740717fb5544a5b09e50fad747763bcb223cad5b47545f4",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_killer.png",
+      "sha256": "c5836c955c5609a716ae9b0a7e04d0a07b476f44b7406d171342c8ef988579ca",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "c98a14ce0ebc874fe66792853c46702ec081b16a17b26477bed410ed0656cf62",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_lady.png",
+      "sha256": "14a75dfd645fa71f3f8728d0e54457e754408488af7667a5146f1b3829e8b561",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_mother.png",
+      "sha256": "2e8c47b56e2b87c074a11303712410118af1ea57684c87d0926812567a4efd3c",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_old_man.png",
+      "sha256": "74aa337c14e056d4ba1ba076f251eed8758322aee96c76212eb1113faa0d36e3",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_red_figure.png",
+      "sha256": "9162a9d833ef0a9249815f7a6174e8355b884ad4eac1f15e443414a81a5dfcc3",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_visitor.png",
+      "sha256": "316edd8228f4a72b4a73c6a94a4dfc650411a61f2e4e059d81ce1fc75f1b815c",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/seance_daughter.png",
+      "sha256": "7eb6ba1031fe0d4552a6bdc291c1cc14a56cd3563fe11b8496471535eb32b245",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "82109bc191015814c0c42709d3347775417bba5f617d347f5d251e5e3b831402",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/seance_father.png",
+      "sha256": "90e085cfeb0998963202a60370becd6f93d1a69cc04d4bc9b0681754ef3a09c3",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "82109bc191015814c0c42709d3347775417bba5f617d347f5d251e5e3b831402",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/seance_medium.png",
+      "sha256": "f1e4f9a2ac0c9dcb8be1d2c4f41aa91c7594cde00e6f260f48bbbd3d82ab55b7",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "30a38f549bc20e27813ec07bd84f917d4c52572a2712ab3ef6c44b6aa5592e24",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/seance_mother.png",
+      "sha256": "4a12ac3091a72db4bac5181f9b945aa27b11e6552e5743f0ac53c3459537dc1b",
+      "size": [
+        512,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "82109bc191015814c0c42709d3347775417bba5f617d347f5d251e5e3b831402",
+      "logical_uv": [
+        128,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_0.png",
+      "sha256": "6af8ace13c64e40e4a586fa156a56b1123e3a2ba3b14d1e0bfa4045b78ee3a75",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "60c5d91d6774e4b64336d9804b857bc759d3db59dc0dbeb219c8da879ca5d0a9",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_1.png",
+      "sha256": "a48f157b4cb039a163ae73bcdd207d38fe87ad381de50dd1592908abff6c88e2",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "60c5d91d6774e4b64336d9804b857bc759d3db59dc0dbeb219c8da879ca5d0a9",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_2.png",
+      "sha256": "5c3984e12879275ed9874f989fc90967c2f9c3bed14c2ef3d8fc41218d21e7e2",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "60c5d91d6774e4b64336d9804b857bc759d3db59dc0dbeb219c8da879ca5d0a9",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_3.png",
+      "sha256": "531e2c3bbde253ba82965672b342e1b8a0b200c3db2ae6b675a80e512c11d269",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "60c5d91d6774e4b64336d9804b857bc759d3db59dc0dbeb219c8da879ca5d0a9",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_4.png",
+      "sha256": "ad9c8610a093371f3970bbfc298e7af6ddd1e479344d22bcf64fbb2e690186b9",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "60c5d91d6774e4b64336d9804b857bc759d3db59dc0dbeb219c8da879ca5d0a9",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_5.png",
+      "sha256": "8777d6b9de7ee8511aabab2599777aac695275365f328eb05b860b078603b7d6",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "60c5d91d6774e4b64336d9804b857bc759d3db59dc0dbeb219c8da879ca5d0a9",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_6.png",
+      "sha256": "eeb829ab0c277290e4775467be74b1098c4884987cb83c1e2eb89dbb4492b619",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "60c5d91d6774e4b64336d9804b857bc759d3db59dc0dbeb219c8da879ca5d0a9",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_7.png",
+      "sha256": "c05c356a824df02a33e1c11d4231c900d6ba367e4d19b8f716177224adb439ed",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "60c5d91d6774e4b64336d9804b857bc759d3db59dc0dbeb219c8da879ca5d0a9",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_8.png",
+      "sha256": "b1cc386f2e4457f8696c613c627942fa6ba2307046769e29c8b19505478b4282",
+      "size": [
+        256,
+        256
+      ],
+      "kind": "entity",
+      "alpha_sha256": "60c5d91d6774e4b64336d9804b857bc759d3db59dc0dbeb219c8da879ca5d0a9",
+      "logical_uv": [
+        64,
+        64
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/item/franks_package.png",
+      "sha256": "80b238213c68547664a84f7714f8fbc2c721a13be6f096c9df067cd1766ba70c",
+      "size": [
+        16,
+        16
+      ],
+      "kind": "item",
+      "alpha_sha256": "3971997df8909d85ba5c9aa120e8cbb2340eb57451277290fc694017df16ba50"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/item/goatman_brat.png",
+      "sha256": "0e86c1523caf018d50f3d9d9c4ada331add1c15dd3f0ed6c3aa5901265f3804f",
+      "size": [
+        16,
+        16
+      ],
+      "kind": "item",
+      "alpha_sha256": "772a392a4d748638fa46f7c94f60f7a8c205ded004a648c65b8dc9245dc44c81"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/item/raw_frank.png",
+      "sha256": "a32ea70783bc96138b1a10eee938c6ea5b503d05b9692eebede38a3efd6da8dc",
+      "size": [
+        16,
+        16
+      ],
+      "kind": "item",
+      "alpha_sha256": "e2cfff5c128603ab16830e309439d7fe96e44949f3a1925c36e87b3ca8c80ab0"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/block/trailer_bathroom_window.png",
+      "sha256": "04e81fc2e494a64cb66128b6a1ff54a2a6dd725f56de32bad8a8543f6ef91582",
+      "size": [
+        32,
+        32
+      ],
+      "kind": "block",
+      "alpha_sha256": "af7da3a8474da68483ca514362093b851fd38be564f370a11187edd7b8e74e03"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/block/trailer_sink_atlas.png",
+      "sha256": "e083cb1ae6119bd02b3df18d7f68c484fc3aee19d0598d3ddb9ed6ea5935efa5",
+      "size": [
+        64,
+        32
+      ],
+      "kind": "block",
+      "alpha_sha256": "d0ff1b294b5288d1ae1421eadf5b2d38a8752b76d472ff30bed9028e25b1c5b8"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/block/trailer_toilet_atlas.png",
+      "sha256": "1fe836385944f025b7b7fdd614432bc89e1ff563578b7ad3107dea864766b196",
+      "size": [
+        64,
+        32
+      ],
+      "kind": "block",
+      "alpha_sha256": "d0ff1b294b5288d1ae1421eadf5b2d38a8752b76d472ff30bed9028e25b1c5b8"
+    }
+  ],
+  "entity_count": 61,
+  "total_count": 67
+}

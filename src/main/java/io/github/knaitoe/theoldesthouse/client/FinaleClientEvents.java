@@ -24,9 +24,16 @@ public final class FinaleClientEvents {
         @Override public void render(MinotaurEntity e,float yaw,float partial,com.mojang.blaze3d.vertex.PoseStack poses,net.minecraft.client.renderer.MultiBufferSource buffers,int light){if(e.childAppearance())boy.render(e,yaw,partial,poses,buffers,light);else super.render(e,yaw,partial,poses,buffers,light);}
     }
     private static final class CagedBoyRenderer extends MobRenderer<MinotaurEntity,net.minecraft.client.model.PlayerModel<MinotaurEntity>>{
-        CagedBoyRenderer(EntityRendererProvider.Context context){super(context,new net.minecraft.client.model.PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER),false),.2F);}
+        CagedBoyRenderer(EntityRendererProvider.Context context){super(context,new CagedBoyModel(context.bakeLayer(ModelLayers.PLAYER)),.2F);}
         @Override public ResourceLocation getTextureLocation(MinotaurEntity e){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/caged_child.png");}
         @Override protected void scale(MinotaurEntity e,com.mojang.blaze3d.vertex.PoseStack poses,float partial){poses.scale(.7F,.7F,.7F);}
+    }
+    private static final class CagedBoyModel extends net.minecraft.client.model.PlayerModel<MinotaurEntity>{
+        CagedBoyModel(ModelPart root){super(root,false);}
+        @Override public void setupAnim(MinotaurEntity e,float w,float a,float age,float yaw,float pitch){
+            HumanoidMotion.reset(this);super.setupAnim(e,w,a,age,yaw,pitch);var motion=HumanoidMotion.sample(e,age-e.tickCount);
+            HumanoidMotion.gait(this,motion.phase(),motion.amount(),motion.running());body.yRot=.025F*(float)Math.sin(age*.04F+e.getId());HumanoidMotion.connect(this);
+        }
     }
     private static final class WitnessRenderer extends MobRenderer<FinaleWitness,WitnessModel>{
         WitnessRenderer(EntityRendererProvider.Context context){super(context,new WitnessModel(context.bakeLayer(ModelLayers.PLAYER)),.3F);}

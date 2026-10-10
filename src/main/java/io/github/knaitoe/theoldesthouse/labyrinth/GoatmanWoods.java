@@ -25,6 +25,7 @@ public final class GoatmanWoods {
     /** The bathroom's awning window, its door, the stove and the griddle on it, and the porch light. */
     public static final BlockPos WINDOW=new BlockPos(8,3,-75),BATH_DOOR=new BlockPos(3,1,-75),STOVE=new BlockPos(-5,1,-76),PAN=new BlockPos(-5,2,-76),PORCH_LIGHT=new BlockPos(0,3,-53);
     public static final String PLATE="TrailerPlate",BRAT="TrailerBrat";
+    public static final BlockPos TOILET=new BlockPos(7,1,-76),SINK=new BlockPos(7,1,-74);
     public static final Vec3[] PATH={new Vec3(.5,0,-.5),new Vec3(.5,0,-31.5),new Vec3(10.5,0,-31.5),new Vec3(10.5,0,-43.5),new Vec3(.5,0,-43.5),new Vec3(.5,0,-54.5)};
     public static final double CLEARING=53;
     /** Where on the trail each hollow opens, where its occupant stands, and which way it faces (away from the path). */
@@ -127,9 +128,8 @@ public final class GoatmanWoods {
         BlockState partition=Blocks.BIRCH_PLANKS.defaultBlockState();
         box(l,b,3,1,-73,7,5,-73,partition);box(l,b,3,1,-76,3,5,-74,partition);
         door(l,b,BATH_DOOR,Direction.WEST,false);
-        put(l,b,7,1,-74,Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL,1));
-        put(l,b,7,1,-76,Blocks.QUARTZ_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST));
-        put(l,b,7,2,-76,Blocks.QUARTZ_SLAB);
+        put(l,b,7,1,-74,GoatmanRegistry.SINK.get().defaultBlockState().setValue(TrailerFixtureBlock.FACING,Direction.WEST).setValue(TrailerFixtureBlock.FILLED,true));
+        put(l,b,7,1,-76,GoatmanRegistry.TOILET.get().defaultBlockState().setValue(TrailerFixtureBlock.FACING,Direction.WEST));
         put(l,b,5,1,-75,Blocks.WHITE_CARPET);
         window(l,b,false);
         // Warm, ordinary light: pendants over the table, reading lamps on shelves by the bunks, the kitchenette, the bathroom, the door.
@@ -155,24 +155,26 @@ public final class GoatmanWoods {
         BuildBlocks.set(l,b.offset(at),state.setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER),F);BuildBlocks.set(l,b.offset(at).above(),state.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER),F);
     }
     private static void doorBlocks(ServerLevel l,BlockPos b,boolean open){
-        var state=Blocks.SPRUCE_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.OPEN,open);
+        var state=GoatmanRegistry.DOOR.get().defaultBlockState().setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.OPEN,open);
         BuildBlocks.set(l,b.offset(DOOR),state.setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER),F);BuildBlocks.set(l,b.offset(DOOR).above(),state.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER),F);
     }
     public static void door(ServerLevel l,BlockPos b,boolean open){
-        var state=Blocks.SPRUCE_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.OPEN,open);
+        var current=l.getBlockState(b.offset(DOOR));
+        var state=(current.getBlock() instanceof DoorBlock?current:GoatmanRegistry.DOOR.get().defaultBlockState().setValue(DoorBlock.FACING,Direction.SOUTH)).setValue(DoorBlock.OPEN,open);
         l.setBlock(b.offset(DOOR),state.setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER),F);l.setBlock(b.offset(DOOR).above(),state.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER),F);
     }
     public static boolean doorOpen(ServerLevel l,BlockPos b){var s=l.getBlockState(b.offset(DOOR));return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}
     /** The awning window: propped (a gap under the sash) or shut flush in the wall. */
     static void window(ServerLevel l,BlockPos b,boolean shut){
-        BuildBlocks.set(l,b.offset(WINDOW),Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.WEST).setValue(TrapDoorBlock.HALF,Half.TOP).setValue(TrapDoorBlock.OPEN,shut),F);
+        BuildBlocks.set(l,b.offset(WINDOW),GoatmanRegistry.WINDOW.get().defaultBlockState().setValue(TrailerFixtureBlock.FACING,Direction.WEST).setValue(TrailerFixtureBlock.OPEN,!shut),F);
     }
     public static void setWindow(ServerLevel l,BlockPos b,boolean shut){
         var s=l.getBlockState(b.offset(WINDOW));
+        if(s.is(GoatmanRegistry.WINDOW.get())){l.setBlock(b.offset(WINDOW),s.setValue(TrailerFixtureBlock.OPEN,!shut),F);return;}
         l.setBlock(b.offset(WINDOW),(s.getBlock() instanceof TrapDoorBlock?s:Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.WEST).setValue(TrapDoorBlock.HALF,Half.TOP)).setValue(TrapDoorBlock.OPEN,shut),F);
     }
     /** Shut means the sash stands flush in the wall; a propped sash (or none) leaves a gap. */
-    public static boolean windowShut(ServerLevel l,BlockPos b){var s=l.getBlockState(b.offset(WINDOW));return s.getBlock() instanceof TrapDoorBlock?s.getValue(TrapDoorBlock.OPEN):!s.isAir();}
+    public static boolean windowShut(ServerLevel l,BlockPos b){var s=l.getBlockState(b.offset(WINDOW));return s.is(GoatmanRegistry.WINDOW.get())?!s.getValue(TrailerFixtureBlock.OPEN):s.getBlock() instanceof TrapDoorBlock?s.getValue(TrapDoorBlock.OPEN):!s.isAir();}
     public static void bathroomDoor(ServerLevel l,BlockPos b,boolean open){
         var lower=b.offset(BATH_DOOR);var s=l.getBlockState(lower);if(!(s.getBlock() instanceof DoorBlock))return;
         l.setBlock(lower,s.setValue(DoorBlock.OPEN,open),F);var upper=l.getBlockState(lower.above());if(upper.getBlock() instanceof DoorBlock)l.setBlock(lower.above(),upper.setValue(DoorBlock.OPEN,open),F);
@@ -183,7 +185,7 @@ public final class GoatmanWoods {
     }
     public static BlockPos bunk(int i){int side=i%2==0?-6:5;int row=i/2;return new BlockPos(side,1+(row/8)*3,-58-(row%8)*2);}
     /** A place at the table: before each chair for the first ten, then down the middle. */
-    public static Vec3 plate(int i){return i<10?new Vec3(i%2==0?-.55:1.55,2.02,-60.5-2*(i/2)):new Vec3(.5,2.02,-60.5-(i-10)*.9);}
+    public static Vec3 plate(int i){return i<10?new Vec3(i%2==0?-.55:1.55,2.02,-60.5-2*(i/2)):new Vec3(i%2==0?-12.8:-12.2,1.02,-60.5-2*((i-10)/2));}
     /** Where a brat lies in the pan on the stove, two rows of six over the griddle and the counter beside it. */
     public static Vec3 panSpot(int i){return new Vec3(-5.8+(i%6)*.5,2.1,-75.25-(i/6)*.45);}
     public static void supplies(ServerLevel l,BlockPos b,int count){
@@ -201,6 +203,33 @@ public final class GoatmanWoods {
             final int index=i;if(displays.stream().anyMatch(d->d.getPersistentData().getInt("Plate")==index&&!d.isRemoved()))continue;
             var d=flat(l,new ItemStack(GoatmanRegistry.PLATE.get()),.45F);if(d==null)continue;
             d.addTag(PLATE);d.getPersistentData().putInt("Plate",i);d.moveTo(plate(i).add(b.getX(),b.getY(),b.getZ()));l.addFreshEntity(d);
+        }
+    }
+    /** Fresh rounds have one actual chair and supported place setting per expected diner. */
+    public static void supperChairs(ServerLevel l,BlockPos b,int count){
+        count=Math.max(0,Math.min(24,count));
+        for(int i=0;i<24;i++){
+            boolean west=i%2==0;int row=i<10?i/2:(i-10)/2,z=-61-row*2,x=i<10?(west?-2:2):(west?-14:-12),y=i<10?1:0;
+            var at=b.offset(x,y,z);var s=l.getBlockState(at);
+            if(i<count){if(s.isAir()||s.is(Blocks.SPRUCE_STAIRS))l.setBlock(at,seat(Blocks.SPRUCE_STAIRS,west?Direction.WEST:Direction.EAST),F);}
+            else if(s.is(Blocks.SPRUCE_STAIRS))l.setBlock(at,Blocks.AIR.defaultBlockState(),F);
+        }
+        if(count>10)for(int z=-61;z>=-61-2*((count-11)/2);z--)for(int x=-13;x<=-13;x++){
+            var at=b.offset(x,0,z);if(l.getBlockState(at).isAir())l.setBlock(at,Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP),F);
+        }
+    }
+    /** Keep the native pan displays in step with the finite raw and cooked originals in the run. */
+    public static void cookingPan(ServerLevel l,BlockPos b,CompoundTag r){
+        var foods=new ArrayList<ItemStack>();
+        for(String key:new String[]{"CookedPan0465","Cooking0465"})for(var entry:r.getList(key,Tag.TAG_COMPOUND)){
+            var t=(CompoundTag)entry;foods.add(ItemStack.parseOptional(l.registryAccess(),t.getCompound("Item")));
+        }
+        var shown=l.getEntitiesOfClass(Display.ItemDisplay.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(BRAT)&&e.getPersistentData().contains("Pan"));
+        for(var d:shown)if(d.getPersistentData().getInt("Pan")>=foods.size())d.discard();
+        for(int i=0;i<foods.size();i++){
+            final int index=i;var item=foods.get(i);var d=shown.stream().filter(e->!e.isRemoved()&&e.getPersistentData().getInt("Pan")==index).findFirst().orElse(null);
+            if(d==null){d=flat(l,item,.32F);if(d==null)continue;d.addTag(PLATE);d.addTag(BRAT);d.getPersistentData().putInt("Pan",i);d.moveTo(panSpot(i).add(b.getX(),b.getY(),b.getZ()));l.addFreshEntity(d);}
+            else {var t=d.saveWithoutId(new CompoundTag());t.put("item",item.save(l.registryAccess()));d.load(t);}
         }
     }
     /** The brats still in the pan, as many as are left (up to twelve shown). */

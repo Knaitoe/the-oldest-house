@@ -38,13 +38,18 @@ public final class GoatmanClient {
     static String line(int demand){
         if(demand==-99)return "Let me—";
         if(demand<0)return GoatmanVignette.RUNNER_LINES[Math.min(GoatmanVignette.RUNNER_LINES.length,-demand)-1];
-        return GoatmanVignette.MIMIC_LINES[Math.min(GoatmanVignette.MIMIC_LINES.length,demand)-1];
+        if(demand>=101)return GoatmanVignette.MIMIC_LINES[Math.min(GoatmanVignette.MIMIC_LINES.length-1,demand-101)];
+        return GoatmanVignette.LEGACY_MIMIC_LINES[Math.min(GoatmanVignette.LEGACY_MIMIC_LINES.length,demand)-1];
     }
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
     public static final class Registration {
         @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){
             e.registerEntityRenderer(GoatmanRegistry.CHILD.get(),GoatmanChildRenderer::new);e.registerEntityRenderer(GoatmanRegistry.FIGURE.get(),GoatmanFigureRenderer::new);
+            e.registerBlockEntityRenderer(GoatmanRegistry.DOOR_ENTITY.get(),TrailerDoorRenderer::new);
         }
+        @SubscribeEvent public static void setup(net.neoforged.fml.event.lifecycle.FMLClientSetupEvent e){e.enqueueWork(()->{
+            net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(GoatmanRegistry.WINDOW.get(),net.minecraft.client.renderer.RenderType.cutout());
+        });}
         @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions e){e.registerLayerDefinition(GoatmanFigureModel.LAYER,GoatmanFigureModel::createBodyLayer);}
         @SubscribeEvent public static void overlays(RegisterGuiLayersEvent e){
             e.registerAboveAll(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"trailer_door"),(g,delta)->{
