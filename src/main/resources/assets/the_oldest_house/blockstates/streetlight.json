@@ -1,0 +1,154 @@
+{
+  "variants": {
+    "facing=north,kind=base,waterlogged=false": {
+      "model": "the_oldest_house:block/streetlight_base"
+    },
+    "facing=north,kind=base,waterlogged=true": {
+      "model": "the_oldest_house:block/streetlight_base"
+    },
+    "facing=north,kind=pole,waterlogged=false": {
+      "model": "the_oldest_house:block/streetlight_pole"
+    },
+    "facing=north,kind=pole,waterlogged=true": {
+      "model": "the_oldest_house:block/streetlight_pole"
+    },
+    "facing=north,kind=top,waterlogged=false": {
+      "model": "the_oldest_house:block/streetlight_top"
+    },
+    "facing=north,kind=top,waterlogged=true": {
+      "model": "the_oldest_house:block/streetlight_top"
+    },
+    "facing=north,kind=arm,waterlogged=false": {
+      "model": "the_oldest_house:block/streetlight_arm"
+    },
+    "facing=north,kind=arm,waterlogged=true": {
+      "model": "the_oldest_house:block/streetlight_arm"
+    },
+    "facing=north,kind=head,waterlogged=false": {
+      "model": "the_oldest_house:block/streetlight_head"
+    },
+    "facing=north,kind=head,waterlogged=true": {
+      "model": "the_oldest_house:block/streetlight_head"
+    },
+    "facing=east,kind=base,waterlogged=false": {
+      "model": "the_oldest_house:block/streetlight_base",
+      "y": 90
+    },
+    "facing=east,kind=base,waterlogged=true": {
+      "model": "the_oldest_house:block/streetlight_base",
+      "y": 90
+    },
+    "facing=east,kind=pole,waterlogged=false": {
+      "model": "the_oldest_house:block/streetlight_pole",
+      "y": 90
+    },
+    "facing=east,kind=pole,waterlogged=true": {
+      "model": "the_oldest_house:block/streetlight_pole",
+      "y": 90
+    },
+    "facing=east,kind=top,waterlogged=false": {
+      "model": "the_oldest_house:block/streetlight_top",
+      "y": 90
+    },
+    "facing=east,kind=top,waterlogged=true": {
+      "model": "the_oldest_house:block/streetlight_top",
+      "y": 90
+    },
+    "facing=east,kind=arm,waterlogged=false": {
+      "model": "the_oldest_house:block/streetlight_arm",
+      "y": 90
+    },
+    "facing=east,kind=arm,waterlogged=true": {
+      "model": "the_oldest_house:block/streetlight_arm",
+      "y": 90
+    },
+    "facing=east,kind=head,waterlogged=false": {
+      "model": "the_oldest_house:block/streetlight_head",
+      "y": 90
+    },
+    "facing=east,kind=head,waterlogged=true": {
+      "model": "the_oldest_house:block/streetlight_head",
+      "y": 90
+    },
+    "facing=south,kind=base,waterlogged=false": {
+      "model": "the_oldest_house:block/streetlight_base",
+      "y": 180
+    },
+    "facing=south,kind=base,waterlogged=true": {
+      "model": "the_oldest_house:block/streetlight_base",
+      "y": 180
+    },
+    "facing=south,kind=pole,waterlogged=false": {
+      "model": "the_oldest_house:block/streetlight_pole",
+      "y": 180
+    },
+    "facing=south,kind=pole,waterlogged=true": {
+      "model": "the_oldest_house:block/streetlight_pole",
+      "y": 180
+    },
+    "facing=south,kind=top,waterlogged=false": {
+      "model": "the_oldest_house:block/streetlight_top",
+      "y": 180
+    },
+    "facing=south,kind=top,waterlogged=true": {
+      "model": "the_oldest_house:block/streetlight_top",
+      "y": 180
+    },
+    "facing=south,kind=arm,waterlogged=false": {
+      "model": "the_oldest_house:block/streetlight_arm",
+      "y": 180
+    },
+    "facing=south,kind=arm,waterlogged=true": {
+      "model": "the_oldest_house:block/streetlight_arm",
+      "y": 180
+    },
+    "facing=south,kind=head,waterlogged=false": {
+      "model": "the_oldest_house:block/streetlight_head",
+      "y": 180
+    },
+    "facing=south,kind=head,waterlogged=true": {
+      "model": "the_oldest_house:block/streetlight_head",
+      "y": 180
+    },
+    "facing=west,kind=base,waterlogged=false": {
+      "model": "the_oldest_house:block/streetlight_base",
+      "y": 270
+    },
+    "facing=west,kind=base,waterlogged=true": {
+      "model": "the_oldest_house:block/streetlight_base",
+      "y": 270
+    },
+    "facing=west,kind=pole,waterlogged=false": {
+      "model": "the_oldest_house:block/streetlight_pole",
+      "y": 270
+    },
+    "facing=west,kind=pole,waterlogged=true": {
+      "model": "the_oldest_house:block/streetlight_pole",
+      "y": 270
+    },
+    "facing=west,kind=top,waterlogged=false": {
+      "model": "the_oldest_house:block/streetlight_top",
+      "y": 270
+    },
+    "facing=west,kind=top,waterlogged=true": {
+      "model": "the_oldest_house:block/streetlight_top",
+      "y": 270
+    },
+    "facing=west,kind=arm,waterlogged=false": {
+      "model": "the_oldest_house:block/streetlight_arm",
+      "y": 270
+    },
+    "facing=west,kind=arm,waterlogged=true": {
+      "model": "the_oldest_house:block/streetlight_arm",
+      "y": 270
+    },
+    "facing=west,kind=head,waterlogged=false": {
+      "model": "the_oldest_house:block/streetlight_head",
+      "y": 270
+    },
+    "facing=west,kind=head,waterlogged=true": {
+      "model": "the_oldest_house:block/streetlight_head",
+      "y": 270
+    }
+  }
+}

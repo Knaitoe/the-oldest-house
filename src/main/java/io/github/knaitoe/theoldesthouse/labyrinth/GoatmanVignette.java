@@ -127,7 +127,8 @@ public final class GoatmanVignette {
         if(!member){own.putBoolean("Active",true);own.putDouble("Progress",0);own.putInt("Vigil",0);own.putBoolean("Arrived",false);}
         own.putBoolean("Active",true);cohort.put(p.getUUID().toString(),own);r.put("Cohort",cohort);saveRun(d,r);
         if(!member)p.displayClientMessage(Component.literal("You're late. Your cousins are already at the trailer."),false);
-        scale(p,true);IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.GOATMAN);stage(l,b,r);
+        scale(p,true);IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.GOATMAN);
+        if(!stage(l,b,r)){r.putBoolean("StagePending0469",true);saveRun(d,r);}
         GoatmanWoods.supplies(l,b,count(r)-1+cohort.getAllKeys().size());if(fresh(r))GoatmanWoods.supperChairs(l,b,count(r)-1+cohort.getAllKeys().size());return true;
     }
     /** A fresh evening: no actors, day, the door open, the bathroom window propped, the porch light on, the pan and the plates empty. */
@@ -161,7 +162,7 @@ public final class GoatmanVignette {
     static final Vec3[] UP={new Vec3(.5,0,-50.5),new Vec3(.5,0,-51.5),new Vec3(.5,.5,-52.6),new Vec3(.5,1,-53.8),new Vec3(.5,1,-54.5)};
     /** From the fire, clear of its seats, round the trailer's north-west corner to the window and up onto the sill. */
     static final Vec3[] WINDOW_PATH={new Vec3(-7.5,0,-52.5),new Vec3(-10.5,0,-54.5),new Vec3(-10.5,0,-58.5),new Vec3(-10,1.5,-58.5)};
-    static final String[] ACTIVITY={"fireW","fireE","fireN","kitchen","shed","fireS","firelight","step"};
+    static final String[] ACTIVITY={"fireW","fireE","fireN","kitchen","shed","fireS","firelight","cupboard"};
     private static final Map<String,Spot> SPOTS=new HashMap<>();
     private static void spot(String key,Vec3 at,float yaw,boolean inside,int pose,Vec3... access){SPOTS.put(key,new Spot(at,yaw,inside,pose,access,null));}
     static{
@@ -176,6 +177,7 @@ public final class GoatmanVignette {
         spot("windowRun",new Vec3(-8.5,1.5,-58.5),270,false,STAND,WINDOW_PATH);
         spot("step",new Vec3(.5,1,-53.8),180,false,STAND,UP[0],UP[1],UP[2]);
         spot("kitchen",new Vec3(-4.5,1,-74.5),180,true,STAND,new Vec3(-3,1,-57.5),new Vec3(-3,1,-72.5));
+        spot("cupboard",new Vec3(4,1,-70.5),270,true,STAND,new Vec3(4,1,-57.5),new Vec3(4,1,-70.5));
         spot("floor",new Vec3(.5,1.05,-58.5),0,true,LIE);
         spot("checkDoor",new Vec3(.5,1,-56.2),0,true,STAND);
         for(int i=0;i<8;i++)spot("cower"+i,new Vec3(i%2==0?-3.8:4.8,1,-65.5-(i/2)*2),180,true,COWER,new Vec3(i%2==0?-3:4,1,-57.5),new Vec3(i%2==0?-3:4,1,-65.5-(i/2)*2));
@@ -279,8 +281,15 @@ public final class GoatmanVignette {
     /** The cousin who wants to check the door: the first who is neither the runner nor the thing. */
     static int checker(CompoundTag r){for(int i=0;i<count(r);i++)if(i!=r.getInt("Wrong")&&i!=r.getInt("Runner"))return i;return 0;}
 
-    public static void stage(ServerLevel l,BlockPos b,CompoundTag r){
-        if(!r.hasUUID("Id"))return;List<GoatmanChild> children=actors(l,b);
+    private static boolean spawnReady(ServerLevel l,BlockPos b){
+        var area=IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN);
+        for(int x=(int)Math.floor(area.minX)>>4;x<=(int)Math.floor(area.maxX)>>4;x++)for(int z=(int)Math.floor(area.minZ)>>4;z<=(int)Math.floor(area.maxZ)>>4;z++)if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(x,z)))return false;
+        return true;
+    }
+    public static boolean stage(ServerLevel l,BlockPos b,CompoundTag r){
+        // Block chunks can arrive before their saved entity sections. Wait for the latter
+        // before deciding that a cousin is missing or registering a fresh body.
+        if(!r.hasUUID("Id")||!spawnReady(l,b))return false;List<GoatmanChild> children=actors(l,b);
         for(var c:children)if(!c.getTags().contains("TrailerWalk")&&(!c.getPersistentData().hasUUID(ROUND)||!c.getPersistentData().getUUID(ROUND).equals(r.getUUID("Id"))))c.discard();
         for(int i=0;i<count(r);i++){
             boolean away=i==r.getInt("Runner")&&(r.getInt("RunnerState")==R_AWAY||r.getInt("RunnerState")==R_LOST)||i==r.getInt("Wrong")&&r.getInt("Phase")==DAWN;
@@ -291,10 +300,15 @@ public final class GoatmanVignette {
             GoatmanChild c=GoatmanRegistry.CHILD.get().create(l);if(c==null)continue;
             c.addTag(ACTOR);c.getPersistentData().putUUID(ROUND,r.getUUID("Id"));c.getPersistentData().putInt(INDEX,i);
             c.appearance(r.getInt("Skin"+i),i==r.getInt("Wrong")?r.getInt("Tells"):0,null);
-            l.addFreshEntity(c);settle(c,b,place(i,r));
+            // Native spawn callbacks and the first tracking packet must see the campsite,
+            // rather than the new entity's default position in chunk zero.
+            settle(c,b,place(i,r));
+            if(!l.addFreshEntity(c))io.github.knaitoe.theoldesthouse.TheOldestHouse.LOGGER.warn("Could not stage trailer cousin {} for round {} at {}; retrying",i,r.getUUID("Id"),c.position());
         }
+        return true;
     }
     private static GoatmanChild girl(ServerPlayer p,BlockPos b,CompoundTag r){
+        if(!spawnReady(p.serverLevel(),b))return null;
         var girls=actors(p.serverLevel(),b).stream().filter(c->c.viewer().filter(p.getUUID()::equals).isPresent()&&!c.getTags().contains("TrailerWalk")).toList();
         for(int i=1;i<girls.size();i++)girls.get(i).discard();if(!girls.isEmpty())return girls.getFirst();
         GoatmanChild c=GoatmanRegistry.CHILD.get().create(p.serverLevel());if(c==null)return null;
@@ -462,7 +476,7 @@ public final class GoatmanVignette {
         else if(phase==VIGIL){clock++;night(l,b,r,enrolled,clock);if(clock>=vigilTicks(r)){r.putInt("Clock",clock);dawn(l,b,r,enrolled,d);phase=DAWN;}}
         r.putInt("Clock",clock);
         // Restore saved actors, never reroll a tell or duplicate a cousin after a restart.
-        if(server.getTickCount()%20==0)stage(l,b,r);cousins(l,b,r,enrolled);
+        if(server.getTickCount()%20==0||r.getBoolean("StagePending0469"))r.putBoolean("StagePending0469",!stage(l,b,r));cousins(l,b,r,enrolled);
         saveRun(d,r);
         if(server.getTickCount()%20==0)for(var p:enrolled)scene(p,r);
         ambience(l,b,r,enrolled,server.getTickCount());
@@ -478,7 +492,7 @@ public final class GoatmanVignette {
         // Late joiners before supper get a brat counted for them; nobody gets one counted after.
         if(!r.getBoolean("PlayerServes0464")&&clock<SUPPER&&r.getInt("PanFor")!=r.getInt("Expected")){r.putInt("Pan",r.getInt("Pan")+r.getInt("Expected")-r.getInt("PanFor"));r.putInt("PanFor",r.getInt("Expected"));GoatmanWoods.pan(l,b,r.getInt("Pan"));}
         boolean serves=r.getBoolean("PlayerServes0464");
-        if(serves&&clock==SERVE_HINT)say(enrolled,"A cousin: Four in each pack. We counted enough for everybody. Could you put them out when they're ready?");
+        if(serves&&clock==SERVE_HINT)say(enrolled,"A cousin: Go grab 'em from the cooler by the kitchen counter. Four in each pack. Cook them on the griddle, then put one on everybody's plate.");
         if(serves&&clock==(fresh(r)?2460:WINDOW_HINT))say(enrolled,"A cousin: Is anyone else getting cold back there?");
         if(!serves&&clock==OLD_WINDOW_HINT)say(enrolled,"A cousin: Somebody shut the bathroom window. Bugs are getting in.");
         if(clock==leaves&&r.getInt("RunnerState")==R_HOME){r.putInt("RunnerState",R_LEAVING);say(enrolled,"A cousin: Generator's out of gas. I'll run get some from the truck. Back before dark.");}
@@ -574,7 +588,7 @@ public final class GoatmanVignette {
         int phase=r.getInt("Phase");
         if(phase<VIGIL&&!r.getBoolean("Silence")){
             if(tick%180==0)l.playSound(null,b.offset(5,1,-40),GoatmanRegistry.WOODS.get(),SoundSource.AMBIENT,.35F,1);
-            if(phase==GATHERING&&tick%120==0)for(var at:new BlockPos[]{b.offset(-14,1,-60),b.offset(14,1,-50),b.offset(-10,1,-76)})l.playSound(null,at,GoatmanRegistry.CRICKETS.get(),SoundSource.AMBIENT,.5F,1);
+            if(phase==GATHERING&&tick%400==0){var at=new BlockPos[]{b.offset(-14,1,-60),b.offset(14,1,-50),b.offset(-10,1,-76)}[(tick/400)%3];l.playSound(null,at,GoatmanRegistry.CRICKETS.get(),SoundSource.AMBIENT,.35F,1);}
         }
         // The fire gutters and the camp fills with copper motes once the woods go quiet.
         if(phase==GATHERING&&r.getBoolean("Silence")&&tick%5==0){Vec3 f=Vec3.atCenterOf(b.offset(GoatmanWoods.FIRE));l.sendParticles(GoatmanRegistry.COPPER.get(),f.x,f.y+.6,f.z,4,1.6,.8,1.6,.003);

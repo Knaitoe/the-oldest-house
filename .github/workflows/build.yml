@@ -57,7 +57,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.67"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.69"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/house/PlaytestLog.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
               hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
@@ -163,7 +163,20 @@ jobs:
               for name in ('WhaleInstitute','PigeonholeBlock','SelfAddressedEnvelopeItem'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               # Proofrock (0.4.67): the town's signboards and school fittings, and the teachers' desks.
-              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/town_fixture.json'))['variants']) == 184
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/town_fixture.json'))['variants']) == 256
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/streetlight.json'))['variants']) == 40
+              for name in ('TownStreetlightBlock','StreetlightUpgrade'):
+                  assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
+              for name in ('metal','base','glass'):
+                  assert z.read(f'assets/the_oldest_house/textures/block/streetlight_{name}.png').startswith(b'\x89PNG')
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/institute_sign.json'))['variants']) == 48
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/trailer_cooler.json'))['variants']) == 16
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/vehicle_wheel.json'))['variants']) == 16
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/notice_post.json'))['variants']) == 4
+              for cls in ('NoticePostBlock','NoticePostBlockEntity','InstituteSignBlock','PlaytestFixes'):
+                  assert f'io/github/knaitoe/theoldesthouse/labyrinth/{cls}.class' in z.namelist()
+              for kind in ('post','outgoing','hours','writing','room_1','room_2','room_3','room_4','room_5','room_6','room_8','missing'):
+                  assert z.read(f'assets/the_oldest_house/textures/block/institute_{kind}.png').startswith(b'\x89PNG')
               assert len(json.loads(z.read('assets/the_oldest_house/blockstates/school_desk.json'))['variants']) == 4
               for sign in ('general','post','laundry','hardware','sheriff','diner','cinema','bait','hall','motel','garage','school'):
                   for panel in 'lmr':
@@ -469,6 +482,7 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq xvfb libgl1-mesa-dri
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 5m gradle runClient -PfontSmoke --no-daemon
+          python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text(), 'A native mod model has a missing texture'"
           test -s build/font-smoke/passed.txt
           test -s build/font-smoke/native-writing.png
           test -s build/font-smoke/native-novel-papers.png
@@ -499,6 +513,10 @@ jobs:
           test -s build/font-smoke/native-playtest-0464.png
           test -s build/font-smoke/trailer-0465-passed.txt
           for page in 0 1 2 3; do test -s build/font-smoke/native-trailer-0465-$page.png; done
+          test -s build/font-smoke/streetlights-0469-passed.txt
+          test -s build/font-smoke/native-streetlights-0469.png
+          test -s build/font-smoke/playtest-0468-passed.txt
+          for page in 4 5 6; do test -s build/font-smoke/native-playtest-0468-$page.png; done
           test -s build/font-smoke/native-goatman.png
           test -s build/font-smoke/coffin-passed.txt
           test -s build/font-smoke/native-coffin.png
@@ -741,7 +759,7 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.67"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.69"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
@@ -816,8 +834,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.67.jar
-            build/libs/the_oldest_house-0.4.67.jar.sha256
+            build/libs/the_oldest_house-0.4.69.jar
+            build/libs/the_oldest_house-0.4.69.jar.sha256
           if-no-files-found: error
 
 
@@ -969,8 +987,13 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq xvfb libgl1-mesa-dri
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 5m gradle runClient -PtrailerSmoke --no-daemon
+          python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text(), 'A native mod model has a missing texture'"
           test -s build/font-smoke/trailer-0465-passed.txt
           for page in 0 1 2 3; do test -s build/font-smoke/native-trailer-0465-$page.png; done
+          test -s build/font-smoke/streetlights-0469-passed.txt
+          test -s build/font-smoke/native-streetlights-0469.png
+          test -s build/font-smoke/playtest-0468-passed.txt
+          for page in 4 5 6; do test -s build/font-smoke/native-playtest-0468-$page.png; done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -978,6 +1001,10 @@ jobs:
           path: |
             build/font-smoke/native-trailer-0465-*.png
             build/font-smoke/trailer-0465-passed.txt
+            build/font-smoke/native-playtest-0468-*.png
+            build/font-smoke/playtest-0468-passed.txt
+            build/font-smoke/native-streetlights-0469.png
+            build/font-smoke/streetlights-0469-passed.txt
             run/logs/latest.log
             run/crash-reports/
 
@@ -992,7 +1019,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
-      - name: Native trailer cooking, physical stalking, disguises and fixture packets
+      - name: Native trailer cooking, physical stalking, disguises and streetlights
         timeout-minutes: 12
         env:
           JAVA_TOOL_OPTIONS: -Xmx6g
@@ -1005,7 +1032,7 @@ jobs:
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/goatman-native.log').read_text())
-          declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/GoatmanTests.java').read_text()))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('GoatmanTests.java','StreetlightTests.java'))
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused native Goatman cases passed; the complete suite remains required.')
           PY

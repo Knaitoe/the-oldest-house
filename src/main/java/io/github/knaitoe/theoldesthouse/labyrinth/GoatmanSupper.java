@@ -41,6 +41,7 @@ public final class GoatmanSupper {
     }
     public static void tick(ServerLevel l,BlockPos b,CompoundTag r){
         if(!r.getBoolean("PlayerServes0464"))return;
+        if(!r.getBoolean("PanPositioned0468")){GoatmanWoods.cookingPan(l,b,r);r.putBoolean("PanPositioned0468",true);}
         var cooking=r.getList("Cooking0465",Tag.TAG_COMPOUND);var cooked=r.getList("CookedPan0465",Tag.TAG_COMPOUND);boolean changed=false;
         for(int i=cooking.size()-1;i>=0;i--){
             var t=cooking.getCompound(i);int left=t.getInt("Left")-1;t.putInt("Left",left);
@@ -62,7 +63,13 @@ public final class GoatmanSupper {
         if(!member.getBoolean("Active")||member.getBoolean("Failed"))return false;
         var base=GoatmanVignette.base(player.server);var rel=event.getPos().subtract(base);var held=player.getItemInHand(event.getHand());
         boolean stove=rel.equals(GoatmanWoods.STOVE)||rel.equals(GoatmanWoods.PAN);
-        if(stove){
+        if(rel.equals(GoatmanWoods.COOLER)||stove&&!player.serverLevel().getBlockState(base.offset(GoatmanWoods.COOLER)).is(GoatmanRegistry.COOLER.get())&&!held.is(GoatmanRegistry.FRANKS.get())&&!held.is(GoatmanRegistry.RAW_FRANK.get())&&run.getList("Cooking0465",Tag.TAG_COMPOUND).isEmpty()&&run.getList("CookedPan0465",Tag.TAG_COMPOUND).isEmpty()){
+            int issued=run.getInt("PacketsIssued0464"),limit=(GoatmanVignette.expectedCount(run)+3)/4;
+            if(issued<limit){
+                var packet=new ItemStack(GoatmanRegistry.FRANKS.get());CustomData.update(DataComponents.CUSTOM_DATA,packet,t->t.putUUID(GoatmanVignette.ROUND,run.getUUID("Id")));
+                run.putInt("PacketsIssued0464",issued+1);give(player,packet);
+            }else player.displayClientMessage(Component.literal("The cooler is empty. We counted enough for supper."),true);
+        }else if(stove){
             var cooking=run.getList("Cooking0465",Tag.TAG_COMPOUND);var cooked=run.getList("CookedPan0465",Tag.TAG_COMPOUND);
             if(held.is(GoatmanRegistry.FRANKS.get()))player.setItemInHand(event.getHand(),held.getItem().use(player.level(),player,event.getHand()).getObject());
             else if(held.is(GoatmanRegistry.RAW_FRANK.get())){
@@ -72,11 +79,7 @@ public final class GoatmanSupper {
             }else if(!cooked.isEmpty()){
                 var item=ItemStack.parseOptional(player.registryAccess(),cooked.getCompound(0).getCompound("Item"));cooked.remove(0);run.put("CookedPan0465",cooked);give(player,item);GoatmanWoods.cookingPan(player.serverLevel(),base,run);
             }else{
-                int issued=run.getInt("PacketsIssued0464"),limit=(GoatmanVignette.expectedCount(run)+3)/4;
-                if(issued<limit){
-                    var packet=new ItemStack(GoatmanRegistry.FRANKS.get());CustomData.update(DataComponents.CUSTOM_DATA,packet,t->t.putUUID(GoatmanVignette.ROUND,run.getUUID("Id")));
-                    run.putInt("PacketsIssued0464",issued+1);give(player,packet);
-                }else player.displayClientMessage(Component.literal(cooking.isEmpty()?"Only the empty wrappers are left.":"They're still cooking."),true);
+                player.displayClientMessage(Component.literal(cooking.isEmpty()?"Grab a pack from the cooler beside the kitchen counter.":"They're still cooking."),true);
             }
         }else{
             var hit=event.getHitVec().getLocation().subtract(base.getX(),base.getY(),base.getZ());int seat=-1;double distance=1.6;
