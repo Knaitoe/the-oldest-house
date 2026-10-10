@@ -79,7 +79,9 @@ public final class GoatmanTests {
         Fixture(GameTestHelper h,int coordinate){
             this.h=h;server=h.getLevel().getServer();l=HouseTestLevel.get(server);origin=new BlockPos(coordinate,80,coordinate);
             oldHouse=HouseSavedData.get(server);oldData=LabyrinthData.get(server);oldMother=MotherCollection.get(server);keep=l.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY);
-            var house=new HouseSavedData();house.markSpawned(origin);server.overworld().getDataStorage().set("the_oldest_house",house);
+            // The fixture authors its own native terrain. A background Overworld copy would
+            // overwrite the home floor while the haunting awaits loaded entity sections.
+            var house=new HouseSavedData();house.markSpawned(origin);house.markInteriorInitialized();server.overworld().getDataStorage().set("the_oldest_house",house);
             var data=new LabyrinthData();data.setBuilt(LabyrinthBuilder.VERSION,origin);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);
             server.overworld().getDataStorage().set("the_oldest_house_mother",new MotherCollection());
             b=LabyrinthPlaces.base(origin,LabyrinthPlace.GOATMAN);GoatmanVignette.build(server,l,b);LabyrinthBuilder.registerDoors(data,LabyrinthPlace.GOATMAN,b);IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.GOATMAN);
