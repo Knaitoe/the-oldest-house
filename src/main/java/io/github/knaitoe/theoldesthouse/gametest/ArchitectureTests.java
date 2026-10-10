@@ -269,7 +269,7 @@ public final class ArchitectureTests {
         }
         // Windows: glass set back behind the wall plane, so each opening has a real reveal.
         for(var scene:List.of(LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.KAREN_ROOM,LabyrinthPlace.HOSPITAL,LabyrinthPlace.MODEL_HOME,LabyrinthPlace.WHALE)){
-            var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var b=LabyrinthPlaces.base(origin,scene);var r=SceneShells.interior(scene);int panes=0;
+            var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var b=LabyrinthPlaces.base(origin,scene);var r=scene==LabyrinthPlace.WHALE?WhaleInstitute.INTERIOR:SceneShells.interior(scene);int panes=0;
             for(var at:BlockPos.betweenClosed(b.offset(r.minX()-3,r.minY(),r.minZ()-3),b.offset(r.maxX()+3,r.maxY(),r.maxZ()))){
                 var rel=at.subtract(b);boolean outside=rel.getX()<r.minX()-1||rel.getX()>r.maxX()+1||rel.getZ()<r.minZ()-1;
                 var st=level.getBlockState(at);if(outside&&(st.is(Blocks.GLASS_PANE)||st.getBlock() instanceof StainedGlassPaneBlock))panes++;
@@ -380,6 +380,8 @@ public final class ArchitectureTests {
             if(name.equals("hotel_upstairs")&&y>=5&&(x==10||z==-6))continue;
             if(scene==LabyrinthPlace.HOTEL&&name.equals("hotel")&&y>=0&&(x==12||z==-4))continue;
             if(!exterior&&y>2&&s.is(Blocks.BIRCH_PLANKS))continue;
+            // The institute's ward ceiling comes off; over the dayroom it is the attics' floor and stays.
+            if(!exterior&&scene==LabyrinthPlace.WHALE&&y==5&&z>-25&&s.is(Blocks.SMOOTH_STONE))continue;
             boolean exposed=false;for(var side:Direction.values())if(l.getBlockState(at.relative(side)).isAir()||!l.getBlockState(at.relative(side)).isSolid()){exposed=true;break;}
             if(!exposed&&y!=minY)continue;
             Integer index=lookup.get(s);if(index==null){index=lookup.size();lookup.put(s,index);palette.add(BlockState.CODEC.encodeStart(JsonOps.INSTANCE,s).getOrThrow());}

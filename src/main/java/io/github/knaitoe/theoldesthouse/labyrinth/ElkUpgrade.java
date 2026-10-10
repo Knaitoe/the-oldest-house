@@ -38,10 +38,14 @@ public final class ElkUpgrade {
     /** The Goatman's trailer and camp are carved again too (layout 38): real seats, lamps, the bathroom window, the shed, the hollows. Layout 18 first built it. */
     static final int GOATMAN_FIRST = 18, GOATMAN_REBUILT_IN = 38;
 
+    /** The Whalestoe institute is carved again (layout 39): post room, corridor, her room, the dayroom and three attics. Layout 21 first built it. */
+    static final int WHALE_FIRST = 21, WHALE_REBUILT_IN = 39;
+
     /** Whether an upgrade from this saved layout carves this scene again. */
     public static boolean rebuilds(LabyrinthPlace place, int builtVersion) {
         if (place == LabyrinthPlace.ELK_CARCASSES) return rebuilds(builtVersion);
         if (place == LabyrinthPlace.GOATMAN) return builtVersion >= GOATMAN_FIRST && builtVersion < GOATMAN_REBUILT_IN;
+        if (place == LabyrinthPlace.WHALE) return builtVersion >= WHALE_FIRST && builtVersion < WHALE_REBUILT_IN;
         return place == LabyrinthPlace.END_WORLD_CABIN && builtVersion >= FIRST_LAYOUT && builtVersion < CABIN_REBUILT_IN;
     }
 
@@ -60,10 +64,10 @@ public final class ElkUpgrade {
         return fixture || ScenePolish.loaded(level, area, base);
     }
 
-    /** After the carve: the cabin's visitors are placed by their own scene; anything else displaced goes to the porch (the trailer's yard for the Goatman). */
+    /** After the carve: the cabin's visitors are placed by their own scene; anything else displaced goes to the porch (the trailer's yard for the Goatman, the institute's reception). */
     public static void settle(ServerLevel level, BlockPos base, LabyrinthPlace place) {
         if (place == LabyrinthPlace.ELK_CARCASSES) { settle(level, base); return; }
-        Vec3 porch = Vec3.atBottomCenterOf(place == LabyrinthPlace.GOATMAN ? base.offset(-1, 0, -47) : base.offset(-6, 0, -10));
+        Vec3 porch = Vec3.atBottomCenterOf(place == LabyrinthPlace.GOATMAN ? base.offset(-1, 0, -47) : place == LabyrinthPlace.WHALE ? base.offset(-4, 0, -4) : base.offset(-6, 0, -10));
         for (Entity e : level.getEntitiesOfClass(Entity.class, area(base, place), e -> e instanceof LivingEntity || e instanceof ItemEntity)) {
             if (e instanceof Player || !e.isAlive()) continue;
             restoreResident(e);

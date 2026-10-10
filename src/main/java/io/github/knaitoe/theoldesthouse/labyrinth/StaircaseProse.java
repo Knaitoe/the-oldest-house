@@ -194,7 +194,7 @@ public final class StaircaseProse {
             {"cross_hall","a crossing hall"},{"quiet_room","the quiet room"},{"drowned_town","the drowned town"},
             {"preserved_cave","the cave under the lake"},{"shallows","the shallows"},{"phone_canoe","the canoe"},
             {"goatman","the door in the woods"},{"ted_caver","the narrow cave"},{"zampano_courtyard","the blind man's courtyard"},
-            {"whale","the attic of letters"},{"barn_well","the well by the barn"},{"plain","the open plain"},{"hospital","the night ward"},
+            {"whale","the institute post room"},{"barn_well","the well by the barn"},{"plain","the open plain"},{"hospital","the night ward"},
             {"karen_room","Karen's room"},{"holloway_camp","Holloway's camp"},{"seance","the seance parlour"},
             {"wallpaper_nursery","the yellow nursery"},{"blind_stretch","the blind stretch"},{"hotel","the hotel"},
             {"hotel_grounds","the hotel grounds"},{"hill_nursery","the Hill House nursery"},{"miniatures","the miniatures workshop"},

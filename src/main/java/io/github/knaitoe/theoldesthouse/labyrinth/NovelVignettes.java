@@ -36,7 +36,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class NovelVignettes {
     public static final String STATE="novel_0423",PHOTO_OWNER="PlainPhotoOwner",PHOTO_ID="PlainPhotoId",CAT="CourtyardCat";
-    public static final int WELL_WAIT=1200,WARD_NIGHT=3600,MAIL_INTERVAL=1200;
+    public static final int WELL_WAIT=1200,WARD_NIGHT=3600;
     public static final List<LabyrinthPlace> PLACES=List.of(LabyrinthPlace.ZAMPANO_COURTYARD,LabyrinthPlace.WHALE,LabyrinthPlace.BARN_WELL,LabyrinthPlace.PLAIN,LabyrinthPlace.HOSPITAL,LabyrinthPlace.KAREN_ROOM);
     private static final ResourceLocation SMALL=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"well_child_scale");
     private static final Map<UUID,ServerPlayer> SCALED=new HashMap<>();
@@ -61,7 +61,7 @@ public final class NovelVignettes {
             var visited=data.visited(p.getUUID()).stream().map(LabyrinthPlace::byId).filter(q->q!=null&&q.slot()>=0&&q!=place&&!q.isOneShot()).toList();
             for(int i=1;i<place.doors().size();i++){var d=data.door(place.doorId(place.doors().get(i)));if(d!=null)data.deal(p.getUUID(),d,visited.isEmpty()?place.id():visited.get((i-1)%visited.size()).id(),false);}
         }
-        if(place==LabyrinthPlace.WHALE&&!own.contains("MailDue")){own.putLong("MailDue",p.serverLevel().getGameTime()+MAIL_INTERVAL);own.putBoolean("Correspondence",true);}
+        if(place==LabyrinthPlace.WHALE)WhaleInstitute.arrive(p,own);
         if(place==LabyrinthPlace.HOSPITAL&&!own.getBoolean("WardFinished")){own.putInt("WardTicks",0);own.putInt("WardCalls",0);own.putBoolean("Alarm",false);}
         if(place==LabyrinthPlace.KAREN_ROOM){showRecord(p,own);p.displayClientMessage(Component.literal("The bed remembers your place. Use the projector to change photographs; sneak-use it to take your originals."),false);}
         save(data,p.getUUID(),own);
@@ -109,14 +109,7 @@ public final class NovelVignettes {
             if(data.state(STATE).getBoolean("ArchiveOpen"))open(p,place,SceneHuntReview.sourceBook(p.serverLevel(),b,place),"ArchiveBook",true,own);else handled=false;
         }else if(place==LabyrinthPlace.ZAMPANO_COURTYARD&&SceneReview.DRAFTS.contains(rel)&&p.serverLevel().getBlockState(e.getPos()).is(HouseBlocks.VIGNETTE_DETAIL.get())){
             int index=SceneReview.DRAFTS.indexOf(rel);open(p,place,NovelTexts.archiveDraft(index),"ArchiveDraft"+index,false,own);
-        }else if(place==LabyrinthPlace.WHALE&&rel.equals(NovelRooms.MAIL)){
-            var book=p.getMainHandItem().get(DataComponents.WRITTEN_BOOK_CONTENT);if(book!=null){
-                String text=book.pages().stream().map(q->q.raw().getString()).reduce("",(a,q)->a+" "+q).toLowerCase(Locale.ROOT);String keyword=text.contains("cat")?"the cat":text.contains("home")?"home":text.contains("door")?"the door":"waiting";
-                ListTag posted=own.getList("PostedBooks",Tag.TAG_COMPOUND);if(posted.size()<8){posted.add(p.getMainHandItem().copyWithCount(1).save(p.registryAccess()));own.put("PostedBooks",posted);p.getMainHandItem().shrink(1);give(p,VignetteYields.mark(NovelTexts.reply(keyword),place.id()));}
-            }else open(p,place,NovelTexts.whaleOpening(),"WhaleOpening",false,own);
-        }else if(place==LabyrinthPlace.WHALE&&rel.equals(NovelRooms.ATTIC_DESK)){
-            if(own.getBoolean("AtticKnocked")&&own.getInt("Letters")>=3)open(p,place,NovelTexts.whaleLast(),"WhaleLast",true,own);else cue(p,own,"The letter has no address for you yet.");
-        }else if(place==LabyrinthPlace.WHALE&&rel.equals(new BlockPos(-7,1,-25)))open(p,place,NovelTexts.whaleOpening(),"WhaleOpening",false,own);
+        }else if(place==LabyrinthPlace.WHALE)handled=WhaleInstitute.click(p,b,rel,own);
         else if(place==LabyrinthPlace.BARN_WELL&&rel.equals(NovelRooms.WELL)){
             if(waitingBelow(p.server)&&own.getInt("WellTicks")<WELL_WAIT)cue(p,own,"The cover will not lift. Someone remains above the shaft.");
             else NovelRooms.cover(p.serverLevel(),b,false);
@@ -135,24 +128,6 @@ public final class NovelVignettes {
         if(handled){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);save(data,p.getUUID(),own);}
         trackPhotoStore(p,e.getPos(),own);
     }
-    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void knock(PlayerInteractEvent.LeftClickBlock e){
-        if(!(e.getEntity() instanceof ServerPlayer p)||e.getAction()!=PlayerInteractEvent.LeftClickBlock.Action.START||!inside(p,LabyrinthPlace.WHALE))return;
-        var b=IndianLakeRooms.base(p.server,LabyrinthPlace.WHALE);if(!e.getPos().equals(b.offset(NovelRooms.ATTIC_DOOR))||p.distanceToSqr(e.getPos().getCenter())>36)return;
-        e.setCanceled(true);var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());long now=p.serverLevel().getGameTime(),last=own.getLong("LastKnock");
-        if(own.contains("LastKnock")&&now-last<5)return;int[] groups=own.getIntArray("Knocks");
-        if(groups.length==0||now-last>80)groups=new int[]{1};else if(now-last>=20){groups=Arrays.copyOf(groups,groups.length+1);groups[groups.length-1]=1;}else groups[groups.length-1]++;
-        if(groups.length>3||Arrays.stream(groups).sum()>6)groups=new int[]{1};own.putIntArray("Knocks",groups);own.putLong("LastKnock",now);save(data,p.getUUID(),own);
-        p.serverLevel().playSound(null,e.getPos(),SoundEvents.WOOD_HIT,SoundSource.BLOCKS,.5F,.75F);
-    }
-    @SubscribeEvent public static void opened(PlayerContainerEvent.Open e){
-        if(!(e.getEntity() instanceof ServerPlayer p)||!participant(p)||!(e.getContainer() instanceof ChestMenu menu))return;var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());
-        if(!p.serverLevel().dimension().equals(net.minecraft.world.level.Level.OVERWORLD)
-                || !own.getBoolean("Correspondence")||own.getInt("Letters")>=8||p.serverLevel().getGameTime()<own.getLong("MailDue"))return;
-        var chest=menu.getContainer();if(!chest.isEmpty())return;
-        for(int i=0;i<chest.getContainerSize();i++)if(chest.getItem(i).isEmpty()){
-            int n=own.getInt("Letters");ItemStack letter=VignetteYields.mark(NovelTexts.letter(n,p.getGameProfile().getName()),LabyrinthPlace.WHALE.id());CustomData.update(DataComponents.CUSTOM_DATA,letter,t->t.putUUID("LetterTo",p.getUUID()));
-            chest.setItem(i,letter);chest.setChanged();menu.broadcastChanges();own.putInt("Letters",n+1);own.putLong("MailDue",p.serverLevel().getGameTime()+MAIL_INTERVAL);save(data,p.getUUID(),own);break;}
-    }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         if(e.getServer().getTickCount()%20==0){var origin=HouseSavedData.get(e.getServer()).houseOrigin();var level=e.getServer().getLevel(HouseDimensions.INTERIOR);if(origin!=null&&level!=null&&LabyrinthData.get(e.getServer()).builtVersion()>=21){var b=LabyrinthPlaces.base(origin,LabyrinthPlace.WHALE);if(b!=null&&level.hasChunkAt(b))MailPlaqueBlock.repair(level,b);}}
         var server=e.getServer();BlockPos origin=HouseSavedData.get(server).houseOrigin();if(origin==null){clearAll();return;}
@@ -170,10 +145,8 @@ public final class NovelVignettes {
                         if(ticks==780)cue(p,own,"The voice comes again, farther away: They will stop asking.");
                         if(ticks==WELL_WAIT){p.removeEffect(net.minecraft.world.effect.MobEffects.DARKNESS);cue(p,own,"The waiting loosens. Climb toward the cover.");}}
                     if(own.getBoolean("WellEntered")&&own.getInt("WellTicks")>=WELL_WAIT&&y>=-.2&&!own.getBoolean("WellReturned")){own.putBoolean("WellReturned",true);WitnessAccount.resolve(p,WitnessAccount.Story.BARN_WELL,"waited_and_climbed_out");data.setCompleted(LabyrinthPlace.BARN_WELL.id(),true);cue(p,own,"A ribbon catches on the barrel beside the well.");}
-                }else if(place==LabyrinthPlace.WHALE&&own.contains("LastKnock")&&now-own.getLong("LastKnock")>=40){
-                    if(own.getInt("Letters")>=3&&Arrays.equals(own.getIntArray("Knocks"),new int[]{3,1,2})){own.putBoolean("AtticKnocked",true);NovelRooms.door(p.serverLevel(),b.offset(NovelRooms.ATTIC_DOOR),Direction.EAST,Blocks.IRON_DOOR,true);cue(p,own,"The middle attic answers after the last pause.");}
-                    own.remove("LastKnock");own.remove("Knocks");
-                }else if(place==LabyrinthPlace.PLAIN)tickPlain(p,b,own);
+                }else if(place==LabyrinthPlace.WHALE)WhaleInstitute.tick(p,b,own);
+                else if(place==LabyrinthPlace.PLAIN)tickPlain(p,b,own);
                 else if(place==LabyrinthPlace.HOSPITAL&&!own.getBoolean("WardFinished")){
                     int ticks=own.getInt("WardTicks")+1;own.putInt("WardTicks",ticks);int gap=Math.max(80,240-ticks/24);
                     if(ticks==1||ticks>=own.getInt("NextAlarm")){own.putBoolean("Alarm",true);own.putInt("NextAlarm",ticks+gap);p.playNotifySound(NovelRegistry.MONITOR.get(),SoundSource.BLOCKS,.45F,1);cue(p,own,ticks>WARD_NIGHT-500?"The monitor calls sooner. The door stays shut.":"The monitor calls. The button is beside the incubator.");}
@@ -281,28 +254,44 @@ public final class NovelVignettes {
             if(level.getBlockEntity(at) instanceof Container c){for(int i=0;i<c.getContainerSize();i++)if(photo(c.getItem(i),p.getUUID()))c.setItem(i,ItemStack.EMPTY);c.setChanged();}}
         give(p,ItemStack.parseOptional(p.registryAccess(),own.getCompound("Photo")));cue(p,own,"The photograph is back. It has not become easier to look at.");
     }
-    private static void open(ServerPlayer p,LabyrinthPlace place,ItemStack book,String key,boolean ending,CompoundTag own){
+    static void open(ServerPlayer p,LabyrinthPlace place,ItemStack book,String key,boolean ending,CompoundTag own){
         var data=LabyrinthData.get(p.server);String slot="Original_"+key;
         if(!own.contains(slot))own.put(slot,book.save(p.registryAccess()));var original=ItemStack.parseOptional(p.registryAccess(),own.getCompound(slot));save(data,p.getUUID(),own);
-        p.openMenu(new SimpleMenuProvider((id,inv,who)->new NovelBookMenu(id,p,place,original,key,ending),Component.literal(original.getHoverName().getString())));
+        show(p,place,original,key,ending,true,own);
+    }
+    /** The reader's own letter, come back to where it was going. It stays theirs: nothing can be taken from this reading. */
+    static void readReturned(ServerPlayer p,LabyrinthPlace place,ItemStack letter){show(p,place,letter,"Returned_"+place.id(),true,false,null);}
+    /** {@code held} is the record a caller will save afterwards; a reward written anywhere else would be overwritten by it. */
+    private static void show(ServerPlayer p,LabyrinthPlace place,ItemStack book,String key,boolean ending,boolean takeable,@Nullable CompoundTag held){
+        p.openMenu(new SimpleMenuProvider((id,inv,who)->new NovelBookMenu(id,p,place,book,key,ending,takeable),Component.literal(book.getHoverName().getString())));
+        // A one-page ending is already open at its last page.
+        if(ending&&p.containerMenu instanceof NovelBookMenu menu&&menu.reader==p&&menu.pages()==1)menu.finish(held);
     }
     public static final class NovelBookMenu extends LecternMenu {
-        private final ServerPlayer reader;private final LabyrinthPlace place;private final ItemStack original;private final String key;private final boolean ending;private int page;
-        NovelBookMenu(int id,ServerPlayer p,LabyrinthPlace place,ItemStack book,String key,boolean ending){super(id,container(book),new SimpleContainerData(1));reader=p;this.place=place;original=VignetteYields.mark(book.copy(),place.id());this.key=key;this.ending=ending;}
+        private final ServerPlayer reader;private final LabyrinthPlace place;private final ItemStack original;private final String key;private final boolean ending,takeable;private int page;
+        NovelBookMenu(int id,ServerPlayer p,LabyrinthPlace place,ItemStack book,String key,boolean ending,boolean takeable){super(id,container(book),new SimpleContainerData(1));reader=p;this.place=place;original=VignetteYields.mark(book.copy(),place.id());this.key=key;this.ending=ending;this.takeable=takeable;}
         private static Container container(ItemStack book){var c=new SimpleContainer(1);c.setItem(0,book.copy());return c;}
         public ItemStack book(){return original.copy();}
+        int pages(){var content=original.get(DataComponents.WRITTEN_BOOK_CONTENT);return content==null?0:content.pages().size();}
         @Override public boolean clickMenuButton(net.minecraft.world.entity.player.Player p,int button){if(p!=reader||!inside(reader,place))return false;var data=LabyrinthData.get(reader.server);var own=personal(data,reader.getUUID());
-            if(button==3){boolean taken=own.getBoolean("Taken_"+key);if(taken)return false;own.putBoolean("Taken_"+key,true);save(data,reader.getUUID(),own);give(reader,original.copy());return true;}
-            int pages=original.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size();int next=button==1?page-1:button==2?page+1:button>=100?button-100:-1;if(next<0||next>=pages)return false;
+            if(button==3){if(!takeable)return false;boolean taken=own.getBoolean("Taken_"+key);if(taken)return false;own.putBoolean("Taken_"+key,true);save(data,reader.getUUID(),own);give(reader,original.copy());return true;}
+            int pages=pages();int next=button==1?page-1:button==2?page+1:button>=100?button-100:-1;if(next<0||next>=pages)return false;
             boolean ok=super.clickMenuButton(p,button);if(!ok)return false;page=next;
-            if(ending&&page==pages-1){var story=WitnessAccount.Story.of(place.id());if(story!=null){WitnessAccount.resolve(reader,story,"read_the_final_page");if(place.isFinishable())data.setCompleted(place.id(),true);}
-                if(place==LabyrinthPlace.ZAMPANO_COURTYARD){own=personal(data,reader.getUUID());reward(reader,own,"Collar",VignetteYields.mark(new ItemStack(NovelRegistry.COLLAR.get()),place.id()));save(data,reader.getUUID(),own);}}
+            if(ending&&page==pages-1)finish(null);
             return true;
         }
+        void finish(@Nullable CompoundTag held){
+            var data=LabyrinthData.get(reader.server);var story=WitnessAccount.Story.of(place.id());
+            if(story!=null){WitnessAccount.resolve(reader,story,place==LabyrinthPlace.WHALE?"returned_to_sender":"read_the_final_page");if(place.isFinishable())data.setCompleted(place.id(),true);}
+            var own=held==null?personal(data,reader.getUUID()):held;
+            if(place==LabyrinthPlace.ZAMPANO_COURTYARD)reward(reader,own,"Collar",VignetteYields.mark(new ItemStack(NovelRegistry.COLLAR.get()),place.id()));
+            if(place==LabyrinthPlace.WHALE)reward(reader,own,"Envelope",SelfAddressedEnvelopeItem.forReader(reader.getUUID()));
+            if(held==null)save(data,reader.getUUID(),own);
+        }
     }
-    private static void give(ServerPlayer p,ItemStack stack){if(!p.getInventory().add(stack))p.drop(stack,false);}
+    static void give(ServerPlayer p,ItemStack stack){if(!p.getInventory().add(stack))p.drop(stack,false);}
     private static void reward(ServerPlayer p,CompoundTag own,String key,ItemStack stack){if(own.getBoolean("Yield_"+key))return;own.putBoolean("Yield_"+key,true);give(p,stack);}
-    private static void cue(ServerPlayer p,CompoundTag own,String text){own.putString("Cue",text);own.putLong("CueUntil",p.serverLevel().getGameTime()+140);var place=current(p);own.putString("CuePlace",place==null?"":place.id());p.displayClientMessage(Component.literal(text),true);}
+    static void cue(ServerPlayer p,CompoundTag own,String text){own.putString("Cue",text);own.putLong("CueUntil",p.serverLevel().getGameTime()+140);var place=current(p);own.putString("CuePlace",place==null?"":place.id());p.displayClientMessage(Component.literal(text),true);}
     private static void scale(ServerPlayer p,boolean on){var attr=p.getAttribute(Attributes.SCALE);if(attr==null)return;if(on){if(!attr.hasModifier(SMALL))attr.addTransientModifier(new AttributeModifier(SMALL,-.3,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));SCALED.put(p.getUUID(),p);}else{attr.removeModifier(SMALL);SCALED.remove(p.getUUID());}}
     private static void restoreScale(ServerPlayer p){scale(p,false);}
     public static boolean childScale(ServerPlayer p){return p.getAttribute(Attributes.SCALE).hasModifier(SMALL);}

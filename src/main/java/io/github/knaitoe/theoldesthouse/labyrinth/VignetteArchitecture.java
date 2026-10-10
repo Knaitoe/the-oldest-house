@@ -44,7 +44,9 @@ public final class VignetteArchitecture {
     private void dress(){switch(scene){
         case FLOORBOARDS->floorboards();case HIDE_AND_CLAP->childRoom();case MODEL_HOME->modelHome();
         case HARRIGAN->harrigan();case MOTHER_DEN->mother();case EXPLORER_CAMP->camp();
-        case ZAMPANO_COURTYARD->archive();case WHALE->whale();case BARN_WELL->barn();
+        case ZAMPANO_COURTYARD->archive();case BARN_WELL->barn();
+        // 0.4.66: the institute authors its own rooms, furniture and windows.
+        case WHALE->{ }
         case PLAIN->plain();case HOSPITAL->hospital();case KAREN_ROOM->karen();
         case HOLLOWAY_CAMP->holloway();case GOATMAN->trailer();case TED_CAVER->caver();
         case PRESERVED_CAVE->chapel();case DROWNED_TOWN->town();case SHALLOWS->shore(false);
@@ -209,25 +211,6 @@ public final class VignetteArchitecture {
         detail(11,2,-37,CLOCK,Direction.WEST);detail(-11,2,-21,COAT,Direction.EAST);
         pendant(-7,5,-25,8);pendant(4,5,-28,8);
         for(int z:new int[]{-6,-14}){table(-13,0,z,TABLE_LAMP);table(13,0,z,VASE);}
-    }
-    private void whale(){
-        wainscot(-13,13,-32,0,4,Blocks.POLISHED_ANDESITE,Blocks.STONE_BRICKS);
-        for(int z:new int[]{-5,-11,-27})panel(13,z,z+1,2,3,Blocks.LIGHT_BLUE_STAINED_GLASS);
-        table(-10,0,-26,INK_PAPERS);table(-9,0,-26,BOOKS);furniture(-10,0,-24,CANE_CHAIR,Direction.NORTH);
-        cabinet(9,0,-25,TOWELS);furniture(10,0,-27,CHEST_OF_DRAWERS,Direction.SOUTH);detail(10,1,-27,BLANKET);
-        furniture(10,0,-16,RADIATOR,Direction.WEST);furniture(-10,0,-6,FORMICA_TABLE,Direction.SOUTH);detail(-10,1,-6,TEA_SET);
-        furniture(-10,0,-4,KITCHEN_STOOL,Direction.NORTH);cabinet(-11,0,-10,DISH_RACK);detail(12,2,-16,CLOCK,Direction.WEST);
-        for(int z:new int[]{-4,-8,-12,-16})for(int y=0;y<=2;y++)add(-12,y,z,Blocks.BOOKSHELF);
-        for(int x=-7;x<=-4;x++){furniture(x,0,-11,FORMICA_TABLE,Direction.SOUTH);detail(x,1,-11,x%2==0?INK_PAPERS:BOOKS);}
-        furniture(-7,0,-9,CANE_CHAIR,Direction.NORTH);furniture(-5,0,-9,CANE_CHAIR,Direction.NORTH);
-        table(7,0,-14,TEA_SET);furniture(7,0,-12,GREEN_ARMCHAIR,Direction.NORTH);furniture(9,0,-14,GREEN_ARMCHAIR,Direction.WEST);
-        rug(5,10,-17,-11,Blocks.GRAY_CARPET,Blocks.LIGHT_GRAY_CARPET);
-        rug(4,8,-25,-21,Blocks.GRAY_CARPET,Blocks.LIGHT_GRAY_CARPET);
-        for(int y:new int[]{5,8,11}){
-            table(-11,y,-28,BOOKS);detail(-7,y,-27,CRATE);detail(-7,y,-23,SATCHEL);
-            for(int z=-28;z<=-21;z++)add(-12,y+1,z,Blocks.DARK_OAK_SLAB);
-        }
-        for(int z:new int[]{-5,-15,-26})pendant(8,4,z,5);
     }
     private void barn(){
         for(int z:new int[]{-20,-25,-31})for(int x=6;x<=14;x++)add(x,4,z,Blocks.SPRUCE_PLANKS);

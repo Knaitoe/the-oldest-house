@@ -180,5 +180,7 @@
   "block.the_oldest_house.trailer_toilet": "Trailer Toilet",
   "block.the_oldest_house.trailer_sink": "Trailer Sink",
   "block.the_oldest_house.trailer_bathroom_window": "Bathroom Awning Window",
-  "block.the_oldest_house.trailer_door": "Trailer Door"
+  "block.the_oldest_house.trailer_door": "Trailer Door",
+  "item.the_oldest_house.self_addressed_envelope": "Self-addressed envelope",
+  "block.the_oldest_house.pigeonhole": "Pigeonhole"
 }

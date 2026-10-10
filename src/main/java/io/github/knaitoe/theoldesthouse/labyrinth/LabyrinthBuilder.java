@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 38;
+    public static final int VERSION = 39;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -302,7 +302,7 @@ public final class LabyrinthBuilder {
             if (rebuildUpgrades.remove(place) && site != null) {
                 ElkUpgrade.settle(site, LabyrinthPlaces.base(pendingOrigin, place), place);
                 // The trailer's own furnishing and exterior passes dress the new carve, as they dress a fresh one.
-                if (place == LabyrinthPlace.GOATMAN) { VignetteArchitecture.forget(site, pendingOrigin, place); VignetteArchitecture.decorateOnce(site, pendingOrigin, place); }
+                if (place == LabyrinthPlace.GOATMAN || place == LabyrinthPlace.WHALE) { VignetteArchitecture.forget(site, pendingOrigin, place); VignetteArchitecture.decorateOnce(site, pendingOrigin, place); }
             }
             if (site != null) ScenePolish.polishOnce(site, pendingOrigin, place);
             if(site!=null){var dressing=SceneHuntReview.prepareFresh(site,pendingOrigin,place);if(dressing!=null){geometry=dressing;return;}}
@@ -346,6 +346,16 @@ public final class LabyrinthBuilder {
                     e -> e instanceof GoatmanChild || e instanceof net.minecraft.world.entity.Display.ItemDisplay d && d.getTags().contains(GoatmanWoods.PLATE))) e.discard();
             GoatmanVignette.forgetRun(server);
             geometry = BuildBlocks.record(interior, () -> GoatmanVignette.build(server, interior, base));
+            return;
+        }
+        // 0.4.66: the old institute likewise waits until nobody is inside or watching; every reader's letters and record stay theirs.
+        if (place == LabyrinthPlace.WHALE && rebuildUpgrades.contains(place)) {
+            BlockPos base = LabyrinthPlaces.base(pendingOrigin, place);
+            if (!ElkUpgrade.vacant(interior, base, place, fixtureDrain)) { active = false; return; }
+            ElkUpgrade.protectResidents(interior,base,place);
+            ScenePolish.forget(server, pendingOrigin, place);
+            WhaleInstitute.clearClocks(interior, base);
+            geometry = BuildBlocks.record(interior, () -> NovelRooms.build(server, interior, base, place));
             return;
         }
         pending.poll();

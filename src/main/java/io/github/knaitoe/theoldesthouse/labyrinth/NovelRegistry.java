@@ -33,6 +33,9 @@ public final class NovelRegistry {
     public static final DeferredItem<ShieldItem> HOLLOWAY_SHIELD=ITEMS.register("holloway_shield",()->new ShieldItem(new Item.Properties().durability(336)));
     public static final DeferredItem<PlainCameraItem> CAMERA=ITEMS.registerItem("plain_camera",PlainCameraItem::new,new Item.Properties().stacksTo(1));
     public static final DeferredItem<FlintAndSteelItem> LIGHTER=ITEMS.register("lighter",()->new FlintAndSteelItem(new Item.Properties().durability(64)));
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<PigeonholeBlock>> PIGEONHOLE_TYPE=CODECS.register("pigeonhole",()->PigeonholeBlock.CODEC);
+    public static final DeferredBlock<PigeonholeBlock> PIGEONHOLE=BLOCKS.registerBlock("pigeonhole",PigeonholeBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).noLootTable());
+    public static final DeferredItem<SelfAddressedEnvelopeItem> ENVELOPE=ITEMS.registerItem("self_addressed_envelope",SelfAddressedEnvelopeItem::new,new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON));
     public static final DeferredItem<WalkieTalkieItem> RADIO=ITEMS.register("walkie_talkie",()->new WalkieTalkieItem(new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<EntityType<?>,EntityType<NovelVulture>> VULTURE=TYPES.register("vulture",()->EntityType.Builder.<NovelVulture>of(NovelVulture::new,MobCategory.MISC).sized(.9F,.45F).clientTrackingRange(16).updateInterval(2).build("vulture"));
     public static final DeferredHolder<EntityType<?>,EntityType<NovelActor>> ACTOR=TYPES.register("novel_actor",()->EntityType.Builder.<NovelActor>of(NovelActor::new,MobCategory.MISC).sized(.6F,1.8F).clientTrackingRange(12).updateInterval(2).build("novel_actor"));

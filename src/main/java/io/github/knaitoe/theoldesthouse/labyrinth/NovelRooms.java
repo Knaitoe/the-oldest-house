@@ -15,7 +15,6 @@ import net.minecraft.world.level.block.state.properties.*;
 /** Six authored places. Outdoor sites really have sky in the outside dimension. */
 public final class NovelRooms {
     public static final BlockPos ARCHIVE_DOOR=new BlockPos(0,0,-19),ARCHIVE_DESK=new BlockPos(-5,0,-30),MAT=new BlockPos(0,0,-16),
-        MAIL=new BlockPos(5,0,-8),ATTIC_DOOR=new BlockPos(-5,8,-20),ATTIC_DESK=new BlockPos(-9,8,-25),
         WELL=new BlockPos(0,0,-23),CARVING=new BlockPos(0,-10,-22),OLD_CARVING=new BlockPos(0,-12,-24),RIBBON=new BlockPos(2,0,-25),
         APOLOGY=new BlockPos(-4,0,-7),FIGURE=new BlockPos(0,0,-93),BUTTON=new BlockPos(5,1,-14),WARD_NOTE=new BlockPos(-4,0,-15),
         BED=new BlockPos(4,0,-10),PROJECTOR=new BlockPos(0,1,-6);
@@ -25,7 +24,7 @@ public final class NovelRooms {
     public static net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dimension(LabyrinthPlace p){return outside(p)?HouseDimensions.OUTSIDE:HouseDimensions.INTERIOR;}
     public static void build(MinecraftServer server,ServerLevel l,BlockPos b,LabyrinthPlace p){
         var r=p.room();box(l,b,r.minX(),r.minY(),r.minZ(),r.maxX(),r.maxY(),r.maxZ(),Blocks.AIR.defaultBlockState());
-        switch(p){case ZAMPANO_COURTYARD->courtyard(l,b);case WHALE->whale(l,b);case BARN_WELL->well(l,b);case PLAIN->plain(l,b);case HOSPITAL->hospital(l,b);case KAREN_ROOM->karen(l,b);default->throw new IllegalArgumentException(p.id());}
+        switch(p){case ZAMPANO_COURTYARD->courtyard(l,b);case WHALE->WhaleInstitute.build(l,b);case BARN_WELL->well(l,b);case PLAIN->plain(l,b);case HOSPITAL->hospital(l,b);case KAREN_ROOM->karen(l,b);default->throw new IllegalArgumentException(p.id());}
         for(var spec:p.doors()){var at=b.offset(spec.rel());door(l,at,spec.facing(),Blocks.DARK_OAK_DOOR,false);BuildBlocks.set(l,at.below(),Blocks.SMOOTH_STONE.defaultBlockState(),F);}
         for(int x=-3;x<=3;x++)for(int z=1;z<=4;z++)BuildBlocks.set(l,b.offset(x,-1,z),Blocks.SMOOTH_STONE.defaultBlockState(),F);
     }
@@ -56,24 +55,6 @@ public final class NovelRooms {
             chest.setItem(0,HouseWriting.book("Readers' appointments","Zampano",HouseWriting.WritingStyle.ZAMPANO,List.of("Seven names. Seven visits.\n\nThe margins remember the voices more clearly than the survey remembers the walls.")));chest.setChanged();}
         for(int i=0;i<7;i++)sign(l,b.offset(10,2,-22-i*2),Direction.WEST,new String[]{"reader "+(i+1),new String[]{"Beatrice","Leonie","Pauline","Ruth","Anne","Esther","Helen"}[i],"", ""});
         at(l,b,-7,5,-25,Blocks.LANTERN);
-    }
-    private static void whale(ServerLevel l,BlockPos b){
-        room(l,b,-13,13,-32,0,0,5,NovelRegistry.INSTITUTE.get(),Blocks.SMOOTH_STONE);
-        door(l,b,Direction.SOUTH,Blocks.BIRCH_DOOR,true);bed(l,b.offset(6,0,-23),Blocks.WHITE_BED,Direction.NORTH);
-        furniture(l,b.offset(-7,0,-25),HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);lectern(l,b.offset(-7,1,-25),NovelTexts.whaleOpening());
-        BuildBlocks.set(l,b.offset(MAIL),prop(NovelPropBlock.Kind.MAIL_SLOT,Direction.WEST),F);
-        MailPlaqueBlock.place(l,b);
-        // The ladder joins three separate, real attics; only one opens to the knock.
-        for(int y=0;y<=11;y++){at(l,b,0,y,-19,Blocks.SMOOTH_STONE);BuildBlocks.set(l,b.offset(0,y,-18),Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH),F);}
-        for(int y:new int[]{5,8,11}){room(l,b,-12,-5,-29,-19,y,2,NovelRegistry.INSTITUTE.get(),Blocks.DARK_OAK_PLANKS);
-            box(l,b,-4,y,-21,-1,y-1,-17,Blocks.SMOOTH_STONE.defaultBlockState());door(l,b.offset(-5,y,-20),Direction.EAST,Blocks.IRON_DOOR,false);}
-        // Leave a supported landing beside each door, with two blocks of headroom.
-        for(int y:new int[]{5,8,11})box(l,b,-4,y,-21,-1,y+2,-17,Blocks.AIR.defaultBlockState());
-        // The landings stop beside the ladder; laid across it they would cut the climb.
-        for(int y:new int[]{5,8,11})box(l,b,-4,y-1,-20,-1,y-1,-17,Blocks.SMOOTH_STONE.defaultBlockState());
-        for(int y=0;y<=13;y++){at(l,b,0,y,-19,Blocks.SMOOTH_STONE);BuildBlocks.set(l,b.offset(0,y,-18),Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH),F);}
-        lectern(l,b.offset(ATTIC_DESK),NovelTexts.whaleLast());
-        for(int z:new int[]{-5,-15,-26})at(l,b,8,4,z,Blocks.LANTERN);
     }
     private static void well(ServerLevel l,BlockPos b){
         outdoor(l,b,17,39,Blocks.GRASS_BLOCK);room(l,b,5,15,-34,-17,0,7,Blocks.SPRUCE_PLANKS,Blocks.COARSE_DIRT);
@@ -148,6 +129,6 @@ public final class NovelRooms {
     }
     public static BlockState prop(NovelPropBlock.Kind kind,Direction facing){return NovelRegistry.PROP.get().defaultBlockState().setValue(NovelPropBlock.KIND,kind).setValue(NovelPropBlock.FACING,facing);}
     public static void furniture(ServerLevel l,BlockPos at,HouseholdFurnitureBlock.Kind kind,Direction facing){BuildBlocks.set(l,at,HouseBlocks.HOUSEHOLD_FURNITURE.get().defaultBlockState().setValue(HouseholdFurnitureBlock.KIND,kind).setValue(HouseholdFurnitureBlock.FACING,facing),F);}
-    private static void lectern(ServerLevel l,BlockPos at,ItemStack book){BuildBlocks.set(l,at,Blocks.LECTERN.defaultBlockState(),F);BuildBlocks.after(l,()->{if(l.getBlockEntity(at) instanceof LecternBlockEntity d){d.setBook(book);d.setChanged();}});}
+    static void lectern(ServerLevel l,BlockPos at,ItemStack book){BuildBlocks.set(l,at,Blocks.LECTERN.defaultBlockState(),F);BuildBlocks.after(l,()->{if(l.getBlockEntity(at) instanceof LecternBlockEntity d){d.setBook(book);d.setChanged();}});}
     public static void sign(ServerLevel l,BlockPos at,Direction facing,String[] lines){BuildBlocks.set(l,at,Blocks.OAK_WALL_SIGN.defaultBlockState().setValue(WallSignBlock.FACING,facing),F);BuildBlocks.after(l,()->{if(l.getBlockEntity(at) instanceof SignBlockEntity s){var text=s.getFrontText();for(int i=0;i<4;i++)text=text.setMessage(i,net.minecraft.network.chat.Component.literal(lines[i]));s.setText(text,true);}});}
 }

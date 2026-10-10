@@ -25,6 +25,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 public final class WitnessAccount {
     public static final String STATE="witness_0410", BOOK_OWNER="HouseWitnessAccount";
     public static final int REQUIRED=requiredForPoolSize(Story.values().length);
+    private static final String LEGACY_WHALE="The letters found me in ordinary chests. Their beginnings made a knock. In the middle attic, I read a page without a next date.";
     public enum Story {
         FLOORBOARDS("floorboards", "The floor", "understanding",
                 "I took up the board. The sound ended. The words underneath belonged to someone who had stayed to care for him."),
@@ -47,7 +48,7 @@ public final class WitnessAccount {
         TED_CAVER("ted_caver","The small passage","survival",
                 "I worked until the hole would take my shoulders. Beyond it, the stone moved and the line tightened. I crawled back through the same opening and climbed above the rope. I left without learning what had been pulling it."),
         ZAMPANO("zampano_courtyard","The readers","understanding","I coaxed the cat from the mat and read the survey behind the sealed windows. The gouges had been measured without anyone asking what made them."),
-        WHALE("whale","The undated letter","connection","The letters found me in ordinary chests. Their beginnings made a knock. In the middle attic, I read a page without a next date."),
+        WHALE("whale","Return to sender","connection","I posted a letter and the answer was already in my hand, dated before I had asked. When a box finally held something for me, it was everything I had sent."),
         BARN_WELL("barn_well","The cover","memory","I climbed below the initials. The cover shut above me. I waited until someone opened it, then climbed back into the yard."),
         PLAIN("plain","The distant frame","memory","The bird circled something beyond the dunes. I held it in the spyglass and heard the shutter. The photograph came with me. The distance remained."),
         HOSPITAL("hospital","The call button","understanding","I stayed through the ward's short night. I pressed the call button. The alarms stopped at dawn, without anyone coming through the door."),
@@ -193,7 +194,7 @@ public final class WitnessAccount {
                         case TED_CAVER->"The line still descended into the small passage.";
                         case GOATMAN->"The door was closed. The table had too few places.";
                         case ZAMPANO->"The windows stayed sealed. The gouges remained beside the trunk.";
-                        case WHALE->"An undated letter waited in the middle attic.";
+                        case WHALE->"The post had been collected. One pigeonhole was empty in a different way from the others.";
                         case BARN_WELL->"Two pairs of initials remained below the cover.";
                         case PLAIN->"A bird still circled beyond the dunes.";
                         case HOSPITAL->"The chair remained beside the empty incubator.";
@@ -204,7 +205,10 @@ public final class WitnessAccount {
                         case HOTEL->"The second place was empty. The desk still held the missing things. The heating plant had been attended.";
                         default->story.text;
                     }:story.text;
-            pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,story.title+"\n\n"+text));
+            // Accounts written before 0.4.66 heard the institute end in its middle attic; their words stay theirs.
+            boolean attic=story==Story.WHALE&&stories.getString(story.id).equals("read_the_final_page");
+            if(attic)text=LEGACY_WHALE;
+            pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,(attic?"The undated letter":story.title)+"\n\n"+text));
         }
         for(Story story:Story.values())if(!stories.contains(story.id)&&begun(data,player,story)){
             boolean left=HouseExperience.record(data,player).getCompound("Retreats").getInt(story.id)>0;
@@ -256,7 +260,7 @@ public final class WitnessAccount {
         if(story==null||LiteraryRooms.isLiterary(place)||place==LabyrinthPlace.HOTEL||NovelVignettes.isNovel(place)||ClassicsVignettes.isClassic(place)||!data.isCompleted(place.id())||has(data,player.getUUID(),story))return;
         String prop=switch(story){case FLOORBOARDS->"the exposed space beneath the loose board";
             case CLAP->"the open wardrobe";case HARRIGAN->"the casket";case MODEL_HOME->"the child's window";
-            case DROWNED_TOWN->"the church's open roof hatch";case PRESERVED_CAVE->"the canoe behind the empty pews";case SHALLOWS->"the bank";case PHONE_CANOE->"the canoe";case GOATMAN->"the trailer door";case TED_CAVER->"the cave landing";case ZAMPANO->"the survey";case WHALE->"the undated letter";case BARN_WELL->"the well";case PLAIN->"the distant shape";case HOSPITAL->"the dawn chart";case HOLLOWAY->"the service latch";case MOTHER->"the keeper's record";case SEANCE->"the family album";case WALLPAPER->"the collected pages";case HOTEL->"the closing account";default->"the closing account";};
+            case DROWNED_TOWN->"the church's open roof hatch";case PRESERVED_CAVE->"the canoe behind the empty pews";case SHALLOWS->"the bank";case PHONE_CANOE->"the canoe";case GOATMAN->"the trailer door";case TED_CAVER->"the cave landing";case ZAMPANO->"the survey";case WHALE->"the pigeonholes";case BARN_WELL->"the well";case PLAIN->"the distant shape";case HOSPITAL->"the dawn chart";case HOLLOWAY->"the service latch";case MOTHER->"the keeper's record";case SEANCE->"the family album";case WALLPAPER->"the collected pages";case HOTEL->"the closing account";default->"the closing account";};
         player.displayClientMessage(Component.literal("Someone reached the end before you. Crouch and examine "+prop+" to record what remains."),false);
     }
     /** Later explorers must inspect a resolved room's ending prop themselves. */
