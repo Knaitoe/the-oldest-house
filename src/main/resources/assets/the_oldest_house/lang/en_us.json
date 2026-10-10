@@ -189,5 +189,12 @@
   "block.the_oldest_house.vehicle_wheel": "Wheel",
   "block.the_oldest_house.institute_sign": "Institute sign",
   "block.the_oldest_house.notice_post": "Note",
-  "block.the_oldest_house.streetlight": "Streetlight"
+  "block.the_oldest_house.streetlight": "Streetlight",
+  "subtitles.the_oldest_house.caver.exhale": "Air breathes out of the stone",
+  "subtitles.the_oldest_house.caver.inhale": "Air draws back into the stone",
+  "subtitles.the_oldest_house.caver.scrape": "Stone scrapes behind you",
+  "subtitles.the_oldest_house.caver.line_taut": "Line pulls taut",
+  "subtitles.the_oldest_house.caver.stone_roll": "Heavy stone rolls inward",
+  "subtitles.the_oldest_house.caver.chisel": "A chisel taps behind a wall",
+  "block.the_oldest_house.cave_rubble": "Packed rubble"
 }
