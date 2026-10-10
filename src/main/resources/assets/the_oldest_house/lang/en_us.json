@@ -182,5 +182,7 @@
   "block.the_oldest_house.trailer_bathroom_window": "Bathroom Awning Window",
   "block.the_oldest_house.trailer_door": "Trailer Door",
   "item.the_oldest_house.self_addressed_envelope": "Self-addressed envelope",
-  "block.the_oldest_house.pigeonhole": "Pigeonhole"
+  "block.the_oldest_house.pigeonhole": "Pigeonhole",
+  "block.the_oldest_house.town_fixture": "Town fixture",
+  "block.the_oldest_house.school_desk": "Teacher's desk"
 }

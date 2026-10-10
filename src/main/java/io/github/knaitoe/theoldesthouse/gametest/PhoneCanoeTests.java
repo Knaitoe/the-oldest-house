@@ -129,13 +129,13 @@ public final class PhoneCanoeTests {
     public static void nativeFifteenUpgradeAppendsFilmingRoomAndPreservesOlderStories(GameTestHelper h){
         upgrade=new Fixture(h,new BlockPos(8900,80,8900));Fixture f=upgrade;var data=LabyrinthData.get(f.server);
         BlockPos town=LabyrinthPlaces.base(f.origin,LabyrinthPlace.DROWNED_TOWN),cave=LabyrinthPlaces.base(f.origin,LabyrinthPlace.PRESERVED_CAVE);
-        var caveLevel=HouseTestLevel.get(f.server,HouseDimensions.INTERIOR);DrownedTown.build(f.server,f.level,town);PreservedCave.build(f.server,caveLevel,cave);
-        var desk=(BarrelBlockEntity)f.level.getBlockEntity(town.offset(DrownedTown.PAPERS[0]));desk.setItem(0,ItemStack.EMPTY);desk.setItem(3,new ItemStack(Items.DIAMOND));
+        var caveLevel=HouseTestLevel.get(f.server,HouseDimensions.INTERIOR);PreservedCave.build(f.server,caveLevel,cave);
         var before=caveLevel.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(cave,LabyrinthPlace.PRESERVED_CAVE)).getFirst();
         CompoundTag state=data.state(PreservedCave.ID);state.putInt("Visit",3);state.putDouble("Voices",6);data.setState(PreservedCave.ID,state);data.setBuilt(15,f.origin);
         h.assertTrue(!LabyrinthBuilder.ensureBuilt(f.server),"a version fifteen world begins the native incremental upgrade");LabyrinthBuilder.finishGameTest(f.server);
         h.assertTrue(data.builtVersion()==LabyrinthBuilder.VERSION&&data.door(LabyrinthPlace.PHONE_CANOE.entryDoorId())!=null,"new native room and return door are appended");
-        h.assertTrue(f.level.getBlockEntity(town.offset(DrownedTown.PAPERS[0]))==desk&&desk.getItem(0).isEmpty()&&desk.getItem(3).is(Items.DIAMOND),"finite school supplies are not restocked or replaced");
+        // 0.4.67: a version fifteen world's town is carved again as Proofrock; its finite contents are covered by the lake upgrade case.
+        h.assertTrue(f.level.getBlockState(town.offset(DrownedTown.PAPERS[0])).is(DrownedTownRegistry.SCHOOL_DESK.get()),"the older town is carved again with the high school's desks");
         h.assertTrue(!before.isRemoved()&&data.state(PreservedCave.ID).getInt("Visit")==3&&data.state(PreservedCave.ID).getDouble("Voices")==6,"existing physical cave canoe and visit noise are untouched");h.succeed();
     }
     @GameTest(template="empty",batch="domestic_layout_upgrade",timeoutTicks=200)

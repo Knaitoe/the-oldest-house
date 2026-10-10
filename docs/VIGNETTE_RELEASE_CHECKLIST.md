@@ -9,7 +9,11 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.66
+## Current candidate: 0.4.67
+
+Drowned Town is redesigned as Proofrock, a 128 × 128 town with Indian Lake High, in its existing slot. DROWNED_TOWN stays one eligible source with the same personal resolution: the church roof opened on the second visit. The essays, key, church and hunt rules are unchanged; only their places move. Still 43 sources / 33 resolutions / two kinds / three endings. Native coverage includes the town's streets, lake and church positions, the school's real doors, ring corridor, grass courtyard and bleacher gap, finite teachers' desks, and two saved-world re-carves that carry every container's exact contents, refund placed air tools and keep the canoe, shore body and hunter identities. Layout 40 / protocol 41. See [the Proofrock record](PROOFROCK_0_4_67.md).
+
+## Earlier candidate: 0.4.66
 
 The Whalestoe institute is redesigned in its existing slot. WHALE stays one eligible source with a new personal resolution: the writer's own returned letter, read in her room (`returned_to_sender`). Earlier attic resolutions keep their evidence and words. Still 43 sources / 33 resolutions / two kinds / three endings. Native coverage includes private posting and replies, the SEVEN cipher, the exact returned originals, peer exclusion, reload, the owner-bound envelope's refusals, daily recall, sealing and death return, and the saved-world re-carve. Layout 39 / protocol 40. See [the institute record](WHALE_INSTITUTE_0_4_66.md).
 

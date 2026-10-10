@@ -41,11 +41,15 @@ public final class ElkUpgrade {
     /** The Whalestoe institute is carved again (layout 39): post room, corridor, her room, the dayroom and three attics. Layout 21 first built it. */
     static final int WHALE_FIRST = 21, WHALE_REBUILT_IN = 39;
 
+    /** Drowned Town is carved again as Proofrock (layout 40): the town, the high school and the old town under the lake. Layout 13 first built it. */
+    static final int DROWNED_FIRST = 13, DROWNED_REBUILT_IN = 40;
+
     /** Whether an upgrade from this saved layout carves this scene again. */
     public static boolean rebuilds(LabyrinthPlace place, int builtVersion) {
         if (place == LabyrinthPlace.ELK_CARCASSES) return rebuilds(builtVersion);
         if (place == LabyrinthPlace.GOATMAN) return builtVersion >= GOATMAN_FIRST && builtVersion < GOATMAN_REBUILT_IN;
         if (place == LabyrinthPlace.WHALE) return builtVersion >= WHALE_FIRST && builtVersion < WHALE_REBUILT_IN;
+        if (place == LabyrinthPlace.DROWNED_TOWN) return builtVersion >= DROWNED_FIRST && builtVersion < DROWNED_REBUILT_IN;
         return place == LabyrinthPlace.END_WORLD_CABIN && builtVersion >= FIRST_LAYOUT && builtVersion < CABIN_REBUILT_IN;
     }
 
@@ -67,11 +71,11 @@ public final class ElkUpgrade {
     /** After the carve: the cabin's visitors are placed by their own scene; anything else displaced goes to the porch (the trailer's yard for the Goatman, the institute's reception). */
     public static void settle(ServerLevel level, BlockPos base, LabyrinthPlace place) {
         if (place == LabyrinthPlace.ELK_CARCASSES) { settle(level, base); return; }
-        Vec3 porch = Vec3.atBottomCenterOf(place == LabyrinthPlace.GOATMAN ? base.offset(-1, 0, -47) : place == LabyrinthPlace.WHALE ? base.offset(-4, 0, -4) : base.offset(-6, 0, -10));
+        Vec3 porch = Vec3.atBottomCenterOf(place == LabyrinthPlace.GOATMAN ? base.offset(-1, 0, -47) : place == LabyrinthPlace.WHALE ? base.offset(-4, 0, -4) : place == LabyrinthPlace.DROWNED_TOWN ? base.offset(0, 0, -8) : base.offset(-6, 0, -10));
         for (Entity e : level.getEntitiesOfClass(Entity.class, area(base, place), e -> e instanceof LivingEntity || e instanceof ItemEntity)) {
             if (e instanceof Player || !e.isAlive()) continue;
             restoreResident(e);
-            if(e instanceof LiteraryActor || e instanceof GoatmanChild || e instanceof GoatmanFigure)continue;
+            if(e instanceof LiteraryActor || e instanceof GoatmanChild || e instanceof GoatmanFigure || e instanceof LakeWitchEntity || e instanceof LakeCongregantEntity)continue;
             if (!stranded(level, e)) continue;
             if (e.isPassenger()) e.stopRiding();
             e.teleportTo(porch.x + (e.getId() % 5) * .7 - 1.4, porch.y, porch.z - (e.getId() % 3) * .6);

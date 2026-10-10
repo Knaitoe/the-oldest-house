@@ -57,7 +57,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.66"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.67"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/house/PlaytestLog.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
               hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
@@ -161,6 +161,18 @@ jobs:
                   assert json.loads(z.read(f'assets/the_oldest_house/models/block/pigeonhole_{n}.json'))['textures']['front'] == f'the_oldest_house:block/pigeonhole_{n}'
               assert json.loads(z.read('assets/the_oldest_house/models/item/self_addressed_envelope.json'))['textures']['layer0']
               for name in ('WhaleInstitute','PigeonholeBlock','SelfAddressedEnvelopeItem'):
+                  assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
+              # Proofrock (0.4.67): the town's signboards and school fittings, and the teachers' desks.
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/town_fixture.json'))['variants']) == 184
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/school_desk.json'))['variants']) == 4
+              for sign in ('general','post','laundry','hardware','sheriff','diner','cinema','bait','hall','motel','garage','school'):
+                  for panel in 'lmr':
+                      assert z.read(f'assets/the_oldest_house/textures/block/town_sign_{sign}_{panel}.png').startswith(b'\x89PNG')
+                      assert json.loads(z.read(f'assets/the_oldest_house/models/block/town_fixture_{sign}_{panel}.json'))['textures']
+              for name in ('locker','locker_top','locker_side','chalkboard_l','chalkboard_m','chalkboard_r','trophy_case','school_crest','bleacher','missing_poster','student_desk_wood','student_desk_metal','school_desk_front','school_desk_top'):
+                  assert z.read(f'assets/the_oldest_house/textures/block/{name}.png').startswith(b'\x89PNG')
+              assert json.loads(z.read('assets/the_oldest_house/models/block/school_desk.json'))['textures']
+              for name in ('ProofrockTown','IndianLakeHigh','TownFixtureBlock','SchoolDeskBlock','SchoolDeskBlockEntity','TownCarry'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               for name in ('wax_cylinder_1','wax_cylinder_2','wax_cylinder_3','family_film'):
                   song=json.loads(z.read(f'data/the_oldest_house/jukebox_song/{name}.json'))
@@ -729,7 +741,7 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.66"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.67"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
@@ -804,8 +816,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.66.jar
-            build/libs/the_oldest_house-0.4.66.jar.sha256
+            build/libs/the_oldest_house-0.4.67.jar
+            build/libs/the_oldest_house-0.4.67.jar.sha256
           if-no-files-found: error
 
 

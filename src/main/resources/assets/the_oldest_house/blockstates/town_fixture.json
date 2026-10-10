@@ -1,0 +1,694 @@
+{
+  "variants": {
+    "facing=north,kind=locker": {
+      "model": "the_oldest_house:block/town_fixture_locker"
+    },
+    "facing=north,kind=locker_top": {
+      "model": "the_oldest_house:block/town_fixture_locker_top"
+    },
+    "facing=north,kind=chalk_l": {
+      "model": "the_oldest_house:block/town_fixture_chalk_l"
+    },
+    "facing=north,kind=chalk_m": {
+      "model": "the_oldest_house:block/town_fixture_chalk_m"
+    },
+    "facing=north,kind=chalk_r": {
+      "model": "the_oldest_house:block/town_fixture_chalk_r"
+    },
+    "facing=north,kind=trophy": {
+      "model": "the_oldest_house:block/town_fixture_trophy"
+    },
+    "facing=north,kind=crest": {
+      "model": "the_oldest_house:block/town_fixture_crest"
+    },
+    "facing=north,kind=bleacher": {
+      "model": "the_oldest_house:block/town_fixture_bleacher"
+    },
+    "facing=north,kind=poster": {
+      "model": "the_oldest_house:block/town_fixture_poster"
+    },
+    "facing=north,kind=student_desk": {
+      "model": "the_oldest_house:block/town_fixture_student_desk"
+    },
+    "facing=north,kind=general_l": {
+      "model": "the_oldest_house:block/town_fixture_general_l"
+    },
+    "facing=north,kind=general_m": {
+      "model": "the_oldest_house:block/town_fixture_general_m"
+    },
+    "facing=north,kind=general_r": {
+      "model": "the_oldest_house:block/town_fixture_general_r"
+    },
+    "facing=north,kind=post_l": {
+      "model": "the_oldest_house:block/town_fixture_post_l"
+    },
+    "facing=north,kind=post_m": {
+      "model": "the_oldest_house:block/town_fixture_post_m"
+    },
+    "facing=north,kind=post_r": {
+      "model": "the_oldest_house:block/town_fixture_post_r"
+    },
+    "facing=north,kind=laundry_l": {
+      "model": "the_oldest_house:block/town_fixture_laundry_l"
+    },
+    "facing=north,kind=laundry_m": {
+      "model": "the_oldest_house:block/town_fixture_laundry_m"
+    },
+    "facing=north,kind=laundry_r": {
+      "model": "the_oldest_house:block/town_fixture_laundry_r"
+    },
+    "facing=north,kind=hardware_l": {
+      "model": "the_oldest_house:block/town_fixture_hardware_l"
+    },
+    "facing=north,kind=hardware_m": {
+      "model": "the_oldest_house:block/town_fixture_hardware_m"
+    },
+    "facing=north,kind=hardware_r": {
+      "model": "the_oldest_house:block/town_fixture_hardware_r"
+    },
+    "facing=north,kind=sheriff_l": {
+      "model": "the_oldest_house:block/town_fixture_sheriff_l"
+    },
+    "facing=north,kind=sheriff_m": {
+      "model": "the_oldest_house:block/town_fixture_sheriff_m"
+    },
+    "facing=north,kind=sheriff_r": {
+      "model": "the_oldest_house:block/town_fixture_sheriff_r"
+    },
+    "facing=north,kind=diner_l": {
+      "model": "the_oldest_house:block/town_fixture_diner_l"
+    },
+    "facing=north,kind=diner_m": {
+      "model": "the_oldest_house:block/town_fixture_diner_m"
+    },
+    "facing=north,kind=diner_r": {
+      "model": "the_oldest_house:block/town_fixture_diner_r"
+    },
+    "facing=north,kind=cinema_l": {
+      "model": "the_oldest_house:block/town_fixture_cinema_l"
+    },
+    "facing=north,kind=cinema_m": {
+      "model": "the_oldest_house:block/town_fixture_cinema_m"
+    },
+    "facing=north,kind=cinema_r": {
+      "model": "the_oldest_house:block/town_fixture_cinema_r"
+    },
+    "facing=north,kind=bait_l": {
+      "model": "the_oldest_house:block/town_fixture_bait_l"
+    },
+    "facing=north,kind=bait_m": {
+      "model": "the_oldest_house:block/town_fixture_bait_m"
+    },
+    "facing=north,kind=bait_r": {
+      "model": "the_oldest_house:block/town_fixture_bait_r"
+    },
+    "facing=north,kind=hall_l": {
+      "model": "the_oldest_house:block/town_fixture_hall_l"
+    },
+    "facing=north,kind=hall_m": {
+      "model": "the_oldest_house:block/town_fixture_hall_m"
+    },
+    "facing=north,kind=hall_r": {
+      "model": "the_oldest_house:block/town_fixture_hall_r"
+    },
+    "facing=north,kind=motel_l": {
+      "model": "the_oldest_house:block/town_fixture_motel_l"
+    },
+    "facing=north,kind=motel_m": {
+      "model": "the_oldest_house:block/town_fixture_motel_m"
+    },
+    "facing=north,kind=motel_r": {
+      "model": "the_oldest_house:block/town_fixture_motel_r"
+    },
+    "facing=north,kind=garage_l": {
+      "model": "the_oldest_house:block/town_fixture_garage_l"
+    },
+    "facing=north,kind=garage_m": {
+      "model": "the_oldest_house:block/town_fixture_garage_m"
+    },
+    "facing=north,kind=garage_r": {
+      "model": "the_oldest_house:block/town_fixture_garage_r"
+    },
+    "facing=north,kind=school_l": {
+      "model": "the_oldest_house:block/town_fixture_school_l"
+    },
+    "facing=north,kind=school_m": {
+      "model": "the_oldest_house:block/town_fixture_school_m"
+    },
+    "facing=north,kind=school_r": {
+      "model": "the_oldest_house:block/town_fixture_school_r"
+    },
+    "facing=east,kind=locker": {
+      "model": "the_oldest_house:block/town_fixture_locker",
+      "y": 90
+    },
+    "facing=east,kind=locker_top": {
+      "model": "the_oldest_house:block/town_fixture_locker_top",
+      "y": 90
+    },
+    "facing=east,kind=chalk_l": {
+      "model": "the_oldest_house:block/town_fixture_chalk_l",
+      "y": 90
+    },
+    "facing=east,kind=chalk_m": {
+      "model": "the_oldest_house:block/town_fixture_chalk_m",
+      "y": 90
+    },
+    "facing=east,kind=chalk_r": {
+      "model": "the_oldest_house:block/town_fixture_chalk_r",
+      "y": 90
+    },
+    "facing=east,kind=trophy": {
+      "model": "the_oldest_house:block/town_fixture_trophy",
+      "y": 90
+    },
+    "facing=east,kind=crest": {
+      "model": "the_oldest_house:block/town_fixture_crest",
+      "y": 90
+    },
+    "facing=east,kind=bleacher": {
+      "model": "the_oldest_house:block/town_fixture_bleacher",
+      "y": 90
+    },
+    "facing=east,kind=poster": {
+      "model": "the_oldest_house:block/town_fixture_poster",
+      "y": 90
+    },
+    "facing=east,kind=student_desk": {
+      "model": "the_oldest_house:block/town_fixture_student_desk",
+      "y": 90
+    },
+    "facing=east,kind=general_l": {
+      "model": "the_oldest_house:block/town_fixture_general_l",
+      "y": 90
+    },
+    "facing=east,kind=general_m": {
+      "model": "the_oldest_house:block/town_fixture_general_m",
+      "y": 90
+    },
+    "facing=east,kind=general_r": {
+      "model": "the_oldest_house:block/town_fixture_general_r",
+      "y": 90
+    },
+    "facing=east,kind=post_l": {
+      "model": "the_oldest_house:block/town_fixture_post_l",
+      "y": 90
+    },
+    "facing=east,kind=post_m": {
+      "model": "the_oldest_house:block/town_fixture_post_m",
+      "y": 90
+    },
+    "facing=east,kind=post_r": {
+      "model": "the_oldest_house:block/town_fixture_post_r",
+      "y": 90
+    },
+    "facing=east,kind=laundry_l": {
+      "model": "the_oldest_house:block/town_fixture_laundry_l",
+      "y": 90
+    },
+    "facing=east,kind=laundry_m": {
+      "model": "the_oldest_house:block/town_fixture_laundry_m",
+      "y": 90
+    },
+    "facing=east,kind=laundry_r": {
+      "model": "the_oldest_house:block/town_fixture_laundry_r",
+      "y": 90
+    },
+    "facing=east,kind=hardware_l": {
+      "model": "the_oldest_house:block/town_fixture_hardware_l",
+      "y": 90
+    },
+    "facing=east,kind=hardware_m": {
+      "model": "the_oldest_house:block/town_fixture_hardware_m",
+      "y": 90
+    },
+    "facing=east,kind=hardware_r": {
+      "model": "the_oldest_house:block/town_fixture_hardware_r",
+      "y": 90
+    },
+    "facing=east,kind=sheriff_l": {
+      "model": "the_oldest_house:block/town_fixture_sheriff_l",
+      "y": 90
+    },
+    "facing=east,kind=sheriff_m": {
+      "model": "the_oldest_house:block/town_fixture_sheriff_m",
+      "y": 90
+    },
+    "facing=east,kind=sheriff_r": {
+      "model": "the_oldest_house:block/town_fixture_sheriff_r",
+      "y": 90
+    },
+    "facing=east,kind=diner_l": {
+      "model": "the_oldest_house:block/town_fixture_diner_l",
+      "y": 90
+    },
+    "facing=east,kind=diner_m": {
+      "model": "the_oldest_house:block/town_fixture_diner_m",
+      "y": 90
+    },
+    "facing=east,kind=diner_r": {
+      "model": "the_oldest_house:block/town_fixture_diner_r",
+      "y": 90
+    },
+    "facing=east,kind=cinema_l": {
+      "model": "the_oldest_house:block/town_fixture_cinema_l",
+      "y": 90
+    },
+    "facing=east,kind=cinema_m": {
+      "model": "the_oldest_house:block/town_fixture_cinema_m",
+      "y": 90
+    },
+    "facing=east,kind=cinema_r": {
+      "model": "the_oldest_house:block/town_fixture_cinema_r",
+      "y": 90
+    },
+    "facing=east,kind=bait_l": {
+      "model": "the_oldest_house:block/town_fixture_bait_l",
+      "y": 90
+    },
+    "facing=east,kind=bait_m": {
+      "model": "the_oldest_house:block/town_fixture_bait_m",
+      "y": 90
+    },
+    "facing=east,kind=bait_r": {
+      "model": "the_oldest_house:block/town_fixture_bait_r",
+      "y": 90
+    },
+    "facing=east,kind=hall_l": {
+      "model": "the_oldest_house:block/town_fixture_hall_l",
+      "y": 90
+    },
+    "facing=east,kind=hall_m": {
+      "model": "the_oldest_house:block/town_fixture_hall_m",
+      "y": 90
+    },
+    "facing=east,kind=hall_r": {
+      "model": "the_oldest_house:block/town_fixture_hall_r",
+      "y": 90
+    },
+    "facing=east,kind=motel_l": {
+      "model": "the_oldest_house:block/town_fixture_motel_l",
+      "y": 90
+    },
+    "facing=east,kind=motel_m": {
+      "model": "the_oldest_house:block/town_fixture_motel_m",
+      "y": 90
+    },
+    "facing=east,kind=motel_r": {
+      "model": "the_oldest_house:block/town_fixture_motel_r",
+      "y": 90
+    },
+    "facing=east,kind=garage_l": {
+      "model": "the_oldest_house:block/town_fixture_garage_l",
+      "y": 90
+    },
+    "facing=east,kind=garage_m": {
+      "model": "the_oldest_house:block/town_fixture_garage_m",
+      "y": 90
+    },
+    "facing=east,kind=garage_r": {
+      "model": "the_oldest_house:block/town_fixture_garage_r",
+      "y": 90
+    },
+    "facing=east,kind=school_l": {
+      "model": "the_oldest_house:block/town_fixture_school_l",
+      "y": 90
+    },
+    "facing=east,kind=school_m": {
+      "model": "the_oldest_house:block/town_fixture_school_m",
+      "y": 90
+    },
+    "facing=east,kind=school_r": {
+      "model": "the_oldest_house:block/town_fixture_school_r",
+      "y": 90
+    },
+    "facing=south,kind=locker": {
+      "model": "the_oldest_house:block/town_fixture_locker",
+      "y": 180
+    },
+    "facing=south,kind=locker_top": {
+      "model": "the_oldest_house:block/town_fixture_locker_top",
+      "y": 180
+    },
+    "facing=south,kind=chalk_l": {
+      "model": "the_oldest_house:block/town_fixture_chalk_l",
+      "y": 180
+    },
+    "facing=south,kind=chalk_m": {
+      "model": "the_oldest_house:block/town_fixture_chalk_m",
+      "y": 180
+    },
+    "facing=south,kind=chalk_r": {
+      "model": "the_oldest_house:block/town_fixture_chalk_r",
+      "y": 180
+    },
+    "facing=south,kind=trophy": {
+      "model": "the_oldest_house:block/town_fixture_trophy",
+      "y": 180
+    },
+    "facing=south,kind=crest": {
+      "model": "the_oldest_house:block/town_fixture_crest",
+      "y": 180
+    },
+    "facing=south,kind=bleacher": {
+      "model": "the_oldest_house:block/town_fixture_bleacher",
+      "y": 180
+    },
+    "facing=south,kind=poster": {
+      "model": "the_oldest_house:block/town_fixture_poster",
+      "y": 180
+    },
+    "facing=south,kind=student_desk": {
+      "model": "the_oldest_house:block/town_fixture_student_desk",
+      "y": 180
+    },
+    "facing=south,kind=general_l": {
+      "model": "the_oldest_house:block/town_fixture_general_l",
+      "y": 180
+    },
+    "facing=south,kind=general_m": {
+      "model": "the_oldest_house:block/town_fixture_general_m",
+      "y": 180
+    },
+    "facing=south,kind=general_r": {
+      "model": "the_oldest_house:block/town_fixture_general_r",
+      "y": 180
+    },
+    "facing=south,kind=post_l": {
+      "model": "the_oldest_house:block/town_fixture_post_l",
+      "y": 180
+    },
+    "facing=south,kind=post_m": {
+      "model": "the_oldest_house:block/town_fixture_post_m",
+      "y": 180
+    },
+    "facing=south,kind=post_r": {
+      "model": "the_oldest_house:block/town_fixture_post_r",
+      "y": 180
+    },
+    "facing=south,kind=laundry_l": {
+      "model": "the_oldest_house:block/town_fixture_laundry_l",
+      "y": 180
+    },
+    "facing=south,kind=laundry_m": {
+      "model": "the_oldest_house:block/town_fixture_laundry_m",
+      "y": 180
+    },
+    "facing=south,kind=laundry_r": {
+      "model": "the_oldest_house:block/town_fixture_laundry_r",
+      "y": 180
+    },
+    "facing=south,kind=hardware_l": {
+      "model": "the_oldest_house:block/town_fixture_hardware_l",
+      "y": 180
+    },
+    "facing=south,kind=hardware_m": {
+      "model": "the_oldest_house:block/town_fixture_hardware_m",
+      "y": 180
+    },
+    "facing=south,kind=hardware_r": {
+      "model": "the_oldest_house:block/town_fixture_hardware_r",
+      "y": 180
+    },
+    "facing=south,kind=sheriff_l": {
+      "model": "the_oldest_house:block/town_fixture_sheriff_l",
+      "y": 180
+    },
+    "facing=south,kind=sheriff_m": {
+      "model": "the_oldest_house:block/town_fixture_sheriff_m",
+      "y": 180
+    },
+    "facing=south,kind=sheriff_r": {
+      "model": "the_oldest_house:block/town_fixture_sheriff_r",
+      "y": 180
+    },
+    "facing=south,kind=diner_l": {
+      "model": "the_oldest_house:block/town_fixture_diner_l",
+      "y": 180
+    },
+    "facing=south,kind=diner_m": {
+      "model": "the_oldest_house:block/town_fixture_diner_m",
+      "y": 180
+    },
+    "facing=south,kind=diner_r": {
+      "model": "the_oldest_house:block/town_fixture_diner_r",
+      "y": 180
+    },
+    "facing=south,kind=cinema_l": {
+      "model": "the_oldest_house:block/town_fixture_cinema_l",
+      "y": 180
+    },
+    "facing=south,kind=cinema_m": {
+      "model": "the_oldest_house:block/town_fixture_cinema_m",
+      "y": 180
+    },
+    "facing=south,kind=cinema_r": {
+      "model": "the_oldest_house:block/town_fixture_cinema_r",
+      "y": 180
+    },
+    "facing=south,kind=bait_l": {
+      "model": "the_oldest_house:block/town_fixture_bait_l",
+      "y": 180
+    },
+    "facing=south,kind=bait_m": {
+      "model": "the_oldest_house:block/town_fixture_bait_m",
+      "y": 180
+    },
+    "facing=south,kind=bait_r": {
+      "model": "the_oldest_house:block/town_fixture_bait_r",
+      "y": 180
+    },
+    "facing=south,kind=hall_l": {
+      "model": "the_oldest_house:block/town_fixture_hall_l",
+      "y": 180
+    },
+    "facing=south,kind=hall_m": {
+      "model": "the_oldest_house:block/town_fixture_hall_m",
+      "y": 180
+    },
+    "facing=south,kind=hall_r": {
+      "model": "the_oldest_house:block/town_fixture_hall_r",
+      "y": 180
+    },
+    "facing=south,kind=motel_l": {
+      "model": "the_oldest_house:block/town_fixture_motel_l",
+      "y": 180
+    },
+    "facing=south,kind=motel_m": {
+      "model": "the_oldest_house:block/town_fixture_motel_m",
+      "y": 180
+    },
+    "facing=south,kind=motel_r": {
+      "model": "the_oldest_house:block/town_fixture_motel_r",
+      "y": 180
+    },
+    "facing=south,kind=garage_l": {
+      "model": "the_oldest_house:block/town_fixture_garage_l",
+      "y": 180
+    },
+    "facing=south,kind=garage_m": {
+      "model": "the_oldest_house:block/town_fixture_garage_m",
+      "y": 180
+    },
+    "facing=south,kind=garage_r": {
+      "model": "the_oldest_house:block/town_fixture_garage_r",
+      "y": 180
+    },
+    "facing=south,kind=school_l": {
+      "model": "the_oldest_house:block/town_fixture_school_l",
+      "y": 180
+    },
+    "facing=south,kind=school_m": {
+      "model": "the_oldest_house:block/town_fixture_school_m",
+      "y": 180
+    },
+    "facing=south,kind=school_r": {
+      "model": "the_oldest_house:block/town_fixture_school_r",
+      "y": 180
+    },
+    "facing=west,kind=locker": {
+      "model": "the_oldest_house:block/town_fixture_locker",
+      "y": 270
+    },
+    "facing=west,kind=locker_top": {
+      "model": "the_oldest_house:block/town_fixture_locker_top",
+      "y": 270
+    },
+    "facing=west,kind=chalk_l": {
+      "model": "the_oldest_house:block/town_fixture_chalk_l",
+      "y": 270
+    },
+    "facing=west,kind=chalk_m": {
+      "model": "the_oldest_house:block/town_fixture_chalk_m",
+      "y": 270
+    },
+    "facing=west,kind=chalk_r": {
+      "model": "the_oldest_house:block/town_fixture_chalk_r",
+      "y": 270
+    },
+    "facing=west,kind=trophy": {
+      "model": "the_oldest_house:block/town_fixture_trophy",
+      "y": 270
+    },
+    "facing=west,kind=crest": {
+      "model": "the_oldest_house:block/town_fixture_crest",
+      "y": 270
+    },
+    "facing=west,kind=bleacher": {
+      "model": "the_oldest_house:block/town_fixture_bleacher",
+      "y": 270
+    },
+    "facing=west,kind=poster": {
+      "model": "the_oldest_house:block/town_fixture_poster",
+      "y": 270
+    },
+    "facing=west,kind=student_desk": {
+      "model": "the_oldest_house:block/town_fixture_student_desk",
+      "y": 270
+    },
+    "facing=west,kind=general_l": {
+      "model": "the_oldest_house:block/town_fixture_general_l",
+      "y": 270
+    },
+    "facing=west,kind=general_m": {
+      "model": "the_oldest_house:block/town_fixture_general_m",
+      "y": 270
+    },
+    "facing=west,kind=general_r": {
+      "model": "the_oldest_house:block/town_fixture_general_r",
+      "y": 270
+    },
+    "facing=west,kind=post_l": {
+      "model": "the_oldest_house:block/town_fixture_post_l",
+      "y": 270
+    },
+    "facing=west,kind=post_m": {
+      "model": "the_oldest_house:block/town_fixture_post_m",
+      "y": 270
+    },
+    "facing=west,kind=post_r": {
+      "model": "the_oldest_house:block/town_fixture_post_r",
+      "y": 270
+    },
+    "facing=west,kind=laundry_l": {
+      "model": "the_oldest_house:block/town_fixture_laundry_l",
+      "y": 270
+    },
+    "facing=west,kind=laundry_m": {
+      "model": "the_oldest_house:block/town_fixture_laundry_m",
+      "y": 270
+    },
+    "facing=west,kind=laundry_r": {
+      "model": "the_oldest_house:block/town_fixture_laundry_r",
+      "y": 270
+    },
+    "facing=west,kind=hardware_l": {
+      "model": "the_oldest_house:block/town_fixture_hardware_l",
+      "y": 270
+    },
+    "facing=west,kind=hardware_m": {
+      "model": "the_oldest_house:block/town_fixture_hardware_m",
+      "y": 270
+    },
+    "facing=west,kind=hardware_r": {
+      "model": "the_oldest_house:block/town_fixture_hardware_r",
+      "y": 270
+    },
+    "facing=west,kind=sheriff_l": {
+      "model": "the_oldest_house:block/town_fixture_sheriff_l",
+      "y": 270
+    },
+    "facing=west,kind=sheriff_m": {
+      "model": "the_oldest_house:block/town_fixture_sheriff_m",
+      "y": 270
+    },
+    "facing=west,kind=sheriff_r": {
+      "model": "the_oldest_house:block/town_fixture_sheriff_r",
+      "y": 270
+    },
+    "facing=west,kind=diner_l": {
+      "model": "the_oldest_house:block/town_fixture_diner_l",
+      "y": 270
+    },
+    "facing=west,kind=diner_m": {
+      "model": "the_oldest_house:block/town_fixture_diner_m",
+      "y": 270
+    },
+    "facing=west,kind=diner_r": {
+      "model": "the_oldest_house:block/town_fixture_diner_r",
+      "y": 270
+    },
+    "facing=west,kind=cinema_l": {
+      "model": "the_oldest_house:block/town_fixture_cinema_l",
+      "y": 270
+    },
+    "facing=west,kind=cinema_m": {
+      "model": "the_oldest_house:block/town_fixture_cinema_m",
+      "y": 270
+    },
+    "facing=west,kind=cinema_r": {
+      "model": "the_oldest_house:block/town_fixture_cinema_r",
+      "y": 270
+    },
+    "facing=west,kind=bait_l": {
+      "model": "the_oldest_house:block/town_fixture_bait_l",
+      "y": 270
+    },
+    "facing=west,kind=bait_m": {
+      "model": "the_oldest_house:block/town_fixture_bait_m",
+      "y": 270
+    },
+    "facing=west,kind=bait_r": {
+      "model": "the_oldest_house:block/town_fixture_bait_r",
+      "y": 270
+    },
+    "facing=west,kind=hall_l": {
+      "model": "the_oldest_house:block/town_fixture_hall_l",
+      "y": 270
+    },
+    "facing=west,kind=hall_m": {
+      "model": "the_oldest_house:block/town_fixture_hall_m",
+      "y": 270
+    },
+    "facing=west,kind=hall_r": {
+      "model": "the_oldest_house:block/town_fixture_hall_r",
+      "y": 270
+    },
+    "facing=west,kind=motel_l": {
+      "model": "the_oldest_house:block/town_fixture_motel_l",
+      "y": 270
+    },
+    "facing=west,kind=motel_m": {
+      "model": "the_oldest_house:block/town_fixture_motel_m",
+      "y": 270
+    },
+    "facing=west,kind=motel_r": {
+      "model": "the_oldest_house:block/town_fixture_motel_r",
+      "y": 270
+    },
+    "facing=west,kind=garage_l": {
+      "model": "the_oldest_house:block/town_fixture_garage_l",
+      "y": 270
+    },
+    "facing=west,kind=garage_m": {
+      "model": "the_oldest_house:block/town_fixture_garage_m",
+      "y": 270
+    },
+    "facing=west,kind=garage_r": {
+      "model": "the_oldest_house:block/town_fixture_garage_r",
+      "y": 270
+    },
+    "facing=west,kind=school_l": {
+      "model": "the_oldest_house:block/town_fixture_school_l",
+      "y": 270
+    },
+    "facing=west,kind=school_m": {
+      "model": "the_oldest_house:block/town_fixture_school_m",
+      "y": 270
+    },
+    "facing=west,kind=school_r": {
+      "model": "the_oldest_house:block/town_fixture_school_r",
+      "y": 270
+    }
+  }
+}

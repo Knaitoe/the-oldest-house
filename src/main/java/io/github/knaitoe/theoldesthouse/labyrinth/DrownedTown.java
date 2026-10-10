@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -35,11 +36,12 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class DrownedTown {
     public static final String ID = "drowned_town";
     public static final int FINAL_VISIT = 2;
-    public static final BlockPos FURNACE = new BlockPos(13, 0, -8), SUPPLIES = new BlockPos(14, 0, -8);
-    public static final BlockPos SCHOOL_DOOR = new BlockPos(-15, 0, -22);
-    public static final BlockPos[] PAPERS = {new BlockPos(-23, 1, -33), new BlockPos(-8, 1, -28), new BlockPos(-19, 1, -24)};
-    public static final BlockPos KEY_DESK = new BlockPos(-14, 1, -32);
-    public static final BlockPos CHURCH_DOOR = new BlockPos(15, -11, -40), ROOF_HATCH = new BlockPos(15, -4, -43);
+    // 0.4.67: Proofrock and Indian Lake High. The furnace is on the beach; the essays and key are in teachers' desks.
+    public static final BlockPos FURNACE = ProofrockTown.FURNACE, SUPPLIES = ProofrockTown.SUPPLIES;
+    public static final BlockPos SCHOOL_DOOR = IndianLakeHigh.ENTRANCE;
+    public static final BlockPos[] PAPERS = IndianLakeHigh.ESSAY_DESKS;
+    public static final BlockPos KEY_DESK = IndianLakeHigh.KEY_DESK;
+    public static final BlockPos CHURCH_DOOR = ProofrockTown.CHURCH_DOOR, ROOF_HATCH = ProofrockTown.ROOF_HATCH;
     private static final String BODY = "the_oldest_house_indian_lake_body";
     public static final String SHORE_BODY="the_oldest_house_lake_shore_body", TOWN_CANOE="the_oldest_house_town_canoe";
     private static final Map<UUID, BlockPos> OPEN_FURNACES = new HashMap<>();
@@ -47,12 +49,8 @@ public final class DrownedTown {
     private DrownedTown() {}
 
     public static int nextVisit(int visit, boolean beatDone) { return visit < 1 ? 1 : beatDone && visit < FINAL_VISIT ? visit + 1 : visit; }
-    public static boolean contains(BlockPos base, Vec3 point) {
-        return point.x >= base.getX() - 29 && point.x <= base.getX() + 30
-                && point.z >= base.getZ() - 64 && point.z <= base.getZ() + 18
-                && point.y >= base.getY() - 13 && point.y <= base.getY() + 9;
-    }
-    private static AABB bounds(BlockPos base) { return new AABB(base.getX()-29, base.getY()-13, base.getZ()-64, base.getX()+30, base.getY()+9, base.getZ()+18); }
+    public static boolean contains(BlockPos base, Vec3 point) { return bounds(base).contains(point); }
+    private static AABB bounds(BlockPos base) { return IndianLakeRooms.bounds(base, LabyrinthPlace.DROWNED_TOWN); }
     public static @Nullable BlockPos base(MinecraftServer server) {
         BlockPos origin = HouseSavedData.get(server).houseOrigin();
         return origin == null ? null : LabyrinthPlaces.base(origin, LabyrinthPlace.DROWNED_TOWN);
@@ -61,23 +59,27 @@ public final class DrownedTown {
         return level.players().stream().filter(p -> p.isAlive() && !p.isSpectator() && contains(base, p.position())).toList();
     }
 
+    /** Recorded in slices when a plan is open; the stocking and staging run after the blocks they fill exist. */
     public static void build(MinecraftServer server, ServerLevel level, BlockPos base) {
-        DrownedTownArchitecture.build(level, base);
-        LakeLandscape.liftSchool(level,base);LakeLandscape.dress(level,base,LabyrinthPlace.DROWNED_TOWN);
+        ProofrockTown.build(level, base);
+        BuildBlocks.after(level, () -> stock(server, level, base));
+    }
+    private static void stock(MinecraftServer server, ServerLevel level, BlockPos base) {
         LabyrinthData data = LabyrinthData.get(server);
         CompoundTag state = data.state(ID);
-        // First construction stocks finite native inventories. Ordinary arrivals never refill them.
+        // First construction stocks finite native inventories. Ordinary arrivals and later rebuilds never refill them.
         if (!state.getBoolean("PaperStocked")) {
-            for (int i = 0; i < PAPERS.length; i++) if (level.getBlockEntity(base.offset(PAPERS[i])) instanceof BarrelBlockEntity desk) {
+            for (int i = 0; i < PAPERS.length; i++) if (level.getBlockEntity(base.offset(PAPERS[i])) instanceof Container desk) {
                 desk.setItem(0, new ItemStack(DrownedTownRegistry.wetEssay(i))); desk.setChanged();
             }
-            if (level.getBlockEntity(base.offset(SUPPLIES)) instanceof BarrelBlockEntity box) {
+            if (level.getBlockEntity(base.offset(SUPPLIES)) instanceof Container box) {
                 box.setItem(0, new ItemStack(Items.COAL, 4)); box.setItem(1, new ItemStack(Items.OAK_DOOR, 2));
                 box.setItem(2, new ItemStack(Items.COOKED_COD, 2)); box.setChanged();
             }
             state.putBoolean("PaperStocked", true);
         }
         state.putBoolean("Built", true); data.setState(ID, state);
+        TownCarry.restore(level, base, data);
         stage(level, base, data);
     }
 
@@ -96,22 +98,26 @@ public final class DrownedTown {
         }
         stage(level, base, data);
         player.displayClientMessage(Component.literal(data.isCompleted(ID) ? "The roof is open. The hymn carries over the lake."
-                : next == 1 ? "The school is left along the street. Find its three damp essays and dry them at the shore furnace; then leave and return."
-                : "Return to the school for the church key. The steeple is across the lake; open its door, then release a breath beneath the roof hatch."), false);
+                : next == 1 ? "The high school is up Main Street on the left, by the water. Dry its three damp essays at the beach furnace; then leave and return."
+                : "The church key is in the school. The steeple stands out of the lake; open the church door beneath it, then release a breath beneath the roof hatch."), false);
     }
 
     public static void guidance(ServerPlayer p){
         var state=LabyrinthData.get(p.server).state(ID);int mask=state.getInt("DryMask");
-        p.displayClientMessage(Component.literal(state.getBoolean("RoofOpened")?"The church roof is open. Follow the hymn beneath its steeple.":state.getInt("Visit")<2?"School: left of the street. Dry its three damp essays at the beach furnace ("+Integer.bitCount(mask)+"/3); then leave and return.":state.getBoolean("ChurchUnlocked")?"In the drowned church, release a breath directly beneath the roof hatch.":"The church key waits in the school. The steeple is across the lake."),false);
+        p.displayClientMessage(Component.literal(state.getBoolean("RoofOpened")?"The church roof is open. Follow the hymn beneath its steeple.":state.getInt("Visit")<2?"The high school is at the top of Main Street, on the left. Dry its three damp essays at the beach furnace ("+Integer.bitCount(mask)+"/3); then leave and return.":state.getBoolean("ChurchUnlocked")?"In the drowned church, release a breath directly beneath the roof hatch.":"The church key waits in the school. The steeple stands out of the lake."),false);
     }
     /** In-place changes only: player doors, drops, furnace contents and depleted desks survive visits/restarts. */
     public static void stage(ServerLevel level, BlockPos base, LabyrinthData data) {
         CompoundTag state = data.state(ID);
         if (state.getInt("Visit") >= 2 && !state.getBoolean("KeyPlaced")) {
+            // The principal's own desk takes the key; a missing desk is set back first, never refilled once given.
             BlockPos at = base.offset(KEY_DESK);
-            level.setBlock(at, LabyrinthBuilder.barrel(net.minecraft.core.Direction.UP), LabyrinthBuilder.flags());
-            if (level.getBlockEntity(at) instanceof BarrelBlockEntity desk) {
-                desk.setItem(0, new ItemStack(DrownedTownRegistry.CHURCH_KEY.get())); desk.setChanged();
+            if (!(level.getBlockEntity(at) instanceof Container)) level.setBlock(at, SchoolDeskBlock.facing(net.minecraft.core.Direction.SOUTH), LabyrinthBuilder.flags());
+            if (level.getBlockEntity(at) instanceof Container desk) {
+                int slot = 0; while (slot < desk.getContainerSize() && !desk.getItem(slot).isEmpty()) slot++;
+                // A drawer a reader has filled keeps everything in it; the key is left on top.
+                if (slot < desk.getContainerSize()) { desk.setItem(slot, new ItemStack(DrownedTownRegistry.CHURCH_KEY.get())); desk.setChanged(); }
+                else net.minecraft.world.Containers.dropItemStack(level, at.getX() + .5, at.getY() + 1, at.getZ() + .5, new ItemStack(DrownedTownRegistry.CHURCH_KEY.get()));
                 state.putBoolean("KeyPlaced", true); data.setState(ID, state);
             }
         }
@@ -210,15 +216,13 @@ public final class DrownedTown {
         }
     }
 
-    /** Portable air doors/soul sand work in the lake, away from the church and authored puzzle props. */
+    /** Portable air doors/soul sand work in the lake, below its surface, away from the church and its steeple. */
     public static boolean allowsPlacing(Level level, BlockPos pos, BlockState state) {
         if (!(level instanceof ServerLevel serverLevel) || !level.dimension().equals(HouseDimensions.OUTSIDE)) return false;
         BlockPos base = base(serverLevel.getServer()); if (base == null) return false;
         BlockPos r = pos.subtract(base);
-        if (r.getX() <= -28 || r.getX() >= 28 || r.getZ() < -62 || r.getZ() > -12 || r.getY() < -11 || r.getY() > -2) return false;
-        if (r.getX() >= 7 && r.getX() <= 23 && r.getZ() >= -59 && r.getZ() <= -40) return false;
-        for (BlockPos prop : PAPERS) if (r.distManhattan(prop) <= 2) return false;
-        if (r.distManhattan(KEY_DESK) <= 2 || r.distManhattan(SCHOOL_DOOR) <= 2) return false;
+        if (!ProofrockTown.water(r.getX(), r.getZ()) || r.getY() < -11 || r.getY() > -2) return false;
+        if (r.getX() >= 20 && r.getX() <= 40 && r.getZ() >= -125 && r.getZ() <= -100) return false;
         return state.getBlock() instanceof DoorBlock || state.is(Blocks.SOUL_SAND);
     }
     public static void onPlaced(BlockEvent.EntityPlaceEvent event) {
@@ -235,13 +239,7 @@ public final class DrownedTown {
                 || expected.equals("sand") && level.getBlockState(pos).is(Blocks.SOUL_SAND);
     }
 
-    private static void keepLoaded(ServerLevel level, BlockPos base) {
-        for (int x = (base.getX() - 30) >> 4; x <= (base.getX() + 30) >> 4; x++)
-            for (int z = (base.getZ() - 65) >> 4; z <= (base.getZ() + 18) >> 4; z++) {
-                ChunkPos pos = new ChunkPos(x, z);
-                level.getChunkSource().addRegionTicket(TicketType.PORTAL, pos, 3, base);
-            }
-    }
+    private static void keepLoaded(ServerLevel level, BlockPos base) { IndianLakeRooms.keepLoaded(level, base, LabyrinthPlace.DROWNED_TOWN); }
     private static void ensureWitch(ServerLevel level, BlockPos base, LabyrinthData data) {
         int visit = Math.max(1, data.state(ID).getInt("Visit"));
         if (data.state(ID).getInt("WitchDefeatedVisit") == visit) return;
@@ -252,10 +250,10 @@ public final class DrownedTown {
         witch.moveTo(Vec3.atBottomCenterOf(spawn)); level.addFreshEntity(witch);
     }
     public static BlockPos witchSpawn(ServerLevel level,BlockPos base){
-        for(var relative:List.of(new BlockPos(-24,0,-40),new BlockPos(-13,0,-51),new BlockPos(25,0,-57),new BlockPos(24,0,-32))){
+        for(var relative:ProofrockTown.LURKS){
             var at=base.offset(relative);if(LakeWitchEntity.walkable(level,base,at)
                     &&visitors(level,base).stream().noneMatch(p->LakeWitchEntity.inView(p,Vec3.atBottomCenterOf(at).add(0,.6,0))))return at;
-        }return base.offset(25,0,-57);
+        }return base.offset(ProofrockTown.LURKS.getFirst());
     }
     /** One original usable canoe and one shore casualty, independent of the later church aftermath. */
     public static void stageShore(ServerLevel level,BlockPos base,LabyrinthData data){
@@ -263,34 +261,28 @@ public final class DrownedTown {
         if(!state.getBoolean("TownCanoePlaced")){
             var canoe=net.minecraft.world.entity.EntityType.BOAT.create(level);
             if(canoe!=null){canoe.setVariant(net.minecraft.world.entity.vehicle.Boat.Type.SPRUCE);canoe.addTag(TOWN_CANOE);
-                canoe.moveTo(base.getX()+13.5,base.getY()-.25,base.getZ()-34.5,90,0);
+                canoe.moveTo(base.getX()+ProofrockTown.CANOE.getX()+.5,base.getY()-.25,base.getZ()+ProofrockTown.CANOE.getZ()+.5,90,0);
                 if(level.addFreshEntity(canoe)){state.putBoolean("TownCanoePlaced",true);state.putUUID("TownCanoeUUID",canoe.getUUID());}}
         }
         if(!state.getBoolean("ShoreBodyPlaced")){
             var body=DrownedTownRegistry.CONGREGANT.get().create(level);
             if(body!=null){body.addTag(SHORE_BODY);body.pose(false,false);body.lying(true);body.preservedEra(2);
-                body.moveTo(base.getX()+5.5,base.getY()+.03,base.getZ()-30.5,32,0);
+                body.moveTo(base.getX()+ProofrockTown.SHORE_BODY.getX()+.5,base.getY()+.03,base.getZ()+ProofrockTown.SHORE_BODY.getZ()+.5,32,0);
                 if(level.addFreshEntity(body)){state.putBoolean("ShoreBodyPlaced",true);state.putUUID("ShoreBodyUUID",body.getUUID());}}
         }
         data.setState(ID,state);
     }
     private static void ensureBodies(ServerLevel level, BlockPos base, LabyrinthData data) {
         boolean shore = IndianLakeProgress.deadOnShore(data);
-        // The pews were built with their backs to the pulpit: turn them to face it, keeping their water.
-        for (int z = -51; z <= -45; z += 3) for (int x : new int[]{10, 11, 12, 18, 19, 20}) {
-            BlockPos pew = base.offset(x, -11, z); BlockState state = level.getBlockState(pew);
-            if (state.is(Blocks.DARK_OAK_STAIRS) && state.getValue(StairBlock.FACING) == net.minecraft.core.Direction.NORTH)
-                level.setBlock(pew, state.setValue(StairBlock.FACING, net.minecraft.core.Direction.SOUTH), LabyrinthBuilder.flags());
-        }
         List<LakeCongregantEntity> bodies = level.getEntitiesOfClass(LakeCongregantEntity.class, bounds(base), b -> b.getTags().contains(BODY));
         for (int index = 0; index < 7; index++) {
             String tag = BODY + "_" + index; LakeCongregantEntity body = bodies.stream().filter(b -> b.getTags().contains(tag)).findFirst().orElse(null);
             boolean preacher = index == 0;
             if (body == null) { body = DrownedTownRegistry.CONGREGANT.get().create(level); if (body == null) continue; body.addTag(BODY); body.addTag(tag); }
             // The preacher stands on the floor behind the pulpit; the congregation sits in the pews facing it.
-            BlockPos at = preacher ? base.offset(15, -11, -56)
-                    : shore ? base.offset(-16 + index * 5, 0, -10)
-                    : base.offset(index % 2 == 0 ? 12 : 18, -11, -45 - (index - 1) / 2 * 3);
+            BlockPos at = preacher ? base.offset(ProofrockTown.PREACHER)
+                    : shore ? base.offset(-16 + index * 5, 0, -90)
+                    : base.offset(index % 2 == 0 ? 26 : 34, -11, -107 - (index - 1) / 2 * 2);
             body.pose(preacher, !preacher && !shore);
             body.moveTo(at.getX() + .5, at.getY(), at.getZ() + .5, preacher ? 0 : shore ? 0 : 180, 0);
             if (!bodies.contains(body)) level.addFreshEntity(body);
@@ -307,7 +299,7 @@ public final class DrownedTown {
         if (level.getGameTime() >= nextHymn) {
             boolean open = data.state(ID).getBoolean("RoofOpened");
             nextHymn = level.getGameTime() + (open ? 160 : 200);
-            level.playSound(null, base.offset(15, open ? -1 : -8, -50), DrownedTownRegistry.HYMN.get(), SoundSource.AMBIENT,
+            level.playSound(null, base.offset(ProofrockTown.HYMN.getX(), open ? -1 : ProofrockTown.HYMN.getY(), ProofrockTown.HYMN.getZ()), DrownedTownRegistry.HYMN.get(), SoundSource.AMBIENT,
                     open ? 1.0F : .45F, open ? 1 : .8F);
         }
     }

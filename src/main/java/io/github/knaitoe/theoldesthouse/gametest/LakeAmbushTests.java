@@ -81,24 +81,36 @@ public final class LakeAmbushTests {
         var goal=LakeWitchEntity.ambushGoal(l,b,b.offset(-9,0,-25),p,false);
         h.assertTrue(goal!=null&&LakeWitchEntity.behindScore(p,Vec3.atBottomCenterOf(goal))>.35,"a reachable rear position wins over waiting directly in front");p.discard();h.succeed();
     }
-    @GameTest(template="empty") public static void townUpgradeKeepsDesksAndFiniteCanoeAndBodyIdentities(GameTestHelper h){
+    @GameTest(template="empty") public static void proofrockRebuildCarriesDesksAirToolsAndKeepsCanoeAndBodyIdentities(GameTestHelper h){
         var s=h.getLevel().getServer();var l=HouseTestLevel.get(s,HouseDimensions.OUTSIDE);var prior=LabyrinthData.get(s);var d=new LabyrinthData();s.overworld().getDataStorage().set("the_oldest_house_labyrinth",d);
         var b=new BlockPos(87500,60,87500);
         try{
-            // Construct the prior lake shell and skip its new checkpoint while preparing an old-save fixture.
+            // The town as a saved world held it before 0.4.67: its raised school, a depleted desk, fuel in the furnace, an air door in the lake.
             DrownedTownArchitecture.build(l,b);LakeLandscape.liftSchool(l,b);
-            var flags=d.state(LakeSettlement.STATE);flags.putBoolean(b.asLong()+":"+LabyrinthPlace.DROWNED_TOWN.id(),true);d.setState(LakeSettlement.STATE,flags);LakeLandscape.dress(l,b,LabyrinthPlace.DROWNED_TOWN);
-            var desk=(BarrelBlockEntity)l.getBlockEntity(b.offset(DrownedTown.PAPERS[0]));var original=new ItemStack(Items.DIAMOND,2);desk.setItem(0,ItemStack.EMPTY);desk.setItem(7,original);
-            LakeSettlement.forget(l,b,LabyrinthPlace.DROWNED_TOWN);LakeSettlement.decorateOnce(l,b,LabyrinthPlace.DROWNED_TOWN);
-            h.assertTrue(l.getBlockEntity(desk.getBlockPos())==desk&&desk.getItem(0).isEmpty()&&desk.getItem(7).getCount()==2,"the town refit retains the exact depleted native school desk");
-            h.assertTrue(l.getBlockState(b.offset(-27,7,-30)).is(Blocks.DEEPSLATE_TILE_STAIRS)&&l.getBlockState(b.offset(-12,5,-44)).is(Blocks.DARK_PRISMARINE_STAIRS)
-                    &&l.getBlockState(b.offset(-27,5,-17)).is(Blocks.OXIDIZED_CUT_COPPER_STAIRS),"school, market and boat shed have distinct real roof silhouettes and materials");
-            h.assertTrue(LakeSettlement.shoreline(-17)!=LakeSettlement.shoreline(-28),"the actual shore bends across the map");
+            var desk=(net.minecraft.world.Container)l.getBlockEntity(b.offset(-23,1,-33));var original=new ItemStack(Items.DIAMOND,2);original.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("Kept"));
+            desk.setItem(0,ItemStack.EMPTY);desk.setItem(7,original.copy());
+            var oldFurnace=(net.minecraft.world.Container)l.getBlockEntity(b.offset(13,0,-8));oldFurnace.setItem(1,new ItemStack(Items.COAL,3));
+            var airDoor=b.offset(5,-11,-30);var lower=Blocks.OAK_DOOR.defaultBlockState();
+            l.setBlock(airDoor,lower,3);l.setBlock(airDoor.above(),lower.setValue(DoorBlock.HALF,net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER),3);
+            var state=d.state(DrownedTown.ID);var placed=new CompoundTag();placed.putString(Long.toString(airDoor.asLong()),"door");placed.putString(Long.toString(airDoor.above().asLong()),"door");
+            state.put("PlacedAirTools",placed);state.putBoolean("PaperStocked",true);state.putInt("Visit",1);d.setState(DrownedTown.ID,state);
+            DrownedTown.stageShore(l,b,d);state=d.state(DrownedTown.ID);UUID canoe=state.getUUID("TownCanoeUUID"),body=state.getUUID("ShoreBodyUUID");
+            l.getEntity(canoe).moveTo(b.getX()+13.5,b.getY()-.25,b.getZ()-34.5);
+            var witch=DrownedTownRegistry.LAKE_WITCH.get().create(l);witch.shore(b,1);witch.moveTo(b.getX()+23.5,b.getY(),b.getZ()-6.5);l.addFreshEntity(witch);var hunter=witch.getUUID();
+            TownCarry.capture(l,b);
+            h.assertTrue(desk.getItem(7).isEmpty()&&oldFurnace.getItem(1).isEmpty()&&d.state(DrownedTown.ID).contains("Carry0467"),"custody empties the old containers before any block removal could drop them");
+            DrownedTown.build(s,l,b);
+            var next=(net.minecraft.world.Container)l.getBlockEntity(b.offset(DrownedTown.PAPERS[0]));
+            h.assertTrue(next!=null&&next.getItem(0).isEmpty()&&ItemStack.isSameItemSameComponents(next.getItem(7),original)&&next.getItem(7).getCount()==2,"the essay desk's exact remaining contents move into Indian Lake High, and it is never restocked");
+            var furnace=(net.minecraft.world.Container)l.getBlockEntity(b.offset(DrownedTown.FURNACE));var supplies=(net.minecraft.world.Container)l.getBlockEntity(b.offset(DrownedTown.SUPPLIES));
+            h.assertTrue(furnace.getItem(1).is(Items.COAL)&&furnace.getItem(1).getCount()==3&&supplies.countItem(Items.OAK_DOOR)==1&&!d.state(DrownedTown.ID).contains("PlacedAirTools"),"the furnace keeps its fuel and the reader's air door comes back with the supplies");
+            var movedCanoe=l.getEntity(canoe);var movedBody=l.getEntity(body);var movedHunter=l.getEntity(hunter);
+            h.assertTrue(movedCanoe!=null&&movedCanoe.position().distanceToSqr(Vec3.atCenterOf(b.offset(ProofrockTown.CANOE)))<4&&movedBody!=null&&movedBody.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(ProofrockTown.SHORE_BODY)))<1,"the same canoe and shore body are set down where Proofrock keeps them");
+            h.assertTrue(movedHunter instanceof LakeWitchEntity w&&LakeWitchEntity.walkable(l,b,w.blockPosition())&&!d.state(DrownedTown.ID).contains("Carry0467"),"the same hunter stands on her new ground, and custody is released");
             h.assertTrue(DrownedTown.witchSpawn(l,b).getZ()<b.getZ()-30,"the initial hunter belongs behind the town, well away from the entrance");
-            DrownedTown.stageShore(l,b,d);var state=d.state(DrownedTown.ID);UUID canoe=state.getUUID("TownCanoeUUID"),body=state.getUUID("ShoreBodyUUID");DrownedTown.stageShore(l,b,d);
-            h.assertTrue(canoe.equals(d.state(DrownedTown.ID).getUUID("TownCanoeUUID"))&&body.equals(d.state(DrownedTown.ID).getUUID("ShoreBodyUUID")),"visits preserve the same canoe and shore body without replacements");
-            var removed=l.getEntity(canoe);if(removed!=null)removed.discard();DrownedTown.stageShore(l,b,d);h.assertTrue(canoe.equals(d.state(DrownedTown.ID).getUUID("TownCanoeUUID")),"a recovered or destroyed canoe is never replenished");h.succeed();
-        }finally{l.getEntitiesOfClass(Entity.class,IndianLakeRooms.bounds(b,LabyrinthPlace.DROWNED_TOWN),e->e.getTags().contains(DrownedTown.TOWN_CANOE)||e.getTags().contains(DrownedTown.SHORE_BODY)).forEach(Entity::discard);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",prior);}
+            DrownedTown.stageShore(l,b,d);h.assertTrue(canoe.equals(d.state(DrownedTown.ID).getUUID("TownCanoeUUID"))&&body.equals(d.state(DrownedTown.ID).getUUID("ShoreBodyUUID")),"visits preserve the same canoe and shore body without replacements");
+            h.succeed();
+        }finally{l.getEntitiesOfClass(Entity.class,IndianLakeRooms.bounds(b,LabyrinthPlace.DROWNED_TOWN).inflate(2),e->e.getTags().contains(DrownedTown.TOWN_CANOE)||e.getTags().contains(DrownedTown.SHORE_BODY)||e instanceof LakeWitchEntity||e instanceof LakeCongregantEntity||e instanceof net.minecraft.world.entity.item.ItemEntity).forEach(Entity::discard);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",prior);}
     }
     @GameTest(template="empty") public static void unclaimedPreparationShieldIsRetiredWithoutTakingEarnedEquipment(GameTestHelper h){
         var l=h.getLevel();var origin=new BlockPos(88500,60,88500);var at=FinaleArchitecture.base(origin).offset(-10,FinaleArchitecture.ARENA,39);var d=LabyrinthData.get(l.getServer());var old=d.state("finale_architecture_049").copy();

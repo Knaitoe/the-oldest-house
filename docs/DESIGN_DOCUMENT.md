@@ -772,10 +772,16 @@ Two Jones father stories sit side by side: in Mapping the Interior a father feed
 
 *Multi-visit · verb: breath*
 
-- A lakeshore at night, with dry town streets, a school, distinct shop and cottage roofs, a working pier and an irregular sandy beach. The older church remains below the reservoir. Varied trees and dead wood frame the bank; a finite usable canoe and a prone shore casualty occupy the map.
+- Proofrock at night (0.4.67): a 128 × 128 town on the lakeshore.
+  - **The town:** Main Street's shops with back alleys and dumpsters; Pine Lane's houses with fenced lawns; the garage, motel and town green; the beach, pier and boathouse.
+  - **Indian Lake High:** a large single-storey school with a ring corridor round a grass courtyard, two-door classrooms, a gym and a library.
+  - **Under the reservoir:** the old town and its church.
+  - **On the map:** a finite usable canoe and a prone shore casualty.
+  - **Built for the hunt:** the town is one level for her, with lit main routes and dark alleys, yards and back rooms. Corners, cars, sheds and fences break sight lines, and the flatbed, picnic tables and bleachers leave gaps only she fits under.
+  - See [PROOFROCK_0_4_67.md](PROOFROCK_0_4_67.md).
 - The shore hunter is the Lake Witch, Stacey Graves, a custom jointed creature crawling on all fours. She travels on the actual water surface, hides behind real cover, approaches from the back, strikes quickly and withdraws. She starts away from the entrance. Living grass and genuine submersion remain refuges; walking at the surface does not. Doors, bubble columns, water breathing and turtle shells work. The human recollection keeps its ordinary proportions and physics.
-- The school's essays are waterlogged. Dry them in a furnace on shore while she comes for you. They explain horror-movie rules that are really the House's rules, including the grass rule.
-- On a later visit, a key from the school opens the church.
+- The school's essays are waterlogged, in three teachers' desks on different sides of its ring. Dry them in the furnace on the beach while she comes for you. They explain horror-movie rules that are really the House's rules, including the grass rule.
+- On a later visit, a key in the principal's desk opens the church.
 - The preacher below keeps the water consecrated. The roof hatch is the only thing inside the church that can be opened. Open it and the choir's hymn gets out. On the next cave visit the pews are empty and the preserved dead are standing on shore.
 - The kept church key opens the church inside the House; outside, Minecraft's drowned ignore its bearer.
 - Yields: the dried essays and church key. Assets: the custom Lake Witch, wet/dried pages, church and hymn. The budget hooded shore NPC was cut.

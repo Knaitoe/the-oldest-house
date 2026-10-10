@@ -168,11 +168,15 @@ public final class ArchitectureTests {
         h.assertTrue(!level.noCollision(null,new AABB(xx+.2,yy-.04,zz+.2,xx+.8,yy-.01,zz+.8)),route+" has an actual supporting tread at "+x+","+feet+","+z);
     }
     private static void frontsAndInteriors(GameTestHelper h,net.minecraft.server.MinecraftServer server,BlockPos origin,LabyrinthData data){
-        for(var scene:List.of(LabyrinthPlace.DROWNED_TOWN,LabyrinthPlace.GOATMAN,LabyrinthPlace.HOLLOWAY_CAMP,LabyrinthPlace.ZAMPANO_COURTYARD))h.assertTrue(data.state(SceneExteriors.STATE).getBoolean(origin.asLong()+":"+scene.id()),scene.id()+" has a finite exterior checkpoint");
+        for(var scene:List.of(LabyrinthPlace.GOATMAN,LabyrinthPlace.HOLLOWAY_CAMP,LabyrinthPlace.ZAMPANO_COURTYARD))h.assertTrue(data.state(SceneExteriors.STATE).getBoolean(origin.asLong()+":"+scene.id()),scene.id()+" has a finite exterior checkpoint");
         var town=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);var b=LabyrinthPlaces.base(origin,LabyrinthPlace.DROWNED_TOWN);
-        // Actual routes through the cottage partition, shop door and upstairs stairs remain clear.
-        for(var at:List.of(b.offset(-19,0,-53),b.offset(-18,0,-53),b.offset(-7,0,-42),b.offset(-9,4,-57)))h.assertTrue(town.noCollision(null,new AABB(at.getX()+.2,at.getY()+.01,at.getZ()+.2,at.getX()+.8,at.getY()+1.8,at.getZ()+.8)),"the dressed town retains a native player passage at "+at);
-        h.assertTrue(town.getBlockState(b.offset(-23,1,-45)).is(Blocks.LIGHT_GRAY_STAINED_GLASS_PANE)&&town.getBlockState(b.offset(-8,4,-58)).getBlock() instanceof BedBlock,"the cottage has framed sash windows and the upstairs flat has a real native bed");
+        // Proofrock (0.4.67): Main Street and the school's ring corridor are clear all the way round, the courtyard is living grass,
+        // and the gym's folded bleachers leave a gap she fits under and a reader does not.
+        for(var at:List.of(b.offset(0,0,-40),b.offset(-22,0,-65),b.offset(-39,0,-66),b.offset(-30,0,-56),b.offset(-30,0,-79)))h.assertTrue(town.noCollision(null,new AABB(at.getX()+.2,at.getY()+.01,at.getZ()+.2,at.getX()+.8,at.getY()+1.8,at.getZ()+.8)),"Proofrock retains a native player passage at "+at);
+        h.assertTrue(town.getBlockState(b.offset(-30,-1,-63)).is(Blocks.GRASS_BLOCK)&&town.getBlockState(b.offset(-6,0,-61)).getBlock() instanceof DoorBlock,"the school courtyard is grass and the front doors are real doors");
+        var gap=b.offset(-45,0,-46);
+        h.assertTrue(town.getBlockState(gap.above()).is(DrownedTownRegistry.FIXTURE.get())&&!town.noCollision(null,new AABB(gap.getX()+.2,gap.getY()+.01,gap.getZ()+.2,gap.getX()+.8,gap.getY()+1.8,gap.getZ()+.8))
+            &&town.noCollision(null,new AABB(gap.getX()+.11,gap.getY()+.01,gap.getZ()+.03,gap.getX()+.89,gap.getY()+.95,gap.getZ()+.97)),"the bleachers leave a gap only the witch fits under");
         var interior=HouseTestLevel.get(server);var trailer=LabyrinthPlaces.base(origin,LabyrinthPlace.GOATMAN);var hut=LabyrinthPlaces.base(origin,LabyrinthPlace.HOLLOWAY_CAMP);var archive=LabyrinthPlaces.base(origin,LabyrinthPlace.ZAMPANO_COURTYARD);
         h.assertTrue(interior.getBlockState(trailer.offset(0,7,-65)).is(Blocks.SMOOTH_STONE_SLAB)&&interior.getBlockState(trailer.offset(5,0,-51)).is(Blocks.IRON_BARS),"the trailer has a stepped metal roof and a physical tow frame");
         h.assertTrue(interior.getBlockState(hut.offset(3,3,0)).is(Blocks.STRIPPED_SPRUCE_LOG)&&!interior.getBlockState(hut.offset(0,8,-5)).isAir(),"the dugout has a braced entry and an earth-covered roof");

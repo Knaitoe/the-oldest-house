@@ -117,6 +117,13 @@ public final class LakeLandscape {
         boolean raised=site==LabyrinthPlace.DROWNED_TOWN&&relative.x>=-28&&relative.x<=3&&relative.z>=-63&&relative.z<=-12&&relative.y>=-12&&relative.y<0;
         return position.add(delta.getX(),delta.getY()+(raised?11:0),delta.getZ());
     }
+    /** The rooms as they stood in the interior before 0.4.29; Drowned Town has since grown into Proofrock (0.4.67). */
+    private static net.minecraft.world.level.levelgen.structure.BoundingBox legacyRoom(LabyrinthPlace site){
+        return site==LabyrinthPlace.DROWNED_TOWN?new net.minecraft.world.level.levelgen.structure.BoundingBox(-29,-13,-64,29,8,0):site.room();
+    }
+    private static AABB legacyBounds(BlockPos b,LabyrinthPlace site){
+        var r=legacyRoom(site);return new AABB(b.getX()+r.minX(),b.getY()+r.minY(),b.getZ()+r.minZ(),b.getX()+r.maxX()+1,b.getY()+r.maxY()+1,b.getZ()+18);
+    }
     public static boolean upgradeWorld(MinecraftServer server,BlockPos origin){
         var data=LabyrinthData.get(server);if(data.builtVersion()<14||data.builtVersion()>=23||!origin.equals(data.builtOrigin()))return true;
         var from=server.getLevel(HouseDimensions.INTERIOR);var to=server.getLevel(HouseDimensions.OUTSIDE);if(from==null||to==null)return false;
@@ -132,7 +139,7 @@ public final class LakeLandscape {
                     ||from.getBlockState(old.offset(0,0,1)).getBlock() instanceof DoorBlock;
             if(!exists){progress.putBoolean(site.id(),true);data.setState("lake_landscape_0426",progress);continue;}
             IndianLakeRooms.keepLoaded(from,old,site);
-            var bounds=IndianLakeRooms.bounds(old,site);
+            var bounds=legacyBounds(old,site);
             for(int x=((int)bounds.minX-1)>>4;x<=((int)bounds.maxX+1)>>4;x++)for(int z=((int)bounds.minZ-1)>>4;z<=((int)bounds.maxZ+1)>>4;z++){
                 from.getChunk(x,z);ready&=from.areEntitiesLoaded(ChunkPos.asLong(x,z));
             }
@@ -140,13 +147,13 @@ public final class LakeLandscape {
         if(!ready)return false;
         for(var site:SITES){
             if(progress.getBoolean(site.id()))continue;
-            var dest=LabyrinthPlaces.base(origin,site);var old=LabyrinthPlaces.legacyBase(origin,site).offset(0,0,4096+site.slot()*192);var r=site.room();var delta=dest.subtract(old);
+            var dest=LabyrinthPlaces.base(origin,site);var old=LabyrinthPlaces.legacyBase(origin,site).offset(0,0,4096+site.slot()*192);var r=legacyRoom(site);var delta=dest.subtract(old);
             var cells=capture(from,old.offset(r.minX(),r.minY(),r.minZ()),old.offset(r.maxX(),r.maxY(),18));
             paste(to,cells,delta,false);
             if(site==LabyrinthPlace.DROWNED_TOWN)liftSchool(to,dest);
             dress(to,dest,site);LabyrinthBuilder.registerDoors(data,site,dest);
-            data.remapReturns(w->w.dimension().equals(HouseDimensions.INTERIOR)&&IndianLakeRooms.bounds(old,site).contains(w.pos())?new LabyrinthData.Waypoint(HouseDimensions.OUTSIDE,relocated(site,old,dest,w.pos()),w.yaw(),w.door()):w);
-            List<Entity> roots=new ArrayList<>();for(Entity e:from.getAllEntities())if(!e.isPassenger()&&IndianLakeRooms.bounds(old,site).contains(e.position()))roots.add(e);
+            data.remapReturns(w->w.dimension().equals(HouseDimensions.INTERIOR)&&legacyBounds(old,site).contains(w.pos())?new LabyrinthData.Waypoint(HouseDimensions.OUTSIDE,relocated(site,old,dest,w.pos()),w.yaw(),w.door()):w);
+            List<Entity> roots=new ArrayList<>();for(Entity e:from.getAllEntities())if(!e.isPassenger()&&legacyBounds(old,site).contains(e.position()))roots.add(e);
             for(Entity e:roots){
                 if(e instanceof LakeWitchEntity witch)witch.relocateLandscape(delta);
                 e.changeDimension(new DimensionTransition(to,relocated(site,old,dest,e.position()),e.getDeltaMovement(),e.getYRot(),e.getXRot(),DimensionTransition.DO_NOTHING));
@@ -161,7 +168,7 @@ public final class LakeLandscape {
     @SubscribeEvent public static void login(PlayerEvent.PlayerLoggedInEvent event){
         if(!(event.getEntity() instanceof ServerPlayer p)||!p.level().dimension().equals(HouseDimensions.INTERIOR))return;
         var origin=HouseSavedData.get(p.server).houseOrigin();if(origin==null)return;var state=LabyrinthData.get(p.server).state("lake_landscape_0426");
-        for(var site:SITES){var b=LabyrinthPlaces.base(origin,site);var old=LabyrinthPlaces.legacyBase(origin,site).offset(0,0,4096+site.slot()*192);if(state.getBoolean(site.id())&&IndianLakeRooms.bounds(old,site).contains(p.position())){
+        for(var site:SITES){var b=LabyrinthPlaces.base(origin,site);var old=LabyrinthPlaces.legacyBase(origin,site).offset(0,0,4096+site.slot()*192);if(state.getBoolean(site.id())&&legacyBounds(old,site).contains(p.position())){
             var dest=p.server.getLevel(HouseDimensions.OUTSIDE);if(dest!=null)p.changeDimension(new DimensionTransition(dest,relocated(site,old,b,p.position()),p.getDeltaMovement(),p.getYRot(),p.getXRot(),DimensionTransition.DO_NOTHING));return;
         }}
     }

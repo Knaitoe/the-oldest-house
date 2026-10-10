@@ -13,8 +13,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.Half;
 
-/** A sealed night sky over real source water; all streets and interiors can be swum through. */
+/**
+ * A sealed night sky over real source water; all streets and interiors can be swum through. Since 0.4.67 this is the
+ * town as it stood before Proofrock, kept so saved-world rebuilds can be exercised against its exact old positions.
+ */
 public final class DrownedTownArchitecture {
+    static final BlockPos FURNACE=new BlockPos(13,0,-8),SUPPLIES=new BlockPos(14,0,-8),CHURCH_DOOR=new BlockPos(15,-11,-40),ROOF_HATCH=new BlockPos(15,-4,-43);
     private static final BlockState NIGHT = Blocks.BLACK_CONCRETE.defaultBlockState();
     private static final BlockState WATER = Blocks.WATER.defaultBlockState();
     private static final int F = LabyrinthBuilder.flags();
@@ -67,8 +71,8 @@ public final class DrownedTownArchitecture {
                 Blocks.BUBBLE_COLUMN.defaultBlockState().setValue(BubbleColumnBlock.DRAG_DOWN, false), F);
 
         // The shore furnace is deliberately on bare dirt, several steps from the nearest grass.
-        level.setBlock(base.offset(DrownedTown.FURNACE), Blocks.FURNACE.defaultBlockState().setValue(AbstractFurnaceBlock.FACING, Direction.SOUTH), F);
-        level.setBlock(base.offset(DrownedTown.SUPPLIES), LabyrinthBuilder.barrel(Direction.UP), F);
+        level.setBlock(base.offset(FURNACE), Blocks.FURNACE.defaultBlockState().setValue(AbstractFurnaceBlock.FACING, Direction.SOUTH), F);
+        level.setBlock(base.offset(SUPPLIES), LabyrinthBuilder.barrel(Direction.UP), F);
         level.setBlock(base.offset(-5, 0, -7), LabyrinthBuilder.stairs(Blocks.SPRUCE_STAIRS, Direction.NORTH), F);
         level.setBlock(base.offset(-4, 0, -7), LabyrinthBuilder.stairs(Blocks.SPRUCE_STAIRS, Direction.NORTH), F);
         level.setBlock(base.offset(-6, 1, -7), Blocks.LANTERN.defaultBlockState(), F);
@@ -131,9 +135,9 @@ public final class DrownedTownArchitecture {
         level.setBlock(base.offset(15, -11, -55), Blocks.POLISHED_BLACKSTONE.defaultBlockState(), F);
         level.setBlock(base.offset(15, -10, -55), Blocks.POLISHED_BLACKSTONE_SLAB.defaultBlockState().setValue(SlabBlock.WATERLOGGED, true), F);
         BlockState gate = Blocks.IRON_DOOR.defaultBlockState().setValue(DoorBlock.FACING, Direction.SOUTH);
-        level.setBlock(base.offset(DrownedTown.CHURCH_DOOR), gate.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER), F);
-        level.setBlock(base.offset(DrownedTown.CHURCH_DOOR).above(), gate.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER), F);
-        level.setBlock(base.offset(DrownedTown.ROOF_HATCH), Blocks.IRON_TRAPDOOR.defaultBlockState()
+        level.setBlock(base.offset(CHURCH_DOOR), gate.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER), F);
+        level.setBlock(base.offset(CHURCH_DOOR).above(), gate.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER), F);
+        level.setBlock(base.offset(ROOF_HATCH), Blocks.IRON_TRAPDOOR.defaultBlockState()
                 .setValue(TrapDoorBlock.FACING, Direction.NORTH).setValue(TrapDoorBlock.HALF, Half.TOP)
                 .setValue(TrapDoorBlock.WATERLOGGED, true), F);
         for (int z : new int[]{-45, -50, -55}) for (int y = -9; y <= -7; y++) {
