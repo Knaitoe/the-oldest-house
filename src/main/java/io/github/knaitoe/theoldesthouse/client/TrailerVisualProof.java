@@ -38,7 +38,7 @@ public final class TrailerVisualProof extends Screen {
     }
     @Override public void render(GuiGraphics g,int x,int y,float partial){
         var mc=Minecraft.getInstance();var out=mc.renderBuffers().bufferSource();g.fill(0,0,width,height,0xff22262b);
-        String[] titles={"All nine cousins","Walking and running: consecutive strides","Seated, cowering and laughing: connected joints","Porcelain fixtures, glazed sash, food and stressed door","Tracking behind the shoulders: bounded neck turns","Cooler, native wheels, painted cars and the note post","Institute enamel notices and centered brass room plates","Proofrock streetlights: fitted iron and warm glass","Seven individual fear gestures","Priority voice at the center","Cousins continue between demands"};g.drawString(font,titles[page],8,8,0xffe8e0d3,false);g.flush();
+        String[] titles={"All nine cousins","Walking and running: consecutive strides","Seated, cowering and laughing: connected joints","Porcelain fixtures, glazed sash, food and stressed door","Tracking behind the shoulders: bounded neck turns","Cooler, native wheels, painted cars and the note post","Institute enamel notices and centered brass room plates","Proofrock streetlights: fitted iron and warm glass","Seven individual terror gestures","Priority voice at the center","Cousins continue between demands","First confusion: looking between cousins","Growing fear: distinct upright reactions","Who just ran out?"};g.drawString(font,titles[page],8,8,0xffe8e0d3,false);g.flush();
         if(page>=8){fear(g,out);return;}
         if(page==7){streetlights(g,out);return;}
         if(page<3||page==4){
@@ -76,10 +76,14 @@ public final class TrailerVisualProof extends Screen {
     private void fear(GuiGraphics g,MultiBufferSource.BufferSource out){
         if(page==9){GoatmanClient.renderDialogue(g,font,GoatmanVignette.VIGIL,104,80,13,100,21);return;}
         if(page==10){GoatmanClient.renderDialogue(g,font,GoatmanVignette.VIGIL,0,0,5,100,21);return;}
+        if(page==13){GoatmanClient.renderDialogue(g,font,GoatmanVignette.GATHERING,0,0,22,100,21);return;}
         var mc=Minecraft.getInstance();String[] labels={"bracing the latch","watching the glass","pacing the aisle","comforting a cousin","trembling at the table","covering the ears","startling at a knock"};
+        int stage=page==11?GoatmanFear.CONFUSION:page==12?GoatmanFear.FEAR:GoatmanFear.TERROR;
+        if(stage==GoatmanFear.CONFUSION)labels=new String[]{"looking toward the door","checking the glass","counting who's here","asking a cousin","looking for the runner","listening","questioning the knock"};
+        else if(stage==GoatmanFear.FEAR)labels[5]="listening from the back";
         float cw=(width-16F)/3,ch=(height-30F)/3;
         for(int i=0;i<7;i++){
-            var m=new GoatmanChildModel(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER));m.fearPose(i+1,1.3F,i==2?.075F:0,42+i*11);joints(m);
+            var m=new GoatmanChildModel(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER));m.fearPose(i+1,stage,1.3F,i==2&&stage>=GoatmanFear.FEAR?.075F:0,42+i*11);joints(m);
             var p=g.pose();p.pushPose();p.translate(8+(i%3+.5F)*cw,30+(i/3+1)*ch-10,150);float scale=Math.min(32,ch/2.1F);p.scale(scale,scale,scale);p.mulPose(Axis.YP.rotationDegrees(165));p.translate(0,-1.5,0);
             m.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(skin(i))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);p.popPose();g.drawCenteredString(font,labels[i],(int)(8+(i%3+.5F)*cw),(int)(30+(i/3+1)*ch-9),0xffe8e0d3);
         }out.endBatch();
@@ -110,8 +114,8 @@ public final class TrailerVisualProof extends Screen {
         var mc=Minecraft.getInstance();boolean focused=Boolean.getBoolean("the_oldest_house.trailerSmoke");
         if(!focused&&!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof TrailerVisualProof proof)||++proof.frames<16)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage im=Screenshot.takeScreenshot(mc.getMainRenderTarget())){im.writeToFile(dir.resolve(proof.page>=8?"native-goatman-fear0472-"+(proof.page-8)+".png":proof.page==7?"native-streetlights-0469.png":(proof.page<4?"native-trailer-0465-":"native-playtest-0468-")+proof.page+".png"));}
-        proof.frames=0;if(++proof.page<11)return;
-        Files.writeString(dir.resolve("goatman-fear0472-passed.txt"),"Seven distinct connected fear gestures; centered priority Goatman subtitle with a competing cousin suppressed; continuing cousin subtitle between demands.\n");
+        proof.frames=0;if(++proof.page<14)return;
+        Files.writeString(dir.resolve("goatman-fear0472-passed.txt"),"Seven distinct connected gestures at confusion, fear and terror; centered priority Goatman subtitle with a competing cousin suppressed; continuing cousin subtitle between demands; the actual departure reaction during gathering.\n");
         Files.writeString(dir.resolve("streetlights-0469-passed.txt"),"Three assembled native streetlights: both street-arm directions and the fitted waterlogged lamps of the submerged street.\n");
         TheOldestHouse.LOGGER.info("TRAILER PROOF PASSED: four native views and connected joints");
         Files.writeString(dir.resolve("trailer-0465-passed.txt"),"All nine native cousin atlases; eight walking/running stride poses; connected hips, shoulders and neck in fear/laughter/seating; actual toilet, sink states, sash states, raw/cooked food and door stress rendered in four GPU views.\n");Files.writeString(dir.resolve("playtest-0468-passed.txt"),"Three additional native GPU views: bounded tracking at eight wrap/shoulder boundaries, the cooler/wheels/cars/note post, and all twelve institute signs and number plates.\n");mc.setScreen(new InstituteVisualProof());

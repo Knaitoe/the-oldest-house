@@ -147,12 +147,14 @@ public final class GoatmanTests {
             GoatmanWoods.door(f.l,f.b,true);GoatmanVignette.hurry(f.l,f.b);ids.addAll(f.cousins().stream().map(Entity::getUUID).toList());GoatmanWoods.setWindow(f.l,f.b,true);GoatmanWoods.door(f.l,f.b,false);begun[0]=true;
         }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Clock")>800&&f.run().getInt("Phase")==GoatmanVignette.VIGIL,"the normal evening transition reaches the occupied vigil")).thenExecute(()->{
             var roles=f.cousins().stream().map(GoatmanChild::fear).filter(role->role>0).collect(java.util.stream.Collectors.toSet());
-            h.assertTrue(roles.size()==7&&f.cousins().stream().filter(GoatmanChild::cowering).count()==1,"seven real cousins have distinct reactions; they do not form cowering ranks: "+roles);
+            h.assertTrue(roles.size()==7&&f.cousins().stream().filter(GoatmanChild::cowering).count()==0,"seven real cousins are afraid but still upright before the later demands: "+roles);
             h.assertTrue(paced.size()>2&&paced.stream().anyMatch(at->at.distanceToSqr(paced.getFirst())>4),"the frightened pacer keeps physically moving in the clear aisle");
             h.assertTrue(ids.equals(f.cousins().stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet())),"the entire sequence preserves all eight original cast UUIDs");
             var shivering=f.cousins().stream().filter(c->c.fear()==GoatmanFear.TREMBLE).findFirst().orElseThrow();var saved=shivering.saveWithoutId(new CompoundTag());var restored=GoatmanRegistry.CHILD.get().create(f.l);restored.load(saved);
-            h.assertTrue(restored.fear()==shivering.fear()&&restored.skin()==shivering.skin()&&restored.getUUID().equals(shivering.getUUID()),"native actor serialization keeps its own fear gesture and identity");
-        }).thenWaitUntil(()->h.assertTrue(f.run().getBoolean("AssaultDone0465"),"all physical wall knocks and the door assault finish from normal nightfall")).thenExecute(()->{
+            h.assertTrue(restored.fear()==shivering.fear()&&restored.fearStage()==shivering.fearStage()&&restored.skin()==shivering.skin()&&restored.getUUID().equals(shivering.getUUID()),"native actor serialization keeps its own reaction stage, gesture and identity");
+        }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Clock")>1000,"the later demands escalate the same cousins to terror")).thenExecute(()->{
+            h.assertTrue(f.cousins().stream().filter(c->c.fearStage()==GoatmanFear.TERROR).count()==7&&f.cousins().stream().filter(GoatmanChild::cowering).count()==1,"terror has seven distinct behaviors, with only one cousin covering their ears");
+        }).thenWaitUntil(()->h.assertTrue(f.run().getBoolean("AssaultDone0465")&&GoatmanStalking.circuitDone(f.run()),"all physical circuit legs and the independent door assault finish from normal nightfall")).thenExecute(()->{
             h.assertTrue(demands.size()==7&&lines.size()>=5,"all seven priority demands and continued distinct cousin dialogue reach the real scene packets: "+demands+" / "+lines);
             h.assertTrue(f.run().getInt("ImpactSerial0472")>=20&&f.run().getInt("FinalBlows0465")>=12,"the one native body produces the surrounding knocks and final hard impacts");
             h.assertTrue(!WitnessAccount.has(LabyrinthData.get(f.server),p.getUUID(),WitnessAccount.Story.GOATMAN),"fear and dialogue do not award the unfinished vigil");h.succeed();
@@ -161,12 +163,55 @@ public final class GoatmanTests {
     @GameTest(template="empty")
     public static void deferredCousinWordsSurviveAPriorityDemandAndTheActualPacketCodec(GameTestHelper h){
         var r=new CompoundTag();r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",110);r.putInt("Demand",104);r.putInt("DemandAt",100);r.putInt("FearLine0472",7);r.putInt("FearAt0472",105);
+        r.putBoolean("HorrorStarted0472",true);r.putInt("FearAge0472",110);r.putInt("FearAtAge0472",105);
         GoatmanFear.tick(r,List.of(),110);var priority=GoatmanVignette.scenePayload(r);
         h.assertTrue(priority.demand()==104&&priority.cousinLine()==0&&r.getInt("FearPending0472")==7,"a demand suppresses and queues the interrupted cousin's actual words");
         var saved=r.copy();saved.putInt("Clock",201);GoatmanFear.tick(saved,List.of(),201);var resumed=GoatmanVignette.scenePayload(saved);
         h.assertTrue(resumed.demand()==0&&resumed.cousinLine()==7&&resumed.cousinRemaining()==GoatmanFear.LINE_TICKS,"the queued cousin resumes after the voice, including after saved-state reload");
         var buffer=io.netty.buffer.Unpooled.buffer();try{io.github.knaitoe.theoldesthouse.network.GoatmanScenePayload.STREAM_CODEC.encode(buffer,resumed);h.assertTrue(resumed.equals(io.github.knaitoe.theoldesthouse.network.GoatmanScenePayload.STREAM_CODEC.decode(buffer)),"the native packet codec carries both priority and cousin subtitle leases exactly");}finally{buffer.release();}
         h.succeed();
+    }
+    private static Fixture confusion,pressure;
+    @AfterBatch(batch="goat_confusion0472") public static void cleanConfusion(ServerLevel l){if(confusion!=null){confusion.close();confusion=null;}}
+    @AfterBatch(batch="goat_pressure0472") public static void cleanPressure(ServerLevel l){if(pressure!=null){pressure.close();pressure=null;}}
+    @GameTest(template="empty",batch="goat_confusion0472",timeoutTicks=2200)
+    public static void anActualDepartureStartsQuestionsAndTheReturnedCousinGetsAResponse(GameTestHelper h){
+        confusion=new Fixture(h,32200);var f=confusion;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        var lines=new HashSet<Integer>();boolean[] begun={false};
+        h.onEachTick(()->{if(begun[0]){int line=GoatmanVignette.scenePayload(f.run()).cousinLine();if(line>0)lines.add(line);}});
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the real departure scene is loaded")).thenExecute(()->{
+            GoatmanVignette.enter(p);var r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.BACK0465-1);r.putInt("ExtraState",GoatmanVignette.X_FIRE);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);f.cohort(r,List.of(p),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);GoatmanVignette.hurry(f.l,f.b);GoatmanWoods.door(f.l,f.b,false);
+            h.assertTrue(GoatmanFear.stage(f.run())==0&&GoatmanVignette.scenePayload(f.run()).cousinLine()==0&&f.cousins().stream().noneMatch(c->c.fear()>0||c.cowering()),"ordinary supper has no premature frightened dialogue or hiding");begun[0]=true;
+        }).thenWaitUntil(()->h.assertTrue(lines.contains(22),"the actual kid running from the fire toward the glass triggers 'Who just ran out, then?'")).thenExecute(()->{
+            h.assertTrue(GoatmanFear.stage(f.run())==GoatmanFear.CONFUSION&&f.cousins().stream().noneMatch(GoatmanChild::cowering),"the first disturbance starts questions rather than terror");
+            var data=LabyrinthData.get(f.server);var loaded=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),f.l.registryAccess()),f.l.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);
+            h.assertTrue(f.run().getBoolean("FearDeparture0472")&&f.run().getIntArray("FearQueue0472").length==2,"the remaining contradictory reactions survive native world-state reload");
+        }).thenWaitUntil(()->h.assertTrue(lines.containsAll(Set.of(22,23,24)),"children continue: you were just here; who came back in?")).thenExecute(()->{
+            var r=f.run();r.putInt("RunnerState",GoatmanVignette.R_KNOCKING);f.run(r);var runner=f.cousin(r.getInt("Runner")).orElseThrow();runner.moveTo(f.b.getX()+.5,f.b.getY()+1,f.b.getZ()-53.8);runner.getPersistentData().remove("Route");f.use(p,GoatmanWoods.DOOR);
+        }).thenWaitUntil(()->h.assertTrue(lines.contains(26)&&f.run().getInt("RunnerState")==GoatmanVignette.R_INSIDE,"the cousin's actual admission prompts a reaction to his return")).thenExecute(()->{
+            h.assertTrue(f.cousins().stream().noneMatch(GoatmanChild::cowering),"confusion and early fear do not put children in hiding");h.succeed();
+        });
+    }
+    @GameTest(template="empty",batch="goat_pressure0472",timeoutTicks=5000)
+    public static void blockedMovementCannotSilenceTheNightAndTheSameBodyStillFinishesEveryLeg(GameTestHelper h){
+        pressure=new Fixture(h,31900);var f=pressure;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        var barriers=new HashMap<BlockPos,net.minecraft.world.level.block.state.BlockState>();var demands=new HashSet<Integer>();UUID[] body={null};boolean[] begun={false};
+        h.onEachTick(()->{
+            if(!begun[0])return;var r=f.run();var packet=GoatmanVignette.scenePayload(r);if(packet.demand()>=101){demands.add(packet.demand());h.assertTrue(packet.cousinLine()==0,"the actual demand packets suppress cousin words even while movement is blocked");}
+            if(r.getInt("Clock")<120)h.assertTrue(GoatmanFear.stage(r)==0&&packet.cousinLine()==0&&f.cousins().stream().noneMatch(GoatmanChild::cowering),"the occupied night is ordinary until an actual audible disturbance");
+        });
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native collision and entity sections are ready")).thenExecute(()->{
+            GoatmanVignette.enter(p);var r=f.run();r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",0);r.putInt("ExtraState",GoatmanVignette.X_DOOR);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);f.cohort(r,List.of(p),0);f.run(r);GoatmanWoods.door(f.l,f.b,false);GoatmanWoods.setWindow(f.l,f.b,true);GoatmanVignette.stage(f.l,f.b,r);
+            var it=f.cousin(r.getInt("Wrong")).orElseThrow();body[0]=it.getUUID();var cell=f.b.offset(-6,0,-50);it.moveTo(cell.getX()+.5,cell.getY(),cell.getZ()+.5);
+            for(int x=-1;x<=1;x++)for(int z=-1;z<=1;z++)if(Math.abs(x)==1||Math.abs(z)==1)for(int y=0;y<4;y++){var at=cell.offset(x,y,z);barriers.put(at,f.l.getBlockState(at));f.l.setBlockAndUpdate(at,Blocks.OBSIDIAN.defaultBlockState());}begun[0]=true;
+        }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Clock")>135,"the first spatial cue has sounded")).thenExecute(()->{
+            h.assertTrue(GoatmanFear.stage(f.run())==GoatmanFear.CONFUSION&&f.run().getInt("PressureCues0472")==1&&f.run().getInt("StalkLeg0465")==0,"a real collision stall cannot suppress the first knock or confused response");
+        }).thenWaitUntil(()->h.assertTrue(f.run().getBoolean("AssaultDone0465"),"all seven audible demands finish on their own occupied clock")).thenExecute(()->{
+            var r=f.run();h.assertTrue(demands.size()==7&&r.getInt("PressureCues0472")==7&&r.getInt("FinalBlows0465")>=12&&r.getInt("StalkLeg0465")==0&&r.getInt("StalkWindowLeg0465")==0,"words, surrounding cues and hard blows remain present without skipping any blocked circuit leg");
+            barriers.forEach(f.l::setBlockAndUpdate);
+        }).thenWaitUntil(()->h.assertTrue(GoatmanStalking.circuitDone(f.run())&&f.run().getInt("StalkWindowLeg0465")==4,"after the obstruction clears, the original native body completes all circuit legs before its full window approach: leg="+f.run().getInt("StalkLeg0465")+" window="+f.run().getInt("StalkWindowLeg0465")+" clock="+f.run().getInt("Clock"))).thenExecute(()->{
+            h.assertTrue(f.cousin(f.run().getInt("Wrong")).orElseThrow().getUUID().equals(body[0]),"independent cue timing never replaces or teleports the original Goatman body");h.succeed();
+        });
     }
     private static Fixture stalking,disguises,fixtures,sharedSupper,spawn;
     private static java.util.function.Consumer<net.neoforged.neoforge.event.entity.EntityJoinLevelEvent> spawnObserver;
@@ -215,7 +260,7 @@ public final class GoatmanTests {
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the circuit's native blocks and entity sections are ready")).thenExecute(()->{
             GoatmanVignette.enter(p);var r=f.run();r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",0);r.putInt("ExtraState",GoatmanVignette.X_DOOR);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);f.cohort(r,List.of(p),0);f.run(r);
             GoatmanWoods.door(f.l,f.b,false);GoatmanWoods.setWindow(f.l,f.b,true);GoatmanVignette.stage(f.l,f.b,r);var it=f.cousin(r.getInt("Wrong")).orElseThrow();identity[0]=it.getUUID();skin[0]=it.skin();it.moveTo(new Vec3(-6,0,-49.6).add(f.b.getX(),f.b.getY(),f.b.getZ()));started[0]=true;
-        }).thenWaitUntil(()->h.assertTrue(f.run().getBoolean("AssaultDone0465"),"the physical circuit and assault finish: leg="+f.run().getInt("StalkLeg0465")+" clock="+f.run().getInt("Clock")+" body="+f.cousin(f.run().getInt("Wrong")).map(c->f.rel(c).toString()).orElse("missing"))).thenExecute(()->{
+        }).thenWaitUntil(()->h.assertTrue(f.run().getBoolean("AssaultDone0465")&&GoatmanStalking.circuitDone(f.run()),"the complete physical circuit and assault finish: leg="+f.run().getInt("StalkLeg0465")+" clock="+f.run().getInt("Clock")+" body="+f.cousin(f.run().getInt("Wrong")).map(c->f.rel(c).toString()).orElse("missing"))).thenExecute(()->{
             var r=f.run();var it=f.cousin(r.getInt("Wrong")).orElseThrow();h.assertTrue(it.getUUID().equals(identity[0])&&it.skin()==skin[0],"the original saved actor and identity survive every disguise and route leg");
             h.assertTrue(demands.equals(List.of(101,102,103,104,105,106,107)),"all seven demands occur once and in order: "+demands);
             h.assertTrue(impacts.contains(f.b.offset(-8,2,-59).asLong())&&impacts.contains(f.b.offset(8,2,-59).asLong())&&impacts.contains(f.b.offset(0,2,-77).asLong()),"window and wall impacts originate on both sides and behind the house");

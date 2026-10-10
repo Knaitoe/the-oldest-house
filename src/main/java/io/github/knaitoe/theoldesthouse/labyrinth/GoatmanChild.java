@@ -22,6 +22,7 @@ public final class GoatmanChild extends PathfinderMob {
     private static final EntityDataAccessor<Boolean> HEAVE=SynchedEntityData.defineId(GoatmanChild.class,EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Integer> FEAR=SynchedEntityData.defineId(GoatmanChild.class,EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DISGUISE=SynchedEntityData.defineId(GoatmanChild.class,EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> FEAR_STAGE=SynchedEntityData.defineId(GoatmanChild.class,EntityDataSerializers.INT);
     /** A seated child's hips sit this far above its feet (seven model pixels at child scale). */
     public static final double HIPS=7/16D*.7;
     public GoatmanChild(EntityType<? extends GoatmanChild> type,Level level){
@@ -29,10 +30,12 @@ public final class GoatmanChild extends PathfinderMob {
     }
     public static AttributeSupplier.Builder attributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,20).add(Attributes.SCALE,.7).add(Attributes.MOVEMENT_SPEED,0);}
     @Override protected void defineSynchedData(SynchedEntityData.Builder b){
-        super.defineSynchedData(b);b.define(SKIN,0);b.define(TELLS,0);b.define(VIEWER,Optional.empty());b.define(WALK,0F);b.define(SPEED,0F);b.define(SEATED,false);b.define(HEAVE,false);b.define(COWER,false);b.define(DISGUISE,-1);b.define(FEAR,0);
+        super.defineSynchedData(b);b.define(SKIN,0);b.define(TELLS,0);b.define(VIEWER,Optional.empty());b.define(WALK,0F);b.define(SPEED,0F);b.define(SEATED,false);b.define(HEAVE,false);b.define(COWER,false);b.define(DISGUISE,-1);b.define(FEAR,0);b.define(FEAR_STAGE,0);
     }
     public int fear(){return entityData.get(FEAR);}
     public void fear(int role){entityData.set(FEAR,Math.max(0,Math.min(7,role)));}
+    public int fearStage(){return entityData.get(FEAR_STAGE);}
+    public void fearStage(int stage){entityData.set(FEAR_STAGE,Math.max(0,Math.min(3,stage)));}
     public int skin(){return entityData.get(SKIN);}
     public int visibleSkin(){return entityData.get(DISGUISE)>=0?entityData.get(DISGUISE):skin();}
     public boolean monsterAppearance(){return entityData.get(DISGUISE)==-2;}
@@ -62,9 +65,9 @@ public final class GoatmanChild extends PathfinderMob {
     @Override public boolean hurt(DamageSource source,float damage){return false;}
     @Override public boolean removeWhenFarAway(double distance){return false;}
     @Override public void addAdditionalSaveData(CompoundTag t){
-        super.addAdditionalSaveData(t);t.putInt("Skin",skin());t.putInt("Tells",tells());t.putFloat("Walk",entityData.get(WALK));t.putBoolean("Seated",seated());t.putBoolean("Cowering",cowering());t.putBoolean("Heaving",heaving());t.putInt("Disguise0465",entityData.get(DISGUISE));t.putInt("Fear0472",fear());viewer().ifPresent(id->t.putUUID("Viewer",id));
+        super.addAdditionalSaveData(t);t.putInt("Skin",skin());t.putInt("Tells",tells());t.putFloat("Walk",entityData.get(WALK));t.putBoolean("Seated",seated());t.putBoolean("Cowering",cowering());t.putBoolean("Heaving",heaving());t.putInt("Disguise0465",entityData.get(DISGUISE));t.putInt("Fear0472",fear());t.putInt("FearStage0472",fearStage());viewer().ifPresent(id->t.putUUID("Viewer",id));
     }
     @Override public void readAdditionalSaveData(CompoundTag t){
-        super.readAdditionalSaveData(t);fear(t.getInt("Fear0472"));appearance(t.getInt("Skin"),t.getInt("Tells"),t.hasUUID("Viewer")?t.getUUID("Viewer"):null);entityData.set(WALK,t.getFloat("Walk"));entityData.set(SEATED,t.getBoolean("Seated"));entityData.set(COWER,t.getBoolean("Cowering"));heave(t.getBoolean("Heaving"));disguise(t.contains("Disguise0465")?t.getInt("Disguise0465"):-1);
+        super.readAdditionalSaveData(t);fear(t.getInt("Fear0472"));fearStage(t.getInt("FearStage0472"));appearance(t.getInt("Skin"),t.getInt("Tells"),t.hasUUID("Viewer")?t.getUUID("Viewer"):null);entityData.set(WALK,t.getFloat("Walk"));entityData.set(SEATED,t.getBoolean("Seated"));entityData.set(COWER,t.getBoolean("Cowering"));heave(t.getBoolean("Heaving"));disguise(t.contains("Disguise0465")?t.getInt("Disguise0465"):-1);
     }
 }

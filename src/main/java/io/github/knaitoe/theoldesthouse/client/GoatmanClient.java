@@ -58,11 +58,12 @@ public final class GoatmanClient {
             }
             return;
         }
-        if(phase!=GoatmanVignette.VIGIL||childRemaining<=0||child<=0)return;
+        if(phase!=GoatmanVignette.VIGIL&&phase!=GoatmanVignette.GATHERING||childRemaining<=0||child<=0)return;
         var rows=font.split(net.minecraft.network.chat.Component.literal(GoatmanFear.line(child)),Math.max(80,Math.min(440,g.guiWidth()-40)));
         int y=g.guiHeight()-65-rows.size()*11;g.fill(16,y-4,g.guiWidth()-16,y+rows.size()*11+3,0x44000000);
         for(int i=0;i<rows.size();i++)g.drawCenteredString(font,rows.get(i),g.guiWidth()/2,y+i*11,0xFFC6BFB4);
     }
+    public static boolean night(){return phase==GoatmanVignette.VIGIL;}
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
     public static final class Registration {
         @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){
