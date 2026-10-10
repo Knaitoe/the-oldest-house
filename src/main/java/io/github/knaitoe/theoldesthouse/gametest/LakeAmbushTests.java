@@ -85,6 +85,8 @@ public final class LakeAmbushTests {
         var s=h.getLevel().getServer();var l=HouseTestLevel.get(s,HouseDimensions.OUTSIDE);var prior=LabyrinthData.get(s);var d=new LabyrinthData();s.overworld().getDataStorage().set("the_oldest_house_labyrinth",d);
         var b=new BlockPos(87500,60,87500);
         try{
+            // Proofrock reaches well beyond the old shore: its chunks are loaded first, as a real arrival's tickets would hold them.
+            for(int cx=(b.getX()-65)>>4;cx<=(b.getX()+65)>>4;cx++)for(int cz=(b.getZ()-129)>>4;cz<=(b.getZ()+18)>>4;cz++)l.getChunk(cx,cz);
             // The town as a saved world held it before 0.4.67: its raised school, a depleted desk, fuel in the furnace, an air door in the lake.
             DrownedTownArchitecture.build(l,b);LakeLandscape.liftSchool(l,b);
             var desk=(net.minecraft.world.Container)l.getBlockEntity(b.offset(-23,1,-33));var original=new ItemStack(Items.DIAMOND,2);original.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("Kept"));
