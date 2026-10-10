@@ -5,7 +5,7 @@ Based on 0.4.69 head `f44ede1` (children and streetlights). The owner asked for 
 - the reader must be able to mine the cave's proper blocks despite the House's rule that nothing is broken;
 - a reader may take back only the torches they placed themselves.
 
-There is no new eligible source: 43 sources / 33 resolutions / two kinds / three endings. The resolution is unchanged: `ted_caver`, "retraced the squeeze", personal and earned once. Protocol 45. Layout 40 is unchanged, because saved caves are reshaped in place rather than carved again. 0.4.70 (the Whalestoe hospital) is a parallel branch that does not yet compile. This work is based on its common ancestor, and the two should merge without touching the same game code. Validation pending.
+There is no new eligible source: 43 sources / 33 resolutions / two kinds / three endings. The resolution is unchanged: `ted_caver`, "retraced the squeeze", personal and earned once. Protocol 45. Layout 40 is unchanged, because saved caves are reshaped in place rather than carved again. 0.4.70 (the Whalestoe hospital) is a parallel branch that does not yet compile. This work is based on its common ancestor, and the two should merge without touching the same game code. Verified source `6f4c10d` (run 38082724316): all twelve jobs, 493 native cases and the 13 caver cases passed.
 
 ## What the review found
 

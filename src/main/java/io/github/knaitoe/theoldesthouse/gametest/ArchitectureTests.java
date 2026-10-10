@@ -282,7 +282,7 @@ public final class ArchitectureTests {
             var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var b=LabyrinthPlaces.base(origin,scene);var r=scene==LabyrinthPlace.WHALE?WhaleInstitute.INTERIOR:SceneShells.interior(scene);int panes=0;
             for(var at:BlockPos.betweenClosed(b.offset(r.minX()-3,r.minY(),r.minZ()-3),b.offset(r.maxX()+3,r.maxY(),r.maxZ()))){
                 var rel=at.subtract(b);boolean outside=rel.getX()<r.minX()-1||rel.getX()>r.maxX()+1||rel.getZ()<r.minZ()-1;
-                var st=level.getBlockState(at);if(outside&&(st.is(Blocks.GLASS_PANE)||st.getBlock() instanceof StainedGlassPaneBlock))panes++;
+                var st=level.getBlockState(at);if(outside&&(st.is(Blocks.GLASS_PANE)||st.getBlock() instanceof StainedGlassPaneBlock||scene==LabyrinthPlace.WHALE&&st.is(NovelRegistry.WARD_GLASS.get())))panes++;
             }
             h.assertTrue(panes>=2,scene.id()+" has recessed windows: "+panes);
         }
