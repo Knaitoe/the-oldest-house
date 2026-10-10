@@ -15,10 +15,10 @@ import net.minecraft.world.entity.Entity;
 /** One saved cousin body circles the house. Only its presentation changes, between unseen sightings. */
 public final class GoatmanStalking {
     private static final Vec3[] CIRCUIT={
-        new Vec3(-5.5,0,-53.5),new Vec3(-9.25,0,-54.5),new Vec3(-9.25,0,-58.5),
-        new Vec3(-9.25,0,-66.5),new Vec3(-9.25,0,-72.5),new Vec3(-9.25,0,-78.5),
+        new Vec3(-5.5,0,-53.5),new Vec3(-9.25,0,-54.5),new Vec3(-8.5,1,-58.5),
+        new Vec3(-9.25,0,-66.5),new Vec3(-8.5,1,-72.5),new Vec3(-9.25,0,-78.5),
         new Vec3(.5,0,-78.5),new Vec3(10.25,0,-78.5),new Vec3(10.25,0,-74.5),
-        new Vec3(10.25,0,-66.5),new Vec3(10.25,0,-58.5),new Vec3(10.25,0,-53.5),
+        new Vec3(10.25,0,-66.5),new Vec3(9.5,1,-58.5),new Vec3(10.25,0,-53.5),
         new Vec3(5.5,0,-53.5),new Vec3(.5,0,-51.5),new Vec3(.5,.5,-52.6),new Vec3(.5,1,-53.8)
     };
     private static final Vec3[] TO_WINDOW={new Vec3(5.5,0,-53.5),new Vec3(10.25,0,-53.5),new Vec3(10.25,0,-66.5),new Vec3(10.25,0,-74.5)};

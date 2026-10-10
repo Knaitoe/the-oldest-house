@@ -39,6 +39,10 @@ neoForge {
                 systemProperty 'the_oldest_house.fontSmoke', 'true'
                 programArguments.addAll '--width', '1200', '--height', '800'
             }
+            if (providers.gradleProperty('trailerSmoke').isPresent()) {
+                systemProperty 'the_oldest_house.trailerSmoke', 'true'
+                programArguments.addAll '--width', '1200', '--height', '800'
+            }
         }
 
         server {

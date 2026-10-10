@@ -7,11 +7,17 @@ from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
 A = ROOT / 'src/main/resources/assets/the_oldest_house'
+MANIFEST = ROOT / 'art/inventory/cast_0465.json'
+APPROVED = {entry['path'] for entry in json.loads(MANIFEST.read_text())['approved_textures']} if MANIFEST.exists() else set()
 
 def save_json(path, data):
     (A / path).write_text(json.dumps(data, indent=2) + '\n')
 
 def save_image(path, image):
+    if (A / path).relative_to(ROOT).as_posix() in APPROVED:
+        if not (A / path).is_file():
+            raise FileNotFoundError(f'Restore the approved texture from git: {path}')
+        return
     (A / path).parent.mkdir(parents=True, exist_ok=True)
     image.save(A / path)
 

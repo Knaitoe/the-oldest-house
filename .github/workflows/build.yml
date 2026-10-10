@@ -932,6 +932,35 @@ jobs:
             run-live/*/logs/latest.log
             run-live/*/crash-reports/
 
+  trailer-client:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Native child joints, strides and textured fixtures
+        timeout-minutes: 6
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 5m gradle runClient -PtrailerSmoke --no-daemon
+          test -s build/font-smoke/trailer-0465-passed.txt
+          for page in 0 1 2 3; do test -s build/font-smoke/native-trailer-0465-$page.png; done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trailer-rendering-${{ github.sha }}
+          path: |
+            build/font-smoke/native-trailer-0465-*.png
+            build/font-smoke/trailer-0465-passed.txt
+            run/logs/latest.log
+            run/crash-reports/
+
   goatman-gameplay:
     runs-on: ubuntu-latest
     steps:
