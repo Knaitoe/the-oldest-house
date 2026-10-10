@@ -21,7 +21,7 @@ public final class TrailerDoorBlockEntity extends BlockEntity {
     public int stress(){return stress;}
     public void resetStress(){impactAt=Long.MIN_VALUE;stress=0;strength=0;setChanged();if(level!=null)level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),3);}
     @Override protected void saveAdditional(CompoundTag t,HolderLookup.Provider r){super.saveAdditional(t,r);t.putInt("Stress",stress);}
-    @Override protected void loadAdditional(CompoundTag t,HolderLookup.Provider r){super.loadAdditional(t,r);stress=Mth.clamp(t.getInt("Stress"),0,20);impactAt=Long.MIN_VALUE;strength=0;}
+    @Override protected void loadAdditional(CompoundTag t,HolderLookup.Provider r){super.loadAdditional(t,r);stress=Mth.clamp(t.getInt("Stress"),0,20);impactAt=t.contains("ImpactAt")?t.getLong("ImpactAt"):Long.MIN_VALUE;strength=Mth.clamp(t.getInt("Strength"),0,3);}
     @Override public CompoundTag getUpdateTag(HolderLookup.Provider r){var t=new CompoundTag();saveAdditional(t,r);t.putLong("ImpactAt",impactAt);t.putInt("Strength",strength);return t;}
     @Override public void handleUpdateTag(CompoundTag t,HolderLookup.Provider r){loadAdditional(t,r);impactAt=t.getLong("ImpactAt");strength=Mth.clamp(t.getInt("Strength"),0,3);}
     @Override public ClientboundBlockEntityDataPacket getUpdatePacket(){return ClientboundBlockEntityDataPacket.create(this);}

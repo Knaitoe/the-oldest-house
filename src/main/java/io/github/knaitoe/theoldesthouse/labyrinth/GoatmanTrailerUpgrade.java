@@ -22,6 +22,7 @@ public final class GoatmanTrailerUpgrade {
     private GoatmanTrailerUpgrade(){}
     public static boolean apply(ServerLevel l,BlockPos b){
         var data=LabyrinthData.get(l.getServer());var done=data.state(STATE);String key=Long.toString(b.asLong());if(done.getBoolean(key))return true;
+        for(var target:new BlockPos[]{b.offset(GoatmanWoods.TOILET),b.offset(GoatmanWoods.SINK),b.offset(GoatmanWoods.WINDOW),b.offset(GoatmanWoods.DOOR)})if(!l.hasChunkAt(target)||!l.areEntitiesLoaded(ChunkPos.asLong(target.getX()>>4,target.getZ()>>4)))return false;
         var changes=new LinkedHashMap<BlockPos,BlockState>();
         var toilet=b.offset(GoatmanWoods.TOILET);var old=l.getBlockState(toilet);
         if(old.is(Blocks.QUARTZ_STAIRS)&&old.getValue(StairBlock.FACING)==Direction.EAST){

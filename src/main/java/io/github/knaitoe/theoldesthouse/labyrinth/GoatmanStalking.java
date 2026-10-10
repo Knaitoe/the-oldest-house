@@ -8,7 +8,9 @@ import net.minecraft.server.level.*;
 import net.minecraft.sounds.*;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.*;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.entity.Entity;
 
 /** One saved cousin body circles the house. Only its presentation changes, between unseen sightings. */
 public final class GoatmanStalking {
@@ -32,10 +34,29 @@ public final class GoatmanStalking {
     }
     public static boolean obscured(ServerLevel l,GoatmanChild c){
         for(var p:l.players()){
-            var to=c.getEyePosition().subtract(p.getEyePosition());double d=to.length();
-            if(d<72&&d>.01&&p.getLookAngle().dot(to.scale(1/d))>-.15&&p.hasLineOfSight(c))return false;
+            Entity camera=p.getCamera();var eye=camera.getEyePosition();
+            // Include the taller skull/horns before changing either presentation, and the actual spectator camera.
+            for(double y:new double[]{.15,.8,1.3,2.0,2.65})for(double x:new double[]{-.3,0,.3}){
+                var point=c.position().add(x,y,0);var to=point.subtract(eye);double d=to.length();
+                if(d<72&&d>.01&&camera.getLookAngle().dot(to.scale(1/d))>-.15&&visible(l,camera,eye,point))return false;
+            }
         }
         return true;
+    }
+    /** Native outlines occlude; the trailer's clear glazing does not hide a visible texture change. */
+    private static boolean visible(ServerLevel l,Entity camera,Vec3 from,Vec3 to){
+        var direction=to.subtract(from).normalize();var start=from;
+        for(int i=0;i<12;i++){
+            var hit=l.clip(new ClipContext(start,to,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,camera));if(hit.getType()==HitResult.Type.MISS)return true;
+            var pos=hit.getBlockPos();var state=l.getBlockState(pos);
+            if(!state.is(Blocks.GLASS)&&!state.is(Blocks.GLASS_PANE)&&!state.is(GoatmanRegistry.WINDOW.get())&&!(state.getBlock() instanceof StainedGlassBlock)&&!(state.getBlock() instanceof StainedGlassPaneBlock))return false;
+            var at=hit.getLocation();double exit=Double.POSITIVE_INFINITY;
+            if(Math.abs(direction.x)>1e-7)exit=Math.min(exit,((direction.x>0?pos.getX()+1:pos.getX())-at.x)/direction.x);
+            if(Math.abs(direction.y)>1e-7)exit=Math.min(exit,((direction.y>0?pos.getY()+1:pos.getY())-at.y)/direction.y);
+            if(Math.abs(direction.z)>1e-7)exit=Math.min(exit,((direction.z>0?pos.getZ()+1:pos.getZ())-at.z)/direction.z);
+            start=at.add(direction.scale(Math.max(0,exit)+.001));if(start.subtract(from).lengthSqr()>=to.subtract(from).lengthSqr())return true;
+        }
+        return false;
     }
     private static void change(ServerLevel l,CompoundTag r,GoatmanChild c){
         if(!r.getBoolean("StalkChange0465")||!obscured(l,c))return;
