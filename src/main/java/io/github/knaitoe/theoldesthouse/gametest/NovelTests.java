@@ -72,7 +72,8 @@ public final class NovelTests {
             var source=letter(p,"This is the actual lectern original, not the default text.");var sourceAt=f.b.offset(WhaleInstitute.LECTERN);f.l.setBlock(sourceAt,Blocks.LECTERN.defaultBlockState(),2);((LecternBlockEntity)f.l.getBlockEntity(sourceAt)).setBook(source);
             var own=f.own(p);var sent=new CompoundTag();sent.putInt("Sent",2);sent.putString("Exact","An earlier private exchange");own.put(WhaleInstitute.KEY,sent);NovelVignettes.save(f.data(),p.getUUID(),own);
             h.assertTrue(!WhaleHospital.apply(f.l,f.b),"a camera in the institute holds the whole in-place repair");p.moveTo(100,80,100);
-            var cat=EntityType.CAT.create(f.l);cat.setNoAi(true);cat.moveTo(f.b.getX()+4.5,f.b.getY(),f.b.getZ()-22.5);cat.setOwnerUUID(p.getUUID());cat.setHealth(4);f.l.addFreshEntity(cat);f.extra.add(cat);var id=cat.getUUID();
+            var cat=EntityType.CAT.create(f.l);h.assertTrue(cat!=null,"the native resident is created");cat.setNoAi(true);cat.moveTo(f.b.getX()+4.5,f.b.getY(),f.b.getZ()-22.5);cat.tame(p);cat.setHealth(4);var id=cat.getUUID();
+            h.assertTrue(f.l.addFreshEntity(cat)&&f.l.getEntity(id)==cat,"the actual owned resident passes native spawn rules and is registered before testing its guard");f.extra.add(cat);
             h.assertTrue(!WhaleHospital.apply(f.l,f.b),"a living resident holds the refit even after the camera leaves");cat.moveTo(100,80,110);
             h.assertTrue(WhaleHospital.apply(f.l,f.b),"the unseen, vacant, loaded ward is repaired in place");var cabinet=(InstituteCabinetBlockEntity)f.l.getBlockEntity(at);
             h.assertTrue(cabinet.getContainerSize()==27&&ItemStack.isSameItemSameComponents(cabinet.getItem(26),original)&&cabinet.getName().getString().equals("Custom ward drawer"),"the same slot, exact item components and native custom name survive the barrel conversion");

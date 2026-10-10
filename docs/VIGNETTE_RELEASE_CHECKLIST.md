@@ -19,7 +19,7 @@ Whalestoe receives native hospital materials, furniture and readable bedside not
 
 ## Earlier candidate: 0.4.71
 
-Ted the Caver is reworked in its existing slot. TED_CAVER stays one eligible source with the same personal resolution (`retraced_the_squeeze`): still 43 sources / 33 resolutions / two kinds / three endings. Native coverage includes a walking-route search proving the stone is the only way on, front-block-only rubble mining and strokes, per-placer torch ownership, the shared breath clock and its inhale-only stone, each reader's own line, the 25-second low-chamber stay and full escape, later-arrival echoes and the guarded saved-cave reshaping with kept work and refunded torches. Layout 40 / protocol 45. See [the caver record](TED_CAVER_0_4_71.md).
+Ted the Caver is reworked in its existing slot. TED_CAVER stays one eligible source with the same personal resolution (`retraced_the_squeeze`): still 43 sources / 33 resolutions / two kinds / three endings. Native coverage includes a walking-route search proving the stone is the only way on, front-block-only rubble mining and strokes, per-placer torch ownership, the shared breath clock and its inhale-only stone, each reader's own line, the 25-second low-chamber stay and full escape, later-arrival echoes and the guarded saved-cave reshaping with kept work and refunded torches. Layout 40 / protocol 45. Verified source `6f4c10d` (run 38082724316): all twelve jobs, 493 native cases and the 13 caver cases passed. See [the caver record](TED_CAVER_0_4_71.md).
 
 ## Earlier candidate: 0.4.69
 
