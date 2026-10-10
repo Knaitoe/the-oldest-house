@@ -45,7 +45,7 @@ public final class LakeWitchModel extends PlayerModel<LakeWitchEntity> {
     }
     @Override public void setupAnim(LakeWitchEntity e,float walk,float speed,float age,float yaw,float pitch){
         resetBody();super.setupAnim(e,walk,speed,age,yaw,pitch);
-        if(e.memory()){leftArm.xRot=-.2F;rightArm.xRot=-.25F;head.xRot=.25F;copyClothes();return;}
+        if(e.memory()){leftArm.xRot=-.2F;rightArm.xRot=-.25F;head.xRot=.25F;var motion=HumanoidMotion.sample(e,age-e.tickCount);HumanoidMotion.gait(this,motion.phase(),motion.amount(),motion.running());body.yRot=.02F*(float)Math.sin(age*.04F+e.getId());HumanoidMotion.connect(this);copyClothes();return;}
         huntPose(walk,speed,age,e.huntPhase(),e.striking());
         lookPose(yaw,pitch);
         attackPose(attackTime,e.biting(),e.striking());

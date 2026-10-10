@@ -30,22 +30,38 @@ import net.neoforged.neoforge.gametest.*;
 @PrefixGameTestTemplate(false)
 public final class GoatmanTests {
     private static Fixture supper;
-    @GameTest(template="empty",batch="goat_supper",timeoutTicks=100)
-    public static void freshPacketsOpenIntoFourFiniteFranksAndPlayersServeWithoutFreezingAnEvening(GameTestHelper h){
-        supper=new Fixture(h,28600);var f=supper;var p=f.player();h.assertTrue(GoatmanVignette.enter(p),"the child joins a fresh evening");
-        var r=f.run();h.assertTrue(GoatmanVignette.count(r)==8,"a fresh round stages eight apparent cousins");
-        r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.SUPPER+20);r.putInt("Expected",8);r.putInt("Pan",0);f.cohort(r,List.of(p),0);f.run(r);
+    @GameTest(template="empty",batch="goat_supper",timeoutTicks=2400)
+    public static void freshPacketsOpenIntoFourRawFranksCookInOccupiedTimeAndPlayersServe(GameTestHelper h){
+        supper=new Fixture(h,28600);var f=supper;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the meal's native item and entity sections are ready")).thenExecute(()->{
+        h.assertTrue(GoatmanVignette.enter(p),"the child joins a fresh evening");
+        var r=f.run();h.assertTrue(GoatmanVignette.count(r)==8&&GoatmanVignette.fresh(r),"a fresh round stages eight apparent cousins with the new evening");
+        r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.SUPPER0465-1);r.putInt("Expected",8);r.putInt("Pan",0);f.cohort(r,List.of(p),0);f.run(r);
         p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);f.click(p,GoatmanWoods.STOVE);
-        h.assertTrue(p.getMainHandItem().is(GoatmanRegistry.FRANKS.get())&&f.run().getInt("PacketsIssued0464")==1,"a real stove interaction gives one finite unopened pack");
-        f.click(p,GoatmanWoods.STOVE);h.assertTrue(p.getMainHandItem().is(GoatmanRegistry.BRAT.get())&&p.getMainHandItem().getCount()==4,"opening the held pack produces exactly four franks in that hand");
-        f.click(p,new BlockPos(-1,1,-61));f.click(p,new BlockPos(-1,1,-61));
-        h.assertTrue(p.getMainHandItem().getCount()==3&&Integer.bitCount(f.run().getInt("Plated0464"))==1,"serving consumes one frank; clicking the same plate cannot double serve it");
-        f.click(p,GoatmanWoods.STOVE);p.getInventory().selected=1;h.assertTrue(p.getMainHandItem().is(GoatmanRegistry.FRANKS.get()),"the second pack is still unopened");f.click(p,GoatmanWoods.STOVE);
-        h.assertTrue(p.getInventory().countItem(GoatmanRegistry.BRAT.get())==7,"two opened packs contain eight total franks including the plated one");
-        f.click(p,GoatmanWoods.STOVE);h.assertTrue(f.run().getInt("PacketsIssued0464")==2&&p.getInventory().countItem(GoatmanRegistry.FRANKS.get())==0,"the wrappers cannot replenish supplies");
-        GoatmanVignette.hurry(f.l,f.b);h.assertTrue(Integer.bitCount(f.run().getInt("Plated0464"))==1,"cousin arrivals never serve food for the player");
-        r=f.run();r.putInt("Clock",200);f.run(r);var late=f.player();h.assertTrue(GoatmanVignette.enter(late),"an early latecomer can still join");
-        GoatmanVignette.tick(f.server);h.assertTrue(f.run().getInt("Clock")>200,"an evening already underway advances while an early latecomer walks the path");h.succeed();
+        h.assertTrue(p.getMainHandItem().is(GoatmanRegistry.FRANKS.get())&&f.run().getInt("PacketsIssued0464")==1,"one finite unopened pack is a real held object");
+        f.click(p,GoatmanWoods.STOVE);h.assertTrue(p.getMainHandItem().is(GoatmanRegistry.RAW_FRANK.get())&&p.getMainHandItem().getCount()==4,"opening consumes the pack and yields exactly four raw franks");
+        for(int i=0;i<4;i++)f.click(p,GoatmanWoods.STOVE);
+        h.assertTrue(p.getMainHandItem().isEmpty()&&f.run().getList("Cooking0465",10).size()==4,"putting four raw originals in the pan consumes all four");
+        int left=f.run().getList("Cooking0465",10).getCompound(0).getInt("Left");GoatmanVignette.onLogout(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p));p.moveTo(100,80,100);GoatmanVignette.tick(f.server);
+        h.assertTrue(f.run().getList("Cooking0465",10).getCompound(0).getInt("Left")==left,"an empty scene cannot cook food or advance the meal");
+        var data=LabyrinthData.get(f.server);var loaded=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),f.l.registryAccess()),f.l.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);f.indoors(p);GoatmanVignette.enter(p);
+        h.runAfterDelay(GoatmanSupper.COOK_TICKS+4,()->{
+            h.assertTrue(f.run().getInt("Clock")==GoatmanVignette.SUPPER0465-1&&f.run().getList("CookedPan0465",10).size()==4,"the saved pan cooks once while the story waits for player plating");
+            for(int i=0;i<4;i++)f.click(p,GoatmanWoods.STOVE);
+            h.assertTrue(p.getInventory().countItem(GoatmanRegistry.BRAT.get())==4,"the player takes four cooked physical originals from the pan");
+            f.click(p,new BlockPos(-1,1,-61));f.click(p,new BlockPos(-1,1,-61));h.assertTrue(p.getMainHandItem().getCount()==3&&Integer.bitCount(f.run().getInt("Plated0464"))==1,"the same plate cannot consume a second frank");
+            for(int i=1;i<4;i++)f.click(p,new BlockPos(i%2==0?-1:1,1,-61-2*(i/2)));
+            f.click(p,GoatmanWoods.STOVE);h.assertTrue(p.getMainHandItem().is(GoatmanRegistry.FRANKS.get()),"the second pack stays sealed until opened");f.click(p,GoatmanWoods.STOVE);for(int i=0;i<4;i++)f.click(p,GoatmanWoods.STOVE);
+            GoatmanVignette.hurry(f.l,f.b);h.assertTrue(Integer.bitCount(f.run().getInt("Plated0464"))==4,"cousin arrivals do not fill any plates");
+        });
+        h.runAfterDelay(GoatmanSupper.COOK_TICKS*2+12,()->{
+            for(int i=0;i<4;i++)f.click(p,GoatmanWoods.STOVE);
+            for(int i=4;i<8;i++)f.click(p,new BlockPos(i%2==0?-1:1,1,-61-2*(i/2)));
+            h.assertTrue(GoatmanSupper.ready(f.run())&&Integer.bitCount(f.run().getInt("Plated0464"))==8,"the player plates all eight cooked franks");
+            f.click(p,GoatmanWoods.STOVE);h.assertTrue(f.run().getInt("PacketsIssued0464")==2&&p.getInventory().countItem(GoatmanRegistry.FRANKS.get())==0,"the saved wrappers cannot replenish supplies");
+        });
+        h.runAfterDelay(GoatmanSupper.COOK_TICKS*2+18,()->{h.assertTrue(f.run().getInt("Clock")>=GoatmanVignette.SUPPER0465,"supper advances after the actual plating actions");h.succeed();});
+        });
     }
     @AfterBatch(batch="goat_supper") public static void supperDone(ServerLevel level){if(supper!=null){supper.close();supper=null;}}
     @GameTest(template="empty") public static void woodsAppendWithoutMovingOldRoomsOrReinterpretingLeaks(GameTestHelper h){
@@ -84,13 +100,13 @@ public final class GoatmanTests {
         }
         /** Dusk at the given clock: everyone has arrived, the pan was filled for them, and the cousin who went for gas is gone. */
         void evening(List<ServerPlayer> participants,int clock){
-            var r=run();r.remove("Cousins0464");r.remove("PlayerServes0464");r.putInt("Wrong",r.getInt("Wrong")%5);r.putInt("Runner",(r.getInt("Wrong")+1)%5);cousins().forEach(Entity::discard);r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",clock);int pan=4+participants.size();
+            var r=run();r.remove("Fresh0465");r.remove("Cousins0464");r.remove("PlayerServes0464");r.putInt("Wrong",r.getInt("Wrong")%5);r.putInt("Runner",(r.getInt("Wrong")+1)%5);cousins().forEach(Entity::discard);r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",clock);int pan=4+participants.size();
             r.putInt("Expected",pan);r.putInt("Pan",pan);r.putInt("PanFor",pan);r.putInt("RunnerState",clock>GoatmanVignette.RUNNER_LEAVES?GoatmanVignette.R_AWAY:GoatmanVignette.R_HOME);
             cohort(r,participants,0);run(r);GoatmanVignette.stage(l,b,r);GoatmanWoods.pan(l,b,pan);
         }
         /** Night at the given clock, the thing at the door and the cousin who went for gas in. */
         void night(List<ServerPlayer> participants,int clock,boolean windowShut){
-            var r=run();if(r.contains("Cousins0464")){r.remove("Cousins0464");r.remove("PlayerServes0464");r.putInt("Wrong",r.getInt("Wrong")%5);r.putInt("Runner",(r.getInt("Wrong")+1)%5);cousins().forEach(Entity::discard);}
+            var r=run();if(r.contains("Cousins0464")){r.remove("Fresh0465");r.remove("Cousins0464");r.remove("PlayerServes0464");r.putInt("Wrong",r.getInt("Wrong")%5);r.putInt("Runner",(r.getInt("Wrong")+1)%5);cousins().forEach(Entity::discard);}
             r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",clock);r.putInt("ExtraState",GoatmanVignette.X_DOOR);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);r.putInt("Expected",4+participants.size());
             cohort(r,participants,clock);run(r);GoatmanWoods.atmosphere(l,b,true);GoatmanWoods.door(l,b,false);GoatmanWoods.setWindow(l,b,windowShut);GoatmanVignette.stage(l,b,r);
         }
@@ -105,6 +121,68 @@ public final class GoatmanTests {
             l.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(keep,server);
             server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);server.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);LabyrinthBuilder.clearAll();LabyrinthDoors.clearAll();
         }
+    }
+    private static Fixture stalking,disguises,fixtures,sharedSupper;
+    @AfterBatch(batch="goat_shared_supper0465") public static void cleanSharedSupper(ServerLevel l){if(sharedSupper!=null){sharedSupper.close();sharedSupper=null;}}
+    @GameTest(template="empty",batch="goat_shared_supper0465",timeoutTicks=2400)
+    public static void twoPlayersShareOneCookingClockAndFiniteSavedPackets(GameTestHelper h){
+        sharedSupper=new Fixture(h,30100);var f=sharedSupper;var p=f.player();var q=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"both readers and the pan are natively loaded")).thenExecute(()->{
+            GoatmanVignette.enter(p);h.assertTrue(GoatmanVignette.enter(q),"a second reader joins the same fresh round");var r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",500);f.cohort(r,List.of(p,q),0);f.run(r);GoatmanVignette.tick(f.server);
+            h.assertTrue(f.run().getInt("Expected")==9,"seven real cousins and two enrolled readers have nine actual places");
+            p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);q.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);f.click(p,GoatmanWoods.STOVE);f.click(p,GoatmanWoods.STOVE);f.click(p,GoatmanWoods.STOVE);
+            f.click(q,GoatmanWoods.STOVE);q.getInventory().selected=2;f.click(q,GoatmanWoods.STOVE);q.getInventory().selected=3;f.click(q,GoatmanWoods.STOVE);
+            h.assertTrue(f.run().getInt("PacketsIssued0464")==3&&q.getInventory().countItem(GoatmanRegistry.FRANKS.get())==2&&p.getMainHandItem().getCount()==3,"three packs supply twelve finite raw franks; a second reader cannot issue a fourth pack");
+            int left=f.run().getList("Cooking0465",10).getCompound(0).getInt("Left"),clock=f.run().getInt("Clock");GoatmanVignette.tick(f.server);
+            h.assertTrue(f.run().getList("Cooking0465",10).getCompound(0).getInt("Left")==left-1&&f.run().getInt("Clock")==clock+1,"two present readers advance the single occupied cooking and story clocks once");
+            GoatmanVignette.onLogout(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p));p.moveTo(100,80,100);
+            var data=LabyrinthData.get(f.server);var loaded=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),f.l.registryAccess()),f.l.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);GoatmanVignette.tick(f.server);
+            h.assertTrue(f.run().getInt("Expected")==9&&f.run().getInt("PacketsIssued0464")==3&&f.run().getList("Cooking0465",10).getCompound(0).getInt("Left")==left-2,"a reload and absent diner preserve all places, issued wrappers and the one remaining reader's occupied timer");
+            f.indoors(p);h.assertTrue(GoatmanVignette.enter(p),"the same reader can return without a new round");p.getInventory().selected=3;f.click(p,GoatmanWoods.STOVE);h.assertTrue(f.run().getInt("PacketsIssued0464")==3,"rejoining cannot restock the shared supper");h.succeed();
+        });
+    }
+    @AfterBatch(batch="goat_stalk0465") public static void cleanStalking(ServerLevel l){if(stalking!=null){stalking.close();stalking=null;}}
+    @AfterBatch(batch="goat_disguise0465") public static void cleanDisguises(ServerLevel l){if(disguises!=null){disguises.close();disguises=null;}}
+    @AfterBatch(batch="goat_fixture0465") public static void cleanFixtures(ServerLevel l){if(fixtures!=null){fixtures.close();fixtures=null;}}
+    @GameTest(template="empty",batch="goat_stalk0465",timeoutTicks=5000)
+    public static void oneNativeBodyCirclesBothSidesThenEscalatesAllSevenDemandsAndHardBlows(GameTestHelper h){
+        stalking=new Fixture(h,30400);var f=stalking;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        var demands=new ArrayList<Integer>();var impacts=new HashSet<Long>();boolean[] started={false};UUID[] identity={null};int[] skin={-1};
+        h.onEachTick(()->{if(!started[0])return;var r=f.run();int demand=r.getInt("Demand");if(demand>=101&&(demands.isEmpty()||demands.getLast()!=demand))demands.add(demand);if(r.contains("LastImpactPos0465"))impacts.add(r.getLong("LastImpactPos0465"));});
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the circuit's native blocks and entity sections are ready")).thenExecute(()->{
+            GoatmanVignette.enter(p);var r=f.run();r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",0);r.putInt("ExtraState",GoatmanVignette.X_DOOR);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);f.cohort(r,List.of(p),0);f.run(r);
+            GoatmanWoods.door(f.l,f.b,false);GoatmanWoods.setWindow(f.l,f.b,true);GoatmanVignette.stage(f.l,f.b,r);var it=f.cousin(r.getInt("Wrong")).orElseThrow();identity[0]=it.getUUID();skin[0]=it.skin();it.moveTo(new Vec3(-6,0,-49.6).add(f.b.getX(),f.b.getY(),f.b.getZ()));started[0]=true;
+        }).thenWaitUntil(()->h.assertTrue(f.run().getBoolean("AssaultDone0465"),"the physical circuit and assault finish: leg="+f.run().getInt("StalkLeg0465")+" clock="+f.run().getInt("Clock")+" body="+f.cousin(f.run().getInt("Wrong")).map(c->f.rel(c).toString()).orElse("missing"))).thenExecute(()->{
+            var r=f.run();var it=f.cousin(r.getInt("Wrong")).orElseThrow();h.assertTrue(it.getUUID().equals(identity[0])&&it.skin()==skin[0],"the original saved actor and identity survive every disguise and route leg");
+            h.assertTrue(demands.equals(List.of(101,102,103,104,105,106,107)),"all seven demands occur once and in order: "+demands);
+            h.assertTrue(impacts.contains(f.b.offset(-8,2,-59).asLong())&&impacts.contains(f.b.offset(8,2,-59).asLong())&&impacts.contains(f.b.offset(0,2,-77).asLong()),"window and wall impacts originate on both sides and behind the house");
+            var door=(TrailerDoorBlockEntity)f.l.getBlockEntity(f.b.offset(GoatmanWoods.DOOR));h.assertTrue(r.getInt("FinalBlows0465")>=12&&door.stress()>=16&&!GoatmanWoods.doorOpen(f.l,f.b),"the final demand produces rapid hard blows and saved door stress without opening it");h.succeed();
+        });
+    }
+    @GameTest(template="empty",batch="goat_disguise0465",timeoutTicks=2400)
+    public static void observedDisguisesWaitAndTheSavedDeckNeverRepeatsAChild(GameTestHelper h){
+        disguises=new Fixture(h,30700);var f=disguises;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native observers and actors are loaded")).thenExecute(()->{
+            GoatmanVignette.enter(p);var r=f.run();f.cohort(r,List.of(p),0);var c=f.cousin(r.getInt("Wrong")).orElseThrow();UUID id=c.getUUID();int original=c.skin();
+            c.moveTo(new Vec3(.5,1,-53.8).add(f.b.getX(),f.b.getY(),f.b.getZ()));GoatmanWoods.door(f.l,f.b,true);p.moveTo(new Vec3(.5,1,-56.7).add(f.b.getX(),f.b.getY(),f.b.getZ()));p.setYRot(0);p.setXRot(0);
+            h.assertTrue(!GoatmanStalking.obscured(f.l,c),"the actual player sees the child through the open doorway");GoatmanStalking.step(f.l,f.b,r,c,1);h.assertTrue(!c.monsterAppearance(),"a pending texture change waits while the actual camera sees it");
+            r.putInt("StalkUsed0465",1<<original);var seen=new HashSet<Integer>();for(int i=0;i<8;i++){int next=GoatmanStalking.nextChild(r);h.assertTrue(next>=0&&next!=original&&seen.add(next),"each remaining child appears only once");}
+            h.assertTrue(GoatmanStalking.nextChild(r)==-2,"exhausting the children leaves only the Goatman");f.run(r);
+            var saved=LabyrinthData.get(f.server).save(new CompoundTag(),f.l.registryAccess());var loaded=LabyrinthData.FACTORY.deserializer().apply(saved,f.l.registryAccess());var restored=GoatmanVignette.run(loaded);h.assertTrue(GoatmanStalking.nextChild(restored)==-2,"a save reload cannot recycle the disguise deck");
+            c.disguise((original+1)%9);h.assertTrue(c.getUUID().equals(id)&&c.skin()==original&&c.visibleSkin()!=original,"the render profile changes without changing the real actor's saved identity");h.succeed();
+        });
+    }
+    @GameTest(template="empty",batch="goat_fixture0465",timeoutTicks=2400)
+    public static void actualBathroomFixturesToggleAndAnOldTrailerUpgradesOnceWithoutRestocking(GameTestHelper h){
+        fixtures=new Fixture(h,31000);var f=fixtures;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"bathroom and door sections are loaded")).thenExecute(()->{
+            h.assertTrue(f.l.getBlockState(f.b.offset(GoatmanWoods.TOILET)).is(GoatmanRegistry.TOILET.get())&&f.l.getBlockState(f.b.offset(GoatmanWoods.SINK)).is(GoatmanRegistry.SINK.get()),"the generated room contains actual toilet and sink blocks");
+            p.moveTo(new Vec3(6.5,1,-75.5).add(f.b.getX(),f.b.getY(),f.b.getZ()));f.use(p,GoatmanWoods.WINDOW);h.assertTrue(GoatmanWoods.windowShut(f.l,f.b),"a native window interaction shuts the glazed sash");f.use(p,GoatmanWoods.WINDOW);h.assertTrue(!GoatmanWoods.windowShut(f.l,f.b),"the same actual window opens again");
+            f.l.setBlock(f.b.offset(GoatmanWoods.TOILET),Blocks.QUARTZ_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST),2);f.l.setBlock(f.b.offset(GoatmanWoods.TOILET).above(),Blocks.QUARTZ_SLAB.defaultBlockState(),2);f.l.setBlock(f.b.offset(GoatmanWoods.SINK),Blocks.WATER_CAULDRON.defaultBlockState(),2);
+            p.moveTo(100,80,100);var packetData=f.run();packetData.putInt("PacketsIssued0464",2);f.run(packetData);h.assertTrue(GoatmanTrailerUpgrade.apply(f.l,f.b),"an unseen, loaded old bathroom upgrades in place");
+            h.assertTrue(f.l.getBlockState(f.b.offset(GoatmanWoods.TOILET)).is(GoatmanRegistry.TOILET.get())&&f.l.getBlockState(f.b.offset(GoatmanWoods.TOILET).above()).isAir()&&f.run().getInt("PacketsIssued0464")==2,"the placeholders change while finite packets and saved scene state remain exact");
+            f.l.setBlock(f.b.offset(GoatmanWoods.TOILET),Blocks.AIR.defaultBlockState(),2);GoatmanTrailerUpgrade.apply(f.l,f.b);h.assertTrue(f.l.getBlockState(f.b.offset(GoatmanWoods.TOILET)).isAir(),"the saved checkpoint preserves later player removals");h.succeed();
+        });
     }
     private static Fixture path,night,taken,window,lost,counter,resume,upgrade;
     @AfterBatch(batch="goat_path") public static void cleanPath(ServerLevel l){if(path!=null){path.close();path=null;}}

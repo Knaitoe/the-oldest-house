@@ -57,7 +57,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.64"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.65"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/house/PlaytestLog.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
               hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
@@ -189,7 +189,7 @@ jobs:
                   from PIL import Image
                   from io import BytesIO
                   skin = Image.open(BytesIO(z.read(f'assets/the_oldest_house/textures/entity/{name}.png')))
-                  assert skin.size == (64, 64) and skin.mode == 'RGBA'
+                  assert skin.size == (256, 256) and skin.mode == 'RGBA'
               static = Image.open(BytesIO(z.read('assets/the_oldest_house/textures/block/model_home_static.png')))
               assert static.size == (32, 384)
               assert json.loads(z.read('assets/the_oldest_house/textures/block/model_home_static.png.mcmeta'))['animation']['frametime'] == 2
@@ -234,20 +234,22 @@ jobs:
                            'assets/the_oldest_house/models/item/trailer_plate.json',
                            'assets/the_oldest_house/textures/item/trailer_plate.png' ):
                   assert name in z.namelist(), name
-              original_cousin_skins = (
-                  'a191ea11a9a8b9dfe285be1935a70655996272a17a3f1a84bdafb72a5455c5e5',
-                  '887a4648b0bb82e95e45e0fb19fc31151ec49789ef0584a8e4330b55ad3eb2af',
-                  'ca0c98977e4c3a680db466385d3e44627914cbae878ebb1abf47012a6dee7bb3',
-                  'ec06fb327630e31891ef46fe37e49d2bfa5eabaa635a0d8e5218eac697ce5c4f',
-                  '3be2a189d532408feffb802567405a168203f2ece8834f6f04eccf2efd70266e',
-                  'cf068c8fef23d5487f8e1947cce722d05d9c712ce7b485be1ca0f4de8702824b',
-              )
-              for i, digest in enumerate(original_cousin_skins):
-                  original = z.read(f'assets/the_oldest_house/textures/entity/trailer_child_{i}.png')
-                  assert hashlib.sha256(original).hexdigest() == digest, f'changed original cousin skin {i}'
-              for i in range(6, 9):
-                  skin = Image.open(BytesIO(z.read(f'assets/the_oldest_house/textures/entity/trailer_child_{i}.png')))
-                  assert skin.size == (64, 64) and skin.mode == 'RGBA', i
+              # The owner-approved 0.4.65 artwork keeps each model's UV proportions and alpha mask.
+              art = json.loads(pathlib.Path('art/inventory/cast_0465.json').read_text())
+              assert len(art['approved_textures']) == 67 and art['entity_count'] == 61
+              for record in art['approved_textures']:
+                  name = record['path'].removeprefix('src/main/resources/')
+                  raw = z.read(name)
+                  assert hashlib.sha256(raw).hexdigest() == record['sha256'], name
+                  image = Image.open(BytesIO(raw)).convert('RGBA')
+                  assert list(image.size) == record['size'], name
+                  assert hashlib.sha256(image.getchannel('A').tobytes()).hexdigest() == record['alpha_sha256'], name
+              for name in ('TrailerFixtureBlock','TrailerDoorBlock','TrailerDoorBlockEntity','GoatmanStalking','GoatmanTrailerUpgrade'):
+                  assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
+              for name in ('HumanoidMotion','TrailerDoorRenderer','TrailerVisualProof'):
+                  assert f'io/github/knaitoe/theoldesthouse/client/{name}.class' in z.namelist()
+              for name in ('toilet','sink_empty','sink_filled','bathroom_window_open','bathroom_window_closed'):
+                  assert len(json.loads(z.read(f'assets/the_oldest_house/models/block/trailer/{name}.json'))['elements']) >= 5
               sounds = json.loads(z.read('assets/the_oldest_house/sounds.json'))
               assert all(f'goatman.{cue}' in sounds for cue in ('hammer', 'laugh', 'woods'))
               # Every cue is subtitled, so the game is playable without sound.
@@ -475,6 +477,8 @@ jobs:
           test -s build/font-smoke/goatman-passed.txt
           test -s build/font-smoke/playtest-assets-passed.txt
           test -s build/font-smoke/native-playtest-0464.png
+          test -s build/font-smoke/trailer-0465-passed.txt
+          for page in 0 1 2 3; do test -s build/font-smoke/native-trailer-0465-$page.png; done
           test -s build/font-smoke/native-goatman.png
           test -s build/font-smoke/coffin-passed.txt
           test -s build/font-smoke/native-coffin.png
@@ -717,7 +721,7 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.64"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.65"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
@@ -792,8 +796,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.64.jar
-            build/libs/the_oldest_house-0.4.64.jar.sha256
+            build/libs/the_oldest_house-0.4.65.jar
+            build/libs/the_oldest_house-0.4.65.jar.sha256
           if-no-files-found: error
 
 

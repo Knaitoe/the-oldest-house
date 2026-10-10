@@ -35,7 +35,8 @@ public final class SeanceRenderers {
             else if(scared){leftArm.xRot=-1.1F;rightArm.xRot=-.9F;leftArm.zRot=-.35F;rightArm.zRot=.35F;head.xRot=.14F+(float)Math.sin(time*.35)*.04F;}
             if(role==0&&seated){head.xRot=.18F;leftArm.xRot=rightArm.xRot=-1.2F;leftArm.yRot=.35F;rightArm.yRot=-.35F;}
         }
-        @Override public void setupAnim(SeanceActor actor,float walk,float amount,float time,float yaw,float pitch){head.getAllParts().forEach(ModelPart::resetPose);body.getAllParts().forEach(ModelPart::resetPose);leftArm.getAllParts().forEach(ModelPart::resetPose);rightArm.getAllParts().forEach(ModelPart::resetPose);leftLeg.resetPose();rightLeg.resetPose();super.setupAnim(actor,walk,amount,time,yaw,pitch);pose(actor.role(),actor.seated(),actor.afraid(),time);}
+        @Override public void setupAnim(SeanceActor actor,float walk,float amount,float time,float yaw,float pitch){HumanoidMotion.reset(this);super.setupAnim(actor,walk,amount,time,yaw,pitch);pose(actor.role(),actor.seated(),actor.afraid(),time);
+            if(actor.role()==3){var motion=HumanoidMotion.sample(actor,time-actor.tickCount);if(!actor.seated())HumanoidMotion.gait(this,motion.phase(),motion.amount(),motion.running());body.yRot+=.025F*(float)Math.sin(time*.04F+actor.getId());HumanoidMotion.connect(this);}}
     }
     private static final class FamilyRenderer extends MobRenderer<SeanceActor,FamilyModel> {
         FamilyRenderer(EntityRendererProvider.Context context){super(context,new FamilyModel(context.bakeLayer(LAYER)),.2F);}

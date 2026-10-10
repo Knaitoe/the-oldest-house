@@ -10,11 +10,11 @@ import net.minecraft.client.renderer.entity.layers.EyesLayer;
 import net.minecraft.resources.ResourceLocation;
 
 /** Only its viewer ever sees it; its eyes catch what little light there is. */
-public final class GoatmanFigureRenderer extends MobRenderer<GoatmanFigure,GoatmanFigureModel> {
+public final class GoatmanFigureRenderer extends MobRenderer<GoatmanFigure,GoatmanFigureModel<GoatmanFigure>> {
     public static final ResourceLocation SKIN=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/goatman.png");
     public static final ResourceLocation EYES=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/goatman_eyes.png");
     public GoatmanFigureRenderer(EntityRendererProvider.Context c){
-        super(c,new GoatmanFigureModel(c.bakeLayer(GoatmanFigureModel.LAYER)),.35F);
+        super(c,new GoatmanFigureModel<>(c.bakeLayer(GoatmanFigureModel.LAYER)),.35F);
         addLayer(new EyesLayer<>(this){@Override public RenderType renderType(){return RenderType.eyes(EYES);}});
     }
     @Override public boolean shouldRender(GoatmanFigure e,Frustum f,double x,double y,double z){

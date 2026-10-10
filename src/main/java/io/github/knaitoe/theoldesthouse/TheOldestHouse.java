@@ -179,6 +179,7 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette::onServerTick);
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette::onBlock);
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette::onAttack);
+        NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanSupper::onFood);
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette::onDeath);
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette::onRespawnPosition);
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette::onRespawn);

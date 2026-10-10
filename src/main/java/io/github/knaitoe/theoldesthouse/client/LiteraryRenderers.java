@@ -88,7 +88,12 @@ public final class LiteraryRenderers {
         }
         @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){head.getAllParts().forEach(ModelPart::resetPose);body.getAllParts().forEach(ModelPart::resetPose);leftLeg.getAllParts().forEach(ModelPart::resetPose);rightLeg.getAllParts().forEach(ModelPart::resetPose);leftArm.getAllParts().forEach(ModelPart::resetPose);rightArm.getAllParts().forEach(ModelPart::resetPose);this.walk=walk;this.amount=amount;crouching=a.getPose()==net.minecraft.world.entity.Pose.CROUCHING||(a.role()==LiteraryActor.KILLER&&a.phase()==3);super.setupAnim(a,walk,amount,age,yaw,pitch);pose(a.role(),a.phase(),age);
             // An actor placed in a chair sits in it: hips on the seat, legs forward.
-            var chair=seat(a);if(chair!=null){float lower=12-chair.seatHeight;for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=lower;leftLeg.xRot=rightLeg.xRot=-1.45F;leftLeg.yRot=.1F;rightLeg.yRot=-.1F;leftArm.xRot=rightArm.xRot=-.35F;hat.copyFrom(head);}}
+            var chair=seat(a);if(chair!=null){float lower=12-chair.seatHeight;for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=lower;leftLeg.xRot=rightLeg.xRot=-1.45F;leftLeg.yRot=.1F;rightLeg.yRot=-.1F;leftArm.xRot=rightArm.xRot=-.35F;hat.copyFrom(head);}
+            if(a.role()==LiteraryActor.BROTHER||a.role()==LiteraryActor.FAMILY_CHILD||a.role()==LiteraryActor.SILHOUETTE&&a.phase()==4){
+                var motion=HumanoidMotion.sample(a,age-a.tickCount);
+                if(chair==null&&!(a.role()==LiteraryActor.BROTHER&&a.phase()>0))HumanoidMotion.gait(this,motion.phase(),motion.amount(),motion.running());
+                body.yRot+=.02F*net.minecraft.util.Mth.sin(age*.037F+a.getId()*1.7F);HumanoidMotion.connect(this);
+            }}
         /** The killer's motion as the renderer drives it, for native proofs: phase, stride, swing and an attack in progress. */
         public void animateKiller(int phase,float walk,float amount,float age,float attack){for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.getAllParts().forEach(ModelPart::resetPose);
             this.walk=walk;this.amount=amount;attackTime=attack;crouching=phase==3;young=false;riding=false;

@@ -10,6 +10,9 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.registries.*;
@@ -17,9 +20,17 @@ import net.neoforged.neoforge.registries.*;
 public final class GoatmanRegistry {
     private static final DeferredRegister<EntityType<?>> TYPES=DeferredRegister.create(Registries.ENTITY_TYPE,TheOldestHouse.MOD_ID);
     private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
+    private static final DeferredRegister.Blocks BLOCKS=DeferredRegister.createBlocks(TheOldestHouse.MOD_ID);
+    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES=DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE,TheOldestHouse.MOD_ID);
+    public static final DeferredBlock<TrailerFixtureBlock> TOILET=BLOCKS.register("trailer_toilet",()->new TrailerFixtureBlock(TrailerFixtureBlock.Kind.TOILET,BlockBehaviour.Properties.ofFullCopy(Blocks.QUARTZ_BLOCK).noOcclusion()));
+    public static final DeferredBlock<TrailerFixtureBlock> SINK=BLOCKS.register("trailer_sink",()->new TrailerFixtureBlock(TrailerFixtureBlock.Kind.SINK,BlockBehaviour.Properties.ofFullCopy(Blocks.QUARTZ_BLOCK).noOcclusion()));
+    public static final DeferredBlock<TrailerFixtureBlock> WINDOW=BLOCKS.register("trailer_bathroom_window",()->new TrailerFixtureBlock(TrailerFixtureBlock.Kind.WINDOW,BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS).noOcclusion()));
+    public static final DeferredBlock<TrailerDoorBlock> DOOR=BLOCKS.register("trailer_door",()->new TrailerDoorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_DOOR).noOcclusion()));
+    public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<TrailerDoorBlockEntity>> DOOR_ENTITY=BLOCK_ENTITIES.register("trailer_door",()->BlockEntityType.Builder.of(TrailerDoorBlockEntity::new,DOOR.get()).build(null));
     private static final DeferredRegister<ParticleType<?>> PARTICLES=DeferredRegister.create(Registries.PARTICLE_TYPE,TheOldestHouse.MOD_ID);
     public static final DeferredItem<Item> PLATE=ITEMS.registerSimpleItem("trailer_plate",new Item.Properties().stacksTo(1));
     public static final DeferredItem<FranksPackageItem> FRANKS=ITEMS.registerItem("franks_package",FranksPackageItem::new,new Item.Properties().stacksTo(1));
+    public static final DeferredItem<Item> RAW_FRANK=ITEMS.registerSimpleItem("raw_frank",new Item.Properties());
     /** 0.4.53: one each, from the pan on the stove. */
     public static final DeferredItem<Item> BRAT=ITEMS.registerSimpleItem("goatman_brat",new Item.Properties().food(new FoodProperties.Builder().nutrition(6).saturationModifier(.6F).build()));
     /** 0.4.53: what the reader who counted right takes home. */
@@ -34,6 +45,6 @@ public final class GoatmanRegistry {
     public static final DeferredHolder<ParticleType<?>,SimpleParticleType> COPPER=PARTICLES.register("goatman_copper",()->new SimpleParticleType(false));
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     private GoatmanRegistry(){}
-    public static void register(IEventBus bus){TYPES.register(bus);SOUNDS.register(bus);ITEMS.register(bus);PARTICLES.register(bus);bus.addListener(GoatmanRegistry::attributes);}
+    public static void register(IEventBus bus){TYPES.register(bus);SOUNDS.register(bus);BLOCKS.register(bus);BLOCK_ENTITIES.register(bus);ITEMS.register(bus);PARTICLES.register(bus);bus.addListener(GoatmanRegistry::attributes);}
     private static void attributes(EntityAttributeCreationEvent e){e.put(CHILD.get(),GoatmanChild.attributes().build());e.put(FIGURE.get(),GoatmanFigure.attributes().build());}
 }

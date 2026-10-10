@@ -9,12 +9,14 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
+import io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild;
 
 /**
  * A man with the head of a goat (0.4.53): a gaunt body, arms too long, furred legs ending in hooves, and a goat's skull
  * with muzzle, beard, drooping ears and swept-back horns. Box UVs match tools/generate_goatman_night_assets.py exactly.
  */
-public final class GoatmanFigureModel extends HierarchicalModel<GoatmanFigure> {
+public final class GoatmanFigureModel<T extends LivingEntity> extends HierarchicalModel<T> {
     public static final ModelLayerLocation LAYER=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"goatman"),"main");
     private final ModelPart root,head,body,rightArm,leftArm,rightLeg,leftLeg;
     public GoatmanFigureModel(ModelPart baked){
@@ -41,8 +43,10 @@ public final class GoatmanFigureModel extends HierarchicalModel<GoatmanFigure> {
         root.addOrReplaceChild("left_leg",CubeListBuilder.create().texOffs(12,34).addBox(-1.5F,0,-1.5F,3,14,3),PartPose.offset(1.8F,-14,0));
         return LayerDefinition.create(mesh,64,64);
     }
-    @Override public void setupAnim(GoatmanFigure e,float swing,float amount,float age,float yaw,float pitch){
-        float partial=age-e.tickCount;pose(age,e.walk(partial),Math.min(1,Math.abs(e.speed())*2.5F),e.heaving(),yaw,pitch);
+    @Override public void setupAnim(T e,float swing,float amount,float age,float yaw,float pitch){
+        float partial=age-e.tickCount;
+        if(e instanceof GoatmanFigure f)pose(age,f.walk(partial),Math.min(1,Math.abs(f.speed())*2.5F),f.heaving(),yaw,pitch);
+        else if(e instanceof GoatmanChild c)pose(age,c.walk(partial),Math.min(1,Math.abs(c.speed())),c.heaving(),yaw,pitch);
     }
     /** The whole pose from plain numbers, so the client proof can draw it without a world. */
     public void pose(float age,float walk,float pace,boolean heaving,float yaw,float pitch){
@@ -58,7 +62,12 @@ public final class GoatmanFigureModel extends HierarchicalModel<GoatmanFigure> {
         if(heaving){
             // Laughing without a sound: the shoulders and head jerk together.
             float h=Mth.abs(Mth.sin(age*.9F))*Mth.abs(Mth.sin(age*.37F));
-            body.xRot+=.12F+.18F*h;head.xRot+=.25F*h;head.y+=1.2F*h;rightArm.y+=1.4F*h;leftArm.y+=1.4F*h;
+            body.xRot+=.12F+.18F*h;head.xRot+=.25F*h;
         }
+        // The torso bends at its hip line; the skull and shoulders travel with it.
+        if(attackTime>0)rightArm.xRot=-1.8F-Mth.sin(attackTime*Mth.PI)*.9F;
+        float lean=body.xRot,top=-14-13*Mth.cos(lean),forward=-13*Mth.sin(lean);
+        body.y=top;body.z=forward;head.y=top;head.z=forward;head.xRot+=lean;
+        for(var arm:new ModelPart[]{rightArm,leftArm}){arm.y=top+Mth.cos(lean);arm.z=forward+Mth.sin(lean);arm.xRot+=lean;}
     }
 }
