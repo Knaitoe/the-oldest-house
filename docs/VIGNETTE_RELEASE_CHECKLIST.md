@@ -9,7 +9,11 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.68
+## Current candidate: 0.4.69
+
+Fresh trailer actors must register at their native camp positions, wait for loaded entity sections and retain saved identities. Require actual door crossings, private path-girl visibility, native walking to camp and all eight shared renderers on both connected clients. Proofrock streetlights retain their original addresses, brightness and submerged water; the guarded saved repair preserves originals, edits and later removals. Require 488 native cases, all twelve exact-source jobs, 444 PNGs, eight trailer/fixture views, all 71 architecture views, complete writing/eight fonts and two actual clients/two reconnects. Layout 40 / protocol 43. See [the update record](CHILDREN_AND_STREETLIGHTS_0_4_69.md).
+
+## Previous verified: 0.4.68
 
 Apply the eleven supplied playtest fixes to the completed Whale/Proofrock source. Preserve scene addresses, private letters, native actors, finite supper supplies, exact note pages and player removals. Require 486 native cases, all focused and socket multiplayer checks, all 71 architecture views, complete writing/eight fonts, 441 PNGs and seven trailer/playtest GPU views. Layout 40 / protocol 42. See [the repair record](PLAYTEST_FIXES_0_4_68.md).
 

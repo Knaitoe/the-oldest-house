@@ -127,7 +127,8 @@ public final class GoatmanVignette {
         if(!member){own.putBoolean("Active",true);own.putDouble("Progress",0);own.putInt("Vigil",0);own.putBoolean("Arrived",false);}
         own.putBoolean("Active",true);cohort.put(p.getUUID().toString(),own);r.put("Cohort",cohort);saveRun(d,r);
         if(!member)p.displayClientMessage(Component.literal("You're late. Your cousins are already at the trailer."),false);
-        scale(p,true);IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.GOATMAN);stage(l,b,r);
+        scale(p,true);IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.GOATMAN);
+        if(!stage(l,b,r)){r.putBoolean("StagePending0469",true);saveRun(d,r);}
         GoatmanWoods.supplies(l,b,count(r)-1+cohort.getAllKeys().size());if(fresh(r))GoatmanWoods.supperChairs(l,b,count(r)-1+cohort.getAllKeys().size());return true;
     }
     /** A fresh evening: no actors, day, the door open, the bathroom window propped, the porch light on, the pan and the plates empty. */
@@ -280,8 +281,15 @@ public final class GoatmanVignette {
     /** The cousin who wants to check the door: the first who is neither the runner nor the thing. */
     static int checker(CompoundTag r){for(int i=0;i<count(r);i++)if(i!=r.getInt("Wrong")&&i!=r.getInt("Runner"))return i;return 0;}
 
-    public static void stage(ServerLevel l,BlockPos b,CompoundTag r){
-        if(!r.hasUUID("Id"))return;List<GoatmanChild> children=actors(l,b);
+    private static boolean spawnReady(ServerLevel l,BlockPos b){
+        var area=IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN);
+        for(int x=(int)Math.floor(area.minX)>>4;x<=(int)Math.floor(area.maxX)>>4;x++)for(int z=(int)Math.floor(area.minZ)>>4;z<=(int)Math.floor(area.maxZ)>>4;z++)if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(x,z)))return false;
+        return true;
+    }
+    public static boolean stage(ServerLevel l,BlockPos b,CompoundTag r){
+        // Block chunks can arrive before their saved entity sections. Wait for the latter
+        // before deciding that a cousin is missing or registering a fresh body.
+        if(!r.hasUUID("Id")||!spawnReady(l,b))return false;List<GoatmanChild> children=actors(l,b);
         for(var c:children)if(!c.getTags().contains("TrailerWalk")&&(!c.getPersistentData().hasUUID(ROUND)||!c.getPersistentData().getUUID(ROUND).equals(r.getUUID("Id"))))c.discard();
         for(int i=0;i<count(r);i++){
             boolean away=i==r.getInt("Runner")&&(r.getInt("RunnerState")==R_AWAY||r.getInt("RunnerState")==R_LOST)||i==r.getInt("Wrong")&&r.getInt("Phase")==DAWN;
@@ -297,8 +305,10 @@ public final class GoatmanVignette {
             settle(c,b,place(i,r));
             if(!l.addFreshEntity(c))io.github.knaitoe.theoldesthouse.TheOldestHouse.LOGGER.warn("Could not stage trailer cousin {} for round {} at {}; retrying",i,r.getUUID("Id"),c.position());
         }
+        return true;
     }
     private static GoatmanChild girl(ServerPlayer p,BlockPos b,CompoundTag r){
+        if(!spawnReady(p.serverLevel(),b))return null;
         var girls=actors(p.serverLevel(),b).stream().filter(c->c.viewer().filter(p.getUUID()::equals).isPresent()&&!c.getTags().contains("TrailerWalk")).toList();
         for(int i=1;i<girls.size();i++)girls.get(i).discard();if(!girls.isEmpty())return girls.getFirst();
         GoatmanChild c=GoatmanRegistry.CHILD.get().create(p.serverLevel());if(c==null)return null;
@@ -466,7 +476,7 @@ public final class GoatmanVignette {
         else if(phase==VIGIL){clock++;night(l,b,r,enrolled,clock);if(clock>=vigilTicks(r)){r.putInt("Clock",clock);dawn(l,b,r,enrolled,d);phase=DAWN;}}
         r.putInt("Clock",clock);
         // Restore saved actors, never reroll a tell or duplicate a cousin after a restart.
-        if(server.getTickCount()%20==0)stage(l,b,r);cousins(l,b,r,enrolled);
+        if(server.getTickCount()%20==0||r.getBoolean("StagePending0469"))r.putBoolean("StagePending0469",!stage(l,b,r));cousins(l,b,r,enrolled);
         saveRun(d,r);
         if(server.getTickCount()%20==0)for(var p:enrolled)scene(p,r);
         ambience(l,b,r,enrolled,server.getTickCount());

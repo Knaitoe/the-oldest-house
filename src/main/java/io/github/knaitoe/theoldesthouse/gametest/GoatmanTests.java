@@ -131,17 +131,16 @@ public final class GoatmanTests {
         }
     }
     private static Fixture stalking,disguises,fixtures,sharedSupper,spawn;
-    @AfterBatch(batch="goat_spawn0469") public static void cleanSpawn(ServerLevel l){if(spawn!=null){spawn.close();spawn=null;}}
+    private static java.util.function.Consumer<net.neoforged.neoforge.event.entity.EntityJoinLevelEvent> spawnObserver;
+    @AfterBatch(batch="goat_spawn0469") public static void cleanSpawn(ServerLevel l){if(spawnObserver!=null){NeoForge.EVENT_BUS.unregister(spawnObserver);spawnObserver=null;}if(spawn!=null){spawn.close();spawn=null;}}
     @GameTest(template="empty",batch="goat_spawn0469",timeoutTicks=1200)
     public static void freshCousinsJoinAtTheirActualCampPositionsAndKeepIdentityOnRestaging(GameTestHelper h){
         spawn=new Fixture(h,31000);var f=spawn;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        var joined=new LinkedHashMap<UUID,Vec3>();
+        spawnObserver=e->{if(e.getLevel()==f.l&&e.getEntity() instanceof GoatmanChild c&&!c.girl()&&c.getTags().contains(GoatmanVignette.ACTOR))joined.put(c.getUUID(),c.position());};
+        NeoForge.EVENT_BUS.addListener(spawnObserver);
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the fresh scene's native entity sections are ready")).thenExecute(()->{
-            var joined=new LinkedHashMap<UUID,Vec3>();
-            java.util.function.Consumer<net.neoforged.neoforge.event.entity.EntityJoinLevelEvent> observe=e->{
-                if(e.getLevel()==f.l&&e.getEntity() instanceof GoatmanChild c&&c.getTags().contains(GoatmanVignette.ACTOR))joined.put(c.getUUID(),c.position());
-            };
-            NeoForge.EVENT_BUS.addListener(observe);
-            try{h.assertTrue(GoatmanVignette.enter(p),"the fresh latecomer enrolls through the normal arrival path");}finally{NeoForge.EVENT_BUS.unregister(observe);}
+            try{h.assertTrue(GoatmanVignette.enter(p),"the fresh latecomer enrolls through the normal arrival path");}finally{NeoForge.EVENT_BUS.unregister(spawnObserver);spawnObserver=null;}
             h.assertTrue(joined.size()==8&&joined.values().stream().allMatch(IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN)::contains),"every cousin's native join event starts at the campsite, never chunk zero: "+joined.values());
             var ids=f.cousins().stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet());
             h.assertTrue(ids.equals(joined.keySet()),"all eight joined bodies are actually present in the scene");

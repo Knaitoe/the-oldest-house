@@ -28,6 +28,8 @@ public final class DrownedTownRegistry {
     private static final DeferredRegister<MapCodec<? extends Block>> CODECS = DeferredRegister.create(BuiltInRegistries.BLOCK_TYPE, TheOldestHouse.MOD_ID);
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, TheOldestHouse.MOD_ID);
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<NoticePostBlock>> NOTICE_TYPE=CODECS.register("notice_post",()->NoticePostBlock.CODEC);
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<TownStreetlightBlock>> STREETLIGHT_TYPE=CODECS.register("streetlight",()->TownStreetlightBlock.CODEC);
+    public static final DeferredBlock<TownStreetlightBlock> STREETLIGHT=BLOCKS.registerBlock("streetlight",TownStreetlightBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable());
     public static final DeferredBlock<NoticePostBlock> NOTICE=BLOCKS.registerBlock("notice_post",NoticePostBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).noOcclusion().noLootTable());
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<NoticePostBlockEntity>> NOTICE_ENTITY=BLOCK_ENTITIES.register("notice_post",()->BlockEntityType.Builder.of(NoticePostBlockEntity::new,NOTICE.get()).build(null));
     /** Proofrock's fitted pieces and the school's teacher desks (0.4.67). */
