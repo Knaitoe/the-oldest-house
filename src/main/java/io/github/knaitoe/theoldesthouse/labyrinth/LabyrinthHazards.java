@@ -328,6 +328,8 @@ public final class LabyrinthHazards {
             for (BlockPos cursor : BlockPos.betweenClosed(
                     bounds.minX(), bounds.minY(), bounds.minZ(),
                     bounds.maxX(), bounds.maxY(), bounds.maxZ())) {
+                // Inactive rooms must not synchronously generate distant chunks on the tick thread.
+                if (!level.hasChunkAt(cursor)) continue;
                 BlockState state = level.getBlockState(cursor);
                 if (!isPortableLight(state)) {
                     continue;
@@ -340,7 +342,7 @@ public final class LabyrinthHazards {
                     level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 0.7F);
                 }
             }
-            SINK_LIGHTS.keySet().removeIf(pos -> !isPortableLight(level.getBlockState(pos)));
+            SINK_LIGHTS.keySet().removeIf(pos -> level.hasChunkAt(pos) && !isPortableLight(level.getBlockState(pos)));
         }
 
         for (ServerPlayer player : level.players()) {

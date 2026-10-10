@@ -26,6 +26,7 @@ Preparation branch: `feat/trailer-cast-0.4.65`, based on Claude's latest 0.4.64 
 - The bathroom has actual modeled/textured porcelain toilet and sink blocks and a glazed awning window. Native clicks toggle the sink water and window; an open sash has an actual opening.
 - A once-only repair upgrades recognized old quartz/cauldron/trapdoor/spruce-door placeholders. It waits for loaded blocks/entity sections, clear living bodies and absent cameras, preserving native occupants, inventories, finite supplies, player edits and later removals.
 - This pass carries all latest 0.4.64 source-read, boat-hop, persistent broken-glazing, camera-frame, nightstand, haunting-glimpse and native-fixture repairs. Existing owned originals, companion custody and all endings remain exact.
+- The two-client expedition exposed an inactive light-sink room synchronously loading distant chunks during a server tick. Its light scan and stale-entry cleanup now inspect only already-loaded native chunks; occupied light expiry and darkness keep their existing rules.
 
 ## Validation
 
