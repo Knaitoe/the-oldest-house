@@ -225,9 +225,12 @@ public final class GoatmanTests {
     @AfterBatch(batch="goat_resume") public static void cleanResume(ServerLevel l){if(resume!=null){resume.close();resume=null;}}
     @AfterBatch(batch="goat_upgrade") public static void cleanUpgrade(ServerLevel l){if(upgrade!=null){upgrade.close();upgrade=null;}}
 
-    @GameTest(template="empty",batch="goat_path",timeoutTicks=230)
+    @GameTest(template="empty",batch="goat_path",timeoutTicks=1200)
     public static void nativeBackwardGirlAndTheShapesInTheHollowsMeetTheLatecomerThenLeave(GameTestHelper h){
-        path=new Fixture(h,28000);var f=path;var p=f.player();p.getAttribute(Attributes.SCALE).setBaseValue(1.2);h.assertTrue(GoatmanVignette.enter(p),"the actual latecomer enrolls");
+        path=new Fixture(h,28000);var f=path;var p=f.player();
+        f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the scene's native entity sections are ready")).thenExecute(()->{
+        p.getAttribute(Attributes.SCALE).setBaseValue(1.2);h.assertTrue(GoatmanVignette.enter(p),"the actual latecomer enrolls");
         var data=LabyrinthData.get(f.server);CompoundTag original=GoatmanVignette.run(data);UUID round=original.getUUID("Id");int wrong=original.getInt("Wrong"),tells=original.getInt("Tells"),runner=original.getInt("Runner");
         h.assertTrue(Integer.bitCount(tells)>=2&&Integer.bitCount(tells)<=3&&wrong>=0&&wrong<8&&runner!=wrong&&runner>=0&&runner<8,"one cousin receives two or three tells, and a different real cousin will go for gas");
         h.assertTrue(Math.abs(p.getAttributeValue(Attributes.SCALE)-.84)<.001,"child view multiplies the existing scale instead of destroying it");
@@ -261,11 +264,14 @@ public final class GoatmanTests {
             h.assertTrue(CompanionOrders.order(pet)==CompanionOrders.Order.DEEPER&&pet.getOwnerUUID().equals(p.getUUID()),"temporary refusal preserves the native pet and saved order");
             p.teleportTo(f.server.overworld(),100,80,100,0,0);p.hasChangedDimension();GoatmanVignette.tick(f.server);h.assertTrue(Math.abs(p.getAttributeValue(Attributes.SCALE)-1.2)<.001,"leaving restores the pre-existing scale");h.succeed();
         });
+        });
     }
 
     @GameTest(template="empty",batch="goat_night",timeoutTicks=600)
     public static void aNightDoneRightCountsLetsTheCousinInKeepsItOutAndEndsAnOldHaunting(GameTestHelper h){
         night=new Fixture(h,28300);var f=night;var a=f.player();var b=f.player();
+        f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the scene's native entity sections are ready")).thenExecute(()->{
         // b brought something home from an earlier night; getting this one right ends it.
         GoatmanHaunt.haunt(b,3,GoatmanVignette.FACE|GoatmanVignette.SILENT);
         h.assertTrue(GoatmanVignette.enter(a)&&GoatmanVignette.enter(b),"both native players join the same evening");
@@ -330,6 +336,7 @@ public final class GoatmanTests {
             h.assertTrue(f.l.getBrightness(LightLayer.BLOCK,f.b.offset(-6,2,-58))>=8&&f.l.getBrightness(LightLayer.BLOCK,f.b.offset(-5,1,-75))>=8,"the bunks and the kitchenette are lit well enough to see a face");
             h.assertTrue(!GoatmanVignette.canDeal(data,a.getUUID())&&GoatmanVignette.canDeal(data,UUID.randomUUID())&&!data.isCompleted(GoatmanVignette.ID),"a personal ending exhausts only its own explorer's encounter");h.succeed();
         });
+        });
     }
 
     @GameTest(template="empty",batch="goat_taken",timeoutTicks=2400)
@@ -365,9 +372,12 @@ public final class GoatmanTests {
         h.assertTrue(GoatmanRegistry.FIGURE.get().getDimensions().height()>2,"it is taller than a man");
     }
 
-    @GameTest(template="empty",batch="goat_window",timeoutTicks=200)
+    @GameTest(template="empty",batch="goat_window",timeoutTicks=1200)
     public static void anOpenBathroomWindowLetsItInAndItWalksHomeWithEveryone(GameTestHelper h){
-        window=new Fixture(h,28900);var f=window;var a=f.player();var b=f.player();GoatmanVignette.enter(a);GoatmanVignette.enter(b);f.night(List.of(a,b),GoatmanVignette.WINDOW_TRY-2,false);
+        window=new Fixture(h,28900);var f=window;var a=f.player();var b=f.player();
+        f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the scene's native entity sections are ready")).thenExecute(()->{
+        GoatmanVignette.enter(a);GoatmanVignette.enter(b);f.night(List.of(a,b),GoatmanVignette.WINDOW_TRY-2,false);
         int wrong=f.run().getInt("Wrong");
         h.runAfterDelay(4,()->{
             h.assertTrue(f.run().getInt("ExtraState")==GoatmanVignette.X_WINDOW,"with the window propped open it does not wait at the door");
@@ -385,6 +395,7 @@ public final class GoatmanTests {
                 h.assertTrue(LabyrinthDealer.rememberedWeight(data,p.getUUID(),LabyrinthPlace.GOATMAN,1)>=24,"the trailer stays near for a reader it followed home");
             }
             h.assertTrue(GoatmanVignette.canDeal(data,a.getUUID()),"a haunted reader may come back for another night");h.succeed();
+        });
         });
     }
 
