@@ -20,4 +20,6 @@ The fresh-trailer client proof waits for the normal native actor-registration re
 
 Layout 40 / protocol 46. Use matching 0.4.72 clients and server. Still 43 eligible sources, 33 resolutions across two kinds and three endings. No new credit is granted by fear, dialogue or scenery.
 
-Validation pending on the exact combined source. Required: 502 native cases, 461 PNG textures, all twelve workflow jobs, complete writing/eight fonts, 71 architecture views, all prior GPU proofs plus the two ward and six fear views, and actual two-client multiplayer with both reconnects and night captures.
+Verified source `40c79100f989d91e74c711c43c353c58eeb1c4ec` ([run 38091222490](https://github.com/Knaitoe/the-oldest-house/actions/runs/38091222490)): all twelve workflow jobs passed, including all 502 required native cases, 21 focused Goatman cases, 13 caver cases, complete writing/eight fonts (1,582 native book pages), 461 PNG textures, 71 architecture views, all prior GPU proofs plus the two ward and six fear views, and actual two-client multiplayer with both reconnects and night captures.
+
+Runtime: `the_oldest_house-0.4.72.jar`. SHA-256: `43d477918093a54d3c82fed6850994ab420c9a57513b360d7607c8c408dfb3bf`.
