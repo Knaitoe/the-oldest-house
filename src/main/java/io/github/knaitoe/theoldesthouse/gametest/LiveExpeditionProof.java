@@ -32,7 +32,7 @@ public final class LiveExpeditionProof {
     private static final BlockPos ORIGIN=new BlockPos(6000,80,6000);
     private static final Set<String> ACKS=new HashSet<>();
     private static final Set<String> PORTHOLE_CRAWLERS=new HashSet<>();
-    private static int phase,changed;private static boolean restarted;private static UUID secondId;
+    private static int phase,changed;private static boolean restarted;private static UUID secondId,nightGoatmanId;
     private static CompoundTag secondStory;private static Map<String,String> firstMap;
     private static final Map<UUID,Vec3> leakReturns=new HashMap<>();private static boolean leakRestarted,firstReturned;
     private static LakeWitchEntity stacy;private static LiteraryActor slasher;private static UUID stacyId,slasherId;private static int crackStarted=-1;
@@ -97,6 +97,10 @@ public final class LiveExpeditionProof {
             write("failed.txt",detail+"\n");s.halt(false);throw new IllegalStateException(detail);
         }
         var d=LabyrinthData.get(s);var base=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.OFFSET_HALL);
+        if((phase==35||phase==36)&&s.getTickCount()%100==0&&a!=null){
+            var camp=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN);var run=GoatmanVignette.run(d);
+            write("trailer-native-night-status.txt","phase="+phase+" scene="+run.getInt("Phase")+" clock="+run.getInt("Clock")+" extra="+run.getInt("ExtraState")+" leg="+run.getInt("StalkLeg0465")+" window="+run.getInt("StalkWindowLeg0465")+" demand="+run.getInt("Demand")+" fear="+GoatmanFear.stage(run)+" cues="+run.getInt("PressureCues0472")+"\n"+a.serverLevel().getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(camp,LabyrinthPlace.GOATMAN)).stream().map(c->c.getUUID()+" index="+c.getPersistentData().getInt(GoatmanVignette.INDEX)+" at="+c.position().subtract(camp.getX(),camp.getY(),camp.getZ())).collect(java.util.stream.Collectors.joining("\n"))+"\n");
+        }
         if((phase==2||phase==4)&&s.getTickCount()%100==0)TheOldestHouse.LOGGER.info("LIVE EXPEDITION positions phase {}: A={}, B={}",phase,location(a),location(b));
         if(phase==1&&ACKS.size()==2) {
             var source=d.door("alcove_hall/far");require(source!=null,"real source door registered");
@@ -292,6 +296,7 @@ public final class LiveExpeditionProof {
             step(s,31,source.lower);
         }else if(phase==31&&a!=null&&b!=null&&LabyrinthPlaces.placeAt(ORIGIN,a.blockPosition())==LabyrinthPlace.GOATMAN&&LabyrinthPlaces.placeAt(ORIGIN,b.blockPosition())==LabyrinthPlace.GOATMAN){
             var camp=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN);var run=GoatmanVignette.run(d);
+            nightGoatmanId=a.serverLevel().getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(camp,LabyrinthPlace.GOATMAN),c->!c.girl()&&c.getPersistentData().getInt(GoatmanVignette.INDEX)==run.getInt("Wrong")).stream().findFirst().orElseThrow().getUUID();
             require(run.getInt("Phase")==GoatmanVignette.PATH&&run.getCompound("Cohort").getAllKeys().size()==2,"both actual door crossings enroll in one fresh trailer round");
             step(s,32,camp);
         }else if(phase==32&&a!=null&&b!=null&&ACKS.size()==2){
@@ -310,9 +315,11 @@ public final class LiveExpeditionProof {
             var cohort=run.getCompound("Cohort");for(var p:List.of(a,b)){var own=cohort.getCompound(p.getUUID().toString());own.putInt("Vigil",0);cohort.put(p.getUUID().toString(),own);at(p,camp.offset(0,1,-59),180,p==a?-.6:.6);}
             run.put("Cohort",cohort);var all=d.state(GoatmanVignette.ID);all.put("Run",run);d.setState(GoatmanVignette.ID,all);GoatmanWoods.door(a.serverLevel(),camp,true);GoatmanWoods.setWindow(a.serverLevel(),camp,true);step(s,35,camp);
         }else if(phase==35&&a!=null&&b!=null&&ACKS.size()==2){
-            var run=GoatmanVignette.run(d);require(run.getInt("Phase")==GoatmanVignette.VIGIL,"both real clients reached the normal shared night transition");step(s,36,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN));
+            var run=GoatmanVignette.run(d);require(run.getInt("Phase")==GoatmanVignette.VIGIL,"both real clients reached the normal shared night transition");require(run.getInt("ExtraState")==GoatmanVignette.X_DOOR,"the connected client closed the real door before the quiet and kept the impostor outside");step(s,36,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN));
         }else if(phase==36&&a!=null&&b!=null&&ACKS.size()==2){
-            write("trailer-night.txt","Both actual clients tracked seven distinct frightened cousins, received native knocks from the west, east and rear of the trailer, and rendered a real priority Goatman demand with the cousin subtitle suppressed.\n");
+            require(GoatmanStalking.circuitDone(GoatmanVignette.run(d)),"the same native Goatman completed every physical circuit leg despite independent dialogue timing");
+            var run=GoatmanVignette.run(d);var camp=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN);var wrong=a.serverLevel().getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(camp,LabyrinthPlace.GOATMAN),c->!c.girl()&&c.getPersistentData().getInt(GoatmanVignette.INDEX)==run.getInt("Wrong"));require(wrong.size()==1&&wrong.getFirst().getUUID().equals(nightGoatmanId),"the complete night keeps the original Goatman UUID and one physical body");
+            write("trailer-night.txt","Both actual clients tracked the same seven cousins from upright confusion through distinct fear to terror, received native knocks from the west, east and rear, and rendered a later priority Goatman demand with the cousin subtitle suppressed. The original Goatman body completed every circuit leg.\n");
             step(s,30,a.blockPosition());write("passed.txt","Two actual NeoForge socket clients: all original shared doors, personal leaves/burns/note scenes and two same-profile reconnects; one Stacy body and one three-second wooden-door break; real shared/private physical hunts, protected hiding peers and renderer ownership; both mine and crawl through persistent shattered portholes with protected hull; both use cameras, return actual rendered exposures, receive distinct locked native maps and independently earn their own Plains memory; a shared native ledger remains hidden for both, appears for the sole eligible reader and disappears after native menu collection without appearing for the peer; fresh trailer door arrivals track eight shared cousins and each private path girl; both clients render distinct fear and priority night dialogue and receive spatial knock events; native screenshots saved; no doubled clocks or transferred ending credit.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: persistent shattered portholes, two actual camera exposures, independent ending-book visibility, fresh trailer children and two reconnects");
         }else if(phase==30&&s.getTickCount()-changed>100){huntChunks.close();s.halt(false);}
     }

@@ -69,7 +69,7 @@ try:
             assert (report / f"{role}-{view}.png").stat().st_size > 500, (role, view)
     assert (report / "camera-maps.txt").is_file()
     for role in ("A", "B"):
-        for view in ("trailer-arrival", "trailer-camp", "trailer-fear", "trailer-voice"):
+        for view in ("trailer-arrival", "trailer-camp", "trailer-confusion", "trailer-fear", "trailer-terror", "trailer-voice"):
             assert (report / f"{role}-{view}.png").stat().st_size > 10000, (role, view)
     assert (report / "trailer-arrival.txt").is_file()
     assert (report / "trailer-camp.txt").is_file()

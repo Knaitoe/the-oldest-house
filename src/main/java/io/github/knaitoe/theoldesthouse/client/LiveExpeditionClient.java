@@ -23,6 +23,7 @@ import net.neoforged.neoforge.client.event.*;
 public final class LiveExpeditionClient {
     private static int previous,ticks,clicked=-100,ack=-1;private static String shot;private static boolean stopping,portholePoseSeen;
     private static BlockPos proofCamp;
+    private static boolean confusionCaptured,terrorCaptured;
     private static final java.util.Set<String> heardSides=new java.util.HashSet<>();
     private static final java.util.List<String> heardKnocks=new java.util.ArrayList<>();
     @SubscribeEvent public static void sounds(net.neoforged.neoforge.client.event.sound.PlaySoundEvent e){
@@ -207,13 +208,22 @@ public final class LiveExpeditionClient {
         }
         if(step==35||step==36){
             proofCamp=target;mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.hideGui=false;
+            // The outside vigil requires the actual front door to be closed before the quiet.
+            // Let one connected client use the normal interaction, rather than admit the impostor.
+            if(step==35&&role.equals("A")&&ticks>8&&open(mc.level.getBlockState(target.offset(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.DOOR))))click(mc,target.offset(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.DOOR),ticks);
             var children=mc.level.getEntitiesOfClass(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild.class,io.github.knaitoe.theoldesthouse.labyrinth.IndianLakeRooms.bounds(target,io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace.GOATMAN));
+            if(ticks%100==0)try{
+                Files.createDirectories(LiveExpeditionProof.folder());Files.writeString(LiveExpeditionProof.folder().resolve(role+"-trailer-night-status.txt"),"phase="+step+" priority="+GoatmanClient.priorityDemand()+" cousin="+GoatmanClient.cousinSubtitle()+" sides="+heardSides+"\n"+String.join("\n",heardKnocks)+"\n"+children.stream().map(c->c.getUUID()+" role="+c.fear()+" stage="+c.fearStage()+" cower="+c.cowering()+" at="+c.position().subtract(target.getX(),target.getY(),target.getZ())).collect(java.util.stream.Collectors.joining("\n"))+"\n");
+            }catch(Exception ex){throw new IllegalStateException(ex);}
             if(step==35){
                 mc.player.setYRot(180);mc.player.setXRot(0);var roles=children.stream().map(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild::fear).filter(n->n>0).collect(java.util.stream.Collectors.toSet());
-                if(ticks>100&&mc.screen==null&&roles.size()==7&&children.stream().filter(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild::cowering).count()==1&&ack!=35){shot=role+"-trailer-fear";ack(mc,35);}
+                if(!confusionCaptured&&shot==null&&mc.screen==null&&roles.size()==7&&GoatmanClient.cousinSubtitle()&&children.stream().filter(c->c.fearStage()==1).count()==7&&children.stream().noneMatch(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild::cowering)){shot=role+"-trailer-confusion";confusionCaptured=true;}
+                if(confusionCaptured&&shot==null&&GoatmanClient.night()&&mc.screen==null&&roles.size()==7&&children.stream().filter(c->c.fearStage()==2).count()==7&&children.stream().noneMatch(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild::cowering)&&ack!=35){shot=role+"-trailer-fear";ack(mc,35);}
             }else{
                 mc.player.setYRot(0);mc.player.setXRot(0);
-                if(mc.screen==null&&GoatmanClient.priorityDemand()>=101&&!GoatmanClient.cousinSubtitle()&&heardSides.size()==3&&ack!=36){
+                boolean terror=children.stream().filter(c->c.fearStage()==3).count()==7&&children.stream().filter(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild::cowering).count()==1;
+                if(terror&&!terrorCaptured&&shot==null&&mc.screen==null){mc.player.setYRot(180);shot=role+"-trailer-terror";terrorCaptured=true;}
+                if(terror&&terrorCaptured&&shot==null&&mc.screen==null&&GoatmanClient.priorityDemand()>=104&&!GoatmanClient.cousinSubtitle()&&heardSides.size()==3&&ack!=36){
                     shot=role+"-trailer-voice";try{Files.createDirectories(LiveExpeditionProof.folder());Files.writeString(LiveExpeditionProof.folder().resolve(role+"-trailer-sounds.txt"),String.join("\n",heardKnocks)+"\n");}catch(Exception ex){throw new IllegalStateException(ex);}ack(mc,36);
                 }
             }

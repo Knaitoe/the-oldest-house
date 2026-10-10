@@ -537,6 +537,9 @@ jobs:
           test -s build/font-smoke/native-goatman-fear0472-0.png
           test -s build/font-smoke/native-goatman-fear0472-1.png
           test -s build/font-smoke/native-goatman-fear0472-2.png
+          test -s build/font-smoke/native-goatman-fear0472-3.png
+          test -s build/font-smoke/native-goatman-fear0472-4.png
+          test -s build/font-smoke/native-goatman-fear0472-5.png
           test -s build/font-smoke/goatman-fear0472-passed.txt
           for page in 0 1; do test -s build/font-smoke/native-institute-0470-$page.png; done
           test -s build/font-smoke/native-goatman.png
@@ -1020,6 +1023,9 @@ jobs:
           test -s build/font-smoke/native-goatman-fear0472-0.png
           test -s build/font-smoke/native-goatman-fear0472-1.png
           test -s build/font-smoke/native-goatman-fear0472-2.png
+          test -s build/font-smoke/native-goatman-fear0472-3.png
+          test -s build/font-smoke/native-goatman-fear0472-4.png
+          test -s build/font-smoke/native-goatman-fear0472-5.png
           test -s build/font-smoke/goatman-fear0472-passed.txt
           for page in 0 1; do test -s build/font-smoke/native-institute-0470-$page.png; done
       - uses: actions/upload-artifact@v4
