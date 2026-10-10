@@ -26,7 +26,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.gametest.*;
 
-@GameTestHolder(TheOldestHouse.MOD_ID)
+@GameTestHolder(TheOldestHouse.MOD_ID+"_goatman")
 @PrefixGameTestTemplate(false)
 public final class GoatmanTests {
     private static Fixture supper;
@@ -166,6 +166,7 @@ public final class GoatmanTests {
             GoatmanVignette.enter(p);var r=f.run();f.cohort(r,List.of(p),0);var c=f.cousin(r.getInt("Wrong")).orElseThrow();UUID id=c.getUUID();int original=c.skin();
             c.moveTo(new Vec3(.5,1,-53.8).add(f.b.getX(),f.b.getY(),f.b.getZ()));GoatmanWoods.door(f.l,f.b,true);p.moveTo(new Vec3(.5,1,-56.7).add(f.b.getX(),f.b.getY(),f.b.getZ()));p.setYRot(0);p.setXRot(0);
             h.assertTrue(!GoatmanStalking.obscured(f.l,c),"the actual player sees the child through the open doorway");GoatmanStalking.step(f.l,f.b,r,c,1);h.assertTrue(!c.monsterAppearance(),"a pending texture change waits while the actual camera sees it");
+            c.moveTo(new Vec3(-9.25,1.3,-58.5).add(f.b.getX(),f.b.getY(),f.b.getZ()));p.moveTo(new Vec3(-6.5,1,-58.5).add(f.b.getX(),f.b.getY(),f.b.getZ()));p.setYRot(90);p.setXRot(0);h.assertTrue(!GoatmanStalking.obscured(f.l,c),"clear native window panes cannot conceal a visible disguise change");
             r.putInt("StalkUsed0465",1<<original);var seen=new HashSet<Integer>();for(int i=0;i<8;i++){int next=GoatmanStalking.nextChild(r);h.assertTrue(next>=0&&next!=original&&seen.add(next),"each remaining child appears only once");}
             h.assertTrue(GoatmanStalking.nextChild(r)==-2,"exhausting the children leaves only the Goatman");f.run(r);
             var saved=LabyrinthData.get(f.server).save(new CompoundTag(),f.l.registryAccess());var loaded=LabyrinthData.FACTORY.deserializer().apply(saved,f.l.registryAccess());var restored=GoatmanVignette.run(loaded);h.assertTrue(GoatmanStalking.nextChild(restored)==-2,"a save reload cannot recycle the disguise deck");
@@ -177,6 +178,7 @@ public final class GoatmanTests {
         fixtures=new Fixture(h,31000);var f=fixtures;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"bathroom and door sections are loaded")).thenExecute(()->{
             h.assertTrue(f.l.getBlockState(f.b.offset(GoatmanWoods.TOILET)).is(GoatmanRegistry.TOILET.get())&&f.l.getBlockState(f.b.offset(GoatmanWoods.SINK)).is(GoatmanRegistry.SINK.get()),"the generated room contains actual toilet and sink blocks");
+            var doorPos=f.b.offset(GoatmanWoods.DOOR);var frame=(TrailerDoorBlockEntity)f.l.getBlockEntity(doorPos);frame.impact(3);var received=new TrailerDoorBlockEntity(doorPos,frame.getBlockState());received.setLevel(f.l);received.loadWithComponents(frame.getUpdatePacket().getTag(),f.l.registryAccess());h.assertTrue(Math.abs(received.recoil(2))>.1&&received.stress()==3,"the actual native block-entity packet retains an active recoil and stress");received.loadWithComponents(frame.saveWithoutMetadata(f.l.registryAccess()),f.l.registryAccess());h.assertTrue(received.recoil(2)==0&&received.stress()==3,"disk reload keeps stress without replaying an old impact");
             p.moveTo(new Vec3(6.5,1,-75.5).add(f.b.getX(),f.b.getY(),f.b.getZ()));f.use(p,GoatmanWoods.WINDOW);h.assertTrue(GoatmanWoods.windowShut(f.l,f.b),"a native window interaction shuts the glazed sash");f.use(p,GoatmanWoods.WINDOW);h.assertTrue(!GoatmanWoods.windowShut(f.l,f.b),"the same actual window opens again");
             f.l.setBlock(f.b.offset(GoatmanWoods.TOILET),Blocks.QUARTZ_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST),2);f.l.setBlock(f.b.offset(GoatmanWoods.TOILET).above(),Blocks.QUARTZ_SLAB.defaultBlockState(),2);f.l.setBlock(f.b.offset(GoatmanWoods.SINK),Blocks.WATER_CAULDRON.defaultBlockState(),2);
             p.moveTo(100,80,100);var packetData=f.run();packetData.putInt("PacketsIssued0464",2);f.run(packetData);h.assertTrue(GoatmanTrailerUpgrade.apply(f.l,f.b),"an unseen, loaded old bathroom upgrades in place");

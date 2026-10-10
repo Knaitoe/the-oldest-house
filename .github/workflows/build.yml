@@ -932,6 +932,40 @@ jobs:
             run-live/*/logs/latest.log
             run-live/*/crash-reports/
 
+  goatman-gameplay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Native trailer cooking, physical stalking, disguises and fixture packets
+        timeout-minutes: 12
+        env:
+          JAVA_TOOL_OPTIONS: -Xmx6g
+        run: |
+          mkdir -p build run
+          printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 11m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_goatman --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/goatman-native.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          completed=re.findall(r'All (\d+) required tests passed',Path('build/goatman-native.log').read_text())
+          declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/GoatmanTests.java').read_text()))
+          assert completed and int(completed[-1])==declared, (completed,declared)
+          print(f'All {declared} focused native Goatman cases passed; the complete suite remains required.')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: goatman-diagnostics-${{ github.sha }}
+          path: build/goatman-native.log
+
   caver-gameplay:
     runs-on: ubuntu-latest
     steps:
