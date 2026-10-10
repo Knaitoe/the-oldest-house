@@ -1,7 +1,7 @@
 {
   "textures": {
     "body": "the_oldest_house:block/cooler",
-    "lid": "minecraft:block/quartz_block",
+    "lid": "minecraft:block/quartz_block_top",
     "latch": "minecraft:block/iron_block",
     "particle": "the_oldest_house:block/cooler"
   },
