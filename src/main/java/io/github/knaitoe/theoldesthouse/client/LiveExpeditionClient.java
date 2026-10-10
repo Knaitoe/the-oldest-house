@@ -170,7 +170,7 @@ public final class LiveExpeditionClient {
             mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);
             var bounds=io.github.knaitoe.theoldesthouse.labyrinth.IndianLakeRooms.bounds(target,io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace.GOATMAN);
             var children=mc.level.getEntitiesOfClass(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild.class,bounds);
-            if(ticks>40&&ack!=32&&children.stream().filter(c->!c.girl()).count()==8&&children.stream().filter(c->c.viewer().filter(mc.player.getUUID()::equals).isPresent()).count()==1){
+            if(ticks>40&&mc.screen==null&&ack!=32&&children.stream().filter(c->!c.girl()).count()==8&&children.stream().filter(c->c.viewer().filter(mc.player.getUUID()::equals).isPresent()).count()==1){
                 var camera=mc.gameRenderer.getMainCamera().getPosition();var frustum=new net.minecraft.client.renderer.culling.Frustum(new org.joml.Matrix4f(),new org.joml.Matrix4f().ortho(-128,128,-128,128,-128,128));frustum.prepare(camera.x,camera.y,camera.z);
                 for(var c:children){boolean mine=!c.girl()||c.viewer().filter(mc.player.getUUID()::equals).isPresent();var renderer=mc.getEntityRenderDispatcher().getRenderer(c);
                     // At the entrance cousins can be beyond native model draw distance;
