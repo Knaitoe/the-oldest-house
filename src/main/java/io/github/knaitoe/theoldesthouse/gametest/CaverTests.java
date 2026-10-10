@@ -129,7 +129,11 @@ public final class CaverTests {
                 h.assertTrue(f.use(p,CaverCave.MARK,Direction.EAST,InteractionHand.MAIN_HAND).consumesAction()&&f.own(p).getBoolean("MarkRead")&&f.l.getBlockState(beside).isAir()&&p.getMainHandItem().getCount()==4,"a torch in the main hand does not stop the reader examining the marks, and none is set on them");
                 p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);p.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(Items.TORCH,4));
                 h.assertTrue(f.use(p,CaverCave.MARK,Direction.EAST,InteractionHand.MAIN_HAND).consumesAction()&&!f.use(p,CaverCave.MARK,Direction.EAST,InteractionHand.OFF_HAND).consumesAction()&&f.l.getBlockState(beside).isAir()&&p.getOffhandItem().getCount()==4,"the client's following off-hand try sets no torch on the marks just read");
-                p.setItemInHand(InteractionHand.OFF_HAND,ItemStack.EMPTY);f.at(p,4.5,-3,-41.5);
+                p.setItemInHand(InteractionHand.OFF_HAND,ItemStack.EMPTY);
+                // Digging at the marks gets a nudge to look closer, and the House keeps them whole.
+                p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.IRON_PICKAXE));var dig=new PlayerInteractEvent.LeftClickBlock(p,f.b.offset(CaverCave.MARK),Direction.EAST,PlayerInteractEvent.LeftClickBlock.Action.START);NeoForge.EVENT_BUS.post(dig);
+                h.assertTrue(!dig.isCanceled()&&!p.gameMode.destroyBlock(f.b.offset(CaverCave.MARK))&&f.l.getBlockState(f.b.offset(CaverCave.MARK)).is(LabyrinthRegistry.CAVE_MARKS.get()),"the marked rock cannot be broken out of the wall");
+                p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);f.at(p,4.5,-3,-41.5);
                 CaverVignette.setBreath(f.l.getServer(),10);f.click(p,CaverCave.STONE);
                 h.assertTrue(!f.l.getBlockState(f.b.offset(CaverCave.STONE)).isAir()&&!f.own(p).getBoolean("StoneSeen"),"the stone stays in its seat while the cave breathes out");
                 CaverVignette.setBreath(f.l.getServer(),CaverVignette.INHALE_START+5);f.click(p,CaverCave.STONE);
