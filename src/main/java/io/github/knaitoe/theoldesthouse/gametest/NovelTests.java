@@ -42,6 +42,74 @@ public final class NovelTests {
             chunks.close();var s=l.getServer();s.overworld().getDataStorage().set("the_oldest_house",oldHouse);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);s.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);s.overworld().setDayTime(oldDayTime);LabyrinthBuilder.clearAll();}
     }
     private static Fixture courtyard,whale,well,plain,ward,karen,upgrade,signRepair;
+    private static Fixture hospitalStyle,hospitalSave,hospitalWriting,hospitalInterrupted;
+    @AfterBatch(batch="novel_hospital_style0470") public static void hospitalStyleDone(ServerLevel l){if(hospitalStyle!=null){hospitalStyle.close();hospitalStyle=null;}}
+    @AfterBatch(batch="novel_hospital_save0470") public static void hospitalSaveDone(ServerLevel l){if(hospitalSave!=null){hospitalSave.close();hospitalSave=null;}}
+    @AfterBatch(batch="novel_hospital_writing0470") public static void hospitalWritingDone(ServerLevel l){if(hospitalWriting!=null){hospitalWriting.close();hospitalWriting=null;}}
+    @AfterBatch(batch="novel_hospital_interrupted0470") public static void hospitalInterruptedDone(ServerLevel l){if(hospitalInterrupted!=null){hospitalInterrupted.close();hospitalInterrupted=null;}}
+    @GameTest(template="empty",batch="novel_hospital_style0470",timeoutTicks=240)
+    public static void instituteHasNativeWardFurnitureAndReadableBedsideNotebooks(GameTestHelper h){
+        hospitalStyle=new Fixture(h,35200,LabyrinthPlace.WHALE);var f=hospitalStyle;var p=f.player();
+        h.runAfterDelay(8,()->{
+            var paint=new HashSet<InstituteFixtureBlock.Kind>();
+            for(int x=-13;x<=13;x++)for(int y=1;y<=4;y++){var state=f.l.getBlockState(f.b.offset(x,y,-9));if(state.is(NovelRegistry.WARD_FIXTURE.get()))paint.add(state.getValue(InstituteFixtureBlock.KIND));}
+            h.assertTrue(paint.contains(InstituteFixtureBlock.Kind.PAINT)&&paint.contains(InstituteFixtureBlock.Kind.PEEL),"the ward walls contain different intact and peeling native finishes");
+            h.assertTrue(f.l.getBlockState(f.b.offset(-9,0,-18)).is(NovelRegistry.WARD_CABINET.get())&&f.l.getBlockState(f.b.offset(0,0,-30)).getValue(InstituteFixtureBlock.KIND)==InstituteFixtureBlock.Kind.CHAIR,"storage and dayroom seating are real hospital fittings");
+            h.assertTrue(f.l.getBlockState(f.b.offset(10,0,-22)).getValue(InstituteFixtureBlock.KIND)==InstituteFixtureBlock.Kind.BED_FOOT&&f.l.getBlockState(f.b.offset(11,0,-22)).getValue(InstituteFixtureBlock.KIND)==InstituteFixtureBlock.Kind.BED_HEAD,"the white ward bed is two physical blocks with an enamel frame");
+            h.assertTrue(f.l.getBlockState(f.b.offset(WhaleInstitute.CALENDAR)).isAir()&&f.l.getBlockState(f.b.offset(WhaleInstitute.CALENDAR_BOOK)).is(NovelRegistry.WARD_NOTEBOOK.get()),"the old wooden calendar sign becomes a notebook on a supported side table");
+            var saved=(InstituteNotebookBlockEntity)f.l.getBlockEntity(f.b.offset(WhaleInstitute.LECTERN));h.assertTrue(ItemStack.isSameItemSameComponents(saved.book(),NovelTexts.whaleOpening()),"the reading table holds the exact original opening letter");
+            f.at(p,9.5,0,-22.5);f.click(p,WhaleInstitute.CALENDAR_BOOK);h.assertTrue(p.containerMenu instanceof NovelVignettes.NovelBookMenu,"the notebook opens through the real private native reading menu");p.closeContainer();
+            for(int i=0;i<=5;i++)for(int z:new int[]{-30,-31})h.assertTrue(f.l.noCollision(null,new AABB(f.b.getX()-6-i+.2,f.b.getY()+i+1.01,f.b.getZ()+z+.2,f.b.getX()-6-i+.8,f.b.getY()+i+2.81,f.b.getZ()+z+.8)),"every enamel stair retains its original standing headroom");
+            h.assertTrue(!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.WHALE),"the calendar and new scenery confer no resolution");h.succeed();
+        });
+    }
+    @GameTest(template="empty",batch="novel_hospital_save0470",timeoutTicks=2400)
+    public static void hospitalRefitWaitsForNativeResidentsAndKeepsExactOriginalsWithoutRestocking(GameTestHelper h){
+        hospitalSave=new Fixture(h,35600,LabyrinthPlace.WHALE);var f=hospitalSave;var p=f.player();f.chunks.hold(f.l,new AABB(f.b.offset(-16,-1,-35),f.b.offset(17,13,3)));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"all ward entity sections are native and ready")).thenExecute(()->{
+            WhaleHospital.forget(f.l.getServer(),f.origin);var at=f.b.offset(-9,0,-18);f.l.setBlock(at,Blocks.BARREL.defaultBlockState(),2);
+            var original=letter(p,"Keep this sentence exactly.");original.set(DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("My actual stored letter"));var old=(BarrelBlockEntity)f.l.getBlockEntity(at);old.setItem(26,original.copy());old.setCustomName(net.minecraft.network.chat.Component.literal("Custom ward drawer"));
+            var source=letter(p,"This is the actual lectern original, not the default text.");NovelRooms.lectern(f.l,f.b.offset(WhaleInstitute.LECTERN),source);
+            var own=f.own(p);var sent=new CompoundTag();sent.putInt("Sent",2);sent.putString("Exact","An earlier private exchange");own.put(WhaleInstitute.KEY,sent);NovelVignettes.save(f.data(),p.getUUID(),own);
+            h.assertTrue(!WhaleHospital.apply(f.l,f.b),"a camera in the institute holds the whole in-place repair");p.moveTo(100,80,100);
+            var cat=EntityType.CAT.create(f.l);cat.setNoAi(true);cat.moveTo(f.b.getX()+4.5,f.b.getY(),f.b.getZ()-22.5);cat.setOwnerUUID(p.getUUID());cat.setHealth(4);f.l.addFreshEntity(cat);f.extra.add(cat);var id=cat.getUUID();
+            h.assertTrue(!WhaleHospital.apply(f.l,f.b),"a living resident holds the refit even after the camera leaves");cat.moveTo(100,80,110);
+            h.assertTrue(WhaleHospital.apply(f.l,f.b),"the unseen, vacant, loaded ward is repaired in place");var cabinet=(InstituteCabinetBlockEntity)f.l.getBlockEntity(at);
+            h.assertTrue(cabinet.getContainerSize()==27&&ItemStack.isSameItemSameComponents(cabinet.getItem(26),original)&&cabinet.getName().getString().equals("Custom ward drawer"),"the same slot, exact item components and native custom name survive the barrel conversion");
+            h.assertTrue(ItemStack.isSameItemSameComponents(((InstituteNotebookBlockEntity)f.l.getBlockEntity(f.b.offset(WhaleInstitute.LECTERN))).book(),source)&&f.own(p).getCompound(WhaleInstitute.KEY).equals(sent),"actual source words and the writer's private exchange remain exact");
+            h.assertTrue(cat.getUUID().equals(id)&&cat.getOwnerUUID().equals(p.getUUID())&&cat.getHealth()==4,"the resident keeps identity, ownership and health");
+            cabinet.removeItemNoUpdate(26);cabinet.setChanged();f.l.setBlock(f.b.offset(0,0,-30),Blocks.AIR.defaultBlockState(),2);f.reload();WhaleHospital.apply(f.l,f.b);
+            h.assertTrue(cabinet.isEmpty()&&f.l.getBlockState(f.b.offset(0,0,-30)).isAir(),"reload never restocks a drawer or replaces a later removed chair");h.succeed();
+        });
+    }
+    @GameTest(template="empty",batch="novel_hospital_interrupted0470",timeoutTicks=2400)
+    public static void interruptedHospitalCustodyFinishesWithoutReplacingTheSavedOriginalWithAnEmptyBarrel(GameTestHelper h){
+        hospitalInterrupted=new Fixture(h,36000,LabyrinthPlace.WHALE);var f=hospitalInterrupted;var p=f.player();f.chunks.hold(f.l,new AABB(f.b.offset(-16,-1,-35),f.b.offset(17,13,3)));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the interrupted ward's native sections are ready")).thenExecute(()->{
+            WhaleHospital.forget(f.l.getServer(),f.origin);var at=f.b.offset(-9,0,-18);f.l.setBlock(at,Blocks.BARREL.defaultBlockState(),2);var old=(BarrelBlockEntity)f.l.getBlockEntity(at);var original=letter(p,"Already in saved custody.");old.setItem(11,original.copy());
+            var containers=new CompoundTag();containers.put(Long.toString(at.asLong()),old.saveWithFullMetadata(f.l.registryAccess()));var pending=new CompoundTag();pending.put("Containers",containers);var checkpoint=f.data().state(WhaleHospital.STATE);checkpoint.put(Long.toString(f.b.asLong()),pending);f.data().setState(WhaleHospital.STATE,checkpoint);
+            old.clearContent();f.reload();p.moveTo(100,80,100);h.assertTrue(WhaleHospital.apply(f.l,f.b),"an interrupted clear resumes from saved native custody");
+            h.assertTrue(ItemStack.isSameItemSameComponents(((InstituteCabinetBlockEntity)f.l.getBlockEntity(at)).getItem(11),original),"the emptied old barrel does not overwrite the saved exact original");h.succeed();
+        });
+    }
+    @GameTest(template="empty",batch="novel_hospital_writing0470",timeoutTicks=240)
+    public static void writingPromptsAndTheOtherHandPreserveWordsAndKeepFinitePrivatePaper(GameTestHelper h){
+        hospitalWriting=new Fixture(h,36400,LabyrinthPlace.WHALE);var f=hospitalWriting;var p=f.player();var peer=f.player();
+        h.runAfterDelay(8,()->{
+            f.at(p,7.5,0,-22.5);f.click(p,WhaleInstitute.DESK);h.assertTrue(p.containerMenu instanceof LiteraryChoiceMenu&&p.getMainHandItem().is(Items.WRITABLE_BOOK),"the actual desk gives finite paper and opens the optional writing choices");
+            p.containerMenu.clicked(2,0,net.minecraft.world.inventory.ClickType.PICKUP,p);var draft=p.getMainHandItem();h.assertTrue(draft.get(DataComponents.WRITABLE_BOOK_CONTENT).pages().getFirst().raw().contains("room I keep returning"),"a native menu selection gives an editable prose beginning");
+            String exact="These are the words I wrote myself.";var pages=new ArrayList<net.minecraft.server.network.Filterable<String>>();pages.add(net.minecraft.server.network.Filterable.passThrough(exact));draft.set(DataComponents.WRITABLE_BOOK_CONTENT,new net.minecraft.world.item.component.WritableBookContent(pages));draft.set(DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("My unsent draft"));
+            f.click(p,WhaleInstitute.DESK);p.containerMenu.clicked(4,0,net.minecraft.world.inventory.ClickType.PICKUP,p);h.assertTrue(draft.get(DataComponents.WRITABLE_BOOK_CONTENT).pages().getFirst().raw().equals(exact),"a prompt never replaces the player's existing prose");
+            for(int i=0;i<3;i++){f.click(p,WhaleInstitute.DESK);p.containerMenu.clicked(8,0,net.minecraft.world.inventory.ClickType.PICKUP,p);}
+            var writing=draft.get(DataComponents.WRITABLE_BOOK_CONTENT);h.assertTrue(writing.pages().size()==4&&writing.pages().getFirst().raw().equals(exact)&&draft.getHoverName().getString().equals("My unsent draft"),"the other hand appends three pages while all original words and components remain");
+            f.click(p,WhaleInstitute.DESK);p.containerMenu.clicked(8,0,net.minecraft.world.inventory.ClickType.PICKUP,p);h.assertTrue(draft.get(DataComponents.WRITABLE_BOOK_CONTENT).equals(writing)&&f.own(peer).getCompound(WhaleInstitute.KEY).getInt("OtherHand0470")==0,"continuations are bounded and private to this writer");
+            var desk=f.b.offset(WhaleInstitute.DESK);p.moveTo(100,80,100);h.assertTrue(!WhaleWriting.choose(p,desk,2),"a stale remote menu cannot edit a held book");
+            f.at(p,7.5,0,-22.5);p.gameMode.changeGameModeForPlayer(GameType.SPECTATOR);h.assertTrue(!WhaleWriting.choose(p,desk,8),"observers cannot drive the writing interaction");p.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+            h.assertTrue(!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.WHALE)&&f.own(p).getCompound(WhaleInstitute.KEY).getInt("Sent")==0,"optional prose and drafts neither post a letter nor confer ending credit");
+            for(int i=0;i<4;i++){p.getInventory().clearContent();f.click(p,WhaleInstitute.DESK);p.closeContainer();}
+            h.assertTrue(f.own(p).getCompound(WhaleInstitute.KEY).getInt("Blanks")==4&&p.getInventory().countItem(Items.WRITABLE_BOOK)==0,"the physical drawer supplies only its original four sheets");h.succeed();
+        });
+    }
     @AfterBatch(batch="novel_sign_repair0468") public static void c8(ServerLevel l){if(signRepair!=null){signRepair.close();signRepair=null;}}
     @GameTest(template="empty",batch="novel_sign_repair0468",timeoutTicks=2400)
     public static void instituteRepairsWaitForCamerasAndKeepTheExactPrivateCorrespondence(GameTestHelper h){

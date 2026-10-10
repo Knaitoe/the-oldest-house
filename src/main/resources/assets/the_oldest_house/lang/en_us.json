@@ -189,5 +189,14 @@
   "block.the_oldest_house.vehicle_wheel": "Wheel",
   "block.the_oldest_house.institute_sign": "Institute sign",
   "block.the_oldest_house.notice_post": "Note",
-  "block.the_oldest_house.streetlight": "Streetlight"
+  "block.the_oldest_house.streetlight": "Streetlight",
+  "block.the_oldest_house.institute_fixture": "Ward fitting",
+  "block.the_oldest_house.institute_cabinet": "Ward cabinet",
+  "block.the_oldest_house.institute_notebook": "Bedside notebook",
+  "block.the_oldest_house.institute_rail": "Enamel ward rail",
+  "block.the_oldest_house.institute_stairs": "Institute stairs",
+  "block.the_oldest_house.institute_slab": "Institute shelf",
+  "block.the_oldest_house.institute_glass": "Ribbed hospital glass",
+  "block.the_oldest_house.institute_door": "Painted ward door",
+  "block.the_oldest_house.institute_locked_door": "Locked ward door"
 }

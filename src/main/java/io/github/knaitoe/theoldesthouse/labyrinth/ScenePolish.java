@@ -99,6 +99,7 @@ public final class ScenePolish {
         SceneSupportRepairs.repairOnce(level,origin,place);
         SceneReview.fresh(level,origin,place);
         if(place==LabyrinthPlace.BARN_WELL)Farmstead.fresh(level,origin);
+        if(place==LabyrinthPlace.WHALE)WhaleHospital.fresh(level,origin);
     }
 
     private static void polish(ServerLevel level, BlockPos origin, LabyrinthPlace place) {
@@ -128,6 +129,7 @@ public final class ScenePolish {
 
     /** An explicit rebuild authors the room again, so it is polished (and composed) again. */
     public static void forget(MinecraftServer server, BlockPos origin, LabyrinthPlace place) {
+        if(place==LabyrinthPlace.WHALE)WhaleHospital.forget(server,origin);
         SceneCraft.forget(server, origin, place);
         ScenePlaytestRepairs.forget(server, origin, place);
         SceneSupportRepairs.forget(server,origin,place);

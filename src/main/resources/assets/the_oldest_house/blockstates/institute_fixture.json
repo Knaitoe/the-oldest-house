@@ -1,0 +1,304 @@
+{
+  "variants": {
+    "facing=north,kind=paint": {
+      "model": "the_oldest_house:block/ward_paint"
+    },
+    "facing=east,kind=paint": {
+      "model": "the_oldest_house:block/ward_paint",
+      "y": 90
+    },
+    "facing=south,kind=paint": {
+      "model": "the_oldest_house:block/ward_paint",
+      "y": 180
+    },
+    "facing=west,kind=paint": {
+      "model": "the_oldest_house:block/ward_paint",
+      "y": 270
+    },
+    "facing=north,kind=peel": {
+      "model": "the_oldest_house:block/ward_peel"
+    },
+    "facing=east,kind=peel": {
+      "model": "the_oldest_house:block/ward_peel",
+      "y": 90
+    },
+    "facing=south,kind=peel": {
+      "model": "the_oldest_house:block/ward_peel",
+      "y": 180
+    },
+    "facing=west,kind=peel": {
+      "model": "the_oldest_house:block/ward_peel",
+      "y": 270
+    },
+    "facing=north,kind=damp": {
+      "model": "the_oldest_house:block/ward_damp"
+    },
+    "facing=east,kind=damp": {
+      "model": "the_oldest_house:block/ward_damp",
+      "y": 90
+    },
+    "facing=south,kind=damp": {
+      "model": "the_oldest_house:block/ward_damp",
+      "y": 180
+    },
+    "facing=west,kind=damp": {
+      "model": "the_oldest_house:block/ward_damp",
+      "y": 270
+    },
+    "facing=north,kind=ivory": {
+      "model": "the_oldest_house:block/ward_ivory"
+    },
+    "facing=east,kind=ivory": {
+      "model": "the_oldest_house:block/ward_ivory",
+      "y": 90
+    },
+    "facing=south,kind=ivory": {
+      "model": "the_oldest_house:block/ward_ivory",
+      "y": 180
+    },
+    "facing=west,kind=ivory": {
+      "model": "the_oldest_house:block/ward_ivory",
+      "y": 270
+    },
+    "facing=north,kind=dado": {
+      "model": "the_oldest_house:block/ward_dado"
+    },
+    "facing=east,kind=dado": {
+      "model": "the_oldest_house:block/ward_dado",
+      "y": 90
+    },
+    "facing=south,kind=dado": {
+      "model": "the_oldest_house:block/ward_dado",
+      "y": 180
+    },
+    "facing=west,kind=dado": {
+      "model": "the_oldest_house:block/ward_dado",
+      "y": 270
+    },
+    "facing=north,kind=floor_ivory": {
+      "model": "the_oldest_house:block/ward_floor_ivory"
+    },
+    "facing=east,kind=floor_ivory": {
+      "model": "the_oldest_house:block/ward_floor_ivory",
+      "y": 90
+    },
+    "facing=south,kind=floor_ivory": {
+      "model": "the_oldest_house:block/ward_floor_ivory",
+      "y": 180
+    },
+    "facing=west,kind=floor_ivory": {
+      "model": "the_oldest_house:block/ward_floor_ivory",
+      "y": 270
+    },
+    "facing=north,kind=floor_gray": {
+      "model": "the_oldest_house:block/ward_floor_gray"
+    },
+    "facing=east,kind=floor_gray": {
+      "model": "the_oldest_house:block/ward_floor_gray",
+      "y": 90
+    },
+    "facing=south,kind=floor_gray": {
+      "model": "the_oldest_house:block/ward_floor_gray",
+      "y": 180
+    },
+    "facing=west,kind=floor_gray": {
+      "model": "the_oldest_house:block/ward_floor_gray",
+      "y": 270
+    },
+    "facing=north,kind=ceiling": {
+      "model": "the_oldest_house:block/ward_ceiling"
+    },
+    "facing=east,kind=ceiling": {
+      "model": "the_oldest_house:block/ward_ceiling",
+      "y": 90
+    },
+    "facing=south,kind=ceiling": {
+      "model": "the_oldest_house:block/ward_ceiling",
+      "y": 180
+    },
+    "facing=west,kind=ceiling": {
+      "model": "the_oldest_house:block/ward_ceiling",
+      "y": 270
+    },
+    "facing=north,kind=chair": {
+      "model": "the_oldest_house:block/ward_chair"
+    },
+    "facing=east,kind=chair": {
+      "model": "the_oldest_house:block/ward_chair",
+      "y": 90
+    },
+    "facing=south,kind=chair": {
+      "model": "the_oldest_house:block/ward_chair",
+      "y": 180
+    },
+    "facing=west,kind=chair": {
+      "model": "the_oldest_house:block/ward_chair",
+      "y": 270
+    },
+    "facing=north,kind=stool": {
+      "model": "the_oldest_house:block/ward_stool"
+    },
+    "facing=east,kind=stool": {
+      "model": "the_oldest_house:block/ward_stool",
+      "y": 90
+    },
+    "facing=south,kind=stool": {
+      "model": "the_oldest_house:block/ward_stool",
+      "y": 180
+    },
+    "facing=west,kind=stool": {
+      "model": "the_oldest_house:block/ward_stool",
+      "y": 270
+    },
+    "facing=north,kind=bedside": {
+      "model": "the_oldest_house:block/ward_bedside"
+    },
+    "facing=east,kind=bedside": {
+      "model": "the_oldest_house:block/ward_bedside",
+      "y": 90
+    },
+    "facing=south,kind=bedside": {
+      "model": "the_oldest_house:block/ward_bedside",
+      "y": 180
+    },
+    "facing=west,kind=bedside": {
+      "model": "the_oldest_house:block/ward_bedside",
+      "y": 270
+    },
+    "facing=north,kind=desk": {
+      "model": "the_oldest_house:block/ward_desk"
+    },
+    "facing=east,kind=desk": {
+      "model": "the_oldest_house:block/ward_desk",
+      "y": 90
+    },
+    "facing=south,kind=desk": {
+      "model": "the_oldest_house:block/ward_desk",
+      "y": 180
+    },
+    "facing=west,kind=desk": {
+      "model": "the_oldest_house:block/ward_desk",
+      "y": 270
+    },
+    "facing=north,kind=table": {
+      "model": "the_oldest_house:block/ward_table"
+    },
+    "facing=east,kind=table": {
+      "model": "the_oldest_house:block/ward_table",
+      "y": 90
+    },
+    "facing=south,kind=table": {
+      "model": "the_oldest_house:block/ward_table",
+      "y": 180
+    },
+    "facing=west,kind=table": {
+      "model": "the_oldest_house:block/ward_table",
+      "y": 270
+    },
+    "facing=north,kind=counter": {
+      "model": "the_oldest_house:block/ward_counter"
+    },
+    "facing=east,kind=counter": {
+      "model": "the_oldest_house:block/ward_counter",
+      "y": 90
+    },
+    "facing=south,kind=counter": {
+      "model": "the_oldest_house:block/ward_counter",
+      "y": 180
+    },
+    "facing=west,kind=counter": {
+      "model": "the_oldest_house:block/ward_counter",
+      "y": 270
+    },
+    "facing=north,kind=bench": {
+      "model": "the_oldest_house:block/ward_bench"
+    },
+    "facing=east,kind=bench": {
+      "model": "the_oldest_house:block/ward_bench",
+      "y": 90
+    },
+    "facing=south,kind=bench": {
+      "model": "the_oldest_house:block/ward_bench",
+      "y": 180
+    },
+    "facing=west,kind=bench": {
+      "model": "the_oldest_house:block/ward_bench",
+      "y": 270
+    },
+    "facing=north,kind=sink": {
+      "model": "the_oldest_house:block/ward_sink"
+    },
+    "facing=east,kind=sink": {
+      "model": "the_oldest_house:block/ward_sink",
+      "y": 90
+    },
+    "facing=south,kind=sink": {
+      "model": "the_oldest_house:block/ward_sink",
+      "y": 180
+    },
+    "facing=west,kind=sink": {
+      "model": "the_oldest_house:block/ward_sink",
+      "y": 270
+    },
+    "facing=north,kind=light": {
+      "model": "the_oldest_house:block/ward_light"
+    },
+    "facing=east,kind=light": {
+      "model": "the_oldest_house:block/ward_light",
+      "y": 90
+    },
+    "facing=south,kind=light": {
+      "model": "the_oldest_house:block/ward_light",
+      "y": 180
+    },
+    "facing=west,kind=light": {
+      "model": "the_oldest_house:block/ward_light",
+      "y": 270
+    },
+    "facing=north,kind=bed_head": {
+      "model": "the_oldest_house:block/ward_bed_head"
+    },
+    "facing=east,kind=bed_head": {
+      "model": "the_oldest_house:block/ward_bed_head",
+      "y": 90
+    },
+    "facing=south,kind=bed_head": {
+      "model": "the_oldest_house:block/ward_bed_head",
+      "y": 180
+    },
+    "facing=west,kind=bed_head": {
+      "model": "the_oldest_house:block/ward_bed_head",
+      "y": 270
+    },
+    "facing=north,kind=bed_foot": {
+      "model": "the_oldest_house:block/ward_bed_foot"
+    },
+    "facing=east,kind=bed_foot": {
+      "model": "the_oldest_house:block/ward_bed_foot",
+      "y": 90
+    },
+    "facing=south,kind=bed_foot": {
+      "model": "the_oldest_house:block/ward_bed_foot",
+      "y": 180
+    },
+    "facing=west,kind=bed_foot": {
+      "model": "the_oldest_house:block/ward_bed_foot",
+      "y": 270
+    },
+    "facing=north,kind=shelf": {
+      "model": "the_oldest_house:block/ward_shelf"
+    },
+    "facing=east,kind=shelf": {
+      "model": "the_oldest_house:block/ward_shelf",
+      "y": 90
+    },
+    "facing=south,kind=shelf": {
+      "model": "the_oldest_house:block/ward_shelf",
+      "y": 180
+    },
+    "facing=west,kind=shelf": {
+      "model": "the_oldest_house:block/ward_shelf",
+      "y": 270
+    }
+  }
+}

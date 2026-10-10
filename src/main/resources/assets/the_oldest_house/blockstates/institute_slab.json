@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "the_oldest_house:block/ward_slab"
+    },
+    "type=top": {
+      "model": "the_oldest_house:block/ward_slab_top"
+    },
+    "type=double": {
+      "model": "the_oldest_house:block/ward_slab_double"
+    }
+  }
+}
