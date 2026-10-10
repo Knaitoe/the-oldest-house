@@ -170,6 +170,12 @@ public final class ArchitectureTests {
     private static void frontsAndInteriors(GameTestHelper h,net.minecraft.server.MinecraftServer server,BlockPos origin,LabyrinthData data){
         for(var scene:List.of(LabyrinthPlace.GOATMAN,LabyrinthPlace.HOLLOWAY_CAMP,LabyrinthPlace.ZAMPANO_COURTYARD))h.assertTrue(data.state(SceneExteriors.STATE).getBoolean(origin.asLong()+":"+scene.id()),scene.id()+" has a finite exterior checkpoint");
         var town=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);var b=LabyrinthPlaces.base(origin,LabyrinthPlace.DROWNED_TOWN);
+        int lamps=0;
+        for(var e:ProofrockTown.streetlights(b).entrySet()){
+            var state=town.getBlockState(e.getKey());h.assertTrue(state.equals(e.getValue()),"a fresh native streetlight stands at its authored address: "+e.getKey().subtract(b)+" actual="+state+" expected="+e.getValue());
+            if(state.getValue(TownStreetlightBlock.KIND)==TownStreetlightBlock.Kind.HEAD){lamps++;boolean wet=state.getValue(TownStreetlightBlock.WATERLOGGED);h.assertTrue(state.getLightEmission(town,e.getKey())==(wet?9:15)&&(!wet||state.getFluidState().isSource()),"each fitted native lamp retains its original light level and underwater source");}
+        }
+        h.assertTrue(lamps==25,"all twenty street lamps, the pier lamp and four submerged lamps have actual textured heads");
         // Proofrock (0.4.67): Main Street and the school's ring corridor are clear all the way round, the courtyard is living grass,
         // and the gym's folded bleachers leave a gap she fits under and a reader does not.
         for(var at:List.of(b.offset(0,0,-40),b.offset(-22,0,-65),b.offset(-39,0,-66),b.offset(-30,0,-56),b.offset(-30,0,-79)))h.assertTrue(town.noCollision(null,new AABB(at.getX()+.2,at.getY()+.01,at.getZ()+.2,at.getX()+.8,at.getY()+1.8,at.getZ()+.8)),"Proofrock retains a native player passage at "+at);

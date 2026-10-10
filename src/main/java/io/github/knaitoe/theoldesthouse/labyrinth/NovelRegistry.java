@@ -28,6 +28,8 @@ public final class NovelRegistry {
         CARVINGS=material("well_carvings",Blocks.MOSSY_COBBLESTONE),PAPER=material("archive_paper",Blocks.WHITE_TERRACOTTA);
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<NovelPropBlock>> PROP_TYPE=CODECS.register("novel_prop",()->NovelPropBlock.CODEC);
     public static final DeferredBlock<NovelPropBlock> PROP=BLOCKS.registerBlock("novel_prop",NovelPropBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable());
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<InstituteSignBlock>> SIGN_TYPE=CODECS.register("institute_sign",()->InstituteSignBlock.CODEC);
+    public static final DeferredBlock<InstituteSignBlock> SIGN=BLOCKS.registerBlock("institute_sign",InstituteSignBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable());
     public static final DeferredItem<Item> COLLAR=ITEMS.registerSimpleItem("cat_collar",new Item.Properties().stacksTo(1)),RIBBON=ITEMS.registerSimpleItem("well_ribbon",new Item.Properties().stacksTo(1)),
         ARCHIVE_KEY=ITEMS.registerSimpleItem("archive_key",new Item.Properties().stacksTo(1));
     public static final DeferredItem<ShieldItem> HOLLOWAY_SHIELD=ITEMS.register("holloway_shield",()->new ShieldItem(new Item.Properties().durability(336)));

@@ -25,7 +25,7 @@ public final class GoatmanWoods {
     /** The bathroom's awning window, its door, the stove and the griddle on it, and the porch light. */
     public static final BlockPos WINDOW=new BlockPos(8,3,-75),BATH_DOOR=new BlockPos(3,1,-75),STOVE=new BlockPos(-5,1,-76),PAN=new BlockPos(-5,2,-76),PORCH_LIGHT=new BlockPos(0,3,-53);
     public static final String PLATE="TrailerPlate",BRAT="TrailerBrat";
-    public static final BlockPos TOILET=new BlockPos(7,1,-76),SINK=new BlockPos(7,1,-74);
+    public static final BlockPos TOILET=new BlockPos(7,1,-76),SINK=new BlockPos(7,1,-74),COOLER=new BlockPos(-7,1,-74);
     public static final Vec3[] PATH={new Vec3(.5,0,-.5),new Vec3(.5,0,-31.5),new Vec3(10.5,0,-31.5),new Vec3(10.5,0,-43.5),new Vec3(.5,0,-43.5),new Vec3(.5,0,-54.5)};
     public static final double CLEARING=53;
     /** Where on the trail each hollow opens, where its occupant stands, and which way it faces (away from the path). */
@@ -120,6 +120,7 @@ public final class GoatmanWoods {
         put(l,b,STOVE.getX(),STOVE.getY(),STOVE.getZ(),Blocks.SMOKER.defaultBlockState().setValue(SmokerBlock.FACING,Direction.SOUTH));
         put(l,b,PAN.getX(),PAN.getY(),PAN.getZ(),Blocks.HEAVY_WEIGHTED_PRESSURE_PLATE);
         put(l,b,-4,1,-76,Blocks.BARREL);put(l,b,-3,1,-76,Blocks.SMOOTH_STONE);
+        BuildBlocks.set(l,b.offset(COOLER),GoatmanRegistry.COOLER.get().defaultBlockState().setValue(TrailerFixtureBlock.FACING,Direction.SOUTH),F);
         for(int x=-7;x<=-3;x++)put(l,b,x,4,-76,Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP));
         // The long supper table, its top a hand above the chairs, five chairs a side turned in to it.
         box(l,b,-1,1,-69,1,1,-61,Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP));
@@ -137,7 +138,7 @@ public final class GoatmanWoods {
         for(int x:new int[]{-7,7})for(int z:new int[]{-59,-65,-71}){put(l,b,x,2,z,Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP));put(l,b,x,3,z,Blocks.LANTERN);}
         put(l,b,-5,5,-74,hanging());put(l,b,5,5,-75,hanging());put(l,b,0,5,-57,hanging());
         // Tires and corrugated trim prevent this reading as a cabin.
-        for(int x:new int[]{-9,9})for(int z:new int[]{-59,-73})put(l,b,x,0,z,Blocks.BLACK_CONCRETE);
+        for(int x:new int[]{-9,9})for(int z:new int[]{-59,-73})put(l,b,x,0,z,GoatmanRegistry.WHEEL.get().defaultBlockState().setValue(TrailerFixtureBlock.FACING,x<0?Direction.WEST:Direction.EAST));
     }
     private static BlockState hanging(){return Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true);}
     /** The generator's shed across the yard: plank walls, a slab roof, the generator and its can. */
@@ -186,8 +187,8 @@ public final class GoatmanWoods {
     public static BlockPos bunk(int i){int side=i%2==0?-6:5;int row=i/2;return new BlockPos(side,1+(row/8)*3,-58-(row%8)*2);}
     /** A place at the table: before each chair for the first ten, then down the middle. */
     public static Vec3 plate(int i){return i<10?new Vec3(i%2==0?-.55:1.55,2.02,-60.5-2*(i/2)):new Vec3(i%2==0?-12.8:-12.2,1.02,-60.5-2*((i-10)/2));}
-    /** Where a brat lies in the pan on the stove, two rows of six over the griddle and the counter beside it. */
-    public static Vec3 panSpot(int i){return new Vec3(-5.8+(i%6)*.5,2.1,-75.25-(i/6)*.45);}
+    /** Four fresh servings lie entirely over the actual griddle, never over the adjacent sink. */
+    public static Vec3 panSpot(int i){return new Vec3(-4.72+(i%2)*.44,2.08,-75.72+((i/2)%2)*.44);}
     public static void supplies(ServerLevel l,BlockPos b,int count){
         // Supply changes follow actual arrivals; they are scenery, never renewable item rewards.
         count=Math.max(5,Math.min(24,count));
@@ -230,6 +231,7 @@ public final class GoatmanWoods {
             final int index=i;var item=foods.get(i);var d=shown.stream().filter(e->!e.isRemoved()&&e.getPersistentData().getInt("Pan")==index).findFirst().orElse(null);
             if(d==null){d=flat(l,item,.32F);if(d==null)continue;d.addTag(PLATE);d.addTag(BRAT);d.getPersistentData().putInt("Pan",i);d.moveTo(panSpot(i).add(b.getX(),b.getY(),b.getZ()));l.addFreshEntity(d);}
             else {var t=d.saveWithoutId(new CompoundTag());t.put("item",item.save(l.registryAccess()));d.load(t);}
+            d.moveTo(panSpot(i).add(b.getX(),b.getY(),b.getZ()));
         }
     }
     /** The brats still in the pan, as many as are left (up to twelve shown). */

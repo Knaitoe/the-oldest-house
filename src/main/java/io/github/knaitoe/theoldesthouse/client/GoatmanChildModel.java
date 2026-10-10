@@ -19,7 +19,7 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
             var at=Minecraft.getInstance().player.position().subtract(e.position());
             head.yRot=Mth.wrapDegrees((float)(Math.atan2(at.z,at.x)*180/Math.PI)-90-e.yBodyRot)*Mth.DEG_TO_RAD;
         }
-        HumanoidMotion.connect(this);
+        limitLook();HumanoidMotion.connect(this);
     }
     /** Also used by native visual proofs, with the same joints as the live renderer. */
     public void pose(float phase,float speed,float age,boolean seated,boolean cower,boolean heave){
@@ -41,4 +41,7 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
         if(attackTime>0&&!seated&&!cower)rightArm.xRot=-1.8F-Mth.sin(attackTime*Mth.PI)*.65F;
     }
     public void cowerPose(){pose(0,0,0,false,true,false);}
+    private void limitLook(){head.yRot=Mth.clamp(Mth.wrapDegrees(head.yRot*Mth.RAD_TO_DEG),-75,75)*Mth.DEG_TO_RAD;head.xRot=Mth.clamp(head.xRot,-60*Mth.DEG_TO_RAD,60*Mth.DEG_TO_RAD);}
+    /** Exercise the same bounded look and torso composition in the native client proof. */
+    public void lookPose(float yaw,float pitch,boolean cower){HumanoidMotion.reset(this);young=false;animatePose(0,0,0,false,cower,false,false);head.yRot=yaw*Mth.DEG_TO_RAD;head.xRot=pitch*Mth.DEG_TO_RAD;limitLook();HumanoidMotion.connect(this);}
 }

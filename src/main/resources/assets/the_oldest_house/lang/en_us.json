@@ -184,5 +184,10 @@
   "item.the_oldest_house.self_addressed_envelope": "Self-addressed envelope",
   "block.the_oldest_house.pigeonhole": "Pigeonhole",
   "block.the_oldest_house.town_fixture": "Town fixture",
-  "block.the_oldest_house.school_desk": "Teacher's desk"
+  "block.the_oldest_house.school_desk": "Teacher's desk",
+  "block.the_oldest_house.trailer_cooler": "Cooler",
+  "block.the_oldest_house.vehicle_wheel": "Wheel",
+  "block.the_oldest_house.institute_sign": "Institute sign",
+  "block.the_oldest_house.notice_post": "Note",
+  "block.the_oldest_house.streetlight": "Streetlight"
 }

@@ -689,6 +689,276 @@
     "facing=west,kind=school_r": {
       "model": "the_oldest_house:block/town_fixture_school_r",
       "y": 270
+    },
+    "facing=north,kind=car_red": {
+      "model": "the_oldest_house:block/town_fixture_car_red"
+    },
+    "facing=north,kind=hood_red": {
+      "model": "the_oldest_house:block/town_fixture_hood_red"
+    },
+    "facing=north,kind=car_blue": {
+      "model": "the_oldest_house:block/town_fixture_car_blue"
+    },
+    "facing=north,kind=hood_blue": {
+      "model": "the_oldest_house:block/town_fixture_hood_blue"
+    },
+    "facing=north,kind=car_green": {
+      "model": "the_oldest_house:block/town_fixture_car_green"
+    },
+    "facing=north,kind=hood_green": {
+      "model": "the_oldest_house:block/town_fixture_hood_green"
+    },
+    "facing=north,kind=car_white": {
+      "model": "the_oldest_house:block/town_fixture_car_white"
+    },
+    "facing=north,kind=hood_white": {
+      "model": "the_oldest_house:block/town_fixture_hood_white"
+    },
+    "facing=north,kind=car_light_blue": {
+      "model": "the_oldest_house:block/town_fixture_car_light_blue"
+    },
+    "facing=north,kind=hood_light_blue": {
+      "model": "the_oldest_house:block/town_fixture_hood_light_blue"
+    },
+    "facing=north,kind=car_brown": {
+      "model": "the_oldest_house:block/town_fixture_car_brown"
+    },
+    "facing=north,kind=hood_brown": {
+      "model": "the_oldest_house:block/town_fixture_hood_brown"
+    },
+    "facing=north,kind=car_cyan": {
+      "model": "the_oldest_house:block/town_fixture_car_cyan"
+    },
+    "facing=north,kind=hood_cyan": {
+      "model": "the_oldest_house:block/town_fixture_hood_cyan"
+    },
+    "facing=north,kind=car_orange": {
+      "model": "the_oldest_house:block/town_fixture_car_orange"
+    },
+    "facing=north,kind=hood_orange": {
+      "model": "the_oldest_house:block/town_fixture_hood_orange"
+    },
+    "facing=north,kind=car_cabin": {
+      "model": "the_oldest_house:block/town_fixture_car_cabin"
+    },
+    "facing=north,kind=car_wheel": {
+      "model": "the_oldest_house:block/town_fixture_car_wheel"
+    },
+    "facing=east,kind=car_red": {
+      "model": "the_oldest_house:block/town_fixture_car_red",
+      "y": 90
+    },
+    "facing=east,kind=hood_red": {
+      "model": "the_oldest_house:block/town_fixture_hood_red",
+      "y": 90
+    },
+    "facing=east,kind=car_blue": {
+      "model": "the_oldest_house:block/town_fixture_car_blue",
+      "y": 90
+    },
+    "facing=east,kind=hood_blue": {
+      "model": "the_oldest_house:block/town_fixture_hood_blue",
+      "y": 90
+    },
+    "facing=east,kind=car_green": {
+      "model": "the_oldest_house:block/town_fixture_car_green",
+      "y": 90
+    },
+    "facing=east,kind=hood_green": {
+      "model": "the_oldest_house:block/town_fixture_hood_green",
+      "y": 90
+    },
+    "facing=east,kind=car_white": {
+      "model": "the_oldest_house:block/town_fixture_car_white",
+      "y": 90
+    },
+    "facing=east,kind=hood_white": {
+      "model": "the_oldest_house:block/town_fixture_hood_white",
+      "y": 90
+    },
+    "facing=east,kind=car_light_blue": {
+      "model": "the_oldest_house:block/town_fixture_car_light_blue",
+      "y": 90
+    },
+    "facing=east,kind=hood_light_blue": {
+      "model": "the_oldest_house:block/town_fixture_hood_light_blue",
+      "y": 90
+    },
+    "facing=east,kind=car_brown": {
+      "model": "the_oldest_house:block/town_fixture_car_brown",
+      "y": 90
+    },
+    "facing=east,kind=hood_brown": {
+      "model": "the_oldest_house:block/town_fixture_hood_brown",
+      "y": 90
+    },
+    "facing=east,kind=car_cyan": {
+      "model": "the_oldest_house:block/town_fixture_car_cyan",
+      "y": 90
+    },
+    "facing=east,kind=hood_cyan": {
+      "model": "the_oldest_house:block/town_fixture_hood_cyan",
+      "y": 90
+    },
+    "facing=east,kind=car_orange": {
+      "model": "the_oldest_house:block/town_fixture_car_orange",
+      "y": 90
+    },
+    "facing=east,kind=hood_orange": {
+      "model": "the_oldest_house:block/town_fixture_hood_orange",
+      "y": 90
+    },
+    "facing=east,kind=car_cabin": {
+      "model": "the_oldest_house:block/town_fixture_car_cabin",
+      "y": 90
+    },
+    "facing=east,kind=car_wheel": {
+      "model": "the_oldest_house:block/town_fixture_car_wheel",
+      "y": 90
+    },
+    "facing=south,kind=car_red": {
+      "model": "the_oldest_house:block/town_fixture_car_red",
+      "y": 180
+    },
+    "facing=south,kind=hood_red": {
+      "model": "the_oldest_house:block/town_fixture_hood_red",
+      "y": 180
+    },
+    "facing=south,kind=car_blue": {
+      "model": "the_oldest_house:block/town_fixture_car_blue",
+      "y": 180
+    },
+    "facing=south,kind=hood_blue": {
+      "model": "the_oldest_house:block/town_fixture_hood_blue",
+      "y": 180
+    },
+    "facing=south,kind=car_green": {
+      "model": "the_oldest_house:block/town_fixture_car_green",
+      "y": 180
+    },
+    "facing=south,kind=hood_green": {
+      "model": "the_oldest_house:block/town_fixture_hood_green",
+      "y": 180
+    },
+    "facing=south,kind=car_white": {
+      "model": "the_oldest_house:block/town_fixture_car_white",
+      "y": 180
+    },
+    "facing=south,kind=hood_white": {
+      "model": "the_oldest_house:block/town_fixture_hood_white",
+      "y": 180
+    },
+    "facing=south,kind=car_light_blue": {
+      "model": "the_oldest_house:block/town_fixture_car_light_blue",
+      "y": 180
+    },
+    "facing=south,kind=hood_light_blue": {
+      "model": "the_oldest_house:block/town_fixture_hood_light_blue",
+      "y": 180
+    },
+    "facing=south,kind=car_brown": {
+      "model": "the_oldest_house:block/town_fixture_car_brown",
+      "y": 180
+    },
+    "facing=south,kind=hood_brown": {
+      "model": "the_oldest_house:block/town_fixture_hood_brown",
+      "y": 180
+    },
+    "facing=south,kind=car_cyan": {
+      "model": "the_oldest_house:block/town_fixture_car_cyan",
+      "y": 180
+    },
+    "facing=south,kind=hood_cyan": {
+      "model": "the_oldest_house:block/town_fixture_hood_cyan",
+      "y": 180
+    },
+    "facing=south,kind=car_orange": {
+      "model": "the_oldest_house:block/town_fixture_car_orange",
+      "y": 180
+    },
+    "facing=south,kind=hood_orange": {
+      "model": "the_oldest_house:block/town_fixture_hood_orange",
+      "y": 180
+    },
+    "facing=south,kind=car_cabin": {
+      "model": "the_oldest_house:block/town_fixture_car_cabin",
+      "y": 180
+    },
+    "facing=south,kind=car_wheel": {
+      "model": "the_oldest_house:block/town_fixture_car_wheel",
+      "y": 180
+    },
+    "facing=west,kind=car_red": {
+      "model": "the_oldest_house:block/town_fixture_car_red",
+      "y": 270
+    },
+    "facing=west,kind=hood_red": {
+      "model": "the_oldest_house:block/town_fixture_hood_red",
+      "y": 270
+    },
+    "facing=west,kind=car_blue": {
+      "model": "the_oldest_house:block/town_fixture_car_blue",
+      "y": 270
+    },
+    "facing=west,kind=hood_blue": {
+      "model": "the_oldest_house:block/town_fixture_hood_blue",
+      "y": 270
+    },
+    "facing=west,kind=car_green": {
+      "model": "the_oldest_house:block/town_fixture_car_green",
+      "y": 270
+    },
+    "facing=west,kind=hood_green": {
+      "model": "the_oldest_house:block/town_fixture_hood_green",
+      "y": 270
+    },
+    "facing=west,kind=car_white": {
+      "model": "the_oldest_house:block/town_fixture_car_white",
+      "y": 270
+    },
+    "facing=west,kind=hood_white": {
+      "model": "the_oldest_house:block/town_fixture_hood_white",
+      "y": 270
+    },
+    "facing=west,kind=car_light_blue": {
+      "model": "the_oldest_house:block/town_fixture_car_light_blue",
+      "y": 270
+    },
+    "facing=west,kind=hood_light_blue": {
+      "model": "the_oldest_house:block/town_fixture_hood_light_blue",
+      "y": 270
+    },
+    "facing=west,kind=car_brown": {
+      "model": "the_oldest_house:block/town_fixture_car_brown",
+      "y": 270
+    },
+    "facing=west,kind=hood_brown": {
+      "model": "the_oldest_house:block/town_fixture_hood_brown",
+      "y": 270
+    },
+    "facing=west,kind=car_cyan": {
+      "model": "the_oldest_house:block/town_fixture_car_cyan",
+      "y": 270
+    },
+    "facing=west,kind=hood_cyan": {
+      "model": "the_oldest_house:block/town_fixture_hood_cyan",
+      "y": 270
+    },
+    "facing=west,kind=car_orange": {
+      "model": "the_oldest_house:block/town_fixture_car_orange",
+      "y": 270
+    },
+    "facing=west,kind=hood_orange": {
+      "model": "the_oldest_house:block/town_fixture_hood_orange",
+      "y": 270
+    },
+    "facing=west,kind=car_cabin": {
+      "model": "the_oldest_house:block/town_fixture_car_cabin",
+      "y": 270
+    },
+    "facing=west,kind=car_wheel": {
+      "model": "the_oldest_house:block/town_fixture_car_wheel",
+      "y": 270
     }
   }
 }

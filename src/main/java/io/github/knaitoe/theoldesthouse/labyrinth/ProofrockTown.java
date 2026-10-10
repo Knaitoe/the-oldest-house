@@ -66,6 +66,9 @@ public final class ProofrockTown {
         shopsWest();shopsEast();houses();garage();motel();green();beach();
         IndianLakeHigh.build(l,b);
         drowned();
+        // Shop awnings and the lane's lawn are authored after the roads. Install
+        // the complete fitted lamps last so neither replaces a section of a post.
+        for(var e:streetlights(b).entrySet())BuildBlocks.set(l,e.getKey(),e.getValue(),F);
         street();
         LabyrinthBuilder.entrance(l,b,Blocks.BLACK_CONCRETE.defaultBlockState(),Blocks.COARSE_DIRT.defaultBlockState(),Blocks.BLACK_CONCRETE.defaultBlockState());
         LabyrinthBuilder.doors(l,b,LabyrinthPlace.DROWNED_TOWN);
@@ -114,17 +117,39 @@ public final class ProofrockTown {
     private void alley(int x,int z){set(x,-1,z,hash(x,z)%4==0?Blocks.COBBLESTONE:hash(x,z)%3==0?Blocks.COARSE_DIRT:Blocks.GRAVEL);}
     /** A pole with an arm, the lantern hung over the street on the side the arm reaches. */
     private void lamp(int x,int z,Direction arm){
-        for(int y=0;y<=4;y++)set(x,y,z,fence(Blocks.DARK_OAK_FENCE,y==4?arm:null));
-        int ax=x+arm.getStepX(),az=z+arm.getStepZ();
-        set(ax,4,az,fence(Blocks.DARK_OAK_FENCE,arm.getOpposite()));
-        set(ax,3,az,Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));
+        for(var e:lampStates(b,x,z,arm).entrySet())BuildBlocks.set(l,e.getKey(),e.getValue(),F);
+    }
+    private static java.util.Map<BlockPos,BlockState> lampStates(BlockPos b,int x,int z,Direction arm){
+        var out=new java.util.LinkedHashMap<BlockPos,BlockState>();
+        for(int y=0;y<=4;y++)out.put(b.offset(x,y,z),TownStreetlightBlock.of(y==0?TownStreetlightBlock.Kind.BASE:y==4?TownStreetlightBlock.Kind.TOP:TownStreetlightBlock.Kind.POLE,arm,false));
+        out.put(b.offset(x+arm.getStepX(),4,z+arm.getStepZ()),TownStreetlightBlock.of(TownStreetlightBlock.Kind.ARM,arm,false));
+        out.put(b.offset(x+arm.getStepX(),3,z+arm.getStepZ()),TownStreetlightBlock.of(TownStreetlightBlock.Kind.HEAD,arm,false));return out;
+    }
+    /** Exact authored locations also used for the once-only saved streetlight repair. */
+    public static java.util.Map<BlockPos,BlockState> streetlights(BlockPos b){
+        var out=new java.util.LinkedHashMap<BlockPos,BlockState>();
+        for(int z:new int[]{-9,-23,-47,-68,-79}){out.putAll(lampStates(b,-5,z,Direction.EAST));out.putAll(lampStates(b,5,z,Direction.WEST));}
+        for(int x:new int[]{-14,-30,-46,-60})out.putAll(lampStates(b,x,-44,Direction.SOUTH));
+        for(int x:new int[]{14,30})out.putAll(lampStates(b,x,-38,Direction.NORTH));
+        out.putAll(lampStates(b,-36,-24,Direction.WEST));out.putAll(lampStates(b,20,-46,Direction.SOUTH));out.putAll(lampStates(b,-5,-88,Direction.EAST));out.putAll(lampStates(b,37,-60,Direction.WEST));
+        for(int y=0;y<=2;y++)out.put(b.offset(1,y,-110),TownStreetlightBlock.of(y==0?TownStreetlightBlock.Kind.BASE:TownStreetlightBlock.Kind.POLE,Direction.NORTH,false));out.put(b.offset(1,3,-110),TownStreetlightBlock.of(TownStreetlightBlock.Kind.HEAD,Direction.NORTH,false));
+        for(int x=4;x<=28;x+=8){for(int y=-11;y<=-8;y++)out.put(b.offset(x,y,-99),TownStreetlightBlock.of(y==-11?TownStreetlightBlock.Kind.BASE:TownStreetlightBlock.Kind.POLE,Direction.NORTH,true));out.put(b.offset(x,-7,-99),TownStreetlightBlock.of(TownStreetlightBlock.Kind.HEAD,Direction.NORTH,true));}
+        return out;
     }
     /** Four long, two wide, two high: a body of paint over dark wheels, glass above. */
     private void car(int x,int z,Block paint){
-        for(int i=0;i<4;i++)for(int j=0;j<2;j++){int cx=x+j,cz=z-i;boolean wheel=i==0||i==3;
-            set(cx,0,cz,wheel?Blocks.POLISHED_BLACKSTONE:paint);
-            set(cx,1,cz,i==1||i==2?Blocks.BLACK_STAINED_GLASS.defaultBlockState():slab(paint));}
+        for(var e:carStates(b,x,z,paint).entrySet())BuildBlocks.set(l,e.getKey(),e.getValue(),F);
     }
+    private static Map<BlockPos,BlockState> carStates(BlockPos b,int x,int z,Block paint){
+        var states=new LinkedHashMap<BlockPos,BlockState>();
+        String colour=paint==Blocks.RED_CONCRETE?"RED":paint==Blocks.BLUE_CONCRETE?"BLUE":paint==Blocks.GREEN_TERRACOTTA?"GREEN":paint==Blocks.WHITE_CONCRETE?"WHITE":paint==Blocks.LIGHT_BLUE_TERRACOTTA?"LIGHT_BLUE":paint==Blocks.BROWN_TERRACOTTA?"BROWN":paint==Blocks.CYAN_TERRACOTTA?"CYAN":"ORANGE";
+        for(int i=0;i<4;i++)for(int j=0;j<2;j++){int cx=x+j,cz=z-i;boolean wheel=i==0||i==3;
+            states.put(b.offset(cx,0,cz),TownFixtureBlock.of(wheel?TownFixtureBlock.Kind.CAR_WHEEL:TownFixtureBlock.Kind.valueOf("CAR_"+colour),j==0?Direction.WEST:Direction.EAST));
+            states.put(b.offset(cx,1,cz),TownFixtureBlock.of(i==1||i==2?TownFixtureBlock.Kind.CAR_CABIN:TownFixtureBlock.Kind.valueOf("HOOD_"+colour),i==0?Direction.SOUTH:Direction.NORTH));}
+        return states;
+    }
+    /** The same finite cars, exposed for a guarded saved-world material upgrade. */
+    public static Map<BlockPos,BlockState> cars(BlockPos b){var out=new LinkedHashMap<BlockPos,BlockState>();int[][] spots={{-3,-18},{2,-30},{-3,-52},{2,-67},{23,-26},{26,-32},{-34,-41},{31,-10}};Block[] paint={Blocks.RED_CONCRETE,Blocks.BLUE_CONCRETE,Blocks.GREEN_TERRACOTTA,Blocks.WHITE_CONCRETE,Blocks.LIGHT_BLUE_TERRACOTTA,Blocks.BROWN_TERRACOTTA,Blocks.CYAN_TERRACOTTA,Blocks.ORANGE_TERRACOTTA};for(int i=0;i<spots.length;i++)out.putAll(carStates(b,spots[i][0],spots[i][1],paint[i]));return out;}
 
     // ------------------------------------------------------------------------------------------------ the woods round the edge
     private void forest(){
@@ -353,7 +378,7 @@ public final class ProofrockTown {
         set(SUPPLIES.getX(),0,SUPPLIES.getZ(),LabyrinthBuilder.barrel(Direction.UP));
         // The pier: planks over posts, a lamp at its end.
         for(int z=-89;z>=-110;z--)for(int x=-1;x<=1;x++){set(x,-1,z,Blocks.SPRUCE_PLANKS);if(Math.abs(x)==1&&Math.floorMod(z,4)==0)for(int y=bed(x,z)+1;y<=-2;y++)set(x,y,z,Blocks.SPRUCE_LOG);}
-        for(int y=0;y<=2;y++)set(1,y,-110,fence(Blocks.SPRUCE_FENCE,null));set(1,3,-110,Blocks.LANTERN);
+        for(int y=0;y<=2;y++)set(1,y,-110,TownStreetlightBlock.of(y==0?TownStreetlightBlock.Kind.BASE:TownStreetlightBlock.Kind.POLE,Direction.NORTH,false));set(1,3,-110,TownStreetlightBlock.of(TownStreetlightBlock.Kind.HEAD,Direction.NORTH,false));
         set(-1,0,-104,LabyrinthBuilder.stairs(Blocks.SPRUCE_STAIRS,Direction.WEST));
         // The boathouse, open to the water on its north side.
         int x0=10,x1=17,z0=-96,z1=-89;
@@ -373,7 +398,7 @@ public final class ProofrockTown {
     private void drowned(){
         // The old street, its lamps still standing, runs from under the pier to the church door.
         for(int x=-1;x<=31;x++)for(int z=-100;z>=-102;z--)if(water(x,z)&&bed(x,z)==-12)set(x,-12,z,hash(x,z)%3==0?Blocks.MOSSY_COBBLESTONE:Blocks.COBBLESTONE);
-        for(int x=4;x<=28;x+=8){for(int y=-11;y<=-8;y++)set(x,y,-99,Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.WATERLOGGED,true));lightWet(x,-7,-99,9);}
+        for(int x=4;x<=28;x+=8){for(int y=-11;y<=-8;y++)set(x,y,-99,TownStreetlightBlock.of(y==-11?TownStreetlightBlock.Kind.BASE:TownStreetlightBlock.Kind.POLE,Direction.NORTH,true));set(x,-7,-99,TownStreetlightBlock.of(TownStreetlightBlock.Kind.HEAD,Direction.NORTH,true));}
         // Two wells still breathe: soul sand under a bubbling column.
         for(var well:new int[][]{{4,-106},{24,-100}}){int x=well[0],z=well[1];
             for(int dx=-1;dx<=1;dx++)for(int dz=-1;dz<=1;dz++)if(dx!=0||dz!=0)set(x+dx,-11,z+dz,Blocks.MOSSY_STONE_BRICKS);
@@ -412,9 +437,8 @@ public final class ProofrockTown {
     // ------------------------------------------------------------------------------------------------ the welcome and the note
     private void street(){
         set(SIGN.getX(),0,SIGN.getZ(),HouseBlocks.TOWN_SIGN.get().defaultBlockState().setValue(TownSignBlock.FACING,Direction.SOUTH));
-        set(LECTERN.getX(),0,LECTERN.getZ(),Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.FACING,Direction.SOUTH));
-        BuildBlocks.after(l,()->{if(l.getBlockEntity(b.offset(LECTERN)) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity desk){desk.setBook(note());desk.setChanged();
-            l.setBlock(desk.getBlockPos(),l.getBlockState(desk.getBlockPos()).setValue(LecternBlock.HAS_BOOK,true),F);}});
+        set(LECTERN.getX(),0,LECTERN.getZ(),DrownedTownRegistry.NOTICE.get().defaultBlockState().setValue(NoticePostBlock.FACING,Direction.SOUTH));
+        BuildBlocks.after(l,()->{if(l.getBlockEntity(b.offset(LECTERN)) instanceof NoticePostBlockEntity post)post.book(note());});
     }
     static net.minecraft.world.item.ItemStack note(){return HouseWriting.book("At the waterline","An explorer",HouseWriting.WritingStyle.PLAIN,List.of(
         "Proofrock is on the bank. The older town is under Indian Lake.\n\nThe high school is at the top of Main Street, on the left, by the water.",
@@ -439,7 +463,7 @@ public final class ProofrockTown {
         return slab.defaultBlockState();
     }
     /** A fence post, joined on one side when something hangs from it, so it reads as connected. */
-    static BlockState fence(Block fence,Direction joined){
+    public static BlockState fence(Block fence,Direction joined){
         var state=fence.defaultBlockState();if(joined==null)return state;
         return state.setValue(switch(joined){case NORTH->CrossCollisionBlock.NORTH;case SOUTH->CrossCollisionBlock.SOUTH;case EAST->CrossCollisionBlock.EAST;default->CrossCollisionBlock.WEST;},true);
     }

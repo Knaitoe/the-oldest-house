@@ -51,7 +51,7 @@ public final class SceneExteriors {
     private boolean safe(BlockPos at,BlockState target){
         var old=l.getBlockState(at);if(reserved(at)||l.getBlockEntity(at)!=null||old.getBlock() instanceof DoorBlock||old.getBlock() instanceof TrapDoorBlock||old.getBlock() instanceof BedBlock)return false;
         if(!old.isAir()&&!net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(old.getBlock()).getNamespace().equals("minecraft")
-                &&!old.is(NovelRegistry.PAPER.get())&&!old.is(LabyrinthBuilder.SOLID.getBlock()))return false;
+                &&!old.is(NovelRegistry.PAPER.get())&&!(site==LabyrinthPlace.ZAMPANO_COURTYARD&&old.is(NovelRegistry.PLASTER.get()))&&!old.is(LabyrinthBuilder.SOLID.getBlock()))return false;
         if(!l.getEntitiesOfClass(Entity.class,new AABB(at)).isEmpty())return false;
         // Preserve attached original props, signs and frames, including their real backing blocks.
         for(Direction side:Direction.values()){
@@ -196,7 +196,7 @@ public final class SceneExteriors {
         for(int x=-2;x<=2;x++){set(x,4,-18,Blocks.CHISELED_STONE_BRICKS);set(x,5,-18,Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH));}
         for(int x=-12;x<=12;x++){set(x,7,-18,Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH));set(x,8,-19,Blocks.STONE_BRICK_SLAB);}
         for(int side:new int[]{-12,12})for(int z=-38;z<=-20;z++)for(int y=0;y<=6;y++){
-            var old=l.getBlockState(p(side,y,z));if(old.is(NovelRegistry.PAPER.get()))set(side,y,z,y==0||y==6?Blocks.STONE_BRICKS:Math.floorMod(z,5)==0?Blocks.BRICKS:Blocks.LIGHT_GRAY_TERRACOTTA);
+            var old=l.getBlockState(p(side,y,z));if(old.is(NovelRegistry.PAPER.get())||old.is(NovelRegistry.PLASTER.get()))set(side,y,z,y==0||y==6?Blocks.STONE_BRICKS:Math.floorMod(z,5)==0?Blocks.BRICKS:Blocks.LIGHT_GRAY_TERRACOTTA);
         }
         for(int x=-11;x<=11;x++)for(int z=-38;z<=-20;z++)set(x,8,z,Blocks.DEEPSLATE_TILE_SLAB);
         // Small glazed rooflights have a physical upstand; no ambient world-time change is involved.
