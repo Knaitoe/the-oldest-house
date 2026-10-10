@@ -417,5 +417,7 @@ public final class CaverVignette {
         var state=p.serverLevel().getBlockState(e.getPos());
         if(CaverCave.isRubble(state)&&!p.getMainHandItem().is(ItemTags.PICKAXES)){e.setCanceled(true);pickaxeHint(p);}
         else if(torch(state)&&!ownsTorch(p,e.getPos())){e.setCanceled(true);p.displayClientMessage(Component.literal("That torch isn't yours to take."),true);}
+        // Trying to dig at the marks only cracks and snaps back; say so, without saying more.
+        else if(CaverCave.isMark(state)&&e.getPos().equals(base(p.server).offset(CaverCave.MARK)))p.displayClientMessage(Component.literal("The cuts are old. Look closer."),true);
     }
 }
