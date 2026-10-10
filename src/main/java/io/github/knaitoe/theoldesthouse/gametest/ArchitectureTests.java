@@ -172,7 +172,7 @@ public final class ArchitectureTests {
         var town=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);var b=LabyrinthPlaces.base(origin,LabyrinthPlace.DROWNED_TOWN);
         int lamps=0;
         for(var e:ProofrockTown.streetlights(b).entrySet()){
-            var state=town.getBlockState(e.getKey());h.assertTrue(state.equals(e.getValue()),"a fresh native streetlight stands at its authored address: "+e.getKey());
+            var state=town.getBlockState(e.getKey());h.assertTrue(state.equals(e.getValue()),"a fresh native streetlight stands at its authored address: "+e.getKey().subtract(b)+" actual="+state+" expected="+e.getValue());
             if(state.getValue(TownStreetlightBlock.KIND)==TownStreetlightBlock.Kind.HEAD){lamps++;boolean wet=state.getValue(TownStreetlightBlock.WATERLOGGED);h.assertTrue(state.getLightEmission(town,e.getKey())==(wet?9:15)&&(!wet||state.getFluidState().isSource()),"each fitted native lamp retains its original light level and underwater source");}
         }
         h.assertTrue(lamps==25,"all twenty street lamps, the pier lamp and four submerged lamps have actual textured heads");
