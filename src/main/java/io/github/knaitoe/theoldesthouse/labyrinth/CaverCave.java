@@ -36,8 +36,37 @@ public final class CaverCave {
     }
     /** The bowl stops at the stone's wall: nothing behind it is reachable except through the stone. */
     static boolean behindStone(int x,int z){return x>=3&&z<=-43;}
-    /** The passage behind the stone: two blocks wide, two high. */
-    static boolean passage(int x,int y,int z){return x>=4&&x<=5&&y>=-3&&y<=-2&&z>=-50&&z<=-44;}
+    /** The passage behind the stone: two blocks wide, two high, before it pinches into the second crawl (0.4.73). */
+    static boolean passage(int x,int y,int z){return x>=4&&x<=5&&y>=-3&&y<=-2&&z>=-46&&z<=-44;}
+    /**
+     * 0.4.73: the first squeeze, from the mouth to the bowl, in crawling order. The packed rubble fills its first five cells;
+     * after them it doglegs twice so the bowl cannot be seen from the mouth.
+     */
+    public static final java.util.List<BlockPos> SQUEEZE=path(new int[][]{{0,-23},{0,-24},{0,-25},{0,-26},{0,-27},{0,-28},{0,-29},
+            {1,-29},{2,-29},{3,-29},{4,-29},{4,-30},{4,-31},{3,-31},{2,-31},{1,-31},{0,-31},{-1,-31},{-2,-31},{-3,-31},{-4,-31},
+            {-4,-32},{-4,-33},{-3,-33},{-2,-33},{-1,-33},{0,-33}});
+    /** 0.4.73: the second crawl, from the passage behind the stone round to the low chamber, in crawling order. */
+    public static final java.util.List<BlockPos> CRAWL=path(new int[][]{{4,-47},{4,-48},{4,-49},{3,-49},{2,-49},{1,-49},{0,-49},
+            {-1,-49},{-2,-49},{-3,-49},{-4,-49},{-5,-49},{-5,-50},{-5,-51},{-5,-52},{-5,-53},{-4,-53},{-3,-53},{-2,-53},{-1,-53},
+            {0,-53},{1,-53}});
+    /** Where the roof lifts and the air holds: three high, every five to eight blocks of crawl. */
+    public static final java.util.Set<BlockPos> BELLS=java.util.Set.of(new BlockPos(0,-3,-29),new BlockPos(4,-3,-30),new BlockPos(0,-3,-31),
+            new BlockPos(-4,-3,-32),new BlockPos(1,-3,-49),new BlockPos(-5,-3,-51));
+    private static java.util.List<BlockPos> path(int[][] cells){var out=new java.util.ArrayList<BlockPos>();for(var c:cells)out.add(new BlockPos(c[0],-3,c[1]));return java.util.List.copyOf(out);}
+    /** A crawl cell (either crawl, bells included), as a floor cell relative to the cave. */
+    public static boolean crawl(BlockPos r){return SQUEEZE.contains(r)||CRAWL.contains(r);}
+    public static boolean bell(BlockPos r){return BELLS.contains(r);}
+    /**
+     * The new crawls' template inside the two areas they wind through: open for a crawl or bell cell, rock otherwise. Outside
+     * those areas, or in the low chamber and its ceiling, it says nothing (null).
+     */
+    public static @javax.annotation.Nullable Boolean crawlTemplate(int x,int y,int z){
+        if(y<-3||y>-1)return null;
+        boolean first=z<=-28&&z>=-33&&x>=-5&&x<=5,second=(z<=-48&&z>=-53&&x>=-6&&x<=6||z==-47&&x>=3&&x<=6)&&!chamber(x,y,z)&&!chamberCeiling(x,y,z);
+        if(!first&&!second)return null;
+        var floor=new BlockPos(x,-3,z);
+        return y==-3&&crawl(floor)||bell(floor);
+    }
     /** The low chamber: one block of air under a slab ceiling, so a reader crouches the whole time. */
     static boolean chamber(int x,int y,int z){return x>=2&&x<=7&&y==-3&&z>=-57&&z<=-51;}
     static boolean chamberCeiling(int x,int y,int z){return x>=2&&x<=7&&y==-2&&z>=-57&&z<=-51;}
@@ -53,12 +82,14 @@ public final class CaverCave {
         for(int y=-3;y<=0;y++)put(l,b,-1,y,-10,Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.EAST));
         for(int y=-3;y<=1;y++)put(l,b,1,y,-11,Blocks.CHAIN.defaultBlockState());
         hollow(l,b,-1,-3,-19,1,0,-12);hollow(l,b,-3,-3,-22,3,1,-19);
-        hollow(l,b,0,-3,-34,0,-3,-23);
+        for(var cell:SQUEEZE)put(l,b,cell.getX(),-3,cell.getZ(),Blocks.AIR.defaultBlockState());
         // Uneven bowl, low stalagmites, and pockets that remain black beyond the lantern's reach. Its back right is the stone's wall.
         for(int z=-35;z>=-47;z--)for(int x=-6;x<=6;x++)for(int y=-3;y<=5;y++)
             if(!behindStone(x,z)&&x*x+(z+41)*(z+41)+((y+3)*(y+3))/2<52)put(l,b,x,y,z,Blocks.AIR.defaultBlockState());
         hollow(l,b,-1,-3,-38,1,0,-34);
-        hollow(l,b,4,-3,-50,5,-2,-44);
+        hollow(l,b,4,-3,-46,5,-2,-44);
+        for(var cell:CRAWL)put(l,b,cell.getX(),-3,cell.getZ(),Blocks.AIR.defaultBlockState());
+        for(var bell:BELLS)for(int y=-3;y<=-1;y++)put(l,b,bell.getX(),y,bell.getZ(),Blocks.AIR.defaultBlockState());
         hollow(l,b,2,-3,-57,7,-3,-51);
         for(int x=2;x<=7;x++)for(int z=-57;z<=-51;z++)put(l,b,x,-2,z,ceiling());
         for(int z=-55;z>=-57;z--)for(int x=3;x<=6;x++)put(l,b,x,-4,z,Blocks.CALCITE.defaultBlockState());

@@ -17,6 +17,8 @@ import net.minecraft.server.level.*;
 import net.minecraft.sounds.*;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.*;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.inventory.*;
@@ -50,6 +52,14 @@ public final class CaverVignette {
     public static final int BREATH=240,EXHALE_END=100,INHALE_START=120,INHALE_END=220;
     /** The draught's push on a crawling body, per tick, toward the camp (+) or back into the cave (-). */
     public static final float OUT=.008F,OUT_PURSUED=.012F,IN=-.006F,IN_PURSUED=-.022F,IN_HELD=-.006F;
+    /**
+     * 0.4.73, bad air: in a crawl the reader's air drains while the cave breathes in (a full in-breath empties it just
+     * before it ends) and comes back otherwise; the bells hold it. At none they black out and come to where they last
+     * had air. Air is personal; the breath is shared.
+     */
+    public static final float AIR_DRAIN=3.2F,AIR_REFILL=5F;
+    public static final int BLACKOUT=40,WAKE=24;
+    private static final Map<UUID,Float> AIR=new HashMap<>();
     private static final int LINE_POINTS=96;
     private static final DustParticleOptions LINE=new DustParticleOptions(new Vector3f(.86F,.82F,.7F),.6F);
     private record Crawl(ServerPlayer player,@Nullable Pose forced,Pose displayed){}
@@ -204,23 +214,38 @@ public final class CaverVignette {
         p.displayClientMessage(Component.literal("You tie the line off beside the ladder. It pays out behind you."),false);
         return true;
     }
-    private static boolean squeeze(Vec3 r){return r.x>-.15&&r.x<1.15&&r.z< -21&&r.z> -35.9&&r.y>=-3.2&&r.y< -2.1;}
+    /** The floor cell a reader is in, relative to the cave. */
+    private static BlockPos cell(Vec3 r){return BlockPos.containing(r.x,-3,r.z);}
+    private static boolean low(Vec3 r){return r.y>=-3.2&&r.y< -2.1;}
+    /** Where crouching starts a crawl: both ends of the squeeze (the camp end once the rubble is out of it) and both ends of the second crawl. */
+    private static boolean mouth(ServerLevel l,BlockPos b,BlockPos c){
+        if(c.equals(new BlockPos(0,-3,-22)))return CaverCave.mouthOpen(l,b);
+        return c.equals(new BlockPos(0,-3,-34))||c.equals(new BlockPos(-1,-3,-34))||c.equals(new BlockPos(4,-3,-46))||c.equals(new BlockPos(5,-3,-46))||c.equals(new BlockPos(2,-3,-53));
+    }
+    /** The draught's push along the crawl toward the camp, or none in a bell or outside the crawls. */
+    public static float[] draught(BlockPos c,float push){
+        var path=CaverCave.SQUEEZE.contains(c)?CaverCave.SQUEEZE:CaverCave.CRAWL.contains(c)?CaverCave.CRAWL:null;
+        if(push==0||path==null||CaverCave.bell(c))return new float[]{0,0};
+        int i=path.indexOf(c);var toward=i==0?c.south():path.get(i-1);
+        return new float[]{(toward.getX()-c.getX())*push,(toward.getZ()-c.getZ())*push};
+    }
     private static boolean lowChamber(Vec3 r){return r.x>1.9&&r.x<8&&r.z< -50.5&&r.z> -58&&r.y>=-3.2&&r.y< -1.4;}
-    private static void crawl(ServerPlayer p,boolean active,float push){
+    private static void crawl(ServerPlayer p,boolean active,float[] push){
         var old=CRAWLING.get(p.getUUID());
         if(active){
             if(old!=null&&old.player()!=p){restore(old);CRAWLING.remove(p.getUUID());old=null;}
             if(old==null){CRAWLING.put(p.getUUID(),new Crawl(p,p.getForcedPose(),p.getPose()));p.setForcedPose(Pose.SWIMMING);p.setPose(Pose.SWIMMING);p.refreshDimensions();sendCrawl(p,true,push);}
         }else if(old!=null){CRAWLING.remove(p.getUUID());restore(old);}
     }
+    private static final float[] STILL={0,0};
     private static void restore(Crawl old){
-        var p=old.player();sendCrawl(p,false,0);if(p.getForcedPose()!=Pose.SWIMMING)return;
+        var p=old.player();sendCrawl(p,false,STILL);if(p.getForcedPose()!=Pose.SWIMMING)return;
         p.setForcedPose(old.forced());p.setPose(old.forced()==null?old.displayed():old.forced());p.refreshDimensions();
     }
     public static boolean crawling(ServerPlayer p){var own=CRAWLING.get(p.getUUID());return own!=null&&own.player()==p;}
-    public static void depart(ServerPlayer p){crawl(p,false,0);ACTIVE.remove(p.getUUID());var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID());
+    public static void depart(ServerPlayer p){crawl(p,false,STILL);ACTIVE.remove(p.getUUID());AIR.remove(p.getUUID());var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID());
         if(own.getBoolean("Active")){own.putBoolean("Active",false);save(d,p.getUUID(),own);}}
-    public static void clearAll(){for(var server:List.copyOf(EXCAVATIONS.keySet()))confirmExcavation(server);for(var old:CRAWLING.values())restore(old);CRAWLING.clear();ACTIVE.clear();
+    public static void clearAll(){for(var server:List.copyOf(EXCAVATIONS.keySet()))confirmExcavation(server);for(var old:CRAWLING.values())restore(old);CRAWLING.clear();ACTIVE.clear();AIR.clear();
         for(var server:List.copyOf(BREATHS.keySet()))saveBreath(server);BREATHS.clear();}
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p)depart(p);}
     /** A reader who was inside when the server last stopped, and wakes elsewhere, is no longer inside. */
@@ -230,7 +255,7 @@ public final class CaverVignette {
         if(own.getBoolean("Active")&&!own.getBoolean("Escaped")){own.putBoolean("Pursuit",false);own.putInt("ReturnCrawl",0);own.putInt("DeepTicks",0);save(d,p.getUUID(),own);}
         depart(p);
     }}
-    private static void sendCrawl(ServerPlayer p,boolean active,float push){var b=base(p.server);if(b!=null)HousePackets.send(p,new CaverCrawlPayload(active,b.getX(),b.getY(),b.getZ(),push));}
+    private static void sendCrawl(ServerPlayer p,boolean active,float[] push){var b=base(p.server);if(b!=null)HousePackets.send(p,new CaverCrawlPayload(active,b.getX(),b.getY(),b.getZ(),push[0],push[1]));}
 
     // ------------------------------------------------------------------------------------------------ the breath
     public static int breathTick(MinecraftServer s){return BREATHS.computeIfAbsent(s,k->Math.floorMod(LabyrinthData.get(k).state(ID).getInt("Breath"),BREATH));}
@@ -256,7 +281,9 @@ public final class CaverVignette {
             l.playSound(null,seam.x,seam.y,seam.z,sound.value(),SoundSource.AMBIENT,.6F,.85F);}
         int dir=breathing(s);if(dir==0||t%4!=0)return;var random=l.getRandom();
         drift(l,mouth.x,mouth.y-.25,mouth.z+.6,dir);
-        if(CaverCave.mouthOpen(l,b)){var at=b.offset(0,-3,-23-random.nextInt(12));if(l.getBlockState(at).isAir())drift(l,at.getX()+.5,at.getY()+.3,at.getZ()+.5,dir);}
+        if(CaverCave.mouthOpen(l,b)){var at=b.offset(CaverCave.SQUEEZE.get(random.nextInt(CaverCave.SQUEEZE.size())));if(l.getBlockState(at).isAir())drift(l,at.getX()+.5,at.getY()+.3,at.getZ()+.5,dir);}
+        // Air stands in the bells; a little pale grit hangs and turns in each, which is how a reader finds them.
+        if(t%8==0)for(var bell:CaverCave.BELLS){var at=b.offset(bell).above(2);if(l.getBlockState(at).isAir())l.sendParticles(ParticleTypes.WHITE_ASH,at.getX()+.5,at.getY()+.2,at.getZ()+.5,2,.18,.25,.18,.004);}
         // The stone breathes through its seams; once it has rolled aside, through the passage behind it.
         if(!moved)for(var edge:new double[][]{{4.03,-2.2},{5.97,-2.6},{5,-.99},{4.6,-.99}})drift(l,b.getX()+edge[0],b.getY()+edge[1],b.getZ()-41.97,dir);
         else drift(l,b.getX()+4.5+random.nextDouble(),b.getY()-2.4,b.getZ()-43.5,dir);
@@ -273,12 +300,17 @@ public final class CaverVignette {
         if(!inside(p)){if(crawling(p)||ACTIVE.contains(p.getUUID()))depart(p);return;}
         enter(p);var b=base(p.server);var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID());var r=rel(p,b);
         long now=p.serverLevel().getGameTime();if(own.getLong("LastTick")==now)return;own.putLong("LastTick",now);
-        int breath=breathing(p.server);float push=push(own,breath);
-        boolean tight=CaverCave.mouthOpen(p.serverLevel(),b)&&squeeze(r)&&(p.isShiftKeyDown()||crawling(p)||r.z<=-23&&r.z>=-34);
+        int breath=breathing(p.server);var c=cell(r);
+        // Only rubble keeps a body out of a crawl cell; a torch set on its floor makes no air pocket. A body already crouched
+        // under the chamber's low roof starts the crawl at that mouth without needing the key.
+        boolean tight=low(r)&&(CaverCave.crawl(c)&&!CaverCave.isRubble(p.serverLevel().getBlockState(b.offset(c)))
+                ||mouth(p.serverLevel(),b,c)&&(p.isShiftKeyDown()||p.getPose()==Pose.CROUCHING||crawling(p)));
+        var push=draught(c,push(own,breath));
         crawl(p,tight,push);
-        if(tight&&(now%10==0||breath!=own.getInt("LastBreath")))sendCrawl(p,true,push);
+        if(tight&&(now%5==0||breath!=own.getInt("LastBreath")))sendCrawl(p,true,push);
         own.putInt("LastBreath",breath);
-        if(tight&&r.z<=-23&&r.z>=-34){
+        air(p,own,b,r,c,tight,breath);
+        if(tight&&CaverCave.SQUEEZE.contains(c)){
             String counter=own.getBoolean("Pursuit")?"ReturnCrawl":"IngressCrawl";
             own.putInt(counter,Math.min(CRAWL_TICKS,own.getInt(counter)+1));
         }
@@ -305,13 +337,42 @@ public final class CaverVignette {
             int clock=own.getInt("PursuitTicks")+1;own.putInt("PursuitTicks",clock);
             if(r.z< -9&&clock%160==0)privateSound(p,LabyrinthRegistry.CAVER_SCRAPE,p.position().add(0,.5,-6),.9F,.5F);
             if(own.getInt("ReturnCrawl")>=CRAWL_TICKS&&r.z> -8.5&&r.y>=-.2&&r.y<3&&Math.abs(r.x-.5)<3){
-                own.putBoolean("Escaped",true);changed=true;crawl(p,false,0);
+                own.putBoolean("Escaped",true);changed=true;crawl(p,false,STILL);
                 save(d,p.getUUID(),own);WitnessAccount.resolve(p,WitnessAccount.Story.TED_CAVER,"retraced_the_squeeze");
                 p.displayClientMessage(Component.literal("You are above the rope. The mouth of the cave is still where you left it."),false);
             }
         }
         save(d,p.getUUID(),own);if(changed)updateJournal(p);
     }
+    /** The reader's own air in the crawls; see {@link #AIR_DRAIN}. Outside them Minecraft's own breathing takes over. */
+    private static void air(ServerPlayer p,CompoundTag own,BlockPos b,Vec3 r,BlockPos c,boolean tight,int breath){
+        var id=p.getUUID();int out=own.getInt("Blackout");
+        if(out>0){out--;own.putInt("Blackout",out);if(out==WAKE)wake(p,own,b);return;}
+        // Where the reader last had air: a bell, or anywhere outside the crawls with ground under them.
+        var here=BlockPos.containing(r);
+        if((!tight||CaverCave.bell(c))&&!p.serverLevel().getBlockState(b.offset(here).below()).getCollisionShape(p.serverLevel(),b.offset(here).below()).isEmpty())
+            own.putLong("LastSafe",(tight?c:here).asLong());
+        if(!tight||!CaverCave.crawl(c)||p.getAbilities().invulnerable){AIR.remove(id);return;}
+        float air=AIR.computeIfAbsent(id,k->(float)p.getAirSupply());
+        air=CaverCave.bell(c)||breath>=0?Math.min(p.getMaxAirSupply(),air+AIR_REFILL):air-AIR_DRAIN;
+        AIR.put(id,air);p.setAirSupply(Math.max(0,Math.round(air)));
+        if(air<=0){
+            own.putInt("Blackout",BLACKOUT);AIR.remove(id);
+            p.addEffect(new MobEffectInstance(MobEffects.BLINDNESS,BLACKOUT+30,0,false,false,false));
+            p.displayClientMessage(Component.literal("The air goes out of you."),true);
+        }
+    }
+    /** Coming to where the air still moves, with nothing lost but the time. */
+    private static void wake(ServerPlayer p,CompoundTag own,BlockPos b){
+        var safe=own.contains("LastSafe")?BlockPos.of(own.getLong("LastSafe")):new BlockPos(0,-3,-22);var at=Vec3.atBottomCenterOf(b.offset(safe));
+        p.teleportTo(p.serverLevel(),at.x,at.y,at.z,p.getYRot(),p.getXRot());p.setDeltaMovement(Vec3.ZERO);p.resetFallDistance();
+        p.setAirSupply(p.getMaxAirSupply()/2);if(CaverCave.crawl(safe))AIR.put(p.getUUID(),p.getMaxAirSupply()/2F);
+        privateSound(p,LabyrinthRegistry.CAVER_GASP,p.position(),.9F,1F);
+        p.displayClientMessage(Component.literal("You come to with your face against the rock. The air here still moves."),false);
+    }
+    /** For tests and operators: the reader's air in the crawl, if they are in one. */
+    public static @Nullable Float air(UUID id){return AIR.get(id);}
+    public static void setAir(ServerPlayer p,float air){AIR.put(p.getUUID(),air);p.setAirSupply(Math.round(air));}
     /** The reader's own line: it pays out as they go, and only they see it, a pale cord along the floor back to the ladder. */
     private static void line(ServerPlayer p,CompoundTag own,Vec3 r,long now){
         if(!own.getBoolean("LineTied")||own.getBoolean("Escaped"))return;
@@ -356,8 +417,8 @@ public final class CaverVignette {
         String[] entries={
             "FIELD NOTEBOOK\n\nR. / Miles\n\nCheck lamps. Leave the line tied. Three sandwiches, two gloves. Miles says a spare glove is a strange thing to count.",
             "FIRST SURVEY\n\nDown the ladder, follow the draught. Rubble is packed into the crack; a pickaxe takes it out a block at a time. I left spare torches in the barrel. Crouch at the opening to crawl. Tie the line off at the ladder.",
-            "WORKING DAY\n\nI wait for the grit after each blow. A hand would fit behind the crack. The air comes out in bursts.\n\nMiles has stopped counting.",
-            "THROUGH\n\nThe squeeze goes farther than the light. I kept my arms in front of me. There was space at the end to stand. I heard my own clothing stop scraping before I stopped moving.",
+            "WORKING DAY\n\nI wait for the grit after each blow. A hand would fit behind the crack. The air comes out in bursts. When it draws back in, I back out.\n\nMiles has stopped counting.",
+            "THROUGH\n\nThe squeeze goes farther than the light and turns twice. Where the roof lifts, the air stays; I waited there each time it drew in. I heard my own clothing stop scraping before I stopped moving.",
             "THE CUTS\n\nA shape lies under the crust. I tried drawing it. Each version looks like a different part of a person.\n\nA smooth stone sits opposite. Air comes from behind it, out and then back in.",
             "ANOTHER PASSAGE\n\nThe smooth stone moved away from my hand. Behind it, the line can go on. I have already made the hole large enough to get back.\n\nThat seemed like a good reason to keep going.",
             "LOW CHAMBER\n\nThe rope tightened. Nothing was tied to its end. Stone scraped behind me.\n\nBack through the squeeze. Up the ladder beside the line. Get above the drop.",

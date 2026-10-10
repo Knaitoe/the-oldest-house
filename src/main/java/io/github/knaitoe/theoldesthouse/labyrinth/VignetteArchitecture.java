@@ -70,8 +70,8 @@ public final class VignetteArchitecture {
             case MOTHER_DEN->(x>=-6&&x<=0&&z<=-9&&z>=-24)||(Math.abs(x)<=2&&z>=-22&&z<=-18);
             case HOSPITAL->Math.abs(x)<=2&&z>=-16&&z<=-12;
             case KAREN_ROOM->Math.abs(x)<=3&&z>=-15&&z<=-6;
-            // The route, and (0.4.71) the stone's wall, the passage behind it and the low chamber.
-            case TED_CAVER->Math.abs(x)<=1&&z<=-8||x>=2&&x<=7&&z<=-42;
+            // The route, (0.4.71) the stone's wall, the passage behind it and the low chamber, and (0.4.73) both winding crawls.
+            case TED_CAVER->Math.abs(x)<=1&&z<=-8||x>=2&&x<=7&&z<=-42||z<=-22&&z>=-34&&x>=-5&&x<=5||z<=-46&&z>=-54&&x>=-6&&x<=6;
             case PHONE_CANOE->Math.abs(x)<=3&&z<=-10;
             default->false;
         };

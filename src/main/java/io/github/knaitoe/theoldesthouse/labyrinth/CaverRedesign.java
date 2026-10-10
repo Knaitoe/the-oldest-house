@@ -28,7 +28,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class CaverRedesign {
-    public static final String STATE="caver_0471",MARKS="caver_marks_0472";
+    public static final String STATE="caver_0471",MARKS="caver_marks_0472",CRAWLS="caver_crawls_0473";
     /** Work at which an older cave's single crack was open. */
     static final int OLD_STROKES=24;
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
@@ -36,7 +36,8 @@ public final class CaverRedesign {
 
     public static boolean done(LabyrinthData d,BlockPos b){return d.state(STATE).getBoolean(Long.toString(b.asLong()));}
     public static boolean marked(LabyrinthData d,BlockPos b){return d.state(MARKS).getBoolean(Long.toString(b.asLong()));}
-    static void markBuilt(LabyrinthData d,BlockPos b){check(d,STATE,b);check(d,MARKS,b);}
+    public static boolean crawled(LabyrinthData d,BlockPos b){return d.state(CRAWLS).getBoolean(Long.toString(b.asLong()));}
+    static void markBuilt(LabyrinthData d,BlockPos b){check(d,STATE,b);check(d,MARKS,b);check(d,CRAWLS,b);}
     private static void check(LabyrinthData d,String id,BlockPos b){var s=d.state(id);s.putBoolean(Long.toString(b.asLong()),true);d.setState(id,s);}
     /** No camera anywhere in the deep cave, and its chunks and entity sections loaded. */
     private static boolean ready(ServerLevel l,BlockPos b){
@@ -50,10 +51,31 @@ public final class CaverRedesign {
      * collision; it waits only for the cave to be loaded and unwatched.
      */
     public static boolean marks(ServerLevel l,BlockPos b){
-        var d=LabyrinthData.get(l.getServer());if(marked(d,b))return true;if(!ready(l,b))return false;
+        var d=LabyrinthData.get(l.getServer());if(marked(d,b))return crawls(l,b);if(!ready(l,b))return false;
         var at=b.offset(CaverCave.MARK);if(l.getBlockState(at).is(Blocks.CHISELED_DEEPSLATE))l.setBlock(at,LabyrinthRegistry.CAVE_MARKS.get().defaultBlockState(),F);
-        check(d,MARKS,b);return true;
+        check(d,MARKS,b);return crawls(l,b);
     }
+    /**
+     * 0.4.73: the straight squeeze and the open passage become the two winding crawls with their air bells, once
+     * ({@value #CRAWLS}). Rock comes back only where nothing living stands; a torch in the way goes back to the barrel. All
+     * of it, or none, and only while the cave is loaded and unwatched.
+     */
+    public static boolean crawls(ServerLevel l,BlockPos b){
+        var d=LabyrinthData.get(l.getServer());if(crawled(d,b))return true;if(!ready(l,b))return false;
+        var bodies=l.getEntitiesOfClass(LivingEntity.class,deep(b),e->e.isAlive()&&!e.isSpectator());
+        var plan=new ArrayList<Change>();
+        for(int x=-6;x<=6;x++)for(int y=-3;y<=-1;y++)for(int z=-53;z<=-28;z++){
+            var open=CaverCave.crawlTemplate(x,y,z);if(open==null)continue;
+            var at=b.offset(x,y,z);var old=l.getBlockState(at);
+            if(open){if(rockLike(old)&&l.getBlockEntity(at)==null)plan.add(new Change(at,Blocks.AIR.defaultBlockState(),false));}
+            else rock(l,b,x,y,z,plan);
+        }
+        for(var c:plan)if(!safe(l,c.at(),c.next(),bodies))return false;
+        for(var c:plan){if(c.refund()){refund(l,b,l.getBlockState(c.at()));CaverVignette.forgetTorch(d,c.at());}l.setBlock(c.at(),c.next(),F);}
+        check(d,CRAWLS,b);return true;
+    }
+    /** The cave's own rock, which a new crawl may be cut through; never a placed or authored block. */
+    private static boolean rockLike(BlockState s){return s.is(Blocks.STONE)||s.is(Blocks.ANDESITE)||s.is(Blocks.TUFF)||s.is(Blocks.MOSSY_COBBLESTONE)||s.is(Blocks.DEEPSLATE)||s.is(Blocks.COBBLESTONE);}
     /** The deep cave beyond the corridor, where every change is made and where no camera may be. */
     public static AABB deep(BlockPos b){return new AABB(Vec3.atLowerCornerOf(b.offset(-10,-5,-61)),Vec3.atLowerCornerOf(b.offset(11,9,-15)));}
 
@@ -123,6 +145,6 @@ public final class CaverRedesign {
         var origin=HouseSavedData.get(s).houseOrigin();if(origin==null)return;var data=LabyrinthData.get(s);var p=LabyrinthPlace.TED_CAVER;
         if(data.door(p.entryDoorId())==null||!LabyrinthBuilder.isPlaceReady(data,p))return;
         var b=LabyrinthPlaces.base(origin,p);var l=s.getLevel(NovelRooms.dimension(p));
-        if(b!=null&&l!=null&&!(done(data,b)&&marked(data,b)))repair(l,b);
+        if(b!=null&&l!=null&&!(done(data,b)&&marked(data,b)&&crawled(data,b)))repair(l,b);
     }
 }

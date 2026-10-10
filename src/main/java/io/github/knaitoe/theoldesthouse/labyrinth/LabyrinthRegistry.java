@@ -32,7 +32,9 @@ public final class LabyrinthRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> STAIRCASE_SCORE=sound("staircase.descent");
     /** The cave's breath, its stone, the line and what is heard behind a shut door (0.4.71). */
     public static final DeferredHolder<SoundEvent,SoundEvent> CAVER_EXHALE=sound("caver.exhale"),CAVER_INHALE=sound("caver.inhale"),CAVER_SCRAPE=sound("caver.scrape"),
-            CAVER_LINE=sound("caver.line_taut"),CAVER_STONE=sound("caver.stone_roll"),CAVER_CHISEL=sound("caver.chisel");
+            CAVER_LINE=sound("caver.line_taut"),CAVER_STONE=sound("caver.stone_roll"),CAVER_CHISEL=sound("caver.chisel"),
+            /** Coming to after the air ran out (0.4.73). */
+            CAVER_GASP=sound("caver.gasp");
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id) {
         return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));
     }
