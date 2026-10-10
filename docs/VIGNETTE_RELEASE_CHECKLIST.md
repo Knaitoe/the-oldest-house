@@ -9,9 +9,11 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.72
+## Current verified update: 0.4.72
 
 Combine the repaired ward build, Claude's cave redesign and the Goatman scene repairs. Keep the existing eligible pool and private resolutions. Require complete physical-circuit, spatial-knock, individual-child and subtitle-priority regressions, all twelve exact-source jobs, native visual proofs and actual multiplayer/reconnects. Layout 40 / protocol 46.
+
+Verified source `40c7910` ([run 38091222490](https://github.com/Knaitoe/the-oldest-house/actions/runs/38091222490)): all twelve jobs, 502 native cases, complete writing/package/71-view architecture and GPU proofs, and both actual clients with two reconnects and the night proof passed.
 
 ## Earlier candidate: 0.4.70
 
