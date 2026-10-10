@@ -70,19 +70,19 @@ public final class WhaleInstitute {
         for(int z:new int[]{-13,-17,-21,-25}){wall(l,b,-12,z,-3,z,paint,dado);wall(l,b,3,z,12,z,paint,dado);}
         NovelRooms.box(l,b,-1,0,-25,1,3,-25,air);
         NovelRooms.door(l,b,Direction.SOUTH,Blocks.BIRCH_DOOR,true);
-        reception(l,b);corridor(l,b);rooms(l,b);dayroom(l,b);attics(l,b);
+        reception(l,b);corridor(l,b);rooms(l,b);dayroom(l,b);attics(l,b);stairHeadroom(l,b);
     }
     private static void reception(ServerLevel l,BlockPos b){
         // The slot in the wall, and the old plaque on its post beside it.
         BuildBlocks.set(l,b.offset(OUTGOING),NovelRooms.prop(NovelPropBlock.Kind.MAIL_SLOT,Direction.SOUTH),F);
-        set(l,b,4,0,-8,Blocks.OAK_FENCE);BuildBlocks.set(l,b.offset(4,1,-8),HouseBlocks.MAIL_PLAQUE.get().defaultBlockState(),F);
+        set(l,b,4,0,-8,Blocks.OAK_FENCE);board(l,b.offset(4,1,-8),Direction.SOUTH,InstituteSignBlock.Kind.OUTGOING);
         for(int n=1;n<=12;n++)BuildBlocks.set(l,b.offset(pigeonhole(n)),NovelRegistry.PIGEONHOLE.get().defaultBlockState().setValue(PigeonholeBlock.FACING,Direction.WEST).setValue(PigeonholeBlock.NUMBER,n),F);
         for(int z=-7;z<=-2;z++){BuildBlocks.set(l,b.offset(12,0,z),Blocks.SPRUCE_PLANKS.defaultBlockState(),F);BuildBlocks.set(l,b.offset(12,3,z),Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP),F);}
-        sign(l,b.offset(12,3,-8),Direction.WEST,new String[]{"","POST","",""});
+        board(l,b.offset(12,3,-8),Direction.WEST,InstituteSignBlock.Kind.POST);
         // Benches turned to the door; a board of rules on the west wall.
         for(int x=-11;x<=-7;x++)for(int z:new int[]{-3,-6})BuildBlocks.set(l,b.offset(x,0,z),Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH),F);
-        sign(l,b.offset(-12,2,-4),Direction.EAST,new String[]{"VISITING HOURS","","none at present",""});
-        sign(l,b.offset(-12,2,-7),Direction.EAST,new String[]{"Patients may","write as often","as they like.",""});
+        board(l,b.offset(-12,2,-4),Direction.EAST,InstituteSignBlock.Kind.HOURS);
+        board(l,b.offset(-12,2,-7),Direction.EAST,InstituteSignBlock.Kind.WRITING);
         NovelRooms.furniture(l,b.offset(-4,0,-8),HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.SOUTH);
         BuildBlocks.set(l,b.offset(-4,1,-8),SceneDetailBlock.state(SceneDetailBlock.Kind.VASE,Direction.SOUTH),F);
         clock(l,b,-6,3,-1,Direction.NORTH,2);clock(l,b,8,3,-1,Direction.NORTH,5);
@@ -94,8 +94,8 @@ public final class WhaleInstitute {
         clock(l,b,1,2,-12,Direction.WEST,3);clock(l,b,-1,2,-16,Direction.EAST,1);clock(l,b,1,2,-20,Direction.WEST,6);clock(l,b,-1,2,-24,Direction.EAST,4);
         for(int i=0;i<4;i++){int z=DOOR_Z[i],east=2*i+1,west=2*i+2;
             // Her number has been taken off: two screw holes where the plate was.
-            sign(l,b.offset(1,2,z+1),Direction.WEST,east==ROOM?new String[]{"","·      ·","",""}:new String[]{"",Integer.toString(east),"",""});
-            sign(l,b.offset(-1,2,z+1),Direction.EAST,new String[]{"",Integer.toString(west),"",""});
+            board(l,b.offset(1,2,z),Direction.WEST,east==ROOM?InstituteSignBlock.Kind.MISSING:InstituteSignBlock.Kind.valueOf("ROOM_"+east));
+            board(l,b.offset(-1,2,z),Direction.EAST,InstituteSignBlock.Kind.valueOf("ROOM_"+west));
             boolean eastLocked=east==5,westLocked=west==2||west==8;
             NovelRooms.door(l,b.offset(2,0,z),Direction.EAST,eastLocked?Blocks.IRON_DOOR:Blocks.BIRCH_DOOR,false);
             NovelRooms.door(l,b.offset(-2,0,z),Direction.WEST,westLocked?Blocks.IRON_DOOR:Blocks.BIRCH_DOOR,false);
@@ -145,8 +145,10 @@ public final class WhaleInstitute {
         for(int i=0;i<=5;i++){int x=-6-i;
             for(int z:new int[]{-31,-30}){for(int y=0;y<i;y++)set(l,b,x,y,z,Blocks.SPRUCE_PLANKS);
                 BuildBlocks.set(l,b.offset(x,i,z),Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.WEST),F);}}
-        NovelRooms.box(l,b,-10,5,-31,-9,5,-30,Blocks.AIR.defaultBlockState());
+        // Headroom is cut after attic railings are installed, so no railing or ceiling closes the stairwell again.
     }
+    private static void board(ServerLevel l,BlockPos at,Direction facing,InstituteSignBlock.Kind kind){BuildBlocks.set(l,at,InstituteSignBlock.of(kind,facing),F);}
+    static void stairHeadroom(ServerLevel l,BlockPos b){for(int i=0;i<=5;i++)for(int z:new int[]{-31,-30})for(int y=i+1;y<=i+3;y++)set(l,b,-6-i,y,z,Blocks.AIR);}
     private static void attics(ServerLevel l,BlockPos b){
         // Three attics under one roof. They insist there have always been three.
         BlockState paint=NovelRegistry.INSTITUTE.get().defaultBlockState(),boards=Blocks.DARK_OAK_PLANKS.defaultBlockState();

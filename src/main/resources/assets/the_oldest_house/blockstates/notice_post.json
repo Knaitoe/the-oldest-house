@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "the_oldest_house:block/notice_post"
+    },
+    "facing=east": {
+      "model": "the_oldest_house:block/notice_post",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "the_oldest_house:block/notice_post",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "the_oldest_house:block/notice_post",
+      "y": 270
+    }
+  }
+}

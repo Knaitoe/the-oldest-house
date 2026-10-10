@@ -121,10 +121,18 @@ public final class ProofrockTown {
     }
     /** Four long, two wide, two high: a body of paint over dark wheels, glass above. */
     private void car(int x,int z,Block paint){
-        for(int i=0;i<4;i++)for(int j=0;j<2;j++){int cx=x+j,cz=z-i;boolean wheel=i==0||i==3;
-            set(cx,0,cz,wheel?Blocks.POLISHED_BLACKSTONE:paint);
-            set(cx,1,cz,i==1||i==2?Blocks.BLACK_STAINED_GLASS.defaultBlockState():slab(paint));}
+        for(var e:carStates(b,x,z,paint).entrySet())BuildBlocks.set(l,e.getKey(),e.getValue(),F);
     }
+    private static Map<BlockPos,BlockState> carStates(BlockPos b,int x,int z,Block paint){
+        var states=new LinkedHashMap<BlockPos,BlockState>();
+        String colour=paint==Blocks.RED_CONCRETE?"RED":paint==Blocks.BLUE_CONCRETE?"BLUE":paint==Blocks.GREEN_TERRACOTTA?"GREEN":paint==Blocks.WHITE_CONCRETE?"WHITE":paint==Blocks.LIGHT_BLUE_TERRACOTTA?"LIGHT_BLUE":paint==Blocks.BROWN_TERRACOTTA?"BROWN":paint==Blocks.CYAN_TERRACOTTA?"CYAN":"ORANGE";
+        for(int i=0;i<4;i++)for(int j=0;j<2;j++){int cx=x+j,cz=z-i;boolean wheel=i==0||i==3;
+            states.put(b.offset(cx,0,cz),TownFixtureBlock.of(wheel?TownFixtureBlock.Kind.CAR_WHEEL:TownFixtureBlock.Kind.valueOf("CAR_"+colour),j==0?Direction.WEST:Direction.EAST));
+            states.put(b.offset(cx,1,cz),TownFixtureBlock.of(i==1||i==2?TownFixtureBlock.Kind.CAR_CABIN:TownFixtureBlock.Kind.valueOf("HOOD_"+colour),i==0?Direction.SOUTH:Direction.NORTH));}
+        return states;
+    }
+    /** The same finite cars, exposed for a guarded saved-world material upgrade. */
+    public static Map<BlockPos,BlockState> cars(BlockPos b){var out=new LinkedHashMap<BlockPos,BlockState>();int[][] spots={{-3,-18},{2,-30},{-3,-52},{2,-67},{23,-26},{26,-32},{-34,-41},{31,-10}};Block[] paint={Blocks.RED_CONCRETE,Blocks.BLUE_CONCRETE,Blocks.GREEN_TERRACOTTA,Blocks.WHITE_CONCRETE,Blocks.LIGHT_BLUE_TERRACOTTA,Blocks.BROWN_TERRACOTTA,Blocks.CYAN_TERRACOTTA,Blocks.ORANGE_TERRACOTTA};for(int i=0;i<spots.length;i++)out.putAll(carStates(b,spots[i][0],spots[i][1],paint[i]));return out;}
 
     // ------------------------------------------------------------------------------------------------ the woods round the edge
     private void forest(){
@@ -412,9 +420,8 @@ public final class ProofrockTown {
     // ------------------------------------------------------------------------------------------------ the welcome and the note
     private void street(){
         set(SIGN.getX(),0,SIGN.getZ(),HouseBlocks.TOWN_SIGN.get().defaultBlockState().setValue(TownSignBlock.FACING,Direction.SOUTH));
-        set(LECTERN.getX(),0,LECTERN.getZ(),Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.FACING,Direction.SOUTH));
-        BuildBlocks.after(l,()->{if(l.getBlockEntity(b.offset(LECTERN)) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity desk){desk.setBook(note());desk.setChanged();
-            l.setBlock(desk.getBlockPos(),l.getBlockState(desk.getBlockPos()).setValue(LecternBlock.HAS_BOOK,true),F);}});
+        set(LECTERN.getX(),0,LECTERN.getZ(),DrownedTownRegistry.NOTICE.get().defaultBlockState().setValue(NoticePostBlock.FACING,Direction.SOUTH));
+        BuildBlocks.after(l,()->{if(l.getBlockEntity(b.offset(LECTERN)) instanceof NoticePostBlockEntity post)post.book(note());});
     }
     static net.minecraft.world.item.ItemStack note(){return HouseWriting.book("At the waterline","An explorer",HouseWriting.WritingStyle.PLAIN,List.of(
         "Proofrock is on the bank. The older town is under Indian Lake.\n\nThe high school is at the top of Main Street, on the left, by the water.",

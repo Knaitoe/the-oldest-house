@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.client;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.sounds.SoundSource;
 import net.neoforged.api.distmarker.Dist;
@@ -15,8 +16,12 @@ public final class StaircaseSoundscape {
     private StaircaseSoundscape(){}
     @SubscribeEvent public static void sound(PlaySoundEvent event){
         var mc=Minecraft.getInstance();var sound=event.getSound();
-        if(sound==null||mc.player==null||mc.level==null||!mc.level.dimension().equals(HouseDimensions.INTERIOR)
-                ||!StaircaseScore.at(HouseSightlineState.origin(),mc.player.blockPosition()))return;
+        if(sound==null||mc.player==null||mc.level==null||!mc.level.dimension().equals(HouseDimensions.INTERIOR))return;
+        if(sound.getLocation().getNamespace().equals("minecraft")&&sound.getLocation().getPath().equals("ambient.cave")){
+            var whale=LabyrinthPlaces.placeBounds(HouseSightlineState.origin(),LabyrinthPlace.WHALE);
+            if(whale!=null&&whale.isInside(mc.player.blockPosition())){event.setSound(null);return;}
+        }
+        if(!StaircaseScore.at(HouseSightlineState.origin(),mc.player.blockPosition()))return;
         var id=sound.getLocation();if(!id.getNamespace().equals("minecraft")||id.getPath().endsWith(".step"))return;
         var source=sound.getSource();
         // Creatures' own idle voices (entity.*.ambient) are gameplay warnings and companions: they stay.
