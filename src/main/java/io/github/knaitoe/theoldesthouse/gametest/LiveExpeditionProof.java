@@ -296,7 +296,11 @@ public final class LiveExpeditionProof {
             step(s,31,source.lower);
         }else if(phase==31&&a!=null&&b!=null&&LabyrinthPlaces.placeAt(ORIGIN,a.blockPosition())==LabyrinthPlace.GOATMAN&&LabyrinthPlaces.placeAt(ORIGIN,b.blockPosition())==LabyrinthPlace.GOATMAN){
             var camp=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN);var run=GoatmanVignette.run(d);
-            nightGoatmanId=a.serverLevel().getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(camp,LabyrinthPlace.GOATMAN),c->!c.girl()&&c.getPersistentData().getInt(GoatmanVignette.INDEX)==run.getInt("Wrong")).stream().findFirst().orElseThrow().getUUID();
+            var wrong=a.serverLevel().getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(camp,LabyrinthPlace.GOATMAN),c->!c.girl()&&c.getPersistentData().getInt(GoatmanVignette.INDEX)==run.getInt("Wrong"));
+            // A real door arrival can precede native entity-section readiness.
+            // Wait for the production staging retry rather than inventing an actor.
+            if(wrong.isEmpty())return;
+            require(wrong.size()==1,"the fresh trailer has one registered native Goatman body");nightGoatmanId=wrong.getFirst().getUUID();
             require(run.getInt("Phase")==GoatmanVignette.PATH&&run.getCompound("Cohort").getAllKeys().size()==2,"both actual door crossings enroll in one fresh trailer round");
             step(s,32,camp);
         }else if(phase==32&&a!=null&&b!=null&&ACKS.size()==2){

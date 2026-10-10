@@ -12,6 +12,8 @@ Native regression coverage follows the normal evening-to-night transition with t
 
 The actual-client run exposed an older flooded-passage repair forcing cold chunks onto the server thread. Its once-only migration now waits for full block/entity readiness across the room and copied vestibule, cameras, native residents and original containers. A native cold-scene regression checks that no chunk is forced, that observers and exact originals stay intact, and that later removals survive saved-state reload. The actual-client fixture host has three GiB; its watchdog and all checks remain enabled.
 
+The fresh-trailer client proof waits for the normal native actor-registration retry after both real door crossings before recording the Goatman's original UUID. It requires a single body, all eight cousins on both clients and that same UUID after the complete night; delayed section readiness cannot crash the proof or bypass its identity checks.
+
 Layout 40 / protocol 46. Use matching 0.4.72 clients and server. Still 43 eligible sources, 33 resolutions across two kinds and three endings. No new credit is granted by fear, dialogue or scenery.
 
 Validation pending on the exact combined source. Required: 502 native cases, 461 PNG textures, all twelve workflow jobs, complete writing/eight fonts, 71 architecture views, all prior GPU proofs plus the two ward and six fear views, and actual two-client multiplayer with both reconnects and night captures.
