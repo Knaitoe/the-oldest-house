@@ -29,7 +29,7 @@ public final class GoatmanFear {
     public static void begin(CompoundTag run){
         if(run.getBoolean("HorrorStarted0472"))return;
         run.putBoolean("HorrorStarted0472",true);run.putInt("FearAge0472",0);run.putInt("FearNext0472",0);
-        run.remove("FearLine0472");run.remove("FearPending0472");run.remove("FearQueue0472");
+        run.remove("FearLine0472");run.remove("FearPending0472");run.remove("FearPendingLease0472");run.remove("FearQueue0472");
     }
     public static void departed(CompoundTag run){
         if(run.getBoolean("FearDeparture0472"))return;
@@ -71,7 +71,7 @@ public final class GoatmanFear {
     }
     public static int remaining(CompoundTag run){
         if(stage(run)==0||run.getInt("FearLine0472")==0)return 0;
-        int since=run.getInt("FearAge0472")-run.getInt("FearAtAge0472");return since>=0?Math.max(0,LINE_TICKS-since):0;
+        int since=run.getInt("FearAge0472")-run.getInt("FearAtAge0472"),lease=run.contains("FearLease0472")?run.getInt("FearLease0472"):LINE_TICKS;return since>=0?Math.max(0,lease-since):0;
     }
     public static void tick(CompoundTag run,List<GoatmanChild> children,int clock){
         if(stage(run)==0)return;
@@ -80,13 +80,13 @@ public final class GoatmanFear {
         if(GoatmanVignette.speaking(run)){
             if(remaining(run)>0){
                 int line=run.getInt("FearLine0472");
-                if(run.getInt("FearPending0472")==0)run.putInt("FearPending0472",line);else queue(run,line);
+                if(run.getInt("FearPending0472")==0){run.putInt("FearPending0472",line);run.putInt("FearPendingLease0472",remaining(run));}else queue(run,line);
                 run.remove("FearLine0472");
             }
             return;
         }
         if(remaining(run)>0)return;
-        int pending=run.getInt("FearPending0472");
+        int pending=run.getInt("FearPending0472"),lease=pending>0&&run.contains("FearPendingLease0472")?run.getInt("FearPendingLease0472"):LINE_TICKS;
         if(pending==0){
             int[] queue=run.getIntArray("FearQueue0472");
             if(queue.length>0){pending=queue[0];run.putIntArray("FearQueue0472",Arrays.copyOfRange(queue,1,queue.length));}
@@ -101,7 +101,7 @@ public final class GoatmanFear {
             }
         }
         if(pending==0)return;
-        run.putInt("FearLine0472",pending);run.putInt("FearAt0472",clock);run.putInt("FearAtAge0472",age);
-        run.putInt("FearNext0472",age+160);run.remove("FearPending0472");
+        run.putInt("FearLine0472",pending);run.putInt("FearAt0472",clock);run.putInt("FearAtAge0472",age);run.putInt("FearLease0472",lease);
+        run.putInt("FearNext0472",age+160);run.remove("FearPending0472");run.remove("FearPendingLease0472");
     }
 }

@@ -167,7 +167,7 @@ public final class GoatmanTests {
         GoatmanFear.tick(r,List.of(),110);var priority=GoatmanVignette.scenePayload(r);
         h.assertTrue(priority.demand()==104&&priority.cousinLine()==0&&r.getInt("FearPending0472")==7,"a demand suppresses and queues the interrupted cousin's actual words");
         var saved=r.copy();saved.putInt("Clock",201);GoatmanFear.tick(saved,List.of(),201);var resumed=GoatmanVignette.scenePayload(saved);
-        h.assertTrue(resumed.demand()==0&&resumed.cousinLine()==7&&resumed.cousinRemaining()==GoatmanFear.LINE_TICKS,"the queued cousin resumes after the voice, including after saved-state reload");
+        h.assertTrue(resumed.demand()==0&&resumed.cousinLine()==7&&resumed.cousinRemaining()==94,"the queued cousin resumes its actual remaining lease after the voice and saved-state reload, so repeated demands cannot starve subsequent replies");
         var buffer=io.netty.buffer.Unpooled.buffer();try{io.github.knaitoe.theoldesthouse.network.GoatmanScenePayload.STREAM_CODEC.encode(buffer,resumed);h.assertTrue(resumed.equals(io.github.knaitoe.theoldesthouse.network.GoatmanScenePayload.STREAM_CODEC.decode(buffer)),"the native packet codec carries both priority and cousin subtitle leases exactly");}finally{buffer.release();}
         h.succeed();
     }
