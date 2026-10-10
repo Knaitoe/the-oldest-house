@@ -1019,7 +1019,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
-      - name: Native trailer cooking, physical stalking, disguises and fixture packets
+      - name: Native trailer cooking, physical stalking, disguises and streetlights
         timeout-minutes: 12
         env:
           JAVA_TOOL_OPTIONS: -Xmx6g
@@ -1032,7 +1032,7 @@ jobs:
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/goatman-native.log').read_text())
-          declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/GoatmanTests.java').read_text()))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('GoatmanTests.java','StreetlightTests.java'))
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused native Goatman cases passed; the complete suite remains required.')
           PY

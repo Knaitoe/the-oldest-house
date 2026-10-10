@@ -13,11 +13,23 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
 import net.neoforged.neoforge.gametest.*;
 
-@GameTestHolder("the_oldest_house")
+@GameTestHolder("the_oldest_house_goatman")
 @PrefixGameTestTemplate(false)
 public final class StreetlightTests {
     private static NativeTestChunks chunks;private static LabyrinthData old;private static ServerPlayer camera;private static ItemEntity original;
     @AfterBatch(batch="streetlights0469") public static void clean(ServerLevel l){if(chunks!=null){chunks.close();chunks=null;}if(camera!=null){camera.discard();camera=null;}if(original!=null){original.discard();original=null;}if(old!=null){l.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",old);old=null;}}
+    @AfterBatch(batch="streetlights_fresh0469") public static void cleanFresh(ServerLevel l){clean(l);}
+    @GameTest(template="empty",batch="streetlights_fresh0469",timeoutTicks=2400)
+    public static void freshTownKeepsEveryFittedStreetlightPartAtItsAuthoredPosition(GameTestHelper h){
+        var l=HouseTestLevel.get(h.getLevel().getServer(),HouseDimensions.OUTSIDE);var b=LabyrinthPlaces.base(new BlockPos(576000,80,576000),LabyrinthPlace.DROWNED_TOWN);
+        chunks=new NativeTestChunks();chunks.hold(l,IndianLakeRooms.bounds(b,LabyrinthPlace.DROWNED_TOWN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(chunks.ready(),"the fresh town's native entity sections are ready")).thenExecute(()->{
+            ProofrockTown.build(l,b);
+            var failures=new java.util.ArrayList<String>();
+            for(var e:ProofrockTown.streetlights(b).entrySet())if(!l.getBlockState(e.getKey()).equals(e.getValue()))failures.add(e.getKey().subtract(b)+" actual="+l.getBlockState(e.getKey())+" expected="+e.getValue());
+            h.assertTrue(failures.isEmpty(),"the actual fresh town keeps every authored streetlight part: "+failures);h.succeed();
+        });
+    }
     @GameTest(template="empty",batch="streetlights0469",timeoutTicks=2400)
     public static void savedStreetlightsWaitForCamerasAndOriginalsAndPreserveLaterRemovals(GameTestHelper h){
         var s=h.getLevel().getServer();var l=HouseTestLevel.get(s,HouseDimensions.OUTSIDE);var b=LabyrinthPlaces.base(new BlockPos(574000,80,574000),LabyrinthPlace.DROWNED_TOWN);
@@ -33,7 +45,7 @@ public final class StreetlightTests {
             h.assertTrue(!StreetlightUpgrade.apply(l,b),"a finite original overlapping a lamp also postpones its replacement");original.moveTo(100,80,100);
             var saved=new CompoundTag();saved.putString("Exact","Keep the player's hunt and original words");LabyrinthData.get(s).setState("streetlight_test_story",saved);
             h.assertTrue(StreetlightUpgrade.apply(l,b),"the unseen, loaded and vacant authored lamps are replaced once");
-            for(var e:lights.entrySet())if(!e.getKey().equals(omitted)&&!e.getKey().equals(edited))h.assertTrue(l.getBlockState(e.getKey()).equals(e.getValue()),"the native lamp part is textured at its original address: "+e.getKey());
+            for(var e:lights.entrySet())if(!e.getKey().equals(omitted)&&!e.getKey().equals(edited))h.assertTrue(l.getBlockState(e.getKey()).equals(e.getValue()),"the native lamp part is textured at its original address: "+e.getKey().subtract(b)+" actual="+l.getBlockState(e.getKey())+" expected="+e.getValue());
             h.assertTrue(l.getBlockState(omitted).isAir()&&l.getBlockState(edited).is(Blocks.GOLD_BLOCK)&&original.getUUID().equals(id)&&original.getItem().is(Items.PAPER)&&LabyrinthData.get(s).state("streetlight_test_story").equals(saved),"removed parts, a player's edit, the actual original and story state all survive");
             var data=LabyrinthData.get(s);var loaded=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),l.registryAccess()),l.registryAccess());s.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);
             l.setBlock(at,Blocks.AIR.defaultBlockState(),2);h.assertTrue(StreetlightUpgrade.apply(l,b)&&l.getBlockState(at).isAir(),"reloading the once-only checkpoint never restores a later removal");h.succeed();
