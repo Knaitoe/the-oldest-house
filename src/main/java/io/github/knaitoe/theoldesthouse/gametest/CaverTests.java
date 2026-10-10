@@ -11,6 +11,7 @@ import net.minecraft.gametest.framework.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.*;
 import net.minecraft.world.*;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -56,7 +57,9 @@ public final class CaverTests {
             for(int x=((int)bounds.minX-1)>>4;x<=((int)bounds.maxX+1)>>4;x++)for(int z=((int)bounds.minZ-1)>>4;z<=((int)bounds.maxZ+1)>>4;z++)l.getChunkSource().removeRegionTicket(TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(x,z),3,b);
             var s=l.getServer();s.overworld().getDataStorage().set("the_oldest_house",oldHouse);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);s.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);LabyrinthBuilder.clearAll();}
     }
-    private static Fixture work,journals,escape,cleanup,upgrade,route,breath,line,repair;
+    private static Fixture work,journals,escape,cleanup,upgrade,route,breath,line,repair,air,crawls;
+    @AfterBatch(batch="caver_air") public static void cleanAir(ServerLevel l){if(air!=null){air.close();air=null;}}
+    @AfterBatch(batch="caver_crawls") public static void cleanCrawls(ServerLevel l){if(crawls!=null){crawls.close();crawls=null;}}
     @AfterBatch(batch="caver_route") public static void cleanRoute(ServerLevel l){if(route!=null){route.close();route=null;}}
     @AfterBatch(batch="caver_breath") public static void cleanBreath(ServerLevel l){if(breath!=null){breath.close();breath=null;}}
     @AfterBatch(batch="caver_line") public static void cleanLine(ServerLevel l){if(line!=null){line.close();line=null;}}
@@ -70,7 +73,7 @@ public final class CaverTests {
         for(int y:new int[]{65,80,150,250}){var origin=new BlockPos(100,y,100);var b=LabyrinthPlaces.base(origin,LabyrinthPlace.TED_CAVER);var slot=LabyrinthPlaces.slotBounds(origin,LabyrinthPlace.TED_CAVER);
             h.assertTrue(slot.isInside(b.offset(-9,-4,-60))&&slot.isInside(b.offset(9,8,0)),"the low cave stays inside its native slot at manor height "+y);}
         h.assertTrue(LabyrinthPlace.TED_CAVER.slot()==32&&LabyrinthPlace.GOATMAN.slot()==31&&DoorLeakKind.STONE.ordinal()==12&&DoorLeakKind.WOODS.ordinal()==11,"new room and dry stone hint append after all old indices");
-        var buffer=io.netty.buffer.Unpooled.buffer();try{var payload=new io.github.knaitoe.theoldesthouse.network.CaverCrawlPayload(true,-400,150,-200,CaverVignette.IN_PURSUED);var codec=io.github.knaitoe.theoldesthouse.network.CaverCrawlPayload.STREAM_CODEC;
+        var buffer=io.netty.buffer.Unpooled.buffer();try{var payload=new io.github.knaitoe.theoldesthouse.network.CaverCrawlPayload(true,-400,150,-200,CaverVignette.IN_PURSUED,-.004F);var codec=io.github.knaitoe.theoldesthouse.network.CaverCrawlPayload.STREAM_CODEC;
             codec.encode(buffer,payload);h.assertTrue(codec.decode(buffer).equals(payload),"native client crawl synchronization preserves its bounded signed origin and the draught on the crawling body");}finally{buffer.release();}h.succeed();
     }
     @GameTest(template="empty",batch="caver_work",timeoutTicks=760)
@@ -78,6 +81,7 @@ public final class CaverTests {
         work=new Fixture(h,30800);var f=work;var p=f.player();f.at(p,.5,-3,-21.5);var at=f.b.offset(CaverCave.APERTURE);
         h.runAfterDelay(8,()->{f.click(p,CaverCave.APERTURE);h.assertTrue(f.data().state(CaverVignette.ID).getInt("Work")==0&&CaverCave.isRubble(f.l.getBlockState(at)),"bare hands cannot remove the packed rubble");p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.IRON_PICKAXE));});
         for(int i=0;i<CaverVignette.STROKES;i++){int stroke=i;h.runAfterDelay(10+i*CaverVignette.STROKE_INTERVAL,()->{
+            CaverVignette.setBreath(f.l.getServer(),10); // the air test owns the breath's pressure; this one counts strokes
             int front=CaverCave.front(f.l,f.b);h.assertTrue(front==stroke/CaverVignette.PER_BLOCK,"five strokes take out each block in turn, from the mouth inward: front "+front+" at stroke "+stroke);
             f.at(p,.5,-3,-21.5-front);f.click(p,CaverCave.rubbleCell(front));int count=f.data().state(CaverVignette.ID).getInt("Work");
             int next=CaverCave.front(f.l,f.b);if(next>=0)f.click(p,CaverCave.rubbleCell(next));
@@ -109,7 +113,7 @@ public final class CaverTests {
     @GameTest(template="empty",batch="caver_escape",timeoutTicks=1500)
     public static void nativeCrawlChamberAndPhysicalReturnCreditOnlyTheExplorer(GameTestHelper h){
         escape=new Fixture(h,31400);var f=escape;f.open();var p=f.player();var peer=f.player();f.at(peer,4.5,-3,-53.5);
-        int[] phase={0},clock={0};
+        int[] phase={0},clock={0},along={0};var s=f.l.getServer();var back=new ArrayList<>(CaverCave.SQUEEZE);Collections.reverse(back);
         h.onEachTick(()->{
             clock[0]++;if(clock[0]<10)return;
             if(phase[0]==0){
@@ -118,10 +122,10 @@ public final class CaverTests {
                 h.assertTrue(f.own(p).getBoolean("LineTied")&&p.getMainHandItem().getCount()==1,"tying the line spends one real string");
                 f.click(p,CaverCave.CHAIN);h.assertTrue(p.getMainHandItem().getCount()==1,"a tied line is never tied twice");p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
                 f.at(p,.5,-3,-21.5);p.setShiftKeyDown(true);CaverVignette.playerTick(p);phase[0]=1;return;}
-            if(phase[0]==1){CaverVignette.playerTick(p);
+            if(phase[0]==1){CaverVignette.setBreath(s,10);CaverVignette.playerTick(p);
                 if(!CaverVignette.crawling(p)&&p.getZ()-f.b.getZ()< -34.1){p.setShiftKeyDown(false);phase[0]=2;clock[0]=0;return;}
                 h.assertTrue(p.getBbHeight()<.7,"native crawling uses the actual short collision box at "+p.position()+"; pose "+p.getPose()+"; forced "+p.getForcedPose());
-                p.move(MoverType.SELF,new Vec3(0,0,-.14));return;}
+                if(along[0]<CaverCave.SQUEEZE.size())along[0]=step(f,p,CaverCave.SQUEEZE,along[0]);else p.move(MoverType.SELF,new Vec3(0,0,-.14));return;}
             if(phase[0]==2){if(clock[0]<3)return;CaverVignette.playerTick(p);h.assertTrue(f.own(p).getBoolean("Squeezed")&&!CaverVignette.crawling(p),"the full physical squeeze reaches a standing chamber");
                 h.assertTrue(f.own(p).getLongArray("LinePath").length>=6,"the line paid out behind the reader through the squeeze: "+f.own(p).getLongArray("LinePath").length);
                 // Readers carry torches in a dark cave: the marks still answer, and no torch is set on them from either hand.
@@ -144,8 +148,10 @@ public final class CaverTests {
                 h.assertTrue(clock[0]>=CaverVignette.DEEP_TICKS-5&&f.own(peer).getInt("DeepTicks")==0,"the long wait is the explorer's own, counted only after their stone: "+clock[0]);
                 var untied=f.own(p);untied.putBoolean("LineTied",false);
                 h.assertTrue(f.own(p).getInt("LineFlash")>0&&CaverVignette.push(f.own(p),-1)==CaverVignette.IN_HELD&&CaverVignette.push(untied,-1)==CaverVignette.IN_PURSUED,"the line draws tight and holds against the in-breath that drags an untied reader");
-                f.reload();f.at(p,.5,-3,-35.5);p.setShiftKeyDown(true);phase[0]=4;return;}
-            if(phase[0]==4){CaverVignette.playerTick(p);p.move(MoverType.SELF,new Vec3(0,0,.14));if(p.getZ()-f.b.getZ()> -21){p.setShiftKeyDown(false);f.at(p,-.5,-3,-9.5);phase[0]=5;}return;}
+                f.reload();f.at(p,.5,-3,-35.5);p.setShiftKeyDown(true);phase[0]=4;along[0]=0;return;}
+            if(phase[0]==4){CaverVignette.setBreath(s,10);CaverVignette.playerTick(p);
+                if(along[0]<back.size())along[0]=step(f,p,back,along[0]);else p.move(MoverType.SELF,new Vec3(0,0,.14));
+                if(p.getZ()-f.b.getZ()> -21){p.setShiftKeyDown(false);f.at(p,-.5,-3,-9.5);phase[0]=5;}return;}
             if(phase[0]==5){h.assertTrue(p.onClimbable(),"the return uses the real native ladder beside the line");p.move(MoverType.SELF,new Vec3(0,.14,0));
                 if(p.getY()-f.b.getY()>=0){f.at(p,.5,0,-7.5);phase[0]=6;}return;}
             CaverVignette.playerTick(p);
@@ -191,20 +197,29 @@ public final class CaverTests {
         h.assertTrue(f.l.getBlockEntity(old)==cache&&cache.getItem(0).isEmpty()&&cache.getItem(4).getCount()==3&&read.equals(d.state(HarriganVignette.ID))&&random.equals(d.state(GoatmanVignette.ID))&&paper.equals(d.state(HouseMarginalia.ID))&&WitnessAccount.has(d,p.getUUID(),WitnessAccount.Story.HARRIGAN),"old storage identity, finite cache, reading, run and personal evidence remain");h.succeed();
     }
 
+    static final double CROUCH=1.49,CRAWL=.59;
     /** Every cell a crouching reader's body fits on real support, reached on foot from {@code start}: steps up one, drops up to three. */
-    private static Set<BlockPos> reachable(Fixture f,BlockPos start){
-        var seen=new HashSet<BlockPos>();var open=new ArrayDeque<BlockPos>();seen.add(start.immutable());open.add(start.immutable());var room=LabyrinthPlace.TED_CAVER.room();
+    private static Set<BlockPos> reachable(Fixture f,BlockPos start){return steps(f,start,CROUCH).keySet();}
+    /** Every cell a body of this height fits on real support, reached from {@code start}, with the fewest moves to it. */
+    private static Map<BlockPos,Integer> steps(Fixture f,BlockPos start,double height){
+        var seen=new HashMap<BlockPos,Integer>();var open=new ArrayDeque<BlockPos>();seen.put(start.immutable(),0);open.add(start.immutable());var room=LabyrinthPlace.TED_CAVER.room();
         while(!open.isEmpty()){var at=open.poll();
             for(var d:Direction.Plane.HORIZONTAL)for(int dy:new int[]{0,1,-1,-2,-3}){var next=at.relative(d).above(dy);var r=next.subtract(f.b);
                 if(r.getX()<room.minX()||r.getX()>room.maxX()||r.getZ()<room.minZ()||r.getZ()>room.maxZ()||r.getY()<room.minY())continue;
-                if(dy>0&&!clear(f.l,at,1.01,2.49))continue;
-                if(dy<0&&!clear(f.l,at.relative(d),.01,1.49))continue;
-                if(fits(f.l,next)){if(seen.add(next.immutable()))open.add(next.immutable());break;}}}
+                if(dy>0&&!clear(f.l,at,1.01,1+height))continue;
+                if(dy<0&&!clear(f.l,at.relative(d),.01,height))continue;
+                if(fits(f.l,next,height)){if(!seen.containsKey(next)){seen.put(next.immutable(),seen.get(at)+1);open.add(next.immutable());}break;}}}
         return seen;
     }
     private static boolean clear(ServerLevel l,BlockPos at,double from,double to){double x=at.getX()+.5,y=at.getY(),z=at.getZ()+.5;return l.noCollision(new AABB(x-.3,y+from,z-.3,x+.3,y+to,z+.3));}
-    private static boolean fits(ServerLevel l,BlockPos at){double x=at.getX()+.5,y=at.getY(),z=at.getZ()+.5;
-        return l.noCollision(new AABB(x-.3,y+.01,z-.3,x+.3,y+1.49,z+.3))&&!l.noCollision(new AABB(x-.3,y-.05,z-.3,x+.3,y-.01,z+.3));}
+    private static boolean fits(ServerLevel l,BlockPos at,double height){double x=at.getX()+.5,y=at.getY(),z=at.getZ()+.5;
+        return l.noCollision(new AABB(x-.3,y+.01,z-.3,x+.3,y+height,z+.3))&&!l.noCollision(new AABB(x-.3,y-.05,z-.3,x+.3,y-.01,z+.3));}
+    /** One crawling step toward the next cell centre along a route, through native collision; the index of the cell still ahead. */
+    private static int step(Fixture f,ServerPlayer p,List<BlockPos> route,int i){
+        var target=Vec3.atBottomCenterOf(f.b.offset(route.get(i)));var d=new Vec3(target.x-p.getX(),0,target.z-p.getZ());
+        if(d.length()<.15){p.setPos(target.x,p.getY(),target.z);return i+1;}
+        p.move(MoverType.SELF,d.normalize().scale(Math.min(.14,d.length())));return i;
+    }
     private static boolean behindStone(Fixture f,BlockPos at){var r=at.subtract(f.b);return r.getZ()<=-44&&r.getX()>=3;}
 
     @GameTest(template="empty",batch="caver_route",timeoutTicks=100)
@@ -212,13 +227,19 @@ public final class CaverTests {
         route=new Fixture(h,33400);var f=route;
         h.runAfterDelay(4,()->{
             var start=f.b.offset(0,-3,-36);
-            var before=reachable(f,start);
-            h.assertTrue(before.size()>40&&before.stream().noneMatch(at->behindStone(f,at)),"with the stone in its seat, no walking or crouching route from the bowl reaches the passage or chamber behind it");
-            CaverCave.stone(f.l,f.b,true);var after=reachable(f,start);
-            h.assertTrue(after.contains(f.b.offset(4,-3,-47))&&after.contains(f.b.offset(5,-3,-54))&&after.contains(f.b.offset(2,-3,-57)),"once the stone has rolled aside the passage and the whole low chamber are reachable on foot");
+            var before=steps(f,start,CRAWL).keySet();
+            h.assertTrue(before.size()>40&&before.stream().noneMatch(at->behindStone(f,at)),"with the stone in its seat, no walking, crouching or crawling route from the bowl reaches anything behind it");
+            CaverCave.stone(f.l,f.b,true);var after=steps(f,start,CRAWL);var upright=reachable(f,start);
+            h.assertTrue(after.containsKey(f.b.offset(4,-3,-47))&&after.containsKey(f.b.offset(5,-3,-54))&&after.containsKey(f.b.offset(2,-3,-57))&&after.get(f.b.offset(2,-3,-53))>=30,"once the stone has rolled aside, the second crawl winds round to the whole low chamber: "+after.get(f.b.offset(2,-3,-53)));
+            h.assertTrue(upright.contains(f.b.offset(4,-3,-45))&&!upright.contains(f.b.offset(5,-3,-54)),"the passage behind the stone can be walked, but the chamber is reached only by crawling");
+            // The first squeeze winds: from its mouth only a crawling body gets through, the long way, and the old straight line is rock.
+            f.open();var mouth=f.b.offset(0,-3,-22);var crawl=steps(f,mouth,CRAWL);
+            h.assertTrue(crawl.containsKey(f.b.offset(0,-3,-34))&&crawl.get(f.b.offset(0,-3,-34))>=28&&!f.l.getBlockState(f.b.offset(0,-3,-30)).isAir()&&!f.l.getBlockState(f.b.offset(0,-3,-32)).isAir(),"the squeeze doglegs twice; there is no straight way through: "+crawl.get(f.b.offset(0,-3,-34)));
+            h.assertTrue(reachable(f,mouth).stream().noneMatch(at->CaverCave.crawl(at.subtract(f.b))),"nobody walks or crouches into the squeeze");
+            for(var bell:CaverCave.BELLS)for(int y=0;y<3;y++)h.assertTrue(f.l.getBlockState(f.b.offset(bell).above(y)).isAir(),"each air bell lifts three blocks: "+bell);
             var cell=f.b.offset(5,-3,-54);double x=cell.getX()+.5,y=cell.getY(),z=cell.getZ()+.5;
             h.assertTrue(!f.l.noCollision(new AABB(x-.3,y+.01,z-.3,x+.3,y+1.8,z+.3))&&f.l.noCollision(new AABB(x-.3,y+.01,z-.3,x+.3,y+1.49,z+.3)),"the low chamber has room to crouch and none to stand");
-            var passage=f.b.offset(4,-3,-47);x=passage.getX()+.5;y=passage.getY();z=passage.getZ()+.5;
+            var passage=f.b.offset(4,-3,-45);x=passage.getX()+.5;y=passage.getY();z=passage.getZ()+.5;
             h.assertTrue(f.l.noCollision(new AABB(x-.3,y+.01,z-.3,x+.3,y+1.8,z+.3))&&!f.l.noCollision(new AABB(x-.3,y+2.01,z-.3,x+.3,y+2.5,z+.3)),"the passage behind the stone is two blocks high and no more");
             h.succeed();});
     }
@@ -262,9 +283,18 @@ public final class CaverTests {
             o.putBoolean("Escaped",true);h.assertTrue(CaverVignette.push(o,-1)==CaverVignette.IN,"once out, nothing pursues");
             f.reload();h.assertTrue(f.own(p).getLongArray("LinePath").length>=4&&f.own(p).getBoolean("LineTied"),"the line survives a native reload");h.succeed();});
     }
+    /** The crawl areas as 0.4.71 carved them: the squeeze straight and one high, the passage behind the stone open to the chamber. */
+    private static void legacy71(Fixture f){
+        var air=Blocks.AIR.defaultBlockState();var rock=Blocks.STONE.defaultBlockState();
+        for(var c:CaverCave.SQUEEZE)if(c.getZ()<=-28)f.l.setBlock(f.b.offset(c),rock,2);
+        for(var c:CaverCave.CRAWL)f.l.setBlock(f.b.offset(c),rock,2);
+        for(var bell:CaverCave.BELLS)for(int y=0;y<3;y++)f.l.setBlock(f.b.offset(bell).above(y),rock,2);
+        for(int z=-33;z<=-28;z++)f.l.setBlock(f.b.offset(0,-3,z),air,2);
+        for(int x=4;x<=5;x++)for(int y=-3;y<=-2;y++)for(int z=-50;z<=-44;z++)f.l.setBlock(f.b.offset(x,y,z),air,2);
+    }
     /** The cave as layouts 20 to 40 carved it: the open back of the bowl, the taller passage and chamber, one cracked block. */
     private static void legacy(Fixture f){
-        var air=Blocks.AIR.defaultBlockState();
+        legacy71(f);var air=Blocks.AIR.defaultBlockState();
         for(int z=-43;z>=-47;z--)for(int x=3;x<=6;x++)for(int y=-3;y<=5;y++)if(x*x+(z+41)*(z+41)+((y+3)*(y+3))/2<52)f.l.setBlock(f.b.offset(x,y,z),air,2);
         for(int x=4;x<=5;x++)for(int z=-50;z<=-43;z++)f.l.setBlock(f.b.offset(x,-1,z),air,2);
         for(int x=2;x<=7;x++)for(int z=-57;z<=-50;z++)for(int y=-3;y<=1;y++)f.l.setBlock(f.b.offset(x,y,z),air,2);
@@ -280,6 +310,7 @@ public final class CaverTests {
             legacy(f);var d=f.data();var state=d.state(CaverVignette.ID);state.putInt("Work",12);d.setState(CaverVignette.ID,state);
             var done=d.state(CaverRedesign.STATE);done.remove(Long.toString(f.b.asLong()));d.setState(CaverRedesign.STATE,done);
             var marked=d.state(CaverRedesign.MARKS);marked.remove(Long.toString(f.b.asLong()));d.setState(CaverRedesign.MARKS,marked);var mark=f.b.offset(CaverCave.MARK);
+            var crawled=d.state(CaverRedesign.CRAWLS);crawled.remove(Long.toString(f.b.asLong()));d.setState(CaverRedesign.CRAWLS,crawled);
             h.assertTrue(reachable(f,f.b.offset(0,-3,-36)).stream().anyMatch(at->behindStone(f,at)),"the older cave really could be walked round its stone");
             var p=f.player();var torch=f.b.offset(3,-3,-44);f.l.setBlock(torch,Blocks.TORCH.defaultBlockState(),3);
             var placed=d.state(CaverVignette.ID);var torches=placed.getCompound("Torches");torches.putUUID(Long.toString(torch.asLong()),p.getUUID());placed.put("Torches",torches);d.setState(CaverVignette.ID,placed);
@@ -305,6 +336,53 @@ public final class CaverTests {
             f.at(p,-2.5,-3,-39.5);h.assertTrue(!CaverRedesign.marks(f.l,f.b)&&f.l.getBlockState(mark).is(Blocks.CHISELED_DEEPSLATE),"the mark does not change while a reader can see it");
             f.at(p,.5,0,-3.5);h.assertTrue(CaverRedesign.marks(f.l,f.b)&&f.l.getBlockState(mark).is(LabyrinthRegistry.CAVE_MARKS.get())&&CaverCave.isMark(f.l.getBlockState(mark)),"unwatched, the dressed mark becomes marked rock");
             f.reload();h.assertTrue(CaverRedesign.marked(f.data(),f.b),"its checkpoint survives reload");
+        }).thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="caver_air",timeoutTicks=200)
+    public static void badAirDrainsOnTheInBreathTheBellsHoldItAndABlackoutWakesTheReaderWhereTheyLastHadAir(GameTestHelper h){
+        air=new Fixture(h,34600);var f=air;f.open();var s=f.l.getServer();ServerPlayer[] who=new ServerPlayer[3];float[] seen={0};
+        h.runAfterDelay(4,()->{for(int i=0;i<3;i++)who[i]=f.player();f.at(who[0],.5,-3,-28.5);f.at(who[1],4.5,-3,-29.5);f.at(who[2],3.5,-3,-28.5);
+            who[2].gameMode.changeGameModeForPlayer(GameType.CREATIVE);f.edit(who[0],o->{o.putBoolean("Squeezed",true);o.putBoolean("LineTied",true);});});
+        // The reader steps from the first bell into the crawl just as the cave starts to breathe in; a peer waits in the next bell.
+        h.runAfterDelay(8,()->{f.at(who[0],2.5,-3,-28.5);CaverVignette.setBreath(s,CaverVignette.INHALE_START);});
+        h.runAfterDelay(28,()->{var p=who[0];Float a=CaverVignette.air(p.getUUID());
+            h.assertTrue(CaverVignette.crawling(p)&&a!=null&&a<290&&a>200&&p.getAirSupply()<p.getMaxAirSupply(),"in the crawl the reader's own air drains while the cave breathes in: "+a);
+            h.assertTrue(CaverVignette.air(who[1].getUUID())!=null&&CaverVignette.air(who[1].getUUID())==who[1].getMaxAirSupply(),"a peer in an air bell keeps all of theirs");
+            h.assertTrue(CaverVignette.air(who[2].getUUID())==null&&who[2].getAirSupply()==who[2].getMaxAirSupply(),"a creative visitor is not drained");
+            seen[0]=a;CaverVignette.setBreath(s,10);});
+        h.runAfterDelay(38,()->{var p=who[0];
+            h.assertTrue(CaverVignette.air(p.getUUID())>seen[0]+30,"it comes back while the cave breathes out");
+            CaverVignette.setAir(p,8);CaverVignette.setBreath(s,CaverVignette.INHALE_START);});
+        h.runAfterDelay(70,()->{var p=who[0];var own=f.own(p);var bell=Vec3.atBottomCenterOf(f.b.offset(0,-3,-29));
+            h.assertTrue(own.getInt("Blackout")>0&&p.hasEffect(MobEffects.BLINDNESS)&&p.position().distanceTo(bell)<.05,"at no air the reader blacks out and comes to in the bell they last breathed in: "+p.position().subtract(Vec3.atLowerCornerOf(f.b)));
+            h.assertTrue(p.isAlive()&&p.getHealth()==p.getMaxHealth()&&p.getAirSupply()==p.getMaxAirSupply()/2&&own.getBoolean("Squeezed")&&own.getBoolean("LineTied"),"nothing is lost but the time: no harm, half a breath, every step kept");
+            h.assertTrue(f.own(who[1]).getInt("Blackout")==0&&CaverVignette.air(who[1].getUUID())==who[1].getMaxAirSupply(),"the peer's air is their own");});
+        h.runAfterDelay(100,()->{h.assertTrue(f.own(who[0]).getInt("Blackout")==0&&WitnessAccount.count(f.data(),who[0].getUUID())==0,"the blackout ends and confers nothing");h.succeed();});
+    }
+    @GameTest(template="empty",batch="caver_crawls",timeoutTicks=300)
+    public static void aCaveCarvedBy071GetsBothWindingCrawlsOnceKeepingTorchesAndWaitingForCamerasAndBodies(GameTestHelper h){
+        crawls=new Fixture(h,34900);var f=crawls;f.open();
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.deepLoaded(),"wait for native chunks and entity sections in the deep cave")).thenExecute(()->{
+            legacy71(f);CaverCave.stone(f.l,f.b,true);var d=f.data();var key=Long.toString(f.b.asLong());
+            var cs=d.state(CaverRedesign.CRAWLS);cs.remove(key);d.setState(CaverRedesign.CRAWLS,cs);
+            var mouth=f.b.offset(0,-3,-22);var straight=steps(f,mouth,CRAWL);
+            h.assertTrue(straight.containsKey(f.b.offset(0,-3,-34))&&straight.get(f.b.offset(0,-3,-34))<=13&&reachable(f,f.b.offset(0,-3,-36)).contains(f.b.offset(5,-3,-54)),"the 0.4.71 squeeze ran straight and the chamber could be walked into");
+            var p=f.player();var torch=f.b.offset(0,-3,-30);f.l.setBlock(torch,Blocks.TORCH.defaultBlockState(),3);
+            var placed=d.state(CaverVignette.ID);var torches=placed.getCompound("Torches");torches.putUUID(Long.toString(torch.asLong()),p.getUUID());placed.put("Torches",torches);d.setState(CaverVignette.ID,placed);
+            f.at(p,.5,-3,-40.5);
+            h.assertTrue(!CaverRedesign.crawls(f.l,f.b)&&f.l.getBlockState(torch).is(Blocks.TORCH)&&!f.l.getBlockState(f.b.offset(-5,-3,-51)).isAir(),"a reader in the deep cave sees nothing change");
+            f.at(p,.5,0,-3.5);var stand=new ArmorStand(f.l,f.b.getX()+5.5,f.b.getY()-3,f.b.getZ()-47.5);f.l.addFreshEntity(stand);
+            h.assertTrue(!CaverRedesign.crawls(f.l,f.b)&&f.l.getBlockState(torch).is(Blocks.TORCH)&&!f.l.getBlockState(f.b.offset(-5,-3,-51)).isAir()&&f.l.getBlockState(f.b.offset(5,-3,-48)).isAir(),"nothing changes, anywhere, while rock would come back through a body in the old passage");
+            stand.discard();
+            h.assertTrue(CaverRedesign.crawls(f.l,f.b)&&CaverRedesign.crawled(f.data(),f.b),"the crawls are cut once the passage is clear and unwatched");
+            var barrel=(BarrelBlockEntity)f.l.getBlockEntity(f.b.offset(CaverCave.CACHE));
+            h.assertTrue(!f.l.getBlockState(torch).isAir()&&!f.l.getBlockState(torch).is(Blocks.TORCH)&&barrel.getItem(2).is(Items.TORCH)&&barrel.getItem(2).getCount()==7&&CaverVignette.torchOwner(f.data(),torch)==null,"a torch standing where rock returns goes back to the camp barrel");
+            for(int x=-6;x<=6;x++)for(int y=-3;y<=-1;y++)for(int z=-53;z<=-28;z++){var open=CaverCave.crawlTemplate(x,y,z);if(open==null)continue;
+                h.assertTrue(open==f.l.getBlockState(f.b.offset(x,y,z)).isAir(),"the reshaped cave matches a new one at "+x+","+y+","+z);}
+            var through=steps(f,mouth,CRAWL);var behind=steps(f,f.b.offset(0,-3,-36),CRAWL);
+            h.assertTrue(through.get(f.b.offset(0,-3,-34))>=28&&behind.containsKey(f.b.offset(5,-3,-54))&&!reachable(f,f.b.offset(0,-3,-36)).contains(f.b.offset(5,-3,-54)),"now both ways in are long crawls, and the chamber is reached only crawling");
+            f.reload();h.assertTrue(CaverRedesign.crawled(f.data(),f.b)&&CaverRedesign.crawls(f.l,f.b),"the checkpoint survives reload and never repeats");
         }).thenSucceed();
     }
 }

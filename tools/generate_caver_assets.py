@@ -191,6 +191,18 @@ def chisel():
     return normalize(out, 0.6)
 
 
+def gasp():
+    """0.4.73: a sharp, ragged in-breath after blacking out, then a cough of grit."""
+    seconds = 1.6
+    t = np.arange(round(RATE * seconds)) / RATE
+    rasp = lowpass(noise(seconds, 940), 0.55) - lowpass(noise(seconds, 941), 0.05)
+    pull = np.clip(t / 0.08, 0, 1) * np.exp(-np.clip(t - 0.08, 0, None) * 5.5) * (t < 0.7)
+    flutter = 0.65 + 0.35 * np.sin(2 * np.pi * 23 * t)
+    cough_t = np.clip(t - 0.95, 0, None)
+    cough = (lowpass(noise(seconds, 942), 0.3) * np.exp(-cough_t * 16) + np.sin(2 * np.pi * 140 * cough_t) * np.exp(-cough_t * 30) * 0.4) * (t > 0.95)
+    return normalize(comb(rasp * pull * flutter, 640, 0.25) * 1.2 + cough * 0.8, 0.7)
+
+
 SOUNDS = {
     'exhale': (lambda: breath(900, True), 'Air breathes out of the stone'),
     'inhale': (lambda: breath(910, False), 'Air draws back into the stone'),
@@ -198,6 +210,7 @@ SOUNDS = {
     'line_taut': (line_taut, 'Line pulls taut'),
     'stone_roll': (stone_roll, 'Heavy stone rolls inward'),
     'chisel': (chisel, 'A chisel taps behind a wall'),
+    'gasp': (gasp, 'You gasp for air'),
 }
 
 
@@ -236,10 +249,22 @@ def lang_and_block():
     tag.write_text(json.dumps({'replace': False, 'values': ['the_oldest_house:cave_rubble']}, indent=2) + '\n')
 
 
+def gasp_only():
+    soundfile.write(str(ASSETS / 'sounds/caver/gasp.ogg'), gasp().astype(np.float32), RATE, format='OGG', subtype='VORBIS')
+    for path, key, value in ((ASSETS / 'sounds.json', 'caver.gasp', {'sounds': [{'name': 'the_oldest_house:caver/gasp'}], 'subtitle': 'subtitles.the_oldest_house.caver.gasp'}),
+                             (ASSETS / 'lang/en_us.json', 'subtitles.the_oldest_house.caver.gasp', 'You gasp for air')):
+        original = path.read_text()
+        table = json.loads(original)
+        table[key] = value
+        write_json(path, table, original)
+
+
 if __name__ == '__main__':
     import sys
     if sys.argv[1:] == ['marks']:
         marks_texture()  # 0.4.72 only; leaves the 0.4.71 files exactly as they are
+    elif sys.argv[1:] == ['gasp']:
+        gasp_only()  # 0.4.73 only
     else:
         rubble_texture()
         sounds()

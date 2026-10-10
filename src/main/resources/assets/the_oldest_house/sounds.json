@@ -696,5 +696,13 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.caver.chisel"
+  },
+  "caver.gasp": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:caver/gasp"
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.caver.gasp"
   }
 }

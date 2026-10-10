@@ -1,4 +1,6 @@
-Version `0.4.72` is in verification. In Ted the Caver the marks and the stone now respond while you hold a torch, and the marks look like cut rock instead of a dressed block. Layout 40 / protocol 46: use matching clients and server.
+Version `0.4.73` is in verification. Ted the Caver's crawls are long and winding now, and the cave's breath matters: your air drains while it breathes in, so you crawl on the out-breath and wait in the air bells where the roof lifts. Run out and you black out and come to at the last place you had air, with nothing lost. Layout 40 / protocol 47: use matching clients and server.
+
+Version `0.4.72` passed all twelve workflow jobs at `6cf0344`. In Ted the Caver the marks and the stone now respond while you hold a torch, and the marks look like cut rock instead of a dressed block. Layout 40 / protocol 46: use matching clients and server.
 
 Version `0.4.71` passed all twelve workflow jobs and 493 native cases at `6f4c10d`. Ted the Caver is reworked: the crack is packed with rubble you mine out a block at a time, the stone is the only way on and gives only when the cave breathes in, a string line tied at the ladder holds you against the draught, and the low chamber is crouch-high with a real wait before the way back. Inside the cave you may mine the rubble and take back your own torches. Saved caves are reshaped once when empty and unwatched, keeping work done. Layout 40 / protocol 45: use matching clients and server. See [the caver record](docs/TED_CAVER_0_4_71.md).
 

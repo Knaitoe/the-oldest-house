@@ -197,5 +197,6 @@
   "subtitles.the_oldest_house.caver.stone_roll": "Heavy stone rolls inward",
   "subtitles.the_oldest_house.caver.chisel": "A chisel taps behind a wall",
   "block.the_oldest_house.cave_rubble": "Packed rubble",
-  "block.the_oldest_house.cave_marks": "Marked rock"
+  "block.the_oldest_house.cave_marks": "Marked rock",
+  "subtitles.the_oldest_house.caver.gasp": "You gasp for air"
 }
