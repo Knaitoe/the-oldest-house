@@ -28,7 +28,8 @@ public final class LiveExpeditionClient {
     @SubscribeEvent public static void sounds(net.neoforged.neoforge.client.event.sound.PlaySoundEvent e){
         if(!LiveExpeditionProof.enabled()||proofCamp==null||previous<35||previous>36||e.getSound()==null)return;
         var sound=e.getSound();var id=sound.getLocation();if(!id.getNamespace().equals(TheOldestHouse.MOD_ID)||!(id.getPath().equals("cabin_knock")||id.getPath().equals("goatman.claw")||id.getPath().equals("goatman.hammer")))return;
-        double x=sound.getX()-proofCamp.getX(),z=sound.getZ()-proofCamp.getZ();if(x< -3)heardSides.add("west");if(x>3)heardSides.add("east");if(z< -74)heardSides.add("rear");heardKnocks.add(id+" at "+x+","+z+" volume="+sound.getVolume());
+        // This event precedes sound resolution; only the instance's ID and world coordinates are ready.
+        double x=sound.getX()-proofCamp.getX(),z=sound.getZ()-proofCamp.getZ();if(x< -3)heardSides.add("west");if(x>3)heardSides.add("east");if(z< -74)heardSides.add("rear");heardKnocks.add(id+" at "+x+","+z);
     }
     @SubscribeEvent public static void tick(ClientTickEvent.Post e) {
         if(!LiveExpeditionProof.enabled())return;var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.gameMode==null)return;
