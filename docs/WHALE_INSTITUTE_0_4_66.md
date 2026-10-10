@@ -76,4 +76,4 @@ Native coverage replaces the old chest/knock case with `postedLettersAreAnswered
 
 `layoutThirtyThreeAppendsOnlyNewHallsAndKeepsExistingDoorsUsable` also checks the institute is carved again in place, with box 7 and her desk, and that an earlier reader's letters and resolution survive. The window check uses the institute's own interior. The writing proof covers every reply with a sixteen-letter name and the longest quotation. The package check covers the 48 pigeonhole block states, twelve plates, the envelope model and the three new classes.
 
-Validation pending.
+Verified together with 0.4.67 at source 3ffcff14d87b9f4c48381e2af22e9639f0b2b327, run 38059068194: all twelve jobs and 484 native cases passed.
