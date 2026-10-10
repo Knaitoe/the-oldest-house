@@ -163,8 +163,8 @@ public enum LabyrinthPlace {
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(0, 0, -15), Direction.SOUTH, LabyrinthData.DEALT)
     )),
-    /** Indian Lake: dive for the essays, then return for the church. */
-    DROWNED_TOWN("drowned_town", Kind.MULTI_VISIT, 27, new BoundingBox(-29, -13, -64, 29, 8, 0), List.of(
+    /** Indian Lake: Proofrock on the bank, its high school's essays, then the drowned church (0.4.67: the whole town). */
+    DROWNED_TOWN("drowned_town", Kind.MULTI_VISIT, 27, new BoundingBox(-64, -13, -128, 64, 8, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
     )),
     /** Indian Lake: a congregation kept fresh by the lake. */

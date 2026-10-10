@@ -20,7 +20,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class SceneExteriors {
     public static final String STATE="scene_exteriors_0429";
-    private static final List<LabyrinthPlace> SITES=List.of(LabyrinthPlace.DROWNED_TOWN,LabyrinthPlace.GOATMAN,LabyrinthPlace.HOLLOWAY_CAMP,LabyrinthPlace.ZAMPANO_COURTYARD);
+    private static final List<LabyrinthPlace> SITES=List.of(LabyrinthPlace.GOATMAN,LabyrinthPlace.HOLLOWAY_CAMP,LabyrinthPlace.ZAMPANO_COURTYARD);
     private final ServerLevel l;private final BlockPos b;private final LabyrinthPlace site;
     private SceneExteriors(ServerLevel level,BlockPos base,LabyrinthPlace place){l=level;b=base;site=place;}
     public static void decorateOnce(ServerLevel l,BlockPos origin,LabyrinthPlace site){

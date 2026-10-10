@@ -1,7 +1,9 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -10,6 +12,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.registries.*;
@@ -18,6 +24,16 @@ public final class DrownedTownRegistry {
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(TheOldestHouse.MOD_ID);
     private static final DeferredRegister<EntityType<?>> TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, TheOldestHouse.MOD_ID);
     private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, TheOldestHouse.MOD_ID);
+    private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(TheOldestHouse.MOD_ID);
+    private static final DeferredRegister<MapCodec<? extends Block>> CODECS = DeferredRegister.create(BuiltInRegistries.BLOCK_TYPE, TheOldestHouse.MOD_ID);
+    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, TheOldestHouse.MOD_ID);
+    /** Proofrock's fitted pieces and the school's teacher desks (0.4.67). */
+    public static final DeferredHolder<MapCodec<? extends Block>, MapCodec<TownFixtureBlock>> FIXTURE_TYPE = CODECS.register("town_fixture", () -> TownFixtureBlock.CODEC);
+    public static final DeferredBlock<TownFixtureBlock> FIXTURE = BLOCKS.registerBlock("town_fixture", TownFixtureBlock::new, BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).noLootTable());
+    public static final DeferredHolder<MapCodec<? extends Block>, MapCodec<SchoolDeskBlock>> SCHOOL_DESK_TYPE = CODECS.register("school_desk", () -> SchoolDeskBlock.CODEC);
+    public static final DeferredBlock<SchoolDeskBlock> SCHOOL_DESK = BLOCKS.registerBlock("school_desk", SchoolDeskBlock::new, BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).noOcclusion().noLootTable());
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SchoolDeskBlockEntity>> SCHOOL_DESK_ENTITY = BLOCK_ENTITIES.register("school_desk",
+            () -> BlockEntityType.Builder.of(SchoolDeskBlockEntity::new, SCHOOL_DESK.get()).build(null));
     public static final DeferredItem<Item> WET_ESSAY_ONE = wet("waterlogged_essay_one");
     public static final DeferredItem<Item> WET_ESSAY_TWO = wet("waterlogged_essay_two");
     public static final DeferredItem<Item> WET_ESSAY_THREE = wet("waterlogged_essay_three");
@@ -63,7 +79,7 @@ public final class DrownedTownRegistry {
     public static Item wetEssay(int index) { return switch(index) {case 0 -> WET_ESSAY_ONE.get(); case 1 -> WET_ESSAY_TWO.get(); default -> WET_ESSAY_THREE.get();}; }
     public static Item dryEssay(int index) { return switch(index) {case 0 -> DRIED_ESSAY_ONE.get(); case 1 -> DRIED_ESSAY_TWO.get(); default -> DRIED_ESSAY_THREE.get();}; }
     public static void register(IEventBus bus) {
-        ITEMS.register(bus); TYPES.register(bus); SOUNDS.register(bus);
+        CODECS.register(bus); BLOCKS.register(bus); BLOCK_ENTITIES.register(bus); ITEMS.register(bus); TYPES.register(bus); SOUNDS.register(bus);
         bus.addListener(DrownedTownRegistry::attributes);
     }
     private static void attributes(EntityAttributeCreationEvent event) {

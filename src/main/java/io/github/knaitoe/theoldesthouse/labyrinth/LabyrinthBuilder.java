@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 39;
+    public static final int VERSION = 40;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -302,7 +302,7 @@ public final class LabyrinthBuilder {
             if (rebuildUpgrades.remove(place) && site != null) {
                 ElkUpgrade.settle(site, LabyrinthPlaces.base(pendingOrigin, place), place);
                 // The trailer's own furnishing and exterior passes dress the new carve, as they dress a fresh one.
-                if (place == LabyrinthPlace.GOATMAN || place == LabyrinthPlace.WHALE) { VignetteArchitecture.forget(site, pendingOrigin, place); VignetteArchitecture.decorateOnce(site, pendingOrigin, place); }
+                if (place == LabyrinthPlace.GOATMAN || place == LabyrinthPlace.WHALE || place == LabyrinthPlace.DROWNED_TOWN) { VignetteArchitecture.forget(site, pendingOrigin, place); VignetteArchitecture.decorateOnce(site, pendingOrigin, place); }
             }
             if (site != null) ScenePolish.polishOnce(site, pendingOrigin, place);
             if(site!=null){var dressing=SceneHuntReview.prepareFresh(site,pendingOrigin,place);if(dressing!=null){geometry=dressing;return;}}
@@ -357,6 +357,22 @@ public final class LabyrinthBuilder {
             WhaleInstitute.clearClocks(interior, base);
             geometry = BuildBlocks.record(interior, () -> NovelRooms.build(server, interior, base, place));
             return;
+        }
+        // 0.4.67: Proofrock is large enough that both a saved world's rebuild and a fresh carve go in slices. Before a
+        // rebuild the old town's finite containers go into saved custody; nobody may be inside or watching.
+        if (place == LabyrinthPlace.DROWNED_TOWN && !architecturalUpgrades.contains(place) && !domesticUpgrades.contains(place)) {
+            ServerLevel site = server.getLevel(HouseDimensions.OUTSIDE);
+            if (site != null) {
+                BlockPos base = LabyrinthPlaces.base(pendingOrigin, place);
+                if (rebuildUpgrades.contains(place)) {
+                    if (!ElkUpgrade.vacant(site, base, place, fixtureDrain)) { active = false; return; }
+                    ElkUpgrade.protectResidents(site, base, place);
+                    TownCarry.capture(site, base);
+                }
+                ScenePolish.forget(server, pendingOrigin, place);
+                geometry = BuildBlocks.record(site, () -> DrownedTown.build(server, site, base));
+                return;
+            }
         }
         pending.poll();
         long started = System.nanoTime();

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "the_oldest_house:block/chalkboard_r",
+    "side": "minecraft:block/white_terracotta",
+    "top": "minecraft:block/white_terracotta"
+  }
+}

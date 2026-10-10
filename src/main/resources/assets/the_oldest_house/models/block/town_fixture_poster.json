@@ -1,0 +1,76 @@
+{
+  "textures": {
+    "poster": "the_oldest_house:block/missing_poster",
+    "particle": "the_oldest_house:block/missing_poster"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        1,
+        15
+      ],
+      "to": [
+        15,
+        15,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ],
+          "texture": "#poster"
+        },
+        "south": {
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ],
+          "texture": "#poster"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            15,
+            2
+          ],
+          "texture": "#poster"
+        },
+        "down": {
+          "uv": [
+            1,
+            14,
+            15,
+            15
+          ],
+          "texture": "#poster"
+        },
+        "east": {
+          "uv": [
+            1,
+            1,
+            2,
+            15
+          ],
+          "texture": "#poster"
+        },
+        "west": {
+          "uv": [
+            14,
+            1,
+            15,
+            15
+          ],
+          "texture": "#poster"
+        }
+      }
+    }
+  ]
+}

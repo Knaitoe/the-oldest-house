@@ -84,7 +84,7 @@ public final class SceneCraft {
     static final Set<LabyrinthPlace> GROUNDS = EnumSet.of(LabyrinthPlace.ELK_LOT, LabyrinthPlace.MAPPING_INTERIOR, LabyrinthPlace.HOLY_RABBIT,
             LabyrinthPlace.COSTUME_NIGHT, LabyrinthPlace.MOVIE_NIGHT, LabyrinthPlace.WINTER_LAKE,
             LabyrinthPlace.CAMP_BLOOD, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.SHALLOWS, LabyrinthPlace.PHONE_CANOE,
-            LabyrinthPlace.DROWNED_TOWN, LabyrinthPlace.HOTEL_GROUNDS, LabyrinthPlace.BARN_WELL, LabyrinthPlace.GOATMAN, LabyrinthPlace.EXPLORER_CAMP);
+            LabyrinthPlace.HOTEL_GROUNDS, LabyrinthPlace.BARN_WELL, LabyrinthPlace.GOATMAN, LabyrinthPlace.EXPLORER_CAMP);
     /** How far outside its room box a scene's banks and woods reach. */
     private static final int REACH = 6;
 

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "the_oldest_house:block/school_desk"
+    },
+    "facing=east": {
+      "model": "the_oldest_house:block/school_desk",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "the_oldest_house:block/school_desk",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "the_oldest_house:block/school_desk",
+      "y": 270
+    }
+  }
+}

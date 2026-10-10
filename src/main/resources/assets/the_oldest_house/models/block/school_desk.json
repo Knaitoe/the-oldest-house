@@ -1,0 +1,42 @@
+{
+  "textures": {
+    "front": "the_oldest_house:block/school_desk_front",
+    "side": "the_oldest_house:block/student_desk_wood",
+    "top": "the_oldest_house:block/school_desk_top",
+    "particle": "the_oldest_house:block/school_desk_top"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#front"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#top"
+        },
+        "down": {
+          "texture": "#side"
+        }
+      }
+    }
+  ]
+}

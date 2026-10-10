@@ -116,10 +116,14 @@ public final class LakeWitchEntity extends PathfinderMob {
         return level.getFluidState(feet).is(FluidTags.WATER)
                 || level.getBlockState(feet.below()).is(Blocks.GRASS_BLOCK);
     }
+    /** Inside the town's ground, one cell in from its edge (0.4.67: Proofrock's whole plot, not the old 59-block box). */
+    static boolean onTownGround(BlockPos base,BlockPos feet){
+        var r=LabyrinthPlace.DROWNED_TOWN.room();int x=feet.getX()-base.getX(),z=feet.getZ()-base.getZ();
+        return feet.getY()==base.getY()&&x>r.minX()&&x<r.maxX()&&z>r.minZ()&&z<=-1;
+    }
     public static boolean walkable(Level level, BlockPos base, BlockPos feet) {
-        int x = feet.getX() - base.getX(), z = feet.getZ() - base.getZ();
         var point=crawlPoint(level,feet,.78,.94);
-        return feet.getY() == base.getY() && x >= -28 && x <= 28 && z >= -63 && z <= -1
+        return onTownGround(base,feet)
                 && !safeGround(level, feet)
                 && level.noCollision(crawlBox(point,.78,.94))
                 && (level.getFluidState(feet.below()).is(FluidTags.WATER)||level.getBlockState(feet.below()).isFaceSturdy(level, feet.below(), Direction.UP));
@@ -139,8 +143,7 @@ public final class LakeWitchEntity extends PathfinderMob {
     private boolean huntWalkable(BlockPos feet){
         if(shoreBase!=null&&walkable(level(),shoreBase,feet))return true;
         if(shoreBase==null||!breakableDoor(feet))return false;
-        int x=feet.getX()-shoreBase.getX(),z=feet.getZ()-shoreBase.getZ();
-        return feet.getY()==shoreBase.getY()&&x>=-28&&x<=28&&z>=-63&&z<=-1&&!safeGround(level(),feet)
+        return onTownGround(shoreBase,feet)&&!safeGround(level(),feet)
                 &&level().getBlockState(feet.below()).isFaceSturdy(level(),feet.below(),Direction.UP);
     }
     public boolean breakableDoor(BlockPos at){
@@ -151,8 +154,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         if(LabyrinthData.get(l.getServer()).doorAt(l.dimension(),lower)!=null)return false;
         if(shoreBase!=null){
             if(lower.equals(shoreBase.offset(DrownedTown.CHURCH_DOOR)))return false;
-            int x=lower.getX()-shoreBase.getX(),z=lower.getZ()-shoreBase.getZ();
-            return lower.getY()==shoreBase.getY()&&x>=-28&&x<=28&&z>=-63&&z<=-12;
+            return onTownGround(shoreBase,lower)&&lower.getZ()-shoreBase.getZ()<=-12;
         }
         if(literaryBase!=null&&literaryPlace!=null){var r=literaryPlace.room();int x=lower.getX()-literaryBase.getX(),z=lower.getZ()-literaryBase.getZ();
             return lower.getY()==literaryBase.getY()&&x>r.minX()+2&&x<r.maxX()-2&&z>r.minZ()+2&&z<-10;
@@ -238,9 +240,7 @@ public final class LakeWitchEntity extends PathfinderMob {
             if(literary){var r=literaryPlace.room();int dx=feet.getX()-base.getX(),dz=feet.getZ()-base.getZ();
                 if(dx<=r.minX()+2||dx>=r.maxX()-2||dz<=r.minZ()+2||dz>=-10)return false;
                 if(literaryPlace==LabyrinthPlace.COSTUME_NIGHT&&level().getBlockState(feet.below()).is(Blocks.GRASS_BLOCK))return false;
-            }else {int dx=feet.getX()-base.getX(),dz=feet.getZ()-base.getZ();
-                if(dx< -28||dx>28||dz< -63||dz> -1||safeGround(level(),feet))return false;
-            }
+            }else if(!onTownGround(base,feet)||safeGround(level(),feet))return false;
             if(!level().getFluidState(feet.below()).is(FluidTags.WATER)
                     &&level().getBlockState(feet.below()).getCollisionShape(level(),feet.below()).isEmpty())return false;
         }return true;
@@ -283,20 +283,23 @@ public final class LakeWitchEntity extends PathfinderMob {
 
     /** Four-neighbor physical surface paths detour around living grass, props and trees. */
     public static List<BlockPos> shoreRoute(Level level, BlockPos base, BlockPos start, BlockPos goal) {
-        if (!walkable(level, base, start) || !walkable(level, base, goal)) return List.of();
-        Map<BlockPos, BlockPos> previous = new HashMap<>(); ArrayDeque<BlockPos> open = new ArrayDeque<>();
-        previous.put(start, start); open.add(start);
-        while (!open.isEmpty() && previous.size() <= 4000) {
-            BlockPos at = open.removeFirst();
-            if (at.equals(goal)) {
-                LinkedList<BlockPos> result = new LinkedList<>();
-                while (!at.equals(start)) { result.addFirst(at); at = previous.get(at); }
-                return result;
-            }
-            for (Direction direction : Direction.Plane.HORIZONTAL) {
-                BlockPos next = at.relative(direction);
-                if (!previous.containsKey(next) && walkable(level, base, next)) { previous.put(next, at); open.addLast(next); }
-            }
+        return aStar(start,goal,at->walkable(level,base,at),12000);
+    }
+    /**
+     * Shortest four-neighbour path by A* (0.4.67). A town ten times the old shore needs directed search: breadth-first
+     * search ran out of nodes before reaching a reader across two streets.
+     */
+    static List<BlockPos> aStar(BlockPos start,BlockPos goal,java.util.function.Predicate<BlockPos> open,int budget){
+        if(!open.test(start)||!open.test(goal))return List.of();
+        Map<BlockPos,BlockPos> previous=new HashMap<>();Map<BlockPos,Integer> cost=new HashMap<>();
+        PriorityQueue<long[]> frontier=new PriorityQueue<>(Comparator.<long[]>comparingLong(e->e[0]).thenComparingLong(e->e[2]));
+        previous.put(start,start);cost.put(start,0);frontier.add(new long[]{start.distManhattan(goal),start.asLong(),0});long order=0;
+        while(!frontier.isEmpty()&&previous.size()<=budget){
+            var entry=frontier.poll();BlockPos at=BlockPos.of(entry[1]);int g=cost.get(at);
+            if(entry[0]>g+at.distManhattan(goal))continue;
+            if(at.equals(goal)){LinkedList<BlockPos> result=new LinkedList<>();while(!at.equals(start)){result.addFirst(at);at=previous.get(at);}return result;}
+            for(Direction side:Direction.Plane.HORIZONTAL){BlockPos next=at.relative(side);Integer known=cost.get(next);
+                if(known!=null&&known<=g+1||!open.test(next))continue;cost.put(next,g+1);previous.put(next,at);frontier.add(new long[]{g+1+next.distManhattan(goal),next.asLong(),++order});}
         }
         return List.of();
     }
@@ -314,7 +317,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         var open=new ArrayDeque<BlockPos>();var seen=new HashSet<BlockPos>();open.add(start);seen.add(start);
         var watchers=level instanceof ServerLevel l?l.players().stream().filter(p->p.isAlive()&&!p.isCreative()&&!p.isSpectator()&&DrownedTown.contains(base,p.position())).toList():List.<ServerPlayer>of();
         BlockPos best=null;double score=-Double.MAX_VALUE;
-        while(!open.isEmpty()&&seen.size()<4000){
+        while(!open.isEmpty()&&seen.size()<6000){
             BlockPos at=open.removeFirst();Vec3 point=Vec3.atBottomCenterOf(at).add(0,.6,0);double distance=point.distanceTo(target.position());
             if(distance>3.5&&distance<17&&at.getZ()<base.getZ()-11){
                 boolean visible=inView(target,point);double value=behindScore(target,point)*12+(visible?-32:18)
@@ -341,12 +344,7 @@ public final class LakeWitchEntity extends PathfinderMob {
     }
     private List<BlockPos> physicalRoute(BlockPos start,BlockPos goal,boolean literary){
         java.util.function.Predicate<BlockPos> open=at->level().hasChunkAt(at)&&(literary?literaryWalkable(at):huntWalkable(at));
-        if(!open.test(start)||!open.test(goal))return List.of();
-        var queue=new ArrayDeque<BlockPos>();var prev=new HashMap<BlockPos,BlockPos>();queue.add(start);prev.put(start,start);
-        while(!queue.isEmpty()&&prev.size()<7000){var at=queue.removeFirst();if(at.equals(goal)){
-            var out=new LinkedList<BlockPos>();while(!at.equals(start)){out.addFirst(at);at=prev.get(at);}return out;}
-            for(var side:Direction.Plane.HORIZONTAL){var next=at.relative(side);if(!prev.containsKey(next)&&open.test(next)){prev.put(next,at);queue.add(next);}}
-        }return List.of();
+        return aStar(start,goal,open,literary?7000:12000);
     }
     private void follow(double speed){
         double remaining=speed*HUNT_SPEED_FACTOR;int nodes=0;
@@ -366,7 +364,7 @@ public final class LakeWitchEntity extends PathfinderMob {
             var observer=level.players().stream().filter(p->p.isAlive()&&!p.isSpectator()&&DrownedTown.contains(shoreBase,p.position())).min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
             BlockPos start=BlockPos.containing(getX(),shoreBase.getY(),getZ());
             BlockPos cover=observer==null?null:ambushGoal(level,shoreBase,start,observer,true);
-            if(cover==null)for(BlockPos at:List.of(shoreBase.offset(-24,0,-40),shoreBase.offset(25,0,-57),shoreBase.offset(-13,0,-51)))if(walkable(level,shoreBase,at)){cover=at;break;}
+            if(cover==null)for(BlockPos lurk:ProofrockTown.LURKS){var at=shoreBase.offset(lurk);if(walkable(level,shoreBase,at)){cover=at;break;}}
             if(cover!=null&&!cover.equals(start))routeTo(cover);
         }
         follow(.26);

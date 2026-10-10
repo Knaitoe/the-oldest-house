@@ -17,7 +17,8 @@ public final class LakeSettlement {
     private final ServerLevel l;private final BlockPos b;private final LabyrinthPlace site;
     private LakeSettlement(ServerLevel l,BlockPos b,LabyrinthPlace site){this.l=l;this.b=b;this.site=site;}
     public static void decorateOnce(ServerLevel l,BlockPos b,LabyrinthPlace site){
-        if(!LakeLandscape.isLake(site)||l.getBlockState(b.offset(0,-1,-3)).isAir())return;
+        // 0.4.67: Proofrock authors its own streets and woods.
+        if(!LakeLandscape.isLake(site)||site==LabyrinthPlace.DROWNED_TOWN||l.getBlockState(b.offset(0,-1,-3)).isAir())return;
         if(site==LabyrinthPlace.DROWNED_TOWN&&IndianLakeRooms.visitors(l,b,site).isEmpty())townSign(l,b);
         var data=LabyrinthData.get(l.getServer());var state=data.state(STATE);String key=b.asLong()+":"+site.id();
         if(state.getBoolean(key))return;

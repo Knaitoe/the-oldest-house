@@ -118,8 +118,9 @@ public final class DrownedTownTests {
             var d=new LabyrinthData();d.setBuilt(LabyrinthBuilder.VERSION,origin);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",d);
             base=LabyrinthPlaces.base(origin,LabyrinthPlace.DROWNED_TOWN);DrownedTown.build(server,level,base);LabyrinthBuilder.registerDoors(d,LabyrinthPlace.DROWNED_TOWN,base);}
         public void close(){
-            for(var actor:level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class,new AABB(base.getX()-30,base.getY()-14,base.getZ()-65,base.getX()+31,base.getY()+10,base.getZ()+19),e->e instanceof LakeWitchEntity||e instanceof LakeCongregantEntity))actor.discard();
-            for(int x=(base.getX()-30)>>4;x<=(base.getX()+30)>>4;x++)for(int z=(base.getZ()-65)>>4;z<=(base.getZ()+18)>>4;z++)
+            var box=IndianLakeRooms.bounds(base,LabyrinthPlace.DROWNED_TOWN);
+            for(var actor:level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class,box.inflate(1),e->e instanceof LakeWitchEntity||e instanceof LakeCongregantEntity||e.getTags().contains(DrownedTown.TOWN_CANOE)||e.getTags().contains(DrownedTown.SHORE_BODY)||e instanceof net.minecraft.world.entity.item.ItemEntity))actor.discard();
+            for(int x=((int)box.minX-1)>>4;x<=((int)box.maxX+1)>>4;x++)for(int z=((int)box.minZ-1)>>4;z<=((int)box.maxZ+1)>>4;z++)
                 level.getChunkSource().removeRegionTicket(TicketType.PORTAL,new ChunkPos(x,z),3,base);
             server.overworld().getDataStorage().set("the_oldest_house",house);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",labyrinth);DrownedTown.clearAll();LabyrinthDoors.clearAll();
         }
@@ -135,21 +136,22 @@ public final class DrownedTownTests {
     public static void nativeFurnaceDoorReturnsKeyAndRoofCompleteTheActualSequence(GameTestHelper helper){
         MinecraftServer server=helper.getLevel().getServer();BlockPos origin=new BlockPos(5600,80,5600);sequenceFixture=new Fixture(server,origin);
         Fixture fixture=sequenceFixture;ServerLevel level=fixture.level;BlockPos base=fixture.base;LabyrinthData data=LabyrinthData.get(server);
-        helper.assertTrue(level.getBlockState(base.offset(0,-1,-30)).is(Blocks.COBBLESTONE)
-                &&level.getFluidState(base.offset(15,-3,-38)).is(net.minecraft.tags.FluidTags.WATER), "a dry main street and a real reservoir exist");
-        helper.assertTrue(level.getBlockState(base.offset(DrownedTown.SCHOOL_DOOR)).getFluidState().isEmpty(), "the native school door holds a breath");
+        helper.assertTrue(level.getBlockState(base.offset(0,-1,-30)).is(Blocks.GRAY_CONCRETE)||level.getBlockState(base.offset(0,-1,-30)).is(Blocks.YELLOW_CONCRETE)||level.getBlockState(base.offset(0,-1,-30)).is(Blocks.ANDESITE), "Main Street is paved and dry");
+        helper.assertTrue(level.getFluidState(base.offset(0,-3,-100)).is(net.minecraft.tags.FluidTags.WATER)&&level.getFluidState(base.offset(50,-3,-60)).is(net.minecraft.tags.FluidTags.WATER), "the lake fills the north and the eastern bay");
+        helper.assertTrue(level.getBlockState(base.offset(DrownedTown.SCHOOL_DOOR)).getBlock() instanceof DoorBlock&&level.getBlockState(base.offset(DrownedTown.SCHOOL_DOOR)).getFluidState().isEmpty(), "the high school's front door stands on dry ground");
+        for(var desk:DrownedTown.PAPERS)helper.assertTrue(level.getBlockEntity(base.offset(desk)) instanceof net.minecraft.world.Container drawer&&drawer.getItem(0).getItem()!=Items.AIR, "each essay is in a real teacher's desk");
         // An ordinary return threshold in the same level exercises the actual labyrinth graph hooks.
         BlockPos source=base.offset(42,0,1);for(int x=-7;x<=7;x++)for(int z=0;z<=17;z++)level.setBlock(source.offset(x,-1,z),Blocks.STONE.defaultBlockState(),3);
         var entrance=new LabyrinthData.Door("drowned_fixture",HouseDimensions.OUTSIDE,source,Direction.SOUTH,"place:drowned_town",true);data.putDoor(entrance);
         sequencePlayer=helper.makeMockServerPlayerInLevel();ServerPlayer player=sequencePlayer;player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
         Vec3 start=Vec3.atBottomCenterOf(source.south(2));player.teleportTo(level,start.x,start.y,start.z,180,0);LabyrinthDoors.use(player,entrance);
         helper.assertTrue(data.state(DrownedTown.ID).getInt("Visit")==1&&data.returnDepth(player.getUUID())==1, "native entry starts the first visit and remembers the way back");
-        player.moveTo(Vec3.atBottomCenterOf(base.offset(15,-11,-39)));player.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(DrownedTownRegistry.CHURCH_KEY.get()));
+        player.moveTo(Vec3.atBottomCenterOf(base.offset(30,-11,-101)));player.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(DrownedTownRegistry.CHURCH_KEY.get()));
         helper.assertTrue(!DrownedTown.unlockChurch(player,base.offset(DrownedTown.CHURCH_DOOR)), "even a borrowed key cannot skip the first visit");player.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
-        player.moveTo(Vec3.atBottomCenterOf(base.offset(20,0,-8)));
+        player.moveTo(Vec3.atBottomCenterOf(base.offset(5,0,-88)));
         var furnace=(FurnaceBlockEntity)level.getBlockEntity(base.offset(DrownedTown.FURNACE));
         click(player,base.offset(DrownedTown.FURNACE));player.openMenu(furnace);furnace.setItem(1,new ItemStack(Items.COAL,3));
-        var first=(BarrelBlockEntity)level.getBlockEntity(base.offset(DrownedTown.PAPERS[0]));furnace.setItem(0,first.removeItemNoUpdate(0));first.setChanged();furnace.setChanged();
+        var first=(net.minecraft.world.Container)level.getBlockEntity(base.offset(DrownedTown.PAPERS[0]));furnace.setItem(0,first.removeItemNoUpdate(0));first.setChanged();furnace.setChanged();
         int[] essay={0};
         helper.onEachTick(()->{
             if(essay[0]>=3)return;
@@ -157,33 +159,33 @@ public final class DrownedTownTests {
             int index=essay[0];helper.assertTrue(furnace.getItem(2).is(DrownedTownRegistry.dryEssay(index)), "normal furnace recipes produce the correct readable essay");
             player.containerMenu.quickMoveStack(player,2);
             helper.assertTrue((data.state(DrownedTown.ID).getInt("DryMask")&(1<<index))!=0, "native furnace pickup records this distinct shore essay");essay[0]++;
-            if(essay[0]<3){var desk=(BarrelBlockEntity)level.getBlockEntity(base.offset(DrownedTown.PAPERS[essay[0]]));furnace.setItem(0,desk.removeItemNoUpdate(0));desk.setChanged();furnace.setChanged();return;}
+            if(essay[0]<3){var desk=(net.minecraft.world.Container)level.getBlockEntity(base.offset(DrownedTown.PAPERS[essay[0]]));furnace.setItem(0,desk.removeItemNoUpdate(0));desk.setChanged();furnace.setChanged();return;}
             player.closeContainer();helper.assertTrue(data.state(DrownedTown.ID).getBoolean("BeatDone")&&!data.isCompleted(DrownedTown.ID), "three dried essays earn the return rather than ending the vignette");
             player.moveTo(Vec3.atBottomCenterOf(base.offset(0,0,-3)));LabyrinthDoors.tickPlayer(player,origin);
             LabyrinthDoors.use(player,data.door(LabyrinthPlace.DROWNED_TOWN.entryDoorId()));player.moveTo(Vec3.atBottomCenterOf(base.offset(0,0,3)));LabyrinthDoors.tickPlayer(player,origin);
             helper.assertTrue(!DrownedTown.contains(base,player.position())&&data.returnDepth(player.getUUID())==0, "walking through the real return door leaves the lake");
             LabyrinthDoors.use(player,entrance);helper.assertTrue(data.state(DrownedTown.ID).getInt("Visit")==2, "only the next actual arrival reveals the key");
-            var desk=(BarrelBlockEntity)level.getBlockEntity(base.offset(DrownedTown.KEY_DESK));ItemStack key=desk.removeItemNoUpdate(0);desk.setChanged();
+            var desk=(net.minecraft.world.Container)level.getBlockEntity(base.offset(DrownedTown.KEY_DESK));ItemStack key=desk.removeItemNoUpdate(0);desk.setChanged();
             helper.assertTrue(key.is(DrownedTownRegistry.CHURCH_KEY.get()), "the later key is in the school");player.setItemInHand(InteractionHand.MAIN_HAND,key);
-            player.moveTo(Vec3.atBottomCenterOf(base.offset(15,-11,-39)));click(player,base.offset(DrownedTown.CHURCH_DOOR));
+            player.moveTo(Vec3.atBottomCenterOf(base.offset(30,-11,-101)));click(player,base.offset(DrownedTown.CHURCH_DOOR));
             helper.assertTrue(level.getBlockState(base.offset(DrownedTown.CHURCH_DOOR)).getValue(DoorBlock.OPEN)&&player.getMainHandItem().is(DrownedTownRegistry.CHURCH_KEY.get()), "the artifact unlocks the gate and is kept");
             var breach=new BlockEvent.BreakEvent(level,base.offset(DrownedTown.ROOF_HATCH),level.getBlockState(base.offset(DrownedTown.ROOF_HATCH)),player);NeoForge.EVENT_BUS.post(breach);
             helper.assertTrue(breach.isCanceled()&&!data.isCompleted(DrownedTown.ID), "normal block breaking cannot bypass the roof beat");
-            player.moveTo(Vec3.atBottomCenterOf(base.offset(15,-5,-42)));click(player,base.offset(DrownedTown.ROOF_HATCH));
+            player.moveTo(Vec3.atBottomCenterOf(base.offset(30,-5,-107)));click(player,base.offset(DrownedTown.ROOF_HATCH));
             helper.assertTrue(data.isCompleted(DrownedTown.ID)&&IndianLakeProgress.hymnEscaped(data)
                     &&level.getBlockState(base.offset(DrownedTown.ROOF_HATCH)).getValue(TrapDoorBlock.OPEN), "native hatch use lets the hymn out and finishes the shared scene");
             helper.assertTrue(WitnessAccount.has(data,player.getUUID(),WitnessAccount.Story.DROWNED_TOWN), "this explorer records the actual resolution");
             click(player,base.offset(DrownedTown.ROOF_HATCH));helper.assertTrue(WitnessAccount.count(data,player.getUUID())==1, "repeated hatch use gives no additional resolution");
             // Exercise actual item placement under the labyrinth's normal protection events.
-            player.getInventory().setItem(20,key.copy());player.moveTo(Vec3.atBottomCenterOf(base.offset(26,-11,-27)));
+            player.getInventory().setItem(20,key.copy());player.moveTo(Vec3.atBottomCenterOf(base.offset(-9,-11,-103)));
             player.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.OAK_DOOR,2));
-            BlockPos ground=base.offset(25,-12,-28),airDoor=ground.above();
+            BlockPos ground=base.offset(-10,-12,-104),airDoor=ground.above();
             player.getMainHandItem().useOn(new net.minecraft.world.item.context.UseOnContext(player,InteractionHand.MAIN_HAND,
                     new BlockHitResult(Vec3.atCenterOf(ground).add(0,.5,0),Direction.UP,ground,false)));
             helper.assertTrue(level.getBlockState(airDoor).is(Blocks.OAK_DOOR)&&level.getBlockState(airDoor).getFluidState().isEmpty(), "a player-placed native door really supplies an air pocket");
             var reclaim=new BlockEvent.BreakEvent(level,airDoor,level.getBlockState(airDoor),player);NeoForge.EVENT_BUS.post(reclaim);
             helper.assertTrue(!reclaim.isCanceled()&&DrownedTown.canBreak(level,airDoor.above()), "both halves of a placed air door can be recovered");
-            player.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.SOUL_SAND));BlockPos sand=base.offset(24,-11,-26);
+            player.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.SOUL_SAND));BlockPos sand=base.offset(-12,-11,-102);
             player.getMainHandItem().useOn(new net.minecraft.world.item.context.UseOnContext(player,InteractionHand.MAIN_HAND,
                     new BlockHitResult(Vec3.atCenterOf(sand.below()).add(0,.5,0),Direction.UP,sand.below(),false)));
             helper.assertTrue(level.getBlockState(sand).is(Blocks.SOUL_SAND)&&DrownedTown.canBreak(level,sand), "portable soul sand is also permitted and recoverable");
