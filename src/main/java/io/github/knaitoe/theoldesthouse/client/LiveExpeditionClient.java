@@ -173,11 +173,27 @@ public final class LiveExpeditionClient {
             if(ticks>40&&ack!=32&&children.stream().filter(c->!c.girl()).count()==8&&children.stream().filter(c->c.viewer().filter(mc.player.getUUID()::equals).isPresent()).count()==1){
                 var camera=mc.gameRenderer.getMainCamera().getPosition();var frustum=new net.minecraft.client.renderer.culling.Frustum(new org.joml.Matrix4f(),new org.joml.Matrix4f().ortho(-128,128,-128,128,-128,128));frustum.prepare(camera.x,camera.y,camera.z);
                 for(var c:children){boolean mine=!c.girl()||c.viewer().filter(mc.player.getUUID()::equals).isPresent();var renderer=mc.getEntityRenderDispatcher().getRenderer(c);
-                    if(renderer.shouldRender(c,frustum,camera.x,camera.y,camera.z)!=mine)throw new IllegalStateException("LIVE EXPEDITION a native trailer child was hidden or leaked to its peer");
+                    // At the entrance cousins can be beyond native model draw distance;
+                    // the nearby private path girls must obey ownership here.
+                    if(c.girl()&&renderer.shouldRender(c,frustum,camera.x,camera.y,camera.z)!=mine)throw new IllegalStateException("LIVE EXPEDITION a native path girl was hidden or leaked to its peer");
                     if(mine&&mc.getResourceManager().getResource(renderer.getTextureLocation(c)).isEmpty())throw new IllegalStateException("LIVE EXPEDITION the actual trailer child renderer selected a missing skin");
                 }
                 var girl=children.stream().filter(c->c.viewer().filter(mc.player.getUUID()::equals).isPresent()).findFirst().orElseThrow();var at=girl.getEyePosition().subtract(mc.player.getEyePosition());mc.player.setYRot((float)Math.toDegrees(Math.atan2(-at.x,at.z)));mc.player.setXRot((float)-Math.toDegrees(Math.atan2(at.y,Math.hypot(at.x,at.z))));
                 shot=role+"-trailer-arrival";ack(mc,32);
+            }
+        }
+        if(step==33){
+            var at=mc.player.position().subtract(target.getX(),target.getY(),target.getZ());var progress=io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.project(at).progress();
+            var next=io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.path(progress+1).add(target.getX(),target.getY(),target.getZ());
+            var toward=next.subtract(mc.player.position());mc.player.setYRot((float)Math.toDegrees(Math.atan2(-toward.x,toward.z)));mc.player.setXRot(0);mc.options.keyShift.setDown(false);mc.options.keyUp.setDown(true);
+        }
+        if(step==34){
+            mc.options.keyUp.setDown(false);
+            var children=mc.level.getEntitiesOfClass(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild.class,io.github.knaitoe.theoldesthouse.labyrinth.IndianLakeRooms.bounds(target,io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace.GOATMAN));
+            if(ticks>40&&ack!=34&&children.stream().filter(c->!c.girl()).count()==8){
+                var camera=mc.gameRenderer.getMainCamera().getPosition();var frustum=new net.minecraft.client.renderer.culling.Frustum(new org.joml.Matrix4f(),new org.joml.Matrix4f().ortho(-128,128,-128,128,-128,128));frustum.prepare(camera.x,camera.y,camera.z);
+                for(var c:children)if(!c.girl()&&!mc.getEntityRenderDispatcher().getRenderer(c).shouldRender(c,frustum,camera.x,camera.y,camera.z))throw new IllegalStateException("LIVE EXPEDITION a shared cousin is invisible at the actual campsite");
+                var at=net.minecraft.world.phys.Vec3.atCenterOf(target.offset(-5,1,-48)).subtract(mc.player.getEyePosition());mc.player.setYRot((float)Math.toDegrees(Math.atan2(-at.x,at.z)));mc.player.setXRot((float)-Math.toDegrees(Math.atan2(at.y,Math.hypot(at.x,at.z))));shot=role+"-trailer-camp";ack(mc,34);
             }
         }
         if(step==30&&ticks==30){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);mc.options.keyUse.setDown(false);mc.stop();}

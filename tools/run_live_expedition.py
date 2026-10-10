@@ -68,6 +68,11 @@ try:
         for view in ("actual-exposure", "camera-view", "developed-frame", "ending-hidden", "ending-personal", "ending-collected"):
             assert (report / f"{role}-{view}.png").stat().st_size > 500, (role, view)
     assert (report / "camera-maps.txt").is_file()
+    for role in ("A", "B"):
+        for view in ("trailer-arrival", "trailer-camp"):
+            assert (report / f"{role}-{view}.png").stat().st_size > 10000, (role, view)
+    assert (report / "trailer-arrival.txt").is_file()
+    assert (report / "trailer-camp.txt").is_file()
     # Require clean native movement validation during the actual crossing
     # and return, even when a later correction would recover a bad packet.
     native_log = (server / "logs/latest.log").read_text(errors="replace")
