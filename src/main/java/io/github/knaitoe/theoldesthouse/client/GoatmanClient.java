@@ -60,7 +60,8 @@ public final class GoatmanClient {
         }
         if(phase!=GoatmanVignette.VIGIL&&phase!=GoatmanVignette.GATHERING||childRemaining<=0||child<=0)return;
         var rows=font.split(net.minecraft.network.chat.Component.literal(GoatmanFear.line(child)),Math.max(80,Math.min(440,g.guiWidth()-40)));
-        int y=g.guiHeight()-65-rows.size()*11;g.fill(16,y-4,g.guiWidth()-16,y+rows.size()*11+3,0x44000000);
+        // Keep the reaction below the central voice and clear of lingering camp chat.
+        int y=Math.min(g.guiHeight()/2+40,g.guiHeight()-40-rows.size()*11);g.fill(16,y-4,g.guiWidth()-16,y+rows.size()*11+3,0xEE000000);
         for(int i=0;i<rows.size();i++)g.drawCenteredString(font,rows.get(i),g.guiWidth()/2,y+i*11,0xFFC6BFB4);
     }
     public static boolean night(){return phase==GoatmanVignette.VIGIL;}
