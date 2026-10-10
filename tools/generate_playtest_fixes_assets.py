@@ -90,7 +90,7 @@ def signs():
 
 def cooler_and_wheel():
     im=grain((16,16),(181,196,196));rect(im,(0,2),(16,4),(221,221,199));rect(im,(1,5),(15,14),(36,87,94));rect(im,(3,8),(13,10),(27,67,72));rect(im,(7,2),(9,6),(157,163,160));save('cooler',im)
-    model('trailer_cooler',{'body':'cooler','lid':'minecraft:block/quartz_block','latch':'minecraft:block/iron_block','particle':'cooler'},
+    model('trailer_cooler',{'body':'cooler','lid':'minecraft:block/quartz_block_top','latch':'minecraft:block/iron_block','particle':'cooler'},
           [box([1,0,1],[15,11,15],'#body'),box([0,11,0],[16,14,16],'#lid'),box([6,9,0],[10,13,1],'#latch'),box([0,5,5],[1,9,11],'#latch'),box([15,5,5],[16,9,11],'#latch')])
     states('trailer_cooler',fixture=True)
     tire=grain((16,16),(27,29,30))
