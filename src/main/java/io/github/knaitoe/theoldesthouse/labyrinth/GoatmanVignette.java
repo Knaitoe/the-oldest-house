@@ -48,6 +48,7 @@ public final class GoatmanVignette {
     public static final int PATH=1,GATHERING=2,VIGIL=3,DAWN=4,MAX_PLAYERS=16,VERSION=453;
     public static final int GATHER_TICKS=1800,VIGIL_TICKS=1600;
     public static final int SUPPER0465=1500,LEAVES0465=1200,BACK0465=1900,SILENCE0465=2700,GATHER0465=3300,VIGIL0465=2500;
+    private static final int WINDOW0465=2100,WINDOW_FOR0465=200;
     public static boolean fresh(CompoundTag r){return r.getBoolean("Fresh0465");}
     public static int supperAt(CompoundTag r){return fresh(r)?SUPPER0465:SUPPER;}
     private static int gatherTicks(CompoundTag r){return fresh(r)?GATHER0465:GATHER_TICKS;}
@@ -483,7 +484,7 @@ public final class GoatmanVignette {
             if(!fresh(r)||clock!=SUPPER0465-1||GoatmanSupper.ready(r)){clock++;evening(l,b,r,enrolled,clock);}
             if(clock>=gatherTicks(r)){nightfall(l,b,r,enrolled);phase=VIGIL;clock=0;}
         }
-        else if(phase==VIGIL){clock++;night(l,b,r,enrolled,clock);if(clock>=vigilTicks(r)){r.putInt("Clock",clock);dawn(l,b,r,enrolled,d);phase=DAWN;}}
+        else if(phase==VIGIL){clock++;night(l,b,r,enrolled,clock);if(dawnReady(r,clock)){r.putInt("Clock",clock);dawn(l,b,r,enrolled,d);phase=DAWN;}}
         r.putInt("Clock",clock);
         // Restore saved actors, never reroll a tell or duplicate a cousin after a restart.
         if(server.getTickCount()%20==0||r.getBoolean("StagePending0469"))r.putBoolean("StagePending0469",!stage(l,b,r));cousins(l,b,r,enrolled);
@@ -539,6 +540,13 @@ public final class GoatmanVignette {
         for(var c:cousinsOf(l,b))if(!fresh(r)&&c.getPersistentData().getInt(INDEX)==r.getInt("Wrong")&&r.getInt("ExtraState")==X_DOOR)settle(c,b,"step");
     }
     private static boolean outside(CompoundTag r){int xs=r.getInt("ExtraState");return xs==X_FIRE||xs==X_APPROACH||xs==X_DOOR;}
+    private static boolean dawnReady(CompoundTag r,int clock){
+        if(clock<vigilTicks(r))return false;
+        if(!fresh(r))return true;
+        if(outside(r)&&(!GoatmanStalking.circuitDone(r)||r.getInt("StalkWindowLeg0465")<4))return false;
+        // A delayed arrival retains the original occupied window-to-dawn interval.
+        return !r.contains("NightWindowAt0472")||clock>=r.getInt("NightWindowAt0472")+VIGIL0465-WINDOW0465;
+    }
     private static void night(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> enrolled,int clock){
         GoatmanWoods.door(l,b,false);
         if(outside(r)){
@@ -546,8 +554,11 @@ public final class GoatmanVignette {
             else if(clock>=KNOCK_FROM&&clock<KNOCK_UNTIL){int beat=(clock-KNOCK_FROM)%80;if(beat==0||beat==7||beat==15){GoatmanFear.begin(r);hammer(l,b,enrolled,beat==0);}
                 if(beat==0){r.putInt("Demand",1+((clock-KNOCK_FROM)/200)%LEGACY_MIMIC_LINES.length);r.putInt("DemandAt",clock);}}
             // The window: left open, it is how it gets in.
-            int windowAt=fresh(r)?2100:WINDOW_TRY;
-            if(clock>=windowAt&&clock<(fresh(r)?2300:KNOCK_UNTIL)){
+            // A timed admission cannot cancel a physically unfinished circuit.
+            if(fresh(r)&&clock>=WINDOW0465&&GoatmanStalking.circuitDone(r)&&r.getInt("StalkWindowLeg0465")>=4&&!r.contains("NightWindowAt0472"))r.putInt("NightWindowAt0472",clock);
+            int windowAt=WINDOW_TRY;
+            if(fresh(r))windowAt=r.contains("NightWindowAt0472")?r.getInt("NightWindowAt0472"):-1;
+            if(windowAt>=0&&clock>=windowAt&&clock<(fresh(r)?windowAt+WINDOW_FOR0465:KNOCK_UNTIL)){
                 if(!GoatmanWoods.windowShut(l,b)){
                     r.putInt("ExtraState",X_WINDOW);GoatmanWoods.bathroomDoor(l,b,true);
                     for(var c:cousinsOf(l,b))if(c.getPersistentData().getInt(INDEX)==r.getInt("Wrong")){
