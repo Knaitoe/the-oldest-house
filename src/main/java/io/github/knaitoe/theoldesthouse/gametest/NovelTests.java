@@ -109,7 +109,8 @@ public final class NovelTests {
             h.assertTrue(!(p.containerMenu instanceof NovelVignettes.NovelBookMenu)&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.WHALE),"reading it in the post room changes nothing");
             f.at(p,8.5,0,-22.5);read=new PlayerInteractEvent.RightClickItem(p,InteractionHand.MAIN_HAND);NeoForge.EVENT_BUS.post(read);
             h.assertTrue(read.isCanceled()&&p.containerMenu instanceof NovelVignettes.NovelBookMenu menu&&!menu.clickMenuButton(p,3),"in her room it opens as her reading, and nothing can be taken from it");
-            h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.WHALE)&&p.getInventory().countItem(NovelRegistry.ENVELOPE.get())==1&&p.getInventory().countItem(Items.WRITTEN_BOOK)==before+3,"a one-page letter read where it was going resolves the institute and leaves an envelope, keeping the letter");
+            h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.WHALE)&&p.getInventory().countItem(NovelRegistry.ENVELOPE.get())==1
+                &&mine.stream().allMatch(o->p.getInventory().items.stream().anyMatch(s->ItemStack.isSameItemSameComponents(s,o))),"a one-page letter read where it was going resolves the institute and leaves an envelope, keeping the letter");
             h.assertTrue(!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.WHALE),"a peer borrows nothing");
             p.closeContainer();f.reload();var w=f.own(p).getCompound(WhaleInstitute.KEY);
             h.assertTrue(w.getInt("Sent")==3&&w.getBoolean("Returned")&&w.getList("Posted",Tag.TAG_COMPOUND).size()==3&&f.own(p).getBoolean("Yield_Envelope"),"native reload keeps the posted letters, the returned bundle and the finite envelope");
