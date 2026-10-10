@@ -55,7 +55,9 @@ neoForge {
             server()
             gameDirectory = project.file('run-live/server')
             programArgument '--nogui'
-            jvmArgument '-Xmx1400m'
+            // Two rendered clients stay live while the host serializes complete scene chunks.
+            // The previous 1.4-GiB host hit its watchdog during native chunk unloading.
+            jvmArgument '-Xmx2g'
             systemProperty 'the_oldest_house.liveProof', 'true'
             systemProperty 'the_oldest_house.liveProofDir', project.file('build/live-proof').absolutePath
         }
