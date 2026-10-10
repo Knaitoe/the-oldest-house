@@ -9,7 +9,11 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.67
+## Current candidate: 0.4.68
+
+Apply the eleven supplied playtest fixes to the completed Whale/Proofrock source. Preserve scene addresses, private letters, native actors, finite supper supplies, exact note pages and player removals. Require 486 native cases, all focused and socket multiplayer checks, all 71 architecture views, complete writing/eight fonts, 441 PNGs and seven trailer/playtest GPU views. Layout 40 / protocol 42. See [the repair record](PLAYTEST_FIXES_0_4_68.md).
+
+## Earlier candidate: 0.4.67
 
 Drowned Town is redesigned as Proofrock, a 128 × 128 town with Indian Lake High, in its existing slot. DROWNED_TOWN stays one eligible source with the same personal resolution: the church roof opened on the second visit. The essays, key, church and hunt rules are unchanged; only their places move. Still 43 sources / 33 resolutions / two kinds / three endings. Native coverage includes the town's streets, lake and church positions, the school's real doors, ring corridor, grass courtyard and bleacher gap, finite teachers' desks, and two saved-world re-carves that carry every container's exact contents, refund placed air tools and keep the canoe, shore body and hunter identities. Layout 40 / protocol 41. See [the Proofrock record](PROOFROCK_0_4_67.md).
 

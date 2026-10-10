@@ -161,7 +161,7 @@ public final class GoatmanVignette {
     static final Vec3[] UP={new Vec3(.5,0,-50.5),new Vec3(.5,0,-51.5),new Vec3(.5,.5,-52.6),new Vec3(.5,1,-53.8),new Vec3(.5,1,-54.5)};
     /** From the fire, clear of its seats, round the trailer's north-west corner to the window and up onto the sill. */
     static final Vec3[] WINDOW_PATH={new Vec3(-7.5,0,-52.5),new Vec3(-10.5,0,-54.5),new Vec3(-10.5,0,-58.5),new Vec3(-10,1.5,-58.5)};
-    static final String[] ACTIVITY={"fireW","fireE","fireN","kitchen","shed","fireS","firelight","step"};
+    static final String[] ACTIVITY={"fireW","fireE","fireN","kitchen","shed","fireS","firelight","cupboard"};
     private static final Map<String,Spot> SPOTS=new HashMap<>();
     private static void spot(String key,Vec3 at,float yaw,boolean inside,int pose,Vec3... access){SPOTS.put(key,new Spot(at,yaw,inside,pose,access,null));}
     static{
@@ -176,6 +176,7 @@ public final class GoatmanVignette {
         spot("windowRun",new Vec3(-8.5,1.5,-58.5),270,false,STAND,WINDOW_PATH);
         spot("step",new Vec3(.5,1,-53.8),180,false,STAND,UP[0],UP[1],UP[2]);
         spot("kitchen",new Vec3(-4.5,1,-74.5),180,true,STAND,new Vec3(-3,1,-57.5),new Vec3(-3,1,-72.5));
+        spot("cupboard",new Vec3(4,1,-70.5),270,true,STAND,new Vec3(4,1,-57.5),new Vec3(4,1,-70.5));
         spot("floor",new Vec3(.5,1.05,-58.5),0,true,LIE);
         spot("checkDoor",new Vec3(.5,1,-56.2),0,true,STAND);
         for(int i=0;i<8;i++)spot("cower"+i,new Vec3(i%2==0?-3.8:4.8,1,-65.5-(i/2)*2),180,true,COWER,new Vec3(i%2==0?-3:4,1,-57.5),new Vec3(i%2==0?-3:4,1,-65.5-(i/2)*2));
@@ -478,7 +479,7 @@ public final class GoatmanVignette {
         // Late joiners before supper get a brat counted for them; nobody gets one counted after.
         if(!r.getBoolean("PlayerServes0464")&&clock<SUPPER&&r.getInt("PanFor")!=r.getInt("Expected")){r.putInt("Pan",r.getInt("Pan")+r.getInt("Expected")-r.getInt("PanFor"));r.putInt("PanFor",r.getInt("Expected"));GoatmanWoods.pan(l,b,r.getInt("Pan"));}
         boolean serves=r.getBoolean("PlayerServes0464");
-        if(serves&&clock==SERVE_HINT)say(enrolled,"A cousin: Four in each pack. We counted enough for everybody. Could you put them out when they're ready?");
+        if(serves&&clock==SERVE_HINT)say(enrolled,"A cousin: Go grab 'em from the cooler by the kitchen counter. Four in each pack. Cook them on the griddle, then put one on everybody's plate.");
         if(serves&&clock==(fresh(r)?2460:WINDOW_HINT))say(enrolled,"A cousin: Is anyone else getting cold back there?");
         if(!serves&&clock==OLD_WINDOW_HINT)say(enrolled,"A cousin: Somebody shut the bathroom window. Bugs are getting in.");
         if(clock==leaves&&r.getInt("RunnerState")==R_HOME){r.putInt("RunnerState",R_LEAVING);say(enrolled,"A cousin: Generator's out of gas. I'll run get some from the truck. Back before dark.");}
@@ -574,7 +575,7 @@ public final class GoatmanVignette {
         int phase=r.getInt("Phase");
         if(phase<VIGIL&&!r.getBoolean("Silence")){
             if(tick%180==0)l.playSound(null,b.offset(5,1,-40),GoatmanRegistry.WOODS.get(),SoundSource.AMBIENT,.35F,1);
-            if(phase==GATHERING&&tick%120==0)for(var at:new BlockPos[]{b.offset(-14,1,-60),b.offset(14,1,-50),b.offset(-10,1,-76)})l.playSound(null,at,GoatmanRegistry.CRICKETS.get(),SoundSource.AMBIENT,.5F,1);
+            if(phase==GATHERING&&tick%400==0){var at=new BlockPos[]{b.offset(-14,1,-60),b.offset(14,1,-50),b.offset(-10,1,-76)}[(tick/400)%3];l.playSound(null,at,GoatmanRegistry.CRICKETS.get(),SoundSource.AMBIENT,.35F,1);}
         }
         // The fire gutters and the camp fills with copper motes once the woods go quiet.
         if(phase==GATHERING&&r.getBoolean("Silence")&&tick%5==0){Vec3 f=Vec3.atCenterOf(b.offset(GoatmanWoods.FIRE));l.sendParticles(GoatmanRegistry.COPPER.get(),f.x,f.y+.6,f.z,4,1.6,.8,1.6,.003);

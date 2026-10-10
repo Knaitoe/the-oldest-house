@@ -41,7 +41,21 @@ public final class NovelTests {
             var bounds=IndianLakeRooms.bounds(b,place);for(int x=((int)bounds.minX-1)>>4;x<=((int)bounds.maxX+1)>>4;x++)for(int z=((int)bounds.minZ-1)>>4;z<=((int)bounds.maxZ+1)>>4;z++)l.getChunkSource().removeRegionTicket(TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(x,z),3,b);
             chunks.close();var s=l.getServer();s.overworld().getDataStorage().set("the_oldest_house",oldHouse);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);s.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);s.overworld().setDayTime(oldDayTime);LabyrinthBuilder.clearAll();}
     }
-    private static Fixture courtyard,whale,well,plain,ward,karen,upgrade;
+    private static Fixture courtyard,whale,well,plain,ward,karen,upgrade,signRepair;
+    @AfterBatch(batch="novel_sign_repair0468") public static void c8(ServerLevel l){if(signRepair!=null){signRepair.close();signRepair=null;}}
+    @GameTest(template="empty",batch="novel_sign_repair0468",timeoutTicks=2400)
+    public static void instituteRepairsWaitForCamerasAndKeepTheExactPrivateCorrespondence(GameTestHelper h){
+        signRepair=new Fixture(h,34800,LabyrinthPlace.WHALE);var f=signRepair;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.WHALE));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the institute's native entity sections are ready")).thenExecute(()->{
+            f.l.setBlock(f.b.offset(1,2,-23),Blocks.AIR.defaultBlockState(),2);NovelRooms.sign(f.l,f.b.offset(1,2,-22),Direction.WEST,new String[]{"","·      ·","",""});
+            f.l.setBlock(f.b.offset(-8,5,-30),Blocks.SMOOTH_STONE.defaultBlockState(),2);f.l.setBlock(f.b.offset(1,10,-28),Blocks.AIR.defaultBlockState(),2);
+            var own=f.own(p);var saved=new CompoundTag();saved.putInt("Sent",2);saved.putString("Exact","The original page in this writer's own custody");own.put(WhaleInstitute.KEY,saved);NovelVignettes.save(f.data(),p.getUUID(),own);
+            h.assertTrue(!PlaytestFixes.apply(f.l,f.b,LabyrinthPlace.WHALE),"an occupied institute is not changed under its reader's camera");p.moveTo(100,80,100);h.assertTrue(PlaytestFixes.apply(f.l,f.b,LabyrinthPlace.WHALE),"the unseen loaded institute gets its bounded repairs");
+            h.assertTrue(f.l.getBlockState(f.b.offset(1,2,-22)).isAir()&&f.l.getBlockState(f.b.offset(1,2,-23)).getValue(InstituteSignBlock.KIND)==InstituteSignBlock.Kind.MISSING,"the same missing plate moves exactly above her real doorway");
+            h.assertTrue(f.l.getBlockState(f.b.offset(-8,5,-30)).isAir()&&!f.l.getBlockState(f.b.offset(1,10,-28)).isAir()&&f.own(p).getCompound(WhaleInstitute.KEY).equals(saved),"headroom and the roof change while the exact private correspondence stays untouched");
+            f.reload();f.l.setBlock(f.b.offset(1,2,-23),Blocks.AIR.defaultBlockState(),2);PlaytestFixes.apply(f.l,f.b,LabyrinthPlace.WHALE);h.assertTrue(f.l.getBlockState(f.b.offset(1,2,-23)).isAir(),"the reloaded checkpoint preserves later removals instead of replacing the plate again");h.succeed();
+        });
+    }
     @AfterBatch(batch="novel_courtyard") public static void c1(ServerLevel l){if(courtyard!=null){courtyard.close();courtyard=null;}}
     @AfterBatch(batch="novel_whale") public static void c2(ServerLevel l){if(whale!=null){whale.close();whale=null;}}
     @AfterBatch(batch="novel_well") public static void c3(ServerLevel l){if(well!=null){well.close();well=null;}}
@@ -78,7 +92,9 @@ public final class NovelTests {
         h.runAfterDelay(8,()->{
             for(int n=1;n<=12;n++){var st=f.l.getBlockState(f.b.offset(WhaleInstitute.pigeonhole(n)));
                 h.assertTrue(st.is(NovelRegistry.PIGEONHOLE.get())&&st.getValue(PigeonholeBlock.NUMBER)==n&&WhaleInstitute.pigeonholeAt(WhaleInstitute.pigeonhole(n))==n,"pigeonhole "+n+" is a real numbered box on the post room wall");}
-            h.assertTrue(f.l.getBlockState(f.b.offset(WhaleInstitute.HER_DOOR)).getBlock() instanceof DoorBlock&&f.l.getBlockEntity(f.b.offset(1,2,-22)) instanceof SignBlockEntity sign&&!sign.getFrontText().getMessage(1,false).getString().contains("7"),"her door is real and its number has been taken off");
+            h.assertTrue(f.l.getBlockState(f.b.offset(WhaleInstitute.HER_DOOR)).getBlock() instanceof DoorBlock&&f.l.getBlockState(f.b.offset(1,2,-23)).is(NovelRegistry.SIGN.get())&&f.l.getBlockState(f.b.offset(1,2,-23)).getValue(InstituteSignBlock.KIND)==InstituteSignBlock.Kind.MISSING,"her real doorway has only its missing-number screw holes, centered above it");
+            for(int i=0;i<=5;i++)for(int z:new int[]{-30,-31}){var body=new AABB(f.b.getX()-6-i+.2,f.b.getY()+i+1.01,f.b.getZ()+z+.2,f.b.getX()-6-i+.8,f.b.getY()+i+2.81,f.b.getZ()+z+.8);h.assertTrue(f.l.noCollision(null,body),"a standing player has continuous headroom up every actual institute tread: "+i);}
+            for(int x=-13;x<=13;x++)for(int z=-32;z<=-25;z++)h.assertTrue(!f.l.getBlockState(f.b.offset(x,10,z)).isAir(),"the attic roof contains the stairs and rooms instead of exposing the caves");
             // Paper from her desk, one sheet at a time; an unsigned sheet does not go.
             f.at(p,7.5,0,-22.5);f.click(p,WhaleInstitute.DESK);f.click(p,WhaleInstitute.DESK);
             h.assertTrue(p.getInventory().countItem(Items.WRITABLE_BOOK)==1&&p.getMainHandItem().is(Items.WRITABLE_BOOK),"the desk gives one blank letter at a time");

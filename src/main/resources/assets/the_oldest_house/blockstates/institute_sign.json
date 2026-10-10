@@ -1,0 +1,184 @@
+{
+  "variants": {
+    "facing=north,kind=post": {
+      "model": "the_oldest_house:block/institute_sign_post"
+    },
+    "facing=north,kind=outgoing": {
+      "model": "the_oldest_house:block/institute_sign_outgoing"
+    },
+    "facing=north,kind=hours": {
+      "model": "the_oldest_house:block/institute_sign_hours"
+    },
+    "facing=north,kind=writing": {
+      "model": "the_oldest_house:block/institute_sign_writing"
+    },
+    "facing=north,kind=room_1": {
+      "model": "the_oldest_house:block/institute_sign_room_1"
+    },
+    "facing=north,kind=room_2": {
+      "model": "the_oldest_house:block/institute_sign_room_2"
+    },
+    "facing=north,kind=room_3": {
+      "model": "the_oldest_house:block/institute_sign_room_3"
+    },
+    "facing=north,kind=room_4": {
+      "model": "the_oldest_house:block/institute_sign_room_4"
+    },
+    "facing=north,kind=room_5": {
+      "model": "the_oldest_house:block/institute_sign_room_5"
+    },
+    "facing=north,kind=room_6": {
+      "model": "the_oldest_house:block/institute_sign_room_6"
+    },
+    "facing=north,kind=room_8": {
+      "model": "the_oldest_house:block/institute_sign_room_8"
+    },
+    "facing=north,kind=missing": {
+      "model": "the_oldest_house:block/institute_sign_missing"
+    },
+    "facing=east,kind=post": {
+      "model": "the_oldest_house:block/institute_sign_post",
+      "y": 90
+    },
+    "facing=east,kind=outgoing": {
+      "model": "the_oldest_house:block/institute_sign_outgoing",
+      "y": 90
+    },
+    "facing=east,kind=hours": {
+      "model": "the_oldest_house:block/institute_sign_hours",
+      "y": 90
+    },
+    "facing=east,kind=writing": {
+      "model": "the_oldest_house:block/institute_sign_writing",
+      "y": 90
+    },
+    "facing=east,kind=room_1": {
+      "model": "the_oldest_house:block/institute_sign_room_1",
+      "y": 90
+    },
+    "facing=east,kind=room_2": {
+      "model": "the_oldest_house:block/institute_sign_room_2",
+      "y": 90
+    },
+    "facing=east,kind=room_3": {
+      "model": "the_oldest_house:block/institute_sign_room_3",
+      "y": 90
+    },
+    "facing=east,kind=room_4": {
+      "model": "the_oldest_house:block/institute_sign_room_4",
+      "y": 90
+    },
+    "facing=east,kind=room_5": {
+      "model": "the_oldest_house:block/institute_sign_room_5",
+      "y": 90
+    },
+    "facing=east,kind=room_6": {
+      "model": "the_oldest_house:block/institute_sign_room_6",
+      "y": 90
+    },
+    "facing=east,kind=room_8": {
+      "model": "the_oldest_house:block/institute_sign_room_8",
+      "y": 90
+    },
+    "facing=east,kind=missing": {
+      "model": "the_oldest_house:block/institute_sign_missing",
+      "y": 90
+    },
+    "facing=south,kind=post": {
+      "model": "the_oldest_house:block/institute_sign_post",
+      "y": 180
+    },
+    "facing=south,kind=outgoing": {
+      "model": "the_oldest_house:block/institute_sign_outgoing",
+      "y": 180
+    },
+    "facing=south,kind=hours": {
+      "model": "the_oldest_house:block/institute_sign_hours",
+      "y": 180
+    },
+    "facing=south,kind=writing": {
+      "model": "the_oldest_house:block/institute_sign_writing",
+      "y": 180
+    },
+    "facing=south,kind=room_1": {
+      "model": "the_oldest_house:block/institute_sign_room_1",
+      "y": 180
+    },
+    "facing=south,kind=room_2": {
+      "model": "the_oldest_house:block/institute_sign_room_2",
+      "y": 180
+    },
+    "facing=south,kind=room_3": {
+      "model": "the_oldest_house:block/institute_sign_room_3",
+      "y": 180
+    },
+    "facing=south,kind=room_4": {
+      "model": "the_oldest_house:block/institute_sign_room_4",
+      "y": 180
+    },
+    "facing=south,kind=room_5": {
+      "model": "the_oldest_house:block/institute_sign_room_5",
+      "y": 180
+    },
+    "facing=south,kind=room_6": {
+      "model": "the_oldest_house:block/institute_sign_room_6",
+      "y": 180
+    },
+    "facing=south,kind=room_8": {
+      "model": "the_oldest_house:block/institute_sign_room_8",
+      "y": 180
+    },
+    "facing=south,kind=missing": {
+      "model": "the_oldest_house:block/institute_sign_missing",
+      "y": 180
+    },
+    "facing=west,kind=post": {
+      "model": "the_oldest_house:block/institute_sign_post",
+      "y": 270
+    },
+    "facing=west,kind=outgoing": {
+      "model": "the_oldest_house:block/institute_sign_outgoing",
+      "y": 270
+    },
+    "facing=west,kind=hours": {
+      "model": "the_oldest_house:block/institute_sign_hours",
+      "y": 270
+    },
+    "facing=west,kind=writing": {
+      "model": "the_oldest_house:block/institute_sign_writing",
+      "y": 270
+    },
+    "facing=west,kind=room_1": {
+      "model": "the_oldest_house:block/institute_sign_room_1",
+      "y": 270
+    },
+    "facing=west,kind=room_2": {
+      "model": "the_oldest_house:block/institute_sign_room_2",
+      "y": 270
+    },
+    "facing=west,kind=room_3": {
+      "model": "the_oldest_house:block/institute_sign_room_3",
+      "y": 270
+    },
+    "facing=west,kind=room_4": {
+      "model": "the_oldest_house:block/institute_sign_room_4",
+      "y": 270
+    },
+    "facing=west,kind=room_5": {
+      "model": "the_oldest_house:block/institute_sign_room_5",
+      "y": 270
+    },
+    "facing=west,kind=room_6": {
+      "model": "the_oldest_house:block/institute_sign_room_6",
+      "y": 270
+    },
+    "facing=west,kind=room_8": {
+      "model": "the_oldest_house:block/institute_sign_room_8",
+      "y": 270
+    },
+    "facing=west,kind=missing": {
+      "model": "the_oldest_house:block/institute_sign_missing",
+      "y": 270
+    }
+  }
+}

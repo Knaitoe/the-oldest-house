@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "facing=north,filled=false,open=false": {
+      "model": "the_oldest_house:block/vehicle_wheel"
+    },
+    "facing=north,filled=false,open=true": {
+      "model": "the_oldest_house:block/vehicle_wheel"
+    },
+    "facing=north,filled=true,open=false": {
+      "model": "the_oldest_house:block/vehicle_wheel"
+    },
+    "facing=north,filled=true,open=true": {
+      "model": "the_oldest_house:block/vehicle_wheel"
+    },
+    "facing=east,filled=false,open=false": {
+      "model": "the_oldest_house:block/vehicle_wheel",
+      "y": 90
+    },
+    "facing=east,filled=false,open=true": {
+      "model": "the_oldest_house:block/vehicle_wheel",
+      "y": 90
+    },
+    "facing=east,filled=true,open=false": {
+      "model": "the_oldest_house:block/vehicle_wheel",
+      "y": 90
+    },
+    "facing=east,filled=true,open=true": {
+      "model": "the_oldest_house:block/vehicle_wheel",
+      "y": 90
+    },
+    "facing=south,filled=false,open=false": {
+      "model": "the_oldest_house:block/vehicle_wheel",
+      "y": 180
+    },
+    "facing=south,filled=false,open=true": {
+      "model": "the_oldest_house:block/vehicle_wheel",
+      "y": 180
+    },
+    "facing=south,filled=true,open=false": {
+      "model": "the_oldest_house:block/vehicle_wheel",
+      "y": 180
+    },
+    "facing=south,filled=true,open=true": {
+      "model": "the_oldest_house:block/vehicle_wheel",
+      "y": 180
+    },
+    "facing=west,filled=false,open=false": {
+      "model": "the_oldest_house:block/vehicle_wheel",
+      "y": 270
+    },
+    "facing=west,filled=false,open=true": {
+      "model": "the_oldest_house:block/vehicle_wheel",
+      "y": 270
+    },
+    "facing=west,filled=true,open=false": {
+      "model": "the_oldest_house:block/vehicle_wheel",
+      "y": 270
+    },
+    "facing=west,filled=true,open=true": {
+      "model": "the_oldest_house:block/vehicle_wheel",
+      "y": 270
+    }
+  }
+}
