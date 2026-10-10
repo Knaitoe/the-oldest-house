@@ -45,6 +45,9 @@ public final class CaverTests {
         ServerPlayer player(){var p=h.makeMockServerPlayerInLevel();p.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-3.5,0,0);p.hasChangedDimension();players.add(p);return p;}
         void at(ServerPlayer p,double x,double y,double z){p.moveTo(new Vec3(b.getX()+x,b.getY()+y,b.getZ()+z));p.setDeltaMovement(Vec3.ZERO);}
         void click(ServerPlayer p,BlockPos local){var pos=b.offset(local);var e=new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,pos,new BlockHitResult(pos.getCenter(),Direction.SOUTH,pos,false));NeoForge.EVENT_BUS.post(e);h.assertTrue(e.isCanceled(),"the real registered interaction handles the authored prop");}
+        /** The native use path, as a client's click arrives: the held item, the hand and the face. */
+        InteractionResult use(ServerPlayer p,BlockPos local,Direction face,InteractionHand hand){var pos=b.offset(local);
+            return p.gameMode.useItemOn(p,l,p.getItemInHand(hand),hand,new BlockHitResult(pos.getCenter().add(face.getStepX()*.5,face.getStepY()*.5,face.getStepZ()*.5),face,pos,false));}
         void open(){var all=data().state(CaverVignette.ID);all.putInt("Work",CaverVignette.STROKES);data().setState(CaverVignette.ID,all);CaverCave.aperture(l,b,true);}
         void reload(){var loaded=LabyrinthData.FACTORY.deserializer().apply(data().save(new CompoundTag(),l.registryAccess()),l.registryAccess());l.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);}
         @Override public void close(){CaverVignette.clearAll();for(var p:players)l.getServer().getPlayerList().remove(p);
@@ -121,7 +124,12 @@ public final class CaverTests {
                 p.move(MoverType.SELF,new Vec3(0,0,-.14));return;}
             if(phase[0]==2){if(clock[0]<3)return;CaverVignette.playerTick(p);h.assertTrue(f.own(p).getBoolean("Squeezed")&&!CaverVignette.crawling(p),"the full physical squeeze reaches a standing chamber");
                 h.assertTrue(f.own(p).getLongArray("LinePath").length>=6,"the line paid out behind the reader through the squeeze: "+f.own(p).getLongArray("LinePath").length);
-                f.at(p,-2.5,-3,-39.5);f.click(p,CaverCave.MARK);f.at(p,4.5,-3,-41.5);
+                // Readers carry torches in a dark cave: the marks still answer, and no torch is set on them from either hand.
+                f.at(p,-2.5,-3,-39.5);p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.TORCH,4));var beside=f.b.offset(CaverCave.MARK).east();
+                h.assertTrue(f.use(p,CaverCave.MARK,Direction.EAST,InteractionHand.MAIN_HAND).consumesAction()&&f.own(p).getBoolean("MarkRead")&&f.l.getBlockState(beside).isAir()&&p.getMainHandItem().getCount()==4,"a torch in the main hand does not stop the reader examining the marks, and none is set on them");
+                p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);p.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(Items.TORCH,4));
+                h.assertTrue(f.use(p,CaverCave.MARK,Direction.EAST,InteractionHand.MAIN_HAND).consumesAction()&&!f.use(p,CaverCave.MARK,Direction.EAST,InteractionHand.OFF_HAND).consumesAction()&&f.l.getBlockState(beside).isAir()&&p.getOffhandItem().getCount()==4,"the client's following off-hand try sets no torch on the marks just read");
+                p.setItemInHand(InteractionHand.OFF_HAND,ItemStack.EMPTY);f.at(p,4.5,-3,-41.5);
                 CaverVignette.setBreath(f.l.getServer(),10);f.click(p,CaverCave.STONE);
                 h.assertTrue(!f.l.getBlockState(f.b.offset(CaverCave.STONE)).isAir()&&!f.own(p).getBoolean("StoneSeen"),"the stone stays in its seat while the cave breathes out");
                 CaverVignette.setBreath(f.l.getServer(),CaverVignette.INHALE_START+5);f.click(p,CaverCave.STONE);
@@ -219,7 +227,9 @@ public final class CaverTests {
             f.edit(who[0],o->o.putBoolean("MarkRead",true));f.edit(who[1],o->o.putBoolean("MarkRead",true));});
         h.runAfterDelay(44,()->{var p=who[0];var peer=who[1];int t=CaverVignette.breathTick(s);
             h.assertTrue(t>50&&t<=72,"one clock advances for everyone inside: "+t);
-            CaverVignette.setBreath(s,30);f.click(p,CaverCave.STONE);
+            CaverVignette.setBreath(s,30);p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.TORCH,3));
+            h.assertTrue(f.use(p,CaverCave.STONE,Direction.SOUTH,InteractionHand.MAIN_HAND).consumesAction()&&f.l.getBlockState(f.b.offset(CaverCave.STONE).south()).isAir()&&p.getMainHandItem().getCount()==3,"the stone answers a reader holding a torch, and no torch is set on it");
+            f.click(p,CaverCave.STONE);
             h.assertTrue(!f.own(p).getBoolean("StoneSeen")&&!f.l.getBlockState(f.b.offset(CaverCave.STONE)).isAir(),"while the cave breathes out the stone is pressed into its seat");
             CaverVignette.setBreath(s,CaverVignette.EXHALE_END+5);h.assertTrue(CaverVignette.breathing(s)==0,"a still moment follows the out-breath");f.click(p,CaverCave.STONE);
             h.assertTrue(!f.l.getBlockState(f.b.offset(CaverCave.STONE)).isAir(),"in the still moment it does not move either");
@@ -255,7 +265,7 @@ public final class CaverTests {
         for(int x=4;x<=5;x++)for(int z=-50;z<=-43;z++)f.l.setBlock(f.b.offset(x,-1,z),air,2);
         for(int x=2;x<=7;x++)for(int z=-57;z<=-50;z++)for(int y=-3;y<=1;y++)f.l.setBlock(f.b.offset(x,y,z),air,2);
         f.l.setBlock(f.b.offset(5,1,-52),Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL,2),2);
-        CaverCave.stone(f.l,f.b,false);
+        CaverCave.stone(f.l,f.b,false);f.l.setBlock(f.b.offset(CaverCave.MARK),Blocks.CHISELED_DEEPSLATE.defaultBlockState(),2);
         f.l.setBlock(f.b.offset(CaverCave.APERTURE),Blocks.CRACKED_DEEPSLATE_BRICKS.defaultBlockState(),2);
         for(int i=1;i<CaverCave.RUBBLE;i++)f.l.setBlock(f.b.offset(CaverCave.rubbleCell(i)),air,2);
     }
@@ -265,15 +275,16 @@ public final class CaverTests {
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.deepLoaded(),"wait for native chunks and entity sections in the deep cave")).thenExecute(()->{
             legacy(f);var d=f.data();var state=d.state(CaverVignette.ID);state.putInt("Work",12);d.setState(CaverVignette.ID,state);
             var done=d.state(CaverRedesign.STATE);done.remove(Long.toString(f.b.asLong()));d.setState(CaverRedesign.STATE,done);
+            var marked=d.state(CaverRedesign.MARKS);marked.remove(Long.toString(f.b.asLong()));d.setState(CaverRedesign.MARKS,marked);var mark=f.b.offset(CaverCave.MARK);
             h.assertTrue(reachable(f,f.b.offset(0,-3,-36)).stream().anyMatch(at->behindStone(f,at)),"the older cave really could be walked round its stone");
             var p=f.player();var torch=f.b.offset(3,-3,-44);f.l.setBlock(torch,Blocks.TORCH.defaultBlockState(),3);
             var placed=d.state(CaverVignette.ID);var torches=placed.getCompound("Torches");torches.putUUID(Long.toString(torch.asLong()),p.getUUID());placed.put("Torches",torches);d.setState(CaverVignette.ID,placed);
             f.at(p,.5,-3,-40.5);
-            h.assertTrue(!CaverRedesign.repair(f.l,f.b)&&f.l.getBlockState(torch).is(Blocks.TORCH)&&f.l.getBlockState(f.b.offset(4,-2,-54)).isAir(),"a reader in the deep cave sees nothing change");
+            h.assertTrue(!CaverRedesign.repair(f.l,f.b)&&f.l.getBlockState(torch).is(Blocks.TORCH)&&f.l.getBlockState(f.b.offset(4,-2,-54)).isAir()&&f.l.getBlockState(mark).is(Blocks.CHISELED_DEEPSLATE),"a reader in the deep cave sees nothing change");
             f.at(p,.5,0,-3.5);var stand=new ArmorStand(f.l,f.b.getX()+4.5,f.b.getY()-3,f.b.getZ()-54.5);f.l.addFreshEntity(stand);
             h.assertTrue(!CaverRedesign.repair(f.l,f.b)&&f.l.getBlockState(torch).is(Blocks.TORCH)&&f.l.getBlockState(f.b.offset(4,-2,-54)).isAir()&&f.l.getBlockState(f.b.offset(3,-3,-45)).isAir(),"nothing changes, anywhere, while new rock would close through a body in the chamber");
             stand.discard();
-            h.assertTrue(CaverRedesign.repair(f.l,f.b),"the reshaping finishes once the chamber is clear and unwatched");
+            h.assertTrue(CaverRedesign.repair(f.l,f.b)&&f.l.getBlockState(mark).is(LabyrinthRegistry.CAVE_MARKS.get())&&CaverRedesign.marked(f.data(),f.b),"the reshaping finishes once the chamber is clear and unwatched, and the dressed mark becomes marked rock");
             var barrel=(BarrelBlockEntity)f.l.getBlockEntity(f.b.offset(CaverCave.CACHE));
             h.assertTrue(!f.l.getBlockState(torch).isAir()&&!f.l.getBlockState(torch).is(Blocks.TORCH)&&barrel.getItem(2).is(Items.TORCH)&&barrel.getItem(2).getCount()==7&&CaverVignette.torchOwner(f.data(),torch)==null,"a torch standing where rock returns goes back to the camp barrel");
             h.assertTrue(f.l.getBlockState(f.b.offset(4,-2,-54)).is(Blocks.TUFF_SLAB)&&!f.l.getBlockState(f.b.offset(4,-1,-54)).isAir()&&f.l.getBlockState(f.b.offset(5,-3,-54)).is(Blocks.LIGHT)&&!f.l.getBlockState(f.b.offset(5,1,-52)).is(Blocks.LIGHT),"the chamber gets its low ceiling and keeps a faint light");
@@ -285,6 +296,11 @@ public final class CaverTests {
             var open=f.data().state(CaverVignette.ID);open.putInt("Work",24);f.data().setState(CaverVignette.ID,open);var again=f.data().state(CaverRedesign.STATE);again.remove(Long.toString(f.b.asLong()));f.data().setState(CaverRedesign.STATE,again);
             for(int i=0;i<CaverCave.RUBBLE;i++)f.l.setBlock(f.b.offset(CaverCave.rubbleCell(i)),Blocks.AIR.defaultBlockState(),2);
             h.assertTrue(CaverRedesign.repair(f.l,f.b)&&CaverCave.front(f.l,f.b)<0&&f.data().state(CaverVignette.ID).getInt("Work")==CaverVignette.STROKES,"an already opened crack is never packed again");
+            // A cave reshaped by 0.4.71 still has the dressed mark: it alone changes, once, and only unwatched.
+            f.l.setBlock(mark,Blocks.CHISELED_DEEPSLATE.defaultBlockState(),2);var again2=f.data().state(CaverRedesign.MARKS);again2.remove(Long.toString(f.b.asLong()));f.data().setState(CaverRedesign.MARKS,again2);
+            f.at(p,-2.5,-3,-39.5);h.assertTrue(!CaverRedesign.marks(f.l,f.b)&&f.l.getBlockState(mark).is(Blocks.CHISELED_DEEPSLATE),"the mark does not change while a reader can see it");
+            f.at(p,.5,0,-3.5);h.assertTrue(CaverRedesign.marks(f.l,f.b)&&f.l.getBlockState(mark).is(LabyrinthRegistry.CAVE_MARKS.get())&&CaverCave.isMark(f.l.getBlockState(mark)),"unwatched, the dressed mark becomes marked rock");
+            f.reload();h.assertTrue(CaverRedesign.marked(f.data(),f.b),"its checkpoint survives reload");
         }).thenSucceed();
     }
 }

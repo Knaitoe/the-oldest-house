@@ -57,7 +57,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.71"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.72"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/house/PlaytestLog.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
               hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
@@ -191,6 +191,9 @@ jobs:
               assert json.loads(z.read('assets/the_oldest_house/blockstates/cave_rubble.json'))['variants']['']['model'] == 'the_oldest_house:block/cave_rubble'
               assert z.read('assets/the_oldest_house/textures/block/cave_rubble.png').startswith(b'\x89PNG')
               assert 'the_oldest_house:cave_rubble' in json.loads(z.read('data/minecraft/tags/block/mineable/pickaxe.json'))['values']
+              # 0.4.72: the mark is cave rock with cuts under a crust, not a dressed block.
+              assert json.loads(z.read('assets/the_oldest_house/blockstates/cave_marks.json'))['variants']['']['model'] == 'the_oldest_house:block/cave_marks'
+              assert z.read('assets/the_oldest_house/textures/block/cave_marks.png').startswith(b'\x89PNG')
               caver_sounds = json.loads(z.read('assets/the_oldest_house/sounds.json'))
               for cue in ('exhale', 'inhale', 'scrape', 'line_taut', 'stone_roll', 'chisel'):
                   assert z.read(f'assets/the_oldest_house/sounds/caver/{cue}.ogg').startswith(b'OggS')
@@ -768,7 +771,7 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.71"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.72"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
@@ -843,8 +846,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.71.jar
-            build/libs/the_oldest_house-0.4.71.jar.sha256
+            build/libs/the_oldest_house-0.4.72.jar
+            build/libs/the_oldest_house-0.4.72.jar.sha256
           if-no-files-found: error
 
 

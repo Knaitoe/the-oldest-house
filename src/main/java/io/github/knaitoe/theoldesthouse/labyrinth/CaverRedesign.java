@@ -28,14 +28,32 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class CaverRedesign {
-    public static final String STATE="caver_0471";
+    public static final String STATE="caver_0471",MARKS="caver_marks_0472";
     /** Work at which an older cave's single crack was open. */
     static final int OLD_STROKES=24;
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private CaverRedesign(){}
 
     public static boolean done(LabyrinthData d,BlockPos b){return d.state(STATE).getBoolean(Long.toString(b.asLong()));}
-    static void markBuilt(LabyrinthData d,BlockPos b){var s=d.state(STATE);s.putBoolean(Long.toString(b.asLong()),true);d.setState(STATE,s);}
+    public static boolean marked(LabyrinthData d,BlockPos b){return d.state(MARKS).getBoolean(Long.toString(b.asLong()));}
+    static void markBuilt(LabyrinthData d,BlockPos b){check(d,STATE,b);check(d,MARKS,b);}
+    private static void check(LabyrinthData d,String id,BlockPos b){var s=d.state(id);s.putBoolean(Long.toString(b.asLong()),true);d.setState(id,s);}
+    /** No camera anywhere in the deep cave, and its chunks and entity sections loaded. */
+    private static boolean ready(ServerLevel l,BlockPos b){
+        if(l.players().stream().anyMatch(p->deep(b).intersects(p.getCamera().getBoundingBox())))return false;
+        for(int x=(b.getX()-10)>>4;x<=(b.getX()+11)>>4;x++)for(int z=(b.getZ()-61)>>4;z<=(b.getZ()-15)>>4;z++)
+            if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(ChunkPos.asLong(x,z)))return false;
+        return true;
+    }
+    /**
+     * 0.4.72: the dressed chiseled block older caves used for the mark becomes the marked rock, once ({@value #MARKS}). Same
+     * collision; it waits only for the cave to be loaded and unwatched.
+     */
+    public static boolean marks(ServerLevel l,BlockPos b){
+        var d=LabyrinthData.get(l.getServer());if(marked(d,b))return true;if(!ready(l,b))return false;
+        var at=b.offset(CaverCave.MARK);if(l.getBlockState(at).is(Blocks.CHISELED_DEEPSLATE))l.setBlock(at,LabyrinthRegistry.CAVE_MARKS.get().defaultBlockState(),F);
+        check(d,MARKS,b);return true;
+    }
     /** The deep cave beyond the corridor, where every change is made and where no camera may be. */
     public static AABB deep(BlockPos b){return new AABB(Vec3.atLowerCornerOf(b.offset(-10,-5,-61)),Vec3.atLowerCornerOf(b.offset(11,9,-15)));}
 
@@ -43,10 +61,7 @@ public final class CaverRedesign {
 
     /** Returns true once the cave has its new shape; false while it must wait. */
     public static boolean repair(ServerLevel l,BlockPos b){
-        var d=LabyrinthData.get(l.getServer());if(done(d,b))return true;
-        if(l.players().stream().anyMatch(p->deep(b).intersects(p.getCamera().getBoundingBox())))return false;
-        for(int x=(b.getX()-10)>>4;x<=(b.getX()+11)>>4;x++)for(int z=(b.getZ()-61)>>4;z<=(b.getZ()-15)>>4;z++)
-            if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(ChunkPos.asLong(x,z)))return false;
+        var d=LabyrinthData.get(l.getServer());if(done(d,b))return marks(l,b);if(!ready(l,b))return false;
         var bodies=l.getEntitiesOfClass(LivingEntity.class,deep(b),e->e.isAlive()&&!e.isSpectator());
         var plan=new ArrayList<Change>();
         // The bowl's back right becomes the stone's wall; the passage behind it loses its third block of height.
@@ -72,8 +87,8 @@ public final class CaverRedesign {
         // Everything can change: refund what stood in the new rock, then make it.
         for(var c:plan){if(c.refund()){refund(l,b,l.getBlockState(c.at()));CaverVignette.forgetTorch(d,c.at());}l.setBlock(c.at(),c.next(),F);}
         if(open&&work!=CaverVignette.STROKES){state.putInt("Work",CaverVignette.STROKES);d.setState(CaverVignette.ID,state);}
-        markBuilt(d,b);
-        return true;
+        check(d,STATE,b);
+        return marks(l,b);
     }
     private static boolean torch(BlockState s){return s.is(Blocks.TORCH)||s.is(Blocks.WALL_TORCH)||s.is(Blocks.SOUL_TORCH)||s.is(Blocks.SOUL_WALL_TORCH);}
     private static void rock(ServerLevel l,BlockPos b,int x,int y,int z,List<Change> plan){
@@ -108,6 +123,6 @@ public final class CaverRedesign {
         var origin=HouseSavedData.get(s).houseOrigin();if(origin==null)return;var data=LabyrinthData.get(s);var p=LabyrinthPlace.TED_CAVER;
         if(data.door(p.entryDoorId())==null||!LabyrinthBuilder.isPlaceReady(data,p))return;
         var b=LabyrinthPlaces.base(origin,p);var l=s.getLevel(NovelRooms.dimension(p));
-        if(b!=null&&l!=null&&!done(data,b))repair(l,b);
+        if(b!=null&&l!=null&&!(done(data,b)&&marked(data,b)))repair(l,b);
     }
 }

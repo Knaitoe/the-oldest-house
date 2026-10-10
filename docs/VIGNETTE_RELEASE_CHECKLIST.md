@@ -9,7 +9,11 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.71
+## Current candidate: 0.4.72
+
+Ted the Caver playtest fix: the marks, stone and front rubble answer a torch-holding hand, no off-hand torch lands on them, and the mark is a custom marked-rock block with a guarded once-only swap in saved caves. No change to the source or its resolution: 43 sources / 33 resolutions / two kinds / three endings. Layout 40 / protocol 46. See [the caver record](TED_CAVER_0_4_71.md).
+
+## Previous verified: 0.4.71
 
 Ted the Caver is reworked in its existing slot. TED_CAVER stays one eligible source with the same personal resolution (`retraced_the_squeeze`): still 43 sources / 33 resolutions / two kinds / three endings. Native coverage includes a walking-route search proving the stone is the only way on, front-block-only rubble mining and strokes, per-placer torch ownership, the shared breath clock and its inhale-only stone, each reader's own line, the 25-second low-chamber stay and full escape, later-arrival echoes and the guarded saved-cave reshaping with kept work and refunded torches. Layout 40 / protocol 45. Verified source `6f4c10d` (run 38082724316): all twelve jobs, 493 native cases and the 13 caver cases passed. See [the caver record](TED_CAVER_0_4_71.md).
 

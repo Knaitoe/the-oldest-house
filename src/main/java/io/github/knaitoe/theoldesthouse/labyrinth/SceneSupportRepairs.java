@@ -54,7 +54,7 @@ public final class SceneSupportRepairs {
     public static boolean cave(ServerLevel l,BlockPos b){
         var bodies=l.getEntitiesOfClass(LivingEntity.class,area(b,LabyrinthPlace.TED_CAVER),e->e.isAlive()&&!e.isSpectator());
         boolean ready=true;
-        if(BuildBlocks.state(l,b.offset(CaverCave.MARK)).is(Blocks.CHISELED_DEEPSLATE)){
+        if(CaverCave.isMark(BuildBlocks.state(l,b.offset(CaverCave.MARK)))){
             for(int x=-8;x<=-4;x++)for(int z=-41;z<=-40;z++)for(int y=-3;y<=-2;y++){
                 if(x==-4&&y==-2&&z==-40)continue;
                 var at=b.offset(x,y,z);
