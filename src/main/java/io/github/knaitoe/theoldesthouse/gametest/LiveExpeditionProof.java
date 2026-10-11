@@ -44,7 +44,7 @@ public final class LiveExpeditionProof {
     private static void require(boolean okay,String message){if(!okay)throw new IllegalStateException("LIVE EXPEDITION: "+message);}
     @SubscribeEvent public static void commands(RegisterCommandsEvent e) {
         if(!enabled())return;
-        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,39)).executes(c->{
+        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,42)).executes(c->{
             var p=c.getSource().getPlayerOrException();if(!role(p).isEmpty()&&IntegerArgumentType.getInteger(c,"step")==phase)ACKS.add(role(p));return 1;
         })));
     }
@@ -332,6 +332,13 @@ public final class LiveExpeditionProof {
             MobSightProof.checkManor(a,b);MobSightProof.depart(a,b);step(s,39,MobSightProof.OUTSIDE_VIEW);
         }else if(phase==39&&a!=null&&b!=null&&ACKS.size()==2){
             MobSightProof.finish(a);
+            CampBedSocketProof.begin(a,b,ORIGIN);step(s,40,CampBedSocketProof.bed(a));marker(b,40,CampBedSocketProof.bed(b));
+        }else if(phase==40&&a!=null&&b!=null&&ACKS.size()==2){
+            CampBedSocketProof.hidden(a,b);step(s,41,CampBedSocketProof.bed(a));marker(b,41,CampBedSocketProof.bed(b));
+        }else if(phase==41&&a!=null&&b!=null&&ACKS.size()==2){
+            CampBedSocketProof.left(a,b,ORIGIN);step(s,42,a.blockPosition());
+        }else if(phase==42&&a!=null&&b!=null&&ACKS.size()==2){
+            CampBedSocketProof.finish(a);
             step(s,30,a.blockPosition());write("passed.txt","Two actual NeoForge socket clients: all original shared doors, personal leaves/burns/note scenes and two same-profile reconnects; one Stacy body and one three-second wooden-door break; real shared/private physical hunts, protected hiding peers and renderer ownership; both mine and crawl through persistent shattered portholes with protected hull; both use cameras, return actual rendered exposures, receive distinct locked native maps and independently earn their own Plains memory; a shared native ledger remains hidden for both, appears for the sole eligible reader and disappears after native menu collection without appearing for the peer; fresh trailer door arrivals track eight shared cousins and each private path girl; both clients render distinct fear and priority night dialogue and receive spatial knock events; native screenshots saved; no doubled clocks or transferred ending credit.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: persistent shattered portholes, two actual camera exposures, independent ending-book visibility, fresh trailer children and two reconnects");
         }else if(phase==30&&s.getTickCount()-changed>100){huntChunks.close();s.halt(false);}
     }

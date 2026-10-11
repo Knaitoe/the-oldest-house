@@ -231,6 +231,17 @@ public final class LiveExpeditionClient {
         if(step>=37&&step<=39&&ack!=step&&MobSightClientProof.ready(mc,step,ticks,role)){
             if(step!=39)shot=role+(step==37?"-outside-mob-sight":"-window-mob-sight");ack(mc,step);
         }
+        if(step==40){mc.options.keyShift.setDown(false);mc.player.setYRot(180);mc.player.setXRot(0);
+            if(mc.player.getForcedPose()!=net.minecraft.world.entity.Pose.SWIMMING){mc.options.keyUp.setDown(false);if(ticks>12)click(mc,target,ticks);}
+            else if(io.github.knaitoe.theoldesthouse.labyrinth.CampBedCrawl.under(mc.player)&&mc.player.getZ()<target.getZ()+.8){mc.options.keyUp.setDown(false);if(ack!=40){shot=role+"-camp-bed-hidden";ack(mc,40);}}
+            else mc.options.keyUp.setDown(true);
+        }
+        if(step==41){mc.player.setYRot(0);mc.player.setXRot(0);mc.options.keyShift.setDown(false);mc.options.keyUp.setDown(true);
+            if(ticks>20&&mc.player.getZ()>target.getZ()+2&&mc.player.getForcedPose()==null&&mc.player.getBbHeight()>1&&ack!=41){mc.options.keyUp.setDown(false);shot=role+"-camp-bed-left";ack(mc,41);}}
+        if(step==42){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);
+            if(mc.screen instanceof PawClutchClient.Focus focus){if(focus.fingers()!=(role.equals("A")?2:1))throw new IllegalStateException("LIVE PAW: peer's finger count reached the wrong client");if(focus.age()==32)shot=role+"-paw-clutch";}
+            if(ticks>80&&mc.screen==null&&ack!=42)ack(mc,42);
+        }
         if(step==30&&ticks==30){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);mc.options.keyUse.setDown(false);mc.stop();}
     }
     private static boolean open(net.minecraft.world.level.block.state.BlockState s){return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}

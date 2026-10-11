@@ -194,7 +194,7 @@ public final class LiteraryRenderers {
         /** Carcasses and bodies reach past their own block; keep them drawn while any of them is in view. */
         @Override public net.minecraft.world.phys.AABB getRenderBoundingBox(LiteraryModelBlockEntity e){
             if(e.getBlockState().is(LiteraryRegistry.PROP.get())&&e.getBlockState().getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.FAN)
-                return new net.minecraft.world.phys.AABB(e.getBlockPos().offset(-3,-LiteraryRooms.FAN.getY(),-3),e.getBlockPos().offset(4,3,4));
+                return new net.minecraft.world.phys.AABB(net.minecraft.world.phys.Vec3.atLowerCornerOf(e.getBlockPos().offset(-3,-LiteraryRooms.FAN.getY(),-3)),net.minecraft.world.phys.Vec3.atLowerCornerOf(e.getBlockPos().offset(4,3,4)));
             return new net.minecraft.world.phys.AABB(e.getBlockPos()).inflate(2);
         }
     }

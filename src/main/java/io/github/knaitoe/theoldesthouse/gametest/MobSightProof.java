@@ -39,7 +39,7 @@ public final class MobSightProof {
         chunks.hold(level, new AABB(at).inflate(3));
         for (int x = -2; x <= 2; x++) for (int z = -2; z <= 2; z++)
             for (int y = -1; y <= 2; y++) level.setBlock(at.offset(x, y, z),
-                    (y == -1 ? Blocks.STONE : Blocks.AIR).defaultBlockState(), 3);
+                    (y == -1 ? Blocks.SEA_LANTERN : Blocks.AIR).defaultBlockState(), 3);
     }
     private static void arrive(ServerPlayer player, ServerLevel level, BlockPos at, double side) {
         player.teleportTo(level, at.getX() + .5 + side, at.getY(), at.getZ() + .5, 0, 0);
@@ -69,6 +69,13 @@ public final class MobSightProof {
         if (a == null || b == null) return;ticks++;
         if (!staged) {
             if (!chunks.ready()) return;
+            // These throwaway test coordinates are natural terrain, not a built manor.
+            // Clear only the loaded sight corridor so a real screenshot can see the tracked body.
+            BlockPos view=phase==37?OUTSIDE_VIEW:manorView;int direction=phase==37?1:-1;
+            if(!sightCorridor(a.serverLevel(),view,direction,false))return;
+            if(phase==38&&!sightCorridor(a.server.overworld(),view,direction,false))return;
+            sightCorridor(a.serverLevel(),view,direction,true);
+            if(phase==38){sightCorridor(a.server.overworld(),view,direction,true);window(a.serverLevel(),view);window(a.server.overworld(),view);}
             if (phase == 37) {
                 wolf = wolf(a.serverLevel(), OUTSIDE_VIEW.offset(70, 0, 70), WOLF);
                 actorA = actor(a, OUTSIDE_VIEW.offset(67, 0, 70), PRIVATE_A);
@@ -85,6 +92,15 @@ public final class MobSightProof {
             source.setYRot(ticks % 90);source.setYHeadRot(ticks % 90);source.setDeltaMovement(new Vec3(.15, 0, 0));
         }
     }
+    private static boolean sightCorridor(ServerLevel l,BlockPos view,int direction,boolean carve){
+        for(int t=0;t<=72;t++)for(int x=-2;x<=2;x++)for(int z=-2;z<=2;z++){
+            var at=view.offset(t+x,0,direction*t+z);
+            if(l.getChunkSource().getChunkNow(at.getX()>>4,at.getZ()>>4)==null)return false;
+            if(carve)for(int y=0;y<4;y++)l.setBlock(at.above(y),Blocks.AIR.defaultBlockState(),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS);
+        }return true;
+    }
+    private static void window(ServerLevel l,BlockPos view){for(int x=0;x<=4;x++)for(int y=0;y<=3;y++)l.setBlock(view.offset(x,y,-2),
+        (x==0||x==4||y==3?Blocks.SPRUCE_PLANKS:Blocks.GLASS).defaultBlockState(),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS);}
     public static void checkOutside(ServerPlayer a, ServerPlayer b) {
         require(staged && a.distanceToSqr(wolf) > 80 * 80 && b.distanceToSqr(wolf) > 80 * 80,
                 "moving native wolf is beyond the former server distance gate");
