@@ -86,4 +86,6 @@ A reader whose part has started but who no longer carries their paw can pull it 
   - Architecture checks the new interior (rug, reachable source and ending) and exports its view: 88 architecture views.
 - **Build checks.** The build job checks the 128-variant blockstate and its models, the textures, the six sounds and their subtitles, the paw item's overrides and images, the skins and the classes.
 
-Exact-source validation is pending.
+## Verification
+
+The first run (`38173254408`, `1175e57`) did not compile. The paw cases read two of the night's timings, which were package-private; `356b13e` made them public. Run `38173492715` on `356b13e` passed eleven of twelve jobs, including the literary job with the three paw cases. It was cancelled while the build job was still running, because the drawn art superseded it. Verified source `8762577` (run `38174200201`): all twelve jobs, 537 native cases and 88 architecture views passed. This includes the full native suite, the client proofs and every focused job.
