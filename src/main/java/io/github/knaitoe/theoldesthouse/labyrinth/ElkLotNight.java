@@ -186,6 +186,8 @@ public final class ElkLotNight {
     static void restElk(ServerLevel l,BlockPos b){var d=LabyrinthData.get(l.getServer());var w=LiteraryVignettes.shared(d,PLACE);var e=elk(l,w);if(e!=null)hide(l,b,e);}
     private static void elk(ServerLevel l,BlockPos b,CompoundTag w,int t,List<ServerPlayer> here){
         var e=elk(l,w);if(e==null)return;e.setInvisible(false);e.setNoGravity(true);int stage=w.getInt("ElkStage"),leg=w.getInt("ElkLeg");
+        // Earlier saved nights may already be beyond impact on an unwounded body.
+        if(stage>=3&&!e.wounded())e.wound();
         switch(stage){
             case 1->{ // Over the fence: an arc from the dark beyond the road.
                 double f=Math.min(1,t/(double)LEAP);var at=rel(b,24.5+(21.5-24.5)*f,.5+(-2.5-.5)*f);e.moveTo(at.x,at.y+1.6*Math.sin(Math.PI*f),at.z,90,0);turn(e,120);
@@ -216,6 +218,7 @@ public final class ElkLotNight {
         }
     }
     private static void impact(ServerLevel l,BlockPos b,CompoundTag w,LiteraryElk e,List<ServerPlayer> here){
+        e.wound();
         var at=b.offset(ElkLot.dent());var st=l.getBlockState(at);if(RoadhouseBlock.is(st,Kind.PU_DOOR))l.setBlock(at,st.setValue(RoadhouseBlock.KIND,Kind.PU_DOOR_DENT),Block.UPDATE_CLIENTS);
         l.playSound(null,at,LiteraryRegistry.LOT_CRASH.get(),SoundSource.BLOCKS,2.5F,1F);l.playSound(null,at,SoundEvents.GLASS_BREAK,SoundSource.BLOCKS,1.2F,.8F);
         l.sendParticles(ParticleTypes.CRIT,at.getX()+.2,at.getY()+1,at.getZ()+.5,18,.3,.4,.4,.2);l.sendParticles(ParticleTypes.POOF,at.getX()+.2,at.getY()+.6,at.getZ()+.5,8,.3,.3,.3,.02);

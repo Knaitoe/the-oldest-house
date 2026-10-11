@@ -34,7 +34,7 @@ public final class ElkFanRoom {
                 &&Math.abs(p.getZ()-b.getZ()+16.5)<1.2&&standing(p.serverLevel(),b);
     }
     public static boolean repair(ServerLevel l,BlockPos b){
-        var area=new AABB(b.offset(-1,-1,-21),b.offset(2,9,-12));
+        var area=new AABB(net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(-1,-1,-21)),net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(2,9,-12)));
         if(!ScenePolish.loaded(l,area,b)||l.players().stream().anyMatch(p->area.inflate(24).intersects(p.getCamera().getBoundingBox()))
                 ||!l.getEntitiesOfClass(Entity.class,area,e->e.isAlive()).isEmpty())return false;
         var cells=new LinkedHashMap<BlockPos,BlockState>();

@@ -49,7 +49,7 @@
         512,
         256
       ],
-      "sha256": "ee054ef3558e0752d6404055106d929d16ff3f85bd4f54acf182f1a18e24670a"
+      "sha256": "b1cbf396e7e01f4cfcc7c33a2380ad572dd193c3badecac735cace7d7ea36948"
     },
     {
       "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_elk_carcass_skinned.png",
@@ -97,7 +97,7 @@
         512,
         256
       ],
-      "sha256": "ef5f30794d28dfc0b9c3974c885b0d2bdb279ae247f4490941e08ab365627b70"
+      "sha256": "a73cccf8a606ddb18665c713a381f3d3735e0b8c7b8fe95bbfcaf92f8c4fe180"
     }
   ],
   "generators": [
