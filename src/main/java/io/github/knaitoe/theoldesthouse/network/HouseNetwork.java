@@ -13,7 +13,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("54")
+        event.registrar("55")
                 .playToClient(HazardViewPayload.TYPE,HazardViewPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.HazardClient.accept(payload)))
                 .playToClient(EndingBookPayload.TYPE,EndingBookPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.EndingBookClient.accept(payload)))
                 .playToClient(PlainExposurePayload.TYPE,PlainExposurePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PlainCameraClient.expose(payload)))
@@ -23,6 +23,8 @@ public final class HouseNetwork {
                 .playToClient(StaircaseLeakPayload.TYPE,StaircaseLeakPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.StaircaseLeakClient.accept(payload)))
                 .playToClient(BurnEmbersPayload.TYPE,BurnEmbersPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.BurnEmbersClient.accept(payload)))
                 .playToClient(LiteraryViewPayload.TYPE,LiteraryViewPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.LiteraryView.accept(payload)))
+                .playToClient(PawClutchPayload.TYPE,PawClutchPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PawClutchClient.accept(payload)))
+                .playToClient(CampBedPayload.TYPE,CampBedPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.CampBedClient.accept(payload)))
                 .playToClient(HotelAtmospherePayload.TYPE,HotelAtmospherePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.HotelAtmosphere.accept(payload)))
                 .playToClient(SeanceViewPayload.TYPE,SeanceViewPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.SeanceView.accept(payload)))
                 .playToClient(StaircaseLightPayload.TYPE,StaircaseLightPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.StaircaseDarkness.accept(payload)))

@@ -247,7 +247,21 @@ jobs:
               assert 'HouseMobRenderMixin' in json.loads(z.read('the_oldest_house.mixins.json'))['client']
               # 0.4.81: Three Fingers, one cottage block, six subtitled cues, the withered paw and five cottage skins.
               cottage = json.loads(z.read('assets/the_oldest_house/blockstates/cottage.json'))['variants']
-              assert len(cottage) == 128, len(cottage)
+              assert len(cottage) == 136, len(cottage)
+              camp = json.loads(z.read('assets/the_oldest_house/blockstates/camp_decor.json'))['variants']
+              assert len(camp) == 288, len(camp)
+              for variant in camp.values():
+                  model = json.loads(z.read(variant['model'].replace('the_oldest_house:', 'assets/the_oldest_house/models/') + '.json'))
+                  assert model['elements'], variant
+              for name in ('bed_head', 'bed_foot'):
+                  mesh = json.loads(z.read(f'assets/the_oldest_house/models/block/camp_{name}_0.json'))
+                  assert mesh['elements'][0]['from'][1] == 12, name
+                  assert mesh['elements'][0]['to'][1] == 16, name
+                  assert all(b['to'][0]-b['from'][0] <= 2 or b['from'][1] >= 12 for b in mesh['elements'][1:]), name
+              for name in ('labyrinth/CampBedCrawl','labyrinth/CampDecorBlock','labyrinth/CampBloodDecor','labyrinth/PlaytestSceneRepairs','labyrinth/MillLetterItem','client/CampBedClient','client/PawClutchClient','client/Playtest0483VisualProof','network/CampBedPayload','network/PawClutchPayload'):
+                  assert f'io/github/knaitoe/theoldesthouse/{name}.class' in z.namelist(), name
+              assert z.read('assets/the_oldest_house/textures/entity/paw_clutch.png').startswith(b'\x89PNG')
+              assert z.read('assets/the_oldest_house/textures/item/mill_letter.png').startswith(b'\x89PNG')
               for variant in cottage.values():
                   assert variant['model'].replace('the_oldest_house:', 'assets/the_oldest_house/models/') + '.json' in z.namelist(), variant['model']
               for name in ('whitewash','wallpaper','wainscot','flagstone','thatch','range_front','kettle','dresser_plates','mantel','clock','sampler','pocketbook','bible','lamp_lit','lamp_dim','milestone','doorstep'):
@@ -602,6 +616,8 @@ jobs:
           test -s build/font-smoke/elk-passed.txt
           test -s build/font-smoke/native-elk.png
           test -s build/font-smoke/elk-fan0480-passed.txt
+          test -s build/font-smoke/playtest0483-passed.txt
+          for view in fan-floor camp-bunk camp-decor cottage-chess paw-open paw-curl paw-closed; do test -s build/font-smoke/native-playtest0483-$view.png; done
           for view in front back night ladder-front ladder-side; do test -s build/font-smoke/native-elk-fan0480-$view.png; done
           test -s build/font-smoke/goatman-passed.txt
           test -s build/font-smoke/playtest-assets-passed.txt

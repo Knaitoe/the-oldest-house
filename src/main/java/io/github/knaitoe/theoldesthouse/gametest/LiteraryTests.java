@@ -549,6 +549,24 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         }).thenSucceed();
     }
     @AfterBatch(batch="literary_paw_news") public static void pawNewsDone(ServerLevel l){close();}
+    @AfterBatch(batch="literary_paw_letter0483") public static void pawLetterDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="literary_paw_letter0483",timeoutTicks=400)
+    public static void theMillEnvelopeOpensARealLetterAndNeverPaysTheCompensationTwice(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.THREE_FINGERS;var p=f.player("mill_letter_reader",place);var peer=f.player("mill_letter_peer",place);
+        h.assertTrue(CottageBlock.is(f.in.getBlockState(f.base(place).offset(-6,1,-11)),CottageBlock.Kind.CHESSBOARD),"the physical chessmen stand on the table between the two seats");
+        pawState(f,p,ThreeFingers.WISHED,2,own->{own.putString("Wish1",ThreeFingers.MONEY);own.putInt("WishVisit",own.getInt("Visit"));});f.arrive(p,place);
+        var start=f.own(p,place);start.putInt("T",2000);LiteraryVignettes.save(f.data(),p.getUUID(),place,start);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.own(p,place).getInt("Stage")==ThreeFingers.MOURNING,"the messenger delivers the real compensation"))
+        .thenExecute(()->{int slot=-1;for(int i=0;i<9;i++)if(p.getInventory().getItem(i).is(LiteraryRegistry.MILL_LETTER.get()))slot=i;
+            h.assertTrue(slot>=0&&p.getInventory().countItem(Items.EMERALD)==7&&p.getInventory().countItem(Items.GOLD_INGOT)==3,"one readable envelope arrives with the finite exact payment");
+            p.getInventory().selected=slot;var original=p.getMainHandItem();original.getItem().use(f.in,p,InteractionHand.MAIN_HAND);
+            h.assertTrue(p.containerMenu instanceof net.minecraft.world.inventory.LecternMenu,"normal item use opens a native private letter view");
+            var menu=p.containerMenu;h.assertTrue(menu.clickMenuButton(p,2)&&!menu.clickMenuButton(p,3),"the actual second page can be read and the private display cannot mint another envelope");p.closeContainer();
+            MillLetterItem.upgrade(p);ThreeFingers.reader(p,f.base(place),f.own(p,place));
+            h.assertTrue(p.getMainHandItem()==original&&p.getInventory().countItem(Items.EMERALD)==7&&p.getInventory().countItem(Items.GOLD_INGOT)==3&&peer.getInventory().countItem(LiteraryRegistry.MILL_LETTER.get())==0,"reading preserves the exact original and pays nobody again");
+            h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0&&WitnessAccount.count(f.data(),peer.getUUID())==0,"the compensation letter is not an ending or peer progression");
+        }).thenSucceed();
+    }
     @GameTest(template="empty",batch="literary_paw_endings",timeoutTicks=300)
     public static void theLastWishTheFireAndALostPawEachEndOrResumeTheirOwnReadersPart(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.THREE_FINGERS;var last=f.player("last_wisher",place);var burner=f.player("paw_burner",place);var loser=f.player("paw_loser",place);var early=f.player("early_burner",place);

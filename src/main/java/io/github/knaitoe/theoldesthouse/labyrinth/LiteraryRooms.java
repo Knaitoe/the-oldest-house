@@ -175,6 +175,7 @@ public final class LiteraryRooms {
     private static void camp(ServerLevel l,BlockPos b){
         terrain(l,b,LabyrinthPlace.CAMP_BLOOD,Blocks.PODZOL);for(int x:new int[]{-20,20})for(int z:new int[]{-26,-57,-83}){room(l,b,x-8,x+8,z-7,z+7,0,5,Blocks.SPRUCE_PLANKS,Blocks.SPRUCE_PLANKS);door(l,b,x+(x<0?8:-8),0,z,Direction.EAST,true);for(int dx:new int[]{-5,5}){NovelRooms.bed(l,b.offset(x+dx,0,z-4),Blocks.RED_BED,Direction.NORTH);furniture(l,b,x+dx,0,z+3,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.NORTH);}for(int zz=z-8;zz<=z+8;zz++)box(l,b,x-9,5,zz,x+9,5,zz,Blocks.SPRUCE_SLAB);roof(l,b,x-8,x+8,z-7,z+7,5);window(l,b,x,z-7,false);light(l,b,x,3,z);}
         for(int z=-8;z>=-98;z--)box(l,b,-2,-1,z,2,-1,z,Blocks.GRAVEL);at(l,b,6,0,-45,Blocks.CAMPFIRE);NovelRooms.sign(l,b.offset(4,1,-97),Direction.SOUTH,new String[]{"SERVICE ROAD","No camp traffic","",""});
+        CampBloodDecor.build(l,b);
     }
     private static void diary(ServerLevel l,BlockPos b){
         room(l,b,-16,16,-42,0,0,8,Blocks.CALCITE,Blocks.OAK_PLANKS);room(l,b,-14,-3,-38,-20,0,4,Blocks.CALCITE,Blocks.OAK_PLANKS);door(l,b,-3,0,-27,Direction.EAST,true);NovelRooms.bed(l,b.offset(-10,0,-33),Blocks.BLUE_BED,Direction.NORTH);desk(l,b,-8,0,-21);

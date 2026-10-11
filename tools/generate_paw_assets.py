@@ -447,7 +447,7 @@ def models():
 
 
 KINDS = ['wallpaper', 'wainscot', 'flagstone', 'whitewash', 'thatch', 'range', 'kettle', 'dresser', 'dresser_top', 'mantel', 'sampler',
-         'pocketbook', 'bible', 'lamp_head', 'milestone', 'doorstep']
+         'pocketbook', 'bible', 'lamp_head', 'milestone', 'doorstep', 'chessboard']
 TURN = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 
 

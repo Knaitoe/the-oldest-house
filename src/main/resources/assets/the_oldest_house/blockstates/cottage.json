@@ -455,6 +455,36 @@
   "facing=west,kind=doorstep,stage=1": {
    "model": "the_oldest_house:block/cottage_doorstep",
    "y": 270
+  },
+  "facing=north,kind=chessboard,stage=0": {
+   "model": "the_oldest_house:block/cottage_chessboard"
+  },
+  "facing=north,kind=chessboard,stage=1": {
+   "model": "the_oldest_house:block/cottage_chessboard"
+  },
+  "facing=east,kind=chessboard,stage=0": {
+   "model": "the_oldest_house:block/cottage_chessboard",
+   "y": 90
+  },
+  "facing=east,kind=chessboard,stage=1": {
+   "model": "the_oldest_house:block/cottage_chessboard",
+   "y": 90
+  },
+  "facing=south,kind=chessboard,stage=0": {
+   "model": "the_oldest_house:block/cottage_chessboard",
+   "y": 180
+  },
+  "facing=south,kind=chessboard,stage=1": {
+   "model": "the_oldest_house:block/cottage_chessboard",
+   "y": 180
+  },
+  "facing=west,kind=chessboard,stage=0": {
+   "model": "the_oldest_house:block/cottage_chessboard",
+   "y": 270
+  },
+  "facing=west,kind=chessboard,stage=1": {
+   "model": "the_oldest_house:block/cottage_chessboard",
+   "y": 270
   }
  }
 }

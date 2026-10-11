@@ -16,8 +16,8 @@ import net.minecraft.world.phys.Vec3;
 public final class KillerNavigation {
     private static final String STATE="ElkMovement0460";
     public static final int BLOCKED_LIMIT=60;
-    /** 5.34 blocks/second: just below the ordinary player's 5.61-block sprint. */
-    public static final double CHASE_STEP=.267;
+    /** Ten percent slower than the former 5.34-block/second chase. */
+    public static final double CHASE_STEP=.267*.9;
     private final Deque<BlockPos> route=new ArrayDeque<>();
     private Vec3 goal;
     private int plannedAt=-20;
@@ -58,7 +58,7 @@ public final class KillerNavigation {
             route.addAll(CarcassHunt.pathOnPlane(a,base,start,end,plane,false,avoid));
             if(route.isEmpty())route.addAll(CarcassHunt.pathOnPlane(a,base,start,end,plane,true,avoid));
         }
-        if(route.isEmpty())a.getNavigation().moveTo(goal.x,goal.y,goal.z,s.getDouble("Speed"));
+        if(route.isEmpty())a.getNavigation().moveTo(goal.x,goal.y,goal.z,s.getDouble("Speed")*.9);
     }
     /** Empty/offline/observer readers never advance a private movement or failed-route clock. */
     public boolean prepare(LiteraryActor a){
@@ -94,7 +94,7 @@ public final class KillerNavigation {
         while(!route.isEmpty()&&a.position().distanceToSqr(Vec3.atBottomCenterOf(route.peekFirst()))<.12)route.removeFirst();
         if(!route.isEmpty()){
             var delta=Vec3.atBottomCenterOf(route.peekFirst()).subtract(a.position()).multiply(1,0,1);
-            if(delta.lengthSqr()>.001){var step=delta.normalize().scale(Math.min(Math.min(CHASE_STEP,.24*s.getDouble("Speed")),delta.length()));
+            if(delta.lengthSqr()>.001){var step=delta.normalize().scale(Math.min(Math.min(CHASE_STEP,.24*.9*s.getDouble("Speed")),delta.length()));
                 CarcassHunt.clearLeaves(a,step);a.move(MoverType.SELF,step);a.setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));a.yBodyRot=a.getYRot();
                 a.walkAnimation.update((float)a.position().distanceTo(before)*4,.4F);
             }

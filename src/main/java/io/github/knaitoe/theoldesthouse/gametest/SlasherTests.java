@@ -42,6 +42,37 @@ public final class SlasherTests {
             var store=l.getServer().overworld().getDataStorage();store.set("the_oldest_house",oldHouse);store.set("the_oldest_house_labyrinth",oldData);}chunks.close();active=null;}
     }
     private static void run(GameTestHelper h,int coordinate,Consumer<Fixture> check){var f=new Fixture(h,coordinate);h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native forest chunks and entity sections ready")).thenExecute(()->{f.start();check.accept(f);});}
+    @AfterBatch(batch="camp_bed0483") public static void bedDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="camp_clock0483") public static void clockDone(ServerLevel l){cleanup();}
+    @GameTest(template="empty",batch="camp_bed0483",timeoutTicks=1800)
+    public static void nativeRaisedBedAllowsCrawlingHidesFromTheSlasherAndRestoresThePose(GameTestHelper h){run(h,1264500,f->{
+        f.corridor();var bed=f.base.offset(0,0,-33);f.l.setBlock(bed,CampDecorBlock.of(CampDecorBlock.Kind.BED_FOOT,net.minecraft.core.Direction.NORTH,0),3);
+        f.l.setBlock(bed.north(),CampDecorBlock.of(CampDecorBlock.Kind.BED_HEAD,net.minecraft.core.Direction.NORTH,0),3);
+        var p=f.player("camp_bed_reader",.5,-31.5);var a=f.actor(.5,-39.5);var original=a.getUUID();final boolean[] walk={false};
+        p.setYRot(180);p.setOnGround(true);
+        var hit=new BlockHitResult(bed.getCenter(),net.minecraft.core.Direction.SOUTH,bed,false);
+        p.gameMode.useItemOn(p,f.l,net.minecraft.world.item.ItemStack.EMPTY,net.minecraft.world.InteractionHand.MAIN_HAND,hit);
+        h.assertTrue(p.getForcedPose()==Pose.SWIMMING&&p.getBbHeight()<.7,"a normal native bed click creates an actual crawl-sized body");walk[0]=true;
+        h.onEachTick(()->{if(active==f&&walk[0]){p.setYRot(180);p.travel(new Vec3(0,0,1));}});
+        h.startSequence().thenWaitUntil(()->h.assertTrue(CampBedCrawl.under(p)&&p.getZ()<bed.getZ()+.8,"native movement crosses under the mattress rather than teleporting: "+p.position().subtract(Vec3.atLowerCornerOf(f.base))))
+        .thenExecute(()->{walk[0]=false;p.setDeltaMovement(Vec3.ZERO);
+            h.assertTrue(f.l.noCollision(p,p.getBoundingBox())&&!CarcassHunt.sees(a,p),"the real low body fits between four legs and the slasher cannot see it");
+        }).thenIdle(30).thenExecute(()->{
+            h.assertTrue(a.getUUID().equals(original)&&WitnessAccount.count(LabyrinthData.get(f.l.getServer()),p.getUUID())==0,"hiding preserves the hunter and grants no story credit");
+            p.moveTo(f.base.getX()+.5,f.base.getY(),f.base.getZ()-30.5);CampBedCrawl.clear(p);
+            h.assertTrue(p.getForcedPose()==null&&p.getPose()!=Pose.SWIMMING&&p.getBbHeight()>1,"leaving restores the original full body without an attribute change");
+            CampBedCrawl.begin(p,bed);CampBedCrawl.clear(p);h.assertTrue(p.getForcedPose()==null,"lifecycle cleanup is repeatable");f.done();
+        });
+    });}
+    @GameTest(template="empty",batch="camp_clock0483",timeoutTicks=1800)
+    public static void sharedSlasherWaitsAnAdditionalThreeSecondsBetweenSwings(GameTestHelper h){run(h,1265000,f->{
+        f.corridor();var p=f.player("camp_clock_reader",.5,-33.5);var peer=f.player("camp_clock_peer",1.2,-33.5);var a=f.actor(.5,-34.5);
+        int[] swings={0},last={0};h.onEachTick(()->{if(active==f){int delay=a.getPersistentData().getCompound("CarcassSearch0455").getInt("AttackDelay");if(delay==CarcassHunt.ATTACK_DELAY&&last[0]!=delay)swings[0]++;last[0]=delay;}});
+        h.startSequence().thenWaitUntil(()->h.assertTrue(swings[0]==1,"one physical swing starts the shared clock"))
+        .thenIdle(80).thenExecute(()->h.assertTrue(swings[0]==1,"two eligible readers cannot shorten the 90-tick interval"))
+        .thenWaitUntil(()->h.assertTrue(swings[0]==2,"the same hunter attacks again after 4.5 seconds, not every 1.5 seconds"))
+        .thenExecute(()->{h.assertTrue(ElkHunt.ATTACK_DELAY==CarcassHunt.ATTACK_DELAY&&Math.abs(KillerNavigation.CHASE_STEP-.2403)<.000001,"both slasher circuits share the longer interval and ten-percent speed reduction");f.done();});
+    });}
     private static void privateRun(GameTestHelper h,int coordinate,Consumer<Fixture> check){var f=new Fixture(h,coordinate,LabyrinthPlace.ELK_CARCASSES);h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native private hunt chunks ready")).thenExecute(()->{f.start();check.accept(f);});}
     private static LiteraryActor privateActor(Fixture f,ServerPlayer reader){
         for(var p:f.players){var d=LabyrinthData.get(f.l.getServer());var own=LiteraryVignettes.personal(d,p.getUUID(),f.scene);own.putBoolean("Interrupted",true);LiteraryVignettes.save(d,p.getUUID(),f.scene,own);}

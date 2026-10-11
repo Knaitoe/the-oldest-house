@@ -17,6 +17,7 @@ import net.neoforged.neoforge.event.EventHooks;
 public final class CarcassHunt {
     private static final String STATE="CarcassSearch0455";
     public static final int BLOCKED_LIMIT=80;
+    public static final int ATTACK_DELAY=90;
     private final Map<UUID,Vec3> lastPositions=new HashMap<>();
     private final Deque<BlockPos> route=new ArrayDeque<>();
     private BlockPos routeGoal;
@@ -32,6 +33,7 @@ public final class CarcassHunt {
     }
     private static LabyrinthPlace scene(LiteraryActor a){return a.scene().equals(LabyrinthPlace.CAMP_BLOOD.id())?LabyrinthPlace.CAMP_BLOOD:LabyrinthPlace.ELK_CARCASSES;}
     public static boolean sees(LiteraryActor a,ServerPlayer p){
+        if(a.scene().equals(LabyrinthPlace.CAMP_BLOOD.id())&&CampBedCrawl.under(p))return false;
         var origin=io.github.knaitoe.theoldesthouse.house.HouseSavedData.get(p.server).houseOrigin();
         if(origin!=null&&a.distanceToSqr(p)>9&&concealed(p,LabyrinthPlaces.base(origin,scene(a))))return false;
         return a.distanceToSqr(p)<42*42&&a.level().clip(new ClipContext(a.getEyePosition(),p.getEyePosition(),
@@ -133,7 +135,7 @@ public final class CarcassHunt {
         if(s.getInt("AvoidTicks0459")>0)s.putInt("AvoidTicks0459",s.getInt("AvoidTicks0459")-1);a.getPersistentData().put(STATE,s);
         ServerPlayer found=null;double nearest=Double.MAX_VALUE;
         for(var p:readers){var last=lastPositions.put(p.getUUID(),p.position());double moved=last==null?0:last.distanceToSqr(p.position());
-            boolean heard=moved>.004&&(p.isSprinting()||!p.isShiftKeyDown())&&a.distanceToSqr(p)<(p.isSprinting()?32*32:12*12);
+            boolean heard=moved>.004&&!CampBedCrawl.under(p)&&(p.isSprinting()||!p.isShiftKeyDown())&&a.distanceToSqr(p)<(p.isSprinting()?32*32:12*12);
             boolean rejected=s.getInt("AvoidTicks0459")>0&&s.contains("RejectedPoint0459")&&p.blockPosition().distSqr(BlockPos.of(s.getLong("RejectedPoint0459")))<=4;
             if(!rejected&&(sees(a,p)||heard)&&a.distanceToSqr(p)<nearest){found=p;nearest=a.distanceToSqr(p);}}
         if(found!=null){remember(a,found);s=state(a);}else if(s.getInt("Memory")>0)s.putInt("Memory",s.getInt("Memory")-1);
@@ -150,7 +152,7 @@ public final class CarcassHunt {
         while(!route.isEmpty()&&a.position().distanceToSqr(Vec3.atBottomCenterOf(route.peekFirst()))<.12)route.removeFirst();
         var before=a.position();
         if(!route.isEmpty()){var next=route.peekFirst();var delta=Vec3.atBottomCenterOf(next).subtract(before).multiply(1,0,1);
-            if(delta.lengthSqr()>.001){var movement=delta.normalize().scale(Math.min(chasing?.23:.12,delta.length()));
+            if(delta.lengthSqr()>.001){var movement=delta.normalize().scale(Math.min((chasing?.23:.12)*.9,delta.length()));
                 var standing=box(before,a.getDimensions(Pose.STANDING).height());boolean low=!fits(a,standing.minmax(standing.move(movement)));
                 a.setPose(low?Pose.CROUCHING:Pose.STANDING);a.refreshDimensions();clearLeaves(a,movement);a.move(MoverType.SELF,movement);
                 a.setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));a.yBodyRot=a.getYRot();a.walkAnimation.update((float)a.position().distanceTo(before)*4,.4F);}}
@@ -159,7 +161,7 @@ public final class CarcassHunt {
         if(failures>=BLOCKED_LIMIT){if(chasing){s.putLong("RejectedPoint0459",s.getLong("Point"));s.putInt("AvoidTicks0459",100);s.putInt("Memory",0);s.remove("Point");}
             s.putInt("Patrol",stop+1);s.putInt("BlockedTicks0459",0);route.clear();routeGoal=null;}
         if(found!=null&&a.distanceToSqr(found)<3.5&&s.getInt("AttackDelay")==0&&sees(a,found)){
-            a.swing(InteractionHand.MAIN_HAND);found.hurt(found.damageSources().mobAttack(a),5);s.putInt("AttackDelay",30);}
+            a.swing(InteractionHand.MAIN_HAND);found.hurt(found.damageSources().mobAttack(a),5);s.putInt("AttackDelay",ATTACK_DELAY);}
         a.getPersistentData().put(STATE,s);
     }
 }
