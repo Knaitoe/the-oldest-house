@@ -166,7 +166,7 @@ jobs:
               for name in ('WhaleInstitute','PigeonholeBlock','SelfAddressedEnvelopeItem'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               # Hospital furnishings and private writing (0.4.70).
-              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/institute_fixture.json'))['variants']) == 80
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/institute_fixture.json'))['variants']) == 84
               assert len(json.loads(z.read('assets/the_oldest_house/blockstates/institute_notebook.json'))['variants']) == 8
               for name in ('paint','peel','damp','ivory','dado','floor_ivory','floor_gray','ceiling','enamel','steel','vinyl','ceramic','cabinet','laminate','glass','diffuser'):
                   assert z.read(f'assets/the_oldest_house/textures/block/ward/{name}.png').startswith(b'\x89PNG')
