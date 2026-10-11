@@ -8,11 +8,15 @@ import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.*;
 import net.minecraft.sounds.*;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.*;
 import net.minecraft.world.level.block.*;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.*;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 /**
@@ -54,13 +58,58 @@ public final class GoatmanSupper {
         if(early(p,e.getItem())){e.setCanceled(true);p.displayClientMessage(Component.literal(NOT_YET),true);}
     }
     /**
-     * A full reader never gets as far as starting to eat, so the same line also answers the right-click itself. Nothing is
-     * cancelled here; the click that plated or took a frank is not taken for a try at eating it.
+     * A plate can be visible above the slab even when the native ray misses that slab. Serve it before the food-use
+     * fallback, then answer actual eating attempts, including a full reader who never starts eating.
      */
     public static void onUse(PlayerInteractEvent.RightClickItem e){
-        if(!(e.getEntity() instanceof ServerPlayer p)||!e.getItemStack().is(GoatmanRegistry.BRAT.get())||!early(p,e.getItemStack()))return;
+        if(!(e.getEntity() instanceof ServerPlayer p)||!e.getItemStack().is(GoatmanRegistry.BRAT.get()))return;
+        if(serveAimed(p,e.getHand())){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);return;}
+        if(!early(p,e.getItemStack()))return;
         if(p.serverLevel().getGameTime()-p.getPersistentData().getLong("GoatmanClick0476")>1)p.displayClientMessage(Component.literal(NOT_YET),true);
     }
+    /** Native entity selection can intercept the block below a visible plate. It must not swallow serving. */
+    public static void onEntity(PlayerInteractEvent.EntityInteract e){
+        if(e.getEntity() instanceof ServerPlayer p&&tableEntity(e.getTarget())&&serveAimed(p,e.getHand())){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);}
+    }
+    public static void onEntitySpecific(PlayerInteractEvent.EntityInteractSpecific e){
+        if(e.getEntity() instanceof ServerPlayer p&&tableEntity(e.getTarget())&&serveAimed(p,e.getHand())){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);}
+    }
+    private static boolean tableEntity(Entity target){return target instanceof GoatmanChild&&target.getTags().contains(GoatmanVignette.ACTOR)||target.getTags().contains(GoatmanWoods.PLATE);}
+    private static boolean serving(ServerPlayer p,CompoundTag run){
+        if(!run.getBoolean("PlayerServes0464")||run.getInt("Phase")!=GoatmanVignette.GATHERING)return false;
+        var member=run.getCompound("Cohort").getCompound(p.getUUID().toString());return member.getBoolean("Active")&&!member.getBoolean("Failed");
+    }
+    /** Aim at the displayed plate, with native reach and block occlusion, rather than wherever its ray ends. */
+    private static int aimedSeat(ServerPlayer p,BlockPos base,CompoundTag run){
+        var eye=p.getEyePosition();var end=eye.add(p.getLookAngle().scale(p.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE)));int seat=-1;double nearest=Double.MAX_VALUE;
+        for(int i=0;i<GoatmanVignette.expectedCount(run);i++){
+            var at=GoatmanWoods.plate(i).add(base.getX(),base.getY(),base.getZ());var hit=new AABB(at.x-.32,at.y-.1,at.z-.32,at.x+.32,at.y+.1,at.z+.32).clip(eye,end);if(hit.isEmpty())continue;
+            double distance=eye.distanceToSqr(hit.get());if(distance>=nearest)continue;
+            var block=p.serverLevel().clip(new ClipContext(eye,at,ClipContext.Block.OUTLINE,ClipContext.Fluid.NONE,p));
+            if(block.getType()!=HitResult.Type.MISS&&!(block.getBlockPos().equals(BlockPos.containing(at).below())&&p.serverLevel().getBlockState(block.getBlockPos()).is(Blocks.SPRUCE_SLAB)))continue;
+            nearest=distance;seat=i;
+        }
+        return seat;
+    }
+    private static boolean serveAimed(ServerPlayer p,InteractionHand hand){
+        if(!GoatmanVignette.inside(p))return false;var data=LabyrinthData.get(p.server);var run=GoatmanVignette.run(data);var held=p.getItemInHand(hand);
+        if(!serving(p,run)||!held.is(GoatmanRegistry.BRAT.get()))return false;
+        var base=GoatmanVignette.base(p.server);int seat=aimedSeat(p,base,run);if(seat<0)return false;
+        plate(p,held,base,run,seat);saveClick(p,data,run);return true;
+    }
+    private static void plate(ServerPlayer player,ItemStack held,BlockPos base,CompoundTag run,int seat){
+        int mask=run.getInt("Plated0464"),bit=1<<seat,empty=run.getInt("EmptyPlates0465");
+        if(held.is(GoatmanRegistry.BRAT.get())&&belongs(held,run)){
+            if((mask&~empty&bit)==0){boolean charred=burnt(held);held.shrink(1);run.putInt("Plated0464",mask|bit);run.putInt("EmptyPlates0465",empty&~bit);
+                run.putInt("BurntPlates0476",charred?run.getInt("BurntPlates0476")|bit:run.getInt("BurntPlates0476")&~bit);GoatmanWoods.served(player.serverLevel(),base,seat,frank(run,charred));
+                if(ready(run)){run.putBoolean("MealReady0465",true);run.putBoolean("MealFrozen0465",true);}}
+            else player.displayClientMessage(Component.literal("There's already one here."),true);
+        }else if(held.isEmpty()&&(mask&~empty&bit)!=0){
+            boolean charred=(run.getInt("BurntPlates0476")&bit)!=0;run.putInt("BurntPlates0476",run.getInt("BurntPlates0476")&~bit);
+            run.putInt("EmptyPlates0465",empty|bit);GoatmanWoods.served(player.serverLevel(),base,seat,false);give(player,frank(run,charred));
+        }else player.displayClientMessage(Component.literal(held.is(GoatmanRegistry.BRAT.get())?"That wasn't in this supper's pack.":"Put a cooked frank on the plate."),true);
+    }
+    private static void saveClick(ServerPlayer player,LabyrinthData data,CompoundTag run){player.getPersistentData().putLong("GoatmanClick0476",player.serverLevel().getGameTime());GoatmanVignette.saveRun(data,run);}
     /** What the next real cousin to bite into a burnt one says, the first three times. */
     static String burntLine(CompoundTag r){int n=r.getInt("BurntEaten0476");r.putInt("BurntEaten0476",n+1);return n<BURNT_LINES.length?BURNT_LINES[n]:null;}
     /**
@@ -126,9 +175,7 @@ public final class GoatmanSupper {
     public static boolean smelled(CompoundTag r,long now){return r.contains("BurntAt0476")&&now-r.getLong("BurntAt0476")<100;}
     static boolean interact(ServerPlayer player,PlayerInteractEvent.RightClickBlock event){
         var data=LabyrinthData.get(player.server);var run=GoatmanVignette.run(data);
-        if(!run.getBoolean("PlayerServes0464")||run.getInt("Phase")!=GoatmanVignette.GATHERING)return false;
-        var member=run.getCompound("Cohort").getCompound(player.getUUID().toString());
-        if(!member.getBoolean("Active")||member.getBoolean("Failed"))return false;
+        if(!serving(player,run))return false;
         var base=GoatmanVignette.base(player.server);var rel=event.getPos().subtract(base);var held=player.getItemInHand(event.getHand());
         boolean stove=rel.equals(GoatmanWoods.STOVE)||rel.equals(GoatmanWoods.PAN);
         if(rel.equals(GoatmanWoods.COOLER)||stove&&!player.serverLevel().getBlockState(base.offset(GoatmanWoods.COOLER)).is(GoatmanRegistry.COOLER.get())&&!held.is(GoatmanRegistry.FRANKS.get())&&!held.is(GoatmanRegistry.RAW_FRANK.get())&&run.getList("Cooking0465",Tag.TAG_COMPOUND).isEmpty()&&run.getList("CookedPan0465",Tag.TAG_COMPOUND).isEmpty()){
@@ -152,18 +199,8 @@ public final class GoatmanSupper {
         }else{
             var hit=event.getHitVec().getLocation().subtract(base.getX(),base.getY(),base.getZ());int seat=-1;double distance=1.6;
             for(int i=0;i<GoatmanVignette.expectedCount(run);i++){double d=GoatmanWoods.plate(i).distanceToSqr(hit);if(d<distance){distance=d;seat=i;}}
-            if(seat<0)return false;int mask=run.getInt("Plated0464"),bit=1<<seat,empty=run.getInt("EmptyPlates0465");
-            if(held.is(GoatmanRegistry.BRAT.get())&&belongs(held,run)){
-                if((mask&~empty&bit)==0){boolean charred=burnt(held);held.shrink(1);run.putInt("Plated0464",mask|bit);run.putInt("EmptyPlates0465",empty&~bit);
-                    run.putInt("BurntPlates0476",charred?run.getInt("BurntPlates0476")|bit:run.getInt("BurntPlates0476")&~bit);GoatmanWoods.served(player.serverLevel(),base,seat,frank(run,charred));
-                    if(ready(run)){run.putBoolean("MealReady0465",true);run.putBoolean("MealFrozen0465",true);}}
-                else player.displayClientMessage(Component.literal("There's already one here."),true);
-            }else if(held.isEmpty()&&(mask&~empty&bit)!=0){
-                boolean charred=(run.getInt("BurntPlates0476")&bit)!=0;run.putInt("BurntPlates0476",run.getInt("BurntPlates0476")&~bit);
-                run.putInt("EmptyPlates0465",empty|bit);GoatmanWoods.served(player.serverLevel(),base,seat,false);give(player,frank(run,charred));
-            }else player.displayClientMessage(Component.literal("Put a cooked frank on the plate."),true);
+            if(seat<0)seat=aimedSeat(player,base,run);if(seat<0)return false;plate(player,held,base,run,seat);
         }
-        player.getPersistentData().putLong("GoatmanClick0476",player.serverLevel().getGameTime());
-        GoatmanVignette.saveRun(data,run);event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);return true;
+        saveClick(player,data,run);event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);return true;
     }
 }
