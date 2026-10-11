@@ -62,7 +62,7 @@ public final class ThreeFingers {
     public static final int TELLING=0,IN_FIRE=1,TAKEN=2,WISHED=3,MOURNING=4,KNOCKING=5,DONE=6;
     public static final String PAW_OWNER=LiteraryVignettes.OWNER,FINGERS="Fingers",ISSUE="PawIssue";
     /** Ticks on the reader's own clock, which runs only while they are in the cottage. */
-    static final int TALE_EVERY=300,THROW_AFTER=100,SERGEANT_GOES=200,NEWS_AT=120,KNOCK_AT=400,LOUDER=800,HAMMER=1200;
+    public static final int TALE_EVERY=300,THROW_AFTER=100,SERGEANT_GOES=200,NEWS_AT=120,KNOCK_AT=400,LOUDER=800,HAMMER=1200;
     public static final String MONEY="money",COMPANION="companion",STORM="storm";
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     private static final Set<String> KINDS=Set.of("Wolf","Cat","Parrot","Horse","Donkey","Mule","Llama","Trader Llama","Camel","Ocelot","Fox","Skeleton Horse","Zombie Horse");
