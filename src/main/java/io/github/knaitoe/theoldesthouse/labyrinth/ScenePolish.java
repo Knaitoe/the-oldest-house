@@ -83,7 +83,7 @@ public final class ScenePolish {
         // The child's room (0.4.74) is furnished, lit and dressed whole by ChildRoom, and the Last Stop (0.4.78) by ElkLot.
         return place.room() != null && place.slot() >= 0 && place != LabyrinthPlace.RED_ROOM
                 && place != LabyrinthPlace.FAMILY_COPY && place != LabyrinthPlace.OLD_CABIN && place != LabyrinthPlace.CHILD_ROOM
-                && place != LabyrinthPlace.ELK_LOT;
+                && place != LabyrinthPlace.ELK_LOT && !HazardVariety.added(place);
     }
 
     private static String key(BlockPos origin, LabyrinthPlace place) {

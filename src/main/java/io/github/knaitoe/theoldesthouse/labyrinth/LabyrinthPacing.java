@@ -24,7 +24,7 @@ public final class LabyrinthPacing {
     public static boolean quiet(LabyrinthPlace place) {
         return place==LabyrinthPlace.QUIET_ROOM || place==LabyrinthPlace.EXPLORER_CAMP;
     }
-    public static boolean physicalTrial(LabyrinthPlace place){return place==LabyrinthPlace.FLOODED_PASSAGE||place==LabyrinthPlace.FRACTURED_WALKWAY||place==LabyrinthPlace.LIGHT_SINK;}
+    public static boolean physicalTrial(LabyrinthPlace place){if(HazardVariety.newKind(place))return true;place=HazardVariety.original(place);return place==LabyrinthPlace.FLOODED_PASSAGE||place==LabyrinthPlace.FRACTURED_WALKWAY||place==LabyrinthPlace.LIGHT_SINK;}
     public static int trialChance(LabyrinthData data,UUID player){
         int depth=data.returnDepth(player);if(domestic(depth))return 0;
         for(var place:LabyrinthPlace.values()){int age=data.recentVisit(player,place);if(physicalTrial(place)&&age>=0&&age<HouseConfig.setting(HouseConfig.HAZARD_SPACING))return 0;}
@@ -38,13 +38,14 @@ public final class LabyrinthPacing {
         return true;
     }
     public static boolean anomaly(LabyrinthPlace place) {
-        return switch(place) {
+        return switch(HazardVariety.original(place)) {
             case FOLDED_MAZE, DEEP_MAZE, ABYSS_MAZE, LONG_HALLWAY, SPIRAL_STAIR, HOTEL_HALLWAY,
                     FALSE_DISTANCE, MOVING_THRESHOLD, DUPLICATE_PASSAGE, GRAVITY_DRIFT, COMPRESSION_PASSAGE -> true;
             default -> false;
         };
     }
     public static boolean loop(LabyrinthPlace place) {
+        place=HazardVariety.original(place);
         return place==LabyrinthPlace.LONG_HALLWAY || place==LabyrinthPlace.HOTEL_HALLWAY
                 || place==LabyrinthPlace.SPIRAL_STAIR || place==LabyrinthPlace.DUPLICATE_PASSAGE;
     }
@@ -73,8 +74,7 @@ public final class LabyrinthPacing {
         }
         for(LabyrinthPlace place:LabyrinthPlace.values()) {
             int age=data.recentVisit(player,place);
-            if((anomaly(place) || place==LabyrinthPlace.FLOODED_PASSAGE || place==LabyrinthPlace.FRACTURED_WALKWAY
-                    || place==LabyrinthPlace.LIGHT_SINK) && age>=0 && age<3) return true;
+            if((anomaly(place) || physicalTrial(place)) && age>=0 && age<3) return true;
         }
         return data.returnDepth(player)>=8;
     }

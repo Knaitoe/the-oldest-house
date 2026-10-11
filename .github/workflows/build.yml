@@ -546,7 +546,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq xvfb libgl1-mesa-dri
-          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 5m gradle runClient -PfontSmoke --no-daemon
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 7m gradle runClient -PfontSmoke --no-daemon
           python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text(), 'A native mod model has a missing texture'"
           test -s build/font-smoke/passed.txt
           test -s build/font-smoke/native-writing.png
@@ -571,6 +571,8 @@ jobs:
           test -s build/font-smoke/native-hotel.png
           test -s build/font-smoke/literary-passed.txt
           test -s build/font-smoke/native-literary.png
+          test -s build/font-smoke/hazards-passed.txt
+          for view in materials dark mirror; do test -s build/font-smoke/native-hazards-$view.png; done
           test -s build/font-smoke/last-stop-cast-passed.txt
           for view in front back night; do test -s build/font-smoke/native-last-stop-cast-$view.png; done
           test -s build/font-smoke/elk-passed.txt
@@ -1010,7 +1012,7 @@ jobs:
           python3 - <<'PYTHON'
           import re
           from pathlib import Path
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('ExplorationPassTests.java','RhythmTests.java'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('ExplorationPassTests.java','RhythmTests.java','HazardVarietyTests.java'))
           passed=re.findall(r'All (\d+) required tests passed',Path('build/exploration-native.log').read_text())
           assert passed and int(passed[-1])==declared, (passed,declared)
           print(f'All {declared} native exploration cases passed.')

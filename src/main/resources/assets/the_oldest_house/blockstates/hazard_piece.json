@@ -1,0 +1,124 @@
+{
+  "variants": {
+    "kind=locker_wall,stage=0": {
+      "model": "the_oldest_house:block/hazard_locker_wall"
+    },
+    "kind=locker_wall,stage=1": {
+      "model": "the_oldest_house:block/hazard_locker_wall"
+    },
+    "kind=frosted_crate,stage=0": {
+      "model": "the_oldest_house:block/hazard_frosted_crate"
+    },
+    "kind=frosted_crate,stage=1": {
+      "model": "the_oldest_house:block/hazard_frosted_crate"
+    },
+    "kind=compressor,stage=0": {
+      "model": "the_oldest_house:block/hazard_compressor"
+    },
+    "kind=compressor,stage=1": {
+      "model": "the_oldest_house:block/hazard_compressor"
+    },
+    "kind=heat_lamp,stage=0": {
+      "model": "the_oldest_house:block/hazard_heat_lamp"
+    },
+    "kind=heat_lamp,stage=1": {
+      "model": "the_oldest_house:block/hazard_heat_lamp_off"
+    },
+    "kind=hook,stage=0": {
+      "model": "the_oldest_house:block/hazard_hook"
+    },
+    "kind=hook,stage=1": {
+      "model": "the_oldest_house:block/hazard_hook"
+    },
+    "kind=ship_plate,stage=0": {
+      "model": "the_oldest_house:block/hazard_ship_plate"
+    },
+    "kind=ship_plate,stage=1": {
+      "model": "the_oldest_house:block/hazard_ship_plate"
+    },
+    "kind=rail,stage=0": {
+      "model": "the_oldest_house:block/hazard_rail"
+    },
+    "kind=rail,stage=1": {
+      "model": "the_oldest_house:block/hazard_rail"
+    },
+    "kind=sculk_boards,stage=0": {
+      "model": "the_oldest_house:block/hazard_sculk_boards"
+    },
+    "kind=sculk_boards,stage=1": {
+      "model": "the_oldest_house:block/hazard_sculk_boards"
+    },
+    "kind=maze_panel,stage=0": {
+      "model": "the_oldest_house:block/hazard_maze_panel"
+    },
+    "kind=maze_panel,stage=1": {
+      "model": "the_oldest_house:block/hazard_maze_panel"
+    },
+    "kind=mirror_glass,stage=0": {
+      "model": "the_oldest_house:block/hazard_mirror_glass"
+    },
+    "kind=mirror_glass,stage=1": {
+      "model": "the_oldest_house:block/hazard_mirror_glass"
+    },
+    "kind=net,stage=0": {
+      "model": "the_oldest_house:block/hazard_net"
+    },
+    "kind=net,stage=1": {
+      "model": "the_oldest_house:block/hazard_net"
+    },
+    "kind=parlour_wall,stage=0": {
+      "model": "the_oldest_house:block/hazard_parlour_wall"
+    },
+    "kind=parlour_wall,stage=1": {
+      "model": "the_oldest_house:block/hazard_parlour_wall"
+    },
+    "kind=narrow_arch,stage=0": {
+      "model": "the_oldest_house:block/hazard_narrow_arch"
+    },
+    "kind=narrow_arch,stage=1": {
+      "model": "the_oldest_house:block/hazard_narrow_arch"
+    },
+    "kind=skirt_gap,stage=0": {
+      "model": "the_oldest_house:block/hazard_skirt_gap"
+    },
+    "kind=skirt_gap,stage=1": {
+      "model": "the_oldest_house:block/hazard_skirt_gap"
+    },
+    "kind=number_four,stage=0": {
+      "model": "the_oldest_house:block/hazard_number_four"
+    },
+    "kind=number_four,stage=1": {
+      "model": "the_oldest_house:block/hazard_number_four"
+    },
+    "kind=sconce,stage=0": {
+      "model": "the_oldest_house:block/hazard_sconce"
+    },
+    "kind=sconce,stage=1": {
+      "model": "the_oldest_house:block/hazard_sconce_off"
+    },
+    "kind=cistern_tile,stage=0": {
+      "model": "the_oldest_house:block/hazard_cistern_tile"
+    },
+    "kind=cistern_tile,stage=1": {
+      "model": "the_oldest_house:block/hazard_cistern_tile"
+    },
+    "kind=pit_stone,stage=0": {
+      "model": "the_oldest_house:block/hazard_pit_stone"
+    },
+    "kind=pit_stone,stage=1": {
+      "model": "the_oldest_house:block/hazard_pit_stone"
+    },
+    "kind=pressure_panel,stage=0": {
+      "model": "the_oldest_house:block/hazard_pressure_panel"
+    },
+    "kind=pressure_panel,stage=1": {
+      "model": "the_oldest_house:block/hazard_pressure_panel"
+    },
+    "kind=drift_tile,stage=0": {
+      "model": "the_oldest_house:block/hazard_drift_tile"
+    },
+    "kind=drift_tile,stage=1": {
+      "model": "the_oldest_house:block/hazard_drift_tile"
+    }
+  }
+}

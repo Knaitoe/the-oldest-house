@@ -1,0 +1,193 @@
+{
+  "layout": 41,
+  "slots": [
+    78,
+    93
+  ],
+  "textures": [
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_locker_wall.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "1a74e50804115a448947da627a75bb0c8e9c8bc2b708bc4e109e271214bba088"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_frosted_crate.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "1f3b07256e7ac636c67d806d5f377052335f7342c5547bd5c84a1b967a0cff55"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_compressor.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "1b069d7b334cb94065d1d20cdd41d8b812ed715ea517d2480220f00f737e9a5b"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_heat_lamp.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "c4f3b1eaa3f572a982945725035d1f926dda29672d77b1461cf9e528ce9709fe"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_heat_lamp_off.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "7915f871cc7cfdcc3df25dafb71c03c8a4cf070b04f4b8bc1bbce11a9acebacb"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_hook.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "026db216e70157208e0fa2b6a0a2279aeece84958596a57a0c69b70ebeedf74d"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_ship_plate.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "1555ce7f71af9c29b759407d333faebab91a9d3d232495c9b0fc3e0151445540"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_rail.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "0d3c8ccacdea3d27c802cc712febcaf71ad8bb5984b97b66d139579aad5161be"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_sculk_boards.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "25e4be8d90f663a5378e12e92a37b73738f85bbc84c7e2d1ce1b0dbf040d02d2"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_maze_panel.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "9ea22f2318a80098c3e295e3e133ef3496ca094d8ac8bd327b1a186916511bed"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_mirror_glass.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "5b86b746102e96f39e26fca3ce2fcdb1ccd983758db3e8f4b3edcff1225d92a0"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_net.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "6671f183b7fef2fbdbd6fc439891cc74a74b723960b8b1762cae616ce6dcf447"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_parlour_wall.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "3021732eab71b56ed35b83e85344ad547cc5d6c2257ed356fd74603cccefab35"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_narrow_arch.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "3e6cbbe04382d07b25faf7a41e9983f240faf0f6b7d273dd05024fac77d3e86c"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_skirt_gap.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "3b494bc4c1abdea7c5123ee12e5bda54891afc61af9b73bdb4bad038c9312e72"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_number_four.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "be8aebdaaee0106920d3121f5c24a37dd2e3895d4fb5b1bb295b0fd2f2a92601"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_sconce.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "e9c9bcbf9adcc52a271671752266f254f682faec0cfdf1f654e67ac6ab11d27b"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_sconce_off.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "b7b8202f427f5ff9fb3275e5afa4779191fa400d86eae1033ebd6e901b490129"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_cistern_tile.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "b5a126214356114c08fd8a3a7d9561f9da6465be4ecdc02fc026830265c13c9b"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_pit_stone.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "a1226366de052283fbc33d31b9c6ab370b57238fb8b80b1f51d0142696fbcb54"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_pressure_panel.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "9d65b21b94451437964449341b807be085f2d86a87798a2bfad6b458739c8eba"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/block/hazard_drift_tile.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "b7e0ae59e55411587451d4e10ef7f826965a877832feca8d69d278e17f90a0ea"
+    },
+    {
+      "file": "src/main/resources/assets/the_oldest_house/textures/entity/literary_quiet_walker.png",
+      "size": [
+        128,
+        64
+      ],
+      "sha256": "f80bf014cb7f927543c88152631ff46f7d21ed060a796c98efeb7350f25b4aa3"
+    }
+  ]
+}

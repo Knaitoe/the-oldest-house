@@ -123,6 +123,7 @@ public final class LabyrinthDoors {
         if (!player.isAlive() || isBusy(player)) {
             return;
         }
+        if(HazardVariety.blocksDoor(player,door))return;
         var hotelRoute=HotelVignette.route(player,door);if(hotelRoute!=null)door=hotelRoute;
         MinecraftServer server = player.server;
         LabyrinthData data = LabyrinthData.get(server);
@@ -322,6 +323,7 @@ public final class LabyrinthDoors {
             WitnessAccount.onArrive(p, place);
             LabyrinthEncounters.onArrive(p, place);
             LabyrinthHazards.onArrive(p, place);
+            HazardVariety.onArrive(p,place);
             LabyrinthLighting.onArrive(p, place);
             LabyrinthMaze.forget(p.getUUID());
             LabyrinthDoorLeaks.send(p);
