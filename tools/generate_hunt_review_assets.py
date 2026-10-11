@@ -12,7 +12,7 @@ PROPS={
  'repair_diagram':[('fan_diagram',[1,1,15.7,15,15,16])],
  'fan_wallpaper':[('fan_wallpaper',[0,0,15.8,16,16,16])],
  'curtain':[('curtain',[0,0,15,16,16,16])],
- 'cushion':[('cushion',[3,0,3,13,3,13])],
+ 'cushion':[('cushion',[3,-8,3,13,-5,10])],
  'carcass':[('hide',[1,0,1,15,5,15]),('hunter_canvas',[3,5,4,13,7,12])],
  'elk_skull':[('skull',[3,0,3,13,5,13]),('hide',[1,4,2,4,7,5]),('hide',[12,4,2,15,7,5])],
  'low_branch':[('fern',[0,8,0,16,16,16])],

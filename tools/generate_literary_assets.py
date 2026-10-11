@@ -137,12 +137,14 @@ for role,(skin,coat,hair) in skins.items():
  if role=='lady':d.rectangle((8,8,15,15),fill=skin+(255,))
  save('textures/entity/literary_'+role+'.png',im)
 for wound in (False,True):
+ if (ROOT/'art/elk_surface_0480.png').exists():continue  # The reviewed custom atlas is baked by tools/bake_elk_atlas.sh.
  im=Image.new('RGBA',(128,64),(104,73,48,255));d=ImageDraw.Draw(im)
  d.rectangle((0,20,65,34),fill=(150,111,72,255));d.rectangle((50,0,78,26),fill=(58,41,29,255));d.rectangle((80,0,111,29),fill=(127,86,52,255));d.rectangle((80,20,107,29),fill=(49,39,30,255));d.rectangle((112,0,127,9),fill=(153,121,80,255));d.rectangle((0,49,30,63),fill=(40,32,26,255));d.point((88,8),fill=(18,17,14,255));d.point((105,8),fill=(18,17,14,255))
  for x in range(4,62,7):d.line((x,5,x+4,21),fill=(115,82,53,255))
  if wound:d.line((29,9,36,16,31,22),fill=(83,26,21,255),width=3);d.line((31,10,36,16),fill=(124,42,26,255))
  save('textures/entity/literary_elk'+('_wounded' if wound else '')+'.png',im)
-fan=Image.new('RGBA',(128,64),(90,56,31,255));d=ImageDraw.Draw(fan);d.rectangle((0,0,23,15),fill=(147,120,61,255));d.rectangle((24,0,79,9),fill=(87,51,29,255));d.line((26,3,77,3),fill=(143,95,48,255));save('textures/entity/literary_fan.png',fan)
+if not (ROOT/'art/elk_surface_0480.png').exists():
+ fan=Image.new('RGBA',(128,64),(90,56,31,255));d=ImageDraw.Draw(fan);d.rectangle((0,0,23,15),fill=(147,120,61,255));d.rectangle((24,0,79,9),fill=(87,51,29,255));d.line((26,3,77,3),fill=(143,95,48,255));save('textures/entity/literary_fan.png',fan)
 
 # All positional effects are mono; original cylinder prose is audibly performed by libflite.
 def audio(name,seconds,sample):

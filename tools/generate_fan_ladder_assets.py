@@ -1,0 +1,106 @@
+"""A supported, climbable four-legged A-frame; native shapes use these same boxes."""
+from pathlib import Path
+import json, random
+from PIL import Image, ImageDraw
+
+ROOT = Path(__file__).resolve().parents[1]
+A = ROOT / 'src/main/resources/assets/the_oldest_house'
+J = ROOT / 'src/main/java/io/github/knaitoe/theoldesthouse/labyrinth/FanLadderGeometry.java'
+
+def write(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(value, indent=2) + '\n')
+
+for name, base in [('fan_ladder_oak', (132, 99, 62)), ('fan_ladder_iron', (119, 125, 122)),
+                   ('fan_ladder_tread', (83, 87, 82)), ('fan_ladder_rubber', (31, 33, 30))]:
+    rng = random.Random(name)
+    im = Image.new('RGBA', (16, 16)); d = ImageDraw.Draw(im)
+    for y in range(16):
+        for x in range(16):
+            shade = rng.randint(-6, 6) + (5 if 'oak' in name and x % 5 == 0 else 0)
+            d.point((x,y), fill=tuple(max(0,min(255,c+shade)) for c in base)+(255,))
+    if 'oak' in name:
+        for x in (2,7,12): d.line((x,1,x,14), fill=(98,72,45,255))
+        d.line((5,0,5,4),fill=(165,129,79,255));d.line((11,9,11,15),fill=(166,126,75,255))
+    elif 'tread' in name:
+        for y in range(2,16,3):d.line((0,y,15,y),fill=(47,51,47,255))
+        for x in (2,13):d.rectangle((x,2,x+1,3),fill=(166,164,143,255))
+    elif 'iron' in name:
+        for xy in ((3,3),(12,3),(3,12),(12,12)):d.rectangle((*xy,xy[0]+1,xy[1]+1),fill=(53,61,60,255))
+        d.line((0,0,15,0),fill=(174,173,151,255))
+    else:
+        for y in (3,7,11):d.line((1,y,14,y),fill=(18,21,19,255))
+    path=A/'textures/block'/f'{name}.png';path.parent.mkdir(parents=True,exist_ok=True);im.save(path)
+
+# The existing rotating fan mesh: lacquered blades and a worn brass motor, in its real cube nets.
+rng=random.Random('fan_motor_0480');fan=Image.new('RGBA',(128,64),(86,58,36,255));d=ImageDraw.Draw(fan)
+for y in range(10):
+    for x in range(24):
+        v=rng.randint(-7,7);d.point((x,y),fill=(138+v,116+v,69+v,255))
+for x,y in ((7,1),(10,1),(7,4),(10,4),(1,7),(14,7),(20,7)):
+    d.point((x,y),fill=(48,49,39,255))
+for y in range(6):
+    for x in range(24,76):
+        v=rng.randint(-4,4)+(9 if x%7==0 else 0);d.point((x,y),fill=(96+v,62+v,34+v,255))
+d.line((28,0,49,0),fill=(151,105,54,255));d.line((29,3,48,3),fill=(65,42,26,255))
+d.line((51,1,71,1),fill=(66,42,25,255));d.rectangle((28,0,30,3),fill=(137,116,70,255))
+fan.save(A/'textures/entity/literary_fan.png')
+
+boxes=[]
+def box(x0,y0,z0,x1,y1,z1,material):
+    boxes.append(([x0,y0,z0,x1,y1,z1],material))
+
+# The four continuous legs lean inward; quarter-block segments keep the mesh native.
+for y in range(0,80,4):
+    front=44-36*(y+2)/80;rear=-28+36*(y+2)/80
+    for z in (front,rear):
+        for x in (1,13):box(x,y,z-1.4,x+2,y+4,z+1.4,'oak')
+for z in (44,-28):
+    for x in (.5,12.5):box(x,0,z-2.2,x+3,3,z+2.2,'rubber')
+for y in range(8,80,8):
+    z=44-36*y/80;box(2.5,y-2,z-2.8,13.5,y,z+2.8,'tread')
+for y in (16,48):
+    z=-28+36*y/80;box(3,y-2,z-1.3,13,y,z+1.3,'oak')
+for x in (1.5,13.5):box(x,36,-11.8,x+1,38,27.8,'iron')
+# Two broad foot pads and an open inspection slot: the reader can look through the fan.
+for x0,x1 in ((.5,5),(11,15.5)):box(x0,80,2,x1,84,14,'tread')
+for z in (2,12):box(3,80,z,13,82,z+2,'iron')
+for x in (1,13):box(x,76,4,x+2,80,12,'iron')
+
+parts=[[] for _ in range(30)]
+for coords,mat in boxes:
+    x0,y0,z0,x1,y1,z1=coords
+    for row in range(6):
+        for column in range(-2,3):
+            lo=max(y0,row*16);hi=min(y1,(row+1)*16)
+            near=max(z0,column*16);far=min(z1,(column+1)*16)
+            if hi>lo and far>near:
+                parts[row*5+column+2].append(([round(v,5) for v in
+                    (x0,lo-row*16,near-column*16,x1,hi-row*16,far-column*16)],mat))
+textures={key:f'the_oldest_house:block/fan_ladder_{key}' for key in ('oak','iron','tread','rubber')}
+textures['particle']=textures['oak']
+variants={}
+for index,elements in enumerate(parts):
+    model={'ambientocclusion':True,'textures':textures,'elements':[
+        {'from':coords[:3],'to':coords[3:],'faces':{face:{'texture':'#'+mat,'uv':[0,0,16,16]}
+         for face in ('down','up','north','south','east','west')}} for coords,mat in elements]}
+    write(A/'models/block'/f'fan_ladder_{index}.json',model)
+    variants[f'part={index}']={'model':f'the_oldest_house:block/fan_ladder_{index}'}
+write(A/'blockstates/fan_ladder.json',{'variants':variants})
+tag=ROOT/'src/main/resources/data/minecraft/tags/block/climbable.json'
+climbable=json.loads(tag.read_text()) if tag.exists() else {'replace':False,'values':[]}
+for native in ('the_oldest_house:well_cover','the_oldest_house:fan_ladder'):
+    if native not in climbable['values']:climbable['values'].append(native)
+write(tag,climbable)
+arrays=[]
+for elements in parts:
+    arrays.append('        new double[][]{'+','.join('{'+','.join(str(v) for v in coords)+'}' for coords,mat in elements)+'}')
+J.write_text('''package io.github.knaitoe.theoldesthouse.labyrinth;
+/** Generated by tools/generate_fan_ladder_assets.py; exact native mesh/collision boxes. */
+final class FanLadderGeometry {
+    static final double[][][] BOXES={
+'''+',\n'.join(arrays)+'''\n    };
+    private FanLadderGeometry(){}
+}
+''')
+print('A-frame: four feet, nine treads, spreaders, open top platform; 30 exact mesh/collision parts.')

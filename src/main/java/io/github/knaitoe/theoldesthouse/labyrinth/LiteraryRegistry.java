@@ -28,6 +28,8 @@ public final class LiteraryRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<LiteraryFrozenBlock>> FROZEN_TYPE=CODECS.register("literary_frozen",()->LiteraryFrozenBlock.CODEC);
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<YachtGlazingBlock>> GLAZING_TYPE=CODECS.register("yacht_glazing",()->YachtGlazingBlock.CODEC);
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<NurseryBlock>> NURSERY_TYPE=CODECS.register("nursery",()->NurseryBlock.CODEC);
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<FanLadderBlock>> FAN_LADDER_TYPE=CODECS.register("fan_ladder",()->FanLadderBlock.CODEC);
+    public static final DeferredBlock<FanLadderBlock> FAN_LADDER=BLOCKS.registerBlock("fan_ladder",FanLadderBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion().noLootTable());
     /** The child's room (0.4.74): its own furniture and toys, and its wallpaper. */
     public static final DeferredBlock<NurseryBlock> NURSERY=BLOCKS.registerBlock("nursery",NurseryBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noOcclusion().noLootTable().lightLevel(NurseryBlock::light));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<RoadhouseBlock>> ROADHOUSE_TYPE=CODECS.register("roadhouse",()->RoadhouseBlock.CODEC);

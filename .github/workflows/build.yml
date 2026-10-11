@@ -577,6 +577,8 @@ jobs:
           for view in front back night; do test -s build/font-smoke/native-last-stop-cast-$view.png; done
           test -s build/font-smoke/elk-passed.txt
           test -s build/font-smoke/native-elk.png
+          test -s build/font-smoke/elk-fan0480-passed.txt
+          for view in front back night ladder-front ladder-side; do test -s build/font-smoke/native-elk-fan0480-$view.png; done
           test -s build/font-smoke/goatman-passed.txt
           test -s build/font-smoke/playtest-assets-passed.txt
           test -s build/font-smoke/native-playtest-0464.png

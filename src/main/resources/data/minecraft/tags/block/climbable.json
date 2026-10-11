@@ -1,1 +1,7 @@
-{"replace":false,"values":["the_oldest_house:well_cover"]}
+{
+  "replace": false,
+  "values": [
+    "the_oldest_house:fan_ladder",
+    "the_oldest_house:well_cover"
+  ]
+}
