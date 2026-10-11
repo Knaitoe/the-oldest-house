@@ -25,7 +25,7 @@ public final class LiteraryPropBlock extends BaseEntityBlock {
     @Override public BlockEntity newBlockEntity(BlockPos p,BlockState s){return new LiteraryModelBlockEntity(p,s);}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return switch(s.getValue(KIND)){
         case CLOCK->Block.box(2,0,2,14,30,14);case COFFIN,ELK_HIDE->Block.box(1,0,0,15,9,16);
-        case FAN->Block.box(6,11,6,10,16,10);case MINIATURE->Block.box(0,0,0,16,7,16);
+        case FAN->Shapes.or(Block.box(5,9.52,5,11,13.52,11),Block.box(6,13.52,6,10,16,10));case MINIATURE->Block.box(0,0,0,16,7,16);
         case CAMERA,TRIPOD,LIGHT_STAND->Block.box(5,0,5,11,23,11);
         case TAPE_X,PAGE->Block.box(0,0,0,16,1,16);case LEDGER->Block.box(2,0,3,14,2,13);case STAIN,LIFE_RING->Shapes.empty();case CARCASS->Block.box(0,0,0,16,13,16);case GUEST_BODY,CREW_BODY->s.getValue(STAGE)==2?Block.box(2,0,2,14,15,14):Block.box(0,0,0,16,5,16);case HARD_HAT->Block.box(3,0,3,13,5,13);case PHOTO,TRUNK_MARK->Block.box(1,0,13,15,16,16);
         case CYLINDER,JAR->Block.box(5,0,5,11,9,11);case BELONGINGS->Block.box(1,0,1,15,12,15);
