@@ -9,7 +9,11 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current verified: 0.4.75
+## Current candidate: 0.4.76
+
+The Whalestoe hospital branch (its verified combined 0.4.72) is merged with this line's verified 0.4.75. No source or resolution changes: 43 sources / 33 resolutions / two kinds / three endings. Layout 40 / protocol 50. See [the hospital record](WHALE_HOSPITAL_0_4_70.md) and [the Goatman fear record](GOATMAN_FEAR_0_4_72.md).
+
+## Previous verified: 0.4.75
 
 Ted the Caver's air gets its own breath gauge in place of Minecraft's bubbles, and a few seconds of choking (shaking view, closing dark, wheezing) before the blackout, ended by any air in time. No change to the source or its resolution: 43 sources / 33 resolutions / two kinds / three endings. Layout 40 / protocol 49. Verified source 53d3e9a (run 38103942680): all twelve jobs and 498 native cases passed. See [the caver record](TED_CAVER_0_4_71.md).
 
@@ -24,6 +28,16 @@ Ted the Caver gains bad air (personal, on the shared breath), air bells, a non-l
 ## Previous verified: 0.4.72
 
 Ted the Caver playtest fix: the marks, stone and front rubble answer a torch-holding hand, no off-hand torch lands on them, and the mark is a custom marked-rock block with a guarded once-only swap in saved caves. No change to the source or its resolution: 43 sources / 33 resolutions / two kinds / three endings. Layout 40 / protocol 46. Verified source `6cf0344` (run 38094381332): all twelve jobs passed. See [the caver record](TED_CAVER_0_4_71.md).
+
+## Hospital branch verified: 0.4.72 (merged in 0.4.76)
+
+Combine the repaired ward build, Claude's cave redesign and the Goatman scene repairs. Keep the existing eligible pool and private resolutions. Require complete physical-circuit, spatial-knock, individual-child and subtitle-priority regressions, all twelve exact-source jobs, native visual proofs and actual multiplayer/reconnects. Layout 40 / protocol 46.
+
+Verified source `40c7910` ([run 38091222490](https://github.com/Knaitoe/the-oldest-house/actions/runs/38091222490)): all twelve jobs, 502 native cases, complete writing/package/71-view architecture and GPU proofs, and both actual clients with two reconnects and the night proof passed.
+
+## Hospital branch candidate: 0.4.70 (merged in 0.4.76)
+
+Whalestoe receives native hospital materials, furniture and readable bedside notebooks, preserving source letters and finite storage. Optional prose starters and bounded other-hand continuations leave existing writing intact. The four sheets, signed posting, SEVEN, returned originals and personal `returned_to_sender` resolution remain. No new Witness source: 43 / 33 / two kinds / three endings. Require 492 native cases, every focused/socket/reconnect check, 71 architecture views, complete writing/eight fonts, 460 PNGs and two additional institute GPU views. Layout 40 / protocol 44. See [the hospital record](WHALE_HOSPITAL_0_4_70.md).
 
 ## Previous verified: 0.4.71
 

@@ -74,8 +74,8 @@ def pigeonhole(n):
         'parent': 'minecraft:block/orientable',
         'textures': {
             'front': f'the_oldest_house:block/pigeonhole_{n}',
-            'side': 'minecraft:block/spruce_planks',
-            'top': 'minecraft:block/spruce_planks',
+            'side': 'the_oldest_house:block/ward/cabinet',
+            'top': 'the_oldest_house:block/ward/laminate',
         },
     })
 

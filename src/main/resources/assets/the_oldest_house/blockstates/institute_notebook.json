@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,table=false": {
+      "model": "the_oldest_house:block/ward_notebook"
+    },
+    "facing=east,table=false": {
+      "model": "the_oldest_house:block/ward_notebook",
+      "y": 90
+    },
+    "facing=south,table=false": {
+      "model": "the_oldest_house:block/ward_notebook",
+      "y": 180
+    },
+    "facing=west,table=false": {
+      "model": "the_oldest_house:block/ward_notebook",
+      "y": 270
+    },
+    "facing=north,table=true": {
+      "model": "the_oldest_house:block/ward_reading_table"
+    },
+    "facing=east,table=true": {
+      "model": "the_oldest_house:block/ward_reading_table",
+      "y": 90
+    },
+    "facing=south,table=true": {
+      "model": "the_oldest_house:block/ward_reading_table",
+      "y": 180
+    },
+    "facing=west,table=true": {
+      "model": "the_oldest_house:block/ward_reading_table",
+      "y": 270
+    }
+  }
+}

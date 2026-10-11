@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab_top",
+  "textures": {
+    "bottom": "the_oldest_house:block/ward/enamel",
+    "top": "the_oldest_house:block/ward/laminate",
+    "side": "the_oldest_house:block/ward/enamel"
+  }
+}

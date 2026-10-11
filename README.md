@@ -1,3 +1,5 @@
+Version `0.4.76` is in verification. It merges the Whalestoe hospital branch (ward rooms, cabinets and letter starters, and its Goatman night repairs) with this line's caver and child's room updates. Layout 40 / protocol 50: use matching clients and server.
+
 Version `0.4.75` passed all twelve workflow jobs and 498 native cases at `53d3e9a`, together with 0.4.73 and 0.4.74. In Ted the Caver's crawls your air has its own gauge, and running out is no longer instant: you choke for a few seconds first, the view shaking and the dark closing in, and reaching air in time ends it with a gasp. Layout 40 / protocol 49: use matching clients and server.
 
 Version `0.4.74` passed with 0.4.75 at `53d3e9a`. The child's room is rebuilt as a real child's bedroom: its own bed, desk, toy chest, wardrobe, dollhouse and rocking horse, and toys you can play with (a train on its track, a top, a jack-in-the-box, a music box, a bear, blocks, a ball). After you read the bedtime card, the room's windows and doors go one by one while nobody is looking. See every one for yourself, then crawl under the bed and find the basement. Layout 40 / protocol 48: use matching clients and server. See [the child's room record](docs/CHILD_ROOM_0_4_74.md).
@@ -6,7 +8,11 @@ Version `0.4.73` passed with 0.4.75 at `53d3e9a`. Ted the Caver's crawls are lon
 
 Version `0.4.72` passed all twelve workflow jobs at `6cf0344`. In Ted the Caver the marks and the stone now respond while you hold a torch, and the marks look like cut rock instead of a dressed block. Layout 40 / protocol 46: use matching clients and server.
 
+The hospital branch's combined `0.4.72` (merged in 0.4.76) passed all twelve workflow jobs and 502 native cases at `40c7910` ([verified run](https://github.com/Knaitoe/the-oldest-house/actions/runs/38091222490)). This combines the Whalestoe hospital materials and writing desk with Claude's 0.4.71 cave update, corrects the ward compilation errors, and repairs the Goatman's physical circuit, confusion-to-terror child reactions, reliable spatial cues and priority dialogue without skipping any circuit leg. Layout 40 / protocol 46; use matching clients and server. See [the combined update and verified package](docs/GOATMAN_FEAR_0_4_72.md).
+
 Version `0.4.71` passed all twelve workflow jobs and 493 native cases at `6f4c10d`. Ted the Caver is reworked: the crack is packed with rubble you mine out a block at a time, the stone is the only way on and gives only when the cave breathes in, a string line tied at the ladder holds you against the draught, and the low chamber is crouch-high with a real wait before the way back. Inside the cave you may mine the rubble and take back your own torches. Saved caves are reshaped once when empty and unwatched, keeping work done. Layout 40 / protocol 45: use matching clients and server. See [the caver record](docs/TED_CAVER_0_4_71.md).
+
+Version `0.4.70` is in verification. Whalestoe gains sixteen native hospital materials, enamel ward furniture and rails, real cabinets, painted doors and readable bedside notebooks. The writing desk offers optional prose starters and a bounded other hand that appends to an editable draft. Saved repairs preserve exact stored items, original letters, private correspondence and depleted supplies. Includes the latest child-arrival and streetlight fixes and Claude's integrated work. Layout 40 / protocol 44; matching clients and server required. Still 43 sources / 33 resolutions across two kinds and three endings. See [the hospital and writing record](docs/WHALE_HOSPITAL_0_4_70.md).
 
 Version `0.4.69` is in verification. Fresh trailer children are placed before native spawn registration and wait for loaded entity sections; two actual clients now test real door arrivals and walking up to the campsite. Proofrock gains fitted iron streetlights with warm glass, including its pier and submerged street. Existing lamps receive a guarded once-only repair. Layout 40 / protocol 43: use matching clients and server. See [the update record](docs/CHILDREN_AND_STREETLIGHTS_0_4_69.md).
 
@@ -25,7 +31,6 @@ Version `0.4.62` modestly increases fresh story/hazard offers and reshapes the w
 Version `0.4.60` combines the verified Stacy/slasher release with Claude's yacht-to-cave elk rework and its pixel-art assets. Stacy retains her doubled scrabbling movement, tight-gap navigation, door breaking, short hiding and animated hand/jaw attacks. Camp Blood keeps one shared physical hunt; the elk scene gives each reader a private killer with physical leaf clearance and bounded route recovery. Native pets and finite dropped originals remain protected throughout the saved-world rebuild. Layout 36 / protocol 34; 43 sources / 33 resolutions across two kinds, three endings. Opening timing, deliberate darkness, novel papers and all intervening repairs remain. Require all 452 native cases, 60 multiplayer cases, every focused suite, all writing/client/package/71-view architecture proofs and the extended two-socket/two-reconnect expedition on the exact head. See [the combined update](docs/INTEGRATED_HUNTS_0_4_60.md). Validation pending.
 
 Version `0.4.61` implements the full novel-informed review: a bounded, testable long hallway; one optional investigation using personally recorded crossings and finite originals on a writing desk; contextual source-poem placement; a less conclusive Witness epilogue; working secondary return gates; restored Stacy head tracking; and protection for another reader's occupied cover from private elk hunters. The boat playtest also adds three-second route recovery, pursuit just below player sprint speed, a brief axe-attack recovery, watched ten-second door ambushes, breakable crawl-through portholes and unseen shore pursuit among real trees. The shared Camp Blood actor, three endings, 43/33/two-kind Witness rule, opening wait and deliberate darkness remain. Layout 36 / protocol 34. Full native, visual and two-client validation pending. See [the changes and playtest route](docs/NOVEL_REVIEW_0_4_61.md).
-
 
 Previous verified version `0.4.59` focuses on Stacy Graves and the carcass slasher. Stacy hunts at twice her previous speed, navigates tight squeezes, recovers failed hiding searches within four to five seconds, swipes while retreating, hides for one to three seconds, and rushes out again. She breaks ordinary wooden doors and scrabbles with jointed elbows/knees; attacks use animated hand rakes or opening-jaw lunges. Rooted hiding pockets give her reachable cover. The slasher recovers from blocked routes and tears through leaves as his real body pushes forward. Low leaf cover now fits crouching players and uses Minecraft spruce leaves. Multiplayer retains one physical actor and one clock; saved originals, ending requirements, opening timing and deliberate darkness remain. See [the focused update](docs/STACY_AND_SLASHER_0_4_59.md). Verified source `072cb10865285f2dbb57ac473942f3725c90fc91`, [run 37805084738](https://github.com/Knaitoe/the-oldest-house/actions/runs/37805084738): all ten jobs, 447 native cases and the two-socket proof passed.
 
@@ -123,7 +128,6 @@ Version `0.4.18` seats Mr. Harrigan on the actual stair chair during both study 
 Version `0.4.17` slows the labyrinth’s descent into the esoteric. The approach and first landing have ordinary warm lamps, floorboards, cupboards and a blocked household window. Familiar corridors hold cut-off kitchens, laundry nooks, bedroom and dining fragments; smaller pieces remain in the deep gray mazes. The first five crossings stay domestic, stories become possible at six, and impossible folds, darkness, the Growl and ambient Mother visits begin at eight. Larger folded mazes wait until twelve and sixteen. Urgent pet rescue and deliberate Hillary scent tracking remain available. Existing worlds receive an in-place decoration upgrade that preserves caches, drops, companions and story progress. Witness remains **seven of nine** resolutions across at least two kinds, with three endings. See [docs/DOMESTIC_LABYRINTH_0_4_17.md](docs/DOMESTIC_LABYRINTH_0_4_17.md).
 
 Version `0.4.16` sharpens the companion wheel and adds **Pet** in its centre (`E`/Enter). Hillary requests a pat when the House appears, temporarily leads regardless of Stay/Follow, then resumes the saved command at the porch. Hide-and-clap adds brief directional/proximity pulses with actual claps, repeats the wardrobe's signal, and removes the blindfold to reveal the girl before her kill. A vignette death places nearby following pets in the Mother's living custody; her den becomes likelier for that owner. Recover a living pet by trading valuables, vignette keepsakes/artifacts, or another living animal. Empty-hand sneak-click offers a life within her reach; another survival player counts only when actually trapped with her in a small closed room, and dies as the payment. Her one-minute deadline begins at the den and pauses while the owner is away. Identity, health, equipment and saved orders survive recovery. Witness remains **seven of nine** resolutions, across at least two kinds, with three endings. See [docs/PETS_AND_CLAP_0_4_16.md](docs/PETS_AND_CLAP_0_4_16.md).
-
 
 ## Earlier releases
 
@@ -320,18 +324,15 @@ GitHub Actions builds, runs the structure game tests and uploads the compiled mo
 - Java 21
 - Mod ID: `the_oldest_house`
 
-
 ### 0.1.13 test-world note
 
 Version 0.1.13 changes the generator of `the_oldest_house:house_interior` from a flat world to native Overworld noise generation. Chunks of that dimension generated by older builds remain flat because Minecraft does not retroactively regenerate existing chunks. For a clean terrain/water test, use a fresh test world or an entirely ungenerated coordinate region.
-
 
 ### 0.1.15 transition-context persistence
 
 Transition context is no longer consumed when the receiving screen is first constructed. The acknowledged kind/token remains stable for the duration of the dimension handoff and is cleared only when the transition screen closes. This prevents any receiving-screen recreation from silently falling back to the default door treatment.
 
 Server logs also record the classified transition kind, token, source/destination dimensions, and player coordinates for each crossing so future threshold bugs can be distinguished from client presentation bugs.
-
 
 ### 0.1.16 physical transition vignettes
 
@@ -341,7 +342,6 @@ The three boundary transitions now share one presentation rule: the player's vie
 - Window crossings show the nearby white-terracotta sill/jamb moving close to the camera; the old exposure/refraction effect has been removed.
 - Wall breaches show white-terracotta wall faces with a narrow stripped-dark-oak structural edge as the player squeezes through the hole; the old iris/dust effect has been removed.
 - Entering The Oldest House is intentionally a little slower/tighter than leaving it.
-
 
 ### 0.1.17 captured-frame transitions
 
@@ -357,7 +357,6 @@ Door, window, and wall-breach overlays are therefore contextual interruptions of
 
 The captured frame is rendered with an explicit normalized-UV quad instead of `GuiGraphics.blit`, avoiding the texture-scaling ambiguity encountered in earlier prototypes.
 
-
 ### 0.1.18 motion pass
 
 Captured-frame transitions now include restrained camera-motion cues instead of treating the captured gameplay image as a stationary photograph.
@@ -367,7 +366,6 @@ Captured-frame transitions now include restrained camera-motion cues instead of 
 
 The motion is intentionally small so the captured HUD does not visibly detach from the screen.
 
-
 ### 0.1.19 live-camera handoff
 
 The window and breach transitions no longer fake body movement by translating the captured framebuffer. That approach moved the crosshair, held item, hotbar, and world together like a flat photograph.
@@ -375,7 +373,6 @@ The window and breach transitions no longer fake body movement by translating th
 The server now waits while the client performs a short **live source-world camera motion** before acknowledging the transition context. NeoForge camera-angle and FOV events provide a small yaw/pitch/roll lean and forward FOV compression while the world is still genuinely rendering and the HUD remains fixed. Only when that live motion reaches the handoff point does the client ACK, allowing the dimension change.
 
 The receiving screen then captures that final live frame, holds it for a much shorter interval with restrained wall/window-edge occlusion, and the destination camera settles back to neutral after the screen closes.
-
 
 ### 0.1.20 real-geometry handoff
 
@@ -385,13 +382,11 @@ Window and wall-breach transitions therefore no longer draw synthetic block-mate
 
 The front-door treatment remains unchanged because its discrete door-panel animation already reads correctly.
 
-
 ### 0.1.21 front-door follow-through
 
 A successful entry through the authored front door now schedules a real door close eight server ticks after the player reaches the House interior. Vanilla `DoorBlock.setOpen` performs the close so the normal wooden-door sound and game event are preserved. The resulting closed lower/upper door states are then mirrored back to the Overworld shell.
 
 Window and wall-breach entries do not affect the front door.
-
 
 ### 0.1.22 domestic architecture expansion
 
@@ -407,7 +402,6 @@ Six authored chests now use three custom lazy-generated loot tables: bedroom bel
 
 The domestic transition envelope now includes the basement and second story while still excluding the roof/attic.
 
-
 ### 0.1.23 architectural and terrain-aware generation pass
 
 The static house exterior has been rebuilt around stronger vanilla-build conventions rather than treating the roof as a procedural cap.
@@ -421,11 +415,9 @@ Natural spawning now evaluates up to 40 candidate sites and chooses the best rat
 
 Before construction clears anything, the builder samples the front approach. Porch posts extend down to real terrain. On land, the front stair run extends outward/downward to the sampled ground height. If the approach is substantially water-covered, the front becomes a short supported spruce landing/dock rather than generating stairs into water.
 
-
 ### 0.1.24 front stair orientation fix
 
 Terrain-adaptive stone-brick approach stairs now face south toward The Oldest House, so their ascending side points back toward the porch while the courses descend northward to the sampled ground level.
-
 
 ### 0.1.25 doorway-clearance audit
 
@@ -435,13 +427,11 @@ The basement stair now begins one block deeper inside the utility room so its ra
 
 A final doorway-clearance pass now runs after all structural, furnishing and lighting generation. Each authored doorway has protected approach cells on both sides; only colliding blocks are removed, so passable carpets and other zero-collision decoration can remain. The future impossible doorway receives the same clearance treatment when revealed.
 
-
 ### 0.1.26 stage-aware domestic mirror refresh
 
 The first impossible doorway threshold is now correctly treated as shared domestic architecture. The impossible hallway begins at z+16; the z+15 partition containing the revealed doorway is no longer excluded from mirroring.
 
 After a House stage modifies domestic/shared architecture, the House dimension now explicitly pushes the complete shared domestic footprint back into the Overworld proxy. This makes the threshold doorway appear immediately and keeps player-visible ordinary rooms consistent while still excluding all hallway geometry from the Overworld.
-
 
 ### 0.1.27 Mirror v2: authoritative domestic persistence
 
@@ -457,7 +447,6 @@ The House dimension is now the authoritative copy of the initialized domestic in
 
 Impossible-only hallway cells remain excluded from all domestic reconciliation.
 
-
 ### 0.1.28 Overworld hallway sightline proxy
 
 The impossible hallway remains physically absent from the Overworld, but can now be seen from the ordinary domestic/front side after its threshold door is revealed and opened.
@@ -466,7 +455,6 @@ The server synchronizes the House origin and reveal state to clients. While the 
 
 No proxy blocks, collision, lighting state, or chunks are created in the Overworld. Crossing the threshold still hands off to the real hallway in the House dimension.
 
-
 ### 0.1.29 upstairs landing correction
 
 The front-bedroom doors no longer open onto the upstairs stairwell void. Both doors have moved to the solid rear section of the central landing at relative z+8, where each has a full walkable approach.
@@ -474,7 +462,6 @@ The front-bedroom doors no longer open onto the upstairs stairwell void. Both do
 The open stairwell now has a continuous spruce-fence guardrail along its solid corridor edge. The upstairs runner has also been adjusted so it stops at the stair opening and resumes on the rear landing rather than implying floor where there is none.
 
 Doorway-clearance volumes were updated to the new landing positions so later furnishing/structure passes cannot recreate the same defect.
-
 
 ### 0.1.30 domestic polish and threshold-view repair
 
@@ -487,7 +474,6 @@ This pass focuses on visible architectural finish and two immersion defects foun
 - Impossible-hall construction now uses client-update / known-shape / suppress-drops flags and immediately purges item/falling-block debris inside the construction volume.
 - The first impossible threshold door appears open, making the long sightline legible as soon as the stage exists.
 - The Overworld sightline no longer tries to render the physical corridor sixty blocks through ordinary terrain. Instead, it renders a depth-tested perspective view immediately behind the real threshold aperture. This avoids hills, water, trees and other valid Overworld geometry occluding the impossible view while keeping the physical exterior unchanged.
-
 
 ### 0.1.31 HouseBuilder rewrite
 
@@ -507,7 +493,6 @@ The domestic House generator has been replaced rather than incrementally patched
 - Actual vanilla painting entities replace wall-banner stand-ins. The same authored paintings are spawned separately in the Overworld and authoritative House dimension because entity mirroring is not yet generalized.
 - Window panes are restored after structural/furnishing passes as a final aperture invariant.
 - The first impossible door again appears closed.
-
 
 ### 0.2.0 Tudor manor rebuild and mirror performance
 
@@ -589,7 +574,6 @@ The opening has been revised so the player's own home remains ordinary.
 - The dimension containing the real mob remains authoritative; projected entities cannot be attacked, interacted with or used for gameplay.
 - Proxy evacuation explicitly ignores projections, so a visible interior NPC is not mistaken for a trapped real Overworld mob and thrown out of the house.
 - Both projection directions are seeded before dimension exits/entries where appropriate to avoid one-frame pop-in.
-
 
 ### Unreleased fixes
 
