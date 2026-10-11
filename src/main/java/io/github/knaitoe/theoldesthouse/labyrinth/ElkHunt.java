@@ -35,7 +35,7 @@ public final class ElkHunt {
     public static final int ABOARD = 0, HUNTED = 1, IN_WATER = 2, ASHORE = 3, SEARCH = 4, SPENT = 5;
     /** Watching, searching, running, crouched at the pile: the killer's model phases. */
     public static final int WATCH = 0, WALK = 1, RUN = 2, PEER = 3;
-    public static final int ATTACK_DELAY=30;
+    public static final int ATTACK_DELAY=90;
     private static final double SEARCH_SPEED = .75, CHASE_SPEED = 1.35;
     /** Cover the visible body beyond the House's short-range scenery observation rule. */
     private static final double RELOCATION_VIEW_RANGE=128;

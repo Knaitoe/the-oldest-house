@@ -199,14 +199,13 @@ public final class LakeWitchEntity extends PathfinderMob {
     private boolean withdrawing(){return cooldown>0&&!exposedHunt&&!emerging;}
     private boolean coverReachable;
     private void beginWithdrawal(@Nullable ServerPlayer target){
-        cancelStrike();cooldown=target!=null&&target.getHealth()<=6?20:20+getRandom().nextInt(41);
+        cancelStrike();cooldown=20+getRandom().nextInt(41);exposedHunt=false;
         entityData.set(HUNT_PHASE,WITHDRAW);coverPause=false;emerging=false;route.clear();routeGoal=null;coverReachable=false;failedCoverTicks=0;
     }
     /** The short hiding interval starts on arrival, rather than expiring during the retreat. */
     private void huntClocks(boolean critical){
         if(passingSwipeTicks>0)passingSwipeTicks--;
-        if(critical&&cooldown>20)cooldown=20;
-        if(cooldown>0&&(!withdrawing()||coverPause||critical))cooldown--;
+        if(cooldown>0&&(!withdrawing()||coverPause))cooldown--;
         if(coverPause&&cooldown==0){coverPause=false;emerging=true;route.clear();routeGoal=null;}
     }
     private void coverProgress(boolean watched,Vec3 before){
@@ -386,7 +385,7 @@ public final class LakeWitchEntity extends PathfinderMob {
             IndianLakeProgress.hunted(LabyrinthData.get(level.getServer()), target.getUUID());
         boolean observed=level.players().stream().filter(p->canAttack(this,p)).anyMatch(p->inView(p,getEyePosition()));
         if(!critical&&!exposedHunt&&!emerging&&observed&&(huntPhase()==LUNGE||cooldown==0&&distanceToSqr(target)<72))beginWithdrawal(target);
-        if(coverPause&&withdrawing()&&!critical){entityData.set(HUNT_PHASE,WITHDRAW);return;}
+        if(coverPause&&withdrawing()){entityData.set(HUNT_PHASE,WITHDRAW);return;}
         if(windup>0){windup--;return;}
         BlockPos goal = BlockPos.containing(target.getX(), shoreBase.getY(), target.getZ());
         if(!huntWalkable(goal)){cancelStrike();clearDoorBreak();return;}
@@ -408,7 +407,7 @@ public final class LakeWitchEntity extends PathfinderMob {
             entityData.set(HUNT_PHASE,LUNGE);entityData.set(STRIKING,true);entityData.set(BITING,getRandom().nextBoolean());windup=4;lungeTicks=24;routeTo(goal);
             level.playSound(null,blockPosition(),DrownedTownRegistry.WITCH_VOICE.get(),SoundSource.HOSTILE,.55F,1.2F);return;
         }
-        boolean withdraw=withdrawing()&&!critical;entityData.set(HUNT_PHASE,withdraw?WITHDRAW:STALK);
+        boolean withdraw=withdrawing();entityData.set(HUNT_PHASE,withdraw?WITHDRAW:STALK);
         if(routeGoal==null||route.isEmpty()||!withdraw&&tickCount%24==0){
             BlockPos cover=exposedHunt||emerging?null:ambushGoal(level,shoreBase,BlockPos.containing(getX(),shoreBase.getY(),getZ()),target,withdraw);
             if(cover!=null){routeTo(cover);coverReachable=!route.isEmpty()||blockPosition().equals(cover);}
@@ -462,7 +461,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         boolean critical=target.getHealth()<=6;huntClocks(critical);
         boolean watched=level.players().stream().filter(p->p.isAlive()&&!p.isSpectator()&&!p.isCreative()&&LiteraryVignettes.inside(p,literaryPlace)).anyMatch(p->inView(p,getEyePosition()));
         if(!critical&&!exposedHunt&&!emerging&&watched&&(huntPhase()==LUNGE||cooldown==0&&distanceToSqr(target)<72))beginWithdrawal(target);
-        if(coverPause&&withdrawing()&&!critical){entityData.set(HUNT_PHASE,WITHDRAW);return;}
+        if(coverPause&&withdrawing()){entityData.set(HUNT_PHASE,WITHDRAW);return;}
         if(windup>0){windup--;return;}
         var goal=BlockPos.containing(target.getX(),literaryBase.getY(),target.getZ());
         if(huntPhase()==LUNGE){
@@ -475,7 +474,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         }
         if(cooldown==0&&distanceToSqr(target)<72&&hasLineOfSight(target)&&(!watched||critical||exposedHunt||emerging)){
             entityData.set(HUNT_PHASE,LUNGE);entityData.set(STRIKING,true);entityData.set(BITING,getRandom().nextBoolean());windup=critical?2:6;lungeTicks=30;literaryRoute(goal);return;}
-        boolean withdraw=withdrawing()&&!critical;entityData.set(HUNT_PHASE,withdraw?WITHDRAW:STALK);
+        boolean withdraw=withdrawing();entityData.set(HUNT_PHASE,withdraw?WITHDRAW:STALK);
         if(routeGoal==null||route.isEmpty()||!withdraw&&tickCount%20==0){var cover=withdraw?literaryCover(level,target):goal;
             coverReachable=cover!=null;if(cover!=null){literaryRoute(cover);coverReachable=!route.isEmpty()||blockPosition().equals(cover);}else literaryRoute(goal);}
         var beforeCover=position();

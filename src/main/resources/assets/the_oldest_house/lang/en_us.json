@@ -237,5 +237,7 @@
   "subtitles.the_oldest_house.literary.paw_scratch": "Something scratches at the door",
   "subtitles.the_oldest_house.literary.paw_hiss": "The fire spits",
   "block.the_oldest_house.cottage": "Cottage piece",
-  "item.the_oldest_house.withered_paw": "Withered paw"
+  "item.the_oldest_house.withered_paw": "Withered paw",
+  "block.the_oldest_house.camp_decor": "Camp furnishing",
+  "item.the_oldest_house.mill_letter": "Envelope from the mill"
 }

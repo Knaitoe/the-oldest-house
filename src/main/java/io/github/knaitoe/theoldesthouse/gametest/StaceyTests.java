@@ -50,6 +50,18 @@ public final class StaceyTests {
     }
     private static void run(GameTestHelper h,LabyrinthPlace p,int coordinate,Consumer<Fixture> check){var f=new Fixture(h,p,coordinate);h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"wait for native chunks and entity sections")).thenExecute(()->{f.start();check.accept(f);});}
     private static void clean(){if(active!=null)active.close();}
+    @AfterBatch(batch="stacey_cycle0483") public static void cycleDone(ServerLevel l){clean();}
+    @GameTest(template="empty",batch="stacey_cycle0483",timeoutTicks=1800)
+    public static void anExposedTownRushReturnsToCoverAfterStrikingALowHealthReader(GameTestHelper h){run(h,LabyrinthPlace.DROWNED_TOWN,1255000,f->{
+        f.corridor();var p=f.player("stacey_cycle_reader",.5,-33.5);p.setHealth(10);
+        h.startSequence().thenIdle(70).thenExecute(()->{
+            var w=f.witch(.5,-35.5);var id=w.getUUID();var tag=new CompoundTag();w.saveWithoutId(tag);tag.putBoolean("ExposedHunt0459",true);tag.putInt("FailedCoverTicks0459",LakeWitchEntity.COVER_SEARCH_LIMIT);tag.putInt("HuntCooldown",0);w.load(tag);f.look(p,w);
+            h.startSequence().thenWaitUntil(()->h.assertTrue(p.getHealth()<10,"the actual exposed body must finish its rush and strike: "+w.huntDiagnostic()))
+            .thenExecute(()->{p.setInvulnerable(true);h.assertTrue(p.getHealth()<=6&&w.huntPhase()==LakeWitchEntity.WITHDRAW&&!w.exposedHunt()&&w.attackCooldown()>0,"the strike clears fallback pursuit and commits to retreat even at low player health");})
+            .thenWaitUntil(()->h.assertTrue(w.hiding(),"Stacey must physically retreat and arrive in cover rather than continue chasing: "+w.huntDiagnostic()))
+            .thenExecute(()->{h.assertTrue(w.getUUID().equals(id)&&w.distanceToSqr(p)>12&&w.attackCooldown()>=20,"the same body begins its short hide only on arrival");f.done();});
+        });
+    });}
     @AfterBatch(batch="stacey_no_cover") public static void noCoverDone(ServerLevel l){clean();}
     @AfterBatch(batch="stacey_pause") public static void pauseDone(ServerLevel l){clean();}
     @AfterBatch(batch="stacey_doors") public static void doorsDone(ServerLevel l){clean();}

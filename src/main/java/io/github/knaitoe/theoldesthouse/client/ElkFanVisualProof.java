@@ -55,6 +55,6 @@ public final class ElkFanVisualProof extends Screen {
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof ElkFanVisualProof proof)||++proof.frames<24)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-elk-fan0480-"+VIEWS[proof.page]+".png"));}
         if(++proof.page<VIEWS.length){proof.frames=0;return;}
-        Files.writeString(dir.resolve("elk-fan0480-passed.txt"),"Healthy/wounded elk from both sides and in dim light on the non-overlapping native UV layout; the whole four-legged A-frame from front and side using its shipped block models.\n");TheOldestHouse.LOGGER.info("ELK FAN CHECK PASSED: two elk atlases and native A-frame in five views");mc.setScreen(new SceneReviewVisualProof());
+        Files.writeString(dir.resolve("elk-fan0480-passed.txt"),"Healthy/wounded elk from both sides and in dim light on the non-overlapping native UV layout; the whole four-legged A-frame from front and side using its shipped block models.\n");TheOldestHouse.LOGGER.info("ELK FAN CHECK PASSED: two elk atlases and native A-frame in five views");mc.setScreen(new Playtest0483VisualProof());
     }
 }

@@ -55,7 +55,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class ThreeFingers {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.THREE_FINGERS;
     public static final BlockPos FIRE=new BlockPos(-8,0,-11),POCKETBOOK=new BlockPos(-7,1,-8),BIBLE=new BlockPos(8,1,-5),FRONT_DOOR=new BlockPos(2,0,-17),LAMP=new BlockPos(6,3,-25);
-    static final BlockPos FATHER_SEAT=new BlockPos(-5,0,-11),SON_SEAT=new BlockPos(-3,0,-11),MOTHER_SEAT=new BlockPos(-6,0,-14),SERGEANT_SEAT=new BlockPos(-6,0,-8),MESSENGER_SPOT=new BlockPos(2,0,-15);
+    static final BlockPos FATHER_SEAT=new BlockPos(-6,0,-10),SON_SEAT=new BlockPos(-4,0,-11),MOTHER_SEAT=new BlockPos(-7,0,-14),SERGEANT_SEAT=new BlockPos(-6,0,-12),MESSENGER_SPOT=new BlockPos(2,0,-15);
     /** The cottage's people, on the stranger role's phases nine to thirteen, each drawn by its own skin. */
     public static final int FATHER=9,MOTHER=10,SON=11,SERGEANT=12,MESSENGER=13;
     /** Each reader's part. */
@@ -160,11 +160,12 @@ public final class ThreeFingers {
     }
     private static void parlour(Site s){
         s.rug(-6,-2,-13,-9);
-        s.furniture(new BlockPos(-4,0,-11),HouseholdFurnitureBlock.Kind.CHESS_TABLE,Direction.EAST);
-        s.furniture(FATHER_SEAT,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);
+        s.furniture(new BlockPos(-6,0,-11),HouseholdFurnitureBlock.Kind.CHESS_TABLE,Direction.NORTH);
+        s.c(-6,1,-11,Kind.CHESSBOARD,Direction.NORTH);
+        s.furniture(FATHER_SEAT,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.NORTH);
         s.furniture(SON_SEAT,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.WEST);
-        s.furniture(MOTHER_SEAT,HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR,Direction.NORTH);
-        s.furniture(new BlockPos(-6,0,-13),HouseholdFurnitureBlock.Kind.FOOTSTOOL,Direction.NORTH);
+        s.furniture(MOTHER_SEAT,HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR,Direction.SOUTH);
+        s.furniture(new BlockPos(-7,0,-13),HouseholdFurnitureBlock.Kind.FOOTSTOOL,Direction.NORTH);
         s.furniture(SERGEANT_SEAT,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.SOUTH);
         s.furniture(new BlockPos(-7,0,-8),HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.EAST);
         s.c(POCKETBOOK.getX(),POCKETBOOK.getY(),POCKETBOOK.getZ(),Kind.POCKETBOOK,Direction.EAST);
@@ -215,7 +216,15 @@ public final class ThreeFingers {
     }
     private static @Nullable LiteraryActor cast(ServerLevel l,CompoundTag own,String key){return own.hasUUID(key)&&l.getEntity(own.getUUID(key)) instanceof LiteraryActor a&&!a.isRemoved()?a:null;}
     private static @Nullable LiteraryActor seat(ServerPlayer p,ServerLevel l,BlockPos b,CompoundTag own,String key,int phase,BlockPos spot,Direction facing){
-        var have=cast(l,own,key);if(have!=null)return have;
+        // Old occupied saves keep their old seats until the guarded furniture repair can run.
+        if(!CottageBlock.is(l.getBlockState(b.offset(-6,1,-11)),Kind.CHESSBOARD))switch(key){
+            case "CastFather"->{spot=new BlockPos(-5,0,-11);facing=Direction.EAST;}
+            case "CastMother"->{spot=new BlockPos(-6,0,-14);facing=Direction.NORTH;}
+            case "CastSon"->spot=new BlockPos(-3,0,-11);
+            case "CastSergeant"->spot=new BlockPos(-6,0,-8);
+            default->{}
+        }
+        var have=cast(l,own,key);if(have!=null){float yaw=facing.toYRot();have.moveTo(b.getX()+spot.getX()+.5,b.getY()+spot.getY(),b.getZ()+spot.getZ()+.5,yaw,0);have.setYHeadRot(yaw);have.yBodyRot=yaw;return have;}
         var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
         a.appearance(LiteraryActor.STRANGER,phase);a.bind(PLACE,p.getUUID());float yaw=facing.toYRot();
         a.moveTo(b.getX()+spot.getX()+.5,b.getY()+spot.getY(),b.getZ()+spot.getZ()+.5,yaw,0);a.setYHeadRot(yaw);a.yBodyRot=yaw;
@@ -226,8 +235,8 @@ public final class ThreeFingers {
     /** Who is in the cottage for this reader, by where their part has reached. */
     private static void cast(ServerPlayer p,ServerLevel l,BlockPos b,CompoundTag own){
         int stage=stage(own);
-        seat(p,l,b,own,"CastFather",FATHER,FATHER_SEAT,Direction.EAST);
-        seat(p,l,b,own,"CastMother",MOTHER,MOTHER_SEAT,Direction.NORTH);
+        seat(p,l,b,own,"CastFather",FATHER,FATHER_SEAT,Direction.NORTH);
+        seat(p,l,b,own,"CastMother",MOTHER,MOTHER_SEAT,Direction.SOUTH);
         if(!own.getBoolean("SonGone"))seat(p,l,b,own,"CastSon",SON,SON_SEAT,Direction.WEST);else dismiss(l,own,"CastSon");
         if(stage<=TAKEN&&!own.getBoolean("SergeantGone"))seat(p,l,b,own,"CastSergeant",SERGEANT,SERGEANT_SEAT,Direction.SOUTH);else dismiss(l,own,"CastSergeant");
         long now=l.getGameTime();
@@ -250,6 +259,7 @@ public final class ThreeFingers {
         if(!own.contains(FINGERS))own.putInt(FINGERS,3);
     }
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){
+        MillLetterItem.upgrade(p);
         var l=p.serverLevel();int t=own.getInt("T")+5;own.putInt("T",t);
         cast(p,l,b,own);
         // The storm, at the windows, unless this reader wished it away.
@@ -314,8 +324,7 @@ public final class ThreeFingers {
     private static void gift(ServerPlayer p,CompoundTag own,String wish){
         if(own.getBoolean("Gift"))return;own.putBoolean("Gift",true);
         if(MONEY.equals(wish)){
-            var envelope=new ItemStack(Items.PAPER);envelope.set(DataComponents.ITEM_NAME,Component.literal("Envelope from the mill"));
-            envelope.set(DataComponents.LORE,new ItemLore(List.of(Component.literal("In consideration of services rendered."))));
+            var envelope=MillLetterItem.issue(p);
             for(var item:List.of(envelope,new ItemStack(Items.EMERALD,7),new ItemStack(Items.GOLD_INGOT,3)))LiteraryVignettes.give(p,item);
         }else if(COMPANION.equals(wish)){
             String name=own.getString("Companion");var collar=new ItemStack(Items.LEAD);collar.set(DataComponents.ITEM_NAME,Component.literal(name+"'s collar"));
@@ -439,6 +448,7 @@ public final class ThreeFingers {
     }
     private static void twist(ServerPlayer p,CompoundTag own){
         own.putInt(FINGERS,Math.max(0,own.getInt(FINGERS)-1));WitheredPawItem.refresh(p,own);
+        io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.PawClutchPayload(own.getInt(FINGERS)));
         hear(p,LiteraryRegistry.PAW_TWIST.get(),p.blockPosition(),1,1);
         p.displayClientMessage(Component.literal("It twists in your hand like a live thing. A finger curls down and stays down."),false);
     }
