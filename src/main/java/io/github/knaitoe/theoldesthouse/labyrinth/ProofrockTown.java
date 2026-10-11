@@ -122,7 +122,7 @@ public final class ProofrockTown {
     private void lamp(int x,int z,Direction arm){
         for(var e:lampStates(b,x,z,arm).entrySet())BuildBlocks.set(l,e.getKey(),e.getValue(),F);
     }
-    private static java.util.Map<BlockPos,BlockState> lampStates(BlockPos b,int x,int z,Direction arm){
+    static java.util.Map<BlockPos,BlockState> lampStates(BlockPos b,int x,int z,Direction arm){
         var out=new java.util.LinkedHashMap<BlockPos,BlockState>();
         for(int y=0;y<=4;y++)out.put(b.offset(x,y,z),TownStreetlightBlock.of(y==0?TownStreetlightBlock.Kind.BASE:y==4?TownStreetlightBlock.Kind.TOP:TownStreetlightBlock.Kind.POLE,arm,false));
         out.put(b.offset(x+arm.getStepX(),4,z+arm.getStepZ()),TownStreetlightBlock.of(TownStreetlightBlock.Kind.ARM,arm,false));

@@ -73,15 +73,16 @@ import static io.github.knaitoe.theoldesthouse.house.RugFloorBlock.Tone.*;
 public final class SceneCraft {
     public static final String STATE = "scene_craft_0446";
     public static final String REPAIR_STATE = "scene_craft_repairs_0447";
-    private static final Set<LabyrinthPlace> REPAIR_PLACES = EnumSet.of(LabyrinthPlace.ELK_LOT, LabyrinthPlace.MAPPING_INTERIOR,
+    private static final Set<LabyrinthPlace> REPAIR_PLACES = EnumSet.of(LabyrinthPlace.MAPPING_INTERIOR,
             LabyrinthPlace.CAMP_BLOOD, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.BARN_WELL, LabyrinthPlace.GOATMAN);
     private static final int F = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
     static final Set<LabyrinthPlace> ROOMS = EnumSet.of(LabyrinthPlace.HILL_NURSERY, LabyrinthPlace.MINIATURES, LabyrinthPlace.MASQUE,
             LabyrinthPlace.USHER, LabyrinthPlace.WINCHESTER, LabyrinthPlace.CRIMSON_HALL, LabyrinthPlace.BLY_ROUTE,
             LabyrinthPlace.ELK_FAN, LabyrinthPlace.CONFESSION, LabyrinthPlace.DEVILS_ROCK, LabyrinthPlace.WHEEL, LabyrinthPlace.GHOSTS_SET);
-    // The elk carcasses (0.4.50) author their own two-stage woods, stream and shore: nothing generic is planted over them.
-    static final Set<LabyrinthPlace> GROUNDS = EnumSet.of(LabyrinthPlace.ELK_LOT, LabyrinthPlace.MAPPING_INTERIOR, LabyrinthPlace.HOLY_RABBIT,
+    // The elk carcasses (0.4.50) author their own two-stage woods, stream and shore, and the Last Stop (0.4.78) its own road,
+    // lot, field and woods: nothing generic is planted over them.
+    static final Set<LabyrinthPlace> GROUNDS = EnumSet.of(LabyrinthPlace.MAPPING_INTERIOR, LabyrinthPlace.HOLY_RABBIT,
             LabyrinthPlace.COSTUME_NIGHT, LabyrinthPlace.MOVIE_NIGHT, LabyrinthPlace.WINTER_LAKE,
             LabyrinthPlace.CAMP_BLOOD, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.SHALLOWS, LabyrinthPlace.PHONE_CANOE,
             LabyrinthPlace.HOTEL_GROUNDS, LabyrinthPlace.BARN_WELL, LabyrinthPlace.GOATMAN, LabyrinthPlace.EXPLORER_CAMP);

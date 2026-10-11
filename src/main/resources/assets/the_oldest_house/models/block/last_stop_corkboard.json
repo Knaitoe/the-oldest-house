@@ -1,0 +1,51 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "s": "the_oldest_house:block/last_stop/swatches",
+  "w": "the_oldest_house:block/last_stop/mahogany",
+  "d": "the_oldest_house:block/last_stop/dark_wood",
+  "c": "the_oldest_house:block/last_stop/corkboard",
+  "particle": "the_oldest_house:block/last_stop/corkboard"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    1,
+    15
+   ],
+   "to": [
+    16,
+    15,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#c",
+     "uv": [
+      0,
+      1,
+      16,
+      15
+     ]
+    },
+    "south": {
+     "texture": "#w"
+    },
+    "east": {
+     "texture": "#w"
+    },
+    "west": {
+     "texture": "#w"
+    },
+    "up": {
+     "texture": "#w"
+    },
+    "down": {
+     "texture": "#w"
+    }
+   }
+  }
+ ]
+}

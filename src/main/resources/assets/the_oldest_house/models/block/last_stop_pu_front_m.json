@@ -1,0 +1,140 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "s": "the_oldest_house:block/last_stop/swatches",
+  "b": "the_oldest_house:block/last_stop/pu_body",
+  "h": "the_oldest_house:block/last_stop/pu_hood",
+  "g": "the_oldest_house:block/last_stop/pu_glass",
+  "l": "the_oldest_house:block/last_stop/pu_liner",
+  "y": "the_oldest_house:block/last_stop/pu_tyre",
+  "t": "the_oldest_house:block/last_stop/pu_tread",
+  "o": "the_oldest_house:block/last_stop/pu_front_m",
+  "particle": "the_oldest_house:block/last_stop/pu_body"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    2,
+    0
+   ],
+   "to": [
+    16,
+    13,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b",
+     "tintindex": 0
+    },
+    "south": {
+     "texture": "#b",
+     "tintindex": 0
+    },
+    "east": {
+     "texture": "#b",
+     "tintindex": 0
+    },
+    "west": {
+     "texture": "#b",
+     "tintindex": 0
+    },
+    "up": {
+     "texture": "#h",
+     "tintindex": 0
+    },
+    "down": {
+     "texture": "#b",
+     "tintindex": 0
+    }
+   }
+  },
+  {
+   "from": [
+    1,
+    0,
+    1
+   ],
+   "to": [
+    15,
+    2,
+    15
+   ],
+   "faces": {
+    "north": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    },
+    "south": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    },
+    "east": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    },
+    "west": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    },
+    "up": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    },
+    "down": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    2,
+    -0.05
+   ],
+   "to": [
+    16,
+    13,
+    0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#o"
+    }
+   }
+  }
+ ]
+}

@@ -224,5 +224,10 @@
   "block.the_oldest_house.institute_door": "Painted ward door",
   "block.the_oldest_house.institute_locked_door": "Locked ward door",
   "subtitles.the_oldest_house.ward.hum": "Fluorescent light hums",
-  "subtitles.the_oldest_house.ward.flicker": "Fluorescent light flickers"
+  "subtitles.the_oldest_house.ward.flicker": "Fluorescent light flickers",
+  "subtitles.the_oldest_house.literary.lot_alarm": "Car alarm blares",
+  "subtitles.the_oldest_house.literary.lot_highway": "Truck passes on the highway",
+  "subtitles.the_oldest_house.literary.lot_pool": "Pool balls clack",
+  "subtitles.the_oldest_house.literary.lot_crash": "Metal crumples",
+  "block.the_oldest_house.roadhouse": "Roadhouse piece"
 }
