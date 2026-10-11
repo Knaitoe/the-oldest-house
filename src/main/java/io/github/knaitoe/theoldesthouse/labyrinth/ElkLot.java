@@ -250,18 +250,26 @@ public final class ElkLot {
         var d=LabyrinthData.get(l.getServer());if(built(d,b))return true;var area=area(b);if(!loaded(l,b))return false;
         if(l.players().stream().anyMatch(p->area.inflate(16).intersects(p.getCamera().getBoundingBox())))return false;
         if(!l.getEntitiesOfClass(LivingEntity.class,area,e->e.isAlive()&&!e.isSpectator()&&!(e instanceof LiteraryActor)&&!(e instanceof LiteraryElk)).isEmpty())return false;
-        // The old source lectern would throw its book onto the floor as it goes, and a disc would leave the jukebox.
-        for(var at:BlockPos.betweenClosed(BlockPos.containing(area.minX,area.minY,area.minZ),BlockPos.containing(area.maxX-1,area.maxY-1,area.maxZ-1))){
-            var be=l.getBlockEntity(at);
-            if(be instanceof LecternBlockEntity lectern){lectern.clearContent();var st=l.getBlockState(at);if(st.hasProperty(LecternBlock.HAS_BOOK))l.setBlock(at,st.setValue(LecternBlock.HAS_BOOK,false),Block.UPDATE_CLIENTS);}
-            else if(be instanceof JukeboxBlockEntity box)box.setTheItem(net.minecraft.world.item.ItemStack.EMPTY);
-        }
         for(var actor:l.getEntitiesOfClass(LiteraryActor.class,area))actor.discard();
         var world=LiteraryVignettes.shared(d,PLACE);var kept=new net.minecraft.nbt.CompoundTag();if(world.hasUUID("Elk"))kept.putUUID("Elk",world.getUUID("Elk"));LiteraryVignettes.shared(d,PLACE,kept);
         LiteraryRooms.build(l,b,PLACE);
         ElkLotNight.restElk(l,b);
         markBuilt(d,b);
         return true;
+    }
+    /**
+     * Empty the lot's lecterns and jukebox before anything replaces them: the old source lectern would throw its book onto the
+     * floor as it goes, and the night's record would leave the jukebox as a disc anyone could pick up.
+     */
+    static void empty(ServerLevel l,BlockPos b){
+        var area=area(b);
+        for(int cx=BlockPos.containing(area.minX,0,0).getX()>>4;cx<=BlockPos.containing(area.maxX-1,0,0).getX()>>4;cx++)
+            for(int cz=BlockPos.containing(0,0,area.minZ).getZ()>>4;cz<=BlockPos.containing(0,0,area.maxZ-1).getZ()>>4;cz++)
+                for(var be:List.copyOf(l.getChunk(cx,cz).getBlockEntities().values())){
+                    var at=be.getBlockPos();if(!area.contains(Vec3.atCenterOf(at)))continue;
+                    if(be instanceof LecternBlockEntity lectern){lectern.clearContent();var st=l.getBlockState(at);if(st.hasProperty(LecternBlock.HAS_BOOK)&&st.getValue(LecternBlock.HAS_BOOK))l.setBlock(at,st.setValue(LecternBlock.HAS_BOOK,false),Block.UPDATE_CLIENTS);}
+                    else if(be instanceof JukeboxBlockEntity box&&!box.getTheItem().isEmpty())box.setTheItem(net.minecraft.world.item.ItemStack.EMPTY);
+                }
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         var s=e.getServer();if(s instanceof net.minecraft.gametest.framework.GameTestServer||s.getTickCount()%40!=13||LabyrinthBuilder.isCarving())return;

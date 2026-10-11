@@ -435,7 +435,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
                 var after=f.own(p,place);h.assertTrue(after.getBoolean("Ready")&&"escaped_the_looping_field_and_read_own_clipping".equals(after.getString("Outcome")),"twice round with the herd closing, it cuts to black: the same resolution as before");
                 h.assertTrue(p.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(ElkLot.PORCH)))<.1,"the reader wakes on the bar's porch");
                 h.assertTrue(LiteraryTexts.ending(p,place,after).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().anyMatch(page->page.raw().getString().contains("$6.50")),"the clipping remembers the open tab");
-                f.read(p,place,ElkLot.BOARD);
+                f.source(p,place);f.read(p,place,ElkLot.BOARD);
                 h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.ELK_LOT)&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.ELK_LOT),"the clipping on the board resolves its own reader only");
                 h.succeed();
             });

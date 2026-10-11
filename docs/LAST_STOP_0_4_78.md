@@ -66,7 +66,7 @@ Each reader's part is their own.
 - no camera is within sixteen blocks;
 - nothing living is in it but the elk and the scene's own cast.
 
-The elk keeps its body, its wound and its UUID, and is put out of sight for the first night. The old accusers and herd eyes go. The old source lectern gives up its book before it is removed, so nothing drops. Every reader's record is kept exactly as it was.
+The elk keeps its body, its wound and its UUID, and is put out of sight for the first night. The old accusers and herd eyes go. The old source lectern gives up its book before it is removed, so nothing drops. Every build of the lot, not only this one, first empties its lecterns and its jukebox, so neither a book nor the night's record is ever thrown onto the floor. Every reader's record is kept exactly as it was.
 
 Until a saved lot is re-carved it keeps working as before, with its old source and ending in their old places.
 
