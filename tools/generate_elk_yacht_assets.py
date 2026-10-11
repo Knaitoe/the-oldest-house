@@ -608,21 +608,19 @@ def elk_atlas(name, skinned):
                     px(im, x, y, shade(c, rng.randint(-8, 8)))
             for x in range(x0 + 6, x1 - 5, 3):
                 fill(im, (x, y0 + 4, x + 1, y1 - 3), (210, 196, 176), rng, 4)
-    neck = paint_box(im, 50, 0, 7, 15, 8, (90, 66, 46), rng, 6)
+    neck = paint_box(im, 0, 36, 7, 15, 8, (90, 66, 46), rng, 6)
     for side in ('front', 'right', 'left'):
         x0, y0, x1, y1 = neck[side]
         for _ in range(8):
             px(im, rng.randint(x0, x1 - 1), rng.randint(y0 + 6, y1 - 1), (78, 26, 22))
-    # Head (80,0) 7.6x7x10 and snout (80,20): painted over the float footprint.
-    fill(im, (80, 0, 116, 18), (106, 80, 56), rng, 6)
-    fill(im, (90, 10, 98, 17), (100, 74, 52), rng, 5)
-    px(im, 91, 12, (24, 20, 18)); px(im, 92, 12, (24, 20, 18)); px(im, 96, 12, (24, 20, 18)); px(im, 95, 12, (24, 20, 18))
-    fill(im, (80, 20, 102, 30), (72, 54, 40), rng, 4)
-    fill(im, (85, 25, 91, 29), (40, 32, 28), rng, 2)
-    paint_box(im, 112, 0, 6, 3, 2, (96, 72, 50), rng, 5)
-    legs = paint_box(im, 0, 38, 3, 13, 3, (76, 58, 42), rng, 5)
-    fill(im, (14, 38, 30, 44), (32, 28, 24), rng, 3)  # hooves
-    paint_box(im, 28, 38, 2, 2, 5, (150, 124, 90), rng, 5)
+    paint_box(im, 68, 0, 8, 7, 10, (106, 80, 56), rng, 6)
+    px(im, 75, 12, (24, 20, 18)); px(im, 88, 12, (24, 20, 18))
+    paint_box(im, 68, 20, 6, 4, 5, (72, 54, 40), rng, 4)
+    fill(im, (73, 25, 79, 29), (40, 32, 28), rng, 2)
+    paint_box(im, 100, 20, 6, 3, 2, (96, 72, 50), rng, 5)
+    paint_box(im, 32, 38, 3, 13, 3, (76, 58, 42), rng, 5)
+    paint_box(im, 48, 38, 4, 2, 4, (32, 28, 24), rng, 3)
+    paint_box(im, 68, 38, 2, 2, 5, (150, 124, 90), rng, 5)
     save('textures/entity/literary_' + name + '.png', im)
 
 

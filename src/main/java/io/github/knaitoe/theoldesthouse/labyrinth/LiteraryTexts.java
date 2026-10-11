@@ -28,8 +28,8 @@ public final class LiteraryTexts {
             "Pay the carpenters by the day. Do not ask them to estimate the end. The landing needs a room even if the room does not need a landing.",
             "The new door opens above the courtyard. There is hay below it. I have ordered another staircase.\n\nThe long switchback reaches the upper ledger. The short stair reaches only plaster.");
         case CHILD_ROOM->book("The bedtime card","Dad",
-            "You can leave the lamp on. If you need us, the door is where it always was.\n\nYour toys are not supposed to be up there.",
-            "If the door has gone, look below the bed. There is room to crawl. You do not have to ask whatever is speaking from the ceiling.");
+            "I left the little lamp on. Your mum says it makes the curtains look yellow.\n\nThe train was on the rug when I came in. I have put it back there.",
+            "You used to lose things under that bed. I could never get my shoulder far enough in to fetch them.\n\nIf you hear us, wait until morning. We are asleep downstairs.");
         case CRIMSON_HALL->book("Three cylinders","The housekeeper",
             "The snow falls through the roof, then stays where it lands. A shovel finds the old red floor. We were told it was the clay beneath the house.",
             "Three women left cylinders in different rooms. Play all three on the hall's jukebox. Let each finish before replacing it.\n\nOne is upstairs. The balcony is still sound.");
@@ -40,8 +40,8 @@ public final class LiteraryTexts {
             "Two drinks. One broken headlamp. Someone went out to move the trucks and left the till open.",
             "The light found an eye above the hood. Everybody had a reason to shout. Nobody had a reason to listen.\n\nThe field begins beyond the parked pickups.");
         case ELK_FAN->book("An unfinished repair","The tenant",
-            "The light flickers at the same point in each turn. The ladder is two rungs short. There are boards beside the tools; they might give me the reach I need. I keep my hands below the blades.",
-            "From up there you can see the carpet between the blades. Do not stay under them.\n\nCome back twice after the repair. The outline will change before the tooth appears.");
+            "The light flickers at the same point in each turn. I brought the old folding ladder in from the shed. The catches still hold. There is a screwdriver in the tray.\n\nI keep my hands below the blades.",
+            "From the top step the carpet seems farther away. Something lies between the turns. I cannot make it out from the chair.\n\nThe room was taped off when I came back. Whoever did it had already gone.");
         case MAPPING_INTERIOR->book("A floor plan","The older brother",
             "The trailer ends at the back bedroom. I know because I have walked around it. Under the hatch, the dirt keeps going.\n\nMy brother sleeps through breakfast now.",
             "I saw someone cross the kitchen. He looked more like a shadow than a man. Each time I return, I can make out another part of his face.",

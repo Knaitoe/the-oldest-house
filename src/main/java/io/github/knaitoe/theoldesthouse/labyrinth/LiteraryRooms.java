@@ -142,7 +142,7 @@ public final class LiteraryRooms {
         for(int w=-2;w<=2;w++)for(int y=1;y<=4;y++){var at=east?b.offset(x,y,z+w):b.offset(x+w,y,z);BuildBlocks.set(l,at,(Math.abs(w)==2||y==1||y==4?Blocks.STRIPPED_SPRUCE_LOG:Blocks.GLASS_PANE).defaultBlockState(),F);}
     }
     private static void fan(ServerLevel l,BlockPos b){
-        room(l,b,-11,11,-28,0,0,9,LiteraryRegistry.SIDING.get(),Blocks.BIRCH_PLANKS);prop(l,b,FAN,LiteraryPropBlock.Kind.FAN,Direction.SOUTH);for(int y=0;y<4;y++){at(l,b,0,y,-18,Blocks.DARK_OAK_PLANKS);BuildBlocks.set(l,b.offset(0,y,-17),Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH),F);}
+        room(l,b,-11,11,-28,0,0,9,LiteraryRegistry.SIDING.get(),Blocks.BIRCH_PLANKS);prop(l,b,FAN,LiteraryPropBlock.Kind.FAN,Direction.SOUTH);ElkFanRoom.build(l,b);
         box(l,b,-4,-1,-21,4,-1,-12,Blocks.GRAY_WOOL);box(l,b,6,0,-23,9,2,-23,Blocks.STONE_BRICKS);at(l,b,7,0,-22,Blocks.CAMPFIRE);furniture(l,b,-7,0,-21,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);furniture(l,b,-7,0,-13,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.EAST);box(l,b,6,2,-28,9,4,-28,Blocks.BLACK_STAINED_GLASS);
     }
     private static void mapping(ServerLevel l,BlockPos b){

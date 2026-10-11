@@ -1,0 +1,148 @@
+{
+  "ambientocclusion": true,
+  "textures": {
+    "oak": "the_oldest_house:block/fan_ladder_oak",
+    "iron": "the_oldest_house:block/fan_ladder_iron",
+    "tread": "the_oldest_house:block/fan_ladder_tread",
+    "rubber": "the_oldest_house:block/fan_ladder_rubber",
+    "particle": "the_oldest_house:block/fan_ladder_oak"
+  },
+  "elements": [
+    {
+      "from": [
+        1.5,
+        4,
+        0
+      ],
+      "to": [
+        2.5,
+        6,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#iron",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#iron",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#iron",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#iron",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#iron",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#iron",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        13.5,
+        4,
+        0
+      ],
+      "to": [
+        14.5,
+        6,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#iron",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#iron",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#iron",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#iron",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#iron",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#iron",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

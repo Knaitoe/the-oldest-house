@@ -39,7 +39,7 @@ public final class VignetteDetailBlock extends HorizontalDirectionalBlock {
             case REPAIR_DIAGRAM -> new double[][]{{1,1,15.7,15,15,16}};
             case FAN_WALLPAPER -> new double[][]{{0,0,15.8,16,16,16}};
             case CURTAIN -> new double[][]{{0,0,15,16,16,16}};
-            case CUSHION -> new double[][]{{3,0,3,13,3,13}};
+            case CUSHION -> new double[][]{{3,-8,3,13,-5,10}};
             case CARCASS -> new double[][]{{1,0,1,15,5,15},{3,5,4,13,7,12}};
             case ELK_SKULL -> new double[][]{{3,0,3,13,5,13},{1,4,2,4,7,5},{12,4,2,15,7,5}};
             case LOW_BRANCH -> new double[][]{{0,8,0,16,16,16}};

@@ -1,0 +1,11 @@
+{
+  "ambientocclusion": true,
+  "textures": {
+    "oak": "the_oldest_house:block/fan_ladder_oak",
+    "iron": "the_oldest_house:block/fan_ladder_iron",
+    "tread": "the_oldest_house:block/fan_ladder_tread",
+    "rubber": "the_oldest_house:block/fan_ladder_rubber",
+    "particle": "the_oldest_house:block/fan_ladder_oak"
+  },
+  "elements": []
+}

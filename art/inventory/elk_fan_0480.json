@@ -1,0 +1,108 @@
+{
+  "release": "0.4.80",
+  "logical_elk_uv": [
+    128,
+    64
+  ],
+  "exports": [
+    512,
+    256
+  ],
+  "native_ladder_parts": 30,
+  "ladder_height": 5.25,
+  "texture_records": [
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/block/fan_ladder_tread.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "6bc927d1afd4c04384e429489707e9d7ede0a18d620f0d7cd16e5793989238ae"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/block/fan_ladder_oak.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "d7635958ab0fc81645dd01263e56a5913d24f62b7c9c842c9450ed41bad4f74f"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/block/fan_ladder_rubber.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "5be2ffc23806f1eec951e69ed7866e868af5ec27cba415b913c53d223c79b3aa"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/block/fan_ladder_iron.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "c904cb65e37344f6329abe8a40e0da7f5ac67c50e256ce0620121876d3a2a415"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_elk_wounded.png",
+      "size": [
+        512,
+        256
+      ],
+      "sha256": "ee054ef3558e0752d6404055106d929d16ff3f85bd4f54acf182f1a18e24670a"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_elk_carcass_skinned.png",
+      "size": [
+        128,
+        64
+      ],
+      "sha256": "be192c0b8a0266be193d6c6ba4a2a4d4355e96ba002e9e0bec0c0e603e8f7494"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_elk.png",
+      "size": [
+        512,
+        256
+      ],
+      "sha256": "0321a53ff87f7ae5f03b4dc6e4158d553d4712c5b2f1dfceb82bb860910815c9"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_elk_carcass.png",
+      "size": [
+        128,
+        64
+      ],
+      "sha256": "e2989b3e89fccc6cf56dfdab1a92c045a4b8a5f3b1ee3819dcaf76405f9f8a42"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_fan.png",
+      "size": [
+        128,
+        64
+      ],
+      "sha256": "e9a5d214e1378f2584dbb47556a5b4540f1c731e6e0ed0bc1357d42bb6843b98"
+    },
+    {
+      "path": "art/elk_surface_0480.png",
+      "size": [
+        512,
+        256
+      ],
+      "sha256": "3036763edf3be1dc9e597a018ea1953df7775dd2cafb29777ae402f0dde9afde"
+    },
+    {
+      "path": "art/elk_surface_wounded_0480.png",
+      "size": [
+        512,
+        256
+      ],
+      "sha256": "ef5f30794d28dfc0b9c3974c885b0d2bdb279ae247f4490941e08ab365627b70"
+    }
+  ],
+  "generators": [
+    "tools/bake_elk_atlas.sh",
+    "tools/generate_fan_ladder_assets.py",
+    "tools/generate_elk_yacht_assets.py"
+  ]
+}
