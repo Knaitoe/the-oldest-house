@@ -229,5 +229,13 @@
   "subtitles.the_oldest_house.literary.lot_highway": "Truck passes on the highway",
   "subtitles.the_oldest_house.literary.lot_pool": "Pool balls clack",
   "subtitles.the_oldest_house.literary.lot_crash": "Metal crumples",
-  "block.the_oldest_house.roadhouse": "Roadhouse piece"
+  "block.the_oldest_house.roadhouse": "Roadhouse piece",
+  "subtitles.the_oldest_house.literary.paw_knock": "Someone knocks at the door",
+  "subtitles.the_oldest_house.literary.paw_hammer": "Fists hammer at the door",
+  "subtitles.the_oldest_house.literary.paw_wind": "Wind batters the cottage",
+  "subtitles.the_oldest_house.literary.paw_twist": "The paw twists",
+  "subtitles.the_oldest_house.literary.paw_scratch": "Something scratches at the door",
+  "subtitles.the_oldest_house.literary.paw_hiss": "The fire spits",
+  "block.the_oldest_house.cottage": "Cottage piece",
+  "item.the_oldest_house.withered_paw": "Withered paw"
 }

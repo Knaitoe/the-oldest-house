@@ -32,7 +32,7 @@ public final class SceneVisualProof extends Screen {
         super(Component.literal("Native scene architecture"));
         var models=Minecraft.getInstance().getEntityModels();body=new LiteraryRenderers.CastModel(models.bakeLayer(LiteraryRenderers.CAST));elk=new LiteraryRenderers.ElkModel(models.bakeLayer(LiteraryRenderers.ELK));
         try(var stream=Files.list(Path.of("../build/architecture-proof"))){files=stream.filter(p->p.toString().endsWith(".json")).sorted().toList();}
-        if(files.size()!=87)throw new IllegalStateException("Expected eighty-seven generated architecture views, found "+files.size());load();
+        if(files.size()!=88)throw new IllegalStateException("Expected eighty-eight generated architecture views, found "+files.size());load();
     }
     private void load()throws Exception{
         var json=JsonParser.parseString(Files.readString(files.get(index))).getAsJsonObject();name=json.get("name").getAsString();
@@ -70,8 +70,8 @@ public final class SceneVisualProof extends Screen {
         Path folder=Path.of("../build/font-smoke/scenes");Files.createDirectories(folder);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(s.name+".png"));}
         if(++s.index<s.files.size())s.load();else{
-            Files.writeString(Path.of("../build/font-smoke/architecture-passed.txt"),"All eighty-seven native generated architecture views rendered successfully.\n");
-            TheOldestHouse.LOGGER.info("HOUSE ARCHITECTURE CHECK PASSED: eighty-seven native architecture screenshots saved");mc.setScreen(new OutsideSkyProof());
+            Files.writeString(Path.of("../build/font-smoke/architecture-passed.txt"),"All eighty-eight native generated architecture views rendered successfully.\n");
+            TheOldestHouse.LOGGER.info("HOUSE ARCHITECTURE CHECK PASSED: eighty-eight native architecture screenshots saved");mc.setScreen(new OutsideSkyProof());
         }
     }
 }

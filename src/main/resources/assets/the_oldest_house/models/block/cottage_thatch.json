@@ -1,0 +1,12 @@
+{
+ "parent": "minecraft:block/cube",
+ "textures": {
+  "north": "the_oldest_house:block/cottage/thatch",
+  "south": "the_oldest_house:block/cottage/thatch",
+  "east": "the_oldest_house:block/cottage/thatch",
+  "west": "the_oldest_house:block/cottage/thatch",
+  "up": "the_oldest_house:block/cottage/thatch_top",
+  "down": "the_oldest_house:block/cottage/thatch",
+  "particle": "the_oldest_house:block/cottage/thatch"
+ }
+}

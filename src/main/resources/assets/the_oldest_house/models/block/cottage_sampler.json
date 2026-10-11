@@ -1,0 +1,43 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "s": "the_oldest_house:block/cottage/sampler",
+  "f": "the_oldest_house:block/cottage/mantel",
+  "particle": "the_oldest_house:block/cottage/sampler"
+ },
+ "elements": [
+  {
+   "from": [
+    2,
+    3,
+    15
+   ],
+   "to": [
+    14,
+    13,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#s"
+    },
+    "south": {
+     "texture": "#f"
+    },
+    "east": {
+     "texture": "#f"
+    },
+    "west": {
+     "texture": "#f"
+    },
+    "up": {
+     "texture": "#f"
+    },
+    "down": {
+     "texture": "#f"
+    }
+   }
+  }
+ ]
+}

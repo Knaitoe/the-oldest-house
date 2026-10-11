@@ -1,0 +1,12 @@
+{
+ "parent": "minecraft:block/cube",
+ "textures": {
+  "north": "the_oldest_house:block/cottage/whitewash",
+  "south": "the_oldest_house:block/cottage/whitewash",
+  "east": "the_oldest_house:block/cottage/whitewash",
+  "west": "the_oldest_house:block/cottage/whitewash",
+  "up": "the_oldest_house:block/cottage/whitewash",
+  "down": "the_oldest_house:block/cottage/whitewash",
+  "particle": "the_oldest_house:block/cottage/whitewash"
+ }
+}

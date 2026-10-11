@@ -877,5 +877,65 @@
         "attenuation_distance": 48
       }
     ]
+  },
+  "literary.paw_knock": {
+    "subtitle": "subtitles.the_oldest_house.literary.paw_knock",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/paw_knock",
+        "stream": false,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "literary.paw_hammer": {
+    "subtitle": "subtitles.the_oldest_house.literary.paw_hammer",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/paw_hammer",
+        "stream": false,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "literary.paw_wind": {
+    "subtitle": "subtitles.the_oldest_house.literary.paw_wind",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/paw_wind",
+        "stream": false,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "literary.paw_twist": {
+    "subtitle": "subtitles.the_oldest_house.literary.paw_twist",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/paw_twist",
+        "stream": false,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "literary.paw_scratch": {
+    "subtitle": "subtitles.the_oldest_house.literary.paw_scratch",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/paw_scratch",
+        "stream": false,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "literary.paw_hiss": {
+    "subtitle": "subtitles.the_oldest_house.literary.paw_hiss",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/paw_hiss",
+        "stream": false,
+        "attenuation_distance": 24
+      }
+    ]
   }
 }

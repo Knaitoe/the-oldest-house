@@ -1,0 +1,12 @@
+{
+ "parent": "minecraft:block/cube",
+ "textures": {
+  "north": "the_oldest_house:block/cottage/flagstone_side",
+  "south": "the_oldest_house:block/cottage/flagstone_side",
+  "east": "the_oldest_house:block/cottage/flagstone_side",
+  "west": "the_oldest_house:block/cottage/flagstone_side",
+  "up": "the_oldest_house:block/cottage/flagstone",
+  "down": "the_oldest_house:block/cottage/flagstone_side",
+  "particle": "the_oldest_house:block/cottage/flagstone_side"
+ }
+}

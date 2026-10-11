@@ -285,6 +285,8 @@ public enum LabyrinthPlace {
     WATCHED_THRESHOLD("watched_threshold",Kind.GRAY,91,new BoundingBox(-11,-1,-23,11,6,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),new DoorSpec("north",new BlockPos(0,0,-23),Direction.SOUTH,LabyrinthData.DEALT),new DoorSpec("west",new BlockPos(-11,0,-12),Direction.EAST,LabyrinthData.DEALT),new DoorSpec("east",new BlockPos(11,0,-12),Direction.WEST,LabyrinthData.DEALT))),
     DUPLICATE_ROOMS("duplicate_rooms",Kind.GRAY,92,new BoundingBox(-7,-1,-43,7,6,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),new DoorSpec("first",new BlockPos(7,0,-9),Direction.WEST,LabyrinthData.DEALT),new DoorSpec("second",new BlockPos(7,0,-23),Direction.WEST,LabyrinthData.DEALT),new DoorSpec("third",new BlockPos(7,0,-37),Direction.WEST,LabyrinthData.DEALT))),
     TURNING_GRAVITY("turning_gravity",Kind.GRAY,93,new BoundingBox(-13,-4,-29,13,6,0),grayDoors(0,0,-29)),
+    /** Three Fingers (0.4.81): a cottage on the mill road, a soldier's withered paw and three wishes. Interior, multi-visit. */
+    THREE_FINGERS("three_fingers",Kind.MULTI_VISIT,94,new BoundingBox(-14,-1,-34,14,10,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

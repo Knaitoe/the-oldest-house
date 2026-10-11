@@ -36,6 +36,9 @@ public final class LiteraryTexts {
         case BLY_ROUTE->book("A wet route","The gardener",
             "The boards dry by afternoon. Each morning the same narrow line is wet again: the door, the corridor, the room with the water.",
             "The cupboards have catches on the inside. Shut one when the dripping approaches. Wait until she has reached the lake room, then come out.\n\nDo not stand in her way.");
+        case THREE_FINGERS->book("A page from a pocketbook","Sgt. Coyle",
+            "Bought from a holy man at Ranipur for the price of a tin of tobacco. He would not touch it after. He said a man should not meddle with what is fated, and that those who do are sorry for it.",
+            "Three men. Three wishes each. The first had his. I have had mine. I shan't write down what they were.\n\nIf it is in the fire, leave it in the fire.");
         case ELK_LOT->book("Till receipt","Last Stop",
             "Two drinks. One broken headlamp. Someone went out to move the trucks and left the till open.",
             "The light found an eye above the hood. Everybody had a reason to shout. Nobody had a reason to listen.\n\nThe field begins beyond the parked pickups.");
@@ -99,6 +102,7 @@ public final class LiteraryTexts {
         case CHILD_ROOM->"The windows went first. Then the doors. I crawled beneath the bed and found a strip of floor that still led somewhere. I stood up only after I had left it.";
         case CRIMSON_HALL->"I played the three voices all the way through. Under the snow, the floor was red. A house can keep a voice much longer than it keeps a person.";
         case BLY_ROUTE->"I shut the cupboard from inside. Drips passed the crack under its door. I waited for the last footstep to enter the lake room, then came out onto the same wet boards.";
+        case THREE_FINGERS->ThreeFingers.account(own);
         case ELK_LOT->"FIELD DEATH\n\nThe name in the clipping was "+name+". I remembered the lights in the parking lot and the eyes beyond it. The report gave the field an ending that I had not stayed to see."+ElkLotNight.tab(own);
         case ELK_FAN->"From above the ladder, the blades kept removing parts of what lay below. On my next return, tape held the shape. On the third, there was only a tooth and the marks where the tape had been.";
         case MAPPING_INTERIOR->own.getBoolean("PileBroken")?"I broke the pile under the trailer. The boy woke when I came back. The crawlspace still ran beyond the walls, but the things at its end could no longer hold him there.":"I took what lay under the trailer. The photograph came with me. When I returned, the boy was harder to wake. Keeping a father's things was not the same as keeping a brother.";

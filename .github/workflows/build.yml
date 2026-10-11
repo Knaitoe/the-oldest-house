@@ -239,6 +239,24 @@ jobs:
               for name in ('ElkLot','ElkLotNight','RoadhouseBlock'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/client/ElkLotClient.class' in z.namelist()
+              # 0.4.81: Three Fingers, one cottage block, six subtitled cues, the withered paw and five placeholder skins.
+              cottage = json.loads(z.read('assets/the_oldest_house/blockstates/cottage.json'))['variants']
+              assert len(cottage) == 128, len(cottage)
+              for variant in cottage.values():
+                  assert variant['model'].replace('the_oldest_house:', 'assets/the_oldest_house/models/') + '.json' in z.namelist(), variant['model']
+              for name in ('whitewash','wallpaper','wainscot','flagstone','thatch','range_front','kettle','dresser_plates','mantel','clock','sampler','pocketbook','bible','lamp_lit','lamp_dim','milestone','doorstep'):
+                  assert z.read(f'assets/the_oldest_house/textures/block/cottage/{name}.png').startswith(b'\x89PNG'), name
+              for cue in ('knock', 'hammer', 'wind', 'twist', 'scratch', 'hiss'):
+                  assert z.read(f'assets/the_oldest_house/sounds/literary/paw_{cue}.ogg').startswith(b'OggS')
+                  assert caver_sounds[f'literary.paw_{cue}']['subtitle'] == f'subtitles.the_oldest_house.literary.paw_{cue}'
+              paw = json.loads(z.read('assets/the_oldest_house/models/item/withered_paw.json'))
+              assert sorted(o['predicate']['custom_model_data'] for o in paw['overrides']) == [1, 2, 3]
+              for suffix in ('', '_2', '_1', '_0'):
+                  assert z.read(f'assets/the_oldest_house/textures/item/withered_paw{suffix}.png').startswith(b'\x89PNG')
+              for name in ('walter','ruth','will','sergeant','messenger'):
+                  assert z.read(f'assets/the_oldest_house/textures/entity/literary_paw_{name}.png').startswith(b'\x89PNG')
+              for name in ('ThreeFingers','CottageBlock','WitheredPawItem'):
+                  assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               # The child's room (0.4.74): one nursery block for every piece of furniture and toy, its wallpaper, twelve subtitled toy cues.
               nursery = json.loads(z.read('assets/the_oldest_house/blockstates/nursery.json'))['variants']
               assert len(nursery) == 448

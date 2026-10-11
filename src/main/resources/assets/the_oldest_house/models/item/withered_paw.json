@@ -1,0 +1,26 @@
+{
+ "parent": "minecraft:item/generated",
+ "textures": {
+  "layer0": "the_oldest_house:item/withered_paw"
+ },
+ "overrides": [
+  {
+   "predicate": {
+    "custom_model_data": 1
+   },
+   "model": "the_oldest_house:item/withered_paw_2"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 2
+   },
+   "model": "the_oldest_house:item/withered_paw_1"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 3
+   },
+   "model": "the_oldest_house:item/withered_paw_0"
+  }
+ ]
+}

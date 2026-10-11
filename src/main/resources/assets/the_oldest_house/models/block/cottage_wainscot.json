@@ -1,0 +1,12 @@
+{
+ "parent": "minecraft:block/cube",
+ "textures": {
+  "north": "the_oldest_house:block/cottage/wainscot",
+  "south": "the_oldest_house:block/cottage/wainscot",
+  "east": "the_oldest_house:block/cottage/wainscot",
+  "west": "the_oldest_house:block/cottage/wainscot",
+  "up": "the_oldest_house:block/cottage/dresser_wood",
+  "down": "the_oldest_house:block/cottage/dresser_wood",
+  "particle": "the_oldest_house:block/cottage/wainscot"
+ }
+}

@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 41;
+    public static final int VERSION = 42;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -246,6 +246,7 @@ public final class LabyrinthBuilder {
                     || (data.builtVersion() < 33 && place.slot() >= 69)
                     || (data.builtVersion() < 34 && place.slot() >= 72)
                     || (data.builtVersion() < 41 && HazardVariety.added(place))
+                    || (data.builtVersion() < 42 && place == LabyrinthPlace.THREE_FINGERS)
                     || (data.builtVersion() < 12 && LabyrinthMaze.isMaze(place))
                     || (data.builtVersion() == 10 && place == LabyrinthPlace.MOTHER_DEN);
             boolean domestic = place == LabyrinthPlace.JUNCTION || LabyrinthHalls.isHall(place) || LabyrinthMaze.isMaze(place);
