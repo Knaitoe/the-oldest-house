@@ -40,7 +40,8 @@ public final class LabyrinthPlaces {
     private static final int APPENDED_INTERIOR_FIRST_SLOT = 45;
     private static final int APPENDED_INTERIOR_NORTH = 1024;
     // Slot 32 starts a fifth column at low/common manor heights; older slots never move.
-    private static final int MAX_COLUMNS = 10;
+    // Appending slots 78–93 needs two further columns at common house heights. Earlier columns and layers never move.
+    private static final int MAX_COLUMNS = 12;
     private static final int MAX_Y = 318;
     private static final int MIN_Y = -60;
 

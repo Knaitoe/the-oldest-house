@@ -2,7 +2,7 @@
 
 Both owner proposals are integrated on the current playtest branch, after Claude's Last Stop corrections and the five named cast skins. Layout 41 / protocol 53; matching clients and server are required. Exact-source validation is pending.
 
-Sixteen new gray slots append after 77. No earlier slot, discovered link, saved route, actor, original paper or Witness resolution changes. Existing hazard presets remain 28/42/54 percent with two visits of spacing; sibling layouts replace a family's choice rather than doubling its weight. Shared routes choose their sibling deterministically. Construction uses the normal depth-gated, bounded `BuildBlocks` slice queue and retains prior saved carve checkpoints.
+Sixteen new gray slots append after 77. The stack capacity expands from ten to twelve columns at common house heights; the existing column spacing and every earlier address remain exact. No earlier slot, discovered link, saved route, actor, original paper or Witness resolution changes. Existing hazard presets remain 28/42/54 percent with two visits of spacing; sibling layouts replace a family's choice rather than doubling its weight. Shared routes choose their sibling deterministically. Construction uses the normal depth-gated, bounded `BuildBlocks` slice queue and retains prior saved carve checkpoints.
 
 | Slot | Map | Depth | Native cost and way through |
 | --- | --- | --- | --- |
