@@ -44,7 +44,7 @@ public final class LiveExpeditionProof {
     private static void require(boolean okay,String message){if(!okay)throw new IllegalStateException("LIVE EXPEDITION: "+message);}
     @SubscribeEvent public static void commands(RegisterCommandsEvent e) {
         if(!enabled())return;
-        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,36)).executes(c->{
+        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,39)).executes(c->{
             var p=c.getSource().getPlayerOrException();if(!role(p).isEmpty()&&IntegerArgumentType.getInteger(c,"step")==phase)ACKS.add(role(p));return 1;
         })));
     }
@@ -73,6 +73,7 @@ public final class LiveExpeditionProof {
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e) {
         if(!enabled())return;var s=e.getServer();var a=player(s,"A");var b=player(s,"B");
+        if(phase==37||phase==38)MobSightProof.tick(a,b);
         // Read on the tick the native return lands, before the reader's restored stride or the test
         // client's still-held walk key carries them on along the tread.
         if(phase==11&&a!=null&&!firstReturned&&!StaircaseLeaks.active(a)){
@@ -324,6 +325,13 @@ public final class LiveExpeditionProof {
             require(GoatmanStalking.circuitDone(GoatmanVignette.run(d)),"the same native Goatman completed every physical circuit leg despite independent dialogue timing");
             var run=GoatmanVignette.run(d);var camp=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN);var wrong=a.serverLevel().getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(camp,LabyrinthPlace.GOATMAN),c->!c.girl()&&c.getPersistentData().getInt(GoatmanVignette.INDEX)==run.getInt("Wrong"));require(wrong.size()==1&&wrong.getFirst().getUUID().equals(nightGoatmanId),"the complete night keeps the original Goatman UUID and one physical body");
             write("trailer-night.txt","Both actual clients tracked the same seven cousins from upright confusion through distinct fear to terror, received native knocks from the west, east and rear, and rendered a later priority Goatman demand with the cousin subtitle suppressed. The original Goatman body completed every circuit leg.\n");
+            MobSightProof.beginOutside(a,b);step(s,37,MobSightProof.OUTSIDE_VIEW);
+        }else if(phase==37&&a!=null&&b!=null&&ACKS.size()==2){
+            MobSightProof.checkOutside(a,b);MobSightProof.beginManor(a,b,ORIGIN);step(s,38,MobSightProof.manorView());
+        }else if(phase==38&&a!=null&&b!=null&&ACKS.size()==2){
+            MobSightProof.checkManor(a,b);MobSightProof.depart(a,b);step(s,39,MobSightProof.OUTSIDE_VIEW);
+        }else if(phase==39&&a!=null&&b!=null&&ACKS.size()==2){
+            MobSightProof.finish(a);
             step(s,30,a.blockPosition());write("passed.txt","Two actual NeoForge socket clients: all original shared doors, personal leaves/burns/note scenes and two same-profile reconnects; one Stacy body and one three-second wooden-door break; real shared/private physical hunts, protected hiding peers and renderer ownership; both mine and crawl through persistent shattered portholes with protected hull; both use cameras, return actual rendered exposures, receive distinct locked native maps and independently earn their own Plains memory; a shared native ledger remains hidden for both, appears for the sole eligible reader and disappears after native menu collection without appearing for the peer; fresh trailer door arrivals track eight shared cousins and each private path girl; both clients render distinct fear and priority night dialogue and receive spatial knock events; native screenshots saved; no doubled clocks or transferred ending credit.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: persistent shattered portholes, two actual camera exposures, independent ending-book visibility, fresh trailer children and two reconnects");
         }else if(phase==30&&s.getTickCount()-changed>100){huntChunks.close();s.halt(false);}
     }

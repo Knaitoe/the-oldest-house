@@ -57,9 +57,8 @@ public final class HouseExteriorEntityMirror {
     private static final int STATE_REFRESH_INTERVAL_TICKS = 20;
     /** Far projections only catch up position twice a second. */
     private static final int FAR_POSITION_INTERVAL_TICKS = 10;
-    /** Only projections close enough to matter visually receive 20 Hz motion. */
-    public static final double MOTION_RADIUS = 48.0D;
-    private static final double MOTION_RADIUS_SQR = MOTION_RADIUS * MOTION_RADIUS;
+    /** Source chunks are requested asynchronously, with a bounded addition budget. */
+    private static final int SOURCE_CHUNKS_PER_PASS = 16;
     private static final int ENTITY_VIEW_MARGIN = 40;
 
     private static final TicketType<ChunkPos> OVERWORLD_SOURCE_TICKET = TicketType.create(
@@ -70,6 +69,9 @@ public final class HouseExteriorEntityMirror {
             TheOldestHouse.MOD_ID + "_interior_entity_view",
             Comparator.comparingLong(ChunkPos::toLong)
     );
+    /** Native movement follows the server's simulation distance, as if the reader were outside. */
+    private static final TicketType<ChunkPos> OVERWORLD_MOTION_TICKET = TicketType.create(
+            TheOldestHouse.MOD_ID + "_overworld_entity_motion", Comparator.comparingLong(ChunkPos::toLong));
 
     /** Real Overworld UUID -> projection UUID in the House dimension. */
     private static final Map<UUID, UUID> OVERWORLD_TO_INTERIOR = new HashMap<>();
@@ -78,6 +80,7 @@ public final class HouseExteriorEntityMirror {
 
     private static final LongSet OVERWORLD_TICKETED_CHUNKS = new LongOpenHashSet();
     private static final LongSet INTERIOR_TICKETED_CHUNKS = new LongOpenHashSet();
+    private static final LongSet OVERWORLD_MOTION_CHUNKS = new LongOpenHashSet();
 
     private static boolean scrubbedInteriorProjections;
     private static boolean scrubbedOverworldProjections;
@@ -128,14 +131,15 @@ public final class HouseExteriorEntityMirror {
         }
 
         ServerLevel overworld = server.overworld();
-        AABB view = viewBounds(origin);
+        AABB view = exteriorViewBounds(interior, origin);
 
         // Inside looking out: real Overworld mobs become projections in the
         // House dimension's mirrored exterior scenery.
         if (hasDomesticObserver(interior, origin)) {
             if (discoveryTick) {
-                ensureOverworldSourceTickets(overworld, origin);
+                ensureOverworldSourceTickets(overworld, interior, origin);
                 scrubInteriorProjectionsIfNeeded(interior, view);
+                if (refreshState) scrubUnmappedProjections(interior, view, OVERWORLD_TO_INTERIOR);
                 removeNativeExteriorMobs(interior, origin, view);
                 syncDirection(
                         overworld,
@@ -143,7 +147,7 @@ public final class HouseExteriorEntityMirror {
                         origin,
                         view,
                         OVERWORLD_TO_INTERIOR,
-                        mob -> eligibleOverworldExteriorSource(origin, mob),
+                        mob -> eligibleOverworldExteriorSource(origin, mob) && hasVisibleObserver(interior, mob),
                         refreshState,
                         refreshFarPosition
                 );
@@ -152,12 +156,13 @@ public final class HouseExteriorEntityMirror {
                         overworld,
                         interior,
                         OVERWORLD_TO_INTERIOR,
-                        mob -> eligibleOverworldExteriorSource(origin, mob)
+                        mob -> eligibleOverworldExteriorSource(origin, mob) && hasVisibleObserver(interior, mob)
                 );
             }
         } else {
             clearProjectionMap(interior, OVERWORLD_TO_INTERIOR);
             releaseTickets(overworld, OVERWORLD_SOURCE_TICKET, OVERWORLD_TICKETED_CHUNKS);
+            releaseTickets(overworld, OVERWORLD_MOTION_TICKET, OVERWORLD_MOTION_CHUNKS, 2);
         }
 
         // Outside looking in: real domestic House mobs become projections
@@ -248,6 +253,10 @@ public final class HouseExteriorEntityMirror {
 
         for (Mob source : sourceLevel.getEntitiesOfClass(Mob.class, view, sourceFilter)) {
             UUID sourceId = source.getUUID();
+            // A farther source may arrive before the reader's matching terrain. Never create a
+            // projection by synchronously generating a cold target chunk. Retry on the next pass.
+            if (targetLevel.getChunkSource().getChunkNow(source.chunkPosition().x, source.chunkPosition().z) == null
+                    || !targetLevel.areEntitiesLoaded(source.chunkPosition().toLong())) continue;
             seen.add(sourceId);
 
             Mob projection = projectionOf(targetLevel, projections, sourceId);
@@ -265,7 +274,7 @@ public final class HouseExteriorEntityMirror {
                 loadVisualState(source, projection);
             }
 
-            if (refreshFarPosition || hasNearbyObserver(targetLevel, source)) {
+            if (refreshFarPosition || hasVisibleObserver(targetLevel, source)) {
                 positionProjection(source, projection);
             }
             visible++;
@@ -288,9 +297,8 @@ public final class HouseExteriorEntityMirror {
     }
 
     /**
-     * On the ticks between discovery passes, only nearby projections move.
-     * This is what makes walking/running/head turns look continuous without
-     * turning the whole mirrored landscape into a 20 Hz entity-copy job.
+     * Every projection within a reader's actual terrain horizon receives native motion each
+     * tick. Expensive NBT/appearance refreshes still run only once a second.
      */
     private static void syncNearbyMovement(
             ServerLevel sourceLevel,
@@ -315,15 +323,15 @@ public final class HouseExteriorEntityMirror {
                 continue;
             }
 
-            if (hasNearbyObserver(targetLevel, source)) {
+            if (hasVisibleObserver(targetLevel, source)) {
                 positionProjection(source, projection);
             }
         }
     }
 
-    private static boolean hasNearbyObserver(ServerLevel targetLevel, Entity projection) {
+    private static boolean hasVisibleObserver(ServerLevel targetLevel, Entity projection) {
         for (ServerPlayer player : targetLevel.players()) {
-            if (player.distanceToSqr(projection) <= MOTION_RADIUS_SQR) {
+            if (player.distanceToSqr(projection) <= HouseMobSight.distanceSquared(HouseMobSight.viewDistance(player))) {
                 return true;
             }
         }
@@ -529,6 +537,31 @@ public final class HouseExteriorEntityMirror {
         );
     }
 
+    /** The union of native terrain views; the legacy band seeds a door crossing before arrival. */
+    private static AABB exteriorViewBounds(ServerLevel interior, BlockPos origin) {
+        AABB view = viewBounds(origin);
+        for (ServerPlayer player : interior.players()) {
+            if (!domesticObserver(player, origin)) continue;
+            double edge = (HouseMobSight.viewDistance(player) + 1) * 16.0D;
+            view = view.minmax(new AABB(player.getX() - edge, interior.getMinBuildHeight(), player.getZ() - edge,
+                    player.getX() + edge, interior.getMaxBuildHeight(), player.getZ() + edge));
+        }
+        return view;
+    }
+
+    private static boolean domesticObserver(ServerPlayer player, BlockPos origin) {
+        return HouseLayout.isInsideDomesticVolume(player.getX() - origin.getX(),
+                player.getY() - origin.getY(), player.getZ() - origin.getZ())
+                || HouseShifts.isInDeepenedHall(origin, player.getX(), player.getY(), player.getZ());
+    }
+
+    /** Also catches crash-saved scenery in a newly expanded view without replacing live projections. */
+    private static void scrubUnmappedProjections(ServerLevel level, AABB view, Map<UUID, UUID> live) {
+        Set<UUID> kept = new HashSet<>(live.values());
+        for (Mob mob : level.getEntitiesOfClass(Mob.class, view, HouseExteriorEntityMirror::isProjection))
+            if (!kept.contains(mob.getUUID())) mob.discard();
+    }
+
     private static void scrubInteriorProjectionsIfNeeded(ServerLevel interior, AABB view) {
         if (scrubbedInteriorProjections) {
             return;
@@ -555,16 +588,47 @@ public final class HouseExteriorEntityMirror {
         }
     }
 
-    private static void ensureOverworldSourceTickets(ServerLevel overworld, BlockPos origin) {
-        ensureTickets(
-                overworld,
-                OVERWORLD_SOURCE_TICKET,
-                OVERWORLD_TICKETED_CHUNKS,
-                origin.getX() + HouseLayout.MIN_X - ENTITY_VIEW_MARGIN,
-                origin.getX() + HouseLayout.MAX_X + ENTITY_VIEW_MARGIN,
-                origin.getZ() + HouseLayout.MIN_Z - ENTITY_VIEW_MARGIN,
-                origin.getZ() + HouseLayout.MAX_Z + ENTITY_VIEW_MARGIN
-        );
+    private static void ensureOverworldSourceTickets(ServerLevel overworld, ServerLevel interior, BlockPos origin) {
+        LongSet wanted = new LongOpenHashSet(), motion = new LongOpenHashSet();
+        int simulation = overworld.getServer().getPlayerList().getSimulationDistance();
+        for (ServerPlayer player : interior.players()) {
+            if (!domesticObserver(player, origin)) continue;
+            player.getChunkTrackingView().forEach(chunk -> {
+                wanted.add(chunk.toLong());
+                if (Math.max(Math.abs(chunk.x - player.chunkPosition().x), Math.abs(chunk.z - player.chunkPosition().z))
+                        <= Math.min(simulation, HouseMobSight.viewDistance(player))) motion.add(chunk.toLong());
+            });
+        }
+        // Before the first chunk-view update, keep the former entry band available.
+        if (wanted.isEmpty()) for (int x = (origin.getX() + HouseLayout.MIN_X - ENTITY_VIEW_MARGIN) >> 4;
+                x <= (origin.getX() + HouseLayout.MAX_X + ENTITY_VIEW_MARGIN) >> 4; x++)
+            for (int z = (origin.getZ() + HouseLayout.MIN_Z - ENTITY_VIEW_MARGIN) >> 4;
+                    z <= (origin.getZ() + HouseLayout.MAX_Z + ENTITY_VIEW_MARGIN) >> 4; z++) wanted.add(ChunkPos.asLong(x, z));
+        updateSourceTickets(overworld, interior, OVERWORLD_SOURCE_TICKET, OVERWORLD_TICKETED_CHUNKS, wanted, 0);
+        updateSourceTickets(overworld, interior, OVERWORLD_MOTION_TICKET, OVERWORLD_MOTION_CHUNKS, motion, 2);
+    }
+
+    private static void updateSourceTickets(ServerLevel source, ServerLevel observers, TicketType<ChunkPos> type,
+            LongSet held, LongSet wanted, int distance) {
+        var iterator = held.iterator();
+        while (iterator.hasNext()) {
+            long key = iterator.nextLong();
+            if (!wanted.contains(key)) {
+                ChunkPos chunk = new ChunkPos(key);
+                source.getChunkSource().removeRegionTicket(type, chunk, distance, chunk);
+                iterator.remove();
+            }
+        }
+        var pending = new java.util.ArrayList<ChunkPos>();
+        wanted.forEach((long key) -> { if (!held.contains(key)) pending.add(new ChunkPos(key)); });
+        pending.sort(Comparator.comparingDouble(chunk -> observers.players().stream().mapToDouble(player ->
+                Math.max(Math.abs(chunk.x - player.chunkPosition().x), Math.abs(chunk.z - player.chunkPosition().z)))
+                .min().orElse(0)));
+        for (int i = 0; i < Math.min(SOURCE_CHUNKS_PER_PASS, pending.size()); i++) {
+            ChunkPos chunk = pending.get(i);
+            source.getChunkSource().addRegionTicket(type, chunk, distance, chunk);
+            held.add(chunk.toLong());
+        }
     }
 
     private static void ensureInteriorSourceTickets(ServerLevel interior, BlockPos origin) {
@@ -618,10 +682,14 @@ public final class HouseExteriorEntityMirror {
             TicketType<ChunkPos> ticketType,
             LongSet ticketed
     ) {
+        releaseTickets(level, ticketType, ticketed, 0);
+    }
+
+    private static void releaseTickets(ServerLevel level, TicketType<ChunkPos> ticketType, LongSet ticketed, int distance) {
         var iterator = ticketed.iterator();
         while (iterator.hasNext()) {
             ChunkPos chunk = new ChunkPos(iterator.nextLong());
-            level.getChunkSource().removeRegionTicket(ticketType, chunk, 0, chunk);
+            level.getChunkSource().removeRegionTicket(ticketType, chunk, distance, chunk);
             iterator.remove();
         }
     }
@@ -650,6 +718,7 @@ public final class HouseExteriorEntityMirror {
 
         clearProjectionMap(overworld, INTERIOR_TO_OVERWORLD);
         releaseTickets(overworld, OVERWORLD_SOURCE_TICKET, OVERWORLD_TICKETED_CHUNKS);
+        releaseTickets(overworld, OVERWORLD_MOTION_TICKET, OVERWORLD_MOTION_CHUNKS, 2);
 
         scrubbedInteriorProjections = false;
         scrubbedOverworldProjections = false;

@@ -74,6 +74,11 @@ try:
     assert (report / "trailer-arrival.txt").is_file()
     assert (report / "trailer-camp.txt").is_file()
     assert (report / "trailer-night.txt").is_file()
+    assert (report / "mob-sight-passed.txt").is_file()
+    for role in ("A", "B"):
+        for view in ("outside-mob-sight", "window-mob-sight"):
+            assert (report / f"{role}-{view}.png").stat().st_size > 500, (role, view)
+            assert (report / f"{role}-{view}.txt").stat().st_size > 100, (role, view)
     for role in ("A", "B"):
         assert (report / f"{role}-trailer-sounds.txt").stat().st_size>100
     # Require clean native movement validation during the actual crossing

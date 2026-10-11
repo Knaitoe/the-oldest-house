@@ -239,6 +239,12 @@ jobs:
               for name in ('ElkLot','ElkLotNight','RoadhouseBlock'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/client/ElkLotClient.class' in z.namelist()
+              # 0.4.82: landscape distance hooks must ship on both native sides.
+              for name in ('house/HouseMobSight', 'mixin/HouseMobTrackingMixin', 'client/mixin/HouseMobRenderMixin',
+                           'gametest/MobSightProof', 'client/MobSightClientProof'):
+                  assert f'io/github/knaitoe/theoldesthouse/{name}.class' in z.namelist(), name
+              assert 'HouseMobTrackingMixin' in json.loads(z.read('the_oldest_house.common.mixins.json'))['mixins']
+              assert 'HouseMobRenderMixin' in json.loads(z.read('the_oldest_house.mixins.json'))['client']
               # 0.4.81: Three Fingers, one cottage block, six subtitled cues, the withered paw and five cottage skins.
               cottage = json.loads(z.read('assets/the_oldest_house/blockstates/cottage.json'))['variants']
               assert len(cottage) == 128, len(cottage)
