@@ -213,5 +213,14 @@
   "subtitles.the_oldest_house.literary.nursery_whisper": "Something whispers above the bed",
   "block.the_oldest_house.nursery": "Nursery piece",
   "block.the_oldest_house.child_wallpaper": "Child's wallpaper",
-  "subtitles.the_oldest_house.caver.choke": "Choking, wheezing breaths"
+  "subtitles.the_oldest_house.caver.choke": "Choking, wheezing breaths",
+  "block.the_oldest_house.institute_fixture": "Ward fitting",
+  "block.the_oldest_house.institute_cabinet": "Ward cabinet",
+  "block.the_oldest_house.institute_notebook": "Bedside notebook",
+  "block.the_oldest_house.institute_rail": "Enamel ward rail",
+  "block.the_oldest_house.institute_stairs": "Institute stairs",
+  "block.the_oldest_house.institute_slab": "Institute shelf",
+  "block.the_oldest_house.institute_glass": "Ribbed hospital glass",
+  "block.the_oldest_house.institute_door": "Painted ward door",
+  "block.the_oldest_house.institute_locked_door": "Locked ward door"
 }

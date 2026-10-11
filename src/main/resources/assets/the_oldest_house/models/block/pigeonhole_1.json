@@ -2,7 +2,7 @@
   "parent": "minecraft:block/orientable",
   "textures": {
     "front": "the_oldest_house:block/pigeonhole_1",
-    "side": "minecraft:block/spruce_planks",
-    "top": "minecraft:block/spruce_planks"
+    "side": "the_oldest_house:block/ward/cabinet",
+    "top": "the_oldest_house:block/ward/laminate"
   }
 }

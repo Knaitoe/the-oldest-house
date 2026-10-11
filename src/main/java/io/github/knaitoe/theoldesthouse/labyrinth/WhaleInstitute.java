@@ -39,6 +39,7 @@ public final class WhaleInstitute {
     public static final String KEY="Whale0466",CLOCK_TAG="WhaleClock0466";
     /** Her room, the box that answers, the letters the slot takes and the paper her desk gives each reader. */
     public static final int ROOM=7,LETTERS=3,BLANKS=4;
+    public static final BlockPos CALENDAR_BOOK=new BlockPos(9,1,-24);
     public static final BlockPos OUTGOING=new BlockPos(5,1,-9),DESK=new BlockPos(7,0,-24),LECTERN=new BlockPos(5,0,-24),
         CALENDAR=new BlockPos(9,2,-24),HER_DOOR=new BlockPos(2,0,-23),ATTIC_DESK=new BlockPos(2,6,-30);
     /** The ground floor inside its outer walls, for the recessed-window check. */
@@ -71,6 +72,7 @@ public final class WhaleInstitute {
         NovelRooms.box(l,b,-1,0,-25,1,3,-25,air);
         NovelRooms.door(l,b,Direction.SOUTH,Blocks.BIRCH_DOOR,true);
         reception(l,b);corridor(l,b);rooms(l,b);dayroom(l,b);attics(l,b);stairHeadroom(l,b);
+        WhaleHospital.freshBase(l,b);
     }
     private static void reception(ServerLevel l,BlockPos b){
         // The slot in the wall, and the old plaque on its post beside it.
@@ -209,17 +211,26 @@ public final class WhaleInstitute {
         var w=own.getCompound(KEY);int box=pigeonholeAt(rel);boolean handled=true;
         if(rel.equals(OUTGOING))post(p,b,own,w);
         else if(box>0)pigeonhole(p,b,own,w,box);
-        else if(rel.equals(DESK))desk(p,own,w);
-        else if(rel.equals(LECTERN))NovelVignettes.open(p,LabyrinthPlace.WHALE,NovelTexts.whaleOpening(),"WhaleOpening0466",false,own);
-        else if(rel.equals(ATTIC_DESK))NovelVignettes.open(p,LabyrinthPlace.WHALE,NovelTexts.whaleLast(),"WhaleAttic0466",false,own);
+        else if(rel.equals(DESK)||rel.equals(DESK.above())){desk(p,own,w);WhaleWriting.open(p,b.offset(DESK));}
+        else if(rel.equals(CALENDAR_BOOK)||rel.equals(CALENDAR_BOOK.below()))NovelVignettes.open(p,LabyrinthPlace.WHALE,calendarBook(w.getInt("Sent")),"WhaleCalendar0470_"+w.getInt("Sent"),false,own);
+        else if(rel.equals(LECTERN))NovelVignettes.open(p,LabyrinthPlace.WHALE,source(literalSource(p,b.offset(LECTERN)),NovelTexts.whaleOpening()),"WhaleOpening0466",false,own);
+        else if(rel.equals(ATTIC_DESK))NovelVignettes.open(p,LabyrinthPlace.WHALE,source(literalSource(p,b.offset(ATTIC_DESK)),NovelTexts.whaleLast()),"WhaleAttic0466",false,own);
         else handled=false;
         own.put(KEY,w);return handled;
     }
     private static void desk(ServerPlayer p,CompoundTag own,CompoundTag w){
+        if(p.getMainHandItem().is(Items.WRITABLE_BOOK))return;
         if(p.getInventory().countItem(Items.WRITABLE_BOOK)>0){NovelVignettes.cue(p,own,"There is still paper in your hands.");return;}
         int taken=w.getInt("Blanks");if(taken>=BLANKS){NovelVignettes.cue(p,own,"The drawer is empty.");return;}
         w.putInt("Blanks",taken+1);NovelVignettes.give(p,VignetteYields.mark(new ItemStack(Items.WRITABLE_BOOK),LabyrinthPlace.WHALE.id()));
         p.playNotifySound(SoundEvents.BOOK_PAGE_TURN,SoundSource.BLOCKS,.6F,1);
+    }
+    private static ItemStack literalSource(ServerPlayer p,BlockPos at){return p.serverLevel().getBlockEntity(at) instanceof InstituteNotebookBlockEntity notebook?notebook.book():ItemStack.EMPTY;}
+    private static ItemStack source(ItemStack saved,ItemStack fallback){return saved.isEmpty()?fallback:saved;}
+    public static ItemStack calendarBook(int stage){
+        var lines=calendarLines(stage);var page=Component.literal("Thursday the 14th\n\n");
+        if(stage>0){page=Component.empty();for(var line:lines)page.append(line.copy()).append("\n\n");}
+        var book=new ItemStack(Items.WRITTEN_BOOK);book.set(DataComponents.WRITTEN_BOOK_CONTENT,new WrittenBookContent(net.minecraft.server.network.Filterable.passThrough("The bedside notebook"),"Pelafina",0,java.util.List.of(net.minecraft.server.network.Filterable.passThrough(page)),true));return book;
     }
     private static void post(ServerPlayer p,BlockPos b,CompoundTag own,CompoundTag w){
         var hand=p.getMainHandItem();int sent=w.getInt("Sent");
