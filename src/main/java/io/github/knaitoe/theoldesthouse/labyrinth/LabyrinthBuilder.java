@@ -271,6 +271,13 @@ public final class LabyrinthBuilder {
         return true;
     }
 
+    /** What construction is on and what it waits for, for diagnostics. */
+    public static String describePending() {
+        if (pending == null) return "nothing pending";
+        return pending.size() + " pending, next " + pending.peek() + (geometry != null ? " (recorded)" : "") + (active ? "" : " (waiting)")
+                + (rebuildUpgrades.contains(pending.peek()) ? " (rebuild upgrade)" : "");
+    }
+
     /** True while construction is actually working, not while it waits for explorers to go deeper. */
     public static boolean isCarving() {
         return pending != null && active;

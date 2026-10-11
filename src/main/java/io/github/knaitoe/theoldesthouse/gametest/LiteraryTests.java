@@ -545,10 +545,12 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         });
     }
     @AfterBatch(batch="literary_elk_porthole") public static void portholeDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="literary_elk_rail",timeoutTicks=180)
+    @GameTest(template="empty",batch="literary_elk_rail",timeoutTicks=400)
     public static void privateKillerPhysicallyHopsYachtRailAndRejectsWallsAndMissingLandings(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("rail_reader",place);var b=f.base(place);
         f.at(p,place,3.5,9,6.5);
+        // The killer only moves where entities tick; wait for the deck rather than lose its first ticks to loading.
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.out.isPositionEntityTicking(b.offset(-2,9,6))&&f.out.isPositionEntityTicking(b.offset(4,9,6)),"wait for the deck to tick entities")).thenExecute(()->{
         // This corridor and the cleared deck lie outside the room box a rebuild clears, so they are put back after the batch.
         railSaved=new HashMap<>();for(var at:BlockPos.betweenClosed(b.offset(-4,-10,5),b.offset(4,12,7)))railSaved.put(at.immutable(),f.out.getBlockState(at));
         // A deck corridor prevents walking around the railing. Its floor and roof are real blocks.
@@ -580,6 +582,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             KillerNavigation.request(a,new Vec3(b.getX()+3.5,b.getY()+9,b.getZ()+6.5),1);
         });
         h.runAfterDelay(135,()->{h.assertTrue(a.getX()<b.getX()-.05&&!a.getPersistentData().contains("YachtVault0464"),"the original killer does not take the custom hop across an actual unsupported gap: "+a.position());h.succeed();});
+        });
     }
     private static Map<BlockPos,net.minecraft.world.level.block.state.BlockState> railSaved;
     @AfterBatch(batch="literary_elk_rail") public static void railDone(ServerLevel l){if(railSaved!=null&&active!=null)railSaved.forEach((at,state)->active.out.setBlock(at,state,Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE));railSaved=null;close();}
