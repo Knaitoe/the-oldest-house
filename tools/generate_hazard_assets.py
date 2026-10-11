@@ -100,7 +100,7 @@ def texture(kind, palette, dark=False):
 def element(a,b,tex):
     return {'from':a,'to':b,'faces':{face:{'texture':'#all','uv':[0,0,16,16]} for face in ('down','up','north','south','west','east')}}
 
-def model(kind, off=False):
+def model(kind, off=False, small=False):
     name='hazard_'+kind+('_off' if off else '')
     tex='the_oldest_house:block/'+name
     boxes=[([0,0,0],[16,16,16])]
@@ -108,7 +108,7 @@ def model(kind, off=False):
     elif kind=='hook':boxes=[([7,8,7],[9,16,9]),([7,5,7],[13,8,9])]
     elif kind=='number_four':boxes=[([14,0,0],[16,16,16])]
     elif kind in ('net','sculk_boards'):boxes=[([0,14,0],[16,16,16])]
-    elif kind=='narrow_arch':boxes=[([0,0,0],[3,16,16]),([13,0,0],[16,16,16]),([3,15,0],[13,16,16])]
+    elif kind=='narrow_arch':boxes=[([0,0,0],[4,16,16]),([12,0,0],[16,16,16]),([4,12,0],[12,16,16])] if small else [([0,0,0],[3,16,16]),([13,0,0],[16,16,16]),([3,15,0],[13,16,16])]
     elif kind=='skirt_gap':boxes=[([0,0,0],[5,16,16]),([11,0,0],[16,16,16]),([5,10,0],[11,16,16])]
     return {'ambientocclusion':kind not in ('mirror_glass','heat_lamp','sconce'),'render_type':'minecraft:translucent' if kind=='mirror_glass' else 'minecraft:cutout','textures':{'all':tex,'particle':tex},'elements':[element(a,b,tex) for a,b in boxes]}
 
@@ -118,6 +118,10 @@ def main():
         for stage in (0,1):
             off=stage==1 and kind in ('heat_lamp','sconce')
             name='hazard_'+kind+('_off' if off else '')
+            if kind=='narrow_arch' and stage==1:
+                variants[f'kind={kind},stage={stage}']={'model':'the_oldest_house:block/hazard_narrow_arch_small'}
+                write_json(ASSETS/'models/block/hazard_narrow_arch_small.json',model(kind,small=True))
+                continue
             variants[f'kind={kind},stage={stage}']={'model':'the_oldest_house:block/'+name}
             if stage and not off:continue
             path=ASSETS/'textures/block'/f'{name}.png';path.parent.mkdir(parents=True,exist_ok=True);texture(kind,palette,off).save(path)
@@ -133,6 +137,6 @@ def main():
     d.line((20,20,20,31),fill=(53,58,47));d.line((22,20,22,31),fill=(8,12,11));d.line((46,20,46,30),fill=(43,50,43));d.line((6,20,6,30),fill=(43,50,43))
     path=ASSETS/'textures/entity/literary_quiet_walker.png';figure.save(path);manifest.append({'file':str(path.relative_to(ROOT)),'size':[128,64],'sha256':hashlib.sha256(path.read_bytes()).hexdigest()})
     write_json(ROOT/'art/inventory/hazards_0480.json',{'layout':41,'slots':[78,93],'textures':manifest})
-    print(f'{len(manifest)} textures, 22 collision-matched models, {len(variants)} block states; existing art preserved')
+    print(f'{len(manifest)} textures, 23 collision-matched models, {len(variants)} block states; existing art preserved')
 
 if __name__=='__main__':main()

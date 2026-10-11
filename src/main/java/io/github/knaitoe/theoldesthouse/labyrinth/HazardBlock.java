@@ -34,7 +34,7 @@ public final class HazardBlock extends Block {
         case HOOK->Shapes.or(box(7,8,7,9,16,9),box(7,5,7,13,8,9));
         case NUMBER_FOUR->box(14,0,0,16,16,16);
         case NET,SCULK_BOARDS->box(0,14,0,16,16,16);
-        case NARROW_ARCH->Shapes.or(box(0,0,0,3,16,16),box(13,0,0,16,16,16),box(3,15,0,13,16,16));
+        case NARROW_ARCH->s.getValue(STAGE)==0?Shapes.or(box(0,0,0,3,16,16),box(13,0,0,16,16,16),box(3,15,0,13,16,16)):Shapes.or(box(0,0,0,4,16,16),box(12,0,0,16,16,16),box(4,12,0,12,16,16));
         case SKIRT_GAP->Shapes.or(box(0,0,0,5,16,16),box(11,0,0,16,16,16),box(5,10,0,11,16,16));
         default->Shapes.block();};}
     @Override public VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return getShape(s,l,p,c);}

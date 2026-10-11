@@ -61,7 +61,7 @@ public final class HazardMaps {
         lamp(l,b,0,5,-10);lamp(l,b,0,5,-38);
     }
     private static void nested(ServerLevel l,BlockPos b,LabyrinthPlace p){room(l,b,p,HazardBlock.of(PARLOUR_WALL));
-        for(int r=0;r<4;r++){int z=-5-r*9;set(l,b,-4,0,z,Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.WEST));set(l,b,4,0,z,Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST));set(l,b,3,0,z-2,Blocks.DARK_OAK_FENCE.defaultBlockState());set(l,b,3,1,z-2,Blocks.DARK_OAK_PRESSURE_PLATE.defaultBlockState());lamp(l,b,0,5,z);if(r<3){int wall=z-4;box(l,b,-6,0,wall,6,5,wall,HazardBlock.of(PARLOUR_WALL));if(r==0)box(l,b,0,0,wall,0,1,wall,AIR);else set(l,b,0,0,wall,HazardBlock.of(NARROW_ARCH));}}
+        for(int r=0;r<4;r++){int z=-5-r*9;set(l,b,-4,0,z,Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.WEST));set(l,b,4,0,z,Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST));set(l,b,3,0,z-2,Blocks.DARK_OAK_FENCE.defaultBlockState());set(l,b,3,1,z-2,Blocks.DARK_OAK_PRESSURE_PLATE.defaultBlockState());lamp(l,b,0,5,z);if(r<3){int wall=z-4;box(l,b,-6,0,wall,6,5,wall,HazardBlock.of(PARLOUR_WALL));if(r==0)box(l,b,0,0,wall,0,1,wall,AIR);else set(l,b,0,0,wall,HazardBlock.of(NARROW_ARCH).setValue(HazardBlock.STAGE,r==2?1:0));}}
         box(l,b,-6,0,-39,6,5,-39,HazardBlock.of(PARLOUR_WALL));set(l,b,0,0,-39,HazardBlock.of(SKIRT_GAP));
     }
     public static BlockPos landing(int i){return new BlockPos(0,i*2,-3-i*6);}

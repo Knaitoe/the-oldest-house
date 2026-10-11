@@ -76,7 +76,7 @@
       "model": "the_oldest_house:block/hazard_narrow_arch"
     },
     "kind=narrow_arch,stage=1": {
-      "model": "the_oldest_house:block/hazard_narrow_arch"
+      "model": "the_oldest_house:block/hazard_narrow_arch_small"
     },
     "kind=skirt_gap,stage=0": {
       "model": "the_oldest_house:block/hazard_skirt_gap"
