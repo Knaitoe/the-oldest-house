@@ -27,7 +27,7 @@ public final class WitnessEnding {
         BlockPos origin=HouseSavedData.get(player.server).houseOrigin();
         if(origin==null||player.isSpectator()||!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)
                 ||!FinaleArchitecture.ready(player.server)||FinaleController.lockedOut(player)
-                ||FinaleProgress.committed(FinaleProgress.phase(player.server,player.getUUID())))return false;
+                ||FinaleProgress.committed(FinaleProgress.phase(player.server,player.getUUID()))||FinaleController.imprisoned(player.server))return false;
         BlockPos cell=FinaleArchitecture.cell(origin);if(cell.distToCenterSqr(player.position())>49)return false;
         LabyrinthData data=LabyrinthData.get(player.server);CompoundTag world=FinaleProgress.world(player.server);
         if(world.getBoolean("Ended")||world.hasUUID("Owner")&&!world.getUUID("Owner").equals(player.getUUID()))return false;

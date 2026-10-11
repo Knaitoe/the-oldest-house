@@ -548,26 +548,32 @@ public final class GoatmanTests {
 
     private static Fixture dash;
     @AfterBatch(batch="goat_dash0477") public static void cleanDash(ServerLevel l){if(dash!=null){dash.close();dash=null;}}
-    @GameTest(template="empty",batch="goat_dash0477",timeoutTicks=400)
-    public static void whileItWaitsAtTheDoorAReaderAtASideWindowSeesItRunPastPrivately(GameTestHelper h){
+    @GameTest(template="empty",batch="goat_dash0477",timeoutTicks=600)
+    public static void whileItWaitsAtTheDoorEachReaderInsideSeesItTearRoundTheTrailerStrikingEveryWindow(GameTestHelper h){
         dash=new Fixture(h,35300);var f=dash;var a=f.player();var peer=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        int[] struck={0,0};boolean[] passing={false};GoatmanFigure[] mine={null};
+        h.onEachTick(()->{var it=mine[0];if(it==null||it.isRemoved())return;struck[0]=Math.max(struck[0],it.struck);
+            var at=f.rel(it);if(Math.abs(at.z+66.5)<3&&Math.abs(Math.abs(at.x)-9.5)<.6)passing[0]=true;});
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the trailer's native entity sections are ready")).thenExecute(()->{
             GoatmanVignette.enter(a);GoatmanVignette.enter(peer);var r=f.run();h.assertTrue(GoatmanVignette.fresh(r),"a fresh round");
             r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",200);r.putInt("ExtraState",GoatmanVignette.X_DOOR);r.putInt("StalkLeg0465",99);r.putLong("LastImpact0465",0);f.cohort(r,List.of(a,peer),200);f.run(r);
-            // The reader at the middle west window looks out of it; the peer looks up the aisle.
-            a.moveTo(f.b.getX()-5.5,f.b.getY()+1,f.b.getZ()-66.5,90,0);a.setYHeadRot(90);peer.moveTo(f.b.getX()+.5,f.b.getY()+1,f.b.getZ()-60.5,180,0);peer.setYHeadRot(180);
+            // Neither reader needs to be looking out of a window: one sits in the aisle, the other faces the back of the trailer.
+            a.moveTo(f.b.getX()-3.5,f.b.getY()+1,f.b.getZ()-62.5,0,0);a.setYHeadRot(0);peer.moveTo(f.b.getX()+.5,f.b.getY()+1,f.b.getZ()-60.5,180,0);peer.setYHeadRot(180);
             var own=r.getCompound("Cohort").getCompound(a.getUUID().toString());var other=r.getCompound("Cohort").getCompound(peer.getUUID().toString());
             r.putLong("LastImpact0465",f.l.getGameTime());GoatmanStalking.dash(f.l,f.b,r,a,own);
-            h.assertTrue(own.getInt("Dashes0476")==0,"never just after a knock: it cannot be at the door and the window at once");
+            h.assertTrue(own.getInt("Laps0484")==0,"never just after a knock: it cannot be at the door and round the back at once");
             r.putLong("LastImpact0465",0);r.putInt("AssaultAt0465",100);GoatmanStalking.dash(f.l,f.b,r,a,own);
-            h.assertTrue(own.getInt("Dashes0476")==0,"never while it is still hammering at the door");
+            h.assertTrue(own.getInt("Laps0484")==0,"never while it is still hammering at the door");
             r.remove("AssaultAt0465");GoatmanStalking.dash(f.l,f.b,r,a,own);GoatmanStalking.dash(f.l,f.b,r,peer,other);
-            var shapes=f.l.getEntitiesOfClass(GoatmanFigure.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN),s->s.purpose.equals("dash"));
-            h.assertTrue(shapes.size()==1&&shapes.getFirst().viewer().filter(a.getUUID()::equals).isPresent()&&own.getInt("Dashes0476")==1&&other.getInt("Dashes0476")==0,"only the reader looking out of a side window gets a run past it, and it is theirs alone");
-            var it=shapes.getFirst();var start=f.rel(it);h.assertTrue(start.x< -10&&start.x> -11&&Math.abs(start.z+66.5)>=9,"it starts outside the west wall, out of their sight: "+start);
-            GoatmanStalking.dash(f.l,f.b,r,a,own);h.assertTrue(own.getInt("Dashes0476")==1,"not again straight away");
-            h.runAfterDelay(14,()->{var at=f.rel(it);h.assertTrue(!it.isRemoved()&&Math.abs(at.z+66.5)<4&&at.x< -10,"it is running past the window: "+at);});
-            h.runAfterDelay(60,()->{h.assertTrue(it.isRemoved(),"and it is gone past the far corner");h.succeed();});
+            var laps=f.l.getEntitiesOfClass(GoatmanFigure.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN),s->s.purpose.equals("lap"));
+            h.assertTrue(laps.size()==2&&laps.stream().anyMatch(s->s.viewer().filter(a.getUUID()::equals).isPresent())&&laps.stream().anyMatch(s->s.viewer().filter(peer.getUUID()::equals).isPresent())&&own.getInt("Laps0484")==1&&other.getInt("Laps0484")==1,"each reader inside gets their own lap, wherever they are looking");
+            var it=laps.stream().filter(s->s.viewer().filter(a.getUUID()::equals).isPresent()).findFirst().orElseThrow();mine[0]=it;var start=f.rel(it);
+            h.assertTrue(Math.abs(Math.abs(start.x)-9.5)<.01&&(Math.abs(start.z+51.5)<.01||Math.abs(start.z+78.5)<.01),"it starts at a corner just off the walls: "+start);
+            GoatmanStalking.dash(f.l,f.b,r,a,own);h.assertTrue(own.getInt("Laps0484")==1,"not again while it is still going round");
+        }).thenWaitUntil(()->h.assertTrue(mine[0]!=null&&mine[0].isRemoved(),"wait for the lap to end")).thenExecute(()->{
+            h.assertTrue(passing[0],"it ran past the middle side window, close enough to the glass to be seen");
+            h.assertTrue(struck[0]==GoatmanStalking.ALL_STRUCK,"it struck all five side windows and the back wall on the way round: "+Integer.toBinaryString(struck[0]));
+            h.succeed();
         });
     }
 

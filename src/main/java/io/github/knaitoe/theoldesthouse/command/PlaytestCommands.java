@@ -58,7 +58,7 @@ public final class PlaytestCommands {
     private static int help(CommandSourceStack source) {
         source.sendSuccess(() -> Component.literal("Testing: /oldesthouse test vignette <id> puts a door two blocks ahead; use Tab for every scene. 'vignette remove' removes the nearest test door."), false);
         source.sendSuccess(() -> Component.literal("/oldesthouse test minotaur (or boy) takes you to the closed cell. /oldesthouse test ending defeat|escape|witness starts a real ending; collapse is an alias for escape."), false);
-        source.sendSuccess(() -> Component.literal("Use a COPY of your world. Defeat kills you and seals your belongings; escape starts the wounded creature and physical collapse, whose eventual completion removes the shared House. Witness stages your personal test account and peaceful release. No shortcut resets a player or takes another player's cell."), false);
+        source.sendSuccess(() -> Component.literal("Use a COPY of your world. Defeat kills you and seals your belongings, then wakes you in the cell, whose one door lets you out of the House for good; escape starts the wounded creature and physical collapse, whose eventual completion removes the shared House. Witness stages your personal test account and peaceful release. No shortcut resets a player or takes another player's cell."), false);
         return 1;
     }
 

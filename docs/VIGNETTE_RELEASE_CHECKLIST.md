@@ -9,7 +9,11 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.81
+## Current candidate: 0.4.84
+
+No new source. The finale's defeat now keeps the reader in the cell until they leave by its one door: check that only fight deaths are kept, that a kept reader blocks other openers and new prisoners, that leaving locks them out and resets the cell, and that the released Minotaur never harms anyone. The Goatman's laps are private per reader and never overlap a door knock. Hearth lighting accepts a one-armed reader's single hand. Require the charge/shield and cell-door cases and every prior check. Mod 0.4.84 / protocol 56 / layout 42; 44 / 33 / two kinds / three endings. See [the record](CHARGE_CELL_LAPS_FIRES_0_4_84.md).
+
+## Previous candidate: 0.4.81
 
 *Three Fingers* adds one personal release source in slot 94: three corrupted wishes on a withered paw, three endings (last wish, empty road, the fire) and one account, resolved by reading the soldier's pocketbook and the Bible. Arrival, the story, pulling or borrowing a paw, gifts and observers confer nothing. Require the three paw cases, the pool and quota assertions (44 / 33 / two kinds / three endings), 88 architecture views and the cottage asset checks. Layout 42 / protocol 54. Verified source 8762577 (run 38174200201): all twelve jobs, 537 native cases and 88 architecture views passed. See [the cottage record](THREE_FINGERS_0_4_81.md).
 
