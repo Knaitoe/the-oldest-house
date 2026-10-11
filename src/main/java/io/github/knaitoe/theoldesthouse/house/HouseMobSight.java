@@ -31,6 +31,7 @@ public final class HouseMobSight {
         if (!(entity instanceof Mob)) return false;
         var dimension = entity.level().dimension();
         if (dimension.equals(HouseDimensions.OUTSIDE)) return true;
+        if (origin == null) return false;
         boolean domestic = HouseLayout.isInsideDomesticVolume(entity.getX() - origin.getX(),
                 entity.getY() - origin.getY(), entity.getZ() - origin.getZ());
         if (dimension.equals(Level.OVERWORLD)) return domestic;

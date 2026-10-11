@@ -15,8 +15,10 @@ public abstract class HouseMobRenderMixin {
     @Redirect(method = "shouldRender", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/entity/Entity;shouldRender(DDD)Z"))
     private boolean theOldestHouse$landscapeDistance(Entity entity, double x, double y, double z) {
-        if (!HouseMobSight.rendersToHorizon(entity, HouseSightlineState.origin()))
-            return entity.shouldRender(x, y, z);
+        // Extend the native allowance without shortening scene-specific distant-boy/camera views.
+        if (entity.shouldRender(x, y, z)) return true;
+        if (!HouseMobSight.rendersToHorizon(entity,
+                HouseSightlineState.hasOrigin() ? HouseSightlineState.origin() : null)) return false;
         return entity.distanceToSqr(x, y, z) <= HouseMobSight.distanceSquared(
                 Minecraft.getInstance().options.getEffectiveRenderDistance());
     }

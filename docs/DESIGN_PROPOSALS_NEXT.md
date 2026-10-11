@@ -269,6 +269,8 @@ Both are designed below. **Recommendation: the Mountains now; Innsmouth later or
 
 ## 5. *I Have No Mouth, and I Must Scream*: "The Kept"
 
+**Updated direction:** the owner is considering the computer game's five playable characters, with one door taking each reader to the next character only after completing the previous circuit. No selection hub. See [the game adaptation and feasibility plan](I_HAVE_NO_MOUTH_GAME_ADAPTATION.md). The short-story-shaped concept below is retained as an earlier alternative, not the current implementation plan. No AM adaptation is shipped in 0.4.82.
+
 **Kind:** release. **Shape:** interior, multi-visit, large (about 64 × 96 with folds). Copyrighted, and the estate is protective, so: no names, no monologue, and not the title phrase anywhere in the game.
 
 **The place:** a machine the size of a country. Corridors of humming cabinets and cable, cathode screens that wake as a reader passes, rooms that are landscapes a mind has imitated badly (an ice cave, a jungle made of wire, a dining room with a hundred empty chairs). The machine speaks in its own new hand, in text on the screens and as captions.
