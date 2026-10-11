@@ -34,7 +34,9 @@ public final class LabyrinthRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> CAVER_EXHALE=sound("caver.exhale"),CAVER_INHALE=sound("caver.inhale"),CAVER_SCRAPE=sound("caver.scrape"),
             CAVER_LINE=sound("caver.line_taut"),CAVER_STONE=sound("caver.stone_roll"),CAVER_CHISEL=sound("caver.chisel"),
             /** Coming to after the air ran out (0.4.73). */
-            CAVER_GASP=sound("caver.gasp");
+            CAVER_GASP=sound("caver.gasp"),
+            /** Strangled, wheezing breaths while the air is gone (0.4.75). */
+            CAVER_CHOKE=sound("caver.choke");
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id) {
         return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));
     }

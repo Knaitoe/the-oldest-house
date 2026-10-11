@@ -73,8 +73,8 @@ public final class CaverTests {
         for(int y:new int[]{65,80,150,250}){var origin=new BlockPos(100,y,100);var b=LabyrinthPlaces.base(origin,LabyrinthPlace.TED_CAVER);var slot=LabyrinthPlaces.slotBounds(origin,LabyrinthPlace.TED_CAVER);
             h.assertTrue(slot.isInside(b.offset(-9,-4,-60))&&slot.isInside(b.offset(9,8,0)),"the low cave stays inside its native slot at manor height "+y);}
         h.assertTrue(LabyrinthPlace.TED_CAVER.slot()==32&&LabyrinthPlace.GOATMAN.slot()==31&&DoorLeakKind.STONE.ordinal()==12&&DoorLeakKind.WOODS.ordinal()==11,"new room and dry stone hint append after all old indices");
-        var buffer=io.netty.buffer.Unpooled.buffer();try{var payload=new io.github.knaitoe.theoldesthouse.network.CaverCrawlPayload(true,-400,150,-200,CaverVignette.IN_PURSUED,-.004F);var codec=io.github.knaitoe.theoldesthouse.network.CaverCrawlPayload.STREAM_CODEC;
-            codec.encode(buffer,payload);h.assertTrue(codec.decode(buffer).equals(payload),"native client crawl synchronization preserves its bounded signed origin and the draught on the crawling body");}finally{buffer.release();}h.succeed();
+        var buffer=io.netty.buffer.Unpooled.buffer();try{var payload=new io.github.knaitoe.theoldesthouse.network.CaverCrawlPayload(true,-400,150,-200,CaverVignette.IN_PURSUED,-.004F,.35F,CaverVignette.CHOKE+12);var codec=io.github.knaitoe.theoldesthouse.network.CaverCrawlPayload.STREAM_CODEC;
+            codec.encode(buffer,payload);h.assertTrue(codec.decode(buffer).equals(payload),"native client crawl synchronization preserves its bounded signed origin, the draught on the crawling body, the reader's own air and the choke");}finally{buffer.release();}h.succeed();
     }
     @GameTest(template="empty",batch="caver_work",timeoutTicks=760)
     public static void actualPickaxeWorkIsTimedSharedAndSavedWithoutReplenishingTools(GameTestHelper h){
@@ -340,26 +340,39 @@ public final class CaverTests {
         }).thenSucceed();
     }
 
-    @GameTest(template="empty",batch="caver_air",timeoutTicks=200)
-    public static void badAirDrainsOnTheInBreathTheBellsHoldItAndABlackoutWakesTheReaderWhereTheyLastHadAir(GameTestHelper h){
-        air=new Fixture(h,34600);var f=air;f.open();var s=f.l.getServer();ServerPlayer[] who=new ServerPlayer[3];float[] seen={0};
+    @GameTest(template="empty",batch="caver_air",timeoutTicks=260)
+    public static void badAirDrainsOnTheInBreathTheBellsHoldItAndChokingBeforeABlackoutWakesTheReaderWhereTheyLastHadAir(GameTestHelper h){
+        air=new Fixture(h,34600);var f=air;f.open();var s=f.l.getServer();ServerPlayer[] who=new ServerPlayer[3];float[] seen={0};Vec3[] spot={null};
         h.runAfterDelay(4,()->{for(int i=0;i<3;i++)who[i]=f.player();f.at(who[0],.5,-3,-28.5);f.at(who[1],4.5,-3,-29.5);f.at(who[2],3.5,-3,-28.5);
             who[2].gameMode.changeGameModeForPlayer(GameType.CREATIVE);f.edit(who[0],o->{o.putBoolean("Squeezed",true);o.putBoolean("LineTied",true);});});
         // The reader steps from the first bell into the crawl just as the cave starts to breathe in; a peer waits in the next bell.
         h.runAfterDelay(8,()->{f.at(who[0],2.5,-3,-28.5);CaverVignette.setBreath(s,CaverVignette.INHALE_START);});
         h.runAfterDelay(28,()->{var p=who[0];Float a=CaverVignette.air(p.getUUID());
-            h.assertTrue(CaverVignette.crawling(p)&&a!=null&&a<290&&a>200&&p.getAirSupply()<p.getMaxAirSupply(),"in the crawl the reader's own air drains while the cave breathes in: "+a);
+            h.assertTrue(CaverVignette.crawling(p)&&a!=null&&a<290&&a>200,"in the crawl the reader's own air drains while the cave breathes in: "+a);
+            h.assertTrue(p.getAirSupply()==p.getMaxAirSupply(),"the reader's own gauge carries it; Minecraft's air bubbles never show");
             h.assertTrue(CaverVignette.air(who[1].getUUID())!=null&&CaverVignette.air(who[1].getUUID())==who[1].getMaxAirSupply(),"a peer in an air bell keeps all of theirs");
             h.assertTrue(CaverVignette.air(who[2].getUUID())==null&&who[2].getAirSupply()==who[2].getMaxAirSupply(),"a creative visitor is not drained");
             seen[0]=a;CaverVignette.setBreath(s,10);});
         h.runAfterDelay(38,()->{var p=who[0];
             h.assertTrue(CaverVignette.air(p.getUUID())>seen[0]+30,"it comes back while the cave breathes out");
-            CaverVignette.setAir(p,8);CaverVignette.setBreath(s,CaverVignette.INHALE_START);});
-        h.runAfterDelay(70,()->{var p=who[0];var own=f.own(p);var bell=Vec3.atBottomCenterOf(f.b.offset(0,-3,-29));
-            h.assertTrue(own.getInt("Blackout")>0&&p.hasEffect(MobEffects.BLINDNESS)&&p.position().distanceTo(bell)<.05,"at no air the reader blacks out and comes to in the bell they last breathed in: "+p.position().subtract(Vec3.atLowerCornerOf(f.b)));
-            h.assertTrue(p.isAlive()&&p.getHealth()==p.getMaxHealth()&&p.getAirSupply()==p.getMaxAirSupply()/2&&own.getBoolean("Squeezed")&&own.getBoolean("LineTied"),"nothing is lost but the time: no harm, half a breath, every step kept");
-            h.assertTrue(f.own(who[1]).getInt("Blackout")==0&&CaverVignette.air(who[1].getUUID())==who[1].getMaxAirSupply(),"the peer's air is their own");});
-        h.runAfterDelay(100,()->{h.assertTrue(f.own(who[0]).getInt("Blackout")==0&&WitnessAccount.count(f.data(),who[0].getUUID())==0,"the blackout ends and confers nothing");h.succeed();});
+            CaverVignette.setAir(p,8);CaverVignette.setBreath(s,CaverVignette.INHALE_START);spot[0]=p.position();});
+        // The peer crawls out of their bell into the same thin air.
+        h.runAfterDelay(40,()->{f.at(who[1],1.5,-3,-28.5);CaverVignette.setAir(who[1],8);});
+        h.runAfterDelay(60,()->{var p=who[0];
+            h.assertTrue(f.own(p).getInt("Choke")>0&&f.own(p).getInt("Blackout")==0&&p.position().distanceTo(spot[0])<.05&&!p.hasEffect(MobEffects.BLINDNESS),"with the air gone the reader chokes where they are; nobody is moved yet");
+            h.assertTrue(f.own(who[1]).getInt("Choke")>0&&f.own(who[1]).getInt("Blackout")==0,"the peer's air runs out too, and they choke");
+            f.at(who[1],.5,-3,-28.5);});
+        h.runAfterDelay(66,()->{var peer=who[1];
+            h.assertTrue(!f.own(peer).contains("Choke")&&f.own(peer).getInt("Blackout")==0&&CaverVignette.air(peer.getUUID())>0&&!peer.hasEffect(MobEffects.BLINDNESS),"a reader who reaches a bell while choking gets air back and never blacks out");
+            h.assertTrue(peer.position().distanceTo(Vec3.atBottomCenterOf(f.b.offset(0,-3,-29)))<.6,"and stays where they got to");});
+        h.runAfterDelay(100,()->{var p=who[0];
+            h.assertTrue(f.own(p).getInt("Choke")>0&&f.own(p).getInt("Blackout")==0&&p.position().distanceTo(spot[0])<.05,"the choking lasts a few seconds before anything else: "+f.own(p).getInt("Choke"));});
+        h.runAfterDelay(150,()->{var p=who[0];var own=f.own(p);var bell=Vec3.atBottomCenterOf(f.b.offset(0,-3,-29));
+            h.assertTrue(own.getInt("Blackout")>0&&!own.contains("Choke")&&p.hasEffect(MobEffects.BLINDNESS)&&p.position().distanceTo(bell)<.05,"when it runs its course the reader blacks out and comes to in the bell they last breathed in: "+p.position().subtract(Vec3.atLowerCornerOf(f.b)));
+            Float left=CaverVignette.air(p.getUUID());
+            h.assertTrue(p.isAlive()&&p.getHealth()==p.getMaxHealth()&&left!=null&&Math.abs(left-p.getMaxAirSupply()/2F)<.01&&own.getBoolean("Squeezed")&&own.getBoolean("LineTied"),"nothing is lost but the time: no harm, half a breath, every step kept");
+            h.assertTrue(f.own(who[1]).getInt("Blackout")==0,"the peer's air is their own");});
+        h.runAfterDelay(200,()->{h.assertTrue(f.own(who[0]).getInt("Blackout")==0&&WitnessAccount.count(f.data(),who[0].getUUID())==0,"the blackout ends and confers nothing");h.succeed();});
     }
     @GameTest(template="empty",batch="caver_crawls",timeoutTicks=300)
     public static void aCaveCarvedBy071GetsBothWindingCrawlsOnceKeepingTorchesAndWaitingForCamerasAndBodies(GameTestHelper h){

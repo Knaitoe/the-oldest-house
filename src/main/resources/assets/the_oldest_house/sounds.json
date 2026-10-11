@@ -812,5 +812,13 @@
         "stream": false
       }
     ]
+  },
+  "caver.choke": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:caver/choke"
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.caver.choke"
   }
 }

@@ -203,6 +203,72 @@ def gasp():
     return normalize(comb(rasp * pull * flutter, 640, 0.25) * 1.2 + cough * 0.8, 0.7)
 
 
+def choke():
+    """0.4.75: strangled, wheezing breaths that will not go in, each caught short in the throat. It loops."""
+    seconds = 2.4
+    n = round(RATE * seconds)
+    t = np.arange(n) / RATE
+    out = np.zeros(n)
+    hiss = lowpass(noise(seconds, 960), 0.6) - lowpass(noise(seconds, 961), 0.12)  # air forced through a closed throat
+    for i, (start, length, pitch) in enumerate(((0.06, 0.34, 1150), (0.62, 0.28, 1280), (1.08, 0.40, 1080), (1.72, 0.30, 1350))):
+        local = t - start
+        on = (local >= 0) & (local < length)
+        env = np.where(on, np.clip(local / (length * 0.7), 0, 1) ** 1.6, 0)
+        whistle = np.sin(2 * np.pi * (pitch + 260 * np.clip(local / length, 0, 1)) * t + 3 * np.sin(2 * np.pi * 17 * t)) * 0.35
+        out += comb(hiss * env, pitch / 2, 0.6) * 0.9 + whistle * env
+        # The breath is cut off: a short low knock in the throat.
+        catch_t = t - (start + length)
+        knock = np.sin(2 * np.pi * 110 * catch_t) * np.exp(-np.clip(catch_t, 0, None) * 45)
+        grit = lowpass(noise(seconds, 963 + i), 0.4) * np.exp(-np.clip(catch_t, 0, None) * 70) * 0.5
+        out += (knock + grit) * ((catch_t >= 0) & (catch_t < 0.12)) * 0.9
+    # Under it all, a strangled creak.
+    creak = lowpass(noise(seconds, 970), 0.25) * (0.5 + 0.5 * np.sign(np.sin(2 * np.pi * 34 * t))) * 0.12
+    fade = np.clip(np.minimum(t / 0.04, (seconds - t) / 0.08), 0, 1)
+    return normalize((out + creak) * fade, 0.75)
+
+
+LUNGS = ['....t....',
+         '..o.t.o..',
+         '.ofotofo.',
+         'ohfo.ofho',
+         'ohfo.ofho',
+         'offo.offo',
+         'offo.offo',
+         'offo.offo',
+         '.ooo.ooo.']
+
+
+def breath_hud():
+    """0.4.75: the reader's breath gauge, 128x32: four 9x9 lungs (breathing, strained, choking, spare) on the top row; the bar's
+    72x7 frame at (0,9); a 70x5 strip of breath at (0,16) and a 70x5 strip of choking red at (0,21)."""
+    img = Image.new('RGBA', (128, 32), (0, 0, 0, 0))
+    palettes = [
+        {'o': (58, 31, 34), 'f': (232, 180, 176), 'h': (250, 222, 218), 't': (201, 164, 159)},
+        {'o': (50, 34, 40), 'f': (156, 140, 154), 'h': (190, 176, 188), 't': (150, 132, 140)},
+        {'o': (20, 8, 8), 'f': (139, 30, 30), 'h': (194, 58, 46), 't': (110, 30, 30)},
+        {'o': (40, 34, 36), 'f': (60, 52, 56), 'h': (76, 68, 72), 't': (60, 52, 56)},
+    ]
+    for frame, palette in enumerate(palettes):
+        for y, row in enumerate(LUNGS):
+            for x, ch in enumerate(row):
+                if ch in palette:
+                    img.putpixel((frame * 9 + x, y), palette[ch] + (255,))
+    for x in range(72):
+        for y in range(7):
+            edge = x in (0, 71) or y in (0, 6)
+            img.putpixel((x, 9 + y), (30, 26, 28, 255) if edge else ((44, 39, 42, 210) if y == 1 else (58, 52, 55, 200)))
+    breath_rows = [(217, 230, 234), (190, 212, 219), (169, 193, 201), (146, 172, 181), (126, 152, 161)]
+    choke_rows = [(214, 72, 58), (194, 58, 46), (170, 44, 38), (150, 36, 32), (128, 28, 26)]
+    for top, rows in ((16, breath_rows), (21, choke_rows)):
+        for y, (r, g, b) in enumerate(rows):
+            for x in range(70):
+                shade = -10 if (x + y * 2) % 7 == 0 else (8 if (x * 3 + y) % 11 == 0 else 0)
+                img.putpixel((x, top + y), (max(0, min(255, r + shade)), max(0, min(255, g + shade)), max(0, min(255, b + shade)), 255))
+    out = ASSETS / 'textures/gui/caver_breath.png'
+    out.parent.mkdir(parents=True, exist_ok=True)
+    img.save(out)
+
+
 SOUNDS = {
     'exhale': (lambda: breath(900, True), 'Air breathes out of the stone'),
     'inhale': (lambda: breath(910, False), 'Air draws back into the stone'),
@@ -211,6 +277,7 @@ SOUNDS = {
     'stone_roll': (stone_roll, 'Heavy stone rolls inward'),
     'chisel': (chisel, 'A chisel taps behind a wall'),
     'gasp': (gasp, 'You gasp for air'),
+    'choke': (choke, 'Choking, wheezing breaths'),
 }
 
 
@@ -259,12 +326,25 @@ def gasp_only():
         write_json(path, table, original)
 
 
+def choke_only():
+    soundfile.write(str(ASSETS / 'sounds/caver/choke.ogg'), choke().astype(np.float32), RATE, format='OGG', subtype='VORBIS')
+    for path, key, value in ((ASSETS / 'sounds.json', 'caver.choke', {'sounds': [{'name': 'the_oldest_house:caver/choke'}], 'subtitle': 'subtitles.the_oldest_house.caver.choke'}),
+                             (ASSETS / 'lang/en_us.json', 'subtitles.the_oldest_house.caver.choke', 'Choking, wheezing breaths')):
+        original = path.read_text()
+        table = json.loads(original)
+        table[key] = value
+        write_json(path, table, original)
+    breath_hud()
+
+
 if __name__ == '__main__':
     import sys
     if sys.argv[1:] == ['marks']:
         marks_texture()  # 0.4.72 only; leaves the 0.4.71 files exactly as they are
     elif sys.argv[1:] == ['gasp']:
         gasp_only()  # 0.4.73 only
+    elif sys.argv[1:] == ['choke']:
+        choke_only()  # 0.4.75 only
     else:
         rubble_texture()
         sounds()

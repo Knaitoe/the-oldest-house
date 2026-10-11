@@ -9,7 +9,11 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.74
+## Current candidate: 0.4.75
+
+Ted the Caver's air gets its own breath gauge in place of Minecraft's bubbles, and a few seconds of choking (shaking view, closing dark, wheezing) before the blackout, ended by any air in time. No change to the source or its resolution: 43 sources / 33 resolutions / two kinds / three endings. Layout 40 / protocol 49. See [the caver record](TED_CAVER_0_4_71.md).
+
+## Earlier candidate: 0.4.74
 
 The child's room is rebuilt in its existing slot: its own furniture and playable toys, a crawlspace and a basement, and a sealing sequence that runs on a shared clock while exits are unwatched. CHILD_ROOM stays one eligible source with the same personal resolution: each reader must look at every sealed exit themselves and then crawl below the bed to the basement. Saved rooms receive a guarded once-only rebuild. Still 43 sources / 33 resolutions / two kinds / three endings. Layout 40 / protocol 48. See [the child's room record](CHILD_ROOM_0_4_74.md).
 
