@@ -1,0 +1,146 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "s": "the_oldest_house:block/nursery_swatches",
+  "w": "the_oldest_house:block/nursery_white_wood",
+  "b": "the_oldest_house:block/nursery_blue_wood",
+  "r": "the_oldest_house:block/nursery_red_wood",
+  "y": "the_oldest_house:block/nursery_yellow_wood",
+  "p": "the_oldest_house:block/nursery_drawing_below",
+  "particle": "the_oldest_house:block/nursery_drawing_below"
+ },
+ "elements": [
+  {
+   "from": [
+    1,
+    2,
+    15
+   ],
+   "to": [
+    15,
+    14,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#p"
+    },
+    "south": {
+     "texture": "#s",
+     "uv": [
+      12.5,
+      8.5,
+      15.5,
+      11.5
+     ]
+    },
+    "east": {
+     "texture": "#s",
+     "uv": [
+      12.5,
+      8.5,
+      15.5,
+      11.5
+     ]
+    },
+    "west": {
+     "texture": "#s",
+     "uv": [
+      12.5,
+      8.5,
+      15.5,
+      11.5
+     ]
+    },
+    "up": {
+     "texture": "#s",
+     "uv": [
+      12.5,
+      8.5,
+      15.5,
+      11.5
+     ]
+    },
+    "down": {
+     "texture": "#s",
+     "uv": [
+      12.5,
+      8.5,
+      15.5,
+      11.5
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    7.5,
+    12.5,
+    14.8
+   ],
+   "to": [
+    8.5,
+    13.5,
+    15
+   ],
+   "faces": {
+    "north": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    },
+    "south": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    },
+    "east": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    },
+    "west": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    },
+    "up": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    },
+    "down": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    }
+   }
+  }
+ ]
+}

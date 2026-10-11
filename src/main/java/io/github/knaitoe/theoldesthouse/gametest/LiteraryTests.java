@@ -220,26 +220,126 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
     @AfterBatch(batch="literary_confession") public static void confessionDone(ServerLevel l){close();}
 
 
+    /** 0.4.74: posts a reader's own click where they stand, as the client sends it. */
+    private static boolean use(ServerPlayer p,BlockPos at,InteractionHand hand){var e=new PlayerInteractEvent.RightClickBlock(p,hand,at,new BlockHitResult(at.getCenter(),Direction.UP,at,false));NeoForge.EVENT_BUS.post(e);return e.isCanceled();}
+    private static int stage(ServerLevel l,BlockPos at){var s=l.getBlockState(at);return s.is(LiteraryRegistry.NURSERY.get())?s.getValue(NurseryBlock.STAGE):-1;}
+    /** Look at each sealed exit long enough to take it in, from where a child would stand. */
+    private static void examine(GameTestHelper h,Fixture f,ServerPlayer p,int from){var place=LabyrinthPlace.CHILD_ROOM;var b=f.base(place);
+        double[][] stands={{-6.5,0,-18.5},{6.5,0,-18.5},{-6.5,0,-11.5},{7.5,0,-7.5}};
+        for(int i=0;i<ChildRoom.EXITS.size();i++){final int exit=i;h.runAfterDelay(from+i*30,()->{var s=stands[exit];f.at(p,place,s[0],s[1],s[2]);f.look(p,b.offset(ChildRoom.EXITS.get(exit).get(ChildRoom.EXITS.get(exit).size()-1)));});}
+    }
+    @GameTest(template="empty",batch="literary_child_sequence",timeoutTicks=1300)
+    public static void childRoomExitsGoUnseenAfterTheCardAndOnlyTheReadersOwnCrawlToTheBasementResolves(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.CHILD_ROOM;var p=f.player("child_reader",place);var peer=f.player("child_peer",place);var observer=f.player("child_spectator",place);observer.setGameMode(GameType.SPECTATOR);
+        var b=f.base(place);var l=f.in;
+        h.runAfterDelay(10,()->{
+            h.assertTrue(l.getBlockState(b.offset(ChildRoom.EXITS.get(0).get(0))).is(Blocks.GLASS)&&NurseryBlock.is(l.getBlockState(b.offset(ChildRoom.TOY_HOMES.get(0))),NurseryBlock.Kind.TEDDY)
+                    &&l.getBlockState(b.offset(ChildRoom.EXITS.get(2).get(0))).getBlock() instanceof DoorBlock,"the room stands whole: two windows, its own doors, the bear by the bed");
+            h.assertTrue(l.getBlockState(b.offset(ChildRoom.BED_HEAD.below())).isAir()&&l.getBlockState(b.offset(ChildRoom.GAP)).is(Blocks.LADDER)&&l.getBlockState(b.offset(6,-3,-10)).isAir(),"a child fits under the bed, there is a gap in the boards and a basement below");
+            f.source(p,place);
+            // Both readers face the door they came in by; the spectator watches the hall door.
+            f.at(p,place,.5,0,-4.5);f.look(p,b.offset(0,1,1));f.at(peer,place,-.5,0,-4.5);f.look(peer,b.offset(0,1,1));
+            f.at(observer,place,-8.5,0,-11.5);f.look(observer,b.offset(-11,0,-12));
+        });
+        h.runAfterDelay(430,()->{var world=LiteraryVignettes.shared(f.data(),place);
+            h.assertTrue(world.getInt("Exits0474")==3&&l.getBlockState(b.offset(ChildRoom.EXITS.get(0).get(0))).is(Blocks.BIRCH_PLANKS)==false&&!l.getBlockState(b.offset(ChildRoom.EXITS.get(0).get(0))).is(Blocks.GLASS),"after the card, the windows went unseen: "+world.getInt("Exits0474"));
+            h.assertTrue(l.getBlockState(b.offset(ChildRoom.EXITS.get(2).get(0))).getBlock() instanceof DoorBlock&&f.own(observer,place).getInt("ExitSeen0474")==0,"a spectator's gaze keeps the hall door, and earns nothing");
+            h.assertTrue(l.getBlockState(b.offset(ChildRoom.CEILING_SLOTS.get(0))).getValue(NurseryBlock.STAGE)==NurseryBlock.CEILING&&!NurseryBlock.is(l.getBlockState(b.offset(ChildRoom.TOY_HOMES.get(0))),NurseryBlock.Kind.TEDDY),"the bear has left the floor for the ceiling");
+            f.at(observer,place,-8.5,0,-4.5);f.look(observer,b.offset(-8,1,1));
+        });
+        h.runAfterDelay(700,()->{h.assertTrue(LiteraryVignettes.shared(f.data(),place).getInt("Exits0474")==ChildRoom.ALL&&!(l.getBlockState(b.offset(ChildRoom.EXITS.get(3).get(0))).getBlock() instanceof DoorBlock),"once unwatched the doors went too");
+            h.assertTrue(f.own(p,place).getInt("ExitSeen0474")==0,"nothing counts as seen until the reader looks");});
+        examine(h,f,p,710);
+        h.runAfterDelay(840,()->{h.assertTrue(f.own(p,place).getInt("ExitSeen0474")==ChildRoom.ALL&&f.own(p,place).getBoolean("AllSeen0474")&&f.own(peer,place).getInt("ExitSeen0474")==0,"the reader has seen every exit themselves; the peer, who never read the card, has not");
+            f.at(p,place,.5,0,-22.5);f.at(peer,place,6.5,-4,-12.5);});
+        h.runAfterDelay(852,()->{h.assertTrue(!f.own(p,place).getBoolean("Ready"),"under the bed is not yet the way out");f.at(p,place,.5,-2,-22.5);});
+        h.runAfterDelay(864,()->{h.assertTrue(f.own(p,place).getBoolean("Crawled0474"),"the reader has gone below the floor");f.at(p,place,6.5,-2,-18.5);});
+        h.runAfterDelay(876,()->f.at(p,place,6.5,-4,-12.5));
+        h.runAfterDelay(890,()->{
+            h.assertTrue(f.own(p,place).getBoolean("Ready")&&"examined_the_lost_exits_and_crawled_below_the_bed".equals(f.own(p,place).getString("Outcome")),"seen, crawled and stood up below: the last account is the reader's");
+            h.assertTrue(!f.own(peer,place).getBoolean("Ready")&&!f.own(observer,place).getBoolean("Ready"),"a peer who walked into the basement and a spectator have nothing");
+            f.read(p,place,LiteraryRooms.ending(place));
+            h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id())),"only the reader's own reading resolves the room");
+            // The way back up: the hatch opens from below and shuts itself once nobody is in it.
+            f.at(p,place,4.5,-3,-4.5);h.assertTrue(use(p,b.offset(ChildRoom.HATCH),InteractionHand.MAIN_HAND)&&l.getBlockState(b.offset(ChildRoom.HATCH)).getValue(TrapDoorBlock.OPEN),"the hatch opens from below");
+            f.at(p,place,.5,0,-6.5);f.at(peer,place,-2.5,0,-6.5);
+        });
+        h.runAfterDelay(1010,()->{h.assertTrue(!l.getBlockState(b.offset(ChildRoom.HATCH)).getValue(TrapDoorBlock.OPEN),"and it shuts itself behind them");h.succeed();});
+    }
+    @AfterBatch(batch="literary_child_sequence") public static void childSequenceDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_child_aftermath",timeoutTicks=400)
-    public static void spectatorsKeepHiddenChangesHiddenAndLateReadersMustInspectEveryExit(GameTestHelper h){
-        var f=new Fixture(h);var place=LabyrinthPlace.CHILD_ROOM;var p=f.player("child_first",place);var observer=f.player("child_observer",place);observer.setGameMode(GameType.SPECTATOR);
-        f.source(p,place);f.at(p,place,0,0,-20);p.setYRot(180);f.at(observer,place,-8.5,0,-10.5);f.look(observer,f.base(place).offset(-11,0,-11));
-        final ServerPlayer[] late={null};var exits=List.of(new BlockPos(-11,0,-11),new BlockPos(11,0,-17),new BlockPos(-4,2,-24),new BlockPos(0,2,-24),new BlockPos(4,2,-24));
-        h.runAfterDelay(75,()->{
-            h.assertTrue((LiteraryVignettes.shared(f.data(),place).getInt("LostExits")&1)==0&&f.own(observer,place).getInt("ExaminedLostExits")==0,"a real spectator hides changes from sight while earning no personal observation credit");
-            for(var exit:exits)LiteraryRooms.box(f.in,f.base(place).offset(exit),0,0,0,0,1,0,Blocks.CALCITE);
-            var world=LiteraryVignettes.shared(f.data(),place);world.putInt("LostExits",31);LiteraryVignettes.shared(f.data(),place,world);
-            late[0]=f.player("child_aftermath",place);f.source(late[0],place);f.at(late[0],place,0,-2,-25);
-        });
-        h.runAfterDelay(90,()->h.assertTrue(!f.own(late[0],place).getBoolean("Ready"),"crawling alone cannot borrow all five shared losses"));
-        for(int i=0;i<exits.size();i++){final int index=i;h.runAfterDelay(95+i*30,()->{var exit=exits.get(index);f.at(late[0],place,index==0?-8.5:index==1?8.5:exit.getX()+.5,0,index<2?exit.getZ()+.5:-21.5);f.look(late[0],f.base(place).offset(exit));});}
-        h.runAfterDelay(250,()->{h.assertTrue(f.own(late[0],place).getInt("ExaminedLostExits")==31,"all five actual sealed thresholds were personally examined");f.at(late[0],place,0,-2,-25);});
-        h.runAfterDelay(265,()->{
-            h.assertTrue(f.own(late[0],place).getBoolean("Ready")&&!f.own(p,place).getBoolean("Ready")&&!f.own(observer,place).getBoolean("Ready"),"only the complete examiner's real under-bed crawl resolves the aftermath");
-            f.read(late[0],place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),late[0].getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id())),"the owned final reading cannot transfer credit");h.succeed();
-        });
+    public static void lateReadersMustSeeEverySealedExitThemselvesBeforeTheirOwnCrawlCounts(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.CHILD_ROOM;f.build(place);var b=f.base(place);
+        for(int i=0;i<ChildRoom.EXITS.size();i++)h.assertTrue(ChildRoom.seal(f.in,b,i),"an exit goes while nobody is there to see it: "+i);
+        var world=LiteraryVignettes.shared(f.data(),place);world.putInt("Exits0474",ChildRoom.ALL);LiteraryVignettes.shared(f.data(),place,world);
+        var late=f.player("child_late",place);
+        h.runAfterDelay(5,()->{h.assertTrue(f.own(late,place).getInt("ExitsAtArrival0474")==ChildRoom.ALL,"the late reader came into a shut room");f.at(late,place,.5,-2,-22.5);});
+        h.runAfterDelay(15,()->f.at(late,place,6.5,-4,-12.5));
+        h.runAfterDelay(27,()->{h.assertTrue(!f.own(late,place).getBoolean("Ready")&&!f.own(late,place).getBoolean("Crawled0474"),"crawling alone cannot borrow the shared losses");f.source(late,place);});
+        examine(h,f,late,35);
+        h.runAfterDelay(165,()->{h.assertTrue(f.own(late,place).getInt("ExitSeen0474")==ChildRoom.ALL,"every sealed threshold was looked at by the late reader");f.at(late,place,.5,-2,-22.5);});
+        h.runAfterDelay(177,()->f.at(late,place,6.5,-4,-12.5));
+        h.runAfterDelay(190,()->{h.assertTrue(f.own(late,place).getBoolean("Ready")&&"examined_the_sealed_thresholds_and_found_the_remaining_crawl".equals(f.own(late,place).getString("Outcome")),"their own crawl found the remaining way");h.succeed();});
     }
     @AfterBatch(batch="literary_child_aftermath") public static void childAftermathDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="literary_child_toys",timeoutTicks=400)
+    public static void childRoomToysPlayInTheirOwnSharedStatesAndConferNothing(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.CHILD_ROOM;var p=f.player("child_player",place);var peer=f.player("child_watcher",place);var b=f.base(place);var l=f.in;
+        var top=new BlockPos(3,0,-8);var music=new BlockPos(-10,1,-15);var ball=ChildRoom.TOY_HOMES.get(3);
+        h.runAfterDelay(5,()->{
+            var teddy=ChildRoom.TOY_HOMES.get(0);f.click(p,place,teddy);
+            h.assertTrue(l.getBlockState(b.offset(teddy)).getValue(NurseryBlock.FACING)==Direction.SOUTH,"the bear turns to the reader who squeezed it");
+            var blocks=ChildRoom.TOY_HOMES.get(2);for(int i=1;i<=3;i++){f.click(p,place,blocks);h.assertTrue(stage(l,b.offset(blocks))==i%3,"the blocks stack, stack again, and fall: "+i);}
+            var jack=new BlockPos(-6,0,-14);for(int i=0;i<7;i++)f.click(p,place,jack);h.assertTrue(stage(l,b.offset(jack))==0,"seven turns of the handle and nothing yet");
+            f.click(p,place,jack);h.assertTrue(stage(l,b.offset(jack))==1,"the eighth turn pops the jack");f.click(p,place,jack);h.assertTrue(stage(l,b.offset(jack))==0,"and he is pushed back in");
+            f.click(p,place,music);h.assertTrue(stage(l,b.offset(music))==1,"the music box opens and plays");
+            f.click(p,place,top);h.assertTrue(NurseryToys.busy(b.offset(top)),"the top spins");
+            f.click(p,place,ChildRoom.TRACK.get(0));h.assertTrue(NurseryToys.busy(b.offset(ChildRoom.TRACK.get(0))),"the train sets off round its track");
+            f.click(p,place,ball);
+            for(var lid:List.of(new BlockPos(-9,0,-20),new BlockPos(-9,0,-6))){f.click(p,place,lid);h.assertTrue(stage(l,b.offset(lid))==1,"the lid or front opens: "+lid);}
+            f.click(p,place,new BlockPos(10,0,-13));h.assertTrue(stage(l,b.offset(10,0,-13))==1&&stage(l,b.offset(10,1,-13))==1,"both wardrobe doors open together");
+            f.click(p,place,new BlockPos(-11,0,-12));h.assertTrue(!l.getBlockState(b.offset(-11,0,-12)).getValue(DoorBlock.OPEN),"the room's own doors stay shut");
+            f.at(p,place,4.5,0,-3.5);h.assertTrue(use(p,b.offset(ChildRoom.HATCH),InteractionHand.MAIN_HAND)&&!l.getBlockState(b.offset(ChildRoom.HATCH)).getValue(TrapDoorBlock.OPEN),"the hatch is fastened from underneath");
+            f.at(p,place,.5,0,-12.5);h.assertTrue(use(p,b.offset(ChildRoom.TOY_HOMES.get(2)),InteractionHand.OFF_HAND)&&stage(l,b.offset(ChildRoom.TOY_HOMES.get(2)))==0,"the client's off-hand try sets nothing down on a toy");
+        });
+        h.runAfterDelay(30,()->{h.assertTrue(!NurseryBlock.is(l.getBlockState(b.offset(ball)),NurseryBlock.Kind.BALL)&&NurseryBlock.is(l.getBlockState(b.offset(ball).north(4)),NurseryBlock.Kind.BALL),"the ball rolls four blocks the way it was pushed");});
+        h.runAfterDelay(220,()->{
+            h.assertTrue(stage(l,b.offset(music))==0&&stage(l,b.offset(top))==1&&NurseryBlock.is(l.getBlockState(b.offset(ChildRoom.TRACK.get(0))),NurseryBlock.Kind.TRAIN),"the tune ends, the top falls over, the train comes home");
+            h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0&&!f.own(p,place).getBoolean("Ready")&&LiteraryVignettes.shared(f.data(),place).getInt("Exits0474")==0,"play is play: no exit goes and nothing is earned");
+            h.succeed();});
+    }
+    @AfterBatch(batch="literary_child_toys") public static void childToysDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="literary_child_rebuild",timeoutTicks=300)
+    public static void anOlderChildRoomIsRebuiltOnceOnlyWhenEmptyAndUnwatched(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.CHILD_ROOM;f.build(place);var b=f.base(place);var l=f.in;var d=f.data();
+        // Make it the room as it stood before 0.4.74: no checkpoint, the old lectern, the figure on the ceiling, and old records.
+        var done=d.state(ChildRoom.STATE);done.remove(Long.toString(b.asLong()));d.setState(ChildRoom.STATE,done);
+        l.setBlock(b.offset(6,1,-20),Blocks.LECTERN.defaultBlockState(),3);
+        var finishedId=UUID.randomUUID();var partwayId=UUID.randomUUID();
+        var finished=new CompoundTag();finished.putBoolean("Completed",true);finished.putBoolean("Read_Source",true);finished.putString("Outcome","examined_the_lost_exits_and_crawled_below_the_bed");LiteraryVignettes.save(d,finishedId,place,finished);
+        var partway=new CompoundTag();partway.putBoolean("Read_Source",true);partway.putBoolean("Ready",true);partway.putInt("ExaminedLostExits",31);partway.putInt("ExitSeen0474",15);LiteraryVignettes.save(d,partwayId,place,partway);
+        var r=place.room();f.chunks.hold(l,new AABB(b.getX()+r.minX()-1,b.getY()+r.minY()-2,b.getZ()+r.minZ()-1,b.getX()+r.maxX()+2,b.getY()+r.maxY()+2,b.getZ()+r.maxZ()+2));
+        final LiteraryActor[] figure={null};final net.minecraft.world.entity.decoration.ArmorStand[] stand={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&ChildRoom.loaded(l,b),"wait for native chunks and entity sections")).thenExecute(()->{
+            figure[0]=LiteraryRegistry.ACTOR.get().create(l);figure[0].moveTo(Vec3.atBottomCenterOf(b.offset(7,4,-16)));figure[0].setNoGravity(true);l.addFreshEntity(figure[0]);
+            var world=LiteraryVignettes.shared(d,place);world.putUUID("CeilingToy",figure[0].getUUID());world.putInt("LostExits",31);LiteraryVignettes.shared(d,place,world);
+            stand[0]=new net.minecraft.world.entity.decoration.ArmorStand(l,b.getX()+.5,b.getY(),b.getZ()-10.5);l.addFreshEntity(stand[0]);
+        }).thenExecute(()->{
+            h.assertTrue(!ChildRoom.rebuild(l,b)&&l.getBlockState(b.offset(6,1,-20)).is(Blocks.LECTERN),"nothing changes while a body is in the room");
+            stand[0].discard();var watcher=NativeTestPlayers.survival(h,"child_rebuild_watcher");f.players.add(watcher);watcher.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()+8.5,180,0);
+            h.assertTrue(!ChildRoom.rebuild(l,b)&&l.getBlockState(b.offset(6,1,-20)).is(Blocks.LECTERN),"nothing changes while someone stands where they could see in");
+            watcher.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()+120.5,180,0);
+            h.assertTrue(ChildRoom.rebuild(l,b)&&ChildRoom.built(f.data(),b)&&!l.getBlockState(b.offset(6,1,-20)).is(Blocks.LECTERN)&&figure[0].isRemoved(),"empty and unwatched, the old room and its ceiling figure go");
+            h.assertTrue(NurseryBlock.is(l.getBlockState(b.offset(ChildRoom.BED_HEAD)),NurseryBlock.Kind.BED_HEAD)&&NurseryBlock.is(l.getBlockState(b.offset(ChildRoom.ACCOUNT)),NurseryBlock.Kind.ACCOUNT)&&l.getBlockState(b.offset(6,-3,-10)).isAir(),"the new room, crawlspace and basement stand in its place");
+            var after=LiteraryVignettes.shared(f.data(),place);
+            h.assertTrue(after.getInt("Exits0474")==0&&!after.contains("LostExits")&&!after.hasUUID("CeilingToy"),"the room's exits are back, for everyone");
+            var keep=LiteraryVignettes.personal(f.data(),finishedId,place);var redo=LiteraryVignettes.personal(f.data(),partwayId,place);
+            h.assertTrue(keep.getBoolean("Completed")&&"examined_the_lost_exits_and_crawled_below_the_bed".equals(keep.getString("Outcome")),"a reader who finished keeps everything");
+            h.assertTrue(!redo.contains("Ready")&&!redo.contains("ExaminedLostExits")&&!redo.contains("ExitSeen0474")&&redo.getBoolean("Read_Source"),"an unfinished reader starts the room over, the card still read");
+            f.reload();h.assertTrue(ChildRoom.built(f.data(),b)&&ChildRoom.rebuild(l,b),"the checkpoint survives reload and never repeats");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="literary_child_rebuild") public static void childRebuildDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_movie_recovery",timeoutTicks=500)
     public static void actualCanoeTravelReturnsForTheNextReaderAndDiscardRecoversOnce(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.MOVIE_NIGHT;var p=f.player("movie_rower",place);var peer=f.player("movie_next",place);f.source(p,place);final LakeCanoeEntity[] boat={null};final boolean[] finished={false};

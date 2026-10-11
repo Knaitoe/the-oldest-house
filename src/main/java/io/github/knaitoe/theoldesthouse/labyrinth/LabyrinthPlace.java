@@ -206,7 +206,7 @@ public enum LabyrinthPlace {
     MASQUE("masque",Kind.ONE_SHOT,47,new BoundingBox(-12,-1,-78,12,11,0),literaryEntry()),
     USHER("usher",Kind.MULTI_VISIT,48,new BoundingBox(-18,-4,-42,18,13,0),literaryEntry()),
     WINCHESTER("winchester",Kind.ONE_SHOT,49,new BoundingBox(-31,-1,-78,31,17,0),literaryEntry()),
-    CHILD_ROOM("child_room",Kind.ONE_SHOT,50,new BoundingBox(-12,-3,-25,12,8,0),literaryEntry()),
+    CHILD_ROOM("child_room",Kind.ONE_SHOT,50,new BoundingBox(-12,-5,-25,12,8,0),literaryEntry()), // 0.4.74: down to the basement
     CRIMSON_HALL("crimson_hall",Kind.MULTI_VISIT,51,new BoundingBox(-19,-1,-44,19,15,0),literaryEntry()),
     BLY_ROUTE("bly_route",Kind.RECURRING,52,new BoundingBox(-13,-5,-54,13,10,0),literaryEntry()),
     ELK_LOT("elk_lot",Kind.ONE_SHOT,53,new BoundingBox(-35,-3,-113,35,17,0),literaryEntry()),

@@ -704,5 +704,113 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.caver.gasp"
+  },
+  "literary.nursery_train": {
+    "subtitle": "subtitles.the_oldest_house.literary.nursery_train",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/nursery_train",
+        "stream": false
+      }
+    ]
+  },
+  "literary.nursery_whistle": {
+    "subtitle": "subtitles.the_oldest_house.literary.nursery_whistle",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/nursery_whistle",
+        "stream": false
+      }
+    ]
+  },
+  "literary.nursery_top": {
+    "subtitle": "subtitles.the_oldest_house.literary.nursery_top",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/nursery_top",
+        "stream": false
+      }
+    ]
+  },
+  "literary.nursery_chime": {
+    "subtitle": "subtitles.the_oldest_house.literary.nursery_chime",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/nursery_chime",
+        "stream": false
+      }
+    ]
+  },
+  "literary.nursery_pop": {
+    "subtitle": "subtitles.the_oldest_house.literary.nursery_pop",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/nursery_pop",
+        "stream": false
+      }
+    ]
+  },
+  "literary.nursery_music_box": {
+    "subtitle": "subtitles.the_oldest_house.literary.nursery_music_box",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/nursery_music_box",
+        "stream": false
+      }
+    ]
+  },
+  "literary.nursery_squeak": {
+    "subtitle": "subtitles.the_oldest_house.literary.nursery_squeak",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/nursery_squeak",
+        "stream": false
+      }
+    ]
+  },
+  "literary.nursery_blocks": {
+    "subtitle": "subtitles.the_oldest_house.literary.nursery_blocks",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/nursery_blocks",
+        "stream": false
+      }
+    ]
+  },
+  "literary.nursery_ball": {
+    "subtitle": "subtitles.the_oldest_house.literary.nursery_ball",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/nursery_ball",
+        "stream": false
+      }
+    ]
+  },
+  "literary.nursery_creak": {
+    "subtitle": "subtitles.the_oldest_house.literary.nursery_creak",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/nursery_creak",
+        "stream": false
+      }
+    ]
+  },
+  "literary.nursery_exit": {
+    "subtitle": "subtitles.the_oldest_house.literary.nursery_exit",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/nursery_exit",
+        "stream": false
+      }
+    ]
+  },
+  "literary.nursery_whisper": {
+    "subtitle": "subtitles.the_oldest_house.literary.nursery_whisper",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/nursery_whisper",
+        "stream": false
+      }
+    ]
   }
 }

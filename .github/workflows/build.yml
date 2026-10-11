@@ -57,7 +57,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.73"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.74"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/house/PlaytestLog.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
               hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
@@ -199,6 +199,19 @@ jobs:
                   assert z.read(f'assets/the_oldest_house/sounds/caver/{cue}.ogg').startswith(b'OggS')
                   assert caver_sounds[f'caver.{cue}']['subtitle'] == f'subtitles.the_oldest_house.caver.{cue}'
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/CaverRedesign.class' in z.namelist()
+              # The child's room (0.4.74): one nursery block for every piece of furniture and toy, its wallpaper, twelve subtitled toy cues.
+              nursery = json.loads(z.read('assets/the_oldest_house/blockstates/nursery.json'))['variants']
+              assert len(nursery) == 448
+              for key, variant in nursery.items():
+                  assert json.loads(z.read('assets/the_oldest_house/models/' + variant['model'].split(':')[1] + '.json'))['textures'], key
+              assert json.loads(z.read('assets/the_oldest_house/blockstates/child_wallpaper.json'))['variants']['']['model'] == 'the_oldest_house:block/child_wallpaper'
+              for name in ('child_wallpaper','nursery_quilt','nursery_swatches','nursery_dollhouse','nursery_train','nursery_card','nursery_exercise_book','nursery_drawing_below'):
+                  assert z.read(f'assets/the_oldest_house/textures/block/{name}.png').startswith(b'\x89PNG')
+              for cue in ('train','whistle','top','chime','pop','music_box','squeak','blocks','ball','creak','exit','whisper'):
+                  assert z.read(f'assets/the_oldest_house/sounds/literary/nursery_{cue}.ogg').startswith(b'OggS')
+                  assert caver_sounds[f'literary.nursery_{cue}']['subtitle'] == f'subtitles.the_oldest_house.literary.nursery_{cue}'
+              for name in ('ChildRoom','NurseryBlock','NurseryToys'):
+                  assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               for name in ('wax_cylinder_1','wax_cylinder_2','wax_cylinder_3','family_film'):
                   song=json.loads(z.read(f'data/the_oldest_house/jukebox_song/{name}.json'))
                   assert song['length_in_seconds'] > 0
@@ -771,7 +784,7 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.73"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.74"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
@@ -846,8 +859,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.73.jar
-            build/libs/the_oldest_house-0.4.73.jar.sha256
+            build/libs/the_oldest_house-0.4.74.jar
+            build/libs/the_oldest_house-0.4.74.jar.sha256
           if-no-files-found: error
 
 

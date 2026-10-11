@@ -110,7 +110,7 @@ public final class ArchitectureTests {
                 }
                 if(scene!=LabyrinthPlace.RED_ROOM)export(level,base,scene);
             }
-            for(var scene:LabyrinthPlace.values())if(LiteraryRooms.isLiterary(scene)){var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var base=LabyrinthPlaces.base(origin,scene);h.assertTrue(scene==LabyrinthPlace.FAMILY_COPY||scene==LabyrinthPlace.OLD_CABIN||scene==LabyrinthPlace.ELK_CARCASSES?level.getBlockEntity(base.offset(LiteraryRooms.source(scene))) instanceof LecternBlockEntity:level.getBlockState(base.offset(LiteraryRooms.source(scene))).is(HouseBlocks.VIGNETTE_DETAIL.get())&&!SceneHuntReview.sourceBook(level,base,scene).isEmpty(),scene.id()+" has a native themed discovery surface and its preserved original");var entrance=base.offset(0,0,-3);h.assertTrue(level.noCollision(null,new AABB(entrance.getX()+.2,entrance.getY()+.01,entrance.getZ()+.2,entrance.getX()+.8,entrance.getY()+1.8,entrance.getZ()+.8)),scene.id()+" clears the actual entrance body");if(scene!=LabyrinthPlace.FAMILY_COPY&&scene!=LabyrinthPlace.OLD_CABIN)export(level,base,scene);}
+            for(var scene:LabyrinthPlace.values())if(LiteraryRooms.isLiterary(scene)){var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var base=LabyrinthPlaces.base(origin,scene);h.assertTrue(scene==LabyrinthPlace.FAMILY_COPY||scene==LabyrinthPlace.OLD_CABIN||scene==LabyrinthPlace.ELK_CARCASSES?level.getBlockEntity(base.offset(LiteraryRooms.source(scene))) instanceof LecternBlockEntity:(scene==LabyrinthPlace.CHILD_ROOM?NurseryBlock.is(level.getBlockState(base.offset(LiteraryRooms.source(scene))),NurseryBlock.Kind.CARD):level.getBlockState(base.offset(LiteraryRooms.source(scene))).is(HouseBlocks.VIGNETTE_DETAIL.get()))&&!SceneHuntReview.sourceBook(level,base,scene).isEmpty(),scene.id()+" has a native themed discovery surface and its preserved original");var entrance=base.offset(0,0,-3);h.assertTrue(level.noCollision(null,new AABB(entrance.getX()+.2,entrance.getY()+.01,entrance.getZ()+.2,entrance.getX()+.8,entrance.getY()+1.8,entrance.getZ()+.8)),scene.id()+" clears the actual entrance body");if(scene!=LabyrinthPlace.FAMILY_COPY&&scene!=LabyrinthPlace.OLD_CABIN)export(level,base,scene);}
             elkStages(h,HouseTestLevel.get(server,HouseDimensions.OUTSIDE),LabyrinthPlaces.base(origin,LabyrinthPlace.ELK_CARCASSES));
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL,"hotel_upstairs");
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL,"hotel_basement");
@@ -198,7 +198,7 @@ public final class ArchitectureTests {
             var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var b=LabyrinthPlaces.base(origin,scene);var r=scene.room();int rugs=0,squares=0;
             for(var at:BlockPos.betweenClosed(b.offset(r.minX(),r.minY(),r.minZ()),b.offset(r.maxX(),r.maxY(),r.maxZ()))){
                 var s=level.getBlockState(at);
-                if(s.is(HouseBlocks.RUG_FLOOR.get()))rugs++;
+                if(s.is(HouseBlocks.RUG_FLOOR.get())||NurseryBlock.is(s,NurseryBlock.Kind.RUG))rugs++;
                 if(scene!=LabyrinthPlace.MASQUE&&s.is(net.minecraft.tags.BlockTags.WOOL_CARPETS)&&!level.getBlockState(at.below()).is(Blocks.SCULK_SENSOR)){
                     boolean alone=true;for(int dx=-1;dx<=1;dx++)for(int dz=-1;dz<=1;dz++)if((dx!=0||dz!=0)&&level.getBlockState(at.offset(dx,0,dz)).is(s.getBlock()))alone=false;
                     if(alone)squares++;
@@ -259,7 +259,8 @@ public final class ArchitectureTests {
             for(var d:Direction.values()){
                 var next=at.relative(d);if(!r.isInside(next.subtract(b))||seen.contains(next))continue;
                 var s=level.getBlockState(next);
-                if(!s.getCollisionShape(level,next).isEmpty()&&!(s.getBlock() instanceof DoorBlock)&&!(s.getBlock() instanceof TrapDoorBlock))continue;
+                // Doors open, hatches open and ladders are climbed.
+                if(!s.getCollisionShape(level,next).isEmpty()&&!(s.getBlock() instanceof DoorBlock)&&!(s.getBlock() instanceof TrapDoorBlock)&&!(s.getBlock() instanceof LadderBlock))continue;
                 seen.add(next);todo.add(next);
             }
         }
