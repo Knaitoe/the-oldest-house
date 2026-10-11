@@ -93,7 +93,7 @@ public final class GoatmanTests {
     @AfterBatch(batch="goat_plating0480") public static void platingDone(ServerLevel level){if(plating!=null){plating.close();plating=null;}}
     @GameTest(template="empty",batch="goat_plating0480",timeoutTicks=700)
     public static void actualGriddleFranksPlateThroughBlockAirAndCousinClicksWithoutEatingOrLosingTheirChar(GameTestHelper h){
-        plating=new Fixture(h,32600);var f=plating;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        plating=new Fixture(h,32600);var f=plating;var p=f.nativePlayer("supper_aim_reader");f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native supper and entity sections are ready")).thenExecute(()->{
             GoatmanVignette.enter(p);var r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.SUPPER0465-1);r.putInt("Expected",8);f.cohort(r,List.of(p),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);
             f.click(p,GoatmanWoods.COOLER);f.click(p,GoatmanWoods.STOVE);for(int i=0;i<4;i++)f.click(p,GoatmanWoods.STOVE);
@@ -102,7 +102,7 @@ public final class GoatmanTests {
         }).thenWaitUntil(()->h.assertTrue(f.run().getList("CookedPan0465",10).getCompound(3).getBoolean(GoatmanSupper.BURNT),"one original burns on the real griddle")).thenExecute(()->{
             for(int i=0;i<4;i++)f.click(p,GoatmanWoods.STOVE);h.assertTrue(p.getInventory().countItem(GoatmanRegistry.BRAT.get())==4,"four actual griddle servings enter the inventory");
             for(int i=0;i<p.getInventory().getContainerSize();i++){var item=p.getInventory().getItem(i);if(item.is(GoatmanRegistry.BRAT.get()))h.assertTrue(item.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA).copyTag().getUUID(GoatmanVignette.ROUND).equals(f.run().getUUID("Id")),"cooking and blackening preserve the original supper marker");}
-            h.assertTrue(GoatmanVignette.childScale(p)&&p.getAttributeValue(Attributes.SCALE)<.75,"the regression uses the actual child-sized reader");
+            h.assertTrue(GoatmanVignette.childScale(p)&&p.getAttributeValue(Attributes.SCALE)<.75&&p.getEyeY()-p.getY()<1.2,"the connected reader's native eye and body have child scale: "+(p.getEyeY()-p.getY()));
             for(var c:f.cousins())c.moveTo(f.b.getX()+6,f.b.getY(),f.b.getZ()-46);
             aimAtPlate(f,p,0,false,0);var original=p.getMainHandItem().get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA,p.getMainHandItem(),t->t.putUUID(GoatmanVignette.ROUND,UUID.randomUUID()));
             p.gameMode.useItem(p,f.l,p.getMainHandItem(),InteractionHand.MAIN_HAND);h.assertTrue(f.run().getInt("Plated0464")==0&&p.getInventory().countItem(GoatmanRegistry.BRAT.get())==4,"cooked food from a different round cannot fill this supper's plates");p.getMainHandItem().set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,original);
@@ -111,7 +111,7 @@ public final class GoatmanTests {
             h.assertTrue(block.getType()==HitResult.Type.BLOCK,"aiming through the first displayed plate hits its native support");
             var used=p.gameMode.useItemOn(p,f.l,p.getMainHandItem(),InteractionHand.MAIN_HAND,block);h.assertTrue(used.consumesAction()&&(f.run().getInt("Plated0464")&1)!=0&&p.getInventory().countItem(GoatmanRegistry.BRAT.get())==3,"the full native block-use path serves exactly one cooked original");
             aimAtPlate(f,p,1,true,.08);var ray=f.l.clip(new ClipContext(p.getEyePosition(),p.getEyePosition().add(p.getLookAngle().scale(p.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE))),ClipContext.Block.OUTLINE,ClipContext.Fluid.NONE,p));
-            h.assertTrue(ray.getType()==HitResult.Type.MISS,"aiming at the visible plate's upper edge can miss the slab beneath it");
+            h.assertTrue(ray.getType()==HitResult.Type.MISS,"aiming at the visible plate's upper edge can miss the slab beneath it: eye="+p.getEyePosition()+", look="+p.getLookAngle()+", hit="+ray.getBlockPos()+" at "+ray.getLocation());
             var wall=f.b.offset(2,2,-61);f.l.setBlock(wall,Blocks.STONE.defaultBlockState(),3);p.gameMode.useItem(p,f.l,p.getMainHandItem(),InteractionHand.MAIN_HAND);h.assertTrue(p.getInventory().countItem(GoatmanRegistry.BRAT.get())==3&&f.run().getInt("Plated0464")==1,"an intervening native wall cannot be served through");f.l.setBlock(wall,Blocks.AIR.defaultBlockState(),3);
             p.gameMode.useItem(p,f.l,p.getMainHandItem(),InteractionHand.MAIN_HAND);h.assertTrue((f.run().getInt("Plated0464")&2)!=0&&p.getInventory().countItem(GoatmanRegistry.BRAT.get())==2,"the native item-use fallback reaches the visible plate before eating starts");
             p.gameMode.useItem(p,f.l,p.getMainHandItem(),InteractionHand.MAIN_HAND);h.assertTrue(p.getInventory().countItem(GoatmanRegistry.BRAT.get())==2,"a second packet cannot consume another frank for the same plate");
@@ -137,6 +137,7 @@ public final class GoatmanTests {
         final GameTestHelper h;final net.minecraft.server.MinecraftServer server;final ServerLevel l;final BlockPos origin,b;
         final HouseSavedData oldHouse;final LabyrinthData oldData;final MotherCollection oldMother;final boolean keep;
         final List<ServerPlayer> players=new ArrayList<>();final NativeTestChunks chunks=new NativeTestChunks();
+        final Set<ServerPlayer> nativePlayers=new HashSet<>();
         Fixture(GameTestHelper h,int coordinate){
             this.h=h;server=h.getLevel().getServer();l=HouseTestLevel.get(server);origin=new BlockPos(coordinate,80,coordinate);
             oldHouse=HouseSavedData.get(server);oldData=LabyrinthData.get(server);oldMother=MotherCollection.get(server);keep=l.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY);
@@ -148,6 +149,7 @@ public final class GoatmanTests {
             b=LabyrinthPlaces.base(origin,LabyrinthPlace.GOATMAN);GoatmanVignette.build(server,l,b);LabyrinthBuilder.registerDoors(data,LabyrinthPlace.GOATMAN,b);IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.GOATMAN);
         }
         ServerPlayer player(){var p=h.makeMockServerPlayerInLevel();p.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-.5,180,0);p.hasChangedDimension();players.add(p);return p;}
+        ServerPlayer nativePlayer(String name){var p=NativeTestPlayers.survival(h,name);p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-.5,180,0);p.hasChangedDimension();players.add(p);nativePlayers.add(p);return p;}
         void at(ServerPlayer p,double progress){p.moveTo(GoatmanWoods.path(progress).add(b.getX(),b.getY(),b.getZ()));}
         /** Inside, by the table, looking up the trailer away from the door. */
         void indoors(ServerPlayer p){p.moveTo(b.getX()+.5,b.getY()+1,b.getZ()-58.5,180,0);}
@@ -178,7 +180,7 @@ public final class GoatmanTests {
         void use(ServerPlayer p,BlockPos rel){BlockPos at=b.offset(rel);p.gameMode.useItemOn(p,l,ItemStack.EMPTY,InteractionHand.MAIN_HAND,new BlockHitResult(Vec3.atCenterOf(at),Direction.WEST,at,false));}
         public void close(){
             chunks.close();
-            for(var p:players){GoatmanHaunt.leave(p);GoatmanHaunt.vanish(p,null);GoatmanVignette.depart(p);TallyCounterItem.forget(p.getUUID());if(server.getPlayerList().getPlayers().contains(p))server.getPlayerList().remove(p);else p.discard();}
+            for(var p:players){GoatmanHaunt.leave(p);GoatmanHaunt.vanish(p,null);GoatmanVignette.depart(p);TallyCounterItem.forget(p.getUUID());if(nativePlayers.contains(p))NativeTestPlayers.remove(p);else if(server.getPlayerList().getPlayers().contains(p))server.getPlayerList().remove(p);else p.discard();}
             AABB bounds=IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN);for(var e:l.getEntitiesOfClass(Entity.class,bounds,e->e instanceof GoatmanChild||e instanceof GoatmanFigure||e instanceof Display||e instanceof Wolf||e instanceof Zombie||e instanceof net.minecraft.world.entity.item.ItemEntity))e.discard();
             for(int x=((int)bounds.minX-1)>>4;x<=((int)bounds.maxX+1)>>4;x++)for(int z=((int)bounds.minZ-1)>>4;z<=((int)bounds.maxZ+1)>>4;z++)l.getChunkSource().removeRegionTicket(TicketType.PORTAL,new ChunkPos(x,z),3,b);
             l.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(keep,server);
