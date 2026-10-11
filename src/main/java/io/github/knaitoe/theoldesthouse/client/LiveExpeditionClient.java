@@ -228,6 +228,9 @@ public final class LiveExpeditionClient {
                 }
             }
         }
+        if(step>=37&&step<=39&&ack!=step&&MobSightClientProof.ready(mc,step,ticks,role)){
+            if(step!=39)shot=role+(step==37?"-outside-mob-sight":"-window-mob-sight");ack(mc,step);
+        }
         if(step==30&&ticks==30){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);mc.options.keyUse.setDown(false);mc.stop();}
     }
     private static boolean open(net.minecraft.world.level.block.state.BlockState s){return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}
