@@ -91,6 +91,34 @@ public final class NotesRepairTests {
             h.assertTrue(creature.hurt(level.damageSources().playerAttack(p),5)&&creature.motion()==MinotaurEntity.WOUNDED&&creature.isAlive()&&creature.getUUID().equals(id)&&FinaleProgress.phase(f.server,p.getUUID())==FinaleProgress.Phase.COLLAPSE,"the actual original weapon wounds the same living prisoner and advances the personal ending");h.succeed();
         }
     }
+    /** 0.4.84: a raised shield stops the charge, but the reader still takes two hearts and is thrown back; the third block breaks it. */
+    @GameTest(template="empty",timeoutTicks=1600) public static void aBlockedChargeStillCostsTwoHeartsAndTheThirdBlockBreaksTheShield(GameTestHelper h){
+        var f=new Fixture(h,104400);var level=h.getLevel();var at=h.absolutePos(BlockPos.ZERO).offset(70,8,-70);
+        for(int x=-3;x<=14;x++)for(int z=-4;z<=4;z++){level.setBlock(at.offset(x,-1,z),Blocks.STONE.defaultBlockState(),2);for(int y=0;y<=5;y++)level.setBlock(at.offset(x,y,z),Blocks.AIR.defaultBlockState(),2);}
+        var p=f.player(h,level,Vec3.atBottomCenterOf(at));var shield=new ItemStack(Items.SHIELD);p.setItemInHand(InteractionHand.OFF_HAND,shield);
+        var weapon=new ItemStack(Items.IRON_SWORD);p.setItemInHand(InteractionHand.MAIN_HAND,weapon);WeaponHistory.record(p,weapon,1);var own=new CompoundTag();own.putString("Phase",FinaleProgress.Phase.FIGHT.name());own.putUUID("Weapon",WeaponHistory.identity(weapon));FinaleProgress.save(f.server,p.getUUID(),own);
+        MinotaurEntity[] it={null};int[] blocks={0};
+        Runnable round=()->{
+            int n=blocks[0];
+            // It comes into the fight only now, so it never charges while the reader stands with no shield up.
+            if(it[0]==null){var c=FinaleRegistry.MINOTAUR.get().create(level);f.entities.add(c);c.caged();c.moveTo(Vec3.atBottomCenterOf(at.offset(10,0,0)));level.addFreshEntity(c);c.awaken(p.getUUID());it[0]=c;}
+            var creature=it[0];p.setHealth(20);p.moveTo(Vec3.atBottomCenterOf(at));p.setDeltaMovement(Vec3.ZERO);p.setYRot(-90);p.setYHeadRot(-90);
+            p.startUsingItem(InteractionHand.OFF_HAND);for(int i=0;i<8;i++)p.doTick();
+            h.assertTrue(p.isBlocking(),"the reader has the shield raised before charge "+(n+1));
+            if(creature.motion()!=MinotaurEntity.STUNNED)creature.moveTo(Vec3.atBottomCenterOf(at.offset(10,0,0)));float before=p.getHealth();boolean stunned=false,recovered=creature.motion()!=MinotaurEntity.STUNNED;
+            // Out of the last stagger, through the next wind-up and charge, into the shield again.
+            for(int i=0;i<400&&!stunned;i++){creature.tick();if(creature.motion()!=MinotaurEntity.STUNNED){if(!recovered)creature.moveTo(Vec3.atBottomCenterOf(at.offset(10,0,0)));recovered=true;}else stunned=recovered;}
+            h.assertTrue(stunned,"charge "+(n+1)+" meets the raised shield and staggers");blocks[0]++;
+            h.assertTrue(p.isAlive()&&Math.abs(before-p.getHealth()-MinotaurEntity.BLOCKED_DAMAGE)<.01F,"blocked or not, the charge costs exactly two hearts: "+before+" -> "+p.getHealth());
+            h.assertTrue(p.getDeltaMovement().horizontalDistance()>1&&p.getDeltaMovement().y>.3,"the blow throws the reader back off their feet");
+            if(n<2){var held=p.getOffhandItem();var tag=held.get(DataComponents.CUSTOM_DATA);
+                h.assertTrue(held.is(Items.SHIELD)&&tag!=null&&tag.copyTag().getInt(MinotaurEntity.BLOCKS_TAG)==n+1&&held.getDamageValue()>=held.getMaxDamage()*(n+1)/3-1,"the shield is worn by each block: blocks="+(tag==null?0:tag.copyTag().getInt(MinotaurEntity.BLOCKS_TAG))+" damage="+held.getDamageValue());}
+        };
+        // A fresh native player is briefly spawn-invulnerable, and each blow leaves a short hurt cooldown: real ticks pass between charges.
+        h.startSequence().thenIdle(80).thenExecute(round).thenIdle(30).thenExecute(round).thenIdle(30).thenExecute(round).thenExecute(()->{
+            h.assertTrue(blocks[0]==3&&p.getOffhandItem().isEmpty(),"the third block breaks the shield outright");
+        }).thenExecute(()->{f.close();h.succeed();});
+    }
     @GameTest(template="empty") public static void retiredNativeSideDoorRemapsBothExplorersAndPreservesOriginalPaperAndChest(GameTestHelper h){
         try(var f=new Fixture(h,103000)){
             var l=h.getLevel();var place=LabyrinthPlace.STRAIGHT_HALL;var b=h.absolutePos(BlockPos.ZERO).offset(120,8,120);LabyrinthHalls.build(l,b,place);

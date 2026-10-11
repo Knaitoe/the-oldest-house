@@ -8,6 +8,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import java.util.*;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.network.chat.Component;
@@ -78,6 +79,7 @@ public final class PlaytestCommandTests {
     @AfterBatch(batch="test_command_collapse") public static void collapseCleanup(ServerLevel l){cleanup();}
     @AfterBatch(batch="test_command_witness") public static void witnessCleanup(ServerLevel l){cleanup();}
     @AfterBatch(batch="test_command_defeat") public static void defeatCleanup(ServerLevel l){cleanup();}
+    @AfterBatch(batch="test_command_cell_door") public static void cellDoorCleanup(ServerLevel l){cleanup();}
     @AfterBatch(batch="test_command_cancel") public static void cancelCleanup(ServerLevel l){cleanup();}
     @AfterBatch(batch="test_command_escape_route") public static void escapeRouteCleanup(ServerLevel l){cleanup();}
     @AfterBatch(batch="test_command_route_peer") public static void routePeerCleanup(ServerLevel l){cleanup();}
@@ -264,12 +266,46 @@ public final class PlaytestCommandTests {
             var cursor=new ItemStack(Items.DIAMOND,2);p.containerMenu.setCarried(cursor);var peerAt=peer.position();peer.getInventory().setItem(3,new ItemStack(Items.EMERALD,7));
             h.assertTrue(command(d,p,"ending defeat")==1,"defeat shortcut is explicit");PlaytestCommands.tick(p.server);
             var collection=MotherCollection.get(p.server);
-            h.assertTrue(!p.isAlive()&&FinaleProgress.phase(p.server,p.getUUID())==FinaleProgress.Phase.LOCKED_OUT&&FinaleProgress.player(p.server,p.getUUID()).getBoolean("NeedsRespawn"),"actual native death invokes the existing permanent defeat and respawn pipeline: alive="+p.isAlive()+" phase="+FinaleProgress.phase(p.server,p.getUUID())+" health="+p.getHealth());
+            h.assertTrue(!p.isAlive()&&FinaleProgress.phase(p.server,p.getUUID())==FinaleProgress.Phase.IMPRISONED&&FinaleProgress.player(p.server,p.getUUID()).getBoolean("NeedsRespawn"),"actual native death in the fight wakes the reader in the cell: alive="+p.isAlive()+" phase="+FinaleProgress.phase(p.server,p.getUUID())+" health="+p.getHealth());
             h.assertTrue(collection.all().stream().anyMatch(e->e.sealed&&e.owner.equals(p.getUUID())&&ItemStack.isSameItemSameComponents(e.item(p.registryAccess()),before))&&collection.all().stream().anyMatch(e->e.sealed&&e.item(p.registryAccess()).is(Items.DIAMOND)&&e.item(p.registryAccess()).getCount()==2),"inventory and actual cursor components enter sealed native custody");
             h.assertTrue(peer.isAlive()&&peer.position().equals(peerAt)&&peer.getInventory().countItem(Items.EMERALD)==7&&FinaleProgress.phase(p.server,peer.getUUID())==FinaleProgress.Phase.UNSEEN&&!FinaleProgress.world(p.server).hasUUID("Owner"),"the peer keeps their life, position, property and ending, and the selected claim releases");
         } finally {p.server.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);}return true;
     });}
 
+    /** 0.4.84: killed in the fight, the reader wakes in the cell; the Minotaur watches them, goes; the cell's one door lets them out for good. */
+    @GameTest(template="empty",batch="test_command_cell_door",timeoutTicks=2400)
+    public static void aReaderKilledInTheFightWakesInTheCellWatchesItGoAndLeavesByItsOneDoor(GameTestHelper h){
+        ServerPlayer[] woke={null};MinotaurEntity[] loose={null};int[] stage={0};
+        run(h,544500,(f,t)->{
+            if(stage[0]==0){
+                var p=source(h,f,"cell_door_owner");var peer=source(h,f,"cell_door_peer");var d=commands();var caged=prisoner(f);var id=caged.getUUID();
+                h.assertTrue(command(d,p,"ending defeat")==1,"defeat shortcut is explicit");PlaytestCommands.tick(p.server);
+                h.assertTrue(!p.isAlive()&&FinaleProgress.phase(p.server,p.getUUID())==FinaleProgress.Phase.IMPRISONED&&FinaleController.imprisoned(p.server),"the fight's death keeps the reader for the cell");
+                var out=f.level.getEntity(id);
+                h.assertTrue(out instanceof MinotaurEntity m&&m.motion()==MinotaurEntity.LOOSE&&m.looseStage()==0&&!FinaleProgress.world(p.server).hasUUID("CagedCreature"),"the same creature is out of the cell, waiting, and no longer its prisoner");
+                loose[0]=(MinotaurEntity)out;
+                h.assertTrue(FinaleController.ensureCaged(f.level,f.origin)==null&&!FinaleController.start(peer),"while someone is kept, no new prisoner appears and nobody else can open the cell");
+                var fresh=p.server.getPlayerList().respawn(p,false,Entity.RemovalReason.KILLED);f.players.remove(p);f.players.add(fresh);fresh.hasChangedDimension();fresh.setNoGravity(true);woke[0]=fresh;
+                h.assertTrue(fresh.isAlive()&&fresh.serverLevel()==f.level&&FinaleArchitecture.inCell(f.origin,fresh.position())&&fresh.getInventory().isEmpty(),"they wake inside the cell with nothing: at "+fresh.position());
+                var door=FinaleArchitecture.cellDoor(f.origin);
+                h.assertTrue(f.level.getBlockState(door).is(Blocks.IRON_DOOR)&&f.level.getBlockState(door.above()).is(Blocks.IRON_DOOR)&&f.level.getBlockState(FinaleArchitecture.cell(f.origin)).is(Blocks.IRON_BARS),"the bars are shut and the cell has its one door");
+                stage[0]=1;return false;
+            }
+            if(stage[0]==1){
+                // It looks at them through the bars a while, then lumbers off.
+                var fresh=woke[0];FinaleController.tickPlayer(fresh,f.origin);
+                if(loose[0].looseStage()<1)return false;
+                h.assertTrue(FinaleArchitecture.inCell(f.origin,fresh.position()),"the reader is still kept in the cell");stage[0]=2;return false;
+            }
+            var fresh=woke[0];var door=FinaleArchitecture.cellDoor(f.origin);fresh.teleportTo(f.level,door.getX()+.5,door.getY(),door.getZ()-.5,0,0);
+            NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(fresh,InteractionHand.MAIN_HAND,door,new BlockHitResult(door.getCenter(),Direction.NORTH,door,false)));
+            h.assertTrue(FinaleProgress.phase(fresh.server,fresh.getUUID())==FinaleProgress.Phase.LOCKED_OUT&&!FinaleController.imprisoned(fresh.server)&&fresh.serverLevel()==fresh.server.overworld(),"the one door takes them out of the House, and they are not let back in");
+            h.assertTrue(f.level.getBlockState(door).is(Blocks.DEEPSLATE_TILES)&&f.level.getBlockState(door.above()).is(Blocks.DEEPSLATE_TILES),"with nobody left inside, the door goes back to wall");
+            var next=FinaleController.ensureCaged(f.level,f.origin);
+            h.assertTrue(next!=null&&next.motion()==MinotaurEntity.CAGED&&!next.getUUID().equals(loose[0].getUUID())&&loose[0].isAlive()&&loose[0].motion()==MinotaurEntity.LOOSE,"the cell holds a prisoner again for the next reader, and the loose one is still out there");
+            return true;
+        });
+    }
     @GameTest(template="empty",batch="test_command_cancel",timeoutTicks=1200)
     public static void cancellationLogoutAndDimensionChangesLeaveNoDeferredEnding(GameTestHelper h){run(h,543000,(f,t)->{
         var p=source(h,f,"test_cancel_owner");var d=commands();var at=p.position();

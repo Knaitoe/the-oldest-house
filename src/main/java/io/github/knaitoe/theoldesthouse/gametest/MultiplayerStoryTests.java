@@ -37,6 +37,13 @@ public final class MultiplayerStoryTests {
         boolean lit=burn(p,f,0);h.assertTrue(p.getOffhandItem().isEmpty()&&lit&&packed.getDamageValue()==1,"the kept hand holds the original and the native lighter in the pack lights the hearth: oneHand="+BodyLoss.oneArmed(p)+", lit="+lit+", damage="+packed.getDamageValue());
         h.assertTrue(!BodyLoss.oneArmed(peer)&&StaircaseFire.flames(FinaleProgress.player(peer.server,peer.getUUID()))==0,"a peer keeps both hands and their own cold fires");
         f.reload();BodyLoss.apply(p);h.assertTrue(BodyLoss.oneArmed(p)&&find(p,f,1)&&burn(p,f,1)&&packed.getDamageValue()==2,"the second bound leaf burns after a saved-data reload without restoring the missing hand");
+        // 0.4.84: the one hand may hold the lighter instead, the book staying in the pack.
+        var book2=p.getMainHandItem();int slot=-1;for(int i=0;i<p.getInventory().items.size();i++)if(p.getInventory().items.get(i)==packed)slot=i;
+        h.assertTrue(slot>=0,"the lighter is in the pack");p.getInventory().items.set(slot,book2);p.setItemInHand(InteractionHand.MAIN_HAND,packed);
+        h.assertTrue(find(p,f,2)&&burn(p,f,2)&&packed.getDamageValue()==3&&StaircaseFire.flames(FinaleProgress.player(p.server,p.getUUID()))==3,"with the lighter in the one hand, the House of Leaves burns its leaf from the pack");
+        // Two hands may hold them either way round.
+        var peerBook=issued(peer);var peerLighter=peer.getMainHandItem();peer.setItemInHand(InteractionHand.MAIN_HAND,peerBook);peer.setItemInHand(InteractionHand.OFF_HAND,peerLighter);
+        h.assertTrue(find(peer,f,0)&&burn(peer,f,0)&&peerLighter.getDamageValue()==1&&StaircaseFire.flames(FinaleProgress.player(peer.server,peer.getUUID()))==1,"a reader with both hands can hold the book in either one");
     });}
     @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
     public static void anExplicitRewriteKeepsBoundLeavesFiresComponentsAndThePeersOriginal(GameTestHelper h){run(h,527000,MultiplayerStoryTests::holdLeaves,f->{

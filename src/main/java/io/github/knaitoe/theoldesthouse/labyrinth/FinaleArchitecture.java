@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.entity.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.*;
 import net.minecraft.world.item.*;
+import net.minecraft.world.phys.Vec3;
 
 /** A continuous native 1,280-block descent to the cell, with an equally deep continuation. */
 public final class FinaleArchitecture {
@@ -329,6 +330,21 @@ public final class FinaleArchitecture {
         var d=LabyrinthData.get(level.getServer());var s=d.state(STATE);if(s.getBoolean("ConnectedCellBars"))return;
         var cell=cell(manor);for(int x=-1;x<=1;x++)for(int y=0;y<4;y++){var at=cell.offset(x,y,0);if(level.getBlockState(at).is(Blocks.IRON_BARS))level.setBlock(at,cellBars(),FLAGS);}
         s.putBoolean("ConnectedCellBars",true);d.setState(STATE,s);
+    }
+    /** The cell's one door (0.4.84), in its back wall: there only while someone killed in the fight wakes inside. */
+    public static BlockPos cellDoor(BlockPos manor){return base(manor).offset(0,ARENA,69);}
+    /** Where the one killed in the fight wakes: the middle of the cell, facing the bars. */
+    public static Vec3 cellSpot(BlockPos manor){return Vec3.atBottomCenterOf(base(manor).offset(0,ARENA,64));}
+    public static boolean inCell(BlockPos manor,Vec3 at){BlockPos b=base(manor);double x=at.x-b.getX(),y=at.y-b.getY(),z=at.z-b.getZ();return x>-5.2&&x<6.2&&z>59.8&&z<69.2&&y>=ARENA-.5&&y<ARENA+7;}
+    public static void placeCellDoor(ServerLevel level,BlockPos manor){
+        BlockPos door=cellDoor(manor);if(level.getBlockState(door).is(Blocks.IRON_DOOR))return;
+        var lower=Blocks.IRON_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.NORTH).setValue(DoorBlock.OPEN,false).setValue(DoorBlock.HALF,net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER);
+        level.setBlock(door,lower,FLAGS);level.setBlock(door.above(),lower.setValue(DoorBlock.HALF,net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER),FLAGS);
+    }
+    /** Once nobody is left inside, the door goes back to wall, so the cell is as every other reader finds it. */
+    public static void removeCellDoor(ServerLevel level,BlockPos manor){
+        BlockPos door=cellDoor(manor);
+        for(BlockPos at:List.of(door,door.above()))if(level.getBlockState(at).is(Blocks.IRON_DOOR))level.setBlock(at,Blocks.DEEPSLATE_TILES.defaultBlockState(),FLAGS);
     }
     public static void closeCell(ServerLevel level,BlockPos manor){
         BlockPos door=cell(manor);for(int x=-1;x<=1;x++)for(int y=0;y<4;y++)level.setBlock(door.offset(x,y,0),cellBars(),FLAGS);

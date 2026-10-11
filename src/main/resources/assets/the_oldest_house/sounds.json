@@ -937,5 +937,25 @@
         "attenuation_distance": 24
       }
     ]
+  },
+  "finale.minotaur_bellow": {
+    "subtitle": "subtitles.the_oldest_house.finale.minotaur_bellow",
+    "sounds": [
+      {
+        "name": "the_oldest_house:finale/minotaur_bellow",
+        "stream": false,
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "finale.minotaur_hoof": {
+    "subtitle": "subtitles.the_oldest_house.finale.minotaur_hoof",
+    "sounds": [
+      {
+        "name": "the_oldest_house:finale/minotaur_hoof",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
   }
 }

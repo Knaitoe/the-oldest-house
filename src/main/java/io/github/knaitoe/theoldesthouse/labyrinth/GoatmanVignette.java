@@ -577,10 +577,10 @@ public final class GoatmanVignette {
                         c.getPersistentData().putString("At","bath");through.addAll(List.of(new Vec3(4.5,1,-74.5),new Vec3(3.5,1,-74.5),new Vec3(2.5,1,-74.5),new Vec3(2.5,1,-72.5),new Vec3(4,1,-71.5),new Vec3(4,1,-57.5),ENTRY,SPOTS.get("floor").at()));setRoute(c,through,"floor");}
                 }else if(!fresh(r)&&clock==windowAt){
                     Vec3 w=Vec3.atCenterOf(b.offset(GoatmanWoods.WINDOW));
-                    for(var p:enrolled)p.connection.send(new ClientboundSoundPacket(Holder.direct(GoatmanRegistry.CLAW.get()),SoundSource.BLOCKS,w.x,w.y,w.z,.9F,1.15F,p.getRandom().nextLong()));
+                    for(var p:enrolled)p.connection.send(new ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(GoatmanRegistry.CLAW.get()),SoundSource.BLOCKS,w.x,w.y,w.z,.9F,1.15F,p.getRandom().nextLong()));
                 }
             }
-            if(clock==KEEN)for(var p:enrolled)p.connection.send(new ClientboundSoundPacket(Holder.direct(GoatmanRegistry.KEEN.get()),SoundSource.AMBIENT,b.getX()+19.5,b.getY()+3,b.getZ()-70.5,1.2F,1,p.getRandom().nextLong()));
+            if(clock==KEEN)for(var p:enrolled)p.connection.send(new ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(GoatmanRegistry.KEEN.get()),SoundSource.AMBIENT,b.getX()+19.5,b.getY()+3,b.getZ()-70.5,1.2F,1,p.getRandom().nextLong()));
         }
         if(clock==CHECK&&GoatmanFear.stage(r)>0)GoatmanFear.queue(r,27);
         if(clock==BEDTIME&&r.getInt("ExtraState")==X_INSIDE)r.putInt("ExtraState",X_FLOOR);
@@ -638,12 +638,12 @@ public final class GoatmanVignette {
     /** A real knock: knuckles, an ordinary rhythm. */
     private static void knock(ServerLevel l,BlockPos b,List<ServerPlayer> players){
         Vec3 at=Vec3.atCenterOf(b.offset(GoatmanWoods.DOOR));
-        for(var p:players)p.connection.send(new ClientboundSoundPacket(Holder.direct(LiteraryRegistry.CABIN_KNOCK.get()),SoundSource.BLOCKS,at.x,at.y,at.z,1.1F,1.08F,p.getRandom().nextLong()));
+        for(var p:players)p.connection.send(new ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(LiteraryRegistry.CABIN_KNOCK.get()),SoundSource.BLOCKS,at.x,at.y,at.z,1.1F,1.08F,p.getRandom().nextLong()));
     }
     /** Half knocking, half clawing. */
     private static void hammer(ServerLevel l,BlockPos b,List<ServerPlayer> players,boolean claw){
         Vec3 at=Vec3.atCenterOf(b.offset(GoatmanWoods.DOOR));
-        for(var p:players)p.connection.send(new ClientboundSoundPacket(Holder.direct((claw?GoatmanRegistry.CLAW:GoatmanRegistry.HAMMER).get()),SoundSource.BLOCKS,at.x,at.y,at.z,1.35F,.91F+p.getRandom().nextFloat()*.15F,p.getRandom().nextLong()));
+        for(var p:players)p.connection.send(new ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder((claw?GoatmanRegistry.CLAW:GoatmanRegistry.HAMMER).get()),SoundSource.BLOCKS,at.x,at.y,at.z,1.35F,.91F+p.getRandom().nextFloat()*.15F,p.getRandom().nextLong()));
         l.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK,Blocks.OAK_PLANKS.defaultBlockState()),at.x,at.y+.4,at.z+.05,10,.38,.55,.08,.012);
     }
 

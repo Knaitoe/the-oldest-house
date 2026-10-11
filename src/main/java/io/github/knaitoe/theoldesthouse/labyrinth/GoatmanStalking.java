@@ -61,33 +61,64 @@ public final class GoatmanStalking {
     }
     /** The trailer's side windows (west, then east), by their lower pane. */
     private static final BlockPos[] SIDE_WINDOWS={new BlockPos(-8,2,-59),new BlockPos(-8,2,-67),new BlockPos(-8,2,-73),new BlockPos(8,2,-59),new BlockPos(8,2,-67)};
-    public static final int DASHES=2,DASH_GAP=400;
+    /** The four corners of a lap, just off the trailer's walls: front west, back west, back east, front east. */
+    private static final Vec3[] CORNERS={new Vec3(-9.5,0,-51.5),new Vec3(-9.5,0,-78.5),new Vec3(9.5,0,-78.5),new Vec3(9.5,0,-51.5)};
+    public static final int LAPS=3,LAP_GAP=300;
+    public static final double LAP_SPEED=.8;
+    /** Every window struck on the way round, and the back wall. */
+    public static final int ALL_STRUCK=(1<<SIDE_WINDOWS.length+1)-1;
     /**
-     * 0.4.77: while the impostor waits unseen behind the closed door, a reader inside looking out of a side window may see it
-     * as it is, running past outside: a private, unsaved figure for that reader only, appearing and vanishing where they cannot
-     * see, never near a knock (it cannot be in two places at once). Twice a night at most, well apart.
+     * 0.4.84: while the impostor waits unseen behind the closed door, it is also seen as it is, tearing round the trailer:
+     * for each reader inside, a private, unsaved figure runs a whole lap just off the walls, past every side window, striking
+     * each one and the back wall as it goes, loud enough to hear from anywhere inside. It starts and ends at a corner the
+     * reader cannot see, never near a knock at the door (it cannot be in two places at once), at most three times a night.
      */
     public static void dash(ServerLevel l,BlockPos b,CompoundTag r,ServerPlayer p,CompoundTag own){
         long now=l.getGameTime();
-        if(p.isSpectator()||own.getInt("Dashes0476")>=DASHES||now<own.getLong("DashAt0476")||now-r.getLong("LastImpact0465")<60)return;
+        if(p.isSpectator()||own.getInt("Laps0484")>=LAPS||now<own.getLong("LapAt0484")||now-r.getLong("LastImpact0465")<60)return;
         boolean waiting=r.getInt("Phase")==GoatmanVignette.VIGIL?circuitDone(r)&&r.getInt("StalkWindowLeg0465")==0&&(!r.contains("AssaultAt0465")||r.getBoolean("AssaultDone0465")):r.getBoolean("Silence");
         if(!waiting||!GoatmanWoods.indoors(p.position().subtract(b.getX(),b.getY(),b.getZ())))return;
-        Vec3 eye=p.getEyePosition(),look=p.getLookAngle();
-        for(var w:SIDE_WINDOWS){
-            Vec3 pane=Vec3.atCenterOf(b.offset(w)).add(0,.5,0),to=pane.subtract(eye);double d=to.length();
-            if(d>11||look.dot(to.scale(1/d))<.8||!visible(l,p,eye,pane))continue;
-            double x=w.getX()<0?-10.5:11.5,z=w.getZ()+.5;
-            int dir=p.getRandom().nextBoolean()?1:-1;
-            // Both ends must be out of this reader's sight; further out if the near corners are visible.
-            for(double reach:new double[]{10,13,16}){
-                Vec3 from=new Vec3(x,0,z+reach*dir).add(b.getX(),b.getY(),b.getZ()),onto=new Vec3(x,0,z-reach*dir).add(b.getX(),b.getY(),b.getZ());
-                if(seenAt(l,p,eye,from)||seenAt(l,p,eye,onto))continue;
-                var f=GoatmanRegistry.FIGURE.get().create(l);if(f==null)return;
-                f.viewer(p.getUUID());f.purpose="dash";f.dashTo=onto;f.dashSpeed=.7;f.until=now+(long)(reach*2/.7)+10;
-                float yaw=(float)(Math.atan2(onto.z-from.z,onto.x-from.x)*180/Math.PI)-90;f.moveTo(from.x,from.y,from.z,yaw,0);f.face(yaw);GoatmanHaunt.appear(l,f);
-                own.putInt("Dashes0476",own.getInt("Dashes0476")+1);own.putLong("DashAt0476",now+DASH_GAP);return;
+        if(!l.getEntitiesOfClass(GoatmanFigure.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),f->f.purpose.equals("lap")&&f.viewer().filter(p.getUUID()::equals).isPresent()).isEmpty())return;
+        Vec3 eye=p.getEyePosition();int first=p.getRandom().nextInt(4),start=-1;
+        for(int k=0;k<4;k++){int c=(first+k)%4;if(!seenAt(l,p,eye,abs(b,CORNERS[c]))){start=c;break;}}
+        if(start<0){own.putLong("LapAt0484",now+40);return;}
+        var f=GoatmanRegistry.FIGURE.get().create(l);if(f==null)return;
+        int dir=p.getRandom().nextBoolean()?1:-1;f.viewer(p.getUUID());f.purpose="lap";f.lapBase=b;f.lapCorner=start;f.lapDir=dir;f.until=now+600;
+        for(int k=1;k<=4;k++)f.lap.add(abs(b,CORNERS[Math.floorMod(start+k*dir,4)]));
+        Vec3 from=abs(b,CORNERS[start]),to=f.lap.peekFirst();float yaw=(float)(Math.atan2(to.z-from.z,to.x-from.x)*180/Math.PI)-90;
+        f.moveTo(from.x,from.y,from.z,yaw,0);f.face(yaw);GoatmanHaunt.appear(l,f);
+        own.putInt("Laps0484",own.getInt("Laps0484")+1);own.putLong("LapAt0484",now+LAP_GAP);
+    }
+    /** One tick of a lap: on round at a run, striking the windows it passes; gone at its corner once it is out of sight there. */
+    static void lapStep(ServerLevel l,GoatmanFigure f,ServerPlayer p,long now){
+        Vec3 to=f.lap.peekFirst();if(to==null||f.lapBase==null){f.discard();return;}
+        Vec3 d=to.subtract(f.position());double len=d.length();float yaw=len>.01?(float)(Math.atan2(d.z,d.x)*180/Math.PI)-90:f.getYRot();
+        if(len<=LAP_SPEED){
+            f.step(to,yaw);f.lap.pollFirst();f.lapCorner=Math.floorMod(f.lapCorner+f.lapDir,4);
+            if(f.lap.isEmpty()){
+                // Round to where it began: it goes there only if this reader cannot see it go; otherwise on to the next corner.
+                if(!seenAt(l,p,p.getEyePosition(),f.position())||f.extra>=4){f.discard();return;}
+                f.extra++;f.lap.add(abs(f.lapBase,CORNERS[Math.floorMod(f.lapCorner+f.lapDir,4)]));
             }
+        }else f.step(f.position().add(d.scale(LAP_SPEED/len)),yaw);
+        if(now%3==0)hear(p,net.minecraft.sounds.SoundEvents.GRASS_STEP,f.position(),1.1F,.65F);
+        strike(f,p);
+    }
+    /** A slap or a scrape on each window as it passes, and a blow on the back wall, all heard by its reader only. */
+    private static void strike(GoatmanFigure f,ServerPlayer p){
+        BlockPos b=f.lapBase;Vec3 rel=f.position().subtract(b.getX(),b.getY(),b.getZ());
+        for(int i=0;i<SIDE_WINDOWS.length;i++){var w=SIDE_WINDOWS[i];if((f.struck&1<<i)!=0)continue;
+            double lane=w.getX()<0?-9.5:9.5;
+            if(Math.abs(rel.x-lane)<.8&&Math.abs(rel.z-(w.getZ()+.5))<.5){f.struck|=1<<i;f.swing(InteractionHand.MAIN_HAND);
+                Vec3 pane=Vec3.atCenterOf(b.offset(w)).add(w.getX()<0?-.45:.45,0,0);
+                hear(p,i%2==0?GoatmanRegistry.CLAW.get():LiteraryRegistry.CABIN_KNOCK.get(),pane,1.7F,i%2==0?1.2F:1.05F);}
         }
+        int back=1<<SIDE_WINDOWS.length;
+        if((f.struck&back)==0&&Math.abs(rel.z+78.5)<.8&&Math.abs(rel.x-.5)<.6){f.struck|=back;f.swing(InteractionHand.MAIN_HAND);
+            hear(p,GoatmanRegistry.HAMMER.get(),Vec3.atCenterOf(b.offset(0,2,-77)).add(0,0,-.45),1.9F,.85F);}
+    }
+    private static void hear(ServerPlayer p,net.minecraft.sounds.SoundEvent sound,Vec3 at,float volume,float pitch){
+        p.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound),SoundSource.HOSTILE,at.x,at.y,at.z,volume,pitch,p.getRandom().nextLong()));
     }
     private static boolean seenAt(ServerLevel l,ServerPlayer p,Vec3 eye,Vec3 feet){
         for(double y:new double[]{.3,1.2,2.1}){var point=feet.add(0,y,0);var to=point.subtract(eye);double d=to.length();if(d>.01&&p.getLookAngle().dot(to.scale(1/d))>-.15&&visible(l,p,eye,point))return true;}

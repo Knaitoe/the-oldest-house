@@ -64,7 +64,7 @@ public final class FinaleController {
     public static void reconcileClaim(MinecraftServer server){
         var world=FinaleProgress.world(server);if(!world.hasUUID("Owner"))return;
         UUID id=world.getUUID("Owner");var phase=FinaleProgress.phase(server,id);
-        if(!FinaleProgress.committed(phase)||phase==FinaleProgress.Phase.HOMEWARD){
+        if(!FinaleProgress.committed(phase)||phase==FinaleProgress.Phase.HOMEWARD||phase==FinaleProgress.Phase.IMPRISONED){
             releaseClaim(server,id);
             if(phase==FinaleProgress.Phase.HOMEWARD){world=FinaleProgress.world(server);world.putBoolean("CellReleased",true);LabyrinthData.get(server).setState(FinaleProgress.STATE,world);}
         }
@@ -98,7 +98,15 @@ public final class FinaleController {
     /** Must run before manor auto-entry, including a pending transition saved by another controller. */
     public static boolean enforceExclusion(ServerPlayer player){
         FinaleProgress.Phase phase = FinaleProgress.phase(player.server, player.getUUID());
-        if (FinaleProgress.committed(phase) && !player.isDeadOrDying() && !player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)) {
+        if (phase == FinaleProgress.Phase.IMPRISONED && !player.isDeadOrDying() && !player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)) {
+            BlockPos origin = HouseSavedData.get(player.server).houseOrigin(); ServerLevel interior = player.server.getLevel(HouseDimensions.INTERIOR);
+            if (origin != null && interior != null) {
+                HouseTransitionEvents.cancelPending(player, "the cell has one door");
+                Vec3 at = FinaleArchitecture.cellSpot(origin); interior.getChunkAt(BlockPos.containing(at));
+                player.teleportTo(interior, at.x, at.y, at.z, 180, 0); player.resetFallDistance(); return true;
+            }
+        }
+        if (FinaleProgress.committed(phase) && phase != FinaleProgress.Phase.IMPRISONED && !player.isDeadOrDying() && !player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)) {
             BlockPos origin = HouseSavedData.get(player.server).houseOrigin(); ServerLevel interior = player.server.getLevel(HouseDimensions.INTERIOR);
             if (origin != null && interior != null) {
                 HouseTransitionEvents.cancelPending(player, "the opened cell cannot be left this way");
@@ -145,6 +153,10 @@ public final class FinaleController {
                 ensureMinotaur(player,origin,record);
             }
             if(phase==FinaleProgress.Phase.COLLAPSE){FinaleCollapse.tickRetreat(player,origin,record);FinaleProgress.save(player.server,player.getUUID(),record);}
+        }else if(phase==FinaleProgress.Phase.IMPRISONED){
+            // The cell keeps them. Its one door, in the back wall, is the only way on.
+            if(!FinaleArchitecture.inCell(origin,player.position())){Vec3 at=FinaleArchitecture.cellSpot(origin);HouseInternalTeleport.shift(player,at,180);}
+            if(player.tickCount%40==0)FinaleArchitecture.placeCellDoor(player.serverLevel(),origin);
         }else if(phase==FinaleProgress.Phase.ESCAPE){
             if(player.getY()<0){player.hurt(player.damageSources().genericKill(),Float.MAX_VALUE);return true;}
             FinaleCollapse.tickEscape(player,origin,record);
@@ -157,7 +169,7 @@ public final class FinaleController {
         return true;
     }
     public static @Nullable MinotaurEntity ensureCaged(ServerLevel level,BlockPos origin){
-        var world=FinaleProgress.world(level.getServer());if(world.hasUUID("Owner")||world.getBoolean("MinotaurWounded")||world.getBoolean("CellReleased"))return null;
+        var world=FinaleProgress.world(level.getServer());if(world.hasUUID("Owner")||world.getBoolean("MinotaurWounded")||world.getBoolean("CellReleased")||imprisoned(level.getServer()))return null;
         BlockPos cell=FinaleArchitecture.cell(origin);level.getChunkAt(cell);
         if(world.hasUUID("CagedCreature")){
             var live=level.getEntity(world.getUUID("CagedCreature"));if(live instanceof MinotaurEntity m){CAGED.put(level.getServer(),m);return m;}
@@ -201,6 +213,12 @@ public final class FinaleController {
         if(phase==FinaleProgress.Phase.ESCAPE&&event.getPos().distManhattan(FinaleArchitecture.exit(origin))<=1&&player.distanceToSqr(event.getPos().getCenter())<20){
             event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);var record=FinaleProgress.player(player.server,player.getUUID());boolean open=FinaleCollapse.pull(player,origin,record);FinaleProgress.save(player.server,player.getUUID(),record);if(open)finish(player,record.getBoolean("Guided"));return;
         }
+        BlockPos door=FinaleArchitecture.cellDoor(origin);
+        if(event.getPos().equals(door)||event.getPos().equals(door.above())){
+            event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);
+            if(phase==FinaleProgress.Phase.IMPRISONED&&player.distanceToSqr(event.getPos().getCenter())<20)walkOut(player,origin);
+            return;
+        }
         BlockPos cell=FinaleArchitecture.cell(origin);
         if(event.getPos().getZ()==cell.getZ()&&Math.abs(event.getPos().getX()-cell.getX())<=1&&Math.abs(event.getPos().getY()-cell.getY())<=3){
             event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);
@@ -233,7 +251,8 @@ public final class FinaleController {
     }
     public static boolean start(ServerPlayer player){
         BlockPos origin=HouseSavedData.get(player.server).houseOrigin();if(origin==null||!FinaleArchitecture.ready(player.server)||lockedOut(player)||!player.isAlive()||player.gameMode.getGameModeForPlayer()==net.minecraft.world.level.GameType.SPECTATOR)return false;
-        CompoundTag world=FinaleProgress.world(player.server);if(world.hasUUID("Owner")&&!world.getUUID("Owner").equals(player.getUUID())){words(player,FinaleArchitecture.cell(origin),"There is already someone on the other side.");return false;}
+        CompoundTag world=FinaleProgress.world(player.server);if(world.hasUUID("Owner")&&!world.getUUID("Owner").equals(player.getUUID())||imprisoned(player.server)){words(player,FinaleArchitecture.cell(origin),"There is already someone on the other side.");return false;}
+        if(looseInArena(player.serverLevel(),origin)){words(player,FinaleArchitecture.cell(origin),"Something heavy is still moving out there in the dark.");return false;}
         if(FinaleProgress.committed(FinaleProgress.phase(player.server,player.getUUID())))return false;
         UUID weapon=WeaponHistory.favorite(player);
         if(weapon==null){ItemStack fallback=new ItemStack(Items.STONE_SWORD);WeaponHistory.record(player,fallback,1);player.getInventory().add(fallback);weapon=WeaponHistory.favorite(player);}
@@ -332,7 +351,11 @@ public final class FinaleController {
     }
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void death(LivingDeathEvent event){
         if(!(event.getEntity() instanceof ServerPlayer player)||!FinaleProgress.committed(FinaleProgress.phase(player.server,player.getUUID())))return;
-        CompoundTag record=FinaleProgress.player(player.server,player.getUUID());record.putString("Phase",FinaleProgress.Phase.LOCKED_OUT.name());record.putBoolean("NeedsRespawn",true);
+        CompoundTag record=FinaleProgress.player(player.server,player.getUUID());var was=FinaleProgress.phase(record);
+        // Killed in the fight (0.4.84), they wake in the cell it came from; dying again in the cell wakes them there again.
+        boolean kept=was==FinaleProgress.Phase.FIGHT||was==FinaleProgress.Phase.IMPRISONED;
+        record.putString("Phase",(kept?FinaleProgress.Phase.IMPRISONED:FinaleProgress.Phase.LOCKED_OUT).name());record.putBoolean("NeedsRespawn",true);
+        if(kept)imprison(player.server,player.getUUID(),true);
         WitnessEnding.keepWeaponOnDeath(player,record);
         for(int i=0;i<player.getInventory().getContainerSize();i++)keep(player,player.getInventory().removeItemNoUpdate(i));
         keep(player,player.containerMenu.getCarried());player.containerMenu.setCarried(ItemStack.EMPTY);
@@ -345,7 +368,14 @@ public final class FinaleController {
             if(entry!=null){entry.sealed=true;MotherCollection.get(player.server).setDirty();}pet.discard();
         }
         FinaleProgress.save(player.server,player.getUUID(),record);LabyrinthData.get(player.server).clearReturns(player.getUUID());
-        if(record.hasUUID("Creature")&&player.serverLevel().getEntity(record.getUUID("Creature")) instanceof MinotaurEntity creature&&creature.motion()!=MinotaurEntity.WOUNDED)creature.discard();
+        if(was!=FinaleProgress.Phase.IMPRISONED&&record.hasUUID("Creature")&&player.serverLevel().getEntity(record.getUUID("Creature")) instanceof MinotaurEntity creature&&creature.motion()!=MinotaurEntity.WOUNDED){
+            // The one that killed them is out: it waits to see them wake behind the bars, then goes into the dark of the stairs.
+            // A prisoner not yet risen changes only where no other living reader can see it.
+            if(was==FinaleProgress.Phase.FIGHT&&(creature.motion()!=MinotaurEntity.CAGED||!creature.observedBesides(player))){creature.loose(player.getUUID(),player.serverLevel().getGameTime());MinotaurLoose.register(player.server,creature.getUUID());
+                var world=FinaleProgress.world(player.server);if(world.hasUUID("CagedCreature")&&world.getUUID("CagedCreature").equals(creature.getUUID())){world.remove("CagedCreature");LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);}
+                CAGED.remove(player.server);}
+            else creature.discard();
+        }
         releaseClaim(player.server,player.getUUID());
         BlockPos origin=HouseSavedData.get(player.server).houseOrigin();var interior=player.server.getLevel(HouseDimensions.INTERIOR);if(origin!=null&&interior!=null){
             if(!FinaleProgress.world(player.server).hasUUID("Owner")){FinaleArchitecture.seal(interior,origin,false);FinaleArchitecture.closeCell(interior,origin);}
@@ -359,6 +389,11 @@ public final class FinaleController {
     }
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void respawnPosition(PlayerRespawnPositionEvent event){
         if(event.getEntity() instanceof ServerPlayer player&&!event.isFromEndFight()&&FinaleProgress.player(player.server,player.getUUID()).getBoolean("NeedsRespawn")){
+            if(FinaleProgress.phase(player.server,player.getUUID())==FinaleProgress.Phase.IMPRISONED){
+                BlockPos manor=HouseSavedData.get(player.server).houseOrigin();ServerLevel interior=player.server.getLevel(HouseDimensions.INTERIOR);
+                if(manor!=null&&interior!=null){Vec3 at=FinaleArchitecture.cellSpot(manor);interior.getChunkAt(BlockPos.containing(at));FinaleArchitecture.closeCell(interior,manor);FinaleArchitecture.placeCellDoor(interior,manor);
+                    event.setDimensionTransition(new DimensionTransition(interior,at,Vec3.ZERO,180,0,DimensionTransition.DO_NOTHING));return;}
+            }
             BlockPos origin=HouseSavedData.get(player.server).housePosition().orElse(null);if(origin==null)return;
             Vec3 at=HouseProxyEntityEvacuation.frontDoorExit(player.server.overworld(),origin);if(at==null)return;player.server.overworld().getChunkAt(BlockPos.containing(at));
             event.setDimensionTransition(new DimensionTransition(player.server.overworld(),at,Vec3.ZERO,180,0,DimensionTransition.DO_NOTHING));
@@ -366,7 +401,9 @@ public final class FinaleController {
     }
     @SubscribeEvent public static void respawned(PlayerEvent.PlayerRespawnEvent event){
         if(event.getEntity() instanceof ServerPlayer player){CompoundTag record=FinaleProgress.player(player.server,player.getUUID());if(record.getBoolean("NeedsRespawn")){
-            player.getInventory().clearContent();record.remove("NeedsRespawn");FinaleProgress.save(player.server,player.getUUID(),record);}}
+            player.getInventory().clearContent();record.remove("NeedsRespawn");FinaleProgress.save(player.server,player.getUUID(),record);
+            if(FinaleProgress.phase(record)==FinaleProgress.Phase.IMPRISONED){BlockPos origin=HouseSavedData.get(player.server).houseOrigin();
+                if(origin!=null)words(player,FinaleArchitecture.cell(origin).south(2).above(2),"You are on the other side of the bars now.");}}}
     }
     @SubscribeEvent public static void projectile(EntityJoinLevelEvent event){
         if(!event.getLevel().isClientSide&&event.getEntity() instanceof TamableAnimal pet&&pet.getPersistentData().getBoolean(GUIDE))installGuideGoal(pet);
@@ -403,6 +440,7 @@ public final class FinaleController {
             if(interior!=null&&interior.getEntity(record.getUUID("RecoveredGuide")) instanceof TamableAnimal pet)CompanionOrders.followAcross(pet,player);
         }
         if(!guided){player.server.overworld().setDayTime(player.server.overworld().getDayTime()+60*24000L);overgrowBase(player,record);}
+        releaseAllImprisoned(player.server);
         CompoundTag world=FinaleProgress.world(player.server);world.putBoolean("Ended",true);world.putLong("CollapsedOrigin",origin.asLong());world.putInt("Demolition",0);world.remove("Owner");
         LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);HouseSavedData.get(player.server).collapse();
         io.github.knaitoe.theoldesthouse.network.HousePackets.sendToAll(player.server,new io.github.knaitoe.theoldesthouse.network.HouseSightlineStatePayload(BlockPos.ZERO,false));
@@ -477,6 +515,43 @@ public final class FinaleController {
             @Override public boolean canUse(){return pet.getPersistentData().getBoolean(GUIDE);}
             @Override public boolean canContinueToUse(){return canUse();}
         });
+    }
+    // ------------------------------------------------------------------------------------------------ the cell (0.4.84)
+    public static final String IMPRISONED="Imprisoned0484";
+    /** Whether anyone killed in the fight is still in the cell; while they are, no one else opens it and nothing new is put in it. */
+    public static boolean imprisoned(MinecraftServer server){return !FinaleProgress.world(server).getCompound(IMPRISONED).isEmpty();}
+    private static void imprison(MinecraftServer server,UUID id,boolean kept){
+        CompoundTag world=FinaleProgress.world(server),list=world.getCompound(IMPRISONED);
+        if(kept)list.putLong(id.toString(),server.overworld().getGameTime());else list.remove(id.toString());
+        world.put(IMPRISONED,list);LabyrinthData.get(server).setState(FinaleProgress.STATE,world);
+    }
+    /** Through the cell's one door: out of the House, and not let back in. The door goes back to wall once the cell is empty. */
+    public static void walkOut(ServerPlayer player,BlockPos origin){
+        CompoundTag record=FinaleProgress.player(player.server,player.getUUID());if(FinaleProgress.phase(record)!=FinaleProgress.Phase.IMPRISONED)return;
+        // Out by the front door; if that is built over, wherever the world begins, never nowhere.
+        ServerLevel overworld=player.server.overworld();Vec3 landing=HouseProxyEntityEvacuation.frontDoorExit(overworld,origin);
+        if(landing==null){BlockPos spawn=overworld.getSharedSpawnPos();overworld.getChunkAt(spawn);landing=Vec3.atBottomCenterOf(overworld.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,spawn));}
+        record.putString("Phase",FinaleProgress.Phase.LOCKED_OUT.name());FinaleProgress.save(player.server,player.getUUID(),record);imprison(player.server,player.getUUID(),false);
+        ServerLevel level=player.serverLevel();BlockPos door=FinaleArchitecture.cellDoor(origin);
+        level.playSound(null,door,SoundEvents.IRON_DOOR_OPEN,SoundSource.BLOCKS,1,.7F);
+        io.github.knaitoe.theoldesthouse.network.HousePackets.send(player,new io.github.knaitoe.theoldesthouse.network.HouseFadePayload(6,6,10));
+        outside(player,landing);
+        level.playSound(null,door,SoundEvents.IRON_DOOR_CLOSE,SoundSource.BLOCKS,1,.6F);
+        player.displayClientMessage(Component.literal("The door shuts behind you. There is no handle on this side."),true);
+        if(!imprisoned(player.server))FinaleArchitecture.removeCellDoor(level,origin);
+    }
+    /** A House that has collapsed keeps nobody: anyone still in the cell is simply outside, and not let back in. */
+    private static void releaseAllImprisoned(MinecraftServer server){
+        CompoundTag world=FinaleProgress.world(server);boolean changed=false;
+        for(String key:new ArrayList<>(world.getCompound(IMPRISONED).getAllKeys())){CompoundTag record=world.getCompound(key);
+            if(FinaleProgress.phase(record)==FinaleProgress.Phase.IMPRISONED){record.putString("Phase",FinaleProgress.Phase.LOCKED_OUT.name());world.put(key,record);changed=true;}}
+        if(world.contains(IMPRISONED)){world.remove(IMPRISONED);changed=true;}
+        if(changed)LabyrinthData.get(server).setState(FinaleProgress.STATE,world);
+    }
+    /** A loose one still on its way out of the arena; a new fight waits for it to be gone. */
+    private static boolean looseInArena(ServerLevel level,BlockPos origin){
+        BlockPos b=FinaleArchitecture.base(origin);AABB arena=new AABB(b.getX()-17,b.getY()+FinaleArchitecture.ARENA-2,b.getZ()+24,b.getX()+18,b.getY()+FinaleArchitecture.ARENA+13,b.getZ()+70);
+        return !level.getEntitiesOfClass(MinotaurEntity.class,arena,m->m.motion()==MinotaurEntity.LOOSE&&m.looseStage()<2).isEmpty();
     }
     public static void clearAll(){LAST_WORDS.clear();MISSING_CREATURES.clear();CAGED.clear();GUIDE_GOALS.clear();FinaleArchitecture.clearAll();FinaleCollapse.clearAll();}
 }

@@ -138,11 +138,12 @@ public final class GoatmanHaunt {
     private static void figure(ServerLevel level,GoatmanFigure f){
         var viewer=f.viewer().map(level::getPlayerByUUID).orElse(null);long now=level.getGameTime();
         if(!(viewer instanceof ServerPlayer p)||now>=f.until||!p.isAlive()){f.discard();return;}
+        if(f.purpose.equals("lap")){GoatmanStalking.lapStep(level,f,p,now);return;}
         if(f.purpose.equals("dash")&&f.dashTo!=null){
             // Past the trailer's windows at a run, its footfalls heard by its viewer only, and gone at the far corner.
             Vec3 d=f.dashTo.subtract(f.position());double len=d.length();if(len<.05){f.discard();return;}
             float yaw=(float)(Math.atan2(d.z,d.x)*180/Math.PI)-90;f.step(len<=f.dashSpeed?f.dashTo:f.position().add(d.scale(f.dashSpeed/len)),yaw);
-            if(now%3==0)p.connection.send(new ClientboundSoundPacket(Holder.direct(net.minecraft.sounds.SoundEvents.GRASS_STEP),SoundSource.HOSTILE,f.getX(),f.getY(),f.getZ(),.9F,.7F,p.getRandom().nextLong()));
+            if(now%3==0)p.connection.send(new ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(net.minecraft.sounds.SoundEvents.GRASS_STEP),SoundSource.HOSTILE,f.getX(),f.getY(),f.getZ(),.9F,.7F,p.getRandom().nextLong()));
             return;
         }
         if(f.purpose.equals("glimpse")||f.purpose.equals("treeline")){
@@ -168,7 +169,7 @@ public final class GoatmanHaunt {
         if(p.level().dimension().equals(Level.OVERWORLD)&&time>=13000&&time<23000&&own.getLong("KnockNight")!=night+1&&p.getRandom().nextInt(30)==0){
             BlockPos door=door(p);
             if(door!=null){own.putLong("KnockNight",night+1);changed=true;
-                p.connection.send(new ClientboundSoundPacket(Holder.direct(GoatmanRegistry.CLAW.get()),SoundSource.BLOCKS,door.getX()+.5,door.getY()+1,door.getZ()+.5,1.1F,.95F,p.getRandom().nextLong()));
+                p.connection.send(new ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(GoatmanRegistry.CLAW.get()),SoundSource.BLOCKS,door.getX()+.5,door.getY()+1,door.getZ()+.5,1.1F,.95F,p.getRandom().nextLong()));
                 p.displayClientMessage(Component.literal("“Let me in. Stop playing.”"),true);}
         }
         if(changed)save(p,own);
