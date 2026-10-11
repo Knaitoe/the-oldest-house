@@ -420,6 +420,7 @@ public final class ExplorationPassTests {
                 var d=new LabyrinthData();d.setBuilt(33,origin);store.set("the_oldest_house_labyrinth",d);
                 for(var p:LabyrinthPlace.values())if(p.slot()>=0&&p.slot()<72)LabyrinthBuilder.registerDoors(d,p,LabyrinthPlaces.base(origin,p));
                 var reader=UUID.randomUUID();d.pushReturn(reader,new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,Vec3.atBottomCenterOf(b),0,true));
+                var savedDoor=d.door(LabyrinthPlace.STRAIGHT_HALL.doorId(LabyrinthPlace.STRAIGHT_HALL.doors().get(1)));d.deal(reader,savedDoor,LabyrinthPlace.FLOODED_PASSAGE.id(),false);var savedDeal=d.deal(reader,savedDoor);
                 var keep=new CompoundTag();keep.putInt("Burned",3);keep.putString("Front","my saved words");d.setStateEntry(StaircaseStory.STATE,reader.toString(),keep);
                 var goat=new CompoundTag();var goatPlayers=new CompoundTag();var mine=new CompoundTag();mine.putBoolean("Haunted",true);mine.putInt("Hauntings",2);goatPlayers.put(reader.toString(),mine);goat.put("Players",goatPlayers);
                 var oldRun=new CompoundTag();oldRun.putInt("Phase",GoatmanVignette.VIGIL);goat.put("Run",oldRun);d.setState(GoatmanVignette.ID,goat);
@@ -430,6 +431,8 @@ public final class ExplorationPassTests {
                 LabyrinthBuilder.ensureBuilt(server);LabyrinthBuilder.finishGameTest(server);
                 for(var hall:HALLS)h.assertTrue(d.door(hall.entryDoorId())!=null&&l.getBlockState(d.door(hall.entryDoorId()).lower).getBlock() instanceof DoorBlock,"all six appended rooms finish with real registered doors");
                 h.assertTrue(d.builtVersion()==LabyrinthBuilder.VERSION&&cache==l.getBlockEntity(at)&&cache.getItem(0).getCount()==7&&cache.getItem(1).isEmpty(),"the native append keeps original container identity and finite contents");
+                for(var hazard:LabyrinthPlace.values())if(HazardVariety.added(hazard))h.assertTrue(d.door(hazard.entryDoorId())!=null&&l.getBlockState(d.door(hazard.entryDoorId()).lower).getBlock() instanceof DoorBlock&&LabyrinthBuilder.isPlaceReady(d,hazard),"all sixteen hazards append through the sliced builder: "+hazard);
+                h.assertTrue(savedDeal.equals(d.deal(reader,savedDoor)),"a discovered hazard link remains exact after the append");
                 // 0.4.50: the saved world's elk scene is carved again as its two stages, with the crew's gate as a second way back.
                 var elk=LabyrinthPlace.ELK_CARCASSES;var elkBase=LabyrinthPlaces.base(origin,elk);var service=elk.doors().stream().filter(door->door.name().equals("service")).findFirst().orElseThrow();
                 h.assertTrue(HouseTestLevel.get(server,HouseDimensions.OUTSIDE).getBlockState(elkBase.offset(9,1,-10)).is(LiteraryRegistry.YACHT_PORTHOLE.get())&&d.door(elk.doorId(service))!=null&&LabyrinthBuilder.isPlaceReady(d,elk),"the elk scene is rebuilt in place and dealt again only once it stands");
