@@ -35,6 +35,9 @@ public final class LiteraryRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<RoadhouseBlock>> ROADHOUSE_TYPE=CODECS.register("roadhouse",()->RoadhouseBlock.CODEC);
     /** The Last Stop (0.4.78): the bar's furniture, its highway and lot, the field's stalks and the pickups. */
     public static final DeferredBlock<RoadhouseBlock> ROADHOUSE=BLOCKS.registerBlock("roadhouse",RoadhouseBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noLootTable().lightLevel(RoadhouseBlock::light));
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CottageBlock>> COTTAGE_TYPE=CODECS.register("cottage",()->CottageBlock.CODEC);
+    /** Three Fingers (0.4.81): the cottage's walls, floor and thatch, its range, dresser and mantel, the papers and the lamp on the road. */
+    public static final DeferredBlock<CottageBlock> COTTAGE=BLOCKS.registerBlock("cottage",CottageBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noLootTable().lightLevel(CottageBlock::light));
     public static final DeferredBlock<LiteraryFrozenBlock> FROZEN=BLOCKS.registerBlock("literary_frozen",LiteraryFrozenBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).dynamicShape().noOcclusion().noLootTable());
     public static final DeferredBlock<LiteraryPropBlock> PROP=BLOCKS.registerBlock("literary_prop",LiteraryPropBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable());
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<LiteraryModelBlockEntity>> MODEL=BES.register("literary_model",()->BlockEntityType.Builder.of(LiteraryModelBlockEntity::new,PROP.get(),FROZEN.get()).build(null));
@@ -55,6 +58,8 @@ public final class LiteraryRegistry {
     public static final DeferredItem<SnowGlobeItem> SNOW_GLOBE=ITEMS.register("cabin_snow_globe",()->new SnowGlobeItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON),false)),
         CRACKED_GLOBE=ITEMS.register("cabin_cracked_snow_globe",()->new SnowGlobeItem(new Item.Properties().stacksTo(1),true));
     public static final DeferredItem<Item> GIVEN_ARM=item("cabin_given_arm");
+    /** Three Fingers (0.4.81): the withered paw, bound to the reader who pulls it from the fire. Its art is the owner's to replace. */
+    public static final DeferredItem<WitheredPawItem> PAW=ITEMS.register("withered_paw",()->new WitheredPawItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
     public static final DeferredItem<Item> CYLINDER_ONE=item("wax_cylinder_one"),CYLINDER_TWO=item("wax_cylinder_two"),CYLINDER_THREE=item("wax_cylinder_three");
     public static final DeferredHolder<EntityType<?>,EntityType<LiteraryActor>> ACTOR=TYPES.register("literary_actor",()->EntityType.Builder.<LiteraryActor>of(LiteraryActor::new,MobCategory.MISC).sized(.6F,1.8F).clientTrackingRange(16).updateInterval(2).build("literary_actor"));
     public static final DeferredHolder<EntityType<?>,EntityType<LiteraryElk>> ELK=TYPES.register("literary_elk",()->EntityType.Builder.<LiteraryElk>of(LiteraryElk::new,MobCategory.CREATURE).sized(1.25F,1.65F).clientTrackingRange(16).updateInterval(2).build("literary_elk"));
@@ -66,6 +71,7 @@ public final class LiteraryRegistry {
             NURSERY_BLOCKS=sound("nursery_blocks"),NURSERY_BALL=sound("nursery_ball"),NURSERY_CREAK=sound("nursery_creak"),NURSERY_EXIT=sound("nursery_exit"),NURSERY_WHISPER=sound("nursery_whisper");
     /** The Last Stop (0.4.78): the struck pickup's alarm, a truck going by unseen, the pool table and the crash; each has its own subtitle. */
     public static final DeferredHolder<SoundEvent,SoundEvent> LOT_ALARM=sound("lot_alarm"),LOT_HIGHWAY=sound("lot_highway"),LOT_POOL=sound("lot_pool"),LOT_CRASH=sound("lot_crash");
+    public static final DeferredHolder<SoundEvent,SoundEvent> PAW_KNOCK=sound("paw_knock"),PAW_HAMMER=sound("paw_hammer"),PAW_WIND=sound("paw_wind"),PAW_TWIST=sound("paw_twist"),PAW_SCRATCH=sound("paw_scratch"),PAW_HISS=sound("paw_hiss");
     private static DeferredBlock<Block> material(String id,Block base){return BLOCKS.registerBlock(id,Block::new,BlockBehaviour.Properties.ofFullCopy(base).noLootTable());}
     private static DeferredItem<Item> item(String id){var props=new Item.Properties().stacksTo(1);if(id.startsWith("wax_cylinder_")||id.equals("family_film"))props.jukeboxPlayable(net.minecraft.resources.ResourceKey.create(Registries.JUKEBOX_SONG,ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id.replace("one","1").replace("two","2").replace("three","3"))));return ITEMS.registerSimpleItem(id,props);}
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String name){return SOUNDS.register("literary."+name,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"literary."+name)));}

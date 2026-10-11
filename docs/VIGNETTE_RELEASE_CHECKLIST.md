@@ -9,7 +9,11 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.80
+## Current candidate: 0.4.81
+
+*Three Fingers* adds one personal release source in slot 94: three corrupted wishes on a withered paw, three endings (last wish, empty road, the fire) and one account, resolved by reading the soldier's pocketbook and the Bible. Arrival, the story, pulling or borrowing a paw, gifts and observers confer nothing. Require the three paw cases, the pool and quota assertions (44 / 33 / two kinds / three endings), 88 architecture views and the cottage asset checks. Layout 42 / protocol 54. See [the cottage record](THREE_FINGERS_0_4_81.md).
+
+## Previous candidate: 0.4.80
 
 Both hazard proposals append sixteen gray slots with new native mechanics and environment art. Keep saved routes and hazard pacing, require safe transient-attribute cleanup, native camera guards, connected chalk-carrying maze panels, private mirrors and stair counts. Require all prior cases, new hazard cases, 87 architecture views and three hazard views. Layout 41 / protocol 53; unchanged 43 / 33 / two kinds / three endings. Exact-source validation pending; see [the hazard record](HAZARD_VARIETY_0_4_80.md).
 

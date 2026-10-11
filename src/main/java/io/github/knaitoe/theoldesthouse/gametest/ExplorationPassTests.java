@@ -165,7 +165,7 @@ public final class ExplorationPassTests {
         String ready=accountText(data,id);
         h.assertTrue(WitnessAccount.ready(data,id)&&ready.contains("The account holds together")
                 &&ready.contains("Crouch and open the bars"),"the original derived quota and real kinds still govern the final passage");
-        h.assertTrue(WitnessAccount.Story.values().length==43&&needed==33,"this presentation pass adds no sources and changes no quota");h.succeed();
+        h.assertTrue(WitnessAccount.Story.values().length==44&&needed==33,"this presentation pass adds no sources and changes no quota");h.succeed();
     }
     @GameTest(template="empty")
     public static void tomKeepsOneFiniteOriginalWhenItsReaderStoresOrTradesTheLighter(GameTestHelper h){

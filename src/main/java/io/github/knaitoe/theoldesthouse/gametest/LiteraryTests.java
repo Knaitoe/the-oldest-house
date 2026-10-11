@@ -98,10 +98,10 @@ public final class LiteraryTests {
     public static void frozenNativeMachineryAndFarmKeepTheirMeshShapeAndNoPower(GameTestHelper h){var f=new Fixture(h);var place=LabyrinthPlace.MAPPING_INTERIOR;f.build(place);var at=f.base(place).offset(18,0,-10);var original=Blocks.PISTON.defaultBlockState().setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.FACING,Direction.UP);f.out.setBlock(at,LiteraryRegistry.FROZEN.get().defaultBlockState(),3);var be=(LiteraryModelBlockEntity)f.out.getBlockEntity(at);var t=new CompoundTag();t.put("FrozenState",NbtUtils.writeBlockState(original));be.display(t);h.assertTrue(LiteraryFrozenBlock.original(f.out,at).equals(original)&&!f.out.getBlockState(at).isRandomlyTicking()&&!f.out.getBlockState(at).isSignalSource(),"the native captured piston retains its exact visual state without native activity");h.assertTrue(!f.out.getBlockState(at).getCollisionShape(f.out,at).isEmpty(),"frozen mechanisms retain physical collision");h.assertTrue(LiteraryFrozenBlock.freezes(Blocks.WHEAT.defaultBlockState())&&LiteraryFrozenBlock.freezes(Blocks.FARMLAND.defaultBlockState()),"both crops and their supporting farmland use the inactive native projection");var saved=be.saveWithFullMetadata(f.out.registryAccess());be.loadWithComponents(saved,f.out.registryAccess());h.assertTrue(LiteraryFrozenBlock.original(f.out,at).equals(original),"the original mesh state survives native block-entity serialization");h.succeed();}
     @AfterBatch(batch="literary_frozen") public static void frozenDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_registry",timeoutTicks=100)
-    public static void eligibleSourcesAndOneOptionalClosureLeaveTheWitnessReachable(GameTestHelper h){var data=new LabyrinthData();var player=UUID.randomUUID();h.assertTrue(WitnessAccount.Story.values().length==43&&WitnessAccount.REQUIRED==33,"the quota derives from all eligible authored stories");h.assertTrue(WitnessAccount.Story.of("old_cabin")==null,"the recurring witness cabin is guidance, not another source");int sources=0;for(var place:LabyrinthPlace.values())if(LiteraryRooms.isLiterary(place)&&place!=LabyrinthPlace.OLD_CABIN){h.assertTrue(WitnessAccount.Story.of(place.id())!=null&&LiteraryTexts.source(place).has(DataComponents.WRITTEN_BOOK_CONTENT),"every new eligible site has original discovery writing and its own resolution registration");sources++;}var unfinished=UUID.randomUUID();data.visit(unfinished,LabyrinthPlace.HILL_NURSERY);
+    public static void eligibleSourcesAndOneOptionalClosureLeaveTheWitnessReachable(GameTestHelper h){var data=new LabyrinthData();var player=UUID.randomUUID();h.assertTrue(WitnessAccount.Story.values().length==44&&WitnessAccount.REQUIRED==33,"the quota derives from all eligible authored stories");h.assertTrue(WitnessAccount.Story.of("old_cabin")==null,"the recurring witness cabin is guidance, not another source");int sources=0;for(var place:LabyrinthPlace.values())if(LiteraryRooms.isLiterary(place)&&place!=LabyrinthPlace.OLD_CABIN){h.assertTrue(WitnessAccount.Story.of(place.id())!=null&&LiteraryTexts.source(place).has(DataComponents.WRITTEN_BOOK_CONTENT),"every new eligible site has original discovery writing and its own resolution registration");sources++;}var unfinished=UUID.randomUUID();data.visit(unfinished,LabyrinthPlace.HILL_NURSERY);
         h.assertTrue(!LiteraryCabinChoices.canRetire(data,LabyrinthPlace.HILL_NURSERY)&&!LiteraryCabinChoices.canRetire(data,LabyrinthPlace.HOLLOWAY_CAMP),"offline unfinished readers and the finale shield route cannot be retired");
         WitnessAccount.resolve(data,unfinished,WitnessAccount.Story.HILL_NURSERY,"personally_resolved");h.assertTrue(LiteraryCabinChoices.canRetire(data,LabyrinthPlace.HILL_NURSERY),"a completed optional room can still close under the single shared outcome");
-        h.assertTrue(sources==23&&WitnessAccount.Story.values().length-1>=WitnessAccount.REQUIRED,"one optional closure leaves forty-two sources for thirty-three required resolutions");for(var story:WitnessAccount.Story.values())WitnessAccount.resolve(data,player,story,"resolved");h.assertTrue(WitnessAccount.count(data,player)==43&&WitnessAccount.ready(data,player),"different choices in one story cannot add a second source");h.succeed();}
+        h.assertTrue(sources==24&&WitnessAccount.Story.values().length-1>=WitnessAccount.REQUIRED,"one optional closure leaves forty-three sources for thirty-three required resolutions");for(var story:WitnessAccount.Story.values())WitnessAccount.resolve(data,player,story,"resolved");h.assertTrue(WitnessAccount.count(data,player)==44&&WitnessAccount.ready(data,player),"different choices in one story cannot add a second source");h.succeed();}
     @GameTest(template="empty",batch="literary_copy",timeoutTicks=500)
     public static void anActualSleptHomeCreatesPrivateFrozenCopiesWithEmptyOriginalContainers(GameTestHelper h){var f=new Fixture(h,64);var p=f.player("copy_reader",LabyrinthPlace.HILL_NURSERY);var peer=f.player("copy_peer",LabyrinthPlace.HILL_NURSERY);var world=p.server.overworld();var home=new BlockPos(63500,80,63500);var bed=home.offset(2,0,-3);f.chunks.hold(world,new AABB(home).inflate(34));LiteraryRooms.box(world,home,-32,-1,-32,31,-1,31,Blocks.STONE_BRICKS);NovelRooms.room(world,home,-10,10,-10,10,0,6,Blocks.OAK_PLANKS,Blocks.BIRCH_PLANKS);NovelRooms.door(world,home.offset(0,0,10),Direction.SOUTH,Blocks.OAK_DOOR,false);NovelRooms.bed(world,bed,Blocks.WHITE_BED,Direction.NORTH);world.setBlock(home.offset(-5,0,-3),Blocks.CRAFTING_TABLE.defaultBlockState(),3);world.setBlock(home.offset(-4,0,-4),Blocks.CHEST.defaultBlockState(),3);((ChestBlockEntity)world.getBlockEntity(home.offset(-4,0,-4))).setItem(0,new ItemStack(Items.DIAMOND,7));world.setBlock(home.offset(5,0,-5),Blocks.PISTON.defaultBlockState(),3);world.setBlock(home.offset(5,30,-5),Blocks.LAPIS_BLOCK.defaultBlockState(),3);world.setBlock(home.offset(7,0,-5),Blocks.HOPPER.defaultBlockState(),3);world.setBlock(home.offset(6,-1,-5),Blocks.FARMLAND.defaultBlockState(),3);world.setBlock(home.offset(6,0,-5),Blocks.WHEAT.defaultBlockState(),3);
         var stand=EntityType.ARMOR_STAND.create(world);h.assertTrue(stand!=null,"the actual home armor stand exists");
@@ -479,6 +479,100 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         }).thenSucceed();
     }
     @AfterBatch(batch="literary_last_stop_saved") public static void lastStopSavedDone(ServerLevel l){close();}
+
+    // ------------------------------------------------------------------------------------------------ Three Fingers (0.4.81)
+    private static ItemStack pawOf(ServerPlayer p,CompoundTag own){for(var s:p.getInventory().items)if(WitheredPawItem.mine(s,p,own))return s;return ItemStack.EMPTY;}
+    private static void wish(ServerPlayer p,int slot){var paw=pawOf(p,LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LabyrinthPlace.THREE_FINGERS));ThreeFingers.use(p,paw);if(p.containerMenu instanceof LiteraryChoiceMenu menu)menu.clicked(slot,0,ClickType.PICKUP,p);}
+    /** A reader's part set where a test needs it, with their own working paw in hand. */
+    private static void pawState(Fixture f,ServerPlayer p,int stage,int fingers,java.util.function.Consumer<CompoundTag> more){
+        var place=LabyrinthPlace.THREE_FINGERS;var own=f.own(p,place);own.putInt("Stage",stage);own.putInt(ThreeFingers.FINGERS,fingers);own.putInt(ThreeFingers.ISSUE,own.getInt(ThreeFingers.ISSUE)+1);own.putBoolean("SergeantGone",true);
+        more.accept(own);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);p.getInventory().add(WitheredPawItem.issue(p,own));
+    }
+    @GameTest(template="empty",batch="literary_paw_fire",timeoutTicks=600)
+    public static void theSoldiersPawIsPulledFromTheFireAndEachReadersFirstWishIsTheirOwn(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.THREE_FINGERS;var p=f.player("paw_reader",place);var peer=f.player("paw_peer",place);var b=f.base(place);var l=f.in;
+        h.assertTrue(CottageBlock.is(l.getBlockState(b.offset(ThreeFingers.POCKETBOOK)),CottageBlock.Kind.POCKETBOOK)&&CottageBlock.is(l.getBlockState(b.offset(ThreeFingers.BIBLE)),CottageBlock.Kind.BIBLE)
+            &&l.getBlockState(b.offset(ThreeFingers.FIRE)).is(Blocks.CAMPFIRE)&&l.getBlockState(b.offset(ThreeFingers.FRONT_DOOR)).getBlock() instanceof DoorBlock&&CottageBlock.is(l.getBlockState(b.offset(ThreeFingers.LAMP)),CottageBlock.Kind.LAMP_HEAD),
+            "the cottage stands: the pocketbook, the Bible, a real fire, the front door and the lamp on the road");
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.own(p,place).hasUUID("CastSergeant")&&f.own(peer,place).hasUUID("CastSergeant"),"wait for each reader's own people")).thenExecute(()->{
+            var mine=(LiteraryActor)l.getEntity(f.own(p,place).getUUID("CastSergeant"));var theirs=(LiteraryActor)l.getEntity(f.own(peer,place).getUUID("CastSergeant"));
+            h.assertTrue(mine!=null&&theirs!=null&&mine!=theirs&&mine.owner().get().equals(p.getUUID())&&theirs.owner().get().equals(peer.getUUID())&&mine.phase()==ThreeFingers.SERGEANT,"each reader has their own soldier, seen by them alone");
+            f.at(p,place,-5.5,0,-6.5);for(int i=0;i<3;i++)LiteraryVignettes.talk(p,mine);
+            h.assertTrue(f.own(p,place).getInt("Tale")==3&&f.own(peer,place).getInt("Tale")==0,"the soldier's story goes at the pace of the reader asking");
+        }).thenWaitUntil(()->h.assertTrue(f.own(p,place).getInt("Stage")==ThreeFingers.IN_FIRE,"wait for the paw to go on the fire")).thenExecute(()->{
+            h.assertTrue(f.own(peer,place).getInt("Stage")==ThreeFingers.TELLING,"the peer's soldier is still telling it");
+            p.setHealth(20);f.click(p,place,ThreeFingers.FIRE);var own=f.own(p,place);var paw=pawOf(p,own);
+            h.assertTrue(own.getInt("Stage")==ThreeFingers.TAKEN&&!paw.isEmpty()&&WitheredPawItem.fingers(paw)==3&&p.getHealth()<20&&p.getHealth()>=19,"pulled from the coals: a burn of half a heart and the reader's own three-fingered paw");
+            h.assertTrue(pawOf(peer,f.own(peer,place)).isEmpty()&&!WitheredPawItem.owned(paw,peer),"nobody else has it, and it is not theirs");
+            ThreeFingers.use(p,paw);
+            h.assertTrue(p.containerMenu instanceof LiteraryChoiceMenu menu&&!menu.getSlot(2).getItem().isEmpty()&&menu.getSlot(4).getItem().isEmpty()&&!menu.getSlot(6).getItem().isEmpty(),"with no companion lost, the paw offers money and the storm, not a name");
+            p.closeContainer();
+            // A real tamed wolf of the peer's dies: the House's own record of it is what the peer's paw may name.
+            var world=p.server.overworld();var wolf=EntityType.WOLF.create(world);h.assertTrue(wolf!=null,"a native wolf exists");
+            wolf.setTame(true,false);wolf.setOwnerUUID(peer.getUUID());wolf.setCustomName(net.minecraft.network.chat.Component.literal("Moss"));wolf.moveTo(57000,80,57000);world.addFreshEntity(wolf);
+            h.assertTrue(wolf.hurt(world.damageSources().genericKill(),1000),"the wolf dies a native death");wolf.discard();
+            h.assertTrue("Moss".equals(ThreeFingers.lostCompanion(f.data(),peer.getUUID()))&&ThreeFingers.lostCompanion(f.data(),p.getUUID())==null,"the lost companion is the one the House saw that reader lose");
+            wish(p,2);own=f.own(p,place);paw=pawOf(p,own);
+            h.assertTrue(own.getInt("Stage")==ThreeFingers.WISHED&&ThreeFingers.MONEY.equals(own.getString("Wish1"))&&own.getInt(ThreeFingers.FINGERS)==2&&WitheredPawItem.fingers(paw)==2&&paw.get(DataComponents.CUSTOM_MODEL_DATA).value()==1,"the first wish takes a finger, on the paw and in the record");
+            h.assertTrue(!own.hasUUID("CastSergeant")&&own.getBoolean("SergeantGone"),"the soldier goes once the wish is made");
+            h.assertTrue(f.own(peer,place).getInt("Stage")==ThreeFingers.TELLING&&f.own(peer,place).hasUUID("CastSon"),"the peer's son is in his chair; nothing of this reader's wish reaches the peer");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="literary_paw_fire") public static void pawFireDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="literary_paw_news",timeoutTicks=400)
+    public static void theFirstWishComesHomeWrongAndTheDoorOpensOntoNobody(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.THREE_FINGERS;var p=f.player("news_reader",place);var peer=f.player("news_peer",place);
+        pawState(f,p,ThreeFingers.WISHED,2,own->{own.putString("Wish1",ThreeFingers.COMPANION);own.putString("Companion","Moss");own.putInt("WishVisit",own.getInt("Visit"));own.putInt("Beat",own.getInt("Visit"));});
+        int visit=f.own(p,place).getInt("Visit");
+        f.arrive(p,place);
+        h.assertTrue(f.own(p,place).getInt("Visit")==visit+1,"coming back after the wish is a new visit");
+        // The reader's clock is moved on so the man from the mill says his piece at once.
+        var start=f.own(p,place);start.putInt("T",2000);LiteraryVignettes.save(f.data(),p.getUUID(),place,start);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.own(p,place).getInt("Stage")==ThreeFingers.MOURNING,"wait for the man from the mill to have been")).thenExecute(()->{
+            var own=f.own(p,place);
+            h.assertTrue(own.getBoolean("SonGone")&&!own.hasUUID("CastSon")&&!own.hasUUID("CastMessenger"),"the son's chair is empty and the man from the mill has gone");
+            ItemStack collar=ItemStack.EMPTY;for(var s:p.getInventory().items)if(s.is(Items.LEAD))collar=s;
+            h.assertTrue(!collar.isEmpty()&&collar.get(DataComponents.ITEM_NAME).getString().equals("Moss's collar"),"the companion comes back only as its collar, by its own name");
+            h.assertTrue(f.own(peer,place).getInt("Stage")==ThreeFingers.TELLING&&f.own(peer,place).hasUUID("CastSon"),"the peer's household is whole");
+            wish(p,4);own=f.own(p,place);
+            h.assertTrue(own.getInt("Stage")==ThreeFingers.KNOCKING&&own.getInt(ThreeFingers.FINGERS)==1,"the second wish, for the son back, takes another finger");
+            ThreeFingers.use(p,pawOf(p,own));h.assertTrue(!(p.containerMenu instanceof LiteraryChoiceMenu),"there is no last wish until the knocking has begun");
+            f.click(p,place,ThreeFingers.FRONT_DOOR);h.assertTrue(f.own(p,place).getInt("Stage")==ThreeFingers.KNOCKING,"before the knocking the door is only a door");
+            own=f.own(p,place);own.putInt("KnockT",ThreeFingers.KNOCK_AT);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+            f.click(p,place,ThreeFingers.FRONT_DOOR);own=f.own(p,place);
+            h.assertTrue(own.getBoolean("Ready")&&"opened_the_door_onto_the_empty_road".equals(own.getString("Outcome"))&&own.getInt(ThreeFingers.FINGERS)==0&&WitheredPawItem.fingers(pawOf(p,own))==0,"opened while the knocking goes on: nobody there, and the last finger down without a wish");
+            h.assertTrue(f.own(peer,place).getInt("Stage")==ThreeFingers.TELLING&&!f.own(peer,place).contains("KnockT"),"the knocking was never the peer's");
+            f.source(p,place);f.read(p,place,ThreeFingers.BIBLE);
+            h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.THREE_FINGERS)&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.THREE_FINGERS),"the family Bible resolves its own reader only");
+            var text=new StringBuilder();for(var page:LiteraryTexts.ending(p,place,f.own(p,place)).get(DataComponents.WRITTEN_BOOK_CONTENT).pages())text.append(page.raw().getString());
+            h.assertTrue(text.toString().contains("THE ROAD")&&text.toString().contains("Moss's collar"),"the account remembers the road and the collar: "+text);
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="literary_paw_news") public static void pawNewsDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="literary_paw_endings",timeoutTicks=300)
+    public static void theLastWishTheFireAndALostPawEachEndOrResumeTheirOwnReadersPart(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.THREE_FINGERS;var last=f.player("last_wisher",place);var burner=f.player("paw_burner",place);var loser=f.player("paw_loser",place);var early=f.player("early_burner",place);
+        pawState(f,last,ThreeFingers.KNOCKING,1,own->{own.putString("Wish1",ThreeFingers.MONEY);own.putInt("KnockT",ThreeFingers.HAMMER);own.putBoolean("SonGone",true);});
+        pawState(f,burner,ThreeFingers.MOURNING,2,own->{own.putString("Wish1",ThreeFingers.STORM);own.putBoolean("SonGone",true);});
+        pawState(f,loser,ThreeFingers.TAKEN,3,own->{});
+        pawState(f,early,ThreeFingers.TAKEN,3,own->{});
+        h.startSequence().thenIdle(10).thenExecute(()->{
+            wish(last,4);var own=f.own(last,place);
+            h.assertTrue(own.getBoolean("Ready")&&"made_the_last_wish_before_the_door".equals(own.getString("Outcome"))&&own.getInt(ThreeFingers.FINGERS)==0&&own.getInt("Stage")==ThreeFingers.DONE,"the last wish stops the knocking and ends the part");
+            h.assertTrue(ThreeFingers.account(own).startsWith("THE LAST FINGER")&&ThreeFingers.account(own).contains("exact sum"),"its account names the last wish and the mill's money");
+            h.assertTrue(burner.getMainHandItem().is(LiteraryRegistry.PAW.get()),"the burner holds their paw");
+            f.click(burner,place,ThreeFingers.FIRE);own=f.own(burner,place);
+            h.assertTrue(own.getBoolean("Ready")&&"gave_the_paw_back_to_the_fire".equals(own.getString("Outcome"))&&pawOf(burner,own).isEmpty(),"once the first wish has come home, the paw can go back on the fire");
+            f.click(early,place,ThreeFingers.FIRE);own=f.own(early,place);
+            h.assertTrue(own.getInt("Stage")==ThreeFingers.TAKEN&&!pawOf(early,own).isEmpty()&&!own.getBoolean("Ready"),"before any wish the fire will not take it");
+            own=f.own(loser,place);var old=pawOf(loser,own).copy();loser.getInventory().clearContent();
+            f.click(loser,place,ThreeFingers.FIRE);own=f.own(loser,place);var fresh=pawOf(loser,own);
+            h.assertTrue(!fresh.isEmpty()&&WitheredPawItem.fingers(fresh)==3&&!WitheredPawItem.mine(old,loser,own)&&own.getInt("Stage")==ThreeFingers.TAKEN,"a lost paw is in the fire again with the same fingers, and the old one answers no more");
+            ThreeFingers.use(loser,old);h.assertTrue(!(loser.containerMenu instanceof LiteraryChoiceMenu),"the old paw opens no wish");
+            ThreeFingers.use(loser,fresh);h.assertTrue(loser.containerMenu instanceof LiteraryChoiceMenu,"the paw from the fire still offers the first wish");loser.closeContainer();
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="literary_paw_endings") public static void pawEndingsDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_crimson_gallery",timeoutTicks=300)
     public static void theCrimsonGalleryStairIsRepairedOnceKeepingWhatAReaderPutThere(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.CRIMSON_HALL;f.build(place);var b=f.base(place);var l=f.in;var d=f.data();

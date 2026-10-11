@@ -1,6 +1,6 @@
 # Design proposals: the next series
 
-Status: design only, for the owner's review. Nothing here is implemented. Each section ends with the decisions it needs.
+Status: design for the owner's review. Section 1 (hazards) was implemented in 0.4.80 and section 3 (the paw) in 0.4.81; the rest is design only. Each section ends with the decisions it needs.
 
 This series covers:
 
@@ -228,6 +228,8 @@ Both are designed below. **Recommendation: the Mountains now; Innsmouth later or
 
 - May a wish draw on a reader's real losses (a dead companion's name, from the hotel's records)? It is the strongest version, and the most personal.
 - Should the money be a real reward, or only the knowledge of what it cost?
+
+**Status:** implemented in 0.4.81 ([the cottage record](THREE_FINGERS_0_4_81.md)). The owner chose real losses (every wish still corrupted) and a small real purse. A third wish, the storm to stop, and a third ending, the paw given back to the fire, were added. The wind is private like the knocking, so one reader's wish never stills another's storm.
 
 ---
 
