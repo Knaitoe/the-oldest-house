@@ -67,7 +67,7 @@ public final class HazardMaps {
     public static BlockPos landing(int i){return new BlockPos(0,i*2,-3-i*6);}
     private static void counting(ServerLevel l,BlockPos b,LabyrinthPlace p){room(l,b,p,HazardBlock.of(PARLOUR_WALL));
         for(int i=0;i<=7;i++){var at=landing(i);box(l,b,-2,i*2-1,at.getZ()-2,5,i*2-1,at.getZ()+1,FLOOR);if(i>0)set(l,b,5,i*2+1,at.getZ()-1,HazardBlock.of(NUMBER_FOUR));
-            if(i<7)for(int step=1;step<=4;step++)for(int x=-1;x<=1;x++){int y=i*2+(step-1)/2;set(l,b,x,y,-3-i*6-1-step,Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.SOUTH));}}
+            if(i<7)for(int step=1;step<=4;step++)for(int x=-1;x<=1;x++){int y=i*2+(step-1)/2;set(l,b,x,y,-3-i*6-1-step,step%2==1?Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH):Blocks.STONE_BRICKS.defaultBlockState());}}
         for(int i:new int[]{1,3,5,7})lamp(l,b,-3,i*2+2,-3-i*6);
     }
     public static List<BlockPos> cisternRoute(){return line(new int[][]{{0,-3},{0,-10},{-8,-10},{-8,-22},{8,-22},{8,-34},{0,-34},{0,-40}});}
