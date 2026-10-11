@@ -142,6 +142,8 @@ public final class GoatmanVignette {
         var attribute=p.getAttribute(Attributes.SCALE);if(attribute==null)return;
         if(active){if(!attribute.hasModifier(CHILD_SCALE))attribute.addTransientModifier(new AttributeModifier(CHILD_SCALE,-.3,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));}
         else attribute.removeModifier(CHILD_SCALE);
+        // The body and eye take the new size now rather than on the player's next tick, so aim and reach agree with it at once.
+        p.refreshDimensions();
     }
     public static boolean childScale(ServerPlayer p){return p.getAttribute(Attributes.SCALE)!=null&&p.getAttribute(Attributes.SCALE).hasModifier(CHILD_SCALE);}
     public static void depart(ServerPlayer p){
