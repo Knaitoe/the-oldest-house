@@ -198,5 +198,19 @@
   "subtitles.the_oldest_house.caver.chisel": "A chisel taps behind a wall",
   "block.the_oldest_house.cave_rubble": "Packed rubble",
   "block.the_oldest_house.cave_marks": "Marked rock",
-  "subtitles.the_oldest_house.caver.gasp": "You gasp for air"
+  "subtitles.the_oldest_house.caver.gasp": "You gasp for air",
+  "subtitles.the_oldest_house.literary.nursery_train": "Toy train chuffs",
+  "subtitles.the_oldest_house.literary.nursery_whistle": "Toy whistle toots",
+  "subtitles.the_oldest_house.literary.nursery_top": "Spinning top whirs",
+  "subtitles.the_oldest_house.literary.nursery_chime": "Toy chime plays",
+  "subtitles.the_oldest_house.literary.nursery_pop": "Jack-in-the-box pops",
+  "subtitles.the_oldest_house.literary.nursery_music_box": "Music box plays",
+  "subtitles.the_oldest_house.literary.nursery_squeak": "Teddy squeaks",
+  "subtitles.the_oldest_house.literary.nursery_blocks": "Toy blocks clatter",
+  "subtitles.the_oldest_house.literary.nursery_ball": "Rubber ball bounces",
+  "subtitles.the_oldest_house.literary.nursery_creak": "Wooden toy creaks",
+  "subtitles.the_oldest_house.literary.nursery_exit": "Something seals into the wall",
+  "subtitles.the_oldest_house.literary.nursery_whisper": "Something whispers above the bed",
+  "block.the_oldest_house.nursery": "Nursery piece",
+  "block.the_oldest_house.child_wallpaper": "Child's wallpaper"
 }

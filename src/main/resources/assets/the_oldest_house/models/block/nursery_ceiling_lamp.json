@@ -1,0 +1,116 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "s": "the_oldest_house:block/nursery_swatches",
+  "w": "the_oldest_house:block/nursery_white_wood",
+  "b": "the_oldest_house:block/nursery_blue_wood",
+  "r": "the_oldest_house:block/nursery_red_wood",
+  "y": "the_oldest_house:block/nursery_yellow_wood",
+  "l": "the_oldest_house:block/nursery_lamp",
+  "particle": "the_oldest_house:block/nursery_lamp"
+ },
+ "elements": [
+  {
+   "from": [
+    4,
+    7,
+    4
+   ],
+   "to": [
+    12,
+    12,
+    12
+   ],
+   "faces": {
+    "north": {
+     "texture": "#l"
+    },
+    "south": {
+     "texture": "#l"
+    },
+    "east": {
+     "texture": "#l"
+    },
+    "west": {
+     "texture": "#l"
+    },
+    "up": {
+     "texture": "#l"
+    },
+    "down": {
+     "texture": "#l"
+    }
+   }
+  },
+  {
+   "from": [
+    7.5,
+    12,
+    7.5
+   ],
+   "to": [
+    8.5,
+    16,
+    8.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#s",
+     "uv": [
+      0.5,
+      8.5,
+      3.5,
+      11.5
+     ]
+    },
+    "south": {
+     "texture": "#s",
+     "uv": [
+      0.5,
+      8.5,
+      3.5,
+      11.5
+     ]
+    },
+    "east": {
+     "texture": "#s",
+     "uv": [
+      0.5,
+      8.5,
+      3.5,
+      11.5
+     ]
+    },
+    "west": {
+     "texture": "#s",
+     "uv": [
+      0.5,
+      8.5,
+      3.5,
+      11.5
+     ]
+    },
+    "up": {
+     "texture": "#s",
+     "uv": [
+      0.5,
+      8.5,
+      3.5,
+      11.5
+     ]
+    },
+    "down": {
+     "texture": "#s",
+     "uv": [
+      0.5,
+      8.5,
+      3.5,
+      11.5
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -655,9 +655,10 @@ Each classic gets its own vignette, and its motifs stay inside it.
 
 *One-shot · verb: losing exits · child height*
 
-- Each time you look away, a door or window becomes wall. Toys hang on the ceiling, and mobs named Dinnerbone render upside down.
-- The last exit is a crawl under the bed.
-- Assets: none.
+- After the bedtime card is read, each time nobody is looking a window or door becomes wall, and a floor toy turns up stuck to the ceiling above the bed, upside down.
+- Every toy can be played with; none of it is progress.
+- The last exit is a crawl under the bed, through the crawlspace, down to a basement where a child can stand. Each reader must have seen every lost exit for themselves first.
+- Assets (0.4.74): one nursery block for all the furniture and toys, its wallpaper, 24 textures and twelve subtitled sounds. See docs/CHILD_ROOM_0_4_74.md.
 
 ### Crimson Peak: the great hall
 

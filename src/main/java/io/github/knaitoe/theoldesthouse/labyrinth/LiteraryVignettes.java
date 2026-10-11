@@ -44,6 +44,7 @@ public final class LiteraryVignettes {
     private static final Map<UUID,Crawl> CRAWLS=new HashMap<>();
     private LiteraryVignettes(){}
     private static String state(LabyrinthPlace place){return "literary_0436_"+place.id();}
+    public static String stateId(LabyrinthPlace place){return state(place);}
     public static CompoundTag personal(LabyrinthData d,UUID p,LabyrinthPlace place){return d.stateEntry(state(place),p.toString());}
     public static void save(LabyrinthData d,UUID p,LabyrinthPlace place,CompoundTag own){d.setStateEntry(state(place),p.toString(),own);}
     public static CompoundTag shared(LabyrinthData d,LabyrinthPlace place){return d.stateEntry(state(place),"World");}
@@ -64,12 +65,7 @@ public final class LiteraryVignettes {
             own.putBoolean("Committed", false);
             save(d, p.getUUID(), place, own);
         }
-        if (place == LabyrinthPlace.CHILD_ROOM && !own.getBoolean("ExitProof0437")) {
-            if (!own.getBoolean("Completed") && !WitnessAccount.has(d,p.getUUID(),WitnessAccount.Story.CHILD_ROOM)) own.putBoolean("Ready", false);
-            own.putBoolean("ExitProof0437", true);
-            own.putInt("ExitsAtArrival", shared(d, place).getInt("LostExits"));
-            save(d, p.getUUID(), place, own);
-        }
+        if (place == LabyrinthPlace.CHILD_ROOM) { ChildRoom.arrive(p, own); save(d, p.getUUID(), place, own); }
         if (place == LabyrinthPlace.MOVIE_NIGHT) ensureMovieCanoe(p, base(p, place));
         if (place == LabyrinthPlace.ELK_CARCASSES) { ElkHunt.arrive(p, own); save(d, p.getUUID(), place, own); }
         if (place == LabyrinthPlace.END_WORLD_CABIN) { CabinBargain.arrive(p, own); save(d, p.getUUID(), place, own); }
@@ -210,7 +206,7 @@ public final class LiteraryVignettes {
         else if(!active&&c!=null)HousePackets.send(p,new NovelScenePayload(17,0,"",0,0));
     }
     private static void restore(Crawl c){c.p().setForcedPose(c.forced());c.p().setPose(c.forced()==null?c.displayed():c.forced());c.p().refreshDimensions();}
-    public static void clearAll(){for(var c:CRAWLS.values())restore(c);CRAWLS.clear();MOVIE_CANOES.clear();}
+    public static void clearAll(){for(var c:CRAWLS.values())restore(c);CRAWLS.clear();MOVIE_CANOES.clear();NurseryToys.clearAll();}
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p){crawl(p,false);scale(p,false);}}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void frozenFood(LivingEntityUseItemEvent.Start e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!retreatLocked(p))return;var s=e.getItem();if(s.is(Items.SNOWBALL)&&s.has(DataComponents.FOOD))return;if(s.is(LiteraryRegistry.MEAL.get())){var t=s.get(DataComponents.CUSTOM_DATA);if(t!=null&&t.copyTag().hasUUID(OWNER)&&t.copyTag().getUUID(OWNER).equals(p.getUUID()))return;}if(s.has(DataComponents.FOOD)){e.setCanceled(true);p.displayClientMessage(Component.literal("It is frozen hard. He is bringing something down to you."),true);}}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void snowNibble(PlayerInteractEvent.RightClickItem e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!inside(p,LabyrinthPlace.HOLY_RABBIT)||!p.getItemInHand(e.getHand()).is(Items.SNOWBALL))return;var snow=p.getItemInHand(e.getHand());snow.set(DataComponents.FOOD,new net.minecraft.world.food.FoodProperties.Builder().nutrition(0).saturationModifier(0).alwaysEdible().build());p.startUsingItem(e.getHand());e.setCanceled(true);e.setCancellationResult(InteractionResult.CONSUME);}
@@ -219,7 +215,7 @@ public final class LiteraryVignettes {
     @SubscribeEvent public static void travel(net.neoforged.neoforge.event.tick.PlayerTickEvent.Pre e){if(e.getEntity() instanceof ServerPlayer p&&retreatLocked(p)){p.stopFallFlying();p.stopRiding();}}
     @SubscribeEvent public static void tick(ServerTickEvent.Post event){var server=event.getServer();LiteraryCopies.tick(server);LiteraryCabinChoices.reconcileClosure(server);if(server.getTickCount()%5!=0)return;
         for(var p:server.getPlayerList().getPlayers()){var place=current(p);if(place==null){crawl(p,false);scale(p,false);continue;}var d=LabyrinthData.get(server);var own=personal(d,p.getUUID(),place);if(!own.getBoolean("Here"))continue;var b=base(p,place);IndianLakeRooms.keepLoaded(p.serverLevel(),b,place);own.putInt("Present",Math.min(72000,own.getInt("Present")+5));own.putInt("ThisVisitTicks",Math.min(72000,own.getInt("ThisVisitTicks")+5));
-            boolean child=place==LabyrinthPlace.CHILD_ROOM||place==LabyrinthPlace.HOLY_RABBIT||(place==LabyrinthPlace.WHEEL&&own.getBoolean("Memory"));scale(p,child);crawl(p,(place==LabyrinthPlace.MAPPING_INTERIOR&&p.getY()<b.getY()-2)||(place==LabyrinthPlace.CHILD_ROOM&&p.getY()<b.getY()-1)||(place==LabyrinthPlace.ELK_CARCASSES&&ElkHunt.crawl(p,b,CRAWLS.containsKey(p.getUUID()))));
+            boolean child=place==LabyrinthPlace.CHILD_ROOM||place==LabyrinthPlace.HOLY_RABBIT||(place==LabyrinthPlace.WHEEL&&own.getBoolean("Memory"));scale(p,child);crawl(p,(place==LabyrinthPlace.MAPPING_INTERIOR&&p.getY()<b.getY()-2)||(place==LabyrinthPlace.CHILD_ROOM&&ChildRoom.crawling(p,b))||(place==LabyrinthPlace.ELK_CARCASSES&&ElkHunt.crawl(p,b,CRAWLS.containsKey(p.getUUID()))));
             if(!own.getBoolean("Interrupted"))switch(place){case HILL_NURSERY->hill(p,b,own);case MINIATURES->miniatures(p,b,own);case MASQUE->masque(p,b,own);case USHER->usher(p,b,own);case WINCHESTER->{if(p.getY()>=b.getY()+7&&p.getZ()<b.getZ()-65&&own.getInt("Present")>=100)ready(p,place,own,"reached_the_upper_construction_ledger");}case CHILD_ROOM->child(p,b,own);case CRIMSON_HALL->crimson(p,b,own);case BLY_ROUTE->bly(p,b,own);case ELK_LOT->lot(p,b,own);case ELK_FAN->fan(p,b,own);case MAPPING_INTERIOR->mapping(p,b,own);case HOLY_RABBIT->rabbit(p,b,own);case CONFESSION->confession(p,b,own);case ELK_CARCASSES->ElkHunt.tick(p,b,own);case COSTUME_NIGHT,MOVIE_NIGHT,WINTER_LAKE,CAMP_BLOOD->hunt(p,b,place,own);case DEVILS_ROCK->diary(p,b,own);case WHEEL->{var mother=actor(p,place,"Mother",LiteraryActor.MOTHER,new BlockPos(14,0,-59),true);if(own.getBoolean("ReachedMother")&&mother!=null&&p.distanceToSqr(mother)<36&&HouseWatchers.sees(p,mother.getEyePosition())){own.putBoolean("LeftMother",true);mother.say("You can leave now. The door will open.");}if(own.getBoolean("LeftMother")&&p.getZ()>b.getZ()-6){own.putBoolean("Memory",false);ready(p,place,own,"left_after_finding_mothers_room");}}case GHOSTS_SET->set(p,b,own);case END_WORLD_CABIN->CabinBargain.tick(p,b,own);case FAMILY_COPY,OLD_CABIN->LiteraryCopies.sceneTick(p,place,own);default->{}}
             HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.EndingBookPayload(b.offset(LiteraryRooms.ending(place)),own.getBoolean("Ready")&&!own.getBoolean("Taken_Ending")));
             save(d,p.getUUID(),place,own);
@@ -254,45 +250,8 @@ public final class LiteraryVignettes {
         else if(own.getInt("Visit")>own.getInt("ChoiceVisit")&&own.getBoolean("LidChosen")&&!watched(p.serverLevel(),woman.position().add(0,1,0))&&!watched(p.serverLevel(),b.offset(12,0,-34).getCenter())){woman.moveTo(Vec3.atBottomCenterOf(b.offset(12,0,-34)));woman.appearance(LiteraryActor.COFFIN_WOMAN,0);world.putBoolean("WomanLeft",true);shared(d,place,world);}
         if(own.getBoolean("LidChosen")&&own.getInt("Visit")>own.getInt("ChoiceVisit")){boolean seen=world.getBoolean("LidClosed")?p.distanceToSqr(b.offset(LiteraryRooms.COFFIN).getCenter())<36:world.getBoolean("WomanLeft")&&HouseWatchers.sees(p,woman.getEyePosition());if(seen&&own.getInt("Present")>120)ready(p,place,own,world.getBoolean("LidClosed")?"returned_to_the_closed_lid":"found_her_outside_the_open_coffin");}
     }
-    private static void child(ServerPlayer p, BlockPos b, CompoundTag own) {
-        var place = LabyrinthPlace.CHILD_ROOM;
-        var d = LabyrinthData.get(p.server);
-        var world = shared(d, place);
-        List<BlockPos> exits = List.of(new BlockPos(-11,0,-11), new BlockPos(11,0,-17),
-                new BlockPos(-4,2,-24), new BlockPos(0,2,-24), new BlockPos(4,2,-24));
-        int mask = world.getInt("LostExits");
-        if (own.getInt("Present") % 60 == 0) {
-            for (int i = 0; i < exits.size(); i++) {
-                var at = b.offset(exits.get(i));
-                if ((mask & (1 << i)) != 0 || !p.serverLevel().getEntitiesOfClass(LivingEntity.class,new AABB(at).expandTowards(0,1,0).inflate(.02),e->e.isAlive()&&!e.isSpectator()).isEmpty() || watched(p.serverLevel(), at.getCenter())
-                        || watched(p.serverLevel(), at.above().getCenter())) continue;
-                LiteraryRooms.box(p.serverLevel(), at, 0,0,0,0,1,0, Blocks.CALCITE);
-                mask |= 1 << i;
-                world.putInt("LostExits", mask);
-                shared(d, place, world);
-                break;
-            }
-        }
-        int examined = own.getInt("ExaminedLostExits");
-        for (int i = 0; i < exits.size(); i++) {
-            var at = b.offset(exits.get(i));
-            if ((mask & (1 << i)) == 0 || !own.getBoolean("Read_Source")
-                    || p.distanceToSqr(at.getCenter()) > 100 || !HouseWatchers.sees(p, at.getCenter())) continue;
-            String key = "ExitExamineTicks" + i;
-            int ticks = Math.min(20, own.getInt(key) + 5);
-            own.putInt(key, ticks);
-            if (ticks >= 20) examined |= 1 << i;
-        }
-        own.putInt("ExaminedLostExits", examined);
-        if (mask == 31 && examined == 31 && p.getY() < b.getY()-1 && p.getZ() < b.getZ()-21) {
-            own.putBoolean("CrawledUnderBed", true);
-            ready(p, place, own, own.getInt("ExitsAtArrival") == 0
-                    ? "examined_the_lost_exits_and_crawled_below_the_bed"
-                    : "examined_the_sealed_thresholds_and_found_the_remaining_crawl");
-        }
-        var toy = actor(p, place, "CeilingToy", LiteraryActor.FAMILY_CHILD, new BlockPos(7,4,-16), false);
-        if (toy != null) { toy.setNoGravity(true); toy.setCustomName(Component.literal("Dinnerbone")); toy.setCustomNameVisible(false); }
-    }
+    /** 0.4.74: the rebuilt child's room keeps its own sequence; see {@link ChildRoom}. */
+    private static void child(ServerPlayer p, BlockPos b, CompoundTag own) { ChildRoom.tick(p, b, own); }
     private static void crimson(ServerPlayer p,BlockPos b,CompoundTag own){var place=LabyrinthPlace.CRIMSON_HALL;var d=LabyrinthData.get(p.server);var world=shared(d,place);int layers=Math.min(5,own.getInt("Visit"));if(layers>world.getInt("SnowVisit")){for(int x=-3;x<=3;x++)for(int z=-27;z<=-21;z++){var at=b.offset(x,0,z);var s=p.serverLevel().getBlockState(at);if(s.isAir()||s.is(Blocks.SNOW))p.serverLevel().setBlock(at,Blocks.SNOW.defaultBlockState().setValue(SnowLayerBlock.LAYERS,layers),F);}world.putInt("SnowVisit",layers);shared(d,place,world);}
         if(p.serverLevel().getBlockEntity(b.offset(0,0,-30)) instanceof JukeboxBlockEntity box){ItemStack disc=box.getItem(0);int index=disc.is(LiteraryRegistry.CYLINDER_ONE.get())?0:disc.is(LiteraryRegistry.CYLINDER_TWO.get())?1:disc.is(LiteraryRegistry.CYLINDER_THREE.get())?2:-1;
             var custom=disc.get(DataComponents.CUSTOM_DATA);boolean owns=custom!=null&&custom.copyTag().hasUUID(OWNER)&&custom.copyTag().getUUID(OWNER).equals(p.getUUID());if(index>=0&&owns&&box.getSongPlayer().isPlaying()&&box.getSongPlayer().getSong()!=null&&p.distanceToSqr(box.getBlockPos().getCenter())<225){if(own.getInt("Playing")!=index+1){own.putInt("Playing",index+1);own.putInt("Listen",0);}int listen=own.getInt("Listen")+5;own.putInt("Listen",listen);int length=(int)Math.ceil(box.getSongPlayer().getSong().lengthInSeconds()*20);if(listen>=length-5&&box.getSongPlayer().getTicksSinceSongStarted()>=length)own.putInt("HeardCylinders",own.getInt("HeardCylinders")|(1<<index));}else{own.putInt("Playing",0);own.putInt("Listen",0);}}

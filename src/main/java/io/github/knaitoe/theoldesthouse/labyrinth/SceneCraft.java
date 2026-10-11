@@ -78,7 +78,7 @@ public final class SceneCraft {
     private static final int F = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
     static final Set<LabyrinthPlace> ROOMS = EnumSet.of(LabyrinthPlace.HILL_NURSERY, LabyrinthPlace.MINIATURES, LabyrinthPlace.MASQUE,
-            LabyrinthPlace.USHER, LabyrinthPlace.WINCHESTER, LabyrinthPlace.CHILD_ROOM, LabyrinthPlace.CRIMSON_HALL, LabyrinthPlace.BLY_ROUTE,
+            LabyrinthPlace.USHER, LabyrinthPlace.WINCHESTER, LabyrinthPlace.CRIMSON_HALL, LabyrinthPlace.BLY_ROUTE,
             LabyrinthPlace.ELK_FAN, LabyrinthPlace.CONFESSION, LabyrinthPlace.DEVILS_ROCK, LabyrinthPlace.WHEEL, LabyrinthPlace.GHOSTS_SET);
     // The elk carcasses (0.4.50) author their own two-stage woods, stream and shore: nothing generic is planted over them.
     static final Set<LabyrinthPlace> GROUNDS = EnumSet.of(LabyrinthPlace.ELK_LOT, LabyrinthPlace.MAPPING_INTERIOR, LabyrinthPlace.HOLY_RABBIT,
