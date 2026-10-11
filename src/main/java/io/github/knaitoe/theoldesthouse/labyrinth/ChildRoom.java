@@ -156,8 +156,8 @@ public final class ChildRoom {
         // Each reader must see for themselves what has become of every exit.
         int seen=own.getInt("ExitSeen0474");
         if(own.getBoolean("Read_Source"))for(int i=0;i<EXITS.size();i++){
-            if((mask&(1<<i))==0||(seen&(1<<i))!=0)continue;var at=centre(b,i);
-            if(p.position().distanceTo(at)>LOOK_REACH||!HouseWatchers.sees(p,at))continue;
+            if((mask&(1<<i))==0||(seen&(1<<i))!=0)continue;
+            if(p.position().distanceTo(centre(b,i))>LOOK_REACH||!looksAt(p,b,i))continue;
             int look=own.getInt("ExitLook0474_"+i)+5;own.putInt("ExitLook0474_"+i,look);
             if(look>=LOOK){seen|=1<<i;own.putInt("ExitSeen0474",seen);p.displayClientMessage(Component.literal(SEEN[i]),true);}
         }
@@ -176,6 +176,8 @@ public final class ChildRoom {
         if(mask==ALL&&own.getInt("Present")%600==300&&!inBasement(p,b)){var at=Vec3.atCenterOf(b.offset(0,5,-21));
             p.connection.send(new ClientboundSoundPacket(LiteraryRegistry.NURSERY_WHISPER,SoundSource.AMBIENT,at.x,at.y,at.z,.55F,.9F+p.getRandom().nextFloat()*.15F,p.getRandom().nextLong()));}
     }
+    /** Whether the reader has the exit in view: any of its own cells, each a whole block whose face answers the look. */
+    static boolean looksAt(ServerPlayer p,BlockPos b,int i){for(var c:EXITS.get(i))if(HouseWatchers.sees(p,Vec3.atCenterOf(b.offset(c))))return true;return false;}
     public static Vec3 centre(BlockPos b,int i){var cells=EXITS.get(i);double x=0,y=0,z=0;for(var c:cells){x+=c.getX()+.5;y+=c.getY()+.5;z+=c.getZ()+.5;}
         return new Vec3(b.getX()+x/cells.size(),b.getY()+y/cells.size(),b.getZ()+z/cells.size());}
     /** Seals one exit if nobody can see it and no body is in it; moves its toy to the ceiling and turns the dolls toward it. */
