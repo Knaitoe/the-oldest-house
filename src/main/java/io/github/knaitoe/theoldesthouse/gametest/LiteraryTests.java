@@ -392,9 +392,14 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         }).thenIdle(75).thenExecute(()->{
             var world=LiteraryVignettes.shared(f.data(),place);
             h.assertTrue(world.contains("CrashAt")&&world.getInt("Alarm")>0&&RoadhouseBlock.is(l.getBlockState(b.offset(ElkLot.dent())),RoadhouseBlock.Kind.PU_DOOR_DENT),"a reader out in the lot brings it on: the truck is dented and its alarm going");
-            h.assertTrue(world.hasUUID("Elk")&&l.getEntity(world.getUUID("Elk")) instanceof LiteraryElk elk&&!elk.isInvisible(),"the elk is a real body in the lot");
+            h.assertTrue(world.hasUUID("Elk")&&l.getEntity(world.getUUID("Elk")) instanceof LiteraryElk elk&&!elk.isInvisible()&&elk.wounded(),"the native crash leaves a visible wound on the same real elk");
+            var elk=(LiteraryElk)l.getEntity(world.getUUID("Elk"));var saved=new CompoundTag();elk.saveWithoutId(saved);
+            h.assertTrue(saved.getBoolean("Wound")&&!f.own(p,place).getBoolean("ElkWounded"),"the crash wound persists without assigning a reader the separate act of striking it");
+            var legacy=saved.copy();legacy.putBoolean("Wound",false);elk.load(legacy);
+            h.assertTrue(!elk.wounded(),"an earlier saved post-crash body can still have the healthy flag");
         }).thenIdle(120).thenExecute(()->{
             h.assertTrue(f.own(p,place).getBoolean("ElkSeen"),"the reader it stood and looked at saw it");
+            var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(l.getEntity(world.getUUID("Elk")) instanceof LiteraryElk elk&&elk.wounded(),"the ongoing post-crash night restores the wound on that native saved body");
         }).thenIdle(200).thenExecute(()->{
             var world=LiteraryVignettes.shared(f.data(),place);
             for(var who:ElkLotNight.MEN)h.assertTrue(l.getEntity(world.getUUID(who.key())) instanceof LiteraryActor man&&!ElkLotNight.inBar(man.position(),b),who.name()+" has come out");
