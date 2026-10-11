@@ -50,6 +50,7 @@ public final class PawClutchClient {
     public static final class Focus extends Screen {
         private final int fingers;private final Model model=new Model();private int age;
         public Focus(int fingers){super(Component.literal("The paw"));this.fingers=fingers;}
+        public int age(){return age;}public int fingers(){return fingers;}
         @Override public boolean isPauseScreen(){return false;}
         @Override public void renderBackground(GuiGraphics g,int x,int y,float delta){}
         @Override public void tick(){var mc=Minecraft.getInstance();if(++age>=64||mc.player==null||!mc.player.isAlive()||mc.player.isSpectator()||mc.level==null||!mc.level.dimension().equals(HouseDimensions.INTERIOR))mc.setScreen(null);}

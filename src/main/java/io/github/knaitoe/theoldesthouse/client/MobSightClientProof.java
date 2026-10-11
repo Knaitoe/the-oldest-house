@@ -28,6 +28,7 @@ public final class MobSightClientProof {
         mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);
         if (step == 39) return ticks > 30;
         mc.options.entityDistanceScaling().set(.5D);
+        mc.options.fov().set(30);
         var camera = mc.gameRenderer.getMainCamera().getPosition();
         var mobs = mc.level.getEntitiesOfClass(Mob.class, new AABB(mc.player.blockPosition()).inflate(160));
         String name = step == 37 ? MobSightProof.WOLF : MobSightProof.MIRROR;

@@ -75,6 +75,10 @@ try:
     assert (report / "trailer-camp.txt").is_file()
     assert (report / "trailer-night.txt").is_file()
     assert (report / "mob-sight-passed.txt").is_file()
+    assert (report / "camp-bed-passed.txt").is_file()
+    for role in ("A", "B"):
+        for view in ("camp-bed-hidden", "camp-bed-left", "paw-clutch"):
+            assert (report / f"{role}-{view}.png").stat().st_size > 500, (role, view)
     for role in ("A", "B"):
         for view in ("outside-mob-sight", "window-mob-sight"):
             assert (report / f"{role}-{view}.png").stat().st_size > 500, (role, view)
