@@ -130,7 +130,7 @@ for color,zs in [('white',(0,1)),('black',(6,7))]:
             if (color,z,x) in [('white',1,4),('black',6,3)]:continue
             px,pz=2+x*1.5,2+z*1.5;h=2.8 if z in (0,7) and x in (3,4) else 2.2 if z in (0,7) else 1.7
             for frm,to in [([px-.45,1,pz-.45],[px+.45,1.5,pz+.45]),([px-.27,1.5,pz-.27],[px+.27,h,pz+.27]),([px-.4,h,pz-.4],[px+.4,h+.4,pz+.4])]:els.append({'from':frm,'to':to,'faces':{d:{'texture':'#'+color} for d in DIRS}})
-(M/'cottage_chessboard.json').write_text(json.dumps({'parent':'minecraft:block/block','textures':{'board':'the_oldest_house:block/cottage/chessboard','white':'minecraft:block/smooth_sandstone','black':'minecraft:block/black_terracotta','particle':'the_oldest_house:block/cottage/chessboard'},'elements':els},separators=(',',':'))+'\n')
+(M/'cottage_chessboard.json').write_text(json.dumps({'parent':'minecraft:block/block','textures':{'board':'the_oldest_house:block/cottage/chessboard','white':'minecraft:block/sandstone_top','black':'minecraft:block/black_terracotta','particle':'the_oldest_house:block/cottage/chessboard'},'elements':els},separators=(',',':'))+'\n')
 p=A/'blockstates/cottage.json';table=json.loads(p.read_text())
 for facing,y in [('north',0),('east',90),('south',180),('west',270)]:
     for stage in range(2):table['variants'][f'facing={facing},kind=chessboard,stage={stage}']={'model':'the_oldest_house:block/cottage_chessboard',**({'y':y} if y else {})}
