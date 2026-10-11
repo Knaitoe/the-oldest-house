@@ -44,6 +44,13 @@ for y in range(6):
         v=rng.randint(-4,4)+(9 if x%7==0 else 0);d.point((x,y),fill=(96+v,62+v,34+v,255))
 d.line((28,0,49,0),fill=(151,105,54,255));d.line((29,3,48,3),fill=(65,42,26,255))
 d.line((51,1,71,1),fill=(66,42,25,255));d.rectangle((28,0,30,3),fill=(137,116,70,255))
+# Fixed ceiling rose and downrod occupy separate, unused native cube nets.
+for x0,x1,height in ((76,84,21),(86,110,8)):
+    for y in range(height):
+        for x in range(x0,x1):
+            v=rng.randint(-5,5);d.point((x,y),fill=(143+v,126+v,84+v,255))
+for x in (77,81):d.line((x,2,x,19),fill=(91,84,58,255))
+for x,y in ((93,1),(99,1),(88,5),(106,5)):d.point((x,y),fill=(47,50,40,255))
 fan.save(A/'textures/entity/literary_fan.png')
 
 boxes=[]
@@ -66,6 +73,9 @@ for x in (1.5,13.5):box(x,36,-11.8,x+1,38,27.8,'iron')
 for x0,x1 in ((.5,5),(11,15.5)):box(x0,80,2,x1,84,14,'tread')
 for z in (2,12):box(3,80,z,13,82,z+2,'iron')
 for x in (1,13):box(x,76,4,x+2,80,12,'iron')
+# Upper grips cross the native cell boundary above the final tread, so a reader
+# pressing forward keeps native ladder contact all the way onto the platform.
+for x in (1,13):box(x,70,14,x+2,88,18,'iron')
 
 parts=[[] for _ in range(30)]
 for coords,mat in boxes:
