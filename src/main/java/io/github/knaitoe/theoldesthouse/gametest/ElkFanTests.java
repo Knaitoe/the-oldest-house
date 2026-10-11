@@ -68,11 +68,11 @@ public final class ElkFanTests {
             f.d().setState(ElkFanRoom.STATE,new CompoundTag());
             var at=f.b.offset(7,0,-13);f.l.setBlock(at,Blocks.BARREL.defaultBlockState(),3);var barrel=(BarrelBlockEntity)f.l.getBlockEntity(at);var original=new ItemStack(Items.DIAMOND,3);original.set(DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("Already here"));barrel.setItem(4,original);var exact=original.copy();
             h.assertTrue(!ElkFanRoom.repair(f.l,f.b),"a native reader camera postpones the saved repair");
-            p.moveTo(f.b.getX()+100,f.b.getY(),f.b.getZ());var cat=EntityType.CAT.create(f.l);cat.setNoAi(true);cat.moveTo(f.b.getX()+.5,f.b.getY()+4,f.b.getZ()-16.5);h.assertTrue(f.l.addFreshEntity(cat),"the resident has a native tracked body");f.extras.add(cat);var uuid=cat.getUUID();
+            p.moveTo(f.b.getX()+100,f.b.getY(),f.b.getZ());var cat=EntityType.CAT.create(f.l);cat.setNoAi(true);cat.tame(p);cat.setNoGravity(true);cat.moveTo(f.b.getX()+.5,f.b.getY()+4,f.b.getZ()-16.5);h.assertTrue(f.l.addFreshEntity(cat),"the resident has a native tracked body");f.extras.add(cat);var uuid=cat.getUUID();
             h.assertTrue(!ElkFanRoom.repair(f.l,f.b),"a living resident prevents the repair");cat.moveTo(f.b.getX()+80,f.b.getY(),f.b.getZ());
             h.assertTrue(ElkFanRoom.repair(f.l,f.b)&&ElkFanRoom.standing(f.l,f.b),"an empty, unwatched, loaded saved room receives the complete ladder");
             h.assertTrue(barrel==f.l.getBlockEntity(at)&&ItemStack.matches(barrel.getItem(4),exact)&&record.equals(LiteraryVignettes.personal(f.d(),p.getUUID(),LabyrinthPlace.ELK_FAN))&&cat.isAlive()&&cat.getUUID().equals(uuid),"native container identity, finite components, reader records and resident identity stay exact");
-            var done=new CompoundTag();done.putBoolean("Done",true);f.d().setStateEntry(ElkFanRoom.STATE,Long.toString(f.origin.asLong()),done);var removed=ElkFanRoom.frame(f.b).keySet().iterator().next();f.l.setBlock(removed,Blocks.AIR.defaultBlockState(),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);
+            var done=new CompoundTag();done.putBoolean("Done",true);done.putInt("Version",ElkFanRoom.VERSION);f.d().setStateEntry(ElkFanRoom.STATE,Long.toString(f.origin.asLong()),done);var removed=ElkFanRoom.frame(f.b).keySet().iterator().next();f.l.setBlock(removed,Blocks.AIR.defaultBlockState(),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);
             h.runAfterDelay(90,()->{h.assertTrue(f.l.getBlockState(removed).isAir(),"the saved once-only checkpoint does not replace a later removed part");h.succeed();});
         });
     }

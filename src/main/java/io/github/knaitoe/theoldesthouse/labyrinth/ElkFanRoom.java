@@ -17,6 +17,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class ElkFanRoom {
     public static final String STATE="elk_fan_ladder_0480";
+    public static final int VERSION=2;
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     private ElkFanRoom(){}
     public static java.util.Map<BlockPos,BlockState> frame(BlockPos b){
@@ -26,7 +27,7 @@ public final class ElkFanRoom {
         return cells;
     }
     public static void build(ServerLevel l,BlockPos b){frame(b).forEach((at,s)->BuildBlocks.set(l,at,s,F));BuildBlocks.after(l,()->{
-        var origin=HouseSavedData.get(l.getServer()).houseOrigin();if(origin!=null&&b.equals(LabyrinthPlaces.base(origin,LabyrinthPlace.ELK_FAN))){var done=new net.minecraft.nbt.CompoundTag();done.putBoolean("Done",true);LabyrinthData.get(l.getServer()).setStateEntry(STATE,Long.toString(origin.asLong()),done);}
+        var origin=HouseSavedData.get(l.getServer()).houseOrigin();if(origin!=null&&b.equals(LabyrinthPlaces.base(origin,LabyrinthPlace.ELK_FAN))){var done=new net.minecraft.nbt.CompoundTag();done.putBoolean("Done",true);done.putInt("Version",VERSION);LabyrinthData.get(l.getServer()).setStateEntry(STATE,Long.toString(origin.asLong()),done);}
     });}
     public static boolean standing(ServerLevel l,BlockPos b){return frame(b).entrySet().stream().allMatch(e->l.getBlockState(e.getKey()).equals(e.getValue()));}
     public static boolean onLadder(net.minecraft.server.level.ServerPlayer p,BlockPos b){
@@ -52,8 +53,8 @@ public final class ElkFanRoom {
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         if(e.getServer().getTickCount()%40!=0)return;var origin=HouseSavedData.get(e.getServer()).houseOrigin();
         if(origin==null)return;var d=LabyrinthData.get(e.getServer());if(!LabyrinthBuilder.isPlaceReady(d,LabyrinthPlace.ELK_FAN))return;
-        var key=Long.toString(origin.asLong());if(d.stateEntry(STATE,key).getBoolean("Done"))return;
+        var key=Long.toString(origin.asLong());var checkpoint=d.stateEntry(STATE,key);if(checkpoint.getBoolean("Done")&&checkpoint.getInt("Version")>=VERSION)return;
         var l=e.getServer().getLevel(HouseDimensions.INTERIOR);var b=LabyrinthPlaces.base(origin,LabyrinthPlace.ELK_FAN);
-        if(l!=null&&b!=null&&repair(l,b)){var done=new net.minecraft.nbt.CompoundTag();done.putBoolean("Done",true);d.setStateEntry(STATE,key,done);}
+        if(l!=null&&b!=null&&repair(l,b)){var done=new net.minecraft.nbt.CompoundTag();done.putBoolean("Done",true);done.putInt("Version",VERSION);d.setStateEntry(STATE,key,done);}
     }
 }
