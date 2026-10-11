@@ -6,9 +6,8 @@ single-pixel noise; nothing sampled). The pickups' body panels are drawn in grey
 glass, chrome, tyres and lights are drawn in colour on separate overlay elements. Four original synthesized sounds get
 subtitles.
 
-The bar's five people wear placeholder skins: each is its own file (literary_bar_<name>.png), first written as a copy of
-an existing stranger skin so the cast renders, and never touched again once it exists, so a designed skin dropped in its
-place is kept.
+The bar's five designed skins (0.4.79) each have their own literary_bar_<name>.png file.
+The placeholder helper only supplies a missing file; it never overwrites the shipped character art.
 
 Run from anywhere:
     python3 tools/generate_last_stop_assets.py
