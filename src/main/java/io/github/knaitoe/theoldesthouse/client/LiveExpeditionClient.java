@@ -246,6 +246,6 @@ public final class LiveExpeditionClient {
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception {
         if(!LiveExpeditionProof.enabled()||shot==null)return;var mc=Minecraft.getInstance();Files.createDirectories(LiveExpeditionProof.folder());
         try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(LiveExpeditionProof.folder().resolve(shot+".png"));}
-        Files.writeString(LiveExpeditionProof.folder().resolve(shot+".txt"),"Actual connected native client rendered and acknowledged this phase.\n");shot=null;if(stopping)mc.stop();
+        Files.writeString(LiveExpeditionProof.folder().resolve(shot+".txt"),"Actual connected native client rendered and acknowledged this phase.\n",StandardOpenOption.CREATE,StandardOpenOption.APPEND);shot=null;if(stopping)mc.stop();
     }
 }
