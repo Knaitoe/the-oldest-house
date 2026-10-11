@@ -45,8 +45,8 @@ public final class TownFixtureBlock extends HorizontalDirectionalBlock {
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return s.getValue(KIND)==Kind.POSTER?Shapes.empty():getShape(s,l,p,c);}
-    /** Only the full panels hide what is behind them; a sheet of paper and a desk do not. */
-    @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){var k=s.getValue(KIND);return k==Kind.POSTER||k==Kind.STUDENT_DESK?Shapes.empty():getShape(s,l,p,CollisionContext.empty());}
+    /** Only the full panels hide what is behind them; a sheet of paper, a desk and a car wheel (0.4.77: the road under it showed through) do not. */
+    @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){var k=s.getValue(KIND);return k==Kind.POSTER||k==Kind.STUDENT_DESK||k==Kind.CAR_WHEEL?Shapes.empty():getShape(s,l,p,CollisionContext.empty());}
     @Override protected BlockState rotate(BlockState s,Rotation r){return s.setValue(FACING,r.rotate(s.getValue(FACING)));}
     @Override protected BlockState mirror(BlockState s,Mirror m){return s.rotate(m.getRotation(s.getValue(FACING)));}
 }

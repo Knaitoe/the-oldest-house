@@ -104,6 +104,22 @@ def cooler_and_wheel():
     elements=[box([4,0,5],[12,16,11],'#rubber'),box([0,4,5],[4,12,11],'#rubber'),box([12,4,5],[16,12,11],'#rubber')]
     model('vehicle_wheel',{'rubber':'vehicle_wheel','particle':'vehicle_wheel'},elements);states('vehicle_wheel',fixture=True)
 
+def car_wheel():
+    """0.4.77: the car wheel faces outward (north in the model; the block faces the car's outer side). The hub shows only on
+    that outer face; front, back, top and bottom are tread; a dark chassis sits behind it and the sill above."""
+    tread=grain((16,16),(30,31,32))
+    for x in range(16):
+        for y in range(16):
+            if y%4==1 and (x//3)%2==(y//4)%2:tread.putpixel((x,y),(17,18,19,255))
+            elif y%4==3:tread.putpixel((x,y),(41,43,43,255))
+    save('car_tread',tread)
+    tyre={'from':[1,0,0],'to':[15,10,7],'faces':{
+        'north':{'texture':'#hub','uv':[1,3,15,13]},'south':{'texture':'#tread','uv':[1,6,15,16]},
+        'east':{'texture':'#tread','uv':[0,6,7,16]},'west':{'texture':'#tread','uv':[9,6,16,16]},
+        'up':{'texture':'#tread','uv':[1,0,15,7]},'down':{'texture':'#tread','uv':[1,9,15,16]}}}
+    model('town_fixture_car_wheel',{'body':'minecraft:block/gray_concrete','hub':'vehicle_wheel','tread':'car_tread','chassis':'minecraft:block/black_concrete','particle':'vehicle_wheel'},
+          [box([0,10,0],[16,16,16],'#body'),tyre,box([0,6,7],[16,10,16],'#chassis')])
+
 def note_post():
     im=grain((32,32),(231,218,180));text(im,'NOTE',3,(65,53,36))
     for row in range(12,28,3):
@@ -126,8 +142,7 @@ def cars():
             model('town_fixture_'+k,{'body':tex,'particle':tex},[element]);kinds.append(k)
     glass=grain((16,16),(42,60,64));rect(glass,(0,0),(16,3),(68,74,71));rect(glass,(0,14),(16,16),(65,71,69));rect(glass,(0,3),(2,14),(79,83,78));rect(glass,(14,3),(16,14),(79,83,78));rect(glass,(7,3),(9,14),(76,81,78));rect(glass,(3,4),(6,6),(72,103,107));rect(glass,(10,5),(13,7),(61,91,95));save('car_glass',glass)
     model('town_fixture_car_cabin',{'glass':'car_glass','particle':'car_glass'},[box([0,0,0],[16,16,16],'#glass')]);kinds.append('car_cabin')
-    wheel=[box([0,8,0],[16,16,16],'#body'),box([4,0,0],[12,8,16],'#rubber'),box([2,2,0],[14,8,16],'#rubber')]
-    model('town_fixture_car_wheel',{'body':'minecraft:block/gray_concrete','rubber':'vehicle_wheel','particle':'vehicle_wheel'},wheel);kinds.append('car_wheel')
+    car_wheel();kinds.append('car_wheel')
     path=A/'blockstates/town_fixture.json';data=json.loads(path.read_text())
     for facing,turn in TURN.items():
         for kind in kinds:
@@ -137,6 +152,9 @@ def cars():
     write('blockstates/town_fixture.json',data)
 
 if __name__=='__main__':
+    import sys
+    if sys.argv[1:]==['wheel']:
+        car_wheel();raise SystemExit(print('Redrew the car wheel: outward hub, tread round it.'))
     signs();cooler_and_wheel();note_post();cars()
     p=A/'lang/en_us.json';lang=json.loads(p.read_text());lang.update({'block.the_oldest_house.trailer_cooler':'Cooler','block.the_oldest_house.vehicle_wheel':'Wheel','block.the_oldest_house.institute_sign':'Institute sign','block.the_oldest_house.notice_post':'Note'})
     write('lang/en_us.json',lang)

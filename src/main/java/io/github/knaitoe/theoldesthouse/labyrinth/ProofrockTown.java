@@ -105,10 +105,13 @@ public final class ProofrockTown {
         for(int z:new int[]{-9,-23,-47,-68,-79}){lamp(-5,z,Direction.EAST);lamp(5,z,Direction.WEST);}
         for(int x:new int[]{-14,-30,-46,-60})lamp(x,-44,Direction.SOUTH);
         for(int x:new int[]{14,30})lamp(x,-38,Direction.NORTH);
-        lamp(-36,-24,Direction.WEST);
+        // 0.4.77: no lamp on the lane's lawn; the gravel lane stays a dark back way.
         // Cars at the kerb: solid enough to hide behind.
         car(-3,-18,Blocks.RED_CONCRETE);car(2,-30,Blocks.BLUE_CONCRETE);car(-3,-52,Blocks.GREEN_TERRACOTTA);car(2,-67,Blocks.WHITE_CONCRETE);
-        car(23,-26,Blocks.LIGHT_BLUE_TERRACOTTA);car(26,-32,Blocks.BROWN_TERRACOTTA);car(-34,-41,Blocks.CYAN_TERRACOTTA);
+        car(23,-26,Blocks.LIGHT_BLUE_TERRACOTTA);car(26,-32,Blocks.BROWN_TERRACOTTA);
+        // 0.4.77: parked along School Street at the school-side kerb, not across it.
+        for(var e:CYAN_ALONG.apply(b).entrySet())BuildBlocks.set(l,e.getKey(),e.getValue(),F);
+        ProofrockRepairs.markDone(LabyrinthData.get(l.getServer()),b);
         // Dumpsters against the far side of the alleys, clear of every back door: a body's width of passage stays beside each.
         for(int[] d:new int[][]{{19,-19},{19,-31},{19,-48},{19,-75},{-19,-9},{-19,-21}})dumpster(d[0],d[1]);
     }
@@ -131,7 +134,7 @@ public final class ProofrockTown {
         for(int z:new int[]{-9,-23,-47,-68,-79}){out.putAll(lampStates(b,-5,z,Direction.EAST));out.putAll(lampStates(b,5,z,Direction.WEST));}
         for(int x:new int[]{-14,-30,-46,-60})out.putAll(lampStates(b,x,-44,Direction.SOUTH));
         for(int x:new int[]{14,30})out.putAll(lampStates(b,x,-38,Direction.NORTH));
-        out.putAll(lampStates(b,-36,-24,Direction.WEST));out.putAll(lampStates(b,20,-46,Direction.SOUTH));out.putAll(lampStates(b,-5,-88,Direction.EAST));out.putAll(lampStates(b,37,-60,Direction.WEST));
+        out.putAll(lampStates(b,20,-46,Direction.SOUTH));out.putAll(lampStates(b,-5,-88,Direction.EAST));out.putAll(lampStates(b,37,-60,Direction.WEST));
         for(int y=0;y<=2;y++)out.put(b.offset(1,y,-110),TownStreetlightBlock.of(y==0?TownStreetlightBlock.Kind.BASE:TownStreetlightBlock.Kind.POLE,Direction.NORTH,false));out.put(b.offset(1,3,-110),TownStreetlightBlock.of(TownStreetlightBlock.Kind.HEAD,Direction.NORTH,false));
         for(int x=4;x<=28;x+=8){for(int y=-11;y<=-8;y++)out.put(b.offset(x,y,-99),TownStreetlightBlock.of(y==-11?TownStreetlightBlock.Kind.BASE:TownStreetlightBlock.Kind.POLE,Direction.NORTH,true));out.put(b.offset(x,-7,-99),TownStreetlightBlock.of(TownStreetlightBlock.Kind.HEAD,Direction.NORTH,true));}
         return out;
@@ -140,14 +143,21 @@ public final class ProofrockTown {
     private void car(int x,int z,Block paint){
         for(var e:carStates(b,x,z,paint).entrySet())BuildBlocks.set(l,e.getKey(),e.getValue(),F);
     }
-    private static Map<BlockPos,BlockState> carStates(BlockPos b,int x,int z,Block paint){
+    private static Map<BlockPos,BlockState> carStates(BlockPos b,int x,int z,Block paint){return carStates(b,x,z,paint,false);}
+    /** Along Z by default; {@code alongX} runs the four lengths east from x, the two widths north from z. Wheels face out. */
+    static Map<BlockPos,BlockState> carStates(BlockPos b,int x,int z,Block paint,boolean alongX){
         var states=new LinkedHashMap<BlockPos,BlockState>();
         String colour=paint==Blocks.RED_CONCRETE?"RED":paint==Blocks.BLUE_CONCRETE?"BLUE":paint==Blocks.GREEN_TERRACOTTA?"GREEN":paint==Blocks.WHITE_CONCRETE?"WHITE":paint==Blocks.LIGHT_BLUE_TERRACOTTA?"LIGHT_BLUE":paint==Blocks.BROWN_TERRACOTTA?"BROWN":paint==Blocks.CYAN_TERRACOTTA?"CYAN":"ORANGE";
-        for(int i=0;i<4;i++)for(int j=0;j<2;j++){int cx=x+j,cz=z-i;boolean wheel=i==0||i==3;
-            states.put(b.offset(cx,0,cz),TownFixtureBlock.of(wheel?TownFixtureBlock.Kind.CAR_WHEEL:TownFixtureBlock.Kind.valueOf("CAR_"+colour),j==0?Direction.WEST:Direction.EAST));
-            states.put(b.offset(cx,1,cz),TownFixtureBlock.of(i==1||i==2?TownFixtureBlock.Kind.CAR_CABIN:TownFixtureBlock.Kind.valueOf("HOOD_"+colour),i==0?Direction.SOUTH:Direction.NORTH));}
+        for(int i=0;i<4;i++)for(int j=0;j<2;j++){int cx=alongX?x+i:x+j,cz=alongX?z-j:z-i;boolean wheel=i==0||i==3;
+            Direction side=alongX?(j==0?Direction.SOUTH:Direction.NORTH):(j==0?Direction.WEST:Direction.EAST),end=alongX?(i==0?Direction.WEST:Direction.EAST):(i==0?Direction.SOUTH:Direction.NORTH);
+            states.put(b.offset(cx,0,cz),TownFixtureBlock.of(wheel?TownFixtureBlock.Kind.CAR_WHEEL:TownFixtureBlock.Kind.valueOf("CAR_"+colour),side));
+            states.put(b.offset(cx,1,cz),TownFixtureBlock.of(i==1||i==2?TownFixtureBlock.Kind.CAR_CABIN:TownFixtureBlock.Kind.valueOf("HOOD_"+colour),end));}
         return states;
     }
+    /** The cyan car as it stood across School Street until 0.4.77, and where it is parked now. */
+    public static final java.util.function.Function<BlockPos,Map<BlockPos,BlockState>> CYAN_ACROSS=b->carStates(b,-34,-41,Blocks.CYAN_TERRACOTTA,false),CYAN_ALONG=b->carStates(b,-37,-42,Blocks.CYAN_TERRACOTTA,true);
+    /** The lamp that stood on the lane's lawn until 0.4.77. */
+    public static Map<BlockPos,BlockState> lawnLamp(BlockPos b){return lampStates(b,-36,-24,Direction.WEST);}
     /** The same finite cars, exposed for a guarded saved-world material upgrade. */
     public static Map<BlockPos,BlockState> cars(BlockPos b){var out=new LinkedHashMap<BlockPos,BlockState>();int[][] spots={{-3,-18},{2,-30},{-3,-52},{2,-67},{23,-26},{26,-32},{-34,-41},{31,-10}};Block[] paint={Blocks.RED_CONCRETE,Blocks.BLUE_CONCRETE,Blocks.GREEN_TERRACOTTA,Blocks.WHITE_CONCRETE,Blocks.LIGHT_BLUE_TERRACOTTA,Blocks.BROWN_TERRACOTTA,Blocks.CYAN_TERRACOTTA,Blocks.ORANGE_TERRACOTTA};for(int i=0;i<spots.length;i++)out.putAll(carStates(b,spots[i][0],spots[i][1],paint[i]));return out;}
 

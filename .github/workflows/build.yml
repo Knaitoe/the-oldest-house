@@ -57,7 +57,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.76"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.77"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/house/PlaytestLog.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
               hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
@@ -152,6 +152,9 @@ jobs:
               assert json.loads(z.read('assets/the_oldest_house/particles/goatman_copper.json'))['textures']
               for name in ('tally_counter','goatman_brat'):
                   assert json.loads(z.read(f'assets/the_oldest_house/models/item/{name}.json'))['textures']['layer0']
+              # 0.4.77: a frank left on the griddle burns, and draws charred through custom model data 1.
+              assert z.read('assets/the_oldest_house/textures/item/goatman_brat_burnt.png').startswith(b'\x89PNG')
+              assert json.loads(z.read('assets/the_oldest_house/models/item/goatman_brat.json'))['overrides'][0]['model'] == 'the_oldest_house:item/goatman_brat_burnt'
               for name in ('GoatmanFigureModel','GoatmanFigureRenderer','GoatmanParticles'):
                   assert f'io/github/knaitoe/theoldesthouse/client/{name}.class' in z.namelist()
               # The Whalestoe institute (0.4.66): twelve numbered pigeonholes and the self-addressed envelope.
@@ -208,6 +211,17 @@ jobs:
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/CaverRedesign.class' in z.namelist()
               # 0.4.75: the reader's own breath gauge replaces the air bubbles in the crawls.
               assert z.read('assets/the_oldest_house/textures/gui/caver_breath.png').startswith(b'\x89PNG')
+              # 0.4.77: the town board and back, the car tread, the ward lights' off state and their hum and flicker, and the new passes.
+              for name in ('proofrock_sign','proofrock_sign_back','car_tread','ward/diffuser','ward/diffuser_off'):
+                  assert z.read(f'assets/the_oldest_house/textures/block/{name}.png').startswith(b'\x89PNG')
+              ward_lights = json.loads(z.read('assets/the_oldest_house/blockstates/institute_fixture.json'))['variants']
+              assert ward_lights['facing=north,kind=light,lit=false']['model'] == 'the_oldest_house:block/ward_light_off'
+              assert json.loads(z.read('assets/the_oldest_house/models/block/town_sign.json'))['textures']['back'] == 'the_oldest_house:block/proofrock_sign_back'
+              for cue in ('hum', 'flicker'):
+                  assert z.read(f'assets/the_oldest_house/sounds/ward/{cue}.ogg').startswith(b'OggS')
+                  assert caver_sounds[f'ward.{cue}']['subtitle'] == f'subtitles.the_oldest_house.ward.{cue}'
+              for name in ('CourtyardFountain','CrimsonGallery','ProofrockRepairs'):
+                  assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               # The child's room (0.4.74): one nursery block for every piece of furniture and toy, its wallpaper, twelve subtitled toy cues.
               nursery = json.loads(z.read('assets/the_oldest_house/blockstates/nursery.json'))['variants']
               assert len(nursery) == 448
@@ -802,7 +816,7 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.76"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.77"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
@@ -877,8 +891,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.76.jar
-            build/libs/the_oldest_house-0.4.76.jar.sha256
+            build/libs/the_oldest_house-0.4.77.jar
+            build/libs/the_oldest_house-0.4.77.jar.sha256
           if-no-files-found: error
 
 

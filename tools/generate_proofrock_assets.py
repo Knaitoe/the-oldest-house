@@ -95,6 +95,52 @@ def signboard(name, top, bottom, bg, fg, border):
         save(f'textures/block/town_sign_{name}_{part}.png', im.crop((16 * i, 0, 16 * i + 16, 16)))
 
 
+ARROWS = {'<': ['00100', '01000', '11111', '01000', '00100'], '>': ['00100', '00010', '11111', '00010', '00100']}
+
+
+def town_board(path, left, right):
+    """0.4.77: the town's direction board, redrawn as pixel art at twice block density (96 x 32 over its three blocks): three
+    painted boards, a darker frame, the name in the alphabet doubled, and worn cream paint with the wood showing through."""
+    navy, wood, paint, frame = (40, 54, 78), (92, 66, 42), (220, 208, 170), (24, 30, 44)
+    im = Image.new('RGBA', (96, 32), navy + (255,))
+    for x in range(96):
+        for y in range(32):
+            board = (y - 1) // 10
+            edge = (y - 1) % 10
+            tone = 10 if edge == 0 else -12 if edge == 9 else ((x * 5 + y * 11 + board * 7) % 7) - 3
+            # Paint worn through to the wood along the board edges.
+            worn = edge in (0, 9) and (x * 13 + board * 5) % 11 == 0 or edge == 1 and (x * 29 + board) % 37 == 0
+            im.putpixel((x, y), shade(wood if worn else navy, tone) + (255,))
+    for x in range(96):
+        im.putpixel((x, 0), frame + (255,)); im.putpixel((x, 31), frame + (255,))
+    for y in range(32):
+        im.putpixel((0, y), frame + (255,)); im.putpixel((95, y), frame + (255,))
+    for (x, y) in ((1, 1), (94, 1), (1, 30), (94, 30)):
+        im.putpixel((x, y), (138, 140, 146, 255))
+
+    def letters(text, top, scale, colour):
+        glyphs = [ARROWS.get(c) or GLYPHS[c] for c in text]
+        total = sum((len(g[0]) + 1) * scale for g in glyphs) - scale
+        x = (96 - total) // 2
+        for i, g in enumerate(glyphs):
+            for row, bits in enumerate(g):
+                for col, bit in enumerate(bits):
+                    if bit != '1':
+                        continue
+                    for dx in range(scale):
+                        for dy in range(scale):
+                            px, py = x + col * scale + dx, top + row * scale + dy
+                            # A few flakes of paint gone.
+                            chip = (px * 7 + py * 3 + i) % 23 == 0
+                            im.putpixel((px, py), (shade(paint, -46) if chip else shade(paint, -8 if dy == scale - 1 and scale > 1 else 0)) + (255,))
+            x += (len(g[0]) + 1) * scale
+
+    letters('PROOFROCK', 2, 2, paint)
+    letters('INDIAN LAKE', 14, 1, paint)
+    letters('<' + ' ' + left + ' ' * 6 + right + ' ' + '>', 23, 1, paint)
+    save(path, im)
+
+
 def locker(top):
     im = Image.new('RGBA', (16, 16))
     base = (82, 108, 132)
@@ -329,12 +375,18 @@ def lang():
 
 
 if __name__ == '__main__':
+    import sys
+    if sys.argv[1:] == ['board']:
+        # The back reads the right way round from behind, so its arrows point the other way.
+        town_board('textures/block/proofrock_sign.png', 'SCHOOL', 'CHURCH'); town_board('textures/block/proofrock_sign_back.png', 'CHURCH', 'SCHOOL')
+        raise SystemExit(print('Redrew the Proofrock direction board, front and back.'))
     for name, (top, bottom, bg, fg, border) in SIGNS.items():
         signboard(name, top, bottom, bg, fg, border)
     locker(False); locker(True); locker_side()
     for part in 'lmr':
         chalkboard(part)
     trophy(); crest(); bleacher(); poster(); metal(); desk_front()
+    town_board('textures/block/proofrock_sign.png', 'SCHOOL', 'CHURCH'); town_board('textures/block/proofrock_sign_back.png', 'CHURCH', 'SCHOOL')
     wood('student_desk_wood', (166, 128, 82)); wood('school_desk_top', (140, 100, 62))
     kinds = models()
     lang()

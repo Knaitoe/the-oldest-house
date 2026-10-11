@@ -107,10 +107,41 @@ def brat():
     save('textures/item/goatman_brat.png', im)
 
 
+def burnt_brat():
+    """0.4.77: the approved brat left on the griddle too long, pixel for pixel: blackened, split, a fleck of ash."""
+    src = Image.open(A / 'textures/item/goatman_brat.png').convert('RGBA')
+    im = Image.new('RGBA', src.size, (0, 0, 0, 0))
+    for x in range(src.width):
+        for y in range(src.height):
+            r, g, b, alpha = src.getpixel((x, y))
+            if alpha == 0:
+                continue
+            v = (r + g + b) / 3
+            # The approved shading keeps its steps, pushed down into char.
+            if v < 50:
+                c = (14, 9, 7)
+            elif v < 95:
+                c = (34, 20, 14)
+            elif v < 120:
+                c = (54, 31, 20)
+            else:
+                c = (78, 46, 30)
+            im.putpixel((x, y), c + (alpha,))
+    # Where the skin split, the paler meat; ash where it caught worst.
+    for x, y, c in ((9, 6, (120, 74, 52)), (10, 5, (104, 64, 46)), (6, 9, (88, 84, 80)), (5, 10, (70, 68, 66))):
+        if src.getpixel((x, y))[3]:
+            im.putpixel((x, y), c + (255,))
+    save('textures/item/goatman_brat_burnt.png', im)
+
+
 def models():
-    for name in ('tally_counter', 'goatman_brat'):
+    for name in ('tally_counter', 'goatman_brat', 'goatman_brat_burnt'):
         p = A / 'models/item' / f'{name}.json'
-        p.write_text(json.dumps({'parent': 'minecraft:item/generated', 'textures': {'layer0': f'the_oldest_house:item/{name}'}}, indent=2) + '\n')
+        model = {'parent': 'minecraft:item/generated', 'textures': {'layer0': f'the_oldest_house:item/{name}'}}
+        if name == 'goatman_brat':
+            # A frank left too long on the griddle carries custom model data 1 and draws charred.
+            model['overrides'] = [{'predicate': {'custom_model_data': 1}, 'model': 'the_oldest_house:item/goatman_brat_burnt'}]
+        p.write_text(json.dumps(model, indent=2) + '\n')
 
 
 def motes():
@@ -418,7 +449,11 @@ def registry(lengths):
 
 
 if __name__ == '__main__':
-    counter(); brat(); models(); motes()
+    import sys
+    if sys.argv[1:] == ['burnt']:
+        burnt_brat(); models()
+        raise SystemExit(print('Generated the burnt brat and its model override.'))
+    counter(); brat(); burnt_brat(); models(); motes()
     goatman()
     registry(audio())
     print('Generated the tally counter, the brat, three copper motes, the Goatman skin and eyes, and four cues.')

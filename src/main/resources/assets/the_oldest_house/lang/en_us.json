@@ -222,5 +222,7 @@
   "block.the_oldest_house.institute_slab": "Institute shelf",
   "block.the_oldest_house.institute_glass": "Ribbed hospital glass",
   "block.the_oldest_house.institute_door": "Painted ward door",
-  "block.the_oldest_house.institute_locked_door": "Locked ward door"
+  "block.the_oldest_house.institute_locked_door": "Locked ward door",
+  "subtitles.the_oldest_house.ward.hum": "Fluorescent light hums",
+  "subtitles.the_oldest_house.ward.flicker": "Fluorescent light flickers"
 }

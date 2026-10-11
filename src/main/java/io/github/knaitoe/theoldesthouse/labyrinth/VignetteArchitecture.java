@@ -212,7 +212,7 @@ public final class VignetteArchitecture {
         rug(-4,3,-35,-25,Blocks.BROWN_CARPET,Blocks.GRAY_CARPET);
         detail(11,2,-37,CLOCK,Direction.WEST);detail(-11,2,-21,COAT,Direction.EAST);
         pendant(-7,5,-25,8);pendant(4,5,-28,8);
-        for(int z:new int[]{-6,-14}){table(-13,0,z,TABLE_LAMP);table(13,0,z,VASE);}
+        // 0.4.77: stone planters stand here instead of indoor tables; CourtyardFountain puts them in.
     }
     private void barn(){
         for(int z:new int[]{-20,-25,-31})for(int x=6;x<=14;x++)add(x,4,z,Blocks.SPRUCE_PLANKS);

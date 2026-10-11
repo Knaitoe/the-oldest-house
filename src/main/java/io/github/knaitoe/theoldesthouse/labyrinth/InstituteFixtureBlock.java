@@ -7,6 +7,7 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.*;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.*;
 
@@ -19,6 +20,8 @@ public final class InstituteFixtureBlock extends HorizontalDirectionalBlock {
         public String getSerializedName(){return name().toLowerCase(Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
+    /** 0.4.77: a ceiling light's tube, which drops out now and then for a few ticks. Saved lights load lit. */
+    public static final BooleanProperty LIT=BooleanProperty.create("lit");
     private static final Map<Kind,Map<Direction,VoxelShape>> SHAPES=new EnumMap<>(Kind.class);
     static {
         for(var k:Kind.values()) {
@@ -50,9 +53,29 @@ public final class InstituteFixtureBlock extends HorizontalDirectionalBlock {
         case BED_FOOT -> new double[][]{{1,3,0,15,5,16},{1,5,0,15,9,16},{1,0,13,3,12,15},{13,0,13,15,12,15},{3,10,13,13,12,15}};
         default -> new double[][]{{0,0,0,16,16,16}};
     };}
-    public InstituteFixtureBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.PAINT));}
+    public InstituteFixtureBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.PAINT).setValue(LIT,true));}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
-    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND);}
+    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,LIT);}
+    public static int light(BlockState s){return s.getValue(KIND)==Kind.LIGHT&&s.getValue(LIT)?13:0;}
+    // ------------------------------------------------------------------------------------------------ 0.4.77: the ceiling lights
+    /** Only lit ceiling lights tick: now and then, near a reader (random ticks only run there), the tube drops out. */
+    @Override public boolean isRandomlyTicking(BlockState s){return s.getValue(KIND)==Kind.LIGHT&&s.getValue(LIT);}
+    @Override public void randomTick(BlockState s,net.minecraft.server.level.ServerLevel l,BlockPos p,net.minecraft.util.RandomSource r){
+        if(s.getValue(KIND)!=Kind.LIGHT||!s.getValue(LIT)||r.nextInt(3)!=0)return;
+        l.setBlock(p,s.setValue(LIT,false),Block.UPDATE_ALL);l.scheduleTick(p,this,2+r.nextInt(5));
+        l.playSound(null,p,NovelRegistry.WARD_FLICKER.get(),net.minecraft.sounds.SoundSource.BLOCKS,.5F,.9F+r.nextFloat()*.2F);
+    }
+    /** A dropped tube catches again, and sometimes stutters out once more before it holds. */
+    @Override public void tick(BlockState s,net.minecraft.server.level.ServerLevel l,BlockPos p,net.minecraft.util.RandomSource r){
+        if(s.getValue(KIND)!=Kind.LIGHT)return;
+        if(!s.getValue(LIT)){l.setBlock(p,s.setValue(LIT,true),Block.UPDATE_ALL);if(r.nextInt(5)<2)l.scheduleTick(p,this,2+r.nextInt(3));}
+        else{l.setBlock(p,s.setValue(LIT,false),Block.UPDATE_ALL);l.scheduleTick(p,this,1+r.nextInt(3));}
+    }
+    /** The hum of the tubes, heard close to a lit light. Client-side, like a portal's. */
+    @Override public void animateTick(BlockState s,net.minecraft.world.level.Level l,BlockPos p,net.minecraft.util.RandomSource r){
+        if(s.getValue(KIND)==Kind.LIGHT&&s.getValue(LIT)&&r.nextInt(2)==0)
+            l.playLocalSound(p.getX()+.5,p.getY()+.7,p.getZ()+.5,NovelRegistry.WARD_HUM.get(),net.minecraft.sounds.SoundSource.BLOCKS,.22F,.96F+r.nextFloat()*.08F,false);
+    }
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return SHAPES.get(s.getValue(KIND)).get(s.getValue(FACING));}
     @Override protected BlockState rotate(BlockState s,Rotation r){return s.setValue(FACING,r.rotate(s.getValue(FACING)));}
     @Override protected BlockState mirror(BlockState s,Mirror m){return s.rotate(m.getRotation(s.getValue(FACING)));}

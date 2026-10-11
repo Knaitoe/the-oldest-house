@@ -27,6 +27,8 @@ def textures():
     atlas = Image.open(SOURCE).convert('RGB')
     w, h = atlas.size
     for i, name in enumerate(MATERIALS):
+        if name == 'diffuser':
+            continue  # 0.4.77: drawn as pixel art, lit and unlit, by generate_ward_lights.py
         x, y = i % 4, i // 4
         tile = atlas.crop((x*w//4+2, y*h//4+2, (x+1)*w//4-2, (y+1)*h//4-2))
         tile = tile.resize((32, 32), Image.Resampling.NEAREST)
@@ -87,7 +89,13 @@ def fixtures():
         model = mesh(boxes, names, extra)
         if kind == 'ceiling': model['elements'][0]['faces']['up']['texture'] = '#floor_gray'
         write(f'models/block/ward_{kind}.json', model)
-        for facing, entry in rotate('ward_' + kind).items(): variants[facing + ',kind=' + kind] = entry
+        for facing, entry in rotate('ward_' + kind).items():
+            if kind == 'light':
+                # 0.4.77: the tube drops out for a few ticks at a time; generate_ward_lights.py writes the dark model.
+                variants[facing + ',kind=light,lit=true'] = entry
+                variants[facing + ',kind=light,lit=false'] = {**entry, 'model': 'the_oldest_house:block/ward_light_off'}
+            else:
+                variants[facing + ',kind=' + kind] = entry
     write('blockstates/institute_fixture.json', {'variants': variants})
 
 

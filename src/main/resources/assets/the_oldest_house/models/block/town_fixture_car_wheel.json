@@ -1,14 +1,16 @@
 {
   "textures": {
     "body": "minecraft:block/gray_concrete",
-    "rubber": "the_oldest_house:block/vehicle_wheel",
+    "hub": "the_oldest_house:block/vehicle_wheel",
+    "tread": "the_oldest_house:block/car_tread",
+    "chassis": "minecraft:block/black_concrete",
     "particle": "the_oldest_house:block/vehicle_wheel"
   },
   "elements": [
     {
       "from": [
         0,
-        8,
+        10,
         0
       ],
       "to": [
@@ -23,7 +25,7 @@
             0,
             0,
             16,
-            8
+            6
           ]
         },
         "south": {
@@ -32,7 +34,7 @@
             0,
             0,
             16,
-            8
+            6
           ]
         },
         "east": {
@@ -41,7 +43,7 @@
             0,
             0,
             16,
-            8
+            6
           ]
         },
         "west": {
@@ -50,7 +52,7 @@
             0,
             0,
             16,
-            8
+            6
           ]
         },
         "up": {
@@ -75,67 +77,67 @@
     },
     {
       "from": [
-        4,
+        1,
         0,
         0
       ],
       "to": [
-        12,
-        8,
-        16
+        15,
+        10,
+        7
       ],
       "faces": {
         "north": {
-          "texture": "#rubber",
+          "texture": "#hub",
           "uv": [
-            4,
-            8,
-            12,
-            16
+            1,
+            3,
+            15,
+            13
           ]
         },
         "south": {
-          "texture": "#rubber",
+          "texture": "#tread",
           "uv": [
-            4,
-            8,
-            12,
+            1,
+            6,
+            15,
             16
           ]
         },
         "east": {
-          "texture": "#rubber",
+          "texture": "#tread",
           "uv": [
             0,
-            8,
-            16,
+            6,
+            7,
             16
           ]
         },
         "west": {
-          "texture": "#rubber",
+          "texture": "#tread",
           "uv": [
-            0,
-            8,
+            9,
+            6,
             16,
             16
           ]
         },
         "up": {
-          "texture": "#rubber",
+          "texture": "#tread",
           "uv": [
-            4,
+            1,
             0,
-            12,
-            16
+            15,
+            7
           ]
         },
         "down": {
-          "texture": "#rubber",
+          "texture": "#tread",
           "uv": [
-            4,
-            0,
-            12,
+            1,
+            9,
+            15,
             16
           ]
         }
@@ -143,68 +145,68 @@
     },
     {
       "from": [
-        2,
-        2,
-        0
+        0,
+        6,
+        7
       ],
       "to": [
-        14,
-        8,
+        16,
+        10,
         16
       ],
       "faces": {
         "north": {
-          "texture": "#rubber",
+          "texture": "#chassis",
           "uv": [
-            2,
-            8,
-            14,
-            14
+            0,
+            6,
+            16,
+            10
           ]
         },
         "south": {
-          "texture": "#rubber",
+          "texture": "#chassis",
           "uv": [
-            2,
-            8,
-            14,
-            14
+            0,
+            6,
+            16,
+            10
           ]
         },
         "east": {
-          "texture": "#rubber",
+          "texture": "#chassis",
           "uv": [
             0,
-            8,
-            16,
-            14
+            6,
+            9,
+            10
           ]
         },
         "west": {
-          "texture": "#rubber",
+          "texture": "#chassis",
           "uv": [
-            0,
-            8,
+            7,
+            6,
             16,
-            14
+            10
           ]
         },
         "up": {
-          "texture": "#rubber",
+          "texture": "#chassis",
           "uv": [
-            2,
             0,
-            14,
+            7,
+            16,
             16
           ]
         },
         "down": {
-          "texture": "#rubber",
+          "texture": "#chassis",
           "uv": [
-            2,
             0,
-            14,
-            16
+            0,
+            16,
+            9
           ]
         }
       }

@@ -9,9 +9,13 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.76
+## Current candidate: 0.4.77
 
-The Whalestoe hospital branch (its verified combined 0.4.72) is merged with this line's verified 0.4.75. No source or resolution changes: 43 sources / 33 resolutions / two kinds / three endings. Layout 40 / protocol 50. See [the hospital record](WHALE_HOSPITAL_0_4_70.md) and [the Goatman fear record](GOATMAN_FEAR_0_4_72.md).
+The owner's playtest notes: burnable franks with cues and reactions, a refusal to eat before supper, a private Goatman past the windows, the Crimson Hall gallery made reachable, Proofrock's board, tyres, cyan car and lawn lamp, flickering humming ward lights, the courtyard fountain and its fish, and the séance family's flight, ghost passage and touch reactions. No source or resolution changes: 43 sources / 33 resolutions / two kinds / three endings. Layout 40 / protocol 51. See [the notes](PLAYTEST_NOTES_0_4_77.md).
+
+## Previous verified: 0.4.76
+
+The Whalestoe hospital branch (its verified combined 0.4.72) is merged with this line's verified 0.4.75. No source or resolution changes: 43 sources / 33 resolutions / two kinds / three endings. Layout 40 / protocol 50. Verified at `ec6b23d` (run 38111159012): all twelve jobs passed. See [the hospital record](WHALE_HOSPITAL_0_4_70.md) and [the Goatman fear record](GOATMAN_FEAR_0_4_72.md).
 
 ## Previous verified: 0.4.75
 

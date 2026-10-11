@@ -138,6 +138,13 @@ public final class GoatmanHaunt {
     private static void figure(ServerLevel level,GoatmanFigure f){
         var viewer=f.viewer().map(level::getPlayerByUUID).orElse(null);long now=level.getGameTime();
         if(!(viewer instanceof ServerPlayer p)||now>=f.until||!p.isAlive()){f.discard();return;}
+        if(f.purpose.equals("dash")&&f.dashTo!=null){
+            // Past the trailer's windows at a run, its footfalls heard by its viewer only, and gone at the far corner.
+            Vec3 d=f.dashTo.subtract(f.position());double len=d.length();if(len<.05){f.discard();return;}
+            float yaw=(float)(Math.atan2(d.z,d.x)*180/Math.PI)-90;f.step(len<=f.dashSpeed?f.dashTo:f.position().add(d.scale(f.dashSpeed/len)),yaw);
+            if(now%3==0)p.connection.send(new ClientboundSoundPacket(Holder.direct(net.minecraft.sounds.SoundEvents.GRASS_STEP),SoundSource.HOSTILE,f.getX(),f.getY(),f.getZ(),.9F,.7F,p.getRandom().nextLong()));
+            return;
+        }
         if(f.purpose.equals("glimpse")||f.purpose.equals("treeline")){
             Vec3 to=f.getEyePosition().subtract(p.getEyePosition());
             if(to.lengthSqr()>.01&&p.getLookAngle().dot(to.normalize())>.94&&p.hasLineOfSight(f))f.discard();

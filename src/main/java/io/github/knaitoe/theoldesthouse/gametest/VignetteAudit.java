@@ -97,7 +97,7 @@ public final class VignetteAudit {
     }
 
     /** Where a visitor can stand: walking with one-block steps, climbing ladders and swimming, from the doorways. */
-    private static java.util.Set<BlockPos> walkable(ServerLevel level, BlockPos base, LabyrinthPlace scene, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+    static java.util.Set<BlockPos> walkable(ServerLevel level, BlockPos base, LabyrinthPlace scene, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
         java.util.Set<BlockPos> seen = new java.util.HashSet<>();
         java.util.ArrayDeque<BlockPos> queue = new java.util.ArrayDeque<>();
         for (var door : scene.doors())

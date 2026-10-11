@@ -246,11 +246,13 @@ public final class GoatmanWoods {
         }
     }
     /** A brat on the plate at one of the ten chairs, or none. */
-    public static void served(ServerLevel l,BlockPos b,int seat,boolean on){
+    public static void served(ServerLevel l,BlockPos b,int seat,boolean on){served(l,b,seat,on?new ItemStack(GoatmanRegistry.BRAT.get()):ItemStack.EMPTY);}
+    /** 0.4.77: the plate shows the frank that was actually put on it, burnt or not. */
+    public static void served(ServerLevel l,BlockPos b,int seat,ItemStack item){
         var shown=l.getEntitiesOfClass(Display.ItemDisplay.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(BRAT)&&e.getPersistentData().contains("Seat")&&e.getPersistentData().getInt("Seat")==seat);
-        if(!on){shown.forEach(Display.ItemDisplay::discard);return;}
+        if(item.isEmpty()){shown.forEach(Display.ItemDisplay::discard);return;}
         if(!shown.isEmpty())return;
-        var d=flat(l,new ItemStack(GoatmanRegistry.BRAT.get()),.3F);if(d==null)return;
+        var d=flat(l,item.copyWithCount(1),.3F);if(d==null)return;
         d.addTag(PLATE);d.addTag(BRAT);d.getPersistentData().putInt("Seat",seat);d.moveTo(plate(seat).add(b.getX(),b.getY()+.04,b.getZ()));l.addFreshEntity(d);
     }
     private static Display.ItemDisplay flat(ServerLevel l,ItemStack item,float scale){

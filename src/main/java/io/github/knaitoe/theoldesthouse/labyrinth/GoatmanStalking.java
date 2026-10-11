@@ -59,6 +59,40 @@ public final class GoatmanStalking {
         }
         return false;
     }
+    /** The trailer's side windows (west, then east), by their lower pane. */
+    private static final BlockPos[] SIDE_WINDOWS={new BlockPos(-8,2,-59),new BlockPos(-8,2,-67),new BlockPos(-8,2,-73),new BlockPos(8,2,-59),new BlockPos(8,2,-67)};
+    public static final int DASHES=2,DASH_GAP=400;
+    /**
+     * 0.4.77: while the impostor waits unseen behind the closed door, a reader inside looking out of a side window may see it
+     * as it is, running past outside: a private, unsaved figure for that reader only, appearing and vanishing where they cannot
+     * see, never near a knock (it cannot be in two places at once). Twice a night at most, well apart.
+     */
+    public static void dash(ServerLevel l,BlockPos b,CompoundTag r,ServerPlayer p,CompoundTag own){
+        long now=l.getGameTime();
+        if(p.isSpectator()||own.getInt("Dashes0476")>=DASHES||now<own.getLong("DashAt0476")||now-r.getLong("LastImpact0465")<60)return;
+        boolean waiting=r.getInt("Phase")==GoatmanVignette.VIGIL?circuitDone(r)&&r.getInt("StalkWindowLeg0465")==0&&(!r.contains("AssaultAt0465")||r.getBoolean("AssaultDone0465")):r.getBoolean("Silence");
+        if(!waiting||!GoatmanWoods.indoors(p.position().subtract(b.getX(),b.getY(),b.getZ())))return;
+        Vec3 eye=p.getEyePosition(),look=p.getLookAngle();
+        for(var w:SIDE_WINDOWS){
+            Vec3 pane=Vec3.atCenterOf(b.offset(w)).add(0,.5,0),to=pane.subtract(eye);double d=to.length();
+            if(d>11||look.dot(to.scale(1/d))<.8||!visible(l,p,eye,pane))continue;
+            double x=w.getX()<0?-10.5:11.5,z=w.getZ()+.5;
+            int dir=p.getRandom().nextBoolean()?1:-1;
+            // Both ends must be out of this reader's sight; further out if the near corners are visible.
+            for(double reach:new double[]{10,13,16}){
+                Vec3 from=new Vec3(x,0,z+reach*dir).add(b.getX(),b.getY(),b.getZ()),onto=new Vec3(x,0,z-reach*dir).add(b.getX(),b.getY(),b.getZ());
+                if(seenAt(l,p,eye,from)||seenAt(l,p,eye,onto))continue;
+                var f=GoatmanRegistry.FIGURE.get().create(l);if(f==null)return;
+                f.viewer(p.getUUID());f.purpose="dash";f.dashTo=onto;f.dashSpeed=.7;f.until=now+(long)(reach*2/.7)+10;
+                float yaw=(float)(Math.atan2(onto.z-from.z,onto.x-from.x)*180/Math.PI)-90;f.moveTo(from.x,from.y,from.z,yaw,0);f.face(yaw);GoatmanHaunt.appear(l,f);
+                own.putInt("Dashes0476",own.getInt("Dashes0476")+1);own.putLong("DashAt0476",now+DASH_GAP);return;
+            }
+        }
+    }
+    private static boolean seenAt(ServerLevel l,ServerPlayer p,Vec3 eye,Vec3 feet){
+        for(double y:new double[]{.3,1.2,2.1}){var point=feet.add(0,y,0);var to=point.subtract(eye);double d=to.length();if(d>.01&&p.getLookAngle().dot(to.scale(1/d))>-.15&&visible(l,p,eye,point))return true;}
+        return false;
+    }
     private static void change(ServerLevel l,CompoundTag r,GoatmanChild c){
         if(!r.getBoolean("StalkChange0465")||!obscured(l,c))return;
         int turn=r.getInt("StalkTurn0465"),skin=turn%2==0?-2:nextChild(r);

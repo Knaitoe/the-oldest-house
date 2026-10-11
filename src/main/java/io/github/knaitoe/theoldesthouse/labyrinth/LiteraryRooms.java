@@ -109,7 +109,9 @@ public final class LiteraryRooms {
         room(l,b,-18,18,-43,0,0,13,Blocks.POLISHED_BLACKSTONE_BRICKS,LiteraryRegistry.RED_FLOOR.get());box(l,b,-3,13,-27,3,15,-21,Blocks.AIR);
         for(int x:new int[]{-14,14})for(int z=-38;z<-6;z+=8)box(l,b,x,0,z,x,11,z,Blocks.POLISHED_BASALT);
         box(l,b,-17,6,-41,17,6,-35,Blocks.DARK_OAK_PLANKS);box(l,b,-17,6,-35,-14,6,-6,Blocks.DARK_OAK_PLANKS);box(l,b,14,6,-35,17,6,-6,Blocks.DARK_OAK_PLANKS);
-        for(int z=-34;z<-6;z++){at(l,b,-14,7,z,Blocks.DARK_OAK_FENCE);at(l,b,14,7,z,Blocks.DARK_OAK_FENCE);}steps(l,b,-11,-7,0,7,false);box(l,b,-13,6,-17,-10,6,-13,Blocks.DARK_OAK_PLANKS);
+        // 0.4.77: eight treads up to the gallery's own level, a landing beyond the last, and a gap in the railing onto the gallery.
+        for(int z=-34;z<-6;z++){if(z<-17||z>-15)at(l,b,-14,7,z,Blocks.DARK_OAK_FENCE);at(l,b,14,7,z,Blocks.DARK_OAK_FENCE);}steps(l,b,-11,-7,0,8,false);box(l,b,-13,6,-17,-10,6,-15,Blocks.DARK_OAK_PLANKS);
+        CrimsonGallery.markBuilt(LabyrinthData.get(l.getServer()),b);
         at(l,b,0,0,-30,Blocks.JUKEBOX);for(var q:List.of(new BlockPos(-12,0,-35),new BlockPos(12,0,-35),new BlockPos(0,7,-39)))prop(l,b,q,LiteraryPropBlock.Kind.CYLINDER,Direction.SOUTH);
         desk(l,b,0,0,-39);furniture(l,b,9,0,-12,HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR,Direction.WEST);light(l,b,0,8,-10);
     }

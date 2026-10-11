@@ -63,6 +63,29 @@ public final class ClassicsTests {
             var prior=f.own(peer).copy();var borrowed=ItemStack.parseOptional(peer.registryAccess(),f.own(p).getCompound("Original_Album"));ClassicsVignettes.readCollected(peer,borrowed);var borrowedMenu=(ClassicsVignettes.PageMenu)peer.containerMenu;h.assertTrue(borrowedMenu.clickMenuButton(peer,103)&&f.own(peer).equals(prior),"trading the actual original album cannot assign its authorship or reading to a peer");f.at(peer,.5,0,-11.5);peer.setYRot(180);});
         h.runAfterDelay(140,()->{h.assertTrue(f.own(peer).getInt("Exposure")>=100,"a later explorer must actually observe the empty sitting");f.read(peer,ClassicsRooms.GRACE);f.read(peer,ClassicsRooms.SITTING);f.read(peer,ClassicsRooms.ALBUM);h.assertTrue(WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.SEANCE)&&f.own(peer).getString("SeanceOutcome").isEmpty(),"the later reader can resolve their own examined aftermath without inheriting the haunting");f.reload();h.assertTrue(WitnessAccount.count(f.data(),peer.getUUID())==1&&WitnessAccount.count(f.data(),p.getUUID())==1,"both personal accounts persist independently");peer.setGameMode(GameType.SPECTATOR);h.assertTrue(!ClassicsVignettes.inside(peer,LabyrinthPlace.SEANCE),"observer mode is authoritative");h.succeed();});
     }
+    private static Fixture flight;
+    @AfterBatch(batch="classic_flight0477") public static void flightDone(ServerLevel l){if(flight!=null){flight.close();flight=null;}}
+    @GameTest(template="empty",batch="classic_flight0477",timeoutTicks=600) public static void touchedTheyEachFlinchDrivenOutTheyLeaveAndTheIronDoorIsNotThereForTheGhost(GameTestHelper h){
+        flight=new Fixture(h,48700,LabyrinthPlace.SEANCE);var f=flight;var p=f.player("seance_ghost");
+        java.util.function.Function<Integer,SeanceActor> role=r->ClassicsVignettes.cast(f.l).stream().filter(a->a.role()==r).findFirst().orElseThrow();
+        java.util.function.Function<SeanceActor,String> said=a->f.l.getEntitiesOfClass(Display.TextDisplay.class,a.getBoundingBox().inflate(4),d->d.getTags().contains("SeanceSpeech")&&d.getPersistentData().hasUUID("Speaker")&&d.getPersistentData().getUUID("Speaker").equals(a.getUUID())).stream().map(d->d.saveWithoutId(new CompoundTag()).getString("text")).findFirst().orElse("");
+        h.startSequence().thenWaitUntil(()->h.assertTrue(ClassicsVignettes.cast(f.l).size()==4,"the family is seated")).thenExecute(()->{
+            var medium=role.apply(0);var daughter=role.apply(3);
+            for(var a:List.of(medium,daughter)){f.at(p,a.getX()-f.b.getX(),0,a.getZ()-f.b.getZ()+1.2);NeoForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteract(p,InteractionHand.MAIN_HAND,a));}
+            h.assertTrue(medium.afraid()&&daughter.afraid()&&said.apply(medium).contains("shoulder")&&said.apply(daughter).contains("holding my hand"),"each one touched flinches and says it in their own words");
+            h.assertTrue(!f.data().state(ClassicsVignettes.STATE).getBoolean("SittingEnded")&&f.own(p).getInt("Disturbances")==0,"a touch unsettles the sitting but is not one of the disturbances");
+            f.click(p,ClassicsRooms.CUPBOARD);f.click(p,ClassicsRooms.CANDLES.get(0));f.click(p,ClassicsRooms.CANDLES.get(1));
+            h.assertTrue(f.data().state(ClassicsVignettes.STATE).getBoolean("SittingEnded"),"three disturbances drive them out");f.at(p,.5,0,-11.5);
+        }).thenWaitUntil(()->h.assertTrue(f.data().state(ClassicsVignettes.STATE).getBoolean("Fled0477"),"the family gets up and leaves the drawing room")).thenExecute(()->{
+            for(var a:ClassicsVignettes.cast(f.l)){var rel=a.position().subtract(f.b.getX(),f.b.getY(),f.b.getZ());h.assertTrue(rel.x<0&&rel.z< -23&&!a.seated()&&a.afraid(),"role "+a.role()+" is in the back room: "+rel);}
+            var door=f.l.getBlockState(f.b.offset(-5,0,-22));h.assertTrue(door.getBlock() instanceof DoorBlock&&!door.getValue(DoorBlock.OPEN),"and the last one in shut the door behind them");
+            var gate=f.l.getBlockState(f.b.offset(ClassicsRooms.GATE));h.assertTrue(!gate.getValue(DoorBlock.OPEN),"the iron door is still locked");
+            p.moveTo(f.b.getX()+ClassicsRooms.GATE.getX()+.5,f.b.getY(),f.b.getZ()-21.3,180,0);p.setYHeadRot(180);p.setDeltaMovement(Vec3.ZERO);
+        }).thenWaitUntil(()->h.assertTrue(p.getZ()-f.b.getZ()< -22.5,"leaning into it, the ghost is through: z="+(p.getZ()-f.b.getZ()))).thenExecute(()->{
+            h.assertTrue(!f.l.getBlockState(f.b.offset(ClassicsRooms.GATE)).getValue(DoorBlock.OPEN)&&f.own(p).getBoolean("WalkedThrough0477"),"without the door ever opening");
+            f.read(p,ClassicsRooms.ALBUM);h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.SEANCE),"and the album on the other side is theirs to read");
+        }).thenSucceed();
+    }
     @GameTest(template="empty",batch="classic_nursery",timeoutTicks=1600) public static void watchingNativePatternAndReturningExposesFourFiniteOriginals(GameTestHelper h){
         nursery=new Fixture(h,47300,LabyrinthPlace.WALLPAPER_NURSERY);var f=nursery;entranceIsWalkable(f);var p=f.player("pattern_reader");var peer=f.player("pattern_peer");peer.setGameMode(GameType.SPECTATOR);p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.IRON_AXE));
         for(var panel:ClassicsRooms.PANELS){h.assertTrue(f.l.getBlockState(f.b.offset(panel)).is(ClassicsRegistry.WALLPAPER.get())&&f.l.getBlockState(f.b.offset(panel).above()).is(ClassicsRegistry.WALLPAPER.get())&&f.l.getBlockState(f.b.offset(panel).below()).is(Blocks.STRIPPED_BIRCH_WOOD),"seams lie in the continuous native wall above its rail");}
