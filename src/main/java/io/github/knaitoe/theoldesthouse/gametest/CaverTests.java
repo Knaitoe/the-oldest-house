@@ -123,7 +123,8 @@ public final class CaverTests {
                 f.click(p,CaverCave.CHAIN);h.assertTrue(p.getMainHandItem().getCount()==1,"a tied line is never tied twice");p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
                 f.at(p,.5,-3,-21.5);p.setShiftKeyDown(true);CaverVignette.playerTick(p);phase[0]=1;return;}
             if(phase[0]==1){CaverVignette.setBreath(s,10);CaverVignette.playerTick(p);
-                if(!CaverVignette.crawling(p)&&p.getZ()-f.b.getZ()< -34.1){p.setShiftKeyDown(false);phase[0]=2;clock[0]=0;return;}
+                // Past the squeeze's far mouth the reader stands as soon as their feet leave its last low cell.
+                if(along[0]>=CaverCave.SQUEEZE.size()&&!CaverVignette.crawling(p)&&p.getZ()-f.b.getZ()< -34){p.setShiftKeyDown(false);phase[0]=2;clock[0]=0;return;}
                 h.assertTrue(p.getBbHeight()<.7,"native crawling uses the actual short collision box at "+p.position()+"; pose "+p.getPose()+"; forced "+p.getForcedPose());
                 if(along[0]<CaverCave.SQUEEZE.size())along[0]=step(f,p,CaverCave.SQUEEZE,along[0]);else p.move(MoverType.SELF,new Vec3(0,0,-.14));return;}
             if(phase[0]==2){if(clock[0]<3)return;CaverVignette.playerTick(p);h.assertTrue(f.own(p).getBoolean("Squeezed")&&!CaverVignette.crawling(p),"the full physical squeeze reaches a standing chamber");

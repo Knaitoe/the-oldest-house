@@ -315,7 +315,7 @@ public final class CaverVignette {
             own.putInt(counter,Math.min(CRAWL_TICKS,own.getInt(counter)+1));
         }
         boolean changed=false;
-        if(own.getInt("IngressCrawl")>=CRAWL_TICKS&&r.z< -34.1&&!own.getBoolean("Squeezed")){
+        if(own.getInt("IngressCrawl")>=CRAWL_TICKS&&r.z< -34&&!own.getBoolean("Squeezed")){
             own.putBoolean("Squeezed",true);changed=true;p.displayClientMessage(Component.literal("The chamber is larger than the draught suggested. There are cuts in the left wall."),false);
         }
         line(p,own,r,now);
