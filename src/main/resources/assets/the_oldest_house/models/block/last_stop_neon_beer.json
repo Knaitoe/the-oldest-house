@@ -1,0 +1,183 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "s": "the_oldest_house:block/last_stop/swatches",
+  "n": "the_oldest_house:block/last_stop/neon_beer",
+  "particle": "the_oldest_house:block/last_stop/neon_beer"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    3,
+    7.5
+   ],
+   "to": [
+    16,
+    13,
+    8.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#n",
+     "uv": [
+      0,
+      3,
+      16,
+      13
+     ]
+    },
+    "south": {
+     "texture": "#n",
+     "uv": [
+      0,
+      3,
+      16,
+      13
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   }
+  },
+  {
+   "from": [
+    3,
+    13,
+    7.75
+   ],
+   "to": [
+    3.5,
+    16,
+    8.25
+   ],
+   "faces": {
+    "north": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    },
+    "south": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    },
+    "east": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    },
+    "west": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    },
+    "up": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    },
+    "down": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    12.5,
+    13,
+    7.75
+   ],
+   "to": [
+    13,
+    16,
+    8.25
+   ],
+   "faces": {
+    "north": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    },
+    "south": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    },
+    "east": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    },
+    "west": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    },
+    "up": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    },
+    "down": {
+     "texture": "#s",
+     "uv": [
+      4.5,
+      0.5,
+      7.5,
+      3.5
+     ]
+    }
+   }
+  }
+ ]
+}

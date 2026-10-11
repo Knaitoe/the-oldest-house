@@ -11,6 +11,8 @@ import net.minecraft.nbt.*;
 import net.minecraft.server.level.*;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.*;
@@ -340,6 +342,138 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         }).thenSucceed();
     }
     @AfterBatch(batch="literary_child_rebuild") public static void childRebuildDone(ServerLevel l){close();}
+    // ------------------------------------------------------------------------------------------------ the Last Stop (0.4.78)
+    private static List<ItemStack> drinks(ServerPlayer p){var out=new ArrayList<ItemStack>();for(var s:p.getInventory().items){var tag=s.get(DataComponents.CUSTOM_DATA);if(tag!=null&&tag.copyTag().contains(ElkLotNight.DRINK))out.add(s);}return out;}
+    private static void order(ServerPlayer p,LiteraryActor marla,int slot){LiteraryVignettes.talk(p,marla);if(p.containerMenu instanceof LiteraryChoiceMenu menu)menu.clicked(slot,0,ClickType.PICKUP,p);}
+    @GameTest(template="empty",batch="literary_last_stop_bar",timeoutTicks=400)
+    public static void theLastStopServesOnEachReadersOwnTabAndPlaysWhatIsPicked(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.ELK_LOT;var p=f.player("tab_reader",place);var peer=f.player("tab_peer",place);var b=f.base(place);var l=f.out;
+        h.assertTrue(ElkLot.built(f.data(),b)&&RoadhouseBlock.is(l.getBlockState(b.offset(ElkLot.REGISTER)),RoadhouseBlock.Kind.REGISTER)&&RoadhouseBlock.is(l.getBlockState(b.offset(ElkLot.BOARD)),RoadhouseBlock.Kind.CORKBOARD)
+                &&l.getBlockState(b.offset(ElkLot.JUKEBOX)).is(Blocks.JUKEBOX)&&RoadhouseBlock.is(l.getBlockState(b.offset(ElkLot.dent())),RoadhouseBlock.Kind.PU_DOOR),"a fresh lot is the bar: its register, its noticeboard, its jukebox and the pickups outside");
+        f.at(p,place,-21.5,0,-22.5);f.at(peer,place,-18.5,0,-20.5);
+        h.runAfterDelay(15,()->{
+            var world=LiteraryVignettes.shared(f.data(),place);
+            for(var who:ElkLotNight.CAST)h.assertTrue(world.hasUUID(who.key())&&l.getEntity(world.getUUID(who.key())) instanceof LiteraryActor a&&a.phase()==who.phase()&&a.position().distanceToSqr(who.home(b))<.1,who.name()+" is in her or his place with their own skin");
+            var marla=(LiteraryActor)l.getEntity(world.getUUID(ElkLotNight.MARLA.key()));
+            order(p,marla,1);
+            h.assertTrue(drinks(p).size()==1&&f.own(p,place).getInt("Tab")==250&&f.own(p,place).getInt("Drinks")==1&&f.own(peer,place).getInt("Tab")==0,"a beer goes on the reader's own tab and nobody else's");
+            for(int i=0;i<6;i++)order(p,marla,3);
+            h.assertTrue(f.own(p,place).getInt("Drinks")==ElkLotNight.MAX_DRINKS&&f.own(p,place).getInt("Tab")==250+5*400&&drinks(p).size()==ElkLotNight.MAX_DRINKS,"five whiskeys more and then no more: six drinks a reader");
+            var whiskey=drinks(p).get(drinks(p).size()-1);
+            NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Finish(p,whiskey.copy(),0,new ItemStack(Items.GLASS_BOTTLE)));
+            h.assertTrue(p.hasEffect(net.minecraft.world.effect.MobEffects.CONFUSION),"a whiskey goes to the head");
+            p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.GLASS_BOTTLE));LiteraryVignettes.talk(p,marla);
+            h.assertTrue(p.getMainHandItem().isEmpty()&&!(p.containerMenu instanceof LiteraryChoiceMenu),"Marla takes an empty glass back");
+            h.assertTrue(l.getBlockEntity(b.offset(ElkLot.JUKEBOX)) instanceof JukeboxBlockEntity box&&box.getTheItem().is(Items.MUSIC_DISC_STAL),"the jukebox is playing when the night starts");
+            p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.MUSIC_DISC_CAT));f.click(p,place,ElkLot.JUKEBOX);
+            h.assertTrue(p.getMainHandItem().is(Items.MUSIC_DISC_CAT)&&((JukeboxBlockEntity)l.getBlockEntity(b.offset(ElkLot.JUKEBOX))).getTheItem().is(Items.MUSIC_DISC_MALL),"a press picks the next record and the reader's own disc stays in hand");
+            for(int i=0;i<3;i++)f.click(p,place,ElkLot.JUKEBOX);
+            h.assertTrue(((JukeboxBlockEntity)l.getBlockEntity(b.offset(ElkLot.JUKEBOX))).getTheItem().isEmpty()&&l.getEntitiesOfClass(ItemEntity.class,new AABB(b.offset(ElkLot.JUKEBOX)).inflate(4)).isEmpty(),"round the records to silence, and nothing ever comes out of it");
+            f.click(p,place,ElkLot.POOL_L);
+            h.assertTrue(l.getBlockState(b.offset(ElkLot.POOL_L)).getValue(RoadhouseBlock.STAGE)==1&&l.getBlockState(b.offset(ElkLot.POOL_R)).getValue(RoadhouseBlock.STAGE)==1,"the break scatters the balls across both halves of the table");
+            f.click(p,place,ElkLot.BOARD);h.assertTrue(!(p.containerMenu instanceof LiteraryVignettes.Pages),"the clipping is not anyone's yet");
+            f.source(p,place);h.assertTrue(f.own(p,place).getBoolean("Read_Source")&&!f.own(peer,place).getBoolean("Read_Source"),"the till receipt by the register is the source, read by its own reader");
+            h.succeed();
+        });
+    }
+    @AfterBatch(batch="literary_last_stop_bar") public static void lastStopBarDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="literary_last_stop_night",timeoutTicks=1000)
+    public static void theElkDentsATruckLooksAtTheReaderAndTheMenHerdWithoutTouching(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.ELK_LOT;var p=f.player("night_reader",place);var b=f.base(place);var l=f.out;var room=place.room();
+        f.chunks.hold(l,new AABB(b.getX()+room.minX(),b.getY()-4,b.getZ()+room.minZ(),b.getX()+room.maxX()+1,b.getY()+12,b.getZ()+2));
+        boolean[] named={false};double[] closest={99};
+        h.onEachTick(()->{var world=LiteraryVignettes.shared(f.data(),place);
+            for(var who:ElkLotNight.MEN){if(!world.hasUUID(who.key())||!(l.getEntity(world.getUUID(who.key())) instanceof LiteraryActor man))continue;
+                if(man.getPersistentData().getInt("Leg0478")>0)closest[0]=Math.min(closest[0],man.distanceTo(p));
+                if(man.getCustomName()!=null&&man.isCustomNameVisible()&&man.getCustomName().getString().contains("night_reader"))named[0]=true;}});
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&ElkLot.loaded(l,b),"wait for native chunks and entity sections")).thenExecute(()->{
+            f.at(p,place,-3.5,0,-8.5);p.setYRot(180);p.setXRot(10);
+            var world=LiteraryVignettes.shared(f.data(),place);world.putInt("Night",ElkLotNight.EARLY-2);LiteraryVignettes.shared(f.data(),place,world);
+        }).thenIdle(75).thenExecute(()->{
+            var world=LiteraryVignettes.shared(f.data(),place);
+            h.assertTrue(world.contains("CrashAt")&&world.getInt("Alarm")>0&&RoadhouseBlock.is(l.getBlockState(b.offset(ElkLot.dent())),RoadhouseBlock.Kind.PU_DOOR_DENT),"a reader out in the lot brings it on: the truck is dented and its alarm going");
+            h.assertTrue(world.hasUUID("Elk")&&l.getEntity(world.getUUID("Elk")) instanceof LiteraryElk elk&&!elk.isInvisible(),"the elk is a real body in the lot");
+        }).thenIdle(120).thenExecute(()->{
+            h.assertTrue(f.own(p,place).getBoolean("ElkSeen"),"the reader it stood and looked at saw it");
+        }).thenIdle(200).thenExecute(()->{
+            var world=LiteraryVignettes.shared(f.data(),place);
+            for(var who:ElkLotNight.MEN)h.assertTrue(l.getEntity(world.getUUID(who.key())) instanceof LiteraryActor man&&!ElkLotNight.inBar(man.position(),b),who.name()+" has come out");
+            var side=l.getBlockState(b.offset(ElkLot.SIDE_DOOR));h.assertTrue(side.getBlock() instanceof DoorBlock&&side.getValue(DoorBlock.OPEN),"they came out of the side door and left it open");
+            int lit=0;for(int i=0;i<3;i++)if(world.contains("Beam"+i)&&l.getBlockState(BlockPos.of(world.getLong("Beam"+i))).is(Blocks.LIGHT))lit++;
+            h.assertTrue(lit>=2,"their flashlights put real light where they point: "+lit);
+        }).thenIdle(380).thenExecute(()->{
+            h.assertTrue(named[0],"the men say the reader's name");
+            h.assertTrue(closest[0]>=1.5,"nobody laid a hand on the reader: closest "+closest[0]);
+            var world=LiteraryVignettes.shared(f.data(),place);var russ=(LiteraryActor)l.getEntity(world.getUUID(ElkLotNight.RUSS.key()));
+            h.assertTrue(russ.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(0,0,-6)))<9,"by now one of them stands on the road back");
+            p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()+200.5,0,0);
+        }).thenIdle(ElkLotNight.EMPTY_RESET+20).thenExecute(()->{
+            var world=LiteraryVignettes.shared(f.data(),place);
+            h.assertTrue(!world.contains("Night")&&!world.contains("CrashAt"),"empty and unwatched, the night starts over");
+            h.assertTrue(RoadhouseBlock.is(l.getBlockState(b.offset(ElkLot.dent())),RoadhouseBlock.Kind.PU_DOOR)&&!l.getBlockState(b.offset(ElkLot.SIDE_DOOR)).getValue(DoorBlock.OPEN),"the truck is mended and the side door shut");
+            for(var who:ElkLotNight.CAST)h.assertTrue(l.getEntity(world.getUUID(who.key())) instanceof LiteraryActor a&&a.position().distanceToSqr(who.home(b))<.1,who.name()+" is back in place");
+            h.assertTrue(l.getEntity(world.getUUID("Elk")) instanceof LiteraryElk elk&&elk.isInvisible(),"the elk is out of sight again, the same body");
+            for(int i=0;i<3;i++)h.assertTrue(!world.contains("Beam"+i),"no flashlight is left burning");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="literary_last_stop_night") public static void lastStopNightDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="literary_last_stop_field",timeoutTicks=400)
+    public static void theFieldRepeatsUnseenAndCarriesOnlyItsOwnReaderBackToTheirClipping(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.ELK_LOT;var p=f.player("field_reader",place);var peer=f.player("field_peer",place);var b=f.base(place);var l=f.out;
+        for(int z=-49;z>=-75;z--)for(int x=-34;x<=34;x++)for(int y=-2;y<=8;y++){var here=l.getBlockState(b.offset(x,y,z));var there=l.getBlockState(b.offset(x,y,z-ElkLot.PERIOD));
+            if(!here.equals(there)){h.fail("the field repeats exactly: "+x+","+y+","+z+" "+here+" against "+there);return;}}
+        var own=f.own(p,place);own.putBoolean("ElkSeen",true);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);var room=place.room();
+        f.chunks.hold(l,new AABB(b.getX()+room.minX(),b.getY()-4,b.getZ()+room.minZ(),b.getX()+room.maxX()+1,b.getY()+12,b.getZ()+2));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&ElkLot.loaded(l,b)&&LiteraryVignettes.shared(f.data(),place).hasUUID("Elk"),"wait for native chunks, entity sections and the elk")).thenExecute(()->{f.at(p,place,4.5,0,-97.2);f.at(peer,place,8.5,0,-97.2);}).thenIdle(10).thenExecute(()->{
+            h.assertTrue(Math.abs(p.getZ()-(b.getZ()-97.2+ElkLot.PERIOD))<.01&&f.own(p,place).getInt("FieldLoops")==1,"at the field's far end the reader is one repeat back, in an identical place");
+            h.assertTrue(f.own(peer,place).getInt("FieldLoops")==0&&f.own(peer,place).getInt("FieldTicks")==0,"a reader who never saw the elk is turned round, and it counts for nothing");
+            var world=LiteraryVignettes.shared(f.data(),place);var elk=(LiteraryElk)l.getEntity(world.getUUID("Elk"));
+            elk.hurt(l.damageSources().playerAttack(p),2);h.assertTrue(f.own(p,place).getBoolean("ElkWounded")&&!f.own(peer,place).getBoolean("ElkWounded"),"the wound is the striker's own, for the fan room");
+            var mine=f.own(p,place);mine.putInt("FieldLoops",2);mine.putInt("FieldTicks",400);mine.putInt("Tab",650);mine.putInt("Drinks",2);LiteraryVignettes.save(f.data(),p.getUUID(),place,mine);
+            f.at(p,place,4.5,0,-97.2);
+            h.runAfterDelay(10,()->{
+                var after=f.own(p,place);h.assertTrue(after.getBoolean("Ready")&&"escaped_the_looping_field_and_read_own_clipping".equals(after.getString("Outcome")),"twice round with the herd closing, it cuts to black: the same resolution as before");
+                h.assertTrue(p.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(ElkLot.PORCH)))<.1,"the reader wakes on the bar's porch");
+                h.assertTrue(LiteraryTexts.ending(p,place,after).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().anyMatch(page->page.raw().getString().contains("$6.50")),"the clipping remembers the open tab");
+                f.read(p,place,ElkLot.BOARD);
+                h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.ELK_LOT)&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.ELK_LOT),"the clipping on the board resolves its own reader only");
+                h.succeed();
+            });
+        });
+    }
+    @AfterBatch(batch="literary_last_stop_field") public static void lastStopFieldDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="literary_last_stop_saved",timeoutTicks=300)
+    public static void aSavedElkLotIsReCarvedOnceKeepingItsElkAndEveryReader(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.ELK_LOT;f.build(place);var b=f.base(place);var l=f.out;var d=f.data();var room=place.room();
+        var done=d.state(ElkLot.STATE);done.remove(Long.toString(b.asLong()));d.setState(ElkLot.STATE,done);
+        var finishedId=UUID.randomUUID();var partwayId=UUID.randomUUID();
+        var finished=new CompoundTag();finished.putBoolean("Completed",true);finished.putString("Outcome","escaped_the_looping_field_and_read_own_clipping");LiteraryVignettes.save(d,finishedId,place,finished);
+        var partway=new CompoundTag();partway.putBoolean("ElkSeen",true);partway.putBoolean("ElkWounded",true);partway.putInt("FieldLoops",1);LiteraryVignettes.save(d,partwayId,place,partway);
+        f.chunks.hold(l,new AABB(b.getX()+room.minX()-1,b.getY()+room.minY()-2,b.getZ()+room.minZ()-1,b.getX()+room.maxX()+2,b.getY()+room.maxY()+2,b.getZ()+room.maxZ()+2));
+        final LiteraryElk[] elk={null};final LiteraryActor[] accuser={null};final Entity[] pig={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&ElkLot.loaded(l,b),"wait for native chunks and entity sections")).thenExecute(()->{
+            l.setBlock(b.offset(ElkLot.OLD_SOURCE),Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.HAS_BOOK,true),3);
+            if(l.getBlockEntity(b.offset(ElkLot.OLD_SOURCE)) instanceof LecternBlockEntity lectern)lectern.setBook(LiteraryTexts.source(place));
+            elk[0]=LiteraryRegistry.ELK.get().create(l);elk[0].moveTo(Vec3.atBottomCenterOf(b.offset(5,0,-23)));elk[0].wound();l.addFreshEntity(elk[0]);
+            accuser[0]=LiteraryRegistry.ACTOR.get().create(l);accuser[0].bind(place,null);accuser[0].appearance(LiteraryActor.STRANGER,0);accuser[0].moveTo(Vec3.atBottomCenterOf(b.offset(8,0,-28)));l.addFreshEntity(accuser[0]);
+            var world=new CompoundTag();world.putUUID("Elk",elk[0].getUUID());world.putUUID("Accuser0",accuser[0].getUUID());LiteraryVignettes.shared(d,place,world);
+            pig[0]=EntityType.PIG.create(l);pig[0].moveTo(Vec3.atBottomCenterOf(b.offset(10,0,-30)));l.addFreshEntity(pig[0]);
+        }).thenExecute(()->{
+            h.assertTrue(!ElkLot.rebuild(l,b)&&!ElkLot.built(f.data(),b),"nothing changes while a living body is in the lot");
+            pig[0].discard();var watcher=NativeTestPlayers.survival(h,"lot_rebuild_watcher");f.players.add(watcher);watcher.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()+8.5,180,0);
+            h.assertTrue(!ElkLot.rebuild(l,b)&&!ElkLot.built(f.data(),b),"nothing changes while someone stands where they could see in");
+            watcher.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()+160.5,180,0);
+            h.assertTrue(ElkLot.rebuild(l,b)&&ElkLot.built(f.data(),b),"empty and unwatched, the lot is re-carved");
+            var world=LiteraryVignettes.shared(f.data(),place);
+            h.assertTrue(world.hasUUID("Elk")&&world.getUUID("Elk").equals(elk[0].getUUID())&&!elk[0].isRemoved()&&elk[0].wounded()&&elk[0].isInvisible()&&!world.hasUUID("Accuser0")&&accuser[0].isRemoved(),"the elk keeps its body, its wound and its UUID, out of sight; the old accusers go");
+            h.assertTrue(l.getEntitiesOfClass(ItemEntity.class,new AABB(b.offset(room.minX(),room.minY(),room.minZ()).getCenter(),b.offset(room.maxX(),room.maxY(),room.maxZ()).getCenter())).isEmpty(),"the old lectern's book was not thrown on the floor");
+            h.assertTrue(RoadhouseBlock.is(l.getBlockState(b.offset(ElkLot.REGISTER)),RoadhouseBlock.Kind.REGISTER)&&l.getBlockState(b.offset(ElkLot.JUKEBOX)).is(Blocks.JUKEBOX),"the bar stands where the old lot was");
+            var keep=LiteraryVignettes.personal(f.data(),finishedId,place);var mid=LiteraryVignettes.personal(f.data(),partwayId,place);
+            h.assertTrue(keep.getBoolean("Completed")&&mid.getBoolean("ElkSeen")&&mid.getBoolean("ElkWounded")&&mid.getInt("FieldLoops")==1,"every reader's record is kept as it was");
+            f.reload();h.assertTrue(ElkLot.built(f.data(),b)&&ElkLot.rebuild(l,b),"the checkpoint survives reload and never repeats");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="literary_last_stop_saved") public static void lastStopSavedDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_crimson_gallery",timeoutTicks=300)
     public static void theCrimsonGalleryStairIsRepairedOnceKeepingWhatAReaderPutThere(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.CRIMSON_HALL;f.build(place);var b=f.base(place);var l=f.in;var d=f.data();

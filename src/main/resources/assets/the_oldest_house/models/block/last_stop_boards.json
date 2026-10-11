@@ -1,0 +1,12 @@
+{
+ "parent": "minecraft:block/cube",
+ "textures": {
+  "north": "the_oldest_house:block/last_stop/boards",
+  "south": "the_oldest_house:block/last_stop/boards",
+  "east": "the_oldest_house:block/last_stop/boards",
+  "west": "the_oldest_house:block/last_stop/boards",
+  "up": "the_oldest_house:block/last_stop/boards",
+  "down": "the_oldest_house:block/last_stop/boards",
+  "particle": "the_oldest_house:block/last_stop/boards"
+ }
+}

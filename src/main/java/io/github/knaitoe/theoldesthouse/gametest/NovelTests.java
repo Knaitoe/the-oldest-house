@@ -178,7 +178,15 @@ public final class NovelTests {
             for(var at:CourtyardFountain.planters(f.b).keySet())f.l.setBlock(at,at.getY()==f.b.getY()?HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH):SceneDetailBlock.state(SceneDetailBlock.Kind.TABLE_LAMP,Direction.SOUTH),2);
             h.assertTrue(!CourtyardFountain.repair(f.l,f.b),"nothing changes while readers stand in the courtyard");
             for(var r:List.of(p,peer,third))r.moveTo(f.b.getX()+300,f.b.getY(),f.b.getZ()+300);f.l.getEntitiesOfClass(Cat.class,IndianLakeRooms.bounds(f.b,f.place)).forEach(Entity::discard);
-            h.assertTrue(CourtyardFountain.repair(f.l,f.b)&&f.l.getBlockState(f.b.offset(CourtyardFountain.BOWL)).is(Blocks.WATER_CAULDRON)&&f.l.getBlockState(f.b.offset(13,0,-6)).is(Blocks.MOSSY_STONE_BRICK_WALL)&&f.l.getBlockState(f.b.offset(13,1,-6)).is(Blocks.POTTED_AZALEA),"unwatched, a saved courtyard gets its fountain and planters once");
+        }).thenWaitUntil(()->{
+            // It waits on loaded sections, cameras and bodies; say which, if it never goes ahead.
+            if(CourtyardFountain.repair(f.l,f.b))return;var near=new AABB(Vec3.atLowerCornerOf(f.b.offset(-16,-3,-17)),Vec3.atLowerCornerOf(f.b.offset(17,4,-2)));
+            h.fail("unwatched, a saved courtyard goes ahead; still waiting on living "+f.l.getEntitiesOfClass(LivingEntity.class,near,e->e.isAlive()).stream().map(e->e.getType().toShortString()+"@"+e.blockPosition().subtract(f.b)).toList()
+                +", players "+f.l.players().stream().map(pl->pl.getCamera().blockPosition().subtract(f.b)).toList());
+        }).thenExecute(()->{
+            h.assertTrue(f.l.getBlockState(f.b.offset(CourtyardFountain.BOWL)).is(Blocks.WATER_CAULDRON)&&f.l.getBlockState(f.b.offset(CourtyardFountain.CENTRE).north()).is(Blocks.WATER),"the saved courtyard gets its fountain: "+f.l.getBlockState(f.b.offset(CourtyardFountain.BOWL)));
+            h.assertTrue(f.l.getBlockState(f.b.offset(13,0,-6)).is(Blocks.MOSSY_STONE_BRICK_WALL)&&f.l.getBlockState(f.b.offset(13,1,-6)).is(Blocks.POTTED_AZALEA),"and its planters where the tables stood: "+f.l.getBlockState(f.b.offset(13,0,-6))+" / "+f.l.getBlockState(f.b.offset(13,1,-6)));
+            h.assertTrue(CourtyardFountain.done(f.data(),f.b),"once");
         }).thenSucceed();
     }
     private static ItemStack letter(ServerPlayer p,String text){

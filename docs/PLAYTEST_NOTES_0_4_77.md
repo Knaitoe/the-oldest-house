@@ -1,6 +1,6 @@
 # Playtest notes (0.4.77)
 
-The owner sent a set of notes with the request to merge the Whalestoe hospital branch (merged as 0.4.76, verified in run 38111159012: all twelve jobs passed). This release works through those notes on top of 0.4.76. The elk lot rework is proposed separately and is not in this release.
+The owner sent a set of notes with the request to merge the Whalestoe hospital branch (merged as 0.4.76, verified in run 38111159012: all twelve jobs passed). This release works through those notes on top of 0.4.76. The elk lot rework was proposed here and implemented in 0.4.78.
 
 ## The trailer supper
 
@@ -45,6 +45,8 @@ The courtyard strays now start clear of the fountain. Saved courtyards get the p
 - **Touch.** Right-clicking a family member gets a reaction in their own words: three lines each for the medium, the mother, the father and the daughter, in turn. They flinch for three seconds and shiver audibly. A touch resets that reader's listening but is not one of the three disturbances and counts for nothing by itself.
 
 ## The elk lot: proposed rework (not in this release)
+
+Approved and implemented in 0.4.78, with a playable jukebox, people who talk and drinks on a tab added: see [the Last Stop](LAST_STOP_0_4_78.md).
 
 Today the lot is a grey concrete slab, a siding box for the bar, three trucks and rows of tall grass. The elk walks off in a straight line, the accusers are three standing strangers repeating one line, and the field is a teleport loop. The proposal, for approval:
 

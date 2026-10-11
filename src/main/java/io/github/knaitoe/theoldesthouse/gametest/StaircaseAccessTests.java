@@ -244,11 +244,11 @@ public final class StaircaseAccessTests {
 
     @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
     public static void alreadyComposedRoofsAndBarnReceiveOnlyTheirMissedRepairsOnce(GameTestHelper h){run(h,516000,f->{
-        for(var place:List.of(LabyrinthPlace.ELK_LOT,LabyrinthPlace.MAPPING_INTERIOR,LabyrinthPlace.CAMP_BLOOD,LabyrinthPlace.END_WORLD_CABIN,LabyrinthPlace.BARN_WELL))holdScene(f,place);
+        // The Last Stop (0.4.78) builds its own bar whole and is no longer composed.
+        for(var place:List.of(LabyrinthPlace.MAPPING_INTERIOR,LabyrinthPlace.CAMP_BLOOD,LabyrinthPlace.END_WORLD_CABIN,LabyrinthPlace.BARN_WELL))holdScene(f,place);
     },f->{
-        var places=List.of(LabyrinthPlace.ELK_LOT,LabyrinthPlace.MAPPING_INTERIOR,LabyrinthPlace.CAMP_BLOOD,LabyrinthPlace.END_WORLD_CABIN,LabyrinthPlace.BARN_WELL);
+        var places=List.of(LabyrinthPlace.MAPPING_INTERIOR,LabyrinthPlace.CAMP_BLOOD,LabyrinthPlace.END_WORLD_CABIN,LabyrinthPlace.BARN_WELL);
         for(var place:places)composed(f,place);
-        oldRoof(f,LabyrinthPlaces.base(f.origin,LabyrinthPlace.ELK_LOT),-23,-7,-24,-5,6);
         oldRoof(f,LabyrinthPlaces.base(f.origin,LabyrinthPlace.MAPPING_INTERIOR),-13,13,-36,-8,5);
         var camp=LabyrinthPlaces.base(f.origin,LabyrinthPlace.CAMP_BLOOD);
         for(int x:new int[]{-20,20})for(int z:new int[]{-26,-57,-83})oldRoof(f,camp,x-8,x+8,z-7,z+7,5);
@@ -274,8 +274,7 @@ public final class StaircaseAccessTests {
             for(var place:places)SceneCraft.craftOnce(f.outside,f.origin,place);
             for(var place:places)h.assertTrue(SceneCraft.done(f.level.getServer(),f.origin,place)&&f.data().state(SceneCraft.REPAIR_STATE).getBoolean(f.origin.asLong()+":"+place.id()),"the existing "+place.id()+" completion receives a separate repair checkpoint");
             h.assertTrue(f.outside.getBlockState(cabin.offset(-13,6,-30)).is(Blocks.DARK_OAK_SLAB)&&f.outside.getBlockState(custom).is(Blocks.GOLD_BLOCK),"the old cabin slope changes while customized roof cells remain");
-            h.assertTrue(f.outside.getBlockState(LabyrinthPlaces.base(f.origin,LabyrinthPlace.ELK_LOT).offset(-24,6,-20)).is(Blocks.DARK_OAK_SLAB)
-                    &&f.outside.getBlockState(LabyrinthPlaces.base(f.origin,LabyrinthPlace.MAPPING_INTERIOR).offset(-14,5,-20)).is(Blocks.SPRUCE_SLAB),"the bar and lodge receive their missed half-pitch roofs");
+            h.assertTrue(f.outside.getBlockState(LabyrinthPlaces.base(f.origin,LabyrinthPlace.MAPPING_INTERIOR).offset(-14,5,-20)).is(Blocks.SPRUCE_SLAB),"the lodge receives its missed half-pitch roof");
             for(int x:new int[]{-20,20})for(int z:new int[]{-26,-57,-83})h.assertTrue(f.outside.getBlockState(camp.offset(x-9,5,z)).getBlock() instanceof SlabBlock,"each of the six cabins receives its missed roof");
             h.assertTrue(f.outside.getBlockState(barn.offset(10,8,-25)).is(Blocks.DARK_OAK_LOG)&&!f.outside.getBlockState(barn.offset(8,7,-25)).is(Blocks.BIRCH_PLANKS)
                     &&f.outside.getBlockState(hanger.above()).is(Blocks.DARK_OAK_PLANKS)&&f.outside.getBlockState(hanger).is(Blocks.CHAIN),"the barn loses its lid, gains the gambrel and retains hanging supports");

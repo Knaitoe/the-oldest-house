@@ -30,6 +30,9 @@ public final class LiteraryRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<NurseryBlock>> NURSERY_TYPE=CODECS.register("nursery",()->NurseryBlock.CODEC);
     /** The child's room (0.4.74): its own furniture and toys, and its wallpaper. */
     public static final DeferredBlock<NurseryBlock> NURSERY=BLOCKS.registerBlock("nursery",NurseryBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noOcclusion().noLootTable().lightLevel(NurseryBlock::light));
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<RoadhouseBlock>> ROADHOUSE_TYPE=CODECS.register("roadhouse",()->RoadhouseBlock.CODEC);
+    /** The Last Stop (0.4.78): the bar's furniture, its highway and lot, the field's stalks and the pickups. */
+    public static final DeferredBlock<RoadhouseBlock> ROADHOUSE=BLOCKS.registerBlock("roadhouse",RoadhouseBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noLootTable().lightLevel(RoadhouseBlock::light));
     public static final DeferredBlock<LiteraryFrozenBlock> FROZEN=BLOCKS.registerBlock("literary_frozen",LiteraryFrozenBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).dynamicShape().noOcclusion().noLootTable());
     public static final DeferredBlock<LiteraryPropBlock> PROP=BLOCKS.registerBlock("literary_prop",LiteraryPropBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable());
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<LiteraryModelBlockEntity>> MODEL=BES.register("literary_model",()->BlockEntityType.Builder.of(LiteraryModelBlockEntity::new,PROP.get(),FROZEN.get()).build(null));
@@ -59,6 +62,8 @@ public final class LiteraryRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> NURSERY_TRAIN=sound("nursery_train"),NURSERY_WHISTLE=sound("nursery_whistle"),NURSERY_TOP=sound("nursery_top"),
             NURSERY_CHIME=sound("nursery_chime"),NURSERY_POP=sound("nursery_pop"),NURSERY_MUSIC_BOX=sound("nursery_music_box"),NURSERY_SQUEAK=sound("nursery_squeak"),
             NURSERY_BLOCKS=sound("nursery_blocks"),NURSERY_BALL=sound("nursery_ball"),NURSERY_CREAK=sound("nursery_creak"),NURSERY_EXIT=sound("nursery_exit"),NURSERY_WHISPER=sound("nursery_whisper");
+    /** The Last Stop (0.4.78): the struck pickup's alarm, a truck going by unseen, the pool table and the crash; each has its own subtitle. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> LOT_ALARM=sound("lot_alarm"),LOT_HIGHWAY=sound("lot_highway"),LOT_POOL=sound("lot_pool"),LOT_CRASH=sound("lot_crash");
     private static DeferredBlock<Block> material(String id,Block base){return BLOCKS.registerBlock(id,Block::new,BlockBehaviour.Properties.ofFullCopy(base).noLootTable());}
     private static DeferredItem<Item> item(String id){var props=new Item.Properties().stacksTo(1);if(id.startsWith("wax_cylinder_")||id.equals("family_film"))props.jukeboxPlayable(net.minecraft.resources.ResourceKey.create(Registries.JUKEBOX_SONG,ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id.replace("one","1").replace("two","2").replace("three","3"))));return ITEMS.registerSimpleItem(id,props);}
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String name){return SOUNDS.register("literary."+name,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"literary."+name)));}

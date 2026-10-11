@@ -1,0 +1,49 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "s": "the_oldest_house:block/last_stop/swatches",
+  "f": "the_oldest_house:block/last_stop/sign_bl",
+  "k": "the_oldest_house:block/last_stop/sign_br",
+  "e": "the_oldest_house:block/last_stop/pole",
+  "particle": "the_oldest_house:block/last_stop/sign_bl"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    6
+   ],
+   "to": [
+    16,
+    16,
+    10
+   ],
+   "faces": {
+    "north": {
+     "texture": "#f"
+    },
+    "south": {
+     "texture": "#k"
+    },
+    "east": {
+     "texture": "#e"
+    },
+    "west": {
+     "texture": "#e"
+    },
+    "up": {
+     "texture": "#e"
+    },
+    "down": {
+     "texture": "#e"
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   }
+  }
+ ]
+}

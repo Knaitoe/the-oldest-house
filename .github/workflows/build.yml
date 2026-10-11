@@ -57,7 +57,7 @@ jobs:
                            'assets/the_oldest_house/textures/entity/finale_materials.png',
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
-              assert 'version="0.4.77"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.78"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/house/PlaytestLog.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
               hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
@@ -222,6 +222,22 @@ jobs:
                   assert caver_sounds[f'ward.{cue}']['subtitle'] == f'subtitles.the_oldest_house.ward.{cue}'
               for name in ('CourtyardFountain','CrimsonGallery','ProofrockRepairs'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
+              # 0.4.78: the Last Stop, one roadhouse block for the bar, road, lot, field and pickups; four subtitled cues; five placeholder skins.
+              roadhouse = json.loads(z.read('assets/the_oldest_house/blockstates/roadhouse.json'))['variants']
+              assert len(roadhouse) == 784, len(roadhouse)
+              for variant in roadhouse.values():
+                  assert variant['model'].replace('the_oldest_house:', 'assets/the_oldest_house/models/') + '.json' in z.namelist(), variant['model']
+              for name in ('asphalt','asphalt_edge','asphalt_centre','gravel_1','boards','counter_front','shelf_bottles','corkboard','neon_beer','sign_tl','stalks','pu_body','pu_door_dent','pu_front_l','pu_tyre'):
+                  assert z.read(f'assets/the_oldest_house/textures/block/last_stop/{name}.png').startswith(b'\x89PNG'), name
+              assert any(e.get('tintindex') == 0 for el in json.loads(z.read('assets/the_oldest_house/models/block/last_stop_pu_door.json'))['elements'] for e in el['faces'].values())
+              for cue in ('alarm', 'highway', 'pool', 'crash'):
+                  assert z.read(f'assets/the_oldest_house/sounds/literary/lot_{cue}.ogg').startswith(b'OggS')
+                  assert caver_sounds[f'literary.lot_{cue}']['subtitle'] == f'subtitles.the_oldest_house.literary.lot_{cue}'
+              for name in ('marla','russ','denny','wade','hollis'):
+                  assert z.read(f'assets/the_oldest_house/textures/entity/literary_bar_{name}.png').startswith(b'\x89PNG')
+              for name in ('ElkLot','ElkLotNight','RoadhouseBlock'):
+                  assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/client/ElkLotClient.class' in z.namelist()
               # The child's room (0.4.74): one nursery block for every piece of furniture and toy, its wallpaper, twelve subtitled toy cues.
               nursery = json.loads(z.read('assets/the_oldest_house/blockstates/nursery.json'))['variants']
               assert len(nursery) == 448
@@ -816,7 +832,7 @@ jobs:
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
               assert z.testzip() is None
-              assert 'version="0.4.77"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              assert 'version="0.4.78"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               assert 'io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/MultiplayerStoryTests.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/PlaytestCommandTests.class' in z.namelist()
@@ -891,8 +907,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-0.4.77.jar
-            build/libs/the_oldest_house-0.4.77.jar.sha256
+            build/libs/the_oldest_house-0.4.78.jar
+            build/libs/the_oldest_house-0.4.78.jar.sha256
           if-no-files-found: error
 
 

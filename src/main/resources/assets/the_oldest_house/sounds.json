@@ -838,5 +838,44 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.ward.flicker"
+  },
+  "literary.lot_alarm": {
+    "subtitle": "subtitles.the_oldest_house.literary.lot_alarm",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/lot_alarm",
+        "stream": false,
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "literary.lot_highway": {
+    "subtitle": "subtitles.the_oldest_house.literary.lot_highway",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/lot_highway",
+        "stream": false,
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "literary.lot_pool": {
+    "subtitle": "subtitles.the_oldest_house.literary.lot_pool",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/lot_pool",
+        "stream": false
+      }
+    ]
+  },
+  "literary.lot_crash": {
+    "subtitle": "subtitles.the_oldest_house.literary.lot_crash",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/lot_crash",
+        "stream": false,
+        "attenuation_distance": 48
+      }
+    ]
   }
 }
