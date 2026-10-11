@@ -57,6 +57,12 @@ public final class MobSightClientProof {
                     mc.player.getY(), mc.player.getZ());
             require(!mc.getEntityRenderDispatcher().getRenderer(beyond).shouldRender(beyond, wide, camera.x, camera.y, camera.z),
                     "native renderer caps visibility at the effective terrain horizon");
+            var boy = io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.ACTOR.get().create(mc.level);
+            require(boy != null, "native distant-boy range control creates");
+            boy.appearance(LiteraryActor.SILHOUETTE, 4);boy.moveTo(camera.x + 184, camera.y, camera.z);
+            require(boy.shouldRender(camera.x, camera.y, camera.z)
+                    && mc.getEntityRenderDispatcher().getRenderer(boy).shouldRender(boy, wide, camera.x, camera.y, camera.z),
+                    "extension retains the existing 192-block boy/camera allowance");
         }
         var direction = moving.getEyePosition().subtract(mc.player.getEyePosition());
         mc.player.setYRot((float)Math.toDegrees(Math.atan2(-direction.x, direction.z)));

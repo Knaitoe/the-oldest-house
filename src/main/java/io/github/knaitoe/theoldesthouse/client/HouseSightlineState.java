@@ -16,7 +16,11 @@ public final class HouseSightlineState {
     }
 
     public static void set(BlockPos newOrigin, boolean newRevealed) {
-        snapshot = new Snapshot(newOrigin == null ? BlockPos.ZERO : newOrigin.immutable(), newRevealed);
+        snapshot = newOrigin == null ? EMPTY : new Snapshot(newOrigin.immutable(), newRevealed);
+    }
+
+    public static boolean hasOrigin() {
+        return snapshot != EMPTY;
     }
 
     public static BlockPos origin() {
