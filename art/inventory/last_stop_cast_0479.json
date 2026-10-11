@@ -1,0 +1,86 @@
+{
+  "version": "0.4.79",
+  "coat_extension": "marla only; waist apron",
+  "skins": [
+    {
+      "name": "marla",
+      "role": "stranger",
+      "phase": 4,
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_bar_marla.png",
+      "size": [
+        512,
+        256
+      ],
+      "logical_uv": [
+        128,
+        64
+      ],
+      "sha256": "64d42aafbe55b725ad32490d4c3a72dbeb486a5ff77eef964c3dbd63e866d435",
+      "alpha_sha256": "a114ae38ccdef6256c7106081e3584ad7093aefcdd2f83dcfaee80b7ab039a33"
+    },
+    {
+      "name": "russ",
+      "role": "stranger",
+      "phase": 5,
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_bar_russ.png",
+      "size": [
+        512,
+        256
+      ],
+      "logical_uv": [
+        128,
+        64
+      ],
+      "sha256": "f26bb75eba1df9518c8620e5ceb6a9fc18757c2358edf163d4c177e26672a171",
+      "alpha_sha256": "0face4488cc4cd728e6bfe9f6506fa07e8516299995cc717f68bde0cab82a20c"
+    },
+    {
+      "name": "denny",
+      "role": "stranger",
+      "phase": 6,
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_bar_denny.png",
+      "size": [
+        512,
+        256
+      ],
+      "logical_uv": [
+        128,
+        64
+      ],
+      "sha256": "5f4f2880e07595f814ef929f885a23845bb47de74d17eee6cc7d7c5f86f9faf5",
+      "alpha_sha256": "5486c74a7edb99a6faf000c63dccfb50162f5e9875cedf164a0f98dbac7c5bb3"
+    },
+    {
+      "name": "wade",
+      "role": "stranger",
+      "phase": 7,
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_bar_wade.png",
+      "size": [
+        512,
+        256
+      ],
+      "logical_uv": [
+        128,
+        64
+      ],
+      "sha256": "1653931742cce2214ab14e74b0610fe2cd54e3f2fb978fb9cc5f89d6fc24fa91",
+      "alpha_sha256": "c6a4cf26c370c434b916ddb3f83117804d711bd182136f4d9bfcb07669f26339"
+    },
+    {
+      "name": "hollis",
+      "role": "stranger",
+      "phase": 8,
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_bar_hollis.png",
+      "size": [
+        512,
+        256
+      ],
+      "logical_uv": [
+        128,
+        64
+      ],
+      "sha256": "236497a0b2511f2b4d7833bed4b4f4442de230d6505e501e65f60884447cd447",
+      "alpha_sha256": "ee594083cdcdefb1bb7733266515b16bacc48556612b0c1ce6cc6dea778ffd0b"
+    }
+  ]
+}

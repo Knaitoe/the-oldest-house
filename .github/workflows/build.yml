@@ -570,6 +570,8 @@ jobs:
           test -s build/font-smoke/native-hotel.png
           test -s build/font-smoke/literary-passed.txt
           test -s build/font-smoke/native-literary.png
+          test -s build/font-smoke/last-stop-cast-passed.txt
+          for view in front back night; do test -s build/font-smoke/native-last-stop-cast-$view.png; done
           test -s build/font-smoke/elk-passed.txt
           test -s build/font-smoke/native-elk.png
           test -s build/font-smoke/goatman-passed.txt

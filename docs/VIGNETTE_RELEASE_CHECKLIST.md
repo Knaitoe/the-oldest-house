@@ -9,7 +9,11 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.78
+## Current candidate: 0.4.79
+
+Five Last Stop character skins replace the existing placeholders, retaining the same native actor phases and identities. Only Marla uses the coat extension, as an apron. Require three native cast views in addition to all prior checks. No source, layout or protocol change: 43 / 33 / two kinds / three endings; layout 40 / protocol 52. See [the cast record](LAST_STOP_CAST_0_4_79.md).
+
+## Previous candidate: 0.4.78
 
 The elk lot is rebuilt whole as the Last Stop: a roadside bar at night with people who talk, drinks on a personal tab and a playable jukebox, an elk that dents a pickup and waits in the field, three men with real flashlights who herd without touching, and a field whose repeat is hidden. Still one source with the same personal resolution (two loops after the reader has personally seen the elk, then the clipping on the noticeboard): 43 sources / 33 resolutions / two kinds / three endings. Saved lots receive a guarded once-only re-carve keeping the elk and every record. Layout 40 / protocol 52. See [the record](LAST_STOP_0_4_78.md).
 
