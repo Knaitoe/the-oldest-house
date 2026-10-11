@@ -39,17 +39,17 @@ public final class ElkFanTests {
     @GameTest(template="empty",batch="elk_fan_climb0480",timeoutTicks=700)
     public static void nativeAFrameClimbReachesTheFanAndItsOpenPlatformKeepsTheImageVisible(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("fan_ladder_reader");final boolean[] walking={false};
-        h.onEachTick(()->{if(walking[0]&&p.getY()<f.b.getY()+5.24){p.setYRot(180);p.travel(new Vec3(0,0,1));}});
+        h.onEachTick(()->{if(walking[0]&&(p.getY()<f.b.getY()+5.24||p.getZ()>f.b.getZ()-16.5)){p.setYRot(180);p.travel(new Vec3(0,0,1));}});
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the room's native entity sections are ready")).thenExecute(()->{
             h.assertTrue(ElkFanRoom.standing(f.l,f.b),"the whole custom A-frame stands, with actual collision parts");
             f.readSource(p);p.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()-13.5);p.setDeltaMovement(Vec3.ZERO);p.setNoGravity(false);walking[0]=true;
-        }).thenWaitUntil(()->h.assertTrue(p.getY()>=f.b.getY()+5.24,"native travel climbs the A-frame to its top platform: "+p.position().subtract(Vec3.atLowerCornerOf(f.b))))
+        }).thenWaitUntil(()->h.assertTrue(p.getY()>=f.b.getY()+5.24&&p.getZ()<=f.b.getZ()-16.5,"native travel climbs the A-frame and walks onto its working platform: "+p.position().subtract(Vec3.atLowerCornerOf(f.b))))
         .thenExecute(()->{
             walking[0]=false;p.setNoGravity(true);p.setDeltaMovement(Vec3.ZERO);
             h.assertTrue(ElkFanRoom.onLadder(p,f.b),"the reader reaches the real working platform without placed blocks");
-            var at=f.b.offset(LiteraryRooms.FAN);p.lookAt(EntityAnchorArgument.Anchor.EYES,at.getCenter());
+            var at=f.b.offset(LiteraryRooms.FAN);p.lookAt(EntityAnchorArgument.Anchor.EYES,new Vec3(at.getX()+.5,at.getY()+.72,at.getZ()+.5));
             var hit=f.l.clip(new ClipContext(p.getEyePosition(),p.getEyePosition().add(p.getLookAngle().scale(4.5)),ClipContext.Block.OUTLINE,ClipContext.Fluid.NONE,p));
-            h.assertTrue(hit.getBlockPos().equals(at),"the actual fan is within native survival interaction reach");p.gameMode.useItemOn(p,f.l,ItemStack.EMPTY,InteractionHand.MAIN_HAND,hit);
+            h.assertTrue(hit.getBlockPos().equals(at),"the visible fan motor is within native survival interaction reach: hit="+hit.getBlockPos().subtract(f.b)+", reader="+p.position().subtract(Vec3.atLowerCornerOf(f.b)));p.gameMode.useItemOn(p,f.l,ItemStack.EMPTY,InteractionHand.MAIN_HAND,hit);
             h.assertTrue(LiteraryVignettes.personal(f.d(),p.getUUID(),LabyrinthPlace.ELK_FAN).getBoolean("Repaired"),"a native click repairs the fan without placing a platform");
             p.lookAt(EntityAnchorArgument.Anchor.EYES,f.b.offset(0,0,-17).getCenter());
             h.assertTrue(HouseWatchers.sees(p,f.b.offset(0,0,-17).getCenter()),"the open platform preserves a real line of sight to the image below the blades");
