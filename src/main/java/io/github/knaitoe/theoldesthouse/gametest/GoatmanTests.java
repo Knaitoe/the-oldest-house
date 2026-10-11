@@ -5,6 +5,7 @@ import io.github.knaitoe.theoldesthouse.house.*;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import io.github.knaitoe.theoldesthouse.opening.CompanionOrders;
 import java.util.*;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.*;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.nbt.CompoundTag;
@@ -88,6 +89,42 @@ public final class GoatmanTests {
         });
     }
     @AfterBatch(batch="goat_supper") public static void supperDone(ServerLevel level){if(supper!=null){supper.close();supper=null;}}
+    private static Fixture plating;
+    @AfterBatch(batch="goat_plating0480") public static void platingDone(ServerLevel level){if(plating!=null){plating.close();plating=null;}}
+    @GameTest(template="empty",batch="goat_plating0480",timeoutTicks=700)
+    public static void actualGriddleFranksPlateThroughBlockAirAndCousinClicksWithoutEatingOrLosingTheirChar(GameTestHelper h){
+        plating=new Fixture(h,32600);var f=plating;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native supper and entity sections are ready")).thenExecute(()->{
+            GoatmanVignette.enter(p);var r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.SUPPER0465-1);r.putInt("Expected",8);f.cohort(r,List.of(p),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);
+            f.click(p,GoatmanWoods.COOLER);f.click(p,GoatmanWoods.STOVE);for(int i=0;i<4;i++)f.click(p,GoatmanWoods.STOVE);
+        }).thenWaitUntil(()->h.assertTrue(f.run().getList("CookedPan0465",10).size()==4,"the actual raw originals finish on the occupied griddle")).thenExecute(()->{
+            var r=f.run();var pan=r.getList("CookedPan0465",10);pan.getCompound(3).putInt("Heat",GoatmanSupper.BURN_TICKS-1);r.put("CookedPan0465",pan);f.run(r);
+        }).thenWaitUntil(()->h.assertTrue(f.run().getList("CookedPan0465",10).getCompound(3).getBoolean(GoatmanSupper.BURNT),"one original burns on the real griddle")).thenExecute(()->{
+            for(int i=0;i<4;i++)f.click(p,GoatmanWoods.STOVE);h.assertTrue(p.getInventory().countItem(GoatmanRegistry.BRAT.get())==4,"four actual griddle servings enter the inventory");
+            for(int i=0;i<p.getInventory().getContainerSize();i++){var item=p.getInventory().getItem(i);if(item.is(GoatmanRegistry.BRAT.get()))h.assertTrue(item.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA).copyTag().getUUID(GoatmanVignette.ROUND).equals(f.run().getUUID("Id")),"cooking and blackening preserve the original supper marker");}
+            h.assertTrue(GoatmanVignette.childScale(p)&&p.getAttributeValue(Attributes.SCALE)<.75,"the regression uses the actual child-sized reader");
+            for(var c:f.cousins())c.moveTo(f.b.getX()+6,f.b.getY(),f.b.getZ()-46);
+            aimAtPlate(f,p,0,false,0);var original=p.getMainHandItem().get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA,p.getMainHandItem(),t->t.putUUID(GoatmanVignette.ROUND,UUID.randomUUID()));
+            p.gameMode.useItem(p,f.l,p.getMainHandItem(),InteractionHand.MAIN_HAND);h.assertTrue(f.run().getInt("Plated0464")==0&&p.getInventory().countItem(GoatmanRegistry.BRAT.get())==4,"cooked food from a different round cannot fill this supper's plates");p.getMainHandItem().set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,original);
+            p.moveTo(f.b.getX()-6.5,f.b.getY()+1,GoatmanWoods.plate(0).z+f.b.getZ());p.lookAt(EntityAnchorArgument.Anchor.EYES,GoatmanWoods.plate(0).add(f.b.getX(),f.b.getY(),f.b.getZ()));p.gameMode.useItem(p,f.l,p.getMainHandItem(),InteractionHand.MAIN_HAND);h.assertTrue(f.run().getInt("Plated0464")==0&&p.getInventory().countItem(GoatmanRegistry.BRAT.get())==4,"a visible plate beyond native reach cannot be served");
+            aimAtPlate(f,p,0,false,0);var block=f.l.clip(new ClipContext(p.getEyePosition(),p.getEyePosition().add(p.getLookAngle().scale(p.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE))),ClipContext.Block.OUTLINE,ClipContext.Fluid.NONE,p));
+            h.assertTrue(block.getType()==HitResult.Type.BLOCK,"aiming through the first displayed plate hits its native support");
+            var used=p.gameMode.useItemOn(p,f.l,p.getMainHandItem(),InteractionHand.MAIN_HAND,block);h.assertTrue(used.consumesAction()&&(f.run().getInt("Plated0464")&1)!=0&&p.getInventory().countItem(GoatmanRegistry.BRAT.get())==3,"the full native block-use path serves exactly one cooked original");
+            aimAtPlate(f,p,1,true,.08);var ray=f.l.clip(new ClipContext(p.getEyePosition(),p.getEyePosition().add(p.getLookAngle().scale(p.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE))),ClipContext.Block.OUTLINE,ClipContext.Fluid.NONE,p));
+            h.assertTrue(ray.getType()==HitResult.Type.MISS,"aiming at the visible plate's upper edge can miss the slab beneath it");
+            var wall=f.b.offset(2,2,-61);f.l.setBlock(wall,Blocks.STONE.defaultBlockState(),3);p.gameMode.useItem(p,f.l,p.getMainHandItem(),InteractionHand.MAIN_HAND);h.assertTrue(p.getInventory().countItem(GoatmanRegistry.BRAT.get())==3&&f.run().getInt("Plated0464")==1,"an intervening native wall cannot be served through");f.l.setBlock(wall,Blocks.AIR.defaultBlockState(),3);
+            p.gameMode.useItem(p,f.l,p.getMainHandItem(),InteractionHand.MAIN_HAND);h.assertTrue((f.run().getInt("Plated0464")&2)!=0&&p.getInventory().countItem(GoatmanRegistry.BRAT.get())==2,"the native item-use fallback reaches the visible plate before eating starts");
+            p.gameMode.useItem(p,f.l,p.getMainHandItem(),InteractionHand.MAIN_HAND);h.assertTrue(p.getInventory().countItem(GoatmanRegistry.BRAT.get())==2,"a second packet cannot consume another frank for the same plate");
+            var cousin=f.cousins().getFirst();aimAtPlate(f,p,2,false,0);var at=GoatmanWoods.plate(2).add(f.b.getX(),f.b.getY(),f.b.getZ());cousin.moveTo(f.b.getX()-2.2,f.b.getY()+1,at.z);var intercept=cousin.getBoundingBox().clip(p.getEyePosition(),at);h.assertTrue(intercept.isPresent(),"the native cousin body intercepts a ray aimed at the next plate");
+            var touch=p.interactOn(cousin,InteractionHand.MAIN_HAND);h.assertTrue(touch.consumesAction()&&(f.run().getInt("Plated0464")&4)!=0&&p.getInventory().countItem(GoatmanRegistry.BRAT.get())==1,"the native entity-use path serves the intended plate rather than swallowing the click");
+            for(int i=0;i<9;i++)if(GoatmanSupper.burnt(p.getInventory().getItem(i))){var burnt=p.getInventory().getItem(i);p.setItemInHand(InteractionHand.OFF_HAND,burnt);p.getInventory().setItem(i,ItemStack.EMPTY);break;}
+            aimAtPlate(f,p,3,true,0);at=GoatmanWoods.plate(3).add(f.b.getX(),f.b.getY(),f.b.getZ());cousin.moveTo(f.b.getX()+2.3,f.b.getY()+1,at.z);intercept=cousin.getBoundingBox().clip(p.getEyePosition(),at);h.assertTrue(intercept.isPresent()&&GoatmanSupper.burnt(p.getOffhandItem()),"the off-hand still holds the actual burnt griddle original behind an entity hit");
+            var specific=new PlayerInteractEvent.EntityInteractSpecific(p,InteractionHand.OFF_HAND,cousin,intercept.orElseThrow().subtract(cousin.position()));NeoForge.EVENT_BUS.post(specific);
+            h.assertTrue(specific.isCanceled()&&specific.getCancellationResult()==InteractionResult.SUCCESS&&p.getOffhandItem().isEmpty()&&p.getInventory().countItem(GoatmanRegistry.BRAT.get())==0,"the specific native entity click consumes exactly the off-hand serving");
+            h.assertTrue(f.run().getInt("Plated0464")==15&&f.run().getInt("BurntPlates0476")==8,"all four cooked originals reach their intended plates and the burnt one keeps its char");h.succeed();
+        });
+    }
+    private static void aimAtPlate(Fixture f,ServerPlayer p,int seat,boolean east,double height){var plate=GoatmanWoods.plate(seat).add(f.b.getX(),f.b.getY(),f.b.getZ());p.moveTo(f.b.getX()+(east?3.5:-3.5),f.b.getY()+1,plate.z);p.setDeltaMovement(Vec3.ZERO);p.lookAt(EntityAnchorArgument.Anchor.EYES,plate.add(0,height,0));}
     @GameTest(template="empty") public static void woodsAppendWithoutMovingOldRoomsOrReinterpretingLeaks(GameTestHelper h){
         for(int y:new int[]{65,80,150,250}){
             var origin=new BlockPos(100,y,100);var b=LabyrinthPlaces.base(origin,LabyrinthPlace.GOATMAN);var slot=LabyrinthPlaces.slotBounds(origin,LabyrinthPlace.GOATMAN);
