@@ -212,5 +212,6 @@
   "subtitles.the_oldest_house.literary.nursery_exit": "Something seals into the wall",
   "subtitles.the_oldest_house.literary.nursery_whisper": "Something whispers above the bed",
   "block.the_oldest_house.nursery": "Nursery piece",
-  "block.the_oldest_house.child_wallpaper": "Child's wallpaper"
+  "block.the_oldest_house.child_wallpaper": "Child's wallpaper",
+  "subtitles.the_oldest_house.caver.choke": "Choking, wheezing breaths"
 }

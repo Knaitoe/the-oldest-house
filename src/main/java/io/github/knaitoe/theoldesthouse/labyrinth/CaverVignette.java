@@ -58,7 +58,8 @@ public final class CaverVignette {
      * had air. Air is personal; the breath is shared.
      */
     public static final float AIR_DRAIN=3.2F,AIR_REFILL=5F;
-    public static final int BLACKOUT=40,WAKE=24;
+    /** 0.4.75: choking ticks once the air is gone, before the blackout; air back within them ends it in a gasp instead. */
+    public static final int CHOKE=80,BLACKOUT=40,WAKE=24;
     private static final Map<UUID,Float> AIR=new HashMap<>();
     private static final int LINE_POINTS=96;
     private static final DustParticleOptions LINE=new DustParticleOptions(new Vector3f(.86F,.82F,.7F),.6F);
@@ -244,7 +245,7 @@ public final class CaverVignette {
     }
     public static boolean crawling(ServerPlayer p){var own=CRAWLING.get(p.getUUID());return own!=null&&own.player()==p;}
     public static void depart(ServerPlayer p){crawl(p,false,STILL);ACTIVE.remove(p.getUUID());AIR.remove(p.getUUID());var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID());
-        if(own.getBoolean("Active")){own.putBoolean("Active",false);save(d,p.getUUID(),own);}}
+        if(own.getBoolean("Active")||own.contains("Choke")){own.putBoolean("Active",false);own.remove("Choke");save(d,p.getUUID(),own);}}
     public static void clearAll(){for(var server:List.copyOf(EXCAVATIONS.keySet()))confirmExcavation(server);for(var old:CRAWLING.values())restore(old);CRAWLING.clear();ACTIVE.clear();AIR.clear();
         for(var server:List.copyOf(BREATHS.keySet()))saveBreath(server);BREATHS.clear();}
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p)depart(p);}
@@ -255,7 +256,10 @@ public final class CaverVignette {
         if(own.getBoolean("Active")&&!own.getBoolean("Escaped")){own.putBoolean("Pursuit",false);own.putInt("ReturnCrawl",0);own.putInt("DeepTicks",0);save(d,p.getUUID(),own);}
         depart(p);
     }}
-    private static void sendCrawl(ServerPlayer p,boolean active,float[] push){var b=base(p.server);if(b!=null)HousePackets.send(p,new CaverCrawlPayload(active,b.getX(),b.getY(),b.getZ(),push[0],push[1]));}
+    private static void sendCrawl(ServerPlayer p,boolean active,float[] push){sendCrawl(p,active,push,0);}
+    /** The crawl, the draught, and (0.4.75) the reader's own air and how far into choking or blacking out they are. */
+    private static void sendCrawl(ServerPlayer p,boolean active,float[] push,int choke){var b=base(p.server);if(b==null)return;Float air=AIR.get(p.getUUID());
+        HousePackets.send(p,new CaverCrawlPayload(active,b.getX(),b.getY(),b.getZ(),push[0],push[1],air==null?1F:air/p.getMaxAirSupply(),choke));}
 
     // ------------------------------------------------------------------------------------------------ the breath
     public static int breathTick(MinecraftServer s){return BREATHS.computeIfAbsent(s,k->Math.floorMod(LabyrinthData.get(k).state(ID).getInt("Breath"),BREATH));}
@@ -307,9 +311,10 @@ public final class CaverVignette {
                 ||mouth(p.serverLevel(),b,c)&&(p.isShiftKeyDown()||p.getPose()==Pose.CROUCHING||crawling(p)));
         var push=draught(c,push(own,breath));
         crawl(p,tight,push);
-        if(tight&&(now%5==0||breath!=own.getInt("LastBreath")))sendCrawl(p,true,push);
         own.putInt("LastBreath",breath);
         air(p,own,b,r,c,tight,breath);
+        // Every tick while crawling, so the reader's own breath gauge and the choking follow their air exactly.
+        if(tight){int out=own.getInt("Blackout");sendCrawl(p,true,push,out>0?CHOKE+BLACKOUT-out:own.getInt("Choke"));}
         if(tight&&CaverCave.SQUEEZE.contains(c)){
             String counter=own.getBoolean("Pursuit")?"ReturnCrawl":"IngressCrawl";
             own.putInt(counter,Math.min(CRAWL_TICKS,own.getInt(counter)+1));
@@ -344,7 +349,10 @@ public final class CaverVignette {
         }
         save(d,p.getUUID(),own);if(changed)updateJournal(p);
     }
-    /** The reader's own air in the crawls; see {@link #AIR_DRAIN}. Outside them Minecraft's own breathing takes over. */
+    /**
+     * The reader's own air in the crawls; see {@link #AIR_DRAIN}. It is kept here and drawn by the reader's own gauge, never
+     * as Minecraft's air bubbles. Out of the crawls it comes back at the same rate.
+     */
     private static void air(ServerPlayer p,CompoundTag own,BlockPos b,Vec3 r,BlockPos c,boolean tight,int breath){
         var id=p.getUUID();int out=own.getInt("Blackout");
         if(out>0){out--;own.putInt("Blackout",out);if(out==WAKE)wake(p,own,b);return;}
@@ -352,27 +360,42 @@ public final class CaverVignette {
         var here=BlockPos.containing(r);
         if((!tight||CaverCave.bell(c))&&!p.serverLevel().getBlockState(b.offset(here).below()).getCollisionShape(p.serverLevel(),b.offset(here).below()).isEmpty())
             own.putLong("LastSafe",(tight?c:here).asLong());
-        if(!tight||!CaverCave.crawl(c)||p.getAbilities().invulnerable){AIR.remove(id);return;}
-        float air=AIR.computeIfAbsent(id,k->(float)p.getAirSupply());
-        air=CaverCave.bell(c)||breath>=0?Math.min(p.getMaxAirSupply(),air+AIR_REFILL):air-AIR_DRAIN;
-        AIR.put(id,air);p.setAirSupply(Math.max(0,Math.round(air)));
-        if(air<=0){
-            own.putInt("Blackout",BLACKOUT);AIR.remove(id);
+        float max=p.getMaxAirSupply();
+        if(!tight||!CaverCave.crawl(c)||p.getAbilities().invulnerable){
+            Float left=AIR.get(id);if(left!=null&&left+AIR_REFILL<max&&!p.getAbilities().invulnerable)AIR.put(id,left+AIR_REFILL);else AIR.remove(id);
+            recover(p,own);return;}
+        float air=AIR.getOrDefault(id,max);
+        air=CaverCave.bell(c)||breath>=0?Math.min(max,air+AIR_REFILL):Math.max(0,air-AIR_DRAIN);
+        AIR.put(id,air);
+        if(air>0){recover(p,own);return;}
+        // No air left. The chest locks for a few seconds first: get to a bell, out of the crawl, or outlast the in-breath and
+        // the choking ends in a gasp. Anyone near enough hears it. Only when it runs its course does the reader black out.
+        int choke=own.getInt("Choke")+1;own.putInt("Choke",choke);
+        if(choke==1)p.displayClientMessage(Component.literal("Your chest locks. There is nothing to breathe."),true);
+        if(choke%30==1)p.serverLevel().playSound(p,p.getX(),p.getY(),p.getZ(),LabyrinthRegistry.CAVER_CHOKE.value(),SoundSource.PLAYERS,.7F,.95F+p.getRandom().nextFloat()*.1F);
+        if(choke>=CHOKE){
+            own.remove("Choke");own.putInt("Blackout",BLACKOUT);AIR.remove(id);
             p.addEffect(new MobEffectInstance(MobEffects.BLINDNESS,BLACKOUT+30,0,false,false,false));
             p.displayClientMessage(Component.literal("The air goes out of you."),true);
         }
+    }
+    /** Air again before the blackout: the choking ends in a ragged gasp. */
+    private static void recover(ServerPlayer p,CompoundTag own){
+        if(own.getInt("Choke")<=0)return;own.remove("Choke");
+        privateSound(p,LabyrinthRegistry.CAVER_GASP,p.position(),.75F,1.15F);
+        p.displayClientMessage(Component.literal("Air. You drag it in, shaking."),true);
     }
     /** Coming to where the air still moves, with nothing lost but the time. */
     private static void wake(ServerPlayer p,CompoundTag own,BlockPos b){
         var safe=own.contains("LastSafe")?BlockPos.of(own.getLong("LastSafe")):new BlockPos(0,-3,-22);var at=Vec3.atBottomCenterOf(b.offset(safe));
         p.teleportTo(p.serverLevel(),at.x,at.y,at.z,p.getYRot(),p.getXRot());p.setDeltaMovement(Vec3.ZERO);p.resetFallDistance();
-        p.setAirSupply(p.getMaxAirSupply()/2);if(CaverCave.crawl(safe))AIR.put(p.getUUID(),p.getMaxAirSupply()/2F);
+        AIR.put(p.getUUID(),p.getMaxAirSupply()/2F);
         privateSound(p,LabyrinthRegistry.CAVER_GASP,p.position(),.9F,1F);
         p.displayClientMessage(Component.literal("You come to with your face against the rock. The air here still moves."),false);
     }
     /** For tests and operators: the reader's air in the crawl, if they are in one. */
     public static @Nullable Float air(UUID id){return AIR.get(id);}
-    public static void setAir(ServerPlayer p,float air){AIR.put(p.getUUID(),air);p.setAirSupply(Math.round(air));}
+    public static void setAir(ServerPlayer p,float air){AIR.put(p.getUUID(),air);}
     /** The reader's own line: it pays out as they go, and only they see it, a pale cord along the floor back to the ladder. */
     private static void line(ServerPlayer p,CompoundTag own,Vec3 r,long now){
         if(!own.getBoolean("LineTied")||own.getBoolean("Escaped"))return;
