@@ -1,0 +1,93 @@
+{
+ "version": "0.4.81",
+ "note": "Drawn in code by tools/draw_three_fingers_art.py.",
+ "skins": [
+  {
+   "name": "walter",
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_walter.png",
+   "size": [
+    512,
+    256
+   ],
+   "logical_uv": [
+    128,
+    64
+   ],
+   "sha256": "a478f99b553b17784db21e8551b1569389c9becd7597f629be36985b4b5f0a01"
+  },
+  {
+   "name": "ruth",
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_ruth.png",
+   "size": [
+    512,
+    256
+   ],
+   "logical_uv": [
+    128,
+    64
+   ],
+   "sha256": "d4b63d181789c06af95389d4047abe39f9efbb4b20ed87383e67a974a3e0600a"
+  },
+  {
+   "name": "will",
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_will.png",
+   "size": [
+    512,
+    256
+   ],
+   "logical_uv": [
+    128,
+    64
+   ],
+   "sha256": "91c2e096756fc3aa036e153ebbd913d0658f56f1cedc4bfefba09cd5d1f7f0fd"
+  },
+  {
+   "name": "sergeant",
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_sergeant.png",
+   "size": [
+    512,
+    256
+   ],
+   "logical_uv": [
+    128,
+    64
+   ],
+   "sha256": "9ff93b5255a272c3a5f876687be1cbc045657439309c1dc936dbd76877877a25"
+  },
+  {
+   "name": "messenger",
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_messenger.png",
+   "size": [
+    512,
+    256
+   ],
+   "logical_uv": [
+    128,
+    64
+   ],
+   "sha256": "ec6ac866f9eff54978c1bafb524cd45f7d35300c6d853871dfed65fcf84ce4f7"
+  }
+ ],
+ "items": [
+  {
+   "fingers": 3,
+   "path": "src/main/resources/assets/the_oldest_house/textures/item/withered_paw.png",
+   "sha256": "d75e42161d60567668bec8e8953a2cdfcfb2c4d343ab19d9ca9549709546910e"
+  },
+  {
+   "fingers": 2,
+   "path": "src/main/resources/assets/the_oldest_house/textures/item/withered_paw_2.png",
+   "sha256": "4d3e6031fe032a84606ca9b91f050aa3916499e9ceba26e755437a84a17a7b0c"
+  },
+  {
+   "fingers": 1,
+   "path": "src/main/resources/assets/the_oldest_house/textures/item/withered_paw_1.png",
+   "sha256": "15c5146dbadc6d6878570b4d14ef7273e356617440a9c70929c3b40278acd339"
+  },
+  {
+   "fingers": 0,
+   "path": "src/main/resources/assets/the_oldest_house/textures/item/withered_paw_0.png",
+   "sha256": "51ceca5893de946493e98a077d9661e017d15c3af9d23e25c3dd2eedb92b1cda"
+  }
+ ]
+}

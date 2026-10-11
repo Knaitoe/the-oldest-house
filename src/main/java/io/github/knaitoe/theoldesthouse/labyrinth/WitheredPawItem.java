@@ -20,7 +20,7 @@ import net.minecraft.world.level.Level;
  * Three Fingers (0.4.81): the old soldier's withered paw, one for each reader who pulls it from the fire. It is bound to
  * that reader and counts down its fingers as they wish. Only the paw last pulled from the fire answers: one lost and
  * pulled out again leaves the old one a dried paw and nothing more, so there is never a second paw to wish on.
- * <p>Its art is a placeholder for the owner's design; the model shows three, two, one or no fingers.
+ * <p>Its art is drawn in code by tools/draw_three_fingers_art.py; the model shows three, two, one or no fingers.
  */
 public final class WitheredPawItem extends Item {
     public WitheredPawItem(Properties properties){super(properties);}

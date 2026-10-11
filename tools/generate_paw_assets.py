@@ -6,8 +6,8 @@ single-pixel noise; nothing sampled): whitewash, faded wallpaper, wainscot, kitc
 the dresser and its plates, the mantel and clock, a sampler, the soldier's pocketbook, the family Bible, the lamp on the
 road, a milestone and the doorstep. Six original synthesized sounds get subtitles.
 
-The withered paw's art and the five people's skins are placeholders for the owner's designs: the placeholder helpers only
-supply a missing file and never overwrite one that exists.
+The withered paw's art and the five people's skins are drawn by tools/draw_three_fingers_art.py (or replaced by the owner).
+The placeholder helpers here only supply a missing file and never overwrite one that exists.
 
 Run from anywhere:
     python3 tools/generate_paw_assets.py

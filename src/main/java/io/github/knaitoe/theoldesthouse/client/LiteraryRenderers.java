@@ -29,7 +29,7 @@ public final class LiteraryRenderers {
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerEntityRenderer(LiteraryRegistry.ACTOR.get(),CastRenderer::new);e.registerEntityRenderer(LiteraryRegistry.ELK.get(),ElkRenderer::new);e.registerBlockEntityRenderer(LiteraryRegistry.MODEL.get(),ModelRenderer::new);}
     /** The Last Stop's own skins, on the existing stranger phases four through eight. */
     static final String[] BAR={"marla","russ","denny","wade","hollis"};
-    /** Three Fingers (0.4.81): the cottage's people on stranger phases nine to thirteen; placeholder skins the owner replaces. */
+    /** Three Fingers (0.4.81): the cottage's people on stranger phases nine to thirteen, each in their own skin. */
     static final String[] COTTAGE={"walter","ruth","will","sergeant","messenger"};
     /** A seat an actor has been placed in: how high it holds the hips, and which way it faces. */
     record Seat(int seatHeight,net.minecraft.core.Direction facing){}

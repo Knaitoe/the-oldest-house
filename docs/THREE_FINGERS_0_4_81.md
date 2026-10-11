@@ -58,8 +58,13 @@ A reader whose part has started but who no longer carries their paw can pull it 
 
 ## Assets
 
-- **Character skins** (`literary_paw_{walter,ruth,will,sergeant,messenger}.png`) are placeholders for the owner's art. Their phases are stranger 9–13. The generator writes them only when missing; Walter, the sergeant and the messenger wear the coat extension, and Ruth wears the gown.
-- **The paw** (`withered_paw.png` plus `_2`, `_1` and `_0`, selected by custom model data from fingers left) is also a placeholder, written only if missing.
+- **Character skins** (`literary_paw_{walter,ruth,will,sergeant,messenger}.png`, stranger phases 9–13) are drawn in code by `tools/draw_three_fingers_art.py`. They are 512 × 256 atlases on the renderer's 128 × 64 layout, like the Last Stop's. The asset generator only supplies a missing file and never overwrites them. `art/inventory/three_fingers_0481.json` records their hashes.
+  - **Walter:** balding, with white side-whiskers, wire spectacles, a collarless shirt, a tweed waistcoat with a watch chain, and carpet slippers. He wears a long green cardigan, open down the front, as his coat.
+  - **Ruth:** greying hair parted and pinned in a bun, worried brows, a plum dress with a white collar and cameo, and an apron over the gown with its bow behind.
+  - **Will:** dark tousled hair, a smudge of mill soot, a striped collarless shirt with rolled sleeves, braces, a red neckerchief and work boots.
+  - **Sergeant Coyle:** a sunburnt, red face, small heavy-lidded eyes, a waxed moustache and cropped grey hair. His navy frock coat is buttoned to the throat in brass, with medal ribbons and a medal on the left breast.
+  - **The man from the mill:** pale and careful, with a thin moustache, a black bowler on the hat layer, a black frock coat open over a black waistcoat, a white collar, a black tie and grey striped trousers.
+- **The paw** (`withered_paw.png` plus `_2`, `_1` and `_0`, selected by custom model data from the fingers left) is drawn by the same tool. It is a dried, knuckled paw raised to wish, with dark nails, a faded red cord and fur at the cut wrist. Each spent wish bends one of its three long fingers down onto the palm, ending in a fist.
 - **Six sounds** are synthesized and subtitled:
   - knock: "Someone knocks at the door"
   - hammer: "Fists hammer at the door"
@@ -79,6 +84,6 @@ A reader whose part has started but who no longer carries their paw can pull it 
   - The pool assertions now expect 44 stories and 24 literary sources.
   - Slots now run 0–94.
   - Architecture checks the new interior (rug, reachable source and ending) and exports its view: 88 architecture views.
-- **Build checks.** The build job checks the 128-variant blockstate and its models, the textures, the six sounds and their subtitles, the paw item's overrides and placeholders, the skins and the classes.
+- **Build checks.** The build job checks the 128-variant blockstate and its models, the textures, the six sounds and their subtitles, the paw item's overrides and images, the skins and the classes.
 
 Exact-source validation is pending.
