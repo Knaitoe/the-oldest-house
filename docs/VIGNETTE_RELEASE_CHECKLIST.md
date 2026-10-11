@@ -9,17 +9,17 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.75
+## Current verified: 0.4.75
 
-Ted the Caver's air gets its own breath gauge in place of Minecraft's bubbles, and a few seconds of choking (shaking view, closing dark, wheezing) before the blackout, ended by any air in time. No change to the source or its resolution: 43 sources / 33 resolutions / two kinds / three endings. Layout 40 / protocol 49. See [the caver record](TED_CAVER_0_4_71.md).
+Ted the Caver's air gets its own breath gauge in place of Minecraft's bubbles, and a few seconds of choking (shaking view, closing dark, wheezing) before the blackout, ended by any air in time. No change to the source or its resolution: 43 sources / 33 resolutions / two kinds / three endings. Layout 40 / protocol 49. Verified source 53d3e9a (run 38103942680): all twelve jobs and 498 native cases passed. See [the caver record](TED_CAVER_0_4_71.md).
 
-## Earlier candidate: 0.4.74
+## Previous verified: 0.4.74
 
-The child's room is rebuilt in its existing slot: its own furniture and playable toys, a crawlspace and a basement, and a sealing sequence that runs on a shared clock while exits are unwatched. CHILD_ROOM stays one eligible source with the same personal resolution: each reader must look at every sealed exit themselves and then crawl below the bed to the basement. Saved rooms receive a guarded once-only rebuild. Still 43 sources / 33 resolutions / two kinds / three endings. Layout 40 / protocol 48. See [the child's room record](CHILD_ROOM_0_4_74.md).
+The child's room is rebuilt in its existing slot: its own furniture and playable toys, a crawlspace and a basement, and a sealing sequence that runs on a shared clock while exits are unwatched. CHILD_ROOM stays one eligible source with the same personal resolution: each reader must look at every sealed exit themselves and then crawl below the bed to the basement. Saved rooms receive a guarded once-only rebuild. Still 43 sources / 33 resolutions / two kinds / three endings. Layout 40 / protocol 48. Verified with 0.4.75 at `53d3e9a` (run 38103942680). See [the child's room record](CHILD_ROOM_0_4_74.md).
 
-## Earlier candidate: 0.4.73
+## Previous verified: 0.4.73
 
-Ted the Caver gains bad air (personal, on the shared breath), air bells, a non-lethal blackout that wakes the reader where they last had air, and two long winding crawls; saved caves receive a guarded once-only reshape. No change to the source or its resolution: 43 sources / 33 resolutions / two kinds / three endings. Layout 40 / protocol 47. Run 38096307854 failed only the full escape case on a stale threshold, fixed in `38f71cd`. See [the caver record](TED_CAVER_0_4_71.md).
+Ted the Caver gains bad air (personal, on the shared breath), air bells, a non-lethal blackout that wakes the reader where they last had air, and two long winding crawls; saved caves receive a guarded once-only reshape. No change to the source or its resolution: 43 sources / 33 resolutions / two kinds / three endings. Layout 40 / protocol 47. Run 38096307854 failed only the full escape case on a stale threshold, fixed in `38f71cd`. Verified with 0.4.75 at `53d3e9a` (run 38103942680). See [the caver record](TED_CAVER_0_4_71.md).
 
 ## Previous verified: 0.4.72
 
