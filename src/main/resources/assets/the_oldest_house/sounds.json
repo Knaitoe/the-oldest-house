@@ -820,5 +820,23 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.caver.choke"
+  },
+  "ward.hum": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:ward/hum",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.ward.hum"
+  },
+  "ward.flicker": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:ward/flicker",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.ward.flicker"
   }
 }

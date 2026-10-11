@@ -32,6 +32,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class ClassicsVignettes {
     public static final String STATE="classics_0434",OWNER="ClassicReader",KEY="ClassicPage";
     public static final int SITTING_TICKS=720,NIGHT_PERIOD=320;
+    /** The shared family moves once per server tick however many readers are in the room. */
+    private static int seanceTick=-1;
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private ClassicsVignettes(){}
     public static boolean isClassic(LabyrinthPlace place){return place==LabyrinthPlace.SEANCE||place==LabyrinthPlace.WALLPAPER_NURSERY;}
@@ -116,9 +118,85 @@ public final class ClassicsVignettes {
     }
     public static void attacked(ServerPlayer p,SeanceActor actor){if(!inside(p,LabyrinthPlace.SEANCE))return;var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());own.putBoolean("Interrupted",true);own.putInt("ListenTicks",0);save(data,p.getUUID(),own);actor.appearance(actor.role(),false,true);actor.say("Something touched me. Close the door.");}
     private static void finish(ServerPlayer p,String outcome){var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());own.putBoolean("SeanceFinished",true);own.putString("SeanceOutcome",outcome);own.remove("SeanceViewUntil");save(data,p.getUUID(),own);var all=data.state(STATE);all.putBoolean("SittingEnded",true);all.putString("SharedOutcome",outcome);data.setState(STATE,all);
-        if(outcome.equals("drove_the_family_out")){var b=base(p,LabyrinthPlace.SEANCE);NovelRooms.door(p.serverLevel(),b.offset(-5,0,-22),Direction.SOUTH,Blocks.DARK_OAK_DOOR,true);for(var a:cast(p.serverLevel())){a.appearance(a.role(),false,true);a.setNoAi(false);a.getNavigation().moveTo(b.getX()-4.5,b.getY(),b.getZ()-27.5,1);}}
+        if(outcome.equals("drove_the_family_out")){var b=base(p,LabyrinthPlace.SEANCE);NovelRooms.door(p.serverLevel(),b.offset(-5,0,-22),Direction.SOUTH,Blocks.DARK_OAK_DOOR,true);startFlight(p.serverLevel(),data);}
         else say(p,0,p.getGameProfile().getName()+". I know you are here. This house is occupied. Please go.");
         HousePackets.send(p,new SeanceViewPayload(-1,0,false));
+    }
+    // ------------------------------------------------------------------------------------------------ 0.4.77: the family leaves
+    /** Each one's way from their chair, round the table, through the west door and into the back room. Rows are x,z. */
+    private static final double[][][] FLIGHT={
+        {{-2.5,-12.5},{-4.5,-19.5},{-4.5,-21.5},{-4.5,-23.5},{-8.5,-29.5}},
+        {{-4.5,-16.5},{-4.5,-19.5},{-4.5,-21.5},{-4.5,-23.5},{-3.5,-29.5}},
+        {{2.5,-19.5},{-4.5,-20.5},{-4.5,-21.5},{-4.5,-23.5},{-9.5,-24.5}},
+        {{-2.5,-19.5},{-4.5,-20.5},{-4.5,-21.5},{-4.5,-23.5},{-2.5,-28.5}}};
+    private static final String FLEE="Flee0477";
+    private static void startFlight(ServerLevel level,LabyrinthData data){
+        var all=data.state(STATE);all.putBoolean("Fleeing0477",true);data.setState(STATE,all);
+        for(var a:cast(level)){a.appearance(a.role(),false,true);a.setNoAi(true);a.getNavigation().stop();a.getPersistentData().putInt(FLEE,0);}
+    }
+    /**
+     * Driven out, they get up and hurry, one behind another, through the west door into the back room, and the last one in
+     * shuts it behind them, never on anyone standing in it. Saved actors keep their place on the way across a reload; a
+     * sitting that ended in fear before 0.4.77, with the family still at the table, sets off now.
+     */
+    private static void flee(ServerLevel level,BlockPos b){
+        var data=LabyrinthData.get(level.getServer());var all=data.state(STATE);
+        if(all.getBoolean("Fled0477")||!all.getBoolean("SittingEnded")||!"drove_the_family_out".equals(all.getString("SharedOutcome")))return;
+        if(!all.getBoolean("Fleeing0477")){startFlight(level,data);all=data.state(STATE);}
+        boolean done=true;
+        for(var a:cast(level)){
+            var route=FLIGHT[a.role()];int i=a.getPersistentData().getInt(FLEE);if(i>=route.length)continue;done=false;
+            Vec3 to=new Vec3(b.getX()+route[i][0],b.getY(),b.getZ()+route[i][1]),d=to.subtract(a.position());double len=d.horizontalDistance();
+            Vec3 next=len<=.16?to:a.position().add(d.x/len*.16,(to.y-a.getY())*.5,d.z/len*.16);
+            float yaw=len>.01?(float)(Math.atan2(d.z,d.x)*180/Math.PI)-90:a.getYRot();a.moveTo(next.x,next.y,next.z,yaw,0);a.setYHeadRot(yaw);a.yBodyRot=yaw;
+            if(next.distanceToSqr(to)<.0025)a.getPersistentData().putInt(FLEE,i+1);
+        }
+        if(!done)return;
+        var door=b.offset(-5,0,-22);
+        if(!level.getEntitiesOfClass(LivingEntity.class,new AABB(door).expandTowards(0,1,0).inflate(.1),e->e.isAlive()).isEmpty())return;
+        NovelRooms.door(level,door,Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);level.playSound(null,door,SoundEvents.WOODEN_DOOR_CLOSE,SoundSource.BLOCKS,1,.8F);
+        cast(level).stream().filter(a->a.role()==2).findFirst().ifPresent(a->a.say("It walks through doors. It doesn't need them. Keep this one shut anyway."));
+        all=data.state(STATE);all.putBoolean("Fled0477",true);all.remove("Fleeing0477");data.setState(STATE,all);
+    }
+    // ------------------------------------------------------------------------------------------------ 0.4.77: what a ghost can do
+    /**
+     * Once the sitting is over, a reader who leans into the shut iron door for a moment finds it is not there for them, and is
+     * on the other side. Either way through; the door stays shut and locked to the living.
+     */
+    private static void lean(ServerPlayer p,BlockPos b,CompoundTag own,CompoundTag all){
+        var gate=p.serverLevel().getBlockState(b.offset(ClassicsRooms.GATE));
+        if(!all.getBoolean("SittingEnded")||!(gate.getBlock() instanceof DoorBlock)||gate.getValue(DoorBlock.OPEN)){own.remove("Lean0477");return;}
+        var rel=p.position().subtract(b.getX(),b.getY(),b.getZ());var look=p.getLookAngle();
+        boolean column=rel.x>ClassicsRooms.GATE.getX()+.05&&rel.x<ClassicsRooms.GATE.getX()+.95&&rel.y>-.5&&rel.y<1;
+        int side=column&&rel.z>-21.75&&rel.z<-20.8&&look.z< -.6?1:column&&rel.z< -22.2&&rel.z>-23.2&&look.z>.6?-1:0;
+        if(side==0){own.remove("Lean0477");return;}
+        int lean=own.getInt("Lean0477")+1;own.putInt("Lean0477",lean);
+        if(lean==10&&!own.getBoolean("GhostHint0477")){own.putBoolean("GhostHint0477",true);p.displayClientMessage(Component.literal("The iron is cold. Then it is hardly there."),true);}
+        if(lean<30)return;
+        own.remove("Lean0477");own.putBoolean("WalkedThrough0477",true);
+        var at=b.offset(ClassicsRooms.GATE);p.serverLevel().playSound(null,at,SoundEvents.CANDLE_EXTINGUISH,SoundSource.PLAYERS,.9F,.5F);
+        p.serverLevel().sendParticles(net.minecraft.core.particles.ParticleTypes.SMOKE,at.getX()+.5,at.getY()+1,at.getZ()+.1,12,.3,.6,.05,.01);
+        p.connection.teleport(b.getX()+ClassicsRooms.GATE.getX()+.5,p.getY(),b.getZ()+(side>0?-23.1:-20.6),p.getYRot(),p.getXRot());p.setDeltaMovement(Vec3.ZERO);
+    }
+    /** Each of them feels a touch differently. It unsettles the sitting but counts for nothing by itself. */
+    private static final String[][] TOUCH={
+        {"Cold. A hand on my shoulder. Sit still, all of you.","Don't take hold of me. Stay where we can speak to you.","It wants to be noticed. It has been noticed."},
+        {"Who touched me? Who's there?","There was a hand in my hair. Please. Not the children.","Leave them alone. Whatever you are, leave them alone."},
+        {"Nobody move. Something brushed past me.","I felt it. I won't pretend I didn't.","That's enough. Whoever you are, that's enough."},
+        {"Something's holding my hand.","It's cold. Mummy, it's so cold.","Is it the lady from upstairs? She's sad."}};
+    @SubscribeEvent(priority=EventPriority.HIGH) public static void touch(PlayerInteractEvent.EntityInteract e){
+        if(!(e.getEntity() instanceof ServerPlayer p)||!(e.getTarget() instanceof SeanceActor a))return;
+        e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);
+        if(e.getHand()!=InteractionHand.MAIN_HAND||!inside(p,LabyrinthPlace.SEANCE)||a.distanceToSqr(p)>12)return;
+        int n=a.getPersistentData().getInt("Touched0477");a.getPersistentData().putInt("Touched0477",n+1);
+        a.say(TOUCH[a.role()][n%TOUCH[a.role()].length]);a.appearance(a.role(),a.seated(),true);a.getPersistentData().putLong("Flinch0477",a.level().getGameTime()+60);
+        a.level().playSound(null,a.blockPosition(),SoundEvents.PLAYER_HURT_FREEZE,SoundSource.NEUTRAL,.35F,1.3F+a.role()*.08F);
+        var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());own.putInt("ListenTicks",0);save(data,p.getUUID(),own);
+    }
+    /** A flinch passes while the sitting goes on. */
+    private static void settle(ServerLevel level,CompoundTag all){
+        if(all.getBoolean("SittingEnded"))return;
+        for(var a:cast(level))if(a.getPersistentData().contains("Flinch0477")&&level.getGameTime()>=a.getPersistentData().getLong("Flinch0477")){a.getPersistentData().remove("Flinch0477");a.appearance(a.role(),a.seated(),false);}
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post event){
         var server=event.getServer();var origin=HouseSavedData.get(server).houseOrigin();var level=server.getLevel(HouseDimensions.INTERIOR);if(origin==null||level==null)return;
@@ -126,7 +204,7 @@ public final class ClassicsVignettes {
             if(place==null){if(!own.getString("Here").isEmpty()){own.remove("Here");own.remove("SeanceViewUntil");save(data,p.getUUID(),own);HousePackets.send(p,new SeanceViewPayload(-1,0,false));}continue;}
             if(!place.id().equals(own.getString("Here"))){onArrive(p,place);own=personal(data,p.getUUID());}
             var b=base(p,place);IndianLakeRooms.keepLoaded(level,b,place);
-            if(place==LabyrinthPlace.SEANCE){ensureCast(level,b);var all=data.state(STATE);boolean watching=HouseWatchers.sees(p,b.offset(0,1,-15).getCenter());if(watching)own.putInt("Exposure",Math.min(1000,own.getInt("Exposure")+1));
+            if(place==LabyrinthPlace.SEANCE){ensureCast(level,b);var all=data.state(STATE);if(seanceTick!=server.getTickCount()){seanceTick=server.getTickCount();flee(level,b);settle(level,all);all=data.state(STATE);}lean(p,b,own,all);boolean watching=HouseWatchers.sees(p,b.offset(0,1,-15).getCenter());if(watching)own.putInt("Exposure",Math.min(1000,own.getInt("Exposure")+1));
                 if(!all.getBoolean("SittingEnded")&&own.getInt("Disturbances")==0&&!own.getBoolean("Interrupted")&&watching&&p.getZ()<b.getZ()-9){int ticks=own.getInt("ListenTicks")+1;own.putInt("ListenTicks",ticks);save(data,p.getUUID(),own);
                     if(ticks==100)say(p,1,"We heard the stairs again. There is nobody in the hall.");if(ticks==260)say(p,3,"Someone is standing behind the empty chair.");if(ticks==440)say(p,2,"Do not frighten your mother. There is no one there.");
                     if(ticks==600){var medium=cast(level).stream().filter(a->a.role()==0).findFirst().orElse(null);if(medium!=null){own.putLong("SeanceViewUntil",level.getGameTime()+40);HousePackets.send(p,new SeanceViewPayload(medium.getId(),40,true));}}

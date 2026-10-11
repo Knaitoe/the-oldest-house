@@ -31,7 +31,7 @@ public final class NovelRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<InstituteSignBlock>> SIGN_TYPE=CODECS.register("institute_sign",()->InstituteSignBlock.CODEC);
     public static final DeferredBlock<InstituteSignBlock> SIGN=BLOCKS.registerBlock("institute_sign",InstituteSignBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable());
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<InstituteFixtureBlock>> WARD_FIXTURE_TYPE=CODECS.register("institute_fixture",()->InstituteFixtureBlock.CODEC);
-    public static final DeferredBlock<InstituteFixtureBlock> WARD_FIXTURE=BLOCKS.registerBlock("institute_fixture",InstituteFixtureBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable().lightLevel(s->s.getValue(InstituteFixtureBlock.KIND)==InstituteFixtureBlock.Kind.LIGHT?13:0));
+    public static final DeferredBlock<InstituteFixtureBlock> WARD_FIXTURE=BLOCKS.registerBlock("institute_fixture",InstituteFixtureBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable().lightLevel(InstituteFixtureBlock::light));
     public static final DeferredBlock<FenceBlock> WARD_RAIL=BLOCKS.registerBlock("institute_rail",FenceBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable());
     public static final DeferredBlock<StairBlock> WARD_STAIRS=BLOCKS.registerBlock("institute_stairs",p->new StairBlock(Blocks.SMOOTH_STONE.defaultBlockState(),p),BlockBehaviour.Properties.ofFullCopy(Blocks.SMOOTH_STONE).noLootTable());
     public static final DeferredBlock<SlabBlock> WARD_SLAB=BLOCKS.registerBlock("institute_slab",SlabBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.SMOOTH_STONE).noLootTable());
@@ -58,6 +58,8 @@ public final class NovelRegistry {
     public static final DeferredHolder<EntityType<?>,EntityType<HouseHuman>> HUMAN=TYPES.register("house_human",()->EntityType.Builder.<HouseHuman>of(HouseHuman::new,MobCategory.MISC).sized(.6F,1.8F).clientTrackingRange(16).updateInterval(2).build("house_human"));
     public static final DeferredHolder<SoundEvent,SoundEvent> MONITOR=sound("novel.monitor"),SHUTTER=sound("novel.shutter"),RADIO_STATIC=sound("novel.radio"),COLLAPSE=sound("novel.collapse");
     public static final DeferredHolder<SoundEvent,SoundEvent> WELL_BREATH=sound("well.breath");
+    /** 0.4.77: the hospital's fluorescent ceiling lights. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> WARD_HUM=sound("ward.hum"),WARD_FLICKER=sound("ward.flicker");
     private static DeferredBlock<Block> material(String id,Block base){return BLOCKS.registerBlock(id,Block::new,BlockBehaviour.Properties.ofFullCopy(base).noLootTable());}
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     private NovelRegistry(){}

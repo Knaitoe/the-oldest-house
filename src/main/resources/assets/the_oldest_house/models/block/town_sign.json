@@ -2,7 +2,8 @@
   "textures": {
     "sign": "the_oldest_house:block/proofrock_sign",
     "wood": "minecraft:block/stripped_spruce_log",
-    "particle": "minecraft:block/stripped_spruce_log"
+    "particle": "minecraft:block/stripped_spruce_log",
+    "back": "the_oldest_house:block/proofrock_sign_back"
   },
   "elements": [
     {
@@ -24,11 +25,11 @@
           "texture": "#wood"
         },
         "north": {
-          "texture": "#sign",
+          "texture": "#back",
           "uv": [
+            0,
+            0,
             16,
-            0,
-            0,
             16
           ]
         },

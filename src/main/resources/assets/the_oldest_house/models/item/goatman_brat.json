@@ -2,5 +2,13 @@
   "parent": "minecraft:item/generated",
   "textures": {
     "layer0": "the_oldest_house:item/goatman_brat"
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "the_oldest_house:item/goatman_brat_burnt"
+    }
+  ]
 }

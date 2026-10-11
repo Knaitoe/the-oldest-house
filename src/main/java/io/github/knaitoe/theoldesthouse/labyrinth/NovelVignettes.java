@@ -57,7 +57,7 @@ public final class NovelVignettes {
     public static void onArrive(ServerPlayer p,LabyrinthPlace place){
         recordVisit(p,place);var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());own.remove("Cue");own.remove("CueUntil");own.remove("CuePlace");save(data,p.getUUID(),own);HousePackets.send(p,new NovelScenePayload(0,0,"",0,0));if(!isNovel(place)||!participant(p))return;
         if(place==LabyrinthPlace.BARN_WELL){BarnFarm.animals(p);Farmstead.stock(p);cue(p,own,"Feed lies beside the barn door. Beyond the yard, an old well waits beneath its little roof.");}
-        if(place==LabyrinthPlace.ZAMPANO_COURTYARD){ensureCats(p);var c=own.getCompound("Courtyard");int visits=c.getInt("Visits")+1;c.putInt("Visits",visits);own.put("Courtyard",c);thinCats(p,visits);
+        if(place==LabyrinthPlace.ZAMPANO_COURTYARD){ensureCats(p);var yard=IndianLakeRooms.base(p.server,place);if(yard!=null)CourtyardFountain.ensureFish(p,yard);var c=own.getCompound("Courtyard");int visits=c.getInt("Visits")+1;c.putInt("Visits",visits);own.put("Courtyard",c);thinCats(p,visits);
             var visited=data.visited(p.getUUID()).stream().map(LabyrinthPlace::byId).filter(q->q!=null&&q.slot()>=0&&q!=place&&!q.isOneShot()).toList();
             for(int i=1;i<place.doors().size();i++){var d=data.door(place.doorId(place.doors().get(i)));if(d!=null)data.deal(p.getUUID(),d,visited.isEmpty()?place.id():visited.get((i-1)%visited.size()).id(),false);}
         }
@@ -74,7 +74,7 @@ public final class NovelVignettes {
         var b=IndianLakeRooms.base(p.server,LabyrinthPlace.ZAMPANO_COURTYARD);if(b==null)return;ListTag cats=new ListTag();
         for(int i=0;i<5;i++){Cat cat=EntityType.CAT.create(p.serverLevel());if(cat==null)continue;cat.setPersistenceRequired();cat.getPersistentData().putInt(CAT,i+1);
             if(i==4){cat.setNoAi(true);cat.setOrderedToSit(true);cat.setInSittingPose(true);cat.moveTo(Vec3.atBottomCenterOf(b.offset(NovelRooms.MAT)));}
-            else{cat.getPersistentData().putBoolean(LabyrinthEncounters.STRAY,true);cat.moveTo(b.getX()-7+i*4,b.getY(),b.getZ()-9,180,0);}
+            else{cat.getPersistentData().putBoolean(LabyrinthEncounters.STRAY,true);cat.moveTo(b.getX()-7+i*4,b.getY(),b.getZ()-11,180,0);}
             p.serverLevel().addFreshEntity(cat);CompoundTag entry=new CompoundTag();entry.putUUID("Cat",cat.getUUID());entry.putInt("Index",i+1);cats.add(entry);}
         all.put("Cats",cats);all.putBoolean("CatsMade",true);data.setState(STATE,all);
     }

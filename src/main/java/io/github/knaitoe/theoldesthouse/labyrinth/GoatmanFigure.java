@@ -20,6 +20,8 @@ public final class GoatmanFigure extends PathfinderMob {
     private static final EntityDataAccessor<Float> SPEED=SynchedEntityData.defineId(GoatmanFigure.class,EntityDataSerializers.FLOAT);
     /** Server-side only: when this appearance ends, and the scene that owns it. */
     public long until;public String purpose="";
+    /** Server-side only (0.4.77): where a dash past the trailer windows is running to, and how fast. */
+    public Vec3 dashTo;public double dashSpeed;
     public GoatmanFigure(EntityType<? extends GoatmanFigure> type,Level level){
         super(type,level);setNoAi(true);setNoGravity(true);setSilent(true);setInvulnerable(true);noPhysics=true;
     }

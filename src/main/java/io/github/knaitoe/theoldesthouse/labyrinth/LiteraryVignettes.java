@@ -127,9 +127,11 @@ public final class LiteraryVignettes {
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void knock(PlayerInteractEvent.LeftClickBlock e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||e.getAction()!=PlayerInteractEvent.LeftClickBlock.Action.START)return;var place=current(p);if(place==null)return;var own=personal(LabyrinthData.get(p.server),p.getUUID(),place);var b=base(p,place);if(p.distanceToSqr(e.getPos().getCenter())>36)return;
         if(place==LabyrinthPlace.HILL_NURSERY&&e.getPos().equals(b.offset(LiteraryRooms.HILL_KNOCK))){own.putInt("Knocks",own.getInt("Knocks")+1);own.putInt("EchoesPending",own.getInt("EchoesPending")+1);own.putInt("EchoDelay",10);e.setCanceled(true);save(LabyrinthData.get(p.server),p.getUUID(),place,own);}
         else if(place==LabyrinthPlace.FAMILY_COPY)LiteraryCopies.knock(p,e.getPos());
+        // 0.4.77: nothing in the House hands out a shovel, so snow comes away by hand too; with anything else held, say so.
+        else if(place==LabyrinthPlace.CRIMSON_HALL&&p.serverLevel().getBlockState(e.getPos()).is(Blocks.SNOW)&&!mayBreak(p,e.getPos()))p.displayClientMessage(Component.literal("Dig the snow away with a shovel, or with your bare hands."),true);
     }
     public static boolean mayBreak(ServerPlayer p,BlockPos pos){var place=current(p);if(place==null)return false;var b=base(p,place);var s=p.serverLevel().getBlockState(pos);return (place==LabyrinthPlace.WINTER_LAKE&&s.is(Blocks.ICE)&&pos.getY()==b.getY()-1&&Math.abs(pos.getX()-b.getX())<=28&&pos.getZ()<b.getZ()-12&&pos.getZ()>b.getZ()-73)
-        ||(place==LabyrinthPlace.CRIMSON_HALL&&s.is(Blocks.SNOW)&&p.getMainHandItem().getItem() instanceof ShovelItem)
+        ||(place==LabyrinthPlace.CRIMSON_HALL&&s.is(Blocks.SNOW)&&(p.getMainHandItem().getItem() instanceof ShovelItem||p.getMainHandItem().isEmpty()))
         ||(place==LabyrinthPlace.ELK_CARCASSES&&participant(p)&&!YachtGlazingBlock.shattered(s)&&
                 (ElkCarcassMap.porthole(pos.subtract(b))&&s.is(LiteraryRegistry.YACHT_PORTHOLE.get())||s.is(LiteraryRegistry.YACHT_WINDOW.get())&&ElkCarcassMap.aboard(pos.subtract(b).getCenter())))
         ||(place==LabyrinthPlace.MAPPING_INTERIOR&&pos.equals(b.offset(LiteraryRooms.PILE))&&s.is(LiteraryRegistry.PROP.get())&&personal(LabyrinthData.get(p.server),p.getUUID(),place).getBoolean("BeyondRoof"))

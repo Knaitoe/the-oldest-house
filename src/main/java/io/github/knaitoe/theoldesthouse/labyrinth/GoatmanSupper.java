@@ -1,20 +1,41 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.*;
+import net.minecraft.sounds.*;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.*;
 import net.minecraft.world.level.block.*;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
-/** One occupied cooking clock; every package, raw frank and cooked serving retains its round. */
+/**
+ * One occupied cooking clock; every package, raw frank and cooked serving retains its round. 0.4.77: a cooked frank left on
+ * the griddle keeps cooking on the same occupied clock: it gets hot at {@link #HOT_TICKS} and burns at {@link #BURN_TICKS},
+ * each with its own cue, and a burnt one stays burnt on the plate, in a cousin's hand and in the reader's. Burnt franks still
+ * count for supper; the cousins notice.
+ */
 public final class GoatmanSupper {
-    public static final int COOK_TICKS=120,PAN_CAPACITY=4;
+    public static final int COOK_TICKS=120,PAN_CAPACITY=4,HOT_TICKS=160,BURN_TICKS=300;
+    public static final String BURNT="Burnt0476",NOT_YET="Not right now. Supper goes on the plates first.";
+    private static final String[] BURNT_LINES={
+        "A cousin: Mine's all black. ...It's fine. I like them like this.",
+        "A cousin: Did you even turn these over? I told you to turn them over.",
+        "A cousin: It tastes like the smoke smells."};
     private GoatmanSupper(){}
+    public static boolean burnt(ItemStack item){var custom=item.get(DataComponents.CUSTOM_DATA);return custom!=null&&custom.copyTag().getBoolean(BURNT);}
+    /** The round's own frank: burnt ones carry their char in their name and model, and none can be eaten before supper. */
+    static ItemStack frank(CompoundTag r,boolean burnt){
+        var item=new ItemStack(GoatmanRegistry.BRAT.get());CustomData.update(DataComponents.CUSTOM_DATA,item,t->{t.putUUID(GoatmanVignette.ROUND,r.getUUID("Id"));if(burnt)t.putBoolean(BURNT,true);});
+        if(burnt)blacken(item);return item;
+    }
+    private static void blacken(ItemStack item){item.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(1));item.set(DataComponents.ITEM_NAME,Component.literal("Burnt brat"));}
     public static boolean ready(CompoundTag r){
         int expected=GoatmanVignette.expectedCount(r);
         return r.getBoolean("MealReady0465")||expected>0&&Integer.bitCount(r.getInt("Plated0464")&~r.getInt("EmptyPlates0465"))>=expected;
@@ -24,38 +45,85 @@ public final class GoatmanSupper {
         return tag!=null&&tag.hasUUID(GoatmanVignette.ROUND)&&r.hasUUID("Id")&&tag.getUUID(GoatmanVignette.ROUND).equals(r.getUUID("Id"));
     }
     private static void give(ServerPlayer p,ItemStack item){if(!p.getInventory().add(item))p.drop(item,false);}
-    public static void onFood(net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Start e){
-        if(!(e.getEntity() instanceof ServerPlayer p)||!GoatmanVignette.inside(p)||!e.getItem().is(GoatmanRegistry.BRAT.get()))return;
-        var r=GoatmanVignette.run(LabyrinthData.get(p.server));if(GoatmanVignette.fresh(r)&&!ready(r)&&belongs(e.getItem(),r)){e.setCanceled(true);p.displayClientMessage(Component.literal("Put supper on the plates first."),true);}
+    private static boolean early(ServerPlayer p,ItemStack item){
+        if(!GoatmanVignette.inside(p))return false;var r=GoatmanVignette.run(LabyrinthData.get(p.server));return GoatmanVignette.fresh(r)&&!ready(r)&&belongs(item,r);
     }
-    /** Cousins eat only food the player actually put down. The impostor uses the absent runner's place. */
-    static boolean eat(ServerLevel l,BlockPos b,CompoundTag r,GoatmanChild c,int index,int clock){
+    /** The refusal to eat before supper is on the plates, now with a line to say so. */
+    public static void onFood(net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Start e){
+        if(!(e.getEntity() instanceof ServerPlayer p)||!e.getItem().is(GoatmanRegistry.BRAT.get()))return;
+        if(early(p,e.getItem())){e.setCanceled(true);p.displayClientMessage(Component.literal(NOT_YET),true);}
+    }
+    /**
+     * A full reader never gets as far as starting to eat, so the same line also answers the right-click itself. Nothing is
+     * cancelled here; the click that plated or took a frank is not taken for a try at eating it.
+     */
+    public static void onUse(PlayerInteractEvent.RightClickItem e){
+        if(!(e.getEntity() instanceof ServerPlayer p)||!e.getItemStack().is(GoatmanRegistry.BRAT.get())||!early(p,e.getItemStack()))return;
+        if(p.serverLevel().getGameTime()-p.getPersistentData().getLong("GoatmanClick0476")>1)p.displayClientMessage(Component.literal(NOT_YET),true);
+    }
+    /** What the next real cousin to bite into a burnt one says, the first three times. */
+    static String burntLine(CompoundTag r){int n=r.getInt("BurntEaten0476");r.putInt("BurntEaten0476",n+1);return n<BURNT_LINES.length?BURNT_LINES[n]:null;}
+    /**
+     * Cousins eat only food the player actually put down. The impostor uses the absent runner's place, and eats a burnt one
+     * without a word. Returns 0 for nothing to say, 1 for the missing supper, 2 for a real cousin's burnt one.
+     */
+    static int eat(ServerLevel l,BlockPos b,CompoundTag r,GoatmanChild c,int index,int clock){
         if(c.getPersistentData().contains("EatingUntil0465")&&clock>=c.getPersistentData().getInt("EatingUntil0465")&&c.getMainHandItem().is(GoatmanRegistry.BRAT.get())){c.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,ItemStack.EMPTY);c.getPersistentData().remove("EatingUntil0465");}
-        if(!GoatmanVignette.fresh(r)||!ready(r)||!c.seated()||(r.getInt("EatenCousins0465")&(1<<index))!=0)return false;
+        if(!GoatmanVignette.fresh(r)||!ready(r)||!c.seated()||(r.getInt("EatenCousins0465")&(1<<index))!=0)return 0;
         int real=index==r.getInt("Wrong")?r.getInt("Runner"):index,seat=real<r.getInt("Wrong")?real:real-1,bit=1<<seat;
         if((r.getInt("Plated0464")&~r.getInt("EmptyPlates0465")&bit)==0){
-            if(index==r.getInt("Runner")&&!r.getBoolean("MissingSupper0465")){r.putBoolean("MissingSupper0465",true);return true;}return false;
+            if(index==r.getInt("Runner")&&!r.getBoolean("MissingSupper0465")){r.putBoolean("MissingSupper0465",true);return 1;}return 0;
         }
+        boolean charred=(r.getInt("BurntPlates0476")&bit)!=0;r.putInt("BurntPlates0476",r.getInt("BurntPlates0476")&~bit);
         r.putInt("EmptyPlates0465",r.getInt("EmptyPlates0465")|bit);r.putInt("EatenCousins0465",r.getInt("EatenCousins0465")|(1<<index));GoatmanWoods.served(l,b,seat,false);
-        var item=new ItemStack(GoatmanRegistry.BRAT.get());CustomData.update(DataComponents.CUSTOM_DATA,item,t->t.putUUID(GoatmanVignette.ROUND,r.getUUID("Id")));c.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,item);c.getPersistentData().putInt("EatingUntil0465",clock+80);return false;
+        c.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,frank(r,charred));c.getPersistentData().putInt("EatingUntil0465",clock+80);return charred&&index!=r.getInt("Wrong")?2:0;
     }
-    public static void tick(ServerLevel l,BlockPos b,CompoundTag r){
+    public static void tick(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> readers){
         if(!r.getBoolean("PlayerServes0464"))return;
         if(!r.getBoolean("PanPositioned0468")){GoatmanWoods.cookingPan(l,b,r);r.putBoolean("PanPositioned0468",true);}
-        var cooking=r.getList("Cooking0465",Tag.TAG_COMPOUND);var cooked=r.getList("CookedPan0465",Tag.TAG_COMPOUND);boolean changed=false;
+        var cooking=r.getList("Cooking0465",Tag.TAG_COMPOUND);var cooked=r.getList("CookedPan0465",Tag.TAG_COMPOUND);boolean changed=false,done=false,hot=false,burned=false;
+        // Franks cooked before 0.4.77 carry no heat and never burn.
+        for(int i=0;i<cooked.size();i++){
+            var t=cooked.getCompound(i);if(!t.contains("Heat")||t.getBoolean(BURNT))continue;int heat=t.getInt("Heat")+1;t.putInt("Heat",heat);
+            if(heat==HOT_TICKS)hot=true;
+            if(heat>=BURN_TICKS){
+                var item=ItemStack.parseOptional(l.registryAccess(),t.getCompound("Item"));CustomData.update(DataComponents.CUSTOM_DATA,item,c->c.putBoolean(BURNT,true));blacken(item);
+                t.put("Item",item.save(l.registryAccess()));t.putBoolean(BURNT,true);burned=changed=true;
+            }
+        }
         for(int i=cooking.size()-1;i>=0;i--){
             var t=cooking.getCompound(i);int left=t.getInt("Left")-1;t.putInt("Left",left);
             if(left<=0){
                 var raw=ItemStack.parseOptional(l.registryAccess(),t.getCompound("Item"));
-                var done=new ItemStack(GoatmanRegistry.BRAT.get());var metadata=raw.get(DataComponents.CUSTOM_DATA);if(metadata!=null)done.set(DataComponents.CUSTOM_DATA,metadata);
-                var entry=new CompoundTag();entry.put("Item",done.save(l.registryAccess()));cooked.add(entry);cooking.remove(i);changed=true;
+                var frank=new ItemStack(GoatmanRegistry.BRAT.get());var metadata=raw.get(DataComponents.CUSTOM_DATA);if(metadata!=null)frank.set(DataComponents.CUSTOM_DATA,metadata);
+                var entry=new CompoundTag();entry.put("Item",frank.save(l.registryAccess()));entry.putInt("Heat",0);cooked.add(entry);cooking.remove(i);changed=done=true;
             }
         }
         r.put("Cooking0465",cooking);r.put("CookedPan0465",cooked);
         if(changed)GoatmanWoods.cookingPan(l,b,r);
+        cues(l,b,r,readers,cooked,done,hot,burned);
         var stove=l.getBlockState(b.offset(GoatmanWoods.STOVE));
         if(stove.is(Blocks.SMOKER)&&stove.getValue(SmokerBlock.LIT)!=!cooking.isEmpty())l.setBlock(b.offset(GoatmanWoods.STOVE),stove.setValue(SmokerBlock.LIT,!cooking.isEmpty()),Block.UPDATE_CLIENTS);
     }
+    /** What the griddle sounds and smells like: done, too hot, burnt. Smoke rises from whatever is still on it. */
+    private static void cues(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> readers,ListTag cooked,boolean done,boolean hot,boolean burned){
+        Vec3 pan=Vec3.atCenterOf(b.offset(GoatmanWoods.PAN)).add(0,.6,0);long now=l.getGameTime();
+        var near=readers.stream().filter(p->p.position().distanceTo(pan)<12).toList();
+        if(done&&now-r.getLong("ReadyCue0476")>60){r.putLong("ReadyCue0476",now);l.playSound(null,pan.x,pan.y,pan.z,SoundEvents.CAMPFIRE_CRACKLE,SoundSource.BLOCKS,1.2F,1.4F);
+            for(var p:near)p.displayClientMessage(Component.literal("The franks on the griddle look done. Take them off."),true);}
+        if(hot&&now-r.getLong("HotCue0476")>60){r.putLong("HotCue0476",now);l.playSound(null,pan.x,pan.y,pan.z,SoundEvents.FIRE_AMBIENT,SoundSource.BLOCKS,1.4F,1.6F);
+            for(var p:near)p.displayClientMessage(Component.literal("The franks are spitting. They're getting too hot."),true);}
+        if(burned&&now-r.getLong("BurntAt0476")>100){r.putLong("BurntAt0476",now);l.playSound(null,pan.x,pan.y,pan.z,SoundEvents.FIRE_EXTINGUISH,SoundSource.BLOCKS,.8F,.7F);
+            for(var p:readers)p.displayClientMessage(Component.literal("There's burnt flesh in the air."),true);
+            int said=r.getInt("BurntSaid0476");
+            if(said<2){r.putInt("BurntSaid0476",said+1);GoatmanVignette.say(readers,said==0?"A cousin: Something's burning! Get them off the griddle!":"A cousin: Open a window or something. It stinks in here.");}}
+        if(now%8!=0)return;
+        for(int i=0;i<cooked.size();i++){var t=cooked.getCompound(i);if(!t.contains("Heat"))continue;Vec3 at=GoatmanWoods.panSpot(i).add(b.getX(),b.getY()+.1,b.getZ());
+            if(t.getBoolean(BURNT))l.sendParticles(ParticleTypes.LARGE_SMOKE,at.x,at.y,at.z,2,.06,.02,.06,.01);
+            else if(t.getInt("Heat")>=HOT_TICKS)l.sendParticles(ParticleTypes.SMOKE,at.x,at.y,at.z,2,.05,.02,.05,.01);}
+    }
+    /** The cousins turn toward the smell for five seconds after something burns. */
+    public static boolean smelled(CompoundTag r,long now){return r.contains("BurntAt0476")&&now-r.getLong("BurntAt0476")<100;}
     static boolean interact(ServerPlayer player,PlayerInteractEvent.RightClickBlock event){
         var data=LabyrinthData.get(player.server);var run=GoatmanVignette.run(data);
         if(!run.getBoolean("PlayerServes0464")||run.getInt("Phase")!=GoatmanVignette.GATHERING)return false;
@@ -86,14 +154,16 @@ public final class GoatmanSupper {
             for(int i=0;i<GoatmanVignette.expectedCount(run);i++){double d=GoatmanWoods.plate(i).distanceToSqr(hit);if(d<distance){distance=d;seat=i;}}
             if(seat<0)return false;int mask=run.getInt("Plated0464"),bit=1<<seat,empty=run.getInt("EmptyPlates0465");
             if(held.is(GoatmanRegistry.BRAT.get())&&belongs(held,run)){
-                if((mask&~empty&bit)==0){held.shrink(1);run.putInt("Plated0464",mask|bit);run.putInt("EmptyPlates0465",empty&~bit);GoatmanWoods.served(player.serverLevel(),base,seat,true);
+                if((mask&~empty&bit)==0){boolean charred=burnt(held);held.shrink(1);run.putInt("Plated0464",mask|bit);run.putInt("EmptyPlates0465",empty&~bit);
+                    run.putInt("BurntPlates0476",charred?run.getInt("BurntPlates0476")|bit:run.getInt("BurntPlates0476")&~bit);GoatmanWoods.served(player.serverLevel(),base,seat,frank(run,charred));
                     if(ready(run)){run.putBoolean("MealReady0465",true);run.putBoolean("MealFrozen0465",true);}}
                 else player.displayClientMessage(Component.literal("There's already one here."),true);
             }else if(held.isEmpty()&&(mask&~empty&bit)!=0){
-                run.putInt("EmptyPlates0465",empty|bit);GoatmanWoods.served(player.serverLevel(),base,seat,false);
-                var item=new ItemStack(GoatmanRegistry.BRAT.get());CustomData.update(DataComponents.CUSTOM_DATA,item,t->t.putUUID(GoatmanVignette.ROUND,run.getUUID("Id")));give(player,item);
+                boolean charred=(run.getInt("BurntPlates0476")&bit)!=0;run.putInt("BurntPlates0476",run.getInt("BurntPlates0476")&~bit);
+                run.putInt("EmptyPlates0465",empty|bit);GoatmanWoods.served(player.serverLevel(),base,seat,false);give(player,frank(run,charred));
             }else player.displayClientMessage(Component.literal("Put a cooked frank on the plate."),true);
         }
+        player.getPersistentData().putLong("GoatmanClick0476",player.serverLevel().getGameTime());
         GoatmanVignette.saveRun(data,run);event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);return true;
     }
 }

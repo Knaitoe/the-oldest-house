@@ -175,7 +175,7 @@ public final class ArchitectureTests {
             var state=town.getBlockState(e.getKey());h.assertTrue(state.equals(e.getValue()),"a fresh native streetlight stands at its authored address: "+e.getKey().subtract(b)+" actual="+state+" expected="+e.getValue());
             if(state.getValue(TownStreetlightBlock.KIND)==TownStreetlightBlock.Kind.HEAD){lamps++;boolean wet=state.getValue(TownStreetlightBlock.WATERLOGGED);h.assertTrue(state.getLightEmission(town,e.getKey())==(wet?9:15)&&(!wet||state.getFluidState().isSource()),"each fitted native lamp retains its original light level and underwater source");}
         }
-        h.assertTrue(lamps==25,"all twenty street lamps, the pier lamp and four submerged lamps have actual textured heads");
+        h.assertTrue(lamps==24,"all nineteen street lamps (0.4.77: none on the lane's lawn), the pier lamp and four submerged lamps have actual textured heads");
         // Proofrock (0.4.67): Main Street and the school's ring corridor are clear all the way round, the courtyard is living grass,
         // and the gym's folded bleachers leave a gap she fits under and a reader does not.
         for(var at:List.of(b.offset(0,0,-40),b.offset(-22,0,-65),b.offset(-39,0,-66),b.offset(-30,0,-56),b.offset(-30,0,-79)))h.assertTrue(town.noCollision(null,new AABB(at.getX()+.2,at.getY()+.01,at.getZ()+.2,at.getX()+.8,at.getY()+1.8,at.getZ()+.8)),"Proofrock retains a native player passage at "+at);
@@ -218,6 +218,12 @@ public final class ArchitectureTests {
             for(var at:BlockPos.betweenClosed(b.offset(r.minX(),r.minY(),r.minZ()),b.offset(r.maxX(),r.maxY(),r.maxZ())))if(level.getBlockState(at).is(Blocks.CAMPFIRE))hearths++;
             h.assertTrue(hearths==1,scene.id()+" has one hearth: "+hearths);
         }
+        // 0.4.77: all three wax cylinders can be reached on foot, the one on the north gallery included.
+        {var scene=LabyrinthPlace.CRIMSON_HALL;var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var b=LabyrinthPlaces.base(origin,scene);var r=scene.room();
+            var stand=VignetteAudit.walkable(level,b,scene,r.minX(),r.minY(),r.minZ(),r.maxX(),r.maxY(),r.maxZ());
+            for(var cylinder:List.of(new BlockPos(-12,0,-35),new BlockPos(12,0,-35),new BlockPos(0,7,-39))){var c=net.minecraft.world.phys.Vec3.atCenterOf(b.offset(cylinder));
+                h.assertTrue(stand.stream().anyMatch(cell->new net.minecraft.world.phys.Vec3(cell.getX()+.5,cell.getY()+1.62,cell.getZ()+.5).distanceTo(c)<=4.5),"the crimson hall's cylinder at "+cylinder.toShortString()+" can be reached on foot");}
+            h.assertTrue(CrimsonGallery.built(data,b),"a new hall records its gallery as already sound");}
         var hill=LabyrinthPlaces.base(origin,LabyrinthPlace.HILL_NURSERY);var interior=HouseTestLevel.get(server);
         h.assertTrue(interior.getBlockState(hill.offset(LiteraryRooms.ending(LabyrinthPlace.HILL_NURSERY))).is(LiteraryRegistry.PROP.get())&&interior.getBlockState(hill.offset(8,1,-36)).isAir(),"the nursery's ending ledger stands in the cellar, not on its roof");
         // Outdoors: mixed woods instead of planted rows, nothing growing out of the lakes, banks without battlements.

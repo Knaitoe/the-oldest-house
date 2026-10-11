@@ -55,6 +55,7 @@ public final class NovelRooms {
             chest.setItem(0,HouseWriting.book("Readers' appointments","Zampano",HouseWriting.WritingStyle.ZAMPANO,List.of("Seven names. Seven visits.\n\nThe margins remember the voices more clearly than the survey remembers the walls.")));chest.setChanged();}
         for(int i=0;i<7;i++)sign(l,b.offset(10,2,-22-i*2),Direction.WEST,new String[]{"reader "+(i+1),new String[]{"Beatrice","Leonie","Pauline","Ruth","Anne","Esther","Helen"}[i],"", ""});
         at(l,b,-7,5,-25,Blocks.LANTERN);
+        CourtyardFountain.build(l,b);
     }
     private static void well(ServerLevel l,BlockPos b){
         outdoor(l,b,17,39,Blocks.GRASS_BLOCK);room(l,b,5,15,-34,-17,0,7,Blocks.SPRUCE_PLANKS,Blocks.COARSE_DIRT);

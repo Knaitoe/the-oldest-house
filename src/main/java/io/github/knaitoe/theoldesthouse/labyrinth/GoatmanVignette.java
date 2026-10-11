@@ -408,8 +408,12 @@ public final class GoatmanVignette {
             ListTag route=c.getPersistentData().getList("Route",Tag.TAG_COMPOUND);
             if(!route.isEmpty()){if(walk(c,b,speed,l))arrive(c,b,r,l,want);continue;}
             if(!at(c).equals(want)){arrive(c,b,r,l,want);continue;}
-            if(phase==GATHERING&&clock>=supperAt(r)&&GoatmanSupper.eat(l,b,r,c,i,clock))say(present,"A cousin: Who had two? There was one for everybody.");
-            idle(c,r,present,clock,i);
+            if(phase==GATHERING&&clock>=supperAt(r)){int ate=GoatmanSupper.eat(l,b,r,c,i,clock);
+                if(ate==1)say(present,"A cousin: Who had two? There was one for everybody.");
+                else if(ate==2){String line=GoatmanSupper.burntLine(r);if(line!=null)say(present,line);}}
+            // Something burnt on the griddle: every real cousin looks round at it for a moment.
+            if(i!=wrong&&GoatmanSupper.smelled(r,l.getGameTime()))face(c,Vec3.atCenterOf(b.offset(GoatmanWoods.PAN)));
+            else idle(c,r,present,clock,i);
             if((phase==GATHERING||phase==VIGIL)&&i!=wrong){GoatmanFear.pose(c,r);if(c.fear()==GoatmanFear.WATCH&&c.fearStage()>=GoatmanFear.FEAR)face(c,abs(new Vec3(-8,2,-59),b));}
         }
     }
@@ -467,6 +471,7 @@ public final class GoatmanVignette {
         for(ServerPlayer p:enrolled){
             String key=p.getUUID().toString();CompoundTag own=cohort.getCompound(key);scale(p,true);
             if(phase<VIGIL)path(p,b,r,own);
+            if(fresh(r)&&outside(r)&&(phase==VIGIL||phase==GATHERING))GoatmanStalking.dash(l,b,r,p,own);
             arrived&=own.getBoolean("Arrived");
             if(phase==VIGIL){
                 if(!GoatmanWoods.indoors(rel(p,b))){
@@ -480,7 +485,7 @@ public final class GoatmanVignette {
         if(phase==PATH&&arrived){phase=GATHERING;clock=0;r.putInt("Phase",phase);r.putInt("Pan",r.getBoolean("PlayerServes0464")?0:count(r)-1+enrolled.size());r.putInt("PanFor",count(r)-1+enrolled.size());GoatmanWoods.pan(l,b,r.getInt("Pan"));}
         if(phase==PATH)clock++;
         else if(phase==GATHERING){
-            GoatmanSupper.tick(l,b,r);
+            GoatmanSupper.tick(l,b,r,enrolled);
             if(!fresh(r)||clock!=SUPPER0465-1||GoatmanSupper.ready(r)){clock++;evening(l,b,r,enrolled,clock);}
             if(clock>=gatherTicks(r)){nightfall(l,b,r,enrolled);phase=VIGIL;clock=0;}
         }
@@ -627,7 +632,7 @@ public final class GoatmanVignette {
         return new GoatmanScenePayload(phase,voice?demand:0,voice?speechTicks(demand)-since:0,r.getBoolean("Silence")?1:0,childSpeaking?child:0,childSpeaking?remaining:0);
     }
     private static void scene(ServerPlayer p,CompoundTag r){HousePackets.send(p,scenePayload(r));}
-    private static void say(List<ServerPlayer> players,String line){for(var p:players)p.displayClientMessage(Component.literal(line),false);}
+    static void say(List<ServerPlayer> players,String line){for(var p:players)p.displayClientMessage(Component.literal(line),false);}
     /** A real knock: knuckles, an ordinary rhythm. */
     private static void knock(ServerLevel l,BlockPos b,List<ServerPlayer> players){
         Vec3 at=Vec3.atCenterOf(b.offset(GoatmanWoods.DOOR));

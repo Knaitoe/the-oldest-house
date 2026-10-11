@@ -152,6 +152,35 @@ public final class NovelTests {
             h.assertTrue(menu.clickMenuButton(p,102)&&WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.ZAMPANO),"the native final page records a personal understanding");
             h.assertTrue(!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.ZAMPANO)&&p.getInventory().countItem(NovelRegistry.COLLAR.get())==1,"the collar is finite and a peer borrows no evidence");
             f.reload();f.click(p,NovelRooms.ARCHIVE_DESK);h.assertTrue(!((NovelVignettes.NovelBookMenu)p.containerMenu).clickMenuButton(p,3),"native save retains finite paper");});}
+    private static Fixture fountain;
+    @AfterBatch(batch="novel_fountain0477") public static void fountainDone(ServerLevel l){if(fountain!=null){fountain.close();fountain=null;}}
+    @GameTest(template="empty",batch="novel_fountain0477",timeoutTicks=300) public static void theCourtyardFountainGivesEachReaderOneFishByHandForTheCat(GameTestHelper h){
+        fountain=new Fixture(h,39700,LabyrinthPlace.ZAMPANO_COURTYARD);var f=fountain;
+        h.assertTrue(f.l.getBlockState(f.b.offset(CourtyardFountain.BOWL)).is(Blocks.WATER_CAULDRON)&&f.l.getBlockState(f.b.offset(CourtyardFountain.CENTRE).north()).is(Blocks.WATER)&&f.l.getBlockState(f.b.offset(13,1,-6)).is(Blocks.POTTED_AZALEA)&&f.l.getBlockState(f.b.offset(-13,1,-14)).is(Blocks.POTTED_FERN)&&CourtyardFountain.done(f.data(),f.b),"a new courtyard has its fountain and stone planters, and no bedside tables");
+        var p=f.player();var peer=f.player();
+        java.util.function.Supplier<List<net.minecraft.world.entity.animal.Cod>> fish=()->f.l.getEntitiesOfClass(net.minecraft.world.entity.animal.Cod.class,IndianLakeRooms.bounds(f.b,f.place),c->c.getTags().contains(CourtyardFountain.FISH)&&c.isAlive());
+        h.startSequence().thenWaitUntil(()->h.assertTrue(fish.get().size()==1&&!f.l.getEntitiesOfClass(Cat.class,IndianLakeRooms.bounds(f.b,f.place),c->c.getPersistentData().getInt(NovelVignettes.CAT)==5).isEmpty(),"one fish swims in the basin and the cat is on the mat")).thenExecute(()->{
+            var it=fish.get().get(0);
+            f.at(peer,it.getX()-f.b.getX()+1.5,0,it.getZ()-f.b.getZ());peer.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.WATER_BUCKET));
+            var bucket=new PlayerInteractEvent.EntityInteract(peer,InteractionHand.MAIN_HAND,it);NeoForge.EVENT_BUS.post(bucket);
+            h.assertTrue(bucket.isCanceled()&&it.isAlive()&&peer.getMainHandItem().is(Items.WATER_BUCKET),"a bucket does not take it");
+            f.at(p,it.getX()-f.b.getX()+1.5,0,it.getZ()-f.b.getZ());p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);NeoForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteract(p,InteractionHand.MAIN_HAND,it));
+            h.assertTrue(!it.isAlive()&&p.getMainHandItem().is(Items.COD)&&f.own(p).getBoolean(CourtyardFountain.FISH)&&fish.get().isEmpty(),"a bare hand takes the one fish, an ordinary raw cod");
+            NovelVignettes.onArrive(p,f.place);h.assertTrue(fish.get().isEmpty(),"no second fish comes for the reader who had one");
+            NovelVignettes.onArrive(peer,f.place);h.assertTrue(fish.get().size()==1,"while the cat waits, another is there for a reader who has not had one");
+            var cat=f.l.getEntitiesOfClass(Cat.class,IndianLakeRooms.bounds(f.b,f.place),c->c.getPersistentData().getInt(NovelVignettes.CAT)==5).get(0);
+            f.at(p,cat.getX()-f.b.getX(),0,cat.getZ()-f.b.getZ()+1.5);NeoForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteract(p,InteractionHand.MAIN_HAND,cat));
+            h.assertTrue(f.data().state(NovelVignettes.STATE).getBoolean("CatCoaxed")&&cat.isTame()&&p.getMainHandItem().isEmpty(),"the fountain's fish coaxes the cat off the mat");
+            fish.get().forEach(Entity::discard);var third=f.player();h.assertTrue(fish.get().isEmpty()&&WitnessAccount.count(f.data(),p.getUUID())==0,"once the cat is off the mat no more fish come, and a fish is no story");
+            // A courtyard saved before 0.4.77: indoor tables at the edges and no fountain.
+            var marks=f.data().state(CourtyardFountain.STATE);marks.remove(Long.toString(f.b.asLong()));f.data().setState(CourtyardFountain.STATE,marks);
+            for(var at:CourtyardFountain.fountain(f.b).keySet()){int y=at.getY()-f.b.getY();f.l.setBlock(at,y==-1?Blocks.MOSSY_STONE_BRICKS.defaultBlockState():Blocks.AIR.defaultBlockState(),2);}
+            for(var at:CourtyardFountain.planters(f.b).keySet())f.l.setBlock(at,at.getY()==f.b.getY()?HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH):SceneDetailBlock.state(SceneDetailBlock.Kind.TABLE_LAMP,Direction.SOUTH),2);
+            h.assertTrue(!CourtyardFountain.repair(f.l,f.b),"nothing changes while readers stand in the courtyard");
+            for(var r:List.of(p,peer,third))r.moveTo(f.b.getX()+300,f.b.getY(),f.b.getZ()+300);f.l.getEntitiesOfClass(Cat.class,IndianLakeRooms.bounds(f.b,f.place)).forEach(Entity::discard);
+            h.assertTrue(CourtyardFountain.repair(f.l,f.b)&&f.l.getBlockState(f.b.offset(CourtyardFountain.BOWL)).is(Blocks.WATER_CAULDRON)&&f.l.getBlockState(f.b.offset(13,0,-6)).is(Blocks.MOSSY_STONE_BRICK_WALL)&&f.l.getBlockState(f.b.offset(13,1,-6)).is(Blocks.POTTED_AZALEA),"unwatched, a saved courtyard gets its fountain and planters once");
+        }).thenSucceed();
+    }
     private static ItemStack letter(ServerPlayer p,String text){
         var book=new ItemStack(Items.WRITTEN_BOOK);book.set(DataComponents.WRITTEN_BOOK_CONTENT,new net.minecraft.world.item.component.WrittenBookContent(net.minecraft.server.network.Filterable.passThrough("A letter"),p.getGameProfile().getName(),0,
             List.of(net.minecraft.server.network.Filterable.passThrough(net.minecraft.network.chat.Component.literal(text))),true));return book;}
