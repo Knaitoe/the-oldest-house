@@ -219,11 +219,11 @@ public final class ArchitectureTests {
             h.assertTrue(hearths==1,scene.id()+" has one hearth: "+hearths);
         }
         // 0.4.77: all three wax cylinders can be reached on foot, the one on the north gallery included.
-        {var scene=LabyrinthPlace.CRIMSON_HALL;var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var b=LabyrinthPlaces.base(origin,scene);var r=scene.room();
-            var stand=VignetteAudit.walkable(level,b,scene,r.minX(),r.minY(),r.minZ(),r.maxX(),r.maxY(),r.maxZ());
-            for(var cylinder:List.of(new BlockPos(-12,0,-35),new BlockPos(12,0,-35),new BlockPos(0,7,-39))){var c=net.minecraft.world.phys.Vec3.atCenterOf(b.offset(cylinder));
-                h.assertTrue(stand.stream().anyMatch(cell->new net.minecraft.world.phys.Vec3(cell.getX()+.5,cell.getY()+1.62,cell.getZ()+.5).distanceTo(c)<=4.5),"the crimson hall's cylinder at "+cylinder.toShortString()+" can be reached on foot");}
-            h.assertTrue(CrimsonGallery.built(data,b),"a new hall records its gallery as already sound");}
+        {var hall=LabyrinthPlace.CRIMSON_HALL;var hallLevel=HouseTestLevel.get(server,NovelRooms.dimension(hall));var hallBase=LabyrinthPlaces.base(origin,hall);var hallRoom=hall.room();
+            var stand=VignetteAudit.walkable(hallLevel,hallBase,hall,hallRoom.minX(),hallRoom.minY(),hallRoom.minZ(),hallRoom.maxX(),hallRoom.maxY(),hallRoom.maxZ());
+            for(var cylinder:List.of(new BlockPos(-12,0,-35),new BlockPos(12,0,-35),new BlockPos(0,7,-39))){var centre=net.minecraft.world.phys.Vec3.atCenterOf(hallBase.offset(cylinder));
+                h.assertTrue(stand.stream().anyMatch(cell->new net.minecraft.world.phys.Vec3(cell.getX()+.5,cell.getY()+1.62,cell.getZ()+.5).distanceTo(centre)<=4.5),"the crimson hall's cylinder at "+cylinder.toShortString()+" can be reached on foot");}
+            h.assertTrue(CrimsonGallery.built(data,hallBase),"a new hall records its gallery as already sound");}
         var hill=LabyrinthPlaces.base(origin,LabyrinthPlace.HILL_NURSERY);var interior=HouseTestLevel.get(server);
         h.assertTrue(interior.getBlockState(hill.offset(LiteraryRooms.ending(LabyrinthPlace.HILL_NURSERY))).is(LiteraryRegistry.PROP.get())&&interior.getBlockState(hill.offset(8,1,-36)).isAir(),"the nursery's ending ledger stands in the cellar, not on its roof");
         // Outdoors: mixed woods instead of planted rows, nothing growing out of the lakes, banks without battlements.
