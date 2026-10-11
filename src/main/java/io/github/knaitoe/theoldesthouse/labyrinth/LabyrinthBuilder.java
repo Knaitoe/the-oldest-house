@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 40;
+    public static final int VERSION = 41;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -144,6 +144,7 @@ public final class LabyrinthBuilder {
     /** The route depth at which explorers can first be dealt a place. */
     public static int requiredDepth(LabyrinthPlace place) {
         if (CORE.contains(place)) return 0;
+        if(HazardVariety.added(place))return HazardVariety.tier(place)==1?6:HazardVariety.tier(place)==2?10:14;
         return switch (place) {
             case FOLDED_MAZE -> LabyrinthPacing.STRANGE_DEPTH;
             case SPIRAL_STAIR, FRACTURED_WALKWAY, LIGHT_SINK, BLIND_STRETCH, MOVING_THRESHOLD -> 10;
@@ -244,6 +245,7 @@ public final class LabyrinthBuilder {
                     || (data.builtVersion() < 32 && place.slot() >= 45)
                     || (data.builtVersion() < 33 && place.slot() >= 69)
                     || (data.builtVersion() < 34 && place.slot() >= 72)
+                    || (data.builtVersion() < 41 && HazardVariety.added(place))
                     || (data.builtVersion() < 12 && LabyrinthMaze.isMaze(place))
                     || (data.builtVersion() == 10 && place == LabyrinthPlace.MOTHER_DEN);
             boolean domestic = place == LabyrinthPlace.JUNCTION || LabyrinthHalls.isHall(place) || LabyrinthMaze.isMaze(place);
@@ -316,6 +318,9 @@ public final class LabyrinthBuilder {
         }
         if (place != null && !prepared(server, place)) {
             return;
+        }
+        if(place!=null&&HazardVariety.added(place)&&!architecturalUpgrades.contains(place)&&!domesticUpgrades.contains(place)){
+            BlockPos base=LabyrinthPlaces.base(pendingOrigin,place);geometry=BuildBlocks.record(interior,()->HazardMaps.build(interior,base,place));return;
         }
         if(place!=null&&HallVariations.added(place)&&!architecturalUpgrades.contains(place)&&!domesticUpgrades.contains(place)) {
             BlockPos base=LabyrinthPlaces.base(pendingOrigin,place);ScenePolish.forget(server,pendingOrigin,place);
@@ -593,6 +598,7 @@ public final class LabyrinthBuilder {
             switch(place){case DROWNED_TOWN->DrownedTown.build(server,site,base);case SHALLOWS->Shallows.build(server,site,base);case PHONE_CANOE->PhoneCanoe.build(server,site,base);default->{}}
             if(place!=LabyrinthPlace.DROWNED_TOWN)LakeLandscape.dress(site,base,place);NovelRooms.safeApproach(site,base);registerDoors(dataFor(server),place,base);VignetteArchitecture.forget(site,origin,place);VignetteArchitecture.decorateOnce(site,origin,place);return;
         }
+        if(HazardVariety.added(place)){fillSolid(level,slot);HazardMaps.build(level,base,place);registerDoors(dataFor(server),place,base);return;}
         LabyrinthMaze.Migration migration = LabyrinthMaze.isMaze(place) ? LabyrinthMaze.capture(level, slot, base) : null;
         fillSolid(level, slot);
         LabyrinthData data = LabyrinthData.get(server);

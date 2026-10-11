@@ -268,6 +268,23 @@ public enum LabyrinthPlace {
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("side",new BlockPos(12,0,-16),Direction.WEST,LabyrinthData.DEALT),
             new DoorSpec("far",new BlockPos(0,0,-28),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** 0.4.80: appended hazards; every older physical address remains exact. */
+    COLD_STORE("cold_store",Kind.GRAY,78,new BoundingBox(-5,-2,-43,5,6,0),grayDoors(0,0,-43)),
+    LISTING_HALL("listing_hall",Kind.GRAY,79,new BoundingBox(-5,-3,-43,5,5,0),grayDoors(0,0,-43)),
+    QUIET_HALL("quiet_hall",Kind.GRAY,80,new BoundingBox(-5,-3,-43,5,7,0),grayDoors(0,0,-43)),
+    UNWATCHED_MAZE("unwatched_maze",Kind.GRAY,81,new BoundingBox(-16,-1,-35,16,5,0),grayDoors(2,0,-35)),
+    MIRROR_HALL("mirror_hall",Kind.GRAY,82,new BoundingBox(-25,-1,-42,8,5,0),threeDoors(-42,-4,0,4)),
+    HEAVY_AND_LIGHT("heavy_and_light",Kind.GRAY,83,new BoundingBox(-7,-4,-44,7,7,0),grayDoors(0,0,-44)),
+    NESTED_ROOMS("nested_rooms",Kind.GRAY,84,new BoundingBox(-7,-1,-43,7,7,0),grayDoors(0,0,-43)),
+    COUNTING_STAIR("counting_stair",Kind.GRAY,85,new BoundingBox(-6,-1,-47,6,17,0),countingDoors()),
+    BENT_CISTERN("bent_cistern",Kind.GRAY,86,new BoundingBox(-11,-4,-41,11,7,0),grayDoors(0,0,-41)),
+    SPIRAL_WALKWAY("spiral_walkway",Kind.GRAY,87,new BoundingBox(-12,-4,-30,12,17,0),grayDoors(0,10,-30)),
+    CORNER_PRESSURE("corner_pressure",Kind.GRAY,88,new BoundingBox(-19,-1,-18,4,5,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),new DoorSpec("far",new BlockPos(-19,0,-14),Direction.EAST,LabyrinthData.DEALT))),
+    RECEDING_HALL("receding_hall",Kind.GRAY,89,new BoundingBox(-3,-1,-66,3,5,0),grayDoors(0,0,-34)),
+    LAST_SCONCE("last_sconce",Kind.GRAY,90,new BoundingBox(-9,-1,-35,9,5,0),grayDoors(0,0,-35)),
+    WATCHED_THRESHOLD("watched_threshold",Kind.GRAY,91,new BoundingBox(-11,-1,-23,11,6,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),new DoorSpec("north",new BlockPos(0,0,-23),Direction.SOUTH,LabyrinthData.DEALT),new DoorSpec("west",new BlockPos(-11,0,-12),Direction.EAST,LabyrinthData.DEALT),new DoorSpec("east",new BlockPos(11,0,-12),Direction.WEST,LabyrinthData.DEALT))),
+    DUPLICATE_ROOMS("duplicate_rooms",Kind.GRAY,92,new BoundingBox(-7,-1,-43,7,6,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),new DoorSpec("first",new BlockPos(7,0,-9),Direction.WEST,LabyrinthData.DEALT),new DoorSpec("second",new BlockPos(7,0,-23),Direction.WEST,LabyrinthData.DEALT),new DoorSpec("third",new BlockPos(7,0,-37),Direction.WEST,LabyrinthData.DEALT))),
+    TURNING_GRAVITY("turning_gravity",Kind.GRAY,93,new BoundingBox(-13,-4,-29,13,6,0),grayDoors(0,0,-29)),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 
@@ -288,6 +305,10 @@ public enum LabyrinthPlace {
         /** Not a carved place at all. */
         HALLWAY
     }
+
+    private static List<DoorSpec> grayDoors(int x,int y,int z){return List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),new DoorSpec("far",new BlockPos(x,y,z),Direction.SOUTH,LabyrinthData.DEALT));}
+    private static List<DoorSpec> threeDoors(int z,int... xs){var doors=new java.util.ArrayList<DoorSpec>();doors.add(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN));for(int i=0;i<xs.length;i++)doors.add(new DoorSpec("door_"+i,new BlockPos(xs[i],0,z),Direction.SOUTH,LabyrinthData.DEALT));return List.copyOf(doors);}
+    private static List<DoorSpec> countingDoors(){var doors=new java.util.ArrayList<DoorSpec>();doors.add(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN));for(int i=1;i<=7;i++)doors.add(new DoorSpec("landing_"+i,new BlockPos(6,i*2,-3-i*6),Direction.WEST,LabyrinthData.DEALT));return List.copyOf(doors);}
 
     private static List<DoorSpec> literaryEntry(){return List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN));}
 

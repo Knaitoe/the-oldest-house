@@ -32,7 +32,7 @@ public final class LastStopCastVisualProof extends Screen {
         var mc=Minecraft.getInstance();
         for(var person:ElkLotNight.CAST){
             var skin=LiteraryRenderers.skin(LiteraryActor.STRANGER,person.phase());
-            if(!skin.getPath().endsWith("literary_bar_"+person.key()+".png"))throw new IllegalStateException("Wrong Last Stop skin for "+person.name());
+            if(!skin.getPath().endsWith("literary_bar_"+person.key().toLowerCase(java.util.Locale.ROOT)+".png"))throw new IllegalStateException("Wrong Last Stop skin for "+person.name());
             try(var stream=mc.getResourceManager().open(skin);var image=NativeImage.read(stream)){
                 if(image.getWidth()!=512||image.getHeight()!=256)throw new IllegalStateException("Wrong Last Stop atlas size: "+skin);
                 for(var rect:new int[][]{{32,32,32,32},{80,80,32,48},{176,80,16,48},{16,80,16,48}}){
@@ -50,7 +50,7 @@ public final class LastStopCastVisualProof extends Screen {
         for(var person:ElkLotNight.CAST){
             var model=new LiteraryRenderers.CastModel(mc.getEntityModels().bakeLayer(LiteraryRenderers.CAST));model.young=false;
             model.pose(LiteraryActor.STRANGER,person.phase(),frames);
-            if(model.body.getChild("coat").visible!=person.key().equals("marla"))throw new IllegalStateException("Only Marla wears the apron extension");
+            if(model.body.getChild("coat").visible!=person.key().equalsIgnoreCase("marla"))throw new IllegalStateException("Only Marla wears the apron extension");
             float centre=12+(i+++.5F)*(width-24)/5F,scale=Math.min((width-30)/5F*.7F,height*.34F);
             var pose=g.pose();pose.pushPose();pose.translate(centre,height*.80F,190);pose.scale(scale,scale,scale);
             pose.mulPose(Axis.YP.rotationDegrees(page==1?-25:page==2?135:180));pose.translate(0,-1.5,0);
@@ -64,6 +64,6 @@ public final class LastStopCastVisualProof extends Screen {
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-last-stop-cast-"+VIEWS[proof.page]+".png"));}
         if(++proof.page<VIEWS.length){proof.frames=0;return;}
         Files.writeString(dir.resolve("last-stop-cast-passed.txt"),"Five named 512x256 atlases on the native 128x64 humanoid UV layout, front/back/night views, opaque base faces and Marla-only apron; existing stranger phases preserved.\n");
-        TheOldestHouse.LOGGER.info("LAST STOP CAST CHECK PASSED: five native skins, three views and the apron");mc.setScreen(new ElkVisualProof());
+        TheOldestHouse.LOGGER.info("LAST STOP CAST CHECK PASSED: five native skins, three views and the apron");mc.setScreen(new HazardVisualProof());
     }
 }

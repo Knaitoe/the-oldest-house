@@ -179,6 +179,7 @@ public final class LabyrinthDealer {
             gray.add(LabyrinthPlace.GRAVITY_DRIFT);
             gray.add(LabyrinthPlace.DUPLICATE_PASSAGE);
         }
+        for(var place:LabyrinthPlace.values())if(HazardVariety.added(place)&&HazardVariety.tier(place)<=tier)gray.add(place);
         gray.removeIf(place -> !LabyrinthBuilder.isPlaceReady(data, place));
         return gray;
     }
@@ -398,6 +399,7 @@ public final class LabyrinthDealer {
     }
 
     public static int grayWeight(LabyrinthPlace place, int depth) {
+        if(HazardVariety.sibling(place))return grayWeight(HazardVariety.original(place),depth);
         return switch (place) {
             case FOLDED_MAZE -> 5 + Math.min(6, Math.max(0, depth - LabyrinthPacing.STRANGE_DEPTH));
             case DEEP_MAZE -> 10 + Math.min(8, Math.max(0, depth - LabyrinthPacing.DEEP_DEPTH));
@@ -485,7 +487,7 @@ public final class LabyrinthDealer {
         if (here != null) gray.remove(here);
         if (gray.stream().filter(p -> data.recentVisit(player, p) != 1).count() >= 2)
             gray.removeIf(p -> data.recentVisit(player, p) == 1);
-        List<LabyrinthPlace> odd = gray.stream().filter(LabyrinthPacing::anomaly)
+        List<LabyrinthPlace> odd = gray.stream().filter(p->!HazardVariety.sibling(p)).filter(LabyrinthPacing::anomaly)
                 .filter(p -> !LabyrinthPacing.loop(p) || LabyrinthPacing.loopDue(data, player)).toList();
         List<LabyrinthData.Door> choices = new ArrayList<>(doors);
         choices.remove(lucky);
@@ -494,7 +496,7 @@ public final class LabyrinthDealer {
             oddDoor = choices.remove(random.nextInt(choices.size()));
         }
         LabyrinthData.Door restDoor = null;
-        List<LabyrinthPlace> trials=gray.stream().filter(LabyrinthPacing::physicalTrial).toList();
+        List<LabyrinthPlace> trials=gray.stream().filter(p->!HazardVariety.sibling(p)).filter(LabyrinthPacing::physicalTrial).toList();
         LabyrinthData.Door trialDoor=null;
         if(lucky==null&&oddDoor==null&&!trials.isEmpty()&&!choices.isEmpty()&&random.nextInt(100)<LabyrinthPacing.trialChance(data,player))trialDoor=choices.remove(random.nextInt(choices.size()));
         if (!choices.isEmpty() && LabyrinthPacing.restDue(data, player) && random.nextInt(100) < 35) {
@@ -504,14 +506,14 @@ public final class LabyrinthDealer {
             if (door == lucky) {
                 data.deal(player, door, pickVignette(data, player, vignettes, random).id(), true, scent);
             } else if (door == oddDoor) {
-                data.deal(player, door, weightedGray(odd, data, player, random).id(),
+                data.deal(player, door, HazardVariety.routeVariant(weightedGray(odd,data,player,random),(here==null?0:data.nodeKey(player,here))^door.id.hashCode(),data).id(),
                         lyingLeak(data, player, random));
             } else if (door == restDoor) {
                 boolean camp = data.returnDepth(player) >= 3 && random.nextBoolean()
                         && data.recentVisit(player, LabyrinthPlace.EXPLORER_CAMP) < 0;
                 data.deal(player, door, (camp ? LabyrinthPlace.EXPLORER_CAMP : LabyrinthPlace.QUIET_ROOM).id(), false);
             } else if(door==trialDoor){
-                data.deal(player,door,weightedGray(trials,data,player,random).id(),lyingLeak(data,player,random));
+                data.deal(player,door,HazardVariety.routeVariant(weightedGray(trials,data,player,random),(here==null?0:data.nodeKey(player,here))^door.id.hashCode(),data).id(),lyingLeak(data,player,random));
             } else {
                 data.deal(player, door, pickGray(gray, data, player, random).id(), lyingLeak(data, player, random));
             }

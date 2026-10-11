@@ -111,6 +111,7 @@ public final class ArchitectureTests {
                 if(scene!=LabyrinthPlace.RED_ROOM)export(level,base,scene);
             }
             for(var scene:LabyrinthPlace.values())if(LiteraryRooms.isLiterary(scene)){var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var base=LabyrinthPlaces.base(origin,scene);h.assertTrue(scene==LabyrinthPlace.FAMILY_COPY||scene==LabyrinthPlace.OLD_CABIN||scene==LabyrinthPlace.ELK_CARCASSES?level.getBlockEntity(base.offset(LiteraryRooms.source(scene))) instanceof LecternBlockEntity:(scene==LabyrinthPlace.ELK_LOT?RoadhouseBlock.is(level.getBlockState(base.offset(LiteraryRooms.source(scene))),RoadhouseBlock.Kind.REGISTER):scene==LabyrinthPlace.CHILD_ROOM?NurseryBlock.is(level.getBlockState(base.offset(LiteraryRooms.source(scene))),NurseryBlock.Kind.CARD):level.getBlockState(base.offset(LiteraryRooms.source(scene))).is(HouseBlocks.VIGNETTE_DETAIL.get()))&&!SceneHuntReview.sourceBook(level,base,scene).isEmpty(),scene.id()+" has a native themed discovery surface and its preserved original");var entrance=base.offset(0,0,-3);h.assertTrue(level.noCollision(null,new AABB(entrance.getX()+.2,entrance.getY()+.01,entrance.getZ()+.2,entrance.getX()+.8,entrance.getY()+1.8,entrance.getZ()+.8)),scene.id()+" clears the actual entrance body");if(scene!=LabyrinthPlace.FAMILY_COPY&&scene!=LabyrinthPlace.OLD_CABIN)export(level,base,scene);}
+            for(var hazard:LabyrinthPlace.values())if(HazardVariety.added(hazard))export(interior,LabyrinthPlaces.base(origin,hazard),hazard);
             elkStages(h,HouseTestLevel.get(server,HouseDimensions.OUTSIDE),LabyrinthPlaces.base(origin,LabyrinthPlace.ELK_CARCASSES));
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL,"hotel_upstairs");
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL,"hotel_basement");
@@ -368,6 +369,7 @@ public final class ArchitectureTests {
         var r=scene.room();JsonObject file=new JsonObject();file.addProperty("name",name);
         JsonArray palette=new JsonArray(),blocks=new JsonArray();Map<BlockState,Integer> lookup=new LinkedHashMap<>();
         int minX=r.minX(),maxX=r.maxX(),minZ=r.minZ(),maxZ=r.maxZ(),minY=Math.max(-1,r.minY()),maxY=Math.min(4,r.maxY());
+        if(HazardVariety.added(scene)){minY=r.minY();maxY=r.maxY()-1;}
         if(scene==LabyrinthPlace.GOATMAN){minZ=-79;maxZ=-45;}
         if(scene==LabyrinthPlace.HOLLOWAY_CAMP)minZ=-24;
         if(scene==LabyrinthPlace.TED_CAVER){minZ=-8;minY=-1;}

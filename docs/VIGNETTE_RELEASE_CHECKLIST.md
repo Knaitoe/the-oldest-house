@@ -9,7 +9,11 @@ Apply this checklist whenever a vignette is added or its progression changes. En
 - Update the current pool and requirement in the design document, README, release notes and `AGENTS.md`. Keep older release descriptions historical. Confirm the game still exposes the intended ending options rather than equating story sources with additional endings.
 - Run the required server GameTests and verify the playable package before publishing the release.
 
-## Current candidate: 0.4.79
+## Current candidate: 0.4.80
+
+Both hazard proposals append sixteen gray slots with new native mechanics and environment art. Keep saved routes and hazard pacing, require safe transient-attribute cleanup, native camera guards, connected chalk-carrying maze panels, private mirrors and stair counts. Require all prior cases, new hazard cases, 87 architecture views and three hazard views. Layout 41 / protocol 53; unchanged 43 / 33 / two kinds / three endings. Exact-source validation pending; see [the hazard record](HAZARD_VARIETY_0_4_80.md).
+
+## Previous candidate: 0.4.79
 
 Five Last Stop character skins replace the existing placeholders, retaining the same native actor phases and identities. Only Marla uses the coat extension, as an apron. Require three native cast views in addition to all prior checks. No source, layout or protocol change: 43 / 33 / two kinds / three endings; layout 40 / protocol 52. See [the cast record](LAST_STOP_CAST_0_4_79.md).
 
