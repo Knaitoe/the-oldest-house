@@ -32,7 +32,7 @@ public final class SceneVisualProof extends Screen {
         super(Component.literal("Native scene architecture"));
         var models=Minecraft.getInstance().getEntityModels();body=new LiteraryRenderers.CastModel(models.bakeLayer(LiteraryRenderers.CAST));elk=new LiteraryRenderers.ElkModel(models.bakeLayer(LiteraryRenderers.ELK));
         try(var stream=Files.list(Path.of("../build/architecture-proof"))){files=stream.filter(p->p.toString().endsWith(".json")).sorted().toList();}
-        if(files.size()!=88)throw new IllegalStateException("Expected eighty-eight generated architecture views, found "+files.size());load();
+        if(files.size()!=90)throw new IllegalStateException("Expected ninety generated architecture views, found "+files.size());load();
     }
     private void load()throws Exception{
         var json=JsonParser.parseString(Files.readString(files.get(index))).getAsJsonObject();name=json.get("name").getAsString();
