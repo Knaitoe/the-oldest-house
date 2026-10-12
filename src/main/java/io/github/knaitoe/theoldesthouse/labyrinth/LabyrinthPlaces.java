@@ -135,7 +135,7 @@ public final class LabyrinthPlaces {
         }
         return new BlockPos(
                 origin.getX() + HouseLayout.CENTER_X + column(origin, place.slot()) * COLUMN_SPACING,
-                slotBottom(origin, place.slot()) + (place == LabyrinthPlace.DROWNED_TOWN || place == LabyrinthPlace.BARN_WELL ? 14 : FLOOR_IN_SLOT),
+                place == LabyrinthPlace.LAKE_HOUSE ? LakeHouse.BASE_Y : slotBottom(origin, place.slot()) + (place == LabyrinthPlace.DROWNED_TOWN || place == LabyrinthPlace.BARN_WELL ? 14 : FLOOR_IN_SLOT),
                 origin.getZ() + HouseLayout.CENTER_Z - (NovelRooms.outside(place) ? 4096 + place.slot()*spacing
                         : place.slot() >= APPENDED_INTERIOR_FIRST_SLOT ? APPENDED_INTERIOR_NORTH : 0)
         );
