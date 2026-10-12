@@ -64,7 +64,7 @@ public final class LakeHouseTests {
             h.assertTrue(f.solid(new BlockPos(0,1,-112))&&f.out.getFluidState(b.offset(0,-1,-98)).is(Fluids.WATER)&&f.out.getFluidState(b.offset(0,-1,-129)).is(Fluids.WATER),"the drive roofs the culvert and both lakes meet its mouths");
             // No lake water stands against open space beside or under it, so nothing drains into the ground.
             int leaks=0;BlockPos leak=null;
-            for(int x=LakeHouse.MIN_X;x<=LakeHouse.MAX_X;x++)for(int z=LakeHouse.MIN_Z;z<=-10;z++)for(int y=-30;y<=-1;y++){
+            for(int x=LakeHouse.MIN_X;x<=LakeHouse.MAX_X;x++)for(int z=LakeHouse.MIN_Z;z<=-10;z++)for(int y=-44;y<=-1;y++){
                 var at=b.offset(x,y,z);if(!f.out.getFluidState(at).is(Fluids.WATER))continue;
                 for(var side:new Direction[]{Direction.NORTH,Direction.SOUTH,Direction.EAST,Direction.WEST,Direction.DOWN})if(f.out.getBlockState(at.relative(side)).isAir()){leaks++;if(leak==null)leak=new BlockPos(x,y,z);}
             }
@@ -185,6 +185,94 @@ public final class LakeHouseTests {
             p.setItemSlot(EquipmentSlot.HEAD,LakeHouseGear.lend(p,LakeHouseRegistry.HELMET.get()));
             p.teleportTo(f.in,b.getX()+.5,b.getY()+300,b.getZ()+.5,0,0);p.getInventory().tick();
             h.assertTrue(!LakeHouseGear.has(p,LakeHouseRegistry.FLASHLIGHT.get())&&!LakeHouseGear.has(p,LakeHouseRegistry.HELMET.get()),"outside the lake house the lent gear is gone");
+            h.succeed();
+        }finally{f.close();}
+    }
+
+    @GameTest(template="empty",batch="lake_house_rooms",timeoutTicks=200)
+    public static void theHouseHoldsWaterEverywhereButItsChairsAndThirtyStepsGoDownToThePool(GameTestHelper h){
+        var f=new Fixture(h);
+        try{
+            var b=f.base();
+            // No pocket of air anywhere inside, under or over the house, except the eight dining chairs.
+            var chairs=new java.util.HashSet<BlockPos>();for(int z=-166;z<=-163;z++){chairs.add(new BlockPos(-8,-25,z));chairs.add(new BlockPos(-5,-25,z));}
+            for(var c:chairs){var st=f.out.getBlockState(b.offset(c));h.assertTrue(st.getBlock() instanceof StairBlock&&!st.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.WATERLOGGED),"a dining chair holds no water at "+c);}
+            int pockets=0;BlockPos pocket=null;
+            for(int x=-LakeHouse.HX;x<=LakeHouse.HX;x++)for(int z=LakeHouse.HZ_BACK;z<=LakeHouse.HZ_FRONT;z++)for(int y=-44;y<=-4;y++){
+                var rel=new BlockPos(x,y,z);if(chairs.contains(rel))continue;var st=f.out.getBlockState(b.offset(rel));
+                boolean dry=st.isAir()||st.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.WATERLOGGED)&&!st.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.WATERLOGGED);
+                if(dry){pockets++;if(pocket==null)pocket=rel;}
+            }
+            h.assertTrue(pockets==0,"the house holds water in every cell but its chairs; "+pockets+" dry, first at "+pocket);
+            // The closet's wall looks like the rest of the pink, and thirty steps go down behind it, each with room to stand.
+            h.assertTrue(f.out.getBlockState(b.offset(-6,-25,-178)).is(Blocks.PINK_TERRACOTTA)&&f.out.getBlockState(b.offset(-6,-24,-178)).is(Blocks.PINK_TERRACOTTA),"the closet's wall is shut");
+            double[] surfaces={-26,-27};
+            for(int k=0;k<30;k++){
+                double surf=k<2?-26-k:-27-.5*(k-1);int x=k<10?-8:k<20?-6:-4,z=k<10?-177+k:k<20?-168-(k-10):-177+(k-20);
+                var at=Vec3.atLowerCornerOf(b).add(x+.2,surf+.01,z+.2);
+                h.assertTrue(f.out.noCollision(null,new AABB(at.x,at.y,at.z,at.x+1.6,at.y+1.8,at.z+.6)),"step "+(k+1)+" of thirty has room to stand at "+x+","+surf+","+z);
+                h.assertTrue(!f.out.noCollision(null,new AABB(at.x,at.y-.2,at.z,at.x+.6,at.y-.02,at.z+.6)),"step "+(k+1)+" is underfoot");
+            }
+            int marks=0;for(var e:BlockPos.betweenClosed(b.offset(-9,-44,-180),b.offset(-2,-26,-160)))if(f.out.getBlockEntity(e) instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign&&sign.getFrontText().getMessage(2,false).getString().length()>0)marks++;
+            h.assertTrue(marks==7,"the stairwell carries its growth chart: "+marks+" marks");
+            // The basement: the pool, three feet and five, warm at the bottom, and the sauna nobody looked into.
+            h.assertTrue(f.out.getFluidState(b.offset(3,-42,-171)).is(Fluids.WATER)&&f.out.getBlockState(b.offset(3,-43,-171)).is(Blocks.SMOOTH_QUARTZ),"the shallow end is a block deep");
+            h.assertTrue(f.out.getFluidState(b.offset(3,-43,-175)).is(Fluids.WATER)&&f.out.getBlockState(b.offset(3,-44,-175)).is(Blocks.MAGMA_BLOCK),"the deep end is two deep, something warm at its floor");
+            h.assertTrue(f.out.getBlockState(b.offset(4,-41,-166)).is(Blocks.SPRUCE_PLANKS)&&f.out.getFluidState(b.offset(4,-41,-165)).is(Fluids.WATER),"the sauna has its walls and its door");
+            // Every lamp is a bulb set in the ceiling, unlit; the hearth's fire and the still life are shown, and the half door hangs in the doorway.
+            h.assertTrue(f.out.getBlockState(b.offset(0,-20,-164)).is(Blocks.REDSTONE_LAMP)&&!f.out.getBlockState(b.offset(0,-20,-164)).getValue(RedstoneLampBlock.LIT),"the foyer's bulb is unlit");
+            var shown=f.out.getEntitiesOfClass(Entity.class,LakeHouse.box(b),e->e.getTags().contains(LakeHouseDisplay.TAG));
+            h.assertTrue(shown.stream().anyMatch(e->e instanceof net.minecraft.world.entity.decoration.Painting)&&shown.stream().filter(e->e instanceof LakeHouseDisplay).count()==3,"the painting, the door's two halves and the hearth's fire are in place: "+shown.size());
+            h.succeed();
+        }finally{f.close();}
+    }
+
+    @GameTest(template="empty",batch="lake_house_ask",timeoutTicks=200)
+    public static void askingHowLiftsThePieceForThatReaderAloneAndTheSecondTimeBreaksTheRule(GameTestHelper h){
+        var f=new Fixture(h);asking=f;
+        try{
+            var b=f.base();var p=f.player("lake_asker");var peer=f.player("lake_witness");var beaver=b.offset(5,-24,-171);
+            at(f,p,4.5,-24,-170.5);
+            h.assertTrue(f.out.getBlockState(beaver).is(LakeHouseRegistry.BEAVER.get())&&f.out.getBlockState(beaver).getValue(LakeHouseBeaverBlock.WATERLOGGED),"the beaver stands on the island, in the water");
+            h.assertTrue(LakeHouseRules.ask(p,b,beaver)==1,"the first time is a warning");
+            var own=LiteraryVignettes.personal(f.data(),p.getUUID(),PLACE);
+            h.assertTrue(!own.getBoolean("AskedHow")&&f.out.getBlockState(beaver).is(LakeHouseRegistry.BEAVER.get()),"it is not broken and the rule holds");
+            var lifted=f.out.getEntitiesOfClass(LakeHouseDisplay.class,new AABB(beaver).inflate(.5),d->p.getUUID().equals(d.owner()));
+            h.assertTrue(lifted.size()==1&&lifted.getFirst().broadcastToPlayer(p)&&!lifted.getFirst().broadcastToPlayer(peer),"only the reader who asked sees it lift");
+            h.assertTrue(LakeHouseRules.ask(p,b,beaver)==2,"asking again");
+            own=LiteraryVignettes.personal(f.data(),p.getUUID(),PLACE);
+            h.assertTrue(own.getBoolean("AskedHow")&&f.out.getBlockState(beaver).is(LakeHouseRegistry.BEAVER.get()),"the second time breaks the rule for good, and still nothing breaks");
+            h.assertTrue(!LiteraryVignettes.personal(f.data(),peer.getUUID(),PLACE).getBoolean("AskedHow"),"the rule is broken for that reader alone");
+            h.runAfterDelay(LakeHouseRules.BACK+2,()->{
+                h.assertTrue(f.out.getEntitiesOfClass(LakeHouseDisplay.class,new AABB(beaver).inflate(.5),d->p.getUUID().equals(d.owner())).isEmpty(),"each lifted piece settles back and goes");
+                h.succeed();});
+        }catch(RuntimeException e){f.close();asking=null;throw e;}
+    }
+    private static Fixture asking;
+    @AfterBatch(batch="lake_house_ask") public static void askDone(ServerLevel l){if(asking!=null){asking.close();asking=null;}}
+
+    @GameTest(template="empty",batch="lake_house_closet",timeoutTicks=200)
+    public static void theClosetGivesFromTheTankVisitAndTheChairsGiveAir(GameTestHelper h){
+        var f=new Fixture(h);
+        try{
+            var b=f.base();var p=f.player("lake_closet");var id=p.getUUID();var panel=new BlockPos(-6,-25,-178);
+            var own=LiteraryVignettes.personal(f.data(),id,PLACE);own.putInt("Visit",2);
+            h.assertTrue(LakeHouse.click(p,b,panel,own)&&f.out.getBlockState(b.offset(panel)).is(Blocks.PINK_TERRACOTTA),"on the helmet visit the wall sounds hollow and does not give");
+            own.putInt("Visit",3);
+            h.assertTrue(LakeHouse.click(p,b,panel,own)&&f.out.getFluidState(b.offset(panel)).is(Fluids.WATER)&&f.out.getFluidState(b.offset(panel.above())).is(Fluids.WATER),"on the tank visit it gives, and stays open");
+            // A dining chair: the reader sits, under water, and breathes.
+            at(f,p,-7.5,-25,-164.5);
+            h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(p,b.offset(-8,-25,-164))&&LakeHouseRules.dryChair(p),"the reader sits in a dining chair");
+            p.baseTick();h.assertTrue(p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER),"their head is under water");
+            LakeHouseDive.setAir(p,100);breathe(f,p,10);
+            h.assertTrue(LakeHouseDive.air(id)==140,"the chair gives them air; air "+LakeHouseDive.air(id));
+            p.stopRiding();
+            // In the third lake, things sink and lie still.
+            var item=new net.minecraft.world.entity.item.ItemEntity(f.out,b.getX()-19.5,b.getY()-10,b.getZ()-171.5,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.APPLE));
+            f.out.addFreshEntity(item);item.baseTick();
+            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.tick.EntityTickEvent.Post(item));
+            h.assertTrue(item.isInWater()&&item.getDeltaMovement().y<0&&item.getDeltaMovement().x==0,"a thing dropped in the third lake sinks straight down: "+item.getDeltaMovement());
+            item.discard();
             h.succeed();
         }finally{f.close();}
     }

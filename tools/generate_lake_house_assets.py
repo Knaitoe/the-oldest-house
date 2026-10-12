@@ -157,11 +157,41 @@ def blockstate():
                          for f, y in rotation.items() for r in ('false', 'true')}}
 
 
+def beaver_model():
+    """The porcelain beaver, facing north: a round body, a smaller head forward, a flat tail behind."""
+    t = f'{NS}:block/lake_house_beaver'
+    return {
+        'textures': {'porcelain': t, 'particle': t},
+        'elements': [
+            {'from': [5, 0, 5], 'to': [11, 6, 11], 'faces': faces('#porcelain', north=face('#porcelain', (5, 8, 11, 14)))},
+            {'from': [6, 5, 3.5], 'to': [10, 9, 7.5], 'faces': faces('#porcelain', north=face('#porcelain', (4, 1, 12, 9)), up=face('#porcelain', (5, 0, 11, 4)))},
+            {'from': [6.5, 0, 11], 'to': [9.5, 1, 14.5], 'faces': faces('#porcelain', (5, 10, 11, 16))},
+        ],
+    }
+
+
+def facing_blockstate(model, extra):
+    rotation = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
+    variants = {}
+    for f, y in rotation.items():
+        for value in extra[1]:
+            entry = {'model': model}
+            if y:
+                entry['y'] = y
+            variants[f'facing={f},{extra[0]}={value}'] = entry
+    return {'variants': variants}
+
+
 NAMES = {
     'item.the_oldest_house.lake_house_flashlight': 'Flashlight',
     'item.the_oldest_house.lake_house_helmet': 'Gold diving helmet',
     'item.the_oldest_house.lake_house_tanks': 'Air tanks',
     'block.the_oldest_house.lake_house_compressor': 'Compressor',
+    'block.the_oldest_house.lake_house_beaver': 'Porcelain beaver',
+    'painting.the_oldest_house.lake_house_still_life.title': 'Still Life with Plums',
+    'painting.the_oldest_house.lake_house_still_life.author': 'Unknown',
+    'painting.the_oldest_house.lake_house_face.title': 'Still Life with Plums',
+    'painting.the_oldest_house.lake_house_face.author': 'Unknown',
     'entity.the_oldest_house.lake_house_canoe': 'Green canoe',
 }
 
@@ -181,7 +211,9 @@ def main():
     table = json.loads((ASSETS / 'sounds.json').read_text())
     lang = json.loads((ASSETS / 'lang/en_us.json').read_text())
     for name, (make, subtitle, reach) in SOUNDS.items():
-        soundfile.write(str(folder / f'{name}.ogg'), make().astype(np.float32), RATE, format='OGG', subtype='VORBIS')
+        # Vorbis output differs from run to run, so a sound already written is left alone; delete it to redraw it.
+        if not (folder / f'{name}.ogg').exists():
+            soundfile.write(str(folder / f'{name}.ogg'), make().astype(np.float32), RATE, format='OGG', subtype='VORBIS')
         table[f'lake_house.{name}'] = {'subtitle': f'subtitles.{NS}.lake_house.{name}',
                                        'sounds': [{'name': f'{NS}:lake_house/{name}', 'stream': False, 'attenuation_distance': reach}]}
         lang[f'subtitles.{NS}.lake_house.{name}'] = subtitle
@@ -193,7 +225,12 @@ def main():
     write_json(ASSETS / 'models/item/lake_house_flashlight.json', {'parent': 'minecraft:item/handheld', 'textures': {'layer0': f'{NS}:item/lake_house_flashlight'}})
     write_json(ASSETS / 'models/block/lake_house_compressor.json', compressor_model())
     write_json(ASSETS / 'blockstates/lake_house_compressor.json', blockstate())
-    print('wrote three sounds, the gear and compressor models, the blockstate and the names')
+    write_json(ASSETS / 'models/block/lake_house_beaver.json', beaver_model())
+    write_json(ASSETS / 'blockstates/lake_house_beaver.json', facing_blockstate(f'{NS}:block/lake_house_beaver', ('waterlogged', ('false', 'true'))))
+    data = ROOT / 'src/main/resources/data/the_oldest_house/painting_variant'
+    for name in ('lake_house_still_life', 'lake_house_face'):
+        write_json(data / f'{name}.json', {'asset_id': f'{NS}:{name}', 'width': 2, 'height': 2})
+    print('wrote three sounds, the gear, compressor and beaver models, their blockstates, two paintings and the names')
 
 
 if __name__ == '__main__':

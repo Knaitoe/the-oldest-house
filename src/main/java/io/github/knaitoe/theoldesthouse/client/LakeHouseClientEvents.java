@@ -16,5 +16,6 @@ public final class LakeHouseClientEvents {
     }
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers event){
         event.registerEntityRenderer(LakeHouseRegistry.CANOE.get(),LakeHouseCanoeRenderer::new);
+        event.registerEntityRenderer(LakeHouseRegistry.DISPLAY.get(),net.minecraft.client.renderer.entity.DisplayRenderer.BlockDisplayRenderer::new);
     }
 }

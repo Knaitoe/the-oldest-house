@@ -91,6 +91,8 @@ public final class LakeHouseDive {
     static Source source(ServerPlayer p,BlockPos b){
         // A bubble column is still the lake: unlike anywhere else in Minecraft, it gives no air here.
         if(!p.isEyeInFluid(FluidTags.WATER))return Source.AIR;
+        // The dining chairs hold no water: sitting in one, the reader breathes. That is the house asking them to stay.
+        if(LakeHouseRules.dryChair(p))return Source.AIR;
         if(LakeHouseGear.mine(p.getItemBySlot(EquipmentSlot.HEAD),p,LakeHouseRegistry.HELMET.get())&&running(p.serverLevel(),b)&&!HOSE_BLOCKED.contains(p.getUUID()))return Source.HOSE;
         var tanks=p.getItemBySlot(EquipmentSlot.CHEST);
         if(LakeHouseGear.mine(tanks,p,LakeHouseRegistry.TANKS.get())&&tanks.getDamageValue()<tanks.getMaxDamage()-1){

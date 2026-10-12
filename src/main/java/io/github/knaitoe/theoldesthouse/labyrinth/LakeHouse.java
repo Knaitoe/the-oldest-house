@@ -88,7 +88,7 @@ public final class LakeHouse {
     }
 
     // ------------------------------------------------------------------------------------------------ building
-    private static final class Site {
+    static final class Site {
         final ServerLevel l;final BlockPos b;final List<BlockPos> connect=new ArrayList<>();
         Site(ServerLevel l,BlockPos b){this.l=l;this.b=b;}
         boolean vestibule(int x,int z){return z>=1;}
@@ -105,8 +105,9 @@ public final class LakeHouse {
 
     public static void build(ServerLevel l,BlockPos b){
         var s=new Site(l,b);
-        land(s);culvert(s);boathouse(s);dock(s);house(s);raft(s);woods(s);
+        land(s);culvert(s);boathouse(s);dock(s);house(s);LakeHouseRooms.build(s);raft(s);woods(s);
         // Fences, walls and panes take their joins from what was actually built around them.
+        BuildBlocks.after(l,()->LakeHouseRooms.props(l,b));
         BuildBlocks.after(l,()->{for(var at:s.connect){var st=l.getBlockState(at);var joined=Block.updateFromNeighbourShapes(st,l,at);if(!joined.equals(st))l.setBlock(at,joined,Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);}});
     }
 
@@ -344,19 +345,22 @@ public final class LakeHouse {
         }
         LakeHouseDive.hose(p,b,own);
         if(r.z<CHANNEL_NORTH)own.putBoolean("ReachedThird",true);
+        LakeHouseRules.steps(p,b,own);
         // The visit's beat: how far into the house the reader got, and back up into the air.
         if(LakeHouseDive.inHouse(r)){
             if(r.z>HZ_FRONT-5)own.putBoolean("SawFoyer",true);
             if(visit>=2&&r.z<HZ_FRONT-9)own.putBoolean("SawBack",true);
         }
+        if(visit>=3&&LakeHouseRules.basement(r))own.putBoolean("SawPool",true);
         boolean surfaced=r.z<CHANNEL_NORTH&&r.y>-1.5&&!p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER);
         if(surfaced&&own.getInt("Beat")<visit){
             if(visit==1&&own.getBoolean("SawFoyer")){own.putInt("Beat",visit);p.displayClientMessage(Component.literal("There's furniture down there."),false);}
             else if(visit==2&&own.getBoolean("SawBack")){own.putInt("Beat",visit);p.displayClientMessage(Component.literal("There's a staircase at the back, with a red runner on it."),false);}
+            else if(visit==3&&own.getBoolean("SawPool")){own.putInt("Beat",visit);p.displayClientMessage(Component.literal("There's a pool under the house. The water in it is warm."),false);}
         }
     }
     /** True when a click in the scene is used up. */
-    public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){return false;}
+    public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){return LakeHouseRules.closet(p,b,rel,own);}
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own){}
 
     // ------------------------------------------------------------------------------------------------ the account
@@ -374,6 +378,8 @@ public final class LakeHouse {
         var s=e.getServer();if(s.getTickCount()%10!=1)return;var b=base(s);if(b==null)return;var l=s.getLevel(NovelRooms.dimension(PLACE));if(l==null)return;
         if(!l.hasChunkAt(b.offset(COMPRESSOR))||!LabyrinthBuilder.isPlaceReady(LabyrinthData.get(s),PLACE))return;
         LakeHouseDive.compressor(l,b,s.getTickCount());
+        if(!l.getEntitiesOfClass(ServerPlayer.class,box(b),q->!q.isSpectator()).isEmpty())LakeHouseRules.flames(l,b);
+        if(s.getTickCount()%40==1)LakeHouseRooms.swing(l,b,s.getTickCount());
         if(s.getTickCount()%40!=11)return;
         if(l.hasChunkAt(b.offset(CANOE)))LakeHouseCanoe.tidy(l,b);
         LakeHouseGear.tidy(l,box(b));
