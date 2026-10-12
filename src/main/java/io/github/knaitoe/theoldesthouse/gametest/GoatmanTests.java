@@ -30,6 +30,23 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID+"_goatman")
 @PrefixGameTestTemplate(false)
 public final class GoatmanTests {
+    private static Fixture departedMeal;
+    @AfterBatch(batch="goat_departed_meal0488") public static void departedMealDone(ServerLevel ignored){if(departedMeal!=null){departedMeal.close();departedMeal=null;}}
+    @GameTest(template="empty",templateNamespace=TheOldestHouse.MOD_ID+"_wake",batch="goat_departed_meal0488",timeoutTicks=320)
+    public static void platesKeepTheOriginalFrankForAPeerAndClearOnlyAfterTheLastActualDeparture(GameTestHelper h){
+        departedMeal=new Fixture(h,36000);var f=departedMeal;var reader=f.nativePlayer("supper_departure");var peer=f.nativePlayer("supper_remaining");f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native meal and guest sections are ready")).thenExecute(()->{
+            h.assertTrue(GoatmanVignette.enter(reader)&&GoatmanVignette.enter(peer),"both actual guests enroll");var run=f.run();f.cohort(run,List.of(reader,peer),0);run.putInt("Plated0464",1);run.putInt("EmptyPlates0465",0);run.putInt("BurntPlates0476",1);run.putBoolean("MealReady0465",true);f.run(run);
+            GoatmanWoods.served(f.l,f.b,0,new ItemStack(GoatmanRegistry.BRAT.get()));
+        }).thenIdle(2).thenExecute(()->{
+            var original=f.l.getEntitiesOfClass(Display.ItemDisplay.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(GoatmanWoods.BRAT)&&e.getPersistentData().contains("Seat")).getFirst();var id=original.getUUID();var untouched=new ItemStack(Items.COOKED_BEEF,2);peer.getInventory().setItem(8,untouched);var custody=untouched.copy();
+            GoatmanVignette.depart(reader);reader.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()+5.5);
+            h.assertTrue(!original.isRemoved()&&id.equals(original.getUUID())&&f.run().getInt("Plated0464")==1&&f.run().getBoolean("MealReady0465"),"the remaining actual guest keeps the same physical meal and ready state");
+            GoatmanVignette.depart(peer);peer.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()+5.5);
+            h.assertTrue(original.isRemoved()&&f.run().getInt("Plated0464")==0&&f.run().getInt("BurntPlates0476")==0&&!f.run().getBoolean("MealReady0465"),"the last actual departure clears the physical frank and its stale plate flags");
+            h.assertTrue(ItemStack.matches(peer.getInventory().getItem(8),custody),"plate cleanup preserves the guest's held food components and quantity");
+        }).thenSucceed();
+    }
     private static Fixture supper;
     @GameTest(template="empty",batch="goat_supper",timeoutTicks=2400)
     public static void freshPacketsOpenIntoFourRawFranksCookInOccupiedTimeAndPlayersServe(GameTestHelper h){

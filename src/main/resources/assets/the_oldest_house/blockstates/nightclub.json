@@ -385,99 +385,99 @@
       "y": 270
     },
     "kind=strip,facing=north,stage=0": {
-      "model": "the_oldest_house:block/nightclub_strip",
+      "model": "the_oldest_house:block/nightclub_strip_0",
       "y": 0
     },
     "kind=strip,facing=north,stage=1": {
-      "model": "the_oldest_house:block/nightclub_strip",
+      "model": "the_oldest_house:block/nightclub_strip_1",
       "y": 0
     },
     "kind=strip,facing=north,stage=2": {
-      "model": "the_oldest_house:block/nightclub_strip",
+      "model": "the_oldest_house:block/nightclub_strip_2",
       "y": 0
     },
     "kind=strip,facing=east,stage=0": {
-      "model": "the_oldest_house:block/nightclub_strip",
+      "model": "the_oldest_house:block/nightclub_strip_0",
       "y": 90
     },
     "kind=strip,facing=east,stage=1": {
-      "model": "the_oldest_house:block/nightclub_strip",
+      "model": "the_oldest_house:block/nightclub_strip_1",
       "y": 90
     },
     "kind=strip,facing=east,stage=2": {
-      "model": "the_oldest_house:block/nightclub_strip",
+      "model": "the_oldest_house:block/nightclub_strip_2",
       "y": 90
     },
     "kind=strip,facing=south,stage=0": {
-      "model": "the_oldest_house:block/nightclub_strip",
+      "model": "the_oldest_house:block/nightclub_strip_0",
       "y": 180
     },
     "kind=strip,facing=south,stage=1": {
-      "model": "the_oldest_house:block/nightclub_strip",
+      "model": "the_oldest_house:block/nightclub_strip_1",
       "y": 180
     },
     "kind=strip,facing=south,stage=2": {
-      "model": "the_oldest_house:block/nightclub_strip",
+      "model": "the_oldest_house:block/nightclub_strip_2",
       "y": 180
     },
     "kind=strip,facing=west,stage=0": {
-      "model": "the_oldest_house:block/nightclub_strip",
+      "model": "the_oldest_house:block/nightclub_strip_0",
       "y": 270
     },
     "kind=strip,facing=west,stage=1": {
-      "model": "the_oldest_house:block/nightclub_strip",
+      "model": "the_oldest_house:block/nightclub_strip_1",
       "y": 270
     },
     "kind=strip,facing=west,stage=2": {
-      "model": "the_oldest_house:block/nightclub_strip",
+      "model": "the_oldest_house:block/nightclub_strip_2",
       "y": 270
     },
     "kind=spot,facing=north,stage=0": {
-      "model": "the_oldest_house:block/nightclub_spot",
+      "model": "the_oldest_house:block/nightclub_spot_0",
       "y": 0
     },
     "kind=spot,facing=north,stage=1": {
-      "model": "the_oldest_house:block/nightclub_spot",
+      "model": "the_oldest_house:block/nightclub_spot_1",
       "y": 0
     },
     "kind=spot,facing=north,stage=2": {
-      "model": "the_oldest_house:block/nightclub_spot",
+      "model": "the_oldest_house:block/nightclub_spot_2",
       "y": 0
     },
     "kind=spot,facing=east,stage=0": {
-      "model": "the_oldest_house:block/nightclub_spot",
+      "model": "the_oldest_house:block/nightclub_spot_0",
       "y": 90
     },
     "kind=spot,facing=east,stage=1": {
-      "model": "the_oldest_house:block/nightclub_spot",
+      "model": "the_oldest_house:block/nightclub_spot_1",
       "y": 90
     },
     "kind=spot,facing=east,stage=2": {
-      "model": "the_oldest_house:block/nightclub_spot",
+      "model": "the_oldest_house:block/nightclub_spot_2",
       "y": 90
     },
     "kind=spot,facing=south,stage=0": {
-      "model": "the_oldest_house:block/nightclub_spot",
+      "model": "the_oldest_house:block/nightclub_spot_0",
       "y": 180
     },
     "kind=spot,facing=south,stage=1": {
-      "model": "the_oldest_house:block/nightclub_spot",
+      "model": "the_oldest_house:block/nightclub_spot_1",
       "y": 180
     },
     "kind=spot,facing=south,stage=2": {
-      "model": "the_oldest_house:block/nightclub_spot",
+      "model": "the_oldest_house:block/nightclub_spot_2",
       "y": 180
     },
     "kind=spot,facing=west,stage=0": {
-      "model": "the_oldest_house:block/nightclub_spot",
+      "model": "the_oldest_house:block/nightclub_spot_0",
       "y": 270
     },
     "kind=spot,facing=west,stage=1": {
-      "model": "the_oldest_house:block/nightclub_spot",
+      "model": "the_oldest_house:block/nightclub_spot_1",
       "y": 270
     },
     "kind=spot,facing=west,stage=2": {
-      "model": "the_oldest_house:block/nightclub_spot",
+      "model": "the_oldest_house:block/nightclub_spot_2",
       "y": 270
     },
     "kind=bench,facing=north,stage=0": {
@@ -526,6 +526,54 @@
     },
     "kind=bench,facing=west,stage=2": {
       "model": "the_oldest_house:block/nightclub_bench",
+      "y": 270
+    },
+    "kind=strobe,facing=north,stage=0": {
+      "model": "the_oldest_house:block/nightclub_strobe_0",
+      "y": 0
+    },
+    "kind=strobe,facing=north,stage=1": {
+      "model": "the_oldest_house:block/nightclub_strobe_1",
+      "y": 0
+    },
+    "kind=strobe,facing=north,stage=2": {
+      "model": "the_oldest_house:block/nightclub_strobe_2",
+      "y": 0
+    },
+    "kind=strobe,facing=east,stage=0": {
+      "model": "the_oldest_house:block/nightclub_strobe_0",
+      "y": 90
+    },
+    "kind=strobe,facing=east,stage=1": {
+      "model": "the_oldest_house:block/nightclub_strobe_1",
+      "y": 90
+    },
+    "kind=strobe,facing=east,stage=2": {
+      "model": "the_oldest_house:block/nightclub_strobe_2",
+      "y": 90
+    },
+    "kind=strobe,facing=south,stage=0": {
+      "model": "the_oldest_house:block/nightclub_strobe_0",
+      "y": 180
+    },
+    "kind=strobe,facing=south,stage=1": {
+      "model": "the_oldest_house:block/nightclub_strobe_1",
+      "y": 180
+    },
+    "kind=strobe,facing=south,stage=2": {
+      "model": "the_oldest_house:block/nightclub_strobe_2",
+      "y": 180
+    },
+    "kind=strobe,facing=west,stage=0": {
+      "model": "the_oldest_house:block/nightclub_strobe_0",
+      "y": 270
+    },
+    "kind=strobe,facing=west,stage=1": {
+      "model": "the_oldest_house:block/nightclub_strobe_1",
+      "y": 270
+    },
+    "kind=strobe,facing=west,stage=2": {
+      "model": "the_oldest_house:block/nightclub_strobe_2",
       "y": 270
     }
   }

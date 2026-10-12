@@ -21,11 +21,15 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 /** Required opt-in native client proof after the writing check, without opening a world. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class NpcVisualProof extends Screen {
-    private static int frames;
+    private static int frames,page;
     public NpcVisualProof(){super(Component.literal("House NPCs"));}
     @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){}
     @Override public void render(GuiGraphics g,int x,int y,float partial){
         g.fill(0,0,width,height,0xFF211E1B);g.drawString(font,"The Oldest House | native human models",10,10,0xFFE6DFCF,false);
+        if(page==1){
+            for(int i=0;i<3;i++){int at=10+i*width/3;g.fill(at,32,at+width/3-18,height-24,0xFF39332D);g.drawString(font,new String[]{"Quiet mourner | dark suit","Quiet mourner | blazer","Quiet mourner | navy jacket"}[i],at+8,40,0xFFE6DFCF,false);mesh(g,HouseHumanRenderers.mourner(i),at+width/6-8,68,4,0);mesh(g,HouseHumanRenderers.mourner(i),at+width/6-8,215,4,1);}
+            g.drawString(font,"Three original guests; native standard player UVs, front and back. The phone choice still determines the ending.",10,height-15,0xFFE6DFCF,false);return;
+        }
         ResourceLocation[] textures={HouseHumanRenderers.HOLLOWAY,HouseHumanRenderers.HARRIGAN,HouseHumanRenderers.HARRIGAN_DEAD,HouseHumanRenderers.WITNESS};
         String[] titles={"Holloway | shared","Harrigan | study","Harrigan | funeral","Old man | witness"};
         for(int i=0;i<4;i++){
@@ -43,6 +47,7 @@ public final class NpcVisualProof extends Screen {
         if(kind==1){model.leftLeg.xRot=model.rightLeg.xRot=-(float)Math.PI/2;model.leftArm.xRot=model.rightArm.xRot=-(float)Math.PI*2/9;}
         if(kind==2&&view==0){model.head.xRot=.3F;model.body.xRot=.14F;model.leftLeg.xRot=model.rightLeg.xRot=-(float)Math.PI/2;model.leftArm.xRot=model.rightArm.xRot=-.43F;}
         if(kind==3){model.body.xRot=.12F;model.head.xRot=.15F;model.leftArm.xRot=model.rightArm.xRot=-.15F;}
+        if(kind==4){model.head.xRot=.175F;model.leftArm.xRot=model.rightArm.xRot=-.314F;model.leftArm.zRot=-.157F;model.rightArm.zRot=.157F;}
         if(kind==0){model.rightArm.xRot=-1.45F;model.rightArm.yRot=-.2F;model.leftArm.xRot=-1.45F;model.leftArm.yRot=.55F;}
         model.hat.copyFrom(model.head);model.jacket.copyFrom(model.body);model.leftSleeve.copyFrom(model.leftArm);model.rightSleeve.copyFrom(model.rightArm);model.leftPants.copyFrom(model.leftLeg);model.rightPants.copyFrom(model.rightLeg);
         g.flush();var poses=g.pose();poses.pushPose();poses.translate(x,y,100);poses.scale(62,62,62);
@@ -56,8 +61,9 @@ public final class NpcVisualProof extends Screen {
         for(var texture:new ResourceLocation[]{HouseHumanRenderers.HOLLOWAY,HouseHumanRenderers.HARRIGAN,HouseHumanRenderers.HARRIGAN_DEAD,HouseHumanRenderers.WITNESS})
             if(mc.getResourceManager().getResource(texture).isEmpty())throw new IllegalStateException("Missing NPC skin "+texture);
         Path folder=Path.of("../build/font-smoke");Files.createDirectories(folder);
+        if(page==1){for(int i=0;i<3;i++)if(mc.getResourceManager().getResource(HouseHumanRenderers.mourner(i)).isEmpty())throw new IllegalStateException("Missing wake skin "+i);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve("native-harrigan-wake.png"));}TheOldestHouse.LOGGER.info("HOUSE WAKE CHECK PASSED: native screenshot saved");mc.setScreen(new CastVisualProof());return;}
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve("native-npcs.png"));}
         Files.writeString(folder.resolve("npcs-passed.txt"),"Native player model meshes, exact skin UVs, seated/casket poses and client renderer initialization passed.\n");
-        TheOldestHouse.LOGGER.info("HOUSE NPC CHECK PASSED: native screenshot saved");mc.setScreen(new CastVisualProof());
+        TheOldestHouse.LOGGER.info("HOUSE NPC CHECK PASSED: native screenshot saved");page=1;frames=0;
     }
 }

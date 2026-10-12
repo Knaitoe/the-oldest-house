@@ -42,12 +42,34 @@ public final class Nightclub {
         for(int x:new int[]{-10,10})for(int z:new int[]{-13,-39})for(int y=0;y<9;y++)prop(l,b,x,y,z,NightclubBlock.Kind.TRIM,Direction.NORTH);
         for(int z=-16;z>=-30;z-=7){for(int x=13;x<=15;x++)prop(l,b,x,0,z,NightclubBlock.Kind.BAR,Direction.WEST);prop(l,b,14,1,z,NightclubBlock.Kind.GLASS,Direction.WEST);NovelRooms.furniture(l,b.offset(11,0,z),HouseholdFurnitureBlock.Kind.KITCHEN_STOOL,Direction.EAST);}
         for(int z=-21;z>=-35;z-=7)prop(l,b,-14,0,z,NightclubBlock.Kind.BENCH,Direction.EAST);
-        for(int z:new int[]{-12,-26,-39})for(int x:new int[]{-14,14})prop(l,b,x,7,z,NightclubBlock.Kind.STRIP,Direction.NORTH);
-        for(int z:new int[]{-18,-32})for(int x:new int[]{-7,0,7})prop(l,b,x,8,z,NightclubBlock.Kind.SPOT,Direction.NORTH);
-        prop(l,b,0,4,-2,NightclubBlock.Kind.STRIP,Direction.SOUTH);
+        lights(l,b,true);
         // A readable, dim exit sign is a native sign rather than approximate generated lettering.
         var at=b.offset(0,3,-1);BuildBlocks.set(l,at,Blocks.DARK_OAK_WALL_SIGN.defaultBlockState().setValue(WallSignBlock.FACING,Direction.NORTH),18);
         BuildBlocks.after(l,()->{if(l.getBlockEntity(at) instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign){var text=sign.getFrontText().setMessage(1,net.minecraft.network.chat.Component.literal("EXIT")).setColor(net.minecraft.world.item.DyeColor.GREEN).setHasGlowingText(true);sign.setText(text,true);sign.setWaxed(true);}});
+    }
+    /** Three brief flashes every 130 seconds; the steady coloured lights never go dark. */
+    public static boolean strobe(long tick,boolean music){long phase=Math.floorMod(tick,2600L);return music&&phase<22&&phase%10<2;}
+    private static void lights(ServerLevel l,BlockPos b,boolean fresh){
+        var d=LabyrinthData.get(l.getServer());var state=d.state(STATE);String key="Lights_"+b.asLong();if(!fresh&&state.getBoolean(key))return;
+        if(!fresh){
+            if(!l.hasChunkAt(b.offset(-14,7,-39))||!l.hasChunkAt(b.offset(14,7,-12))||!l.getBlockState(b.offset(MIXER)).is(NightclubRegistry.BLOCK.get()))return;
+            if(l.players().stream().anyMatch(p->p.isAlive()&&!p.isSpectator()&&bounds(b).contains(p.position())))return;
+        }
+        int colour=0;
+        for(int z:new int[]{-12,-26,-39})for(int x:new int[]{-14,14}){
+            var at=b.offset(x,7,z);if(fresh||l.getBlockState(at).is(NightclubRegistry.BLOCK.get())&&l.getBlockState(at).getValue(NightclubBlock.KIND)==NightclubBlock.Kind.STRIP)
+                l.setBlock(at,NightclubBlock.of(NightclubBlock.Kind.STRIP,Direction.NORTH).setValue(NightclubBlock.STAGE,colour++%3),3);
+        }
+        for(int z:new int[]{-18,-32})for(int x:new int[]{-7,0,7}){
+            var old=b.offset(x,8,z);var lower=b.offset(x,4,z);
+            if(!fresh&&(!l.getBlockState(old).is(NightclubRegistry.BLOCK.get())||l.getBlockState(old).getValue(NightclubBlock.KIND)!=NightclubBlock.Kind.SPOT||!l.getBlockState(lower).isAir()))continue;
+            if(!fresh)l.setBlock(old,Blocks.AIR.defaultBlockState(),3);
+            for(int y=5;y<=8;y++)if(fresh||l.getBlockState(b.offset(x,y,z)).isAir())l.setBlock(b.offset(x,y,z),Blocks.CHAIN.defaultBlockState(),3);
+            l.setBlock(lower,NightclubBlock.of(NightclubBlock.Kind.SPOT,Direction.NORTH).setValue(NightclubBlock.STAGE,colour++%3),3);
+        }
+        for(int z:new int[]{-21,-35}){var at=b.offset(0,8,z);if(fresh||l.getBlockState(at).isAir())l.setBlock(at,NightclubBlock.of(NightclubBlock.Kind.STROBE,Direction.NORTH).setValue(NightclubBlock.STAGE,0),3);}
+        if(fresh)prop(l,b,0,4,-2,NightclubBlock.Kind.STRIP,Direction.SOUTH);
+        state.putBoolean(key,true);d.setState(STATE,state);
     }
     public static void ensureCast(ServerLevel l,BlockPos b){
         var d=LabyrinthData.get(l.getServer());var state=d.state(STATE);String origin=Long.toString(b.asLong());var cast=state.getCompound(origin);
@@ -58,8 +80,11 @@ public final class Nightclub {
         }
         state.put(origin,cast);d.setState(STATE,state);
     }
-    @SubscribeEvent public static void tick(ServerTickEvent.Post e){var server=e.getServer();if(server.getTickCount()%10!=0)return;var o=HouseSavedData.get(server).houseOrigin();var l=server.getLevel(HouseDimensions.INTERIOR);if(o==null||l==null)return;var b=LabyrinthPlaces.base(o,LabyrinthPlace.NIGHTCLUB);
+    @SubscribeEvent public static void tick(ServerTickEvent.Post e){var server=e.getServer();if(server.getTickCount()%2!=0)return;var o=HouseSavedData.get(server).houseOrigin();var l=server.getLevel(HouseDimensions.INTERIOR);if(o==null||l==null)return;var b=LabyrinthPlaces.base(o,LabyrinthPlace.NIGHTCLUB);
+        if(server.getTickCount()%10==0)lights(l,b,false);
         if(l.players().stream().noneMatch(p->p.isAlive()&&!p.isSpectator()&&bounds(b).contains(p.position())))return;
-        IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.NIGHTCLUB);ensureCast(l,b);
+        if(server.getTickCount()%10==0){IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.NIGHTCLUB);ensureCast(l,b);}
+        var mixer=l.getBlockState(b.offset(MIXER));boolean flash=strobe(l.getGameTime(),mixer.is(NightclubRegistry.BLOCK.get())&&mixer.getValue(NightclubBlock.STAGE)>0);
+        for(int z:new int[]{-21,-35}){var at=b.offset(0,8,z);var s=l.getBlockState(at);if(s.is(NightclubRegistry.BLOCK.get())&&s.getValue(NightclubBlock.KIND)==NightclubBlock.Kind.STROBE&&s.getValue(NightclubBlock.STAGE)!=(flash?1:0))l.setBlock(at,s.setValue(NightclubBlock.STAGE,flash?1:0),3);}
     }
 }

@@ -14,7 +14,7 @@ def cube(lo,hi,texture='wall',front=None):
 textures={'wall':'the_oldest_house:block/nightclub_wall','floor':'the_oldest_house:block/nightclub_floor',
           'speaker':'the_oldest_house:block/nightclub_speaker','black':'minecraft:block/black_concrete',
           'cloth':'minecraft:block/black_wool','metal':'minecraft:block/gray_concrete',
-          'pink':'minecraft:block/pink_concrete','blue':'minecraft:block/cyan_concrete',
+          'pink':'minecraft:block/red_concrete','blue':'minecraft:block/blue_concrete',
           'glass':'minecraft:block/glass','green':'minecraft:block/lime_concrete','water':'minecraft:block/blue_stained_glass'}
 meshes={
  'wall':[cube([0,0,0],[16,16,16])],
@@ -36,11 +36,19 @@ for stage in range(3):
     for z in (3,6,9,12):deck.append(cube([7.3,8,z],[8.7,9,z+1],'black'))
     if stage:deck.append(cube([2,8.1,2],[4,8.2,3],'green' if stage==1 else 'pink'))
     meshes['mixer_'+str(stage)]=deck
+# Full bright native emissive faces preserve the coarse vanilla concrete palette.
+for kind in ('strip','spot'):
+    for stage,colour in enumerate(('pink','blue','green')):
+        panels=json.loads(json.dumps(meshes[kind]));panels[-1]['faces']={d:{'texture':'#'+colour,'uv':[0,0,16,16]} for d in panels[-1]['faces']};panels[-1]['neoforge_data']={'block_light':15,'sky_light':0};panels[-1]['shade']=False
+        meshes[kind+'_'+str(stage)]=panels
+for stage in range(3):
+    panel=cube([4,13.8,4],[12,14,12],'metal' if stage==0 else 'glass');panel['shade']=False;panel['neoforge_data']={'block_light':0 if stage==0 else 15,'sky_light':0}
+    meshes['strobe_'+str(stage)]=[cube([3,14,3],[13,16,13],'black'),panel]
 variants={}
-for kind in ('wall','floor','ceiling','trim','speaker','mixer','bar','glass','strip','spot','bench'):
+for kind in ('wall','floor','ceiling','trim','speaker','mixer','bar','glass','strip','spot','bench','strobe'):
     for face,rotation in (('north',0),('east',90),('south',180),('west',270)):
-        for stage in range(3):variants[f'kind={kind},facing={face},stage={stage}']={'model':'the_oldest_house:block/nightclub_'+(f'mixer_{stage}' if kind=='mixer' else 'glass_empty' if kind=='glass' and stage==0 else kind),'y':rotation}
-for name,elements in meshes.items():save('models/block/nightclub_'+name+'.json',{'ambientocclusion':True,'textures':dict(textures,particle=textures['floor'] if name=='floor' else textures['wall']),'elements':elements})
+        for stage in range(3):variants[f'kind={kind},facing={face},stage={stage}']={'model':'the_oldest_house:block/nightclub_'+(f'{kind}_{stage}' if kind in ('mixer','strip','spot','strobe') else 'glass_empty' if kind=='glass' and stage==0 else kind),'y':rotation}
+for name,elements in meshes.items():save('models/block/nightclub_'+name+'.json',{'ambientocclusion':not(name.startswith(('strip','spot','strobe'))),'textures':dict(textures,particle=textures['floor'] if name=='floor' else textures['wall']),'elements':elements})
 save('blockstates/nightclub.json',{'variants':variants})
 display={'gui':{'rotation':[30,225,0],'scale':[1.4,1.4,1.4]},'firstperson_righthand':{'rotation':[0,0,0],'translation':[0,3,0],'scale':[1.5,1.5,1.5]},'thirdperson_righthand':{'rotation':[0,0,0],'translation':[0,3,0],'scale':[1.2,1.2,1.2]}}
 save('models/item/nightclub_glass.json',{'parent':'the_oldest_house:block/nightclub_glass','display':display,'overrides':[{'predicate':{'the_oldest_house:empty':1},'model':'the_oldest_house:item/nightclub_glass_empty'}]})
@@ -69,4 +77,4 @@ with tempfile.TemporaryDirectory() as tmp:
     wav=Path(tmp)/'beat.wav'
     with wave.open(str(wav),'wb') as f:f.setnchannels(1);f.setsampwidth(2);f.setframerate(rate);f.writeframes(pcm)
     subprocess.run(['ffmpeg','-y','-loglevel','error','-i',str(wav),'-c:a','libvorbis','-q:a','4',str(target)],check=True)
-print('Generated 14 club meshes, two glass item models, 132 oriented states and the original 32-second bass loop; supplied textures untouched.')
+print('Generated club meshes, two glass item models, 144 oriented states and the original 32-second bass loop; supplied textures untouched.')
