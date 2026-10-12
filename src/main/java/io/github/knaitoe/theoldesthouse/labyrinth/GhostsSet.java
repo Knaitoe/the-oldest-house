@@ -27,11 +27,11 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class GhostsSet {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.GHOSTS_SET;
     public static final String STATE="ghosts_set_0485";
-    public static final int DAYS=7, STAND=0, SIT=1, CROUCH=2, CRAWL=3, WALL=4, BED=5, FLINCH=6, SLUMP=7, VOMIT=8, HAND=9,LEAP=10;
+    public static final int DAYS=7, STAND=0, SIT=1, CROUCH=2, CRAWL=3, WALL=4, BED=5, FLINCH=6, SLUMP=7, VOMIT=8, HAND=9,LEAP=10,EATING=11,CHOKING=12,DEAD=13;
     public static final String[] PEOPLE={"Marjorie","Merry","John","Sarah","Barry","Father Wanderly"};
     public static final int[] ROLES={LiteraryActor.GHOST_MARJORIE,LiteraryActor.GHOST_MERRY,LiteraryActor.GHOST_JOHN,LiteraryActor.GHOST_SARAH,LiteraryActor.GHOST_PRODUCER,LiteraryActor.GHOST_PRIEST};
     public static final String[] TITLES={"The interviews and reconstructions","The family dinner","The upstairs reconstruction","The private conversation","The evaluation","The exorcism","The final pickup"};
-    public static final int[] LENGTH={800,1200,1000,1200,1000,780,1200};
+    public static final int[] LENGTH={800,1200,1000,1200,1000,780,1560};
     private static final int[][] EXPOSURES={{160,360,560,740},{300,570,900,1100},{250,420,620,900},{170,470,780,1080},{170,480,650,900},{180,560,735,770},{180,550,800,1100}};
     private record Line(int tick,int speaker,String text) {}
     // Original adaptation dialogue. Recollections and recreated incidents are explicitly distinguished from documentary takes.
@@ -66,9 +66,11 @@ public final class GhostsSet {
             new Line(660,0,"There's a mechanism in it. Who put this here?"),new Line(705,1,"You said you were pretending!"),
             new Line(715,3,"Marjorie!")),
         List.of(new Line(5,4,"The show is over. We're collecting the equipment. This visit wasn't on the call sheet."),
-            new Line(180,3,"We're having supper. You can put the case by the door."),new Line(350,0,"Merry has hers without sauce. She always does."),
-            new Line(550,1,"You said you weren't going to eat it."),new Line(790,1,"Marjorie? Mum?"),
-            new Line(1000,4,"Leave your account in the booth. Keep the tape and the cut separate.")));
+            new Line(180,3,"We're having supper. You can put the case by the door."),new Line(300,0,"No sauce for Merry. Nothing messy. Nothing she doesn't already know."),
+            new Line(390,0,"Look. I'm eating mine. You wanted us to have supper together, didn't you?"),
+            new Line(480,1,"You said you weren't going to eat it."),new Line(550,0,"What did you think was going to happen, Merry?"),
+            new Line(645,1,"Marjorie? Say it's only pretending."),new Line(740,1,"Mum? Dad? How long until you wake up?"),
+            new Line(900,1,"I can't stay here."),new Line(1380,4,"She went through the front door. Don't turn that into an answer. Keep the tape.")));
     private static final Map<ServerLevel,BuildBlocks.Plan> REPAIRS=new IdentityHashMap<>();
     private static final Map<ServerLevel,Set<BlockPos>> REPAIR_CELLS=new IdentityHashMap<>();
     private GhostsSet() {}
@@ -152,6 +154,7 @@ public final class GhostsSet {
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own) {
         if(!own.getBoolean("Filming0485"))return;
         if(a.role()==LiteraryActor.GHOST_PRODUCER){
+            p.displayClientMessage(Component.literal("Barry: "+GhostsConversations.line(own,4)),false);
             var icons=new HashMap<Integer,ItemStack>();
             icons.put(0,LiteraryChoiceMenu.icon(Items.REDSTONE,own.getBoolean("DayDone")?"Review the edited episode":"Ready for today's filming"));
             icons.put(4,LiteraryChoiceMenu.icon(Items.PAPER,"Review the unedited camera log"));
@@ -165,15 +168,9 @@ public final class GhostsSet {
                 LiteraryVignettes.save(data,p.getUUID(),PLACE,now);return slot==0||slot==4||slot==8;
             });return;
         }
-        if(a.phase()==SLUMP&&a.role()<=LiteraryActor.GHOST_SARAH){p.displayClientMessage(Component.literal(PEOPLE[a.role()-LiteraryActor.GHOST_MARJORIE]+" does not answer."),false);return;}
+        if((a.phase()==SLUMP||a.phase()==DEAD||a.phase()==CHOKING)&&a.role()<=LiteraryActor.GHOST_SARAH){p.displayClientMessage(Component.literal(PEOPLE[a.role()-LiteraryActor.GHOST_MARJORIE]+" does not answer."),false);return;}
         int i=Arrays.stream(ROLES).boxed().toList().indexOf(a.role());if(i<0)return;
-        String line=switch(i){
-            case 0->day(own)==4?"Being watched doesn't make the voices stop. Sometimes I can decide what you see.":"You keep looking through that thing. Do you ever look at me?";
-            case 1->day(own)>3?"They cut out the bits where she talks normally. Will they do that to me too?":"Could you leave the pictures here? They're ours.";
-            case 2->"We need people to understand what this family is going through.";
-            case 3->"She has a doctor. Remember that when you put this together.";
-            default->"An image is evidence of what it shows. Be careful with what you say it proves.";
-        };p.displayClientMessage(Component.literal(PEOPLE[i]+": "+line),false);
+        p.displayClientMessage(Component.literal(PEOPLE[i]+": "+GhostsConversations.line(own,i)),false);
         if(day(own)==4&&i==0&&!recording(p))own.putBoolean("RespectedPrivacy",true);
         if(day(own)>1){var prev=own.getCompound("FilmLog"+(day(own)-1));if(prev.getInt("Frames_Merry")>=20&&i==1)p.displayClientMessage(Component.literal("Merry: They kept my face in the episode. People at school saw it."),false);if(prev.getInt("Frames_Sarah")>=20&&i==3)p.displayClientMessage(Component.literal("Sarah: They used my crying. The part where I asked them to stop is gone."),false);}
     }
@@ -185,6 +182,29 @@ public final class GhostsSet {
         var at=b.offset(relative);if(!p.serverLevel().hasChunkAt(at)||!p.serverLevel().areEntitiesLoaded(ChunkPos.asLong(at.getX()>>4,at.getZ()>>4)))return null;
         var a=LiteraryVignettes.actor(p,PLACE,key,role,relative,true);if(a!=null){a.setNoGravity(true);a.setCustomNameVisible(false);}return a;
     }
+    private static final double[][] MERRY_EXIT={{3.4,.625,-27.6},{4.6,.625,-27.6},{5.5,0,-25.5},{.5,0,-24.5},{.5,0,-15.5},{.5,0,-12.5},{.5,0,-6.5}};
+    /** The surviving original walks round the table and through the ordinary native front door. */
+    private static void finalDinner(ServerPlayer p,BlockPos b,LiteraryActor[] cast,CompoundTag own,int t){
+        for(int i:new int[]{0,2,3}){
+            int choke=630+i*15,still=780+i*15;
+            pose(cast[i],t<choke?EATING:t<still?CHOKING:DEAD);
+            if(t>=choke&&t<still)capture(p,own,"FamilyConvulsions",cast[i].getEyePosition());
+            if(t>=choke)capture(p,own,"MouthLeak",cast[i].getEyePosition());
+        }
+        if(t>=300&&t<645)capture(p,own,"DinnerMouth",cast[0].getEyePosition());
+        if(t>=860&&!own.getBoolean("MerryLeft0488")){
+            int step=own.getInt("MerryExitStep0488");
+            if(step<MERRY_EXIT.length){var at=MERRY_EXIT[step];pose(cast[1],STAND);cast[1].setOnGround(true);
+                // Only open this authored door; never replace an edited block or a native block entity.
+                var door=b.offset(0,0,-14);var state=p.serverLevel().getBlockState(door);
+                if(step>=3&&state.getBlock() instanceof net.minecraft.world.level.block.DoorBlock&&!state.getValue(net.minecraft.world.level.block.DoorBlock.OPEN))((net.minecraft.world.level.block.DoorBlock)state.getBlock()).setOpen(cast[1],p.serverLevel(),state,door,true);
+                toward(cast[1],b,at[0],at[1],at[2],.42);
+                if(cast[1].position().distanceToSqr(new Vec3(b.getX()+at[0],b.getY()+at[1],b.getZ()+at[2]))<.18){own.putInt("MerryExitStep0488",step+1);if(step+1==MERRY_EXIT.length)own.putBoolean("MerryLeft0488",true);}
+            }
+        }
+        if(t>=860&&!own.getBoolean("MerryLeft0488"))capture(p,own,"MerryDeparture",cast[1].getEyePosition());
+        capture(p,own,"FinalMeal",cast[0].getEyePosition());capture(p,own,"MerryPlate",Vec3.atLowerCornerOf(b).add(1.5,1.06,-28.5));
+    }
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own) {
         if(!own.getBoolean("Filming0485")||own.getBoolean("Completed")||!built(LabyrinthData.get(p.server),b))return;
         var cast=new LiteraryActor[6];for(int i=0;i<6;i++){cast[i]=person(p,b,i);if(cast[i]==null)return;}
@@ -193,7 +213,7 @@ public final class GhostsSet {
         if(playhouse==null||drawer==null)return;
         int d=day(own);if(!own.getBoolean("CastPlaced")){stage(b,cast,d);pose(playhouse,0);pose(drawer,0);own.putBoolean("CastPlaced",true);}
         if(d==4&&own.getBoolean("BedroomPickup")&&(own.getInt("PickupStep0")<PICKUP_ROUTE.length||own.getInt("PickupStep1")<PICKUP_ROUTE.length)){pickup(b,cast,own);return;}
-        if(own.getBoolean("DayDone")) { display(p,own,b); return; }
+        if(own.getBoolean("DayDone")) { if(d==7)finalDinner(p,b,cast,own,Math.max(own.getInt("ShotClock"),820));display(p,own,b); return; }
         var here=d==4&&own.getBoolean("BedroomPickup")?Vec3.atBottomCenterOf(b.offset(GhostsSetRooms.MERRY_ROOM)):focus(b,d);
         if(!own.getBoolean("Rolling")||p.distanceToSqr(here)>24*24){display(p,own,b);return;}
         // The evaluation takes place upstairs too; the utility conversation moves to the bedroom later in its day.
@@ -230,7 +250,7 @@ public final class GhostsSet {
             }
             if(t>=780)own.putBoolean("JumpEject0488",true);
         }
-        if(d==7){if(t>=700)for(int i:new int[]{0,2,3})pose(cast[i],SLUMP);capture(p,own,"FinalMeal",cast[0].getEyePosition());capture(p,own,"MerryPlate",Vec3.atLowerCornerOf(b).add(1.5,1.06,-28.5));}
+        if(d==7)finalDinner(p,b,cast,own,t);
         for(int i=0;i<4;i++)capture(p,own,PEOPLE[i],cast[i].getEyePosition());
         if(recording(p)){
             var eye=lensEye(p,own);var look=lensLook(p,own);int lead=-1;double alignment=-1;for(int i=0;i<4;i++)if(framed(p,eye,look,cast[i].getEyePosition())){double a=look.dot(cast[i].getEyePosition().subtract(eye).normalize());if(a>alignment){alignment=a;lead=i;}}
@@ -249,24 +269,13 @@ public final class GhostsSet {
     public static ItemStack edit(String name,CompoundTag own,int d,boolean raw) {
         var log=own.getCompound("FilmLog"+d);var text=new StringBuilder((raw?"CAMERA LOG":"THE POSSESSION — EDITED EPISODE")+"\n\nDay "+d+": "+TITLES[d-1]+"\n\n");
         var seen=new ArrayList<String>();for(var key:log.getAllKeys())if(key.startsWith("Frames_")&&log.getInt(key)>=20)seen.add(key.substring(7));Collections.sort(seen);
-        if(raw){text.append(seen.isEmpty()?"No sustained usable shot was recorded.\n":"Sustained shots: "+String.join(", ",seen)+".\n");text.append("The camera log records framing, not a diagnosis. No shot proves what happened outside it.");}
+        if(raw){text.append(seen.isEmpty()?"No sustained usable shot was recorded.\n\n":"Sustained shots: "+String.join(", ",seen)+".\n\n");}
         else {
             String lead="";int held=0;for(int i=0;i<4;i++)if(log.getInt("LeadTicks_"+PEOPLE[i])>held){lead=PEOPLE[i];held=log.getInt("LeadTicks_"+lead);}
             if(held>=20)text.append(switch(lead){case "Marjorie"->"Your longest centred subject is Marjorie. The production builds a possession story around her body and voice.\n\n";case "John"->"Your longest centred subject is John. The production makes this a father's struggle to save his family.\n\n";case "Sarah"->"Your longest centred subject is Sarah. Her medical concerns become the episode's story of a family losing trust.\n\n";default->"Your longest centred subject is Merry. The episode makes a child's frightened perspective its point of view.\n\n";});
-            if(seen.contains("Marjorie"))text.append("The cut holds on Marjorie. Barry presents the pauses and changes of voice as a continuous display.\n\n");
-            if(seen.contains("John"))text.append("John's reaction becomes the centre of the episode: a father confronting something he cannot understand.\n\n");
-            if(seen.contains("Sarah"))text.append("Sarah's distress is used as a reaction shot. Her objections lose their surrounding conversation.\n\n");
-            if(seen.contains("Merry"))text.append("Merry's frightened face is held after the words that frightened her have ended.\n\n");
-            if(seen.contains("UnderTable"))text.append("The lens followed Marjorie below the table. The family remains audible beyond the frame.\n\n");
-            if(seen.contains("TableFittings"))text.append("The rusty fittings are visible in the rushes. Barry omits that shot from the broadcast. You still have its place in the camera log.\n\n");
-            if(seen.contains("DrawerMechanism"))text.append("You kept the mechanism in the frame. The broadcast cuts away before it can be examined.\n\n");
-            if(seen.isEmpty())text.append("Your camera supplies no usable image. The episode fills the gap with narration and a reconstructed shot.\n\n");
-            if(seen.contains("Handholds"))text.append("The damaged plaster stays visible beside the wall reconstruction.\n\n");
-            if(seen.contains("Playhouse"))text.append("The cardboard house collapses in your frame. The cut holds on the wreckage after the sisters have stopped speaking.\n\n");
-            if(seen.contains("PrivateConfession"))text.append("The confession is filmed. Barry uses it as an explanation without the appeal to put the camera down.\n\n");
-            if(seen.contains("FinalMeal"))text.append("The final meal remains on the tape after the programme has ended.\n\n");
-            if(d==4&&own.getBoolean("RespectedPrivacy"))text.append("You put the camera away for part of the private conversation. The production calls the missing image a technical problem.\n\n");
         }
+        text.append(GhostsConversations.review(own,d,raw,new HashSet<>(seen)));
+        if(raw)text.append("\n\nThe camera log records framing, not a diagnosis. No shot proves what happened outside it.");
         return HouseWriting.book(raw?"Unedited camera log — day "+d:"Edited episode — day "+d,name,HouseWriting.WritingStyle.WILL,pages(text.toString()));
     }
     /** Conservative pages for the real 114-pixel lectern, retaining every word and explicit line break. */

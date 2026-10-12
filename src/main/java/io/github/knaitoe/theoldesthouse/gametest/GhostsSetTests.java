@@ -184,4 +184,48 @@ public final class GhostsSetTests {
         });
     }
     @AfterBatch(batch="ghosts_dressing0488") public static void dressingDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="ghosts_recorded_review0488",timeoutTicks=200)
+    public static void EveryDayReviewsOnlyItsActualRecordedSubjects(GameTestHelper h){
+        String[] first={"Marjorie","UnderTable","Handholds","PrivateConfession","Evaluation","DrawerMechanism","DinnerMouth"};
+        String[] second={"Merry","InjuredHand","Threat","Playhouse","MotherObjection","FrozenLeap","MerryDeparture"};
+        String[] omitted={"marjorie's interview","beneath the table","damaged plaster","put down","answers are placed","mechanism","messy mouth"};
+        var own=new CompoundTag();var prior=new HashSet<String>();
+        for(int day=1;day<=7;day++)for(boolean raw:new boolean[]{false,true}){
+            var log=new CompoundTag();log.putInt("Frames_"+first[day-1],40);own.put("FilmLog"+day,log);
+            String a=words(GhostsSet.edit("reader",own,day,raw));log=new CompoundTag();log.putInt("Frames_"+second[day-1],40);own.put("FilmLog"+day,log);
+            String b=words(GhostsSet.edit("reader",own,day,raw));h.assertTrue(!a.equals(b),"recording a different subject changes that day's actual "+(raw?"log":"cut")+", day "+day);
+            h.assertTrue(!b.toLowerCase(Locale.ROOT).contains(omitted[day-1]),"an unrecorded subject never appears in the other summary, day "+day+": "+b);
+            h.assertTrue(prior.add(b),"each day has distinct subject-specific review language");
+        }
+        own.putInt("FilmDay",7);var log=new CompoundTag();log.putInt("Frames_MerryDeparture",19);own.put("FilmLog7",log);
+        h.assertTrue(!words(GhostsSet.edit("reader",own,7,true)).contains("walks through the front door"),"an unusably brief glimpse does not fabricate a recorded departure");h.succeed();
+    }
+    @GameTest(template="empty",batch="ghosts_conversations0488",timeoutTicks=200)
+    public static void AllSixSpeakersChangeEachDayAndKeepTheirOwnConversationCursor(GameTestHelper h){
+        for(int speaker=0;speaker<6;speaker++){
+            var seen=new HashSet<String>();var own=new CompoundTag();var peer=new CompoundTag();
+            for(int day=1;day<=7;day++){own.putInt("FilmDay",day);peer.putInt("FilmDay",day);String first=GhostsConversations.line(own,speaker),next=GhostsConversations.line(own,speaker);
+                h.assertTrue(seen.add(first)&&seen.add(next),"each actual speaker has new conversation on each day, role "+speaker+", day "+day);
+                h.assertTrue(GhostsConversations.line(peer,speaker).equals(first),"one reader's conversation does not advance a peer's cursor");
+                h.assertTrue(GhostsConversations.line(own.copy(),speaker).equals(first),"the saved native tag retains the speaker's own dialogue cursor");
+            }
+        }h.succeed();
+    }
+    @GameTest(template="empty",batch="ghosts_final_death0488",timeoutTicks=260)
+    public static void PoisoningUnfoldsOnTheOriginalFamilyAndMerryWalksOutAfterTheirDeaths(GameTestHelper h){
+        var f=fixture(h);var p=f.player("ghost_final_death",P);var peer=f.player("ghost_final_peer",P);f.source(p,P);
+        h.runAtTickTime(30,()->{
+            var own=f.own(p,P);own.putInt("FilmDay",7);own.putInt("ShotClock",295);own.putBoolean("CastPlaced",false);own.putBoolean("Rolling",true);f.at(p,P,-4,0,-24);
+            GhostsSet.reader(p,f.base(P),own);var ids=new HashMap<Integer,UUID>();for(int role:GhostsSet.ROLES)ids.put(role,actor(f,p,role).getUUID());
+            h.assertTrue(actor(f,p,LiteraryActor.GHOST_MARJORIE).phase()==GhostsSet.EATING,"Marjorie eats and teases before the poisoning takes effect");
+            own.putInt("ShotClock",625);GhostsSet.reader(p,f.base(P),own);h.assertTrue(actor(f,p,LiteraryActor.GHOST_MARJORIE).phase()==GhostsSet.CHOKING&&actor(f,p,LiteraryActor.GHOST_JOHN).phase()==GhostsSet.EATING,"the three deaths have distinct onset times instead of one instant slump");
+            own.putInt("ShotClock",855);GhostsSet.reader(p,f.base(P),own);for(int role:new int[]{LiteraryActor.GHOST_MARJORIE,LiteraryActor.GHOST_JOHN,LiteraryActor.GHOST_SARAH})h.assertTrue(actor(f,p,role).phase()==GhostsSet.DEAD,"each poisoned family member reaches the leaking, still death pose");
+            save(f,p,own);f.reload();own=f.own(p,P);GhostsSet.arrive(p,own);for(int i=0;i<230;i++)GhostsSet.reader(p,f.base(P),own);
+            var merry=actor(f,p,LiteraryActor.GHOST_MERRY);h.assertTrue(own.getBoolean("MerryLeft0488")&&merry.getZ()>f.base(P).getZ()-14&&merry.phase()==GhostsSet.STAND,"the original surviving Merry physically passes through the front door: step="+own.getInt("MerryExitStep0488")+", at="+merry.position());
+            for(int role:GhostsSet.ROLES)h.assertTrue(ids.get(role).equals(actor(f,p,role).getUUID()),"death and departure preserve each native family identity");
+            var position=merry.position();save(f,p,own);f.reload();GhostsSet.reader(p,f.base(P),f.own(p,P));h.assertTrue(merry.position().equals(position),"a finished or interrupted return does not reseat Merry beside the bodies");
+            h.assertTrue(f.own(peer,P).getInt("FilmDay")==1&&actor(f,peer,LiteraryActor.GHOST_MARJORIE).phase()!=GhostsSet.DEAD&&!own.getBoolean("Ready"),"another reader's living family and the original seven-day account gate remain independent");h.succeed();
+        });
+    }
+    @AfterBatch(batch="ghosts_final_death0488") public static void finalDeathDone(ServerLevel l){close();}
 }

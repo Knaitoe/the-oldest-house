@@ -25,16 +25,16 @@ public final class GhostsVisualProof extends Screen {
     @Override protected void init(){var sample=new net.minecraft.nbt.CompoundTag();for(int d=1;d<=7;d++){var log=new net.minecraft.nbt.CompoundTag();for(String name:new String[]{"Marjorie","Merry","John","Sarah","UnderTable","TableFittings","DrawerMechanism","Handholds","Playhouse","PrivateConfession","FinalMeal"})log.putInt("Frames_"+name,40);log.putInt("LeadTicks_Sarah",40);sample.put("FilmLog"+d,log);}sample.putBoolean("RespectedPrivacy",true);sample.putString("Confession","I kept the fittings and the mechanism in the tape, even when the cut left them out.");var mc=Minecraft.getInstance();for(int d=1;d<=7;d++)for(boolean raw:new boolean[]{true,false})for(var page:GhostsSet.edit("Native proof",sample,d,raw).get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages())if(mc.font.split(page.raw(),114).size()>14)throw new IllegalStateException("The filming account exceeds its native lectern page");}
     @Override public void renderBackground(GuiGraphics g,int x,int y,float d){}
     @Override public void render(GuiGraphics g,int x,int y,float partial){
-        var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xff292821);g.drawString(font,"The Barrett home / "+(page==0?"cast and human poses":"native furnishings and evidence"),10,10,0xffe7dbc3,false);g.flush();
+        var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xff292821);g.drawString(font,"The Barrett home / "+(page==0?"cast and human poses":page==3?"final supper / mouth animation":"native furnishings and evidence"),10,10,0xffe7dbc3,false);g.flush();
         var buffers=mc.renderBuffers().bufferSource();
-        if(page==0){
-            for(int n=0;n<17;n++){
-                int role=n<6?GhostsSet.ROLES[n]:n==15?LiteraryActor.GHOST_JOHN:LiteraryActor.GHOST_MARJORIE,phase=n<6?GhostsSet.STAND:n-6;
-                var model=new GhostsCastModel(mc.getEntityModels().bakeLayer(GhostsCastModel.LAYER));model.preview(role,phase,frames);
+        if(page==0||page==3){
+            for(int n=0;n<(page==0?17:12);n++){
+                int role=page==3?new int[]{LiteraryActor.GHOST_MARJORIE,LiteraryActor.GHOST_JOHN,LiteraryActor.GHOST_SARAH}[n%3]:n<6?GhostsSet.ROLES[n]:n==15?LiteraryActor.GHOST_JOHN:LiteraryActor.GHOST_MARJORIE,phase=page==3?(n<3?GhostsSet.EATING:n<6?GhostsSet.CHOKING:GhostsSet.DEAD):n<6?GhostsSet.STAND:n-6;
+                var model=new GhostsCastModel(mc.getEntityModels().bakeLayer(GhostsCastModel.LAYER));float age=page==3?frames+(n/3)*13:frames;model.preview(role,phase,age);
                 var skin=GhostsCastModel.skin(role,phase);if(mc.getResourceManager().getResource(skin).isEmpty())throw new IllegalStateException("Missing filming skin "+skin);
                 var pose=g.pose();pose.pushPose();float centreY=38+(n/5+.73F)*(height-70)/4;pose.translate(24+(n%5+.5F)*(width-48)/5,centreY,190);float size=role==LiteraryActor.GHOST_MERRY?28*.58F:28;pose.scale(size,size,size);pose.mulPose(Axis.YP.rotationDegrees(145));pose.translate(0,-1.5,0);
-                if(phase==GhostsSet.BED)LiteraryRenderers.bedPose(pose,1);model.renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(skin)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);buffers.endBatch();pose.popPose();
-                g.drawCenteredString(font,n<6?GhostsSet.PEOPLE[n]:"pose "+phase,24+(n%5)*(width-48)/5+(width-48)/10,(int)centreY+12,0xffe7dbc3);
+                if(phase==GhostsSet.BED)LiteraryRenderers.bedPose(pose,1);model.renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(skin)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);if(page==3)GhostsMouthLayer.preview(model,role,phase,age,pose,buffers,LightTexture.FULL_BRIGHT);buffers.endBatch();pose.popPose();
+                g.drawCenteredString(font,page==3?GhostsSet.PEOPLE[role-LiteraryActor.GHOST_MARJORIE]+" / "+phase:n<6?GhostsSet.PEOPLE[n]:"pose "+phase,24+(n%5)*(width-48)/5+(width-48)/10,(int)centreY+12,0xffe7dbc3);
             }
         }else if(page==1){
             var camera=new net.minecraft.world.item.ItemStack(LiteraryRegistry.CAMCORDER.get());var mesh=mc.getItemRenderer().getModel(camera,null,null,0);if(mesh==mc.getModelManager().getMissingModel()||!mesh.isGui3d())throw new IllegalStateException("The production camera requires its native mesh");g.renderItem(camera,width-24,height-24);
@@ -52,7 +52,7 @@ public final class GhostsVisualProof extends Screen {
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof GhostsVisualProof proof)||++proof.frames<24)return;
-        var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-ghosts-"+(proof.page==0?"cast":proof.page==1?"fixtures":"paper-and-cases")+".png"));}
-        if(++proof.page<3){proof.frames=0;return;}Files.writeString(dir.resolve("ghosts-passed.txt"),"Six painted cast skins, eleven jointed human poses, eight cast atlases, 140 fixture states, native case lids, four fitted call-sheet orientations and rolling native-font caption rendered.\n");mc.setScreen(new LastStopCastVisualProof());
+        var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-ghosts-"+(proof.page==0?"cast":proof.page==1?"fixtures":proof.page==2?"paper-and-cases":"final-dinner")+".png"));}
+        if(++proof.page<4){proof.frames=0;return;}Files.writeString(dir.resolve("ghosts-passed.txt"),"Six painted cast skins, fourteen jointed human poses, animated mouth strands/drops, eight cast atlases, 140 fixture states, native case lids, four fitted call-sheet orientations and rolling native-font caption rendered.\n");mc.setScreen(new LastStopCastVisualProof());
     }
 }

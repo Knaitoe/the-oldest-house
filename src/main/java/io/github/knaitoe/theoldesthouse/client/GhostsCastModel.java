@@ -37,11 +37,14 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
     public void preview(int role,int phase,float age){for(var part:new ModelPart[]{head,hat,body,rightArm,leftArm,rightLeg,leftLeg})part.getAllParts().forEach(ModelPart::resetPose);young=false;crouching=false;riding=false;jaw.visible=role==LiteraryActor.GHOST_MARJORIE;pose(phase,role==LiteraryActor.GHOST_MERRY?.58F:1,(float)Math.sin(age*.08F),age);}
     private void pose(int phase,float scale,float step,float age){
         switch(phase){
-            case GhostsSet.SIT,GhostsSet.SLUMP,GhostsSet.VOMIT,GhostsSet.HAND->{
+            case GhostsSet.SIT,GhostsSet.SLUMP,GhostsSet.VOMIT,GhostsSet.HAND,GhostsSet.EATING,GhostsSet.CHOKING,GhostsSet.DEAD->{
                 float lower=12;for(var part:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=lower;
                 leftLeg.xRot=rightLeg.xRot=-1F;leftKnee.xRot=rightKnee.xRot=1F;leftArm.xRot=-.7F;rightArm.xRot=-.8F;leftElbow.xRot=-.65F;rightElbow.xRot=-.6F;
                 if(phase==GhostsSet.HAND){rightArm.xRot=-1.25F;rightElbow.xRot=-1.4F;head.xRot=.35F;head.yRot=-.3F;}
                 if(phase==GhostsSet.SLUMP){body.xRot=.52F;head.xRot=.85F;head.zRot=.17F;leftArm.xRot=rightArm.xRot=-.1F;leftElbow.xRot=rightElbow.xRot=.2F;}
+                if(phase==GhostsSet.EATING){float chew=(float)Math.sin(age*.23F);head.xRot=.12F+chew*.025F;head.yRot=.2F;rightArm.xRot=-1.04F;rightElbow.xRot=-1.65F+chew*.08F;jaw.xRot=.04F+Math.max(0,chew)*.16F;}
+                if(phase==GhostsSet.CHOKING){float catchBreath=(float)Math.sin(age*.68F);body.xRot=.3F+catchBreath*.065F;body.zRot=(float)Math.sin(age*.47F)*.045F;head.xRot=.27F-catchBreath*.08F;head.zRot=(float)Math.sin(age*.53F)*.06F;rightArm.xRot=-1.18F;rightElbow.xRot=-1.95F;leftArm.xRot=-.5F;leftElbow.xRot=-.95F;jaw.xRot=.28F+Math.max(0,catchBreath)*.07F;}
+                if(phase==GhostsSet.DEAD){body.xRot=.66F;body.zRot=.12F;head.xRot=.93F;head.zRot=.24F;leftArm.xRot=rightArm.xRot=-.12F;leftElbow.xRot=rightElbow.xRot=.13F;leftLeg.xRot=-.72F;rightLeg.xRot=-.9F;jaw.xRot=.32F;}
                 // The dinner is an unnaturally still stare and a slowly opening mouth, without a retching body loop.
                 if(phase==GhostsSet.VOMIT){head.yRot=.55F;head.xRot=.03F;jaw.xRot=.25F+(float)Math.sin(age*.035F)*.025F;}
             }
@@ -62,9 +65,9 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         if(phase!=GhostsSet.CRAWL)HumanoidMotion.connect(this);hat.copyFrom(head);
     }
     public static ResourceLocation skin(LiteraryActor a){return skin(a.role(),a.phase());}
-    public static ResourceLocation skin(int role,int phase){String name=GhostsSet.PEOPLE[Math.max(0,Math.min(5,role-LiteraryActor.GHOST_MARJORIE))].toLowerCase(java.util.Locale.ROOT).replace(' ','_');if(role==LiteraryActor.GHOST_MARJORIE&&phase==GhostsSet.VOMIT)name+="_dinner";if(role==LiteraryActor.GHOST_JOHN&&(phase==GhostsSet.FLINCH||phase==GhostsSet.HAND))name+="_hand";return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/ghosts_"+name+".png");}
+    public static ResourceLocation skin(int role,int phase){String name=GhostsSet.PEOPLE[Math.max(0,Math.min(5,role-LiteraryActor.GHOST_MARJORIE))].toLowerCase(java.util.Locale.ROOT).replace(' ','_');if(role==LiteraryActor.GHOST_MARJORIE&&(phase==GhostsSet.VOMIT||phase==GhostsSet.EATING||phase==GhostsSet.CHOKING||phase==GhostsSet.DEAD))name+="_dinner";if(role==LiteraryActor.GHOST_JOHN&&(phase==GhostsSet.FLINCH||phase==GhostsSet.HAND))name+="_hand";return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/ghosts_"+name+".png");}
     public static final class Renderer extends MobRenderer<LiteraryActor,GhostsCastModel>{
-        public Renderer(EntityRendererProvider.Context c){super(c,new GhostsCastModel(c.bakeLayer(LAYER)),.2F);}
+        public Renderer(EntityRendererProvider.Context c){super(c,new GhostsCastModel(c.bakeLayer(LAYER)),.2F);addLayer(new GhostsMouthLayer(this));}
         @Override public ResourceLocation getTextureLocation(LiteraryActor a){return skin(a);}
         @Override protected void setupRotations(LiteraryActor a,PoseStack p,float age,float yaw,float partial,float scale){super.setupRotations(a,p,age,yaw,partial,scale);if(a.phase()==GhostsSet.BED)LiteraryRenderers.bedPose(p,1);}
         @Override public void render(LiteraryActor a,float yaw,float partial,PoseStack p,MultiBufferSource out,int light){super.render(a,yaw,partial,p,out,light);}
