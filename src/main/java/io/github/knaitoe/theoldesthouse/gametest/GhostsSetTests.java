@@ -46,6 +46,34 @@ public final class GhostsSetTests {
     public static void OnlyAllFilmingDaysAndOwnFinalAccountResolve(GameTestHelper h){var f=fixture(h);var p=f.player("ghost_end",P);f.source(p,P);h.runAtTickTime(30,()->{var t=f.own(p,P);t.putInt("FilmDay",7);t.putBoolean("DayDone",true);t.putString("Confession","I chose to keep looking at her mother.");GhostsSet.reader(p,f.base(P),t);h.assertTrue(!t.getBoolean("Ready"),"the last arrival and a confession do not replace the previous filming days");t.putInt("FilmedDays",127);GhostsSet.reader(p,f.base(P),t);save(f,p,t);h.assertTrue(t.getBoolean("Ready")&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.GHOSTS_SET),"the completed personal account still has to be read");f.read(p,P,LiteraryRooms.ending(P));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.GHOSTS_SET),"actual final native reading resolves this reader's existing source");h.succeed();});}
     @GameTest(template="empty",batch="ghosts_menu",timeoutTicks=240)
     public static void ReviewingTheCutKeepsItsNewNativeBookOpen(GameTestHelper h){var f=fixture(h);var p=f.player("ghost_menu",P);f.source(p,P);h.runAtTickTime(30,()->{var t=f.own(p,P);t.putBoolean("DayDone",true);save(f,p,t);var barry=actor(f,p,LiteraryActor.GHOST_PRODUCER);p.moveTo(barry.position().add(0,0,1));p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);LiteraryVignettes.talk(p,barry);var menu=p.containerMenu;menu.clicked(0,0,ClickType.PICKUP,p);h.assertTrue(p.containerMenu instanceof LiteraryVignettes.Pages,"the selection closes only itself, leaving the new native edited episode open");h.succeed();});}
+    @GameTest(template="empty",batch="ghosts_call_sheet",timeoutTicks=180)
+    public static void CallSheetCollectionDoesNotRecallThePlainsPhotographIntoTheOpenReader(GameTestHelper h){
+        var f=fixture(h);var p=f.player("ghost_call_sheet",P);
+        var photo=io.github.knaitoe.theoldesthouse.opening.NavidsonLetter.createSnapshot(f.in,NovelVignettes.plainPixels());
+        net.minecraft.world.item.component.CustomData.update(DataComponents.CUSTOM_DATA,photo,t->{t.putUUID(NovelVignettes.PHOTO_OWNER,p.getUUID());t.putUUID(NovelVignettes.PHOTO_ID,UUID.randomUUID());});
+        var own=NovelVignettes.personal(f.data(),p.getUUID());own.put("Photo",photo.save(p.registryAccess()));own.putLong("PhotoDay",0);NovelVignettes.save(f.data(),p.getUUID(),own);
+        var chestAt=f.base(P).offset(-17,0,-8);f.in.setBlock(chestAt,Blocks.CHEST.defaultBlockState(),3);
+        var chest=(net.minecraft.world.level.block.entity.ChestBlockEntity)f.in.getBlockEntity(chestAt);chest.setItem(0,photo.copy());
+        f.click(p,P,new BlockPos(-17,0,-8));p.getInventory().selected=1;f.click(p,P,LiteraryRooms.source(P));
+        h.assertTrue(p.containerMenu instanceof LiteraryVignettes.Pages,"the actual call-sheet surface opens its own native reader");
+        var menu=(LiteraryVignettes.Pages)p.containerMenu;var paper=menu.original();
+        h.assertTrue(paper.is(Items.WRITTEN_BOOK)&&paper.get(DataComponents.WRITTEN_BOOK_CONTENT).title().raw().equals("Call sheet"),"the open original is the producer's call sheet");
+        p.server.overworld().setDayTime(24000);
+        h.runAfterDelay(25,()->{
+            h.assertTrue(p.containerMenu==menu&&ItemStack.matches(chest.getItem(0),photo)&&p.getInventory().countItem(Items.FILLED_MAP)==0,"a due morning recall waits while the reader is open instead of intruding on paper collection");
+            h.assertTrue(menu.clickMenuButton(p,3)&&!menu.clickMenuButton(p,3),"taking the call sheet yields its finite original exactly once");
+            h.assertTrue(p.getInventory().items.stream().anyMatch(s->ItemStack.matches(s,paper)),"the exact call-sheet stack reaches the reader's inventory");
+            h.assertTrue(ItemStack.matches(p.getMainHandItem(),paper),"the collected call sheet occupies the selected empty hand before any unrelated recall");
+            p.closeContainer();
+        });
+        h.runAfterDelay(65,()->{
+            h.assertTrue(chest.getItem(0).isEmpty()&&p.getInventory().countItem(Items.FILLED_MAP)==1,"after the reader closes, the same photograph is recalled from storage once");
+            h.assertTrue(p.getInventory().items.stream().anyMatch(s->ItemStack.matches(s,paper))&&p.getInventory().items.stream().anyMatch(s->ItemStack.matches(s,photo)),"the call sheet and photograph remain distinct exact originals");
+            h.assertTrue(ItemStack.matches(p.getMainHandItem(),paper),"the photograph's later return does not replace the collected call sheet in the hand");
+            f.reload();f.click(p,P,LiteraryRooms.source(P));
+            h.assertTrue(ItemStack.matches(((LiteraryVignettes.Pages)p.containerMenu).original(),paper)&&!p.containerMenu.clickMenuButton(p,3),"reload preserves the call sheet and its finite collection independently of the returning photo");h.succeed();
+        });
+    }
     @GameTest(template="empty",batch="ghosts_crawl",timeoutTicks=260)
     public static void DinnerCrawlAndFittingsUseNativeClearance(GameTestHelper h){var f=fixture(h);var p=f.player("ghost_crawl",P);f.source(p,P);h.runAtTickTime(30,()->{var t=f.own(p,P);t.putInt("FilmDay",2);t.putInt("ShotClock",515);t.putBoolean("CastPlaced",false);t.putBoolean("Rolling",true);f.at(p,P,0,0,-26);for(int n=0;n<70;n++)GhostsSet.reader(p,f.base(P),t);var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);h.assertTrue(Math.abs(m.getX()-f.base(P).getX()+.4)<.3&&Math.abs(m.getZ()-f.base(P).getZ()+28.5)<.3,"the original body crawls into the native table clearance: "+m.position());h.assertTrue(m.getBoundingBox().maxY<f.base(P).getY()+.9375,"the crawl collision body stays below the continuous tabletop");h.assertTrue(f.in.getBlockState(f.base(P).offset(0,0,-29)).getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.BOLTS,"the fittings retain a real table top");h.succeed();});}
     @GameTest(template="empty",batch="ghosts_pickup",timeoutTicks=260)
@@ -91,6 +119,7 @@ public final class GhostsSetTests {
     @AfterBatch(batch="ghosts_legacy") public static void legacyDone(ServerLevel l){close();}
     @AfterBatch(batch="ghosts_ending") public static void endingDone(ServerLevel l){close();}
     @AfterBatch(batch="ghosts_menu") public static void menuDone(ServerLevel l){close();}
+    @AfterBatch(batch="ghosts_call_sheet") public static void callSheetDone(ServerLevel l){close();}
     @AfterBatch(batch="ghosts_crawl") public static void crawlDone(ServerLevel l){close();}
     @AfterBatch(batch="ghosts_pickup") public static void pickupDone(ServerLevel l){close();}
     @AfterBatch(batch="ghosts_upgrade") public static void upgradeDone(ServerLevel l){close();}

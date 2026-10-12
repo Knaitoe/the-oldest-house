@@ -31,7 +31,8 @@ public final class HotelRenderers {
                 var leg=r.addOrReplaceChild(left?"left_leg":"right_leg",CubeListBuilder.create().texOffs(0,16).mirror(left).addBox(-2,0,-2,4,6,4),PartPose.offset(left?1.9F:-1.9F,12,0));
                 leg.addOrReplaceChild("knee",CubeListBuilder.create().texOffs(0,22).mirror(left).addBox(-2,0,-2,4,6,4),PartPose.offset(0,6,0));
             }
-            r.getChild("body").addOrReplaceChild("tails",CubeListBuilder.create().texOffs(64,30).addBox(-4.5F,1,-2.4F,9,16,4.8F).texOffs(64,52).addBox(-4.5F,15,1.4F,4,6,1.2F).addBox(.5F,15,1.4F,4,6,1.2F),PartPose.ZERO);
+            // Match the painted shirt/lapels on the torso instead of covering them with the skirt material.
+            r.getChild("body").addOrReplaceChild("tails",CubeListBuilder.create().texOffs(16,16).addBox(-4,0,-2,8,12,4,new CubeDeformation(.15F)).texOffs(64,52).addBox(-4.3F,11.5F,1.6F,3.8F,8,1).addBox(.5F,11.5F,1.6F,3.8F,8,1),PartPose.ZERO);
             r.getChild("body").addOrReplaceChild("apron",CubeListBuilder.create().texOffs(96,0).addBox(-4.2F,3,-2.8F,8.4F,13,1),PartPose.ZERO);
             r.getChild("body").addOrReplaceChild("skirt",CubeListBuilder.create().texOffs(64,30).addBox(-5,9,-3,10,12,6),PartPose.ZERO);
             r.getChild("head").addOrReplaceChild("cap",CubeListBuilder.create().texOffs(64,0).addBox(-4.6F,-9,-4.6F,9.2F,2,9.2F),PartPose.ZERO);

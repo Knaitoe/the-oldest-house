@@ -240,6 +240,9 @@ public final class NovelVignettes {
     }
     private static void returnPhoto(ServerPlayer p,CompoundTag own){
         if(!own.contains("Photo")||own.getBoolean("PhotoGivenAway"))return;
+        // A due recall must not intrude on collecting an unrelated original or moving items in an open menu.
+        // Leave PhotoDay pending so the same photograph returns normally after the reader closes it.
+        if(p.containerMenu!=p.inventoryMenu)return;
         if(MotherCollection.get(p.server).all().stream().filter(e->!e.pet).anyMatch(e->photo(e.item(p.registryAccess()),p.getUUID()))){own.putBoolean("PhotoGivenAway",true);return;}
         long day=p.server.overworld().getDayTime()/24000;if(day<=own.getLong("PhotoDay"))return;own.putLong("PhotoDay",day);
         for(int i=0;i<p.getInventory().getContainerSize();i++)if(photo(p.getInventory().getItem(i),p.getUUID()))return;
