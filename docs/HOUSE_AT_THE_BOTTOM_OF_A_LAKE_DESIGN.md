@@ -100,7 +100,7 @@ A reader who comes alone has Tess. She is an original character; the name is a w
 - **The rule:** she is the one who sets it, and she's hurt if the reader breaks it ("Couldn't it just be ours?").
 - **The finale:** at the dock she says "Something was in my room last night. The floor was wet. We have to go back and say hello." In the house she goes up toward the footsteps first, but won't meet it without her reader.
 - **After the ending, she says goodbye once.** On the reader's next visit alone she is waiting at the dock one last time and ends it, as the book does. Her words depend on the ending:
-  - Said hello: "It was ours because we never asked. I don't want to spend the rest of it asking."
+  - Said hello: "I came out here twice on my own. Just sat in the canoe and looked down. There's nothing there. I have to stop coming."
   - Left the lights on: "It's still lit, isn't it. I'm not going back down. I don't think you should either."
   - Stayed a little longer: "You didn't come up. I sat on that raft until it got light. I can't do that again."
 
