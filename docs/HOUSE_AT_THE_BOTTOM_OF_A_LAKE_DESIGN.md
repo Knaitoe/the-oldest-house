@@ -82,7 +82,7 @@ An outdoor literary scene in the next slot (95), multi-visit, appended and carve
 4. **Between visits: the house follows you home.** The next time that reader wakes in a bed in their own world, they see private dripping from the ceiling and wet footprints leading from the nearest door to the bed and stopping. It happens once. Nothing in the world is changed.
 5. **Say hello.**
    - The sauna door shuts on its own. It's hot and steamy but harmless.
-   - The footsteps go upstairs, and every lamp in the house lights for that reader alone, through per-reader block views.
+   - The footsteps go upstairs, and every lamp in the house lights for that reader alone (see "The lights" below).
    - In the dressing room the wax figure is putting on the black dress. What the reader does next decides their ending.
 
 ## Tess, the solo partner
@@ -99,6 +99,12 @@ A reader who comes alone has Tess. She is an original character; the name is a w
 - **The helmet visit:** she tends the compressor and tugs the hose when it snags.
 - **The rule:** she is the one who sets it, and she's hurt if the reader breaks it ("Couldn't it just be ours?").
 - **The finale:** at the dock she says "Something was in my room last night. The floor was wet. We have to go back and say hello." In the house she goes up toward the footsteps first, but won't meet it without her reader.
+- **After the ending, she says goodbye once.** On the reader's next visit alone she is waiting at the dock one last time and ends it, as the book does. Her words depend on the ending:
+  - Said hello: "It was ours because we never asked. I don't want to spend the rest of it asking."
+  - Left the lights on: "It's still lit, isn't it. I'm not going back down. I don't think you should either."
+  - Stayed a little longer: "You didn't come up. I sat on that raft until it got light. I can't do that again."
+
+  After that she is never at the dock again; the canoe waits there alone. A solo reader is never left wondering where she went, and it costs only a few lines. If the reader never comes back alone, the goodbye simply never happens.
 
 ## Multiplayer
 
@@ -118,6 +124,15 @@ Each ending readies that reader's account. The reader resolves it by reading the
 | **Left the lights on** | Leave through the half door while the house is lit, without touching the figure. | The house stays lit for that reader on every later visit. | **The house light.** Hung anywhere in the Overworld, even underwater, it makes that place home: the reader respawns under it without a bed. It switches itself on as they come home at night, and now and then they hear wet steps near it. |
 | **Stayed a little longer** | Sit at your place at the table and stay seated as the lights dim. | The reader blacks out at the table and wakes on the raft at dawn. The account says days have passed; the world's time does not change. The house stays dark, with their place set. | **The gold helmet.** Unlimited breath underwater, but no armour, muffled hearing and a narrower view. Sometimes the house creaks somewhere above. |
 
+## The lights
+
+The finale's "every light came on" happens for one reader at a time, and the house stays lit afterwards for a reader who left the lights on. It is built so it never depends on the client relighting blocks the server sent to one player:
+
+- **How the lamps look:** the house's lamps switch to their lit state for that reader alone, through per-reader block views. The Last Stop already sends single readers their own blocks.
+- **The light itself:** while that reader is inside the house, a hidden night-vision effect gives them full brightness. It has no particles and no icon. This is what actually lights the rooms for them, so the moment works even if a client never relights the private lamp blocks.
+- **The lights going out:** the effect ends and a short vanilla darkness covers the blackout.
+- **Left the lights on:** the same lamps and brightness return on every later visit while the reader is inside the house.
+
 ## Counts and versions
 
 - **Witness pool:** one new personal source, making 45 sources and 34 required resolutions (75 percent, rounded up), across two kinds. The House still has its three endings.
@@ -125,7 +140,5 @@ Each ending readies that reader's account. The reader resolves it by reading the
 
 ## Open questions
 
-- **Tess after the ending.** Does she end it, as the book does ("we peaked early"), or is she simply not at the dock again?
 - **The house light outside the Overworld.** It is Overworld-only by default; the owner can open it to other dimensions.
-- **Private lighting.** The finale relies on the client relighting lamps sent to one reader alone. The Last Stop already sends one reader their own blocks, but private light needs a native test before the finale depends on it.
 - **Pacing.** Four visits of a few minutes each is a target, not a measurement.
