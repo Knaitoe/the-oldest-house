@@ -1,7 +1,7 @@
 {
   "textures": {
-    "formica": "the_oldest_house:block/ghosts/formica",
-    "cream": "the_oldest_house:block/ghosts/cream"
+    "formica": "the_oldest_house:block/ghosts/materials_atlas",
+    "cream": "the_oldest_house:block/ghosts/materials_atlas"
   },
   "elements": [
     {
@@ -19,55 +19,55 @@
         "north": {
           "texture": "#cream",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            0.0,
+            8.0,
+            4.0,
+            12.0
           ]
         },
         "south": {
           "texture": "#cream",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            0.0,
+            8.0,
+            4.0,
+            12.0
           ]
         },
         "east": {
           "texture": "#cream",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            0.0,
+            8.0,
+            4.0,
+            12.0
           ]
         },
         "west": {
           "texture": "#cream",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            0.0,
+            8.0,
+            4.0,
+            12.0
           ]
         },
         "up": {
           "texture": "#cream",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            0.0,
+            8.0,
+            4.0,
+            12.0
           ]
         },
         "down": {
           "texture": "#cream",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            0.0,
+            8.0,
+            4.0,
+            12.0
           ]
         }
       }
@@ -87,55 +87,55 @@
         "north": {
           "texture": "#formica",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            4.0,
+            12.0,
+            8.0
           ]
         },
         "south": {
           "texture": "#formica",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            4.0,
+            12.0,
+            8.0
           ]
         },
         "east": {
           "texture": "#formica",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            4.0,
+            12.0,
+            8.0
           ]
         },
         "west": {
           "texture": "#formica",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            4.0,
+            12.0,
+            8.0
           ]
         },
         "up": {
           "texture": "#formica",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            4.0,
+            12.0,
+            8.0
           ]
         },
         "down": {
           "texture": "#formica",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            4.0,
+            12.0,
+            8.0
           ]
         }
       }

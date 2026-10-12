@@ -1,7 +1,7 @@
 {
   "textures": {
-    "red": "the_oldest_house:block/ghosts/red",
-    "denim": "the_oldest_house:block/ghosts/denim"
+    "red": "the_oldest_house:block/ghosts/materials_atlas",
+    "denim": "the_oldest_house:block/ghosts/materials_atlas"
   },
   "elements": [
     {
@@ -19,55 +19,55 @@
         "north": {
           "texture": "#denim",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            8.0,
+            12.0,
+            12.0
           ]
         },
         "south": {
           "texture": "#denim",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            8.0,
+            12.0,
+            12.0
           ]
         },
         "east": {
           "texture": "#denim",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            8.0,
+            12.0,
+            12.0
           ]
         },
         "west": {
           "texture": "#denim",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            8.0,
+            12.0,
+            12.0
           ]
         },
         "up": {
           "texture": "#denim",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            8.0,
+            12.0,
+            12.0
           ]
         },
         "down": {
           "texture": "#denim",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            8.0,
+            12.0,
+            12.0
           ]
         }
       }
@@ -87,55 +87,55 @@
         "north": {
           "texture": "#red",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            12.0,
+            8.0,
+            16.0,
+            12.0
           ]
         },
         "south": {
           "texture": "#red",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            12.0,
+            8.0,
+            16.0,
+            12.0
           ]
         },
         "east": {
           "texture": "#red",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            12.0,
+            8.0,
+            16.0,
+            12.0
           ]
         },
         "west": {
           "texture": "#red",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            12.0,
+            8.0,
+            16.0,
+            12.0
           ]
         },
         "up": {
           "texture": "#red",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            12.0,
+            8.0,
+            16.0,
+            12.0
           ]
         },
         "down": {
           "texture": "#red",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            12.0,
+            8.0,
+            16.0,
+            12.0
           ]
         }
       }

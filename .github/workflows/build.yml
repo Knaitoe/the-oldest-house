@@ -60,7 +60,7 @@ jobs:
                   assert name in z.namelist(), name
               assert f'version="{expected_version}"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               ghosts = json.loads(z.read('assets/the_oldest_house/blockstates/ghosts_set.json'))['variants']
-              assert len(ghosts) == 112
+              assert len(ghosts) == 140
               for variant in ghosts.values():
                   assert json.loads(z.read('assets/the_oldest_house/models/'+variant['model'].split(':')[1]+'.json'))['elements']
               for name in ('marjorie','merry','john','sarah','barry','father_wanderly','marjorie_dinner','john_hand'):
@@ -679,6 +679,7 @@ jobs:
           test -s build/font-smoke/ghosts-passed.txt
           test -s build/font-smoke/native-ghosts-cast.png
           test -s build/font-smoke/native-ghosts-fixtures.png
+          test -s build/font-smoke/native-ghosts-paper-and-cases.png
           test -s build/font-smoke/scenes/ghosts_upstairs.png
           test -s build/font-smoke/scenes/ghosts_basement.png
           test -s build/font-smoke/literary-passed.txt

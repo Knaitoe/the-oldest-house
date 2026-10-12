@@ -22,7 +22,7 @@ public final class GhostsSetRooms {
     static void set(ServerLevel l,BlockPos b,int x,int y,int z,BlockState s) {var at=b.offset(x,y,z);if(protectedCells.contains(at))return;if(repairGuard!=null)BuildBlocks.protectedSet(l,at,s,F,repairGuard,protectedCells);else BuildBlocks.set(l,at,s,F);}
     static void fill(ServerLevel l,BlockPos b,int x0,int y0,int z0,int x1,int y1,int z1,BlockState s) {if(repairGuard==null)BuildBlocks.box(l,b.offset(x0,y0,z0),b.offset(x1,y1,z1),s,F);else for(var c:BlockPos.betweenClosed(x0,y0,z0,x1,y1,z1))set(l,b,c.getX(),c.getY(),c.getZ(),s);}
     static void repair(ServerLevel l,BlockPos b,java.util.Set<BlockPos> keep,java.util.function.BooleanSupplier guard){protectedCells=keep;repairGuard=guard;try{build(l,b);}finally{protectedCells=java.util.Set.of();repairGuard=null;}}
-    static void prop(ServerLevel l,BlockPos b,int x,int y,int z,GhostsSetBlock.Kind k,Direction f) { set(l,b,x,y,z,GhostsSetBlock.of(k,f)); }
+    static void prop(ServerLevel l,BlockPos b,int x,int y,int z,GhostsSetBlock.Kind k,Direction f) { set(l,b,x,y,z,k==CASE?LiteraryRegistry.GHOST_CASE.get().defaultBlockState().setValue(GhostsCaseBlock.FACING,f):GhostsSetBlock.of(k,f)); }
     private static void furniture(ServerLevel l,BlockPos b,int x,int y,int z,HouseholdFurnitureBlock.Kind k,Direction f) {set(l,b,x,y,z,HouseBlocks.HOUSEHOLD_FURNITURE.get().defaultBlockState().setValue(HouseholdFurnitureBlock.KIND,k).setValue(HouseholdFurnitureBlock.FACING,f));}
     private static void literary(ServerLevel l,BlockPos b,BlockPos rel,LiteraryPropBlock.Kind k,Direction f){set(l,b,rel.getX(),rel.getY(),rel.getZ(),LiteraryRegistry.PROP.get().defaultBlockState().setValue(LiteraryPropBlock.KIND,k).setValue(LiteraryPropBlock.FACING,f));}
     private static void door(ServerLevel l,BlockPos b,int x,int y,int z,Direction f){var state=Blocks.OAK_DOOR.defaultBlockState().setValue(DoorBlock.FACING,f).setValue(DoorBlock.OPEN,true);set(l,b,x,y,z,state);set(l,b,x,y+1,z,state.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));}
@@ -43,6 +43,7 @@ public final class GhostsSetRooms {
         door(l,b,8,5,-23,Direction.SOUTH);
         fill(l,b,0,5,-44,0,9,-24,wall);
         fill(l,b,-14,5,-44,-14,9,-24,wall);
+        fill(l,b,-14,10,-44,12,10,-15,GhostsSetBlock.of(CEILING,Direction.NORTH));
         prop(l,b,-14,7,-33,PLASTER,Direction.EAST);
         // Five broad, backed treads meet the upstairs landing; the central arrival and all source/ending approaches stay clear.
         for(int i=0;i<5;i++)for(int x=-18;x<=-16;x++) {
@@ -51,7 +52,7 @@ public final class GhostsSetRooms {
         }
         fill(l,b,-18,4,-22,-15,4,-21,floor);fill(l,b,-19,5,-22,-19,5,-16,Blocks.OAK_FENCE.defaultBlockState());
         for(int x:new int[]{-12,10})for(int z:new int[]{-41,-26}) {
-            prop(l,b,x,3,z,LAMP,Direction.NORTH);prop(l,b,x,10,z,LAMP,Direction.NORTH);
+            prop(l,b,x,3,z,LAMP,Direction.NORTH);prop(l,b,x,9,z,LAMP,Direction.NORTH);
         }
         // A six-block table with a continuous underside and real leg clearance. The rusty fittings can be filmed from below.
         for(int x=-1;x<=1;x++)for(int z=-29;z<=-28;z++)prop(l,b,x,0,z,GhostsSetBlock.Kind.TABLE,Direction.NORTH);
@@ -63,11 +64,12 @@ public final class GhostsSetRooms {
         prop(l,b,-12,1,-42,JUG,Direction.SOUTH);prop(l,b,-7,1,-42,BOOKS,Direction.SOUTH);
         furniture(l,b,-10,0,-18,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);
         furniture(l,b,-7,0,-18,HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR,Direction.WEST);
+        for(int x=-10;x<=-7;x++)for(int z=-21;z<=-19;z++)prop(l,b,x,0,z,RUG,Direction.NORTH);
         // Distinct, lived-in bedrooms rather than a bed on the stage: books, the borrowed hat, a jug trap and the sisters' pictures.
         prop(l,b,-10,5,-33,BED_HEAD,Direction.NORTH);prop(l,b,-10,5,-32,BED_FOOT,Direction.NORTH);
         prop(l,b,10,5,-41,BED_HEAD,Direction.NORTH);prop(l,b,10,5,-40,BED_FOOT,Direction.NORTH);
-        for(int x:new int[]{-12,10}){furniture(l,b,x-1,5,-41,HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);prop(l,b,x-1,6,-41,BOOKS,Direction.SOUTH);}
-        prop(l,b,-11,6,-41,HAT,Direction.SOUTH);prop(l,b,8,7,-44,DRAWING,Direction.SOUTH);
+        for(int x:new int[]{-12,10}){prop(l,b,x-1,5,-41,COUNTER,Direction.SOUTH);prop(l,b,x-1,6,-41,BOOKS,Direction.SOUTH);}
+        prop(l,b,-11,5,-41,COUNTER,Direction.SOUTH);prop(l,b,-11,6,-41,HAT,Direction.SOUTH);prop(l,b,8,7,-44,DRAWING,Direction.SOUTH);
         prop(l,b,8,8,-23,JUG,Direction.SOUTH);prop(l,b,11,5,-26,BOOKS,Direction.NORTH);
         // Basement beneath the kitchen, reached by an enclosed stair beside the living room.
         fill(l,b,3,-5,-35,11,-5,-20,GhostsSetBlock.of(TILE,Direction.NORTH));
@@ -91,6 +93,6 @@ public final class GhostsSetRooms {
         for(int x:new int[]{-18,18})for(int z:new int[]{-10,-40})literary(l,b,new BlockPos(x,0,z),LiteraryPropBlock.Kind.LIGHT_STAND,Direction.SOUTH);
         fill(l,b,14,4,-41,19,4,-32,GhostsSetBlock.of(CEILING,Direction.NORTH));
         prop(l,b,16,3,-38,LAMP,Direction.NORTH);prop(l,b,0,10,-9,LAMP,Direction.NORTH);
-        BuildBlocks.after(l,()->GhostsSet.markBuilt(LabyrinthData.get(l.getServer()),b));
+        BuildBlocks.after(l,()->{var data=LabyrinthData.get(l.getServer());GhostsSet.markBuilt(data,b);GhostsSetDressing.markBuilt(data,b);});
     }
 }

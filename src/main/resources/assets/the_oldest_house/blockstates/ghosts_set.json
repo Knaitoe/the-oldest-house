@@ -447,6 +447,118 @@
     "kind=plaster,facing=west": {
       "model": "the_oldest_house:block/ghosts_plaster",
       "y": 270
+    },
+    "kind=meal_stew,facing=north": {
+      "model": "the_oldest_house:block/ghosts_meal_stew",
+      "y": 0
+    },
+    "kind=meal_stew,facing=east": {
+      "model": "the_oldest_house:block/ghosts_meal_stew",
+      "y": 90
+    },
+    "kind=meal_stew,facing=south": {
+      "model": "the_oldest_house:block/ghosts_meal_stew",
+      "y": 180
+    },
+    "kind=meal_stew,facing=west": {
+      "model": "the_oldest_house:block/ghosts_meal_stew",
+      "y": 270
+    },
+    "kind=meal_sandwich,facing=north": {
+      "model": "the_oldest_house:block/ghosts_meal_sandwich",
+      "y": 0
+    },
+    "kind=meal_sandwich,facing=east": {
+      "model": "the_oldest_house:block/ghosts_meal_sandwich",
+      "y": 90
+    },
+    "kind=meal_sandwich,facing=south": {
+      "model": "the_oldest_house:block/ghosts_meal_sandwich",
+      "y": 180
+    },
+    "kind=meal_sandwich,facing=west": {
+      "model": "the_oldest_house:block/ghosts_meal_sandwich",
+      "y": 270
+    },
+    "kind=meal_soup,facing=north": {
+      "model": "the_oldest_house:block/ghosts_meal_soup",
+      "y": 0
+    },
+    "kind=meal_soup,facing=east": {
+      "model": "the_oldest_house:block/ghosts_meal_soup",
+      "y": 90
+    },
+    "kind=meal_soup,facing=south": {
+      "model": "the_oldest_house:block/ghosts_meal_soup",
+      "y": 180
+    },
+    "kind=meal_soup,facing=west": {
+      "model": "the_oldest_house:block/ghosts_meal_soup",
+      "y": 270
+    },
+    "kind=meal_roast,facing=north": {
+      "model": "the_oldest_house:block/ghosts_meal_roast",
+      "y": 0
+    },
+    "kind=meal_roast,facing=east": {
+      "model": "the_oldest_house:block/ghosts_meal_roast",
+      "y": 90
+    },
+    "kind=meal_roast,facing=south": {
+      "model": "the_oldest_house:block/ghosts_meal_roast",
+      "y": 180
+    },
+    "kind=meal_roast,facing=west": {
+      "model": "the_oldest_house:block/ghosts_meal_roast",
+      "y": 270
+    },
+    "kind=meal_potatoes,facing=north": {
+      "model": "the_oldest_house:block/ghosts_meal_potatoes",
+      "y": 0
+    },
+    "kind=meal_potatoes,facing=east": {
+      "model": "the_oldest_house:block/ghosts_meal_potatoes",
+      "y": 90
+    },
+    "kind=meal_potatoes,facing=south": {
+      "model": "the_oldest_house:block/ghosts_meal_potatoes",
+      "y": 180
+    },
+    "kind=meal_potatoes,facing=west": {
+      "model": "the_oldest_house:block/ghosts_meal_potatoes",
+      "y": 270
+    },
+    "kind=lamp_off,facing=north": {
+      "model": "the_oldest_house:block/ghosts_lamp_off",
+      "y": 0
+    },
+    "kind=lamp_off,facing=east": {
+      "model": "the_oldest_house:block/ghosts_lamp_off",
+      "y": 90
+    },
+    "kind=lamp_off,facing=south": {
+      "model": "the_oldest_house:block/ghosts_lamp_off",
+      "y": 180
+    },
+    "kind=lamp_off,facing=west": {
+      "model": "the_oldest_house:block/ghosts_lamp_off",
+      "y": 270
+    },
+    "kind=rug,facing=north": {
+      "model": "the_oldest_house:block/ghosts_rug",
+      "y": 0
+    },
+    "kind=rug,facing=east": {
+      "model": "the_oldest_house:block/ghosts_rug",
+      "y": 90
+    },
+    "kind=rug,facing=south": {
+      "model": "the_oldest_house:block/ghosts_rug",
+      "y": 180
+    },
+    "kind=rug,facing=west": {
+      "model": "the_oldest_house:block/ghosts_rug",
+      "y": 270
     }
   }
 }

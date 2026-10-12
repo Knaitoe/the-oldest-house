@@ -1,0 +1,77 @@
+{
+  "textures": {
+    "food": "the_oldest_house:block/ghosts/meals_atlas"
+  },
+  "render_type": "minecraft:cutout",
+  "ambientocclusion": false,
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        3
+      ],
+      "to": [
+        13,
+        1,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#food",
+          "uv": [
+            0.0,
+            0.0,
+            4.0,
+            8.0
+          ]
+        },
+        "south": {
+          "texture": "#food",
+          "uv": [
+            0.0,
+            0.0,
+            4.0,
+            8.0
+          ]
+        },
+        "east": {
+          "texture": "#food",
+          "uv": [
+            0.0,
+            0.0,
+            4.0,
+            8.0
+          ]
+        },
+        "west": {
+          "texture": "#food",
+          "uv": [
+            0.0,
+            0.0,
+            4.0,
+            8.0
+          ]
+        },
+        "up": {
+          "texture": "#food",
+          "uv": [
+            0.0,
+            0.0,
+            4.0,
+            8.0
+          ]
+        },
+        "down": {
+          "texture": "#food",
+          "uv": [
+            0.0,
+            0.0,
+            4.0,
+            8.0
+          ]
+        }
+      }
+    }
+  ]
+}

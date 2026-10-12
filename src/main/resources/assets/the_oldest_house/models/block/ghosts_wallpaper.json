@@ -1,6 +1,6 @@
 {
   "textures": {
-    "wallpaper": "the_oldest_house:block/ghosts/wallpaper"
+    "wallpaper": "the_oldest_house:block/ghosts/materials_atlas"
   },
   "elements": [
     {
@@ -18,55 +18,55 @@
         "north": {
           "texture": "#wallpaper",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            0.0,
+            0.0,
+            4.0,
+            4.0
           ]
         },
         "south": {
           "texture": "#wallpaper",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            0.0,
+            0.0,
+            4.0,
+            4.0
           ]
         },
         "east": {
           "texture": "#wallpaper",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            0.0,
+            0.0,
+            4.0,
+            4.0
           ]
         },
         "west": {
           "texture": "#wallpaper",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            0.0,
+            0.0,
+            4.0,
+            4.0
           ]
         },
         "up": {
           "texture": "#wallpaper",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            0.0,
+            0.0,
+            4.0,
+            4.0
           ]
         },
         "down": {
           "texture": "#wallpaper",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            0.0,
+            0.0,
+            4.0,
+            4.0
           ]
         }
       }

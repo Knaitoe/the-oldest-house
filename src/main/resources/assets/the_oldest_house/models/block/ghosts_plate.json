@@ -1,7 +1,9 @@
 {
   "textures": {
-    "spaghetti": "the_oldest_house:block/ghosts/spaghetti"
+    "food": "the_oldest_house:block/ghosts/meals_atlas"
   },
+  "render_type": "minecraft:cutout",
+  "ambientocclusion": false,
   "elements": [
     {
       "from": [
@@ -16,61 +18,60 @@
       ],
       "faces": {
         "north": {
-          "texture": "#spaghetti",
+          "texture": "#food",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            0.0,
+            8.0,
+            8.0
           ]
         },
         "south": {
-          "texture": "#spaghetti",
+          "texture": "#food",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            0.0,
+            8.0,
+            8.0
           ]
         },
         "east": {
-          "texture": "#spaghetti",
+          "texture": "#food",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            0.0,
+            8.0,
+            8.0
           ]
         },
         "west": {
-          "texture": "#spaghetti",
+          "texture": "#food",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            0.0,
+            8.0,
+            8.0
           ]
         },
         "up": {
-          "texture": "#spaghetti",
+          "texture": "#food",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            0.0,
+            8.0,
+            8.0
           ]
         },
         "down": {
-          "texture": "#spaghetti",
+          "texture": "#food",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            0.0,
+            8.0,
+            8.0
           ]
         }
       }
     }
-  ],
-  "ambientocclusion": true
+  ]
 }

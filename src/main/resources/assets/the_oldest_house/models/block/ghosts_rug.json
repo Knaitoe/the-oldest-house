@@ -1,0 +1,75 @@
+{
+  "textures": {
+    "cloth": "the_oldest_house:block/ghosts/materials_atlas"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        1,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cloth",
+          "uv": [
+            12.0,
+            8.0,
+            16.0,
+            12.0
+          ]
+        },
+        "south": {
+          "texture": "#cloth",
+          "uv": [
+            12.0,
+            8.0,
+            16.0,
+            12.0
+          ]
+        },
+        "east": {
+          "texture": "#cloth",
+          "uv": [
+            12.0,
+            8.0,
+            16.0,
+            12.0
+          ]
+        },
+        "west": {
+          "texture": "#cloth",
+          "uv": [
+            12.0,
+            8.0,
+            16.0,
+            12.0
+          ]
+        },
+        "up": {
+          "texture": "#cloth",
+          "uv": [
+            12.0,
+            8.0,
+            16.0,
+            12.0
+          ]
+        },
+        "down": {
+          "texture": "#cloth",
+          "uv": [
+            12.0,
+            8.0,
+            16.0,
+            12.0
+          ]
+        }
+      }
+    }
+  ]
+}
