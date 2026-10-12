@@ -262,7 +262,6 @@ public final class HarriganVignette {
     }
 
     private static void stage(ServerLevel level, BlockPos base, LabyrinthData data, int visit) {
-        clearTagged(level, placeBounds(base), BODY_TAG);
         clearTagged(level, placeBounds(base), PROP_TAG);
         int flags = LabyrinthBuilder.flags();
         if (level.getBlockState(base.offset(READER_CHAIR)).isAir()) {
@@ -307,8 +306,19 @@ public final class HarriganVignette {
                 READING_PAGES);
     }
 
-    private static void spawnBody(ServerLevel level, BlockPos pos, boolean dead, boolean inCasket) {
-        ArmorStand stand = new ArmorStand(level, pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D);
+    private static ArmorStand spawnBody(ServerLevel level, BlockPos pos, boolean dead, boolean inCasket) {
+        var data=LabyrinthData.get(level.getServer());var state=data.state(ID);var base=base(level.getServer());
+        ArmorStand stand=null;
+        if(state.hasUUID("OriginalBody0488")){
+            if(level.getEntity(state.getUUID("OriginalBody0488")) instanceof ArmorStand original)stand=original;
+            else return null; // An unloaded or removed original is not a new body.
+        }else{
+            var originals=level.getEntitiesOfClass(ArmorStand.class,placeBounds(base),body->body.getTags().contains(BODY_TAG));
+            if(!originals.isEmpty())stand=originals.getFirst();
+        }
+        boolean fresh=stand==null;
+        if(fresh)stand=new ArmorStand(level, pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D);
+        else stand.setPos(pos.getX()+.5D,pos.getY(),pos.getZ()+.5D);
         stand.addTag(BODY_TAG);
         stand.setInvisible(true);
         stand.setNoBasePlate(true);
@@ -323,12 +333,36 @@ public final class HarriganVignette {
         } else {
             stand.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.PLAYER_HEAD));
         }
-        equipSuit(stand);
+        if(fresh)equipSuit(stand);
         stand.setNoGravity(true);
         stand.getPersistentData().putInt(BODY_POSE, 1);
         if (!inCasket) seatBody(stand, pos.below());
+        else {
+            stand.getPersistentData().remove(BODY_SEAT);stand.setBodyPose(new Rotations(0,0,0));
+            stand.setLeftLegPose(new Rotations(0,0,0));stand.setRightLegPose(new Rotations(0,0,0));
+            stand.setLeftArmPose(new Rotations(0,0,0));stand.setRightArmPose(new Rotations(0,0,0));
+        }
         HarriganAppearance.apply(stand,inCasket);
-        level.addFreshEntity(stand);
+        if(fresh&&!level.addFreshEntity(stand))return null;
+        state.putUUID("OriginalBody0488",stand.getUUID());data.setState(ID,state);return stand;
+    }
+
+    /** Arrange the same body behind the closed door before the reader can see the wake. */
+    public static boolean enterWake(ServerPlayer player){
+        if(!inVignette(player)||!player.isAlive()||player.isSpectator())return false;
+        var data=LabyrinthData.get(player.server);var state=data.state(ID);if(visitFor(data)!=2)return false;
+        var level=player.serverLevel();var base=base(player.server);
+        HarriganWake.ensureCast(level,base);
+        if(state.getBoolean("FuneralEntered"))return true;
+        var originals=level.getEntitiesOfClass(ArmorStand.class,placeBounds(base),body->body.getTags().contains(BODY_TAG));
+        if(originals.isEmpty())return false;
+        var identity=state.hasUUID("OriginalBody0488")?state.getUUID("OriginalBody0488"):null;
+        var body=identity!=null?originals.stream().filter(a->a.getUUID().equals(identity)).findFirst().orElse(null):originals.getFirst();
+        if(body==null)return false;
+        var target=Vec3.atCenterOf(base.offset(CASKET).above());
+        if(HouseWatchers.isWatched(level,body.position().add(0,1,0))||HouseWatchers.isWatched(level,target))return false;
+        if(spawnBody(level,base.offset(CASKET).above(),true,true)==null)return false;
+        state=data.state(ID);state.putBoolean("FuneralEntered",true);data.setState(ID,state);return true;
     }
 
     private static void seatBody(ArmorStand stand, BlockPos chair) {
@@ -520,6 +554,9 @@ public final class HarriganVignette {
     }
 
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if(!event.isCanceled()&&event.getEntity() instanceof ServerPlayer player&&event.getHand()==net.minecraft.world.InteractionHand.MAIN_HAND
+                &&inVignette(player)&&event.getPos().equals(base(player.server).offset(FUNERAL_DOOR))
+                &&visitFor(LabyrinthData.get(player.server))==2)enterWake(player);
         if (!event.getLevel().isClientSide() && event.getEntity() instanceof ServerPlayer reader
                 && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND && inVignette(reader)
                 && event.getPos().equals(base(reader.server).offset(LECTERN))
@@ -794,6 +831,7 @@ public final class HarriganVignette {
         }
 
         if (visit == 2) {
+            HarriganWake.ensureCast(interior,base);
             for (ServerPlayer player : visitors) explainFuneral(player, data);
             CompoundTag state = data.state(ID);
             boolean funeral = state.getBoolean("FuneralEntered");
@@ -804,10 +842,8 @@ public final class HarriganVignette {
                         if (HouseWatchers.isWatched(interior, corpse)) {
                             continue;
                         }
-                        state.putBoolean("FuneralEntered", true);
-                        data.setState(ID, state);
-                        clearTagged(interior, placeBounds(base), BODY_TAG);
-                        spawnBody(interior, base.offset(CASKET).above(), true, true);
+                        if(spawnBody(interior, base.offset(CASKET).above(), true, true)==null)continue;
+                        state=data.state(ID);state.putBoolean("FuneralEntered", true);data.setState(ID,state);
                         break;
                     }
                 }

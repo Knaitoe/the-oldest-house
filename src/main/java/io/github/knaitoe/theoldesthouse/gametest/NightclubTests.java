@@ -49,6 +49,9 @@ public final class NightclubTests {
         f.at(player,12,-16);f.at(peer,12,-17);
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native room entity sections are ready"))
             .thenExecute(()->{
+                var colours=new HashSet<Integer>();for(int x:new int[]{-7,0,7})for(int z:new int[]{-18,-32}){var light=f.level.getBlockState(f.base.offset(x,4,z));h.assertTrue(light.is(NightclubRegistry.BLOCK.get())&&NightclubBlock.light(light)==15,"lower hanging lights illuminate the actual dance floor");colours.add(light.getValue(NightclubBlock.STAGE));}
+                h.assertTrue(colours.size()==3,"the physical dance-floor lights use all three neon colours");
+                h.assertTrue(Nightclub.strobe(2600,true)&&!Nightclub.strobe(2622,true)&&!Nightclub.strobe(2600,false),"rare flashes finish promptly and stay off when music stops");
                 h.assertTrue(f.click(player,glass,Direction.WEST).consumesAction()&&f.level.getBlockState(f.base.offset(glass)).isAir(),"native click takes the one actual counter glass");
                 h.assertTrue(player.getInventory().items.stream().filter(s->s.is(NightclubRegistry.GLASS.get())).mapToInt(ItemStack::getCount).sum()==1,"one glass enters native inventory");
                 f.click(peer,glass,Direction.WEST);h.assertTrue(peer.getInventory().items.stream().noneMatch(s->s.is(NightclubRegistry.GLASS.get())),"another reader cannot take the removed glass");

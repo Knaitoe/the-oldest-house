@@ -20,6 +20,7 @@ public final class HouseHumanRenderers {
     private static HarriganRenderer harrigan;
     private HouseHumanRenderers(){}
     public static boolean ready(){return harrigan!=null;}
+    public static ResourceLocation mourner(int role){return texture("harrigan_mourner_"+Math.max(0,Math.min(2,role)));}
     private static ResourceLocation texture(String name){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/"+name+".png");}
     @SubscribeEvent public static void renderHarrigan(RenderLivingEvent.Pre<?,?> event){
         if(harrigan==null||event.getRenderer()==harrigan||!(event.getEntity() instanceof ArmorStand body)||HarriganAppearance.variant(body)==0)return;
@@ -53,7 +54,7 @@ public final class HouseHumanRenderers {
     }
     private static final class HarriganRenderer extends LivingEntityRenderer<ArmorStand,HarriganModel> {
         HarriganRenderer(EntityRendererProvider.Context context){super(context,new HarriganModel(context.bakeLayer(ModelLayers.PLAYER)),0);}
-        @Override public ResourceLocation getTextureLocation(ArmorStand body){return HarriganAppearance.variant(body)>=2?HARRIGAN_DEAD:HARRIGAN;}
+        @Override public ResourceLocation getTextureLocation(ArmorStand body){int role=HarriganAppearance.variant(body);return role>=4&&role<=6?mourner(role-4):role>=2?HARRIGAN_DEAD:HARRIGAN;}
         @Override protected boolean isBodyVisible(ArmorStand body){return true;}
         @Override protected boolean shouldShowName(ArmorStand body){return false;}
         @Override protected void setupRotations(ArmorStand body,com.mojang.blaze3d.vertex.PoseStack poses,float age,float yaw,float partial,float scale){

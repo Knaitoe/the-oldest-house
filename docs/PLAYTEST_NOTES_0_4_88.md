@@ -1,5 +1,7 @@
 # October 12 playtest notes — nightclub checkpoint (0.4.88)
 
+The follow-up source is described in [the additional notes](PLAYTEST_ADDITIONS_0_4_88.md). The ledger below records the earlier nightclub checkpoint.
+
 This checkpoint implements the first part of the uploaded `This kid begins in the doorway(2).docx`, the Native American Father instruction and the endless nightclub. The other notes remain open. Source batches continue after quick compile and focused checks; full checks run in the background at the owner's request. It is not a verified release.
 
 | Note | Current state |

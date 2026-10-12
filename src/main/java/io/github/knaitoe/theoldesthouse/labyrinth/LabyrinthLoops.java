@@ -318,6 +318,15 @@ public final class LabyrinthLoops {
         return HOTEL_FIRST_ROOM + Math.floorMod((laps + k) * 2 + side, HOTEL_ROOMS);
     }
 
+    /** The exact private plaque this reader currently sees, using the authoritative loop clock. */
+    public static int roomNumberAt(ServerPlayer player, BlockPos base, BlockPos lower) {
+        State state=STATES.get(player.getUUID());
+        int laps=state!=null&&state.place==LabyrinthPlace.HOTEL_HALLWAY&&player.serverLevel().getGameTime()-state.seen<=40?state.laps:0;
+        for(int k=0;k<4;k++)for(int side=0;side<2;side++)
+            if(lower.equals(base.offset(roomDoor(k,side))))return roomNumber(laps,k,side);
+        return 0;
+    }
+
     /** Shows this player the numbers for how far they have walked, before anything else they see this tick. */
     private static void sendNumbers(ServerPlayer player, BlockPos base, int laps) {
         HousePackets.send(player, new HotelRoomNumbersPayload(base, laps));

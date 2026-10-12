@@ -136,6 +136,10 @@ public final class HouseExteriorEntityMirror {
         // Inside looking out: real Overworld mobs become projections in the
         // House dimension's mirrored exterior scenery.
         if (hasDomesticObserver(interior, origin)) {
+            // Region tickets alone do not stop a dimension with no resident players
+            // from suspending all entities after fifteen seconds. These observers
+            // are watching the real Overworld, so its source mobs must keep ticking.
+            overworld.resetEmptyTime();
             if (discoveryTick) {
                 ensureOverworldSourceTickets(overworld, interior, origin);
                 scrubInteriorProjectionsIfNeeded(interior, view);
@@ -168,6 +172,7 @@ public final class HouseExteriorEntityMirror {
         // Outside looking in: real domestic House mobs become projections
         // inside the Overworld proxy shell.
         if (hasOverworldObserver(overworld, origin)) {
+            interior.resetEmptyTime();
             if (discoveryTick) {
                 ensureInteriorSourceTickets(interior, origin);
                 scrubOverworldProjectionsIfNeeded(overworld, view);
@@ -660,7 +665,7 @@ public final class HouseExteriorEntityMirror {
                 wanted.add(key);
                 if (ticketed.add(key)) {
                     ChunkPos chunk = new ChunkPos(cx, cz);
-                    level.getChunkSource().addRegionTicket(ticketType, chunk, 0, chunk);
+                    level.getChunkSource().addRegionTicket(ticketType, chunk, ticketType==INTERIOR_SOURCE_TICKET?2:0, chunk);
                 }
             }
         }
@@ -672,7 +677,7 @@ public final class HouseExteriorEntityMirror {
                 continue;
             }
             ChunkPos chunk = new ChunkPos(key);
-            level.getChunkSource().removeRegionTicket(ticketType, chunk, 0, chunk);
+            level.getChunkSource().removeRegionTicket(ticketType, chunk, ticketType==INTERIOR_SOURCE_TICKET?2:0, chunk);
             iterator.remove();
         }
     }
@@ -682,7 +687,7 @@ public final class HouseExteriorEntityMirror {
             TicketType<ChunkPos> ticketType,
             LongSet ticketed
     ) {
-        releaseTickets(level, ticketType, ticketed, 0);
+        releaseTickets(level, ticketType, ticketed, ticketType==INTERIOR_SOURCE_TICKET?2:0);
     }
 
     private static void releaseTickets(ServerLevel level, TicketType<ChunkPos> ticketType, LongSet ticketed, int distance) {

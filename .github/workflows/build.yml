@@ -660,6 +660,7 @@ jobs:
           test -s build/font-smoke/native-embers.png
           test -s build/font-smoke/npcs-passed.txt
           test -s build/font-smoke/native-npcs.png
+          test -s build/font-smoke/native-harrigan-wake.png
           test -s build/font-smoke/cast-passed.txt
           test -s build/font-smoke/stacey-scrabble-passed.txt
           test -s build/font-smoke/native-stacey-scrabble.png

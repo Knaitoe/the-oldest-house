@@ -151,6 +151,13 @@ public final class GoatmanVignette {
         LabyrinthData d=LabyrinthData.get(p.server);CompoundTag r=run(d),cohort=r.getCompound("Cohort");String key=p.getUUID().toString();
         if(cohort.contains(key)){CompoundTag own=cohort.getCompound(key);own.putBoolean("Active",false);own.putBoolean("Interrupted",true);cohort.put(key,own);r.put("Cohort",cohort);saveRun(d,r);}
         BlockPos b=base(p.server);if(b!=null)for(var girl:p.serverLevel().getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),c->c.viewer().filter(p.getUUID()::equals).isPresent()&&!c.getTags().contains("TrailerWalk")))girl.discard();
+        // Departure is reported before the leaving player is teleported. Exclude
+        // that player explicitly; a living enrolled peer keeps the shared supper.
+        if(b!=null&&cohort.contains(key)&&p.level().dimension().equals(HouseDimensions.INTERIOR)){
+            final CompoundTag enrolled=cohort;
+            boolean peer=visitors(p.serverLevel(),b).stream().anyMatch(other->other!=p&&other.isAlive()&&enrolled.contains(other.getUUID().toString())&&enrolled.getCompound(other.getUUID().toString()).getBoolean("Active"));
+            if(!peer){for(int seat=0;seat<24;seat++)GoatmanWoods.served(p.serverLevel(),b,seat,false);r.putInt("Plated0464",0);r.putInt("EmptyPlates0465",0);r.putInt("BurntPlates0476",0);r.putBoolean("MealReady0465",false);saveRun(d,r);}
+        }
         GoatmanHaunt.vanish(p,"hollow");
     }
     private static List<GoatmanChild> actors(ServerLevel l,BlockPos b){return l.getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),c->c.getTags().contains(ACTOR));}
