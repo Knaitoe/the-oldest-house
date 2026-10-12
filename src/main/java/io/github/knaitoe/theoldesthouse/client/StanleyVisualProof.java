@@ -44,7 +44,7 @@ public final class StanleyVisualProof extends Screen {
         }else if(page==3){
             for(int n=0;n<6;n++){
                 net.minecraft.client.model.EntityModel<?> model;net.minecraft.resources.ResourceLocation skin;
-                if(n==2||n==5){var cast=new LiteraryRenderers.CastModel(mc.getEntityModels().bakeLayer(LiteraryRenderers.CAST));int phase=n==2?5:4;cast.pose(LiteraryActor.STRANGER,phase,frames*2);model=cast;skin=LiteraryRenderers.skin(LiteraryActor.STRANGER,phase);}
+                if(n==2||n==5){var cast=new LiteraryRenderers.CastModel(mc.getEntityModels().bakeLayer(LiteraryRenderers.CAST));cast.young=false;int phase=n==2?5:4;cast.pose(LiteraryActor.STRANGER,phase,frames*2);model=cast;skin=LiteraryRenderers.skin(LiteraryActor.STRANGER,phase);}
                 else{int role=new int[]{0,1,0,3,5,0}[n];var cast=new HotelRenderers.CastModel(mc.getEntityModels().bakeLayer(HotelRenderers.CAST));cast.preview(role,false,frames*2,HotelActor.IDLE,0);model=cast;skin=HotelRenderers.skin(role);}
                 int cx=20+(n%3)*(width-40)/3+(width-40)/6,cy=58+(n/3)*(height-85)/2;
                 var p=g.pose();p.pushPose();p.translate(cx,cy,190);p.scale(52,52,52);p.mulPose(Axis.YP.rotationDegrees(145));

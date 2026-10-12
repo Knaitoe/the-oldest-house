@@ -1162,7 +1162,7 @@ jobs:
           for page in 0 1; do test -s build/font-smoke/native-institute-0470-$page.png; done
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 3m gradle runClient -PstanleySmoke --no-daemon
           test -s build/font-smoke/stanley-passed.txt
-          for view in cast actions fixtures; do test -s build/font-smoke/native-stanley-$view.png; done
+          for view in cast actions fixtures comparison; do test -s build/font-smoke/native-stanley-$view.png; done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
