@@ -200,19 +200,19 @@ public final class LakeHouse {
         // The wide lake door and two windows.
         s.fill(-1,0,-9,1,2,-9,Blocks.AIR);
         for(int z:new int[]{-3,-6}){s.set(-6,1,z,Blocks.GLASS_PANE);s.set(6,1,z,Blocks.GLASS_PANE);}
-        // A pitched roof along the room, ridge over the middle.
+        // A pitched roof along the room, seated on the walls' top course, ridge over the middle.
         for(int i=0;i<=6;i++)for(int z=1;z>=-10;z--){
-            int y=4+i;
+            int y=3+i;
             s.set(-7+i,y,z,Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST));
             s.set(7-i,y,z,Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.WEST));
             if(i>0)for(int x=-7+i+1;x<=7-i-1;x++){if(z==0||z==-9)s.set(x,y,z,Blocks.SPRUCE_PLANKS);}
         }
-        s.fill(0,10,1,0,10,-10,Blocks.SPRUCE_SLAB);
+        s.fill(0,9,1,0,9,-10,Blocks.SPRUCE_SLAB);
         // Inside: the rental counter with the log, the shelf with the accounts, a rack of paddles, one lamp.
         s.set(-4,0,-4,Blocks.SPRUCE_PLANKS);s.set(-4,0,-6,Blocks.SPRUCE_PLANKS);s.set(-5,0,-5,Blocks.SPRUCE_PLANKS);
         s.set(4,0,-4,Blocks.SPRUCE_PLANKS);s.set(4,0,-6,Blocks.SPRUCE_PLANKS);s.set(5,0,-5,Blocks.SPRUCE_PLANKS);
         for(int z=-2;z>=-7;z-=5)s.set(5,2,z,Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.WEST).setValue(TrapDoorBlock.OPEN,true));
-        s.set(0,3,-4,Blocks.CHAIN);s.set(0,2,-4,Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));
+        s.fill(0,3,-4,0,8,-4,Blocks.CHAIN);s.set(0,2,-4,Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));
     }
 
     /** The dock runs out over the clear water to where the canoes are tied. */
