@@ -36,7 +36,7 @@ public final class StanleyVisualProof extends Screen {
                 int motion=page==0?HotelActor.IDLE:new int[]{HotelActor.GREET,HotelActor.POUR,HotelActor.IDLE,HotelActor.LISTEN,0,0,0,HotelActor.IDLE,HotelActor.POUR,HotelActor.LISTEN}[n];
                 boolean dance=page==0?role>=4:n==5||n==6;
                 var model=new HotelRenderers.CastModel(mc.getEntityModels().bakeLayer(HotelRenderers.CAST));model.preview(role,dance,frames*2,motion,n>=7?.8F:.5F);
-                int cx=20+(n%columns)*(width-40)/columns+(width-40)/columns/2,cy=38+(n/columns)*(height-65)/rows;
+                int cx=20+(n%columns)*(width-40)/columns+(width-40)/columns/2,cy=58+(n/columns)*(height-85)/rows;
                 var p=g.pose();p.pushPose();p.translate(cx,cy,190);float scale=page==0?57:43;p.scale(scale,scale,scale);p.mulPose(Axis.YP.rotationDegrees(page==0?145:n>=7?25:145));
                 var buffers=mc.renderBuffers().bufferSource();model.renderToBuffer(p,buffers.getBuffer(RenderType.entityCutoutNoCull(HotelRenderers.skin(role))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);buffers.endBatch();p.popPose();
                 g.drawCenteredString(font,page==0?NAMES[role]:new String[]{"Acknowledgment","Pour","Polish","Listen","Keys and fingers","Waltz","Waltz","Coat / back","Pour / back","Guest / back"}[n],cx,cy+(int)(scale*1.6),0xffe4d6b9);

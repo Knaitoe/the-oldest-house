@@ -20,9 +20,9 @@ public final class HotelRenderers {
     @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions e){e.registerLayerDefinition(CAST,CastModel::layer);e.registerLayerDefinition(HOSE,HoseModel::layer);}
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerEntityRenderer(HotelRegistry.ACTOR.get(),CastRenderer::new);e.registerEntityRenderer(HotelRegistry.HOSE.get(),HoseRenderer::new);}
     public static final class CastModel extends HumanoidModel<HotelActor> {
-        private final ModelPart tails,apron,skirt,cap,leftElbow,rightElbow,leftKnee,rightKnee,glass,bottle,cloth;
+        private final ModelPart tails,apron,skirt,cap,leftElbow,rightElbow,leftKnee,rightKnee,glass,bottleGrip,bottleAim,bottle,cloth;
         private final ModelPart[] leftFingers=new ModelPart[3],rightFingers=new ModelPart[3];
-        public CastModel(ModelPart r){super(r);tails=body.getChild("tails");apron=body.getChild("apron");skirt=body.getChild("skirt");cap=head.getChild("cap");leftElbow=leftArm.getChild("elbow");rightElbow=rightArm.getChild("elbow");leftKnee=leftLeg.getChild("knee");rightKnee=rightLeg.getChild("knee");glass=leftElbow.getChild("glass");bottle=rightElbow.getChild("bottle");cloth=rightElbow.getChild("cloth");for(int i=0;i<3;i++){leftFingers[i]=leftElbow.getChild("finger"+i);rightFingers[i]=rightElbow.getChild("finger"+i);}}
+        public CastModel(ModelPart r){super(r);tails=body.getChild("tails");apron=body.getChild("apron");skirt=body.getChild("skirt");cap=head.getChild("cap");leftElbow=leftArm.getChild("elbow");rightElbow=rightArm.getChild("elbow");leftKnee=leftLeg.getChild("knee");rightKnee=rightLeg.getChild("knee");glass=leftElbow.getChild("glass");bottleGrip=rightElbow.getChild("bottle_grip");bottleAim=bottleGrip.getChild("bottle_aim");bottle=bottleAim.getChild("bottle");cloth=rightElbow.getChild("cloth");for(int i=0;i<3;i++){leftFingers[i]=leftElbow.getChild("finger"+i);rightFingers[i]=rightElbow.getChild("finger"+i);}}
         public static LayerDefinition layer(){var m=HumanoidModel.createMesh(CubeDeformation.NONE,0);var r=m.getRoot();
             for(boolean left:new boolean[]{false,true}){
                 var arm=r.addOrReplaceChild(left?"left_arm":"right_arm",CubeListBuilder.create().texOffs(40,16).mirror(left).addBox(left?-1:-3,-2,-2,4,6,4),PartPose.offset(left?5:-5,2,0));
@@ -36,7 +36,8 @@ public final class HotelRenderers {
             r.getChild("body").addOrReplaceChild("skirt",CubeListBuilder.create().texOffs(64,30).addBox(-5,9,-3,10,12,6),PartPose.ZERO);
             r.getChild("head").addOrReplaceChild("cap",CubeListBuilder.create().texOffs(64,0).addBox(-4.6F,-9,-4.6F,9.2F,2,9.2F),PartPose.ZERO);
             r.getChild("left_arm").getChild("elbow").addOrReplaceChild("glass",CubeListBuilder.create().texOffs(104,24).addBox(-1,-4,-1,2,4,2).texOffs(104,34).addBox(-.3F,0,-.3F,.6F,2,.6F).texOffs(104,37).addBox(-1.4F,2,-1.4F,2.8F,.4F,2.8F),PartPose.offset(1,5,-1.5F));
-            r.getChild("right_arm").getChild("elbow").addOrReplaceChild("bottle",CubeListBuilder.create().texOffs(116,24).addBox(-1.2F,-5,-1.2F,2.4F,5,2.4F).texOffs(116,33).addBox(-.6F,-7,-.6F,1.2F,2,1.2F),PartPose.offset(-2,5,-1.5F));
+            var grip=r.getChild("right_arm").getChild("elbow").addOrReplaceChild("bottle_grip",CubeListBuilder.create(),PartPose.offset(-2,5,-1.5F));
+            grip.addOrReplaceChild("bottle_aim",CubeListBuilder.create(),PartPose.ZERO).addOrReplaceChild("bottle",CubeListBuilder.create().texOffs(116,24).addBox(-1.2F,-5,-1.2F,2.4F,5,2.4F).texOffs(116,33).addBox(-.6F,-7,-.6F,1.2F,2,1.2F),PartPose.ZERO);
             r.getChild("right_arm").getChild("elbow").addOrReplaceChild("cloth",CubeListBuilder.create().texOffs(100,44).addBox(-2.5F,0,-2.5F,5,.3F,5),PartPose.offset(-2,6,-1));
             return LayerDefinition.create(m,128,64);}
         private void reset(){for(var p:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg})p.getAllParts().forEach(ModelPart::resetPose);young=false;crouching=false;riding=false;}
@@ -49,7 +50,7 @@ public final class HotelRenderers {
             if(role==0){rightElbow.xRot=-.2F;leftElbow.xRot=-.1F;if(motion==HotelActor.GREET){float bow=(float)Math.sin(Math.PI*progress);body.xRot+=bow*.23F;head.xRot+=bow*.2F;rightArm.xRot=-.65F*bow;rightElbow.xRot=-1.2F*bow;rightArm.zRot=-.2F*bow;}}
             if(role==1){
                 leftArm.xRot=-.65F;leftElbow.xRot=-1.02F;rightArm.xRot=-.8F;rightElbow.xRot=-.85F;
-                if(motion==HotelActor.POUR){float pour=(float)Math.sin(Math.PI*progress);glass.visible=bottle.visible=true;rightArm.xRot-=.3F*pour;rightArm.yRot=.35F;rightElbow.xRot=-1.25F;leftArm.yRot=-.15F;bottle.zRot=-.95F*pour;glass.xRot=-leftArm.xRot-leftElbow.xRot;}
+                if(motion==HotelActor.POUR){float pour=(float)Math.sin(Math.PI*progress);glass.visible=bottle.visible=true;rightArm.xRot-=.3F*pour;rightArm.yRot=-.5F;rightElbow.xRot=-1.25F;leftArm.yRot=.3F;bottleGrip.xRot=-rightArm.xRot-rightElbow.xRot;bottleAim.yRot=-rightArm.yRot;bottle.zRot=.95F*pour;glass.xRot=-leftArm.xRot-leftElbow.xRot;}
                 else{float polish=(float)Math.sin(time*.08F);cloth.visible=true;rightArm.yRot=polish*.2F;rightElbow.xRot=-.6F-polish*.12F;cloth.xRot=-rightArm.xRot-rightElbow.xRot;leftArm.xRot=-.12F;leftElbow.xRot=-.3F;}
                 head.xRot+=.2F;
             }
