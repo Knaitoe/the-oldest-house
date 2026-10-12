@@ -94,7 +94,7 @@ neoForge {
             // Full native fixtures and chunk serialization exhausted five GiB.
             // Retain every persistence check with a six-GiB test-host heap.
             jvmArgument '-Xmx6g'
-            systemProperty 'neoforge.enabledGameTestNamespaces', providers.gradleProperty('gameTestNamespaces').getOrElse(project.mod_id + ',' + project.mod_id + '_hotel,' + project.mod_id + '_literary,' + project.mod_id + '_ghosts,' + project.mod_id + '_doors,' + project.mod_id + '_seam,' + project.mod_id + '_staircase,' + project.mod_id + '_multiplayer,' + project.mod_id + '_exploration,' + project.mod_id + '_caver,' + project.mod_id + '_goatman,' + project.mod_id + '_charge')
+            systemProperty 'neoforge.enabledGameTestNamespaces', providers.gradleProperty('gameTestNamespaces').getOrElse(project.mod_id + ',' + project.mod_id + '_hotel,' + project.mod_id + '_literary,' + project.mod_id + '_ghosts,' + project.mod_id + '_doors,' + project.mod_id + '_seam,' + project.mod_id + '_staircase,' + project.mod_id + '_multiplayer,' + project.mod_id + '_exploration,' + project.mod_id + '_caver,' + project.mod_id + '_goatman,' + project.mod_id + '_charge,' + project.mod_id + '_mirrorcheck')
         }
 
         data {

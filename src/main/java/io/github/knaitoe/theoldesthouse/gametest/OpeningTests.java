@@ -771,7 +771,16 @@ public final class OpeningTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 100)
+    private static NativeTestChunks domesticProjectionChunks;
+    private static Wolf domesticProjectionResident;
+    @net.minecraft.gametest.framework.AfterBatch(batch = "domestic_projection0487")
+    public static void closeDomesticProjection(ServerLevel level) {
+        HouseExteriorEntityMirror.clear(level.getServer());
+        if (domesticProjectionResident != null) {domesticProjectionResident.discard();domesticProjectionResident=null;}
+        if (domesticProjectionChunks != null) {domesticProjectionChunks.close();domesticProjectionChunks=null;}
+    }
+
+    @GameTest(template = "empty", templateNamespace = TheOldestHouse.MOD_ID + "_mirrorcheck", batch = "domestic_projection0487", timeoutTicks = 1200)
     public static void domesticHouseMobsProjectIntoTheOverworldProxy(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();
         ServerLevel overworld = helper.getLevel();
@@ -789,9 +798,16 @@ public final class OpeningTests {
         );
         interiorStandIn.getChunkAt(inside);
         overworld.getChunkAt(inside);
+        domesticProjectionChunks = new NativeTestChunks();
+        var entityChunk = new net.minecraft.world.level.ChunkPos(inside);
+        var chunkCentre = new BlockPos(entityChunk.getMinBlockX()+8,inside.getY(),entityChunk.getMinBlockZ()+8);
+        domesticProjectionChunks.hold(interiorStandIn,new AABB(chunkCentre));
+        domesticProjectionChunks.hold(overworld,new AABB(chunkCentre));
 
         Wolf resident = EntityType.WOLF.create(interiorStandIn);
         helper.assertTrue(resident != null, "domestic source wolf did not create");
+        domesticProjectionResident = resident;
+        resident.setNoGravity(true);
         resident.setCustomName(Component.literal("House Resident"));
         resident.moveTo(
                 inside.getX() + 0.5D,
@@ -813,9 +829,11 @@ public final class OpeningTests {
                 "domestic source wolf was not added"
         );
 
-        // EntitySectionStorage indexes fresh entities on the following level
-        // tick. Test the real query path, not the direct object reference.
-        helper.runAfterDelay(1, () -> {
+        // Real target chunks and their entity sections load asynchronously. A one-tick delay
+        // does not guarantee they are ready, and the projection must never force a cold target.
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(domesticProjectionChunks.ready(),
+                "wait for actual entity sections: source="+interiorStandIn.areEntitiesLoaded(entityChunk.toLong())
+                +" target="+overworld.areEntitiesLoaded(entityChunk.toLong()))).thenExecute(() -> {
             try {
                 helper.assertTrue(resident.isAlive(), "domestic source wolf is not alive after insertion");
                 helper.assertTrue(

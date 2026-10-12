@@ -18,4 +18,8 @@ The 0.4.86 full suite completed with one failed charge case. Its test player was
 
 That existing case also has a focused `_charge` namespace and a matching empty native template, and remains included in the full suite. It passes locally. CI runs it before the full suite without replacing any previous check. The two-client software renderer limit, enabled watchdog and both reconnects remain required.
 
+## Native projection fixture
+
+Run 38261792241 completed the full native run with one failed domestic projection case; the other eleven jobs passed, including both connected clients and two reconnects. The projection case requested blocks then assumed the target's entity sections would be loaded one tick later. Production correctly skips a cold target. Its isolated fixture now leases the actual source and target chunks until their native entity sections are ready, holds the source above unbuilt terrain, and releases both leases after its batch. The exact projection count, type, visible state, movement, orientation, stride and evacuation assertions remain unchanged. The focused native case passes locally and remains in the full 559-case suite. CI checks it before the complete suite.
+
 Mod 0.4.87; protocol 58; layout 42. Still 44 sources, 33 required resolutions across two kinds and three endings. All twelve jobs, all 559 native cases, 691 PNG decodes, 90 architecture views, four Stanley views and every previous native/client/socket proof are required. Exact-source release validation is pending.
