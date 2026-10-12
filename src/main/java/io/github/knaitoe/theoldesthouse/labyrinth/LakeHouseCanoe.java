@@ -4,6 +4,8 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -35,6 +37,8 @@ public final class LakeHouseCanoe extends Boat {
     /** Where the canoes wait, one per reader: either side of the dock's far end. */
     static final BlockPos[] SPOTS={new BlockPos(4,-1,-19),new BlockPos(-4,-1,-19),new BlockPos(4,-1,-16),new BlockPos(-4,-1,-16)};
     private @Nullable UUID owner;
+    private boolean inCulvert;
+    private int scrapeTicks;
 
     public LakeHouseCanoe(EntityType<? extends Boat> type,Level level){super(type,level);setInvulnerable(true);}
     @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(CHIPS,0);}
@@ -55,6 +59,23 @@ public final class LakeHouseCanoe extends Boat {
     @Override public Item getDropItem(){return Items.AIR;}
     /** A canoe dropped onto land is only set down: no splintering into planks. */
     @Override protected void checkFallDamage(double y,boolean onGround,BlockState state,BlockPos pos){resetFallDistance();}
+
+    /**
+     * Under the service drive the culvert's ceiling is a block over the gunwales: too low and narrow for the paddles, so the
+     * canoe crawls along as its readers push off the walls, scraping, and comes out with its paint chipped.
+     */
+    @Override public void tick(){
+        super.tick();
+        var above=blockPosition().above(2);
+        boolean low=isVehicle()&&!level().getBlockState(above).getCollisionShape(level(),above).isEmpty();
+        if(low&&isControlledByLocalInstance())setDeltaMovement(getDeltaMovement().multiply(.82,1,.82));
+        if(low&&!level().isClientSide){
+            if(!inCulvert){chip();for(var e:getPassengers())if(e instanceof ServerPlayer p)p.displayClientMessage(Component.literal("Too low for the paddles. You push along the walls with your hands."),true);}
+            double dx=getX()-xo,dz=getZ()-zo;
+            if(--scrapeTicks<=0&&dx*dx+dz*dz>1e-4){level().playSound(null,getX(),getY(),getZ(),LakeHouseRegistry.SCRAPE.get(),SoundSource.NEUTRAL,.7F,.9F+random.nextFloat()*.2F);scrapeTicks=30;}
+        }
+        inCulvert=low;
+    }
 
     @Override public void addAdditionalSaveData(CompoundTag tag){super.addAdditionalSaveData(tag);if(owner!=null)tag.putUUID("Owner",owner);tag.putInt("Chips",chips());}
     @Override public void readAdditionalSaveData(CompoundTag tag){super.readAdditionalSaveData(tag);owner=tag.hasUUID("Owner")?tag.getUUID("Owner"):null;chips(tag.getInt("Chips"));}
