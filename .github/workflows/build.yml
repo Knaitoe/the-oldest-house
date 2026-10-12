@@ -680,6 +680,7 @@ jobs:
           test -s build/font-smoke/native-ghosts-cast.png
           test -s build/font-smoke/native-ghosts-fixtures.png
           test -s build/font-smoke/native-ghosts-paper-and-cases.png
+          test -s build/font-smoke/native-ghosts-final-dinner.png
           test -s build/font-smoke/scenes/ghosts_upstairs.png
           test -s build/font-smoke/scenes/ghosts_basement.png
           test -s build/font-smoke/literary-passed.txt
