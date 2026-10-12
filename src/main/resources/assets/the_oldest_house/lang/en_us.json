@@ -249,5 +249,10 @@
   "subtitles.the_oldest_house.ghost_low": "A voice croaks low",
   "subtitles.the_oldest_house.ghost_thin": "The voice turns thin",
   "subtitles.the_oldest_house.ghost_scrape": "A chair scrapes; something moves below the table",
-  "subtitles.the_oldest_house.ghost_card": "Cardboard creases and tears"
+  "subtitles.the_oldest_house.ghost_card": "Cardboard creases and tears",
+  "block.the_oldest_house.nightclub": "Nightclub furnishing",
+  "entity.the_oldest_house.nightclub_actor": "Clubgoer",
+  "subtitles.the_oldest_house.nightclub.beat": "A bass rhythm repeats",
+  "item.the_oldest_house.nightclub_glass": "Glass of water",
+  "item.the_oldest_house.nightclub_glass_empty": "Empty glass"
 }

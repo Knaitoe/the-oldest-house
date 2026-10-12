@@ -287,6 +287,8 @@ public enum LabyrinthPlace {
     TURNING_GRAVITY("turning_gravity",Kind.GRAY,93,new BoundingBox(-13,-4,-29,13,6,0),grayDoors(0,0,-29)),
     /** Three Fingers (0.4.81): a cottage on the mill road, a soldier's withered paw and three wishes. Interior, multi-visit. */
     THREE_FINGERS("three_fingers",Kind.MULTI_VISIT,94,new BoundingBox(-14,-1,-34,14,10,0),literaryEntry()),
+    /** An endless recurring dance room, without an authored Witness resolution. */
+    NIGHTCLUB("nightclub",Kind.RECURRING,95,new BoundingBox(-16,-1,-49,16,9,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 
