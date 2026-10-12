@@ -244,5 +244,12 @@
   "subtitles.the_oldest_house.finale.minotaur_bellow": "The Minotaur bellows",
   "subtitles.the_oldest_house.finale.minotaur_hoof": "A hoof strikes stone",
   "death.attack.the_oldest_house.minotaur_charge": "%1$s was trampled by %2$s",
-  "death.attack.the_oldest_house.minotaur_charge.item": "%1$s was trampled by %2$s"
+  "death.attack.the_oldest_house.minotaur_charge.item": "%1$s was trampled by %2$s",
+  "subtitles.the_oldest_house.lake_house.compressor": "Compressor chugs",
+  "subtitles.the_oldest_house.lake_house.scrape": "Canoe scrapes concrete",
+  "subtitles.the_oldest_house.lake_house.hiss": "Air hisses into tanks",
+  "item.the_oldest_house.lake_house_flashlight": "Flashlight",
+  "item.the_oldest_house.lake_house_helmet": "Gold diving helmet",
+  "item.the_oldest_house.lake_house_tanks": "Air tanks",
+  "block.the_oldest_house.lake_house_compressor": "Compressor"
 }

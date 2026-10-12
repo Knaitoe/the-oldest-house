@@ -17,7 +17,9 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.StairsShape;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -51,6 +53,8 @@ public final class LakeHouse {
     public static final int CHANNEL_SOUTH=-100,CHANNEL_NORTH=-127,COVER_SOUTH=-104,COVER_NORTH=-120;
     /** The house: its centre on the lake bed, the half front door, and the raft tied over the chimney. */
     public static final BlockPos HOUSE=new BlockPos(0,-26,-170),FRONT_DOOR=new BlockPos(0,-25,-161),RAFT=new BlockPos(6,-1,-173),CHIMNEY=new BlockPos(6,-3,-173);
+    /** The compressor at the raft's west end, feeding the helmet's hose ({@link LakeHouseDive}). */
+    public static final BlockPos COMPRESSOR=new BlockPos(4,0,-173);
     /** The house's walls: x -9..9, z -161..-179; ground floor y -25..-21, upstairs y -19..-15, roof ridge y -5. */
     public static final int HX=9,HZ_FRONT=-161,HZ_BACK=-179,GROUND=-26,UPPER=-20,EAVES=-14;
 
@@ -268,11 +272,13 @@ public final class LakeHouse {
         }
     }
 
-    /** Somebody's raft, already tied to the chimney: logs and rope, and room to lie down. */
+    /** Somebody's raft, already tied to the chimney: logs and rope, the compressor, and a bedroll to lie down on. */
     private static void raft(Site s){
         for(int x=RAFT.getX()-3;x<=RAFT.getX()+3;x++)for(int z=RAFT.getZ()-2;z<=RAFT.getZ()+2;z++)
             s.set(x,-1,z,Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS,Direction.Axis.X));
         s.wet(CHIMNEY.getX(),CHIMNEY.getY()+1,CHIMNEY.getZ(),Blocks.CHAIN);
+        s.set(COMPRESSOR.getX(),COMPRESSOR.getY(),COMPRESSOR.getZ(),LakeHouseRegistry.COMPRESSOR.get().defaultBlockState().setValue(LakeHouseCompressorBlock.FACING,Direction.EAST));
+        for(int x=RAFT.getX()+2;x<=RAFT.getX()+3;x++)s.set(x,0,RAFT.getZ()-2,Blocks.RED_CARPET);
     }
 
     /** Woods round both lakes: birch and oak by the clear water, spruce close round the third. */
@@ -307,6 +313,14 @@ public final class LakeHouse {
 
     // ------------------------------------------------------------------------------------------------ helpers
     public static @Nullable BlockPos base(MinecraftServer s){var origin=HouseSavedData.get(s).houseOrigin();return origin==null?null:LabyrinthPlaces.base(origin,PLACE);}
+    /** Whether a reader is in the lake house's grounds at all. */
+    public static boolean inside(ServerPlayer p){
+        if(p.level().dimension()!=NovelRooms.dimension(PLACE))return false;var b=base(p.server);return b!=null&&box(b).contains(p.position());
+    }
+    /** Whether the reader stands on the raft. Relative to the base. */
+    static boolean onRaft(Vec3 r){return Math.abs(r.x-RAFT.getX()-.5)<=3.6&&Math.abs(r.z-RAFT.getZ()-.5)<=2.6&&r.y>=-.3&&r.y<=1.5;}
+    /** Whether the reader's flashlight has gone out (the lounge, on the helmet visit). */
+    static boolean flashlightOut(ServerPlayer p){return false;}
     static int stage(CompoundTag own){return own.getInt("Stage");}
 
     // ------------------------------------------------------------------------------------------------ the reader's part
@@ -320,6 +334,26 @@ public final class LakeHouse {
         own.putInt("T",own.getInt("T")+5);
         // A reader who arrived before their level did, or whose canoe was put away, finds one waiting again.
         if(own.getInt("T")%100==5)LakeHouseCanoe.ensure(p);
+        var r=p.position().subtract(Vec3.atLowerCornerOf(b));int visit=Math.max(1,own.getInt("Visit"));
+        // The flashlight hangs by the boathouse door. The visit's diving gear waits on the raft: the helmet on the second
+        // visit, the tanks from the third.
+        if(r.z>-10&&LakeHouseGear.give(p,LakeHouseRegistry.FLASHLIGHT.get()))p.displayClientMessage(Component.literal("A flashlight hangs on a nail by the door. You take it."),true);
+        if(onRaft(r)){
+            if(visit==2&&LakeHouseGear.give(p,LakeHouseRegistry.HELMET.get()))p.displayClientMessage(Component.literal("A gold diving helmet sits on the raft, its hose coupled to the compressor."),true);
+            else if(visit>=3&&LakeHouseGear.give(p,LakeHouseRegistry.TANKS.get()))p.displayClientMessage(Component.literal("A pair of air tanks lies on the raft, filled."),true);
+        }
+        LakeHouseDive.hose(p,b,own);
+        if(r.z<CHANNEL_NORTH)own.putBoolean("ReachedThird",true);
+        // The visit's beat: how far into the house the reader got, and back up into the air.
+        if(LakeHouseDive.inHouse(r)){
+            if(r.z>HZ_FRONT-5)own.putBoolean("SawFoyer",true);
+            if(visit>=2&&r.z<HZ_FRONT-9)own.putBoolean("SawBack",true);
+        }
+        boolean surfaced=r.z<CHANNEL_NORTH&&r.y>-1.5&&!p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER);
+        if(surfaced&&own.getInt("Beat")<visit){
+            if(visit==1&&own.getBoolean("SawFoyer")){own.putInt("Beat",visit);p.displayClientMessage(Component.literal("There's furniture down there."),false);}
+            else if(visit==2&&own.getBoolean("SawBack")){own.putInt("Beat",visit);p.displayClientMessage(Component.literal("There's a staircase at the back, with a red runner on it."),false);}
+        }
     }
     /** True when a click in the scene is used up. */
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){return false;}
@@ -337,9 +371,12 @@ public final class LakeHouse {
 
     // ------------------------------------------------------------------------------------------------ the shared clock
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
-        var s=e.getServer();if(s.getTickCount()%40!=11)return;var b=base(s);if(b==null)return;var l=s.getLevel(NovelRooms.dimension(PLACE));if(l==null)return;
-        if(!LabyrinthBuilder.isPlaceReady(LabyrinthData.get(s),PLACE)||!l.hasChunkAt(b.offset(CANOE)))return;
-        LakeHouseCanoe.tidy(l,b);
+        var s=e.getServer();if(s.getTickCount()%10!=1)return;var b=base(s);if(b==null)return;var l=s.getLevel(NovelRooms.dimension(PLACE));if(l==null)return;
+        if(!l.hasChunkAt(b.offset(COMPRESSOR))||!LabyrinthBuilder.isPlaceReady(LabyrinthData.get(s),PLACE))return;
+        LakeHouseDive.compressor(l,b,s.getTickCount());
+        if(s.getTickCount()%40!=11)return;
+        if(l.hasChunkAt(b.offset(CANOE)))LakeHouseCanoe.tidy(l,b);
+        LakeHouseGear.tidy(l,box(b));
     }
     /** The scene's box, absolute. */
     public static AABB box(BlockPos b){return new AABB(b.getX()+MIN_X,b.getY()+MIN_Y,b.getZ()+MIN_Z,b.getX()+MAX_X+1,b.getY()+MAX_Y+1,b.getZ()+1);}

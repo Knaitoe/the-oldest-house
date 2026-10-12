@@ -38,6 +38,32 @@ The house at the bottom of the lake is being built on its own branch, `claude/fu
   - Two readers get two canoes, apart. A canoe cannot be broken, wears to three states, carries two, and is put away when its reader leaves.
   - The rental log, then an account, resolves the reader's own story.
 
+## Phase 2, on the branch now: breath and the lent gear
+
+- **Breath** (`LakeHouseDive`). The scene keeps each reader's vanilla air bar.
+  - Under water it runs down a point a tick, whatever potion, conduit, turtle shell or Respiration the reader brought; in the air it comes back four a tick.
+  - Only the vignette's lent gear gives air.
+  - Out of air the reader chokes for four seconds; air back in time ends it in a gasp (the caver's sounds).
+  - Otherwise they black out and come to on the raft, or on the dock if they never got through the culvert, with half a breath and nothing else lost.
+- **The lent gear** (`LakeHouseGear`, three items).
+  - Each piece is marked with its reader and works for nobody else. It goes back the moment its reader is outside the scene, cannot be thrown away, and drops nothing on death.
+  - **Flashlight:** taken from the boathouse door. It is a real light where its beam lands, moved as it swings, so everyone sees it.
+  - **Gold diving helmet (visit 2):** waiting on the raft. Worn on the head it is a 3D item model, and in first person the view becomes its round window. It breathes while the compressor runs and the hose is free and within its 32 blocks; past that the hose pulls the diver back. The hose shows as a line of particles from the compressor down to the diver. The first time the diver goes into the house on that visit it catches on the step's rail, and gives nothing until they swim back and free it.
+  - **Air tanks (visit 3 on):** waiting on the raft. Worn in the chest slot, drawn on the back. They give a minute of air a fill; the durability bar is the gauge, and right-clicking the compressor fills them again.
+- **The compressor** (`LakeHouseCompressorBlock`, on the raft). It runs while minded: a reader near it with their head above water, or, for a reader diving alone, Tess (for now, simply that the reader is alone). It chugs and smokes while it runs. With two readers and nobody at it, it stops, so the helmet visit is real co-op.
+- **The culvert scrape.** In the covered culvert the canoe crawls (too low for the paddles), scrapes along, and chips its paint once per pass. Two passes take it to the bare wood.
+- **Beats:**
+  - Visit 1 ends on reaching the foyer and coming back up: "There's furniture down there."
+  - Visit 2 ends on reaching the back of the ground floor and coming back up.
+  - Later beats come with the interior (phase 3).
+- **Assets:**
+  - Textures drawn by tools/draw_lake_house_art.py: the helmet's shell, window and collar, the tanks' icon and back texture, the flashlight, the compressor's four faces, and the porthole view.
+  - Written by tools/generate_lake_house_assets.py: three subtitled sounds (`lake_house.compressor`, `lake_house.scrape`, `lake_house.hiss`), the item models (the helmet built of elements), the compressor's model and blockstate, and all the names. This tool adds entries to the shared `sounds.json` and `lang/en_us.json`.
+- **Tests:** three more in `LakeHouseTests`.
+  - Water breathing gives nothing; the lent tanks breathe and spend their fill; another reader's tanks give nothing; out of air the reader chokes unharmed, blacks out and comes to on the raft with half a breath.
+  - The compressor runs for a reader diving alone, stops with two readers and nobody minding it, and runs again with a partner on the raft. The hose catches on the rail, gives nothing while caught, frees at the rail, and breathes again.
+  - The flashlight is lent at the door and its beam is a waterlogged light that goes when it is put away. Outside the scene the gear is gone.
+
 ## Shared files touched
 
 | File | Change |
@@ -52,10 +78,11 @@ The house at the bottom of the lake is being built on its own branch, `claude/fu
 | `labyrinth/WitnessAccount.java` | `LAKE_HOUSE` story after `THREE_FINGERS` |
 | `labyrinth/ScenePolish.java`, `SceneReview.java`, `ScenePlaytestRepairs.java` | excluded like `THREE_FINGERS` |
 | `labyrinth/SceneClock.java` | `case LAKE_HOUSE->4` (a summer noon) |
-| `lang/en_us.json` | `entity.the_oldest_house.lake_house_canoe` |
+| `lang/en_us.json`, `sounds.json` | the canoe, gear and compressor names, three sounds and their subtitles (written by tools/generate_lake_house_assets.py; rerun it after a merge if these files conflict) |
 | `gametest/ArchitectureTests.java` | lectern source for `LAKE_HOUSE`; a `lake_house_cutaway` view through both storeys |
 | `client/SceneVisualProof.java` | 88 → 90 architecture views (the scene's own view and the cutaway) |
 | `gametest/HazardVarietyTests.java` | 96 slots, the highest 95 |
+| `gametest/LiteraryTests.java` | the Witness reachability case counts 25 literary sources and 45 resolutions |
 | Eleven tests with Witness counts | `Story.values().length==45`, `REQUIRED==34` (Classics, Literary, Goatman, HouseNpc, Hotel, NovelCorrespondence, ExplorationPass, Correspondence, Witness, Stacey, Marginalia) |
 
 ## At integration
@@ -73,10 +100,6 @@ The house at the bottom of the lake is being built on its own branch, `claude/fu
 
 These follow the design document.
 
-- **Breath:**
-  - the vanilla air bar, with the reader's own aids not working;
-  - the lent gear: free dive, then the helmet on the raft compressor's hose, then chest-slot tanks;
-  - the choke and blackout onto the raft.
 - **Inside the house:**
   - the rooms, and mining as asking how;
   - dropped items sinking, the dry chairs, the dresses and the painting.
