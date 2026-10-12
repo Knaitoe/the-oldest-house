@@ -8,12 +8,12 @@ The additional `This%20kid%20begins%20in%20the%20doorway.docx` was read in full,
 | Holy Rabbit father and son beneath a tree | Confirmed; camp dressing remains pending |
 | Hotel NPC texture alignment | Corrected six-skin set from 0.4.87 is retained; current cast screenshot has complete faces; compare against an updated in-game build |
 | Room 217 will not open | Added the reader's displayed 217 as an actual entrance into the hotel; other private plaque numbers remain locked |
-| Floating props and stacked boxes in the child's room | Pending geometry/support repair |
+| Floating props and stacked boxes in the child's room | Desk and stacked-box tops now match native collision heights; other props still need scene inspection |
 | Ghost Set source should look like a call sheet | Pending custom surface art; preserve the finite original book |
-| Marjorie's text should rumble and roll | Pending |
+| Marjorie's text should rumble and roll | Integrated private dinner captions with small per-glyph rolling movement; native GPU inspection pending |
 | Different meals across visits, ending with spaghetti | Pending |
-| Day six frozen jump, head turn toward camera, then forced departure | Pending; keep each reader's filming day private |
-| Improve all Ghost Set art, animation, house construction and interactions | Pending |
+| Day six frozen jump, head turn toward camera, then forced departure | Integrated sixty-tick hold, head turn and native saved-door return; fifteen Ghost Set cases pass, GPU camera inspection pending |
+| Improve all Ghost Set art, animation, house construction and interactions | Eight painted cast atlases and held-jump pose integrated; environment, wider construction and interactions still pending |
 | Plains: unique note storage and daytime arrival | Still pending from the first notes |
 | Fan: visible blade spin, flickering light and repair | Pending |
 | Fan toolbox: actual lightbulb, not planks | Pending |
@@ -35,6 +35,8 @@ The wake preserves Harrigan's body UUID through life, death in the study and the
 
 Club fixtures now use separate red, blue and green states. The lower pendants have visible chain support and light the dance floor at native level 15. Neon panel faces use NeoForge's actual `neoforge_data` light fields. Two strobe housings produce only three 100 ms flashes, separated by 400 ms, once every 130 seconds; the steady coloured light remains on. Silence stops the flashes. Existing club fixtures migrate once while vacant; player edits, finite glasses, music setting and original actors are retained.
 
-Mod 0.4.88 / protocol 62 / layout 43. The native suite now declares 571 cases; all 717 PNGs decode and all 144 club states resolve. All six focused new/updated native cases pass locally in 36 seconds: wake, reader-specific 217, mirror idle timeout, Goatman last departure, finite club glass/seats and reversible shared dance/despair. Full exact-source CI and native GPU inspection remain pending. Sources remain 44, required resolutions 33 across two kinds, with three endings. Continue source batches after quick checks without waiting for full CI.
+Mod 0.4.88 / protocol 63 / layout 43. The native suite now declares 572 cases; all 717 PNGs decode and all 144 club states resolve. All six focused new/updated native cases pass locally in 36 seconds: wake, reader-specific 217, mirror idle timeout, Goatman last departure, finite club glass/seats and reversible shared dance/despair. The follow-up adds eight painted Ghost Set cast atlases, a three-second held jump and head turn, private rolling dinner captions and the native saved-door cut. All fifteen Ghost Set cases pass locally in 33 seconds. [Cast and take provenance](GHOSTS_CAST_AND_TAKE_0_4_88.md). Full exact-source CI and native GPU inspection remain pending. Sources remain 44, required resolutions 33 across two kinds, with three endings. Continue source batches after quick checks without waiting for full CI.
 
 The preceding source 552772 passed nine of twelve workflow jobs. Two old server assertions still expected the pre-nightclub recurring pool and slot total; the client architecture assertion still expected 90 rather than the actual 91 views. Their exact expectations are corrected here. The actual multiplayer run stopped at its server watchdog in phase six and remains unverified; it is not counted as passing.
+
+The first additional-notes checkpoint ba0a417, run 38299337308, has now passed its actual two-client/reconnect job and ten completed workflow jobs. The Goatman job ran all 23 selected cases successfully but its source counter incorrectly included the last-departure case in the wake namespace. This follow-up selects both namespaces and counts all 27 declared cases in those namespaces; no assertion is weakened or test removed. The broad build/client job was still running when this follow-up was prepared, so this is not a completely verified release. The separate multiplayer watchdog failure on 552772 remains a record of that earlier attempt, not a failure on the newer checkpoint.

@@ -11,7 +11,6 @@ import random
 from pathlib import Path
 
 import numpy as np
-import soundfile
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources'
@@ -468,7 +467,7 @@ def models():
                        box((0, -16, 14), (2, 0, 16), 'w'), box((14, -16, 14), (16, 0, 16), 'w')],
           {**W, 'm': 'nursery_mattress', 'q': 'nursery_quilt'})
     legs = lambda h, x0=1, x1=13, z0=2, z1=12, t='w': [box((x, 0, z), (x + 2, h, z + 2), t) for x in (x0, x1) for z in (z0, z1)]
-    model('desk', [box((0, 10, 1), (16, 12, 15), 'y'), *legs(10), box((4, 7, 1), (12, 10, 2), 'r'), color((7.5, 8, .5), (8.5, 9, 1), 'gold')], W)
+    model('desk', [box((0, 14, 1), (16, 16, 15), 'y'), *legs(14), box((4, 7, 1), (12, 10, 2), 'r'), color((7.5, 8, .5), (8.5, 9, 1), 'gold')], W)
     model('chair', [box((3, 6, 3), (13, 8, 13), 'r'), *legs(6, 3, 11, 3, 11), box((3, 8, 11), (13, 15, 13), 'y')], W)
     chest = [box((1, 0, 3), (15, 8, 13), 'r'), color((4, 3, 2.9), (6, 5, 3), 'blue'), color((7, 3, 2.9), (9, 5, 3), 'yellow'), color((10, 3, 2.9), (12, 5, 3), 'green')]
     model('toy_chest_0', chest + [box((.5, 8, 2.5), (15.5, 9, 13.5), 'y')], W)
@@ -507,7 +506,7 @@ def models():
           {**W, 'p': 'nursery_drawing_below'}, 'nursery_drawing_below')
     model('card', [box((5, 0, 7), (11, 3, 9), 'c'), box((5, 3, 7.5), (11, 3.5, 8.5), 'c')], {**W, 'c': 'nursery_card'}, 'nursery_card')
     model('account', [box((3, 0, 4), (13, 1.5, 12), 'e', overrides={d: ('s', sw('white')) for d in ('north', 'south', 'east')})], {**W, 'e': 'nursery_exercise_book'}, 'nursery_exercise_book')
-    model('boxes', [box((1, 0, 1), (15, 13, 15), 'c'), box((1, 13, 1), (15, 13.5, 15), 'c')], {**W, 'c': 'nursery_cardboard'}, 'nursery_cardboard')
+    model('boxes', [box((1, 0, 1), (15, 15.5, 15), 'c'), box((1, 15.5, 1), (15, 16, 15), 'c')], {**W, 'c': 'nursery_cardboard'}, 'nursery_cardboard')
     bars = [box((x, 2, z), (x + 1, 10, z + 1), 'w') for x in range(3, 14, 2) for z in (2.5, 12.5)]
     model('crib', [*[box((x, 0, z), (x + 2, 12, z + 2), 'w') for x in (0, 14) for z in (2, 12)], box((0, 10, 2), (16, 12, 4), 'w'), box((0, 10, 12), (16, 12, 14), 'w'),
                    *bars, box((2, 2, 4), (14, 4, 12), 'm'), box((0, 2, 4), (2, 12, 12), 'w'), box((14, 2, 4), (16, 12, 12), 'w')], {**W, 'm': 'nursery_mattress'})
@@ -722,6 +721,7 @@ def write_json(path, data, original):
 
 
 def sounds():
+    import soundfile
     folder = ASSETS / 'sounds/literary'
     folder.mkdir(parents=True, exist_ok=True)
     for name, (make, _) in SOUNDS.items():
