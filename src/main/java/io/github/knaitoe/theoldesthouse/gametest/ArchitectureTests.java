@@ -210,7 +210,8 @@ public final class ArchitectureTests {
                 }
             }
             h.assertTrue(squares==0,scene.id()+" keeps no lattice of lone carpet squares: "+squares);
-            if(scene!=LabyrinthPlace.WINCHESTER&&scene!=LabyrinthPlace.MASQUE)h.assertTrue(rugs>=9,scene.id()+" has a laid rug: "+rugs);
+            if(scene==LabyrinthPlace.GHOSTS_SET){int floors=0;for(var at:BlockPos.betweenClosed(b.offset(-19,-1,-45),b.offset(19,-1,-1))){var surface=level.getBlockState(at);if(surface.is(LiteraryRegistry.GHOST_SET.get())&&surface.getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.FLOOR)floors++;}h.assertTrue(floors>=100&&level.getBlockState(b.offset(0,0,-28)).is(LiteraryRegistry.GHOST_SET.get()),"the furnished filming home retains its laid native floor and continuous dining table");}
+            else if(scene!=LabyrinthPlace.WINCHESTER&&scene!=LabyrinthPlace.MASQUE)h.assertTrue(rugs>=9,scene.id()+" has a laid rug: "+rugs);
             // The discovery paper and the ending can both be reached from the entrance.
             var reached=reachable(level,b,scene);
             for(var paper:List.of(LiteraryRooms.source(scene),LiteraryRooms.ending(scene))){
