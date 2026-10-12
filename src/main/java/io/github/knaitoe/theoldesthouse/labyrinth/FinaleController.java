@@ -518,8 +518,21 @@ public final class FinaleController {
     }
     // ------------------------------------------------------------------------------------------------ the cell (0.4.84)
     public static final String IMPRISONED="Imprisoned0484";
-    /** Whether anyone killed in the fight is still in the cell; while they are, no one else opens it and nothing new is put in it. */
-    public static boolean imprisoned(MinecraftServer server){return !FinaleProgress.world(server).getCompound(IMPRISONED).isEmpty();}
+    /** Whether anyone killed in the fight is still in the cell; while they are, no one else opens it and nothing new is put in it.
+     *  Only a kept reader who is in the game holds the cell: one who has left never shuts the finale for everyone else. */
+    public static boolean imprisoned(MinecraftServer server){return imprisonedBesides(server,null);}
+    private static boolean imprisonedBesides(MinecraftServer server,@Nullable UUID besides){
+        for(String key:FinaleProgress.world(server).getCompound(IMPRISONED).getAllKeys()){UUID id;try{id=UUID.fromString(key);}catch(IllegalArgumentException ignored){continue;}
+            if(!id.equals(besides)&&server.getPlayerList().getPlayer(id)!=null&&FinaleProgress.phase(server,id)==FinaleProgress.Phase.IMPRISONED)return true;}
+        return false;
+    }
+    /** A kept reader leaving the game takes the door with them; it is put back when they return to the cell. */
+    @SubscribeEvent public static void keptLeave(PlayerEvent.PlayerLoggedOutEvent event){
+        if(!(event.getEntity() instanceof ServerPlayer player)||FinaleProgress.phase(player.server,player.getUUID())!=FinaleProgress.Phase.IMPRISONED)return;
+        BlockPos origin=HouseSavedData.get(player.server).houseOrigin();ServerLevel interior=player.server.getLevel(HouseDimensions.INTERIOR);
+        // The leaving reader is still listed while this event runs.
+        if(origin!=null&&interior!=null&&interior.isLoaded(FinaleArchitecture.cellDoor(origin))&&!imprisonedBesides(player.server,player.getUUID()))FinaleArchitecture.removeCellDoor(interior,origin);
+    }
     private static void imprison(MinecraftServer server,UUID id,boolean kept){
         CompoundTag world=FinaleProgress.world(server),list=world.getCompound(IMPRISONED);
         if(kept)list.putLong(id.toString(),server.overworld().getGameTime());else list.remove(id.toString());

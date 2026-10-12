@@ -341,7 +341,7 @@ public final class SceneReviewTests {
             h.assertTrue(witch.position().distanceToSqr(start)>.25,"withdrawal is real native movement away from the approach");
             var tag=new CompoundTag();witch.saveWithoutId(tag);int delay=witch.attackCooldown();witch.load(tag);h.assertTrue(witch.getUUID().equals(id)&&witch.attackCooldown()==delay,"reload preserves the actual attack interval");
             owner.setHealth(6);f.at(owner,witch.getX()-f.base.getX()+1.5,0,witch.getZ()-f.base.getZ());owner.lookAt(EntityAnchorArgument.Anchor.EYES,witch.getEyePosition());
-            boolean[] done={false};h.onEachTick(()->{if(active==f&&!done[0]&&owner.getHealth()<6){done[0]=true;h.assertTrue(witch.getUUID().equals(id)&&witch.attackCooldown()<=20,"the same actor physically strikes despite the player's gaze at three hearts");f.done();}});
+            boolean[] done={false};h.onEachTick(()->{if(active==f&&!done[0]&&owner.getHealth()<6){done[0]=true;h.assertTrue(witch.getUUID().equals(id)&&witch.attackCooldown()<=60&&witch.huntPhase()==LakeWitchEntity.WITHDRAW,"the same actor physically strikes despite the player's gaze at three hearts, then withdraws on an ordinary interval (0.4.83: low health no longer skips her retreat): "+witch.huntDiagnostic());f.done();}});
         });
     });}
 

@@ -285,7 +285,7 @@ public final class PlaytestCommandTests {
                 h.assertTrue(out instanceof MinotaurEntity m&&m.motion()==MinotaurEntity.LOOSE&&m.looseStage()==0&&!FinaleProgress.world(p.server).hasUUID("CagedCreature"),"the same creature is out of the cell, waiting, and no longer its prisoner");
                 loose[0]=(MinotaurEntity)out;
                 h.assertTrue(FinaleController.ensureCaged(f.level,f.origin)==null&&!FinaleController.start(peer),"while someone is kept, no new prisoner appears and nobody else can open the cell");
-                var fresh=p.server.getPlayerList().respawn(p,false,Entity.RemovalReason.KILLED);f.players.remove(p);f.players.add(fresh);fresh.hasChangedDimension();fresh.setNoGravity(true);woke[0]=fresh;
+                var fresh=p.server.getPlayerList().respawn(p,false,Entity.RemovalReason.KILLED);fresh.connection.player=fresh;f.players.remove(p);f.players.add(fresh);fresh.hasChangedDimension();fresh.setNoGravity(true);woke[0]=fresh;
                 h.assertTrue(fresh.isAlive()&&fresh.serverLevel()==f.level&&FinaleArchitecture.inCell(f.origin,fresh.position())&&fresh.getInventory().isEmpty(),"they wake inside the cell with nothing: at "+fresh.position());
                 var door=FinaleArchitecture.cellDoor(f.origin);
                 h.assertTrue(f.level.getBlockState(door).is(Blocks.IRON_DOOR)&&f.level.getBlockState(door.above()).is(Blocks.IRON_DOOR)&&f.level.getBlockState(FinaleArchitecture.cell(f.origin)).is(Blocks.IRON_BARS),"the bars are shut and the cell has its one door");
