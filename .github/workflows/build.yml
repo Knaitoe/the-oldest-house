@@ -136,6 +136,16 @@ jobs:
               for name in ('father','father_bandaged','father_mangled','snow_rabbit'):
                   assert z.read(f'assets/the_oldest_house/textures/entity/literary_{name}.png').startswith(b'\x89PNG')
               assert 'io/github/knaitoe/theoldesthouse/client/HolyRabbitVisualProof.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/client/NightclubVisualProof.class' in z.namelist()
+              for name in ('nightclub_wall','nightclub_floor','nightclub_speaker'):
+                  assert f'assets/the_oldest_house/textures/block/{name}.png' in z.namelist()
+              for name in ('nightclub_dancer_male','nightclub_dancer_female','nightclub_dancer_vest',
+                           'nightclub_dancer_copper','nightclub_dancer_mustard','nightclub_dancer_silver',
+                           'nightclub_dancer_brick','nightclub_dancer_braids','nightclub_dj'):
+                  assert f'assets/the_oldest_house/textures/entity/{name}.png' in z.namelist()
+                  assert f'assets/the_oldest_house/textures/entity/{name}_despair.png' in z.namelist()
+              assert 'assets/the_oldest_house/models/item/nightclub_glass.json' in z.namelist()
+              assert z.read('assets/the_oldest_house/sounds/nightclub/beat.ogg').startswith(b'OggS')
               assert 'io/github/knaitoe/theoldesthouse/mixin/StillRabbitMixin.class' in z.namelist()
               assert 'data/the_oldest_house_playtest488/structure/empty.nbt' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/HotelTests.class' in z.namelist()
@@ -1195,6 +1205,9 @@ jobs:
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 3m gradle runClient -PholyRabbitSmoke --no-daemon
           test -s build/font-smoke/holy-rabbit-passed.txt
           for view in cast motion; do test -s build/font-smoke/native-holy-rabbit-$view.png; done
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 3m gradle runClient -PnightclubSmoke --no-daemon
+          test -s build/font-smoke/nightclub-passed.txt
+          for view in cast motion despair fixtures; do test -s build/font-smoke/native-nightclub-$view.png; done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -1214,6 +1227,8 @@ jobs:
             build/font-smoke/stanley-passed.txt
             build/font-smoke/native-holy-rabbit-*.png
             build/font-smoke/holy-rabbit-passed.txt
+            build/font-smoke/native-nightclub-*.png
+            build/font-smoke/nightclub-passed.txt
             run/logs/latest.log
             run/crash-reports/
 

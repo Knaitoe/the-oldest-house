@@ -989,5 +989,14 @@
         "name": "the_oldest_house:literary/ghost_card"
       }
     ]
+  },
+  "nightclub.beat": {
+    "subtitle": "subtitles.the_oldest_house.nightclub.beat",
+    "sounds": [
+      {
+        "name": "the_oldest_house:nightclub/beat",
+        "stream": true
+      }
+    ]
   }
 }

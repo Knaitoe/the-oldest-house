@@ -506,31 +506,49 @@
     },
     {
       "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_father.png",
-      "sha256": "d3cb66a94152211359671970f745d6b32a1e8868fcb1eba6d29e1b22f1602524",
+      "sha256": "3f5a5508bf68d8be946870e5cbaf9bc003a5a9c588fc3753f0da6422c3592b17",
       "size": [
-        512,
-        256
+        1774,
+        887
       ],
       "kind": "entity",
-      "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261",
+      "alpha_sha256": "251d10a75e0107233de75d624c5a9c395cb066fd185d3bb14267e0295d9bd219",
       "logical_uv": [
         128,
         64
-      ]
+      ],
+      "superseded_0465": {
+        "sha256": "d3cb66a94152211359671970f745d6b32a1e8868fcb1eba6d29e1b22f1602524",
+        "size": [
+          512,
+          256
+        ],
+        "alpha_sha256": "107429b8df3b1a4ac2e3f57df265e0d70bb50f9ecd0e267ef0fb4cf32c39a261"
+      },
+      "revision": "0.4.88: explicit owner instruction to make the original Holy Rabbit Father Native American across his healthy and bandaged states."
     },
     {
       "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_father_bandaged.png",
-      "sha256": "d4d012dbfdb66f35703dd3ddb0bd228a7d2a299bb3e369bd14a22971ca35834e",
+      "sha256": "d1bec3a6f4201ed2a0a8d66c75151ba553469e8df3466d3c83eb631d0808ca8c",
       "size": [
-        512,
-        256
+        1774,
+        887
       ],
       "kind": "entity",
-      "alpha_sha256": "5a1b34aa67cb2c9aacbcae0c8a071d1ea870eacda09422ccceb1a1fbbc2df271",
+      "alpha_sha256": "35eb2f00c4e43c0095b1a3258d1de191c13305f06002506b75317a6cef550439",
       "logical_uv": [
         128,
         64
-      ]
+      ],
+      "superseded_0465": {
+        "sha256": "d4d012dbfdb66f35703dd3ddb0bd228a7d2a299bb3e369bd14a22971ca35834e",
+        "size": [
+          512,
+          256
+        ],
+        "alpha_sha256": "5a1b34aa67cb2c9aacbcae0c8a071d1ea870eacda09422ccceb1a1fbbc2df271"
+      },
+      "revision": "0.4.88: explicit owner instruction to make the original Holy Rabbit Father Native American across his healthy and bandaged states."
     },
     {
       "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_guest_0.png",

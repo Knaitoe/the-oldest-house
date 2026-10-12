@@ -1,6 +1,6 @@
-# October 12 playtest notes — first checkpoint (0.4.88)
+# October 12 playtest notes — nightclub checkpoint (0.4.88)
 
-This checkpoint implements the first part of the uploaded `This kid begins in the doorway(2).docx`, including the later instruction that the Father be Native American. The other notes remain open. It is not a verified release.
+This checkpoint implements the first part of the uploaded `This kid begins in the doorway(2).docx`, the Native American Father instruction and the endless nightclub. The other notes remain open. Source batches continue after quick compile and focused checks; full checks run in the background at the owner's request. It is not a verified release.
 
 | Note | Current state |
 | --- | --- |
@@ -10,7 +10,7 @@ This checkpoint implements the first part of the uploaded `This kid begins in th
 | Custom Father and rabbit art | Integrated; native client render checks pending |
 | Harrigan's wake after finding him in the chair | Pending |
 | Simpler chalk and spool art | Pending |
-| Endless dark nightclub with custom dancers | Pending |
+| Endless dark nightclub with custom dancers | Implemented; two native gameplay cases pass; custom pixels, painted club attire and reversible despair are integrated; native GPU inspection pending |
 | Goatman plates after departure | Pending |
 | Institute's yellow ceiling lighting only | Pending |
 | Courtyard fountain material and spout | Pending |
@@ -31,6 +31,18 @@ The Father's narrow entrance has physical headroom. Saved shelter repair clears 
 
 All six new native cases pass locally, including camera-gated saved-shelter preservation. The existing 41 literary cases also ran; their meal regression caught and verified the consumption-order fix. The new complete-night case separately caught and verified the late-meal clock fix. Every one of the 693 shipped PNGs decodes with valid chunk CRCs, and the existing eight font grids pass. Two mandatory native client views render the three Father skins and motions plus the actual rabbit mesh and facial details. GPU inspection is pending.
 
-Mod 0.4.88 / protocol 59 / layout 42. Protocol 59 keeps the new injury and stationary-rabbit client rendering paired with this server. No new source or slot is added in this checkpoint: 44 eligible sources, 33 required resolutions across two kinds, three endings. Require all twelve exact-source jobs, the complete 565-case native suite, 693 PNG decodes, 90 architecture views, both Holy Rabbit views, all four Stanley views and every earlier native/client/socket proof before calling a release verified. The full hotel candidate remains tracked separately at source `6e63f3f439c415b6096df5856ab785707d54388e`, run `38270670659`.
+The recurring nightclub appends physical slot 95 at layout 43. Its dark room has an eighteen-person dance floor, a raised DJ booth, eight speaker cabinets, a native exit sign, bar counters, finite glasses, stools and upholstered benches. Custom wall, floor and speaker textures use Minecraft-like coarse square pixels and subdued palettes. Eighteen painted NPC atlases retain the mod's established style and contemporary club clothing. The original 120-BPM loop has no sampled or licensed recording. Eight distinct dancer designs and a separate DJ retain different faces, hair and club clothing. Split elbows, wrists and knees support shuffle, raised-hands, swaying and mixer gestures.
+
+The mixer cycles normal, soft and silent music. Silence gradually morphs the same saved actors into restrained, hollow facial expressions, a hunched torso, trembling head and dropped arms; feet keep moving. Restarting music resets their synced mood immediately and restores passive or gleeful dancing. This is a shared physical mixer, not a client's volume setting. Joining, reload and revisiting retain the same actor UUIDs and mixer setting. Saved missing originals are never silently replaced.
+
+Decor has actual native actions. Empty-handed clicks take one existing glass from a counter; native item use drinks it and leaves an empty glass; placing it on an empty bar top consumes the held glass and restores an empty physical prop. Another guest cannot duplicate the removed glass, and revisiting does not refill it. The native Adventure allowance is restricted to returning that item to a club bar. Benches and stools mount actual seat entities and permit dismounting. Touching a playing speaker produces a positional bass pulse; a muted speaker stays still. The ordinary return door has proper support and remains usable. There is no completion timer, forced exit, scene damage clock or earned resolution for staying; the room can be revisited indefinitely. This recurring room is intentionally outside the Witness source pool.
+
+Both new focused native cases pass: actual Adventure pickup/drinking/empty return and both seats, and shared music/continued physical dance/despair/restart with original UUIDs, reload, revisit and an open return door. The drinking fixture advances native player-use ticks because mock connections do not dispatch movement packets. All 714 PNGs pass decode and CRC checks; all 132 oriented prop states resolve to native models and existing materials. Four native client views cover cast comparison, motion, despair/return and furnishings. The new GPU views and complete exact-source CI remain pending.
+
+Mod 0.4.88 / protocol 60 / layout 43. Protocol 60 pairs the added registry, glass models, score and synced despair presentation with this server. The first Father checkpoint used protocol 59 / layout 42. The nightclub appends one slot and no source: still 44 eligible sources, 33 required resolutions across two kinds, three endings. Require all twelve exact-source jobs, the complete 567-case native suite, 714 PNG decodes, 91 architecture views, all four nightclub views, both Holy Rabbit views, all four Stanley views and every earlier native/client/socket proof before calling a release verified; do not wait for the full run to keep patching and publishing source batches. The preceding hotel source `6e63f3f439c415b6096df5856ab785707d54388e`, run `38270670659`, passed all twelve jobs, including both actual clients and reconnects; its four captured views match the inspected hotel views byte for byte.
 
 Artwork provenance and prompt directions: [HOLY_RABBIT_ART_0_4_88.md](HOLY_RABBIT_ART_0_4_88.md).
+
+Nightclub artwork and native models: [NIGHTCLUB_0_4_88.md](NIGHTCLUB_0_4_88.md).
+
+The preceding Father checkpoint `ec82d52` completed eleven of twelve CI jobs, including both actual clients and reconnects. Its build job stopped on the old approved hash for `literary_father.png`, before the complete default gameplay corpus ran. This source updates both authorized Father artwork records to the requested Native American Father, retaining the old values as provenance and keeping all other approved hash/alpha checks strict. Full verification remains pending.
