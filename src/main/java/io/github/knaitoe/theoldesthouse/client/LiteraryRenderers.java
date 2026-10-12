@@ -24,7 +24,7 @@ public final class LiteraryRenderers {
     public static final ModelLayerLocation CAST=layer("literary_cast"),ELK=layer("literary_elk"),FAN=layer("literary_fan");
     private static ModelLayerLocation layer(String name){return new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,name),"main");}
     private static ResourceLocation texture(String name){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/literary_"+name+".png");}
-    public static ResourceLocation skin(int role,int phase){String[] roles={"mother","dancer","red_figure","coffin_woman","lady","silhouette","brother","father","visitor","killer","family_father","family_mother","family_child","old_man","stranger","camera"};String name=roles[Math.max(0,Math.min(15,role))];if(role==LiteraryActor.SILHOUETTE&&phase==4)return texture("plain_boy");if(role==LiteraryActor.SILHOUETTE&&phase==5)return texture("quiet_walker");if(role==LiteraryActor.STRANGER&&phase>=4&&phase<4+BAR.length)return texture("bar_"+BAR[phase-4]);if(role==LiteraryActor.STRANGER&&phase>=9&&phase<9+COTTAGE.length)return texture("paw_"+COTTAGE[phase-9]);if(role==LiteraryActor.STRANGER)name+="_"+Math.min(3,phase);else if(role==LiteraryActor.SILHOUETTE&&phase>0)name+="_"+Math.min(3,phase);else if(role==LiteraryActor.FATHER&&phase>=2)name+="_bandaged";else if(role>=LiteraryActor.FAMILY_FATHER&&role<=LiteraryActor.FAMILY_CHILD&&phase>0)name+="_changed";return texture(name);}
+    public static ResourceLocation skin(int role,int phase){String[] roles={"mother","dancer","red_figure","coffin_woman","lady","silhouette","brother","father","visitor","killer","family_father","family_mother","family_child","old_man","stranger","camera"};String name=roles[Math.max(0,Math.min(15,role))];if(role==LiteraryActor.SILHOUETTE&&phase==4)return texture("plain_boy");if(role==LiteraryActor.SILHOUETTE&&phase==5)return texture("quiet_walker");if(role==LiteraryActor.STRANGER&&phase>=4&&phase<4+BAR.length)return texture("bar_"+BAR[phase-4]);if(role==LiteraryActor.STRANGER&&phase>=9&&phase<9+COTTAGE.length)return texture("paw_"+COTTAGE[phase-9]);if(role==LiteraryActor.STRANGER)name+="_"+Math.min(3,phase);else if(role==LiteraryActor.SILHOUETTE&&phase>0)name+="_"+Math.min(3,phase);else if(role==LiteraryActor.FATHER&&phase>=2)name+=phase>=3?"_mangled":"_bandaged";else if(role>=LiteraryActor.FAMILY_FATHER&&role<=LiteraryActor.FAMILY_CHILD&&phase>0)name+="_changed";return texture(name);}
     @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions e){e.registerLayerDefinition(CAST,CastModel::layer);e.registerLayerDefinition(GhostsCastModel.LAYER,GhostsCastModel::layer);e.registerLayerDefinition(ELK,ElkModel::layer);e.registerLayerDefinition(FAN,ModelRenderer::fanLayer);}
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerEntityRenderer(LiteraryRegistry.ACTOR.get(),CastRenderer::new);e.registerEntityRenderer(LiteraryRegistry.ELK.get(),ElkRenderer::new);e.registerBlockEntityRenderer(LiteraryRegistry.MODEL.get(),ModelRenderer::new);}
     /** The Last Stop's own skins, on the existing stranger phases four through eight. */
@@ -64,14 +64,38 @@ public final class LiteraryRenderers {
                 part.addOrReplaceChild("killer_boot",CubeListBuilder.create().texOffs(16,32).mirror(left).addBox(-2,7,-2,4,5,4,new CubeDeformation(.38F)),PartPose.ZERO);
                 part.addOrReplaceChild("killer_toe",CubeListBuilder.create().texOffs(32,32).mirror(left).addBox(-2,10,-3,4,2,1,new CubeDeformation(.38F)),PartPose.ZERO);}
             return LayerDefinition.create(m,128,64);}
-        private void dress(int role,int phase){boolean bar=role==LiteraryActor.STRANGER&&phase>=4&&phase<4+BAR.length;int cottage=role==LiteraryActor.STRANGER&&phase>=9&&phase<9+COTTAGE.length?phase-9:-1;coat.visible=role==LiteraryActor.FAMILY_FATHER||role==LiteraryActor.OLD_MAN||role==LiteraryActor.VISITOR||role==LiteraryActor.STRANGER&&cottage<0&&(!bar||phase==4)||cottage==0||cottage==3||cottage==4;gown.visible=role==LiteraryActor.LADY||role==LiteraryActor.COFFIN_WOMAN||role==LiteraryActor.FAMILY_MOTHER||cottage==1;mask.visible=role==LiteraryActor.DANCER||role==LiteraryActor.RED_FIGURE;hood.visible=false;bandage.visible=role==LiteraryActor.FATHER&&phase>=2;
+        private void dress(int role,int phase){boolean bar=role==LiteraryActor.STRANGER&&phase>=4&&phase<4+BAR.length;int cottage=role==LiteraryActor.STRANGER&&phase>=9&&phase<9+COTTAGE.length?phase-9:-1;coat.visible=role==LiteraryActor.FATHER||role==LiteraryActor.FAMILY_FATHER||role==LiteraryActor.OLD_MAN||role==LiteraryActor.VISITOR||role==LiteraryActor.STRANGER&&cottage<0&&(!bar||phase==4)||cottage==0||cottage==3||cottage==4;gown.visible=role==LiteraryActor.LADY||role==LiteraryActor.COFFIN_WOMAN||role==LiteraryActor.FAMILY_MOTHER||cottage==1;mask.visible=role==LiteraryActor.DANCER||role==LiteraryActor.RED_FIGURE;hood.visible=false;bandage.visible=role==LiteraryActor.FATHER&&phase>=2;
             boolean killer=role==LiteraryActor.KILLER;for(var part:new ModelPart[]{killerHood,killerMask,killerCoat,killerBelt,sleeveRight,sleeveLeft,tailRight,tailLeft,bootRight,bootLeft,toeRight,toeLeft,axe})part.visible=killer;hardHat.visible=false;hat.visible=!killer;}
         public void pose(int role,int phase,float age){dress(role,phase);
             if(role==LiteraryActor.DANCER&&phase==1){leftArm.xRot=rightArm.xRot=-.8F;leftArm.zRot=-.55F;rightArm.zRot=.55F;body.yRot=(float)Math.sin(age*.045)*.18F;leftLeg.xRot=(float)Math.sin(age*.08)*.22F;rightLeg.xRot=-leftLeg.xRot;}
             if(role==LiteraryActor.OLD_MAN){body.xRot=.19F;head.xRot=.14F;leftArm.xRot=rightArm.xRot=-.1F;}
-            if(role==LiteraryActor.FATHER&&phase>=2){leftLeg.xRot=.25F;leftLeg.zRot=.06F;body.zRot=-.06F;rightArm.zRot=.2F;}
+            if(role==LiteraryActor.FATHER)father(phase,age);
             if(role==LiteraryActor.BROTHER&&phase>0){leftArm.xRot=rightArm.xRot=-.18F;head.xRot=.4F;}
             if(role==LiteraryActor.KILLER)killer(phase,age);
+        }
+        /** A guarded left leg bears less weight each night; the final state cannot take a stride. */
+        private void father(int phase,float age){
+            float breath=(float)Math.sin(age*.065F),stride=(float)Math.cos(walk*.6662F);
+            if(phase>=3){
+                body.xRot=.38F;body.zRot=-.12F;head.xRot+=.2F;
+                leftLeg.xRot=-.8F;leftLeg.zRot=-.28F;rightLeg.xRot=-1.15F;
+                leftArm.xRot=-.55F;rightArm.xRot=-.4F;rightArm.zRot=.23F;
+                for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=5;
+                body.y+=breath*.12F;
+            }else{
+                float pain=phase>=2?1F:.3F;
+                leftLeg.xRot=.18F*pain-stride*amount*(.65F-.43F*pain);
+                rightLeg.xRot=stride*amount*.85F;
+                leftLeg.zRot=-.05F*pain;body.zRot=-.075F*pain;
+                body.xRot+=.08F*pain;body.y+=(float)Math.sin(walk*1.33F)*amount*.45F*pain;
+                rightArm.xRot=-.2F*pain;rightArm.zRot=.2F*pain;
+                leftArm.xRot=-stride*amount*.28F;
+            }
+            hat.copyFrom(head);
+        }
+        public void animateFather(int phase,float stride,float strength,float age){
+            for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.getAllParts().forEach(ModelPart::resetPose);
+            young=false;walk=stride;amount=strength;pose(LiteraryActor.FATHER,phase,age);
         }
         /** Watching (0), searching (1), running (2), crouched at the pile (3); a strike is an overhead chop. */
         private void killer(int phase,float age){

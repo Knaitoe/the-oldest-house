@@ -6,5 +6,10 @@ import net.minecraft.server.level.ServerPlayer;
 /** Eating is a native use/finish action, never a dialogue checkbox. */
 public final class LiteraryMealItem extends Item {
     public LiteraryMealItem(Properties p){super(p);}
-    @Override public ItemStack finishUsingItem(ItemStack stack,Level l,LivingEntity user){if(user instanceof ServerPlayer p)LiteraryVignettes.ate(p,stack);return super.finishUsingItem(stack,l,user);}
+    @Override public ItemStack finishUsingItem(ItemStack stack,Level l,LivingEntity user){
+        if(user instanceof ServerPlayer p)LiteraryVignettes.ate(p,stack);
+        var result=super.finishUsingItem(stack,l,user);
+        if(user instanceof ServerPlayer p&&LiteraryVignettes.inside(p,LabyrinthPlace.HOLY_RABBIT)&&LiteraryVignettes.retreatLocked(p))HolyRabbit.hunger(p);
+        return result;
+    }
 }

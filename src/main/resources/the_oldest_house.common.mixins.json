@@ -8,7 +8,8 @@
     "StaircaseSpectateMixin",
     "PortholeCrawlMixin",
     "OneArmMixin",
-    "HouseMobTrackingMixin"
+    "HouseMobTrackingMixin",
+    "StillRabbitMixin"
   ],
   "injectors": {
     "defaultRequire": 1

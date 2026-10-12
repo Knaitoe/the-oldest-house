@@ -90,7 +90,7 @@ public final class LiteraryTests {
             h.runAfterDelay(5,()->{var own=f.own(p,place);h.assertTrue(own.getInt("Night")==1,"the actual chosen stay starts its first native night before food arrives");var token=UUID.randomUUID();own.putUUID("MealToken",token);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
             var meal=LiteraryVignettes.mark(p,place,"Meal1",new ItemStack(LiteraryRegistry.MEAL.get()));net.minecraft.world.item.component.CustomData.update(DataComponents.CUSTOM_DATA,meal,t->{t.putInt("Night",own.getInt("Night"));t.putUUID("MealToken",token);});
             var replay=meal.copy();meal.getItem().finishUsingItem(meal,f.out,p);LiteraryVignettes.ate(p,replay);
-            h.assertTrue(f.own(p,place).getInt("Meals")==1&&p.getFoodData().getFoodLevel()>6,"actual native eating raises hunger and consumes this night's permission once");h.succeed();});
+            h.assertTrue(f.own(p,place).getInt("Meals")==1&&p.getFoodData().getFoodLevel()==1,"actual native eating consumes this night's permission once while the hollow stays hungry");h.succeed();});
         });
     }
     @AfterBatch(batch="literary_food") public static void foodDone(ServerLevel l){close();}

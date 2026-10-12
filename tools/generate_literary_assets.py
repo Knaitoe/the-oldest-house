@@ -117,6 +117,7 @@ for role in ['family_father','family_mother','family_child']:
 skins['father_bandaged']=skins['father']
 for i in range(1,4):skins['silhouette_'+str(i)]=tuple(tuple(int(a+(b-a)*i/3) for a,b in zip(old,new)) for old,new in zip(skins['silhouette'],skins['father']))
 for role,(skin,coat,hair) in skins.items():
+ if role in ('father','father_bandaged') and (A/'textures/entity'/('literary_'+role+'.png')).exists():continue  # Reviewed painted Holy Rabbit cast; preserve the supplied atlas.
  im=Image.new('RGBA',(128,64),(0,0,0,0));d=ImageDraw.Draw(im);rng=random.Random(role)
  for rect,col in [((0,0,32,16),skin),((16,16,40,32),coat),((40,16,56,32),coat),((0,16,16,32),(42,40,35)),((16,48,32,64),(42,40,35)),((32,48,48,64),coat),((64,28,96,64),coat),((96,28,127,63),coat),((64,0,82,18),(188,175,149) if role=='dancer' else skin),((82,0,112,28),coat),((112,0,127,14),(194,183,164))]:d.rectangle(rect,fill=col+(255,))
  # Hairline, asymmetric cheek shade, collar, placket, belt, cuffs and shoe seams.
