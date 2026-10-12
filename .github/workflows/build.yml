@@ -490,6 +490,18 @@ jobs:
           assert passed and int(passed[-1]) == 1, 'The three real shield charges did not complete.'
           PY
 
+      - name: Native domestic projection check
+        timeout-minutes: 4
+        run: |
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 3m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_mirrorcheck --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/native-domestic-projection.log
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          passed = re.findall(r'All (\d+) required tests passed', Path('build/native-domestic-projection.log').read_text())
+          assert passed and int(passed[-1]) == 1, 'The native domestic projection did not complete.'
+          PY
+
       - name: Structure game tests
         timeout-minutes: 62
         env:
