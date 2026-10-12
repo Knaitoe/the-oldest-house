@@ -6,6 +6,8 @@
   icon and the tanks on a reader's back (LakeHouseGearClient, 32 x 32 UV), the flashlight, and the round window the helmet
   leaves of the first-person view.
 - The compressor on the raft: its tank, engine, skid and gauge.
+- In the house: the porcelain beaver pepper shaker, and the still life in the lounge (two plums and a table edge) with the
+  face it becomes.
 
 Nothing else writes these files. Run this tool again only to redraw.
 
@@ -426,6 +428,52 @@ def porthole():
     return a
 
 
+# ------------------------------------------------------------------------------------------------ the house
+def beaver():
+    """White porcelain with a brown glaze over its back, painted blue eyes and a ring of pepper holes."""
+    c = tile(seed=31)
+    block(c, 0, 0, 16, 16, (238, 234, 224), .03)
+    for y in range(0, 16):
+        for x in range(0, 16):
+            if (x - 8) ** 2 / 40 + (y - 11) ** 2 / 18 < 1:
+                put(c, x, y, (126, 84, 52), .8)
+    for x, y in ((5, 4), (10, 4)):
+        put(c, x, y, (40, 70, 150), 1)
+    for x, y in ((7, 1), (8, 1), (9, 2), (6, 2)):
+        put(c, x, y, (60, 50, 40), 1)
+    for x in range(16):
+        put(c, x, 15, (200, 196, 186), .5)
+    return c
+
+
+def painting(face):
+    """The lounge's still life, 32 square: two plums on a table edge, dim. As the face, the same picture with something
+    pale behind it, the plums its eyes and the table's edge its mouth."""
+    n = 32
+    rng = np.random.default_rng(41)
+    a = np.zeros((n, n, 4), dtype=np.float32)
+    yy, xx = np.mgrid[0:n, 0:n]
+    a[..., 0:3] = np.array([30, 26, 22]) / 255 * (1 + rng.normal(0, .06, (n, n, 1)))
+    a[..., 3] = 1
+    if face:
+        skin = ((xx - 15.5) / 11) ** 2 + ((yy - 15) / 14) ** 2 < 1
+        a[skin, 0:3] = np.array([196, 186, 168]) / 255 * (1 + rng.normal(0, .04, (int(skin.sum()), 1)))
+        shade = skin & (xx > 21)
+        a[shade, 0:3] *= .82
+    table = yy >= 24
+    a[table, 0:3] = np.array([92, 58, 34]) / 255 * (1 + rng.normal(0, .05, (int(table.sum()), 1)))
+    a[yy == 24, 0:3] = np.array([140, 96, 60]) / 255
+    if face:
+        mouth = (yy >= 23) & (yy <= 25) & (np.abs(xx - 15.5) < 7)
+        a[mouth, 0:3] = np.array([60, 34, 30]) / 255
+    for cx, cy in ((11, 17), (20, 18)):
+        plum = ((xx - cx) / 4.2) ** 2 + ((yy - cy) / 4.6) ** 2 < 1
+        a[plum, 0:3] = np.array([78, 34, 82]) / 255 if not face else np.array([24, 18, 26]) / 255
+        a[plum & (xx < cx - 1) & (yy < cy - 1), 0:3] = np.array([150, 110, 160]) / 255 if not face else np.array([210, 210, 200]) / 255
+    a[0, :, 0:3] = a[-1, :, 0:3] = a[:, 0, 0:3] = a[:, -1, 0:3] = np.array([70, 52, 30]) / 255
+    return np.clip(a, 0, 1)
+
+
 def gear():
     out = ASSETS / 'textures'
     save_tile(helmet_shell(), out / 'item/lake_house_helmet.png')
@@ -439,7 +487,12 @@ def gear():
     path = out / 'misc/lake_house_porthole.png'
     path.parent.mkdir(parents=True, exist_ok=True)
     Image.fromarray((porthole() * 255).round().astype(np.uint8), 'RGBA').save(path, optimize=True)
-    print('wrote the helmet, tanks, flashlight, compressor and porthole')
+    save_tile(beaver(), out / 'block/lake_house_beaver.png')
+    for name, face in (('lake_house_still_life', False), ('lake_house_face', True)):
+        path = out / f'painting/{name}.png'
+        path.parent.mkdir(parents=True, exist_ok=True)
+        Image.fromarray((painting(face) * 255).round().astype(np.uint8), 'RGBA').save(path, optimize=True)
+    print('wrote the helmet, tanks, flashlight, compressor, porthole, beaver and the still life')
 
 
 def main():

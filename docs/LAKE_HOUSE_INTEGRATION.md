@@ -64,6 +64,34 @@ The house at the bottom of the lake is being built on its own branch, `claude/fu
   - The compressor runs for a reader diving alone, stops with two readers and nobody minding it, and runs again with a partner on the raft. The hose catches on the rail, gives nothing while caught, frees at the rail, and breathes again.
   - The flashlight is lent at the door and its beam is a waterlogged light that goes when it is put away. Outside the scene the gear is gone.
 
+## Phase 3, on the branch now: inside the house
+
+- **The rooms** (`LakeHouseRooms`). Everything in the house is full of water and every partial block holds water, so the only air in the house is the eight dining chairs.
+  - **Ground floor:** the foyer and hall, with a red runner up the stair, a coatrack, a credenza and a lamp on a chain. The dining room has a long table, eight dry chairs and candles burning under water. The study has bookshelves, a stepladder, a desk and an ashtray (a heavy core). The lounge has the racked pool table, the still life and the pink closet. The kitchen has a marble counter, two islands, the porcelain beaver and a hearth that burns under water.
+  - **Upstairs:** a panelled hall set with dark glass, four bedrooms behind twin doors, an arched door into the dressing room and its wardrobes, and a ladder into the eaves.
+  - **Below:** thirty steps down from the closet, two whole and then half steps in three flights, with a growth chart on the walls ("R." at 4, 6, 8, 10, 12 and 13, then an unnamed mark higher than the rest). They lead to a basement with posts and a beam, a tiled pool (three feet at one end, five at the other, a downward current over something warm at the bottom) and a sauna.
+  - Every lamp is an unlit redstone lamp in a ceiling, ready for the finale.
+- **What is shown, not built** (`LakeHouseDisplay`, entity `lake_house_display`, a block display that can be shown to one reader only):
+  - the left half of the front door, swaying on its hinge;
+  - the fire in the kitchen hearth;
+  - the still life (a new painting variant);
+  - a dead fish lying just under the surface.
+- **The rules** (`LakeHouseRules`):
+  - **Don't ask how.** Mining anything in the house never breaks it. The piece lifts, turns over to show nothing holds it, and settles back, and only the reader who asked sees it. The first time is a warning. The second breaks the rule for that reader, for good (saved as `AskedHow`), and footsteps walk about upstairs for them alone for a while.
+  - Things dropped in the third lake sink straight down and lie still.
+  - Candles, the hearth and the sauna's steam go on under water.
+  - Sitting in a dining chair, a reader breathes.
+  - A bubble column gives no air here.
+  - The pink closet's wall sounds hollow on the helmet visit and gives from the tank visit, staying open.
+- **Beat 3:** reaching the pool and coming back up: "There's a pool under the house. The water in it is warm."
+- **Assets:**
+  - Drawn by the art tool: the porcelain beaver, and two 2x2 paintings (the still life, and the face it becomes in the finale).
+  - Written by the assets tool: the beaver's model and blockstate, the two painting variants, and the names. The tool now leaves an existing sound alone, since Vorbis output differs between runs.
+- **Tests:** three more.
+  - No dry cell anywhere in the house but its chairs. All thirty steps have room to stand and something underfoot, with seven growth-chart marks. The pool's two depths and the warm floor, the sauna, the unlit lamps, and the shown pieces are all in place.
+  - Asking how lifts the beaver for that reader alone and breaks nothing. The second time breaks the rule for that reader only, and the lifted pieces settle and go.
+  - The closet holds on the helmet visit and gives on the tank visit; a dining chair gives air; a dropped apple sinks.
+
 ## Shared files touched
 
 | File | Change |
@@ -80,6 +108,7 @@ The house at the bottom of the lake is being built on its own branch, `claude/fu
 | `labyrinth/SceneClock.java` | `case LAKE_HOUSE->4` (a summer noon) |
 | `lang/en_us.json`, `sounds.json` | the canoe, gear and compressor names, three sounds and their subtitles (written by tools/generate_lake_house_assets.py; rerun it after a merge if these files conflict) |
 | `gametest/ArchitectureTests.java` | lectern source for `LAKE_HOUSE`; a `lake_house_cutaway` view through both storeys |
+| `data/the_oldest_house/painting_variant/` | two new variants (`lake_house_still_life`, `lake_house_face`); a new data file, nothing changed |
 | `client/SceneVisualProof.java` | 88 → 90 architecture views (the scene's own view and the cutaway) |
 | `gametest/HazardVarietyTests.java` | 96 slots, the highest 95 |
 | `gametest/LiteraryTests.java` | the Witness reachability case counts 25 literary sources and 45 resolutions |
@@ -100,9 +129,7 @@ The house at the bottom of the lake is being built on its own branch, `claude/fu
 
 These follow the design document.
 
-- **Inside the house:**
-  - the rooms, and mining as asking how;
-  - dropped items sinking, the dry chairs, the dresses and the painting.
+- **The dresses** (private shown pieces in the dressing room and over the pool), and the still life turning into the face.
 - **Tess:**
   - solo only, and gone when a second reader arrives;
   - the visits and the footprints at home.

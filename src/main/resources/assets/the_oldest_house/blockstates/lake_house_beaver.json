@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_beaver"
+    },
+    "facing=north,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_beaver"
+    },
+    "facing=east,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_beaver",
+      "y": 90
+    },
+    "facing=east,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_beaver",
+      "y": 90
+    },
+    "facing=south,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_beaver",
+      "y": 180
+    },
+    "facing=south,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_beaver",
+      "y": 180
+    },
+    "facing=west,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_beaver",
+      "y": 270
+    },
+    "facing=west,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_beaver",
+      "y": 270
+    }
+  }
+}

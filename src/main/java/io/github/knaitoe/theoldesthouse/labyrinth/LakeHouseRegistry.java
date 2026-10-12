@@ -42,6 +42,14 @@ public final class LakeHouseRegistry {
     public static final DeferredBlock<LakeHouseCompressorBlock> COMPRESSOR=BLOCKS.registerBlock("lake_house_compressor",LakeHouseCompressorBlock::new,
             BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).strength(-1,3600000).noOcclusion().noLootTable());
 
+    /** A block shown in the house, to everyone or to one reader ({@link LakeHouseDisplay}). */
+    public static final DeferredHolder<EntityType<?>,EntityType<LakeHouseDisplay>> DISPLAY=TYPES.register("lake_house_display",
+            ()->EntityType.Builder.<LakeHouseDisplay>of(LakeHouseDisplay::new,MobCategory.MISC).sized(0,0).clientTrackingRange(10).updateInterval(1).build("lake_house_display"));
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<LakeHouseBeaverBlock>> BEAVER_TYPE=CODECS.register("lake_house_beaver",()->LakeHouseBeaverBlock.CODEC);
+    /** The porcelain beaver pepper shaker on the kitchen island. Scenery: not to be broken or taken. */
+    public static final DeferredBlock<LakeHouseBeaverBlock> BEAVER=BLOCKS.registerBlock("lake_house_beaver",LakeHouseBeaverBlock::new,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_GLAZED_TERRACOTTA).strength(-1,3600000).noOcclusion().noLootTable());
+
     /** Each subtitled: the compressor's engine, the canoe against the culvert, air into the tanks. */
     public static final DeferredHolder<SoundEvent,SoundEvent> COMPRESSOR_SOUND=sound("lake_house.compressor"),SCRAPE=sound("lake_house.scrape"),HISS=sound("lake_house.hiss");
 

@@ -251,5 +251,10 @@
   "item.the_oldest_house.lake_house_flashlight": "Flashlight",
   "item.the_oldest_house.lake_house_helmet": "Gold diving helmet",
   "item.the_oldest_house.lake_house_tanks": "Air tanks",
-  "block.the_oldest_house.lake_house_compressor": "Compressor"
+  "block.the_oldest_house.lake_house_compressor": "Compressor",
+  "block.the_oldest_house.lake_house_beaver": "Porcelain beaver",
+  "painting.the_oldest_house.lake_house_still_life.title": "Still Life with Plums",
+  "painting.the_oldest_house.lake_house_still_life.author": "Unknown",
+  "painting.the_oldest_house.lake_house_face.title": "Still Life with Plums",
+  "painting.the_oldest_house.lake_house_face.author": "Unknown"
 }
