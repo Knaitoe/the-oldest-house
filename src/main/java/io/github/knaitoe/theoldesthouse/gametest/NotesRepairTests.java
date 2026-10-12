@@ -21,6 +21,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID) @PrefixGameTestTemplate(false)
 public final class NotesRepairTests {
+    private static Fixture chargeFixture;
     private static final class Fixture implements AutoCloseable {
         final net.minecraft.server.MinecraftServer server;final HouseSavedData oldHouse;final LabyrinthData oldData;
         final BlockPos origin;final LabyrinthData data=new LabyrinthData();final List<ServerPlayer> players=new ArrayList<>();final List<Entity> entities=new ArrayList<>();
@@ -92,8 +93,9 @@ public final class NotesRepairTests {
         }
     }
     /** 0.4.84: a raised shield stops the charge, but the reader still takes two hearts and is thrown back; the third block breaks it. */
-    @GameTest(template="empty",timeoutTicks=1600) public static void aBlockedChargeStillCostsTwoHeartsAndTheThirdBlockBreaksTheShield(GameTestHelper h){
-        var f=new Fixture(h,104400);var level=h.getLevel();var at=h.absolutePos(BlockPos.ZERO).offset(70,8,-70);
+    @GameTest(template="empty",batch="minotaur_charge0484",timeoutTicks=1600) public static void aBlockedChargeStillCostsTwoHeartsAndTheThirdBlockBreaksTheShield(GameTestHelper h){
+        // The eighty-tick wind-up owns global HouseSavedData and cannot share the default concurrent fixture batch.
+        var f=chargeFixture=new Fixture(h,104400);var level=h.getLevel();var at=h.absolutePos(BlockPos.ZERO).offset(70,8,-70);
         for(int x=-3;x<=14;x++)for(int z=-4;z<=4;z++){level.setBlock(at.offset(x,-1,z),Blocks.STONE.defaultBlockState(),2);for(int y=0;y<=5;y++)level.setBlock(at.offset(x,y,z),Blocks.AIR.defaultBlockState(),2);}
         var p=f.player(h,level,Vec3.atBottomCenterOf(at));var shield=new ItemStack(Items.SHIELD);p.setItemInHand(InteractionHand.OFF_HAND,shield);
         var weapon=new ItemStack(Items.IRON_SWORD);p.setItemInHand(InteractionHand.MAIN_HAND,weapon);WeaponHistory.record(p,weapon,1);var own=new CompoundTag();own.putString("Phase",FinaleProgress.Phase.FIGHT.name());own.putUUID("Weapon",WeaponHistory.identity(weapon));FinaleProgress.save(f.server,p.getUUID(),own);
@@ -117,8 +119,9 @@ public final class NotesRepairTests {
         // A fresh native player is briefly spawn-invulnerable, and each blow leaves a short hurt cooldown: real ticks pass between charges.
         h.startSequence().thenIdle(80).thenExecute(round).thenIdle(30).thenExecute(round).thenIdle(30).thenExecute(round).thenExecute(()->{
             h.assertTrue(blocks[0]==3&&p.getOffhandItem().isEmpty(),"the third block breaks the shield outright");
-        }).thenExecute(()->{f.close();h.succeed();});
+        }).thenExecute(()->{f.close();chargeFixture=null;h.succeed();});
     }
+    @AfterBatch(batch="minotaur_charge0484") public static void chargeDone(ServerLevel level){if(chargeFixture!=null){chargeFixture.close();chargeFixture=null;}}
     @GameTest(template="empty") public static void retiredNativeSideDoorRemapsBothExplorersAndPreservesOriginalPaperAndChest(GameTestHelper h){
         try(var f=new Fixture(h,103000)){
             var l=h.getLevel();var place=LabyrinthPlace.STRAIGHT_HALL;var b=h.absolutePos(BlockPos.ZERO).offset(120,8,120);LabyrinthHalls.build(l,b,place);

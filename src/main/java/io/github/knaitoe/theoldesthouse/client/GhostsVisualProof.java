@@ -32,9 +32,9 @@ public final class GhostsVisualProof extends Screen {
                 int role=n<6?GhostsSet.ROLES[n]:n==15?LiteraryActor.GHOST_JOHN:LiteraryActor.GHOST_MARJORIE,phase=n<6?GhostsSet.STAND:n-6;
                 var model=new GhostsCastModel(mc.getEntityModels().bakeLayer(GhostsCastModel.LAYER));model.preview(role,phase,frames);
                 var skin=GhostsCastModel.skin(role,phase);if(mc.getResourceManager().getResource(skin).isEmpty())throw new IllegalStateException("Missing filming skin "+skin);
-                var pose=g.pose();pose.pushPose();pose.translate(24+(n%5+.5F)*(width-48)/5,35+(n/5+.8F)*(height-70)/4,190);float size=role==LiteraryActor.GHOST_MERRY?36*.58F:36;pose.scale(size,size,size);pose.mulPose(Axis.YP.rotationDegrees(145));pose.translate(0,-1.5,0);
+                var pose=g.pose();pose.pushPose();float centreY=38+(n/4+.73F)*(height-70)/4;pose.translate(24+(n%4+.5F)*(width-48)/4,centreY,190);float size=role==LiteraryActor.GHOST_MERRY?30*.58F:30;pose.scale(size,size,size);pose.mulPose(Axis.YP.rotationDegrees(145));pose.translate(0,-1.5,0);
                 if(phase==GhostsSet.BED)LiteraryRenderers.bedPose(pose,1);model.renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(skin)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);buffers.endBatch();pose.popPose();
-                g.drawCenteredString(font,n<6?GhostsSet.PEOPLE[n]:"pose "+phase,24+(n%5)*(width-48)/5+(width-48)/10,32+(n/5+1)*(height-70)/4,0xffe7dbc3);
+                g.drawCenteredString(font,n<6?GhostsSet.PEOPLE[n]:"pose "+phase,24+(n%4)*(width-48)/4+(width-48)/8,(int)centreY+12,0xffe7dbc3);
             }
         }else{
             var camera=new net.minecraft.world.item.ItemStack(LiteraryRegistry.CAMCORDER.get());var mesh=mc.getItemRenderer().getModel(camera,null,null,0);if(mesh==mc.getModelManager().getMissingModel()||!mesh.isGui3d())throw new IllegalStateException("The production camera requires its native mesh");g.renderItem(camera,width-24,height-24);
