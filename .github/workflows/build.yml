@@ -59,6 +59,16 @@ jobs:
                            'data/the_oldest_house/loot_modifiers/finale_notes.json'):
                   assert name in z.namelist(), name
               assert f'version="{expected_version}"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
+              ghosts = json.loads(z.read('assets/the_oldest_house/blockstates/ghosts_set.json'))['variants']
+              assert len(ghosts) == 112
+              for variant in ghosts.values():
+                  assert json.loads(z.read('assets/the_oldest_house/models/'+variant['model'].split(':')[1]+'.json'))['elements']
+              for name in ('marjorie','merry','john','sarah','barry','father_wanderly','marjorie_dinner','john_hand'):
+                  assert z.read(f'assets/the_oldest_house/textures/entity/ghosts_{name}.png').startswith(b'\x89PNG')
+              for name in ('labyrinth/GhostsSet','labyrinth/GhostsSetRooms','labyrinth/CamcorderItem','client/GhostsCastModel','client/GhostsPropRenderer','client/CamcorderClient','gametest/GhostsSetTests','network/CamcorderFramePayload'):
+                  assert f'io/github/knaitoe/theoldesthouse/{name}.class' in z.namelist()
+              for cue in ('ghost_low','ghost_thin','ghost_scrape','ghost_card'):
+                  assert z.read(f'assets/the_oldest_house/sounds/literary/{cue}.ogg').startswith(b'OggS')
               assert 'io/github/knaitoe/theoldesthouse/house/PlaytestLog.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
               hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
@@ -607,6 +617,11 @@ jobs:
           test -s build/font-smoke/native-companions.png
           test -s build/font-smoke/hotel-passed.txt
           test -s build/font-smoke/native-hotel.png
+          test -s build/font-smoke/ghosts-passed.txt
+          test -s build/font-smoke/native-ghosts-cast.png
+          test -s build/font-smoke/native-ghosts-fixtures.png
+          test -s build/font-smoke/scenes/ghosts_upstairs.png
+          test -s build/font-smoke/scenes/ghosts_basement.png
           test -s build/font-smoke/literary-passed.txt
           test -s build/font-smoke/native-literary.png
           test -s build/font-smoke/hazards-passed.txt
@@ -751,12 +766,12 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_literary --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/literary-native.log
+          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_literary,the_oldest_house_ghosts --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/literary-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/literary-native.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path(f'src/main/java/io/github/knaitoe/theoldesthouse/gametest/{name}.java').read_text())) for name in ('LiteraryTests','ElkFanTests'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path(f'src/main/java/io/github/knaitoe/theoldesthouse/gametest/{name}.java').read_text())) for name in ('LiteraryTests','ElkFanTests','GhostsSetTests'))
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused native literary cases passed; the complete suite remains required.')
           PY

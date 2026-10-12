@@ -1,0 +1,76 @@
+{
+  "textures": {
+    "drawing": "the_oldest_house:block/ghosts/drawing"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        2,
+        15
+      ],
+      "to": [
+        14,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#drawing",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#drawing",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#drawing",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#drawing",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#drawing",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#drawing",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ],
+  "ambientocclusion": true
+}

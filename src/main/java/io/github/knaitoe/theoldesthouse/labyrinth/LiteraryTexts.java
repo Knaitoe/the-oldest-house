@@ -78,9 +78,9 @@ public final class LiteraryTexts {
         case WHEEL->book("House numbers","The daughter",
             "Room two comes after room one. I wrote that so I would not forget. When I went back through two, the chair in one was smaller.",
             "The front door takes me to the beginning. Mother's room is farther in than the numbers suggest.\n\nFind her room, then choose the unnumbered door. Leave at your own height.");
-        case GHOSTS_SET->book("Call sheet","The producer",
-            "Family scene. Interior. Keep the camera off the loose boards. The marks are on the carpet. The lamps should come up when the guest reaches an X.",
-            "Off the mark, the camera sees nothing useful.\n\nThe booth records the words you actually type. Read the transcript after the performance. Take the disc if you want to hear the room again.");
+        case GHOSTS_SET->HouseWriting.book("Call sheet","The producer",HouseWriting.WritingStyle.WILL,GhostsSet.pages(
+            "The Possession. Interior. Camera operator: collect your camera and speak with Barry. Put the camera away to talk to the family. Earlier incidents are reconstructed from their accounts.\n\n"+
+            "Hold use to record where you look. Crouch beside the dinner table to take a low shot. The monitor plays your recorded frames; Barry keeps the cut and the camera log.\n\nWhen filming ends, leave through the door. The following day begins only on a later return. An unfinished day waits for you. The booth keeps your own words, or your chosen silence."));
         case END_WORLD_CABIN->book("Guest book","Those who stayed",
             "June\n\nLoons at dusk. A storm sat on the far shore all week and never crossed. The kids counted four people down on the beach at sundown. Nobody we'd seen in town. They waved as if they knew us.",
             "August\n\nLovely week. Someone knocked the last night, late, and kept on. We didn't answer. In the morning there were wet footprints out along the jetty, and none coming back.",
@@ -115,11 +115,11 @@ public final class LiteraryTexts {
         case CAMP_BLOOD->"I read the essay, crossed the cabins and lost him among the trees. The service road had no gate. I had spent the night looking for one.";
         case DEVILS_ROCK->"I laid the pages in order. The camera had times for each arrival, but never a face. The last page ended in this room. It did not tell me how the paper had entered it.";
         case WHEEL->"I reached Mother's room. The front door opened onto an outside I could stand up in. The numbers remained on the doors behind me. I kept the key without choosing another room.";
-        case GHOSTS_SET->"TRANSCRIPT\n\n"+(own.getString("Confession").isEmpty()?"[The booth recorded silence.]":own.getString("Confession"))+"\n\nThe lights had shown a family waiting on its marks. Off the carpet, another conversation had gone on behind my back.";
+        case GHOSTS_SET->own.getBoolean("Filming0485")?GhostsSet.account(name,own):"TRANSCRIPT\n\n"+(own.getString("Confession").isEmpty()?"[The booth recorded silence.]":own.getString("Confession"))+"\n\nThe lights had shown a family waiting on its marks. Off the carpet, another conversation had gone on behind my back.";
         case END_WORLD_CABIN->own.getBoolean("Offered")?"I chose what went to the keeper. The visitors thanked me by name. On her shelf it would remain exactly what I gave up. I could see it; I would not carry it again.":"I refused. One visitor walked into the lake. On the screen, "+StaircaseProse.place(own.getString("ClosedRoom"))+" went dark. My hands were still full.";
         case FAMILY_COPY->"They had shown me my house as if they had lived there first. The family changed, and the photograph changed with it. The weapon had my old scratches, but none of its days. I left when the welcome ended.";
         case OLD_CABIN->"The lamp finished a name. The man beside it said another. He did not need either one to recognize what I had brought.";
-        default->throw new IllegalArgumentException(place.id());};return book("The account: "+place.id().replace('_',' '),name,text,"I folded the paper along its old crease. Someone had carried it before there was anything written on this side.\n\nI could still hear the room while I put it away.");}
+        default->throw new IllegalArgumentException(place.id());};if(place==LabyrinthPlace.GHOSTS_SET&&own.getBoolean("Filming0485"))return HouseWriting.book("The tape and the cut",name,HouseWriting.WritingStyle.WILL,GhostsSet.pages(text));return book("The account: "+place.id().replace('_',' '),name,text,"I folded the paper along its old crease. Someone had carried it before there was anything written on this side.\n\nI could still hear the room while I put it away.");}
     /** The bargain's account (0.4.51), in the reader's own words and the room's prose name. */
     static ItemStack cabin(String name,CompoundTag own){
         int given=own.getInt("Given");String room=own.getString("ClosedRoom");

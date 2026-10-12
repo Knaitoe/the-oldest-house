@@ -13,9 +13,11 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("56")
+        event.registrar("57")
                 .playToClient(HazardViewPayload.TYPE,HazardViewPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.HazardClient.accept(payload)))
                 .playToClient(EndingBookPayload.TYPE,EndingBookPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.EndingBookClient.accept(payload)))
+                .playToClient(CamcorderExposurePayload.TYPE,CamcorderExposurePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.CamcorderClient.expose(payload)))
+                .playToServer(CamcorderFramePayload.TYPE,CamcorderFramePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.GhostsSet.receiveFrame(p,payload.nonce(),payload.pixels());}))
                 .playToClient(PlainExposurePayload.TYPE,PlainExposurePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PlainCameraClient.expose(payload)))
                 .playToServer(PlainFramePayload.TYPE,PlainFramePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.NovelVignettes.capturePlainFrame(p,payload);}))
                 .playToClient(BodyLossPayload.TYPE,BodyLossPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.labyrinth.BodyLoss.clientSet(payload.player(),payload.arm())))

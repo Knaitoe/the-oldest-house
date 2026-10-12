@@ -165,6 +165,8 @@ public final class BuildBlocks {
             return cursor == commands.size();
         }
         public int lastVisits() { return lastVisits; }
+        /** The recorded native state without applying a plan; upgrade comparisons never execute its callbacks. */
+        public BlockState plannedState(BlockPos at){return authoredStateAt(at);}
         /** Commands and the most block positions they can visit (an empty section counts once). */
         public String describe() {
             long visits = 0;
@@ -210,6 +212,15 @@ public final class BuildBlocks {
             },pos,pos);return true;
         }
         if(!guard.getAsBoolean())return false;if(!level.getBlockState(pos).equals(state))level.setBlock(pos,state,flags);return true;
+    }
+
+    /** A cell protected after recording is skipped; observers still pause the remaining plan. */
+    public static void protectedSet(ServerLevel level,BlockPos position,BlockState state,int flags,java.util.function.BooleanSupplier guard,java.util.Set<BlockPos> keep){
+        var pos=position.immutable();if(keep.contains(pos))return;
+        if(recording!=null&&recording.level==level){var before=state(level,pos);recording.add(new Command(){
+            public boolean step(ServerLevel ignored){if(keep.contains(pos))return true;var actual=level.getBlockState(pos);if(!actual.equals(before)&&!actual.equals(state))return true;if(!guard.getAsBoolean())return false;if(!actual.equals(state))level.setBlock(pos,state,flags);return true;}
+            public BlockState stateAt(BlockPos at){return pos.equals(at)?state:null;}
+        },pos,pos);}else if(guard.getAsBoolean())set(level,pos,state,flags);
     }
 
     /** Read earlier authored commands when a later prop depends on them. */

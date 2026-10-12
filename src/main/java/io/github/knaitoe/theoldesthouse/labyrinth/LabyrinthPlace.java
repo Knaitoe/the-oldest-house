@@ -224,7 +224,7 @@ public enum LabyrinthPlace {
     CAMP_BLOOD("camp_blood",Kind.ONE_SHOT,62,new BoundingBox(-33,-3,-104,33,19,0),literaryEntry()),
     DEVILS_ROCK("devils_rock",Kind.MULTI_VISIT,63,new BoundingBox(-17,-1,-43,17,11,0),literaryEntry()),
     WHEEL("wheel",Kind.MULTI_VISIT,64,new BoundingBox(-27,-1,-65,27,13,0),literaryEntry()),
-    GHOSTS_SET("ghosts_set",Kind.ONE_SHOT,65,new BoundingBox(-21,-1,-47,21,12,0),literaryEntry()),
+    GHOSTS_SET("ghosts_set",Kind.MULTI_VISIT,65,new BoundingBox(-21,-5,-47,21,12,0),literaryEntry()),
     END_WORLD_CABIN("end_world_cabin",Kind.ONE_SHOT,66,new BoundingBox(-31,-9,-81,31,19,0),literaryEntry()),
     FAMILY_COPY("family_copy",Kind.MULTI_VISIT,67,new BoundingBox(-34,-17,-71,34,33,0),literaryEntry()),
     OLD_CABIN("old_cabin",Kind.RECURRING,68,new BoundingBox(-12,-9,-29,12,17,0),literaryEntry()),
