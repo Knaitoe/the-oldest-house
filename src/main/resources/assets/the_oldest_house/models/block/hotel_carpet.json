@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/carpet",
   "textures": {
-    "wool": "the_oldest_house:block/hotel_carpet"
+    "wool": "the_oldest_house:block/stanley/carpet"
   }
 }

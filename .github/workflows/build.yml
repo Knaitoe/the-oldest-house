@@ -130,6 +130,9 @@ jobs:
               assert 'io/github/knaitoe/theoldesthouse/gametest/ClassicsTests.class' in z.namelist()
               for name in ('HotelVignette','HotelRooms','HotelRegistry','HotelTexts','HotelActor','HotelHose','HotelPropBlock','BlindStretch'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
+              for name in ('porter','bartender','scarred_guest','pianist','dancer','dancer_dress'):
+                  assert z.read(f'assets/the_oldest_house/textures/entity/stanley_{name}.png').startswith(b'\x89PNG')
+              assert 'io/github/knaitoe/theoldesthouse/client/StanleyVisualProof.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/HotelTests.class' in z.namelist()
               for name in ('LiteraryVignettes','LiteraryRooms','LiteraryRegistry','LiteraryTexts','LiteraryActor','LiteraryElk','LiteraryCopies','LiteraryCabinChoices','LiteraryFrozenBlock','LiteraryModelBlockEntity','CabinBargain','CabinScreen','BodyLoss','SnowGlobeItem','GoatmanHaunt','TallyCounterItem'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
@@ -617,6 +620,8 @@ jobs:
           test -s build/font-smoke/native-companions.png
           test -s build/font-smoke/hotel-passed.txt
           test -s build/font-smoke/native-hotel.png
+          test -s build/font-smoke/stanley-passed.txt
+          for view in cast actions fixtures; do test -s build/font-smoke/native-stanley-$view.png; done
           test -s build/font-smoke/ghosts-passed.txt
           test -s build/font-smoke/native-ghosts-cast.png
           test -s build/font-smoke/native-ghosts-fixtures.png
@@ -1118,7 +1123,7 @@ jobs:
         with:
           gradle-version: '9.2.1'
       - name: Native child joints, strides and textured fixtures
-        timeout-minutes: 6
+        timeout-minutes: 9
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq xvfb libgl1-mesa-dri
@@ -1139,6 +1144,9 @@ jobs:
           test -s build/font-smoke/native-goatman-fear0472-5.png
           test -s build/font-smoke/goatman-fear0472-passed.txt
           for page in 0 1; do test -s build/font-smoke/native-institute-0470-$page.png; done
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 3m gradle runClient -PstanleySmoke --no-daemon
+          test -s build/font-smoke/stanley-passed.txt
+          for view in cast actions fixtures; do test -s build/font-smoke/native-stanley-$view.png; done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -1154,6 +1162,8 @@ jobs:
             build/font-smoke/institute-0470-passed.txt
             build/font-smoke/native-goatman-fear0472-*.png
             build/font-smoke/goatman-fear0472-passed.txt
+            build/font-smoke/native-stanley-*.png
+            build/font-smoke/stanley-passed.txt
             run/logs/latest.log
             run/crash-reports/
 
