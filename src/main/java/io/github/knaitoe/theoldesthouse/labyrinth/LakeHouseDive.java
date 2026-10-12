@@ -89,8 +89,8 @@ public final class LakeHouseDive {
     }
     /** What the reader is breathing this tick. Tanks spend a tick of their fill when they are what keeps the reader going. */
     static Source source(ServerPlayer p,BlockPos b){
-        var eye=BlockPos.containing(p.getX(),p.getEyeY(),p.getZ());
-        if(!p.isEyeInFluid(FluidTags.WATER)||p.level().getBlockState(eye).is(Blocks.BUBBLE_COLUMN))return Source.AIR;
+        // A bubble column is still the lake: unlike anywhere else in Minecraft, it gives no air here.
+        if(!p.isEyeInFluid(FluidTags.WATER))return Source.AIR;
         if(LakeHouseGear.mine(p.getItemBySlot(EquipmentSlot.HEAD),p,LakeHouseRegistry.HELMET.get())&&running(p.serverLevel(),b)&&!HOSE_BLOCKED.contains(p.getUUID()))return Source.HOSE;
         var tanks=p.getItemBySlot(EquipmentSlot.CHEST);
         if(LakeHouseGear.mine(tanks,p,LakeHouseRegistry.TANKS.get())&&tanks.getDamageValue()<tanks.getMaxDamage()-1){
