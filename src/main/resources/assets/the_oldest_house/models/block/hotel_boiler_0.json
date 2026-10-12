@@ -1,17 +1,17 @@
 {
   "ambientocclusion": true,
   "textures": {
-    "surface": "the_oldest_house:block/hotel_wood",
-    "metal": "the_oldest_house:block/hotel_brass",
-    "steel": "the_oldest_house:block/hotel_steel",
-    "rubber": "the_oldest_house:block/hotel_rubber",
-    "paper": "the_oldest_house:block/hotel_paper",
-    "keys": "the_oldest_house:block/hotel_keys",
-    "food": "the_oldest_house:block/hotel_food",
-    "patch": "the_oldest_house:block/hotel_patch",
-    "photo": "the_oldest_house:block/hotel_party",
-    "particle": "the_oldest_house:block/hotel_wood",
-    "gauge": "the_oldest_house:block/hotel_gauge_0"
+    "surface": "the_oldest_house:block/stanley/walnut",
+    "metal": "the_oldest_house:block/stanley/brass",
+    "steel": "the_oldest_house:block/stanley/steel",
+    "rubber": "the_oldest_house:block/stanley/rubber",
+    "paper": "the_oldest_house:block/stanley/paper",
+    "keys": "the_oldest_house:block/stanley/keys",
+    "food": "the_oldest_house:block/stanley/food",
+    "patch": "the_oldest_house:block/stanley/patch",
+    "photo": "the_oldest_house:block/stanley/party",
+    "particle": "the_oldest_house:block/stanley/walnut",
+    "gauge": "the_oldest_house:block/stanley/gauge_0"
   },
   "elements": [
     {

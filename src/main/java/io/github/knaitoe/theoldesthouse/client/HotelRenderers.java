@@ -15,23 +15,50 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
 public final class HotelRenderers {
     public static final ModelLayerLocation CAST=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"hotel_cast"),"main"),HOSE=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"hotel_hose"),"main");
-    public static ResourceLocation skin(int role){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/hotel_"+new String[]{"porter","bartender","scarred_guest","pianist","dancer","dancer_dress"}[Math.max(0,Math.min(5,role))]+".png");}
+    public static ResourceLocation skin(int role){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/stanley_"+new String[]{"porter","bartender","scarred_guest","pianist","dancer","dancer_dress"}[Math.max(0,Math.min(5,role))]+".png");}
     public static ResourceLocation rubber(){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/hotel_hose.png");}
     @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions e){e.registerLayerDefinition(CAST,CastModel::layer);e.registerLayerDefinition(HOSE,HoseModel::layer);}
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerEntityRenderer(HotelRegistry.ACTOR.get(),CastRenderer::new);e.registerEntityRenderer(HotelRegistry.HOSE.get(),HoseRenderer::new);}
     public static final class CastModel extends HumanoidModel<HotelActor> {
-        private final ModelPart tails,apron,skirt,cap;
-        public CastModel(ModelPart r){super(r);tails=body.getChild("tails");apron=body.getChild("apron");skirt=body.getChild("skirt");cap=head.getChild("cap");}
+        private final ModelPart tails,apron,skirt,cap,leftElbow,rightElbow,leftKnee,rightKnee,glass,bottle,cloth;
+        private final ModelPart[] leftFingers=new ModelPart[3],rightFingers=new ModelPart[3];
+        public CastModel(ModelPart r){super(r);tails=body.getChild("tails");apron=body.getChild("apron");skirt=body.getChild("skirt");cap=head.getChild("cap");leftElbow=leftArm.getChild("elbow");rightElbow=rightArm.getChild("elbow");leftKnee=leftLeg.getChild("knee");rightKnee=rightLeg.getChild("knee");glass=leftElbow.getChild("glass");bottle=rightElbow.getChild("bottle");cloth=rightElbow.getChild("cloth");for(int i=0;i<3;i++){leftFingers[i]=leftElbow.getChild("finger"+i);rightFingers[i]=rightElbow.getChild("finger"+i);}}
         public static LayerDefinition layer(){var m=HumanoidModel.createMesh(CubeDeformation.NONE,0);var r=m.getRoot();
+            for(boolean left:new boolean[]{false,true}){
+                var arm=r.addOrReplaceChild(left?"left_arm":"right_arm",CubeListBuilder.create().texOffs(40,16).mirror(left).addBox(left?-1:-3,-2,-2,4,6,4),PartPose.offset(left?5:-5,2,0));
+                var elbow=arm.addOrReplaceChild("elbow",CubeListBuilder.create().texOffs(40,22).mirror(left).addBox(left?-1:-3,0,-2,4,6,4),PartPose.offset(0,4,0));
+                for(int i=0;i<3;i++)elbow.addOrReplaceChild("finger"+i,CubeListBuilder.create().texOffs(96,24).addBox(-.4F,0,-.45F,.8F,2,.9F),PartPose.offset((left?-.4F:-2.4F)+i,5.5F,-1.7F));
+                var leg=r.addOrReplaceChild(left?"left_leg":"right_leg",CubeListBuilder.create().texOffs(0,16).mirror(left).addBox(-2,0,-2,4,6,4),PartPose.offset(left?1.9F:-1.9F,12,0));
+                leg.addOrReplaceChild("knee",CubeListBuilder.create().texOffs(0,22).mirror(left).addBox(-2,0,-2,4,6,4),PartPose.offset(0,6,0));
+            }
             r.getChild("body").addOrReplaceChild("tails",CubeListBuilder.create().texOffs(64,30).addBox(-4.5F,1,-2.4F,9,16,4.8F).texOffs(64,52).addBox(-4.5F,15,1.4F,4,6,1.2F).addBox(.5F,15,1.4F,4,6,1.2F),PartPose.ZERO);
             r.getChild("body").addOrReplaceChild("apron",CubeListBuilder.create().texOffs(96,0).addBox(-4.2F,3,-2.8F,8.4F,13,1),PartPose.ZERO);
             r.getChild("body").addOrReplaceChild("skirt",CubeListBuilder.create().texOffs(64,30).addBox(-5,9,-3,10,12,6),PartPose.ZERO);
             r.getChild("head").addOrReplaceChild("cap",CubeListBuilder.create().texOffs(64,0).addBox(-4.6F,-9,-4.6F,9.2F,2,9.2F),PartPose.ZERO);
+            r.getChild("left_arm").getChild("elbow").addOrReplaceChild("glass",CubeListBuilder.create().texOffs(104,24).addBox(-1,-4,-1,2,4,2).texOffs(104,34).addBox(-.3F,0,-.3F,.6F,2,.6F).texOffs(104,37).addBox(-1.4F,2,-1.4F,2.8F,.4F,2.8F),PartPose.offset(1,5,-1.5F));
+            r.getChild("right_arm").getChild("elbow").addOrReplaceChild("bottle",CubeListBuilder.create().texOffs(116,24).addBox(-1.2F,-5,-1.2F,2.4F,5,2.4F).texOffs(116,33).addBox(-.6F,-7,-.6F,1.2F,2,1.2F),PartPose.offset(-2,5,-1.5F));
+            r.getChild("right_arm").getChild("elbow").addOrReplaceChild("cloth",CubeListBuilder.create().texOffs(100,44).addBox(-2.5F,0,-2.5F,5,.3F,5),PartPose.offset(-2,6,-1));
             return LayerDefinition.create(m,128,64);}
-        public void pose(int role,boolean dancing,float time){tails.visible=role==0||role==3||role==4;apron.visible=role==1;skirt.visible=role==5;cap.visible=role==0;
-            if(role==3){leftArm.xRot=rightArm.xRot=-1.18F;leftArm.yRot=.22F;rightArm.yRot=-.22F;leftArm.zRot=(float)Math.sin(time*.25)*.08F;rightArm.zRot=(float)Math.cos(time*.25)*.08F;head.xRot=.16F;}
-            if(dancing){leftArm.xRot=rightArm.xRot=-1;leftArm.zRot=-.6F;rightArm.zRot=.6F;body.yRot=(float)Math.sin(time*.045)*.12F;leftLeg.xRot=(float)Math.sin(time*.09)*.2F;rightLeg.xRot=-leftLeg.xRot;}}
-        @Override public void setupAnim(HotelActor a,float walk,float amount,float time,float yaw,float pitch){head.getAllParts().forEach(ModelPart::resetPose);body.getAllParts().forEach(ModelPart::resetPose);leftArm.resetPose();rightArm.resetPose();leftLeg.resetPose();rightLeg.resetPose();super.setupAnim(a,walk,amount,time,yaw,pitch);pose(a.role(),a.dancing(),time);}
+        private void reset(){for(var p:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg})p.getAllParts().forEach(ModelPart::resetPose);young=false;crouching=false;riding=false;}
+        public void pose(int role,boolean dancing,float time){pose(role,dancing,time,HotelActor.IDLE,0);}
+        public void preview(int role,boolean dancing,float time,int motion,float progress){reset();pose(role,dancing,time,motion,progress);}
+        private void pose(int role,boolean dancing,float time,int motion,float progress){
+            tails.visible=role==0||role==3||role==4;apron.visible=role==1;skirt.visible=role==5;cap.visible=role==0;glass.visible=bottle.visible=cloth.visible=false;
+            for(int i=0;i<3;i++){leftFingers[i].visible=rightFingers[i].visible=role==3;}
+            float breath=(float)Math.sin(time*.035F)*.012F,beat=(float)Math.sin(time*.13F);body.xRot+=breath;
+            if(role==0){rightElbow.xRot=-.2F;leftElbow.xRot=-.1F;if(motion==HotelActor.GREET){float bow=(float)Math.sin(Math.PI*progress);body.xRot+=bow*.23F;head.xRot+=bow*.2F;rightArm.xRot=-.65F*bow;rightElbow.xRot=-1.2F*bow;rightArm.zRot=-.2F*bow;}}
+            if(role==1){
+                leftArm.xRot=-.65F;leftElbow.xRot=-1.02F;rightArm.xRot=-.8F;rightElbow.xRot=-.85F;
+                if(motion==HotelActor.POUR){float pour=(float)Math.sin(Math.PI*progress);glass.visible=bottle.visible=true;rightArm.xRot-=.3F*pour;rightArm.yRot=.35F;rightElbow.xRot=-1.25F;leftArm.yRot=-.15F;bottle.zRot=-.95F*pour;glass.xRot=-leftArm.xRot-leftElbow.xRot;}
+                else{float polish=(float)Math.sin(time*.08F);cloth.visible=true;rightArm.yRot=polish*.2F;rightElbow.xRot=-.6F-polish*.12F;cloth.xRot=-rightArm.xRot-rightElbow.xRot;leftArm.xRot=-.12F;leftElbow.xRot=-.3F;}
+                head.xRot+=.2F;
+            }
+            if(role==2||role==4&&!dancing){head.zRot=.11F;rightArm.xRot=-.1F;rightElbow.xRot=-.3F;if(motion==HotelActor.LISTEN){float lean=(float)Math.sin(Math.PI*progress);head.xRot+=.18F*lean;head.zRot+=.12F*lean;leftArm.xRot=-.25F*lean;leftElbow.xRot=-.8F*lean;}}
+            if(role==3){leftArm.xRot=rightArm.xRot=-.84F;leftArm.yRot=.15F;rightArm.yRot=-.15F;leftElbow.xRot=-.64F-beat*.05F;rightElbow.xRot=-.64F+beat*.05F;leftArm.zRot=(float)Math.sin(time*.11F)*.045F;rightArm.zRot=(float)Math.cos(time*.11F)*.045F;head.xRot=.23F;body.xRot=.06F;for(int i=0;i<3;i++){leftFingers[i].xRot=-.2F-(float)Math.sin(time*.3F+i*1.7F)*.18F;rightFingers[i].xRot=-.2F-(float)Math.cos(time*.3F+i*1.7F)*.18F;}}
+            if(dancing){boolean dress=role==5;leftArm.xRot=-.9F;rightArm.xRot=-.8F;leftArm.zRot=dress?-.37F:-.58F;rightArm.zRot=dress?.58F:.37F;leftElbow.xRot=dress?-.5F:-.8F;rightElbow.xRot=dress?-.8F:-.5F;body.yRot=(float)Math.sin(time*.04F)*.09F;head.yRot=-body.yRot;leftLeg.xRot=beat*.19F;rightLeg.xRot=-leftLeg.xRot;leftKnee.xRot=Math.max(0,-beat)*.28F;rightKnee.xRot=Math.max(0,beat)*.28F;skirt.xRot=beat*.035F;tails.xRot=-beat*.025F;}
+            hat.copyFrom(head);
+        }
+        @Override public void setupAnim(HotelActor a,float walk,float amount,float time,float yaw,float pitch){reset();super.setupAnim(a,walk,amount,time,yaw,pitch);pose(a.role(),a.dancing(),time,a.gesture(),a.gestureProgress(time-a.tickCount));}
     }
     private static final class CastRenderer extends MobRenderer<HotelActor,CastModel>{CastRenderer(EntityRendererProvider.Context c){super(c,new CastModel(c.bakeLayer(CAST)),.2F);}@Override public ResourceLocation getTextureLocation(HotelActor a){return skin(a.role());}@Override protected boolean shouldShowName(HotelActor a){return false;}}
     public static final class HoseModel extends EntityModel<HotelHose>{private final ModelPart root;public HoseModel(ModelPart r){root=r;}
