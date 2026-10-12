@@ -1,6 +1,6 @@
 {
   "textures": {
-    "ceiling": "the_oldest_house:block/ghosts/ceiling"
+    "ceiling": "the_oldest_house:block/ghosts/materials_atlas"
   },
   "elements": [
     {
@@ -18,55 +18,55 @@
         "north": {
           "texture": "#ceiling",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            0.0,
+            12.0,
+            4.0
           ]
         },
         "south": {
           "texture": "#ceiling",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            0.0,
+            12.0,
+            4.0
           ]
         },
         "east": {
           "texture": "#ceiling",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            0.0,
+            12.0,
+            4.0
           ]
         },
         "west": {
           "texture": "#ceiling",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            0.0,
+            12.0,
+            4.0
           ]
         },
         "up": {
           "texture": "#ceiling",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            0.0,
+            12.0,
+            4.0
           ]
         },
         "down": {
           "texture": "#ceiling",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            0.0,
+            12.0,
+            4.0
           ]
         }
       }

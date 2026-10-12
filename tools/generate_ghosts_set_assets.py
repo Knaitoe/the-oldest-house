@@ -110,3 +110,7 @@ camera={'textures':{'metal':'the_oldest_house:block/ghosts/metal','controls':'th
 gui=Image.new('RGBA',(24,16));d=ImageDraw.Draw(gui);d.rectangle((1,2,18,13),outline='#d5cdb4');d.rectangle((18,5,23,10),outline='#d5cdb4');d.rectangle((3,4,16,11),outline='#767e6f');gui.save(A/'textures/gui/camcorder.png')
 lang=A/'lang/en_us.json';data=json.loads(lang.read_text());data['item.the_oldest_house.camcorder']='Production camcorder';data['block.the_oldest_house.ghosts_set']='Barrett home';lang.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
 print(f'Generated {len(K)*4} fixture states, {len(palette)+7+1} home textures, eight fitted cast atlases and camcorder art.')
+
+# Fit the retained original atlases and extended native fixture states after the base mesh pass.
+import runpy
+runpy.run_path(str(ROOT/'tools/update_ghosts_fixture_models.py'),run_name='__main__')

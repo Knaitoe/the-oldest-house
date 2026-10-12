@@ -21,7 +21,8 @@ public final class GhostsSetBlock extends Block {
     public enum Kind implements StringRepresentable {
         WALLPAPER, FLOOR, CEILING, TILE, PANEL, TABLE, CHAIR, COUNTER, SINK, COOKER,
         PLATE, HAT, BOOKS, JUG, BOLTS, CAMERA, CASE, MONITOR, DRAWING, LAMP, BED_HEAD, BED_FOOT,
-        PLAIN_PLATE, PLAYHOUSE, TORN_CARD, DRAWER, DRAWER_RIG, PLASTER;
+        PLAIN_PLATE, PLAYHOUSE, TORN_CARD, DRAWER, DRAWER_RIG, PLASTER,
+        MEAL_STEW, MEAL_SANDWICH, MEAL_SOUP, MEAL_ROAST, MEAL_POTATOES, LAMP_OFF, RUG;
         @Override public String getSerializedName() { return name().toLowerCase(java.util.Locale.ROOT); }
         public boolean cube() { return ordinal() <= PANEL.ordinal(); }
     }
@@ -39,10 +40,11 @@ public final class GhostsSetBlock extends Block {
             case TABLE -> Shapes.or(Block.box(0,15,0,16,16,16), Block.box(1,0,1,3,15,3), Block.box(13,0,13,15,15,15));
             case CHAIR -> Shapes.or(Block.box(2,8,2,14,10,14), Block.box(2,0,2,4,8,4), Block.box(12,0,12,14,8,14), Block.box(2,10,12,14,22,14));
             case BOLTS -> Shapes.or(Block.box(0,15,0,16,16,16),Block.box(4,9,6,12,13,9));
-            case PLATE, PLAIN_PLATE, HAT, BOOKS -> Block.box(3,0,3,13,3,13);
+            case PLATE, PLAIN_PLATE, MEAL_STEW, MEAL_SANDWICH, MEAL_SOUP, MEAL_ROAST, MEAL_POTATOES, HAT, BOOKS -> Block.box(3,0,3,13,3,13);
             case JUG -> Block.box(5,0,5,11,9,11);
             case DRAWING -> Block.box(2,2,15,14,14,16);
-            case LAMP -> Block.box(3,0,3,13,12,13);
+            case LAMP,LAMP_OFF -> Shapes.or(Block.box(3,6,3,13,12,13),Block.box(7,12,7,9,16,9));
+            case RUG -> Block.box(0,0,0,16,1,16);
             case BED_HEAD, BED_FOOT -> Shapes.or(Block.box(0,6,0,16,12,16), Block.box(1,0,1,3,6,3), Block.box(13,0,13,15,6,15));
             default -> Shapes.block();
         };
@@ -57,10 +59,11 @@ public final class GhostsSetBlock extends Block {
     }
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c) { return shape(s); }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c) {
-        return switch(s.getValue(KIND)){case DRAWING,PLATE,PLAIN_PLATE,HAT,BOOKS->Shapes.empty();default->shape(s);};
+        return switch(s.getValue(KIND)){case DRAWING,PLATE,PLAIN_PLATE,MEAL_STEW,MEAL_SANDWICH,MEAL_SOUP,MEAL_ROAST,MEAL_POTATOES,HAT,BOOKS,RUG->Shapes.empty();default->shape(s);};
     }
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p) { return s.getValue(KIND).cube()?Shapes.block():Shapes.empty(); }
     public static int light(BlockState s) { return s.getValue(KIND)==Kind.LAMP?12:0; }
+    public static Kind meal(int day){return switch(day){case 1->Kind.MEAL_STEW;case 3->Kind.MEAL_SANDWICH;case 4->Kind.MEAL_SOUP;case 5->Kind.MEAL_ROAST;case 6->Kind.MEAL_POTATOES;default->Kind.PLATE;};}
     @Override protected BlockState rotate(BlockState s,net.minecraft.world.level.block.Rotation r) { return s.setValue(FACING,r.rotate(s.getValue(FACING))); }
     @Override protected BlockState mirror(BlockState s,net.minecraft.world.level.block.Mirror m) { return s.rotate(m.getRotation(s.getValue(FACING))); }
 }

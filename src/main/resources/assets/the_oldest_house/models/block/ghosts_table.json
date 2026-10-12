@@ -1,7 +1,7 @@
 {
   "textures": {
-    "wood": "the_oldest_house:block/ghosts/wood",
-    "formica": "the_oldest_house:block/ghosts/formica"
+    "wood": "the_oldest_house:block/ghosts/materials_atlas",
+    "formica": "the_oldest_house:block/ghosts/materials_atlas"
   },
   "elements": [
     {
@@ -19,55 +19,55 @@
         "north": {
           "texture": "#formica",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            4.0,
+            12.0,
+            8.0
           ]
         },
         "south": {
           "texture": "#formica",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            4.0,
+            12.0,
+            8.0
           ]
         },
         "east": {
           "texture": "#formica",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            4.0,
+            12.0,
+            8.0
           ]
         },
         "west": {
           "texture": "#formica",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            4.0,
+            12.0,
+            8.0
           ]
         },
         "up": {
           "texture": "#formica",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            4.0,
+            12.0,
+            8.0
           ]
         },
         "down": {
           "texture": "#formica",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            4.0,
+            12.0,
+            8.0
           ]
         }
       }
@@ -87,55 +87,55 @@
         "north": {
           "texture": "#wood",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            4.0,
+            8.0,
+            8.0
           ]
         },
         "south": {
           "texture": "#wood",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            4.0,
+            8.0,
+            8.0
           ]
         },
         "east": {
           "texture": "#wood",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            4.0,
+            8.0,
+            8.0
           ]
         },
         "west": {
           "texture": "#wood",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            4.0,
+            8.0,
+            8.0
           ]
         },
         "up": {
           "texture": "#wood",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            4.0,
+            8.0,
+            8.0
           ]
         },
         "down": {
           "texture": "#wood",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            4.0,
+            8.0,
+            8.0
           ]
         }
       }
@@ -155,55 +155,55 @@
         "north": {
           "texture": "#wood",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            4.0,
+            8.0,
+            8.0
           ]
         },
         "south": {
           "texture": "#wood",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            4.0,
+            8.0,
+            8.0
           ]
         },
         "east": {
           "texture": "#wood",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            4.0,
+            8.0,
+            8.0
           ]
         },
         "west": {
           "texture": "#wood",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            4.0,
+            8.0,
+            8.0
           ]
         },
         "up": {
           "texture": "#wood",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            4.0,
+            8.0,
+            8.0
           ]
         },
         "down": {
           "texture": "#wood",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            4.0,
+            8.0,
+            8.0
           ]
         }
       }

@@ -23,6 +23,9 @@ public final class LiteraryRegistry {
     private static final DeferredRegister<net.minecraft.core.particles.ParticleType<?>> PARTICLES=DeferredRegister.create(Registries.PARTICLE_TYPE,TheOldestHouse.MOD_ID);
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<GhostsSetBlock>> GHOST_SET_TYPE=CODECS.register("ghosts_set",()->GhostsSetBlock.CODEC);
     public static final DeferredBlock<GhostsSetBlock> GHOST_SET=BLOCKS.registerBlock("ghosts_set",GhostsSetBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion().noLootTable().lightLevel(GhostsSetBlock::light));
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<GhostsCaseBlock>> GHOST_CASE_TYPE=CODECS.register("ghosts_case",()->GhostsCaseBlock.CODEC);
+    public static final DeferredBlock<GhostsCaseBlock> GHOST_CASE=BLOCKS.registerBlock("ghosts_case",GhostsCaseBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion().noLootTable());
+    public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<GhostsCaseBlockEntity>> GHOST_CASE_ENTITY=BES.register("ghosts_case",()->BlockEntityType.Builder.of(GhostsCaseBlockEntity::new,GHOST_CASE.get()).build(null));
     public static final DeferredItem<CamcorderItem> CAMCORDER=ITEMS.registerItem("camcorder",CamcorderItem::new,new Item.Properties().stacksTo(1));
     /** A reader's own storm at the cabin (0.4.52): rain streaks and wind-torn leaves, drawn by their client only. */
     public static final DeferredHolder<net.minecraft.core.particles.ParticleType<?>,net.minecraft.core.particles.SimpleParticleType> CABIN_RAIN=PARTICLES.register("cabin_rain",()->new net.minecraft.core.particles.SimpleParticleType(false)),

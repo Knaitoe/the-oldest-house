@@ -74,7 +74,7 @@ public final class GhostsSet {
     private GhostsSet() {}
     public static boolean built(LabyrinthData d,BlockPos b) { return d.state(STATE).getBoolean(Long.toString(b.asLong())); }
     public static void markBuilt(LabyrinthData d,BlockPos b) {var t=d.state(STATE);t.putBoolean(Long.toString(b.asLong()),true);t.remove("Repair_"+b.asLong());d.setState(STATE,t);}
-    public static void clearAll() { REPAIRS.clear();REPAIR_CELLS.clear(); }
+    public static void clearAll() { REPAIRS.clear();REPAIR_CELLS.clear();GhostsSetDressing.clear(); }
     private static int day(CompoundTag own) { return Math.max(1,Math.min(DAYS,own.getInt("FilmDay"))); }
     public static void arrive(ServerPlayer p,CompoundTag own) {
         if(own.getBoolean("Completed")||own.getBoolean("Ready")&&!own.getBoolean("Filming0485"))return;
@@ -296,7 +296,7 @@ public final class GhostsSet {
         var frames=own.getList("FramesDay"+day(own),Tag.TAG_COMPOUND);if(frames.size()>=4)return false;var frame=new CompoundTag();var bounded=pixels.clone();for(int i=0;i<bounded.length;i++)bounded[i]&=0xffffff;frame.putIntArray("Pixels",bounded);frames.add(frame);own.put("FramesDay"+day(own),frames);own.remove("FrameNonce");LiteraryVignettes.save(data,p.getUUID(),PLACE,own);return true;
     }
     private static AABB area(BlockPos b) { return new AABB(Vec3.atLowerCornerOf(b.offset(-21,-5,-47)),Vec3.atLowerCornerOf(b.offset(22,13,1))); }
-    private static boolean vacant(ServerLevel l,BlockPos b) {
+    static boolean vacant(ServerLevel l,BlockPos b) {
         var area=area(b);for(int x=(int)area.minX>>4;x<=(int)area.maxX>>4;x++)for(int z=(int)area.minZ>>4;z<=(int)area.maxZ>>4;z++)if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(ChunkPos.asLong(x,z)))return false;
         if(l.players().stream().anyMatch(p->area.inflate(24).intersects(p.getCamera().getBoundingBox())))return false;
         return l.getEntitiesOfClass(Entity.class,area,e->e.isAlive()&&!(e instanceof LiteraryActor)).isEmpty();

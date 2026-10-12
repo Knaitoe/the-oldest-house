@@ -1,8 +1,8 @@
 {
   "textures": {
-    "metal": "the_oldest_house:block/ghosts/metal",
-    "wood": "the_oldest_house:block/ghosts/wood",
-    "label": "the_oldest_house:block/ghosts/label"
+    "metal": "the_oldest_house:block/ghosts/materials_atlas",
+    "wood": "the_oldest_house:block/ghosts/materials_atlas",
+    "label": "the_oldest_house:block/ghosts/equipment_atlas"
   },
   "elements": [
     {
@@ -20,55 +20,55 @@
         "north": {
           "texture": "#metal",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            12.0,
+            4.0,
+            16.0,
+            8.0
           ]
         },
         "south": {
           "texture": "#metal",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            12.0,
+            4.0,
+            16.0,
+            8.0
           ]
         },
         "east": {
           "texture": "#metal",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            12.0,
+            4.0,
+            16.0,
+            8.0
           ]
         },
         "west": {
           "texture": "#metal",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            12.0,
+            4.0,
+            16.0,
+            8.0
           ]
         },
         "up": {
           "texture": "#metal",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            12.0,
+            4.0,
+            16.0,
+            8.0
           ]
         },
         "down": {
           "texture": "#metal",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            12.0,
+            4.0,
+            16.0,
+            8.0
           ]
         }
       }
@@ -88,55 +88,55 @@
         "north": {
           "texture": "#wood",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            4.0,
+            8.0,
+            8.0
           ]
         },
         "south": {
           "texture": "#wood",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            4.0,
+            8.0,
+            8.0
           ]
         },
         "east": {
           "texture": "#wood",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            4.0,
+            8.0,
+            8.0
           ]
         },
         "west": {
           "texture": "#wood",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            4.0,
+            8.0,
+            8.0
           ]
         },
         "up": {
           "texture": "#wood",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            4.0,
+            8.0,
+            8.0
           ]
         },
         "down": {
           "texture": "#wood",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            4.0,
+            4.0,
+            8.0,
+            8.0
           ]
         }
       }
@@ -156,55 +156,55 @@
         "north": {
           "texture": "#label",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            0.0,
+            12.0,
+            8.0
           ]
         },
         "south": {
           "texture": "#label",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            0.0,
+            12.0,
+            8.0
           ]
         },
         "east": {
           "texture": "#label",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            0.0,
+            12.0,
+            8.0
           ]
         },
         "west": {
           "texture": "#label",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            0.0,
+            12.0,
+            8.0
           ]
         },
         "up": {
           "texture": "#label",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            0.0,
+            12.0,
+            8.0
           ]
         },
         "down": {
           "texture": "#label",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            8.0,
+            0.0,
+            12.0,
+            8.0
           ]
         }
       }

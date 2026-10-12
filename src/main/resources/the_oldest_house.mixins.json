@@ -13,7 +13,8 @@
     "PlayerPatMixin",
     "LazySectionBuffersMixin",
     "HouseMobRenderMixin",
-    "GhostsPickMixin"
+    "GhostsPickMixin",
+    "GhostsLecternMixin"
   ],
   "injectors": {
     "defaultRequire": 1
