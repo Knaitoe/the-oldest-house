@@ -28,13 +28,13 @@ public final class GhostsVisualProof extends Screen {
         var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xff292821);g.drawString(font,"The Barrett home / "+(page==0?"cast and human poses":"native furnishings and evidence"),10,10,0xffe7dbc3,false);g.flush();
         var buffers=mc.renderBuffers().bufferSource();
         if(page==0){
-            for(int n=0;n<16;n++){
+            for(int n=0;n<17;n++){
                 int role=n<6?GhostsSet.ROLES[n]:n==15?LiteraryActor.GHOST_JOHN:LiteraryActor.GHOST_MARJORIE,phase=n<6?GhostsSet.STAND:n-6;
                 var model=new GhostsCastModel(mc.getEntityModels().bakeLayer(GhostsCastModel.LAYER));model.preview(role,phase,frames);
                 var skin=GhostsCastModel.skin(role,phase);if(mc.getResourceManager().getResource(skin).isEmpty())throw new IllegalStateException("Missing filming skin "+skin);
-                var pose=g.pose();pose.pushPose();float centreY=38+(n/4+.73F)*(height-70)/4;pose.translate(24+(n%4+.5F)*(width-48)/4,centreY,190);float size=role==LiteraryActor.GHOST_MERRY?30*.58F:30;pose.scale(size,size,size);pose.mulPose(Axis.YP.rotationDegrees(145));pose.translate(0,-1.5,0);
+                var pose=g.pose();pose.pushPose();float centreY=38+(n/5+.73F)*(height-70)/4;pose.translate(24+(n%5+.5F)*(width-48)/5,centreY,190);float size=role==LiteraryActor.GHOST_MERRY?28*.58F:28;pose.scale(size,size,size);pose.mulPose(Axis.YP.rotationDegrees(145));pose.translate(0,-1.5,0);
                 if(phase==GhostsSet.BED)LiteraryRenderers.bedPose(pose,1);model.renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(skin)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);buffers.endBatch();pose.popPose();
-                g.drawCenteredString(font,n<6?GhostsSet.PEOPLE[n]:"pose "+phase,24+(n%4)*(width-48)/4+(width-48)/8,(int)centreY+12,0xffe7dbc3);
+                g.drawCenteredString(font,n<6?GhostsSet.PEOPLE[n]:"pose "+phase,24+(n%5)*(width-48)/5+(width-48)/10,(int)centreY+12,0xffe7dbc3);
             }
         }else{
             var camera=new net.minecraft.world.item.ItemStack(LiteraryRegistry.CAMCORDER.get());var mesh=mc.getItemRenderer().getModel(camera,null,null,0);if(mesh==mc.getModelManager().getMissingModel()||!mesh.isGui3d())throw new IllegalStateException("The production camera requires its native mesh");g.renderItem(camera,width-24,height-24);
@@ -48,6 +48,6 @@ public final class GhostsVisualProof extends Screen {
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof GhostsVisualProof proof)||++proof.frames<24)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-ghosts-"+(proof.page==0?"cast":"fixtures")+".png"));}
-        if(++proof.page<2){proof.frames=0;return;}Files.writeString(dir.resolve("ghosts-passed.txt"),"Six native cast skins, ten connected human poses, eight cast atlases and all 112 oriented fixture states rendered.\n");mc.setScreen(new LastStopCastVisualProof());
+        if(++proof.page<2){proof.frames=0;return;}Files.writeString(dir.resolve("ghosts-passed.txt"),"Six native cast skins, eleven connected human poses including the held jump, eight cast atlases and all 112 oriented fixture states rendered.\n");mc.setScreen(new LastStopCastVisualProof());
     }
 }

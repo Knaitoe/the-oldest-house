@@ -1252,12 +1252,12 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 11m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_goatman --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/goatman-native.log
+          timeout --signal=QUIT --kill-after=20s 11m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_goatman,the_oldest_house_wake --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/goatman-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/goatman-native.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('GoatmanTests.java','StreetlightTests.java'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('GoatmanTests.java','StreetlightTests.java','HarriganWakeTests.java','OctoberFollowupTests.java'))
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused native Goatman cases passed; the complete suite remains required.')
           PY

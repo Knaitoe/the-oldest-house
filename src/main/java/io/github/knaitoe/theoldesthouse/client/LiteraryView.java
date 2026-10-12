@@ -15,6 +15,7 @@ public final class LiteraryView {
     private static ClientLevel cameraWorld,modelWorld;private static int lease,drowse,drowseLease,screenLease;private static CompoundTag models=new CompoundTag();
     private LiteraryView(){}
     public static void accept(LiteraryViewPayload payload){var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||mc.player.isSpectator())return;
+        GhostsTakeClient.accept(payload.models());
         if(payload.models().contains("Models")){var list=payload.models().getList("Models",Tag.TAG_COMPOUND);if(list.size()<=3&&list.stream().allMatch(t->((CompoundTag)t).getIntArray("Blocks").length<=256)&&payload.models().hasUUID("Reader")&&payload.models().getUUID("Reader").equals(mc.player.getUUID())){models=payload.models().copy();modelWorld=mc.level;}}
         if(payload.models().hasUUID("Reader")&&payload.models().getUUID("Reader").equals(mc.player.getUUID())&&payload.models().contains("Scar")){models=payload.models().copy();modelWorld=mc.level;}
         if(payload.models().hasUUID("Reader")&&payload.models().getUUID("Reader").equals(mc.player.getUUID())&&payload.models().getIntArray("Screen").length==384){models=payload.models().copy();modelWorld=mc.level;screenLease=Math.max(0,Math.min(30,payload.ticks()));}

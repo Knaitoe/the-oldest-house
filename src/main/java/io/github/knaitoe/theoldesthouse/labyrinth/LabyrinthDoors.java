@@ -419,6 +419,13 @@ public final class LabyrinthDoors {
         return true;
     }
 
+    /** An authored forced cut still uses the native visit departure and exact saved return stack. */
+    public static boolean finishTakeAndReturn(ServerPlayer player,LabyrinthPlace place){
+        var origin=HouseSavedData.get(player.server).houseOrigin();if(origin==null||!player.isAlive()||player.isSpectator()||isBusy(player)||LabyrinthPlaces.placeAt(origin,player.blockPosition())!=place)return false;
+        var data=LabyrinthData.get(player.server);var back=data.peekReturn(player.getUUID());if(back==null||player.server.getLevel(back.dimension())==null)return false;
+        // A cut happens away from the doorway. Its inverse crossing transform would carry the upstairs offset home.
+        depart(player,place);sendBack(player,4,10,24);return true;
+    }
     private static void depart(ServerPlayer player, LabyrinthPlace place) {
         if (place == LabyrinthPlace.GHOSTS_SET) GhostsSet.depart(player);
         if (place == LabyrinthPlace.HARRIGAN) HarriganVignette.onDepart(player);

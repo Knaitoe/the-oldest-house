@@ -99,17 +99,41 @@ public final class GhostsSetTests {
         });
     }
     @GameTest(template="empty",batch="ghosts_full_take",timeoutTicks=360)
-    public static void SevenActualTakesReachThePrivateCollapseMechanismAndLanding(GameTestHelper h){var f=fixture(h);var p=f.player("ghost_full_take",P);f.source(p,P);h.runAtTickTime(30,()->{
+    public static void SevenActualTakesReachThePrivateCollapseMechanismAndHeldJump(GameTestHelper h){var f=fixture(h);var p=f.player("ghost_full_take",P);f.source(p,P);h.runAtTickTime(30,()->{
         for(int d=1;d<=7;d++){
             var t=f.own(p,P);h.assertTrue(t.getInt("FilmDay")==d,"the real take belongs to its following filming day");double[] at=switch(d){case 3,5,6->new double[]{-7,5,-28};case 4->new double[]{5,-4,-27};default->new double[]{-4,0,-24};};f.at(p,P,at[0],at[1],at[2]);h.assertTrue(GhostsSet.start(p,t),"each take starts through the owner/source gate");
             for(int n=0;n<800&&!t.getBoolean("DayDone");n++){GhostsSet.reader(p,f.base(P),t);if(d==4&&t.getBoolean("BedroomPickup")&&t.getInt("PickupStep0")>=18&&t.getInt("PickupStep1")>=18&&!t.getBoolean("Rolling")){f.at(p,P,8,5,-28);GhostsSet.start(p,t);}}
             h.assertTrue(t.getBoolean("DayDone")&&t.getInt("ShotClock")>=GhostsSet.LENGTH[d-1],"the physical take runs to its own final beat, day "+d+", clock="+t.getInt("ShotClock"));
             if(d==4)h.assertTrue(actor(f,p,LiteraryActor.GHOST_PLAYHOUSE).phase()==2,"the actual private cardboard body reaches its collapsed state");
-            if(d==6){var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);h.assertTrue(actor(f,p,LiteraryActor.GHOST_DRAWER).phase()==2&&t.getInt("ExorcismStep")>=3&&m.getY()<f.base(P).getY()+1,"the drawer opens, the mechanism is exposed and the native body reaches the bottom of the stair: "+m.position()+", route="+t.getInt("ExorcismStep"));}
+            if(d==6){var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);h.assertTrue(actor(f,p,LiteraryActor.GHOST_DRAWER).phase()==2&&t.getBoolean("JumpFrozen0488")&&t.getBoolean("JumpEject0488")&&m.phase()==GhostsSet.LEAP&&m.getY()>f.base(P).getY()+5,"the drawer opens and the original body holds its midair pose before the forced cut: "+m.position());}
             save(f,p,t);if(d<7){GhostsSet.depart(p);f.at(p,P,0,0,2);f.arrive(p,P);}
         }
         h.assertTrue(f.own(p,P).getInt("FilmedDays")==127,"seven real scripted takes leave all seven personal day records");h.succeed();
     });}
+    @GameTest(template="empty",batch="ghosts_frozen_return",timeoutTicks=240)
+    public static void HeldJumpTurnsOnlyItsOriginalHeadAndReturnsThroughTheSavedVisit(GameTestHelper h){
+        var f=fixture(h);var p=f.player("ghost_jump",P);var peer=f.player("ghost_jump_peer",P);f.source(p,P);
+        final Vec3[] body={null};final UUID[] original={null};final float[] startHead={0};final CompoundTag[] peerBefore={null};
+        var back=Vec3.atBottomCenterOf(f.base(P).offset(0,0,40));var returned=back.add(0,0,1);
+        h.startSequence().thenIdle(30).thenExecute(()->{
+            var own=f.own(p,P);own.putInt("FilmDay",6);own.putInt("ShotClock",715);own.putBoolean("CastPlaced",false);own.putBoolean("Rolling",true);own.putBoolean("DayDone",false);f.at(p,P,-7,5,-28);film(p,cam(p));
+            GhostsSet.reader(p,f.base(P),own);var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);body[0]=m.position();original[0]=m.getUUID();startHead[0]=m.getYHeadRot();peerBefore[0]=f.own(peer,P).copy();
+            h.assertTrue(own.getBoolean("JumpFrozen0488")&&m.phase()==GhostsSet.LEAP&&!own.getBoolean("DayDone"),"the jump begins as a held pose on the actual original actor");
+            save(f,p,own);f.reload();own=f.own(p,P);GhostsSet.arrive(p,own);save(f,p,own);h.assertTrue(own.getBoolean("JumpFrozen0488")&&own.getInt("ShotClock")==720,"an interrupted arrival and SavedData reload keep the held jump instead of launching it again");
+            f.data().pushReturn(p.getUUID(),new LabyrinthData.Waypoint(f.in.dimension(),back,0,true));
+        }).thenIdle(45).thenExecute(()->{
+            var own=f.own(p,P);var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);
+            h.assertTrue(m.getUUID().equals(original[0])&&m.position().distanceToSqr(body[0])<.000001&&m.getDeltaMovement().lengthSqr()<.000001,"native ticks retain the same motionless midair body");
+            h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(m.getYHeadRot()-startHead[0]))>10&&!own.getBoolean("DayDone"),"the head turns toward its reader's camera before the three-second hold ends");
+            h.assertTrue(own.getCompound("FilmLog6").getInt("Frames_FrozenLeap")>=20&&f.own(peer,P).getInt("FilmDay")==peerBefore[0].getInt("FilmDay")&&!f.own(peer,P).getBoolean("JumpFrozen0488"),"the owned lens records its held view without borrowing a peer's day");
+        }).thenWaitUntil(()->{
+            var t=f.own(p,P);h.assertTrue(!LabyrinthDoors.isBusy(p)&&!LiteraryVignettes.inside(p,P)&&f.data().returnDepth(p.getUUID())==0,"the authored cut completes the native saved return: clock="+t.getInt("ShotClock")+", done="+t.getBoolean("DayDone")+", eject="+t.getBoolean("JumpEject0488")+", busy="+LabyrinthDoors.isBusy(p)+", depth="+f.data().returnDepth(p.getUUID())+", pos="+p.position()+", place="+LabyrinthPlaces.placeAt(f.origin,p.blockPosition()));
+        }).thenExecute(()->{
+            h.assertTrue(p.position().distanceToSqr(returned)<.01&&f.own(p,P).getBoolean("FilmDoorExit")&&f.own(p,P).getInt("FilmDay")==6,"the cut returns beside the saved prior door without carrying its upstairs offset and leaves the following day unstarted");
+            h.assertTrue(f.in.getEntity(original[0])!=null&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.GHOSTS_SET),"the same original body survives and the cut alone grants no ending");
+            f.arrive(p,P);h.assertTrue(f.own(p,P).getInt("FilmDay")==7&&!f.own(p,P).getBoolean("JumpFrozen0488")&&f.own(peer,P).getInt("FilmDay")==1,"a later actual arrival admits only this reader to day seven");
+        }).thenSucceed();
+    }
     private static void close(){if(active!=null){active.close();active=null;}}
     @AfterBatch(batch="ghosts_days") public static void daysDone(ServerLevel l){close();}
     @AfterBatch(batch="ghosts_lens") public static void lensDone(ServerLevel l){close();}
@@ -124,4 +148,5 @@ public final class GhostsSetTests {
     @AfterBatch(batch="ghosts_pickup") public static void pickupDone(ServerLevel l){close();}
     @AfterBatch(batch="ghosts_upgrade") public static void upgradeDone(ServerLevel l){close();}
     @AfterBatch(batch="ghosts_full_take") public static void fullTakeDone(ServerLevel l){close();}
+    @AfterBatch(batch="ghosts_frozen_return") public static void frozenReturnDone(ServerLevel l){close();}
 }

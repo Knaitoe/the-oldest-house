@@ -51,12 +51,12 @@ public final class NurseryBlock extends Block {
     private static VoxelShape base(Kind k,int stage){return switch(k){
         case BED_HEAD->Shapes.or(Block.box(0,0,0,16,6,16),Block.box(0,0,0,16,14,2));
         case BED_FOOT->Shapes.or(Block.box(0,0,0,16,6,16),Block.box(0,0,14,16,10,16));
-        case DESK->Block.box(1,0,1,15,12,15);case CHAIR->Block.box(3,0,3,13,8,13);case TOY_CHEST->Block.box(1,0,3,15,stage==1?14:9,13);
+        case DESK->Block.box(0,0,1,16,16,15);case CHAIR->Block.box(3,0,3,13,8,13);case TOY_CHEST->Block.box(1,0,3,15,stage==1?14:9,13);
         case SHELF->Block.box(0,0,6,16,16,16);case WARDROBE_LOW->Block.box(1,0,4,15,16,16);case WARDROBE_HIGH->Block.box(1,0,4,15,14,16);
         case DOLLHOUSE->Block.box(1,0,3,15,15,16);case ROCKING_HORSE->Block.box(4,0,1,12,13,15);case NIGHT_LIGHT->Block.box(5,0,5,11,7,11);
         case CEILING_LAMP->Block.box(4,6,4,12,16,12);case MOBILE->Block.box(2,4,2,14,16,14);case RUG,TRACK->Block.box(0,0,0,16,1,16);
         case DRAWINGS->Block.box(1,2,15,15,14,16);case CARD->Block.box(5,0,5,11,3,11);case ACCOUNT->Block.box(3,0,4,13,2,12);
-        case BOXES->Block.box(1,0,1,15,13,15);case CRIB->Block.box(0,0,2,16,12,14);case TRAIN->Block.box(4,0,1,12,8,15);
+        case BOXES->Block.box(1,0,1,15,16,15);case CRIB->Block.box(0,0,2,16,12,14);case TRAIN->Block.box(4,0,1,12,8,15);
         case TOP->stage==1?Block.box(2,0,5,14,5,11):Block.box(5,0,5,11,8,11);case JACK_BOX->Block.box(4,0,4,12,stage==1?15:8,12);
         case MUSIC_BOX->Block.box(4,0,5,12,stage==1?10:5,11);case TEDDY->Block.box(4,0,4,12,10,12);
         case BLOCKS->Block.box(3,0,3,13,stage==0?4:stage==1?8:stage==2?12:5,13);case BALL->Block.box(5,0,5,11,6,11);case DOLL->Block.box(5,0,5,11,10,11);

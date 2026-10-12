@@ -1,7 +1,7 @@
 """The Barrett home and its camera crew: fitted native meshes and discrete Minecraft pixels.
 
-The picture-book drawing is an original ImageGen asset kept in asset_sources; everything with an exact native UV
-footprint is authored here. No earlier asset is overwritten. Rerun to reproduce these new assets.
+The painted cast is imported unchanged from ImageGen and deliberately retained. This generator authors the existing
+native environment meshes, pixel materials and equipment. Exact cast prompts and hashes: docs/GHOSTS_CAST_AND_TAKE_0_4_88.md.
 """
 from pathlib import Path
 import json, random, shutil
@@ -98,31 +98,10 @@ for name in K:
     for f,y in [('north',0),('east',90),('south',180),('west',270)]:variants[f'kind={name},facing={f}']={'model':'the_oldest_house:block/ghosts_'+name,'y':y}
 (S/'ghosts_set.json').write_text(json.dumps({'variants':variants},indent=2)+'\n')
 
-def skin(name,hair,shirt,trousers,seed):
-    im=Image.new('RGBA',(128,64),(0,0,0,0));d=ImageDraw.Draw(im)
-    # Entire cuboid footprints are painted before facial and garment detail, including elbow/knee islands.
-    tone=(196,159,125);d.rectangle((0,0,31,15),fill=hair);d.rectangle((8,8,15,15),fill=tone)
-    d.rectangle((0,16,15,31),fill=trousers);d.rectangle((16,16,39,31),fill=shirt);d.rectangle((40,16,55,31),fill=shirt)
-    d.rectangle((40,27,55,31),fill=tone);d.rectangle((0,29,15,31),fill='#3e3c35')
-    d.rectangle((8,8,15,9),fill=hair);d.point((9,11),fill='#37352f');d.point((14,11),fill='#37352f');d.line((11,14,12,14),fill='#8f5d4d')
-    d.rectangle((8,12,9,13),fill='#c29276');d.rectangle((14,12,15,13),fill='#c29276')
-    d.rectangle((20,20,27,22),fill=tone);d.line((23,23,23,31),fill=tuple(max(0,x-18) for x in shirt))
-    for y in (24,28):d.point((24,y),fill='#b5ad92')
-    # Fine, discrete seam pixels, not noise blurred across the UV borders.
-    d.line((20,20,20,31),fill=tuple(max(0,x-10) for x in shirt));d.line((27,20,27,31),fill=tuple(max(0,x-10) for x in shirt))
-    d.rectangle((64,0,75,2),fill=tone);d.line((65,1,69,1),fill='#895b50')
-    if name=='father_wanderly':d.line((22,23,25,23),fill='#e9dfc5')
-    if name=='barry':d.rectangle((20,24,22,27),fill='#b5b199');d.point((21,25),fill='#575c50')
-    if name=='merry':d.rectangle((23,26,25,28),fill='#debe81');d.point((24,27),fill='#66567a')
-    im.resize((512,256),Image.Resampling.NEAREST).save(E/f'ghosts_{name}.png')
-    return im
-cast=[('marjorie',(70,47,34),(100,94,121),(52,67,85)),('merry',(105,68,35),(141,87,82),(68,87,113)),('john',(88,70,51),(112,125,97),(74,72,59)),('sarah',(66,43,31),(142,117,87),(66,71,70)),('barry',(74,65,48),(48,57,53),(62,70,65)),('father_wanderly',(111,108,96),(42,45,41),(39,43,40))]
-for i,(name,hair,shirt,trousers) in enumerate(cast):
-    im=skin(name,hair,shirt,trousers,i)
-    if name=='marjorie':
-        d=ImageDraw.Draw(im);d.rectangle((10,14,13,15),fill='#81924f');d.rectangle((64,0,75,2),fill='#829052');im.resize((512,256),Image.Resampling.NEAREST).save(E/'ghosts_marjorie_dinner.png')
-    if name=='john':
-        d=ImageDraw.Draw(im);d.line((45,29,47,30),fill='#a35845');im.resize((512,256),Image.Resampling.NEAREST).save(E/'ghosts_john_hand.png')
+# Painted cast atlases are original ImageGen imports. Never regenerate the retired flat-colour skins.
+for name in ('marjorie','merry','john','sarah','barry','father_wanderly','marjorie_dinner','john_hand'):
+    if not (E/f'ghosts_{name}.png').exists():raise FileNotFoundError(E/f'ghosts_{name}.png')
+
 item=Image.new('RGBA',(32,32));d=ImageDraw.Draw(item);d.rectangle((5,10,25,23),fill='#3d4943',outline='#b4b39b');d.rectangle((1,12,7,20),fill='#26332f');d.rectangle((8,7,20,10),fill='#6a7161');d.rectangle((11,13,22,20),fill='#739182');d.rectangle((23,8,27,11),fill='#494c3e');d.point((21,12),fill='#b94535')
 item.save(A/'textures/item/camcorder.png')
 camera={'textures':{'metal':'the_oldest_house:block/ghosts/metal','controls':'the_oldest_house:block/ghosts/controls'},'elements':[q([3,6,5],[13,12,12],'metal'),q([6,7,1],[10,11,5],'controls'),q([4,12,7],[10,14,8],'metal'),q([12,7,5],[15,12,6],'controls')],

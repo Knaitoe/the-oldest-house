@@ -27,12 +27,12 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class GhostsSet {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.GHOSTS_SET;
     public static final String STATE="ghosts_set_0485";
-    public static final int DAYS=7, STAND=0, SIT=1, CROUCH=2, CRAWL=3, WALL=4, BED=5, FLINCH=6, SLUMP=7, VOMIT=8, HAND=9;
+    public static final int DAYS=7, STAND=0, SIT=1, CROUCH=2, CRAWL=3, WALL=4, BED=5, FLINCH=6, SLUMP=7, VOMIT=8, HAND=9,LEAP=10;
     public static final String[] PEOPLE={"Marjorie","Merry","John","Sarah","Barry","Father Wanderly"};
     public static final int[] ROLES={LiteraryActor.GHOST_MARJORIE,LiteraryActor.GHOST_MERRY,LiteraryActor.GHOST_JOHN,LiteraryActor.GHOST_SARAH,LiteraryActor.GHOST_PRODUCER,LiteraryActor.GHOST_PRIEST};
     public static final String[] TITLES={"The interviews and reconstructions","The family dinner","The upstairs reconstruction","The private conversation","The evaluation","The exorcism","The final pickup"};
-    public static final int[] LENGTH={800,1200,1000,1200,1000,1400,1200};
-    private static final int[][] EXPOSURES={{160,360,560,740},{300,570,900,1100},{250,420,620,900},{170,470,780,1080},{170,480,650,900},{180,560,880,1220},{180,550,800,1100}};
+    public static final int[] LENGTH={800,1200,1000,1200,1000,780,1200};
+    private static final int[][] EXPOSURES={{160,360,560,740},{300,570,900,1100},{250,420,620,900},{170,470,780,1080},{170,480,650,900},{180,560,735,770},{180,550,800,1100}};
     private record Line(int tick,int speaker,String text) {}
     // Original adaptation dialogue. Recollections and recreated incidents are explicitly distinguished from documentary takes.
     private static final List<List<Line>> LINES=List.of(
@@ -63,8 +63,8 @@ public final class GhostsSet {
             new Line(840,4,"Hold on the father's reaction. We can use that.")),
         List.of(new Line(5,3,"If you want me to stop this, say so."),new Line(150,0,"I'm cold. Please. Someone help me."),
             new Line(330,5,"Keep your places. Do not answer it."),new Line(510,0,"The drawer! I didn't do that."),
-            new Line(660,0,"There's a mechanism in it. Who put this here?"),new Line(820,1,"You said you were pretending!"),
-            new Line(1050,3,"Marjorie!"),new Line(1240,4,"Keep the landing. Don't lose the landing.")),
+            new Line(660,0,"There's a mechanism in it. Who put this here?"),new Line(705,1,"You said you were pretending!"),
+            new Line(715,3,"Marjorie!")),
         List.of(new Line(5,4,"The show is over. We're collecting the equipment. This visit wasn't on the call sheet."),
             new Line(180,3,"We're having supper. You can put the case by the door."),new Line(350,0,"Merry has hers without sauce. She always does."),
             new Line(550,1,"You said you weren't going to eat it."),new Line(790,1,"Marjorie? Mum?"),
@@ -78,11 +78,13 @@ public final class GhostsSet {
     private static int day(CompoundTag own) { return Math.max(1,Math.min(DAYS,own.getInt("FilmDay"))); }
     public static void arrive(ServerPlayer p,CompoundTag own) {
         if(own.getBoolean("Completed")||own.getBoolean("Ready")&&!own.getBoolean("Filming0485"))return;
-        if(!own.getBoolean("Filming0485")) { own.putBoolean("Filming0485",true);own.putInt("FilmDay",1);own.putInt("ShotClock",0); }
+        boolean newDay=false;
+        if(!own.getBoolean("Filming0485")) { own.putBoolean("Filming0485",true);own.putInt("FilmDay",1);own.putInt("ShotClock",0);newDay=true; }
         else if(own.getBoolean("DayDone")&&own.getBoolean("FilmDoorExit")&&day(own)<DAYS) {
-            own.putInt("FilmDay",day(own)+1);own.putInt("ShotClock",0);own.putBoolean("DayDone",false);own.putBoolean("Rolling",false);own.putBoolean("CastPlaced",false);
+            own.putInt("FilmDay",day(own)+1);own.putInt("ShotClock",0);own.putBoolean("DayDone",false);own.putBoolean("Rolling",false);own.putBoolean("CastPlaced",false);newDay=true;
         }
         own.putBoolean("FilmDoorExit",false);own.remove("FrameNonce");
+        if(newDay){own.remove("JumpFrozen0488");own.remove("JumpEject0488");own.remove("GhostVoice");own.remove("GhostVoiceUntil");}
         LiteraryVignettes.reward(p,PLACE,own,"Camcorder",new ItemStack(LiteraryRegistry.CAMCORDER.get()));
         p.displayClientMessage(Component.literal("Filming day "+day(own)+": "+TITLES[day(own)-1]+". Speak with Barry when you're ready."),false);
     }
@@ -98,8 +100,14 @@ public final class GhostsSet {
     }
     /** A centred lens and an actual unobstructed native ray; adjacent table tops do not count as transparent. */
     public static boolean framed(ServerPlayer p,Vec3 target) {
-        var ray=target.subtract(p.getEyePosition());if(ray.lengthSqr()>32*32||ray.lengthSqr()<.01||p.getLookAngle().dot(ray.normalize())<Math.cos(Math.toRadians(32)))return false;
-        var hit=p.serverLevel().clip(new ClipContext(p.getEyePosition(),target,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p));
+        return framed(p,p.getEyePosition(),p.getLookAngle(),target);
+    }
+    private static boolean frozen(CompoundTag own){return day(own)==6&&own.getBoolean("JumpFrozen0488")&&!own.getBoolean("DayDone");}
+    private static Vec3 lensEye(ServerPlayer p,CompoundTag own){return frozen(own)?new Vec3(own.getDouble("GhostEyeX"),own.getDouble("GhostEyeY"),own.getDouble("GhostEyeZ")):p.getEyePosition();}
+    private static Vec3 lensLook(ServerPlayer p,CompoundTag own){return frozen(own)?Vec3.directionFromRotation(own.getFloat("GhostPitch"),own.getFloat("GhostYaw")):p.getLookAngle();}
+    private static boolean framed(ServerPlayer p,Vec3 eye,Vec3 look,Vec3 target){
+        var ray=target.subtract(eye);if(ray.lengthSqr()>32*32||ray.lengthSqr()<.01||look.dot(ray.normalize())<Math.cos(Math.toRadians(32)))return false;
+        var hit=p.serverLevel().clip(new ClipContext(eye,target,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p));
         return hit.getType()==HitResult.Type.MISS||hit.getLocation().distanceToSqr(target)<.0025;
     }
     private static LiteraryActor person(ServerPlayer p,BlockPos b,int i) {
@@ -140,8 +148,6 @@ public final class GhostsSet {
     private static void pickup(BlockPos b,LiteraryActor[] cast,CompoundTag own){
         for(int i=0;i<2;i++){String key="PickupStep"+i;int step=own.getInt(key);if(step>=PICKUP_ROUTE.length)continue;var at=PICKUP_ROUTE[step];pose(cast[i],STAND);cast[i].setOnGround(true);toward(cast[i],b,at[0]+i*.05,at[1],at[2],.35);if(cast[i].position().distanceToSqr(new Vec3(b.getX()+at[0]+i*.05,b.getY()+at[1],b.getZ()+at[2]))<.16)own.putInt(key,step+1);}
     }
-    private static final double[][] EXORCISM_ROUTE={{-8.5,5,-24.5},{-8.5,5,-21.5},{-17.5,5,-21.5}};
-    private static void landing(LiteraryActor a,BlockPos b,CompoundTag own){int step=own.getInt("ExorcismStep");if(step>=EXORCISM_ROUTE.length)return;var at=EXORCISM_ROUTE[step];toward(a,b,at[0],at[1],at[2],.42);if(a.position().distanceToSqr(new Vec3(b.getX()+at[0],b.getY()+at[1],b.getZ()+at[2]))<.16)own.putInt("ExorcismStep",step+1);}
     public static boolean cameraCrawl(ServerPlayer p,BlockPos b){double x=p.getX()-b.getX(),z=p.getZ()-b.getZ();return Math.abs(p.getY()-b.getY())<1&&(p.isShiftKeyDown()&&x>=-4&&x<=5&&z>=-31&&z<=-26||x>=-1.4&&x<=2.4&&z>=-29.5&&z<=-27&&!p.serverLevel().noCollision(p,new AABB(p.getX()-.3,p.getY(),p.getZ()-.3,p.getX()+.3,p.getY()+1.8,p.getZ()+.3)));}
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own) {
         if(!own.getBoolean("Filming0485"))return;
@@ -172,7 +178,7 @@ public final class GhostsSet {
         if(day(own)>1){var prev=own.getCompound("FilmLog"+(day(own)-1));if(prev.getInt("Frames_Merry")>=20&&i==1)p.displayClientMessage(Component.literal("Merry: They kept my face in the episode. People at school saw it."),false);if(prev.getInt("Frames_Sarah")>=20&&i==3)p.displayClientMessage(Component.literal("Sarah: They used my crying. The part where I asked them to stop is gone."),false);}
     }
     private static void capture(ServerPlayer p,CompoundTag own,String subject,Vec3 at) {
-        if(!recording(p)||!framed(p,at))return;
+        if(!recording(p)||!framed(p,lensEye(p,own),lensLook(p,own),at))return;
         var log=own.getCompound("FilmLog"+day(own));String k="Frames_"+subject;log.putInt(k,Math.min(72000,log.getInt(k)+5));own.put("FilmLog"+day(own),log);
     }
     private static LiteraryActor prop(ServerPlayer p,BlockPos b,String key,int role,BlockPos relative){
@@ -189,10 +195,10 @@ public final class GhostsSet {
         if(d==4&&own.getBoolean("BedroomPickup")&&(own.getInt("PickupStep0")<PICKUP_ROUTE.length||own.getInt("PickupStep1")<PICKUP_ROUTE.length)){pickup(b,cast,own);return;}
         if(own.getBoolean("DayDone")) { display(p,own,b); return; }
         var here=d==4&&own.getBoolean("BedroomPickup")?Vec3.atBottomCenterOf(b.offset(GhostsSetRooms.MERRY_ROOM)):focus(b,d);
-        if(!own.getBoolean("Rolling")||p.distanceToSqr(here)>24*24)return;
+        if(!own.getBoolean("Rolling")||p.distanceToSqr(here)>24*24){display(p,own,b);return;}
         // The evaluation takes place upstairs too; the utility conversation moves to the bedroom later in its day.
         int previous=own.getInt("ShotClock"),t=previous+5;own.putInt("ShotClock",t);
-        for(var line:LINES.get(d-1))if(line.tick()>previous&&line.tick()<=t&&p.distanceToSqr(cast[line.speaker()])<24*24){p.displayClientMessage(Component.literal(PEOPLE[line.speaker()]+": "+line.text()),false);if(d==2&&line.speaker()==0)cue(p,line.tick()<1100?LiteraryRegistry.GHOST_LOW:LiteraryRegistry.GHOST_THIN,cast[0].getEyePosition());}
+        for(var line:LINES.get(d-1))if(line.tick()>previous&&line.tick()<=t&&p.distanceToSqr(cast[line.speaker()])<24*24){String words=PEOPLE[line.speaker()]+": "+line.text();if(line.speaker()==0&&d==2){own.putString("GhostVoice",words);own.putInt("GhostVoiceId",d*10000+line.tick());own.putLong("GhostVoiceUntil",p.level().getGameTime()+140);}else p.displayClientMessage(Component.literal(words),false);if(d==2&&line.speaker()==0)cue(p,line.tick()<1100?LiteraryRegistry.GHOST_LOW:LiteraryRegistry.GHOST_THIN,cast[0].getEyePosition());}
         if(d==2) {
             if(previous<520&&t>=520)cue(p,LiteraryRegistry.GHOST_SCRAPE,cast[0].position());
             if(t>=250&&t<520){pose(cast[0],VOMIT);if(t%20==0)p.serverLevel().sendParticles(p,net.minecraft.core.particles.ParticleTypes.SPORE_BLOSSOM_AIR,false,b.getX()-.5,b.getY()+1.03,b.getZ()-28.5,2,.06,.02,.06,0);}
@@ -218,13 +224,16 @@ public final class GhostsSet {
         if(d==6){
             if(t<720)pose(cast[0],BED);
             if(t>=510){pose(drawer,t>=660?2:1);if(t<820)capture(p,own,"DrawerMechanism",drawer.position().add(0,.55,-.4));}
-            if(t>=720&&t<1000){if(previous<720)cast[0].move(MoverType.SELF,new Vec3(0,.8,0));pose(cast[0],STAND);landing(cast[0],b,own);}
-            if(t>=1000){pose(cast[0],FLINCH);toward(cast[0],b,-17.5,0,-14.5,.4);capture(p,own,"Landing",cast[0].position());}
+            if(t>=720&&t<780){
+                if(!own.getBoolean("JumpFrozen0488")){var eye=p.getEyePosition();pose(cast[0],LEAP);own.putBoolean("JumpFrozen0488",true);own.putDouble("GhostEyeX",eye.x);own.putDouble("GhostEyeY",eye.y);own.putDouble("GhostEyeZ",eye.z);cast[0].moveTo(cast[0].getX(),cast[0].getY()+.8,cast[0].getZ());var aim=cast[0].getEyePosition().subtract(eye);own.putFloat("GhostYaw",(float)(Math.toDegrees(Math.atan2(aim.z,aim.x))-90));own.putFloat("GhostPitch",(float)-Math.toDegrees(Math.atan2(aim.y,Math.sqrt(aim.x*aim.x+aim.z*aim.z))));own.putFloat("JumpBodyYaw",cast[0].getYRot());}
+                pose(cast[0],LEAP);cast[0].setDeltaMovement(Vec3.ZERO);cast[0].setNoGravity(true);float body=own.getFloat("JumpBodyYaw");var toCamera=new Vec3(own.getDouble("GhostEyeX"),own.getDouble("GhostEyeY"),own.getDouble("GhostEyeZ")).subtract(cast[0].getEyePosition());float head=(float)(Math.toDegrees(Math.atan2(toCamera.z,toCamera.x))-90);float turn=net.minecraft.util.Mth.wrapDegrees(head-body);cast[0].setYRot(body);cast[0].setYBodyRot(body);cast[0].setYHeadRot(body+turn*Math.min(1,(t-720)/45F));own.putInt("GhostFreezeTarget",cast[0].getId());capture(p,own,"FrozenLeap",cast[0].getEyePosition());
+            }
+            if(t>=780)own.putBoolean("JumpEject0488",true);
         }
         if(d==7){if(t>=700)for(int i:new int[]{0,2,3})pose(cast[i],SLUMP);capture(p,own,"FinalMeal",cast[0].getEyePosition());capture(p,own,"MerryPlate",Vec3.atLowerCornerOf(b).add(1.5,1.06,-28.5));}
         for(int i=0;i<4;i++)capture(p,own,PEOPLE[i],cast[i].getEyePosition());
         if(recording(p)){
-            int lead=-1;double alignment=-1;for(int i=0;i<4;i++)if(framed(p,cast[i].getEyePosition())){double a=p.getLookAngle().dot(cast[i].getEyePosition().subtract(p.getEyePosition()).normalize());if(a>alignment){alignment=a;lead=i;}}
+            var eye=lensEye(p,own);var look=lensLook(p,own);int lead=-1;double alignment=-1;for(int i=0;i<4;i++)if(framed(p,eye,look,cast[i].getEyePosition())){double a=look.dot(cast[i].getEyePosition().subtract(eye).normalize());if(a>alignment){alignment=a;lead=i;}}
             if(lead>=0){var log=own.getCompound("FilmLog"+d);var key="LeadTicks_"+PEOPLE[lead];log.putInt(key,Math.min(72000,log.getInt(key)+5));own.put("FilmLog"+d,log);}
             for(int exposure:EXPOSURES[d-1])if(previous<exposure&&t>=exposure)requestFrame(p,own);
         }
@@ -271,8 +280,10 @@ public final class GhostsSet {
         if(finished(own))LiteraryVignettes.ready(p,PLACE,own,"completed_the_filming_days_and_read_own_cut");
         var model=new CompoundTag();var frames=own.getList("FramesDay"+day(own),Tag.TAG_COMPOUND);
         if(!frames.isEmpty()){int n=(p.server.getTickCount()/60)%frames.size();model.putIntArray("Screen",frames.getCompound(n).getIntArray("Pixels"));}
-        model.putBoolean("ScreenDark",frames.isEmpty());HousePackets.send(p,new LiteraryViewPayload(-1,0,0,model));
+        model.putUUID("Reader",p.getUUID());model.putInt("GhostDay",day(own));model.putLong("GhostBase",b.asLong());boolean frozen=day(own)==6&&own.getBoolean("JumpFrozen0488")&&!own.getBoolean("DayDone");model.putBoolean("GhostFreeze",frozen);model.putInt("GhostFreezeTarget",frozen?own.getInt("GhostFreezeTarget"):-1);for(String key:List.of("GhostEyeX","GhostEyeY","GhostEyeZ","GhostYaw","GhostPitch"))if(own.contains(key))model.put(key,own.get(key).copy());int voice=(int)Math.max(0,Math.min(140,own.getLong("GhostVoiceUntil")-p.level().getGameTime()));model.putInt("GhostVoiceRemaining",voice);if(voice>0){model.putString("GhostVoice",own.getString("GhostVoice"));model.putInt("GhostVoiceId",own.getInt("GhostVoiceId"));}
+        model.putBoolean("ScreenDark",frames.isEmpty());HousePackets.send(p,new LiteraryViewPayload(-1,20,0,model));
     }
+    @SubscribeEvent public static void finishJump(ServerTickEvent.Post event){for(var p:event.getServer().getPlayerList().getPlayers()){if(!LiteraryVignettes.inside(p,PLACE)||LabyrinthDoors.isBusy(p))continue;var data=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(data,p.getUUID(),PLACE);if(!own.getBoolean("JumpEject0488")||!own.getBoolean("DayDone"))continue;if(LabyrinthDoors.finishTakeAndReturn(p,PLACE)){own=LiteraryVignettes.personal(data,p.getUUID(),PLACE);own.remove("JumpEject0488");LiteraryVignettes.save(data,p.getUUID(),PLACE,own);}}}
     private static boolean finished(CompoundTag own){return day(own)==DAYS&&own.getBoolean("DayDone")&&own.getInt("FilmedDays")==((1<<DAYS)-1)&&own.contains("Confession");}
     private static void requestFrame(ServerPlayer p,CompoundTag own) {
         var frames=own.getList("FramesDay"+day(own),Tag.TAG_COMPOUND);if(frames.size()>=4||own.hasUUID("FrameNonce")&&p.server.getTickCount()-own.getInt("FrameTick")<60)return;
