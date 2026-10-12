@@ -43,7 +43,7 @@ public final class LiteraryTexts {
             "Two drinks. One broken headlamp. Someone went out to move the trucks and left the till open.",
             "The light found an eye above the hood. Everybody had a reason to shout. Nobody had a reason to listen.\n\nThe field begins beyond the parked pickups.");
         case ELK_FAN->book("An unfinished repair","The tenant",
-            "The light flickers at the same point in each turn. I brought the old folding ladder in from the shed. The catches still hold. There is a screwdriver in the tray.\n\nI keep my hands below the blades.",
+            "The light flickers at the same point in each turn. I brought the old folding ladder in from the shed. The catches still hold. There is a screwdriver and a replacement bulb in the tray.\n\nI keep my hands below the blades.",
             "From the top step the carpet seems farther away. Something lies between the turns. I cannot make it out from the chair.\n\nThe room was taped off when I came back. Whoever did it had already gone.");
         case MAPPING_INTERIOR->book("A floor plan","The older brother",
             "The trailer ends at the back bedroom. I know because I have walked around it. Under the hatch, the dirt keeps going.\n\nMy brother sleeps through breakfast now.",
@@ -104,7 +104,7 @@ public final class LiteraryTexts {
         case BLY_ROUTE->"I shut the cupboard from inside. Drips passed the crack under its door. I waited for the last footstep to enter the lake room, then came out onto the same wet boards.";
         case THREE_FINGERS->ThreeFingers.account(own);
         case ELK_LOT->"FIELD DEATH\n\nThe name in the clipping was "+name+". I remembered the lights in the parking lot and the eyes beyond it. The report gave the field an ending that I had not stayed to see."+ElkLotNight.tab(own);
-        case ELK_FAN->"From above the ladder, the blades kept removing parts of what lay below. On my next return, tape held the shape. On the third, there was only a tooth and the marks where the tape had been.";
+        case ELK_FAN->"From above the ladder I could see what lay below the moving blades. Five seconds was longer than I thought. The blade caught me; when I could see again I was outside the room. A tooth lay in my hand. When I returned, tape held the shape of the deer.";
         case MAPPING_INTERIOR->own.getBoolean("PileBroken")?"I broke the pile under the trailer. The boy woke when I came back. The crawlspace still ran beyond the walls, but the things at its end could no longer hold him there.":"I took what lay under the trailer. The photograph came with me. When I returned, the boy was harder to wake. Keeping a father's things was not the same as keeping a brother.";
         case HOLY_RABBIT->"The same rabbit was alive in the same place each morning. Father walked more slowly, then could not stand. Below the torn cloth his left leg was ruined. I had eaten what he brought me. At the end of his drag trail I found the knife and a foot. He had left enough for me to leave.";
         case CONFESSION->"The last chapter addressed the person holding the pen.\n\n"+own.getString("Statistics")+"\n\nThe signature was mine. The chair opposite me had not changed.";

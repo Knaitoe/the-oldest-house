@@ -22,7 +22,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 /** The shipped cow-elk atlases and complete native A-frame, rather than a concept render. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class ElkFanVisualProof extends Screen {
-    private static final String[] VIEWS={"front","back","night","ladder-front","ladder-side"};
+    private static final String[] VIEWS={"front","back","night","ladder-front","ladder-side","deer-outline"};
     private int page,frames;
     public ElkFanVisualProof(){super(Component.literal("Cow elk and fan-room ladder"));}
     @Override public void renderBackground(GuiGraphics g,int x,int y,float delta){}
@@ -38,7 +38,11 @@ public final class ElkFanVisualProof extends Screen {
     @Override public void render(GuiGraphics g,int mouseX,int mouseY,float delta){
         var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xff292723);g.drawString(font,"Cow elk / "+VIEWS[page],10,10,0xffeee1c4,false);g.flush();
         var pose=g.pose();var buffers=mc.renderBuffers().bufferSource();int light=page==2?LightTexture.pack(9,0):LightTexture.FULL_BRIGHT;
-        if(page<3){for(int n=0;n<2;n++){
+        if(page==5){
+            pose.pushPose();pose.translate(width*.5,height*.56,180);pose.scale(58,-58,58);pose.mulPose(Axis.XP.rotationDegrees(70));pose.translate(0,LiteraryRooms.FAN.getY(),0);
+            ElkFanOutline.draw(1,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);buffers.endBatch();pose.popPose();
+            var bulb=new net.minecraft.world.item.ItemStack(LiteraryRegistry.LIGHTBULB.get());var model=mc.getItemRenderer().getModel(bulb,null,null,0);if(model==mc.getModelManager().getMissingModel()||!model.isGui3d())throw new IllegalStateException("Missing actual replacement bulb mesh");g.renderItem(bulb,width/2-8,height-28);
+        }else if(page<3){for(int n=0;n<2;n++){
             var model=new LiteraryRenderers.ElkModel(mc.getEntityModels().bakeLayer(LiteraryRenderers.ELK));model.setupAnim(null,0,0,0,0,0);
             var scale=Math.min(height*.38F,width*.22F);pose.pushPose();pose.translate(width*(n==0?.26:.74),height*.79,190);pose.scale(scale,scale,scale);pose.mulPose(Axis.YP.rotationDegrees(page==1?-135:45));pose.translate(0,-1.5,0);
             var texture=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/literary_"+(n==0?"elk":"elk_wounded")+".png");model.renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(texture)),light,OverlayTexture.NO_OVERLAY,0xffffffff);pose.popPose();buffers.endBatch();
@@ -47,7 +51,7 @@ public final class ElkFanVisualProof extends Screen {
             float scale=(height-48)/9F;pose.pushPose();pose.translate(width*.50,height-20,190);pose.scale(scale,-scale,scale);pose.mulPose(Axis.XP.rotationDegrees(14));pose.mulPose(Axis.YP.rotationDegrees(page==3?30:88));pose.translate(-.5,0,-.5);
             for(var entry:ElkFanRoom.frame(BlockPos.ZERO).entrySet()){pose.pushPose();pose.translate(entry.getKey().getX(),entry.getKey().getY(),entry.getKey().getZ()+17);mc.getBlockRenderer().renderSingleBlock(entry.getValue(),pose,buffers,light,OverlayTexture.NO_OVERLAY);pose.popPose();}
             for(int z=-2;z<=2;z++){pose.pushPose();pose.translate(0,-1,z);mc.getBlockRenderer().renderSingleBlock(Blocks.BIRCH_PLANKS.defaultBlockState(),pose,buffers,light,OverlayTexture.NO_OVERLAY);pose.popPose();}
-            pose.pushPose();pose.translate(.5,7.72,.5);LiteraryRenderers.ModelRenderer.renderFan(mc.getEntityModels().bakeLayer(LiteraryRenderers.FAN),pose,buffers,light,OverlayTexture.NO_OVERLAY,frames*.6F);pose.popPose();
+            pose.pushPose();pose.translate(.5,7.72,.5);LiteraryRenderers.ModelRenderer.renderFan(mc.getEntityModels().bakeLayer(LiteraryRenderers.FAN),pose,buffers,light,OverlayTexture.NO_OVERLAY,frames*.055F);pose.popPose();
             pose.popPose();buffers.endBatch();g.drawCenteredString(font,"Four feet, nine treads, spreaders and the open working platform",width/2,27,0xffeee1c4);
         }
     }

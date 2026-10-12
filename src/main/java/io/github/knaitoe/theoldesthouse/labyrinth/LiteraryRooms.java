@@ -143,7 +143,8 @@ public final class LiteraryRooms {
     }
     private static void fan(ServerLevel l,BlockPos b){
         room(l,b,-11,11,-28,0,0,9,LiteraryRegistry.SIDING.get(),Blocks.BIRCH_PLANKS);prop(l,b,FAN,LiteraryPropBlock.Kind.FAN,Direction.SOUTH);ElkFanRoom.build(l,b);
-        box(l,b,-4,-1,-21,4,-1,-12,Blocks.GRAY_WOOL);box(l,b,6,0,-23,9,2,-23,Blocks.STONE_BRICKS);at(l,b,7,0,-22,Blocks.CAMPFIRE);furniture(l,b,-7,0,-21,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);furniture(l,b,-7,0,-13,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.EAST);box(l,b,6,2,-28,9,4,-28,Blocks.BLACK_STAINED_GLASS);
+        furniture(l,b,-5,0,-15,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.SOUTH);BuildBlocks.set(l,b.offset(SceneHuntReview.TOOLS),io.github.knaitoe.theoldesthouse.house.VignetteDetailBlock.state(io.github.knaitoe.theoldesthouse.house.VignetteDetailBlock.Kind.TOOL_TRAY,Direction.SOUTH),F);
+        box(l,b,-4,-1,-21,4,-1,-12,Blocks.GRAY_WOOL);box(l,b,6,0,-23,9,2,-23,Blocks.STONE_BRICKS);at(l,b,7,0,-22,Blocks.CAMPFIRE);furniture(l,b,-7,0,-21,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);furniture(l,b,-7,0,-13,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.EAST);box(l,b,6,2,-28,9,4,-28,Blocks.BLACK_STAINED_GLASS);BuildBlocks.after(l,()->ElkFanSequence.markDressed(l,b));
     }
     private static void mapping(ServerLevel l,BlockPos b){
         terrain(l,b,LabyrinthPlace.MAPPING_INTERIOR,Blocks.GRASS_BLOCK);room(l,b,-13,13,-36,-8,0,5,LiteraryRegistry.SIDING.get(),Blocks.BIRCH_PLANKS);door(l,b,0,0,-8,Direction.SOUTH,true);box(l,b,0,-1,-8,0,-1,0,Blocks.GRAVEL);

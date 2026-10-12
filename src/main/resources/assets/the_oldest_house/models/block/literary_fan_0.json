@@ -5,7 +5,7 @@
     "brass": "the_oldest_house:block/literary_brass",
     "wax": "the_oldest_house:block/literary_wax",
     "paper": "the_oldest_house:block/literary_paper",
-    "glass": "the_oldest_house:block/literary_glass",
+    "glass": "the_oldest_house:block/ghosts/equipment_atlas",
     "hide": "the_oldest_house:block/literary_hide",
     "photo": "the_oldest_house:block/literary_photo",
     "face": "the_oldest_house:block/literary_clock_face",
@@ -163,56 +163,86 @@
         "north": {
           "texture": "#glass",
           "uv": [
-            0,
-            0,
+            12,
+            8,
             16,
             16
-          ]
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15,
+            "ambient_occlusion": false
+          }
         },
         "south": {
           "texture": "#glass",
           "uv": [
-            0,
-            0,
+            12,
+            8,
             16,
             16
-          ]
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15,
+            "ambient_occlusion": false
+          }
         },
         "east": {
           "texture": "#glass",
           "uv": [
-            0,
-            0,
+            12,
+            8,
             16,
             16
-          ]
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15,
+            "ambient_occlusion": false
+          }
         },
         "west": {
           "texture": "#glass",
           "uv": [
-            0,
-            0,
+            12,
+            8,
             16,
             16
-          ]
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15,
+            "ambient_occlusion": false
+          }
         },
         "up": {
           "texture": "#glass",
           "uv": [
-            0,
-            0,
+            12,
+            8,
             16,
             16
-          ]
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15,
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "texture": "#glass",
           "uv": [
-            0,
-            0,
+            12,
+            8,
             16,
             16
-          ]
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15,
+            "ambient_occlusion": false
+          }
         }
       }
     }
