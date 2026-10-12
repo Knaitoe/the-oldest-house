@@ -19,10 +19,10 @@ The additional `This%20kid%20begins%20in%20the%20doorway.docx` was read in full,
 | Footage summaries depend on what was recorded each day | Integrated: seven subject-specific raw/edited tables assembled only from qualifying actual framing records; absent shots are omitted |
 | Final dinner has messy Marjorie teasing and more grotesque family death | Integrated: eating, staggered choking, still deaths, native head-attached sauce/blood and animated saliva/blood strands/drops; GPU inspection pending |
 | Plains: unique note storage and daytime arrival | Still pending from the first notes |
-| Fan: visible blade spin, flickering light and repair | Pending |
-| Fan toolbox: actual lightbulb, not planks | Pending |
-| Five seconds on the fan: knock off, return outside and complete sequence | Pending |
-| Floor tape must trace the deer silhouette | Pending |
+| Fan: visible blade spin, flickering light and repair | Integrated: slower continuous blades, steady floor image, actual flickering native light and bulb repair |
+| Fan toolbox: actual lightbulb, not planks | Integrated: one finite owned replacement, consumed by real repair; borrowed bulbs fail |
+| Five seconds on the fan: knock off, return outside and complete sequence | Integrated: continuous five-second wait, native saved-door return and one personally earned source/tooth |
+| Floor tape must trace the deer silhouette | Integrated: private native muzzle/antler/flank/leg outline and floor inspection; old border removal waits for a vacant room |
 | Club: brighter red, blue, green and rare strobe | Integrated: six lower hanging fixtures, brighter steady strips, native full-bright panel faces and three brief flashes every 130 seconds |
 | Harrigan wake from the first notes | Integrated: same original corpse moves behind the closed funeral door before it opens; three original guests can be addressed |
 | Goatman plates after departure from the first notes | Integrated: last actual enrolled departure clears native serving displays and stale flags; peers and carried food retain their originals |
@@ -39,7 +39,7 @@ The wake preserves Harrigan's body UUID through life, death in the study and the
 
 Club fixtures now use separate red, blue and green states. The lower pendants have visible chain support and light the dance floor at native level 15. Neon panel faces use NeoForge's actual `neoforge_data` light fields. Two strobe housings produce only three 100 ms flashes, separated by 400 ms, once every 130 seconds; the steady coloured light remains on. Silence stops the flashes. Existing club fixtures migrate once while vacant; player edits, finite glasses, music setting and original actors are retained.
 
-Mod 0.4.88 / protocol 65 / layout 43. The native suite now declares 577 cases; all 721 PNGs decode and all 144 club states resolve. All six focused new/updated native cases pass locally in 36 seconds: wake, reader-specific 217, mirror idle timeout, Goatman last departure, finite club glass/seats and reversible shared dance/despair. The follow-up adds eight painted Ghost Set cast atlases, a three-second held jump and head turn, private rolling dinner captions and the native saved-door cut. All fifteen Ghost Set cases pass locally in 33 seconds. [Cast and take provenance](GHOSTS_CAST_AND_TAKE_0_4_88.md). Full exact-source CI and native GPU inspection remain pending. Sources remain 44, required resolutions 33 across two kinds, with three endings. Continue source batches after quick checks without waiting for full CI.
+Mod 0.4.88 / protocol 66 / layout 43. The native suite now declares 579 cases; all 721 PNGs decode and all 144 club states resolve. All six focused new/updated native cases pass locally in 36 seconds: wake, reader-specific 217, mirror idle timeout, Goatman last departure, finite club glass/seats and reversible shared dance/despair. The follow-up adds eight painted Ghost Set cast atlases, a three-second held jump and head turn, private rolling dinner captions and the native saved-door cut. All fifteen Ghost Set cases pass locally in 33 seconds. [Cast and take provenance](GHOSTS_CAST_AND_TAKE_0_4_88.md). Full exact-source CI and native GPU inspection remain pending. Sources remain 44, required resolutions 33 across two kinds, with three endings. Continue source batches after quick checks without waiting for full CI.
 
 The preceding source 552772 passed nine of twelve workflow jobs. Two old server assertions still expected the pre-nightclub recurring pool and slot total; the client architecture assertion still expected 90 rather than the actual 91 views. Their exact expectations are corrected here. The actual multiplayer run stopped at its server watchdog in phase six and remains unverified; it is not counted as passing.
 

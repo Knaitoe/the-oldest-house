@@ -694,7 +694,7 @@ jobs:
           test -s build/font-smoke/elk-fan0480-passed.txt
           test -s build/font-smoke/playtest0483-passed.txt
           for view in fan-floor camp-bunk camp-decor cottage-chess paw-open paw-curl paw-closed; do test -s build/font-smoke/native-playtest0483-$view.png; done
-          for view in front back night ladder-front ladder-side; do test -s build/font-smoke/native-elk-fan0480-$view.png; done
+          for view in front back night ladder-front ladder-side deer-outline; do test -s build/font-smoke/native-elk-fan0480-$view.png; done
           test -s build/font-smoke/goatman-passed.txt
           test -s build/font-smoke/playtest-assets-passed.txt
           test -s build/font-smoke/native-playtest-0464.png
@@ -827,7 +827,7 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_literary,the_oldest_house_ghosts --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/literary-native.log
+          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_literary,the_oldest_house_ghosts,the_oldest_house_fan488 --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/literary-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
