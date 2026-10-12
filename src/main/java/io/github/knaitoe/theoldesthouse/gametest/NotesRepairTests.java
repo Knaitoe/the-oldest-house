@@ -93,18 +93,23 @@ public final class NotesRepairTests {
         }
     }
     /** 0.4.84: a raised shield stops the charge, but the reader still takes two hearts and is thrown back; the third block breaks it. */
-    @GameTest(template="empty",batch="minotaur_charge0484",timeoutTicks=1600) public static void aBlockedChargeStillCostsTwoHeartsAndTheThirdBlockBreaksTheShield(GameTestHelper h){
+    @GameTest(template="empty",templateNamespace=TheOldestHouse.MOD_ID+"_charge",batch="minotaur_charge0484",timeoutTicks=1600) public static void aBlockedChargeStillCostsTwoHeartsAndTheThirdBlockBreaksTheShield(GameTestHelper h){
         // The eighty-tick wind-up owns global HouseSavedData and cannot share the default concurrent fixture batch.
-        var f=chargeFixture=new Fixture(h,104400);var level=h.getLevel();var at=h.absolutePos(BlockPos.ZERO).offset(70,8,-70);
+        var f=chargeFixture=new Fixture(h,104400);var level=HouseTestLevel.get(f.server,HouseDimensions.INTERIOR);var at=FinaleArchitecture.base(f.origin).offset(0,FinaleArchitecture.ARENA,34);
         for(int x=-3;x<=14;x++)for(int z=-4;z<=4;z++){level.setBlock(at.offset(x,-1,z),Blocks.STONE.defaultBlockState(),2);for(int y=0;y<=5;y++)level.setBlock(at.offset(x,y,z),Blocks.AIR.defaultBlockState(),2);}
-        var p=f.player(h,level,Vec3.atBottomCenterOf(at));var shield=new ItemStack(Items.SHIELD);p.setItemInHand(InteractionHand.OFF_HAND,shield);
-        var weapon=new ItemStack(Items.IRON_SWORD);p.setItemInHand(InteractionHand.MAIN_HAND,weapon);WeaponHistory.record(p,weapon,1);var own=new CompoundTag();own.putString("Phase",FinaleProgress.Phase.FIGHT.name());own.putUUID("Weapon",WeaponHistory.identity(weapon));FinaleProgress.save(f.server,p.getUUID(),own);
+        var p=f.player(h,level,Vec3.atBottomCenterOf(at));p.hasChangedDimension();var shield=new ItemStack(Items.SHIELD);p.setItemInHand(InteractionHand.OFF_HAND,shield);
+        var weapon=new ItemStack(Items.IRON_SWORD);p.setItemInHand(InteractionHand.MAIN_HAND,weapon);WeaponHistory.record(p,weapon,1);var own=new CompoundTag();own.putString("Phase",FinaleProgress.Phase.STAIRCASE.name());own.putUUID("Weapon",WeaponHistory.identity(weapon));FinaleProgress.save(f.server,p.getUUID(),own);
+        // Reserve the scene without starting an unshielded fight during spawn grace. The real commitment guard
+        // otherwise moves an Overworld fixture into the House, leaving its creature in a different dimension.
+        var world=FinaleProgress.world(f.server);world.putUUID("Owner",p.getUUID());f.data.setState(FinaleProgress.STATE,world);
         MinotaurEntity[] it={null};int[] blocks={0};
         Runnable round=()->{
             int n=blocks[0];
             // It comes into the fight only now, so it never charges while the reader stands with no shield up.
-            if(it[0]==null){var c=FinaleRegistry.MINOTAUR.get().create(level);f.entities.add(c);c.caged();c.moveTo(Vec3.atBottomCenterOf(at.offset(10,0,0)));level.addFreshEntity(c);c.awaken(p.getUUID());it[0]=c;}
+            if(it[0]==null){var c=FinaleRegistry.MINOTAUR.get().create(level);f.entities.add(c);c.caged();c.moveTo(Vec3.atBottomCenterOf(at.offset(10,0,0)));level.addFreshEntity(c);c.awaken(p.getUUID());it[0]=c;
+                var record=FinaleProgress.player(f.server,p.getUUID());record.putString("Phase",FinaleProgress.Phase.FIGHT.name());record.putUUID("Creature",c.getUUID());FinaleProgress.save(f.server,p.getUUID(),record);}
             var creature=it[0];p.setHealth(20);p.moveTo(Vec3.atBottomCenterOf(at));p.setDeltaMovement(Vec3.ZERO);p.setYRot(-90);p.setYHeadRot(-90);
+            h.assertTrue(p.serverLevel()==level&&FinaleProgress.phase(f.server,p.getUUID())==FinaleProgress.Phase.FIGHT,"each charge shares the real committed reader's arena and dimension");
             p.startUsingItem(InteractionHand.OFF_HAND);for(int i=0;i<8;i++)p.doTick();
             h.assertTrue(p.isBlocking(),"the reader has the shield raised before charge "+(n+1));
             if(creature.motion()!=MinotaurEntity.STUNNED)creature.moveTo(Vec3.atBottomCenterOf(at.offset(10,0,0)));float before=p.getHealth();boolean stunned=false,recovered=creature.motion()!=MinotaurEntity.STUNNED;

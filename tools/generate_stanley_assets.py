@@ -120,6 +120,10 @@ for pressure in range(4):
 
 roles = [('porter', (82, 27, 35), (185, 143, 110)), ('bartender', (39, 41, 39), (205, 163, 126)), ('scarred_guest', (85, 81, 60), (179, 147, 119)), ('pianist', (35, 32, 34), (176, 137, 108)), ('dancer', (45, 39, 37), (189, 145, 110)), ('dancer_dress', (93, 67, 87), (206, 164, 131))]
 for index, (name, color, skin) in enumerate(roles):
+    # Painted production skins are reviewed raster assets. Regenerating room materials must not replace them.
+    skin_path = A / 'textures/entity' / ('stanley_' + name + '.png')
+    if skin_path.exists():
+        continue
     im = Image.new('RGBA', (128, 64), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
     d.rectangle((0, 16, 63, 63), fill=color + (255,))
@@ -158,7 +162,7 @@ for index, (name, color, skin) in enumerate(roles):
     d.rectangle((116, 24, 127, 40), fill=(66, 81, 54, 255))
     d.rectangle((119, 29, 125, 31), fill=(211, 196, 155, 255))
     d.rectangle((100, 44, 121, 53), fill=(218, 208, 178, 255))
-    im.resize((512, 256), Image.Resampling.NEAREST).save(A / 'textures/entity' / ('stanley_' + name + '.png'), optimize=True)
+    im.resize((512, 256), Image.Resampling.NEAREST).save(skin_path, optimize=True)
 
 replacements = {'wood': 'walnut', 'brass': 'brass', 'steel': 'steel', 'rubber': 'rubber', 'paper': 'paper', 'keys': 'keys', 'food': 'food', 'patch': 'patch', 'party': 'party', 'carpet': 'carpet', 'wallpaper': 'wallpaper', 'wainscot': 'wainscot', 'ceiling': 'ceiling', **{f'gauge_{i}': f'gauge_{i}' for i in range(4)}}
 for folder in ('block', 'item'):
@@ -169,4 +173,4 @@ for folder in ('block', 'item'):
             if value.startswith(prefix) and value[len(prefix):] in replacements:
                 data['textures'][key] = 'the_oldest_house:block/stanley/' + replacements[value[len(prefix):]]
         p.write_text(json.dumps(data, indent=2) + '\n')
-print('Fitted six 512x256 jointed-cast atlases and seventeen original hotel materials to existing native meshes.')
+print('Updated seventeen hotel materials; existing painted cast atlases remain intact.')
