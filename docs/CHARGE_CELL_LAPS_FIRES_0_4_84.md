@@ -26,6 +26,7 @@ This builds on the owner's latest public source (`8ade65a`, Build #845). The own
   - A creature unloaded at the time of the death is released as soon as it loads.
 - **The one door.** The cell has one door, an iron door set into its back wall, there only while someone is kept. Using it takes the reader out of the House by the front door (or to the world spawn if that is built over), and **not let back in**: they are `LOCKED_OUT`, as a defeat always was.
 - **The door resets.** Once nobody is left inside, the door goes back to wall, so the cell is exactly as every other reader finds it. The next reader to come down finds a new prisoner in it.
+- **Only readers in the game hold the cell.** A kept reader who leaves the game takes the door with them and stops holding the cell, so a reader who never returns cannot shut the finale for everyone else. Coming back, they are still kept, and the door is there again within two seconds.
 - **On the stairs.** The released Minotaur stays on the staircase. It climbs a stretch of stairs at a lumbering pace, rests, growls far off, and moves on. It harms nobody and moves without being seen only if it is wedged. At most three roam at once; an older one goes, unseen, when a fourth is released.
 - **Unchanged.**
   - A new fight waits until any loose Minotaur has left the arena.
@@ -67,5 +68,15 @@ Each hearth still burns only the next leaf of the reader's own House of Leaves, 
   - The defeat shortcut expects `IMPRISONED`.
   - The window-run case now checks private laps for two readers wherever they look: never after a knock or during the assault, starting at a corner and striking all five windows and the back wall.
   - The one-armed hearth case adds a leaf burned with the lighter held and the book packed, and a two-handed reader holding the book in the main hand.
+
+## Run 38185666073 (6683430)
+
+- **Passed.** Eight of twelve jobs passed, among them goatman, trailer-client, caver and staircase.
+- **The cell-door case.** It failed at the door, but the fault was in the test. It respawned its reader through the server directly, which leaves the connection pointing at the dead player. A real client's respawn re-points it. The case now does the same, so its teleport moves the reader who woke in the cell.
+- **The owner's three 0.4.83 failures, fixed at the owner's request.**
+  - The mill-envelope case never set the wish's `Beat`, so the return was not a new visit and the man from the mill never came. A real wish sets it.
+  - The boat-attack case allowed 85 ticks for two swings 90 ticks apart. The first swing lands inside the reader's native spawn grace, so the case now waits two full intervals.
+  - The older three-hearts Stacey case still expected the removed low-health shortcut. It now expects her to strike through the gaze and then withdraw on an ordinary interval.
+- **Live multiplayer.** The watchdog stopped the dedicated server in phase 6. Phases 1 to 6 had kept advancing, so this was a sustained slow server rather than one hung tick.
 
 Exact-source validation is pending.

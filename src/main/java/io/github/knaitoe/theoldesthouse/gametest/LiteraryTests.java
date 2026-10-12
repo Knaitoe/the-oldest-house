@@ -554,7 +554,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
     public static void theMillEnvelopeOpensARealLetterAndNeverPaysTheCompensationTwice(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.THREE_FINGERS;var p=f.player("mill_letter_reader",place);var peer=f.player("mill_letter_peer",place);
         h.assertTrue(CottageBlock.is(f.in.getBlockState(f.base(place).offset(-6,1,-11)),CottageBlock.Kind.CHESSBOARD),"the physical chessmen stand on the table between the two seats");
-        pawState(f,p,ThreeFingers.WISHED,2,own->{own.putString("Wish1",ThreeFingers.MONEY);own.putInt("WishVisit",own.getInt("Visit"));});f.arrive(p,place);
+        pawState(f,p,ThreeFingers.WISHED,2,own->{own.putString("Wish1",ThreeFingers.MONEY);own.putInt("WishVisit",own.getInt("Visit"));own.putInt("Beat",own.getInt("Visit"));});f.arrive(p,place);
         var start=f.own(p,place);start.putInt("T",2000);LiteraryVignettes.save(f.data(),p.getUUID(),place,start);
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.own(p,place).getInt("Stage")==ThreeFingers.MOURNING,"the messenger delivers the real compensation"))
         .thenExecute(()->{int slot=-1;for(int i=0;i<9;i++)if(p.getInventory().getItem(i).is(LiteraryRegistry.MILL_LETTER.get()))slot=i;
@@ -723,14 +723,14 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         });
     }
     @AfterBatch(batch="literary_elk_landing") public static void shoreLandingDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="literary_elk_attack_delay",timeoutTicks=200)
+    @GameTest(template="empty",batch="literary_elk_attack_delay",timeoutTicks=400)
     public static void nativeBoatAttacksKeepABriefSavedDelayAndNeverStrikeAnotherReadersBody(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("attack_reader",place);var peer=f.player("attack_peer",place);
         final long[] last={-1};final int[] swings={0};final boolean[] ready={false};
         h.startSequence().thenIdle(10).thenExecute(()->{
             var own=f.own(p,place);own.putInt("ElkStage",ElkHunt.HUNTED);own.putBoolean("ElkResetPending",false);own.putInt("ElkEmerge",0);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
             p.hasChangedDimension();peer.hasChangedDimension();p.connection.resetPosition();peer.connection.resetPosition();p.setInvulnerable(false);peer.setInvulnerable(false);ready[0]=true;
-        }).thenIdle(85).thenExecute(()->{h.assertTrue(swings[0]>=2&&p.getHealth()<p.getMaxHealth()&&peer.getHealth()==peer.getMaxHealth(),"native swings deal actual owner damage with breathing room and leave the other reader unharmed: swings="+swings[0]+", ownerHealth="+p.getHealth()+", peerHealth="+peer.getHealth()+", own="+f.own(p,place));h.succeed();});
+        }).thenIdle(ElkHunt.ATTACK_DELAY*2+20).thenExecute(()->{h.assertTrue(swings[0]>=2&&p.getHealth()<p.getMaxHealth()&&peer.getHealth()==peer.getMaxHealth(),"native swings deal actual owner damage with breathing room and leave the other reader unharmed: swings="+swings[0]+", ownerHealth="+p.getHealth()+", peerHealth="+peer.getHealth()+", own="+f.own(p,place));h.succeed();});
         h.onEachTick(()->{if(!ready[0])return;var a=elkKiller(f,p);if(a==null)return;var b=f.base(place);f.at(p,place,.5,0,-8.5);f.at(peer,place,1.5,0,-8.5);a.moveTo(b.getX()+.5,b.getY(),b.getZ()-9.5);a.setDeltaMovement(Vec3.ZERO);a.setNoGravity(true);
             h.assertTrue(f.out.noCollision(p,p.getBoundingBox())&&f.out.noCollision(a,a.getBoundingBox()),"the axe test uses the real clear cabin corridor, outside the companionway stairs");
             long stamp=f.own(p,place).getLong("ElkStrikeAt");if(stamp>0&&stamp!=last[0]){if(last[0]>0)h.assertTrue(stamp-last[0]>=ElkHunt.ATTACK_DELAY,"every physical axe swing observes the saved one-and-a-half-second recovery");last[0]=stamp;swings[0]++;}
