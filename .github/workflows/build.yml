@@ -133,6 +133,11 @@ jobs:
               for name in ('porter','bartender','scarred_guest','pianist','dancer','dancer_dress'):
                   assert z.read(f'assets/the_oldest_house/textures/entity/stanley_{name}.png').startswith(b'\x89PNG')
               assert 'io/github/knaitoe/theoldesthouse/client/StanleyVisualProof.class' in z.namelist()
+              for name in ('father','father_bandaged','father_mangled','snow_rabbit'):
+                  assert z.read(f'assets/the_oldest_house/textures/entity/literary_{name}.png').startswith(b'\x89PNG')
+              assert 'io/github/knaitoe/theoldesthouse/client/HolyRabbitVisualProof.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/mixin/StillRabbitMixin.class' in z.namelist()
+              assert 'data/the_oldest_house_playtest488/structure/empty.nbt' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/HotelTests.class' in z.namelist()
               for name in ('LiteraryVignettes','LiteraryRooms','LiteraryRegistry','LiteraryTexts','LiteraryActor','LiteraryElk','LiteraryCopies','LiteraryCabinChoices','LiteraryFrozenBlock','LiteraryModelBlockEntity','CabinBargain','CabinScreen','BodyLoss','SnowGlobeItem','GoatmanHaunt','TallyCounterItem'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
@@ -501,6 +506,18 @@ jobs:
           passed = re.findall(r'All (\d+) required tests passed', Path('build/native-domestic-projection.log').read_text())
           assert passed and int(passed[-1]) == 1, 'The native domestic projection did not complete.'
           PY
+
+      - name: Native October 12 playtest repairs
+        timeout-minutes: 4
+        run: |
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 3m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_playtest488 --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/native-playtest488.log
+          python3 - <<'PYTEST'
+          import re
+          from pathlib import Path
+          passed = re.findall(r'All (\d+) required tests passed', Path('build/native-playtest488.log').read_text())
+          assert passed and int(passed[-1]) == 6, 'The actual navigation, cottage speech and Holy Rabbit repairs did not complete.'
+          PYTEST
 
       - name: Structure game tests
         timeout-minutes: 62
@@ -1175,6 +1192,9 @@ jobs:
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 3m gradle runClient -PstanleySmoke --no-daemon
           test -s build/font-smoke/stanley-passed.txt
           for view in cast actions fixtures comparison; do test -s build/font-smoke/native-stanley-$view.png; done
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 3m gradle runClient -PholyRabbitSmoke --no-daemon
+          test -s build/font-smoke/holy-rabbit-passed.txt
+          for view in cast motion; do test -s build/font-smoke/native-holy-rabbit-$view.png; done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -1192,6 +1212,8 @@ jobs:
             build/font-smoke/goatman-fear0472-passed.txt
             build/font-smoke/native-stanley-*.png
             build/font-smoke/stanley-passed.txt
+            build/font-smoke/native-holy-rabbit-*.png
+            build/font-smoke/holy-rabbit-passed.txt
             run/logs/latest.log
             run/crash-reports/
 

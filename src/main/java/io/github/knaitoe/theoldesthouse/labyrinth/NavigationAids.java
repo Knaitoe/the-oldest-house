@@ -19,6 +19,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
@@ -92,17 +93,22 @@ public final class NavigationAids {
         player.displayClientMessage(Component.literal(active?"You knot the string.":"You wind the loose end in."),true);
     }
     public static void onRightClick(PlayerInteractEvent.RightClickBlock event) {
-        if(!(event.getEntity() instanceof ServerPlayer player)||!allowed(player)||event.getHand()!=InteractionHand.MAIN_HAND)return;
+        if(event.isCanceled()||!(event.getEntity() instanceof ServerPlayer player)||!allowed(player))return;
         ItemStack held=event.getItemStack();
         if(!held.is(LabyrinthRegistry.CHALK.get())&&!held.is(LabyrinthRegistry.TRAIL_SPOOL.get()))return;
-        if(!(player.serverLevel().getBlockState(event.getPos()).getBlock() instanceof DoorBlock))return;
+        double reach=player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.BLOCK_INTERACTION_RANGE);
+        if(player.getEyePosition().distanceToSqr(event.getHitVec().getLocation())>reach*reach)return;
         // Marking a handle must not also send the player through it.
         event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);
         if(held.is(LabyrinthRegistry.TRAIL_SPOOL.get())){toggle(player);return;}
+        if(!(player.serverLevel().getBlockState(event.getPos()).getBlock() instanceof DoorBlock)){
+            // These tools draw beside a protected surface; native adventure block-building permission is not needed.
+            event.setCancellationResult(held.getItem().useOn(new UseOnContext(player,event.getHand(),event.getHitVec())));return;
+        }
         BlockPos floor=player.blockPosition();
         if(placeChalk(player.serverLevel(),floor,Direction.UP,player.getDirection())) {
             remember(player.serverLevel(),floor,player.getUUID(),true);
-            held.hurtAndBreak(1,player,EquipmentSlot.MAINHAND);
+            held.hurtAndBreak(1,player,event.getHand()==InteractionHand.MAIN_HAND?EquipmentSlot.MAINHAND:EquipmentSlot.OFFHAND);
         }else ExpeditionRhythm.refuse(player,floor,"chalk_surface","There is no clear floor for the mark. Try the wall beside the door.");
     }
     public static void onPlayerTick(PlayerTickEvent.Post event) {

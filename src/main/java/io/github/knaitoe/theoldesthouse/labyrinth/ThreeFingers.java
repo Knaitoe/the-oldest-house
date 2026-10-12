@@ -36,6 +36,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -207,9 +208,15 @@ public final class ThreeFingers {
     // ------------------------------------------------------------------------------------------------ helpers
     static @Nullable BlockPos base(MinecraftServer s){var origin=HouseSavedData.get(s).houseOrigin();return origin==null?null:LabyrinthPlaces.base(origin,PLACE);}
     private static int stage(CompoundTag own){return own.getInt("Stage");}
-    private static void say(LiteraryActor a,String line){a.say(line);a.getPersistentData().putLong("Said0481",a.level().getGameTime());}
+    private static void say(LiteraryActor a,String line){a.say(line);long now=a.level().getGameTime();a.getPersistentData().putLong("Said0481",now);a.getPersistentData().putLong("SayUntil0488",now+Math.max(100,Math.min(TALE_EVERY-20,line.length()*2+20)));}
     /** A line said to the one reader the speaker belongs to. */
-    private static void speak(ServerPlayer p,@Nullable LiteraryActor a,String who,String line){if(a!=null)say(a,line);p.displayClientMessage(Component.literal(who+": “"+line+"”"),false);}
+    private static void speak(ServerPlayer p,@Nullable LiteraryActor a,String who,String line){
+        var b=base(p.server);
+        if(b!=null)for(var previous:p.serverLevel().getEntitiesOfClass(LiteraryActor.class,new AABB(Vec3.atLowerCornerOf(b.offset(-10,-1,-18)),Vec3.atLowerCornerOf(b.offset(11,6,2))),cast->cast.scene().equals(PLACE.id())&&cast.owner().filter(p.getUUID()::equals).isPresent())){
+            previous.setCustomNameVisible(false);previous.setCustomName(null);
+        }
+        if(a!=null)say(a,line);p.displayClientMessage(Component.literal(who+": “"+line+"”"),false);
+    }
     /** A sound only this reader hears. */
     static void hear(ServerPlayer p,SoundEvent sound,BlockPos at,float volume,float pitch){
         p.connection.send(new ClientboundSoundPacket(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound),SoundSource.BLOCKS,at.getX()+.5,at.getY()+1,at.getZ()+.5,volume,pitch,p.getRandom().nextLong()));
@@ -240,7 +247,10 @@ public final class ThreeFingers {
         if(!own.getBoolean("SonGone"))seat(p,l,b,own,"CastSon",SON,SON_SEAT,Direction.WEST);else dismiss(l,own,"CastSon");
         if(stage<=TAKEN&&!own.getBoolean("SergeantGone"))seat(p,l,b,own,"CastSergeant",SERGEANT,SERGEANT_SEAT,Direction.SOUTH);else dismiss(l,own,"CastSergeant");
         long now=l.getGameTime();
-        for(var key:CAST){var a=cast(l,own,key);if(a!=null&&a.isCustomNameVisible()&&now-a.getPersistentData().getLong("Said0481")>100)a.setCustomNameVisible(false);}
+        for(var key:CAST){var a=cast(l,own,key);if(a!=null&&a.hasCustomName()){
+            var said=a.getPersistentData();long until=said.contains("SayUntil0488")?said.getLong("SayUntil0488"):said.getLong("Said0481")+100;
+            if(now>until){a.setCustomNameVisible(false);a.setCustomName(null);}
+        }}
     }
     /** The latest companion the House saw the reader lose, by the name it answered to; null when there was none. */
     public static @Nullable String lostCompanion(LabyrinthData d,UUID reader){
