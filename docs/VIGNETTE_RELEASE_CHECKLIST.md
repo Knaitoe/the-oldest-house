@@ -1,3 +1,7 @@
+## Candidate 0.4.85 — filming days
+
+The existing Ghosts set becomes a seven-visit camera-crew story. Verify physical door exits/returns, interruption and reload, private owned-camera use, native occlusion and under-table clearance, both stairs, cast identity, private playhouse/drawer phases, longest-centred-subject edits, bounded actual GPU keyframes, legacy original preservation and the own final reading. Require all twelve exact-source jobs and all prior checks, 556 native cases, 668 decoded PNGs, 90 architecture views and the new native cast/fixture images. Validation is pending. Mod 0.4.85 / protocol 57 / layout 42; 44 / 33 / two kinds / three endings. See [the filming record](HEAD_FULL_OF_GHOSTS_0_4_85.md).
+
 # Vignette release checklist
 
 Apply this checklist whenever a vignette is added or its progression changes. Ending credit is part of the vignette implementation and release review.
@@ -159,7 +163,7 @@ Forty-three eligible sources require **thirty-three distinct personal resolution
 | Camp Blood's personal survival and service-route escape | Survival |
 | Devil's Rock's eight discovered pages and final reading | Memory |
 | The wheel's actual numbered route and front-door return | Memory |
-| The ghost set's performed marks and personal transcript | Connection |
+| The ghost set's seven filming days and own account beside the production cut | Connection |
 | The cabin's explicit offering/refusal and read choice record | Release |
 | The copied family's visits, actual heirloom and personal account | Memory |
 

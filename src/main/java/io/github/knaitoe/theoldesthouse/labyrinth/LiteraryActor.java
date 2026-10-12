@@ -13,6 +13,7 @@ import net.minecraft.world.entity.player.Player;
 /** Role is appearance; ownership and scene attribution remain server facts. */
 public final class LiteraryActor extends PathfinderMob {
     public static final int MOTHER=0,DANCER=1,RED_FIGURE=2,COFFIN_WOMAN=3,LADY=4,SILHOUETTE=5,BROTHER=6,FATHER=7,VISITOR=8,KILLER=9,FAMILY_FATHER=10,FAMILY_MOTHER=11,FAMILY_CHILD=12,OLD_MAN=13,STRANGER=14,CAMERA=15;
+    public static final int GHOST_MARJORIE=16,GHOST_MERRY=17,GHOST_JOHN=18,GHOST_SARAH=19,GHOST_PRODUCER=20,GHOST_PRIEST=21,GHOST_PLAYHOUSE=22,GHOST_DRAWER=23;
     private static final EntityDataAccessor<Integer> ROLE=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT),PHASE=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT);
     private static final EntityDataAccessor<Optional<UUID>> OWNER=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.OPTIONAL_UUID);
     private String scene="";private boolean small;
@@ -22,7 +23,8 @@ public final class LiteraryActor extends PathfinderMob {
     public static AttributeSupplier.Builder attributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,40).add(Attributes.MOVEMENT_SPEED,.24).add(Attributes.SCALE,1);}
     @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(ROLE,0);b.define(PHASE,0);b.define(OWNER,Optional.empty());}
     public int role(){return entityData.get(ROLE);}public int phase(){return entityData.get(PHASE);}public Optional<UUID> owner(){return entityData.get(OWNER);}public String scene(){return scene;}
-    public void appearance(int role,int phase){entityData.set(ROLE,role);entityData.set(PHASE,phase);boolean now=role==BROTHER||role==FAMILY_CHILD||role==SILHOUETTE&&phase==4;if(now!=small){small=now;getAttribute(Attributes.SCALE).setBaseValue(now?.58:1);refreshDimensions();}}
+    @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(key==ROLE||key==PHASE)refreshDimensions();}
+    public void appearance(int role,int phase){boolean changed=role()!=role||phase()!=phase;entityData.set(ROLE,role);entityData.set(PHASE,phase);boolean now=role==BROTHER||role==FAMILY_CHILD||role==GHOST_MERRY||role==SILHOUETTE&&phase==4;if(now!=small){small=now;getAttribute(Attributes.SCALE).setBaseValue(now?.58:1);changed=true;}if(changed)refreshDimensions();}
     public void bind(LabyrinthPlace p,UUID owner){scene=p.id();entityData.set(OWNER,Optional.ofNullable(owner));}
     @Override public boolean shouldRenderAtSqrDistance(double distance){return role()==SILHOUETTE&&phase()==4?distance<192D*192D:super.shouldRenderAtSqrDistance(distance);}
     public void say(String text){setCustomName(Component.literal(text));setCustomNameVisible(true);}
@@ -32,14 +34,15 @@ public final class LiteraryActor extends PathfinderMob {
         if(privateKiller){if(active)privateHunt.tick(this,before);}
         else if(!level().isClientSide&&role()==KILLER&&(scene.equals(LabyrinthPlace.CAMP_BLOOD.id())||scene.equals(LabyrinthPlace.ELK_CARCASSES.id())))carcassHunt.tick(this);
     }
-    @Override public EntityDimensions getDefaultDimensions(Pose pose){return role()==KILLER&&pose==Pose.CROUCHING?EntityDimensions.scalable(.6F,1.3F).withEyeHeight(1.05F):super.getDefaultDimensions(pose);}
+    @Override public EntityDimensions getDefaultDimensions(Pose pose){if(role()==GHOST_PLAYHOUSE)return EntityDimensions.scalable(1F,phase()>=2?.2F:1F).withEyeHeight(.4F);if(role()==GHOST_DRAWER)return EntityDimensions.scalable(.9F,.9F).withEyeHeight(.5F);if(role()>=GHOST_MARJORIE&&role()<=GHOST_PRIEST){if(phase()==GhostsSet.CRAWL)return EntityDimensions.scalable(.55F,.65F).withEyeHeight(.38F);if(phase()==GhostsSet.SIT||phase()==GhostsSet.SLUMP||phase()==GhostsSet.VOMIT||phase()==GhostsSet.HAND)return EntityDimensions.scalable(.6F,1.25F).withEyeHeight(1.05F);if(phase()==GhostsSet.BED)return EntityDimensions.scalable(.6F,.7F).withEyeHeight(.4F);}return role()==KILLER&&pose==Pose.CROUCHING?EntityDimensions.scalable(.6F,1.3F).withEyeHeight(1.05F):super.getDefaultDimensions(pose);}
     @Override public void move(MoverType type,net.minecraft.world.phys.Vec3 movement){
         if(type==MoverType.SELF&&role()==KILLER&&scene.equals(LabyrinthPlace.ELK_CARCASSES.id())&&owner().isPresent()&&KillerNavigation.moving(this)){
             double horizontal=Math.hypot(movement.x,movement.z);
             if(horizontal>KillerNavigation.CHASE_STEP){double scale=KillerNavigation.CHASE_STEP/horizontal;movement=new net.minecraft.world.phys.Vec3(movement.x*scale,movement.y,movement.z*scale);}
         }super.move(type,movement);
     }
-    @Override protected InteractionResult mobInteract(Player p,InteractionHand hand){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)LiteraryVignettes.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}
+    @Override public boolean isPickable(){return super.isPickable();}
+    @Override protected InteractionResult mobInteract(Player p,InteractionHand hand){if(role()>=GHOST_MARJORIE&&p.getItemInHand(hand).getItem() instanceof CamcorderItem){p.startUsingItem(hand);return InteractionResult.CONSUME;}if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)LiteraryVignettes.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}
     @Override public boolean hurt(DamageSource source,float amount){if(source.getEntity() instanceof ServerPlayer p){if(role()==FATHER&&LiteraryVignettes.inside(p,LabyrinthPlace.HOLY_RABBIT)){if(getHealth()<=1)return false;boolean hit=super.hurt(source,Math.min(Math.min(1,amount),getHealth()-1));if(hit)LiteraryVignettes.attacked(p,this);return hit;}LiteraryVignettes.attacked(p,this);}return false;}
     @Override public boolean removeWhenFarAway(double d){return false;}
     @Override public boolean isPushable(){return false;}

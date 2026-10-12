@@ -21,6 +21,9 @@ public final class LiteraryRegistry {
     private static final DeferredRegister<BlockEntityType<?>> BES=DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE,TheOldestHouse.MOD_ID);
     private static final DeferredRegister<SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
     private static final DeferredRegister<net.minecraft.core.particles.ParticleType<?>> PARTICLES=DeferredRegister.create(Registries.PARTICLE_TYPE,TheOldestHouse.MOD_ID);
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<GhostsSetBlock>> GHOST_SET_TYPE=CODECS.register("ghosts_set",()->GhostsSetBlock.CODEC);
+    public static final DeferredBlock<GhostsSetBlock> GHOST_SET=BLOCKS.registerBlock("ghosts_set",GhostsSetBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion().noLootTable().lightLevel(GhostsSetBlock::light));
+    public static final DeferredItem<CamcorderItem> CAMCORDER=ITEMS.registerItem("camcorder",CamcorderItem::new,new Item.Properties().stacksTo(1));
     /** A reader's own storm at the cabin (0.4.52): rain streaks and wind-torn leaves, drawn by their client only. */
     public static final DeferredHolder<net.minecraft.core.particles.ParticleType<?>,net.minecraft.core.particles.SimpleParticleType> CABIN_RAIN=PARTICLES.register("cabin_rain",()->new net.minecraft.core.particles.SimpleParticleType(false)),
         CABIN_LEAF=PARTICLES.register("cabin_leaf",()->new net.minecraft.core.particles.SimpleParticleType(false));
@@ -75,6 +78,7 @@ public final class LiteraryRegistry {
     /** The Last Stop (0.4.78): the struck pickup's alarm, a truck going by unseen, the pool table and the crash; each has its own subtitle. */
     public static final DeferredHolder<SoundEvent,SoundEvent> LOT_ALARM=sound("lot_alarm"),LOT_HIGHWAY=sound("lot_highway"),LOT_POOL=sound("lot_pool"),LOT_CRASH=sound("lot_crash");
     public static final DeferredHolder<SoundEvent,SoundEvent> PAW_KNOCK=sound("paw_knock"),PAW_HAMMER=sound("paw_hammer"),PAW_WIND=sound("paw_wind"),PAW_TWIST=sound("paw_twist"),PAW_SCRATCH=sound("paw_scratch"),PAW_HISS=sound("paw_hiss");
+    public static final DeferredHolder<SoundEvent,SoundEvent> GHOST_LOW=sound("ghost_low"),GHOST_THIN=sound("ghost_thin"),GHOST_SCRAPE=sound("ghost_scrape"),GHOST_CARD=sound("ghost_card");
     private static DeferredBlock<Block> material(String id,Block base){return BLOCKS.registerBlock(id,Block::new,BlockBehaviour.Properties.ofFullCopy(base).noLootTable());}
     private static DeferredItem<Item> item(String id){var props=new Item.Properties().stacksTo(1);if(id.startsWith("wax_cylinder_")||id.equals("family_film"))props.jukeboxPlayable(net.minecraft.resources.ResourceKey.create(Registries.JUKEBOX_SONG,ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id.replace("one","1").replace("two","2").replace("three","3"))));return ITEMS.registerSimpleItem(id,props);}
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String name){return SOUNDS.register("literary."+name,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"literary."+name)));}

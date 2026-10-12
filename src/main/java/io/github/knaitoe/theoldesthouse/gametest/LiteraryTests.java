@@ -26,7 +26,7 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID+"_literary") @PrefixGameTestTemplate(false)
 public final class LiteraryTests {
     private static Fixture active;
-    private static final class Fixture implements AutoCloseable {
+    static final class Fixture implements AutoCloseable {
         final GameTestHelper h;final NativeTestChunks chunks=new NativeTestChunks();final ServerLevel in,out;final BlockPos origin;final HouseSavedData oldHouse;final LabyrinthData oldData;final MotherCollection oldMother;final LiteraryCopies oldCopies;final List<ServerPlayer> players=new ArrayList<>();final Set<LabyrinthPlace> built=new HashSet<>();final long oldDay;final List<Entity> extras=new ArrayList<>();
         Fixture(GameTestHelper h){this(h,80);}
         Fixture(GameTestHelper h,int originY){this.h=h;oldDay=h.getLevel().getServer().overworld().getDayTime();in=HouseTestLevel.get(h.getLevel().getServer(),HouseDimensions.INTERIOR);out=HouseTestLevel.get(in.getServer(),HouseDimensions.OUTSIDE);oldHouse=HouseSavedData.get(in.getServer());oldData=LabyrinthData.get(in.getServer());oldMother=MotherCollection.get(in.getServer());oldCopies=LiteraryCopies.get(in.getServer());origin=new BlockPos(57000,originY,57000);var house=new HouseSavedData();house.markSpawned(origin);var store=in.getServer().overworld().getDataStorage();store.set("the_oldest_house",house);store.set("the_oldest_house_labyrinth",new LabyrinthData());store.set("the_oldest_house_mother",new MotherCollection());store.set("the_oldest_house_literary_copies",new LiteraryCopies());data().setBuilt(LabyrinthBuilder.VERSION,origin);active=this;}

@@ -420,6 +420,7 @@ public final class LabyrinthDoors {
     }
 
     private static void depart(ServerPlayer player, LabyrinthPlace place) {
+        if (place == LabyrinthPlace.GHOSTS_SET) GhostsSet.depart(player);
         if (place == LabyrinthPlace.HARRIGAN) HarriganVignette.onDepart(player);
         if (place == LabyrinthPlace.HIDE_AND_CLAP) HideAndClap.departBeforeStarting(player);
         if (place == LabyrinthPlace.SHALLOWS) Shallows.onDepart(player);

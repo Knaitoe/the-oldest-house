@@ -957,5 +957,37 @@
         "attenuation_distance": 32
       }
     ]
+  },
+  "literary.ghost_low": {
+    "subtitle": "subtitles.the_oldest_house.ghost_low",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/ghost_low"
+      }
+    ]
+  },
+  "literary.ghost_thin": {
+    "subtitle": "subtitles.the_oldest_house.ghost_thin",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/ghost_thin"
+      }
+    ]
+  },
+  "literary.ghost_scrape": {
+    "subtitle": "subtitles.the_oldest_house.ghost_scrape",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/ghost_scrape"
+      }
+    ]
+  },
+  "literary.ghost_card": {
+    "subtitle": "subtitles.the_oldest_house.ghost_card",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/ghost_card"
+      }
+    ]
   }
 }
