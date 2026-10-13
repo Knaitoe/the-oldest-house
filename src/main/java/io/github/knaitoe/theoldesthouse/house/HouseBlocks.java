@@ -45,7 +45,7 @@ public final class HouseBlocks {
     public static final DeferredBlock<SceneDetailBlock> SCENE_DETAIL = BLOCKS.registerBlock(
             "scene_detail", SceneDetailBlock::new,
             BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noCollission().noOcclusion().noLootTable()
-                    .lightLevel(s -> s.getValue(SceneDetailBlock.KIND) == SceneDetailBlock.Kind.TABLE_LAMP ? 9 : 0));
+                    .lightLevel(s -> s.getValue(SceneDetailBlock.KIND) == SceneDetailBlock.Kind.TABLE_LAMP && s.getValue(SceneDetailBlock.LIT) ? 9 : 0));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<VignetteDetailBlock>> VIGNETTE_DETAIL_TYPE =
             BLOCK_TYPES.register("vignette_detail",()->VignetteDetailBlock.CODEC);
     public static final DeferredBlock<VignetteDetailBlock> VIGNETTE_DETAIL = BLOCKS.registerBlock(

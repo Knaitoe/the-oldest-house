@@ -58,8 +58,8 @@ public final class NurseryBlock extends Block {
         case DRAWINGS->Block.box(1,2,15,15,14,16);case CARD->Block.box(5,0,5,11,3,11);case ACCOUNT->Block.box(3,0,4,13,2,12);
         case BOXES->Block.box(1,0,1,15,16,15);case CRIB->Block.box(0,0,2,16,12,14);case TRAIN->Block.box(4,0,1,12,8,15);
         case TOP->stage==1?Block.box(2,0,5,14,5,11):Block.box(5,0,5,11,8,11);case JACK_BOX->Block.box(4,0,4,12,stage==1?15:8,12);
-        case MUSIC_BOX->Block.box(4,0,5,12,stage==1?10:5,11);case TEDDY->Block.box(4,0,4,12,10,12);
-        case BLOCKS->Block.box(3,0,3,13,stage==0?4:stage==1?8:stage==2?12:5,13);case BALL->Block.box(5,0,5,11,6,11);case DOLL->Block.box(5,0,5,11,10,11);
+        case MUSIC_BOX->Block.box(4,0,7,12,stage==1?10:5,13);case TEDDY->Block.box(4,0,4,12,10,12);
+        case BLOCKS->Block.box(3,0,3,13,stage==0?4:stage==1?8:stage==2?12:5,13);case BALL->Block.box(5,0,5,11,6,11);case DOLL->stage==2?Block.box(5,-7,5,11,3,11):stage==1?Block.box(5,0,7,11,10,13):Block.box(5,0,5,11,10,11);
     };}
     private static VoxelShape rotated(VoxelShape shape,Direction facing){
         if(facing==Direction.NORTH)return shape;var out=new VoxelShape[]{Shapes.empty()};int turns=facing.get2DDataValue()==0?2:facing.get2DDataValue()==1?3:facing.get2DDataValue()==3?1:0;

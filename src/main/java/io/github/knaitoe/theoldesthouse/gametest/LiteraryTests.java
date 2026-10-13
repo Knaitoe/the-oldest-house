@@ -433,7 +433,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         }).thenSucceed();
     }
     @AfterBatch(batch="literary_last_stop_night") public static void lastStopNightDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="literary_last_stop_field",timeoutTicks=400)
+    @GameTest(template="empty",batch="literary_last_stop_field",timeoutTicks=750)
     public static void theFieldRepeatsUnseenAndCarriesOnlyItsOwnReaderBackToTheirClipping(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_LOT;var p=f.player("field_reader",place);var peer=f.player("field_peer",place);var b=f.base(place);var l=f.out;
         for(int z=-49;z>=-75;z--)for(int x=-34;x<=34;x++)for(int y=-2;y<=8;y++){var here=l.getBlockState(b.offset(x,y,z));var there=l.getBlockState(b.offset(x,y,z-ElkLot.PERIOD));
@@ -447,14 +447,14 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             elk.hurt(l.damageSources().playerAttack(p),2);h.assertTrue(f.own(p,place).getBoolean("ElkWounded")&&!f.own(peer,place).getBoolean("ElkWounded"),"the wound is the striker's own, for the fan room");
             var mine=f.own(p,place);mine.putInt("FieldLoops",2);mine.putInt("FieldTicks",400);mine.putInt("Tab",650);mine.putInt("Drinks",2);LiteraryVignettes.save(f.data(),p.getUUID(),place,mine);
             f.at(p,place,4.5,0,-97.2);
-            h.runAfterDelay(10,()->{
-                var after=f.own(p,place);h.assertTrue(after.getBoolean("Ready")&&"escaped_the_looping_field_and_read_own_clipping".equals(after.getString("Outcome")),"twice round with the herd closing, it cuts to black: the same resolution as before");
+            h.startSequence().thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Ready"),"the original herd must physically reach this reader before the ending")).thenExecute(()->{
+                var after=f.own(p,place);h.assertTrue(ElkLotEnding.HERD.equals(after.getString("Outcome"))&&after.getBoolean("CaptureWitness0492"),"the field ending follows actual native contact, not a loop counter");
                 h.assertTrue(p.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(ElkLot.PORCH)))<.1,"the reader wakes on the bar's porch");
                 h.assertTrue(LiteraryTexts.ending(p,place,after).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().anyMatch(page->page.raw().getString().contains("$6.50")),"the clipping remembers the open tab");
                 f.source(p,place);f.read(p,place,ElkLot.BOARD);
                 h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.ELK_LOT)&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.ELK_LOT),"the clipping on the board resolves its own reader only");
                 h.succeed();
-            });
+            }).thenSucceed();
         });
     }
     @AfterBatch(batch="literary_last_stop_field") public static void lastStopFieldDone(ServerLevel l){close();}

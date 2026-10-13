@@ -17,9 +17,10 @@ public final class SceneDetailBlock extends HorizontalDirectionalBlock {
         public boolean wall(){return this==COAT||this==CLOCK||this==FRAME;}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
-    public SceneDetailBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.BOOKS));}
+    public static final BooleanProperty LIT=BooleanProperty.create("lit");
+    public SceneDetailBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.BOOKS).setValue(LIT,true));}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
-    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND);}
+    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,LIT);}
     public static BlockState state(Kind kind,Direction facing){return HouseBlocks.SCENE_DETAIL.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing);}
     public static boolean supported(BlockGetter level,BlockPos at,BlockState state){
         var facing=state.getValue(FACING);var kind=state.getValue(KIND);

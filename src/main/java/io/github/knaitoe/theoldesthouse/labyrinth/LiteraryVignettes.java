@@ -206,6 +206,7 @@ public final class LiteraryVignettes {
         return true;
     }
     public static boolean retreatLocked(ServerPlayer p) {
+        if(ElkLotEnding.held(p))return true;
         if (LakeHouse.inside(p)&&personal(LabyrinthData.get(p.server),p.getUUID(),LabyrinthPlace.LAKE_HOUSE).getInt("Finish")>0)return true;
         if (CabinBargain.held(p)) return true;
         if (!inside(p, LabyrinthPlace.HOLY_RABBIT)) return false;
@@ -221,9 +222,9 @@ public final class LiteraryVignettes {
         else if(!active&&c!=null)HousePackets.send(p,new NovelScenePayload(17,0,"",0,0));
     }
     private static void restore(Crawl c){c.p().setForcedPose(c.forced());c.p().setPose(c.forced()==null?c.displayed():c.forced());c.p().refreshDimensions();}
-    public static void clearAll(){for(var c:CRAWLS.values())restore(c);CRAWLS.clear();HolyRabbit.clearAll();MOVIE_CANOES.clear();NurseryToys.clearAll();GhostsSet.clearAll();}
+    public static void clearAll(){for(var c:CRAWLS.values())restore(c);CRAWLS.clear();HolyRabbit.clearAll();ElkLotEnding.clearAll();MOVIE_CANOES.clear();NurseryToys.clearAll();GhostsSet.clearAll();}
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p){crawl(p,false);scale(p,false);HolyRabbit.release(p);}}
-    @SubscribeEvent(priority=EventPriority.LOWEST) public static void frozenFood(LivingEntityUseItemEvent.Start e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!retreatLocked(p))return;var s=e.getItem();if(s.is(Items.SNOWBALL)&&s.has(DataComponents.FOOD))return;if(s.is(LiteraryRegistry.MEAL.get())){var t=s.get(DataComponents.CUSTOM_DATA);if(t!=null&&t.copyTag().hasUUID(OWNER)&&t.copyTag().getUUID(OWNER).equals(p.getUUID()))return;}if(s.has(DataComponents.FOOD)){e.setCanceled(true);p.displayClientMessage(Component.literal("It is frozen hard. He is bringing something down to you."),true);}}
+    @SubscribeEvent(priority=EventPriority.LOWEST) public static void frozenFood(LivingEntityUseItemEvent.Start e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!inside(p,LabyrinthPlace.HOLY_RABBIT)||!retreatLocked(p))return;var s=e.getItem();if(s.is(Items.SNOWBALL)&&s.has(DataComponents.FOOD))return;if(s.is(LiteraryRegistry.MEAL.get())){var t=s.get(DataComponents.CUSTOM_DATA);if(t!=null&&t.copyTag().hasUUID(OWNER)&&t.copyTag().getUUID(OWNER).equals(p.getUUID()))return;}if(s.has(DataComponents.FOOD)){e.setCanceled(true);p.displayClientMessage(Component.literal("It is frozen hard. He is bringing something down to you."),true);}}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void snowNibble(PlayerInteractEvent.RightClickItem e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!inside(p,LabyrinthPlace.HOLY_RABBIT)||!p.getItemInHand(e.getHand()).is(Items.SNOWBALL))return;var snow=p.getItemInHand(e.getHand());snow.set(DataComponents.FOOD,new net.minecraft.world.food.FoodProperties.Builder().nutrition(0).saturationModifier(0).alwaysEdible().build());p.startUsingItem(e.getHand());e.setCanceled(true);e.setCancellationResult(InteractionResult.CONSUME);}
     @SubscribeEvent public static void pearl(EntityJoinLevelEvent e){if(e.getEntity() instanceof ThrownEnderpearl pearl&&pearl.getOwner() instanceof ServerPlayer p&&retreatLocked(p)){e.setCanceled(true);pearl.discard();}}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void chat(ServerChatEvent e){var p=e.getPlayer();var place=current(p);if(place==LabyrinthPlace.GHOSTS_SET&&p.distanceToSqr(base(p,place).offset(LiteraryRooms.BOOTH).getCenter())<36){var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);if(own.getBoolean("Booth")&&!own.contains("Confession")){own.putString("Confession",e.getRawText().substring(0,Math.min(512,e.getRawText().length())));save(d,p.getUUID(),place,own);}}else if(place==LabyrinthPlace.OLD_CABIN)LiteraryCopies.nameSpoken(p,e.getRawText());}
