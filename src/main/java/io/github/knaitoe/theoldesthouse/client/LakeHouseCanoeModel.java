@@ -69,6 +69,7 @@ public final class LakeHouseCanoeModel extends HierarchicalModel<LakeHouseCanoe>
     }
 
     @Override public void setupAnim(LakeHouseCanoe canoe,float partialTicks,float unused,float age,float yaw,float pitch){
+        leftPaddle.visible=rightPaddle.visible=!canoe.underLowRoof();
         paddle(canoe,0,leftPaddle,partialTicks);paddle(canoe,1,rightPaddle,partialTicks);
     }
     /** The vanilla boat's stroke, so the paddles keep time with its paddling sounds and speed. */

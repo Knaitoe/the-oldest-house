@@ -86,7 +86,7 @@ public final class GoatmanSupper {
             var at=GoatmanWoods.plate(i).add(base.getX(),base.getY(),base.getZ());var hit=new AABB(at.x-.32,at.y-.1,at.z-.32,at.x+.32,at.y+.1,at.z+.32).clip(eye,end);if(hit.isEmpty())continue;
             double distance=eye.distanceToSqr(hit.get());if(distance>=nearest)continue;
             var block=p.serverLevel().clip(new ClipContext(eye,at,ClipContext.Block.OUTLINE,ClipContext.Fluid.NONE,p));
-            if(block.getType()!=HitResult.Type.MISS&&!(block.getBlockPos().equals(BlockPos.containing(at).below())&&p.serverLevel().getBlockState(block.getBlockPos()).is(Blocks.SPRUCE_SLAB)))continue;
+            if(block.getType()!=HitResult.Type.MISS&&!(block.getBlockPos().equals(BlockPos.containing(at).below())&&GoatmanWoods.tableSupport(p.serverLevel().getBlockState(block.getBlockPos()))))continue;
             nearest=distance;seat=i;
         }
         return seat;
@@ -99,14 +99,22 @@ public final class GoatmanSupper {
     }
     private static void plate(ServerPlayer player,ItemStack held,BlockPos base,CompoundTag run,int seat){
         int mask=run.getInt("Plated0464"),bit=1<<seat,empty=run.getInt("EmptyPlates0465");
+        var at=BlockPos.containing(GoatmanWoods.plate(seat).add(base.getX(),base.getY(),base.getZ()));var level=player.serverLevel();
+        if(!level.hasChunkAt(at)||!level.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(at.getX()>>4,at.getZ()>>4))){player.displayClientMessage(Component.literal("Wait a moment."),true);return;}
+        var shown=GoatmanWoods.serving(level,base,seat);var original=GoatmanWoods.food(level,shown);
+        // A bookkeeping bit cannot make a physically empty, loaded plate occupied.
+        // Conversely an existing original must never be overwritten by another serving.
+        boolean occupied=original.is(GoatmanRegistry.BRAT.get());
+        if(occupied){mask|=bit;empty&=~bit;GoatmanWoods.served(level,base,seat,original);}else empty|=bit;
+        run.putInt("Plated0464",mask);run.putInt("EmptyPlates0465",empty);
         if(held.is(GoatmanRegistry.BRAT.get())&&belongs(held,run)){
-            if((mask&~empty&bit)==0){boolean charred=burnt(held);held.shrink(1);run.putInt("Plated0464",mask|bit);run.putInt("EmptyPlates0465",empty&~bit);
-                run.putInt("BurntPlates0476",charred?run.getInt("BurntPlates0476")|bit:run.getInt("BurntPlates0476")&~bit);GoatmanWoods.served(player.serverLevel(),base,seat,frank(run,charred));
+            if(!occupied){boolean charred=burnt(held);if(GoatmanWoods.served(level,base,seat,held.copyWithCount(1))==null)return;held.shrink(1);run.putInt("Plated0464",mask|bit);run.putInt("EmptyPlates0465",empty&~bit);
+                run.putInt("BurntPlates0476",charred?run.getInt("BurntPlates0476")|bit:run.getInt("BurntPlates0476")&~bit);
                 if(ready(run)){run.putBoolean("MealReady0465",true);run.putBoolean("MealFrozen0465",true);}}
             else player.displayClientMessage(Component.literal("There's already one here."),true);
-        }else if(held.isEmpty()&&(mask&~empty&bit)!=0){
-            boolean charred=(run.getInt("BurntPlates0476")&bit)!=0;run.putInt("BurntPlates0476",run.getInt("BurntPlates0476")&~bit);
-            run.putInt("EmptyPlates0465",empty|bit);GoatmanWoods.served(player.serverLevel(),base,seat,false);give(player,frank(run,charred));
+        }else if(held.isEmpty()&&occupied){
+            run.putInt("BurntPlates0476",run.getInt("BurntPlates0476")&~bit);
+            run.putInt("EmptyPlates0465",empty|bit);shown.discard();give(player,original.copyWithCount(1));
         }else player.displayClientMessage(Component.literal(held.is(GoatmanRegistry.BRAT.get())?"That wasn't in this supper's pack.":"Put a cooked frank on the plate."),true);
     }
     private static void saveClick(ServerPlayer player,LabyrinthData data,CompoundTag run){player.getPersistentData().putLong("GoatmanClick0476",player.serverLevel().getGameTime());GoatmanVignette.saveRun(data,run);}
@@ -123,9 +131,13 @@ public final class GoatmanSupper {
         if((r.getInt("Plated0464")&~r.getInt("EmptyPlates0465")&bit)==0){
             if(index==r.getInt("Runner")&&!r.getBoolean("MissingSupper0465")){r.putBoolean("MissingSupper0465",true);return 1;}return 0;
         }
-        boolean charred=(r.getInt("BurntPlates0476")&bit)!=0;r.putInt("BurntPlates0476",r.getInt("BurntPlates0476")&~bit);
-        r.putInt("EmptyPlates0465",r.getInt("EmptyPlates0465")|bit);r.putInt("EatenCousins0465",r.getInt("EatenCousins0465")|(1<<index));GoatmanWoods.served(l,b,seat,false);
-        c.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,frank(r,charred));c.getPersistentData().putInt("EatingUntil0465",clock+80);return charred&&index!=r.getInt("Wrong")?2:0;
+        var plate=BlockPos.containing(GoatmanWoods.plate(seat).add(b.getX(),b.getY(),b.getZ()));
+        if(!l.hasChunkAt(plate)||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(plate.getX()>>4,plate.getZ()>>4)))return 0;
+        var shown=GoatmanWoods.serving(l,b,seat);var original=GoatmanWoods.food(l,shown);
+        if(!original.is(GoatmanRegistry.BRAT.get())){r.putInt("EmptyPlates0465",r.getInt("EmptyPlates0465")|bit);return 0;}
+        boolean charred=burnt(original);r.putInt("BurntPlates0476",r.getInt("BurntPlates0476")&~bit);
+        r.putInt("EmptyPlates0465",r.getInt("EmptyPlates0465")|bit);r.putInt("EatenCousins0465",r.getInt("EatenCousins0465")|(1<<index));shown.discard();
+        c.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,original.copyWithCount(1));c.getPersistentData().putInt("EatingUntil0465",clock+80);return charred&&index!=r.getInt("Wrong")?2:0;
     }
     public static void tick(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> readers){
         if(!r.getBoolean("PlayerServes0464"))return;

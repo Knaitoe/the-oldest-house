@@ -29,15 +29,18 @@ public final class HolyRabbitDialogue {
     }
     public static void meal(ServerPlayer p,LiteraryActor father,CompoundTag own,int night){voice(p,father,night==1?"I found something for us. Small bites. There will be a morning.":night==2?name(own)+" found us again. Here. Eat yours first.":"There's a little left. I already ate on the way back.");}
     public static void talk(ServerPlayer p,LiteraryActor father,CompoundTag own){
-        own.putInt("Drowse",Math.max(0,own.getInt("Drowse")-100));boolean truth=own.getBoolean("WoundSeen0488");var icons=new HashMap<Integer,ItemStack>();
-        icons.put(0,LiteraryChoiceMenu.icon(Items.RABBIT_HIDE,truth?"Ask where the meat came from":"Ask whether "+name(own)+" can come back again"));
-        icons.put(4,LiteraryChoiceMenu.icon(Items.CAMPFIRE,truth?"Ask him to stay with you":"Ask whether you will get home"));icons.put(8,LiteraryChoiceMenu.icon(Items.PAPER,"Sit with him quietly"));
+        own.putInt("Drowse",Math.max(0,own.getInt("Drowse")-100));boolean truth=own.getBoolean("WoundSeen0488");int day=Math.max(1,own.getInt("Night"));var icons=new HashMap<Integer,ItemStack>();
+        icons.put(0,LiteraryChoiceMenu.icon(Items.RABBIT_HIDE,truth?"Ask where the meat came from":day==1?"Ask why the rabbit from your dream is here":day==2?"Ask how "+name(own)+" came back":"Ask him to point out "+name(own)));
+        icons.put(2,LiteraryChoiceMenu.icon(Items.SNOWBALL,truth?"Ask whether he can walk":day==1?"Ask when the blizzard will stop":day==2?"Ask why his trousers are wet":"Ask why he cannot stand"));
+        icons.put(4,LiteraryChoiceMenu.icon(Items.CAMPFIRE,truth?"Ask him to stay with you":day==1?"Ask whether Mother is waiting":day==2?"Ask whether you will get home":"Ask him not to go hunting again"));icons.put(8,LiteraryChoiceMenu.icon(Items.PAPER,"Sit with him quietly"));
         LiteraryChoiceMenu.open(p,"Father",icons,()->p.isAlive()&&!p.isSpectator()&&LiteraryVignettes.inside(p,LabyrinthPlace.HOLY_RABBIT)&&p.distanceToSqr(father)<=36,slot->{
             var d=LabyrinthData.get(p.server);var now=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.HOLY_RABBIT);String words;
+            int today=Math.max(1,now.getInt("Night"));
             if(now.getBoolean("LastHunt0490"))words=slot==4?"I have to get you one more morning.":"Hunting.";
-            else if(now.getBoolean("WoundSeen0488"))words=slot==0?"Look at me, not at that. You can walk now. That is what matters.":"I will be right behind you. Keep going when you see the light.";
-            else if(slot==0)words=now.getInt("Night")>=2?"You've seen him. Same little mark, same tree. Some things keep finding their way back to us.":"If he can find us under all this snow, he can find us tomorrow. Hold on to that.";
-            else words=now.getInt("Night")>=2?"You keep eating. I'll keep looking. We don't need to solve the whole forest tonight.":"First we wait for the snow to ease. Your mother will be waiting. Stay close to me.";
+            else if(now.getBoolean("WoundSeen0488"))words=slot==0?"You needed to eat. I couldn't let the snow have you.":slot==2?"The poles will hold me. You go ahead. Keep looking for the light.":"I will be right behind you. Keep going when you see the light.";
+            else if(today>=3)words=slot==0?name(now)+" is by the tree. My arm won't lift. Look where I looked yesterday.":slot==2?"I'm only tired. You must save your strength. You're the one who has to walk.":"One more try. I can still get you one more morning.";
+            else if(today==2)words=slot==0?"You've seen him. Same little mark, same tree. Some things keep finding their way back to us.":slot==2?"I went by the creek. Don't worry about my trousers. Keep the skin folded and eat while it's warm.":"You keep eating. I'll keep looking. We don't need to solve the whole forest tonight.";
+            else words=slot==0?"If he can find us under all this snow, he can find us tomorrow. Hold on to that.":slot==2?"We wait here until it eases. The tree keeps the worst of it off. Stay where I can see you.":"Your mother will be waiting. Tell her about the rabbit when we're home.";
             if(slot!=8)voice(p,father,words);LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.HOLY_RABBIT,now);return true;
         });
     }

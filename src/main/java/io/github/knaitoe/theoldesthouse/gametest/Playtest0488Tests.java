@@ -130,7 +130,7 @@ public final class Playtest0488Tests {
             h.assertTrue(!f.own(p,place).getBoolean("TrailOpen"),"earned meals alone do not skip the actual injury reveal");
             var father=(LiteraryActor)f.out.getEntity(LiteraryVignettes.shared(f.data(),place).getUUID("Father_"+p.getUUID()));
             p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,father.position().add(.18,.45,0));
-            h.runAfterDelay(10,()->{
+            h.runAfterDelay(125,()->{
                 h.assertTrue(f.own(p,place).getBoolean("WoundSeen0488")&&f.own(p,place).getBoolean("TrailOpen")&&!father.isInvisible(),"the reader really sees the collapsed father's wound before he can disappear");
                 f.at(p,place,.5,0,-119.5);p.setYRot(180);p.setXRot(0);
                 h.startSequence().thenWaitUntil(()->{h.assertTrue(f.own(p,place).getBoolean("FatherGone"),"the original father has physically retreated on his poles: "+father.position());}).thenExecute(()->{
@@ -143,24 +143,28 @@ public final class Playtest0488Tests {
     }
     @AfterBatch(batch="notes488_rabbit_ending") public static void rabbitEndingDone(ServerLevel ignored){if(rabbitEnding!=null){rabbitEnding.close();rabbitEnding=null;}}
 
-    @GameTest(template="empty",batch="notes488_rabbit_nights",timeoutTicks=2400)
+    @GameTest(template="empty",batch="notes488_rabbit_nights",timeoutTicks=4200)
     public static void twoActualNightsReturnFiniteMealsWithoutTrappingFatherOnTheFoliage(GameTestHelper h){
         rabbitNights=new LiteraryTests.Fixture(h);var f=rabbitNights;var place=LabyrinthPlace.HOLY_RABBIT;
-        var p=f.player("rabbit_nights",place);var b=f.base(place);f.at(p,place,3.5,0,-21.5);boolean[] started={false},done={false};
+        var p=f.player("rabbit_nights",place);var b=f.base(place);f.at(p,place,3.5,0,-21.5);boolean[] started={false},done={false},carried={false},tossed={false};UUID[] rabbitId={null};float[] health={0};
         h.onEachTick(()->{
             if(done[0])return;
             var world=LiteraryVignettes.shared(f.data(),place);if(!world.hasUUID("Father_"+p.getUUID()))return;
             var father=(LiteraryActor)f.out.getEntity(world.getUUID("Father_"+p.getUUID()));if(father==null)return;
             if(!started[0]){LiteraryVignettes.talk(p,father);p.containerMenu.clicked(0,0,ClickType.PICKUP,p);p.closeContainer();started[0]=true;}
             var own=f.own(p,place);int night=own.getInt("Night");
-            if(night<3&&own.getInt("NightTicks")<95){f.at(p,place,7.5,0,-21.5);f.look(p,b.offset(HolyRabbit.RABBIT));}
+            var rabbit=world.hasUUID("Rabbit_"+p.getUUID())?(Rabbit)f.out.getEntity(world.getUUID("Rabbit_"+p.getUUID())):null;
+            if(rabbit!=null){if(rabbitId[0]==null){rabbitId[0]=rabbit.getUUID();health[0]=rabbit.getHealth();}h.assertTrue(rabbit.getUUID().equals(rabbitId[0])&&rabbit.isAlive()&&rabbit.getHealth()==health[0],"the apparent harvest preserves the original living rabbit and health");if(rabbit.getVehicle()==father)carried[0]=true;if(own.getInt("HarvestTicks0491")>35&&own.getInt("HarvestTicks0491")<75&&rabbit.getY()>b.getY()+.1)tossed[0]=true;}
+            if(night<3&&own.getInt("NightTicks")<95){f.at(p,place,3.5,0,-17.5);f.look(p,b.offset(HolyRabbit.RABBIT));}
             else{f.at(p,place,3.5,0,-20.5);p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,father.position().add(.18,.45,0));}
             for(var item:p.getInventory().items)if(item.is(LiteraryRegistry.MEAL.get())){
                 h.assertTrue(night==own.getInt("MealNight")&&own.getInt("AteNight")!=night,"the present night issues exactly one fresh original meal (night="+night+", meal="+own.getInt("MealNight")+", ate="+own.getInt("AteNight")+", count="+item.getCount()+")");
+                h.assertTrue(night>=3||own.getInt("HarvestDay0491")==night,"each finite supper follows the visible apparent harvest and return");
                 item.getItem().finishUsingItem(item,f.out,p);h.assertTrue(p.getFoodData().getFoodLevel()==1,"the actual native consumption leaves hunger at one immediately");break;
             }
             own=f.own(p,place);
-            if(night>=3&&father.phase()==3){
+            if(night>=3&&father.phase()==3&&own.getInt("NightTicks")>=120){
+                h.assertTrue(carried[0]&&tossed[0],"the actual native rabbit was held and tossed before the next morning");
                 h.assertTrue(own.getInt("Meals")==2&&own.getInt("AteNight")==2,"both actual completed routes issued one finite meal and native eating counted each once");
                 h.assertTrue(Integer.bitCount(own.getInt("RabbitMornings"))>=2,"the unchanged rabbit was really seen alive in both mornings");
                 h.assertTrue(own.getBoolean("RabbitBelieved0490")&&own.getBoolean("RabbitTruth0490")&&!own.getBoolean("RabbitBelief0490"),"the observed returning named rabbit builds hope before the witnessed wound changes its explanation");h.assertTrue(own.getBoolean("WoundSeen0488")&&own.getBoolean("TrailOpen"),"the two actual nights lead to the physical injury reveal and earned escape");done[0]=true;h.succeed();

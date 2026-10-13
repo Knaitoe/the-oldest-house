@@ -116,7 +116,7 @@ public final class ClassicsVignettes {
         cast(p.serverLevel()).forEach(a->a.appearance(a.role(),false,true));say(p,Integer.bitCount(mask)%3+1,bit==0?"The cupboard. There was a hand on it.":"That candle was burning. I watched you light it.");
         if(Integer.bitCount(mask|(1<<bit))>=3)finish(p,"drove_the_family_out");
     }
-    public static void attacked(ServerPlayer p,SeanceActor actor){if(!inside(p,LabyrinthPlace.SEANCE))return;var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());own.putBoolean("Interrupted",true);own.putInt("ListenTicks",0);save(data,p.getUUID(),own);actor.appearance(actor.role(),false,true);actor.say("Something touched me. Close the door.");}
+    public static void attacked(ServerPlayer p,SeanceActor actor){if(!inside(p,LabyrinthPlace.SEANCE))return;var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());own.putBoolean("Interrupted",true);own.putInt("ListenTicks",0);save(data,p.getUUID(),own);actor.appearance(actor.role(),false,true);actor.say("Something touched me. Get the children out.");if(!data.state(STATE).getBoolean("SittingEnded"))finish(p,"drove_the_family_out");}
     private static void finish(ServerPlayer p,String outcome){var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());own.putBoolean("SeanceFinished",true);own.putString("SeanceOutcome",outcome);own.remove("SeanceViewUntil");save(data,p.getUUID(),own);var all=data.state(STATE);all.putBoolean("SittingEnded",true);all.putString("SharedOutcome",outcome);data.setState(STATE,all);
         if(outcome.equals("drove_the_family_out")){var b=base(p,LabyrinthPlace.SEANCE);NovelRooms.door(p.serverLevel(),b.offset(-5,0,-22),Direction.SOUTH,Blocks.DARK_OAK_DOOR,true);startFlight(p.serverLevel(),data);}
         else say(p,0,p.getGameProfile().getName()+". I know you are here. This house is occupied. Please go.");
@@ -132,7 +132,7 @@ public final class ClassicsVignettes {
     private static final String FLEE="Flee0477";
     private static void startFlight(ServerLevel level,LabyrinthData data){
         var all=data.state(STATE);all.putBoolean("Fleeing0477",true);data.setState(STATE,all);
-        for(var a:cast(level)){a.appearance(a.role(),false,true);a.setNoAi(true);a.getNavigation().stop();a.getPersistentData().putInt(FLEE,0);}
+        for(var a:cast(level)){a.appearance(a.role(),false,true);a.setNoAi(true);a.setNoGravity(true);a.getNavigation().stop();a.getPersistentData().putInt(FLEE,0);}
     }
     /**
      * Driven out, they get up and hurry, one behind another, through the west door into the back room, and the last one in
@@ -148,15 +148,15 @@ public final class ClassicsVignettes {
             var route=FLIGHT[a.role()];int i=a.getPersistentData().getInt(FLEE);if(i>=route.length)continue;done=false;
             Vec3 to=new Vec3(b.getX()+route[i][0],b.getY(),b.getZ()+route[i][1]),d=to.subtract(a.position());double len=d.horizontalDistance();
             Vec3 next=len<=.16?to:a.position().add(d.x/len*.16,(to.y-a.getY())*.5,d.z/len*.16);
-            float yaw=len>.01?(float)(Math.atan2(d.z,d.x)*180/Math.PI)-90:a.getYRot();a.moveTo(next.x,next.y,next.z,yaw,0);a.setYHeadRot(yaw);a.yBodyRot=yaw;
-            if(next.distanceToSqr(to)<.0025)a.getPersistentData().putInt(FLEE,i+1);
+            float yaw=len>.01?(float)(Math.atan2(d.z,d.x)*180/Math.PI)-90:a.getYRot();a.move(net.minecraft.world.entity.MoverType.SELF,next.subtract(a.position()));a.setDeltaMovement(Vec3.ZERO);a.setYRot(yaw);a.setYHeadRot(yaw);a.yBodyRot=yaw;
+            if(a.position().distanceToSqr(to)<.0025)a.getPersistentData().putInt(FLEE,i+1);
         }
         if(!done)return;
         var door=b.offset(-5,0,-22);
         if(!level.getEntitiesOfClass(LivingEntity.class,new AABB(door).expandTowards(0,1,0).inflate(.1),e->e.isAlive()).isEmpty())return;
         NovelRooms.door(level,door,Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);level.playSound(null,door,SoundEvents.WOODEN_DOOR_CLOSE,SoundSource.BLOCKS,1,.8F);
         cast(level).stream().filter(a->a.role()==2).findFirst().ifPresent(a->a.say("It walks through doors. It doesn't need them. Keep this one shut anyway."));
-        all=data.state(STATE);all.putBoolean("Fled0477",true);all.remove("Fleeing0477");data.setState(STATE,all);
+        cast(level).forEach(a->a.setNoGravity(false));all=data.state(STATE);all.putBoolean("Fled0477",true);all.remove("Fleeing0477");data.setState(STATE,all);
     }
     // ------------------------------------------------------------------------------------------------ 0.4.77: what a ghost can do
     /**
@@ -191,7 +191,8 @@ public final class ClassicsVignettes {
         int n=a.getPersistentData().getInt("Touched0477");a.getPersistentData().putInt("Touched0477",n+1);
         a.say(TOUCH[a.role()][n%TOUCH[a.role()].length]);a.appearance(a.role(),a.seated(),true);a.getPersistentData().putLong("Flinch0477",a.level().getGameTime()+60);
         a.level().playSound(null,a.blockPosition(),SoundEvents.PLAYER_HURT_FREEZE,SoundSource.NEUTRAL,.35F,1.3F+a.role()*.08F);
-        var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());own.putInt("ListenTicks",0);save(data,p.getUUID(),own);
+        var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());own.putInt("ListenTicks",0);own.putInt("TouchedFamily0491",own.getInt("TouchedFamily0491")|(1<<a.role()));save(data,p.getUUID(),own);
+        if(Integer.bitCount(own.getInt("TouchedFamily0491"))>=3&&!data.state(STATE).getBoolean("SittingEnded"))finish(p,"drove_the_family_out");
     }
     /** A flinch passes while the sitting goes on. */
     private static void settle(ServerLevel level,CompoundTag all){

@@ -25,6 +25,7 @@ public final class HolyRabbitRenderer extends RabbitRenderer {
     public static final ModelLayerLocation MARKS=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"holy_rabbit_marks"),"main");
     public HolyRabbitRenderer(EntityRendererProvider.Context context){super(context);addLayer(new Marks(this,context.bakeLayer(MARKS)));}
     @Override public ResourceLocation getTextureLocation(Rabbit rabbit){return HolyRabbit.owner(rabbit).isPresent()?ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/literary_snow_rabbit.png"):super.getTextureLocation(rabbit);}
+    @Override protected void setupRotations(Rabbit rabbit,PoseStack pose,float age,float yaw,float partial,float scale){super.setupRotations(rabbit,pose,age,yaw,partial,scale);if(HolyRabbit.owner(rabbit).isPresent()&&rabbit.hasPose(net.minecraft.world.entity.Pose.DYING)){pose.translate(0,.2,0);pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(90));}}
     @Override public boolean shouldRender(Rabbit rabbit,Frustum f,double x,double y,double z){
         var owner=HolyRabbit.owner(rabbit);var p=Minecraft.getInstance().player;
         return (owner.isEmpty()||p!=null&&owner.get().equals(p.getUUID()))&&super.shouldRender(rabbit,f,x,y,z);

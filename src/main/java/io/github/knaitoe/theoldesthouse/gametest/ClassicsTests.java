@@ -21,7 +21,7 @@ import net.neoforged.neoforge.gametest.*;
 @PrefixGameTestTemplate(false)
 public final class ClassicsTests {
     private static Fixture listening,haunting,nursery,upgrade;
-    private static final class Fixture implements AutoCloseable {
+    static final class Fixture implements AutoCloseable {
         final GameTestHelper h;final ServerLevel l;final BlockPos origin,b;final LabyrinthPlace place;
         final HouseSavedData oldHouse;final LabyrinthData oldData;final List<ServerPlayer> players=new ArrayList<>();final List<BlockPos> held=new ArrayList<>();
         Fixture(GameTestHelper h,int x,LabyrinthPlace place){this.h=h;this.place=place;l=HouseTestLevel.get(h.getLevel().getServer(),HouseDimensions.INTERIOR);oldHouse=HouseSavedData.get(l.getServer());oldData=LabyrinthData.get(l.getServer());origin=new BlockPos(x,80,x);var house=new HouseSavedData();house.markSpawned(origin);house.markInteriorInitialized();l.getServer().overworld().getDataStorage().set("the_oldest_house",house);l.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",new LabyrinthData());b=LabyrinthPlaces.base(origin,place);ClassicsRooms.build(l,b,place);LabyrinthBuilder.registerDoors(data(),place,b);data().setBuilt(LabyrinthBuilder.VERSION,origin);IndianLakeRooms.keepLoaded(l,b,place);}

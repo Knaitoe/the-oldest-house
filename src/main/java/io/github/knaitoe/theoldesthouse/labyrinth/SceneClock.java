@@ -24,7 +24,8 @@ public final class SceneClock {
             case HOSPITAL->5;
             case DROWNED_TOWN,SHALLOWS,PHONE_CANOE->7;
             case HOTEL_GROUNDS->8;
-            case ELK_LOT,HOLY_RABBIT,ELK_CARCASSES,COSTUME_NIGHT,MOVIE_NIGHT,WINTER_LAKE,CAMP_BLOOD,BLY_ROUTE->9;
+            case HOLY_RABBIT->11;
+            case ELK_LOT,ELK_CARCASSES,COSTUME_NIGHT,MOVIE_NIGHT,WINTER_LAKE,CAMP_BLOOD,BLY_ROUTE->9;
             case END_WORLD_CABIN->10;
             case LAKE_HOUSE,LAKE_HOUSE_EMPTY->4;
             default->0;
@@ -32,6 +33,6 @@ public final class SceneClock {
     }
     public static long time(int mode,int elapsed,long nativeTime){return switch(mode){
         case 1->21000;case 3,10->12500;case 7,8,9->18000;case 4->6000;
-        case 5->18000+Math.min(6000,Math.max(0,elapsed)*6000L/3600);default->nativeTime;
+        case 11->1000;case 5->18000+Math.min(6000,Math.max(0,elapsed)*6000L/3600);default->nativeTime;
     };}
 }
