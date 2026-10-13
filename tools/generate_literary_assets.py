@@ -88,6 +88,7 @@ base={
 }
 variants={}
 for kind,els in base.items():
+ if kind=='trunk_mark':continue  # Keep the reviewed continuous carved-tree models and original block entity.
  for stage in range(4):
   elements=list(els)
   if kind=='coffin':elements.append(cube([1,8,0],[15,9,16],rot=None if stage else {'origin':[1,8,0],'axis':'z','angle':-45}))
@@ -107,7 +108,9 @@ items={'elk_tooth':[cube([6,1,7],[10,3,9],'paper'),cube([5,3,7],[11,9,9],'paper'
  'father_meal':[cube([3,0,3],[13,2,13],'paper'),cube([4,2,4],[12,4,12],'hide'),cube([5,4,5],[11,5,11],'wax')],
  'family_stew':[cube([4,0,4],[12,2,12]),cube([3,2,3],[13,5,13],'iron'),cube([4,5,4],[12,6,12],'wax')]}
 for n in ('one','two','three'):items['wax_cylinder_'+n]=base['cylinder']
-for name,els in items.items():write('models/item/'+name+'.json',{'textures':tex,'elements':els,'display':display})
+for name,els in items.items():
+ if name=='father_meal':continue  # Keep the authored folded hide and painted cooked-meat material.
+ write('models/item/'+name+'.json',{'textures':tex,'elements':els,'display':display})
 
 # Standard humanoid faces and limbs occupy the left 64 pixels; tailoring occupies the right.
 skins={'mother':((211,182,153),(59,43,48),(46,31,25)), 'dancer':((190,159,127),(36,45,61),(24,20,19)), 'red_figure':((110,67,54),(117,27,23),(49,21,18)), 'coffin_woman':((206,177,152),(191,183,165),(62,41,31)), 'lady':((184,179,164),(174,172,159),(38,28,27)), 'silhouette':((24,23,25),(22,22,25),(20,20,22)), 'brother':((168,138,109),(70,83,107),(42,29,23)), 'father':((164,132,101),(83,73,57),(46,35,28)), 'visitor':((176,148,116),(56,46,40),(111,104,88)), 'killer':((104,98,87),(31,34,31),(26,24,21)), 'family_father':((194,160,126),(60,76,72),(53,37,26)), 'family_mother':((216,184,154),(115,92,85),(60,40,27)), 'family_child':((197,164,130),(102,107,123),(54,36,26)), 'old_man':((189,161,131),(74,64,50),(190,183,163)), 'camera':((0,0,0),(0,0,0),(0,0,0))}

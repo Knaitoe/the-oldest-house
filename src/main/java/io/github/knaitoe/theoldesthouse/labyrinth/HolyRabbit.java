@@ -27,9 +27,12 @@ import net.neoforged.neoforge.event.tick.*;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class HolyRabbit {
     private static final LabyrinthPlace PLACE=LabyrinthPlace.HOLY_RABBIT;
+    public static final int DAY_TICKS=1800;
+    public static long skyTime(int ticks){int t=Math.max(0,Math.min(DAY_TICKS,ticks));return t<900?1000+t*6000L/900:t<1200?7000+(t-900)*6000L/300:13000+(t-1200)*10000L/600;}
+    private static Vec3 carving(ServerLevel l,BlockPos b){return new Vec3(b.getX()+.5,b.getY()+3.3,b.getZ()-23.95);}
     private static final String SHELTER="rabbit_shelter0488",MARKER="the_oldest_house:holy_rabbit:";
-    public static final BlockPos RABBIT=new BlockPos(6,0,-23);
-    private static final double[][] WALK={{3.5,-22.5},{3.5,-18.5},{6.5,-18.5},{6.5,-23.5},{6.5,-18.5},{3.5,-18.5},{3.5,-22.5}};
+    public static final BlockPos RABBIT=new BlockPos(1,0,-18);
+    private static final double[][] WALK={{3.5,-22.5},{3.5,-18.5},{6.5,-18.5},{1.5,-18.5},{6.5,-18.5},{3.5,-18.5},{3.5,-22.5}};
     private static final double[][] LAST_HUNT={{3.5,-18.5},{6.5,-18.5},{6.5,-30.5},{.5,-30.5},{.5,-36.5}};
     private record Frost(ServerPlayer player,int before){}
     private static final Map<UUID,Frost> FROST=new HashMap<>();
@@ -64,12 +67,12 @@ public final class HolyRabbit {
             rabbit.setVariant(Rabbit.Variant.WHITE_SPLOTCHED);rabbit.setCustomName(Component.literal("Slaney"));rabbit.setNoAi(true);rabbit.setNoGravity(true);rabbit.setInvulnerable(true);rabbit.setPersistenceRequired();rabbit.addTag("HolyRabbit");
             rabbit.moveTo(Vec3.atBottomCenterOf(b.offset(RABBIT)));rabbit.setYRot(90);
             if(!p.serverLevel().addFreshEntity(rabbit))return null;
-            world.putUUID(key,rabbit.getUUID());LiteraryVignettes.shared(data,PLACE,world);own.putBoolean("RabbitAnchor0488",true);
+            world.putUUID(key,rabbit.getUUID());LiteraryVignettes.shared(data,PLACE,world);own.putBoolean("RabbitAnchor0488",true);own.putBoolean("RabbitFront0491",true);
         }
         if(rabbit==null)return null;
         // Migrate the original circulating rabbit once, when no real camera can see the move.
-        if(!own.getBoolean("RabbitAnchor0488")&&!LiteraryVignettes.watched(p.serverLevel(),rabbit.getEyePosition())&&!LiteraryVignettes.watched(p.serverLevel(),b.offset(RABBIT).getCenter())){
-            rabbit.moveTo(Vec3.atBottomCenterOf(b.offset(RABBIT)));own.putBoolean("RabbitAnchor0488",true);
+        if(!own.getBoolean("RabbitFront0491")&&!rabbit.isPassenger()&&!LiteraryVignettes.watched(p.serverLevel(),rabbit.getEyePosition())&&!LiteraryVignettes.watched(p.serverLevel(),b.offset(RABBIT).getCenter())){
+            rabbit.moveTo(Vec3.atBottomCenterOf(b.offset(RABBIT)));own.putBoolean("RabbitAnchor0488",true);own.putBoolean("RabbitFront0491",true);
         }
         rabbit.setNoAi(true);rabbit.setNoGravity(true);rabbit.setDeltaMovement(Vec3.ZERO);
         var name=rabbit.getCustomName();if(name!=null&&!name.getString().isBlank())own.putString("RabbitName",name.getString());
@@ -96,6 +99,17 @@ public final class HolyRabbit {
         double gait=(ticks%30)<20?1:.22,speed=night==1?.09:.04;
         father.move(MoverType.SELF,delta.normalize().scale(Math.min(delta.length(),speed*5*gait)));
     }
+    /** The apparent harvest uses the same living native rabbit, carried and tossed without replacing it. */
+    private static boolean harvest(ServerPlayer p,LiteraryActor father,Rabbit rabbit,BlockPos b,CompoundTag own,int day){
+        if(day>=3||rabbit==null||own.getInt("HarvestDay0491")>=day)return false;
+        if(own.getInt("MealNight")>=day){own.putInt("HarvestDay0491",day);return false;}
+        if(own.getInt("FatherWaypoint0488")<4)return false;
+        int t=own.getInt("HarvestTicks0491")+5;own.putInt("HarvestTicks0491",t);father.gesture(2);father.setDeltaMovement(Vec3.ZERO);
+        if(t<=30){rabbit.setPose(Pose.DYING);if(!rabbit.isPassenger())rabbit.startRiding(father,true);if(t==5){father.say(day==1?"Look away a moment. I'll make something for us.":"Small bites again. You remember how to eat it.");father.getPersistentData().putLong("SayUntil0488",p.level().getGameTime()+90);}return true;}
+        if(t==35){rabbit.stopRiding();var from=rabbit.position();own.putDouble("TossX0491",from.x);own.putDouble("TossY0491",from.y);own.putDouble("TossZ0491",from.z);}
+        if(t<=75){double f=Math.min(1,(t-35)/40D);var from=new Vec3(own.getDouble("TossX0491"),own.getDouble("TossY0491"),own.getDouble("TossZ0491"));var end=Vec3.atBottomCenterOf(b.offset(RABBIT));var target=from.lerp(end,f).add(0,2.4*f*(1-f),0);rabbit.move(MoverType.SELF,target.subtract(rabbit.position()));rabbit.setDeltaMovement(Vec3.ZERO);return true;}
+        own.putInt("HarvestDay0491",day);own.putBoolean("RabbitDiscarded0491",true);father.gesture(0);return false;
+    }
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){
         var father=LiteraryVignettes.actor(p,PLACE,"Father",LiteraryActor.FATHER,new BlockPos(3,0,-22),true);
         if(!LiteraryVignettes.retreatLocked(p)){release(p);return;}
@@ -103,15 +117,19 @@ public final class HolyRabbit {
         int night=Math.max(1,own.getInt("Night"));own.putInt("Night",night);
         int ticks=own.getInt("NightTicks")+5;own.putInt("NightTicks",ticks);
         int drowse=own.getInt("Drowse")+5;own.putInt("Drowse",drowse);
-        HousePackets.send(p,new LiteraryViewPayload(-1,20,Math.min(90,drowse/4),new CompoundTag()));
+        var sky=new CompoundTag();sky.putUUID("Reader",p.getUUID());sky.putBoolean("RabbitScene0491",true);sky.putInt("RabbitDayTicks",ticks);sky.putIntArray("RabbitBase",new int[]{b.getX(),b.getY(),b.getZ()});
+        HousePackets.send(p,new LiteraryViewPayload(-1,20,Math.min(28,drowse/20),sky));
+        var rabbit=rabbit(p,b,own);
+        if(ticks<=10&&rabbit!=null){rabbit.stopRiding();rabbit.setPose(Pose.STANDING);own.putBoolean("RabbitDiscarded0491",false);own.putInt("HarvestTicks0491",0);}
         if(father!=null){
             father.appearance(LiteraryActor.FATHER,own.getBoolean("LastHunt0490")?4:Math.min(3,night));
-            if(own.getBoolean("LastHunt0490"))lastHunt(p,father,b,own,ticks);else walk(father,b,own,night,ticks);
+            father.gesture(ticks<100?(night<3?1:3):0);
+            if(own.getBoolean("LastHunt0490"))lastHunt(p,father,b,own,ticks);else if(!harvest(p,father,rabbit,b,own,night))walk(father,b,own,night,ticks);
+            if(ticks==15&&rabbit!=null){String name=own.getString("RabbitName");String line=night==1?"There. By the snow. The little one from your dream. "+name+".":night==2?"Look. "+name+"'s there again. Same brown ear.":"He's there. I can see him. You'll have to look for yourself today.";father.say(line);father.getPersistentData().putLong("SayUntil0488",p.level().getGameTime()+100);p.displayClientMessage(Component.literal("Father: "+line),false);}
             if(!own.getBoolean("LastHunt0490")&&drowse>=320&&father.distanceToSqr(p)<36&&p.hurt(p.damageSources().mobAttack(father),1)){own.putInt("Drowse",0);father.say("Stay with me.");}
-            if(night>=3&&!father.isInvisible()&&p.distanceToSqr(father)<64&&HouseWatchers.sees(p,father.position().add(.18,.45,0)))own.putBoolean("WoundSeen0488",true);
+            if(night>=3&&ticks>=120&&!father.isInvisible()&&p.distanceToSqr(father)<64&&HouseWatchers.sees(p,father.position().add(.18,.45,0)))own.putBoolean("WoundSeen0488",true);
         }
-        var rabbit=rabbit(p,b,own);
-        if(rabbit!=null&&ticks<100&&HouseWatchers.sees(p,rabbit.getEyePosition()))own.putInt("RabbitMornings",own.getInt("RabbitMornings")|(1<<Math.min(7,night)));
+        if(rabbit!=null&&ticks<600&&!own.getBoolean("RabbitDiscarded0491")&&HouseWatchers.sees(p,rabbit.getEyePosition()))own.putInt("RabbitMornings",own.getInt("RabbitMornings")|(1<<Math.min(7,night)));
         HolyRabbitDialogue.tick(p,father,own,night,ticks);
         boolean returned=night>=3||own.getInt("FatherWaypoint0488")>=WALK.length;
         if(ticks>=200&&returned&&own.getInt("MealNight")<night&&p.distanceToSqr(b.offset(0,0,-24).getCenter())<100){
@@ -120,11 +138,11 @@ public final class HolyRabbit {
             own.putUUID("MealToken",token);own.putInt("MealNight",night);LiteraryVignettes.give(p,meal);
             HolyRabbitDialogue.meal(p,father,own,night);
         }
-        if(ticks>=500&&own.getInt("MealNight")>=night&&own.getInt("AteNight")==night){
-            own.putInt("Night",Math.min(8,night+1));own.putInt("NightTicks",0);own.remove("FatherWaypoint0488");
-            if(night>=2&&!LiteraryVignettes.watched(p.serverLevel(),b.offset(0,3,-25).getCenter()))own.putBoolean("CarvingAppeared",true);
+        if(night<3&&ticks>=DAY_TICKS&&own.getInt("MealNight")>=night&&own.getInt("AteNight")==night){
+            own.putInt("Night",night+1);own.putInt("NightTicks",0);own.putInt("Drowse",0);own.remove("FatherWaypoint0488");own.putInt("HarvestTicks0491",0);
+            if(night>=2&&!LiteraryVignettes.watched(p.serverLevel(),carving(p.serverLevel(),b)))own.putBoolean("CarvingAppeared",true);
         }
-        if(own.getBoolean("CarvingAppeared")&&HouseWatchers.sees(p,b.offset(0,3,-25).getCenter()))own.putBoolean("CarvingRead",true);
+        if(own.getBoolean("CarvingAppeared")&&HouseWatchers.sees(p,carving(p.serverLevel(),b)))own.putBoolean("CarvingRead",true);
         // Older earned trails remain earned. Fresh trails require seeing why the rabbit is still alive.
         boolean revealed=own.getBoolean("WoundSeen0488")||own.getBoolean("TrailOpen")&&own.getBoolean("FatherGone");
         if(night>=3&&own.getInt("Meals")>=2&&revealed){

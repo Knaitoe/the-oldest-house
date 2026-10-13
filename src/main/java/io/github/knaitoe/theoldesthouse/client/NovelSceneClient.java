@@ -30,7 +30,7 @@ public final class NovelSceneClient {
     public static boolean wellActive(){return active()&&(mode==14||mode==WellSequence.DESCENDING_MODE);}
     public static float wellDepth(){var mc=Minecraft.getInstance();var b=io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlaces.base(HouseSightlineState.origin(),io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace.BARN_WELL);return mc.player==null||b==null?0:WellSequence.depth(mc.player.getY()-b.getY());}
     /** Scene modes that set their own fog colour, which the interior's black must not cover. */
-    public static boolean authorsFog(){return active()&&(mode==1||mode==3||mode==4||mode==5||mode>=10);}
+    public static boolean authorsFog(){return RabbitSceneClient.active(Minecraft.getInstance().level)||active()&&(mode==1||mode==3||mode==4||mode==5||mode>=10);}
     private static boolean stairActive(){var mc=Minecraft.getInstance();return stairLease>0&&stairShake>0&&mc.player!=null&&mc.player.isAlive()&&!mc.player.isSpectator()&&mc.level!=null
             &&mc.level.dimension().equals(HouseDimensions.INTERIOR)&&HouseSightlineState.origin()!=null
             &&io.github.knaitoe.theoldesthouse.labyrinth.FinaleArchitecture.contains(HouseSightlineState.origin(),mc.player.blockPosition());}
@@ -39,7 +39,7 @@ public final class NovelSceneClient {
     /** Read-only spatial clock; late packets may expire a cue, but never the scene's sky. */
     public static long sceneTime(net.minecraft.world.level.Level level,long nativeTime){
         var mc=Minecraft.getInstance();if(level!=mc.level||mc.player==null)return nativeTime;
-        return LakeHouseAtmosphere.time(SceneClock.time(clockMode(level),elapsed,nativeTime));
+        return RabbitSceneClient.time(level,LakeHouseAtmosphere.time(SceneClock.time(clockMode(level),elapsed,nativeTime)));
     }
     public static int clockMode(net.minecraft.world.level.Level level){
         var mc=Minecraft.getInstance();if(level!=mc.level||mc.player==null)return 0;

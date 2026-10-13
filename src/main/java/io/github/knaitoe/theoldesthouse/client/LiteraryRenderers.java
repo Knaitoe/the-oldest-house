@@ -76,7 +76,7 @@ public final class LiteraryRenderers {
             if(role==LiteraryActor.KILLER)killer(phase,age);
             if(role==LiteraryActor.LAKE_TESS){
                 if(phase==2||phase==6){float stroke=age*.095F;body.xRot=0;head.xRot=-.8F;leftArm.xRot=rightArm.xRot=-2.65F+(float)Math.sin(stroke)*.55F;leftArm.zRot=-.18F-Math.max(0,(float)Math.cos(stroke))*.5F;rightArm.zRot=-leftArm.zRot;leftLeg.xRot=(float)Math.sin(age*.18)*.18F;rightLeg.xRot=-leftLeg.xRot;hat.copyFrom(head);}
-                else if(phase==1){leftLeg.xRot=rightLeg.xRot=-1.5F;rightArm.xRot=-.8F+(float)Math.sin(age*.12)*.4F;leftArm.xRot=-.6F;}
+                else if(phase==1){leftLeg.xRot=rightLeg.xRot=-1.45F;leftLeg.yRot=.12F;rightLeg.yRot=-.12F;leftArm.xRot=rightArm.xRot=-.35F;leftArm.zRot=-.12F;rightArm.zRot=.12F;}
                 else if(phase==3){rightArm.xRot=-1.6F;head.xRot=-.25F;}
                 else if(phase==4){body.xRot=.2F;leftArm.xRot=-.75F;rightArm.xRot=-1.2F;}
             }
@@ -130,6 +130,12 @@ public final class LiteraryRenderers {
             tailRight.xRot=Math.max(0,-rightLeg.xRot)*.35F;tailLeft.xRot=Math.max(0,-leftLeg.xRot)*.35F;
         }
         @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){head.getAllParts().forEach(ModelPart::resetPose);body.getAllParts().forEach(ModelPart::resetPose);leftLeg.getAllParts().forEach(ModelPart::resetPose);rightLeg.getAllParts().forEach(ModelPart::resetPose);leftArm.getAllParts().forEach(ModelPart::resetPose);rightArm.getAllParts().forEach(ModelPart::resetPose);this.walk=walk;this.amount=amount;crouching=a.getPose()==net.minecraft.world.entity.Pose.CROUCHING||(a.role()==LiteraryActor.KILLER&&a.phase()==3);super.setupAnim(a,walk,amount,age,yaw,pitch);pose(a.role(),a.phase(),age);
+            if(a.role()==LiteraryActor.FATHER){switch(a.gesture()){
+                case 1->{rightArm.xRot=-1.45F;rightArm.yRot=-.45F;rightArm.zRot=.18F;head.yRot-=.25F;}
+                case 2->{leftArm.xRot=rightArm.xRot=-1.2F;leftArm.yRot=.3F;rightArm.yRot=-.3F;body.xRot+=.12F;head.xRot+=.2F;}
+                case 3->{rightArm.xRot=-.45F+(float)Math.sin(age*.12F)*.08F;rightArm.zRot=.18F;head.xRot+=.18F;}
+                default->{}
+            }hat.copyFrom(head);}
             if(a.role()==LiteraryActor.LAKE_TESS)lakeHairMotion.pose(a,age);
             // An actor placed in a chair sits in it: hips on the seat, legs forward.
             var chair=seat(a);if(chair!=null){float lower=12-chair.seatHeight();for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=lower;leftLeg.xRot=rightLeg.xRot=-1.45F;leftLeg.yRot=.1F;rightLeg.yRot=-.1F;leftArm.xRot=rightArm.xRot=-.35F;hat.copyFrom(head);}

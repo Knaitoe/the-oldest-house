@@ -150,7 +150,7 @@ public final class GoatmanTests {
         h.assertTrue(LabyrinthPlace.PHONE_CANOE.slot()==30&&LabyrinthPlace.GOATMAN.slot()==31&&DoorLeakKind.CANOE.ordinal()==10&&DoorLeakKind.WOODS.ordinal()==11,"the new site and sensory hint append to the existing saved layout");
         h.assertTrue(WitnessAccount.REQUIRED==34&&WitnessAccount.Story.values().length==45,"the current forty-five playable sources require thirty-four personal resolutions");h.succeed();
     }
-    private static final class Fixture implements AutoCloseable {
+    static final class Fixture implements AutoCloseable {
         final GameTestHelper h;final net.minecraft.server.MinecraftServer server;final ServerLevel l;final BlockPos origin,b;
         final HouseSavedData oldHouse;final LabyrinthData oldData;final MotherCollection oldMother;final boolean keep;
         final List<ServerPlayer> players=new ArrayList<>();final NativeTestChunks chunks=new NativeTestChunks();

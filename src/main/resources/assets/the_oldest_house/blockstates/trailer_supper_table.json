@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "support=none": {
+      "model": "the_oldest_house:block/trailer_table_none"
+    },
+    "support=west": {
+      "model": "the_oldest_house:block/trailer_table_west"
+    },
+    "support=east": {
+      "model": "the_oldest_house:block/trailer_table_east"
+    }
+  }
+}

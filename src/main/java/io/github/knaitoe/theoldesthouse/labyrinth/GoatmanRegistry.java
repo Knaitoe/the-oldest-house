@@ -28,6 +28,7 @@ public final class GoatmanRegistry {
     public static final DeferredBlock<TrailerFixtureBlock> COOLER=BLOCKS.register("trailer_cooler",()->new TrailerFixtureBlock(TrailerFixtureBlock.Kind.COOLER,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable()));
     public static final DeferredBlock<TrailerFixtureBlock> WHEEL=BLOCKS.register("vehicle_wheel",()->new TrailerFixtureBlock(TrailerFixtureBlock.Kind.WHEEL,BlockBehaviour.Properties.ofFullCopy(Blocks.BLACK_CONCRETE).noOcclusion().noLootTable()));
     public static final DeferredBlock<TrailerDoorBlock> DOOR=BLOCKS.register("trailer_door",()->new TrailerDoorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_DOOR).noOcclusion()));
+    public static final DeferredBlock<TrailerTableBlock> TABLE=BLOCKS.register("trailer_supper_table",()->new TrailerTableBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion().noLootTable()));
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<TrailerDoorBlockEntity>> DOOR_ENTITY=BLOCK_ENTITIES.register("trailer_door",()->BlockEntityType.Builder.of(TrailerDoorBlockEntity::new,DOOR.get()).build(null));
     private static final DeferredRegister<ParticleType<?>> PARTICLES=DeferredRegister.create(Registries.PARTICLE_TYPE,TheOldestHouse.MOD_ID);
     public static final DeferredItem<Item> PLATE=ITEMS.registerSimpleItem("trailer_plate",new Item.Properties().stacksTo(1));

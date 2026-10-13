@@ -509,7 +509,7 @@ public final class GoatmanVignette {
     }
     private static void cookingChatter(CompoundTag r,List<ServerPlayer> readers){
         if(!fresh(r)||GoatmanSupper.ready(r)||r.getInt("Clock")<850)return;
-        int ticks=r.getInt("CookingChatTicks0490")+1;r.putInt("CookingChatTicks0490",ticks);if(ticks%260!=0)return;
+        int ticks=r.getInt("CookingChatTicks0490")+1;r.putInt("CookingChatTicks0490",ticks);if(ticks%220!=0)return;
         String[] lines={"A cousin: Leave mine another minute. I like the edges dark.","A cousin: Who packed three bottles of mustard and no forks?","A cousin: They're in the drawer. Try the other one.","A cousin: My dad used to cook these on a stick. Half of them fell in the fire.","A cousin: Turn that one. It's catching underneath.","A cousin: We can wait. There's still light outside.","A cousin: Save one for him when he gets back.","A cousin: That's plenty. We can split the last ones."};
         int next=r.getInt("CookingChatLine0490");say(readers,lines[Math.floorMod(next,lines.length)]);r.putInt("CookingChatLine0490",next+1);
     }

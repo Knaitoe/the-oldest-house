@@ -1,0 +1,32 @@
+# October 13 immediate playtest fixes — 0.4.91 candidate
+
+This extends the pushed `dcad5ee` review source on `feat/playtest-notes-0.4.88`. It includes the supplied supper screenshots, séance family screenshot, floating Slaney trunk, day/night video, canoe seating screenshot and culvert hand-push request. Earlier Zampanò handwriting/fountain and other scenery fixes remain integrated.
+
+| Finding | Resulting behavior |
+| --- | --- |
+| Extra supper table legs | The 27 connected tabletop tiles have six supports across the whole table. A bounded, vacant saved-room repair recognizes only the old formica/top-slab tiles and keeps edits. |
+| An empty plate rejects a frank | A loaded native food display determines occupancy. A stale occupied bit cannot reject a held serving. Plating consumes one exact held original only after its display exists; duplicate clicks keep its UUID; pickup and cousin eating transfer its components. Removed food is not recreated from flags. |
+| Idle chatter delivery | Saved cooking chatter runs every 220 ticks (11 seconds), previously 260 ticks (13 seconds), with the same saved cursor and stage gates. |
+| Séance family stands on chairs | An actual attack, three distinct touched people, or the existing three disturbances start flight. The original bodies use native collision movement around their chairs, through the west door and into the back room; the door closes after everyone clears it. Personal final-reading credit remains required. |
+| Floating carved tree | Native logs connect the original carved trunk and original carving block entity to the ground and tree above. The saved repair waits for loaded sections, actual cameras and affected living bodies, preserves edits and does not refill later removals. |
+| Slaney days and blizzard | Each saved day starts with morning light, lasts 90 seconds of present scene time, passes through daylight/sunset/night, and advances only after that day's finite meal was actually eaten. A personal client clock, dense wind-driven snow and shorter fog keep the trapped scene visible without changing the server's time or other scenes. Fatigue darkness is capped at 28%. |
+| Apparent magic, then the truth | The named original rabbit waits visibly in front of camp. The father points on the first two mornings, physically approaches, holds the same living native rabbit in a limp pose, tosses it back out, and returns before issuing the meal. The next morning restores its living pose. On day three his arm cannot rise; the witnessed leg injury explains the food. Dialogue choices and replies change by day and knowledge. Existing finite meal tokens, belief-before-truth, last hunt, carving/trail requirements and personal resolution remain. |
+| Family meal texture | A folded hide now contains three raised cooked-meat strips, using a new painted material, replacing the book-like layered slab. |
+| Tess seating | Native passenger offsets use the actual bench centres, 1.1875 blocks apart. Tess uses the same 0.6-block hip attachment as the reader, fixing her previously elevated body; her seated arms rest rather than paddle. Painted atlas and nine outdoor-only hair joints are preserved. |
+| Culvert wall pushes | Forward alternates hand strokes; left/right selects a wall. Paddles are put away under the low roof. Each accepted stroke needs a reachable native solid wall and the actual first rider, alternates sides, has a 16-tick cooldown, and gives forward motion plus a lateral shove away from that wall. Movement uses the native canoe collision path. Local prediction and a bounded server request drive synchronized first-person skin-hand reaches and third-person arm motion. Air/open water, invalid sides and non-riders cannot push. |
+
+No new Witness source: 45 eligible sources, 34 distinct personal resolutions across two kinds, three endings. Layout stays 44; mod 0.4.91 / protocol 70. There are 601 declared native cases and 765 resource PNGs. All 785 pre-existing repository PNGs remain byte-identical to `dcad5ee`.
+
+Source compile, resource JSON, generator syntax, PNG decoding/CRC and whitespace checks pass. The first expanded native run passed 54 of 56 cases; it exposed Tess's missing hip attachment and an old wound fixture that did not wait for the new third-morning cue. Both are corrected. All 57 cases in the final focused native rerun pass. JAR packaging and all eight font grids in source and the packaged JAR pass. Full exact-source CI, native GPU inspection and actual client/socket/reconnect checks remain required before calling this a verified release.
+
+The new native reproductions cover stale plate occupancy and exact food components, whole-table supports and the shorter chatter interval, original-family collision departure, rooted-tree migration with camera/body/edit/block-entity protection, and actual canoe bench attachment, wall contact, alternating impulse, cooldown, ownership and UUID retention. The actual two-day story case now checks that the original rabbit remains alive with the same health/UUID during carry and toss, and that the finite meal follows the apparent harvest.
+
+## New painted meal material
+
+The built-in ImageGen tool produced an opaque material tile. Source: `art/review_0491/ration-meat-source.png`. Runtime asset: `src/main/resources/assets/the_oldest_house/textures/item/father_meat0491.png`, packed to 32×32 logical pixels with nearest-neighbour sampling; authored geometry: `models/item/father_meal.json`. No existing PNG was repainted. The literary generator preserves the authored meal and rooted carving models.
+
+Exact prompt:
+
+> Use case: stylized-concept. Asset type: Minecraft food material texture for a small three-dimensional survival ration. Make one square, seamless, top-down material tile of cooked meat: muted roast-brown edges, dusty pink-brown fibrous interior and a few pale fat flecks. Deliberate coarse Minecraft pixel-art texture, about 32 by 32 logical square pixels enlarged evenly to fill the canvas. Soft painted variation inside the square pixels; restrained earthy palette. This is a flat material tile for small pieces of food in a folded hide, not a scene or a picture of the whole ration. No plates, utensils, people, animals, body parts, lettering, border, perspective, shadows cast outside the material, logos or watermark. Completely opaque texture, no transparency.
+
+Packaged review JAR: `the_oldest_house-0.4.91.jar`, 66406240 bytes; SHA-256 `45e349db4fa27eec42056b4544f79e0839695a9071722fa7213409a9ecc0fc5a`.

@@ -83,6 +83,7 @@ public final class GoatmanWoods {
         BuildBlocks.after(l,()->supplies(l,b,5));
         LabyrinthBuilder.entrance(l,b,Blocks.WHITE_TERRACOTTA.defaultBlockState(),Blocks.DIRT_PATH.defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState());
         BuildBlocks.after(l,()->repairEntrance(l,b));LabyrinthBuilder.doors(l,b,LabyrinthPlace.GOATMAN);
+        ReviewScenery0491.fresh(l,b,LabyrinthPlace.GOATMAN);
     }
     /** Remove only the original painted horizon across the return door's actual throat. */
     public static void repairEntrance(ServerLevel l,BlockPos b){
@@ -123,7 +124,7 @@ public final class GoatmanWoods {
         BuildBlocks.set(l,b.offset(COOLER),GoatmanRegistry.COOLER.get().defaultBlockState().setValue(TrailerFixtureBlock.FACING,Direction.SOUTH),F);
         for(int x=-7;x<=-3;x++)put(l,b,x,4,-76,Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP));
         // The long supper table, its top a hand above the chairs, five chairs a side turned in to it.
-        for(int x=-1;x<=1;x++)for(int z=-69;z<=-61;z++)BuildBlocks.set(l,b.offset(x,1,z),io.github.knaitoe.theoldesthouse.house.HouseBlocks.HOUSEHOLD_FURNITURE.get().defaultBlockState().setValue(io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.KIND,io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.FORMICA_TABLE).setValue(io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.FACING,Direction.NORTH),F);
+        for(int x=-1;x<=1;x++)for(int z=-69;z<=-61;z++)BuildBlocks.set(l,b.offset(x,1,z),TrailerTableBlock.tile(x,z),F);
         for(int z:CHAIR_Z){put(l,b,-2,1,z,seat(Blocks.SPRUCE_STAIRS,Direction.WEST));put(l,b,2,1,z,seat(Blocks.SPRUCE_STAIRS,Direction.EAST));}
         // The bathroom in the north-east corner, behind a partition, with its awning window propped open.
         BlockState partition=Blocks.BIRCH_PLANKS.defaultBlockState();
@@ -248,13 +249,19 @@ public final class GoatmanWoods {
     /** A brat on the plate at one of the ten chairs, or none. */
     public static void served(ServerLevel l,BlockPos b,int seat,boolean on){served(l,b,seat,on?new ItemStack(GoatmanRegistry.BRAT.get()):ItemStack.EMPTY);}
     /** 0.4.77: the plate shows the frank that was actually put on it, burnt or not. */
-    public static void served(ServerLevel l,BlockPos b,int seat,ItemStack item){
+    public static Display.ItemDisplay served(ServerLevel l,BlockPos b,int seat,ItemStack item){
         var shown=l.getEntitiesOfClass(Display.ItemDisplay.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(BRAT)&&e.getPersistentData().contains("Seat")&&e.getPersistentData().getInt("Seat")==seat);
-        if(item.isEmpty()){shown.forEach(Display.ItemDisplay::discard);return;}
-        if(!shown.isEmpty())return;
-        var d=flat(l,item.copyWithCount(1),.3F);if(d==null)return;
-        d.addTag(PLATE);d.addTag(BRAT);d.getPersistentData().putInt("Seat",seat);d.moveTo(plate(seat).add(b.getX(),b.getY()+.04,b.getZ()));l.addFreshEntity(d);
+        if(item.isEmpty()){shown.forEach(Display.ItemDisplay::discard);return null;}
+        if(!shown.isEmpty()){positionServing(shown.getFirst(),b,seat);return shown.getFirst();}
+        var d=flat(l,item.copyWithCount(1),.55F);if(d==null)return null;
+        d.addTag(PLATE);d.addTag(BRAT);d.getPersistentData().putInt("Seat",seat);positionServing(d,b,seat);return l.addFreshEntity(d)?d:null;
     }
+    public static Display.ItemDisplay serving(ServerLevel l,BlockPos b,int seat){return l.getEntitiesOfClass(Display.ItemDisplay.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(BRAT)&&e.getPersistentData().contains("Seat")&&e.getPersistentData().getInt("Seat")==seat).stream().findFirst().orElse(null);}
+    public static ItemStack food(ServerLevel l,Display.ItemDisplay d){return d==null?ItemStack.EMPTY:ItemStack.parseOptional(l.registryAccess(),d.saveWithoutId(new CompoundTag()).getCompound("item"));}
+    private static void positionServing(Display.ItemDisplay d,BlockPos b,int seat){
+        var tag=d.saveWithoutId(new CompoundTag());var transform=tag.getCompound("transformation");transform.put("scale",floats(.55F,.55F,.55F));tag.put("transformation",transform);d.load(tag);d.moveTo(plate(seat).add(b.getX(),b.getY()+.09,b.getZ()));
+    }
+    public static boolean tableSupport(BlockState s){return s.is(GoatmanRegistry.TABLE.get())||s.is(Blocks.SPRUCE_SLAB)||s.is(io.github.knaitoe.theoldesthouse.house.HouseBlocks.HOUSEHOLD_FURNITURE.get())&&s.getValue(io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.KIND)==io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.FORMICA_TABLE;}
     private static Display.ItemDisplay flat(ServerLevel l,ItemStack item,float scale){
         Display.ItemDisplay d=net.minecraft.world.entity.EntityType.ITEM_DISPLAY.create(l);if(d==null)return null;
         CompoundTag tag=d.saveWithoutId(new CompoundTag());tag.put("item",item.save(l.registryAccess()));tag.putString("item_display","fixed");

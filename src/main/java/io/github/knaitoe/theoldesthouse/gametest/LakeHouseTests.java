@@ -104,6 +104,29 @@ public final class LakeHouseTests {
     }
 
     /** Puts a reader at a spot relative to the scene, facing north, and refreshes what their eyes are in. */
+    private static Fixture pushing;
+    @AfterBatch(batch="lake_house_push0491") public static void pushingDone(ServerLevel ignored){if(pushing!=null){pushing.close();pushing=null;}}
+    @GameTest(template="empty",batch="lake_house_push0491",timeoutTicks=240)
+    public static void originalBenchPositionsAndActualAlternatingWallPushesMoveTheCanoe(GameTestHelper h){
+        pushing=new Fixture(h);var f=pushing;
+        f.ready(()->{
+            var p=f.player("lake_hand_push");var peer=f.player("lake_push_peer");var canoe=f.out.getEntitiesOfClass(LakeHouseCanoe.class,LakeHouse.box(f.base()),c->p.getUUID().equals(c.owner())).getFirst();var id=canoe.getUUID();
+            var tess=LiteraryRegistry.ACTOR.get().create(f.out);tess.appearance(LiteraryActor.LAKE_TESS,1);tess.bind(PLACE,p.getUUID());tess.setNoGravity(true);f.out.addFreshEntity(tess);var tessId=tess.getUUID();
+            h.assertTrue(p.startRiding(canoe)&&tess.startRiding(canoe),"the reader and original Tess occupy the two real benches");
+            canoe.moveTo(f.base().getX()+1,f.base().getY()-.35,f.base().getZ()-112,180,0);canoe.setDeltaMovement(Vec3.ZERO);canoe.positionRider(p);canoe.positionRider(tess);
+            h.assertTrue(p.position().distanceTo(tess.position())>1.18&&Math.abs(p.getY()-tess.getY())<.01,"the native seated bodies attach to separate bench centres at the same height");
+            h.assertTrue(canoe.underLowRoof()&&canoe.wallWithinReach(-1)&&canoe.wallWithinReach(1),"the actual culvert ceiling and two walls are reachable");
+            h.assertTrue(!canoe.push(peer,-1)&&!canoe.push(p,8),"a non-rider and an invalid hand side cannot propel it");
+            var before=canoe.position();h.assertTrue(canoe.push(p,-1)&&canoe.getDeltaMovement().z<0&&canoe.getDeltaMovement().x<0,"the first stroke moves forward and away from the actual left wall");canoe.move(net.minecraft.world.entity.MoverType.SELF,canoe.getDeltaMovement());
+            h.assertTrue(canoe.position().distanceTo(before)>.1&&!canoe.push(p,1),"native collision applies real movement and blocks an immediate second stroke");
+            h.runAfterDelay(LakeHouseCanoe.STROKE_TICKS+1,()->{
+                canoe.setDeltaMovement(Vec3.ZERO);h.assertTrue(!canoe.push(p,-1)&&canoe.push(p,1)&&canoe.getDeltaMovement().x>0&&canoe.getDeltaMovement().z<0,"the next stroke switches walls and reverses the lateral shove");
+                canoe.moveTo(f.base().getX()+1,f.base().getY()-.35,f.base().getZ()-90,180,0);h.assertTrue(!canoe.underLowRoof()&&!canoe.push(p,-1),"open water restores paddling and cannot receive a wall stroke");
+                h.assertTrue(canoe.getUUID().equals(id)&&tess.getUUID().equals(tessId)&&tess.getVehicle()==canoe,"seating and pushing preserve the same canoe and passenger");h.succeed();
+            });
+        });
+    }
+
     private static void at(Fixture f,ServerPlayer p,double x,double y,double z){var b=f.base();p.stopRiding();p.teleportTo(f.out,b.getX()+x,b.getY()+y,b.getZ()+z,180,0);p.setDeltaMovement(Vec3.ZERO);p.baseTick();}
     private static void breathe(Fixture f,ServerPlayer p,int ticks){for(int i=0;i<ticks;i++){p.baseTick();LakeHouseDive.breathe(p,f.base());}}
 

@@ -18,5 +18,6 @@ public abstract class HouseSceneClockMixin {
     private void housePlainSkyBrightness(CallbackInfoReturnable<Integer> cir){
         Level level=(Level)(Object)this;
         if(level.isClientSide()&&NovelSceneClient.clockMode(level)==4)cir.setReturnValue(0);
+        if(level.isClientSide())cir.setReturnValue(io.github.knaitoe.theoldesthouse.client.RabbitSceneClient.darkness(level,cir.getReturnValue()));
     }
 }
