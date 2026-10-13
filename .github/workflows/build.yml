@@ -339,7 +339,12 @@ jobs:
               for item in inventory:
                   name = item['item']
                   model = json.loads(z.read(f'assets/the_oldest_house/models/item/{name}.json'))
-                  assert model['textures']['layer0'] == f'the_oldest_house:item/{name}'
+                  if name in ('chalk','trail_spool'):
+                      assert model['parent']=='minecraft:block/block' and len(model['elements'])>=(2 if name=='chalk' else 8)
+                      assert all(element['faces'] for element in model['elements'])
+                      assert model['textures']['chalk']=='minecraft:block/white_concrete' if name=='chalk' else model['textures']['thread']=='minecraft:block/white_wool' and model['textures']['wood']=='minecraft:block/oak_planks'
+                  else:
+                      assert model['textures']['layer0'] == f'the_oldest_house:item/{name}'
                   icon = Image.open(BytesIO(z.read(f'assets/the_oldest_house/textures/item/{name}.png')))
                   icon.load()
                   expected_size = (16, 16) if name in ('church_key','archive_key','well_ribbon') else (32, 32)
