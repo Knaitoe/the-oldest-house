@@ -83,6 +83,8 @@ Ted’s cave accepts ordinary and soul torches on the floor and walls, and those
 <!-- Current architectural build also repairs the outside clock/sky, native water-running all-fours ambush, distinct lakeside streets/beach/trees, finite canoe and shore casualty, and encounter-earned shield. -->
 # The Oldest House
 
+Current source batch: [October 12 scenery finishing](docs/SCENE_FINISHING_0_4_88.md), mod 0.4.88 / protocol 67 / layout 43. 44 eligible Witness sources, 33 resolutions across two kinds, three endings. Full exact-source verification is pending.
+
 A NeoForge 1.21.1 horror-mod prototype built around one impossible house.
 
 Version `0.4.49` increases story and hazard encounters, brings new stone halls forward to seven crossings, repairs the uploaded cabin/window/water notes, registers Holloway's shield and Tom's lighter, and gives new burn books a connected personal account. Existing maps, finite supplies and other players' progress are retained. Five selected original staircase sheets now offer personal domestic scenes with safe multiplayer return; growls are slower and dislodge one shared falling block for nearby readers. Layout 35 / protocol 34; use matching server and client JARs. [Details and validation](docs/PLAYTEST_0_4_49.md).

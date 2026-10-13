@@ -5,7 +5,7 @@ The additional `This%20kid%20begins%20in%20the%20doorway.docx` was read in full,
 | Request | Status in this source batch |
 | --- | --- |
 | Mirror mobs remain stuck | Fixed the native empty-dimension entity timeout while actual observers remain; native regression passes beyond fifteen seconds |
-| Holy Rabbit father and son beneath a tree | Confirmed; camp dressing remains pending |
+| Holy Rabbit father and son beneath a tree | Integrated: two supported bedrolls and sparse supplies under the existing tree, standing headroom and the original father/rabbit/carving retained |
 | Hotel NPC texture alignment | Corrected six-skin set from 0.4.87 is retained; current cast screenshot has complete faces; compare against an updated in-game build |
 | Room 217 will not open | Added the reader's displayed 217 as an actual entrance into the hotel; other private plaque numbers remain locked |
 | Floating props and stacked boxes in the child's room | Desk and stacked-box tops now match native collision heights; other props still need scene inspection |
@@ -18,7 +18,7 @@ The additional `This%20kid%20begins%20in%20the%20doorway.docx` was read in full,
 | Conversations change each filming day | Integrated: six speakers, seven personal day tables, two conversations each and saved per-speaker cursors |
 | Footage summaries depend on what was recorded each day | Integrated: seven subject-specific raw/edited tables assembled only from qualifying actual framing records; absent shots are omitted |
 | Final dinner has messy Marjorie teasing and more grotesque family death | Integrated: eating, staggered choking, still deaths, native head-attached sauce/blood and animated saliva/blood strands/drops; GPU inspection pending |
-| Plains: unique note storage and daytime arrival | Still pending from the first notes |
+| Plains: unique note storage and daytime arrival | Integrated: weatherproof field-note case preserves the exact original; noon and immediate sky brightness cover the actual arrival |
 | Fan: visible blade spin, flickering light and repair | Integrated: slower continuous blades, steady floor image, actual flickering native light and bulb repair |
 | Fan toolbox: actual lightbulb, not planks | Integrated: one finite owned replacement, consumed by real repair; borrowed bulbs fail |
 | Five seconds on the fan: knock off, return outside and complete sequence | Integrated: continuous five-second wait, native saved-door return and one personally earned source/tooth |
@@ -26,10 +26,10 @@ The additional `This%20kid%20begins%20in%20the%20doorway.docx` was read in full,
 | Club: brighter red, blue, green and rare strobe | Integrated: six lower hanging fixtures, brighter steady strips, native full-bright panel faces and three brief flashes every 130 seconds |
 | Harrigan wake from the first notes | Integrated: same original corpse moves behind the closed funeral door before it opens; three original guests can be addressed |
 | Goatman plates after departure from the first notes | Integrated: last actual enrolled departure clears native serving displays and stale flags; peers and carried food retain their originals |
-| Simpler chalk and spool artwork | Still pending |
-| Institute: yellow ceiling lights only | Still pending |
-| Courtyard fountain texture and proper water spout | Still pending |
-| Zampanò's wall covered in his writings | Still pending |
+| Simpler chalk and spool artwork | Integrated: plain native chalk and linen-on-wood reel meshes using Minecraft materials |
+| Institute: yellow ceiling lights only | Integrated: floor/table/hidden authored lights removed; yellow ceiling fixtures remain |
+| Courtyard fountain texture and proper water spout | Integrated: native stone-brick bowl with smooth stone rim, animated tinted water jet and moving spray/overflow |
+| Zampanò's wall covered in his writings | Integrated: dense supported wall of the original handwriting; generic paper patches retired |
 
 Room 217 uses the authoritative per-player loop count to resolve the actual number on that door. The same shared door remains a locked resident room for a reader seeing 201. Clicking 217 enters the existing furnished hotel, with its unchanged personal tab, rest, belongings, photograph and closing account. No shared door registration is rewritten. The ordinary upstairs bedroom door still uses native opening; the service door retains its actual key.
 
@@ -39,10 +39,12 @@ The wake preserves Harrigan's body UUID through life, death in the study and the
 
 Club fixtures now use separate red, blue and green states. The lower pendants have visible chain support and light the dance floor at native level 15. Neon panel faces use NeoForge's actual `neoforge_data` light fields. Two strobe housings produce only three 100 ms flashes, separated by 400 ms, once every 130 seconds; the steady coloured light remains on. Silence stops the flashes. Existing club fixtures migrate once while vacant; player edits, finite glasses, music setting and original actors are retained.
 
-Mod 0.4.88 / protocol 66 / layout 43. The native suite now declares 579 cases; all 721 PNGs decode and all 144 club states resolve. All six focused new/updated native cases pass locally in 36 seconds: wake, reader-specific 217, mirror idle timeout, Goatman last departure, finite club glass/seats and reversible shared dance/despair. The follow-up adds eight painted Ghost Set cast atlases, a three-second held jump and head turn, private rolling dinner captions and the native saved-door cut. All fifteen Ghost Set cases pass locally in 33 seconds. [Cast and take provenance](GHOSTS_CAST_AND_TAKE_0_4_88.md). Full exact-source CI and native GPU inspection remain pending. Sources remain 44, required resolutions 33 across two kinds, with three endings. Continue source batches after quick checks without waiting for full CI.
+Mod 0.4.88 / protocol 67 / layout 43. The native suite now declares 583 cases; all 721 PNGs decode and all 144 club states resolve. All six focused new/updated native cases pass locally in 36 seconds: wake, reader-specific 217, mirror idle timeout, Goatman last departure, finite club glass/seats and reversible shared dance/despair. The follow-up adds eight painted Ghost Set cast atlases, a three-second held jump and head turn, private rolling dinner captions and the native saved-door cut. All fifteen Ghost Set cases pass locally in 33 seconds. [Cast and take provenance](GHOSTS_CAST_AND_TAKE_0_4_88.md). Full exact-source CI and native GPU inspection remain pending. Sources remain 44, required resolutions 33 across two kinds, with three endings. Continue source batches after quick checks without waiting for full CI.
 
 The preceding source 552772 passed nine of twelve workflow jobs. Two old server assertions still expected the pre-nightclub recurring pool and slot total; the client architecture assertion still expected 90 rather than the actual 91 views. Their exact expectations are corrected here. The actual multiplayer run stopped at its server watchdog in phase six and remains unverified; it is not counted as passing.
 
 The first additional-notes checkpoint ba0a417, run 38299337308, has now passed its actual two-client/reconnect job and ten completed workflow jobs. The Goatman job ran all 23 selected cases successfully but its source counter incorrectly included the last-departure case in the wake namespace. This follow-up selects both namespaces and counts all 27 declared cases in those namespaces; no assertion is weakened or test removed. The broad build/client job was still running when this follow-up was prepared, so this is not a completely verified release. The separate multiplayer watchdog failure on 552772 remains a record of that earlier attempt, not a failure on the newer checkpoint.
 
 The Ghost Set home/decor follow-up passes all seventeen focused native cases in 32 seconds. Four new original atlases decode, all 140 oriented Ghost Set fixture states and eight case/lid states resolve, and the required native proof adds paper/cases/rolling-text views. [Implementation and artwork provenance](GHOSTS_HOME_AND_DECOR_0_4_88.md). Full exact-source CI and actual GPU inspection remain pending.
+
+The final scenery pass is documented in [SCENE_FINISHING_0_4_88.md](SCENE_FINISHING_0_4_88.md). All rows in this requested ledger now have source implementations. Full exact-source native/server/client and multiplayer verification remains pending; implementation status does not certify their appearance in a running game.

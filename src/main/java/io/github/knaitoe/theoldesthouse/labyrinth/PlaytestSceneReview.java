@@ -38,11 +38,7 @@ public final class PlaytestSceneReview {
                 if(old.isAir()||old.is(HouseBlocks.HOUSEHOLD_FURNITURE.get())&&old.getValue(HouseholdFurnitureBlock.KIND)==HouseholdFurnitureBlock.Kind.CANE_CHAIR)
                     ready&=set(l,seat,HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.CANE_CHAIR,z==-10?Direction.NORTH:Direction.SOUTH));}
         }
-        // Retain the papers as groups on a plaster wall, rather than wallpaper on every face.
-        for(int y=0;y<=7;y++)for(int z=-39;z<=-19;z++)for(int x=-12;x<=12;x++){
-            if(x!=-12&&x!=12&&z!=-39&&z!=-19)continue;var at=b.offset(x,y,z);var old=BuildBlocks.state(l,at);
-            if(old.is(NovelRegistry.PAPER.get())&&!paperPatch(x,y,z))ready&=set(l,at,NovelRegistry.PLASTER.get().defaultBlockState());
-        }
+        // The owner requests the original dense handwriting wall; generic paper patches are retired by the final scenery pass.
         return ready;
     }
     public static boolean paperPatch(int x,int y,int z){return z==-39&&y>=2&&y<=4&&(x>=-8&&x<=-5||x>=-1&&x<=2||x>=6&&x<=8);}

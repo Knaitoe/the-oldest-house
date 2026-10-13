@@ -62,6 +62,7 @@ public final class NovelVignettes {
             for(int i=1;i<place.doors().size();i++){var d=data.door(place.doorId(place.doors().get(i)));if(d!=null)data.deal(p.getUUID(),d,visited.isEmpty()?place.id():visited.get((i-1)%visited.size()).id(),false);}
         }
         if(place==LabyrinthPlace.WHALE)WhaleInstitute.arrive(p,own);
+        if(place==LabyrinthPlace.PLAIN)HousePackets.send(p,new NovelScenePayload(4,0,"",0,0));
         if(place==LabyrinthPlace.HOSPITAL&&!own.getBoolean("WardFinished")){own.putInt("WardTicks",0);own.putInt("WardCalls",0);own.putBoolean("Alarm",false);}
         if(place==LabyrinthPlace.KAREN_ROOM){showRecord(p,own);p.displayClientMessage(Component.literal("The bed remembers your place. Use the projector to change photographs; sneak-use it to take your originals."),false);}
         save(data,p.getUUID(),own);
@@ -116,7 +117,7 @@ public final class NovelVignettes {
         }else if(place==LabyrinthPlace.BARN_WELL&&(rel.equals(NovelRooms.CARVING)||rel.equals(NovelRooms.OLD_CARVING)&&p.level().getBlockState(b.offset(rel)).is(NovelRegistry.CARVINGS.get()))){own.putBoolean("Initials",true);cue(p,own,"K. G. / D. G. Two pairs of cuts in the stone above you.");}
         else if(place==LabyrinthPlace.BARN_WELL&&rel.equals(NovelRooms.RIBBON)){if(own.getBoolean("WellReturned"))reward(p,own,"Ribbon",VignetteYields.mark(new ItemStack(NovelRegistry.RIBBON.get()),place.id()));}
         else if(place==LabyrinthPlace.BARN_WELL&&rel.equals(new BlockPos(-4,0,-17)))open(p,place,NovelTexts.well(),"WellBook",false,own);
-        else if(place==LabyrinthPlace.PLAIN&&rel.equals(NovelRooms.APOLOGY))open(p,place,NovelTexts.apology(),"Apology",false,own);
+        else if(place==LabyrinthPlace.PLAIN&&rel.equals(NovelRooms.APOLOGY))open(p,place,PlaytestScenes0488.plainOriginal(p.serverLevel(),b),"Apology",false,own);
         else if(place==LabyrinthPlace.PLAIN&&rel.equals(new BlockPos(3,0,-7)))reward(p,own,"Camera0464",new ItemStack(NovelRegistry.CAMERA.get()));
         else if(place==LabyrinthPlace.HOSPITAL&&rel.equals(NovelRooms.BUTTON)){
             if(own.getBoolean("Alarm")){own.putBoolean("Alarm",false);own.putInt("WardCalls",own.getInt("WardCalls")+1);cue(p,own,"The button clicks. No footsteps follow.");}

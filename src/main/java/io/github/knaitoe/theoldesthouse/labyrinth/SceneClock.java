@@ -9,8 +9,13 @@ import net.minecraft.world.level.Level;
 public final class SceneClock {
     private SceneClock(){}
     public static int at(BlockPos origin,BlockPos position,ResourceKey<Level> dimension){
-        if(!HouseDimensions.isHouseDimension(dimension))return 0;
+        if(origin==null||position==null||!HouseDimensions.isHouseDimension(dimension))return 0;
         var place=LabyrinthPlaces.placeAt(origin,position);
+        // Keep the plain's presentation across its complete authored arrival volume.
+        if(place==null&&dimension.equals(HouseDimensions.OUTSIDE)){
+            var plain=LabyrinthPlaces.base(origin,LabyrinthPlace.PLAIN);
+            if(plain!=null&&IndianLakeRooms.bounds(plain,LabyrinthPlace.PLAIN).contains(net.minecraft.world.phys.Vec3.atCenterOf(position)))place=LabyrinthPlace.PLAIN;
+        }
         if(place==null||!dimension.equals(NovelRooms.dimension(place)))return 0;
         return switch(place){
             case ZAMPANO_COURTYARD->1;

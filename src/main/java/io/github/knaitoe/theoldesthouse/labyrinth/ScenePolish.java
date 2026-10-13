@@ -103,6 +103,7 @@ public final class ScenePolish {
         SceneReview.fresh(level,origin,place);
         if(place==LabyrinthPlace.BARN_WELL)Farmstead.fresh(level,origin);
         if(place==LabyrinthPlace.WHALE)WhaleHospital.fresh(level,origin);
+        PlaytestScenes0488.fresh(level,LabyrinthPlaces.base(origin,place),place);
     }
 
     private static void polish(ServerLevel level, BlockPos origin, LabyrinthPlace place) {
@@ -139,6 +140,7 @@ public final class ScenePolish {
         SceneReview.forget(server,origin,place);
         SceneHuntReview.forget(server,origin,place);
         PlaytestSceneReview.forget(server,origin,place);
+        PlaytestScenes0488.forget(server,origin,place);
         if(place==LabyrinthPlace.BARN_WELL)Farmstead.forget(server,origin);
         var coverLevel=server.getLevel(io.github.knaitoe.theoldesthouse.house.HouseDimensions.OUTSIDE);
         if(coverLevel!=null&&StaceyCover.SITES.contains(place))StaceyCover.forget(coverLevel,LabyrinthPlaces.base(origin,place),place);
