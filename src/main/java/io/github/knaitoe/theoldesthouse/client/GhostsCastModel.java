@@ -44,13 +44,13 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         switch(phase){
             case GhostsSet.SIT,GhostsSet.SLUMP,GhostsSet.VOMIT,GhostsSet.HAND,GhostsSet.EATING,GhostsSet.CHOKING,GhostsSet.DEAD->{
                 float lower=12;for(var part:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=lower;
-                leftLeg.xRot=rightLeg.xRot=-1F;leftKnee.xRot=rightKnee.xRot=1F;leftArm.xRot=-.7F;rightArm.xRot=-.8F;leftElbow.xRot=-.65F;rightElbow.xRot=-.6F;
+                leftLeg.xRot=rightLeg.xRot=-(float)Math.PI/2;leftKnee.xRot=rightKnee.xRot=(float)Math.PI/2;leftArm.xRot=-.7F;rightArm.xRot=-.8F;leftElbow.xRot=-.65F;rightElbow.xRot=-.6F;
                 if(phase==GhostsSet.HAND){rightArm.xRot=-1.25F;rightElbow.xRot=-1.4F;head.xRot=.35F;head.yRot=-.3F;}
                 if(phase==GhostsSet.SLUMP){body.xRot=.52F;head.xRot=.85F;head.zRot=.17F;leftArm.xRot=rightArm.xRot=-.1F;leftElbow.xRot=rightElbow.xRot=.2F;}
                 if(phase==GhostsSet.EATING){float chew=(float)Math.sin(age*.23F);head.xRot=.12F+chew*.025F;head.yRot=.2F;rightArm.xRot=-1.04F;rightElbow.xRot=-1.65F+chew*.08F;jaw.xRot=.04F+Math.max(0,chew)*.16F;}
                 if(phase==GhostsSet.CHOKING){float rate=currentRole==LiteraryActor.GHOST_JOHN?.33F:currentRole==LiteraryActor.GHOST_SARAH?.75F:.48F;float catchBreath=(float)Math.sin(age*rate+currentRole);body.xRot=.3F+catchBreath*.065F;body.zRot=(float)Math.sin(age*rate*.69F)*.045F;head.xRot=.27F-catchBreath*.08F;head.zRot=(float)Math.sin(age*rate*.78F)*.06F;rightArm.xRot=-1.18F;rightElbow.xRot=-1.95F;leftArm.xRot=-.5F;leftElbow.xRot=-.95F;jaw.xRot=.28F+Math.max(0,catchBreath)*.07F;if(currentRole==LiteraryActor.GHOST_JOHN){body.xRot=-.12F+catchBreath*.12F;head.xRot=-.45F;leftArm.xRot=-1.1F;leftElbow.xRot=-1.8F;}if(currentRole==LiteraryActor.GHOST_SARAH){body.zRot=.23F+catchBreath*.09F;leftArm.xRot=-1.2F;rightArm.xRot=-.4F;}}
-                if(phase==GhostsSet.DEAD){body.xRot=.66F;body.zRot=.12F;head.xRot=.93F;head.zRot=.24F;leftArm.xRot=rightArm.xRot=-.12F;leftElbow.xRot=rightElbow.xRot=.13F;leftLeg.xRot=-.72F;rightLeg.xRot=-.9F;jaw.xRot=.32F;}
-                if(phase==GhostsSet.DEAD&&currentRole==LiteraryActor.GHOST_JOHN){body.xRot=-.3F;body.zRot=-.12F;head.xRot=-.55F;leftLeg.xRot=-.3F;rightArm.zRot=.32F;}
+                if(phase==GhostsSet.DEAD){body.xRot=.66F;body.zRot=.12F;head.xRot=.93F;head.zRot=.24F;leftArm.xRot=rightArm.xRot=-.12F;leftElbow.xRot=rightElbow.xRot=.13F;leftKnee.xRot=1.36F;rightKnee.xRot=1.48F;jaw.xRot=.32F;}
+                if(phase==GhostsSet.DEAD&&currentRole==LiteraryActor.GHOST_JOHN){body.xRot=-.3F;body.zRot=-.12F;head.xRot=-.55F;leftLeg.yRot=.18F;rightArm.zRot=.32F;}
                 if(phase==GhostsSet.DEAD&&currentRole==LiteraryActor.GHOST_SARAH){body.xRot=.24F;body.zRot=.38F;head.xRot=.65F;head.zRot=.45F;leftArm.zRot=-.2F;rightArm.xRot=-.65F;}
                 // The dinner is an unnaturally still stare and a slowly opening mouth, without a retching body loop.
                 if(phase==GhostsSet.VOMIT){head.yRot=.55F;head.xRot=.03F;jaw.xRot=.25F+(float)Math.sin(age*.035F)*.025F;}

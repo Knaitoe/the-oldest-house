@@ -27,6 +27,7 @@ public final class HouseSitting {
     public static void register(IEventBus bus) { TYPES.register(bus); }
     public static boolean isSeat(BlockState state) {
         return io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.Kind.CHAIR)
+                || state.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.ROADHOUSE.get())&&state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.RoadhouseBlock.KIND).seat()
                 || state.is(io.github.knaitoe.theoldesthouse.labyrinth.NightclubRegistry.BLOCK.get())&&state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.NightclubBlock.KIND)==io.github.knaitoe.theoldesthouse.labyrinth.NightclubBlock.Kind.BENCH
                 || state.getBlock() instanceof StairBlock && state.getValue(StairBlock.HALF) == Half.BOTTOM
                 || state.getBlock() instanceof CarpetBlock
@@ -39,11 +40,12 @@ public final class HouseSitting {
                 || player.distanceToSqr(pos.getCenter()) > 16
                 || io.github.knaitoe.theoldesthouse.labyrinth.HarriganVignette.occupiesChair(player.serverLevel(), pos)
                 || !player.level().getEntitiesOfClass(SeatEntity.class, new AABB(pos)).isEmpty()) return false;
+        if(state.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.ROADHOUSE.get())&&!player.level().getEntitiesOfClass(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor.class,new AABB(pos),a->a.isAlive()&&a.blockPosition().equals(pos)).isEmpty())return false;
         SeatEntity seat = SEAT.get().create(player.serverLevel());
         if (seat == null) return false;
         seat.support(pos);
         double height=io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.Kind.CHAIR)? .5 : state.is(io.github.knaitoe.theoldesthouse.labyrinth.NightclubRegistry.BLOCK.get()) ? .5 : state.getBlock() instanceof CarpetBlock ? .07 : state.getBlock() instanceof HouseholdFurnitureBlock
-                ? state.getValue(HouseholdFurnitureBlock.KIND).seatHeight/16.0 : .45;
+                ? state.getValue(HouseholdFurnitureBlock.KIND).seatHeight/16.0 : state.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.ROADHOUSE.get())?state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.RoadhouseBlock.KIND).seatHeight/16.0:.45;
         seat.moveTo(pos.getX() + 0.5, pos.getY() + height, pos.getZ() + 0.5);
         if (!player.serverLevel().addFreshEntity(seat) || !player.startRiding(seat)) { seat.discard(); return false; }
         if (state.getBlock() instanceof StairBlock) {
@@ -55,6 +57,7 @@ public final class HouseSitting {
         }
         if(state.is(io.github.knaitoe.theoldesthouse.labyrinth.NightclubRegistry.BLOCK.get())){float yaw=state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.NightclubBlock.FACING).toYRot();player.setYRot(yaw);player.setYHeadRot(yaw);}
         if(io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.Kind.CHAIR)){float yaw=state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.FACING).toYRot();player.setYRot(yaw);player.setYHeadRot(yaw);}
+        if(state.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.ROADHOUSE.get())){float yaw=state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.RoadhouseBlock.FACING).toYRot();player.setYRot(yaw);player.setYHeadRot(yaw);}
         HouseExperience.sat(player,pos,state);
         return true;
     }

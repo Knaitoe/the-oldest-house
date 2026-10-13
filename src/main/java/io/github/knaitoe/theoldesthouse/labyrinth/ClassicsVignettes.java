@@ -125,14 +125,14 @@ public final class ClassicsVignettes {
     // ------------------------------------------------------------------------------------------------ 0.4.77: the family leaves
     /** Each one's way from their chair, round the table, through the west door and into the back room. Rows are x,z. */
     private static final double[][][] FLIGHT={
-        {{-2.5,-12.5},{-4.5,-19.5},{-4.5,-21.5},{-4.5,-23.5},{-8.5,-29.5}},
-        {{-4.5,-16.5},{-4.5,-19.5},{-4.5,-21.5},{-4.5,-23.5},{-3.5,-29.5}},
-        {{2.5,-19.5},{-4.5,-20.5},{-4.5,-21.5},{-4.5,-23.5},{-9.5,-24.5}},
-        {{-2.5,-19.5},{-4.5,-20.5},{-4.5,-21.5},{-4.5,-23.5},{-2.5,-28.5}}};
+        {{.5,-13.5},{-4.5,-13.5},{-4.5,-19.5},{-4.5,-21.5},{-4.5,-23.5},{-8.5,-29.5}},
+        {{-1.5,-14.5},{-1.5,-13.5},{-4.5,-13.5},{-4.5,-19.5},{-4.5,-21.5},{-4.5,-23.5},{-3.5,-29.5}},
+        {{1.5,-14.5},{1.5,-13.5},{-4.5,-13.5},{-4.5,-19.5},{-4.5,-21.5},{-4.5,-23.5},{-9.5,-24.5}},
+        {{-1.5,-17.5},{-4.5,-19.5},{-4.5,-20.5},{-4.5,-21.5},{-4.5,-23.5},{-2.5,-28.5}}};
     private static final String FLEE="Flee0477";
     private static void startFlight(ServerLevel level,LabyrinthData data){
         var all=data.state(STATE);all.putBoolean("Fleeing0477",true);data.setState(STATE,all);
-        for(var a:cast(level)){a.appearance(a.role(),false,true);a.setNoAi(true);a.setNoGravity(true);a.getNavigation().stop();a.getPersistentData().putInt(FLEE,0);}
+        for(var a:cast(level)){a.appearance(a.role(),false,true);a.setNoAi(true);a.setNoGravity(true);a.getNavigation().stop();a.getPersistentData().putInt(FLEE,0);a.getPersistentData().putBoolean("FlightRoute0492",true);}
     }
     /**
      * Driven out, they get up and hurry, one behind another, through the west door into the back room, and the last one in
@@ -145,9 +145,18 @@ public final class ClassicsVignettes {
         if(!all.getBoolean("Fleeing0477")){startFlight(level,data);all=data.state(STATE);}
         boolean done=true;
         for(var a:cast(level)){
+            // Older routes began by lowering feet into a seat or steering through its back. Resume the same body.
+            if(!a.getPersistentData().getBoolean("FlightRoute0492")){
+                var route=FLIGHT[a.role()];int nearest=0;double distance=Double.MAX_VALUE;
+                if(a.getZ()<b.getZ()-19)for(int n=1;n<route.length;n++){double d=a.position().distanceToSqr(new Vec3(b.getX()+route[n][0],a.getY(),b.getZ()+route[n][1]));if(d<distance){nearest=n;distance=d;}}
+                a.getPersistentData().putInt(FLEE,nearest);a.getPersistentData().putBoolean("FlightRoute0492",true);a.setNoGravity(true);
+            }
             var route=FLIGHT[a.role()];int i=a.getPersistentData().getInt(FLEE);if(i>=route.length)continue;done=false;
-            Vec3 to=new Vec3(b.getX()+route[i][0],b.getY(),b.getZ()+route[i][1]),d=to.subtract(a.position());double len=d.horizontalDistance();
-            Vec3 next=len<=.16?to:a.position().add(d.x/len*.16,(to.y-a.getY())*.5,d.z/len*.16);
+            // Clear the actual 9/16 seat top before taking the first step. Only descend after the body is off it.
+            double y=b.getY()+(i==0?9/16D+.001:0);
+            if(i==0&&a.getY()<y-.001){a.move(net.minecraft.world.entity.MoverType.SELF,new Vec3(0,Math.min(.12,y-a.getY()),0));a.setDeltaMovement(Vec3.ZERO);continue;}
+            Vec3 to=new Vec3(b.getX()+route[i][0],y,b.getZ()+route[i][1]),d=to.subtract(a.position());double len=d.horizontalDistance();
+            Vec3 next=a.position().add(len<.001?0:d.x/len*Math.min(.16,len),Math.clamp(to.y-a.getY(),-.08,.12),len<.001?0:d.z/len*Math.min(.16,len));
             float yaw=len>.01?(float)(Math.atan2(d.z,d.x)*180/Math.PI)-90:a.getYRot();a.move(net.minecraft.world.entity.MoverType.SELF,next.subtract(a.position()));a.setDeltaMovement(Vec3.ZERO);a.setYRot(yaw);a.setYHeadRot(yaw);a.yBodyRot=yaw;
             if(a.position().distanceToSqr(to)<.0025)a.getPersistentData().putInt(FLEE,i+1);
         }

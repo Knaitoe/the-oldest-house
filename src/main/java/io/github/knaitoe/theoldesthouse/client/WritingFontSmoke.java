@@ -36,11 +36,16 @@ public final class WritingFontSmoke {
         LazySectionBuffers.verifyInstalled();
         mc.options.guiScale().set(2);
         mc.resizeDisplay();
+        NativeModelTextures.verify();
         List<ItemStack> books = new ArrayList<>(HouseWriting.samples());
         books.add(NavidsonLetter.createBook());
         books.addAll(io.github.knaitoe.theoldesthouse.labyrinth.ClassicsTexts.specimens());
         books.addAll(io.github.knaitoe.theoldesthouse.labyrinth.HotelTexts.specimens());
         books.addAll(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryTexts.specimens());
+        for(var outcome:List.of(io.github.knaitoe.theoldesthouse.labyrinth.ElkLotEnding.MEN,io.github.knaitoe.theoldesthouse.labyrinth.ElkLotEnding.HERD)){
+            var account=new net.minecraft.nbt.CompoundTag();account.putString("Outcome",outcome);account.putInt("Tab",2400);account.putInt("Drinks",6);
+            books.add(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryTexts.ending("WWWWWWWWWWWWWWWW",io.github.knaitoe.theoldesthouse.labyrinth.ElkLot.PLACE,account));
+        }
         books.addAll(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseNotes.specimens());
         books.addAll(io.github.knaitoe.theoldesthouse.house.ExpeditionInquiry.specimens());
         books.add(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseFire.book(new java.util.UUID(0,0),5));

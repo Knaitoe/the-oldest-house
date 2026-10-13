@@ -77,10 +77,11 @@ public final class ElkLotNight {
     /** The three who go out. */
     public static final List<Person> MEN=List.of(RUSS,DENNY,WADE);
     /** Each man's way out: away from his seat, along the room and out of the side door. */
+    private static final double EXIT_Z=ElkLot.SIDE_DOOR.getZ()+.5;
     private static final double[][][] OUT={
-        {{-23.5,-22.5},{-16.5,-22.5},{-14.5,-25.5},{-12.5,-25.5},{-10.5,-25.5}},
-        {{-20.5,-21.5},{-16.5,-22.5},{-14.5,-25.5},{-12.5,-25.5},{-10.5,-25.5},{-2.5,-25.5}},
-        {{-29.5,-22.5},{-16.5,-22.5},{-14.5,-25.5},{-12.5,-25.5},{-10.5,-25.5}}};
+        {{-23.5,-22.5},{-16.5,-22.5},{-14.5,EXIT_Z},{-12.5,EXIT_Z},{-10.5,EXIT_Z}},
+        {{-20.5,-21.5},{-16.5,-22.5},{-14.5,EXIT_Z},{-12.5,EXIT_Z},{-10.5,EXIT_Z},{-2.5,EXIT_Z}},
+        {{-29.5,-22.5},{-16.5,-22.5},{-14.5,EXIT_Z},{-12.5,EXIT_Z},{-10.5,EXIT_Z}}};
     /** Where each man stands while they search, and where once they herd: one on the road back, one by the bar, one at the gap. */
     private static final double[][] SEARCHING={{-8.5,-16.5},{-2.5,-15.5},{-4.5,-31.5}},HERDING={{0.5,-6.5},{-8.5,-13.0},{4.5,-36.5}};
 

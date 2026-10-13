@@ -1,8 +1,8 @@
 {
   "textures": {
     "food": "the_oldest_house:block/ghosts/meals_atlas",
-    "ceramic": "minecraft:block/quartz_block",
-    "noodle": "minecraft:block/smooth_sandstone",
+    "ceramic": "minecraft:block/quartz_block_side",
+    "noodle": "minecraft:block/sandstone_top",
     "bread": "minecraft:block/brown_mushroom_block",
     "green": "minecraft:block/moss_block",
     "potato": "minecraft:block/stripped_oak_log"

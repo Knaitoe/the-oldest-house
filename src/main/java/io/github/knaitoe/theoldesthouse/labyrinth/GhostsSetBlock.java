@@ -40,7 +40,7 @@ public final class GhostsSetBlock extends Block {
             case STAIR -> Shapes.or(Block.box(0,0,0,16,8,16),Block.box(0,8,0,16,16,8));
             case RAIL -> Shapes.or(Block.box(6,0,1,10,16,3),Block.box(6,0,13,10,16,15),Block.box(5,14,0,11,16,16));
             case TABLE -> Shapes.or(Block.box(0,15,0,16,16,16), Block.box(1,0,1,3,15,3), Block.box(13,0,13,15,15,15));
-            case CHAIR -> Shapes.or(Block.box(2,8,2,14,10,14), Block.box(2,0,2,4,8,4), Block.box(12,0,12,14,8,14), Block.box(2,10,12,14,22,14));
+            case CHAIR -> Shapes.or(Block.box(2,8,2,14,10,14), Block.box(2,0,2,4,8,4), Block.box(12,0,2,14,8,4), Block.box(2,0,12,4,8,14), Block.box(12,0,12,14,8,14), Block.box(2,4,2,14,6,4), Block.box(2,10,12,14,22,14));
             case BOLTS -> Shapes.or(Block.box(0,15,0,16,16,16),Block.box(4,9,6,12,13,9));
             case PLATE, PLAIN_PLATE, MEAL_STEW, MEAL_SANDWICH, MEAL_SOUP, MEAL_ROAST, MEAL_POTATOES, HAT, BOOKS -> Block.box(3,0,3,13,3,13);
             case JUG -> Block.box(5,0,5,11,9,11);

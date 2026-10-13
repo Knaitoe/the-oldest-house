@@ -202,8 +202,8 @@ public final class GoatmanWoods {
         var displays=l.getEntitiesOfClass(Display.ItemDisplay.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(PLATE)&&!e.getTags().contains(BRAT));
         for(var d:displays)if(d.getPersistentData().getInt("Plate")>=count)d.discard();
         for(int i=0;i<count;i++){
-            final int index=i;if(displays.stream().anyMatch(d->d.getPersistentData().getInt("Plate")==index&&!d.isRemoved()))continue;
-            var d=flat(l,new ItemStack(GoatmanRegistry.PLATE.get()),.45F);if(d==null)continue;
+            final int index=i;var existing=displays.stream().filter(d->d.getPersistentData().getInt("Plate")==index&&!d.isRemoved()).findFirst();if(existing.isPresent()){positionPlate(existing.get(),b,index);continue;}
+            var d=flat(l,new ItemStack(GoatmanRegistry.PLATE.get()),.85F);if(d==null)continue;
             d.addTag(PLATE);d.getPersistentData().putInt("Plate",i);d.moveTo(plate(i).add(b.getX(),b.getY(),b.getZ()));l.addFreshEntity(d);
         }
     }
@@ -258,6 +258,18 @@ public final class GoatmanWoods {
     }
     public static Display.ItemDisplay serving(ServerLevel l,BlockPos b,int seat){return l.getEntitiesOfClass(Display.ItemDisplay.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(BRAT)&&e.getPersistentData().contains("Seat")&&e.getPersistentData().getInt("Seat")==seat).stream().findFirst().orElse(null);}
     public static ItemStack food(ServerLevel l,Display.ItemDisplay d){return d==null?ItemStack.EMPTY:ItemStack.parseOptional(l.registryAccess(),d.saveWithoutId(new CompoundTag()).getCompound("item"));}
+    /** Fix existing display transforms in place; no servings or place settings are created by the correction. */
+    public static void fitPlaceSettings(ServerLevel l,BlockPos b){
+        for(var d:l.getEntitiesOfClass(Display.ItemDisplay.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(PLATE))){
+            if(d.getPersistentData().getBoolean("PlaceSetting0492"))continue;
+            if(d.getTags().contains(BRAT)&&d.getPersistentData().contains("Seat"))positionServing(d,b,d.getPersistentData().getInt("Seat"));
+            else if(!d.getTags().contains(BRAT)&&d.getPersistentData().contains("Plate"))positionPlate(d,b,d.getPersistentData().getInt("Plate"));
+            d.getPersistentData().putBoolean("PlaceSetting0492",true);
+        }
+    }
+    private static void positionPlate(Display.ItemDisplay d,BlockPos b,int seat){
+        var tag=d.saveWithoutId(new CompoundTag());var transform=tag.getCompound("transformation");transform.put("scale",floats(.85F,.85F,.85F));tag.put("transformation",transform);d.load(tag);d.moveTo(plate(seat).add(b.getX(),b.getY(),b.getZ()));
+    }
     private static void positionServing(Display.ItemDisplay d,BlockPos b,int seat){
         var tag=d.saveWithoutId(new CompoundTag());var transform=tag.getCompound("transformation");transform.put("scale",floats(.55F,.55F,.55F));tag.put("transformation",transform);d.load(tag);d.moveTo(plate(seat).add(b.getX(),b.getY()+.09,b.getZ()));
     }

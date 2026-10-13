@@ -27,7 +27,15 @@ public final class GhostsVisualProof extends Screen {
     @Override public void render(GuiGraphics g,int x,int y,float partial){
         var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xff292821);g.drawString(font,"The Barrett home / "+(page==0?"cast and human poses":page==3?"final supper / mouth animation":"native furnishings and evidence"),10,10,0xffe7dbc3,false);g.flush();
         var buffers=mc.renderBuffers().bufferSource();
-        if(page==0||page==3){
+        if(page==4){
+            var p=g.pose();p.pushPose();p.translate(width/2.,height*.72,180);p.scale(48,-48,48);p.mulPose(Axis.XP.rotationDegrees(18));p.mulPose(Axis.YP.rotationDegrees(-35));
+            for(int bx=-1;bx<=1;bx++)for(int z=-1;z<=0;z++){p.pushPose();p.translate(bx-.5,0,z);mc.getBlockRenderer().renderSingleBlock(GhostsSetBlock.of(GhostsSetBlock.Kind.TABLE,Direction.NORTH),p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.popPose();}
+            for(int i=0;i<4;i++){boolean left=i==0||i==2;int row=i<2?-1:1;
+                p.pushPose();p.translate(left?-3.5:2.5,0,row);mc.getBlockRenderer().renderSingleBlock(GhostsSetBlock.of(GhostsSetBlock.Kind.CHAIR,left?Direction.EAST:Direction.WEST),p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.popPose();
+                int role=GhostsSet.ROLES[i];float size=i==0?.86F:i==1?.58F:1F;var model=new GhostsCastModel(mc.getEntityModels().bakeLayer(GhostsCastModel.LAYER));model.preview(role,GhostsSet.SIT,frames);
+                p.pushPose();p.translate(left?-2.9:2.9,GhostsSet.seatedHeight(size),row+.5);p.mulPose(Axis.YP.rotationDegrees(left?270:90));p.scale(-size,-size,size);p.translate(0,-1.501,0);model.renderToBuffer(p,buffers.getBuffer(RenderType.entityCutoutNoCull(GhostsCastModel.skin(role,GhostsSet.SIT))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);p.popPose();
+            }buffers.endBatch();p.popPose();g.drawCenteredString(font,"Native dining chairs / four actual cast scales and seated poses",width/2,34,0xffe7dbc3);
+        }else if(page==0||page==3){
             for(int n=0;n<(page==0?17:12);n++){
                 int role=page==3?new int[]{LiteraryActor.GHOST_MARJORIE,LiteraryActor.GHOST_JOHN,LiteraryActor.GHOST_SARAH}[n%3]:n<6?GhostsSet.ROLES[n]:n==15?LiteraryActor.GHOST_JOHN:LiteraryActor.GHOST_MARJORIE,phase=page==3?(n<3?GhostsSet.EATING:n<6?GhostsSet.CHOKING:GhostsSet.DEAD):n<6?GhostsSet.STAND:n-6;
                 var model=new GhostsCastModel(mc.getEntityModels().bakeLayer(GhostsCastModel.LAYER));float age=page==3?frames+(n/3)*13:frames;model.preview(role,phase,age);
@@ -52,7 +60,7 @@ public final class GhostsVisualProof extends Screen {
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof GhostsVisualProof proof)||++proof.frames<24)return;
-        var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-ghosts-"+(proof.page==0?"cast":proof.page==1?"fixtures":proof.page==2?"paper-and-cases":"final-dinner")+".png"));}
-        if(++proof.page<4){proof.frames=0;return;}Files.writeString(dir.resolve("ghosts-passed.txt"),"Six painted cast skins, fourteen jointed human poses, animated mouth strands/drops, eight cast atlases, 140 fixture states, native case lids, four fitted call-sheet orientations and rolling native-font caption rendered.\n");mc.setScreen(new LastStopCastVisualProof());
+        var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-ghosts-"+(proof.page==0?"cast":proof.page==1?"fixtures":proof.page==2?"paper-and-cases":proof.page==4?"seating":"final-dinner")+".png"));}
+        if(++proof.page<5){proof.frames=0;return;}Files.writeString(dir.resolve("ghosts-passed.txt"),"Six painted cast skins, fourteen jointed human poses, animated mouth strands/drops, eight cast atlases, 140 fixture states, native case lids, four fitted call-sheet orientations, rolling native-font caption and an assembled native four-chair dining scene rendered.\n");mc.setScreen(new LastStopCastVisualProof());
     }
 }

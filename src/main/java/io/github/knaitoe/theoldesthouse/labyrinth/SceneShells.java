@@ -258,20 +258,24 @@ public final class SceneShells {
 
         /** The room's own field, floor and ceiling materials, as actually built. */
         private void detect() {
-            Map<Block, Integer> walls = new HashMap<>(), floors = new HashMap<>(), ceilings = new HashMap<>();
+            Map<Block, Integer> walls = new HashMap<>(), outerWalls = new HashMap<>(), floors = new HashMap<>(), ceilings = new HashMap<>();
             int eye = s.y0() + 1;
             for (int x = s.x0(); x <= s.x1(); x++) for (int z = s.z0(); z <= s.z1(); z++) {
                 if (reserved(scene, x, eye, z)) continue;
                 if (air(x, eye, z)) for (Direction d : Direction.Plane.HORIZONTAL) {
                     int nx = x + d.getStepX(), nz = z + d.getStepZ();
+                    if (reserved(scene, nx, eye, nz)) continue;
                     var st = state(nx, eye, nz);
-                    if (!st.isAir() && !entity(nx, eye, nz) && st.isCollisionShapeFullBlock(l, at(nx, eye, nz)))
+                    if (!st.isAir() && !entity(nx, eye, nz) && st.isCollisionShapeFullBlock(l, at(nx, eye, nz))) {
                         walls.merge(st.getBlock(), 1, Integer::sum);
+                        if (perimeter(nx, nz)) outerWalls.merge(st.getBlock(), 1, Integer::sum);
+                    }
                 }
                 if (air(x, s.y0(), z)) floors.merge(state(x, s.y0() - 1, z).getBlock(), 1, Integer::sum);
                 if (air(x, s.y1(), z)) ceilings.merge(state(x, s.y1() + 1, z).getBlock(), 1, Integer::sum);
             }
-            field = top(walls);
+            // An inset, finished partition is not the structural outer wall where a chimney can be carved.
+            field = top(outerWalls.isEmpty() ? walls : outerWalls);
             floor = top(floors);
             ceiling = top(ceilings);
         }

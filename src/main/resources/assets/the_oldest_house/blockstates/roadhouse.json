@@ -205,16 +205,16 @@
    "model": "the_oldest_house:block/last_stop_pool_r_1"
   },
   "facing=north,kind=pool_lamp,stage=0": {
-   "model": "the_oldest_house:block/last_stop_pool_lamp_0"
+   "model": "the_oldest_house:block/last_stop_pool_lamp"
   },
   "facing=north,kind=pool_lamp,stage=1": {
-   "model": "the_oldest_house:block/last_stop_pool_lamp_1"
+   "model": "the_oldest_house:block/last_stop_pool_lamp"
   },
   "facing=north,kind=pool_lamp,stage=2": {
-   "model": "the_oldest_house:block/last_stop_pool_lamp_1"
+   "model": "the_oldest_house:block/last_stop_pool_lamp"
   },
   "facing=north,kind=pool_lamp,stage=3": {
-   "model": "the_oldest_house:block/last_stop_pool_lamp_1"
+   "model": "the_oldest_house:block/last_stop_pool_lamp"
   },
   "facing=north,kind=dartboard,stage=0": {
    "model": "the_oldest_house:block/last_stop_dartboard"
@@ -861,19 +861,19 @@
    "y": 90
   },
   "facing=east,kind=pool_lamp,stage=0": {
-   "model": "the_oldest_house:block/last_stop_pool_lamp_0",
+   "model": "the_oldest_house:block/last_stop_pool_lamp",
    "y": 90
   },
   "facing=east,kind=pool_lamp,stage=1": {
-   "model": "the_oldest_house:block/last_stop_pool_lamp_1",
+   "model": "the_oldest_house:block/last_stop_pool_lamp",
    "y": 90
   },
   "facing=east,kind=pool_lamp,stage=2": {
-   "model": "the_oldest_house:block/last_stop_pool_lamp_1",
+   "model": "the_oldest_house:block/last_stop_pool_lamp",
    "y": 90
   },
   "facing=east,kind=pool_lamp,stage=3": {
-   "model": "the_oldest_house:block/last_stop_pool_lamp_1",
+   "model": "the_oldest_house:block/last_stop_pool_lamp",
    "y": 90
   },
   "facing=east,kind=dartboard,stage=0": {
@@ -1645,19 +1645,19 @@
    "y": 180
   },
   "facing=south,kind=pool_lamp,stage=0": {
-   "model": "the_oldest_house:block/last_stop_pool_lamp_0",
+   "model": "the_oldest_house:block/last_stop_pool_lamp",
    "y": 180
   },
   "facing=south,kind=pool_lamp,stage=1": {
-   "model": "the_oldest_house:block/last_stop_pool_lamp_1",
+   "model": "the_oldest_house:block/last_stop_pool_lamp",
    "y": 180
   },
   "facing=south,kind=pool_lamp,stage=2": {
-   "model": "the_oldest_house:block/last_stop_pool_lamp_1",
+   "model": "the_oldest_house:block/last_stop_pool_lamp",
    "y": 180
   },
   "facing=south,kind=pool_lamp,stage=3": {
-   "model": "the_oldest_house:block/last_stop_pool_lamp_1",
+   "model": "the_oldest_house:block/last_stop_pool_lamp",
    "y": 180
   },
   "facing=south,kind=dartboard,stage=0": {
@@ -2429,19 +2429,19 @@
    "y": 270
   },
   "facing=west,kind=pool_lamp,stage=0": {
-   "model": "the_oldest_house:block/last_stop_pool_lamp_0",
+   "model": "the_oldest_house:block/last_stop_pool_lamp",
    "y": 270
   },
   "facing=west,kind=pool_lamp,stage=1": {
-   "model": "the_oldest_house:block/last_stop_pool_lamp_1",
+   "model": "the_oldest_house:block/last_stop_pool_lamp",
    "y": 270
   },
   "facing=west,kind=pool_lamp,stage=2": {
-   "model": "the_oldest_house:block/last_stop_pool_lamp_1",
+   "model": "the_oldest_house:block/last_stop_pool_lamp",
    "y": 270
   },
   "facing=west,kind=pool_lamp,stage=3": {
-   "model": "the_oldest_house:block/last_stop_pool_lamp_1",
+   "model": "the_oldest_house:block/last_stop_pool_lamp",
    "y": 270
   },
   "facing=west,kind=dartboard,stage=0": {

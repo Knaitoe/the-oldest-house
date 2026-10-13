@@ -19,7 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
-@GameTestHolder(TheOldestHouse.MOD_ID)
+@GameTestHolder(TheOldestHouse.MOD_ID+"_writing")
 @PrefixGameTestTemplate(false)
 public final class WritingTests {
     private record Letter(int index, Style style, int cp) {}

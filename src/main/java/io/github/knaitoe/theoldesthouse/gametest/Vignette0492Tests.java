@@ -28,9 +28,13 @@ public final class Vignette0492Tests {
     private static void close(){if(active!=null){active.close();active=null;}}
     private static void lease(LiteraryTests.Fixture f,LabyrinthPlace place){var b=f.base(place);var r=place.room();f.chunks.hold(f.level(place),new AABB(b.getX()+r.minX()-2,b.getY()+r.minY()-2,b.getZ()+r.minZ()-2,b.getX()+r.maxX()+3,b.getY()+r.maxY()+3,b.getZ()+r.maxZ()+3));}
     private static PlayerInteractEvent.RightClickBlock use(ServerPlayer p,BlockPos at,InteractionHand hand){
-        var shape=p.serverLevel().getBlockState(at).getShape(p.serverLevel(),at).bounds();var target=new Vec3(at.getX()+(shape.minX+shape.maxX)/2,at.getY()+shape.maxY-.01,at.getZ()+(shape.minZ+shape.maxZ)/2);
         p.moveTo(at.getX()+.5,at.getY(),at.getZ()+2);p.setDeltaMovement(Vec3.ZERO);
-        var event=new PlayerInteractEvent.RightClickBlock(p,hand,at,new BlockHitResult(target,Direction.SOUTH,at,false));NeoForge.EVENT_BUS.post(event);return event;
+        BlockHitResult hit=null;for(var box:p.serverLevel().getBlockState(at).getShape(p.serverLevel(),at).toAabbs()){
+            var target=box.getCenter().add(at.getX(),at.getY(),at.getZ());var ray=p.serverLevel().clip(new net.minecraft.world.level.ClipContext(p.getEyePosition(),target,net.minecraft.world.level.ClipContext.Block.OUTLINE,net.minecraft.world.level.ClipContext.Fluid.NONE,p));
+            if(ray.getType()==HitResult.Type.BLOCK&&ray.getBlockPos().equals(at)){hit=ray;break;}
+        }
+        if(hit==null)hit=new BlockHitResult(at.getCenter(),Direction.SOUTH,at,false);
+        var event=new PlayerInteractEvent.RightClickBlock(p,hand,at,hit);NeoForge.EVENT_BUS.post(event);return event;
     }
     @GameTest(template="empty",batch="review492_nursery",timeoutTicks=300)
     public static void chestAndShelfToysTouchTheirOriginalSupportsAndTheChairSeatsANativePlayer(GameTestHelper h){
@@ -53,8 +57,8 @@ public final class Vignette0492Tests {
         l.setBlock(chest,l.getBlockState(chest).setValue(NurseryBlock.STAGE,0),18);l.setBlock(shelf,l.getBlockState(shelf).setValue(NurseryBlock.STAGE,3),18);
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native entity sections load")).thenExecute(()->{
             p.setGameMode(GameType.SPECTATOR);f.at(p,place,-9,2,-20);h.assertTrue(!NurserySupport0492.repair(l,b),"a spectator's actual camera protects the props");
-            var pig=EntityType.PIG.create(l);f.extras.add(pig);pig.setNoGravity(true);pig.moveTo(chest.getX()+.5,chest.getY(),chest.getZ()+.5);l.addFreshEntity(pig);f.at(p,place,0,0,100);
-            h.assertTrue(!NurserySupport0492.repair(l,b),"an actual living body blocks the changed cell");pig.discard();
+            var body=LiteraryRegistry.ACTOR.get().create(l);f.extras.add(body);body.bind(place,null);body.setNoGravity(true);body.moveTo(chest.getX()+.5,chest.getY(),chest.getZ()+.5);h.assertTrue(l.addFreshEntity(body),"the fixture body joins the native level");f.at(p,place,0,0,100);
+            h.assertTrue(!NurserySupport0492.repair(l,b),"an actual living body blocks the changed cell");body.discard();
             h.assertTrue(NurserySupport0492.repair(l,b)&&l.getBlockState(chest).getValue(NurseryBlock.STAGE)==2&&l.getBlockState(shelf).getValue(NurseryBlock.STAGE)==3,"only the recognised original mount changes; an advanced hanging toy stays intact");
             l.setBlock(chest,Blocks.AIR.defaultBlockState(),18);f.reload();h.assertTrue(NurserySupport0492.repair(l,b)&&l.getBlockState(chest).isAir(),"the saved checkpoint never restores a later removal");
         }).thenSucceed();
@@ -113,4 +117,81 @@ public final class Vignette0492Tests {
         }).thenSucceed();
     }
     @AfterBatch(batch="review492_herd_custody") public static void herdDone(ServerLevel l){close();}
+
+    @GameTest(template="empty",batch="review492_bar_handling",timeoutTicks=300)
+    public static void barStoolsRespectTheOriginalOccupantAndNativeDartsAndPoolRemainUsable(GameTestHelper h){
+        var f=fixture(h);var place=ElkLot.PLACE;var p=f.player("bar_handling",place);var b=f.base(place);lease(f,place);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&LiteraryVignettes.shared(f.data(),place).hasUUID("Russ"),"the actual cast is loaded")).thenExecute(()->{
+            var russ=(LiteraryActor)f.out.getEntity(LiteraryVignettes.shared(f.data(),place).getUUID("Russ"));var occupied=russ.blockPosition();f.at(p,place,-23.5,0,-22);
+            h.assertTrue(!HouseSitting.sit(p,occupied)&&!p.isPassenger(),"an original bar attendant keeps his occupied stool");
+            var free=b.offset(-20,0,-24);use(p,free,InteractionHand.MAIN_HAND);h.assertTrue(p.getVehicle() instanceof SeatEntity,"a free native bar stool seats the player");p.stopRiding();
+            f.click(p,place,ElkLot.POOL_L);h.assertTrue(f.out.getBlockState(b.offset(ElkLot.POOL_L)).getValue(RoadhouseBlock.STAGE)==1&&f.out.getBlockState(b.offset(ElkLot.POOL_R)).getValue(RoadhouseBlock.STAGE)==1,"both original pool halves show the break");
+            f.click(p,place,ElkLot.DARTS);h.assertTrue(f.out.getBlockState(b.offset(ElkLot.DARTS)).getValue(RoadhouseBlock.STAGE)==1&&!f.own(p,place).getBoolean("Ready"),"throwing darts changes the native mesh without finishing the story");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="review492_bar_handling") public static void barHandlingDone(ServerLevel l){close();}
+
+    private static ClassicsTests.Fixture seance;
+    @AfterBatch(batch="review492_seance_saved") public static void seanceDone(ServerLevel l){if(seance!=null){seance.close();seance=null;}}
+    @GameTest(template="empty",batch="review492_seance_saved",timeoutTicks=650)
+    public static void savedFamilyStepsOffTheActualCaneChairsAndRunsThroughTheWestDoor(GameTestHelper h){
+        seance=new ClassicsTests.Fixture(h,492400,LabyrinthPlace.SEANCE);var f=seance;var p=f.player("saved_family_witness");var ids=new HashSet<UUID>();
+        h.startSequence().thenWaitUntil(()->h.assertTrue(ClassicsVignettes.cast(f.l).size()==4,"the original family and native chair layout are loaded")).thenExecute(()->{
+            for(var a:ClassicsVignettes.cast(f.l)){ids.add(a.getUUID());a.moveTo(a.getX(),f.b.getY()+.48,a.getZ());a.setNoGravity(true);a.appearance(a.role(),false,true);a.getPersistentData().putInt("Flee0477",0);a.getPersistentData().remove("FlightRoute0492");var saved=a.saveWithoutId(new CompoundTag());a.load(saved);}
+            var all=f.data().state(ClassicsVignettes.STATE);all.putBoolean("SittingEnded",true);all.putString("SharedOutcome","drove_the_family_out");all.putBoolean("Fleeing0477",true);f.data().setState(ClassicsVignettes.STATE,all);f.reload();
+            NovelRooms.door(f.l,f.b.offset(-5,0,-22),Direction.SOUTH,Blocks.DARK_OAK_DOOR,true);f.at(p,.5,0,-11.5);
+        }).thenWaitUntil(()->h.assertTrue(f.data().state(ClassicsVignettes.STATE).getBoolean("Fled0477"),"the saved native bodies must actually leave: "+ClassicsVignettes.cast(f.l).stream().map(a->a.role()+":"+a.position().subtract(f.b.getX(),f.b.getY(),f.b.getZ())+" leg="+a.getPersistentData().getInt("Flee0477")).toList())).thenExecute(()->{
+            h.assertTrue(ids.equals(new HashSet<>(ClassicsVignettes.cast(f.l).stream().map(Entity::getUUID).toList())),"no original is replaced to manufacture an escape");
+            for(var a:ClassicsVignettes.cast(f.l))h.assertTrue(a.getZ()<f.b.getZ()-23&&!a.seated()&&f.l.noCollision(a,a.getBoundingBox()),"each actor finishes clear of the native room collision: "+a.role());
+            h.assertTrue(!f.l.getBlockState(f.b.offset(-5,0,-22)).getValue(DoorBlock.OPEN),"the last original shuts the physical door");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="review492_courtyard_saved") public static void courtyardDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="review492_courtyard_saved",timeoutTicks=350)
+    public static void checkpointedCourtyardDecorBecomesChessWithoutRestockingLaterEdits(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.ZAMPANO_COURTYARD;var b=f.base(place);var l=f.out;f.built.add(place);var box=new AABB(Vec3.atLowerCornerOf(b.offset(-16,-2,-42)),Vec3.atLowerCornerOf(b.offset(17,18,8)));f.chunks.hold(l,box);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the native courtyard sections are loaded")).thenExecute(()->{
+            NovelRooms.build(l.getServer(),l,b,place);VignetteArchitecture.decorateOnce(l,f.origin,place);
+            for(int x:new int[]{-8,8}){var table=b.offset(x,0,-12);h.assertTrue(l.getBlockState(table).getValue(HouseholdFurnitureBlock.KIND)==HouseholdFurnitureBlock.Kind.CHESS_TABLE&&l.getBlockState(table.above()).getValue(VignetteDetailBlock.KIND)==VignetteDetailBlock.Kind.CHESS,"the actual builder authors chess before any review can run");l.setBlock(table,HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH),18);l.setBlock(table.above(),SceneDetailBlock.state(SceneDetailBlock.Kind.VASE,Direction.SOUTH),18);}
+            var old=f.data().state(PlaytestSceneReview.STATE);old.putBoolean(f.origin.asLong()+":"+place.id(),true);f.data().setState(PlaytestSceneReview.STATE,old);f.reload();
+            var p=NativeTestPlayers.survival(h,"courtyard_camera");f.players.add(p);p.teleportTo(l,b.getX(),b.getY(),b.getZ()-11,0,0);p.setGameMode(GameType.SPECTATOR);h.assertTrue(!CourtyardChess0492.repair(l,b),"an actual spectator camera postpones the saved geometry change");p.teleportTo(l,b.getX(),b.getY(),b.getZ()+100,0,0);
+            h.assertTrue(CourtyardChess0492.repair(l,b),"the old completed checkpoint cannot suppress the recognised correction");
+            for(int x:new int[]{-8,8})h.assertTrue(l.getBlockState(b.offset(x,0,-12)).getValue(HouseholdFurnitureBlock.KIND)==HouseholdFurnitureBlock.Kind.CHESS_TABLE&&l.getBlockState(b.offset(x,1,-12)).getValue(VignetteDetailBlock.KIND)==VignetteDetailBlock.Kind.CHESS,"both actual settings retain boards and chessmen");
+            l.setBlock(b.offset(-8,1,-12),Blocks.AIR.defaultBlockState(),18);f.reload();h.assertTrue(CourtyardChess0492.repair(l,b)&&l.getBlockState(b.offset(-8,1,-12)).isAir(),"later removal stays removed across native saved-data reload");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="review492_men_exit") public static void menExitDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="review492_men_exit",timeoutTicks=450)
+    public static void allThreeOriginalMenLeaveTheirActualBarSeatsThroughTheSideDoor(GameTestHelper h){
+        var f=fixture(h);var place=ElkLot.PLACE;var p=f.player("bar_exit_reader",place);var b=f.base(place);lease(f,place);f.at(p,place,-3.5,0,-8.5);var ids=new HashMap<String,UUID>();
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&LiteraryVignettes.shared(f.data(),place).hasUUID("Wade"),"the native bar layout and original men are loaded")).thenExecute(()->{
+            var w=LiteraryVignettes.shared(f.data(),place);for(var who:ElkLotNight.MEN)ids.put(who.key(),w.getUUID(who.key()));w.putInt("CrashAt",0);w.putInt("Night",ElkLotNight.MEN_OUT-1);LiteraryVignettes.shared(f.data(),place,w);
+        }).thenWaitUntil(()->{for(var who:ElkLotNight.MEN){var a=(LiteraryActor)f.out.getEntity(ids.get(who.key()));h.assertTrue(a!=null&&!ElkLotNight.inBar(a.position(),b),who.name()+" exits the actual furnishings: "+(a==null?"missing":a.position().subtract(b.getX(),b.getY(),b.getZ())+" leg="+a.getPersistentData().getInt("Leg0478")));}}).thenExecute(()->{
+            for(var id:ids.values())h.assertTrue(f.out.getEntity(id) instanceof LiteraryActor,"the same original men walked out");h.assertTrue(f.out.getBlockState(b.offset(ElkLot.SIDE_DOOR)).getValue(DoorBlock.OPEN),"they leave the real side door open");
+        }).thenSucceed();
+    }
+    private static GoatmanTests.Fixture goatman;
+    @AfterBatch(batch="review492_cousin_talk") public static void cousinDone(ServerLevel l){if(goatman!=null){goatman.close();goatman=null;}}
+    @GameTest(template="empty",batch="review492_cousin_talk",timeoutTicks=300)
+    public static void nativeCousinClicksGiveDifferentRepliesDuringCookingVigilAndDawn(GameTestHelper h){
+        goatman=new GoatmanTests.Fixture(h,492600);var f=goatman;var p=f.nativePlayer("cousin_talker");f.indoors(p);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(!f.cousins().isEmpty(),"a real native cousin is loaded")).thenExecute(()->{
+            var c=f.cousins().getFirst();c.moveTo(f.b.getX()-2.5,f.b.getY()+1,f.b.getZ()-72.5);p.moveTo(f.b.getX()-.5,f.b.getY()+1,f.b.getZ()-72.5);p.setDeltaMovement(Vec3.ZERO);var r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);f.run(r);
+            var click=new PlayerInteractEvent.EntityInteract(p,InteractionHand.MAIN_HAND,c);NeoForge.EVENT_BUS.post(click);h.assertTrue(click.isCanceled()&&!GoatmanVignette.personal(LabyrinthData.get(f.server),p.getUUID()).getString("LastCousinReply0492").isEmpty(),"the native entity click produces a visible reply");
+            String first=GoatmanVignette.personal(LabyrinthData.get(f.server),p.getUUID()).getString("LastCousinReply0492");var own=GoatmanVignette.personal(LabyrinthData.get(f.server),p.getUUID());own.remove("CousinTalkAt0492");var data=LabyrinthData.get(f.server);var all=data.state(GoatmanVignette.ID);var players=all.getCompound("Players");players.put(p.getUUID().toString(),own);all.put("Players",players);data.setState(GoatmanVignette.ID,all);r=f.run();r.putInt("Phase",GoatmanVignette.VIGIL);f.run(r);
+            h.assertTrue(GoatmanConversations.talk(p,c,InteractionHand.MAIN_HAND)&&!GoatmanVignette.personal(data,p.getUUID()).getString("LastCousinReply0492").equals(first),"the vigil has its own replies");
+            var far=new PlayerInteractEvent.EntityInteract(p,InteractionHand.OFF_HAND,c);NeoForge.EVENT_BUS.post(far);h.assertTrue(!far.isCanceled(),"an offhand packet cannot double-deliver dialogue");p.moveTo(f.b.getX()+5,f.b.getY()+1,f.b.getZ()-72.5);h.assertTrue(!GoatmanConversations.talk(p,c,InteractionHand.MAIN_HAND),"unreachable cousins cannot be talked to remotely");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="review492_ghosts_seats") public static void ghostsSeatsDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="review492_ghosts_seats",timeoutTicks=350)
+    public static void savedGhostsDiningPosesLiftTheOriginalThighsOntoTheirActualSeats(GameTestHelper h){
+        var f=fixture(h);var place=GhostsSet.PLACE;var p=f.player("ghost_seat_reader",place);var b=f.base(place);lease(f,place);var ids=new HashMap<Integer,UUID>();
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&LiteraryVignettes.shared(f.data(),place).hasUUID("FilmSarah_"+p.getUUID()),"the original private family and actual chairs are loaded")).thenExecute(()->{
+            var own=f.own(p,place);own.putInt("FilmDay",2);own.putBoolean("CastPlaced",false);own.putBoolean("Rolling",false);GhostsSet.reader(p,b,own);var world=LiteraryVignettes.shared(f.data(),place);
+            for(int i=0;i<4;i++){var a=(LiteraryActor)f.in.getEntity(world.getUUID("Film"+GhostsSet.PEOPLE[i]+"_"+p.getUUID()));ids.put(i,a.getUUID());h.assertTrue(Math.abs(a.getY()-b.getY()-GhostsSet.seatedHeight(a.getScale()))<.001,"fresh placement fits each original cast scale");a.moveTo(a.getX(),b.getY()+.625,a.getZ());a.getPersistentData().remove("GhostSeat0492");a.load(a.saveWithoutId(new CompoundTag()));}
+            int clock=own.getInt("ShotClock");GhostsSet.reader(p,b,own);for(var entry:ids.entrySet()){var a=(LiteraryActor)f.in.getEntity(entry.getValue());h.assertTrue(a!=null&&a.phase()==GhostsSet.SIT&&Math.abs(a.getY()-b.getY()-GhostsSet.seatedHeight(a.getScale()))<.001&&f.in.noCollision(a,a.getBoundingBox()),"saved originals fit the native seat without a replacement or collision: "+entry.getKey());}
+            h.assertTrue(own.getInt("ShotClock")==clock&&!own.getBoolean("DayDone")&&!own.getBoolean("Ready"),"fitting the actors does not advance or complete the filmed day");
+        }).thenSucceed();
+    }
 }
