@@ -32,7 +32,8 @@ public final class LakeHouseTests {
             oldHouse=HouseSavedData.get(in.getServer());oldData=LabyrinthData.get(in.getServer());origin=new BlockPos(59000,80,59000);
             var house=new HouseSavedData();house.markSpawned(origin);house.markInteriorInitialized();var store=in.getServer().overworld().getDataStorage();store.set("the_oldest_house",house);store.set("the_oldest_house_labyrinth",new LabyrinthData());
             data().setBuilt(LabyrinthBuilder.VERSION,origin);LiteraryRooms.build(out,base(),PLACE);LabyrinthBuilder.registerDoors(data(),PLACE,base());lease.hold(out,new AABB(Vec3.atLowerCornerOf(base().offset(-12,-44,-183)),Vec3.atLowerCornerOf(base().offset(12,12,8))));}
-        void ready(Runnable action){Runnable[] await=new Runnable[1];await[0]=()->{if(!lease.ready()){h.runAfterDelay(1,await[0]);return;}action.run();};await[0].run();}
+        // Native scheduling removes the executing Runnable after it returns; requeue a fresh wrapper.
+        void ready(Runnable action){Runnable[] await=new Runnable[1];await[0]=()->{if(!lease.ready()){h.runAfterDelay(1,()->await[0].run());return;}action.run();};await[0].run();}
         LabyrinthData data(){return LabyrinthData.get(in.getServer());}
         BlockPos base(){return LabyrinthPlaces.base(origin,PLACE);}
         ServerPlayer player(String name){var p=NativeTestPlayers.survival(h,name);players.add(p);var b=base();p.teleportTo(out,b.getX()+.5,b.getY(),b.getZ()-3,180,0);p.hasChangedDimension();p.setNoGravity(true);LiteraryVignettes.onArrive(p,PLACE);return p;}

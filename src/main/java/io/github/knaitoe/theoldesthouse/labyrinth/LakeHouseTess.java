@@ -14,7 +14,7 @@ import io.github.knaitoe.theoldesthouse.house.HouseWatchers;
 public final class LakeHouseTess {
     private LakeHouseTess(){}
     public static @Nullable LiteraryActor actor(ServerPlayer p,CompoundTag own){return own.hasUUID("Tess")&&p.serverLevel().getEntity(own.getUUID("Tess")) instanceof LiteraryActor a&&!a.isRemoved()?a:null;}
-    public static int readers(ServerPlayer p,BlockPos b){return p.serverLevel().getEntitiesOfClass(ServerPlayer.class,IndianLakeRooms.bounds(b,LakeHouse.PLACE),q->q.isAlive()&&!q.isSpectator()).size();}
+    public static int readers(ServerPlayer p,BlockPos b){var bounds=IndianLakeRooms.bounds(b,LakeHouse.PLACE);return (int)p.serverLevel().players().stream().filter(q->q.isAlive()&&!q.isSpectator()&&bounds.contains(q.position())).count();}
     private static @Nullable LiteraryActor ensure(ServerPlayer p,BlockPos b,CompoundTag own){
         var a=actor(p,own);if(a!=null)return a;
         if(own.hasUUID("Tess"))return null; // Its saved native body may be in an unloaded entity section.
