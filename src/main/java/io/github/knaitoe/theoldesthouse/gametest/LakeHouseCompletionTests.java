@@ -94,6 +94,15 @@ public final class LakeHouseCompletionTests {
             returnVisit(f,p);readTick(f,p,5);h.assertTrue(LakeHouseTess.actor(p,own(f,p))!=null,"a later real departure and solo arrival can bring her back");h.succeed();
         }finally{lease.close();f.close();}};action[0].run();
     }
+    @GameTest(template="empty",batch="lake_house_swim0490",timeoutTicks=1000)
+    public static void theOriginalTessSwimsThroughTheDoorAndUpTheNativeStair(GameTestHelper h){
+        var f=new LakeHouseTests.Fixture(h);var p=f.player("lake_swim");p.setItemSlot(EquipmentSlot.CHEST,LakeHouseGear.lend(p,LakeHouseRegistry.TANKS.get()));
+        f.ready(()->{at(f,p,.5,-24,-164.5);readTick(f,p,5);var tess=LakeHouseTess.actor(p,own(f,p));h.assertTrue(tess!=null,"the solo reader has the original Tess");var id=tess.getUUID();var b=f.base();tess.appearance(LiteraryActor.LAKE_TESS,2);tess.moveTo(b.getX()+.5,b.getY()-24,b.getZ()-159.5);at(f,p,7.5,-18.8,-175.5);
+            int[] steps={0};Runnable[] swim=new Runnable[1];swim[0]=()->{try{readTick(f,p,5);h.assertTrue(tess.getUUID().equals(id)&&f.out.getEntity(id)==tess&&f.out.noCollision(tess,tess.getBoundingBox()),"the same body moves without crossing a native wall or fitting");
+                if(tess.getY()>b.getY()-20&&tess.distanceToSqr(p)<10){h.assertTrue(tess.phase()==2&&Float.isFinite(tess.getXRot()),"her actual swimming body reaches the upper bedroom through the stair opening");h.succeed();f.close();return;}
+                h.assertTrue(++steps[0]<150,"Tess finds the real front door and central staircase; at="+tess.position()+", goal="+p.position());h.runAfterDelay(5,()->swim[0].run());
+            }catch(Throwable error){f.close();throw error;}};swim[0].run();});
+    }
     @GameTest(template="empty",batch="lake_house_rule",timeoutTicks=800)
     public static void miningLiftsAnOriginalWarnsThenBreaksTheRuleAndPersists(GameTestHelper h){
         var f=new LakeHouseTests.Fixture(h);var p=f.player("lake_rule");at(f,p,-5.5,-24,-174.5);var at=f.base().offset(LakeHouseInterior.ASH);var original=f.out.getBlockState(at);

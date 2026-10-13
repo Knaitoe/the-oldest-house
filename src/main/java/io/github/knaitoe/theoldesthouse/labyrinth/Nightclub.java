@@ -43,9 +43,9 @@ public final class Nightclub {
         for(int z=-16;z>=-30;z-=7){for(int x=13;x<=15;x++)prop(l,b,x,0,z,NightclubBlock.Kind.BAR,Direction.WEST);prop(l,b,14,1,z,NightclubBlock.Kind.GLASS,Direction.WEST);NovelRooms.furniture(l,b.offset(11,0,z),HouseholdFurnitureBlock.Kind.KITCHEN_STOOL,Direction.EAST);}
         for(int z=-21;z>=-35;z-=7)prop(l,b,-14,0,z,NightclubBlock.Kind.BENCH,Direction.EAST);
         lights(l,b,true);
-        // A readable, dim exit sign is a native sign rather than approximate generated lettering.
-        var at=b.offset(0,3,-1);BuildBlocks.set(l,at,Blocks.DARK_OAK_WALL_SIGN.defaultBlockState().setValue(WallSignBlock.FACING,Direction.NORTH),18);
-        BuildBlocks.after(l,()->{if(l.getBlockEntity(at) instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign){var text=sign.getFrontText().setMessage(1,net.minecraft.network.chat.Component.literal("EXIT")).setColor(net.minecraft.world.item.DyeColor.GREEN).setHasGlowingText(true);sign.setText(text,true);sign.setWaxed(true);}});
+        prop(l,b,0,3,-1,NightclubBlock.Kind.EXIT,Direction.NORTH);
+        for(int x:new int[]{-2,2})prop(l,b,x,5,-45,NightclubBlock.Kind.DJ_LIGHT,Direction.NORTH);
+
     }
     /** Three brief flashes every 130 seconds; the steady coloured lights never go dark. */
     public static boolean strobe(long tick,boolean music){long phase=Math.floorMod(tick,2600L);return music&&phase<22&&phase%10<2;}
@@ -71,6 +71,15 @@ public final class Nightclub {
         if(fresh)prop(l,b,0,4,-2,NightclubBlock.Kind.STRIP,Direction.SOUTH);
         state.putBoolean(key,true);d.setState(STATE,state);
     }
+    /** Add only to expected vacant fixtures; preserve the old sign and every player edit. */
+    private static void finish(ServerLevel l,BlockPos b){
+        var d=LabyrinthData.get(l.getServer());var state=d.state(STATE);String key="Finish0490_"+b.asLong();if(state.getBoolean(key))return;
+        var area=bounds(b);for(var corner:new BlockPos[]{b.offset(-16,0,-49),b.offset(16,8,0)})if(!l.hasChunkAt(corner)||!l.areEntitiesLoaded(ChunkPos.asLong(corner.getX()>>4,corner.getZ()>>4)))return;
+        if(l.players().stream().anyMatch(p->area.inflate(32).intersects(p.getCamera().getBoundingBox()))||!l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,area,e->e.isAlive()&&!(e instanceof NightclubActor)).isEmpty())return;
+        for(int x:new int[]{-2,2}){var at=b.offset(x,5,-45);if(l.getBlockState(at).isAir()&&l.getBlockEntity(at)==null)prop(l,b,x,5,-45,NightclubBlock.Kind.DJ_LIGHT,Direction.NORTH);}
+        var exit=b.offset(0,4,-1);if(l.getBlockState(exit).isAir()&&l.getBlockEntity(exit)==null)prop(l,b,0,4,-1,NightclubBlock.Kind.EXIT,Direction.NORTH);
+        state.putBoolean(key,true);d.setState(STATE,state);
+    }
     public static void ensureCast(ServerLevel l,BlockPos b){
         var d=LabyrinthData.get(l.getServer());var state=d.state(STATE);String origin=Long.toString(b.asLong());var cast=state.getCompound(origin);
         for(int i=0;i<=DANCERS;i++){
@@ -81,7 +90,7 @@ public final class Nightclub {
         state.put(origin,cast);d.setState(STATE,state);
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){var server=e.getServer();if(server.getTickCount()%2!=0)return;var o=HouseSavedData.get(server).houseOrigin();var l=server.getLevel(HouseDimensions.INTERIOR);if(o==null||l==null)return;var b=LabyrinthPlaces.base(o,LabyrinthPlace.NIGHTCLUB);
-        if(server.getTickCount()%10==0)lights(l,b,false);
+        if(server.getTickCount()%10==0){lights(l,b,false);finish(l,b);}
         if(l.players().stream().noneMatch(p->p.isAlive()&&!p.isSpectator()&&bounds(b).contains(p.position())))return;
         if(server.getTickCount()%10==0){IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.NIGHTCLUB);ensureCast(l,b);}
         var mixer=l.getBlockState(b.offset(MIXER));boolean flash=strobe(l.getGameTime(),mixer.is(NightclubRegistry.BLOCK.get())&&mixer.getValue(NightclubBlock.STAGE)>0);

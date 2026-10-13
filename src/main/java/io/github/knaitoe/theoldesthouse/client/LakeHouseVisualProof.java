@@ -31,7 +31,7 @@ public final class LakeHouseVisualProof extends Screen {
             for(int i=0;i<8;i++){
                 int role=i<6?LiteraryActor.LAKE_TESS:LiteraryActor.LAKE_WAX;int phase=i==2?1:i>=3&&i<6?2:0;
                 for(var part:new net.minecraft.client.model.geom.ModelPart[]{cast.head,cast.body,cast.leftArm,cast.rightArm,cast.leftLeg,cast.rightLeg})part.getAllParts().forEach(net.minecraft.client.model.geom.ModelPart::resetPose);
-                cast.young=false;cast.pose(role,phase,frames);if(role==LiteraryActor.LAKE_TESS)cast.previewLakeHair(i==3||i==4,frames+i*21);var pose=g.pose();pose.pushPose();pose.translate(30+(i+.5F)*(width-60)/8,height*.67F,220);pose.scale(43,-43,43);pose.mulPose(Axis.YP.rotationDegrees(i==1||i==7?180:20));if(phase==2)pose.mulPose(Axis.XP.rotationDegrees(90));
+                cast.young=false;cast.pose(role,phase,frames);if(role==LiteraryActor.LAKE_TESS)cast.previewLakeHair(i==3||i==4,frames+i*21);var pose=g.pose();pose.pushPose();pose.translate(30+(i+.5F)*(width-60)/8,height*.67F,220);pose.scale(43,43,43);pose.mulPose(Axis.YP.rotationDegrees(i==1||i==7?180:20));if(phase==2){pose.mulPose(Axis.XP.rotationDegrees(-90));pose.translate(0,-1,.3);}pose.translate(0,-1.501,0);
                 cast.renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(LiteraryRenderers.skin(role,phase))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);buffers.endBatch();pose.popPose();
             }
         }else if(page==1){

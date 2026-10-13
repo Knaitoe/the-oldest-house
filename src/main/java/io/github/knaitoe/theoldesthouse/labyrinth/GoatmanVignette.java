@@ -494,7 +494,7 @@ public final class GoatmanVignette {
         if(phase==PATH&&arrived){phase=GATHERING;clock=0;r.putInt("Phase",phase);r.putInt("Pan",r.getBoolean("PlayerServes0464")?0:count(r)-1+enrolled.size());r.putInt("PanFor",count(r)-1+enrolled.size());GoatmanWoods.pan(l,b,r.getInt("Pan"));}
         if(phase==PATH)clock++;
         else if(phase==GATHERING){
-            GoatmanSupper.tick(l,b,r,enrolled);
+            GoatmanSupper.tick(l,b,r,enrolled);cookingChatter(r,enrolled);
             if(!fresh(r)||clock!=SUPPER0465-1||GoatmanSupper.ready(r)){clock++;evening(l,b,r,enrolled,clock);}
             if(clock>=gatherTicks(r)){nightfall(l,b,r,enrolled);phase=VIGIL;clock=0;}
         }
@@ -506,6 +506,12 @@ public final class GoatmanVignette {
         saveRun(d,r);
         if(server.getTickCount()%20==0||speaking(r)||clock==r.getInt("FearAt0472"))for(var p:enrolled)scene(p,r);
         ambience(l,b,r,enrolled,server.getTickCount());
+    }
+    private static void cookingChatter(CompoundTag r,List<ServerPlayer> readers){
+        if(!fresh(r)||GoatmanSupper.ready(r)||r.getInt("Clock")<850)return;
+        int ticks=r.getInt("CookingChatTicks0490")+1;r.putInt("CookingChatTicks0490",ticks);if(ticks%260!=0)return;
+        String[] lines={"A cousin: Leave mine another minute. I like the edges dark.","A cousin: Who packed three bottles of mustard and no forks?","A cousin: They're in the drawer. Try the other one.","A cousin: My dad used to cook these on a stick. Half of them fell in the fire.","A cousin: Turn that one. It's catching underneath.","A cousin: We can wait. There's still light outside.","A cousin: Save one for him when he gets back.","A cousin: That's plenty. We can split the last ones."};
+        int next=r.getInt("CookingChatLine0490");say(readers,lines[Math.floorMod(next,lines.length)]);r.putInt("CookingChatLine0490",next+1);
     }
     private static void evening(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> enrolled,int clock){
         int supper=supperAt(r),leaves=fresh(r)?LEAVES0465:RUNNER_LEAVES,backAt=fresh(r)?BACK0465:RUNNER_BACK,silence=fresh(r)?SILENCE0465:SILENCE;

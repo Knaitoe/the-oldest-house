@@ -35,6 +35,7 @@ public final class GhostsSetRooms {
         }
         // The family lives behind an ordinary front door; equipment occupies the arrival passage and east service wing.
         fill(l,b,-14,0,-14,13,4,-14,wall);door(l,b,0,0,-14,Direction.SOUTH);
+        fill(l,b,-14,0,-44,-14,3,-15,wall);door(l,b,-14,0,-18,Direction.WEST);
         fill(l,b,13,0,-44,13,10,-15,GhostsSetBlock.of(PANEL,Direction.WEST));
         door(l,b,13,0,-35,Direction.EAST);
         fill(l,b,-14,4,-44,12,4,-15,floor);
@@ -48,9 +49,10 @@ public final class GhostsSetRooms {
         // Five broad, backed treads meet the upstairs landing; the central arrival and all source/ending approaches stay clear.
         for(int i=0;i<5;i++)for(int x=-18;x<=-16;x++) {
             fill(l,b,x,-1,-16-i,x,i-1,-16-i,floor);
-            set(l,b,x,i,-16-i,Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH).setValue(StairBlock.SHAPE,StairsShape.STRAIGHT));
+            set(l,b,x,i,-16-i,GhostsSetBlock.of(STAIR,Direction.NORTH));
         }
-        fill(l,b,-18,4,-22,-15,4,-21,floor);fill(l,b,-19,5,-22,-19,5,-16,Blocks.OAK_FENCE.defaultBlockState());
+        fill(l,b,-18,4,-22,-15,4,-21,floor);for(int i=0;i<5;i++)prop(l,b,-19,i+1,-16-i,RAIL,Direction.NORTH);
+        fill(l,b,-19,5,-22,-19,5,-21,GhostsSetBlock.of(RAIL,Direction.NORTH));
         for(int x:new int[]{-12,10})for(int z:new int[]{-41,-26}) {
             prop(l,b,x,3,z,LAMP,Direction.NORTH);prop(l,b,x,9,z,LAMP,Direction.NORTH);
         }
@@ -87,12 +89,12 @@ public final class GhostsSetRooms {
         prop(l,b,4,-2,-33,LAMP,Direction.SOUTH);prop(l,b,10,-4,-32,CASE,Direction.WEST);
         prop(l,b,5,-4,-33,BOOKS,Direction.SOUTH);
         // Production equipment is kept against supported surfaces, leaving the rooms useful to a moving camera operator.
-        prop(l,b,16,0,-33,COUNTER,Direction.WEST);literary(l,b,new BlockPos(16,1,-33),LiteraryPropBlock.Kind.TELEVISION,Direction.WEST);prop(l,b,18,0,-33,CASE,Direction.WEST);
+        prop(l,b,16,0,-33,COUNTER,Direction.WEST);literary(l,b,new BlockPos(16,1,-33),LiteraryPropBlock.Kind.TELEVISION,Direction.EAST);prop(l,b,18,0,-33,CASE,Direction.WEST);
         prop(l,b,17,0,-12,CASE,Direction.SOUTH);prop(l,b,-18,0,-30,CAMERA,Direction.EAST);
         literary(l,b,LiteraryRooms.BOOTH,LiteraryPropBlock.Kind.RECEIVER,Direction.WEST);
         for(int x:new int[]{-18,18})for(int z:new int[]{-10,-40})literary(l,b,new BlockPos(x,0,z),LiteraryPropBlock.Kind.LIGHT_STAND,Direction.SOUTH);
         fill(l,b,14,4,-41,19,4,-32,GhostsSetBlock.of(CEILING,Direction.NORTH));
         prop(l,b,16,3,-38,LAMP,Direction.NORTH);prop(l,b,0,10,-9,LAMP,Direction.NORTH);
-        BuildBlocks.after(l,()->{var data=LabyrinthData.get(l.getServer());GhostsSet.markBuilt(data,b);GhostsSetDressing.markBuilt(data,b);});
+        BuildBlocks.after(l,()->{var data=LabyrinthData.get(l.getServer());GhostsSet.markBuilt(data,b);GhostsSetDressing.markBuilt(data,b);GhostsSetFinish.markBuilt(l,b);});
     }
 }

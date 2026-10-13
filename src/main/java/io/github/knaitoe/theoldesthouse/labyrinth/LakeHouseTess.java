@@ -43,9 +43,7 @@ public final class LakeHouseTess {
         if(a!=null){a.say(text);a.getPersistentData().putLong("LakeSayUntil",p.level().getGameTime()+100);}
     }
     private static void move(LiteraryActor a,Vec3 to,double step){
-        var d=to.subtract(a.position());double len=d.length();if(len<.05)return;
-        var delta=d.scale(Math.min(step,len)/len);a.move(MoverType.SELF,delta);a.setDeltaMovement(Vec3.ZERO);
-        float yaw=(float)(Math.atan2(d.z,d.x)*180/Math.PI)-90;a.setYRot(yaw);a.setYHeadRot(yaw);a.yBodyRot=yaw;
+        LakeHouseSwimNavigation.move(a,to,step);
     }
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){
         var a=actor(p,own);int count=readers(p,b);boolean ended=own.getBoolean("Ready");
@@ -55,8 +53,8 @@ public final class LakeHouseTess {
         }
         if(own.getInt("TessLeaving")>0&&a!=null){
             int t=own.getInt("TessLeaving")+5;own.putInt("TessLeaving",t);
-            if(!visible(p,a)){a.discard();own.remove("Tess");own.putInt("TessLeaving",0);return;}
-            if(t>=60){a.appearance(a.role(),6);var to=a.getY()<b.getY()+.1?new Vec3(a.getX(),b.getY()+.2,a.getZ()):new Vec3(b.getX()+48,b.getY()+1,b.getZ()-148);move(a,to,.7);}
+            if(!visible(p,a)){LakeHouseSwimNavigation.forget(a);a.discard();own.remove("Tess");own.putInt("TessLeaving",0);return;}
+            if(t>=60){a.appearance(a.role(),6);var relative=a.position().subtract(Vec3.atLowerCornerOf(b));var to=LakeHouseDive.inHouse(relative)?new Vec3(b.getX()+.5,b.getY()-24,b.getZ()-159.5):a.getY()<b.getY()+.1?new Vec3(a.getX(),b.getY()+.2,a.getZ()):new Vec3(b.getX()+48,b.getY()+1,b.getZ()-148);move(a,to,.7);}
             return;
         }
         if(count!=1||own.getBoolean("SoloGone")||own.getBoolean("GoodbyeDone")||ended&&!goodbye)return;
@@ -84,10 +82,8 @@ public final class LakeHouseTess {
             a.appearance(a.role(),2);
             var ar=a.position().subtract(Vec3.atLowerCornerOf(b));
             // Swim via the real foyer and central stair, rather than crossing a partition to follow a reader.
-            if(ar.z>LakeHouse.HZ_FRONT+1&&r.z<LakeHouse.HZ_FRONT)to=new Vec3(.5,-24,-159.5);
-            else if(Math.abs(ar.x)>1.5&&Math.abs(r.x)<2)to=new Vec3(.5,ar.y,ar.z);
-            else if(Math.abs(ar.x-r.x)>3&&LakeHouseDive.inHouse(r))to=new Vec3(.5,r.y,-164.5);
-            else if(r.y>-20&&ar.y<-20&&LakeHouseDive.inHouse(r))to=new Vec3(.5,-18.8,-177.5);
+            var mouth=new Vec3(.5,-24,-159.5);
+            if(LakeHouseDive.inHouse(r)&&!LakeHouseDive.inHouse(ar))to=ar.z>-160.1&&(Math.abs(ar.x-.5)>.5||Math.abs(ar.y+24)>1)?mouth:new Vec3(.5,-24,-163.5);
             else to=r.add(-1.7,.1,1.4);
             if(own.getInt("Visit")>=4&&own.getBoolean("Lit"))to=new Vec3(.5,-18.8,-164.5);
         }else{a.appearance(a.role(),0);to=r.add(2,0,1);}

@@ -60,7 +60,7 @@ public final class NightclubRenderers {
             leftWrist.xRot=despair*.23F;rightWrist.xRot=despair*.23F;hat.copyFrom(head);
         }
         private void pose(int slot,float time){
-            int look=NightclubActor.look(slot);skirt.visible=look==1||look==7;headphones.visible=look==8;
+            int look=NightclubActor.look(slot);skirt.visible=look==1||look==7;head.visible=hat.visible=look!=8;headphones.visible=false;
             float beat=(float)Math.sin(time*Math.PI/5),sway=(float)Math.sin(time*Math.PI/20+slot*1.73);
             for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y-=Math.abs(beat)*.45F;
             head.xRot+=beat*.075F;
@@ -84,9 +84,21 @@ public final class NightclubRenderers {
             float time=(a.level().getGameTime()%24000)+(age-a.tickCount);pose(a.slot(),time);morph(a.despair(age-a.tickCount),time);
         }
     }
+    /** Dedicated painted face coordinates; the chin is no longer sampled from the torso UV net. */
+    public static void renderDjHead(CastModel model,PoseStack p,MultiBufferSource out,int light){
+        p.pushPose();model.head.translateAndRotate(p);var v=out.getBuffer(net.minecraft.client.renderer.RenderType.entityCutoutNoCull(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/nightclub_dj_head0490.png")));
+        face(v,p,light,new float[][]{{-.25F,0,-.25F},{.25F,0,-.25F},{.25F,-.5F,-.25F},{-.25F,-.5F,-.25F}},218,143,382,360,0,0,-1);
+        face(v,p,light,new float[][]{{-.25F,0,.25F},{-.25F,0,-.25F},{-.25F,-.5F,-.25F},{-.25F,-.5F,.25F}},14,143,215,303,-1,0,0);
+        face(v,p,light,new float[][]{{.25F,0,-.25F},{.25F,0,.25F},{.25F,-.5F,.25F},{.25F,-.5F,-.25F}},385,143,554,303,1,0,0);
+        face(v,p,light,new float[][]{{.25F,0,.25F},{-.25F,0,.25F},{-.25F,-.5F,.25F},{.25F,-.5F,.25F}},221,0,392,140,0,0,1);
+        face(v,p,light,new float[][]{{-.25F,-.5F,-.25F},{.25F,-.5F,-.25F},{.25F,-.5F,.25F},{-.25F,-.5F,.25F}},221,0,392,72,0,-1,0);
+        face(v,p,light,new float[][]{{-.25F,0,.25F},{.25F,0,.25F},{.25F,0,-.25F},{-.25F,0,-.25F}},415,308,505,350,0,1,0);
+        model.headphones.visible=true;model.headphones.render(p,out.getBuffer(net.minecraft.client.renderer.RenderType.entityCutoutNoCull(ResourceLocation.withDefaultNamespace("textures/block/black_concrete.png"))),light,net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);model.headphones.visible=false;p.popPose();
+    }
+    private static void face(com.mojang.blaze3d.vertex.VertexConsumer v,PoseStack p,int light,float[][] points,float x0,float y0,float x1,float y1,float nx,float ny,float nz){float[][] uv={{x0,y1},{x1,y1},{x1,y0},{x0,y0}};for(int i=0;i<4;i++)v.addVertex(p.last(),points[i][0],points[i][1],points[i][2]).setColor(-1).setUv(uv[i][0]/1774,uv[i][1]/887).setOverlay(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY).setLight(light).setNormal(p.last(),nx,ny,nz);}
     private static final class Renderer extends MobRenderer<NightclubActor,CastModel>{
         private final CastModel male,maleDespair,female;
-        Renderer(EntityRendererProvider.Context c){super(c,new CastModel(c.bakeLayer(MALE)),.2F);male=model;maleDespair=new CastModel(c.bakeLayer(MALE_DESPAIR));female=new CastModel(c.bakeLayer(CAST));}
+        Renderer(EntityRendererProvider.Context c){super(c,new CastModel(c.bakeLayer(MALE)),.2F);male=model;maleDespair=new CastModel(c.bakeLayer(MALE_DESPAIR));female=new CastModel(c.bakeLayer(CAST));addLayer(new net.minecraft.client.renderer.entity.layers.RenderLayer<NightclubActor,CastModel>(this){@Override public void render(PoseStack p,MultiBufferSource out,int light,NightclubActor a,float walk,float amount,float partial,float age,float yaw,float pitch){if(a.dj())renderDjHead(getParentModel(),p,out,light);}});}
         @Override public void render(NightclubActor a,float yaw,float partial,PoseStack p,MultiBufferSource out,int light){model=a.look()==0?(a.despair()>=.4F?maleDespair:male):female;super.render(a,yaw,partial,p,out,light);}
         @Override public ResourceLocation getTextureLocation(NightclubActor a){return skin(a.look(),a.despair()>=.4F);}
         @Override protected boolean shouldShowName(NightclubActor a){return false;}
