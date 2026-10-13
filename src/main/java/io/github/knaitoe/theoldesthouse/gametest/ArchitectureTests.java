@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.gametest.*;
 
-@GameTestHolder(TheOldestHouse.MOD_ID)
+@GameTestHolder(TheOldestHouse.MOD_ID+"_architecture")
 @PrefixGameTestTemplate(false)
 public final class ArchitectureTests {
     /** A player pressed into the closed far door's cell is still in the hallway, never ejected through the wall. */

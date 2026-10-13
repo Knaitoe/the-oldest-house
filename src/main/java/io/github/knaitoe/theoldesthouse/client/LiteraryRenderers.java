@@ -21,11 +21,11 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 /** Tailored, posed human cast, antlerless cow elk and bounded native fan/miniature renderers. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
 public final class LiteraryRenderers {
-    public static final ModelLayerLocation CAST=layer("literary_cast"),ELK=layer("literary_elk"),CRUTCH=layer("rabbit_crutch"),FAN=layer("literary_fan");
+    public static final ModelLayerLocation CAST=layer("literary_cast"),ELK=layer("literary_elk"),ELK_EYES=layer("literary_elk_eyes"),CRUTCH=layer("rabbit_crutch"),FAN=layer("literary_fan");
     private static ModelLayerLocation layer(String name){return new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,name),"main");}
     private static ResourceLocation texture(String name){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/literary_"+name+".png");}
     public static ResourceLocation skin(int role,int phase){if(role==LiteraryActor.LAKE_TESS)return texture("lake_tess");if(role==LiteraryActor.LAKE_WAX)return texture("lake_wax");String[] roles={"mother","dancer","red_figure","coffin_woman","lady","silhouette","brother","father","visitor","killer","family_father","family_mother","family_child","old_man","stranger","camera"};String name=roles[Math.max(0,Math.min(15,role))];if(role==LiteraryActor.SILHOUETTE&&phase==4)return texture("plain_boy");if(role==LiteraryActor.SILHOUETTE&&phase==5)return texture("quiet_walker");if(role==LiteraryActor.STRANGER&&phase>=4&&phase<4+BAR.length)return texture("bar_"+BAR[phase-4]);if(role==LiteraryActor.STRANGER&&phase>=9&&phase<9+COTTAGE.length)return texture("paw_"+COTTAGE[phase-9]);if(role==LiteraryActor.STRANGER)name+="_"+Math.min(3,phase);else if(role==LiteraryActor.SILHOUETTE&&phase>0)name+="_"+Math.min(3,phase);else if(role==LiteraryActor.FATHER&&phase>=2)name+=phase>=3?"_mangled":"_bandaged";else if(role>=LiteraryActor.FAMILY_FATHER&&role<=LiteraryActor.FAMILY_CHILD&&phase>0)name+="_changed";return texture(name);}
-    @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions e){e.registerLayerDefinition(CAST,CastModel::layer);e.registerLayerDefinition(CRUTCH,CrutchLayer::layer);e.registerLayerDefinition(GhostsCastModel.LAYER,GhostsCastModel::layer);e.registerLayerDefinition(ELK,ElkModel::layer);e.registerLayerDefinition(FAN,ModelRenderer::fanLayer);}
+    @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions e){e.registerLayerDefinition(CAST,CastModel::layer);e.registerLayerDefinition(CRUTCH,CrutchLayer::layer);e.registerLayerDefinition(GhostsCastModel.LAYER,GhostsCastModel::layer);e.registerLayerDefinition(ELK,ElkModel::layer);e.registerLayerDefinition(ELK_EYES,ElkEyes::layer);e.registerLayerDefinition(FAN,ModelRenderer::fanLayer);}
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerEntityRenderer(LiteraryRegistry.ACTOR.get(),CastRenderer::new);e.registerEntityRenderer(LiteraryRegistry.ELK.get(),ElkRenderer::new);e.registerBlockEntityRenderer(LiteraryRegistry.MODEL.get(),ModelRenderer::new);}
     /** The Last Stop's own skins, on the existing stranger phases four through eight. */
     static final String[] BAR={"marla","russ","denny","wade","hollis"};
@@ -136,7 +136,7 @@ public final class LiteraryRenderers {
                 case 3->{rightArm.xRot=-.45F+(float)Math.sin(age*.12F)*.08F;rightArm.zRot=.18F;head.xRot+=.18F;}
                 default->{}
             }hat.copyFrom(head);}
-            if(a.role()==LiteraryActor.STRANGER&&a.gesture()==4){leftArm.xRot=rightArm.xRot=-1.45F;leftArm.yRot=.28F;rightArm.yRot=-.28F;body.xRot+=.12F;}
+            if(a.role()==LiteraryActor.STRANGER&&a.gesture()==4)reaching();
             if(a.role()==LiteraryActor.LAKE_TESS)lakeHairMotion.pose(a,age);
             // An actor placed in a chair sits in it: hips on the seat, legs forward.
             var chair=seat(a);if(chair!=null){float lower=12-chair.seatHeight();for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=lower;leftLeg.xRot=rightLeg.xRot=-1.45F;leftLeg.yRot=.1F;rightLeg.yRot=-.1F;leftArm.xRot=rightArm.xRot=-.35F;hat.copyFrom(head);}
@@ -146,6 +146,7 @@ public final class LiteraryRenderers {
                 body.yRot+=.02F*net.minecraft.util.Mth.sin(age*.037F+a.getId()*1.7F);HumanoidMotion.connect(this);
             }}
         public void previewLakeHair(boolean drifting,float age){lakeHairMotion.preview(drifting,age);}
+        public void reaching(){leftArm.xRot=rightArm.xRot=-1.45F;leftArm.yRot=.28F;rightArm.yRot=-.28F;body.xRot+=.12F;}
         /** The killer's motion as the renderer drives it, for native proofs: phase, stride, swing and an attack in progress. */
         public void animateKiller(int phase,float walk,float amount,float age,float attack){for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.getAllParts().forEach(ModelPart::resetPose);
             this.walk=walk;this.amount=amount;attackTime=attack;crouching=phase==3;young=false;riding=false;
@@ -186,7 +187,14 @@ public final class LiteraryRenderers {
             var head=root.getChild("head");head.xRot=.5F+(r.nextFloat()-.5F)*.3F;head.yRot=switch(stage){case 1->1.15F;case 2->-.45F;case 3->.6F;default->.25F;};head.zRot=(r.nextFloat()-.5F)*.3F;
             head.getChild("ear_left").zRot=.35F;head.getChild("ear_right").zRot=-.35F;root.getChild("tail").xRot=-.3F;}
         @Override public void renderToBuffer(PoseStack p,VertexConsumer b,int light,int overlay,int color){root.render(p,b,light,overlay,color);}}
-    private static final class ElkRenderer extends MobRenderer<LiteraryElk,ElkModel>{ElkRenderer(EntityRendererProvider.Context c){super(c,new ElkModel(c.bakeLayer(ELK)),.5F);}@Override public ResourceLocation getTextureLocation(LiteraryElk a){return texture(a.wounded()?"elk_wounded":"elk");}@Override public boolean shouldRender(LiteraryElk a,net.minecraft.client.renderer.culling.Frustum f,double x,double y,double z){var p=Minecraft.getInstance().player;return (a.owner().isEmpty()||p!=null&&a.owner().get().equals(p.getUUID()))&&super.shouldRender(a,f,x,y,z);}}
+    public static final class ElkEyes extends net.minecraft.client.renderer.entity.layers.RenderLayer<LiteraryElk,ElkModel>{
+        private final ModelPart eyes;
+        ElkEyes(ElkRenderer parent,EntityRendererProvider.Context c){super(parent);eyes=c.bakeLayer(ELK_EYES).getChild("eyes");}
+        public static LayerDefinition layer(){var mesh=new MeshDefinition();mesh.getRoot().addOrReplaceChild("eyes",CubeListBuilder.create().texOffs(0,0).addBox(-3.5F,-1.7F,-8.06F,1.2F,.8F,.12F).addBox(2.3F,-1.7F,-8.06F,1.2F,.8F,.12F),PartPose.ZERO);return LayerDefinition.create(mesh,128,64);}
+        public static void draw(ElkModel model,ModelPart eyes,PoseStack p,MultiBufferSource out){p.pushPose();model.root.getChild("head").translateAndRotate(p);eyes.render(p,out.getBuffer(RenderType.eyes(texture("herd_eyes"))),LightTexture.FULL_BRIGHT,net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);p.popPose();}
+        @Override public void render(PoseStack p,MultiBufferSource out,int light,LiteraryElk a,float walk,float amount,float partial,float age,float yaw,float pitch){if(a.owner().isPresent()&&!a.isInvisible())draw(getParentModel(),eyes,p,out);}
+    }
+    private static final class ElkRenderer extends MobRenderer<LiteraryElk,ElkModel>{ElkRenderer(EntityRendererProvider.Context c){super(c,new ElkModel(c.bakeLayer(ELK)),.5F);addLayer(new ElkEyes(this,c));}@Override public ResourceLocation getTextureLocation(LiteraryElk a){return texture(a.wounded()?"elk_wounded":"elk");}@Override public boolean shouldRender(LiteraryElk a,net.minecraft.client.renderer.culling.Frustum f,double x,double y,double z){var p=Minecraft.getInstance().player;return (a.owner().isEmpty()||p!=null&&a.owner().get().equals(p.getUUID()))&&super.shouldRender(a,f,x,y,z);}}
     public static final class ModelRenderer implements BlockEntityRenderer<LiteraryModelBlockEntity>{private final ModelPart fan;private final ElkModel elk;private final HumanoidModel<?> tiny,tinySlim;private final CastModel miniatureFigure,corpse;private final ElkModel carcass;
         public ModelRenderer(BlockEntityRendererProvider.Context c){fan=c.bakeLayer(FAN);elk=new ElkModel(c.bakeLayer(ELK));tiny=new HumanoidModel<>(c.bakeLayer(ModelLayers.PLAYER));tinySlim=new HumanoidModel<>(c.bakeLayer(ModelLayers.PLAYER_SLIM));miniatureFigure=new CastModel(c.bakeLayer(CAST));corpse=new CastModel(c.bakeLayer(CAST));carcass=new ElkModel(c.bakeLayer(ELK));}
         public static LayerDefinition fanLayer(){var m=new MeshDefinition();var r=m.getRoot();r.addOrReplaceChild("hub",CubeListBuilder.create().texOffs(0,0).addBox(-3,-2,-3,6,4,6),PartPose.ZERO);r.addOrReplaceChild("hanger",CubeListBuilder.create().texOffs(76,0).addBox(-1,2,-1,2,18.5F,2).texOffs(86,0).addBox(-3,18.5F,-3,6,2,6),PartPose.ZERO);for(int i=0;i<4;i++)r.addOrReplaceChild("blade"+i,CubeListBuilder.create().texOffs(24,0).addBox(2,-1,-2,22,1.5F,4),PartPose.rotation(0,(float)(i*Math.PI/2),.025F));return LayerDefinition.create(m,128,64);}

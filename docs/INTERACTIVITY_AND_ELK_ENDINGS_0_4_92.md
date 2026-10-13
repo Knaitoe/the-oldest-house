@@ -12,8 +12,22 @@ The child's-room doll sits on the original chest lid. Its shelf counterpart and 
 
 No original PNG changes. New meshes use existing painted materials. Asset generators retain the fitted mesh offsets and interaction variants.
 
-Mod 0.4.92 / protocol 71 / layout 44. No source is added: 45 eligible sources, 34 required resolutions, two kinds, three House endings. Five new cases bring the declared native corpus to 606. There remain 765 resource PNGs.
+Mod 0.4.92 / protocol 71 / layout 44. No source is added: 45 eligible sources, 34 required resolutions, two kinds, three House endings. Eleven new cases bring the declared native corpus to 612. There remain 765 resource PNGs.
 
 Initial validation: changed source including the five new cases compiled. All eight writing-font grids, all 765 PNG decodes/CRCs, generator Python syntax and whitespace checks passed. The native server then failed because the new namespace lacked its empty structure template. That template has been added. The workspace briefly went offline and lost transient build tools; the source remained intact. Fresh focused/full tests and client checks are in progress.
 
 Required before a verified release: new five native cases and updated field capture case; full exact-source native corpus; package/font/model checks; GPU views of the fitted props, both captures and recent fixes; and the two-client socket/reconnect expedition. Resolve reproduced full-structure preparation stalls, trailer proof failures or camp-bed socket crawl failures. Build, hash, save and deliver the matching review JAR. No full CI/GPU/multiplayer success is claimed by this initial checkpoint.
+
+
+October 13 follow-up to the owner’s 19:02–19:20 screenshots:
+
+- The original séance bodies stand above the cane seat before stepping into the clear aisle. Saved, already-started flight resumes without replacement, removal or collision bypass. A native saved-chair case verifies all four original UUIDs, physical back-room arrival, clear collision bodies and the last actor closing the west door.
+- The courtyard builder now authors chess tables, chessboards and opposing chairs directly. A separate once-only loaded/vacant repair catches the recognised vase tables even when the old review checkpoint was already completed, protecting cameras and later removals.
+- Cousins answer native main-hand entity clicks with phase-aware cooking, vigil and dawn replies. Serving keeps priority, and offhand, range and wall guards prevent duplicate or remote delivery.
+- Plating prioritises the visible plate selected by the native aim ray. An unrelated, later table hit cannot choose a neighbouring setting. Actual food/component occupancy remains authoritative. Existing plate/serving displays are fitted in place, including displays that load later; no servings are created by that repair. Place settings are larger, and the native proof compares empty, cooked and burnt settings.
+- Ghosts dining thighs now lie horizontally over the original seat; the actor origin accounts for the thigh thickness at each original cast scale. Old seated actors are corrected with native upward movement while retaining their UUIDs, take and filmed day. Slumped/dead poses keep their distinct torsos without driving their thighs through the seats. Dining chairs have four legs and a supported rung. Every painted PNG is retained.
+- Ghosts ceramic and noodle surfaces now reference actual native texture resources. The GPU check verifies material paths separately from model presence, after rendered fixtures revealed missing texture patches.
+- Russ, Denny and Wade use the actual side-door Z coordinate in both the exit and capture return. A new native doorway case identified the previous one-block route mismatch.
+- The new Holy Rabbit and Elk Lot accounts retain all prose while splitting it into bounded native-font pages. Harrigan’s fireplace detection uses the structural perimeter, keeping the inset funeral finish from being selected as the outer chimney wall.
+
+Verification remains in progress. The first 18-case focused run passed all architecture, writing, saved séance, courtyard and cousin cases, failing only the newly reproduced bar exit. The first GPU run rendered all 94 generated scene views, the full font corpus and the new asset views; manual inspection caught the remaining Ghosts noodle texture and chair clipping. The corrected GPU and native story suites are being rerun. The initial remote source checkpoint passed nine of twelve CI jobs, including both live socket clients and reconnects; the corrected source must receive its own complete run before release.

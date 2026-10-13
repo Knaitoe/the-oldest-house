@@ -138,7 +138,10 @@ public final class GoatmanTests {
             aimAtPlate(f,p,3,true,0);at=GoatmanWoods.plate(3).add(f.b.getX(),f.b.getY(),f.b.getZ());cousin.moveTo(f.b.getX()+2.3,f.b.getY()+1,at.z);intercept=cousin.getBoundingBox().clip(p.getEyePosition(),at);h.assertTrue(intercept.isPresent()&&GoatmanSupper.burnt(p.getOffhandItem()),"the off-hand still holds the actual burnt griddle original behind an entity hit");
             var specific=new PlayerInteractEvent.EntityInteractSpecific(p,InteractionHand.OFF_HAND,cousin,intercept.orElseThrow().subtract(cousin.position()));NeoForge.EVENT_BUS.post(specific);
             h.assertTrue(specific.isCanceled()&&specific.getCancellationResult()==InteractionResult.SUCCESS&&p.getOffhandItem().isEmpty()&&p.getInventory().countItem(GoatmanRegistry.BRAT.get())==0,"the specific native entity click consumes exactly the off-hand serving");
-            h.assertTrue(f.run().getInt("Plated0464")==15&&f.run().getInt("BurntPlates0476")==8,"all four cooked originals reach their intended plates and the burnt one keeps its char");h.succeed();
+            h.assertTrue(f.run().getInt("Plated0464")==15&&f.run().getInt("BurntPlates0476")==8,"all four cooked originals reach their intended plates and the burnt one keeps its char");
+            for(int seat=0;seat<4;seat++){var display=GoatmanWoods.serving(f.l,f.b,seat);var item=GoatmanWoods.food(f.l,display);var at=GoatmanWoods.plate(seat).add(f.b.getX(),f.b.getY()+.09,f.b.getZ());var tag=display.saveWithoutId(new CompoundTag());
+                h.assertTrue(display.position().distanceToSqr(at)<.000001&&item.getCount()==1&&GoatmanSupper.burnt(item)==(seat==3)&&tag.getString("item_display").equals("fixed")&&Math.abs(tag.getCompound("transformation").getList("scale",5).getFloat(0)-.55)<.0001,"the actual original display keeps the native reviewed pose, scale and visible food: "+seat);
+            }h.succeed();
         });
     }
     private static void aimAtPlate(Fixture f,ServerPlayer p,int seat,boolean east,double height){var plate=GoatmanWoods.plate(seat).add(f.b.getX(),f.b.getY(),f.b.getZ());p.moveTo(f.b.getX()+(east?3.5:-3.5),f.b.getY()+1,plate.z);p.setDeltaMovement(Vec3.ZERO);p.lookAt(EntityAnchorArgument.Anchor.EYES,plate.add(0,height,0));}
@@ -192,7 +195,14 @@ public final class GoatmanTests {
             r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",clock);r.putInt("ExtraState",GoatmanVignette.X_DOOR);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);r.putInt("Expected",4+participants.size());
             cohort(r,participants,clock);run(r);GoatmanWoods.atmosphere(l,b,true);GoatmanWoods.door(l,b,false);GoatmanWoods.setWindow(l,b,windowShut);GoatmanVignette.stage(l,b,r);
         }
-        void click(ServerPlayer p,BlockPos rel){BlockPos at=b.offset(rel);NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new BlockHitResult(Vec3.atCenterOf(at),Direction.SOUTH,at,false)));}
+        void click(ServerPlayer p,BlockPos rel){BlockPos at=b.offset(rel);
+            if(GoatmanWoods.tableSupport(l.getBlockState(at)))for(int i=0;i<GoatmanVignette.expectedCount(run());i++){
+                var plate=GoatmanWoods.plate(i).add(b.getX(),b.getY(),b.getZ());if(!BlockPos.containing(plate).below().equals(at))continue;
+                aimAtPlate(this,p,i,i%2!=0,0);var ray=l.clip(new ClipContext(p.getEyePosition(),plate,ClipContext.Block.OUTLINE,ClipContext.Fluid.NONE,p));
+                if(ray.getType()==HitResult.Type.BLOCK){p.gameMode.useItemOn(p,l,p.getMainHandItem(),InteractionHand.MAIN_HAND,ray);return;}p.gameMode.useItem(p,l,p.getMainHandItem(),InteractionHand.MAIN_HAND);return;
+            }
+            NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new BlockHitResult(Vec3.atCenterOf(at),Direction.SOUTH,at,false)));
+        }
         /** The whole native interaction: the event, then the block's own use. */
         void use(ServerPlayer p,BlockPos rel){BlockPos at=b.offset(rel);p.gameMode.useItemOn(p,l,ItemStack.EMPTY,InteractionHand.MAIN_HAND,new BlockHitResult(Vec3.atCenterOf(at),Direction.WEST,at,false));}
         public void close(){

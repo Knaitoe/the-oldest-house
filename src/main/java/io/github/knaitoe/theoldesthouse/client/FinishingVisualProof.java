@@ -50,7 +50,7 @@ public final class FinishingVisualProof extends Screen {
             image.writeToFile(dir.resolve(s.page==0?"native-finishing-props.png":"native-finishing-wall.png"));
         }
         if(++s.page<2){s.frames=0;return;}
-        Files.writeString(dir.resolve("finishing-passed.txt"),"Native field-case and fountain meshes, animated tinted water, chalk/string item models and dense original handwriting wall rendered.\n");mc.setScreen(new LakeHouseVisualProof());
+        Files.writeString(dir.resolve("finishing-passed.txt"),"Native field-case and fountain meshes, animated tinted water, chalk/string item models and dense original handwriting wall rendered.\n");mc.setScreen(new Vignette0492VisualProof());
     }
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT,bus=EventBusSubscriber.Bus.MOD)
     public static final class Colors {

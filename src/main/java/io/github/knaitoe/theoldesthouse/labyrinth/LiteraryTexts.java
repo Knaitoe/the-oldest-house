@@ -123,7 +123,10 @@ public final class LiteraryTexts {
         case END_WORLD_CABIN->own.getBoolean("Offered")?"I chose what went to the keeper. The visitors thanked me by name. On her shelf it would remain exactly what I gave up. I could see it; I would not carry it again.":"I refused. One visitor walked into the lake. On the screen, "+StaircaseProse.place(own.getString("ClosedRoom"))+" went dark. My hands were still full.";
         case FAMILY_COPY->"They had shown me my house as if they had lived there first. The family changed, and the photograph changed with it. The weapon had my old scratches, but none of its days. I left when the welcome ended.";
         case OLD_CABIN->"The lamp finished a name. The man beside it said another. He did not need either one to recognize what I had brought.";
-        default->throw new IllegalArgumentException(place.id());};if(place==LabyrinthPlace.GHOSTS_SET&&own.getBoolean("Filming0485"))return HouseWriting.book("The tape and the cut",name,HouseWriting.WritingStyle.WILL,GhostsSet.pages(text));return book("The account: "+place.id().replace('_',' '),name,text,"I folded the paper along its old crease. Someone had carried it before there was anything written on this side.\n\nI could still hear the room while I put it away.");}
+        default->throw new IllegalArgumentException(place.id());};if(place==LabyrinthPlace.GHOSTS_SET&&own.getBoolean("Filming0485"))return HouseWriting.book("The tape and the cut",name,HouseWriting.WritingStyle.WILL,GhostsSet.pages(text));
+        String afterword="I folded the paper along its old crease. Someone had carried it before there was anything written on this side.\n\nI could still hear the room while I put it away.";
+        if(place==LabyrinthPlace.HOLY_RABBIT||place==LabyrinthPlace.ELK_LOT){var pages=new ArrayList<String>(GhostsSet.pages(text));pages.addAll(GhostsSet.pages(afterword));return book("The account: "+place.id().replace('_',' '),name,pages.toArray(String[]::new));}
+        return book("The account: "+place.id().replace('_',' '),name,text,afterword);}
     /** The bargain's account (0.4.51), in the reader's own words and the room's prose name. */
     static ItemStack cabin(String name,CompoundTag own){
         int given=own.getInt("Given");String room=own.getString("ClosedRoom");

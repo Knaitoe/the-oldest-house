@@ -116,3 +116,4 @@ print(f'Generated {len(K)*4} fixture states, {len(palette)+7+1} home textures, e
 # Fit the retained original atlases and extended native fixture states after the base mesh pass.
 import runpy
 runpy.run_path(str(ROOT/'tools/update_ghosts_fixture_models.py'),run_name='__main__')
+runpy.run_path(str(ROOT/'tools/update_ghosts_seating_models.py'),run_name='__main__')

@@ -200,7 +200,11 @@ public final class VignetteArchitecture {
         }
         for(int x:new int[]{-15,15})for(int z:new int[]{-4,-9,-14})for(int y:new int[]{2,3,7,8})trim(x,y,z,Blocks.LIGHT_GRAY_STAINED_GLASS);
         for(int x:new int[]{-14,14})for(int z=-17;z<=-2;z++)add(x,6,z,Blocks.STONE_BRICK_SLAB);
-        for(int x:new int[]{-8,8}){furniture(x,0,-10,CANE_CHAIR,Direction.SOUTH);table(x,0,-12,VASE);}
+        for(int x:new int[]{-8,8}){
+            furniture(x,0,-10,CANE_CHAIR,Direction.NORTH);furniture(x,0,-14,CANE_CHAIR,Direction.SOUTH);
+            furniture(x,0,-12,HouseholdFurnitureBlock.Kind.CHESS_TABLE,Direction.SOUTH);
+            add(x,1,-12,VignetteDetailBlock.state(VignetteDetailBlock.Kind.CHESS,Direction.NORTH));
+        }
         table(-8,0,-34,INK_PAPERS);table(-7,0,-34,BOOKS);table(-6,0,-34,TABLE_LAMP);
         furniture(-7,0,-32,CANE_CHAIR,Direction.NORTH);cabinet(8,0,-37,FILE_TRAY);cabinet(7,0,-37,BOOKS);
         cabinet(-10,0,-24,FILE_TRAY);detail(-10,0,-27,CRATE);detail(-9,0,-27,BOOKS);

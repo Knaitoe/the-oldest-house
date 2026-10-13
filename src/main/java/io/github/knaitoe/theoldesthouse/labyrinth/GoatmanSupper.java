@@ -69,10 +69,10 @@ public final class GoatmanSupper {
     }
     /** Native entity selection can intercept the block below a visible plate. It must not swallow serving. */
     public static void onEntity(PlayerInteractEvent.EntityInteract e){
-        if(e.getEntity() instanceof ServerPlayer p&&tableEntity(e.getTarget())&&serveAimed(p,e.getHand())){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);}
+        if(e.getEntity() instanceof ServerPlayer p&&tableEntity(e.getTarget())&&(serveAimed(p,e.getHand())||GoatmanConversations.talk(p,e.getTarget(),e.getHand()))){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);}
     }
     public static void onEntitySpecific(PlayerInteractEvent.EntityInteractSpecific e){
-        if(e.getEntity() instanceof ServerPlayer p&&tableEntity(e.getTarget())&&serveAimed(p,e.getHand())){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);}
+        if(e.getEntity() instanceof ServerPlayer p&&tableEntity(e.getTarget())&&(serveAimed(p,e.getHand())||GoatmanConversations.talk(p,e.getTarget(),e.getHand()))){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);}
     }
     private static boolean tableEntity(Entity target){return target instanceof GoatmanChild&&target.getTags().contains(GoatmanVignette.ACTOR)||target.getTags().contains(GoatmanWoods.PLATE);}
     private static boolean serving(ServerPlayer p,CompoundTag run){
@@ -141,6 +141,7 @@ public final class GoatmanSupper {
     }
     public static void tick(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> readers){
         if(!r.getBoolean("PlayerServes0464"))return;
+        if(l.getGameTime()%20==0)GoatmanWoods.fitPlaceSettings(l,b);
         if(!r.getBoolean("PanPositioned0468")){GoatmanWoods.cookingPan(l,b,r);r.putBoolean("PanPositioned0468",true);}
         var cooking=r.getList("Cooking0465",Tag.TAG_COMPOUND);var cooked=r.getList("CookedPan0465",Tag.TAG_COMPOUND);boolean changed=false,done=false,hot=false,burned=false;
         // Franks cooked before 0.4.77 carry no heat and never burn.
@@ -209,9 +210,8 @@ public final class GoatmanSupper {
                 player.displayClientMessage(Component.literal(cooking.isEmpty()?"Grab a pack from the cooler beside the kitchen counter.":"They're still cooking."),true);
             }
         }else{
-            var hit=event.getHitVec().getLocation().subtract(base.getX(),base.getY(),base.getZ());int seat=-1;double distance=1.6;
-            for(int i=0;i<GoatmanVignette.expectedCount(run);i++){double d=GoatmanWoods.plate(i).distanceToSqr(hit);if(d<distance){distance=d;seat=i;}}
-            if(seat<0)seat=aimedSeat(player,base,run);if(seat<0)return false;plate(player,held,base,run,seat);
+            // The visible plate under the crosshair wins. A later slab hit can be nearer a different place setting.
+            int seat=aimedSeat(player,base,run);if(seat<0)return false;plate(player,held,base,run,seat);
         }
         saveClick(player,data,run);event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);return true;
     }
