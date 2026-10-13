@@ -26,6 +26,7 @@ public final class SceneClock {
             case HOTEL_GROUNDS->8;
             case ELK_LOT,HOLY_RABBIT,ELK_CARCASSES,COSTUME_NIGHT,MOVIE_NIGHT,WINTER_LAKE,CAMP_BLOOD,BLY_ROUTE->9;
             case END_WORLD_CABIN->10;
+            case LAKE_HOUSE,LAKE_HOUSE_EMPTY->4;
             default->0;
         };
     }

@@ -1,0 +1,218 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "wood": "the_oldest_house:block/lake_wood",
+    "brass": "the_oldest_house:block/lake_brass",
+    "glass": "the_oldest_house:block/lake_glass",
+    "cloth": "the_oldest_house:block/lake_cloth",
+    "marble": "the_oldest_house:block/lake_marble",
+    "felt": "the_oldest_house:block/lake_felt",
+    "ball": "the_oldest_house:block/lake_ball",
+    "cedar": "the_oldest_house:block/lake_cedar",
+    "linen": "the_oldest_house:block/lake_linen",
+    "porcelain": "the_oldest_house:block/lake_porcelain",
+    "ash": "the_oldest_house:block/lake_ash",
+    "books": "the_oldest_house:block/lake_books",
+    "face": "the_oldest_house:block/lake_face",
+    "still_life": "the_oldest_house:block/lake_still_life",
+    "runner": "the_oldest_house:block/lake_runner",
+    "glow": "the_oldest_house:block/lake_glow",
+    "stone": "the_oldest_house:block/lake_stone",
+    "black_dress": "the_oldest_house:block/lake_black_dress",
+    "particle": "the_oldest_house:block/lake_wood"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        6,
+        1
+      ],
+      "to": [
+        15,
+        9,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cedar"
+        },
+        "south": {
+          "texture": "#cedar"
+        },
+        "east": {
+          "texture": "#cedar"
+        },
+        "west": {
+          "texture": "#cedar"
+        },
+        "up": {
+          "texture": "#cedar"
+        },
+        "down": {
+          "texture": "#cedar"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        3,
+        6,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wood"
+        },
+        "south": {
+          "texture": "#wood"
+        },
+        "east": {
+          "texture": "#wood"
+        },
+        "west": {
+          "texture": "#wood"
+        },
+        "up": {
+          "texture": "#wood"
+        },
+        "down": {
+          "texture": "#wood"
+        }
+      }
+    },
+    {
+      "from": [
+        13,
+        0,
+        1
+      ],
+      "to": [
+        15,
+        6,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wood"
+        },
+        "south": {
+          "texture": "#wood"
+        },
+        "east": {
+          "texture": "#wood"
+        },
+        "west": {
+          "texture": "#wood"
+        },
+        "up": {
+          "texture": "#wood"
+        },
+        "down": {
+          "texture": "#wood"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        0,
+        13
+      ],
+      "to": [
+        3,
+        6,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wood"
+        },
+        "south": {
+          "texture": "#wood"
+        },
+        "east": {
+          "texture": "#wood"
+        },
+        "west": {
+          "texture": "#wood"
+        },
+        "up": {
+          "texture": "#wood"
+        },
+        "down": {
+          "texture": "#wood"
+        }
+      }
+    },
+    {
+      "from": [
+        13,
+        0,
+        13
+      ],
+      "to": [
+        15,
+        6,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wood"
+        },
+        "south": {
+          "texture": "#wood"
+        },
+        "east": {
+          "texture": "#wood"
+        },
+        "west": {
+          "texture": "#wood"
+        },
+        "up": {
+          "texture": "#wood"
+        },
+        "down": {
+          "texture": "#wood"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        9,
+        13
+      ],
+      "to": [
+        15,
+        16,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cedar"
+        },
+        "south": {
+          "texture": "#cedar"
+        },
+        "east": {
+          "texture": "#cedar"
+        },
+        "west": {
+          "texture": "#cedar"
+        },
+        "up": {
+          "texture": "#cedar"
+        },
+        "down": {
+          "texture": "#cedar"
+        }
+      }
+    }
+  ]
+}

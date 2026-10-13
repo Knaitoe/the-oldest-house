@@ -270,7 +270,8 @@ public final class LabyrinthDoors {
      * Through {@code from} into {@code place}: its entry door gets a copy of
      * where the player stands, and the player is shifted to match.
      */
-    private static void arrive(ServerPlayer player, LabyrinthData.Door from, LabyrinthData.Door entry, LabyrinthPlace place) {
+    private static void arrive(ServerPlayer player, LabyrinthData.Door from, LabyrinthData.Door suppliedEntry, LabyrinthPlace place) {
+        final LabyrinthData.Door entry=LakeHouse.destinationEntry(player,suppliedEntry,place);
         MinecraftServer server = player.server;
         ServerLevel fromLevel = player.serverLevel();
         ServerLevel toLevel = server.getLevel(entry.dimension);
@@ -427,6 +428,7 @@ public final class LabyrinthDoors {
         depart(player,place);sendBack(player,4,10,24);return true;
     }
     private static void depart(ServerPlayer player, LabyrinthPlace place) {
+        if(place==LabyrinthPlace.LAKE_HOUSE||place==LabyrinthPlace.LAKE_HOUSE_EMPTY)LakeHouseStory.depart(player);
         if (place == LabyrinthPlace.GHOSTS_SET) GhostsSet.depart(player);
         if (place == LabyrinthPlace.HARRIGAN) HarriganVignette.onDepart(player);
         if (place == LabyrinthPlace.HIDE_AND_CLAP) HideAndClap.departBeforeStarting(player);
