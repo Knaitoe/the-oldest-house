@@ -14,11 +14,14 @@ import net.minecraft.world.level.block.entity.*;
 import net.minecraft.world.level.block.state.*;
 import net.minecraft.world.level.block.state.properties.*;
 import net.minecraft.world.level.material.*;
+import net.minecraft.world.level.portal.DimensionTransition;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.*;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerRespawnPositionEvent;
 
 /** A placed original keeps its owner and every item component. Native death/respawn remains authoritative. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
@@ -56,14 +59,20 @@ public final class LakeHouseLightBlock extends BaseEntityBlock implements Simple
     }
     @SubscribeEvent(priority=net.neoforged.bus.api.EventPriority.LOWEST)
     public static void death(LivingDeathEvent e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||HouseDimensions.isHouseDimension(p.level().dimension()))return;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LakeHouse.PLACE);if(own.contains("HomeLight")){own.putBoolean("LightRespawn",true);LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),LakeHouse.PLACE,own);}}
-    @SubscribeEvent public static void respawn(PlayerEvent.PlayerRespawnEvent e){
-        if(!(e.getEntity() instanceof ServerPlayer p)||e.isEndConquered())return;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LakeHouse.PLACE);if(!own.getBoolean("LightRespawn"))return;
-        own.putBoolean("LightRespawn",false);LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),LakeHouse.PLACE,own);var at=BlockPos.of(own.getLong("HomeLight"));var l=p.server.overworld();
+    @SubscribeEvent(priority=net.neoforged.bus.api.EventPriority.LOWEST)
+    public static void respawnPosition(PlayerRespawnPositionEvent e){
+        if(!(e.getEntity() instanceof ServerPlayer p)||e.isFromEndFight())return;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LakeHouse.PLACE);if(!own.getBoolean("LightRespawn"))return;
+        var at=BlockPos.of(own.getLong("HomeLight"));var l=p.server.overworld();
         // Respawning is allowed to load its actual home chunk, just as a vanilla bed respawn does.
         l.getChunkAt(at);if(!(l.getBlockEntity(at) instanceof Lamp lamp)||!LakeHouseArtifactItem.owned(lamp.original,p))return;
         for(var feet:new BlockPos[]{at.below(2),at.below(),at.above(),at.north(),at.south(),at.east(),at.west()}){
             var box=p.getDimensions(net.minecraft.world.entity.Pose.STANDING).makeBoundingBox(feet.getX()+.5,feet.getY(),feet.getZ()+.5);if(!l.noCollision(p,box))continue;
-            p.teleportTo(l,feet.getX()+.5,feet.getY(),feet.getZ()+.5,p.getYRot(),0);p.resetFallDistance();return;
+            // Choose the native spawn before the replacement player and its connection are installed.
+            e.setDimensionTransition(new DimensionTransition(l,Vec3.atBottomCenterOf(feet),Vec3.ZERO,p.getYRot(),0,DimensionTransition.DO_NOTHING));return;
         }
+    }
+    @SubscribeEvent public static void respawn(PlayerEvent.PlayerRespawnEvent e){
+        if(!(e.getEntity() instanceof ServerPlayer p)||e.isEndConquered())return;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LakeHouse.PLACE);if(!own.getBoolean("LightRespawn"))return;
+        own.putBoolean("LightRespawn",false);LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),LakeHouse.PLACE,own);p.resetFallDistance();
     }
 }

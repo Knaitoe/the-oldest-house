@@ -146,12 +146,13 @@ public final class LakeHouseDive {
      */
     static boolean minded(ServerLevel l,BlockPos b){
         var at=b.offset(LakeHouse.COMPRESSOR).getCenter();int readers=0;boolean diver=false;
-        for(var p:l.getEntitiesOfClass(ServerPlayer.class,LakeHouse.box(b),q->!q.isSpectator()&&q.isAlive())){
+        var actual=l.players().stream().filter(p->!p.isSpectator()&&p.isAlive()&&LakeHouse.box(b).contains(p.position())).toList();
+        for(var p:actual){
             readers++;
             if(p.distanceToSqr(at)<4.5*4.5&&!p.isEyeInFluid(FluidTags.WATER))return true;
             if(LakeHouseGear.mine(p.getItemBySlot(EquipmentSlot.HEAD),p,LakeHouseRegistry.HELMET.get()))diver=true;
         }
-        return readers==1&&diver&&l.getEntitiesOfClass(ServerPlayer.class,LakeHouse.box(b),q->!q.isSpectator()&&q.isAlive()).stream().anyMatch(LakeHouseTess::minds);
+        return readers==1&&diver&&actual.stream().anyMatch(LakeHouseTess::minds);
     }
     /** Every ten ticks: start or stop the compressor, and its engine's sound and exhaust while it runs. */
     public static void compressor(ServerLevel l,BlockPos b,long now){

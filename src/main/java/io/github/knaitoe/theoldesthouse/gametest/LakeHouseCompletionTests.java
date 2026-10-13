@@ -85,7 +85,7 @@ public final class LakeHouseCompletionTests {
     @GameTest(template="empty",batch="lake_house_tess",timeoutTicks=800)
     public static void tessIsPrivateLeavesWithoutPoppingAndNeverReturnsMidVisit(GameTestHelper h){
         var f=new LakeHouseTests.Fixture(h);var lease=new NativeTestChunks();lease.hold(f.out,new AABB(Vec3.atLowerCornerOf(f.base().offset(-8,-1,-22)),Vec3.atLowerCornerOf(f.base().offset(8,12,2))));var p=f.player("lake_solo");
-        Runnable[] action=new Runnable[1];action[0]=()->{if(!lease.ready()){h.runAfterDelay(1,action[0]);return;}try{
+        Runnable[] action=new Runnable[1];action[0]=()->{if(!lease.ready()){h.runAfterDelay(1,()->action[0].run());return;}try{
             at(f,p,.5,0,-15.5);readTick(f,p,5);var tess=LakeHouseTess.actor(p,own(f,p));h.assertTrue(tess!=null&&tess.role()==LiteraryActor.LAKE_TESS,"a real original Tess appears for a solo reader");
             var observer=f.player("lake_observer");observer.gameMode.changeGameModeForPlayer(net.minecraft.world.level.GameType.SPECTATOR);h.assertTrue(!tess.broadcastToPlayer(observer),"spectators never receive Tess and do not dismiss her");readTick(f,p,5);h.assertTrue(!own(f,p).getBoolean("SoloGone"),"a spectator is not a partner");
             var peer=f.player("lake_partner");p.lookAt(EntityAnchorArgument.Anchor.EYES,tess.getEyePosition());readTick(f,p,5);h.assertTrue(tess.isAlive()&&!tess.broadcastToPlayer(peer)&&own(f,p).getBoolean("SoloGone"),"a watched Tess stays physically present while starting her departure");
