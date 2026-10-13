@@ -998,5 +998,35 @@
         "stream": true
       }
     ]
+  },
+  "lake_house.compressor": {
+    "subtitle": "subtitles.the_oldest_house.lake_house.compressor",
+    "sounds": [
+      {
+        "name": "the_oldest_house:lake_house/compressor",
+        "stream": false,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "lake_house.scrape": {
+    "subtitle": "subtitles.the_oldest_house.lake_house.scrape",
+    "sounds": [
+      {
+        "name": "the_oldest_house:lake_house/scrape",
+        "stream": false,
+        "attenuation_distance": 20
+      }
+    ]
+  },
+  "lake_house.hiss": {
+    "subtitle": "subtitles.the_oldest_house.lake_house.hiss",
+    "sounds": [
+      {
+        "name": "the_oldest_house:lake_house/hiss",
+        "stream": false,
+        "attenuation_distance": 16
+      }
+    ]
   }
 }

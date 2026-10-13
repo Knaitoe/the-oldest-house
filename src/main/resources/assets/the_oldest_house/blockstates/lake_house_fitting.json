@@ -1,0 +1,1764 @@
+{
+  "variants": {
+    "kind=coatrack,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_coatrack",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=coatrack,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_coatrack",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=coatrack,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_coatrack",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=coatrack,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_coatrack",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=coatrack,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_coatrack",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=coatrack,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_coatrack",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=coatrack,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_coatrack",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=coatrack,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_coatrack",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=coatrack,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_coatrack_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=coatrack,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_coatrack_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=coatrack,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_coatrack_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=coatrack,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_coatrack_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=coatrack,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_coatrack_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=coatrack,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_coatrack_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=coatrack,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_coatrack_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=coatrack,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_coatrack_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=key_bowl,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_key_bowl",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=key_bowl,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_key_bowl",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=key_bowl,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_key_bowl",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=key_bowl,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_key_bowl",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=key_bowl,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_key_bowl",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=key_bowl,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_key_bowl",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=key_bowl,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_key_bowl",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=key_bowl,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_key_bowl",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=key_bowl,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_key_bowl_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=key_bowl,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_key_bowl_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=key_bowl,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_key_bowl_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=key_bowl,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_key_bowl_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=key_bowl,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_key_bowl_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=key_bowl,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_key_bowl_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=key_bowl,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_key_bowl_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=key_bowl,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_key_bowl_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=bulb,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bulb",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=bulb,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bulb",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=bulb,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bulb",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=bulb,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bulb",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=bulb,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bulb",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=bulb,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bulb",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=bulb,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bulb",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=bulb,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bulb",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=bulb,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bulb_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=bulb,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bulb_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=bulb,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bulb_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=bulb,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bulb_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=bulb,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bulb_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=bulb,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bulb_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=bulb,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bulb_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=bulb,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bulb_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=table,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_table",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=table,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_table",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=table,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_table",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=table,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_table",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=table,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_table",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=table,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_table",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=table,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_table",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=table,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_table",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=table,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_table_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=table,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_table_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=table,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_table_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=table,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_table_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=table,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_table_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=table,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_table_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=table,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_table_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=table,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_table_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=chair,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_chair",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=chair,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_chair",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=chair,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_chair",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=chair,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_chair",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=chair,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_chair",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=chair,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_chair",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=chair,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_chair",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=chair,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_chair",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=chair,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_chair_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=chair,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_chair_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=chair,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_chair_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=chair,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_chair_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=chair,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_chair_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=chair,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_chair_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=chair,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_chair_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=chair,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_chair_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=ash_tray,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_ash_tray",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=ash_tray,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_ash_tray",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=ash_tray,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_ash_tray",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=ash_tray,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_ash_tray",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=ash_tray,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_ash_tray",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=ash_tray,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_ash_tray",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=ash_tray,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_ash_tray",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=ash_tray,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_ash_tray",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=ash_tray,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_ash_tray_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=ash_tray,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_ash_tray_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=ash_tray,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_ash_tray_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=ash_tray,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_ash_tray_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=ash_tray,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_ash_tray_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=ash_tray,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_ash_tray_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=ash_tray,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_ash_tray_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=ash_tray,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_ash_tray_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=bookcase,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bookcase",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=bookcase,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bookcase",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=bookcase,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bookcase",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=bookcase,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bookcase",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=bookcase,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bookcase",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=bookcase,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bookcase",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=bookcase,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bookcase",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=bookcase,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bookcase",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=bookcase,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bookcase_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=bookcase,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bookcase_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=bookcase,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bookcase_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=bookcase,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bookcase_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=bookcase,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bookcase_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=bookcase,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bookcase_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=bookcase,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bookcase_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=bookcase,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bookcase_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=pool_table,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_pool_table",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=pool_table,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_pool_table",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=pool_table,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_pool_table",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=pool_table,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_pool_table",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=pool_table,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_pool_table",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=pool_table,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_pool_table",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=pool_table,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_pool_table",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=pool_table,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_pool_table",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=pool_table,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_pool_table_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=pool_table,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_pool_table_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=pool_table,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_pool_table_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=pool_table,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_pool_table_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=pool_table,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_pool_table_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=pool_table,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_pool_table_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=pool_table,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_pool_table_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=pool_table,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_pool_table_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=sofa,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sofa",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=sofa,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sofa",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=sofa,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sofa",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=sofa,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sofa",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=sofa,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sofa",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=sofa,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sofa",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=sofa,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sofa",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=sofa,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sofa",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=sofa,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sofa_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=sofa,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sofa_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=sofa,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sofa_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=sofa,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sofa_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=sofa,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sofa_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=sofa,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sofa_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=sofa,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sofa_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=sofa,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sofa_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=painting,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_painting",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=painting,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_painting",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=painting,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_painting",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=painting,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_painting",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=painting,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_painting",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=painting,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_painting",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=painting,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_painting",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=painting,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_painting",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=painting,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_painting_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=painting,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_painting_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=painting,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_painting_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=painting,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_painting_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=painting,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_painting_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=painting,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_painting_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=painting,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_painting_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=painting,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_painting_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=island,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_island",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=island,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_island",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=island,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_island",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=island,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_island",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=island,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_island",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=island,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_island",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=island,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_island",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=island,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_island",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=island,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_island_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=island,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_island_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=island,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_island_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=island,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_island_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=island,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_island_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=island,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_island_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=island,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_island_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=island,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_island_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=beaver,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_beaver",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=beaver,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_beaver",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=beaver,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_beaver",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=beaver,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_beaver",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=beaver,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_beaver",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=beaver,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_beaver",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=beaver,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_beaver",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=beaver,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_beaver",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=beaver,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_beaver_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=beaver,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_beaver_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=beaver,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_beaver_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=beaver,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_beaver_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=beaver,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_beaver_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=beaver,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_beaver_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=beaver,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_beaver_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=beaver,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_beaver_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=red_runner,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_red_runner",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=red_runner,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_red_runner",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=red_runner,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_red_runner",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=red_runner,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_red_runner",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=red_runner,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_red_runner",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=red_runner,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_red_runner",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=red_runner,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_red_runner",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=red_runner,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_red_runner",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=red_runner,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_red_runner_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=red_runner,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_red_runner_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=red_runner,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_red_runner_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=red_runner,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_red_runner_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=red_runner,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_red_runner_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=red_runner,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_red_runner_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=red_runner,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_red_runner_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=red_runner,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_red_runner_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=wardrobe,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_wardrobe",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=wardrobe,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_wardrobe",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=wardrobe,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_wardrobe",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=wardrobe,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_wardrobe",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=wardrobe,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_wardrobe",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=wardrobe,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_wardrobe",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=wardrobe,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_wardrobe",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=wardrobe,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_wardrobe",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=wardrobe,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_wardrobe_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=wardrobe,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_wardrobe_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=wardrobe,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_wardrobe_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=wardrobe,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_wardrobe_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=wardrobe,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_wardrobe_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=wardrobe,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_wardrobe_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=wardrobe,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_wardrobe_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=wardrobe,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_wardrobe_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=bed,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bed",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=bed,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bed",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=bed,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bed",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=bed,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bed",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=bed,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bed",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=bed,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bed",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=bed,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bed",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=bed,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bed",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=bed,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bed_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=bed,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bed_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=bed,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bed_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=bed,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bed_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=bed,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bed_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=bed,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bed_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=bed,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_bed_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=bed,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_bed_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=sauna_bench,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sauna_bench",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=sauna_bench,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sauna_bench",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=sauna_bench,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sauna_bench",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=sauna_bench,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sauna_bench",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=sauna_bench,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sauna_bench",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=sauna_bench,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sauna_bench",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=sauna_bench,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sauna_bench",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=sauna_bench,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sauna_bench",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=sauna_bench,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sauna_bench_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=sauna_bench,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sauna_bench_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=sauna_bench,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sauna_bench_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=sauna_bench,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sauna_bench_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=sauna_bench,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sauna_bench_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=sauna_bench,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sauna_bench_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=sauna_bench,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sauna_bench_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=sauna_bench,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sauna_bench_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=sauna_door,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sauna_door",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=sauna_door,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sauna_door",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=sauna_door,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sauna_door",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=sauna_door,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sauna_door",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=sauna_door,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sauna_door",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=sauna_door,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sauna_door",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=sauna_door,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sauna_door",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=sauna_door,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sauna_door",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=sauna_door,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sauna_door_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=sauna_door,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sauna_door_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=sauna_door,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sauna_door_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=sauna_door,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sauna_door_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=sauna_door,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sauna_door_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=sauna_door,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sauna_door_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=sauna_door,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_sauna_door_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=sauna_door,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_sauna_door_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=half_door,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_half_door",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=half_door,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_half_door",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=half_door,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_half_door",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=half_door,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_half_door",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=half_door,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_half_door",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=half_door,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_half_door",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=half_door,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_half_door",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=half_door,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_half_door",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=half_door,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_half_door_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=half_door,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_half_door_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=half_door,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_half_door_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=half_door,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_half_door_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=half_door,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_half_door_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=half_door,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_half_door_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=half_door,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_half_door_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=half_door,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_half_door_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=lamp,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_lamp",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=lamp,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_lamp",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=lamp,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_lamp",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=lamp,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_lamp",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=lamp,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_lamp",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=lamp,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_lamp",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=lamp,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_lamp",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=lamp,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_lamp",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=lamp,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_lamp_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=lamp,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_lamp_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=lamp,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_lamp_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=lamp,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_lamp_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=lamp,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_lamp_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=lamp,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_lamp_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=lamp,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_lamp_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=lamp,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_lamp_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=candle,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_candle",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=candle,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_candle",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=candle,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_candle",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=candle,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_candle",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=candle,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_candle",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=candle,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_candle",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=candle,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_candle",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=candle,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_candle",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=candle,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_candle_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=candle,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_candle_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=candle,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_candle_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=candle,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_candle_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=candle,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_candle_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=candle,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_candle_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=candle,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_candle_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=candle,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_candle_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=hearth,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_hearth",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=hearth,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_hearth",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=hearth,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_hearth",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=hearth,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_hearth",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=hearth,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_hearth",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=hearth,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_hearth",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=hearth,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_hearth",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=hearth,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_hearth",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=hearth,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_hearth_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=hearth,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_hearth_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=hearth,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_hearth_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=hearth,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_hearth_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=hearth,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_hearth_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=hearth,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_hearth_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=hearth,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_hearth_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=hearth,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_hearth_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=dress,facing=north,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_dress",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=dress,facing=north,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_dress",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=dress,facing=east,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_dress",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=dress,facing=east,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_dress",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=dress,facing=south,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_dress",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=dress,facing=south,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_dress",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=dress,facing=west,lit=false,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_dress",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=dress,facing=west,lit=false,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_dress",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=dress,facing=north,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_dress_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=dress,facing=north,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_dress_lit",
+      "y": 0,
+      "uvlock": true
+    },
+    "kind=dress,facing=east,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_dress_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=dress,facing=east,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_dress_lit",
+      "y": 90,
+      "uvlock": true
+    },
+    "kind=dress,facing=south,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_dress_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=dress,facing=south,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_dress_lit",
+      "y": 180,
+      "uvlock": true
+    },
+    "kind=dress,facing=west,lit=true,waterlogged=true": {
+      "model": "the_oldest_house:block/lake_house_dress_lit",
+      "y": 270,
+      "uvlock": true
+    },
+    "kind=dress,facing=west,lit=true,waterlogged=false": {
+      "model": "the_oldest_house:block/lake_house_dress_lit",
+      "y": 270,
+      "uvlock": true
+    }
+  }
+}

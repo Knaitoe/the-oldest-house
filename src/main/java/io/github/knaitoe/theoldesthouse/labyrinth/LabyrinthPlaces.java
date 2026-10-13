@@ -40,8 +40,8 @@ public final class LabyrinthPlaces {
     private static final int APPENDED_INTERIOR_FIRST_SLOT = 45;
     private static final int APPENDED_INTERIOR_NORTH = 1024;
     // Slot 32 starts a fifth column at low/common manor heights; older slots never move.
-    // Appending slots 78–93 needs two further columns at common house heights. Earlier columns and layers never move.
-    private static final int MAX_COLUMNS = 12;
+    // Slots 96–97 require column twelve at common house heights. Earlier columns and layers never move.
+    private static final int MAX_COLUMNS = 13;
     private static final int MAX_Y = 318;
     private static final int MIN_Y = -60;
 
@@ -135,7 +135,7 @@ public final class LabyrinthPlaces {
         }
         return new BlockPos(
                 origin.getX() + HouseLayout.CENTER_X + column(origin, place.slot()) * COLUMN_SPACING,
-                slotBottom(origin, place.slot()) + (place == LabyrinthPlace.DROWNED_TOWN || place == LabyrinthPlace.BARN_WELL ? 14 : FLOOR_IN_SLOT),
+                (place == LabyrinthPlace.LAKE_HOUSE || place == LabyrinthPlace.LAKE_HOUSE_EMPTY) ? LakeHouse.BASE_Y : slotBottom(origin, place.slot()) + (place == LabyrinthPlace.DROWNED_TOWN || place == LabyrinthPlace.BARN_WELL ? 14 : FLOOR_IN_SLOT),
                 origin.getZ() + HouseLayout.CENTER_Z - (NovelRooms.outside(place) ? 4096 + place.slot()*spacing
                         : place.slot() >= APPENDED_INTERIOR_FIRST_SLOT ? APPENDED_INTERIOR_NORTH : 0)
         );
@@ -187,6 +187,7 @@ public final class LabyrinthPlaces {
     /** The place whose slot holds a position, if any. */
     @Nullable
     public static LabyrinthPlace placeAt(BlockPos origin, BlockPos pos) {
+        for (var lake : new LabyrinthPlace[]{LabyrinthPlace.LAKE_HOUSE,LabyrinthPlace.LAKE_HOUSE_EMPTY}) {var b=base(origin,lake);if(b!=null&&IndianLakeRooms.bounds(b,lake).contains(net.minecraft.world.phys.Vec3.atCenterOf(pos)))return lake;}
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
             BoundingBox slot = slotBounds(origin, place);
             if (slot != null && slot.isInside(pos)) {

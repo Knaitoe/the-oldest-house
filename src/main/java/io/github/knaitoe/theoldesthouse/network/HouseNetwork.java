@@ -13,7 +13,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("67")
+        event.registrar("68")
                 .playToClient(HazardViewPayload.TYPE,HazardViewPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.HazardClient.accept(payload)))
                 .playToClient(EndingBookPayload.TYPE,EndingBookPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.EndingBookClient.accept(payload)))
                 .playToClient(CamcorderExposurePayload.TYPE,CamcorderExposurePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.CamcorderClient.expose(payload)))
@@ -24,6 +24,7 @@ public final class HouseNetwork {
                 .playToClient(CabinStormPayload.TYPE,CabinStormPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.CabinStormClient.accept(payload)))
                 .playToClient(StaircaseLeakPayload.TYPE,StaircaseLeakPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.StaircaseLeakClient.accept(payload)))
                 .playToClient(BurnEmbersPayload.TYPE,BurnEmbersPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.BurnEmbersClient.accept(payload)))
+                .playToClient(LakeHouseViewPayload.TYPE,LakeHouseViewPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.LakeHouseAtmosphere.accept(payload)))
                 .playToClient(LiteraryViewPayload.TYPE,LiteraryViewPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.LiteraryView.accept(payload)))
                 .playToClient(PawClutchPayload.TYPE,PawClutchPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PawClutchClient.accept(payload)))
                 .playToClient(CampBedPayload.TYPE,CampBedPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.CampBedClient.accept(payload)))

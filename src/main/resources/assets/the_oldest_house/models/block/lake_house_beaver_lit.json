@@ -1,0 +1,313 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "wood": "the_oldest_house:block/lake_wood",
+    "brass": "the_oldest_house:block/lake_brass",
+    "glass": "the_oldest_house:block/lake_glass",
+    "cloth": "the_oldest_house:block/lake_cloth",
+    "marble": "the_oldest_house:block/lake_marble",
+    "felt": "the_oldest_house:block/lake_felt",
+    "ball": "the_oldest_house:block/lake_ball",
+    "cedar": "the_oldest_house:block/lake_cedar",
+    "linen": "the_oldest_house:block/lake_linen",
+    "porcelain": "the_oldest_house:block/lake_porcelain",
+    "ash": "the_oldest_house:block/lake_ash",
+    "books": "the_oldest_house:block/lake_books",
+    "face": "the_oldest_house:block/lake_face",
+    "still_life": "the_oldest_house:block/lake_still_life",
+    "runner": "the_oldest_house:block/lake_runner",
+    "glow": "the_oldest_house:block/lake_glow",
+    "stone": "the_oldest_house:block/lake_stone",
+    "black_dress": "the_oldest_house:block/lake_black_dress",
+    "particle": "the_oldest_house:block/lake_wood"
+  },
+  "elements": [
+    {
+      "from": [
+        6,
+        -3,
+        6
+      ],
+      "to": [
+        10,
+        4,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#porcelain"
+        },
+        "south": {
+          "texture": "#porcelain"
+        },
+        "east": {
+          "texture": "#porcelain"
+        },
+        "west": {
+          "texture": "#porcelain"
+        },
+        "up": {
+          "texture": "#porcelain"
+        },
+        "down": {
+          "texture": "#porcelain"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          0,
+          7
+        ],
+        "axis": "x",
+        "angle": -22.5
+      }
+    },
+    {
+      "from": [
+        5,
+        1,
+        4
+      ],
+      "to": [
+        11,
+        6,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#porcelain"
+        },
+        "south": {
+          "texture": "#porcelain"
+        },
+        "east": {
+          "texture": "#porcelain"
+        },
+        "west": {
+          "texture": "#porcelain"
+        },
+        "up": {
+          "texture": "#porcelain"
+        },
+        "down": {
+          "texture": "#porcelain"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          0,
+          7
+        ],
+        "axis": "x",
+        "angle": -22.5
+      }
+    },
+    {
+      "from": [
+        6,
+        5,
+        4
+      ],
+      "to": [
+        7,
+        7,
+        6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wood"
+        },
+        "south": {
+          "texture": "#wood"
+        },
+        "east": {
+          "texture": "#wood"
+        },
+        "west": {
+          "texture": "#wood"
+        },
+        "up": {
+          "texture": "#wood"
+        },
+        "down": {
+          "texture": "#wood"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          0,
+          7
+        ],
+        "axis": "x",
+        "angle": -22.5
+      }
+    },
+    {
+      "from": [
+        9,
+        5,
+        4
+      ],
+      "to": [
+        10,
+        7,
+        6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wood"
+        },
+        "south": {
+          "texture": "#wood"
+        },
+        "east": {
+          "texture": "#wood"
+        },
+        "west": {
+          "texture": "#wood"
+        },
+        "up": {
+          "texture": "#wood"
+        },
+        "down": {
+          "texture": "#wood"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          0,
+          7
+        ],
+        "axis": "x",
+        "angle": -22.5
+      }
+    },
+    {
+      "from": [
+        7,
+        -3,
+        10
+      ],
+      "to": [
+        9,
+        0,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wood"
+        },
+        "south": {
+          "texture": "#wood"
+        },
+        "east": {
+          "texture": "#wood"
+        },
+        "west": {
+          "texture": "#wood"
+        },
+        "up": {
+          "texture": "#wood"
+        },
+        "down": {
+          "texture": "#wood"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          0,
+          7
+        ],
+        "axis": "x",
+        "angle": -22.5
+      }
+    },
+    {
+      "from": [
+        6,
+        3,
+        3
+      ],
+      "to": [
+        7,
+        4,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ash"
+        },
+        "south": {
+          "texture": "#ash"
+        },
+        "east": {
+          "texture": "#ash"
+        },
+        "west": {
+          "texture": "#ash"
+        },
+        "up": {
+          "texture": "#ash"
+        },
+        "down": {
+          "texture": "#ash"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          0,
+          7
+        ],
+        "axis": "x",
+        "angle": -22.5
+      }
+    },
+    {
+      "from": [
+        9,
+        3,
+        3
+      ],
+      "to": [
+        10,
+        4,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ash"
+        },
+        "south": {
+          "texture": "#ash"
+        },
+        "east": {
+          "texture": "#ash"
+        },
+        "west": {
+          "texture": "#ash"
+        },
+        "up": {
+          "texture": "#ash"
+        },
+        "down": {
+          "texture": "#ash"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          0,
+          7
+        ],
+        "axis": "x",
+        "angle": -22.5
+      }
+    }
+  ]
+}

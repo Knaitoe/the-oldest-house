@@ -1,0 +1,105 @@
+{
+  "textures": {
+    "wood": "the_oldest_house:block/lake_wood",
+    "runner": "the_oldest_house:block/lake_runner",
+    "particle": "the_oldest_house:block/lake_wood"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        8,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wood"
+        },
+        "south": {
+          "texture": "#wood"
+        },
+        "east": {
+          "texture": "#wood"
+        },
+        "west": {
+          "texture": "#wood"
+        },
+        "up": {
+          "texture": "#wood"
+        },
+        "down": {
+          "texture": "#wood"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        8,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#runner"
+        },
+        "south": {
+          "texture": "#runner"
+        },
+        "east": {
+          "texture": "#runner"
+        },
+        "west": {
+          "texture": "#runner"
+        },
+        "up": {
+          "texture": "#runner"
+        },
+        "down": {
+          "texture": "#runner"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        8,
+        8
+      ],
+      "to": [
+        8,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#runner"
+        },
+        "south": {
+          "texture": "#runner"
+        },
+        "east": {
+          "texture": "#runner"
+        },
+        "west": {
+          "texture": "#runner"
+        },
+        "up": {
+          "texture": "#runner"
+        },
+        "down": {
+          "texture": "#runner"
+        }
+      }
+    }
+  ]
+}

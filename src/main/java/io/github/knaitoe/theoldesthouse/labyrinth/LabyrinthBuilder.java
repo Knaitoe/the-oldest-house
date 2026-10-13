@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 43;
+    public static final int VERSION = 44;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -248,6 +248,7 @@ public final class LabyrinthBuilder {
                     || (data.builtVersion() < 41 && HazardVariety.added(place))
                     || (data.builtVersion() < 42 && place == LabyrinthPlace.THREE_FINGERS)
                     || (data.builtVersion() < 43 && place == LabyrinthPlace.NIGHTCLUB)
+                    || (data.builtVersion() < LakeHouse.LAYOUT && (place == LabyrinthPlace.LAKE_HOUSE || place == LabyrinthPlace.LAKE_HOUSE_EMPTY))
                     || (data.builtVersion() < 12 && LabyrinthMaze.isMaze(place))
                     || (data.builtVersion() == 10 && place == LabyrinthPlace.MOTHER_DEN);
             boolean domestic = place == LabyrinthPlace.JUNCTION || LabyrinthHalls.isHall(place) || LabyrinthMaze.isMaze(place);
@@ -336,7 +337,7 @@ public final class LabyrinthBuilder {
             geometry=BuildBlocks.record(interior,()->{if(HallVariations.domestic(place))LabyrinthHalls.build(interior,base,place);else StoneHalls.build(interior,base,place);});
             return;
         }
-        if (place != null && LiteraryRooms.isLiterary(place)
+        if (place != null && (LiteraryRooms.isLiterary(place)||place==LabyrinthPlace.LAKE_HOUSE_EMPTY)
                 && !architecturalUpgrades.contains(place) && !domesticUpgrades.contains(place)) {
             ServerLevel site = server.getLevel(NovelRooms.dimension(place));
             if (site != null) {
@@ -345,7 +346,7 @@ public final class LabyrinthBuilder {
                 if (rebuildUpgrades.contains(place) && !ElkUpgrade.vacant(site, base, place, fixtureDrain)) { active = false; return; }
                 if(rebuildUpgrades.contains(place))ElkUpgrade.protectResidents(site,base,place);
                 ScenePolish.forget(server, pendingOrigin, place);
-                geometry = BuildBlocks.record(site, () -> LiteraryRooms.build(site, base, place));
+                geometry = BuildBlocks.record(site, () -> {if(place==LabyrinthPlace.LAKE_HOUSE_EMPTY)LakeHouse.buildEmpty(site,base);else LiteraryRooms.build(site, base, place);});
                 if (place == LabyrinthPlace.ELK_CARCASSES) TheOldestHouse.LOGGER.info("Recorded {}: {}", place.id(), geometry.describe());
                 return;
             }
@@ -594,6 +595,7 @@ public final class LabyrinthBuilder {
         if (base == null || slot == null) {
             return;
         }
+        if(place==LabyrinthPlace.LAKE_HOUSE_EMPTY){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){LakeHouse.buildEmpty(site,base);registerDoors(dataFor(server),place,base);}return;}
         if(place==LabyrinthPlace.NIGHTCLUB){fillSolid(level,slot);Nightclub.build(level,base);registerDoors(dataFor(server),place,base);return;}
         if(LiteraryRooms.isLiterary(place)){var site=server.getLevel(NovelRooms.dimension(place));if(site!=null){if(!LiteraryRooms.outside(place))fillSolid(site,slot);LiteraryRooms.build(site,base,place);registerDoors(dataFor(server),place,base);}return;}
         if(place==LabyrinthPlace.HOTEL_GROUNDS){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){HotelRooms.build(site,base,place);registerDoors(dataFor(server),place,base);VignetteArchitecture.forget(site,origin,place);VignetteArchitecture.decorateOnce(site,origin,place);}return;}
