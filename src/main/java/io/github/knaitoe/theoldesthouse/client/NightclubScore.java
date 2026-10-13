@@ -12,7 +12,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.*;
-/** One positional loop per actual listener, cleared immediately on exit/death/reconnect. */
+/** One room-wide loop per actual listener, cleared immediately on exit/death/reconnect. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class NightclubScore {
     private static Score sound;private static int retry;
@@ -27,7 +27,7 @@ public final class NightclubScore {
     @SubscribeEvent public static void music(SelectMusicEvent e){if(inside())e.setMusic(null);}
     private static final class Score extends AbstractTickableSoundInstance{
         final ClientLevel world;final LocalPlayer reader;
-        Score(ClientLevel world,LocalPlayer reader){super(NightclubRegistry.BEAT.get(),SoundSource.RECORDS,RandomSource.create());this.world=world;this.reader=reader;looping=true;delay=0;relative=false;attenuation=Attenuation.LINEAR;volume=.7F;var b=LabyrinthPlaces.base(HouseSightlineState.origin(),LabyrinthPlace.NIGHTCLUB);x=b.getX()+.5;y=b.getY()+1.8;z=b.getZ()-42.5;}
+        Score(ClientLevel world,LocalPlayer reader){super(NightclubRegistry.BEAT.get(),SoundSource.RECORDS,RandomSource.create());this.world=world;this.reader=reader;looping=true;delay=0;relative=true;attenuation=Attenuation.NONE;volume=.7F;var b=LabyrinthPlaces.base(HouseSightlineState.origin(),LabyrinthPlace.NIGHTCLUB);x=0;y=0;z=0;}
         @Override public void tick(){if(!inside()||Minecraft.getInstance().level!=world||Minecraft.getInstance().player!=reader){stop();return;}volume=NightclubScore.volume()==2?.3F:.7F;}
     }
 }

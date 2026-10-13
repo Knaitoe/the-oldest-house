@@ -60,7 +60,7 @@ jobs:
                   assert name in z.namelist(), name
               assert f'version="{expected_version}"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               ghosts = json.loads(z.read('assets/the_oldest_house/blockstates/ghosts_set.json'))['variants']
-              assert len(ghosts) == 140
+              assert len(ghosts) == 148
               for variant in ghosts.values():
                   assert json.loads(z.read('assets/the_oldest_house/models/'+variant['model'].split(':')[1]+'.json'))['elements']
               for name in ('marjorie','merry','john','sarah','barry','father_wanderly','marjorie_dinner','john_hand'):

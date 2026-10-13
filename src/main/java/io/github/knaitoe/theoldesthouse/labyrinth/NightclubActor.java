@@ -26,12 +26,13 @@ public final class NightclubActor extends PathfinderMob {
     public float despair(){return entityData.get(DESPAIR)/20F;}
     public float despair(float partial){return net.minecraft.util.Mth.lerp(partial,previousDespair,despair());}
     public void bind(BlockPos base,int slot){this.base=base.immutable();entityData.set(SLOT,Math.max(0,Math.min(Nightclub.DANCERS,slot)));}
-    public static Vec3 home(BlockPos b,int slot){if(slot==Nightclub.DANCERS)return new Vec3(b.getX()+.5,b.getY()+1,b.getZ()-44.5);int col=slot%6,row=slot/6;return new Vec3(b.getX()-8.5+col*3.5,b.getY(),b.getZ()-18.5-row*7);}
+    private static final double[][] ANCHORS={{-7.8,-18.4},{-5.7,-19.6},{-2.2,-23.8},{.2,-24.5},{5.7,-17.4},{7.4,-19.2},{-8.5,-28.8},{-6.7,-30.1},{-2.8,-32.7},{-.7,-32.2},{4.8,-27.5},{7.2,-28.1},{-7.4,-36.4},{-4.8,-37.7},{-.9,-37.2},{1.4,-35.8},{6.5,-33.8},{8.4,-35.9}};
+    public static Vec3 home(BlockPos b,int slot){if(slot==Nightclub.DANCERS)return new Vec3(b.getX()+.5,b.getY()+1,b.getZ()-44.5);var at=ANCHORS[Math.floorMod(slot,ANCHORS.length)];return new Vec3(b.getX()+at[0],b.getY(),b.getZ()+at[1]);}
     @Override public void tick(){previousDespair=despair();super.tick();if(level().isClientSide||tickCount%2!=0)return;
         var mixer=level().getBlockState(base.offset(Nightclub.MIXER));
         if(mixer.is(NightclubRegistry.BLOCK.get()))entityData.set(DESPAIR,mixer.getValue(NightclubBlock.STAGE)==0?Math.min(20,entityData.get(DESPAIR)+4):0);
         double time=level().getGameTime(),seed=slot()*1.73;var anchor=home(base,slot());
-        if(!dj()){var target=anchor.add(Math.sin(time*.06+seed)*.28,0,Math.cos(time*.047+seed)*.3);var delta=target.subtract(position()).multiply(1,0,1);double length=delta.length();if(length>.002)move(MoverType.SELF,delta.scale(Math.min(.055,length)/length));setYRot((float)(slot()*37+Math.sin(time*.024+seed)*28));}
+        if(!dj()){var target=anchor.add(Math.sin(time*.06+seed)*.28,0,Math.cos(time*.047+seed)*.3);var delta=target.subtract(position()).multiply(1,0,1);double length=delta.length();if(length>.002)move(MoverType.SELF,delta.scale(Math.min(.055,length)/length));var partner=home(base,slot()%2==0?slot()+1:slot()-1).subtract(anchor);float facing=(float)Math.toDegrees(Math.atan2(-partner.x,partner.z));setYRot(net.minecraft.util.Mth.approachDegrees(getYRot(),facing+(float)Math.sin(time*.024+seed)*22,4));}
         else setYRot(0);yBodyRot=getYRot();yHeadRot=getYRot();
     }
     @Override protected InteractionResult mobInteract(Player p,InteractionHand hand){

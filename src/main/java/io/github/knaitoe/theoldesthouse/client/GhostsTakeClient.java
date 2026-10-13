@@ -21,7 +21,7 @@ import net.neoforged.neoforge.client.event.*;
 public final class GhostsTakeClient {
     private static ClientLevel world;private static Entity marker;private static CameraType oldCamera;
     private static volatile int lease,day;private static BlockPos base;
-    private static int voiceId=-1,voiceTicks,voiceAge;private static String words="";
+    private static int voiceId=-1,voiceTicks,voiceAge,shake;private static Float privacyPitch;private static String words="";
     private GhostsTakeClient(){}
     public static int day(){return lease>0&&Minecraft.getInstance().level==world?day:0;}
     public static boolean frozen(){return marker!=null&&lease>0&&Minecraft.getInstance().level==world;}
@@ -29,7 +29,7 @@ public final class GhostsTakeClient {
         var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||!take.hasUUID("Reader")||!take.getUUID("Reader").equals(mc.player.getUUID())||!take.contains("GhostDay"))return;
         if(world!=null&&world!=mc.level)clear();int previous=day;world=mc.level;day=Math.max(1,Math.min(7,take.getInt("GhostDay")));lease=20;base=BlockPos.of(take.getLong("GhostBase"));if(previous!=day){dirtyMeals();voiceId=-1;voiceTicks=0;words="";}
         if(take.getInt("GhostVoiceRemaining")>0&&take.getInt("GhostVoiceId")!=voiceId){voiceId=take.getInt("GhostVoiceId");words=take.getString("GhostVoice");voiceTicks=Math.min(140,take.getInt("GhostVoiceRemaining"));voiceAge=0;}
-        var target=mc.level.getEntity(take.getInt("GhostFreezeTarget"));
+        shake=take.getInt("GhostShake");privacyPitch=take.contains("GhostPrivacyPitch")?take.getFloat("GhostPrivacyPitch"):null;var target=mc.level.getEntity(take.getInt("GhostFreezeTarget"));
         if(target instanceof LiteraryActor actor&&actor.role()==LiteraryActor.GHOST_MARJORIE&&actor.owner().filter(mc.player.getUUID()::equals).isPresent()&&take.getBoolean("GhostFreeze")){
             if(marker==null){marker=EntityType.MARKER.create(mc.level);if(marker==null)return;oldCamera=mc.options.getCameraType();mc.options.setCameraType(CameraType.FIRST_PERSON);}
             marker.moveTo(take.getDouble("GhostEyeX"),take.getDouble("GhostEyeY"),take.getDouble("GhostEyeZ"),take.getFloat("GhostYaw"),take.getFloat("GhostPitch"));mc.setCameraEntity(marker);
@@ -37,10 +37,10 @@ public final class GhostsTakeClient {
     }
     private static void restore(){var mc=Minecraft.getInstance();if(marker!=null){if(mc.getCameraEntity()==marker&&mc.player!=null)mc.setCameraEntity(mc.player);marker.discard();marker=null;if(oldCamera!=null)mc.options.setCameraType(oldCamera);oldCamera=null;}}
     private static void dirtyMeals(){var mc=Minecraft.getInstance();if(base!=null&&mc.level==world)mc.levelRenderer.setBlocksDirty(base.getX()-1,base.getY()+1,base.getZ()-29,base.getX()+1,base.getY()+1,base.getZ()-28);}
-    public static void clear(){restore();int old=day;lease=day=voiceTicks=voiceAge=0;if(old!=0)dirtyMeals();world=null;base=null;voiceId=-1;words="";}
-    @SubscribeEvent public static void tick(ClientTickEvent.Post ignored){var mc=Minecraft.getInstance();if(lease>0)--lease;if(voiceTicks>0){--voiceTicks;++voiceAge;}if(lease==0||mc.level!=world||mc.player==null||!mc.player.isAlive()||mc.player.isSpectator())clear();}
+    public static void clear(){restore();privacyPitch=null;shake=0;int old=day;lease=day=voiceTicks=voiceAge=0;if(old!=0)dirtyMeals();world=null;base=null;voiceId=-1;words="";}
+    @SubscribeEvent public static void tick(ClientTickEvent.Post ignored){var mc=Minecraft.getInstance();if(lease>0)--lease;if(shake>0)--shake;if(voiceTicks>0){--voiceTicks;++voiceAge;}if(lease==0||mc.level!=world||mc.player==null||!mc.player.isAlive()||mc.player.isSpectator())clear();}
     @SubscribeEvent public static void input(MovementInputUpdateEvent e){if(!frozen())return;var input=e.getInput();input.forwardImpulse=input.leftImpulse=0;input.up=input.down=input.left=input.right=input.jumping=input.shiftKeyDown=false;e.getEntity().setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);}
-    @SubscribeEvent public static void camera(ViewportEvent.ComputeCameraAngles e){if(frozen()){e.setYaw(marker.getYRot());e.setPitch(marker.getXRot());e.setRoll(0);}}
+    @SubscribeEvent public static void camera(ViewportEvent.ComputeCameraAngles e){if(frozen()){e.setYaw(marker.getYRot());e.setPitch(marker.getXRot());e.setRoll(0);}if(privacyPitch!=null&&lease>0)e.setPitch(privacyPitch);if(shake>0){float wobble=(float)Math.sin((12-shake)*1.8)*shake/12F;e.setRoll(e.getRoll()+wobble*1.5F);e.setPitch(e.getPitch()+wobble*.7F);}}
     @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut ignored){clear();}
     @SubscribeEvent public static void caption(RenderGuiEvent.Post event){
         if(voiceTicks<=0||words.isEmpty()||Minecraft.getInstance().player==null)return;var mc=Minecraft.getInstance();var g=event.getGuiGraphics();int width=mc.getWindow().getGuiScaledWidth(),height=mc.getWindow().getGuiScaledHeight();
