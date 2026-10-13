@@ -74,7 +74,7 @@ public final class Nightclub {
     /** Add only to expected vacant fixtures; preserve the old sign and every player edit. */
     private static void finish(ServerLevel l,BlockPos b){
         var d=LabyrinthData.get(l.getServer());var state=d.state(STATE);String key="Finish0490_"+b.asLong();if(state.getBoolean(key))return;
-        var area=bounds(b);for(var corner:new BlockPos[]{b.offset(-16,0,-49),b.offset(16,8,0)})if(!l.hasChunkAt(corner)||!l.areEntitiesLoaded(ChunkPos.asLong(corner.getX()>>4,corner.getZ()>>4)))return;
+        var area=bounds(b);for(int x=(b.getX()-16)>>4;x<=(b.getX()+16)>>4;x++)for(int z=(b.getZ()-49)>>4;z<=b.getZ()>>4;z++)if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(ChunkPos.asLong(x,z)))return;
         if(l.players().stream().anyMatch(p->area.inflate(32).intersects(p.getCamera().getBoundingBox()))||!l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,area,e->e.isAlive()&&!(e instanceof NightclubActor)).isEmpty())return;
         for(int x:new int[]{-2,2}){var at=b.offset(x,5,-45);if(l.getBlockState(at).isAir()&&l.getBlockEntity(at)==null)prop(l,b,x,5,-45,NightclubBlock.Kind.DJ_LIGHT,Direction.NORTH);}
         var exit=b.offset(0,4,-1);if(l.getBlockState(exit).isAir()&&l.getBlockEntity(exit)==null)prop(l,b,0,4,-1,NightclubBlock.Kind.EXIT,Direction.NORTH);

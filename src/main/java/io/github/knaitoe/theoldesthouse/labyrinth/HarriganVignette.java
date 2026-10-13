@@ -176,18 +176,7 @@ public final class HarriganVignette {
             lectern.setBook(readingBook());
         }
 
-        // Funeral room and casket.
-        for (int x = -2; x <= 2; x++) {
-            for (int z = -22; z <= -19; z++) {
-                level.setBlock(base.offset(x, 0, z), Blocks.DARK_OAK_SLAB.defaultBlockState(), flags);
-            }
-        }
-        for (int z = -22; z <= -19; z++) {
-            level.setBlock(base.offset(-2, 1, z), Blocks.DARK_OAK_TRAPDOOR.defaultBlockState(), flags);
-            level.setBlock(base.offset(2, 1, z), Blocks.DARK_OAK_TRAPDOOR.defaultBlockState(), flags);
-        }
-        level.setBlock(base.offset(0, 1, -22), Blocks.WHITE_CARPET.defaultBlockState(), flags);
-        level.setBlock(base.offset(0, 1, -21), Blocks.WHITE_CARPET.defaultBlockState(), flags);
+        HarriganFinish.build(level,base);
 
         LabyrinthBuilder.entrance(level, base, wall, floor, ceiling);
         LabyrinthBuilder.doors(level,base,LabyrinthPlace.HARRIGAN);
@@ -262,7 +251,7 @@ public final class HarriganVignette {
     }
 
     private static void stage(ServerLevel level, BlockPos base, LabyrinthData data, int visit) {
-        clearTagged(level, placeBounds(base), PROP_TAG);
+        // Original prop UUIDs survive visits and entity-section loading.
         int flags = LabyrinthBuilder.flags();
         if (level.getBlockState(base.offset(READER_CHAIR)).isAir()) {
             level.setBlock(base.offset(READER_CHAIR), LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH), flags);
@@ -284,7 +273,7 @@ public final class HarriganVignette {
         if (visit == 1 && !data.isCompleted(ID)) {
             spawnBody(level, base.offset(CHAIR).above(), false, false);
             placeProp(level, base.offset(SIDE_TABLE).above(), Direction.UP, LabyrinthRegistry.PHONE.get().getDefaultInstance(), "player_phone");
-            placeProp(level, base.offset(SIDE_TABLE).east().above(), Direction.UP, LabyrinthRegistry.HARRIGANS_PHONE.get().getDefaultInstance(), "harrigan_phone_display");
+            placeProp(level, base.offset(SIDE_TABLE).east().above(), Direction.UP, LabyrinthRegistry.HARRIGANS_PHONE.get().getDefaultInstance(), "harrigan_phone");
             if (data.state(ID).getBoolean("TicketVisible")) {
                 placeProp(level, base.offset(SIDE_TABLE).south().above(), Direction.UP,
                         LabyrinthRegistry.SCRATCH_TICKET.get().getDefaultInstance(), "ticket");
@@ -318,7 +307,7 @@ public final class HarriganVignette {
         }
         boolean fresh=stand==null;
         if(fresh)stand=new ArmorStand(level, pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D);
-        else stand.setPos(pos.getX()+.5D,pos.getY(),pos.getZ()+.5D);
+        else stand.teleportTo(pos.getX()+.5D,pos.getY(),pos.getZ()+.5D);stand.setDeltaMovement(Vec3.ZERO);
         stand.addTag(BODY_TAG);
         stand.setInvisible(true);
         stand.setNoBasePlate(true);
@@ -338,6 +327,7 @@ public final class HarriganVignette {
         stand.getPersistentData().putInt(BODY_POSE, 1);
         if (!inCasket) seatBody(stand, pos.below());
         else {
+            stand.setPos(pos.getX()+.5D,pos.getY()-.1D,pos.getZ()+.5D);stand.xo=stand.getX();stand.yo=stand.getY();stand.zo=stand.getZ();
             stand.getPersistentData().remove(BODY_SEAT);stand.setBodyPose(new Rotations(0,0,0));
             stand.setLeftLegPose(new Rotations(0,0,0));stand.setRightLegPose(new Rotations(0,0,0));
             stand.setLeftArmPose(new Rotations(0,0,0));stand.setRightArmPose(new Rotations(0,0,0));
@@ -419,14 +409,21 @@ public final class HarriganVignette {
         entity.setItemSlot(EquipmentSlot.FEET, boots);
     }
 
-    private static void placeProp(ServerLevel level, BlockPos pos, Direction direction, ItemStack item, String role) {
-        ItemFrame frame = new ItemFrame(level, pos, direction);
-        frame.addTag(PROP_TAG);
-        frame.addTag(PROP_TAG + "_" + role);
-        frame.setItem(item, false);
-        frame.setInvulnerable(true);
-        level.addFreshEntity(frame);
+    private static ItemFrame originalProp(ServerLevel level,String role){
+        var data=LabyrinthData.get(level.getServer());var state=data.state(ID);String key="OriginalProp0490_"+role;
+        if(state.hasUUID(key))return level.getEntity(state.getUUID(key)) instanceof ItemFrame frame?frame:null;
+        var originals=level.getEntitiesOfClass(ItemFrame.class,placeBounds(base(level.getServer())),e->e.getTags().contains(PROP_TAG+"_"+role)||role.equals("harrigan_phone")&&e.getTags().contains(PROP_TAG+"_harrigan_phone_display"));
+        if(originals.isEmpty())return null;var frame=originals.getFirst();frame.addTag(PROP_TAG+"_"+role);state.putUUID(key,frame.getUUID());data.setState(ID,state);return frame;
     }
+    private static void placeProp(ServerLevel level,BlockPos pos,Direction direction,ItemStack item,String role){
+        var data=LabyrinthData.get(level.getServer());var state=data.state(ID);String key="OriginalProp0490_"+role;
+        if(state.getBoolean("PropTaken0490_"+role)||originalProp(level,role)!=null||data.state(ID).hasUUID(key))return;
+        if(!level.hasChunkAt(pos)||!level.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(pos.getX()>>4,pos.getZ()>>4)))return;
+        var frame=new ItemFrame(level,pos,direction);frame.addTag(PROP_TAG);frame.addTag(PROP_TAG+"_"+role);frame.setItem(item,false);frame.setInvulnerable(true);
+        if(level.addFreshEntity(frame)){state=data.state(ID);state.putUUID(key,frame.getUUID());data.setState(ID,state);}
+    }
+    private static void propTaken(LabyrinthData data,String role){var state=data.state(ID);state.putBoolean("PropTaken0490_"+role,true);data.setState(ID,state);}
+    private static void ensureProps(ServerLevel level,BlockPos b,int visit){var state=LabyrinthData.get(level.getServer()).state(ID);if(visit==1&&!state.getBoolean("BeatDone")){placeProp(level,b.offset(SIDE_TABLE).above(),Direction.UP,LabyrinthRegistry.PHONE.get().getDefaultInstance(),"player_phone");if(state.getBoolean("TicketVisible"))placeProp(level,b.offset(SIDE_TABLE).south().above(),Direction.UP,LabyrinthRegistry.SCRATCH_TICKET.get().getDefaultInstance(),"ticket");}if(visit<=2)placeProp(level,b.offset(SIDE_TABLE).east().above(),Direction.UP,LabyrinthRegistry.HARRIGANS_PHONE.get().getDefaultInstance(),"harrigan_phone");}
 
     // ---------------------------------------------------------------------
     // Reading and first visit
@@ -492,19 +489,20 @@ public final class HarriganVignette {
         if (!inVignette(player) || visitFor(data) != 1 || !state.getBoolean("TicketVisible")) {
             return;
         }
-        frame.discard();
+        propTaken(data,"ticket");frame.discard();
         ItemStack emeralds = new ItemStack(Items.EMERALD, 12);
         if (!player.getInventory().add(emeralds)) {
             player.drop(emeralds, false);
         }
         if (!hasOwnedPhone(player)) {
-            ItemStack phone = phoneFor(player);
+            var spare=originalProp(player.serverLevel(),"player_phone");ItemStack phone=spare==null?ItemStack.EMPTY:spare.getItem().copy();
+            if(!phone.isEmpty()){CustomData.update(DataComponents.CUSTOM_DATA,phone,tag->tag.putUUID(OWNER,player.getUUID()));spare.setItem(ItemStack.EMPTY,false);propTaken(data,"player_phone");spare.discard();var personal=playerState(data,player.getUUID());personal.putBoolean("PhoneGiven0490",true);savePlayerState(data,player.getUUID(),personal);}
             if (!player.getInventory().add(phone)) {
                 player.drop(phone, false);
             }
         }
-        clearPropRole(player.serverLevel(), placeBounds(base(player.server)), "player_phone");
-        state.putBoolean("BeatDone", true);
+        // Transfer the exact original displayed spare, retaining its components.
+        state=data.state(ID);state.putBoolean("BeatDone", true);
         state.putBoolean("TicketVisible", false);
         data.setState(ID, state);
         player.serverLevel().playSound(null, frame.blockPosition(), SoundEvents.BRUSH_GENERIC, SoundSource.PLAYERS, 0.8F, 1.25F);
@@ -519,8 +517,7 @@ public final class HarriganVignette {
         if (!inVignette(player) || visitFor(data) != 2 || hasItem(player, LabyrinthRegistry.HARRIGANS_PHONE.get())) {
             return;
         }
-        frame.discard();
-        ItemStack phone = LabyrinthRegistry.HARRIGANS_PHONE.get().getDefaultInstance();
+        ItemStack phone=frame.getItem().copy();if(!phone.is(LabyrinthRegistry.HARRIGANS_PHONE.get()))return;frame.setItem(ItemStack.EMPTY,false);propTaken(data,"harrigan_phone");frame.discard();
         if (!player.getInventory().add(phone)) {
             player.drop(phone, false);
         }
@@ -597,7 +594,13 @@ public final class HarriganVignette {
         return stack;
     }
 
+    public static boolean repairLegacyPhone(ServerPlayer player,ItemStack stack){
+        if(!stack.is(LabyrinthRegistry.PHONE.get())||phoneOwner(stack)!=null||hasOwnedPhone(player))return false;var data=LabyrinthData.get(player.server);var own=playerState(data,player.getUUID());
+        if(own.getBoolean("PhoneOwnerRepair0490")||!(own.getBoolean("Contact")||own.getBoolean("KeptHarriganPhone")||own.getBoolean("PhoneGiven0490")))return false;
+        CustomData.update(DataComponents.CUSTOM_DATA,stack,t->t.putUUID(OWNER,player.getUUID()));own.putBoolean("PhoneOwnerRepair0490",true);savePlayerState(data,player.getUUID(),own);return true;
+    }
     public static void beginPhone(ServerPlayer player, ItemStack stack) {
+        repairLegacyPhone(player,stack);
         if (!isOwnedPhone(stack, player.getUUID())) {
             player.displayClientMessage(Component.literal("The phone has no number stored in it.")
                     .withStyle(ChatFormatting.DARK_GRAY), true);
@@ -823,6 +826,7 @@ public final class HarriganVignette {
             return;
         }
 
+        ensureProps(interior,base,visit);
         if (visit == 1 && !data.isCompleted(ID)) {
             for (ServerPlayer player : visitors) {
                 tickReading(player, data);
@@ -839,7 +843,7 @@ public final class HarriganVignette {
                 for (ServerPlayer player : visitors) {
                     if (player.getZ() < base.getZ() - 14.0D) {
                         Vec3 corpse = Vec3.atCenterOf(base.offset(CHAIR).above());
-                        if (HouseWatchers.isWatched(interior, corpse)) {
+                        if (HouseWatchers.isWatched(interior, corpse)||HouseWatchers.isWatched(interior,Vec3.atCenterOf(base.offset(CASKET).above()))) {
                             continue;
                         }
                         if(spawnBody(interior, base.offset(CASKET).above(), true, true)==null)continue;
@@ -856,28 +860,13 @@ public final class HarriganVignette {
         if (readingFinished(state)) return;
         long now = player.serverLevel().getGameTime();
         if (player.containerMenu instanceof LecternMenu lectern && READERS.contains(player.getUUID())) {
-            observeReadingPage(player, data, lectern.getPage());
+            observeReadingPage(player,data,lectern.getPage());readingView(player,lectern.getPage());
             return;
         }
-        if (state.getBoolean("ReadingStarted")) return;
-        CompoundTag personal = playerState(data, player.getUUID());
-        if (!personal.getBoolean("StudyExplained")) {
-            personal.putBoolean("StudyExplained", true);
-            savePlayerState(data, player.getUUID(), personal);
-            player.displayClientMessage(Component.literal("Mr. Harrigan: The book is on the lectern. Read me a little, would you? There is a chair beside it.")
-                    .withStyle(ChatFormatting.GRAY), false);
-            player.displayClientMessage(Component.literal("Mr. Harrigan: Two phones on the table. The spare is for you; the other is mine. When my time comes, I'd like mine to go with me.")
-                    .withStyle(ChatFormatting.GRAY), false);
-            NEXT_SPEECH.put(player.getUUID(), now + 200L);
-        }
-        long next = NEXT_SPEECH.getOrDefault(player.getUUID(), 0L);
-        if (now >= next && player.position().distanceToSqr(Vec3.atCenterOf(base(player.server).offset(CHAIR))) < 100.0D) {
-            int pick = Math.floorMod((int) (now / 20L + player.getUUID().getLeastSignificantBits()), SMALL_TALK.length);
-            player.displayClientMessage(Component.literal(SMALL_TALK[pick]).withStyle(ChatFormatting.GRAY), false);
-            NEXT_SPEECH.put(player.getUUID(), now + 180L + player.getRandom().nextInt(180));
-        }
+        // An occupied study alone never starts his reading commentary.
     }
 
+    private static void readingView(ServerPlayer player,int page){var tag=new CompoundTag();tag.putUUID("Reader",player.getUUID());tag.putBoolean("HarriganReading",true);tag.putString("HarriganLine",page>0?PAGE_LINES[Math.min(PAGE_LINES.length-1,page-1)]:"Mr. Harrigan: Take your time. I'm listening.");io.github.knaitoe.theoldesthouse.network.HousePackets.send(player,new io.github.knaitoe.theoldesthouse.network.LiteraryViewPayload(-1,20,0,tag));}
     private static boolean readingFinished(CompoundTag state) {
         // Older saves have already spoken the closing line when the ticket appears.
         return state.getBoolean("ReadingFinished") || state.getBoolean("TicketVisible") || state.getBoolean("BeatDone");
@@ -919,7 +908,7 @@ public final class HarriganVignette {
                 .withStyle(ChatFormatting.GRAY), false);
         player.displayClientMessage(Component.literal("One call a day. Name a hostile species, such as zombie: those creatures within 64 blocks of your Overworld bed die at the next dawn. Keep a bed set as your respawn point.")
                 .withStyle(ChatFormatting.DARK_GRAY), false);
-        player.displayClientMessage(Component.literal("Naming harmless creatures or named lives can bring Harrigan to you instead. The clock works whether or not his number answers.")
+        player.displayClientMessage(Component.literal("The clock works whether or not his number answers.")
                 .withStyle(ChatFormatting.DARK_GRAY), false);
     }
 

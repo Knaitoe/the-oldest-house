@@ -123,7 +123,7 @@ public final class GoatmanWoods {
         BuildBlocks.set(l,b.offset(COOLER),GoatmanRegistry.COOLER.get().defaultBlockState().setValue(TrailerFixtureBlock.FACING,Direction.SOUTH),F);
         for(int x=-7;x<=-3;x++)put(l,b,x,4,-76,Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP));
         // The long supper table, its top a hand above the chairs, five chairs a side turned in to it.
-        box(l,b,-1,1,-69,1,1,-61,Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP));
+        for(int x=-1;x<=1;x++)for(int z=-69;z<=-61;z++)BuildBlocks.set(l,b.offset(x,1,z),io.github.knaitoe.theoldesthouse.house.HouseBlocks.HOUSEHOLD_FURNITURE.get().defaultBlockState().setValue(io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.KIND,io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.FORMICA_TABLE).setValue(io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.FACING,Direction.NORTH),F);
         for(int z:CHAIR_Z){put(l,b,-2,1,z,seat(Blocks.SPRUCE_STAIRS,Direction.WEST));put(l,b,2,1,z,seat(Blocks.SPRUCE_STAIRS,Direction.EAST));}
         // The bathroom in the north-east corner, behind a partition, with its awning window propped open.
         BlockState partition=Blocks.BIRCH_PLANKS.defaultBlockState();

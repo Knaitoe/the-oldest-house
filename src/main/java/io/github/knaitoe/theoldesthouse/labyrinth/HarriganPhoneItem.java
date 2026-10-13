@@ -58,7 +58,7 @@ public final class HarriganPhoneItem extends Item {
                 .withStyle(ChatFormatting.DARK_GRAY));
         tooltip.add(Component.literal("At dawn, that species dies near your Overworld bed.")
                 .withStyle(ChatFormatting.DARK_GRAY));
-        tooltip.add(Component.literal("Set a bed respawn. Naming harmless lives has a cost.")
+        tooltip.add(Component.literal("Set a bed respawn for the dawn call.")
                 .withStyle(ChatFormatting.DARK_GRAY));
     }
 

@@ -48,10 +48,12 @@ public final class HouseHumanRenderers {
         private static void rotate(net.minecraft.client.model.geom.ModelPart part,net.minecraft.core.Rotations pose){float radians=(float)Math.PI/180;part.xRot=pose.getX()*radians;part.yRot=pose.getY()*radians;part.zRot=pose.getZ()*radians;}
         @Override public void setupAnim(ArmorStand body,float walk,float amount,float age,float yaw,float pitch){
             super.setupAnim(body,0,0,age,0,0);rotate(head,body.getHeadPose());rotate(this.body,body.getBodyPose());
-            rotate(leftArm,body.getLeftArmPose());rotate(rightArm,body.getRightArmPose());rotate(leftLeg,body.getLeftLegPose());rotate(rightLeg,body.getRightLegPose());copyClothing();
+            rotate(leftArm,body.getLeftArmPose());rotate(rightArm,body.getRightArmPose());rotate(leftLeg,body.getLeftLegPose());rotate(rightLeg,body.getRightLegPose());if(HarriganAppearance.variant(body)==3)resting(this);copyClothing();
         }
         public void copyClothing(){hat.copyFrom(head);jacket.copyFrom(body);leftSleeve.copyFrom(leftArm);rightSleeve.copyFrom(rightArm);leftPants.copyFrom(leftLeg);rightPants.copyFrom(rightLeg);}
     }
+    public static void resting(PlayerModel<?> model){model.head.z=-3.5F;model.head.xRot=-.04F;model.leftArm.xRot=model.rightArm.xRot=-.12F;model.leftArm.zRot=-.09F;model.rightArm.zRot=.09F;}
+    public static void casketPose(com.mojang.blaze3d.vertex.PoseStack p){p.translate(0,-.2125,.3);p.mulPose(Axis.YP.rotationDegrees(180));p.mulPose(Axis.XP.rotationDegrees(90));p.scale(.85F,.85F,.85F);}
     private static final class HarriganRenderer extends LivingEntityRenderer<ArmorStand,HarriganModel> {
         HarriganRenderer(EntityRendererProvider.Context context){super(context,new HarriganModel(context.bakeLayer(ModelLayers.PLAYER)),0);}
         @Override public ResourceLocation getTextureLocation(ArmorStand body){int role=HarriganAppearance.variant(body);return role>=4&&role<=6?mourner(role-4):role>=2?HARRIGAN_DEAD:HARRIGAN;}
@@ -60,7 +62,7 @@ public final class HouseHumanRenderers {
         @Override protected void setupRotations(ArmorStand body,com.mojang.blaze3d.vertex.PoseStack poses,float age,float yaw,float partial,float scale){
             super.setupRotations(body,poses,age,yaw,partial,scale);
             if(HarriganAppearance.variant(body)==3){
-                poses.mulPose(Axis.XP.rotationDegrees(-90));poses.mulPose(Axis.YP.rotationDegrees(180));
+                casketPose(poses);
             }
         }
     }

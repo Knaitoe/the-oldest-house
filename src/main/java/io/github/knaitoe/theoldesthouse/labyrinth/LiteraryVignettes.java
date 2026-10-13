@@ -170,7 +170,7 @@ public final class LiteraryVignettes {
                 LiteraryChoiceMenu.open(p, "Stay through the nights?", icons,
                         () -> inside(p, place) && p.distanceToSqr(actor) <= 36,
                         slot -> slot == 8 || slot == 0 && commitRabbit(p));
-            } else {own.putInt("Drowse",Math.max(0,own.getInt("Drowse")-100));actor.say(actor.phase()>=3?"Eat. Leave when you can.":own.contains("RabbitName") ? "It is still out there. " + own.getString("RabbitName") + ". Alive." : "Stay awake. Take what I brought.");}
+            } else HolyRabbitDialogue.talk(p,actor,own);
         }
         else if(place==LabyrinthPlace.CONFESSION)actor.say("Bring a blank book. Sit where you can hear me.");
         else if(place==LabyrinthPlace.ELK_LOT)ElkLotNight.talk(p,actor,own);

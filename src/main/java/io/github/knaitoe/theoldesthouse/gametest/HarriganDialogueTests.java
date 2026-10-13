@@ -25,7 +25,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerContainerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.gametest.*;
 
-@GameTestHolder(TheOldestHouse.MOD_ID)
+@GameTestHolder(TheOldestHouse.MOD_ID+"_wake")
 @PrefixGameTestTemplate(false)
 public final class HarriganDialogueTests {
     /** Keep the real ServerPlayer/lectern path while observing the text sent to the explorer. */
@@ -94,9 +94,11 @@ public final class HarriganDialogueTests {
     @GameTest(template="empty",batch="harrigan_reading",timeoutTicks=460)
     public static void readingPausesResumesAndDismissesOnceWithoutLaterGenericDialogue(GameTestHelper h) {
         reading=new Fixture(h,26800,false);Fixture f=reading;
+        h.runAfterDelay(9,()->h.assertTrue(f.player.messages.stream().noneMatch(line->line.startsWith("Mr. Harrigan:")),"entering the study cannot start commentary before the actual reading"));
         h.runAfterDelay(10,()->{f.open();f.page(0);});
         h.runAfterDelay(25,()->{
             f.closeBook();h.assertTrue(!f.data().state(HarriganVignette.ID).getBoolean("TicketVisible")&&!f.player.heard("That's enough for today"),"closing before the ending pauses the reading without a reward or dismissal");
+            var phone=f.prop(LabyrinthRegistry.PHONE.get());var id=phone.getUUID();for(int n=0;n<4;n++)HarriganVignette.onArrive(f.player,LabyrinthPlace.HARRIGAN);h.assertTrue(f.level.getEntitiesOfClass(ItemFrame.class,f.bounds(),frame->frame.getItem().is(LabyrinthRegistry.PHONE.get())).size()==1&&f.prop(LabyrinthRegistry.PHONE.get()).getUUID().equals(id),"repeated staging retains the one actual spare phone frame");
             f.open();f.page(1);
         });
         h.runAfterDelay(40,()->f.page(2));
@@ -164,7 +166,10 @@ public final class HarriganDialogueTests {
             BlockPos at=f.base.offset(HarriganVignette.CASKET);
             NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(f.player,InteractionHand.MAIN_HAND,at,new BlockHitResult(Vec3.atCenterOf(at),Direction.UP,at,false)));
             h.assertTrue(f.player.getInventory().countItem(LabyrinthRegistry.HARRIGANS_PHONE.get())==0&&f.player.getInventory().countItem(LabyrinthRegistry.PHONE.get())==1,"native burial consumes only his phone and preserves the owned phone");
-            h.assertTrue(f.player.heard("within 30 seconds")&&f.player.heard("One call a day")&&f.player.heard("64 blocks")&&f.player.heard("harmless creatures"),"the live connection explains the actual call controls, limits and consequences");
+            var original=f.player.getInventory().items.stream().filter(stack->stack.is(LabyrinthRegistry.PHONE.get())).findFirst().orElseThrow();var before=original.copy();net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA,original,tag->tag.remove("HarriganOwner"));
+            h.assertTrue(HarriganVignette.repairLegacyPhone(f.player,original)&&ItemStack.matches(before,original),"the completed reader's blank legacy gift is repaired in place with all other components retained");
+            h.assertTrue(!HarriganVignette.repairLegacyPhone(f.player,new ItemStack(LabyrinthRegistry.PHONE.get())),"the same evidence cannot bind another blank phone");
+            h.assertTrue(f.player.heard("within 30 seconds")&&f.player.heard("One call a day")&&f.player.heard("64 blocks")&&!f.player.heard("harmless creatures"),"the live connection explains controls and limits without revealing the friendly-mob consequence");
             var own=f.player.getInventory().items.stream().filter(s->s.is(LabyrinthRegistry.PHONE.get())).findFirst().orElseThrow();HarriganVignette.beginPhone(f.player,own);
             h.assertTrue(f.player.heard("Calls cannot leave the House"),"using the phone in the House explains dead air instead of giving an unexplained failure");h.succeed();
         });
