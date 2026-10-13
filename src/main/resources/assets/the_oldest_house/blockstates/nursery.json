@@ -334,10 +334,10 @@
    "model": "the_oldest_house:block/nursery_doll"
   },
   "facing=north,kind=doll,stage=1": {
-   "model": "the_oldest_house:block/nursery_doll"
+   "model": "the_oldest_house:block/nursery_doll_shelf"
   },
   "facing=north,kind=doll,stage=2": {
-   "model": "the_oldest_house:block/nursery_doll"
+   "model": "the_oldest_house:block/nursery_doll_chest"
   },
   "facing=north,kind=doll,stage=3": {
    "model": "the_oldest_house:block/nursery_doll",
@@ -784,11 +784,11 @@
    "y": 90
   },
   "facing=east,kind=doll,stage=1": {
-   "model": "the_oldest_house:block/nursery_doll",
+   "model": "the_oldest_house:block/nursery_doll_shelf",
    "y": 90
   },
   "facing=east,kind=doll,stage=2": {
-   "model": "the_oldest_house:block/nursery_doll",
+   "model": "the_oldest_house:block/nursery_doll_chest",
    "y": 90
   },
   "facing=east,kind=doll,stage=3": {
@@ -1236,11 +1236,11 @@
    "y": 180
   },
   "facing=south,kind=doll,stage=1": {
-   "model": "the_oldest_house:block/nursery_doll",
+   "model": "the_oldest_house:block/nursery_doll_shelf",
    "y": 180
   },
   "facing=south,kind=doll,stage=2": {
-   "model": "the_oldest_house:block/nursery_doll",
+   "model": "the_oldest_house:block/nursery_doll_chest",
    "y": 180
   },
   "facing=south,kind=doll,stage=3": {
@@ -1688,11 +1688,11 @@
    "y": 270
   },
   "facing=west,kind=doll,stage=1": {
-   "model": "the_oldest_house:block/nursery_doll",
+   "model": "the_oldest_house:block/nursery_doll_shelf",
    "y": 270
   },
   "facing=west,kind=doll,stage=2": {
-   "model": "the_oldest_house:block/nursery_doll",
+   "model": "the_oldest_house:block/nursery_doll_chest",
    "y": 270
   },
   "facing=west,kind=doll,stage=3": {

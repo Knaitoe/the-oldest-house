@@ -58,6 +58,7 @@ public final class NurseryToys {
         if(r.equals(ChildRoom.HATCH)&&s.is(Blocks.IRON_TRAPDOOR)){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);
             if(e.getHand()==InteractionHand.MAIN_HAND)hatch(p,l,at,s,b);return;}
         if(!s.is(LiteraryRegistry.NURSERY.get()))return;var kind=s.getValue(NurseryBlock.KIND);
+        if(kind==Kind.CHAIR)return; // The native seat interaction owns the actual mount and dismount.
         // The bedtime card and the exercise book are read, not played with.
         if(kind==Kind.CARD||kind==Kind.ACCOUNT)return;
         e.setCanceled(true);

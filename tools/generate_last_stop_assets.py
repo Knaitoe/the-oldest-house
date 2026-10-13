@@ -807,6 +807,13 @@ def models():
     model('pool_lamp', [color((7.5, 12, 7.5), (8.5, 16, 8.5), 'black'), color((3, 8, 3), (13, 12, 13), 'shade'),
                         color((3.2, 7.95, 3.2), (12.8, 8, 12.8), 'bulb', faces_=('down',), glow=True), color((6, 7, 6), (10, 8, 10), 'bulb', glow=True)], {}, 'swatches')
     model('dartboard', [box((3, 3, 15), (13, 13, 16), 'b', overrides={d: ('s', sw('black')) for d in ('south', 'east', 'west', 'up', 'down')})], {'b': 'dartboard'}, 'dartboard')
+    dart = json.loads((MODELS / 'last_stop_dartboard.json').read_text())
+    for stage in (1, 2, 3):
+        fitted = json.loads(json.dumps(dart))
+        for i in range(stage):
+            x, y = [(6, 5), (10, 9), (8, 8)][i]
+            fitted['elements'].append(color((x-.15, y-.15, 11), (x+.15, y+.15, 15.9), 'black'))
+        (MODELS / f'last_stop_dartboard_{stage}.json').write_text(json.dumps(fitted, indent=1) + '\n')
     model('corkboard', [box((0, 1, 15), (16, 15, 16), 'c', uv=[0, 1, 16, 15], overrides={d: ('w', None) for d in ('south', 'east', 'west', 'up', 'down')})],
           {**W, 'c': 'corkboard'}, 'corkboard')
     model('neon_beer', [box((0, 3, 7.5), (16, 13, 8.5), 'n', uv=[0, 3, 16, 13], faces_=('north', 'south'), glow=True),
@@ -874,6 +881,8 @@ def blockstate():
         for kind in KINDS:
             for stage in range(4):
                 name = f'gravel_{stage}' if kind == 'gravel' else f'{kind}_{min(stage, 1)}' if kind in ('pool_l', 'pool_r') else kind
+                if kind == 'dartboard' and stage:
+                    name += f'_{stage}'
                 v = {'model': f'the_oldest_house:block/last_stop_{name}'}
                 if y:
                     v['y'] = y

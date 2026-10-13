@@ -109,10 +109,7 @@ public final class ElkLotNight {
     private static void turn(LivingEntity a,float yaw){a.setYRot(yaw);a.setYHeadRot(yaw);a.yBodyRot=yaw;a.yRotO=yaw;}
     /** One step toward {@code to}; true once there. */
     private static boolean walk(LivingEntity a,Vec3 to,double speed){
-        var d=to.subtract(a.position());double len=d.horizontalDistance();
-        var next=len<=speed?to:a.position().add(d.x/len*speed,to.y-a.getY(),d.z/len*speed);
-        float yaw=len>.01?(float)(Math.atan2(d.z,d.x)*180/Math.PI)-90:a.getYRot();a.moveTo(next.x,next.y,next.z,yaw,0);turn(a,yaw);a.setDeltaMovement(Vec3.ZERO);
-        return len<=speed;
+        return ElkLotEnding.step(a,to,speed);
     }
     private static void say(LiteraryActor a,String line){a.say(line);a.getPersistentData().putLong("Said0478",a.level().getGameTime());}
     /** A line said to the readers near enough to hear it. */
@@ -240,9 +237,12 @@ public final class ElkLotNight {
         int stage=stage(w);
         for(int i=0;i<MEN.size();i++){
             var who=MEN.get(i);var a=cast(l,w,who);if(a==null)continue;var data=a.getPersistentData();int leg=data.getInt("Leg0478");
+            var capture=ElkLotEnding.menTarget(l.getServer());if(capture!=null){beam(l,b,w,i,a,capture);continue;}
+            if(a.gesture()==4){a.gesture(0);data.remove("ReturnToBar0492");}
             if(leg<OUT[i].length){if(walk(a,rel(b,OUT[i][leg][0],OUT[i][leg][1]),.16))data.putInt("Leg0478",leg+1);beam(l,b,w,i,a,null);continue;}
             var p=nearest(a,here,24);
             var spot=(stage>=2?HERDING:SEARCHING)[i];var goal=rel(b,spot[0],spot[1]);
+            if(stage>=3&&p!=null&&!ElkLotNight.inField(p.position(),b)&&!ElkLotNight.inBar(p.position(),b)){var away=a.position().subtract(p.position()).multiply(1,0,1);goal=away.lengthSqr()>3.3*3.3?p.position().add(away.normalize().scale(3.3)):a.position();}
             // They keep their distance and never touch anyone: near a reader a man steps back and round them toward where he is going.
             if(p!=null&&p.distanceToSqr(a)<2.8*2.8){var away=new Vec3(a.getX()-p.getX(),0,a.getZ()-p.getZ());away=away.lengthSqr()<1e-4?new Vec3(1,0,0):away.normalize();
                 var side=new Vec3(-away.z,0,away.x);if(side.dot(goal.subtract(a.position()))<0)side=side.scale(-1);var step=side.scale(.8).add(away.scale(.5)).normalize().scale(.6);
@@ -288,19 +288,16 @@ public final class ElkLotNight {
         boolean field=inField(p.position(),b);
         if(field&&own.getBoolean("ElkSeen")&&!own.getBoolean("Ready")){
             int ticks=own.getInt("FieldTicks")+5;own.putInt("FieldTicks",ticks);int loops=own.getInt("FieldLoops");
-            if(ticks%80==0){
-                LiteraryVignettes.sound(p,LiteraryRegistry.HOOVES.get(),p.blockPosition().offset(3,0,-5),.75F,1.2F);
-                // The herd closes in, heard more than seen: eyes in the stalks, nearer with every pass.
-                double near=Math.max(3.5,9-loops*2-ticks/200.0);
-                for(int side:new int[]{-1,1}){var eye=LiteraryVignettes.actor(p,PLACE,"Herd"+side,LiteraryActor.RED_FIGURE,BlockPos.containing(side*8,0,-75),true);
-                    if(eye!=null){eye.appearance(LiteraryActor.RED_FIGURE,3);eye.moveTo(p.getX()+side*near,b.getY(),p.getZ()-near*.6,0,0);}}
-            }
+            if(ticks%80==0)LiteraryVignettes.sound(p,LiteraryRegistry.HOOVES.get(),p.blockPosition().offset(3,0,-5),.75F,1.2F);
+            // Continuous native steps, so the eyes creep rather than jumping between sound beats.
+            double near=Math.max(2,9-loops*2-ticks/200.0);
+            for(int side:new int[]{-1,1}){var eye=LiteraryVignettes.actor(p,PLACE,"Herd"+side,LiteraryActor.RED_FIGURE,BlockPos.containing(side*8,0,-75),true);
+                if(eye!=null){eye.appearance(LiteraryActor.RED_FIGURE,3);eye.setInvisible(false);eye.setNoGravity(true);ElkLotEnding.step(eye,new Vec3(p.getX()+side*near,b.getY(),p.getZ()-near*.6),.1);}}
             // After the first time round, a cap lies by the broken post, only for this reader and only in the field they see.
             if(loops>=1&&ticks%20==0)for(int copy=0;copy<2;copy++){int z=ElkLot.FIELD_START-ElkLot.BROKEN_POST-1-copy*ElkLot.PERIOD;
                 p.connection.send(new ClientboundBlockUpdatePacket(b.offset(ElkLot.POSTS_X+2,0,z),RoadhouseBlock.of(Kind.CAP,Direction.EAST)));
                 p.connection.send(new ClientboundBlockUpdatePacket(b.offset(ElkLot.POSTS_X+2,1,z),Blocks.AIR.defaultBlockState()));}
             if(p.getZ()<b.getZ()+ElkLot.LOOP_AT){
-                if(loops>=2&&ticks>=400){finale(p,b,own);return;}
                 p.teleportTo(l,p.getX(),p.getY(),p.getZ()+ElkLot.PERIOD,p.getYRot(),p.getXRot());own.putInt("FieldLoops",loops+1);
                 LiteraryVignettes.sound(p,LiteraryRegistry.HOOVES.get(),p.blockPosition().offset(-4,0,-6),1F,.9F);
             }
@@ -309,18 +306,8 @@ public final class ElkLotNight {
             // Without the elk seen, the field only turns a reader round at its end; it does not count.
             p.teleportTo(l,p.getX(),p.getY(),p.getZ()+ElkLot.PERIOD,p.getYRot(),p.getXRot());
         }
+        ElkLotEnding.reader(p,b,own,LiteraryVignettes.shared(d,PLACE));
     }
-    /** The hooves come all round, it cuts to black, and the reader wakes on the bar's porch. */
-    private static void finale(ServerPlayer p,BlockPos b,CompoundTag own){
-        LiteraryVignettes.sound(p,LiteraryRegistry.HOOVES.get(),p.blockPosition(),1.4F,.7F);HousePackets.send(p,new HouseFadePayload(20,40,40));
-        var porch=b.offset(ElkLot.PORCH);p.teleportTo(p.serverLevel(),porch.getX()+.5,porch.getY(),porch.getZ()+.5,180,0);
-        LiteraryVignettes.ready(p,PLACE,own,"escaped_the_looping_field_and_read_own_clipping");
-        // The eyes go with the dark; a later visit meets them fresh.
-        var d=LabyrinthData.get(p.server);var w=LiteraryVignettes.shared(d,PLACE);
-        for(int side:new int[]{-1,1}){String id="Herd"+side+"_"+p.getUUID();if(!w.hasUUID(id))continue;if(p.serverLevel().getEntity(w.getUUID(id)) instanceof LiteraryActor eye)eye.discard();w.remove(id);}
-        LiteraryVignettes.shared(d,PLACE,w);
-    }
-
     // ------------------------------------------------------------------------------------------------ talking and drinking
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
         var who=person(a);if(who==null)return;var d=LabyrinthData.get(p.server);var w=LiteraryVignettes.shared(d,PLACE);var near=List.of(p);
@@ -390,7 +377,7 @@ public final class ElkLotNight {
             p.displayClientMessage(Component.literal(next==1?"You break. Two stripes drop and the cue ball stops dead.":"You rack them up again."),true);
             var w=LiteraryVignettes.shared(d,PLACE);var denny=cast(l,w,DENNY);if(denny!=null&&next==1&&denny.getPersistentData().getInt("Leg0478")==0&&denny.distanceToSqr(p)<64)speak(denny,DENNY,"Not bad. Now sink something on purpose.",List.of(p));
             return true;}
-        if(rel.equals(ElkLot.DARTS)){String[] throwsOf={"Three darts. One sticks, low, in the double ring.","Three darts. Two in the wall, one in the board.","Three darts. A bullseye. Nobody saw it."};int n=own.getInt("Darts");own.putInt("Darts",n+1);
+        if(rel.equals(ElkLot.DARTS)){String[] throwsOf={"Three darts. One sticks, low, in the double ring.","Three darts. Two in the wall, one in the board.","Three darts. A bullseye. Nobody saw it."};int n=own.getInt("Darts");own.putInt("Darts",n+1);var at=b.offset(ElkLot.DARTS);var state=l.getBlockState(at);if(RoadhouseBlock.is(state,Kind.DARTBOARD))l.setBlock(at,state.setValue(RoadhouseBlock.STAGE,(n+1)%4),18);p.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
             l.playSound(null,b.offset(ElkLot.DARTS),SoundEvents.ARROW_HIT,SoundSource.BLOCKS,.7F,1.6F);p.displayClientMessage(Component.literal(throwsOf[n%throwsOf.length]),true);return true;}
         if(rel.equals(ElkLot.BOARD)&&!own.getBoolean("Ready")){p.displayClientMessage(Component.literal("Flyers: a lost dog called Biscuit, a band on Thursday, a tractor for sale. One clipping is pinned face to the cork."),true);return true;}
         return false;

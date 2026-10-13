@@ -838,12 +838,12 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_literary,the_oldest_house_ghosts,the_oldest_house_fan488,the_oldest_house_lake_house --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/literary-native.log
+          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_literary,the_oldest_house_ghosts,the_oldest_house_fan488,the_oldest_house_lake_house,the_oldest_house_playtest492 --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/literary-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/literary-native.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path(f'src/main/java/io/github/knaitoe/theoldesthouse/gametest/{name}.java').read_text())) for name in ('LiteraryTests','ElkFanTests','GhostsSetTests','LakeHouseTests','LakeHouseCompletionTests'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path(f'src/main/java/io/github/knaitoe/theoldesthouse/gametest/{name}.java').read_text())) for name in ('LiteraryTests','ElkFanTests','GhostsSetTests','LakeHouseTests','LakeHouseCompletionTests','Vignette0492Tests'))
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused native literary cases passed; the complete suite remains required.')
           PY

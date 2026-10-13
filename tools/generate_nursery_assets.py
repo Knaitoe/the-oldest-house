@@ -442,10 +442,22 @@ def color(frm, to, name, rot=None):
 
 
 def model(name, elements, textures, particle=None):
+    if name.startswith('music_box_'):
+        elements = json.loads(json.dumps(elements))
+        for e in elements:
+            for key in ('from', 'to'):
+                e[key][2] += 2
     tex = {'s': 'the_oldest_house:block/nursery_swatches', **{k: f'the_oldest_house:block/{v}' for k, v in textures.items()}}
     tex['particle'] = 'the_oldest_house:block/' + (particle or textures.get('w', 'nursery_white_wood'))
     data = {'parent': 'minecraft:block/block', 'render_type': 'minecraft:cutout', 'ambientocclusion': False, 'textures': tex, 'elements': elements}
     (MODELS / f'nursery_{name}.json').write_text(json.dumps(data, indent=1) + '\n')
+    if name == 'doll':
+        for suffix, axis, offset in [('shelf', 2, 2), ('chest', 1, -7)]:
+            fitted = json.loads(json.dumps(data))
+            for e in fitted['elements']:
+                for key in ('from', 'to'):
+                    e[key][axis] += offset
+            (MODELS / f'nursery_doll_{suffix}.json').write_text(json.dumps(fitted, indent=1) + '\n')
 
 
 def rotated(elements, axis, angle, origin=(8, 0, 8)):
@@ -554,7 +566,9 @@ def blockstate():
                     name = f'nursery_{kind}_0' if kind in STAGED else f'nursery_{kind}'
                     variants[f'facing={facing},kind={kind},stage={stage}'] = {'model': f'the_oldest_house:block/{name}', 'x': 180, 'y': (y + 180) % 360}
                     continue
-                if kind in STAGED:
+                if kind == 'doll' and stage in (1, 2):
+                    name = 'nursery_doll_' + ('shelf' if stage == 1 else 'chest')
+                elif kind in STAGED:
                     name = f'nursery_{kind}_{min(stage, STAGED[kind] - 1)}'
                 else:
                     name = f'nursery_{kind}'

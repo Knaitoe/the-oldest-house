@@ -126,7 +126,7 @@ public final class ChildRoom {
         // The ladder up, and the hatch that comes out beside the door the reader came in by.
         for(int y=-4;y<=-2;y++)set(l,b,4,y,-4,Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.NORTH));
         set(l,b,HATCH,Blocks.IRON_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.HALF,Half.TOP).setValue(TrapDoorBlock.FACING,Direction.NORTH).setValue(TrapDoorBlock.OPEN,false));
-        markBuilt(LabyrinthData.get(l.getServer()),b);
+        NurserySupport0492.fresh(l,b);markBuilt(LabyrinthData.get(l.getServer()),b);
     }
     static void markBuilt(LabyrinthData d,BlockPos b){var s=d.state(STATE);s.putBoolean(Long.toString(b.asLong()),true);d.setState(STATE,s);}
     public static boolean built(LabyrinthData d,BlockPos b){return d.state(STATE).getBoolean(Long.toString(b.asLong()));}
