@@ -45,7 +45,7 @@ public final class SceneReviewVisualProof extends Screen {
             var model=mc.getBlockRenderer().getBlockModel(VignetteDetailBlock.state(kind,Direction.NORTH));
             if(model==mc.getModelManager().getMissingModel())throw new IllegalStateException("Missing native vignette model: "+kind);
         }
-        Files.writeString(dir.resolve("reviewed-assets-passed.txt"),"All 43 custom native prop models, the reading desk and the native costume UV skin rendered.\n");
-        TheOldestHouse.LOGGER.info("REVIEWED ASSETS CHECK PASSED: forty-three native props, reading desk and costume skin");mc.setScreen(new HallChangeVisualProof());
+        Files.writeString(dir.resolve("reviewed-assets-passed.txt"),"All 45 custom native prop models, the reading desk and the native costume UV skin rendered.\n");
+        TheOldestHouse.LOGGER.info("REVIEWED ASSETS CHECK PASSED: forty-five native props, reading desk and costume skin");mc.setScreen(new FinishingVisualProof());
     }
 }

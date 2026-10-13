@@ -25,8 +25,8 @@ public final class WhaleHospital {
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     private WhaleHospital(){}
     private static String key(BlockPos b){return Long.toString(b.asLong());}
-    public static void fresh(ServerLevel l,BlockPos origin){var b=LabyrinthPlaces.base(origin,LabyrinthPlace.WHALE);BuildBlocks.after(l,()->refit(l,b,false));}
-    static void freshBase(ServerLevel l,BlockPos b){BuildBlocks.after(l,()->refit(l,b,false));}
+    public static void fresh(ServerLevel l,BlockPos origin){var b=LabyrinthPlaces.base(origin,LabyrinthPlace.WHALE);BuildBlocks.after(l,()->{refit(l,b,false);PlaytestScenes0488.repair(l,b,LabyrinthPlace.WHALE,false);});}
+    static void freshBase(ServerLevel l,BlockPos b){BuildBlocks.after(l,()->{refit(l,b,false);PlaytestScenes0488.repair(l,b,LabyrinthPlace.WHALE,false);});}
     public static void forget(net.minecraft.server.MinecraftServer s,BlockPos origin){var d=LabyrinthData.get(s);var state=d.state(STATE);state.remove(key(LabyrinthPlaces.base(origin,LabyrinthPlace.WHALE)));d.setState(STATE,state);}
     public static boolean apply(ServerLevel l,BlockPos b){return refit(l,b,true);}
     private static boolean refit(ServerLevel l,BlockPos b,boolean guarded){

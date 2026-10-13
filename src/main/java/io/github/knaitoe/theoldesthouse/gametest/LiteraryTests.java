@@ -74,6 +74,7 @@ public final class LiteraryTests {
         var at=f.base(place).offset(1,0,-16);f.in.setBlock(at,Blocks.COBBLESTONE.defaultBlockState(),3);var event=new BlockEvent.EntityPlaceEvent(net.neoforged.neoforge.common.util.BlockSnapshot.create(f.in.dimension(),f.in,at),Blocks.AIR.defaultBlockState(),p);NeoForge.EVENT_BUS.post(event);
         h.assertTrue(!event.isCanceled()&&f.own(p,place).getBoolean("BuiltReach"),"a genuine final placed block records the reach");
         for(int slot=0;slot<9;slot++)if(p.getInventory().getItem(slot).is(LiteraryRegistry.LIGHTBULB.get()))p.getInventory().selected=slot;
+        f.data().pushReturn(p.getUUID(),new LabyrinthData.Waypoint(f.in.dimension(),Vec3.atBottomCenterOf(f.base(place).offset(0,0,40)),0,true));
         f.click(p,place,LiteraryRooms.FAN);f.at(p,place,.5,5.25,-16.5);f.look(p,f.base(place).offset(0,0,-17));
         h.runAfterDelay(75,()->h.assertTrue(!f.own(p,place).getBoolean("BladeStrike"),"the fan cannot knock the reader off before five seconds"));
         h.runAfterDelay(115,()->{var own=f.own(p,place);h.assertTrue(own.getBoolean("Repaired")&&own.getBoolean("BladeStrike")&&own.getBoolean("ElkThroughFan")&&own.getBoolean("Completed"),"five seconds of real standing completes the personally seen sequence");

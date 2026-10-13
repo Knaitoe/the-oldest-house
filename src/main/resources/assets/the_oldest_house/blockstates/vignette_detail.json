@@ -687,6 +687,38 @@
     "facing=west,kind=scribble_15": {
       "model": "the_oldest_house:block/zampano_scribble_15",
       "y": 270
+    },
+    "facing=north,kind=plain_notes": {
+      "model": "the_oldest_house:block/plain_notes",
+      "y": 0
+    },
+    "facing=east,kind=plain_notes": {
+      "model": "the_oldest_house:block/plain_notes",
+      "y": 90
+    },
+    "facing=south,kind=plain_notes": {
+      "model": "the_oldest_house:block/plain_notes",
+      "y": 180
+    },
+    "facing=west,kind=plain_notes": {
+      "model": "the_oldest_house:block/plain_notes",
+      "y": 270
+    },
+    "facing=north,kind=fountain_bowl": {
+      "model": "the_oldest_house:block/fountain_bowl",
+      "y": 0
+    },
+    "facing=east,kind=fountain_bowl": {
+      "model": "the_oldest_house:block/fountain_bowl",
+      "y": 90
+    },
+    "facing=south,kind=fountain_bowl": {
+      "model": "the_oldest_house:block/fountain_bowl",
+      "y": 180
+    },
+    "facing=west,kind=fountain_bowl": {
+      "model": "the_oldest_house:block/fountain_bowl",
+      "y": 270
     }
   }
 }

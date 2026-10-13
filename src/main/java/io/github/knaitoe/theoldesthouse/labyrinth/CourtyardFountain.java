@@ -79,6 +79,7 @@ public final class CourtyardFountain {
     }
     static void markDone(LabyrinthData d,BlockPos b){var s=d.state(STATE);s.putBoolean(Long.toString(b.asLong()),true);d.setState(STATE,s);}
     public static boolean done(LabyrinthData d,BlockPos b){return d.state(STATE).getBoolean(Long.toString(b.asLong()));}
+    public static boolean bowl(BlockState s){return s.is(Blocks.WATER_CAULDRON)||s.is(HouseBlocks.VIGNETTE_DETAIL.get())&&s.getValue(io.github.knaitoe.theoldesthouse.house.VignetteDetailBlock.KIND)==io.github.knaitoe.theoldesthouse.house.VignetteDetailBlock.Kind.FOUNTAIN_BOWL;}
 
     // ------------------------------------------------------------------------------------------------ saved courtyards
     private static final Set<HouseholdFurnitureBlock.Kind> TABLES=Set.of(HouseholdFurnitureBlock.Kind.WALNUT_DESK,HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,HouseholdFurnitureBlock.Kind.READING_DESK,HouseholdFurnitureBlock.Kind.FORMICA_TABLE);
@@ -139,9 +140,10 @@ public final class CourtyardFountain {
     @SubscribeEvent public static void ambience(ServerTickEvent.Post e){
         var s=e.getServer();if(s.getTickCount()%10!=0)return;var origin=HouseSavedData.get(s).houseOrigin();if(origin==null)return;
         var l=s.getLevel(NovelRooms.dimension(PLACE));if(l==null)return;var b=LabyrinthPlaces.base(origin,PLACE);var bowl=b.offset(BOWL);
-        if(!l.hasChunkAt(bowl)||!l.getBlockState(bowl).is(Blocks.WATER_CAULDRON)||l.players().stream().noneMatch(p->p.distanceToSqr(Vec3.atCenterOf(bowl))<400))return;
-        // Water brims at the bowl's lip and drips into the basin.
-        for(int i=0;i<2;i++){double a=l.random.nextDouble()*Math.PI*2;l.sendParticles(ParticleTypes.DRIPPING_WATER,bowl.getX()+.5+Math.cos(a)*.48,bowl.getY()+.95,bowl.getZ()+.5+Math.sin(a)*.48,1,0,0,0,0);}
+        if(!l.hasChunkAt(bowl)||!bowl(l.getBlockState(bowl))||l.players().stream().noneMatch(p->p.distanceToSqr(Vec3.atCenterOf(bowl))<400))return;
+        // The continuous animated jet is part of the native bowl mesh; moving droplets follow the nozzle and overflow.
+        l.sendParticles(ParticleTypes.SPLASH,bowl.getX()+.5,bowl.getY()+.95,bowl.getZ()+.5,3,.035,.10,.035,.025);
+        for(int i=0;i<2;i++){double a=l.random.nextDouble()*Math.PI*2;l.sendParticles(ParticleTypes.DRIPPING_WATER,bowl.getX()+.5+Math.cos(a)*.48,bowl.getY()+.56,bowl.getZ()+.5+Math.sin(a)*.48,1,0,0,0,0);}
         if(s.getTickCount()%60==0)l.playSound(null,bowl,SoundEvents.WATER_AMBIENT,SoundSource.BLOCKS,.35F,1.3F);
     }
 }

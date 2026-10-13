@@ -10,7 +10,7 @@ import net.minecraft.world.phys.shapes.*;
 /** Custom scene objects; mesh and rotated selection share exact dimensions. */
 public final class VignetteDetailBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<VignetteDetailBlock> CODEC=simpleCodec(VignetteDetailBlock::new);
-    public enum Kind implements StringRepresentable { BEAR, TRAIN, TOY_BLOCKS, DOLL, CHESS, NOTICE_BOARD, MAP_BOARD, MISSING_NOTICE, DIARY_STACK, FIELD_NOTEBOOK, FLASHLIGHT, CASSETTE, SEALED_BOX, BOOK_TRAY, SHADOW, CHILD_WALL, TOOL_TRAY, REPAIR_DIAGRAM, FAN_WALLPAPER, CURTAIN, CUSHION, CARCASS, ELK_SKULL, LOW_BRANCH, FAMILY_BOARD, RECORDER, CHILD_FABRIC, SCRIBBLE_0, SCRIBBLE_1, SCRIBBLE_2, SCRIBBLE_3, SCRIBBLE_4, SCRIBBLE_5, SCRIBBLE_6, SCRIBBLE_7, SCRIBBLE_8, SCRIBBLE_9, SCRIBBLE_10, SCRIBBLE_11, SCRIBBLE_12, SCRIBBLE_13, SCRIBBLE_14, SCRIBBLE_15;
+    public enum Kind implements StringRepresentable { BEAR, TRAIN, TOY_BLOCKS, DOLL, CHESS, NOTICE_BOARD, MAP_BOARD, MISSING_NOTICE, DIARY_STACK, FIELD_NOTEBOOK, FLASHLIGHT, CASSETTE, SEALED_BOX, BOOK_TRAY, SHADOW, CHILD_WALL, TOOL_TRAY, REPAIR_DIAGRAM, FAN_WALLPAPER, CURTAIN, CUSHION, CARCASS, ELK_SKULL, LOW_BRANCH, FAMILY_BOARD, RECORDER, CHILD_FABRIC, SCRIBBLE_0, SCRIBBLE_1, SCRIBBLE_2, SCRIBBLE_3, SCRIBBLE_4, SCRIBBLE_5, SCRIBBLE_6, SCRIBBLE_7, SCRIBBLE_8, SCRIBBLE_9, SCRIBBLE_10, SCRIBBLE_11, SCRIBBLE_12, SCRIBBLE_13, SCRIBBLE_14, SCRIBBLE_15, PLAIN_NOTES, FOUNTAIN_BOWL;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}}
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public VignetteDetailBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.BEAR));}
@@ -19,6 +19,8 @@ public final class VignetteDetailBlock extends HorizontalDirectionalBlock {
     public static BlockState state(Kind kind,Direction facing){return HouseBlocks.VIGNETTE_DETAIL.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing);}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         double[][] boxes=switch(s.getValue(KIND)){
+            case PLAIN_NOTES -> new double[][]{{3,0,3,5,12,5},{11,0,11,13,12,13},{1,12,1,15,15,15},{1,15,12,15,22,14}};
+            case FOUNTAIN_BOWL -> new double[][]{{2,0,2,14,3,14},{0,3,0,3,9,16},{13,3,0,16,9,16},{3,3,0,13,9,3},{3,3,13,13,9,16},{7,3,7,9,11,9}};
             case BEAR -> new double[][]{{4,0,4,12,8,12},{3,8,3,13,14,13},{2,12,4,5,16,7},{11,12,4,14,16,7},{1,1,5,4,7,10},{12,1,5,15,7,10}};
             case TRAIN -> new double[][]{{1,2,3,15,6,12},{1,6,4,6,11,11},{9,6,5,12,9,10},{10,9,6,12,13,8},{2,0,2,5,3,13},{11,0,2,14,3,13}};
             case TOY_BLOCKS -> new double[][]{{1,0,2,6,5,7},{7,0,6,12,5,11},{3,5,4,8,10,9},{10,0,1,15,5,6}};

@@ -56,6 +56,7 @@ public final class NovelRooms {
         for(int i=0;i<7;i++)sign(l,b.offset(10,2,-22-i*2),Direction.WEST,new String[]{"reader "+(i+1),new String[]{"Beatrice","Leonie","Pauline","Ruth","Anne","Esther","Helen"}[i],"", ""});
         at(l,b,-7,5,-25,Blocks.LANTERN);
         CourtyardFountain.build(l,b);
+        PlaytestScenes0488.fresh(l,b,LabyrinthPlace.ZAMPANO_COURTYARD);
     }
     private static void well(ServerLevel l,BlockPos b){
         outdoor(l,b,17,39,Blocks.GRASS_BLOCK);room(l,b,5,15,-34,-17,0,7,Blocks.SPRUCE_PLANKS,Blocks.COARSE_DIRT);
@@ -94,6 +95,7 @@ public final class NovelRooms {
         box(l,b,-10,-1,-104,10,-1,-78,Blocks.SANDSTONE.defaultBlockState());
         // The distant boy is a reader-owned native silhouette, restored by the scene tick.
         lectern(l,b.offset(APOLOGY),NovelTexts.apology());at(l,b,3,0,-7,Blocks.BARREL);
+        PlaytestScenes0488.fresh(l,b,LabyrinthPlace.PLAIN);
     }
     /** Back the authored walkable core first, then restore only its missing floor tiles. */
     public static void repairPlainGround(ServerLevel l,BlockPos b){

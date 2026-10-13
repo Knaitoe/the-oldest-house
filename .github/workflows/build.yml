@@ -526,7 +526,8 @@ jobs:
           import re
           from pathlib import Path
           passed = re.findall(r'All (\d+) required tests passed', Path('build/native-playtest488.log').read_text())
-          assert passed and int(passed[-1]) == 6, 'The actual navigation, cottage speech and Holy Rabbit repairs did not complete.'
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('Playtest0488Tests.java','Finishing488Tests.java'))
+          assert passed and int(passed[-1]) == declared, 'The actual navigation, speech, survival and scene finishing repairs did not complete.'
           PYTEST
 
       - name: Structure game tests
@@ -735,6 +736,9 @@ jobs:
           for view in lid-open lid-quarter lid-three-quarter lid-closed stone-initials fade-start fade-middle fade-dark lid-from-below; do test -s build/font-smoke/native-well-$view.png; done
           test -s build/font-smoke/reviewed-assets-passed.txt
           test -s build/font-smoke/native-reviewed-assets.png
+          test -s build/font-smoke/native-finishing-props.png
+          test -s build/font-smoke/native-finishing-wall.png
+          test -s build/font-smoke/finishing-passed.txt
           test -s build/font-smoke/hall-changes-passed.txt
           test -s build/font-smoke/native-hall-changes.png
           for scene in kitchen laundry car repair late_kitchen; do test -s build/font-smoke/scenes/staircase_leak_$scene.png; done

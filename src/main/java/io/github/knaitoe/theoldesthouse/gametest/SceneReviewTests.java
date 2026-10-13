@@ -282,13 +282,13 @@ public final class SceneReviewTests {
     });}
 
     @GameTest(template="empty",batch="review_fan_supply",timeoutTicks=1600)
-    public static void compactFanRoomOffersFiniteBoardsAndItsOriginalReadingThroughACustomSurface(GameTestHelper h){run(h,LabyrinthPlace.ELK_FAN,554500,f->{
+    public static void compactFanRoomOffersOneFiniteBulbAndItsOriginalReadingThroughACustomSurface(GameTestHelper h){run(h,LabyrinthPlace.ELK_FAN,554500,f->{
         LiteraryRooms.build(f.level,f.base,f.place);SceneReview.apply(f.level,f.base,f.place);SceneHuntReview.apply(f.level,f.origin,f.place);
         var owner=f.player("review_fan_builder");var peer=f.player("review_fan_peer");LiteraryVignettes.onArrive(owner,f.place);
         f.click(owner,SceneHuntReview.TOOLS);f.click(owner,SceneHuntReview.TOOLS);
-        h.assertTrue(owner.getInventory().countItem(Items.OAK_PLANKS)==8,"the real tool tray gives eight original boards once");
+        h.assertTrue(owner.getInventory().countItem(LiteraryRegistry.LIGHTBULB.get())==1&&owner.getInventory().countItem(Items.OAK_PLANKS)==0,"the real tool tray gives one original replacement bulb and no boards");
         owner.getInventory().clearContent();f.click(owner,SceneHuntReview.TOOLS);
-        h.assertTrue(owner.getInventory().countItem(Items.OAK_PLANKS)==0,"depleting the original boards cannot refill the tray");
+        h.assertTrue(owner.getInventory().countItem(LiteraryRegistry.LIGHTBULB.get())==0&&owner.getInventory().countItem(Items.OAK_PLANKS)==0,"depleting the original bulb cannot refill the tray");
         h.assertTrue(f.level.getBlockState(f.base.offset(-9,2,-19)).is(LiteraryRegistry.SIDING.get())&&f.level.getBlockState(f.base.offset(LiteraryRooms.FAN)).is(LiteraryRegistry.PROP.get()),"the new compact wall preserves the actual fan interaction address");
         f.source(owner);h.assertTrue(f.own(owner).getBoolean("Read_Source")&&!f.own(peer).getBoolean("Read_Source")&&WitnessAccount.count(f.data(),owner.getUUID())==0,"the themed source still opens the personal original and arrival supplies confer no resolution");f.done();
     });}

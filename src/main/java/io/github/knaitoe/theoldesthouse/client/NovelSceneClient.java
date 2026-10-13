@@ -18,6 +18,7 @@ public final class NovelSceneClient {
     private static final int STAIR_SHAKE=13;
     private static int mode,lease,elapsed,captionTicks,stairLease;private static float shake,stairShake;private static String caption="";
     private static ClientLevel sceneWorld;private static java.util.UUID sceneReader;
+    private static ClientLevel clockWorld;private static net.minecraft.core.BlockPos clockPosition,clockOrigin;private static int spatialClock;
     private NovelSceneClient(){}
     public static void drawCoveredDarkness(net.minecraft.client.gui.GuiGraphics g){g.fill(0,0,g.guiWidth(),g.guiHeight(),0xFF000000);}
     public static void drawWellFade(net.minecraft.client.gui.GuiGraphics g,float ticks){int alpha=Math.round(255*WellSequence.darkness(ticks));if(alpha>0)g.fill(0,0,g.guiWidth(),g.guiHeight(),alpha<<24);}
@@ -38,7 +39,15 @@ public final class NovelSceneClient {
     /** Read-only spatial clock; late packets may expire a cue, but never the scene's sky. */
     public static long sceneTime(net.minecraft.world.level.Level level,long nativeTime){
         var mc=Minecraft.getInstance();if(level!=mc.level||mc.player==null)return nativeTime;
-        return SceneClock.time(SceneClock.at(HouseSightlineState.origin(),mc.player.blockPosition(),level.dimension()),elapsed,nativeTime);
+        return SceneClock.time(clockMode(level),elapsed,nativeTime);
+    }
+    public static int clockMode(net.minecraft.world.level.Level level){
+        var mc=Minecraft.getInstance();if(level!=mc.level||mc.player==null)return 0;
+        var origin=HouseSightlineState.hasOrigin()?HouseSightlineState.origin():null;var position=mc.player.blockPosition();
+        if(clockWorld!=mc.level||!position.equals(clockPosition)||!java.util.Objects.equals(origin,clockOrigin)){
+            clockWorld=mc.level;clockPosition=position;clockOrigin=origin;spatialClock=SceneClock.at(origin,position,level.dimension());
+        }
+        return spatialClock==0&&active()&&mode==4?4:spatialClock;
     }
     @SubscribeEvent public static void fog(ViewportEvent.ComputeFogColor e){if(!active())return;if(mode==5){e.setRed(.16F);e.setGreen(.12F);e.setBlue(.21F);}else if(mode==1||mode==3){e.setRed(.035F);e.setGreen(.05F);e.setBlue(.073F);}else if(mode==4){e.setRed(.76F);e.setGreen(.67F);e.setBlue(.46F);}else if(mode==12||mode==14){e.setRed(0);e.setGreen(0);e.setBlue(0);}else if(mode>=10){e.setRed(.065F);e.setGreen(.059F);e.setBlue(.05F);}}
     @SubscribeEvent public static void mist(ViewportEvent.RenderFog e){

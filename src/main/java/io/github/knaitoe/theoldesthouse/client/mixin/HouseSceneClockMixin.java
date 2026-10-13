@@ -13,4 +13,10 @@ public abstract class HouseSceneClockMixin {
         Level level=(Level)(Object)this;
         if(level.isClientSide())cir.setReturnValue(NovelSceneClient.sceneTime(level,cir.getReturnValue()));
     }
+    /** Native sky brightness is cached separately from day time; a night-time arrival must be bright on its first frame. */
+    @Inject(method="getSkyDarken",at=@At("RETURN"),cancellable=true)
+    private void housePlainSkyBrightness(CallbackInfoReturnable<Integer> cir){
+        Level level=(Level)(Object)this;
+        if(level.isClientSide()&&NovelSceneClient.clockMode(level)==4)cir.setReturnValue(0);
+    }
 }
