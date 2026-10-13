@@ -11,7 +11,7 @@ ROOT=Path(__file__).resolve().parents[1]
 A=ROOT/'src/main/resources/assets/the_oldest_house'
 T=A/'textures/block/ghosts';T.mkdir(parents=True,exist_ok=True)
 M=A/'models/block';S=A/'blockstates';E=A/'textures/entity'
-K=['wallpaper','floor','ceiling','tile','panel','table','chair','counter','sink','cooker','plate','hat','books','jug','bolts','camera','case','monitor','drawing','lamp','bed_head','bed_foot','plain_plate','playhouse','torn_card','drawer','drawer_rig','plaster']
+K=['wallpaper','floor','ceiling','tile','panel','table','chair','counter','sink','cooker','plate','hat','books','jug','bolts','camera','case','monitor','drawing','lamp','bed_head','bed_foot','plain_plate','playhouse','torn_card','drawer','drawer_rig','plaster','plain_plate','meal_stew','meal_sandwich','meal_soup','meal_roast','meal_potatoes','lamp_off','rug','stair','rail']
 palette={'wallpaper':(199,185,159),'floor':(118,85,53),'ceiling':(216,210,188),'tile':(122,135,122),'panel':(107,82,58),
          'wood':(105,75,48),'formica':(161,171,151),'metal':(56,64,61),'cream':(225,215,183),'cardboard':(164,133,90),
          'denim':(64,82,114),'red':(126,47,36),'green':(89,115,61),'cloth':(126,139,155),'white':(220,218,199)}
@@ -90,11 +90,13 @@ parts={
 'drawer_rig':[q([5,1,2],[11,2,8],'metal'),q([6,2,3],[7,4,4],'metal'),q([8,2,3],[9,4,4],'metal'),q([10,2,3],[11,4,4],'metal'),q([4,3,6],[12,4,7],'red')],
 }
 variants={}
-for name in K:
+for name in dict.fromkeys(K):
     elements=parts.get(name,[q([0,0,0],[16,16,16],name)])
     used={v['texture'][1:] for e in elements for v in e['faces'].values()}
     model={'textures':{k:'the_oldest_house:block/ghosts/'+k for k in used},'elements':elements,'ambientocclusion':True}
-    (M/f'ghosts_{name}.json').write_text(json.dumps(model,indent=2)+'\n')
+    target=M/f'ghosts_{name}.json'
+    if name not in {"plate","plain_plate","meal_stew","meal_sandwich","meal_soup","meal_roast","meal_potatoes","stair","rail"}:target.write_text(json.dumps(model,indent=2)+'\n')
+    elif not target.exists():raise FileNotFoundError("Missing authored mesh: "+str(target))
     for f,y in [('north',0),('east',90),('south',180),('west',270)]:variants[f'kind={name},facing={f}']={'model':'the_oldest_house:block/ghosts_'+name,'y':y}
 (S/'ghosts_set.json').write_text(json.dumps({'variants':variants},indent=2)+'\n')
 

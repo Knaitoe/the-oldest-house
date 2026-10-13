@@ -44,8 +44,10 @@ for kind in ('strip','spot'):
 for stage in range(3):
     panel=cube([4,13.8,4],[12,14,12],'metal' if stage==0 else 'glass');panel['shade']=False;panel['neoforge_data']={'block_light':0 if stage==0 else 15,'sky_light':0}
     meshes['strobe_'+str(stage)]=[cube([3,14,3],[13,16,13],'black'),panel]
+for authored in ("exit","dj_light"):
+    original=json.loads((A/f"models/block/nightclub_{authored}.json").read_text());meshes[authored]=original["elements"];textures.update({k:v for k,v in original["textures"].items() if k!="particle"})
 variants={}
-for kind in ('wall','floor','ceiling','trim','speaker','mixer','bar','glass','strip','spot','bench','strobe'):
+for kind in ('wall','floor','ceiling','trim','speaker','mixer','bar','glass','strip','spot','bench','strobe','exit','dj_light'):
     for face,rotation in (('north',0),('east',90),('south',180),('west',270)):
         for stage in range(3):variants[f'kind={kind},facing={face},stage={stage}']={'model':'the_oldest_house:block/nightclub_'+(f'{kind}_{stage}' if kind in ('mixer','strip','spot','strobe') else 'glass_empty' if kind=='glass' and stage==0 else kind),'y':rotation}
 for name,elements in meshes.items():save('models/block/nightclub_'+name+'.json',{'ambientocclusion':not(name.startswith(('strip','spot','strobe'))),'textures':dict(textures,particle=textures['floor'] if name=='floor' else textures['wall']),'elements':elements})
@@ -77,4 +79,4 @@ with tempfile.TemporaryDirectory() as tmp:
     wav=Path(tmp)/'beat.wav'
     with wave.open(str(wav),'wb') as f:f.setnchannels(1);f.setsampwidth(2);f.setframerate(rate);f.writeframes(pcm)
     subprocess.run(['ffmpeg','-y','-loglevel','error','-i',str(wav),'-c:a','libvorbis','-q:a','4',str(target)],check=True)
-print('Generated club meshes, two glass item models, 144 oriented states and the original 32-second bass loop; supplied textures untouched.')
+print('Generated club meshes, two glass item models, 168 oriented states and the original 32-second bass loop; supplied textures untouched.')

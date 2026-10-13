@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "kind=wallpaper": {
+      "model": "the_oldest_house:block/harrigan_wallpaper"
+    },
+    "kind=carpet": {
+      "model": "the_oldest_house:block/harrigan_carpet"
+    },
+    "kind=panel": {
+      "model": "the_oldest_house:block/harrigan_panel"
+    },
+    "kind=casket": {
+      "model": "the_oldest_house:block/harrigan_casket"
+    }
+  }
+}

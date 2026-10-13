@@ -163,7 +163,7 @@ public final class Playtest0488Tests {
             if(night>=3&&father.phase()==3){
                 h.assertTrue(own.getInt("Meals")==2&&own.getInt("AteNight")==2,"both actual completed routes issued one finite meal and native eating counted each once");
                 h.assertTrue(Integer.bitCount(own.getInt("RabbitMornings"))>=2,"the unchanged rabbit was really seen alive in both mornings");
-                h.assertTrue(own.getBoolean("WoundSeen0488")&&own.getBoolean("TrailOpen"),"the two actual nights lead to the physical injury reveal and earned escape");done[0]=true;h.succeed();
+                h.assertTrue(own.getBoolean("RabbitBelieved0490")&&own.getBoolean("RabbitTruth0490")&&!own.getBoolean("RabbitBelief0490"),"the observed returning named rabbit builds hope before the witnessed wound changes its explanation");h.assertTrue(own.getBoolean("WoundSeen0488")&&own.getBoolean("TrailOpen"),"the two actual nights lead to the physical injury reveal and earned escape");done[0]=true;h.succeed();
             }
         });
     }

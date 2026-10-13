@@ -43,7 +43,8 @@ public final class NpcVisualProof extends Screen {
         g.drawString(font,"Shared actors use native tracking. Tom and the double retain each explorer's standard or slim skin.",10,height-15,0xFFE6DFCF,false);
     }
     private void mesh(GuiGraphics g,ResourceLocation texture,int x,int y,int kind,int view){
-        var mc=Minecraft.getInstance();var model=new PlayerModel<>(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER),false);
+        var mc=Minecraft.getInstance();var model=new PlayerModel<>(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER),false);model.young=false;
+        if(kind==2&&view==1){casket(g,texture,model,x,y);return;}
         if(kind==1){model.leftLeg.xRot=model.rightLeg.xRot=-(float)Math.PI/2;model.leftArm.xRot=model.rightArm.xRot=-(float)Math.PI*2/9;}
         if(kind==2&&view==0){model.head.xRot=.3F;model.body.xRot=.14F;model.leftLeg.xRot=model.rightLeg.xRot=-(float)Math.PI/2;model.leftArm.xRot=model.rightArm.xRot=-.43F;}
         if(kind==3){model.body.xRot=.12F;model.head.xRot=.15F;model.leftArm.xRot=model.rightArm.xRot=-.15F;}
@@ -52,8 +53,16 @@ public final class NpcVisualProof extends Screen {
         model.hat.copyFrom(model.head);model.jacket.copyFrom(model.body);model.leftSleeve.copyFrom(model.leftArm);model.rightSleeve.copyFrom(model.rightArm);model.leftPants.copyFrom(model.leftLeg);model.rightPants.copyFrom(model.rightLeg);
         g.flush();var poses=g.pose();poses.pushPose();poses.translate(x,y,100);poses.scale(62,62,62);
         poses.mulPose(Axis.YP.rotationDegrees(view==1&&kind==0?20:view==1?110:160));poses.mulPose(Axis.XP.rotationDegrees(-5));
-        if(kind==2&&view==1){poses.translate(-.55,.45,0);poses.mulPose(Axis.ZP.rotationDegrees(-90));}
         var buffers=mc.renderBuffers().bufferSource();model.renderToBuffer(poses,buffers.getBuffer(RenderType.entityCutoutNoCull(texture)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);buffers.endBatch();poses.popPose();
+    }
+    private void casket(GuiGraphics g,ResourceLocation texture,PlayerModel<?> model,int x,int y){
+        HouseHumanRenderers.resting(model);model.hat.copyFrom(model.head);model.leftSleeve.copyFrom(model.leftArm);model.rightSleeve.copyFrom(model.rightArm);
+        g.flush();var mc=Minecraft.getInstance();var poses=g.pose();var buffers=mc.renderBuffers().bufferSource();
+        poses.pushPose();poses.translate(x,y+20,150);poses.scale(42,-42,42);poses.mulPose(Axis.XP.rotationDegrees(25));poses.mulPose(Axis.YP.rotationDegrees(-25));poses.translate(-.5,0,0);
+        var state=io.github.knaitoe.theoldesthouse.labyrinth.HarriganFinishBlock.of(io.github.knaitoe.theoldesthouse.labyrinth.HarriganFinishBlock.Kind.CASKET);
+        mc.getBlockRenderer().renderSingleBlock(state,poses,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
+        poses.translate(.5,.9,.5);HouseHumanRenderers.casketPose(poses);poses.scale(-1,-1,1);poses.translate(0,-1.501,0);
+        model.renderToBuffer(poses,buffers.getBuffer(RenderType.entityCutoutNoCull(texture)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);buffers.endBatch();poses.popPose();
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event)throws Exception{
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof NpcVisualProof)||++frames<4)return;

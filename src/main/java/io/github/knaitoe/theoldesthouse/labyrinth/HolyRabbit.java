@@ -61,7 +61,7 @@ public final class HolyRabbit {
         if(world.hasUUID(key)){if(p.serverLevel().getEntity(world.getUUID(key)) instanceof Rabbit existing)rabbit=existing;}
         else{
             rabbit=EntityType.RABBIT.create(p.serverLevel());if(rabbit==null)return null;
-            rabbit.setVariant(Rabbit.Variant.WHITE_SPLOTCHED);rabbit.setNoAi(true);rabbit.setNoGravity(true);rabbit.setInvulnerable(true);rabbit.setPersistenceRequired();rabbit.addTag("HolyRabbit");
+            rabbit.setVariant(Rabbit.Variant.WHITE_SPLOTCHED);rabbit.setCustomName(Component.literal("Slaney"));rabbit.setNoAi(true);rabbit.setNoGravity(true);rabbit.setInvulnerable(true);rabbit.setPersistenceRequired();rabbit.addTag("HolyRabbit");
             rabbit.moveTo(Vec3.atBottomCenterOf(b.offset(RABBIT)));rabbit.setYRot(90);
             if(!p.serverLevel().addFreshEntity(rabbit))return null;
             world.putUUID(key,rabbit.getUUID());LiteraryVignettes.shared(data,PLACE,world);own.putBoolean("RabbitAnchor0488",true);
@@ -112,13 +112,13 @@ public final class HolyRabbit {
         }
         var rabbit=rabbit(p,b,own);
         if(rabbit!=null&&ticks<100&&HouseWatchers.sees(p,rabbit.getEyePosition()))own.putInt("RabbitMornings",own.getInt("RabbitMornings")|(1<<Math.min(7,night)));
+        HolyRabbitDialogue.tick(p,father,own,night,ticks);
         boolean returned=night>=3||own.getInt("FatherWaypoint0488")>=WALK.length;
         if(ticks>=200&&returned&&own.getInt("MealNight")<night&&p.distanceToSqr(b.offset(0,0,-24).getCenter())<100){
             var meal=LiteraryVignettes.mark(p,PLACE,"Meal"+night,new ItemStack(LiteraryRegistry.MEAL.get()));var token=UUID.randomUUID();
             CustomData.update(DataComponents.CUSTOM_DATA,meal,t->{t.putInt("Night",night);t.putUUID("MealToken",token);});
             own.putUUID("MealToken",token);own.putInt("MealNight",night);LiteraryVignettes.give(p,meal);
-            if(father!=null)father.say(night==1?"A rabbit. Keep the skin out of the snow. You need to eat.":night==2?"I went past the creek. Here. Take the meat first.":"There is some left. I ate on the way back.");
-            if(night>=2)p.displayClientMessage(Component.literal("The same small skin is folded around the meat. His trousers are wet above the knees."),false);
+            HolyRabbitDialogue.meal(p,father,own,night);
         }
         if(ticks>=500&&own.getInt("MealNight")>=night&&own.getInt("AteNight")==night){
             own.putInt("Night",Math.min(8,night+1));own.putInt("NightTicks",0);own.remove("FatherWaypoint0488");
@@ -137,7 +137,7 @@ public final class HolyRabbit {
         if(p.getZ()<b.getZ()-33){
             if(!own.getBoolean("TrailOpen")){p.setTicksFrozen(200);p.hurt(p.damageSources().freeze(),2);}
             else{
-                own.putInt("TrailTicks",own.getInt("TrailTicks")+5);if(own.getInt("TrailTicks")>600)p.hurt(p.damageSources().freeze(),2);
+                own.putInt("TrailTicks",own.getInt("TrailTicks")+5);if(own.getBoolean("FatherGone")&&own.getInt("TrailTicks")>600)p.hurt(p.damageSources().freeze(),2);
                 if(p.getZ()<b.getZ()-118&&own.getInt("Meals")>=2&&own.getBoolean("FatherGone")&&own.getBoolean("CarvingRead")&&Integer.bitCount(own.getInt("RabbitMornings"))>=2){
                     if(!own.getBoolean("Rescue0490")){own.putBoolean("Rescue0490",true);p.playNotifySound(net.minecraft.sounds.SoundEvents.NOTE_BLOCK_BELL.value(),SoundSource.AMBIENT,.55F,.6F);p.displayClientMessage(Component.literal("A light sweeps between the trees. A voice answers a radio. Behind it, the two poles keep moving. The rabbit is still alive."),false);}
                     own.putBoolean("Committed",false);LiteraryVignettes.ready(p,PLACE,own,"ate_and_followed_the_fathers_drag_trail");release(p);

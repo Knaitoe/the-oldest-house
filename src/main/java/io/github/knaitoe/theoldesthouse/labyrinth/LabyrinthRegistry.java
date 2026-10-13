@@ -26,6 +26,7 @@ public final class LabyrinthRegistry {
     /** The cuts under the mineral crust (0.4.72): cave rock, not a dressed block, so the mark reads as part of the wall. */
     public static final DeferredBlock<Block> CAVE_MARKS=BLOCKS.registerSimpleBlock("cave_marks",
             BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(1.5F,6F).sound(SoundType.STONE).requiresCorrectToolForDrops().noLootTable());
+    public static final DeferredBlock<HarriganFinishBlock> HARRIGAN_FINISH=BLOCKS.register("harrigan_finish",()->new HarriganFinishBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).strength(2F).sound(SoundType.WOOD).noOcclusion().noLootTable()));
     public static final ResourceLocation HEARTBEAT_ID=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"vignette.heartbeat");
     public static final DeferredHolder<SoundEvent,SoundEvent> FLOORBOARD_HEARTBEAT=SOUNDS.register("vignette.heartbeat",()->SoundEvent.createVariableRangeEvent(HEARTBEAT_ID));
     public static final DeferredHolder<SoundEvent,SoundEvent> HALL_PIPES=sound("hall.pipes"), HALL_STONE=sound("hall.stone"), HALL_SETTLE=sound("hall.settle");

@@ -54,8 +54,8 @@ public final class LiteraryTexts {
             "His things are below the house. Break the pile, or take what he left. I do not know which one means letting him go.");
         case HOLY_RABBIT->book("The hollow","A child",
             "He put me where the needles kept the snow out. His shoulders would not fit. He said we would wait for morning.\n\nMy own food was hard as the ground.",
-            "He brought food down from above my head. The first time, there was a hide. Afterward there was only the food. His leg made a line when he walked.",
-            "Stay awake. Eat what he brings, or wait for another night. When the trail opens, follow it quickly.\n\nThe white rabbit is still outside every morning.");
+            "He came back with meat wrapped in a rabbit skin. The skin came back again. He said the creek had wet his trousers. There was blood in both boot marks.",
+            "Stay awake. Eat what he brings, or wait for another night. When the trail opens, follow it quickly.\n\nSlaney is still outside every morning.");
         case CONFESSION->book("Terms of the interview","The listener",
             "He asked for a chair and a book with blank pages. He did not ask for forgiveness. I thought this meant the account would be easier to take down.",
             "He stops when I leave. When I return, he finds the exact word.\n\nThere are clean books on the low shelf. I put one on the table between our chairs. By the time I reached the last page, I recognised the handwriting.");
@@ -110,7 +110,7 @@ public final class LiteraryTexts {
         case ELK_LOT->"FIELD DEATH\n\nThe name in the clipping was "+name+". I remembered the lights in the parking lot and the eyes beyond it. The report gave the field an ending that I had not stayed to see."+ElkLotNight.tab(own);
         case ELK_FAN->"From above the ladder I could see what lay below the moving blades. Five seconds was longer than I thought. The blade caught me; when I could see again I was outside the room. A tooth lay in my hand. When I returned, tape held the shape of the deer.";
         case MAPPING_INTERIOR->own.getBoolean("PileBroken")?"I broke the pile under the trailer. The boy woke when I came back. The crawlspace still ran beyond the walls, but the things at its end could no longer hold him there.":"I took what lay under the trailer. The photograph came with me. When I returned, the boy was harder to wake. Keeping a father's things was not the same as keeping a brother.";
-        case HOLY_RABBIT->"The same rabbit was alive in the same place each morning. Father walked more slowly, then could not stand. Below the torn cloth his left leg was ruined. I had eaten what he brought me. At the end of his drag trail I found the knife and a foot. He had left enough for me to leave.";
+        case HOLY_RABBIT->"The rabbit was alive each morning. The same skin came back with the meat. Father said he had crossed the creek, but the boot tracks went across that trail. Both trouser legs were dark with blood. I understood where our food had come from.\n\nA searcher found me with a light and a radio. Father stood between two poles, lifted his ruined legs and went back into the trees. I could not make him stop. Long afterward, a rabbit outside a window could still put me back under that tree.";
         case CONFESSION->"The last chapter addressed the person holding the pen.\n\n"+own.getString("Statistics")+"\n\nThe signature was mine. The chair opposite me had not changed.";
         case ELK_CARCASSES->"I held still beneath the hides. His boots passed the opening twice. When they no longer came back, I followed the service path. The pile stayed where the camp had put it.";
         case COSTUME_NIGHT->"The coats remained on the beach. I kept one of them in view until my feet found grass. It stopped with the sand still beneath it.";
