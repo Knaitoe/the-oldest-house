@@ -27,15 +27,17 @@ public final class Shallows {
     private Shallows() {}
     public static void build(MinecraftServer server,ServerLevel level,BlockPos base){
         IndianLakeArchitecture.shallows(level,base);LabyrinthData data=LabyrinthData.get(server);CompoundTag state=data.state(ID);
+        if(!state.getBoolean("Built"))state.putBoolean("FreshCast0493",true);
         state.putBoolean("Built",true);data.setState(ID,state);boys(level,base);
     }
     private static void boys(ServerLevel level,BlockPos base){
-        var all=level.getEntitiesOfClass(LakeCongregantEntity.class,IndianLakeRooms.bounds(base,LabyrinthPlace.SHALLOWS),e->e.getTags().contains(BOY));
+        boolean fresh=LabyrinthData.get(level.getServer()).state(ID).getBoolean("FreshCast0493");
         for(int i=0;i<3;i++){
-            String tag=BOY+i;if(all.stream().anyMatch(b->b.getTags().contains(tag)))continue;
-            var boy=DrownedTownRegistry.CONGREGANT.get().create(level);if(boy==null)continue;
-            boy.pose(false,false);boy.memoryBoy(true);boy.addTag(BOY);boy.addTag(tag);
-            boy.moveTo(base.getX()+new int[]{-4,5,-3}[i]+.5,base.getY(),base.getZ()+new int[]{-10,-11,-5}[i]+.5,180,0);level.addFreshEntity(boy);
+            String tag=BOY+i;int index=i;
+            LakeOriginals.ensure(level,base,LabyrinthPlace.SHALLOWS,ID,"boy"+i,tag,DrownedTownRegistry.CONGREGANT.get(),fresh,boy->{
+                boy.pose(false,false);boy.memoryBoy(true);boy.addTag(BOY);boy.addTag(tag);
+                boy.moveTo(base.getX()+new int[]{-4,5,-3}[index]+.5,base.getY(),base.getZ()+new int[]{-10,-11,-5}[index]+.5,180,0);
+            });
         }
     }
     public static CompoundTag personal(LabyrinthData data,UUID owner){return data.state(ID).getCompound("Players").getCompound(owner.toString()).copy();}
@@ -54,13 +56,15 @@ public final class Shallows {
         if(!IndianLakeProgress.canDealShallows(data,player.getUUID()))return;
         BlockPos base=IndianLakeRooms.base(player.server,place);if(base==null)return;
         IndianLakeRooms.keepLoaded(player.serverLevel(),base,place);boys(player.serverLevel(),base);
-        CompoundTag record=personal(data,player.getUUID());record.putBoolean("Cold",false);record.putBoolean("Active",true);
+        CompoundTag record=personal(data,player.getUUID());
+        if(record.getBoolean("Active")&&record.hasUUID("Actor"))return;
+        record.putBoolean("Cold",false);record.putBoolean("Active",true);
         // Reconnects reuse their saved actor; a new visit cannot duplicate a still-loaded recollection.
         LakeWitchEntity girl=actor(player);
         if(girl==null){
             girl=DrownedTownRegistry.LAKE_WITCH.get().create(player.serverLevel());if(girl==null)return;
             girl.recollection(player.getUUID(),base);girl.moveTo(Vec3.atBottomCenterOf(base.offset(2,0,-8)));
-            player.serverLevel().addFreshEntity(girl);record.putUUID("Actor",girl.getUUID());
+            if(!player.serverLevel().addFreshEntity(girl))return;record.putUUID("Actor",girl.getUUID());
         }
         save(data,player.getUUID(),record);words(player,base.offset(-4,2,-10),"Take her out further. Both hands.");
         IndianLakeArchitecture.light(player.serverLevel(),base.offset(2,3,-8),8);IndianLakeArchitecture.light(player.serverLevel(),base.offset(0,2,-13),6);
@@ -173,7 +177,7 @@ public final class Shallows {
         BlockPos base=IndianLakeRooms.base(event.getServer(),LabyrinthPlace.SHALLOWS);
         if(base!=null){
             var visitors=IndianLakeRooms.visitors(level,base,LabyrinthPlace.SHALLOWS);
-            if(!visitors.isEmpty())IndianLakeRooms.keepLoaded(level,base,LabyrinthPlace.SHALLOWS);
+            if(!visitors.isEmpty()){IndianLakeRooms.keepLoaded(level,base,LabyrinthPlace.SHALLOWS);boys(level,base);}
             Set<ServerPlayer> players=new HashSet<>(event.getServer().getPlayerList().getPlayers());players.addAll(level.players());
             for(ServerPlayer player:players){
                 if(!IndianLakeRooms.inside(player,LabyrinthPlace.SHALLOWS)&&personal(LabyrinthData.get(player.server),player.getUUID()).getBoolean("Active"))onDepart(player);

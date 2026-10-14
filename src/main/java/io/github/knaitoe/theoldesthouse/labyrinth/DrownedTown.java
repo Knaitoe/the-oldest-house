@@ -68,6 +68,7 @@ public final class DrownedTown {
         LabyrinthData data = LabyrinthData.get(server);
         CompoundTag state = data.state(ID);
         // First construction stocks finite native inventories. Ordinary arrivals and later rebuilds never refill them.
+        if(!state.getBoolean("Built")&&!state.getBoolean("PaperStocked")&&!state.contains("Visit"))state.putBoolean("FreshCast0493",true);
         if (!state.getBoolean("PaperStocked")) {
             for (int i = 0; i < PAPERS.length; i++) if (level.getBlockEntity(base.offset(PAPERS[i])) instanceof Container desk) {
                 desk.setItem(0, new ItemStack(DrownedTownRegistry.wetEssay(i))); desk.setChanged();
@@ -274,18 +275,19 @@ public final class DrownedTown {
     }
     private static void ensureBodies(ServerLevel level, BlockPos base, LabyrinthData data) {
         boolean shore = IndianLakeProgress.deadOnShore(data);
-        List<LakeCongregantEntity> bodies = level.getEntitiesOfClass(LakeCongregantEntity.class, bounds(base), b -> b.getTags().contains(BODY));
+        boolean fresh=data.state(ID).getBoolean("FreshCast0493");
         for (int index = 0; index < 7; index++) {
-            String tag = BODY + "_" + index; LakeCongregantEntity body = bodies.stream().filter(b -> b.getTags().contains(tag)).findFirst().orElse(null);
+            String tag = BODY + "_" + index;
             boolean preacher = index == 0;
-            if (body == null) { body = DrownedTownRegistry.CONGREGANT.get().create(level); if (body == null) continue; body.addTag(BODY); body.addTag(tag); }
             // The preacher stands on the floor behind the pulpit; the congregation sits in the pews facing it.
             BlockPos at = preacher ? base.offset(ProofrockTown.PREACHER)
                     : shore ? base.offset(-16 + index * 5, 0, -90)
                     : base.offset(index % 2 == 0 ? 26 : 34, -11, -107 - (index - 1) / 2 * 2);
+            var body=LakeOriginals.ensure(level,base,LabyrinthPlace.DROWNED_TOWN,ID,"body"+index,tag,DrownedTownRegistry.CONGREGANT.get(),fresh,
+                    b->{b.addTag(BODY);b.addTag(tag);b.pose(preacher,!preacher&&!shore);b.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5,preacher?0:shore?0:180,0);});
+            if(body==null)continue;
             body.pose(preacher, !preacher && !shore);
             body.moveTo(at.getX() + .5, at.getY(), at.getZ() + .5, preacher ? 0 : shore ? 0 : 180, 0);
-            if (!bodies.contains(body)) level.addFreshEntity(body);
         }
     }
     public static void onServerTick(ServerTickEvent.Post event) {
@@ -293,7 +295,7 @@ public final class DrownedTown {
         ServerLevel level = server.getLevel(HouseDimensions.OUTSIDE); BlockPos base = base(server);
         LabyrinthData data = LabyrinthData.get(server);
         if (level == null || base == null || !data.state(ID).getBoolean("Built") || visitors(level, base).isEmpty()) return;
-        if (server.getTickCount() % 20 == 0) keepLoaded(level, base);
+        if (server.getTickCount() % 20 == 0) {keepLoaded(level, base);ensureBodies(level,base,data);}
         ensureWitch(level, base, data);
         if (level.getBlockEntity(base.offset(FURNACE)) instanceof FurnaceBlockEntity furnace) recordDrying(server, essayIndex(furnace.getItem(2)));
         if (level.getGameTime() >= nextHymn) {
