@@ -275,5 +275,6 @@
   "item.the_oldest_house.lake_found_flashlight": "The flashlight that found you",
   "entity.the_oldest_house.lake_house_dress": "A dress in the water",
   "entity.the_oldest_house.lake_house_seat": "A dry chair",
-  "subtitles.the_oldest_house.goatman_knock": "Someone knocks on the trailer"
+  "subtitles.the_oldest_house.goatman_knock": "Someone knocks on the trailer",
+  "subtitles.the_oldest_house.goatman_score": "Quiet music in the trailer"
 }
