@@ -121,7 +121,7 @@ public final class LakeHouseTests {
             float health=p.getHealth();var before=canoe.position();h.assertTrue(canoe.push(p,-1)&&canoe.getDeltaMovement().z<0&&canoe.getDeltaMovement().x<0,"the first stroke moves forward and away from the actual left wall");canoe.move(net.minecraft.world.entity.MoverType.SELF,canoe.getDeltaMovement());
             h.assertTrue(canoe.position().distanceTo(before)>.1&&!canoe.push(p,1),"native collision applies real movement and blocks an immediate second stroke");
             h.runAfterDelay(LakeHouseCanoe.STROKE_TICKS+1,()->{
-                canoe.setDeltaMovement(Vec3.ZERO);h.assertTrue(!canoe.push(p,-1)&&canoe.push(p,1)&&canoe.getDeltaMovement().x>0&&canoe.getDeltaMovement().z<0,"the next stroke switches walls and reverses the lateral shove");
+                canoe.moveTo(f.base().getX()+.70,canoe.getY(),canoe.getZ(),180,0);canoe.positionRider(p);canoe.positionRider(tess);h.assertTrue(!f.out.getBlockCollisions(canoe,canoe.getBoundingBox()).iterator().hasNext()&&canoe.wallWithinReach(-1)&&canoe.wallWithinReach(1),"the off-centre original clears native wall collision and can still reach the opposite wall");canoe.setDeltaMovement(Vec3.ZERO);h.assertTrue(!canoe.push(p,-1)&&canoe.push(p,1)&&canoe.getDeltaMovement().x>0&&canoe.getDeltaMovement().z<0,"the next stroke switches walls and reverses the lateral shove");
                 h.assertTrue(p.getHealth()==health&&!p.isInWall()&&!p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER)&&p.getAirSupply()==p.getMaxAirSupply(),"actual rider ticks and the first two native strokes cost neither health nor breath under the roof");
             });
             h.runAfterDelay(340,()->{

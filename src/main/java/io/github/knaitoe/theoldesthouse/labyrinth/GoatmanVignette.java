@@ -395,7 +395,7 @@ public final class GoatmanVignette {
                     if(run==0&&at(c).equals("byFire")){r.putInt("WindowRun0464",run=1);GoatmanFear.departed(r);}
                     if(run==1&&at(c).equals("windowRun")&&c.getPersistentData().getList("Route",Tag.TAG_COMPOUND).isEmpty()){r.putInt("WindowRun0464",run=2);r.putInt("WindowAt0464",clock);}
                     if(run==2){int since=clock-r.getInt("WindowAt0464");
-                        if(since%20==0)l.playSound(null,b.offset(-8,2,-59),GoatmanRegistry.CLAW.get(),SoundSource.BLOCKS,2.4F,1.35F);
+                        if(since%20==0)l.playSound(null,b.offset(-8,2,-59),GoatmanRegistry.CLAW.get(),SoundSource.BLOCKS,3.2F,1.35F);
                         if(since>=WINDOW_STAY)r.putInt("WindowRun0464",run=3);}
                     if(run==1||run==2)want="windowRun";
                 }
@@ -590,7 +590,7 @@ public final class GoatmanVignette {
                         c.getPersistentData().putString("At","bath");through.addAll(List.of(new Vec3(4.5,1,-74.5),new Vec3(3.5,1,-74.5),new Vec3(2.5,1,-74.5),new Vec3(2.5,1,-72.5),new Vec3(4,1,-71.5),new Vec3(4,1,-57.5),ENTRY,SPOTS.get("floor").at()));setRoute(c,through,"floor");}
                 }else if(!fresh(r)&&clock==windowAt){
                     Vec3 w=Vec3.atCenterOf(b.offset(GoatmanWoods.WINDOW));
-                    for(var p:enrolled)p.connection.send(new ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(GoatmanRegistry.CLAW.get()),SoundSource.BLOCKS,w.x,w.y,w.z,.9F,1.15F,p.getRandom().nextLong()));
+                    for(var p:enrolled)p.connection.send(new ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(GoatmanRegistry.CLAW.get()),SoundSource.BLOCKS,w.x,w.y,w.z,3.2F,1.15F,p.getRandom().nextLong()));
                 }
             }
             if(clock==KEEN)for(var p:enrolled)p.connection.send(new ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(GoatmanRegistry.KEEN.get()),SoundSource.AMBIENT,b.getX()+19.5,b.getY()+3,b.getZ()-70.5,1.2F,1,p.getRandom().nextLong()));
