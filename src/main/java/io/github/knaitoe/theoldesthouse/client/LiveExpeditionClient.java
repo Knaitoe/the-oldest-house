@@ -24,12 +24,12 @@ public final class LiveExpeditionClient {
     private static int previous,ticks,clicked=-100,ack=-1;private static String shot;private static boolean stopping,portholePoseSeen;
     private static BlockPos proofCamp;
     private static boolean confusionCaptured,terrorCaptured;
-    private static final java.util.Set<String> heardSides=new java.util.HashSet<>();
-    private static final java.util.List<String> heardKnocks=new java.util.ArrayList<>();
-    @SubscribeEvent public static void sounds(net.neoforged.neoforge.client.event.sound.PlaySoundEvent e){
+    private static final java.util.Set<String> heardSides=java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private static final java.util.List<String> heardKnocks=new java.util.concurrent.CopyOnWriteArrayList<>();
+    @SubscribeEvent public static void sounds(net.neoforged.neoforge.client.event.sound.PlaySoundSourceEvent e){
         if(!LiveExpeditionProof.enabled()||proofCamp==null||previous<35||previous>36||e.getSound()==null)return;
         var sound=e.getSound();var id=sound.getLocation();if(!id.getNamespace().equals(TheOldestHouse.MOD_ID)||!(id.getPath().equals("goatman.knock")||id.getPath().equals("goatman.claw")||id.getPath().equals("goatman.hammer")))return;
-        // This event precedes sound resolution; only the instance's ID and world coordinates are ready.
+        // The native source is resolved here, so its sample gain and spatial coordinates are available.
         if(sound.getVolume()<3)throw new IllegalStateException("LIVE EXPEDITION the louder native trailer impact lost its gain");
         double x=sound.getX()-proofCamp.getX(),z=sound.getZ()-proofCamp.getZ();if(x< -3)heardSides.add("west");if(x>3)heardSides.add("east");if(z< -74)heardSides.add("rear");heardKnocks.add(id+" at "+x+","+z+" gain="+sound.getVolume());
     }
@@ -258,6 +258,7 @@ public final class LiveExpeditionClient {
             if(ticks>80&&mc.screen==null&&ack!=42)ack(mc,42);
         }
         if(step>=43&&step<=46&&SupperSocketClient.ready(mc,step,ticks,role,target))ack(mc,step);
+        if((step==52||step==53)&&GhostsSocketClient.ready(mc,step,ticks,role,target))ack(mc,step);
         if(step>=47&&step<=51&&CanoeSocketClient.ready(mc,step,ticks,role,target))ack(mc,step);
         if(step==30&&ticks==30){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);mc.options.keyUse.setDown(false);mc.stop();}
     }
