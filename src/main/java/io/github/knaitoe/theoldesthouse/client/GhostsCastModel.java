@@ -49,6 +49,8 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
     private float[] snapshot(){var values=new float[joints.size()*6];int i=0;for(var p:joints){values[i++]=p.x;values[i++]=p.y;values[i++]=p.z;values[i++]=p.xRot;values[i++]=p.yRot;values[i++]=p.zRot;}return values;}
     private void blend(LiteraryActor actor,float age){
         var state=transitions.computeIfAbsent(actor,a->new Tween(a.phase()));
+        // A newly visible apex must freeze in its complete leap, even if its earlier phase was last rendered off-camera.
+        if(GhostsTakeClient.frozen()&&actor.phase()==GhostsSet.LEAP){state.phase=actor.phase();state.from=null;state.last=snapshot();return;}
         if(state.phase!=actor.phase()){state.from=state.last;state.started=age;state.phase=actor.phase();}
         if(state.from!=null){float t=net.minecraft.util.Mth.clamp((age-state.started)/(actor.phase()==GhostsSet.LEAP?5F:8F),0,1);t=t*t*(3-2*t);int i=0;
             for(var p:joints){p.x=net.minecraft.util.Mth.lerp(t,state.from[i++],p.x);p.y=net.minecraft.util.Mth.lerp(t,state.from[i++],p.y);p.z=net.minecraft.util.Mth.lerp(t,state.from[i++],p.z);p.xRot=angle(state.from[i++],p.xRot,t);p.yRot=angle(state.from[i++],p.yRot,t);p.zRot=angle(state.from[i++],p.zRot,t);}if(t==1)state.from=null;
