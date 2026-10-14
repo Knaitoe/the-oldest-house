@@ -231,10 +231,19 @@ public final class LiveExpeditionClient {
         if(step>=37&&step<=39&&ack!=step&&MobSightClientProof.ready(mc,step,ticks,role)){
             if(step!=39)shot=role+(step==37?"-outside-mob-sight":"-window-mob-sight");ack(mc,step);
         }
-        if(step==40){mc.options.keyShift.setDown(false);mc.player.setYRot(180);mc.player.setXRot(0);
-            if(mc.player.getForcedPose()!=net.minecraft.world.entity.Pose.SWIMMING){mc.options.keyUp.setDown(false);if(ticks>12)click(mc,target,ticks);}
-            else if(io.github.knaitoe.theoldesthouse.labyrinth.CampBedCrawl.under(mc.player)&&mc.player.getZ()<target.getZ()+.8){mc.options.keyUp.setDown(false);if(ack!=40){shot=role+"-camp-bed-hidden";ack(mc,40);}}
-            else mc.options.keyUp.setDown(true);
+        if(step==40){mc.options.keyShift.setDown(false);mc.player.setXRot(0);
+            boolean crawling=mc.player.getForcedPose()==net.minecraft.world.entity.Pose.SWIMMING;
+            boolean under=io.github.knaitoe.theoldesthouse.labyrinth.CampBedCrawl.under(mc.player);
+            if(crawling&&under&&mc.player.getZ()<target.getZ()+.8){mc.options.keyUp.setDown(false);if(ack!=40){shot=role+"-camp-bed-hidden";ack(mc,40);}}
+            else{
+                // A real slasher can knock a reader away before they hide. Walk back into reach, centre outside the
+                // legs, and retry the real block use; a fixed heading cannot recover either displacement.
+                double x=target.getX()+.5,z=target.getZ()+(!crawling||Math.abs(mc.player.getX()-x)>.04?2.5:.5);
+                double dx=x-mc.player.getX(),dz=z-mc.player.getZ();
+                mc.player.setYRot((float)Math.toDegrees(Math.atan2(-dx,dz)));mc.options.keyUp.setDown(dx*dx+dz*dz>.0025);
+                if(!crawling&&ticks>12&&mc.player.distanceToSqr(target.getCenter())<16)click(mc,target,ticks);
+            }
+            if(ticks%40==0)try{Files.createDirectories(LiveExpeditionProof.folder());Files.writeString(LiveExpeditionProof.folder().resolve(role+"-camp-bed-status.txt"),"position="+mc.player.position()+" target="+target+" forced="+mc.player.getForcedPose()+" pose="+mc.player.getPose()+" under="+under+" health="+mc.player.getHealth()+" collision="+mc.level.noCollision(mc.player,mc.player.getBoundingBox())+"\n",StandardOpenOption.CREATE,StandardOpenOption.APPEND);}catch(Exception ex){throw new IllegalStateException(ex);}
         }
         if(step==41){mc.player.setYRot(0);mc.player.setXRot(0);mc.options.keyShift.setDown(false);mc.options.keyUp.setDown(true);
             if(ticks>20&&mc.player.getZ()>target.getZ()+2&&mc.player.getForcedPose()==null&&mc.player.getBbHeight()>1&&ack!=41){mc.options.keyUp.setDown(false);shot=role+"-camp-bed-left";ack(mc,41);}}
