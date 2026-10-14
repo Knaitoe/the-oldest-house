@@ -24,7 +24,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.gametest.*;
 
-@GameTestHolder(TheOldestHouse.MOD_ID)
+@GameTestHolder(TheOldestHouse.MOD_ID+"_harrigan_review")
 @PrefixGameTestTemplate(false)
 public final class HarriganAndStraysTests {
     private static final String BODY = TheOldestHouse.MOD_ID + "_harrigan_body";
@@ -89,7 +89,7 @@ public final class HarriganAndStraysTests {
         h.assertTrue(body.getYRot()==180&&body.getLeftArmPose().getX()<0&&body.getRightArmPose().getX()<0,
                 "Harrigan faces away from the entrance with his hands resting forward");
     }
-    @GameTest(template="empty",batch="harrigan_pose",timeoutTicks=450)
+    @GameTest(template="empty",templateNamespace=TheOldestHouse.MOD_ID,batch="harrigan_pose",timeoutTicks=450)
     public static void existingHarriganIsSeatedWithoutRestagingAndBothVisitsRemainPlayable(GameTestHelper h) {
         pose=new Fixture(h,25400);Fixture f=pose;
         var data=LabyrinthData.get(f.level.getServer());CompoundTag state=data.state(HarriganVignette.ID);
@@ -137,7 +137,7 @@ public final class HarriganAndStraysTests {
             });
         });
     }
-    @GameTest(template="empty",batch="stray_meats")
+    @GameTest(template="empty",templateNamespace=TheOldestHouse.MOD_ID,batch="stray_meats")
     public static void everyVanillaMeatAdoptsNativeCatsAndWolvesThroughTheRegisteredInteraction(GameTestHelper h) {
         meats=new Fixture(h,25700);Fixture f=meats;var owner=f.player(f.base);
         h.assertTrue(!owner.getAbilities().instabuild,"the fixture really consumes survival inventory");
@@ -154,7 +154,7 @@ public final class HarriganAndStraysTests {
         }
         h.succeed();
     }
-    @GameTest(template="empty",batch="stray_guards")
+    @GameTest(template="empty",templateNamespace=TheOldestHouse.MOD_ID,batch="stray_guards")
     public static void meatCannotStealPetsTameProjectionsOrReplaceOrdinaryVanillaInteractions(GameTestHelper h) {
         guarded=new Fixture(h,26000);Fixture f=guarded;var owner=f.player(f.base);var pet=f.stray(false,owner);
         owner.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.BEEF,2));
@@ -174,7 +174,7 @@ public final class HarriganAndStraysTests {
         var vanilla=LabyrinthEncounters.spawnStray(h.getLevel(),outside.position().add(1,0,0),false);f.animals.add(vanilla);
         h.assertTrue(!LabyrinthEncounters.feedStray(outside,vanilla,InteractionHand.MAIN_HAND)&&outside.getMainHandItem().getCount()==2,"even a stray marker does not change animals outside the House");h.succeed();
     }
-    @GameTest(template="empty",batch="stray_hands")
+    @GameTest(template="empty",templateNamespace=TheOldestHouse.MOD_ID,batch="stray_hands")
     public static void offHandMeatWorksAndCreativeAdoptionDoesNotConsumeTheItem(GameTestHelper h) {
         hands=new Fixture(h,26300);Fixture f=hands;var owner=f.player(f.base);var cat=f.stray(true,owner);
         owner.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.STICK));owner.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(Items.COOKED_MUTTON,2));
