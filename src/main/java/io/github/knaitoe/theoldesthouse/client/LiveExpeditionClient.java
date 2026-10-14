@@ -122,9 +122,11 @@ public final class LiveExpeditionClient {
         if(step==18){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(true);if(ticks==30){shot=role+"-slasher-leaves";ack(mc,18);}}
         if(step==19&&ticks>30&&ack!=19){
             mc.options.keyUp.setDown(false);var actors=mc.level.getEntitiesOfClass(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor.class,mc.player.getBoundingBox().inflate(32),a->a.role()==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor.KILLER&&a.owner().isPresent());
-            if(actors.size()==2){var frustum=new net.minecraft.client.renderer.culling.Frustum(new org.joml.Matrix4f(),new org.joml.Matrix4f().ortho(-64,64,-64,64,-64,64));var camera=mc.gameRenderer.getMainCamera().getPosition();frustum.prepare(camera.x,camera.y,camera.z);
-                int visible=0;for(var a:actors){boolean mine=a.owner().orElseThrow().equals(mc.player.getUUID());boolean rendered=mc.getEntityRenderDispatcher().getRenderer(a).shouldRender(a,frustum,camera.x,camera.y,camera.z);if(rendered!=mine)throw new IllegalStateException("LIVE EXPEDITION native private actor renderer leaked or hid the wrong socket's killer");if(rendered)visible++;}
-                if(visible!=1)throw new IllegalStateException("LIVE EXPEDITION each socket must render exactly its own elk killer");double dx=target.getX()+.5-mc.player.getX(),dz=target.getZ()+.5-mc.player.getZ();mc.player.setYRot((float)Math.toDegrees(Math.atan2(-dx,dz)));mc.player.setXRot(0);shot=role+"-private-elk";ack(mc,19);
+            if(actors.stream().anyMatch(a->!a.owner().orElseThrow().equals(mc.player.getUUID())))throw new IllegalStateException("LIVE EXPEDITION a hidden peer's private killer was still sent as a targetable native entity");
+            if(actors.size()==1){var actor=actors.getFirst();var frustum=new net.minecraft.client.renderer.culling.Frustum(new org.joml.Matrix4f(),new org.joml.Matrix4f().ortho(-64,64,-64,64,-64,64));var camera=mc.gameRenderer.getMainCamera().getPosition();frustum.prepare(camera.x,camera.y,camera.z);
+                if(!mc.getEntityRenderDispatcher().getRenderer(actor).shouldRender(actor,frustum,camera.x,camera.y,camera.z))throw new IllegalStateException("LIVE EXPEDITION the original owned killer is hidden from its socket");
+                var to=actor.getEyePosition().subtract(mc.player.getEyePosition());mc.player.setYRot((float)Math.toDegrees(Math.atan2(-to.x,to.z)));mc.player.setXRot((float)-Math.toDegrees(Math.atan2(to.y,Math.hypot(to.x,to.z))));
+                if(ticks>60&&mc.hitResult instanceof net.minecraft.world.phys.EntityHitResult pick&&pick.getEntity()==actor){shot=role+"-private-elk";ack(mc,19);}
             }
         }
         if(step==22){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(true);if(ticks>30&&mc.player.isCrouching()&&ack!=22)ack(mc,22);}
@@ -251,6 +253,7 @@ public final class LiveExpeditionClient {
             if(mc.screen instanceof PawClutchClient.Focus focus){if(focus.fingers()!=(role.equals("A")?2:1))throw new IllegalStateException("LIVE PAW: peer's finger count reached the wrong client");if(focus.age()==32)shot=role+"-paw-clutch";}
             if(ticks>80&&mc.screen==null&&ack!=42)ack(mc,42);
         }
+        if(step>=43&&step<=46&&SupperSocketClient.ready(mc,step,ticks,role,target))ack(mc,step);
         if(step==30&&ticks==30){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);mc.options.keyUse.setDown(false);mc.stop();}
     }
     private static boolean open(net.minecraft.world.level.block.state.BlockState s){return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}

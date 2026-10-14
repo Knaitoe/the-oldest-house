@@ -261,17 +261,24 @@ public final class GoatmanWoods {
     /** Fix existing display transforms in place; no servings or place settings are created by the correction. */
     public static void fitPlaceSettings(ServerLevel l,BlockPos b){
         for(var d:l.getEntitiesOfClass(Display.ItemDisplay.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(PLATE))){
-            if(d.getPersistentData().getBoolean("PlaceSetting0492"))continue;
+            if(d.getPersistentData().getBoolean("PlaceSetting0493"))continue;
             if(d.getTags().contains(BRAT)&&d.getPersistentData().contains("Seat"))positionServing(d,b,d.getPersistentData().getInt("Seat"));
             else if(!d.getTags().contains(BRAT)&&d.getPersistentData().contains("Plate"))positionPlate(d,b,d.getPersistentData().getInt("Plate"));
-            d.getPersistentData().putBoolean("PlaceSetting0492",true);
+            d.getPersistentData().putBoolean("PlaceSetting0493",true);
         }
     }
     private static void positionPlate(Display.ItemDisplay d,BlockPos b,int seat){
-        var tag=d.saveWithoutId(new CompoundTag());var transform=tag.getCompound("transformation");transform.put("scale",floats(.85F,.85F,.85F));tag.put("transformation",transform);d.load(tag);d.moveTo(plate(seat).add(b.getX(),b.getY(),b.getZ()));
+        flatPose(d,.85F);var at=plate(seat).add(b.getX(),b.getY(),b.getZ());d.moveTo(at.x,at.y,at.z,0,0);
     }
     private static void positionServing(Display.ItemDisplay d,BlockPos b,int seat){
-        var tag=d.saveWithoutId(new CompoundTag());var transform=tag.getCompound("transformation");transform.put("scale",floats(.55F,.55F,.55F));tag.put("transformation",transform);d.load(tag);d.moveTo(plate(seat).add(b.getX(),b.getY()+.09,b.getZ()));
+        flatPose(d,.55F);var at=plate(seat).add(b.getX(),b.getY()+.05,b.getZ());d.moveTo(at.x,at.y,at.z,0,0);
+    }
+    /** Correct the entire saved native display pose, not just its scale; keep its exact item and UUID. */
+    private static void flatPose(Display.ItemDisplay d,float scale){
+        var tag=d.saveWithoutId(new CompoundTag());tag.putString("item_display","fixed");tag.putString("billboard","fixed");tag.putFloat("view_range",1);
+        CompoundTag transform=new CompoundTag();transform.put("scale",floats(scale,scale,scale));transform.put("translation",floats(0,0,0));
+        transform.put("left_rotation",floats(-.70710677F,0,0,.70710677F));transform.put("right_rotation",floats(0,0,0,1));tag.put("transformation",transform);
+        d.load(tag);d.setInvisible(false);
     }
     public static boolean tableSupport(BlockState s){return s.is(GoatmanRegistry.TABLE.get())||s.is(Blocks.SPRUCE_SLAB)||s.is(io.github.knaitoe.theoldesthouse.house.HouseBlocks.HOUSEHOLD_FURNITURE.get())&&s.getValue(io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.KIND)==io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.FORMICA_TABLE;}
     private static Display.ItemDisplay flat(ServerLevel l,ItemStack item,float scale){

@@ -44,7 +44,7 @@ public final class LiveExpeditionProof {
     private static void require(boolean okay,String message){if(!okay)throw new IllegalStateException("LIVE EXPEDITION: "+message);}
     @SubscribeEvent public static void commands(RegisterCommandsEvent e) {
         if(!enabled())return;
-        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,42)).executes(c->{
+        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,51)).executes(c->{
             var p=c.getSource().getPlayerOrException();if(!role(p).isEmpty()&&IntegerArgumentType.getInteger(c,"step")==phase)ACKS.add(role(p));return 1;
         })));
     }
@@ -98,6 +98,11 @@ public final class LiveExpeditionProof {
             write("failed.txt",detail+"\n");s.halt(false);throw new IllegalStateException(detail);
         }
         var d=LabyrinthData.get(s);var base=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.OFFSET_HALL);
+        if(phase==19&&privateA!=null&&privateB!=null){
+            // Hold the opt-in tracking fixture still while both clients receive and pick it.
+            var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.ELK_CARCASSES);var at=new Vec3(site.getX()+.5,site.getY(),site.getZ()-32.7);
+            for(var original:List.of(privateA,privateB)){original.moveTo(at);original.setDeltaMovement(Vec3.ZERO);}
+        }
         if((phase==35||phase==36)&&s.getTickCount()%100==0&&a!=null){
             var camp=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN);var run=GoatmanVignette.run(d);
             write("trailer-native-night-status.txt","phase="+phase+" scene="+run.getInt("Phase")+" clock="+run.getInt("Clock")+" extra="+run.getInt("ExtraState")+" leg="+run.getInt("StalkLeg0465")+" window="+run.getInt("StalkWindowLeg0465")+" demand="+run.getInt("Demand")+" fear="+GoatmanFear.stage(run)+" cues="+run.getInt("PressureCues0472")+"\n"+a.serverLevel().getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(camp,LabyrinthPlace.GOATMAN)).stream().map(c->c.getUUID()+" index="+c.getPersistentData().getInt(GoatmanVignette.INDEX)+" at="+c.position().subtract(camp.getX(),camp.getY(),camp.getZ())).collect(java.util.stream.Collectors.joining("\n"))+"\n");
@@ -211,11 +216,16 @@ public final class LiveExpeditionProof {
             for(var p:List.of(a,b)){var camp=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.CAMP_BLOOD);camp.putBoolean("Here",false);LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.CAMP_BLOOD,camp);
                 outside(p,site.offset(p==a?-1:1,0,-31),0);var own=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.ELK_CARCASSES);own.putBoolean("Here",true);own.putBoolean("Interrupted",true);LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.ELK_CARCASSES,own);}
             privateA=ElkHunt.killer(a,site);privateB=ElkHunt.killer(b,site);require(privateA!=null&&privateB!=null&&privateA!=privateB,"two sockets receive two distinct private elk killers");
-            privateA.moveTo(site.getX()-.5,site.getY(),site.getZ()-38.5);privateB.moveTo(site.getX()+1.3,site.getY(),site.getZ()-39.5);privateA.setNoGravity(true);privateB.setNoGravity(true);privateAId=privateA.getUUID();privateBId=privateB.getUUID();
+            // Overlap two private originals inside native picking reach. Each actual socket must
+            // receive and pick its own body, with no invisible peer entity intercepting the ray.
+            privateA.moveTo(site.getX()+.5,site.getY(),site.getZ()-32.7);privateB.moveTo(privateA.position());privateA.setNoGravity(true);privateB.setNoGravity(true);privateAId=privateA.getUUID();privateBId=privateB.getUUID();
             step(s,19,privateA.blockPosition());marker(b,19,privateB.blockPosition());
         }else if(phase==19&&a!=null&&b!=null&&ACKS.size()==2){
             require(privateA.owner().orElseThrow().equals(a.getUUID())&&privateB.owner().orElseThrow().equals(b.getUUID()),"native private actor ownership matches each socket");
             var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.ELK_CARCASSES);
+            require(privateA.getUUID().equals(privateAId)&&privateB.getUUID().equals(privateBId),"both native picks retained the two overlapping original bodies");
+            privateB.moveTo(site.getX()+1.3,site.getY(),site.getZ()-39.5);
+            write("private-picking.txt","Both actual socket clients received only their owned private killer and picked that exact native entity while its peer's original overlapped it on the server. No hidden peer entity was sent to either client.\n");
             for(var p:List.of(a,b)){var cover=site.offset(p==a?0:1,0,-41);outside(p,cover,0);p.setYRot(180);p.serverLevel().setBlock(cover.above(),HouseBlocks.FOREST_COVER.get().defaultBlockState(),3);}
             privateA.moveTo(site.getX()+.5,site.getY(),site.getZ()-48.5);KillerNavigation.request(privateA,Vec3.atBottomCenterOf(site.offset(0,0,-35)),1.0);lastHunterPosition=privateA.position();step(s,22,site.offset(0,0,-43));
         }else if(phase==22&&a!=null&&b!=null&&ACKS.size()==2&&s.getTickCount()-changed>140){
@@ -339,6 +349,15 @@ public final class LiveExpeditionProof {
             CampBedSocketProof.left(a,b,ORIGIN);step(s,42,a.blockPosition());
         }else if(phase==42&&a!=null&&b!=null&&ACKS.size()==2){
             CampBedSocketProof.finish(a);
+            SupperSocketProof.begin(a,b,ORIGIN);step(s,43,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN));
+        }else if(phase==43&&a!=null&&b!=null&&ACKS.size()==2){
+            SupperSocketProof.food(a,b);step(s,44,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN));
+        }else if(phase==44&&a!=null&&b!=null&&ACKS.size()==2){
+            SupperSocketProof.served(a,b,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN));step(s,45,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN));
+        }else if(phase==45&&a!=null&&b!=null&&ACKS.size()==2){
+            SupperSocketProof.pickedUp(a,b,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN));SupperSocketProof.legacy(a,b,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN));step(s,46,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN));
+        }else if(phase==46&&a!=null&&b!=null&&ACKS.size()==2){
+            SupperSocketProof.served(a,b,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN));
             step(s,30,a.blockPosition());write("passed.txt","Two actual NeoForge socket clients: all original shared doors, personal leaves/burns/note scenes and two same-profile reconnects; one Stacy body and one three-second wooden-door break; real shared/private physical hunts, protected hiding peers and renderer ownership; both mine and crawl through persistent shattered portholes with protected hull; both use cameras, return actual rendered exposures, receive distinct locked native maps and independently earn their own Plains memory; a shared native ledger remains hidden for both, appears for the sole eligible reader and disappears after native menu collection without appearing for the peer; fresh trailer door arrivals track eight shared cousins and each private path girl; both clients render distinct fear and priority night dialogue and receive spatial knock events; native screenshots saved; no doubled clocks or transferred ending credit.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: persistent shattered portholes, two actual camera exposures, independent ending-book visibility, fresh trailer children and two reconnects");
         }else if(phase==30&&s.getTickCount()-changed>100){huntChunks.close();s.halt(false);}
     }

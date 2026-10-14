@@ -56,7 +56,7 @@ public final class Vignette0492VisualProof extends Screen {
             var p=g.pose();p.pushPose();p.translate(width/2,height*.76,190);p.scale(68,-68,68);p.mulPose(Axis.XP.rotationDegrees(28));p.mulPose(Axis.YP.rotationDegrees(-32));
             for(int bx=-1;bx<=1;bx++)for(int z=-3;z<=1;z++){p.pushPose();p.translate(bx,0,z);block(TrailerTableBlock.tile(bx,-64+z),g,out,LightTexture.FULL_BRIGHT);p.popPose();}
             for(int i=0;i<3;i++){double z=1.5-i*2;p.pushPose();p.translate(-.55,1.02,z);p.mulPose(Axis.XP.rotationDegrees(-90));p.scale(.85F,.85F,.85F);mc.getItemRenderer().renderStatic(new ItemStack(GoatmanRegistry.PLATE.get()),ItemDisplayContext.FIXED,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,p,out,null,0);p.popPose();
-                if(i>0){var food=new ItemStack(GoatmanRegistry.BRAT.get());if(i==2)food.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(1));p.pushPose();p.translate(-.55,1.11,z);p.mulPose(Axis.XP.rotationDegrees(-90));p.scale(.55F,.55F,.55F);mc.getItemRenderer().renderStatic(food,ItemDisplayContext.FIXED,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,p,out,null,0);p.popPose();}
+                if(i>0){var food=new ItemStack(GoatmanRegistry.BRAT.get());if(i==2)food.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(1));p.pushPose();p.translate(-.55,1.07,z);p.mulPose(Axis.XP.rotationDegrees(-90));p.scale(.55F,.55F,.55F);mc.getItemRenderer().renderStatic(food,ItemDisplayContext.FIXED,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,p,out,null,0);p.popPose();}
             }p.popPose();g.drawCenteredString(font,"Empty / cooked / burnt: the native place-setting transforms",width/2,34,0xffeadfc9);
         }
         out.endBatch();

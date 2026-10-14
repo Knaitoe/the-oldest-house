@@ -56,6 +56,10 @@ public final class LakeHouseCanoe extends Boat {
         double seat=getPassengers().indexOf(passenger)==0?9.5/16D:-9.5/16D;
         return new Vec3(0,dimensions.height()/3,seat).yRot(-getYRot()*(float)Math.PI/180);
     }
+    @Override protected void positionRider(Entity passenger,Entity.MoveFunction move){
+        if(passenger instanceof Player player)CanoeRiderPose.apply(player,underLowRoof());
+        super.positionRider(passenger,move);
+    }
     public boolean underLowRoof(){var above=blockPosition().above(2);return isVehicle()&&!level().getBlockState(above).getCollisionShape(level(),above).isEmpty();}
     public int pushSide(){return entityData.get(PUSH_TICKS)>0?entityData.get(PUSH_SIDE):0;}
     public float pushAge(float partial){return STROKE_TICKS-entityData.get(PUSH_TICKS)+partial;}

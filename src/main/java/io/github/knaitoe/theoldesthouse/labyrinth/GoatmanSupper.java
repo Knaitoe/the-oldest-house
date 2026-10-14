@@ -99,6 +99,11 @@ public final class GoatmanSupper {
         plate(p,held,base,run,seat);saveClick(p,data,run);return true;
     }
     private static void plate(ServerPlayer player,ItemStack held,BlockPos base,CompoundTag run,int seat){
+        // A native client can send both block-use and its item-use fallback for one click.
+        // The last frank becomes an empty hand between those packets: the fallback must
+        // neither show an occupied error nor pick the newly served original up immediately.
+        var input=player.getPersistentData();long now=player.serverLevel().getGameTime();
+        if(input.contains("PlateInput0493")&&now-input.getLong("PlateInput0493")<=2&&input.getInt("PlateSeat0493")==seat&&input.getInt("PlateSlot0493")==player.getInventory().selected)return;
         int mask=run.getInt("Plated0464"),bit=1<<seat,empty=run.getInt("EmptyPlates0465");
         var at=BlockPos.containing(GoatmanWoods.plate(seat).add(base.getX(),base.getY(),base.getZ()));var level=player.serverLevel();
         if(!level.hasChunkAt(at)||!level.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(at.getX()>>4,at.getZ()>>4))){player.displayClientMessage(Component.literal("Wait a moment."),true);return;}
@@ -111,11 +116,13 @@ public final class GoatmanSupper {
         if(held.is(GoatmanRegistry.BRAT.get())&&belongs(held,run)){
             if(!occupied){boolean charred=burnt(held);if(GoatmanWoods.served(level,base,seat,held.copyWithCount(1))==null)return;held.shrink(1);run.putInt("Plated0464",mask|bit);run.putInt("EmptyPlates0465",empty&~bit);
                 run.putInt("BurntPlates0476",charred?run.getInt("BurntPlates0476")|bit:run.getInt("BurntPlates0476")&~bit);
+                input.putLong("PlateInput0493",now);input.putInt("PlateSeat0493",seat);input.putInt("PlateSlot0493",player.getInventory().selected);
                 if(ready(run)){run.putBoolean("MealReady0465",true);run.putBoolean("MealFrozen0465",true);}}
             else player.displayClientMessage(Component.literal("There's already one here."),true);
         }else if(held.isEmpty()&&occupied){
             run.putInt("BurntPlates0476",run.getInt("BurntPlates0476")&~bit);
             run.putInt("EmptyPlates0465",empty|bit);shown.discard();give(player,original.copyWithCount(1));
+            input.putLong("PlateInput0493",now);input.putInt("PlateSeat0493",seat);input.putInt("PlateSlot0493",player.getInventory().selected);
         }else player.displayClientMessage(Component.literal(held.is(GoatmanRegistry.BRAT.get())?"That wasn't in this supper's pack.":"Put a cooked frank on the plate."),true);
     }
     private static void saveClick(ServerPlayer player,LabyrinthData data,CompoundTag run){player.getPersistentData().putLong("GoatmanClick0476",player.serverLevel().getGameTime());GoatmanVignette.saveRun(data,run);}
