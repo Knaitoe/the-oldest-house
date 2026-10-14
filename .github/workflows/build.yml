@@ -1192,6 +1192,15 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
+      - name: Native Ghosts textures, joints and prop transitions
+        timeout-minutes: 5
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PghostsSmoke --no-daemon
+          test -s build/font-smoke/ghosts-passed.txt
+          for view in cast fixtures paper-and-cases final-dinner seating seating-prayer all-poses-front all-poses-side all-poses-back eight-atlases-and-closed-eyes marjorie-blink-and-jaw help-fall-and-death fixtures-east fixtures-south fixtures-west prop-transitions; do test -s build/font-smoke/native-ghosts-$view.png; done
+          python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
       - name: Native child joints, strides and textured fixtures
         timeout-minutes: 9
         run: |
@@ -1228,6 +1237,8 @@ jobs:
         with:
           name: trailer-rendering-${{ github.sha }}
           path: |
+            build/font-smoke/native-ghosts-*.png
+            build/font-smoke/ghosts-passed.txt
             build/font-smoke/native-trailer-0465-*.png
             build/font-smoke/trailer-0465-passed.txt
             build/font-smoke/native-playtest-0468-*.png

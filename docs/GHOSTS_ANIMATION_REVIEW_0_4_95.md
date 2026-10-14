@@ -8,7 +8,7 @@ Requested October 14: review the complete set, repair stuttering and day six's b
 | --- | --- | --- |
 | Cast locomotion, climbing and tracking | Five-tick script calls moved native bodies in coarse steps. | The script selects targets; collision movement, accelerated falls and bounded turning run every native entity tick. |
 | Pose changes | Whole jointed poses switched immediately. | Per-original pose snapshots blend over eight ticks, or five for the leap. Connected elbows/knees remain intact. |
-| Blink | Thin lid cuboids sampled the hair/forehead island and appeared for three frames. | Front-only lids smoothly close over six ticks using the atlas's existing reserved skin strip; a narrow crease appears at closure. |
+| Blink | Thin lid cuboids sampled the hair/forehead island and appeared for three frames. | Front-only lids smoothly close over six ticks using the atlas's existing clean cheek skin; a narrow crease appears at closure. |
 | Vomiting/chewing jaw | The cuboid's upper jaw face repeated the forehead and eyes when it opened. | Explicit outer skin faces preserve the painted net; upper/lower inner surfaces sample darkened reserved skin. |
 | Marjorie dinner skin | Approved image's painted net has an 18-pixel UV step, larger than the normal atlas's 1774/128 step. | Fit vertex UVs to the actual dinner artwork. No PNG is resized, redrawn or replaced. |
 | Day-six jump | The old beat raised Marjorie beside her bed, without clearing a guard. | The original walks off the bed, through its actual doorway to a balcony over the open foyer, and clears a native guard through six physical leap steps. Camera obstruction delays the leap. |
