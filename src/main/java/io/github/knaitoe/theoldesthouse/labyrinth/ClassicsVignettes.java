@@ -34,6 +34,7 @@ public final class ClassicsVignettes {
     public static final int SITTING_TICKS=720,NIGHT_PERIOD=320;
     /** The shared family moves once per server tick however many readers are in the room. */
     private static int seanceTick=-1;
+    private static final int[][] CHAIRS={{0,-13},{-3,-15},{2,-15},{0,-18}};
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private ClassicsVignettes(){}
     public static boolean isClassic(LabyrinthPlace place){return place==LabyrinthPlace.SEANCE||place==LabyrinthPlace.WALLPAPER_NURSERY;}
@@ -52,7 +53,7 @@ public final class ClassicsVignettes {
     public static void ensureCast(ServerLevel level,BlockPos base){
         var data=LabyrinthData.get(level.getServer());var all=data.state(STATE);
         if(all.getBoolean("CastMade"))return;
-        int[][] positions={{0,-13},{-3,-15},{2,-15},{0,-18}};float[] facing={180,-90,90,0};
+        int[][] positions=CHAIRS;float[] facing={180,-90,90,0};
         for(int role=0;role<4;role++){
             if(all.hasUUID("Actor"+role))continue;
             var actor=ClassicsRegistry.ACTOR.get().create(level);if(actor==null)return;actor.appearance(role,true,false);
@@ -118,7 +119,7 @@ public final class ClassicsVignettes {
     }
     public static void attacked(ServerPlayer p,SeanceActor actor){if(!inside(p,LabyrinthPlace.SEANCE))return;var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());own.putBoolean("Interrupted",true);own.putInt("ListenTicks",0);save(data,p.getUUID(),own);actor.appearance(actor.role(),false,true);actor.say("Something touched me. Get the children out.");if(!data.state(STATE).getBoolean("SittingEnded"))finish(p,"drove_the_family_out");}
     private static void finish(ServerPlayer p,String outcome){var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());own.putBoolean("SeanceFinished",true);own.putString("SeanceOutcome",outcome);own.remove("SeanceViewUntil");save(data,p.getUUID(),own);var all=data.state(STATE);all.putBoolean("SittingEnded",true);all.putString("SharedOutcome",outcome);data.setState(STATE,all);
-        if(outcome.equals("drove_the_family_out")){var b=base(p,LabyrinthPlace.SEANCE);NovelRooms.door(p.serverLevel(),b.offset(-5,0,-22),Direction.SOUTH,Blocks.DARK_OAK_DOOR,true);startFlight(p.serverLevel(),data);}
+        if(outcome.equals("drove_the_family_out")){var b=base(p,LabyrinthPlace.SEANCE);NovelRooms.door(p.serverLevel(),b.offset(-5,0,-22),Direction.SOUTH,Blocks.DARK_OAK_DOOR,true);startFlight(p.serverLevel(),b,data);}
         else say(p,0,p.getGameProfile().getName()+". I know you are here. This house is occupied. Please go.");
         HousePackets.send(p,new SeanceViewPayload(-1,0,false));
     }
@@ -130,9 +131,16 @@ public final class ClassicsVignettes {
         {{1.5,-14.5},{1.5,-13.5},{-4.5,-13.5},{-4.5,-19.5},{-4.5,-21.5},{-4.5,-23.5},{-9.5,-24.5}},
         {{-1.5,-17.5},{-4.5,-19.5},{-4.5,-20.5},{-4.5,-21.5},{-4.5,-23.5},{-2.5,-28.5}}};
     private static final String FLEE="Flee0477";
-    private static void startFlight(ServerLevel level,LabyrinthData data){
+    private static int flightLeg(SeanceActor a,BlockPos b){
+        var chair=CHAIRS[a.role()];
+        if(new AABB(b.offset(chair[0],0,chair[1])).contains(a.getX(),b.getY()+.1,a.getZ()))return 0;
+        var route=FLIGHT[a.role()];int nearest=1;double distance=Double.MAX_VALUE;
+        for(int n=1;n<route.length;n++){double d=a.position().distanceToSqr(new Vec3(b.getX()+route[n][0],a.getY(),b.getZ()+route[n][1]));if(d<distance){nearest=n;distance=d;}}
+        return nearest;
+    }
+    private static void startFlight(ServerLevel level,BlockPos b,LabyrinthData data){
         var all=data.state(STATE);all.putBoolean("Fleeing0477",true);data.setState(STATE,all);
-        for(var a:cast(level)){a.appearance(a.role(),false,true);a.setNoAi(true);a.setNoGravity(true);a.getNavigation().stop();a.getPersistentData().putInt(FLEE,0);a.getPersistentData().putBoolean("FlightRoute0492",true);}
+        for(var a:cast(level)){a.appearance(a.role(),false,true);a.setNoAi(true);a.setNoGravity(true);a.getNavigation().stop();a.getPersistentData().putInt(FLEE,flightLeg(a,b));a.getPersistentData().putBoolean("FlightRoute0492",true);}
     }
     /**
      * Driven out, they get up and hurry, one behind another, through the west door into the back room, and the last one in
@@ -142,14 +150,12 @@ public final class ClassicsVignettes {
     private static void flee(ServerLevel level,BlockPos b){
         var data=LabyrinthData.get(level.getServer());var all=data.state(STATE);
         if(all.getBoolean("Fled0477")||!all.getBoolean("SittingEnded")||!"drove_the_family_out".equals(all.getString("SharedOutcome")))return;
-        if(!all.getBoolean("Fleeing0477")){startFlight(level,data);all=data.state(STATE);}
+        if(!all.getBoolean("Fleeing0477")){startFlight(level,b,data);all=data.state(STATE);}
         boolean done=true;
         for(var a:cast(level)){
             // Older routes began by lowering feet into a seat or steering through its back. Resume the same body.
             if(!a.getPersistentData().getBoolean("FlightRoute0492")){
-                var route=FLIGHT[a.role()];int nearest=0;double distance=Double.MAX_VALUE;
-                if(a.getZ()<b.getZ()-19)for(int n=1;n<route.length;n++){double d=a.position().distanceToSqr(new Vec3(b.getX()+route[n][0],a.getY(),b.getZ()+route[n][1]));if(d<distance){nearest=n;distance=d;}}
-                a.getPersistentData().putInt(FLEE,nearest);a.getPersistentData().putBoolean("FlightRoute0492",true);a.setNoGravity(true);
+                a.getPersistentData().putInt(FLEE,flightLeg(a,b));a.getPersistentData().putBoolean("FlightRoute0492",true);a.setNoGravity(true);
             }
             var route=FLIGHT[a.role()];int i=a.getPersistentData().getInt(FLEE);if(i>=route.length)continue;done=false;
             // Clear the actual 9/16 seat top before taking the first step. Only descend after the body is off it.

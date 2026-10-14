@@ -62,8 +62,9 @@ public final class GoatmanSupper {
      * fallback, then answer actual eating attempts, including a full reader who never starts eating.
      */
     public static void onUse(PlayerInteractEvent.RightClickItem e){
-        if(!(e.getEntity() instanceof ServerPlayer p)||!e.getItemStack().is(GoatmanRegistry.BRAT.get()))return;
+        if(!(e.getEntity() instanceof ServerPlayer p))return;
         if(serveAimed(p,e.getHand())){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);return;}
+        if(!e.getItemStack().is(GoatmanRegistry.BRAT.get()))return;
         if(!early(p,e.getItemStack()))return;
         if(p.serverLevel().getGameTime()-p.getPersistentData().getLong("GoatmanClick0476")>1)p.displayClientMessage(Component.literal(NOT_YET),true);
     }
@@ -93,7 +94,7 @@ public final class GoatmanSupper {
     }
     private static boolean serveAimed(ServerPlayer p,InteractionHand hand){
         if(!GoatmanVignette.inside(p))return false;var data=LabyrinthData.get(p.server);var run=GoatmanVignette.run(data);var held=p.getItemInHand(hand);
-        if(!serving(p,run)||!held.is(GoatmanRegistry.BRAT.get()))return false;
+        if(!serving(p,run)||!held.isEmpty()&&!held.is(GoatmanRegistry.BRAT.get()))return false;
         var base=GoatmanVignette.base(p.server);int seat=aimedSeat(p,base,run);if(seat<0)return false;
         plate(p,held,base,run,seat);saveClick(p,data,run);return true;
     }

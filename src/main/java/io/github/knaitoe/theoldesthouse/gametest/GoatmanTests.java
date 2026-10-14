@@ -141,7 +141,11 @@ public final class GoatmanTests {
             h.assertTrue(f.run().getInt("Plated0464")==15&&f.run().getInt("BurntPlates0476")==8,"all four cooked originals reach their intended plates and the burnt one keeps its char");
             for(int seat=0;seat<4;seat++){var display=GoatmanWoods.serving(f.l,f.b,seat);var item=GoatmanWoods.food(f.l,display);var displayAt=GoatmanWoods.plate(seat).add(f.b.getX(),f.b.getY()+.09,f.b.getZ());var tag=display.saveWithoutId(new CompoundTag());
                 h.assertTrue(display.position().distanceToSqr(displayAt)<.000001&&item.getCount()==1&&GoatmanSupper.burnt(item)==(seat==3)&&tag.getString("item_display").equals("fixed")&&Math.abs(tag.getCompound("transformation").getList("scale",5).getFloat(0)-.55)<.0001,"the actual original display keeps the native reviewed pose, scale and visible food: "+seat);
-            }h.succeed();
+            }
+            var picked=GoatmanWoods.serving(f.l,f.b,1);var exact=GoatmanWoods.food(f.l,picked).copy();aimAtPlate(f,p,1,true,.08);
+            h.assertTrue(p.getMainHandItem().isEmpty(),"the reader reaches for the actual serving with an empty hand");
+            p.gameMode.useItem(p,f.l,ItemStack.EMPTY,InteractionHand.MAIN_HAND);
+            h.assertTrue(picked.isRemoved()&&p.getInventory().items.stream().anyMatch(item->ItemStack.matches(item,exact)),"the native air-use pickup returns the exact original food components");h.succeed();
         });
     }
     private static void aimAtPlate(Fixture f,ServerPlayer p,int seat,boolean east,double height){var plate=GoatmanWoods.plate(seat).add(f.b.getX(),f.b.getY(),f.b.getZ());p.moveTo(f.b.getX()+(east?3.5:-3.5),f.b.getY()+1,plate.z);p.setDeltaMovement(Vec3.ZERO);p.lookAt(EntityAnchorArgument.Anchor.EYES,plate.add(0,height,0));}
@@ -198,7 +202,7 @@ public final class GoatmanTests {
         void click(ServerPlayer p,BlockPos rel){BlockPos at=b.offset(rel);
             if(GoatmanWoods.tableSupport(l.getBlockState(at)))for(int i=0;i<GoatmanVignette.expectedCount(run());i++){
                 var plate=GoatmanWoods.plate(i).add(b.getX(),b.getY(),b.getZ());if(!BlockPos.containing(plate).below().equals(at))continue;
-                aimAtPlate(this,p,i,i%2!=0,0);var ray=l.clip(new ClipContext(p.getEyePosition(),plate,ClipContext.Block.OUTLINE,ClipContext.Fluid.NONE,p));
+                aimAtPlate(this,p,i,i%2!=0,0);var ray=l.clip(new ClipContext(p.getEyePosition(),p.getEyePosition().add(p.getLookAngle().scale(p.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE))),ClipContext.Block.OUTLINE,ClipContext.Fluid.NONE,p));
                 if(ray.getType()==HitResult.Type.BLOCK){p.gameMode.useItemOn(p,l,p.getMainHandItem(),InteractionHand.MAIN_HAND,ray);return;}p.gameMode.useItem(p,l,p.getMainHandItem(),InteractionHand.MAIN_HAND);return;
             }
             NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new BlockHitResult(Vec3.atCenterOf(at),Direction.SOUTH,at,false)));
