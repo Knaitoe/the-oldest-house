@@ -1044,6 +1044,7 @@
         "name": "the_oldest_house:goatman/around_the_tin_walls",
         "stream": true
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.goatman_score"
   }
 }

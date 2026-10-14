@@ -70,10 +70,12 @@ def main():
     for name in ("knock", "claw", "hammer"):
         sounds[f"goatman.{name}"] = {"sounds": [{"name": f"the_oldest_house:goatman/{name}_vigil", "attenuation_distance": 48}],
                                      "subtitle": f"subtitles.the_oldest_house.goatman_{name}"}
-    sounds["goatman.score"] = {"sounds": [{"name": "the_oldest_house:goatman/around_the_tin_walls", "stream": True}]}
+    sounds["goatman.score"] = {"sounds": [{"name": "the_oldest_house:goatman/around_the_tin_walls", "stream": True}],
+                                "subtitle": "subtitles.the_oldest_house.goatman_score"}
     path.write_text(json.dumps(sounds, indent=2) + "\n")
     path = ASSETS / "lang/en_us.json"
     language = json.loads(path.read_text()); language["subtitles.the_oldest_house.goatman_knock"] = "Someone knocks on the trailer"
+    language["subtitles.the_oldest_house.goatman_score"] = "Quiet music in the trailer"
     path.write_text(json.dumps(language, indent=2, ensure_ascii=False) + "\n")
     print(f"Original {LENGTH}-second mono score and three close impact masters generated.")
 
