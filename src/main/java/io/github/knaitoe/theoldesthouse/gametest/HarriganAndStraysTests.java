@@ -89,7 +89,7 @@ public final class HarriganAndStraysTests {
         h.assertTrue(body.getYRot()==180&&body.getLeftArmPose().getX()<0&&body.getRightArmPose().getX()<0,
                 "Harrigan faces away from the entrance with his hands resting forward");
     }
-    @GameTest(template="empty",batch="harrigan_pose",timeoutTicks=150)
+    @GameTest(template="empty",batch="harrigan_pose",timeoutTicks=450)
     public static void existingHarriganIsSeatedWithoutRestagingAndBothVisitsRemainPlayable(GameTestHelper h) {
         pose=new Fixture(h,25400);Fixture f=pose;
         var data=LabyrinthData.get(f.level.getServer());CompoundTag state=data.state(HarriganVignette.ID);
@@ -100,7 +100,12 @@ public final class HarriganAndStraysTests {
         UUID witness=UUID.randomUUID();WitnessAccount.resolve(data,witness,WitnessAccount.Story.HARRIGAN,"kept_phone");
         boolean[] started={false};
         h.onEachTick(()->{
-            if(started[0]||f.bodies().isEmpty())return;started[0]=true;
+            if(started[0]||f.bodies().isEmpty())return;
+            // A newly loaded body can precede its neighbouring native frame sections. Capture only the saved originals.
+            var props=data.state(HarriganVignette.ID);
+            for(String role:List.of("player_phone","harrigan_phone","ticket")){String key="OriginalProp0490_"+role;
+                if(!props.hasUUID(key)||!(f.level.getEntity(props.getUUID(key)) instanceof ItemFrame))return;}
+            started[0]=true;
             h.assertTrue(f.bodies().size()==1,"one native study actor is loaded; count="+f.bodies().size());var body=f.bodies().getFirst();seated(h,body,f.base.offset(HarriganVignette.CHAIR));
             var frames=f.level.getEntitiesOfClass(ItemFrame.class,f.bounds()).stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet());
             UUID original=body.getUUID();

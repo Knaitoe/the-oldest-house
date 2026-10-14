@@ -31,8 +31,8 @@ jobs:
       - name: Download exact reviewed source package
         uses: actions/download-artifact@v4
         with:
-          name: seam-candidate-2173933572ab9a1107181f1359620d539d3c629a
-          run-id: 38505357788
+          name: seam-candidate-7fe2dd580f247a64b1db0d4998b25bff508768e5
+          run-id: 38509353701
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: reviewed
       - name: Prepare valid mod archive entries
@@ -59,12 +59,12 @@ jobs:
               for n in z.namelist():
                   if n.endswith('.json'):json.loads(z.read(n))
               print('All',len(z.infolist()),'original mod entries are byte-identical; archive CRC, native descriptor and JSON passed.')
-              print('Verified source: 2173933572ab9a1107181f1359620d539d3c629a; original JAR SHA256:',expected)
+              print('Verified source: 7fe2dd580f247a64b1db0d4998b25bff508768e5; original JAR SHA256:',expected)
           PY
       - name: Upload native mod archive root
         uses: actions/upload-artifact@v4
         with:
-          name: native-mod-root-2173933
+          name: native-mod-root-7fe2dd5
           path: mod-root/
           include-hidden-files: true
           compression-level: 6
