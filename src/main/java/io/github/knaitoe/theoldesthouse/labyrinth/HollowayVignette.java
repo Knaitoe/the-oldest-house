@@ -34,7 +34,6 @@ public final class HollowayVignette {
     public static final String ID="holloway_camp",REWARD_OWNER="HollowayRewardOwner";
     public static final int ARENA_TICKS=80;
     private static final Set<UUID> PRESENT=new HashSet<>();
-    private static final Map<UUID,Long> MISSING=new HashMap<>();
     private static final Map<UUID,HouseHuman> LIVE=new HashMap<>();
     private HollowayVignette(){}
     public static CompoundTag personal(LabyrinthData data,UUID id){return data.state(ID).getCompound("Players").getCompound(id.toString()).copy();}
@@ -77,7 +76,7 @@ public final class HollowayVignette {
         PRESENT.remove(p.getUUID());var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());
         if(!own.getBoolean("InRoom"))return;own.putBoolean("InRoom",false);own.putBoolean("Run",false);own.putBoolean("CampAnger",false);own.putInt("Arena",0);own.putInt("ArenaTicks",0);save(data,p.getUUID(),own);
     }
-    public static void clearAll(){PRESENT.clear();MISSING.clear();LIVE.clear();}
+    public static void clearAll(){PRESENT.clear();LIVE.clear();}
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){PRESENT.remove(e.getEntity().getUUID());}
     @SubscribeEvent public static void death(LivingDeathEvent e){if(e.getEntity() instanceof ServerPlayer p)depart(p);}
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
@@ -109,10 +108,11 @@ public final class HollowayVignette {
         var data=LabyrinthData.get(l.getServer());var all=data.state(ID);var bounds=IndianLakeRooms.bounds(b,LabyrinthPlace.HOLLOWAY_CAMP);
         if(all.getBoolean("ActorDead"))return null;
         if(all.hasUUID("Actor")){
-            UUID id=all.getUUID("Actor");var entity=l.getEntity(id);if(entity instanceof HouseHuman actor){LIVE.put(id,actor);MISSING.remove(id);return actor;}
-            var queued=LIVE.get(id);if(queued!=null&&!queued.isRemoved()&&queued.level()==l){MISSING.remove(id);return queued;}
-            // Native entity chunks can arrive after block chunks on a saved-world join.
-            long first=MISSING.computeIfAbsent(id,key->l.getGameTime());if(l.getGameTime()-first<100)return null;
+            UUID id=all.getUUID("Actor");var entity=l.getEntity(id);if(entity instanceof HouseHuman actor){LIVE.put(id,actor);return actor;}
+            var queued=LIVE.get(id);if(queued!=null&&!queued.isRemoved()&&queued.level()==l)return queued;
+            // The saved original may still be loading. Time alone never proves its loss,
+            // and a removed original must not be replaced by another body or UUID.
+            return null;
         }
         var existing=l.getEntitiesOfClass(HouseHuman.class,bounds);
         HouseHuman actor=existing.isEmpty()?NovelRegistry.HUMAN.get().create(l):existing.getFirst();if(actor==null)return null;
@@ -125,7 +125,7 @@ public final class HollowayVignette {
         var data=LabyrinthData.get(l.getServer());var all=data.state(ID);
         if(all.hasUUID("Actor")&&!all.getUUID("Actor").equals(actor.getUUID()))return;
         all.putBoolean("ActorDead",true);all.putUUID("Actor",actor.getUUID());all.putLong("DeathAt",l.getGameTime());data.setState(ID,all);
-        LIVE.remove(actor.getUUID());MISSING.remove(actor.getUUID());
+        LIVE.remove(actor.getUUID());
         if(killer!=null&&inside(killer)){
             enter(killer);var own=personal(data,killer.getUUID());own.putBoolean("KilledHolloway",true);own.putBoolean("Looted",true);
             own.putInt("LootVisit",own.getInt("Visits"));own.putBoolean("Seen",true);own.putBoolean("Run",true);save(data,killer.getUUID(),own);

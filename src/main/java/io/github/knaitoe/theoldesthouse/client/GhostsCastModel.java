@@ -39,12 +39,15 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         pose(a.phase(),a.getScale(),step,age);
     }
     public void preview(int role,int phase,float age){for(var part:new ModelPart[]{head,hat,body,rightArm,leftArm,rightLeg,leftLeg})part.getAllParts().forEach(ModelPart::resetPose);currentRole=role;young=false;crouching=false;riding=false;hat.visible=false;jaw.visible=true;pose(phase,role==LiteraryActor.GHOST_MERRY?.58F:role==LiteraryActor.GHOST_MARJORIE?.86F:1,(float)Math.sin(age*.08F),age);}
+    private void seatLegs(){
+        for(var part:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=12;
+        leftLeg.xRot=rightLeg.xRot=-(float)Math.PI/2;leftKnee.xRot=rightKnee.xRot=(float)Math.PI/2;
+    }
     private void pose(int phase,float scale,float step,float age){
         lids.visible=phase==GhostsSet.DEAD||phase==GhostsSet.PRAY||Math.floorMod((int)age+currentRole*13,93)<3;
         switch(phase){
             case GhostsSet.SIT,GhostsSet.SLUMP,GhostsSet.VOMIT,GhostsSet.HAND,GhostsSet.EATING,GhostsSet.CHOKING,GhostsSet.DEAD->{
-                float lower=12;for(var part:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=lower;
-                leftLeg.xRot=rightLeg.xRot=-(float)Math.PI/2;leftKnee.xRot=rightKnee.xRot=(float)Math.PI/2;leftArm.xRot=-.7F;rightArm.xRot=-.8F;leftElbow.xRot=-.65F;rightElbow.xRot=-.6F;
+                seatLegs();leftArm.xRot=-.7F;rightArm.xRot=-.8F;leftElbow.xRot=-.65F;rightElbow.xRot=-.6F;
                 if(phase==GhostsSet.HAND){rightArm.xRot=-1.25F;rightElbow.xRot=-1.4F;head.xRot=.35F;head.yRot=-.3F;}
                 if(phase==GhostsSet.SLUMP){body.xRot=.52F;head.xRot=.85F;head.zRot=.17F;leftArm.xRot=rightArm.xRot=-.1F;leftElbow.xRot=rightElbow.xRot=.2F;}
                 if(phase==GhostsSet.EATING){float chew=(float)Math.sin(age*.23F);head.xRot=.12F+chew*.025F;head.yRot=.2F;rightArm.xRot=-1.04F;rightElbow.xRot=-1.65F+chew*.08F;jaw.xRot=.04F+Math.max(0,chew)*.16F;}
@@ -67,7 +70,7 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
             case GhostsSet.BED->{leftElbow.xRot=rightElbow.xRot=-.3F;leftArm.zRot=-.3F;rightArm.zRot=.3F;leftKnee.xRot=.2F;rightKnee.xRot=.08F;head.yRot=.12F;}
             case GhostsSet.FLINCH->{body.zRot=.15F;head.xRot=-.2F;rightArm.xRot=-1.25F;rightElbow.xRot=-1.4F;leftArm.xRot=-.7F;leftElbow.xRot=-1.1F;rightKnee.xRot=.35F;}
             case GhostsSet.LEAP->{body.xRot=-.12F;leftArm.xRot=-1.05F;rightArm.xRot=-.85F;leftElbow.xRot=-.45F;rightElbow.xRot=-.65F;leftLeg.xRot=-.55F;rightLeg.xRot=.2F;leftKnee.xRot=.95F;rightKnee.xRot=.75F;}
-            case GhostsSet.PRAY->{if(currentRole==LiteraryActor.GHOST_MERRY){for(var part:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=12;leftLeg.xRot=rightLeg.xRot=-1;leftKnee.xRot=rightKnee.xRot=1;}head.xRot=.35F;leftArm.xRot=-1.45F;rightArm.xRot=1.25F;leftElbow.xRot=-.12F;rightElbow.xRot=.12F;}
+            case GhostsSet.PRAY->{if(currentRole==LiteraryActor.GHOST_MERRY)seatLegs();head.xRot=.35F;leftArm.xRot=-1.45F;rightArm.xRot=1.25F;leftElbow.xRot=-.12F;rightElbow.xRot=.12F;}
             case GhostsSet.HELP->{head.xRot=-.35F;body.xRot=-.14F;leftArm.xRot=-2.25F;rightArm.xRot=-2.4F;leftElbow.xRot=-.4F;rightElbow.xRot=-.45F;}
             case GhostsSet.FALL->{body.xRot=.16F;head.xRot=-.2F;leftArm.zRot=-.8F;rightArm.zRot=.8F;leftLeg.xRot=-.18F;rightLeg.xRot=.15F;leftKnee.xRot=.6F;rightKnee.xRot=.5F;}
             case GhostsSet.IMPACT->{body.xRot=.45F;head.xRot=.2F;leftLeg.xRot=rightLeg.xRot=-.7F;leftKnee.xRot=rightKnee.xRot=1.4F;leftArm.xRot=-.4F;rightArm.xRot=-.5F;}

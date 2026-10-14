@@ -53,7 +53,20 @@ public final class HouseNpcTests {
             var bounds=IndianLakeRooms.bounds(b,LabyrinthPlace.HOLLOWAY_CAMP);for(int x=((int)bounds.minX)>>4;x<=((int)bounds.maxX)>>4;x++)for(int z=((int)bounds.minZ)>>4;z<=((int)bounds.maxZ)>>4;z++)l.getChunkSource().removeRegionTicket(TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(x,z),3,b);
             chunks.close();var s=l.getServer();s.overworld().getDataStorage().set("the_oldest_house",oldHouse);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);}
     }
-    private static Fixture cache,hunt,resume,torches,guards,upgrade,activity,aftermath;
+    private static Fixture cache,hunt,resume,torches,guards,upgrade,activity,aftermath,lateOriginal;
+    @AfterBatch(batch="npc_late_original0493") public static void lateOriginalDone(ServerLevel l){if(lateOriginal!=null){lateOriginal.close();lateOriginal=null;}}
+    @GameTest(template="empty",batch="npc_late_original0493",timeoutTicks=300)
+    public static void aLateSerializedOriginalNeverGetsReplacedAfterFiveSeconds(GameTestHelper h){
+        lateOriginal=new Fixture(h,44100);var f=lateOriginal;f.player();var original=f.actor();var id=original.getUUID();
+        original.setCustomName(net.minecraft.network.chat.Component.literal("The original camp resident"));original.setHealth(13);
+        var saved=original.saveWithoutId(new CompoundTag());original.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);HollowayVignette.clearAll();f.reload();
+        h.runAfterDelay(140,()->{
+            h.assertTrue(HollowayVignette.ensureActor(f.l,f.b)==null&&f.data().state(HollowayVignette.ID).getUUID("Actor").equals(id),"a saved UUID remains authoritative beyond the old 100-tick timeout while its native body is absent");
+            h.assertTrue(f.l.getEntitiesOfClass(HouseHuman.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.HOLLOWAY_CAMP)).isEmpty(),"the scene has not spawned a substitute camp resident");
+            var restored=NovelRegistry.HUMAN.get().create(f.l);h.assertTrue(restored!=null,"the original native serialization can be restored");restored.load(saved);h.assertTrue(f.l.addFreshEntity(restored),"the same saved native UUID joins successfully");
+            h.assertTrue(f.actor()==restored&&restored.getUUID().equals(id)&&restored.getHealth()==13&&restored.getCustomName().getString().equals("The original camp resident"),"the actual restored original retains its UUID, health and name rather than inheriting a replacement's defaults");h.succeed();
+        });
+    }
     @AfterBatch(batch="npc_activity") public static void activityCleanup(ServerLevel l){if(activity!=null){activity.close();activity=null;}}
     @GameTest(template="empty",batch="npc_activity",timeoutTicks=260)
     public static void nativePatrolBelongingWarningsVisibleBoltsAndHurtFeedback(GameTestHelper h){

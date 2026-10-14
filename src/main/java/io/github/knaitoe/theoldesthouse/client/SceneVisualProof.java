@@ -45,8 +45,8 @@ public final class SceneVisualProof extends Screen {
     }
     @Override public void renderBackground(GuiGraphics g,int x,int y,float delta){}
     @Override public void render(GuiGraphics g,int x,int y,float delta){
-        var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xFF292723);g.drawString(font,"THE OLDEST HOUSE / 0.4.80",16,12,0xFFE0D5BF,false);
-        g.drawString(font,name.replace('_',' '),16,29,0xFFF3EEE3,false);g.drawString(font,"Native geometry view / interiors cut away / actors omitted",16,height-19,0xFFD4C8B3,false);g.flush();
+        var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xFF292723);g.drawString(font,"THE OLDEST HOUSE / "+net.neoforged.fml.ModList.get().getModContainerById(TheOldestHouse.MOD_ID).orElseThrow().getModInfo().getVersion(),16,12,0xFFE0D5BF,false);
+        g.drawString(font,name.replace('_',' '),16,29,0xFFF3EEE3,false);g.drawString(font,"Native geometry / full-bright cutaway / actors omitted",16,height-19,0xFFD4C8B3,false);g.flush();
         var pose=g.pose();pose.pushPose();pose.translate(width/2.,height/2.+12,200);float scale=(float)Math.min((width-40)/span,(height-85)/(span*.62));
         pose.scale(scale,-scale,scale);pose.mulPose(Axis.XP.rotationDegrees(32));pose.mulPose(Axis.YP.rotationDegrees(-45));pose.translate(-cx,-cy,-cz);
         var buffers=mc.renderBuffers().bufferSource();
@@ -71,7 +71,7 @@ public final class SceneVisualProof extends Screen {
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(s.name+".png"));}
         if(++s.index<s.files.size())s.load();else{
             Files.writeString(Path.of("../build/font-smoke/architecture-passed.txt"),"All ninety-four native generated architecture views rendered successfully.\n");
-            TheOldestHouse.LOGGER.info("HOUSE ARCHITECTURE CHECK PASSED: ninety-one native architecture screenshots saved");mc.setScreen(new OutsideSkyProof());
+            TheOldestHouse.LOGGER.info("HOUSE ARCHITECTURE CHECK PASSED: {} native architecture screenshots saved",s.files.size());mc.setScreen(new OutsideSkyProof());
         }
     }
 }

@@ -94,7 +94,7 @@ public final class ClassicsVignettes {
     private static boolean seanceEvidence(LabyrinthData data,CompoundTag own){return own.getBoolean("SeanceFinished")||(data.state(STATE).getBoolean("SittingEnded")&&own.getInt("Exposure")>=100&&own.getBoolean("Read_Grace")&&own.getBoolean("Read_Sitting"));}
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void click(PlayerInteractEvent.RightClickBlock event){
         if(!(event.getEntity() instanceof ServerPlayer p)||event.getHand()!=InteractionHand.MAIN_HAND)return;var place=current(p);if(place==null||p.distanceToSqr(event.getPos().getCenter())>36)return;var b=base(p,place);var rel=event.getPos().subtract(b);boolean handled=false;
-        if(place==LabyrinthPlace.WALLPAPER_NURSERY){int index=ClassicsRooms.PANELS.indexOf(rel);if(index>=0){if(p.getMainHandItem().getItem() instanceof AxeItem){peel(p,index);handled=true;}else if(p.serverLevel().getBlockState(event.getPos()).getValue(WallpaperPanelBlock.PEELED)){readPanel(p,index);handled=true;}}}
+        if(place==LabyrinthPlace.WALLPAPER_NURSERY){int index=ClassicsRooms.PANELS.indexOf(rel);var panel=p.serverLevel().getBlockState(event.getPos());if(index>=0&&panel.is(ClassicsRegistry.WALLPAPER.get())){if(p.getMainHandItem().getItem() instanceof AxeItem){peel(p,index);handled=true;}else if(panel.getValue(WallpaperPanelBlock.PEELED)){readPanel(p,index);handled=true;}}}
         else if(rel.equals(ClassicsRooms.GRACE)){open(p,place,"Grace",ClassicsTexts.grace(),false);handled=true;}
         else if(rel.equals(ClassicsRooms.SITTING)){open(p,place,"Sitting",ClassicsTexts.medium(),false);handled=true;}
         else if(rel.equals(ClassicsRooms.ALBUM)){open(p,place,"Album",ClassicsTexts.album(p.getGameProfile().getName()),true);handled=true;}
