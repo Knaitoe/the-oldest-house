@@ -714,10 +714,10 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
     }
     private static Map<BlockPos,net.minecraft.world.level.block.state.BlockState> railSaved;
     @AfterBatch(batch="literary_elk_rail") public static void railDone(ServerLevel l){if(railSaved!=null&&active!=null)railSaved.forEach((at,state)->active.out.setBlock(at,state,Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE));railSaved=null;close();}
-    @GameTest(template="empty",batch="literary_elk_landing",timeoutTicks=200)
+    @GameTest(template="empty",batch="literary_elk_landing",timeoutTicks=450)
     public static void theOriginalKillerLeavesTheBoatOnlyUnseenAndLurksOnDryGroundAmongRealTrees(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("shore_reader",place);var b=f.base(place);
-        h.startSequence().thenIdle(10).thenExecute(()->{
+        h.startSequence().thenWaitUntil(()->h.assertTrue(elkKiller(f,p)!=null,"the original private yacht killer loads before its observed departure is tested")).thenExecute(()->{
             var a=elkKiller(f,p);h.assertTrue(a!=null,"the original private yacht killer exists");var id=a.getUUID();a.moveTo(b.getX()+.5,b.getY()+ElkCarcassMap.MAIN,b.getZ()-3.5);a.setNoGravity(true);
             var shore=ElkCarcassMap.standAt(-32,-100);f.at(p,place,shore.getX()+.5,shore.getY(),shore.getZ()+.5);p.setOnGround(true);p.setYRot(180);
             var camera=NativeTestPlayers.survival(h,"shore_camera");f.players.add(camera);camera.teleportTo(f.out,b.getX()+.5,b.getY()+ElkCarcassMap.MAIN+1,b.getZ()-.5,180,0);camera.setNoGravity(true);camera.setGameMode(GameType.SPECTATOR);camera.lookAt(EntityAnchorArgument.Anchor.EYES,a.getEyePosition());
