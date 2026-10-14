@@ -193,7 +193,7 @@ public final class TellTaleFloorboards {
         if (source instanceof Projectile projectile && projectile.getOwner() != null) {
             source = projectile.getOwner();
         }
-        if (!(source instanceof Player) || isSilent(source, event.getVanillaEvent())) {
+        if (!(source instanceof Player player) || !player.isAlive() || player.isSpectator() || isSilent(source, event.getVanillaEvent())) {
             return;
         }
         heat = Math.min(MAX_HEAT, heat + weight(event.getVanillaEvent()));
@@ -216,7 +216,7 @@ public final class TellTaleFloorboards {
         List<ServerPlayer> inside = new ArrayList<>();
         AABB room = interior(base);
         for (ServerPlayer player : level.players()) {
-            if (room.contains(player.position())) {
+            if (player.isAlive()&&!player.isSpectator()&&room.contains(player.position())) {
                 inside.add(player);
             }
         }
