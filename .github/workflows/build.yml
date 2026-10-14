@@ -21,6 +21,13 @@ jobs:
         run: |
           set -o pipefail
           gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_harrigan_review --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee native-preservation.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text=Path('native-preservation.log').read_text()
+          counts=re.findall(r'All (\d+) required tests passed',text)
+          assert counts and int(counts[-1])==4, 'The full isolated native corpus must actually execute and pass.'
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
