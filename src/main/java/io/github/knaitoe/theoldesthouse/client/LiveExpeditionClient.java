@@ -275,6 +275,8 @@ public final class LiveExpeditionClient {
     private static void ack(Minecraft mc,int step){if(ack!=step){ack=step;mc.player.connection.sendCommand("othproof "+step);}}
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception {
         if(!LiveExpeditionProof.enabled()||shot==null)return;var mc=Minecraft.getInstance();Files.createDirectories(LiveExpeditionProof.folder());
+        if(GoatmanWindowClient.windowShot(shot)&&!GoatmanWindowClient.frameReady(mc,shot)){if(!GoatmanWindowClient.waiting())shot=null;return;}
+        GoatmanWindowClient.captured(mc,shot);
         try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(LiveExpeditionProof.folder().resolve(shot+".png"));}
         Files.writeString(LiveExpeditionProof.folder().resolve(shot+".txt"),"Actual connected native client rendered and acknowledged this phase.\n",StandardOpenOption.CREATE,StandardOpenOption.APPEND);shot=null;if(stopping)mc.stop();
     }
