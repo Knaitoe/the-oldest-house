@@ -47,12 +47,21 @@ public final class MobSightClientProof {
         if (step == 37) {
             var actors = mobs.stream().filter(mob -> mob instanceof LiteraryActor && mob.getCustomName() != null
                     && List.of(MobSightProof.PRIVATE_A, MobSightProof.PRIVATE_B).contains(mob.getCustomName().getString())).toList();
-            if (actors.size() != 2) return false;
+            require(actors.stream().allMatch(actor -> ((LiteraryActor)actor).owner().filter(mc.player.getUUID()::equals).isPresent()),
+                    "native distant tracking must not send another reader's private body");
+            if (actors.size() != 1) return false;
             for (var actor : actors) {
                 boolean mine = ((LiteraryActor)actor).owner().filter(mc.player.getUUID()::equals).isPresent();
                 require(mc.getEntityRenderDispatcher().getRenderer(actor).shouldRender(actor, wide, camera.x, camera.y, camera.z) == mine,
                         "greater distance neither hides the reader's actor nor reveals their peer's");
             }
+            var foreign = io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.ACTOR.get().create(mc.level);
+            require(foreign != null, "native private-renderer range control creates");
+            foreign.appearance(LiteraryActor.STRANGER, io.github.knaitoe.theoldesthouse.labyrinth.ThreeFingers.SERGEANT);
+            foreign.bind(io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace.THREE_FINGERS, new UUID(0, 1));
+            foreign.moveTo(actors.getFirst().position());
+            require(!mc.getEntityRenderDispatcher().getRenderer(foreign).shouldRender(foreign, wide, camera.x, camera.y, camera.z),
+                    "the native renderer independently rejects a foreign private body at the extended range");
             var beyond = EntityType.WOLF.create(mc.level);require(beyond != null, "native range-control wolf creates");
             beyond.moveTo(mc.player.getX() + Math.sqrt(HouseMobSight.distanceSquared(mc.options.getEffectiveRenderDistance())) + 32,
                     mc.player.getY(), mc.player.getZ());

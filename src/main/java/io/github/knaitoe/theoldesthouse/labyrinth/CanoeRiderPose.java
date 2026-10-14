@@ -14,7 +14,7 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 public final class CanoeRiderPose {
     private static final Map<Player,Pose> PREVIOUS=new WeakHashMap<>();
     private CanoeRiderPose(){}
-    public static void apply(Player player,boolean low){
+    public static synchronized void apply(Player player,boolean low){
         if(low&&player.isAlive()&&!player.isSpectator()){
             if(!PREVIOUS.containsKey(player))PREVIOUS.put(player,player.getForcedPose());
             player.setSwimming(false);player.setForcedPose(Pose.CROUCHING);player.setPose(Pose.CROUCHING);player.refreshDimensions();
