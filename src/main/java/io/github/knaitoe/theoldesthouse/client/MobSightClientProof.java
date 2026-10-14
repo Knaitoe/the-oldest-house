@@ -30,6 +30,10 @@ public final class MobSightClientProof {
         mc.options.entityDistanceScaling().set(.5D);
         mc.options.fov().set(30);
         var camera = mc.gameRenderer.getMainCamera().getPosition();
+        // A received dimension/marker and client ticks can precede its first rendered
+        // frame. Do not test the new world's mob against the previous world's camera.
+        if(camera.distanceToSqr(mc.player.getEyePosition())>64)return false;
+        if(step==38&&!HouseSightlineState.hasOrigin())return false;
         var mobs = mc.level.getEntitiesOfClass(Mob.class, new AABB(mc.player.blockPosition()).inflate(160));
         String name = step == 37 ? MobSightProof.WOLF : MobSightProof.MIRROR;
         var moving = mobs.stream().filter(mob -> mob.getCustomName() != null && mob.getCustomName().getString().equals(name)).findFirst().orElse(null);
@@ -40,7 +44,12 @@ public final class MobSightClientProof {
         wide.prepare(camera.x, camera.y, camera.z);
         var renderer = mc.getEntityRenderDispatcher().getRenderer(moving);
         require(!moving.shouldRender(camera.x, camera.y, camera.z), "fixture must exceed the original native model-distance gate");
-        require(renderer.shouldRender(moving, wide, camera.x, camera.y, camera.z), "registered native renderer shows a distant moving mob");
+        require(renderer.shouldRender(moving, wide, camera.x, camera.y, camera.z),
+                "registered native renderer shows a distant moving mob: step="+step+" role="+role
+                +" camera="+camera+" player="+mc.player.position()+" mob="+moving.position()
+                +" bounds="+moving.getBoundingBox()+" origin="+HouseSightlineState.origin()
+                +" horizon="+HouseMobSight.rendersToHorizon(moving,HouseSightlineState.hasOrigin()?HouseSightlineState.origin():null)
+                +" view="+mc.options.getEffectiveRenderDistance());
         var narrow = new Frustum(new Matrix4f(), new Matrix4f().ortho(-1, 1, -1, 1, -1, 1));
         narrow.prepare(camera.x, camera.y, camera.z);
         require(!renderer.shouldRender(moving, narrow, camera.x, camera.y, camera.z), "distance extension preserves native frustum culling");
