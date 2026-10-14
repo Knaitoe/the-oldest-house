@@ -159,9 +159,14 @@ public final class GhostsSet {
     }
     /** The thigh underside, rather than its centre joint, rests on the original ten-pixel seat. */
     public static double seatedHeight(float scale){return .625+(.125-.001)*scale;}
+    public static boolean seatedPose(int role,int phase){return switch(phase){
+        case SIT,SLUMP,VOMIT,HAND,EATING,CHOKING,DEAD->true;
+        case PRAY->role==LiteraryActor.GHOST_MERRY;
+        default->false;
+    };}
     private static void fitSavedSeats(BlockPos b,LiteraryActor[] cast){
         for(var a:cast){if(a==null||a.getPersistentData().getBoolean("GhostSeat0492"))continue;
-            if(!Set.of(SIT,SLUMP,VOMIT,HAND,EATING,CHOKING,DEAD).contains(a.phase()))continue;
+            if(!seatedPose(a.role(),a.phase()))continue;
             double y=a.getY()-b.getY();boolean table=Math.abs(y-.625)<.01&&Math.abs(a.getX()-b.getX()-(a.role()==LiteraryActor.GHOST_MARJORIE||a.role()==LiteraryActor.GHOST_JOHN?-2.4:3.4))<.15;
             boolean bed=a.role()==LiteraryActor.GHOST_MARJORIE&&Math.abs(y-5.75)<.01&&Math.abs(a.getX()-b.getX()+9.5)<.15;
             if(!table&&!bed){a.getPersistentData().putBoolean("GhostSeat0492",true);continue;}

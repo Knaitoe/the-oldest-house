@@ -192,6 +192,7 @@ public final class NovelVignettes {
     }
     public static boolean exitLocked(ServerPlayer p,LabyrinthData.Door door) {
         return participant(p)&&door.id.equals(LabyrinthPlace.BARN_WELL.entryDoorId())
+                &&personal(LabyrinthData.get(p.server),p.getUUID()).getBoolean("WellEntered")
                 &&!personal(LabyrinthData.get(p.server),p.getUUID()).getBoolean("WellReturned")
                 &&!WitnessAccount.has(LabyrinthData.get(p.server),p.getUUID(),WitnessAccount.Story.BARN_WELL);
     }

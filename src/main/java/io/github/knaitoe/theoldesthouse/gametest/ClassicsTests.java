@@ -20,7 +20,7 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class ClassicsTests {
-    private static Fixture listening,haunting,nursery,upgrade;
+    private static Fixture listening,haunting,nursery,upgrade,panelEdit;
     static final class Fixture implements AutoCloseable {
         final GameTestHelper h;final ServerLevel l;final BlockPos origin,b;final LabyrinthPlace place;
         final HouseSavedData oldHouse;final LabyrinthData oldData;final List<ServerPlayer> players=new ArrayList<>();final List<BlockPos> held=new ArrayList<>();
@@ -40,6 +40,17 @@ public final class ClassicsTests {
     @AfterBatch(batch="classic_haunting") public static void c2(ServerLevel l){if(haunting!=null){haunting.close();haunting=null;}}
     @AfterBatch(batch="classic_nursery") public static void c3(ServerLevel l){if(nursery!=null){nursery.close();nursery=null;}}
     @AfterBatch(batch="classic_upgrade") public static void c4(ServerLevel l){if(upgrade!=null){upgrade.close();upgrade=null;}}
+    @AfterBatch(batch="classic_panel_edit0493") public static void panelEditDone(ServerLevel l){if(panelEdit!=null){panelEdit.close();panelEdit=null;}}
+    @GameTest(template="empty",batch="classic_panel_edit0493",timeoutTicks=120)
+    public static void anEditedWallpaperSeamDoesNotCrashOrInventAnOriginal(GameTestHelper h){
+        panelEdit=new Fixture(h,47500,LabyrinthPlace.WALLPAPER_NURSERY);var f=panelEdit;var p=f.player("pattern_edit_reader");
+        var rel=ClassicsRooms.PANELS.getFirst();var at=f.b.offset(rel);f.at(p,rel.getX()+.5,0,rel.getZ()+2.5);
+        var before=f.own(p).copy();f.l.setBlock(at,Blocks.GOLD_BLOCK.defaultBlockState(),3);
+        var use=new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new BlockHitResult(at.getCenter(),Direction.SOUTH,at,false));
+        NeoForge.EVENT_BUS.post(use);
+        h.assertTrue(!use.isCanceled()&&f.l.getBlockState(at).is(Blocks.GOLD_BLOCK),"an edited block at the old seam is left to its own native interaction without reading a missing wallpaper property");
+        h.assertTrue(f.own(p).equals(before)&&WitnessAccount.count(f.data(),p.getUUID())==0,"the edit neither produces a hidden original nor invents personal reading or ending credit");h.succeed();
+    }
     @GameTest(template="empty") public static void twoCompleteSourcesAppendAndQuotaRoundsUp(GameTestHelper h){
         h.assertTrue(LabyrinthPlace.SEANCE.slot()==40&&LabyrinthPlace.WALLPAPER_NURSERY.slot()==41&&WitnessAccount.Story.values().length==45&&WitnessAccount.REQUIRED==34,"two complete native sources append without renumbering the original places");
         for(int y:new int[]{65,80,150,250})for(var place:List.of(LabyrinthPlace.SEANCE,LabyrinthPlace.WALLPAPER_NURSERY)){var o=new BlockPos(0,y,0);var b=LabyrinthPlaces.base(o,place);var slot=LabyrinthPlaces.slotBounds(o,place);h.assertTrue(b!=null&&slot.isInside(b.offset(place.room().minX(),-1,place.room().minZ()))&&slot.isInside(b.offset(place.room().maxX(),7,0)),"new native room and ceiling fit at manor height "+y);}
