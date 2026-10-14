@@ -86,7 +86,25 @@ public final class HarriganDialogueTests {
             level.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);
         }
     }
-    private static Fixture reading,legacy,phones;
+    private static Fixture reading,legacy,phones,observer;
+    @AfterBatch(batch="harrigan_observer0493") public static void cleanObserver(ServerLevel level){if(observer!=null){observer.close();observer=null;}}
+    @GameTest(template="empty",batch="harrigan_observer0493",timeoutTicks=120)
+    public static void anObserverCannotFinishTheReadingOrTakeItsOriginalGift(GameTestHelper h){
+        observer=new Fixture(h,27600,false);var f=observer;
+        h.runAfterDelay(10,()->{f.player.gameMode.changeGameModeForPlayer(net.minecraft.world.level.GameType.SPECTATOR);f.open();f.page(4);});
+        h.runAfterDelay(30,()->{
+            f.closeBook();var state=f.data().state(HarriganVignette.ID);
+            h.assertTrue(!state.getBoolean("ReadingStarted")&&!state.getBoolean("ReadingFinished")&&!state.getBoolean("TicketVisible")&&f.player.messages.stream().noneMatch(line->line.startsWith("Mr. Harrigan:")),"native observer pages and closing neither start the performance nor release the original gift");
+            f.player.gameMode.changeGameModeForPlayer(net.minecraft.world.level.GameType.SURVIVAL);f.open();f.page(4);f.closeBook();
+        });
+        h.runAfterDelay(50,()->{
+            h.assertTrue(f.data().state(HarriganVignette.ID).getBoolean("TicketVisible"),"the actual participating reader can still finish the same preserved book");
+            var ticket=f.prop(LabyrinthRegistry.SCRATCH_TICKET.get());var id=ticket.getUUID();f.player.gameMode.changeGameModeForPlayer(net.minecraft.world.level.GameType.SPECTATOR);f.take(ticket);
+            h.assertTrue(!ticket.isRemoved()&&ticket.getUUID().equals(id)&&f.player.getInventory().countItem(Items.EMERALD)==0,"an observer interaction does not consume or replenish the original ticket");
+            f.player.gameMode.changeGameModeForPlayer(net.minecraft.world.level.GameType.SURVIVAL);f.take(ticket);
+            h.assertTrue(f.player.getInventory().countItem(Items.EMERALD)==12&&f.player.getInventory().countItem(LabyrinthRegistry.PHONE.get())==1,"the preserved original remains available once to the participant");h.succeed();
+        });
+    }
     @AfterBatch(batch="harrigan_reading") public static void cleanReading(ServerLevel level){if(reading!=null){reading.close();reading=null;}}
     @AfterBatch(batch="harrigan_legacy_dialogue") public static void cleanLegacy(ServerLevel level){if(legacy!=null){legacy.close();legacy=null;}}
     @AfterBatch(batch="harrigan_phone_guidance") public static void cleanPhones(ServerLevel level){if(phones!=null){phones.close();phones=null;}}

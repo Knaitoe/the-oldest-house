@@ -184,6 +184,27 @@ public final class WitnessTests {
     @GameTest(template="empty",batch="floorboard_attack") public static void axeAttackWorksThroughAnAlreadyCancelledEvent(GameTestHelper helper){pryFixture(helper,true);}
     @GameTest(template="empty",batch="floorboard_mining") public static void axeBreakFallbackWorksThroughAnAlreadyCancelledEvent(GameTestHelper helper){pryFixture(helper,false);}
 
+    @GameTest(template="empty",batch="floorboard_observer0493")
+    public static void observersCannotSpendTheHeartbeatOrBeForcedThroughItsExit(GameTestHelper helper){
+        var server=helper.getLevel().getServer();var level=HouseTestLevel.get(server);BlockPos origin=new BlockPos(45400,80,45400);
+        var player=NativeTestPlayers.survival(helper,"heartbeat_observer");
+        try(var fixture=new Fixture(server,origin)){
+            BlockPos base=LabyrinthPlaces.base(origin,LabyrinthPlace.FLOORBOARDS);TellTaleFloorboards.build(level,base,true);
+            LabyrinthData.get(server).pushReturn(player.getUUID(),new LabyrinthData.Waypoint(player.serverLevel().dimension(),player.position(),0,false));
+            player.teleportTo(level,base.getX()+.5,base.getY(),base.getZ()-5.5,0,0);player.setNoGravity(true);
+            for(int i=0;i<25;i++)level.gameEvent(net.minecraft.world.level.gameevent.GameEvent.STEP,player.position(),net.minecraft.world.level.gameevent.GameEvent.Context.of(player));
+            helper.assertTrue(TellTaleFloorboards.heat()==TellTaleFloorboards.MAX_HEAT,"an actual participant's native steps can reach the peak");
+            player.setGameMode(GameType.SPECTATOR);TellTaleFloorboards.onServerTick(new net.neoforged.neoforge.event.tick.ServerTickEvent.Post(server));
+            double fading=TellTaleFloorboards.heat();
+            helper.assertTrue(fading==99.5&&!player.getPersistentData().getBoolean("HouseTransitionPending"),"an observer-only room decays normally without consuming the peak or forcing an exit");
+            level.gameEvent(net.minecraft.world.level.gameevent.GameEvent.STEP,player.position(),net.minecraft.world.level.gameevent.GameEvent.Context.of(player));
+            helper.assertTrue(TellTaleFloorboards.heat()==fading,"native observer vibrations do not agitate the room");
+            player.setGameMode(GameType.SURVIVAL);level.gameEvent(net.minecraft.world.level.gameevent.GameEvent.STEP,player.position(),net.minecraft.world.level.gameevent.GameEvent.Context.of(player));
+            TellTaleFloorboards.onServerTick(new net.neoforged.neoforge.event.tick.ServerTickEvent.Post(server));
+            helper.assertTrue(TellTaleFloorboards.heat()==0&&player.getPersistentData().getBoolean("HouseTransitionPending")&&WitnessAccount.count(LabyrinthData.get(server),player.getUUID())==0,"the restored participant still faces the actual peak and earns no account by failing");helper.succeed();
+        }finally{LabyrinthDoors.clearAll();NativeTestPlayers.remove(player);}
+    }
+
     private static Fixture sceneFixture;
     private static MinotaurEntity sceneCreature;
     private static ServerPlayer scenePlayer;

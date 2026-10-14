@@ -85,15 +85,19 @@ public final class RhythmTests {
         var base=h.absolutePos(BlockPos.ZERO).offset(100,10,100);
         LabyrinthBuilder.registerDoors(fixture,LabyrinthPlace.FLOORBOARDS,base);LabyrinthBuilder.registerDoors(fixture,LabyrinthPlace.BARN_WELL,base);
         var entry=fixture.door(LabyrinthPlace.FLOORBOARDS.entryDoorId());var well=fixture.door(LabyrinthPlace.BARN_WELL.entryDoorId());
+        var d=LabyrinthData.get(p.server);var originalWell=NovelVignettes.personal(d,p.getUUID()).copy();
         try{
             var outside=p.server.getLevel(well.dimension);p.teleportTo(outside,well.lower.getX()+.5,well.lower.getY(),well.lower.getZ()+.5,0,0);
+            h.assertTrue(!NovelVignettes.exitLocked(p,well),"an unbegun farm visit offers an ordinary retreat");
+            var committedWell=originalWell.copy();committedWell.putBoolean("WellEntered",true);NovelVignettes.save(d,p.getUUID(),committedWell);
             h.assertTrue(!ExpeditionRhythm.offerRetreat(p,LabyrinthPlace.BARN_WELL,well),"the well's authored locked exit cannot consume the first explanation");
+            NovelVignettes.save(d,p.getUUID(),originalWell);
             var interior=p.server.getLevel(entry.dimension);p.teleportTo(interior,entry.lower.getX()+.5,entry.lower.getY(),entry.lower.getZ()+.5,0,0);
             peer.teleportTo(interior,entry.lower.getX()+.5,entry.lower.getY(),entry.lower.getZ()+.5,0,0);
             h.assertTrue(ExpeditionRhythm.offerRetreat(p,LabyrinthPlace.FLOORBOARDS,entry)&&!ExpeditionRhythm.offerRetreat(p,LabyrinthPlace.FLOORBOARDS,entry)&&ExpeditionRhythm.offerRetreat(peer,LabyrinthPlace.FLOORBOARDS,entry),"the explanation is once per actual explorer");
-            var d=LabyrinthData.get(p.server);var loaded=LabyrinthData.load(d.save(new CompoundTag(),p.registryAccess()),p.registryAccess());
+            var loaded=LabyrinthData.load(d.save(new CompoundTag(),p.registryAccess()),p.registryAccess());
             h.assertTrue(loaded.stateEntry(ExpeditionRhythm.STATE,p.getUUID().toString()).getBoolean("RetreatExplained")&&WitnessAccount.count(d,p.getUUID())==0,"the hint survives restart without awarding progress");h.succeed();
-        }finally{NativeTestPlayers.remove(p);NativeTestPlayers.remove(peer);}
+        }finally{NovelVignettes.save(d,p.getUUID(),originalWell);NativeTestPlayers.remove(p);NativeTestPlayers.remove(peer);}
     }
     private static void buildHall(ServerLevel l,BlockPos b,LabyrinthPlace p){if(HallVariations.domestic(p))HallVariations.buildDomestic(l,b,p);else HallVariations.buildStone(l,b,p);}
     @GameTest(template="empty",batch="exploration_hall_changes",timeoutTicks=1200)

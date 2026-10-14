@@ -432,6 +432,7 @@ public final class HarriganVignette {
         if (!(event.getEntity() instanceof ServerPlayer player) || !(event.getContainer() instanceof LecternMenu lectern)) {
             return;
         }
+        if(!player.isAlive()||player.isSpectator()){READERS.remove(player.getUUID());return;}
         if (!inVignette(player) || visitFor(LabyrinthData.get(player.server)) != 1) {
             return;
         }
@@ -486,7 +487,7 @@ public final class HarriganVignette {
     private static void scratchTicket(ServerPlayer player, ItemFrame frame) {
         LabyrinthData data = LabyrinthData.get(player.server);
         CompoundTag state = data.state(ID);
-        if (!inVignette(player) || visitFor(data) != 1 || !state.getBoolean("TicketVisible")) {
+        if (!player.isAlive()||player.isSpectator()||!inVignette(player) || visitFor(data) != 1 || !state.getBoolean("TicketVisible")) {
             return;
         }
         propTaken(data,"ticket");frame.discard();
@@ -514,7 +515,7 @@ public final class HarriganVignette {
 
     private static void takeHarriganPhone(ServerPlayer player, ItemFrame frame) {
         LabyrinthData data = LabyrinthData.get(player.server);
-        if (!inVignette(player) || visitFor(data) != 2 || hasItem(player, LabyrinthRegistry.HARRIGANS_PHONE.get())) {
+        if (!player.isAlive()||player.isSpectator()||!inVignette(player) || visitFor(data) != 2 || hasItem(player, LabyrinthRegistry.HARRIGANS_PHONE.get())) {
             return;
         }
         ItemStack phone=frame.getItem().copy();if(!phone.is(LabyrinthRegistry.HARRIGANS_PHONE.get()))return;frame.setItem(ItemStack.EMPTY,false);propTaken(data,"harrigan_phone");frame.discard();
@@ -556,12 +557,13 @@ public final class HarriganVignette {
                 &&visitFor(LabyrinthData.get(player.server))==2)enterWake(player);
         if (!event.getLevel().isClientSide() && event.getEntity() instanceof ServerPlayer reader
                 && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND && inVignette(reader)
+                && reader.isAlive()&&!reader.isSpectator()
                 && event.getPos().equals(base(reader.server).offset(LECTERN))
                 && visitFor(LabyrinthData.get(reader.server)) == 1
                 && event.getLevel().getBlockEntity(event.getPos()) instanceof LecternBlockEntity lectern && lectern.hasBook()) {
             READERS.add(reader.getUUID());
         }
-        if (!(event.getEntity() instanceof ServerPlayer player) || !inVignette(player)
+        if (!(event.getEntity() instanceof ServerPlayer player) || !player.isAlive()||player.isSpectator()||!inVignette(player)
                 || visitFor(LabyrinthData.get(player.server)) != 2
                 || !isCasket(player.server, event.getPos())) {
             return;
@@ -856,6 +858,7 @@ public final class HarriganVignette {
     }
 
     private static void tickReading(ServerPlayer player, LabyrinthData data) {
+        if(!player.isAlive()||player.isSpectator()){READERS.remove(player.getUUID());return;}
         CompoundTag state = data.state(ID);
         if (readingFinished(state)) return;
         long now = player.serverLevel().getGameTime();

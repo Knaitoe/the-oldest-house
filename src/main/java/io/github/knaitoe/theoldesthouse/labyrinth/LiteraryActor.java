@@ -49,7 +49,14 @@ public final class LiteraryActor extends PathfinderMob {
     @Override public boolean isPickable(){return super.isPickable();}
     @Override protected InteractionResult mobInteract(Player p,InteractionHand hand){if(role()>=GHOST_MARJORIE&&role()<=GHOST_DRAWER&&p.getItemInHand(hand).getItem() instanceof CamcorderItem){p.startUsingItem(hand);return InteractionResult.CONSUME;}if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)LiteraryVignettes.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}
     @Override public boolean hurt(DamageSource source,float amount){if(source.getEntity() instanceof ServerPlayer p){if(role()==FATHER&&LiteraryVignettes.inside(p,LabyrinthPlace.HOLY_RABBIT)){if(getHealth()<=1)return false;boolean hit=super.hurt(source,Math.min(Math.min(1,amount),getHealth()-1));if(hit)LiteraryVignettes.attacked(p,this);return hit;}LiteraryVignettes.attacked(p,this);}return false;}
-    @Override public boolean broadcastToPlayer(ServerPlayer p){if((role()==LAKE_TESS||role()==LAKE_WAX)&&owner().isPresent())return !p.isSpectator()&&owner().get().equals(p.getUUID())&&super.broadcastToPlayer(p);return super.broadcastToPlayer(p);}
+    @Override public boolean broadcastToPlayer(ServerPlayer p){
+        // Match the renderer's privacy rule at native tracking too. A hidden peer's
+        // overlapping cast must not remain on this client and intercept its entity pick.
+        boolean sharedCopy=scene.equals(LabyrinthPlace.FAMILY_COPY.id())||scene.equals(LabyrinthPlace.OLD_CABIN.id());
+        if(owner().isPresent()&&!sharedCopy&&!owner().get().equals(p.getUUID()))return false;
+        if((role()==LAKE_TESS||role()==LAKE_WAX)&&owner().isPresent()&&p.isSpectator())return false;
+        return super.broadcastToPlayer(p);
+    }
     @Override public boolean removeWhenFarAway(double d){return false;}
     @Override public boolean isPushable(){return false;}
     @Override public void addAdditionalSaveData(CompoundTag t){super.addAdditionalSaveData(t);t.putInt("Role",role());t.putInt("Phase",phase());t.putInt("Gesture0491",gesture());t.putString("Scene",scene);owner().ifPresent(id->t.putUUID("Reader",id));}
