@@ -58,7 +58,7 @@ try:
     reconnected = launch("runProofB", "client-b-reconnected")
     wait_for(lambda: (report / "restart-b-leak.txt").exists() and reconnected.poll() is not None, 240, "personal burn, two note rooms and logout inside a leak")
     recovered = launch("runProofB", "client-b-leak-reconnected")
-    wait_for(lambda: (report / "passed.txt").exists() and (report / "B-reconnected.png").exists(), 420, "same-profile recovery, native shared hunts and rendered proof")
+    wait_for(lambda: (report / "passed.txt").exists() and (report / "B-reconnected.png").exists(), 600, "same-profile recovery, native shared hunts, actual servings and canoe breath/input/rendered proof")
     for p in processes:
         p.wait(timeout=90)
         assert p.returncode == 0, p.returncode
@@ -76,6 +76,14 @@ try:
     assert (report / "trailer-night.txt").is_file()
     assert (report / "mob-sight-passed.txt").is_file()
     assert (report / "camp-bed-passed.txt").is_file()
+    assert (report / "canoe-passed.txt").is_file()
+    assert (report / "tess-native-route.txt").is_file()
+    assert (report / "A-tess-swimming-stair.png").stat().st_size > 500
+    for role in ("A", "B"):
+        for view in ("supper-empty", "supper-served", "supper-picked-up", "supper-old-original-repaired", "canoe-under-roof", "canoe-left-hand", "canoe-right-hand", "canoe-seated-open-water", "canoe-dismounted-dive"):
+            assert (report / f"{role}-{view}.png").stat().st_size > 500, (role, view)
+        for step in (44, 46):
+            assert (report / f"{role}-supper-pixels-{step}.txt").is_file()
     for role in ("A", "B"):
         for view in ("camp-bed-hidden", "camp-bed-left", "paw-clutch"):
             assert (report / f"{role}-{view}.png").stat().st_size > 500, (role, view)

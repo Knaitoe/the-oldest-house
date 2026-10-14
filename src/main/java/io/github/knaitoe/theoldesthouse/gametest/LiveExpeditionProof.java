@@ -74,6 +74,8 @@ public final class LiveExpeditionProof {
     @SubscribeEvent public static void tick(ServerTickEvent.Post e) {
         if(!enabled())return;var s=e.getServer();var a=player(s,"A");var b=player(s,"B");
         if(phase==37||phase==38)MobSightProof.tick(a,b);
+        if(a!=null&&b!=null&&(phase==48||phase==49))CanoeSocketProof.observe(a,b,phase,s.getTickCount()-changed);
+        if(a!=null&&phase==51)CanoeSocketProof.swimming(a);
         // Read on the tick the native return lands, before the reader's restored stride or the test
         // client's still-held walk key carries them on along the tread.
         if(phase==11&&a!=null&&!firstReturned&&!StaircaseLeaks.active(a)){
@@ -358,6 +360,17 @@ public final class LiveExpeditionProof {
             SupperSocketProof.pickedUp(a,b,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN));SupperSocketProof.legacy(a,b,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN));step(s,46,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN));
         }else if(phase==46&&a!=null&&b!=null&&ACKS.size()==2){
             SupperSocketProof.served(a,b,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN));
+            CanoeSocketProof.begin(a,b,ORIGIN);step(s,47,CanoeSocketProof.base(a));marker(b,47,CanoeSocketProof.base(b));
+        }else if(phase==47&&a!=null&&b!=null&&ACKS.size()==2&&CanoeSocketProof.ready(a,b)){
+            step(s,48,CanoeSocketProof.base(a));marker(b,48,CanoeSocketProof.base(b));
+        }else if(phase==48&&a!=null&&b!=null&&ACKS.size()==2&&s.getTickCount()-changed>=340){
+            CanoeSocketProof.waited(a,b,s.getTickCount()-changed);step(s,49,CanoeSocketProof.base(a));marker(b,49,CanoeSocketProof.base(b));
+        }else if(phase==49&&a!=null&&b!=null&&ACKS.size()==2){
+            CanoeSocketProof.pushed(a,b);step(s,50,CanoeSocketProof.base(a));marker(b,50,CanoeSocketProof.base(b));
+        }else if(phase==50&&a!=null&&b!=null&&ACKS.size()==2){
+            CanoeSocketProof.dived(a,b);CanoeSocketProof.swim(a,b);step(s,51,CanoeSocketProof.base(a));marker(b,51,CanoeSocketProof.base(b));
+        }else if(phase==51&&a!=null&&b!=null&&ACKS.size()==2){
+            CanoeSocketProof.finish(a,b);
             step(s,30,a.blockPosition());write("passed.txt","Two actual NeoForge socket clients: all original shared doors, personal leaves/burns/note scenes and two same-profile reconnects; one Stacy body and one three-second wooden-door break; real shared/private physical hunts, protected hiding peers and renderer ownership; both mine and crawl through persistent shattered portholes with protected hull; both use cameras, return actual rendered exposures, receive distinct locked native maps and independently earn their own Plains memory; a shared native ledger remains hidden for both, appears for the sole eligible reader and disappears after native menu collection without appearing for the peer; fresh trailer door arrivals track eight shared cousins and each private path girl; both clients render distinct fear and priority night dialogue and receive spatial knock events; native screenshots saved; no doubled clocks or transferred ending credit.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: persistent shattered portholes, two actual camera exposures, independent ending-book visibility, fresh trailer children and two reconnects");
         }else if(phase==30&&s.getTickCount()-changed>100){huntChunks.close();s.halt(false);}
     }

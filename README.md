@@ -1,4 +1,4 @@
-Development candidate **0.4.93** begins the complete vignette examination with four confirmed progression, original-actor, edited-block and seated-pose repairs. Native verification is pending. [Examination and evidence](docs/VIGNETTE_EXAMINATION_0_4_93.md).
+Development candidate **0.4.93**: complete catalog examination of all 45 sources and five recurring/internal scenes, with confirmed ownership, original-entity, observer, edited-block, seated-pose, supper-input/display and actual canoe-clearance repairs. The candidate declares 621 native cases; final exact-source verification is pending. [Per-vignette findings and evidence limits](docs/VIGNETTE_EXAMINATION_0_4_93.md).
 
 Verified baseline **0.4.92**, source `7fe2dd5`: all twelve [CI jobs](https://github.com/Knaitoe/the-oldest-house/actions/runs/38509353701) and 612 required native tests passed. Older development checkpoint paragraphs below are historical.
 
