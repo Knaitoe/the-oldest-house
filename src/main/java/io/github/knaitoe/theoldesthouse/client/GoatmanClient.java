@@ -18,6 +18,7 @@ public final class GoatmanClient {
     public static void accept(GoatmanScenePayload p){phase=p.phase();lease=60;demand=p.demand();remaining=p.remaining();flags=p.flags();cousinLine=p.cousinLine();cousinRemaining=p.cousinRemaining();}
     /** The vigil sets its own night and dawn fog colour, which the interior's black must not cover. */
     public static boolean authorsFog(){return active();}
+    public static boolean sceneActive(){return active();}
     private static boolean active(){var mc=Minecraft.getInstance();return lease>0&&phase>0&&mc.player!=null&&mc.player.isAlive()&&mc.level!=null&&mc.level.dimension().equals(HouseDimensions.INTERIOR);}
     public static int priorityDemand(){return active()&&remaining>0?demand:0;}
     public static boolean cousinSubtitle(){return active()&&demand==0&&cousinRemaining>0&&cousinLine>0;}

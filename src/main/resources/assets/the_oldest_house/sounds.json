@@ -262,8 +262,8 @@
   "goatman.hammer": {
     "sounds": [
       {
-        "name": "the_oldest_house:goatman/hammer",
-        "attenuation_distance": 32
+        "name": "the_oldest_house:goatman/hammer_vigil",
+        "attenuation_distance": 48
       }
     ],
     "subtitle": "subtitles.the_oldest_house.goatman_hammer"
@@ -625,8 +625,8 @@
   "goatman.claw": {
     "sounds": [
       {
-        "name": "the_oldest_house:goatman/claw",
-        "attenuation_distance": 16
+        "name": "the_oldest_house:goatman/claw_vigil",
+        "attenuation_distance": 48
       }
     ],
     "subtitle": "subtitles.the_oldest_house.goatman_claw"
@@ -1026,6 +1026,23 @@
         "name": "the_oldest_house:lake_house/hiss",
         "stream": false,
         "attenuation_distance": 16
+      }
+    ]
+  },
+  "goatman.knock": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:goatman/knock_vigil",
+        "attenuation_distance": 48
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.goatman_knock"
+  },
+  "goatman.score": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:goatman/around_the_tin_walls",
+        "stream": true
       }
     ]
   }

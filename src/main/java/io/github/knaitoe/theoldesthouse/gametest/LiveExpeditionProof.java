@@ -334,9 +334,13 @@ public final class LiveExpeditionProof {
         }else if(phase==35&&a!=null&&b!=null&&ACKS.size()==2){
             var run=GoatmanVignette.run(d);require(run.getInt("Phase")==GoatmanVignette.VIGIL,"both real clients reached the normal shared night transition");require(run.getInt("ExtraState")==GoatmanVignette.X_DOOR,"the connected client closed the real door before the quiet and kept the impostor outside");step(s,36,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN));
         }else if(phase==36&&a!=null&&b!=null&&ACKS.size()==2){
+            // Connected clients can finish their window/audio captures before the third
+            // physical lap ends. Wait for the original queue; never skip a circuit leg.
+            if(!GoatmanStalking.circuitDone(GoatmanVignette.run(d)))return;
             require(GoatmanStalking.circuitDone(GoatmanVignette.run(d)),"the same native Goatman completed every physical circuit leg despite independent dialogue timing");
             var run=GoatmanVignette.run(d);var camp=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN);var wrong=a.serverLevel().getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(camp,LabyrinthPlace.GOATMAN),c->!c.girl()&&c.getPersistentData().getInt(GoatmanVignette.INDEX)==run.getInt("Wrong"));require(wrong.size()==1&&wrong.getFirst().getUUID().equals(nightGoatmanId),"the complete night keeps the original Goatman UUID and one physical body");
-            write("trailer-night.txt","Both actual clients tracked the same seven cousins from upright confusion through distinct fear to terror, received native knocks from the west, east and rear, and rendered a later priority Goatman demand with the cousin subtitle suppressed. The original Goatman body completed every circuit leg.\n");
+            require(run.getInt("Circuits0494")==GoatmanStalking.CIRCUITS,"the original native Goatman completes three physical circuits before departure");
+            write("trailer-night.txt","Both actual clients tracked the same seven cousins from upright confusion through distinct fear to terror, received louder native knocks from the west, east and rear, and rendered a later priority Goatman demand with the cousin subtitle suppressed. Both captured the same original body as a child and Goatman through the native front glazing, with the original score active and a real vanilla music request blocked. The original Goatman body completed three full physical circuits.\n");
             MobSightProof.beginOutside(a,b);step(s,37,MobSightProof.OUTSIDE_VIEW);
         }else if(phase==37&&a!=null&&b!=null&&ACKS.size()==2){
             MobSightProof.checkOutside(a,b);MobSightProof.beginManor(a,b,ORIGIN);step(s,38,MobSightProof.manorView());
