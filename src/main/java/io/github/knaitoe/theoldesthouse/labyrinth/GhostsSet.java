@@ -242,7 +242,13 @@ public final class GhostsSet {
         capture(p,own,"FinalMeal",cast[0].getEyePosition());capture(p,own,"MerryPlate",Vec3.atLowerCornerOf(b).add(1.5,1.06,-28.5));
     }
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own) {
-        if(!own.getBoolean("Filming0485")||own.getBoolean("Completed")||!built(LabyrinthData.get(p.server),b))return;
+        if(!own.getBoolean("Filming0485")||!built(LabyrinthData.get(p.server),b))return;
+        if(own.getBoolean("Completed")){
+            // Fit only saved originals; a concluded take must never create or restage a missing actor.
+            var saved=new LiteraryActor[6];var world=LiteraryVignettes.shared(LabyrinthData.get(p.server),PLACE);
+            for(int i=0;i<6;i++){String key="Film"+PEOPLE[i]+"_"+p.getUUID();if(world.hasUUID(key)&&p.serverLevel().getEntity(world.getUUID(key)) instanceof LiteraryActor a)saved[i]=a;}
+            fitSavedSeats(b,saved);return;
+        }
         var cast=new LiteraryActor[6];for(int i=0;i<6;i++){cast[i]=person(p,b,i);if(cast[i]==null)return;}
         if(own.getBoolean("CastPlaced"))fitSavedSeats(b,cast);
         var playhouse=prop(p,b,"FilmPlayhouse",LiteraryActor.GHOST_PLAYHOUSE,new BlockPos(9,5,-32));

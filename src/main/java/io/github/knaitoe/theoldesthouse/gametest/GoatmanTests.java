@@ -139,8 +139,8 @@ public final class GoatmanTests {
             var specific=new PlayerInteractEvent.EntityInteractSpecific(p,InteractionHand.OFF_HAND,cousin,intercept.orElseThrow().subtract(cousin.position()));NeoForge.EVENT_BUS.post(specific);
             h.assertTrue(specific.isCanceled()&&specific.getCancellationResult()==InteractionResult.SUCCESS&&p.getOffhandItem().isEmpty()&&p.getInventory().countItem(GoatmanRegistry.BRAT.get())==0,"the specific native entity click consumes exactly the off-hand serving");
             h.assertTrue(f.run().getInt("Plated0464")==15&&f.run().getInt("BurntPlates0476")==8,"all four cooked originals reach their intended plates and the burnt one keeps its char");
-            for(int seat=0;seat<4;seat++){var display=GoatmanWoods.serving(f.l,f.b,seat);var item=GoatmanWoods.food(f.l,display);var at=GoatmanWoods.plate(seat).add(f.b.getX(),f.b.getY()+.09,f.b.getZ());var tag=display.saveWithoutId(new CompoundTag());
-                h.assertTrue(display.position().distanceToSqr(at)<.000001&&item.getCount()==1&&GoatmanSupper.burnt(item)==(seat==3)&&tag.getString("item_display").equals("fixed")&&Math.abs(tag.getCompound("transformation").getList("scale",5).getFloat(0)-.55)<.0001,"the actual original display keeps the native reviewed pose, scale and visible food: "+seat);
+            for(int seat=0;seat<4;seat++){var display=GoatmanWoods.serving(f.l,f.b,seat);var item=GoatmanWoods.food(f.l,display);var displayAt=GoatmanWoods.plate(seat).add(f.b.getX(),f.b.getY()+.09,f.b.getZ());var tag=display.saveWithoutId(new CompoundTag());
+                h.assertTrue(display.position().distanceToSqr(displayAt)<.000001&&item.getCount()==1&&GoatmanSupper.burnt(item)==(seat==3)&&tag.getString("item_display").equals("fixed")&&Math.abs(tag.getCompound("transformation").getList("scale",5).getFloat(0)-.55)<.0001,"the actual original display keeps the native reviewed pose, scale and visible food: "+seat);
             }h.succeed();
         });
     }

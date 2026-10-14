@@ -11,5 +11,5 @@ for a,b in [([12,0,2],[14,8,4]),([2,0,12],[4,8,14]),([2,4,2],[14,6,4])]:
     element=copy.deepcopy(leg);element['from']=a;element['to']=b;model['elements'].append(element)
 path.write_text(json.dumps(model,indent=2)+'\n')
 for path in (root/'src/main/resources/assets/the_oldest_house/models/block').glob('ghosts_*.json'):
-    text=path.read_text().replace('minecraft:block/smooth_sandstone','minecraft:block/sandstone_top')
+    text=path.read_text().replace('minecraft:block/smooth_sandstone','minecraft:block/sandstone_top').replace('"#spaghetti"','"#food"')
     path.write_text(text)

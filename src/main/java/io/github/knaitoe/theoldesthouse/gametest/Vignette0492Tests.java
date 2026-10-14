@@ -180,6 +180,8 @@ public final class Vignette0492Tests {
             var click=new PlayerInteractEvent.EntityInteract(p,InteractionHand.MAIN_HAND,c);NeoForge.EVENT_BUS.post(click);h.assertTrue(click.isCanceled()&&!GoatmanVignette.personal(LabyrinthData.get(f.server),p.getUUID()).getString("LastCousinReply0492").isEmpty(),"the native entity click produces a visible reply");
             String first=GoatmanVignette.personal(LabyrinthData.get(f.server),p.getUUID()).getString("LastCousinReply0492");var own=GoatmanVignette.personal(LabyrinthData.get(f.server),p.getUUID());own.remove("CousinTalkAt0492");var data=LabyrinthData.get(f.server);var all=data.state(GoatmanVignette.ID);var players=all.getCompound("Players");players.put(p.getUUID().toString(),own);all.put("Players",players);data.setState(GoatmanVignette.ID,all);r=f.run();r.putInt("Phase",GoatmanVignette.VIGIL);f.run(r);
             h.assertTrue(GoatmanConversations.talk(p,c,InteractionHand.MAIN_HAND)&&!GoatmanVignette.personal(data,p.getUUID()).getString("LastCousinReply0492").equals(first),"the vigil has its own replies");
+            String vigil=GoatmanVignette.personal(data,p.getUUID()).getString("LastCousinReply0492");own=GoatmanVignette.personal(data,p.getUUID());own.remove("CousinTalkAt0492");all=data.state(GoatmanVignette.ID);players=all.getCompound("Players");players.put(p.getUUID().toString(),own);all.put("Players",players);data.setState(GoatmanVignette.ID,all);r=f.run();r.putInt("Phase",GoatmanVignette.DAWN);f.run(r);
+            h.assertTrue(GoatmanConversations.talk(p,c,InteractionHand.MAIN_HAND)&&!GoatmanVignette.personal(data,p.getUUID()).getString("LastCousinReply0492").equals(vigil),"concluded nights retain distinct dawn replies");
             var far=new PlayerInteractEvent.EntityInteract(p,InteractionHand.OFF_HAND,c);NeoForge.EVENT_BUS.post(far);h.assertTrue(!far.isCanceled(),"an offhand packet cannot double-deliver dialogue");p.moveTo(f.b.getX()+5,f.b.getY()+1,f.b.getZ()-72.5);h.assertTrue(!GoatmanConversations.talk(p,c,InteractionHand.MAIN_HAND),"unreachable cousins cannot be talked to remotely");
         }).thenSucceed();
     }
@@ -192,6 +194,11 @@ public final class Vignette0492Tests {
             for(int i=0;i<4;i++){var a=(LiteraryActor)f.in.getEntity(world.getUUID("Film"+GhostsSet.PEOPLE[i]+"_"+p.getUUID()));ids.put(i,a.getUUID());h.assertTrue(Math.abs(a.getY()-b.getY()-GhostsSet.seatedHeight(a.getScale()))<.001,"fresh placement fits each original cast scale");a.moveTo(a.getX(),b.getY()+.625,a.getZ());a.getPersistentData().remove("GhostSeat0492");a.load(a.saveWithoutId(new CompoundTag()));}
             int clock=own.getInt("ShotClock");GhostsSet.reader(p,b,own);for(var entry:ids.entrySet()){var a=(LiteraryActor)f.in.getEntity(entry.getValue());h.assertTrue(a!=null&&a.phase()==GhostsSet.SIT&&Math.abs(a.getY()-b.getY()-GhostsSet.seatedHeight(a.getScale()))<.001&&f.in.noCollision(a,a.getBoundingBox()),"saved originals fit the native seat without a replacement or collision: "+entry.getKey());}
             h.assertTrue(own.getInt("ShotClock")==clock&&!own.getBoolean("DayDone")&&!own.getBoolean("Ready"),"fitting the actors does not advance or complete the filmed day");
+            own.putBoolean("Completed",true);own.putBoolean("Ready",true);own.putString("Outcome","kept_the_recorded_day");
+            for(var id:ids.values()){var a=(LiteraryActor)f.in.getEntity(id);a.moveTo(a.getX(),b.getY()+.625,a.getZ());a.getPersistentData().remove("GhostSeat0492");}
+            var missing=ids.get(3);f.in.getEntity(missing).discard();GhostsSet.reader(p,b,own);
+            for(int i=0;i<3;i++){var a=(LiteraryActor)f.in.getEntity(ids.get(i));h.assertTrue(a!=null&&Math.abs(a.getY()-b.getY()-GhostsSet.seatedHeight(a.getScale()))<.001,"concluded takes fit only their existing originals");}
+            h.assertTrue(f.in.getEntity(missing)==null&&own.getBoolean("Completed")&&own.getString("Outcome").equals("kept_the_recorded_day")&&own.getInt("ShotClock")==clock,"missing originals, the exact outcome and the concluded take remain untouched");
         }).thenSucceed();
     }
 }
