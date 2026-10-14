@@ -3,6 +3,8 @@ package io.github.knaitoe.theoldesthouse.client;
 import com.mojang.math.Axis;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlaces;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.multiplayer.ClientLevel;
