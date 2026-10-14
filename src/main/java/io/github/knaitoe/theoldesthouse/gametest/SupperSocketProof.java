@@ -27,7 +27,7 @@ final class SupperSocketProof {
             p.getInventory().setItem(0,ItemStack.EMPTY);p.getInventory().setItem(7,ItemStack.EMPTY);p.inventoryMenu.broadcastChanges();GoatmanWoods.served(level,base,seat(p),false);
         }
         var run=GoatmanVignette.run(data);run.putInt("Phase",GoatmanVignette.GATHERING);run.putInt("Clock",850);run.putBoolean("PlayerServes0464",true);run.putInt("Plated0464",0);run.putInt("EmptyPlates0465",0);run.putBoolean("MealReady0465",false);run.putBoolean("MealFrozen0465",false);
-        var cohort=run.getCompound("Cohort");for(var p:List.of(a,b)){var own=cohort.getCompound(p.getUUID().toString());own.putBoolean("Arrived",true);own.putBoolean("Active",true);own.putBoolean("Failed",false);cohort.put(p.getUUID().toString(),own);}run.put("Cohort",cohort);GoatmanVignette.saveRun(data,run);
+        var cohort=run.getCompound("Cohort");for(var p:List.of(a,b)){var own=cohort.getCompound(p.getUUID().toString());own.putBoolean("Arrived",true);own.putBoolean("Active",true);own.putBoolean("Failed",false);cohort.put(p.getUUID().toString(),own);}run.put("Cohort",cohort);var all=data.state(GoatmanVignette.ID);all.put("Run",run);data.setState(GoatmanVignette.ID,all);
         ORIGINALS.clear();ITEMS.clear();
     }
     static void food(ServerPlayer a,ServerPlayer b){
