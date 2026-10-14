@@ -101,6 +101,49 @@ public final class IndianLakeLinkedTests {
     }
     private static Fixture cave,throwing,upgrade;
     private static Fixture originalCave;
+    private static Fixture originalTown,originalShallows;
+    private static NativeTestChunks originalTownChunks;
+    @AfterBatch(batch="town_originals0493") public static void cleanOriginalTown(ServerLevel level){if(originalTownChunks!=null){originalTownChunks.close();originalTownChunks=null;}if(originalTown!=null){originalTown.close();originalTown=null;}}
+    @AfterBatch(batch="shallows_originals0493") public static void cleanOriginalShallows(ServerLevel level){if(originalShallows!=null){originalShallows.close();originalShallows=null;}}
+    @GameTest(template="empty",batch="town_originals0493",timeoutTicks=1200)
+    public static void originalChurchResidentsSurviveLegacyAdoptionAndALateEntityLoad(GameTestHelper h){
+        originalTown=new Fixture(h,new BlockPos(47900,80,47900),LabyrinthPlace.DROWNED_TOWN);var f=originalTown;var bounds=IndianLakeRooms.bounds(f.base,f.place);
+        var original=f.level.getEntitiesOfClass(LakeCongregantEntity.class,bounds,e->e.getTags().contains("the_oldest_house_indian_lake_body_0")).getFirst();
+        original.setCustomName(Component.literal("The original preacher"));original.setHealth(13);var id=original.getUUID();
+        var removed=f.level.getEntitiesOfClass(LakeCongregantEntity.class,bounds,e->e.getTags().contains("the_oldest_house_indian_lake_body_1")).getFirst();removed.discard();
+        var data=LabyrinthData.get(f.server);var state=data.state(DrownedTown.ID);state.remove("NativeOriginals0493");state.remove("FreshCast0493");data.setState(DrownedTown.ID,state);
+        originalTownChunks=new NativeTestChunks();originalTownChunks.hold(f.level,bounds);boolean[] started={false};
+        h.onEachTick(()->{
+            if(started[0]){DrownedTown.stage(f.level,f.base,LabyrinthData.get(f.server));return;}
+            if(!originalTownChunks.ready())return;started[0]=true;DrownedTown.stage(f.level,f.base,data);
+            h.assertTrue(data.state(DrownedTown.ID).getCompound("NativeOriginals0493").getCompound("body0").getUUID("Id").equals(id)&&f.level.getEntitiesOfClass(LakeCongregantEntity.class,bounds,e->e.getTags().contains("the_oldest_house_indian_lake_body")).size()==6,"the loaded church adopts its original residents without refilling a removed legacy body");
+            var saved=original.saveWithoutId(new CompoundTag());original.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);
+            f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",LabyrinthData.load(data.save(new CompoundTag(),f.level.registryAccess()),f.level.registryAccess()));
+            h.runAfterDelay(140,()->{
+                h.assertTrue(f.level.getEntitiesOfClass(LakeCongregantEntity.class,bounds,e->e.getTags().contains("the_oldest_house_indian_lake_body")).size()==5,"repeated native church restaging cannot replace its late original");
+                var returned=DrownedTownRegistry.CONGREGANT.get().create(f.level);returned.load(saved);h.assertTrue(f.level.addFreshEntity(returned),"the serialized original preacher returns under its actual UUID");DrownedTown.stage(f.level,f.base,LabyrinthData.get(f.server));
+                h.assertTrue(returned.getUUID().equals(id)&&returned.getHealth()==13&&returned.getName().getString().equals("The original preacher")&&returned.preacher(),"church posing keeps the actual UUID, name and health after SavedData reload");h.succeed();
+            });
+        });
+    }
+    @GameTest(template="empty",batch="shallows_originals0493",timeoutTicks=350)
+    public static void shallowRecollectionsRemainPrivateAndReuseTheirLateOriginals(GameTestHelper h){
+        originalShallows=new Fixture(h,new BlockPos(48700,80,48700),LabyrinthPlace.SHALLOWS);var f=originalShallows;var data=LabyrinthData.get(f.server);var bounds=IndianLakeRooms.bounds(f.base,f.place);
+        var owner=f.realPlayer("memory_owner",f.base.offset(2,0,-7));var peer=f.realPlayer("memory_peer",f.base.offset(4,0,-7));
+        IndianLakeProgress.hunted(data,owner.getUUID());IndianLakeProgress.hunted(data,peer.getUUID());Shallows.onArrive(owner,f.place);Shallows.onArrive(peer,f.place);
+        var original=Shallows.actor(owner);var other=Shallows.actor(peer);h.assertTrue(original!=null&&other!=null&&original.broadcastToPlayer(owner)&&!original.broadcastToPlayer(peer)&&other.broadcastToPlayer(peer)&&!other.broadcastToPlayer(owner),"native tracking sends each physical recollection only to its own reader");
+        var shared=DrownedTownRegistry.LAKE_WITCH.get().create(f.level);h.assertTrue(shared.broadcastToPlayer(owner)&&shared.broadcastToPlayer(peer),"the real shared lake witch retains ordinary native tracking");shared.discard();
+        original.setCustomName(Component.literal("The original recollection"));var id=original.getUUID();var saved=original.saveWithoutId(new CompoundTag());original.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);
+        var boy=f.level.getEntitiesOfClass(LakeCongregantEntity.class,bounds,e->e.getTags().contains(Shallows.BOY+"0")).getFirst();boy.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);
+        f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",LabyrinthData.load(data.save(new CompoundTag(),f.level.registryAccess()),f.level.registryAccess()));
+        h.onEachTick(()->{Shallows.onArrive(owner,f.place);Shallows.onArrive(peer,f.place);});
+        h.runAfterDelay(140,()->{
+            var loaded=LabyrinthData.get(f.server);
+            h.assertTrue(Shallows.actor(owner)==null&&Shallows.personal(loaded,owner.getUUID()).getUUID("Actor").equals(id)&&Shallows.actor(peer)==other&&f.level.getEntitiesOfClass(LakeWitchEntity.class,bounds,LakeWitchEntity::memory).size()==1&&f.level.getEntitiesOfClass(LakeCongregantEntity.class,bounds,e->e.getTags().contains(Shallows.BOY)).size()==2,"repeated actual arrivals retain the absent native girl and boy and leave the peer's original untouched");
+            var returned=DrownedTownRegistry.LAKE_WITCH.get().create(f.level);returned.load(saved);h.assertTrue(f.level.addFreshEntity(returned),"the saved native memory UUID returns without replacement conflict");Shallows.onArrive(owner,f.place);
+            h.assertTrue(Shallows.actor(owner)==returned&&returned.getUUID().equals(id)&&returned.getName().getString().equals("The original recollection")&&Shallows.lift(owner,returned)&&!Shallows.lift(peer,returned)&&!IndianLakeProgress.hasThrown(loaded,owner.getUUID()),"the original remains privately liftable after restart without awarding a throw");h.succeed();
+        });
+    }
     private static NativeTestChunks originalCaveChunks;
     @AfterBatch(batch="cave_originals0493") public static void cleanOriginalCave(ServerLevel level){
         if(originalCaveChunks!=null){originalCaveChunks.close();originalCaveChunks=null;}

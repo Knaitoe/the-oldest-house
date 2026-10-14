@@ -22,6 +22,20 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class PhoneCanoeTests {
+    private static Fixture originalCanoe;
+    @AfterBatch(batch="phone_original0493") public static void cleanOriginalCanoe(ServerLevel level){if(originalCanoe!=null){originalCanoe.close();originalCanoe=null;}}
+    @GameTest(template="empty",batch="phone_original0493",timeoutTicks=250)
+    public static void filmingCanoeCannotBeReplacedWhileItsSerializedOriginalLoads(GameTestHelper h){
+        originalCanoe=new Fixture(h,new BlockPos(49500,80,49500));var f=originalCanoe;var original=PhoneCanoe.stage(f.level,f.base);var id=original.getUUID();
+        original.setCustomName(net.minecraft.network.chat.Component.literal("The original filming canoe"));var saved=original.saveWithoutId(new CompoundTag());original.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);
+        var data=LabyrinthData.get(f.server);f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",LabyrinthData.load(data.save(new CompoundTag(),f.level.registryAccess()),f.level.registryAccess()));
+        h.onEachTick(()->PhoneCanoe.stage(f.level,f.base));
+        h.runAfterDelay(140,()->{
+            h.assertTrue(PhoneCanoe.stage(f.level,f.base)==null&&f.level.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(f.base,LabyrinthPlace.PHONE_CANOE),e->e.getTags().contains(PhoneCanoe.CANOE)).isEmpty(),"restaging and SavedData reload preserve the absent original instead of making another filming canoe");
+            var returned=DrownedTownRegistry.CAVE_CANOE.get().create(f.level);returned.load(saved);h.assertTrue(f.level.addFreshEntity(returned),"the same serialized canoe UUID returns successfully");
+            h.assertTrue(PhoneCanoe.stage(f.level,f.base)==returned&&returned.getUUID().equals(id)&&returned.getName().getString().equals("The original filming canoe"),"the exact original canoe remains the scene's native body and retains its name");h.succeed();
+        });
+    }
     @GameTest(template="empty") public static void appendedRoomAndLeakFitExistingWorldSlots(GameTestHelper h){
         for(int y:new int[]{65,80,150,250}){
             BlockPos origin=new BlockPos(100,y,100),base=LabyrinthPlaces.base(origin,LabyrinthPlace.PHONE_CANOE);var slot=LabyrinthPlaces.slotBounds(origin,LabyrinthPlace.PHONE_CANOE);

@@ -29,12 +29,16 @@ public final class PhoneCanoe {
     private static void save(LabyrinthData data,UUID player,CompoundTag state){CompoundTag all=data.state(ID);all.put(player.toString(),state);data.setState(ID,all);}
     public static boolean canDeal(LabyrinthData data,UUID player){return !personal(data,player).getBoolean("Finished")&&!WitnessAccount.has(data,player,WitnessAccount.Story.PHONE_CANOE);}
     public static boolean bound(ServerPlayer player){return personal(LabyrinthData.get(player.server),player.getUUID()).getInt("Phase")>=3&&IndianLakeRooms.inside(player,LabyrinthPlace.PHONE_CANOE);}
-    public static void build(net.minecraft.server.MinecraftServer server,ServerLevel level,BlockPos base){IndianLakeArchitecture.phone(level,base);stage(level,base);}
+    public static void build(net.minecraft.server.MinecraftServer server,ServerLevel level,BlockPos base){
+        IndianLakeArchitecture.phone(level,base);var data=LabyrinthData.get(server);var state=data.state(ID);
+        if(state.isEmpty()&&data.door(LabyrinthPlace.PHONE_CANOE.entryDoorId())==null)state.putBoolean("FreshCast0493",true);
+        state.putBoolean("Built",true);data.setState(ID,state);stage(level,base);
+    }
     public static LakeCanoeEntity stage(ServerLevel level,BlockPos base){
-        var boats=level.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(base,LabyrinthPlace.PHONE_CANOE),b->b.getTags().contains(CANOE));
-        if(!boats.isEmpty()){for(int i=1;i<boats.size();i++)boats.get(i).discard();boats.getFirst().mobile(true);return boats.getFirst();}
-        LakeCanoeEntity boat=DrownedTownRegistry.CAVE_CANOE.get().create(level);if(boat==null)return null;
-        boat.addTag(CANOE);boat.mobile(true);boat.moveTo(Vec3.atBottomCenterOf(base.offset(BOAT)));boat.setYRot(180);level.addFreshEntity(boat);return boat;
+        boolean fresh=LabyrinthData.get(level.getServer()).state(ID).getBoolean("FreshCast0493");
+        var boat=LakeOriginals.ensure(level,base,LabyrinthPlace.PHONE_CANOE,ID,"canoe",CANOE,DrownedTownRegistry.CAVE_CANOE.get(),fresh,
+                b->{b.addTag(CANOE);b.mobile(true);b.moveTo(Vec3.atBottomCenterOf(base.offset(BOAT)));b.setYRot(180);});
+        if(boat!=null)boat.mobile(true);return boat;
     }
     public static void onArrive(ServerPlayer player,LabyrinthPlace place){
         if(place!=LabyrinthPlace.PHONE_CANOE)return;BlockPos base=IndianLakeRooms.base(player.server,place);if(base==null)return;

@@ -81,6 +81,9 @@ public final class LakeWitchEntity extends PathfinderMob {
     @Override public EntityDimensions getDefaultDimensions(Pose pose){return memory()?EntityDimensions.scalable(.6F,1.8F).withEyeHeight(1.6F):super.getDefaultDimensions(pose);}
     @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(MEMORY_PHASE.equals(key))refreshDimensions();}
     public @Nullable UUID memoryOwner() { return memoryOwner; }
+    @Override public boolean broadcastToPlayer(ServerPlayer player){
+        return (!memory()||memoryOwner!=null&&memoryOwner.equals(player.getUUID()))&&super.broadcastToPlayer(player);
+    }
     public @Nullable BlockPos memoryBase() { return memoryBase; }
     public void recollection(UUID owner, BlockPos base) {
         // No goals or hunt logic run in memory mode; leave native travel enabled for the throw's gravity.
