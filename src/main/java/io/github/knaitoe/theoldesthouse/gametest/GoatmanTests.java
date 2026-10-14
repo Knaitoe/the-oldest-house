@@ -9,6 +9,7 @@ import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.*;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.server.level.*;
 import net.minecraft.util.Mth;
 import net.minecraft.world.*;
@@ -30,6 +31,20 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID+"_goatman")
 @PrefixGameTestTemplate(false)
 public final class GoatmanTests {
+    private static Fixture hiddenFood;
+    @AfterBatch(batch="goat_food_pose0493") public static void cleanHiddenFood(ServerLevel level){if(hiddenFood!=null){hiddenFood.close();hiddenFood=null;}}
+    @GameTest(template="empty",batch="goat_food_pose0493",timeoutTicks=1200)
+    public static void oldInvisibleServingsRegainTheirEntireNativePoseWithoutReplacingTheOriginal(GameTestHelper h){
+        hiddenFood=new Fixture(h,50300);var f=hiddenFood;var p=f.nativePlayer("old_plate_pose");f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native serving sections are loaded")).thenExecute(()->{
+            var food=new ItemStack(GoatmanRegistry.BRAT.get());food.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("The original hidden serving"));
+            var display=GoatmanWoods.served(f.l,f.b,0,food);var id=display.getUUID();var tag=display.saveWithoutId(new CompoundTag());
+            var transform=tag.getCompound("transformation");var zero=new ListTag();for(int i=0;i<3;i++)zero.add(net.minecraft.nbt.FloatTag.valueOf(0));transform.put("scale",zero);tag.put("transformation",transform);tag.putFloat("view_range",0);tag.putString("item_display","none");display.load(tag);display.setInvisible(true);display.moveTo(f.b.getX(),f.b.getY()-2,f.b.getZ()-61);display.getPersistentData().putBoolean("PlaceSetting0492",true);
+            GoatmanWoods.fitPlaceSettings(f.l,f.b);var fixed=display.saveWithoutId(new CompoundTag());var pose=fixed.getCompound("transformation");
+            h.assertTrue(display.getUUID().equals(id)&&GoatmanWoods.serving(f.l,f.b,0)==display&&ItemStack.matches(GoatmanWoods.food(f.l,display),food),"the saved repair keeps the actual serving UUID and every original item component");
+            h.assertTrue(!display.isInvisible()&&fixed.getFloat("view_range")==1&&fixed.getString("item_display").equals("fixed")&&Math.abs(pose.getList("scale",5).getFloat(0)-.55)<.0001&&Math.abs(pose.getList("left_rotation",5).getFloat(0)+.70710677)<.0001&&pose.getList("translation",5).getFloat(1)==0&&display.position().distanceToSqr(GoatmanWoods.plate(0).add(f.b.getX(),f.b.getY()+.05,f.b.getZ()))<.000001,"the old checkpoint marker cannot preserve an invisible, zero-range, zero-scale or misplaced original");
+        }).thenSucceed();
+    }
     private static Fixture departedMeal;
     @AfterBatch(batch="goat_departed_meal0488") public static void departedMealDone(ServerLevel ignored){if(departedMeal!=null){departedMeal.close();departedMeal=null;}}
     @GameTest(template="empty",templateNamespace=TheOldestHouse.MOD_ID+"_wake",batch="goat_departed_meal0488",timeoutTicks=320)
@@ -139,7 +154,7 @@ public final class GoatmanTests {
             var specific=new PlayerInteractEvent.EntityInteractSpecific(p,InteractionHand.OFF_HAND,cousin,intercept.orElseThrow().subtract(cousin.position()));NeoForge.EVENT_BUS.post(specific);
             h.assertTrue(specific.isCanceled()&&specific.getCancellationResult()==InteractionResult.SUCCESS&&p.getOffhandItem().isEmpty()&&p.getInventory().countItem(GoatmanRegistry.BRAT.get())==0,"the specific native entity click consumes exactly the off-hand serving");
             h.assertTrue(f.run().getInt("Plated0464")==15&&f.run().getInt("BurntPlates0476")==8,"all four cooked originals reach their intended plates and the burnt one keeps its char");
-            for(int seat=0;seat<4;seat++){var display=GoatmanWoods.serving(f.l,f.b,seat);var item=GoatmanWoods.food(f.l,display);var displayAt=GoatmanWoods.plate(seat).add(f.b.getX(),f.b.getY()+.09,f.b.getZ());var tag=display.saveWithoutId(new CompoundTag());
+            for(int seat=0;seat<4;seat++){var display=GoatmanWoods.serving(f.l,f.b,seat);var item=GoatmanWoods.food(f.l,display);var displayAt=GoatmanWoods.plate(seat).add(f.b.getX(),f.b.getY()+.05,f.b.getZ());var tag=display.saveWithoutId(new CompoundTag());
                 h.assertTrue(display.position().distanceToSqr(displayAt)<.000001&&item.getCount()==1&&GoatmanSupper.burnt(item)==(seat==3)&&tag.getString("item_display").equals("fixed")&&Math.abs(tag.getCompound("transformation").getList("scale",5).getFloat(0)-.55)<.0001,"the actual original display keeps the native reviewed pose, scale and visible food: "+seat);
             }
             var picked=GoatmanWoods.serving(f.l,f.b,1);var exact=GoatmanWoods.food(f.l,picked).copy();aimAtPlate(f,p,1,true,.08);

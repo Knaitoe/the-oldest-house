@@ -33,11 +33,14 @@ public final class ImmediateFindingsTests {
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"actual food sections are loaded")).thenExecute(()->{
             h.assertTrue(GoatmanVignette.enter(p),"the cook joins a fresh evening");var run=f.run();run.putInt("Phase",GoatmanVignette.GATHERING);run.putInt("Clock",850);run.putInt("Plated0464",1);run.putInt("EmptyPlates0465",0);run.putInt("CookingChatTicks0490",219);f.cohort(run,List.of(p),0);f.run(run);
             int supports=0;for(int x=-1;x<=1;x++)for(int z=-69;z<=-61;z++){var at=f.b.offset(x,1,z);var state=f.l.getBlockState(at);h.assertTrue(state.is(GoatmanRegistry.TABLE.get()),"every tile is the connected table");if(state.getCollisionShape(f.l,at).toAabbs().stream().anyMatch(box->box.minY<.8))supports++;}h.assertTrue(supports==6,"the entire long table has six supports, not four per tile");
-            var food=new ItemStack(GoatmanRegistry.BRAT.get(),2);food.set(DataComponents.CUSTOM_NAME,Component.literal("My actual cooked frank"));CustomData.update(DataComponents.CUSTOM_DATA,food,t->{t.putUUID(GoatmanVignette.ROUND,run.getUUID("Id"));t.putUUID("ReviewOriginal",UUID.randomUUID());});var exact=food.copyWithCount(1);p.setItemInHand(InteractionHand.MAIN_HAND,food);
-            f.click(p,new BlockPos(-1,1,-61));var original=GoatmanWoods.serving(f.l,f.b,0);h.assertTrue(original!=null&&food.getCount()==1&&ItemStack.matches(GoatmanWoods.food(f.l,original),exact),"the physically empty plate accepts one held original despite the stale occupied bit");var id=original.getUUID();
-            f.click(p,new BlockPos(-1,1,-61));h.assertTrue(food.getCount()==1&&GoatmanWoods.serving(f.l,f.b,0).getUUID().equals(id),"an actually occupied plate keeps its original and spends nothing twice");
-            p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);f.click(p,new BlockPos(-1,1,-61));h.assertTrue(original.isRemoved()&&p.getInventory().items.stream().anyMatch(item->ItemStack.matches(item,exact)),"pickup returns the exact native food components");
-        }).thenIdle(2).thenExecute(()->h.assertTrue(f.run().getInt("CookingChatLine0490")>=1,"post-story cooking chatter advances at the shorter 220-tick interval")).thenSucceed();
+            var food=new ItemStack(GoatmanRegistry.BRAT.get());food.set(DataComponents.CUSTOM_NAME,Component.literal("My actual cooked frank"));CustomData.update(DataComponents.CUSTOM_DATA,food,t->{t.putUUID(GoatmanVignette.ROUND,run.getUUID("Id"));t.putUUID("ReviewOriginal",UUID.randomUUID());});var exact=food.copyWithCount(1);p.setItemInHand(InteractionHand.MAIN_HAND,food);
+            f.click(p,new BlockPos(-1,1,-61));var original=GoatmanWoods.serving(f.l,f.b,0);h.assertTrue(original!=null&&food.isEmpty()&&ItemStack.matches(GoatmanWoods.food(f.l,original),exact),"the physically empty plate accepts the last held original despite the stale occupied bit");var id=original.getUUID();
+            f.click(p,new BlockPos(-1,1,-61));h.assertTrue(p.getMainHandItem().isEmpty()&&GoatmanWoods.serving(f.l,f.b,0).getUUID().equals(id),"the native empty-hand fallback cannot pick the last serving straight back up");
+        }).thenIdle(3).thenExecute(()->{
+            var original=GoatmanWoods.serving(f.l,f.b,0);var exact=GoatmanWoods.food(f.l,original).copy();f.click(p,new BlockPos(-1,1,-61));
+            h.assertTrue(original.isRemoved()&&p.getInventory().items.stream().anyMatch(item->ItemStack.matches(item,exact)),"a later intentional pickup returns the exact native food components");
+            h.assertTrue(f.run().getInt("CookingChatLine0490")>=1,"post-story cooking chatter advances at the shorter 220-tick interval");
+        }).thenSucceed();
     }
 
     @GameTest(template="empty",batch="review491_family",timeoutTicks=650)

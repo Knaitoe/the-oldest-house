@@ -196,12 +196,12 @@ public final class WitnessTests {
             helper.assertTrue(TellTaleFloorboards.heat()==TellTaleFloorboards.MAX_HEAT,"an actual participant's native steps can reach the peak");
             player.setGameMode(GameType.SPECTATOR);TellTaleFloorboards.onServerTick(new net.neoforged.neoforge.event.tick.ServerTickEvent.Post(()->true,server));
             double fading=TellTaleFloorboards.heat();
-            helper.assertTrue(fading==99.5&&!player.getPersistentData().getBoolean("HouseTransitionPending"),"an observer-only room decays normally without consuming the peak or forcing an exit");
+            helper.assertTrue(fading==99.5&&!LabyrinthDoors.isBusy(player),"an observer-only room decays normally without consuming the peak or forcing an exit");
             level.gameEvent(net.minecraft.world.level.gameevent.GameEvent.STEP,player.position(),net.minecraft.world.level.gameevent.GameEvent.Context.of(player));
             helper.assertTrue(TellTaleFloorboards.heat()==fading,"native observer vibrations do not agitate the room");
             player.setGameMode(GameType.SURVIVAL);level.gameEvent(net.minecraft.world.level.gameevent.GameEvent.STEP,player.position(),net.minecraft.world.level.gameevent.GameEvent.Context.of(player));
             TellTaleFloorboards.onServerTick(new net.neoforged.neoforge.event.tick.ServerTickEvent.Post(()->true,server));
-            helper.assertTrue(TellTaleFloorboards.heat()==0&&player.getPersistentData().getBoolean("HouseTransitionPending")&&WitnessAccount.count(LabyrinthData.get(server),player.getUUID())==0,"the restored participant still faces the actual peak and earns no account by failing");helper.succeed();
+            helper.assertTrue(TellTaleFloorboards.heat()==0&&LabyrinthDoors.isBusy(player)&&LabyrinthData.get(server).returnDepth(player.getUUID())==1&&WitnessAccount.count(LabyrinthData.get(server),player.getUUID())==0,"the restored participant still faces the actual peak, retains the route until the native fade completes, and earns no account by failing");helper.succeed();
         }finally{LabyrinthDoors.clearAll();NativeTestPlayers.remove(player);}
     }
 

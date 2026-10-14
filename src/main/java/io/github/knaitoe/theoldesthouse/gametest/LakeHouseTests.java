@@ -106,7 +106,7 @@ public final class LakeHouseTests {
     /** Puts a reader at a spot relative to the scene, facing north, and refreshes what their eyes are in. */
     private static Fixture pushing;
     @AfterBatch(batch="lake_house_push0491") public static void pushingDone(ServerLevel ignored){if(pushing!=null){pushing.close();pushing=null;}}
-    @GameTest(template="empty",batch="lake_house_push0491",timeoutTicks=240)
+    @GameTest(template="empty",batch="lake_house_push0491",timeoutTicks=600)
     public static void originalBenchPositionsAndActualAlternatingWallPushesMoveTheCanoe(GameTestHelper h){
         pushing=new Fixture(h);var f=pushing;
         f.ready(()->{
@@ -116,13 +116,18 @@ public final class LakeHouseTests {
             canoe.moveTo(f.base().getX()+1,f.base().getY()-.35,f.base().getZ()-112,180,0);canoe.setDeltaMovement(Vec3.ZERO);canoe.positionRider(p);canoe.positionRider(tess);
             h.assertTrue(p.position().distanceTo(tess.position())>1.18&&Math.abs(p.getY()-tess.getY())<.01,"the native seated bodies attach to separate bench centres at the same height");
             h.assertTrue(canoe.underLowRoof()&&canoe.wallWithinReach(-1)&&canoe.wallWithinReach(1),"the actual culvert ceiling and two walls are reachable");
+            h.assertTrue(p.getForcedPose()==net.minecraft.world.entity.Pose.CROUCHING&&!f.out.getBlockCollisions(p,p.getBoundingBox()).iterator().hasNext()&&p.getEyeY()>f.base().getY()&&tess.getEyeY()>f.base().getY(),"the actual ducked reader and original Tess have dry eyes and native ceiling clearance, rather than a synthetic box");
             h.assertTrue(!canoe.push(peer,-1)&&!canoe.push(p,8),"a non-rider and an invalid hand side cannot propel it");
-            var before=canoe.position();h.assertTrue(canoe.push(p,-1)&&canoe.getDeltaMovement().z<0&&canoe.getDeltaMovement().x<0,"the first stroke moves forward and away from the actual left wall");canoe.move(net.minecraft.world.entity.MoverType.SELF,canoe.getDeltaMovement());
+            float health=p.getHealth();var before=canoe.position();h.assertTrue(canoe.push(p,-1)&&canoe.getDeltaMovement().z<0&&canoe.getDeltaMovement().x<0,"the first stroke moves forward and away from the actual left wall");canoe.move(net.minecraft.world.entity.MoverType.SELF,canoe.getDeltaMovement());
             h.assertTrue(canoe.position().distanceTo(before)>.1&&!canoe.push(p,1),"native collision applies real movement and blocks an immediate second stroke");
             h.runAfterDelay(LakeHouseCanoe.STROKE_TICKS+1,()->{
                 canoe.setDeltaMovement(Vec3.ZERO);h.assertTrue(!canoe.push(p,-1)&&canoe.push(p,1)&&canoe.getDeltaMovement().x>0&&canoe.getDeltaMovement().z<0,"the next stroke switches walls and reverses the lateral shove");
-                canoe.moveTo(f.base().getX()+1,f.base().getY()-.35,f.base().getZ()-90,180,0);h.assertTrue(!canoe.underLowRoof()&&!canoe.push(p,-1),"open water restores paddling and cannot receive a wall stroke");
-                h.assertTrue(canoe.getUUID().equals(id)&&tess.getUUID().equals(tessId)&&tess.getVehicle()==canoe,"seating and pushing preserve the same canoe and passenger");h.succeed();
+                h.assertTrue(p.getHealth()==health&&!p.isInWall()&&!p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER)&&p.getAirSupply()==p.getMaxAirSupply(),"actual rider ticks and the first two native strokes cost neither health nor breath under the roof");
+            });
+            h.runAfterDelay(340,()->{
+                h.assertTrue(p.getHealth()==health&&!p.isInWall()&&!p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER)&&p.getAirSupply()==p.getMaxAirSupply()&&!LakeHouseDive.choking(p.getUUID()),"remaining longer than an ordinary drowning window keeps the real seated reader alive and breathing");
+                canoe.moveTo(f.base().getX()+1,f.base().getY()-.35,f.base().getZ()-90,180,0);canoe.positionRider(p);h.assertTrue(!canoe.underLowRoof()&&!canoe.push(p,-1)&&p.getForcedPose()==null,"open water restores paddling and the original player pose and cannot receive a wall stroke");
+                h.assertTrue(canoe.getUUID().equals(id)&&tess.getUUID().equals(tessId)&&tess.getVehicle()==canoe,"seating and pushing preserve the same canoe and passenger");p.stopRiding();CanoeRiderPose.apply(p,false);h.assertTrue(p.getForcedPose()==null,"dismount leaves no held canoe pose");h.succeed();
             });
         });
     }
