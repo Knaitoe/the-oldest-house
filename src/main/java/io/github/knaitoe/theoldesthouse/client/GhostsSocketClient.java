@@ -26,7 +26,7 @@ public final class GhostsSocketClient {
         if(next==53){mc.options.keyUp.setDown(false);if(age>20&&!GhostsTakeClient.frozen()&&GhostsTakeClient.day()==0&&mc.getCameraEntity()==mc.player&&mc.player.distanceToSqr(at.getCenter())>32*32)pending="ghosts-restored-camera";return false;}
         var cast=mc.level.getEntitiesOfClass(LiteraryActor.class,new AABB(Vec3.atLowerCornerOf(at.offset(-21,-5,-47)),Vec3.atLowerCornerOf(at.offset(22,13,1))),a->a.role()==LiteraryActor.GHOST_MARJORIE);
         if(cast.isEmpty())return false;require(cast.size()==1&&cast.getFirst().owner().filter(mc.player.getUUID()::equals).isPresent(),"the client receives only its own native Marjorie");var m=cast.getFirst();if(original==null)original=m.getUUID();require(original.equals(m.getUUID()),"the approach and held jump keep the original client UUID");
-        if(!mc.player.isUsingItem()&&age>10)mc.gameMode.useItem(mc.player,InteractionHand.MAIN_HAND);
+        mc.options.keyUse.setDown(true);if(!mc.player.isUsingItem()&&age>10)mc.gameMode.useItem(mc.player,InteractionHand.MAIN_HAND);
         if(!GhostsTakeClient.frozen()){
             Vec3 goal=mc.player.getZ()<at.getZ()-21.6?new Vec3(at.getX()-8.5,at.getY()+5,at.getZ()-21.4):new Vec3(at.getX()+(reader.equals("A")?-7.5:-11.5),at.getY()+5,at.getZ()-18.5);
             Vec3 delta=goal.subtract(mc.player.position());mc.player.setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));mc.player.setXRot(0);mc.options.keyUp.setDown(delta.horizontalDistanceSqr()>.09);
