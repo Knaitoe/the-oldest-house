@@ -100,6 +100,43 @@ public final class IndianLakeLinkedTests {
         }
     }
     private static Fixture cave,throwing,upgrade;
+    private static Fixture originalCave;
+    private static NativeTestChunks originalCaveChunks;
+    @AfterBatch(batch="cave_originals0493") public static void cleanOriginalCave(ServerLevel level){
+        if(originalCaveChunks!=null){originalCaveChunks.close();originalCaveChunks=null;}
+        if(originalCave!=null){originalCave.close();originalCave=null;}
+    }
+    @GameTest(template="empty",batch="cave_originals0493",timeoutTicks=1200)
+    public static void caveAdoptsLegacyOriginalsAndNeverReplacesLateBodiesOrAnotherCanoe(GameTestHelper h){
+        originalCave=new Fixture(h,new BlockPos(46300,80,46300),LabyrinthPlace.PRESERVED_CAVE);var f=originalCave;
+        var bounds=IndianLakeRooms.bounds(f.base,f.place);originalCaveChunks=new NativeTestChunks();originalCaveChunks.hold(f.level,bounds);
+        var original=f.level.getEntitiesOfClass(LakeCongregantEntity.class,bounds,e->e.getTags().contains(PreservedCave.BODY+"0")).getFirst();
+        original.setCustomName(Component.literal("The original in the front pew"));original.setHealth(13);original.preservedEra(3);var id=original.getUUID();
+        var removed=f.level.getEntitiesOfClass(LakeCongregantEntity.class,bounds,e->e.getTags().contains(PreservedCave.BODY+"1")).getFirst();removed.discard();
+        var canoe=f.level.getEntitiesOfClass(LakeCanoeEntity.class,bounds,e->e.getTags().contains(PreservedCave.CANOE_TAG)).getFirst();var canoeId=canoe.getUUID();
+        var foreign=DrownedTownRegistry.CAVE_CANOE.get().create(f.level);foreign.moveTo(Vec3.atBottomCenterOf(f.base.offset(2,0,-41)));foreign.setCustomName(Component.literal("A visitor's canoe"));f.level.addFreshEntity(foreign);
+        var data=LabyrinthData.get(f.server);var state=data.state(PreservedCave.ID);
+        for(String key:List.of("BodyOriginals0493","BodiesRecorded0493","CanoeOriginal0493","CanoeRecorded0493","FreshOriginals0493"))state.remove(key);
+        data.setState(PreservedCave.ID,state);boolean[] started={false};
+        h.onEachTick(()->{
+            if(started[0]){PreservedCave.stage(f.level,f.base,LabyrinthData.get(f.server));return;}
+            if(!originalCaveChunks.ready())return;started[0]=true;PreservedCave.stage(f.level,f.base,data);
+            h.assertTrue(data.state(PreservedCave.ID).getCompound("BodyOriginals0493").getUUID("0").equals(id)&&data.state(PreservedCave.ID).getUUID("CanoeOriginal0493").equals(canoeId),"a fully loaded legacy scene adopts its actual native originals");
+            h.assertTrue(f.level.getEntitiesOfClass(LakeCongregantEntity.class,bounds,e->e.getTags().contains(PreservedCave.BODY)).size()==23&&!foreign.isRemoved(),"a removed legacy body stays absent and another canoe is not erased");
+            var bodySave=original.saveWithoutId(new CompoundTag());var canoeSave=canoe.saveWithoutId(new CompoundTag());
+            original.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);canoe.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);
+            f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",LabyrinthData.load(data.save(new CompoundTag(),f.level.registryAccess()),f.level.registryAccess()));
+            h.runAfterDelay(140,()->{
+                var reloaded=LabyrinthData.get(f.server);
+                h.assertTrue(f.level.getEntitiesOfClass(LakeCongregantEntity.class,bounds,e->e.getTags().contains(PreservedCave.BODY)).size()==22&&f.level.getEntitiesOfClass(LakeCanoeEntity.class,bounds,e->e.getTags().contains(PreservedCave.CANOE_TAG)).isEmpty()&&!foreign.isRemoved(),"five seconds of native restaging and SavedData reload cannot replace either late original or consume a visitor's canoe");
+                var returned=DrownedTownRegistry.CONGREGANT.get().create(f.level);returned.load(bodySave);
+                var returnedCanoe=DrownedTownRegistry.CAVE_CANOE.get().create(f.level);returnedCanoe.load(canoeSave);
+                h.assertTrue(f.level.addFreshEntity(returned)&&f.level.addFreshEntity(returnedCanoe),"the same serialized native UUIDs return without replacement conflicts");
+                PreservedCave.stage(f.level,f.base,reloaded);
+                h.assertTrue(returned.getUUID().equals(id)&&returned.getHealth()==13&&returned.preservedEra()==3&&returned.getName().getString().equals("The original in the front pew")&&returnedCanoe.getUUID().equals(canoeId)&&!foreign.isRemoved(),"restaging retains the original body identity, name, health and era and the exact original canoe");h.succeed();
+            });
+        });
+    }
     @AfterBatch(batch="lake_cave") public static void cleanCave(ServerLevel level){if(cave!=null){cave.close();cave=null;}}
     @AfterBatch(batch="lake_throw") public static void cleanThrow(ServerLevel level){if(throwing!=null){throwing.close();throwing=null;}}
     @AfterBatch(batch="lake_upgrade") public static void cleanUpgrade(ServerLevel level){if(upgrade!=null){upgrade.close();upgrade=null;}}
