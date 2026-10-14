@@ -34,7 +34,12 @@ public final class GhostsSocketClient {
             return false;
         }
         mc.options.keyUp.setDown(false);require(m.phase()==GhostsSet.LEAP&&m.getY()>at.getY()+6&&m.getZ()>at.getZ()-15,"the camera handoff waits for the real original beyond the native banister");
-        if(heldBody==null){heldBody=m.position();heldEye=mc.getCameraEntity().position();head=m.getYHeadRot();}
+        if(heldBody==null){heldBody=m.position();heldEye=mc.getCameraEntity().position();head=m.getYHeadRot();
+            // A local, unspawned native model fixture reproduces a cached standing pose first seen again at the held apex.
+            var sample=LiteraryRegistry.ACTOR.get().create(mc.level);require(sample!=null,"the native pose fixture creates");sample.bind(LabyrinthPlace.GHOSTS_SET,mc.player.getUUID());sample.appearance(LiteraryActor.GHOST_MARJORIE,GhostsSet.STAND);
+            var model=new GhostsCastModel(mc.getEntityModels().bakeLayer(GhostsCastModel.LAYER));model.setupAnim(sample,0,0,.5F,0,0);sample.appearance(LiteraryActor.GHOST_MARJORIE,GhostsSet.LEAP);model.setupAnim(sample,0,0,.5F,0,0);
+            require(Math.abs(model.body.xRot+.12F)<.001,"the held apex cannot trap the renderer in its previous standing pose blend");sample.discard();
+        }
         require(m.position().distanceToSqr(heldBody)<.002&&mc.getCameraEntity()!=mc.player&&mc.getCameraEntity().position().distanceToSqr(heldEye)<.000001,"the original body and reader's native held lens remain fixed");
         if(++heldTicks>=43){require(Math.abs(net.minecraft.util.Mth.wrapDegrees(m.getYHeadRot()-head))>10,"only the original head turns toward this reader's lens during the hold");pending="ghosts-held-banister-jump";}
         return false;

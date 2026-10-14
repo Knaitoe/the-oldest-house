@@ -41,7 +41,7 @@ final class GhostsSkinMesh {
                     float topA=-4.75F+.55F*ea*ea,topB=-4.75F+.55F*eb*eb;
                     float bottomA=topA+(-3.35F-.45F*ea*ea-topA)*blink,bottomB=topB+(-3.35F-.45F*eb*eb-topB)*blink;
                     quad(p,v,light,overlay,colour,new float[][]{{x+a*2.5F,bottomA,-4.035F},{x+b*2.5F,bottomB,-4.035F},{x+b*2.5F,topB,-4.035F},{x+a*2.5F,topA,-4.035F}},9.8F+a*.6F,13.3F,9.8F+b*.6F,13.7F,0,0,-1);
-                    if(blink>.75F&&i>0&&i<9){float lineA=-3.95F+.1F*ea*ea,lineB=-3.95F+.1F*eb*eb;quad(p,v,light,overlay,0xff79665b,new float[][]{{x+a*2.5F,lineA,-4.04F},{x+b*2.5F,lineB,-4.04F},{x+b*2.5F,lineB-.04F,-4.04F},{x+a*2.5F,lineA-.04F,-4.04F}},9.8F,13.3F,10.4F,13.4F,0,0,-1);}
+                    if(blink>.75F&&i>0&&i<9){float lineA=-3.95F+.1F*ea*ea,lineB=-3.95F+.1F*eb*eb;quad(p,v,light,overlay,0xff79665b,new float[][]{{x+a*2.5F,lineA,-4.04F},{x+b*2.5F,lineB,-4.04F},{x+b*2.5F,lineB-.12F,-4.04F},{x+a*2.5F,lineA-.12F,-4.04F}},9.8F,13.3F,10.4F,13.4F,0,0,-1);}
                 }
             }
         }
