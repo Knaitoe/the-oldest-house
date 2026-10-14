@@ -888,6 +888,9 @@ public final class LabyrinthDoors {
                 player.stopRiding();
                 player.teleportTo(level, pos.x, pos.y, pos.z, pending.target().yaw(), 0.0F);
                 if(player.serverLevel()!=level || player.position().distanceToSqr(pos)>0.01D)continue;
+                // A forced cut runs after the native listener's tick. The first acknowledged
+                // packet must use the landing baseline, as the ordinary internal doors do.
+                player.connection.resetPosition();
                 player.setDeltaMovement(Vec3.ZERO);
                 player.resetFallDistance();
                 for(var companion:companions)io.github.knaitoe.theoldesthouse.opening.CompanionOrders.followAcross(companion,player);

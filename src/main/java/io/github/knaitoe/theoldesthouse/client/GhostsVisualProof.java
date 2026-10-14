@@ -33,7 +33,7 @@ public final class GhostsVisualProof extends Screen {
         if(page>=6&&page<=11){
             reviewCast(g,buffers);
         }else if(page==15){
-            for(int n=0;n<12;n++){var pose=g.pose();pose.pushPose();pose.translate(24+(n%6+.5F)*(width-48)/6,52+(n/6+.6F)*(height-72)/2,190);pose.scale(32,-32,32);pose.mulPose(Axis.XP.rotationDegrees(18));pose.mulPose(Axis.YP.rotationDegrees(-35));GhostsPropRenderer.preview(n<6?LiteraryActor.GHOST_DRAWER:LiteraryActor.GHOST_PLAYHOUSE,(n%6)*.4F,pose,buffers,LightTexture.FULL_BRIGHT);buffers.endBatch();pose.popPose();}
+            for(int n=0;n<12;n++){var pose=g.pose();pose.pushPose();pose.translate(24+(n%6+.5F)*(width-48)/6,52+(n/6+.6F)*(height-72)/2,190);pose.scale(32,-32,32);pose.mulPose(Axis.XP.rotationDegrees(18));pose.mulPose(Axis.YP.rotationDegrees(145));GhostsPropRenderer.preview(n<6?LiteraryActor.GHOST_DRAWER:LiteraryActor.GHOST_PLAYHOUSE,(n%6)*.4F,pose,buffers,LightTexture.FULL_BRIGHT);buffers.endBatch();pose.popPose();}
         }else if(page==4||page==5){
             var p=g.pose();p.pushPose();p.translate(width/2.,height*.72,180);p.scale(48,-48,48);p.mulPose(Axis.XP.rotationDegrees(18));p.mulPose(Axis.YP.rotationDegrees(-35));
             for(int bx=-1;bx<=1;bx++)for(int z=-1;z<=0;z++){p.pushPose();p.translate(bx-.5,0,z);mc.getBlockRenderer().renderSingleBlock(GhostsSetBlock.of(GhostsSetBlock.Kind.TABLE,Direction.NORTH),p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.popPose();}
@@ -56,7 +56,7 @@ public final class GhostsVisualProof extends Screen {
             var camera=new net.minecraft.world.item.ItemStack(LiteraryRegistry.CAMCORDER.get());var mesh=mc.getItemRenderer().getModel(camera,null,null,0);if(mesh==mc.getModelManager().getMissingModel()||!mesh.isGui3d())throw new IllegalStateException("The production camera requires its native mesh");g.renderItem(camera,width-24,height-24);
             int n=0;for(var kind:GhostsSetBlock.Kind.values()){
                 for(var face:Direction.Plane.HORIZONTAL)if(mc.getBlockRenderer().getBlockModel(GhostsSetBlock.of(kind,face))==mc.getModelManager().getMissingModel())throw new IllegalStateException("Missing filming fixture "+kind+" "+face);
-                var pose=g.pose();pose.pushPose();pose.translate(20+(n%7+.5F)*(width-40)/7,36+(n/7+.7F)*(height-60)/5,190);pose.scale(23,-23,23);pose.mulPose(Axis.XP.rotationDegrees(20));pose.mulPose(Axis.YP.rotationDegrees(-30));
+                var pose=g.pose();pose.pushPose();pose.translate(20+(n%7+.5F)*(width-40)/7,36+(n/7+.7F)*(height-60)/((GhostsSetBlock.Kind.values().length+6)/7),190);pose.scale(23,-23,23);pose.mulPose(Axis.XP.rotationDegrees(20));pose.mulPose(Axis.YP.rotationDegrees(-30));
                 mc.getBlockRenderer().renderSingleBlock(GhostsSetBlock.of(kind,page==12?Direction.EAST:page==13?Direction.SOUTH:page==14?Direction.WEST:Direction.NORTH),pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);buffers.endBatch();pose.popPose();n++;
             }
         }else{
