@@ -47,7 +47,7 @@ public final class GoatmanStalking {
         return true;
     }
     /** Native outlines occlude; the trailer's clear glazing does not hide a visible texture change. */
-    private static boolean visible(ServerLevel l,Entity camera,Vec3 from,Vec3 to){
+    public static boolean visible(net.minecraft.world.level.Level l,Entity camera,Vec3 from,Vec3 to){
         var direction=to.subtract(from).normalize();var start=from;
         for(int i=0;i<12;i++){
             var hit=l.clip(new ClipContext(start,to,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,camera));if(hit.getType()==HitResult.Type.MISS)return true;
