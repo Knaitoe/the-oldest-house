@@ -80,7 +80,7 @@ public final class GhostsVisualProof extends Screen {
             p.mulPose(Axis.YP.rotationDegrees(page==7?90:page==8?0:page==9?180-(n%3)*90:180));if(!faceOnly){p.translate(0,-1.5,0);if(phase==GhostsSet.BED)LiteraryRenderers.bedPose(p,1);}else p.translate(0,.25,0);
             model.renderToBuffer(p,buffers.getBuffer(RenderType.entityCutoutNoCull(GhostsCastModel.skin(role,phase))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);
             if(!faceOnly)GhostsMouthLayer.preview(model,role,phase,age,p,buffers,LightTexture.FULL_BRIGHT);buffers.endBatch();p.popPose();
-            g.drawCenteredString(font,page==10?(n<6?"normal / ":"dinner / ")+(n%6):GhostsSet.PEOPLE[role-LiteraryActor.GHOST_MARJORIE]+" / "+phase,20+(n%columns)*(width-40)/columns+(width-40)/12,(int)cy+15,0xffe7dbc3);
+            g.drawCenteredString(font,page==10?(n<6?"normal / ":"dinner / ")+(n%6):GhostsSet.PEOPLE[role-LiteraryActor.GHOST_MARJORIE].replace("Father Wanderly","Wanderly")+" / "+phase,20+(n%columns)*(width-40)/columns+(width-40)/12,(int)cy+(faceOnly?30:15),0xffe7dbc3);
         }
     }
     private static String pageName(int page){return switch(page){case 0->"cast";case 1->"fixtures";case 2->"paper-and-cases";case 3->"final-dinner";case 4->"seating";case 5->"seating-prayer";case 6->"all-poses-front";case 7->"all-poses-side";case 8->"all-poses-back";case 9->"eight-atlases-and-closed-eyes";case 10->"marjorie-blink-and-jaw";case 11->"help-fall-and-death";case 12->"fixtures-east";case 13->"fixtures-south";case 14->"fixtures-west";default->"prop-transitions";};}
