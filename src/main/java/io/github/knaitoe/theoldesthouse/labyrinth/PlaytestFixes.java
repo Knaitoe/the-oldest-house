@@ -30,7 +30,7 @@ public final class PlaytestFixes {
         if(!loaded(l,at)||l.players().stream().anyMatch(p->new AABB(at).inflate(48).intersects(p.getCamera().getBoundingBox())))return false;
         if(!l.getEntitiesOfClass(Entity.class,new AABB(at).inflate(.02)).isEmpty())return false;
         if(l.getBlockEntity(at)!=null&&!(source&&(l.getBlockEntity(at) instanceof SignBlockEntity||l.getBlockEntity(at) instanceof LecternBlockEntity)))return false;
-        for(Direction d:Direction.values()){var near=at.relative(d);var s=l.getBlockState(near);if(s.is(HouseBlocks.SCENE_DETAIL.get())){var k=s.getValue(SceneDetailBlock.KIND);if((k.wall()?near.relative(s.getValue(SceneDetailBlock.FACING).getOpposite()):near.below()).equals(at))return false;}}
+        for(Direction d:Direction.values()){var near=at.relative(d);if(!loaded(l,near))return false;var s=l.getBlockState(near);if(s.is(HouseBlocks.SCENE_DETAIL.get())){var k=s.getValue(SceneDetailBlock.KIND);if((k.wall()?near.relative(s.getValue(SceneDetailBlock.FACING).getOpposite()):near.below()).equals(at))return false;}}
         return true;
     }
     private static boolean notice(SignBlockEntity s,String[] expected){for(int i=0;i<4;i++)if(!s.getFrontText().getMessage(i,false).getString().equals(expected[i])||!s.getBackText().getMessage(i,false).getString().isEmpty())return false;return true;}
@@ -70,5 +70,5 @@ public final class PlaytestFixes {
         done.putBoolean(key,true);data.setState(STATE,done);return true;
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){var s=e.getServer();if(s instanceof net.minecraft.gametest.framework.GameTestServer||s.getTickCount()%40!=13||LabyrinthBuilder.isCarving())return;var o=HouseSavedData.get(s).houseOrigin();if(o==null)return;
-        var data=LabyrinthData.get(s);for(var p:SITES){var l=s.getLevel(NovelRooms.dimension(p));var b=LabyrinthPlaces.base(o,p);if(l!=null&&b!=null&&LabyrinthBuilder.isPlaceReady(data,p)&&!l.getBlockState(b.offset(0,-1,-3)).isAir())apply(l,b,p);}}
+        var data=LabyrinthData.get(s);for(var p:SITES){var l=s.getLevel(NovelRooms.dimension(p));var b=LabyrinthPlaces.base(o,p);if(l!=null&&b!=null&&LabyrinthBuilder.isPlaceReady(data,p)&&loaded(l,b.offset(0,-1,-3))&&!l.getBlockState(b.offset(0,-1,-3)).isAir())apply(l,b,p);}}
 }

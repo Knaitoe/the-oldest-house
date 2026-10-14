@@ -91,10 +91,12 @@ public final class HarriganAndStraysTests {
     }
     @GameTest(template="empty",batch="harrigan_pose",timeoutTicks=150)
     public static void existingHarriganIsSeatedWithoutRestagingAndBothVisitsRemainPlayable(GameTestHelper h) {
-        pose=new Fixture(h,25400);Fixture f=pose;HarriganVignette.build(f.level.getServer(),f.level,f.base);
-        var owner=f.player(f.base.offset(HarriganVignette.READER_CHAIR).above());
+        pose=new Fixture(h,25400);Fixture f=pose;
         var data=LabyrinthData.get(f.level.getServer());CompoundTag state=data.state(HarriganVignette.ID);
         state.putInt("Visit",1);state.putInt("PagesTurned",3);state.putBoolean("TicketVisible",true);data.setState(HarriganVignette.ID,state);
+        // The already-earned ticket belongs to the saved scene before its originals are captured for comparison.
+        HarriganVignette.build(f.level.getServer(),f.level,f.base);
+        var owner=f.player(f.base.offset(HarriganVignette.READER_CHAIR).above());
         UUID witness=UUID.randomUUID();WitnessAccount.resolve(data,witness,WitnessAccount.Story.HARRIGAN,"kept_phone");
         boolean[] started={false};
         h.onEachTick(()->{

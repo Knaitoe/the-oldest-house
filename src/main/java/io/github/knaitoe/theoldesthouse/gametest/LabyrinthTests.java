@@ -406,7 +406,9 @@ public final class LabyrinthTests {
                 "Harrigan's chair faces away from the entry");
         helper.assertTrue(level.getBlockState(base.offset(HarriganVignette.FUNERAL_DOOR)).is(Blocks.DARK_OAK_PLANKS),
                 "the funeral room is hidden on the first visit");
-        helper.assertTrue(level.getBlockState(base.offset(HarriganVignette.CASKET)).is(Blocks.DARK_OAK_SLAB),
+        var casket=level.getBlockState(base.offset(HarriganVignette.CASKET));
+        helper.assertTrue(casket.is(io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthRegistry.HARRIGAN_FINISH.get())
+                        &&casket.getValue(io.github.knaitoe.theoldesthouse.labyrinth.HarriganFinishBlock.KIND)==io.github.knaitoe.theoldesthouse.labyrinth.HarriganFinishBlock.Kind.CASKET,
                 "the funeral room already has its casket behind the wall");
         helper.assertTrue(HarriganPhoneItem.homeTime(0L).equals("06:00")
                         && HarriganPhoneItem.homeTime(6000L).equals("12:00")
