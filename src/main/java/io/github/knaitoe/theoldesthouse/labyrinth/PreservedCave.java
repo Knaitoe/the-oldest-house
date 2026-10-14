@@ -26,7 +26,9 @@ public final class PreservedCave {
     private PreservedCave() {}
     public static void build(MinecraftServer server,ServerLevel level,BlockPos base){
         IndianLakeArchitecture.cave(level,base);
-        LabyrinthData data=LabyrinthData.get(server);CompoundTag state=data.state(ID);state.putBoolean("Built",true);data.setState(ID,state);
+        LabyrinthData data=LabyrinthData.get(server);CompoundTag state=data.state(ID);
+        if(!state.getBoolean("Built"))state.putBoolean("FreshOriginals0493",true);
+        state.putBoolean("Built",true);data.setState(ID,state);
         stage(level,base,data);
     }
     public static void onArrive(ServerPlayer player,LabyrinthPlace place){
@@ -76,25 +78,54 @@ public final class PreservedCave {
     }
     public static void stage(ServerLevel level,BlockPos base,LabyrinthData data){
         stageBodies(level,base,data);
-        List<LakeCanoeEntity> canoes=level.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(base,LabyrinthPlace.PRESERVED_CAVE));
-        if(canoes.isEmpty()){
-            LakeCanoeEntity canoe=DrownedTownRegistry.CAVE_CANOE.get().create(level);
-            if(canoe!=null){canoe.addTag(CANOE_TAG);canoe.moveTo(Vec3.atBottomCenterOf(base.offset(CANOE)));canoe.setYRot(90);level.addFreshEntity(canoe);}
-        }else for(int i=1;i<canoes.size();i++)canoes.get(i).discard();
+        CompoundTag state=data.state(ID);if(state.getBoolean("CanoeRecorded0493"))return;
+        boolean fresh=state.getBoolean("FreshOriginals0493");
+        AABB bounds=IndianLakeRooms.bounds(base,LabyrinthPlace.PRESERVED_CAVE);
+        if(!fresh&&!ScenePolish.loaded(level,bounds,base))return;
+        List<LakeCanoeEntity> canoes=level.getEntitiesOfClass(LakeCanoeEntity.class,bounds,c->c.getTags().contains(CANOE_TAG));
+        LakeCanoeEntity canoe=canoes.isEmpty()?null:canoes.getFirst();
+        if(canoe==null&&fresh){
+            canoe=DrownedTownRegistry.CAVE_CANOE.get().create(level);if(canoe==null)return;
+            canoe.addTag(CANOE_TAG);canoe.moveTo(Vec3.atBottomCenterOf(base.offset(CANOE)));canoe.setYRot(90);
+            if(!level.addFreshEntity(canoe))return;
+        }
+        if(canoe!=null)state.putUUID("CanoeOriginal0493",canoe.getUUID());
+        for(int i=1;i<canoes.size();i++)canoes.get(i).discard();
+        state.putBoolean("CanoeRecorded0493",true);
+        if(state.getBoolean("BodiesRecorded0493"))state.remove("FreshOriginals0493");
+        data.setState(ID,state);
     }
     public static void stageBodies(ServerLevel level,BlockPos base,LabyrinthData data){
-        var bodies=level.getEntitiesOfClass(LakeCongregantEntity.class,IndianLakeRooms.bounds(base,LabyrinthPlace.PRESERVED_CAVE),b->b.getTags().contains(BODY));
-        boolean shore=IndianLakeProgress.deadOnShore(data);double voices=data.state(ID).getDouble("Voices");
+        CompoundTag state=data.state(ID),originals=state.getCompound("BodyOriginals0493");
+        boolean recording=!state.getBoolean("BodiesRecorded0493"),fresh=state.getBoolean("FreshOriginals0493"),complete=true;
+        AABB bounds=IndianLakeRooms.bounds(base,LabyrinthPlace.PRESERVED_CAVE);
+        // A legacy save has no UUID ledger. Wait for its native entity sections before adopting
+        // its loaded originals; an uncertain absent body is never evidence for a replacement.
+        if(recording&&!fresh&&!ScenePolish.loaded(level,bounds,base))return;
+        var bodies=recording?level.getEntitiesOfClass(LakeCongregantEntity.class,bounds,b->b.getTags().contains(BODY)):List.<LakeCongregantEntity>of();
+        boolean shore=IndianLakeProgress.deadOnShore(data);double voices=state.getDouble("Voices");
         for(int index=0;index<BODY_COUNT;index++){
-            String tag=BODY+index;var matching=bodies.stream().filter(b->b.getTags().contains(tag)).toList();
-            LakeCongregantEntity body=matching.isEmpty()?DrownedTownRegistry.CONGREGANT.get().create(level):matching.getFirst();if(body==null)continue;
-            for(int i=1;i<matching.size();i++)matching.get(i).discard();
+            String key=Integer.toString(index),tag=BODY+index;LakeCongregantEntity body=null;
+            if(originals.hasUUID(key)){
+                Entity original=level.getEntity(originals.getUUID(key));if(original instanceof LakeCongregantEntity loaded)body=loaded;
+            }else if(recording){
+                var matching=bodies.stream().filter(b->b.getTags().contains(tag)).toList();
+                if(!matching.isEmpty()){body=matching.getFirst();for(int i=1;i<matching.size();i++)matching.get(i).discard();}
+                else if(fresh){
+                    body=DrownedTownRegistry.CONGREGANT.get().create(level);
+                    if(body==null){complete=false;continue;}
+                    body.addTag(BODY);body.addTag(tag);body.preservedEra(index%4);
+                }
+                if(body!=null)originals.putUUID(key,body.getUUID());
+            }
+            if(body==null)continue;
             boolean up=shore||standing(index,voices);int row=index/4,col=index%4;
             BlockPos at=shore?base.offset(col<2?-10-col:10+(col-2),0,-2-row)
                     :base.offset(new int[]{-5,-3,3,5}[col],0,-15-row*4);
             body.pose(false,!up);body.setNoGravity(true);body.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5,0,0);
-            if(matching.isEmpty()){body.addTag(BODY);body.addTag(tag);body.preservedEra(index%4);level.addFreshEntity(body);}
+            if(level.getEntity(body.getUUID())==null&&!level.addFreshEntity(body)){originals.remove(key);complete=false;}
         }
+        if(recording){state.put("BodyOriginals0493",originals);state.putBoolean("BodiesRecorded0493",complete);data.setState(ID,state);}
     }
     public static void examine(ServerPlayer player,LakeCanoeEntity canoe){
         if(player.isSpectator()||!IndianLakeRooms.inside(player,LabyrinthPlace.PRESERVED_CAVE)
