@@ -67,7 +67,9 @@ public final class LakeHouseCanoe extends Boat {
     /** A hand must reach a real solid wall; air and water supply no propulsion. */
     public boolean wallWithinReach(int side){
         if(side!=-1&&side!=1)return false;var f=forward();var across=new Vec3(f.z,0,-f.x).scale(side);
-        var from=position().add(0,.6,0).add(f.scale(.35));var end=from.add(across.scale(1.2));
+        // A native 1.375-wide hull can sit against either wall of the two-wide channel.
+        // The opposite wall is then 1.3125 away; a 1.2 reach stranded an off-centre original.
+        var from=position().add(0,.6,0).add(f.scale(.35));var end=from.add(across.scale(1.35));
         if(!level().hasChunkAt(BlockPos.containing(end)))return false;
         return level().clip(new ClipContext(from,end,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,this)).getType()==HitResult.Type.BLOCK;
     }

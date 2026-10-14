@@ -37,7 +37,8 @@ public final class GhostsMotion {
                 Vec3 delta=move.target.subtract(actor.position());
                 if(move.falling){move.fall=Math.min(.8,move.fall+.08);delta=new Vec3(0,-Math.min(move.fall,Math.max(0,actor.getY()-move.target.y)),0);}
                 else if(delta.length()>move.speed)delta=delta.normalize().scale(move.speed);
-                if(!move.falling)actor.setOnGround(actor.level().getBlockCollisions(actor,actor.getBoundingBox().move(0,-.04,0)).iterator().hasNext());
+                // These no-gravity scripted walkers retain native stair stepping between the five-tick route choices.
+                if(!move.falling&&(actor.phase()==GhostsSet.STAND||actor.phase()==GhostsSet.HELP))actor.setOnGround(true);
                 actor.move(MoverType.SELF,delta);actor.setDeltaMovement(Vec3.ZERO);
                 if(!move.falling&&delta.horizontalDistanceSqr()>.000001){
                     float yaw=(float)Math.toDegrees(Math.atan2(-delta.x,delta.z));
