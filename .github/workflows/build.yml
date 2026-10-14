@@ -531,7 +531,7 @@ jobs:
           import re
           from pathlib import Path
           passed = re.findall(r'All (\d+) required tests passed', Path('build/native-playtest488.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('Playtest0488Tests.java','Finishing488Tests.java'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('Playtest0488Tests.java','Finishing488Tests.java','LakeSettlementTests.java'))
           assert passed and int(passed[-1]) == declared, 'The actual navigation, speech, survival and scene finishing repairs did not complete.'
           PYTEST
 

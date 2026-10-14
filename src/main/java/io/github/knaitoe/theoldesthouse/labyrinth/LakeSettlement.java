@@ -3,6 +3,8 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 import io.github.knaitoe.theoldesthouse.house.*;
 import net.minecraft.core.*;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.TicketType;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
@@ -18,13 +20,27 @@ public final class LakeSettlement {
     private LakeSettlement(ServerLevel l,BlockPos b,LabyrinthPlace site){this.l=l;this.b=b;this.site=site;}
     public static void decorateOnce(ServerLevel l,BlockPos b,LabyrinthPlace site){
         // 0.4.67: Proofrock authors its own streets and woods.
-        if(!LakeLandscape.isLake(site)||site==LabyrinthPlace.DROWNED_TOWN||l.getBlockState(b.offset(0,-1,-3)).isAir())return;
-        if(site==LabyrinthPlace.DROWNED_TOWN&&IndianLakeRooms.visitors(l,b,site).isEmpty())townSign(l,b);
+        if(!LakeLandscape.isLake(site)||site==LabyrinthPlace.DROWNED_TOWN)return;
         var data=LabyrinthData.get(l.getServer());var state=data.state(STATE);String key=b.asLong()+":"+site.id();
         if(state.getBoolean(key))return;
-        if(!IndianLakeRooms.visitors(l,b,site).isEmpty())return;
+        // A periodic repair is not permission to generate an undealt lake. Check the saved
+        // checkpoint and native chunk before even reading its floor; getBlockState loads it.
+        var entry=b.offset(0,-1,-3);
+        if(!l.hasChunkAt(entry)||l.getBlockState(entry).isAir())return;
+        var r=site.room();var area=new AABB(b.getX()+r.minX()-8,b.getY()-4,b.getZ()+r.minZ()-8,
+                b.getX()+r.maxX()+9,b.getY()+r.maxY()+4,b.getZ()+18);
+        if(l.players().stream().anyMatch(p->area.inflate(48).intersects(p.getCamera().getBoundingBox())))return;
+        // Existing vacant scenery may finish loading asynchronously. No block or original
+        // actor is inspected until every affected native entity section is available.
+        boolean ready=true;
+        for(int x=(int)Math.floor(area.minX)>>4;x<=(int)Math.floor(area.maxX-1)>>4;x++)
+            for(int z=(int)Math.floor(area.minZ)>>4;z<=(int)Math.floor(area.maxZ-1)>>4;z++){
+                var chunk=new ChunkPos(x,z);l.getChunkSource().addRegionTicket(TicketType.PORTAL,chunk,3,b);
+                ready&=l.hasChunk(x,z)&&l.areEntitiesLoaded(chunk.toLong());
+            }
+        if(!ready)return;
         var scene=new LakeSettlement(l,b,site);scene.removeRegularTrees();
-        if(site==LabyrinthPlace.DROWNED_TOWN)scene.town();scene.forest();
+        scene.forest();
         state.putBoolean(key,true);data.setState(STATE,state);
     }
     private static void townSign(ServerLevel l,BlockPos b){

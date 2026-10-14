@@ -12,7 +12,7 @@ The report-only `VignetteAudit` is not a release gate. Its generic standing grid
 
 Both supplied playtest documents were read in full: `The lights aren.docx` and `The lights aren(1).docx`. The entire twelve-page supplied *The Father, the Son, and the Holy Rabbit* text was also reviewed. The accepted notes remain authoritative: painted NPCs, appropriate chess/fountains, practical props, Ghosts gates/prayer/stairs/privacy/crew departure, Harrigan interjections and finite originals, nightclub light/music/dancer behavior, supper supports/serving/chatter, visible Slaney and distinct days, and Tess/canoe/swimming behavior. No original PNG has been repainted or replaced by these source repairs.
 
-Candidate: mod 0.4.93, protocol 71, layout 44. The pool remains 45 sources, 34 distinct resolutions across at least two kinds, and three House endings. The candidate declares 621 native cases; the extra nine cover concrete observer, edited-block, late-original, and saved-food failures. Existing physical and progression cases were strengthened, rather than replaced with assertions that merely repeat the implementation. Source whitespace, Python syntax and resource checks are separate from Java/native/client validation.
+Candidate: mod 0.4.93, protocol 71, layout 44. The pool remains 45 sources, 34 distinct resolutions across at least two kinds, and three House endings. The candidate declares 622 native cases; the extra ten cover concrete observer, edited-block, late-original, saved-food and unloaded scenery failures. Existing physical and progression cases were strengthened, rather than replaced with assertions that merely repeat the implementation. Source whitespace, Python syntax and resource checks are separate from Java/native/client validation.
 
 Checkpoint history must remain explicit:
 
@@ -27,6 +27,10 @@ Checkpoint history must remain explicit:
 The real-client additions extend the original two-client expedition and both same-profile reconnects. Supper uses actual authored blocks, child scale, native block-use plus item-use packets, original components, a later intentional pickup, and native world framebuffer food pixels. Canoe coverage uses actual connected survival riders, native buoyancy and dimensions, a wait beyond the ordinary drowning window, both wall pushes, open-water pose restoration and real underwater air consumption after dismount. The same Tess then follows the physical foyer/stair in the native actor renderer. The upper-room target is explicit fixture setup; it does not simulate four separate lake-house visits. These new checks remain pending until their exact-source run completes.
 
 ## Confirmed repairs
+
+Follow-up to failed run #893 (`0f9e2d5`): ten jobs passed, but the full corpus exceeded its 60-minute limit before finishing. The missing three cutaways are retained as required evidence; the 94-view renderer check is not reduced. A native thread dump identified `LakeSettlement.decorateOnce` forcing synchronous chunk generation even for undealt or already checkpointed lakes. It now checks the saved checkpoint and loaded entry before probing terrain, and waits asynchronously for the affected native entity sections and all actual cameras before editing existing scenery. The new regression verifies that repeated absent/checkpointed probes do not create a chunk or a false completion.
+
+The actual connected canoe frames passed the 340-tick roof wait, unchanged health/full breath and both hand pushes. Phase 50 then stalled because vanilla put one dismounting reader on the bow and continuous crouching prevented stepping off it. The proof driver now walks sideways off the original hull with real movement input before diving, retaining the exact normal-air, health, pose and original identity assertions. Tess's rendered physical stair route remains pending until phase 51 completes on the new source.
 
 | Area | Trigger, repair and retained requirement |
 | --- | --- |

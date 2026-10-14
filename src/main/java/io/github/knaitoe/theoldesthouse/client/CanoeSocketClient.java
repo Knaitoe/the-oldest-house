@@ -40,7 +40,17 @@ public final class CanoeSocketClient {
                 }
             }
         }
-        if(next==50){mc.options.setCameraType(CameraType.FIRST_PERSON);mc.player.setYRot(180);mc.player.setXRot(80);mc.options.keyShift.setDown(true);mc.options.keyUp.setDown(!mc.player.isPassenger());
+        if(next==50){
+            mc.options.setCameraType(CameraType.FIRST_PERSON);mc.player.setXRot(80);
+            if(mc.player.isPassenger()){
+                mc.player.setYRot(180);mc.options.keyShift.setDown(true);mc.options.keyUp.setDown(false);
+            }else{
+                // Vanilla can dismount onto the canoe's bow. Crouching there prevents walking
+                // over its edge, so first walk sideways clear of the real hull, then dive.
+                var boats=mc.level.getEntitiesOfClass(LakeHouseCanoe.class,mc.player.getBoundingBox().inflate(8),b->b.getUUID().equals(canoe));
+                boolean overHull=!boats.isEmpty()&&boats.getFirst().getBoundingBox().inflate(.45,1, .45).intersects(mc.player.getBoundingBox());
+                mc.player.setYRot(overHull?90:180);mc.options.keyShift.setDown(!overHull);mc.options.keyUp.setDown(true);
+            }
             if(ticks>45&&!mc.player.isPassenger()&&mc.player.getForcedPose()==null&&mc.player.isEyeInFluid(FluidTags.WATER)&&mc.player.getAirSupply()<mc.player.getMaxAirSupply()-20&&mc.player.getAirSupply()>0&&mc.player.getHealth()==health){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);pending="canoe-dismounted-dive";}
         }
         if(next==51){
