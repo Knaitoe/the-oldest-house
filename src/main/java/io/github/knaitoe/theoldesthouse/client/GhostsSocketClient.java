@@ -13,15 +13,17 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
+import net.neoforged.neoforge.client.event.RenderLivingEvent;
+import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 
 /** Opt-in native movement, held lens and original-body capture; inert in ordinary sessions. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class GhostsSocketClient {
-    private static int step,heldTicks;private static boolean shot,done;private static UUID original;private static Vec3 heldBody,heldEye;private static float head;private static String role,pending;private static BlockPos site;
+    private static int step,heldTicks,heldActorRenders,heldPlayerRenders;private static boolean shot,done;private static UUID original;private static Vec3 heldBody,heldEye;private static float head;private static String role,pending;private static BlockPos site;
     private GhostsSocketClient(){}
     private static void require(boolean okay,String words){if(!okay)throw new IllegalStateException("LIVE GHOSTS CLIENT: "+words);}
     public static boolean ready(Minecraft mc,int next,int age,String reader,BlockPos at){
-        if(step!=next){step=next;done=false;pending=null;mc.options.keyUp.setDown(false);if(next==52){mc.player.getInventory().selected=0;original=null;heldTicks=0;heldBody=heldEye=null;shot=false;}}
+        if(step!=next){step=next;done=false;pending=null;mc.options.keyUp.setDown(false);if(next==52){mc.player.getInventory().selected=0;original=null;heldTicks=heldActorRenders=heldPlayerRenders=0;heldBody=heldEye=null;shot=false;}}
         role=reader;site=at;mc.options.keySprint.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyUse.setDown(false);if(done)return true;
         if(next==53){mc.options.keyUp.setDown(false);if(age>20&&!GhostsTakeClient.frozen()&&GhostsTakeClient.day()==0&&mc.getCameraEntity()==mc.player&&mc.player.distanceToSqr(at.getCenter())>32*32)pending="ghosts-restored-camera";return false;}
         var cast=mc.level.getEntitiesOfClass(LiteraryActor.class,new AABB(Vec3.atLowerCornerOf(at.offset(-21,-5,-47)),Vec3.atLowerCornerOf(at.offset(22,13,1))),a->a.role()==LiteraryActor.GHOST_MARJORIE);
@@ -44,9 +46,12 @@ public final class GhostsSocketClient {
         if(++heldTicks>=43){require(Math.abs(net.minecraft.util.Mth.wrapDegrees(m.getYHeadRot()-head))>10,"only the original head turns toward this reader's lens during the hold");pending="ghosts-held-banister-jump";}
         return false;
     }
+    @SubscribeEvent public static void playerDrawn(RenderPlayerEvent.Post ignored){if(LiveExpeditionProof.enabled()&&step==52&&GhostsTakeClient.frozen())++heldPlayerRenders;}
+    @SubscribeEvent public static void castDrawn(RenderLivingEvent.Post<?,?> e){if(LiveExpeditionProof.enabled()&&step==52&&GhostsTakeClient.frozen()&&e.getEntity() instanceof LiteraryActor actor&&actor.getUUID().equals(original))++heldActorRenders;}
     @SubscribeEvent public static void frame(RenderFrameEvent.Post ignored)throws Exception{
         if(!LiveExpeditionProof.enabled()||pending==null)return;var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.getOverlay()!=null)return;String label=pending;
+        if(label.equals("ghosts-held-banister-jump"))require(heldActorRenders>10&&heldPlayerRenders==0,"the native held shot renders the original Marjorie, without operator or peer bodies covering the lens");
         Files.createDirectories(LiveExpeditionProof.folder());try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(LiveExpeditionProof.folder().resolve(role+"-"+label+".png"));}
-        Files.writeString(LiveExpeditionProof.folder().resolve(role+"-"+label+".txt"),"Actual connected client; explicit day-six fixture. original="+original+" heldBody="+heldBody+" heldEye="+heldEye+" nativeCamera="+mc.gameRenderer.getMainCamera().getPosition()+" heldTicks="+heldTicks+" frozen="+GhostsTakeClient.frozen()+" reader="+mc.player.position()+"\n");pending=null;if(!label.equals("ghosts-native-approach"))done=true;
+        Files.writeString(LiveExpeditionProof.folder().resolve(role+"-"+label+".txt"),"Actual connected client; explicit day-six fixture. original="+original+" heldBody="+heldBody+" heldEye="+heldEye+" nativeCamera="+mc.gameRenderer.getMainCamera().getPosition()+" heldTicks="+heldTicks+" frozen="+GhostsTakeClient.frozen()+" reader="+mc.player.position()+" heldActorRenders="+heldActorRenders+" heldPlayerRenders="+heldPlayerRenders+"\n");pending=null;if(!label.equals("ghosts-native-approach"))done=true;
     }
 }
