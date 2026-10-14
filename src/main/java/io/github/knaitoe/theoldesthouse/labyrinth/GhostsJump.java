@@ -11,7 +11,7 @@ import net.minecraft.world.phys.Vec3;
 
 /** An original body leaves the bed, walks to the front balcony and clears the native guard before its frozen apex. */
 public final class GhostsJump {
-    private static final double[][] APPROACH={{-9.5,5.625,-32.5},{-8.4,5.625,-32.5},{-8.4,5,-30.5},{-9.5,5,-24.5},{-9.5,5,-21.5},{-9.5,5,-16.25}};
+    private static final double[][] APPROACH={{-9.5,5.75,-32.5},{-8.4,5.75,-32.5},{-8.4,5,-30.5},{-9.5,5,-24.5},{-9.5,5,-21.5},{-9.5,5,-16.25}};
     private static final String ARC="GhostJumpArc0495",APEX="GhostJumpApex0495";
     private GhostsJump(){}
     static boolean room(ServerPlayer player,BlockPos base,CompoundTag own){

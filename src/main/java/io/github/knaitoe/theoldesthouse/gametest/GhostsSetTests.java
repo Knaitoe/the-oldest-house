@@ -26,6 +26,7 @@ public final class GhostsSetTests {
     private static void film(ServerPlayer p,ItemStack s){p.setItemInHand(InteractionHand.MAIN_HAND,s);p.startUsingItem(InteractionHand.MAIN_HAND);}
     private static ItemStack cam(ServerPlayer p){return p.getInventory().items.stream().filter(s->s.is(LiteraryRegistry.CAMCORDER.get())).findFirst().orElseThrow().copy();}
     private static LiteraryActor actor(LiteraryTests.Fixture f,ServerPlayer p,int role){return f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(Vec3.atLowerCornerOf(f.base(P).offset(-21,-5,-47)),Vec3.atLowerCornerOf(f.base(P).offset(22,13,1))),a->a.role()==role&&a.owner().filter(p.getUUID()::equals).isPresent()).stream().findFirst().orElseThrow();}
+    private static String status(LiteraryTests.Fixture f,ServerPlayer p){var own=f.own(p,P);var cast=f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(Vec3.atLowerCornerOf(f.base(P).offset(-21,-5,-47)),Vec3.atLowerCornerOf(f.base(P).offset(22,13,1))),a->a.owner().filter(p.getUUID()::equals).isPresent());return "day="+own.getInt("FilmDay")+" clock="+own.getInt("ShotClock")+" rolling="+own.getBoolean("Rolling")+" approach="+own.getInt("JumpApproach0495")+" pickup="+own.getInt("PickupStep0")+","+own.getInt("PickupStep1")+" reader="+p.position().subtract(f.base(P).getX(),f.base(P).getY(),f.base(P).getZ())+" cast="+cast.stream().map(a->a.role()+"/"+a.phase()+" at "+a.position().subtract(f.base(P).getX(),f.base(P).getY(),f.base(P).getZ())+" arc="+a.getPersistentData().getInt("GhostJumpArc0495")).toList();}
     private static String words(ItemStack s){return s.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(p->p.raw().getString()).reduce("",String::concat);}
     @GameTest(template="empty",batch="ghosts_room0490",timeoutTicks=500)
     public static void anUpstairsTakeWaitsForTheActualRoomAndMarjorieIsSmallerThanTheAdults(GameTestHelper h){
@@ -135,7 +136,7 @@ public final class GhostsSetTests {
         f.chunks.hold(f.in,new AABB(Vec3.atLowerCornerOf(b.offset(-21,-5,-47)),Vec3.atLowerCornerOf(b.offset(22,13,1))));
         int[] started={0};var identities=new HashSet<UUID>();
         h.onEachTick(()->{
-            if(!f.chunks.ready()||!GhostsSet.built(f.data(),b))return;var world=LiteraryVignettes.shared(f.data(),P);for(String name:GhostsSet.PEOPLE)if(!world.hasUUID("Film"+name+"_"+p.getUUID()))return;var own=f.own(p,P);int day=own.getInt("FilmDay");
+            if(p.server.getTickCount()%1000==0)TheOldestHouse.LOGGER.info("GHOSTS FULL TAKE: {}",status(f,p));if(!f.chunks.ready()||!GhostsSet.built(f.data(),b))return;var world=LiteraryVignettes.shared(f.data(),P);for(String name:GhostsSet.PEOPLE)if(!world.hasUUID("Film"+name+"_"+p.getUUID()))return;var own=f.own(p,P);int day=own.getInt("FilmDay");
             if(started[0]!=day){double[] at=switch(day){case 3,5,6->new double[]{-7,5,-28};case 4->new double[]{5,-4,-27};default->new double[]{-4,0,-24};};f.at(p,P,at[0],at[1],at[2]);h.assertTrue(GhostsSet.start(p,own),"each take starts through its actual owner/source gate");save(f,p,own);started[0]=day;for(int role:GhostsSet.ROLES)identities.add(actor(f,p,role).getUUID());}
             if(day==4&&own.getBoolean("BedroomPickup")&&GhostsSet.pickupReady(own)&&!own.getBoolean("Rolling")&&!own.getBoolean("DayDone")){f.at(p,P,8,5,-28);GhostsSet.start(p,own);save(f,p,own);}
             // This is explicit camera-position setup; the original body still walks and leaps through native ticks.
@@ -157,7 +158,7 @@ public final class GhostsSetTests {
         h.startSequence().thenIdle(30).thenExecute(()->{
             var own=f.own(p,P);own.putInt("FilmDay",6);own.putInt("ShotClock",715);own.putBoolean("CastPlaced",false);own.putBoolean("Rolling",true);own.putBoolean("DayDone",false);f.at(p,P,-7,5,-28);film(p,cam(p));
             save(f,p,own);peerBefore[0]=f.own(peer,P).copy();
-        }).thenWaitUntil(()->{var own=f.own(p,P);if(!own.getBoolean("JumpFrozen0488"))f.at(p,P,-7.5,5,-18.5);h.assertTrue(own.getBoolean("JumpFrozen0488"),"the original body reaches its native balcony leap before freezing");}).thenExecute(()->{
+        }).thenWaitUntil(()->{var own=f.own(p,P);if(!own.getBoolean("JumpFrozen0488"))f.at(p,P,-7.5,5,-18.5);h.assertTrue(own.getBoolean("JumpFrozen0488"),"the original body reaches its native balcony leap before freezing: "+status(f,p));}).thenExecute(()->{
             var own=f.own(p,P);var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);body[0]=m.position();original[0]=m.getUUID();startHead[0]=m.getYHeadRot();
             h.assertTrue(m.phase()==GhostsSet.LEAP&&m.getY()>f.base(P).getY()+6&&m.getZ()>f.base(P).getZ()-15&&!own.getBoolean("DayDone"),"the held original has cleared the real native banister");
             save(f,p,own);f.reload();own=f.own(p,P);GhostsSet.arrive(p,own);save(f,p,own);h.assertTrue(own.getBoolean("JumpFrozen0488")&&own.getInt("ShotClock")==720,"an interrupted arrival and SavedData reload keep the held jump instead of launching it again");

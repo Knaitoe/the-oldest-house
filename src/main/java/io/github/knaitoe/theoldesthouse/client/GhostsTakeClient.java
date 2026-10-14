@@ -38,7 +38,7 @@ public final class GhostsTakeClient {
     }
     private static void applyFreeze(){
         var mc=Minecraft.getInstance();var take=pendingFreeze;if(take==null||mc.level==null||mc.player==null)return;var target=mc.level.getEntity(take.getInt("GhostFreezeTarget"));
-        if(target instanceof LiteraryActor actor&&actor.role()==LiteraryActor.GHOST_MARJORIE&&actor.owner().filter(mc.player.getUUID()::equals).isPresent()&&actor.phase()==io.github.knaitoe.theoldesthouse.labyrinth.GhostsSet.LEAP&&(!take.contains("GhostActorX")||actor.position().distanceToSqr(new net.minecraft.world.phys.Vec3(take.getDouble("GhostActorX"),take.getDouble("GhostActorY"),take.getDouble("GhostActorZ")))<.16)){
+        if(target instanceof LiteraryActor actor&&actor.role()==LiteraryActor.GHOST_MARJORIE&&actor.owner().filter(mc.player.getUUID()::equals).isPresent()&&actor.phase()==io.github.knaitoe.theoldesthouse.labyrinth.GhostsSet.LEAP&&(!take.contains("GhostActorX")||actor.position().distanceToSqr(new net.minecraft.world.phys.Vec3(take.getDouble("GhostActorX"),take.getDouble("GhostActorY"),take.getDouble("GhostActorZ")))<.0001)){
             if(marker==null){marker=EntityType.MARKER.create(mc.level);if(marker==null)return;oldCamera=mc.options.getCameraType();mc.options.setCameraType(CameraType.FIRST_PERSON);}
             marker.moveTo(take.getDouble("GhostEyeX"),take.getDouble("GhostEyeY"),take.getDouble("GhostEyeZ"),take.getFloat("GhostYaw"),take.getFloat("GhostPitch"));marker.setOldPosAndRot();mc.setCameraEntity(marker);
         }

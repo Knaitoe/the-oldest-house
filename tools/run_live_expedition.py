@@ -77,6 +77,11 @@ try:
     assert (report / "mob-sight-passed.txt").is_file()
     assert (report / "camp-bed-passed.txt").is_file()
     assert (report / "canoe-passed.txt").is_file()
+    assert (report / "ghosts-native-jump-passed.txt").is_file()
+    for role in ("A", "B"):
+        for view in ("ghosts-native-approach", "ghosts-held-banister-jump", "ghosts-restored-camera"):
+            assert (report / f"{role}-{view}.png").stat().st_size > 500, (role, view)
+            assert (report / f"{role}-{view}.txt").stat().st_size > 100, (role, view)
     assert (report / "tess-native-route.txt").is_file()
     assert (report / "A-tess-swimming-stair.png").stat().st_size > 500
     for role in ("A", "B"):
