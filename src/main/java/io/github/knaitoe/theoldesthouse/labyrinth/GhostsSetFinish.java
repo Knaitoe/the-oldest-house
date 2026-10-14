@@ -18,7 +18,15 @@ public final class GhostsSetFinish {
     private static final String STATE="ghosts_finish0490";
     private static final Map<ServerLevel,BuildBlocks.Plan> PLANS=new WeakHashMap<>();
     private GhostsSetFinish(){}
-    public static void markBuilt(ServerLevel l,BlockPos b){var d=LabyrinthData.get(l.getServer());var t=d.state(STATE);t.putBoolean(Long.toString(b.asLong()),true);d.setState(STATE,t);}
+    public static void markBuilt(ServerLevel l,BlockPos b){var d=LabyrinthData.get(l.getServer());var t=d.state(STATE);t.putBoolean(Long.toString(b.asLong()),true);t.putBoolean("Balcony0495_"+b.asLong(),true);d.setState(STATE,t);}
+    private static boolean balcony(ServerLevel l,BlockPos b){
+        var data=LabyrinthData.get(l.getServer());var state=data.state(STATE);String key="Balcony0495_"+b.asLong();if(state.getBoolean(key))return true;
+        var area=new AABB(net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(-13,4,-17)),net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(-6,8,-13)));
+        for(int x=((int)area.minX)>>4;x<=((int)area.maxX)>>4;x++)for(int z=((int)area.minZ)>>4;z<=((int)area.maxZ)>>4;z++)if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(x,z)))return false;
+        if(l.players().stream().anyMatch(p->area.inflate(32).intersects(p.getCamera().getBoundingBox()))||!l.getEntitiesOfClass(LivingEntity.class,area.inflate(.2),LivingEntity::isAlive).isEmpty())return false;
+        for(int x=-12;x<=-7;x++){var at=b.offset(x,5,-15);if(l.getBlockState(at).isAir()&&l.getBlockEntity(at)==null)l.setBlock(at,GhostsSetBlock.of(GhostsSetBlock.Kind.RAIL,Direction.EAST),18);}
+        state.putBoolean(key,true);data.setState(STATE,state);return true;
+    }
     private static boolean safe(ServerLevel l,BlockPos b){
         var area=new AABB(net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(-20,-1,-44)),net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(-12,9,-14)));
         for(int x=((int)area.minX)>>4;x<=((int)area.maxX)>>4;x++)for(int z=((int)area.minZ)>>4;z<=((int)area.maxZ)>>4;z++)if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(x,z)))return false;
@@ -26,6 +34,7 @@ public final class GhostsSetFinish {
         return l.getEntitiesOfClass(LivingEntity.class,area.inflate(.2),LivingEntity::isAlive).isEmpty();
     }
     public static boolean repair(ServerLevel l,BlockPos b){
+        if(!balcony(l,b))return false;
         if(LabyrinthData.get(l.getServer()).state(STATE).getBoolean(Long.toString(b.asLong())))return true;if(!safe(l,b))return false;
         var plan=PLANS.get(l);if(plan==null){plan=BuildBlocks.record(l,()->{
             for(int i=0;i<5;i++)for(int x=-18;x<=-16;x++){var at=b.offset(x,i,-16-i);if(l.getBlockState(at).is(Blocks.OAK_STAIRS))BuildBlocks.protectedSet(l,at,GhostsSetBlock.of(GhostsSetBlock.Kind.STAIR,Direction.NORTH),18,()->safe(l,b),Set.of());}

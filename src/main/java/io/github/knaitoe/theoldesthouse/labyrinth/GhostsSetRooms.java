@@ -53,6 +53,8 @@ public final class GhostsSetRooms {
         }
         fill(l,b,-18,4,-22,-15,4,-21,floor);for(int i=0;i<5;i++)prop(l,b,-19,i+1,-16-i,RAIL,Direction.NORTH);
         fill(l,b,-19,5,-22,-19,5,-21,GhostsSetBlock.of(RAIL,Direction.NORTH));
+        // A real balcony guard above the open foyer, with the stair entrance kept clear.
+        for(int x=-12;x<=-7;x++)prop(l,b,x,5,-15,RAIL,Direction.EAST);
         for(int x:new int[]{-12,10})for(int z:new int[]{-41,-26}) {
             prop(l,b,x,3,z,LAMP,Direction.NORTH);prop(l,b,x,9,z,LAMP,Direction.NORTH);
         }

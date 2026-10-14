@@ -687,6 +687,7 @@ jobs:
           test -s build/font-smoke/native-ghosts-fixtures.png
           test -s build/font-smoke/native-ghosts-paper-and-cases.png
           test -s build/font-smoke/native-ghosts-final-dinner.png
+          for view in all-poses-front all-poses-side all-poses-back eight-atlases-and-closed-eyes marjorie-blink-and-jaw help-fall-and-death fixtures-east fixtures-south fixtures-west prop-transitions; do test -s build/font-smoke/native-ghosts-$view.png; done
           test -s build/font-smoke/scenes/ghosts_upstairs.png
           test -s build/font-smoke/scenes/ghosts_basement.png
           test -s build/font-smoke/literary-passed.txt

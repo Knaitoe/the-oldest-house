@@ -1,3 +1,5 @@
+Ghosts Set review candidate 0.4.95: continuous native cast motion, a physical held balcony jump and camera restoration, fitted unchanged dinner/blink/jaw textures, and expanded native visual/socket review. Final exact-source verification is pending; see [the review record](docs/GHOSTS_ANIMATION_REVIEW_0_4_95.md).
+
 Development candidate **0.4.94**: repeated native Goatman/child window sightings, much louder moving trailer knocks, an original subtle score and scene-scoped vanilla-music suppression. Exact-source native/client verification is pending. [Changes and evidence](docs/GOATMAN_WINDOW_AUDIO_0_4_94.md).
 
 Development candidate **0.4.93**: complete catalog examination of all 45 sources and five recurring/internal scenes, with confirmed ownership, original-entity, observer, edited-block, seated-pose, supper-input/display and actual canoe-clearance repairs. The candidate declares 621 native cases; final exact-source verification is pending. [Per-vignette findings and evidence limits](docs/VIGNETTE_EXAMINATION_0_4_93.md).

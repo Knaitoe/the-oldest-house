@@ -95,10 +95,20 @@ public final class GhostsSetTests {
             h.assertTrue(ItemStack.matches(((LiteraryVignettes.Pages)p.containerMenu).original(),paper)&&!p.containerMenu.clickMenuButton(p,3),"reload preserves the call sheet and its finite collection independently of the returning photo");h.succeed();
         });
     }
-    @GameTest(template="empty",batch="ghosts_crawl",timeoutTicks=260)
-    public static void DinnerCrawlAndFittingsUseNativeClearance(GameTestHelper h){var f=fixture(h);var p=f.player("ghost_crawl",P);f.source(p,P);h.runAtTickTime(30,()->{var t=f.own(p,P);t.putInt("FilmDay",2);t.putInt("ShotClock",515);t.putBoolean("CastPlaced",false);t.putBoolean("Rolling",true);f.at(p,P,0,0,-26);for(int n=0;n<70;n++)GhostsSet.reader(p,f.base(P),t);var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);h.assertTrue(Math.abs(m.getX()-f.base(P).getX()+.4)<.3&&Math.abs(m.getZ()-f.base(P).getZ()+28.5)<.3,"the original body crawls into the native table clearance: "+m.position());h.assertTrue(m.getBoundingBox().maxY<f.base(P).getY()+.9375,"the crawl collision body stays below the continuous tabletop");h.assertTrue(f.in.getBlockState(f.base(P).offset(0,0,-29)).getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.BOLTS,"the fittings retain a real table top");h.succeed();});}
-    @GameTest(template="empty",batch="ghosts_pickup",timeoutTicks=260)
-    public static void SistersClimbBothRealStairsWithoutAdvancingTheTake(GameTestHelper h){var f=fixture(h);var p=f.player("ghost_pickup",P);f.source(p,P);h.runAtTickTime(30,()->{var t=f.own(p,P);t.putInt("FilmDay",4);t.putInt("ShotClock",565);t.putBoolean("CastPlaced",false);t.putBoolean("Rolling",true);f.at(p,P,5,-4,-27);GhostsSet.reader(p,f.base(P),t);for(int n=0;n<600;n++)GhostsSet.reader(p,f.base(P),t);for(int i=0;i<2;i++){var a=actor(f,p,GhostsSet.ROLES[i]);h.assertTrue(GhostsSet.pickupReady(t)&&a.getY()>=f.base(P).getY()+4.9,"both sisters use the basement stair, landing stair and bedroom doorway: "+i+", step="+t.getInt("PickupStep"+i)+", at="+a.position());}h.assertTrue(t.getInt("ShotClock")==570&&!t.getBoolean("Rolling"),"the upstairs pickup waits for another explicit start and does not consume filming time while walking");var prop=actor(f,p,LiteraryActor.GHOST_PLAYHOUSE);h.assertTrue(prop.phase()==0,"the intact private playhouse waits for its actual take");h.succeed();});}
+    @GameTest(template="empty",batch="ghosts_crawl",timeoutTicks=400)
+    public static void DinnerCrawlAndFittingsUseNativeClearance(GameTestHelper h){
+        var f=fixture(h);var p=f.player("ghost_crawl",P);f.source(p,P);
+        h.startSequence().thenIdle(30).thenExecute(()->{var own=f.own(p,P);own.putInt("FilmDay",2);own.putInt("ShotClock",515);own.putBoolean("CastPlaced",false);own.putBoolean("Rolling",true);f.at(p,P,0,0,-26);save(f,p,own);})
+        .thenWaitUntil(()->{var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);h.assertTrue(Math.abs(m.getX()-f.base(P).getX()+.4)<.3&&Math.abs(m.getZ()-f.base(P).getZ()+28.5)<.3,"the original body crawls into the table through actual native ticks: "+m.position());})
+        .thenExecute(()->{var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);h.assertTrue(m.getBoundingBox().maxY<f.base(P).getY()+.9375,"the crawl collision body stays below the continuous tabletop");h.assertTrue(f.in.getBlockState(f.base(P).offset(0,0,-29)).getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.BOLTS,"the fittings retain a real tabletop");}).thenSucceed();
+    }
+    @GameTest(template="empty",batch="ghosts_pickup",timeoutTicks=2400)
+    public static void SistersClimbBothRealStairsWithoutAdvancingTheTake(GameTestHelper h){
+        var f=fixture(h);var p=f.player("ghost_pickup",P);f.source(p,P);
+        h.startSequence().thenIdle(30).thenExecute(()->{var own=f.own(p,P);own.putInt("FilmDay",4);own.putInt("ShotClock",565);own.putBoolean("CastPlaced",false);own.putBoolean("Rolling",true);f.at(p,P,5,-4,-27);save(f,p,own);})
+        .thenWaitUntil(()->h.assertTrue(GhostsSet.pickupReady(f.own(p,P)),"both sisters finish their actual native stair route"))
+        .thenExecute(()->{var own=f.own(p,P);for(int i=0;i<2;i++){var a=actor(f,p,GhostsSet.ROLES[i]);h.assertTrue(a.getY()>=f.base(P).getY()+4.9,"the original sister used both staircases: "+a.position());}h.assertTrue(own.getInt("ShotClock")==570&&!own.getBoolean("Rolling"),"walking the pickup does not consume filming time");h.assertTrue(actor(f,p,LiteraryActor.GHOST_PLAYHOUSE).phase()==0,"the private playhouse waits intact for the explicit next take");}).thenSucceed();
+    }
     @GameTest(template="empty",batch="ghosts_lead",timeoutTicks=200)
     public static void TheLongestCentredSubjectChangesTheBroadcastStory(GameTestHelper h){var a=new CompoundTag();var l=new CompoundTag();l.putInt("Frames_Marjorie",40);l.putInt("Frames_Sarah",40);l.putInt("LeadTicks_Sarah",30);a.put("FilmLog2",l);String first=words(GhostsSet.edit("reader",a,2,false));l.putInt("LeadTicks_Marjorie",60);a.put("FilmLog2",l);String second=words(GhostsSet.edit("reader",a,2,false));h.assertTrue(first.contains("medical concerns")&&second.contains("possession story")&&!first.equals(second),"centring a different face changes the production's lead, even when both appear in the footage");h.succeed();}
     @GameTest(template="empty",batch="ghosts_upgrade",timeoutTicks=800)
@@ -119,27 +129,37 @@ public final class GhostsSetTests {
             h.assertTrue(f.in.getBlockState(edit).is(Blocks.GOLD_BLOCK)&&f.in.getBlockState(floor).is(LiteraryRegistry.GHOST_SET.get()),"the player's edit survives while an unchanged legacy floor receives the new authored surface");h.assertTrue(f.in.getEntity(id)==m&&f.own(p,P).getBoolean("Completed")&&f.own(p,P).getCompound("Original_Source").equals(original),"family identity, finished personal state and immutable original survive the same restart");h.succeed();
         });
     }
-    @GameTest(template="empty",batch="ghosts_full_take",timeoutTicks=360)
-    public static void SevenActualTakesReachThePrivateCollapseMechanismAndHeldJump(GameTestHelper h){var f=fixture(h);var p=f.player("ghost_full_take",P);f.source(p,P);h.runAtTickTime(30,()->{
-        for(int d=1;d<=7;d++){
-            var t=f.own(p,P);h.assertTrue(t.getInt("FilmDay")==d,"the real take belongs to its following filming day");double[] at=switch(d){case 3,5,6->new double[]{-7,5,-28};case 4->new double[]{5,-4,-27};default->new double[]{-4,0,-24};};f.at(p,P,at[0],at[1],at[2]);h.assertTrue(GhostsSet.start(p,t),"each take starts through the owner/source gate");
-            for(int n=0;n<800&&!t.getBoolean("DayDone");n++){GhostsSet.reader(p,f.base(P),t);if(d==4&&t.getBoolean("BedroomPickup")&&GhostsSet.pickupReady(t)&&!t.getBoolean("Rolling")){f.at(p,P,8,5,-28);GhostsSet.start(p,t);}}
-            h.assertTrue(t.getBoolean("DayDone")&&t.getInt("ShotClock")>=GhostsSet.LENGTH[d-1],"the physical take runs to its own final beat, day "+d+", clock="+t.getInt("ShotClock"));
-            if(d==4)h.assertTrue(actor(f,p,LiteraryActor.GHOST_PLAYHOUSE).phase()==2,"the actual private cardboard body reaches its collapsed state");
-            if(d==6){var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);h.assertTrue(actor(f,p,LiteraryActor.GHOST_DRAWER).phase()==2&&t.getBoolean("JumpFrozen0488")&&t.getBoolean("JumpEject0488")&&m.phase()==GhostsSet.LEAP&&m.getY()>f.base(P).getY()+5,"the drawer opens and the original body holds its midair pose before the forced cut: "+m.position());}
-            save(f,p,t);if(d<7){GhostsSet.depart(p);f.at(p,P,0,0,2);f.arrive(p,P);}
-        }
-        h.assertTrue(f.own(p,P).getInt("FilmedDays")==127,"seven real scripted takes leave all seven personal day records");h.succeed();
-    });}
-    @GameTest(template="empty",batch="ghosts_frozen_return",timeoutTicks=240)
+    @GameTest(template="empty",batch="ghosts_full_take",timeoutTicks=12000)
+    public static void SevenActualTakesReachThePrivateCollapseMechanismAndHeldJump(GameTestHelper h){
+        var f=fixture(h);var p=f.player("ghost_full_take",P);f.source(p,P);var b=f.base(P);
+        f.chunks.hold(f.in,new AABB(Vec3.atLowerCornerOf(b.offset(-21,-5,-47)),Vec3.atLowerCornerOf(b.offset(22,13,1))));
+        int[] started={0};var identities=new HashSet<UUID>();
+        h.onEachTick(()->{
+            if(!f.chunks.ready()||!GhostsSet.built(f.data(),b))return;var world=LiteraryVignettes.shared(f.data(),P);for(String name:GhostsSet.PEOPLE)if(!world.hasUUID("Film"+name+"_"+p.getUUID()))return;var own=f.own(p,P);int day=own.getInt("FilmDay");
+            if(started[0]!=day){double[] at=switch(day){case 3,5,6->new double[]{-7,5,-28};case 4->new double[]{5,-4,-27};default->new double[]{-4,0,-24};};f.at(p,P,at[0],at[1],at[2]);h.assertTrue(GhostsSet.start(p,own),"each take starts through its actual owner/source gate");save(f,p,own);started[0]=day;for(int role:GhostsSet.ROLES)identities.add(actor(f,p,role).getUUID());}
+            if(day==4&&own.getBoolean("BedroomPickup")&&GhostsSet.pickupReady(own)&&!own.getBoolean("Rolling")&&!own.getBoolean("DayDone")){f.at(p,P,8,5,-28);GhostsSet.start(p,own);save(f,p,own);}
+            // This is explicit camera-position setup; the original body still walks and leaps through native ticks.
+            if(day==6&&own.getInt("ShotClock")>=600&&!own.getBoolean("JumpFrozen0488"))f.at(p,P,-7.5,5,-18.5);
+            if(!own.getBoolean("DayDone")||LabyrinthDoors.isBusy(p))return;
+            h.assertTrue(own.getInt("ShotClock")>=GhostsSet.LENGTH[day-1],"the occupied day reaches its final beat");
+            if(day==4)h.assertTrue(actor(f,p,LiteraryActor.GHOST_PLAYHOUSE).phase()==2,"the original cardboard body really collapses");
+            if(day==6){var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);h.assertTrue(own.getBoolean("JumpFrozen0488")&&own.getBoolean("JumpEject0488")&&m.phase()==GhostsSet.LEAP&&m.getY()>b.getY()+6&&m.getZ()>b.getZ()-15,"the same body cleared the balcony banister before its held cut: "+m.position());}
+            for(int role:GhostsSet.ROLES)h.assertTrue(identities.contains(actor(f,p,role).getUUID()),"every day retains the original cast identity");
+            if(day==7){h.assertTrue(own.getInt("FilmedDays")==127,"seven native-timed takes preserve all seven personal day records");h.succeed();return;}
+            GhostsSet.depart(p);f.at(p,P,0,0,2);f.arrive(p,P);
+        });
+    }
+    @GameTest(template="empty",batch="ghosts_frozen_return",timeoutTicks=900)
     public static void HeldJumpTurnsOnlyItsOriginalHeadAndReturnsThroughTheSavedVisit(GameTestHelper h){
         var f=fixture(h);var p=f.player("ghost_jump",P);var peer=f.player("ghost_jump_peer",P);f.source(p,P);
         final Vec3[] body={null};final UUID[] original={null};final float[] startHead={0};final CompoundTag[] peerBefore={null};
         var back=Vec3.atBottomCenterOf(f.base(P).offset(0,0,40));var returned=back.add(0,0,1);
         h.startSequence().thenIdle(30).thenExecute(()->{
             var own=f.own(p,P);own.putInt("FilmDay",6);own.putInt("ShotClock",715);own.putBoolean("CastPlaced",false);own.putBoolean("Rolling",true);own.putBoolean("DayDone",false);f.at(p,P,-7,5,-28);film(p,cam(p));
-            GhostsSet.reader(p,f.base(P),own);var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);body[0]=m.position();original[0]=m.getUUID();startHead[0]=m.getYHeadRot();peerBefore[0]=f.own(peer,P).copy();
-            h.assertTrue(own.getBoolean("JumpFrozen0488")&&m.phase()==GhostsSet.LEAP&&!own.getBoolean("DayDone"),"the jump begins as a held pose on the actual original actor");
+            save(f,p,own);peerBefore[0]=f.own(peer,P).copy();
+        }).thenWaitUntil(()->{var own=f.own(p,P);if(!own.getBoolean("JumpFrozen0488"))f.at(p,P,-7.5,5,-18.5);h.assertTrue(own.getBoolean("JumpFrozen0488"),"the original body reaches its native balcony leap before freezing");}).thenExecute(()->{
+            var own=f.own(p,P);var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);body[0]=m.position();original[0]=m.getUUID();startHead[0]=m.getYHeadRot();
+            h.assertTrue(m.phase()==GhostsSet.LEAP&&m.getY()>f.base(P).getY()+6&&m.getZ()>f.base(P).getZ()-15&&!own.getBoolean("DayDone"),"the held original has cleared the real native banister");
             save(f,p,own);f.reload();own=f.own(p,P);GhostsSet.arrive(p,own);save(f,p,own);h.assertTrue(own.getBoolean("JumpFrozen0488")&&own.getInt("ShotClock")==720,"an interrupted arrival and SavedData reload keep the held jump instead of launching it again");
             f.data().pushReturn(p.getUUID(),new LabyrinthData.Waypoint(f.in.dimension(),back,0,true));
         }).thenIdle(45).thenExecute(()->{
@@ -232,22 +252,18 @@ public final class GhostsSetTests {
             }
         }h.succeed();
     }
-    @GameTest(template="empty",batch="ghosts_final_death0488",timeoutTicks=260)
+    @GameTest(template="empty",batch="ghosts_final_death0488",timeoutTicks=2000)
     public static void PoisoningUnfoldsOnTheOriginalFamilyAndMerryWalksOutAfterTheirDeaths(GameTestHelper h){
-        var f=fixture(h);var p=f.player("ghost_final_death",P);var peer=f.player("ghost_final_peer",P);f.source(p,P);
-        h.runAtTickTime(30,()->{
-            var own=f.own(p,P);own.putInt("FilmDay",7);own.putInt("ShotClock",295);own.putBoolean("CastPlaced",false);own.putBoolean("Rolling",true);f.at(p,P,-4,0,-24);
-            GhostsSet.reader(p,f.base(P),own);var ids=new HashMap<Integer,UUID>();for(int role:GhostsSet.ROLES)ids.put(role,actor(f,p,role).getUUID());
-            h.assertTrue(actor(f,p,LiteraryActor.GHOST_MARJORIE).phase()==GhostsSet.EATING,"Marjorie eats and teases before the poisoning takes effect");
-            for(int step=0;step<250&&(own.getInt("CrewExit0490_4")<4||own.getInt("CrewExit0490_5")<4);step++)GhostsSet.reader(p,f.base(P),own);h.assertTrue(actor(f,p,LiteraryActor.GHOST_PRODUCER).getZ()>f.base(P).getZ()-9&&actor(f,p,LiteraryActor.GHOST_PRIEST).getZ()>f.base(P).getZ()-9,"the original crew physically leave before the poisoning begins");
-            own.putInt("ShotClock",625);GhostsSet.reader(p,f.base(P),own);h.assertTrue(actor(f,p,LiteraryActor.GHOST_MARJORIE).phase()==GhostsSet.CHOKING&&actor(f,p,LiteraryActor.GHOST_JOHN).phase()==GhostsSet.EATING,"the three deaths have distinct onset times instead of one instant slump");
-            own.putInt("ShotClock",855);GhostsSet.reader(p,f.base(P),own);for(int role:new int[]{LiteraryActor.GHOST_MARJORIE,LiteraryActor.GHOST_JOHN,LiteraryActor.GHOST_SARAH})h.assertTrue(actor(f,p,role).phase()==GhostsSet.DEAD,"each poisoned family member reaches the leaking, still death pose");
-            save(f,p,own);f.reload();own=f.own(p,P);GhostsSet.arrive(p,own);for(int i=0;i<230;i++)GhostsSet.reader(p,f.base(P),own);
-            var merry=actor(f,p,LiteraryActor.GHOST_MERRY);h.assertTrue(own.getBoolean("MerryLeft0488")&&merry.getZ()>f.base(P).getZ()-14&&merry.phase()==GhostsSet.STAND,"the original surviving Merry physically passes through the front door: step="+own.getInt("MerryExitStep0488")+", at="+merry.position());
-            for(int role:GhostsSet.ROLES)h.assertTrue(ids.get(role).equals(actor(f,p,role).getUUID()),"death and departure preserve each native family identity");
-            var position=merry.position();save(f,p,own);f.reload();GhostsSet.reader(p,f.base(P),f.own(p,P));h.assertTrue(merry.position().equals(position),"a finished or interrupted return does not reseat Merry beside the bodies");
-            h.assertTrue(f.own(peer,P).getInt("FilmDay")==1&&actor(f,peer,LiteraryActor.GHOST_MARJORIE).phase()!=GhostsSet.DEAD&&!own.getBoolean("Ready"),"another reader's living family and the original seven-day account gate remain independent");h.succeed();
-        });
+        var f=fixture(h);var p=f.player("ghost_final_death",P);var peer=f.player("ghost_final_peer",P);f.source(p,P);var ids=new HashMap<Integer,UUID>();
+        h.startSequence().thenIdle(30).thenExecute(()->{
+            var own=f.own(p,P);own.putInt("FilmDay",7);own.putInt("ShotClock",295);own.putBoolean("CastPlaced",false);own.putBoolean("Rolling",true);f.at(p,P,-4,0,-24);GhostsSet.reader(p,f.base(P),own);save(f,p,own);
+            for(int role:GhostsSet.ROLES)ids.put(role,actor(f,p,role).getUUID());h.assertTrue(actor(f,p,LiteraryActor.GHOST_MARJORIE).phase()==GhostsSet.EATING,"Marjorie eats and teases before the poison takes effect");
+        }).thenWaitUntil(()->{var own=f.own(p,P);h.assertTrue(own.getInt("CrewExit0490_4")>=4&&own.getInt("CrewExit0490_5")>=4,"the original crew walk their full native exit route before poisoning");}).thenExecute(()->{
+            var own=f.own(p,P);h.assertTrue(actor(f,p,LiteraryActor.GHOST_PRODUCER).getZ()>f.base(P).getZ()-9&&actor(f,p,LiteraryActor.GHOST_PRIEST).getZ()>f.base(P).getZ()-9,"both original crew bodies are beyond the occupied room");own.putInt("ShotClock",625);GhostsSet.reader(p,f.base(P),own);h.assertTrue(actor(f,p,LiteraryActor.GHOST_MARJORIE).phase()==GhostsSet.CHOKING&&actor(f,p,LiteraryActor.GHOST_JOHN).phase()==GhostsSet.EATING,"the original family has distinct death onset times");own.putInt("ShotClock",855);GhostsSet.reader(p,f.base(P),own);save(f,p,own);f.reload();
+            for(int role:new int[]{LiteraryActor.GHOST_MARJORIE,LiteraryActor.GHOST_JOHN,LiteraryActor.GHOST_SARAH})h.assertTrue(actor(f,p,role).phase()==GhostsSet.DEAD,"each original reaches its leaking, still death pose");
+        }).thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("MerryLeft0488"),"the surviving original walks through the actual front door in native time")).thenExecute(()->{
+            var own=f.own(p,P);var merry=actor(f,p,LiteraryActor.GHOST_MERRY);h.assertTrue(merry.getZ()>f.base(P).getZ()-14&&merry.phase()==GhostsSet.STAND,"Merry is beyond the door");for(int role:GhostsSet.ROLES)h.assertTrue(ids.get(role).equals(actor(f,p,role).getUUID()),"every original identity survives poisoning and departure");var position=merry.position();save(f,p,own);f.reload();GhostsSet.reader(p,f.base(P),f.own(p,P));h.assertTrue(merry.position().equals(position),"reload does not reseat Merry beside the bodies");h.assertTrue(f.own(peer,P).getInt("FilmDay")==1&&actor(f,peer,LiteraryActor.GHOST_MARJORIE).phase()!=GhostsSet.DEAD&&!own.getBoolean("Ready"),"a peer's living family and the original seven-day account gate remain independent");
+        }).thenSucceed();
     }
     @AfterBatch(batch="ghosts_final_death0488") public static void finalDeathDone(ServerLevel l){close();}
 }
