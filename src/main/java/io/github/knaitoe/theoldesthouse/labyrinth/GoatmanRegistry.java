@@ -43,7 +43,8 @@ public final class GoatmanRegistry {
     /** 0.4.53: the thing itself, always private to whoever sees it. */
     public static final DeferredHolder<EntityType<?>,EntityType<GoatmanFigure>> FIGURE=TYPES.register("goatman",()->EntityType.Builder.<GoatmanFigure>of(GoatmanFigure::new,MobCategory.MISC).sized(.6F,2.2F).eyeHeight(1.95F).clientTrackingRange(10).updateInterval(1).build("goatman"));
     public static final DeferredHolder<SoundEvent,SoundEvent> HAMMER=sound("goatman.hammer"),LAUGH=sound("goatman.laugh"),WOODS=sound("goatman.woods"),
-        CLICK=sound("goatman.click"),CLAW=sound("goatman.claw"),CRICKETS=sound("goatman.crickets"),KEEN=sound("goatman.keen");
+        CLICK=sound("goatman.click"),CLAW=sound("goatman.claw"),CRICKETS=sound("goatman.crickets"),KEEN=sound("goatman.keen"),
+        KNOCK=sound("goatman.knock"),SCORE=sound("goatman.score");
     /** The smell, where it is strongest. */
     public static final DeferredHolder<ParticleType<?>,SimpleParticleType> COPPER=PARTICLES.register("goatman_copper",()->new SimpleParticleType(false));
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}

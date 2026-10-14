@@ -28,9 +28,10 @@ public final class LiveExpeditionClient {
     private static final java.util.List<String> heardKnocks=new java.util.ArrayList<>();
     @SubscribeEvent public static void sounds(net.neoforged.neoforge.client.event.sound.PlaySoundEvent e){
         if(!LiveExpeditionProof.enabled()||proofCamp==null||previous<35||previous>36||e.getSound()==null)return;
-        var sound=e.getSound();var id=sound.getLocation();if(!id.getNamespace().equals(TheOldestHouse.MOD_ID)||!(id.getPath().equals("literary.cabin_knock")||id.getPath().equals("goatman.claw")||id.getPath().equals("goatman.hammer")))return;
+        var sound=e.getSound();var id=sound.getLocation();if(!id.getNamespace().equals(TheOldestHouse.MOD_ID)||!(id.getPath().equals("goatman.knock")||id.getPath().equals("goatman.claw")||id.getPath().equals("goatman.hammer")))return;
         // This event precedes sound resolution; only the instance's ID and world coordinates are ready.
-        double x=sound.getX()-proofCamp.getX(),z=sound.getZ()-proofCamp.getZ();if(x< -3)heardSides.add("west");if(x>3)heardSides.add("east");if(z< -74)heardSides.add("rear");heardKnocks.add(id+" at "+x+","+z);
+        if(sound.getVolume()<3)throw new IllegalStateException("LIVE EXPEDITION the louder native trailer impact lost its gain");
+        double x=sound.getX()-proofCamp.getX(),z=sound.getZ()-proofCamp.getZ();if(x< -3)heardSides.add("west");if(x>3)heardSides.add("east");if(z< -74)heardSides.add("rear");heardKnocks.add(id+" at "+x+","+z+" gain="+sound.getVolume());
     }
     @SubscribeEvent public static void tick(ClientTickEvent.Post e) {
         if(!LiveExpeditionProof.enabled())return;var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.gameMode==null)return;
@@ -225,11 +226,14 @@ public final class LiveExpeditionClient {
                 mc.player.setYRot(0);mc.player.setXRot(0);
                 boolean terror=children.stream().filter(c->c.fearStage()==3).count()==7&&children.stream().filter(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild::cowering).count()==1;
                 if(terror&&!terrorCaptured&&shot==null&&mc.screen==null){mc.player.setYRot(180);shot=role+"-trailer-terror";terrorCaptured=true;}
-                if(terror&&terrorCaptured&&shot==null&&mc.screen==null&&GoatmanClient.priorityDemand()>=104&&!GoatmanClient.cousinSubtitle()&&heardSides.size()==3&&ack!=36){
+                if(terror&&terrorCaptured&&shot==null&&mc.screen==null&&GoatmanClient.priorityDemand()>=104&&!GoatmanClient.cousinSubtitle()&&heardSides.size()==3&&GoatmanWindowClient.ready()&&ack!=36){
                     shot=role+"-trailer-voice";try{Files.createDirectories(LiveExpeditionProof.folder());Files.writeString(LiveExpeditionProof.folder().resolve(role+"-trailer-sounds.txt"),String.join("\n",heardKnocks)+"\n");}catch(Exception ex){throw new IllegalStateException(ex);}ack(mc,36);
                 }
             }
+            String window=GoatmanWindowClient.tick(mc,children,target,role,step==36&&shot==null&&mc.screen==null);
+            if(window!=null)shot=window;
         }
+        GoatmanWindowClient.leave(mc,step,ticks,role);
         if(step>=37&&step<=39&&ack!=step&&MobSightClientProof.ready(mc,step,ticks,role)){
             if(step!=39)shot=role+(step==37?"-outside-mob-sight":"-window-mob-sight");ack(mc,step);
         }
