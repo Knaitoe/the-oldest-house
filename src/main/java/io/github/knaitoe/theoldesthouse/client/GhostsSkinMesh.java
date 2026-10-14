@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import net.minecraft.client.model.geom.ModelPart;
 
-/** Fits the unchanged painted atlas; eyelids use its reserved skin, and mouth interiors never repeat the face. */
+/** Fits the unchanged painted atlas; eyelids use clean cheek skin, and mouth interiors never repeat the face. */
 final class GhostsSkinMesh {
     private GhostsSkinMesh(){}
     static float atlasScale(int role,int phase){return role==LiteraryActor.GHOST_MARJORIE&&(phase==GhostsSet.VOMIT||phase==GhostsSet.EATING||phase==GhostsSet.CHOKING||phase==GhostsSet.DEAD)?128F*18/1774:1;}
@@ -29,8 +29,8 @@ final class GhostsSkinMesh {
         if(blink>0){
             for(float x:new float[]{-3.05F,.55F}){
                 float bottom=-4.85F+1.7F*blink;
-                quad(p,v,light,overlay,colour,new float[][]{{x,bottom,-4.035F},{x+2.5F,bottom,-4.035F},{x+2.5F,-4.85F,-4.035F},{x,-4.85F,-4.035F}},66,.65F,70,1.9F,0,0,-1);
-                if(blink>.75F)quad(p,v,light,overlay,0xff79665b,new float[][]{{x+.15F,bottom,-4.04F},{x+2.35F,bottom,-4.04F},{x+2.35F,bottom-.045F,-4.04F},{x+.15F,bottom-.045F,-4.04F}},66,1,70,1.1F,0,0,-1);
+                quad(p,v,light,overlay,colour,new float[][]{{x,bottom,-4.035F},{x+2.5F,bottom,-4.035F},{x+2.5F,-4.85F,-4.035F},{x,-4.85F,-4.035F}},9.8F,13.3F,10.4F,13.7F,0,0,-1);
+                if(blink>.75F)quad(p,v,light,overlay,0xff79665b,new float[][]{{x+.15F,bottom,-4.04F},{x+2.35F,bottom,-4.04F},{x+2.35F,bottom-.045F,-4.04F},{x+.15F,bottom-.045F,-4.04F}},9.8F,13.3F,10.4F,13.4F,0,0,-1);
             }
         }
         p.pushPose();jaw.translateAndRotate(p);sides(p,v,light,overlay,colour,0,2,14,16);

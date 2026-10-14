@@ -16,12 +16,15 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /** Baked native home meshes, six named skins and the very same jointed poses used in the scene. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class GhostsVisualProof extends Screen {
     private int page,frames;
+    private static boolean launched;
     public GhostsVisualProof(){super(Component.literal("The Barrett home — native filming assets"));}
+    @SubscribeEvent public static void launch(ClientTickEvent.Post ignored){var mc=Minecraft.getInstance();if(Boolean.getBoolean("the_oldest_house.ghostsSmoke")&&!launched&&mc.screen!=null&&mc.getOverlay()==null){launched=true;mc.options.guiScale().set(2);mc.resizeDisplay();NativeModelTextures.verify();mc.setScreen(new GhostsVisualProof());}}
     @Override protected void init(){var sample=new net.minecraft.nbt.CompoundTag();for(int d=1;d<=7;d++){var log=new net.minecraft.nbt.CompoundTag();for(String name:new String[]{"Marjorie","Merry","John","Sarah","UnderTable","TableFittings","DrawerMechanism","Handholds","Playhouse","PrivateConfession","FinalMeal"})log.putInt("Frames_"+name,40);log.putInt("LeadTicks_Sarah",40);sample.put("FilmLog"+d,log);}sample.putBoolean("RespectedPrivacy",true);sample.putString("Confession","I kept the fittings and the mechanism in the tape, even when the cut left them out.");var mc=Minecraft.getInstance();for(int d=1;d<=7;d++)for(boolean raw:new boolean[]{true,false})for(var page:GhostsSet.edit("Native proof",sample,d,raw).get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages())if(mc.font.split(page.raw(),114).size()>14)throw new IllegalStateException("The filming account exceeds its native lectern page");}
     @Override public void renderBackground(GuiGraphics g,int x,int y,float d){}
     @Override public void render(GuiGraphics g,int x,int y,float partial){
@@ -82,8 +85,8 @@ public final class GhostsVisualProof extends Screen {
     }
     private static String pageName(int page){return switch(page){case 0->"cast";case 1->"fixtures";case 2->"paper-and-cases";case 3->"final-dinner";case 4->"seating";case 5->"seating-prayer";case 6->"all-poses-front";case 7->"all-poses-side";case 8->"all-poses-back";case 9->"eight-atlases-and-closed-eyes";case 10->"marjorie-blink-and-jaw";case 11->"help-fall-and-death";case 12->"fixtures-east";case 13->"fixtures-south";case 14->"fixtures-west";default->"prop-transitions";};}
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
-        var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof GhostsVisualProof proof)||++proof.frames<24)return;
+        var mc=Minecraft.getInstance();if(!(Boolean.getBoolean("the_oldest_house.fontSmoke")||Boolean.getBoolean("the_oldest_house.ghostsSmoke"))||!(mc.screen instanceof GhostsVisualProof proof)||++proof.frames<24)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-ghosts-"+pageName(proof.page)+".png"));}
-        if(++proof.page<16){proof.frames=0;return;}Files.writeString(dir.resolve("ghosts-passed.txt"),"Sixteen native views: all eighteen human poses from front/side/back, eight unchanged painted atlases, normal/dinner blink and jaw frames, helping/falling/distinct deaths and mouth strands/drops, all four fixture orientations, drawer/cardboard transitions, case lids, four fitted call-sheet orientations, native caption and four fitted dining chairs including Merry's prayer pose rendered.\n");mc.setScreen(new LastStopCastVisualProof());
+        if(++proof.page<16){proof.frames=0;return;}Files.writeString(dir.resolve("ghosts-passed.txt"),"Sixteen native views: all eighteen human poses from front/side/back, eight unchanged painted atlases, normal/dinner blink and jaw frames, helping/falling/distinct deaths and mouth strands/drops, all four fixture orientations, drawer/cardboard transitions, case lids, four fitted call-sheet orientations, native caption and four fitted dining chairs including Merry's prayer pose rendered.\n");if(Boolean.getBoolean("the_oldest_house.ghostsSmoke"))mc.stop();else mc.setScreen(new LastStopCastVisualProof());
     }
 }
