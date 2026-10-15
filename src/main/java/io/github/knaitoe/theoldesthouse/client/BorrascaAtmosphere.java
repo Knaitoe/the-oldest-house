@@ -25,14 +25,16 @@ public final class BorrascaAtmosphere {
     private static ClientLevel world;
     private static long refreshed;
     private static Loop clear,muffled,wind;
+    private static int retry;
     private BorrascaAtmosphere(){}
     public static void accept(BorrascaViewPayload p){var mc=Minecraft.getInstance();state=p;world=mc.level;refreshed=world==null?0:world.getGameTime();if(!p.active())stop();}
     public static boolean active(){var mc=Minecraft.getInstance();if(state==null||!state.active()||mc.level==null||mc.level!=world||mc.player==null||!mc.player.isAlive()||mc.level.dimension()!=HouseDimensions.OUTSIDE||mc.level.getGameTime()-refreshed>60)return false;var b=state.source().subtract(BorrascaRooms.MACHINE);return BorrascaSites.bounds(b).contains(mc.player.position());}
     public static boolean playing(){var mc=Minecraft.getInstance();return clear!=null&&muffled!=null&&mc.getSoundManager().isActive(clear)&&mc.getSoundManager().isActive(muffled);}
     public static long time(long normal){return !active()?normal:switch(state.visit()){case 1->6000;case 2->9000;case 3->12500;default->18000;};}
     public static BlockPos source(){return state==null?BlockPos.ZERO:state.source();}
-    private static void stop(){var mc=Minecraft.getInstance();for(var s:new Loop[]{clear,muffled,wind})if(s!=null)mc.getSoundManager().stop(s);clear=muffled=wind=null;}
+    private static void stop(){var mc=Minecraft.getInstance();for(var s:new Loop[]{clear,muffled,wind})if(s!=null)mc.getSoundManager().stop(s);clear=muffled=wind=null;retry=0;}
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){var mc=Minecraft.getInstance();if(!active()){stop();state=null;world=null;return;}mc.getMusicManager().stopPlaying();
+        if(clear!=null&&mc.options.getSoundSourceVolume(SoundSource.MASTER)>0&&mc.options.getSoundSourceVolume(SoundSource.AMBIENT)>0&&!playing()){if(++retry>=40)stop();}else retry=0;
         if(clear==null){clear=new Loop(BorrascaRegistry.GRINDER.get(),0);muffled=new Loop(BorrascaRegistry.GRINDER_MUFFLED.get(),1);wind=new Loop(BorrascaRegistry.TOWN_WIND.get(),2);mc.getSoundManager().play(clear);mc.getSoundManager().play(muffled);mc.getSoundManager().play(wind);}
     }
     @SubscribeEvent public static void choose(SelectMusicEvent e){if(active())e.setMusic(null);}

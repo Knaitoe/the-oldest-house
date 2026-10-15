@@ -165,6 +165,17 @@ public final class BuildBlocks {
             return cursor == commands.size();
         }
         public int lastVisits() { return lastVisits; }
+        /** A private first-build job can resume without revisiting applied commands or player edits. */
+        public net.minecraft.nbt.CompoundTag checkpoint(){
+            var t=new net.minecraft.nbt.CompoundTag();t.putInt("Count",commands.size());t.putInt("Cursor",cursor);
+            if(cursor<commands.size()){var c=commands.get(cursor);if(c instanceof Fill f)t.putLong("FillIndex",f.cursor);else if(c instanceof Clear clear){t.putInt("ClearSection",clear.section);t.putLong("ClearCell",clear.inner);}}
+            return t;
+        }
+        public void resume(net.minecraft.nbt.CompoundTag t){
+            if(t.isEmpty())return;if(t.getInt("Count")!=commands.size())throw new IllegalStateException("Saved construction plan differs from its authored layout");
+            int next=t.getInt("Cursor");if(next<0||next>commands.size())throw new IllegalArgumentException("Invalid saved construction cursor");cursor=next;
+            if(cursor<commands.size()){var c=commands.get(cursor);if(c instanceof Fill f){long i=t.getLong("FillIndex");if(i<0||i>=f.size)throw new IllegalArgumentException("Invalid fill cursor");f.cursor=i;}else if(c instanceof Clear clear){int section=t.getInt("ClearSection");long cell=t.getLong("ClearCell");if(section<0||section>=clear.sections||cell< -1||cell>=4096)throw new IllegalArgumentException("Invalid clear cursor");clear.section=section;clear.inner=cell;}}
+        }
         /** The recorded native state without applying a plan; upgrade comparisons never execute its callbacks. */
         public BlockState plannedState(BlockPos at){return authoredStateAt(at);}
         /** Commands and the most block positions they can visit (an empty section counts once). */

@@ -48,10 +48,10 @@ public final class BorrascaSites {
         if(chunks.isEmpty()){leased=l;var box=bounds(b).inflate(2);for(int x=((int)box.minX)>>4;x<=((int)box.maxX)>>4;x++)for(int z=((int)box.minZ)>>4;z<=((int)box.maxZ)>>4;z++){var c=new ChunkPos(x,z);l.getChunkSource().addRegionTicket(TICKET,c,1,c);chunks.add(c);}}
         // Never call a synchronous chunk getter as a timeout fallback.
         if(chunks.stream().anyMatch(c->l.getChunkSource().getChunkNow(c.x,c.z)==null))return;
-        if(plan==null)plan=BuildBlocks.record(l,()->BorrascaRooms.build(l,b));
-        if(!plan.tick())return;
+        if(plan==null){plan=BuildBlocks.record(l,()->BorrascaRooms.build(l,b));plan.resume(site(server,building).getCompound("BuildCursor"));}
+        if(!plan.tick()){var progress=site(server,building);progress.put("BuildCursor",plan.checkpoint());d.setStateEntry(SITES,building.toString(),progress);return;}
         d.putDoor(new LabyrinthData.Door("borrasca/"+building+"/entry",HouseDimensions.OUTSIDE,b.offset(0,0,1),Direction.SOUTH,LabyrinthData.RETURN,false));
-        var t=site(server,building);t.putBoolean("Built",true);d.setStateEntry(SITES,building.toString(),t);release();
+        var t=site(server,building);t.putBoolean("Built",true);t.remove("BuildCursor");d.setStateEntry(SITES,building.toString(),t);release();
     }
     private static void release(){if(leased!=null)for(var c:chunks)leased.getChunkSource().removeRegionTicket(TICKET,c,1,c);chunks.clear();leased=null;plan=null;building=null;}
     public static void clear(){release();waiting.clear();store=null;}
