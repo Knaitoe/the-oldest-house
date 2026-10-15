@@ -87,7 +87,7 @@ public final class LiteraryVignettes {
         private static Container container(ItemStack s){var c=new SimpleContainer(1);c.setItem(0,s.copy());return c;}
         public ItemStack original(){return book.copy();}
         @Override public boolean clickMenuButton(Player who,int button){if(who!=reader||!participant(reader)||(surface&&(!inside(reader,place)||reader.distanceToSqr(at.getCenter())>36)))return false;var d=LabyrinthData.get(reader.server);var own=personal(d,reader.getUUID(),place);
-            if(button==3){if(!surface||!owned||own.getBoolean("Taken_"+key))return false;own.putBoolean("Taken_"+key,true);save(d,reader.getUUID(),place,own);give(reader,book.copy());return true;}
+            if(button==3){if(!surface||!owned||own.getBoolean("Taken_"+key))return false;own.putBoolean("Taken_"+key,true);save(d,reader.getUUID(),place,own);give(reader,book.copy());if(place==LabyrinthPlace.BORRASCA)BorrascaStory.took(reader,key,at);return true;}
             if(!super.clickMenuButton(who,button))return false;if(getPage()==book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()-1)reached(d,own);return true;}
         /** A one-page paper has no page to turn to, and the lectern sends nothing for it: opening it is reading it to the end. */
         public void opened(){opened(personal(LabyrinthData.get(reader.server),reader.getUUID(),place));}

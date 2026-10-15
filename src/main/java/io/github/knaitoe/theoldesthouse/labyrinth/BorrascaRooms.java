@@ -9,7 +9,7 @@ import net.minecraft.world.level.block.state.properties.*;
 
 /** A continuous native town, remembered treehouse, switchback and inhabited industrial site. */
 public final class BorrascaRooms {
-    public static final BlockPos SOURCE=new BlockPos(3,1,-5),ACCOUNT=new BlockPos(-3,1,-5),CARVING=new BlockPos(0,7,-98),BEDROOM=new BlockPos(27,6,-56),REGISTER=new BlockPos(-25,1,-31),MAP=new BlockPos(-20,1,-37),NOTICE=new BlockPos(9,1,-47),SIGN=new BlockPos(-8,11,-148),TRUCK=new BlockPos(12,12,-163),SERVICE=new BlockPos(-21,13,-171),EVIDENCE=new BlockPos(-26,13,-195),TESTIMONY=new BlockPos(-22,13,-202),POWER=new BlockPos(6,12,-183),RELEASE=new BlockPos(-15,12,-205),MACHINE=new BlockPos(0,12,-189),FACTORY_DOOR=new BlockPos(-17,12,-169);
+    public static final BlockPos SOURCE=new BlockPos(3,1,-5),ACCOUNT=new BlockPos(-3,1,-5),CARVING=new BlockPos(0,7,-98),BEDROOM=new BlockPos(27,6,-56),REGISTER=new BlockPos(-25,1,-31),MAP=new BlockPos(-20,1,-37),NOTICE=new BlockPos(9,1,-47),SIGN=new BlockPos(7,10,-148),TRUCK=new BlockPos(12,12,-163),SERVICE=new BlockPos(-21,13,-171),EVIDENCE=new BlockPos(-26,13,-195),TESTIMONY=new BlockPos(-22,13,-202),POWER=new BlockPos(6,12,-183),RELEASE=new BlockPos(-15,12,-205),MACHINE=new BlockPos(0,12,-189),FACTORY_DOOR=new BlockPos(-17,12,-169);
     public static final BlockPos[] RETURN_ROUTE={new BlockPos(-17,12,-208),new BlockPos(-27,11,-209),new BlockPos(-32,8,-189),new BlockPos(-32,4,-165),new BlockPos(-27,0,-131),new BlockPos(-18,0,-106),new BlockPos(-12,0,-73)};
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private BorrascaRooms(){}
@@ -44,7 +44,7 @@ public final class BorrascaRooms {
         // A complete two-storey home; the bedroom is reached by its native stair flight.
         house(l,b,13,34,-65,-44,0,LiteraryRegistry.SIDING.get(),Blocks.OAK_PLANKS);box(l,b,14,5,-64,33,5,-45,Blocks.OAK_PLANKS);box(l,b,13,6,-65,34,10,-44,LiteraryRegistry.SIDING.get());box(l,b,14,6,-64,33,10,-45,Blocks.AIR);box(l,b,13,11,-65,34,11,-44,Blocks.DARK_OAK_PLANKS);
         for(int i=0;i<6;i++){box(l,b,15,1+i,-48-i,17,2+i,-48-i,Blocks.AIR);for(int x=15;x<=17;x++)BuildBlocks.set(l,b.offset(x,i,-48-i),Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH),F);}
-        box(l,b,15,5,-53,17,5,-48,Blocks.AIR);box(l,b,25,8,-44,28,9,-44,Blocks.GLASS_PANE);NovelRooms.bed(l,b.offset(30,6,-61),Blocks.YELLOW_BED,Direction.NORTH);furnished(l,b,27,6,-56,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);fit(l,b,BEDROOM.above(),BorrascaFittingBlock.Kind.PAPER,Direction.SOUTH);furnished(l,b,32,6,-55,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.WEST);lamp(l,b,24,9,-57);
+        box(l,b,15,5,-52,17,5,-48,Blocks.AIR);box(l,b,25,8,-44,28,9,-44,Blocks.GLASS_PANE);NovelRooms.bed(l,b.offset(30,6,-61),Blocks.YELLOW_BED,Direction.NORTH);furnished(l,b,27,6,-56,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);fit(l,b,BEDROOM.above(),BorrascaFittingBlock.Kind.PAPER,Direction.SOUTH);furnished(l,b,32,6,-55,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.WEST);lamp(l,b,24,9,-57);
         for(int x:new int[]{-8,8})for(int z:new int[]{-15,-44,-68}){box(l,b,x,0,z,x,3,z,Blocks.DARK_OAK_FENCE);set(l,b,x,4,z,Blocks.LANTERN);}
         fit(l,b,NOTICE,BorrascaFittingBlock.Kind.NOTICE,Direction.WEST);sign(l,b,9,2,-47,"COMMUNITY","MISSING","Please ask at","the records office");
         // Three trunks, a braced platform, open trapdoor, a real seven-rung ladder and rain shelter.
@@ -56,6 +56,7 @@ public final class BorrascaRooms {
         // Gentle one-block rises carry the trail all the way to the twelve-block ridge.
         for(int z=-105;z>=-169;z--){int y=Math.min(12,(-z-105)/5);int x=(int)Math.round(8*Math.sin((-z-105)*.065));for(int dx=-2;dx<=2;dx++){box(l,b,x+dx,0,z,x+dx,y-1,z,Blocks.STONE);set(l,b,x+dx,y-1,z,Blocks.DIRT_PATH);if(z<-105&&(-z-105)%5==0)BuildBlocks.set(l,b.offset(x+dx,y-1,z),Blocks.STONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH),F);}}
         box(l,b,-31,0,-214,27,10,-165,Blocks.STONE);box(l,b,-31,11,-214,27,11,-165,Blocks.GRAVEL);box(l,b,10,0,-165,14,11,-159,Blocks.STONE);box(l,b,-30,12,-213,26,24,-166,Blocks.AIR);
+        for(int x=-8;x<=-4;x++)BuildBlocks.set(l,b.offset(x,11,-165),Blocks.STONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH),F);
         house(l,b,-29,-14,-204,-169,12,Blocks.STONE_BRICKS,Blocks.POLISHED_ANDESITE);box(l,b,-28,17,-203,-15,17,-170,Blocks.SMOOTH_STONE);door(l,b,-17,12,-169,Direction.SOUTH,Blocks.IRON_DOOR);
         door(l,b,-14,12,-179,Direction.EAST,Blocks.SPRUCE_DOOR);box(l,b,-11,12,-179,-11,13,-179,Blocks.AIR);box(l,b,-17,12,-204,-17,13,-204,Blocks.AIR);
         // A visible lever opens the office. No invisible per-player wall is used.
@@ -66,13 +67,14 @@ public final class BorrascaRooms {
         for(int y=13;y<=16;y++)for(int x=-2;x<=2;x++)for(int z=-191;z<=-187;z++)if(Math.abs(x)==2||z==-191||z==-187)fit(l,b,new BlockPos(x,y,z),BorrascaFittingBlock.Kind.STEEL,Direction.NORTH);
         BuildBlocks.set(l,b.offset(POWER),Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACE,AttachFace.FLOOR).setValue(LeverBlock.POWERED,true),F);BuildBlocks.set(l,b.offset(RELEASE),Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACE,AttachFace.FLOOR),F);
         for(int x:new int[]{11,13})for(int z=-165;z<=-160;z++)fit(l,b,new BlockPos(x,12,z),BorrascaFittingBlock.Kind.TRUCK,Direction.NORTH);box(l,b,11,13,-163,13,13,-161,Blocks.GREEN_TERRACOTTA);box(l,b,11,14,-163,13,14,-162,Blocks.BLACK_STAINED_GLASS);sign(l,b,12,13,-160,"PRESCOTT","ORE / SERVICE","D-417","Drisking");
-        box(l,b,-10,0,-149,-10,13,-149,Blocks.SPRUCE_FENCE);box(l,b,-6,0,-149,-6,13,-149,Blocks.SPRUCE_FENCE);box(l,b,-10,11,-150,-6,13,-149,Blocks.SPRUCE_PLANKS);fit(l,b,SIGN,BorrascaFittingBlock.Kind.NOTICE,Direction.SOUTH);sign(l,b,-8,12,-149,"   SKIN ","  ND"," MIN ","West rim");
+        box(l,b,5,0,-149,5,12,-149,Blocks.SPRUCE_FENCE);box(l,b,9,0,-149,9,12,-149,Blocks.SPRUCE_FENCE);box(l,b,5,9,-150,9,12,-149,Blocks.SPRUCE_PLANKS);fit(l,b,SIGN,BorrascaFittingBlock.Kind.NOTICE,Direction.SOUTH);sign(l,b,7,11,-148,"   SKIN ","  ND"," MIN ","West rim");
         // A separately graded service descent. Its door is opened by the native release lever.
         box(l,b,-18,12,-207,-14,15,-206,Blocks.STONE_BRICKS);door(l,b,-17,12,-206,Direction.NORTH,Blocks.IRON_DOOR);
         for(int i=0;i<RETURN_ROUTE.length-1;i++)path(l,b,RETURN_ROUTE[i],RETURN_ROUTE[i+1]);
         sign(l,b,-15,14,-205,"FIRE EXIT","Release lever","Keep low under","the service pipe");for(int x=-21;x<=-15;x++)for(int z=-210;z<=-208;z++)BuildBlocks.set(l,b.offset(x,13,z),Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP),F);
         box(l,b,-23,12,-207,-18,15,-207,Blocks.STONE_BRICKS);box(l,b,-23,12,-210,-16,15,-210,Blocks.STONE_BRICKS);box(l,b,-16,12,-209,-16,15,-207,Blocks.STONE_BRICKS);
         box(l,b,34,-5,-61,41,-1,-53,Blocks.STONE_BRICKS);box(l,b,35,-4,-60,40,-2,-54,Blocks.AIR);
+        for(int z:new int[]{-181,-191,-201})lamp(l,b,-22,15,z);
         // Reading porch and normal return, away from the committed evidence room.
         box(l,b,-5,-1,-9,5,-1,2,Blocks.STONE_BRICKS);for(int x:new int[]{-5,5})box(l,b,x,0,-8,x,4,0,Blocks.BRICKS);box(l,b,-5,5,-9,5,5,0,Blocks.DARK_OAK_PLANKS);furnished(l,b,3,0,-5,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);furnished(l,b,-3,0,-5,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);LiteraryRooms.paper(l,b,SOURCE,BorrascaTexts.source());LiteraryRooms.prop(l,b,ACCOUNT,LiteraryPropBlock.Kind.LEDGER,Direction.SOUTH);lamp(l,b,0,3,-6);
         NovelRooms.safeApproach(l,b);LabyrinthBuilder.entrance(l,b,Blocks.BRICKS.defaultBlockState(),Blocks.STONE_BRICKS.defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState());NovelRooms.door(l,b.offset(0,0,1),Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);
