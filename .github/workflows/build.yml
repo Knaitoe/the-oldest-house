@@ -723,6 +723,8 @@ jobs:
           test -s build/font-smoke/native-playtest-0464.png
           test -s build/font-smoke/trailer-0465-passed.txt
           for page in 0 1 2 3; do test -s build/font-smoke/native-trailer-0465-$page.png; done
+          test -s build/font-smoke/cousin-gaits-0497-passed.txt
+          for page in 0 1 2 3; do test -s build/font-smoke/native-cousin-gaits-0497-$page.png; done
           test -s build/font-smoke/streetlights-0469-passed.txt
           test -s build/font-smoke/native-streetlights-0469.png
           test -s build/font-smoke/playtest-0468-passed.txt
@@ -1276,6 +1278,8 @@ jobs:
           python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text(), 'A native mod model has a missing texture'"
           test -s build/font-smoke/trailer-0465-passed.txt
           for page in 0 1 2 3; do test -s build/font-smoke/native-trailer-0465-$page.png; done
+          test -s build/font-smoke/cousin-gaits-0497-passed.txt
+          for page in 0 1 2 3; do test -s build/font-smoke/native-cousin-gaits-0497-$page.png; done
           test -s build/font-smoke/streetlights-0469-passed.txt
           test -s build/font-smoke/native-streetlights-0469.png
           test -s build/font-smoke/playtest-0468-passed.txt
@@ -1313,6 +1317,8 @@ jobs:
             build/font-smoke/literary-phases-passed.txt
             build/font-smoke/native-trailer-0465-*.png
             build/font-smoke/trailer-0465-passed.txt
+            build/font-smoke/native-cousin-gaits-0497-*.png
+            build/font-smoke/cousin-gaits-0497-passed.txt
             build/font-smoke/native-playtest-0468-*.png
             build/font-smoke/playtest-0468-passed.txt
             build/font-smoke/native-streetlights-0469.png
