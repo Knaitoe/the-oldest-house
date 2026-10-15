@@ -136,7 +136,7 @@ public final class GoatmanWoods {
         window(l,b,false);
         // Warm, ordinary light: pendants over the table, reading lamps on shelves by the bunks, the kitchenette, the bathroom, the door.
         for(int z:new int[]{-62,-68}){put(l,b,0,5,z,Blocks.CHAIN);put(l,b,0,4,z,hanging());}
-        for(int x:new int[]{-7,7})for(int z:new int[]{-59,-65,-71}){put(l,b,x,2,z,Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP));put(l,b,x,3,z,Blocks.LANTERN);}
+        for(int x:new int[]{-7,7})for(int z:new int[]{-57,-65,-71}){put(l,b,x,2,z,Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP));put(l,b,x,3,z,Blocks.LANTERN);}
         put(l,b,-5,5,-74,hanging());put(l,b,5,5,-75,hanging());put(l,b,0,5,-57,hanging());
         // Tires and corrugated trim prevent this reading as a cabin.
         for(int x:new int[]{-9,9})for(int z:new int[]{-59,-73})put(l,b,x,0,z,GoatmanRegistry.WHEEL.get().defaultBlockState().setValue(TrailerFixtureBlock.FACING,x<0?Direction.WEST:Direction.EAST));
