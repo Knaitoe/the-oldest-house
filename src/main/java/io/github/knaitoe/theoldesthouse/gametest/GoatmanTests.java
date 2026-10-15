@@ -32,6 +32,40 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID+"_goatman")
 @PrefixGameTestTemplate(false)
 public final class GoatmanTests {
+    private static Fixture exchange;
+    @AfterBatch(batch="goat_exchange_open0497") public static void cleanExchange(ServerLevel l){if(exchange!=null){exchange.close();exchange=null;}}
+    @AfterBatch(batch="goat_exchange_late0497") public static void cleanLateExchange(ServerLevel l){cleanExchange(l);}
+    @GameTest(template="empty",templateNamespace=TheOldestHouse.MOD_ID+"_goatman_windows",batch="goat_exchange_open0497",timeoutTicks=2400)
+    public static void theDisguisedOriginalRunsOutAsTheRealChildRunsInThenStrikesEverySidePane(GameTestHelper h){exchange(h,false);}
+    @GameTest(template="empty",templateNamespace=TheOldestHouse.MOD_ID+"_goatman_windows",batch="goat_exchange_late0497",timeoutTicks=2400)
+    public static void aLateOpenedDoorAndSavedApproachKeepTheSameTwoChildrenInTheExchange(GameTestHelper h){exchange(h,true);}
+    private static void exchange(GameTestHelper h,boolean late){
+        exchange=new Fixture(h,late?50900:50600);var f=exchange;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        boolean[] started={false},loaded={false};UUID[] impostor={null},runner={null};int[] skin={-1},outAt={-1},inAt={-1},waiting={0};
+        var panes=new HashSet<Long>();var expected=new HashSet<Long>();for(var at:List.of(new BlockPos(-8,2,-59),new BlockPos(-8,2,-67),new BlockPos(-8,2,-73),new BlockPos(8,2,-59),new BlockPos(8,2,-67)))expected.add(f.b.offset(at).asLong());
+        h.onEachTick(()->{
+            if(!started[0])return;var r=f.run();var extra=f.cousin(r.getInt("Wrong")).orElseThrow();var real=f.cousin(r.getInt("Runner"));
+            h.assertTrue(extra.getUUID().equals(impostor[0])&&extra.skin()==skin[0]&&!extra.monsterAppearance(),"the outgoing figure is the same saved Goatman still disguised as the original child throughout the evening");
+            if(real.isPresent()){
+                var child=real.get();if(runner[0]==null)runner[0]=child.getUUID();h.assertTrue(child.getUUID().equals(runner[0]),"the returning child's actual body survives the saved approach");
+                if(inAt[0]<0&&f.rel(child).z<=-55.5)inAt[0]=r.getInt("Clock");
+                if(late&&r.getInt("RunnerState")==GoatmanVignette.R_KNOCKING&&++waiting[0]==45)GoatmanWoods.door(f.l,f.b,true);
+                if(late&&!loaded[0]&&r.getInt("RunnerState")==GoatmanVignette.R_RETURNING){
+                    var data=LabyrinthData.get(f.server);var restored=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),f.l.registryAccess()),f.l.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",restored);loaded[0]=true;
+                }
+            }
+            if(outAt[0]<0&&f.rel(extra).z>=-55.5)outAt[0]=r.getInt("Clock");
+            if(inAt[0]>=0&&outAt[0]>=0)h.assertTrue(Math.abs(inAt[0]-outAt[0])<=1,"the actual opposing doorway crossings share the same native tick (within one tick's sampling): in="+inAt[0]+" out="+outAt[0]);
+            if(r.contains("LastImpactPos0465")&&expected.contains(r.getLong("LastImpactPos0465")))panes.add(r.getLong("LastImpactPos0465"));
+            h.assertTrue(!WitnessAccount.has(LabyrinthData.get(f.server),p.getUUID(),WitnessAccount.Story.GOATMAN),"the doorway exchange and window knocks alone award no survival credit");
+        });
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the original trailer and all native actor sections are ready")).thenExecute(()->{
+            h.assertTrue(GoatmanVignette.enter(p),"the reader joins the actual fresh evening");var r=f.run();r.putInt("Wrong",late?7:0);r.putInt("Runner",late?0:7);r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.BACK0465-1);r.putInt("ExtraState",GoatmanVignette.X_SUPPER);r.putInt("RunnerState",GoatmanVignette.R_AWAY);f.cohort(r,List.of(p),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);GoatmanWoods.door(f.l,f.b,!late);GoatmanWoods.setWindow(f.l,f.b,true);
+            var extra=f.cousin(r.getInt("Wrong")).orElseThrow();impostor[0]=extra.getUUID();skin[0]=extra.skin();h.assertTrue(GoatmanWoods.indoors(f.rel(extra)),"the disguised original begins in the returning child's actual supper seat");started[0]=true;
+        }).thenWaitUntil(()->h.assertTrue(inAt[0]>=0&&outAt[0]>=0,"both original bodies physically cross the doorway")).thenWaitUntil(()->h.assertTrue(panes.containsAll(expected),"that same disguised child physically circles and strikes all five separate side panes during gathering: "+panes.size()+"/5 clock="+f.run().getInt("Clock"))).thenExecute(()->{
+            h.assertTrue(f.run().getInt("Phase")==GoatmanVignette.GATHERING&&(!late||loaded[0]),"all five panes are reached before nightfall, including the saved late-opened exchange");
+        }).thenSucceed();
+    }
     private static Fixture hiddenFood;
     @AfterBatch(batch="goat_food_pose0493") public static void cleanHiddenFood(ServerLevel level){if(hiddenFood!=null){hiddenFood.close();hiddenFood=null;}}
     @GameTest(template="empty",batch="goat_food_pose0493",timeoutTicks=1200)
