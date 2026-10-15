@@ -1358,6 +1358,32 @@ jobs:
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused native Goatman cases passed; the complete suite remains required.')
           PY
+      - name: Publish failed Goatman game tests
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          log = Path('build/goatman-native.log')
+          if not log.exists():
+              print('::error title=Failed game test::no game test log was written')
+              raise SystemExit(0)
+          lines = log.read_text(errors='replace').splitlines()
+          keys = re.compile(r'(failed|FAILED|Exception|exception|Error|required tests|timed out|Caused by)')
+          picked = []
+          for i, line in enumerate(lines):
+              if keys.search(line) and 'Node.js' not in line:
+                  text = re.sub(r'^\[[^]]*\] \[[^]]*\] \[[^]]*\]: ', '', line).strip()
+                  detail = ' | '.join(l.strip() for l in lines[i + 1:i + 3])
+                  entry = (text + ' :: ' + detail)[:900]
+                  if entry not in picked:
+                      picked.append(entry)
+          tail = ' | '.join(l.strip() for l in lines[-12:])[:3000]
+          for entry in picked[:9]:
+              print('::error title=Failed game test::' + entry.replace('%', '%25'))
+          print('::error title=Game test log tail::' + tail.replace('%', '%25'))
+          PY
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
