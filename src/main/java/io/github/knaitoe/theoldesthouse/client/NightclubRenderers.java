@@ -99,8 +99,8 @@ public final class NightclubRenderers {
     private static final class Renderer extends MobRenderer<NightclubActor,CastModel>{
         private final CastModel male,maleDespair,female;
         Renderer(EntityRendererProvider.Context c){super(c,new CastModel(c.bakeLayer(MALE)),.2F);male=model;maleDespair=new CastModel(c.bakeLayer(MALE_DESPAIR));female=new CastModel(c.bakeLayer(CAST));addLayer(new net.minecraft.client.renderer.entity.layers.RenderLayer<NightclubActor,CastModel>(this){@Override public void render(PoseStack p,MultiBufferSource out,int light,NightclubActor a,float walk,float amount,float partial,float age,float yaw,float pitch){if(a.dj())renderDjHead(getParentModel(),p,out,light);}});}
-        @Override public void render(NightclubActor a,float yaw,float partial,PoseStack p,MultiBufferSource out,int light){model=a.look()==0?(a.despair()>=.4F?maleDespair:male):female;super.render(a,yaw,partial,p,out,light);}
-        @Override public ResourceLocation getTextureLocation(NightclubActor a){return skin(a.look(),a.despair()>=.4F);}
+        @Override public void render(NightclubActor a,float yaw,float partial,PoseStack p,MultiBufferSource out,int light){model=a.look()==0?(a.despair(partial)>=.4F?maleDespair:male):female;super.render(a,yaw,partial,p,out,light);}
+        @Override public ResourceLocation getTextureLocation(NightclubActor a){return skin(a.look(),a.despair(1)>=.4F);}
         @Override protected boolean shouldShowName(NightclubActor a){return false;}
     }
 }

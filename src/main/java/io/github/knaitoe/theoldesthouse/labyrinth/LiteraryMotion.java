@@ -11,13 +11,25 @@ import net.minecraft.world.phys.Vec3;
 public final class LiteraryMotion {
     private record Goal(Vec3 at, double speed, long until) {}
     private static final WeakHashMap<LiteraryActor, Goal> goals = new WeakHashMap<>();
+    private record ElkStep(Vec3 velocity,long until) {}
+    private static final WeakHashMap<LiteraryElk,ElkStep> elkSteps=new WeakHashMap<>();
     private static final String BLY_CYCLE = "BlyCycle0496";
     private LiteraryMotion() {}
 
     static void toward(LiteraryActor actor, Vec3 at, double fiveTickDistance) {
         goals.put(actor, new Goal(at, fiveTickDistance / 5, actor.level().getGameTime() + 6));
     }
-    public static void clearAll() { goals.clear(); }
+    static void stop(LiteraryActor actor) { goals.remove(actor); actor.setDeltaMovement(Vec3.ZERO); }
+    public static void clearAll() { goals.clear(); elkSteps.clear(); }
+    static void legacyElk(LiteraryElk elk,Vec3 fiveTickStep){elkSteps.put(elk,new ElkStep(fiveTickStep.scale(.2),elk.level().getGameTime()+6));}
+    public static void tickElk(LiteraryElk elk){
+        if(!(elk.level() instanceof ServerLevel level))return;var step=elkSteps.get(elk);if(step==null)return;
+        var base=IndianLakeRooms.base(level.getServer(),LabyrinthPlace.ELK_LOT);var data=LabyrinthData.get(level.getServer());
+        if(base==null||ElkLot.built(data,base)||level.getGameTime()>step.until||level.players().stream().noneMatch(p->LiteraryVignettes.inside(p,LabyrinthPlace.ELK_LOT))){elkSteps.remove(elk);return;}
+        if(!level.hasChunkAt(BlockPos.containing(elk.position().add(step.velocity))))return;
+        Vec3 before=elk.position();elk.move(MoverType.SELF,step.velocity);elk.walkAnimation.update((float)elk.position().subtract(before).horizontalDistance()*4,.4F);
+        float yaw=(float)Math.toDegrees(Math.atan2(-step.velocity.x,step.velocity.z));elk.setYRot(Mth.approachDegrees(elk.getYRot(),yaw,8));elk.setYBodyRot(elk.getYRot());elk.setYHeadRot(elk.getYRot());
+    }
 
     /** A newly created body is placed before its native spawn, never reset in front of a reader. */
     static void initialLady(LiteraryActor actor, BlockPos base) {
@@ -37,10 +49,14 @@ public final class LiteraryMotion {
         if (actor.role() == LiteraryActor.LADY && actor.scene().equals(LabyrinthPlace.BLY_ROUTE.id())) {
             lady(actor, level); return;
         }
+        if (actor.role() == LiteraryActor.DANCER && actor.scene().equals(LabyrinthPlace.MASQUE.id())) {
+            if(actor.phase()==1){float yaw=(float)(level.getGameTime()%360);actor.setYRot(yaw);actor.setYBodyRot(yaw);actor.setYHeadRot(yaw);}return;
+        }
         var goal = goals.get(actor);
         if (goal == null) return;
         var reader = actor.owner().map(level.getServer().getPlayerList()::getPlayer).orElse(null);
-        if (reader == null || !LiteraryVignettes.inside(reader, LabyrinthPlace.MAPPING_INTERIOR)
+        var place=LabyrinthPlace.byId(actor.scene());
+        if (reader == null || place==null || !LiteraryVignettes.inside(reader, place)
                 || level.getGameTime() > goal.until) { goals.remove(actor); return; }
         Vec3 delta = goal.at.subtract(actor.position()).multiply(1, 0, 1);
         if (delta.lengthSqr() <= .04) { goals.remove(actor); return; }

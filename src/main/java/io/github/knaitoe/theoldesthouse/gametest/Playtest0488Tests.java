@@ -147,14 +147,17 @@ public final class Playtest0488Tests {
     public static void twoActualNightsReturnFiniteMealsWithoutTrappingFatherOnTheFoliage(GameTestHelper h){
         rabbitNights=new LiteraryTests.Fixture(h);var f=rabbitNights;var place=LabyrinthPlace.HOLY_RABBIT;
         var p=f.player("rabbit_nights",place);var b=f.base(place);f.at(p,place,3.5,0,-21.5);boolean[] started={false},done={false},carried={false},tossed={false};UUID[] rabbitId={null};float[] health={0};
+        final Vec3[] previousFather={null},previousRabbit={null};final int[] throwFrames={0};
         h.onEachTick(()->{
             if(done[0])return;
             var world=LiteraryVignettes.shared(f.data(),place);if(!world.hasUUID("Father_"+p.getUUID()))return;
             var father=(LiteraryActor)f.out.getEntity(world.getUUID("Father_"+p.getUUID()));if(father==null)return;
             if(!started[0]){LiteraryVignettes.talk(p,father);p.containerMenu.clicked(0,0,ClickType.PICKUP,p);p.closeContainer();started[0]=true;}
             var own=f.own(p,place);int night=own.getInt("Night");
+            if(previousFather[0]!=null)h.assertTrue(father.position().subtract(previousFather[0]).horizontalDistance()<=.091,"Father's actual weighted gait advances every native tick, without five-tick jumps");previousFather[0]=father.position();
             var rabbit=world.hasUUID("Rabbit_"+p.getUUID())?(Rabbit)f.out.getEntity(world.getUUID("Rabbit_"+p.getUUID())):null;
             if(rabbit!=null){if(rabbitId[0]==null){rabbitId[0]=rabbit.getUUID();health[0]=rabbit.getHealth();}h.assertTrue(rabbit.getUUID().equals(rabbitId[0])&&rabbit.isAlive()&&rabbit.getHealth()==health[0],"the apparent harvest preserves the original living rabbit and health");if(rabbit.getVehicle()==father)carried[0]=true;if(own.getInt("HarvestTicks0491")>35&&own.getInt("HarvestTicks0491")<75&&rabbit.getY()>b.getY()+.1)tossed[0]=true;}
+            if(rabbit!=null){if(!rabbit.isPassenger()&&previousRabbit[0]!=null&&own.getInt("HarvestTicks0491")>40&&own.getInt("HarvestTicks0491")<75){double step=rabbit.position().distanceTo(previousRabbit[0]);h.assertTrue(step<=.2,"the original rabbit's native throw advances continuously: "+step);if(step>.005)throwFrames[0]++;}previousRabbit[0]=rabbit.position();}
             if(night<3&&own.getInt("NightTicks")<95){f.at(p,place,3.5,0,-17.5);f.look(p,b.offset(HolyRabbit.RABBIT));}
             else{f.at(p,place,3.5,0,-20.5);p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,father.position().add(.18,.45,0));}
             for(var item:p.getInventory().items)if(item.is(LiteraryRegistry.MEAL.get())){
@@ -164,7 +167,7 @@ public final class Playtest0488Tests {
             }
             own=f.own(p,place);
             if(night>=3&&father.phase()==3&&own.getInt("NightTicks")>=120){
-                h.assertTrue(carried[0]&&tossed[0],"the actual native rabbit was held and tossed before the next morning");
+                h.assertTrue(carried[0]&&tossed[0]&&throwFrames[0]>=40,"the actual native rabbit was held and tossed continuously before both mornings: "+throwFrames[0]);
                 h.assertTrue(own.getInt("Meals")==2&&own.getInt("AteNight")==2,"both actual completed routes issued one finite meal and native eating counted each once");
                 h.assertTrue(Integer.bitCount(own.getInt("RabbitMornings"))>=2,"the unchanged rabbit was really seen alive in both mornings");
                 h.assertTrue(own.getBoolean("RabbitBelieved0490")&&own.getBoolean("RabbitTruth0490")&&!own.getBoolean("RabbitBelief0490"),"the observed returning named rabbit builds hope before the witnessed wound changes its explanation");h.assertTrue(own.getBoolean("WoundSeen0488")&&own.getBoolean("TrailOpen"),"the two actual nights lead to the physical injury reveal and earned escape");done[0]=true;h.succeed();
