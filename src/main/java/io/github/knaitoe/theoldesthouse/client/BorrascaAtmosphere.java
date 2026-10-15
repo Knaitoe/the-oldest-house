@@ -44,7 +44,7 @@ public final class BorrascaAtmosphere {
         Loop(SoundEvent event,int band){super(event,SoundSource.AMBIENT,RandomSource.create());this.band=band;looping=true;delay=0;relative=band==2;attenuation=Attenuation.NONE;volume=.001F;}
         @Override public boolean canStartSilent(){return true;}
         @Override public void tick(){if(!active()){stop();return;}var mc=Minecraft.getInstance();var p=mc.player;var at=state.source().getCenter();x=band==2?0:at.x;y=band==2?0:at.y;z=band==2?0:at.z;
-            double distance=p.getEyePosition().distanceTo(at);boolean enclosed=!mc.level.canSeeSky(p.blockPosition())||mc.level.clip(new ClipContext(p.getEyePosition(),at,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,p)).getType()!=HitResult.Type.MISS;
+            double distance=p.getEyePosition().distanceTo(at);var obstruction=mc.level.clip(new ClipContext(p.getEyePosition(),at,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,p));boolean enclosed=!mc.level.canSeeSky(p.blockPosition())||obstruction.getType()!=HitResult.Type.MISS&&!obstruction.getBlockPos().equals(state.source());
             float filter=Mth.clamp((float)(distance-24)/70+(enclosed?.55F:0),0,1);float gain=state.running()?(float)(.65/(1+distance*.055)):0;
             float target=band==2?(enclosed?.018F:.045F):gain*(band==0?1-filter:filter*.8F);volume=Mth.lerp(.08F,volume,target);
         }

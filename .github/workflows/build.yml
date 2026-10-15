@@ -70,6 +70,13 @@ jobs:
               for cue in ('ghost_low','ghost_thin','ghost_scrape','ghost_card'):
                   assert z.read(f'assets/the_oldest_house/sounds/literary/{cue}.ogg').startswith(b'OggS')
               assert 'io/github/knaitoe/theoldesthouse/house/PlaytestLog.class' in z.namelist()
+              for name in ('BorrascaSites','BorrascaStory','BorrascaCast','BorrascaMachineBlock','BorrascaTexts'):
+                  assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
+              assert z.read('assets/the_oldest_house/textures/entity/borrasca_atlas.png').startswith(b'\x89PNG')
+              assert 'assets/minecraft/atlases/blocks.json' in z.namelist()
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/borrasca_fitting.json'))['variants']) == 36
+              for cue in ('grinder','grinder_muffled','motor_stop','tree_creak','town_wind'):
+                  assert z.read(f'assets/the_oldest_house/sounds/borrasca/{cue}.ogg').startswith(b'OggS')
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
               hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
               assert len(hall) == 24
@@ -1201,6 +1208,15 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
+      - name: Native Borrasca atlas, cast and machine
+        timeout-minutes: 5
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PborrascaSmoke --no-daemon
+          test -s build/font-smoke/borrasca-assets-passed.txt
+          for view in front side back dim fixtures-0 fixtures-1; do test -s build/font-smoke/native-borrasca-$view.png; done
+          python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
       - name: Native Ghosts textures, joints and prop transitions
         timeout-minutes: 5
         run: |
