@@ -1217,6 +1217,13 @@ jobs:
           test -s build/font-smoke/borrasca-assets-passed.txt
           for view in front side back dim fixtures-0 fixtures-1; do test -s build/font-smoke/native-borrasca-$view.png; done
           python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: borrasca-native-assets-${{ github.sha }}
+          path: |
+            build/font-smoke/native-borrasca-*.png
+            build/font-smoke/borrasca-assets-passed.txt
+          if-no-files-found: error
       - name: Native Ghosts textures, joints and prop transitions
         timeout-minutes: 5
         run: |

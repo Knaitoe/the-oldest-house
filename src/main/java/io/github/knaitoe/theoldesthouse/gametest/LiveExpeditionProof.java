@@ -78,6 +78,7 @@ public final class LiveExpeditionProof {
         if(a!=null&&phase==51)CanoeSocketProof.swimming(a);
         if(a!=null&&b!=null&&(phase==52||phase==53))GhostsSocketProof.observe(a,b);
         if(a!=null&&b!=null&&(phase==56||phase==58))BorrascaSocketProof.observe(a,b,phase);
+        if(a!=null&&b!=null&&phase>=54&&phase<=59&&s.getTickCount()%40==0)BorrascaSocketProof.status(a,b,phase);
         // Read on the tick the native return lands, before the reader's restored stride or the test
         // client's still-held walk key carries them on along the tread.
         if(phase==11&&a!=null&&!firstReturned&&!StaircaseLeaks.active(a)){
