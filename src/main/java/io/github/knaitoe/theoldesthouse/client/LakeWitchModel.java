@@ -34,10 +34,11 @@ public final class LakeWitchModel extends PlayerModel<LakeWitchEntity> {
     }
     public static LayerDefinition createBodyLayer(){
         var mesh=PlayerModel.createMesh(CubeDeformation.NONE,true);var root=mesh.getRoot();var outer=new CubeDeformation(.25F);
-        var head=root.addOrReplaceChild("head",CubeListBuilder.create().texOffs(0,0).addBox(-4,-8,-4,8,6,8),PartPose.ZERO);
-        head.addOrReplaceChild("jaw",CubeListBuilder.create().texOffs(0,6).addBox(-4,0,-7,8,2,8),PartPose.offset(0,-2,3));
-        var hat=root.addOrReplaceChild("hat",CubeListBuilder.create().texOffs(32,0).addBox(-4,-8,-4,8,6,8,new CubeDeformation(.5F)),PartPose.ZERO);
-        hat.addOrReplaceChild("jaw",CubeListBuilder.create().texOffs(32,6).addBox(-4,0,-7,8,2,8,new CubeDeformation(.5F)),PartPose.offset(0,-2,3));
+        // Explicit face islands also fit the upper mouth's underside; the two hair halves never overlap at the lip.
+        var head=root.addOrReplaceChild("head",CubeListBuilder.create(),PartPose.ZERO);
+        head.addOrReplaceChild("jaw",CubeListBuilder.create(),PartPose.offset(0,-2,3));
+        var hat=root.addOrReplaceChild("hat",CubeListBuilder.create(),PartPose.ZERO);
+        hat.addOrReplaceChild("jaw",CubeListBuilder.create(),PartPose.offset(0,-2,3));
         arm(root,"right_arm",40,16,false,CubeDeformation.NONE);arm(root,"left_arm",32,48,true,CubeDeformation.NONE);
         arm(root,"right_sleeve",40,32,false,outer);arm(root,"left_sleeve",48,48,true,outer);
         leg(root,"right_leg",0,16,false,CubeDeformation.NONE);leg(root,"left_leg",16,48,true,CubeDeformation.NONE);
@@ -61,6 +62,8 @@ public final class LakeWitchModel extends PlayerModel<LakeWitchEntity> {
         boolean base=jaw.visible,outer=jawOverlay.visible;
         try{jaw.visible=false;jawOverlay.visible=false;super.renderToBuffer(p,out,light,overlay,colour);}
         finally{jaw.visible=base;jawOverlay.visible=outer;}
+        LakeWitchJaw.upper(head,0,0,p,out,light,overlay,colour);
+        LakeWitchJaw.upper(hat,.5F,32,p,out,light,overlay,colour);
         LakeWitchJaw.render(head,jaw,0,0,p,out,light,overlay,colour);
         LakeWitchJaw.render(hat,jawOverlay,.5F,32,p,out,light,overlay,colour);
     }

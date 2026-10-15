@@ -35,7 +35,9 @@ public final class LastStopCastVisualProof extends Screen {
             if(!skin.getPath().endsWith("literary_bar_"+person.key().toLowerCase(java.util.Locale.ROOT)+".png"))throw new IllegalStateException("Wrong Last Stop skin for "+person.name());
             try(var stream=mc.getResourceManager().open(skin);var image=NativeImage.read(stream)){
                 if(image.getWidth()!=512||image.getHeight()!=256)throw new IllegalStateException("Wrong Last Stop atlas size: "+skin);
-                for(var rect:new int[][]{{32,32,32,32},{80,80,32,48},{176,80,16,48},{16,80,16,48}}){
+                var rectangles=new java.util.ArrayList<int[]>(java.util.List.of(new int[]{32,32,32,32},new int[]{80,80,32,48},new int[]{176,80,16,48},new int[]{16,80,16,48}));
+                if(person.phase()==6){rectangles.add(new int[]{0,160,64,93});if(LiterarySkinMesh.dennyLegV(16F/64)!=36F/64||LiterarySkinMesh.dennyLegV(20F/64)!=40F/64||LiterarySkinMesh.dennyLegV(32F/64)!=63F/64)throw new IllegalStateException("Denny's actual leg vertices do not fit the painted denim net");}
+                for(var rect:rectangles){
                     int opaque=0;
                     for(int y=rect[1];y<rect[1]+rect[3];y++)for(int x=rect[0];x<rect[0]+rect[2];x++)if((image.getPixelRGBA(x,y)>>>24)>=128)opaque++;
                     if(opaque<rect[2]*rect[3]*.95)throw new IllegalStateException("Incomplete native face on "+skin);

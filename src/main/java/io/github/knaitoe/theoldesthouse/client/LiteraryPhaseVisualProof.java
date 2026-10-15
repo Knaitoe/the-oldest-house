@@ -56,7 +56,7 @@ public final class LiteraryPhaseVisualProof extends Screen {
             else model.preview(state.role,state.phase,frames);
             float size=state.role==LiteraryActor.BROTHER||state.role==LiteraryActor.FAMILY_CHILD||state.role==LiteraryActor.SILHOUETTE&&state.phase==4?.58F:1;
             float cx=10+(n%columns+.5F)*cellWidth,top=29+(n/columns)*cellHeight;
-            var pose=g.pose();pose.pushPose();pose.translate(cx,top+scale*.52F+cellHeight*.06F+scale*1.5F*(1-size),190);pose.scale(scale*size,scale*size,scale*size);
+            var pose=g.pose();pose.pushPose();pose.translate(cx,top+scale*(group==3?.95F:.52F)+cellHeight*.06F+scale*1.5F*(1-size),190);pose.scale(scale*size,scale*size,scale*size);
             pose.mulPose(Axis.YP.rotationDegrees(new float[]{180,90,0,145}[view]));
             if(state.role==LiteraryActor.COFFIN_WOMAN&&state.phase==1)LiteraryRenderers.coffinPose(pose);
             if(state.role==LiteraryActor.BROTHER&&state.phase>0)LiteraryRenderers.bedPose(pose,.58F);

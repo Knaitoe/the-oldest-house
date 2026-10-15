@@ -95,17 +95,18 @@ public final class VignetteAnimationTests {
     public static void actualIceBreakUnderwaterWaitAndSupportedFarBankResolveOnlyTheirReader(GameTestHelper h){
         var f=fixture(h);var place=LabyrinthPlace.WINTER_LAKE;var p=f.player("winter_route",place);var peer=f.player("winter_dry_peer",place);var b=f.base(place);
         f.source(p,place);f.source(peer,place);f.at(peer,place,.5,.125,-80.5);f.at(p,place,.5,0,-24.5);
-        var ice=b.offset(0,-1,-25);final int[] phase={0},nativeWetTicks={0};
+        var ice=b.offset(0,-1,-25);final int[] phase={0},nativeWetTicks={0},fluidWarmup={0};
         h.runAfterDelay(20,()->{
             h.assertTrue(!f.own(peer,place).getBoolean("Ready")&&!f.own(p,place).getBoolean("Ready"),"dry bank arrival and the source alone do not resolve this lake");
             h.assertTrue(f.out.getBlockState(ice).is(Blocks.ICE)&&p.gameMode.destroyBlock(ice)&&!f.out.getBlockState(ice).is(Blocks.ICE),"the actual allowed native mining action opens original lake ice");
             h.assertTrue(f.own(p,place).getBoolean("BrokeIce")&&!f.own(peer,place).getBoolean("BrokeIce"),"only the real ice miner retains the break fact");phase[0]=1;
         });
         h.onEachTick(()->{
-            if(phase[0]!=1)return;f.at(p,place,.5,-3,-24.5);p.doTick();p.setDeltaMovement(Vec3.ZERO);p.setHealth(20);
-            h.assertTrue(p.isUnderWater()&&p.getY()+p.getBbHeight()<b.getY(),"native eye fluid and complete body are genuinely beneath the ice");nativeWetTicks[0]++;
+            if(phase[0]!=1)return;f.at(p,place,.5,-3,-24.5);p.baseTick();p.setDeltaMovement(Vec3.ZERO);p.setHealth(20);
+            h.assertTrue(p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER)&&p.getY()+p.getBbHeight()<b.getY(),"native eye fluid and complete body are genuinely beneath the ice: eye="+p.getEyePosition()+", body="+p.getBoundingBox());
+            if(!p.isUnderWater()){h.assertTrue(++fluidWarmup[0]<=5,"native underwater state settles after actual fluid ticks, never from a forced flag");return;}nativeWetTicks[0]++;
             if(nativeWetTicks[0]==65)h.assertTrue(!f.own(p,place).getBoolean("Ready"),"a shorter real underwater interval cannot manufacture the bank outcome");
-            if(f.own(p,place).getInt("SubmergedTicks")>=110){phase[0]=2;f.at(p,place,.5,.125,-80.5);p.doTick();p.setDeltaMovement(Vec3.ZERO);h.assertTrue(!p.isUnderWater()&&f.out.noCollision(p,p.getBoundingBox()),"the real far bank supports the living full-height reader above native water");}
+            if(f.own(p,place).getInt("SubmergedTicks")>=110){phase[0]=2;f.at(p,place,.5,.125,-80.5);p.baseTick();p.setDeltaMovement(Vec3.ZERO);h.assertTrue(!p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER)&&f.out.noCollision(p,p.getBoundingBox()),"the real far bank supports the living full-height reader above native water");}
         });
         h.startSequence().thenWaitUntil(()->h.assertTrue(phase[0]==2&&f.own(p,place).getBoolean("Ready"),"actual ice, at least one hundred native wet ticks and physical bank arrival all complete"))
             .thenExecute(()->{h.assertTrue(nativeWetTicks[0]>=100&&!f.own(peer,place).getBoolean("Ready"),"the dry peer inherits neither water time nor outcome");f.reload();h.assertTrue(f.own(p,place).getBoolean("Ready")&&f.own(p,place).getInt("SubmergedTicks")>=100,"the actual escape facts survive SavedData reload");f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id())),"the owned final reading resolves only the real participant");}).thenSucceed();
