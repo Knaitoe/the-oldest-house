@@ -156,9 +156,10 @@ public final class LiteraryRenderers {
         }
         @Override public void renderToBuffer(PoseStack p,VertexConsumer out,int light,int overlay,int colour){
             if(!dennyLegs||young){super.renderToBuffer(p,out,light,overlay,colour);return;}
-            boolean left=leftLeg.visible,right=rightLeg.visible;
-            try{leftLeg.visible=false;rightLeg.visible=false;super.renderToBuffer(p,out,light,overlay,colour);}
-            finally{leftLeg.visible=left;rightLeg.visible=right;}
+            boolean left=leftLeg.visible,right=rightLeg.visible,torso=body.visible;
+            try{leftLeg.visible=false;rightLeg.visible=false;body.visible=false;super.renderToBuffer(p,out,light,overlay,colour);}
+            finally{leftLeg.visible=left;rightLeg.visible=right;body.visible=torso;}
+            LiterarySkinMesh.dennyBody(body,p,out,light,overlay,colour);
             var fitted=LiterarySkinMesh.dennyLeg(out);leftLeg.render(p,fitted,light,overlay,colour);rightLeg.render(p,fitted,light,overlay,colour);
         }
         public void reaching(){leftArm.xRot=rightArm.xRot=-1.45F;leftArm.yRot=.28F;rightArm.yRot=-.28F;body.xRot+=.12F;}
