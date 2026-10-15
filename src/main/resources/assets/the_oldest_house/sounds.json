@@ -1046,5 +1046,55 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.goatman_score"
+  },
+  "borrasca.grinder": {
+    "subtitle": "subtitles.the_oldest_house.borrasca.grinder",
+    "sounds": [
+      {
+        "name": "the_oldest_house:borrasca/grinder",
+        "stream": true,
+        "attenuation_distance": 256
+      }
+    ]
+  },
+  "borrasca.grinder_muffled": {
+    "subtitle": "subtitles.the_oldest_house.borrasca.grinder",
+    "sounds": [
+      {
+        "name": "the_oldest_house:borrasca/grinder_muffled",
+        "stream": true,
+        "attenuation_distance": 256
+      }
+    ]
+  },
+  "borrasca.motor_stop": {
+    "subtitle": "subtitles.the_oldest_house.borrasca.motor_stop",
+    "sounds": [
+      {
+        "name": "the_oldest_house:borrasca/motor_stop",
+        "stream": false,
+        "attenuation_distance": 256
+      }
+    ]
+  },
+  "borrasca.tree_creak": {
+    "subtitle": "subtitles.the_oldest_house.borrasca.tree_creak",
+    "sounds": [
+      {
+        "name": "the_oldest_house:borrasca/tree_creak",
+        "stream": false,
+        "attenuation_distance": 256
+      }
+    ]
+  },
+  "borrasca.town_wind": {
+    "subtitle": "subtitles.the_oldest_house.borrasca.town_wind",
+    "sounds": [
+      {
+        "name": "the_oldest_house:borrasca/town_wind",
+        "stream": true,
+        "attenuation_distance": 256
+      }
+    ]
   }
 }

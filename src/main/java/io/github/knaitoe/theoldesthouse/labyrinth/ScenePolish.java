@@ -84,7 +84,7 @@ public final class ScenePolish {
         // the Three Fingers cottage (0.4.81) by ThreeFingers, and the house at the bottom of the lake by LakeHouse.
         return place.room() != null && place.slot() >= 0 && place != LabyrinthPlace.RED_ROOM
                 && place != LabyrinthPlace.FAMILY_COPY && place != LabyrinthPlace.OLD_CABIN && place != LabyrinthPlace.CHILD_ROOM
-                && place != LabyrinthPlace.GHOSTS_SET && place != LabyrinthPlace.ELK_LOT && place != LabyrinthPlace.THREE_FINGERS && place != LabyrinthPlace.NIGHTCLUB && place != LabyrinthPlace.LAKE_HOUSE && place != LabyrinthPlace.LAKE_HOUSE_EMPTY && !HazardVariety.added(place);
+                && place != LabyrinthPlace.GHOSTS_SET && place != LabyrinthPlace.ELK_LOT && place != LabyrinthPlace.THREE_FINGERS && place != LabyrinthPlace.NIGHTCLUB && place != LabyrinthPlace.LAKE_HOUSE && place != LabyrinthPlace.LAKE_HOUSE_EMPTY && place != LabyrinthPlace.BORRASCA && !HazardVariety.added(place);
     }
 
     private static String key(BlockPos origin, LabyrinthPlace place) {

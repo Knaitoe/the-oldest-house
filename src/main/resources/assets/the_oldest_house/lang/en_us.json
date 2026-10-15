@@ -276,5 +276,11 @@
   "entity.the_oldest_house.lake_house_dress": "A dress in the water",
   "entity.the_oldest_house.lake_house_seat": "A dry chair",
   "subtitles.the_oldest_house.goatman_knock": "Someone knocks on the trailer",
-  "subtitles.the_oldest_house.goatman_score": "Quiet music in the trailer"
+  "subtitles.the_oldest_house.goatman_score": "Quiet music in the trailer",
+  "block.the_oldest_house.borrasca_fitting": "Drisking fitting",
+  "block.the_oldest_house.borrasca_machine": "Refinery crushing drum",
+  "subtitles.the_oldest_house.borrasca.grinder": "Metal grinds on the ridge",
+  "subtitles.the_oldest_house.borrasca.motor_stop": "A heavy motor winds down",
+  "subtitles.the_oldest_house.borrasca.tree_creak": "The treehouse timbers settle",
+  "subtitles.the_oldest_house.borrasca.town_wind": "Wind passes through the pines"
 }

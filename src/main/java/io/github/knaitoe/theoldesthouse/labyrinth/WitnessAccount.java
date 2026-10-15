@@ -85,7 +85,8 @@ public final class WitnessAccount {
         END_WORLD_CABIN("end_world_cabin","The visitors at dusk","release","I answered the visitors for myself. The screen held the consequence after my answer."),
         FAMILY_COPY("family_copy","The house they remembered","memory","They welcomed me into a house I had actually lived in. I returned until their welcome ended."),
         THREE_FINGERS("three_fingers","The last finger","release","I took the paw out of the fire and wished on it. Every wish came true in the worst way it could. I chose how the last finger fell."),
-        LAKE_HOUSE("lake_house","The house in the third lake","connection","There was a house on the bottom of the lake, and every time we went down it let us a little further in. We kept to one rule and didn't ask how. In the end I went back to meet whoever lived there.");
+        LAKE_HOUSE("lake_house","The house in the third lake","connection","There was a house on the bottom of the lake, and every time we went down it let us a little further in. We kept to one rule and didn't ask how. In the end I went back to meet whoever lived there."),
+        BORRASCA("borrasca","The names brought out of Drisking","understanding","I returned to the town, followed its ordinary machinery and brought an original account of its crimes back through the door. The thing in the mountain was people whom the town already knew.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}

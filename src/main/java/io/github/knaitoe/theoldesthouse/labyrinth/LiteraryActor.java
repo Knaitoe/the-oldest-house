@@ -15,6 +15,7 @@ public final class LiteraryActor extends PathfinderMob {
     public static final int MOTHER=0,DANCER=1,RED_FIGURE=2,COFFIN_WOMAN=3,LADY=4,SILHOUETTE=5,BROTHER=6,FATHER=7,VISITOR=8,KILLER=9,FAMILY_FATHER=10,FAMILY_MOTHER=11,FAMILY_CHILD=12,OLD_MAN=13,STRANGER=14,CAMERA=15;
     public static final int GHOST_MARJORIE=16,GHOST_MERRY=17,GHOST_JOHN=18,GHOST_SARAH=19,GHOST_PRODUCER=20,GHOST_PRIEST=21,GHOST_PLAYHOUSE=22,GHOST_DRAWER=23;
     public static final int LAKE_TESS=24,LAKE_WAX=25;
+    public static final int BORRASCA_KYLE=26,BORRASCA_KIMBER=27,BORRASCA_SHERIFF=28,BORRASCA_PRESCOTT=29;
     private static final EntityDataAccessor<Integer> ROLE=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT),PHASE=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> GESTURE=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT);
     private static final EntityDataAccessor<Optional<UUID>> OWNER=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.OPTIONAL_UUID);

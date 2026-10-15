@@ -1,0 +1,76 @@
+{
+  "textures": {
+    "atlas": "the_oldest_house:entity/borrasca_atlas",
+    "particle": "the_oldest_house:entity/borrasca_atlas"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0.1,
+        1
+      ],
+      "to": [
+        15,
+        0.45,
+        15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            12.03,
+            12.03,
+            15.97,
+            15.97
+          ],
+          "texture": "#atlas"
+        },
+        "south": {
+          "uv": [
+            12.03,
+            12.03,
+            15.97,
+            15.97
+          ],
+          "texture": "#atlas"
+        },
+        "east": {
+          "uv": [
+            12.03,
+            12.03,
+            15.97,
+            15.97
+          ],
+          "texture": "#atlas"
+        },
+        "west": {
+          "uv": [
+            12.03,
+            12.03,
+            15.97,
+            15.97
+          ],
+          "texture": "#atlas"
+        },
+        "up": {
+          "uv": [
+            12.03,
+            12.03,
+            15.97,
+            15.97
+          ],
+          "texture": "#atlas"
+        },
+        "down": {
+          "uv": [
+            12.03,
+            12.03,
+            15.97,
+            15.97
+          ],
+          "texture": "#atlas"
+        }
+      }
+    }
+  ]
+}
