@@ -197,7 +197,9 @@ public final class NovelVignettes {
                 &&!WitnessAccount.has(LabyrinthData.get(p.server),p.getUUID(),WitnessAccount.Story.BARN_WELL);
     }
     private static void tickPlain(ServerPlayer p,BlockPos b,CompoundTag own){
-        BlockPos target=b.offset(NovelRooms.FIGURE);p.serverLevel().getChunkAt(target);p.serverLevel().getChunkSource().addRegionTicket(TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(target),3,target);
+        BlockPos target=b.offset(NovelRooms.FIGURE);var chunks=p.serverLevel().getChunkSource();chunks.addRegionTicket(TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(target),3,target);
+        if(chunks.getChunkNow(target.getX()>>4,target.getZ()>>4)==null){chunks.getChunkFuture(target.getX()>>4,target.getZ()>>4,net.minecraft.world.level.chunk.status.ChunkStatus.FULL,true);return;}
+        if(!p.serverLevel().areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(target.getX()>>4,target.getZ()>>4)))return;
         var birds=p.serverLevel().getEntitiesOfClass(NovelVulture.class,new AABB(target).inflate(18));if(birds.isEmpty()&&p.tickCount%40==0){var v=NovelRegistry.VULTURE.get().create(p.serverLevel());if(v!=null){v.circle(target);v.moveTo(target.getX()+7,target.getY()+9,target.getZ());p.serverLevel().addFreshEntity(v);}}
         distantBoy(p,b,own);
         if(own.contains("Photo"))return;Vec3 look=target.getCenter().subtract(p.getEyePosition());
@@ -215,7 +217,7 @@ public final class NovelVignettes {
         if(own.hasUUID("PlainBoy0464"))return;
         var boy=LiteraryRegistry.ACTOR.get().create(p.serverLevel());if(boy==null)return;
         boy.appearance(LiteraryActor.SILHOUETTE,4);boy.bind(LabyrinthPlace.PLAIN,p.getUUID());boy.setNoGravity(true);
-        boy.moveTo(b.getX()+.5,b.getY(),b.getZ()-92.5,0,0);p.serverLevel().addFreshEntity(boy);own.putUUID("PlainBoy0464",boy.getUUID());
+        boy.moveTo(b.getX()+.5,b.getY(),b.getZ()-92.5,0,0);if(p.serverLevel().addFreshEntity(boy))own.putUUID("PlainBoy0464",boy.getUUID());
     }
     /** Only the original requester, still composing that distant view, can develop this one frame. */
     public static boolean capturePlainFrame(ServerPlayer p,io.github.knaitoe.theoldesthouse.network.PlainFramePayload frame){

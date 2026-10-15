@@ -32,6 +32,9 @@ public final class ClapGhostModel extends HierarchicalModel<ClapGhostEntity> {
         return LayerDefinition.create(mesh, 128, 128);
     }
     @Override public void setupAnim(ClapGhostEntity entity, float walk, float amount, float age, float yaw, float pitch) {
+        pose(age,yaw);
+    }
+    public void pose(float age,float yaw){
         root.getAllParts().forEach(ModelPart::resetPose);
         root.xScale = root.yScale = root.zScale = 0.80F;
         root.getChild("head").yRot = yaw * Mth.DEG_TO_RAD;

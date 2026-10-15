@@ -53,6 +53,23 @@ public final class HolyRabbit {
         else release(p);
     }
 
+    /** Interpolate the original scripted throw through native collision on every server tick. */
+    @SubscribeEvent public static void rabbitTick(EntityTickEvent.Post e){
+        if(!(e.getEntity() instanceof Rabbit rabbit)||!(rabbit.level() instanceof ServerLevel level)||rabbit.isPassenger())return;
+        var id=owner(rabbit).orElse(null);if(id==null)return;
+        var reader=level.getServer().getPlayerList().getPlayer(id);
+        if(reader==null||!LiteraryVignettes.inside(reader,PLACE)||!LiteraryVignettes.retreatLocked(reader))return;
+        var own=LiteraryVignettes.personal(LabyrinthData.get(level.getServer()),id,PLACE);
+        int t=own.getInt("HarvestTicks0491");if(t<35||t>75||!own.contains("TossScriptTick0496"))return;
+        var b=IndianLakeRooms.base(level.getServer(),PLACE);if(b==null)return;
+        double sub=Math.max(0L,Math.min(5L,level.getGameTime()-own.getLong("TossScriptTick0496")));
+        double f=Math.min(1,(t+sub-35)/40D);
+        var from=new Vec3(own.getDouble("TossX0491"),own.getDouble("TossY0491"),own.getDouble("TossZ0491"));
+        var target=from.lerp(Vec3.atBottomCenterOf(b.offset(RABBIT)),f).add(0,2.4*f*(1-f),0);
+        if(!level.hasChunkAt(BlockPos.containing(target)))return;
+        rabbit.move(MoverType.SELF,target.subtract(rabbit.position()));rabbit.setDeltaMovement(Vec3.ZERO);
+    }
+
     /** Native synced name styling carries the private renderer marker without changing a named rabbit's words. */
     public static Optional<UUID> owner(Rabbit rabbit){
         var name=rabbit.getCustomName();var insertion=name==null?null:name.getStyle().getInsertion();
@@ -81,33 +98,31 @@ public final class HolyRabbit {
     }
     /** Both poles bear his weight. The same visible body takes the last route into the trees. */
     private static void lastHunt(ServerPlayer p,LiteraryActor father,BlockPos b,CompoundTag own,int ticks){
-        int next=own.getInt("LastHuntStep0490");if(next>=LAST_HUNT.length){own.putBoolean("FatherGone",true);return;}
+        int next=own.getInt("LastHuntStep0490");if(next>=LAST_HUNT.length){LiteraryMotion.stop(father);own.putBoolean("FatherGone",true);return;}
         var at=LAST_HUNT[next];var target=new Vec3(b.getX()+at[0],b.getY(),b.getZ()+at[1]);
         if(!p.serverLevel().hasChunkAt(BlockPos.containing(target))||!p.serverLevel().areEntitiesLoaded(ChunkPos.asLong(BlockPos.containing(target).getX()>>4,BlockPos.containing(target).getZ()>>4)))return;
         var delta=target.subtract(father.position());if(delta.lengthSqr()<.04){own.putInt("LastHuntStep0490",next+1);return;}
-        float yaw=(float)Math.toDegrees(Math.atan2(-delta.x,delta.z));father.setYRot(yaw);father.setYHeadRot(yaw);father.yBodyRot=yaw;
-        father.move(MoverType.SELF,delta.normalize().scale(Math.min(delta.length(),ticks%30<20?.22:.035)));father.setDeltaMovement(Vec3.ZERO);
+        LiteraryMotion.toward(father,target,ticks%30<20?.22:.035);father.setDeltaMovement(Vec3.ZERO);
     }
     private static void walk(LiteraryActor father,BlockPos b,CompoundTag own,int night,int ticks){
-        if(night>=3){father.setDeltaMovement(Vec3.ZERO);return;}
+        if(night>=3){LiteraryMotion.stop(father);return;}
         if(ticks<40)return;int next=own.contains("FatherWaypoint0488")?own.getInt("FatherWaypoint0488"):1;
-        if(next>=WALK.length)return;
+        if(next>=WALK.length){LiteraryMotion.stop(father);return;}
         var target=new Vec3(b.getX()+WALK[next][0],father.getY(),b.getZ()+WALK[next][1]);var delta=target.subtract(father.position()).multiply(1,0,1);
         if(delta.lengthSqr()<.04){own.putInt("FatherWaypoint0488",next+1);return;}
-        father.setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));father.setYHeadRot(father.getYRot());father.yBodyRot=father.getYRot();
         // A short weight-bearing step followed by a pause, with less distance covered on the second night.
         double gait=(ticks%30)<20?1:.22,speed=night==1?.09:.04;
-        father.move(MoverType.SELF,delta.normalize().scale(Math.min(delta.length(),speed*5*gait)));
+        LiteraryMotion.toward(father,target,speed*5*gait);
     }
     /** The apparent harvest uses the same living native rabbit, carried and tossed without replacing it. */
     private static boolean harvest(ServerPlayer p,LiteraryActor father,Rabbit rabbit,BlockPos b,CompoundTag own,int day){
         if(day>=3||rabbit==null||own.getInt("HarvestDay0491")>=day)return false;
         if(own.getInt("MealNight")>=day){own.putInt("HarvestDay0491",day);return false;}
         if(own.getInt("FatherWaypoint0488")<4)return false;
-        int t=own.getInt("HarvestTicks0491")+5;own.putInt("HarvestTicks0491",t);father.gesture(2);father.setDeltaMovement(Vec3.ZERO);
+        int t=own.getInt("HarvestTicks0491")+5;own.putInt("HarvestTicks0491",t);father.gesture(2);LiteraryMotion.stop(father);
         if(t<=30){rabbit.setPose(Pose.DYING);if(!rabbit.isPassenger())rabbit.startRiding(father,true);if(t==5){father.say(day==1?"Look away a moment. I'll make something for us.":"Small bites again. You remember how to eat it.");father.getPersistentData().putLong("SayUntil0488",p.level().getGameTime()+90);}return true;}
         if(t==35){rabbit.stopRiding();var from=rabbit.position();own.putDouble("TossX0491",from.x);own.putDouble("TossY0491",from.y);own.putDouble("TossZ0491",from.z);}
-        if(t<=75){double f=Math.min(1,(t-35)/40D);var from=new Vec3(own.getDouble("TossX0491"),own.getDouble("TossY0491"),own.getDouble("TossZ0491"));var end=Vec3.atBottomCenterOf(b.offset(RABBIT));var target=from.lerp(end,f).add(0,2.4*f*(1-f),0);rabbit.move(MoverType.SELF,target.subtract(rabbit.position()));rabbit.setDeltaMovement(Vec3.ZERO);return true;}
+        if(t<=75){own.putLong("TossScriptTick0496",p.serverLevel().getGameTime());return true;}
         own.putInt("HarvestDay0491",day);own.putBoolean("RabbitDiscarded0491",true);father.gesture(0);return false;
     }
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){

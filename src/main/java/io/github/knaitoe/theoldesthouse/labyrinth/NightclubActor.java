@@ -15,7 +15,8 @@ import net.minecraft.world.phys.Vec3;
 public final class NightclubActor extends PathfinderMob {
     private static final EntityDataAccessor<Integer> SLOT=SynchedEntityData.defineId(NightclubActor.class,EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DESPAIR=SynchedEntityData.defineId(NightclubActor.class,EntityDataSerializers.INT);
-    private float previousDespair;
+    private float previousDespair,shownDespair;
+    private boolean displayInitialized;
     private BlockPos base=BlockPos.ZERO;
     public NightclubActor(EntityType<? extends NightclubActor> type,Level l){super(type,l);setNoAi(true);setPersistenceRequired();setCanPickUpLoot(false);}
     public static AttributeSupplier.Builder attributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,20).add(Attributes.MOVEMENT_SPEED,.2);}
@@ -24,15 +25,15 @@ public final class NightclubActor extends PathfinderMob {
     public static int look(int slot){return slot==Nightclub.DANCERS?8:Math.floorMod(slot,8);}
     public int look(){return look(slot());}
     public float despair(){return entityData.get(DESPAIR)/20F;}
-    public float despair(float partial){return net.minecraft.util.Mth.lerp(partial,previousDespair,despair());}
+    public float despair(float partial){return level().isClientSide&&displayInitialized?net.minecraft.util.Mth.lerp(partial,previousDespair,shownDespair):despair();}
     public void bind(BlockPos base,int slot){this.base=base.immutable();entityData.set(SLOT,Math.max(0,Math.min(Nightclub.DANCERS,slot)));}
     private static final double[][] ANCHORS={{-7.8,-18.4},{-5.7,-19.6},{-2.2,-23.8},{.2,-24.5},{5.7,-17.4},{7.4,-19.2},{-8.5,-28.8},{-6.7,-30.1},{-2.8,-32.7},{-.7,-32.2},{4.8,-27.5},{7.2,-28.1},{-7.4,-36.4},{-4.8,-37.7},{-.9,-37.2},{1.4,-35.8},{6.5,-33.8},{8.4,-35.9}};
     public static Vec3 home(BlockPos b,int slot){if(slot==Nightclub.DANCERS)return new Vec3(b.getX()+.5,b.getY()+1,b.getZ()-44.5);var at=ANCHORS[Math.floorMod(slot,ANCHORS.length)];return new Vec3(b.getX()+at[0],b.getY(),b.getZ()+at[1]);}
-    @Override public void tick(){previousDespair=despair();super.tick();if(level().isClientSide||tickCount%2!=0)return;
+    @Override public void tick(){super.tick();if(level().isClientSide){if(!displayInitialized){shownDespair=previousDespair=despair();displayInitialized=true;}else{previousDespair=shownDespair;shownDespair=net.minecraft.util.Mth.approach(shownDespair,despair(),.1F);}return;}
         var mixer=level().getBlockState(base.offset(Nightclub.MIXER));
-        if(mixer.is(NightclubRegistry.BLOCK.get()))entityData.set(DESPAIR,mixer.getValue(NightclubBlock.STAGE)==0?Math.min(20,entityData.get(DESPAIR)+4):0);
+        if(mixer.is(NightclubRegistry.BLOCK.get()))entityData.set(DESPAIR,mixer.getValue(NightclubBlock.STAGE)==0?Math.min(20,entityData.get(DESPAIR)+2):0);
         double time=level().getGameTime(),seed=slot()*1.73;var anchor=home(base,slot());
-        if(!dj()){var target=anchor.add(Math.sin(time*.06+seed)*.28,0,Math.cos(time*.047+seed)*.3);var delta=target.subtract(position()).multiply(1,0,1);double length=delta.length();if(length>.002)move(MoverType.SELF,delta.scale(Math.min(.055,length)/length));var partner=home(base,slot()%2==0?slot()+1:slot()-1).subtract(anchor);float facing=(float)Math.toDegrees(Math.atan2(-partner.x,partner.z));setYRot(net.minecraft.util.Mth.approachDegrees(getYRot(),facing+(float)Math.sin(time*.024+seed)*22,4));}
+        if(!dj()){var target=anchor.add(Math.sin(time*.06+seed)*.28,0,Math.cos(time*.047+seed)*.3);var delta=target.subtract(position()).multiply(1,0,1);double length=delta.length();if(length>.002)move(MoverType.SELF,delta.scale(Math.min(.0275,length)/length));var partner=home(base,slot()%2==0?slot()+1:slot()-1).subtract(anchor);float facing=(float)Math.toDegrees(Math.atan2(-partner.x,partner.z));setYRot(net.minecraft.util.Mth.approachDegrees(getYRot(),facing+(float)Math.sin(time*.024+seed)*22,2));}
         else setYRot(0);yBodyRot=getYRot();yHeadRot=getYRot();
     }
     @Override protected InteractionResult mobInteract(Player p,InteractionHand hand){
@@ -44,5 +45,5 @@ public final class NightclubActor extends PathfinderMob {
     @Override public boolean isPushable(){return false;}
     @Override public boolean removeWhenFarAway(double distance){return false;}
     @Override public void addAdditionalSaveData(CompoundTag t){super.addAdditionalSaveData(t);t.putInt("ClubSlot",slot());t.putLong("ClubBase",base.asLong());t.putInt("ClubDespair",entityData.get(DESPAIR));}
-    @Override public void readAdditionalSaveData(CompoundTag t){super.readAdditionalSaveData(t);bind(BlockPos.of(t.getLong("ClubBase")),t.getInt("ClubSlot"));entityData.set(DESPAIR,Math.max(0,Math.min(20,t.getInt("ClubDespair"))));previousDespair=despair();}
+    @Override public void readAdditionalSaveData(CompoundTag t){super.readAdditionalSaveData(t);bind(BlockPos.of(t.getLong("ClubBase")),t.getInt("ClubSlot"));entityData.set(DESPAIR,Math.max(0,Math.min(20,t.getInt("ClubDespair"))));shownDespair=previousDespair=despair();displayInitialized=true;}
 }

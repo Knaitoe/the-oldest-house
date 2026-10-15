@@ -72,16 +72,18 @@ public final class NightclubTests {
     }
     @GameTest(template="empty",batch="nightclub_cast",timeoutTicks=320)
     public static void originalBodiesKeepDancingWhenMutedAndSurviveReloadAndARevisitWithAnOpenExit(GameTestHelper h){
-        var f=new Fixture(h);var player=f.player("club_dance");var peer=f.player("club_dance_peer");var identity=new HashSet<UUID>();var start=new HashMap<UUID,Vec3>();
+        var f=new Fixture(h);var player=f.player("club_dance");var peer=f.player("club_dance_peer");var identity=new HashSet<UUID>();var start=new HashMap<UUID,Vec3>();var previous=new HashMap<UUID,Vec3>();final int[] movingFrames={0};final boolean[] sample={false};
+        h.onEachTick(()->{if(!sample[0])return;boolean moved=false;for(var a:f.level.getEntitiesOfClass(NightclubActor.class,Nightclub.bounds(f.base))){if(a.dj())continue;var before=previous.put(a.getUUID(),a.position());if(before==null)continue;double step=a.position().subtract(before).horizontalDistance();h.assertTrue(step<=.028,"every actual nightclub stride is a native-tick step, not a two-tick jump: "+step);moved|=step>.001;}if(moved)movingFrames[0]++;});
         h.startSequence().thenWaitUntil(()->{
             h.assertTrue(f.chunks.ready(),"native room sections are ready");Nightclub.ensureCast(f.level,f.base);
             h.assertTrue(f.level.getEntitiesOfClass(NightclubActor.class,Nightclub.bounds(f.base)).size()==19,"eighteen shared dancers and their original DJ arrive");
             h.assertTrue(f.level.getEntitiesOfClass(NightclubActor.class,Nightclub.bounds(f.base)).stream().map(NightclubActor::look).distinct().count()==9,"the native cast selects eight distinct dancer looks and a dedicated DJ");
         }).thenExecute(()->{
-            f.level.getEntitiesOfClass(NightclubActor.class,Nightclub.bounds(f.base)).forEach(a->{identity.add(a.getUUID());start.put(a.getUUID(),a.position());});
+            f.level.getEntitiesOfClass(NightclubActor.class,Nightclub.bounds(f.base)).forEach(a->{identity.add(a.getUUID());start.put(a.getUUID(),a.position());previous.put(a.getUUID(),a.position());});sample[0]=true;
             f.at(player,0,-40);f.click(player,Nightclub.MIXER,Direction.SOUTH);f.click(player,Nightclub.MIXER,Direction.SOUTH);
             h.assertTrue(f.level.getBlockState(f.base.offset(Nightclub.MIXER)).getValue(NightclubBlock.STAGE)==0,"the native mixer physically switches the shared speakers off");
         }).thenIdle(90).thenExecute(()->{
+            sample[0]=false;h.assertTrue(movingFrames[0]>=70,"the original dancers move between decisions on most actual native frames: "+movingFrames[0]);
             h.assertTrue(f.level.getEntitiesOfClass(NightclubActor.class,Nightclub.bounds(f.base)).stream().filter(a->!a.dj()).anyMatch(a->a.position().distanceTo(start.get(a.getUUID()))>.03),"actual native dancer bodies keep moving in silence");
             h.assertTrue(f.level.getEntitiesOfClass(NightclubActor.class,Nightclub.bounds(f.base)).stream().allMatch(a->a.despair()==1),"the actual mixer pause has transformed every original body into synced despair");
             f.reload();f.at(player,0,5);f.at(peer,0,5);

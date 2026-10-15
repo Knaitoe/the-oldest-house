@@ -49,11 +49,14 @@ public final class MotherModel extends HierarchicalModel<MotherEntity> {
         return LayerDefinition.create(mesh, 128, 256);
     }
     @Override public void setupAnim(MotherEntity entity, float walk, float amount, float age, float yaw, float pitch) {
+        pose(entity.shownCorruption(),entity.isCarrying(),walk,amount,age,yaw,pitch);
+    }
+    public void pose(float corruption,boolean carrying,float walk,float amount,float age,float yaw,float pitch){
         root.getAllParts().forEach(ModelPart::resetPose);
         ModelPart head = root.getChild("head");
         head.yRot = yaw * Mth.DEG_TO_RAD;
         head.xRot = pitch * Mth.DEG_TO_RAD;
-        float raw = Mth.clamp(entity.shownCorruption(), 0.0F, 1.0F);
+        float raw = Mth.clamp(corruption, 0.0F, 1.0F);
         float t = Mth.clamp((raw - 0.20F) / 0.80F, 0.0F, 1.0F);
         float c = t * t * (3.0F - 2.0F * t);
         float jt = Mth.clamp((raw - 0.74F) / 0.26F, 0.0F, 1.0F);
@@ -76,7 +79,7 @@ public final class MotherModel extends HierarchicalModel<MotherEntity> {
             arm.xRot = Mth.cos(walk * 0.38F + (sign > 0 ? 0 : Mth.PI)) * amount * 0.25F;
             arm.zRot = -sign * (0.06F + c * 0.09F);
             ModelPart forearm = arm.getChild(side + "_forearm");
-            forearm.xRot = entity.isCarrying() ? -1.90F : -0.14F - c * 0.16F;
+            forearm.xRot = carrying ? -1.90F : -0.14F - c * 0.16F;
             ModelPart hand = forearm.getChild(side + "_hand");
             hand.yScale = 1.0F + c * 0.08F;
             for (int i = 0; i < 3; i++) {

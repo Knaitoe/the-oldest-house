@@ -37,7 +37,7 @@ public final class CastVisualProof extends Screen {
             var buffers=mc.renderBuffers().bufferSource();var consumer=buffers.getBuffer(RenderType.entityCutoutNoCull(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/"+textures[i]+".png")));
             if(i==2)new MotherModel(mc.getEntityModels().bakeLayer(MotherModel.LAYER)).renderToBuffer(pose,consumer,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);
             else if(i==3)new GoatmanChildModel(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER)).renderToBuffer(pose,consumer,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);
-            else {var model=new LakeWitchModel(mc.getEntityModels().bakeLayer(LakeWitchModel.LAYER));if(i==0){grounded(model);model.huntPose(0,.5F,0,LakeWitchEntity.STALK,false);if(model.body.xRot<1.5F||model.head.y<15)throw new IllegalStateException("Hunt model is not on all fours");}model.renderToBuffer(pose,consumer,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);}
+            else {var model=new LakeWitchModel(mc.getEntityModels().bakeLayer(LakeWitchModel.LAYER));model.young=false;if(i==0){grounded(model);model.huntPose(0,.5F,0,LakeWitchEntity.STALK,false);if(model.body.xRot<1.5F||model.head.y<15)throw new IllegalStateException("Hunt model is not on all fours");}model.renderToBuffer(pose,consumer,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);}
             buffers.endBatch();pose.popPose();
         }
         g.drawString(font,"Native UVs / original appearance IDs / ordinary clothing, changed by wear and the lake.",10,height-14,0xFFE6DFCF,false);
@@ -79,6 +79,6 @@ public final class CastVisualProof extends Screen {
         Path folder=Path.of("../build/font-smoke");Files.createDirectories(folder);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve("native-cast.png"));}
         Files.writeString(folder.resolve("cast-passed.txt"),"Native remaining-cast models, memory/hunting skins and outdoor effects passed.\n");
-        TheOldestHouse.LOGGER.info("HOUSE CAST CHECK PASSED: native screenshot saved");mc.setScreen(new StaceyScrabbleVisualProof());
+        TheOldestHouse.LOGGER.info("HOUSE CAST CHECK PASSED: native screenshot saved");mc.setScreen(new CharacterPhaseVisualProof());
     }
 }

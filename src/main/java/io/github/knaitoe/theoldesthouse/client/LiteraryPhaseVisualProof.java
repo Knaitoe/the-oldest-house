@@ -46,7 +46,7 @@ public final class LiteraryPhaseVisualProof extends Screen {
         var mc=Minecraft.getInstance();int group=page/4,view=page%4;
         g.fill(0,0,width,height,0xff262320);g.drawString(font,"Literary / "+GROUPS[group]+" / "+VIEWS[view]+" / original atlases and native joints",10,9,0xffeee0c4,false);g.flush();
         var cast=cast(group);int columns=6,rows=(cast.size()+columns-1)/columns;
-        float cellWidth=(width-20F)/columns,cellHeight=(height-40F)/rows,scale=Math.min(cellWidth*.49F,cellHeight*.47F);
+        float cellWidth=(width-20F)/columns,cellHeight=(height-40F)/rows,scale=Math.min(cellWidth*.45F,cellHeight*.38F);
         var buffers=mc.renderBuffers().bufferSource();int n=0;
         for(var state:cast){
             var skin=LiteraryRenderers.skin(state.role,state.phase);if(mc.getResourceManager().getResource(skin).isEmpty())throw new IllegalStateException("Missing phase atlas "+skin);
@@ -56,7 +56,7 @@ public final class LiteraryPhaseVisualProof extends Screen {
             else model.preview(state.role,state.phase,frames);
             float size=state.role==LiteraryActor.BROTHER||state.role==LiteraryActor.FAMILY_CHILD||state.role==LiteraryActor.SILHOUETTE&&state.phase==4?.58F:1;
             float cx=10+(n%columns+.5F)*cellWidth,top=29+(n/columns)*cellHeight;
-            var pose=g.pose();pose.pushPose();pose.translate(cx,top+cellHeight*.08F+scale*1.5F*(1-size),190);pose.scale(scale*size,scale*size,scale*size);
+            var pose=g.pose();pose.pushPose();pose.translate(cx,top+scale*.52F+cellHeight*.06F+scale*1.5F*(1-size),190);pose.scale(scale*size,scale*size,scale*size);
             pose.mulPose(Axis.YP.rotationDegrees(new float[]{180,90,0,145}[view]));
             if(state.role==LiteraryActor.COFFIN_WOMAN&&state.phase==1)LiteraryRenderers.coffinPose(pose);
             if(state.role==LiteraryActor.BROTHER&&state.phase>0)LiteraryRenderers.bedPose(pose,.58F);
@@ -66,11 +66,11 @@ public final class LiteraryPhaseVisualProof extends Screen {
         }
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
-        var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof LiteraryPhaseVisualProof proof)||++proof.frames<24)return;
+        var mc=Minecraft.getInstance();if((!Boolean.getBoolean("the_oldest_house.fontSmoke")&&!VignetteReviewSmoke.active())||!(mc.screen instanceof LiteraryPhaseVisualProof proof)||++proof.frames<24)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-literary-"+GROUPS[proof.page/4]+"-"+VIEWS[proof.page%4]+".png"));}
         if(++proof.page<16){proof.frames=0;return;}
         Files.writeString(dir.resolve("literary-phases-passed.txt"),"Sixteen saved native views: all sixteen original roles; six silhouette forms, five Father states, four Brother states, all changed family skins and three coffin states; all fourteen stranger phases; killer walking/searching/crouching/three strike samples, dancing and the final two-pole pose. Front/side/back/dim light; native adult proportions and original child scales. Hidden coffin phase intentionally remains absent. These are staged mesh/UV checks, not ordinary complete playthroughs.\n");
-        TheOldestHouse.LOGGER.info("LITERARY PHASE CHECK PASSED: sixteen complete native cast views");mc.setScreen(new GhostsVisualProof());
+        TheOldestHouse.LOGGER.info("LITERARY PHASE CHECK PASSED: sixteen complete native cast views");if(VignetteReviewSmoke.active())mc.stop();else mc.setScreen(new GhostsVisualProof());
     }
 }

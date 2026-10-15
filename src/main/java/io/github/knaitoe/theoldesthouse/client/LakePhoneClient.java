@@ -15,6 +15,7 @@ import net.neoforged.neoforge.client.event.*;
 public final class LakePhoneClient {
     private static int phase,cameraId=-1,elapsed,lease;
     private static net.minecraft.client.multiplayer.ClientLevel sceneLevel;
+    private static CameraType priorView;
     private LakePhoneClient(){}
     public static void accept(LakePhonePayload packet){
         if(packet.phase()==0){clear();return;}
@@ -27,15 +28,16 @@ public final class LakePhoneClient {
     @SubscribeEvent public static void frame(RenderFrameEvent.Pre event){enforce();}
     private static void enforce(){
         Minecraft mc=Minecraft.getInstance();
-        if(!bound()||mc.player==null||mc.level==null||mc.player.isDeadOrDying()||(sceneLevel!=null&&sceneLevel!=mc.level)){clear();return;}
+        if(!bound()||mc.player==null||mc.level==null||mc.player.isDeadOrDying()||mc.player.isSpectator()||(sceneLevel!=null&&sceneLevel!=mc.level)){clear();return;}
         if(sceneLevel==null)sceneLevel=mc.level;
-        mc.options.setCameraType(CameraType.FIRST_PERSON);
+        if(priorView==null)priorView=mc.options.getCameraType();mc.options.setCameraType(CameraType.FIRST_PERSON);
         if(mc.screen instanceof AbstractContainerScreen<?>)mc.setScreen(null);
         if(phase>=3&&mc.level.getEntity(cameraId) instanceof LakePhoneCamera camera)mc.setCameraEntity(camera);
     }
     public static void clear(){
         Minecraft mc=Minecraft.getInstance();
         if(mc.getCameraEntity() instanceof LakePhoneCamera)mc.setCameraEntity(mc.player);
+        if(priorView!=null)mc.options.setCameraType(priorView);priorView=null;
         sceneLevel=null;phase=0;cameraId=-1;lease=0;
     }
     @SubscribeEvent public static void input(MovementInputUpdateEvent event){

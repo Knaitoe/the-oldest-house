@@ -1,6 +1,7 @@
 package io.github.knaitoe.theoldesthouse.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.LakeWitchEntity;
 import net.minecraft.client.model.PlayerModel;
@@ -45,12 +46,23 @@ public final class LakeWitchModel extends PlayerModel<LakeWitchEntity> {
     }
     @Override public void setupAnim(LakeWitchEntity e,float walk,float speed,float age,float yaw,float pitch){
         resetBody();super.setupAnim(e,walk,speed,age,yaw,pitch);
-        if(e.memory()){leftArm.xRot=-.2F;rightArm.xRot=-.25F;head.xRot=.25F;var motion=HumanoidMotion.sample(e,age-e.tickCount);HumanoidMotion.gait(this,motion.phase(),motion.amount(),motion.running());body.yRot=.02F*(float)Math.sin(age*.04F+e.getId());HumanoidMotion.connect(this);copyClothes();return;}
+        if(e.memory()){var motion=HumanoidMotion.sample(e,age-e.tickCount);memoryPose(motion.phase(),motion.amount(),motion.running(),age,e.getId());head.yRot=yaw*net.minecraft.util.Mth.DEG_TO_RAD;hat.copyFrom(head);return;}
         huntPose(walk,speed,age,e.huntPhase(),e.striking());
         lookPose(yaw,pitch);
         attackPose(attackTime,e.biting(),e.striking());
         if(e.hurtTime>0){float recoil=e.hurtTime/10F;head.xRot-=recoil*.7F;body.xRot-=recoil*.25F;leftArm.xRot+=recoil*.9F;rightArm.xRot+=recoil*.9F;leftElbow.xRot+=recoil*.8F;rightElbow.xRot+=recoil*.8F;}
         copyClothes();
+    }
+    public void memoryPose(float walk,float amount,boolean running,float age,int seed){
+        resetBody();young=false;crouching=false;riding=false;leftArm.xRot=-.2F;rightArm.xRot=-.25F;head.xRot=.25F;
+        HumanoidMotion.gait(this,walk,amount,running);body.yRot=.02F*(float)Math.sin(age*.04F+seed);HumanoidMotion.connect(this);copyClothes();
+    }
+    @Override public void renderToBuffer(PoseStack p,VertexConsumer out,int light,int overlay,int colour){
+        boolean base=jaw.visible,outer=jawOverlay.visible;
+        try{jaw.visible=false;jawOverlay.visible=false;super.renderToBuffer(p,out,light,overlay,colour);}
+        finally{jaw.visible=base;jawOverlay.visible=outer;}
+        LakeWitchJaw.render(head,jaw,0,0,p,out,light,overlay,colour);
+        LakeWitchJaw.render(hat,jawOverlay,.5F,32,p,out,light,overlay,colour);
     }
     /** Reapply native look direction after the low hunting pose resets the model. */
     public void lookPose(float yaw,float pitch){

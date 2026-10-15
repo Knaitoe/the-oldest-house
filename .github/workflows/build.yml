@@ -526,12 +526,12 @@ jobs:
         timeout-minutes: 4
         run: |
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 3m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_playtest488 --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/native-playtest488.log
+          timeout --signal=QUIT --kill-after=20s 3m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_playtest488,the_oldest_house_nightclub --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/native-playtest488.log
           python3 - <<'PYTEST'
           import re
           from pathlib import Path
           passed = re.findall(r'All (\d+) required tests passed', Path('build/native-playtest488.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('Playtest0488Tests.java','Finishing488Tests.java','LakeSettlementTests.java'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('Playtest0488Tests.java','Finishing488Tests.java','LakeSettlementTests.java','NightclubTests.java'))
           assert passed and int(passed[-1]) == declared, 'The actual navigation, speech, survival and scene finishing repairs did not complete.'
           PYTEST
 
@@ -694,6 +694,10 @@ jobs:
           test -s build/font-smoke/native-literary.png
           test -s build/font-smoke/literary-phases-passed.txt
           for group in cast changes people actions; do for view in front side back dim; do test -s build/font-smoke/native-literary-$group-$view.png; done; done
+          test -s build/font-smoke/character-phases-passed.txt
+          for group in mother witch clap; do for view in front side back dim; do test -s build/font-smoke/native-character-$group-$view.png; done; done
+          for view in front side; do test -s build/font-smoke/native-character-witch-jaw-$view.png; done
+          for pose in seated flight standing; do for view in front side back dim; do test -s build/font-smoke/native-classics-$pose-$view.png; done; done
           test -s build/font-smoke/hazards-passed.txt
           for view in materials dark mirror; do test -s build/font-smoke/native-hazards-$view.png; done
           test -s build/font-smoke/last-stop-cast-passed.txt
@@ -846,7 +850,7 @@ jobs:
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/literary-native.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path(f'src/main/java/io/github/knaitoe/theoldesthouse/gametest/{name}.java').read_text())) for name in ('LiteraryTests','ElkFanTests','GhostsSetTests','LakeHouseTests','LakeHouseCompletionTests','Vignette0492Tests'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path(f'src/main/java/io/github/knaitoe/theoldesthouse/gametest/{name}.java').read_text())) for name in ('LiteraryTests','ElkFanTests','GhostsSetTests','LakeHouseTests','LakeHouseCompletionTests','Vignette0492Tests','VignetteAnimationTests'))
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused native literary cases passed; the complete suite remains required.')
           PY
@@ -1203,6 +1207,18 @@ jobs:
           test -s build/font-smoke/ghosts-passed.txt
           for view in cast fixtures paper-and-cases final-dinner seating seating-prayer all-poses-front all-poses-side all-poses-back eight-atlases-and-closed-eyes marjorie-blink-and-jaw help-fall-and-death fixtures-east fixtures-south fixtures-west prop-transitions; do test -s build/font-smoke/native-ghosts-$view.png; done
           python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
+      - name: Native complete vignette phase and texture review
+        timeout-minutes: 5
+        run: |
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PvignetteReviewSmoke --no-daemon
+          test -s build/font-smoke/character-phases-passed.txt
+          for group in mother witch clap; do for view in front side back dim; do test -s build/font-smoke/native-character-$group-$view.png; done; done
+          for view in front side; do test -s build/font-smoke/native-character-witch-jaw-$view.png; done
+          test -s build/font-smoke/classics-passed.txt
+          for pose in seated flight standing; do for view in front side back dim; do test -s build/font-smoke/native-classics-$pose-$view.png; done; done
+          test -s build/font-smoke/literary-phases-passed.txt
+          for group in cast changes people actions; do for view in front side back dim; do test -s build/font-smoke/native-literary-$group-$view.png; done; done
+          python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
       - name: Native child joints, strides and textured fixtures
         timeout-minutes: 9
         run: |
@@ -1241,6 +1257,12 @@ jobs:
           path: |
             build/font-smoke/native-ghosts-*.png
             build/font-smoke/ghosts-passed.txt
+            build/font-smoke/native-character-*.png
+            build/font-smoke/character-phases-passed.txt
+            build/font-smoke/native-classics-*.png
+            build/font-smoke/classics-passed.txt
+            build/font-smoke/native-literary-*.png
+            build/font-smoke/literary-phases-passed.txt
             build/font-smoke/native-trailer-0465-*.png
             build/font-smoke/trailer-0465-passed.txt
             build/font-smoke/native-playtest-0468-*.png

@@ -18,15 +18,17 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 /** Actual registered cast layer, native multi-cube items and all four wallpaper meshes. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class ClassicsVisualProof extends Screen {
-    private int frames;
+    private static final String[] POSES={"seated","flight","standing"},VIEWS={"front","side","back","dim"};
+    private int frames,page;
     public ClassicsVisualProof(){super(Component.literal("The sitting and the pattern"));}
     @Override public void renderBackground(GuiGraphics graphics,int x,int y,float delta){}
     @Override public void render(GuiGraphics g,int x,int y,float delta){
-        var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xFF27231E);g.drawString(font,"Native séance cast / veil, skirts, cuffs and lap poses",12,9,0xFFE8DDC5,false);g.flush();
+        var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xFF27231E);g.drawString(font,"Native séance / "+POSES[page/4]+" / "+VIEWS[page%4]+" / veil, skirts, cuffs and lap poses",12,9,0xFFE8DDC5,false);g.flush();
         for(int i=0;i<4;i++){
-            var model=new SeanceRenderers.FamilyModel(mc.getEntityModels().bakeLayer(SeanceRenderers.LAYER));model.pose(i,frames<12,frames>=12,frames);
-            var pose=g.pose();pose.pushPose();pose.translate(45+i*(width-45)/4,45,180);float size=i==3?48:65;pose.scale(size,size,size);pose.mulPose(Axis.YP.rotationDegrees(155));
-            var buffers=mc.renderBuffers().bufferSource();model.renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(SeanceRenderers.skin(i))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);buffers.endBatch();pose.popPose();
+            var model=new SeanceRenderers.FamilyModel(mc.getEntityModels().bakeLayer(SeanceRenderers.LAYER));model.young=false;model.pose(i,page/4==0,page/4==1,frames);
+            if(page/4==1){model.leftLeg.xRot=(float)Math.cos(frames*.66F)*.5F;model.rightLeg.xRot=-model.leftLeg.xRot;if(i==3){HumanoidMotion.gait(model,frames*.4F,.6F,true);HumanoidMotion.connect(model);}}
+            var pose=g.pose();pose.pushPose();float size=65*(i==3?.72F:1);pose.translate(70+i*(width-45)/4,45+65*.52F+1.5F*(65-size),180);pose.scale(size,size,size);pose.mulPose(Axis.YP.rotationDegrees(new float[]{180,90,0,145}[page%4]));
+            var buffers=mc.renderBuffers().bufferSource();model.renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(SeanceRenderers.skin(i))),page%4==3?LightTexture.pack(7,0):LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);buffers.endBatch();pose.popPose();
         }
         for(int i=0;i<4;i++){
             var state=ClassicsRegistry.WALLPAPER.get().defaultBlockState().setValue(WallpaperPanelBlock.FIGURE,(i&1)!=0).setValue(WallpaperPanelBlock.PEELED,(i&2)!=0);
@@ -39,8 +41,9 @@ public final class ClassicsVisualProof extends Screen {
         }
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event)throws Exception{
-        var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof ClassicsVisualProof proof)||++proof.frames<24)return;
-        var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-classics.png"));}
-        Files.writeString(dir.resolve("classics-passed.txt"),"24 native frames: four registered custom cast meshes/skins, seated and panic poses, all four animated/torn wallpaper meshes and both three-dimensional keepsakes.\n");TheOldestHouse.LOGGER.info("CLASSICS CHECK PASSED: registered native cast, wallpaper and item meshes");mc.setScreen(new HotelVisualProof());
+        var mc=Minecraft.getInstance();if((!Boolean.getBoolean("the_oldest_house.fontSmoke")&&!VignetteReviewSmoke.active())||!(mc.screen instanceof ClassicsVisualProof proof)||++proof.frames<24)return;
+        var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-classics-"+POSES[proof.page/4]+"-"+VIEWS[proof.page%4]+".png"));if(proof.page==0)image.writeToFile(dir.resolve("native-classics.png"));}
+        if(++proof.page<12){proof.frames=0;return;}
+        Files.writeString(dir.resolve("classics-passed.txt"),"Twelve saved native views: all four unchanged cast skins in seated, flight and standing poses, front/side/back/dim, original adult proportions and daughter scale; all four animated/torn wallpaper meshes and both three-dimensional keepsakes. Staged mesh/UV checks, not ordinary complete playthroughs.\n");TheOldestHouse.LOGGER.info("CLASSICS CHECK PASSED: twelve registered native cast, wallpaper and item views");mc.setScreen(VignetteReviewSmoke.active()?new LiteraryPhaseVisualProof():new HotelVisualProof());
     }
 }
