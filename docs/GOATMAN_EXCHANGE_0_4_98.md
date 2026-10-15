@@ -24,6 +24,14 @@ physical evening circuit survives the quiet and finishes before nightfall; a
 stale by-fire route cannot carry the body through a wall. Legacy evenings retain
 their existing progression.
 
+A pane already in a reader's clear native glazing ray waits at least two seconds
+for a look. Watched holds still require forty watched ticks. The connected review
+walks between the front and middle panes after a capture or a previously captured
+appearance, so earlier evening disguises cannot exhaust its opportunities while
+it waits at the wrong pane. It still requires the same original body, actual head
+pixels of the monster and two different children, both native pane viewpoints,
+the original audio/voice checks and all three completed physical night circuits.
+
 Each knock, claw or body-blow event now contains a single contact. The old masters
 embedded four knocks or two scrapes inside every event, making rapid physical
 strikes overlap into unrelated noise. Twelve original mono takes supply four

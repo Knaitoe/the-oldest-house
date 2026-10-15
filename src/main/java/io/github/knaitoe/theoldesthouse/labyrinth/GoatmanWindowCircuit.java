@@ -25,7 +25,7 @@ public final class GoatmanWindowCircuit {
     /**
      * October 15 visibility follow-up. Each side pane is one block wide, so it can only be seen from a narrow wedge of the
      * trailer. The body now spends its time where a reader can actually see it: a pane in some reader's clear native glazing
-     * ray keeps the earlier 26-56 tick wait for a look; a pane nobody can see from where they stand gets a short slap and the
+     * ray keeps a 40-70 tick wait for a look; a pane nobody can see from where they stand gets a short slap and the
      * body moves on. Once a reader is actually watching, it stays pressed to the glass, laughing without a sound, for
      * {@link #ATTENDED} watched ticks before it tears off again.
      */
@@ -47,7 +47,7 @@ public final class GoatmanWindowCircuit {
         return false;
     }
     public static void start(ServerLevel l,CompoundTag r,GoatmanChild c,int clock){
-        boolean view=inView(l,c);int pause=view?26+c.getRandom().nextInt(31):UNSEEN_MIN+c.getRandom().nextInt(UNSEEN_SPREAD);
+        boolean view=inView(l,c);int pause=view?40+c.getRandom().nextInt(31):UNSEEN_MIN+c.getRandom().nextInt(UNSEEN_SPREAD);
         r.putInt("StalkPause0465",clock+pause);r.putInt("WindowMax0497",clock+(view?90:pause));r.putBoolean("WindowView0497",view);
         r.putInt("WindowSeen0497",0);r.putBoolean("WindowHolding0497",true);r.putInt("WindowSerial0497",r.getInt("WindowSerial0497")+1);r.putInt("WindowSkin0497",c.monsterAppearance()?-2:c.visibleSkin());
     }
