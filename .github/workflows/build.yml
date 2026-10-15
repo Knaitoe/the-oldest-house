@@ -36,6 +36,12 @@ jobs:
       - name: Verify playtest journey measurements
         run: python3 -m unittest discover -s tools -p test_summarize_playtest_log.py -v
 
+      - name: Decode packaged positional Goatman contacts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          python3 tools/verify_goatman_impacts.py --jar
+
       - name: Verify playable package
         run: |
           python3 - <<'PY'

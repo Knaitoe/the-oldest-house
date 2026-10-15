@@ -264,6 +264,18 @@
       {
         "name": "the_oldest_house:goatman/hammer_vigil",
         "attenuation_distance": 48
+      },
+      {
+        "name": "the_oldest_house:goatman/hammer_vigil_1",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "the_oldest_house:goatman/hammer_vigil_2",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "the_oldest_house:goatman/hammer_vigil_3",
+        "attenuation_distance": 48
       }
     ],
     "subtitle": "subtitles.the_oldest_house.goatman_hammer"
@@ -626,6 +638,18 @@
     "sounds": [
       {
         "name": "the_oldest_house:goatman/claw_vigil",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "the_oldest_house:goatman/claw_vigil_1",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "the_oldest_house:goatman/claw_vigil_2",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "the_oldest_house:goatman/claw_vigil_3",
         "attenuation_distance": 48
       }
     ],
@@ -1033,6 +1057,18 @@
     "sounds": [
       {
         "name": "the_oldest_house:goatman/knock_vigil",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "the_oldest_house:goatman/knock_vigil_1",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "the_oldest_house:goatman/knock_vigil_2",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "the_oldest_house:goatman/knock_vigil_3",
         "attenuation_distance": 48
       }
     ],
