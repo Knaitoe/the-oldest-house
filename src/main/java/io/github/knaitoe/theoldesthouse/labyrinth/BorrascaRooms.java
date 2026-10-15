@@ -74,6 +74,8 @@ public final class BorrascaRooms {
         box(l,b,5,0,-149,5,12,-149,Blocks.SPRUCE_FENCE);box(l,b,9,0,-149,9,12,-149,Blocks.SPRUCE_FENCE);box(l,b,5,9,-150,9,12,-149,Blocks.SPRUCE_PLANKS);fit(l,b,SIGN,BorrascaFittingBlock.Kind.NOTICE,Direction.SOUTH);sign(l,b,7,11,-148,"   SKIN ","  ND"," MIN ","West rim");
         // A separately graded service descent. Its door is opened by the native release lever.
         box(l,b,-18,12,-207,-14,15,-206,Blocks.STONE_BRICKS);door(l,b,-17,12,-206,Direction.NORTH,Blocks.IRON_DOOR);
+        // The lintel is two blocks deep; its rear layer must share the original door's actual opening.
+        box(l,b,-17,12,-207,-17,13,-207,Blocks.AIR);
         for(int i=0;i<RETURN_ROUTE.length-1;i++)path(l,b,RETURN_ROUTE[i],RETURN_ROUTE[i+1]);
         sign(l,b,-15,14,-205,"FIRE EXIT","Release lever","Keep low under","the service pipe");for(int x=-21;x<=-15;x++)for(int z=-210;z<=-208;z++)BuildBlocks.set(l,b.offset(x,13,z),Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP),F);
         box(l,b,-23,12,-207,-18,15,-207,Blocks.STONE_BRICKS);box(l,b,-23,12,-210,-16,15,-210,Blocks.STONE_BRICKS);box(l,b,-16,12,-209,-16,15,-207,Blocks.STONE_BRICKS);

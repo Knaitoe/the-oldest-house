@@ -373,6 +373,10 @@ public final class GoatmanTests {
             int hits=r.getInt("DoorPressureHits0497");if(hits>frontHits[0]){var original=f.cousin(r.getInt("Wrong")).orElseThrow();h.assertTrue(hits==frontHits[0]+1&&original.getUUID().equals(identity[0])&&f.rel(original).distanceToSqr(new Vec3(.5,1,-53.8))<.02&&r.getLong("LastImpactPos0465")==f.b.offset(GoatmanWoods.DOOR).asLong(),"each front-step blow comes from the original body at its actual door after the physical route");frontHits[0]=hits;}
         });
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the circuit's native blocks and entity sections are ready")).thenExecute(()->{
+            for(boolean middle:new boolean[]{false,true})for(String role:List.of("A","B"))for(double faceHeight:new double[]{1.1,2.2}){
+                var eye=GoatmanWindowViews.feet(f.b,role,middle).add(0,p.getEyeHeight(),0);var head=new Vec3(f.b.getX()-8.5,f.b.getY()+1+faceHeight,f.b.getZ()+GoatmanWindowViews.window(middle));
+                h.assertTrue(GoatmanStalking.visible(f.l,p,eye,head),"both actual socket review viewpoints have clear native glazing rays for child and monster heads: role="+role+" middle="+middle+" head="+faceHeight);
+            }
             GoatmanVignette.enter(p);var r=f.run();r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",0);r.putInt("ExtraState",GoatmanVignette.X_DOOR);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);f.cohort(r,List.of(p),0);f.run(r);
             GoatmanWoods.door(f.l,f.b,false);GoatmanWoods.setWindow(f.l,f.b,true);GoatmanVignette.stage(f.l,f.b,r);var it=f.cousin(r.getInt("Wrong")).orElseThrow();identity[0]=it.getUUID();skin[0]=it.skin();it.moveTo(new Vec3(-6,0,-49.6).add(f.b.getX(),f.b.getY(),f.b.getZ()));started[0]=true;
         }).thenWaitUntil(()->h.assertTrue(f.run().getBoolean("AssaultDone0465")&&GoatmanStalking.circuitDone(f.run()),"the complete physical circuit and assault finish: leg="+f.run().getInt("StalkLeg0465")+" clock="+f.run().getInt("Clock")+" body="+f.cousin(f.run().getInt("Wrong")).map(c->f.rel(c).toString()).orElse("missing"))).thenExecute(()->{
