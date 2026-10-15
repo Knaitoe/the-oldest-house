@@ -29,6 +29,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 public final class TrailerVisualProof extends Screen {
     private static boolean started;
     private int page,frames;
+    private boolean gaitsChecked;
     public TrailerVisualProof(){super(Component.literal("Trailer update"));}
     @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){}
     private static ResourceLocation skin(int i){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/trailer_child_"+i+".png");}
@@ -38,7 +39,8 @@ public final class TrailerVisualProof extends Screen {
     }
     @Override public void render(GuiGraphics g,int x,int y,float partial){
         var mc=Minecraft.getInstance();var out=mc.renderBuffers().bufferSource();g.fill(0,0,width,height,0xff22262b);
-        String[] titles={"All nine cousins","Walking and running: consecutive strides","Seated, cowering and laughing: connected joints","Porcelain fixtures, glazed sash, food and stressed door","Tracking behind the shoulders: bounded neck turns","Cooler, native wheels, painted cars and the note post","Institute enamel notices and centered brass room plates","Proofrock streetlights: fitted iron and warm glass","Seven individual terror gestures","Priority voice at the center","Cousins continue between demands","First confusion: looking between cousins","Growing fear: distinct upright reactions","Who just ran out?"};g.drawString(font,titles[page],8,8,0xffe8e0d3,false);g.flush();
+        String[] titles={"All nine cousins","Walking and running: consecutive strides","Seated, cowering and laughing: connected joints","Porcelain fixtures, glazed sash, food and stressed door","Tracking behind the shoulders: bounded neck turns","Cooler, native wheels, painted cars and the note post","Institute enamel notices and centered brass room plates","Proofrock streetlights: fitted iron and warm glass","Seven individual terror gestures","Priority voice at the center","Cousins continue between demands","First confusion: looking between cousins","Growing fear: distinct upright reactions","Who just ran out?","Individual cousin walks: first stride","Individual cousin walks: opposite stride","Individual cousin runs: first stride","Individual cousin runs: opposite stride"};g.drawString(font,titles[page],8,8,0xffe8e0d3,false);g.flush();
+        if(page>=14){gaits(g,out);return;}
         if(page>=8){fear(g,out);return;}
         if(page==7){streetlights(g,out);return;}
         if(page<3||page==4){
@@ -65,6 +67,54 @@ public final class TrailerVisualProof extends Screen {
         var door=GoatmanRegistry.DOOR.get().defaultBlockState().setValue(DoorBlock.FACING,Direction.SOUTH);
         for(int i=0;i<2;i++){var p=g.pose();p.pushPose();p.translate(width-108+i*52,height-20,150);p.scale(38,-38,38);p.mulPose(Axis.YP.rotationDegrees(155));TrailerDoorRenderer.draw(door,i==0?0:1.8F,i==0?0:20,p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.popPose();}out.endBatch();
         int i=0;for(var item:new ItemStack[]{new ItemStack(GoatmanRegistry.FRANKS.get()),new ItemStack(GoatmanRegistry.RAW_FRANK.get()),new ItemStack(GoatmanRegistry.BRAT.get())}){var p=g.pose();p.pushPose();p.translate(12+i++*58,height-62,0);p.scale(3,3,1);g.renderItem(item,0,0);p.popPose();}
+    }
+    /** Compare identical distance phases so the differences come from carriage, not arbitrary pose offsets. */
+    private void gaits(GuiGraphics g,MultiBufferSource.BufferSource out){
+        var mc=Minecraft.getInstance();
+        if(!gaitsChecked){checkGaits();gaitsChecked=true;}
+        float phase=page%2==0?.65F:2.22F,speed=page>=16?.18F:.075F;
+        float cw=(width-16F)/3,ch=(height-30F)/3;
+        for(int i=0;i<9;i++){
+            var m=childModel();m.pose(i,phase,speed,42,false,false,false);joints(m);
+            var p=g.pose();p.pushPose();p.translate(8+(i%3+.5F)*cw,28+(i/3+1)*ch-12,150);
+            float scale=Math.min(34,ch/2.1F);p.scale(scale,scale,scale);p.mulPose(Axis.YP.rotationDegrees(160));p.translate(0,-1.5,0);
+            m.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(skin(i))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);p.popPose();
+            g.drawCenteredString(font,"Cousin "+(i+1),(int)(8+(i%3+.5F)*cw),(int)(28+(i/3+1)*ch-10),0xffe8e0d3);
+        }out.endBatch();
+    }
+    private static GoatmanChildModel childModel(){return new GoatmanChildModel(Minecraft.getInstance().getEntityModels().bakeLayer(ModelLayers.PLAYER));}
+    private static float[] snapshot(GoatmanChildModel m){
+        float[] out=new float[42];int at=0;
+        for(var p:new net.minecraft.client.model.geom.ModelPart[]{m.head,m.hat,m.body,m.leftArm,m.rightArm,m.leftLeg,m.rightLeg}){
+            out[at++]=p.x;out[at++]=p.y;out[at++]=p.z;out[at++]=p.xRot;out[at++]=p.yRot;out[at++]=p.zRot;
+        }return out;
+    }
+    /** Native baked joints: stable identities, bounded strides, reverse phases and no pose leakage on a reused renderer. */
+    private static void checkGaits(){
+        var signatures=new java.util.HashSet<String>();var m=childModel();
+        for(int skin=0;skin<9;skin++){
+            m.pose(skin,.65F,.075F,42,false,false,false);float[] original=snapshot(m);
+            signatures.add(java.util.Arrays.toString(original));
+            m.pose((skin+1)%9,2.22F,.18F,71,false,false,false);
+            m.pose(skin,.65F,.075F,42,false,false,false);
+            if(!java.util.Arrays.equals(original,snapshot(m)))throw new IllegalStateException("Cousin gait changed after another actor used the renderer: "+skin);
+            for(float speed:new float[]{.025F,.075F,.18F})for(int step=-8;step<=8;step++){
+                m.pose(skin,step*(float)Math.PI/8,speed,42,false,false,false);joints(m);
+                for(float value:snapshot(m))if(!Float.isFinite(value))throw new IllegalStateException("Non-finite cousin joint: "+skin);
+                if(Math.abs(m.leftLeg.xRot)>1.25F||Math.abs(m.rightLeg.xRot)>1.25F)throw new IllegalStateException("Excessive cousin stride: "+skin);
+            }
+            for(int pose=0;pose<4;pose++){
+                boolean seated=pose==1,cower=pose==2,heave=pose==3;
+                m.pose(skin,.65F,.18F,42,false,false,false);
+                m.pose(skin,0,0,42,seated,cower,heave);joints(m);
+                var reference=childModel();reference.pose(0,0,0,42,seated,cower,heave);
+                if(!java.util.Arrays.equals(snapshot(reference),snapshot(m)))throw new IllegalStateException("Walking leaked into a stopped, seated or fear pose: "+skin+" pose="+pose);
+            }
+            m.pose(skin,.65F,.075F,42,false,false,false);float leg=m.rightLeg.xRot;
+            m.pose(skin,.65F,.075F,99,false,false,false);
+            if(leg!=m.rightLeg.xRot)throw new IllegalStateException("A stationary distance phase advanced with time: "+skin);
+        }
+        if(signatures.size()!=9)throw new IllegalStateException("Cousins still share an identical gait: "+signatures.size());
     }
     private void fixtures(GuiGraphics g,MultiBufferSource.BufferSource out,boolean boards){
         var mc=Minecraft.getInstance();var states=new java.util.ArrayList<net.minecraft.world.level.block.state.BlockState>();var labels=new java.util.ArrayList<String>();
@@ -113,8 +163,9 @@ public final class TrailerVisualProof extends Screen {
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();boolean focused=Boolean.getBoolean("the_oldest_house.trailerSmoke");
         if(!focused&&!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof TrailerVisualProof proof)||++proof.frames<16)return;
-        var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage im=Screenshot.takeScreenshot(mc.getMainRenderTarget())){im.writeToFile(dir.resolve(proof.page>=8?"native-goatman-fear0472-"+(proof.page-8)+".png":proof.page==7?"native-streetlights-0469.png":(proof.page<4?"native-trailer-0465-":"native-playtest-0468-")+proof.page+".png"));}
-        proof.frames=0;if(++proof.page<14)return;
+        var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage im=Screenshot.takeScreenshot(mc.getMainRenderTarget())){im.writeToFile(dir.resolve(proof.page>=14?"native-cousin-gaits-0497-"+(proof.page-14)+".png":proof.page>=8?"native-goatman-fear0472-"+(proof.page-8)+".png":proof.page==7?"native-streetlights-0469.png":(proof.page<4?"native-trailer-0465-":"native-playtest-0468-")+proof.page+".png"));}
+        proof.frames=0;if(++proof.page<18)return;
+        Files.writeString(dir.resolve("cousin-gaits-0497-passed.txt"),"Nine stable native cousin gaits; 459 forward/reverse walking and running joint samples; bounded strides and connected hips/neck/shoulders; reused-renderer identity and stopped/seated/cowering/heaving reset checks; four GPU views at matching distance phases.\n");
         Files.writeString(dir.resolve("goatman-fear0472-passed.txt"),"Seven distinct connected gestures at confusion, fear and terror; centered priority Goatman subtitle with a competing cousin suppressed; continuing cousin subtitle between demands; the actual departure reaction during gathering.\n");
         Files.writeString(dir.resolve("streetlights-0469-passed.txt"),"Three assembled native streetlights: both street-arm directions and the fitted waterlogged lamps of the submerged street.\n");
         TheOldestHouse.LOGGER.info("TRAILER PROOF PASSED: four native views and connected joints");

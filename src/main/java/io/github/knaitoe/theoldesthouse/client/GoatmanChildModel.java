@@ -13,7 +13,7 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
         boolean still=e.tell(GoatmanVignette.STILL)&&!e.stalkingAppearance();
         float speed=Math.abs(e.speed())/8,phase=e.walk(age-e.tickCount)*.78F;
         super.setupAnim(e,0,0,still?0:age,yaw,pitch);
-        animatePose(phase,speed,age+e.skin()*17,e.seated(),e.cowering(),e.heaving(),still);
+        animatePose(e.visibleSkin(),phase,speed,age+e.skin()*17,e.seated(),e.cowering(),e.heaving(),still);
         if(e.getMainHandItem().is(GoatmanRegistry.BRAT.get())){rightArm.xRot=-1.2F-.16F*Mth.sin(age*.3F+e.skin());head.xRot+=.1F;}
         if(!e.stalkingAppearance()&&e.tell(GoatmanVignette.HEAD)&&Minecraft.getInstance().player!=null){
             var at=Minecraft.getInstance().player.position().subtract(e.position());
@@ -24,15 +24,22 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
     }
     /** Also used by native visual proofs, with the same joints as the live renderer. */
     public void pose(float phase,float speed,float age,boolean seated,boolean cower,boolean heave){
-        HumanoidMotion.reset(this);young=false;animatePose(phase,speed,age,seated,cower,heave,false);HumanoidMotion.connect(this);
+        pose(0,phase,speed,age,seated,cower,heave);
     }
-    private void animatePose(float phase,float speed,float age,boolean seated,boolean cower,boolean heave,boolean still){
+    public void pose(int skin,float phase,float speed,float age,boolean seated,boolean cower,boolean heave){
+        HumanoidMotion.reset(this);young=false;animatePose(skin,phase,speed,age,seated,cower,heave,false);HumanoidMotion.connect(this);
+    }
+    private void animatePose(int skin,float phase,float speed,float age,boolean seated,boolean cower,boolean heave,boolean still){
         if(!still){body.yRot=.025F*Mth.sin(age*.045F);head.xRot+=.025F*Mth.sin(age*.032F);}
         if(seated){
             head.y=hat.y=body.y=5;leftArm.y=rightArm.y=7;leftLeg.y=rightLeg.y=17;
             leftLeg.xRot=rightLeg.xRot=-1.45F;leftLeg.yRot=.12F;rightLeg.yRot=-.12F;leftArm.xRot=-.6F;rightArm.xRot=-.5F;
         }else{head.y=hat.y=body.y=0;leftArm.y=rightArm.y=2;leftLeg.y=rightLeg.y=12;}
-        if(!seated&&speed>.002F)HumanoidMotion.gait(this,phase,Math.min(1,speed/.11F),speed>.12F);
+        if(!seated&&speed>.002F){
+            float amount=Math.min(1,speed/.11F);boolean running=speed>.12F;
+            HumanoidMotion.gait(this,phase,amount,running);
+            if(!cower&&!still)CousinGait.apply(this,skin,phase,amount,running);
+        }
         if(cower){body.xRot=.45F;head.xRot=.4F;leftArm.xRot=rightArm.xRot=-2.3F;leftArm.zRot=-.25F;rightArm.zRot=.25F;leftLeg.xRot=rightLeg.xRot=-.55F;}
         if(heave){
             // Laughing with no sound coming out: the shoulders and head jerk together.
@@ -64,8 +71,8 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
     }
     /** The proof uses the same connected joints and fear gestures as the tracked actor. */
     public void fearPose(int role,float phase,float speed,float age){fearPose(role,GoatmanFear.TERROR,phase,speed,age);}
-    public void fearPose(int role,int stage,float phase,float speed,float age){HumanoidMotion.reset(this);young=false;animatePose(phase,speed,age,stage<GoatmanFear.FEAR||role==GoatmanFear.TREMBLE,stage==GoatmanFear.TERROR&&role==GoatmanFear.EARS,false,false);animateFear(role,stage,age);limitLook();HumanoidMotion.connect(this);}
+    public void fearPose(int role,int stage,float phase,float speed,float age){HumanoidMotion.reset(this);young=false;animatePose(0,phase,speed,age,stage<GoatmanFear.FEAR||role==GoatmanFear.TREMBLE,stage==GoatmanFear.TERROR&&role==GoatmanFear.EARS,false,false);animateFear(role,stage,age);limitLook();HumanoidMotion.connect(this);}
     private void limitLook(){head.yRot=Mth.clamp(Mth.wrapDegrees(head.yRot*Mth.RAD_TO_DEG),-75,75)*Mth.DEG_TO_RAD;head.xRot=Mth.clamp(head.xRot,-60*Mth.DEG_TO_RAD,60*Mth.DEG_TO_RAD);}
     /** Exercise the same bounded look and torso composition in the native client proof. */
-    public void lookPose(float yaw,float pitch,boolean cower){HumanoidMotion.reset(this);young=false;animatePose(0,0,0,false,cower,false,false);head.yRot=yaw*Mth.DEG_TO_RAD;head.xRot=pitch*Mth.DEG_TO_RAD;limitLook();HumanoidMotion.connect(this);}
+    public void lookPose(float yaw,float pitch,boolean cower){HumanoidMotion.reset(this);young=false;animatePose(0,0,0,0,false,cower,false,false);head.yRot=yaw*Mth.DEG_TO_RAD;head.xRot=pitch*Mth.DEG_TO_RAD;limitLook();HumanoidMotion.connect(this);}
 }
