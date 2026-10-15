@@ -389,6 +389,63 @@ public final class GoatmanTests {
             h.assertTrue(r.getBoolean("DoorPressureDone0497")&&frontHits[0]==6&&r.getInt("DoorPressureHits0497")==6,"all six door impacts were observed on the original body after the third physical lap");h.succeed();
         });
     }
+    private static Fixture paneHolds,paneLap;
+    @AfterBatch(batch="goat_pane_holds0497") public static void cleanPaneHolds(ServerLevel l){if(paneHolds!=null){paneHolds.close();paneHolds=null;}}
+    @AfterBatch(batch="goat_pane_lap0497") public static void cleanPaneLap(ServerLevel l){if(paneLap!=null){paneLap.close();paneLap=null;}}
+    private static void look(ServerPlayer p,Vec3 at){var to=at.subtract(p.getEyePosition());p.setYRot((float)Math.toDegrees(Math.atan2(-to.x,to.z)));p.setXRot((float)-Math.toDegrees(Math.atan2(to.y,Math.hypot(to.x,to.z))));p.setYHeadRot(p.getYRot());}
+    /** October 15: window time goes where a reader can actually see it, and a watched face stays at the glass. */
+    @GameTest(template="empty",templateNamespace=TheOldestHouse.MOD_ID+"_goatman_windows",batch="goat_pane_holds0497",timeoutTicks=600)
+    public static void windowTimeGoesWhereAReaderCanSeeAndAWatchedFaceStaysAtTheGlass(GameTestHelper h){
+        paneHolds=new Fixture(h,297000);var f=paneHolds;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the trailer's native blocks and entity sections are ready")).thenExecute(()->{
+            GoatmanVignette.enter(p);var r=f.run();r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",0);r.putInt("ExtraState",GoatmanVignette.X_DOOR);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);f.cohort(r,List.of(p),0);f.run(r);
+            GoatmanWoods.door(f.l,f.b,false);GoatmanVignette.stage(f.l,f.b,r);
+            var it=f.cousin(r.getInt("Wrong")).orElseThrow();var tire=new Vec3(-8.5,1,-66.5).add(f.b.getX(),f.b.getY(),f.b.getZ());
+            for(boolean monster:new boolean[]{true,false}){
+                it.disguise(monster?-2:it.skin());it.moveTo(tire.x,tire.y,tire.z,-90,0);
+                h.assertTrue(!f.l.noCollision(it,it.getBoundingBox().move(0,-.02,0)),"the original body stands on the middle window's real tire");
+                // At the front of the aisle the middle pane lies outside the reader's narrow wedge of view.
+                f.indoors(p);h.assertTrue(!GoatmanWindowCircuit.inView(f.l,it),"from the front of the aisle the middle pane cannot be seen: monster="+monster);
+                var unseen=new CompoundTag();GoatmanWindowCircuit.start(f.l,unseen,it,100);int wait=unseen.getInt("WindowMax0497")-100,held=0;
+                for(int clock=100;clock<400&&GoatmanWindowCircuit.hold(f.l,unseen,it,clock);clock++)held++;
+                h.assertTrue(!unseen.getBoolean("WindowView0497")&&wait>=GoatmanWindowCircuit.UNSEEN_MIN&&wait<GoatmanWindowCircuit.UNSEEN_MIN+GoatmanWindowCircuit.UNSEEN_SPREAD&&held==wait&&!it.heaving(),"a pane nobody can see gets a short slap, not the whole wait: wait="+wait+" held="+held);
+                var feet=GoatmanWindowViews.feet(f.b,"A",true);p.moveTo(feet.x,feet.y,feet.z);look(p,GoatmanWindowCircuit.face(it));
+                h.assertTrue(GoatmanWindowCircuit.inView(f.l,it)&&GoatmanWindowCircuit.watched(f.l,it),"beside the middle window the reader has a clear glazing ray and is looking at the face: monster="+monster);
+                var seen=new CompoundTag();GoatmanWindowCircuit.start(f.l,seen,it,1000);int stare=0;boolean heaved=true;
+                for(int clock=1000;clock<1300&&GoatmanWindowCircuit.hold(f.l,seen,it,clock);clock++){stare++;heaved&=it.heaving();}
+                h.assertTrue(seen.getBoolean("WindowView0497")&&stare>=GoatmanWindowCircuit.ATTENDED&&seen.getInt("WindowSeen0497")>=GoatmanWindowCircuit.ATTENDED&&heaved&&!it.heaving(),"a watched face stays at the glass, laughing without a sound, for at least "+GoatmanWindowCircuit.ATTENDED+" watched ticks: held="+stare+" seen="+seen.getInt("WindowSeen0497")+" monster="+monster);
+            }
+            h.succeed();
+        });
+    }
+    /** October 15: the private tearing lap jumps up onto a tire its reader can see, so its head fills the glass, and stares back. */
+    @GameTest(template="empty",templateNamespace=TheOldestHouse.MOD_ID+"_goatman_windows",batch="goat_pane_lap0497",timeoutTicks=1400)
+    public static void theTearingLapJumpsUpIntoAWindowItsReaderCanSeeAndStaresBack(GameTestHelper h){
+        paneLap=new Fixture(h,298000);var f=paneLap;var a=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        final int middleWest=1;GoatmanFigure[] mine={null};boolean[] onTire={false},faceClear={false},heaved={false};int[] watched={0},struck={0};
+        h.onEachTick(()->{var it=mine[0];if(it==null||it.isRemoved())return;struck[0]=Math.max(struck[0],it.struck);
+            var spot=GoatmanStalking.paneSpot(f.b,middleWest);var face=spot.add(0,GoatmanStalking.FACE,0);look(a,face);
+            if(it.pane==middleWest&&it.paneAt>=0&&it.paneExit==null&&it.position().distanceToSqr(spot)<1e-4){
+                onTire[0]|=f.l.getBlockState(BlockPos.containing(spot).below()).is(GoatmanRegistry.WHEEL.get());
+                // The figure's skull spans 1.69-2.13 above its feet: from the tire it is entirely above the sill at y 2.
+                faceClear[0]|=spot.y+1.69>f.b.getY()+2&&GoatmanStalking.visible(f.l,a,a.getEyePosition(),face);
+                heaved[0]|=it.heaving();watched[0]=Math.max(watched[0],it.paneSeen);
+            }
+        });
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the trailer's native entity sections are ready")).thenExecute(()->{
+            GoatmanVignette.enter(a);var r=f.run();h.assertTrue(GoatmanVignette.fresh(r),"a fresh round");
+            r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",200);r.putInt("ExtraState",GoatmanVignette.X_DOOR);r.putInt("StalkLeg0465",99);r.putLong("LastImpact0465",0);f.cohort(r,List.of(a),200);f.run(r);
+            var feet=GoatmanWindowViews.feet(f.b,"A",true);a.moveTo(feet.x,feet.y,feet.z);look(a,GoatmanStalking.paneSpot(f.b,middleWest).add(0,GoatmanStalking.FACE,0));
+            var own=r.getCompound("Cohort").getCompound(a.getUUID().toString());GoatmanStalking.dash(f.l,f.b,r,a,own);
+            var laps=f.l.getEntitiesOfClass(GoatmanFigure.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN),s->s.purpose.equals("lap")&&s.viewer().filter(a.getUUID()::equals).isPresent());
+            h.assertTrue(laps.size()==1&&own.getInt("Laps0484")==1,"the reader inside gets one private lap");mine[0]=laps.get(0);
+        }).thenWaitUntil(()->h.assertTrue(mine[0]!=null&&mine[0].isRemoved(),"wait for the lap to end")).thenExecute(()->{
+            h.assertTrue(onTire[0]&&faceClear[0],"it stood on the middle window's tire with its whole head clear in the glass: tire="+onTire[0]+" face="+faceClear[0]);
+            h.assertTrue(heaved[0]&&watched[0]>=GoatmanStalking.PANE_WATCHED,"watched, it stayed and stared back, laughing without a sound: watched="+watched[0]);
+            h.assertTrue(struck[0]==GoatmanStalking.ALL_STRUCK,"it still struck all five side windows and the back wall: "+Integer.toBinaryString(struck[0]));
+            h.succeed();
+        });
+    }
     @GameTest(template="empty",batch="goat_disguise0465",timeoutTicks=2400)
     public static void observedDisguisesWaitAndTheSavedDeckNeverRepeatsAChild(GameTestHelper h){
         disguises=new Fixture(h,30700);var f=disguises;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));

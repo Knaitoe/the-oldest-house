@@ -24,6 +24,8 @@ public final class GoatmanFigure extends PathfinderMob {
     public Vec3 dashTo;public double dashSpeed;
     /** Server-side only (0.4.84): a lap round the trailer, the corners still to run, the way round, and the windows it has struck. */
     public final java.util.ArrayDeque<Vec3> lap=new java.util.ArrayDeque<>();public net.minecraft.core.BlockPos lapBase;public int lapCorner,lapDir=1,struck,extra;
+    /** Server-side only (0.4.97): the side window it has jumped up to, when it got there, how long it has been watched, and where it drops back down. */
+    public int pane=-1,paneSeen;public long paneAt=-1;public Vec3 paneExit;
     public GoatmanFigure(EntityType<? extends GoatmanFigure> type,Level level){
         super(type,level);setNoAi(true);setNoGravity(true);setSilent(true);setInvulnerable(true);noPhysics=true;
     }
