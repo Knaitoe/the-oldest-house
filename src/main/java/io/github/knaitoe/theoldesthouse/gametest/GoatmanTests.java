@@ -484,7 +484,7 @@ public final class GoatmanTests {
         f.evening(List.of(a,b),GoatmanVignette.SUPPER-2);var start=f.run();int wrong=start.getInt("Wrong"),runner=start.getInt("Runner");
         h.assertTrue(f.cousins().size()==4&&f.cousin(runner).isEmpty(),"the cousin who went for gas is not at the camp");
         h.assertTrue(f.l.getBlockState(f.b.offset(-2,1,-61)).getValue(StairBlock.FACING)==Direction.WEST&&f.l.getBlockState(f.b.offset(2,1,-61)).getValue(StairBlock.FACING)==Direction.EAST,"every chair's back is behind its sitter, who faces the table");
-        h.assertTrue(f.l.getBlockState(f.b.offset(0,4,-62)).is(Blocks.LANTERN)&&f.l.getBlockState(f.b.offset(-7,3,-59)).is(Blocks.LANTERN)&&!f.l.getBlockState(f.b.offset(0,5,-63)).is(Blocks.SEA_LANTERN),"warm lamps hang over the table and stand by the bunks, and the cold ceiling lights are gone");
+        h.assertTrue(f.l.getBlockState(f.b.offset(0,4,-62)).is(Blocks.LANTERN)&&f.l.getBlockState(f.b.offset(-7,3,-57)).is(Blocks.LANTERN)&&f.l.getBlockState(f.b.offset(7,3,-57)).is(Blocks.LANTERN)&&f.l.getBlockState(f.b.offset(-7,2,-59)).isAir()&&f.l.getBlockState(f.b.offset(-7,3,-59)).isAir()&&f.l.getBlockState(f.b.offset(7,2,-59)).isAir()&&f.l.getBlockState(f.b.offset(7,3,-59)).isAir()&&!f.l.getBlockState(f.b.offset(0,5,-63)).is(Blocks.SEA_LANTERN),"warm lamps hang over the table and stand beside both bunks, both front windows stay unobstructed, and the cold ceiling lights are gone");
         f.click(a,GoatmanWoods.STOVE);h.assertTrue(f.run().getInt("Pan")==6&&a.getInventory().countItem(GoatmanRegistry.BRAT.get())==0,"a pan is not served before supper");
         h.runAfterDelay(4,()->{
             GoatmanVignette.hurry(f.l,f.b);
