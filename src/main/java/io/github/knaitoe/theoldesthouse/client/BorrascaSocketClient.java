@@ -24,10 +24,11 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 public final class BorrascaSocketClient {
     private static int last,route,clicked=-100;private static String shot;private static SimpleSoundInstance vanilla;
     private BorrascaSocketClient(){}
-    private static void stop(Minecraft mc){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);}
+    private static void stop(Minecraft mc){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyUse.setDown(false);mc.options.keyAttack.setDown(false);mc.options.keyJump.setDown(false);mc.options.keySprint.setDown(false);}
     private static boolean walk(Minecraft mc,BlockPos p,double tolerance){double dx=p.getX()+.5-mc.player.getX(),dz=p.getZ()+.5-mc.player.getZ();if(Math.hypot(dx,dz)<tolerance){mc.options.keyUp.setDown(false);return true;}if(Math.abs(dx)>.15)dz=0;mc.player.setYRot((float)Math.toDegrees(Math.atan2(-dx,dz)));mc.player.setXRot(0);mc.options.keyUp.setDown(true);return false;}
     private static void click(Minecraft mc,BlockPos at,int age){if(age-clicked<20)return;clicked=age;mc.player.setXRot((float)-Math.toDegrees(Math.atan2(at.getY()+.5-mc.player.getEyeY(),Math.sqrt(mc.player.position().distanceToSqr(at.getCenter())))));mc.gameMode.useItemOn(mc.player,InteractionHand.MAIN_HAND,new BlockHitResult(at.getCenter(),Direction.SOUTH,at,false));}
     public static boolean ready(Minecraft mc,int step,int age,String role,BlockPos target){if(last!=step){last=step;route=0;clicked=-100;vanilla=null;stop(mc);}
+        if(age%40==0)TheOldestHouse.LOGGER.info("LIVE BORRASCA CLIENT {} phase={} route={} body={} ground={} gravity={} pose={} velocity={} below={} screen={}",role,step,route,mc.player.position(),mc.player.onGround(),!mc.player.isNoGravity(),mc.player.getPose(),mc.player.getDeltaMovement(),mc.level.getBlockState(mc.player.blockPosition().below()),mc.screen==null?"none":mc.screen.getClass().getSimpleName());
         if(step==54){if(BorrascaAtmosphere.active()){var b=BorrascaAtmosphere.source().subtract(BorrascaRooms.MACHINE);if(walk(mc,b.offset(0,0,-3),.4))return true;}else{click(mc,target,age);walk(mc,target.north(3),.4);}return false;}
         if(step==55){
             if(!BorrascaAtmosphere.active())return false;if(age>=20&&vanilla==null){vanilla=SimpleSoundInstance.forMusic(SoundEvents.MUSIC_GAME.value());mc.getSoundManager().play(vanilla);}if(age>45&&vanilla!=null&&mc.getSoundManager().isActive(vanilla))throw new IllegalStateException("LIVE BORRASCA vanilla music overlapped the industrial scene");
