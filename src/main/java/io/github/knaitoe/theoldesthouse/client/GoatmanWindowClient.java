@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.client;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.gametest.LiveExpeditionProof;
+import io.github.knaitoe.theoldesthouse.gametest.GoatmanWindowViews;
 import io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild;
 import io.github.knaitoe.theoldesthouse.labyrinth.GoatmanStalking;
 import java.nio.file.Files;
@@ -47,7 +48,7 @@ public final class GoatmanWindowClient {
         if(pendingName!=null){aim(mc,pendingBody);return pendingName;}
         if(!capture)return null;
         // Walk to the clear side of the actual bunks; the centre aisle's watching cousin and peer can cover this window.
-        double window=forms.size()<2?-58.5:-66.5;var goal=new Vec3(base.getX()-3.2,base.getY()+1,base.getZ()+window+(role.equals("A")?1.3:-1.9));var walk=goal.subtract(mc.player.position());
+        boolean middle=forms.size()>=2;double window=GoatmanWindowViews.window(middle);var goal=GoatmanWindowViews.feet(base,role,middle);var walk=goal.subtract(mc.player.position());
         if(walk.horizontalDistanceSqr()>.04){mc.player.setYRot((float)Math.toDegrees(Math.atan2(-walk.x,walk.z)));mc.player.setXRot(0);mc.options.keyUp.setDown(true);return null;}
         mc.options.keyUp.setDown(false);
         for(var c:children){

@@ -74,6 +74,7 @@ jobs:
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               assert 'data/the_oldest_house_borrasca/structure/empty.nbt' in z.namelist()
               assert 'data/the_oldest_house_goatman_windows/structure/empty.nbt' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/gametest/GoatmanWindowViews.class' in z.namelist()
               assert z.read('assets/the_oldest_house/textures/entity/borrasca_atlas.png').startswith(b'\x89PNG')
               assert 'assets/minecraft/atlases/blocks.json' in z.namelist()
               assert len(json.loads(z.read('assets/the_oldest_house/blockstates/borrasca_fitting.json'))['variants']) == 36
