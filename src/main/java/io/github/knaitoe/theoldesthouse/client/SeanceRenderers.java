@@ -22,16 +22,19 @@ public final class SeanceRenderers {
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers event){event.registerEntityRenderer(ClassicsRegistry.ACTOR.get(),FamilyRenderer::new);}
     public static final class FamilyModel extends HumanoidModel<SeanceActor> {
         private final ModelPart veil,skirt,collar;
-        public FamilyModel(ModelPart root){super(root);veil=head.getChild("veil");skirt=body.getChild("skirt");collar=body.getChild("collar");}
+        public final ModelPart leftKnee,rightKnee;
+        public FamilyModel(ModelPart root){super(root);veil=head.getChild("veil");skirt=body.getChild("skirt");collar=body.getChild("collar");leftKnee=leftLeg.getChild("knee");rightKnee=rightLeg.getChild("knee");}
         public static LayerDefinition layer(){var mesh=HumanoidModel.createMesh(CubeDeformation.NONE,0);var root=mesh.getRoot();
+            for(boolean left:new boolean[]{false,true}){var leg=root.addOrReplaceChild(left?"left_leg":"right_leg",CubeListBuilder.create().texOffs(0,16).mirror(left).addBox(-2,0,-2,4,6,4),PartPose.offset(left?1.9F:-1.9F,12,0));leg.addOrReplaceChild("knee",CubeListBuilder.create().texOffs(0,22).mirror(left).addBox(-2,0,-2,4,6,4),PartPose.offset(0,6,0));}
             root.getChild("head").addOrReplaceChild("veil",CubeListBuilder.create().texOffs(64,0).addBox(-4.5F,-8.5F,-4.4F,9,9,1).texOffs(64,12).addBox(-4.4F,-7.5F,3.2F,8.8F,10,1),PartPose.ZERO);
             root.getChild("body").addOrReplaceChild("skirt",CubeListBuilder.create().texOffs(64,28).addBox(-4.5F,8,-2.6F,9,7,5.2F).texOffs(64,42).addBox(-5.5F,15,-3.2F,11,7,6.4F),PartPose.ZERO);
             root.getChild("body").addOrReplaceChild("collar",CubeListBuilder.create().texOffs(96,0).addBox(-3.8F,0,-2.6F,7.6F,2,1.2F),PartPose.ZERO);
             root.getChild("right_arm").addOrReplaceChild("cuff",CubeListBuilder.create().texOffs(96,8).addBox(-3.3F,7,-2.3F,4.6F,2,4.6F),PartPose.ZERO);
             root.getChild("left_arm").addOrReplaceChild("cuff",CubeListBuilder.create().texOffs(96,8).addBox(-1.3F,7,-2.3F,4.6F,2,4.6F),PartPose.ZERO);return LayerDefinition.create(mesh,128,64);}
         public void pose(int role,boolean seated,boolean scared,float time){
+            leftKnee.resetPose();rightKnee.resetPose();
             veil.visible=role==0;skirt.visible=role!=2;collar.visible=true;
-            if(seated){leftLeg.xRot=rightLeg.xRot=-1.45F;rightLeg.yRot=.12F;leftLeg.yRot=-.12F;leftArm.xRot=rightArm.xRot=-.72F;leftArm.zRot=-.12F;rightArm.zRot=.12F;skirt.xRot=-.4F;}
+            if(seated){leftLeg.xRot=rightLeg.xRot=-(float)Math.PI/2;leftKnee.xRot=rightKnee.xRot=(float)Math.PI/2;leftKnee.yScale=rightKnee.yScale=4F/3;rightLeg.yRot=.12F;leftLeg.yRot=-.12F;leftArm.xRot=rightArm.xRot=-.72F;leftArm.zRot=-.12F;rightArm.zRot=.12F;skirt.xRot=-.4F;}
             else if(scared){leftArm.xRot=-1.1F;rightArm.xRot=-.9F;leftArm.zRot=-.35F;rightArm.zRot=.35F;head.xRot=.14F+(float)Math.sin(time*.35)*.04F;}
             if(role==0&&seated){head.xRot=.18F;leftArm.xRot=rightArm.xRot=-1.2F;leftArm.yRot=.35F;rightArm.yRot=-.35F;}
         }

@@ -24,7 +24,7 @@ public final class CharacterPhaseVisualProof extends Screen {
     private static final String[] GROUPS={"mother","witch","clap"},VIEWS={"front","side","back","dim"};
     private int page,frames;
     public CharacterPhaseVisualProof(){super(Component.literal("Native character phase review"));}
-    @Override protected void init(){WitchUvProof.verify();}
+    @Override protected void init(){PaintedCastUvProof.verify();}
     @Override public void renderBackground(GuiGraphics g,int x,int y,float delta){}
     private static ResourceLocation skin(String name){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/"+name+".png");}
     private static void witchPose(LakeWitchModel m,int n,float age){

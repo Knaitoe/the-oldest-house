@@ -7,6 +7,9 @@ import java.nio.file.*;
 import net.minecraft.client.*;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.model.geom.ModelPart;
+import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Vector3f;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
@@ -21,6 +24,13 @@ public final class ClassicsVisualProof extends Screen {
     private static final String[] POSES={"seated","flight","standing"},VIEWS={"front","side","back","dim"};
     private int frames,page;
     public ClassicsVisualProof(){super(Component.literal("The sitting and the pattern"));}
+    private static float lowest(ModelPart part){float[] low={-Float.MAX_VALUE};part.visit(new PoseStack(),(pose,path,index,cube)->{for(float x:new float[]{cube.minX,cube.maxX})for(float y:new float[]{cube.minY,cube.maxY})for(float z:new float[]{cube.minZ,cube.maxZ})low[0]=Math.max(low[0],pose.pose().transformPosition(new Vector3f(x/16,y/16,z/16)).y);});return low[0];}
+    @Override protected void init(){
+        var mc=Minecraft.getInstance();for(int role=0;role<4;role++){var model=new SeanceRenderers.FamilyModel(mc.getEntityModels().bakeLayer(SeanceRenderers.LAYER));model.young=false;model.pose(role,true,false,0);
+            for(var leg:new ModelPart[]{model.leftLeg,model.rightLeg})if(lowest(leg)<1.20F||lowest(leg)>1.30F)throw new IllegalStateException("The actual seated shin must hang down from the knee, not point straight at the table: "+lowest(leg));
+            model.pose(role,false,true,0);if(model.leftKnee.xRot!=0||model.rightKnee.xRot!=0||model.leftKnee.yScale!=1||model.rightKnee.yScale!=1)throw new IllegalStateException("The original fleeing family retains its seated knee transform");
+        }
+    }
     @Override public void renderBackground(GuiGraphics graphics,int x,int y,float delta){}
     @Override public void render(GuiGraphics g,int x,int y,float delta){
         var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xFF27231E);g.drawString(font,"Native séance / "+POSES[page/4]+" / "+VIEWS[page%4]+" / veil, skirts, cuffs and lap poses",12,9,0xFFE8DDC5,false);g.flush();
