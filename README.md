@@ -1,3 +1,5 @@
+Active review candidate **0.4.96**: examine all fifty scenes for texture mapping, every animation phase, native movement and camera/input/save boundaries. First repairs cover Bly, Mapping, Movie Night and the miniatures; the full review and exact-source validation remain in progress. Preserve all approved PNG bytes. Mod 0.4.96 / protocol 71 / layout 44; 45 eligible sources / 34 required / two kinds / three endings; 627 declared native cases / 765 resource PNGs. [Review ledger](docs/VIGNETTE_ANIMATION_REVIEW_0_4_96.md).
+
 Ghosts Set review candidate 0.4.95: continuous native cast motion, a physical held balcony jump and camera restoration, fitted unchanged dinner/blink/jaw textures, and expanded native visual/socket review. See the exact branch-head Actions run and [the review record](docs/GHOSTS_ANIMATION_REVIEW_0_4_95.md).
 
 Development candidate **0.4.94**: repeated native Goatman/child window sightings, much louder moving trailer knocks, an original subtle score and scene-scoped vanilla-music suppression. Exact-source native/client verification is pending. [Changes and evidence](docs/GOATMAN_WINDOW_AUDIO_0_4_94.md).

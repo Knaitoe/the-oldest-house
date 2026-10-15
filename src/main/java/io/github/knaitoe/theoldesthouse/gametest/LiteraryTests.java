@@ -634,6 +634,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         h.onEachTick(()->{if(boat[0]==null||finished[0])return;var b=f.base(place);if(p.getVehicle()==boat[0]){
             double stop=f.own(p,place).getInt("Flashes")<2?b.getZ()-65:b.getZ()-82;
             boat[0].moveTo(b.getX()+.5,b.getY()-.4,Math.max(stop,boat[0].getZ()-.35),180,0);boat[0].setDeltaMovement(Vec3.ZERO);p.setPos(boat[0].getX(),b.getY(),boat[0].getZ());p.setHealth(20);
+            var world=LiteraryVignettes.shared(f.data(),place);if(world.hasUUID("Witch")&&f.out.getEntity(world.getUUID("Witch")) instanceof LakeWitchEntity witch)p.lookAt(EntityAnchorArgument.Anchor.EYES,witch.getEyePosition());
         }
         if(f.own(p,place).getBoolean("Ready")){finished[0]=true;h.assertTrue(f.own(p,place).getDouble("RowDistance")>=45&&f.own(p,place).getInt("Flashes")>=2&&!f.own(peer,place).getBoolean("Ready"),"actual rowing and two native exposures belong only to their passenger");}
         });
