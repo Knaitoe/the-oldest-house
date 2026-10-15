@@ -53,6 +53,8 @@ public final class BorrascaRooms {
         box(l,b,-3,-1,-105,3,-1,-72,Blocks.DIRT_PATH);for(int x:new int[]{-2,0,2})tree(l,b,x,-96+x,0,14);
         box(l,b,-5,5,-99,5,5,-88,Blocks.SPRUCE_PLANKS);for(int x:new int[]{-5,5})for(int z:new int[]{-99,-88})box(l,b,x,0,z,x,5,z,Blocks.SPRUCE_LOG);
         box(l,b,-5,6,-99,5,9,-99,Blocks.SPRUCE_PLANKS);for(int x:new int[]{-5,5})box(l,b,x,6,-98,x,8,-90,Blocks.SPRUCE_FENCE);box(l,b,-5,10,-100,5,10,-88,Blocks.SPRUCE_SLAB);
+        // Dirt paths are 1/16 lower than a rung's block. A full-height timber apron lets ordinary walking engage the bottom rung.
+        box(l,b,3,-1,-88,3,-1,-86,Blocks.SPRUCE_PLANKS);
         box(l,b,3,0,-89,3,7,-89,Blocks.SPRUCE_LOG);for(int y=0;y<=6;y++)BuildBlocks.set(l,b.offset(3,y,-88),Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH),F);box(l,b,3,6,-88,3,6,-88,Blocks.AIR);BuildBlocks.set(l,b.offset(3,6,-88),Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.SOUTH).setValue(TrapDoorBlock.OPEN,true),F);
         set(l,b,-1,7,-100,Blocks.SPRUCE_PLANKS);fit(l,b,CARVING,BorrascaFittingBlock.Kind.CARVING,Direction.SOUTH);sign(l,b,-1,7,-99,"KYLE / KIMBER","Keep a place","for whoever","comes back");furnished(l,b,-3,6,-96,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.SOUTH);
         // Gentle one-block rises carry the trail all the way to the twelve-block ridge.
