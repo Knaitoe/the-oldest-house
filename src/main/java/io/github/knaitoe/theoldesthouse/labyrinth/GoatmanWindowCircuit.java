@@ -22,9 +22,49 @@ public final class GoatmanWindowCircuit {
     public static boolean sideWindow(int leg){return leg==2||leg==3||leg==4||leg==9||leg==10;}
     public static Vec3 via(int leg){return switch(leg){case 3->new Vec3(-9.5,0,-62.5);case 4->new Vec3(-9.5,0,-69.5);case 9->new Vec3(10.25,0,-70.5);case 10->new Vec3(10.25,0,-62.5);default->null;};}
     public static boolean atPane(BlockPos b,GoatmanChild c){var p=c.position().subtract(b.getX(),b.getY(),b.getZ());if(p.y<.8||Math.abs(p.x)<8||Math.abs(p.x)>10)return false;for(double z:new double[]{-58.5,-66.5,-72.5})if(Math.abs(p.z-z)<1.2)return true;return false;}
-    public static void start(CompoundTag r,GoatmanChild c,int clock){int pause=26+c.getRandom().nextInt(31);r.putInt("StalkPause0465",clock+pause);r.putInt("WindowMax0497",clock+90);r.putInt("WindowSeen0497",0);r.putBoolean("WindowHolding0497",true);r.putInt("WindowSerial0497",r.getInt("WindowSerial0497")+1);r.putInt("WindowSkin0497",c.monsterAppearance()?-2:c.visibleSkin());}
-    /** An attended glimpse lasts at least eighteen native ticks, without waiting forever for a look. */
-    public static boolean hold(ServerLevel l,CompoundTag r,GoatmanChild c,int clock){if(!r.getBoolean("WindowHolding0497"))return false;boolean seen=false;for(var p:l.players()){var camera=p.getCamera();var face=c.position().add(0,c.monsterAppearance()?2.2:1.1,0);var to=face.subtract(camera.getEyePosition());if(p.isAlive()&&to.lengthSqr()<72*72&&camera.getLookAngle().dot(to.normalize())>.65&&GoatmanStalking.visible(l,camera,camera.getEyePosition(),face)){seen=true;break;}}if(seen)r.putInt("WindowSeen0497",r.getInt("WindowSeen0497")+1);int seenFor=r.getInt("WindowSeen0497");boolean hold=clock<r.getInt("WindowMax0497")&&(clock<r.getInt("StalkPause0465")||seenFor>0&&seenFor<18);if(!hold)r.putBoolean("WindowHolding0497",false);return hold;}
+    /**
+     * October 15 visibility follow-up. Each side pane is one block wide, so it can only be seen from a narrow wedge of the
+     * trailer. The body now spends its time where a reader can actually see it: a pane in some reader's clear native glazing
+     * ray keeps the earlier 26-56 tick wait for a look; a pane nobody can see from where they stand gets a short slap and the
+     * body moves on. Once a reader is actually watching, it stays pressed to the glass, laughing without a sound, for
+     * {@link #ATTENDED} watched ticks before it tears off again.
+     */
+    public static final int ATTENDED=40,ATTENDED_MAX=80,UNSEEN_MIN=8,UNSEEN_SPREAD=13;
+    /** The point a reader looks at: the monster's head, or the smaller child's. */
+    public static Vec3 face(GoatmanChild c){return c.position().add(0,c.monsterAppearance()?2.2:1.1,0);}
+    /** Whether any living reader's actual camera has a clear native glazing ray to the face, wherever they are looking. */
+    public static boolean inView(ServerLevel l,GoatmanChild c){
+        var face=face(c);
+        for(var p:l.players()){if(!p.isAlive())continue;var camera=p.getCamera();var eye=camera.getEyePosition();
+            if(eye.distanceToSqr(face)<72*72&&GoatmanStalking.visible(l,camera,eye,face))return true;}
+        return false;
+    }
+    /** Whether a reader is looking at the face now, through clear glazing. */
+    public static boolean watched(ServerLevel l,GoatmanChild c){
+        var face=face(c);
+        for(var p:l.players()){var camera=p.getCamera();var to=face.subtract(camera.getEyePosition());
+            if(p.isAlive()&&to.lengthSqr()<72*72&&camera.getLookAngle().dot(to.normalize())>.65&&GoatmanStalking.visible(l,camera,camera.getEyePosition(),face))return true;}
+        return false;
+    }
+    public static void start(ServerLevel l,CompoundTag r,GoatmanChild c,int clock){
+        boolean view=inView(l,c);int pause=view?26+c.getRandom().nextInt(31):UNSEEN_MIN+c.getRandom().nextInt(UNSEEN_SPREAD);
+        r.putInt("StalkPause0465",clock+pause);r.putInt("WindowMax0497",clock+(view?90:pause));r.putBoolean("WindowView0497",view);
+        r.putInt("WindowSeen0497",0);r.putBoolean("WindowHolding0497",true);r.putInt("WindowSerial0497",r.getInt("WindowSerial0497")+1);r.putInt("WindowSkin0497",c.monsterAppearance()?-2:c.visibleSkin());
+    }
+    /** An attended glimpse lasts at least {@link #ATTENDED} watched native ticks; an unwatched one never waits forever for a look. */
+    public static boolean hold(ServerLevel l,CompoundTag r,GoatmanChild c,int clock){
+        if(!r.getBoolean("WindowHolding0497"))return false;
+        boolean seen=watched(l,c);int seenFor=r.getInt("WindowSeen0497");
+        if(seen){
+            // The first actual look buys the reader a real stare, even if it came late in the wait.
+            if(seenFor==0)r.putInt("WindowMax0497",Math.max(r.getInt("WindowMax0497"),clock+ATTENDED_MAX));
+            r.putInt("WindowSeen0497",++seenFor);
+        }
+        boolean hold=clock<r.getInt("WindowMax0497")&&(clock<r.getInt("StalkPause0465")||seenFor>0&&seenFor<ATTENDED);
+        c.heave(hold&&seen);
+        if(!hold)r.putBoolean("WindowHolding0497",false);
+        return hold;
+    }
     public static void nextLap(CompoundTag r,GoatmanChild c,int clock){r.putInt("StalkLeg0465",0);r.putInt("StalkPause0465",clock+22+c.getRandom().nextInt(70));r.putInt("StalkVia0497",-1);if(!r.contains("WindowSerial0497"))r.putBoolean("StalkChange0465",true);r.putFloat("StalkSpeed0497",.38F+c.getRandom().nextFloat()*.08F);}
     /** Six real blows after the last physical lap; the independent seven-demand clock never waits. */
     public static void frontDoor(ServerLevel l,BlockPos b,CompoundTag r,GoatmanChild c,int clock){

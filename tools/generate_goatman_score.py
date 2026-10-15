@@ -2,7 +2,7 @@
 
 No samples from outside this project. The score uses synthesized bowed fifths and
 felt-piano fragments, with no rhythmic knocks that could hide the real stalker.
-Existing internal impact recordings get separate compressed masters for this scene.
+Its three close impact masters come from generate_goatman_harsh_impacts.py.
 """
 from pathlib import Path
 import json
@@ -59,12 +59,12 @@ def main():
             output.setnchannels(1); output.setsampwidth(2); output.setframerate(RATE)
             output.writeframes((np.clip(samples, -.95, .95) * 32767).astype("<i2").tobytes())
         encode(wav, folder / "around_the_tin_walls.ogg")
-    masters = (("knock", ASSETS / "sounds/literary/cabin_knock.ogg"),
-               ("claw", folder / "claw.ogg"), ("hammer", folder / "hammer.ogg"))
-    for name, source in masters:
-        subprocess.run(["ffmpeg", "-nostdin", "-v", "error", "-y", "-i", str(source),
-                        "-af", f"volume=6,asoftclip=type=tanh:threshold=0.94:output={0.68 if name == 'claw' else 0.94}",
-                        "-ac", "1", "-ar", str(RATE), "-c:a", "libvorbis", "-q:a", "5", str(folder / f"{name}_vigil.ogg")], check=True)
+    # 0.4.97: the three close impact masters are synthesized as harsh tin-camper blows by
+    # generate_goatman_harsh_impacts.py; the earlier boosted soft recordings are retired.
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import generate_goatman_harsh_impacts
+    generate_goatman_harsh_impacts.main(folder)
     path = ASSETS / "sounds.json"
     sounds = json.loads(path.read_text())
     for name in ("knock", "claw", "hammer"):

@@ -86,15 +86,30 @@ public final class GoatmanStalking {
         for(int k=0;k<4;k++){int c=(first+k)%4;if(!seenAt(l,p,eye,abs(b,CORNERS[c]))){start=c;break;}}
         if(start<0){own.putLong("LapAt0484",now+40);return;}
         var f=GoatmanRegistry.FIGURE.get().create(l);if(f==null)return;
-        int dir=p.getRandom().nextBoolean()?1:-1;f.viewer(p.getUUID());f.purpose="lap";f.lapBase=b;f.lapCorner=start;f.lapDir=dir;f.until=now+600;
+        int dir=p.getRandom().nextBoolean()?1:-1;f.viewer(p.getUUID());f.purpose="lap";f.lapBase=b;f.lapCorner=start;f.lapDir=dir;f.until=now+1200;
         for(int k=1;k<=4;k++)f.lap.add(abs(b,CORNERS[Math.floorMod(start+k*dir,4)]));
         Vec3 from=abs(b,CORNERS[start]),to=f.lap.peekFirst();float yaw=(float)(Math.atan2(to.z-from.z,to.x-from.x)*180/Math.PI)-90;
         f.moveTo(from.x,from.y,from.z,yaw,0);f.face(yaw);GoatmanHaunt.appear(l,f);
         own.putInt("Laps0484",own.getInt("Laps0484")+1);own.putLong("LapAt0484",now+LAP_GAP);
     }
+    /**
+     * 0.4.97 visibility: the lap ran on the ground, and the figure's head (1.7-2.1 above its feet) passed below the side
+     * windows' sills at y 2, a block a tick. At a window its reader can actually see from where they stand, it now jumps up
+     * onto the tire beneath it, so its head and shoulders fill the glass; it slams the pane, waits for a look, stares back
+     * laughing without a sound while it is watched, and drops back to its lane past the window. Windows the reader cannot
+     * see are still slapped at a run.
+     */
+    public static final double VAULT=.42,FACE=1.9;
+    public static final int PANE_SLAM=10,PANE_WAIT=46,PANE_WATCHED=24,PANE_MAX=72;
+    /** Where the figure stands on a side window's tire, just off the glass. */
+    public static Vec3 paneSpot(BlockPos b,int window){var w=SIDE_WINDOWS[window];return abs(b,new Vec3(w.getX()<0?-8.5:9.5,1,w.getZ()+.5));}
+    public static int sideWindows(){return SIDE_WINDOWS.length;}
     /** One tick of a lap: on round at a run, striking the windows it passes; gone at its corner once it is out of sight there. */
     static void lapStep(ServerLevel l,GoatmanFigure f,ServerPlayer p,long now){
         Vec3 to=f.lap.peekFirst();if(to==null||f.lapBase==null){f.discard();return;}
+        if(f.pane>=0){atPane(l,f,p,now,to);return;}
+        int ahead=paneAhead(f,to);
+        if(ahead>=0&&canSee(l,p,paneSpot(f.lapBase,ahead).add(0,FACE,0))){f.pane=ahead;f.paneAt=-1;f.paneSeen=0;f.paneExit=null;atPane(l,f,p,now,to);return;}
         Vec3 d=to.subtract(f.position());double len=d.length();float yaw=len>.01?(float)(Math.atan2(d.z,d.x)*180/Math.PI)-90:f.getYRot();
         if(len<=LAP_SPEED){
             f.step(to,yaw);f.lap.pollFirst();f.lapCorner=Math.floorMod(f.lapCorner+f.lapDir,4);
@@ -119,6 +134,47 @@ public final class GoatmanStalking {
         int back=1<<SIDE_WINDOWS.length;
         if((f.struck&back)==0&&Math.abs(rel.z+78.5)<.8&&Math.abs(rel.x-.5)<.6){f.struck|=back;f.swing(InteractionHand.MAIN_HAND);
             hear(p,GoatmanRegistry.HAMMER.get(),Vec3.atCenterOf(b.offset(0,2,-77)).add(0,0,-.45),3.4F,.85F);}
+    }
+    /** The next unstruck side window just ahead of it on its own side's lane, or -1. */
+    private static int paneAhead(GoatmanFigure f,Vec3 to){
+        BlockPos b=f.lapBase;Vec3 rel=f.position().subtract(b.getX(),b.getY(),b.getZ());double heading=to.z-f.getZ();
+        for(int i=0;i<SIDE_WINDOWS.length;i++){if((f.struck&1<<i)!=0)continue;
+            var w=SIDE_WINDOWS[i];double lane=w.getX()<0?-9.5:9.5,ahead=w.getZ()+.5-rel.z;
+            if(Math.abs(rel.x-lane)<.8&&Math.abs(ahead)<1.7&&ahead*heading>=0)return i;}
+        return -1;
+    }
+    /** Up on a side window's tire: vault, slam, wait for a look, stare while watched, then drop back down past it. */
+    private static void atPane(ServerLevel l,GoatmanFigure f,ServerPlayer p,long now,Vec3 to){
+        BlockPos b=f.lapBase;var w=SIDE_WINDOWS[f.pane];boolean west=w.getX()<0;float inward=west?-90:90;
+        if(f.paneExit!=null){
+            Vec3 d=f.paneExit.subtract(f.position());double len=d.length();float yaw=len>.01?(float)(Math.atan2(d.z,d.x)*180/Math.PI)-90:f.getYRot();
+            if(len<=VAULT){f.step(f.paneExit,yaw);f.pane=-1;f.paneAt=-1;f.paneExit=null;}else f.step(f.position().add(d.scale(VAULT/len)),yaw);
+            return;
+        }
+        Vec3 spot=paneSpot(b,f.pane),glass=Vec3.atCenterOf(b.offset(w)).add(west?-.45:.45,0,0);
+        if(f.paneAt<0){
+            Vec3 d=spot.subtract(f.position());double len=d.length();
+            if(len>VAULT){f.step(f.position().add(d.scale(VAULT/len)),(float)(Math.atan2(d.z,d.x)*180/Math.PI)-90);return;}
+            f.step(spot,inward);f.face(inward);f.paneAt=now;f.struck|=1<<f.pane;f.swing(InteractionHand.MAIN_HAND);
+            hear(p,f.pane%2==0?GoatmanRegistry.CLAW.get():GoatmanRegistry.KNOCK.get(),glass,3.2F,f.pane%2==0?1.1F:.95F);
+            return;
+        }
+        long held=now-f.paneAt;boolean seen=watching(l,p,spot.add(0,FACE,0));
+        // Caught looking: it hits the glass again, right in front of them.
+        if(seen&&++f.paneSeen==8){f.swing(InteractionHand.MAIN_HAND);hear(p,GoatmanRegistry.KNOCK.get(),glass,3.4F,.88F);}
+        f.face(inward);f.heave(seen);
+        if(held<PANE_SLAM||held<PANE_MAX&&(f.paneSeen==0?held<PANE_WAIT:f.paneSeen<PANE_WATCHED))return;
+        f.heave(false);double away=Math.signum(to.z-spot.z);if(away==0)away=west?-1:1;
+        f.paneExit=abs(b,new Vec3(west?-9.5:9.5,0,w.getZ()+.5+away*1.4));
+    }
+    /** Its reader's actual camera has a clear native glazing ray to the point, wherever they are looking. */
+    private static boolean canSee(ServerLevel l,ServerPlayer p,Vec3 point){
+        Entity camera=p.getCamera();var eye=camera.getEyePosition();return eye.distanceToSqr(point)<72*72&&visible(l,camera,eye,point);
+    }
+    /** Its reader is looking at the point now, through clear glazing. */
+    private static boolean watching(ServerLevel l,ServerPlayer p,Vec3 point){
+        Entity camera=p.getCamera();var eye=camera.getEyePosition();var to=point.subtract(eye);
+        return to.lengthSqr()>.0001&&camera.getLookAngle().dot(to.normalize())>.65&&canSee(l,p,point);
     }
     private static void hear(ServerPlayer p,net.minecraft.sounds.SoundEvent sound,Vec3 at,float volume,float pitch){
         p.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound),SoundSource.HOSTILE,at.x,at.y,at.z,volume,pitch,p.getRandom().nextLong()));
@@ -179,7 +235,7 @@ public final class GoatmanStalking {
         if(!window){
             BlockPos hit=switch(leg){case 2->new BlockPos(-8,2,-59);case 3->new BlockPos(-8,2,-67);case 4->new BlockPos(-8,2,-73);case 6->new BlockPos(0,2,-77);case 8->GoatmanWoods.WINDOW;case 9->new BlockPos(8,2,-67);case 10->new BlockPos(8,2,-59);default->null;};
             if(hit!=null){face(c,Vec3.atCenterOf(b.offset(hit)));impact(l,b,r,c,hit,leg%3==0?2:1);r.putInt("StalkPause0465",clock+18+c.getRandom().nextInt(29));
-                if(GoatmanWindowCircuit.sideWindow(leg)){GoatmanWindowCircuit.start(r,c,clock);r.putBoolean("StalkChange0465",true);}
+                if(GoatmanWindowCircuit.sideWindow(leg)){GoatmanWindowCircuit.start(l,r,c,clock);r.putBoolean("StalkChange0465",true);}
                 else if(!r.contains("CircuitGoal0494"))r.putBoolean("StalkChange0465",true);}
         }
     }
