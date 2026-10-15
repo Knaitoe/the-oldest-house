@@ -1,0 +1,148 @@
+{
+  "variants": {
+    "kind=timber,facing=north": {
+      "model": "the_oldest_house:block/borrasca_timber",
+      "y": 0
+    },
+    "kind=timber,facing=east": {
+      "model": "the_oldest_house:block/borrasca_timber",
+      "y": 90
+    },
+    "kind=timber,facing=south": {
+      "model": "the_oldest_house:block/borrasca_timber",
+      "y": 180
+    },
+    "kind=timber,facing=west": {
+      "model": "the_oldest_house:block/borrasca_timber",
+      "y": 270
+    },
+    "kind=steel,facing=north": {
+      "model": "the_oldest_house:block/borrasca_steel",
+      "y": 0
+    },
+    "kind=steel,facing=east": {
+      "model": "the_oldest_house:block/borrasca_steel",
+      "y": 90
+    },
+    "kind=steel,facing=south": {
+      "model": "the_oldest_house:block/borrasca_steel",
+      "y": 180
+    },
+    "kind=steel,facing=west": {
+      "model": "the_oldest_house:block/borrasca_steel",
+      "y": 270
+    },
+    "kind=rust,facing=north": {
+      "model": "the_oldest_house:block/borrasca_rust",
+      "y": 0
+    },
+    "kind=rust,facing=east": {
+      "model": "the_oldest_house:block/borrasca_rust",
+      "y": 90
+    },
+    "kind=rust,facing=south": {
+      "model": "the_oldest_house:block/borrasca_rust",
+      "y": 180
+    },
+    "kind=rust,facing=west": {
+      "model": "the_oldest_house:block/borrasca_rust",
+      "y": 270
+    },
+    "kind=paper,facing=north": {
+      "model": "the_oldest_house:block/borrasca_paper",
+      "y": 0
+    },
+    "kind=paper,facing=east": {
+      "model": "the_oldest_house:block/borrasca_paper",
+      "y": 90
+    },
+    "kind=paper,facing=south": {
+      "model": "the_oldest_house:block/borrasca_paper",
+      "y": 180
+    },
+    "kind=paper,facing=west": {
+      "model": "the_oldest_house:block/borrasca_paper",
+      "y": 270
+    },
+    "kind=notice,facing=north": {
+      "model": "the_oldest_house:block/borrasca_notice",
+      "y": 0
+    },
+    "kind=notice,facing=east": {
+      "model": "the_oldest_house:block/borrasca_notice",
+      "y": 90
+    },
+    "kind=notice,facing=south": {
+      "model": "the_oldest_house:block/borrasca_notice",
+      "y": 180
+    },
+    "kind=notice,facing=west": {
+      "model": "the_oldest_house:block/borrasca_notice",
+      "y": 270
+    },
+    "kind=carving,facing=north": {
+      "model": "the_oldest_house:block/borrasca_carving",
+      "y": 0
+    },
+    "kind=carving,facing=east": {
+      "model": "the_oldest_house:block/borrasca_carving",
+      "y": 90
+    },
+    "kind=carving,facing=south": {
+      "model": "the_oldest_house:block/borrasca_carving",
+      "y": 180
+    },
+    "kind=carving,facing=west": {
+      "model": "the_oldest_house:block/borrasca_carving",
+      "y": 270
+    },
+    "kind=drawers,facing=north": {
+      "model": "the_oldest_house:block/borrasca_drawers",
+      "y": 0
+    },
+    "kind=drawers,facing=east": {
+      "model": "the_oldest_house:block/borrasca_drawers",
+      "y": 90
+    },
+    "kind=drawers,facing=south": {
+      "model": "the_oldest_house:block/borrasca_drawers",
+      "y": 180
+    },
+    "kind=drawers,facing=west": {
+      "model": "the_oldest_house:block/borrasca_drawers",
+      "y": 270
+    },
+    "kind=belt,facing=north": {
+      "model": "the_oldest_house:block/borrasca_belt",
+      "y": 0
+    },
+    "kind=belt,facing=east": {
+      "model": "the_oldest_house:block/borrasca_belt",
+      "y": 90
+    },
+    "kind=belt,facing=south": {
+      "model": "the_oldest_house:block/borrasca_belt",
+      "y": 180
+    },
+    "kind=belt,facing=west": {
+      "model": "the_oldest_house:block/borrasca_belt",
+      "y": 270
+    },
+    "kind=truck,facing=north": {
+      "model": "the_oldest_house:block/borrasca_truck",
+      "y": 0
+    },
+    "kind=truck,facing=east": {
+      "model": "the_oldest_house:block/borrasca_truck",
+      "y": 90
+    },
+    "kind=truck,facing=south": {
+      "model": "the_oldest_house:block/borrasca_truck",
+      "y": 180
+    },
+    "kind=truck,facing=west": {
+      "model": "the_oldest_house:block/borrasca_truck",
+      "y": 270
+    }
+  }
+}

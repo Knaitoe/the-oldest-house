@@ -110,7 +110,7 @@ public final class PlaytestLog {
         }
         LabyrinthPlace place = dimension.equals(HouseDimensions.OUTSIDE)
                 ? LiteraryCopies.placeAt(player.server, player.blockPosition()) : null;
-        if (place == null && origin != null) {
+        if(place==null&&dimension.equals(HouseDimensions.OUTSIDE))place=BorrascaSites.placeAt(player.server,player.blockPosition());if (place == null && origin != null) {
             var candidate = LabyrinthPlaces.placeAt(origin, player.blockPosition());
             if (candidate != null && NovelRooms.dimension(candidate).equals(dimension)) place = candidate;
         }

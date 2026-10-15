@@ -184,7 +184,7 @@ public final class LabyrinthDoors {
             return;
         }
         LabyrinthData.Door entry = place == null || place.slot() < 0 ? null : data.door(place.entryDoorId());
-        if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)entry=LiteraryCopies.prepareEntry(player,place);
+        if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)entry=LiteraryCopies.prepareEntry(player,place);if(place==LabyrinthPlace.BORRASCA){entry=BorrascaSites.prepareEntry(player);if(entry==null){sticks(player,door);return;}}
         if(place!=null&&LiteraryCabinChoices.closed(data,player.getUUID(),place)){if(reroute(player,door))return;locked(player);return;}
         if (entry == null || (place == LabyrinthPlace.RED_ROOM && !RedRoom.prepare(player))) {
             if(reroute(player,door))return;locked(player);
@@ -261,7 +261,7 @@ public final class LabyrinthDoors {
 
     @Nullable
     private static LabyrinthPlace placeOf(MinecraftServer server, LabyrinthData.Door door) {
-        var copy=door.dimension.equals(HouseDimensions.OUTSIDE)?LiteraryCopies.placeAt(server,door.lower):null;if(copy!=null)return copy;
+        if(door.dimension.equals(HouseDimensions.OUTSIDE)&&BorrascaSites.placeAt(server,door.lower)!=null)return LabyrinthPlace.BORRASCA;var copy=door.dimension.equals(HouseDimensions.OUTSIDE)?LiteraryCopies.placeAt(server,door.lower):null;if(copy!=null)return copy;
         BlockPos origin = HouseSavedData.get(server).houseOrigin();
         return origin == null || !io.github.knaitoe.theoldesthouse.house.HouseDimensions.isHouseDimension(door.dimension) ? null : LabyrinthPlaces.placeAt(origin, door.lower);
     }
@@ -348,7 +348,7 @@ public final class LabyrinthDoors {
             HideAndClap.confineLockedPlayer(player);
             return true;
         }
-        LabyrinthPlace place = LiteraryCopies.placeAt(player.server,player.blockPosition());
+        LabyrinthPlace place = BorrascaSites.placeAt(player.server,player.blockPosition());if(place==null)place=LiteraryCopies.placeAt(player.server,player.blockPosition());
         if(place==null)place=LabyrinthPlaces.placeAt(origin, player.blockPosition());
         if (place == null) {
             STEPS.remove(player.getUUID());
@@ -359,7 +359,7 @@ public final class LabyrinthDoors {
             return true;
         }
         LabyrinthData data = LabyrinthData.get(player.server);
-        LabyrinthData.Door entry = place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN?LiteraryCopies.entry(player,place):data.door(place.entryDoorId());
+        LabyrinthData.Door entry = place==LabyrinthPlace.BORRASCA?BorrascaSites.entry(player):place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN?LiteraryCopies.entry(player,place):data.door(place.entryDoorId());
         if (entry == null) {
             return true;
         }
@@ -427,7 +427,7 @@ public final class LabyrinthDoors {
         // A cut happens away from the doorway. Its inverse crossing transform would carry the upstairs offset home.
         depart(player,place);sendBack(player,4,10,24);return true;
     }
-    private static void depart(ServerPlayer player, LabyrinthPlace place) {
+    private static void depart(ServerPlayer player, LabyrinthPlace place) {if(place==LabyrinthPlace.BORRASCA)BorrascaStory.depart(player);
         if(place==LabyrinthPlace.LAKE_HOUSE||place==LabyrinthPlace.LAKE_HOUSE_EMPTY)LakeHouseStory.depart(player);
         if (place == LabyrinthPlace.GHOSTS_SET) GhostsSet.depart(player);
         if (place == LabyrinthPlace.HARRIGAN) HarriganVignette.onDepart(player);
@@ -480,7 +480,7 @@ public final class LabyrinthDoors {
         String correspondenceSource=io.github.knaitoe.theoldesthouse.house.HouseExperience.record(data,id).getString("CurrentPlace");
         Consumer<ServerPlayer> confirmedReturn=p->{
             if(!LabyrinthData.get(p.server).consumeReturn(p.getUUID(),back))return;
-            caveDeparture.accept(p);
+            caveDeparture.accept(p);if(entry.id.equals("borrasca/"+p.getUUID()+"/entry"))BorrascaStory.returned(p);
             INSIDE.remove(p.getUUID());
             io.github.knaitoe.theoldesthouse.house.HouseExperience.returned(p);
             VignetteGate.departed(p,back,entry);
@@ -1001,7 +1001,7 @@ public final class LabyrinthDoors {
         BlockPos origin = HouseSavedData.get(server).houseOrigin();
         if (origin == null) return false;
         if (level.dimension().equals(HouseDimensions.OUTSIDE)) {
-            if(LiteraryCopies.protectedPosition(server,pos))return true;
+            if(LiteraryCopies.protectedPosition(server,pos)||BorrascaSites.protectedPosition(server,pos))return true;
             for (LabyrinthPlace place : LabyrinthPlace.values()) if (NovelRooms.outside(place)) {
                 BlockPos base=LabyrinthPlaces.base(origin, place);
                 if (base!=null && IndianLakeRooms.bounds(base, place).contains(Vec3.atCenterOf(pos))) return true;

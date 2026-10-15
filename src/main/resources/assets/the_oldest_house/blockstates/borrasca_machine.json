@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "running=true": {
+      "model": "the_oldest_house:block/borrasca_machine"
+    },
+    "running=false": {
+      "model": "the_oldest_house:block/borrasca_machine"
+    }
+  }
+}

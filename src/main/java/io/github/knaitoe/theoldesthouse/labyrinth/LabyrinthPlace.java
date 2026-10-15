@@ -293,6 +293,8 @@ public enum LabyrinthPlace {
     LAKE_HOUSE("lake_house",Kind.MULTI_VISIT,96,new BoundingBox(LakeHouse.MIN_X,LakeHouse.MIN_Y,LakeHouse.MIN_Z,LakeHouse.MAX_X,LakeHouse.MAX_Y,0),literaryEntry()),
     /** A shared empty-lake aftermath; internal, never offered as another story. */
     LAKE_HOUSE_EMPTY("lake_house_empty",Kind.HALLWAY,97,new BoundingBox(LakeHouse.MIN_X,LakeHouse.MIN_Y,LakeHouse.MIN_Z,LakeHouse.MAX_X,LakeHouse.MAX_Y,0),literaryEntry()),
+    /** Borrasca: one reader's four returns to the same town, never another reader's later town. */
+    BORRASCA("borrasca",Kind.MULTI_VISIT,98,new BoundingBox(-44,-5,-220,44,26,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 
