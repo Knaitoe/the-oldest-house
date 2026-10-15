@@ -23,7 +23,7 @@ import net.neoforged.neoforge.client.event.*;
 public final class LiveExpeditionClient {
     private static int previous,ticks,clicked=-100,ack=-1;private static String shot;private static boolean stopping,portholePoseSeen;
     private static BlockPos proofCamp;
-    private static boolean confusionCaptured,terrorCaptured;
+    private static boolean confusionCaptured,terrorCaptured,voiceCaptured;
     private static volatile String badImpact;
     private static final java.util.Set<String> heardSides=java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final java.util.List<String> heardKnocks=new java.util.concurrent.CopyOnWriteArrayList<>();
@@ -227,9 +227,11 @@ public final class LiveExpeditionClient {
                 mc.player.setYRot(0);mc.player.setXRot(0);
                 boolean terror=children.stream().filter(c->c.fearStage()==3).count()==7&&children.stream().filter(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild::cowering).count()==1;
                 if(terror&&!terrorCaptured&&shot==null&&mc.screen==null){mc.player.setYRot(180);shot=role+"-trailer-terror";terrorCaptured=true;}
-                if(terror&&terrorCaptured&&shot==null&&mc.screen==null&&GoatmanClient.priorityDemand()>=104&&!GoatmanClient.cousinSubtitle()&&heardSides.size()==3&&GoatmanWindowClient.ready()&&ack!=36){
-                    shot=role+"-trailer-voice";try{Files.createDirectories(LiveExpeditionProof.folder());Files.writeString(LiveExpeditionProof.folder().resolve(role+"-trailer-sounds.txt"),String.join("\n",heardKnocks)+"\n");}catch(Exception ex){throw new IllegalStateException(ex);}ack(mc,36);
+                if(terror&&terrorCaptured&&shot==null&&mc.screen==null&&GoatmanClient.priorityDemand()>=104&&!GoatmanClient.cousinSubtitle()&&heardSides.size()==3&&!voiceCaptured){
+                    shot=role+"-trailer-voice";try{Files.createDirectories(LiveExpeditionProof.folder());Files.writeString(LiveExpeditionProof.folder().resolve(role+"-trailer-sounds.txt"),String.join("\n",heardKnocks)+"\n");}catch(Exception ex){throw new IllegalStateException(ex);}voiceCaptured=true;
                 }
+                // Capture the real short-lived voice lease when it occurs; later window frames must not postpone it.
+                if(voiceCaptured&&shot==null&&GoatmanWindowClient.ready()&&ack!=36)ack(mc,36);
             }
             String window=GoatmanWindowClient.tick(mc,children,target,role,step==36&&shot==null&&mc.screen==null);
             if(window!=null)shot=window;

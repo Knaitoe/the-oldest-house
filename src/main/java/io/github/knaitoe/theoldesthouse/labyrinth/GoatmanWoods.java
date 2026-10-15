@@ -84,6 +84,7 @@ public final class GoatmanWoods {
         LabyrinthBuilder.entrance(l,b,Blocks.WHITE_TERRACOTTA.defaultBlockState(),Blocks.DIRT_PATH.defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState());
         BuildBlocks.after(l,()->repairEntrance(l,b));LabyrinthBuilder.doors(l,b,LabyrinthPlace.GOATMAN);
         ReviewScenery0491.fresh(l,b,LabyrinthPlace.GOATMAN);
+        BuildBlocks.after(l,()->GoatmanWindowCircuit.built(l,b));
     }
     /** Remove only the original painted horizon across the return door's actual throat. */
     public static void repairEntrance(ServerLevel l,BlockPos b){
@@ -139,7 +140,7 @@ public final class GoatmanWoods {
         for(int x:new int[]{-7,7})for(int z:new int[]{-57,-65,-71}){put(l,b,x,2,z,Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP));put(l,b,x,3,z,Blocks.LANTERN);}
         put(l,b,-5,5,-74,hanging());put(l,b,5,5,-75,hanging());put(l,b,0,5,-57,hanging());
         // Tires and corrugated trim prevent this reading as a cabin.
-        for(int x:new int[]{-9,9})for(int z:new int[]{-59,-73})put(l,b,x,0,z,GoatmanRegistry.WHEEL.get().defaultBlockState().setValue(TrailerFixtureBlock.FACING,x<0?Direction.WEST:Direction.EAST));
+        for(int x:new int[]{-9,9})for(int z:new int[]{-59,-67,-73})put(l,b,x,0,z,GoatmanRegistry.WHEEL.get().defaultBlockState().setValue(TrailerFixtureBlock.FACING,x<0?Direction.WEST:Direction.EAST));
     }
     private static BlockState hanging(){return Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true);}
     /** The generator's shed across the yard: plank walls, a slab roof, the generator and its can. */

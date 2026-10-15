@@ -72,6 +72,8 @@ jobs:
               assert 'io/github/knaitoe/theoldesthouse/house/PlaytestLog.class' in z.namelist()
               for name in ('BorrascaSites','BorrascaStory','BorrascaCast','BorrascaMachineBlock','BorrascaTexts'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
+              assert 'data/the_oldest_house_borrasca/structure/empty.nbt' in z.namelist()
+              assert 'data/the_oldest_house_goatman_windows/structure/empty.nbt' in z.namelist()
               assert z.read('assets/the_oldest_house/textures/entity/borrasca_atlas.png').startswith(b'\x89PNG')
               assert 'assets/minecraft/atlases/blocks.json' in z.namelist()
               assert len(json.loads(z.read('assets/the_oldest_house/blockstates/borrasca_fitting.json'))['variants']) == 36
@@ -855,7 +857,7 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_literary,the_oldest_house_ghosts,the_oldest_house_fan488,the_oldest_house_lake_house,the_oldest_house_playtest492 --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/literary-native.log
+          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_literary,the_oldest_house_ghosts,the_oldest_house_fan488,the_oldest_house_lake_house,the_oldest_house_playtest492,the_oldest_house_borrasca --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/literary-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
@@ -1180,7 +1182,23 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
+      - name: Targeted production Borrasca socket entry and movement
+        timeout-minutes: 8
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri
+          LP_NUM_THREADS=1 LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a python3 tools/run_live_expedition.py --borrasca-only
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: borrasca-socket-preflight-${{ github.sha }}
+          path: |
+            build/borrasca-live-proof/
+            run-borrasca-live/*/logs/latest.log
+            run-borrasca-live/*/crash-reports/
+          if-no-files-found: warn
       - name: Two actual clients, native packets, movement and reconnect
+        if: ${{ !cancelled() }}
         timeout-minutes: 16
         run: |
           sudo apt-get update -qq
@@ -1194,8 +1212,11 @@ jobs:
           name: live-multiplayer-${{ github.sha }}
           path: |
             build/live-proof/
+            build/borrasca-live-proof/
             run-live/*/logs/latest.log
             run-live/*/crash-reports/
+            run-borrasca-live/*/logs/latest.log
+            run-borrasca-live/*/crash-reports/
 
   trailer-client:
     runs-on: ubuntu-latest
@@ -1327,7 +1348,7 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 11m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_goatman,the_oldest_house_wake --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/goatman-native.log
+          timeout --signal=QUIT --kill-after=20s 11m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_goatman,the_oldest_house_wake,the_oldest_house_goatman_windows --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/goatman-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
