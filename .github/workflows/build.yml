@@ -692,6 +692,8 @@ jobs:
           test -s build/font-smoke/scenes/ghosts_basement.png
           test -s build/font-smoke/literary-passed.txt
           test -s build/font-smoke/native-literary.png
+          test -s build/font-smoke/literary-phases-passed.txt
+          for group in cast changes people actions; do for view in front side back dim; do test -s build/font-smoke/native-literary-$group-$view.png; done; done
           test -s build/font-smoke/hazards-passed.txt
           for view in materials dark mirror; do test -s build/font-smoke/native-hazards-$view.png; done
           test -s build/font-smoke/last-stop-cast-passed.txt
