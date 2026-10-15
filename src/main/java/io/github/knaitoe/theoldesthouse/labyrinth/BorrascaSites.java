@@ -54,7 +54,7 @@ public final class BorrascaSites {
         var t=site(server,building);t.putBoolean("Built",true);t.remove("BuildCursor");d.setStateEntry(SITES,building.toString(),t);release();
     }
     private static void release(){if(leased!=null)for(var c:chunks)leased.getChunkSource().removeRegionTicket(TICKET,c,1,c);chunks.clear();leased=null;plan=null;building=null;}
-    public static void clear(){release();waiting.clear();store=null;}
+    public static void clear(){release();waiting.clear();store=null;BorrascaCast.clear();}
     @SubscribeEvent public static void stopped(ServerStoppedEvent event){clear();}
     public static int heldChunks(){return chunks.size();}
 }

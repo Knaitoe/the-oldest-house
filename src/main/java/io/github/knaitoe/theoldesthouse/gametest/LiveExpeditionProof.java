@@ -44,7 +44,7 @@ public final class LiveExpeditionProof {
     private static void require(boolean okay,String message){if(!okay)throw new IllegalStateException("LIVE EXPEDITION: "+message);}
     @SubscribeEvent public static void commands(RegisterCommandsEvent e) {
         if(!enabled())return;
-        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,53)).executes(c->{
+        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,59)).executes(c->{
             var p=c.getSource().getPlayerOrException();if(!role(p).isEmpty()&&IntegerArgumentType.getInteger(c,"step")==phase)ACKS.add(role(p));return 1;
         })));
     }
@@ -77,6 +77,7 @@ public final class LiveExpeditionProof {
         if(a!=null&&b!=null&&(phase==48||phase==49))CanoeSocketProof.observe(a,b,phase,s.getTickCount()-changed);
         if(a!=null&&phase==51)CanoeSocketProof.swimming(a);
         if(a!=null&&b!=null&&(phase==52||phase==53))GhostsSocketProof.observe(a,b);
+        if(a!=null&&b!=null&&(phase==56||phase==58))BorrascaSocketProof.observe(a,b,phase);
         // Read on the tick the native return lands, before the reader's restored stride or the test
         // client's still-held walk key carries them on along the tread.
         if(phase==11&&a!=null&&!firstReturned&&!StaircaseLeaks.active(a)){
@@ -379,7 +380,19 @@ public final class LiveExpeditionProof {
         }else if(phase==52&&a!=null&&b!=null&&ACKS.size()==2){
             step(s,53,GhostsSocketProof.base());
         }else if(phase==53&&a!=null&&b!=null&&ACKS.size()==2&&GhostsSocketProof.finished(a,b)){
-            GhostsSocketProof.finish();step(s,30,a.blockPosition());write("passed.txt","Two actual NeoForge socket clients: all original shared doors, personal leaves/burns/note scenes and two same-profile reconnects; one Stacy body and one three-second wooden-door break; real shared/private physical hunts, protected hiding peers and renderer ownership; both mine and crawl through persistent shattered portholes with protected hull; both use cameras, return actual rendered exposures, receive distinct locked native maps and independently earn their own Plains memory; a shared native ledger remains hidden for both, appears for the sole eligible reader and disappears after native menu collection without appearing for the peer; fresh trailer door arrivals track eight shared cousins and each private path girl; both clients render distinct fear and priority night dialogue and receive spatial knock events; native screenshots saved; no doubled clocks or transferred ending credit.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: persistent shattered portholes, two actual camera exposures, independent ending-book visibility, fresh trailer children and two reconnects");
+            GhostsSocketProof.finish();BorrascaSocketProof.begin(a,b,ORIGIN);step(s,54,BorrascaSocketProof.source());
+        }else if(phase==54&&a!=null&&b!=null&&ACKS.size()==2&&BorrascaSocketProof.entered(a,b)){
+            step(s,55,BorrascaSocketProof.base(a).offset(BorrascaRooms.SOURCE));marker(b,55,BorrascaSocketProof.base(b).offset(BorrascaRooms.SOURCE));
+        }else if(phase==55&&a!=null&&b!=null&&ACKS.size()==2&&BorrascaSocketProof.read(a,b)){
+            step(s,56,BorrascaSocketProof.base(a));marker(b,56,BorrascaSocketProof.base(b));
+        }else if(phase==56&&a!=null&&b!=null&&ACKS.size()==2&&BorrascaSocketProof.climbed(a,b)){
+            BorrascaSocketProof.records(a,b);step(s,57,BorrascaSocketProof.base(a).offset(BorrascaRooms.EVIDENCE));marker(b,57,BorrascaSocketProof.base(b).offset(BorrascaRooms.EVIDENCE));
+        }else if(phase==57&&a!=null&&b!=null&&ACKS.size()==2&&BorrascaSocketProof.took(a,b)){
+            BorrascaSocketProof.pipe(a,b);step(s,58,BorrascaSocketProof.base(a).offset(BorrascaRooms.RELEASE));marker(b,58,BorrascaSocketProof.base(b).offset(BorrascaRooms.RELEASE));
+        }else if(phase==58&&a!=null&&b!=null&&ACKS.size()==2&&BorrascaSocketProof.crawled(a,b)){
+            BorrascaSocketProof.porch(a,b);step(s,59,BorrascaSites.entry(a).lower);marker(b,59,BorrascaSites.entry(b).lower);
+        }else if(phase==59&&a!=null&&b!=null&&ACKS.size()==2&&BorrascaSocketProof.returned(a,b)){
+            BorrascaSocketProof.finish();step(s,30,a.blockPosition());write("passed.txt","Two actual NeoForge socket clients: all original shared doors, personal leaves/burns/note scenes and two same-profile reconnects; one Stacy body and one three-second wooden-door break; real shared/private physical hunts, protected hiding peers and renderer ownership; both mine and crawl through persistent shattered portholes with protected hull; both use cameras, return actual rendered exposures, receive distinct locked native maps and independently earn their own Plains memory; a shared native ledger remains hidden for both, appears for the sole eligible reader and disappears after native menu collection without appearing for the peer; fresh trailer door arrivals track eight shared cousins and each private path girl; both clients render distinct fear and priority night dialogue and receive spatial knock events; native screenshots saved; new Borrasca source entry, original native records, positional sound/music exclusion, actual treehouse climb, crouched pipe and exact personal return also passed under the documented targeted fixture; no doubled clocks or transferred ending credit.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: persistent shattered portholes, two actual camera exposures, independent ending-book visibility, fresh trailer children and two reconnects");
         }else if(phase==30&&s.getTickCount()-changed>100){huntChunks.close();s.halt(false);}
     }
 
