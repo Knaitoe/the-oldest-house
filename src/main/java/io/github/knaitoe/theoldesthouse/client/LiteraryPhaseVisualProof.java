@@ -46,7 +46,7 @@ public final class LiteraryPhaseVisualProof extends Screen {
         var mc=Minecraft.getInstance();int group=page/4,view=page%4;
         g.fill(0,0,width,height,0xff262320);g.drawString(font,"Literary / "+GROUPS[group]+" / "+VIEWS[view]+" / original atlases and native joints",10,9,0xffeee0c4,false);g.flush();
         var cast=cast(group);int columns=6,rows=(cast.size()+columns-1)/columns;
-        float cellWidth=(width-20F)/columns,cellHeight=(height-40F)/rows,scale=Math.min(cellWidth*.45F,cellHeight*.38F);
+        float cellWidth=(width-20F)/columns,cellHeight=(height-40F)/rows,scale=Math.min(cellWidth*.45F,cellHeight*.35F);
         var buffers=mc.renderBuffers().bufferSource();int n=0;
         for(var state:cast){
             var skin=LiteraryRenderers.skin(state.role,state.phase);if(mc.getResourceManager().getResource(skin).isEmpty())throw new IllegalStateException("Missing phase atlas "+skin);
@@ -62,7 +62,7 @@ public final class LiteraryPhaseVisualProof extends Screen {
             if(state.role==LiteraryActor.BROTHER&&state.phase>0)LiteraryRenderers.bedPose(pose,.58F);
             if(!(state.role==LiteraryActor.COFFIN_WOMAN&&state.phase==2))model.renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(skin)),view==3?LightTexture.pack(7,0):LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);
             if(state.role==LiteraryActor.FATHER&&state.phase==4)LiteraryRenderers.crutches(model,mc.getEntityModels().bakeLayer(LiteraryRenderers.CRUTCH).getChild("pole"),pose,buffers,view==3?LightTexture.pack(7,0):LightTexture.FULL_BRIGHT);
-            buffers.endBatch();pose.popPose();g.drawCenteredString(font,state.label,(int)cx,(int)(top+cellHeight-12),0xffeee0c4);n++;
+            buffers.endBatch();pose.popPose();var lines=font.split(Component.literal(state.label),(int)cellWidth-6);for(int line=0;line<Math.min(2,lines.size());line++)g.drawString(font,lines.get(line),(int)cx-font.width(lines.get(line))/2,(int)(top+cellHeight-22)+line*9,0xffeee0c4,false);n++;
         }
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{

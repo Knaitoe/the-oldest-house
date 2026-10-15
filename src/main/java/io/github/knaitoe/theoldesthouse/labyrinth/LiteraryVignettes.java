@@ -347,23 +347,14 @@ public final class LiteraryVignettes {
             var queued=MOVIE_CANOES.get(world.getUUID("Canoe"));
             if(queued!=null&&!queued.isRemoved()&&queued.level()==level)canoe=queued;
         }
-        if (canoe == null && world.hasUUID("Canoe") && !world.getBoolean("CanoeRemoved")) {
-            // Absence in an unloaded entity chunk is not evidence of a lost canoe.
-            var bounds = IndianLakeRooms.bounds(b, place);
-            for (int x = ((int) bounds.minX) >> 4; x <= ((int) bounds.maxX) >> 4; x++) {
-                for (int z = ((int) bounds.minZ) >> 4; z <= ((int) bounds.maxZ) >> 4; z++) {
-                    level.getChunk(x, z);
-                    if (!level.areEntitiesLoaded(ChunkPos.asLong(x, z))) return;
-                }
-            }
-            if (world.contains("CanoePosition")) {
-                var at = BlockPos.of(world.getLong("CanoePosition"));
-                level.getChunk(at);
-                if (!level.areEntitiesLoaded(new ChunkPos(at).toLong())) return;
-            }
-            if (level.getEntity(world.getUUID("Canoe")) instanceof LakeCanoeEntity found) canoe = found;
-        }
         if (canoe == null) {
+            // Request only the saved original section (or the spawn section), never force generation.
+            var at=world.hasUUID("Canoe")&&!world.getBoolean("CanoeRemoved")&&world.contains("CanoePosition")?BlockPos.of(world.getLong("CanoePosition")):b.offset(0,-1,-16);
+            var chunks=level.getChunkSource();chunks.addRegionTicket(TicketType.PORTAL,new ChunkPos(at),3,at);
+            if(chunks.getChunkNow(at.getX()>>4,at.getZ()>>4)==null){chunks.getChunkFuture(at.getX()>>4,at.getZ()>>4,net.minecraft.world.level.chunk.status.ChunkStatus.FULL,true);return;}
+            if(!level.areEntitiesLoaded(ChunkPos.asLong(at.getX()>>4,at.getZ()>>4)))return;
+            // Loaded absence still cannot authorize a replacement. Only actual native discard/death can.
+            if(world.hasUUID("Canoe")&&!world.getBoolean("CanoeRemoved"))return;
             canoe = DrownedTownRegistry.CAVE_CANOE.get().create(level);
             if (canoe == null) return;
             canoe.addTag("LiteraryMovieCanoe");
@@ -418,7 +409,36 @@ public final class LiteraryVignettes {
         if(own.getInt("ThisVisitTicks")>=900&&Integer.bitCount(own.getInt("DiaryPlaced"))<target){int i=0;while(i<target&&(own.getInt("DiaryPlaced")&(1<<i))!=0)i++;if(i<target){own.putInt("DiaryPlaced",own.getInt("DiaryPlaced")|(1<<i));reward(p,place,own,"Diary"+i,LiteraryTexts.diary(i,p.getGameProfile().getName()));}}
         int expected=(1<<target)-1;if((own.getInt("DiaryRead")&expected)==expected)own.putInt("Beat",own.getInt("Visit"));
     }
-    private static boolean wheelDoor(ServerPlayer p,CompoundTag own,BlockPos rel){if(rel.equals(new BlockPos(0,0,-7))&&!own.getBoolean("LeftMother")){var b=base(p,LabyrinthPlace.WHEEL);p.teleportTo(p.serverLevel(),b.getX()-13.5,b.getY(),b.getZ()-8.5,180,0);own.putBoolean("FrontLoop",true);return true;}if(Math.abs(rel.getX())!=14||!(rel.getZ()==-17||rel.getZ()==-34||rel.getZ()==-51))return false;int door=(-rel.getZ()/17-1)*2+(rel.getX()>0?1:0);int seen=own.getInt("WheelDoors");int target=switch(door){case 0->1;case 1->0;case 2->4;case 3->1;case 4->5;default->3;};seen|=1<<door;own.putInt("WheelDoors",seen);own.putBoolean("Memory",door==0||door==2||door==4);var b=base(p,LabyrinthPlace.WHEEL);int x=target%2==0?-14:14,z=-8-(target/2)*17;if(door==4&&Integer.bitCount(seen)>=4){own.putBoolean("ReachedMother",true);p.teleportTo(p.serverLevel(),b.getX()+14.5,b.getY(),b.getZ()-58.5,0,0);}else{p.teleportTo(p.serverLevel(),b.getX()+x+.5,b.getY(),b.getZ()+z+.5,180,0);if((seen&2)!=0)LiteraryRooms.at(p.serverLevel(),b,-10,0,-9,Blocks.FLOWER_POT);}return true;}
+    private static boolean wheelDoor(ServerPlayer p,CompoundTag own,BlockPos rel){
+        var b=base(p,LabyrinthPlace.WHEEL);
+        if(rel.equals(new BlockPos(0,0,-7))&&!own.getBoolean("LeftMother")){
+            var landing=wheelLanding(p,new Vec3(b.getX()-13.5,b.getY(),b.getZ()-8.5));
+            if(landing!=null){p.teleportTo(p.serverLevel(),landing.x,landing.y,landing.z,180,0);if(p.position().distanceToSqr(landing)<.01)own.putBoolean("FrontLoop",true);}return true;
+        }
+        if(Math.abs(rel.getX())!=14||!(rel.getZ()==-17||rel.getZ()==-34||rel.getZ()==-51))return false;
+        int door=(-rel.getZ()/17-1)*2+(rel.getX()>0?1:0),seen=own.getInt("WheelDoors")|(1<<door);
+        int target=switch(door){case 0->1;case 1->0;case 2->4;case 3->1;case 4->5;default->3;};
+        boolean mother=door==4&&Integer.bitCount(seen)>=4;
+        int x=target%2==0?-14:14,z=-8-(target/2)*17;
+        var landing=wheelLanding(p,mother?new Vec3(b.getX()+14.5,b.getY(),b.getZ()-58.5):new Vec3(b.getX()+x+.5,b.getY(),b.getZ()+z+.5));
+        if(landing==null)return true;
+        p.teleportTo(p.serverLevel(),landing.x,landing.y,landing.z,mother?0:180,0);
+        if(p.position().distanceToSqr(landing)>=.01)return true;
+        own.putInt("WheelDoors",seen);own.putBoolean("Memory",door==0||door==2||door==4);
+        if(mother)own.putBoolean("ReachedMother",true);else if((seen&2)!=0)LiteraryRooms.at(p.serverLevel(),b,-10,0,-9,Blocks.FLOWER_POT);
+        return true;
+    }
+    /** One authored landing shared a cell with its armchair. Keep the room, but use loaded clear floor. */
+    private static @Nullable Vec3 wheelLanding(ServerPlayer p,Vec3 target){
+        var level=p.serverLevel();
+        for(int forward=0;forward<=1;forward++){
+            var at=target.add(0,0,forward);var cell=BlockPos.containing(at);
+            if(!level.hasChunkAt(cell)||!level.areEntitiesLoaded(ChunkPos.asLong(cell.getX()>>4,cell.getZ()>>4)))continue;
+            if(level.getBlockState(cell.below()).getCollisionShape(level,cell.below()).isEmpty())continue;
+            if(level.noCollision(p,p.getBoundingBox().move(at.subtract(p.position()))))return at;
+        }
+        p.displayClientMessage(Component.literal("There is no clear space beyond this door yet."),true);return null;
+    }
     private static void set(ServerPlayer p,BlockPos b,CompoundTag own){var place=LabyrinthPlace.GHOSTS_SET;boolean mark=Math.abs(p.getX()-b.getX())<=6&&p.getZ()<b.getZ()-19&&p.getZ()>b.getZ()-21&&p.serverLevel().getBlockState(p.blockPosition()).is(LiteraryRegistry.PROP.get());
         var mother=actor(p,place,"Mother",LiteraryActor.FAMILY_MOTHER,new BlockPos(-6,0,-31),false);var father=actor(p,place,"Father",LiteraryActor.FAMILY_FATHER,new BlockPos(3,0,-34),false);var child=actor(p,place,"Child",LiteraryActor.FAMILY_CHILD,new BlockPos(5,0,-33),false);
         if(mark){own.putInt("MarkTicks",own.getInt("MarkTicks")+5);if(own.getInt("MarkTicks")%40==5){camera(p,place,own,40);if(mother!=null)mother.say("We have everything we need. Say it again, for the camera.");if(father!=null)father.say("This is a good home. We are a family.");}for(int x:new int[]{-17,17})LiteraryRooms.at(p.serverLevel(),b,x,3,-25,Blocks.SEA_LANTERN);}

@@ -7,6 +7,9 @@ import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -87,4 +90,81 @@ public final class VignetteAnimationTests {
         h.runAfterDelay(320,()->{var own=f.own(p,place);var models=own.getList("Models",Tag.TAG_COMPOUND);h.assertTrue(own.getInt("ModelsExamined")==3&&own.getBoolean("Ready")&&models.size()==1,"three actual visits resolve the bounded personal examination");int[] blocks=models.getCompound(0).getIntArray("Blocks");h.assertTrue(blocks.length==256&&blocks[64]==Block.getId(Blocks.GOLD_BLOCK.defaultBlockState()),"the model contains the exact observed native block, not a decorative substitute");h.assertTrue(f.own(peer,place).getList("Models",Tag.TAG_COMPOUND).isEmpty()&&!f.own(peer,place).getBoolean("Ready"),"the peer sees and earns no borrowed miniature history");f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id())),"only the reader who examined three visits and read their original account receives this source");h.succeed();});
     }
     @AfterBatch(batch="literary_miniature_visits") public static void miniatureDone(ServerLevel l){close();}
+
+    @GameTest(template="empty",batch="literary_winter_sequence",timeoutTicks=350)
+    public static void actualIceBreakUnderwaterWaitAndSupportedFarBankResolveOnlyTheirReader(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.WINTER_LAKE;var p=f.player("winter_route",place);var peer=f.player("winter_dry_peer",place);var b=f.base(place);
+        f.source(p,place);f.source(peer,place);f.at(peer,place,.5,.125,-80.5);f.at(p,place,.5,0,-24.5);
+        var ice=b.offset(0,-1,-25);final int[] phase={0},nativeWetTicks={0};
+        h.runAfterDelay(20,()->{
+            h.assertTrue(!f.own(peer,place).getBoolean("Ready")&&!f.own(p,place).getBoolean("Ready"),"dry bank arrival and the source alone do not resolve this lake");
+            h.assertTrue(f.out.getBlockState(ice).is(Blocks.ICE)&&p.gameMode.destroyBlock(ice)&&!f.out.getBlockState(ice).is(Blocks.ICE),"the actual allowed native mining action opens original lake ice");
+            h.assertTrue(f.own(p,place).getBoolean("BrokeIce")&&!f.own(peer,place).getBoolean("BrokeIce"),"only the real ice miner retains the break fact");phase[0]=1;
+        });
+        h.onEachTick(()->{
+            if(phase[0]!=1)return;f.at(p,place,.5,-3,-24.5);p.doTick();p.setDeltaMovement(Vec3.ZERO);p.setHealth(20);
+            h.assertTrue(p.isUnderWater()&&p.getY()+p.getBbHeight()<b.getY(),"native eye fluid and complete body are genuinely beneath the ice");nativeWetTicks[0]++;
+            if(nativeWetTicks[0]==65)h.assertTrue(!f.own(p,place).getBoolean("Ready"),"a shorter real underwater interval cannot manufacture the bank outcome");
+            if(f.own(p,place).getInt("SubmergedTicks")>=110){phase[0]=2;f.at(p,place,.5,.125,-80.5);p.doTick();p.setDeltaMovement(Vec3.ZERO);h.assertTrue(!p.isUnderWater()&&f.out.noCollision(p,p.getBoundingBox()),"the real far bank supports the living full-height reader above native water");}
+        });
+        h.startSequence().thenWaitUntil(()->h.assertTrue(phase[0]==2&&f.own(p,place).getBoolean("Ready"),"actual ice, at least one hundred native wet ticks and physical bank arrival all complete"))
+            .thenExecute(()->{h.assertTrue(nativeWetTicks[0]>=100&&!f.own(peer,place).getBoolean("Ready"),"the dry peer inherits neither water time nor outcome");f.reload();h.assertTrue(f.own(p,place).getBoolean("Ready")&&f.own(p,place).getInt("SubmergedTicks")>=100,"the actual escape facts survive SavedData reload");f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id())),"the owned final reading resolves only the real participant");}).thenSucceed();
+    }
+    @AfterBatch(batch="literary_winter_sequence") public static void winterDone(ServerLevel l){close();}
+
+    @GameTest(template="empty",batch="literary_diary_sequence",timeoutTicks=700)
+    public static void eightActualDiaryOriginalsRequireThreeSeparateVisitsAndRetainTheirPrivateWords(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.DEVILS_ROCK;var p=f.player("diary_reader",place);var peer=f.player("diary_peer",place);var b=f.base(place);f.source(p,place);
+        final int[] returns={0};final boolean[] finished={false};final CompoundTag[] firstOriginal={null};
+        h.onEachTick(()->{
+            if(finished[0])return;f.at(peer,place,.5,0,-3);f.look(peer,b.offset(0,1,5));
+            var own=f.own(p,place);int placed=own.getInt("DiaryPlaced"),read=own.getInt("DiaryRead");
+            for(int i=0;i<8;i++)if((placed&(1<<i))!=0&&(read&(1<<i))==0){
+                h.assertTrue(f.in.getBlockState(b.offset(LiteraryVignettes.diaryPosition(i))).is(LiteraryRegistry.PROP.get()),"a genuine unseen native page appears before it is read");
+                f.read(p,place,LiteraryVignettes.diaryPosition(i));if(i==0)firstOriginal[0]=f.own(p,place).getCompound("Original_Diary0").copy();break;
+            }
+            own=f.own(p,place);int visit=own.getInt("Visit"),target=Math.min(8,visit*3),expected=(1<<target)-1;
+            if(own.getInt("DiaryRead")==expected&&own.getInt("Beat")>=visit){
+                h.assertTrue(visit==returns[0]+1,"the native arrival sequence advances only one distinct visit at a time");
+                if(visit<3){h.assertTrue(!own.getBoolean("Ready")&&Integer.bitCount(own.getInt("DiaryRead"))==visit*3,"one or two visits cannot read all eight original pages");f.reload();f.arrive(p,place);returns[0]++;}
+                else{finished[0]=true;h.assertTrue(returns[0]==2&&own.getInt("DiaryRead")==255&&own.getBoolean("Ready")&&firstOriginal[0]!=null,"all eight native page menus and three visits produce the original personal ending");f.reload();h.assertTrue(f.own(p,place).getCompound("Original_Diary0").equals(firstOriginal[0])&&f.own(peer,place).getInt("DiaryRead")==0&&!f.own(peer,place).getBoolean("Ready"),"reload retains exact reader-original words while the actual peer reads none");f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id())),"no shared page appearance grants a peer this memory");h.succeed();return;}
+            }
+            f.at(p,place,.5,0,-3);f.look(p,b.offset(0,1,5));
+        });
+    }
+    @AfterBatch(batch="literary_diary_sequence") public static void diaryDone(ServerLevel l){close();}
+
+    @GameTest(template="empty",batch="literary_wheel_sequence",timeoutTicks=350)
+    public static void sixNativeStoryDoorsKeepTheMotherGatePrivateAndRequireTheRealFrontReturn(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.WHEEL;var p=f.player("wheel_route",place);var peer=f.player("wheel_peer",place);var b=f.base(place);f.source(p,place);
+        h.startSequence().thenWaitUntil(()->{for(int x:new int[]{-14,14})for(int z:new int[]{-8,-25,-42,-59}){var cell=b.offset(x,0,z);h.assertTrue(f.in.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(cell.getX()>>4,cell.getZ()>>4)),"actual destination sections are entity-ready before native door use");}}).thenExecute(()->{
+        f.click(p,place,new BlockPos(0,0,-7));h.assertTrue(f.own(p,place).getBoolean("FrontLoop")&&!f.own(p,place).getBoolean("Ready"),"the actual front door loops before Mother is found");
+        int[] order={4,0,1,2,3,5,4};
+        for(int n=0;n<order.length;n++){final int at=n;h.runAfterDelay(20+n*15,()->{
+            int door=order[at];var rel=new BlockPos(door%2==0?-14:14,0,-17*(door/2+1));
+            h.assertTrue(f.in.getBlockState(b.offset(rel)).getBlock() instanceof net.minecraft.world.level.block.DoorBlock,"each numbered story threshold is an actual native door");
+            f.click(p,place,rel);h.assertTrue((f.own(p,place).getInt("WheelDoors")&(1<<door))!=0,"the actual use of door "+door+" records its own route bit");
+            h.assertTrue(f.in.noCollision(p,p.getBoundingBox()),"native story door "+door+" lands a real reader in clear supported space");
+            if(at==0)h.assertTrue(!f.own(p,place).getBoolean("ReachedMother"),"using Mother's door too early does not skip the four-room gate");
+        });}
+        h.runAfterDelay(135,()->{var own=f.own(p,place);h.assertTrue(own.getInt("WheelDoors")==63&&own.getBoolean("ReachedMother")&&!own.getBoolean("Ready"),"all six native doors still require seeing Mother and returning");
+            var world=LiteraryVignettes.shared(f.data(),place);var mother=(LiteraryActor)f.in.getEntity(world.getUUID("Mother_"+p.getUUID()));h.assertTrue(mother!=null&&mother.owner().orElseThrow().equals(p.getUUID()),"the route finds the same privately bound native Mother");p.lookAt(EntityAnchorArgument.Anchor.EYES,mother.getEyePosition());
+        });
+        h.runAfterDelay(155,()->{h.assertTrue(f.own(p,place).getBoolean("LeftMother")&&!f.own(peer,place).getBoolean("ReachedMother"),"only the actual reader has seen Mother at the end of their route");f.at(p,place,.5,0,-4.5);});
+        h.runAfterDelay(180,()->{h.assertTrue(f.own(p,place).getBoolean("Ready")&&!f.own(p,place).getBoolean("Memory")&&p.getBbHeight()>1.5&&!f.own(peer,place).getBoolean("Ready"),"the physical front return ends only that reader's memory and restores the actual full-height native body");f.reload();f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id())),"the actual original account completes only this route's reader");h.succeed();});
+        });
+    }
+    @AfterBatch(batch="literary_wheel_sequence") public static void wheelDone(ServerLevel l){close();}
+
+    @GameTest(template="empty",batch="literary_movie_original",timeoutTicks=450)
+    public static void uncertainLoadedAbsenceCannotReplaceTheActualSerializedMovieCanoe(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.MOVIE_NIGHT;var p=f.player("movie_original",place);var b=f.base(place);
+        h.startSequence().thenWaitUntil(()->{var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(world.hasUUID("Canoe")&&f.out.getEntity(world.getUUID("Canoe")) instanceof LakeCanoeEntity,"the actual original canoe has entered a native entity section");})
+            .thenExecute(()->{var world=LiteraryVignettes.shared(f.data(),place);var original=(LakeCanoeEntity)f.out.getEntity(world.getUUID("Canoe"));var id=original.getUUID();var saved=original.saveWithoutId(new CompoundTag());original.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);f.reload();
+                h.runAfterDelay(145,()->{var state=LiteraryVignettes.shared(f.data(),place);h.assertTrue(state.getUUID("Canoe").equals(id)&&!state.getBoolean("CanoeRemoved")&&f.out.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(b,place)).isEmpty(),"even loaded native absence after 140 ticks cannot invent a removal or second canoe");var restored=DrownedTownRegistry.CAVE_CANOE.get().create(f.out);h.assertTrue(restored!=null,"the saved original has its real native type");restored.load(saved);h.assertTrue(f.out.addFreshEntity(restored),"the actual serialized body returns through native entity loading");
+                    h.runAfterDelay(15,()->{var latest=LiteraryVignettes.shared(f.data(),place);h.assertTrue(latest.getUUID("Canoe").equals(id)&&f.out.getEntity(id)==restored&&f.out.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(b,place)).size()==1,"the exact original UUID is recovered once without replacements");h.assertTrue(!f.own(p,place).getBoolean("Ready")&&f.own(p,place).getDouble("RowDistance")==0,"waiting for native loading grants no fabricated travel or outcome");h.succeed();});
+                });
+            });
+    }
+    @AfterBatch(batch="literary_movie_original") public static void movieOriginalDone(ServerLevel l){close();}
 }
