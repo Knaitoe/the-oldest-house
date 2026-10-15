@@ -41,7 +41,7 @@ public final class GoatmanTests {
     public static void aLateOpenedDoorAndSavedApproachKeepTheSameTwoChildrenInTheExchange(GameTestHelper h){exchange(h,true);}
     private static void exchange(GameTestHelper h,boolean late){
         exchange=new Fixture(h,late?50900:50600);var f=exchange;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
-        boolean[] started={false},loaded={false};UUID[] impostor={null},runner={null};int[] skin={-1},outAt={-1},inAt={-1},waiting={0};
+        boolean[] started={false},loaded={false};UUID[] impostor={null},runner={null};int[] skin={-1},outAt={-1},inAt={-1},waiting={0},lastImpact={0};
         var panes=new HashSet<Long>();var expected=new HashSet<Long>();for(var at:List.of(new BlockPos(-8,2,-59),new BlockPos(-8,2,-67),new BlockPos(-8,2,-73),new BlockPos(8,2,-59),new BlockPos(8,2,-67)))expected.add(f.b.offset(at).asLong());
         h.onEachTick(()->{
             if(!started[0])return;var r=f.run();var extra=f.cousin(r.getInt("Wrong")).orElseThrow();var real=f.cousin(r.getInt("Runner"));
@@ -49,6 +49,8 @@ public final class GoatmanTests {
             if(outAt[0]<0||inAt[0]<0)h.assertTrue(!extra.stalkingAppearance()&&extra.visibleSkin()==skin[0],"the Goatman is still disguised as the original child throughout the opposing doorway crossing");
             if(real.isPresent()){
                 var child=real.get();if(runner[0]==null)runner[0]=child.getUUID();h.assertTrue(child.getUUID().equals(runner[0]),"the returning child's actual body survives the saved approach");
+                double plane=GoatmanWoods.DOOR.getZ()+3/32D;
+                if(Math.abs(f.rel(child).z-plane)<.3&&Math.abs(f.rel(extra).z-plane)<.3)h.assertTrue(!child.getBoundingBox().intersects(extra.getBoundingBox()),"the two original child bodies pass in separate lanes through the actual native doorway");
                 if(inAt[0]<0&&f.rel(child).z<=GoatmanWoods.DOOR.getZ()+3/32D)inAt[0]=r.getInt("Clock");
                 if(late&&r.getInt("RunnerState")==GoatmanVignette.R_KNOCKING&&++waiting[0]==45)GoatmanWoods.door(f.l,f.b,true);
                 if(late&&!loaded[0]&&r.getInt("RunnerState")==GoatmanVignette.R_RETURNING){
@@ -57,7 +59,10 @@ public final class GoatmanTests {
             }
             if(outAt[0]<0&&f.rel(extra).z>=GoatmanWoods.DOOR.getZ()+3/32D)outAt[0]=r.getInt("Clock");
             if(inAt[0]>=0&&outAt[0]>=0)h.assertTrue(Math.abs(inAt[0]-outAt[0])<=1,"the actual opposing doorway crossings share the same native tick (within one tick's sampling): in="+inAt[0]+" out="+outAt[0]);
-            if(r.contains("LastImpactPos0465")&&expected.contains(r.getLong("LastImpactPos0465")))panes.add(r.getLong("LastImpactPos0465"));
+            if(r.getInt("ImpactSerial0472")>lastImpact[0]){
+                lastImpact[0]=r.getInt("ImpactSerial0472");long at=r.getLong("LastImpactPos0465");
+                if(expected.contains(at)){h.assertTrue(extra.position().distanceToSqr(Vec3.atCenterOf(BlockPos.of(at)))<6&&!f.l.noCollision(extra,extra.getBoundingBox().move(0,-.02,0)),"each pane's actual sound is struck by the original body standing on its physical tire support");panes.add(at);}
+            }
             h.assertTrue(!WitnessAccount.has(LabyrinthData.get(f.server),p.getUUID(),WitnessAccount.Story.GOATMAN),"the doorway exchange and window knocks alone award no survival credit");
         });
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the original trailer and all native actor sections are ready")).thenExecute(()->{
@@ -65,6 +70,7 @@ public final class GoatmanTests {
             var extra=f.cousin(r.getInt("Wrong")).orElseThrow();impostor[0]=extra.getUUID();skin[0]=extra.skin();h.assertTrue(GoatmanWoods.indoors(f.rel(extra)),"the disguised original begins in the returning child's actual supper seat");started[0]=true;
         }).thenWaitUntil(()->h.assertTrue(inAt[0]>=0&&outAt[0]>=0,"both original bodies physically cross the doorway")).thenWaitUntil(()->h.assertTrue(panes.containsAll(expected),"that same disguised child physically circles and strikes all five separate side panes during gathering: "+panes.size()+"/5 clock="+f.run().getInt("Clock"))).thenExecute(()->{
             h.assertTrue(f.run().getInt("Phase")==GoatmanVignette.GATHERING&&(!late||loaded[0]),"all five panes are reached before nightfall, including the saved late-opened exchange");
+            TheOldestHouse.LOGGER.info("GOATMAN EXCHANGE PASSED: late={} in={} out={} panes={} original={} runner={}",late,inAt[0],outAt[0],panes.size(),impostor[0],runner[0]);
         }).thenSucceed();
     }
     private static Fixture hiddenFood;

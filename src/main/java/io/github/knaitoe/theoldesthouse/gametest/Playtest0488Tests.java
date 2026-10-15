@@ -126,7 +126,10 @@ public final class Playtest0488Tests {
         var own=f.own(p,place);own.putBoolean("Committed",true);own.putString("CommitAction","agreed_to_stay_with_father");own.putInt("Night",3);
         own.putInt("Meals",2);own.putInt("RabbitMornings",6);own.putBoolean("CarvingRead",true);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
         f.at(p,place,3.5,0,-20.5);p.setYRot(0);p.setXRot(0);
-        h.runAfterDelay(10,()->{
+        h.startSequence().thenWaitUntil(()->{
+            var world=LiteraryVignettes.shared(f.data(),place);
+            h.assertTrue(world.hasUUID("Father_"+p.getUUID())&&f.out.getEntity(world.getUUID("Father_"+p.getUUID())) instanceof LiteraryActor,"the original father's actual native entity section has loaded before the injury observation");
+        }).thenExecute(()->{
             h.assertTrue(!f.own(p,place).getBoolean("TrailOpen"),"earned meals alone do not skip the actual injury reveal");
             var father=(LiteraryActor)f.out.getEntity(LiteraryVignettes.shared(f.data(),place).getUUID("Father_"+p.getUUID()));
             p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,father.position().add(.18,.45,0));
