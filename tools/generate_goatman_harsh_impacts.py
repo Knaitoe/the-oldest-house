@@ -8,10 +8,13 @@ sheet-metal ring, the loose pane or door chattering in its frame afterwards, and
 saturation for grit. The claw is a hit followed by nails dragged across the glass with a
 stick-slip screech.
 
-Outputs replace the three existing vigil masters (sounds.json names are unchanged):
-  sounds/goatman/knock_vigil.ogg   four hard raps, the last the heaviest
-  sounds/goatman/claw_vigil.ogg    hit and screeching drag, twice
-  sounds/goatman/hammer_vigil.ogg  one full-body blow with a long clang and rattle
+Each event now contains ONE contact. Rhythm belongs to the actual striking body;
+playing four prerecorded raps for every swing made the fast assault beats pile up
+into an unrelated rattle. Four separately synthesized takes per event vary the
+contact, frame vibration and loose glass rather than merely shifting one pitch.
+  sounds/goatman/knock_vigil*.ogg   one dry knuckle crack and short frame chatter
+  sounds/goatman/claw_vigil*.ogg    a palm slap and one brief nail skid on glass
+  sounds/goatman/hammer_vigil*.ogg  one heavy body blow and a settling tin frame
 
 All three stay mono (positional), and decode without clipping.
 """
@@ -159,31 +162,35 @@ def scrape(rng, seconds):
 
 
 def knock(rng):
-    out = silence(1.25)
-    for at, velocity, f0 in ((0, .82, 128), (.15, .93, 118), (.285, 1.0, 112), (.6, 1.25, 96)):
-        place(out, hit(rng, velocity, f0=f0, ring_base=rng.uniform(470, 560)), at)
-    return drive(out, 2.6)
+    out = silence(.36)
+    # Bone against the hard frame, with a warm short body rather than a sustained electronic clang.
+    place(out, knuckle(rng, rng.uniform(.85, 1.05)), 0)
+    place(out, boom(rng, 1.15, rng.uniform(155, 205), tau=.027, length=.22), .001)
+    place(out, boom(rng, .48, rng.uniform(370, 480), tau=.012, length=.12), .001)
+    place(out, ring(rng, .17, rng.uniform(720, 870), length=.24, tau=.038), .002)
+    place(out, rattle(rng, .3, clicks=5, spacing=.018, length=.18), .012)
+    return drive(out, 1.35)
 
 
 def hammer(rng):
-    out = silence(1.1)
+    out = silence(.68)
     place(out, knuckle(rng, 1.5), 0)
     place(out, knuckle(rng, .8), .004)
-    place(out, boom(rng, 1.1, 64, tau=.085, length=.5), .002)
-    place(out, boom(rng, .55, 140, tau=.06, length=.3), .001)
-    place(out, ring(rng, 1.0, 380, length=1.05, tau=.36), .001)
-    place(out, rattle(rng, .9, clicks=16, spacing=.024, length=.6), .006)
+    place(out, boom(rng, 1.1, rng.uniform(67, 82), tau=.06, length=.4), .002)
+    place(out, boom(rng, .75, rng.uniform(165, 195), tau=.035, length=.22), .001)
+    place(out, ring(rng, .4, rng.uniform(360, 440), length=.64, tau=.12), .001)
+    place(out, rattle(rng, .75, clicks=12, spacing=.024, length=.48), .006)
     # Things inside shaking: a short high jingle off the shelves.
     place(out, rattle(rng, .5, clicks=10, spacing=.018, length=.35, low=3500, high=9500), .03)
-    return drive(out, 3.0)
+    return drive(out, 1.8)
 
 
 def claw(rng):
-    out = silence(1.7)
-    for at, velocity, drag in ((0, 1.0, .58), (.88, 1.1, .6)):
-        place(out, hit(rng, velocity, f0=rng.uniform(105, 125), ring_base=rng.uniform(600, 720), ring_gain=.45, rattle_gain=.35, length=.5), at)
-        place(out, .8 * scrape(rng, drag), at + .17)
-    return drive(out, 2.2)
+    out = silence(.64)
+    place(out, hit(rng, 1.0, f0=rng.uniform(145, 175), ring_base=rng.uniform(620, 780), ring_gain=.23, rattle_gain=.3, length=.4), 0)
+    # A hand sliding off the pane, with intermittent contact instead of a long synthetic squeal.
+    place(out, .45 * scrape(rng, rng.uniform(.27, .36)), .08)
+    return drive(out, 1.5)
 
 
 def normalise(x):
@@ -206,8 +213,10 @@ def main(folder=FOLDER):
     folder = Path(folder)
     folder.mkdir(parents=True, exist_ok=True)
     for name, make, seed in (("knock", knock, 4497), ("claw", claw, 3297), ("hammer", hammer, 6197)):
-        encode(normalise(make(np.random.default_rng(seed))), folder / f"{name}_vigil.ogg")
-    print(f"Three harsh mono Goatman impact masters generated in {folder}.")
+        for take in range(4):
+            suffix = "" if take == 0 else f"_{take}"
+            encode(normalise(make(np.random.default_rng(seed + take * 7919))), folder / f"{name}_vigil{suffix}.ogg")
+    print(f"Twelve short mono Goatman impact takes generated in {folder}.")
 
 
 if __name__ == "__main__":

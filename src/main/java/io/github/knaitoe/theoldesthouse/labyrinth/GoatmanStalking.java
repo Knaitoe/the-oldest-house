@@ -188,30 +188,59 @@ public final class GoatmanStalking {
         int turn=r.getInt("StalkTurn0465"),skin=turn%2==0?-2:nextChild(r);
         c.disguise(skin);r.putInt("StalkTurn0465",turn+1);r.putBoolean("StalkChange0465",false);
     }
+    public static boolean eveningActive(CompoundTag run){var lap=run.getCompound("EveningCircuit0497");return !lap.isEmpty()&&lap.getInt("StalkLeg0465")<CIRCUIT.length;}
+    /** The fleeing child keeps its face through the doorway; only the unseen body outside may change between panes. */
+    public static boolean evening(ServerLevel l,BlockPos b,CompoundTag run,GoatmanChild c,int clock,boolean ready){
+        if(run.getInt("WindowRun0464")==3)return false;
+        var lap=run.getCompound("EveningCircuit0497");
+        if(lap.isEmpty()){
+            if(!ready)return false;
+            lap.putBoolean("Evening0497",true);lap.putBoolean("StalkStarted0465",true);lap.putInt("CircuitGoal0494",1);
+            lap.putIntArray("StalkDeck0465",run.getIntArray("StalkDeck0465"));lap.putInt("StalkUsed0465",run.getInt("StalkUsed0465")|1<<c.skin());
+            lap.putInt("StalkCursor0465",run.getInt("StalkCursor0465"));lap.putInt("StalkTurn0465",run.getInt("StalkTurn0465"));lap.putBoolean("StalkChange0465",true);
+            lap.putFloat("StalkSpeed0497",.42F);c.getPersistentData().remove("Route");c.pose(false);c.heave(false);
+            run.putInt("WindowRun0464",1);GoatmanFear.departed(run);
+        }
+        int previous=lap.getInt("ImpactSerial0472");step(l,b,lap,c,clock);
+        for(String key:List.of("StalkUsed0465","StalkCursor0465","StalkTurn0465"))run.putInt(key,lap.getInt(key));
+        if(lap.getInt("ImpactSerial0472")!=previous){
+            run.putLong("LastImpact0465",lap.getLong("LastImpact0465"));run.putLong("LastImpactPos0465",lap.getLong("LastImpactPos0465"));
+            run.putInt("ImpactSerial0472",run.getInt("ImpactSerial0472")+1);run.putInt("ImpactClock0472",clock);
+        }
+        run.put("EveningCircuit0497",lap);
+        if(lap.getInt("StalkLeg0465")>=CIRCUIT.length){
+            // The body really finished on the front step; no stale by-fire route may cut back through the walls.
+            c.getPersistentData().putString("At","step");c.getPersistentData().putString("Goal","step");c.getPersistentData().remove("Route");
+            run.putInt("WindowRun0464",3);if(run.getBoolean("Silence"))run.putInt("ExtraState",GoatmanVignette.X_DOOR);
+        }
+        return true;
+    }
     public static void step(ServerLevel l,BlockPos b,CompoundTag r,GoatmanChild c,int clock){
+        boolean evening=r.getBoolean("Evening0497");
         if(!r.getBoolean("StalkStarted0465")){
-            r.putBoolean("StalkStarted0465",true);r.putInt("StalkUsed0465",1<<c.skin());r.putBoolean("StalkChange0465",true);
+            r.putBoolean("StalkStarted0465",true);r.putInt("StalkUsed0465",r.getInt("StalkUsed0465")|1<<c.skin());r.putBoolean("StalkChange0465",true);
             // An already-started saved circuit keeps its progress. New nights circle repeatedly
             // with this same saved actor, rather than waiting invisibly through the whole assault.
             if(r.getInt("StalkLeg0465")==0)r.putInt("CircuitGoal0494",CIRCUITS);
-            c.disguise(c.skin());c.getPersistentData().remove("Route");c.pose(false);c.cower(false);c.heave(false);
+            if(!c.stalkingAppearance())c.disguise(c.skin());c.getPersistentData().remove("Route");c.pose(false);c.cower(false);c.heave(false);
         }
         boolean supported=GoatmanWindowCircuit.stepsReady(l,b);
         if(!GoatmanWindowCircuit.atPane(b,c))change(l,r,c);
         // Longer glimpses cannot move the voice clock or make a distant wall strike stress the door.
         // Finish on this original body's real front step, then permit its bathroom-window approach.
-        if(r.contains("WindowSerial0497")&&r.getInt("StalkLeg0465")>=CIRCUIT.length
+        if(!evening&&r.contains("WindowSerial0497")&&r.getInt("StalkLeg0465")>=CIRCUIT.length
                 &&r.getInt("Circuits0494")>=r.getInt("CircuitGoal0494")&&!r.getBoolean("DoorPressureDone0497")){
             c.pose(false);face(c,Vec3.atCenterOf(b.offset(GoatmanWoods.DOOR)));
             GoatmanWindowCircuit.frontDoor(l,b,r,c,clock);return;
         }
         // Voice timing cannot skip a leg or send this same body to the window prematurely.
-        boolean window=circuitDone(r)&&r.getBoolean("AssaultDone0465")&&clock>=1900;
+        boolean window=!evening&&circuitDone(r)&&r.getBoolean("AssaultDone0465")&&clock>=1900;
         if(!window&&circuitDone(r)){
             c.pose(false);face(c,abs(b,new Vec3(.5,2,-55)));
             return;
         }
         int leg=r.getInt(window?"StalkWindowLeg0465":"StalkLeg0465");Vec3[] route=window?TO_WINDOW:CIRCUIT;
+        if(evening&&leg>=route.length){c.pose(false);return;}
         if(!window&&leg>=route.length&&!circuitDone(r)){
             GoatmanWindowCircuit.nextLap(r,c,clock);c.pose(false);return;
         }

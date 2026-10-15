@@ -371,10 +371,49 @@ public final class GoatmanVignette {
     }
 
     // ------------------------------------------------------------------------------------------------ the cousins
+    /** Count actual scripted movement ticks to the door plane, including the one tick used by a zero-length waypoint. */
+    private static int doorTicks(GoatmanChild c,BlockPos b,List<Vec3> points,boolean incoming){
+        Vec3 here=rel(c,b);int ticks=0;double plane=-55.5;
+        if(incoming?here.z<=plane:here.z>=plane)return -1;
+        for(var next:points){double length=here.distanceTo(next);
+            if(incoming?next.z<=plane:next.z>=plane){double fraction=(plane-here.z)/(next.z-here.z);return ticks+Math.max(1,(int)Math.ceil(length*fraction/RUN));}
+            ticks+=Math.max(1,(int)Math.ceil(length/RUN));here=next;
+        }
+        return Integer.MAX_VALUE;
+    }
+    private static List<Vec3> remaining(GoatmanChild c){
+        var out=new ArrayList<Vec3>();var left=c.getPersistentData().getList("Route",Tag.TAG_COMPOUND);
+        for(int k=0;k<left.size();k++){var t=left.getCompound(k);out.add(new Vec3(t.getDouble("X"),t.getDouble("Y"),t.getDouble("Z")));}return out;
+    }
+    /** Two child-width lanes fit through the native one-block door without the bodies passing through one another. */
+    private static List<Vec3> exchangeLane(List<Vec3> points,boolean incoming){return points.stream().map(v->v.z>=-57&&v.z<=-54.5?new Vec3(incoming?.75:.25,v.y,v.z):v).toList();}
+    /** The borrowed-seat child leaves in the real child's doorway beat, never on a later wall-clock timer. */
+    private static void exchange(ServerLevel l,BlockPos b,CompoundTag r,boolean open,List<GoatmanChild> cast){
+        if(!fresh(r)||r.getInt("Phase")!=GATHERING||r.getBoolean("Silence"))return;
+        var extra=cast.stream().filter(c->c.getPersistentData().getInt(INDEX)==r.getInt("Wrong")).findFirst().orElse(null);
+        var real=cast.stream().filter(c->c.getPersistentData().getInt(INDEX)==r.getInt("Runner")).findFirst().orElse(null);if(extra==null||real==null)return;
+        int rs=r.getInt("RunnerState");var incoming=remaining(real);incoming.addAll(inFrom("step",r.getInt("Runner"),r));incoming=exchangeLane(incoming,true);
+        if(open&&r.getInt("ExtraState")==X_SUPPER&&(rs==R_RETURNING||rs==R_KNOCKING||rs==R_INSIDE)){
+            var outgoing=exchangeLane(onward(extra,"byFire"),false);int out=doorTicks(extra,b,outgoing,false),in=doorTicks(real,b,incoming,true);
+            if(rs!=R_RETURNING||in<=out){r.putBoolean("Exchange0497",true);r.putInt("ExtraState",X_FIRE);setRoute(extra,outgoing,"byFire");}
+        }
+        // If the real child was kept at a shut door, let the outgoing body cover its aisle first.
+        // Both then run across the same threshold together, in either actor iteration order.
+        if(r.getBoolean("Exchange0497"))r.putBoolean("ExchangeAdmit0497",open&&doorTicks(extra,b,remaining(extra),false)<=doorTicks(real,b,incoming,true));
+    }
+    private static boolean admit(CompoundTag r){return !r.getBoolean("Exchange0497")||r.getBoolean("ExchangeAdmit0497");}
+    private static void exchanged(BlockPos b,CompoundTag r,List<GoatmanChild> cast){
+        if(!r.getBoolean("Exchange0497"))return;
+        for(var c:cast){int i=c.getPersistentData().getInt(INDEX);
+            if(i==r.getInt("Wrong")&&rel(c,b).z>=-55.5&&!r.contains("ExchangeOut0497")){r.putInt("ExchangeOut0497",r.getInt("Clock"));GoatmanFear.departed(r);}
+            if(i==r.getInt("Runner")&&rel(c,b).z<=-55.5&&!r.contains("ExchangeIn0497"))r.putInt("ExchangeIn0497",r.getInt("Clock"));
+        }
+        if(r.contains("ExchangeOut0497")&&r.contains("ExchangeIn0497"))GoatmanFear.returned(r);
+    }
     private static void cousins(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> present){
         int phase=r.getInt("Phase"),clock=r.getInt("Clock"),wrong=r.getInt("Wrong"),runner=r.getInt("Runner");
-        boolean open=GoatmanWoods.doorOpen(l,b);
-        for(var c:cousinsOf(l,b)){
+        boolean open=GoatmanWoods.doorOpen(l,b);var cast=cousinsOf(l,b);exchange(l,b,r,open,cast);
+        for(var c:cast){
             int i=c.getPersistentData().getInt(INDEX);if(i>=count(r))continue;
             if(fresh(r)&&phase==VIGIL&&i==wrong&&outside(r)){GoatmanStalking.step(l,b,r,c,clock);continue;}
             if(!outside(r)&&c.stalkingAppearance()&&GoatmanStalking.obscured(l,c))c.disguise(-1);
@@ -384,15 +423,17 @@ public final class GoatmanVignette {
                 if(rs==R_LEAVING){if(!goal(c).equals("_trail")&&!at(c).equals("_trail")){List<Vec3> out=toYard(at(c));
                         for(double s:new double[]{66,63,58,53,48,43,41,37,33,30,27})out.add(GoatmanWoods.path(s));setRoute(c,out,"_trail");}
                     if(walk(c,b,WALK,l)){c.getPersistentData().putString("At","_trail");if(!watched(c,present)){c.discard();r.putInt("RunnerState",R_AWAY);}}continue;}
-                if(rs==R_RETURNING){speed=RUN;if(walk(c,b,RUN,l)){c.getPersistentData().putString("At","step");r.putInt("RunnerState",open?R_INSIDE:R_KNOCKING);if(open){GoatmanFear.returned(r);setRoute(c,inFrom("step",i,r),seatName(i,r));}}continue;}
-                if(rs==R_KNOCKING){face(c,abs(new Vec3(.5,1,-55.5),b));c.pose(false);if(open){r.putInt("RunnerState",R_INSIDE);GoatmanFear.returned(r);setRoute(c,inFrom("step",i,r),seatName(i,r));}continue;}
+                if(rs==R_RETURNING){speed=RUN;if(walk(c,b,RUN,l)){c.getPersistentData().putString("At","step");boolean enter=open&&admit(r);r.putInt("RunnerState",enter?R_INSIDE:R_KNOCKING);if(enter){GoatmanFear.returned(r);setRoute(c,inFrom("step",i,r),seatName(i,r));}}continue;}
+                if(rs==R_KNOCKING){face(c,abs(new Vec3(.5,1,-55.5),b));c.pose(false);if(open&&admit(r)){r.putInt("RunnerState",R_INSIDE);GoatmanFear.returned(r);setRoute(c,inFrom("step",i,r),seatName(i,r));walk(c,b,RUN,l);}continue;}
                 if(rs==R_INSIDE&&c.getPersistentData().contains("Route"))speed=RUN;
             }
             if(i==wrong){int xs=r.getInt("ExtraState");
+                if(fresh(r)&&xs==X_FIRE&&phase==GATHERING&&clock>=BACK0465
+                        &&GoatmanStalking.evening(l,b,r,c,clock,at(c).equals("byFire")&&c.getPersistentData().getList("Route",Tag.TAG_COMPOUND).isEmpty()))continue;
                 if(xs==X_FIRE&&phase==GATHERING&&clock>=(fresh(r)?BACK0465:RUNNER_BACK)&&clock<(fresh(r)?SILENCE0465:SILENCE)){speed=RUN;
                     // Once it is out by the fire, it runs to the nearest window, scrapes at the glass where it stands, and goes back.
                     int run=r.getInt("WindowRun0464");
-                    if(run==0&&at(c).equals("byFire")){r.putInt("WindowRun0464",run=1);GoatmanFear.departed(r);}
+                    if(!fresh(r)&&run==0&&at(c).equals("byFire")){r.putInt("WindowRun0464",run=1);GoatmanFear.departed(r);}
                     if(run==1&&at(c).equals("windowRun")&&c.getPersistentData().getList("Route",Tag.TAG_COMPOUND).isEmpty()){r.putInt("WindowRun0464",run=2);r.putInt("WindowAt0464",clock);}
                     if(run==2){int since=clock-r.getInt("WindowAt0464");
                         if(since%20==0)l.playSound(null,b.offset(-8,2,-59),GoatmanRegistry.CLAW.get(),SoundSource.BLOCKS,3.2F,1.35F);
@@ -425,6 +466,7 @@ public final class GoatmanVignette {
             else idle(c,r,present,clock,i);
             if((phase==GATHERING||phase==VIGIL)&&i!=wrong){GoatmanFear.pose(c,r);if(c.fear()==GoatmanFear.WATCH&&c.fearStage()>=GoatmanFear.FEAR)face(c,abs(new Vec3(-8,2,-59),b));}
         }
+        exchanged(b,r,cast);
     }
     /** From wherever a spot is, out to the yard. */
     private static List<Vec3> toYard(String from){
@@ -434,7 +476,7 @@ public final class GoatmanVignette {
         out.add(YARD);return out;
     }
     /** From the step through the door to a seat. */
-    private static List<Vec3> inFrom(String spot,int i,CompoundTag r){var seat=SPOTS.get(seatName(i,r));List<Vec3> out=new ArrayList<>();out.add(UP[4]);out.add(ENTRY);out.addAll(List.of(seat.access()));out.add(seat.at());return out;}
+    private static List<Vec3> inFrom(String spot,int i,CompoundTag r){var seat=SPOTS.get(seatName(i,r));List<Vec3> out=new ArrayList<>();out.add(UP[4]);out.add(ENTRY);out.addAll(List.of(seat.access()));out.add(seat.at());return r.getBoolean("Exchange0497")?exchangeLane(out,true):out;}
     private static void arrive(GoatmanChild c,BlockPos b,CompoundTag r,ServerLevel l,String key){
         settle(c,b,key);int i=c.getPersistentData().getInt(INDEX);
         if(i!=r.getInt("Wrong")&&(r.getInt("Phase")==GATHERING||r.getInt("Phase")==VIGIL))GoatmanFear.pose(c,r);
@@ -496,7 +538,7 @@ public final class GoatmanVignette {
         else if(phase==GATHERING){
             GoatmanSupper.tick(l,b,r,enrolled);cookingChatter(r,enrolled);
             if(!fresh(r)||clock!=SUPPER0465-1||GoatmanSupper.ready(r)){clock++;evening(l,b,r,enrolled,clock);}
-            if(clock>=gatherTicks(r)){nightfall(l,b,r,enrolled);phase=VIGIL;clock=0;}
+            if(clock>=gatherTicks(r)&&!GoatmanStalking.eveningActive(r)){nightfall(l,b,r,enrolled);phase=VIGIL;clock=0;}
         }
         else if(phase==VIGIL){clock++;night(l,b,r,enrolled,clock);if(dawnReady(r,clock)){r.putInt("Clock",clock);dawn(l,b,r,enrolled,d);phase=DAWN;}}
         r.putInt("Clock",clock);
@@ -530,14 +572,17 @@ public final class GoatmanVignette {
         if(clock==leaves&&r.getInt("RunnerState")==R_HOME){r.putInt("RunnerState",R_LEAVING);say(enrolled,"A cousin: Generator's out of gas. I'll run get some from the truck. Back before dark.");}
         if(clock==supper){if(r.getInt("ExtraState")==X_ACTIVITY)r.putInt("ExtraState",X_SUPPER);GoatmanWoods.door(l,b,true);say(enrolled,"A cousin: Food's on the table. Come inside before it gets cold.");}
         if(!fresh(r)&&clock==GRUMBLE)say(enrolled,"A cousin: Who had two? There was one for everybody.");
-        if(clock==(fresh(r)?2250:EXTRA_OUT)&&r.getInt("ExtraState")==X_SUPPER)r.putInt("ExtraState",X_FIRE);
+        if(!fresh(r)&&clock==EXTRA_OUT&&r.getInt("ExtraState")==X_SUPPER)r.putInt("ExtraState",X_FIRE);
         if(clock>=backAt&&clock<silence&&r.getInt("RunnerState")==R_AWAY){
             Vec3 at=abs(GoatmanWoods.path(27),b);GoatmanChild c=GoatmanRegistry.CHILD.get().create(l);
             if(c!=null){int i=r.getInt("Runner");c.addTag(ACTOR);c.getPersistentData().putUUID(ROUND,r.getUUID("Id"));c.getPersistentData().putInt(INDEX,i);c.appearance(r.getInt("Skin"+i),0,null);
                 c.moveTo(at.x,at.y,at.z);l.addFreshEntity(c);List<Vec3> back=new ArrayList<>();for(double s:new double[]{30,33,37,41,43,48,53,58,63,66})back.add(GoatmanWoods.path(s));back.addAll(List.of(UP[0],UP[1],UP[2],UP[3]));
                 setRoute(c,back,"step");r.putInt("RunnerState",R_RETURNING);say(enrolled,"From the trail: “Wait up! Don't lock it!”");}
         }
-        if(r.getInt("RunnerState")==R_KNOCKING&&clock%60==0){knock(l,b,enrolled);int line=(clock/60)%RUNNER_LINES.length;r.putInt("Demand",-(line+1));r.putInt("DemandAt",clock);}
+        if(r.getInt("RunnerState")==R_KNOCKING&&!GoatmanWoods.doorOpen(l,b)){
+            int beat=clock%60;if(beat==0||beat==4||beat==9)knock(l,b,enrolled);
+            if(beat==0){int line=(clock/60)%RUNNER_LINES.length;r.putInt("Demand",-(line+1));r.putInt("DemandAt",clock);}
+        }
         if(clock==silence){
             GoatmanFear.quiet(r);
             r.putBoolean("Silence",true);GoatmanWoods.porchLight(l,b,false);
@@ -547,7 +592,8 @@ public final class GoatmanVignette {
             if(rs==R_LEAVING||rs==R_AWAY||rs==R_RETURNING||rs==R_KNOCKING){r.putInt("RunnerState",R_LOST);
                 for(var c:cousinsOf(l,b))if(c.getPersistentData().getInt(INDEX)==r.getInt("Runner"))c.discard();
                 if(rs==R_KNOCKING){r.putInt("Demand",-99);r.putInt("DemandAt",clock);}}
-            if(r.getInt("ExtraState")==X_FIRE)r.putInt("ExtraState",X_APPROACH);
+            if(fresh(r)&&r.getInt("ExtraState")==X_SUPPER)r.putInt("ExtraState",X_FIRE);
+            if(r.getInt("ExtraState")==X_FIRE&&!GoatmanStalking.eveningActive(r))r.putInt("ExtraState",X_APPROACH);
         }
     }
     /** Night falls: a cousin locks the door on whatever is outside, and anyone outside finds themselves in. */
