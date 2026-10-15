@@ -41,7 +41,7 @@ public final class CharacterPhaseVisualProof extends Screen {
             float cx=10+(n%columns+.5F)*cw,top=29+(n/columns)*ch;
             var p=g.pose();p.pushPose();p.translate(cx,top+(close?ch*.72F:scale*.52F+ch*.06F),190);p.scale(scale,scale,scale);p.mulPose(Axis.YP.rotationDegrees(new float[]{180,90,0,145}[view]));
             ResourceLocation texture;String label;
-            if(group==0){int stage=n==16?0:n;texture=skin("mother_of_strays"+(stage==0?"":"_"+stage));var m=new MotherModel(mc.getEntityModels().bakeLayer(MotherModel.LAYER));m.pose(stage/15F,n==16,.8F,.5F,frames,12,0);label=n==16?"Carrying / original":"Corruption / "+stage;
+            if(group==0){int stage=n==16?0:n;texture=skin("mother_of_strays"+(stage==0?"":"_"+stage));var m=new MotherModel(mc.getEntityModels().bakeLayer(MotherModel.LAYER));m.pose(stage/15F,n==16,.8F,.5F,frames,12,0);label=n==16?"Carrying":"Corruption / "+stage;
                 require(mc,texture);m.renderToBuffer(p,buffers.getBuffer(RenderType.entityCutoutNoCull(texture)),light,OverlayTexture.NO_OVERLAY,-1);
             }else if(group==2){texture=skin("clap_ghost_girl");var m=new ClapGhostModel(mc.getEntityModels().bakeLayer(ClapGhostModel.LAYER));m.pose(n*7,10);label="Native step / "+n;
                 require(mc,texture);m.renderToBuffer(p,buffers.getBuffer(RenderType.entityCutoutNoCull(texture)),light,OverlayTexture.NO_OVERLAY,-1);

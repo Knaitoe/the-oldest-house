@@ -58,6 +58,10 @@ public final class LiteraryMotion {
         var place=LabyrinthPlace.byId(actor.scene());
         if (reader == null || place==null || !LiteraryVignettes.inside(reader, place)
                 || level.getGameTime() > goal.until) { goals.remove(actor); return; }
+        if(place==LabyrinthPlace.HOLY_RABBIT&&actor.role()==LiteraryActor.FATHER){
+            var own=LiteraryVignettes.personal(LabyrinthData.get(level.getServer()),reader.getUUID(),place);
+            if(!LiteraryVignettes.retreatLocked(reader)||own.getInt("Night")>=3&&!own.getBoolean("LastHunt0490")){stop(actor);return;}
+        }
         Vec3 delta = goal.at.subtract(actor.position()).multiply(1, 0, 1);
         if (delta.lengthSqr() <= .04) { goals.remove(actor); return; }
         Vec3 step = delta.normalize().scale(Math.min(goal.speed, delta.length()));
