@@ -1,7 +1,6 @@
 package io.github.knaitoe.theoldesthouse.gametest;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
-import io.github.knaitoe.theoldesthouse.house.WitnessAccount;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import java.util.UUID;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
