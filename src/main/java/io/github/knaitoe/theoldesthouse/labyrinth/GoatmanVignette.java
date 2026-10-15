@@ -72,6 +72,8 @@ public final class GoatmanVignette {
     public static final int X_ACTIVITY=0,X_SUPPER=1,X_FIRE=2,X_APPROACH=3,X_DOOR=4,X_INSIDE=5,X_WINDOW=6,X_FLOOR=7;
     private static final ResourceLocation CHILD_SCALE=ResourceLocation.fromNamespaceAndPath(io.github.knaitoe.theoldesthouse.TheOldestHouse.MOD_ID,"trailer_child_scale");
     private static final double WALK=.075,RUN=.18,CREEP=.06;
+    /** Inner frame of the three-pixel-thick south-facing native door. */
+    private static final double EXCHANGE_PLANE=GoatmanWoods.DOOR.getZ()+3/32D;
     /** For the native tests: the cousins cover their routes at once, through every arrival, as though they had walked. */
     private static boolean hurried;
     public static int count(CompoundTag r){return r.contains("Cousins0464")?Math.max(5,Math.min(8,r.getInt("Cousins0464"))):5;}
@@ -373,7 +375,7 @@ public final class GoatmanVignette {
     // ------------------------------------------------------------------------------------------------ the cousins
     /** Count actual scripted movement ticks to the door plane, including the one tick used by a zero-length waypoint. */
     private static int doorTicks(GoatmanChild c,BlockPos b,List<Vec3> points,boolean incoming){
-        Vec3 here=rel(c,b);int ticks=0;double plane=-55.5;
+        Vec3 here=rel(c,b);int ticks=0;double plane=EXCHANGE_PLANE;
         if(incoming?here.z<=plane:here.z>=plane)return -1;
         for(var next:points){double length=here.distanceTo(next);
             if(incoming?next.z<=plane:next.z>=plane){double fraction=(plane-here.z)/(next.z-here.z);return ticks+Math.max(1,(int)Math.ceil(length*fraction/RUN));}
@@ -405,8 +407,8 @@ public final class GoatmanVignette {
     private static void exchanged(BlockPos b,CompoundTag r,List<GoatmanChild> cast){
         if(!r.getBoolean("Exchange0497"))return;
         for(var c:cast){int i=c.getPersistentData().getInt(INDEX);
-            if(i==r.getInt("Wrong")&&rel(c,b).z>=-55.5&&!r.contains("ExchangeOut0497")){r.putInt("ExchangeOut0497",r.getInt("Clock"));GoatmanFear.departed(r);}
-            if(i==r.getInt("Runner")&&rel(c,b).z<=-55.5&&!r.contains("ExchangeIn0497"))r.putInt("ExchangeIn0497",r.getInt("Clock"));
+            if(i==r.getInt("Wrong")&&rel(c,b).z>=EXCHANGE_PLANE&&!r.contains("ExchangeOut0497")){r.putInt("ExchangeOut0497",r.getInt("Clock"));GoatmanFear.departed(r);}
+            if(i==r.getInt("Runner")&&rel(c,b).z<=EXCHANGE_PLANE&&!r.contains("ExchangeIn0497"))r.putInt("ExchangeIn0497",r.getInt("Clock"));
         }
         if(r.contains("ExchangeOut0497")&&r.contains("ExchangeIn0497"))GoatmanFear.returned(r);
     }
@@ -415,6 +417,8 @@ public final class GoatmanVignette {
         boolean open=GoatmanWoods.doorOpen(l,b);var cast=cousinsOf(l,b);exchange(l,b,r,open,cast);
         for(var c:cast){
             int i=c.getPersistentData().getInt(INDEX);if(i>=count(r))continue;
+            if(fresh(r)&&phase==GATHERING&&r.getBoolean("Exchange0497")&&!open
+                    &&(!r.contains("ExchangeOut0497")||!r.contains("ExchangeIn0497"))&&(i==wrong||i==runner)){c.pose(false);continue;}
             if(fresh(r)&&phase==VIGIL&&i==wrong&&outside(r)){GoatmanStalking.step(l,b,r,c,clock);continue;}
             if(!outside(r)&&c.stalkingAppearance()&&GoatmanStalking.obscured(l,c))c.disguise(-1);
             if((phase==GATHERING||phase==VIGIL)&&i!=wrong)GoatmanFear.pose(c,r);else {c.fear(0);c.fearStage(0);}

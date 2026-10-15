@@ -49,13 +49,13 @@ public final class GoatmanTests {
             if(outAt[0]<0||inAt[0]<0)h.assertTrue(!extra.stalkingAppearance()&&extra.visibleSkin()==skin[0],"the Goatman is still disguised as the original child throughout the opposing doorway crossing");
             if(real.isPresent()){
                 var child=real.get();if(runner[0]==null)runner[0]=child.getUUID();h.assertTrue(child.getUUID().equals(runner[0]),"the returning child's actual body survives the saved approach");
-                if(inAt[0]<0&&f.rel(child).z<=-55.5)inAt[0]=r.getInt("Clock");
+                if(inAt[0]<0&&f.rel(child).z<=GoatmanWoods.DOOR.getZ()+3/32D)inAt[0]=r.getInt("Clock");
                 if(late&&r.getInt("RunnerState")==GoatmanVignette.R_KNOCKING&&++waiting[0]==45)GoatmanWoods.door(f.l,f.b,true);
                 if(late&&!loaded[0]&&r.getInt("RunnerState")==GoatmanVignette.R_RETURNING){
                     var data=LabyrinthData.get(f.server);var restored=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),f.l.registryAccess()),f.l.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",restored);loaded[0]=true;
                 }
             }
-            if(outAt[0]<0&&f.rel(extra).z>=-55.5)outAt[0]=r.getInt("Clock");
+            if(outAt[0]<0&&f.rel(extra).z>=GoatmanWoods.DOOR.getZ()+3/32D)outAt[0]=r.getInt("Clock");
             if(inAt[0]>=0&&outAt[0]>=0)h.assertTrue(Math.abs(inAt[0]-outAt[0])<=1,"the actual opposing doorway crossings share the same native tick (within one tick's sampling): in="+inAt[0]+" out="+outAt[0]);
             if(r.contains("LastImpactPos0465")&&expected.contains(r.getLong("LastImpactPos0465")))panes.add(r.getLong("LastImpactPos0465"));
             h.assertTrue(!WitnessAccount.has(LabyrinthData.get(f.server),p.getUUID(),WitnessAccount.Story.GOATMAN),"the doorway exchange and window knocks alone award no survival credit");
