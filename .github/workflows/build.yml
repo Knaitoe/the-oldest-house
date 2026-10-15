@@ -753,6 +753,9 @@ jobs:
           test -s build/font-smoke/finishing-passed.txt
           for view in cast fixtures gear; do test -s build/font-smoke/native-lake-house-$view.png; done
           test -s build/font-smoke/lake-house-passed.txt
+          test -s build/font-smoke/borrasca-assets-passed.txt
+          for view in front side back dim fixtures-0 fixtures-1; do test -s build/font-smoke/native-borrasca-$view.png; done
+          for view in borrasca borrasca_treehouse borrasca_refinery; do test -s build/font-smoke/scenes/$view.png; done
           test -s build/font-smoke/hall-changes-passed.txt
           test -s build/font-smoke/native-hall-changes.png
           for scene in kitchen laundry car repair late_kitchen; do test -s build/font-smoke/scenes/staircase_leak_$scene.png; done
@@ -850,7 +853,7 @@ jobs:
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/literary-native.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path(f'src/main/java/io/github/knaitoe/theoldesthouse/gametest/{name}.java').read_text())) for name in ('LiteraryTests','ElkFanTests','GhostsSetTests','LakeHouseTests','LakeHouseCompletionTests','Vignette0492Tests','VignetteAnimationTests'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path(f'src/main/java/io/github/knaitoe/theoldesthouse/gametest/{name}.java').read_text())) for name in ('LiteraryTests','ElkFanTests','GhostsSetTests','LakeHouseTests','LakeHouseCompletionTests','Vignette0492Tests','VignetteAnimationTests','BorrascaTests'))
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused native literary cases passed; the complete suite remains required.')
           PY
