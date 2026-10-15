@@ -452,6 +452,12 @@ public final class GoatmanTests {
                 h.assertTrue(!unseen.getBoolean("WindowView0497")&&wait>=GoatmanWindowCircuit.UNSEEN_MIN&&wait<GoatmanWindowCircuit.UNSEEN_MIN+GoatmanWindowCircuit.UNSEEN_SPREAD&&held==wait&&!it.heaving(),"a pane nobody can see gets a short slap, not the whole wait: wait="+wait+" held="+held);
                 var feet=GoatmanWindowViews.feet(f.b,"A",true);p.moveTo(feet.x,feet.y,feet.z);look(p,GoatmanWindowCircuit.face(it));
                 h.assertTrue(GoatmanWindowCircuit.inView(f.l,it)&&GoatmanWindowCircuit.watched(f.l,it),"beside the middle window the reader has a clear glazing ray and is looking at the face: monster="+monster);
+                look(p,p.getEyePosition().scale(2).subtract(GoatmanWindowCircuit.face(it)));
+                h.assertTrue(GoatmanWindowCircuit.inView(f.l,it)&&!GoatmanWindowCircuit.watched(f.l,it),"the native opening remains available when the reader has not turned toward it yet");
+                var offered=new CompoundTag();GoatmanWindowCircuit.start(f.l,offered,it,600);int available=0;
+                for(int clock=600;clock<900&&GoatmanWindowCircuit.hold(f.l,offered,it,clock);clock++)available++;
+                h.assertTrue(available>=40&&available<=70&&offered.getInt("WindowSeen0497")==0&&!it.heaving(),"a clear available pane gives a reader at least two seconds to turn, without inventing a watched stare: "+available);
+                look(p,GoatmanWindowCircuit.face(it));
                 var seen=new CompoundTag();GoatmanWindowCircuit.start(f.l,seen,it,1000);int stare=0;boolean heaved=true;
                 for(int clock=1000;clock<1300&&GoatmanWindowCircuit.hold(f.l,seen,it,clock);clock++){stare++;heaved&=it.heaving();}
                 h.assertTrue(seen.getBoolean("WindowView0497")&&stare>=GoatmanWindowCircuit.ATTENDED&&seen.getInt("WindowSeen0497")>=GoatmanWindowCircuit.ATTENDED&&heaved&&!it.heaving(),"a watched face stays at the glass, laughing without a sound, for at least "+GoatmanWindowCircuit.ATTENDED+" watched ticks: held="+stare+" seen="+seen.getInt("WindowSeen0497")+" monster="+monster);
