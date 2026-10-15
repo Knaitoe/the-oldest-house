@@ -46,7 +46,8 @@ public final class LiteraryMotion {
         if (delta.lengthSqr() <= .04) { goals.remove(actor); return; }
         Vec3 step = delta.normalize().scale(Math.min(goal.speed, delta.length()));
         if (!level.hasChunkAt(BlockPos.containing(actor.position().add(step)))) return;
-        actor.move(MoverType.SELF, step);
+        Vec3 before=actor.position();actor.move(MoverType.SELF, step);
+        actor.walkAnimation.update((float)actor.position().subtract(before).horizontalDistance()*4,.4F);
         float yaw = (float)Math.toDegrees(Math.atan2(-step.x, step.z));
         actor.setYRot(Mth.approachDegrees(actor.getYRot(), yaw, 8));
         actor.setYBodyRot(actor.getYRot()); actor.setYHeadRot(actor.getYRot());
@@ -74,7 +75,8 @@ public final class LiteraryMotion {
         Vec3 step = new Vec3(length < .00001 ? 0 : delta.x / length * Math.min(.06, length),
                 Mth.clamp(delta.y, -.08, .08), length < .00001 ? 0 : delta.z / length * Math.min(.06, length));
         if (!level.hasChunkAt(BlockPos.containing(actor.position().add(step)))) return;
-        actor.move(MoverType.SELF, step);
+        Vec3 before=actor.position();actor.move(MoverType.SELF, step);
+        actor.walkAnimation.update((float)actor.position().subtract(before).horizontalDistance()*4,.4F);
         actor.setYRot(Mth.approachDegrees(actor.getYRot(), 180, 8));
         actor.setYBodyRot(actor.getYRot()); actor.setYHeadRot(actor.getYRot());
     }
