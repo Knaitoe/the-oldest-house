@@ -60,7 +60,7 @@ public final class GoatmanWindowCircuit {
             if(seenFor==0)r.putInt("WindowMax0497",Math.max(r.getInt("WindowMax0497"),clock+ATTENDED_MAX));
             r.putInt("WindowSeen0497",++seenFor);
         }
-        boolean hold=clock<r.getInt("WindowMax0497")&&(clock<r.getInt("StalkPause0465")||seenFor>0&&seenFor<ATTENDED);
+        boolean hold=clock<r.getInt("WindowMax0497")&&(clock<r.getInt("StalkPause0465")||seenFor>0&&seenFor<=ATTENDED);
         c.heave(hold&&seen);
         if(!hold)r.putBoolean("WindowHolding0497",false);
         return hold;

@@ -425,11 +425,13 @@ public final class GoatmanTests {
         final int middleWest=1;GoatmanFigure[] mine={null};boolean[] onTire={false},faceClear={false},heaved={false};int[] watched={0},struck={0};
         h.onEachTick(()->{var it=mine[0];if(it==null||it.isRemoved())return;struck[0]=Math.max(struck[0],it.struck);
             var spot=GoatmanStalking.paneSpot(f.b,middleWest);var face=spot.add(0,GoatmanStalking.FACE,0);look(a,face);
+            // The watched count stays on the figure while it drops back off the tire, until its next window.
+            if(it.pane==middleWest)watched[0]=Math.max(watched[0],it.paneSeen);
             if(it.pane==middleWest&&it.paneAt>=0&&it.paneExit==null&&it.position().distanceToSqr(spot)<1e-4){
                 onTire[0]|=f.l.getBlockState(BlockPos.containing(spot).below()).is(GoatmanRegistry.WHEEL.get());
                 // The figure's skull spans 1.69-2.13 above its feet: from the tire it is entirely above the sill at y 2.
                 faceClear[0]|=spot.y+1.69>f.b.getY()+2&&GoatmanStalking.visible(f.l,a,a.getEyePosition(),face);
-                heaved[0]|=it.heaving();watched[0]=Math.max(watched[0],it.paneSeen);
+                heaved[0]|=it.heaving();
             }
         });
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the trailer's native entity sections are ready")).thenExecute(()->{
