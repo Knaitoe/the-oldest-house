@@ -39,11 +39,11 @@ public final class BorrascaSites {
     public static @Nullable LabyrinthData.Door prepareEntry(ServerPlayer p){
         var d=LabyrinthData.get(p.server);if(store!=d){clear();store=d;}var t=site(p.server,p.getUUID());
         if(!t.contains("Index")){var world=d.stateEntry(SITES,"World");int index=world.getInt("NextIndex");if(index>=32000)return null;t.putInt("Index",index);world.putInt("NextIndex",index+1);d.setStateEntry(SITES,"World",world);d.setStateEntry(SITES,p.getUUID().toString(),t);}
-        if(t.getBoolean("Built"))return entry(p);waiting.add(p.getUUID());return null;
+        if(t.getBoolean("Built"))return entry(p);if(!p.getUUID().equals(building))waiting.add(p.getUUID());return null;
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post event){advance(event.getServer());}
     public static void advance(MinecraftServer server){
-        var d=LabyrinthData.get(server);if(store!=d){clear();store=d;}if(building==null){if(waiting.isEmpty())return;building=waiting.iterator().next();waiting.remove(building);}
+        var d=LabyrinthData.get(server);if(store!=d){clear();store=d;}while(building==null&&!waiting.isEmpty()){var next=waiting.iterator().next();waiting.remove(next);if(!ready(server,next))building=next;}if(building==null)return;
         var b=base(server,building);var l=server.getLevel(HouseDimensions.OUTSIDE);if(b==null||l==null){release();return;}
         if(chunks.isEmpty()){leased=l;var box=bounds(b).inflate(2);for(int x=((int)box.minX)>>4;x<=((int)box.maxX)>>4;x++)for(int z=((int)box.minZ)>>4;z<=((int)box.maxZ)>>4;z++){var c=new ChunkPos(x,z);l.getChunkSource().addRegionTicket(TICKET,c,1,c);chunks.add(c);}}
         // Never call a synchronous chunk getter as a timeout fallback.
@@ -51,7 +51,7 @@ public final class BorrascaSites {
         if(plan==null){plan=BuildBlocks.record(l,()->BorrascaRooms.build(l,b));plan.resume(site(server,building).getCompound("BuildCursor"));}
         if(!plan.tick()){var progress=site(server,building);progress.put("BuildCursor",plan.checkpoint());d.setStateEntry(SITES,building.toString(),progress);return;}
         d.putDoor(new LabyrinthData.Door("borrasca/"+building+"/entry",HouseDimensions.OUTSIDE,b.offset(0,0,1),Direction.SOUTH,LabyrinthData.RETURN,false));
-        var t=site(server,building);t.putBoolean("Built",true);t.remove("BuildCursor");d.setStateEntry(SITES,building.toString(),t);release();
+        var t=site(server,building);t.putBoolean("Built",true);t.remove("BuildCursor");d.setStateEntry(SITES,building.toString(),t);waiting.remove(building);release();
     }
     private static void release(){if(leased!=null)for(var c:chunks)leased.getChunkSource().removeRegionTicket(TICKET,c,1,c);chunks.clear();leased=null;plan=null;building=null;}
     public static void clear(){release();waiting.clear();store=null;BorrascaCast.clear();}

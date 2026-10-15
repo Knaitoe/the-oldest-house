@@ -26,7 +26,8 @@ public final class GoatmanStalking {
     public static final int ASSAULT_END=1080;
     public static final int CIRCUITS=3;
     public static boolean circuitDone(CompoundTag r){return r.getInt("StalkLeg0465")>=CIRCUIT.length
-            &&(!r.contains("CircuitGoal0494")||r.getInt("Circuits0494")>=r.getInt("CircuitGoal0494"));}
+            &&(!r.contains("CircuitGoal0494")||r.getInt("Circuits0494")>=r.getInt("CircuitGoal0494"))
+            &&(!r.contains("WindowSerial0497")||r.getBoolean("DoorPressureDone0497"));}
     private GoatmanStalking(){}
     private static Vec3 abs(BlockPos b,Vec3 p){return p.add(b.getX(),b.getY(),b.getZ());}
     /** The deck is consumed only when an appearance actually changes; exhaustion never recycles a child. */
@@ -139,7 +140,15 @@ public final class GoatmanStalking {
             if(r.getInt("StalkLeg0465")==0)r.putInt("CircuitGoal0494",CIRCUITS);
             c.disguise(c.skin());c.getPersistentData().remove("Route");c.pose(false);c.cower(false);c.heave(false);
         }
-        change(l,r,c);
+        boolean supported=GoatmanWindowCircuit.stepsReady(l,b);
+        if(!GoatmanWindowCircuit.atPane(b,c))change(l,r,c);
+        // Longer glimpses cannot move the voice clock or make a distant wall strike stress the door.
+        // Finish on this original body's real front step, then permit its bathroom-window approach.
+        if(r.contains("WindowSerial0497")&&r.getInt("StalkLeg0465")>=CIRCUIT.length
+                &&r.getInt("Circuits0494")>=r.getInt("CircuitGoal0494")&&!r.getBoolean("DoorPressureDone0497")){
+            c.pose(false);face(c,Vec3.atCenterOf(b.offset(GoatmanWoods.DOOR)));
+            GoatmanWindowCircuit.frontDoor(l,b,r,c,clock);return;
+        }
         // Voice timing cannot skip a leg or send this same body to the window prematurely.
         boolean window=circuitDone(r)&&r.getBoolean("AssaultDone0465")&&clock>=1900;
         if(!window&&circuitDone(r)){
@@ -148,12 +157,14 @@ public final class GoatmanStalking {
         }
         int leg=r.getInt(window?"StalkWindowLeg0465":"StalkLeg0465");Vec3[] route=window?TO_WINDOW:CIRCUIT;
         if(!window&&leg>=route.length&&!circuitDone(r)){
-            r.putInt("StalkLeg0465",0);r.putInt("StalkPause0465",clock+40);r.putBoolean("StalkChange0465",true);c.pose(false);return;
+            GoatmanWindowCircuit.nextLap(r,c,clock);c.pose(false);return;
         }
         if(leg>=route.length){c.pose(false);face(c,Vec3.atCenterOf(b.offset(GoatmanWoods.WINDOW)));return;}
-        if(clock<r.getInt("StalkPause0465")){c.pose(false);return;}
-        Vec3 target=abs(b,route[leg]),delta=target.subtract(c.position());double length=delta.length();
-        double speed=r.getInt("DemandStage0465")>=4?.52:.42;
+        if(GoatmanWindowCircuit.hold(l,r,c,clock)||clock<r.getInt("StalkPause0465")){c.pose(false);return;}
+        Vec3 local=route[leg];if(!window&&supported){if(leg==3)local=new Vec3(-8.5,1,-66.5);if(leg==9)local=new Vec3(9.5,1,-66.5);}
+        Vec3 via=!window&&supported?GoatmanWindowCircuit.via(leg):null;boolean approaching=via!=null&&r.getInt("StalkVia0497")!=leg;
+        Vec3 target=abs(b,approaching?via:local),delta=target.subtract(c.position());double length=delta.length();
+        double speed=(r.contains("StalkSpeed0497")?r.getFloat("StalkSpeed0497"):.42)*(r.getInt("DemandStage0465")>=4?.52/.42:1);
         Vec3 movement=length<=speed?delta:delta.scale(speed/length);var before=c.position();
         c.setOnGround(true);c.move(net.minecraft.world.entity.MoverType.SELF,movement);c.setDeltaMovement(Vec3.ZERO);
         // A wheel approach rises physically before the next horizontal step; collision never teleports the body.
@@ -161,15 +172,15 @@ public final class GoatmanStalking {
         float yaw=length>.01?(float)(Math.atan2(delta.z,delta.x)*180/Math.PI)-90:c.getYRot();
         c.setYRot(yaw);c.setYHeadRot(yaw);c.yBodyRot=yaw;c.animate(c.position().distanceTo(before),false,false);
         if(c.position().distanceToSqr(target)>.012)return;
+        if(approaching){r.putInt("StalkVia0497",leg);return;}
         r.putInt(window?"StalkWindowLeg0465":"StalkLeg0465",leg+1);
         if(!window&&leg==route.length-1&&r.contains("CircuitGoal0494"))r.putInt("Circuits0494",r.getInt("Circuits0494")+1);
         if(window&&leg==route.length-1){impact(l,b,r,c,GoatmanWoods.WINDOW,2);return;}
         if(!window){
             BlockPos hit=switch(leg){case 2->new BlockPos(-8,2,-59);case 3->new BlockPos(-8,2,-67);case 4->new BlockPos(-8,2,-73);case 6->new BlockPos(0,2,-77);case 8->GoatmanWoods.WINDOW;case 9->new BlockPos(8,2,-67);case 10->new BlockPos(8,2,-59);default->null;};
-            if(hit!=null){face(c,Vec3.atCenterOf(b.offset(hit)));impact(l,b,r,c,hit,leg%3==0?2:1);r.putInt("StalkPause0465",clock+24);
-                // Each new circuit has one sustained disguise: monster, an unused child,
-                // monster. Change only unseen between laps, not in the reader's window.
-                if(!r.contains("CircuitGoal0494"))r.putBoolean("StalkChange0465",true);}
+            if(hit!=null){face(c,Vec3.atCenterOf(b.offset(hit)));impact(l,b,r,c,hit,leg%3==0?2:1);r.putInt("StalkPause0465",clock+18+c.getRandom().nextInt(29));
+                if(GoatmanWindowCircuit.sideWindow(leg)){GoatmanWindowCircuit.start(r,c,clock);r.putBoolean("StalkChange0465",true);}
+                else if(!r.contains("CircuitGoal0494"))r.putBoolean("StalkChange0465",true);}
         }
     }
     private static void face(GoatmanChild c,Vec3 p){var d=p.subtract(c.position());float yaw=(float)(Math.atan2(d.z,d.x)*180/Math.PI)-90;c.setYRot(yaw);c.setYHeadRot(yaw);c.yBodyRot=yaw;}

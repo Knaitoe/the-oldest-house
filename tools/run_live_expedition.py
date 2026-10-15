@@ -3,20 +3,23 @@ from pathlib import Path
 import os
 import signal
 import subprocess
+import sys
 import time
 
 os.environ.setdefault("ALSOFT_DRIVERS", "null")
 
 ROOT = Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
-report = ROOT / "build/live-proof"
+borrasca_only = "--borrasca-only" in sys.argv[1:]
+proof_root = ROOT / ("run-borrasca-live" if borrasca_only else "run-live")
+report = ROOT / ("build/borrasca-live-proof" if borrasca_only else "build/live-proof")
 report.mkdir(parents=True, exist_ok=True)
-server = ROOT / "run-live/server"
+server = proof_root / "server"
 server.mkdir(parents=True, exist_ok=True)
 (server / "eula.txt").write_text("eula=true\n")
 (server / "server.properties").write_text('server-ip=127.0.0.1\nserver-port=25578\nonline-mode=false\nview-distance=6\nsimulation-distance=3\nspawn-protection=0\nspawn-monsters=false\nmax-players=3\nlevel-type=minecraft:flat\ngenerator-settings={"layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:dirt","height":2},{"block":"minecraft:grass_block","height":1}],"biome":"minecraft:plains"}\ngenerate-structures=false\nsync-chunk-writes=false\n')
 for role in ("a", "b"):
-    folder = ROOT / "run-live" / role
+    folder = proof_root / role
     folder.mkdir(parents=True, exist_ok=True)
     (folder / "options.txt").write_text("pauseOnLostFocus:false\nrenderDistance:6\nsimulationDistance:5\nmaxFps:30\nenableVsync:false\nguiScale:2\ntutorialStep:none\n")
 
@@ -25,7 +28,7 @@ logs = []
 def launch(task, name):
     log = open(report / f"{name}.log", "w")
     logs.append(log)
-    p = subprocess.Popen(["gradle", task, "--no-daemon", "--max-workers=1", "-Dorg.gradle.jvmargs=-Xmx256m"], stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+    p = subprocess.Popen(["gradle", task, "--no-daemon", "--max-workers=1", "-Dorg.gradle.jvmargs=-Xmx256m"] + (["-PborrascaSocketSmoke"] if borrasca_only else []), stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
     processes.append(p)
     return p
 
@@ -45,7 +48,7 @@ def wait_for(check, seconds, context):
     raise RuntimeError(f"Timed out waiting for {context}")
 
 try:
-    subprocess.run(["gradle", "classes", "prepareProofServerRun", "prepareProofARun", "prepareProofBRun", "--no-daemon", "--max-workers=2"], check=True)
+    subprocess.run(["gradle", "classes", "prepareProofServerRun", "prepareProofARun", "prepareProofBRun", "--no-daemon", "--max-workers=2"] + (["-PborrascaSocketSmoke"] if borrasca_only else []), check=True)
     host = launch("runProofServer", "server")
     wait_for(lambda: "Done (" in (server / "logs/latest.log").read_text(errors="replace") if (server / "logs/latest.log").exists() else False, 180, "dedicated server startup")
     first = launch("runProofA", "client-a")
@@ -54,6 +57,19 @@ try:
     # The expedition itself still requires both live clients together.
     wait_for(lambda: "joined the game" in (server / "logs/latest.log").read_text(errors="replace"), 180, "first native client window and socket login")
     second = launch("runProofB", "client-b-first")
+    if borrasca_only:
+        wait_for(lambda: (report / "passed.txt").exists(), 300, "targeted production Borrasca source, ladder, original record, low pipe and native return")
+        for p in processes:
+            p.wait(timeout=90)
+            assert p.returncode == 0, p.returncode
+        assert (report / "borrasca-socket-passed.txt").is_file()
+        for role in ("A", "B"):
+            for view in ("source-and-sound", "native-ladder", "original-register", "native-pipe", "native-return"):
+                assert (report / f"{role}-borrasca-{view}.png").stat().st_size > 500, (role, view)
+        native_log = (server / "logs/latest.log").read_text(errors="replace")
+        assert not any(warning in native_log for warning in ("moved too quickly!", "moved wrongly!", "floating too long!")), native_log[-5000:]
+        print((report / "passed.txt").read_text(), flush=True)
+        raise SystemExit(0)
     wait_for(lambda: (report / "restart-b.txt").exists() and second.poll() is not None, 360, "both clients' first expedition and native logout")
     reconnected = launch("runProofB", "client-b-reconnected")
     wait_for(lambda: (report / "restart-b-leak.txt").exists() and reconnected.poll() is not None, 240, "personal burn, two note rooms and logout inside a leak")
@@ -74,6 +90,12 @@ try:
     assert (report / "trailer-arrival.txt").is_file()
     assert (report / "trailer-camp.txt").is_file()
     assert (report / "trailer-night.txt").is_file()
+    for role in ("A", "B"):
+        assert (report / f"{role}-trailer-window-goatman.png").stat().st_size > 500
+        children = list(report.glob(f"{role}-trailer-window-child*.png"))
+        assert len(children) >= 2, (role, children)
+        assert all(frame.stat().st_size > 500 for frame in children)
+        assert (report / f"{role}-trailer-window-variety.txt").stat().st_size > 100
     assert (report / "mob-sight-passed.txt").is_file()
     assert (report / "camp-bed-passed.txt").is_file()
     assert (report / "canoe-passed.txt").is_file()
@@ -119,5 +141,5 @@ finally:
     for name in ("server", "client-a", "client-b-first", "client-b-reconnected", "client-b-leak-reconnected"):
         log = report / f"{name}.log"
         if log.exists():
-            selected = [line for line in log.read_text(errors="replace").splitlines() if any(word in line for word in ("LIVE EXPEDITION", "LIVE PORTHOLE", "Exception", "Caused by", "ERROR", "FAILED"))]
+            selected = [line for line in log.read_text(errors="replace").splitlines() if any(word in line for word in ("LIVE EXPEDITION", "LIVE PORTHOLE", "LIVE BORRASCA", "Exception", "Caused by", "ERROR", "FAILED"))]
             print(f"{name}:\n" + "\n".join(selected[-25:]), flush=True)

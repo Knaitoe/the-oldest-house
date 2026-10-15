@@ -22,7 +22,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.gametest.*;
 
 /** Native interactions and physics. Staged entry/route positions are named; no test claims an ordinary playthrough. */
-@GameTestHolder(TheOldestHouse.MOD_ID+"_literary") @PrefixGameTestTemplate(false)
+@GameTestHolder(TheOldestHouse.MOD_ID+"_borrasca") @PrefixGameTestTemplate(false)
 public final class BorrascaTests {
     private static final LabyrinthPlace P=LabyrinthPlace.BORRASCA;
     private static Fixture active;
@@ -60,7 +60,7 @@ public final class BorrascaTests {
     @GameTest(template="empty",batch="borrasca_walk",timeoutTicks=1400)
     public static void nativeWalkingReachesTheBedroomAndTheRidgeWithAReachableMineSign(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("drisking_walker");final int[] phase={0},next={0},moves={0};
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{f.enter(p);f.at(p,16,0,-46);p.setNoGravity(false);phase[0]=1;}).thenWaitUntil(()->h.assertTrue(phase[0]==3,"ordinary walking finishes: phase="+phase[0]+", ridge point="+next[0]+", body="+p.position().subtract(Vec3.atLowerCornerOf(f.base(p))))).thenSucceed();
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{f.enter(p);var b=f.base(p);h.assertTrue(!f.out.noCollision(p,new AABB(b.getX()-4.8,b.getY()+6,b.getZ()-93.1,b.getX()-4.2,b.getY()+7,b.getZ()-92.9)),"the actual treehouse rail blocks the gap between posts");h.assertTrue(!f.out.noCollision(p,new AABB(b.getX()-10.8,b.getY()+12,b.getZ()-190.1,b.getX()-10.2,b.getY()+13,b.getZ()-189.9)),"the actual refinery grille blocks the gap between bars");f.at(p,16,0,-46);p.setNoGravity(false);phase[0]=1;}).thenWaitUntil(()->h.assertTrue(phase[0]==3,"ordinary walking finishes: phase="+phase[0]+", ridge point="+next[0]+", body="+p.position().subtract(Vec3.atLowerCornerOf(f.base(p))))).thenSucceed();
         h.onEachTick(()->{if(phase[0]==0||phase[0]==3)return;var b=f.base(p);if(phase[0]==1){p.setYRot(180);p.travel(new Vec3(0,0,1));if(p.getZ()<b.getZ()-54){h.assertTrue(p.getY()>=b.getY()+5.9,"the real stair reaches the upstairs floor without a scripted jump");f.at(p,0,0,-105);phase[0]=2;}return;}
             int n=next[0];if(n>64){h.assertTrue(moves[0]>200&&p.getY()>=b.getY()+11.8,"the same ordinary body walked the graded ridge and final native stair");h.succeed();phase[0]=3;return;}if(phase[0]!=2)return;
             double x=b.getX()+Math.round(8*Math.sin(n*.065))+.5,z=b.getZ()-105-n+.5,dx=x-p.getX(),dz=z-p.getZ();if(Math.hypot(dx,dz)<.35){if(n==43){var sign=b.offset(BorrascaRooms.SIGN).getCenter();h.assertTrue(p.getEyePosition().distanceTo(sign)<4.5,"the original mine notice is within native interaction reach from the actual trail");}next[0]++;return;}p.setYRot((float)Math.toDegrees(Math.atan2(-dx,dz)));p.travel(new Vec3(0,0,1));moves[0]++;
@@ -103,8 +103,20 @@ public final class BorrascaTests {
 
     @GameTest(template="empty",batch="borrasca_build",timeoutTicks=1000)
     public static void firstConstructionResumesItsSavedBoundedCursorAndKeepsAppliedEdits(GameTestHelper h){
-        var f=new Fixture(h);var p=NativeTestPlayers.survival(h,"drisking_builder");f.players.add(p);h.assertTrue(BorrascaSites.prepareEntry(p)==null,"first entry waits without starting a visit");var b=BorrascaSites.base(p.server,p.getUUID());f.chunks.hold(f.out,BorrascaSites.bounds(b).inflate(2));final boolean[] reloaded={false};final BlockPos[] kept={null};
-        h.onEachTick(()->{var site=f.data().stateEntry("borrasca_sites_0497",p.getUUID().toString());var cursor=site.getCompound("BuildCursor");if(!reloaded[0]&&!cursor.isEmpty()&&cursor.getInt("Cursor")>=3){kept[0]=b.offset(0,-3,-80);f.out.setBlock(kept[0],Blocks.GOLD_BLOCK.defaultBlockState(),3);f.reload();h.assertTrue(BorrascaSites.prepareEntry(p)==null,"an unfinished build resumes at its saved command");reloaded[0]=true;}if(BorrascaSites.ready(p.server,p.getUUID())){h.assertTrue(reloaded[0]&&f.out.getBlockState(kept[0]).is(Blocks.GOLD_BLOCK),"already applied ground is not replayed after saved-data reload");h.assertTrue(BorrascaSites.heldChunks()==0&&BorrascaSites.entry(p)!=null&&f.own(p).getInt("Visit")==0,"completion releases construction tickets and grants no arrival, reading or credit");h.succeed();}});
+        var f=new Fixture(h);var p=NativeTestPlayers.survival(h,"drisking_builder");f.players.add(p);h.assertTrue(BorrascaSites.prepareEntry(p)==null,"first entry waits without starting a visit");var b=BorrascaSites.base(p.server,p.getUUID());f.chunks.hold(f.out,BorrascaSites.bounds(b).inflate(2));final boolean[] reloaded={false};final BlockPos[] kept={null};final int[] finishedTicks={0};final LabyrinthData.Door[] originalDoor={null};
+        h.onEachTick(()->{
+            // A real door retries throughout construction. Retrying must never enqueue the active site again.
+            for(int retry=0;retry<3;retry++)BorrascaSites.prepareEntry(p);
+            var site=f.data().stateEntry("borrasca_sites_0497",p.getUUID().toString());var cursor=site.getCompound("BuildCursor");
+            if(!reloaded[0]&&!cursor.isEmpty()&&cursor.getInt("Cursor")>=3){kept[0]=b.offset(0,-3,-80);f.out.setBlock(kept[0],Blocks.GOLD_BLOCK.defaultBlockState(),3);f.reload();h.assertTrue(BorrascaSites.prepareEntry(p)==null,"an unfinished build resumes at its saved command");reloaded[0]=true;}
+            if(!BorrascaSites.ready(p.server,p.getUUID()))return;
+            h.assertTrue(reloaded[0]&&f.out.getBlockState(kept[0]).is(Blocks.GOLD_BLOCK),"already applied ground is not replayed after saved-data reload");
+            h.assertTrue(BorrascaSites.heldChunks()==0&&BorrascaSites.entry(p)!=null&&f.own(p).getInt("Visit")==0,"completion releases construction tickets and grants no arrival, reading or credit");
+            if(finishedTicks[0]++==0){originalDoor[0]=BorrascaSites.entry(p);f.out.setBlock(b.offset(0,-1,-3),Blocks.DIAMOND_BLOCK.defaultBlockState(),3);}
+            h.assertTrue(BorrascaSites.entry(p)==originalDoor[0]&&f.out.getBlockState(b.offset(0,-1,-3)).is(Blocks.DIAMOND_BLOCK),"repeated native entry requests cannot rebuild the completed site, erase its entry floor or replace its saved door");
+            // Keep advancing the actual queue after completion: a same-tick assertion misses the stale second build.
+            BorrascaSites.advance(p.server);if(finishedTicks[0]>=100)h.succeed();
+        });
     }
 
     @GameTest(template="empty",batch="borrasca_interrupt",timeoutTicks=350)

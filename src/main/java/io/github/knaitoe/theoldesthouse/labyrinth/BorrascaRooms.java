@@ -20,11 +20,13 @@ public final class BorrascaRooms {
     private static void door(ServerLevel l,BlockPos b,int x,int y,int z,Direction facing,Block block){box(l,b,x,y,z,x,y+1,z,Blocks.AIR);NovelRooms.door(l,b.offset(x,y,z),facing,block,false);}
     private static void lamp(ServerLevel l,BlockPos b,int x,int y,int z){set(l,b,x,y+1,z,Blocks.CHAIN);BuildBlocks.set(l,b.offset(x,y,z),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);}
     private static void sign(ServerLevel l,BlockPos b,int x,int y,int z,String a,String c,String d,String e){NovelRooms.sign(l,b.offset(x,y,z),Direction.SOUTH,new String[]{a,c,d,e});}
+    /** Each connection is its own bounded construction command, after its neighbours exist. */
+    private static void join(ServerLevel l,BlockPos b,int x0,int y0,int z0,int x1,int y1,int z1){for(var rel:BlockPos.betweenClosed(x0,y0,z0,x1,y1,z1)){var at=b.offset(rel).immutable();BuildBlocks.after(l,()->{var state=l.getBlockState(at);if(!(state.getBlock() instanceof FenceBlock||state.getBlock() instanceof IronBarsBlock))return;for(var side:Direction.Plane.HORIZONTAL){var next=at.relative(side);state=state.updateShape(side,l.getBlockState(next),l,at,next);}l.setBlock(at,state,F);});}}
     private static void house(ServerLevel l,BlockPos b,int x0,int x1,int z0,int z1,int y,Block wall,Block floor){
         NovelRooms.room(l,b,x0,x1,z0,z1,y,5,wall,floor);
         for(int x:new int[]{x0,x1})for(int z:new int[]{z0,z1})box(l,b,x,y,z,x,y+5,z,Blocks.STRIPPED_SPRUCE_LOG);
         for(int x=x0-1;x<=x1+1;x++)for(int z=z0-1;z<=z1+1;z++){int rise=Math.min(Math.min(x-x0+1,x1+1-x),3);set(l,b,x,y+6+Math.max(0,rise),z,Blocks.DARK_OAK_PLANKS);}
-        for(int x=x0+3;x<x1-1;x+=5)for(int z:new int[]{z0,z1})box(l,b,x,y+2,z,x+1,y+3,z,Blocks.GLASS_PANE);
+        for(int x=x0+3;x<x1-1;x+=5)for(int z:new int[]{z0,z1}){box(l,b,x,y+2,z,x+1,y+3,z,Blocks.GLASS_PANE);join(l,b,x,y+2,z,x+1,y+3,z);}
         int dx=(x0+x1)/2;door(l,b,dx,y,z1,Direction.SOUTH,Blocks.SPRUCE_DOOR);box(l,b,dx-1,y-1,z1+1,dx+1,y-1,z1+2,Blocks.STONE_BRICKS);lamp(l,b,dx,y+3,z1-2);
     }
     public static void build(ServerLevel l,BlockPos b){
@@ -75,6 +77,7 @@ public final class BorrascaRooms {
         box(l,b,-23,12,-207,-18,15,-207,Blocks.STONE_BRICKS);box(l,b,-23,12,-210,-16,15,-210,Blocks.STONE_BRICKS);box(l,b,-16,12,-209,-16,15,-207,Blocks.STONE_BRICKS);
         box(l,b,34,-5,-61,41,-1,-53,Blocks.STONE_BRICKS);box(l,b,35,-4,-60,40,-2,-54,Blocks.AIR);
         for(int z:new int[]{-181,-191,-201})lamp(l,b,-22,15,z);
+        for(int x:new int[]{-5,5})join(l,b,x,6,-98,x,8,-90);for(int x:new int[]{-11,8})join(l,b,x,12,-204,x,18,-176);for(int x:new int[]{5,9})join(l,b,x,9,-149,x,12,-149);join(l,b,25,8,-44,28,9,-44);
         // Reading porch and normal return, away from the committed evidence room.
         box(l,b,-5,-1,-9,5,-1,2,Blocks.STONE_BRICKS);for(int x:new int[]{-5,5})box(l,b,x,0,-8,x,4,0,Blocks.BRICKS);box(l,b,-5,5,-9,5,5,0,Blocks.DARK_OAK_PLANKS);furnished(l,b,3,0,-5,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);furnished(l,b,-3,0,-5,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);LiteraryRooms.paper(l,b,SOURCE,BorrascaTexts.source());LiteraryRooms.prop(l,b,ACCOUNT,LiteraryPropBlock.Kind.LEDGER,Direction.SOUTH);lamp(l,b,0,3,-6);
         NovelRooms.safeApproach(l,b);LabyrinthBuilder.entrance(l,b,Blocks.BRICKS.defaultBlockState(),Blocks.STONE_BRICKS.defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState());NovelRooms.door(l,b.offset(0,0,1),Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);
