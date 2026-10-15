@@ -55,6 +55,17 @@ public final class BorrascaTests {
     @AfterBatch(batch="borrasca_private") public static void privateDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="borrasca_build") public static void buildDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="borrasca_interrupt") public static void interruptDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="borrasca_walk") public static void walkDone(ServerLevel l){cleanup();}
+
+    @GameTest(template="empty",batch="borrasca_walk",timeoutTicks=1400)
+    public static void nativeWalkingReachesTheBedroomAndTheRidgeWithAReachableMineSign(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("drisking_walker");final int[] phase={0},next={0},moves={0};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{f.enter(p);f.at(p,16,0,-46);p.setNoGravity(false);phase[0]=1;});
+        h.onEachTick(()->{if(phase[0]==0||phase[0]==3)return;var b=f.base(p);if(phase[0]==1){p.setYRot(180);p.travel(new Vec3(0,0,1));if(p.getZ()<b.getZ()-54){h.assertTrue(p.getY()>=b.getY()+5.9,"the real stair reaches the upstairs floor without a scripted jump");f.at(p,0,0,-105);phase[0]=2;}return;}
+            int n=next[0];if(n>64){h.assertTrue(moves[0]>200&&p.getY()>=b.getY()+11.8,"the same ordinary body walked the graded ridge and final native stair");h.succeed();phase[0]=3;return;}if(phase[0]!=2)return;
+            double x=b.getX()+Math.round(8*Math.sin(n*.065))+.5,z=b.getZ()-105-n+.5,dx=x-p.getX(),dz=z-p.getZ();if(Math.hypot(dx,dz)<.35){if(n==43){var sign=b.offset(BorrascaRooms.SIGN).getCenter();h.assertTrue(p.getEyePosition().distanceTo(sign)<4.5,"the original mine notice is within native interaction reach from the actual trail");}next[0]++;return;}p.setYRot((float)Math.toDegrees(Math.atan2(-dx,dz)));p.travel(new Vec3(0,0,1));moves[0]++;
+        });
+    }
 
     @GameTest(template="empty",batch="borrasca_registration")
     public static void oneCompleteSourceAppendsWithoutRenumberingOrChangingTheThreeEndings(GameTestHelper h){

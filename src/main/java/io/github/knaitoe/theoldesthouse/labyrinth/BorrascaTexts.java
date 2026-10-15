@@ -9,6 +9,7 @@ public final class BorrascaTexts {
     private BorrascaTexts(){}
     private static ItemStack book(String title,String author,String... pages){var fitted=new java.util.ArrayList<String>();for(String original:pages){var page=new StringBuilder();for(String word:original.split("(?<=\\s)")){if(page.length()+word.length()>145){fitted.add(page.toString().strip());page.setLength(0);}page.append(word);}if(!page.isEmpty())fitted.add(page.toString().strip());}return HouseWriting.book(title,author,HouseWriting.WritingStyle.WILL,fitted);}
     public static ItemStack accountBook(String reader){return book("The names brought back",reader,account());}
+    public static ItemStack accountBook(String reader,net.minecraft.nbt.CompoundTag own){String text=account();if(own.getBoolean("PowerOff"))text=text.replace("The sound had not changed. What I allowed it to mean had.","I stopped the motor. I could no longer pretend I had not known what I was hearing.");return book("The names brought back",reader,text);}
     public static ItemStack source(){return book("A place kept at the tree","Drisking",
         "CONTENT NOTE\n\nThis investigation concerns abduction, sexual violence, forced pregnancy and death. These events remain off-screen. No assault is shown or heard.\n\nThe way back stays open. You may leave at any point.",
         "Kyle and Kimber said they would wait by the diner. There is a platform in the three trees beyond the last house.\n\nWhen the sound comes from the ridge, everyone in town seems to know what to call it. Nobody agrees about what makes it.");}

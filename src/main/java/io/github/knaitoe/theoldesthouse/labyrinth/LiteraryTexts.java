@@ -97,7 +97,7 @@ public final class LiteraryTexts {
             "Bring the weapon you have used most. I can tell whether it has a past, or whether the House has made another one.\n\nThe lamp speaks my name slowly.");
         default->throw new IllegalArgumentException(p.id());};}
     public static ItemStack ending(ServerPlayer p,LabyrinthPlace place,CompoundTag own){return ending(p.getGameProfile().getName(),place,own);}
-    public static ItemStack ending(String name,LabyrinthPlace place,CompoundTag own){if(place==LabyrinthPlace.BORRASCA)return BorrascaTexts.accountBook(name);if(place==LabyrinthPlace.END_WORLD_CABIN&&own.getBoolean("Bargain0451"))return cabin(name,own);String text=switch(place){
+    public static ItemStack ending(String name,LabyrinthPlace place,CompoundTag own){if(place==LabyrinthPlace.BORRASCA)return BorrascaTexts.accountBook(name,own);if(place==LabyrinthPlace.END_WORLD_CABIN&&own.getBoolean("Bargain0451"))return cabin(name,own);String text=switch(place){
         case HILL_NURSERY->"I knocked "+own.getInt("Knocks")+" times. The cellar returned each one. Above it, somebody had written my name as if I lived there. The diary called the same thing protection that I had called a locked room.";
         case MINIATURES->"The tables held rooms I had walked through. Each little figure had my face. Behind the latest one there was room for somebody else, although I did not remember making that space.";
         case MASQUE->"I put my hand on the clock. The next chime did not come. Seven rooms of people had been waiting for it; now there was only the sound of my hand leaving the wood.";
