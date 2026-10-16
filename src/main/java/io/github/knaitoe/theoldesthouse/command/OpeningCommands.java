@@ -26,7 +26,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Debug controls for the opening sequence, under {@code /oldesthouse opening}.
+ * Debug controls for the opening sequence, under {@code /ghosthouse opening}.
  * Each takes an optional target player (defaults to the caller).
  */
 public final class OpeningCommands {
@@ -102,7 +102,7 @@ public final class OpeningCommands {
         OpeningWorldData.PhotoRecord photo = OpeningWorldData.get(source.getServer()).photoOf(player.getUUID());
         if (photo == null) {
             source.sendFailure(Component.literal("No photo has been taken of " + player.getGameProfile().getName()
-                    + "'s house yet; try /oldesthouse opening photo."));
+                    + "'s house yet; try /ghosthouse opening photo."));
             return 0;
         }
         ServerLevel level = source.getServer().getLevel(ResourceKey.create(Registries.DIMENSION, photo.dimension()));
@@ -193,7 +193,7 @@ public final class OpeningCommands {
         HouseSavedData data = HouseSavedData.get(source.getServer());
         if (data.isSpawned()) {
             BlockPos origin = data.housePosition().orElse(null);
-            source.sendSuccess(() -> Component.literal("The Oldest House already stands at "
+            source.sendSuccess(() -> Component.literal("The house already stands at "
                     + (origin == null ? "an unknown position" : format(origin)) + "."), false);
             return 1;
         }

@@ -132,7 +132,7 @@ public final class HouseProgression {
         int changed = HouseRugs.shift(interior, origin);
         HouseDimensionMirror.reconcileAuthoritativeDomestic(interior, server.overworld(), origin);
         data.markRugsShifted();
-        TheOldestHouse.LOGGER.info("The rugs of The Oldest House changed colour ({} carpet blocks) at perceived age {}.",
+        TheOldestHouse.LOGGER.info("The rugs of the house changed colour ({} carpet blocks) at perceived age {}.",
                 changed, data.houseAge());
         return true;
     }
@@ -178,7 +178,7 @@ public final class HouseProgression {
     // ------------------------------------------------------------------
     // Status
 
-    /** One line per stage, as {@code /oldesthouse status} shows them. */
+    /** One line per stage, as {@code /ghosthouse status} shows them. */
     public static List<String> describe(HouseSavedData data) {
         List<String> lines = new ArrayList<>();
         int age = data.houseAge();
@@ -236,7 +236,7 @@ public final class HouseProgression {
     public static String reveal(MinecraftServer server, String what) {
         HouseSavedData data = HouseSavedData.get(server);
         if (!data.isSpawned()) {
-            return "The Oldest House has not spawned yet.";
+            return "The house has not spawned yet.";
         }
         switch (what) {
             case "rugs" -> {

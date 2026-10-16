@@ -284,7 +284,7 @@ public final class NavidsonPhoto {
         phase = Phase.DONE;
         copy.releaseTickets();
         if (camera != null && result.pixels() != null) {
-            // Remember where the photo was taken, for /oldesthouse opening copy.
+            // Remember where the photo was taken, for /ghosthouse opening copy.
             float yaw = (float) Math.toDegrees(Math.atan2(-camera.fx(), camera.fz()));
             float pitch = (float) -Math.toDegrees(Math.asin(Math.max(-1.0D, Math.min(1.0D, camera.fy()))));
             OpeningWorldData.get(copy.target().getServer()).putPhoto(player, new OpeningWorldData.PhotoRecord(

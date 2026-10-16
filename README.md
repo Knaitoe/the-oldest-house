@@ -1,4 +1,16 @@
-Development candidate **0.4.98**: the Goatman still disguised as a child runs out as the real child runs in; that same body visits all five side panes during the evening, and twelve short varied contact recordings replace stacked knock sequences. Borrasca, cousin walks, existing native actors and every PNG are retained. Mod 0.4.98 / protocol 72 / layout 45; 46 sources / 35 required / two kinds / three endings; 642 native cases. Complete exact-source validation is pending. [Implementation and evidence limits](docs/GOATMAN_EXCHANGE_0_4_98.md).
+# This House Has Ghosts in It
+
+Development candidate **0.4.99** renames the mod and playable JAR, corrects the
+watched lake witch's escape and one-block passing swipe, and fits the Hide and
+Clap blindfold to both player head types with explicit completion cleanup.
+Use `/ghosthouse`; `/oldesthouse` remains compatible. Replace the previous JAR
+when upgrading. Existing world identities and every PNG remain. The Goatman
+repairs in 0.4.98 passed all twelve jobs and 642 native cases; this combined
+648-case candidate awaits its own exact-source validation.
+[Player checks and evidence limits](docs/PLAYTEST_0_4_99.md) ·
+[Rename and compatibility](docs/RENAME_0_4_99.md).
+
+Verified previous build **0.4.98**: the Goatman still disguised as a child runs out as the real child runs in; that same body visits all five side panes during the evening, and twelve short varied contact recordings replace stacked knock sequences. Borrasca, cousin walks, existing native actors and every PNG are retained. Mod 0.4.98 / protocol 72 / layout 45; 46 sources / 35 required / two kinds / three endings; 642 native cases. All twelve jobs and all 642 native cases passed in [run 38819015597](https://github.com/Knaitoe/the-oldest-house/actions/runs/38819015597). [Implementation and evidence limits](docs/GOATMAN_EXCHANGE_0_4_98.md).
 
 Earlier candidate **0.4.97 — Borrasca**: four saved visits to a private native town, treehouse and refinery, non-graphic investigation, original fitted atlas and positional industrial sound, original-evidence escape and successful-return Witness. [Implementation record](docs/BORRASCA_0_4_97.md).
 
@@ -90,7 +102,7 @@ Previous Version `0.4.54` implements the uploaded scene notes: an opaque covered
 
 Version `0.4.53` repairs the floating Ted cave outcrop and calcite formation, and connects native barn fence rails. Existing scenes upgrade once when loaded, away from cameras and without adding collision through living residents. Gate state, torches, finite supplies, original records and native animal identities remain. Includes native Ted torch/mining permissions and the complete operator finale escape route. Layout 35 / protocol 34, forty-three sources / thirty-three resolutions across two kinds, three endings. Validation pending. See [the repair details](docs/SCENE_SUPPORTS_0_4_53.md).
 
-Version `0.4.52` prepares the complete finale course when using `/oldesthouse test minotaur`, `boy`, or `ending defeat|escape|collapse|witness`. The commands wait for native loading of the full staircase and escape hallway, repair absent lower supports without replacing existing blocks, and prepare the water landing, real obstacles and final door before moving the player. A peer occupying a missing support makes preparation wait. Native actor identities, original equipment, depleted supplies and other players' progress remain. Includes the Ted cave torch/mining repair from 0.4.51. Layout 35 / protocol 34; forty-three sources, thirty-three resolutions across two kinds, three endings. Exact-head verification pending. See [the changes and test commands](docs/FINALE_ROUTE_0_4_52.md).
+Version `0.4.52` prepares the complete finale course when using `/ghosthouse test minotaur`, `boy`, or `ending defeat|escape|collapse|witness`. The commands wait for native loading of the full staircase and escape hallway, repair absent lower supports without replacing existing blocks, and prepare the water landing, real obstacles and final door before moving the player. A peer occupying a missing support makes preparation wait. Native actor identities, original equipment, depleted supplies and other players' progress remain. Includes the Ted cave torch/mining repair from 0.4.51. Layout 35 / protocol 34; forty-three sources, thirty-three resolutions across two kinds, three endings. Exact-head verification pending. See [the changes and test commands](docs/FINALE_ROUTE_0_4_52.md).
 
 ## 0.4.51 cave interaction repair
 
@@ -98,10 +110,9 @@ Ted’s cave accepts ordinary and soul torches on the floor and walls, and those
 
 ## 0.4.50 testing shortcuts
 
-`/oldesthouse test` lists the operator controls: `vignette <id>` puts any scene behind a real door (Tab lists IDs); `minotaur` or `boy` goes directly to the closed cell; `ending defeat|escape|witness` starts each real ending. Cell preparation/loading waits asynchronously, and another player's finale claim remains protected, including while offline. Use a **world copy** for endings; defeat seals belongings and completing escape removes the shared House. See [the command reference](docs/TEST_COMMANDS_0_4_50.md) for aliases, equipment and prerequisite details.
+`/ghosthouse test` lists the operator controls: `vignette <id>` puts any scene behind a real door (Tab lists IDs); `minotaur` or `boy` goes directly to the closed cell; `ending defeat|escape|witness` starts each real ending. Cell preparation/loading waits asynchronously, and another player's finale claim remains protected, including while offline. Use a **world copy** for endings; defeat seals belongings and completing escape removes the shared House. See [the command reference](docs/TEST_COMMANDS_0_4_50.md) for aliases, equipment and prerequisite details.
 
 <!-- Current architectural build also repairs the outside clock/sky, native water-running all-fours ambush, distinct lakeside streets/beach/trees, finite canoe and shore casualty, and encounter-earned shield. -->
-# The Oldest House
 
 Current source batch: [October 12 scenery finishing](docs/SCENE_FINISHING_0_4_88.md), mod 0.4.88 / protocol 67 / layout 43. 44 eligible Witness sources, 33 resolutions across two kinds, three endings. Full exact-source verification is pending.
 
@@ -137,7 +148,7 @@ Version `0.4.33` adds a personal **House of Leaves** at the staircase hallway. B
 
 Version `0.4.32` combines the full approved correspondence with the latest collected-book reading and confirmed personal returns. Every sixth letter is now reachable at the existing depth-sixteen limit, with extra room travel before it appears. Observer checks use the authoritative game mode. All 108 new pieces, the seventeen older installments, saved originals, signed replies, scene architecture and story progression remain intact. Layout 29 / protocol 28; seventeen Witness sources, thirteen resolutions across two kinds, three endings. See [the design document](docs/DESIGN_DOCUMENT.md) and [the complete polished selection](docs/CORRESPONDENCE_0_4_32.md). The [verified build](https://github.com/Knaitoe/the-oldest-house/actions/runs/37132585917) passed all 283 native gameplay tests and the full client checks; all 260 checked book pages fit.
 
-Version `0.4.31` incorporates the approved 108-piece correspondence selection after its final literary pass: fourteen six-letter chains, sixteen loose notes and eight notes grounded in the reader's own game actions. Existing paper surfaces interleave these voices and preserve ordered discovery, distinct hands and immutable originals. Reading a collected letter advances its own chain; subsequent installments need two intervening route crossings and the appropriate depth. Legacy notes, saves and finite inventories remain. Layout 29 / protocol 28, with seventeen Witness sources, thirteen personal resolutions across two kinds and three endings. The [verified build](https://github.com/Knaitoe/the-oldest-house/actions/runs/37129458957) passed all 279 native GameTests and 260 real book pages, along with the established client and package checks. See [the correspondence](docs/CORRESPONDENCE_0_4_31.md). Operator previews use `/oldesthouse writing correspondence I01` (tab completion lists every new ID) and leave progress unchanged.
+Version `0.4.31` incorporates the approved 108-piece correspondence selection after its final literary pass: fourteen six-letter chains, sixteen loose notes and eight notes grounded in the reader's own game actions. Existing paper surfaces interleave these voices and preserve ordered discovery, distinct hands and immutable originals. Reading a collected letter advances its own chain; subsequent installments need two intervening route crossings and the appropriate depth. Legacy notes, saves and finite inventories remain. Layout 29 / protocol 28, with seventeen Witness sources, thirteen personal resolutions across two kinds and three endings. The [verified build](https://github.com/Knaitoe/the-oldest-house/actions/runs/37129458957) passed all 279 native GameTests and 260 real book pages, along with the established client and package checks. See [the correspondence](docs/CORRESPONDENCE_0_4_31.md). Operator previews use `/ghosthouse writing correspondence I01` (tab completion lists every new ID) and leave progress unchanged.
 
 Version `0.4.30` makes the early halls ordinary and less crowded with doors, spaces out looping rooms, and keeps the model home's child's room closed until its third visit. Chalk works in the ordinary house as well as the labyrinth. Whale letters now arrive in empty ordinary-world chests; supported mail signage, concrete loose-page prose and distinct writer fonts replace repeated theory captions. The caver entry connects to its camp, Tom's original camp moves onto the actual staircase entry floor, and old finale wall gaps close without rebuilding the encounter. Holloway is mortal, with personal theft/escape progression preserved. Ambient livestock no longer spawn in the labyrinth. The prisoner has its own skin. Minotaur collision-size changes and repeated route/state allocations have been reduced, with native combat and animated render timing checks included. The [verified build](https://github.com/Knaitoe/the-oldest-house/actions/runs/37093414011) passed all 277 gameplay tests and client checks. Layout 29 / protocol 28; seventeen Witness sources, thirteen personal resolutions across two kinds, three endings. See [the current design](docs/DESIGN_DOCUMENT.md) and [the notes pass](docs/NOTES_AND_HALLWAYS_0_4_30.md).
 
@@ -157,7 +168,7 @@ Version `0.4.26` repairs the Mother’s den with walkable stairs and continuous 
 
 Version `0.4.25` implements **Holloway's camp and three-room hunt**, with a shared persistent human actor, next-visit pursuit after personally taking supplies, placed-torch tracking, cover and shield/weapon staggers, and finite shield/wrong-map rewards. **Harrigan now has proper human skins**, retaining his original saved seated actor and dialogue. The finale’s old man has a distinct patched-coat skin and hunch. Tom and the private double keep the explorer's standard/slim skin. Native multiplayer menus, personal progression, late joins, offline pause and independent escape credit are covered by the required GameTests. Layout 22 appends slot 39; seventeen eligible Witness sources now require **thirteen**, across two kinds, with three endings. See [docs/HOUSE_NPCS_0_4_25.md](docs/HOUSE_NPCS_0_4_25.md).
 
-Version `0.4.24` improves **custom-font legibility** with connected opaque strokes, consistent book baselines, corrected glyph mappings, explicit spaces and punctuation fallbacks. All standalone mentions of **house**, in any case, appear blue in authored pages and at display time in existing books, chat, tooltips, captions and labels. Signed chat and saved text are preserved. `/oldesthouse writing samples` now previews all six prose styles. Layout 21 and all story/ending progress remain unchanged. See [docs/WRITING_0_4_24.md](docs/WRITING_0_4_24.md).
+Version `0.4.24` improves **custom-font legibility** with connected opaque strokes, consistent book baselines, corrected glyph mappings, explicit spaces and punctuation fallbacks. All standalone mentions of **house**, in any case, appear blue in authored pages and at display time in existing books, chat, tooltips, captions and labels. Signed chat and saved text are preserved. `/ghosthouse writing samples` now previews all six prose styles. Layout 21 and all story/ending progress remain unchanged. See [docs/WRITING_0_4_24.md](docs/WRITING_0_4_24.md).
 
 Version `0.4.23` makes the six planned **House of Leaves sites** playable: Zampano’s courtyard, the Whale, the barn and well, the plain, the hospital and Karen’s room. The five new personal story resolutions make Witness require **twelve of sixteen**, across at least two kinds; Karen’s bed and actual-room projector are a navigation anchor. The finale now leaves the **Minotaur wounded and alive** while ceilings and floors physically break, a water shaft catches the fall, damaged corridors require jumping and crouching, and the final handle must be forced open. Layout 21 appends the new sites and preserves earlier rooms and evidence. See [docs/NOVEL_AND_COLLAPSE_0_4_23.md](docs/NOVEL_AND_COLLAPSE_0_4_23.md).
 
@@ -241,7 +252,7 @@ After the manor has actually been entered at least once, each new morning advanc
 What the mornings bring, all tunable in `the_oldest_house-house-server.toml`:
 
 1. **Rugs:** the first morning after someone actually completes a night in a manor bed, the great room and principal bedroom rugs trade colours, and so do the study's and literary bedroom's. Only carpet still where the house laid it changes. The House does **not** substitute a calendar-age fallback if nobody sleeps there.
-2. **The room between rooms:** never before House morning 3 and never until two further House mornings have passed after the rugs, each eligible morning has a 50% chance of arming the room behind the study door, then 75%, then certain on the third eligible morning. Armed, the door switches over the first time nobody is in or looking at the doorway; nothing in the manor visibly changes. The first night in the manor only brings the rugs; after that the House's mornings are the clock, wherever anyone slept. `/oldesthouse status` shows the chance for the next morning.
+2. **The room between rooms:** never before House morning 3 and never until two further House mornings have passed after the rugs, each eligible morning has a 50% chance of arming the room behind the study door, then 75%, then certain on the third eligible morning. Armed, the door switches over the first time nobody is in or looking at the doorway; nothing in the manor visibly changes. The first night in the manor only brings the rugs; after that the House's mornings are the clock, wherever anyone slept. `/ghosthouse status` shows the chance for the next morning.
 3. **Subtle changes** (`HouseShifts`): from the rugs on, on any morning when nothing larger happens, there is a 45% chance of one, rising by 20 points each quiet morning in a row and falling back after one happens. Each only touches what no player can see (in range, in a wide view cone and in line of sight):
    - **Paintings** trade walls with one of the same size, or one hangs a block over.
    - **The hall** is one block longer (once): the end wall moves back into space only the House dimension has, and the last slice of hall repeats in front of it. Outside, and in the Overworld proxy, nothing changes.
@@ -259,7 +270,7 @@ At most one of these happens on any morning.
 
 The room is real and so are its doors, but they stand in the House dimension far above the manor (the pocket, 100 blocks up). Its east door is the study door, directly above the real one, with a copy of the hall in front of it; its west door is the same door seven blocks further west, with a copy of the study (and the view from its windows) shifted by the same amount behind it. Clicking the real door from the hall shifts the player straight up; from the study, up and seven blocks west. Either way the shift is relative to where they stand, so nothing about their position, facing or momentum changes and nothing loads, and in the same tick the copy's door swings open with an ordinary door's sound. Walking out of the room through either door shifts them back down to the matching side of the real door, which has closed behind them: out the far side, into the other room, exactly where they expected to arrive. Coming out the opposite side from the one you went in by is what counts as having found the room. The copies' paintings are matched one for one. The real door never opens, the wall around it cannot be broken, and nothing in the pocket can be used but its two doors. The room is not the labyrinth: beds and every other ordinary rule still apply in it.
 
-For testing, `/oldesthouse day [n]` passes whole nights as if everyone online slept (in the manor if they are standing in it), `/oldesthouse reveal rugs|room|hallway` forces a stage, and `/oldesthouse shift [kind]` makes one subtle change now (a random one, or `paintings`, `deeper_hall`, `doors`, `chests`, `candles`, `echoes`, `chairs`, `notes`, `guest_bed`, `window`). `/oldesthouse age` and `/oldesthouse advance` still set perceived age directly, without running mornings.
+For testing, `/ghosthouse day [n]` passes whole nights as if everyone online slept (in the manor if they are standing in it), `/ghosthouse reveal rugs|room|hallway` forces a stage, and `/ghosthouse shift [kind]` makes one subtle change now (a random one, or `paintings`, `deeper_hall`, `doors`, `chests`, `candles`, `echoes`, `chairs`, `notes`, `guest_bed`, `window`). `/ghosthouse age` and `/ghosthouse advance` still set perceived age directly, without running mornings.
 
 ## The labyrinth and its vignettes
 
@@ -305,40 +316,40 @@ Commands require permission level 2.
 
 | Command | Purpose |
 | --- | --- |
-| `/oldesthouse spawn` | Force-spawn the test house about 36 blocks in front of the player. |
-| `/oldesthouse status` | Show the House's state, the mod's day count, the rugs, the room's chance of appearing next morning, when the hallway opens, and your own opening progress. |
-| `/oldesthouse day [n]` | Pass one (or `n`) nights as the mod sees them: the clock jumps to dawn, everyone online counts as having slept, and each morning runs as a real one would (opening steps, House age, rugs, the room's roll, the hallway). Stops early while Navidson's photo develops. |
-| `/oldesthouse reveal rugs\|room\|hallway` | Force that stage now. |
-| `/oldesthouse shift [kind]` | Make one subtle change now: random by weight, or the named one. Fails if what it would change is in someone's view. |
-| `/oldesthouse age <days>` | Set The Oldest House perceived age to an exact value (does not run mornings). |
-| `/oldesthouse advance` | Advance The Oldest House perceived age by one day. |
-| `/oldesthouse advance <days>` | Fast-forward The Oldest House perceived age by the supplied number of days. |
-| `/oldesthouse door <floorboards\|red_room\|hide_and_clap\|junction\|gray_corridor\|long_hallway\|spiral_stair\|hotel_hallway\|dealt>` | Place a test door two blocks in front of you, facing you, that leads there (`dealt`: wherever the dealer deals it, each time). The door you arrive at leads back to it. Works in any dimension. |
-| `/oldesthouse door remove` | Remove the nearest test door within eight blocks. |
-| `/oldesthouse labyrinth go` | Go straight to the junction; its entry door leads back to where you stood (or the hallway, once it exists). |
-| `/oldesthouse labyrinth build` | Carve every labyrinth place again. |
-| `/oldesthouse labyrinth status` | Deals, the dealer's odds, finished vignettes, and how many doors deep your way back is. |
-| `/oldesthouse vignette floorboards reset\|complete` | Put the floorboards back as new (dealable again), or mark them finished. |
-| `/oldesthouse growl far\|below\|near\|basement\|status` | Hear the Growl now from far off, below or close behind; wake in the cellar as if after a night in the manor; or show your odds (next growl, depth, times heard, whether the cellar can happen). |
-| `/oldesthouse vignette hide_and_clap reset\|complete` | Put the child's room back as new (no wardrobe, blindfold on the wall, dealable again), or mark the game finished. |
-| `/oldesthouse vignette red_room capture\|forget\|status` | Copy the room you are standing in as your room now; forget your tally and copy; or show where you spend your time and whose room stands in the Red Room. |
-| `/oldesthouse restock` | Give every empty, untouched chest and barrel in the manor its room's loot table (for houses built before the tables existed). |
-| `/oldesthouse visit` | Increment the stored visit count. |
-| `/oldesthouse reconcile` | Force an authoritative House-dimension to Overworld reconciliation and report how many positions changed. |
-| `/oldesthouse reset` | Reset persistent The Oldest House state. This does **not** erase blocks already placed in the world. |
-| `/oldesthouse opening status [player]` | Show a player's opening stage, sleeps, bed, timing, Hillary, first-entry state and last photo. |
-| `/oldesthouse opening advance [player]` | Run the player's next opening step now. |
-| `/oldesthouse opening eligible [player]` | Skip the settling-in requirements; the letter arrives on the next handled morning. |
-| `/oldesthouse opening letter [player]` | Take the photo and deliver Navidson's letter and snapshot immediately. |
-| `/oldesthouse opening photo [player]` | Photograph the player's house again and hand you the snapshot. |
-| `/oldesthouse opening copy [player]` | Stand where Navidson's camera stood in the outside dimension. |
-| `/oldesthouse opening house [player]` | Have the Navidsons move in next door now (the same site search as the letter's morning) and report why sites were turned down. |
-| `/oldesthouse opening hillary [player]` | Put a new Hillary on the player's doorstep, replacing any earlier one. |
-| `/oldesthouse opening reset [player]` | Clear that player's opening progress. |
+| `/ghosthouse spawn` | Force-spawn the test house about 36 blocks in front of the player. |
+| `/ghosthouse status` | Show the House's state, the mod's day count, the rugs, the room's chance of appearing next morning, when the hallway opens, and your own opening progress. |
+| `/ghosthouse day [n]` | Pass one (or `n`) nights as the mod sees them: the clock jumps to dawn, everyone online counts as having slept, and each morning runs as a real one would (opening steps, House age, rugs, the room's roll, the hallway). Stops early while Navidson's photo develops. |
+| `/ghosthouse reveal rugs\|room\|hallway` | Force that stage now. |
+| `/ghosthouse shift [kind]` | Make one subtle change now: random by weight, or the named one. Fails if what it would change is in someone's view. |
+| `/ghosthouse age <days>` | Set The Oldest House perceived age to an exact value (does not run mornings). |
+| `/ghosthouse advance` | Advance The Oldest House perceived age by one day. |
+| `/ghosthouse advance <days>` | Fast-forward The Oldest House perceived age by the supplied number of days. |
+| `/ghosthouse door <floorboards\|red_room\|hide_and_clap\|junction\|gray_corridor\|long_hallway\|spiral_stair\|hotel_hallway\|dealt>` | Place a test door two blocks in front of you, facing you, that leads there (`dealt`: wherever the dealer deals it, each time). The door you arrive at leads back to it. Works in any dimension. |
+| `/ghosthouse door remove` | Remove the nearest test door within eight blocks. |
+| `/ghosthouse labyrinth go` | Go straight to the junction; its entry door leads back to where you stood (or the hallway, once it exists). |
+| `/ghosthouse labyrinth build` | Carve every labyrinth place again. |
+| `/ghosthouse labyrinth status` | Deals, the dealer's odds, finished vignettes, and how many doors deep your way back is. |
+| `/ghosthouse vignette floorboards reset\|complete` | Put the floorboards back as new (dealable again), or mark them finished. |
+| `/ghosthouse growl far\|below\|near\|basement\|status` | Hear the Growl now from far off, below or close behind; wake in the cellar as if after a night in the manor; or show your odds (next growl, depth, times heard, whether the cellar can happen). |
+| `/ghosthouse vignette hide_and_clap reset\|complete` | Put the child's room back as new (no wardrobe, blindfold on the wall, dealable again), or mark the game finished. |
+| `/ghosthouse vignette red_room capture\|forget\|status` | Copy the room you are standing in as your room now; forget your tally and copy; or show where you spend your time and whose room stands in the Red Room. |
+| `/ghosthouse restock` | Give every empty, untouched chest and barrel in the manor its room's loot table (for houses built before the tables existed). |
+| `/ghosthouse visit` | Increment the stored visit count. |
+| `/ghosthouse reconcile` | Force an authoritative House-dimension to Overworld reconciliation and report how many positions changed. |
+| `/ghosthouse reset` | Reset persistent The Oldest House state. This does **not** erase blocks already placed in the world. |
+| `/ghosthouse opening status [player]` | Show a player's opening stage, sleeps, bed, timing, Hillary, first-entry state and last photo. |
+| `/ghosthouse opening advance [player]` | Run the player's next opening step now. |
+| `/ghosthouse opening eligible [player]` | Skip the settling-in requirements; the letter arrives on the next handled morning. |
+| `/ghosthouse opening letter [player]` | Take the photo and deliver Navidson's letter and snapshot immediately. |
+| `/ghosthouse opening photo [player]` | Photograph the player's house again and hand you the snapshot. |
+| `/ghosthouse opening copy [player]` | Stand where Navidson's camera stood in the outside dimension. |
+| `/ghosthouse opening house [player]` | Have the Navidsons move in next door now (the same site search as the letter's morning) and report why sites were turned down. |
+| `/ghosthouse opening hillary [player]` | Put a new Hillary on the player's doorstep, replacing any earlier one. |
+| `/ghosthouse opening reset [player]` | Clear that player's opening progress. |
 
 ### Important
 
-`/oldesthouse spawn` is a development command. It clears the The Oldest House build volume before placing the prototype, so do not aim it at anything you care about.
+`/ghosthouse spawn` is a development command. It clears the The Oldest House build volume before placing the prototype, so do not aim it at anything you care about.
 
 ## Build
 
@@ -488,8 +499,8 @@ The House dimension is now the authoritative copy of the initialized domestic in
 - Once initialized, the active domestic footprint is reconciled from the House dimension back to the Overworld once per second while a player is within 96 blocks in either dimension. This catches mutations that do not reliably fire placement/break events, including container menu changes, furnace progress, many redstone/environmental state changes and block-entity updates.
 - Explicit Overworld player edits are still accepted first and pushed into the House dimension before the authoritative pass, preserving break/place/door interactions on the exterior shell.
 - Explosions and piston movement now queue shared-position mirror updates as well.
-- `/oldesthouse reconcile` forces an immediate authoritative domestic reconciliation and reports how many shared positions changed.
-- `/oldesthouse reset` clears queued mirror work in addition to persistent House state.
+- `/ghosthouse reconcile` forces an immediate authoritative domestic reconciliation and reports how many shared positions changed.
+- `/ghosthouse reset` clears queued mirror work in addition to persistent House state.
 
 Impossible-only hallway cells remain excluded from all domestic reconciliation.
 
@@ -542,7 +553,7 @@ The domestic House generator has been replaced rather than incrementally patched
 
 ### 0.2.0 Tudor manor rebuild and mirror performance
 
-**Breaking change:** the House layout changed completely. Worlds with a House generated by 0.1.x should run `/oldesthouse reset` and respawn it (or use a fresh test world); the server log warns when it finds an old-layout House.
+**Breaking change:** the House layout changed completely. Worlds with a House generated by 0.1.x should run `/ghosthouse reset` and respawn it (or use a fresh test world); the server log warns when it finds an old-layout House.
 
 The House is now a large, old, asymmetrical Tudor manor that reads as decades of additions rather than one shell:
 
@@ -634,16 +645,16 @@ The opening has been revised so the player's own home remains ordinary.
 - The room between rooms no longer uses a separate dimension or a transition: it stands above the manor in the House dimension, the player is shifted up and down by a relative move, and the door physically swings open. Copying the bedroom no longer duplicates its paintings (they were popping off the wall and dropping as items).
 - The room between rooms now leads from the hall to the study: the familiar study door routes through a small room that cannot fit in the wall, and out the far side into the study. It is armed by a 50/75/100% roll from House morning 3 and switches over only when nobody is in or looking at the doorway. It is no longer treated as labyrinth space, and the hallway waits until someone has walked through it. Worlds with the earlier bedroom version have that door taken down and the room moved on the next start.
 - The first night in the manor shifts the rugs; around day 3 the room between rooms appears; ten kinds of subtle change follow on quiet mornings; after the room and two of them, the impossible hallway gets a heavily weighted daily roll, at the end of the hall as before. Subtle changes continue after it opens.
-- `/oldesthouse day [n]`, `/oldesthouse reveal rugs|room|hallway`, and a fuller `/oldesthouse status`.
-- The House's site search no longer gives up in woods or hills: it searches 32-96 blocks out in loosening passes, clears trees (never anything player-made), and skips unloaded chunks instead of reading them as the bottom of the world. The letter and Hillary now wait for the House, older saves retry every morning, and `/oldesthouse opening house` spawns it now with a report.
+- `/ghosthouse day [n]`, `/ghosthouse reveal rugs|room|hallway`, and a fuller `/ghosthouse status`.
+- The House's site search no longer gives up in woods or hills: it searches 32-96 blocks out in loosening passes, clears trees (never anything player-made), and skips unloaded chunks instead of reading them as the bottom of the world. The letter and Hillary now wait for the House, older saves retry every morning, and `/ghosthouse opening house` spawns it now with a report.
 - Hillary greets her recipient and waits to be greeted back (right-click, bone, or crouching facing her) before darting off towards the manor; ignored, she follows and whines.
-- The labyrinth: a door in the impossible hallway's far wall into a solid plaster dimension, the gray junction and corridor, a dealer that re-deals doors on every arrival with a dry-spell guarantee and leaking vignette doors, and the first vignette, The Tell-Tale Heart's floorboards. `/oldesthouse door <place>` puts a test door to any of it wherever you stand.
+- The labyrinth: a door in the impossible hallway's far wall into a solid plaster dimension, the gray junction and corridor, a dealer that re-deals doors on every arrival with a dry-spell guarantee and leaking vignette doors, and the first vignette, The Tell-Tale Heart's floorboards. `/ghosthouse door <place>` puts a test door to any of it wherever you stand.
 - The Growl: original synthesized sounds, heard alone and from nowhere in the labyrinth, more often the deeper you are but always sporadic; and, very rarely after enough of it, a night in the manor that ends in the cellar with the Growl underneath.
 - Hillary seeks: hold a vignette's object out to her and the next dealing that can have a vignette door does, with her bark leaking from behind it instead of the heartbeat. She scratches at the front door but never comes in.
-- Seamless loops: the Five and a Half Minute Hallway, the hotel hallway with its climbing room numbers, and the spiral staircase that takes longer to climb than to descend. They are dealt as gray places, less often than the junction and corridor. `/oldesthouse labyrinth status` shows your laps while you are in one.
+- Seamless loops: the Five and a Half Minute Hallway, the hotel hallway with its climbing room numbers, and the spiral staircase that takes longer to climb than to descend. They are dealt as gray places, less often than the junction and corridor. `/ghosthouse labyrinth status` shows your laps while you are in one.
 - Hide-and-clap: woven blindfold and cloth edge, private articulated girl with bare feet, a counted start and moving claps, a wardrobe and crayon drawing. Entry locks the room; opening the wardrobe releases the blindfold. A minute after equipping it, failure ends with feet, a camera twist, fatal damage, recoverable item drops and a manor respawn. Reservations and deadlines survive reconnects.
 - The Red Room: a copy of the room you spend the most time in at home, dealt as a recurring vignette. Its bed works at night, loses you time and wakes you deeper. The labyrinth's slots now fill upwards above the manor and carry on below it, so a high manor keeps every place.
-- Every chest and barrel in the manor now has a loot table for its room: pantry food in the kitchen, bottles and bowls in the scullery, candles and odds and ends in the parlour and landings, books and ink in the literary bedroom, fletching and scrap metal in the maker loft, moth-eaten leftovers in the box room. `/oldesthouse restock` applies them to an existing house.
+- Every chest and barrel in the manor now has a loot table for its room: pantry food in the kitchen, bottles and bowls in the scullery, candles and odds and ends in the parlour and landings, books and ink in the literary bedroom, fletching and scrap metal in the maker loft, moth-eaten leftovers in the box room. `/ghosthouse restock` applies them to an existing house.
 
 ### 0.3.6 playtest spatial fixes
 
@@ -709,7 +720,7 @@ The opening has been revised so the player's own home remains ordinary.
 - A pending transition is now an explicit state machine: prepared, syncing, moving, then complete or failed. It is only forgotten once it has completed or failed. A destination level that is not there yet is waited for (up to a second) instead of the crossing silently vanishing. A crossing whose player has meanwhile died or been moved elsewhere, whose teleport another mod cancels, or which throws before arrival fails cleanly: logged, none of its hooks run, and the client told to drop its presentation context.
 - The room between rooms decides by plane crossings along the door's normal, not by distance from the door. Strafing or sidestepping at the copied door no longer counts as backing out (the retreat margin is now 0.75 blocks along the normal). A fast or knocked-back player cannot skip a plane, and nothing happens while someone stands in a doorway. Its three per-player maps are now one record per player.
 - GameTests cover a missing destination, a player who left by another way, logging out mid-transition, and the room's crossings: sidestepping, backing out on either side, traversal, one-tick fast crossings and wandering off.
-- A House generated with an older layout than the build's now stands down as a whole instead of running against coordinates it no longer matches. There are no crossings, mirroring, mornings, room between rooms, hallway, labyrinth or sound bridge; it is only an ordinary building. Anyone found inside one of the mod's dimensions is returned to the Overworld spawn. Operators are told once at login, and `/oldesthouse status` says so. `/oldesthouse reset` and a respawn bring it back.
+- A House generated with an older layout than the build's now stands down as a whole instead of running against coordinates it no longer matches. There are no crossings, mirroring, mornings, room between rooms, hallway, labyrinth or sound bridge; it is only an ordinary building. Anyone found inside one of the mod's dimensions is returned to the Overworld spawn. Operators are told once at login, and `/ghosthouse status` says so. `/ghosthouse reset` and a respawn bring it back.
 - Navidson's photograph now follows a tree trunk all the way up, however tall: giant jungle and spruce trunks disappear whole instead of leaving their lower twelve blocks standing. Each trunk is checked once for all its logs.
 - The sound bridge's reach is the visual mirror's shared region, with no separate radius. Tests now check that neither the room between rooms (and its copied hall) nor the labyrinth stack can be heard from the Overworld or hear it, including for a manor so high its labyrinth lies below it.
 - Every one of the mod's own packets now goes out through one helper that skips connections without the mod's channel. NeoForge throws on such a send, which took down whatever event handler was sending (a login, a morning). Real clients always have the channel; this is what lets GameTests use real mock players at all.
@@ -724,4 +735,4 @@ The opening has been revised so the player's own home remains ordinary.
   - The living-room armchairs join the stack on the second visit, and the kid's chair on the third.
   - The tree in the yard stands closer every visit. By the third, a branch taps at the kid's window and the grass has sunk in one long patch.
 - **Visit 4:** the kid's door stands open, the window is broken, and the tree has come in over the bed.
-- `/oldesthouse vignette model_home reset|visit <1-4>|complete` for testing. The labyrinth is carved again (version 6) to make room for the new place.
+- `/ghosthouse vignette model_home reset|visit <1-4>|complete` for testing. The labyrinth is carved again (version 6) to make room for the new place.

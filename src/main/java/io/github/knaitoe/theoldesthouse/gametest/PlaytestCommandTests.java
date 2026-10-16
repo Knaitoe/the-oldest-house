@@ -36,7 +36,10 @@ public final class PlaytestCommandTests {
         var dispatcher = new CommandDispatcher<CommandSourceStack>(); HouseCommands.register(dispatcher); return dispatcher;
     }
     private static int command(CommandDispatcher<CommandSourceStack> d, ServerPlayer p, String text) {
-        try { return d.execute("oldesthouse test " + text, p.createCommandSourceStack().withPermission(2)); }
+        return command(d,p,"ghosthouse",text);
+    }
+    private static int command(CommandDispatcher<CommandSourceStack> d, ServerPlayer p, String root, String text) {
+        try { return d.execute(root+" test " + text, p.createCommandSourceStack().withPermission(2)); }
         catch (Exception e) { throw new IllegalStateException(text, e); }
     }
     private static void run(GameTestHelper h, int coordinate, Check check) {
@@ -95,14 +98,14 @@ public final class PlaytestCommandTests {
         var mine=d.getRoot().getChild("oldesthouse").getChild("test").getChild("vignette");
         for(var place:LabyrinthPlace.values()) if(place.slot()>=0)
             h.assertTrue(mine.getChild(place.id())!=null,"every authored scene is available by its real id: "+place.id());
-        h.assertTrue(!d.getRoot().getChild("oldesthouse").canUse(p.createCommandSourceStack().withPermission(0)),"ordinary players cannot run operator shortcuts");
+        h.assertTrue(!d.getRoot().getChild("oldesthouse").canUse(p.createCommandSourceStack().withPermission(0))&&!d.getRoot().getChild("ghosthouse").canUse(p.createCommandSourceStack().withPermission(0)),"ordinary players cannot run operator shortcuts under either command name");
         var lower=p.blockPosition().relative(p.getDirection(),2);f.put(f.level,lower.below(),Blocks.STONE.defaultBlockState());
         h.assertTrue(command(d,p,"vignette floorboards")==1,"the explicit alias places a native test door");
         var door=f.data().doorAt(f.level.dimension(),lower);
         h.assertTrue(door!=null&&door.command&&door.destination.equals("place:floorboards")&&f.level.getBlockState(lower).getBlock() instanceof DoorBlock&&f.level.getBlockState(lower.above()).getBlock() instanceof DoorBlock,"both native halves and the actual authored destination are registered");
         h.assertTrue(command(d,p,"vignette floorboards")==0,"an occupied doorway is not overwritten");
         h.assertTrue(FinaleProgress.phase(p.server,peer.getUUID())==FinaleProgress.Phase.UNSEEN&&WitnessAccount.count(f.data(),peer.getUUID())==0,"placing the shared door grants no peer participation");
-        h.assertTrue(command(d,p,"vignette remove")==1&&f.data().doorAt(f.level.dimension(),lower)==null&&f.level.getBlockState(lower).isAir(),"removal uses the original test door registry");return true;
+        h.assertTrue(command(d,p,"oldesthouse","vignette remove")==1&&f.data().doorAt(f.level.dimension(),lower)==null&&f.level.getBlockState(lower).isAir(),"the legacy command removes the same original door created through the branded command");return true;
     });}
 
     @GameTest(template="empty",batch="test_command_cell",timeoutTicks=1200)

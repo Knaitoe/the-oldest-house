@@ -64,6 +64,6 @@ public final class CharacterPhaseVisualProof extends Screen {
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-character-"+name+".png"));}
         if(++proof.page<14){proof.frames=0;return;}
         Files.writeString(dir.resolve("character-phases-passed.txt"),"Fourteen saved native views: all sixteen unchanged Mother corruption atlases and carrying; lake-witch stalking, withdrawal, lunge, wind-up, hand rake and bite plus standing/carried/sinking human memory; four cloth-girl stride samples; front/side/back/dim and six jaw closeups from front/side. Actual production pose helpers and baked layers. Staged UV/mesh review, not complete ordinary play.\n");
-        TheOldestHouse.LOGGER.info("CHARACTER PHASE CHECK PASSED: fourteen complete native views");mc.setScreen(VignetteReviewSmoke.active()?new ClassicsVisualProof():new StaceyScrabbleVisualProof());
+        TheOldestHouse.LOGGER.info("CHARACTER PHASE CHECK PASSED: fourteen complete native views");mc.setScreen(new BlindfoldVisualProof());
     }
 }

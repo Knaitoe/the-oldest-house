@@ -105,7 +105,7 @@ public final class WritingFontSmoke {
         @Override public void renderBackground(GuiGraphics g, int x, int y, float partial) {}
         @Override public void render(GuiGraphics g, int mouseX, int mouseY, float partial) {
             g.fill(0,0,width,height,0xFF211E1B);
-            g.drawString(font, "The Oldest House | native writing proof", 10, 8, 0xFFEAE0D0);
+            g.drawString(font, TheOldestHouse.displayName()+" | native writing proof", 10, 8, 0xFFEAE0D0);
             g.drawString(font,Component.literal("HOUSE 33").withStyle(style -> style.withFont(
                     net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"hotel"))),
                     width-100,8,0xFFEAE0D0,false);

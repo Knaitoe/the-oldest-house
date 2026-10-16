@@ -243,7 +243,7 @@ public final class HouseBetweenRoom {
         }
         data.markRoomRevealed();
         HousePackets.sendToAll(server, doorPayload(data));
-        TheOldestHouse.LOGGER.info("The study door of The Oldest House now leads through the room between rooms (perceived age {}).",
+        TheOldestHouse.LOGGER.info("The study door of the house now leads through the room between rooms (perceived age {}).",
                 data.houseAge());
         return true;
     }

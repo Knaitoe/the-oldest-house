@@ -49,7 +49,7 @@ public final class HouseCommands {
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(
+        var root = dispatcher.register(
                 Commands.literal("oldesthouse")
                         .requires(source -> source.hasPermission(2))
                         .then(Commands.literal("spawn")
@@ -101,6 +101,9 @@ public final class HouseCommands {
                         .then(WritingCommands.build())
                         .then(OpeningCommands.build())
         );
+        dispatcher.register(Commands.literal("ghosthouse")
+                .requires(source -> source.hasPermission(2))
+                .redirect(root));
     }
 
     private static int spawn(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context)
@@ -112,7 +115,7 @@ public final class HouseCommands {
 
         if (data.isSpawned()) {
             source.sendFailure(Component.literal(
-                    "The Oldest House is already marked as spawned. Use /oldesthouse reset before another test spawn."
+                    "The house is already marked as spawned. Use /ghosthouse reset before another test spawn."
             ));
             return 0;
         }
@@ -138,7 +141,7 @@ public final class HouseCommands {
 
         source.sendSuccess(
                 () -> Component.literal(
-                        "Spawned prototype of The Oldest House at " +
+                        "Spawned prototype of the house at " +
                                 origin.getX() + ", " + origin.getY() + ", " + origin.getZ() +
                                 " (north-west floor corner)."
                 ),
@@ -154,7 +157,7 @@ public final class HouseCommands {
 
         String housePosition = formatPosition(data.housePosition());
         List<String> lines = new ArrayList<>();
-        lines.add("The Oldest House state | spawned=" + data.isSpawned() +
+        lines.add(io.github.knaitoe.theoldesthouse.TheOldestHouse.displayName()+" | world state | spawned=" + data.isSpawned() +
                 ", houseOrigin=" + housePosition +
                 ", age=" + data.houseAge() +
                 ", impossibleDoor=" + data.isImpossibleDoorRevealed() +
@@ -166,9 +169,9 @@ public final class HouseCommands {
                 ", visits=" + data.visitCount() +
                 ", sleptInManor=" + data.sleptInManor());
         lines.add("Day " + HouseCalendar.today(server) + " as the mod counts them (time of day "
-                + HouseCalendar.timeOfDay(server) + "). Mornings come from waking after a night's sleep, or /oldesthouse day.");
+                + HouseCalendar.timeOfDay(server) + "). Mornings come from waking after a night's sleep, or /ghosthouse day.");
         if (!data.isSpawned()) {
-            lines.add("The House appears through the opening sequence (see /oldesthouse opening status).");
+            lines.add("The House appears through the opening sequence (see /ghosthouse opening status).");
         } else if (data.visitCount() <= 0) {
             lines.add("Perceived age stays at " + data.houseAge() + " until somebody enters the manor.");
         }
@@ -255,7 +258,7 @@ public final class HouseCommands {
         return 1;
     }
 
-    /** {@code /oldesthouse shift [kind]}: one subtle change now, picked by weight or named. */
+    /** {@code /ghosthouse shift [kind]}: one subtle change now, picked by weight or named. */
     private static LiteralArgumentBuilder<CommandSourceStack> shiftCommand() {
         LiteralArgumentBuilder<CommandSourceStack> shift = Commands.literal("shift")
                 .executes(context -> shift(context.getSource(), null));
@@ -268,7 +271,7 @@ public final class HouseCommands {
     private static int shift(CommandSourceStack source, @Nullable HouseShifts.Shift kind) {
         HouseSavedData data = HouseSavedData.get(source.getServer());
         if (!data.isSpawned()) {
-            source.sendFailure(Component.literal("The Oldest House has not spawned yet."));
+            source.sendFailure(Component.literal("The house has not spawned yet."));
             return 0;
         }
         String change = HouseShifts.trigger(source.getServer(), data, kind);
@@ -298,7 +301,7 @@ public final class HouseCommands {
         data.setHouseAge(days);
 
         source.sendSuccess(
-                () -> Component.literal("The Oldest House age set to " + days + " day(s)."),
+                () -> Component.literal("The house age set to " + days + " day(s)."),
                 true
         );
         return 1;
@@ -309,7 +312,7 @@ public final class HouseCommands {
 
         if (!data.isSpawned()) {
             source.sendFailure(Component.literal(
-                    "The Oldest House has not spawned yet. Spawn it before advancing its perceived age."
+                    "The house has not spawned yet. Spawn it before advancing its perceived age."
             ));
             return 0;
         }
@@ -317,7 +320,7 @@ public final class HouseCommands {
         int newAge = data.advanceHouseAge(days);
         source.sendSuccess(
                 () -> Component.literal(
-                        "Advanced The Oldest House by " + days + " day(s). Perceived age is now " + newAge + " day(s)."
+                        "Advanced the house by " + days + " day(s). Perceived age is now " + newAge + " day(s)."
                 ),
                 true
         );
@@ -330,7 +333,7 @@ public final class HouseCommands {
         data.incrementVisitCount();
 
         source.sendSuccess(
-                () -> Component.literal("The Oldest House visit count is now " + data.visitCount() + "."),
+                () -> Component.literal("The house visit count is now " + data.visitCount() + "."),
                 true
         );
         return 1;
@@ -346,7 +349,7 @@ public final class HouseCommands {
 
         if (!data.isSpawned() || origin == null || interior == null) {
             source.sendFailure(Component.literal(
-                    "The Oldest House interior is not available to reconcile."
+                    "The house interior is not available to reconcile."
             ));
             return 0;
         }
@@ -395,7 +398,7 @@ public final class HouseCommands {
 
         source.sendSuccess(
                 () -> Component.literal(
-                        "Persistent state for The Oldest House reset. Existing prototype blocks were left untouched."
+                        "Persistent state for the house reset. Existing prototype blocks were left untouched."
                 ),
                 true
         );

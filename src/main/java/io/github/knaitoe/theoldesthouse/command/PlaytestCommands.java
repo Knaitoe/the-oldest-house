@@ -56,8 +56,8 @@ public final class PlaytestCommands {
     }
 
     private static int help(CommandSourceStack source) {
-        source.sendSuccess(() -> Component.literal("Testing: /oldesthouse test vignette <id> puts a door two blocks ahead; use Tab for every scene. 'vignette remove' removes the nearest test door."), false);
-        source.sendSuccess(() -> Component.literal("/oldesthouse test minotaur (or boy) takes you to the closed cell. /oldesthouse test ending defeat|escape|witness starts a real ending; collapse is an alias for escape."), false);
+        source.sendSuccess(() -> Component.literal("Testing: /ghosthouse test vignette <id> puts a door two blocks ahead; use Tab for every scene. 'vignette remove' removes the nearest test door."), false);
+        source.sendSuccess(() -> Component.literal("/ghosthouse test minotaur (or boy) takes you to the closed cell. /ghosthouse test ending defeat|escape|witness starts a real ending; collapse is an alias for escape."), false);
         source.sendSuccess(() -> Component.literal("Use a COPY of your world. Defeat kills you and seals your belongings, then wakes you in the cell, whose one door lets you out of the House for good; escape starts the wounded creature and physical collapse, whose eventual completion removes the shared House. Witness stages your personal test account and peaceful release. No shortcut resets a player or takes another player's cell."), false);
         return 1;
     }
@@ -70,11 +70,11 @@ public final class PlaytestCommands {
     private static String blocked(ServerPlayer player, Start start) {
         if (!player.isAlive() || player.isRemoved()) return "Respawn before using a testing shortcut.";
         if (player.isSpectator()) return "Leave spectator mode before using this shortcut.";
-        if (HouseSavedData.get(player.server).houseOrigin() == null) return "Spawn the House first: /oldesthouse spawn.";
+        if (HouseSavedData.get(player.server).houseOrigin() == null) return "Spawn the House first: /ghosthouse spawn.";
         if (HouseTransitionEvents.isPending(player) || StaircaseLeaks.active(player)) return "Finish your current crossing or personal note scene first.";
         var phase = FinaleProgress.phase(player.server, player.getUUID());
         if (FinaleProgress.terminal(phase)) return "This player has already finished an ending. Use a fresh test player or a copy of the world.";
-        if (FinaleProgress.committed(phase)) return "This player already has an ending in progress. /oldesthouse finale status shows it.";
+        if (FinaleProgress.committed(phase)) return "This player already has an ending in progress. /ghosthouse finale status shows it.";
         var world = FinaleProgress.world(player.server);
         if (world.getBoolean("Ended")) return "This world's House has already collapsed. Use a fresh world copy.";
         if (world.hasUUID("Owner") && !world.getUUID("Owner").equals(player.getUUID()))
@@ -88,10 +88,10 @@ public final class PlaytestCommands {
         var player = source.getPlayerOrException();
         String error = blocked(player, start);
         if (error != null) return fail(source, error);
-        if (PENDING.containsKey(player.getUUID())) return fail(source, "A shortcut is already waiting. Use /oldesthouse test cancel first.");
+        if (PENDING.containsKey(player.getUUID())) return fail(source, "A shortcut is already waiting. Use /ghosthouse test cancel first.");
         FinaleArchitecture.request(player.server);
         PENDING.put(player.getUUID(), new Pending(source, player, start));
-        source.sendSuccess(() -> Component.literal("Preparing the complete staircase and escape hallway asynchronously. You will move when the route's blocks and entities are loaded. /oldesthouse test cancel stops the wait."
+        source.sendSuccess(() -> Component.literal("Preparing the complete staircase and escape hallway asynchronously. You will move when the route's blocks and entities are loaded. /ghosthouse test cancel stops the wait."
                 + (start == Start.CELL ? "" : " This will start the real " + start.name().toLowerCase(Locale.ROOT) + " ending in this world.")), false);
         return 1;
     }
@@ -136,7 +136,7 @@ public final class PlaytestCommands {
             String error = blocked(player, pending.start);
             if (error == null && (player.serverLevel() != pending.from || !pending.origin.equals(HouseSavedData.get(server).houseOrigin())))
                 error = "The player or House moved before the shortcut was ready. Run the command again.";
-            if (error == null && ++pending.ticks > 1200) error = "The complete finale route did not become ready within sixty seconds. Preparation continues; retry when /oldesthouse finale go is available.";
+            if (error == null && ++pending.ticks > 1200) error = "The complete finale route did not become ready within sixty seconds. Preparation continues; retry when /ghosthouse finale go is available.";
             if (error != null) { fail(pending.source, error); remove(pending); continue; }
             if (!pending.loaded() || !FinaleArchitecture.ready(server)) continue;
             if (!FinaleArchitecture.prepareTestEscape(pending.level,pending.origin)) continue;
@@ -180,17 +180,17 @@ public final class PlaytestCommands {
                         // would otherwise leave the player alive in a committed fight.
                         player.hasChangedDimension();
                         if (!player.hurt(player.damageSources().genericKill(), Float.MAX_VALUE))
-                            fail(pending.source, "Native death was refused. The finale is committed; check /oldesthouse finale status.");
+                            fail(pending.source, "Native death was refused. The finale is committed; check /ghosthouse finale status.");
                     }
                     else {
                         var record = FinaleProgress.player(server, player.getUUID());
                         if (FinaleProgress.phase(record) != FinaleProgress.Phase.COLLAPSE) FinaleController.wound(player, actor);
                         pending.source.sendSuccess(() -> Component.literal("Collapse started. The same creature remains wounded and alive. Use the west breach, physical fall and escape route; existing Mother custody decides whether a guide returns."), false);
                     }
-                } else fail(pending.source, "The real finale refused to start. /oldesthouse finale status shows its state.");
+                } else fail(pending.source, "The real finale refused to start. /ghosthouse finale status shows its state.");
             } catch (RuntimeException e) {
                 TheOldestHouse.LOGGER.error("Could not complete {} operator fixture for {}", pending.start, player.getUUID(), e);
-                fail(pending.source, "The shortcut could not complete. Check /oldesthouse finale status before retrying.");
+                fail(pending.source, "The shortcut could not complete. Check /ghosthouse finale status before retrying.");
             } finally { remove(pending); }
         }
     }

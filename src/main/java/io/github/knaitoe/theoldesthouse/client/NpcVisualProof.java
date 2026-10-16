@@ -25,7 +25,7 @@ public final class NpcVisualProof extends Screen {
     public NpcVisualProof(){super(Component.literal("House NPCs"));}
     @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){}
     @Override public void render(GuiGraphics g,int x,int y,float partial){
-        g.fill(0,0,width,height,0xFF211E1B);g.drawString(font,"The Oldest House | native human models",10,10,0xFFE6DFCF,false);
+        g.fill(0,0,width,height,0xFF211E1B);g.drawString(font,TheOldestHouse.displayName()+" | native human models",10,10,0xFFE6DFCF,false);
         if(page==1){
             for(int i=0;i<3;i++){int at=10+i*width/3;g.fill(at,32,at+width/3-18,height-24,0xFF39332D);g.drawString(font,new String[]{"Quiet mourner | dark suit","Quiet mourner | blazer","Quiet mourner | navy jacket"}[i],at+8,40,0xFFE6DFCF,false);mesh(g,HouseHumanRenderers.mourner(i),at+width/6-8,68,4,0);mesh(g,HouseHumanRenderers.mourner(i),at+width/6-8,215,4,1);}
             g.drawString(font,"Three original guests; native standard player UVs, front and back. The phone choice still determines the ending.",10,height-15,0xFFE6DFCF,false);return;

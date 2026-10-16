@@ -44,7 +44,7 @@ public final class HouseStageManager {
         HousePackets.sendToAll(server, new HouseSightlineStatePayload(origin, true));
 
         TheOldestHouse.LOGGER.info(
-                "The first impossible doorway and direct hallway in The Oldest House have been revealed at perceived age {}.",
+                "The first impossible doorway and direct hallway in the house have been revealed at perceived age {}.",
                 data.houseAge()
         );
     }

@@ -27,6 +27,9 @@ jobs:
         id: build_mod
         run: gradle build
 
+      - name: Verify shipped name and save-compatible package
+        run: python3 tools/verify_mod_branding.py --jar
+
       - name: Verify writing atlas structure
         run: |
           python3 -m pip install Pillow
@@ -47,7 +50,7 @@ jobs:
           python3 - <<'PY'
           import hashlib, json, pathlib, zipfile
           expected_version = next(line.split('=', 1)[1].strip() for line in pathlib.Path('gradle.properties').read_text().splitlines() if line.startswith('mod_version='))
-          jars = list(pathlib.Path('build/libs').glob('the_oldest_house-*.jar'))
+          jars = list(pathlib.Path('build/libs').glob('this_house_has_ghosts_in_it-*.jar'))
           runtime = [p for p in jars if not p.stem.endswith(('-sources', '-javadoc'))]
           assert len(runtime) == 1, runtime
           jar = runtime[0]
@@ -661,7 +664,7 @@ jobs:
       - name: Upload mod jar
         uses: actions/upload-artifact@v4
         with:
-          name: the-oldest-house-${{ github.sha }}
+          name: this-house-has-ghosts-in-it-${{ github.sha }}
           path: |
             build/libs/*.jar
             build/libs/*.jar.sha256
@@ -711,6 +714,8 @@ jobs:
           test -s build/font-smoke/literary-phases-passed.txt
           for group in cast changes people actions; do for view in front side back dim; do test -s build/font-smoke/native-literary-$group-$view.png; done; done
           test -s build/font-smoke/character-phases-passed.txt
+          test -s build/font-smoke/blindfold-fit-passed.txt
+          for view in worn removed; do test -s build/font-smoke/native-blindfold-$view.png; done
           for group in mother witch clap; do for view in front side back dim; do test -s build/font-smoke/native-character-$group-$view.png; done; done
           for view in front side; do test -s build/font-smoke/native-character-witch-jaw-$view.png; done
           for pose in seated flight standing; do for view in front side back dim; do test -s build/font-smoke/native-classics-$pose-$view.png; done; done
@@ -990,7 +995,7 @@ jobs:
           completed=re.findall(r'All (\d+) required tests passed',Path('build/seam-native.log').read_text())
           declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/SeamDoorTests.java').read_text()))
           assert declared==4 and completed and int(completed[-1])==declared, (completed,declared)
-          jars=[p for p in Path('build/libs').glob('the_oldest_house-*.jar') if not p.stem.endswith(('-sources','-javadoc'))]
+          jars=[p for p in Path('build/libs').glob('this_house_has_ghosts_in_it-*.jar') if not p.stem.endswith(('-sources','-javadoc'))]
           assert len(jars)==1, jars
           jar=jars[0]
           with zipfile.ZipFile(jar) as z:
@@ -1036,6 +1041,7 @@ jobs:
           jar.with_name(jar.name+'.sha256').write_text(hashlib.sha256(jar.read_bytes()).hexdigest()+'  '+jar.name+'\n')
           print(f'All {declared} native seam cases passed. This candidate still requires the complete suite and client proofs.')
           PY
+          python3 tools/verify_mod_branding.py --jar
       - name: Publish failed seam tests
         if: failure()
         run: |
@@ -1070,8 +1076,8 @@ jobs:
         with:
           name: seam-candidate-${{ github.sha }}
           path: |
-            build/libs/the_oldest_house-*.jar
-            build/libs/the_oldest_house-*.jar.sha256
+            build/libs/this_house_has_ghosts_in_it-*.jar
+            build/libs/this_house_has_ghosts_in_it-*.jar.sha256
           if-no-files-found: error
 
 
@@ -1317,6 +1323,8 @@ jobs:
             build/font-smoke/ghosts-passed.txt
             build/font-smoke/native-character-*.png
             build/font-smoke/character-phases-passed.txt
+            build/font-smoke/blindfold-fit-passed.txt
+            build/font-smoke/native-blindfold-*.png
             build/font-smoke/native-classics-*.png
             build/font-smoke/classics-passed.txt
             build/font-smoke/native-literary-*.png

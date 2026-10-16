@@ -57,7 +57,7 @@ public final class HouseInteriorInitializer {
             cancel();
             job = new Job(server.overworld(), interior, origin);
             job.addTickets();
-            TheOldestHouse.LOGGER.info("Seeding The Oldest House interior in the background.");
+            TheOldestHouse.LOGGER.info("Seeding the house interior in the background.");
         }
 
         int copied = 0;
@@ -104,7 +104,7 @@ public final class HouseInteriorInitializer {
             }
 
             TheOldestHouse.LOGGER.info(
-                    "Completing The Oldest House interior synchronously ({} of {} chunks were ready).",
+                    "Completing the house interior synchronously ({} of {} chunks were ready).",
                     job.copied.size(),
                     job.chunks.size()
             );
@@ -153,7 +153,7 @@ public final class HouseInteriorInitializer {
         data.markInteriorInitialized();
 
 
-        TheOldestHouse.LOGGER.info("Initialized The Oldest House interior over matching native Overworld terrain.");
+        TheOldestHouse.LOGGER.info("Initialized the house interior over matching native Overworld terrain.");
     }
 
     private static final class Job {

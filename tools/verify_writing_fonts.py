@@ -49,7 +49,7 @@ def verify(read):
 
 if __name__=='__main__':
     verify(lambda p:(ROOT/'src/main/resources'/p).read_bytes())
-    jars=[p for p in (ROOT/'build/libs').glob('the_oldest_house-*.jar') if not p.stem.endswith(('-sources','-javadoc'))]
+    jars=[p for p in (ROOT/'build/libs').glob('this_house_has_ghosts_in_it-*.jar') if not p.stem.endswith(('-sources','-javadoc'))]
     if jars:
         assert len(jars)==1,jars
         with zipfile.ZipFile(jars[0]) as jar: verify(jar.read)

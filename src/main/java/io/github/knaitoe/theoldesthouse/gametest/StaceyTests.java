@@ -22,6 +22,58 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID+"_multiplayer")
 @PrefixGameTestTemplate(false)
 public final class StaceyTests {
+
+    @AfterBatch(batch="witch_watched_town0499") public static void watchedTownDone(ServerLevel l){clean();}
+    @AfterBatch(batch="witch_watched_literary0499") public static void watchedLiteraryDone(ServerLevel l){clean();}
+    @AfterBatch(batch="witch_swipe_near0499") public static void nearSwipeDone(ServerLevel l){clean();}
+    @AfterBatch(batch="witch_swipe_far0499") public static void farSwipeDone(ServerLevel l){clean();}
+    @GameTest(template="empty",batch="witch_watched_town0499",timeoutTicks=1200)
+    public static void aWatchedTownWitchFleesInsteadOfUsingTheReaderAsMissingCover(GameTestHelper h){watchedRetreat(h,LabyrinthPlace.DROWNED_TOWN,1256000);}
+    @GameTest(template="empty",batch="witch_watched_literary0499",timeoutTicks=1200)
+    public static void aWatchedLiteraryWitchFleesEvenAfterLowHealthAndSavedEmergence(GameTestHelper h){watchedRetreat(h,LabyrinthPlace.COSTUME_NIGHT,1256500);}
+    private static void watchedRetreat(GameTestHelper h,LabyrinthPlace place,int coordinate){run(h,place,coordinate,f->{
+        f.corridor();var a=f.player("witch_watched_owner",.5,-28.5);var b=f.player("witch_watched_peer",1.25,-28.5);a.setHealth(6);
+        h.startSequence().thenIdle(70).thenExecute(()->{
+            var w=f.witch(.5,-32.5);var id=w.getUUID();var saved=new CompoundTag();w.saveWithoutId(saved);
+            saved.putInt("HuntCooldown",0);saved.putBoolean("ExposedHunt0459",true);saved.putBoolean("Emerging0459",true);w.load(saved);
+            f.look(a,w);f.look(b,w);double initial=w.distanceToSqr(a);
+            h.onEachTick(()->{if(active!=f)return;f.look(a,w);f.look(b,w);
+                h.assertTrue(LakeWitchEntity.inView(a,w.getEyePosition())&&LakeWitchEntity.inView(b,w.getEyePosition()),"both actual eligible readers keep the same native witch in view");
+                h.assertTrue(w.huntPhase()!=LakeWitchEntity.LUNGE&&w.distanceToSqr(a)>=initial-.01&&a.getHealth()==6&&b.getHealth()==20,
+                        "a watched escape never substitutes the reader's position for absent cover or resumes a low-health/emergence rush: "+w.huntDiagnostic());
+            });
+            h.startSequence().thenIdle(90).thenExecute(()->{
+                h.assertTrue(w.distanceToSqr(a)>64&&w.getUUID().equals(id),"the original body physically runs away on the available corridor");
+                var reload=new CompoundTag();w.saveWithoutId(reload);w.load(reload);
+            }).thenIdle(55).thenExecute(()->{
+                h.assertTrue(w.getUUID().equals(id)&&w.huntPhase()==LakeWitchEntity.WITHDRAW&&w.passingSwipeCooldown()==0,
+                        "saved approach retains the original body and an observed retreat without a fabricated passing strike");
+                h.assertTrue(WitnessAccount.count(LabyrinthData.get(f.l.getServer()),a.getUUID())==0&&WitnessAccount.count(LabyrinthData.get(f.l.getServer()),b.getUUID())==0,"watching and retreat grant no story credit");
+                TheOldestHouse.LOGGER.info("WITCH WATCHED RETREAT PASSED: site={} distance={} original={}",place.id(),Math.sqrt(w.distanceToSqr(a)),id);f.done();
+            });
+        });
+    });}
+    @GameTest(template="empty",batch="witch_swipe_near0499",timeoutTicks=1200)
+    public static void aNaturalEscapeCanSwipeAReaderNineTenthsOfABlockAlongsideIt(GameTestHelper h){passingRange(h,.9,true,1257000);}
+    @GameTest(template="empty",batch="witch_swipe_far0499",timeoutTicks=1200)
+    public static void aNaturalEscapeDoesNotSwipeAReaderMoreThanOneBlockAlongsideIt(GameTestHelper h){passingRange(h,1.1,false,1257500);}
+    private static void passingRange(GameTestHelper h,double offset,boolean hit,int coordinate){run(h,LabyrinthPlace.COSTUME_NIGHT,coordinate,f->{
+        f.corridor();for(int z:new int[]{-38,-36})for(int y=0;y<=3;y++)f.put(1,y,z,Blocks.STONE);
+        var p=f.player("witch_passing_range",.5+offset,-36.5);
+        h.startSequence().thenIdle(70).thenExecute(()->{
+            var w=f.witch(.5,-38.5);var id=w.getUUID();var saved=new CompoundTag();w.saveWithoutId(saved);
+            saved.putInt("HuntCooldown",40);saved.putInt("HuntPhase0459",LakeWitchEntity.WITHDRAW);w.load(saved);f.look(p,w);
+            h.onEachTick(()->{if(active!=f)return;h.assertTrue(w.huntPhase()==LakeWitchEntity.WITHDRAW&&w.tickCount<160,"the actual route is a bounded retreat, never an attack approach: "+w.huntDiagnostic());
+                if(w.getZ()>f.base.getZ()-38&&w.getZ()<f.base.getZ()-35)h.assertTrue(Math.abs(w.getX()-f.base.getX()-.5)<.02,"the real wall forces the escape past the alcove along its original aisle");
+                if(!hit)h.assertTrue(p.getHealth()==20,"a reader 1.1 blocks off the swept escape cannot be struck");
+            });
+            h.startSequence().thenWaitUntil(()->h.assertTrue(w.getZ()>f.base.getZ()-34.5,"the same body must physically pass the reader's alcove")).thenExecute(()->{
+                h.assertTrue(w.getUUID().equals(id)&&p.getHealth()==(hit?16:20)&&!w.biting(),"only the incidental one-block hand swipe hurts a reader, with original identity and no bite: health="+p.getHealth());
+                TheOldestHouse.LOGGER.info("WITCH PASSING RANGE PASSED: offset={} hit={} original={}",offset,hit,id);f.done();
+            });
+        });
+    });}
+
     private static Fixture active;
     private static final class Fixture implements AutoCloseable {
         final GameTestHelper h;final LabyrinthPlace place;final ServerLevel l;final BlockPos origin,base;
@@ -39,8 +91,9 @@ public final class StaceyTests {
             if(x==0&&z>=-41&&z<=-38)put(x,1,z,Blocks.STONE);
         }door(new BlockPos(6,0,-31),Blocks.SPRUCE_DOOR);}
         ServerPlayer player(String name,double x,double z){var p=NativeTestPlayers.survival(h,name);players.add(p);p.setNoGravity(true);p.getFoodData().setFoodLevel(6);
-            p.teleportTo(l,base.getX()+x,base.getY(),base.getZ()+z,180,0);p.connection.resetPosition();p.hasChangedDimension();return p;}
+            p.teleportTo(l,base.getX()+x,base.getY(),base.getZ()+z,0,0);p.connection.resetPosition();p.hasChangedDimension();return p;}
         void look(ServerPlayer p,Entity body){var delta=body.getEyePosition().subtract(p.getEyePosition());p.setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));p.setXRot((float)-Math.toDegrees(Math.atan2(delta.y,Math.sqrt(delta.x*delta.x+delta.z*delta.z))));p.setYHeadRot(p.getYRot());p.yRotO=p.getYRot();p.xRotO=p.getXRot();}
+        void lookAway(ServerPlayer p,Entity body){look(p,body);p.setYRot(p.getYRot()+180);p.setXRot(-p.getXRot());p.setYHeadRot(p.getYRot());p.yRotO=p.getYRot();p.xRotO=p.getXRot();}
         LakeWitchEntity witch(double x,double z){var w=DrownedTownRegistry.LAKE_WITCH.get().create(l);w.moveTo(base.getX()+x,base.getY(),base.getZ()+z);
             if(place==LabyrinthPlace.DROWNED_TOWN)w.shore(base,1);else w.literaryHunt(base,place);w.setNoAi(true);l.addFreshEntity(w);bodies.add(w);return w;}
         void door(BlockPos rel,Block block){var lower=block.defaultBlockState().setValue(DoorBlock.FACING,Direction.NORTH).setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER);
@@ -55,7 +108,7 @@ public final class StaceyTests {
     public static void anExposedTownRushReturnsToCoverAfterStrikingALowHealthReader(GameTestHelper h){run(h,LabyrinthPlace.DROWNED_TOWN,1255000,f->{
         f.corridor();var p=f.player("stacey_cycle_reader",.5,-33.5);p.setHealth(10);
         h.startSequence().thenIdle(70).thenExecute(()->{
-            var w=f.witch(.5,-35.5);var id=w.getUUID();var tag=new CompoundTag();w.saveWithoutId(tag);tag.putBoolean("ExposedHunt0459",true);tag.putInt("FailedCoverTicks0459",LakeWitchEntity.COVER_SEARCH_LIMIT);tag.putInt("HuntCooldown",0);w.load(tag);f.look(p,w);
+            var w=f.witch(.5,-35.5);var id=w.getUUID();var tag=new CompoundTag();w.saveWithoutId(tag);tag.putBoolean("ExposedHunt0459",true);tag.putInt("FailedCoverTicks0459",LakeWitchEntity.COVER_SEARCH_LIMIT);tag.putInt("HuntCooldown",0);w.load(tag);f.lookAway(p,w);
             h.startSequence().thenWaitUntil(()->h.assertTrue(p.getHealth()<10,"the actual exposed body must finish its rush and strike: "+w.huntDiagnostic()))
             .thenExecute(()->{p.setInvulnerable(true);h.assertTrue(p.getHealth()<=6&&w.huntPhase()==LakeWitchEntity.WITHDRAW&&!w.exposedHunt()&&w.attackCooldown()>0,"the strike clears fallback pursuit and commits to retreat even at low player health");})
             .thenWaitUntil(()->h.assertTrue(w.hiding(),"Stacey must physically retreat and arrive in cover rather than continue chasing: "+w.huntDiagnostic()))
@@ -75,16 +128,19 @@ public final class StaceyTests {
     @AfterBatch(batch="stacey_open_squeeze") public static void openSqueezeDone(ServerLevel l){clean();}
 
     @GameTest(template="empty",batch="stacey_no_cover",timeoutTicks=1800)
-    public static void failedCoverCommitsOneSharedBodyToPursuitWithinFiveSecondsAndSurvivesReload(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,1250000,f->{
+    public static void failedCoverWaitsForBothGazesThenCommitsWithinFiveSecondsAndSurvivesReload(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,1250000,f->{
         f.corridor();for(int x=-1;x<=1;x++)for(int z=-45;z<=-27;z++)if(z<-38||z>-36)for(int y=0;y<=3;y++)f.put(x,y,z,Blocks.STONE);var a=f.player("stacey_front_reader",.5,-35.5);var b=f.player("stacey_back_reader",.5,-37.5);a.setInvulnerable(true);b.setInvulnerable(true);
         var w=f.witch(.5,-36.5);var id=w.getUUID();f.look(a,w);f.look(b,w);h.assertTrue(LakeWitchEntity.inView(a,w.getEyePosition())&&LakeWitchEntity.inView(b,w.getEyePosition()),"both native watchers actually face the trapped body");
-        h.onEachTick(()->{if(active==f){f.look(a,w);f.look(b,w);}});
+        boolean[] gaze={true};h.onEachTick(()->{if(active==f&&gaze[0]){f.look(a,w);f.look(b,w);}});
         h.startSequence().thenIdle(100).thenExecute(()->{
+            h.assertTrue(!w.exposedHunt()&&w.huntPhase()==LakeWitchEntity.WITHDRAW,"even a failed hiding search cannot become a watched pursuit");
+            gaze[0]=false;f.lookAway(a,w);f.lookAway(b,w);
+        }).thenIdle(100).thenExecute(()->{
             h.assertTrue(w.exposedHunt()&&w.failedCoverTicks()==LakeWitchEntity.COVER_SEARCH_LIMIT,"no unseen reachable cover ends the shared search after four occupied seconds: "+w.huntDiagnostic());
             var tag=new CompoundTag();w.saveWithoutId(tag);int delay=w.attackCooldown();w.load(tag);
             h.assertTrue(w.getUUID().equals(id)&&w.getHealth()==36&&w.exposedHunt()&&w.attackCooldown()==delay,"reload preserves the same body, health and failed-search decision");
             a.setInvulnerable(false);b.setInvulnerable(false);
-        }).thenWaitUntil(()->h.assertTrue(a.getHealth()<20||b.getHealth()<20,"even two sustained gazes cannot restart the failed hiding loop")).thenExecute(()->{
+        }).thenWaitUntil(()->h.assertTrue(a.getHealth()<20||b.getHealth()<20,"looking away permits the saved failed-cover pursuit to strike")).thenExecute(()->{
             h.assertTrue(w.getUUID().equals(id)&&WitnessAccount.count(LabyrinthData.get(f.l.getServer()),a.getUUID())==0&&WitnessAccount.count(LabyrinthData.get(f.l.getServer()),b.getUUID())==0,"one physical strike awards no peer progression");f.done();
         });
     });}
@@ -185,7 +241,7 @@ public final class StaceyTests {
         });
     });}
     @GameTest(template="empty",batch="stacey_passing_hide",timeoutTicks=1800)
-    public static void retreatSwipesInPassingPausesOnlyOneToThreeOccupiedSecondsAndRushesPastTwoGazes(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,1254500,f->{
+    public static void retreatSwipesInPassingPausesOnlyOneToThreeSecondsAndRushesAfterBothGazesTurnAway(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,1254500,f->{
         f.corridor();var a=f.player("stacey_passing_reader",.5,-36.5);var b=f.player("stacey_passing_peer",1.4,-36.5);b.setInvulnerable(true);
         // Let the real newly connected readers' native spawn protection expire.
         h.startSequence().thenIdle(70).thenExecute(()->{
@@ -202,6 +258,9 @@ public final class StaceyTests {
             a.setGameMode(GameType.SURVIVAL);b.setGameMode(GameType.SURVIVAL);a.setInvulnerable(true);gaze[0]=true;resume[0]=w.tickCount;
         }).thenWaitUntil(()->h.assertTrue(w.emerging()&&!w.hiding(),"the short hiding interval must end despite two readers' gaze")).thenExecute(()->{
             h.assertTrue(Math.abs(w.tickCount-resume[0]-delay[0])<=1,"two readers still advance only one physical hiding clock");
+        }).thenIdle(10).thenExecute(()->{
+            h.assertTrue(w.huntPhase()==LakeWitchEntity.WITHDRAW,"emergence still follows an escape route while either real reader watches");
+            gaze[0]=false;f.lookAway(a,w);f.lookAway(b,w);
         }).thenWaitUntil(()->h.assertTrue(w.position().distanceToSqr(a.position())<hidden[0].distanceToSqr(a.position())-2,
                 "the same body must actually scurry back toward the reader after hiding: "+w.huntDiagnostic())).thenExecute(()->{
             h.assertTrue(w.getUUID().equals(id)&&WitnessAccount.count(LabyrinthData.get(f.l.getServer()),b.getUUID())==0,"a passing strike and shared hunt cannot grant a peer's story progress");f.done();

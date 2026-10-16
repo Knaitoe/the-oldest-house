@@ -165,7 +165,7 @@ public final class OpeningSequence {
     /**
      * The once-a-day part of a player's opening: their morning step if it is
      * morning and they are home, then whether they have settled in. Runs
-     * from the player tick and from {@code /oldesthouse day}.
+     * from the player tick and from {@code /ghosthouse day}.
      */
     public static void checkMorning(ServerPlayer player, OpeningPlayerState state, long day) {
         ServerLevel overworld = player.server.overworld();
@@ -395,7 +395,7 @@ public final class OpeningSequence {
         if (state.houseDue(currentDay(player.server)) && !state.enteredHouse()
                 && !HouseSavedData.get(player.server).isSpawned()) {
             return name + state.stage().name().toLowerCase() + ", but the House has not appeared: "
-                    + houseSearchSummary() + ". It tries again every morning; /oldesthouse opening house tries now.";
+                    + houseSearchSummary() + ". It tries again every morning; /ghosthouse opening house tries now.";
         }
         return switch (state.stage()) {
             case NONE -> {

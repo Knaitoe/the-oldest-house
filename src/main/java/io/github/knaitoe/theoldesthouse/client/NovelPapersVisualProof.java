@@ -30,7 +30,7 @@ public final class NovelPapersVisualProof extends Screen {
     }
     @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){}
     @Override public void render(GuiGraphics g,int x,int y,float partial){
-        g.fill(0,0,width,height,0xFF211E1B);g.drawString(font,"The Oldest House | source papers: Zampanò / Johnny / Pelafina",10,8,0xFFEAE0D0);
+        g.fill(0,0,width,height,0xFF211E1B);g.drawString(font,TheOldestHouse.displayName()+" | source papers: Zampanò / Johnny / Pelafina",10,8,0xFFEAE0D0);
         for(int i=0;i<pages.size();i++){int left=10+i%3*(width/3),top=30+i/3*164;
             g.fill(left,top,left+width/3-18,top+154,0xFFE7D9BC);g.drawString(font,CorrespondenceTexts.find(ids[i]).title(),left+8,top+7,0xFF241E19,false);
             int row=top+24;for(var line:font.split(pages.get(i),114)){g.drawString(font,line,left+8,row,0xFF181411,false);row+=9;}
