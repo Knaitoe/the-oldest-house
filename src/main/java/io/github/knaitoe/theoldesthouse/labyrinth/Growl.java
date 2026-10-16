@@ -293,7 +293,7 @@ public final class Growl {
                 play(player, Kind.BELOW, player.position().add(random.nextDouble() * 3 - 1.5,
                         -(5.5 + random.nextDouble() * 6), random.nextDouble() * 3 - 1.5), 1.15F + random.nextFloat() * .25F);
                 hillaryHears(server, origin);
-                TheOldestHouse.LOGGER.info("{} woke in the cellar of The Oldest House, and heard it underneath.",
+                TheOldestHouse.LOGGER.info("{} woke in the cellar of the house, and heard it underneath.",
                         player.getGameProfile().getName());
             }
         }

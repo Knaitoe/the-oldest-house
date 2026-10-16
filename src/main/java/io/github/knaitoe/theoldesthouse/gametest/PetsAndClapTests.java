@@ -6,6 +6,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import io.github.knaitoe.theoldesthouse.opening.*;
 import java.util.*;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.nbt.CompoundTag;
@@ -173,7 +174,48 @@ public final class PetsAndClapTests {
             server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);server.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);LabyrinthBuilder.clearAll();LabyrinthDoors.clearAll();
         }
     }
-    private static Fixture death,recovery,unpaid,lifeTrade,playerTrade;
+    private static Fixture death,recovery,unpaid,lifeTrade,playerTrade,clapSuccess;
+    @AfterBatch(batch="clap_success0499") public static void cleanSuccess(ServerLevel l){if(clapSuccess!=null){clapSuccess.close();clapSuccess=null;}}
+    @AfterBatch(batch="clap_success_full0499") public static void cleanFullSuccess(ServerLevel l){cleanSuccess(l);}
+    @GameTest(template="empty",templateNamespace=TheOldestHouse.MOD_ID+"_multiplayer",batch="clap_success0499",timeoutTicks=1200)
+    public static void completingTheActualClapGameRemovesTheWornClothAndReturnsItsExactOriginalOnce(GameTestHelper h){clapSuccess(h,false,97800);}
+    @GameTest(template="empty",templateNamespace=TheOldestHouse.MOD_ID+"_multiplayer",batch="clap_success_full0499",timeoutTicks=1200)
+    public static void completingWithAFullInventoryDropsOneOriginalAndReloadCannotRebindIt(GameTestHelper h){clapSuccess(h,true,98800);}
+    private static void clapSuccess(GameTestHelper h,boolean full,int coordinate){
+        clapSuccess=new Fixture(h,new BlockPos(coordinate,80,coordinate));var f=clapSuccess;var owner=f.player(f.base.offset(0,0,-4));var peer=f.player(f.base.south(5));
+        owner.setNoGravity(true);var original=new ItemStack(LabyrinthRegistry.BLINDFOLD.get());original.set(DataComponents.CUSTOM_NAME,Component.literal("The original cloth "+owner.getUUID()));
+        var token=new CompoundTag();token.putUUID("OriginalCloth0499",UUID.randomUUID());original.set(DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(token));
+        var helmet=new ItemStack(Items.DIAMOND_HELMET);helmet.set(DataComponents.CUSTOM_NAME,Component.literal("Peer's untouched helmet"));peer.setItemSlot(EquipmentSlot.HEAD,helmet.copy());
+        var boots=new ItemStack(Items.LEATHER_BOOTS);boots.setDamageValue(9);owner.setItemSlot(EquipmentSlot.FEET,boots.copy());
+        h.assertTrue(HideAndClap.enter(owner),"the reader starts the original native room");owner.setItemSlot(EquipmentSlot.HEAD,original.copy());
+        h.onEachTick(()->{if(clapSuccess!=f)return;var session=LabyrinthData.get(f.server).state(HideAndClap.ID).getCompound("Session");
+            if(session.getString("Stage").equals("CLAPPING")){var spots=session.getLongArray("Spots");int index=session.getInt("Index");if(index<spots.length){var at=Vec3.atBottomCenterOf(BlockPos.of(spots[index]));owner.teleportTo(f.level,at.x,at.y,at.z,180,0);}}
+        });
+        h.startSequence().thenWaitUntil(()->h.assertTrue(HideAndClap.isBound(owner.getItemBySlot(EquipmentSlot.HEAD),owner.getUUID()),"native ticks bind the actual head slot and retain the original cloth"))
+        .thenWaitUntil(()->h.assertTrue(LabyrinthData.get(f.server).state(HideAndClap.ID).contains("Wardrobe"),"counting and the actual clap spots create a real wardrobe before the deadline"))
+        .thenExecute(()->{
+            if(full)for(int slot=0;slot<36;slot++)owner.getInventory().setItem(slot,new ItemStack(Items.COBBLESTONE,64));
+            // A stale carried wrapper is a temporary bound copy, never an additional finite original.
+            owner.containerMenu.setCarried(owner.getItemBySlot(EquipmentSlot.HEAD).copy());
+            var data=LabyrinthData.get(f.server);var state=data.state(HideAndClap.ID);var at=f.base.offset(BlockPos.of(state.getLong("Wardrobe")));
+            var click=new BlockHitResult(at.getCenter(),Direction.SOUTH,at,false);
+            HideAndClap.onRightClickBlock(new PlayerInteractEvent.RightClickBlock(peer,InteractionHand.MAIN_HAND,at,click));
+            h.assertTrue(!data.isCompleted(HideAndClap.ID)&&HideAndClap.isLocked(owner),"a peer cannot remove the owner's blindfold or finish their reserved round");
+            HideAndClap.onRightClickBlock(new PlayerInteractEvent.RightClickBlock(owner,InteractionHand.MAIN_HAND,at,click));
+            h.assertTrue(data.isCompleted(HideAndClap.ID)&&!HideAndClap.isLocked(owner)&&owner.getItemBySlot(EquipmentSlot.HEAD).isEmpty()&&owner.containerMenu.getCarried().isEmpty(),"the actual wardrobe success clears the head, wrapper cursor and game lock immediately");
+            h.assertTrue(ItemStack.isSameItemSameComponents(peer.getItemBySlot(EquipmentSlot.HEAD),helmet)&&ItemStack.isSameItemSameComponents(owner.getItemBySlot(EquipmentSlot.FEET),boots),"other equipment and the peer's original helmet remain exact");
+            var restored=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),f.level.registryAccess()),f.level.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",restored);HideAndClap.clearAll();
+            HideAndClap.onPlayerLoggedIn(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(owner));
+            HideAndClap.onPlayerTick(new net.neoforged.neoforge.event.tick.PlayerTickEvent.Pre(owner));
+            HideAndClap.onRightClickBlock(new PlayerInteractEvent.RightClickBlock(owner,InteractionHand.MAIN_HAND,at,click));
+        }).thenIdle(5).thenExecute(()->{
+            int carried=0;for(int slot=0;slot<owner.getInventory().getContainerSize();slot++){var item=owner.getInventory().getItem(slot);if(ItemStack.isSameItemSameComponents(item,original))carried+=item.getCount();h.assertTrue(!HideAndClap.isBound(item,owner.getUUID()),"no temporary binding survives in inventory or armor");}
+            int dropped=f.level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new AABB(f.base).inflate(24),e->ItemStack.isSameItemSameComponents(e.getItem(),original)).stream().mapToInt(e->e.getItem().getCount()).sum();
+            h.assertTrue(carried+dropped==1&&(full?dropped==1:carried==1)&&owner.getItemBySlot(EquipmentSlot.HEAD).isEmpty()&&!HideAndClap.isLocked(owner),"one exact unbound original survives completion, repeated clicks, reload and reconnect: carried="+carried+" dropped="+dropped);
+            h.assertTrue(WitnessAccount.has(LabyrinthData.get(f.server),owner.getUUID(),WitnessAccount.Story.CLAP)&&!WitnessAccount.has(LabyrinthData.get(f.server),peer.getUUID(),WitnessAccount.Story.CLAP),"only the real winner receives the existing story outcome");
+            TheOldestHouse.LOGGER.info("CLAP CLOTH RELEASE PASSED: full={} carried={} dropped={} original={}",full,carried,dropped,original.getHoverName().getString());h.succeed();cleanSuccess(f.level);
+        });
+    }
     @GameTest(template="empty") public static void nativeClapReservationAllowsRetreatUntilTheBlindfoldIsChosen(GameTestHelper h){
         try(var f=new Fixture(h,new BlockPos(97600,80,97600),LabyrinthPlace.HIDE_AND_CLAP)){
             var owner=f.player(f.base.north(3));var peer=f.player(f.base.south(5));

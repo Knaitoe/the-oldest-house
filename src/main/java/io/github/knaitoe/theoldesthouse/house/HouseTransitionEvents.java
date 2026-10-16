@@ -123,7 +123,7 @@ public final class HouseTransitionEvents {
                 company.append(other.getGameProfile().getName()).append(String.format(" (%.1f blocks)", other.distanceTo(player))).append(' ');
             }
         }
-        TheOldestHouse.LOGGER.warn("The Oldest House breach for {}: rel=({}, {}, {}), domestic={}, nearDoor={}, deepHall={}, stack={}, finale={}, hallwayRevealed={}, hallway={}, place={}, nearby=[{}]",
+        TheOldestHouse.LOGGER.warn("The house breach for {}: rel=({}, {}, {}), domestic={}, nearDoor={}, deepHall={}, stack={}, finale={}, hallwayRevealed={}, hallway={}, place={}, nearby=[{}]",
                 player.getGameProfile().getName(),
                 String.format("%.2f", relX), String.format("%.2f", relY), String.format("%.2f", relZ),
                 HouseLayout.isInsideDomesticVolume(relX, relY, relZ),
@@ -202,7 +202,7 @@ public final class HouseTransitionEvents {
                     pending.destination.location(), (synced - started) / 1_000_000L,
                     (System.nanoTime() - synced) / 1_000_000L);
         } catch (RuntimeException e) {
-            TheOldestHouse.LOGGER.error("The Oldest House transition {} for {} threw during {}",
+            TheOldestHouse.LOGGER.error("The house transition {} for {} threw during {}",
                     pending.token, player.getGameProfile().getName(), pending.phase, e);
             if (pending.arrived) {
                 // The move itself happened; only what follows it went wrong.
@@ -298,7 +298,7 @@ public final class HouseTransitionEvents {
     private static void fail(ServerPlayer player, PendingTransition pending, String reason) {
         pending.phase = Phase.FAILED;
         PENDING.remove(player.getUUID());
-        TheOldestHouse.LOGGER.warn("The Oldest House transition {} for {} ({} -> {}) failed: {}",
+        TheOldestHouse.LOGGER.warn("The house transition {} for {} ({} -> {}) failed: {}",
                 pending.token, player.getGameProfile().getName(),
                 pending.from.location(), pending.destination.location(), reason);
         if (!player.hasDisconnected()) {
@@ -318,7 +318,7 @@ public final class HouseTransitionEvents {
         }
         ServerLevel overworld = player.getServer().overworld();
         BlockPos spawn = overworld.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, overworld.getSharedSpawnPos());
-        TheOldestHouse.LOGGER.warn("{} was inside The Oldest House, whose layout is outdated; returning them to the Overworld spawn.",
+        TheOldestHouse.LOGGER.warn("{} was inside the house, whose layout is outdated; returning them to the Overworld spawn.",
                 player.getGameProfile().getName());
         beginDoorTransition(player, Level.OVERWORLD, null, null, Vec3.atBottomCenterOf(spawn), player.getYRot());
     }
@@ -476,7 +476,7 @@ public final class HouseTransitionEvents {
         nextToken = nextToken == Integer.MAX_VALUE ? 1 : nextToken + 1;
 
         TheOldestHouse.LOGGER.info(
-                "Prepared The Oldest House transition for {}: kind={}, token={}, from={}, to={}, pos=({}, {}, {})",
+                "Prepared the house transition for {}: kind={}, token={}, from={}, to={}, pos=({}, {}, {})",
                 player.getGameProfile().getName(),
                 kind,
                 token,

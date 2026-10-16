@@ -90,7 +90,7 @@ public final class HouseSpawnManager {
         }
         lastReport = report;
         if (report.origin() == null) {
-            TheOldestHouse.LOGGER.warn("No site for The Oldest House near {}: {}. It will try again next morning.",
+            TheOldestHouse.LOGGER.warn("No site for the house near {}: {}. It will try again next morning.",
                     anchor, report.describe());
             return false;
         }
@@ -98,7 +98,7 @@ public final class HouseSpawnManager {
         HouseBuilder.build(level, report.origin());
         data.markSpawned(report.origin());
         LabyrinthDoors.syncSealedDoors(level.getServer());
-        TheOldestHouse.LOGGER.info("The Oldest House appeared next door to {}: {}.", anchor, report.describe());
+        TheOldestHouse.LOGGER.info("The house appeared next door to {}: {}.", anchor, report.describe());
         return true;
     }
 

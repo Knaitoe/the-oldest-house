@@ -49,10 +49,10 @@ public final class HouseLifecycleEvents {
             // Only someone who can do something about it is told; to
             // everyone else the House is simply a house.
             player.sendSystemMessage(Component.literal(
-                    "The Oldest House here was built with layout v" + data.layoutVersion()
+                    "The house here was built with layout v" + data.layoutVersion()
                             + ", but this version of the mod uses v" + HouseLayout.LAYOUT_VERSION
                             + ". It has gone quiet: an ordinary building, with nothing inside working. "
-                            + "Use /oldesthouse reset and let it respawn (or start a new world) to bring it back.")
+                            + "Use /ghosthouse reset and let it respawn (or start a new world) to bring it back.")
                     .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
         }
     }
@@ -64,10 +64,10 @@ public final class HouseLifecycleEvents {
         HouseBetweenRoom.ensurePocket(event.getServer());
         if (data.isOutdated()) {
             TheOldestHouse.LOGGER.warn(
-                    "The Oldest House in this world was generated with layout v{}, but this build uses v{}. "
+                    "The house in this world was generated with layout v{}, but this build uses v{}. "
                             + "It stands down entirely (no crossings, mirroring, mornings, rooms or labyrinth) "
                             + "and anyone inside is returned to the Overworld spawn. "
-                            + "Use /oldesthouse reset and let it respawn (or a fresh world) to bring it back.",
+                            + "Use /ghosthouse reset and let it respawn (or a fresh world) to bring it back.",
                     data.layoutVersion(),
                     HouseLayout.LAYOUT_VERSION
             );
@@ -122,7 +122,7 @@ public final class HouseLifecycleEvents {
                 inManor
         );
         if (!changes.isEmpty()) {
-            TheOldestHouse.LOGGER.info("Morning at The Oldest House: {}.", String.join("; ", changes));
+            TheOldestHouse.LOGGER.info("Morning at the house: {}.", String.join("; ", changes));
         }
         if (inManor) {
             HouseExperience.slept(player);

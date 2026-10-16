@@ -21,8 +21,8 @@ import net.minecraft.server.level.ServerPlayer;
 
 /**
  * Test controls for the labyrinth and its vignettes:
- * {@code /oldesthouse door}, {@code /oldesthouse labyrinth} and
- * {@code /oldesthouse vignette}.
+ * {@code /ghosthouse door}, {@code /ghosthouse labyrinth} and
+ * {@code /ghosthouse vignette}.
  */
 public final class LabyrinthCommands {
     private LabyrinthCommands() {
@@ -150,7 +150,7 @@ public final class LabyrinthCommands {
                                     }
                                     context.getSource().sendSuccess(() -> Component.literal(
                                             "The model home is set for visit " + visit + " of " + ModelHome.FINAL_VISIT
-                                                    + ", its beat not yet seen (/oldesthouse door model_home to go in)."), true);
+                                                    + ", its beat not yet seen (/ghosthouse door model_home to go in)."), true);
                                     return 1;
                                 })))
                         .then(Commands.literal("complete").executes(context -> {
@@ -169,7 +169,7 @@ public final class LabyrinthCommands {
                             }
                             context.getSource().sendSuccess(() -> Component.literal(
                                     "Copied the room you are standing in as your room. The Red Room will be it the next time a door leads there"
-                                            + " (/oldesthouse door red_room)."), true);
+                                            + " (/ghosthouse door red_room)."), true);
                             return 1;
                         }))
                         .then(Commands.literal("forget").executes(context -> {
@@ -243,7 +243,7 @@ public final class LabyrinthCommands {
                 context.getSource().sendFailure(Component.literal("Enter an active gray hall or the ordinary manor. Quiet rooms, vignettes and the finale are excluded."));
                 return 0;
             }
-            context.getSource().sendSuccess(() -> Component.literal("One change is waiting for an unwitnessed opportunity. Use /oldesthouse growl status to inspect it."), false);
+            context.getSource().sendSuccess(() -> Component.literal("One change is waiting for an unwitnessed opportunity. Use /ghosthouse growl status to inspect it."), false);
             return 1;
         }));
         growl.then(Commands.literal("basement").executes(context -> {
@@ -266,7 +266,7 @@ public final class LabyrinthCommands {
     public static int placeDoor(CommandSourceStack source, String destination) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
         if (HouseSavedData.get(source.getServer()).houseOrigin() == null) {
-            source.sendFailure(Component.literal("The Navidsons' house must exist first (/oldesthouse opening house, or /oldesthouse spawn)."));
+            source.sendFailure(Component.literal("The Navidsons' house must exist first (/ghosthouse opening house, or /ghosthouse spawn)."));
             return 0;
         }
         LabyrinthBuilder.ensureBuilt(source.getServer());
@@ -280,7 +280,7 @@ public final class LabyrinthCommands {
                 + " stands in front of you. Open it to go through; walk back out through the door you arrive at to come back."
                 + (LabyrinthBuilder.isCarving() ? " The labyrinth is being carved; give it a moment." : "")
                 + (noRoom ? " No room has been copied yet, so it stays locked: stand in a room of yours and run"
-                        + " /oldesthouse vignette red_room capture first." : "")), true);
+                        + " /ghosthouse vignette red_room capture first." : "")), true);
         return 1;
     }
 

@@ -125,7 +125,7 @@ public final class HouseWriting {
         return book;
     }
 
-    /** Six short specimens for /oldesthouse writing samples. */
+    /** Six short specimens for /ghosthouse writing samples. */
     public static List<ItemStack> samples() {
         ItemStack will = book(
                 "Writing sample: Will", "Will Navidson", WritingStyle.WILL,

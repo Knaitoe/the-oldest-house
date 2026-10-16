@@ -136,7 +136,7 @@ public final class HouseShifts {
             if (change != null) {
                 data.recordShift(shift.id());
                 HouseDimensionMirror.reconcileAuthoritativeDomestic(interior, server.overworld(), origin);
-                TheOldestHouse.LOGGER.info("The Oldest House changed ({}): {}.", shift.id(), change);
+                TheOldestHouse.LOGGER.info("The house changed ({}): {}.", shift.id(), change);
                 return change;
             }
         }
@@ -291,7 +291,7 @@ public final class HouseShifts {
             }
             scheduleEcho(server, player, origin);
             data.setEchoPending(false);
-            TheOldestHouse.LOGGER.info("{} heard the principal bedroom of The Oldest House.", player.getGameProfile().getName());
+            TheOldestHouse.LOGGER.info("{} heard the principal bedroom of the house.", player.getGameProfile().getName());
             return;
         }
     }

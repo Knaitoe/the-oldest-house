@@ -18,7 +18,12 @@ repositories {
 }
 
 base {
-    archivesName = mod_id
+    archivesName = mod_archive_name
+}
+
+tasks.named('jar', Jar) {
+    manifest.attributes 'Implementation-Title': mod_name,
+            'Implementation-Version': project.version
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)

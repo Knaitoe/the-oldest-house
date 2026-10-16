@@ -1,3 +1,5 @@
+October 16 title: **This House Has Ghosts in It**, version 0.4.99. Registry/save compatibility and current validation are documented in [the rename record](RENAME_0_4_99.md).
+
 Current development candidate 0.4.97: Borrasca appends at slot 98 with per-reader persistent native sites, four personally completed returns, saved original cast/records, non-graphic adult exploitation evidence and an original-evidence service escape. Preserve every prior UUID, finite item, player edit, source, outcome, PNG byte and proof. Protocol 72 / labyrinth layout 45; 46 eligible sources / 35 required across two kinds / three House endings; 766 resource PNGs. New art/audio and bounded saved first-build cursors are integrated. First checkpoint 47e1287 compiles; its GPU atlas registration finding is corrected in the follow-up. Require all twelve exact-source jobs, complete declared corpus, all earlier native views plus six Borrasca asset views and three new architecture views (97 total), both original client reconnect proofs and new Borrasca socket checks before delivery. Do not describe pending or failed candidates as verified. Continue authorized development while CI runs. Canon: docs/BORRASCA_0_4_97.md. Earlier candidate paragraphs below are historical.
 
 Current development candidate 0.4.96: fifty-scene source/phase/renderer findings and ordinary-play limits are recorded in VIGNETTE_ANIMATION_REVIEW_0_4_96.md. Continuous native motion, genuine viewed fireworks, bounded full-proportion miniatures, unchanged painted-UV fitting, seated séance knees, clear Wheel landings, camera cleanup and asynchronous original staging preserve every actor, finite supply and completed choice. Checkpoint 47e3d27 passed 98 focused cases, the early preflight and 42 expanded views; final vest/knee changes require complete exact-source verification. Keep all earlier native/socket/94 architecture checks. No new source/ending: 45 / 34 / two kinds / three endings; mod 0.4.96 / protocol 71 / layout 44; 631 declared native cases.
@@ -16,7 +18,7 @@ Current candidate: 0.4.61. The full October 8 review is implemented in [NOVEL_RE
 
 0.4.47 review repairs: native companions retain their floor during platform cleanup; already composed 0.4.46 scenes receive missed structural repairs through a separate checkpoint; new accounts state lifetime totals and independently recorded Overworld work accurately. Finite property, original pages, routes, progress and native identities remain. See [REVIEW_SAFETY_0_4_47.md](REVIEW_SAFETY_0_4_47.md).
 
-# The Oldest House: Design Document
+# This House Has Ghosts in It: Design Document
 
 Sep 28, 2026 · @Sean Price · revised in the repository to match decisions made since
 

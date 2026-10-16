@@ -52,6 +52,11 @@ public final class TheOldestHouse {
     public static final String MOD_ID = "the_oldest_house";
     public static final Logger LOGGER = LogUtils.getLogger();
 
+    public static String displayName() {
+        return net.neoforged.fml.ModList.get().getModContainerById(MOD_ID)
+                .orElseThrow().getModInfo().getDisplayName();
+    }
+
     public TheOldestHouse(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.addListener(HouseNetwork::registerPayloads);
         OpeningRegistry.register(modEventBus);
@@ -237,6 +242,6 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.NavigationAids::onPlayerTick);
         OpeningSequence.register(NeoForge.EVENT_BUS);
 
-        LOGGER.info("The Oldest House prototype initialized.");
+        LOGGER.info("{} initialized.", modContainer.getModInfo().getDisplayName());
     }
 }

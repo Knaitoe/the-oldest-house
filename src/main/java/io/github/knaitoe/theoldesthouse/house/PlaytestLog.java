@@ -28,7 +28,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 @EventBusSubscriber(modid = TheOldestHouse.MOD_ID)
 public final class PlaytestLog {
     private static final ExecutorService WRITER = Executors.newSingleThreadExecutor(r -> {
-        Thread thread = new Thread(r, "The Oldest House playtest log");
+        Thread thread = new Thread(r, "The house playtest log");
         thread.setDaemon(true); return thread;
     });
     private static final Map<UUID, String> STAGES = new HashMap<>(), PHASES = new HashMap<>();

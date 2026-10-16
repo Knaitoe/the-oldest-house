@@ -353,8 +353,9 @@ public final class HideAndClap {
         restore(data, level);
         if (data.isCompleted(ID)) {
             if (game != null && server.getPlayerList().getPlayer(game.player) != null) {
-                release(game, server);
+                Game finished = game;
                 game = null;
+                release(finished, server);
                 persist(data, level);
             }
             removeFeet();
@@ -589,12 +590,22 @@ public final class HideAndClap {
         ServerPlayer player = server.getPlayerList().getPlayer(current.player);
         if (player != null) {
             removeBoundCopies(player, current.player);
+            // Equipment is explicit: a separately equipped, unbound cloth also comes off,
+            // while helmets and every other carried original remain untouched.
+            ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
+            if (head.is(LabyrinthRegistry.BLINDFOLD.get())) {
+                player.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
+                if (!player.getInventory().add(head)) player.drop(head, false);
+            }
             if (!current.originalCloth.isEmpty()) {
                 ItemStack cloth = current.originalCloth.copy();
+                current.originalCloth = ItemStack.EMPTY;
                 if (!player.getInventory().add(cloth)) player.drop(cloth, false);
             }
             HousePackets.send(player, new ClapGamePayload(false, 0, 0));
+            player.getInventory().setChanged();
             player.inventoryMenu.broadcastChanges();
+            player.containerMenu.broadcastChanges();
         }
     }
 
@@ -871,8 +882,8 @@ public final class HideAndClap {
         data.setState(ID, state);
         data.setCompleted(ID, true);
         WitnessAccount.resolve(player,WitnessAccount.Story.CLAP,"completed_game");
-        release(finished, level.getServer());
         game = null;
+        release(finished, level.getServer());
         persist(data, serverLevel);
         removeFeet();
         TheOldestHouse.LOGGER.info("{} opened the wardrobe.", player.getGameProfile().getName());
@@ -1070,7 +1081,7 @@ public final class HideAndClap {
             return false;
         }
         LabyrinthData data = LabyrinthData.get(server);
-        if (game != null) release(game, server);
+        if (game != null) { Game finished = game; game = null; release(finished, server); }
         data.setCompleted(ID, false);
         data.setState(ID, new CompoundTag());
         removeFeet();
