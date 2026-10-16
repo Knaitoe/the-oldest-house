@@ -45,6 +45,11 @@ class Look:
 
 # Each row is a character design, rather than an index into a repeated picture.
 LOOKS = {
+    'literary_paw_walter': Look('#d6a88a','#cecbc4','receding','#47513c','#5a4c3e','coat','#9e8350',eyes='#5c6c78',age=2,beard='short',glasses=True,mark='cottage_walter'),
+    'literary_paw_ruth': Look('#deb496','#76665a','bun','#523240','#5f4b4e','dress','#d8cebb',eyes='#544a3e',age=2,mark='cottage_apron'),
+    'literary_paw_will': Look('#daac8a','#3e2c20','messy','#d6ceba','#585046','braces','#962e28',eyes='#465c42',mark='cottage_braces',sleeve=6),
+    'literary_paw_sergeant': Look('#c48868','#968c80','close','#282c3a','#5c5a58','coat','#b09250',eyes='#382c24',age=2,beard='moustache',mark='cottage_uniform'),
+    'literary_paw_messenger': Look('#dcbaa2','#2c241e','part','#201e20','#5b5a59','coat','#242226',eyes='#48423c',beard='moustache',mark='cottage_bowler'),
     'harrigan': Look('#c7ab91','#b9b7ac','receding','#343941','#2c3037','suit','#7d3940',age=2,glasses=True,logical=64),
     'harrigan_dead': Look('#b9b2a4','#b9b7ac','receding','#343941','#2c3037','suit','#7d3940',age=2,mark='dead',logical=64),
     'harrigan_mourner_0': Look('#ae7b59','#262320','close','#292e33','#26292f','suit','#77736e',logical=64),
@@ -266,6 +271,11 @@ def cloth_face(size,look,side='front'):
     if side=='back':
         d.line((1,2,w-2,2),fill=lo)
         if look.style in ('suit','coat','uniform','waistcoat'):d.line((w//2,3,w//2,h-3),fill=shade(c,-7))
+        if look.mark=='cottage_braces':
+            for x in range(2,w-1,4):d.line((x,1,x,h-3),fill=shade(c,-17))
+            d.line((2,0,w//2,h-4,w-3,0),fill='#58402f',width=2)
+        if look.mark=='cottage_apron':
+            d.line((1,h-7,w-2,h-7),fill=a);d.line((w//2,h-7,w//2-2,h-2),fill=a)
         return im
     if side!='front':return im
     mid=w//2
@@ -317,6 +327,26 @@ def cloth_face(size,look,side='front'):
         d.polygon([(2,6),(mid-1,5),(mid,7),(mid+1,5),(w-3,6),(w-3,10),(2,10)],fill=c)
         d.line((3,6,mid-2,6),fill=a);d.line((mid+1,6,w-4,6),fill=a)
         d.rectangle((0,h-6,w-1,h-1),fill=c);d.line((0,h-6,w-1,h-6),fill=a)
+    # Cottage garments use deliberate pixel marks, with their original period details.
+    if look.mark=='cottage_walter':
+        d.rectangle((mid-3,7,mid+2,h-2),fill='#796047')
+        for y in range(9,h-2,5):d.point((mid,y),fill='#3c332b')
+        d.line((mid+1,h-10,mid+3,h-8,mid+5,h-9),fill='#b69b60')
+    if look.mark=='cottage_apron':
+        d.rectangle((mid-4,4,mid+3,h-1),fill=a)
+        d.line((mid-4,3,mid+3,3),fill='#ede2ca')
+        d.line((mid-3,8,mid+2,8),fill=shade(a,-17))
+        d.point((mid,2),fill='#a98c58')
+    if look.mark=='cottage_braces':
+        for x in range(2,w-1,4):d.line((x,1,x,h-3),fill=shade(c,-17))
+        for x in (2,w-4):d.rectangle((x,0,x+1,h-3),fill='#58402f')
+        d.polygon([(mid-4,0),(mid+3,0),(mid+1,3),(mid,6),(mid-2,4)],fill=a)
+        d.rectangle((0,h-2,w-1,h-1),fill=rgb(look.pants))
+    if look.mark=='cottage_uniform':
+        d.rectangle((1,5,w-2,h-1),fill=c);d.line((mid,5,mid,h-2),fill=lo)
+        for y in range(6,h-3,5):
+            for x in (mid-3,mid+2):d.rectangle((x,y,x,y+1),fill=a)
+        for x,color in ((2,'#843e3c'),(3,'#d1c49b'),(4,'#51667a')):d.line((x,3,x,4),fill=color)
     if look.style=='ragged':
         d.line((mid,3,mid,h-3),fill=lo);d.rectangle((3,h-7,5,h-4),fill=shade(c,16))
         for y in (6,12,18):d.point((mid+1,y),fill=a)
@@ -344,6 +374,20 @@ def paint(look):
             d.rectangle((front+3,7,front+5,11),fill=shade(look.skin,-16));d.line((front+4,8,front+4,10),fill=shade(look.skin,-34))
             if look.glasses:d.line((front,7,front+5,7),fill='#666250')
         put(head[side],art)
+    if look.mark=='cottage_bowler':
+        # The ordinary native hat layer supplies the crown, leaving the actual face clear.
+        for side,box in net(32,0,8,8,8).items():
+            art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
+            if side=='top':art=panel((16,16),'#242326','cloth')
+            elif side!='bottom':
+                d.rectangle((0,0,15,5),fill='#242326');d.line((0,4,15,4),fill='#111519')
+                d.line((1,1,14,1),fill='#38383a')
+            put(box,art)
+    if look.mark=='cottage_apron':
+        art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
+        d.polygon([(5,4),(10,4),(12,6),(12,9),(10,11),(5,11),(3,9),(3,6)],fill=rgb(look.hair))
+        d.line((5,5,9,5,11,7),fill=shade(look.hair,15))
+        put(net(32,0,8,8,8)['back'],art)
     torso=net(16,16,8,12,4)
     for side,box in torso.items():put(box,cloth_face((round((box[2]-box[0])*S),round((box[3]-box[1])*S)),look,side))
     # Classic humanoids mirror one arm/leg; player models have the two extra left nets.
@@ -380,6 +424,8 @@ def paint(look):
                 if look.style=='swim':
                     d.rectangle((0,2,w-1,h-1),fill=rgb(look.skin));d.line((0,1,w-1,1),fill=rgb(look.accent))
                 else:
+                    if look.mark=='cottage_walter':d.rectangle((0,h-7,w-1,h-6),fill='#673c3a')
+                    if look.mark=='cottage_bowler':d.line((2,1,2,h-7),fill=shade(look.pants,13))
                     d.rectangle((0,h-5,w-1,h-1),fill='#34302c');d.line((1,h-4,w-2,h-4),fill='#635442');d.line((0,h-1,w-1,h-1),fill='#222522')
             if side=='bottom':art=panel((w,h),look.skin if look.style=='swim' else '#292c28','skin')
             put(box,art)
@@ -394,6 +440,13 @@ def paint(look):
             if side not in ('top','bottom'):
                 for x in range(3,w-2,6):d.line((x,3,x,h-3),fill=shade(look.cloth,-11))
                 d.line((1,h-2,w-2,h-2),fill=rgb(look.accent))
+                if look.mark=='cottage_apron':
+                    if side=='front':
+                        d.rectangle((3,0,w-4,h-3),fill=rgb(look.accent))
+                        for x in (5,w-7):d.line((x,3,x,h-4),fill=shade(look.accent,-18))
+                        d.line((3,h-3,w-4,h-3),fill=shade(look.accent,-24))
+                    elif side=='back':
+                        d.line((1,1,w-2,1),fill=rgb(look.accent));d.line((w//2,2,w//2-2,8),fill=rgb(look.accent))
             put(box,art)
         # A solid clean swatch for inner mouths/eyelids, outside every head island.
         ImageDraw.Draw(im).rectangle((64*S,0,79*S-1,4*S-1),fill=rgb(look.skin))

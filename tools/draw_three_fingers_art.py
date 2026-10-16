@@ -3,6 +3,7 @@
 This replaces the placeholders that generate_paw_assets.py writes when a file is missing. That generator never
 overwrites an existing file, so the art here stays put however often it runs. Run this tool again only to redraw.
 
+The five skins now delegate to paint_character_skins.py for the 0.4.100 pixel grid; the earlier drawing routines below are historical.
 The skins use the renderer's 128 x 64 logical layout, exported at 512 x 256 like the Last Stop's. The cast model uses the
 classic humanoid islands (the left limbs mirror the right ones), plus a coat extension at (64, 28) and a gown at (96, 28).
 Walter, the sergeant and the man from the mill wear the coat; Ruth wears the gown; Will wears neither.
@@ -14,6 +15,8 @@ import hashlib
 import json
 import math
 import sys
+
+from paint_character_skins import LOOKS, paint
 
 import numpy as np
 from PIL import Image
@@ -906,10 +909,10 @@ def preview(folder):
 def main():
     entity = ASSETS / 'textures/entity'
     item = ASSETS / 'textures/item'
-    record = {'version': '0.4.81', 'note': 'Drawn in code by tools/draw_three_fingers_art.py.', 'skins': [], 'items': []}
+    record = {'version': '0.4.81', 'note': 'Cottage skins use tools/paint_character_skins.py; paw items retain the original code drawing.', 'skins': [], 'items': []}
     for name, draw in CAST.items():
         target = entity / f'literary_paw_{name}.png'
-        img = draw().image()
+        img = paint(LOOKS['literary_paw_' + name])
         img.save(target, optimize=True)
         raw = target.read_bytes()
         record['skins'].append({'name': name, 'path': str(target.relative_to(ROOT)), 'size': list(img.size), 'logical_uv': [128, 64],
