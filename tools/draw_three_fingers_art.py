@@ -909,7 +909,7 @@ def preview(folder):
 def main():
     entity = ASSETS / 'textures/entity'
     item = ASSETS / 'textures/item'
-    record = {'version': '0.4.81', 'note': 'Cottage skins use tools/paint_character_skins.py; paw items retain the original code drawing.', 'skins': [], 'items': []}
+    record = {'version': '0.4.100', 'note': 'Cottage skins use tools/paint_character_skins.py; paw items retain the original code drawing.', 'skins': [], 'items': []}
     for name, draw in CAST.items():
         target = entity / f'literary_paw_{name}.png'
         img = paint(LOOKS['literary_paw_' + name])
