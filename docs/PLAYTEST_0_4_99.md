@@ -41,6 +41,9 @@ inventory icon stays byte-identical; only its HEAD display is hidden to prevent
 a second floating sprite over the fitted cloth.
 
 Successful wardrobe opening clears the active game before releasing equipment.
+Both the live game and its saved Session are detached before inventory or drop
+callbacks: otherwise a full-inventory toss can restore the just-finished turn
+and return the original cloth again. Completed rounds cannot rebind equipment.
 All temporary owner-bound wrappers are removed from armor, inventory, menu slots
 and cursor, the worn head slot is explicitly cleared, and the exact original
 cloth returns to inventory or one native drop when full. The original is consumed

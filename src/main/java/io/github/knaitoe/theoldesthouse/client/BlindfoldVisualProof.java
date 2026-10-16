@@ -48,12 +48,12 @@ public final class BlindfoldVisualProof extends Screen {
         for(int i=0;i<8;i++){
             boolean slim=i%2==1;int view=i/2;var model=new PlayerModel<AbstractClientPlayer>(mc.getEntityModels().bakeLayer(slim?ModelLayers.PLAYER_SLIM:ModelLayers.PLAYER),slim);
             if(view==3){model.head.y=4.2F;model.head.yRot=.7F;model.head.xRot=.45F;}model.hat.copyFrom(model.head);
-            var pose=g.pose();pose.pushPose();pose.translate((i%4+.5F)*cw,30+(i/4)*ch+ch*.72F,180);float zoom=scale*(view==3?.8F:1);pose.scale(zoom,zoom,zoom);pose.mulPose(Axis.YP.rotationDegrees(new float[]{180,90,0,180}[view]));
+            var pose=g.pose();pose.pushPose();pose.translate((i%4+.5F)*cw,30+(i/4)*ch+ch*.72F,180);float zoom=scale*(view==3?.65F:1);pose.scale(zoom,zoom,zoom);pose.mulPose(Axis.YP.rotationDegrees(new float[]{180,90,0,180}[view]));
             if(view==3)pose.translate(0,-model.head.y/16F-.05F,0); // Recenter the close-up after the actual crouched head transform.
             var texture=DefaultPlayerSkin.get(new UUID(499,slim?1:0)).texture();var skin=out.getBuffer(RenderType.entityCutoutNoCull(texture));
             model.head.render(pose,skin,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);model.hat.render(pose,skin,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
             if(worn)BlindfoldWornLayer.draw(model.head,mc.getEntityModels().bakeLayer(BlindfoldWornLayer.LAYER),pose,out,LightTexture.FULL_BRIGHT);
-            out.endBatch();pose.popPose();g.drawCenteredString(font,(slim?"slim":"standard")+" / "+new String[]{"front","side","back","crouched head turn"}[view],(int)((i%4+.5F)*cw),(int)(30+(i/4+1)*ch-12),0xffe9dfcd);
+            out.endBatch();pose.popPose();g.drawCenteredString(font,(slim?"slim":"standard")+" / "+new String[]{"front","side","back","crouch + turn"}[view],(int)((i%4+.5F)*cw),(int)(30+(i/4+1)*ch-12),0xffe9dfcd);
         }
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event)throws Exception{

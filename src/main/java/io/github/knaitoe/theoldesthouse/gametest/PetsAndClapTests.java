@@ -204,7 +204,7 @@ public final class PetsAndClapTests {
             HideAndClap.onRightClickBlock(new PlayerInteractEvent.RightClickBlock(peer,InteractionHand.MAIN_HAND,at,click));
             h.assertTrue(!data.isCompleted(HideAndClap.ID)&&HideAndClap.isLocked(owner),"a peer cannot remove the owner's blindfold or finish their reserved round");
             HideAndClap.onRightClickBlock(new PlayerInteractEvent.RightClickBlock(owner,InteractionHand.MAIN_HAND,at,click));
-            h.assertTrue(data.isCompleted(HideAndClap.ID)&&!HideAndClap.isLocked(owner)&&owner.getItemBySlot(EquipmentSlot.HEAD).isEmpty()&&owner.containerMenu.getCarried().isEmpty(),"the actual wardrobe success clears the head, wrapper cursor and game lock immediately");
+            h.assertTrue(data.isCompleted(HideAndClap.ID)&&!HideAndClap.isLocked(owner)&&!data.state(HideAndClap.ID).getCompound("Session").hasUUID("Player")&&owner.getItemBySlot(EquipmentSlot.HEAD).isEmpty()&&owner.containerMenu.getCarried().isEmpty(),"the actual wardrobe success clears the head, wrapper cursor and both live/saved game locks before item callbacks can restore them");
             h.assertTrue(ItemStack.isSameItemSameComponents(peer.getItemBySlot(EquipmentSlot.HEAD),helmet)&&ItemStack.isSameItemSameComponents(owner.getItemBySlot(EquipmentSlot.FEET),boots),"other equipment and the peer's original helmet remain exact");
             var restored=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),f.level.registryAccess()),f.level.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",restored);HideAndClap.clearAll();
             HideAndClap.onPlayerLoggedIn(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(owner));

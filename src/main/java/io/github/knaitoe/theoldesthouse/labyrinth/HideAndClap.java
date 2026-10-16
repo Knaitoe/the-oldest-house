@@ -485,6 +485,7 @@ public final class HideAndClap {
 
     public static boolean isLocked(ServerPlayer player) {
         LabyrinthData data = LabyrinthData.get(player.server);
+        if (data.isCompleted(ID)) return false;
         ServerLevel level = player.server.getLevel(HouseDimensions.INTERIOR);
         if (level != null) restore(data, level);
         return !data.isCompleted(ID) && game != null && game.clock.started() && game.player.equals(player.getUUID()) && player.isAlive();
@@ -587,6 +588,16 @@ public final class HideAndClap {
     }
 
     private static void release(Game current, MinecraftServer server) {
+        // Item tossing and equipment callbacks ask isLocked(), which may restore a
+        // saved turn. Detach both authorities before any inventory/drop callback.
+        if (game == current) game = null;
+        LabyrinthData data = LabyrinthData.get(server);
+        CompoundTag state = data.state(ID);
+        CompoundTag session = state.getCompound("Session");
+        if (session.hasUUID("Player") && session.getUUID("Player").equals(current.player)) {
+            state.remove("Session");
+            data.setState(ID, state);
+        }
         ServerPlayer player = server.getPlayerList().getPlayer(current.player);
         if (player != null) {
             removeBoundCopies(player, current.player);
@@ -915,7 +926,7 @@ public final class HideAndClap {
 
     private static boolean reservedHere(ServerPlayer player) {
         BlockPos base=base(player.server);
-        return game!=null&&game.player.equals(player.getUUID())&&player.isAlive()&&base!=null
+        return !LabyrinthData.get(player.server).isCompleted(ID)&&game!=null&&game.player.equals(player.getUUID())&&player.isAlive()&&base!=null
                 &&player.level().dimension().equals(HouseDimensions.INTERIOR)&&isInRoom(base,player.position());
     }
 
