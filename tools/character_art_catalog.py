@@ -45,7 +45,7 @@ def entry(name,logical):
 
 
 def entries():
-    rows=[entry(name,look.logical) for name,look in sorted(LOOKS.items())]
+    rows=[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith('literary_paw_')]
     for i,name in enumerate(['walter','ruth','will','sergeant','messenger']):
         rows.append({'name':'literary_paw_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':9+i})
     return rows
