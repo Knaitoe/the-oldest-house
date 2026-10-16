@@ -184,7 +184,15 @@ public final class Shallows {
                 for(int i=0;i<player.getInventory().getContainerSize();i++)if(player.getInventory().getItem(i).is(DrownedTownRegistry.SHALLOWS_BURDEN.get())&&!validBurden(player,player.getInventory().getItem(i)))player.getInventory().setItem(i,ItemStack.EMPTY);
             }
         }
-        for(Entity e:level.getAllEntities())if(e.getTags().contains(WORDS)&&e.getPersistentData().getLong("Until")<=level.getGameTime())e.discard();
+        expireWords(level);
+    }
+    /** Discard only after traversing the native live lookup; removal can shift its backing map. */
+    public static void expireWords(ServerLevel level){
+        List<Entity> expired=new ArrayList<>();
+        for(Entity entity:level.getAllEntities()){
+            if(entity.getTags().contains(WORDS)&&entity.getPersistentData().getLong("Until")<=level.getGameTime())expired.add(entity);
+        }
+        for(Entity entity:expired)entity.discard();
     }
     public static boolean reset(ServerPlayer player){onDepart(player);LabyrinthData data=LabyrinthData.get(player.server);CompoundTag state=data.state("indian_lake"),boys=state.getCompound("Boys");boys.remove(player.getUUID().toString());state.put("Boys",boys);data.setState("indian_lake",state);save(data,player.getUUID(),new CompoundTag());return true;}
 }
