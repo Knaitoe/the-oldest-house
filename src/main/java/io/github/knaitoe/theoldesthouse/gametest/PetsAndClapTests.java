@@ -185,8 +185,10 @@ public final class PetsAndClapTests {
         clapSuccess=new Fixture(h,new BlockPos(coordinate,80,coordinate));var f=clapSuccess;var owner=f.player(f.base.offset(0,0,-4));var peer=f.player(f.base.south(5));
         owner.setNoGravity(true);var original=new ItemStack(LabyrinthRegistry.BLINDFOLD.get());original.set(DataComponents.CUSTOM_NAME,Component.literal("The original cloth "+owner.getUUID()));
         var token=new CompoundTag();token.putUUID("OriginalCloth0499",UUID.randomUUID());original.set(DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(token));
-        var helmet=new ItemStack(Items.DIAMOND_HELMET);helmet.set(DataComponents.CUSTOM_NAME,Component.literal("Peer's untouched helmet"));peer.setItemSlot(EquipmentSlot.HEAD,helmet.copy());
-        var boots=new ItemStack(Items.LEATHER_BOOTS);boots.setDamageValue(9);owner.setItemSlot(EquipmentSlot.FEET,boots.copy());
+        // Ordinary carried-item ownership is part of the exact original before the round starts.
+        MotherCollection.rememberCarried(original,owner.getUUID(),f.server.overworld().getGameTime());
+        var helmet=new ItemStack(Items.DIAMOND_HELMET);helmet.set(DataComponents.CUSTOM_NAME,Component.literal("Peer's untouched helmet"));MotherCollection.rememberCarried(helmet,peer.getUUID(),f.server.overworld().getGameTime());peer.setItemSlot(EquipmentSlot.HEAD,helmet.copy());
+        var boots=new ItemStack(Items.LEATHER_BOOTS);boots.setDamageValue(9);MotherCollection.rememberCarried(boots,owner.getUUID(),f.server.overworld().getGameTime());owner.setItemSlot(EquipmentSlot.FEET,boots.copy());
         h.assertTrue(HideAndClap.enter(owner),"the reader starts the original native room");owner.setItemSlot(EquipmentSlot.HEAD,original.copy());
         h.onEachTick(()->{if(clapSuccess!=f)return;var session=LabyrinthData.get(f.server).state(HideAndClap.ID).getCompound("Session");
             if(session.getString("Stage").equals("CLAPPING")){var spots=session.getLongArray("Spots");int index=session.getInt("Index");if(index<spots.length){var at=Vec3.atBottomCenterOf(BlockPos.of(spots[index]));owner.teleportTo(f.level,at.x,at.y,at.z,180,0);}}
