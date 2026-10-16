@@ -1,6 +1,6 @@
 # This House Has Ghosts in It
 
-Development candidate **0.4.100** reviews every generated character except Borrasca. It replaces portrait-like faces and clothing images with native pixel paintings, fits Harrigan's study/casket poses with articulated limbs, and corrects the DJ, dinner and vest mappings. Includes all 0.4.99 rename, watched-witch retreat, blindfold and Goatman repairs. Existing world/actor identities, personal outcomes and finite originals remain. Java/build and pixel/UV/source checks pass locally; complete 648-case/twelve-job and native rendered validation remains pending.
+Development candidate **0.4.100** reviews every generated character except Borrasca. It replaces portrait-like faces and clothing images with native pixel paintings, fits Harrigan's study/casket poses with articulated limbs, and corrects the DJ, dinner and vest mappings. Includes all 0.4.99 rename, watched-witch retreat, blindfold and Goatman repairs. Existing world/actor identities, personal outcomes and finite originals remain. Java/build and pixel/UV/source checks pass locally; A full-suite Shallows text-expiry crash is repaired by collecting expired words before removal, with one native regression added. Complete 649-case/twelve-job and native rendered validation remains pending.
 [Character findings and per-sheet accounting](docs/CHARACTER_REVIEW_0_4_100.md) ·
 [Previous player repairs](docs/PLAYTEST_0_4_99.md).
 

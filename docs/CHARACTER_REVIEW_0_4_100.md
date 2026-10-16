@@ -27,7 +27,8 @@ No new actor IDs, story sources, resolutions or endings. All personal progress, 
 - Java compilation and initial build pass locally.
 - All 766 PNGs decode with valid CRCs. Exact painting reproduction, opaque native base faces, integer pixel grid, source hashes and excluded/unrelated art checks pass.
 - The fresh 20-view native pass completes after the joint-cap/helmet follow-up. Native coffin bounds, folded hands, seated knees, cap UVs and renderer-reuse resets pass. The cap regression fails on the earlier implementation and passes on the corrected native mesh. Final complete-suite checks remain pending.
-- Complete exact-source twelve-job CI, 648 native gameplay cases, all earlier writing/package/GPU/97 architecture views and actual two-client/reconnect proofs are required. Pending results are not a verified release. Staged mesh views do not claim an uninterrupted ordinary playthrough.
+- The first exact-source matrix passed eleven jobs, including both actual clients/reconnects, but the full corpus crashed in Shallows word expiration. Native entity removal shifted the lookup being traversed. The follow-up collects due words before removal and adds a 128-word native regression with future words, unrelated displays and an original named actor. No prior case is removed or weakened.
+- Complete exact-source twelve-job CI, 649 native gameplay cases, all earlier writing/package/GPU/97 architecture views and actual two-client/reconnect proofs are required. Pending results are not a verified release. Staged mesh views do not claim an uninterrupted ordinary playthrough.
 
 ## Per-sheet accounting
 
