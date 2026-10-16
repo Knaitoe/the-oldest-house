@@ -1,18 +1,18 @@
 # Character review — 0.4.100
 
-The owner requested examination of every generated character, excluding Borrasca, and clarified the target: aesthetically pleasant designs fitted to Minecraft, not literal painted faces. This supersedes earlier image-byte preservation only for the 112 sheets explicitly listed in `art/inventory/character_review_04100.json`. The remaining 654 packaged PNGs retain their exact original bytes, including every Borrasca painting.
+The owner requested examination of every generated character, excluding Borrasca, and clarified the target: aesthetically pleasant designs fitted to Minecraft, not literal painted faces. This supersedes earlier image-byte preservation only for the 117 sheets explicitly listed in `art/inventory/character_review_04100.json`. The remaining 649 packaged PNGs retain their exact original bytes, including every Borrasca painting.
 
 ## Findings and changes
 
 - Replaced portrait faces, repeated suit pictures, generated fabric pictures and non-integral export grids with per-face pixel paintings. Faces use 16 × 16 authored pixels on the eight-unit Minecraft head; ears, hair, collars, seams, cuffs, hands, pockets, trouser creases and soles have their own intended surfaces. Palette changes distinguish the original people and outfits. Club despair, changed family, Father injuries, Marjorie's dinner and John's hand keep their state-specific art.
 - Harrigan now uses connected elbows and knees. The study pose has hanging lower legs and feet at the floor. His body remains the original saved ArmorStand; living, dead-in-chair and casket states and the three mourner appearances use the same existing synchronization. The casket pose folds his hands over the torso, supports his head over the pillow, centers an adult-proportioned body inside the shorter coffin and resets all joints before another actor/state renders. The coffin's physical shape matches its new mesh; the original block address and contents/phone choices remain.
 - Marjorie's dinner now uses the same 128 × 64 logical layout as her other phases. The emergency atlas rescale is gone; native jaw, blink and mouth effects remain.
-- Denny's vest, back, trousers and boots now fit the standard native islands. Removed the special leg remap and alternate torso draw. The five cottage characters already had authored pixel features; they retain their art and receive the same native review.
+- Denny's vest, back, trousers and boots now fit the standard native islands. Removed the special leg remap and alternate torso draw. The five cottage characters now use that same pixel grid: Walter keeps his spectacles, white whiskers, green cardigan and watch chain; Ruth her plum dress, apron and pinned bun; Will his striped shirt, braces and red neckerchief; the sergeant his frock coat, moustache and medals; the messenger his black coat, bowler and striped trousers. Fine noise and soft facial shading are removed. The old cottage generator delegates to the common painter.
 - All nine nightclub people and both moods use the same native layout. Removed the separately cropped DJ portrait and its extra head render; his normal model head and head-attached headphones now render together.
 - Native segment caps have their own painted elbow/knee swatches, keeping palm/sole islands at the actual extremities. A native baked-vertex regression reproduced the hand-coloured elbow before the fix. Road crew hard hats receive complete crown and brim faces; only the actual female passenger wears the corpse gown.
 - Native coat/gown/bandage footprints stay within their texture islands. Father injury marks belong to the actual left-leg bandage; mirrored base legs are intact. The medium's veil retains a face opening.
 - Elk sheets retain opaque padding around every complete native net, as required by the existing elk/fan coverage regression. Elk hide, wounds, skinned remains, rabbit fur and Minotaur/vulture materials use grouped pixel marks rather than photographed-looking surface grain. The vulture now selects its actual 256 × 512 material sheet, matching its native UV layer.
-- Mother stages, cloth girl, the Goatman, Pekingese, cottage people, intentional featureless figures, scarecrow and player-skin doubles were examined against their model definitions and retained where they already fit. The old generated-room/item materials are outside this character pass.
+- Mother stages, cloth girl, the Goatman, Pekingese, intentional featureless figures, scarecrow and player-skin doubles were examined against their model definitions and retained where they already fit. The old generated-room/item materials are outside this character pass.
 
 ## Scope and preservation
 
@@ -26,7 +26,7 @@ No new actor IDs, story sources, resolutions or endings. All personal progress, 
 
 - Java compilation and initial build pass locally.
 - All 766 PNGs decode with valid CRCs. Exact painting reproduction, opaque native base faces, integer pixel grid, source hashes and excluded/unrelated art checks pass.
-- The fresh 20-view native pass completes after the joint-cap/helmet follow-up. Native coffin bounds, folded hands, seated knees, cap UVs and renderer-reuse resets pass. The cap regression fails on the earlier implementation and passes on the corrected native mesh. Final complete-suite checks remain pending.
+- The fresh 20-view native pass completes after the joint-cap/helmet follow-up. Native coffin bounds, folded hands, seated knees, cap UVs and renderer-reuse resets pass. The cap regression fails on the earlier implementation and passes on the corrected native mesh. The five cottage follow-up sheets pass exact painting, UV, alpha and exclusion checks; their updated native page 17 remains required in the final exact-source run. Final complete-suite checks remain pending.
 - The first exact-source matrix passed eleven jobs, including both actual clients/reconnects, but the full corpus crashed in Shallows word expiration. Native entity removal shifted the lookup being traversed. The follow-up collects due words before removal and adds a 128-word native regression with future words, unrelated displays and an original named actor. No prior case is removed or weakened.
 - Complete exact-source twelve-job CI, 649 native gameplay cases, all earlier writing/package/GPU/97 architecture views and actual two-client/reconnect proofs are required. Pending results are not a verified release. Staged mesh views do not claim an uninterrupted ordinary playthrough.
 
@@ -114,11 +114,11 @@ No new actor IDs, story sources, resolutions or endings. All personal progress, 
 | `literary_lake_wax` | Repainted on native face islands | literary; `native-character-art-11.png` |
 | `literary_mother` | Repainted on native face islands | literary; `native-character-art-11.png` |
 | `literary_old_man` | Repainted on native face islands | literary; `native-character-art-11.png` |
-| `literary_paw_messenger` | Authored pixel art retained | literary; `native-character-art-17.png` |
-| `literary_paw_ruth` | Authored pixel art retained | literary; `native-character-art-17.png` |
-| `literary_paw_sergeant` | Authored pixel art retained | literary; `native-character-art-17.png` |
-| `literary_paw_walter` | Authored pixel art retained | literary; `native-character-art-17.png` |
-| `literary_paw_will` | Authored pixel art retained | literary; `native-character-art-17.png` |
+| `literary_paw_messenger` | Repainted native islands; original period outfit retained | literary; `native-character-art-17.png` |
+| `literary_paw_ruth` | Repainted native islands; original period outfit retained | literary; `native-character-art-17.png` |
+| `literary_paw_sergeant` | Repainted native islands; original period outfit retained | literary; `native-character-art-17.png` |
+| `literary_paw_walter` | Repainted native islands; original period outfit retained | literary; `native-character-art-17.png` |
+| `literary_paw_will` | Repainted native islands; original period outfit retained | literary; `native-character-art-17.png` |
 | `literary_plain_boy` | Intentional featureless silhouette retained | Literary cast; all six silhouette phases in native literary review |
 | `literary_quiet_walker` | Intentional featureless silhouette retained | Literary cast; all six silhouette phases in native literary review |
 | `literary_red_figure` | Repainted on native face islands | literary; `native-character-art-11.png` |

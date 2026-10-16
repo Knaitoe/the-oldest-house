@@ -667,6 +667,56 @@
       "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
     },
     {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_messenger.png",
+      "previous_sha256": "ec6ac866f9eff54978c1bafb524cd45f7d35300c6d853871dfed65fcf84ce4f7",
+      "sha256": "6a7a667047894dcfa2512add18e8f5e53c0c99211aa7a56f0149c54a4e8e1e48",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "0f7443c03b2199f58b44a2af8c02744db79ddebf567a2c1e4d9cf8c3f1ba19e6"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_ruth.png",
+      "previous_sha256": "d4b63d181789c06af95389d4047abe39f9efbb4b20ed87383e67a974a3e0600a",
+      "sha256": "5373d5e6ff9563deed05187d4a284a2942dea8ae0f7dce27d42bbf7222abad1d",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "412f2896861debff6e8b46a6d54b4c37ce0a049633c5e4c25016a9dc4ac6f4b7"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_sergeant.png",
+      "previous_sha256": "9ff93b5255a272c3a5f876687be1cbc045657439309c1dc936dbd76877877a25",
+      "sha256": "fa65ec441e5ef6ff58b3f0b7afe6aa7994a0a84af479f64b4e9f024f5662f1f9",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_walter.png",
+      "previous_sha256": "a478f99b553b17784db21e8551b1569389c9becd7597f629be36985b4b5f0a01",
+      "sha256": "0596396eb5f4db35a2da27fe418f61914cbdc7035ac2c2fbe12a3dc5bfe757c8",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_will.png",
+      "previous_sha256": "91c2e096756fc3aa036e153ebbd913d0658f56f1cedc4bfefba09cd5d1f7f0fd",
+      "sha256": "91527b1520b50dac0ae375deb58d01d526a4a0234055ecc4348842d28a66480d",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
       "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_red_figure.png",
       "previous_sha256": "9162a9d833ef0a9249815f7a6174e8355b884ad4eac1f15e443414a81a5dfcc3",
       "sha256": "0b6448356de064effee2d27cd59a19fa043f4e51c1799c8c26c568975bd348ff",
@@ -1667,11 +1717,6 @@
     "src/main/resources/assets/the_oldest_house/textures/entity/literary_camera.png": "af7bd33477ab51f2deabd43268e5f67f976a35414617502777be7739c2b88fe9",
     "src/main/resources/assets/the_oldest_house/textures/entity/literary_fan.png": "150af69ec7466835935397d71f3527d67f0ffb7a75b7b32730b7a03d93f50f9a",
     "src/main/resources/assets/the_oldest_house/textures/entity/literary_herd_eyes.png": "4ebc695b8968b031d013d27979fe8427ff77e866670c6150c21147cd2250ea2f",
-    "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_messenger.png": "ec6ac866f9eff54978c1bafb524cd45f7d35300c6d853871dfed65fcf84ce4f7",
-    "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_ruth.png": "d4b63d181789c06af95389d4047abe39f9efbb4b20ed87383e67a974a3e0600a",
-    "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_sergeant.png": "9ff93b5255a272c3a5f876687be1cbc045657439309c1dc936dbd76877877a25",
-    "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_walter.png": "a478f99b553b17784db21e8551b1569389c9becd7597f629be36985b4b5f0a01",
-    "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_will.png": "91c2e096756fc3aa036e153ebbd913d0658f56f1cedc4bfefba09cd5d1f7f0fd",
     "src/main/resources/assets/the_oldest_house/textures/entity/literary_plain_boy.png": "4160534e41567845125e8e729f285fa5fb9d75e68b7a5795cbc11abd6942f406",
     "src/main/resources/assets/the_oldest_house/textures/entity/literary_quiet_walker.png": "f80bf014cb7f927543c88152631ff46f7d21ed060a796c98efeb7350f25b4aa3",
     "src/main/resources/assets/the_oldest_house/textures/entity/literary_silhouette.png": "564acc4444c46f23517d6ee8e0a2ffbfed5155e3acca16fd622fb7382403a61d",
