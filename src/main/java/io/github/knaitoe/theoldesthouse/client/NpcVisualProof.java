@@ -43,10 +43,10 @@ public final class NpcVisualProof extends Screen {
         g.drawString(font,"Shared actors use native tracking. Tom and the double retain each explorer's standard or slim skin.",10,height-15,0xFFE6DFCF,false);
     }
     private void mesh(GuiGraphics g,ResourceLocation texture,int x,int y,int kind,int view){
-        var mc=Minecraft.getInstance();var model=new PlayerModel<>(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER),false);model.young=false;
+        var mc=Minecraft.getInstance();PlayerModel<?> model;
+        if(kind==1||kind==2||kind==4){var fitted=new HouseHumanRenderers.HarriganModel(mc.getEntityModels().bakeLayer(HouseHumanRenderers.HARRIGAN_LAYER));fitted.preview(kind==4?4:kind==1?1:2);model=fitted;}
+        else model=new PlayerModel<>(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER),false);model.young=false;
         if(kind==2&&view==1){casket(g,texture,model,x,y);return;}
-        if(kind==1){model.leftLeg.xRot=model.rightLeg.xRot=-(float)Math.PI/2;model.leftArm.xRot=model.rightArm.xRot=-(float)Math.PI*2/9;}
-        if(kind==2&&view==0){model.head.xRot=.3F;model.body.xRot=.14F;model.leftLeg.xRot=model.rightLeg.xRot=-(float)Math.PI/2;model.leftArm.xRot=model.rightArm.xRot=-.43F;}
         if(kind==3){model.body.xRot=.12F;model.head.xRot=.15F;model.leftArm.xRot=model.rightArm.xRot=-.15F;}
         if(kind==4){model.head.xRot=.175F;model.leftArm.xRot=model.rightArm.xRot=-.314F;model.leftArm.zRot=-.157F;model.rightArm.zRot=.157F;}
         if(kind==0){model.rightArm.xRot=-1.45F;model.rightArm.yRot=-.2F;model.leftArm.xRot=-1.45F;model.leftArm.yRot=.55F;}
@@ -57,6 +57,7 @@ public final class NpcVisualProof extends Screen {
     }
     private void casket(GuiGraphics g,ResourceLocation texture,PlayerModel<?> model,int x,int y){
         HouseHumanRenderers.resting(model);model.hat.copyFrom(model.head);model.leftSleeve.copyFrom(model.leftArm);model.rightSleeve.copyFrom(model.rightArm);
+        if(model instanceof HouseHumanRenderers.HarriganModel fitted)fitted.preview(3);
         g.flush();var mc=Minecraft.getInstance();var poses=g.pose();var buffers=mc.renderBuffers().bufferSource();
         poses.pushPose();poses.translate(x,y+20,150);poses.scale(42,-42,42);poses.mulPose(Axis.XP.rotationDegrees(25));poses.mulPose(Axis.YP.rotationDegrees(-25));poses.translate(-.5,0,0);
         var state=io.github.knaitoe.theoldesthouse.labyrinth.HarriganFinishBlock.of(io.github.knaitoe.theoldesthouse.labyrinth.HarriganFinishBlock.Kind.CASKET);
@@ -70,7 +71,7 @@ public final class NpcVisualProof extends Screen {
         for(var texture:new ResourceLocation[]{HouseHumanRenderers.HOLLOWAY,HouseHumanRenderers.HARRIGAN,HouseHumanRenderers.HARRIGAN_DEAD,HouseHumanRenderers.WITNESS})
             if(mc.getResourceManager().getResource(texture).isEmpty())throw new IllegalStateException("Missing NPC skin "+texture);
         Path folder=Path.of("../build/font-smoke");Files.createDirectories(folder);
-        if(page==1){for(int i=0;i<3;i++)if(mc.getResourceManager().getResource(HouseHumanRenderers.mourner(i)).isEmpty())throw new IllegalStateException("Missing wake skin "+i);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve("native-harrigan-wake.png"));}TheOldestHouse.LOGGER.info("HOUSE WAKE CHECK PASSED: native screenshot saved");mc.setScreen(new CastVisualProof());return;}
+        if(page==1){for(int i=0;i<3;i++)if(mc.getResourceManager().getResource(HouseHumanRenderers.mourner(i)).isEmpty())throw new IllegalStateException("Missing wake skin "+i);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve("native-harrigan-wake.png"));}TheOldestHouse.LOGGER.info("HOUSE WAKE CHECK PASSED: native screenshot saved");mc.setScreen(new CharacterArtVisualProof());return;}
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve("native-npcs.png"));}
         Files.writeString(folder.resolve("npcs-passed.txt"),"Native player model meshes, exact skin UVs, seated/casket poses and client renderer initialization passed.\n");
         TheOldestHouse.LOGGER.info("HOUSE NPC CHECK PASSED: native screenshot saved");page=1;frames=0;

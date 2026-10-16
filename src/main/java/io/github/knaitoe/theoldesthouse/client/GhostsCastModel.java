@@ -25,10 +25,10 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
     public static LayerDefinition layer(){
         var mesh=HumanoidModel.createMesh(CubeDeformation.NONE,0);var r=mesh.getRoot();
         for(boolean left:new boolean[]{false,true}){
-            var arm=r.addOrReplaceChild(left?"left_arm":"right_arm",CubeListBuilder.create().texOffs(40,16).mirror(left).addBox(left?-1:-3,-2,-2,4,6,4),PartPose.offset(left?5:-5,2,0));
-            arm.addOrReplaceChild("elbow",CubeListBuilder.create().texOffs(40,22).mirror(left).addBox(left?-1:-3,0,-2,4,6,4),PartPose.offset(0,4,0));
-            var leg=r.addOrReplaceChild(left?"left_leg":"right_leg",CubeListBuilder.create().texOffs(0,16).mirror(left).addBox(-2,0,-2,4,6,4),PartPose.offset(left?1.9F:-1.9F,12,0));
-            leg.addOrReplaceChild("knee",CubeListBuilder.create().texOffs(0,22).mirror(left).addBox(-2,0,-2,4,6,4),PartPose.offset(0,6,0));
+            var arm=r.addOrReplaceChild(left?"left_arm":"right_arm",SegmentedSkin.limb(40,16,0,left?-1:-3,-2,-2,4,6,4,left,true),PartPose.offset(left?5:-5,2,0));
+            arm.addOrReplaceChild("elbow",SegmentedSkin.limb(40,16,6,left?-1:-3,0,-2,4,6,4,left,true),PartPose.offset(0,4,0));
+            var leg=r.addOrReplaceChild(left?"left_leg":"right_leg",SegmentedSkin.limb(0,16,0,-2,0,-2,4,6,4,left,false),PartPose.offset(left?1.9F:-1.9F,12,0));
+            leg.addOrReplaceChild("knee",SegmentedSkin.limb(0,16,6,-2,0,-2,4,6,4,left,false),PartPose.offset(0,6,0));
         }
         // Explicit face UVs keep the opened jaw's inner surface out of the eye/forehead island.
         var head=r.addOrReplaceChild("head",CubeListBuilder.create(),PartPose.ZERO);

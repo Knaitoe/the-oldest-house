@@ -35,6 +35,8 @@ jobs:
           python3 -m pip install Pillow
           python3 tools/verify_writing_fonts.py
           python3 tools/verify_textures.py
+          python3 tools/paint_character_skins.py --check
+          python3 tools/verify_character_art.py
 
       - name: Verify playtest journey measurements
         run: python3 -m unittest discover -s tools -p test_summarize_playtest_log.py -v
@@ -44,6 +46,9 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq ffmpeg
           python3 tools/verify_goatman_impacts.py --jar
+
+      - name: Verify packaged character paintings and exclusions
+        run: python3 tools/verify_character_art.py --jar
 
       - name: Verify playable package
         run: |
@@ -422,10 +427,13 @@ jobs:
                            'assets/the_oldest_house/models/item/trailer_plate.json',
                            'assets/the_oldest_house/textures/item/trailer_plate.png' ):
                   assert name in z.namelist(), name
-              # The owner-approved 0.4.65 artwork keeps each model's UV proportions and alpha mask.
+              # October 16 explicitly supersedes the old artwork only for the reviewed character repaints.
+              repaint = {r['path']: r for r in json.loads(pathlib.Path('art/inventory/character_review_04100.json').read_text())['repainted']}
+              # Unrelated 0.4.65 assets still retain their exact original bytes and alpha.
               art = json.loads(pathlib.Path('art/inventory/cast_0465.json').read_text())
               assert len(art['approved_textures']) == 67 and art['entity_count'] == 61
-              for record in art['approved_textures']:
+              for original in art['approved_textures']:
+                  record = repaint.get(original['path'], original)
                   name = record['path'].removeprefix('src/main/resources/')
                   raw = z.read(name)
                   assert hashlib.sha256(raw).hexdigest() == record['sha256'], name
@@ -686,6 +694,8 @@ jobs:
           test -s build/font-smoke/npcs-passed.txt
           test -s build/font-smoke/native-npcs.png
           test -s build/font-smoke/native-harrigan-wake.png
+          test -s build/font-smoke/character-art-passed.txt
+          for view in $(seq -w 0 19); do test -s build/font-smoke/native-character-art-$view.png; done
           test -s build/font-smoke/cast-passed.txt
           test -s build/font-smoke/stacey-scrabble-passed.txt
           test -s build/font-smoke/native-stacey-scrabble.png

@@ -25,12 +25,12 @@ public final class LakeWitchModel extends PlayerModel<LakeWitchEntity> {
     }
     private static void arm(PartDefinition root,String name,int u,int v,boolean left,CubeDeformation inflate){
         float x=left?-1:-2;
-        var upper=root.addOrReplaceChild(name,CubeListBuilder.create().texOffs(u,v).addBox(x,-2,-2,3,6,4,inflate),PartPose.offset(left?5:-5,2.5F,0));
-        upper.addOrReplaceChild("elbow",CubeListBuilder.create().texOffs(u,v+6).addBox(x,0,-2,3,6,4,inflate),PartPose.offset(0,4,0));
+        var upper=root.addOrReplaceChild(name,inflate==CubeDeformation.NONE?SegmentedSkin.limb(u,v,0,x,-2,-2,3,6,4,false,true):CubeListBuilder.create().texOffs(u,v).addBox(x,-2,-2,3,6,4,inflate),PartPose.offset(left?5:-5,2.5F,0));
+        upper.addOrReplaceChild("elbow",inflate==CubeDeformation.NONE?SegmentedSkin.limb(u,v,6,x,0,-2,3,6,4,false,true):CubeListBuilder.create().texOffs(u,v+6).addBox(x,0,-2,3,6,4,inflate),PartPose.offset(0,4,0));
     }
     private static void leg(PartDefinition root,String name,int u,int v,boolean left,CubeDeformation inflate){
-        var upper=root.addOrReplaceChild(name,CubeListBuilder.create().texOffs(u,v).addBox(-2,0,-2,4,6,4,inflate),PartPose.offset(left?1.9F:-1.9F,12,0));
-        upper.addOrReplaceChild("knee",CubeListBuilder.create().texOffs(u,v+6).addBox(-2,0,-2,4,6,4,inflate),PartPose.offset(0,6,0));
+        var upper=root.addOrReplaceChild(name,inflate==CubeDeformation.NONE?SegmentedSkin.limb(u,v,0,-2,0,-2,4,6,4,false,false):CubeListBuilder.create().texOffs(u,v).addBox(-2,0,-2,4,6,4,inflate),PartPose.offset(left?1.9F:-1.9F,12,0));
+        upper.addOrReplaceChild("knee",inflate==CubeDeformation.NONE?SegmentedSkin.limb(u,v,6,-2,0,-2,4,6,4,false,false):CubeListBuilder.create().texOffs(u,v+6).addBox(-2,0,-2,4,6,4,inflate),PartPose.offset(0,6,0));
     }
     public static LayerDefinition createBodyLayer(){
         var mesh=PlayerModel.createMesh(CubeDeformation.NONE,true);var root=mesh.getRoot();var outer=new CubeDeformation(.25F);

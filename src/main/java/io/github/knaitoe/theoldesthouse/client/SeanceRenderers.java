@@ -25,7 +25,7 @@ public final class SeanceRenderers {
         public final ModelPart leftKnee,rightKnee;
         public FamilyModel(ModelPart root){super(root);veil=head.getChild("veil");skirt=body.getChild("skirt");collar=body.getChild("collar");leftKnee=leftLeg.getChild("knee");rightKnee=rightLeg.getChild("knee");}
         public static LayerDefinition layer(){var mesh=HumanoidModel.createMesh(CubeDeformation.NONE,0);var root=mesh.getRoot();
-            for(boolean left:new boolean[]{false,true}){var leg=root.addOrReplaceChild(left?"left_leg":"right_leg",CubeListBuilder.create().texOffs(0,16).mirror(left).addBox(-2,0,-2,4,6,4),PartPose.offset(left?1.9F:-1.9F,12,0));leg.addOrReplaceChild("knee",CubeListBuilder.create().texOffs(0,22).mirror(left).addBox(-2,0,-2,4,6,4),PartPose.offset(0,6,0));}
+            for(boolean left:new boolean[]{false,true}){var leg=root.addOrReplaceChild(left?"left_leg":"right_leg",SegmentedSkin.limb(0,16,0,-2,0,-2,4,6,4,left,false),PartPose.offset(left?1.9F:-1.9F,12,0));leg.addOrReplaceChild("knee",SegmentedSkin.limb(0,16,6,-2,0,-2,4,6,4,left,false),PartPose.offset(0,6,0));}
             root.getChild("head").addOrReplaceChild("veil",CubeListBuilder.create().texOffs(64,0).addBox(-4.5F,-8.5F,-4.4F,9,9,1).texOffs(64,12).addBox(-4.4F,-7.5F,3.2F,8.8F,10,1),PartPose.ZERO);
             root.getChild("body").addOrReplaceChild("skirt",CubeListBuilder.create().texOffs(64,28).addBox(-4.5F,8,-2.6F,9,7,5.2F).texOffs(64,42).addBox(-5.5F,15,-3.2F,11,7,6.4F),PartPose.ZERO);
             root.getChild("body").addOrReplaceChild("collar",CubeListBuilder.create().texOffs(96,0).addBox(-3.8F,0,-2.6F,7.6F,2,1.2F),PartPose.ZERO);

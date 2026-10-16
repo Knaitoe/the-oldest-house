@@ -1,0 +1,1786 @@
+{
+  "source_commit": "098c45b7871408d38f51eb753aa2c43b9b2a1ddc",
+  "authorization": "October 16, 2026: examine every generated character except Borrasca; aesthetically pleasant designs fitted to Minecraft, not literal painted faces. This supersedes earlier PNG-byte preservation only for the listed repaints.",
+  "excluded": [
+    "Borrasca"
+  ],
+  "png_count": 766,
+  "repainted": [
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/caged_child.png",
+      "previous_sha256": "5c5d79604142278079b6fb17b1fd3756e7fdd887c79e056cf3e879c07aaa3ce6",
+      "sha256": "137d17b278590b787a42ecfccf0b36739a0b14c566d346f9ba75792290ecefa1",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/finale_materials.png",
+      "previous_sha256": "55f8a90c2d0a06ee096a17e6e249b87804715f263f0a29ddf38626a1042f3e4d",
+      "sha256": "133f4067a1a33d441b3782348e852fe4ce623bbe85be5915609a10de39eb21ea",
+      "size": [
+        256,
+        512
+      ],
+      "alpha_sha256": "b5a41c3758763bbec72769fab4a2533bf2db0b6312d93d25a695f9e4b9e02260"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/finale_witness.png",
+      "previous_sha256": "0cbae63b1775816c76fcd4fd18766d22ce61f4aaebc9d46bcc851fa62996814f",
+      "sha256": "8efed121a95b371971444289afdefd9758c2d6f655fe6377b389ca502141e180",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/ghosts_barry.png",
+      "previous_sha256": "7913a14bf53a7a6891cb7ac9294e3962e3a055e4a7c6f13bede5c27d6858095e",
+      "sha256": "65594f1431ae2f7f31df5b9c9286636d8cd4a8e344fe0068c620821b7ed68556",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/ghosts_father_wanderly.png",
+      "previous_sha256": "14df4aa3b9a475520de86131fd9fe9425267e8fd4328a9b33083cbff8b54a612",
+      "sha256": "c86512c966f702fc1bc645a9ec1a4f718cc7dec7c6d240ef80cbf49811fa1445",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/ghosts_john.png",
+      "previous_sha256": "d584c13d4804e955b16519ceccf0461bd0bd27591925c1f00743b990d21359fe",
+      "sha256": "eabc5a887198ca188f21fc27a1c186dd16ab2dd7cf8284b8dcdc4a4acfb7536f",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/ghosts_john_hand.png",
+      "previous_sha256": "bd9cd8fcebcc3a38a71409fe8dcc275289fa91741932ebc1711f1636a04db534",
+      "sha256": "66057f85feba39cae1eae8b2465f185695e0cdde8f0d6566769ff0ab18755974",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/ghosts_marjorie.png",
+      "previous_sha256": "6431fbbfcc7189f51a23c0a740ed3a83a9a12ac868437b4f7371b654ded40d44",
+      "sha256": "0696e3c2c5a10d4c3f68a1655b5bcb9b1f7165f6354e031f77f658262fbcba0a",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/ghosts_marjorie_dinner.png",
+      "previous_sha256": "68003da0d439d5acd2da7467f5db025e0bb93a6fbd3bee703337304e5feef4f4",
+      "sha256": "98af0bbca8c4de803d535429f8d83c40d6bb3655f2d892b4903e998457a6ded0",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/ghosts_merry.png",
+      "previous_sha256": "9b9459f92dc5448abc3fdfa8c03c31e9d158cb5c83b536989d8e91ede7d2663f",
+      "sha256": "c019d6af4fafd4788df80f2923f605b79535fee0426c62f76a8f4397d62eaf4d",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/ghosts_sarah.png",
+      "previous_sha256": "83a774af86ed48aed0091ca4e53d4b1ba320014d4628a6379add4ed3f65d2f1d",
+      "sha256": "c53b840a14b6f0ef596eb61ad8cce36f3ae9cd11ed01f0fb022bb946a9dfa101",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/harrigan.png",
+      "previous_sha256": "03501a01a69a43f84819bd0a0cf09c103bf4940d0e260b214e139ac2c6b82bb1",
+      "sha256": "4fe3e9abe8339de04240ae0e533f431f6068fdaa553297126963e6f4a330f2e4",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/harrigan_dead.png",
+      "previous_sha256": "7f0acd6b8cd7674f947347821818ad36f416f67dff9afe359c04ba52f22ce826",
+      "sha256": "1801846604238bf205cca28b0721f73d401ba535054c44549761b15d74d3fe21",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/harrigan_mourner_0.png",
+      "previous_sha256": "8dd595c2b3a5955ac59448e222028efdbad841a3a0959432facf82ade3566c1d",
+      "sha256": "31b6e04b4e5cf6dcfd46b05893b684f495ed1d9fdd63846cd1b31f3935f2b7d7",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/harrigan_mourner_1.png",
+      "previous_sha256": "4d6800317ff260c916344794955feab055a4f6071254a6a2c04fd03b73b7db0e",
+      "sha256": "b590fb97986ca72f097c0c78a1451ee4d5cb76c45db55aa23ab7d3d92a3f0d06",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/harrigan_mourner_2.png",
+      "previous_sha256": "747a145057ef98f7add84ee52eedd7ca4081ec38017f4beca55c29f9061ed222",
+      "sha256": "786ceccd26f9f6ef816a05b998d934357ab364ddb558579f9c348a95ad1d0736",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/holloway.png",
+      "previous_sha256": "23908b7aacb72201d942b850b497c332041cabc3e417bef6d42e818da533030f",
+      "sha256": "3eb1eb0ed1bbefcb43d6f840c7998bd0e3b140e5a9fac5794cef234302e2b0f0",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/hotel_bartender.png",
+      "previous_sha256": "31d881d9c0223b1c2f4c5f08a049e6f4a8f46198462ccb7be4be3329dd5fe7ac",
+      "sha256": "a06fdfd5fa87987b4e6afef7fff6f01f2852dc6025441a3192a48225713704ad",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/hotel_dancer.png",
+      "previous_sha256": "e3edf850a32ce0f236f4d02a85c3167f80ff18a849d3f54fc439b78b3d5ddae5",
+      "sha256": "62a6f73d01f02cc9261ea7c43e464bca653866617f7f3ff5077cb13c24a31d8c",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/hotel_dancer_dress.png",
+      "previous_sha256": "7bdc5c6c8a38a610413b7f79ab376932689f3f672d3bb9608a1f2b75fd0cbc81",
+      "sha256": "5f4616f0a5e6ca4a9d293f35d3f5969137dc143c6aca390d4bbdf1e7c7e53efc",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/hotel_pianist.png",
+      "previous_sha256": "2d6f5588be8601bea13b3ab287096da0ea45c835eeadc8bd61a6ec66736f2e5c",
+      "sha256": "2a21775058461322eef11932dc204935bce85752f7ef4cae7cfb3e6300b9b886",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/hotel_porter.png",
+      "previous_sha256": "7d06b8181826c77f1e5bbba5fdd5a75d171a3dd81f5c5a710b8a88e8253d9000",
+      "sha256": "d4d1fb2c88df6e4ccf54b4e8f28831c1fd0e358a5013e322b2f95fd19e1292d4",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/hotel_scarred_guest.png",
+      "previous_sha256": "8527219b703961dea7d1e4b8d977a37e6b3b93182663ae4f14f15a4a5877b5d9",
+      "sha256": "292c5cacc090020f18c38339716f582126ece2e333c2c2c2d80ed4288cac9fcb",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_boy.png",
+      "previous_sha256": "7c41529313c73f87f4c7a184f1c377e2f2f22907aea01f608aa277630977c82d",
+      "sha256": "f7ae6eaad2978a27f4f324a193060fdff581f4e815be5ba020025ace2203b2d5",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_congregant.png",
+      "previous_sha256": "d09867959cf9666237e6a29b9d9ed162baf3e097fbb1c6d47215cd7a59d77b50",
+      "sha256": "d3b79e094e9afe04694394edd81590efd68d0dbfec869f68ded6125c72f64ac6",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_congregant_1.png",
+      "previous_sha256": "b83537c29b32ec8c045d40077e35a5ca694d3739c1d22b48d3df2497b7507e7b",
+      "sha256": "a71c804d38e3716a9df13c1836470200fd702632e882286d91819d4acf82f7ce",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_congregant_2.png",
+      "previous_sha256": "7fdf4127ce4e0d95360454683ee3a23550ee309bb05e56c5697fc1a37ff02b83",
+      "sha256": "7f948ead7f3fec3649f054713aad1aa6de11e2e62a9e27137d0ab57007cecfa5",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_congregant_3.png",
+      "previous_sha256": "21f1caf06f6232124a5133bb864037e21d8daf5ba85fd8ec2da758a157949a92",
+      "sha256": "5e8cf67f41cc6e58c4e69eb038317289bca59dc24a8f455818425cb324092497",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_preacher.png",
+      "previous_sha256": "2d0ed24790839b6e9b12d0c11496c77ec153c642a6be6a72f3408750b5e7f808",
+      "sha256": "1fda2e0d2adfcce9fe464b1482a411b0dbbd7112da73893c5d593d8a55ea4f44",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_witch.png",
+      "previous_sha256": "125527faf29e462858b6c17558186cf15a639b00d34415089970e5d067fa5b0e",
+      "sha256": "44b166326454f751740e8102d425b79c1c66589c6248a63331cc76e8488513d4",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "d517021ffd34a316491ae90ed860316ebb6ecfe61d65b26dc0c54ca1d93a954d"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_witch_memory.png",
+      "previous_sha256": "865f7afd77b85a26997971563bdcdf35938983a2400e32a26bbc3fabcf29e86d",
+      "sha256": "c82fb2399b95806da48825346165c0578cff905d27802a6eef7553d34573d2f3",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "d517021ffd34a316491ae90ed860316ebb6ecfe61d65b26dc0c54ca1d93a954d"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_bar_denny.png",
+      "previous_sha256": "5f4f2880e07595f814ef929f885a23845bb47de74d17eee6cc7d7c5f86f9faf5",
+      "sha256": "4bf55d758dd1b250884e6d0ee9c09c96da0878b2015a89ded936d2db00160357",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_bar_hollis.png",
+      "previous_sha256": "236497a0b2511f2b4d7833bed4b4f4442de230d6505e501e65f60884447cd447",
+      "sha256": "1798e0d719e48339223b95e3ee86d73f1176677ea70f97b0e0d674b9fe882018",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_bar_marla.png",
+      "previous_sha256": "64d42aafbe55b725ad32490d4c3a72dbeb486a5ff77eef964c3dbd63e866d435",
+      "sha256": "0ae8ef4f9c94484b6e085cf1d7c889d4b08541077bebc048cc540b55e55ff972",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_bar_russ.png",
+      "previous_sha256": "f26bb75eba1df9518c8620e5ceb6a9fc18757c2358edf163d4c177e26672a171",
+      "sha256": "7902495c306be98ef944309260eb2600bdb8ce26abd4538cd31bdeefb9441920",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_bar_wade.png",
+      "previous_sha256": "1653931742cce2214ab14e74b0610fe2cd54e3f2fb978fb9cc5f89d6fc24fa91",
+      "sha256": "d361a442e336d0f3d7f3eb25617e88b27e60b085a40ee72eba6d6e34807152c4",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_brother.png",
+      "previous_sha256": "e6e9573595f44ded8dd020c3aed3c2ecc057d07c021905f733d9cfd9b97186b4",
+      "sha256": "19d84ceba9bc0f3d7a9eb39168f4e1ce29a49e94694c7b44ecba88384ee2e739",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_coffin_woman.png",
+      "previous_sha256": "bf0942728168f1033a442ad7f8ea9a9e2412d4e6e23c2c2609cbdacc9a0c802c",
+      "sha256": "0f746f998ae24cc3fb0685bc5a51bfa8fc88221b3637e98e4789947a63de55df",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_crew_0.png",
+      "previous_sha256": "da91c2ea715a2010685e11451983fc77fb7d75fa32b9e55ceb9de31265142569",
+      "sha256": "061cd5ab93f7f0b2068020e11be07ed586d6648cb039d67e603885bec6f87347",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "01fe686543974f0e1ae604fcd50d768b151b12aa68c8e81d66096aae1139b2fb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_crew_1.png",
+      "previous_sha256": "b300c8538d0839c5cb9448f815d1a9dd4d42d81535cb3e6430921ecf2534170a",
+      "sha256": "bc1c82be34016d4a7e09a8e53167b2dbf7623760c4bc2217e91eed097f4369e8",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "01fe686543974f0e1ae604fcd50d768b151b12aa68c8e81d66096aae1139b2fb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_crew_2.png",
+      "previous_sha256": "05b48439947c339852c2d902d2cfdaf88bb41acb670c65b36ca639da9d061333",
+      "sha256": "e32682324e6c5d44be361c722facf6f25c83091a7c4e615553a5c3ad6f9601d3",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "01fe686543974f0e1ae604fcd50d768b151b12aa68c8e81d66096aae1139b2fb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_crew_3.png",
+      "previous_sha256": "969092021f9da9b1ed3a145705e05f1337af17466fbef81fa2f72700d3c1dc7c",
+      "sha256": "22c0ec7d6865e478319bf1036b91dea8e2799559683e60bb3f612fe94f1ec9f8",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "01fe686543974f0e1ae604fcd50d768b151b12aa68c8e81d66096aae1139b2fb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_dancer.png",
+      "previous_sha256": "5b06cebd27c1e20e57cc1db21a7cd0c173c2df1cbd92e11186449b31955412d7",
+      "sha256": "33bbcb473db3e86c7b3f20f1c2efd1f6bf9a4ef8b6d3da211d57cc09991f9e0e",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "60f1ff6641f6c613eccecf3c71b17099c564824e9e32487ad35260d0ee68af45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_elk.png",
+      "previous_sha256": "0321a53ff87f7ae5f03b4dc6e4158d553d4712c5b2f1dfceb82bb860910815c9",
+      "sha256": "9af2107ecb61d9d300d7629ce219d3382bede0f962fdb19cb53c08f8605c76e6",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "b5a41c3758763bbec72769fab4a2533bf2db0b6312d93d25a695f9e4b9e02260"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_elk_carcass.png",
+      "previous_sha256": "e2989b3e89fccc6cf56dfdab1a92c045a4b8a5f3b1ee3819dcaf76405f9f8a42",
+      "sha256": "d49b5611fa24b8f4f8166289226516d100cb103b7c57848aec8932efa3985878",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "b5a41c3758763bbec72769fab4a2533bf2db0b6312d93d25a695f9e4b9e02260"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_elk_carcass_skinned.png",
+      "previous_sha256": "be192c0b8a0266be193d6c6ba4a2a4d4355e96ba002e9e0bec0c0e603e8f7494",
+      "sha256": "0019001ee336bd4fde5d899fa52266f4231320dc5724607f558e790e04094aa1",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "b5a41c3758763bbec72769fab4a2533bf2db0b6312d93d25a695f9e4b9e02260"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_elk_wounded.png",
+      "previous_sha256": "b1cbf396e7e01f4cfcc7c33a2380ad572dd193c3badecac735cace7d7ea36948",
+      "sha256": "d49b5611fa24b8f4f8166289226516d100cb103b7c57848aec8932efa3985878",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "b5a41c3758763bbec72769fab4a2533bf2db0b6312d93d25a695f9e4b9e02260"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_family_child.png",
+      "previous_sha256": "6a25f8333a67d6e6ef4bf39888d3daf8c737e4ed66d3a2747daa82ccadead4db",
+      "sha256": "f007934f90a1808e19e77d573d7ae5bea836eb124ce1796bb26d25eae6bdb079",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_family_child_changed.png",
+      "previous_sha256": "8effae86f08c96d12d7217da7eb95fdba00bad80d82743dbe3063e8fc5e30069",
+      "sha256": "13cd4c18ae252a92d382f3761ffcd36a0087a15492d32dc0e975a03e90a0d57e",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_family_father.png",
+      "previous_sha256": "b45d614742db0cd4485de8e165c7d30e786935dd24b9b323b7479d481e95f79f",
+      "sha256": "77619b9e2461d0bbfab6fe67c0e907e73ae430bfa7aac5d0aef805e6c9fed409",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_family_father_changed.png",
+      "previous_sha256": "e431ce9260a81f424bad9b91a25f3700e68c7c3fc29a368242337a4a4f4f35b4",
+      "sha256": "386e9d80043e74c35af2c8b071dd80e86c0dfdd2a5740293677e964fd3e66965",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_family_mother.png",
+      "previous_sha256": "e0276d1afa64587d8b22056c34d8fd6ed0f1e792aadb1a3a19a80e00a479468f",
+      "sha256": "11a716c3ca10d2621ea4282565f48f1cd078368fa6ed93e03b346d0a3e60617f",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_family_mother_changed.png",
+      "previous_sha256": "955ef27d339b06d46af3c235198f9164d929e50a6b52b1a1aa73912b077b9748",
+      "sha256": "1317c614bf2be0de2edfb8e54a20c5ee1f239361709727c220581d14c9dbb244",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_father.png",
+      "previous_sha256": "3f5a5508bf68d8be946870e5cbaf9bc003a5a9c588fc3753f0da6422c3592b17",
+      "sha256": "820d4ae7dc0faf3d950b10e33a85a537b78467e8ae70861655ff548657d2df02",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_father_bandaged.png",
+      "previous_sha256": "d1bec3a6f4201ed2a0a8d66c75151ba553469e8df3466d3c83eb631d0808ca8c",
+      "sha256": "9ce253c62fe6ad0b0c7b5c68f5fa6b25e29d1e0e3a14b2374ae9b56e46db0751",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "256029aeb4401a29aea14d51e866dec2920f2ab54f768b00ce48304389e64b37"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_father_mangled.png",
+      "previous_sha256": "539ef9c57a0191ab44e1d25c0d611963fe803eff55b2a0d6d01f485243a1dca8",
+      "sha256": "e700c80cf8677deb76ee8478fcf3fa23e39fcebab1ba9fc152fdbee7361d6905",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "256029aeb4401a29aea14d51e866dec2920f2ab54f768b00ce48304389e64b37"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_guest_0.png",
+      "previous_sha256": "2b78e0be2d578ce8c10e8d1cf25af79ed7ada2106f1018f04c9e2daf194f69c8",
+      "sha256": "d9b2a65911670b65af6f8502c6d40fa7ca96198524f7787c7e97bfe4b7b222af",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_guest_1.png",
+      "previous_sha256": "f523e80bb67b5b0cf73e8cebaba9436d0ff27e55fc62c481f00e43459b3acdac",
+      "sha256": "61dc74534cbd8fb63ac24755c793636d0a333d37965f0a9f9fd8c0044cf72d1c",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_guest_2.png",
+      "previous_sha256": "90ebfd58f7706510dd45c3ac7005a1e57e62d9dcaad6487e094bd04f794673a4",
+      "sha256": "e6da21deb35048d2a7fa2b13cbb8f3bbff44678beeb070564ddc4b641e7ed700",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_guest_3.png",
+      "previous_sha256": "6a90cbc23b1b230dfaaca1b0af21160581b17377f2d7f9f9ab4de9ce7f43d790",
+      "sha256": "4d91479961ead2a7451eff1c648c3ca8a6dec21d93c49d6f5e53b6326aedfa66",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_killer.png",
+      "previous_sha256": "c5836c955c5609a716ae9b0a7e04d0a07b476f44b7406d171342c8ef988579ca",
+      "sha256": "e4badf2ea665d0e2615e8de1daa315106c1aacebc0f3088968ca79139f7a5d8f",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "5f8ddf7cd659b5e9104c5206cf6f278b4fa5cedb4af5327c72bd63ddb5f0c746"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_lady.png",
+      "previous_sha256": "14a75dfd645fa71f3f8728d0e54457e754408488af7667a5146f1b3829e8b561",
+      "sha256": "0ae5860b4de0b7bf4cf061c3f0d331b8f500e939c5b9d2638f2c0b2a65a02126",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_lake_tess.png",
+      "previous_sha256": "9548abc46143ab90b5c65c277f4817f12b4b9db5bcdd5cd16d392409c5148827",
+      "sha256": "d159d777d34b9771fc890a8834003fa3715816b714f4053ca586dc41fac2c33c",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "f8300e49739a74b0a64293bcbc7b5436889a8a552ef35769bdfd5697dd780de5"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_lake_wax.png",
+      "previous_sha256": "789376c2c6282ba98b52b8f8033d25a6a554965ab6ff2834c1db44e0557b4fd1",
+      "sha256": "d9111d245ce50f1c0bb588d15b5c3b9c2a66f5d0ec5005b238a7a830c1180198",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_mother.png",
+      "previous_sha256": "2e8c47b56e2b87c074a11303712410118af1ea57684c87d0926812567a4efd3c",
+      "sha256": "eb723ef7139bd6d91fbae524ef038ee5554d26f9f4f0db8eab26f5558ca448b0",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_old_man.png",
+      "previous_sha256": "74aa337c14e056d4ba1ba076f251eed8758322aee96c76212eb1113faa0d36e3",
+      "sha256": "abeeec3bb8b8dce2bdf05fb707174d85c325459f9904e0f901e275c5293e8525",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_red_figure.png",
+      "previous_sha256": "9162a9d833ef0a9249815f7a6174e8355b884ad4eac1f15e443414a81a5dfcc3",
+      "sha256": "0b6448356de064effee2d27cd59a19fa043f4e51c1799c8c26c568975bd348ff",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "60f1ff6641f6c613eccecf3c71b17099c564824e9e32487ad35260d0ee68af45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_snow_rabbit.png",
+      "previous_sha256": "8c2129cfdfe20b8c69e63d3d43ba5db5f1b4175ed113a208e18436aa6a02a579",
+      "sha256": "f737a06b1c347f8b71eb1f4dc0467f184982af7b14ce7a2521acf8c75d1b4069",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "b5a41c3758763bbec72769fab4a2533bf2db0b6312d93d25a695f9e4b9e02260"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_stranger_0.png",
+      "previous_sha256": "7fe9516ce1ddf84602b8b53f8201cda43b180b9084f0efdb1aaeb955658f282f",
+      "sha256": "e5914ff3e29195977898ab42a06231e531d125f05c46fa40d7334ce4c5b39771",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_stranger_1.png",
+      "previous_sha256": "466639cd6b6c275a5db01bbd9d146c0123a3a0a95e91a388f33fa7f77eab55c6",
+      "sha256": "5fa93fb0926ea1c9ef50a14d8555d5f30cc0b712ec74582171d78a106898d586",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_stranger_2.png",
+      "previous_sha256": "27eb691109fb1f957e46dd84205179c1a6895b697173c8dd50e0292325ff56c7",
+      "sha256": "923b692d57f360e44d5a84c9c5407ea1693b9e98c4c79f86b4d0137a3da3e053",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_stranger_3.png",
+      "previous_sha256": "a4317fa3a3f40007680bda9746be865601303c5908e50acfa1cfb35e3ccff1d0",
+      "sha256": "287f9815729ba6b04fe849cd08bffeda73cd4912e0f26aa9e5d773a5e8cc8673",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_visitor.png",
+      "previous_sha256": "316edd8228f4a72b4a73c6a94a4dfc650411a61f2e4e059d81ce1fc75f1b815c",
+      "sha256": "f2f66660dbb718b3de9e58fde9219a6b0fc131b9c487d71add5d2bd3d0cafb4a",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/minotaur_materials.png",
+      "previous_sha256": "54a1b24c8346b5c59df15ce076d70737fc81c91cf1da6d41bf8b7639f659ccf4",
+      "sha256": "ad1db4dbb7c937c7ebef2eb37d328b62e74d358b249cfb030b9ed48d9761bb39",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "71189f7fb6aed638640078fba3a35fda6c39c8962e74dcc75935aac948da9063"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_braids.png",
+      "previous_sha256": "ef396b5003d7439224d3bf637cd1ee2a7cde6f42905f773907e800903b39f81c",
+      "sha256": "2624ccf03257592dc9982e57db4436f143e3e74995a6153a62fca69d8f74aef6",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "ab8326fce5d1436af0bc7f1ba13f834497313a1c1f2662e5823a8f4647869180"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_braids_despair.png",
+      "previous_sha256": "896e78b301fd95c58584ff7db4ebd3cd30ba613a72da9024703a7ac7f78b565a",
+      "sha256": "c1a02fbf4ef6538d1ac6b76a52dd45161430db110b44663a633d59d4108e9d75",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "ab8326fce5d1436af0bc7f1ba13f834497313a1c1f2662e5823a8f4647869180"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_brick.png",
+      "previous_sha256": "2ea235a6f438aa544fecd56cf28ce963e378baf6b8be479189026479f3c0f356",
+      "sha256": "8d9d7d42e4568e7f1f3a85ef146cf3f389c9e42cad11c91ab7f8e03d18ece63f",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_brick_despair.png",
+      "previous_sha256": "da2e78b628919dcbc9d530667739e5af6185bf1fcf7d8bf801a114e61206c30d",
+      "sha256": "a51a5d12f74983e88c3839fec7aa60ea3796724c8abf04277724e372eb97ad04",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_copper.png",
+      "previous_sha256": "e13efc7d4f4ee694f0507070e76807e4a7b51c5a283350244f94f4ad85628880",
+      "sha256": "bb15b1f85eeddb46b16a89bef18612ce6f6522750971a36f382eb9ba7e0d447a",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_copper_despair.png",
+      "previous_sha256": "2adc0c87d60b6405be93dd32202a15d7a9c8d1d79829ffdf3999975a81a63dd7",
+      "sha256": "da07545bb2ee6e03fee04915bca2b69b66a1cbb9c965e6e38615e6b552911a9f",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_female.png",
+      "previous_sha256": "12a518dd5287d060b19350892034287776197644cf8e1ed6f91535ed7934feb5",
+      "sha256": "8a1f5e0a6fe5c2fb6b4255c70d65d8c0e30527183bd15e6562aef00fde3cb397",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "ab8326fce5d1436af0bc7f1ba13f834497313a1c1f2662e5823a8f4647869180"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_female_despair.png",
+      "previous_sha256": "a8de29ac68242374232a7910af13a52668e1de789e7d03068e1c66f5921416f3",
+      "sha256": "3dc82d56c49b9d69f311ad308e10175deaba3259464c36292a44830a4415e53b",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "ab8326fce5d1436af0bc7f1ba13f834497313a1c1f2662e5823a8f4647869180"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_male.png",
+      "previous_sha256": "d6ccc2dbffdd48693ea9447a110f9ce69cb9f909dcfbe508cbda11abb64d137b",
+      "sha256": "6421018b62e7440fcb4a921628521fe9a8fc96be33ad56ef23dafb13f022b37c",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_male_despair.png",
+      "previous_sha256": "8ca7171f0a0bc0f1d8c4fc833df06838d0d60f9540305ebc11ad0afbccea6155",
+      "sha256": "3fd0932d15416741b497c5ef6f77207fbeb26db465928bd19d75db6a23a55fc8",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_mustard.png",
+      "previous_sha256": "5b0bfc0efc096297ca2d1d8f22e533580ace7e1a1ed0e9f5c2622edef48b0768",
+      "sha256": "a33ddccedb73fd2ec7b76d7dea2d5aa77ad79b36b94cc12764d9863a373210b2",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_mustard_despair.png",
+      "previous_sha256": "b3949aba79013b8e24586abc221670f0285e12de1e1b834b0a6ffc1b52a2a620",
+      "sha256": "fb690ab1665f476f1ba8c0134a0c7148495e6446c7ec750db823e6ac44fa6a44",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_silver.png",
+      "previous_sha256": "c01a33210c900ae9d6415ea71fe60ddbb64abb5e1cbb334d4d6124314658a6cf",
+      "sha256": "4cef5fad81f3dec377eaa680ec4e7a7f80e179d345acaf4d4ccf4155727da828",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_silver_despair.png",
+      "previous_sha256": "ef9616021438bc4f0a2ff29eecded8d87e8cc817806396aba3b68ae10b9cb66f",
+      "sha256": "6ae046f5ee3a1e133847311ce09ab520d06e7745c57218cff41bccdb43160f1d",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_vest.png",
+      "previous_sha256": "a6ed5a4563af244181b11c82b1f1a58c68e240603e3150a3ad0f20a196475bc5",
+      "sha256": "c3e03761537025a62d90e6b7b22af96965f7a6d565bdd7cacc3b84610dfe5170",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_vest_despair.png",
+      "previous_sha256": "dabedf349936cfed655a6decdf0e4b69ebd0e5cd2a07ef3241516d422c9f87d8",
+      "sha256": "3fec5cc38c4df0f76ee340681cfefe8749d7a75bd5d29577682a05db1e19908d",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dj.png",
+      "previous_sha256": "9dfa6eef2473cd7341eeab882c029ed8b6119f12b035253ba31f4b311e896f49",
+      "sha256": "07bf39a862f454464faf9a0a3971928b9badba18c291c0fe4eea599fe3a84bf7",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dj_despair.png",
+      "previous_sha256": "3e9fc75d5651915eb3a3f3786975b8185a809124b9ef270e1d9456eedc04ca3d",
+      "sha256": "81321b1f2d064a85f791326695919880c235a0c03bf725f120f4c800c8ce2215",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dj_head0490.png",
+      "previous_sha256": "a68c16ade5d3f7db4a34be92c415dfdbf77cc9e6ce652ecca1849b6603de0f6a",
+      "sha256": "07bf39a862f454464faf9a0a3971928b9badba18c291c0fe4eea599fe3a84bf7",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/seance_daughter.png",
+      "previous_sha256": "7eb6ba1031fe0d4552a6bdc291c1cc14a56cd3563fe11b8496471535eb32b245",
+      "sha256": "20d846c229224011d7bf83f2c45c191561baf3333e8c3f6254511eeb590fd932",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "7d8341447da453224fead307c626c75a9baa526cbbb1b6696761644a14defd70"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/seance_father.png",
+      "previous_sha256": "90e085cfeb0998963202a60370becd6f93d1a69cc04d4bc9b0681754ef3a09c3",
+      "sha256": "dede5c4eb73d5addc88e231370d5975fbb92ae00ad6b4ef25125b07783d1c41c",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "7d8341447da453224fead307c626c75a9baa526cbbb1b6696761644a14defd70"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/seance_medium.png",
+      "previous_sha256": "f1e4f9a2ac0c9dcb8be1d2c4f41aa91c7594cde00e6f260f48bbbd3d82ab55b7",
+      "sha256": "bd56e5ee85dc127b3d00f5b273be98bf70b7cdbcdb3da71a6b88a3acd35241fb",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "7d8341447da453224fead307c626c75a9baa526cbbb1b6696761644a14defd70"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/seance_mother.png",
+      "previous_sha256": "4a12ac3091a72db4bac5181f9b945aa27b11e6552e5743f0ac53c3459537dc1b",
+      "sha256": "325621bd24db5bba8807a071054d2a3864653fc04172b90f023ac2c0b007cfe4",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "7d8341447da453224fead307c626c75a9baa526cbbb1b6696761644a14defd70"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/stanley_bartender.png",
+      "previous_sha256": "16635a14b06d727aa3f2f84405d97887ae230af7c0aef7dd039eadcd8db689ac",
+      "sha256": "a06fdfd5fa87987b4e6afef7fff6f01f2852dc6025441a3192a48225713704ad",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/stanley_dancer.png",
+      "previous_sha256": "2e8db6445825b7c804555d305c41b8e59bc843990c5e36ceccf08f93cb8e9225",
+      "sha256": "62a6f73d01f02cc9261ea7c43e464bca653866617f7f3ff5077cb13c24a31d8c",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/stanley_dancer_dress.png",
+      "previous_sha256": "b468322ab0f6c3af4108d36b0fba633fcacf8c4fefb312d0587a66eebdbcdf0e",
+      "sha256": "5f4616f0a5e6ca4a9d293f35d3f5969137dc143c6aca390d4bbdf1e7c7e53efc",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/stanley_pianist.png",
+      "previous_sha256": "bcb1540b1748bdd1e2b2ce3330c49cc6dcea6caf7eaeb348a1e9316eccb4214b",
+      "sha256": "2a21775058461322eef11932dc204935bce85752f7ef4cae7cfb3e6300b9b886",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/stanley_porter.png",
+      "previous_sha256": "4a3c1f00e05dcbac7edd47ca0a8ab3622dac0f39e913b03f7f53ab428e5104c7",
+      "sha256": "d4d1fb2c88df6e4ccf54b4e8f28831c1fd0e358a5013e322b2f95fd19e1292d4",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/stanley_scarred_guest.png",
+      "previous_sha256": "25a55792379c267b176c163b68e0993848e9b45228b33521ea232c6face58720",
+      "sha256": "292c5cacc090020f18c38339716f582126ece2e333c2c2c2d80ed4288cac9fcb",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_0.png",
+      "previous_sha256": "6af8ace13c64e40e4a586fa156a56b1123e3a2ba3b14d1e0bfa4045b78ee3a75",
+      "sha256": "9f0a0f4f9b2b223d5858aea0232dd219946cce29bea941254da5bca02eab3cf1",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_1.png",
+      "previous_sha256": "a48f157b4cb039a163ae73bcdd207d38fe87ad381de50dd1592908abff6c88e2",
+      "sha256": "bb55d44c908124d669b1f9aa4f719c5cbe217ba444c2a35edb9f07db503b274e",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_2.png",
+      "previous_sha256": "5c3984e12879275ed9874f989fc90967c2f9c3bed14c2ef3d8fc41218d21e7e2",
+      "sha256": "4f2bb61beb40c956a62cd17205658e8e69c0d5b3e62c6f5708b6b70a947f5db3",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_3.png",
+      "previous_sha256": "531e2c3bbde253ba82965672b342e1b8a0b200c3db2ae6b675a80e512c11d269",
+      "sha256": "94f1a9bccdfd1fbc71b8bfb4b07c5f778f17638cc0c44a28dfbef56fb14c2d80",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_4.png",
+      "previous_sha256": "ad9c8610a093371f3970bbfc298e7af6ddd1e479344d22bcf64fbb2e690186b9",
+      "sha256": "85a5f4ce65082b177f083999818396414df63b0534fd4ea9aa739c3593715c4b",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_5.png",
+      "previous_sha256": "8777d6b9de7ee8511aabab2599777aac695275365f328eb05b860b078603b7d6",
+      "sha256": "f83a05cc31d24d7e39f7e8078e56c02bc328201cf5112ef667570b18787eb1ac",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_6.png",
+      "previous_sha256": "eeb829ab0c277290e4775467be74b1098c4884987cb83c1e2eb89dbb4492b619",
+      "sha256": "fa7c6191f7b54292b0361f822afe4c6fb6f9a0473f239d28794ea52d2421c1e6",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_7.png",
+      "previous_sha256": "c05c356a824df02a33e1c11d4231c900d6ba367e4d19b8f716177224adb439ed",
+      "sha256": "d4b1c48adaf6d4c28b581164e360abb7cc999d511359514d04386fb766836a97",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_8.png",
+      "previous_sha256": "b1cc386f2e4457f8696c613c627942fa6ba2307046769e29c8b19505478b4282",
+      "sha256": "fd4086ba20826f04395d9b6aa3ab31d8e7bbcfc46cdeeccdc35594307f349b77",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    }
+  ],
+  "unchanged_png_sha256": {
+    "src/main/resources/assets/the_oldest_house/textures/block/archive_paper.png": "a860cd0291b6671cd714a88d166f0e60e33ceff24dc852c466d5f5e68294a0d6",
+    "src/main/resources/assets/the_oldest_house/textures/block/archive_paper_0.png": "21c010ca76b8a53f196f089eb092382291317e795c98aabf44ab08236b86d02e",
+    "src/main/resources/assets/the_oldest_house/textures/block/archive_paper_1.png": "69a6912a6c90158650fd27880037e9a64881e2f7776c49e809b214f3c5efd638",
+    "src/main/resources/assets/the_oldest_house/textures/block/archive_paper_2.png": "fc95d807c57beffe81fac435b48808e3001c78a96c473e004a88c9df03ffa2c0",
+    "src/main/resources/assets/the_oldest_house/textures/block/archive_paper_3.png": "83da60b21e11458d3a06dc70513c424bc02279872d91b84464c997dd1327a7f2",
+    "src/main/resources/assets/the_oldest_house/textures/block/bedside_front.png": "be56ca8d94d2f04f281b822ed8e5e616322854f898f41655e6a53d27a8506c56",
+    "src/main/resources/assets/the_oldest_house/textures/block/bleacher.png": "e6f03c554291ffc2d322224f67fade1eac26a56d2ae32869b3f29f9c77264fbb",
+    "src/main/resources/assets/the_oldest_house/textures/block/blue_weave.png": "64a0fca3d83be7a64f25f1160a5593155e86edba891a729ebca980e6ed8309cb",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/blanket_0.png": "a3508160e4f64f2281b772b9ead906077fa7919b92150bca7db884435070b74b",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/blanket_1.png": "62781645146c56d77fcb9b8252fd2f602690eb03c7615eb321fc9c644b571409",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/blanket_2.png": "0890a5602545081b9342a7b09017ffae9392f2d4a21fb7c18a9c82362825b5a3",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/blanket_3.png": "1c39b66a099f565075954f994495e8b5e09d2c97609b0af93b87cdcbe611fabd",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/blanket_4.png": "dbe8a3d677fc0495721b972ac0dd8b9c9fc57e5cde325e748dcd0aa07fcf1242",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/blanket_5.png": "5c565df63229f9965c249e3c17869a2c953be5ee0cbf5dca51cbf31258026d3a",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/boots.png": "6723351a03327f1360269236974c86a8140f952c5e6323d29fce947d51ea7b07",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/canvas.png": "ee3996dfda01576a5f5f969f5d06528ce61f0bb37564e82f897aba216da94c72",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/cedar.png": "3c68854bf914197e749e1db44c91e001e136a80aa7560c693775a86b46ea382e",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/first_aid.png": "057f535b7a401c92651b6c64cb9d677279b70f550464ae5fc03f7024705155b4",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/floor.png": "1ab18544267ec8c4de0e21f9404cb873a4a6bda5418c35c38397034b9b289822",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/iron.png": "c4a66214905d90fef1828248174ef34702481ba2a8da0889abd4d0f27dfd20ce",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/lantern_glass.png": "f375fd8355389f1fdc08a6bea425a9fa4dd260082db720afaeef65078afa4ec9",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/notice_0.png": "3ba88a9497d7f26fa1e387aeab02a083b8403da53df04c82ac92bd707d6311c0",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/notice_1.png": "b89ab14ac961b44b310d6d62749a99406407301b7ee67b03cfe4e73498da822a",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/notice_2.png": "69dbca652444add2c0148c95bfbb764d5c178ec33d1af6f75ba8f908bc971d12",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/notice_3.png": "7a3dd2455c8c861c8e0a5b64ed8ac819a881cd66071c551497ffcad8b1dbdf98",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/notice_4.png": "1363197356a1e139b271312bfbd50fb55b0befd01e5542ce39e7b114a5f5274a",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/notice_5.png": "5fb8e8d9794768716696bf9f02438250437ecd8becf908ea247146c454e0ac58",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/oar.png": "de484b3f728681e02fff72942e17e10ac6b386d8f79a16471e98e8db14959c1e",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/ring.png": "510e8dd77727d21a277912d36bde648d0c01b0f32081bb21f1d40a6be6712238",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/sign_0.png": "161bf55cf469965dbadb00a2812cb4b6e6dd89b307b00b3f9d27d19e4c96c0dc",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/sign_1.png": "5d0876ae91b55ea8ae693a6acab921d6b03dd8592201be1062495b3ee6447589",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/sign_2.png": "b1d4aabb07d541e277317c0b9f58001bbd3a4a994919877e8b0e0b651ea6d976",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/sign_3.png": "a7fefe1a037864a7057ed74bccb7b345f8be0bbc316b21ea0b847ea05ba6ade9",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/sign_4.png": "9e6456f739456e95bbb3dcd175f8bc08656250a62fc3ef1126f87d2a65c533b8",
+    "src/main/resources/assets/the_oldest_house/textures/block/camp/sign_5.png": "83058d3d7456dbba01c85e90dd654e6281b672044bb4fbffab2d5710c4a6d3c4",
+    "src/main/resources/assets/the_oldest_house/textures/block/cane.png": "e4f03e6bd4ef0c7e57060cc690510a89317004e16e03c42a37fc3d2fccf88fab",
+    "src/main/resources/assets/the_oldest_house/textures/block/car_blue.png": "13ce1c8b1f57e334c3141bbb0b3a41079d90308d626d9d735fdfc17a7b325c2f",
+    "src/main/resources/assets/the_oldest_house/textures/block/car_brown.png": "a060a9a3d35881c46cf26c2af519e4df09c5ac1aba0908666641c43cc0161e9d",
+    "src/main/resources/assets/the_oldest_house/textures/block/car_cyan.png": "02d5938966879ade204e23a634ef450b8036fe01168f8cb4a0e11bfb292818f4",
+    "src/main/resources/assets/the_oldest_house/textures/block/car_glass.png": "a490d8bd8cf6b72c226154327419c038d71a9af1b468faa00cc2dd55f4a95bf6",
+    "src/main/resources/assets/the_oldest_house/textures/block/car_green.png": "71aacb3c04f5df58e572b44c9878cc7728c117a4a2bdc19d63eb473514c964ba",
+    "src/main/resources/assets/the_oldest_house/textures/block/car_hood_blue.png": "a9ec22957c48ae7f4b3f46c30c8cfcfbefb4a7ee89e29c18ae5d5d646daead8f",
+    "src/main/resources/assets/the_oldest_house/textures/block/car_hood_brown.png": "7dbf7f315acf117b40886ff0c611489a3b97e1e0970a30acb2309f6df003313b",
+    "src/main/resources/assets/the_oldest_house/textures/block/car_hood_cyan.png": "1fc049d3600550e2e572f72505e25aa92a7d6e627b3762b3b7f18ec6ee24dc11",
+    "src/main/resources/assets/the_oldest_house/textures/block/car_hood_green.png": "19541507e999602206c49d68535846eda6b3f5991a58b5a0f32a9a2bc03b5a6a",
+    "src/main/resources/assets/the_oldest_house/textures/block/car_hood_light_blue.png": "0d1dd54e626e3a20257f95dcc3a50894bf56ddce9625c62636f7c70018a0bacb",
+    "src/main/resources/assets/the_oldest_house/textures/block/car_hood_orange.png": "01bd32521c10a1721c5cda2c94942820a8fa32ca0a1eaeeecd2199a04a328a86",
+    "src/main/resources/assets/the_oldest_house/textures/block/car_hood_red.png": "ef54e5925e6deece5727ab89c71347c54370cb9aefddd444c332b46988c5dca5",
+    "src/main/resources/assets/the_oldest_house/textures/block/car_hood_white.png": "2a95c409d977dfd4bef543ac40974e7a9064eb3f85dc3bcaa38328bedcdf9a5c",
+    "src/main/resources/assets/the_oldest_house/textures/block/car_light_blue.png": "e70f35639a6947bda6cd45bda71cb04bc388c680d86bc7cdffab4af2515838c7",
+    "src/main/resources/assets/the_oldest_house/textures/block/car_orange.png": "29a9318e316e9fa7cda5308df5a66fb4587797a5adc01bb142c747a604c9dc67",
+    "src/main/resources/assets/the_oldest_house/textures/block/car_red.png": "71f0c8cb6d738867f46ce9b4c36ada4d4c94118dd619f8fb43af5691f7c845a5",
+    "src/main/resources/assets/the_oldest_house/textures/block/car_tread.png": "b706cd5a8445ab23c79f4f887c94641f9df6703ed91a340c60abe1153287eb27",
+    "src/main/resources/assets/the_oldest_house/textures/block/car_white.png": "47ca60d3f8aac5edf31bb9a66b9bec5dbce681e78eb449b683e48a21c9876572",
+    "src/main/resources/assets/the_oldest_house/textures/block/cave_drag_mud.png": "34f7cb7f361e91aa4eee9aa08c35dc51bb88daf0a93b86fba0ac43094209b818",
+    "src/main/resources/assets/the_oldest_house/textures/block/cave_marks.png": "309afda55b8940fcb70fa4ceadae779a7404e451fa86555fe8719b93bd44161f",
+    "src/main/resources/assets/the_oldest_house/textures/block/cave_rubble.png": "722f03856819a2a4f95861d302d7aa540198fa0b3c624e681a4415469d142036",
+    "src/main/resources/assets/the_oldest_house/textures/block/cell_gouges.png": "e645a96098e30dccc19a56c7b99c6d4b6a70c411a27734864653100a21afdfaa",
+    "src/main/resources/assets/the_oldest_house/textures/block/chalkboard_l.png": "4c4d7fda2315c188d46f3ff6d06eba86093e0e5c55b1e835381ae8a72e1b221f",
+    "src/main/resources/assets/the_oldest_house/textures/block/chalkboard_m.png": "7ab28d1a8c729bd7c95ae497b7548a6b9618147f4cdff536e264192c54843d45",
+    "src/main/resources/assets/the_oldest_house/textures/block/chalkboard_r.png": "6b083012cb3c36db681f25dfd250ecb9f04761ef6a96a1c5fdffe127e472557b",
+    "src/main/resources/assets/the_oldest_house/textures/block/child_wallpaper.png": "4616be95c4d0cf40ac0d218a1b5bdf67a5efadd764f8228c0886dd1b1ac1abc0",
+    "src/main/resources/assets/the_oldest_house/textures/block/collapse_plaster.png": "af0d2624d7a58764b42330dba8c9b22247a5abdc80b8d079207e17960c52c198",
+    "src/main/resources/assets/the_oldest_house/textures/block/cooler.png": "d0c018e3a0126b6ea861ae580254bfa47329ab6ddbffedfa7c140e17d5c2d54c",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/bible.png": "92b283e5079061af134d59ddf59b2d97fb296cc1a65cc6ba7c68cb1687c03997",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/bible_side.png": "3f8cafd49647bfdffd395f743507d4f9bad1618788e426eceeebc87a24bf10be",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/chessboard.png": "269058fcb3e89ab166909580d90043014c08808c79a555d70e6d7a02a5e38c6e",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/clock.png": "389f831b78a14f29f3bc18dfda9843b7466f917fde4e16be1ba636c8c348c7ad",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/doorstep.png": "8ff517833f7a97b099f56cce65a7d736127e57cbb5968c79b6a4d4b12d092263",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/dresser_front.png": "ca61c45b9e072eee603cd8f957719f10d70088694a8a2c8cc8401cac2792d36b",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/dresser_plates.png": "b075e41da6f0a1d130fe114ab57e62a6e7f8ba12469ae6e6c4bc4f4e6a0889eb",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/dresser_wood.png": "deb4a3b2ad2d2404c87e86be2e0572aa1baac608cf181710b01c5f0c2f6af3e5",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/flagstone.png": "6b31d234c464d451f980c1fa024466b066dc56186b3e09d450acd6b5f936be4e",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/flagstone_side.png": "1b37ea497b46c22eb64897e6479767fe622d5a8123c213d34d1e82b9e061ed12",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/kettle.png": "2fbe4a55bec702d6db0b7c809e648dd3392ca0dd330070ca11107e342b53d99a",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/lamp_dim.png": "9fd6d1d9084c0108562f9abf91aa5b5643e22dda61285283995ed580e618d1d4",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/lamp_lit.png": "4f8302c80002c0731da827d6454eb7afc955c60fb77123051764d8bdcb7f5450",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/mantel.png": "b9304cc8d854f1167fba08fc469b70c8df2afa91d111a86bf9af2182384622f6",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/milestone.png": "a5ec728eb8c3ef83520f159067c2af5193489e737060036d4081b7a9e4ef7646",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/pocketbook.png": "e497e6c3df13f7a47a689641f88400c4d58fab1c549c5768bfe6479d443e2a80",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/range_front.png": "546d81bb688140a5008c492fea408fb8735fdcd9f87f29ce4fde620f9eef0c19",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/range_side.png": "693ed527e78e569faeaca441cb23b70e9ddd8e02c510bbbc62736caf4ee57c92",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/range_top.png": "aa5263b216103a36ad1496ca60e05f1c67bfc42f486cd40df984d9c92ef913c0",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/sampler.png": "74a0cf391d430558ca6b2d5759f6da25816fb4ca7433aaab570b0fa5f40fea8e",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/thatch.png": "0bed5f54fd2d5db66cecd95c9ac1289f28cb4f9e83a77d83a4b399a8caff9db8",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/thatch_top.png": "16e1edde835267aafffe90af8d06167d30cc37a1c610893427eeb9d95957e0c3",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/wainscot.png": "a0589f9b58ad58814969ea12cad69adbf453118c1a32efbbd4072400fbfce4ea",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/wallpaper.png": "a0b813a8e0c56a71799d3c8fa903bb257eea918a01a73186f9e2e05ad8bf53c4",
+    "src/main/resources/assets/the_oldest_house/textures/block/cottage/whitewash.png": "69c62de4a65a6ab1cb5d14af51561788589f29b8e6790e30a9f9f2779987c735",
+    "src/main/resources/assets/the_oldest_house/textures/block/crimson_floor.png": "13c33387402ebcd0ac869e22eddc9c0acad288a34111902de1ea95821eb21232",
+    "src/main/resources/assets/the_oldest_house/textures/block/detail_black.png": "fb374c547d3fab1d8fb35360580d6bc3022368b03587d6c41cad9020cfbadfd9",
+    "src/main/resources/assets/the_oldest_house/textures/block/detail_blue.png": "379f3828dc49b4f649b85596add14dc04e4536209372af3faf7c763e091728f3",
+    "src/main/resources/assets/the_oldest_house/textures/block/detail_brass.png": "77d1e75b4472288deb444663d96eb4f5fa8ff7412f19ad366c84ab24648d9c4b",
+    "src/main/resources/assets/the_oldest_house/textures/block/detail_cloth.png": "a8b26b81df3685159c1408449eeac90b6d9d1fab4b55691747ec46006febb271",
+    "src/main/resources/assets/the_oldest_house/textures/block/detail_cream.png": "74764286076aca8562363d386cfe9d0f41cc6260e3847c39756dc17b8c1dfdd3",
+    "src/main/resources/assets/the_oldest_house/textures/block/detail_floral.png": "ae2d6c8c5ed4c8bb3db66d3b85150ed27c74e344945d9903d5292d2538ce704e",
+    "src/main/resources/assets/the_oldest_house/textures/block/detail_glass.png": "846b269bef9128a1ce0ac6379d06d1dcc41eaff5bd4b5867c338e235d8f6966f",
+    "src/main/resources/assets/the_oldest_house/textures/block/detail_green.png": "c4f4c18622669c718a38e10629022212b9cc1ceda5f8dfd47735555ee1d97096",
+    "src/main/resources/assets/the_oldest_house/textures/block/detail_ink.png": "77a9d8aa2c295df7c3a07475f4f0e6829b0aeb048dc0b2ae8fc36c59c1cf7326",
+    "src/main/resources/assets/the_oldest_house/textures/block/detail_leather.png": "5f1db32ed44596abbe237426de50351617126df32a4535dc894a108a29d7d2b2",
+    "src/main/resources/assets/the_oldest_house/textures/block/detail_paper.png": "aead7d76bd8be30496e942521d28ee89d192f070d60dd94285cfba4dfc19aef8",
+    "src/main/resources/assets/the_oldest_house/textures/block/detail_red.png": "e12ea22a5b2a71a2ee190b69f9df46dd689f6fb9c54b4ef28c150cd2a8dd6a44",
+    "src/main/resources/assets/the_oldest_house/textures/block/detail_rope.png": "d7985cf64a72b6f715bbfbb22e4cd8a91bcef7a0230cac0427715c7e05f8cc1f",
+    "src/main/resources/assets/the_oldest_house/textures/block/detail_steel.png": "3a7178082993bb347a7e22c2f0335c095d954de931b61868298e9f853617a1cd",
+    "src/main/resources/assets/the_oldest_house/textures/block/detail_white.png": "d534a1a9ee43060fb0a9b22ec2fc03d06a1ff4074888d954ec53a2ec0d5c8707",
+    "src/main/resources/assets/the_oldest_house/textures/block/detail_wood.png": "541de5bf83b2e1cc4ec3d14e49ca6666d282e2df5f1eb966bb396436b9824ec4",
+    "src/main/resources/assets/the_oldest_house/textures/block/drawer_front.png": "e0b1fc702d92cb1d3df574bc7ef96dbbefff21293a73a036023023c1210054ed",
+    "src/main/resources/assets/the_oldest_house/textures/block/elk_fur.png": "6f1a0fa102b4267062a34614f7f06d9bee5b4fd87b313a7c402d929e10c3555a",
+    "src/main/resources/assets/the_oldest_house/textures/block/elk_tape.png": "14efaf8df6f7bb102e59c876a18105aea557a9a1a7ff652e0d35105a95051a88",
+    "src/main/resources/assets/the_oldest_house/textures/block/elk_tape_peeled.png": "4ea5a90b0b872ef1a5692636bda0bdf5abb6a270af2c904e354b25dbd2f28c10",
+    "src/main/resources/assets/the_oldest_house/textures/block/enamel.png": "696aa365fb1965474c626c0cf577b449c47d39f13b6f3fc12cc5a3eaf9985cd1",
+    "src/main/resources/assets/the_oldest_house/textures/block/fan_ladder_iron.png": "c904cb65e37344f6329abe8a40e0da7f5ac67c50e256ce0620121876d3a2a415",
+    "src/main/resources/assets/the_oldest_house/textures/block/fan_ladder_oak.png": "d7635958ab0fc81645dd01263e56a5913d24f62b7c9c842c9450ed41bad4f74f",
+    "src/main/resources/assets/the_oldest_house/textures/block/fan_ladder_rubber.png": "5be2ffc23806f1eec951e69ed7866e868af5ec27cba415b913c53d223c79b3aa",
+    "src/main/resources/assets/the_oldest_house/textures/block/fan_ladder_tread.png": "6bc927d1afd4c04384e429489707e9d7ede0a18d620f0d7cd16e5793989238ae",
+    "src/main/resources/assets/the_oldest_house/textures/block/father_drag_snow.png": "25c472440d9342149aa98351609190b2f40cb1638721564bad87c1ec5ffa20d5",
+    "src/main/resources/assets/the_oldest_house/textures/block/floral.png": "08319af8610c662d9b9b46328a5ab1cc1f12331b668cadff58368854e4968e4a",
+    "src/main/resources/assets/the_oldest_house/textures/block/formica.png": "63bcd1a0b371a3526e4d47b8b3132e05fb90109e4c9044eeb8f81b9282e2e3a9",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/call_sheet.png": "a482ca37db771015114cdbeb1c05f4a14324c301530f523c468bf2745bf69e67",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/cardboard.png": "a22f72e882c83d3cc11294c83cb7c05aa7b8d6744447d2ee97c20428c084ffee",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/ceiling.png": "dca689ad58232b54d77ef414f5186361722805e8a1ec1be9fa87f1c2e65cb921",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/cloth.png": "59cbd56c28759a5b99679cb8495da5c68813e4628213d7d0969f2e0a3408a22d",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/controls.png": "ed7346a4c8c5d6b5d9d0d07e30567ff22c43b0ce9989b4e7667a3d651dc09eee",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/cream.png": "800c4956b480e1bb7bec724871a7e162101a7e511c5d9f0ccdff998fe78b6618",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/denim.png": "1b6a55d9fcab76ce46d5e9e91370dd2ffac7821444d4377e3895ecac2d8310d3",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/drawing.png": "a6d343ac9d3c365ecf013adb7862d36ade1fefb5e1f4431ab0b0b8f402bdb7ad",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/equipment_atlas.png": "1c47a7fadfeccf2582f72cf2ae7bcb3ce983dac415d4fd6460dd6a4291893f34",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/floor.png": "ff4aaac6fa59bcc81f5472bd31d896834ad99c17639ca16d6b2be3322980fd7b",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/formica.png": "fe6549cbcf287fc32c5f733ee64107c0002175e26281bcbc6e0cc8386dc22bac",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/green.png": "6fdd0d598a1f3d93c680eff137bfce5be3a75acd49406e647c856c3226b333da",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/hat.png": "c89a9bf2102192a9fd38f375358d94b1dac1703bbf5a5b9c01a05b81a6c1098c",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/label.png": "85abaa29dc27022d36c8ab19f6c9fd165865d55e31cc9fbbe58d614566f48121",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/materials_atlas.png": "c90a4cbfa55592ba006c95ee3a3b1847380c11e52ff759f8cf58baeecfad7794",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/meals_atlas.png": "d3c5132e83526d952bd3d1a290115a160f146a95d3c3e4342529a6db0d9a080c",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/metal.png": "ce15d31ec3644817570c3b4bf04bd4ba61dfdf73b97597147e4fc6ad29fd5aa2",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/panel.png": "70d845423036e8edd5d75a060bbe9bb5bb6c77597bd2fd40a5e878d8501bc6c1",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/plaster.png": "d4afea175a8309b809fc95e70bbc73cecb8151b316f02e12d8f0ad683ac53cc6",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/red.png": "a82660ed7eb961fa0d361e9504779ceaca5e12b432386b380857d44bb3dbd860",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/spaghetti.png": "f3db9edf61f9b72559f96cab983b20d7a1c7116d21162c31ad7fea0e2b6100d2",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/spaghetti_plain.png": "5899e781e0f9e437cb499e8fe79ff66aca267729b676bcfa0d1869c6492b7708",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/tile.png": "e0a10bbc55e55cf675a549a0f6b68e1d4aaa6ca03bd3fe150204eb3c30b3e69b",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/vines.png": "5483ac88c327819b965138292c859b75f6bc8ec31918602d4e3b902f50e15096",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/wallpaper.png": "0cbf973576304ebc547f1f998bfce468fc2206264686ab0530df92da346fa7ad",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/white.png": "3390bcdc2e99feb8e9c054d2cdf636662271478d237e9d72364fb81a19220707",
+    "src/main/resources/assets/the_oldest_house/textures/block/ghosts/wood.png": "cc6d5dd5403a04afe36138c5056ca479bbd2a3bf6aab0c67753a9c9e86ee5fec",
+    "src/main/resources/assets/the_oldest_house/textures/block/great_room_rug_authored.png": "2ced10f8397d84931281cd6437fc5275a4f6605cca66c53b5aee7b2d45957f90",
+    "src/main/resources/assets/the_oldest_house/textures/block/great_room_rug_shifted.png": "ead1ff3f70f145dbbd93a4ab62e4d3312dba7daccbd07aba6755a1ccbcb1c7b7",
+    "src/main/resources/assets/the_oldest_house/textures/block/green_cloth.png": "9ab3814d31ac14ab3d2a4500759f972c8b74febfc007286ebbb54026dbd7dbe6",
+    "src/main/resources/assets/the_oldest_house/textures/block/hard_hat.png": "d5dba19b07eb2960ceafdbc33328047f2f38ed8a3814e23ce216ec94304e3eb9",
+    "src/main/resources/assets/the_oldest_house/textures/block/harrigan_carpet0490.png": "1081fd76f65a2d43ac8d65faf494193e1b24193b121e512eeaa5da7869dca8d2",
+    "src/main/resources/assets/the_oldest_house/textures/block/harrigan_wallpaper0490.png": "1bb3d6fa54bee99a71cd8313ea23819ddf44896ef8c702aa052cfd05851c108b",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_cistern_tile.png": "b5a126214356114c08fd8a3a7d9561f9da6465be4ecdc02fc026830265c13c9b",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_compressor.png": "1b069d7b334cb94065d1d20cdd41d8b812ed715ea517d2480220f00f737e9a5b",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_drift_tile.png": "b7e0ae59e55411587451d4e10ef7f826965a877832feca8d69d278e17f90a0ea",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_frosted_crate.png": "1f3b07256e7ac636c67d806d5f377052335f7342c5547bd5c84a1b967a0cff55",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_heat_lamp.png": "c4f3b1eaa3f572a982945725035d1f926dda29672d77b1461cf9e528ce9709fe",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_heat_lamp_off.png": "7915f871cc7cfdcc3df25dafb71c03c8a4cf070b04f4b8bc1bbce11a9acebacb",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_hook.png": "026db216e70157208e0fa2b6a0a2279aeece84958596a57a0c69b70ebeedf74d",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_locker_wall.png": "1a74e50804115a448947da627a75bb0c8e9c8bc2b708bc4e109e271214bba088",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_maze_panel.png": "9ea22f2318a80098c3e295e3e133ef3496ca094d8ac8bd327b1a186916511bed",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_mirror_glass.png": "5b86b746102e96f39e26fca3ce2fcdb1ccd983758db3e8f4b3edcff1225d92a0",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_narrow_arch.png": "3e6cbbe04382d07b25faf7a41e9983f240faf0f6b7d273dd05024fac77d3e86c",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_net.png": "6671f183b7fef2fbdbd6fc439891cc74a74b723960b8b1762cae616ce6dcf447",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_number_four.png": "be8aebdaaee0106920d3121f5c24a37dd2e3895d4fb5b1bb295b0fd2f2a92601",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_parlour_wall.png": "3021732eab71b56ed35b83e85344ad547cc5d6c2257ed356fd74603cccefab35",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_pit_stone.png": "a1226366de052283fbc33d31b9c6ab370b57238fb8b80b1f51d0142696fbcb54",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_pressure_panel.png": "9d65b21b94451437964449341b807be085f2d86a87798a2bfad6b458739c8eba",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_rail.png": "0d3c8ccacdea3d27c802cc712febcaf71ad8bb5984b97b66d139579aad5161be",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_sconce.png": "e9c9bcbf9adcc52a271671752266f254f682faec0cfdf1f654e67ac6ab11d27b",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_sconce_off.png": "b7b8202f427f5ff9fb3275e5afa4779191fa400d86eae1033ebd6e901b490129",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_sculk_boards.png": "25e4be8d90f663a5378e12e92a37b73738f85bbc84c7e2d1ce1b0dbf040d02d2",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_ship_plate.png": "1555ce7f71af9c29b759407d333faebab91a9d3d232495c9b0fc3e0151445540",
+    "src/main/resources/assets/the_oldest_house/textures/block/hazard_skirt_gap.png": "3b494bc4c1abdea7c5123ee12e5bda54891afc61af9b73bdb4bad038c9312e72",
+    "src/main/resources/assets/the_oldest_house/textures/block/hotel_brass.png": "f881df2d461a5489315e6fa299cdf090484d5d5422468e91b58d80dfaba4b280",
+    "src/main/resources/assets/the_oldest_house/textures/block/hotel_carpet.png": "ed97bfb38c2e14df312d388c8051ec2ca5ae09d444bd596b41afb429345d1de6",
+    "src/main/resources/assets/the_oldest_house/textures/block/hotel_ceiling.png": "baeeec312c769cfdaaae8944c3f9ce7ca1c2a44fc39b4356540c2fdc2dd55fd2",
+    "src/main/resources/assets/the_oldest_house/textures/block/hotel_food.png": "6a49ad382684d7cc73a4dc5049b53f71472b8caf0af97f877eca3111d8696540",
+    "src/main/resources/assets/the_oldest_house/textures/block/hotel_gauge_0.png": "db7d4226a60ee91dca5aee382a16e7d38f81e9e51a36a572d22555093d0fea18",
+    "src/main/resources/assets/the_oldest_house/textures/block/hotel_gauge_1.png": "168a354a5b872e76d09cadac885bf9c73e8ba6a466d3a7398df4814a8ba48407",
+    "src/main/resources/assets/the_oldest_house/textures/block/hotel_gauge_2.png": "b0163db11582a9872d7454bd7307c68243d0a1d5257be4ab0f955e739f122913",
+    "src/main/resources/assets/the_oldest_house/textures/block/hotel_gauge_3.png": "6cc95ccdb35aaddae5fa93e116af295e9cba21c0848c8300bfdc40a82953426c",
+    "src/main/resources/assets/the_oldest_house/textures/block/hotel_keys.png": "978d3308f9ae9a04d454ac932acac5be7643364795ab82b9a175cc2fa1f60070",
+    "src/main/resources/assets/the_oldest_house/textures/block/hotel_paper.png": "1f790b5992c6a23d17b4171f9b835ca3652da4b2db8636b15bc26b178d4326eb",
+    "src/main/resources/assets/the_oldest_house/textures/block/hotel_party.png": "90d93e070c29224e4032329af219f8a42964e101f2ef8339892c696906278bfc",
+    "src/main/resources/assets/the_oldest_house/textures/block/hotel_patch.png": "5a3edae47fd81f5fa246a45c2c4588549af65aff5c1f167f2a68489ab5145efc",
+    "src/main/resources/assets/the_oldest_house/textures/block/hotel_room_plaque.png": "fdbbefc660df499cac137aba353184ad34c141736e67915342d84d7bc499496c",
+    "src/main/resources/assets/the_oldest_house/textures/block/hotel_rubber.png": "1d0e7600f82db74accd27e99b07ce633f7f6fa7e34c593cc7f70adf48ee8dc18",
+    "src/main/resources/assets/the_oldest_house/textures/block/hotel_steel.png": "1a5ec7df99a1175ffa193749ed10a9e87a248c2a71145b3963bc8a08c8a703b8",
+    "src/main/resources/assets/the_oldest_house/textures/block/hotel_wainscot.png": "08d3bb2fded19c66d9020e9638c82cd644aac8115f09dd292890f75496427408",
+    "src/main/resources/assets/the_oldest_house/textures/block/hotel_wallpaper.png": "f08cf712f48bb3d006e39fd943574a9479803bf411aa59ce770f4c367b8973a2",
+    "src/main/resources/assets/the_oldest_house/textures/block/hotel_wood.png": "2f93d9df2dc48577e1d6cd6fd270427ad5e76b2d0e6e558da4026aa77a0ba5e8",
+    "src/main/resources/assets/the_oldest_house/textures/block/hunt_birch_bark.png": "ab95ecef82549d8ea311ae86da8eda07748be482f55a7293af78ef05a68cbf6e",
+    "src/main/resources/assets/the_oldest_house/textures/block/hunt_child_fabric.png": "39f435f6ad018c283615a6d7eb0740a0fc8d3e76e505f7f7cdacfdc4cf2f4863",
+    "src/main/resources/assets/the_oldest_house/textures/block/hunt_curtain.png": "fa956db8fcaac2136f0cb33a5e2034bb4d8ee3fed865eea5198fcd0f13835a28",
+    "src/main/resources/assets/the_oldest_house/textures/block/hunt_cushion.png": "aac8e30bc4f28e8425bfdc48788e72fdb88830b497e66523173efde818152aa5",
+    "src/main/resources/assets/the_oldest_house/textures/block/hunt_family_board.png": "5360280b4b5b40d4e4c9411447a6c9c1732d7dd3b1079627ba33b89db5ace8cd",
+    "src/main/resources/assets/the_oldest_house/textures/block/hunt_fan_diagram.png": "5a36bae7335ba0decf22a6a9b192d4af3c9162e85e08c3b9da910e9d6c53e4e4",
+    "src/main/resources/assets/the_oldest_house/textures/block/hunt_fan_enamel.png": "19bc9b2512eb0d35922cced3ceace5b1b1b75cff13f585981e5c31c885cc2f59",
+    "src/main/resources/assets/the_oldest_house/textures/block/hunt_fan_oak.png": "8b0032ee2cc7ee7825996cf005f6c84f0b3e06d456d544a824bef1994c3b4075",
+    "src/main/resources/assets/the_oldest_house/textures/block/hunt_fan_wallpaper.png": "14e6d1e3106164ac95cfaf31617801f1e945d2fa2e634a34beda19fca83f266e",
+    "src/main/resources/assets/the_oldest_house/textures/block/hunt_fern.png": "c0a16503a9ddb951ecff4cd6f7ab6e18012b25a3929a4358cab494bf3022dc46",
+    "src/main/resources/assets/the_oldest_house/textures/block/hunt_hide.png": "08f1538629e443a4b1639cd384acd0763d7f6f2bf617adf46ea942bfd88b7fe0",
+    "src/main/resources/assets/the_oldest_house/textures/block/hunt_hunter_canvas.png": "506864ec6530f4e0143ec987d96596a433f81fd4f282ac6a6933b67c755ffd15",
+    "src/main/resources/assets/the_oldest_house/textures/block/hunt_leather.png": "71ac29b7a708e9a7f21dd714b2a511104946de8975e359950152b081af364419",
+    "src/main/resources/assets/the_oldest_house/textures/block/hunt_recorder.png": "e3228e0e4ba4c8c7e97b53e5f5f7e006c131a414677e1f7c46d76542dbf56bf2",
+    "src/main/resources/assets/the_oldest_house/textures/block/hunt_skull.png": "05740fbc29a95b695ecb884f0bdc1f0f6945e98bbb0d31a4bced041698b2ff32",
+    "src/main/resources/assets/the_oldest_house/textures/block/hunt_tools.png": "49b6355de4bb90a1bfc39e419c3e0b93784816aa700743e250ad59c55dfc66cf",
+    "src/main/resources/assets/the_oldest_house/textures/block/institute_hours.png": "c6aa4c99d04f8f8d7619e5974d302dce089a34df689b2784a2d961cca00dde0b",
+    "src/main/resources/assets/the_oldest_house/textures/block/institute_missing.png": "25b861d65543483c5cc2d35918d137a82105265c534aa341e987757b4aa153be",
+    "src/main/resources/assets/the_oldest_house/textures/block/institute_outgoing.png": "da9d83e71ab5afec2d978be911b712b97de8cdc8e89e21d15d62ea1f70d8637c",
+    "src/main/resources/assets/the_oldest_house/textures/block/institute_paint.png": "2e32bd46ffc2502fb628ab8a22c05a43b9bba2ff1f5c299e8bf8f97e3c92bbc0",
+    "src/main/resources/assets/the_oldest_house/textures/block/institute_post.png": "15371bbd240cf6e53e047089ee0d2a9d8f239678b0f3f685ed3a9ccd2886285a",
+    "src/main/resources/assets/the_oldest_house/textures/block/institute_room_1.png": "4ea96ebade548340170948157a0195282050abf6f7079029fab1758d7a76e5fd",
+    "src/main/resources/assets/the_oldest_house/textures/block/institute_room_2.png": "a5b6e6fc7fdaf13fe71563a5c52432eb35c8dc56f33a871ba42317635a9b7652",
+    "src/main/resources/assets/the_oldest_house/textures/block/institute_room_3.png": "81c39c05c35754b2e34941b3d651ed062509d6cf763b6955c23c6ff010e7c762",
+    "src/main/resources/assets/the_oldest_house/textures/block/institute_room_4.png": "82c85868a09d504d5672617d95ba731aea1a80e268f807b60f5b765a6e46571e",
+    "src/main/resources/assets/the_oldest_house/textures/block/institute_room_5.png": "e8b80e660cff5a9c45d5dc26e62a1d04132cf73ed12f1d9dbb7593ee389f8a1e",
+    "src/main/resources/assets/the_oldest_house/textures/block/institute_room_6.png": "e7371c1ad28be918f6a82c8ca1f51a5d8575de4a044c195eacc0a3b7ba21fc4a",
+    "src/main/resources/assets/the_oldest_house/textures/block/institute_room_8.png": "ca8bd6b1c9ea78c220b64376f522c6f30b09c441c11550fb56907242cef16177",
+    "src/main/resources/assets/the_oldest_house/textures/block/institute_writing.png": "3f7c940c5e4dd9a22be48faacb77ebadfe7f0d9137eaea19bb6810ab235e0a42",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_ash.png": "6aa5c672f3a8cdef755e378c0953d820b5249c68076062e5a733d884700ff119",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_ball.png": "a4711918abcdc9d8af2631e29f317264555ecc0f9aab629a18b3be130b7fdf8b",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_black_dress.png": "09ff0d19852791729a04dc5097a9c81ad63b2b73dcd40899e9a294869c6005eb",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_books.png": "88a71677ed59d388995a9c02227a3151f9c6bd138d80fd5e582d32a81d1c48b9",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_brass.png": "83b7e4363d1614dd223f39286c9d41dd1fd80434aceeaa357d07217bdf20dd9e",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_cedar.png": "dda21e5645bae98011f608c4a911c535f150932beb61fc6f9363e7098ac9f555",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_cloth.png": "5c4c25c4246f346efbd053214a64e117ddafb924f02a44002f6767ca48c75011",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_face.png": "9b596208c1699b9b37cfe2ab5b32bce805672e4b8e329a9359b82b04d35c5db4",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_felt.png": "61b92c08d7b675927dead8e4abb6347549a91673d830b9fa679e5376903ce2ab",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_glass.png": "dc8de1bd9f01c9c879fbf21afb25bc4c02d91434cd08291e8e9dd3eb381242e3",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_glow.png": "b45d06238ae530045829c4eba30f995a280ab638ca3e560bacc4cea1dc11cf57",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_house_cedar.png": "f546ec28a16e4ab3ca77ed64a404bd6538049ae59a20372b031401a1f67fc1fd",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_house_compressor_base.png": "b612e1fb177acb1ef126020d20d37a8c9903b1b85a62bbbaf2eb5e5f6e46e2dd",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_house_compressor_engine.png": "ff9de9d27ffddd784ecdd64164d950b339e0ed75c7eec7c2ce4ff6ab741c8e5e",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_house_compressor_gauge.png": "f30d40e981f4e94fe06c882421a3afbb878d67e754b0a16b76fd2aad0527fe07",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_house_compressor_tank.png": "c6659c973e836e7f59b5f8cd3b7d99f4450ef8b07235a1ec8f9ec6eaa6c6fdb7",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_house_floor.png": "214a28a954e04f216432295fb4da10ebd1992661ff4ad5c0efadf77ba3402e5f",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_house_pool_stone.png": "f385e999be2c51d9a14d3bf5f0ac26115ac8ed9c6e0084e8504b09c76a6d8717",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_house_wall.png": "e8797232a99e9a6c2eeca56cd0002c7f3a71e1bb214e67c50f6bce2c81126131",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_linen.png": "be8a8ed766072356a4d6566acc5bc51565006e9f57b4f660ea40e2db5529fa3a",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_marble.png": "7deebdf6165eef876b31d92c48eef904f0c2fe41a9a8fe4f8a9240e32c23528c",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_porcelain.png": "0e50a462d1e4eee41e3b4ccb9ca67ecbc042882a6d1a094f7a26bd6291085381",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_runner.png": "c00e8d93dc54d43d417fcb5578ac90e0ed990b923991bd5783ddfd920b432d2a",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_still_life.png": "b1b0e4e9a0c3718593c9b4d92b05f7e135272536edf7e9575d5e12cfb57b02f8",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_stone.png": "b931496937aef01a1132b1fd4a2165cb58490338d517e416f9ac098313599f73",
+    "src/main/resources/assets/the_oldest_house/textures/block/lake_wood.png": "243c5ddb4c95944f045c684a0e3da2364676ecbb0cf23324db7085a7acbd4051",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/asphalt.png": "b6e3a4ba59138efd290df873c77fc21cb7843ce040d4b45addb8014224f238b4",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/asphalt_centre.png": "2ee6a9952932e15833e60d3609cd8bb63050fd411747022687a4ac10a721c0bb",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/asphalt_edge.png": "9794f95bf7cdc77f2fa8e9e0507a4bea827ce8faa791abef5d272b58db17ee64",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/boards.png": "bebdbad96a715c6e9f28c55ceae18c4d3a00f2db78655b7f217d20e720f851f4",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/cabinet.png": "9a7d39ba8d3d69cd9b57499bf166c7860fb5fbb9ec7cdb0281d7d90618dbcbd1",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/corkboard.png": "8e8d88808e2e137026e393781b6a8dc50a634b12fc7b6af81b0d04b7e5f5b06f",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/counter_back.png": "820c9a5ce6f414f28e0f87759c70ac5b753a83e03d383d540e792ce57d8a4b5b",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/counter_front.png": "ff2224c34cf7ab6adaf66ce5b50e767f9e18c4f330069ce3c3348f44f5d9bc31",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/counter_top.png": "60a4774424c742925a4bbae339c24ff6343250acbc88b94251dedc8f458693df",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/dark_wood.png": "55b4e212d7cc84d0b01fab9d249051ea3d86db9ed21947dc9d7ae3456e5655ab",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/dartboard.png": "bc6dfa07b91f078114d741129fe1e4aa05d1c2812c047209a38c3e7374ccfbba",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/felt.png": "3f7893c87f6ac82bf4b1dd4c6ebef2a695aaf8824a4c97b06dc088e35a044d4b",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/formica.png": "1df97d4cc06385a979494c4c029cd6e6777751fd02031ed4d4003c667839a31d",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/gravel_0.png": "4dc86d1b0a8081d0e02ff07128b0d23e11e8abe2eae026353cb03a2c58f8b3e8",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/gravel_1.png": "791541e00e24cbf39e4fce982120123e53b73852a96085117094180ff827769e",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/gravel_2.png": "4934d2a64a9c72110cea32ee23f0cea0797de531aed639228cea7c48273786d3",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/gravel_3.png": "f85d5148d712a8bc3c43d7581759498a88dab755d6f627393d7fd41e2d19ac4d",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/mahogany.png": "69f00d208709fbb66ef5beedfb938a006389d04c8252afaa3ba96b6e2ea60cec",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/mirror.png": "4644cc1c5ecb2171fd433423d0d689070bd813c0d940855db6830d370f8985b8",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/neon_beer.png": "3ce8741b5d2bc54b25c08535d167148f920407cb84eccd2f7f8408904d80caf6",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/pole.png": "f3a3f13b68b98933f92473bb808d16fc39de630217d2bda7498a491eb5fc5004",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/pu_body.png": "6834769ebdc2f7fd07f064b4217f5e048f6eb26d8ae4010d933ba501f2072cbd",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/pu_door.png": "605e01800ab237aaddb285446034a6f12b23100a8f7b55126058b8cb45d7fbf5",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/pu_door_dent.png": "9d59f3ff746d075a15ed2e16c1b23f442cc699c9cba2a5edc48b74e99bd3e9c0",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/pu_front_l.png": "7e85a98a37d935ac3149c885c9e9032b5f053bee029380622f49ef951a8248ff",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/pu_front_m.png": "8e3a44d7dd54491890fd35e07ddefff8f702bcb18ee9971df60f1f543e676e88",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/pu_front_r.png": "b6bc3fc8b5ae92f29bf171e32e4715d3f5127e0e8c13771bd79d4c02b2c25167",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/pu_glass.png": "057fa268a66f535d3fb751a772118289601efdca588ac6878ab9745a288a5e39",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/pu_hood.png": "9e2ff0aadf88da7944d02e7391049ea3e843743271f4a67d6f15faa30146afb7",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/pu_liner.png": "42a8f06646305bb3b7c6e6aa7d20d472b6840df6899608060c5621064539d0cd",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/pu_tail_l.png": "1a557bcaeb9b3ad533128301f3029af614d076cb0286a4634880c9e1578b1168",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/pu_tail_m.png": "28a2daecf8afe25fe4e2dd943cc69351e95a2a617581fd4fda88f71adeee1c19",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/pu_tail_r.png": "62fa428ff8a4e3ac0c24e89410c8a0771cb015c36124e1d250d0cfd363e8fadb",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/pu_tailgate.png": "edc31816bc7a3b3280004c829aaf9643637ff6037884cea53d4496f8b1d3af0b",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/pu_tread.png": "a28b143f98ed7e0601f47a3c31568c34887f6574c5f53a211b00779cd52c2c58",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/pu_tyre.png": "1c60a7b7f9e840f1394dab4cfd7011be140f214553d64e36d50d8af7b2ba57b8",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/register.png": "5b8dc344a210ae39bc7dfc0050920ebfdc6d5dd0d303a487c8a117fdfff910e4",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/shelf_bottles.png": "cb0c43c4ad99804e18277121cc01310ad1417f38327e4e63b3b3f331e23c044d",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/sign_bl.png": "579bb40d9555371c4a463fd8a75b7424dd72e60fc8f207d7c0abc156a3b06c7a",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/sign_bm.png": "11f291a159a76a1329a06f8aa2ae596d7cc0b4b338ac2b0195ab0d348091ee11",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/sign_br.png": "870c9d0a664e136122427fd939107a4ba5bb72c33f198b789663963611ab5da7",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/sign_tl.png": "607733ae18497776fadddd0045ac9cec1b64e9a384d5270a3c5c4ef0275b5bb7",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/sign_tm.png": "65c4a769d1e9409abc619bbf5cd5281f3742e3137884ff0fb29e6d9c2af62356",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/sign_tr.png": "3d2a8e1ab7006551bdd9a62f3da542afb635874401a97634e9d471debfe3c00e",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/stalks.png": "39fd6d47406990854661377a8390df74f8e39972294b9876c0697fe72275a86a",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/stalks_top.png": "61b14bbd5902a12fd5b6a7e12a7e785a435e1b78d77192af0b6ebec218489cac",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/stubble.png": "0b0d2e267ce723a6d02aedd70c596f35aeb9864ae686d26c3fa053398118ac25",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/swatches.png": "c52c851f5ff689cbedb62299991c6b8fb54d8c4637adc260ebc1c5f8bb38bab2",
+    "src/main/resources/assets/the_oldest_house/textures/block/last_stop/vinyl.png": "4f46ae4ba848d0367f9d93df6591612aab082d6873b515330501e7c1e35c9e4d",
+    "src/main/resources/assets/the_oldest_house/textures/block/leak_wallpaper.png": "a263d454c38b368590a9960d101f0f31ff95cb5f9f8a057e64e7e5aae3daa1f8",
+    "src/main/resources/assets/the_oldest_house/textures/block/letter.png": "843b6a045073db1e991dad1d5645521f859a6b5f5fb7ad2a679f86eeef3d703f",
+    "src/main/resources/assets/the_oldest_house/textures/block/life_ring.png": "0f7969e1f420495feaf927250c0519c2eb556daccb4efbf6bb4965b4865b0cbf",
+    "src/main/resources/assets/the_oldest_house/textures/block/literary_brass.png": "26c897fbba39145486077b3001cf76340b9b9b42d8fd89d3e21ead9ec0c45e89",
+    "src/main/resources/assets/the_oldest_house/textures/block/literary_clock_face.png": "57fd448816cf645561a2a8a9dd5f57b2c8236108afc1102d56aa65ddc4798544",
+    "src/main/resources/assets/the_oldest_house/textures/block/literary_dark_panel.png": "2c86df2f01570226017ed36281e2bd2581cadcbfd5e652ce8af051549c642975",
+    "src/main/resources/assets/the_oldest_house/textures/block/literary_glass.png": "d66e59d71ed8fc15af560c4b30d45dfa35fc7ae950ab6aae4590bd3974cabcbb",
+    "src/main/resources/assets/the_oldest_house/textures/block/literary_hide.png": "1c6474fcc93c3eccbee5e9fdc5b305f6da955e5c0fd3c4793cd3f7b189890bc9",
+    "src/main/resources/assets/the_oldest_house/textures/block/literary_iron.png": "daf6f2bd27fed3be82e972a93a681881a18358f30a0c4a511ff352d2496c77ea",
+    "src/main/resources/assets/the_oldest_house/textures/block/literary_oak.png": "34ca7db33c753a1fc8eb791d6b5c7fa42fec2c8b67be737bc62a28df2399257c",
+    "src/main/resources/assets/the_oldest_house/textures/block/literary_paper.png": "4667bdcd3954474dc54106f077715219ae4f9da20096bff4e47c0a8527945ff4",
+    "src/main/resources/assets/the_oldest_house/textures/block/literary_photo.png": "62929d3e66a3981d63b84957473282236153d1708867545a615380671dbed8c4",
+    "src/main/resources/assets/the_oldest_house/textures/block/literary_rug_authored.png": "33de0e24527497e34b4ee921394ed722c1a1c70d6f303d486bc5ca737373d9ab",
+    "src/main/resources/assets/the_oldest_house/textures/block/literary_rug_shifted.png": "e6e313ba3fa575899f9a0c955522ed1ab930e4896e376582ff0a20f6ad72fe55",
+    "src/main/resources/assets/the_oldest_house/textures/block/literary_wax.png": "80578ae452b2b57acbf7bc1ffb06f4dce4b40da88e4851f32d9877f6d4d6e84c",
+    "src/main/resources/assets/the_oldest_house/textures/block/locker.png": "e9470a9207869a51d05c528306bfd5cbd6676f0e0bc4cc72180855bd0f14204f",
+    "src/main/resources/assets/the_oldest_house/textures/block/locker_side.png": "542905bcebd7b666dc94c4a1816ab688ff62df6352ef017c60e51a00c198b9db",
+    "src/main/resources/assets/the_oldest_house/textures/block/locker_top.png": "15fdc17f032ea460ed902463dd90ebfd621bc8849924c4b8ccfd5efe433e0ad1",
+    "src/main/resources/assets/the_oldest_house/textures/block/loose_floorboard.png": "0bb25f1c41b6a2e75998145d31c09890b580aff302041801a707e75b0edcaebb",
+    "src/main/resources/assets/the_oldest_house/textures/block/mail_plaque.png": "3a8210ba8076ba15fa8cbc87ce7185f30e03bbe91b811c0fbc3f75d0ef222459",
+    "src/main/resources/assets/the_oldest_house/textures/block/manufactured_siding.png": "1cb51d36facce5fd54f013116b0b2049d765b28797c2c76131ea53d4a01319ae",
+    "src/main/resources/assets/the_oldest_house/textures/block/metal_legs.png": "1c3c2168c0e9ffde7277a62dd5535ad4de16020a976a4a840417cfc0f8c51573",
+    "src/main/resources/assets/the_oldest_house/textures/block/missing_poster.png": "fc878427a9914d772dbf7b1ee29a1b2248cfb1c2e045a84c492fba07a9cfe592",
+    "src/main/resources/assets/the_oldest_house/textures/block/model_home_materials.png": "409b76fb9508c9333f368e814935de842bbb61b84395950aa0a205c7fe923617",
+    "src/main/resources/assets/the_oldest_house/textures/block/model_home_static.png": "d5ca312ac5b8e740d57f0d0e5606883d05e8fbe24250d89f87581a063f3bba8f",
+    "src/main/resources/assets/the_oldest_house/textures/block/nightclub_exit0490.png": "1a06452a98ea8530ff5c70cc4687da0e043f17b012ec5dc1690993dee2d0bf31",
+    "src/main/resources/assets/the_oldest_house/textures/block/nightclub_floor.png": "05c41b56d6b1ea4d09a923b77fdd3eac81f39ee45cdf7178e8d90c64dbb9125a",
+    "src/main/resources/assets/the_oldest_house/textures/block/nightclub_speaker.png": "8385aa430169a2a3630c7bd222e4a040dea5da6dd5e2cc08dbed53af060efff5",
+    "src/main/resources/assets/the_oldest_house/textures/block/nightclub_wall.png": "8bc29b6e9314dfcb4b111ebdc1fe9acb377f0ba29503fb2332351f8dff382fe8",
+    "src/main/resources/assets/the_oldest_house/textures/block/notebook_cover.png": "ac8efb5cbc2a361616057d395cc270b31095d24ecb74a05a91e0d15e8abfc594",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_blue_wood.png": "557c3b2c521e0a5204b52652bcc40818047376e19ac343199ba0490964bb3c61",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_books.png": "09efa1f11f062f455ac827a68e4e8925cbdd1fa1171043df46a50405fa55d903",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_card.png": "2ab4675e2eebd28f7b2ee30c58b34adceec8e2713f372d733201b8ac534a5bfd",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_cardboard.png": "5dd0334dab77e9c01ad7b562b6d292000384cb4a6c562aeb2a224bc524957582",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_dollhouse.png": "f93a022d987a71a1c3ad78a4bc81909b687a9e0572031c67b4ab970314ef2813",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_dollhouse_inside.png": "e77321eb9ee035a2d47262a650d40bcf2632819ae466ad8ecb54785859412f50",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_drawing.png": "a5e234c0d2f65caa5b70ff5321066c974020b88288359d1dd47aa6e41ba737b4",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_drawing_below.png": "4fefd62250c16d3f5314a8e8406f2a04aa614848af17cbb532481b2022249196",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_exercise_book.png": "ac68438870020da99b61c503fc063adc72f7ca6a04dc3c9018483b7481b7e598",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_faces.png": "4e127c2a2396ad8105b9b9028a7f9d6fd80e25d844a67a69fc83d205bb9ef0a6",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_lamp.png": "f84ed55d448124225c5be069b7eb34e02acd028d95a2f97d9783d843ce1ee7ee",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_lamp_off.png": "00a5b374aa2197f490dcce31cef96389c46aad9a02e0723fb3bbd07461d65bb3",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_mattress.png": "0e269b16854511981e951bdb2bea3be8169284409e64d9ba71b1a9d29160d609",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_mobile.png": "c6c642c7f0f9edef7a752c16beacd88fe2d305b1d145e10653076804878ca055",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_quilt.png": "ebf0c68162373aeb4aaed966c6401d31b6c1cc522409dd98de62ed044cd7375c",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_red_wood.png": "d366c5a16c84c9042a54470d35998fed235af3a845fec56412a76e22428e26d2",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_rug.png": "49fa41001b9b9070bc03ff8b0aa21a379d493953ed6a5e0e176f95a07c6dd528",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_swatches.png": "e179c358babeacca433f07f54995e15a142acbfd6f2e50f9d8def86b91da396f",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_track.png": "23d44a6e786feec91f09818b08dd10f98ab82aeb9371dcc3a887b5d5ee5ef273",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_train.png": "f929246da08b69aabe391d95e1c4bad93ee3904ca263cb3d3cbc3940e1e04fe0",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_wallpaper.png": "eae8935b7c575dcb124ddf2fe527026152fb83f8d8aada8fc9150d9e0b223192",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_wallpaper_figure.png": "728f66656c16926ed2c0fdfe61e87e8954920f9fc3bed0e86e8eefbe9ee4e504",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_wallpaper_figure_peeled.png": "465cbd4bc3c2de5a59ece313bc225f55bfa81d32112e388fc4dcda9497b554b4",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_wallpaper_peeled.png": "4c7eb1eb8bc1a6117f2483e7f529d73821393d2c7bd132c6693001a111c1cb4b",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_wardrobe.png": "c3850de82eb2c1a85aa19280f13721670bbb8ff11b2a2306d8894dcb786cf926",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_white_wood.png": "4e906c1183c7d9c2098933df1d9ccffb9e17b2daae4fffceaafaa396b60ef5f6",
+    "src/main/resources/assets/the_oldest_house/textures/block/nursery_yellow_wood.png": "5dc9623194f69bc9d6489384b0ec51d3de5890027f06401d56083d7dac4dab93",
+    "src/main/resources/assets/the_oldest_house/textures/block/paper.png": "ac5987ecca151d078be202acfd9692bf6ee9792c7c03e60d6fa594c4171b6fec",
+    "src/main/resources/assets/the_oldest_house/textures/block/pigeonhole_1.png": "9b918862d6992560a6497158cb4f98cd075dbf54c09e55e2351a6a28cc5244a7",
+    "src/main/resources/assets/the_oldest_house/textures/block/pigeonhole_10.png": "0a79da640ec869dd38122e3f7c198c0a171a979e8bb3fcb6fd147032e2ead6ec",
+    "src/main/resources/assets/the_oldest_house/textures/block/pigeonhole_11.png": "569cf74194286d7c008d5e0345ec73ce297becf5d2cfa87afdf9de1256699736",
+    "src/main/resources/assets/the_oldest_house/textures/block/pigeonhole_12.png": "f7ad7499eaeaa5e28ca11322300d7d637e5d59f7fe5cb0fa414048b49fbbbcd0",
+    "src/main/resources/assets/the_oldest_house/textures/block/pigeonhole_2.png": "bd338fea080f91de4832f19c4c84e63cae73f1afc1b6ad1f025dc2b898197836",
+    "src/main/resources/assets/the_oldest_house/textures/block/pigeonhole_3.png": "d3004df1f0138701273259cc9666760b0993196deb8cf4bea35916edd82acd3e",
+    "src/main/resources/assets/the_oldest_house/textures/block/pigeonhole_4.png": "44b88f0f963fada625bdc2c335aec45d4bb07b0cf2944ca3d748e0047c070d6b",
+    "src/main/resources/assets/the_oldest_house/textures/block/pigeonhole_5.png": "8163e920189830be6cce20f16a94c0601f31ddfbc85a0843703d6a5c556ac98c",
+    "src/main/resources/assets/the_oldest_house/textures/block/pigeonhole_6.png": "32547e8f757d7277dfb4fb9078d52f051e3ebd478df6d6eb51d402f87e91f065",
+    "src/main/resources/assets/the_oldest_house/textures/block/pigeonhole_7.png": "a3f82f7d86d66aacf641b28a32f60339c27d447af8227607fea50f934b38fe0e",
+    "src/main/resources/assets/the_oldest_house/textures/block/pigeonhole_8.png": "10cb53de53edcf651c2a5fa1ce0e1c2f42542fb74602cc9b24c54b4aced74e62",
+    "src/main/resources/assets/the_oldest_house/textures/block/pigeonhole_9.png": "4115ef4c317516c4ae36fbc059f60588f5f95dc693e9f5b9c68d12f3df6239e1",
+    "src/main/resources/assets/the_oldest_house/textures/block/principal_rug_authored.png": "ad48557c06f10d7b3d8e5c7c2d52ad874beaf79226d1ce63a604cea71b2196b2",
+    "src/main/resources/assets/the_oldest_house/textures/block/principal_rug_shifted.png": "c3139d41aba4898069b09bb4f9faac62765ae93133cae9924813f4a1d8db587e",
+    "src/main/resources/assets/the_oldest_house/textures/block/proofrock_sign.png": "af9c974db11ae5d626a6e32a15d12af1c6085d92c5deefaba4acba57c058be1f",
+    "src/main/resources/assets/the_oldest_house/textures/block/proofrock_sign_back.png": "a942ff8d89684da5e3cdf22c2f15d4f7e2af982fcec6a2b078eb6c920cbdea54",
+    "src/main/resources/assets/the_oldest_house/textures/block/rabbit_carved_trunk.png": "713b8a5ceb07282dcc98f6b462118ae815dcbf29807bb2f204d10c46dd19ea5f",
+    "src/main/resources/assets/the_oldest_house/textures/block/review_bear.png": "f2ae65e19c89942d45f630507789d9f36bfffbb199779b057d567b4e8cf48a3f",
+    "src/main/resources/assets/the_oldest_house/textures/block/review_chess.png": "7cd278c494bb0c79b0ffaa23a7ab8fd75866bdc5a2d8a6ae5593ec1d9f525222",
+    "src/main/resources/assets/the_oldest_house/textures/block/review_child_wall.png": "20c0a09f0437dd17a03c8e857aa6d1a350058af51ba1801fee381ff953b59466",
+    "src/main/resources/assets/the_oldest_house/textures/block/review_diary.png": "619866dc4b057da3c8da9119edb302be59af954ef9fd222e595091f3af506ca6",
+    "src/main/resources/assets/the_oldest_house/textures/block/review_doll.png": "5c1cac3eb1a45543a5b8a6e736f0961ca8d2a3911dc5fb29aa623044017e1646",
+    "src/main/resources/assets/the_oldest_house/textures/block/review_lake_map.png": "75090714625f6a7fd0bb36c051432b7788ad1245cc31017b46658b56fc3bd8d9",
+    "src/main/resources/assets/the_oldest_house/textures/block/review_missing_notice.png": "97d08704e0f889de468add018cce7df21b9eadf88c09dcc71b5242d53cf68b3a",
+    "src/main/resources/assets/the_oldest_house/textures/block/review_notice.png": "5c6b67d669c7bbd15ead3ddacb23f925557d2639efdc80cf6e3f18b497f57e20",
+    "src/main/resources/assets/the_oldest_house/textures/block/review_pier.png": "f0132df10b9dde857e26ca990dab1f183d97e4d9a6d99aedebff850f616f3b05",
+    "src/main/resources/assets/the_oldest_house/textures/block/review_reading_wood.png": "9795d7d9b954ece8aede044f4b2f0a6f246f632f50c736d7439d3f667b8d54a1",
+    "src/main/resources/assets/the_oldest_house/textures/block/review_scarecrow_cloth.png": "dc23bf424e4280c980978b96ee22ebc33f103e78c335d409d463b60792e394ed",
+    "src/main/resources/assets/the_oldest_house/textures/block/review_scarecrow_face.png": "4e9791954592e12113a4bdfb1ddb21755952886c79af0be8776a8fde0795b846",
+    "src/main/resources/assets/the_oldest_house/textures/block/review_straw.png": "8387d21a0775c8455fa1d383b4e2e5d51e2f8c89db89567c7a543bf2405ea682",
+    "src/main/resources/assets/the_oldest_house/textures/block/review_toy_blocks.png": "570a1dfa888f8285ba36e311f7183d56a2a4b278910b5d21cb6e62fee7912bab",
+    "src/main/resources/assets/the_oldest_house/textures/block/review_train.png": "ac99d70aa7fdf52eed629afa8d81d6f67fdafc40a42e66267238aaf9f342d3e3",
+    "src/main/resources/assets/the_oldest_house/textures/block/review_well_initials.png": "d8b332d29e552d9a1292282f25db5d88a7816b6d7f6faa27f72716d8509c970d",
+    "src/main/resources/assets/the_oldest_house/textures/block/safety_fence.png": "8f0943356c97e1041d35e557ed303af49180e06961bb42d28f40f99c17e76cb7",
+    "src/main/resources/assets/the_oldest_house/textures/block/school_crest.png": "40dde9d41fe6ccedaf57388540d707551afdce42333f34141146c97b328d749f",
+    "src/main/resources/assets/the_oldest_house/textures/block/school_desk_front.png": "46455ffcaff395a057962dc0821f3780804e8962cde4b803c8dbe40b3b427c93",
+    "src/main/resources/assets/the_oldest_house/textures/block/school_desk_top.png": "581c249ffe344f9e88400b01c07196bd0afe87964b048e6f46dc3da7844d57ba",
+    "src/main/resources/assets/the_oldest_house/textures/block/sealed_window.png": "bd8733a874c5f211edbf5876aaebc5120fb1096ad2de5bd00dcd38e65c0fe4d9",
+    "src/main/resources/assets/the_oldest_house/textures/block/seance_table.png": "864019e6b8af5c1f12e38a5789dfe780e3b2cdc3ce0a3e8582e8e8e23df6adeb",
+    "src/main/resources/assets/the_oldest_house/textures/block/seance_wainscot.png": "bcf21002a24690aee0f98ce3cc84e62f9fcc77590a0b465c1220e8105b0d341e",
+    "src/main/resources/assets/the_oldest_house/textures/block/seance_wallpaper.png": "e02253c309cfbf8df4d0511d9cbf4e904f676a5bc0d79b718621bb20baf3ae7a",
+    "src/main/resources/assets/the_oldest_house/textures/block/site_siding.png": "4d693afdfdc2ddebced2e8810df8039d5db81128bf33ec16a53e194053002a99",
+    "src/main/resources/assets/the_oldest_house/textures/block/stain_pool.png": "8d14f1ccffb6f15d2a5c1eaa0b83496231c78ff2cfed347e4cb4bb305f6dabbb",
+    "src/main/resources/assets/the_oldest_house/textures/block/stain_prints.png": "11d43b73dcfc8381d5b054c9def638a49316f605c9ee93b8710f52786df98526",
+    "src/main/resources/assets/the_oldest_house/textures/block/stain_smear.png": "2291f261767d31b276a75f5b83359f8b430c5a10b1d56f9109b7afdd145cd09c",
+    "src/main/resources/assets/the_oldest_house/textures/block/stain_spatter.png": "23445c831e56881bb8c28f5e8be722b2b6d1ace6acb30733046811e78e3614b0",
+    "src/main/resources/assets/the_oldest_house/textures/block/staircase_stone.png": "b8fdc7709421bc294331b2e0c17486e61fb0c904ffcc28c454b747d8bb95542e",
+    "src/main/resources/assets/the_oldest_house/textures/block/stanley/brass.png": "4023aa2b8381028fbe4203323728a2c01cc17dea29cd127584eff49e46417bfd",
+    "src/main/resources/assets/the_oldest_house/textures/block/stanley/carpet.png": "3679e626de354074432b13eb9aa95537872c73def384334157fc5cf927a1300c",
+    "src/main/resources/assets/the_oldest_house/textures/block/stanley/ceiling.png": "a1d466ce8e960f970564ccd2061f00ba16fbfdcfdcf3cd0ee32ee8c7721747af",
+    "src/main/resources/assets/the_oldest_house/textures/block/stanley/food.png": "505c1ac131f26e1011f27c2151ae5aab866b1c76574b2c8fabd7d2c03f0f64f7",
+    "src/main/resources/assets/the_oldest_house/textures/block/stanley/gauge_0.png": "8d27fe417c708c4fd21b5724f035a9388c701b5ac469e58248e76742fb9d8c0b",
+    "src/main/resources/assets/the_oldest_house/textures/block/stanley/gauge_1.png": "117170543d690d8a8b7e38af8f0cc7b7166665da1bb66749c2e779467f01f3f2",
+    "src/main/resources/assets/the_oldest_house/textures/block/stanley/gauge_2.png": "f935b1525d4c6d14b4d0da216e29d022b4b477264a7e0236c1ca86e1913b1f9c",
+    "src/main/resources/assets/the_oldest_house/textures/block/stanley/gauge_3.png": "79dfed4d72703f5d87cfc5f8410eb3457abbecce180c1ac388bfcf4943aa86c4",
+    "src/main/resources/assets/the_oldest_house/textures/block/stanley/keys.png": "08aacaf7f8cb01ac1301d26b0bc32de276339a3be720f898ff6e9654f7007537",
+    "src/main/resources/assets/the_oldest_house/textures/block/stanley/paper.png": "c481ebb6c231fdb8af14c3947e78b6b2603fd74f0927d11575f97f4007c33c45",
+    "src/main/resources/assets/the_oldest_house/textures/block/stanley/party.png": "2e78f0d34d7d8d973460a9c8b36fe8a2e43175c7fd9c9a961bd12cbd92d196b7",
+    "src/main/resources/assets/the_oldest_house/textures/block/stanley/patch.png": "5a59dfc86504c07fcc67bef6ff3edc6346cba4f32e94064b0d46182acfb89a98",
+    "src/main/resources/assets/the_oldest_house/textures/block/stanley/rubber.png": "b110addcb0f27753a4459beaec241ed014cb6878c5b1938b80d6f231a8a844d1",
+    "src/main/resources/assets/the_oldest_house/textures/block/stanley/steel.png": "144b4ed291d22ace5473cc7b985306ac7e7762376279e0a672a9129af320b0a0",
+    "src/main/resources/assets/the_oldest_house/textures/block/stanley/wainscot.png": "13cd1c5d8480147761492ca862085204f47fcc4001e18430ab43328d1c5f9158",
+    "src/main/resources/assets/the_oldest_house/textures/block/stanley/wallpaper.png": "aebb3665e829e3dec704cc2f7417d345109e3846504f0b26f52d24fa655b8d99",
+    "src/main/resources/assets/the_oldest_house/textures/block/stanley/walnut.png": "3a7f4a79be2e8bb0f699e21032ac44ff9161366b13c472abc461ac0715963b62",
+    "src/main/resources/assets/the_oldest_house/textures/block/streetlight_base.png": "905581ed4d389ccc266bb396f0668bd6504e23d19d18b2bce0c10e5b9fc0a662",
+    "src/main/resources/assets/the_oldest_house/textures/block/streetlight_glass.png": "2e3436fc92a72268515fdd864a4a7047be8844d2f3fc620103123a8b3f7035b3",
+    "src/main/resources/assets/the_oldest_house/textures/block/streetlight_metal.png": "35aff456f3f1133dac238ccb5b2644d4f0f232257d161f73b811ddfa2331c3fe",
+    "src/main/resources/assets/the_oldest_house/textures/block/student_desk_metal.png": "332fe2307133349db2d949ba8effc9c776235f1c7a387d3419ab08e3d755ec9b",
+    "src/main/resources/assets/the_oldest_house/textures/block/student_desk_wood.png": "f86a5004c84ab46b1e5d32096972429b0a9523fbf0d72f2a05b4ebf1ec9a2775",
+    "src/main/resources/assets/the_oldest_house/textures/block/study_rug_authored.png": "e8e482562aa5006662656ec1ce06baca4df65c51eeed41d1d5c968d45f632fb6",
+    "src/main/resources/assets/the_oldest_house/textures/block/study_rug_shifted.png": "73769da5ba2949532934d920a992950610b51d596afe9b431dc774991d139677",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_bait_l.png": "2c208278b12a5fe9c9a8942dc9f7e525dc816ba0039cd15d25749e346ae972d4",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_bait_m.png": "c3c0a5f6ede7d69e15c30bce8584babb0c2d553e0fcb824c2582ecc726e6071d",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_bait_r.png": "2249fbf02c8b5b9164fb90c95248aa6968dc7f04475fa462f18f801b0de4b980",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_cinema_l.png": "af1b634716b77d1a80f73d5f361855f7c241464d98786abb8d231b9b7df32f2f",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_cinema_m.png": "dec4e5bfaa4f7f9ca493d3358329b1ef055b6f81fdcdbfed466fd72848dc77da",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_cinema_r.png": "df150470fe13328ecd696c16c0655fb5b01bb1a9311f2f1da6c100e817c95d85",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_diner_l.png": "f39c5f3b26f4a668d7d112373e50a4f2bd2b6805d414c00a26ced776fdc27487",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_diner_m.png": "b3106242c90f82d4e6978df842e8365dfc1d6674ca6ad1097e391c37bdd0bd42",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_diner_r.png": "8ff00d8f230b2bbecf88b5d527bb77ac70443831b0422e009dc5d391b5f5d30a",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_garage_l.png": "e30cc625b3b343e566a062d2f9242b2acbb6bfe4b26a96653e7a4f8f9d0c39e4",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_garage_m.png": "944048fdbfaeabfdb5bf31f09ee04c227a007600605b498c6725b8bb1e3901c6",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_garage_r.png": "9088255d5b6169c3e18967c188f6f6b04827ce7dea47faf2ab88799cca4c86a6",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_general_l.png": "0609b46556b12904464b923bba299dbdf8ac1e7f3519c50fee4c29ce0df1b822",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_general_m.png": "14bb812ce60650b60b370e6aaad18da492ebe086f1a2408b14ed0e68b6136dac",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_general_r.png": "45c30ba0ddaa9c5e8456d145dc9edb12026eb359458f7fc53b1aa80a1114ef9a",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_hall_l.png": "c6489e282a7ca0c63c65bd666c06dbf70b288a62725e5b38d34b8341b380bcfe",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_hall_m.png": "d9c345f22e1a0796465c76b7ce3868425e5752e642dd91c59ca462f3399770ad",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_hall_r.png": "e0dc54480e0bb65f49a945a97b7cf43cf23a5c0b88c76c9bc7407bcb2f03e116",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_hardware_l.png": "beecaed7f51f862c1a6bc0773b71be1bbc703895ac1b2861c568dad738cf53a4",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_hardware_m.png": "924dacc6c0c428ce4a5f2886764e311fac7b913f919beb8babd54c0d4420cf1e",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_hardware_r.png": "6cc5e8dd157e823f8b9a9abf79e35487ee29d1a7eabf9b354b8bb1f43ba7e45b",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_laundry_l.png": "ef229016b708c3af3ce9283470421c9eeb20ef8ec65a63e9b9a7f2b99cb214c2",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_laundry_m.png": "60d0d18015d53f5ac0f6192434ed1a88d6b1e36d62440a5175281e71e4c05ac4",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_laundry_r.png": "f467d82053d2e4dac84c4b1402acb76eb326cbac20f6c4b19b2d6d41e368a815",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_motel_l.png": "905f6849aa03a7fe1ce136a468396cdaaa4ec4ccabe121e880fa5ececf53a7ee",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_motel_m.png": "049733313b82cebaef194c98bf938ecbe85a58a74b10b8a84ee42b3229868f5f",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_motel_r.png": "bc8c308ce883757438af95eabcc874d2562adaa09fc5ef418e12fc00cc8a4055",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_post_l.png": "38e3007ce7188edce60debd10532d0ce094906e47cf551afc56c63388f9076a2",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_post_m.png": "37bb4cf08420fec48debd2d655cfabe200f9e130c58987b1805f9543a8d26840",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_post_r.png": "574847e5b55c818fff9d1ce1974d97089fb49ee35e1132f4a4ec7ce2cc305af4",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_school_l.png": "352257eb319f7b187aad8826440097a756277746813a3932f911525feea6e49d",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_school_m.png": "8c8f26fb6f13fca18bc1788f61ff9964ec96d4bd62dee663718a801e244d6bb1",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_school_r.png": "68674f05064ec87c70515d3baef79f10aa0459312e2778ec80b26ba8c0ef5ee6",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_sheriff_l.png": "1bea63efd7d2898ad083d17236e445daaf97c4d922e7972e28a98e0f10b34b66",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_sheriff_m.png": "19cf84dc3a984cb67197833e6f0faa79c955a5882438146446379ea587511d13",
+    "src/main/resources/assets/the_oldest_house/textures/block/town_sign_sheriff_r.png": "3930e9076a717054b7820d27042270b4ead4b27eccc1f2f8d23307ed3ae61e22",
+    "src/main/resources/assets/the_oldest_house/textures/block/trailer_bathroom_window.png": "04e81fc2e494a64cb66128b6a1ff54a2a6dd725f56de32bad8a8543f6ef91582",
+    "src/main/resources/assets/the_oldest_house/textures/block/trailer_sink_atlas.png": "e083cb1ae6119bd02b3df18d7f68c484fc3aee19d0598d3ddb9ed6ea5935efa5",
+    "src/main/resources/assets/the_oldest_house/textures/block/trailer_toilet_atlas.png": "1fe836385944f025b7b7fdd614432bc89e1ff563578b7ad3107dea864766b196",
+    "src/main/resources/assets/the_oldest_house/textures/block/trophy_case.png": "d219532d8055ea45d096081afcb92e9917ce0fdd4ea09b33d3467df59c2a143b",
+    "src/main/resources/assets/the_oldest_house/textures/block/usher_crack.png": "9a3fd8b98f23f94129b5104876f2ae4898605708fb4f2eb35502f60d354a788d",
+    "src/main/resources/assets/the_oldest_house/textures/block/vehicle_wheel.png": "8e3deff1f7a094f1dea2aecb6c89961bfe069f9c2e771578d5c744df1fdff272",
+    "src/main/resources/assets/the_oldest_house/textures/block/walnut.png": "7ffd1b0bc4988fbde013b3be6e926a8715af40cc3009623fa9ebe0f5598205f1",
+    "src/main/resources/assets/the_oldest_house/textures/block/ward/cabinet.png": "b99f7fdc5ad39d9eacb6d2be217553f0c2bbf58cf2f7c043b94cb4cb5cfc9195",
+    "src/main/resources/assets/the_oldest_house/textures/block/ward/ceiling.png": "695a122a3bf55a7cac341aa22ede49257032503327a2d33f59e4aee6a0873c0b",
+    "src/main/resources/assets/the_oldest_house/textures/block/ward/ceramic.png": "5eb0d3fa1135926d09b00484c998df6c467cbec85c10fd4334fc0a58f7f34799",
+    "src/main/resources/assets/the_oldest_house/textures/block/ward/dado.png": "5828c0e3352171420cca7d3c9a361b1d08a86695a8fa3af9e39ae60256e1369c",
+    "src/main/resources/assets/the_oldest_house/textures/block/ward/damp.png": "63c409076a9220089f1615c535d76b3e197679031c8376ac49935dc1a601b5df",
+    "src/main/resources/assets/the_oldest_house/textures/block/ward/diffuser.png": "be6f6cfdcf85decbf12e5a427f4e58ad849e78f28367bc8b3b944764b117dd10",
+    "src/main/resources/assets/the_oldest_house/textures/block/ward/diffuser_off.png": "78ef7a32bad7207022099576a072e2d349aafa297113d225a87da21fb69a61a5",
+    "src/main/resources/assets/the_oldest_house/textures/block/ward/enamel.png": "9f0d20e4a1f6232bcd6206aa80327f6ba04e3dd3dcb50e9114cafea19d59e7ef",
+    "src/main/resources/assets/the_oldest_house/textures/block/ward/floor_gray.png": "98daafb72bc9b244d9cc4e912066d8ba8e67ee28840f4eb866407920d38f8217",
+    "src/main/resources/assets/the_oldest_house/textures/block/ward/floor_ivory.png": "fe4807f115c83c8ea89aae57c1704d012f81de2f8b72a602a999b8c60ebdffc2",
+    "src/main/resources/assets/the_oldest_house/textures/block/ward/glass.png": "29c0102b3ba6f0a9ca5243123afc4bd1f8ad7157976e089909f2a0415b6ba126",
+    "src/main/resources/assets/the_oldest_house/textures/block/ward/ivory.png": "410c9fba06495757bf7cf6f4903bb0bd61c09ea168152b06896bf80814338ae1",
+    "src/main/resources/assets/the_oldest_house/textures/block/ward/laminate.png": "317dba62656d0f31950dbd7c26c557c401fc091d92d6c26c5169c6209d0b7aee",
+    "src/main/resources/assets/the_oldest_house/textures/block/ward/paint.png": "facae7a2ce3648cee4f1dec96c5cd5f1c9eb24b5a7940a8c0fa0b5684b00000f",
+    "src/main/resources/assets/the_oldest_house/textures/block/ward/peel.png": "2fcfb8f0c598ed1b18e68d9f892c0ac477ff3f2dc31c91425019cdb2ad039a86",
+    "src/main/resources/assets/the_oldest_house/textures/block/ward/steel.png": "fd235365d1bbff8088da53fb5f33c02c0664f19b1005d1237ac21b28435846aa",
+    "src/main/resources/assets/the_oldest_house/textures/block/ward/vinyl.png": "084a195994f66bb00b0036ac89e6763e61e09cb08dd29872a932f4de5379087d",
+    "src/main/resources/assets/the_oldest_house/textures/block/ward_fabric.png": "f5efb5b2a41dc6dd3120760e5aea1438989ecb398462851f85c3737f3bee92cf",
+    "src/main/resources/assets/the_oldest_house/textures/block/wardrobe_door.png": "ca039b913291fef749c3afcf942b51c3532176a2474f47981924d5fedd9c4cbf",
+    "src/main/resources/assets/the_oldest_house/textures/block/wardrobe_front_lower.png": "5b17e7d6c227feb2d2af8e4bee035e5123ea906f7e2c66950ed9f9fa54b7061f",
+    "src/main/resources/assets/the_oldest_house/textures/block/wardrobe_front_upper.png": "6599d176849ac460fa41f9cbfb8ce2640a370cb871617718fe4dd18ddade8b1b",
+    "src/main/resources/assets/the_oldest_house/textures/block/wardrobe_inner.png": "e96ebad3310fdb7dc551d0100cde9720db9f32cd084efdc62dea68a757057430",
+    "src/main/resources/assets/the_oldest_house/textures/block/wardrobe_side.png": "ac84e97ff63b3b1e3fad1145ce9423592415c0bd1c7ebb7b2c4ad38ec43a68e7",
+    "src/main/resources/assets/the_oldest_house/textures/block/wardrobe_top.png": "b39e2d9598cac3750c7604877099311aa628466599b8df8392cc098cb6b1f151",
+    "src/main/resources/assets/the_oldest_house/textures/block/washer_front.png": "e144e1534e29b3472370805a86afd38655f4ef496874d5a4179ade9e2a34f678",
+    "src/main/resources/assets/the_oldest_house/textures/block/waterline_note.png": "faa2fd6191296194d8ad82f5f731881a19288f90c079bc54a06a26199f5fd748",
+    "src/main/resources/assets/the_oldest_house/textures/block/well_carvings.png": "dd1153f8a41e56c2dd00c6c96f7a2aa956f7740026648f189bc599c9db40fe72",
+    "src/main/resources/assets/the_oldest_house/textures/block/whale_mail_slot.png": "03afc5e0fc5b2ac66d63cc30397d32934e0bf0c6b94b27f8528d1b45c4d60d49",
+    "src/main/resources/assets/the_oldest_house/textures/block/yacht_antifoul.png": "5aa5a6dc1bdee81e0bce3d9adcb6e4ee4b4090875a3fcfaf0ae3782ab8147be4",
+    "src/main/resources/assets/the_oldest_house/textures/block/yacht_boot.png": "dca32ddf664d229559cf3387f11d5839b6d63d78b317b614fee8bb23841df57e",
+    "src/main/resources/assets/the_oldest_house/textures/block/yacht_canvas.png": "52e2889b32ffc252681771ea4d154aed914ba8debcc5cccaee9783d9f67d4eac",
+    "src/main/resources/assets/the_oldest_house/textures/block/yacht_carpet.png": "ee6887fb450536c41d8cb9b4b3b9dc33237fd639f7cc93139a9bc26b06ab7f6c",
+    "src/main/resources/assets/the_oldest_house/textures/block/yacht_cushion.png": "76a1a2d37bfab397ed7a8ace1e385dad1b81501ce082b9d68917ee8cc63fbfb7",
+    "src/main/resources/assets/the_oldest_house/textures/block/yacht_hull.png": "c20326ad8b1493743dc36c614341e3fc4829e5d5ebc3cee4ffa98752f531d471",
+    "src/main/resources/assets/the_oldest_house/textures/block/yacht_hull_stripe.png": "70ea153ad78996a85375acd1af2b8497f515c3728d76d85779d9b9f069ac68e1",
+    "src/main/resources/assets/the_oldest_house/textures/block/yacht_porthole.png": "981cdb1498faede28eb88da391aabbcd0cc4beefa997e69850b314753306fe03",
+    "src/main/resources/assets/the_oldest_house/textures/block/yacht_porthole_broken.png": "bc41ede8d38a21198e243c593e1f94abe05c8464b674ac8bf8a772657c58289d",
+    "src/main/resources/assets/the_oldest_house/textures/block/yacht_rail.png": "efda916c6233d7382cfe6f9f0efd764a6ac6ba873a9e2b33e4aba7bd398885c8",
+    "src/main/resources/assets/the_oldest_house/textures/block/yacht_salon_panel.png": "8d88044a73dd5794ead424d5372688a54c6a5f5d23158eb5555fb65cd40a03f4",
+    "src/main/resources/assets/the_oldest_house/textures/block/yacht_teak.png": "87d856f42a0e5cedf6a56bd6fa72585efdf8548a856d9e89af61cd16bb0016ac",
+    "src/main/resources/assets/the_oldest_house/textures/block/yacht_window.png": "a6545195a40b9d2c429153f5b5e312d8e3985db9468a96ec27356573a4244ab6",
+    "src/main/resources/assets/the_oldest_house/textures/block/yacht_window_broken.png": "55ca08c4f396dd71d93f979d08855b29eeac8c8e3791c335c6a71decbd9319a8",
+    "src/main/resources/assets/the_oldest_house/textures/block/zampano_scribble_0.png": "2f4bf498cc5091ce2f4aa0ca2e1873cfbe38b5fd3f3f60b8fe137a1448057221",
+    "src/main/resources/assets/the_oldest_house/textures/block/zampano_scribble_1.png": "8c47f3769c1873191bf06cd5717e48d657c6f66bee34ef06481fd6302e54c792",
+    "src/main/resources/assets/the_oldest_house/textures/block/zampano_scribble_10.png": "eb588f06ae4c40bb0a9b9a16738e60e325858ced9e67459717d83da1665b6005",
+    "src/main/resources/assets/the_oldest_house/textures/block/zampano_scribble_11.png": "e1252425edeb5ae70c20f6f4b4938cdb4ee7e902e17abbb6938031085db26204",
+    "src/main/resources/assets/the_oldest_house/textures/block/zampano_scribble_12.png": "9a0d9c782324368357aec02a288bd2ad526cf666fc82f812a76afb9706b28c34",
+    "src/main/resources/assets/the_oldest_house/textures/block/zampano_scribble_13.png": "90920b1fde425b1cbe3f724eed6f62b32207ec811a7ed575efd37d4f350c3fbc",
+    "src/main/resources/assets/the_oldest_house/textures/block/zampano_scribble_14.png": "a049c04be5f160f8ee1ad2db0b07dde9be6a8eda8ac90692759a5689d3e18275",
+    "src/main/resources/assets/the_oldest_house/textures/block/zampano_scribble_15.png": "c4199f9be9ca25841b907d4705af79fcf69c9fb30051662b66804027e59d454a",
+    "src/main/resources/assets/the_oldest_house/textures/block/zampano_scribble_2.png": "075edcb3bae89f6713fa415f3f214f3f82a26b7625c02960641f0dcb03333149",
+    "src/main/resources/assets/the_oldest_house/textures/block/zampano_scribble_3.png": "16ea08bad9dba6dbdb5bde05a9e8ab7e6865a3e697ff95ef2cb25f92b3121b31",
+    "src/main/resources/assets/the_oldest_house/textures/block/zampano_scribble_4.png": "71a82460c35255b577d8749e5bbac4a35eeadbce56053e94d8594ea009666c06",
+    "src/main/resources/assets/the_oldest_house/textures/block/zampano_scribble_5.png": "9536f54f52e2d5502f42de41f1d4ea179f44871450201f4647b6391e71df5b21",
+    "src/main/resources/assets/the_oldest_house/textures/block/zampano_scribble_6.png": "a65c986431bfe0e933a8bbd5c89f52aaa4683aa55f338d51d2e12046e2777bd1",
+    "src/main/resources/assets/the_oldest_house/textures/block/zampano_scribble_7.png": "8356f5acb789d2d2890446b64537192bc2783786b68d3c296ee9cdfc518d5cec",
+    "src/main/resources/assets/the_oldest_house/textures/block/zampano_scribble_8.png": "27bbb41b7bd7d15efc300063e84e6047ddd961eb73f7fa51f989bb69b0ddc142",
+    "src/main/resources/assets/the_oldest_house/textures/block/zampano_scribble_9.png": "bf8e4c57e2dbd4354e885abc0904a9819b504c5b187d15b2e718ebc48fa4a997",
+    "src/main/resources/assets/the_oldest_house/textures/entity/arm_stump_bandage.png": "0f37d89dceb46df2d2ca06f84e43ad27e3efcc12f5048f36d528aab42cc57943",
+    "src/main/resources/assets/the_oldest_house/textures/entity/borrasca_atlas.png": "8f0135dc2790f7530033ca8972e273df91b3408887cac89c0209b0169433d79b",
+    "src/main/resources/assets/the_oldest_house/textures/entity/clap_ghost_girl.png": "93084c0eb99a351b50f9d601ddc7488941785af62b7130cc9911c56225ae322e",
+    "src/main/resources/assets/the_oldest_house/textures/entity/costume_scarecrow.png": "d7ca486aace43933dd494b9034a31438781b5c02a4d056f180765d8cd978ac23",
+    "src/main/resources/assets/the_oldest_house/textures/entity/goatman.png": "1e5363f57222ad7792fbc32557cf6689c33bd2e191fb5e776d7567a2e04e45fd",
+    "src/main/resources/assets/the_oldest_house/textures/entity/goatman_eyes.png": "1f20a61b9ca5f36f29e1a0776cffcec5d851ced54097dbdfb4a2c61448eeac09",
+    "src/main/resources/assets/the_oldest_house/textures/entity/hotel_hose.png": "c3242c81a9edccd0e642e5abfba2b12d6795162abf5b018a83431fe6d5a5600a",
+    "src/main/resources/assets/the_oldest_house/textures/entity/lake_house_canoe.png": "c75b90516968a66420b8dfbab7c0ab27fbf072c675c25d5ee900615146f3d633",
+    "src/main/resources/assets/the_oldest_house/textures/entity/lake_house_canoe_chipped.png": "185fd9f3335a0addd16b0c6299dffd968689a0112b0b0e3c67d35e62a29216f6",
+    "src/main/resources/assets/the_oldest_house/textures/entity/lake_house_canoe_scraped.png": "2a63eb05c93f5a3b0fe6b633c7c16737707f279a0bab083a0593a3a525bcc40f",
+    "src/main/resources/assets/the_oldest_house/textures/entity/lake_house_tanks.png": "78d7015e2decefdb48dbc831adb682f7622df8be7bd00b878360a619711671c6",
+    "src/main/resources/assets/the_oldest_house/textures/entity/literary_camera.png": "af7bd33477ab51f2deabd43268e5f67f976a35414617502777be7739c2b88fe9",
+    "src/main/resources/assets/the_oldest_house/textures/entity/literary_fan.png": "150af69ec7466835935397d71f3527d67f0ffb7a75b7b32730b7a03d93f50f9a",
+    "src/main/resources/assets/the_oldest_house/textures/entity/literary_herd_eyes.png": "4ebc695b8968b031d013d27979fe8427ff77e866670c6150c21147cd2250ea2f",
+    "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_messenger.png": "ec6ac866f9eff54978c1bafb524cd45f7d35300c6d853871dfed65fcf84ce4f7",
+    "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_ruth.png": "d4b63d181789c06af95389d4047abe39f9efbb4b20ed87383e67a974a3e0600a",
+    "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_sergeant.png": "9ff93b5255a272c3a5f876687be1cbc045657439309c1dc936dbd76877877a25",
+    "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_walter.png": "a478f99b553b17784db21e8551b1569389c9becd7597f629be36985b4b5f0a01",
+    "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_will.png": "91c2e096756fc3aa036e153ebbd913d0658f56f1cedc4bfefba09cd5d1f7f0fd",
+    "src/main/resources/assets/the_oldest_house/textures/entity/literary_plain_boy.png": "4160534e41567845125e8e729f285fa5fb9d75e68b7a5795cbc11abd6942f406",
+    "src/main/resources/assets/the_oldest_house/textures/entity/literary_quiet_walker.png": "f80bf014cb7f927543c88152631ff46f7d21ed060a796c98efeb7350f25b4aa3",
+    "src/main/resources/assets/the_oldest_house/textures/entity/literary_silhouette.png": "564acc4444c46f23517d6ee8e0a2ffbfed5155e3acca16fd622fb7382403a61d",
+    "src/main/resources/assets/the_oldest_house/textures/entity/literary_silhouette_1.png": "d48d3a841eaff49d1a563288586ac7382cd6ac4edc3b8bf61ebbb3ba0ce4f1c7",
+    "src/main/resources/assets/the_oldest_house/textures/entity/literary_silhouette_2.png": "6f2abb7ede44c848ebf78dd924aca78297d8e4c67a4cf8af5809701dc040c37c",
+    "src/main/resources/assets/the_oldest_house/textures/entity/literary_silhouette_3.png": "0005b90c1c2b697e4e8fe10667d2ab2afa9fb3b85e1c108ced630154821e8cc9",
+    "src/main/resources/assets/the_oldest_house/textures/entity/mother_of_strays.png": "e913b2d1b1629713769cdf503a88c2e4cbb73842c613dd50bf48651bd7287add",
+    "src/main/resources/assets/the_oldest_house/textures/entity/mother_of_strays_1.png": "78b4c08b5e6556ecf4e7fe160c30775ca5b5bd5898c7a5f9107ae29ae46332de",
+    "src/main/resources/assets/the_oldest_house/textures/entity/mother_of_strays_10.png": "89c32af7e1f1ddf4ed5b7c54229b43c0ced9c46e8659789fce00708a78a5e22f",
+    "src/main/resources/assets/the_oldest_house/textures/entity/mother_of_strays_11.png": "49e58281d04627de7b9ec58a0886d3afbac0e4b2078e2335884a1c3eefd193e9",
+    "src/main/resources/assets/the_oldest_house/textures/entity/mother_of_strays_12.png": "e0562defb5fdf7bea5eec00e0e4d56a5f219772e8d1e56f16144281540bc04a7",
+    "src/main/resources/assets/the_oldest_house/textures/entity/mother_of_strays_13.png": "d8c681a68fdca16cc6b87ebd0c26308fc3588bb40f02dcfd9950f50d557ae095",
+    "src/main/resources/assets/the_oldest_house/textures/entity/mother_of_strays_14.png": "e0a1b68c2429b16ff95a120714b6cfec555fbbe2a7b4ab44fba83bbc39148dc4",
+    "src/main/resources/assets/the_oldest_house/textures/entity/mother_of_strays_15.png": "0b2f3d1dde781fb307b9db4d0a460eb70768ae1b1aee19fddcb22b7df68940d8",
+    "src/main/resources/assets/the_oldest_house/textures/entity/mother_of_strays_2.png": "a1a06d70a28096377685ff1620a15de5c8ba054ac023dc24ca4477cc33f52932",
+    "src/main/resources/assets/the_oldest_house/textures/entity/mother_of_strays_3.png": "03940fda6aabcae8957542917cb2cf510da37c0ae7933f07d622280e63ccc723",
+    "src/main/resources/assets/the_oldest_house/textures/entity/mother_of_strays_4.png": "7da192f354eed64f09b2112276f0cb06c7a4ceb4bebff1a8cbd4644dbc7b1136",
+    "src/main/resources/assets/the_oldest_house/textures/entity/mother_of_strays_5.png": "6cbea1c9c3bb7869c604a65bc4c051700ab60667562f4830983f22c60a503be6",
+    "src/main/resources/assets/the_oldest_house/textures/entity/mother_of_strays_6.png": "6666dab7bea7f2a848f3b14a803e4e82dd5c5974df849450dbd4e0c90a2d1e0a",
+    "src/main/resources/assets/the_oldest_house/textures/entity/mother_of_strays_7.png": "029d1b88851da0f60d3c2f9e19463d11530b5f716b9c6149c7f1ffe77b99f6fe",
+    "src/main/resources/assets/the_oldest_house/textures/entity/mother_of_strays_8.png": "8690d1b7fa5aae2cab0821984365645fe2cbd4790162549a35c436eb2d25c53a",
+    "src/main/resources/assets/the_oldest_house/textures/entity/mother_of_strays_9.png": "c66b048be8b0650d2f66be39e8d19bfe8bd5fbe7da09e69e163024005bb045f8",
+    "src/main/resources/assets/the_oldest_house/textures/entity/mother_pekingese.png": "1ec683f6c63707e178b6649a5e469684724cb40bd6221f736053a61956c117ca",
+    "src/main/resources/assets/the_oldest_house/textures/entity/paw_clutch.png": "d2ca6ee7bb5352238efc56147d780dfd786b0e547e182551f79d9f090a03f51b",
+    "src/main/resources/assets/the_oldest_house/textures/font/child.png": "0e929cf96132668f3f7559b8235b74c6ac97a21927f6c0c1e4870b7cf9d6acbd",
+    "src/main/resources/assets/the_oldest_house/textures/font/claw.png": "f3b459f72034a6745cc07adc2f7e991044044c266d8da8b42897b839c0d44a69",
+    "src/main/resources/assets/the_oldest_house/textures/font/hotel.png": "0d6354176fe098aa70a71a8ed5461ebe398b7e588ced3204d6c51eddc8e60a3c",
+    "src/main/resources/assets/the_oldest_house/textures/font/johnny.png": "2f9989a65ac768eb03f6058d9c800ada15746c9983022acb031d751fe2f78bf5",
+    "src/main/resources/assets/the_oldest_house/textures/font/karen.png": "167975d55e56623bb3b6ba66c4c001555a8f571300dc6fc64ca0d1664d9716e9",
+    "src/main/resources/assets/the_oldest_house/textures/font/pelafina.png": "167975d55e56623bb3b6ba66c4c001555a8f571300dc6fc64ca0d1664d9716e9",
+    "src/main/resources/assets/the_oldest_house/textures/font/will.png": "ceae481f74e519cb3a23176b658688b6cf3753fa8ddb2d6e22dbb415d60ec963",
+    "src/main/resources/assets/the_oldest_house/textures/font/zampano.png": "0d6354176fe098aa70a71a8ed5461ebe398b7e588ced3204d6c51eddc8e60a3c",
+    "src/main/resources/assets/the_oldest_house/textures/gui/blindfold_edge.png": "e79efa7f9c8a7305c5d88dd9eeb80966589921da7f8882539a3ec1b76fdc30a6",
+    "src/main/resources/assets/the_oldest_house/textures/gui/camcorder.png": "b95009b7c1ce6e45c8836b6ab7850a05bd88b8dace30e9a5a2684d567b2b52e0",
+    "src/main/resources/assets/the_oldest_house/textures/gui/caver_breath.png": "2371d792b48f3a5aeea2491d78d226d182bd7419af7b28fa3e8f941c720a54c2",
+    "src/main/resources/assets/the_oldest_house/textures/item/archive_key.png": "0bd66da685dcf97f5fcdcfa94d8a50fde257336d5421a1d5cfe1b3e959f81105",
+    "src/main/resources/assets/the_oldest_house/textures/item/blindfold.png": "e19b8487e8f687ca6b0977ca13e8c30c9692e8147da02765475a17ddb21e2d59",
+    "src/main/resources/assets/the_oldest_house/textures/item/cabin_given_arm.png": "b5e5f950b8e42f4d2b30820c148833fd6e37d02a10df409a235a788389981996",
+    "src/main/resources/assets/the_oldest_house/textures/item/cabin_globe_base.png": "dc3f5cd1367cadc43775f062bf26fccafcd466c5029a77bd715338e849b19df3",
+    "src/main/resources/assets/the_oldest_house/textures/item/cabin_globe_glass.png": "92b0378f7c24db2d54057ed16ee8844cb5c3c6d80cc6649cbe334142efb281b6",
+    "src/main/resources/assets/the_oldest_house/textures/item/cabin_globe_glass_cracked.png": "70052820800dfd2d5d3e15d3984e00ba0141c4ca611e78e3afb621045e06d200",
+    "src/main/resources/assets/the_oldest_house/textures/item/cabin_globe_scene.png": "42b8ce2f141c3c7fd8ffe8c86fda686287ff89c9f53e7072be75bc92d320b954",
+    "src/main/resources/assets/the_oldest_house/textures/item/camcorder.png": "a3be184b03ee89b8c482d2aed4ee9b2092da19a4d77f1594830c71f907c9f52f",
+    "src/main/resources/assets/the_oldest_house/textures/item/cat_collar.png": "1b6fdb69bf34cf9fdc395850f5e0dec3f90add4c92cc245b40cde6d9070d74b4",
+    "src/main/resources/assets/the_oldest_house/textures/item/chalk.png": "61c0828bae89de469d0dd25bc9fe3eac826efa80043a3722e3cad6da6f6fe14c",
+    "src/main/resources/assets/the_oldest_house/textures/item/church_key.png": "e8abc2f77047ef57ac213a5369e8b7b61205f68d9bd98557c3e9de46e4aca686",
+    "src/main/resources/assets/the_oldest_house/textures/item/dried_essay_one.png": "233a253b335d3c514b63266f02751dc031e4c90be3108c890a987700eca3bfbe",
+    "src/main/resources/assets/the_oldest_house/textures/item/dried_essay_three.png": "d3de234c856da20ece680770dddb95abac6457cedb46552f2e35a4068609ba47",
+    "src/main/resources/assets/the_oldest_house/textures/item/dried_essay_two.png": "25ebdb36fdb822a837317c9821033d1ac60f3bba81891c84d63e1ffdb2f87bc8",
+    "src/main/resources/assets/the_oldest_house/textures/item/father_meat0491.png": "cd75658201cfbdc546b6839ca3fd5da6151a7d5bd7948f446b0f0ba9e81bb005",
+    "src/main/resources/assets/the_oldest_house/textures/item/franks_package.png": "80b238213c68547664a84f7714f8fbc2c721a13be6f096c9df067cd1766ba70c",
+    "src/main/resources/assets/the_oldest_house/textures/item/goatman_brat.png": "0e86c1523caf018d50f3d9d9c4ada331add1c15dd3f0ed6c3aa5901265f3804f",
+    "src/main/resources/assets/the_oldest_house/textures/item/goatman_brat_burnt.png": "75f578d1a86cc1f0dbed917bb0d4a3f30b4c31cf3afb1acb9f1b786e769b5c3b",
+    "src/main/resources/assets/the_oldest_house/textures/item/harrigans_phone.png": "b7ba9562518610df7cebc31657588491d5118479df020515c666e4ea1813a601",
+    "src/main/resources/assets/the_oldest_house/textures/item/holloway_shield.png": "678fa9583cb1f645ba9feb98b280674d1c8e7775e4b1fc7d8d87b3556eb1fb67",
+    "src/main/resources/assets/the_oldest_house/textures/item/lake_house_flashlight.png": "794f3c953357ab76e2bff1db863e221686d8450874a3eb014056089910481524",
+    "src/main/resources/assets/the_oldest_house/textures/item/lake_house_helmet.png": "6e8a018be45bf09fa3dcbcafe31e715742780cdff7b9a6444f40137085c3ecb0",
+    "src/main/resources/assets/the_oldest_house/textures/item/lake_house_helmet_collar.png": "d7cfa85fd3e9cb4d85d8df38b5bdecde5179bc2536d3aeafef4012cdf1921507",
+    "src/main/resources/assets/the_oldest_house/textures/item/lake_house_helmet_port.png": "cfb36b658cba3e895a55a3df123789e34cc1f57cc5d9be980c40d83cd604f6d8",
+    "src/main/resources/assets/the_oldest_house/textures/item/lake_house_tanks.png": "bf77109ca5ec4c72b06ecc1a4d1a0d5c353d4239652b79d312ffd652d3e9e9ee",
+    "src/main/resources/assets/the_oldest_house/textures/item/lake_phone.png": "d3da786562514c75388b453250b533970495a65a8149925ad6492f26827697d5",
+    "src/main/resources/assets/the_oldest_house/textures/item/lighter.png": "d483efda73781e7e77130cc034a11658dc8bbfee547c439f534a185bddbd7c79",
+    "src/main/resources/assets/the_oldest_house/textures/item/mill_letter.png": "fccbc20c810084084abcb126f0c1c2411e48a0f98dd414d6bec50423e0087f7f",
+    "src/main/resources/assets/the_oldest_house/textures/item/phone.png": "73fb8bf005bdfd29fb1b98ab0e358de24e62b6a65e38a600a95e808e749844b0",
+    "src/main/resources/assets/the_oldest_house/textures/item/plain_camera.png": "1c51f48f50809f46c375c7bc2137af9ac42ae149fd8c8553d182a9d3c071b099",
+    "src/main/resources/assets/the_oldest_house/textures/item/raw_frank.png": "a32ea70783bc96138b1a10eee938c6ea5b503d05b9692eebede38a3efd6da8dc",
+    "src/main/resources/assets/the_oldest_house/textures/item/scratch_ticket.png": "abcaa760ef6280afcb7d1c947916869e64c4a138cd31fdf6b4608d63c1841c34",
+    "src/main/resources/assets/the_oldest_house/textures/item/seance_planchette.png": "2e1032175187f057dac0a1913aeee07d7adf2ebfd9ab4f89c32ee9c692669e46",
+    "src/main/resources/assets/the_oldest_house/textures/item/self_addressed_envelope.png": "f2ab2eac876e98eb8b1d7ec2490d786a901ff4be13e1c76aad4605be41d61278",
+    "src/main/resources/assets/the_oldest_house/textures/item/shallows_burden.png": "9359e000aa4ac6d4782b1580b4ea6f1a042361b4d4e4fc019af0ded015898a29",
+    "src/main/resources/assets/the_oldest_house/textures/item/tally_counter.png": "84b9be9e47c8d917f8e14d7f5e7787be8ff2ebcd1b3bf9fda43e6072ee9f2d93",
+    "src/main/resources/assets/the_oldest_house/textures/item/trail_spool.png": "58950b993026b023471a796ffb2689cc04b2a58456158c60c57c09d4905bdaf1",
+    "src/main/resources/assets/the_oldest_house/textures/item/trailer_plate.png": "6f033fec676c33b99ad2701745513203d02107234c2b9ae5cc3923025776e513",
+    "src/main/resources/assets/the_oldest_house/textures/item/walkie_talkie.png": "9024df57c4d0dac94d4b680e942fc6e6c60350c5a7c05a9e7c6ad11fdcb07183",
+    "src/main/resources/assets/the_oldest_house/textures/item/wallpaper_folio.png": "49db9378cc01ff2b5cd0212c84941c1bdd2a7a425f3880b06f75c6cd6929150a",
+    "src/main/resources/assets/the_oldest_house/textures/item/waterlogged_essay_one.png": "460b52dc35e18cc700ee9a178577f344f6164a4ee812b778a73e27dd91b44dac",
+    "src/main/resources/assets/the_oldest_house/textures/item/waterlogged_essay_three.png": "a8d4fd6fda8d9c2605fd9801ce61eb4eaa9abc814fe3d2afba01debf795c00ff",
+    "src/main/resources/assets/the_oldest_house/textures/item/waterlogged_essay_two.png": "e741e073864d9e92059bada4c354ce87c39b82d1b0c1f9054b3f3fdab389fcd1",
+    "src/main/resources/assets/the_oldest_house/textures/item/well_ribbon.png": "a65275710d65db877d297e09038f01ec34c32971f81945cf8b1e28e4b95924e0",
+    "src/main/resources/assets/the_oldest_house/textures/item/withered_paw.png": "d75e42161d60567668bec8e8953a2cdfcfb2c4d343ab19d9ca9549709546910e",
+    "src/main/resources/assets/the_oldest_house/textures/item/withered_paw_0.png": "51ceca5893de946493e98a077d9661e017d15c3af9d23e25c3dd2eedb92b1cda",
+    "src/main/resources/assets/the_oldest_house/textures/item/withered_paw_1.png": "15c5146dbadc6d6878570b4d14ef7273e356617440a9c70929c3b40278acd339",
+    "src/main/resources/assets/the_oldest_house/textures/item/withered_paw_2.png": "4d3e6031fe032a84606ca9b91f050aa3916499e9ceba26e755437a84a17a7b0c",
+    "src/main/resources/assets/the_oldest_house/textures/misc/lake_house_porthole.png": "ae489cca5b18854cc9528fda33238da57770a13eee899b822f5347ee68f5682d",
+    "src/main/resources/assets/the_oldest_house/textures/painting/architectural_study.png": "8baeb9cac3efe2f7448987f756dbf68bb1a7a43ad670a10f5a78335db37fee39",
+    "src/main/resources/assets/the_oldest_house/textures/painting/brass_clock.png": "15fed9c6f559503774bb2830c96a8077a1de558b5147cdbf6436268d7b1a0e85",
+    "src/main/resources/assets/the_oldest_house/textures/painting/child_portrait.png": "711952b7e5b01e19c072464e95ecbfba832f6f0e03d2401ba158ebbd161c5090",
+    "src/main/resources/assets/the_oldest_house/textures/painting/empty_chair.png": "09be5b7a7ed1e320b5bf0c1c2f1748886fcb44d9c3c3d37c2f737bc626873297",
+    "src/main/resources/assets/the_oldest_house/textures/painting/family_table.png": "525d3ac11e2446ff92df4f90437cc2b59372e2918f6cda5958178a8780df4da5",
+    "src/main/resources/assets/the_oldest_house/textures/painting/house_drawing.png": "db4bccd9859b70cd9f538a247c950aebd48c5eb82321a2c0bc907edc382ec3cd",
+    "src/main/resources/assets/the_oldest_house/textures/painting/karen_portrait.png": "b719d6c43182500fdb4d4213dde12f7ef4ffec75f0a957ad602b77a11edc533c",
+    "src/main/resources/assets/the_oldest_house/textures/painting/lake_evening.png": "07fafccb9475752386c3152ef4ab42986f1ce78cc21f3483914295520021fec5",
+    "src/main/resources/assets/the_oldest_house/textures/painting/navidson_manor.png": "11851385fa58b518e20c641a87cae651559898453f02d1d49b3df413c3f57485",
+    "src/main/resources/assets/the_oldest_house/textures/painting/old_man_portrait.png": "429e0f15eb07a6a0f3272a1699a391b4bb3923fe5acb91b16f2f3d344e2a00ea",
+    "src/main/resources/assets/the_oldest_house/textures/painting/pressed_fern.png": "9d0552c2beacd9e0457f1fe297f9f2719d7b699517a42d7c29af88ead756efec",
+    "src/main/resources/assets/the_oldest_house/textures/painting/scholar_at_desk.png": "47ada88c59e1c3aa8414aab76b743443ae3d9a5ef16a75257e101311e6ce22e6",
+    "src/main/resources/assets/the_oldest_house/textures/painting/the_yard.png": "ae43560110900234f9b99c3da4e5a6414550565eaa6a01df698db7c31b060ce5",
+    "src/main/resources/assets/the_oldest_house/textures/painting/unknown_woman_portrait.png": "9bf7ba58a8df88a460c070ac71a8b233ebb4b2ef48eaf57ad26a3a98d95df3f8",
+    "src/main/resources/assets/the_oldest_house/textures/painting/will_portrait.png": "0ac553e5678a52899c261a2b738412ea1abc1dd8948510534a4e2db84c3247cc",
+    "src/main/resources/assets/the_oldest_house/textures/painting/winter_road.png": "6f468d7e9a94d5f9657a9ffd4c5cfc58db096dadc2fb7151b47a8d0f483f3fdd",
+    "src/main/resources/assets/the_oldest_house/textures/particle/cabin_leaf_0.png": "43dcdfda3988587f60ee43679d0e534a2e1fe4e93914e7fadddd14138a7b02c7",
+    "src/main/resources/assets/the_oldest_house/textures/particle/cabin_leaf_1.png": "cf439398b236ad9f352fe872ed79bb786c4fc2a5066cbd70fedebd566ccc7aa2",
+    "src/main/resources/assets/the_oldest_house/textures/particle/cabin_leaf_2.png": "f89acbf72e87a0259b28c551e75a4d635d5e7f58cce3405e90df1096bff1e19a",
+    "src/main/resources/assets/the_oldest_house/textures/particle/cabin_leaf_3.png": "2290fbaffc33d37cfa24e7aaed486c4543de109f12c76ff5109df651ff271731",
+    "src/main/resources/assets/the_oldest_house/textures/particle/cabin_rain_0.png": "d4e711211a7836cc3ece4c1368559173872160cda23e2e7d32c751321663a719",
+    "src/main/resources/assets/the_oldest_house/textures/particle/cabin_rain_1.png": "00af0aec2528f49e4c193e05ef4927934933041b0166e2741a048e096561e9b1",
+    "src/main/resources/assets/the_oldest_house/textures/particle/goatman_copper_0.png": "3f91416ab29f277093502161759a286b7f480d2ece5db3e6cae326512aff3f06",
+    "src/main/resources/assets/the_oldest_house/textures/particle/goatman_copper_1.png": "70b12bde021ff9ac188edd9c2de3f91ceaf7bfcd3c3f81e2678416b12c1b136d",
+    "src/main/resources/assets/the_oldest_house/textures/particle/goatman_copper_2.png": "eabd272dccf0b2414eb4629ce706edb4b48f1e0464210c20a04e2960369b69f4",
+    "src/main/resources/assets/the_oldest_house/textures/particle/lake_wet_footprint.png": "11d43b73dcfc8381d5b054c9def638a49316f605c9ee93b8710f52786df98526"
+  }
+}
