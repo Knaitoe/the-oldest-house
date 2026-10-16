@@ -31,8 +31,9 @@ public final class BlindfoldVisualProof extends Screen {
     @Override protected void init(){
         if(BlindfoldWornLayer.registeredSkinCount()<2)throw new IllegalStateException("Blindfold layer missing from a native player skin renderer");
         var band=Minecraft.getInstance().getEntityModels().bakeLayer(BlindfoldWornLayer.LAYER).getChild("band");
-        var front=band.cubes.getFirst();
-        if(front.minZ>=-4.5F||front.minX> -4.5F||front.maxX<4.5F||front.minY> -4||front.maxY< -3)throw new IllegalStateException("Blindfold misses the native player's eye row or clips through the hat");
+        boolean[] fitted={false};
+        band.visit(new com.mojang.blaze3d.vertex.PoseStack(),(pose,path,index,cube)->{if(index==0)fitted[0]=cube.minZ< -4.5F&&cube.minX<= -4.5F&&cube.maxX>=4.5F&&cube.minY<= -4&&cube.maxY>= -3;});
+        if(!fitted[0])throw new IllegalStateException("Blindfold misses the native player's eye row or clips through the hat");
         if(!BlindfoldWornLayer.visible(new ItemStack(LabyrinthRegistry.BLINDFOLD.get()))||BlindfoldWornLayer.visible(ItemStack.EMPTY))throw new IllegalStateException("Blindfold worn-layer guard survives empty equipment");
         ClapGameClientState.accept(new ClapGamePayload(true,0,0));
         if(!ClapGameClientState.bound())throw new IllegalStateException("Native cloth lock was not applied");
