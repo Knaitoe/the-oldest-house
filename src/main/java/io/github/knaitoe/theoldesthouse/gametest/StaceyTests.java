@@ -57,7 +57,7 @@ public final class StaceyTests {
     @GameTest(template="empty",batch="witch_swipe_far0499",timeoutTicks=1200)
     public static void aNaturalEscapeDoesNotSwipeAReaderMoreThanOneBlockAlongsideIt(GameTestHelper h){passingRange(h,1.1,false,1257500);}
     private static void passingRange(GameTestHelper h,double offset,boolean hit,int coordinate){run(h,LabyrinthPlace.COSTUME_NIGHT,coordinate,f->{
-        f.corridor();for(int z:new int[]{-37,-35})for(int y=0;y<=3;y++)f.put(1,y,z,Blocks.STONE);
+        f.corridor();for(int z:new int[]{-38,-36})for(int y=0;y<=3;y++)f.put(1,y,z,Blocks.STONE);
         var p=f.player("witch_passing_range",.5+offset,-36.5);
         h.startSequence().thenIdle(70).thenExecute(()->{
             var w=f.witch(.5,-38.5);var id=w.getUUID();var saved=new CompoundTag();w.saveWithoutId(saved);
