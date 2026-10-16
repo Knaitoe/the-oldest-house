@@ -1,0 +1,51 @@
+"""The native mesh/phase used to review each human painting. Borrasca is excluded."""
+from paint_character_skins import LOOKS
+
+HOTEL = ['porter','bartender','scarred_guest','pianist','dancer','dancer_dress']
+GHOSTS = {'marjorie':'GHOST_MARJORIE','merry':'GHOST_MERRY','john':'GHOST_JOHN','sarah':'GHOST_SARAH','barry':'GHOST_PRODUCER','father_wanderly':'GHOST_PRIEST'}
+LITERARY = {'mother':'MOTHER','dancer':'DANCER','red_figure':'RED_FIGURE','coffin_woman':'COFFIN_WOMAN','lady':'LADY','brother':'BROTHER','father':'FATHER','visitor':'VISITOR','killer':'KILLER','family_father':'FAMILY_FATHER','family_mother':'FAMILY_MOTHER','family_child':'FAMILY_CHILD','old_man':'OLD_MAN','lake_tess':'LAKE_TESS','lake_wax':'LAKE_WAX'}
+CLUB=['dancer_male','dancer_female','dancer_vest','dancer_copper','dancer_mustard','dancer_silver','dancer_brick','dancer_braids','dj']
+
+
+def entry(name,logical):
+    row={'name':name,'logical':logical,'model':'player','number':0,'phase':0}
+    if name.startswith('harrigan'):
+        row.update(model='harrigan',number=4+int(name[-1]) if 'mourner' in name else 2 if name.endswith('dead') else 1)
+    elif name.startswith('ghosts_'):
+        role=name[7:];phase=0
+        if role.endswith('_dinner'):role=role[:-7];phase=8  # GhostsSet.VOMIT
+        if role.endswith('_hand'):role=role[:-5];phase=9
+        row.update(model='ghosts',role=GHOSTS[role],phase=phase)
+    elif name.startswith(('hotel_','stanley_')):
+        role=name.split('_',1)[1];row.update(model='hotel',number=HOTEL.index(role))
+    elif name.startswith('nightclub_'):
+        role=name[10:];despair=role.endswith('_despair')
+        if despair:role=role[:-8]
+        row.update(model='club',number=CLUB.index(role),phase=int(despair))
+    elif name.startswith('seance_'):
+        row.update(model='seance',number=['medium','mother','father','daughter'].index(name[7:]))
+    elif name.startswith('lake_witch'):
+        row.update(model='witch',phase=0 if name.endswith('memory') else 1)
+    elif name.startswith('trailer_child_'):
+        row.update(model='cousin',number=int(name[-1]))
+    elif name.startswith('literary_'):
+        role=name[9:];phase=0
+        if role.startswith('bar_'):
+            row.update(model='literary',role='STRANGER',phase=4+['marla','russ','denny','wade','hollis'].index(role[4:]));return row
+        if role.startswith('stranger_'):
+            row.update(model='literary',role='STRANGER',phase=int(role[-1]));return row
+        if role.startswith(('crew_','guest_')):
+            row.update(model='corpse',number=int(role[-1]));return row
+        if role.endswith('_changed'):role=role[:-8];phase=1
+        if role.endswith('_bandaged'):role='father';phase=2
+        if role.endswith('_mangled'):role='father';phase=3
+        if role=='father' and phase==0:phase=1
+        row.update(model='literary',role=LITERARY[role],phase=phase)
+    return row
+
+
+def entries():
+    rows=[entry(name,look.logical) for name,look in sorted(LOOKS.items())]
+    for i,name in enumerate(['walter','ruth','will','sergeant','messenger']):
+        rows.append({'name':'literary_paw_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':9+i})
+    return rows

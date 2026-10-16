@@ -1,14 +1,8 @@
 # This House Has Ghosts in It
 
-Development candidate **0.4.99** renames the mod and playable JAR, corrects the
-watched lake witch's escape and one-block passing swipe, and fits the Hide and
-Clap blindfold to both player head types with explicit completion cleanup.
-Use `/ghosthouse`; `/oldesthouse` remains compatible. Replace the previous JAR
-when upgrading. Existing world identities and every PNG remain. The Goatman
-repairs in 0.4.98 passed all twelve jobs and 642 native cases; this combined
-648-case candidate awaits its own exact-source validation.
-[Player checks and evidence limits](docs/PLAYTEST_0_4_99.md) ·
-[Rename and compatibility](docs/RENAME_0_4_99.md).
+Development candidate **0.4.100** reviews every generated character except Borrasca. It replaces portrait-like faces and clothing images with native pixel paintings, fits Harrigan's study/casket poses with articulated limbs, and corrects the DJ, dinner and vest mappings. Includes all 0.4.99 rename, watched-witch retreat, blindfold and Goatman repairs. Existing world/actor identities, personal outcomes and finite originals remain. Java/build and pixel/UV/source checks pass locally; complete 648-case/twelve-job and native rendered validation remains pending.
+[Character findings and per-sheet accounting](docs/CHARACTER_REVIEW_0_4_100.md) ·
+[Previous player repairs](docs/PLAYTEST_0_4_99.md).
 
 Verified previous build **0.4.98**: the Goatman still disguised as a child runs out as the real child runs in; that same body visits all five side panes during the evening, and twelve short varied contact recordings replace stacked knock sequences. Borrasca, cousin walks, existing native actors and every PNG are retained. Mod 0.4.98 / protocol 72 / layout 45; 46 sources / 35 required / two kinds / three endings; 642 native cases. All twelve jobs and all 642 native cases passed in [run 38819015597](https://github.com/Knaitoe/the-oldest-house/actions/runs/38819015597). [Implementation and evidence limits](docs/GOATMAN_EXCHANGE_0_4_98.md).
 

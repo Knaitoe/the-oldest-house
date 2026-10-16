@@ -14,18 +14,20 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
 public final class NovelCreatureRenderers {
-    private static final ModelLayerLocation VULTURE=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"vulture"),"main");
+    public static final ModelLayerLocation VULTURE=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"vulture"),"main");
+    public static final ResourceLocation VULTURE_SKIN=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/finale_materials.png");
     @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions e){e.registerLayerDefinition(VULTURE,VultureModel::layer);}
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerEntityRenderer(NovelRegistry.VULTURE.get(),VultureRenderer::new);e.registerEntityRenderer(NovelRegistry.ACTOR.get(),ActorRenderer::new);}
     private static final class VultureRenderer extends MobRenderer<NovelVulture,VultureModel>{VultureRenderer(EntityRendererProvider.Context c){super(c,new VultureModel(c.bakeLayer(VULTURE)),0);}
-        @Override public ResourceLocation getTextureLocation(NovelVulture e){return FinaleClientEvents.MATERIALS;}}
-    private static final class VultureModel extends HierarchicalModel<NovelVulture>{private final ModelPart root,left,right;VultureModel(ModelPart r){root=r.getChild("root");left=root.getChild("left");right=root.getChild("right");}
+        @Override public ResourceLocation getTextureLocation(NovelVulture e){return VULTURE_SKIN;}}
+    public static final class VultureModel extends HierarchicalModel<NovelVulture>{private final ModelPart root,left,right;public VultureModel(ModelPart r){root=r.getChild("root");left=root.getChild("left");right=root.getChild("right");}
         @Override public ModelPart root(){return root;}
         static LayerDefinition layer(){var m=new MeshDefinition();var r=m.getRoot().addOrReplaceChild("root",CubeListBuilder.create().texOffs(128,128).addBox(-2,-3,-4,4,6,10),PartPose.offset(0,20,0));
             r.addOrReplaceChild("neck",CubeListBuilder.create().texOffs(0,256).addBox(-1,-1,-7,2,3,4).texOffs(128,0).addBox(-.7F,0,-9,1.4F,1,2),PartPose.ZERO);
             r.addOrReplaceChild("left",CubeListBuilder.create().texOffs(0,128).addBox(0,-.5F,-3,18,1,7),PartPose.offset(2,-1,0));r.addOrReplaceChild("right",CubeListBuilder.create().texOffs(0,128).addBox(-18,-.5F,-3,18,1,7),PartPose.offset(-2,-1,0));
             r.addOrReplaceChild("tail",CubeListBuilder.create().texOffs(128,128).addBox(-3,-.5F,5,6,1,7),PartPose.ZERO);return LayerDefinition.create(m,256,512);}
-        @Override public void setupAnim(NovelVulture e,float walk,float amount,float age,float yaw,float pitch){root.getAllParts().forEach(ModelPart::resetPose);root.zRot=.18F;
+        @Override public void setupAnim(NovelVulture e,float walk,float amount,float age,float yaw,float pitch){preview(age);}
+        public void preview(float age){root.getAllParts().forEach(ModelPart::resetPose);root.zRot=.18F;
             // Long glides, banked into the circle, broken now and then by a few slow wingbeats.
             float cycle=age%140F,flap=cycle<24?(float)Math.sin(cycle*.52F)*.55F:0;
             left.zRot=(float)Math.sin(age*.025)*.025F+flap;right.zRot=-left.zRot;}}

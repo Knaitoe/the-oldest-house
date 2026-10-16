@@ -25,11 +25,11 @@ public final class HotelRenderers {
         public CastModel(ModelPart r){super(r);tails=body.getChild("tails");apron=body.getChild("apron");skirt=body.getChild("skirt");cap=head.getChild("cap");leftElbow=leftArm.getChild("elbow");rightElbow=rightArm.getChild("elbow");leftKnee=leftLeg.getChild("knee");rightKnee=rightLeg.getChild("knee");glass=leftElbow.getChild("glass");bottleGrip=rightElbow.getChild("bottle_grip");bottleAim=bottleGrip.getChild("bottle_aim");bottle=bottleAim.getChild("bottle");cloth=rightElbow.getChild("cloth");for(int i=0;i<3;i++){leftFingers[i]=leftElbow.getChild("finger"+i);rightFingers[i]=rightElbow.getChild("finger"+i);}}
         public static LayerDefinition layer(){var m=HumanoidModel.createMesh(CubeDeformation.NONE,0);var r=m.getRoot();
             for(boolean left:new boolean[]{false,true}){
-                var arm=r.addOrReplaceChild(left?"left_arm":"right_arm",CubeListBuilder.create().texOffs(40,16).mirror(left).addBox(left?-1:-3,-2,-2,4,6,4),PartPose.offset(left?5:-5,2,0));
-                var elbow=arm.addOrReplaceChild("elbow",CubeListBuilder.create().texOffs(40,22).mirror(left).addBox(left?-1:-3,0,-2,4,6,4),PartPose.offset(0,4,0));
+                var arm=r.addOrReplaceChild(left?"left_arm":"right_arm",SegmentedSkin.limb(40,16,0,left?-1:-3,-2,-2,4,6,4,left,true),PartPose.offset(left?5:-5,2,0));
+                var elbow=arm.addOrReplaceChild("elbow",SegmentedSkin.limb(40,16,6,left?-1:-3,0,-2,4,6,4,left,true),PartPose.offset(0,4,0));
                 for(int i=0;i<3;i++)elbow.addOrReplaceChild("finger"+i,CubeListBuilder.create().texOffs(96,24).addBox(-.4F,0,-.45F,.8F,2,.9F),PartPose.offset((left?-.4F:-2.4F)+i,5.5F,-1.7F));
-                var leg=r.addOrReplaceChild(left?"left_leg":"right_leg",CubeListBuilder.create().texOffs(0,16).mirror(left).addBox(-2,0,-2,4,6,4),PartPose.offset(left?1.9F:-1.9F,12,0));
-                leg.addOrReplaceChild("knee",CubeListBuilder.create().texOffs(0,22).mirror(left).addBox(-2,0,-2,4,6,4),PartPose.offset(0,6,0));
+                var leg=r.addOrReplaceChild(left?"left_leg":"right_leg",SegmentedSkin.limb(0,16,0,-2,0,-2,4,6,4,left,false),PartPose.offset(left?1.9F:-1.9F,12,0));
+                leg.addOrReplaceChild("knee",SegmentedSkin.limb(0,16,6,-2,0,-2,4,6,4,left,false),PartPose.offset(0,6,0));
             }
             // Match the painted shirt/lapels on the torso instead of covering them with the skirt material.
             r.getChild("body").addOrReplaceChild("tails",CubeListBuilder.create().texOffs(16,16).addBox(-4,0,-2,8,12,4,new CubeDeformation(.15F)).texOffs(64,52).addBox(-4.3F,11.5F,1.6F,3.8F,8,1).addBox(.5F,11.5F,1.6F,3.8F,8,1),PartPose.ZERO);

@@ -1,0 +1,807 @@
+[
+  {
+    "name": "caged_child",
+    "logical": 64,
+    "model": "player",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "finale_witness",
+    "logical": 64,
+    "model": "player",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "ghosts_barry",
+    "logical": 128,
+    "model": "ghosts",
+    "number": 0,
+    "phase": 0,
+    "role": "GHOST_PRODUCER"
+  },
+  {
+    "name": "ghosts_father_wanderly",
+    "logical": 128,
+    "model": "ghosts",
+    "number": 0,
+    "phase": 0,
+    "role": "GHOST_PRIEST"
+  },
+  {
+    "name": "ghosts_john",
+    "logical": 128,
+    "model": "ghosts",
+    "number": 0,
+    "phase": 0,
+    "role": "GHOST_JOHN"
+  },
+  {
+    "name": "ghosts_john_hand",
+    "logical": 128,
+    "model": "ghosts",
+    "number": 0,
+    "phase": 9,
+    "role": "GHOST_JOHN"
+  },
+  {
+    "name": "ghosts_marjorie",
+    "logical": 128,
+    "model": "ghosts",
+    "number": 0,
+    "phase": 0,
+    "role": "GHOST_MARJORIE"
+  },
+  {
+    "name": "ghosts_marjorie_dinner",
+    "logical": 128,
+    "model": "ghosts",
+    "number": 0,
+    "phase": 8,
+    "role": "GHOST_MARJORIE"
+  },
+  {
+    "name": "ghosts_merry",
+    "logical": 128,
+    "model": "ghosts",
+    "number": 0,
+    "phase": 0,
+    "role": "GHOST_MERRY"
+  },
+  {
+    "name": "ghosts_sarah",
+    "logical": 128,
+    "model": "ghosts",
+    "number": 0,
+    "phase": 0,
+    "role": "GHOST_SARAH"
+  },
+  {
+    "name": "harrigan",
+    "logical": 64,
+    "model": "harrigan",
+    "number": 1,
+    "phase": 0
+  },
+  {
+    "name": "harrigan_dead",
+    "logical": 64,
+    "model": "harrigan",
+    "number": 2,
+    "phase": 0
+  },
+  {
+    "name": "harrigan_mourner_0",
+    "logical": 64,
+    "model": "harrigan",
+    "number": 4,
+    "phase": 0
+  },
+  {
+    "name": "harrigan_mourner_1",
+    "logical": 64,
+    "model": "harrigan",
+    "number": 5,
+    "phase": 0
+  },
+  {
+    "name": "harrigan_mourner_2",
+    "logical": 64,
+    "model": "harrigan",
+    "number": 6,
+    "phase": 0
+  },
+  {
+    "name": "holloway",
+    "logical": 64,
+    "model": "player",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "hotel_bartender",
+    "logical": 128,
+    "model": "hotel",
+    "number": 1,
+    "phase": 0
+  },
+  {
+    "name": "hotel_dancer",
+    "logical": 128,
+    "model": "hotel",
+    "number": 4,
+    "phase": 0
+  },
+  {
+    "name": "hotel_dancer_dress",
+    "logical": 128,
+    "model": "hotel",
+    "number": 5,
+    "phase": 0
+  },
+  {
+    "name": "hotel_pianist",
+    "logical": 128,
+    "model": "hotel",
+    "number": 3,
+    "phase": 0
+  },
+  {
+    "name": "hotel_porter",
+    "logical": 128,
+    "model": "hotel",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "hotel_scarred_guest",
+    "logical": 128,
+    "model": "hotel",
+    "number": 2,
+    "phase": 0
+  },
+  {
+    "name": "lake_boy",
+    "logical": 64,
+    "model": "player",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "lake_congregant",
+    "logical": 64,
+    "model": "player",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "lake_congregant_1",
+    "logical": 64,
+    "model": "player",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "lake_congregant_2",
+    "logical": 64,
+    "model": "player",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "lake_congregant_3",
+    "logical": 64,
+    "model": "player",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "lake_preacher",
+    "logical": 64,
+    "model": "player",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "lake_witch",
+    "logical": 64,
+    "model": "witch",
+    "number": 0,
+    "phase": 1
+  },
+  {
+    "name": "lake_witch_memory",
+    "logical": 64,
+    "model": "witch",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "literary_bar_denny",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 6,
+    "role": "STRANGER"
+  },
+  {
+    "name": "literary_bar_hollis",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 8,
+    "role": "STRANGER"
+  },
+  {
+    "name": "literary_bar_marla",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 4,
+    "role": "STRANGER"
+  },
+  {
+    "name": "literary_bar_russ",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 5,
+    "role": "STRANGER"
+  },
+  {
+    "name": "literary_bar_wade",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 7,
+    "role": "STRANGER"
+  },
+  {
+    "name": "literary_brother",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 0,
+    "role": "BROTHER"
+  },
+  {
+    "name": "literary_coffin_woman",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 0,
+    "role": "COFFIN_WOMAN"
+  },
+  {
+    "name": "literary_crew_0",
+    "logical": 128,
+    "model": "corpse",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "literary_crew_1",
+    "logical": 128,
+    "model": "corpse",
+    "number": 1,
+    "phase": 0
+  },
+  {
+    "name": "literary_crew_2",
+    "logical": 128,
+    "model": "corpse",
+    "number": 2,
+    "phase": 0
+  },
+  {
+    "name": "literary_crew_3",
+    "logical": 128,
+    "model": "corpse",
+    "number": 3,
+    "phase": 0
+  },
+  {
+    "name": "literary_dancer",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 0,
+    "role": "DANCER"
+  },
+  {
+    "name": "literary_family_child",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 0,
+    "role": "FAMILY_CHILD"
+  },
+  {
+    "name": "literary_family_child_changed",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 1,
+    "role": "FAMILY_CHILD"
+  },
+  {
+    "name": "literary_family_father",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 0,
+    "role": "FAMILY_FATHER"
+  },
+  {
+    "name": "literary_family_father_changed",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 1,
+    "role": "FAMILY_FATHER"
+  },
+  {
+    "name": "literary_family_mother",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 0,
+    "role": "FAMILY_MOTHER"
+  },
+  {
+    "name": "literary_family_mother_changed",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 1,
+    "role": "FAMILY_MOTHER"
+  },
+  {
+    "name": "literary_father",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 1,
+    "role": "FATHER"
+  },
+  {
+    "name": "literary_father_bandaged",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 2,
+    "role": "FATHER"
+  },
+  {
+    "name": "literary_father_mangled",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 3,
+    "role": "FATHER"
+  },
+  {
+    "name": "literary_guest_0",
+    "logical": 128,
+    "model": "corpse",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "literary_guest_1",
+    "logical": 128,
+    "model": "corpse",
+    "number": 1,
+    "phase": 0
+  },
+  {
+    "name": "literary_guest_2",
+    "logical": 128,
+    "model": "corpse",
+    "number": 2,
+    "phase": 0
+  },
+  {
+    "name": "literary_guest_3",
+    "logical": 128,
+    "model": "corpse",
+    "number": 3,
+    "phase": 0
+  },
+  {
+    "name": "literary_killer",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 0,
+    "role": "KILLER"
+  },
+  {
+    "name": "literary_lady",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 0,
+    "role": "LADY"
+  },
+  {
+    "name": "literary_lake_tess",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 0,
+    "role": "LAKE_TESS"
+  },
+  {
+    "name": "literary_lake_wax",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 0,
+    "role": "LAKE_WAX"
+  },
+  {
+    "name": "literary_mother",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 0,
+    "role": "MOTHER"
+  },
+  {
+    "name": "literary_old_man",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 0,
+    "role": "OLD_MAN"
+  },
+  {
+    "name": "literary_red_figure",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 0,
+    "role": "RED_FIGURE"
+  },
+  {
+    "name": "literary_stranger_0",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 0,
+    "role": "STRANGER"
+  },
+  {
+    "name": "literary_stranger_1",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 1,
+    "role": "STRANGER"
+  },
+  {
+    "name": "literary_stranger_2",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 2,
+    "role": "STRANGER"
+  },
+  {
+    "name": "literary_stranger_3",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 3,
+    "role": "STRANGER"
+  },
+  {
+    "name": "literary_visitor",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 0,
+    "role": "VISITOR"
+  },
+  {
+    "name": "nightclub_dancer_braids",
+    "logical": 128,
+    "model": "club",
+    "number": 7,
+    "phase": 0
+  },
+  {
+    "name": "nightclub_dancer_braids_despair",
+    "logical": 128,
+    "model": "club",
+    "number": 7,
+    "phase": 1
+  },
+  {
+    "name": "nightclub_dancer_brick",
+    "logical": 128,
+    "model": "club",
+    "number": 6,
+    "phase": 0
+  },
+  {
+    "name": "nightclub_dancer_brick_despair",
+    "logical": 128,
+    "model": "club",
+    "number": 6,
+    "phase": 1
+  },
+  {
+    "name": "nightclub_dancer_copper",
+    "logical": 128,
+    "model": "club",
+    "number": 3,
+    "phase": 0
+  },
+  {
+    "name": "nightclub_dancer_copper_despair",
+    "logical": 128,
+    "model": "club",
+    "number": 3,
+    "phase": 1
+  },
+  {
+    "name": "nightclub_dancer_female",
+    "logical": 128,
+    "model": "club",
+    "number": 1,
+    "phase": 0
+  },
+  {
+    "name": "nightclub_dancer_female_despair",
+    "logical": 128,
+    "model": "club",
+    "number": 1,
+    "phase": 1
+  },
+  {
+    "name": "nightclub_dancer_male",
+    "logical": 128,
+    "model": "club",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "nightclub_dancer_male_despair",
+    "logical": 128,
+    "model": "club",
+    "number": 0,
+    "phase": 1
+  },
+  {
+    "name": "nightclub_dancer_mustard",
+    "logical": 128,
+    "model": "club",
+    "number": 4,
+    "phase": 0
+  },
+  {
+    "name": "nightclub_dancer_mustard_despair",
+    "logical": 128,
+    "model": "club",
+    "number": 4,
+    "phase": 1
+  },
+  {
+    "name": "nightclub_dancer_silver",
+    "logical": 128,
+    "model": "club",
+    "number": 5,
+    "phase": 0
+  },
+  {
+    "name": "nightclub_dancer_silver_despair",
+    "logical": 128,
+    "model": "club",
+    "number": 5,
+    "phase": 1
+  },
+  {
+    "name": "nightclub_dancer_vest",
+    "logical": 128,
+    "model": "club",
+    "number": 2,
+    "phase": 0
+  },
+  {
+    "name": "nightclub_dancer_vest_despair",
+    "logical": 128,
+    "model": "club",
+    "number": 2,
+    "phase": 1
+  },
+  {
+    "name": "nightclub_dj",
+    "logical": 128,
+    "model": "club",
+    "number": 8,
+    "phase": 0
+  },
+  {
+    "name": "nightclub_dj_despair",
+    "logical": 128,
+    "model": "club",
+    "number": 8,
+    "phase": 1
+  },
+  {
+    "name": "seance_daughter",
+    "logical": 128,
+    "model": "seance",
+    "number": 3,
+    "phase": 0
+  },
+  {
+    "name": "seance_father",
+    "logical": 128,
+    "model": "seance",
+    "number": 2,
+    "phase": 0
+  },
+  {
+    "name": "seance_medium",
+    "logical": 128,
+    "model": "seance",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "seance_mother",
+    "logical": 128,
+    "model": "seance",
+    "number": 1,
+    "phase": 0
+  },
+  {
+    "name": "stanley_bartender",
+    "logical": 128,
+    "model": "hotel",
+    "number": 1,
+    "phase": 0
+  },
+  {
+    "name": "stanley_dancer",
+    "logical": 128,
+    "model": "hotel",
+    "number": 4,
+    "phase": 0
+  },
+  {
+    "name": "stanley_dancer_dress",
+    "logical": 128,
+    "model": "hotel",
+    "number": 5,
+    "phase": 0
+  },
+  {
+    "name": "stanley_pianist",
+    "logical": 128,
+    "model": "hotel",
+    "number": 3,
+    "phase": 0
+  },
+  {
+    "name": "stanley_porter",
+    "logical": 128,
+    "model": "hotel",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "stanley_scarred_guest",
+    "logical": 128,
+    "model": "hotel",
+    "number": 2,
+    "phase": 0
+  },
+  {
+    "name": "trailer_child_0",
+    "logical": 64,
+    "model": "cousin",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "trailer_child_1",
+    "logical": 64,
+    "model": "cousin",
+    "number": 1,
+    "phase": 0
+  },
+  {
+    "name": "trailer_child_2",
+    "logical": 64,
+    "model": "cousin",
+    "number": 2,
+    "phase": 0
+  },
+  {
+    "name": "trailer_child_3",
+    "logical": 64,
+    "model": "cousin",
+    "number": 3,
+    "phase": 0
+  },
+  {
+    "name": "trailer_child_4",
+    "logical": 64,
+    "model": "cousin",
+    "number": 4,
+    "phase": 0
+  },
+  {
+    "name": "trailer_child_5",
+    "logical": 64,
+    "model": "cousin",
+    "number": 5,
+    "phase": 0
+  },
+  {
+    "name": "trailer_child_6",
+    "logical": 64,
+    "model": "cousin",
+    "number": 6,
+    "phase": 0
+  },
+  {
+    "name": "trailer_child_7",
+    "logical": 64,
+    "model": "cousin",
+    "number": 7,
+    "phase": 0
+  },
+  {
+    "name": "trailer_child_8",
+    "logical": 64,
+    "model": "cousin",
+    "number": 8,
+    "phase": 0
+  },
+  {
+    "name": "literary_paw_walter",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 9
+  },
+  {
+    "name": "literary_paw_ruth",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 10
+  },
+  {
+    "name": "literary_paw_will",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 11
+  },
+  {
+    "name": "literary_paw_sergeant",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 12
+  },
+  {
+    "name": "literary_paw_messenger",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 13
+  }
+]

@@ -15,7 +15,7 @@ public final class HarriganFinishBlock extends Block {
     @Override protected MapCodec<? extends Block> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(KIND);}
     public static BlockState of(Kind k){return LabyrinthRegistry.HARRIGAN_FINISH.get().defaultBlockState().setValue(KIND,k);}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return s.getValue(KIND)==Kind.CASKET?Block.box(-3,0,-16,19,12,32):Shapes.block();}
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return s.getValue(KIND)==Kind.CASKET?Block.box(-2,0,-12,18,12,28):Shapes.block();}
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return s.getValue(KIND)==Kind.CASKET?Shapes.empty():Shapes.block();}
     @Override protected int getLightBlock(BlockState s,BlockGetter l,BlockPos p){return s.getValue(KIND)==Kind.CASKET?0:15;}
 }

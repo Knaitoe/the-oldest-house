@@ -23,11 +23,7 @@ final class PaintedCastUvProof {
         var expectedJaw=new Vertices(1);original.getChild("jaw").render(new PoseStack(),expectedJaw,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
         var actualJaw=new Vertices(1);LakeWitchJaw.render(model.head,model.jaw,0,0,new PoseStack(),actualJaw,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
         compare("jaw",expectedJaw,actualJaw,16);
-        var bodyMesh=new MeshDefinition();bodyMesh.getRoot().addOrReplaceChild("body",CubeListBuilder.create().texOffs(16,16).addBox(-4,0,-2,8,12,4),PartPose.ZERO);
-        var body=LayerDefinition.create(bodyMesh,128,64).bakeRoot().getChild("body");
-        var expectedBody=new Vertices(2);body.render(new PoseStack(),expectedBody,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
-        var actualBody=new Vertices(2);LiterarySkinMesh.dennyBody(body,new PoseStack(),actualBody,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
-        compare("Denny unchanged vest faces",expectedBody,actualBody,20);
+
     }
     private static void compare(String part,Vertices expected,Vertices actual,int count){
         if(expected.uv.size()!=count||actual.uv.size()!=count)throw new IllegalStateException("Incomplete actual painted "+part+" UV vertices: "+expected.uv.size()+" / "+actual.uv.size());

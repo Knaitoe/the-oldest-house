@@ -45,12 +45,11 @@ public final class LiteraryRenderers {
         /** The elk killer's own tailoring (0.4.50) and the crew's hard hats; hidden on everyone else. */
         private final ModelPart killerHood,killerMask,killerCoat,killerBelt,sleeveRight,sleeveLeft,tailRight,tailLeft,bootRight,bootLeft,toeRight,toeLeft,axe,hardHat;
         private float walk,amount;
-        private boolean dennyLegs;
         public CastModel(ModelPart r){super(r);coat=body.getChild("coat");gown=body.getChild("gown");mask=head.getChild("mask");bandage=leftLeg.getChild("bandage");hood=head.getChild("hood");
             lakeHair=head.getChild("lake_hair");lakeHairMotion=new LakeHouseHair(lakeHair);killerHood=head.getChild("killer_hood");killerMask=head.getChild("killer_mask");hardHat=head.getChild("hard_hat");killerCoat=body.getChild("killer_coat");killerBelt=body.getChild("killer_belt");
             sleeveRight=rightArm.getChild("killer_sleeve");sleeveLeft=leftArm.getChild("killer_sleeve");axe=rightArm.getChild("killer_axe");
             tailRight=rightLeg.getChild("killer_tail");tailLeft=leftLeg.getChild("killer_tail");bootRight=rightLeg.getChild("killer_boot");bootLeft=leftLeg.getChild("killer_boot");toeRight=rightLeg.getChild("killer_toe");toeLeft=leftLeg.getChild("killer_toe");}
-        public static LayerDefinition layer(){var m=HumanoidModel.createMesh(CubeDeformation.NONE,0);var r=m.getRoot();r.getChild("body").addOrReplaceChild("coat",CubeListBuilder.create().texOffs(64,28).addBox(-4.4F,1,-2.4F,8.8F,17,4.8F),PartPose.ZERO);r.getChild("body").addOrReplaceChild("gown",CubeListBuilder.create().texOffs(96,28).addBox(-5.2F,9,-3.2F,10.4F,14,6.4F),PartPose.ZERO);r.getChild("head").addOrReplaceChild("mask",CubeListBuilder.create().texOffs(64,0).addBox(-4.15F,-8.2F,-4.5F,8.3F,8.5F,1),PartPose.ZERO);r.getChild("head").addOrReplaceChild("hood",CubeListBuilder.create().texOffs(82,0).addBox(-4.4F,-8.4F,-4.4F,8.8F,8.8F,8.8F),PartPose.ZERO);r.getChild("left_leg").addOrReplaceChild("bandage",CubeListBuilder.create().texOffs(112,0).addBox(-2.2F,5,-2.2F,4.4F,5,4.4F),PartPose.ZERO);r.addOrReplaceChild("herd_eyes",CubeListBuilder.create().texOffs(0,0).addBox(-4,0,0,1,1,1).addBox(3,0,0,1,1,1),PartPose.ZERO);
+        public static LayerDefinition layer(){var m=HumanoidModel.createMesh(CubeDeformation.NONE,0);var r=m.getRoot();r.getChild("body").addOrReplaceChild("coat",CubeListBuilder.create().texOffs(64,28).addBox(-4.4F,1,-2.4F,8.8F,17,4.8F),PartPose.ZERO);r.getChild("body").addOrReplaceChild("gown",CubeListBuilder.create().texOffs(96,28).addBox(-5,9,-3,10,14,6,new CubeDeformation(.2F)),PartPose.ZERO);r.getChild("head").addOrReplaceChild("mask",CubeListBuilder.create().texOffs(64,0).addBox(-4.15F,-8.2F,-4.5F,8.3F,8.5F,1),PartPose.ZERO);r.getChild("head").addOrReplaceChild("hood",CubeListBuilder.create().texOffs(82,0).addBox(-4.4F,-8.4F,-4.4F,8.8F,8.8F,8.8F),PartPose.ZERO);r.getChild("left_leg").addOrReplaceChild("bandage",CubeListBuilder.create().texOffs(112,0).addBox(-2,5,-2,4,5,4,new CubeDeformation(.2F)),PartPose.ZERO);r.addOrReplaceChild("herd_eyes",CubeListBuilder.create().texOffs(0,0).addBox(-4,0,0,1,1,1).addBox(3,0,0,1,1,1),PartPose.ZERO);
             // Integer UV footprints with deformation, so every face of the killer's atlas is painted exactly.
             var head=r.getChild("head");var body=r.getChild("body");
             LakeHouseHair.layer(head);
@@ -67,7 +66,7 @@ public final class LiteraryRenderers {
                 part.addOrReplaceChild("killer_boot",CubeListBuilder.create().texOffs(16,32).mirror(left).addBox(-2,7,-2,4,5,4,new CubeDeformation(.38F)),PartPose.ZERO);
                 part.addOrReplaceChild("killer_toe",CubeListBuilder.create().texOffs(32,32).mirror(left).addBox(-2,10,-3,4,2,1,new CubeDeformation(.38F)),PartPose.ZERO);}
             return LayerDefinition.create(m,128,64);}
-        private void dress(int role,int phase){dennyLegs=role==LiteraryActor.STRANGER&&phase==6;boolean bar=role==LiteraryActor.STRANGER&&phase>=4&&phase<4+BAR.length;int cottage=role==LiteraryActor.STRANGER&&phase>=9&&phase<9+COTTAGE.length?phase-9:-1;coat.visible=role==LiteraryActor.FATHER||role==LiteraryActor.FAMILY_FATHER||role==LiteraryActor.OLD_MAN||role==LiteraryActor.VISITOR||role==LiteraryActor.STRANGER&&cottage<0&&(!bar||phase==4)||cottage==0||cottage==3||cottage==4;gown.visible=role==LiteraryActor.LADY||role==LiteraryActor.COFFIN_WOMAN||role==LiteraryActor.FAMILY_MOTHER||cottage==1||role==LiteraryActor.LAKE_WAX;mask.visible=role==LiteraryActor.DANCER||role==LiteraryActor.RED_FIGURE;hood.visible=false;bandage.visible=role==LiteraryActor.FATHER&&phase>=2;
+        private void dress(int role,int phase){boolean bar=role==LiteraryActor.STRANGER&&phase>=4&&phase<4+BAR.length;int cottage=role==LiteraryActor.STRANGER&&phase>=9&&phase<9+COTTAGE.length?phase-9:-1;coat.visible=role==LiteraryActor.FATHER||role==LiteraryActor.FAMILY_FATHER||role==LiteraryActor.OLD_MAN||role==LiteraryActor.VISITOR||role==LiteraryActor.STRANGER&&cottage<0&&(!bar||phase==4)||cottage==0||cottage==3||cottage==4;gown.visible=role==LiteraryActor.LADY||role==LiteraryActor.COFFIN_WOMAN||role==LiteraryActor.FAMILY_MOTHER||cottage==1||role==LiteraryActor.LAKE_WAX;mask.visible=role==LiteraryActor.DANCER||role==LiteraryActor.RED_FIGURE;hood.visible=false;bandage.visible=role==LiteraryActor.FATHER&&phase>=2;
             boolean killer=role==LiteraryActor.KILLER;for(var part:new ModelPart[]{killerHood,killerMask,killerCoat,killerBelt,sleeveRight,sleeveLeft,tailRight,tailLeft,bootRight,bootLeft,toeRight,toeLeft,axe})part.visible=killer;hardHat.visible=false;lakeHair.visible=role==LiteraryActor.LAKE_TESS;hat.visible=!killer&&role!=LiteraryActor.LAKE_TESS;}
         public void pose(int role,int phase,float age){dress(role,phase);
             if(role==LiteraryActor.DANCER&&phase==1){leftArm.xRot=rightArm.xRot=-.8F;leftArm.zRot=-.55F;rightArm.zRot=.55F;body.yRot=(float)Math.sin(age*.045)*.18F;leftLeg.xRot=(float)Math.sin(age*.08)*.22F;rightLeg.xRot=-leftLeg.xRot;}
@@ -154,14 +153,6 @@ public final class LiteraryRenderers {
             pose(role,phase,age);hat.copyFrom(head);
             if(role==LiteraryActor.BROTHER||role==LiteraryActor.FAMILY_CHILD||role==LiteraryActor.SILHOUETTE&&phase==4)HumanoidMotion.connect(this);
         }
-        @Override public void renderToBuffer(PoseStack p,VertexConsumer out,int light,int overlay,int colour){
-            if(!dennyLegs||young){super.renderToBuffer(p,out,light,overlay,colour);return;}
-            boolean left=leftLeg.visible,right=rightLeg.visible,torso=body.visible;
-            try{leftLeg.visible=false;rightLeg.visible=false;body.visible=false;super.renderToBuffer(p,out,light,overlay,colour);}
-            finally{leftLeg.visible=left;rightLeg.visible=right;body.visible=torso;}
-            LiterarySkinMesh.dennyBody(body,p,out,light,overlay,colour);
-            var fitted=LiterarySkinMesh.dennyLeg(out);leftLeg.render(p,fitted,light,overlay,colour);rightLeg.render(p,fitted,light,overlay,colour);
-        }
         public void reaching(){leftArm.xRot=rightArm.xRot=-1.45F;leftArm.yRot=.28F;rightArm.yRot=-.28F;body.xRot+=.12F;}
         /** The killer's motion as the renderer drives it, for native proofs: phase, stride, swing and an attack in progress. */
         public void animateKiller(int phase,float walk,float amount,float age,float attack){for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.getAllParts().forEach(ModelPart::resetPose);
@@ -174,7 +165,7 @@ public final class LiteraryRenderers {
         /** Drawn by the block entity renderer, never by an entity renderer, so it resets the adult pose itself (a model is born young). */
         public void corpse(boolean crew,int variant,int stage){
             for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.getAllParts().forEach(ModelPart::resetPose);
-            attackTime=0;crouching=false;young=false;riding=false;dress(-1,0);hat.visible=false;gown.visible=!crew&&variant==1;hardHat.visible=crew&&variant!=2;
+            attackTime=0;crouching=false;young=false;riding=false;dress(-1,0);hat.visible=false;gown.visible=!crew&&variant==0;hardHat.visible=crew&&variant!=2;
             switch(stage){
                 case 0->{leftArm.zRot=-.42F;rightArm.zRot=.3F;rightArm.xRot=-.2F;leftLeg.zRot=-.08F;rightLeg.zRot=.1F;head.yRot=.55F;head.xRot=-.2F;}
                 case 1->{rightArm.xRot=-2.9F;rightArm.zRot=.12F;leftArm.zRot=-.15F;head.yRot=-.7F;leftLeg.xRot=.12F;rightLeg.zRot=.08F;}

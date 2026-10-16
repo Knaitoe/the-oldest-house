@@ -5,21 +5,11 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import net.minecraft.client.model.geom.ModelPart;
 
-/** Fits the unchanged painted atlas; eyelids use clean cheek skin, and mouth interiors never repeat the face. */
+/** Fits the native pixel atlas; eyelids use clean cheek skin, and mouth interiors never repeat the face. */
 final class GhostsSkinMesh {
     private GhostsSkinMesh(){}
-    static float atlasScale(int role,int phase){return role==LiteraryActor.GHOST_MARJORIE&&(phase==GhostsSet.VOMIT||phase==GhostsSet.EATING||phase==GhostsSet.CHOKING||phase==GhostsSet.DEAD)?128F*18/1774:1;}
-    static VertexConsumer fit(VertexConsumer out,int role,int phase){
-        float scale=atlasScale(role,phase);if(scale==1)return out;
-        return new VertexConsumer(){
-            public VertexConsumer addVertex(float x,float y,float z){out.addVertex(x,y,z);return this;}
-            public VertexConsumer setColor(int r,int g,int b,int a){out.setColor(r,g,b,a);return this;}
-            public VertexConsumer setUv(float u,float v){out.setUv(u*scale,v*scale);return this;}
-            public VertexConsumer setUv1(int u,int v){out.setUv1(u,v);return this;}
-            public VertexConsumer setUv2(int u,int v){out.setUv2(u,v);return this;}
-            public VertexConsumer setNormal(float x,float y,float z){out.setNormal(x,y,z);return this;}
-        };
-    }
+    // Every painted phase now shares the exact native 128x64 layout.
+    static VertexConsumer fit(VertexConsumer out,int role,int phase){return out;}
     static void head(ModelPart head,ModelPart jaw,float blink,PoseStack p,VertexConsumer v,int light,int overlay,int colour){
         if(!head.visible)return;p.pushPose();head.translateAndRotate(p);
         walls(p,v,light,overlay,colour,-8,0,8,16);
