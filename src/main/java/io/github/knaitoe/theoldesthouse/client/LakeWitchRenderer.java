@@ -32,13 +32,15 @@ public final class LakeWitchRenderer extends MobRenderer<LakeWitchEntity, LakeWi
      */
     public static void memory(PoseStack pose,int phase,float swing,float t,int seed){
         switch(phase){
-            case Shallows.LYING->{pose.translate(0,.2,0);lay(pose,90);}
+            // On her back the head is twice the body's depth: her back clears the sand by a little so the head does not sink into it.
+            case Shallows.LYING->{pose.translate(0,.26,0);lay(pose,90);}
             case Shallows.CARRIED->{pose.mulPose(Axis.ZP.rotation(-swing*.55F));lay(pose,90);}
             case Shallows.FLYING->{pose.mulPose(Axis.ZP.rotationDegrees(t*11));pose.mulPose(Axis.XP.rotationDegrees(90+t*34));pose.translate(0,-.95,0);}
-            case Shallows.BROKEN->{pose.translate(0,.17,0);pose.mulPose(Axis.ZP.rotationDegrees(22));lay(pose,-90);}
+            // Face down with her front on the surface; only a slight list, so no side of her goes under.
+            case Shallows.BROKEN->{pose.translate(0,BROKEN_LIFT,0);pose.mulPose(Axis.ZP.rotationDegrees(BROKEN_LIST));lay(pose,-90);}
             case Shallows.RISING->{
                 float jerk=(float)Math.sin(t*2.9F+seed)*1.5F;
-                if(t<LakeWitchModel.RISE_SPLIT){pose.translate(0,.17,0);pose.mulPose(Axis.ZP.rotationDegrees(22*(1-t/LakeWitchModel.RISE_SPLIT)+jerk));lay(pose,-90);}
+                if(t<LakeWitchModel.RISE_SPLIT){pose.translate(0,BROKEN_LIFT,0);pose.mulPose(Axis.ZP.rotationDegrees(BROKEN_LIST*(1-t/LakeWitchModel.RISE_SPLIT)+jerk));lay(pose,-90);}
                 else{float k=(t-LakeWitchModel.RISE_SPLIT)/(Shallows.RISE_TICKS-LakeWitchModel.RISE_SPLIT);
                     // Pressed flat at first, then up onto her hands in three hitches.
                     float hitch=Math.min(1,(float)Math.floor(k*3+.35F)/3);pose.translate(0,-.42*(1-hitch),0);pose.mulPose(Axis.ZP.rotationDegrees(jerk*2));}
@@ -47,6 +49,7 @@ public final class LakeWitchRenderer extends MobRenderer<LakeWitchEntity, LakeWi
             default->{}
         }
     }
+    private static final float BROKEN_LIFT=.15F,BROKEN_LIST=4;
     /** Turn the standing body about its own centre so it lies along its length: 90 face up, -90 face down. */
     private static void lay(PoseStack pose,float degrees){pose.mulPose(Axis.XP.rotationDegrees(degrees));pose.translate(0,-.95,0);}
     @Override public ResourceLocation getTextureLocation(LakeWitchEntity entity) { return entity.memory() ? MEMORY : TEXTURE; }

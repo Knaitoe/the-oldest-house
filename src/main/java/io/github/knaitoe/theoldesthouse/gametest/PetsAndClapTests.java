@@ -191,7 +191,9 @@ public final class PetsAndClapTests {
         var boots=new ItemStack(Items.LEATHER_BOOTS);boots.setDamageValue(9);MotherCollection.rememberCarried(boots,owner.getUUID(),f.server.overworld().getGameTime());owner.setItemSlot(EquipmentSlot.FEET,boots.copy());
         h.assertTrue(HideAndClap.enter(owner),"the reader starts the original native room");owner.setItemSlot(EquipmentSlot.HEAD,original.copy());
         h.onEachTick(()->{if(clapSuccess!=f)return;var session=LabyrinthData.get(f.server).state(HideAndClap.ID).getCompound("Session");
-            if(session.getString("Stage").equals("CLAPPING")){var spots=session.getLongArray("Spots");int index=session.getInt("Index");if(index<spots.length){var at=Vec3.atBottomCenterOf(BlockPos.of(spots[index]));owner.teleportTo(f.level,at.x,at.y,at.z,180,0);}}
+            if(session.getString("Stage").equals("CLAPPING")){var spots=session.getLongArray("Spots");int index=session.getInt("Index");if(index<spots.length){var at=Vec3.atBottomCenterOf(BlockPos.of(spots[index]));
+                // Face away from the room's middle: the wardrobe appears behind the reader, and a wall spot facing inward has no room behind it.
+                var middle=Vec3.atBottomCenterOf(f.base.offset(0,0,-7));float yaw=(float)Math.toDegrees(Math.atan2(-(at.x-middle.x),at.z-middle.z));owner.teleportTo(f.level,at.x,at.y,at.z,yaw,0);}}
         });
         h.startSequence().thenWaitUntil(()->h.assertTrue(HideAndClap.isBound(owner.getItemBySlot(EquipmentSlot.HEAD),owner.getUUID()),"native ticks bind the actual head slot and retain the original cloth"))
         .thenWaitUntil(()->h.assertTrue(LabyrinthData.get(f.server).state(HideAndClap.ID).contains("Wardrobe"),"counting and the actual clap spots create a real wardrobe before the deadline"))
