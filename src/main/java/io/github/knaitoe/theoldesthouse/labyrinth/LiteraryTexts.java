@@ -56,8 +56,8 @@ public final class LiteraryTexts {
         // 0.4.101: the child's own words; the meat and the trousers are noticed, not yet understood.
         case HOLY_RABBIT->book("The hollow","A child",
             "He put me where the needles kept the snow out. His shoulders would not fit. He said we would wait for morning.\n\nMy own food was hard as the ground.",
-            "He came back with meat wrapped in a rabbit skin and told me to eat it slow.\n\nHis trousers were wet to the knee. He said the creek was deeper than it looked.",
-            "He shakes me when my eyes close. He says sleeping is how the snow gets you.\n\nIn the morning Slaney was out by the snow again, the same as yesterday.\n\nHe says when the snow lets us go, we go fast, and we don't stop for anything.");
+            "He came back with the rabbit already open and told me not to chew.\n\nHis trousers were wet to the hip. He said the creek was good news: follow water and you find people.",
+            "He flicks my cheek when my eyes close. He says sleeping is how the snow gets you.\n\nIn the morning Slaney was out by the snow again, the same as yesterday.\n\nHe says when the snow lets us go, we go fast, and we don't stop for anything.");
         case CONFESSION->book("Terms of the interview","The listener",
             "He asked for a chair and a book with blank pages. He did not ask for forgiveness. I thought this meant the account would be easier to take down.",
             "He stops when I leave. When I return, he finds the exact word.\n\nThere are clean books on the low shelf. I put one on the table between our chairs. By the time I reached the last page, I recognised the handwriting.");
@@ -135,10 +135,10 @@ public final class LiteraryTexts {
     /** 0.4.101: what the child saw, in order, with the rabbit's own name; the carving only if they looked up at it. */
     static String rabbitAccount(CompoundTag own){
         String rabbit=own.getString("RabbitName").isBlank()?"Slaney":own.getString("RabbitName");
-        return rabbit+" was by the snow every morning. Every night the meat came wrapped in the same skin. Father said the creek had soaked his trousers. The creek was behind us. Both his legs were dark to the knee.\n\n"
-            +(own.getBoolean("CarvingRead")?"He had cut my initials into the tree beside my mother's, and a little rabbit under them, deep enough to go through the bark.\n\n":"")
-            +"A searcher found me with a light and a radio. Back in the trees, Father set the poles under his arms and went the other way. I called him. He did not stop.\n\n"
-            +"Years later a rabbit sat outside a window, one ear brown at the tip, and I was under that tree again, eating.";
+        return rabbit+" was by the snow every morning. Every night the meat came in the same skin. Father said he had been through the creek again. His tracks never went near it. Both his legs were dark to the hip.\n\n"
+            +(own.getBoolean("CarvingRead")?"He had cut my initials into the tree beside my mother's name, and under them a little rabbit with "+rabbit+" at its feet. He had gone round her name so many times the bark nearly came away.\n\n":"")
+            +"A searcher found me with a light and a radio. Back in the trees, Father got the poles under his arms and went the other way. One of the men asked where he was going. I said hunting.\n\n"
+            +"Years later a rabbit sat in the flowers outside a window, brown at the tips, and I kept my mouth shut tight the way I had under that tree, so I would not lose anything he gave me.";
     }
     /** The bargain's account (0.4.51), in the reader's own words and the room's prose name. */
     static ItemStack cabin(String name,CompoundTag own){

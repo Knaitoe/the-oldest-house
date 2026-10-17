@@ -54,6 +54,18 @@ trail opens is turned back by the wind ("Father hasn't gone that way"), not by d
   did not see. It mentions the carving only if they looked. It ends on its own last line, under the Witness title
   "The food in the hollow", without the shared folded-paper afterword.
 
+**Closer to Jones's story** (the owner supplied the full text on October 17; every line stays original wording):
+
+- The child names the rabbit when Father asks ("A thing with a name is real").
+- After the first meal the child pushes the skin into the snow past the tree, sure that he'll come back; Father only
+  says "Maybe he will."
+- They swallow without chewing. Father calls the creek a good sign, because water runs to people. His legs are wet,
+  then dark, to the hip.
+- The carving has the cartoon rabbit with his name at its feet, and the mother's name gone round until the bark nearly
+  comes away.
+- In the account, a searcher asks where Father is going and the child says "hunting". Years later, at a window with a
+  rabbit in the flowers, the child keeps their mouth shut tight so as not to lose anything he gave them.
+
 Saved worlds: a reader partway through keeps their night, meals and records. The new behaviour applies from their next
 tick. Already collected accounts keep their saved words.
 
