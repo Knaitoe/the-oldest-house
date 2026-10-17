@@ -16,14 +16,16 @@ public final class HolyRabbitDialogue {
         if(night==1&&own.getInt("AteNight")==1&&once(own,4))voice(p,father,"Keep the skin folded. There are things in these woods that know how to come back.");
         if(night==2&&(own.getInt("RabbitMornings")&4)!=0&&own.getInt("Meals")>=1&&once(own,8)){
             own.putBoolean("RabbitBelief0490",true);own.putBoolean("RabbitBelieved0490",true);
-            p.displayClientMessage(Component.literal(name(own)+" is alive beside the tree. You ate, and he came back. Perhaps the dream sent him to keep you both alive."),false);
+            p.displayClientMessage(Component.literal(name(own)+" is beside the tree again, one ear brown at the tip. Last night you ate. This morning he came back."),false);
             voice(p,father,"There he is. I told you he could find us. We only have to get through another night.");
         }
         if(night>=2&&own.getInt("MealNight")>=2&&!own.getBoolean("WoundSeen0488")&&once(own,16))voice(p,father,"I went by the creek. That's why my trousers are wet. Don't let the meat get cold while you worry about me.");
-        if(own.getBoolean("CarvingRead")&&!own.getBoolean("WoundSeen0488")&&once(own,32))p.displayClientMessage(Component.literal("Your initials are cut beside your mother's. Below them is a little rabbit. Father has pressed the knife hard enough to cut through the bark."),false);
+        // On the last day he points the reader to what he cut, once, if they have not looked up at it yet.
+        if(night>=3&&ticks>=300&&own.getBoolean("CarvingAppeared")&&!own.getBoolean("CarvingRead")&&once(own,128))voice(p,father,"I cut something into the tree for you. Up high, where the snow can't get at it.");
+        if(own.getBoolean("CarvingRead")&&once(own,32))p.displayClientMessage(Component.literal("Your initials are cut beside your mother's. Below them is a little rabbit. Father has pressed the knife hard enough to cut through the bark."),false);
         if(own.getBoolean("WoundSeen0488")&&once(own,64)){
             own.putBoolean("RabbitTruth0490",true);own.putBoolean("RabbitBelief0490",false);
-            p.displayClientMessage(Component.literal("The torn trousers show where he has cut. The same skin, filled again. The rabbit never had to come back from the dead. You look at the food, then at his legs."),false);
+            p.displayClientMessage(Component.literal("His trouser leg is cut open. The cloth tied round his thigh has bled through. Out by the snow, "+name(own)+" sits where he sat this morning."),false);
             voice(p,father,"You needed to eat. That is all. You needed to stay awake.");
         }
     }

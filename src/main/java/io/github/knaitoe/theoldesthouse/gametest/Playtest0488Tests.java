@@ -24,7 +24,7 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID+"_playtest488") @PrefixGameTestTemplate(false)
 public final class Playtest0488Tests {
     private static LiteraryTests.Fixture speech;
-    private static LiteraryTests.Fixture rabbitMotion,rabbitEnding,rabbitNights,rabbitShelter;
+    private static LiteraryTests.Fixture rabbitMotion,rabbitEnding,rabbitNights,rabbitShelter,rabbitFloor,rabbitTrail,rabbitMorning;
 
     @GameTest(template="empty",batch="notes488_navigation",timeoutTicks=100)
     public static void adventureReaderCanDrawChalkAndUseStringBesideProtectedHouseStone(GameTestHelper h){
@@ -199,4 +199,81 @@ public final class Playtest0488Tests {
         }).thenSucceed();
     }
     @AfterBatch(batch="notes488_rabbit_shelter") public static void rabbitShelterDone(ServerLevel ignored){if(rabbitShelter!=null){rabbitShelter.close();rabbitShelter=null;}}
+
+    // ---------------------------------------------------------------- 0.4.101 Holy Rabbit pass
+    private static void commit(LiteraryTests.Fixture f,net.minecraft.server.level.ServerPlayer p,int night,int ticks,java.util.function.Consumer<CompoundTag> extra){
+        var own=f.own(p,LabyrinthPlace.HOLY_RABBIT);own.putBoolean("Committed",true);own.putString("CommitAction","agreed_to_stay_with_father");
+        own.putInt("Night",night);own.putInt("NightTicks",ticks);extra.accept(own);LiteraryVignettes.save(f.data(),p.getUUID(),LabyrinthPlace.HOLY_RABBIT,own);
+    }
+    private static String text(ItemStack book){var out=new StringBuilder();for(var page:book.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages())out.append(page.raw().getString()).append(' ');return out.toString();}
+
+    @GameTest(template="empty",batch="rabbit_pass_floor",timeoutTicks=400)
+    public static void theColdAndFathersShakingNeverTakeTheLastThreeHearts(GameTestHelper h){
+        rabbitFloor=new LiteraryTests.Fixture(h);var f=rabbitFloor;var place=LabyrinthPlace.HOLY_RABBIT;
+        var p=f.player("rabbit_floor",place);commit(f,p,1,400,own->own.putInt("Drowse",300));
+        f.at(p,place,5.5,0,-21.5);p.setHealth(7);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(LiteraryVignettes.shared(f.data(),place).hasUUID("Father_"+p.getUUID()),"the real father has arrived"))
+            .thenIdle(40).thenExecute(()->{
+                h.assertTrue(f.own(p,place).getInt("Drowse")<320&&p.getHealth()>=HolyRabbit.FLOOR,"Father still shakes the drowsing child awake, and the shaking leaves three hearts: "+p.getHealth());
+                h.assertTrue(p.getTicksFrozen()>=100&&p.getTicksFrozen()<p.getTicksRequiredToFreeze(),"outside the shelter the native frost stays just short of the freeze that hurts: "+p.getTicksFrozen());
+                f.at(p,place,.5,0,-40.5);
+            })
+            .thenIdle(60).thenExecute(()->{
+                h.assertTrue(p.getHealth()>=HolyRabbit.FLOOR&&f.own(p,place).getBoolean("TooSoon0501"),"before the trail opens the wind past the trees turns the child back without taking the last hearts: "+p.getHealth());
+                h.succeed();
+            });
+    }
+    @AfterBatch(batch="rabbit_pass_floor") public static void rabbitFloorDone(ServerLevel ignored){if(rabbitFloor!=null){rabbitFloor.close();rabbitFloor=null;}}
+
+    @GameTest(template="empty",batch="rabbit_pass_trail",timeoutTicks=900)
+    public static void theEscapeColdWaitsForFathersRetreatAndTheCarvingIsRememberedNotRequired(GameTestHelper h){
+        rabbitTrail=new LiteraryTests.Fixture(h);var f=rabbitTrail;var place=LabyrinthPlace.HOLY_RABBIT;
+        var p=f.player("rabbit_trail",place);var b=f.base(place);
+        commit(f,p,3,400,own->{own.putInt("Meals",2);own.putInt("AteNight",2);own.putInt("MealNight",3);own.putInt("RabbitMornings",6);own.putBoolean("WoundSeen0488",true);});
+        var carving=new Vec3(b.getX()+.5,b.getY()+3.3,b.getZ()-23.95);
+        f.at(p,place,.5,0,-22.5);p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,carving);
+        h.startSequence().thenIdle(15).thenExecute(()->{
+            h.assertTrue(!f.own(p,place).getBoolean("CarvingAppeared"),"nothing is cut into the tree while the reader is watching it");
+            p.setYRot(0);p.setXRot(0);
+        }).thenIdle(15).thenExecute(()->{
+            var now=f.own(p,place);
+            h.assertTrue(now.getBoolean("CarvingAppeared")&&!now.getBoolean("CarvingRead"),"on the last day the carving appears the first moment nobody is looking at it");
+            h.assertTrue(now.getBoolean("TrailOpen"),"the seen wound, two meals and two mornings open the trail");
+            f.at(p,place,.5,0,-40.5);p.setYRot(180);
+        }).thenIdle(40).thenExecute(()->{
+            var now=f.own(p,place);
+            h.assertTrue(now.getBoolean("LastHunt0490")&&!now.getBoolean("FatherGone")&&now.getInt("TrailTicks")==0,"the escape cold waits while Father is still going: "+now.getInt("TrailTicks"));
+            now.putBoolean("FatherGone",true);now.putInt("LastHuntStep0490",99);LiteraryVignettes.save(f.data(),p.getUUID(),place,now);
+        }).thenIdle(30).thenExecute(()->{
+            h.assertTrue(f.own(p,place).getInt("TrailTicks")>0,"once he has gone, the trail's cold starts counting");
+            f.at(p,place,.5,0,-21.5);p.setYRot(0);
+        }).thenIdle(15).thenExecute(()->{
+            h.assertTrue(f.own(p,place).getInt("TrailTicks")==0,"back under the tree the cold starts over");
+            f.at(p,place,.5,0,-119.5);p.setYRot(180);
+        }).thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Ready")&&!f.own(p,place).getBoolean("CarvingRead"),"the way out does not depend on having looked up at the carving"))
+        .thenExecute(()->{
+            var unread=f.own(p,place);unread.remove("CarvingRead");var read=unread.copy();read.putBoolean("CarvingRead",true);
+            var plain=text(LiteraryTexts.ending(p,place,unread));
+            h.assertTrue(plain.contains("Slaney")&&!plain.contains("initials"),"the account names the rabbit and leaves out a carving the reader never looked at");
+            h.assertTrue(text(LiteraryTexts.ending(p,place,read)).contains("initials"),"a carving the reader did look up at is remembered in the account");
+            h.succeed();
+        });
+    }
+    @AfterBatch(batch="rabbit_pass_trail") public static void rabbitTrailDone(ServerLevel ignored){if(rabbitTrail!=null){rabbitTrail.close();rabbitTrail=null;}}
+
+    @GameTest(template="empty",batch="rabbit_pass_morning",timeoutTicks=600)
+    public static void fatherWaitsForTheReaderToSeeTheRabbitBeforeHeTakesIt(GameTestHelper h){
+        rabbitMorning=new LiteraryTests.Fixture(h);var f=rabbitMorning;var place=LabyrinthPlace.HOLY_RABBIT;
+        var p=f.player("rabbit_morning",place);var b=f.base(place);
+        commit(f,p,1,120,own->own.putInt("FatherWaypoint0488",4));
+        // East of the rabbit, facing further east: it is behind the reader.
+        f.at(p,place,3.5,0,-17.5);p.setYRot(-90);p.setXRot(0);
+        h.startSequence().thenIdle(60).thenExecute(()->{
+            var now=f.own(p,place);
+            h.assertTrue(now.getInt("HarvestTicks0491")==0&&now.getInt("RabbitWait0501")>0&&(now.getInt("RabbitMornings")&2)==0,"Father will not take the rabbit before the reader has seen it alive this morning");
+            f.look(p,b.offset(HolyRabbit.RABBIT));
+        }).thenWaitUntil(()->h.assertTrue((f.own(p,place).getInt("RabbitMornings")&2)!=0&&f.own(p,place).getInt("HarvestTicks0491")>0,"once the reader has looked, the morning counts and the apparent harvest begins"))
+        .thenExecute(h::succeed);
+    }
+    @AfterBatch(batch="rabbit_pass_morning") public static void rabbitMorningDone(ServerLevel ignored){if(rabbitMorning!=null){rabbitMorning.close();rabbitMorning=null;}}
 }

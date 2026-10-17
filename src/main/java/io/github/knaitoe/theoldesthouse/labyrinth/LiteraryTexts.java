@@ -53,10 +53,11 @@ public final class LiteraryTexts {
             "The trailer ends at the back bedroom. I know because I have walked around it. Under the hatch, the dirt keeps going.\n\nMy brother sleeps through breakfast now.",
             "I saw someone cross the kitchen. He looked more like a shadow than a man. Each time I return, I can make out another part of his face.",
             "His things are below the house. Break the pile, or take what he left. I do not know which one means letting him go.");
+        // 0.4.101: the child's own words; the meat and the trousers are noticed, not yet understood.
         case HOLY_RABBIT->book("The hollow","A child",
             "He put me where the needles kept the snow out. His shoulders would not fit. He said we would wait for morning.\n\nMy own food was hard as the ground.",
-            "He came back with meat wrapped in a rabbit skin. The skin came back again. He said the creek had wet his trousers. There was blood in both boot marks.",
-            "Stay awake. Eat what he brings, or wait for another night. When the trail opens, follow it quickly.\n\nSlaney is still outside every morning.");
+            "He came back with meat wrapped in a rabbit skin and told me to eat it slow.\n\nHis trousers were wet to the knee. He said the creek was deeper than it looked.",
+            "He shakes me when my eyes close. He says sleeping is how the snow gets you.\n\nIn the morning Slaney was out by the snow again, the same as yesterday.\n\nHe says when the snow lets us go, we go fast, and we don't stop for anything.");
         case CONFESSION->book("Terms of the interview","The listener",
             "He asked for a chair and a book with blank pages. He did not ask for forgiveness. I thought this meant the account would be easier to take down.",
             "He stops when I leave. When I return, he finds the exact word.\n\nThere are clean books on the low shelf. I put one on the table between our chairs. By the time I reached the last page, I recognised the handwriting.");
@@ -112,7 +113,7 @@ public final class LiteraryTexts {
         case ELK_LOT->ElkLotEnding.account(name,own);
         case ELK_FAN->"From above the ladder I could see what lay below the moving blades. Five seconds was longer than I thought. The blade caught me; when I could see again I was outside the room. A tooth lay in my hand. When I returned, tape held the shape of the deer.";
         case MAPPING_INTERIOR->own.getBoolean("PileBroken")?"I broke the pile under the trailer. The boy woke when I came back. The crawlspace still ran beyond the walls, but the things at its end could no longer hold him there.":"I took what lay under the trailer. The photograph came with me. When I returned, the boy was harder to wake. Keeping a father's things was not the same as keeping a brother.";
-        case HOLY_RABBIT->"The rabbit was alive each morning. The same skin came back with the meat. Father said he had crossed the creek, but the boot tracks went across that trail. Both trouser legs were dark with blood. I understood where our food had come from.\n\nA searcher found me with a light and a radio. Father stood between two poles, lifted his ruined legs and went back into the trees. I could not make him stop. Long afterward, a rabbit outside a window could still put me back under that tree.";
+        case HOLY_RABBIT->rabbitAccount(own);
         case CONFESSION->"The last chapter addressed the person holding the pen.\n\n"+own.getString("Statistics")+"\n\nThe signature was mine. The chair opposite me had not changed.";
         case ELK_CARCASSES->"I held still beneath the hides. His boots passed the opening twice. When they no longer came back, I followed the service path. The pile stayed where the camp had put it.";
         case COSTUME_NIGHT->"The coats remained on the beach. I kept one of them in view until my feet found grass. It stopped with the sand still beneath it.";
@@ -127,8 +128,18 @@ public final class LiteraryTexts {
         case OLD_CABIN->"The lamp finished a name. The man beside it said another. He did not need either one to recognize what I had brought.";
         default->throw new IllegalArgumentException(place.id());};if(place==LabyrinthPlace.GHOSTS_SET&&own.getBoolean("Filming0485"))return HouseWriting.book("The tape and the cut",name,HouseWriting.WritingStyle.WILL,GhostsSet.pages(text));
         String afterword="I folded the paper along its old crease. Someone had carried it before there was anything written on this side.\n\nI could still hear the room while I put it away.";
-        if(place==LabyrinthPlace.HOLY_RABBIT||place==LabyrinthPlace.ELK_LOT){var pages=new ArrayList<String>(GhostsSet.pages(text));pages.addAll(GhostsSet.pages(afterword));return book("The account: "+place.id().replace('_',' '),name,pages.toArray(String[]::new));}
+        // The rabbit's account ends on its own last line, under its own title, without the shared folded-paper afterword.
+        if(place==LabyrinthPlace.HOLY_RABBIT)return book(WitnessAccount.Story.HOLY_RABBIT.title,name,GhostsSet.pages(text).toArray(String[]::new));
+        if(place==LabyrinthPlace.ELK_LOT){var pages=new ArrayList<String>(GhostsSet.pages(text));pages.addAll(GhostsSet.pages(afterword));return book("The account: "+place.id().replace('_',' '),name,pages.toArray(String[]::new));}
         return book("The account: "+place.id().replace('_',' '),name,text,afterword);}
+    /** 0.4.101: what the child saw, in order, with the rabbit's own name; the carving only if they looked up at it. */
+    static String rabbitAccount(CompoundTag own){
+        String rabbit=own.getString("RabbitName").isBlank()?"Slaney":own.getString("RabbitName");
+        return rabbit+" was by the snow every morning. Every night the meat came wrapped in the same skin. Father said the creek had soaked his trousers. The creek was behind us. Both his legs were dark to the knee.\n\n"
+            +(own.getBoolean("CarvingRead")?"He had cut my initials into the tree beside my mother's, and a little rabbit under them, deep enough to go through the bark.\n\n":"")
+            +"A searcher found me with a light and a radio. Back in the trees, Father set the poles under his arms and went the other way. I called him. He did not stop.\n\n"
+            +"Years later a rabbit sat outside a window, one ear brown at the tip, and I was under that tree again, eating.";
+    }
     /** The bargain's account (0.4.51), in the reader's own words and the room's prose name. */
     static ItemStack cabin(String name,CompoundTag own){
         int given=own.getInt("Given");String room=own.getString("ClosedRoom");
