@@ -167,6 +167,6 @@ public final class ShallowsVisualProof extends Screen {
         if(!proof.problems.isEmpty())throw new IllegalStateException("SHALLOWS VIEW CHECK FAILED: "+String.join("; ",proof.problems));
         Files.writeString(dir.resolve("shallows-passed.txt"),"Eight native Shallows views: the level carry with her head to the reader, strokes out over the water and back with both carriers' arms following, the bank, the throw, the flat break on the water, the rise and the low crossing.\n");
         TheOldestHouse.LOGGER.info("SHALLOWS VIEW CHECK PASSED: eight native views");
-        mc.setScreen(new CastVisualProof());
+        mc.setScreen(new MovieNightVisualProof());
     }
 }

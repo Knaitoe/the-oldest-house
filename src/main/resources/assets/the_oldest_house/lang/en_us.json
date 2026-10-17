@@ -286,5 +286,17 @@
   "subtitles.the_oldest_house.shallows.swing": "Cloth swings through the air",
   "subtitles.the_oldest_house.shallows.break": "Bones snap against the water",
   "subtitles.the_oldest_house.shallows.rise": "Bones grind back into place",
-  "subtitles.the_oldest_house.shallows.scurry": "Something skitters across the water"
+  "subtitles.the_oldest_house.shallows.scurry": "Something skitters across the water",
+  "subtitles.the_oldest_house.movie.calm": "Film music: a bright beach tune",
+  "subtitles.the_oldest_house.movie.dread": "Film music: low strings creep closer",
+  "subtitles.the_oldest_house.movie.sting": "Film music: a shrieking sting",
+  "subtitles.the_oldest_house.movie.finale": "Film music: strings swell at dawn",
+  "subtitles.the_oldest_house.movie.bell": "On the screen: a buoy bell tolls",
+  "subtitles.the_oldest_house.movie.projector": "Projector whirs",
+  "subtitles.the_oldest_house.movie.reel": "The reel's tail flaps",
+  "subtitles.the_oldest_house.movie.cut": "The speakers cut out",
+  "subtitles.the_oldest_house.movie.bump": "Something knocks the hull",
+  "block.the_oldest_house.movie_prop": "Movie night fixture",
+  "block.the_oldest_house.movie_screen": "Projection screen",
+  "entity.the_oldest_house.lake_shark": "A shark from the film"
 }

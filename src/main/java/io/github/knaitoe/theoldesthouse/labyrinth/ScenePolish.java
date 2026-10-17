@@ -81,10 +81,10 @@ public final class ScenePolish {
 
     public static boolean applies(LabyrinthPlace place) {
         // The child's room (0.4.74) is furnished, lit and dressed whole by ChildRoom, the Last Stop (0.4.78) by ElkLot, and
-        // the Three Fingers cottage (0.4.81) by ThreeFingers, and the house at the bottom of the lake by LakeHouse.
+        // the Three Fingers cottage (0.4.81) by ThreeFingers, the house at the bottom of the lake by LakeHouse, and Movie Night (0.4.102) by MovieNight.
         return place.room() != null && place.slot() >= 0 && place != LabyrinthPlace.RED_ROOM
                 && place != LabyrinthPlace.FAMILY_COPY && place != LabyrinthPlace.OLD_CABIN && place != LabyrinthPlace.CHILD_ROOM
-                && place != LabyrinthPlace.GHOSTS_SET && place != LabyrinthPlace.ELK_LOT && place != LabyrinthPlace.THREE_FINGERS && place != LabyrinthPlace.NIGHTCLUB && place != LabyrinthPlace.LAKE_HOUSE && place != LabyrinthPlace.LAKE_HOUSE_EMPTY && place != LabyrinthPlace.BORRASCA && !HazardVariety.added(place);
+                && place != LabyrinthPlace.GHOSTS_SET && place != LabyrinthPlace.ELK_LOT && place != LabyrinthPlace.THREE_FINGERS && place != LabyrinthPlace.MOVIE_NIGHT && place != LabyrinthPlace.NIGHTCLUB && place != LabyrinthPlace.LAKE_HOUSE && place != LabyrinthPlace.LAKE_HOUSE_EMPTY && place != LabyrinthPlace.BORRASCA && !HazardVariety.added(place);
     }
 
     private static String key(BlockPos origin, LabyrinthPlace place) {

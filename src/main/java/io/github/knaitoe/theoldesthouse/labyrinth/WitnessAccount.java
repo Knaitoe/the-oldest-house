@@ -76,7 +76,7 @@ public final class WitnessAccount {
         CONFESSION("confession","The listener's signature","understanding","I wrote until the speaker began counting the listener. The journal sealed in the wall carried my name."),
         ELK_CARCASSES("elk_carcasses","The passing boots","survival","I held still beneath the hides while the boots passed. When the search ended, I took the service path."),
         COSTUME_NIGHT("costume_night","The coats on the beach","survival","One costume moved when nobody watched it. I reached the living grass and kept it in sight."),
-        MOVIE_NIGHT("movie_night","The flashes over water","survival","Each firework found it closer to the canoe. I kept rowing until the pier was beneath my hands."),
+        MOVIE_NIGHT("movie_night","The flashes over water","survival","Each burst showed her nearer the canoe and held her where it found her. I rowed in the dark between them until the pier was under my hands."),
         WINTER_LAKE("winter_lake","The broken ice","survival","I broke a hole and waited beneath the ice. After she passed, I came up and crossed to the bank."),
         CAMP_BLOOD("camp_blood","The service road","survival","The essay had remembered an ordinary summer. I escaped beyond the last cabin before that summer returned."),
         DEVILS_ROCK("devils_rock","The eight loose pages","memory","I read the eight pages in order. The last one reached this room without a person bringing it."),

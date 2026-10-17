@@ -66,7 +66,7 @@ public final class LiteraryVignettes {
             save(d, p.getUUID(), place, own);
         }
         if (place == LabyrinthPlace.CHILD_ROOM) { ChildRoom.arrive(p, own); save(d, p.getUUID(), place, own); }
-        if (place == LabyrinthPlace.MOVIE_NIGHT) ensureMovieCanoe(p, base(p, place));
+        if (place == LabyrinthPlace.MOVIE_NIGHT) { MovieNight.arrive(p, own); save(d, p.getUUID(), place, own); MovieNight.canoes(p, base(p, place)); }
         if (place == LabyrinthPlace.ELK_CARCASSES) { ElkHunt.arrive(p, own); save(d, p.getUUID(), place, own); }
         if (place == LabyrinthPlace.END_WORLD_CABIN) { CabinBargain.arrive(p, own); save(d, p.getUUID(), place, own); }
         if (place == LabyrinthPlace.THREE_FINGERS) { ThreeFingers.arrive(p, own); save(d, p.getUUID(), place, own); }
@@ -222,7 +222,7 @@ public final class LiteraryVignettes {
         else if(!active&&c!=null)HousePackets.send(p,new NovelScenePayload(17,0,"",0,0));
     }
     private static void restore(Crawl c){c.p().setForcedPose(c.forced());c.p().setPose(c.forced()==null?c.displayed():c.forced());c.p().refreshDimensions();}
-    public static void clearAll(){for(var c:CRAWLS.values())restore(c);CRAWLS.clear();LiteraryMotion.clearAll();HolyRabbit.clearAll();ElkLotEnding.clearAll();MOVIE_CANOES.clear();NurseryToys.clearAll();GhostsSet.clearAll();}
+    public static void clearAll(){for(var c:CRAWLS.values())restore(c);CRAWLS.clear();LiteraryMotion.clearAll();HolyRabbit.clearAll();ElkLotEnding.clearAll();MovieNight.clearAll();NurseryToys.clearAll();GhostsSet.clearAll();}
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p){crawl(p,false);scale(p,false);HolyRabbit.release(p);}}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void frozenFood(LivingEntityUseItemEvent.Start e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!inside(p,LabyrinthPlace.HOLY_RABBIT)||!retreatLocked(p))return;var s=e.getItem();if(s.is(Items.SNOWBALL)&&s.has(DataComponents.FOOD))return;if(s.is(LiteraryRegistry.MEAL.get())){var t=s.get(DataComponents.CUSTOM_DATA);if(t!=null&&t.copyTag().hasUUID(OWNER)&&t.copyTag().getUUID(OWNER).equals(p.getUUID()))return;}if(s.has(DataComponents.FOOD)){e.setCanceled(true);p.displayClientMessage(Component.literal("It is frozen hard. He is bringing something down to you."),true);}}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void snowNibble(PlayerInteractEvent.RightClickItem e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!inside(p,LabyrinthPlace.HOLY_RABBIT)||!p.getItemInHand(e.getHand()).is(Items.SNOWBALL))return;var snow=p.getItemInHand(e.getHand());snow.set(DataComponents.FOOD,new net.minecraft.world.food.FoodProperties.Builder().nutrition(0).saturationModifier(0).alwaysEdible().build());p.startUsingItem(e.getHand());e.setCanceled(true);e.setCancellationResult(InteractionResult.CONSUME);}
@@ -324,84 +324,13 @@ public final class LiteraryVignettes {
     private static void hunt(ServerPlayer p,BlockPos b,LabyrinthPlace place,CompoundTag own){
         if(place==LabyrinthPlace.CAMP_BLOOD){var killer=actor(p,place,"Killer",LiteraryActor.KILLER,new BlockPos(12,0,-48),false);if(killer==null)return;if(own.getBoolean("Pursued")&&p.getZ()<b.getZ()-95&&own.getInt("Present")>180)ready(p,place,own,"escaped_past_the_last_cabins");return;}
         if(place==LabyrinthPlace.COSTUME_NIGHT&&own.getBoolean("WitchSeen")&&p.serverLevel().getBlockState(p.blockPosition().below()).is(Blocks.GRASS_BLOCK)&&p.getZ()<b.getZ()-54)ready(p,place,own,"reached_living_grass_beyond_the_costumes");
-        var witch=huntBody(p,place,new BlockPos(14,0,-41));if(witch==null)return;boolean water=p.isUnderWater()&&p.getY()+p.getBbHeight()<b.getY();boolean grass=p.serverLevel().getBlockState(p.blockPosition().below()).is(Blocks.GRASS_BLOCK);
+        var witch=huntBody(p,place,place==LabyrinthPlace.MOVIE_NIGHT?MovieNight.WITCH_START:new BlockPos(14,0,-41));
+        // The canoes, the pier and the film go on whether or not her body is loaded here.
+        if(witch==null){if(place==LabyrinthPlace.MOVIE_NIGHT)MovieNight.reader(p,b,own,null);return;}boolean water=p.isUnderWater()&&p.getY()+p.getBbHeight()<b.getY();boolean grass=p.serverLevel().getBlockState(p.blockPosition().below()).is(Blocks.GRASS_BLOCK);
         if(place==LabyrinthPlace.COSTUME_NIGHT){if(HouseWatchers.sees(p,witch.getEyePosition()))own.putBoolean("WitchSeen",true);if(own.getBoolean("WitchSeen")&&grass&&p.getZ()<b.getZ()-54)ready(p,place,own,"reached_living_grass_beyond_the_costumes");}
         if(place==LabyrinthPlace.WINTER_LAKE){if(water){own.putInt("SubmergedTicks",own.getInt("SubmergedTicks")+5);}if(own.getBoolean("BrokeIce")&&own.getInt("SubmergedTicks")>=100&&p.getZ()<b.getZ()-76&&p.getY()>=b.getY())ready(p,place,own,"broke_ice_waited_beneath_it_and_reached_the_bank");}
-        if(place==LabyrinthPlace.MOVIE_NIGHT){ensureMovieCanoe(p,b);if(p.getVehicle() instanceof LakeCanoeEntity canoe&&canoe.getTags().contains("LiteraryMovieCanoe")){own.putBoolean("Rowed",true);if(own.contains("LastRowX")){double dx=p.getX()-own.getDouble("LastRowX"),dz=p.getZ()-own.getDouble("LastRowZ");double dist=Math.sqrt(dx*dx+dz*dz);if(dist<3)own.putDouble("RowDistance",own.getDouble("RowDistance")+dist);}own.putDouble("LastRowX",p.getX());own.putDouble("LastRowZ",p.getZ());if(own.getInt("Present")%140==0){var rocket=new net.minecraft.world.entity.projectile.FireworkRocketEntity(p.serverLevel(),p.getX()+9,p.getY()+4,p.getZ()-6,new ItemStack(Items.FIREWORK_ROCKET));p.serverLevel().addFreshEntity(rocket);sound(p,SoundEvents.FIREWORK_ROCKET_LARGE_BLAST,p.blockPosition(),1,1);p.serverLevel().sendParticles(net.minecraft.core.particles.ParticleTypes.FLASH,witch.getX(),b.getY()+2,witch.getZ(),1,0,0,0,0);if(observedMovieFlash(p,witch))own.putInt("Flashes",own.getInt("Flashes")+1);Vec3 toward=p.position().subtract(witch.position()).multiply(1,0,1).normalize();witch.move(MoverType.SELF,toward.scale(6));}}
-            if(own.getBoolean("Rowed")&&own.getDouble("RowDistance")>=45&&own.getInt("Flashes")>=2&&p.getZ()<b.getZ()-79){if(p.getVehicle()!=null)p.stopRiding();ready(p,place,own,"rowed_to_the_far_pier_between_firework_exposures");}}
+        if(place==LabyrinthPlace.MOVIE_NIGHT)MovieNight.reader(p,b,own,witch);
 
-    }
-    private static boolean observedMovieFlash(ServerPlayer reader,LakeWitchEntity witch){
-        Vec3 eye=reader.getEyePosition(),point=witch.getEyePosition(),delta=point.subtract(eye);
-        return delta.lengthSqr()<=48*48&&delta.lengthSqr()>.0001&&reader.getLookAngle().dot(delta.normalize())>=.5
-                &&reader.serverLevel().clip(new ClipContext(eye,point,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,reader)).getType()==HitResult.Type.MISS;
-    }
-    private static final Map<UUID,LakeCanoeEntity> MOVIE_CANOES=new HashMap<>();
-    private static void ensureMovieCanoe(ServerPlayer p, BlockPos b) {
-        var place = LabyrinthPlace.MOVIE_NIGHT;
-        var d = LabyrinthData.get(p.server);
-        var world = shared(d, place);
-        var level = p.serverLevel();
-        LakeCanoeEntity canoe = world.hasUUID("Canoe") && level.getEntity(world.getUUID("Canoe")) instanceof LakeCanoeEntity c ? c : null;
-        if(canoe==null&&world.hasUUID("Canoe")){
-            var queued=MOVIE_CANOES.get(world.getUUID("Canoe"));
-            if(queued!=null&&!queued.isRemoved()&&queued.level()==level)canoe=queued;
-        }
-        if (canoe == null) {
-            // Request only the saved original section (or the spawn section), never force generation.
-            var at=world.hasUUID("Canoe")&&!world.getBoolean("CanoeRemoved")&&world.contains("CanoePosition")?BlockPos.of(world.getLong("CanoePosition")):b.offset(0,-1,-16);
-            var chunks=level.getChunkSource();chunks.addRegionTicket(TicketType.PORTAL,new ChunkPos(at),3,at);
-            if(chunks.getChunkNow(at.getX()>>4,at.getZ()>>4)==null){chunks.getChunkFuture(at.getX()>>4,at.getZ()>>4,net.minecraft.world.level.chunk.status.ChunkStatus.FULL,true);return;}
-            if(!level.areEntitiesLoaded(ChunkPos.asLong(at.getX()>>4,at.getZ()>>4)))return;
-            // Loaded absence still cannot authorize a replacement. Only actual native discard/death can.
-            if(world.hasUUID("Canoe")&&!world.getBoolean("CanoeRemoved"))return;
-            canoe = DrownedTownRegistry.CAVE_CANOE.get().create(level);
-            if (canoe == null) return;
-            canoe.addTag("LiteraryMovieCanoe");
-            canoe.mobile(true);
-            canoe.moveTo(b.getX()+.5, b.getY()-.4, b.getZ()-15.5, 180, 0);
-            if (!level.addFreshEntity(canoe)) return;
-            MOVIE_CANOES.put(canoe.getUUID(),canoe);
-            world.putUUID("Canoe", canoe.getUUID());
-            world.remove("CanoeRemoved");
-            world.remove("CanoeClaim");
-        }
-        ServerPlayer claimant = world.hasUUID("CanoeClaim") ? p.server.getPlayerList().getPlayer(world.getUUID("CanoeClaim")) : null;
-        boolean active = claimant != null && inside(claimant, place) && !personal(d, claimant.getUUID(), place).getBoolean("Ready");
-        if (canoe.getPassengers().isEmpty() && !active) {
-            var start = new Vec3(b.getX()+.5, b.getY()-.4, b.getZ()-15.5);
-            if (canoe.position().distanceToSqr(start) > 16) {
-                canoe.moveTo(start.x, start.y, start.z, 180, 0);
-                canoe.setDeltaMovement(Vec3.ZERO);
-            }
-            world.remove("CanoeClaim");
-        }
-        world.putLong("CanoePosition", canoe.blockPosition().asLong());
-        shared(d, place, world);
-    }
-
-    @SubscribeEvent public static void movieCanoeRemoved(EntityLeaveLevelEvent event) {
-        var entity = event.getEntity();
-        MOVIE_CANOES.remove(entity.getUUID());
-        if (!(event.getLevel() instanceof ServerLevel level) || !entity.getTags().contains("LiteraryMovieCanoe")) return;
-        var d = LabyrinthData.get(level.getServer());
-        var world = shared(d, LabyrinthPlace.MOVIE_NIGHT);
-        if (!world.hasUUID("Canoe") || !world.getUUID("Canoe").equals(entity.getUUID())) return;
-        world.putLong("CanoePosition", entity.blockPosition().asLong());
-        var reason = entity.getRemovalReason();
-        if (reason == Entity.RemovalReason.KILLED || reason == Entity.RemovalReason.DISCARDED) world.putBoolean("CanoeRemoved", true);
-        shared(d, LabyrinthPlace.MOVIE_NIGHT, world);
-    }
-
-    public static boolean boardMovie(ServerPlayer p, LakeCanoeEntity canoe) {
-        if (!inside(p, LabyrinthPlace.MOVIE_NIGHT) || !canoe.getTags().contains("LiteraryMovieCanoe")
-                || !p.getMainHandItem().isEmpty() || p.distanceToSqr(canoe) >= 25 || !canoe.getPassengers().isEmpty()) return false;
-        var d = LabyrinthData.get(p.server);
-        var world = shared(d, LabyrinthPlace.MOVIE_NIGHT);
-        if (!world.hasUUID("Canoe") || !world.getUUID("Canoe").equals(canoe.getUUID()) || !p.startRiding(canoe, true)) return false;
-        world.putUUID("CanoeClaim", p.getUUID());
-        shared(d, LabyrinthPlace.MOVIE_NIGHT, world);
-        return true;
     }
     public static BlockPos diaryPosition(int i){return new BlockPos(new int[]{-9,7,-6,10,-11,5,12,-3}[i],0,new int[]{-12,-23,-30,-9,-36,-34,-29,-37}[i]);}
     private static int diaryIndex(BlockPos rel){for(int i=0;i<8;i++)if(rel.equals(diaryPosition(i)))return i;return -1;}

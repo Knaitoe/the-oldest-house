@@ -1,0 +1,49 @@
+{
+  "variants": {
+    "facing=north,kind=speaker": {
+      "model": "the_oldest_house:block/movie_speaker"
+    },
+    "facing=east,kind=speaker": {
+      "model": "the_oldest_house:block/movie_speaker",
+      "y": 90
+    },
+    "facing=south,kind=speaker": {
+      "model": "the_oldest_house:block/movie_speaker",
+      "y": 180
+    },
+    "facing=west,kind=speaker": {
+      "model": "the_oldest_house:block/movie_speaker",
+      "y": 270
+    },
+    "facing=north,kind=projector": {
+      "model": "the_oldest_house:block/movie_projector"
+    },
+    "facing=east,kind=projector": {
+      "model": "the_oldest_house:block/movie_projector",
+      "y": 90
+    },
+    "facing=south,kind=projector": {
+      "model": "the_oldest_house:block/movie_projector",
+      "y": 180
+    },
+    "facing=west,kind=projector": {
+      "model": "the_oldest_house:block/movie_projector",
+      "y": 270
+    },
+    "facing=north,kind=mortar": {
+      "model": "the_oldest_house:block/movie_mortar"
+    },
+    "facing=east,kind=mortar": {
+      "model": "the_oldest_house:block/movie_mortar",
+      "y": 90
+    },
+    "facing=south,kind=mortar": {
+      "model": "the_oldest_house:block/movie_mortar",
+      "y": 180
+    },
+    "facing=west,kind=mortar": {
+      "model": "the_oldest_house:block/movie_mortar",
+      "y": 270
+    }
+  }
+}
