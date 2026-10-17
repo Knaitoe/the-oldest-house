@@ -18,7 +18,7 @@ def main():
     review=json.loads(CATALOG.read_text());changed={r['path']:r for r in review['repainted']}
     assert review['excluded']==['Borrasca']
     assert set(changed).isdisjoint(review['unchanged_png_sha256'])
-    assert len(changed)+len(review['unchanged_png_sha256'])==review['png_count']==766
+    assert len(changed)+len(review['unchanged_png_sha256'])==review['png_count']==769
     packaged=None
     if args.jar:
         jars=[p for p in (ROOT/'build/libs').glob('this_house_has_ghosts_in_it-*.jar') if not p.stem.endswith(('-sources','-javadoc'))]

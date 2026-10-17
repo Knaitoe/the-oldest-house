@@ -99,7 +99,7 @@ public final class IndianLakeLinkedTests {
             PreservedCave.clearAll();LabyrinthDoors.clearAll();LabyrinthBuilder.clearAll();
         }
     }
-    private static Fixture cave,throwing,upgrade;
+    private static Fixture cave,throwing,upgrade,letGo;
     private static Fixture originalCave;
     private static Fixture originalTown,originalShallows;
     private static NativeTestChunks originalTownChunks;
@@ -129,10 +129,13 @@ public final class IndianLakeLinkedTests {
     @GameTest(template="empty",batch="shallows_originals0493",timeoutTicks=350)
     public static void shallowRecollectionsRemainPrivateAndReuseTheirLateOriginals(GameTestHelper h){
         originalShallows=new Fixture(h,new BlockPos(48700,80,48700),LabyrinthPlace.SHALLOWS);var f=originalShallows;var data=LabyrinthData.get(f.server);var bounds=IndianLakeRooms.bounds(f.base,f.place);
-        var owner=f.realPlayer("memory_owner",f.base.offset(2,0,-7));var peer=f.realPlayer("memory_peer",f.base.offset(4,0,-7));
+        var owner=f.realPlayer("memory_owner",f.base.offset(-1,0,-11));var peer=f.realPlayer("memory_peer",f.base.offset(-8,0,-11));
         IndianLakeProgress.hunted(data,owner.getUUID());IndianLakeProgress.hunted(data,peer.getUUID());Shallows.onArrive(owner,f.place);Shallows.onArrive(peer,f.place);
         var original=Shallows.actor(owner);var other=Shallows.actor(peer);h.assertTrue(original!=null&&other!=null&&original.broadcastToPlayer(owner)&&!original.broadcastToPlayer(peer)&&other.broadcastToPlayer(peer)&&!other.broadcastToPlayer(owner),"native tracking sends each physical recollection only to its own reader");
         var shared=DrownedTownRegistry.LAKE_WITCH.get().create(f.level);h.assertTrue(shared.broadcastToPlayer(owner)&&shared.broadcastToPlayer(peer),"the real shared lake witch retains ordinary native tracking");shared.discard();
+        var ownBoy=Shallows.carrier(owner);var peerBoy=Shallows.carrier(peer);
+        h.assertTrue(ownBoy!=null&&peerBoy!=null&&ownBoy.broadcastToPlayer(owner)&&!ownBoy.broadcastToPlayer(peer)&&peerBoy.broadcastToPlayer(peer)&&!peerBoy.broadcastToPlayer(owner)
+                &&Shallows.personal(data,owner.getUUID()).getInt("Slot")!=Shallows.personal(data,peer.getUUID()).getInt("Slot")&&original.distanceToSqr(other)>16,"each reader has a private boy at her feet and a carry place of their own on the bank");
         original.setCustomName(Component.literal("The original recollection"));var id=original.getUUID();var saved=original.saveWithoutId(new CompoundTag());original.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);
         var boy=f.level.getEntitiesOfClass(LakeCongregantEntity.class,bounds,e->e.getTags().contains(Shallows.BOY+"0")).getFirst();boy.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);
         f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",LabyrinthData.load(data.save(new CompoundTag(),f.level.registryAccess()),f.level.registryAccess()));
@@ -239,42 +242,93 @@ public final class IndianLakeLinkedTests {
         h.runAfterDelay(1,()->io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents.onPlayerTick(new net.neoforged.neoforge.event.tick.PlayerTickEvent.Post(player)));
         h.runAfterDelay(3,()->{h.assertTrue(player.serverLevel()==destination&&WitnessAccount.has(data,player.getUUID(),WitnessAccount.Story.PRESERVED_CAVE)&&data.isCompleted(PreservedCave.ID)&&data.returnDepth(player.getUUID())==0,"the actual native arrival grants the personally witnessed aftermath and consumes its real return path once");h.succeed();});
     }
-    @GameTest(template="empty",batch="lake_throw",timeoutTicks=450)
-    public static void nativeCarryChargedThrowAndSplashNameOnlyItsOwner(GameTestHelper h){
+    @GameTest(template="empty",batch="lake_throw",timeoutTicks=700)
+    public static void swungOutOnThreeSheBreaksOnTheWaterAndOnlyItsOwnerIsNamed(GameTestHelper h){
         throwing=new Fixture(h,new BlockPos(7200,80,7200),LabyrinthPlace.SHALLOWS);Fixture f=throwing;LabyrinthData data=LabyrinthData.get(f.server);
-        ServerPlayer owner=f.player("named_thrower",f.base.offset(2,0,-7)),peer=f.player("unhunted_peer",f.base.offset(4,0,-7));
+        ServerPlayer owner=f.player("named_thrower",f.base.offset(-1,0,-11)),peer=f.player("unhunted_peer",f.base.offset(4,0,-7));
         // Even a manually placed debug door must respect the hunt prerequisite.
         var gate=new LabyrinthData.Door("hunt_gate",HouseDimensions.OUTSIDE,f.base.offset(42,0,1),Direction.SOUTH,"place:shallows",true);data.putDoor(gate);
         Vec3 before=peer.position();LabyrinthDoors.use(peer,gate);h.assertTrue(peer.position().equals(before)&&data.returnDepth(peer.getUUID())==0,"command doors cannot skip the personal hunt");
-        IndianLakeProgress.hunted(data,owner.getUUID());Shallows.onArrive(owner,LabyrinthPlace.SHALLOWS);LakeWitchEntity girl=Shallows.actor(owner);
-        h.assertTrue(girl!=null&&!Shallows.lift(peer,girl)&&!IndianLakeProgress.hasThrown(data,owner.getUUID()),"entering does not count a throw, and peers cannot lift this owner's actor");
-        owner.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.TORCH));h.assertTrue(!Shallows.lift(owner,girl),"lifting really requires empty hands");owner.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
+        IndianLakeProgress.hunted(data,owner.getUUID());Shallows.onArrive(owner,LabyrinthPlace.SHALLOWS);LakeWitchEntity girl=Shallows.actor(owner);LakeCongregantEntity boy=Shallows.carrier(owner);
+        h.assertTrue(girl!=null&&boy!=null&&girl.memoryPhase()==Shallows.LYING&&boy.carry()==Shallows.HOLD&&boy.broadcastToPlayer(owner)&&!boy.broadcastToPlayer(peer),"she lies on the bank with a boy holding her feet whom only this reader is sent");
+        h.assertTrue(!Shallows.lift(peer,girl)&&!IndianLakeProgress.hasThrown(data,owner.getUUID()),"entering does not count a throw, and peers cannot take this owner's recollection");
+        owner.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.TORCH));h.assertTrue(!Shallows.lift(owner,girl),"taking her wrists really requires empty hands");owner.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
         girl.interact(owner,InteractionHand.MAIN_HAND);
-        h.assertTrue(owner.getMainHandItem().is(DrownedTownRegistry.SHALLOWS_BURDEN.get())&&girl.memoryPhase()==1,"native entity interaction lifts the actual recollection");
-        // Abandoning a carry is retryable and cleans its temporary item.
-        Shallows.onDepart(owner);h.assertTrue(!IndianLakeProgress.hasThrown(data,owner.getUUID())&&owner.getMainHandItem().isEmpty(),"an interrupted carry cannot grant a name or leave a tradeable grip");
+        var stance=Shallows.stance(f.base,0);
+        h.assertTrue(owner.getMainHandItem().is(DrownedTownRegistry.SHALLOWS_BURDEN.get())&&girl.memoryPhase()==Shallows.CARRIED&&boy.carry()==Shallows.SWINGING
+                &&owner.position().distanceToSqr(stance)<.01&&Math.abs(owner.getYRot()-Shallows.READER_YAW)<1,"native entity interaction puts the reader at her wrists, facing the boy at her feet");
+        // Abandoning a carry is retryable and cleans its temporary grip and both private people.
+        Shallows.onDepart(owner);h.assertTrue(!IndianLakeProgress.hasThrown(data,owner.getUUID())&&owner.getMainHandItem().isEmpty()&&girl.isRemoved()&&boy.isRemoved(),"an interrupted carry cannot grant a name or leave a grip or a boy behind");
         Shallows.onArrive(owner,LabyrinthPlace.SHALLOWS);girl=Shallows.actor(owner);girl.interact(owner,InteractionHand.MAIN_HAND);
         owner.getInventory().setItem(5,new ItemStack(DrownedTownRegistry.DRIED_ESSAY_ONE.get()));
-        owner.moveTo(Vec3.atBottomCenterOf(f.base.offset(0,0,-12)));owner.setYRot(180);owner.setXRot(0);
-        LakeWitchEntity falling=girl;int[] phase={0},started={0};
+        LakeWitchEntity flying=girl;int[] step={0},presses={0},lowest={0};double[] lastZ={0};Vec3[] still={null};
+        double surface=f.base.getY()-1+8/9D;
         LakeWitchEntity stale=DrownedTownRegistry.LAKE_WITCH.get().create(f.level);stale.recollection(owner.getUUID(),f.base);
         stale.moveTo(Vec3.atBottomCenterOf(f.base.offset(2,0,-8)));f.level.addFreshEntity(stale);
         h.onEachTick(()->{
-            f.load();if(phase[0]==0&&falling.tickCount>=3){
-                ItemStack held=owner.getMainHandItem();held.getItem().use(f.level,owner,InteractionHand.MAIN_HAND);
-                held.getItem().releaseUsing(held,f.level,owner,72000-12);started[0]=falling.tickCount;phase[0]=1;
-                h.assertTrue(falling.memoryPhase()==2&&!IndianLakeProgress.hasThrown(data,owner.getUUID()),"releasing the charged grip launches the body but does not assume a landing");
-                if(stale.tickCount>0)h.assertTrue(stale.isRemoved(),"a late-loaded actor from an old visit cannot duplicate the current memory");
+            f.load();if(flying.tickCount<3)return;
+            if(stale.tickCount>0)h.assertTrue(stale.isRemoved(),"a late-loaded actor from an old visit cannot duplicate the current memory");
+            if(step[0]==0){
+                h.assertTrue(Shallows.swing(owner,-1)&&Shallows.count(flying)==1&&!Shallows.swing(owner,-1),"the left key swings her out once; the same key again is not a stroke");
+                step[0]=1;presses[0]=1;return;
             }
-            if(phase[0]!=1)return;
-            h.assertTrue(falling.tickCount-started[0]<120,"native entity physics must reach water: position="+falling.position()+"; velocity="+falling.getDeltaMovement()+"; phase="+falling.memoryPhase()+"; noAI="+falling.isNoAi()+"; noGravity="+falling.isNoGravity());
-            if(!IndianLakeProgress.hasThrown(data,owner.getUUID()))return;
-            h.assertTrue(falling.memoryPhase()==3&&falling.getZ()<=f.base.getZ()-14,"the actual splash finishes the throwing beat");
-            var book=owner.getInventory().getItem(5).get(DataComponents.WRITTEN_BOOK_CONTENT);
-            h.assertTrue(book.pages().getLast().raw().getString().contains("named_thrower"),"a carried dried essay gains the player's name immediately");
-            h.assertTrue(WitnessAccount.has(data,owner.getUUID(),WitnessAccount.Story.SHALLOWS)&&!WitnessAccount.has(data,peer.getUUID(),WitnessAccount.Story.SHALLOWS)
-                    &&!IndianLakeProgress.hasThrown(data,peer.getUUID())&&!LabyrinthDealer.vignettesAvailable(data,owner.getUUID()).contains(LabyrinthPlace.SHALLOWS),"resolution belongs to its participant and exhausts only their scene");
-            h.assertTrue(!Shallows.throwGirl(owner,new ItemStack(DrownedTownRegistry.SHALLOWS_BURDEN.get())),"a forged or stale grip cannot repeat the throw");phase[0]=2;h.succeed();
+            if(step[0]==1){
+                // Alternate keys as each stroke allows: back, out (two), back, out (three) and both let go.
+                if(flying.memoryPhase()==Shallows.CARRIED){
+                    if(Shallows.readyForStroke(flying)&&Shallows.swing(owner,presses[0]%2==1?1:-1))presses[0]++;
+                    h.assertTrue(presses[0]<=5&&!IndianLakeProgress.hasThrown(data,owner.getUUID()),"three strokes out release her, never more and never a credit while she is still held");
+                    if(presses[0]%2==0)h.assertTrue(Shallows.count(flying)==presses[0]/2,"the boy counts only the strokes out");
+                    return;
+                }
+                h.assertTrue(flying.memoryPhase()==Shallows.FLYING&&presses[0]==5&&owner.getMainHandItem().isEmpty(),"on three both let go mid-swing and the grip is gone: phase="+flying.memoryPhase()+" presses="+presses[0]);
+                step[0]=2;return;
+            }
+            if(step[0]==2){
+                h.assertTrue(flying.getY()>=surface-.01||flying.getZ()>f.base.getZ()-13,"the lake never takes her: y="+flying.getY()+" z="+flying.getZ());
+                if(!IndianLakeProgress.hasThrown(data,owner.getUUID())){h.assertTrue(flying.memoryPhase()==Shallows.FLYING&&flying.memoryTicks<60,"thrown, she reaches the water: "+flying.position());return;}
+                h.assertTrue(flying.memoryPhase()==Shallows.BROKEN&&flying.getZ()<=f.base.getZ()-14&&Math.abs(flying.getY()-surface)<.02,"she breaks on the water's surface well out from the bank: "+flying.position());
+                var book=owner.getInventory().getItem(5).get(DataComponents.WRITTEN_BOOK_CONTENT);
+                h.assertTrue(book.pages().getLast().raw().getString().contains("named_thrower"),"a carried dried essay gains the player's name immediately");
+                h.assertTrue(WitnessAccount.has(data,owner.getUUID(),WitnessAccount.Story.SHALLOWS)&&!WitnessAccount.has(data,peer.getUUID(),WitnessAccount.Story.SHALLOWS)
+                        &&!IndianLakeProgress.hasThrown(data,peer.getUUID())&&!LabyrinthDealer.vignettesAvailable(data,owner.getUUID()).contains(LabyrinthPlace.SHALLOWS),"resolution belongs to its participant and exhausts only their scene");
+                h.assertTrue(!Shallows.swing(owner,-1),"a finished throw takes no more strokes");
+                step[0]=3;return;
+            }
+            if(step[0]==3){
+                h.assertTrue(!flying.isRemoved(),"the aftermath plays out before she goes");
+                if(flying.memoryPhase()==Shallows.BROKEN){if(still[0]==null)still[0]=flying.position();h.assertTrue(flying.position().distanceToSqr(still[0])<1e-6,"she lies still before she moves");return;}
+                if(flying.memoryPhase()==Shallows.RISING){lastZ[0]=flying.getZ();return;}
+                if(flying.memoryPhase()==Shallows.SCURRY){
+                    h.assertTrue(flying.getZ()<lastZ[0]&&(flying.getY()>=surface-.01||flying.getZ()<f.base.getZ()-35),"she runs away across the water's surface, toward the far woods: "+flying.position());
+                    lastZ[0]=flying.getZ();lowest[0]++;return;
+                }
+                h.assertTrue(flying.memoryPhase()==Shallows.GONE&&lowest[0]>20&&flying.getZ()<=f.base.getZ()-34,"she reaches the woods across the lake: "+flying.position());
+                step[0]=4;h.succeed();
+            }
+        });
+    }
+    @AfterBatch(batch="lake_letgo") public static void cleanLetGo(ServerLevel level){if(letGo!=null){letGo.close();letGo=null;}}
+    @GameTest(template="empty",batch="lake_letgo",timeoutTicks=300)
+    public static void lettingGoOrStoppingStartsTheCountAgainAndABlowStillRefuses(GameTestHelper h){
+        letGo=new Fixture(h,new BlockPos(7800,80,7800),LabyrinthPlace.SHALLOWS);Fixture f=letGo;LabyrinthData data=LabyrinthData.get(f.server);
+        ServerPlayer owner=f.player("second_thoughts",f.base.offset(-1,0,-11));IndianLakeProgress.hunted(data,owner.getUUID());
+        Shallows.onArrive(owner,LabyrinthPlace.SHALLOWS);LakeWitchEntity girl=Shallows.actor(owner);LakeCongregantEntity boy=Shallows.carrier(owner);
+        h.assertTrue(Shallows.lift(owner,girl)&&Shallows.swing(owner,-1),"she is taken up and swung out");
+        int[] step={0};long[] at={0};
+        h.onEachTick(()->{
+            f.load();long now=f.level.getGameTime();
+            if(step[0]==0&&Shallows.readyForStroke(girl)){owner.setShiftKeyDown(true);step[0]=1;at[0]=now;return;}
+            if(step[0]==1&&now>at[0]+2){
+                h.assertTrue(girl.memoryPhase()==Shallows.LYING&&Shallows.count(girl)==0&&owner.getMainHandItem().isEmpty()&&boy.carry()==Shallows.HOLD,"sneaking lets go: she is down on the bank, the count is gone, the boy still has her feet");
+                owner.setShiftKeyDown(false);h.assertTrue(Shallows.lift(owner,girl)&&Shallows.swing(owner,-1)&&Shallows.count(girl)==1,"she can be taken up again");
+                step[0]=2;at[0]=now;return;
+            }
+            if(step[0]==2&&now>at[0]+100){
+                h.assertTrue(girl.memoryPhase()==Shallows.CARRIED&&Shallows.count(girl)==0&&Math.abs(Shallows.swingAngle(girl))<.05F,"a swing left alone dies down and the count starts over: angle="+Shallows.swingAngle(girl));
+                Shallows.onAttack(new AttackEntityEvent(owner,boy));
+                h.assertTrue(Shallows.personal(data,owner.getUUID()).getBoolean("Cold")&&girl.isRemoved()&&boy.isRemoved()&&owner.getMainHandItem().isEmpty()&&!IndianLakeProgress.hasThrown(data,owner.getUUID()),"striking the boy at her feet darkens the visit without a throw");
+                step[0]=3;h.succeed();
+            }
         });
     }
     @GameTest(template="empty",batch="lake_upgrade",timeoutTicks=200)

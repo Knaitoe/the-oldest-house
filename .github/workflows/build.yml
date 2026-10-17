@@ -398,6 +398,14 @@ jobs:
                            'assets/the_oldest_house/sounds/indian_lake/door.ogg',
                            'assets/the_oldest_house/textures/entity/lake_witch_memory.png',
                            'assets/the_oldest_house/textures/entity/lake_boy.png',
+                           'assets/the_oldest_house/textures/entity/lake_boy_1.png',
+                           'assets/the_oldest_house/textures/entity/lake_boy_2.png',
+                           'assets/the_oldest_house/textures/entity/lake_boy_3.png',
+                           'assets/the_oldest_house/sounds/shallows/swing.ogg',
+                           'assets/the_oldest_house/sounds/shallows/break.ogg',
+                           'assets/the_oldest_house/sounds/shallows/rise.ogg',
+                           'assets/the_oldest_house/sounds/shallows/scurry.ogg',
+                           'io/github/knaitoe/theoldesthouse/client/ShallowsClient.class',
                            'assets/the_oldest_house/models/item/shallows_burden.json',
                            'assets/the_oldest_house/sounds/indian_lake/cave_voice_0.ogg',
                            'assets/the_oldest_house/sounds/indian_lake/cave_voice_7.ogg',
@@ -696,6 +704,8 @@ jobs:
           test -s build/font-smoke/native-harrigan-wake.png
           test -s build/font-smoke/character-art-passed.txt
           for view in $(seq -w 0 19); do test -s build/font-smoke/native-character-art-$view.png; done
+          test -s build/font-smoke/shallows-passed.txt
+          for view in 0 1 2 3 4 5 6 7; do test -s build/font-smoke/native-shallows-$view.png; done
           test -s build/font-smoke/cast-passed.txt
           test -s build/font-smoke/stacey-scrabble-passed.txt
           test -s build/font-smoke/native-stacey-scrabble.png

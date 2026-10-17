@@ -810,6 +810,7 @@ First playable site in 0.4.11: [DROWNED_TOWN_0_4_11.md](DROWNED_TOWN_0_4_11.md).
 - Dealt only after this player has actually been hunted in Drowned Town. The player is one of the boys who throws her.
 - Completing it adds a page to the dried essays listing the boys who were there, including the player's username. In 0.4.12, lift her with empty hands, carry her to the bank, briefly hold use and release toward the water. Actual contact with the lake completes the recollection; leaving early stays retryable. Completion is personal.
 - Reuses the custom Lake Witch with jointed limbs.
+- **0.4.101:** the reader takes her wrists while a private boy holds her feet and swings her with the strafe keys; on the count of three both let go mid-swing. The lake does not take her: she breaks on its surface, lies still, gets up wrong and runs across the water into the woods on all fours. The landing is the throwing beat. Canon: [SHALLOWS_0_4_101.md](SHALLOWS_0_4_101.md).
 
 ### Indian Lake: the cave of the preserved dead
 

@@ -59,6 +59,10 @@ LOOKS = {
     'finale_witness': Look('#c0a184','#ada794','receding','#615746','#484438','coat','#98846a',age=2,beard='full',logical=64),
     'caged_child': Look('#c9a283','#4b342a','messy','#79766b','#494a46','ragged','#b4aa8c',eyes='#6c6252',logical=64),
     'lake_boy': Look('#c39a77','#55402d','messy','#706248','#4b4e46','shirt','#b7a478',logical=64),
+    # 0.4.101: the Shallows' other boys. Lonnie holds her feet; Hank and Clay stand on the bank with Bud.
+    'lake_boy_1': Look('#bf9171','#2f241d','close','#7a3a2e','#3d4148','flannel','#b59a6a',eyes='#4a3c30',logical=64),
+    'lake_boy_2': Look('#d8ae8e','#a4562e','short','#56664c','#55503f','knit','#c9b98f',eyes='#5a6a4a',logical=64),
+    'lake_boy_3': Look('#d2a684','#c9a35a','messy','#4f6f8f','#3b3f4c','tee','#e0d6bc',eyes='#506a80',logical=64),
     'lake_congregant': Look('#c6aa8c','#c4c1af','receding','#615349','#46443f','suit','#82755e',age=2,logical=64),
     'lake_congregant_1': Look('#ba9271','#5c4935','part','#667051','#464a3d','suit','#7d654d',age=1,logical=64),
     'lake_congregant_2': Look('#cea487','#584035','bun','#743f49','#4d383c','dress','#bd9c7a',logical=64),

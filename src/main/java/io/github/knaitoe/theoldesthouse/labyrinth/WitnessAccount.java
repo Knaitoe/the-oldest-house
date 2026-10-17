@@ -40,7 +40,7 @@ public final class WitnessAccount {
         PRESERVED_CAVE("preserved_cave", "The congregation", "understanding",
                 "I walked between the people the lake had kept. Their clothes belonged to different years. Their faces had not changed. The canoe was behind the last row."),
         SHALLOWS("shallows", "The boys", "memory",
-                "I carried her to the water. I let go. The school pages remembered my name among the boys on the bank."),
+                "I held her wrists while another boy held her feet, and we swung her out over the water on three. The lake would not take her. The school pages remembered my name among the boys on the bank."),
         PHONE_CANOE("phone_canoe","The recording","memory",
                 "I took the canoe over the drowned steeple. The telephone fell. I could still see the sky, but I could no longer turn toward the shore. Something kept recording after my hands were empty."),
         GOATMAN("goatman","The trailer","survival",

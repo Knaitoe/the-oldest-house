@@ -31,10 +31,16 @@ public final class LakeWitchEntity extends PathfinderMob {
     private static final EntityDataAccessor<Integer> MEMORY_PHASE = SynchedEntityData.defineId(LakeWitchEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> HUNT_PHASE = SynchedEntityData.defineId(LakeWitchEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> BITING = SynchedEntityData.defineId(LakeWitchEntity.class, EntityDataSerializers.BOOLEAN);
+    /** The Shallows carry's swing angle in radians, toward the water when positive (0.4.101). */
+    private static final EntityDataAccessor<Float> SWING = SynchedEntityData.defineId(LakeWitchEntity.class, EntityDataSerializers.FLOAT);
     public static final int STALK=0, LUNGE=1, WITHDRAW=2;
     public static final double HUNT_SPEED_FACTOR=2;
     public static final int COVER_SEARCH_LIMIT=80, DOOR_BREAK_TICKS=60;
     @Nullable private UUID memoryOwner;
+    /** Server: ticks spent in the current recollection phase, saved so an aftermath resumes where it was. */
+    public int memoryTicks;
+    /** Client: the previous and current swing, and the client tick the current phase began. */
+    private float swingO,swingNow;private int phaseStart;
     @Nullable private BlockPos memoryBase;
     @Nullable private BlockPos shoreBase;
     @Nullable private BlockPos literaryBase;
@@ -69,25 +75,43 @@ public final class LakeWitchEntity extends PathfinderMob {
                 .add(Attributes.ATTACK_DAMAGE, 6).add(Attributes.FOLLOW_RANGE, 40).add(Attributes.KNOCKBACK_RESISTANCE, .65);
     }
     @Override protected void registerGoals() {}
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { super.defineSynchedData(builder); builder.define(STRIKING, false); builder.define(MEMORY_PHASE, -1);builder.define(HUNT_PHASE,STALK);builder.define(BITING,false); }
+    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { super.defineSynchedData(builder); builder.define(STRIKING, false); builder.define(MEMORY_PHASE, -1);builder.define(HUNT_PHASE,STALK);builder.define(BITING,false);builder.define(SWING,0F); }
     public boolean memory() { return entityData.get(MEMORY_PHASE) >= 0; }
     public int memoryPhase() { return entityData.get(MEMORY_PHASE); }
-    public void memoryPhase(int phase) { entityData.set(MEMORY_PHASE, phase);refreshDimensions(); }
+    public void memoryPhase(int phase) { if(phase!=memoryPhase())memoryTicks=0;entityData.set(MEMORY_PHASE, phase);refreshDimensions(); }
+    public float swing(){return entityData.get(SWING);}
+    public void swing(float angle){entityData.set(SWING,angle);}
+    /** The swing between client ticks, for a smooth carry. */
+    public float swingAt(float partial){return net.minecraft.util.Mth.lerp(partial,swingO,swingNow);}
+    /** Client ticks since the current recollection phase began. */
+    public float phaseAge(float partial){return tickCount-phaseStart+partial;}
     public int huntPhase(){return entityData.get(HUNT_PHASE);}
     public boolean biting(){return !memory()&&entityData.get(BITING);}
     public void literaryHunt(BlockPos base,LabyrinthPlace place){
         literaryBase=base.immutable();literaryPlace=place;setNoGravity(true);setInvulnerable(false);
     }
-    @Override public EntityDimensions getDefaultDimensions(Pose pose){return memory()?EntityDimensions.scalable(.6F,1.8F).withEyeHeight(1.6F):super.getDefaultDimensions(pose);}
-    @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(MEMORY_PHASE.equals(key))refreshDimensions();}
+    /** The recollection lies, hangs, tumbles or crawls; each has its own small box, never a standing one. */
+    @Override public EntityDimensions getDefaultDimensions(Pose pose){
+        if(!memory())return super.getDefaultDimensions(pose);
+        return switch(memoryPhase()){
+            case Shallows.LYING->EntityDimensions.scalable(1.2F,.5F).withEyeHeight(.3F);
+            case Shallows.CARRIED,Shallows.FLYING->EntityDimensions.scalable(.8F,.6F).withEyeHeight(.3F);
+            case Shallows.SCURRY,Shallows.GONE->EntityDimensions.scalable(.9F,.8F).withEyeHeight(.5F);
+            default->EntityDimensions.scalable(1.0F,.5F).withEyeHeight(.3F);
+        };
+    }
+    @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(MEMORY_PHASE.equals(key)){refreshDimensions();phaseStart=tickCount;}}
+    @Override public boolean isPushable(){return !memory()&&super.isPushable();}
+    @Override protected void pushEntities(){if(!memory())super.pushEntities();}
+    @Override public boolean isPickable(){return (!memory()||memoryPhase()<=Shallows.CARRIED)&&super.isPickable();}
     public @Nullable UUID memoryOwner() { return memoryOwner; }
     @Override public boolean broadcastToPlayer(ServerPlayer player){
         return (!memory()||memoryOwner!=null&&memoryOwner.equals(player.getUUID()))&&super.broadcastToPlayer(player);
     }
     public @Nullable BlockPos memoryBase() { return memoryBase; }
     public void recollection(UUID owner, BlockPos base) {
-        // No goals or hunt logic run in memory mode; leave native travel enabled for the throw's gravity.
-        memoryOwner=owner;memoryBase=base.immutable();shoreBase=null;memoryPhase(0);setNoAi(false);
+        // No goals or hunt logic run in memory mode. Shallows places her every tick, the throw included (0.4.101).
+        memoryOwner=owner;memoryBase=base.immutable();shoreBase=null;memoryPhase(0);setNoAi(false);setNoGravity(true);
     }
     @Override protected net.minecraft.world.InteractionResult mobInteract(net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand) {
         if(memory()) {
@@ -388,8 +412,9 @@ public final class LakeWitchEntity extends PathfinderMob {
         follow(.26);
     }
     @Override public void tick() {
+        if(level().isClientSide()){swingO=swingNow;swingNow=swing();}
         super.tick();
-        if(memory()) { setAirSupply(300); Shallows.tickActor(this); return; }
+        if(memory()) { setAirSupply(300); if(!level().isClientSide())Shallows.tickActor(this); return; }
         if(literaryBase!=null&&literaryPlace!=null){tickLiterary();return;}
         if (!(level() instanceof ServerLevel level) || shoreBase == null || !isAlive()) return;
         setAirSupply(300);move(MoverType.SELF,Vec3.ZERO);
@@ -528,7 +553,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         tag.putBoolean("CoverPause0459",coverPause);tag.putBoolean("Emerging0459",emerging);tag.putInt("PassingSwipeTicks0459",passingSwipeTicks);
         tag.putInt("HuntPhase0459",huntPhase()==WITHDRAW?WITHDRAW:STALK);
         if(literaryBase!=null&&literaryPlace!=null){tag.putLong("LiteraryBase",literaryBase.asLong());tag.putString("LiteraryScene",literaryPlace.id());}
-        if(memoryOwner!=null&&memoryBase!=null){tag.putUUID("MemoryOwner",memoryOwner);tag.putLong("MemoryBase",memoryBase.asLong());tag.putInt("MemoryPhase",memoryPhase());}
+        if(memoryOwner!=null&&memoryBase!=null){tag.putUUID("MemoryOwner",memoryOwner);tag.putLong("MemoryBase",memoryBase.asLong());tag.putInt("MemoryPhase",memoryPhase());tag.putInt("MemoryTicks0501",memoryTicks);}
     }
     @Override public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag); shoreBase = tag.contains("ShoreBase") ? BlockPos.of(tag.getLong("ShoreBase")) : null;
@@ -538,6 +563,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         failedCoverTicks=Math.min(COVER_SEARCH_LIMIT,Math.max(0,tag.getInt("FailedCoverTicks0459")));exposedHunt=tag.getBoolean("ExposedHunt0459");clearDoorBreak();
         if(shoreBase!=null){setNoGravity(true);settleTicks=40;}
         if(tag.contains("LiteraryBase")){var place=LabyrinthPlace.byId(tag.getString("LiteraryScene"));if(place!=null)literaryHunt(BlockPos.of(tag.getLong("LiteraryBase")),place);}
-        if(tag.hasUUID("MemoryOwner")){recollection(tag.getUUID("MemoryOwner"),BlockPos.of(tag.getLong("MemoryBase")));memoryPhase(tag.getInt("MemoryPhase"));setNoGravity(memoryPhase()==1||memoryPhase()==3);}
+        // A recollection's own code places it every tick; native gravity never pulls on it (0.4.101).
+        if(tag.hasUUID("MemoryOwner")){recollection(tag.getUUID("MemoryOwner"),BlockPos.of(tag.getLong("MemoryBase")));memoryPhase(tag.getInt("MemoryPhase"));memoryTicks=tag.getInt("MemoryTicks0501");setNoGravity(true);}
     }
 }

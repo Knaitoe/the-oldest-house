@@ -66,6 +66,11 @@ public final class DrownedTownRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> PHONE_LEAK=sound("leak.phone_canoe");
     public static final DeferredHolder<SoundEvent,SoundEvent> PHONE_RECORD=sound("vignette.phone_record");
     public static final DeferredHolder<SoundEvent,SoundEvent> PHONE_WATER=sound("vignette.phone_water");
+    /** 0.4.101 Shallows: the swing, her break on the water, her bones as she rises, and the crossing. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> SHALLOWS_SWING=sound("shallows.swing");
+    public static final DeferredHolder<SoundEvent,SoundEvent> SHALLOWS_BREAK=sound("shallows.break");
+    public static final DeferredHolder<SoundEvent,SoundEvent> SHALLOWS_RISE=sound("shallows.rise");
+    public static final DeferredHolder<SoundEvent,SoundEvent> SHALLOWS_SCURRY=sound("shallows.scurry");
     private static final java.util.List<DeferredHolder<SoundEvent,SoundEvent>> CAVE_VOICES = java.util.stream.IntStream.range(0,8).mapToObj(i->sound("vignette.cave_voice_"+i)).toList();
     public static SoundEvent caveVoice(int index){return CAVE_VOICES.get(Math.max(0,Math.min(7,index))).get();}
     private DrownedTownRegistry() {}

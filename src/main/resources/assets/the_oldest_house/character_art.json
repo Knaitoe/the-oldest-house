@@ -169,6 +169,27 @@
     "phase": 0
   },
   {
+    "name": "lake_boy_1",
+    "logical": 64,
+    "model": "player",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "lake_boy_2",
+    "logical": 64,
+    "model": "player",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "lake_boy_3",
+    "logical": 64,
+    "model": "player",
+    "number": 0,
+    "phase": 0
+  },
+  {
     "name": "lake_congregant",
     "logical": 64,
     "model": "player",
