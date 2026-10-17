@@ -14,6 +14,6 @@ public final class LakeCongregantRenderer extends MobRenderer<LakeCongregantEnti
         if(e.lying()){pose.translate(0,.22,0);pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(90));}
     }
     @Override public ResourceLocation getTextureLocation(LakeCongregantEntity entity) {
-        return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "textures/entity/" + (entity.preacher() ? "lake_preacher" : entity.memoryBoy()?"lake_boy": "lake_congregant"+(entity.preservedEra()>0?"_"+entity.preservedEra():"")) + ".png");
+        return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "textures/entity/" + (entity.preacher() ? "lake_preacher" : entity.memoryBoy()?"lake_boy"+(entity.boyLook()>0?"_"+entity.boyLook():""): "lake_congregant"+(entity.preservedEra()>0?"_"+entity.preservedEra():"")) + ".png");
     }
 }

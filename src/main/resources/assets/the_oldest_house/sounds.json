@@ -1132,5 +1132,37 @@
         "attenuation_distance": 256
       }
     ]
+  },
+  "shallows.swing": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:shallows/swing"
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.shallows.swing"
+  },
+  "shallows.break": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:shallows/break"
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.shallows.break"
+  },
+  "shallows.rise": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:shallows/rise"
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.shallows.rise"
+  },
+  "shallows.scurry": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:shallows/scurry"
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.shallows.scurry"
   }
 }

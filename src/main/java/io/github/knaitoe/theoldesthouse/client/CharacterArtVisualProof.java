@@ -147,6 +147,6 @@ public final class CharacterArtVisualProof extends Screen {
         if(++proof.page<6+(proof.cast.size()+7)/8){proof.frames=0;return;}
         Files.writeString(dir.resolve("character-art-passed.txt"),proof.cast.size()+" human skins on production layers, front and back; native coffin/pillow and three close views, seated original, bounded corpse vertices, joint and renderer-reuse reset checks. Existing character-phase views cover all sixteen Mother stages, witch attacks, cloth girl and earlier creature views. Borrasca excluded. These are staged mesh/UV views, not uninterrupted ordinary playthroughs.\n");
         TheOldestHouse.LOGGER.info("CHARACTER ART CHECK PASSED: {} human sheets and native coffin bounds",proof.cast.size());
-        if(Boolean.getBoolean("the_oldest_house.characterArtSmoke"))mc.stop();else mc.setScreen(new CastVisualProof());
+        if(Boolean.getBoolean("the_oldest_house.characterArtSmoke"))mc.stop();else mc.setScreen(new ShallowsVisualProof());
     }
 }

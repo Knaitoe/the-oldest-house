@@ -4,7 +4,7 @@
   "excluded": [
     "Borrasca"
   ],
-  "png_count": 766,
+  "png_count": 769,
   "repainted": [
     {
       "path": "src/main/resources/assets/the_oldest_house/textures/entity/caged_child.png",
@@ -1170,6 +1170,36 @@
       "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_8.png",
       "previous_sha256": "b1cc386f2e4457f8696c613c627942fa6ba2307046769e29c8b19505478b4282",
       "sha256": "fd4086ba20826f04395d9b6aa3ab31d8e7bbcfc46cdeeccdc35594307f349b77",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_boy_1.png",
+      "previous_sha256": null,
+      "sha256": "6c93cf421bf626804379a2ab308ab2989444f1892ffb575ed5009ae878d30308",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_boy_2.png",
+      "previous_sha256": null,
+      "sha256": "2a07419069d8e65293ece696a91cc74a38d245ae3d837b231fc6c45e25285f8d",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_boy_3.png",
+      "previous_sha256": null,
+      "sha256": "cd1c1c64ef60a286ac61fb9a6cd73ec420c029065296f706c87356e4db41328a",
       "size": [
         256,
         256
