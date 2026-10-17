@@ -57,7 +57,7 @@ public final class LiteraryTexts {
         case HOLY_RABBIT->book("The hollow","A child",
             "He put me where the needles kept the snow out. His shoulders would not fit. He said we would wait for morning.\n\nMy own food was hard as the ground.",
             "He came back with the rabbit already open and told me not to chew.\n\nHis trousers were wet to the hip. He said the creek was good news: follow water and you find people.",
-            "He flicks my cheek when my eyes close. He says sleeping is how the snow gets you.\n\nIn the morning Slaney was out by the snow again, the same as yesterday.\n\nHe says when the snow lets us go, we go fast, and we don't stop for anything.");
+            "He flicks my cheek when my eyes close. He says sleeping is how the snow gets you.\n\nThis morning Slaney was out by the snow again.\n\nWhen the snow lets us go, we go fast and don't stop.");
         case CONFESSION->book("Terms of the interview","The listener",
             "He asked for a chair and a book with blank pages. He did not ask for forgiveness. I thought this meant the account would be easier to take down.",
             "He stops when I leave. When I return, he finds the exact word.\n\nThere are clean books on the low shelf. I put one on the table between our chairs. By the time I reached the last page, I recognised the handwriting.");
