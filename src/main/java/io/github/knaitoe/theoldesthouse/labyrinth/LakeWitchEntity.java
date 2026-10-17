@@ -476,8 +476,11 @@ public final class LakeWitchEntity extends PathfinderMob {
         if(x<=r.minX()+2||x>=r.maxX()-2||z<=r.minZ()+2||z>=-10)return false;
         var point=crawlPoint(level(),node,getBbWidth(),getBbHeight());
         if(!supportedFootprint(literaryBase,point.x,point.z,true))return false;
-        double y=supportHeight(level(),literaryBase,point.x,point.z,getBbWidth());
-        return breakableDoor(node)||level().noCollision(this,crawlBox(new Vec3(point.x,y,point.z),getBbWidth(),getBbHeight()));
+        double y=supportHeight(level(),literaryBase,point.x,point.z,getBbWidth());var box=crawlBox(new Vec3(point.x,y,point.z),getBbWidth(),getBbHeight());
+        // Movie Night (0.4.102): the readers she hunts sit in canoes, whose hulls would close every cell around them to her plan.
+        // Her route plans past them by the blocks alone; her body still meets the hull when she gets there.
+        if(literaryPlace==LabyrinthPlace.MOVIE_NIGHT)return !level().getBlockCollisions(this,box).iterator().hasNext();
+        return breakableDoor(node)||level().noCollision(this,box);
     }
     private void literaryRoute(BlockPos goal){
         route.clear();routeGoal=goal;var start=BlockPos.containing(getX(),literaryBase.getY(),getZ());
