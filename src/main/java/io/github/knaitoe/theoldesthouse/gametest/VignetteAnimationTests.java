@@ -150,7 +150,7 @@ public final class VignetteAnimationTests {
             var own=f.own(p,place);own.putInt("Flashes",2);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);});
         h.runAfterDelay(60,()->{h.assertTrue(f.own(p,place).getBoolean("Ready")&&!f.own(rower,place).getBoolean("Ready"),"seen twice and up on the pier, the reader's night is over; the rower's is not");
             var text=LiteraryTexts.ending(p,place,f.own(p,place)).get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page->page.raw().getString()).reduce("",String::concat);
-            h.assertTrue(text.contains("Teeth of Summer")&&text.contains("no sharks in a lake")&&text.contains("my own head went up on the screen")&&!text.contains("speakers went quiet"),"the account tells the night the reader had and no other: "+text);
+            h.assertTrue(text.contains("Teeth of Summer")&&text.contains("no sharks in a lake")&&text.contains("my own head went up on the screen")&&text.contains("speakers went quiet")==f.own(p,place).getBoolean("Quiet0502")&&!text.contains("caught me"),"the account tells the night the reader had and no other: "+text);
             f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),rower.getUUID(),WitnessAccount.Story.of(place.id())),"reading it completes only this reader's scene");h.succeed();});
     }
     @AfterBatch(batch="literary_movie_pier") public static void moviePierDone(ServerLevel l){close();}
