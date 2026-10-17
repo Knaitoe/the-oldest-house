@@ -627,19 +627,37 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         }).thenSucceed();
     }
     @AfterBatch(batch="literary_crimson_gallery") public static void crimsonGalleryDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="literary_movie_recovery",timeoutTicks=500)
-    public static void actualCanoeTravelReturnsForTheNextReaderAndDiscardRecoversOnce(GameTestHelper h){
-        var f=new Fixture(h);var place=LabyrinthPlace.MOVIE_NIGHT;var p=f.player("movie_rower",place);var peer=f.player("movie_next",place);f.source(p,place);final LakeCanoeEntity[] boat={null};final boolean[] finished={false};
-        h.runAfterDelay(10,()->{var world=LiteraryVignettes.shared(f.data(),place);boat[0]=(LakeCanoeEntity)f.out.getEntity(world.getUUID("Canoe"));h.assertTrue(boat[0]!=null&&f.out.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(f.base(place),place)).size()==1,"simultaneous native arrivals create exactly one canoe");f.at(p,place,.5,0,-14);p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);h.assertTrue(LiteraryVignettes.boardMovie(p,boat[0]),"the actual empty-handed reader boards the shared canoe");});
-        h.onEachTick(()->{if(boat[0]==null||finished[0])return;var b=f.base(place);if(p.getVehicle()==boat[0]){
-            double stop=f.own(p,place).getInt("Flashes")<2?b.getZ()-65:b.getZ()-82;
-            boat[0].moveTo(b.getX()+.5,b.getY()-.4,Math.max(stop,boat[0].getZ()-.35),180,0);boat[0].setDeltaMovement(Vec3.ZERO);p.setPos(boat[0].getX(),b.getY(),boat[0].getZ());p.setHealth(20);
-            var world=LiteraryVignettes.shared(f.data(),place);if(world.hasUUID("Witch")&&f.out.getEntity(world.getUUID("Witch")) instanceof LakeWitchEntity witch)p.lookAt(EntityAnchorArgument.Anchor.EYES,witch.getEyePosition());
-        }
-        if(f.own(p,place).getBoolean("Ready")){finished[0]=true;h.assertTrue(f.own(p,place).getDouble("RowDistance")>=45&&f.own(p,place).getInt("Flashes")>=2&&!f.own(peer,place).getBoolean("Ready"),"actual rowing and two native exposures belong only to their passenger");}
+    @GameTest(template="empty",batch="literary_movie_recovery",timeoutTicks=1400)
+    public static void fourCanoesRowToTheFarPierAndAnEmptyCanoeReturnsToItsSlot(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.MOVIE_NIGHT;var p=f.player("movie_rower",place);var peer=f.player("movie_next",place);f.source(p,place);
+        final LakeCanoeEntity[] boat={null};final boolean[] finished={false};final int[] leg={0};
+        // West of the screen's raft, up past it, then in to the end of the far pier.
+        final double[][] route={{-16,-30},{-16,-50},{.5,-58.2}};
+        h.runAfterDelay(10,()->{var world=LiteraryVignettes.shared(f.data(),place);
+            h.assertTrue(f.out.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(f.base(place),place)).size()==4,"simultaneous native arrivals moor exactly four canoes at the dock");
+            boat[0]=MovieNight.canoe(f.out,world,0);f.at(p,place,-2.5,0,-13);p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);peer.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
+            h.assertTrue(boat[0]!=null&&MovieNight.board(p,boat[0]),"the actual empty-handed reader takes a canoe from the dock");
+            f.at(peer,place,-2.5,0,-13);h.assertTrue(!MovieNight.board(peer,boat[0]),"nobody else climbs into a canoe already in use");f.at(peer,place,8,0,-4);});
+        h.onEachTick(()->{if(boat[0]==null||finished[0])return;var b=f.base(place);
+            if(p.getVehicle()==boat[0]){
+                var target=route[Math.min(leg[0],route.length-1)];boolean hold=leg[0]==2&&f.own(p,place).getInt("Flashes")<2;
+                Vec3 at=boat[0].position(),goal=new Vec3(b.getX()+target[0],b.getY()-.4,b.getZ()+target[1]),step=goal.subtract(at).multiply(1,0,1);
+                if(step.length()<.4){if(leg[0]<2)leg[0]++;}else if(!hold){step=step.normalize().scale(.35);at=at.add(step);}
+                boat[0].moveTo(at.x,b.getY()-.4,at.z,180,0);boat[0].setDeltaMovement(Vec3.ZERO);p.setPos(boat[0].getX(),b.getY(),boat[0].getZ());p.setHealth(20);
+                var witch=MovieNight.witch(f.out,b);if(witch!=null)p.lookAt(EntityAnchorArgument.Anchor.EYES,witch.getEyePosition());
+            }
+            if(f.own(p,place).getBoolean("Ready")){finished[0]=true;
+                h.assertTrue(f.own(p,place).getDouble("RowDistance")>=30&&f.own(p,place).getInt("Flashes")>=2&&!f.own(peer,place).getBoolean("Ready"),"actual rowing and two native exposures belong only to their passenger");
+                h.assertTrue(p.getVehicle()==null&&MovieNight.onPier(p,b),"coming alongside the far pier puts the reader up on its boards");}
         });
-        h.runAfterDelay(350,()->{h.assertTrue(finished[0],"actual canoe completion: distance="+f.own(p,place).getDouble("RowDistance")+", flashes="+f.own(p,place).getInt("Flashes"));h.assertTrue(boat[0].getZ()>f.base(place).getZ()-20,"the empty completed canoe returns to its real starting pier for the next reader: z="+boat[0].getZ());var old=boat[0].getUUID();boat[0].discard();
-            h.runAfterDelay(15,()->{var world=LiteraryVignettes.shared(f.data(),place);var replacement=f.out.getEntity(world.getUUID("Canoe"));h.assertTrue(replacement instanceof LakeCanoeEntity&&!replacement.getUUID().equals(old)&&f.out.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(f.base(place),place)).size()==1,"actual entity discard creates one usable replacement instead of abandoning the scene");h.assertTrue(!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id()))&&f.own(peer,place).getDouble("RowDistance")==0,"canoe recovery never manufactures personal travel or credit");h.succeed();});
+        h.runAfterDelay(1200,()->{h.assertTrue(finished[0],"actual canoe completion: distance="+f.own(p,place).getDouble("RowDistance")+", flashes="+f.own(p,place).getInt("Flashes")+", bursts="+f.own(p,place).getInt("Bursts0502"));
+            var slot=MovieNight.slot(f.base(place),0);h.assertTrue(boat[0].position().distanceToSqr(slot)<1,"the empty canoe goes back to its own place at the dock for the next reader: "+boat[0].position());
+            h.assertTrue(f.own(peer,place).getInt("Bursts0502")==0,"a reader standing on the beach is not out under the bursts");
+            var old=boat[0].getUUID();boat[0].discard();
+            h.runAfterDelay(15,()->{var world=LiteraryVignettes.shared(f.data(),place);var replacement=MovieNight.canoe(f.out,world,0);
+                h.assertTrue(replacement!=null&&!replacement.getUUID().equals(old)&&f.out.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(f.base(place),place)).size()==4,"an actual discard brings one usable replacement to the same place");
+                h.assertTrue(!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id()))&&f.own(peer,place).getDouble("RowDistance")==0,"canoe recovery never manufactures personal travel or credit");
+                f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id())),"the rower's own account completes the scene");h.succeed();});
         });
     }
     @AfterBatch(batch="literary_movie_recovery") public static void movieRecoveryDone(ServerLevel l){close();}

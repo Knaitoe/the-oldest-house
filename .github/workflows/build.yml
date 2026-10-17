@@ -205,6 +205,14 @@ jobs:
               assert json.loads(z.read('assets/the_oldest_house/particles/goatman_copper.json'))['textures']
               for name in ('tally_counter','goatman_brat'):
                   assert json.loads(z.read(f'assets/the_oldest_house/models/item/{name}.json'))['textures']['layer0']
+              # Movie Night (0.4.102): the film's atlas, the shark's skin, the props and the score.
+              for name in ('textures/movie/teeth_of_summer.png','textures/entity/lake_shark.png','textures/block/movie_speaker.png','textures/block/movie_projector.png','textures/block/movie_reel.png','textures/block/movie_mortar.png'):
+                  assert z.read(f'assets/the_oldest_house/{name}').startswith(b'\x89PNG')
+              for name in ('calm','dread','sting','finale','bell','projector','reel','cut','bump'):
+                  assert z.read(f'assets/the_oldest_house/sounds/movie/{name}.ogg').startswith(b'OggS')
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/movie_prop.json'))['variants']) == 12
+              for name in ('MovieFilm','MovieScreenRenderer','LakeSharkModel','LakeSharkRenderer','MovieNightClient'):
+                  assert f'io/github/knaitoe/theoldesthouse/client/{name}.class' in z.namelist()
               # 0.4.77: a frank left on the griddle burns, and draws charred through custom model data 1.
               assert z.read('assets/the_oldest_house/textures/item/goatman_brat_burnt.png').startswith(b'\x89PNG')
               assert json.loads(z.read('assets/the_oldest_house/models/item/goatman_brat.json'))['overrides'][0]['model'] == 'the_oldest_house:item/goatman_brat_burnt'
@@ -706,6 +714,8 @@ jobs:
           for view in $(seq -w 0 19); do test -s build/font-smoke/native-character-art-$view.png; done
           test -s build/font-smoke/shallows-passed.txt
           for view in 0 1 2 3 4 5 6 7; do test -s build/font-smoke/native-shallows-$view.png; done
+          test -s build/font-smoke/movie-night-passed.txt
+          for view in 0 1 2 3 4 5 6; do test -s build/font-smoke/native-movie-$view.png; done
           test -s build/font-smoke/cast-passed.txt
           test -s build/font-smoke/stacey-scrabble-passed.txt
           test -s build/font-smoke/native-stacey-scrabble.png

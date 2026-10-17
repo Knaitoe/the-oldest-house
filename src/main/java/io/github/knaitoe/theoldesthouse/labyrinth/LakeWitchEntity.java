@@ -247,7 +247,8 @@ public final class LakeWitchEntity extends PathfinderMob {
     private boolean literaryTarget(ServerPlayer p){
         return p.isAlive()&&!p.isSpectator()&&!p.isCreative()&&LiteraryVignettes.inside(p,literaryPlace)
                 &&!(p.isUnderWater()&&p.getY()+p.getBbHeight()<literaryBase.getY())
-                &&(literaryPlace!=LabyrinthPlace.COSTUME_NIGHT||!level().getBlockState(p.blockPosition().below()).is(Blocks.GRASS_BLOCK));
+                &&(literaryPlace!=LabyrinthPlace.COSTUME_NIGHT||!level().getBlockState(p.blockPosition().below()).is(Blocks.GRASS_BLOCK))
+                &&(literaryPlace!=LabyrinthPlace.MOVIE_NIGHT||MovieNight.exposed(p));
     }
     /** A native arm swing can catch one reader alongside the swept retreat, without stopping it. */
     private void passingSwipe(Vec3 before){
@@ -270,6 +271,8 @@ public final class LakeWitchEntity extends PathfinderMob {
             if(literary){var r=literaryPlace.room();int dx=feet.getX()-base.getX(),dz=feet.getZ()-base.getZ();
                 if(dx<=r.minX()+2||dx>=r.maxX()-2||dz<=r.minZ()+2||dz>=-10)return false;
                 if(literaryPlace==LabyrinthPlace.COSTUME_NIGHT&&level().getBlockState(feet.below()).is(Blocks.GRASS_BLOCK))return false;
+                // Movie Night (0.4.102): she keeps to the water and the planks out on it; the far pier and the banks are not hers.
+                if(literaryPlace==LabyrinthPlace.MOVIE_NIGHT&&!MovieNight.footing(level().getBlockState(feet.below())))return false;
             }else if(!onTownGround(base,feet)||safeGround(level(),feet))return false;
             if(!level().getFluidState(feet.below()).is(FluidTags.WATER)
                     &&level().getBlockState(feet.below()).getCollisionShape(level(),feet.below()).isEmpty())return false;
@@ -506,8 +509,12 @@ public final class LakeWitchEntity extends PathfinderMob {
         var target=level.players().stream().filter(this::literaryTarget)
                 .min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
         if(target==null||distanceToSqr(target)>3600){cancelStrike();route.clear();routeGoal=null;clearDoorBreak();coverReachable=false;return;}
+        // Movie Night (0.4.102): while a burst lights the lake she does not move at all.
+        boolean movie=literaryPlace==LabyrinthPlace.MOVIE_NIGHT;
+        if(movie&&MovieNight.lit(level,literaryBase)){cancelStrike();route.clear();routeGoal=null;return;}
         boolean critical=target.getHealth()<=6;huntClocks(critical);
-        boolean watched=level.players().stream().filter(p->p.isAlive()&&!p.isSpectator()&&!p.isCreative()&&LiteraryVignettes.inside(p,literaryPlace)).anyMatch(p->inView(p,getEyePosition()));
+        // There, only a reader who catches her in the projector's beam turns her back; in the dark she comes on regardless.
+        boolean watched=level.players().stream().filter(p->p.isAlive()&&!p.isSpectator()&&!p.isCreative()&&LiteraryVignettes.inside(p,literaryPlace)).anyMatch(p->inView(p,getEyePosition())&&(!movie||MovieNight.inBeam(literaryBase,getEyePosition())));
         if(watched&&huntPhase()!=WITHDRAW&&!coverPause)beginWithdrawal(target);
         if(coverPause&&withdrawing()){entityData.set(HUNT_PHASE,WITHDRAW);return;}
         if(windup>0){windup--;return;}
@@ -526,7 +533,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         if(routeGoal==null||route.isEmpty()||!withdraw&&tickCount%20==0){var cover=withdraw?literaryCover(level,target):goal;
             coverReachable=cover!=null;if(cover!=null){literaryRoute(cover);coverReachable=!route.isEmpty()||blockPosition().equals(cover);}else {var escape=withdraw?escapeGoal(target,true):goal;if(escape!=null)literaryRoute(escape);else {route.clear();routeGoal=null;}}}
         var beforeCover=position();
-        literaryFollow(withdraw?.34:critical?.32:.19);
+        literaryFollow(withdraw?.34:critical?.32:movie?.095:.19);
         if(withdraw)coverProgress(watched,beforeCover);
         else if(!hasLineOfSight(target))coverAttempt(position().distanceToSqr(beforeCover)>.0004);
     }

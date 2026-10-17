@@ -59,17 +59,101 @@ public final class VignetteAnimationTests {
     }
     @AfterBatch(batch="literary_mapping_motion") public static void mappingDone(ServerLevel l){close();}
 
-    @GameTest(template="empty",batch="literary_movie_observation",timeoutTicks=480)
-    public static void nativeFireworksCountOnlyThePassengersActualUnobstructedView(GameTestHelper h){
-        var f=fixture(h);var place=LabyrinthPlace.MOVIE_NIGHT;var p=f.player("movie_looks",place);var peer=f.player("movie_peer",place);f.at(peer,place,20,0,-3);f.at(p,place,.5,0,-14);
-        final LakeCanoeEntity[] boat={null};final LakeWitchEntity[] witch={null};
-        h.runAfterDelay(10,()->{var world=LiteraryVignettes.shared(f.data(),place);boat[0]=(LakeCanoeEntity)f.out.getEntity(world.getUUID("Canoe"));witch[0]=(LakeWitchEntity)f.out.getEntity(world.getUUID("Witch"));p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);h.assertTrue(boat[0]!=null&&witch[0]!=null&&LiteraryVignettes.boardMovie(p,boat[0]),"the real passenger boards the original canoe beside the native hunt body");});
-        h.onEachTick(()->{if(witch[0]==null)return;p.setHealth(20);int present=f.own(p,place).getInt("Present");Vec3 point=witch[0].getEyePosition();if(present<170||present>=320)point=p.getEyePosition().scale(2).subtract(point);p.lookAt(EntityAnchorArgument.Anchor.EYES,point);});
-        h.runAfterDelay(160,()->h.assertTrue(f.own(p,place).getInt("Flashes")==0,"an actual native firework behind the passenger grants no observed exposure"));
-        h.runAfterDelay(300,()->h.assertTrue(f.own(p,place).getInt("Flashes")==1,"turning toward the original body's real clear sight line records the next exposure"));
-        h.runAfterDelay(450,()->{h.assertTrue(f.own(p,place).getInt("Flashes")==1&&!f.own(p,place).getBoolean("Ready")&&!f.own(peer,place).getBoolean("Ready"),"later off-camera flashes, standing peers and no genuine rowing cannot manufacture the far-pier outcome");var body=witch[0].getUUID();f.reload();h.assertTrue(f.own(p,place).getInt("Flashes")==1&&LiteraryVignettes.shared(f.data(),place).getUUID("Witch").equals(body),"the actual saved exposure and original body survive reload");h.succeed();});
+    @GameTest(template="empty",batch="literary_movie_observation",timeoutTicks=900)
+    public static void burstsFreezeHerAndCountOnlyWhatThePassengerActuallySees(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.MOVIE_NIGHT;var p=f.player("movie_looks",place);var peer=f.player("movie_peer",place);f.at(peer,place,20,0,-3);f.at(p,place,-2.5,0,-13);
+        final LakeCanoeEntity[] boat={null};final int[] bursts={0},seen={0},still={0},frozenFor={0};final Vec3[] frozenAt={null},last={null};final double[] moved={0};
+        h.runAfterDelay(10,()->{boat[0]=MovieNight.canoe(f.out,LiteraryVignettes.shared(f.data(),place),0);p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
+            h.assertTrue(boat[0]!=null&&MovieNight.board(p,boat[0]),"the real passenger boards an original canoe at the dock");});
+        h.onEachTick(()->{if(boat[0]==null)return;var b=f.base(place);var witch=MovieNight.witch(f.out,b);if(witch==null)return;
+            p.setPos(boat[0].getX(),b.getY(),boat[0].getZ());p.setHealth(20);
+            // Looking straight away from her for the first burst, then at her for the rest.
+            Vec3 point=witch.getEyePosition();if(bursts[0]<1)point=p.getEyePosition().scale(2).subtract(point);p.lookAt(EntityAnchorArgument.Anchor.EYES,point);
+            int now=f.own(p,place).getInt("Bursts0502");
+            if(now>bursts[0]){if(MovieNight.observed(p,witch))seen[0]++;bursts[0]=now;frozenAt[0]=witch.position();frozenFor[0]=0;}
+            else if(frozenAt[0]!=null&&frozenFor[0]<15){frozenFor[0]++;h.assertTrue(witch.position().distanceToSqr(frozenAt[0])<1e-6,"she does not move while a burst lights the lake");still[0]++;}
+            if(last[0]!=null)moved[0]+=witch.position().distanceTo(last[0]);last[0]=witch.position();
+            h.assertTrue(f.own(p,place).getInt("Flashes")==seen[0],"exposures are exactly the bursts that found her in the passenger's clear view: "+f.own(p,place).getInt("Flashes")+" against "+seen[0]);
+        });
+        h.runAfterDelay(820,()->{h.assertTrue(bursts[0]>=4&&still[0]>=40,"bursts go up from the barge every few seconds and each one holds her: "+bursts[0]+" bursts, "+still[0]+" frozen ticks");
+            h.assertTrue(moved[0]>2,"between the bursts, in the dark, she comes on: "+moved[0]);
+            h.assertTrue(f.own(peer,place).getInt("Bursts0502")==0&&!f.own(p,place).getBoolean("Ready")&&!f.own(peer,place).getBoolean("Ready"),"a reader on the beach is not out under them, and nobody has reached the pier");
+            int flashes=f.own(p,place).getInt("Flashes");var body=LiteraryVignettes.shared(f.data(),place).getUUID("Witch");f.reload();
+            h.assertTrue(f.own(p,place).getInt("Flashes")==flashes&&LiteraryVignettes.shared(f.data(),place).getUUID("Witch").equals(body),"the saved exposures and her original body survive reload");h.succeed();});
     }
     @AfterBatch(batch="literary_movie_observation") public static void movieDone(ServerLevel l){close();}
+
+    @GameTest(template="empty",batch="literary_movie_beam",timeoutTicks=200)
+    public static void theBeamThrowsShadowsTurnsHerBackAndTheSpeakersFallQuietNearHer(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.MOVIE_NIGHT;var p=f.player("movie_beam",place);var b=f.base(place);Vec3 o=Vec3.atLowerCornerOf(b);
+        h.assertTrue(MovieNight.inBeam(b,o.add(.5,1.2,-29)),"the water between the dock and the screen is in the beam");
+        h.assertTrue(!MovieNight.inBeam(b,o.add(9.5,1.2,-24))&&!MovieNight.inBeam(b,o.add(.5,1.2,-16))&&!MovieNight.inBeam(b,o.add(.5,1.2,-43)),"off to the side, behind the lens and beyond the screen are not");
+        h.assertTrue(f.out.getBlockState(b.offset(MovieNight.SCREEN)).is(MovieNightRegistry.SCREEN.get())&&MoviePropBlock.is(f.out.getBlockState(b.offset(MovieNight.PROJECTOR)),MoviePropBlock.Kind.PROJECTOR),"the screen and the projector stand where the beam runs between them");
+        f.at(p,place,.5,0,-27);final LakeWitchEntity[] witch={null};final int[] stage={0};
+        h.onEachTick(()->{if(witch[0]!=null&&stage[0]>=1&&stage[0]<=2)p.lookAt(EntityAnchorArgument.Anchor.EYES,witch[0].getEyePosition());});
+        h.runAfterDelay(10,()->{h.assertTrue(f.own(p,place).getBoolean("ShadowSeen0502"),"standing in the beam puts the reader's own head on the film");
+            witch[0]=MovieNight.witch(f.out,b);h.assertTrue(witch[0]!=null,"her original body is out on the lake");
+            // On the raft, watching her out of the beam: she keeps coming.
+            f.at(p,place,-6,0,-39.5);witch[0].moveTo(b.getX()-19.5,b.getY()-.108,b.getZ()-30.5,0,0);stage[0]=1;});
+        h.runAfterDelay(20,()->{h.assertTrue(witch[0].huntPhase()!=LakeWitchEntity.WITHDRAW,"seen in the dark she does not turn back: "+witch[0].huntDiagnostic());
+            witch[0].moveTo(b.getX()+.5,b.getY()-.108,b.getZ()-34.5,0,0);stage[0]=2;});
+        h.runAfterDelay(27,()->{h.assertTrue(witch[0].huntPhase()==LakeWitchEntity.WITHDRAW,"caught in the beam she withdraws: "+witch[0].huntDiagnostic());
+            h.assertTrue(f.own(p,place).getBoolean("Muted0502")&&f.own(p,place).getBoolean("Quiet0502"),"near her in the dark the speakers go quiet for this reader");
+            witch[0].moveTo(b.getX()+22.5,b.getY()-.108,b.getZ()-68,0,0);stage[0]=3;});
+        h.runAfterDelay(40,()->{h.assertTrue(!f.own(p,place).getBoolean("Muted0502")&&f.own(p,place).getBoolean("Quiet0502"),"they come back once she is far off, and the night remembers they went quiet");
+            // Watching the film while she crosses the beam: her shadow goes up on it.
+            f.at(p,place,.5,0,-22);witch[0].moveTo(b.getX()+3,b.getY()-.108,b.getZ()-33,0,0);p.lookAt(EntityAnchorArgument.Anchor.EYES,o.add(.5,3,MovieNight.FILM_Z));stage[0]=4;});
+        h.runAfterDelay(56,()->{h.assertTrue(f.own(p,place).getBoolean("WitchShadow0502"),"her shadow crosses the film the reader is watching");h.succeed();});
+    }
+    @AfterBatch(batch="literary_movie_beam") public static void movieBeamDone(ServerLevel l){close();}
+
+    @GameTest(template="empty",batch="literary_movie_shark",timeoutTicks=420)
+    public static void theSharkComesOnlyToItsReaderAndCannotTouchAnyone(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.MOVIE_NIGHT;var p=f.player("movie_shark",place);var peer=f.player("movie_shore",place);f.at(peer,place,-8,0,-4);f.at(p,place,-2.5,0,-13);
+        final LakeCanoeEntity[] boat={null};final LakeSharkEntity[] shark={null};final int[] oldest={0};
+        h.runAfterDelay(10,()->{boat[0]=MovieNight.canoe(f.out,LiteraryVignettes.shared(f.data(),place),0);p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);h.assertTrue(boat[0]!=null&&MovieNight.board(p,boat[0]),"the reader takes a canoe");
+            var own=f.own(p,place);own.putBoolean("SharkVisit0502",true);own.remove("SharkDone0502");LiteraryVignettes.save(f.data(),p.getUUID(),place,own);});
+        h.onEachTick(()->{if(boat[0]==null)return;var b=f.base(place);
+            boat[0].moveTo(b.getX()-16,b.getY()-.4,b.getZ()-50,180,0);boat[0].setDeltaMovement(Vec3.ZERO);p.setPos(boat[0].getX(),b.getY(),boat[0].getZ());
+            // Keep her far off, so nothing but the shark is near the canoe.
+            var witch=MovieNight.witch(f.out,b);if(witch!=null)witch.moveTo(b.getX()+25,b.getY()-.108,b.getZ()-70,0,0);
+            var s=LakeSharkEntity.of(p.getUUID());if(s==null)return;if(shark[0]==null)shark[0]=s;
+            h.assertTrue(s==shark[0],"one shark, the same one, for the whole of its visit");
+            h.assertTrue(s.broadcastToPlayer(p)&&!s.broadcastToPlayer(peer),"only its own reader is ever sent it");
+            h.assertTrue(!s.canBeCollidedWith()&&!s.isPickable()&&!s.hurt(f.out.damageSources().generic(),5)&&!s.shouldBeSaved(),"it has no body to touch, takes no harm and is never saved");
+            h.assertTrue(p.getHealth()==20&&peer.getHealth()==20,"it hurts nobody");oldest[0]=Math.max(oldest[0],s.age());
+            p.lookAt(EntityAnchorArgument.Anchor.EYES,s.position().add(0,1.3,0));
+        });
+        h.runAfterDelay(400,()->{h.assertTrue(shark[0]!=null&&oldest[0]>=LakeSharkEntity.CIRCLE+LakeSharkEntity.DIVE,"the shark came, circled and went under the canoe: "+oldest[0]);
+            h.assertTrue(shark[0].isRemoved()&&LakeSharkEntity.of(p.getUUID())==null&&f.out.getEntitiesOfClass(LakeSharkEntity.class,IndianLakeRooms.bounds(f.base(place),place)).isEmpty(),"then it sank away and is gone");
+            h.assertTrue(f.own(p,place).getBoolean("SharkDone0502")&&f.own(p,place).getBoolean("SharkSeen0502")&&!f.own(peer,place).getBoolean("SharkSeen0502"),"it comes once a visit, and only its reader saw it");h.succeed();});
+    }
+    @AfterBatch(batch="literary_movie_shark") public static void movieSharkDone(ServerLevel l){close();}
+
+    @GameTest(template="empty",batch="literary_movie_pier",timeoutTicks=260)
+    public static void herFootingEndsAtTheFarPierAndTheAccountRemembersTheNight(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.MOVIE_NIGHT;var p=f.player("movie_pier",place);var rower=f.player("movie_alongside",place);var b=f.base(place);
+        h.assertTrue(MovieNight.footing(Blocks.WATER.defaultBlockState())&&MovieNight.footing(Blocks.OAK_PLANKS.defaultBlockState())&&MovieNight.footing(Blocks.DARK_OAK_PLANKS.defaultBlockState())
+                &&!MovieNight.footing(Blocks.SPRUCE_PLANKS.defaultBlockState())&&!MovieNight.footing(Blocks.SAND.defaultBlockState())&&!MovieNight.footing(Blocks.GRASS_BLOCK.defaultBlockState()),"she keeps to the water and the planks out on it; never the far pier or a bank");
+        h.assertTrue(f.out.getBlockState(b.offset(0,-1,-64)).is(Blocks.SPRUCE_PLANKS)&&f.out.getBlockState(b.offset(2,-1,-64)).is(Blocks.WATER)&&f.out.getBlockState(b.offset(-2,-1,-64)).is(Blocks.WATER),"the far pier runs out over open water");
+        f.at(p,place,.5,0,-64);final LakeCanoeEntity[] boat={null};final LakeWitchEntity[] witch={null};
+        h.runAfterDelay(10,()->{h.assertTrue(MovieNight.onPier(p,b)&&!MovieNight.exposed(p),"up on the pier the reader is out of her reach");
+            boat[0]=MovieNight.canoe(f.out,LiteraryVignettes.shared(f.data(),place),1);f.at(rower,place,3.5,0,-13);rower.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);h.assertTrue(boat[0]!=null&&MovieNight.board(rower,boat[0]),"a second reader takes another canoe");
+            witch[0]=MovieNight.witch(f.out,b);h.assertTrue(witch[0]!=null,"her original body is out on the lake");witch[0].moveTo(b.getX()+3.5,b.getY()-.108,b.getZ()-64,0,0);
+            var own=f.own(p,place);own.putDouble("RowDistance",40);own.putInt("Flashes",1);own.putBoolean("SharkSeen0502",true);own.putBoolean("ShadowSeen0502",true);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);});
+        h.onEachTick(()->{if(boat[0]==null||witch[0]==null)return;
+            // The rower sits on the far side of the pier; she must go round its end, never across it.
+            boat[0].moveTo(b.getX()-4.5,b.getY()-.4,b.getZ()-66,180,0);boat[0].setDeltaMovement(Vec3.ZERO);rower.setPos(boat[0].getX(),b.getY(),boat[0].getZ());rower.setHealth(20);
+            double x=witch[0].getX()-b.getX(),z=witch[0].getZ()-b.getZ(),half=witch[0].getBbWidth()/2;
+            h.assertTrue(!(x+half>-1&&x-half<2&&z+half>-72&&z-half<-58),"she never sets foot on the far pier: "+witch[0].position());});
+        h.runAfterDelay(40,()->{h.assertTrue(!f.own(p,place).getBoolean("Ready")&&f.own(p,place).getBoolean("PierHint0502"),"the pier alone is not the end: she has to have been seen in two bursts");
+            var own=f.own(p,place);own.putInt("Flashes",2);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);});
+        h.runAfterDelay(60,()->{h.assertTrue(f.own(p,place).getBoolean("Ready")&&!f.own(rower,place).getBoolean("Ready"),"seen twice and up on the pier, the reader's night is over; the rower's is not");
+            var text=LiteraryTexts.ending(p,place,f.own(p,place)).get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page->page.raw().getString()).reduce("",String::concat);
+            h.assertTrue(text.contains("Teeth of Summer")&&text.contains("no sharks in a lake")&&text.contains("my own head went up on the screen")&&!text.contains("speakers went quiet"),"the account tells the night the reader had and no other: "+text);
+            f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),rower.getUUID(),WitnessAccount.Story.of(place.id())),"reading it completes only this reader's scene");h.succeed();});
+    }
+    @AfterBatch(batch="literary_movie_pier") public static void moviePierDone(ServerLevel l){close();}
 
     @GameTest(template="empty",batch="literary_miniature_cold",timeoutTicks=100)
     public static void coldMiniatureSamplingReturnsBeforeAnyNativeBlockReadCanGenerateASection(GameTestHelper h){
@@ -160,10 +244,10 @@ public final class VignetteAnimationTests {
     @GameTest(template="empty",batch="literary_movie_original",timeoutTicks=450)
     public static void uncertainLoadedAbsenceCannotReplaceTheActualSerializedMovieCanoe(GameTestHelper h){
         var f=fixture(h);var place=LabyrinthPlace.MOVIE_NIGHT;var p=f.player("movie_original",place);var b=f.base(place);
-        h.startSequence().thenWaitUntil(()->{var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(world.hasUUID("Canoe")&&f.out.getEntity(world.getUUID("Canoe")) instanceof LakeCanoeEntity,"the actual original canoe has entered a native entity section");})
-            .thenExecute(()->{var world=LiteraryVignettes.shared(f.data(),place);var original=(LakeCanoeEntity)f.out.getEntity(world.getUUID("Canoe"));var id=original.getUUID();var saved=original.saveWithoutId(new CompoundTag());original.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);f.reload();
-                h.runAfterDelay(145,()->{var state=LiteraryVignettes.shared(f.data(),place);h.assertTrue(state.getUUID("Canoe").equals(id)&&!state.getBoolean("CanoeRemoved")&&f.out.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(b,place)).isEmpty(),"even loaded native absence after 140 ticks cannot invent a removal or second canoe");var restored=DrownedTownRegistry.CAVE_CANOE.get().create(f.out);h.assertTrue(restored!=null,"the saved original has its real native type");restored.load(saved);h.assertTrue(f.out.addFreshEntity(restored),"the actual serialized body returns through native entity loading");
-                    h.runAfterDelay(15,()->{var latest=LiteraryVignettes.shared(f.data(),place);h.assertTrue(latest.getUUID("Canoe").equals(id)&&f.out.getEntity(id)==restored&&f.out.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(b,place)).size()==1,"the exact original UUID is recovered once without replacements");h.assertTrue(!f.own(p,place).getBoolean("Ready")&&f.own(p,place).getDouble("RowDistance")==0,"waiting for native loading grants no fabricated travel or outcome");h.succeed();});
+        h.startSequence().thenWaitUntil(()->{var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(world.hasUUID("Canoe0")&&f.out.getEntity(world.getUUID("Canoe0")) instanceof LakeCanoeEntity,"the actual original canoe has entered a native entity section");})
+            .thenExecute(()->{var world=LiteraryVignettes.shared(f.data(),place);var original=(LakeCanoeEntity)f.out.getEntity(world.getUUID("Canoe0"));var id=original.getUUID();var saved=original.saveWithoutId(new CompoundTag());original.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);f.reload();
+                h.runAfterDelay(145,()->{var state=LiteraryVignettes.shared(f.data(),place);h.assertTrue(state.getUUID("Canoe0").equals(id)&&!state.getBoolean("Removed0")&&f.out.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(b,place)).size()==3,"even loaded native absence after 140 ticks cannot invent a removal or a fifth canoe");var restored=DrownedTownRegistry.CAVE_CANOE.get().create(f.out);h.assertTrue(restored!=null,"the saved original has its real native type");restored.load(saved);h.assertTrue(f.out.addFreshEntity(restored),"the actual serialized body returns through native entity loading");
+                    h.runAfterDelay(15,()->{var latest=LiteraryVignettes.shared(f.data(),place);h.assertTrue(latest.getUUID("Canoe0").equals(id)&&f.out.getEntity(id)==restored&&f.out.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(b,place)).size()==4,"the exact original UUID is recovered once without replacements");h.assertTrue(!f.own(p,place).getBoolean("Ready")&&f.own(p,place).getDouble("RowDistance")==0,"waiting for native loading grants no fabricated travel or outcome");h.succeed();});
                 });
             });
     }
