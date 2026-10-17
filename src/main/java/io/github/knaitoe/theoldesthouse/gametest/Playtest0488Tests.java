@@ -231,6 +231,7 @@ public final class Playtest0488Tests {
         var p=f.player("rabbit_trail",place);var b=f.base(place);
         commit(f,p,3,400,own->{own.putInt("Meals",2);own.putInt("AteNight",2);own.putInt("MealNight",3);own.putInt("RabbitMornings",6);own.putBoolean("WoundSeen0488",true);});
         var carving=new Vec3(b.getX()+.5,b.getY()+3.3,b.getZ()-23.95);
+        h.assertTrue(f.out.getBlockState(b.offset(0,3,-24)).isAir(),"the carved words face open air, not the canopy's leaves");
         f.at(p,place,.5,0,-22.5);p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,carving);
         h.startSequence().thenIdle(15).thenExecute(()->{
             h.assertTrue(!f.own(p,place).getBoolean("CarvingAppeared"),"nothing is cut into the tree while the reader is watching it");

@@ -158,7 +158,7 @@ public final class LiteraryRooms {
         terrain(l,b,LabyrinthPlace.HOLY_RABBIT,Blocks.SNOW_BLOCK);tree(l,b,0,0,-25,19);box(l,b,-5,0,-29,5,4,-20,Blocks.SPRUCE_LEAVES);box(l,b,-3,0,-28,3,0,-21,Blocks.AIR);box(l,b,-3,-1,-28,3,-1,-21,Blocks.PODZOL);box(l,b,-2,0,-20,2,2,-18,Blocks.AIR);
         HolyRabbit.shelter(l,b);
         PlaytestScenes0488.fresh(l,b,LabyrinthPlace.HOLY_RABBIT);
-        for(int y=0;y<=4;y++)at(l,b,0,y,-25,y==2?LiteraryRegistry.CARVED_TRUNK.get():Blocks.OAK_LOG);prop(l,b,new BlockPos(0,3,-25),LiteraryPropBlock.Kind.TRUNK_MARK,Direction.SOUTH);ReviewScenery0491.fresh(l,b,LabyrinthPlace.HOLY_RABBIT);
+        for(int y=0;y<=4;y++)at(l,b,0,y,-25,y==2?LiteraryRegistry.CARVED_TRUNK.get():Blocks.OAK_LOG);prop(l,b,new BlockPos(0,3,-25),LiteraryPropBlock.Kind.TRUNK_MARK,Direction.SOUTH);at(l,b,0,3,-24,Blocks.AIR);ReviewScenery0491.fresh(l,b,LabyrinthPlace.HOLY_RABBIT);
         // The drag trench is physical: three blocks deep, with no side route over the drifts.
         box(l,b,-3,0,-118,3,3,-33,Blocks.SNOW_BLOCK);box(l,b,-1,0,-118,1,2,-30,Blocks.AIR);box(l,b,-1,-1,-118,1,-1,-30,LiteraryRegistry.DRAG_SNOW.get());for(int z=-119;z<=-34;z++)for(int x:new int[]{-2,2})box(l,b,x,0,z,x,3,z,Blocks.SNOW_BLOCK);
         at(l,b,0,0,-120,Blocks.BARREL);box(l,b,-3,-1,-123,3,-1,-119,Blocks.SNOW_BLOCK);

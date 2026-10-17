@@ -1,8 +1,8 @@
 # The Holy Rabbit, a pass — 0.4.101
 
 The owner asked for a pass on *The Father, the Son, and the Holy Rabbit* after the October 17 gameplay and storytelling
-review. It ships in the same candidate as the reworked Shallows (protocol 73, layout 45). No geometry, actor, item or
-sound changes; 46 sources / 35 resolutions / two kinds / three endings are unchanged. Every earlier owner direction
+review. It ships in the same candidate as the reworked Shallows (protocol 73, layout 45). No actor, item or sound changes, and one
+geometry cell (below); 46 sources / 35 resolutions / two kinds / three endings are unchanged. Every earlier owner direction
 stands: the explicit stay or an owned meal commits the visit, hunger stays at one, the cold uses the native freezing
 overlay, Father walks, harvests and tosses the same living Slaney, belief comes before the wound, and the food is
 explained only after the wound is seen.
@@ -65,6 +65,17 @@ trail opens is turned back by the wind ("Father hasn't gone that way"), not by d
   comes away.
 - In the account, a searcher asks where Father is going and the child says "hunting". Years later, at a window with a
   rabbit in the flowers, the child keeps their mouth shut tight so as not to lose anything he gave them.
+
+**Owner follow-ups (October 17).**
+
+- **The carving can be seen.** Father's words on the trunk (the trunk mark, "<name>, come home") face south at canopy
+  height, and a canopy leaf block stood directly in front of them. New builds leave that one cell open. Saved worlds
+  keep their leaf: the mod is unreleased, and the owner judged mid-save repairs unimportant here.
+- **It is an understanding ending.** The Witness account now files the Holy Rabbit as understanding rather than
+  survival, and its line shows the turn: "The rabbit was alive every morning, and every night the meat came in its
+  skin. Then I saw his legs. I followed the line they left in the snow."
+- Mid-save edge cases (a reader already on the third day under the old thirty-second morning rule) are out of scope for
+  the same reason.
 
 Saved worlds: a reader partway through keeps their night, meals and records. The new behaviour applies from their next
 tick. Already collected accounts keep their saved words.
