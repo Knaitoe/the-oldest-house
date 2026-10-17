@@ -42,6 +42,8 @@ public final class LakeHouse {
     public static final int BASE_Y=40;
     /** The scene's extent, relative to its base. The deepest cell is the basement under the house. */
     public static final int MIN_X=-56,MAX_X=56,MIN_Y=-44,MAX_Y=24,MIN_Z=-230;
+    /** The scene's eastern edge, past the empty lake that a reader who said hello comes out on ({@link LakeHouseFinale}). */
+    public static final int BOX_MAX_X=LakeHouseFinale.EMPTY_DX+MAX_X;
 
     // ------------------------------------------------------------------------------------------------ the map
     /** The boathouse: the rental log on its lectern, the account on its shelf. */
@@ -106,6 +108,7 @@ public final class LakeHouse {
     public static void build(ServerLevel l,BlockPos b){
         var s=new Site(l,b);
         land(s);culvert(s);boathouse(s);dock(s);house(s);LakeHouseRooms.build(s);raft(s);woods(s);
+        LakeHouseFinale.buildEmpty(l,b);
         // Fences, walls and panes take their joins from what was actually built around them.
         BuildBlocks.after(l,()->LakeHouseRooms.props(l,b));
         BuildBlocks.after(l,()->{for(var at:s.connect){var st=l.getBlockState(at);var joined=Block.updateFromNeighbourShapes(st,l,at);if(!joined.equals(st))l.setBlock(at,joined,Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);}});
@@ -124,6 +127,9 @@ public final class LakeHouse {
         int low=Math.min(Math.min(lowestWater(x+1,z),lowestWater(x-1,z)),Math.min(lowestWater(x,z+1),lowestWater(x,z-1)));
         return Math.min(own,low==Integer.MAX_VALUE?own:low-1);
     }
+
+    /** Everything but the house: the land, both lakes, the culvert, the boathouse and dock, and the woods. */
+    static void landscape(Site s){land(s);culvert(s);boathouse(s);dock(s);woods(s);}
 
     /** Ground, the two lakes and their beds. Water is only ever laid where solid ground holds it in, sides and all. */
     private static void land(Site s){
@@ -385,5 +391,5 @@ public final class LakeHouse {
         LakeHouseGear.tidy(l,box(b));
     }
     /** The scene's box, absolute. */
-    public static AABB box(BlockPos b){return new AABB(b.getX()+MIN_X,b.getY()+MIN_Y,b.getZ()+MIN_Z,b.getX()+MAX_X+1,b.getY()+MAX_Y+1,b.getZ()+1);}
+    public static AABB box(BlockPos b){return new AABB(b.getX()+MIN_X,b.getY()+MIN_Y,b.getZ()+MIN_Z,b.getX()+BOX_MAX_X+1,b.getY()+MAX_Y+1,b.getZ()+1);}
 }
