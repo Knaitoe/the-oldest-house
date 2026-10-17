@@ -136,7 +136,8 @@ public final class VignetteAnimationTests {
         h.assertTrue(MovieNight.footing(Blocks.WATER.defaultBlockState())&&MovieNight.footing(Blocks.OAK_PLANKS.defaultBlockState())&&MovieNight.footing(Blocks.DARK_OAK_PLANKS.defaultBlockState())
                 &&!MovieNight.footing(Blocks.SPRUCE_PLANKS.defaultBlockState())&&!MovieNight.footing(Blocks.SAND.defaultBlockState())&&!MovieNight.footing(Blocks.GRASS_BLOCK.defaultBlockState()),"she keeps to the water and the planks out on it; never the far pier or a bank");
         h.assertTrue(f.out.getBlockState(b.offset(0,-1,-64)).is(Blocks.SPRUCE_PLANKS)&&f.out.getBlockState(b.offset(2,-1,-64)).is(Blocks.WATER)&&f.out.getBlockState(b.offset(-2,-1,-64)).is(Blocks.WATER),"the far pier runs out over open water");
-        f.at(p,place,.5,0,-64);final LakeCanoeEntity[] boat={null};final LakeWitchEntity[] witch={null};
+        // Every account needs its source read first.
+        f.source(p,place);f.at(p,place,.5,0,-64);final LakeCanoeEntity[] boat={null};final LakeWitchEntity[] witch={null};
         h.runAfterDelay(10,()->{h.assertTrue(MovieNight.onPier(p,b)&&!MovieNight.exposed(p),"up on the pier the reader is out of her reach");
             boat[0]=MovieNight.canoe(f.out,LiteraryVignettes.shared(f.data(),place),1);f.at(rower,place,3.5,0,-13);rower.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);h.assertTrue(boat[0]!=null&&MovieNight.board(rower,boat[0]),"a second reader takes another canoe");
             witch[0]=MovieNight.witch(f.out,b);h.assertTrue(witch[0]!=null,"her original body is out on the lake");witch[0].moveTo(b.getX()+3.5,b.getY()-.108,b.getZ()-64,0,0);
