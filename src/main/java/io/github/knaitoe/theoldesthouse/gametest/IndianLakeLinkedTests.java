@@ -299,8 +299,9 @@ public final class IndianLakeLinkedTests {
                 if(flying.memoryPhase()==Shallows.BROKEN){if(still[0]==null)still[0]=flying.position();h.assertTrue(flying.position().distanceToSqr(still[0])<1e-6,"she lies still before she moves");return;}
                 if(flying.memoryPhase()==Shallows.RISING){lastZ[0]=flying.getZ();return;}
                 if(flying.memoryPhase()==Shallows.SCURRY){
-                    h.assertTrue(flying.getZ()<lastZ[0]&&(flying.getY()>=surface-.01||flying.getZ()<f.base.getZ()-35),"she runs away across the water's surface, toward the far woods: "+flying.position());
-                    lastZ[0]=flying.getZ();lowest[0]++;return;
+                    // The tick she turns from rising to running she has not stepped yet; she never comes back toward the bank.
+                    h.assertTrue(flying.getZ()<=lastZ[0]&&(flying.getY()>=surface-.01||flying.getZ()<f.base.getZ()-35),"she runs away across the water's surface, toward the far woods: "+flying.position());
+                    if(flying.getZ()<lastZ[0])lowest[0]++;lastZ[0]=flying.getZ();return;
                 }
                 h.assertTrue(flying.memoryPhase()==Shallows.GONE&&lowest[0]>20&&flying.getZ()<=f.base.getZ()-34,"she reaches the woods across the lake: "+flying.position());
                 step[0]=4;h.succeed();

@@ -12,17 +12,18 @@ public final class HolyRabbitDialogue {
     private static void voice(ServerPlayer p,LiteraryActor father,String words){if(father!=null){father.say(words);father.getPersistentData().putLong("SayUntil0488",p.level().getGameTime()+100);}p.displayClientMessage(Component.literal("Father: "+words),false);}
     public static void tick(ServerPlayer p,LiteraryActor father,CompoundTag own,int night,int ticks){
         if(night==1&&ticks>=15&&once(own,1))p.displayClientMessage(Component.literal("Before you woke, a small rabbit sat beside you in the hollow. One ear had a brown tip. You can still remember its warmth."),false);
-        if(night==1&&(own.getInt("RabbitMornings")&2)!=0&&once(own,2))voice(p,father,"The little one from your dream? We'll call him "+name(own)+". Now he has a name to find his way back to.");
-        if(night==1&&own.getInt("AteNight")==1&&once(own,4))voice(p,father,"Keep the skin folded. There are things in these woods that know how to come back.");
+        // As in Jones's story, the boy names the rabbit and the boy believes it will come back; Father goes along with it.
+        if(night==1&&(own.getInt("RabbitMornings")&2)!=0&&once(own,2)){voice(p,father,"The little one from your dream. Has he got a name?");p.displayClientMessage(Component.literal("You tell him: "+name(own)+". A thing with a name is real."),false);}
+        if(night==1&&own.getInt("AteNight")==1&&once(own,4)){p.displayClientMessage(Component.literal("You fold the skin and push it into the snow past the tree. He'll come back."),false);voice(p,father,"Maybe he will.");}
         if(night==2&&(own.getInt("RabbitMornings")&4)!=0&&own.getInt("Meals")>=1&&once(own,8)){
             own.putBoolean("RabbitBelief0490",true);own.putBoolean("RabbitBelieved0490",true);
             p.displayClientMessage(Component.literal(name(own)+" is beside the tree again, one ear brown at the tip. Last night you ate. This morning he came back."),false);
             voice(p,father,"There he is. I told you he could find us. We only have to get through another night.");
         }
-        if(night>=2&&own.getInt("MealNight")>=2&&!own.getBoolean("WoundSeen0488")&&once(own,16))voice(p,father,"I went by the creek. That's why my trousers are wet. Don't let the meat get cold while you worry about me.");
+        if(night>=2&&own.getInt("MealNight")>=2&&!own.getBoolean("WoundSeen0488")&&once(own,16))voice(p,father,"I went by the creek. That's why my trousers are wet. It's a good sign; water runs to people. Don't let the meat get cold while you worry about me.");
         // On the last day he points the reader to what he cut, once, if they have not looked up at it yet.
         if(night>=3&&ticks>=300&&own.getBoolean("CarvingAppeared")&&!own.getBoolean("CarvingRead")&&once(own,128))voice(p,father,"I cut something into the tree for you. Up high, where the snow can't get at it.");
-        if(own.getBoolean("CarvingRead")&&once(own,32))p.displayClientMessage(Component.literal("Your initials are cut beside your mother's. Below them is a little rabbit. Father has pressed the knife hard enough to cut through the bark."),false);
+        if(own.getBoolean("CarvingRead")&&once(own,32))p.displayClientMessage(Component.literal("Your initials are cut beside your mother's name. Below them is a little rabbit, with "+name(own)+" cut under its feet. He has gone round her name so many times the bark is coming away."),false);
         if(own.getBoolean("WoundSeen0488")&&once(own,64)){
             own.putBoolean("RabbitTruth0490",true);own.putBoolean("RabbitBelief0490",false);
             p.displayClientMessage(Component.literal("His trouser leg is cut open. The cloth tied round his thigh has bled through. Out by the snow, "+name(own)+" sits where he sat this morning."),false);
