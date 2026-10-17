@@ -78,7 +78,11 @@ public final class LakeWitchEntity extends PathfinderMob {
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { super.defineSynchedData(builder); builder.define(STRIKING, false); builder.define(MEMORY_PHASE, -1);builder.define(HUNT_PHASE,STALK);builder.define(BITING,false);builder.define(SWING,0F); }
     public boolean memory() { return entityData.get(MEMORY_PHASE) >= 0; }
     public int memoryPhase() { return entityData.get(MEMORY_PHASE); }
-    public void memoryPhase(int phase) { if(phase!=memoryPhase())memoryTicks=0;entityData.set(MEMORY_PHASE, phase);refreshDimensions(); }
+    public void memoryPhase(int phase) {
+        if(phase!=memoryPhase())memoryTicks=0;Vec3 at=position();entityData.set(MEMORY_PHASE, phase);refreshDimensions();
+        // A wider box would be nudged by native size-change fudging; Shallows has already put her exactly where she is.
+        if(!level().isClientSide()&&!at.equals(position()))setPos(at);
+    }
     public float swing(){return entityData.get(SWING);}
     public void swing(float angle){entityData.set(SWING,angle);}
     /** The swing between client ticks, for a smooth carry. */

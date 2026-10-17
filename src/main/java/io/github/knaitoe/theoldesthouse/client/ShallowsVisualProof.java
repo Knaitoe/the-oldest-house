@@ -107,14 +107,17 @@ public final class ShallowsVisualProof extends Screen {
             var arms=arms(scene(1).get(i));if((arms.z0+arms.z1)/2>-.05F)problems.add((i==1?"reader's":"carrier's")+" arms do not follow her toward the water: "+arms);
         }
         var lying=bounds(scene(3).getFirst(),false);var lyingHead=bounds(scene(3).getFirst(),true);
-        if(lying.y1>1.1F||lying.y0<-.2F||lying.x1-lying.x0<1.3F)problems.add("on the bank she is not lying down with her feet up: "+lying);
+        if(lying.y1>1.1F||lying.y0<-.15F||lying.x1-lying.x0<1.3F)problems.add("on the bank she is not lying down with her feet up: "+lying);
         if((lyingHead.x0+lyingHead.x1)/2>-.25F)problems.add("on the bank her head is not toward the reader: "+lyingHead);
-        var broken=bounds(scene(5).getFirst(),false);if(broken.y1-broken.y0>.85F||broken.y0<-.45F)problems.add("broken, she is not flat on the water: "+broken);
+        // Face down, only the face may meet the surface from below; nothing else of her goes under.
+        var lies=scene(5).getFirst();var broken=bounds(lies,false);
+        if(broken.y1-broken.y0>.8F||broken.y0<lies.y()-.2F)problems.add("broken, she is not flat on the water: "+broken);
         var crawl=bounds(scene(7).getFirst(),false);if(crawl.y1-crawl.y0>1.25F)problems.add("crossing, she is not low on all fours: "+crawl);
     }
     private static Bounds bounds(Figure f,boolean headOnly){
         var p=new PoseStack();place(p,f);var b=new Bounds();
-        if(headOnly&&f.model() instanceof LakeWitchModel m)m.head.render(p,b,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
+        // Her head's cubes are drawn by the jaw helper, not by the head part itself.
+        if(headOnly&&f.model() instanceof LakeWitchModel m)LakeWitchJaw.upper(m.head,0,0,p,b,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
         else f.model().renderToBuffer(p,b,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
         return b;
     }

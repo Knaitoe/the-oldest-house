@@ -91,7 +91,8 @@ public final class LakeWitchModel extends PlayerModel<LakeWitchEntity> {
             leftLeg.xRot=rightLeg.xRot=-.72F;leftLeg.xRot+=kick*.18F;rightLeg.xRot-=kick*.18F;
             leftArm.xRot=-1.35F+sin(age*.4F+seed)*.45F;rightArm.xRot=-1.2F-sin(age*.37F+seed)*.45F;leftArm.zRot=-.5F;rightArm.zRot=.5F;
             leftElbow.xRot=-.6F;rightElbow.xRot=-.5F+sin(age*.5F)*.2F;
-            head.xRot=-.55F;head.yRot=sin(age*.21F+seed)*.7F;
+            // The head lifted off the sand, toward whoever has her feet; a head tipped back would sink into it.
+            head.xRot=.5F;head.yRot=sin(age*.21F+seed)*.7F;
         }
         copyClothes();
     }
@@ -103,25 +104,31 @@ public final class LakeWitchModel extends PlayerModel<LakeWitchEntity> {
         leftKnee.xRot=.6F;rightKnee.xRot=.9F;head.xRot=-.5F;
         copyClothes();
     }
-    /** Face down on the water, every joint at an angle it cannot take: an arm behind her, a knee the wrong way, the head turned too far. */
+    /**
+     * Face down on the water, every joint at an angle it cannot take: one arm wrenched up behind her and folded back, the
+     * other flung out with the forearm bent sideways, both knees bent outward, the head turned almost all the way round.
+     * The bends lie in the plane of the water, so nothing of her goes under but the face against it.
+     */
     public void brokenPose(float age,int seed){
         resetBody();young=false;crouching=false;riding=false;
-        rightArm.xRot=2.55F;rightArm.zRot=-.45F;rightElbow.xRot=-1.55F;rightElbow.yRot=.9F;
-        leftArm.zRot=1.35F;leftArm.xRot=-.2F;leftElbow.xRot=-1.1F;leftElbow.yRot=-1.25F;
-        leftLeg.zRot=-.52F;leftLeg.xRot=.15F;leftKnee.xRot=-1.25F;
-        rightLeg.yRot=1.05F;rightLeg.xRot=.42F;rightKnee.zRot=.75F;rightKnee.xRot=.35F;
-        head.yRot=2.25F;head.zRot=.32F;body.zRot=.16F;
+        rightArm.xRot=BROKEN_RIGHT_ARM;rightArm.zRot=-.35F;rightElbow.xRot=-1.9F;rightElbow.yRot=.6F;
+        leftArm.zRot=-1.35F;leftArm.xRot=-.2F;leftElbow.yRot=-1.25F;leftElbow.zRot=-1.3F;
+        leftLeg.zRot=-.52F;leftLeg.xRot=.1F;leftKnee.zRot=-1.15F;
+        rightLeg.yRot=.5F;rightLeg.xRot=.12F;rightLeg.zRot=.35F;rightKnee.zRot=.9F;
+        head.yRot=BROKEN_HEAD_TURN;head.zRot=.15F;body.zRot=.1F;
         copyClothes();
     }
+    private static final float BROKEN_RIGHT_ARM=1.95F,BROKEN_HEAD_TURN=3.0F;
+    private static float mix(float from,float to,float k){return from+(to-from)*k;}
     /** Twitch, then the head snaps round, then the hands plant, then she rises onto them; never smoothly. */
     public void risingPose(float t,float age,int seed){
         float tremor=sin(age*2.7F+seed)*.05F;
         if(t<RISE_SPLIT){
             brokenPose(age,seed);float k=(float)Math.floor(t/3)*3/RISE_SPLIT;
-            float snap=t<6?0:t<8?1.15F:1;head.yRot=2.25F*(1-snap)+tremor;head.zRot=.32F*(1-snap);
+            float snap=t<6?0:t<8?1.15F:1;head.yRot=BROKEN_HEAD_TURN*(1-snap)+tremor;head.zRot=.15F*(1-snap);
             float plant=Math.max(0,(k-.35F)/.65F);
-            rightArm.xRot=2.55F+(-1.57F-2.55F)*plant;rightArm.zRot=-.45F*(1-plant)+.3F*plant;rightElbow.xRot=-1.55F*(1-plant)-.55F*plant;rightElbow.yRot=.9F*(1-plant);
-            leftArm.xRot=-.2F+(-1.57F+.2F)*plant;leftArm.zRot=1.35F*(1-plant)-.3F*plant;leftElbow.xRot=-1.1F*(1-plant)-.6F*plant;leftElbow.yRot=-1.25F*(1-plant);
+            rightArm.xRot=mix(BROKEN_RIGHT_ARM,-1.57F,plant);rightArm.zRot=mix(-.35F,.3F,plant);rightElbow.xRot=mix(-1.9F,-.55F,plant);rightElbow.yRot=mix(.6F,0,plant);
+            leftArm.xRot=mix(-.2F,-1.57F,plant);leftArm.zRot=mix(-1.35F,-.3F,plant);leftElbow.xRot=mix(0,-.6F,plant);leftElbow.yRot=mix(-1.25F,0,plant);leftElbow.zRot=mix(-1.3F,0,plant);
             leftArm.xRot+=tremor;rightArm.zRot+=tremor;copyClothes();return;
         }
         scurryPose(0,0,age,seed);float k=(t-RISE_SPLIT)/(Shallows.RISE_TICKS-RISE_SPLIT);

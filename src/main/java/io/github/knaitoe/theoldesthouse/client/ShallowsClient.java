@@ -99,10 +99,11 @@ public final class ShallowsClient {
     public static void carryArms(HumanoidModel<?> model,float swing,float waterSide,float reach,boolean torso){
         float lift=1-Mth.cos(swing);
         for(var arm:new net.minecraft.client.model.geom.ModelPart[]{model.leftArm,model.rightArm}){
-            arm.xRot=-.95F-.45F*lift-reach*.6F;arm.yRot=-waterSide*swing*.62F;arm.zRot=(arm==model.leftArm?.12F:-.12F);
+            // A positive yaw turns a raised arm to the body's right; waterSide is +1 when the lake is on that side.
+            arm.xRot=-.95F-.45F*lift-reach*.6F;arm.yRot=waterSide*swing*.85F;arm.zRot=(arm==model.leftArm?.12F:-.12F);
         }
         // A boy twists with the swing and watches her; a reader's own head and body stay with their camera.
-        if(torso){model.body.yRot=-waterSide*swing*.22F;model.head.yRot=model.body.yRot*.5F;model.head.xRot=.35F;}
+        if(torso){model.body.yRot=waterSide*swing*.22F;model.head.yRot=model.body.yRot*.5F;model.head.xRot=.35F;}
     }
     /** The reader's own body, seen from behind or by a camera: holding her wrists. */
     public static void pose(PlayerModel<?> model,LivingEntity entity,float age){

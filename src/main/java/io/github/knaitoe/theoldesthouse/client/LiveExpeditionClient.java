@@ -21,7 +21,7 @@ import net.neoforged.neoforge.client.event.*;
 /** Opt-in actual native input/menu/payload proof; never runs in user sessions. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class LiveExpeditionClient {
-    private static int previous,ticks,clicked=-100,ack=-1;private static String shot;private static boolean stopping,portholePoseSeen;
+    private static int previous,ticks,clicked=-100,ack=-1;private static String shot;private static boolean stopping,portholePoseSeen,pawShot;
     private static BlockPos proofCamp;
     private static boolean confusionCaptured,terrorCaptured,voiceCaptured;
     private static volatile String badImpact;
@@ -38,7 +38,7 @@ public final class LiveExpeditionClient {
         if(!LiveExpeditionProof.enabled())return;if(badImpact!=null)throw new IllegalStateException(badImpact);var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.gameMode==null)return;
         var component=mc.player.getInventory().getItem(8).get(DataComponents.CUSTOM_DATA);if(component==null)return;
         var data=component.copyTag();int step=data.getInt("Step");if(step<1)return;String role=System.getProperty("the_oldest_house.liveProofRole","");
-        if(previous!=step){previous=step;ticks=0;clicked=-100;ack=-1;portholePoseSeen=false;mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);mc.options.keyUse.setDown(false);}ticks++;
+        if(previous!=step){previous=step;ticks=0;clicked=-100;ack=-1;portholePoseSeen=false;pawShot=false;mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);mc.options.keyUse.setDown(false);}ticks++;
         BlockPos target=BlockPos.of(data.getLong("Target"));var block=mc.level.getBlockState(target);
         if(step==1&&ticks>30&&mc.level.players().size()>=2)ack(mc,1);
         if(step==2||step==31) {
@@ -257,7 +257,8 @@ public final class LiveExpeditionClient {
         if(step==41){mc.player.setYRot(0);mc.player.setXRot(0);mc.options.keyShift.setDown(false);mc.options.keyUp.setDown(true);
             if(ticks>20&&mc.player.getZ()>target.getZ()+2&&mc.player.getForcedPose()==null&&mc.player.getBbHeight()>1&&ack!=41){mc.options.keyUp.setDown(false);shot=role+"-camp-bed-left";ack(mc,41);}}
         if(step==42){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);
-            if(mc.screen instanceof PawClutchClient.Focus focus){if(focus.fingers()!=(role.equals("A")?2:1))throw new IllegalStateException("LIVE PAW: peer's finger count reached the wrong client");if(focus.age()==32)shot=role+"-paw-clutch";}
+            if(mc.screen instanceof PawClutchClient.Focus focus){if(focus.fingers()!=(role.equals("A")?2:1))throw new IllegalStateException("LIVE PAW: peer's finger count reached the wrong client");// The view may open before this client reaches the step; one frame from its middle onward is enough.
+                if(focus.age()>=24&&!pawShot&&shot==null){shot=role+"-paw-clutch";pawShot=true;}}
             if(ticks>80&&mc.screen==null&&ack!=42)ack(mc,42);
         }
         if(step>=43&&step<=46&&SupperSocketClient.ready(mc,step,ticks,role,target))ack(mc,step);
