@@ -63,6 +63,9 @@ public final class LakeHouseDive {
     private record Light(ServerLevel level,BlockPos at,boolean water){}
     private static final Map<UUID,Integer> AIR=new HashMap<>(),CHOKING=new HashMap<>(),OUT=new HashMap<>();
     private static final Map<UUID,Light> LIGHTS=new HashMap<>();
+    /** Where a reader blacked out by the house comes to, and what they find, instead of the raft. */
+    private record Waking(Vec3 at,String line){}
+    private static final Map<UUID,Waking> WAKINGS=new HashMap<>();
     /** Divers whose hose is caught or stretched to its end: the helmet gives them nothing. */
     private static final Set<UUID> HOSE_BLOCKED=new HashSet<>();
     private LakeHouseDive(){}
@@ -120,8 +123,22 @@ public final class LakeHouseDive {
         p.serverLevel().playSound(null,p.getX(),p.getY(),p.getZ(),LabyrinthRegistry.CAVER_GASP.value(),SoundSource.PLAYERS,.75F,1.1F);
         p.displayClientMessage(Component.literal("Air. You drag it in."),true);
     }
+    /** The house puts the reader out: the same blackout, ending somewhere of its choosing. */
+    public static void blackout(ServerPlayer p,Vec3 at,String line){
+        CHOKING.remove(p.getUUID());OUT.put(p.getUUID(),BLACKOUT);WAKINGS.put(p.getUUID(),new Waking(at,line));AIR.put(p.getUUID(),p.getAirSupply());
+        p.addEffect(new MobEffectInstance(MobEffects.BLINDNESS,BLACKOUT+30,0,false,false,false));
+        p.addEffect(new MobEffectInstance(MobEffects.DARKNESS,BLACKOUT+30,0,false,false,false));
+    }
     /** Coming to on the raft, or on the dock for a reader who never got through the culvert, with nothing lost but time. */
     private static void wake(ServerPlayer p,BlockPos b){
+        var waking=WAKINGS.remove(p.getUUID());
+        if(waking!=null){
+            p.stopRiding();p.teleportTo(p.serverLevel(),waking.at().x,waking.at().y,waking.at().z,p.getYRot(),0);p.setDeltaMovement(Vec3.ZERO);p.resetFallDistance();
+            AIR.put(p.getUUID(),p.getMaxAirSupply());p.setAirSupply(p.getMaxAirSupply());HOSE_BLOCKED.remove(p.getUUID());
+            p.serverLevel().playSound(null,p.getX(),p.getY(),p.getZ(),LabyrinthRegistry.CAVER_GASP.value(),SoundSource.PLAYERS,.9F,1F);
+            p.displayClientMessage(Component.literal(waking.line()),false);
+            return;
+        }
         boolean third=p.getZ()<b.getZ()+LakeHouse.CHANNEL_NORTH;
         var at=Vec3.atBottomCenterOf(b.offset(third?LakeHouse.RAFT.offset(1,1,0):LakeHouse.DOCK_END.offset(0,1,2)));
         p.stopRiding();p.teleportTo(p.serverLevel(),at.x,at.y,at.z,p.getYRot(),20);p.setDeltaMovement(Vec3.ZERO);p.resetFallDistance();
@@ -238,12 +255,12 @@ public final class LakeHouseDive {
 
     // ------------------------------------------------------------------------------------------------ leaving
     static void forget(UUID id){
-        AIR.remove(id);CHOKING.remove(id);OUT.remove(id);HOSE_BLOCKED.remove(id);
+        AIR.remove(id);CHOKING.remove(id);OUT.remove(id);HOSE_BLOCKED.remove(id);WAKINGS.remove(id);
         var light=LIGHTS.remove(id);if(light!=null)restore(light);
     }
     @SubscribeEvent public static void left(PlayerEvent.PlayerLoggedOutEvent e){forget(e.getEntity().getUUID());}
     @SubscribeEvent public static void stopping(ServerStoppingEvent e){
         for(var light:new java.util.ArrayList<>(LIGHTS.values()))restore(light);
-        LIGHTS.clear();AIR.clear();CHOKING.clear();OUT.clear();HOSE_BLOCKED.clear();
+        LIGHTS.clear();AIR.clear();CHOKING.clear();OUT.clear();HOSE_BLOCKED.clear();WAKINGS.clear();
     }
 }
