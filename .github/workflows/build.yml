@@ -421,7 +421,7 @@ jobs:
               for name in ('plain_camera','archive_key','church_key','well_ribbon','franks_package'):
                   icon = Image.open(BytesIO(z.read(f'assets/the_oldest_house/textures/item/{name}.png')))
                   assert icon.size == (16, 16) and icon.mode == 'RGBA', name
-              for name in ('HouseHuman', 'HollowayCamp', 'HollowayVignette', 'HarriganAppearance'):
+              for name in ('HouseHuman', 'HollowayCamp', 'HollowayVignette', 'HarriganWake'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               for name in ('holloway', 'harrigan', 'harrigan_dead', 'finale_witness', 'lake_witch', 'lake_witch_memory', 'caged_child'):
                   from PIL import Image
