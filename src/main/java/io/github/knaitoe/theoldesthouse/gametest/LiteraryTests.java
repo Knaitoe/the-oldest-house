@@ -53,6 +53,17 @@ public final class LiteraryTests {
         f.click(p,place,LiteraryRooms.source(place));h.assertTrue(p.containerMenu instanceof LiteraryVignettes.Pages,"the actual source surface opens its native private paper");
         h.assertTrue(f.own(p,place).getBoolean("Read_Source"),"opening a one-page paper reads it to the end");h.assertTrue(!f.own(peer,place).getBoolean("Read_Source"),"one reader's opening is not another's");
         p.closeContainer();h.succeed();}
+    /** 0.4.105: the lake nights tell one story: the ribbon goes out in winter and is back on Hank's table by June; what she takes, the lake keeps. */
+    @GameTest(template="empty") public static void theLakeNightsTellOneStory(GameTestHelper h){
+        var night=new CompoundTag();night.putInt("Missing0502",MovieNightCast.JAMIE_BIT);var stranger=MovieNight.account(night);
+        h.assertTrue(stranger.contains("nobody drowns in Indian Lake")&&!stranger.contains("boys from the shallows"),"a reader new to the lake hears only what Proofrock says");
+        night.putBoolean("Congregation0505",true);night.putBoolean("Shallows0505",true);var known=MovieNight.account(night);
+        h.assertTrue(known.contains("the lake keeps its people in rows")&&known.contains("boys from the shallows")&&!known.contains("nobody drowns"),"a reader who walked among the congregation knows where the missing go, and Ray knows a boy from the shallows");
+        h.assertTrue(WinterLake.account(new CompoundTag()).contains("In June Hank found it on his table"),"the ribbon given back in winter is on Hank's table by June");
+        var costume=new CompoundTag();costume.putBoolean("HankDare0503",true);var contest=CostumeNight.account(costume);
+        h.assertTrue(contest.contains("the winner is the same")&&contest.contains("back on his table by June"),"Hank's contest crowns her every year, with the ribbon that came back");
+        h.succeed();
+    }
     @AfterBatch(batch="literary_papers") public static void papersDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_hill",timeoutTicks=200)
     public static void actualColdDoorNameAndCountedKnocksEarnOnlyTheReadersAccount(GameTestHelper h){var f=new Fixture(h);var place=LabyrinthPlace.HILL_NURSERY;var p=f.player("hill_reader",place);f.source(p,place);f.at(p,place,-9.5,0,-17);f.look(p,f.base(place).offset(LiteraryRooms.HILL_WALL));h.runAfterDelay(10,()->{h.assertTrue(f.own(p,place).getBoolean("ColdDoor")&&f.own(p,place).getBoolean("NameSeen"),"native doorway presence and line of sight are required");f.at(p,place,-9.5,-4,-34);for(int i=0;i<3;i++)NeoForge.EVENT_BUS.post(new PlayerInteractEvent.LeftClickBlock(p,f.base(place).offset(LiteraryRooms.HILL_KNOCK),Direction.SOUTH,PlayerInteractEvent.LeftClickBlock.Action.START));});h.runAfterDelay(50,()->{h.assertTrue(f.own(p,place).getInt("Knocks")==3&&f.own(p,place).getInt("Echoes")==3&&f.own(p,place).getBoolean("Ready"),"each actual knock returns once at its cellar source");f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.HILL_NURSERY),"reading the own ending grants one eligible source");h.succeed();});}

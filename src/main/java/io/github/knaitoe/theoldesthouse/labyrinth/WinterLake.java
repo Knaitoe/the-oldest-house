@@ -369,7 +369,7 @@ public final class WinterLake {
         if(own.getBoolean("FellThrough0504"))text.append("The ice opened and I went down into the black water with her. The only light was the hole I had made. "+(own.getBoolean("CameUp0504")?"I came up through it.":"")+"\n\n");
         text.append("At the hole where she went down, I held the ribbon out over the water. A hand came up and took it.\n\n");
         text.append("Then the boys ran, the way we all ran at the shallows, and I walked back across the ice alone, as quietly as I could.\n\n");
-        return text.append("The fire was out when I reached the bank. Behind me the ice ticked and settled, and somewhere under it she had her ribbon back.").toString();
+        return text.append("The fire was out when I reached the bank. Behind me the ice ticked and settled, and somewhere under it she had her ribbon back.\n\nIt did not stay down. In June Hank found it on his table, dry, the week of the costume contest, and it has been there every June since.").toString();
     }
     public static void clearAll(){LAST.clear();SUSPICION.clear();}
 

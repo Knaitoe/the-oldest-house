@@ -118,6 +118,9 @@ public final class MovieNight {
     public static void arrive(ServerPlayer p,CompoundTag own){
         // About one visit in three, once, a shark comes for this reader's canoe.
         own.putBoolean("SharkVisit0502",p.getRandom().nextInt(3)==0);own.remove("SharkDone0502");own.putBoolean("Muted0502",false);own.remove("PierHint0502");
+        // 0.4.105: what this reader already knows of the lake, so the night can tell them where the missing go.
+        own.putBoolean("Congregation0505",WitnessAccount.has(LabyrinthData.get(p.server),p.getUUID(),WitnessAccount.Story.PRESERVED_CAVE));
+        own.putBoolean("Shallows0505",IndianLakeProgress.hasThrown(LabyrinthData.get(p.server),p.getUUID()));
     }
     /** Every five ticks while the reader is here (from the shared hunt). */
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own,@Nullable LakeWitchEntity witch){
@@ -301,7 +304,12 @@ public final class MovieNight {
         if(own.getBoolean("SharkSeen0502"))text.append("Out past the screen a fin came round the canoe, the way the one in the film had. Something went under the hull and lifted it. There are no sharks in a lake.\n\n");
         if(own.getBoolean("Struck0502"))text.append("She caught me once, in the dark between bursts.\n\n");
         if(own.getBoolean("MetDot0502"))text.append(missing!=0?"The woman in the ticket hut asked whether I had seen the Pruitts on my way across. I said I hadn't.\n\n":"The woman in the ticket hut said nobody walks round.\n\n");
-        return text.append("The pier was under my hands before the last burst. Behind me the film went on").append((missing&MovieNightCast.JUNE_BIT)!=0?" for nobody":"").append(". A boy on the screen asked if it was gone.").toString();
+        text.append("The pier was under my hands before the last burst. Behind me the film went on").append((missing&MovieNightCast.JUNE_BIT)!=0?" for nobody":"").append(". A boy on the screen asked if it was gone.");
+        // 0.4.105: the night's turn, and its place in the lake's story: nobody she takes is drowned.
+        if(own.getBoolean("Shallows0505"))text.append("\n\nRay knew me. He said every one of the boys from the shallows comes to the film once, and none of them stays to the end.");
+        if(missing!=0&&own.getBoolean("Congregation0505"))text.append("\n\nI knew where they would be. Under the hill, in the cave behind the drowned church, the lake keeps its people in rows, in the clothes of every year. By morning there would be a few more, still facing the way the screen had been.");
+        else text.append("\n\nIn Proofrock they say nobody drowns in Indian Lake. It keeps them.");
+        return text.toString();
     }
 
     // ------------------------------------------------------------------------------------------------ the build
