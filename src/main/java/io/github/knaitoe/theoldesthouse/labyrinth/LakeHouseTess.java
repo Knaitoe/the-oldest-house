@@ -70,7 +70,7 @@ public final class LakeHouseTess {
         }
         if(!own.getBoolean("TessGreeting")&&!p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER)&&p.distanceToSqr(a)<100){
             own.putBoolean("TessGreeting",true);
-            line(p,a,own.getInt("Visit")>=4?"Something was in my room last night. The floor was wet. We have to go back and say hello.":own.getInt("Visit")==1?"We can go through that tunnel. But if there's something down there, let's not ask how.":own.getInt("Visit")==2?"I'll keep the compressor going. Pull twice if you need me.":"The tanks are filled. Let's see what's upstairs.");
+            line(p,a,own.getInt("Visit")>=4?"Something was in my room last night. The floor was wet, and the water was warm, like that room by the pool. We have to go back and say hello.":own.getInt("Visit")==1?"We can go through that tunnel. But if there's something down there, let's not ask how.":own.getInt("Visit")==2?"I'll keep the compressor going. Pull twice if you need me.":"The tanks are filled. Let's see what's upstairs. And there were bubbles coming out round the wardrobe in the study.");
         }
         if(p.getVehicle() instanceof LakeHouseCanoe canoe){
             if(a.getVehicle()!=canoe){a.stopRiding();a.startRiding(canoe);}a.appearance(a.role(),1);return;
@@ -92,7 +92,9 @@ public final class LakeHouseTess {
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
         if(a.role()!=LiteraryActor.LAKE_TESS)return;
         int n=own.getInt("TessTalk");own.putInt("TessTalk",n+1);
-        String[] lines=own.getBoolean("RuleBroken")?new String[]{"Couldn't it just be ours?","You heard it too. Someone walking, upstairs.","We should have left it where it was."}:own.getBoolean("Lit")?new String[]{"All of them. Every room.","There's somebody upstairs. I won't go in without you.","We came to say hello."}:own.getInt("Visit")==2?new String[]{"There's a staircase at the back. Red carpet, all the way up.","I saw bedrooms up there. Dresses too.","The hose catches on that rail. Swim back and lift it over."}:new String[]{"Everything's still where somebody put it.","Don't ask how. I mean it.","Come up when you need to. It will still be there."};
+        String[] lines=own.getBoolean("RuleBroken")?new String[]{"Couldn't it just be ours?","You heard it too. Someone walking, upstairs.","We should have left it where it was."}:own.getBoolean("Lit")?new String[]{"All of them. Every room.","There's somebody upstairs. I won't go in without you.","We came to say hello."}:own.getInt("Visit")==2?new String[]{"There's a staircase at the back. Red carpet, all the way up.","I saw bedrooms up there. Dresses too.","The hose catches on that rail. Swim back and lift it over."}
+                :own.getInt("Visit")==3?new String[]{"The bubbles come out round the wardrobe in the study. Something's behind it.","I saw bedrooms up there. Dresses too.","Come up when you need to. It will still be there."}
+                :own.getInt("Visit")>=4?new String[]{"The water on my floor was warm. Like that room by the pool.","We came to say hello.","Don't ask how. I mean it."}:new String[]{"Everything's still where somebody put it.","Don't ask how. I mean it.","Come up when you need to. It will still be there."};
         line(p,a,lines[n%lines.length]);
     }
 }

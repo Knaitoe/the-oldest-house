@@ -92,6 +92,8 @@ public final class LakeHouseDive {
     static Source source(ServerPlayer p,BlockPos b){
         // A bubble column is still the lake: unlike anywhere else in Minecraft, it gives no air here.
         if(p.getVehicle() instanceof LakeHouseSeat||!p.isEyeInFluid(FluidTags.WATER))return Source.AIR;
+        // 0.4.105: with every lamp on, the house breathes for the reader inside it, so each ending can be reached in it.
+        if(LakeHouseStory.lit(p)&&LakeHouseStory.withinWalls(p.position().subtract(Vec3.atLowerCornerOf(b))))return Source.AIR;
         if(LakeHouseGear.mine(p.getItemBySlot(EquipmentSlot.HEAD),p,LakeHouseRegistry.HELMET.get())&&running(p.serverLevel(),b)&&!HOSE_BLOCKED.contains(p.getUUID()))return Source.HOSE;
         var tanks=p.getItemBySlot(EquipmentSlot.CHEST);
         if(LakeHouseGear.mine(tanks,p,LakeHouseRegistry.TANKS.get())&&tanks.getDamageValue()<tanks.getMaxDamage()-1){
@@ -126,6 +128,9 @@ public final class LakeHouseDive {
         p.stopRiding();p.teleportTo(p.serverLevel(),at.x,at.y,at.z,p.getYRot(),20);p.setDeltaMovement(Vec3.ZERO);p.resetFallDistance();
         AIR.put(p.getUUID(),p.getMaxAirSupply()/2);p.setAirSupply(p.getMaxAirSupply()/2);
         HOSE_BLOCKED.remove(p.getUUID());
+        // Coming to outside the house is not leaving it; the half door counts again only after the reader is back in.
+        var data=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(data,p.getUUID(),LakeHouse.PLACE);
+        if(own.getBoolean("InsideLit0505")){own.putBoolean("InsideLit0505",false);LiteraryVignettes.save(data,p.getUUID(),LakeHouse.PLACE,own);}
         p.serverLevel().playSound(null,p.getX(),p.getY(),p.getZ(),LabyrinthRegistry.CAVER_GASP.value(),SoundSource.PLAYERS,.9F,1F);
         p.displayClientMessage(Component.literal(third?"You come to on the raft, coughing up lake water.":"You come to on the dock, coughing up lake water."),false);
     }

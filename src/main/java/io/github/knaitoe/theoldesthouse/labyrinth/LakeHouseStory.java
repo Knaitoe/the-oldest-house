@@ -42,12 +42,14 @@ public final class LakeHouseStory {
     public static boolean lit(ServerPlayer p){return own(p).getBoolean("Lit");}
     public static void arrive(ServerPlayer p,CompoundTag own){
         if(!own.getBoolean("LakeFreshVisit"))return;own.putBoolean("LakeDeparted",false);
-        own.putBoolean("SoloGone",false);own.putBoolean("TessGreeting",false);own.putInt("TessLeaving",0);own.putInt("SaunaWait",0);own.putInt("SeatWait",0);
+        own.putBoolean("SoloGone",false);own.putBoolean("TessGreeting",false);own.putInt("TessLeaving",0);own.putInt("SaunaWait",0);own.putInt("SeatWait",0);own.putBoolean("InsideLit0505",false);
         if(own.getInt("Visit")>=3)own.putBoolean("FlashlightOut",false);
     }
     public static void depart(ServerPlayer p){var own=own(p);own.putBoolean("LakeDeparted",true);own.putBoolean("Here",false);save(p,own);releaseLift(p.getUUID());releaseVision(p);}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void died(net.neoforged.neoforge.event.entity.living.LivingDeathEvent e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!LakeHouse.inside(p))return;var own=own(p);own.putInt("Finish",0);if(own.getBoolean("Ready"))own.putBoolean("LakeDeparted",true);save(p,own);releaseLift(p.getUUID());releaseVision(p);}
     private static boolean house(Vec3 r){return Math.abs(r.x-.5)<9&&r.z<-161&&r.z>-179&&r.y>-43&&r.y<-14;}
+    /** Inside the house's walls, basement and sauna included; relative to the base. */
+    public static boolean withinWalls(Vec3 r){return house(r);}
     private static void view(ServerPlayer p,BlockPos at,BlockState state){p.connection.send(new ClientboundBlockUpdatePacket(at,state));}
     private static void lightView(ServerPlayer p,BlockPos b,CompoundTag own,boolean inside){
         boolean bright=own.getBoolean("Lit")&&inside;
@@ -78,8 +80,14 @@ public final class LakeHouseStory {
                 var d=display(p,b.offset(-7+i*2,-18,-168),LakeHouseFittingBlock.of(LakeHouseFittingBlock.Kind.DRESS,Direction.SOUTH));if(d!=null)own.putUUID(key,d.getUUID());
             }else if(own.getInt("T")%10==5){d.shape(d.paintedState(),(float)Math.sin((own.getInt("T")+i*37)*.025)*.12F,(float)Math.sin((own.getInt("T")+i*19)*.012)*.07F);}
         }
-        if(own.getBoolean("SawPool")&&own.hasUUID("Dress2")&&p.serverLevel().getEntity(own.getUUID("Dress2")) instanceof LakeHouseDress black&&p.position().distanceToSqr(b.offset(LakeHouseInterior.POOL).getCenter())<64){
+        if(own.getBoolean("SawPool")&&!own.getBoolean("Lit")&&own.hasUUID("Dress2")&&p.serverLevel().getEntity(own.getUUID("Dress2")) instanceof LakeHouseDress black&&p.position().distanceToSqr(b.offset(LakeHouseInterior.POOL).getCenter())<64){
             black.moveTo(b.getX()+4,b.getY()-38.5,b.getZ()-175);black.shape(black.paintedState(),(float)Math.sin(own.getInt("T")*.018)*.1F,0);
+        }
+        // 0.4.105: once every lamp is on, the black dress is the figure's. It comes down over the wax while the reader climbs.
+        if(own.getBoolean("Lit")&&own.hasUUID("Dress2")&&p.serverLevel().getEntity(own.getUUID("Dress2")) instanceof LakeHouseDress worn){
+            float settle=Math.min(1F,own.getInt("T")/120F);var at=b.offset(LakeHouseInterior.FIGURE);
+            worn.moveTo(at.getX(),at.getY()+1.45-settle,at.getZ());
+            if(own.getInt("T")%10==5)worn.shape(worn.paintedState(),0,(1-settle)*.08F*(float)Math.sin(own.getInt("T")*.05));
         }
     }
     private static void figure(ServerPlayer p,BlockPos b,CompoundTag own){
@@ -100,6 +108,7 @@ public final class LakeHouseStory {
         lightView(p,b,own,inside);dresses(p,b,own);figure(p,b,own);
         if(own.getBoolean("Ready"))return false;
         int visit=own.getInt("Visit");
+        cues(p,b,own,visit);
         if(visit==2&&r.x>2&&r.z<-162&&r.z>-170&&inside&&!own.getBoolean("FlashlightFailed")){
             own.putBoolean("FlashlightFailed",true);own.putBoolean("FlashlightOut",true);p.displayClientMessage(Component.literal("The flashlight clicks. Nothing comes back on."),true);
         }
@@ -121,14 +130,37 @@ public final class LakeHouseStory {
             own.putInt("SaunaWait",own.getInt("SaunaWait")+5);
             var at=b.offset(LakeHouseInterior.SAUNA_EXIT);var s=p.serverLevel().getBlockState(at);if(s.is(LakeHouseRegistry.FITTING.get()))view(p,at,s.setValue(LakeHouseFittingBlock.LIT,false));
             p.serverLevel().sendParticles(p,net.minecraft.core.particles.ParticleTypes.CLOUD,true,p.getX(),p.getEyeY(),p.getZ(),2,.7,.2,.7,.005);
-            if(own.getInt("SaunaWait")>=SAUNA_TICKS&&!own.getBoolean("Lit")){own.putBoolean("Lit",true);own.putBoolean("HelloStage",true);own.putBoolean("FlashlightOut",false);own.putInt("T",1);p.displayClientMessage(Component.literal("Footsteps climb the stairs. Every lamp comes on."),false);}
+            if(own.getInt("SaunaWait")>=SAUNA_TICKS&&!own.getBoolean("Lit")){own.putBoolean("Lit",true);own.putBoolean("HelloStage",true);own.putBoolean("FlashlightOut",false);own.putInt("T",1);p.displayClientMessage(Component.literal("Footsteps climb the stairs. Every lamp comes on, and the water in the house is suddenly easy to breathe."),false);}
         }
         if(own.getBoolean("Lit")){
-            if(own.getBoolean("HelloStage")&&Math.abs(r.x)<2&&r.z>-160&&r.z<-156&&r.y>-26&&r.y<-21){complete(p,own,LakeHouse.LEFT_THE_LIGHTS_ON);return true;}
+            // 0.4.105: only leaving counts. A reader swimming back in through the half door (after a blackout, say) has
+            // not left; the door counts once they have been inside the lit house and come out through it.
+            if(own.getBoolean("HelloStage")&&inside)own.putBoolean("InsideLit0505",true);
+            if(own.getBoolean("HelloStage")&&own.getBoolean("InsideLit0505")&&Math.abs(r.x)<2&&r.z>-160&&r.z<-156&&r.y>-26&&r.y<-21){complete(p,own,LakeHouse.LEFT_THE_LIGHTS_ON);return true;}
             if(p.getVehicle() instanceof LakeHouseSeat&&p.getVehicle().blockPosition().equals(b.offset(LakeHouseInterior.TABLE_PLACE))){own.putInt("SeatWait",own.getInt("SeatWait")+5);if(own.getInt("SeatWait")>=STAY_TICKS){complete(p,own,LakeHouse.STAYED);return true;}}
             else own.putInt("SeatWait",0);
         }
         return false;
+    }
+    /**
+     * 0.4.105: the way down is shown, not stated. Until someone opens it, bubbles leak round the study wardrobe for a
+     * reader on the tanks visit; on the last visit, steam from the sauna drifts up the stair behind it. Both are the
+     * reader's own, so a reader without Tess sees them too.
+     */
+    private static void cues(ServerPlayer p,BlockPos b,CompoundTag own,int visit){
+        if(own.getInt("T")%10!=5)return;
+        var closet=b.offset(LakeHouseInterior.CLOSET);var face=new Vec3(closet.getX()+.5,closet.getY()+.9,closet.getZ()+1.05);
+        if(visit>=3&&!own.getBoolean("SawPool")&&p.serverLevel().getBlockState(closet).is(LakeHouseRegistry.FITTING.get())){
+            p.serverLevel().sendParticles(p,net.minecraft.core.particles.ParticleTypes.BUBBLE,true,face.x,face.y,face.z,6,.45,.8,.05,.02);
+            if(own.getInt("T")%60==5&&p.distanceToSqr(face)<144)ThreeFingers.hear(p,SoundEvents.BUBBLE_COLUMN_UPWARDS_AMBIENT,closet,.5F,.8F);
+            if(!own.getBoolean("ClosetHint0505")&&p.distanceToSqr(face)<64&&HouseWatchers.sees(p,closet.getCenter())){own.putBoolean("ClosetHint0505",true);p.displayClientMessage(Component.literal("Bubbles are leaking out round the edges of the wardrobe."),true);}
+        }
+        if(visit>=4&&own.getBoolean("SawPool")&&!own.getBoolean("Lit")){
+            var low=b.offset(-6,-31,-174).getCenter();
+            p.serverLevel().sendParticles(p,net.minecraft.core.particles.ParticleTypes.CLOUD,true,face.x,face.y,face.z,3,.4,.6,.4,.01);
+            p.serverLevel().sendParticles(p,net.minecraft.core.particles.ParticleTypes.CLOUD,true,low.x,low.y,low.z,3,1,1.5,1,.01);
+            if(!own.getBoolean("WarmHint0505")&&p.distanceToSqr(face)<64){own.putBoolean("WarmHint0505",true);p.displayClientMessage(Component.literal("Warm water is coming up the stair behind the wardrobe."),true);}
+        }
     }
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
         var at=b.offset(rel);var state=p.serverLevel().getBlockState(at);if(!state.is(LakeHouseRegistry.FITTING.get())||LakeHouse.empty(p))return false;

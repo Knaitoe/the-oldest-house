@@ -14,7 +14,7 @@ public final class LakeHouseInterior {
     public static final BlockPos TABLE_PLACE=new BlockPos(-3,-25,-166),ASH=new BlockPos(-6,-24,-175),PAINTING_AT=new BlockPos(8,-23,-167),
         CLOSET=new BlockPos(-6,-25,-176),POOL=new BlockPos(5,-41,-175),SAUNA=new BlockPos(5,-40,-165),SAUNA_EXIT=new BlockPos(5,-40,-170),
         FIGURE=new BlockPos(-5,-19,-166),DRESSING=new BlockPos(-5,-19,-167),KITCHEN=new BlockPos(5,-25,-174);
-    public static final List<BlockPos> LAMPS=List.of(new BlockPos(0,-22,-163),new BlockPos(-5,-24,-169),new BlockPos(5,-24,-169),new BlockPos(-8,-24,-174),new BlockPos(6,-24,-178),new BlockPos(0,-16,-175),new BlockPos(-5,-18,-169),new BlockPos(8,-18,-164),new BlockPos(6,-18,-178),new BlockPos(4,-39,-169),new BlockPos(7,-40,-175));
+    public static final List<BlockPos> LAMPS=List.of(new BlockPos(0,-22,-163),new BlockPos(-5,-24,-169),new BlockPos(5,-24,-169),new BlockPos(-8,-24,-174),new BlockPos(6,-24,-178),new BlockPos(0,-16,-175),new BlockPos(-5,-18,-169),new BlockPos(8,-18,-164),new BlockPos(6,-18,-178),new BlockPos(4,-39,-169),new BlockPos(7,-40,-175),new BlockPos(-8,-18,-176));
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     private LakeHouseInterior(){}
     private static void at(ServerLevel l,BlockPos b,int x,int y,int z,BlockState s){BuildBlocks.set(l,b.offset(x,y,z),s,F);}
@@ -60,6 +60,17 @@ public final class LakeHouseInterior {
         for(int x=-8;x<=-4;x++)prop(l,b,x,-19,-169,WARDROBE,Direction.NORTH);
         for(int x:new int[]{4,7}){prop(l,b,x,-19,-165,BED,Direction.NORTH);prop(l,b,x,-19,-166,BED,Direction.NORTH);prop(l,b,x,-19,-175,BED,Direction.NORTH);prop(l,b,x,-19,-176,BED,Direction.NORTH);}
         fill(l,b,-1,-14,-172,1,-14,-174,water); // the eaves are reached through this upper opening
+        // 0.4.105: upstairs is lived in. A vanity in the dressing room; nightstands and a wardrobe in each bedroom; the
+        // back room on the left is a child's, with its own lamp. Nothing stands in the central route or a doorway.
+        prop(l,b,-8,-19,-163,TABLE,Direction.EAST);prop(l,b,-8,-18,-163,KEY_BOWL,Direction.EAST);
+        for(int z:new int[]{-166,-176})prop(l,b,5,-19,z,TABLE,Direction.NORTH);
+        prop(l,b,8,-19,-168,WARDROBE,Direction.WEST);prop(l,b,8,-19,-172,WARDROBE,Direction.WEST);
+        prop(l,b,-7,-19,-176,BED,Direction.NORTH);prop(l,b,-7,-19,-177,BED,Direction.NORTH);
+        prop(l,b,-5,-19,-178,TABLE,Direction.NORTH);prop(l,b,-5,-18,-178,CANDLE,Direction.NORTH);
+        prop(l,b,-8,-19,-172,WARDROBE,Direction.EAST);prop(l,b,-8,-19,-173,BOOKCASE,Direction.EAST);
+        // The eaves keep what the house no longer uses: a wardrobe and shelves, a table, a dress on its form.
+        prop(l,b,-6,-13,-169,WARDROBE,Direction.EAST);prop(l,b,-6,-13,-171,BOOKCASE,Direction.EAST);
+        prop(l,b,4,-13,-167,TABLE,Direction.NORTH);prop(l,b,-3,-13,-176,DRESS,Direction.SOUTH);
         // The closet's thirty marked half-height treads spiral down round a stone core.
         fill(l,b,-9,-44,-179,9,-27,-161,LakeHouseRegistry.POOL_STONE.get().defaultBlockState());
         fill(l,b,-8,-42,-178,-3,-27,-171,water);
