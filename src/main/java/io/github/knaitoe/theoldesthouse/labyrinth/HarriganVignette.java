@@ -5,7 +5,6 @@ import io.github.knaitoe.theoldesthouse.house.HouseCalendar;
 import io.github.knaitoe.theoldesthouse.house.HouseConfig;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
-import io.github.knaitoe.theoldesthouse.house.HouseWatchers;
 import io.github.knaitoe.theoldesthouse.house.HouseWriting;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +16,6 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Rotations;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -37,7 +35,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Zombie;
@@ -68,7 +65,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 /**
- * Mr Harrigan's Phone: a two-visit vignette followed by a persistent artifact.
+ * Mr Harrigan's Phone: a three-visit vignette followed by a persistent artifact. On the first visit he is alive in his
+ * chair and the reader reads to him; on the second he is dead in it, and his phone lies on the table beside him; on the
+ * third the room has been made ready for his funeral, and he lies in his casket beyond an open doorway (0.4.105).
  *
  * The vignette never reaches into another vignette. Everything the phone does
  * after the funeral happens outside the House dimension, and targeting while
@@ -76,20 +75,20 @@ import net.neoforged.neoforge.event.tick.EntityTickEvent;
  */
 public final class HarriganVignette {
     public static final String ID = "harrigan";
-    public static final int FINAL_VISIT = 2;
+    public static final int FINAL_VISIT = 3;
+    /** Mr. Harrigan is one scene actor (0.4.105), never an armour stand: alive, dead in his chair, or in his casket. */
+    public static final int ALIVE_PHASE = 0, DEAD_PHASE = 1, CASKET_PHASE = 2;
+    private static final String ACTOR = "Harrigan0505";
     public static final double KILL_RADIUS = 64.0D;
     private static final int TEXT_WINDOW_TICKS = 20 * 30;
     private static final int NIGHT_START = 13000;
     private static final int NIGHT_END = 23000;
     private static final String PROP_TAG = TheOldestHouse.MOD_ID + "_harrigan_prop";
-    private static final String BODY_TAG = TheOldestHouse.MOD_ID + "_harrigan_body";
     private static final String GHOST_TAG = TheOldestHouse.MOD_ID + "_harrigan_ghost";
     private static final String OWNER = "HarriganOwner";
     private static final String GHOST_OWNER = "HarriganGhostOwner";
     private static final String GHOST_TARGET = "HarriganGhostTarget";
     private static final String GHOST_MODE = "HarriganGhostMode";
-    private static final String BODY_POSE = "HarriganBodyPose";
-    private static final String BODY_SEAT = "HarriganBodySeat";
 
     public static final BlockPos CHAIR = new BlockPos(0, 0, -9);
     public static final BlockPos LECTERN = new BlockPos(-3, 0, -7);
@@ -150,7 +149,7 @@ public final class HarriganVignette {
         BlockState ceiling = Blocks.DEEPSLATE_TILES.defaultBlockState();
         LabyrinthBuilder.room(level, base, -7, 7, 5, -24, 0, wall, floor, ceiling);
 
-        // Study/funeral dividing wall.
+        // Study/funeral dividing wall. The doorway in it opens only for the funeral, on the third visit.
         for (int x = -7; x <= 7; x++) {
             for (int y = 0; y <= 5; y++) {
                 level.setBlock(base.offset(x, y, -13), wall, flags);
@@ -175,6 +174,9 @@ public final class HarriganVignette {
         if (level.getBlockEntity(base.offset(LECTERN)) instanceof LecternBlockEntity lectern) {
             lectern.setBook(readingBook());
         }
+        CompoundTag fresh = LabyrinthData.get(server).state(ID);
+        fresh.putBoolean("Parlor0505", false);
+        LabyrinthData.get(server).setState(ID, fresh);
 
         HarriganFinish.build(level,base);
 
@@ -204,7 +206,6 @@ public final class HarriganVignette {
             state.putInt("Visit", visit);
             state.putBoolean("BeatDone", false);
             state.putBoolean("TicketVisible", false);
-            state.putBoolean("FuneralEntered", false);
             data.setState(ID, state);
         }
         BlockPos base = base(player.server);
@@ -213,7 +214,7 @@ public final class HarriganVignette {
             boolean someoneElseIsAlreadyHere = interior.getEntitiesOfClass(ServerPlayer.class, placeBounds(base))
                     .stream().anyMatch(other -> !other.getUUID().equals(player.getUUID()));
             if (!someoneElseIsAlreadyHere) {
-                stage(interior, base, data, visit);
+                stage(interior, base, data, visitFor(data));
             }
         }
         NEXT_SPEECH.put(player.getUUID(), player.serverLevel().getGameTime() + 80L);
@@ -231,8 +232,9 @@ public final class HarriganVignette {
         READERS.remove(player.getUUID());
         NEXT_SPEECH.remove(player.getUUID());
         LabyrinthData data = LabyrinthData.get(player.server);
-        if (visitFor(data) == 2 && hasItem(player, LabyrinthRegistry.HARRIGANS_PHONE.get())) {
-            // Keeping his phone closes the story but does not connect the player's phone.
+        if (visitFor(data) == FINAL_VISIT && hasItem(player, LabyrinthRegistry.HARRIGANS_PHONE.get())) {
+            // Leaving his funeral with his phone keeps it: that closes the story but does not connect the player's phone.
+            // Carried out of the study on the second visit, it is only on its way to the funeral.
             data.setCompleted(ID, true);
             WitnessAccount.resolve(player,WitnessAccount.Story.HARRIGAN,"kept_phone");
             CompoundTag p = playerState(data, player.getUUID());
@@ -251,40 +253,97 @@ public final class HarriganVignette {
     }
 
     private static void stage(ServerLevel level, BlockPos base, LabyrinthData data, int visit) {
-        // Original prop UUIDs survive visits and entity-section loading.
-        int flags = LabyrinthBuilder.flags();
-        if (level.getBlockState(base.offset(READER_CHAIR)).isAir()) {
-            level.setBlock(base.offset(READER_CHAIR), LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH), flags);
+        // His original actor and prop UUIDs survive visits and entity-section loading.
+        if (visit >= FINAL_VISIT) {
+            parlor(level, base, data, true);
+            var harrigan = harrigan(level, base, CASKET_PHASE);
+            if (harrigan != null) pose(harrigan, base, CASKET_PHASE);
+            HarriganWake.ensureCast(level, base, true);
+            return;
         }
-
-        // Visit one seals the funeral room completely. Visit two exposes it.
-        for (int y = 0; y <= 3; y++) {
-            level.setBlock(base.offset(FUNERAL_DOOR.getX(), y, FUNERAL_DOOR.getZ()),
-                    Blocks.DARK_OAK_PLANKS.defaultBlockState(), flags);
-        }
-        if (visit >= 2) {
-            BlockState door = Blocks.DARK_OAK_DOOR.defaultBlockState()
-                    .setValue(DoorBlock.FACING, Direction.NORTH);
-            level.setBlock(base.offset(FUNERAL_DOOR), door.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER), flags);
-            level.setBlock(base.offset(FUNERAL_DOOR).above(), door.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER), flags);
-            level.setBlock(base.offset(FUNERAL_DOOR).above(2), Blocks.AIR.defaultBlockState(), flags);
-        }
-
+        parlor(level, base, data, false);
+        int phase = visit == 1 && !data.isCompleted(ID) ? ALIVE_PHASE : DEAD_PHASE;
+        var harrigan = harrigan(level, base, phase);
+        if (harrigan != null) pose(harrigan, base, phase);
         if (visit == 1 && !data.isCompleted(ID)) {
-            spawnBody(level, base.offset(CHAIR).above(), false, false);
             placeProp(level, base.offset(SIDE_TABLE).above(), Direction.UP, LabyrinthRegistry.PHONE.get().getDefaultInstance(), "player_phone");
             placeProp(level, base.offset(SIDE_TABLE).east().above(), Direction.UP, LabyrinthRegistry.HARRIGANS_PHONE.get().getDefaultInstance(), "harrigan_phone");
             if (data.state(ID).getBoolean("TicketVisible")) {
                 placeProp(level, base.offset(SIDE_TABLE).south().above(), Direction.UP,
                         LabyrinthRegistry.SCRATCH_TICKET.get().getDefaultInstance(), "ticket");
             }
-        } else if (!data.state(ID).getBoolean("FuneralEntered")) {
-            spawnBody(level, base.offset(CHAIR).above(), true, false);
+        } else {
             placeProp(level, base.offset(SIDE_TABLE).east().above(), Direction.UP,
                     LabyrinthRegistry.HARRIGANS_PHONE.get().getDefaultInstance(), "harrigan_phone");
-        } else {
-            spawnBody(level, base.offset(CASKET).above(), true, true);
         }
+    }
+
+    /**
+     * The study, or (on the third visit) the same room made ready for his funeral: his chair and reading things gone,
+     * chairs set out in rows, the lectern holding a guest book, flowers on his table, and the doorway in the far wall
+     * opened onto the room where he lies. Only what the study itself authored changes; the doorway is sealed in planks
+     * on the first two visits.
+     */
+    private static void parlor(ServerLevel level, BlockPos base, LabyrinthData data, boolean funeral) {
+        int flags = LabyrinthBuilder.flags();
+        CompoundTag state = data.state(ID);
+        boolean dressed = state.getBoolean("Parlor0505");
+        for (int x = -1; x <= 1; x++) for (int y = 0; y <= 2; y++)
+            level.setBlock(base.offset(x, y, FUNERAL_DOOR.getZ()), funeral ? Blocks.AIR.defaultBlockState() : Blocks.DARK_OAK_PLANKS.defaultBlockState(), flags);
+        if (!funeral) level.setBlock(base.offset(FUNERAL_DOOR).above(3), Blocks.DARK_OAK_PLANKS.defaultBlockState(), flags);
+        if (dressed == funeral) {
+            if (!funeral && level.getBlockState(base.offset(READER_CHAIR)).isAir())
+                level.setBlock(base.offset(READER_CHAIR), LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH), flags);
+            return;
+        }
+        BlockState table = Blocks.DARK_OAK_SLAB.defaultBlockState().setValue(net.minecraft.world.level.block.SlabBlock.TYPE,
+                net.minecraft.world.level.block.state.properties.SlabType.TOP);
+        if (funeral) {
+            // His shelves are draped; his chair is gone; mourners' chairs face the doorway, an aisle down the middle.
+            for (int z = -11; z <= -3; z++) for (int y = 0; y <= 1; y++)
+                if (level.getBlockState(base.offset(-6, y, z)).is(Blocks.BOOKSHELF)) level.setBlock(base.offset(-6, y, z), HarriganFinishBlock.of(HarriganFinishBlock.Kind.PANEL), flags);
+            if (level.getBlockState(base.offset(CHAIR)).getBlock() instanceof StairBlock) level.setBlock(base.offset(CHAIR), Blocks.AIR.defaultBlockState(), flags);
+            for (BlockPos seat : FUNERAL_CHAIRS) {
+                BlockPos at = base.offset(seat);
+                if (level.getBlockState(at).isAir() && level.getBlockState(at.above()).isAir() && level.getBlockState(at.below()).isSolid())
+                    level.setBlock(at, LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH), flags);
+            }
+            for (BlockPos flowers : List.of(base.offset(SIDE_TABLE).above(), base.offset(SIDE_TABLE).east().south().above())) {
+                if (level.getBlockState(flowers).isAir()) level.setBlock(flowers, flowers.getX() == base.getX() + SIDE_TABLE.getX()
+                        ? Blocks.POTTED_WHITE_TULIP.defaultBlockState() : Blocks.POTTED_LILY_OF_THE_VALLEY.defaultBlockState(), flags);
+            }
+            if (level.getBlockEntity(base.offset(LECTERN)) instanceof LecternBlockEntity lectern) lectern.setBook(guestBook());
+        } else {
+            for (int z = -11; z <= -3; z++) for (int y = 0; y <= 1; y++)
+                if (level.getBlockState(base.offset(-6, y, z)).is(LabyrinthRegistry.HARRIGAN_FINISH.get())) level.setBlock(base.offset(-6, y, z), Blocks.BOOKSHELF.defaultBlockState(), flags);
+            for (BlockPos seat : FUNERAL_CHAIRS) {
+                BlockPos at = base.offset(seat);
+                if (level.getBlockState(at).getBlock() instanceof StairBlock) level.setBlock(at, Blocks.AIR.defaultBlockState(), flags);
+            }
+            for (BlockPos flowers : List.of(base.offset(SIDE_TABLE).above(), base.offset(SIDE_TABLE).east().south().above()))
+                if (level.getBlockState(flowers).getBlock() instanceof net.minecraft.world.level.block.FlowerPotBlock) level.setBlock(flowers, Blocks.AIR.defaultBlockState(), flags);
+            level.setBlock(base.offset(CHAIR), LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH), flags);
+            level.setBlock(base.offset(SIDE_TABLE), table, flags);
+            if (level.getBlockState(base.offset(READER_CHAIR)).isAir())
+                level.setBlock(base.offset(READER_CHAIR), LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH), flags);
+            if (level.getBlockEntity(base.offset(LECTERN)) instanceof LecternBlockEntity lectern) lectern.setBook(readingBook());
+        }
+        state = data.state(ID);
+        state.putBoolean("Parlor0505", funeral);
+        data.setState(ID, state);
+    }
+
+    /** Rows facing the funeral doorway, leaving the aisle (x -1 to 1) and the lectern clear. */
+    private static final List<BlockPos> FUNERAL_CHAIRS = List.of(
+            new BlockPos(-4, 0, -9), new BlockPos(-3, 0, -9), new BlockPos(-2, 0, -9),
+            new BlockPos(-4, 0, -11), new BlockPos(-3, 0, -11), new BlockPos(-2, 0, -11),
+            new BlockPos(2, 0, -10), new BlockPos(3, 0, -10), new BlockPos(4, 0, -10),
+            new BlockPos(2, 0, -12), new BlockPos(3, 0, -12), new BlockPos(4, 0, -12));
+
+    private static ItemStack guestBook() {
+        return HouseWriting.book("In memory", "The mourners", HouseWriting.WritingStyle.PLAIN, List.of(
+                "Please sign.\n\nHe hired me to read the stock pages to him the winter his eyes went. He tipped by the page and never once said thank you. I miss it already.\n\nR. Dean",
+                "He paid for the new roof on the library and made them promise not to put his name on it.\n\nThe church\n\nYou kept him company at the end. That was more than most of us managed.\n\nM."));
     }
 
     private static ItemStack readingBook() {
@@ -295,106 +354,89 @@ public final class HarriganVignette {
                 READING_PAGES);
     }
 
-    private static ArmorStand spawnBody(ServerLevel level, BlockPos pos, boolean dead, boolean inCasket) {
-        var data=LabyrinthData.get(level.getServer());var state=data.state(ID);var base=base(level.getServer());
-        ArmorStand stand=null;
-        if(state.hasUUID("OriginalBody0488")){
-            if(level.getEntity(state.getUUID("OriginalBody0488")) instanceof ArmorStand original)stand=original;
-            else return null; // An unloaded or removed original is not a new body.
-        }else{
-            var originals=level.getEntitiesOfClass(ArmorStand.class,placeBounds(base),body->body.getTags().contains(BODY_TAG));
-            if(!originals.isEmpty())stand=originals.getFirst();
-        }
-        boolean fresh=stand==null;
-        if(fresh)stand=new ArmorStand(level, pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D);
-        else stand.teleportTo(pos.getX()+.5D,pos.getY(),pos.getZ()+.5D);stand.setDeltaMovement(Vec3.ZERO);
-        stand.addTag(BODY_TAG);
-        stand.setInvisible(true);
-        stand.setNoBasePlate(true);
-        stand.setShowArms(true);
-        stand.setInvulnerable(true);
-        // The study's entry is south of him. North (180) keeps his face turned away.
-        stand.setYRot(180.0F);
-        stand.setXRot(0.0F);
-        if (dead) {
-            stand.setHeadPose(new Rotations(inCasket ? -10.0F : 18.0F, 0.0F, inCasket ? 0.0F : 8.0F));
-            stand.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.ZOMBIE_HEAD));
-        } else {
-            stand.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.PLAYER_HEAD));
-        }
-        if(fresh)equipSuit(stand);
-        stand.setNoGravity(true);
-        stand.getPersistentData().putInt(BODY_POSE, 1);
-        if (!inCasket) seatBody(stand, pos.below());
-        else {
-            stand.setPos(pos.getX()+.5D,pos.getY()-.1D,pos.getZ()+.5D);stand.xo=stand.getX();stand.yo=stand.getY();stand.zo=stand.getZ();
-            stand.getPersistentData().remove(BODY_SEAT);stand.setBodyPose(new Rotations(0,0,0));
-            stand.setLeftLegPose(new Rotations(0,0,0));stand.setRightLegPose(new Rotations(0,0,0));
-            stand.setLeftArmPose(new Rotations(0,0,0));stand.setRightArmPose(new Rotations(0,0,0));
-        }
-        HarriganAppearance.apply(stand,inCasket);
-        if(fresh&&!level.addFreshEntity(stand))return null;
-        state.putUUID("OriginalBody0488",stand.getUUID());data.setState(ID,state);return stand;
+    /** The phase he belongs in for a visit. */
+    private static int phaseFor(LabyrinthData data, int visit) {
+        return visit >= FINAL_VISIT ? CASKET_PHASE : visit == 1 && !data.isCompleted(ID) ? ALIVE_PHASE : DEAD_PHASE;
     }
 
-    /** Arrange the same body behind the closed door before the reader can see the wake. */
-    public static boolean enterWake(ServerPlayer player){
-        if(!inVignette(player)||!player.isAlive()||player.isSpectator())return false;
-        var data=LabyrinthData.get(player.server);var state=data.state(ID);if(visitFor(data)!=2)return false;
-        var level=player.serverLevel();var base=base(player.server);
-        HarriganWake.ensureCast(level,base);
-        if(state.getBoolean("FuneralEntered"))return true;
-        var originals=level.getEntitiesOfClass(ArmorStand.class,placeBounds(base),body->body.getTags().contains(BODY_TAG));
-        if(originals.isEmpty())return false;
-        var identity=state.hasUUID("OriginalBody0488")?state.getUUID("OriginalBody0488"):null;
-        var body=identity!=null?originals.stream().filter(a->a.getUUID().equals(identity)).findFirst().orElse(null):originals.getFirst();
-        if(body==null)return false;
-        var target=Vec3.atCenterOf(base.offset(CASKET).above());
-        if(HouseWatchers.isWatched(level,body.position().add(0,1,0))||HouseWatchers.isWatched(level,target))return false;
-        if(spawnBody(level,base.offset(CASKET).above(),true,true)==null)return false;
-        state=data.state(ID);state.putBoolean("FuneralEntered",true);data.setState(ID,state);return true;
-    }
-
-    private static void seatBody(ArmorStand stand, BlockPos chair) {
-        // The armor model's hip is thirteen pixels above the entity origin.
-        // Put it just above the stair's half-height seat, in front of its back.
-        stand.setPos(chair.getX() + 0.5D, chair.getY() + 0.55D - 13.0D / 16.0D, chair.getZ() + 0.3D);
-        stand.setYRot(180.0F);
-        stand.setXRot(0.0F);
-        stand.setNoGravity(true);
-        stand.setDeltaMovement(Vec3.ZERO);
-        boolean dead = stand.getItemBySlot(EquipmentSlot.HEAD).is(Items.ZOMBIE_HEAD);
-        stand.setHeadPose(new Rotations(dead ? 18.0F : 0.0F, 0.0F, dead ? 8.0F : 0.0F));
-        stand.setBodyPose(new Rotations(dead ? 8.0F : 0.0F, 0.0F, 0.0F));
-        stand.setLeftLegPose(new Rotations(-90.0F, -5.0F, 0.0F));
-        stand.setRightLegPose(new Rotations(-90.0F, 5.0F, 0.0F));
-        stand.setLeftArmPose(new Rotations(dead ? -25.0F : -40.0F, 0.0F, -5.0F));
-        stand.setRightArmPose(new Rotations(dead ? -25.0F : -40.0F, 0.0F, 5.0F));
-        stand.getPersistentData().putInt(BODY_POSE, 1);
-        stand.getPersistentData().putLong(BODY_SEAT, chair.asLong());
-    }
-
-    /** Repair the existing actor in place, even when a reader still occupies the scene. */
-    public static void onEntityTick(EntityTickEvent.Post event) {
-        if (!(event.getEntity() instanceof ArmorStand stand) || !stand.getTags().contains(BODY_TAG)
-                || !(stand.level() instanceof ServerLevel level) || !level.dimension().equals(HouseDimensions.INTERIOR)) return;
-        BlockPos base = base(level.getServer());
-        if (base == null || !placeBounds(base).contains(stand.position())) return;
-        // Only native head components change; UUID, seat, reader menus and scene progress stay intact.
-        boolean casket=stand.getZ()<base.getZ()-15;
-        HarriganAppearance.apply(stand,casket);
-        if(stand.getPersistentData().getInt(BODY_POSE)>=1)return;
+    /**
+     * His one original actor: created once (in the given phase, or not at all when it is negative), found again by its
+     * saved UUID, and never replaced while that body exists.
+     */
+    @Nullable
+    public static LiteraryActor harrigan(ServerLevel level, BlockPos base, int createAs) {
+        if (base == null) return null;
+        var data = LabyrinthData.get(level.getServer());
+        var state = data.state(ID);
+        if (state.hasUUID(ACTOR)) {
+            if (level.getEntity(state.getUUID(ACTOR)) instanceof LiteraryActor found) return found;
+            // An unloaded original is not a missing one: wait until both his places are loaded to know.
+            for (BlockPos place : List.of(base.offset(CHAIR), base.offset(CASKET)))
+                if (!level.hasChunkAt(place) || !level.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(place.getX() >> 4, place.getZ() >> 4))) return null;
+        }
+        if (createAs < 0) return null;
         BlockPos chair = base.offset(CHAIR);
-        if (Math.abs(stand.getX() - chair.getX() - 0.5D) < 0.75D
-                && Math.abs(stand.getZ() - chair.getZ() - 0.5D) < 0.75D) seatBody(stand, chair);
-        else stand.getPersistentData().putInt(BODY_POSE, 1); // Leave a body already in the casket there.
+        if (!level.hasChunkAt(chair) || !level.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(chair.getX() >> 4, chair.getZ() >> 4))) return null;
+        LiteraryActor actor = LiteraryRegistry.ACTOR.get().create(level);
+        if (actor == null) return null;
+        actor.bind(LabyrinthPlace.HARRIGAN, null);
+        actor.setNoGravity(true);
+        actor.setInvulnerable(true);
+        actor.setSilent(true);
+        pose(actor, base, createAs);
+        if (!level.addFreshEntity(actor)) return null;
+        state = data.state(ID);
+        state.putUUID(ACTOR, actor.getUUID());
+        data.setState(ID, state);
+        return actor;
     }
 
+    /** Seated in his chair facing away from the door, alive or dead, or laid out in the casket. */
+    private static void pose(LiteraryActor actor, BlockPos base, int phase) {
+        actor.appearance(LiteraryActor.HARRIGAN, phase);
+        if (phase == CASKET_PHASE) {
+            BlockPos casket = base.offset(CASKET);
+            actor.moveTo(casket.getX() + .5D, casket.getY() + .9D, casket.getZ() + .5D, 180.0F, 0.0F);
+        } else {
+            // The model's hip is thirteen pixels above its feet: just above the stair's half-height seat, ahead of its back.
+            BlockPos chair = base.offset(CHAIR);
+            actor.moveTo(chair.getX() + .5D, chair.getY() + .55D - 13.0D / 16.0D, chair.getZ() + .3D, 180.0F, 0.0F);
+        }
+        actor.setYHeadRot(180.0F);
+        actor.yBodyRot = 180.0F;
+        actor.setDeltaMovement(Vec3.ZERO);
+    }
+
+    /** Whether his own body is in this chair, so nobody else can sit in it through him. */
     public static boolean occupiesChair(ServerLevel level, BlockPos chair) {
-        return !level.getEntitiesOfClass(ArmorStand.class, new AABB(chair).inflate(0, 1, 0),
-                stand -> stand.getTags().contains(BODY_TAG)
-                        && stand.getPersistentData().contains(BODY_SEAT)
-                        && stand.getPersistentData().getLong(BODY_SEAT) == chair.asLong()).isEmpty();
+        return !level.getEntitiesOfClass(LiteraryActor.class, new AABB(chair).inflate(0, 1, 0),
+                actor -> actor.role() == LiteraryActor.HARRIGAN && actor.phase() != CASKET_PHASE).isEmpty();
+    }
+
+    /** Right-clicking him or a mourner. Alive he answers; dead he does not; the mourners each say their piece. */
+    public static void talk(ServerPlayer player, LiteraryActor actor) {
+        if (!player.isAlive() || player.isSpectator() || !inVignette(player) || player.distanceToSqr(actor) > 36) return;
+        if (actor.role() == LiteraryActor.HARRIGAN_MOURNER) { HarriganWake.talk(player, actor); return; }
+        long now = player.serverLevel().getGameTime();
+        if (player.getPersistentData().getLong("HarriganTalk0505") > now) return;
+        player.getPersistentData().putLong("HarriganTalk0505", now + 40);
+        if (actor.phase() != ALIVE_PHASE) {
+            player.displayClientMessage(Component.literal(actor.phase() == CASKET_PHASE ? "He looks smaller than he did in his chair."
+                    : "He doesn't answer. His hand is cold.").withStyle(ChatFormatting.GRAY), false);
+            return;
+        }
+        LabyrinthData data = LabyrinthData.get(player.server);
+        CompoundTag state = data.state(ID);
+        String line;
+        if (readingFinished(state)) line = "Mr. Harrigan: That's enough for today. The ticket is yours. So is the phone.";
+        else if (!state.getBoolean("ReadingStarted")) line = SMALL_TALK[0];
+        else {
+            int said = state.getInt("SmallTalk0505");
+            line = SMALL_TALK[1 + Math.floorMod(said, SMALL_TALK.length - 1)];
+            state.putInt("SmallTalk0505", said + 1);
+            data.setState(ID, state);
+        }
+        player.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY), false);
     }
 
     private static void equipSuit(LivingEntity entity) {
@@ -519,12 +561,14 @@ public final class HarriganVignette {
             return;
         }
         ItemStack phone=frame.getItem().copy();if(!phone.is(LabyrinthRegistry.HARRIGANS_PHONE.get()))return;frame.setItem(ItemStack.EMPTY,false);propTaken(data,"harrigan_phone");frame.discard();
+        // Taking his phone is the second visit's beat: the next time the room opens, it is for his funeral.
+        CompoundTag beat=data.state(ID);beat.putBoolean("BeatDone",true);data.setState(ID,beat);
         if (!player.getInventory().add(phone)) {
             player.drop(phone, false);
         }
         player.displayClientMessage(Component.literal("His phone is cold.")
                 .withStyle(ChatFormatting.DARK_GRAY), false);
-        player.displayClientMessage(Component.literal("Keep his phone as a keepsake, or carry it through the funeral door and lay it beside him. Your own phone may reach him if his goes with him.")
+        player.displayClientMessage(Component.literal("Keep his phone as a keepsake, or bring it to his funeral and lay it beside him. Your own phone may reach him if his goes with him.")
                 .withStyle(ChatFormatting.GRAY), false);
         player.displayClientMessage(Component.literal("To bury it, hold Mr. Harrigan's phone and right-click the casket.")
                 .withStyle(ChatFormatting.GRAY), false);
@@ -535,7 +579,7 @@ public final class HarriganVignette {
             return;
         }
         Entity target = event.getTarget();
-        if (target.getTags().contains(PROP_TAG) || target.getTags().contains(BODY_TAG)) {
+        if (target.getTags().contains(PROP_TAG)) {
             event.setCanceled(true);
             return;
         }
@@ -552,9 +596,6 @@ public final class HarriganVignette {
     }
 
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        if(!event.isCanceled()&&event.getEntity() instanceof ServerPlayer player&&event.getHand()==net.minecraft.world.InteractionHand.MAIN_HAND
-                &&inVignette(player)&&event.getPos().equals(base(player.server).offset(FUNERAL_DOOR))
-                &&visitFor(LabyrinthData.get(player.server))==2)enterWake(player);
         if (!event.getLevel().isClientSide() && event.getEntity() instanceof ServerPlayer reader
                 && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND && inVignette(reader)
                 && reader.isAlive()&&!reader.isSpectator()
@@ -564,7 +605,7 @@ public final class HarriganVignette {
             READERS.add(reader.getUUID());
         }
         if (!(event.getEntity() instanceof ServerPlayer player) || !player.isAlive()||player.isSpectator()||!inVignette(player)
-                || visitFor(LabyrinthData.get(player.server)) != 2
+                || visitFor(LabyrinthData.get(player.server)) != FINAL_VISIT
                 || !isCasket(player.server, event.getPos())) {
             return;
         }
@@ -829,32 +870,27 @@ public final class HarriganVignette {
         }
 
         ensureProps(interior,base,visit);
+        var harrigan = harrigan(interior, base, phaseFor(data, visit));
         if (visit == 1 && !data.isCompleted(ID)) {
+            // Alive, he turns his head toward whoever is nearest, as far as an old neck turns.
+            ServerPlayer nearest = null;
             for (ServerPlayer player : visitors) {
                 tickReading(player, data);
+                if (harrigan != null && player.isAlive() && !player.isSpectator() && player.distanceToSqr(harrigan) < 64
+                        && (nearest == null || player.distanceToSqr(harrigan) < nearest.distanceToSqr(harrigan))) nearest = player;
+            }
+            if (harrigan != null && harrigan.phase() == ALIVE_PHASE) {
+                float toward = nearest == null ? 180.0F : (float) Math.toDegrees(Math.atan2(harrigan.getX() - nearest.getX(), nearest.getZ() - harrigan.getZ()));
+                harrigan.setYHeadRot(180.0F + Math.max(-60.0F, Math.min(60.0F, net.minecraft.util.Mth.wrapDegrees(toward - 180.0F))));
             }
             return;
         }
-
         if (visit == 2) {
-            HarriganWake.ensureCast(interior,base);
-            for (ServerPlayer player : visitors) explainFuneral(player, data);
-            CompoundTag state = data.state(ID);
-            boolean funeral = state.getBoolean("FuneralEntered");
-            if (!funeral) {
-                for (ServerPlayer player : visitors) {
-                    if (player.getZ() < base.getZ() - 14.0D) {
-                        Vec3 corpse = Vec3.atCenterOf(base.offset(CHAIR).above());
-                        if (HouseWatchers.isWatched(interior, corpse)||HouseWatchers.isWatched(interior,Vec3.atCenterOf(base.offset(CASKET).above()))) {
-                            continue;
-                        }
-                        if(spawnBody(interior, base.offset(CASKET).above(), true, true)==null)continue;
-                        state=data.state(ID);state.putBoolean("FuneralEntered", true);data.setState(ID,state);
-                        break;
-                    }
-                }
-            }
+            for (ServerPlayer player : visitors) explainDeath(player, data);
+            return;
         }
+        HarriganWake.ensureCast(interior, base, false);
+        for (ServerPlayer player : visitors) explainFuneral(player, data);
     }
 
     private static void tickReading(ServerPlayer player, LabyrinthData data) {
@@ -891,14 +927,25 @@ public final class HarriganVignette {
                 .withStyle(ChatFormatting.GRAY), false);
     }
 
+    private static void explainDeath(ServerPlayer player, LabyrinthData data) {
+        CompoundTag personal = playerState(data, player.getUUID());
+        if (personal.getBoolean("DeathExplained0505")) return;
+        personal.putBoolean("DeathExplained0505", true);
+        savePlayerState(data, player.getUUID(), personal);
+        player.displayClientMessage(Component.literal("Mr. Harrigan has died in his chair. His phone is on the table beside him.")
+                .withStyle(ChatFormatting.GRAY), false);
+        player.displayClientMessage(Component.literal("Your spare phone stays yours. Take his if you mean to see it buried with him; the funeral is the next time this room opens.")
+                .withStyle(ChatFormatting.GRAY), false);
+    }
+
     private static void explainFuneral(ServerPlayer player, LabyrinthData data) {
         CompoundTag personal = playerState(data, player.getUUID());
         if (personal.getBoolean("FuneralExplained")) return;
         personal.putBoolean("FuneralExplained", true);
         savePlayerState(data, player.getUUID(), personal);
-        player.displayClientMessage(Component.literal("The phone beside the study chair is his. The door beyond it now opens into a funeral room.")
+        player.displayClientMessage(Component.literal("The study has been made ready for his funeral. He lies beyond the open doorway.")
                 .withStyle(ChatFormatting.GRAY), false);
-        player.displayClientMessage(Component.literal("Your spare phone stays yours. Keep his as a keepsake, or hold it and right-click his casket to lay it beside him. Only then may your own phone reach his number outside the House.")
+        player.displayClientMessage(Component.literal("Hold his phone and right-click his casket to lay it beside him, or leave with it to keep it. Only if it goes with him may your own phone reach his number outside the House.")
                 .withStyle(ChatFormatting.GRAY), false);
     }
 

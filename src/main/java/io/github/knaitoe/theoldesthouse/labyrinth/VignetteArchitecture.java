@@ -65,7 +65,7 @@ public final class VignetteArchitecture {
     /** Story volumes that set dressing and shell detailing must leave exactly as authored. */
     static boolean storyReserved(LabyrinthPlace scene,int x,int y,int z){
         return switch(scene){
-            case FLOORBOARDS->x==2&&z==-6&&y<=1;
+            case FLOORBOARDS->x==2&&z==-6&&y<=1||x==5&&z==-1&&y<=1;
             case MODEL_HOME->x<=-10&&x>=-21&&z>=-15&&z<=-11;
             case MOTHER_DEN->(x>=-6&&x<=0&&z<=-9&&z>=-24)||(Math.abs(x)<=2&&z>=-22&&z<=-18);
             case HOSPITAL->Math.abs(x)<=2&&z>=-16&&z<=-12;

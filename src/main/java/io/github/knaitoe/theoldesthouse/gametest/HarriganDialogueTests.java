@@ -12,7 +12,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.*;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.inventory.LecternMenu;
 import net.minecraft.world.item.*;
@@ -80,7 +79,7 @@ public final class HarriganDialogueTests {
         void take(ItemFrame frame) { NeoForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteract(player,InteractionHand.MAIN_HAND,frame)); }
         public void close() {
             HarriganVignette.clearAll(level.getServer());player.discard();
-            for(var entity:level.getEntitiesOfClass(Entity.class,bounds(),e->e instanceof ArmorStand||e instanceof ItemFrame))entity.discard();
+            for(var entity:level.getEntitiesOfClass(Entity.class,bounds(),e->e instanceof LiteraryActor||e instanceof ItemFrame))entity.discard();
             for(var chunk:chunks)level.getChunkSource().removeRegionTicket(TicketType.PORTAL,chunk,3,base);
             level.getServer().overworld().getDataStorage().set("the_oldest_house",oldHouse);
             level.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);
@@ -157,7 +156,7 @@ public final class HarriganDialogueTests {
                     &&WitnessAccount.has(f.data(),f.player.getUUID(),WitnessAccount.Story.HARRIGAN),"the finite ticket and recorded resolution survive the upgrade");h.succeed();
         });
     }
-    @GameTest(template="empty",batch="harrigan_phone_guidance",timeoutTicks=110)
+    @GameTest(template="empty",batch="harrigan_phone_guidance",timeoutTicks=140)
     public static void bothPhonesExplainTheirUsesAndEitherFuneralChoiceKeepsNativeProgress(GameTestHelper h) {
         phones=new Fixture(h,27400,false);Fixture f=phones;
         h.runAfterDelay(10,()->{f.open();f.page(4);f.closeBook();});
@@ -171,14 +170,20 @@ public final class HarriganDialogueTests {
             HarriganVignette.onArrive(f.player,LabyrinthPlace.HARRIGAN);
         });
         h.runAfterDelay(45,()->{
-            h.assertTrue(f.player.heard("funeral room")&&f.player.heard("Your spare phone stays yours"),"the second visit explains the two different phones");
+            h.assertTrue(f.player.heard("died in his chair")&&f.player.heard("Your spare phone stays yours"),"the second visit explains the two different phones");
             f.take(f.prop(LabyrinthRegistry.HARRIGANS_PHONE.get()));
             h.assertTrue(f.player.heard("right-click the casket")&&f.player.getInventory().countItem(LabyrinthRegistry.HARRIGANS_PHONE.get())==1,"taking his real phone explains both the keepsake and burial action");
             var his=f.player.getInventory().items.stream().filter(s->s.is(LabyrinthRegistry.HARRIGANS_PHONE.get())).findFirst().orElseThrow();
             var help=his.getTooltipLines(Item.TooltipContext.of(f.level),f.player,TooltipFlag.NORMAL).stream().map(Component::getString).toList();
             h.assertTrue(help.stream().anyMatch(s->s.contains("keepsake"))&&help.stream().anyMatch(s->s.contains("casket")),"the existing keepsake item ID now retains the choice in its tooltip");
             HarriganVignette.onDepart(f.player);
-            h.assertTrue(WitnessAccount.has(f.data(),f.player.getUUID(),WitnessAccount.Story.HARRIGAN)&&f.player.heard("his number has no connection"),"keeping his phone preserves the personal resolution and explains the silent number");
+            h.assertTrue(!WitnessAccount.has(f.data(),f.player.getUUID(),WitnessAccount.Story.HARRIGAN),"carried out of the study, his phone is only on its way to the funeral");
+            HarriganVignette.onArrive(f.player,LabyrinthPlace.HARRIGAN);
+        });
+        h.runAfterDelay(65,()->{
+            h.assertTrue(f.data().state(HarriganVignette.ID).getInt("Visit")==3&&f.player.heard("made ready for his funeral"),"the third visit is the funeral, and says so");
+            HarriganVignette.onDepart(f.player);
+            h.assertTrue(WitnessAccount.has(f.data(),f.player.getUUID(),WitnessAccount.Story.HARRIGAN)&&f.player.heard("his number has no connection"),"leaving the funeral with his phone keeps it, resolves the story and explains the silent number");
             f.player.moveTo(Vec3.atBottomCenterOf(f.base.offset(HarriganVignette.CASKET).south()));
             for(int slot=0;slot<f.player.getInventory().items.size();slot++)if(f.player.getInventory().getItem(slot).is(LabyrinthRegistry.HARRIGANS_PHONE.get())){f.player.getInventory().selected=slot;break;}
             BlockPos at=f.base.offset(HarriganVignette.CASKET);
