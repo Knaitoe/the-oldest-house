@@ -59,7 +59,6 @@ public final class SceneReviewTests {
     @AfterBatch(batch="review_books") public static void booksDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="review_well") public static void wellDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="review_witch") public static void witchDone(ServerLevel l){cleanup();}
-    @AfterBatch(batch="review_shore") public static void shoreDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="review_archive") public static void archiveDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="review_fan") public static void fanDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="review_hunter_cover") public static void hunterCoverDone(ServerLevel l){cleanup();}
@@ -231,7 +230,7 @@ public final class SceneReviewTests {
     });}
 
     @GameTest(template="empty",batch="review_witch",timeoutTicks=1600)
-    public static void oneNativeCostumeWitchStrikesRecoilAndReloadPreserveIdentityAndPeerSafety(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,553000,f->{
+    public static void oneNativeLakeWitchStrikesRecoilAndReloadPreserveIdentityAndPeerSafety(GameTestHelper h){run(h,LabyrinthPlace.WINTER_LAKE,553000,f->{
         for(int x=-6;x<=7;x++)for(int z=-47;z<=-35;z++)f.put(x,-1,z,Blocks.SANDSTONE);
         var owner=f.player("review_witch_owner");var peer=f.player("review_witch_peer");f.at(owner,2,0,-40.5);f.at(peer,5,0,-40.5);owner.getFoodData().setFoodLevel(6);peer.getFoodData().setFoodLevel(6);
         f.look(owner,new BlockPos(9,1,-35));f.look(peer,new BlockPos(10,1,-35));
@@ -245,25 +244,9 @@ public final class SceneReviewTests {
             h.assertTrue(witch.getHealth()<health&&witch.hurtTime>0&&witch.huntPhase()==LakeWitchEntity.WITHDRAW&&!witch.striking(),"a real native sword wound cancels the strike and exposes recoil");
             float wounded=witch.getHealth();var tag=new CompoundTag();witch.saveWithoutId(tag);witch.load(tag);
             h.assertTrue(witch.getUUID().equals(id)&&witch.getHealth()==wounded&&f.level.getEntity(id)==witch&&!witch.isInvulnerable(),"native save/reload keeps the same wounded original");
-            for(int x=4;x<=7;x++)for(int z=-44;z<=-38;z++)f.put(x,-1,z,Blocks.GRASS_BLOCK);
-            f.at(owner,5.5,0,-41.5);f.at(peer,6.5,0,-42.5);float a=owner.getHealth(),b=peer.getHealth();
-            h.startSequence().thenIdle(45).thenExecute(()->{h.assertTrue(owner.getHealth()==a&&peer.getHealth()==b&&f.data().state(DrownedTown.ID).equals(before)&&WitnessAccount.count(f.data(),peer.getUUID())==0,"real living grass protects both readers and the literary wound cannot alter the town's shared state or grant evidence");f.done();});
+            // 0.4.103: living grass is Costume Night's refuge and is tested there; this hunt is the lake's ordinary one.
+            h.assertTrue(f.data().state(DrownedTown.ID).equals(before)&&WitnessAccount.count(f.data(),peer.getUUID())==0,"the literary wound cannot alter the town's shared state or grant evidence");f.done();
         });});
-    });}
-
-    @GameTest(template="empty",batch="review_shore",timeoutTicks=1600)
-    public static void nativeCostumeBayAndSwimmingStepsRetainResidentsAndOriginalStand(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,553500,f->{
-        for(int x=-28;x<=28;x++)for(int z=-58;z<=-35;z++)for(int y=-5;y<=-1;y++)f.put(x,y,z,z<=-55?(y==-1?Blocks.GRASS_BLOCK:Blocks.DIRT):z<=-49?Blocks.WATER:y==-1?Blocks.SAND:Blocks.SANDSTONE);
-        var owner=f.player("review_shore_owner");var peer=f.player("review_shore_peer");
-        var cat=EntityType.CAT.create(f.level);cat.setNoAi(true);cat.setNoGravity(true);cat.setTame(true,false);cat.setOwnerUUID(owner.getUUID());cat.setOrderedToSit(true);cat.moveTo(Vec3.atBottomCenterOf(f.base.offset(21,0,-40)));f.level.addFreshEntity(cat);var id=cat.getUUID();
-        h.assertTrue(!SceneReview.shore(f.level,f.base)&&f.level.getBlockState(f.base.offset(21,-1,-40)).is(Blocks.SAND)&&cat.getUUID().equals(id),"the new bay cannot remove the real sitting companion's support");cat.moveTo(Vec3.atBottomCenterOf(f.base.offset(0,0,-40)));
-        h.assertTrue(SceneReview.shore(f.level,f.base)&&f.level.getBlockState(f.base.offset(20,-4,-45)).is(Blocks.WATER),"the empty bay has genuine swimming depth rather than a thin water sheet");
-        var stand=new ArmorStand(f.level,f.base.getX()+20.5,f.base.getY(),f.base.getZ()-44.5);stand.setNoGravity(true);stand.setInvulnerable(true);stand.addTag("HouseCostume");var shirt=new ItemStack(Items.LEATHER_CHESTPLATE);shirt.set(DataComponents.CUSTOM_NAME,Component.literal("Original costume"));stand.setItemSlot(EquipmentSlot.CHEST,shirt);f.level.addFreshEntity(stand);var standId=stand.getUUID();
-        SceneReview.dressCostume(f.level,f.base);var water=f.base.offset(20,-1,-45);
-        h.assertTrue(stand.getUUID().equals(standId)&&SceneReview.costume(stand)&&Math.abs(stand.getY()-(water.getY()+f.level.getFluidState(water).getHeight(f.level,water)))<.01&&stand.getItemBySlot(EquipmentSlot.CHEST).getHoverName().getString().equals("Original costume"),"the same native stand meets the actual water and retains its original equipment components");
-        f.at(owner,.5,-.1,-53.5);owner.move(MoverType.SELF,new Vec3(0,.42,-1));owner.move(MoverType.SELF,new Vec3(0,0,-2));owner.move(MoverType.SELF,new Vec3(0,-.42,0));
-        h.assertTrue(owner.getZ()<f.base.getZ()-55&&owner.getY()>=f.base.getY()-.01&&!f.level.noCollision(owner,owner.getBoundingBox().move(0,-.06,0)),"native swimming ascent and the half-height stair lip reach supported living grass");
-        h.assertTrue(cat.isAlive()&&cat.getUUID().equals(id)&&cat.isOrderedToSit()&&cat.getOwnerUUID().equals(owner.getUUID())&&WitnessAccount.count(f.data(),peer.getUUID())==0,"native companions and personal progress stay intact");f.done();
     });}
 
     @GameTest(template="empty",batch="review_archive",timeoutTicks=1600)
@@ -332,7 +315,7 @@ public final class SceneReviewTests {
     });}
 
     @GameTest(template="empty",batch="review_witch_interval",timeoutTicks=1600)
-    public static void lookingAtTheNativeApproachMakesHerWithdrawAndThreeHeartsMakesHerRush(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,555500,f->{
+    public static void lookingAtTheNativeApproachMakesHerWithdrawAndThreeHeartsMakesHerRush(GameTestHelper h){run(h,LabyrinthPlace.WINTER_LAKE,555500,f->{
         for(int x=-18;x<=18;x++)for(int z=-63;z<=-12;z++)f.put(x,-1,z,Blocks.SANDSTONE);
         var owner=f.player("review_witch_glance_reader");f.at(owner,.5,0,-38.5);owner.getFoodData().setFoodLevel(6);f.look(owner,new BlockPos(0,1,-41));
         var witch=LiteraryVignettes.huntBody(owner,f.place,new BlockPos(0,0,-41));var id=witch.getUUID();var start=witch.position();

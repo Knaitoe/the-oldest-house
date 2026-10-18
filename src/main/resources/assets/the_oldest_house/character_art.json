@@ -880,5 +880,109 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 20
+  },
+  {
+    "name": "literary_costume_hank",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 21
+  },
+  {
+    "name": "literary_costume_tina",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 22
+  },
+  {
+    "name": "literary_costume_danny",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 23
+  },
+  {
+    "name": "literary_costume_ron",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 24
+  },
+  {
+    "name": "literary_costume_kaylee",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 25
+  },
+  {
+    "name": "literary_costume_marcus",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 26
+  },
+  {
+    "name": "literary_costume_shelly",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 27
+  },
+  {
+    "name": "literary_costume_owen",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 28
+  },
+  {
+    "name": "literary_costume_brooke",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 29
+  },
+  {
+    "name": "literary_costume_wes",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 30
+  },
+  {
+    "name": "literary_costume_rosa",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 31
+  },
+  {
+    "name": "literary_costume_pip",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 32
+  },
+  {
+    "name": "literary_costume_lyle",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 33
   }
 ]

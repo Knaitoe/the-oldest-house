@@ -509,6 +509,7 @@ public final class LakeWitchEntity extends PathfinderMob {
     /** Physical approach and retreat, a one-to-three-second hide, then another committed rush. */
     private void tickLiterary(){
         if(!(level() instanceof ServerLevel level)||!isAlive())return;setAirSupply(300);
+        if(literaryPlace==LabyrinthPlace.COSTUME_NIGHT){tickCostume(level);return;}
         var target=level.players().stream().filter(this::literaryTarget)
                 .min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
         if(target==null||distanceToSqr(target)>3600){cancelStrike();route.clear();routeGoal=null;clearDoorBreak();coverReachable=false;return;}
@@ -539,6 +540,35 @@ public final class LakeWitchEntity extends PathfinderMob {
         literaryFollow(withdraw?.34:critical?.32:movie?.095:.19);
         if(withdraw)coverProgress(watched,beforeCover);
         else if(!hasLineOfSight(target))coverAttempt(position().distanceToSqr(beforeCover)>.0004);
+    }
+    /**
+     * Costume Night (0.4.103): she moves only while no living reader there can see her, and does not move at all while one
+     * can. Until the lights go out she only shifts between places at the water's edge; once they are out she comes for the
+     * nearest reader on the sand, fast, and strikes if she reaches them unseen, then goes back to the water for a while.
+     */
+    private void tickCostume(ServerLevel level){
+        var readers=level.players().stream().filter(p->p.isAlive()&&!p.isSpectator()&&!p.isCreative()&&LiteraryVignettes.inside(p,literaryPlace)).toList();
+        // With nobody on the beach she waits where she is, as the party's own clock does.
+        if(readers.isEmpty()){if(windup>0||entityData.get(STRIKING))cancelStrike();route.clear();routeGoal=null;return;}
+        var middle=position().add(0,getBbHeight()*.5,0);
+        if(readers.stream().anyMatch(p->inView(p,getEyePosition())||inView(p,middle))){
+            if(windup>0||entityData.get(STRIKING))cancelStrike();route.clear();routeGoal=null;entityData.set(HUNT_PHASE,STALK);return;
+        }
+        if(passingSwipeTicks>0)passingSwipeTicks--;if(cooldown>0)cooldown--;
+        boolean hunting=CostumeNight.hunting(level,literaryBase);
+        var target=hunting&&cooldown==0?readers.stream().filter(this::literaryTarget).filter(p->distanceToSqr(p)<3600).min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null):null;
+        if(target!=null&&distanceToSqr(target)<2.4&&hasLineOfSight(target)){
+            if(windup==0){windup=5;entityData.set(HUNT_PHASE,LUNGE);entityData.set(STRIKING,true);entityData.set(BITING,getRandom().nextBoolean());return;}
+            if(--windup>0)return;
+            swing(net.minecraft.world.InteractionHand.MAIN_HAND);strikeAttempts++;lastStrikeAccepted=target.hurt(damageSources().mobAttack(this),4);
+            cancelStrike();cooldown=80;entityData.set(HUNT_PHASE,WITHDRAW);route.clear();routeGoal=null;return;
+        }
+        if(windup>0)cancelStrike();
+        BlockPos goal;double speed;
+        if(target!=null){goal=BlockPos.containing(target.getX(),literaryBase.getY(),target.getZ());speed=.2;entityData.set(HUNT_PHASE,STALK);}
+        else{goal=literaryBase.offset(CostumeNight.lurk(level,literaryBase,getId()));speed=hunting?.2:.05;entityData.set(HUNT_PHASE,hunting&&cooldown>0?WITHDRAW:STALK);}
+        if(routeGoal==null||!routeGoal.equals(goal)||route.isEmpty()||tickCount%10==0)literaryRoute(goal);
+        literaryFollow(speed);
     }
     private void literaryFollow(double speed){
         double remaining=speed*HUNT_SPEED_FACTOR;int nodes=0;

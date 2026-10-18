@@ -1245,5 +1245,59 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.movie.bump"
+  },
+  "costume.radio": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:costume/radio",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.costume.radio"
+  },
+  "costume.cheer": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:costume/cheer",
+        "attenuation_distance": 40
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.costume.cheer"
+  },
+  "costume.pop": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:costume/pop",
+        "attenuation_distance": 48
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.costume.pop"
+  },
+  "costume.megaphone": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:costume/megaphone",
+        "attenuation_distance": 48
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.costume.megaphone"
+  },
+  "costume.drip": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:costume/drip",
+        "attenuation_distance": 8
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.costume.drip"
+  },
+  "costume.giggle": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:costume/giggle",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.costume.giggle"
   }
 }

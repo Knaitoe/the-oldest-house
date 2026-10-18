@@ -176,16 +176,16 @@ public final class LiveExpeditionProof {
             require(StaircaseStory.isCurrent(b,b.getOffhandItem())&&StaircaseStory.burned(StaircaseStory.record(b))==1,"scene recovery preserves the living book and personal burned cursor");
             if(!leakRestarted){step(s,13,b.blockPosition());leakRestarted=true;}
         }else if(phase==13&&ACKS.size()==2){
-            var l=s.getLevel(HouseDimensions.OUTSIDE);var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.COSTUME_NIGHT);
+            var l=s.getLevel(HouseDimensions.OUTSIDE);var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.WINTER_LAKE);
             holdHunt(l,site);if(!huntChunks.ready())return;huntFloor(l,site);
             for(int x:new int[]{-1,1})for(int y=0;y<=3;y++)l.setBlock(site.offset(x,y,-35),Blocks.STONE.defaultBlockState(),3);
             var lower=Blocks.SPRUCE_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.NORTH).setValue(DoorBlock.HALF,net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER);
             l.setBlock(site.offset(0,0,-35),lower,3);l.setBlock(site.offset(0,1,-35),lower.setValue(DoorBlock.HALF,net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER),3);
             for(var p:List.of(a,b))outside(p,site.offset(0,0,-30),p==a?-.4:.4);
-            stacy=DrownedTownRegistry.LAKE_WITCH.get().create(l);stacy.moveTo(site.getX()+.5,site.getY(),site.getZ()-41.5);stacy.literaryHunt(site,LabyrinthPlace.COSTUME_NIGHT);stacy.setNoAi(true);l.addFreshEntity(stacy);stacyId=stacy.getUUID();
+            stacy=DrownedTownRegistry.LAKE_WITCH.get().create(l);stacy.moveTo(site.getX()+.5,site.getY(),site.getZ()-41.5);stacy.literaryHunt(site,LabyrinthPlace.WINTER_LAKE);stacy.setNoAi(true);l.addFreshEntity(stacy);stacyId=stacy.getUUID();
             step(s,14,site.offset(0,0,-35));
         }else if(phase==14&&a!=null&&b!=null){
-            var l=s.getLevel(HouseDimensions.OUTSIDE);var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.COSTUME_NIGHT);var door=site.offset(0,0,-35);
+            var l=s.getLevel(HouseDimensions.OUTSIDE);var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.WINTER_LAKE);var door=site.offset(0,0,-35);
             if(stacy.doorBreakTicks()>0&&crackStarted<0)crackStarted=stacy.tickCount;
             if(crackStarted>=0&&!l.getBlockState(door).isAir())require(stacy.doorBreakTicks()<=stacy.tickCount-crackStarted+1,"two socket readers cannot multiply Stacy's cracking clock");
             if(l.getBlockState(door).isAir()){

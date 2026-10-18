@@ -1,0 +1,283 @@
+{
+  "textures": {
+    "side": "the_oldest_house:block/costume_pail_side",
+    "face": "the_oldest_house:block/costume_pail_face",
+    "candy": "the_oldest_house:block/costume_candy",
+    "dark": "minecraft:block/black_concrete",
+    "particle": "the_oldest_house:block/costume_pail_side"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        0,
+        4
+      ],
+      "to": [
+        12,
+        6,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#face",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#side",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#side",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#side",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#candy",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#side",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        6,
+        3.5
+      ],
+      "to": [
+        8.5,
+        9,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark",
+          "uv": [
+            7.5,
+            7,
+            8.5,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#dark",
+          "uv": [
+            7.5,
+            7,
+            8.5,
+            10
+          ]
+        },
+        "east": {
+          "texture": "#dark",
+          "uv": [
+            12,
+            7,
+            12.5,
+            10
+          ]
+        },
+        "west": {
+          "texture": "#dark",
+          "uv": [
+            3.5,
+            7,
+            4,
+            10
+          ]
+        },
+        "up": {
+          "texture": "#dark",
+          "uv": [
+            7.5,
+            3.5,
+            8.5,
+            4
+          ]
+        },
+        "down": {
+          "texture": "#dark",
+          "uv": [
+            7.5,
+            3.5,
+            8.5,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        6,
+        12
+      ],
+      "to": [
+        8.5,
+        9,
+        12.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark",
+          "uv": [
+            7.5,
+            7,
+            8.5,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#dark",
+          "uv": [
+            7.5,
+            7,
+            8.5,
+            10
+          ]
+        },
+        "east": {
+          "texture": "#dark",
+          "uv": [
+            3.5,
+            7,
+            4,
+            10
+          ]
+        },
+        "west": {
+          "texture": "#dark",
+          "uv": [
+            12,
+            7,
+            12.5,
+            10
+          ]
+        },
+        "up": {
+          "texture": "#dark",
+          "uv": [
+            7.5,
+            12,
+            8.5,
+            12.5
+          ]
+        },
+        "down": {
+          "texture": "#dark",
+          "uv": [
+            7.5,
+            12,
+            8.5,
+            12.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        8.5,
+        4
+      ],
+      "to": [
+        8.5,
+        9,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark",
+          "uv": [
+            7.5,
+            7,
+            8.5,
+            7.5
+          ]
+        },
+        "south": {
+          "texture": "#dark",
+          "uv": [
+            7.5,
+            7,
+            8.5,
+            7.5
+          ]
+        },
+        "east": {
+          "texture": "#dark",
+          "uv": [
+            4,
+            7,
+            12,
+            7.5
+          ]
+        },
+        "west": {
+          "texture": "#dark",
+          "uv": [
+            4,
+            7,
+            12,
+            7.5
+          ]
+        },
+        "up": {
+          "texture": "#dark",
+          "uv": [
+            7.5,
+            4,
+            8.5,
+            12
+          ]
+        },
+        "down": {
+          "texture": "#dark",
+          "uv": [
+            7.5,
+            4,
+            8.5,
+            12
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -11,8 +11,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
@@ -291,6 +293,85 @@ public final class VignetteAnimationTests {
             h.assertTrue(canoe.getPassengers().size()==2&&canoe.position().distanceTo(Vec3.atLowerCornerOf(b).add(MovieNightCast.MOORING))<.5,"the two are back in their canoe at its mooring");h.succeed();});
     }
     @AfterBatch(batch="literary_movie_cast") public static void movieCastDone(ServerLevel l){close();var out=HouseTestLevel.get(l.getServer(),io.github.knaitoe.theoldesthouse.house.HouseDimensions.OUTSIDE);for(var c:FORCED)out.setChunkForced(c.x,c.z,false);FORCED.clear();}
+
+    // ------------------------------------------------------------------------------------------------ Costume Night (0.4.103)
+    private static void costumeState(LiteraryTests.Fixture f,java.util.function.Consumer<CompoundTag> change){var w=LiteraryVignettes.shared(f.data(),LabyrinthPlace.COSTUME_NIGHT);change.accept(w);LiteraryVignettes.shared(f.data(),LabyrinthPlace.COSTUME_NIGHT,w);}
+    private static void lookUp(ServerPlayer p){p.lookAt(EntityAnchorArgument.Anchor.EYES,p.getEyePosition().add(0,10,0));}
+    @GameTest(template="empty",batch="literary_costume_still",timeoutTicks=420)
+    public static void theThirteenthWitchHoldsStillWhileWatchedAndHuntsOnlyOnceTheLightsAreOut(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.COSTUME_NIGHT;var p=f.player("costume_judge",place);var peer=f.player("costume_peer",place);var b=f.base(place);
+        f.at(p,place,13.5,0,-23.5);f.at(peer,place,.5,0,-4);final int[] stage={0};final Vec3[] still={null};
+        h.onEachTick(()->{var witch=CostumeNight.witch(f.out);if(witch==null)return;lookUp(peer);
+            if(stage[0]==1){p.lookAt(EntityAnchorArgument.Anchor.EYES,witch.getEyePosition());if(still[0]==null)still[0]=witch.position();
+                h.assertTrue(witch.position().distanceToSqr(still[0])<1e-8,"while a reader looks at her she does not move at all, lights or no lights: "+witch.position()+" from "+still[0]);}
+            else lookUp(p);
+            h.assertTrue(!f.out.getBlockState(witch.blockPosition().below()).is(Blocks.GRASS_BLOCK),"she never sets foot on the park grass");});
+        h.runAfterDelay(15,()->{
+            for(var who:CostumeNight.EVERYONE){var a=CostumeNight.cast(f.out,who);h.assertTrue(a!=null&&a.role()==LiteraryActor.STRANGER&&a.phase()==who.phase(),"everyone at the contest is here in their own costume: "+who.name());
+                h.assertTrue(a.gesture()==(who.crawls()?CostumeNight.CRAWL:0)&&(a.gesture()!=CostumeNight.CRAWL||a.getBbHeight()<1.3F),"the crawlers are on all fours, low to the sand: "+who.name());}
+            h.assertTrue(CostumeNight.cast(f.out,CostumeNight.ENTRANTS.get(1)).getScale()<.7F&&CostumeNight.cast(f.out,CostumeNight.HANK).getY()>=b.getY()+.99,"the youngest entrants are children; Hank judges from the stage");
+            h.assertTrue(CostumeNight.witch(f.out)!=null&&f.out.getBlockState(b.offset(CostumeNight.bulbs().getFirst())).getValue(CostumePropBlock.LIT),"the thirteenth witch is at the water and the bulbs are lit");});
+        // Unseen beside her while the bulbs are lit: the contest is still on, and she does nothing.
+        h.runAfterDelay(75,()->{h.assertTrue(p.getHealth()==20&&!f.own(p,place).getBoolean("Struck0503"),"before the lights go she never strikes, even unseen beside her");
+            var witch=CostumeNight.witch(f.out);var start=Vec3.atBottomCenterOf(b.offset(CostumeNight.WITCH_START));witch.moveTo(start.x,witch.getY(),start.z,90,0);
+            f.at(p,place,10.5,0,-24.5);costumeState(f,w->{w.putBoolean("LightsOut",true);w.putInt("RibbonAt",-10000);});stage[0]=1;});
+        h.runAfterDelay(120,()->{stage[0]=2;var witch=CostumeNight.witch(f.out);still[0]=witch.position();});
+        h.runAfterDelay(175,()->{var witch=CostumeNight.witch(f.out);
+            h.assertTrue(witch.position().distanceTo(still[0])>1&&p.getHealth()<20&&f.own(p,place).getBoolean("Struck0503"),"the moment nobody looks she comes, fast, and strikes the reader unseen: health="+p.getHealth()+" moved="+witch.position().distanceTo(still[0]));
+            p.setHealth(20);f.at(p,place,.5,0,-60.5);});
+        h.runAfterDelay(300,()->{h.assertTrue(p.getHealth()==20&&peer.getHealth()==20,"on the park grass, and where she cannot come by the entrance, nobody is hurt");h.succeed();});
+    }
+    @AfterBatch(batch="literary_costume_still") public static void costumeStillDone(ServerLevel l){close();}
+
+    @GameTest(template="empty",batch="literary_costume_ribbon",timeoutTicks=760)
+    public static void hankCallsTheNumbersGivesTheRibbonAndTheLightsGoOut(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.COSTUME_NIGHT;var p=f.player("costume_ribbon",place);var peer=f.player("costume_crowd",place);var b=f.base(place);
+        f.at(p,place,2.5,0,-15);f.at(peer,place,-2.5,0,-8);var tina=CostumeNight.ENTRANTS.getFirst();final int[] start={0};
+        h.onEachTick(()->{lookUp(p);lookUp(peer);});
+        h.runAfterDelay(10,()->{var hank=CostumeNight.cast(f.out,CostumeNight.HANK);h.assertTrue(hank!=null,"Hank is on the stage");
+            f.at(p,place,-2.5,0,-23.5);LiteraryVignettes.talk(p,hank);LiteraryVignettes.talk(p,hank);
+            h.assertTrue(f.own(p,place).getInt("Talk_Hank")==2&&f.own(p,place).getBoolean("HankStory0503"),"spoken to twice, Hank tells how the contest began");
+            CostumeNight.use(p,CostumePropBlock.Kind.APPLE_TUB,b.offset(CostumeNight.APPLES));CostumeNight.use(p,CostumePropBlock.Kind.APPLE_TUB,b.offset(CostumeNight.APPLES));
+            CostumeNight.use(p,CostumePropBlock.Kind.CANDY_BOWL,b.offset(CostumeNight.CANDY));CostumeNight.use(p,CostumePropBlock.Kind.CANDY_BOWL,b.offset(CostumeNight.CANDY));
+            h.assertTrue(p.getInventory().countItem(Items.APPLE)==1&&p.getInventory().countItem(Items.COOKIE)==1,"one apple from the tub and one sweet from the bowl, however often the reader tries");
+            f.at(p,place,2.5,0,-15);costumeState(f,w->w.putInt("Party",CostumeNight.FIRST_CALL-1));});
+        h.runAfterDelay(110,()->{var w=LiteraryVignettes.shared(f.data(),place);var a=CostumeNight.cast(f.out,tina);
+            h.assertTrue(w.getInt("Called")==0&&a.position().distanceTo(Vec3.atLowerCornerOf(b).add(CostumeNight.STAGE_FRONT))<1.5&&a.gesture()==4,"number one is called up and shows off at the front of the stage: "+a.position());});
+        h.runAfterDelay(290,()->{var a=CostumeNight.cast(f.out,tina);h.assertTrue(!LiteraryVignettes.shared(f.data(),place).contains("Called")&&a.position().distanceTo(tina.home(b))<.6,"then she goes back to her place: "+a.position());
+            costumeState(f,w->w.putInt("Party",CostumeNight.RIBBON-1));start[0]=1;});
+        h.runAfterDelay(540,()->{h.assertTrue(!LiteraryVignettes.shared(f.data(),place).getBoolean("LightsOut")&&p.getHealth()==20&&peer.getHealth()==20,"through the ribbon the bulbs stay on and nobody is hurt");});
+        h.runAfterDelay(590,()->{var w=LiteraryVignettes.shared(f.data(),place);
+            h.assertTrue(w.getBoolean("LightsOut"),"nobody comes up for the ribbon, and the lights go out");
+            h.assertTrue(CostumeNight.bulbs().stream().allMatch(rel->!f.out.getBlockState(b.offset(rel)).getValue(CostumePropBlock.LIT))&&!f.out.getBlockState(b.offset(CostumeNight.RADIO)).getValue(CostumePropBlock.LIT),"every bulb and the radio go dark");
+            for(var who:CostumeNight.ENTRANTS)h.assertTrue(CostumeNight.cast(f.out,who).gesture()==CostumeNight.CRAWL,"every entrant drops to all fours for the crawl: "+who.name());
+            h.assertTrue(CostumeNight.cast(f.out,CostumeNight.HANK).gesture()==0,"Hank stays on his feet");h.succeed();});
+    }
+    @AfterBatch(batch="literary_costume_ribbon") public static void costumeRibbonDone(ServerLevel l){close();}
+
+    @GameTest(template="empty",batch="literary_costume_park",timeoutTicks=420)
+    public static void crossingToTheParkWithHerInSightEndsTheNightAndTheContestResets(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.COSTUME_NIGHT;var p=f.player("costume_crosser",place);var peer=f.player("costume_waiter",place);var b=f.base(place);
+        for(int x=-24;x<=24;x+=16)for(int z=-40;z<=-8;z+=16){var c=new net.minecraft.world.level.ChunkPos(b.offset(x,0,z));if(!FORCED.contains(c)){FORCED.add(c);f.out.setChunkForced(c.x,c.z,true);}}
+        f.source(p,place);f.at(peer,place,5.5,0,-60.5);f.at(p,place,.5,0,-30.5);final boolean[] watching={true};
+        h.onEachTick(()->{var witch=CostumeNight.witch(f.out);if(witch==null)return;
+            if(watching[0]){p.lookAt(EntityAnchorArgument.Anchor.EYES,witch.getEyePosition());peer.lookAt(EntityAnchorArgument.Anchor.EYES,witch.getEyePosition());}else{lookUp(p);lookUp(peer);}});
+        h.runAfterDelay(10,()->costumeState(f,w->{w.putBoolean("LightsOut",true);w.putInt("RibbonAt",-10000);}));
+        h.runAfterDelay(40,()->{h.assertTrue(f.own(p,place).getBoolean("SeenHer0503")&&f.own(p,place).getBoolean("Crossing0503"),"out on the sand after the lights go, the reader keeps her in sight");
+            f.at(p,place,.5,0,-60.5);});
+        h.runAfterDelay(70,()->{h.assertTrue(f.own(p,place).getBoolean("Ready"),"the park grass with her in sight is the end of the night");
+            h.assertTrue(!f.own(peer,place).getBoolean("Ready")&&f.own(peer,place).getBoolean("CrossHint0503"),"a reader who waited on the grass from before the lights went has not crossed the dark");
+            var text=LiteraryTexts.ending(p,place,f.own(p,place)).get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page->page.raw().getString()).reduce("",String::concat);
+            h.assertTrue(text.contains("one down by the water")&&text.contains("one of them was not playing")&&!text.contains("Hank told me"),"the account tells this reader's night, and only what they heard: "+text);
+            f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id())),"reading it completes only this reader's scene");
+            watching[0]=false;for(var r:java.util.List.of(p,peer)){r.stopRiding();r.teleportTo(f.in,f.origin.getX()+.5,f.origin.getY()+1,f.origin.getZ()+.5,0,0);}});
+        h.runAfterDelay(260,()->{var w=LiteraryVignettes.shared(f.data(),place);
+            h.assertTrue(!w.getBoolean("LightsOut")&&!w.contains("Party")&&CostumeNight.bulbs().stream().allMatch(rel->f.out.getBlockState(b.offset(rel)).getValue(CostumePropBlock.LIT)),"once the beach is empty and unwatched, the bulbs come back on for the next reader");
+            var tina=CostumeNight.ENTRANTS.getFirst();var danny=CostumeNight.ENTRANTS.get(1);
+            h.assertTrue(CostumeNight.cast(f.out,tina).gesture()==0&&CostumeNight.cast(f.out,tina).position().distanceTo(tina.home(b))<.5&&CostumeNight.cast(f.out,danny).gesture()==CostumeNight.CRAWL,"everyone is back in their place, standing or crawling as they came");
+            var witch=CostumeNight.witch(f.out);var start=Vec3.atBottomCenterOf(b.offset(CostumeNight.WITCH_START));
+            h.assertTrue(witch!=null&&Math.hypot(witch.getX()-start.x,witch.getZ()-start.z)<1.5,"and she is back at the water's edge");h.succeed();});
+    }
+    @AfterBatch(batch="literary_costume_park") public static void costumeParkDone(ServerLevel l){close();var out=HouseTestLevel.get(l.getServer(),io.github.knaitoe.theoldesthouse.house.HouseDimensions.OUTSIDE);for(var c:FORCED)out.setChunkForced(c.x,c.z,false);FORCED.clear();}
 
     @GameTest(template="empty",batch="literary_movie_original",timeoutTicks=450)
     public static void uncertainLoadedAbsenceCannotReplaceTheActualSerializedMovieCanoe(GameTestHelper h){

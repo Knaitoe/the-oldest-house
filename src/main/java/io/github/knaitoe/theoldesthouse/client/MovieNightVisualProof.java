@@ -148,6 +148,6 @@ public final class MovieNightVisualProof extends Screen {
         if(!proof.problems.isEmpty())throw new IllegalStateException("MOVIE NIGHT VIEW CHECK FAILED: "+String.join("; ",proof.problems));
         Files.writeString(dir.resolve("movie-night-passed.txt"),"Nine native Movie Night views: five frames of Teeth of Summer from the drawn atlas (title, night swim, fin, rise, dawn with THE END?), the shark with its fin clear of the water, the props with the projector's shadows on the film, the audience's things with the lake's boards, and the five painted canoes.\n");
         TheOldestHouse.LOGGER.info("MOVIE NIGHT VIEW CHECK PASSED: nine native views");
-        mc.setScreen(new CastVisualProof());
+        mc.setScreen(new CostumeNightVisualProof());
     }
 }
