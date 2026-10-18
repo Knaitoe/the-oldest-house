@@ -182,6 +182,9 @@ public final class LiveExpeditionProof {
             var lower=Blocks.SPRUCE_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.NORTH).setValue(DoorBlock.HALF,net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER);
             l.setBlock(site.offset(0,0,-35),lower,3);l.setBlock(site.offset(0,1,-35),lower.setValue(DoorBlock.HALF,net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER),3);
             for(var p:List.of(a,b))outside(p,site.offset(0,0,-30),p==a?-.4:.4);
+            // The proof wrote the House after both clients joined, so their login copy of its origin was empty. A real
+            // client always has it (sent when the House appears and on every login); the lake's own clock needs it.
+            for(var p:List.of(a,b))io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.HouseSightlineStatePayload(ORIGIN,false));
             stacy=DrownedTownRegistry.LAKE_WITCH.get().create(l);stacy.moveTo(site.getX()+.5,site.getY(),site.getZ()-41.5);stacy.literaryHunt(site,LabyrinthPlace.WINTER_LAKE);stacy.setNoAi(true);l.addFreshEntity(stacy);stacyId=stacy.getUUID();
             step(s,14,site.offset(0,0,-35));
         }else if(phase==14&&a!=null&&b!=null){

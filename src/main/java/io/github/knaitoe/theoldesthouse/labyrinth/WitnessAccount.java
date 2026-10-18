@@ -77,7 +77,7 @@ public final class WitnessAccount {
         ELK_CARCASSES("elk_carcasses","The passing boots","survival","I held still beneath the hides while the boots passed. When the search ended, I took the service path."),
         COSTUME_NIGHT("costume_night","The thirteenth witch","survival","One witch held still whenever I looked. I reached the park grass and kept her in sight."),
         MOVIE_NIGHT("movie_night","The flashes over water","survival","Each burst showed her nearer the canoe and held her where it found her. I rowed in the dark between them until the pier was under my hands."),
-        WINTER_LAKE("winter_lake","The broken ice","survival","I broke a hole and waited beneath the ice. After she passed, I came up and crossed to the bank."),
+        WINTER_LAKE("winter_lake","The dare","survival","I carried her ribbon out to the hole where she went down and gave it back. Then I walked to the bank as quietly as I could."),
         CAMP_BLOOD("camp_blood","The service road","survival","The essay had remembered an ordinary summer. I escaped beyond the last cabin before that summer returned."),
         DEVILS_ROCK("devils_rock","The eight loose pages","memory","I read the eight pages in order. The last one reached this room without a person bringing it."),
         WHEEL("wheel","The numbered doors","memory","I found Mother beyond the numbered doors. The front door finally opened onto an outside where I could stand up."),

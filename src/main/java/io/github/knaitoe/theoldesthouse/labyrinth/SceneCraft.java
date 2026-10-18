@@ -81,10 +81,9 @@ public final class SceneCraft {
             LabyrinthPlace.USHER, LabyrinthPlace.WINCHESTER, LabyrinthPlace.CRIMSON_HALL, LabyrinthPlace.BLY_ROUTE,
             LabyrinthPlace.ELK_FAN, LabyrinthPlace.CONFESSION, LabyrinthPlace.DEVILS_ROCK, LabyrinthPlace.WHEEL, LabyrinthPlace.GHOSTS_SET);
     // The elk carcasses (0.4.50) author their own two-stage woods, stream and shore, the Last Stop (0.4.78) its own road,
-    // lot, field and woods, Movie Night (0.4.102) its own banks, woods and piers, and Costume Night (0.4.103) its beach, lake and
-    // park: nothing generic is planted over them.
+    // lot, field and woods, Movie Night (0.4.102) its own banks, woods and piers, Costume Night (0.4.103) its beach, lake and
+    // park, and Winter Lake (0.4.104) its frozen lake and snowy banks: nothing generic is planted over them.
     static final Set<LabyrinthPlace> GROUNDS = EnumSet.of(LabyrinthPlace.MAPPING_INTERIOR, LabyrinthPlace.HOLY_RABBIT,
-            LabyrinthPlace.WINTER_LAKE,
             LabyrinthPlace.CAMP_BLOOD, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.SHALLOWS, LabyrinthPlace.PHONE_CANOE,
             LabyrinthPlace.HOTEL_GROUNDS, LabyrinthPlace.BARN_WELL, LabyrinthPlace.GOATMAN, LabyrinthPlace.EXPLORER_CAMP);
     /** How far outside its room box a scene's banks and woods reach. */
@@ -1214,14 +1213,6 @@ public final class SceneCraft {
             case HOLY_RABBIT -> { fellGrid(); woods(5, new int[]{75, 20, 0, 0, 5}, true); undergrowth(); }
             case CAMP_BLOOD -> { fellGrid(); woods(5, new int[]{30, 0, 40, 30, 0}, false); undergrowth(); cabins(); campGround(); }
             case END_WORLD_CABIN -> { fellGrid(); woods(5, new int[]{55, 10, 10, 25, 0}, false); undergrowth(); endCabin(); }
-            case WINTER_LAKE -> {
-                fellGrid();
-                beach();
-                shores();
-                woods(4, scene == LabyrinthPlace.WINTER_LAKE ? new int[]{90, 10, 0, 0, 0} : new int[]{40, 0, 35, 25, 0}, scene == LabyrinthPlace.WINTER_LAKE);
-                undergrowth();
-                reeds();
-            }
             case SHALLOWS, PHONE_CANOE, DROWNED_TOWN -> banks();
             case HOTEL_GROUNDS -> hotelGrounds();
             case BARN_WELL -> barn();
@@ -1274,8 +1265,6 @@ public final class SceneCraft {
                 if (LiteraryRooms.buildingClearing(scene, x + ox, z + oz)) continue;
                 fell(x + ox, z + oz, 4 + Math.abs(x + z) % 3);
             }
-        if (scene == LabyrinthPlace.WINTER_LAKE)
-            for (int x = -26; x <= 26; x += 5) fell(x, r.minZ() + 5, 5);
     }
 
     private void fell(int x, int z, int height) {
@@ -1968,79 +1957,6 @@ public final class SceneCraft {
     }
 
     // ------------------------------------------------------------------
-    // Lakes.
-
-    private boolean lake(int x, int z) {
-        BlockState s = at(x, -1, z);
-        return s.is(Blocks.WATER) || s.is(Blocks.ICE);
-    }
-
-    /** The costume-night beach was a single sheet of sand over the lake: it is given ground beneath it. */
-    private void beach() {
-        if (scene != LabyrinthPlace.COSTUME_NIGHT) return;
-        for (int x = -28; x <= 28; x++)
-            for (int z = -48; z <= -13; z++) {
-                if (!at(x, -1, z).is(Blocks.SAND)) continue;
-                for (int y = -2; y >= -11; y--) if (at(x, y, z).is(Blocks.WATER)) set(p(x, y, z), Blocks.SANDSTONE.defaultBlockState());
-            }
-    }
-
-    /** Fills a run of shallows into bank, top to bed, so the shoreline is no longer ruled straight. */
-    private void bank(int x, int z, boolean grassy) {
-        boolean winter = scene == LabyrinthPlace.WINTER_LAKE;
-        for (int y = -1; y >= -11; y--) {
-            BlockState s = at(x, y, z);
-            if (!s.is(Blocks.WATER) && !s.is(Blocks.ICE)) break;
-            set(p(x, y, z), (y == -1 ? grassy ? Blocks.GRASS_BLOCK : Blocks.SAND : grassy ? Blocks.DIRT : Blocks.SANDSTONE).defaultBlockState());
-        }
-        if (winter && at(x, 0, z).isAir()) set(p(x, 0, z), Blocks.SNOW.defaultBlockState());
-    }
-
-    private void shores() {
-        for (int x = -27; x <= 27; x++) {
-            if (Math.abs(x) <= 5) continue;
-            int near = Integer.MIN_VALUE, far = Integer.MIN_VALUE;
-            for (int z = -12; z >= -76; z--) if (lake(x, z)) { near = z; break; }
-            for (int z = r.minZ() + 4; z <= -12; z++) if (lake(x, z)) { far = z; break; }
-            int dn = (int) Math.round((Landscapes.noise(x, 0, 31) + 1) * 1.5), df = (int) Math.round((Landscapes.noise(x, 0, 57) + 1) * 1.5);
-            if (near != Integer.MIN_VALUE) for (int i = 0; i < dn; i++) bank(x, near - i, false);
-            if (far != Integer.MIN_VALUE && far < near - 6) for (int i = 0; i < df; i++) bank(x, far + i, true);
-        }
-        for (int z = -72; z <= -13; z++)
-            for (int side : new int[]{-1, 1}) {
-                int d = (int) Math.round((Landscapes.noise(0, z, 83 + side) + 1) * 1.5);
-                for (int i = 0; i < d; i++) if (lake(side * (28 - i), z)) bank(side * (28 - i), z, false);
-            }
-    }
-
-    /** Reeds and lily pads along the shallows; on the frozen lake, dead stalks in the snow. */
-    private void reeds() {
-        boolean winter = scene == LabyrinthPlace.WINTER_LAKE;
-        for (int x = -28; x <= 28; x++)
-            for (int z = r.minZ() + 4; z <= -2; z++) {
-                if (Math.abs(x) <= 6) continue;
-                int h = hash(x, z, 607) % 100;
-                BlockState top = at(x, -1, z);
-                boolean shore = false;
-                for (Direction d : Direction.Plane.HORIZONTAL) shore |= at(x + d.getStepX(), -1, z + d.getStepZ()).is(Blocks.WATER);
-                if (!winter && shore && (top.is(Blocks.SAND) || top.is(Blocks.GRASS_BLOCK)) && at(x, 0, z).isAir() && h < 30) {
-                    int height = 2 + h % 2;
-                    Plan cane = new Plan();
-                    for (int y = 0; y < height; y++) cane.add(x, y, z, Blocks.SUGAR_CANE);
-                    cane.place();
-                } else if (!winter && top.is(Blocks.WATER) && at(x, 0, z).isAir() && h < 7 && nearShore(x, z)) put(x, 0, z, Blocks.LILY_PAD);
-                else if (winter && top.is(Blocks.SAND) && at(x, 0, z).is(Blocks.SNOW) && h < 4) {
-                    remove(p(x, 0, z));
-                    put(x, 0, z, Blocks.DEAD_BUSH);
-                }
-            }
-    }
-
-    private boolean nearShore(int x, int z) {
-        for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++) if (!lake(x + dx, z + dz) && at(x + dx, -1, z + dz).isSolidRender(l, p(x + dx, -1, z + dz))) return true;
-        return false;
-    }
-
     /**
      * Indian Lake's banks rose in a checkerboard of single steps behind a flat
      * wall of leaves: they are regraded to a smooth rise, and the leaf wall is

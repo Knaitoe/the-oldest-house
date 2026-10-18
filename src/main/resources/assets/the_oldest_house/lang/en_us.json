@@ -306,5 +306,14 @@
   "subtitles.the_oldest_house.costume.pop": "The bulbs pop and go dark",
   "subtitles.the_oldest_house.costume.megaphone": "Hank's megaphone squeals",
   "subtitles.the_oldest_house.costume.drip": "Water drips onto sand",
-  "subtitles.the_oldest_house.costume.giggle": "Children giggle in the dark"
+  "subtitles.the_oldest_house.costume.giggle": "Children giggle in the dark",
+  "subtitles.the_oldest_house.winter.knock": "Something knocks under the ice",
+  "subtitles.the_oldest_house.winter.crack": "The ice cracks",
+  "subtitles.the_oldest_house.winter.groan": "The ice groans",
+  "subtitles.the_oldest_house.winter.break": "The ice breaks",
+  "subtitles.the_oldest_house.winter.hand": "Water laps in the hole",
+  "subtitles.the_oldest_house.winter.run": "Boys run through the snow",
+  "subtitles.the_oldest_house.winter.wind": "Wind across the ice",
+  "item.the_oldest_house.winter_ribbon": "Her ribbon",
+  "block.the_oldest_house.winter_prop": "Lake ice"
 }

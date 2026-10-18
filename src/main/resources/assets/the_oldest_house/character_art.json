@@ -984,5 +984,37 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 33
+  },
+  {
+    "name": "literary_winter_bud",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 34
+  },
+  {
+    "name": "literary_winter_hank",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 35
+  },
+  {
+    "name": "literary_winter_clay",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 36
+  },
+  {
+    "name": "literary_winter_lonnie",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 37
   }
 ]

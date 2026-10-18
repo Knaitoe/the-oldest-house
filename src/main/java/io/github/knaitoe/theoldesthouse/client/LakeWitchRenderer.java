@@ -18,9 +18,13 @@ public final class LakeWitchRenderer extends MobRenderer<LakeWitchEntity, LakeWi
     @Override public void render(LakeWitchEntity e,float yaw,float partial,PoseStack pose,MultiBufferSource buffers,int light){
         // Once she is in the trees there is nothing left of her to draw.
         if(e.memory()&&e.memoryPhase()==Shallows.GONE)return;
+        // Under Winter Lake's ice (0.4.104) the moon reaches her a little through the clear ice, enough to see her pale by.
+        if(e.underIce())light=net.minecraft.client.renderer.LightTexture.pack(Math.max(7,net.minecraft.client.renderer.LightTexture.block(light)),Math.max(9,net.minecraft.client.renderer.LightTexture.sky(light)));
         super.render(e,yaw,partial,pose,buffers,light);
     }
     @Override protected void setupRotations(LakeWitchEntity e,PoseStack pose,float age,float yaw,float partial,float scale){
+        // Hands and feet flat against the underside of the ice, her back to the lake bed, her face turned up through it.
+        if(e.underIce()){super.setupRotations(e,pose,age,yaw,partial,scale);pose.translate(0,(e.getBbHeight()+.1F)/scale,0);pose.mulPose(Axis.ZP.rotationDegrees(180));return;}
         if(!e.memory()){super.setupRotations(e,pose,age,yaw,partial,scale);return;}
         // A recollection is placed and turned by the server every tick; draw it by its own facing.
         super.setupRotations(e,pose,age,Mth.rotLerp(partial,e.yRotO,e.getYRot()),partial,scale);

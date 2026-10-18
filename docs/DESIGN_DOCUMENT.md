@@ -846,6 +846,7 @@ First playable site in 0.4.11: [DROWNED_TOWN_0_4_11.md](DROWNED_TOWN_0_4_11.md).
 
 - Lake Witch costumes stand on armor stands across the beach. One is not a costume, and moves only when the player looks away. Reach the grass.
 - **0.4.103:** Proofrock's Halloween Lake Witch costume contest. Hank, the boy from the Shallows grown old, judges twelve numbered entrants, all dressed as her; the thirteenth has no number and moves only while no living reader can see her. He gives the ribbon to "the one down by the water", the lights go out, everyone crawls, and she hunts; the park's grass, reached with her in sight, is the way out. Canon: [COSTUME_NIGHT_0_4_103.md](COSTUME_NIGHT_0_4_103.md).
+- **0.4.104:** Winter Lake becomes the dare, the winter after the Shallows: Bud, Hank, Clay and Lonnie take the reader back out onto the frozen lake, and Hank gives them her ribbon to walk out to the hole where she went down. She is under the ice and goes to sound; snowballs draw her; under a noisy reader she breaks through and pulls them under. A hand takes the ribbon, the boys run, and the bank is the way out. Canon: [WINTER_LAKE_0_4_104.md](WINTER_LAKE_0_4_104.md).
 
 ### Indian Lake: movie night
 

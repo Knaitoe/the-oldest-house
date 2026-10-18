@@ -13,7 +13,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("75")
+        event.registrar("76")
                 .playToServer(ShallowsSwingPayload.TYPE,ShallowsSwingPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.Shallows.swing(p,payload.side());}))
                 .playToClient(MovieNightPayload.TYPE,MovieNightPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.MovieNightClient.accept(payload)))
                 .playToClient(ShallowsCuePayload.TYPE,ShallowsCuePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.ShallowsClient.accept(payload)))

@@ -232,6 +232,22 @@ jobs:
               for name in ('CostumeNight','CostumePropBlock','CostumeNightRegistry'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/client/CostumeNightVisualProof.class' in z.namelist()
+              # Winter Lake (0.4.104): the boys' four skins, the lake's ice and her ribbon, and the night's sounds.
+              for name in ('bud','hank','clay','lonnie'):
+                  assert z.read(f'assets/the_oldest_house/textures/entity/literary_winter_{name}.png').startswith(b'\x89PNG')
+              for name in ('black_ice','snow_ice','snow_ice_side','snow_ice_bottom','cracked','split','cattails','snowballs'):
+                  assert z.read(f'assets/the_oldest_house/textures/block/winter_{name}.png').startswith(b'\x89PNG')
+              assert z.read('assets/the_oldest_house/textures/item/winter_ribbon.png').startswith(b'\x89PNG')
+              assert json.loads(z.read('assets/the_oldest_house/models/item/winter_ribbon.json'))['textures']['layer0'] == 'the_oldest_house:item/winter_ribbon'
+              winter_sounds = json.loads(z.read('assets/the_oldest_house/sounds.json'))
+              for name in ('knock','crack','groan','break','hand','run','wind'):
+                  assert z.read(f'assets/the_oldest_house/sounds/winter/{name}.ogg').startswith(b'OggS')
+                  assert winter_sounds[f'winter.{name}']['subtitle'] == f'subtitles.the_oldest_house.winter.{name}'
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/winter_prop.json'))['variants']) == 6
+              for name in ('WinterLake','WinterPropBlock','WinterLakeRegistry','WinterRibbonItem'):
+                  assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/client/WinterLakeVisualProof.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/client/mixin/HouseSceneSkyMixin.class' in z.namelist()
               for name in ('MovieFilm','MovieScreenRenderer','LakeSharkModel','LakeSharkRenderer','MovieNightClient','LakeCanoeRenderer'):
                   assert f'io/github/knaitoe/theoldesthouse/client/{name}.class' in z.namelist()
               # 0.4.77: a frank left on the griddle burns, and draws charred through custom model data 1.
@@ -739,6 +755,8 @@ jobs:
           for view in 0 1 2 3 4 5 6 7 8; do test -s build/font-smoke/native-movie-$view.png; done
           test -s build/font-smoke/costume-night-passed.txt
           for view in 0 1 2; do test -s build/font-smoke/native-costume-$view.png; done
+          test -s build/font-smoke/winter-lake-passed.txt
+          for view in 0 1 2; do test -s build/font-smoke/native-winter-$view.png; done
           test -s build/font-smoke/cast-passed.txt
           test -s build/font-smoke/stacey-scrabble-passed.txt
           test -s build/font-smoke/native-stacey-scrabble.png
