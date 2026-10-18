@@ -260,8 +260,15 @@ public final class LiteraryVignettes {
     private static void masque(ServerPlayer p,BlockPos b,CompoundTag own){var place=LabyrinthPlace.MASQUE;int room=Math.max(0,Math.min(6,(-p.blockPosition().getZ()+b.getZ()-1)/11));own.putInt("Rooms",own.getInt("Rooms")|(1<<room));int time=(int)(p.serverLevel().getGameTime()%400);boolean chime=time<60;var d=LabyrinthData.get(p.server);var world=shared(d,place);boolean stopped=world.getBoolean("Stopped");var clock=p.serverLevel().getBlockState(b.offset(LiteraryRooms.CLOCK));if(clock.is(LiteraryRegistry.PROP.get())&&clock.getValue(LiteraryPropBlock.STAGE)==3){stopped=true;world.putBoolean("Stopped",true);shared(d,place,world);}
         for(int i=0;i<7;i++)for(int side:new int[]{-1,1}){var dancer=actor(p,place,"Dancer"+i+"_"+side,LiteraryActor.DANCER,new BlockPos(side*5,0,-11*i-6),false);if(dancer!=null)dancer.appearance(LiteraryActor.DANCER,chime||stopped?0:1);}
         if(!stopped&&time<5)sound(p,SoundEvents.BELL_BLOCK,b.offset(LiteraryRooms.CLOCK),2,.6F);
-        if(!stopped&&time==65)sound(p,LiteraryRegistry.PARTY.get(),b.offset(0,0,-room*11-6),.65F,1);
-        if(chime&&!stopped&&own.contains("LastPosition")){Vec3 last=new Vec3(own.getDouble("LastX"),p.getY(),own.getDouble("LastZ"));if(last.distanceToSqr(p.position())>.0025){var red=actor(p,place,"RedFigure"+room,LiteraryActor.RED_FIGURE,new BlockPos(0,0,-11*room-8),false);if(red!=null)red.say("The clock is speaking.");own.putBoolean("MovedAtChime",true);}}
+        // This runs every fifth tick, so the music needs a five-tick window to start in every world.
+        if(!stopped&&time>=65&&time<70)sound(p,LiteraryRegistry.PARTY.get(),b.offset(0,0,-room*11-6),.65F,1);
+        // 0.4.105: the steward's rule costs something. A second after the first stroke, a reader still moving is put back
+        // a room, at its near door, and the rooms past it count again only once they are crossed again. Once a chime.
+        if(chime&&time>=20&&!stopped&&own.contains("LastPosition")){Vec3 last=new Vec3(own.getDouble("LastX"),p.getY(),own.getDouble("LastZ"));long stroke=p.serverLevel().getGameTime()/400+1;
+            if(last.distanceToSqr(p.position())>.0025&&own.getLong("CaughtChime0505")!=stroke){int back=Math.max(0,room-1);own.putLong("CaughtChime0505",stroke);own.putBoolean("MovedAtChime",true);
+                own.putInt("Rooms",own.getInt("Rooms")&((1<<(back+1))-1));p.teleportTo(p.serverLevel(),b.getX()+.5,b.getY(),b.getZ()-11*back-1.5,180,p.getXRot());p.setDeltaMovement(Vec3.ZERO);
+                var red=actor(p,place,"RedFigure"+back,LiteraryActor.RED_FIGURE,new BlockPos(0,0,-11*back-8),false);if(red!=null)red.say("The clock is speaking.");
+                p.displayClientMessage(Component.literal("You moved while the clock spoke. You are a room further back."),true);}}
         own.putLong("LastPosition",p.blockPosition().asLong());own.putDouble("LastX",p.getX());own.putDouble("LastZ",p.getZ());
     }
     private static void usher(ServerPlayer p,BlockPos b,CompoundTag own){var place=LabyrinthPlace.USHER;var d=LabyrinthData.get(p.server);var woman=actor(p,place,"Woman",LiteraryActor.COFFIN_WOMAN,LiteraryRooms.COFFIN,false);if(woman==null)return;var world=shared(d,place);

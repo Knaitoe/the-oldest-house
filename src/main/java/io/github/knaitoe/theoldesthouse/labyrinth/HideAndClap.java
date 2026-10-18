@@ -478,6 +478,9 @@ public final class HideAndClap {
             persist(data, level);
             player.displayClientMessage(Component.literal("Someone is waiting for you to put the blindfold on. You can still turn back.")
                     .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), true);
+            // 0.4.105: the note says she will finish the game; this says what that costs, before the blindfold goes on.
+            player.displayClientMessage(Component.literal("If the minute runs out you die, and drop everything you carry, even with keepInventory on.")
+                    .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), false);
         }
         closeEntry(level, data);
         return true;

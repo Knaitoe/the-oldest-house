@@ -206,7 +206,8 @@ public final class StaircaseProse {
             {"devils_rock","the diary room"},{"wheel","the wheel of rooms"},{"ghosts_set","the haunted set"},
             {"end_world_cabin","the cabin at the end"},{"family_copy","your family's copied home"},{"old_cabin","the old man's cabin"},
             {"stone_gallery","a stone gallery"},{"stone_crossing","a stone crossing"},{"stone_descent","a stone stair"},
-            {"hallway_end","the impossible hallway"}};
+            {"hallway_end","the impossible hallway"},{"three_fingers","the cottage on the mill road"},{"lake_house","the house under the lake"},
+            {"borrasca","Drisking"}};
         for (String[] n : names) PLACES.put(n[0], n[1]);
     }
     /** A room's name as prose, never its internal identifier. */

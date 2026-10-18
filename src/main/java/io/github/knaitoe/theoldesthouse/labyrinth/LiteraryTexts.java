@@ -115,7 +115,7 @@ public final class LiteraryTexts {
         case LAKE_HOUSE->LakeHouse.account(own);
         case BORRASCA->BorrascaTexts.account();
         case ELK_LOT->ElkLotEnding.account(name,own);
-        case ELK_FAN->"From above the ladder I could see what lay below the moving blades. Five seconds was longer than I thought. The blade caught me; when I could see again I was outside the room. A tooth lay in my hand. When I returned, tape held the shape of the deer.";
+        case ELK_FAN->"From above the ladder I could see what lay below the moving blades. I stayed up there longer than I meant to. The blade caught me; when I could see again I was outside the room. A tooth lay in my hand. When I returned, tape held the shape of the deer.";
         case MAPPING_INTERIOR->own.getBoolean("PileBroken")?"I broke the pile under the trailer. The boy woke when I came back. The crawlspace still ran beyond the walls, but the things at its end could no longer hold him there.":"I took what lay under the trailer. The photograph came with me. When I returned, the boy was harder to wake. Keeping a father's things was not the same as keeping a brother.";
         case HOLY_RABBIT->rabbitAccount(own);
         case CONFESSION->"The last chapter addressed the person holding the pen.\n\n"+own.getString("Statistics")+"\n\nThe signature was mine. The chair opposite me had not changed.";
@@ -137,8 +137,14 @@ public final class LiteraryTexts {
         if(place==LabyrinthPlace.MOVIE_NIGHT){var pages=new ArrayList<String>(GhostsSet.pages(text));pages.addAll(GhostsSet.pages(afterword));return book("The account: after the show",name,pages.toArray(String[]::new));}
         if(place==LabyrinthPlace.COSTUME_NIGHT){var pages=new ArrayList<String>(GhostsSet.pages(text));pages.addAll(GhostsSet.pages(afterword));return book("The account: the ribbon",name,pages.toArray(String[]::new));}
         if(place==LabyrinthPlace.WINTER_LAKE){var pages=new ArrayList<String>(GhostsSet.pages(text));pages.addAll(GhostsSet.pages(afterword));return book("The account: the dare",name,pages.toArray(String[]::new));}
-        if(place==LabyrinthPlace.ELK_LOT){var pages=new ArrayList<String>(GhostsSet.pages(text));pages.addAll(GhostsSet.pages(afterword));return book("The account: "+place.id().replace('_',' '),name,pages.toArray(String[]::new));}
-        return book("The account: "+place.id().replace('_',' '),name,text,afterword);}
+        if(place==LabyrinthPlace.ELK_LOT){var pages=new ArrayList<String>(GhostsSet.pages(text));pages.addAll(GhostsSet.pages(afterword));return book(accountTitle(place),name,pages.toArray(String[]::new));}
+        return book(accountTitle(place),name,text,afterword);}
+    /** 0.4.105: an account is titled with its room's prose name, never its internal id. A book title holds 32 characters, so the longest names are shortened. */
+    public static String accountTitle(LabyrinthPlace place){
+        String title="The account: "+StaircaseProse.place(place.id());if(title.length()<=32)return title;
+        return "The account: "+switch(place){case HILL_NURSERY->"the nursery";case MINIATURES->"the workshop";case ELK_FAN->"the fan room";case MAPPING_INTERIOR->"the crawlspace";
+            case ELK_CARCASSES->"the ridge";case END_WORLD_CABIN->"the cabin";case FAMILY_COPY->"the copied home";case THREE_FINGERS->"the cottage";case LAKE_HOUSE->"the lake house";default->"the room";};
+    }
     /** 0.4.101: what the child saw, in order, with the rabbit's own name; the carving only if they looked up at it. */
     static String rabbitAccount(CompoundTag own){
         String rabbit=own.getString("RabbitName").isBlank()?"Slaney":own.getString("RabbitName");

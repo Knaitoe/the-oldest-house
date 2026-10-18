@@ -57,6 +57,23 @@ public final class LiteraryTests {
     @GameTest(template="empty",batch="literary_hill",timeoutTicks=200)
     public static void actualColdDoorNameAndCountedKnocksEarnOnlyTheReadersAccount(GameTestHelper h){var f=new Fixture(h);var place=LabyrinthPlace.HILL_NURSERY;var p=f.player("hill_reader",place);f.source(p,place);f.at(p,place,-9.5,0,-17);f.look(p,f.base(place).offset(LiteraryRooms.HILL_WALL));h.runAfterDelay(10,()->{h.assertTrue(f.own(p,place).getBoolean("ColdDoor")&&f.own(p,place).getBoolean("NameSeen"),"native doorway presence and line of sight are required");f.at(p,place,-9.5,-4,-34);for(int i=0;i<3;i++)NeoForge.EVENT_BUS.post(new PlayerInteractEvent.LeftClickBlock(p,f.base(place).offset(LiteraryRooms.HILL_KNOCK),Direction.SOUTH,PlayerInteractEvent.LeftClickBlock.Action.START));});h.runAfterDelay(50,()->{h.assertTrue(f.own(p,place).getInt("Knocks")==3&&f.own(p,place).getInt("Echoes")==3&&f.own(p,place).getBoolean("Ready"),"each actual knock returns once at its cellar source");f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.HILL_NURSERY),"reading the own ending grants one eligible source");h.succeed();});}
     @AfterBatch(batch="literary_hill") public static void hillDone(ServerLevel l){close();}
+    /** 0.4.105: standing still through the chime costs nothing; moving puts the reader back a room, once a chime. */
+    @GameTest(template="empty",batch="literary_masque_chime",timeoutTicks=900)
+    public static void movingWhileTheClockSpeaksPutsTheReaderBackARoom(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.MASQUE;var p=f.player("masque_reader",place);var b=f.base(place);
+        java.util.function.IntPredicate at=t->{long time=f.in.getGameTime()%400;return time>=t&&time<t+10;};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.in.getGameTime()%400>=100&&f.in.getGameTime()%400<300,"a quiet stretch between chimes"))
+            .thenExecute(()->f.at(p,place,.5,0,-38.5))
+            .thenWaitUntil(()->h.assertTrue(at.test(40),"the clock is speaking"))
+            .thenExecute(()->{var own=f.own(p,place);h.assertTrue(!own.getBoolean("MovedAtChime")&&Math.abs(p.getZ()-(b.getZ()-38.5))<.01&&(own.getInt("Rooms")&8)!=0,"a reader who stands still through the chime keeps their place and their rooms");f.at(p,place,.5,0,-40.5);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("MovedAtChime"),"moving while the clock speaks is noticed"))
+            .thenExecute(()->{h.assertTrue(Math.abs(p.getZ()-(b.getZ()-23.5))<.01&&Math.abs(p.getX()-(b.getX()+.5))<.01,"the reader is put back at the near door of the room before: "+p.position().subtract(Vec3.atLowerCornerOf(b)));
+                h.assertTrue((f.own(p,place).getInt("Rooms")&~7)==0,"the rooms past it must be crossed again");f.at(p,place,.5,0,-27.5);})
+            .thenIdle(12)
+            .thenExecute(()->h.assertTrue(Math.abs(p.getZ()-(b.getZ()-27.5))<.01||f.in.getGameTime()%400>=60,"one chime puts a reader back only once"))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="literary_masque_chime") public static void masqueChimeDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_coffin",timeoutTicks=230)
     public static void nativeCoffinChoiceRequiresAReturnAndKeepsTheSameWoman(GameTestHelper h){var f=new Fixture(h);var place=LabyrinthPlace.USHER;var p=f.player("coffin_reader",place);f.source(p,place);h.runAfterDelay(10,()->{var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(world.hasUUID("Woman"),"the living native body is present before the decision");p.setShiftKeyDown(true);f.click(p,place,LiteraryRooms.COFFIN);p.setShiftKeyDown(false);h.assertTrue(f.own(p,place).getBoolean("LidClosed")&&!f.own(p,place).getBoolean("Ready"),"closing the physical lid grants no ending by itself");f.arrive(p,place);f.at(p,place,2,-3,-29);});h.runAfterDelay(150,()->{var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(world.getInt("Cracks")==1&&f.own(p,place).getBoolean("Ready"),"the next native visit brings a local crack and an earned consequence");h.assertTrue(f.in.getEntity(world.getUUID("Woman")) instanceof LiteraryActor,"the same woman's native UUID survives the return");f.read(p,place,LiteraryRooms.ending(place));h.succeed();});}
     @AfterBatch(batch="literary_coffin") public static void coffinDone(ServerLevel l){close();}
@@ -79,7 +96,11 @@ public final class LiteraryTests {
         h.runAfterDelay(75,()->h.assertTrue(!f.own(p,place).getBoolean("BladeStrike"),"the fan cannot knock the reader off before five seconds"));
         h.runAfterDelay(115,()->{var own=f.own(p,place);h.assertTrue(own.getBoolean("Repaired")&&own.getBoolean("BladeStrike")&&own.getBoolean("ElkThroughFan")&&own.getBoolean("Completed"),"five seconds of real standing completes the personally seen sequence");
             h.assertTrue(!LiteraryVignettes.inside(p,place)&&WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&p.getInventory().countItem(LiteraryRegistry.TOOTH.get())==1,"the player returns outside with one earned source and one original tooth");
-            f.arrive(p,place);f.click(p,place,SceneHuntReview.TOOLS);h.assertTrue(p.getInventory().countItem(LiteraryRegistry.LIGHTBULB.get())==0&&p.getInventory().countItem(LiteraryRegistry.TOOTH.get())==1,"returning never restocks the bulb or the tooth");h.succeed();});
+            f.arrive(p,place);f.click(p,place,SceneHuntReview.TOOLS);h.assertTrue(p.getInventory().countItem(LiteraryRegistry.LIGHTBULB.get())==0&&p.getInventory().countItem(LiteraryRegistry.TOOTH.get())==1,"returning never restocks the bulb or the tooth");
+            // 0.4.105: every account is titled with its room's prose name, within a written book title's 32 characters.
+            for(var each:LabyrinthPlace.values()){try{LiteraryRooms.ending(each);}catch(IllegalArgumentException notLiterary){continue;}
+                var title=LiteraryTexts.accountTitle(each);h.assertTrue(title.length()<=32&&!title.contains("_")&&!title.endsWith(" the room"),"an account is titled with its room's prose name: "+title);}
+            h.assertTrue(LiteraryTexts.accountTitle(place).equals("The account: the fan room"),"the fan's account has a shortened prose title");h.succeed();});
     }
     @AfterBatch(batch="literary_fan") public static void fanDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_food",timeoutTicks=100)
