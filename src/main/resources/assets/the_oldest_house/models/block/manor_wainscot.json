@@ -1,0 +1,12 @@
+{
+ "parent": "minecraft:block/cube",
+ "textures": {
+  "particle": "the_oldest_house:block/manor/wainscot",
+  "north": "the_oldest_house:block/manor/wainscot",
+  "south": "the_oldest_house:block/manor/wainscot",
+  "east": "the_oldest_house:block/manor/wainscot",
+  "west": "the_oldest_house:block/manor/wainscot",
+  "up": "the_oldest_house:block/manor/wainscot",
+  "down": "the_oldest_house:block/manor/wainscot"
+ }
+}

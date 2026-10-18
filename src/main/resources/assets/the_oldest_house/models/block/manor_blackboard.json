@@ -1,0 +1,43 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "b": "the_oldest_house:block/manor/blackboard",
+  "w": "the_oldest_house:block/manor/desk",
+  "particle": "the_oldest_house:block/manor/blackboard"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    2,
+    15
+   ],
+   "to": [
+    16,
+    15,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b"
+    },
+    "south": {
+     "texture": "#w"
+    },
+    "east": {
+     "texture": "#w"
+    },
+    "west": {
+     "texture": "#w"
+    },
+    "up": {
+     "texture": "#w"
+    },
+    "down": {
+     "texture": "#w"
+    }
+   }
+  }
+ ]
+}

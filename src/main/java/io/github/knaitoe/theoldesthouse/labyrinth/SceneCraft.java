@@ -77,8 +77,9 @@ public final class SceneCraft {
             LabyrinthPlace.CAMP_BLOOD, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.BARN_WELL, LabyrinthPlace.GOATMAN);
     private static final int F = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
-    static final Set<LabyrinthPlace> ROOMS = EnumSet.of(LabyrinthPlace.HILL_NURSERY, LabyrinthPlace.MINIATURES, LabyrinthPlace.MASQUE,
-            LabyrinthPlace.USHER, LabyrinthPlace.WINCHESTER, LabyrinthPlace.CRIMSON_HALL, LabyrinthPlace.BLY_ROUTE,
+    // The Masque and Bly (0.4.105) are built whole by MasqueSuite and BlyManor.
+    static final Set<LabyrinthPlace> ROOMS = EnumSet.of(LabyrinthPlace.HILL_NURSERY, LabyrinthPlace.MINIATURES,
+            LabyrinthPlace.USHER, LabyrinthPlace.WINCHESTER, LabyrinthPlace.CRIMSON_HALL,
             LabyrinthPlace.ELK_FAN, LabyrinthPlace.CONFESSION, LabyrinthPlace.DEVILS_ROCK, LabyrinthPlace.WHEEL, LabyrinthPlace.GHOSTS_SET);
     // The elk carcasses (0.4.50) author their own two-stage woods, stream and shore, the Last Stop (0.4.78) its own road,
     // lot, field and woods, Movie Night (0.4.102) its own banks, woods and piers, Costume Night (0.4.103) its beach, lake and

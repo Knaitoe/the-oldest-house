@@ -1,0 +1,107 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "e": "the_oldest_house:block/masque/ebony",
+  "c": "the_oldest_house:block/masque/clock_case_stopped",
+  "particle": "the_oldest_house:block/masque/ebony"
+ },
+ "elements": [
+  {
+   "from": [
+    2,
+    0,
+    4
+   ],
+   "to": [
+    14,
+    16,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#c"
+    },
+    "south": {
+     "texture": "#e"
+    },
+    "east": {
+     "texture": "#e"
+    },
+    "west": {
+     "texture": "#e"
+    },
+    "up": {
+     "texture": "#e"
+    },
+    "down": {
+     "texture": "#e"
+    }
+   }
+  },
+  {
+   "from": [
+    1,
+    0,
+    3
+   ],
+   "to": [
+    15,
+    1,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#e"
+    },
+    "south": {
+     "texture": "#e"
+    },
+    "east": {
+     "texture": "#e"
+    },
+    "west": {
+     "texture": "#e"
+    },
+    "up": {
+     "texture": "#e"
+    },
+    "down": {
+     "texture": "#e"
+    }
+   }
+  },
+  {
+   "from": [
+    1,
+    15,
+    3
+   ],
+   "to": [
+    15,
+    16,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#e"
+    },
+    "south": {
+     "texture": "#e"
+    },
+    "east": {
+     "texture": "#e"
+    },
+    "west": {
+     "texture": "#e"
+    },
+    "up": {
+     "texture": "#e"
+    },
+    "down": {
+     "texture": "#e"
+    }
+   }
+  }
+ ]
+}

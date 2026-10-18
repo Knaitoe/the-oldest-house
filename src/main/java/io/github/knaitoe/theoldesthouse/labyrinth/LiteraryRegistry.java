@@ -44,6 +44,12 @@ public final class LiteraryRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CottageBlock>> COTTAGE_TYPE=CODECS.register("cottage",()->CottageBlock.CODEC);
     /** Three Fingers (0.4.81): the cottage's walls, floor and thatch, its range, dresser and mantel, the papers and the lamp on the road. */
     public static final DeferredBlock<CottageBlock> COTTAGE=BLOCKS.registerBlock("cottage",CottageBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noLootTable().lightLevel(CottageBlock::light));
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<MasqueBlock>> MASQUE_TYPE=CODECS.register("masque",()->MasqueBlock.CODEC);
+    /** The Masque (0.4.105): the seven chambers' velvet, glass and ebony, the braziers in the closed corridor and the clock. */
+    public static final DeferredBlock<MasqueBlock> MASQUE=BLOCKS.registerBlock("masque",MasqueBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS).strength(.8F).noLootTable().lightLevel(MasqueBlock::light));
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<ManorBlock>> MANOR_TYPE=CODECS.register("manor",()->ManorBlock.CODEC);
+    /** Bly (0.4.105): the manor's boards, damask and wet line, its rooms and conservatory; and the old man's signal lamp. */
+    public static final DeferredBlock<ManorBlock> MANOR=BLOCKS.registerBlock("manor",ManorBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noLootTable().lightLevel(ManorBlock::light));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CampDecorBlock>> CAMP_DECOR_TYPE=CODECS.register("camp_decor",()->CampDecorBlock.CODEC);
     public static final DeferredBlock<CampDecorBlock> CAMP_DECOR=BLOCKS.registerBlock("camp_decor",CampDecorBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).noOcclusion().noLootTable().lightLevel(CampDecorBlock::light));
     public static final DeferredBlock<LiteraryFrozenBlock> FROZEN=BLOCKS.registerBlock("literary_frozen",LiteraryFrozenBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).dynamicShape().noOcclusion().noLootTable());

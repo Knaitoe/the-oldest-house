@@ -1,0 +1,12 @@
+{
+ "parent": "minecraft:block/cube",
+ "textures": {
+  "particle": "the_oldest_house:block/masque/velvet_white",
+  "north": "the_oldest_house:block/masque/velvet_white",
+  "south": "the_oldest_house:block/masque/velvet_white",
+  "east": "the_oldest_house:block/masque/velvet_white",
+  "west": "the_oldest_house:block/masque/velvet_white",
+  "up": "the_oldest_house:block/masque/velvet_white",
+  "down": "the_oldest_house:block/masque/velvet_white"
+ }
+}

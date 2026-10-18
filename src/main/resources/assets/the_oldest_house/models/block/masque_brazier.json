@@ -1,0 +1,147 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "i": "the_oldest_house:block/masque/iron",
+  "e": "the_oldest_house:block/masque/embers",
+  "f": "minecraft:block/campfire_fire",
+  "particle": "the_oldest_house:block/masque/iron"
+ },
+ "elements": [
+  {
+   "from": [
+    3,
+    0,
+    3
+   ],
+   "to": [
+    13,
+    5,
+    13
+   ],
+   "faces": {
+    "north": {
+     "texture": "#i"
+    },
+    "south": {
+     "texture": "#i"
+    },
+    "east": {
+     "texture": "#i"
+    },
+    "west": {
+     "texture": "#i"
+    },
+    "up": {
+     "texture": "#i"
+    },
+    "down": {
+     "texture": "#i"
+    }
+   }
+  },
+  {
+   "from": [
+    2,
+    4,
+    2
+   ],
+   "to": [
+    14,
+    6,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#i"
+    },
+    "south": {
+     "texture": "#i"
+    },
+    "east": {
+     "texture": "#i"
+    },
+    "west": {
+     "texture": "#i"
+    },
+    "up": {
+     "texture": "#e"
+    },
+    "down": {
+     "texture": "#i"
+    }
+   }
+  },
+  {
+   "from": [
+    3,
+    5.5,
+    3
+   ],
+   "to": [
+    13,
+    6.2,
+    13
+   ],
+   "faces": {
+    "up": {
+     "texture": "#e"
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   }
+  },
+  {
+   "from": [
+    2,
+    6,
+    8
+   ],
+   "to": [
+    14,
+    16,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#f"
+    },
+    "south": {
+     "texture": "#f"
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  },
+  {
+   "from": [
+    8,
+    6,
+    2
+   ],
+   "to": [
+    8,
+    16,
+    14
+   ],
+   "faces": {
+    "east": {
+     "texture": "#f"
+    },
+    "west": {
+     "texture": "#f"
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ]
+}

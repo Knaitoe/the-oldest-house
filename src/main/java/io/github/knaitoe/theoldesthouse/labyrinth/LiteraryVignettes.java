@@ -114,7 +114,7 @@ public final class LiteraryVignettes {
         if(rel.equals(LiteraryRooms.source(place))&&!oldLot||oldLot&&rel.equals(ElkLot.OLD_SOURCE)||SceneReview.readingAlias(p.serverLevel(),b,place,rel)){open(p,place,own,"Source",SceneHuntReview.sourceBook(p.serverLevel(),b,place),e.getPos());handled=true;}
         else if((oldLot?rel.equals(ElkLot.OLD_ENDING):rel.equals(LiteraryRooms.ending(place)))&&own.getBoolean("Ready")){open(p,place,own,"Ending",LiteraryTexts.ending(p,place,own),e.getPos());handled=true;}
         else switch(place){
-            case MASQUE->{if(rel.equals(LiteraryRooms.CLOCK)&&own.getInt("Rooms")==127){own.putBoolean("ClockStopped0506",true);p.connection.send(new net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket(e.getPos(),stoppedClock(p.serverLevel(),e.getPos())));p.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(LiteraryRegistry.PARTY.getId(),SoundSource.BLOCKS));ready(p,place,own,"stopped_the_seventh_room_clock");handled=true;}}
+            case MASQUE->{if(MasqueSuite.clock(rel)&&own.getInt("Rooms")==127){own.putBoolean("ClockStopped0506",true);MasqueSuite.stoppedView(p,b);p.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(LiteraryRegistry.PARTY.getId(),SoundSource.BLOCKS));ready(p,place,own,"stopped_the_seventh_room_clock");handled=true;}}
             case USHER->{if(rel.distManhattan(LiteraryRooms.COFFIN)<=1){chooseLid(p,own);handled=true;}}
             case ELK_LOT->{if(!oldLot)handled=ElkLotNight.click(p,b,rel,own);}
             case THREE_FINGERS->handled=ThreeFingers.click(p,b,rel,own);
@@ -243,8 +243,6 @@ public final class LiteraryVignettes {
     static void sound(ServerPlayer p,SoundEvent sound,BlockPos at,float volume,float pitch){p.serverLevel().playSound(null,at,sound,SoundSource.BLOCKS,volume,pitch);}
     /** A sound only this reader hears, at the block. */
     static void heard(ServerPlayer p,SoundEvent sound,BlockPos at,float volume,float pitch){p.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound),SoundSource.BLOCKS,at.getX()+.5,at.getY()+.5,at.getZ()+.5,volume,pitch,p.getRandom().nextLong()));}
-    /** The clock as a reader who has stopped it sees it; the world's clock keeps going for everyone else. */
-    private static net.minecraft.world.level.block.state.BlockState stoppedClock(ServerLevel l,BlockPos at){var s=l.getBlockState(at);return s.is(LiteraryRegistry.PROP.get())?s.setValue(LiteraryPropBlock.STAGE,3):s;}
     private static void hill(ServerPlayer p,BlockPos b,CompoundTag own){var place=LabyrinthPlace.HILL_NURSERY;var rel=p.blockPosition().subtract(b);if(rel.getX()<-3&&rel.getZ()<-10&&rel.getZ()>-25){p.setTicksFrozen(Math.min(150,p.getTicksFrozen()+20));own.putBoolean("ColdDoor",true);}
         if(HouseWatchers.sees(p,b.offset(LiteraryRooms.HILL_WALL).getCenter()))own.putBoolean("NameSeen",true);
         if(own.getInt("Present")%80==0){int z=Math.max(-41,Math.min(-4,rel.getZ()));sound(p,SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR,b.offset(rel.getX()<-3?-4:rel.getX()>3?4:3,1,z),.75F,.75F);}
@@ -264,7 +262,7 @@ public final class LiteraryVignettes {
     private static void masque(ServerPlayer p,BlockPos b,CompoundTag own){var place=LabyrinthPlace.MASQUE;int room=Math.max(0,Math.min(6,(-p.blockPosition().getZ()+b.getZ()-1)/11));own.putInt("Rooms",own.getInt("Rooms")|(1<<room));int time=(int)(p.serverLevel().getGameTime()%400);boolean chime=time<60;
         // 0.4.105: the party is each reader's own. Their dancers, the figure that scolds them and the chimes are private, and the hand
         // they put on the clock stops only their evening: a later reader finds the clock still going and the rooms still dancing.
-        boolean stopped=own.getBoolean("ClockStopped0506");if(stopped&&time%100<5)p.connection.send(new net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket(b.offset(LiteraryRooms.CLOCK),stoppedClock(p.serverLevel(),b.offset(LiteraryRooms.CLOCK))));
+        boolean stopped=own.getBoolean("ClockStopped0506");if(stopped&&time%100<5)MasqueSuite.stoppedView(p,b);
         for(int i=0;i<7;i++)for(int side:new int[]{-1,1}){var dancer=actor(p,place,"Dancer"+i+"_"+side,LiteraryActor.DANCER,new BlockPos(side*5,0,-11*i-6),true);if(dancer!=null){dancer.appearance(LiteraryActor.DANCER,chime||stopped?0:1);
             // Once their clock has stopped, the still dancers turn to whoever stopped it.
             if(stopped){float yaw=(float)Math.toDegrees(Math.atan2(-(p.getX()-dancer.getX()),p.getZ()-dancer.getZ()));dancer.setYRot(yaw);dancer.setYBodyRot(yaw);dancer.setYHeadRot(yaw);}}}
@@ -300,7 +298,8 @@ public final class LiteraryVignettes {
         // come up in the lake room's water with the cupboard they waited in no longer counting. The wait starts again.
         long now=p.serverLevel().getGameTime();if(own.contains("HeldUntil0506")){long until=own.getLong("HeldUntil0506");if(now<until)return;own.remove("HeldUntil0506");LiteraryMotion.release(p);
             if(now-until<100){p.teleportTo(p.serverLevel(),b.getX()+.5,b.getY()-3,b.getZ()-44.5,180,0);p.setDeltaMovement(Vec3.ZERO);own.putInt("RefugeTicks",0);own.putBoolean("WaitedInCloset",false);p.displayClientMessage(Component.literal("She took you down to the water with her. The cupboard you waited in does not count now."),true);}}
-        boolean closet=Math.abs(p.getX()-b.getX())>4&&p.getZ()<b.getZ()-6&&p.getZ()>b.getZ()-34;boolean closed=false;if(closet){int zz=p.getZ()<b.getZ()-25?-31:p.getZ()<b.getZ()-14?-20:-9;var s=p.serverLevel().getBlockState(b.offset(p.getX()<b.getX()?-4:4,0,zz));closed=s.getBlock() instanceof DoorBlock&&!s.getValue(DoorBlock.OPEN);}
+        // A reader is in a cupboard only inside one of the six presses (0.4.105); the rooms off the corridor are not cupboards.
+        var door=BlyManor.cupboardDoor(p.blockPosition().subtract(b));boolean closet=door!=null;boolean closed=false;if(closet){var s=p.serverLevel().getBlockState(b.offset(door));closed=s.getBlock() instanceof DoorBlock&&!s.getValue(DoorBlock.OPEN);}
         if(closed&&time<740){own.putInt("RefugeTicks",own.getInt("RefugeTicks")+5);own.putBoolean("WaitedInCloset",true);}if(lady.distanceToSqr(p)<3&&Math.abs(p.getX()-b.getX()-.5)<1.1){own.putBoolean("Dragged",true);own.putLong("HeldUntil0506",now+BLY_HOLD);LiteraryMotion.hold(p,now+BLY_HOLD);float hurt=Math.min(4,p.getHealth()-2);if(hurt>0)p.hurt(p.damageSources().drown(),hurt);
             p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS,BLY_HOLD+40));HousePackets.send(p,new HouseFadePayload(30,20,30));sound(p,SoundEvents.PLAYER_HURT_DROWN,p.blockPosition(),1,.7F);return;}
         if(time>=740&&lady.getY()<=b.getY()-3.95&&own.getInt("RefugeTicks")>=200&&!closet&&p.getZ()<b.getZ()-34&&p.getY()>=b.getY())ready(p,place,own,"waited_in_a_shut_closet_until_the_lake");

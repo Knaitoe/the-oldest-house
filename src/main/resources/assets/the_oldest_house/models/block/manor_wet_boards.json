@@ -1,0 +1,12 @@
+{
+ "parent": "minecraft:block/cube",
+ "textures": {
+  "particle": "the_oldest_house:block/manor/boards",
+  "north": "the_oldest_house:block/manor/boards",
+  "south": "the_oldest_house:block/manor/boards",
+  "east": "the_oldest_house:block/manor/boards",
+  "west": "the_oldest_house:block/manor/boards",
+  "up": "the_oldest_house:block/manor/wet_boards",
+  "down": "the_oldest_house:block/manor/boards"
+ }
+}

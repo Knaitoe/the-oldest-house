@@ -1,0 +1,46 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:translucent",
+ "textures": {
+  "g": "the_oldest_house:block/manor/glazing",
+  "particle": "the_oldest_house:block/manor/glazing"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    7
+   ],
+   "to": [
+    16,
+    16,
+    9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#g"
+    },
+    "south": {
+     "texture": "#g"
+    },
+    "east": {
+     "texture": "#g",
+     "cullface": "east"
+    },
+    "west": {
+     "texture": "#g",
+     "cullface": "west"
+    },
+    "up": {
+     "texture": "#g",
+     "cullface": "up"
+    },
+    "down": {
+     "texture": "#g",
+     "cullface": "down"
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,43 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "n": "the_oldest_house:block/manor/note",
+  "e": "the_oldest_house:block/manor/note",
+  "particle": "the_oldest_house:block/manor/note"
+ },
+ "elements": [
+  {
+   "from": [
+    3,
+    0,
+    4
+   ],
+   "to": [
+    13,
+    0.5,
+    12
+   ],
+   "faces": {
+    "north": {
+     "texture": "#e"
+    },
+    "south": {
+     "texture": "#e"
+    },
+    "east": {
+     "texture": "#e"
+    },
+    "west": {
+     "texture": "#e"
+    },
+    "up": {
+     "texture": "#n"
+    },
+    "down": {
+     "texture": "#n"
+    }
+   }
+  }
+ ]
+}

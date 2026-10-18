@@ -6,8 +6,8 @@ become three visits with a real Mr. Harrigan, and then for the third visit to be
 have a screen from which the player can call and text him as its notes say; and then for the storytelling batch from the
 same review and a fix to the lake house's culvert, where the reader pushes the canoe along the walls by hand; and then for
 the review's larger storytelling fixes; and then for a polish of the lake house.
-The candidate is 0.4.105 on verified 0.4.104 (fd6a73f). Protocol 77 (the phone's screen adds two packets); layout 45 is
-unchanged. 46 sources / 35 resolutions / two kinds / three endings are unchanged.
+The candidate is 0.4.105 on verified 0.4.104 (fd6a73f). Protocol 78 (the phone's screen adds two packets, and the
+rebuilt thin rooms two blocks); layout 45 is unchanged. 46 sources / 35 resolutions / two kinds / three endings are unchanged.
 
 ## Floorboards: the room has its hatchet
 
@@ -247,6 +247,42 @@ Three rooms that played thin. Bly keeps its timing and the old man's story is op
   none of them his, and he never found out where his own sword went. It grants no Witness credit and the cabin stays
   in the deal.
 
+## The thin rooms rebuilt
+
+The Masque and Bly are built whole now, the way the child's room and the cottage are: their own builders (`MasqueSuite`,
+`BlyManor`) and their own blocks, and the polish, composition, review and playtest passes leave them alone. Every place the
+story counts by is where it was. `tools/generate_thin_rooms_assets.py` draws 72 textures in vanilla's style (nothing
+sampled), with the models and states: one `masque` block (19 kinds, seven colour stages, 532 states) and one `manor` block
+(26 kinds, four stages, 416 states).
+
+- **The Masque is Poe's suite.** Seven chambers in their colours (blue, purple, green, orange, white, violet, black), each
+  hung in velvet of its colour with ebony pilasters, a gilt cornice and a coffered ceiling, on parquet. They wind: the
+  doorway out of each is off to the other side of the one in, so a reader sees little more than one room at a time. In the
+  middle of each side wall is a tall Gothic window of three leaded lancets in the room's colour; behind it a closed corridor
+  follows the suite with a brazier on a tripod opposite every window, and that firelight through the glass is the only
+  light: there is no lamp or candle inside. The seventh is black velvet from ceiling to carpet, its panes scarlet, and the
+  gigantic ebony clock (base, pendulum case, dial and crown in a three-wide cabinet) stands against its far wall. Its
+  pendulum swings (an animated texture) and its hands stand at three minutes to the hour; a reader who stops it sees the
+  pendulum hang still and both hands at twelve, and nobody else does. A hand on any part of the clock up to its face
+  counts. Divans against the walls, two masks on each near wall, an empty musicians' dais with three music stands in the
+  fourth room; the steward's invitation lies on a silver salver on an ebony stand by the door, and the account's ledger is
+  set on a stand in the black room.
+- **Bly is a manor's ground floor at night.** The front door opens on a flagged hall (a wet doormat, the hall clock
+  stopped, an umbrella stand, a portrait), then a panelled corridor: dark oak wainscot, green damask,
+  plaster cornice and ceiling, brass candle sconces, and its boards wet down one narrow line (her lane) from the door to
+  the pond. Three linen cupboards stand in each corridor wall, panelled presses three deep with shelves of linen and a brass
+  catch on the inside of the door; only standing inside one counts as hiding now (`BlyManor.cupboardDoor`), not anywhere
+  off the corridor. Off the corridor are the drawing room (the house's one fire in a brick chimney breast with a marble
+  shelf, armchairs, a sofa, a rug), the library (a wall of shelves, a desk), the schoolroom (a blackboard, two small desks,
+  a globe, the girl's dolls' house with a face at its attic window) and the children's room (two beds). Portraits of a
+  woman with a blank face, a boy, a girl and the master hang through the house. At the end, through a brick arch, the
+  conservatory: glass on white-painted iron with the night behind it, a glazed roof, stone flags, potted ferns and
+  azaleas, wicker chairs, two lanterns, and the pond flush with the floor (weed under the water, pads off her line). The
+  gardener's note and the account lie on his potting bench.
+- **The old man's porch.** The old cabin's landing is a weathered timber porch on worn boards, with posts and beams, a
+  chair and a rag rug, instead of a grey terracotta box. The lamp that spells his name is an iron-framed signal lamp,
+  warm when lit and smoked dark between letters, instead of a sea lantern and grey concrete.
+
 ## Validation scope
 
 - **Floorboards:** both pry cases now first try the board by hand: it stays, the event is refused and the noise does not
@@ -284,6 +320,14 @@ Three rooms that played thin. Bly keeps its timing and the old man's story is op
   stands their own dancers still and readies their account while the world's clock and a later reader's dancers keep
   going; the old man tells one part for each visit's whole name, never for part of one or yesterday's, and not again
   once told.
+- **Thin rooms rebuilt (new case, and updated ones):** each Masque chamber has a window of its own colour in each side
+  wall with a burning brazier opposite and no light inside; each opens on to the next only off to one side; the seventh
+  is black velvet to the carpet and holds the clock. Bly's six cupboards have shut doors and only their insides count;
+  the corridor's boards are wet along her lane and nothing stands in her way from the hall to the pond, which is deep
+  where she goes under; the drawing room has the fire; the note and the account lie on the bench; the scenery passes
+  leave both rooms as built. The Bly motion case hides its reader inside a cupboard and stands the observer in the hall;
+  the Masque case checks the clock's own face. The architecture test reads the invitation and the note as their sources
+  and counts the manor's rugs.
 - **Phone screen (client proof):** three native views of the screen (home, messages, a voicemail call with its input),
   saved as `native-phone-0..2.png` and required by the build job.
 - **Run 39140034350 (34bc996):** ten of twelve jobs passed. The build job's only failure was the Harrigan pose case, which
