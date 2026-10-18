@@ -41,10 +41,13 @@ public final class LakeHouseCompletionTests {
         returnVisit(f,p);at(f,p,7.5,0,-173.5);readTick(f,p,5);f.h.assertTrue(LakeHouseGear.has(p,LakeHouseRegistry.HELMET.get()),"visit two lends the helmet at the raft");
         at(f,p,.5,-24,-175.5);readTick(f,p,5);at(f,p,7.5,0,-173.5);readTick(f,p,5);f.h.assertTrue(own(f,p).getInt("Beat")==2,"the actual back of the ground floor and return earn beat two");
         returnVisit(f,p);at(f,p,7.5,0,-173.5);readTick(f,p,5);f.h.assertTrue(LakeHouseGear.has(p,LakeHouseRegistry.TANKS.get()),"visit three lends the tanks");
+        at(f,p,-2.5,-24.5,-175.5);p.lookAt(EntityAnchorArgument.Anchor.EYES,f.base().offset(LakeHouseInterior.CLOSET).getCenter());readTick(f,p,10);
+        f.h.assertTrue(own(f,p).getBoolean("ClosetHint0505"),"bubbles round the study wardrobe show the way down without saying it");
         at(f,p,-5.5,-19,-166.5);p.lookAt(EntityAnchorArgument.Anchor.EYES,f.base().offset(LakeHouseInterior.DRESSING).getCenter());readTick(f,p,5);
         at(f,p,3.5,-19,-164.5);readTick(f,p,5);at(f,p,5.5,-40,-175.5);readTick(f,p,5);at(f,p,7.5,0,-173.5);readTick(f,p,5);
         f.h.assertTrue(own(f,p).getInt("Beat")==3&&own(f,p).getBoolean("HomePending"),"the dressing room, bedroom and pool earn the third return and the private home haunting");
-        returnVisit(f,p);at(f,p,5.5,-40,-165.5);readTick(f,p,LakeHouseStory.SAUNA_TICKS+10);
+        returnVisit(f,p);at(f,p,-2.5,-24.5,-175.5);readTick(f,p,10);f.h.assertTrue(own(f,p).getBoolean("WarmHint0505"),"on the last visit warm water rising behind the wardrobe points to the sauna");
+        at(f,p,5.5,-40,-165.5);readTick(f,p,LakeHouseStory.SAUNA_TICKS+10);
         f.h.assertTrue(own(f,p).getBoolean("Lit")&&own(f,p).getBoolean("HelloStage")&&!own(f,p).getBoolean("Ready"),"the fourth visit's actual sauna wait lights the house without granting an ending");
     }
     private static void empty(LakeHouseTests.Fixture f){var b=LakeHouse.emptyBase(f.in.getServer());LakeHouse.buildEmpty(f.out,b);LabyrinthBuilder.registerDoors(f.data(),LabyrinthPlace.LAKE_HOUSE_EMPTY,b);}
@@ -65,6 +68,11 @@ public final class LakeHouseCompletionTests {
     @GameTest(template="empty",batch="lake_house_lights",timeoutTicks=800)
     public static void leavingThroughTheHalfDoorKeepsOnlyThisReadersLightsOn(GameTestHelper h){
         var f=new LakeHouseTests.Fixture(h);var p=f.player("lake_lights");var peer=f.player("lake_dark");f.ready(()->{try{hello(f,p);
+            // As after a blackout on the raft: swimming back in through the half door is not leaving.
+            var back=own(f,p);back.putBoolean("InsideLit0505",false);LiteraryVignettes.save(f.data(),p.getUUID(),PLACE,back);
+            at(f,p,.5,-24,-159.5);readTick(f,p,5);h.assertTrue(!own(f,p).getBoolean("Ready"),"coming back in through the half door is not leaving the lit house");
+            at(f,p,.5,-24,-164.5);readTick(f,p,5);p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST,ItemStack.EMPTY);p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD,ItemStack.EMPTY);
+            LakeHouseDive.setAir(p,20);LakeHouseDive.breathe(p,f.base());h.assertTrue(p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER)&&p.getAirSupply()>20,"inside the lit house the reader breathes without gear");
             at(f,p,.5,-24,-159.5);readTick(f,p,110);h.assertTrue(LakeHouse.LEFT_THE_LIGHTS_ON.equals(own(f,p).getString("Outcome"))&&own(f,p).getBoolean("Lit")&&!own(f,peer).getBoolean("Lit"),"the actual half-door exit keeps just one reader's lights");
             h.assertTrue(p.getInventory().countItem(LakeHouseRegistry.HOUSE_LIGHT.get())==1&&!LakeHouse.empty(p),"one house light and the original physical house");
             for(var lamp:LakeHouseInterior.LAMPS)h.assertTrue(!f.out.getBlockState(f.base().offset(lamp)).getValue(LakeHouseFittingBlock.LIT),"the server's shared lamps stay dark for other readers");

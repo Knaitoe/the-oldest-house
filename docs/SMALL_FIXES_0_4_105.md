@@ -5,7 +5,7 @@ then (before it was verified) for the Floorboards hint to become a hatchet in th
 become three visits with a real Mr. Harrigan, and then for the third visit to be a real funeral home and for the phone to
 have a screen from which the player can call and text him as its notes say; and then for the storytelling batch from the
 same review and a fix to the lake house's culvert, where the reader pushes the canoe along the walls by hand; and then for
-the review's larger storytelling fixes.
+the review's larger storytelling fixes; and then for a polish of the lake house.
 The candidate is 0.4.105 on verified 0.4.104 (fd6a73f). Protocol 77 (the phone's screen adds two packets); layout 45 is
 unchanged. 46 sources / 35 resolutions / two kinds / three endings are unchanged.
 
@@ -200,6 +200,32 @@ instead of retelling the same chase:
 **Controls in one voice.** Instructions inside scenes (the Harrigan funeral's casket, Model Home's doorway) are the House's
 grey italic small print, as the source hints are, rather than lines in the scene's own voice.
 
+## The lake house
+
+Four visits stay. What changed:
+
+- **The ending choice works.** Once the lights came on, "Left the lights on" fired whenever the reader was just outside
+  the front door, whichever way they were going. A reader who ran out of air woke on the raft and, swimming back in, was
+  given that ending without choosing it, so "Said hello" (the book's own ending) was the hardest to reach. Now the door
+  counts only for a reader who has been inside the lit house and comes out through it; waking on the raft and coming back
+  in does not count.
+- **The lit house breathes for the reader.** With every lamp on, a reader inside the house (basement and sauna included)
+  needs no air, so the figure upstairs, the dry chair and the half door are all real choices. The lights coming on now say
+  so: "Every lamp comes on, and the water in the house is suddenly easy to breathe."
+- **The way down is shown.** The third visit needs the pool behind the study wardrobe, and the fourth needs the sauna;
+  nothing pointed at either. Now, until someone opens it, bubbles leak round the study wardrobe for a reader on the tanks
+  visit (with the sound of them, and "Bubbles are leaking out round the edges of the wardrobe." the first time they see
+  it); on the last visit steam rises up the stair behind it ("Warm water is coming up the stair behind the wardrobe.").
+  These are the reader's own, so a reader without Tess sees them too. Tess, when she is there, says it in her own words:
+  bubbles round the wardrobe in the study on the third visit, and on the fourth that the water on her floor was warm,
+  like that room by the pool.
+- **The figure puts on the dress.** Once the lights are on, the black dress comes down over the wax figure while the
+  reader climbs to it.
+- **Upstairs is lived in.** The empty back room on the left is a child's room (a bed, a desk with a candle, a wardrobe,
+  shelves, its own lamp); each bedroom has a nightstand and a wardrobe; the dressing room has a vanity; the eaves keep a
+  wardrobe, shelves, a table and a dress on its form. Nothing stands in the central route or a doorway. The house is the
+  same size; making it bigger is a separate change.
+
 ## Validation scope
 
 - **Floorboards:** both pry cases now first try the board by hand: it stays, the event is refused and the noise does not
@@ -229,6 +255,9 @@ grey italic small print, as the source hints are, rather than lines in the scene
 - **Lake nights (new case):** a reader new to the lake hears only what Proofrock says; one who walked among the
   congregation knows where the missing go, and Ray knows a boy from the shallows; the winter ribbon is on Hank's table by
   June; Hank's contest crowns her every year, with the ribbon that came back.
+- **Lake house (extended cases):** the tanks visit shows bubbles round the study wardrobe; the last visit shows warm water
+  rising behind it; swimming back in through the half door after the lights come on is not leaving; inside the lit house
+  a reader without gear breathes; going out through the door from inside keeps the lights on as before.
 - **Phone screen (client proof):** three native views of the screen (home, messages, a voicemail call with its input),
   saved as `native-phone-0..2.png` and required by the build job.
 - **Run 39140034350 (34bc996):** ten of twelve jobs passed. The build job's only failure was the Harrigan pose case, which
@@ -240,3 +269,6 @@ grey italic small print, as the source hints are, rather than lines in the scene
   on without it.
 - **Run 39155587807 (c808d1a):** every job failed to compile: one Devil's Rock call still passed the reader's name to the
   page it lays on the floor (fixed in afb3e43).
+- **Run 39156292190 (72e53d3):** live-multiplayer stopped on the server watchdog early in the expedition (phase 4 to 5).
+  The server thread was still logging twenty seconds before the watchdog fired, so the server had fallen steadily behind
+  rather than hanging on one tick; the run before got through the whole expedition.
