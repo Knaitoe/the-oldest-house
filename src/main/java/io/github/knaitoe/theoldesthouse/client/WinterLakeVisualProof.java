@@ -101,6 +101,6 @@ public final class WinterLakeVisualProof extends Screen {
         if(!proof.problems.isEmpty())throw new IllegalStateException("WINTER LAKE VIEW CHECK FAILED: "+String.join("; ",proof.problems));
         Files.writeString(dir.resolve("winter-lake-passed.txt"),"Three native Winter Lake views: the lake's ice, cattails, snowballs and her ribbon, the four boys in their winter things, and her upside down under the black ice; every lake texture, the ribbon's item model and each boy's skin are present.\n");
         TheOldestHouse.LOGGER.info("WINTER LAKE VIEW CHECK PASSED: three native views");
-        mc.setScreen(new CastVisualProof());
+        PhoneVisualProof.start();
     }
 }

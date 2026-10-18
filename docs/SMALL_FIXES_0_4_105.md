@@ -1,10 +1,11 @@
 # Small fixes from the vignette review, and Mr. Harrigan — 0.4.105
 
 On October 18 the owner asked for the smaller batch of fixes from the gameplay and storytelling review of every vignette,
-then (before it was verified) for the Floorboards hint to become a hatchet in the room, and for Mr. Harrigan's Phone to
-become three visits with a real Mr. Harrigan.
-The candidate is 0.4.105 on verified 0.4.104 (fd6a73f). Protocol 76 and layout 45 are unchanged; no saved state changes
-shape. 46 sources / 35 resolutions / two kinds / three endings are unchanged.
+then (before it was verified) for the Floorboards hint to become a hatchet in the room, for Mr. Harrigan's Phone to
+become three visits with a real Mr. Harrigan, and then for the third visit to be a real funeral home and for the phone to
+have a screen from which the player can call and text him as its notes say.
+The candidate is 0.4.105 on verified 0.4.104 (fd6a73f). Protocol 77 (the phone's screen adds two packets); layout 45 is
+unchanged. 46 sources / 35 resolutions / two kinds / three endings are unchanged.
 
 ## Floorboards: the room has its hatchet
 
@@ -68,16 +69,50 @@ Harrigan to be a rendered person with alive and dead states rather than an armor
 - **The second visit** is his study alone. He is dead in his chair; his phone lies on the table beside him. The doorway in
   the far wall is sealed in planks: there is no funeral yet. Taking his phone is this visit's beat. Carrying it out of the
   study resolves nothing; it is on its way to the funeral. Until his phone is taken, the study stays the study.
-- **The third visit** is the funeral, laid out in the same room. His chair is gone; chairs stand in rows facing the far wall,
-  where the doorway has been opened; his shelves are draped; the lectern holds a guest book ("In memory", signed by the
-  town); flowers stand on his table. Beyond the doorway he lies in his casket and three mourners stand by. Holding his phone
-  and right-clicking the casket buries it with him (`buried_phone`, and the reader's own phone reaches his number outside the
-  House, as before); leaving the funeral with it keeps it (`kept_phone`). The Witness story, its title and line are unchanged.
+- **The third visit** is his funeral, at a funeral home built in the same slot in place of the study (the study's
+  things are gone: no chair, no lectern, no shelves). Through the door is a foyer on dark oak boards: a standing sign
+  ("PEABODY & SONS / Funeral Home / Visitation for / Mr. Harrigan"), a guest book on a lectern ("In memory", signed by the
+  town), flowers on pedestals and benches along the walls. Beyond a panelled partition is the chapel: burgundy carpet, panelled
+  and papered walls, a red aisle between five rows of pews, lanterns on chains, and at the far end his casket between
+  flowers and candle stands, where he lies. Three mourners stand by, two at the casket and one at the chapel door. Holding
+  his phone and right-clicking the casket buries it with him (`buried_phone`, and the reader's own phone reaches his number
+  outside the House, as before); leaving the funeral with it keeps it (`kept_phone`). The Witness story, its title and line
+  are unchanged. If the visits were ever counted back, the study is built again.
 - **He is one scene actor** (`LiteraryActor`, roles `HARRIGAN` and `HARRIGAN_MOURNER`), drawn with his existing art and
   model: seated alive, his head turning toward the nearest reader and his chest rising; seated dead, slumped as it fell; laid
   in the casket. Blows do nothing, and there is nothing on him to strip. The same body is moved, never replaced. His
   mourners are scene actors too, each with their line. The old armor stand, its appearance component and its repair tick are
   gone (the mod is unreleased).
+
+## Mr. Harrigan's phone has a screen
+
+The phone's notes say: text him a creature's name from outside the House, once a day; a hostile species dies within 64
+blocks of the caller's Overworld bed at the next dawn; a harmless or named creature brings him in person; players can be
+named where the server allows it; nothing goes from inside the House; and his number answers only if his phone was buried
+with him. All of that already ran, but only by typing a name in chat. Using the phone (the reader's own, from the scratch
+ticket) now opens its screen, and the screen does what the notes say.
+
+- **Home:** the time back home in large figures (the phone keeps the Overworld clock, even in the House), signal bars or
+  "No service", and Mr. Harrigan's contact with the last message, a Call button and a Message button.
+- **Messages:** the thread with him, kept per reader (the last forty lines): the reader's texts on the right, anything that
+  comes back on the left, and quiet notes in the middle ("Delivered", "No answer.", "Call · his voicemail"). A box takes a
+  name and Send (or Enter) texts it to him. The reply is what the call already answered: a hostile species gets his
+  acknowledgement, a harmless one "Delivered", an unknown name "?", a forbidden one or a player where players are off his
+  scrambled "don't".
+- **Calls:** the phone rings out (a ringback tone). With his phone buried and the day's name not yet given, the line picks
+  up on his voicemail: "This is Harrigan. I don't pick up this phone. If you have a name for me, leave it after the tone."
+  then the tone, and a name left there counts as the day's text. Otherwise it rings until it gives up. In the House the
+  call fails at once: no service. If the reader kept his phone instead, calling his number makes *his* phone ring in their
+  pocket, and texts to him buzz there too: nothing reaches him.
+- **Once a day** holds across both: after the day's name, texts get "No answer." and calls ring out.
+- The screen replaces typing a name in chat after using the phone (the chat listener is gone), and the notes now say so
+  ("Use it to open it. Outside the House: call him, or text him a name." and "Try a hostile species, such as zombie. One a
+  day.").
+- A typed name is checked against online players first, then the nearest creature with that name, then a species, and
+  only then against players who have been on the server (a missing profile cache no longer matters, and a name that could
+  be no id no longer throws).
+- Six subtitled sounds (`tools/generate_phone_audio.py`): "Phone rings", "Line picks up", "Voicemail tone", "Message sent",
+  "Message received", "His phone rings". The server owns the thread and every outcome; the screen only shows what it is sent.
 
 ## Validation scope
 
@@ -89,7 +124,15 @@ Harrigan to be a rendered person with alive and dead states rather than an armor
   door of the room before, forgets the rooms past it, and a second move in the same chime does not put them back again.
 - **Harrigan:** the pose case follows one actor through all three visits (alive and seated, unharmed by a blow, with
   nothing to strip, persisting through NBT; dead in the same chair with the funeral sealed; taking his phone as the beat; laid
-  in the casket with the study made ready, the guest book and three mourners). The wake case checks the funeral is the third
+  in the casket in the funeral home: chair and lectern gone, the sign, the guest book, the pews, the aisle and three
+  mourners). The wake case checks the funeral is the third
   visit, that the study stays the study until his phone is taken, and that the mourners persist through a reload. The
   dialogue case keeps the phone through the study and resolves it on leaving the funeral. The layout-append case keeps his
   actor's identity and state.
+- **Phone (new case):** a connected call reaches his voicemail; a texted "zombie" is delivered and acknowledged and marks
+  the zombie for the next dawn by the caller's bed; a second name that day gets no answer and changes nothing, and a second
+  call rings out; the next day a name left on voicemail counts; with his phone kept, his number rings and buzzes in the
+  caller's pocket and nothing reaches him; inside the House nothing is delivered and calls have no service; the screen is
+  sent the clock, the line and the whole thread.
+- **Phone screen (client proof):** three native views of the screen (home, messages, a voicemail call with its input),
+  saved as `native-phone-0..2.png` and required by the build job.

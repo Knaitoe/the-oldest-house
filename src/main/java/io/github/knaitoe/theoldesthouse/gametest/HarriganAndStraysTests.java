@@ -130,10 +130,15 @@ public final class HarriganAndStraysTests {
                     var laid=f.bodies();
                     h.assertTrue(data.state(HarriganVignette.ID).getInt("Visit")==3&&laid.size()==1&&laid.getFirst().getUUID().equals(original)&&laid.getFirst().phase()==HarriganVignette.CASKET_PHASE
                             &&Math.abs(laid.getFirst().getZ()-(f.base.getZ()+HarriganVignette.CASKET.getZ()+.5))<.01,"the third visit lays the same body in his casket");
-                    h.assertTrue(f.level.getBlockState(f.base.offset(HarriganVignette.FUNERAL_DOOR)).isAir()&&f.level.getBlockState(f.base.offset(HarriganVignette.CHAIR)).isAir()
-                            &&!HarriganVignette.occupiesChair(f.level,f.base.offset(HarriganVignette.CHAIR)),"the study is made ready for the funeral: his chair gone, the far doorway open");
-                    var lectern=(net.minecraft.world.level.block.entity.LecternBlockEntity)f.level.getBlockEntity(f.base.offset(HarriganVignette.LECTERN));
-                    h.assertTrue(lectern.getBook().get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).title().raw().equals("In memory"),"the lectern holds the guest book");
+                    h.assertTrue(f.level.getBlockState(f.base.offset(HarriganVignette.FUNERAL_DOOR).above()).isAir()&&f.level.getBlockState(f.base.offset(-4,2,-13)).isAir()&&f.level.getBlockState(f.base.offset(HarriganVignette.CHAIR)).isAir()
+                            &&!HarriganVignette.occupiesChair(f.level,f.base.offset(HarriganVignette.CHAIR))&&!f.level.getBlockState(f.base.offset(HarriganVignette.LECTERN)).is(net.minecraft.world.level.block.Blocks.LECTERN),"the door opens on a funeral home: his study, its chair and its reading lectern are gone");
+                    var lectern=(net.minecraft.world.level.block.entity.LecternBlockEntity)f.level.getBlockEntity(f.base.offset(HarriganVignette.GUEST_BOOK));
+                    h.assertTrue(lectern.getBook().get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).title().raw().equals("In memory"),"the foyer's stand holds the guest book");
+                    var sign=(net.minecraft.world.level.block.entity.SignBlockEntity)f.level.getBlockEntity(f.base.offset(HarriganVignette.HOME_SIGN));
+                    h.assertTrue(sign.getFrontText().getMessage(0,false).getString().equals("PEABODY & SONS"),"the funeral home has its own sign");
+                    h.assertTrue(f.level.getBlockState(f.base.offset(HarriganVignette.CASKET)).is(LabyrinthRegistry.HARRIGAN_FINISH.get())
+                            &&f.level.getBlockState(f.base.offset(4,0,-8)).getBlock() instanceof net.minecraft.world.level.block.StairBlock
+                            &&f.level.getBlockState(f.base.offset(0,0,-10)).is(net.minecraft.world.level.block.Blocks.RED_CARPET),"his casket stands at the front of a chapel of pews either side of an aisle");
                     h.assertTrue(f.level.getEntitiesOfClass(LiteraryActor.class,f.bounds(),a->a.role()==LiteraryActor.HARRIGAN_MOURNER).size()==3,"three mourners stand at the funeral");
                     h.assertTrue(WitnessAccount.has(data,witness,WitnessAccount.Story.HARRIGAN),"another reader's evidence is untouched");h.succeed();
                 });
