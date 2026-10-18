@@ -28,6 +28,8 @@ public final class PawClutchClient {
     public static void accept(PawClutchPayload p){if(p.fingers()<0||p.fingers()>2)return;pending=p.fingers();wait=0;}
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){var mc=Minecraft.getInstance();if(pending<0)return;
         if(mc.player==null||!mc.player.isAlive()||mc.player.isSpectator()||mc.level==null||!mc.level.dimension().equals(HouseDimensions.INTERIOR)){pending=-1;return;}
+        // A level still loading (a reader carried across a door with the paw) is not time the view could have opened.
+        if(mc.screen instanceof net.minecraft.client.gui.screens.ReceivingLevelScreen)return;
         // The choice menu's native close packet must finish before the view opens.
         if(++wait>5&&mc.screen==null){int fingers=pending;pending=-1;mc.setScreen(new Focus(fingers));}else if(wait>80)pending=-1;
     }

@@ -57,12 +57,12 @@ public final class WitnessAccount {
         MOTHER("mother_of_strays", "The keeper", "release",
                 "She let something go. For a moment, keeping it safe and keeping it forever were different things."),
         SEANCE("seance","The empty chair","connection",
-                "They could hear the cupboard, but they could not see my hand. The album had names beneath its photographs. The final space had mine."),
+                "They could hear the cupboard, but they could not see my hand. The album had names beneath its photographs. The last were hers and the children's, in her own hand."),
         WALLPAPER("wallpaper_nursery","The pattern","understanding",
                 "I watched the shape cross the seams. Under four strips of paper she had kept her own words. I read the last page before I left."),
         HOTEL("hotel","The closing account","understanding","I was in the photograph. I took the key from the snow, read the log and vented the plant. The desk had kept my missing things. I read the closing account before I left."),
-        HILL_NURSERY("hill_nursery","The returned knocks","understanding","The cellar returned every knock I made. Upstairs, my name had been written beside the cold door."),
-        MINIATURES("miniatures","The little rooms","memory","I recognized the rooms on the tables. The latest figure wore my face; another figure stood behind it."),
+        HILL_NURSERY("hill_nursery","The returned knocks","understanding","The cellar returned every knock I made. Upstairs, beside the cold door, the children in the photograph had grown up."),
+        MINIATURES("miniatures","The little rooms","memory","I recognized the rooms on the tables. In the latest, someone stood just behind my figure, in a room I had crossed alone."),
         MASQUE("masque","The last clock","release","I crossed seven colored rooms and put my hand on the clock. The next chime never came."),
         USHER("usher","The coffin lid","understanding","I returned to the consequence of the lid I had chosen. The sound had followed the stone."),
         WINCHESTER("winchester","The upper ledger","understanding","A long stair had gained one floor. The ledger at its end bought another day of construction."),
@@ -79,11 +79,11 @@ public final class WitnessAccount {
         MOVIE_NIGHT("movie_night","The flashes over water","survival","Each burst showed her nearer the canoe and held her where it found her. I rowed in the dark between them until the pier was under my hands."),
         WINTER_LAKE("winter_lake","The dare","survival","I carried her ribbon out to the hole where she went down and gave it back. Then I walked to the bank as quietly as I could."),
         CAMP_BLOOD("camp_blood","The service road","survival","The essay had remembered an ordinary summer. I escaped beyond the last cabin before that summer returned."),
-        DEVILS_ROCK("devils_rock","The eight loose pages","memory","I read the eight pages in order. The last one reached this room without a person bringing it."),
+        DEVILS_ROCK("devils_rock","The eight loose pages","memory","I read the eight pages in order. The last one asked me to tell him the path was still there."),
         WHEEL("wheel","The numbered doors","memory","I found Mother beyond the numbered doors. The front door finally opened onto an outside where I could stand up."),
         GHOSTS_SET("ghosts_set","The tape and the cut","connection","I returned to film the family. My frame kept some things and missed others. I left my own account beside the production's cut."),
         END_WORLD_CABIN("end_world_cabin","The visitors at dusk","release","I answered the visitors for myself. The screen held the consequence after my answer."),
-        FAMILY_COPY("family_copy","The house they remembered","memory","They welcomed me into a house I had actually lived in. I returned until their welcome ended."),
+        FAMILY_COPY("family_copy","The house they remembered","memory","They welcomed me into a house I had actually lived in, and thanked me at the door for looking after it."),
         THREE_FINGERS("three_fingers","The last finger","release","I took the paw out of the fire and wished on it. Every wish came true in the worst way it could. I chose how the last finger fell."),
         LAKE_HOUSE("lake_house","The house in the third lake","connection","There was a house on the bottom of the lake, and every time we went down it let us a little further in. We kept to one rule and didn't ask how. In the end I went back to meet whoever lived there."),
         BORRASCA("borrasca","The names brought out of Drisking","understanding","I returned to the town, followed its ordinary machinery and brought an original account of its crimes back through the door. The thing in the mountain was people whom the town already knew.");
@@ -143,7 +143,10 @@ public final class WitnessAccount {
     public static boolean resolve(LabyrinthData data,UUID player,Story story,String outcome){
         if(has(data,player,story))return false;
         CompoundTag record=record(data,player),stories=record.getCompound("Stories");
-        stories.putString(story.id,outcome);record.put("Stories",stories);save(data,player,record);ExpeditionRhythm.request(data,player);return true;
+        stories.putString(story.id,outcome);record.put("Stories",stories);
+        // 0.4.105: the order rooms ended in, so the account reads as this reader's own journey.
+        var order=record.getList("Order",net.minecraft.nbt.Tag.TAG_STRING);order.add(net.minecraft.nbt.StringTag.valueOf(story.id));record.put("Order",order);
+        save(data,player,record);ExpeditionRhythm.request(data,player);return true;
     }
     public static void resolve(ServerPlayer player,Story story,String outcome){
         if(player.isSpectator()||FinaleProgress.terminal(FinaleProgress.phase(player.server,player.getUUID())))return;
@@ -157,6 +160,16 @@ public final class WitnessAccount {
                     ?"A passage in your account is readable now. It describes a cell."
                     :"You can set this part of the account down now."),false);
         }
+    }
+    /**
+     * Resolved stories in the order this reader ended them (0.4.105). Records older than that order have no list, so their
+     * stories follow, as before, in the order the House added them.
+     */
+    public static List<Story> inOrder(CompoundTag record){
+        var ordered=new ArrayList<Story>();var order=record.getList("Order",net.minecraft.nbt.Tag.TAG_STRING);
+        for(int i=0;i<order.size();i++){Story story=Story.of(order.getString(i));if(story!=null&&!ordered.contains(story))ordered.add(story);}
+        for(Story story:Story.values())if(!ordered.contains(story))ordered.add(story);
+        return ordered;
     }
     public static boolean readPlay(LabyrinthData data,UUID player){return record(data,player).getBoolean("ReadPlay");}
     public static void markRead(LabyrinthData data,UUID player){
@@ -183,7 +196,7 @@ public final class WitnessAccount {
             pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,"OTHER ENDINGS\n\n"+missing+"\n\nThe account needs another kind of ending."));
         }
         CompoundTag stories=record(data,player).getCompound("Stories");
-        for(Story story:Story.values())if(stories.contains(story.id)){
+        for(Story story:inOrder(record(data,player)))if(stories.contains(story.id)){
             String text=stories.getString(story.id).equals("aftermath")
                     ?"Someone reached this room before me. I examined what remained.\n\n"+switch(story){
                         case FLOORBOARDS->"The board was gone. The floor was quiet. There had been somebody waiting beside the bed.";

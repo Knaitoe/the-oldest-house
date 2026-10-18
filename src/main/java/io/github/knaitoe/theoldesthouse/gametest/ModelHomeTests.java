@@ -4,9 +4,11 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDealer;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
+import io.github.knaitoe.theoldesthouse.labyrinth.LiteraryVignettes;
 import io.github.knaitoe.theoldesthouse.labyrinth.ModelHome;
 import io.github.knaitoe.theoldesthouse.labyrinth.VignetteYields;
 import java.util.List;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -112,6 +114,24 @@ public final class ModelHomeTests {
         helper.assertTrue(ModelHome.nextVisit(ModelHome.FINAL_VISIT, true) == ModelHome.FINAL_VISIT, "and there is no visit after the last");
         helper.assertTrue(ModelHome.stackedChairs(1).size() == 6 && ModelHome.stackedChairs(2).size() == 8
                 && ModelHome.stackedChairs(3).size() == 9, "the stack grows each visit");
+        helper.succeed();
+    }
+
+    /** 0.4.105: a personal story is begun by the reader's own visits; another reader's progress weighs nothing for them. */
+    @GameTest(template = "empty")
+    public static void aPersonalStoryBegunByThisReaderIsDealtMoreOftenToThem(GameTestHelper helper) {
+        LabyrinthData data = new LabyrinthData();
+        UUID reader = UUID.randomUUID(), other = UUID.randomUUID();
+        LabyrinthPlace room = LabyrinthPlace.LAKE_HOUSE;
+        helper.assertTrue(room.isMultiVisit() && LabyrinthDealer.dealWeight(data, reader, room) == 1, "before the reader has been, it is as likely as any other");
+        CompoundTag own = LiteraryVignettes.personal(data, reader, room);
+        own.putInt("Visit", 2);
+        LiteraryVignettes.save(data, reader, room, own);
+        helper.assertTrue(LabyrinthDealer.dealWeight(data, reader, room) == LabyrinthDealer.UNFINISHED_WEIGHT && LabyrinthDealer.dealWeight(data, other, room) == 1,
+                "begun by this reader, it comes up more for them only");
+        own.putBoolean("Completed", true);
+        LiteraryVignettes.save(data, reader, room, own);
+        helper.assertTrue(LabyrinthDealer.dealWeight(data, reader, room) == 1, "finished, it is no longer weighted");
         helper.succeed();
     }
 

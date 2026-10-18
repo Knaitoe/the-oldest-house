@@ -46,7 +46,7 @@ public final class LakeHouseCanoe extends Boat {
     private @Nullable UUID owner;
     private boolean inCulvert;
     private int scrapeTicks;
-    private boolean handLeft,handRight,handForward;
+    private boolean handLeft,handRight,handForward,handBack;
 
     public LakeHouseCanoe(EntityType<? extends Boat> type,Level level){super(type,level);setInvulnerable(true);}
     @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(CHIPS,0);b.define(PUSH_SIDE,0);b.define(PUSH_TICKS,0);}
@@ -60,31 +60,67 @@ public final class LakeHouseCanoe extends Boat {
         if(passenger instanceof Player player)CanoeRiderPose.apply(player,underLowRoof());
         super.positionRider(passenger,move);
     }
-    public boolean underLowRoof(){var above=blockPosition().above(2);return isVehicle()&&!level().getBlockState(above).getCollisionShape(level(),above).isEmpty();}
+    /**
+     * Under the culvert's roof anywhere along the hull. Each bench sits well forward or aft of the hull's centre, so a
+     * reader ducks before their head reaches the ceiling, whichever way the canoe is going.
+     */
+    public boolean underLowRoof(){
+        if(!isVehicle())return false;var along=heading(getYRot());
+        for(double reach:new double[]{-.95,0,.95}){
+            var above=BlockPos.containing(getX()+along.x*reach,getY(),getZ()+along.z*reach).above(2);
+            if(!level().getBlockState(above).getCollisionShape(level(),above).isEmpty())return true;
+        }
+        return false;
+    }
     public int pushSide(){return entityData.get(PUSH_TICKS)>0?entityData.get(PUSH_SIDE):0;}
     public float pushAge(float partial){return STROKE_TICKS-entityData.get(PUSH_TICKS)+partial;}
-    private Vec3 forward(){double yaw=Math.toRadians(getYRot());return new Vec3(-Math.sin(yaw),0,Math.cos(yaw));}
-    /** A hand must reach a real solid wall; air and water supply no propulsion. */
+    private static Vec3 heading(float yaw){double r=Math.toRadians(yaw);return new Vec3(-Math.sin(r),0,Math.cos(r));}
+    /**
+     * The way the culvert runs, as the facing nearest the hull's own: no paddle can turn the canoe under the roof, so it
+     * lines itself up with the water rather than jamming crosswise between the walls.
+     */
+    public float channelYaw(){
+        var at=BlockPos.containing(getX(),getY()+.3,getZ());
+        int alongZ=open(at,net.minecraft.core.Direction.NORTH)+open(at,net.minecraft.core.Direction.SOUTH);
+        int alongX=open(at,net.minecraft.core.Direction.EAST)+open(at,net.minecraft.core.Direction.WEST);
+        float yaw=net.minecraft.util.Mth.wrapDegrees(getYRot());
+        if(alongZ>=alongX)return Math.abs(net.minecraft.util.Mth.wrapDegrees(yaw-180))<=90?180:0;
+        return Math.abs(net.minecraft.util.Mth.wrapDegrees(yaw-90))<=90?90:-90;
+    }
+    private int open(BlockPos at,net.minecraft.core.Direction d){
+        int n=0;for(;n<3;n++){var cell=at.relative(d,n+1);if(!level().getBlockState(cell).getCollisionShape(level(),cell).isEmpty())break;}return n;
+    }
+    /** Along the culvert, and the reader's own right hand across it. */
+    private Vec3 forward(){return heading(channelYaw());}
+    private Vec3 right(){var f=forward();return new Vec3(-f.z,0,f.x);}
+    /** A hand must reach a real solid wall on its own side (-1 left, 1 right); air and water supply no propulsion. */
     public boolean wallWithinReach(int side){
-        if(side!=-1&&side!=1)return false;var f=forward();var across=new Vec3(f.z,0,-f.x).scale(side);
+        if(side!=-1&&side!=1)return false;var f=forward();var across=right().scale(side);
         // A native 1.375-wide hull can sit against either wall of the two-wide channel.
         // The opposite wall is then 1.3125 away; a 1.2 reach stranded an off-centre original.
         var from=position().add(0,.6,0).add(f.scale(.35));var end=from.add(across.scale(1.35));
         if(!level().hasChunkAt(BlockPos.containing(end)))return false;
         return level().clip(new ClipContext(from,end,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,this)).getType()==HitResult.Type.BLOCK;
     }
-    /** The same bounded stroke is predicted locally and checked against the server's actual canoe and walls. */
-    public boolean push(Player player,int side){
-        if(!player.isAlive()||player.isSpectator()||player.getVehicle()!=this||getFirstPassenger()!=player||!underLowRoof()||entityData.get(PUSH_TICKS)>0||side==entityData.get(PUSH_SIDE)||!wallWithinReach(side))return false;
-        var f=forward();var away=new Vec3(f.z,0,-f.x).scale(-side*.085);
-        var motion=getDeltaMovement().add(f.scale(.12)).add(away);var horizontal=motion.multiply(1,0,1);
+    /**
+     * One hand pushes off its own wall: the canoe goes along the culvert (back out, for a back stroke, {@code side} ±2) and
+     * a little away from that wall. The same bounded stroke is predicted locally and checked against the server's actual
+     * canoe and walls; the server allows a few ticks for the packet to arrive.
+     */
+    public boolean push(Player player,int stroke){
+        int side=Integer.signum(stroke);boolean back=Math.abs(stroke)==2;
+        if(side==0||Math.abs(stroke)>2)return false;
+        if(!player.isAlive()||player.isSpectator()||player.getVehicle()!=this||getFirstPassenger()!=player||!underLowRoof()
+                ||entityData.get(PUSH_TICKS)>(level().isClientSide?0:3)||BodyLoss.missing(player)==(side<0?net.minecraft.world.entity.HumanoidArm.LEFT:net.minecraft.world.entity.HumanoidArm.RIGHT)||!wallWithinReach(side))return false;
+        var away=right().scale(-side*.085);
+        var motion=getDeltaMovement().add(forward().scale(back?-.13:.13)).add(away);var horizontal=motion.multiply(1,0,1);
         if(horizontal.lengthSqr()>.22*.22)horizontal=horizontal.normalize().scale(.22);
         setDeltaMovement(new Vec3(horizontal.x,motion.y,horizontal.z));entityData.set(PUSH_SIDE,side);entityData.set(PUSH_TICKS,STROKE_TICKS);
         if(!level().isClientSide)level().playSound(null,getX(),getY(),getZ(),LakeHouseRegistry.SCRAPE.get(),SoundSource.NEUTRAL,.4F,1.1F);
         return true;
     }
     @Override public void setInput(boolean left,boolean right,boolean up,boolean down){
-        handLeft=left;handRight=right;handForward=up;
+        handLeft=left;handRight=right;handForward=up;handBack=down;
         if(underLowRoof())super.setInput(false,false,false,false);else super.setInput(left,right,up,down);
     }
 
@@ -113,15 +149,25 @@ public final class LakeHouseCanoe extends Boat {
         int remaining=entityData.get(PUSH_TICKS);if(remaining>0)entityData.set(PUSH_TICKS,remaining-1);
         boolean low=underLowRoof();
         if(low&&level().isClientSide&&isControlledByLocalInstance()&&getFirstPassenger() instanceof Player player){
-            int side=handLeft&&!handRight?-1:handRight&&!handLeft?1:handForward?-entityData.get(PUSH_SIDE):0;
-            if(side==0&&handForward)side=wallWithinReach(-1)?-1:1;
-            if(side!=0&&push(player,side))net.neoforged.neoforge.network.PacketDistributor.sendToServer(new io.github.knaitoe.theoldesthouse.network.CanoePushPayload(side));
+            // Left or right uses that hand, stroke after stroke; forward or back goes hand over hand (one hand, if that
+            // is all the reader has).
+            boolean back=handBack&&!handForward;int side=handLeft&&!handRight?-1:handRight&&!handLeft?1:0;
+            if(side==0&&(handForward||back)){
+                var missing=BodyLoss.missing(player);
+                side=missing==net.minecraft.world.entity.HumanoidArm.LEFT?1:missing==net.minecraft.world.entity.HumanoidArm.RIGHT?-1
+                        :entityData.get(PUSH_SIDE)!=0?-entityData.get(PUSH_SIDE):wallWithinReach(-1)?-1:1;
+            }
+            int stroke=back?side*2:side;
+            if(side!=0&&push(player,stroke))net.neoforged.neoforge.network.PacketDistributor.sendToServer(new io.github.knaitoe.theoldesthouse.network.CanoePushPayload(stroke));
         }
         super.tick();
-        if(low&&isControlledByLocalInstance())setDeltaMovement(getDeltaMovement().multiply(.94,1,.94));
+        if(low&&isControlledByLocalInstance()){
+            setDeltaMovement(getDeltaMovement().multiply(.94,1,.94));
+            setYRot(net.minecraft.util.Mth.approachDegrees(getYRot(),channelYaw(),4F));
+        }
         if(!low){entityData.set(PUSH_TICKS,0);entityData.set(PUSH_SIDE,0);}
         if(low&&!level().isClientSide){
-            if(!inCulvert){chip();for(var e:getPassengers())if(e instanceof ServerPlayer p)p.displayClientMessage(Component.literal("Too low for the paddles. Hold forward to alternate hand pushes; left or right reaches for that wall."),true);}
+            if(!inCulvert){chip();for(var e:getPassengers())if(e instanceof ServerPlayer p)p.displayClientMessage(Component.literal("Too low to paddle. Hold forward to push along the walls hand over hand, or back to push out again. Left or right uses that hand."),true);}
             double dx=getX()-xo,dz=getZ()-zo;
             if(--scrapeTicks<=0&&dx*dx+dz*dz>1e-4){level().playSound(null,getX(),getY(),getZ(),LakeHouseRegistry.SCRAPE.get(),SoundSource.NEUTRAL,.7F,.9F+random.nextFloat()*.2F);scrapeTicks=30;}
         }

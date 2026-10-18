@@ -3,7 +3,8 @@
 On October 18 the owner asked for the smaller batch of fixes from the gameplay and storytelling review of every vignette,
 then (before it was verified) for the Floorboards hint to become a hatchet in the room, for Mr. Harrigan's Phone to
 become three visits with a real Mr. Harrigan, and then for the third visit to be a real funeral home and for the phone to
-have a screen from which the player can call and text him as its notes say.
+have a screen from which the player can call and text him as its notes say; and then for the storytelling batch from the
+same review and a fix to the lake house's culvert, where the reader pushes the canoe along the walls by hand.
 The candidate is 0.4.105 on verified 0.4.104 (fd6a73f). Protocol 77 (the phone's screen adds two packets); layout 45 is
 unchanged. 46 sources / 35 resolutions / two kinds / three endings are unchanged.
 
@@ -114,6 +115,58 @@ ticket) now opens its screen, and the screen does what the notes say.
 - Six subtitled sounds (`tools/generate_phone_audio.py`): "Phone rings", "Line picks up", "Voicemail tone", "Message sent",
   "Message received", "His phone rings". The server owns the thread and every outcome; the screen only shows what it is sent.
 
+## The lake house's culvert
+
+Under the service drive the canoe is pushed along by hand. Four things were wrong with it:
+
+- **The hands were mirrored.** Each stroke checked the wall on the far side and pushed the canoe toward the wall the
+  animated hand was touching. A hand now pushes off its own wall: forward along the culvert and a little away from it.
+- **One hand could only push once.** The same hand was refused twice in a row, so holding left or right (as the hint said)
+  gave one stroke and then nothing. Left or right now repeats that hand; forward goes hand over hand (one hand, for a
+  reader who has only one).
+- **Nothing reversed or straightened it.** Back now pushes back out. Under the roof the canoe lines itself up with the
+  culvert, and strokes run along it rather than along the hull, so a canoe that came in askew cannot jam crosswise.
+- **The reader ducked late.** They ducked only once the canoe's middle was under the roof, but they sit well forward of it.
+  The roof is now looked for along the whole hull, so both benches duck before a head reaches the ceiling.
+
+The hint now reads "Too low to paddle. Hold forward to push along the walls hand over hand, or back to push out again.
+Left or right uses that hand." The push packet is unchanged in shape (a back stroke doubles the hand's side).
+
+## The storytelling batch
+
+From the storytelling half of the review:
+
+- **The same turn in too many rooms.** "Your name was already there" stays where it is earned (Confession, Last Stop,
+  Whale). The others get their own:
+  - Hill Nursery: beside the cold door hangs a photograph of the two children grown, in clothes from years the house has not
+    reached.
+  - Miniatures: in the latest little room a second figure stands just behind the reader's own, in a room they crossed
+    alone (the dark figure the tables already showed).
+  - Séance: the album's last space holds the mother's own name and her children's, in the hand that writes the letters,
+    dated to the first of the three days she cannot account for.
+  - Devil's Rock: the last loose page asks whoever finds it to tell him the path was still there.
+  - Family Copy: the family know the reader's rooms better than they do, and at the end the father thanks them at the door
+    for minding the place while the family was away.
+  Their Witness lines follow.
+- **Rules in characters' mouths.** The papers that switched to instructions (Miniatures, Usher, Devil's Rock, Wheel,
+  Family Copy) are back in their writers' voices. The bare rule is given once, as a grey line in chat, when that paper has
+  been read through (the action bar would be hidden behind the open book). Karen's note no longer says "Click it", and the
+  hotel's unsettled account reads as an account rather than a checklist.
+- **Holloway's honest reader.** A reader who comes three times and takes nothing hears him say so ("You came three times
+  and left it all where it was. I counted. There's nothing here you need. Go on."), and the camp is not dealt to them
+  again. It is acknowledged, not counted: his resolution is still the hunt.
+- **Confession's payoff** is written, not tabled: only what there is to count, in words; and a listener whose hands stayed
+  empty gets its own lines instead of four zeros. Its account is paged now, like the other long ones.
+- **One afterword, twenty-five times.** The shared "I folded the paper along its old crease" page is gone; each account
+  ends on its own last line.
+- **The Witness account reads in order.** It now saves the order rooms ended in and lists them that way; records saved
+  before this keep the House's order.
+- **Ghosts and Borrasca say less.** The doctor's lines about testimony are concrete now ("She answered before he finished
+  asking. I'd like to know who told her the question."). Borrasca states its point once, in the register's own framing.
+- **Begun stories come up more, for personal stories too.** The dealer's extra weight for a begun, unfinished multi-visit
+  story read only the shared visit counter, which personal stories never write. Literary rooms now count the reader's own
+  visits, and Holloway's camp counts once that reader has taken something from it.
+
 ## Validation scope
 
 - **Floorboards:** both pry cases now first try the board by hand: it stays, the event is refused and the noise does not
@@ -134,5 +187,18 @@ ticket) now opens its screen, and the screen does what the notes say.
   call rings out; the next day a name left on voicemail counts; with his phone kept, his number rings and buzzes in the
   caller's pocket and nothing reaches him; inside the House nothing is delivered and calls have no service; the screen is
   sent the clock, the line and the whole thread.
+- **Culvert (extended case):** the first stroke moves forward and away from the reader's own left wall; the same hand may
+  push again off the near wall; turned askew, a back stroke still runs back along the culvert; the reader ducks as the bow
+  passes under the roof, before their head reaches it.
+- **Storytelling (new cases):** an honest reader is told once and the camp leaves their deals while a looter keeps it; the
+  account reads in the order rooms ended (an older record keeps the House's order); a personal story begun by one reader
+  is weighted for them only, and not once finished.
 - **Phone screen (client proof):** three native views of the screen (home, messages, a voicemail call with its input),
   saved as `native-phone-0..2.png` and required by the build job.
+- **Run 39140034350 (34bc996):** ten of twelve jobs passed. The build job's only failure was the Harrigan pose case, which
+  still expected the old doorway and chair cells to be air; the chapel's aisle carpet covers both, so it now checks the
+  wall above the doorway is gone and that no chair stands in his place. Because of it the build job never reached the
+  client views, so the phone screen's three views are still to run. Live-multiplayer failed on the Three Fingers paw view's
+  frame: the proof carries each client into the House and sends the paw in the same moment, and the client's 80-tick wait
+  for the view counted the level's loading screen. It no longer does, and the proof waits for the frame instead of going
+  on without it.

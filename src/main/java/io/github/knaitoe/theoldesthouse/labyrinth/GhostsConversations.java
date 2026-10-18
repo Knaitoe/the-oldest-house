@@ -13,7 +13,7 @@ public final class GhostsConversations {
             {"We need people to understand what this family is going through.","Being out of work isn't what brought you here. Don't make that the whole story."},
             {"You can film her books. Put them back where she left them.","The appointment was before you arrived. A camera isn't treatment."},
             {"Today is interviews and reconstructions. Mark the difference on your tape.","A pause can be longer in the edit. Remember how long it actually lasted."},
-            {"I have spoken with John. I haven't performed an evaluation yet.","Something witnessed and something believed are different kinds of testimony."}
+            {"I have spoken with John. I haven't performed an evaluation yet.","I'd like to hear it from Merry herself, not from your tape."}
         },
         {
             {"Merry wants my hat. She always wants something that belongs to me.","Keep the table in your picture. You ought to see where his hand went."},
@@ -29,7 +29,7 @@ public final class GhostsConversations {
             {"I was trying to help her down. I wasn't watching the wall.","Can we finish this pickup before the neighbours come home?"},
             {"She shouldn't have to repeat it because you missed it.","Look at the handholds. Then decide what your picture leaves out."},
             {"Today is a reconstruction. Keep that word with the shot.","Show the plaster if you want the audience to have something to examine."},
-            {"An account of climbing is not the same as seeing it yourself.","I have not given the production permission for an exorcism."}
+            {"I didn't see her climb. Neither did your camera.","I have not given the production permission for an exorcism."}
         },
         {
             {"Being watched doesn't make the voices stop. Sometimes I can decide what you see.","I asked for one conversation without the camera. You can still choose that."},
@@ -37,7 +37,7 @@ public final class GhostsConversations {
             {"The money keeps us here. I can't pretend it doesn't matter.","If she says she can control some of it, listen to the rest of what she says."},
             {"Privacy shouldn't have to be a favour you grant her.","She has a doctor. Remember that when you put this together."},
             {"The basement conversation is today. The bedroom pickup comes after it.","If she refuses the lens, log the refusal. Don't invent an image to replace it."},
-            {"A confession made for an audience may still contain something true.","Do not make her choice to perform settle everything about her illness."}
+            {"She said it to the camera. I'd still like to hear the rest of it.","One afternoon on camera isn't the whole of her illness."}
         },
         {
             {"I can read your rules. The camera shouldn't be in this evaluation.","When I answer quietly, you wait for me to say it again differently."},
@@ -45,7 +45,7 @@ public final class GhostsConversations {
             {"I want an answer. We can't keep living from appointment to appointment.","If you film me looking frightened, leave in what frightened me."},
             {"She can read, John. She can use the internet. She's a person.","The part where I object belongs on the tape too."},
             {"Keep the question with its answer in today's log.","Watch the mother as well as the priest. The evaluation has more than one witness."},
-            {"There are rules for an evaluation. The presence of your crew is an objection I must hear.","Knowledge of a question does not establish where that knowledge came from."}
+            {"There are rules for an evaluation. The presence of your crew is an objection I must hear.","She answered before he finished asking. I'd like to know who told her the question."}
         },
         {
             {"I'm cold. Please stay where I can see you.","I haven't touched that drawer. Don't cut away if it moves."},
