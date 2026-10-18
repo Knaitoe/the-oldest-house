@@ -340,8 +340,8 @@ public final class VignetteAnimationTests {
             f.at(p,place,2.5,0,-15);costumeState(f,w->w.putInt("Party",CostumeNight.FIRST_CALL-1));});
         h.runAfterDelay(110,()->{var w=LiteraryVignettes.shared(f.data(),place);var a=CostumeNight.cast(f.out,tina);
             h.assertTrue(w.getInt("Called")==0&&a.position().distanceTo(Vec3.atLowerCornerOf(b).add(CostumeNight.STAGE_FRONT))<1.5&&a.gesture()==4,"number one is called up and shows off at the front of the stage: "+a.position());});
-        h.runAfterDelay(290,()->{var a=CostumeNight.cast(f.out,tina);var w=LiteraryVignettes.shared(f.data(),place);
-            h.assertTrue(!(w.contains("Called")&&w.getInt("Called")==0)&&a.position().distanceTo(tina.home(b))<.6,"then she goes back to her place (Hank may already be calling number two): "+a.position()+" home "+tina.home(b));
+        h.runAfterDelay(290,()->{var a=CostumeNight.cast(f.out,tina);var night=LiteraryVignettes.shared(f.data(),place);
+            h.assertTrue(!(night.contains("Called")&&night.getInt("Called")==0)&&a.position().distanceTo(tina.home(b))<.6,"then she goes back to her place (Hank may already be calling number two): "+a.position()+" home "+tina.home(b));
             costumeState(f,w->w.putInt("Party",CostumeNight.RIBBON-1));start[0]=1;});
         h.runAfterDelay(540,()->{h.assertTrue(!LiteraryVignettes.shared(f.data(),place).getBoolean("LightsOut")&&p.getHealth()==20&&peer.getHealth()==20,"through the ribbon the bulbs stay on and nobody is hurt");});
         h.runAfterDelay(590,()->{var w=LiteraryVignettes.shared(f.data(),place);
