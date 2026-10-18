@@ -6,6 +6,7 @@
   "client": [
     "HouseFontMixin",
     "HouseSceneClockMixin",
+    "HouseSceneSkyMixin",
     "CabinStormLevelMixin",
     "CabinStormBiomeMixin",
     "WolfPatMixin",
