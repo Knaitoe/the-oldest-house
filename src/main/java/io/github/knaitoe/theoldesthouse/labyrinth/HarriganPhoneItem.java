@@ -20,7 +20,7 @@ import net.minecraft.world.level.Level;
  *
  * It deliberately uses the Overworld clock instead of the holder's dimension
  * clock. Inside the House, where a vanilla clock is useless, the item's name
- * still advances with the time back home.
+ * still advances with the time back home. Using it opens its screen (0.4.105): the clock, and his number to call or text.
  */
 public final class HarriganPhoneItem extends Item {
     public HarriganPhoneItem(Properties properties) {
@@ -52,9 +52,9 @@ public final class HarriganPhoneItem extends Item {
                 .withStyle(ChatFormatting.DARK_GRAY));
         tooltip.add(Component.literal("If his phone rests in the casket, yours can reach him.")
                 .withStyle(ChatFormatting.DARK_GRAY));
-        tooltip.add(Component.literal("Outside the House: use, then type a name in chat.")
+        tooltip.add(Component.literal("Use it to open it. Outside the House: call him, or text him a name.")
                 .withStyle(ChatFormatting.DARK_GRAY));
-        tooltip.add(Component.literal("Try a hostile species, such as zombie. One call a day.")
+        tooltip.add(Component.literal("Try a hostile species, such as zombie. One a day.")
                 .withStyle(ChatFormatting.DARK_GRAY));
         tooltip.add(Component.literal("At dawn, that species dies near your Overworld bed.")
                 .withStyle(ChatFormatting.DARK_GRAY));

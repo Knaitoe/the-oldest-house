@@ -104,6 +104,51 @@ public final class HarriganDialogueTests {
             h.assertTrue(f.player.getInventory().countItem(Items.EMERALD)==12&&f.player.getInventory().countItem(LabyrinthRegistry.PHONE.get())==1,"the preserved original remains available once to the participant");h.succeed();
         });
     }
+    private static HouseSavedData phoneHouse;private static LabyrinthData phoneData;private static final List<ServerPlayer> PHONE_READERS=new ArrayList<>();
+    @AfterBatch(batch="harrigan_phone_screen0505") public static void cleanPhoneScreen(ServerLevel level){
+        for(var p:PHONE_READERS)NativeTestPlayers.remove(p);PHONE_READERS.clear();HarriganVignette.clearAll(level.getServer());
+        if(phoneHouse!=null){level.getServer().overworld().getDataStorage().set("the_oldest_house",phoneHouse);level.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",phoneData);phoneHouse=null;phoneData=null;}
+    }
+    private static void line(LabyrinthData data,ServerPlayer p,java.util.function.Consumer<CompoundTag> change){
+        var state=data.state(HarriganVignette.ID);var players=state.getCompound("Players");var own=players.getCompound(p.getUUID().toString());change.accept(own);players.put(p.getUUID().toString(),own);state.put("Players",players);data.setState(HarriganVignette.ID,state);
+    }
+    private static CompoundTag own(LabyrinthData data,ServerPlayer p){return data.state(HarriganVignette.ID).getCompound("Players").getCompound(p.getUUID().toString());}
+    private static String last(LabyrinthData data,ServerPlayer p,int back){var thread=own(data,p).getList("Thread0505",net.minecraft.nbt.Tag.TAG_COMPOUND);return thread.size()<=back?"":thread.getCompound(thread.size()-1-back).getString("Text");}
+    /** 0.4.105: the phone's screen texts and calls him; a name does what the phone's notes say, once a day, and nothing leaves the House. */
+    @GameTest(template="empty",batch="harrigan_phone_screen0505",timeoutTicks=100)
+    public static void thePhoneTextsAndCallsHimByItsNotes(GameTestHelper h){
+        var server=h.getLevel().getServer();phoneHouse=HouseSavedData.get(server);phoneData=LabyrinthData.get(server);
+        var house=new HouseSavedData();house.markSpawned(new BlockPos(27800,80,27800));server.overworld().getDataStorage().set("the_oldest_house",house);
+        var data=new LabyrinthData();server.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);
+        var caller=NativeTestPlayers.survival(h,"phone_caller");var kept=NativeTestPlayers.survival(h,"phone_keeper");var inside=NativeTestPlayers.survival(h,"phone_inside");
+        PHONE_READERS.addAll(List.of(caller,kept,inside));
+        for(var p:PHONE_READERS)p.getInventory().add(HarriganVignette.phoneFor(p));
+        caller.setRespawnPosition(net.minecraft.world.level.Level.OVERWORLD,caller.blockPosition(),0,true,false);
+        line(data,caller,t->t.putBoolean("Contact",true));line(data,inside,t->t.putBoolean("Contact",true));
+        line(data,kept,t->t.putBoolean("KeptHarriganPhone",true));kept.getInventory().add(new ItemStack(LabyrinthRegistry.HARRIGANS_PHONE.get()));
+        inside.teleportTo(HouseTestLevel.get(server),0.5,80,0.5,0,0);
+        h.runAfterDelay(5,()->{
+            HarriganVignette.phoneCall(caller);
+            h.assertTrue(last(data,caller,0).equals("Call · his voicemail"),"a connected call rings through to his voicemail: "+last(data,caller,0));
+            HarriganVignette.phoneText(caller,"zombie",false);
+            h.assertTrue(last(data,caller,1).equals("zombie")&&last(data,caller,0).equals("delivered"),"a text goes to him and he answers it");
+            h.assertTrue(own(data,caller).getString("HostileType").equals("minecraft:zombie")&&own(data,caller).getLong("HostileDay")==HouseCalendar.today(server)+1,"naming a hostile species marks it for the next dawn by the caller's bed");
+            HarriganVignette.phoneText(caller,"skeleton",false);
+            h.assertTrue(last(data,caller,0).equals("No answer.")&&own(data,caller).getString("HostileType").equals("minecraft:zombie"),"one a day: a second name gets no answer and changes nothing");
+            HarriganVignette.phoneCall(caller);
+            h.assertTrue(last(data,caller,0).equals("Call · no answer"),"and a second call that day goes unanswered");
+            line(data,caller,t->t.putLong("LastCallDay",HouseCalendar.today(server)-1));
+            HarriganVignette.phoneText(caller,"creeper",true);
+            h.assertTrue(last(data,caller,1).equals("Voicemail: creeper")&&last(data,caller,0).equals("i heard you")&&own(data,caller).getString("HostileType").equals("minecraft:creeper"),"a name left on his voicemail counts as the day's call");
+            HarriganVignette.phoneCall(kept);HarriganVignette.phoneText(kept,"zombie",false);
+            h.assertTrue(last(data,kept,2).equals("Call · it rang in your pocket")&&last(data,kept,0).equals("His phone buzzes in your pocket.")&&!own(data,kept).contains("HostileType"),"with his phone kept, his number rings in the caller's own pocket and nothing reaches him");
+            HarriganVignette.phoneText(inside,"zombie",false);HarriganVignette.phoneCall(inside);
+            h.assertTrue(last(data,inside,1).equals("Not delivered. No service.")&&last(data,inside,0).equals("Call · no service")&&!own(data,inside).contains("HostileType"),"nothing leaves the House");
+            var shown=HarriganVignette.phoneState(caller,null);
+            h.assertTrue(shown.getBoolean("Service")&&shown.getString("Line").equals("connected")&&shown.getList("Thread",net.minecraft.nbt.Tag.TAG_COMPOUND).size()==own(data,caller).getList("Thread0505",net.minecraft.nbt.Tag.TAG_COMPOUND).size()&&shown.getBoolean("Today"),"the screen is sent the clock, the line and the whole thread");
+            h.succeed();
+        });
+    }
     @AfterBatch(batch="harrigan_reading") public static void cleanReading(ServerLevel level){if(reading!=null){reading.close();reading=null;}}
     @AfterBatch(batch="harrigan_legacy_dialogue") public static void cleanLegacy(ServerLevel level){if(legacy!=null){legacy.close();legacy=null;}}
     @AfterBatch(batch="harrigan_phone_guidance") public static void cleanPhones(ServerLevel level){if(phones!=null){phones.close();phones=null;}}
@@ -165,7 +210,7 @@ public final class HarriganDialogueTests {
             h.assertTrue(f.player.heard("spare phone")&&f.player.heard("time back home"),"the real gift explains whose phone it is and why its clock matters");
             var owned=f.player.getInventory().items.stream().filter(s->s.is(LabyrinthRegistry.PHONE.get())).findFirst().orElseThrow();
             var help=owned.getTooltipLines(Item.TooltipContext.of(f.level),f.player,TooltipFlag.NORMAL).stream().map(Component::getString).toList();
-            h.assertTrue(help.stream().anyMatch(s->s.contains("Outside the House"))&&help.stream().anyMatch(s->s.contains("type a name in chat"))
+            h.assertTrue(help.stream().anyMatch(s->s.contains("Outside the House"))&&help.stream().anyMatch(s->s.contains("text him a name"))
                     &&help.stream().anyMatch(s->s.contains("Overworld bed")),"the inventory tooltip retains controls, place and delayed effect");
             HarriganVignette.onArrive(f.player,LabyrinthPlace.HARRIGAN);
         });
@@ -192,7 +237,7 @@ public final class HarriganDialogueTests {
             var original=f.player.getInventory().items.stream().filter(stack->stack.is(LabyrinthRegistry.PHONE.get())).findFirst().orElseThrow();var before=original.copy();net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA,original,tag->tag.remove("HarriganOwner"));
             h.assertTrue(HarriganVignette.repairLegacyPhone(f.player,original)&&ItemStack.matches(before,original),"the completed reader's blank legacy gift is repaired in place with all other components retained");
             h.assertTrue(!HarriganVignette.repairLegacyPhone(f.player,new ItemStack(LabyrinthRegistry.PHONE.get())),"the same evidence cannot bind another blank phone");
-            h.assertTrue(f.player.heard("within 30 seconds")&&f.player.heard("One call a day")&&f.player.heard("64 blocks")&&!f.player.heard("harmless creatures"),"the live connection explains controls and limits without revealing the friendly-mob consequence");
+            h.assertTrue(f.player.heard("text him a creature's name")&&f.player.heard("One call a day")&&f.player.heard("64 blocks")&&!f.player.heard("harmless creatures"),"the live connection explains controls and limits without revealing the friendly-mob consequence");
             var own=f.player.getInventory().items.stream().filter(s->s.is(LabyrinthRegistry.PHONE.get())).findFirst().orElseThrow();HarriganVignette.beginPhone(f.player,own);
             h.assertTrue(f.player.heard("Calls cannot leave the House"),"using the phone in the House explains dead air instead of giving an unexplained failure");h.succeed();
         });

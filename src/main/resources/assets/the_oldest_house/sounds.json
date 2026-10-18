@@ -1362,5 +1362,59 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.winter.wind"
+  },
+  "phone.ringback": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:phone/ringback",
+        "attenuation_distance": 8
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.phone.ringback"
+  },
+  "phone.pickup": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:phone/pickup",
+        "attenuation_distance": 8
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.phone.pickup"
+  },
+  "phone.beep": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:phone/beep",
+        "attenuation_distance": 8
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.phone.beep"
+  },
+  "phone.sent": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:phone/sent",
+        "attenuation_distance": 8
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.phone.sent"
+  },
+  "phone.received": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:phone/received",
+        "attenuation_distance": 8
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.phone.received"
+  },
+  "phone.his_ring": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:phone/his_ring",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.phone.his_ring"
   }
 }

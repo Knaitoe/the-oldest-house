@@ -8,12 +8,13 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.*;
 
 /**
- * Quiet, persistent funeral guests on the third visit (0.4.105: scene actors, not armour stands); talking never confers
+ * Quiet, persistent guests at the funeral home on the third visit (0.4.105: scene actors, not armour stands); talking never confers
  * phone custody or Witness progress.
  */
 public final class HarriganWake {
-    private static final BlockPos[] SPOTS={new BlockPos(-4,0,-17),new BlockPos(4,0,-17),new BlockPos(4,0,-23)};
-    private static final float[] FACING={-35,35,180};
+    /** Two by the casket, one just inside the chapel, each turned toward him. */
+    private static final BlockPos[] SPOTS={new BlockPos(-3,0,-18),new BlockPos(3,0,-18),new BlockPos(-5,0,-6)};
+    private static final float[] FACING={-124,124,-160};
     private static final String[] WORDS={"\"You read to him, didn't you?\"","\"I keep thinking he'll ask us to be quiet.\"","\"I don't know what to do with my hands.\""};
     private HarriganWake(){}
     /** On arrival nobody else is in the room yet, so the guests are set out before anyone can see them appear. */

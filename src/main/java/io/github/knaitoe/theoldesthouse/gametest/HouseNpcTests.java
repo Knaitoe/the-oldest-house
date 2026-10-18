@@ -172,7 +172,7 @@ public final class HouseNpcTests {
             if(stage[0]==1){
                 var body=HarriganVignette.harrigan(f.l,harrigan,HarriganVignette.ALIVE_PHASE);if(body==null)return;
                 original[0]=body;identity[0]=body.getUUID();
-                var saved=f.data().state(HarriganVignette.ID);prior.putUUID("Harrigan0505",identity[0]);prior.putBoolean("Parlor0505",saved.getBoolean("Parlor0505"));
+                var saved=f.data().state(HarriganVignette.ID);prior.putUUID("Harrigan0505",identity[0]);prior.putBoolean("FuneralHome0505",saved.getBoolean("FuneralHome0505"));
                 f.data().setState(HarriganVignette.ID,prior);f.data().setBuilt(21,f.origin);LabyrinthBuilder.ensureBuilt(f.l.getServer());
                 // This case tests preservation; the hallway cases independently test paced construction.
                 LabyrinthBuilder.finishGameTest(f.l.getServer());stage[0]=2;return;

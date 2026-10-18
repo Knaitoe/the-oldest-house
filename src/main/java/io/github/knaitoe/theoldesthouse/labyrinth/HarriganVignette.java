@@ -56,7 +56,6 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.event.ServerChatEvent;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerContainerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -67,7 +66,7 @@ import net.neoforged.neoforge.event.tick.EntityTickEvent;
 /**
  * Mr Harrigan's Phone: a three-visit vignette followed by a persistent artifact. On the first visit he is alive in his
  * chair and the reader reads to him; on the second he is dead in it, and his phone lies on the table beside him; on the
- * third the room has been made ready for his funeral, and he lies in his casket beyond an open doorway (0.4.105).
+ * third the door opens on the funeral home built in the study's place, and he lies in his casket in its chapel (0.4.105).
  *
  * The vignette never reaches into another vignette. Everything the phone does
  * after the funeral happens outside the House dimension, and targeting while
@@ -80,7 +79,6 @@ public final class HarriganVignette {
     public static final int ALIVE_PHASE = 0, DEAD_PHASE = 1, CASKET_PHASE = 2;
     private static final String ACTOR = "Harrigan0505";
     public static final double KILL_RADIUS = 64.0D;
-    private static final int TEXT_WINDOW_TICKS = 20 * 30;
     private static final int NIGHT_START = 13000;
     private static final int NIGHT_END = 23000;
     private static final String PROP_TAG = TheOldestHouse.MOD_ID + "_harrigan_prop";
@@ -132,7 +130,6 @@ public final class HarriganVignette {
     };
 
     private static final Map<UUID, Long> NEXT_SPEECH = new HashMap<>();
-    private static final Map<UUID, Long> WAITING_TEXT = new HashMap<>();
     /** Caller -> the one active post-vignette Harrigan entity. */
     private static final Map<UUID, UUID> ACTIVE_GHOSTS = new HashMap<>();
 
@@ -143,13 +140,22 @@ public final class HarriganVignette {
     // Room and visits
 
     public static void build(MinecraftServer server, ServerLevel level, BlockPos base) {
+        buildStudy(level, base);
+        CompoundTag fresh = LabyrinthData.get(server).state(ID);
+        fresh.putBoolean("FuneralHome0505", false);
+        LabyrinthData.get(server).setState(ID, fresh);
+        stage(level, base, LabyrinthData.get(server), visitFor(LabyrinthData.get(server)));
+    }
+
+    /** His study, with the sealed room behind it; also what the funeral home goes back to if the visits ever start over. */
+    private static void buildStudy(ServerLevel level, BlockPos base) {
         int flags = LabyrinthBuilder.flags();
         BlockState wall = Blocks.DARK_OAK_PLANKS.defaultBlockState();
         BlockState floor = Blocks.SPRUCE_PLANKS.defaultBlockState();
         BlockState ceiling = Blocks.DEEPSLATE_TILES.defaultBlockState();
         LabyrinthBuilder.room(level, base, -7, 7, 5, -24, 0, wall, floor, ceiling);
 
-        // Study/funeral dividing wall. The doorway in it opens only for the funeral, on the third visit.
+        // The study's back wall. There is no doorway in it: the funeral is somewhere else, on the third visit.
         for (int x = -7; x <= 7; x++) {
             for (int y = 0; y <= 5; y++) {
                 level.setBlock(base.offset(x, y, -13), wall, flags);
@@ -162,6 +168,7 @@ public final class HarriganVignette {
             level.setBlock(base.offset(-6, 1, z), Blocks.BOOKSHELF.defaultBlockState(), flags);
         }
         level.setBlock(base.offset(CHAIR), LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH), flags);
+        level.setBlock(base.offset(READER_CHAIR), LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH), flags);
         BlockState table = Blocks.DARK_OAK_SLAB.defaultBlockState().setValue(net.minecraft.world.level.block.SlabBlock.TYPE,
                 net.minecraft.world.level.block.state.properties.SlabType.TOP);
         level.setBlock(base.offset(SIDE_TABLE), table, flags);
@@ -174,15 +181,11 @@ public final class HarriganVignette {
         if (level.getBlockEntity(base.offset(LECTERN)) instanceof LecternBlockEntity lectern) {
             lectern.setBook(readingBook());
         }
-        CompoundTag fresh = LabyrinthData.get(server).state(ID);
-        fresh.putBoolean("Parlor0505", false);
-        LabyrinthData.get(server).setState(ID, fresh);
 
         HarriganFinish.build(level,base);
 
         LabyrinthBuilder.entrance(level, base, wall, floor, ceiling);
         LabyrinthBuilder.doors(level,base,LabyrinthPlace.HARRIGAN);
-        stage(level, base, LabyrinthData.get(server), visitFor(LabyrinthData.get(server)));
     }
 
     public static void onArrive(ServerPlayer player, LabyrinthPlace place) {
@@ -255,13 +258,13 @@ public final class HarriganVignette {
     private static void stage(ServerLevel level, BlockPos base, LabyrinthData data, int visit) {
         // His original actor and prop UUIDs survive visits and entity-section loading.
         if (visit >= FINAL_VISIT) {
-            parlor(level, base, data, true);
+            funeralHome(level, base, data, true);
             var harrigan = harrigan(level, base, CASKET_PHASE);
             if (harrigan != null) pose(harrigan, base, CASKET_PHASE);
             HarriganWake.ensureCast(level, base, true);
             return;
         }
-        parlor(level, base, data, false);
+        funeralHome(level, base, data, false);
         int phase = visit == 1 && !data.isCompleted(ID) ? ALIVE_PHASE : DEAD_PHASE;
         var harrigan = harrigan(level, base, phase);
         if (harrigan != null) pose(harrigan, base, phase);
@@ -278,67 +281,124 @@ public final class HarriganVignette {
         }
     }
 
+    /** Where the guest book lies in the funeral home's foyer. */
+    public static final BlockPos GUEST_BOOK = new BlockPos(-4, 0, -2);
+    /** The funeral home's own sign, facing whoever comes in. */
+    public static final BlockPos HOME_SIGN = new BlockPos(4, 0, -2);
+
     /**
-     * The study, or (on the third visit) the same room made ready for his funeral: his chair and reading things gone,
-     * chairs set out in rows, the lectern holding a guest book, flowers on his table, and the doorway in the far wall
-     * opened onto the room where he lies. Only what the study itself authored changes; the doorway is sealed in planks
-     * on the first two visits.
+     * On the third visit the door no longer opens on his study: it opens on Peabody &amp; Sons, a funeral home, built whole
+     * in the study's place (0.4.105) and kept from then on. If the visits ever start over, the study comes back. Only the
+     * study's own plain walls are refaced; its windows, fireplace and ceiling stay.
      */
-    private static void parlor(ServerLevel level, BlockPos base, LabyrinthData data, boolean funeral) {
-        int flags = LabyrinthBuilder.flags();
-        CompoundTag state = data.state(ID);
-        boolean dressed = state.getBoolean("Parlor0505");
-        for (int x = -1; x <= 1; x++) for (int y = 0; y <= 2; y++)
-            level.setBlock(base.offset(x, y, FUNERAL_DOOR.getZ()), funeral ? Blocks.AIR.defaultBlockState() : Blocks.DARK_OAK_PLANKS.defaultBlockState(), flags);
-        if (!funeral) level.setBlock(base.offset(FUNERAL_DOOR).above(3), Blocks.DARK_OAK_PLANKS.defaultBlockState(), flags);
-        if (dressed == funeral) {
-            if (!funeral && level.getBlockState(base.offset(READER_CHAIR)).isAir())
-                level.setBlock(base.offset(READER_CHAIR), LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH), flags);
-            return;
+    private static void funeralHome(ServerLevel level, BlockPos base, LabyrinthData data, boolean funeral) {
+        boolean built = data.state(ID).getBoolean("FuneralHome0505");
+        if (built != funeral) {
+            if (funeral) buildFuneralHome(level, base);
+            else buildStudy(level, base);
+            CompoundTag state = data.state(ID);
+            state.putBoolean("FuneralHome0505", funeral);
+            data.setState(ID, state);
         }
-        BlockState table = Blocks.DARK_OAK_SLAB.defaultBlockState().setValue(net.minecraft.world.level.block.SlabBlock.TYPE,
-                net.minecraft.world.level.block.state.properties.SlabType.TOP);
-        if (funeral) {
-            // His shelves are draped; his chair is gone; mourners' chairs face the doorway, an aisle down the middle.
-            for (int z = -11; z <= -3; z++) for (int y = 0; y <= 1; y++)
-                if (level.getBlockState(base.offset(-6, y, z)).is(Blocks.BOOKSHELF)) level.setBlock(base.offset(-6, y, z), HarriganFinishBlock.of(HarriganFinishBlock.Kind.PANEL), flags);
-            if (level.getBlockState(base.offset(CHAIR)).getBlock() instanceof StairBlock) level.setBlock(base.offset(CHAIR), Blocks.AIR.defaultBlockState(), flags);
-            for (BlockPos seat : FUNERAL_CHAIRS) {
-                BlockPos at = base.offset(seat);
-                if (level.getBlockState(at).isAir() && level.getBlockState(at.above()).isAir() && level.getBlockState(at.below()).isSolid())
-                    level.setBlock(at, LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH), flags);
-            }
-            for (BlockPos flowers : List.of(base.offset(SIDE_TABLE).above(), base.offset(SIDE_TABLE).east().south().above())) {
-                if (level.getBlockState(flowers).isAir()) level.setBlock(flowers, flowers.getX() == base.getX() + SIDE_TABLE.getX()
-                        ? Blocks.POTTED_WHITE_TULIP.defaultBlockState() : Blocks.POTTED_LILY_OF_THE_VALLEY.defaultBlockState(), flags);
-            }
-            if (level.getBlockEntity(base.offset(LECTERN)) instanceof LecternBlockEntity lectern) lectern.setBook(guestBook());
-        } else {
-            for (int z = -11; z <= -3; z++) for (int y = 0; y <= 1; y++)
-                if (level.getBlockState(base.offset(-6, y, z)).is(LabyrinthRegistry.HARRIGAN_FINISH.get())) level.setBlock(base.offset(-6, y, z), Blocks.BOOKSHELF.defaultBlockState(), flags);
-            for (BlockPos seat : FUNERAL_CHAIRS) {
-                BlockPos at = base.offset(seat);
-                if (level.getBlockState(at).getBlock() instanceof StairBlock) level.setBlock(at, Blocks.AIR.defaultBlockState(), flags);
-            }
-            for (BlockPos flowers : List.of(base.offset(SIDE_TABLE).above(), base.offset(SIDE_TABLE).east().south().above()))
-                if (level.getBlockState(flowers).getBlock() instanceof net.minecraft.world.level.block.FlowerPotBlock) level.setBlock(flowers, Blocks.AIR.defaultBlockState(), flags);
-            level.setBlock(base.offset(CHAIR), LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH), flags);
-            level.setBlock(base.offset(SIDE_TABLE), table, flags);
-            if (level.getBlockState(base.offset(READER_CHAIR)).isAir())
-                level.setBlock(base.offset(READER_CHAIR), LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH), flags);
-            if (level.getBlockEntity(base.offset(LECTERN)) instanceof LecternBlockEntity lectern) lectern.setBook(readingBook());
+        if (!funeral) {
+            // The study's back wall stays shut on the first two visits.
+            for (int x = -1; x <= 1; x++) for (int y = 0; y <= 3; y++)
+                level.setBlock(base.offset(x, y, FUNERAL_DOOR.getZ()), Blocks.DARK_OAK_PLANKS.defaultBlockState(), LabyrinthBuilder.flags());
         }
-        state = data.state(ID);
-        state.putBoolean("Parlor0505", funeral);
-        data.setState(ID, state);
     }
 
-    /** Rows facing the funeral doorway, leaving the aisle (x -1 to 1) and the lectern clear. */
-    private static final List<BlockPos> FUNERAL_CHAIRS = List.of(
-            new BlockPos(-4, 0, -9), new BlockPos(-3, 0, -9), new BlockPos(-2, 0, -9),
-            new BlockPos(-4, 0, -11), new BlockPos(-3, 0, -11), new BlockPos(-2, 0, -11),
-            new BlockPos(2, 0, -10), new BlockPos(3, 0, -10), new BlockPos(4, 0, -10),
-            new BlockPos(2, 0, -12), new BlockPos(3, 0, -12), new BlockPos(4, 0, -12));
+    private static boolean plainWall(BlockState state) {
+        return state.is(Blocks.DARK_OAK_PLANKS) || state.is(Blocks.STRIPPED_DARK_OAK_LOG) || state.is(Blocks.STRIPPED_DARK_OAK_WOOD)
+                || state.is(Blocks.DARK_OAK_LOG) || state.is(Blocks.GREEN_TERRACOTTA) || state.is(Blocks.SPRUCE_PLANKS)
+                || state.is(LabyrinthRegistry.HARRIGAN_FINISH.get()) && state.getValue(HarriganFinishBlock.KIND) != HarriganFinishBlock.Kind.CASKET;
+    }
+
+    private static void buildFuneralHome(ServerLevel level, BlockPos base) {
+        int flags = LabyrinthBuilder.flags();
+        BlockState air = Blocks.AIR.defaultBlockState();
+        BlockState panel = HarriganFinishBlock.of(HarriganFinishBlock.Kind.PANEL);
+        BlockState paper = HarriganFinishBlock.of(HarriganFinishBlock.Kind.WALLPAPER);
+        // Nothing of the study is left inside: its furniture, its props, the wall between its two rooms, its lamps.
+        for (var frame : level.getEntitiesOfClass(ItemFrame.class, placeBounds(base), f -> f.getTags().contains(PROP_TAG))) frame.discard();
+        for (int x = -7; x <= 7; x++) for (int z = -24; z <= 0; z++) {
+            for (int y = 0; y <= 4; y++) {
+                BlockPos at = base.offset(x, y, z);
+                if (!level.getBlockState(at).isAir()) level.setBlock(at, air, flags);
+            }
+            BlockPos chain = base.offset(x, 5, z);
+            if (level.getBlockState(chain).is(Blocks.CHAIN)) level.setBlock(chain, air, flags);
+            // A boarded floor in the foyer; the funeral carpet through the chapel.
+            level.setBlock(base.offset(x, -1, z), z >= -4 ? Blocks.DARK_OAK_PLANKS.defaultBlockState() : HarriganFinishBlock.of(HarriganFinishBlock.Kind.CARPET), flags);
+        }
+        // Panelled to the rail, papered above it, wherever the study had plain wall. Windows and the hearth are left.
+        for (int y = 0; y <= 4; y++) {
+            BlockState face = y <= 1 ? panel : paper;
+            for (int z = -24; z <= 0; z++) for (int side : new int[]{-8, 8}) {
+                BlockPos at = base.offset(side, y, z);
+                if (plainWall(level.getBlockState(at))) level.setBlock(at, face, flags);
+            }
+            for (int x = -7; x <= 7; x++) {
+                BlockPos back = base.offset(x, y, -25);
+                if (plainWall(level.getBlockState(back))) level.setBlock(back, face, flags);
+                BlockPos front = base.offset(x, y, 1);
+                if (plainWall(level.getBlockState(front)) && level.getBlockEntity(front) == null) level.setBlock(front, face, flags);
+            }
+        }
+
+        // The foyer: the guest book on its stand, the home's sign, flowers, a bench either side.
+        level.setBlock(base.offset(GUEST_BOOK), Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.FACING, Direction.EAST).setValue(LecternBlock.HAS_BOOK, true), flags);
+        if (level.getBlockEntity(base.offset(GUEST_BOOK)) instanceof LecternBlockEntity book) book.setBook(guestBook());
+        level.setBlock(base.offset(HOME_SIGN), Blocks.DARK_OAK_SIGN.defaultBlockState().setValue(net.minecraft.world.level.block.StandingSignBlock.ROTATION, 0), flags);
+        if (level.getBlockEntity(base.offset(HOME_SIGN)) instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign) {
+            var text = new net.minecraft.world.level.block.entity.SignText()
+                    .setMessage(0, Component.literal("PEABODY & SONS"))
+                    .setMessage(1, Component.literal("Funeral Home"))
+                    .setMessage(2, Component.literal("Visitation for"))
+                    .setMessage(3, Component.literal("Mr. Harrigan"));
+            sign.setText(text, true);
+            sign.setText(text, false);
+            sign.setWaxed(true);
+        }
+        for (int side : new int[]{-1, 1}) {
+            pedestal(level, base.offset(side * 6, 0, -1), side < 0 ? Blocks.POTTED_WHITE_TULIP : Blocks.POTTED_LILY_OF_THE_VALLEY);
+            for (int z = -4; z <= -3; z++) level.setBlock(base.offset(side * 7, 0, z), LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, side < 0 ? Direction.WEST : Direction.EAST), flags);
+        }
+        // Between foyer and chapel, a panelled partition with a wide opening.
+        for (int x = -7; x <= 7; x++) for (int y = 0; y <= 4; y++) {
+            boolean opening = Math.abs(x) <= 2 && y <= 3;
+            if (!opening) level.setBlock(base.offset(x, y, -5), y <= 1 || Math.abs(x) <= 2 ? panel : paper, flags);
+        }
+
+        // The chapel: an aisle runner, five rows of pews either side of it, all facing the casket.
+        for (int x = -1; x <= 1; x++) for (int z = -17; z <= -6; z++) level.setBlock(base.offset(x, 0, z), Blocks.RED_CARPET.defaultBlockState(), flags);
+        for (int row = 0; row < 5; row++) {
+            int z = -8 - row * 2;
+            for (int x = 2; x <= 6; x++) for (int side : new int[]{-1, 1})
+                level.setBlock(base.offset(side * x, 0, z), LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, Direction.SOUTH), flags);
+        }
+        // At the front he lies in his casket, flowers and candles either side.
+        level.setBlock(base.offset(CASKET), HarriganFinishBlock.of(HarriganFinishBlock.Kind.CASKET), flags);
+        for (int side : new int[]{-1, 1}) {
+            pedestal(level, base.offset(side * 3, 0, -20), side < 0 ? Blocks.POTTED_WHITE_TULIP : Blocks.POTTED_OXEYE_DAISY);
+            pedestal(level, base.offset(side * 5, 0, -23), Blocks.POTTED_LILY_OF_THE_VALLEY);
+            for (int z : new int[]{-18, -22}) {
+                level.setBlock(base.offset(side * 2, 0, z), Blocks.DARK_OAK_FENCE.defaultBlockState(), flags);
+                level.setBlock(base.offset(side * 2, 1, z), LabyrinthBuilder.candle(3, true), flags);
+            }
+        }
+        // Lamps on chains down the middle and over the side aisles.
+        for (BlockPos lamp : List.of(new BlockPos(0, 4, -2), new BlockPos(0, 4, -9), new BlockPos(0, 4, -15), new BlockPos(-5, 4, -12),
+                new BlockPos(5, 4, -12), new BlockPos(-5, 4, -20), new BlockPos(5, 4, -20))) {
+            level.setBlock(base.offset(lamp).above(), Blocks.CHAIN.defaultBlockState(), flags);
+            level.setBlock(base.offset(lamp), Blocks.LANTERN.defaultBlockState().setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true), flags);
+        }
+    }
+
+    /** A flower arrangement on a short white stand. */
+    private static void pedestal(ServerLevel level, BlockPos at, net.minecraft.world.level.block.Block pot) {
+        level.setBlock(at, Blocks.QUARTZ_PILLAR.defaultBlockState(), LabyrinthBuilder.flags());
+        level.setBlock(at.above(), pot.defaultBlockState(), LabyrinthBuilder.flags());
+    }
 
     private static ItemStack guestBook() {
         return HouseWriting.book("In memory", "The mourners", HouseWriting.WritingStyle.PLAIN, List.of(
@@ -642,6 +702,7 @@ public final class HarriganVignette {
         if(own.getBoolean("PhoneOwnerRepair0490")||!(own.getBoolean("Contact")||own.getBoolean("KeptHarriganPhone")||own.getBoolean("PhoneGiven0490")))return false;
         CustomData.update(DataComponents.CUSTOM_DATA,stack,t->t.putUUID(OWNER,player.getUUID()));own.putBoolean("PhoneOwnerRepair0490",true);savePlayerState(data,player.getUUID(),own);return true;
     }
+    /** Using the phone opens it (0.4.105): its clock back home everywhere, and its one contact, him, to call or to text. */
     public static void beginPhone(ServerPlayer player, ItemStack stack) {
         repairLegacyPhone(player,stack);
         if (!isOwnedPhone(stack, player.getUUID())) {
@@ -649,56 +710,128 @@ public final class HarriganVignette {
                     .withStyle(ChatFormatting.DARK_GRAY), true);
             return;
         }
-        if (player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)) {
-            WAITING_TEXT.remove(player.getUUID());
-            player.displayClientMessage(Component.literal("Dead air. Calls cannot leave the House; the phone's clock still keeps the time back home.")
-                    .withStyle(ChatFormatting.DARK_GRAY), true);
-            return;
-        }
         LabyrinthData data = LabyrinthData.get(player.server);
-        CompoundTag p = playerState(data, player.getUUID());
-        if (p.getBoolean("Severed") || !p.getBoolean("Contact")) {
-            String reason = p.getBoolean("Severed") ? "The connection is gone. The clock still keeps time."
-                    : p.getBoolean("KeptHarriganPhone") ? "His phone stayed with you. Lay it in the casket if you want yours to reach him."
-                    : "His number is saved, but there is no connection yet. The clock still keeps time.";
-            player.displayClientMessage(Component.literal("No service. " + reason)
+        if (noService(player)) {
+            player.displayClientMessage(Component.literal("No service. Calls cannot leave the House; the clock still keeps the time back home.")
                     .withStyle(ChatFormatting.DARK_GRAY), true);
-            return;
+        } else if (playerState(data, player.getUUID()).getBoolean("Contact")) {
+            explainCalling(player, data);
         }
-        long today = HouseCalendar.today(player.server);
-        if (p.contains("LastCallDay") && p.getLong("LastCallDay") == today) {
-            player.displayClientMessage(Component.literal("No answer.")
-                    .withStyle(ChatFormatting.DARK_GRAY), true);
-            return;
-        }
-        if (p.hasUUID("PendingPlayer")) {
-            player.displayClientMessage(Component.literal("The last message is still waiting.")
-                    .withStyle(ChatFormatting.DARK_GRAY), true);
-            return;
-        }
-        explainCalling(player, data);
-        WAITING_TEXT.put(player.getUUID(), player.server.getTickCount() + (long) TEXT_WINDOW_TICKS);
-        player.displayClientMessage(Component.literal("To: type a creature's name in chat within 30 seconds, such as zombie.")
-                .withStyle(ChatFormatting.GRAY), false);
+        sendPhone(player, true, null);
     }
 
-    public static void onServerChat(ServerChatEvent event) {
-        ServerPlayer player = event.getPlayer();
-        Long until = WAITING_TEXT.remove(player.getUUID());
-        if (until == null || player.server.getTickCount() > until) {
-            return;
+    /** Whose turn a line in the thread is: the reader's, his, or the phone's own small print. */
+    public static final int ME = 0, HIM = 1, NOTE = 2;
+    private static final int THREAD = 40;
+    static final String GREETING = "This is Harrigan. I don't pick up this phone. If you have a name for me, leave it after the tone.";
+
+    /** Nothing leaves the House: not a call, not a text. The clock still works. */
+    private static boolean noService(ServerPlayer player) {
+        return HouseDimensions.isHouseDimension(player.level().dimension());
+    }
+
+    private static boolean usedToday(CompoundTag p, MinecraftServer server) {
+        return p.contains("LastCallDay") && p.getLong("LastCallDay") == HouseCalendar.today(server);
+    }
+
+    /** One line of the thread with him, kept with the reader's phone record. */
+    private static void log(ServerPlayer player, int who, String text) {
+        LabyrinthData data = LabyrinthData.get(player.server);
+        CompoundTag p = playerState(data, player.getUUID());
+        var thread = p.getList("Thread0505", net.minecraft.nbt.Tag.TAG_COMPOUND);
+        CompoundTag line = new CompoundTag();
+        // Numbered, so the screen can tell a new line from an old one once the oldest start falling off.
+        int number = p.getInt("ThreadSeq0505") + 1;
+        p.putInt("ThreadSeq0505", number);
+        line.putInt("N", number);
+        line.putInt("Who", who);
+        line.putString("Text", text);
+        thread.add(line);
+        while (thread.size() > THREAD) thread.remove(0);
+        p.put("Thread0505", thread);
+        savePlayerState(data, player.getUUID(), p);
+    }
+
+    /** What the phone's screen shows. */
+    public static CompoundTag phoneState(ServerPlayer player, @Nullable CompoundTag call) {
+        CompoundTag p = playerState(LabyrinthData.get(player.server), player.getUUID());
+        CompoundTag state = new CompoundTag();
+        state.putLong("DayTime", player.server.overworld().getDayTime());
+        state.putBoolean("Service", !noService(player));
+        state.putString("Line", p.getBoolean("Severed") ? "severed" : p.getBoolean("Contact") ? "connected"
+                : p.getBoolean("KeptHarriganPhone") ? "kept" : "none");
+        state.putBoolean("Today", usedToday(p, player.server));
+        state.put("Thread", p.getList("Thread0505", net.minecraft.nbt.Tag.TAG_COMPOUND).copy());
+        if (call != null) state.put("Call", call);
+        return state;
+    }
+
+    private static void sendPhone(ServerPlayer player, boolean open, @Nullable CompoundTag call) {
+        io.github.knaitoe.theoldesthouse.network.HousePackets.send(player,
+                new io.github.knaitoe.theoldesthouse.network.HarriganPhonePayload(open, phoneState(player, call)));
+    }
+
+    /** From the phone's screen: a text, a call, or a name left on his voicemail. */
+    public static void phoneAction(ServerPlayer player, int action, String text) {
+        if (!player.isAlive() || player.isSpectator() || !hasOwnedPhone(player)) return;
+        long now = player.serverLevel().getGameTime();
+        if (player.getPersistentData().getLong("PhoneAction0505") > now) return;
+        player.getPersistentData().putLong("PhoneAction0505", now + 10);
+        switch (action) {
+            case io.github.knaitoe.theoldesthouse.network.HarriganPhoneActionPayload.CALL -> phoneCall(player);
+            case io.github.knaitoe.theoldesthouse.network.HarriganPhoneActionPayload.TEXT -> phoneText(player, text, false);
+            case io.github.knaitoe.theoldesthouse.network.HarriganPhoneActionPayload.VOICEMAIL -> phoneText(player, text, true);
+            default -> { }
         }
-        event.setCanceled(true);
-        if (player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)) {
-            player.displayClientMessage(Component.literal("Dead air.")
-                    .withStyle(ChatFormatting.DARK_GRAY), false);
-            return;
+    }
+
+    /**
+     * A name sent to his number, by text or left on his voicemail. It is the call the phone's notes describe: once a day,
+     * a hostile species dies near the caller's Overworld bed at the next dawn; a harmless creature or a named one brings
+     * him instead. Nothing goes from inside the House, or to a number that is not connected.
+     */
+    public static void phoneText(ServerPlayer player, String raw, boolean voicemail) {
+        String name = raw == null ? "" : raw.trim();
+        if (name.isEmpty()) return;
+        if (name.length() > 32) name = name.substring(0, 32);
+        LabyrinthData data = LabyrinthData.get(player.server);
+        log(player, ME, voicemail ? "Voicemail: " + name : name);
+        CompoundTag p = playerState(data, player.getUUID());
+        if (noService(player)) log(player, NOTE, "Not delivered. No service.");
+        else if (p.getBoolean("Severed")) log(player, NOTE, "Not delivered.");
+        else if (!p.getBoolean("Contact"))
+            log(player, NOTE, hasItem(player, LabyrinthRegistry.HARRIGANS_PHONE.get()) ? "His phone buzzes in your pocket." : "Not delivered.");
+        else if (usedToday(p, player.server)) log(player, NOTE, "No answer.");
+        else if (p.hasUUID("PendingPlayer")) log(player, NOTE, "The last message is still waiting.");
+        else placeCall(player, name);
+        sendPhone(player, false, null);
+    }
+
+    /** A call to his number: it rings, and then whatever his number does now. */
+    public static void phoneCall(ServerPlayer player) {
+        CompoundTag p = playerState(LabyrinthData.get(player.server), player.getUUID());
+        CompoundTag call = new CompoundTag();
+        String result;
+        if (noService(player)) result = "noservice";
+        else if (p.getBoolean("Severed")) result = "disconnected";
+        else if (!p.getBoolean("Contact") && hasItem(player, LabyrinthRegistry.HARRIGANS_PHONE.get())) {
+            // His phone never went with him, so the call finds it where it is: on the caller.
+            result = "pocket";
+            player.serverLevel().playSound(null, player.getX(), player.getY(), player.getZ(), PhoneSounds.HIS_RING.get(), SoundSource.PLAYERS, .9F, 1.0F);
+        } else if (!p.getBoolean("Contact") || usedToday(p, player.server)) result = "unanswered";
+        else {
+            result = "voicemail";
+            call.putString("Greeting", GREETING);
         }
-        String target = event.getRawText().trim();
-        if (target.isEmpty()) {
-            return;
-        }
-        placeCall(player, target);
+        call.putString("Result", result);
+        log(player, NOTE, switch (result) {
+            case "voicemail" -> "Call · his voicemail";
+            case "pocket" -> "Call · it rang in your pocket";
+            case "disconnected" -> "Call · not in service";
+            case "noservice" -> "Call · no service";
+            default -> "Call · no answer";
+        });
+        sendPhone(player, false, call);
     }
 
     public enum TargetKind {
@@ -731,33 +864,13 @@ public final class HarriganVignette {
         CompoundTag p = playerState(data, caller.getUUID());
         long today = HouseCalendar.today(caller.server);
         if (p.contains("LastCallDay") && p.getLong("LastCallDay") == today) {
-            caller.displayClientMessage(Component.literal("No answer.")
-                    .withStyle(ChatFormatting.DARK_GRAY), false);
+            log(caller, NOTE, "No answer.");
             return;
         }
 
         ServerPlayer onlinePlayer = caller.server.getPlayerList().getPlayerByName(rawTarget);
-        if (onlinePlayer != null || caller.server.getProfileCache().get(rawTarget).isPresent()) {
-            if (!HouseConfig.HARRIGAN_PLAYER_TARGETS.get()) {
-                scrambled(caller);
-                return;
-            }
-            if (onlinePlayer != null && onlinePlayer.getUUID().equals(caller.getUUID())) {
-                scrambled(caller);
-                return;
-            }
-            UUID targetId = onlinePlayer != null
-                    ? onlinePlayer.getUUID()
-                    : caller.server.getProfileCache().get(rawTarget).orElseThrow().getId();
-            String targetName = onlinePlayer != null
-                    ? onlinePlayer.getGameProfile().getName()
-                    : caller.server.getProfileCache().get(rawTarget).orElseThrow().getName();
-            p.putLong("LastCallDay", today);
-            p.putUUID("PendingPlayer", targetId);
-            p.putString("PendingPlayerName", targetName);
-            p.putLong("PlayerNightDay", today + (isNight(caller.server) ? 1L : 0L));
-            savePlayerState(data, caller.getUUID(), p);
-            acknowledge(caller, data, p);
+        if (onlinePlayer != null) {
+            callPlayer(caller, data, p, today, onlinePlayer.getUUID(), onlinePlayer.getGameProfile().getName());
             return;
         }
 
@@ -773,10 +886,17 @@ public final class HarriganVignette {
         }
 
         String normalized = rawTarget.toLowerCase(Locale.ROOT).trim().replace(' ', '_');
-        ResourceLocation key = normalized.contains(":") ? ResourceLocation.tryParse(normalized) : ResourceLocation.withDefaultNamespace(normalized);
+        // Typed on the phone, so anything can arrive here; tryParse refuses what no id could be instead of throwing.
+        ResourceLocation key = ResourceLocation.tryParse(normalized);
         if (key == null || !BuiltInRegistries.ENTITY_TYPE.containsKey(key)) {
-            caller.displayClientMessage(Component.literal("?")
-                    .withStyle(ChatFormatting.DARK_GRAY), false);
+            // A name that is no creature may still be a player who is offline; the cache is absent on some servers.
+            var cache = caller.server.getProfileCache();
+            var profile = cache == null ? java.util.Optional.<com.mojang.authlib.GameProfile>empty() : cache.get(rawTarget);
+            if (profile.isPresent()) {
+                callPlayer(caller, data, p, today, profile.get().getId(), profile.get().getName());
+            } else {
+                log(caller, HIM, "?");
+            }
             return;
         }
         EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(key);
@@ -792,9 +912,21 @@ public final class HarriganVignette {
         } else if (kind == TargetKind.FRIENDLY) {
             scheduleFriendly(caller, data, p, today);
         } else {
-            caller.displayClientMessage(Component.literal("?")
-                    .withStyle(ChatFormatting.DARK_GRAY), false);
+            log(caller, HIM, "?");
         }
+    }
+
+    private static void callPlayer(ServerPlayer caller, LabyrinthData data, CompoundTag p, long today, UUID targetId, String targetName) {
+        if (!HouseConfig.HARRIGAN_PLAYER_TARGETS.get() || targetId.equals(caller.getUUID())) {
+            scrambled(caller);
+            return;
+        }
+        p.putLong("LastCallDay", today);
+        p.putUUID("PendingPlayer", targetId);
+        p.putString("PendingPlayerName", targetName);
+        p.putLong("PlayerNightDay", today + (isNight(caller.server) ? 1L : 0L));
+        savePlayerState(data, caller.getUUID(), p);
+        acknowledge(caller, data, p);
     }
 
     private static void scheduleHostile(ServerPlayer caller, LabyrinthData data, CompoundTag p, long today, ResourceLocation type) {
@@ -819,6 +951,7 @@ public final class HarriganVignette {
         p.putInt("TotalCalls", p.getInt("TotalCalls") + 1);
         savePlayerState(data, caller.getUUID(), p);
         // No text reply. He answers in person.
+        log(caller, NOTE, "Delivered");
     }
 
     private static void consumeBlocked(ServerPlayer caller, LabyrinthData data, CompoundTag p, long today) {
@@ -833,13 +966,11 @@ public final class HarriganVignette {
         state.putInt("TotalCalls", calls + 1);
         savePlayerState(data, player.getUUID(), state);
         String[] pool = calls < 2 ? ACK : DISTORTED;
-        player.displayClientMessage(Component.literal(pool[Math.floorMod(calls, pool.length)])
-                .withStyle(ChatFormatting.DARK_GRAY), false);
+        log(player, HIM, pool[Math.floorMod(calls, pool.length)]);
     }
 
     private static void scrambled(ServerPlayer player) {
-        player.displayClientMessage(Component.literal("d̷o̴n̵'̷t̴")
-                .withStyle(ChatFormatting.DARK_GRAY), false);
+        log(player, HIM, "d̷o̴n̵'̷t̴");
     }
 
     // ---------------------------------------------------------------------
@@ -943,7 +1074,7 @@ public final class HarriganVignette {
         if (personal.getBoolean("FuneralExplained")) return;
         personal.putBoolean("FuneralExplained", true);
         savePlayerState(data, player.getUUID(), personal);
-        player.displayClientMessage(Component.literal("The study has been made ready for his funeral. He lies beyond the open doorway.")
+        player.displayClientMessage(Component.literal("The door opens on a funeral home now. He lies at the front of the chapel, made ready for his funeral.")
                 .withStyle(ChatFormatting.GRAY), false);
         player.displayClientMessage(Component.literal("Hold his phone and right-click his casket to lay it beside him, or leave with it to keep it. Only if it goes with him may your own phone reach his number outside the House.")
                 .withStyle(ChatFormatting.GRAY), false);
@@ -954,7 +1085,7 @@ public final class HarriganVignette {
         if (personal.getBoolean("CallingExplained")) return;
         personal.putBoolean("CallingExplained", true);
         savePlayerState(data, player.getUUID(), personal);
-        player.displayClientMessage(Component.literal("Your own phone can reach his number now. Outside the House, right-click it, then type a creature's name in chat within 30 seconds.")
+        player.displayClientMessage(Component.literal("Your own phone can reach his number now. Outside the House, open it to call him, or text him a creature's name.")
                 .withStyle(ChatFormatting.GRAY), false);
         player.displayClientMessage(Component.literal("One call a day. Name a hostile species, such as zombie: those creatures within 64 blocks of your Overworld bed die at the next dawn. Keep a bed set as your respawn point.")
                 .withStyle(ChatFormatting.DARK_GRAY), false);
@@ -1261,7 +1392,6 @@ public final class HarriganVignette {
         p.remove("PendingPlayerName");
         p.remove("PlayerNightDay");
         savePlayerState(data, owner, p);
-        WAITING_TEXT.remove(owner);
 
         Zombie ghost = activeGhost(server, owner);
         if (ghost != null) {
@@ -1479,7 +1609,6 @@ public final class HarriganVignette {
 
     public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         READERS.remove(event.getEntity().getUUID());
-        WAITING_TEXT.remove(event.getEntity().getUUID());
         NEXT_SPEECH.remove(event.getEntity().getUUID());
     }
 
@@ -1492,7 +1621,6 @@ public final class HarriganVignette {
             }
         }
         ACTIVE_GHOSTS.clear();
-        WAITING_TEXT.clear();
         NEXT_SPEECH.clear();
     }
 

@@ -39,7 +39,7 @@ public final class HarriganWakeTests {
                 var state=f.data().state(HarriganVignette.ID);
                 h.assertTrue(state.getInt("Visit")==3&&harrigan.get().getUUID().equals(identity)&&harrigan.get().phase()==HarriganVignette.CASKET_PHASE
                         &&Math.abs(harrigan.get().getZ()-(b.getZ()+HarriganVignette.CASKET.getZ()+.5))<.01,"the third visit is the funeral, and the same body lies in its casket");
-                h.assertTrue(f.in.getBlockState(b.offset(HarriganVignette.FUNERAL_DOOR)).isAir()&&mourners.get()==3,"the far doorway stands open onto three mourners");
+                h.assertTrue(f.in.getBlockState(b.offset(HarriganVignette.FUNERAL_DOOR).above()).isAir()&&mourners.get()==3,"the third visit opens on his funeral and three mourners");
                 var saved=state.copy();f.reload();HarriganWake.ensureCast(f.in,b,true);
                 state=f.data().state(HarriganVignette.ID);for(int role=0;role<3;role++)h.assertTrue(state.getUUID("Mourner0505_"+role).equals(saved.getUUID("Mourner0505_"+role)),"reloading retains the original mourner "+role);
                 h.assertTrue(mourners.get()==3,"and adds none");

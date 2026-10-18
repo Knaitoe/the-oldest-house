@@ -78,6 +78,7 @@ public final class TheOldestHouse {
         io.github.knaitoe.theoldesthouse.labyrinth.MovieNightRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.CostumeNightRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.WinterLakeRegistry.register(modEventBus);
+        io.github.knaitoe.theoldesthouse.labyrinth.PhoneSounds.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.BorrascaRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.FinaleLoot.register(modEventBus);
         ClapGhostRegistry.register(modEventBus);
@@ -175,7 +176,6 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onEntityInteractSpecific);
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onAttackEntity);
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onRightClickBlock);
-        NeoForge.EVENT_BUS.addListener(HarriganVignette::onServerChat);
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onPlayerLoggedOut);
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.DrownedTown::onServerTick);
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.PreservedCave::onServerTick);

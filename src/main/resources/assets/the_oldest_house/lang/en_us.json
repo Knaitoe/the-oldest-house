@@ -315,5 +315,11 @@
   "subtitles.the_oldest_house.winter.run": "Boys run through the snow",
   "subtitles.the_oldest_house.winter.wind": "Wind across the ice",
   "item.the_oldest_house.winter_ribbon": "Her ribbon",
-  "block.the_oldest_house.winter_prop": "Lake ice"
+  "block.the_oldest_house.winter_prop": "Lake ice",
+  "subtitles.the_oldest_house.phone.ringback": "Phone rings",
+  "subtitles.the_oldest_house.phone.pickup": "Line picks up",
+  "subtitles.the_oldest_house.phone.beep": "Voicemail tone",
+  "subtitles.the_oldest_house.phone.sent": "Message sent",
+  "subtitles.the_oldest_house.phone.received": "Message received",
+  "subtitles.the_oldest_house.phone.his_ring": "His phone rings"
 }
