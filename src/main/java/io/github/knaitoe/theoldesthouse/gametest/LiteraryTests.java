@@ -91,7 +91,7 @@ public final class LiteraryTests {
         var own=f.own(p,place);own.putInt("Rooms",127);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
         f.click(p,place,LiteraryRooms.CLOCK);
         h.assertTrue(f.own(p,place).getBoolean("ClockStopped0506")&&f.own(p,place).getBoolean("Ready"),"the reader's hand on the clock stops their evening and readies their account");
-        h.assertTrue(f.in.getBlockState(b.offset(LiteraryRooms.CLOCK)).getValue(LiteraryPropBlock.STAGE)==0,"the world's clock keeps going for every other reader");
+        h.assertTrue(MasqueBlock.is(f.in.getBlockState(b.offset(LiteraryRooms.CLOCK)),MasqueBlock.Kind.CLOCK_FACE)&&f.in.getBlockState(b.offset(LiteraryRooms.CLOCK)).getValue(MasqueBlock.STAGE)==0&&MasqueBlock.is(f.in.getBlockState(b.offset(LiteraryRooms.CLOCK).below()),MasqueBlock.Kind.CLOCK_CASE)&&f.in.getBlockState(b.offset(LiteraryRooms.CLOCK).below()).getValue(MasqueBlock.STAGE)==0,"the world's clock keeps going for every other reader");
         java.util.function.Function<ServerPlayer,LiteraryActor> dancer=reader->{var world=LiteraryVignettes.shared(f.data(),place);String key="Dancer0_1_"+reader.getUUID();return world.hasUUID(key)&&f.in.getEntity(world.getUUID(key)) instanceof LiteraryActor a?a:null;};
         h.startSequence().thenWaitUntil(()->{long time=f.in.getGameTime()%400;h.assertTrue(time>=100&&time<300&&dancer.apply(p)!=null&&dancer.apply(late)!=null&&dancer.apply(late).phase()==1,"a quiet stretch with both readers' own dancers in the room");})
             .thenExecute(()->{var mine=dancer.apply(p);h.assertTrue(mine.phase()==0&&mine.owner().orElseThrow().equals(p.getUUID())&&dancer.apply(late).owner().orElseThrow().equals(late.getUUID()),"the stopper's own dancers stand still while the later reader's still dance");
@@ -100,6 +100,31 @@ public final class LiteraryTests {
             .thenSucceed();
     }
     @AfterBatch(batch="literary_masque_own") public static void masqueOwnDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="literary_thin_structures",timeoutTicks=600)
+    public static void theMasqueWindsByBrazierLightAndBlyKeepsItsCupboardsLineAndPond(GameTestHelper h){
+        var f=new Fixture(h);var masque=LabyrinthPlace.MASQUE;var bly=LabyrinthPlace.BLY_ROUTE;f.build(masque);f.build(bly);var m=f.base(masque);var y=f.base(bly);var l=f.in;
+        for(var place:List.of(masque,bly))h.assertTrue(!ScenePolish.applies(place)&&!SceneReview.applies(place)&&!SceneCraft.applies(place),"the scenery passes leave "+place.id()+" as it is built");
+        h.succeedWhen(()->{
+            for(int i=0;i<MasqueSuite.ROOMS;i++){int mid=-11*i-6;
+                for(int x:new int[]{-10,10}){var lancet=l.getBlockState(m.offset(x,2,mid));var fire=m.offset(x<0?-11:11,1,mid);
+                    h.assertTrue(MasqueBlock.is(lancet,MasqueBlock.Kind.LANCET)&&lancet.getValue(MasqueBlock.STAGE)==i,"chamber "+i+" has a window of its own colour in each side wall");
+                    h.assertTrue(MasqueBlock.is(l.getBlockState(fire),MasqueBlock.Kind.BRAZIER)&&l.getBlockState(fire).getLightEmission()==15,"a brazier burns in the closed corridor opposite chamber "+i+"'s window");}
+                for(int x=-9;x<=9;x++)for(int yy=0;yy<=7;yy++)h.assertTrue(l.getBlockState(m.offset(x,yy,mid)).getLightEmission()==0,"there is no lamp or candle inside chamber "+i);
+                if(i<MasqueSuite.ROOMS-1){int d=MasqueSuite.door(i),far=-11*i-11;
+                    h.assertTrue(l.getBlockState(m.offset(d,0,far)).isAir()&&l.getBlockState(m.offset(d,0,far-1)).isAir()&&!l.getBlockState(m.offset(-d,0,far)).isAir(),"chamber "+i+" opens on to the next only off to one side");}}
+            h.assertTrue(MasqueBlock.is(l.getBlockState(m.offset(0,-1,-72)),MasqueBlock.Kind.VELVET)&&l.getBlockState(m.offset(0,-1,-72)).getValue(MasqueBlock.STAGE)==MasqueBlock.BLACK,"the seventh chamber is black velvet down to the carpet");
+            h.assertTrue(MasqueBlock.is(l.getBlockState(m.offset(MasqueSuite.FACE)),MasqueBlock.Kind.CLOCK_FACE)&&MasqueSuite.clock(MasqueSuite.FACE.below(2))&&!MasqueSuite.clock(MasqueSuite.FACE.above()),"the clock stands in the black room, and a hand on any part of it below the face counts");
+            for(int zz:BlyManor.CUPBOARDS)for(int s:new int[]{-1,1}){var door=new BlockPos(4*s,0,zz);var state=l.getBlockState(y.offset(door));
+                h.assertTrue(state.getBlock() instanceof DoorBlock&&!state.getValue(DoorBlock.OPEN),"each cupboard has a shut door in the corridor wall");
+                h.assertTrue(door.equals(BlyManor.cupboardDoor(new BlockPos(6*s,0,zz)))&&BlyManor.cupboardDoor(new BlockPos(6*s,0,-14))==null&&BlyManor.cupboardDoor(new BlockPos(2*s,0,zz))==null,"only the inside of a press counts as a cupboard");
+                h.assertTrue(l.getBlockState(y.offset(6*s,0,zz)).isAir()&&ManorBlock.is(l.getBlockState(y.offset(7*s,0,zz-1)),ManorBlock.Kind.LINEN),"the cupboard has room to stand among its linen");}
+            for(int z=-7;z>=-34;z--)h.assertTrue(ManorBlock.is(l.getBlockState(y.offset(0,-1,z)),ManorBlock.Kind.WET_BOARDS),"the corridor's boards are wet down her line at "+z);
+            for(int z=-3;z>=-48;z--)for(int yy=0;yy<=1;yy++){var at=y.offset(0,yy,z);h.assertTrue(l.getBlockState(at).getCollisionShape(l,at).isEmpty(),"nothing stands in her way at "+z+","+yy);}
+            h.assertTrue(l.getFluidState(y.offset(0,-4,-48)).isSource()&&l.getFluidState(y.offset(0,-3,-44)).isSource(),"the pond is deep where she goes under and where a reader she takes comes up");
+            h.assertTrue(l.getBlockState(y.offset(-12,0,-13)).is(Blocks.CAMPFIRE)&&ManorBlock.is(l.getBlockState(y.offset(LiteraryRooms.source(bly))),ManorBlock.Kind.NOTE)&&ManorBlock.is(l.getBlockState(y.offset(LiteraryRooms.ending(bly)).below()),ManorBlock.Kind.BENCH),"the drawing room has its fire and the gardener's note and the account lie on his bench");
+        });
+    }
+    @AfterBatch(batch="literary_thin_structures") public static void thinStructuresDone(ServerLevel l){close();}
     @GameTest(template="empty")
     public static void theOldManTellsOnePartForEachWholeNameAnsweredOnAVisit(GameTestHelper h){
         var own=new CompoundTag();own.putString("Name","Elias");own.putInt("Visit",1);

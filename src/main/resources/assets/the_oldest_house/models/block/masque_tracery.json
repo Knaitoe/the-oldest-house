@@ -1,0 +1,12 @@
+{
+ "parent": "minecraft:block/cube",
+ "textures": {
+  "particle": "the_oldest_house:block/masque/tracery",
+  "north": "the_oldest_house:block/masque/tracery",
+  "south": "the_oldest_house:block/masque/tracery",
+  "east": "the_oldest_house:block/masque/tracery",
+  "west": "the_oldest_house:block/masque/tracery",
+  "up": "the_oldest_house:block/masque/tracery",
+  "down": "the_oldest_house:block/masque/tracery"
+ }
+}

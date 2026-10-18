@@ -1,0 +1,47 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:translucent",
+ "textures": {
+  "g": "the_oldest_house:block/masque/glass_black",
+  "t": "the_oldest_house:block/masque/tracery",
+  "particle": "the_oldest_house:block/masque/glass_black"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    6
+   ],
+   "to": [
+    16,
+    16,
+    10
+   ],
+   "faces": {
+    "north": {
+     "texture": "#g"
+    },
+    "south": {
+     "texture": "#g"
+    },
+    "east": {
+     "texture": "#t",
+     "cullface": "east"
+    },
+    "west": {
+     "texture": "#t",
+     "cullface": "west"
+    },
+    "up": {
+     "texture": "#t",
+     "cullface": "up"
+    },
+    "down": {
+     "texture": "#t",
+     "cullface": "down"
+    }
+   }
+  }
+ ]
+}

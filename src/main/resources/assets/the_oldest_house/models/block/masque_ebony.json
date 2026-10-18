@@ -1,0 +1,12 @@
+{
+ "parent": "minecraft:block/cube",
+ "textures": {
+  "particle": "the_oldest_house:block/masque/ebony",
+  "north": "the_oldest_house:block/masque/ebony",
+  "south": "the_oldest_house:block/masque/ebony",
+  "east": "the_oldest_house:block/masque/ebony",
+  "west": "the_oldest_house:block/masque/ebony",
+  "up": "the_oldest_house:block/masque/ebony",
+  "down": "the_oldest_house:block/masque/ebony"
+ }
+}

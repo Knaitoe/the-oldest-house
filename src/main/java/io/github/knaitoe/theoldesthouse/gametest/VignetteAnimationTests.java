@@ -31,7 +31,7 @@ public final class VignetteAnimationTests {
     @GameTest(template="empty",batch="literary_bly_motion",timeoutTicks=1900)
     public static void originalLadyWalksEveryTickSinksGraduallyAndKeepsThePersonalClosetGate(GameTestHelper h){
         var f=fixture(h);var place=LabyrinthPlace.BLY_ROUTE;var p=f.player("bly_motion",place);var peer=f.player("bly_observer",place);
-        f.source(p,place);f.at(p,place,-8,0,-9);f.look(p,f.base(place).offset(-11,1,-9));f.at(peer,place,10,0,-3);
+        f.source(p,place);f.at(p,place,-6,0,-9);f.look(p,f.base(place).offset(-8,1,-9));f.at(peer,place,4,0,-3);
         final UUID[] id={null};final Vec3[] previous={null};final long[] cycle={-1};final int[] strides={0},sinks={0};final boolean[] checked={false};
         h.onEachTick(()->{
             var state=LiteraryVignettes.shared(f.data(),place);if(!state.hasUUID("Lady"))return;
@@ -51,7 +51,7 @@ public final class VignetteAnimationTests {
 
     @GameTest(template="empty",batch="literary_bly_hold",timeoutTicks=1400)
     public static void standingInTheLadysWayCostsTheReaderTheirPlace(GameTestHelper h){
-        var f=fixture(h);var place=LabyrinthPlace.BLY_ROUTE;var p=f.player("bly_held",place);var b=f.base(place);f.at(p,place,8,0,-3);
+        var f=fixture(h);var place=LabyrinthPlace.BLY_ROUTE;var p=f.player("bly_held",place);var b=f.base(place);f.at(p,place,4,0,-3);
         final boolean[] placed={false};final int[] carried={0};
         h.onEachTick(()->{
             var state=LiteraryVignettes.shared(f.data(),place);if(!state.hasUUID("Lady"))return;

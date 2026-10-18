@@ -1,0 +1,12 @@
+{
+ "parent": "minecraft:block/cube",
+ "textures": {
+  "particle": "the_oldest_house:block/manor/damask",
+  "north": "the_oldest_house:block/manor/damask",
+  "south": "the_oldest_house:block/manor/damask",
+  "east": "the_oldest_house:block/manor/damask",
+  "west": "the_oldest_house:block/manor/damask",
+  "up": "the_oldest_house:block/manor/damask",
+  "down": "the_oldest_house:block/manor/damask"
+ }
+}
