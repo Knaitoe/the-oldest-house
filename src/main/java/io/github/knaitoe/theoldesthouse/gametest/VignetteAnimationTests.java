@@ -1,6 +1,7 @@
 package io.github.knaitoe.theoldesthouse.gametest;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import java.util.UUID;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
@@ -135,6 +136,8 @@ public final class VignetteAnimationTests {
     @GameTest(template="empty",batch="literary_movie_pier",timeoutTicks=260)
     public static void herFootingEndsAtTheFarPierAndTheAccountRemembersTheNight(GameTestHelper h){
         var f=fixture(h);var place=LabyrinthPlace.MOVIE_NIGHT;var p=f.player("movie_pier",place);var rower=f.player("movie_alongside",place);var b=f.base(place);
+        for(var at:new BlockPos[]{b.offset(0,0,-2),b.offset(-30,4,-30),b.offset(30,0,-50),b.offset(0,-1,MovieNight.PIER_END),b.offset(0,1,-86),b.offset(0,12,-41)})
+            h.assertTrue(SceneClock.time(SceneClock.at(f.origin,at,HouseDimensions.OUTSIDE),0,6000)==18000,"the whole of Movie Night, from the entrance to the far pier and the screen's top, keeps the midnight clock: "+at);
         h.assertTrue(MovieNight.footing(Blocks.WATER.defaultBlockState())&&MovieNight.footing(MovieMaterialBlock.of(MovieMaterialBlock.Kind.DOCK))&&MovieNight.footing(MovieMaterialBlock.of(MovieMaterialBlock.Kind.RAFT))
                 &&!MovieNight.footing(MovieMaterialBlock.of(MovieMaterialBlock.Kind.PIER))&&!MovieNight.footing(Blocks.SAND.defaultBlockState())&&!MovieNight.footing(Blocks.GRASS_BLOCK.defaultBlockState()),"she keeps to the water and the grey boards out on it; never the far pier's cedar or a bank");
         h.assertTrue(MovieMaterialBlock.is(f.out.getBlockState(b.offset(0,-1,-64)),MovieMaterialBlock.Kind.PIER)&&MovieMaterialBlock.is(f.out.getBlockState(b.offset(0,-1,-10)),MovieMaterialBlock.Kind.DOCK)&&MovieMaterialBlock.is(f.out.getBlockState(b.offset(0,-1,-42)),MovieMaterialBlock.Kind.RAFT)&&f.out.getBlockState(b.offset(2,-1,-64)).is(Blocks.WATER)&&f.out.getBlockState(b.offset(-2,-1,-64)).is(Blocks.WATER),"the far pier runs out over open water");
@@ -337,7 +340,8 @@ public final class VignetteAnimationTests {
             f.at(p,place,2.5,0,-15);costumeState(f,w->w.putInt("Party",CostumeNight.FIRST_CALL-1));});
         h.runAfterDelay(110,()->{var w=LiteraryVignettes.shared(f.data(),place);var a=CostumeNight.cast(f.out,tina);
             h.assertTrue(w.getInt("Called")==0&&a.position().distanceTo(Vec3.atLowerCornerOf(b).add(CostumeNight.STAGE_FRONT))<1.5&&a.gesture()==4,"number one is called up and shows off at the front of the stage: "+a.position());});
-        h.runAfterDelay(290,()->{var a=CostumeNight.cast(f.out,tina);h.assertTrue(!LiteraryVignettes.shared(f.data(),place).contains("Called")&&a.position().distanceTo(tina.home(b))<.6,"then she goes back to her place: "+a.position());
+        h.runAfterDelay(290,()->{var a=CostumeNight.cast(f.out,tina);var w=LiteraryVignettes.shared(f.data(),place);
+            h.assertTrue(!(w.contains("Called")&&w.getInt("Called")==0)&&a.position().distanceTo(tina.home(b))<.6,"then she goes back to her place (Hank may already be calling number two): "+a.position()+" home "+tina.home(b));
             costumeState(f,w->w.putInt("Party",CostumeNight.RIBBON-1));start[0]=1;});
         h.runAfterDelay(540,()->{h.assertTrue(!LiteraryVignettes.shared(f.data(),place).getBoolean("LightsOut")&&p.getHealth()==20&&peer.getHealth()==20,"through the ribbon the bulbs stay on and nobody is hurt");});
         h.runAfterDelay(590,()->{var w=LiteraryVignettes.shared(f.data(),place);

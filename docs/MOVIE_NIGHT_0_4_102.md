@@ -62,6 +62,13 @@ and shoulders, a standing figure, or something on all fours.
 
 ## The night
 
+**It is night.** The scene's own clock holds it at midnight for anyone inside, whatever hour it is at home. In 0.4.103
+that clock was found never to reach the sky: the client hooked `getDayTime()`, but the sky, sun, moon, stars and daylight
+read `dayTime()`, which bypasses it, so the lake showed the home world's hour. `HouseSceneSkyMixin` now routes `dayTime()`
+through the same scene clock, so this and every other scene with its own hour shows it. The live two-client proof checks
+that a connected client at the lake sees midnight, and the pier case checks the clock covers the whole scene, entrance to
+far pier.
+
 - **Fireworks.** A rocket goes up from the barge every three to five seconds while anyone is here. Each burst lights the
   whole lake like lightning, for every reader. The light comes at the end of the rocket's own native lifetime, even if
   its section has stopped ticking.
