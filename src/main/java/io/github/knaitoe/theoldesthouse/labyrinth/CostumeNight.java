@@ -250,6 +250,9 @@ public final class CostumeNight {
         String line=who==HANK?(out?HANK_DARK[n%HANK_DARK.length]:HANK_TALK[Math.min(n,HANK_TALK.length-1)])
                 :out?DARK[(n+who.number())%DARK.length]:n==0?"Number "+who.number()+". "+who.lines()[0]:who.lines()[n%who.lines().length];
         if(who==HANK&&!out&&n>=1)own.putBoolean("HankStory0503",true);
+        // 0.4.104: a reader who did the dare that winter is someone he remembers.
+        if(who==HANK&&!out&&n==0&&WitnessAccount.has(LabyrinthData.get(p.server),p.getUUID(),WitnessAccount.Story.WINTER_LAKE)){
+            line="You. You took it back out to her, that winter. I never could. Your card's on the table where you came in.";own.putBoolean("HankDare0503",true);}
         speak(a,who,line,List.of(p),24);
     }
     /** The apple tub, the candy bowl and the radio. One apple and one sweet to each reader, ever. */
@@ -279,6 +282,7 @@ public final class CostumeNight {
         if(own.getBoolean("Noticed0503"))text.append("I counted thirteen on the sand. The thirteenth had no number, and it was wet.\n\n");
         if(own.getBoolean("HankStory0503"))text.append("Hank told me he started the contest with three friends, the summer after the shallows, so that if every child in town was her, nobody would be afraid of the real one. He gives the ribbon to whoever is most like her.\n\n");
         if(own.getBoolean("Shallows0503"))text.append("He looked at me for a long time, as if he had seen me somewhere before, at the edge of the water.\n\n");
+        if(own.getBoolean("HankDare0503"))text.append("He remembered the winter I walked her ribbon out across the ice. He said he never could.\n\n");
         text.append("He gave the ribbon to the one down by the water. Nobody came up for it.\n\n");
         text.append("When the lights went, everyone got down on all fours, the way she goes. One of them held still whenever I looked at it. Every time I looked back, it was nearer.\n\n");
         if(own.getBoolean("Struck0503"))text.append("It reached me once, while I was looking at someone else.\n\n");

@@ -116,6 +116,7 @@ the grass before the ribbon is told the contest isn't over.
   - the thirteenth witch with no number, if they got close to her before the ribbon;
   - Hank's story of the contest, if he told it to them;
   - Hank looking at them as if he knew them from the water's edge, if they threw her at the Shallows;
+  - Hank remembering the winter they walked her ribbon out across the ice, if they did the dare at Winter Lake (0.4.104);
   - the ribbon nobody came up for, and the crawl in the dark;
   - being caught once while looking at someone else, if she struck them.
 

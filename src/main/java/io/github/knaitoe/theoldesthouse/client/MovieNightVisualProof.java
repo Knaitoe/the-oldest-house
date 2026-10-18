@@ -55,7 +55,8 @@ public final class MovieNightVisualProof extends Screen {
         if(shark.z1-shark.z0<4.5F||shark.z1-shark.z0>6.2F)problems.add("the shark is not a large one, nose to tail: "+shark);
         if(shark.y1<1.5F)problems.add("its fin does not stand clear above its back: "+shark);
         var hull=new Bounds();var canoe=new LakeHouseCanoeModel<LakeCanoeEntity>(Minecraft.getInstance().getEntityModels().bakeLayer(LakeHouseCanoeModel.LAYER));canoe.renderToBuffer(new PoseStack(),hull,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
-        if(hull.x1-hull.x0<38)problems.add("the painted canoes are not a long, narrow canoe hull: "+hull);
+        // The model draws in blocks: stem to stem the hull is 42 pixels; the paddles held out at the sides widen it.
+        if(hull.x1-hull.x0<2.4F)problems.add("the painted canoes are not a canoe's length, stem to stem: "+hull);
         for(var paint:LakeCanoeRenderer.PAINT)if(Minecraft.getInstance().getResourceManager().getResource(paint).isEmpty())problems.add("a canoe's paint is missing: "+paint);
     }
     /** Mean and spread of a frame's brightness. */
