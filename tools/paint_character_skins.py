@@ -50,6 +50,14 @@ LOOKS = {
     'literary_paw_will': Look('#daac8a','#3e2c20','messy','#d6ceba','#585046','braces','#962e28',eyes='#465c42',mark='cottage_braces',sleeve=6),
     'literary_paw_sergeant': Look('#c48868','#968c80','close','#282c3a','#5c5a58','coat','#b09250',eyes='#382c24',age=2,beard='moustache',mark='cottage_uniform'),
     'literary_paw_messenger': Look('#dcbaa2','#2c241e','part','#201e20','#5b5a59','coat','#242226',eyes='#48423c',beard='moustache',mark='cottage_bowler'),
+    # Movie Night (0.4.102): the projectionist, the ticket seller, the Pruitts on the beach and the two in the canoe.
+    'literary_movie_ray': Look('#c9a184','#8f887c','receding','#58664d','#3d3a33','cardigan','#c7b98e',eyes='#5d5e52',age=2,glasses=True,beard='moustache',mark='movie_cap'),
+    'literary_movie_dot': Look('#d9b096','#a4532f','bun','#a8404a','#423a3c','cardigan','#ecdcb4',eyes='#4e5a48',age=1,mark='movie_badge'),
+    'literary_movie_frank': Look('#cf9f7d','#5b4130','part','#3a7c8a','#a08e6a','shirt','#f0d27a',eyes='#4f5f6e',age=1,mark='movie_hawaiian',sleeve=4),
+    'literary_movie_june': Look('#e0b89a','#6c4a2e','long','#d6a248','#d6a248','dress','#f2ead2',eyes='#566a50',sleeve=0),
+    'literary_movie_jamie': Look('#dcb090','#8c5a2e','messy','#c4463a','#3e5a78','tee','#efe4cc',eyes='#4f6a7a',mark='movie_stripes',sleeve=4),
+    'literary_movie_bobby': Look('#c99a78','#2c2219','part','#2d4878','#3a4d68','jacket','#e6d8b0',eyes='#4a3c30',mark='movie_letter'),
+    'literary_movie_lynn': Look('#e2bea6','#d6b06a','long','#e8c6cf','#394c66','knit','#f6eef0',eyes='#5b7090',mark='freckles'),
     'harrigan': Look('#c7ab91','#b9b7ac','receding','#343941','#2c3037','suit','#7d3940',age=2,glasses=True,logical=64),
     'harrigan_dead': Look('#b9b2a4','#b9b7ac','receding','#343941','#2c3037','suit','#7d3940',age=2,mark='dead',logical=64),
     'harrigan_mourner_0': Look('#ae7b59','#262320','close','#292e33','#26292f','suit','#77736e',logical=64),
@@ -280,6 +288,8 @@ def cloth_face(size,look,side='front'):
             d.line((2,0,w//2,h-4,w-3,0),fill='#58402f',width=2)
         if look.mark=='cottage_apron':
             d.line((1,h-7,w-2,h-7),fill=a);d.line((w//2,h-7,w//2-2,h-2),fill=a)
+        if look.mark=='movie_stripes':
+            for y in range(3,h-1,4):d.line((0,y,w-1,y),fill=a);d.line((0,y+1,w-1,y+1),fill=shade(a,-14))
         return im
     if side!='front':return im
     mid=w//2
@@ -351,6 +361,17 @@ def cloth_face(size,look,side='front'):
         for y in range(6,h-3,5):
             for x in (mid-3,mid+2):d.rectangle((x,y,x,y+1),fill=a)
         for x,color in ((2,'#843e3c'),(3,'#d1c49b'),(4,'#51667a')):d.line((x,3,x,4),fill=color)
+    # Movie Night garments: the father's loud shirt, the boy's stripes, the letterman's letter, the ticket seller's badge.
+    if look.mark=='movie_hawaiian':
+        for i,(x,y) in enumerate(((2,5),(w-5,4),(4,11),(w-6,12),(2,18),(w-4,19),(mid+3,16),(mid-5,21))):
+            if y<h-1:
+                d.point((x,y),fill=a);d.point((x+1,y),fill='#f6efe0');d.point((x,y+1),fill='#f6efe0');d.point((x+1,y+1),fill=shade(a,-30))
+    if look.mark=='movie_stripes':
+        for y in range(3,h-1,4):d.line((0,y,w-1,y),fill=a);d.line((0,y+1,w-1,y+1),fill=shade(a,-14))
+    if look.mark=='movie_letter':
+        d.rectangle((2,5,6,12),fill=a);d.rectangle((3,6,5,11),fill=c);d.rectangle((3,6,4,8),fill=a);d.point((5,9),fill=a)
+    if look.mark=='movie_badge':
+        d.rectangle((w-7,6,w-3,8),fill='#efe8d4');d.line((w-6,7,w-4,7),fill='#7a3036')
     if look.style=='ragged':
         d.line((mid,3,mid,h-3),fill=lo);d.rectangle((3,h-7,5,h-4),fill=shade(c,16))
         for y in (6,12,18):d.point((mid+1,y),fill=a)
@@ -386,6 +407,18 @@ def paint(look):
             elif side!='bottom':
                 d.rectangle((0,0,15,5),fill='#242326');d.line((0,4,15,4),fill='#111519')
                 d.line((1,1,14,1),fill='#38383a')
+            put(box,art)
+    if look.mark=='movie_cap':
+        # A flat cloth cap on the hat layer; its brim shades the front edge only.
+        for side,box in net(32,0,8,8,8).items():
+            art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
+            if side=='top':
+                art=panel((16,16),'#6b5a44','cloth');d=ImageDraw.Draw(art)
+                for x in range(1,15,3):d.line((x,1,x,14),fill='#5b4b38')
+            elif side=='front':
+                d.rectangle((0,0,15,2),fill='#6b5a44');d.line((0,3,15,3),fill='#3f3426');d.line((1,1,14,1),fill='#7d6a52')
+            elif side!='bottom':
+                d.rectangle((0,0,15,1),fill='#6b5a44');d.line((0,2,15,2),fill='#4d4030')
             put(box,art)
     if look.mark=='cottage_apron':
         art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)

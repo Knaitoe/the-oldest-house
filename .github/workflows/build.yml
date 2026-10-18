@@ -210,8 +210,16 @@ jobs:
                   assert z.read(f'assets/the_oldest_house/{name}').startswith(b'\x89PNG')
               for name in ('calm','dread','sting','finale','bell','projector','reel','cut','bump'):
                   assert z.read(f'assets/the_oldest_house/sounds/movie/{name}.ogg').startswith(b'OggS')
-              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/movie_prop.json'))['variants']) == 12
-              for name in ('MovieFilm','MovieScreenRenderer','LakeSharkModel','LakeSharkRenderer','MovieNightClient'):
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/movie_prop.json'))['variants']) == 56
+              # The cast, the lake's boards, the audience's things and the painted canoes.
+              for name in ('ray','dot','frank','june','jamie','bobby','lynn'):
+                  assert z.read(f'assets/the_oldest_house/textures/entity/literary_movie_{name}.png').startswith(b'\x89PNG')
+              for name in ('dock','raft','pier','canvas','frame','siding','chair','blanket','cooler','cooler_top','popcorn','popcorn_top','kernels','life_ring','can_side','can_top','buoy','poster_top','poster_bottom'):
+                  assert z.read(f'assets/the_oldest_house/textures/block/movie_{name}.png').startswith(b'\x89PNG')
+              for name in ('red','blue','yellow','white','teal'):
+                  assert z.read(f'assets/the_oldest_house/textures/entity/movie_canoe_{name}.png').startswith(b'\x89PNG')
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/movie_material.json'))['variants']) == 6
+              for name in ('MovieFilm','MovieScreenRenderer','LakeSharkModel','LakeSharkRenderer','MovieNightClient','LakeCanoeRenderer'):
                   assert f'io/github/knaitoe/theoldesthouse/client/{name}.class' in z.namelist()
               # 0.4.77: a frank left on the griddle burns, and draws charred through custom model data 1.
               assert z.read('assets/the_oldest_house/textures/item/goatman_brat_burnt.png').startswith(b'\x89PNG')
@@ -711,11 +719,11 @@ jobs:
           test -s build/font-smoke/native-npcs.png
           test -s build/font-smoke/native-harrigan-wake.png
           test -s build/font-smoke/character-art-passed.txt
-          for view in $(seq -w 0 19); do test -s build/font-smoke/native-character-art-$view.png; done
+          for view in $(seq -w 0 20); do test -s build/font-smoke/native-character-art-$view.png; done
           test -s build/font-smoke/shallows-passed.txt
           for view in 0 1 2 3 4 5 6 7; do test -s build/font-smoke/native-shallows-$view.png; done
           test -s build/font-smoke/movie-night-passed.txt
-          for view in 0 1 2 3 4 5 6; do test -s build/font-smoke/native-movie-$view.png; done
+          for view in 0 1 2 3 4 5 6 7 8; do test -s build/font-smoke/native-movie-$view.png; done
           test -s build/font-smoke/cast-passed.txt
           test -s build/font-smoke/stacey-scrabble-passed.txt
           test -s build/font-smoke/native-stacey-scrabble.png

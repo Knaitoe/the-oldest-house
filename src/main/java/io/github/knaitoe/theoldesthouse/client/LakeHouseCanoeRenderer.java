@@ -17,8 +17,8 @@ import org.joml.Quaternionf;
 public final class LakeHouseCanoeRenderer extends EntityRenderer<LakeHouseCanoe> {
     /** Fresh paint, chipped in the culvert, scraped down to the wood. */
     private static final ResourceLocation[] PAINT={paint("lake_house_canoe"),paint("lake_house_canoe_chipped"),paint("lake_house_canoe_scraped")};
-    private final LakeHouseCanoeModel model;
-    public LakeHouseCanoeRenderer(EntityRendererProvider.Context context){super(context);shadowRadius=.7F;model=new LakeHouseCanoeModel(context.bakeLayer(LakeHouseCanoeModel.LAYER));}
+    private final LakeHouseCanoeModel<LakeHouseCanoe> model;
+    public LakeHouseCanoeRenderer(EntityRendererProvider.Context context){super(context);shadowRadius=.7F;model=new LakeHouseCanoeModel<>(context.bakeLayer(LakeHouseCanoeModel.LAYER));}
     private static ResourceLocation paint(String name){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/"+name+".png");}
 
     @Override public void render(LakeHouseCanoe canoe,float yaw,float partialTicks,PoseStack pose,MultiBufferSource buffers,int light){

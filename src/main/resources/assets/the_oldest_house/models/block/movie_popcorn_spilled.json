@@ -1,0 +1,175 @@
+{
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "cloth": "the_oldest_house:block/movie_blanket",
+    "box": "the_oldest_house:block/movie_popcorn",
+    "corn": "the_oldest_house:block/movie_popcorn_top",
+    "kernels": "the_oldest_house:block/movie_kernels",
+    "particle": "the_oldest_house:block/movie_popcorn"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        1,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cloth",
+          "uv": [
+            0,
+            15,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#cloth",
+          "uv": [
+            0,
+            15,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#cloth",
+          "uv": [
+            0,
+            15,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#cloth",
+          "uv": [
+            0,
+            15,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#cloth",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#cloth",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        1,
+        6
+      ],
+      "to": [
+        11,
+        5,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#box",
+          "uv": [
+            5,
+            11,
+            11,
+            15
+          ],
+          "rotation": 90
+        },
+        "south": {
+          "texture": "#box",
+          "uv": [
+            5,
+            11,
+            11,
+            15
+          ],
+          "rotation": 90
+        },
+        "east": {
+          "texture": "#box",
+          "uv": [
+            6,
+            11,
+            10,
+            15
+          ]
+        },
+        "west": {
+          "texture": "#corn",
+          "uv": [
+            6,
+            11,
+            10,
+            15
+          ]
+        },
+        "up": {
+          "texture": "#box",
+          "uv": [
+            5,
+            6,
+            11,
+            10
+          ],
+          "rotation": 90
+        },
+        "down": {
+          "texture": "#box",
+          "uv": [
+            5,
+            6,
+            11,
+            10
+          ],
+          "rotation": 90
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        1.1,
+        1
+      ],
+      "to": [
+        15,
+        1.1,
+        15
+      ],
+      "faces": {
+        "up": {
+          "texture": "#kernels",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
+        }
+      }
+    }
+  ]
+}

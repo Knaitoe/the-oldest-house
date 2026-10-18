@@ -1,0 +1,41 @@
+{
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "ring": "the_oldest_house:block/movie_life_ring",
+    "particle": "the_oldest_house:block/movie_life_ring"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        2,
+        14
+      ],
+      "to": [
+        14,
+        14,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ring",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#ring",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ]
+        }
+      }
+    }
+  ]
+}

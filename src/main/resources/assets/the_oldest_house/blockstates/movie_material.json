@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "kind=dock": {
+      "model": "the_oldest_house:block/movie_material_dock"
+    },
+    "kind=raft": {
+      "model": "the_oldest_house:block/movie_material_raft"
+    },
+    "kind=pier": {
+      "model": "the_oldest_house:block/movie_material_pier"
+    },
+    "kind=canvas": {
+      "model": "the_oldest_house:block/movie_material_canvas"
+    },
+    "kind=frame": {
+      "model": "the_oldest_house:block/movie_material_frame"
+    },
+    "kind=siding": {
+      "model": "the_oldest_house:block/movie_material_siding"
+    }
+  }
+}

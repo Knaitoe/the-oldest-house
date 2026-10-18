@@ -4,6 +4,7 @@ from paint_character_skins import LOOKS
 HOTEL = ['porter','bartender','scarred_guest','pianist','dancer','dancer_dress']
 GHOSTS = {'marjorie':'GHOST_MARJORIE','merry':'GHOST_MERRY','john':'GHOST_JOHN','sarah':'GHOST_SARAH','barry':'GHOST_PRODUCER','father_wanderly':'GHOST_PRIEST'}
 LITERARY = {'mother':'MOTHER','dancer':'DANCER','red_figure':'RED_FIGURE','coffin_woman':'COFFIN_WOMAN','lady':'LADY','brother':'BROTHER','father':'FATHER','visitor':'VISITOR','killer':'KILLER','family_father':'FAMILY_FATHER','family_mother':'FAMILY_MOTHER','family_child':'FAMILY_CHILD','old_man':'OLD_MAN','lake_tess':'LAKE_TESS','lake_wax':'LAKE_WAX'}
+MOVIE=['ray','dot','frank','june','jamie','bobby','lynn']
 CLUB=['dancer_male','dancer_female','dancer_vest','dancer_copper','dancer_mustard','dancer_silver','dancer_brick','dancer_braids','dj']
 
 
@@ -45,7 +46,10 @@ def entry(name,logical):
 
 
 def entries():
-    rows=[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith('literary_paw_')]
+    rows=[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_'))]
     for i,name in enumerate(['walter','ruth','will','sergeant','messenger']):
         rows.append({'name':'literary_paw_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':9+i})
+    # Movie Night (0.4.102): the lake's audience on stranger phases fourteen to twenty.
+    for i,name in enumerate(MOVIE):
+        rows.append({'name':'literary_movie_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':14+i})
     return rows

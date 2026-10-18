@@ -634,7 +634,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         // West of the screen's raft, up past it, then in to the end of the far pier.
         final double[][] route={{-16,-30},{-16,-50},{.5,-58.2}};
         h.runAfterDelay(10,()->{var world=LiteraryVignettes.shared(f.data(),place);
-            h.assertTrue(f.out.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(f.base(place),place)).size()==4,"simultaneous native arrivals moor exactly four canoes at the dock");
+            h.assertTrue(f.out.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(f.base(place),place),c->c.getTags().contains(MovieNight.CANOE)).size()==4,"simultaneous native arrivals moor exactly four canoes at the dock");
             boat[0]=MovieNight.canoe(f.out,world,0);f.at(p,place,-2.5,0,-13);p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);peer.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
             h.assertTrue(boat[0]!=null&&MovieNight.board(p,boat[0]),"the actual empty-handed reader takes a canoe from the dock");
             f.at(peer,place,-2.5,0,-13);h.assertTrue(!MovieNight.board(peer,boat[0]),"nobody else climbs into a canoe already in use");f.at(peer,place,8,0,-4);});
@@ -655,7 +655,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             h.assertTrue(f.own(peer,place).getInt("Bursts0502")==0,"a reader standing on the beach is not out under the bursts");
             var old=boat[0].getUUID();boat[0].discard();
             h.runAfterDelay(15,()->{var world=LiteraryVignettes.shared(f.data(),place);var replacement=MovieNight.canoe(f.out,world,0);
-                h.assertTrue(replacement!=null&&!replacement.getUUID().equals(old)&&f.out.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(f.base(place),place)).size()==4,"an actual discard brings one usable replacement to the same place");
+                h.assertTrue(replacement!=null&&!replacement.getUUID().equals(old)&&f.out.getEntitiesOfClass(LakeCanoeEntity.class,IndianLakeRooms.bounds(f.base(place),place),c->c.getTags().contains(MovieNight.CANOE)).size()==4,"an actual discard brings one usable replacement to the same place");
                 h.assertTrue(!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id()))&&f.own(peer,place).getDouble("RowDistance")==0,"canoe recovery never manufactures personal travel or credit");
                 f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id())),"the rower's own account completes the scene");h.succeed();});
         });
