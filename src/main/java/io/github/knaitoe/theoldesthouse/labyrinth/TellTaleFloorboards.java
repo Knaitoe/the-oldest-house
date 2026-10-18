@@ -266,6 +266,7 @@ public final class TellTaleFloorboards {
         if (!stack.is(ItemTags.AXES)) {
             // The board shifts a little under a hand, and the beat skips.
             player.serverLevel().playSound(null, event.getPos(), SoundEvents.WOOD_HIT, SoundSource.BLOCKS, 0.4F, 0.7F);
+            byHand(player);
             return;
         }
         event.setCanceled(true);
@@ -277,10 +278,15 @@ public final class TellTaleFloorboards {
     public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || player.isSpectator()
                 || event.getAction()!=PlayerInteractEvent.LeftClickBlock.Action.START
-                || !isLooseBoard(player.serverLevel(), event.getPos())
-                || !player.getMainHandItem().is(ItemTags.AXES)) return;
+                || !isLooseBoard(player.serverLevel(), event.getPos())) return;
+        if (!player.getMainHandItem().is(ItemTags.AXES)) { byHand(player); return; }
         event.setCanceled(true);
         pry(player, player.getMainHandItem(), InteractionHand.MAIN_HAND);
+    }
+
+    /** 0.4.105: nothing in the room mentions an axe, so trying the board with anything else says what it needs. */
+    private static void byHand(ServerPlayer player) {
+        player.displayClientMessage(Component.literal("It won't come up by hand. An axe would pry it up."), true);
     }
 
     public static boolean pry(ServerPlayer player, ItemStack axe, InteractionHand hand) {
@@ -313,7 +319,7 @@ public final class TellTaleFloorboards {
         return true;
     }
 
-    /** The loose board comes up under an axe; anything else in the room is loud and stays put. */
+    /** The loose board comes up under an axe and stays put, quietly, under anything else; the rest of the room is loud. */
     public static void onBreak(BlockEvent.BreakEvent event) {
         if (!(event.getLevel() instanceof ServerLevel level) || !level.dimension().equals(HouseDimensions.INTERIOR)) {
             return;
@@ -323,10 +329,10 @@ public final class TellTaleFloorboards {
             return;
         }
         event.setCanceled(true);
-        if (event.getPos().equals(base.offset(LOOSE_BOARD))
-                && event.getPlayer() instanceof ServerPlayer player
-                && player.getMainHandItem().is(ItemTags.AXES)) {
-            pry(player, player.getMainHandItem(), InteractionHand.MAIN_HAND);
+        if (event.getPos().equals(base.offset(LOOSE_BOARD)) && event.getPlayer() instanceof ServerPlayer player) {
+            // Working at the board where the heartbeat is was never the noise; only an axe lifts it.
+            if (player.getMainHandItem().is(ItemTags.AXES)) pry(player, player.getMainHandItem(), InteractionHand.MAIN_HAND);
+            else byHand(player);
             return;
         }
         // Trying to dig or break your way out is loud.

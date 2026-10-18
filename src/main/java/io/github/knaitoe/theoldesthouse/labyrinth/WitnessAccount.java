@@ -70,7 +70,7 @@ public final class WitnessAccount {
         CRIMSON_HALL("crimson_hall","The recorded voices","connection","I played all three voices through their endings. Beneath the snow, the floor was red."),
         BLY_ROUTE("bly_route","The wet boards","survival","I waited in a shut cupboard until the footsteps reached the lake room. Then I came out."),
         ELK_LOT("elk_lot","The looping field","survival","The field turned back upon itself. The clipping at the parking lot had my name and an ending I had not seen."),
-        ELK_FAN("elk_fan","The broken light","understanding","I repaired the light above the carpet. On later returns the shape became tape, then a tooth."),
+        ELK_FAN("elk_fan","The broken light","understanding","I fixed the light and stood under the turning blades until they threw me out. A tooth was in my hand. When I went back, tape held the shape of the deer."),
         MAPPING_INTERIOR("mapping_interior","The crawl beyond the roof","connection","The passage under the house ran farther than the roof. I returned to the boy after choosing what to do with his father's things."),
         HOLY_RABBIT("holy_rabbit","The food in the hollow","understanding","The rabbit was alive every morning, and every night the meat came in its skin. Then I saw his legs. I followed the line they left in the snow."),
         CONFESSION("confession","The listener's signature","understanding","I wrote until the speaker began counting the listener. The journal sealed in the wall carried my name."),

@@ -169,6 +169,8 @@ public final class WitnessTests {
             level.getChunkAt(board);level.setBlock(board,HouseBlocks.LOOSE_FLOORBOARD.get().defaultBlockState(),3);
             ServerPlayer player=FakePlayerFactory.get(level,new GameProfile(UUID.randomUUID(),"pry_fixture"));
             player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);player.moveTo(Vec3.atBottomCenterOf(board.above().south()));
+            double calm=TellTaleFloorboards.heat();var byHand=new BlockEvent.BreakEvent(level,board,level.getBlockState(board),player);NeoForge.EVENT_BUS.post(byHand);
+            helper.assertTrue(byHand.isCanceled()&&level.getBlockState(board).is(HouseBlocks.LOOSE_FLOORBOARD.get())&&TellTaleFloorboards.heat()==calm,"working at the board by hand leaves it in place and makes no noise");
             ItemStack axe=new ItemStack(Items.IRON_AXE);player.setItemInHand(InteractionHand.MAIN_HAND,axe);
             if(attack){var event=new PlayerInteractEvent.LeftClickBlock(player,board,Direction.UP,PlayerInteractEvent.LeftClickBlock.Action.START);
                 event.setCanceled(true);NeoForge.EVENT_BUS.post(event);helper.assertTrue(event.isCanceled(),"native mining remains cancelled after the authored pry");}
@@ -178,7 +180,7 @@ public final class WitnessTests {
             int wear=axe.getDamageValue();helper.assertTrue(!TellTaleFloorboards.pry(player,axe,InteractionHand.MAIN_HAND)&&axe.getDamageValue()==wear,"repeat events cannot duplicate the note or wear the axe twice");
             BlockPos wall=base.offset(-6,0,-6);level.setBlock(wall,Blocks.BROWN_TERRACOTTA.defaultBlockState(),3);
             var attempt=new BlockEvent.BreakEvent(level,wall,level.getBlockState(wall),player);NeoForge.EVENT_BUS.post(attempt);
-            helper.assertTrue(attempt.isCanceled()&&level.getBlockState(wall).is(Blocks.BROWN_TERRACOTTA),"ordinary labyrinth blocks remain protected");
+            helper.assertTrue(attempt.isCanceled()&&level.getBlockState(wall).is(Blocks.BROWN_TERRACOTTA)&&TellTaleFloorboards.heat()>0,"ordinary labyrinth blocks remain protected, and trying them is loud");
         }helper.succeed();
     }
     @GameTest(template="empty",batch="floorboard_attack") public static void axeAttackWorksThroughAnAlreadyCancelledEvent(GameTestHelper helper){pryFixture(helper,true);}
