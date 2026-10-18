@@ -704,7 +704,7 @@ public final class ModelHome {
                 if (!state.getBoolean("BeatDone")) {
                     state.putBoolean("BeatDone", true);
                     data.setState(ID, state);
-                    for(ServerPlayer visitor:visitors)visitor.displayClientMessage(net.minecraft.network.chat.Component.literal("You saw it. The doorway will remember this when you leave and return."),false);
+                    for(ServerPlayer visitor:visitors)visitor.displayClientMessage(net.minecraft.network.chat.Component.literal("You saw it. ").append(net.minecraft.network.chat.Component.literal("The doorway will remember this when you leave and return.").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC)),false);
                     TheOldestHouse.LOGGER.info("The chairs in the model home were stacked on visit {}.", visit);
                 }
             }

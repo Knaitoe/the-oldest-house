@@ -4,7 +4,8 @@ On October 18 the owner asked for the smaller batch of fixes from the gameplay a
 then (before it was verified) for the Floorboards hint to become a hatchet in the room, for Mr. Harrigan's Phone to
 become three visits with a real Mr. Harrigan, and then for the third visit to be a real funeral home and for the phone to
 have a screen from which the player can call and text him as its notes say; and then for the storytelling batch from the
-same review and a fix to the lake house's culvert, where the reader pushes the canoe along the walls by hand.
+same review and a fix to the lake house's culvert, where the reader pushes the canoe along the walls by hand; and then for
+the review's larger storytelling fixes.
 The candidate is 0.4.105 on verified 0.4.104 (fd6a73f). Protocol 77 (the phone's screen adds two packets); layout 45 is
 unchanged. 46 sources / 35 resolutions / two kinds / three endings are unchanged.
 
@@ -167,6 +168,38 @@ From the storytelling half of the review:
   story read only the shared visit counter, which personal stories never write. Literary rooms now count the reader's own
   visits, and Holloway's camp counts once that reader has taken something from it.
 
+## The larger storytelling fixes
+
+**Endings that only retold the night.** Each of these now ends on something the reader did not know, a reason or a piece
+of the room's past, never on an event they did not see:
+
+- Bly: the cupboard catches are on the inside because a child once hid from her in one; she has never opened one, and the
+  reader thinks she is still looking for that child.
+- Winchester: the upper ledger keeps a name beside every room, none of them the builders'; the last name has no room yet,
+  which is why the work cannot stop.
+- Wheel: Mother is the only thing in the house still the size the reader remembers; every room before hers measured them
+  against her.
+- The yacht's hides: his boots never slowed, because nobody looks twice at a pile of things already dead.
+- The Witness lines follow, and Hotel's and Drowned Town's change too: the desk kept everything the reader lost and a
+  second place setting nobody has signed for; opening the drowned church's roof let the people who had listened for years
+  stand up under the hill (the congregation the cave then finds gone).
+
+**The three lake nights as one story.** Costume Night, Movie Night and Winter Lake now carry the Indian Lake story forward
+instead of retelling the same chase:
+
+- **The ribbon.** It came off in Hank's hand at the shallows. In winter the dare takes it back out to her, and Winter Lake
+  now ends with it back on Hank's table in June, dry, the week of the costume contest, every June since. At Costume Night
+  Hank keeps every year's card, and every one has the same winner in his hand: the one by the water. A reader who did the
+  dare hears from Hank that it was back on his table by June.
+- **What she takes, the lake keeps.** Movie Night's missing (the Pruitts, the canoe's two teenagers) are not drowned. A
+  reader who has walked among the drowned congregation in the cave knows where they will be by morning, in its rows,
+  still facing the way the screen had been; anyone else hears what Proofrock says: nobody drowns in Indian Lake, it keeps
+  them. Ray recognises a reader who was one of the boys at the shallows.
+- Their Witness lines carry the same turns.
+
+**Controls in one voice.** Instructions inside scenes (the Harrigan funeral's casket, Model Home's doorway) are the House's
+grey italic small print, as the source hints are, rather than lines in the scene's own voice.
+
 ## Validation scope
 
 - **Floorboards:** both pry cases now first try the board by hand: it stays, the event is refused and the noise does not
@@ -193,6 +226,9 @@ From the storytelling half of the review:
 - **Storytelling (new cases):** an honest reader is told once and the camp leaves their deals while a looter keeps it; the
   account reads in the order rooms ended (an older record keeps the House's order); a personal story begun by one reader
   is weighted for them only, and not once finished.
+- **Lake nights (new case):** a reader new to the lake hears only what Proofrock says; one who walked among the
+  congregation knows where the missing go, and Ray knows a boy from the shallows; the winter ribbon is on Hank's table by
+  June; Hank's contest crowns her every year, with the ribbon that came back.
 - **Phone screen (client proof):** three native views of the screen (home, messages, a voicemail call with its input),
   saved as `native-phone-0..2.png` and required by the build job.
 - **Run 39140034350 (34bc996):** ten of twelve jobs passed. The build job's only failure was the Harrigan pose case, which
@@ -202,3 +238,5 @@ From the storytelling half of the review:
   frame: the proof carries each client into the House and sends the paw in the same moment, and the client's 80-tick wait
   for the view counted the level's loading screen. It no longer does, and the proof waits for the frame instead of going
   on without it.
+- **Run 39155587807 (c808d1a):** every job failed to compile: one Devil's Rock call still passed the reader's name to the
+  page it lays on the floor (fixed in afb3e43).

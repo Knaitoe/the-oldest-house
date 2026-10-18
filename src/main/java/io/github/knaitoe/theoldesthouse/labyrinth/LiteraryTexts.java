@@ -107,10 +107,10 @@ public final class LiteraryTexts {
         case MINIATURES->"The tables held rooms I had walked through, a little figure standing where I had stood. In the latest, a second figure stood just behind mine, close enough to touch its shoulder. I had crossed that room alone.";
         case MASQUE->"I put my hand on the clock. The next chime did not come. Seven rooms of people had been waiting for it; now there was only the sound of my hand leaving the wood.";
         case USHER->own.getBoolean("LidClosed")?"I returned to the closed coffin. Scratching had crossed the stone along with the crack. I could no longer call it the wood settling.":"I left the lid open. When I returned, the coffin was empty. I found her in the wing, standing where there had been no chair.";
-        case WINCHESTER->"The switchbacks brought me one floor up. The ledger bought another day of work. A door looked down on the place where I had begun; the short stair ended against plaster.";
+        case WINCHESTER->"The switchbacks brought me one floor up, to the upper ledger. Beside every room it kept a name, and none of the names were the builders'. The last name had no room yet. That was why the work could not stop.";
         case CHILD_ROOM->"The windows went first. Then the doors. I crawled beneath the bed and found a strip of floor that still led somewhere. I stood up only after I had left it.";
         case CRIMSON_HALL->"I played the three voices all the way through. Under the snow, the floor was red. A house can keep a voice much longer than it keeps a person.";
-        case BLY_ROUTE->"I shut the cupboard from inside. Drips passed the crack under its door. I waited for the last footstep to enter the lake room, then came out onto the same wet boards.";
+        case BLY_ROUTE->"I shut a cupboard from inside while the drips passed on their way to the lake room. The catches are inside because a child once hid from her in one. She has never opened one. I think she is still looking for that child.";
         case THREE_FINGERS->ThreeFingers.account(own);
         case LAKE_HOUSE->LakeHouse.account(own);
         case BORRASCA->BorrascaTexts.account();
@@ -119,13 +119,13 @@ public final class LiteraryTexts {
         case MAPPING_INTERIOR->own.getBoolean("PileBroken")?"I broke the pile under the trailer. The boy woke when I came back. The crawlspace still ran beyond the walls, but the things at its end could no longer hold him there.":"I took what lay under the trailer. The photograph came with me. When I returned, the boy was harder to wake. Keeping a father's things was not the same as keeping a brother.";
         case HOLY_RABBIT->rabbitAccount(own);
         case CONFESSION->"The last chapter addressed the person holding the pen.\n\n"+own.getString("Statistics")+"\n\nThe signature was mine. The chair opposite me had not changed.";
-        case ELK_CARCASSES->"I held still beneath the hides. His boots passed the opening twice. When they no longer came back, I followed the service path. The pile stayed where the camp had put it.";
+        case ELK_CARCASSES->"I held still beneath the hides. His boots passed the opening twice and did not slow: nobody looks twice at a pile of things already dead. When the boots stopped coming back, I followed the service path.";
         case COSTUME_NIGHT->CostumeNight.account(own);
         case MOVIE_NIGHT->MovieNight.account(own);
         case WINTER_LAKE->WinterLake.account(own);
         case CAMP_BLOOD->"I read the essay, crossed the cabins and lost him among the trees. The service road had no gate. I had spent the night looking for one.";
         case DEVILS_ROCK->"I laid the pages in order. The camera had times for each arrival, but never a face. The last page asked me to tell him the path was still there. It did not say who he was, or how the paper had entered the room.";
-        case WHEEL->"I reached Mother's room. The front door opened onto an outside I could stand up in. The numbers remained on the doors behind me. I kept the key without choosing another room.";
+        case WHEEL->"I reached Mother's room. She was the only thing in the house still the size I remembered; every room before hers had measured me against her. The front door opened onto an outside I could stand up in. I kept the key.";
         case GHOSTS_SET->own.getBoolean("Filming0485")?GhostsSet.account(name,own):"TRANSCRIPT\n\n"+(own.getString("Confession").isEmpty()?"[The booth recorded silence.]":own.getString("Confession"))+"\n\nThe lights had shown a family waiting on its marks. Off the carpet, another conversation had gone on behind my back.";
         case END_WORLD_CABIN->own.getBoolean("Offered")?"I chose what went to the keeper. The visitors thanked me by name. On her shelf it would remain exactly what I gave up. I could see it; I would not carry it again.":"I refused. One visitor walked into the lake. On the screen, "+StaircaseProse.place(own.getString("ClosedRoom"))+" went dark. My hands were still full.";
         case FAMILY_COPY->"They knew my rooms better than I did: which stair complained, where the window had been. The weapon on their wall had my old scratches, but none of its days. When the welcome ended, the father thanked me for minding the place while they were away.";

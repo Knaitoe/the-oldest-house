@@ -630,8 +630,9 @@ public final class HarriganVignette {
                 .withStyle(ChatFormatting.DARK_GRAY), false);
         player.displayClientMessage(Component.literal("Keep his phone as a keepsake, or bring it to his funeral and lay it beside him. Your own phone may reach him if his goes with him.")
                 .withStyle(ChatFormatting.GRAY), false);
+        // 0.4.105: controls are the House's grey italic small print, never a character's line.
         player.displayClientMessage(Component.literal("To bury it, hold Mr. Harrigan's phone and right-click the casket.")
-                .withStyle(ChatFormatting.GRAY), false);
+                .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), false);
     }
 
     public static void onAttackEntity(AttackEntityEvent event) {
@@ -1077,7 +1078,7 @@ public final class HarriganVignette {
         player.displayClientMessage(Component.literal("The door opens on a funeral home now. He lies at the front of the chapel, made ready for his funeral.")
                 .withStyle(ChatFormatting.GRAY), false);
         player.displayClientMessage(Component.literal("Hold his phone and right-click his casket to lay it beside him, or leave with it to keep it. Only if it goes with him may your own phone reach his number outside the House.")
-                .withStyle(ChatFormatting.GRAY), false);
+                .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), false);
     }
 
     private static void explainCalling(ServerPlayer player, LabyrinthData data) {
