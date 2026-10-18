@@ -103,8 +103,8 @@ public final class LiveExpeditionClient {
         if(step==14||step==15){mc.options.keyUp.setDown(false);if(ticks>15){double dx=target.getX()+.5-mc.player.getX(),dz=target.getZ()+.5-mc.player.getZ();mc.player.setYRot((float)Math.toDegrees(Math.atan2(-dx,dz)));mc.player.setXRot(0);}
             if(step==15&&ticks==40){
                 // The lake's midnight must reach the native sky and daylight, whatever hour it is at home.
-                int clock=NovelSceneClient.clockMode(mc.level);float expected=mc.level.dimensionType().timeOfDay(18000),actual=mc.level.getTimeOfDay(1);
-                if(clock!=9||Math.abs(actual-expected)>1e-4F)throw new IllegalStateException("LIVE EXPEDITION the lake's midnight never reached the native sky: clock "+clock+" time of day "+actual+" expected "+expected+" native day "+mc.level.getLevelData().getDayTime()+" origin "+(HouseSightlineState.hasOrigin()?HouseSightlineState.origin():null));
+                int clock=NovelSceneClient.clockMode(mc.level);float midnight=mc.level.dimensionType().timeOfDay(18000),actual=mc.level.getTimeOfDay(1);
+                if(clock!=9||Math.abs(actual-midnight)>1e-4F)throw new IllegalStateException("LIVE EXPEDITION the lake's midnight never reached the native sky: clock "+clock+" time of day "+actual+" expected "+midnight+" native day "+mc.level.getLevelData().getDayTime()+" origin "+(HouseSightlineState.hasOrigin()?HouseSightlineState.origin():null));
                 var witch=io.github.knaitoe.theoldesthouse.labyrinth.DrownedTownRegistry.LAKE_WITCH.get().create(mc.level);
                 if(witch==null)throw new IllegalStateException("Native Stacy model fixture missing");
                 var model=new LakeWitchModel(mc.getEntityModels().bakeLayer(LakeWitchModel.LAYER));
