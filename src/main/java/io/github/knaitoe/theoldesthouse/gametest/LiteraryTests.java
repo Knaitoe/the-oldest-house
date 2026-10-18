@@ -85,6 +85,35 @@ public final class LiteraryTests {
             .thenSucceed();
     }
     @AfterBatch(batch="literary_masque_chime") public static void masqueChimeDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="literary_masque_own",timeoutTicks=800)
+    public static void aStoppedClockStopsOnlyTheEveningOfTheReaderWhoStoppedIt(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.MASQUE;var p=f.player("masque_stopper",place);var late=f.player("masque_late",place);var b=f.base(place);
+        var own=f.own(p,place);own.putInt("Rooms",127);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+        f.click(p,place,LiteraryRooms.CLOCK);
+        h.assertTrue(f.own(p,place).getBoolean("ClockStopped0506")&&f.own(p,place).getBoolean("Ready"),"the reader's hand on the clock stops their evening and readies their account");
+        h.assertTrue(f.in.getBlockState(b.offset(LiteraryRooms.CLOCK)).getValue(LiteraryPropBlock.STAGE)==0,"the world's clock keeps going for every other reader");
+        java.util.function.Function<ServerPlayer,LiteraryActor> dancer=reader->{var world=LiteraryVignettes.shared(f.data(),place);String key="Dancer0_1_"+reader.getUUID();return world.hasUUID(key)&&f.in.getEntity(world.getUUID(key)) instanceof LiteraryActor a?a:null;};
+        h.startSequence().thenWaitUntil(()->{long time=f.in.getGameTime()%400;h.assertTrue(time>=100&&time<300&&dancer.apply(p)!=null&&dancer.apply(late)!=null&&dancer.apply(late).phase()==1,"a quiet stretch with both readers' own dancers in the room");})
+            .thenExecute(()->{var mine=dancer.apply(p);h.assertTrue(mine.phase()==0&&mine.owner().orElseThrow().equals(p.getUUID())&&dancer.apply(late).owner().orElseThrow().equals(late.getUUID()),"the stopper's own dancers stand still while the later reader's still dance");
+                h.assertTrue(!LiteraryVignettes.shared(f.data(),place).hasUUID("Dancer0_1"),"no dancer is shared between readers");
+                h.assertTrue(!f.own(late,place).getBoolean("ClockStopped0506")&&!f.own(late,place).getBoolean("Ready"),"another reader's hand on the clock stops nothing for this one");})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="literary_masque_own") public static void masqueOwnDone(ServerLevel l){close();}
+    @GameTest(template="empty")
+    public static void theOldManTellsOnePartForEachWholeNameAnsweredOnAVisit(GameTestHelper h){
+        var own=new CompoundTag();own.putString("Name","Elias");own.putInt("Visit",1);
+        h.assertTrue(LiteraryCopies.answer(own,"Eli")==null&&own.getInt("Told0506")==0&&!own.getBoolean("MorseAnswered"),"part of a name is not his name");
+        String first=LiteraryCopies.answer(own," elias "),again=LiteraryCopies.answer(own,"Elias");
+        h.assertTrue(first.equals(LiteraryCopies.STORY[0])&&!again.equals(LiteraryCopies.STORY[1])&&own.getInt("Told0506")==1,"one part a visit, however often today's name is said");
+        own.putInt("Visit",2);own.putString("Name","Samuel");h.assertTrue(LiteraryCopies.answer(own,"Elias")==null,"yesterday's name is not today's");
+        String second=LiteraryCopies.answer(own,"Samuel");own.putInt("Visit",3);own.putString("Name","Joseph");String third=LiteraryCopies.answer(own,"JOSEPH");
+        h.assertTrue(second.equals(LiteraryCopies.STORY[1])&&third.equals(LiteraryCopies.STORY[2])&&own.getInt("Told0506")==3,"each visit's whole name buys the next part");
+        own.putInt("Visit",4);own.putString("Name","Daniel");String after=LiteraryCopies.answer(own,"Daniel");
+        h.assertTrue(after!=null&&Arrays.stream(LiteraryCopies.STORY).noneMatch(after::equals)&&own.getInt("Told0506")==3,"once told, the story is not told again");
+        h.assertTrue(LiteraryTexts.ending("reader",LabyrinthPlace.OLD_CABIN,own).has(DataComponents.WRITTEN_BOOK_CONTENT),"the account he readies can be written");
+        h.succeed();
+    }
     @GameTest(template="empty",batch="literary_coffin",timeoutTicks=230)
     public static void nativeCoffinChoiceRequiresAReturnAndKeepsTheSameWoman(GameTestHelper h){var f=new Fixture(h);var place=LabyrinthPlace.USHER;var p=f.player("coffin_reader",place);f.source(p,place);h.runAfterDelay(10,()->{var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(world.hasUUID("Woman"),"the living native body is present before the decision");p.setShiftKeyDown(true);f.click(p,place,LiteraryRooms.COFFIN);p.setShiftKeyDown(false);h.assertTrue(f.own(p,place).getBoolean("LidClosed")&&!f.own(p,place).getBoolean("Ready"),"closing the physical lid grants no ending by itself");f.arrive(p,place);f.at(p,place,2,-3,-29);});h.runAfterDelay(150,()->{var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(world.getInt("Cracks")==1&&f.own(p,place).getBoolean("Ready"),"the next native visit brings a local crack and an earned consequence");h.assertTrue(f.in.getEntity(world.getUUID("Woman")) instanceof LiteraryActor,"the same woman's native UUID survives the return");f.read(p,place,LiteraryRooms.ending(place));h.succeed();});}
     @AfterBatch(batch="literary_coffin") public static void coffinDone(ServerLevel l){close();}

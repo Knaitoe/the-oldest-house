@@ -226,6 +226,27 @@ Four visits stay. What changed:
   wardrobe, shelves, a table and a dress on its form. Nothing stands in the central route or a doorway. The house is the
   same size; making it bigger is a separate change.
 
+## The thin rooms
+
+Three rooms that played thin. Bly keeps its timing and the old man's story is optional; none of it touches saved state.
+
+- **Bly: standing in her way costs your place.** Being in her path used to cost two hearts and nothing else. Now she
+  holds the reader to her face for two seconds, carrying them a pace ahead of her along her route while the screen goes
+  black, and they come up in the lake room's water. The cupboard they waited in no longer counts, so the wait starts
+  again on a later walk. It costs up to two hearts but never takes the reader below one. The account of a reader she
+  took says so: they came up in the water, and she was looking for that child when she found them.
+- **Masque: each reader's own evening.** Once anyone stopped the clock, the dancers, the chime and the music stopped for
+  everyone, and a later reader crossed seven dead rooms. Now each reader has their own dancers, their own red figure and
+  their own chimes and music, and stopping the clock stops only their evening. They see the clock stopped (the world's
+  clock keeps going for everyone else), the music cuts off, and the still dancers turn to face them.
+- **The old man says who he is.** His cabin was a judge of weapons with a name that changed. Now, when a reader types
+  the whole of that visit's name from the lamp's Morse, he tells one part of his story, once per visit: the House never
+  had the name he came in with; he went down the stairs with a sword he took from the wall of a kitchen that looked like
+  his own, every nick in place; it was the House's, the beast did not turn round for it, and when he came out of the
+  cell there was no door left for him. After the third part his account is ready on the landing: three names said back,
+  none of them his, and he never found out where his own sword went. It grants no Witness credit and the cabin stays
+  in the deal.
+
 ## Validation scope
 
 - **Floorboards:** both pry cases now first try the board by hand: it stays, the event is refused and the noise does not
@@ -258,6 +279,11 @@ Four visits stay. What changed:
 - **Lake house (extended cases):** the tanks visit shows bubbles round the study wardrobe; the last visit shows warm water
   rising behind it; swimming back in through the half door after the lights come on is not leaving; inside the lit house
   a reader without gear breathes; going out through the door from inside keeps the lights on as before.
+- **Thin rooms (new cases):** a reader in the Lady's path is carried a pace ahead of her for her hold, then comes up
+  alive in the lake room's water with their cupboard wait gone and no account; one reader stopping the Masque clock
+  stands their own dancers still and readies their account while the world's clock and a later reader's dancers keep
+  going; the old man tells one part for each visit's whole name, never for part of one or yesterday's, and not again
+  once told.
 - **Phone screen (client proof):** three native views of the screen (home, messages, a voicemail call with its input),
   saved as `native-phone-0..2.png` and required by the build job.
 - **Run 39140034350 (34bc996):** ten of twelve jobs passed. The build job's only failure was the Harrigan pose case, which
