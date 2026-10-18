@@ -276,3 +276,8 @@ Four visits stay. What changed:
   art proof still required a standing mourner's elbows to be straight, from before mourners stood with their hands
   clasped. It now checks only what the seated pose would leak (knees up, elbows at +0.5). The phone screen's views come
   later in the same chain and are still to run.
+- **Run 39160073343 (560598c):** eleven of twelve jobs passed, live-multiplayer included (the paw view's frame was
+  saved). The build job failed on two checks. The character art proof probed the joint caps with the mourners' hands
+  still clasped, so a bent elbow's cap read as open; the limbs are now put back at rest before the caps are probed. The
+  cancelled canoe toss case looked for the refunded paper only within two blocks of the reader, but the refund falls
+  with vanilla's random toss beside the dock; it now looks within eight.

@@ -70,9 +70,10 @@ public final class IntegrationRepairsTests {
             var saved=PhoneCanoe.personal(loaded,p.getUUID());saved.putInt("Phase",0);all=loaded.state(PhoneCanoe.ID);all.put(p.getUUID().toString(),saved);loaded.setState(PhoneCanoe.ID,all);
             PhoneCanoe.tick(p);
             h.runAfterDelay(10,()->{
-            var returned=l.getEntitiesOfClass(ItemEntity.class,p.getBoundingBox().inflate(2),e->ItemStack.isSameItemSameComponents(e.getItem(),original));returned.forEach(f::keep);
+            // The refund drops with vanilla's random toss beside the dock, so it is looked for where it can land, not under the reader.
+            var returned=l.getEntitiesOfClass(ItemEntity.class,p.getBoundingBox().inflate(8),e->ItemStack.isSameItemSameComponents(e.getItem(),original));returned.forEach(f::keep);
             h.assertTrue(returned.size()==1&&returned.getFirst().getItem().getCount()==3&&p.getUUID().equals(returned.getFirst().getTarget())&&PhoneCanoe.personal(loaded,p.getUUID()).getList("ReturnedTosses",Tag.TAG_COMPOUND).isEmpty(),"a full inventory after the saved binding ends returns one owner-targeted residual stack: visible="+returned.size()+"; saved="+PhoneCanoe.personal(loaded,p.getUUID()).getList("ReturnedTosses",Tag.TAG_COMPOUND).size());
-            PhoneCanoe.tick(p);h.assertTrue(l.getEntitiesOfClass(ItemEntity.class,p.getBoundingBox().inflate(2),e->ItemStack.isSameItemSameComponents(e.getItem(),original)).size()==1,"subsequent ticks cannot duplicate the saved toss refund");h.succeed();
+            PhoneCanoe.tick(p);h.assertTrue(l.getEntitiesOfClass(ItemEntity.class,p.getBoundingBox().inflate(8),e->ItemStack.isSameItemSameComponents(e.getItem(),original)).size()==1,"subsequent ticks cannot duplicate the saved toss refund");h.succeed();
             });
     }
     @GameTest(template="empty",batch="integration_finale")
