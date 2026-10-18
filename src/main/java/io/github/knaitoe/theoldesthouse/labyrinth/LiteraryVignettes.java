@@ -67,6 +67,7 @@ public final class LiteraryVignettes {
         }
         if (place == LabyrinthPlace.CHILD_ROOM) { ChildRoom.arrive(p, own); save(d, p.getUUID(), place, own); }
         if (place == LabyrinthPlace.MOVIE_NIGHT) { MovieNight.arrive(p, own); save(d, p.getUUID(), place, own); MovieNight.canoes(p, base(p, place)); }
+        if (place == LabyrinthPlace.COSTUME_NIGHT) { CostumeNight.arrive(p, own); save(d, p.getUUID(), place, own); }
         if (place == LabyrinthPlace.ELK_CARCASSES) { ElkHunt.arrive(p, own); save(d, p.getUUID(), place, own); }
         if (place == LabyrinthPlace.END_WORLD_CABIN) { CabinBargain.arrive(p, own); save(d, p.getUUID(), place, own); }
         if (place == LabyrinthPlace.THREE_FINGERS) { ThreeFingers.arrive(p, own); save(d, p.getUUID(), place, own); }
@@ -175,6 +176,7 @@ public final class LiteraryVignettes {
         else if(place==LabyrinthPlace.CONFESSION)actor.say("Bring a blank book. Sit where you can hear me.");
         else if(place==LabyrinthPlace.ELK_LOT)ElkLotNight.talk(p,actor,own);
         else if(place==LabyrinthPlace.MOVIE_NIGHT)MovieNightCast.talk(p,actor,own);
+        else if(place==LabyrinthPlace.COSTUME_NIGHT)CostumeNight.talk(p,actor,own);
         else if(place==LabyrinthPlace.THREE_FINGERS)ThreeFingers.talk(p,actor,own);
         else if(place==LabyrinthPlace.GHOSTS_SET)GhostsSet.talk(p,actor,own);
         else if(place==LabyrinthPlace.LAKE_HOUSE)LakeHouse.talk(p,actor,own);else if(place==LabyrinthPlace.BORRASCA)BorrascaStory.talk(p,actor,own);
@@ -324,11 +326,10 @@ public final class LiteraryVignettes {
     private static void pursue(ServerPlayer p,Entity body,double speed,boolean water){Vec3 delta=p.position().subtract(body.position()).multiply(1,0,1);if(delta.lengthSqr()<.01)return;body.setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));body.move(MoverType.SELF,delta.normalize().scale(speed*5));if(water)body.setPos(body.getX(),base(p,current(p)).getY(),body.getZ());}
     private static void hunt(ServerPlayer p,BlockPos b,LabyrinthPlace place,CompoundTag own){
         if(place==LabyrinthPlace.CAMP_BLOOD){var killer=actor(p,place,"Killer",LiteraryActor.KILLER,new BlockPos(12,0,-48),false);if(killer==null)return;if(own.getBoolean("Pursued")&&p.getZ()<b.getZ()-95&&own.getInt("Present")>180)ready(p,place,own,"escaped_past_the_last_cabins");return;}
-        if(place==LabyrinthPlace.COSTUME_NIGHT&&own.getBoolean("WitchSeen")&&p.serverLevel().getBlockState(p.blockPosition().below()).is(Blocks.GRASS_BLOCK)&&p.getZ()<b.getZ()-54)ready(p,place,own,"reached_living_grass_beyond_the_costumes");
-        var witch=huntBody(p,place,place==LabyrinthPlace.MOVIE_NIGHT?MovieNight.WITCH_START:new BlockPos(14,0,-41));
-        // The canoes, the pier and the film go on whether or not her body is loaded here.
-        if(witch==null){if(place==LabyrinthPlace.MOVIE_NIGHT)MovieNight.reader(p,b,own,null);return;}boolean water=p.isUnderWater()&&p.getY()+p.getBbHeight()<b.getY();boolean grass=p.serverLevel().getBlockState(p.blockPosition().below()).is(Blocks.GRASS_BLOCK);
-        if(place==LabyrinthPlace.COSTUME_NIGHT){if(HouseWatchers.sees(p,witch.getEyePosition()))own.putBoolean("WitchSeen",true);if(own.getBoolean("WitchSeen")&&grass&&p.getZ()<b.getZ()-54)ready(p,place,own,"reached_living_grass_beyond_the_costumes");}
+        var witch=huntBody(p,place,place==LabyrinthPlace.MOVIE_NIGHT?MovieNight.WITCH_START:place==LabyrinthPlace.COSTUME_NIGHT?CostumeNight.WITCH_START:new BlockPos(14,0,-41));
+        // The canoes, the pier and the film (and the costume party) go on whether or not her body is loaded here.
+        if(witch==null){if(place==LabyrinthPlace.MOVIE_NIGHT)MovieNight.reader(p,b,own,null);if(place==LabyrinthPlace.COSTUME_NIGHT)CostumeNight.reader(p,b,own,null);return;}boolean water=p.isUnderWater()&&p.getY()+p.getBbHeight()<b.getY();boolean grass=p.serverLevel().getBlockState(p.blockPosition().below()).is(Blocks.GRASS_BLOCK);
+        if(place==LabyrinthPlace.COSTUME_NIGHT)CostumeNight.reader(p,b,own,witch);
         if(place==LabyrinthPlace.WINTER_LAKE){if(water){own.putInt("SubmergedTicks",own.getInt("SubmergedTicks")+5);}if(own.getBoolean("BrokeIce")&&own.getInt("SubmergedTicks")>=100&&p.getZ()<b.getZ()-76&&p.getY()>=b.getY())ready(p,place,own,"broke_ice_waited_beneath_it_and_reached_the_bank");}
         if(place==LabyrinthPlace.MOVIE_NIGHT)MovieNight.reader(p,b,own,witch);
 

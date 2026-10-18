@@ -219,6 +219,19 @@ jobs:
               for name in ('red','blue','yellow','white','teal'):
                   assert z.read(f'assets/the_oldest_house/textures/entity/movie_canoe_{name}.png').startswith(b'\x89PNG')
               assert len(json.loads(z.read('assets/the_oldest_house/blockstates/movie_material.json'))['variants']) == 6
+              # Costume Night (0.4.103): the contest's thirteen skins, the party's props and its sounds.
+              for name in ('hank','tina','danny','ron','kaylee','marcus','shelly','owen','brooke','wes','rosa','pip','lyle'):
+                  assert z.read(f'assets/the_oldest_house/textures/entity/literary_costume_{name}.png').startswith(b'\x89PNG')
+              for name in ('bulbs','bulbs_off','radio_front','radio_front_off','radio_side','tub_side','tub_top','pail_side','pail_face','candy','board_top','board_bottom'):
+                  assert z.read(f'assets/the_oldest_house/textures/block/costume_{name}.png').startswith(b'\x89PNG')
+              costume_sounds = json.loads(z.read('assets/the_oldest_house/sounds.json'))
+              for name in ('radio','cheer','pop','megaphone','drip','giggle'):
+                  assert z.read(f'assets/the_oldest_house/sounds/costume/{name}.ogg').startswith(b'OggS')
+                  assert costume_sounds[f'costume.{name}']['subtitle'] == f'subtitles.the_oldest_house.costume.{name}'
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/costume_prop.json'))['variants']) == 48
+              for name in ('CostumeNight','CostumePropBlock','CostumeNightRegistry'):
+                  assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
+              assert 'io/github/knaitoe/theoldesthouse/client/CostumeNightVisualProof.class' in z.namelist()
               for name in ('MovieFilm','MovieScreenRenderer','LakeSharkModel','LakeSharkRenderer','MovieNightClient','LakeCanoeRenderer'):
                   assert f'io/github/knaitoe/theoldesthouse/client/{name}.class' in z.namelist()
               # 0.4.77: a frank left on the griddle burns, and draws charred through custom model data 1.
@@ -719,11 +732,13 @@ jobs:
           test -s build/font-smoke/native-npcs.png
           test -s build/font-smoke/native-harrigan-wake.png
           test -s build/font-smoke/character-art-passed.txt
-          for view in $(seq -w 0 20); do test -s build/font-smoke/native-character-art-$view.png; done
+          for view in $(seq -w 0 22); do test -s build/font-smoke/native-character-art-$view.png; done
           test -s build/font-smoke/shallows-passed.txt
           for view in 0 1 2 3 4 5 6 7; do test -s build/font-smoke/native-shallows-$view.png; done
           test -s build/font-smoke/movie-night-passed.txt
           for view in 0 1 2 3 4 5 6 7 8; do test -s build/font-smoke/native-movie-$view.png; done
+          test -s build/font-smoke/costume-night-passed.txt
+          for view in 0 1 2; do test -s build/font-smoke/native-costume-$view.png; done
           test -s build/font-smoke/cast-passed.txt
           test -s build/font-smoke/stacey-scrabble-passed.txt
           test -s build/font-smoke/native-stacey-scrabble.png

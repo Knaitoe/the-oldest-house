@@ -17,8 +17,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class StaceyCover {
     public static final String STATE="stacey_cover_0459";
-    // 0.4.67: Proofrock's own corners, cars, sheds and crawlspaces replace the town's three rock recesses.
-    public static final List<LabyrinthPlace> SITES=List.of(LabyrinthPlace.COSTUME_NIGHT,LabyrinthPlace.MOVIE_NIGHT,LabyrinthPlace.WINTER_LAKE);
+    // 0.4.67: Proofrock's own corners, cars, sheds and crawlspaces replace the town's three rock recesses. Costume Night
+    // (0.4.103) needs none: there she moves only while nobody is looking.
+    public static final List<LabyrinthPlace> SITES=List.of(LabyrinthPlace.MOVIE_NIGHT,LabyrinthPlace.WINTER_LAKE);
     private StaceyCover(){}
     public static List<BlockPos> centers(LabyrinthPlace p){return p==LabyrinthPlace.DROWNED_TOWN
             ?List.of(new BlockPos(-13,0,-29),new BlockPos(22,0,-49),new BlockPos(-23,0,-53))

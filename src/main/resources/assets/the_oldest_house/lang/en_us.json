@@ -299,5 +299,12 @@
   "block.the_oldest_house.movie_prop": "Movie night fixture",
   "block.the_oldest_house.movie_screen": "Projection screen",
   "block.the_oldest_house.movie_material": "Lakeside boards",
-  "entity.the_oldest_house.lake_shark": "A shark from the film"
+  "block.the_oldest_house.costume_prop": "Costume party fixture",
+  "entity.the_oldest_house.lake_shark": "A shark from the film",
+  "subtitles.the_oldest_house.costume.radio": "A surf song on a little radio",
+  "subtitles.the_oldest_house.costume.cheer": "The crowd laughs and claps",
+  "subtitles.the_oldest_house.costume.pop": "The bulbs pop and go dark",
+  "subtitles.the_oldest_house.costume.megaphone": "Hank's megaphone squeals",
+  "subtitles.the_oldest_house.costume.drip": "Water drips onto sand",
+  "subtitles.the_oldest_house.costume.giggle": "Children giggle in the dark"
 }

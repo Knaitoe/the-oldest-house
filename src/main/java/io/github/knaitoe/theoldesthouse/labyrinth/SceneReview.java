@@ -28,7 +28,7 @@ public final class SceneReview {
     private static Work work;private static int cursor;
     private record Work(ServerLevel level,BlockPos origin,LabyrinthPlace place,BuildBlocks.Plan plan){}
     private SceneReview(){}
-    public static boolean applies(LabyrinthPlace p){if(p==LabyrinthPlace.GHOSTS_SET||p==LabyrinthPlace.ELK_CARCASSES||p==LabyrinthPlace.CHILD_ROOM||p==LabyrinthPlace.ELK_LOT||p==LabyrinthPlace.THREE_FINGERS||p==LabyrinthPlace.MOVIE_NIGHT||p==LabyrinthPlace.LAKE_HOUSE||p==LabyrinthPlace.LAKE_HOUSE_EMPTY||p==LabyrinthPlace.BORRASCA)return false;return p==LabyrinthPlace.ZAMPANO_COURTYARD||p==LabyrinthPlace.BARN_WELL
+    public static boolean applies(LabyrinthPlace p){if(p==LabyrinthPlace.GHOSTS_SET||p==LabyrinthPlace.ELK_CARCASSES||p==LabyrinthPlace.CHILD_ROOM||p==LabyrinthPlace.ELK_LOT||p==LabyrinthPlace.THREE_FINGERS||p==LabyrinthPlace.MOVIE_NIGHT||p==LabyrinthPlace.COSTUME_NIGHT||p==LabyrinthPlace.LAKE_HOUSE||p==LabyrinthPlace.LAKE_HOUSE_EMPTY||p==LabyrinthPlace.BORRASCA)return false;return p==LabyrinthPlace.ZAMPANO_COURTYARD||p==LabyrinthPlace.BARN_WELL
             ||LiteraryRooms.isLiterary(p)&&p!=LabyrinthPlace.FAMILY_COPY&&p!=LabyrinthPlace.OLD_CABIN;}
     public static AABB area(BlockPos b,LabyrinthPlace p){var r=p.room();return new AABB(Vec3.atLowerCornerOf(b.offset(r.minX()-2,r.minY()-2,r.minZ()-2)),Vec3.atLowerCornerOf(b.offset(r.maxX()+3,r.maxY()+4,8)));}
     private static String key(BlockPos o,LabyrinthPlace p){return o.asLong()+":"+p.id();}

@@ -1,0 +1,485 @@
+{
+  "textures": {
+    "wire": "minecraft:block/black_concrete",
+    "bulb": "the_oldest_house:block/costume_bulbs_off",
+    "particle": "the_oldest_house:block/costume_bulbs_off"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        13,
+        7.5
+      ],
+      "to": [
+        16,
+        13.5,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wire",
+          "uv": [
+            0,
+            2.5,
+            16,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#wire",
+          "uv": [
+            0,
+            2.5,
+            16,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#wire",
+          "uv": [
+            7.5,
+            2.5,
+            8.5,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#wire",
+          "uv": [
+            7.5,
+            2.5,
+            8.5,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#wire",
+          "uv": [
+            0,
+            7.5,
+            16,
+            8.5
+          ]
+        },
+        "down": {
+          "texture": "#wire",
+          "uv": [
+            0,
+            7.5,
+            16,
+            8.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2.0,
+        12,
+        7.25
+      ],
+      "to": [
+        3.0,
+        13,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wire",
+          "uv": [
+            13.0,
+            3,
+            14.0,
+            4
+          ]
+        },
+        "south": {
+          "texture": "#wire",
+          "uv": [
+            2.0,
+            3,
+            3.0,
+            4
+          ]
+        },
+        "east": {
+          "texture": "#wire",
+          "uv": [
+            7.25,
+            3,
+            8.75,
+            4
+          ]
+        },
+        "west": {
+          "texture": "#wire",
+          "uv": [
+            7.25,
+            3,
+            8.75,
+            4
+          ]
+        },
+        "up": {
+          "texture": "#wire",
+          "uv": [
+            2.0,
+            7.25,
+            3.0,
+            8.75
+          ]
+        },
+        "down": {
+          "texture": "#wire",
+          "uv": [
+            2.0,
+            7.25,
+            3.0,
+            8.75
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1.5,
+        10,
+        7
+      ],
+      "to": [
+        3.5,
+        12,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bulb",
+          "uv": [
+            1,
+            1,
+            7,
+            7
+          ]
+        },
+        "south": {
+          "texture": "#bulb",
+          "uv": [
+            1,
+            1,
+            7,
+            7
+          ]
+        },
+        "east": {
+          "texture": "#bulb",
+          "uv": [
+            1,
+            1,
+            7,
+            7
+          ]
+        },
+        "west": {
+          "texture": "#bulb",
+          "uv": [
+            1,
+            1,
+            7,
+            7
+          ]
+        },
+        "up": {
+          "texture": "#bulb",
+          "uv": [
+            1,
+            1,
+            7,
+            7
+          ]
+        },
+        "down": {
+          "texture": "#bulb",
+          "uv": [
+            1,
+            1,
+            7,
+            7
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7.0,
+        12,
+        7.25
+      ],
+      "to": [
+        8.0,
+        13,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wire",
+          "uv": [
+            8.0,
+            3,
+            9.0,
+            4
+          ]
+        },
+        "south": {
+          "texture": "#wire",
+          "uv": [
+            7.0,
+            3,
+            8.0,
+            4
+          ]
+        },
+        "east": {
+          "texture": "#wire",
+          "uv": [
+            7.25,
+            3,
+            8.75,
+            4
+          ]
+        },
+        "west": {
+          "texture": "#wire",
+          "uv": [
+            7.25,
+            3,
+            8.75,
+            4
+          ]
+        },
+        "up": {
+          "texture": "#wire",
+          "uv": [
+            7.0,
+            7.25,
+            8.0,
+            8.75
+          ]
+        },
+        "down": {
+          "texture": "#wire",
+          "uv": [
+            7.0,
+            7.25,
+            8.0,
+            8.75
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        10,
+        7
+      ],
+      "to": [
+        8.5,
+        12,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bulb",
+          "uv": [
+            9,
+            1,
+            15,
+            7
+          ]
+        },
+        "south": {
+          "texture": "#bulb",
+          "uv": [
+            9,
+            1,
+            15,
+            7
+          ]
+        },
+        "east": {
+          "texture": "#bulb",
+          "uv": [
+            9,
+            1,
+            15,
+            7
+          ]
+        },
+        "west": {
+          "texture": "#bulb",
+          "uv": [
+            9,
+            1,
+            15,
+            7
+          ]
+        },
+        "up": {
+          "texture": "#bulb",
+          "uv": [
+            9,
+            1,
+            15,
+            7
+          ]
+        },
+        "down": {
+          "texture": "#bulb",
+          "uv": [
+            9,
+            1,
+            15,
+            7
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        12.0,
+        12,
+        7.25
+      ],
+      "to": [
+        13.0,
+        13,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wire",
+          "uv": [
+            3.0,
+            3,
+            4.0,
+            4
+          ]
+        },
+        "south": {
+          "texture": "#wire",
+          "uv": [
+            12.0,
+            3,
+            13.0,
+            4
+          ]
+        },
+        "east": {
+          "texture": "#wire",
+          "uv": [
+            7.25,
+            3,
+            8.75,
+            4
+          ]
+        },
+        "west": {
+          "texture": "#wire",
+          "uv": [
+            7.25,
+            3,
+            8.75,
+            4
+          ]
+        },
+        "up": {
+          "texture": "#wire",
+          "uv": [
+            12.0,
+            7.25,
+            13.0,
+            8.75
+          ]
+        },
+        "down": {
+          "texture": "#wire",
+          "uv": [
+            12.0,
+            7.25,
+            13.0,
+            8.75
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        11.5,
+        10,
+        7
+      ],
+      "to": [
+        13.5,
+        12,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bulb",
+          "uv": [
+            1,
+            9,
+            7,
+            15
+          ]
+        },
+        "south": {
+          "texture": "#bulb",
+          "uv": [
+            1,
+            9,
+            7,
+            15
+          ]
+        },
+        "east": {
+          "texture": "#bulb",
+          "uv": [
+            1,
+            9,
+            7,
+            15
+          ]
+        },
+        "west": {
+          "texture": "#bulb",
+          "uv": [
+            1,
+            9,
+            7,
+            15
+          ]
+        },
+        "up": {
+          "texture": "#bulb",
+          "uv": [
+            1,
+            9,
+            7,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#bulb",
+          "uv": [
+            1,
+            9,
+            7,
+            15
+          ]
+        }
+      }
+    }
+  ]
+}

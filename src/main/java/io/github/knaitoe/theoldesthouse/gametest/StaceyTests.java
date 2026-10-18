@@ -30,7 +30,7 @@ public final class StaceyTests {
     @GameTest(template="empty",batch="witch_watched_town0499",timeoutTicks=1200)
     public static void aWatchedTownWitchFleesInsteadOfUsingTheReaderAsMissingCover(GameTestHelper h){watchedRetreat(h,LabyrinthPlace.DROWNED_TOWN,1256000);}
     @GameTest(template="empty",batch="witch_watched_literary0499",timeoutTicks=1200)
-    public static void aWatchedLiteraryWitchFleesEvenAfterLowHealthAndSavedEmergence(GameTestHelper h){watchedRetreat(h,LabyrinthPlace.COSTUME_NIGHT,1256500);}
+    public static void aWatchedLiteraryWitchFleesEvenAfterLowHealthAndSavedEmergence(GameTestHelper h){watchedRetreat(h,LabyrinthPlace.WINTER_LAKE,1256500);}
     private static void watchedRetreat(GameTestHelper h,LabyrinthPlace place,int coordinate){run(h,place,coordinate,f->{
         f.corridor();var a=f.player("witch_watched_owner",.5,-28.5);var b=f.player("witch_watched_peer",1.25,-28.5);a.setHealth(6);
         h.startSequence().thenIdle(70).thenExecute(()->{
@@ -57,7 +57,7 @@ public final class StaceyTests {
     public static void aNaturalEscapeCanSwipeAReaderNineTenthsOfABlockAlongsideIt(GameTestHelper h){passingRange(h,.9,true,1257000);}
     @GameTest(template="empty",batch="witch_swipe_far0499",timeoutTicks=1200)
     public static void aNaturalEscapeDoesNotSwipeAReaderMoreThanOneBlockAlongsideIt(GameTestHelper h){passingRange(h,1.1,false,1257500);}
-    private static void passingRange(GameTestHelper h,double offset,boolean hit,int coordinate){run(h,LabyrinthPlace.COSTUME_NIGHT,coordinate,f->{
+    private static void passingRange(GameTestHelper h,double offset,boolean hit,int coordinate){run(h,LabyrinthPlace.WINTER_LAKE,coordinate,f->{
         f.corridor();for(int z:new int[]{-38,-36})for(int y=0;y<=3;y++)f.put(1,y,z,Blocks.STONE);
         var p=f.player("witch_passing_range",.5+offset,-36.5);
         h.startSequence().thenIdle(70).thenExecute(()->{
@@ -128,7 +128,7 @@ public final class StaceyTests {
     @AfterBatch(batch="stacey_open_squeeze") public static void openSqueezeDone(ServerLevel l){clean();}
 
     @GameTest(template="empty",batch="stacey_no_cover",timeoutTicks=1800)
-    public static void failedCoverWaitsForBothGazesThenCommitsWithinFiveSecondsAndSurvivesReload(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,1250000,f->{
+    public static void failedCoverWaitsForBothGazesThenCommitsWithinFiveSecondsAndSurvivesReload(GameTestHelper h){run(h,LabyrinthPlace.WINTER_LAKE,1250000,f->{
         f.corridor();for(int x=-1;x<=1;x++)for(int z=-45;z<=-27;z++)if(z<-38||z>-36)for(int y=0;y<=3;y++)f.put(x,y,z,Blocks.STONE);var a=f.player("stacey_front_reader",.5,-35.5);var b=f.player("stacey_back_reader",.5,-37.5);a.setInvulnerable(true);b.setInvulnerable(true);
         var w=f.witch(.5,-36.5);var id=w.getUUID();f.look(a,w);f.look(b,w);h.assertTrue(LakeWitchEntity.inView(a,w.getEyePosition())&&LakeWitchEntity.inView(b,w.getEyePosition()),"both native watchers actually face the trapped body");
         boolean[] gaze={true};h.onEachTick(()->{if(active==f&&gaze[0]){f.look(a,w);f.look(b,w);}});
@@ -145,7 +145,7 @@ public final class StaceyTests {
         });
     });}
     @GameTest(template="empty",batch="stacey_pause",timeoutTicks=1800)
-    public static void observersAndOfflineReadersCannotAdvanceOrResetTheSavedSearch(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,1250500,f->{
+    public static void observersAndOfflineReadersCannotAdvanceOrResetTheSavedSearch(GameTestHelper h){run(h,LabyrinthPlace.WINTER_LAKE,1250500,f->{
         f.corridor();var p=f.player("stacey_paused_reader",.5,-30.5);var observer=f.player("stacey_observer",.5,-42.5);observer.setGameMode(GameType.SPECTATOR);
         var w=f.witch(.5,-36.5);p.setInvulnerable(true);var tag=new CompoundTag();w.saveWithoutId(tag);tag.putInt("FailedCoverTicks0459",41);tag.putBoolean("ExposedHunt0459",true);tag.putInt("HuntCooldown",13);w.load(tag);
         p.setGameMode(GameType.SPECTATOR);var position=w.position();h.startSequence().thenIdle(40).thenExecute(()->{
@@ -154,7 +154,7 @@ public final class StaceyTests {
         }).thenIdle(1).thenExecute(()->{h.assertTrue(w.exposedHunt()&&w.attackCooldown()<=13,"the returning player cannot farm another hiding grace period");f.done();});
     });}
     @GameTest(template="empty",batch="stacey_doors",timeoutTicks=1800)
-    public static void actualSharedPursuitBreaksBothWoodenDoorHalvesOnceAndReachesTheReader(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,1251000,f->{
+    public static void actualSharedPursuitBreaksBothWoodenDoorHalvesOnceAndReachesTheReader(GameTestHelper h){run(h,LabyrinthPlace.WINTER_LAKE,1251000,f->{
         f.corridor();for(int x:new int[]{-1,1})for(int y=0;y<=3;y++)f.put(x,y,-35,Blocks.STONE);
         var door=f.base.offset(0,0,-35);f.door(new BlockPos(0,0,-35),Blocks.SPRUCE_DOOR);
         var a=f.player("stacey_door_reader",.5,-30.5);var b=f.player("stacey_door_peer",1.3,-30.5);a.setInvulnerable(true);b.setInvulnerable(true);
@@ -180,7 +180,7 @@ public final class StaceyTests {
         h.assertTrue(WitnessAccount.Story.values().length==46,"no new Witness source is introduced");f.done();
     });}
     @GameTest(template="empty",batch="stacey_speed",timeoutTicks=1800)
-    public static void actualLungeSpendsDoubledMovementAcrossMoreThanOnePathNode(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,1252000,f->{
+    public static void actualLungeSpendsDoubledMovementAcrossMoreThanOnePathNode(GameTestHelper h){run(h,LabyrinthPlace.WINTER_LAKE,1252000,f->{
         f.corridor();var p=f.player("stacey_speed_reader",.5,-30.5);p.setHealth(6);p.setInvulnerable(true);var w=f.witch(.5,-40.5);double[] peak={0};var previous=new Vec3[]{w.position()};
         h.onEachTick(()->{if(active==f){double moved=w.position().subtract(previous[0]).multiply(1,0,1).length();peak[0]=Math.max(peak[0],moved);previous[0]=w.position();
             h.assertTrue(moved<=1.25,"doubled movement stays in its native per-tick budget");}});
@@ -189,7 +189,7 @@ public final class StaceyTests {
         });
     });}
     @GameTest(template="empty",batch="stacey_cover",timeoutTicks=1800)
-    public static void detailedCoverWaitsForCamerasAndLivingPetsAndNeverRefillsRemovedPieces(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,1252500,f->{
+    public static void detailedCoverWaitsForCamerasAndLivingPetsAndNeverRefillsRemovedPieces(GameTestHelper h){run(h,LabyrinthPlace.WINTER_LAKE,1252500,f->{
         for(var center:StaceyCover.centers(f.place))for(int x=-2;x<=2;x++)for(int z=-2;z<=3;z++){var at=f.base.offset(center).offset(x,-1,z);f.l.setBlock(at,Blocks.SAND.defaultBlockState(),3);}
         var center=f.base.offset(StaceyCover.centers(f.place).getFirst());var camera=f.player("stacey_cover_camera",center.getX()-f.base.getX()+.5,center.getZ()-f.base.getZ()+.5);camera.setGameMode(GameType.SPECTATOR);
         var fresh=BuildBlocks.record(f.l,()->StaceyCover.fresh(f.l,f.base,f.place));
@@ -226,11 +226,11 @@ public final class StaceyTests {
         });
     });}
     @GameTest(template="empty",batch="stacey_squeeze",timeoutTicks=4000)
-    public static void literaryHuntCrawlsLowOneBlockTurnsAndBreaksTheDoorWithoutClipping(GameTestHelper h){squeeze(h,LabyrinthPlace.COSTUME_NIGHT,1253500);}
+    public static void literaryHuntCrawlsLowOneBlockTurnsAndBreaksTheDoorWithoutClipping(GameTestHelper h){squeeze(h,LabyrinthPlace.WINTER_LAKE,1253500);}
     @GameTest(template="empty",batch="stacey_shore_squeeze",timeoutTicks=4000)
     public static void townHunterUsesHerActualLowBodyInTheSameOneBlockSqueeze(GameTestHelper h){squeeze(h,LabyrinthPlace.DROWNED_TOWN,1254000);}
     @GameTest(template="empty",batch="stacey_open_squeeze",timeoutTicks=4000)
-    public static void anAlreadyOpenDoorHasARealOffsetPassageRatherThanAnInvisibleBarrier(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,1255000,f->{
+    public static void anAlreadyOpenDoorHasARealOffsetPassageRatherThanAnInvisibleBarrier(GameTestHelper h){run(h,LabyrinthPlace.WINTER_LAKE,1255000,f->{
         f.corridor();for(int x:new int[]{-1,1})for(int z=-45;z<=-27;z++)for(int y=0;y<=3;y++)f.put(x,y,z,Blocks.STONE);
         var door=f.base.offset(0,0,-35);f.door(new BlockPos(0,0,-35),Blocks.SPRUCE_DOOR);
         f.l.setBlock(door,f.l.getBlockState(door).setValue(DoorBlock.OPEN,true),3);f.l.setBlock(door.above(),f.l.getBlockState(door.above()).setValue(DoorBlock.OPEN,true),3);
@@ -241,7 +241,7 @@ public final class StaceyTests {
         });
     });}
     @GameTest(template="empty",batch="stacey_passing_hide",timeoutTicks=1800)
-    public static void retreatSwipesInPassingPausesOnlyOneToThreeSecondsAndRushesAfterBothGazesTurnAway(GameTestHelper h){run(h,LabyrinthPlace.COSTUME_NIGHT,1254500,f->{
+    public static void retreatSwipesInPassingPausesOnlyOneToThreeSecondsAndRushesAfterBothGazesTurnAway(GameTestHelper h){run(h,LabyrinthPlace.WINTER_LAKE,1254500,f->{
         f.corridor();var a=f.player("stacey_passing_reader",.5,-36.5);var b=f.player("stacey_passing_peer",1.4,-36.5);b.setInvulnerable(true);
         // Let the real newly connected readers' native spawn protection expire.
         h.startSequence().thenIdle(70).thenExecute(()->{

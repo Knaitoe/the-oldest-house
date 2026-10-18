@@ -41,6 +41,8 @@ class Look:
     mark: str = ''
     sleeve: int = 9
     logical: int = 128
+    costume: str = ''
+    number: int = 0
 
 
 # Each row is a character design, rather than an index into a repeated picture.
@@ -58,6 +60,20 @@ LOOKS = {
     'literary_movie_jamie': Look('#dcb090','#8c5a2e','messy','#c4463a','#3e5a78','tee','#efe4cc',eyes='#4f6a7a',mark='movie_stripes',sleeve=4),
     'literary_movie_bobby': Look('#c99a78','#2c2219','part','#2d4878','#3a4d68','jacket','#e6d8b0',eyes='#4a3c30',mark='movie_letter'),
     'literary_movie_lynn': Look('#e2bea6','#d6b06a','long','#e8c6cf','#394c66','knit','#f6eef0',eyes='#5b7090',mark='freckles'),
+    # Costume Night (0.4.103): Hank, who judges, and the twelve entrants, every one of them dressed as the Lake Witch.
+    'literary_costume_hank': Look('#cfa688','#bdb8ae','receding','#6a5a46','#3f3a34','cardigan','#d7c79e',eyes='#5a6066',age=2,glasses=True,beard='moustache',mark='movie_badge'),
+    'literary_costume_tina': Look('#e0b89c','#18181a','long','#1d1e22','#26272b','dress','#4a4d55',eyes='#4e5a48',sleeve=6,costume='yarn bags',number=1),
+    'literary_costume_danny': Look('#ddb294','#6a4a2c','messy','#d9d6ca','#4a5560','ragged','#5d7a3a',eyes='#5a6a7a',costume='sheet',number=2),
+    'literary_costume_ron': Look('#c99a7a','#1e1d1c','long','#8f7a96','#3e4652','coat','#c9b9cc',costume='mask',number=3),
+    'literary_costume_kaylee': Look('#e6c2a6','#5e9a3a','long','#2b2d33','#2b2d33','dress','#4c7a33',sleeve=6,costume='paint',number=4),
+    'literary_costume_marcus': Look('#b98a66','#2a211b','short','#3c4130','#4a4f32','shirt','#5c6e34',costume='weed',number=5),
+    'literary_costume_shelly': Look('#e8cdb8','#141416','long','#6d6f73','#6d6f73','dress','#9a9da2',eyes='#3e3e44',sleeve=0,costume='pale',number=6),
+    'literary_costume_owen': Look('#d8ae8e','#4a3324','short','#7a5a3a','#4d5a66','tee','#c8a070',sleeve=4,costume='cardboard',number=7),
+    'literary_costume_brooke': Look('#d9b090','#6e8f3c','long','#2f6a8a','#33434f','tee','#7aa04a',sleeve=4,costume='mop',number=8),
+    'literary_costume_wes': Look('#c69878','#151515','short','#5e6266','#3a3f45','jacket','#8a8e92',costume='hood',number=9),
+    'literary_costume_rosa': Look('#c99b7d','#101012','long','#c3c9c8','#c3c9c8','dress','#9aa6a8',sleeve=0,costume='yarn gown',number=10),
+    'literary_costume_pip': Look('#dcb092','#7a5634','messy','#c05a8a','#4a5866','tee','#e0d0d8',sleeve=4,costume='pillow',number=11),
+    'literary_costume_lyle': Look('#c4977a','#121212','long','#b6566c','#3d5170','dress','#e6c6a0',beard='full',sleeve=6,costume='flowers',number=12),
     'harrigan': Look('#c7ab91','#b9b7ac','receding','#343941','#2c3037','suit','#7d3940',age=2,glasses=True,logical=64),
     'harrigan_dead': Look('#b9b2a4','#b9b7ac','receding','#343941','#2c3037','suit','#7d3940',age=2,mark='dead',logical=64),
     'harrigan_mourner_0': Look('#ae7b59','#262320','close','#292e33','#26292f','suit','#77736e',logical=64),
@@ -204,6 +220,36 @@ def panel(size, color, kind='cloth', side='front'):
     return im
 
 
+DIGITS={'0':['111','101','101','101','111'],'1':['010','110','010','010','111'],'2':['111','001','111','100','111'],'3':['111','001','011','001','111'],
+        '4':['101','101','111','001','001'],'5':['111','100','111','001','111'],'6':['111','100','111','101','111'],'7':['111','001','010','010','010'],
+        '8':['111','101','111','101','111'],'9':['111','101','111','001','111']}
+
+
+def costume_face(look):
+    """A Lake Witch costume's face, if it covers or changes the wearer's own: a rubber mask, a cardboard one, face paint."""
+    c=set(look.costume.split())
+    if 'mask' in c:
+        im=panel((16,16),'#7f8b6d','skin');d=ImageDraw.Draw(im)
+        for x in (2,9):d.rectangle((x,5,x+4,9),fill='#22261e');d.point((x+2,7),fill='#c8c070')
+        for y in (2,4):d.line((4,y,11,y),fill='#6c7860')
+        d.line((7,9,7,11),fill='#5c6652');d.line((3,12,12,12),fill='#262a20');d.line((3,13,12,13),fill='#3a4030')
+        for x in (4,6,8,10):d.point((x,12),fill='#e4e0c8')
+        return im
+    if 'cardboard' in c:
+        im=panel((16,16),'#b8905e','skin');d=ImageDraw.Draw(im)
+        for y in (3,8):d.line((0,y,15,y),fill='#a47e50')
+        d.rectangle((0,0,15,15),outline='#8c6a40')
+        for x in (3,10):d.rectangle((x,6,x+2,8),fill='#1c1a18')
+        d.line((3,11,5,13,7,11,9,13,11,11,12,12),fill='#1c1a18')
+        return im
+    if 'paint' in c:
+        im=panel((16,16),'#e9e7dd','skin');d=ImageDraw.Draw(im)
+        for x in (2,9):d.rectangle((x,5,x+4,9),fill='#2b2b30');d.rectangle((x+1,7,x+3,7),fill='#e9e2ce');d.point((x+2,7),fill=rgb(look.eyes))
+        d.line((6,13,9,13),fill='#2b2b30');d.point((5,12),fill='#2b2b30');d.point((10,12),fill='#2b2b30')
+        return im
+    return None
+
+
 def face(look):
     im=panel((16,16),look.skin,'skin');d=ImageDraw.Draw(im)
     skin=rgb(look.skin);dark=shade(look.skin,-36);cheek=shade(look.skin,-12)
@@ -243,6 +289,11 @@ def face(look):
     if look.glasses:
         c='#666250';d.rectangle((2,6,6,9),outline=c);d.rectangle((9,6,13,9),outline=c)
         d.line((6,7,9,7),fill=c);d.line((0,7,2,7),fill=c);d.line((13,7,15,7),fill=c)
+    covered=costume_face(look)
+    if covered is not None:im.paste(covered,(0,0));d=ImageDraw.Draw(im)
+    if 'pale' in look.costume.split():
+        for x in (3,10):d.line((x-1,5,x+3,5),fill='#4a4248')
+        d.line((6,13,9,13),fill='#5a2a34');d.line((6,14,9,14),fill='#7a3a44')
     if look.cut=='receding':
         d.rectangle((0,0,1,5),fill=hair);d.rectangle((14,0,15,5),fill=hair)
         d.line((1,0,3,0),fill=hhi);d.line((12,0,14,0),fill=hhi)
@@ -268,6 +319,18 @@ def face(look):
         d.line((5,12,5,14),fill='#a85c36');d.point((10,13),fill='#a85c36');d.point((7,14),fill='#c07847')
     if look.mark=='changed':
         d.line((3,7,5,7),fill='#625846');d.line((10,7,12,7),fill='#625846');d.line((6,13,9,13),fill='#70594a')
+    c=set(look.costume.split())
+    if 'yarn' in c or 'mop' in c:
+        # A wig worn down over the face: strands of different lengths, with gaps the eyes look out through.
+        for x in range(16):
+            if x%3==0 and 2<x<14:continue
+            length=15 if x<2 or x>13 else 9+(x*7)%6
+            d.line((x,0,x,length),fill=hhi if (x*5)%4==0 else hair)
+    if 'hood' in c:
+        cloth=rgb(look.cloth)
+        d.rectangle((0,0,15,2),fill=cloth);d.rectangle((0,0,1,15),fill=cloth);d.rectangle((14,0,15,15),fill=cloth)
+        for x in (3,5,8,10,12):d.line((x,3,x,6+x%3),fill=hair)
+        for x in (4,9,12):d.point((x,3),fill='#a8acae')
     return im
 
 
@@ -375,7 +438,36 @@ def cloth_face(size,look,side='front'):
     if look.style=='ragged':
         d.line((mid,3,mid,h-3),fill=lo);d.rectangle((3,h-7,5,h-4),fill=shade(c,16))
         for y in (6,12,18):d.point((mid+1,y),fill=a)
+    costume_marks(d,look,w,h)
+    if look.number:
+        # The entry number, pinned on: a white card with red digits.
+        x0,y0=mid-5,5;d.rectangle((x0,y0,x0+9,y0+7),fill='#efece2',outline='#9a968a')
+        digits=str(look.number);x=x0+5-(len(digits)*4-1)//2
+        for ch in digits:
+            for row,bits in enumerate(DIGITS[ch]):
+                for col,bit in enumerate(bits):
+                    if bit=='1':d.point((x+col,y0+2+row),fill='#a8322c')
+            x+=4
     return im
+
+
+def costume_marks(d,look,w,h):
+    c=set(look.costume.split())
+    if 'bags' in c:
+        for x in range(-h,w,6):d.line((x,0,x+h,h),fill='#4d5058')
+        for x,y in ((3,5),(11,9),(6,16),(12,19)):d.point((x,y),fill='#6a6e78')
+    if 'sheet' in c:
+        for x,length in ((2,h-6),(6,h-10),(10,h-4),(13,h-12)):
+            if x<w:d.line((x,1,x,length),fill='#4f6b2c');d.point((x+1 if x+1<w else x,length//2),fill='#6a8a3a')
+    if 'weed' in c:
+        for x,length in ((1,10),(4,16),(8,8),(11,14),(14,11)):
+            if x<w:d.line((x,0,x,min(h-1,length)),fill='#3e5a26');d.line((x,length//2,min(w-1,x+1),length//2+2),fill='#56743a')
+    if 'gown' in c:
+        for x,y in ((3,9),(10,14),(6,19),(12,5)):d.ellipse((x-2,y-2,x+2,y+2),fill='#9fa8aa')
+        for x in (5,11):d.line((x,h-6,x,h-1),fill='#8e9799')
+    if 'flowers' in c:
+        for x,y in ((2,4),(9,7),(5,12),(12,15),(3,19),(10,21)):
+            if x<w and y<h:d.point((x,y),fill='#efe0a8');d.point((min(w-1,x+1),y),fill='#e8a8b8')
 
 
 def paint(look):
@@ -399,6 +491,15 @@ def paint(look):
             d.rectangle((front+3,7,front+5,11),fill=shade(look.skin,-16));d.line((front+4,8,front+4,10),fill=shade(look.skin,-34))
             if look.glasses:d.line((front,7,front+5,7),fill='#666250')
         put(head[side],art)
+    if 'pillow' in look.costume.split():
+        for side,box in head.items():
+            art=panel((16,16),'#ecebe4','cloth',side);d=ImageDraw.Draw(art)
+            if side=='front':
+                for x in (3,10):d.rectangle((x,6,x+2,8),fill='#1c1c1e')
+                d.line((5,12,10,12),fill='#7a7a80');d.line((0,15,15,15),fill='#d0cfc8')
+            put(box,art)
+    if 'hood' in look.costume.split():
+        for side in ('top','back','left','right'):put(head[side],panel((16,16),look.cloth,'cloth',side))
     if look.mark=='cottage_bowler':
         # The ordinary native hat layer supplies the crown, leaving the actual face clear.
         for side,box in net(32,0,8,8,8).items():
