@@ -9,15 +9,17 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.vehicle.Boat;
 
 /**
  * A canoe, not a boat: long and narrow, a low hull that tapers to both ends, upswept stems, two seats and a yoke, and
  * single-bladed paddles. It keeps the vanilla boat's frame of reference (long axis X, bow at +X, model Y down, the hull's
  * bottom 6 pixels below the origin) so the vanilla boat's floating, seats and paddle timing all line up.
  * <p>Texture 128 by 64 ({@code textures/entity/lake_house_canoe*.png}, drawn by tools/draw_lake_house_art.py). The sides'
- * outer faces carry the green paint: the minimum-Z face on the -Z side, the maximum-Z face on the +Z side.
+ * outer faces carry the green paint: the minimum-Z face on the -Z side, the maximum-Z face on the +Z side. Movie Night's
+ * painted canoes (0.4.102) are the same hull on the same UV layout, in their own colours.
  */
-public final class LakeHouseCanoeModel extends HierarchicalModel<LakeHouseCanoe> {
+public final class LakeHouseCanoeModel<T extends Boat> extends HierarchicalModel<T> {
     public static final ModelLayerLocation LAYER=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"lake_house_canoe"),"main");
     /** The angle of the tapering end panels: from the side wall at x ±14, z ±5.5 to the stem at x ±19.9. */
     private static final float TAPER=(float)Math.atan2(5.5,6);
@@ -68,12 +70,12 @@ public final class LakeHouseCanoeModel extends HierarchicalModel<LakeHouseCanoe>
                 .texOffs(40,34).addBox(-.5F,-2,10,1,5,6);
     }
 
-    @Override public void setupAnim(LakeHouseCanoe canoe,float partialTicks,float unused,float age,float yaw,float pitch){
-        leftPaddle.visible=rightPaddle.visible=!canoe.underLowRoof();
+    @Override public void setupAnim(T canoe,float partialTicks,float unused,float age,float yaw,float pitch){
+        leftPaddle.visible=rightPaddle.visible=!(canoe instanceof LakeHouseCanoe lake&&lake.underLowRoof());
         paddle(canoe,0,leftPaddle,partialTicks);paddle(canoe,1,rightPaddle,partialTicks);
     }
     /** The vanilla boat's stroke, so the paddles keep time with its paddling sounds and speed. */
-    private static void paddle(LakeHouseCanoe canoe,int side,ModelPart paddle,float partialTicks){
+    private static void paddle(Boat canoe,int side,ModelPart paddle,float partialTicks){
         float t=canoe.getRowingTime(side,partialTicks);
         paddle.xRot=Mth.clampedLerp((float)(-Math.PI/3),(float)(-Math.PI/12),(Mth.sin(-t)+1)/2);
         paddle.yRot=Mth.clampedLerp((float)(-Math.PI/4),(float)(Math.PI/4),(Mth.sin(-t+1)+1)/2);

@@ -24,13 +24,15 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  * Movie Night (0.4.102) on the production code: five frames of *Teeth of Summer* built by MovieFilm from the drawn atlas,
  * the shark on its own model and skin, and the lake's props with the projector's shadows on the film. Checks confirm each
  * frame is a picture rather than a blank, the beach is brighter than the night sea, the last title appears, and the shark
- * is long with its fin standing clear of the water; they report after every view is saved.
+ * is long with its fin standing clear of the water; they report after every view is saved. Two more views show the
+ * audience's things with the lake's own boards, and the painted canoes on the lake house canoe's hull.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class MovieNightVisualProof extends Screen {
     private record View(String name,int shot,int tick){}
     private static final View[] VIEWS={new View("the title",1,80),new View("the night swim",2,160),new View("the fin",3,120),new View("the rise",8,115),
-            new View("dawn, and THE END?",11,220),new View("the shark",-1,0),new View("the props and the shadows",4,90)};
+            new View("dawn, and THE END?",11,220),new View("the shark",-1,0),new View("the props and the shadows",4,90),
+            new View("the audience's things and the boards",-1,0),new View("the painted canoes",-1,0)};
     private final List<String> problems=new ArrayList<>();
     private int page,frames;
     public MovieNightVisualProof(){super(Component.literal("Movie Night"));}
@@ -52,6 +54,9 @@ public final class MovieNightVisualProof extends Screen {
         p.mulPose(Axis.YP.rotationDegrees(180));p.scale(-1,-1,1);model.setupAnim(null,0,0,0,0,0);model.renderToBuffer(p,shark,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
         if(shark.z1-shark.z0<4.5F||shark.z1-shark.z0>6.2F)problems.add("the shark is not a large one, nose to tail: "+shark);
         if(shark.y1<1.5F)problems.add("its fin does not stand clear above its back: "+shark);
+        var hull=new Bounds();var canoe=new LakeHouseCanoeModel<LakeCanoeEntity>(Minecraft.getInstance().getEntityModels().bakeLayer(LakeHouseCanoeModel.LAYER));canoe.renderToBuffer(new PoseStack(),hull,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
+        if(hull.x1-hull.x0<38)problems.add("the painted canoes are not a long, narrow canoe hull: "+hull);
+        for(var paint:LakeCanoeRenderer.PAINT)if(Minecraft.getInstance().getResourceManager().getResource(paint).isEmpty())problems.add("a canoe's paint is missing: "+paint);
     }
     /** Mean and spread of a frame's brightness. */
     private static double[] stats(int[] rgb){
@@ -71,6 +76,8 @@ public final class MovieNightVisualProof extends Screen {
         var view=VIEWS[page];g.fill(0,0,width,height,0xff0d1018);g.drawString(font,"Movie Night / "+view.name(),10,9,0xfff2ece0,false);
         if(view.shot()>=0&&page!=6){film(g,view,width*.5F,height*.52F,Math.min((width-20)/(float)MovieFilm.W,(height-40)/(float)MovieFilm.H));return;}
         if(page==5){shark(g);return;}
+        if(page==7){things(g);return;}
+        if(page==8){canoes(g);return;}
         // A smaller frame with a rower's head and something on all fours thrown across it, and the props below.
         float scale=Math.min((width-20)/(float)MovieFilm.W,(height*.55F)/MovieFilm.H);film(g,view,width*.5F,height*.36F,scale);
         float left=width*.5F-MovieFilm.W*scale/2,top=height*.36F-MovieFilm.H*scale/2;
@@ -102,10 +109,34 @@ public final class MovieNightVisualProof extends Screen {
     }
     private void props(GuiGraphics g){
         var mc=Minecraft.getInstance();var out=mc.renderBuffers().bufferSource();var p=g.pose();float scale=Math.min(width,height)/9F;
-        MoviePropBlock.Kind[] kinds=MoviePropBlock.Kind.values();
+        MoviePropBlock.Kind[] kinds={MoviePropBlock.Kind.SPEAKER,MoviePropBlock.Kind.PROJECTOR,MoviePropBlock.Kind.MORTAR};
         for(int i=0;i<kinds.length;i++){
             p.pushPose();p.translate(width*(.25F+.25F*i),height*.86F,400);p.scale(scale,-scale,scale);p.mulPose(Axis.XP.rotationDegrees(24));p.mulPose(Axis.YP.rotationDegrees(150));p.translate(-.5,-.5,-.5);
             mc.getBlockRenderer().renderSingleBlock(MoviePropBlock.of(kinds[i],Direction.NORTH),p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.popPose();
+        }
+        out.endBatch();
+    }
+    /** The lawn chair (and knocked over), blanket, cooler, popcorn (and spilled), poster, life ring, film cans and buoy, then the six boards. */
+    private void things(GuiGraphics g){
+        var mc=Minecraft.getInstance();var out=mc.renderBuffers().bufferSource();var p=g.pose();
+        var states=new ArrayList<net.minecraft.world.level.block.state.BlockState>();
+        for(var k:MoviePropBlock.Kind.values())if(k.ordinal()>MoviePropBlock.Kind.MORTAR.ordinal())states.add(MoviePropBlock.of(k,Direction.NORTH));
+        for(var k:MovieMaterialBlock.Kind.values())states.add(MovieMaterialBlock.of(k));
+        int columns=6;float cell=Math.min(width/(columns+.5F),(height-30)/3.4F),scale=cell*.52F;
+        for(int i=0;i<states.size();i++){
+            p.pushPose();p.translate(width*.5F+(i%columns-(columns-1)/2F)*cell,30+cell*(i/columns+.6F),400);p.scale(scale,-scale,scale);p.mulPose(Axis.XP.rotationDegrees(24));p.mulPose(Axis.YP.rotationDegrees(150));p.translate(-.5,-.5,-.5);
+            mc.getBlockRenderer().renderSingleBlock(states.get(i),p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.popPose();
+        }
+        out.endBatch();
+    }
+    /** Each of the five paints on the canoe's own hull, three-quarter view from above. */
+    private void canoes(GuiGraphics g){
+        var mc=Minecraft.getInstance();var out=mc.renderBuffers().bufferSource();var p=g.pose();
+        var model=new LakeHouseCanoeModel<LakeCanoeEntity>(mc.getEntityModels().bakeLayer(LakeHouseCanoeModel.LAYER));float scale=Math.min(width/3.2F,height/3.6F)/2.6F;
+        for(int i=0;i<LakeCanoeRenderer.PAINT.length;i++){
+            p.pushPose();p.translate(width*(i<3?.2F+.3F*i:.35F+.3F*(i-3)),height*(i<3?.36F:.74F),400);p.scale(scale,-scale,scale);p.mulPose(Axis.XP.rotationDegrees(28));p.mulPose(Axis.YP.rotationDegrees(-30));
+            p.scale(-1,-1,1);p.mulPose(Axis.YP.rotationDegrees(90));
+            model.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(LakeCanoeRenderer.PAINT[i])),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);p.popPose();
         }
         out.endBatch();
     }
@@ -115,8 +146,8 @@ public final class MovieNightVisualProof extends Screen {
         try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-movie-"+proof.page+".png"));}
         if(++proof.page<VIEWS.length){proof.frames=0;return;}
         if(!proof.problems.isEmpty())throw new IllegalStateException("MOVIE NIGHT VIEW CHECK FAILED: "+String.join("; ",proof.problems));
-        Files.writeString(dir.resolve("movie-night-passed.txt"),"Seven native Movie Night views: five frames of Teeth of Summer from the drawn atlas (title, night swim, fin, rise, dawn with THE END?), the shark with its fin clear of the water, and the props with the projector's shadows on the film.\n");
-        TheOldestHouse.LOGGER.info("MOVIE NIGHT VIEW CHECK PASSED: seven native views");
+        Files.writeString(dir.resolve("movie-night-passed.txt"),"Nine native Movie Night views: five frames of Teeth of Summer from the drawn atlas (title, night swim, fin, rise, dawn with THE END?), the shark with its fin clear of the water, the props with the projector's shadows on the film, the audience's things with the lake's boards, and the five painted canoes.\n");
+        TheOldestHouse.LOGGER.info("MOVIE NIGHT VIEW CHECK PASSED: nine native views");
         mc.setScreen(new CastVisualProof());
     }
 }

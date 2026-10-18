@@ -26,9 +26,13 @@ public final class MovieNightRegistry {
     private static final DeferredRegister<SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
 
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<MoviePropBlock>> PROP_TYPE=CODECS.register("movie_prop",()->MoviePropBlock.CODEC);
-    /** Speakers, the projector and the barge's mortars. Scenery: no item, no drops, not to be broken. */
+    /** Speakers, the projector, the barge's mortars and the audience's things on the sand. Scenery: no item, no drops, not to be broken. */
     public static final DeferredBlock<MoviePropBlock> PROP=BLOCKS.registerBlock("movie_prop",MoviePropBlock::new,
             BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).strength(-1,3600000).noOcclusion().noLootTable());
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<MovieMaterialBlock>> MATERIAL_TYPE=CODECS.register("movie_material",()->MovieMaterialBlock.CODEC);
+    /** The dock's and raft's boards, the pier's cedar, the screen's canvas and frame, the hut's siding. Scenery, not to be broken. */
+    public static final DeferredBlock<MovieMaterialBlock> MATERIAL=BLOCKS.registerBlock("movie_material",MovieMaterialBlock::new,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(-1,3600000).noLootTable());
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<MovieScreenBlock>> SCREEN_TYPE=CODECS.register("movie_screen",()->MovieScreenBlock.CODEC);
     /** One block in the screen's black wall carries the film, its beam and the shadows thrown across it. */
     public static final DeferredBlock<MovieScreenBlock> SCREEN=BLOCKS.registerBlock("movie_screen",MovieScreenBlock::new,

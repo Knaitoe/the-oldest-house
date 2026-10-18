@@ -16,7 +16,7 @@ public final class DrownedTownClientEvents {
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(DrownedTownRegistry.LAKE_WITCH.get(), LakeWitchRenderer::new);
         event.registerEntityRenderer(DrownedTownRegistry.CONGREGANT.get(), LakeCongregantRenderer::new);
-        event.registerEntityRenderer(DrownedTownRegistry.CAVE_CANOE.get(), context -> new net.minecraft.client.renderer.entity.BoatRenderer(context,false));
+        event.registerEntityRenderer(DrownedTownRegistry.CAVE_CANOE.get(), LakeCanoeRenderer::new);
         event.registerEntityRenderer(DrownedTownRegistry.PHONE_CAMERA.get(),net.minecraft.client.renderer.entity.NoopRenderer::new);
     }
 }

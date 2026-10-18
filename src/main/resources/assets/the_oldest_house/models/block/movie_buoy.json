@@ -1,0 +1,213 @@
+{
+  "textures": {
+    "paint": "the_oldest_house:block/movie_buoy",
+    "lamp": "minecraft:block/glowstone",
+    "particle": "the_oldest_house:block/movie_buoy"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        0,
+        4
+      ],
+      "to": [
+        12,
+        7,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#paint",
+          "uv": [
+            4,
+            9,
+            12,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#paint",
+          "uv": [
+            4,
+            9,
+            12,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#paint",
+          "uv": [
+            4,
+            9,
+            12,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#paint",
+          "uv": [
+            4,
+            9,
+            12,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#paint",
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ]
+        },
+        "down": {
+          "texture": "#paint",
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        7,
+        6
+      ],
+      "to": [
+        10,
+        11,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#paint",
+          "uv": [
+            6,
+            5,
+            10,
+            9
+          ]
+        },
+        "south": {
+          "texture": "#paint",
+          "uv": [
+            6,
+            5,
+            10,
+            9
+          ]
+        },
+        "east": {
+          "texture": "#paint",
+          "uv": [
+            6,
+            5,
+            10,
+            9
+          ]
+        },
+        "west": {
+          "texture": "#paint",
+          "uv": [
+            6,
+            5,
+            10,
+            9
+          ]
+        },
+        "up": {
+          "texture": "#paint",
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ]
+        },
+        "down": {
+          "texture": "#paint",
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        11,
+        7
+      ],
+      "to": [
+        9,
+        13,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#lamp",
+          "uv": [
+            7,
+            3,
+            9,
+            5
+          ]
+        },
+        "south": {
+          "texture": "#lamp",
+          "uv": [
+            7,
+            3,
+            9,
+            5
+          ]
+        },
+        "east": {
+          "texture": "#lamp",
+          "uv": [
+            7,
+            3,
+            9,
+            5
+          ]
+        },
+        "west": {
+          "texture": "#lamp",
+          "uv": [
+            7,
+            3,
+            9,
+            5
+          ]
+        },
+        "up": {
+          "texture": "#lamp",
+          "uv": [
+            7,
+            7,
+            9,
+            9
+          ]
+        },
+        "down": {
+          "texture": "#lamp",
+          "uv": [
+            7,
+            7,
+            9,
+            9
+          ]
+        }
+      }
+    }
+  ]
+}

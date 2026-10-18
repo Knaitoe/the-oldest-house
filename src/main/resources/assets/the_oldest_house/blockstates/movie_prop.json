@@ -44,6 +44,175 @@
     "facing=west,kind=mortar": {
       "model": "the_oldest_house:block/movie_mortar",
       "y": 270
+    },
+    "facing=north,kind=lawn_chair": {
+      "model": "the_oldest_house:block/movie_lawn_chair"
+    },
+    "facing=east,kind=lawn_chair": {
+      "model": "the_oldest_house:block/movie_lawn_chair",
+      "y": 90
+    },
+    "facing=south,kind=lawn_chair": {
+      "model": "the_oldest_house:block/movie_lawn_chair",
+      "y": 180
+    },
+    "facing=west,kind=lawn_chair": {
+      "model": "the_oldest_house:block/movie_lawn_chair",
+      "y": 270
+    },
+    "facing=north,kind=lawn_chair_tipped": {
+      "model": "the_oldest_house:block/movie_lawn_chair",
+      "x": 90
+    },
+    "facing=east,kind=lawn_chair_tipped": {
+      "model": "the_oldest_house:block/movie_lawn_chair",
+      "x": 90,
+      "y": 90
+    },
+    "facing=south,kind=lawn_chair_tipped": {
+      "model": "the_oldest_house:block/movie_lawn_chair",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west,kind=lawn_chair_tipped": {
+      "model": "the_oldest_house:block/movie_lawn_chair",
+      "x": 90,
+      "y": 270
+    },
+    "facing=north,kind=blanket": {
+      "model": "the_oldest_house:block/movie_blanket"
+    },
+    "facing=east,kind=blanket": {
+      "model": "the_oldest_house:block/movie_blanket",
+      "y": 90
+    },
+    "facing=south,kind=blanket": {
+      "model": "the_oldest_house:block/movie_blanket",
+      "y": 180
+    },
+    "facing=west,kind=blanket": {
+      "model": "the_oldest_house:block/movie_blanket",
+      "y": 270
+    },
+    "facing=north,kind=cooler": {
+      "model": "the_oldest_house:block/movie_cooler"
+    },
+    "facing=east,kind=cooler": {
+      "model": "the_oldest_house:block/movie_cooler",
+      "y": 90
+    },
+    "facing=south,kind=cooler": {
+      "model": "the_oldest_house:block/movie_cooler",
+      "y": 180
+    },
+    "facing=west,kind=cooler": {
+      "model": "the_oldest_house:block/movie_cooler",
+      "y": 270
+    },
+    "facing=north,kind=popcorn": {
+      "model": "the_oldest_house:block/movie_popcorn"
+    },
+    "facing=east,kind=popcorn": {
+      "model": "the_oldest_house:block/movie_popcorn",
+      "y": 90
+    },
+    "facing=south,kind=popcorn": {
+      "model": "the_oldest_house:block/movie_popcorn",
+      "y": 180
+    },
+    "facing=west,kind=popcorn": {
+      "model": "the_oldest_house:block/movie_popcorn",
+      "y": 270
+    },
+    "facing=north,kind=popcorn_spilled": {
+      "model": "the_oldest_house:block/movie_popcorn_spilled"
+    },
+    "facing=east,kind=popcorn_spilled": {
+      "model": "the_oldest_house:block/movie_popcorn_spilled",
+      "y": 90
+    },
+    "facing=south,kind=popcorn_spilled": {
+      "model": "the_oldest_house:block/movie_popcorn_spilled",
+      "y": 180
+    },
+    "facing=west,kind=popcorn_spilled": {
+      "model": "the_oldest_house:block/movie_popcorn_spilled",
+      "y": 270
+    },
+    "facing=north,kind=poster": {
+      "model": "the_oldest_house:block/movie_poster"
+    },
+    "facing=east,kind=poster": {
+      "model": "the_oldest_house:block/movie_poster",
+      "y": 90
+    },
+    "facing=south,kind=poster": {
+      "model": "the_oldest_house:block/movie_poster",
+      "y": 180
+    },
+    "facing=west,kind=poster": {
+      "model": "the_oldest_house:block/movie_poster",
+      "y": 270
+    },
+    "facing=north,kind=poster_top": {
+      "model": "the_oldest_house:block/movie_poster_top"
+    },
+    "facing=east,kind=poster_top": {
+      "model": "the_oldest_house:block/movie_poster_top",
+      "y": 90
+    },
+    "facing=south,kind=poster_top": {
+      "model": "the_oldest_house:block/movie_poster_top",
+      "y": 180
+    },
+    "facing=west,kind=poster_top": {
+      "model": "the_oldest_house:block/movie_poster_top",
+      "y": 270
+    },
+    "facing=north,kind=life_ring": {
+      "model": "the_oldest_house:block/movie_life_ring"
+    },
+    "facing=east,kind=life_ring": {
+      "model": "the_oldest_house:block/movie_life_ring",
+      "y": 90
+    },
+    "facing=south,kind=life_ring": {
+      "model": "the_oldest_house:block/movie_life_ring",
+      "y": 180
+    },
+    "facing=west,kind=life_ring": {
+      "model": "the_oldest_house:block/movie_life_ring",
+      "y": 270
+    },
+    "facing=north,kind=film_cans": {
+      "model": "the_oldest_house:block/movie_film_cans"
+    },
+    "facing=east,kind=film_cans": {
+      "model": "the_oldest_house:block/movie_film_cans",
+      "y": 90
+    },
+    "facing=south,kind=film_cans": {
+      "model": "the_oldest_house:block/movie_film_cans",
+      "y": 180
+    },
+    "facing=west,kind=film_cans": {
+      "model": "the_oldest_house:block/movie_film_cans",
+      "y": 270
+    },
+    "facing=north,kind=buoy": {
+      "model": "the_oldest_house:block/movie_buoy"
+    },
+    "facing=east,kind=buoy": {
+      "model": "the_oldest_house:block/movie_buoy",
+      "y": 90
+    },
+    "facing=south,kind=buoy": {
+      "model": "the_oldest_house:block/movie_buoy",
+      "y": 180
+    },
+    "facing=west,kind=buoy": {
+      "model": "the_oldest_house:block/movie_buoy",
+      "y": 270
     }
   }
 }

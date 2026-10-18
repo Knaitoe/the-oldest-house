@@ -4,7 +4,9 @@
 client composes over them, three silhouettes the projector throws onto the screen, and the leader's countdown digits.
 The client builds each frame from this atlas (MovieFilm), so the layout below is mirrored there; change both together.
 The shark is a private, harmless figure; its skin follows LakeSharkModel's box layout. The speaker, projector and mortar
-textures are the props' own faces.
+textures are the props' own faces; so are the boards (dock, raft, pier), the screen's canvas and frame, the hut's
+siding, the audience's lawn chairs, blanket, cooler and popcorn, the poster, life ring, film cans and buoy. The painted
+canoes recolour the lake house canoe's fresh paint on the same layout.
 
 Usage: python3 tools/draw_movie_night_art.py [--preview DIR]
 """
@@ -692,6 +694,225 @@ def prop_textures():
     return {k: Image.fromarray(np.clip(v, 0, 255).astype(np.uint8), 'RGBA') for k, v in out.items()}
 
 
+# ------------------------------------------------------------------------------------------------ the lake's boards and the audience's things
+def boards(base, gap, grain, seed, width=4, nails=True, horizontal=False, joints=True):
+    """Boards four pixels wide with a dark gap, a little grain, nail heads and a butt joint at a different place on each."""
+    img = canvas(16, 16, base)
+    rng = np.random.default_rng(seed)
+    for i in range(16 // width):
+        x0 = i * width
+        shade = rng.uniform(-14, 14)
+        for y in range(16):
+            for x in range(x0 + 1, x0 + width):
+                c = [max(0, min(255, base[k] + shade)) for k in range(3)]
+                px(img, x, y, c)
+            px(img, x0, y, gap)
+        for _ in range(2):
+            gx = x0 + 1 + int(rng.integers(0, width - 1))
+            gy = int(rng.integers(0, 12))
+            for y in range(gy, gy + int(rng.integers(3, 6))):
+                px(img, gx, y % 16, grain)
+        if joints:
+            jy = int(rng.integers(2, 14))
+            rect(img, x0 + 1, jy, x0 + width, jy + 1, gap)
+            if nails:
+                px(img, x0 + 2, (jy + 2) % 16, (40, 38, 36))
+                px(img, x0 + 2, (jy - 2) % 16, (40, 38, 36))
+    noise(img, .04, seed + 1)
+    if horizontal:
+        img = np.ascontiguousarray(np.transpose(img, (1, 0, 2)))
+    return img
+
+
+def material_textures():
+    out = {}
+    # The dock and the barge: sun-greyed boards. She can stand on these.
+    out['movie_dock'] = boards((132, 126, 114), (62, 58, 52), (156, 150, 138), 501)
+    # The screen's raft: tarred, nearly black, with a sheen where the tar is thick.
+    raft = boards((44, 40, 36), (20, 18, 16), (70, 66, 58), 502, horizontal=True)
+    for x, y in ((3, 2), (9, 6), (12, 13), (5, 10)):
+        px(raft, x, y, (92, 88, 80))
+    out['movie_raft'] = raft
+    # The far pier: oiled cedar, warm and red. She cannot.
+    out['movie_pier'] = boards((166, 104, 62), (92, 54, 30), (192, 128, 80), 503)
+    # The screen's back and border: black canvas, a woven ground and one seam with its stitches.
+    c = canvas(16, 16, (26, 26, 28))
+    for y in range(16):
+        for x in range(16):
+            if (x + y) % 2 == 0:
+                px(c, x, y, (31, 31, 33))
+    rect(c, 7, 0, 9, 16, (36, 36, 38))
+    for y in range(1, 16, 3):
+        px(c, 7, y, (52, 52, 54))
+    noise(c, .03, 504)
+    out['movie_canvas'] = c
+    # The frame: white paint on boards, peeling to grey wood in places.
+    f = boards((224, 220, 206), (168, 164, 150), (236, 234, 224), 505, nails=False)
+    rng = np.random.default_rng(506)
+    for _ in range(5):
+        x, y = int(rng.integers(1, 14)), int(rng.integers(1, 14))
+        rect(f, x, y, x + int(rng.integers(1, 3)), y + int(rng.integers(1, 3)), (122, 116, 104))
+    out['movie_frame'] = f
+    # The ticket hut: seafoam clapboard, each board lit along its top and shadowed under its lap.
+    h = canvas(16, 16, (146, 190, 170))
+    for y0 in range(0, 16, 4):
+        rect(h, 0, y0, 16, y0 + 1, (178, 216, 198))
+        rect(h, 0, y0 + 3, 16, y0 + 4, (96, 134, 118))
+    for x, y in ((4, 6), (11, 9), (2, 14), (13, 2)):
+        px(h, x, y, (196, 200, 186))
+    noise(h, .03, 507)
+    out['movie_siding'] = h
+    return out
+
+
+def audience_textures():
+    out = {}
+    # Lawn-chair webbing: green and white strips, woven over and under.
+    w = canvas(16, 16, (0, 0, 0, 0))
+    for y in range(16):
+        for x in range(16):
+            cx, cy = x // 2, y // 2
+            vertical = (cx + cy) % 2 == 0
+            c = ((70, 142, 92) if cx % 2 == 0 else (230, 228, 214)) if vertical else ((70, 142, 92) if cy % 2 == 0 else (230, 228, 214))
+            edge = x % 2 == 1 if vertical else y % 2 == 1
+            px(w, x, y, [v - 16 for v in c] if edge else c)
+    out['movie_chair'] = w
+    # A plaid blanket: red ground, cream and green bands both ways, a fringe at two edges.
+    b = canvas(16, 16, (166, 44, 40))
+    for i in range(16):
+        for j in (3, 4, 11, 12):
+            px(b, i, j, (226, 214, 180))
+            px(b, j, i, (226, 214, 180))
+        for j in (7, 8):
+            px(b, i, j, (48, 80, 54))
+            px(b, j, i, (48, 80, 54))
+    for j in (3, 4, 11, 12):
+        for k in (7, 8):
+            px(b, j, k, (140, 150, 120))
+            px(b, k, j, (140, 150, 120))
+    for i in range(0, 16, 2):
+        px(b, i, 0, (236, 226, 196))
+        px(b, i, 15, (236, 226, 196))
+    noise(b, .04, 511)
+    out['movie_blanket'] = b
+    # The cooler: red sides under a white lid band, a drain plug; and the white lid from above.
+    k = canvas(16, 16, (190, 46, 40))
+    rect(k, 0, 0, 16, 3, (232, 230, 222))
+    rect(k, 0, 3, 16, 4, (120, 30, 26))
+    rect(k, 1, 14, 3, 15, (60, 60, 60))
+    rect(k, 5, 7, 11, 9, (226, 222, 210))
+    noise(k, .04, 512)
+    out['movie_cooler'] = k
+    t = canvas(16, 16, (232, 230, 222))
+    rect(t, 0, 0, 16, 1, (200, 198, 190))
+    rect(t, 0, 15, 16, 16, (200, 198, 190))
+    rect(t, 2, 7, 14, 9, (206, 204, 196))
+    noise(t, .03, 513)
+    out['movie_cooler_top'] = t
+    # The popcorn box: red and white stripes; the heap of popcorn on top; spilled kernels on the sand.
+    pc = canvas(16, 16, (236, 232, 222))
+    for x in range(0, 16, 4):
+        rect(pc, x, 0, x + 2, 16, (196, 40, 36))
+    rect(pc, 0, 0, 16, 1, (250, 246, 236))
+    noise(pc, .03, 514)
+    out['movie_popcorn'] = pc
+    top = canvas(16, 16, (238, 220, 160))
+    rng = np.random.default_rng(515)
+    for _ in range(40):
+        x, y = int(rng.integers(0, 16)), int(rng.integers(0, 16))
+        px(top, x, y, (250, 244, 220) if rng.random() < .6 else (214, 176, 92))
+    out['movie_popcorn_top'] = top
+    kern = canvas(16, 16, (0, 0, 0, 0))
+    rng = np.random.default_rng(516)
+    for _ in range(26):
+        x, y = int(rng.integers(0, 16)), int(rng.integers(0, 16))
+        px(kern, x, y, (248, 240, 214) if rng.random() < .7 else (220, 180, 96))
+    out['movie_kernels'] = kern
+    # The life ring: red and white quarters on a ring, a rope round it.
+    ring = canvas(16, 16, (0, 0, 0, 0))
+    for y in range(16):
+        for x in range(16):
+            dx, dy = x - 7.5, y - 7.5
+            r = math.hypot(dx, dy)
+            if 3.4 <= r <= 7.2:
+                quarter = (dx >= 0) == (dy >= 0)
+                px(ring, x, y, (204, 46, 38) if quarter else (238, 236, 228))
+                if 5.0 <= r <= 5.6 and (x + y) % 3 == 0:
+                    px(ring, x, y, (176, 150, 100))
+    out['movie_life_ring'] = ring
+    # Film cans: ridged grey tin, and a lid with a paper label.
+    cs = canvas(16, 16, (96, 100, 104))
+    for y in range(0, 16, 3):
+        rect(cs, 0, y, 16, y + 1, (70, 74, 78))
+    noise(cs, .04, 517)
+    out['movie_can_side'] = cs
+    ct = canvas(16, 16, (110, 114, 118))
+    ellipse(ct, (1, 1, 14, 14), (124, 128, 132))
+    ellipse(ct, (5, 5, 10, 10), (214, 204, 170))
+    rect(ct, 6, 7, 10, 8, (120, 60, 40))
+    noise(ct, .03, 518)
+    out['movie_can_top'] = ct
+    # The mooring buoy: red and white bands, rust running down from the seams.
+    bu = canvas(16, 16, (196, 48, 40))
+    for y0 in (4, 12):
+        rect(bu, 0, y0, 16, y0 + 4, (234, 232, 224))
+    for x in (3, 10):
+        for y in range(4, 10):
+            px(bu, x, y, (140, 70, 40))
+    noise(bu, .04, 519)
+    out['movie_buoy'] = bu
+    # The film's poster, a night sea: the title at the top, a swimmer at the surface, the jaws rising under her.
+    poster = canvas(16, 32, (18, 34, 66))
+    vgrad(poster, 0, 32, (40, 64, 110), (8, 14, 30))
+    rect(poster, 0, 1, 16, 7, (176, 30, 28))
+    for x0, w in ((2, 2), (5, 1), (7, 3), (11, 3)):
+        rect(poster, x0, 2, x0 + w, 3, (244, 232, 200))
+    for x0, w in ((3, 3), (7, 2), (10, 3)):
+        rect(poster, x0, 4, x0 + w, 5, (244, 232, 200))
+    rect(poster, 0, 12, 16, 13, (120, 150, 190))
+    rect(poster, 7, 11, 9, 12, (220, 180, 150))
+    px(poster, 6, 12, (220, 180, 150))
+    px(poster, 9, 12, (220, 180, 150))
+    poly(poster, [(3, 31), (8, 16), (13, 31)], (96, 104, 112))
+    poly(poster, [(5, 31), (8, 21), (11, 31)], (150, 30, 34))
+    for x in range(6, 11, 2):
+        px(poster, x, 23 + abs(8 - x), (240, 240, 232))
+    for x, y in ((7, 18), (9, 18)):
+        px(poster, x, y, (10, 10, 12))
+    rect(poster, 0, 0, 16, 1, (230, 226, 210))
+    rect(poster, 0, 31, 16, 32, (230, 226, 210))
+    rect(poster, 0, 0, 1, 32, (230, 226, 210))
+    rect(poster, 15, 0, 16, 32, (230, 226, 210))
+    out['movie_poster_top'] = poster[:16].copy()
+    out['movie_poster_bottom'] = poster[16:].copy()
+    return out
+
+
+def canoe_paints():
+    """Movie Night's painted canoes: the lake house canoe's fresh paint, recoloured; the wood and trim stay as they are."""
+    import colorsys
+    src = Image.open(ASSETS / 'textures/entity/lake_house_canoe.png').convert('RGBA')
+    out = {}
+    # Hue, saturation scale, and the value as offset + scale of the original, so every colour reads as fresh paint.
+    for name, hue, sat, lift, light in (('red', 2, 1.3, .2, .95), ('blue', 212, 1.1, .14, .95), ('yellow', 45, 1.3, .44, .7),
+                                        ('white', 40, .12, .52, .62), ('teal', 176, 1.05, .12, .92)):
+        img = src.copy()
+        pix = img.load()
+        for y in range(img.height):
+            for x in range(img.width):
+                r, g, b, a = pix[x, y]
+                if a == 0:
+                    continue
+                h, s, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+                if not (70 / 360 <= h <= 170 / 360 and s > .12):
+                    continue
+                h2, s2, v2 = hue / 360, min(1, s * sat), min(1, lift + v * light)
+                rr, gg, bb = colorsys.hsv_to_rgb(h2, s2, v2)
+                pix[x, y] = (round(rr * 255), round(gg * 255), round(bb * 255), a)
+        out[f'movie_canoe_{name}'] = img
+    return out
+
+
 # ------------------------------------------------------------------------------------------------ block models
 def element(frm, to, textures, uv=None):
     faces = {}
@@ -728,7 +949,65 @@ def prop_models():
                            element((3, 6, 3), (7, 10, 7), {'all': '#tube'}),
                            element((9, 6, 4), (13, 10, 8), {'all': '#tube'}),
                            element((5, 6, 9), (9, 11, 13), {'all': '#tube'})]}
-    return {'movie_speaker': speaker, 'movie_projector': projector, 'movie_mortar': mortar}
+    T = 'the_oldest_house:block/'
+    spruce, log = 'minecraft:block/spruce_planks', 'minecraft:block/stripped_spruce_log'
+    # A folding lawn chair: aluminium tubes, a webbed seat, armrests, and a webbed back leaning back.
+    lean = {'origin': [8, 5, 12], 'axis': 'x', 'angle': 22.5}
+    chair_elements = [element((3, 4, 3), (13, 5, 12), {'up': '#web', 'down': '#web', 'north': '#tube', 'south': '#tube', 'east': '#tube', 'west': '#tube'})]
+    for x in (2, 13):
+        chair_elements += [element((x, 4, 2), (x + 1, 5, 13), {'all': '#tube'}),
+                           element((x, 0, 2), (x + 1, 4, 3), {'all': '#tube'}),
+                           element((x, 0, 12), (x + 1, 4, 13), {'all': '#tube'}),
+                           element((x, 8, 4), (x + 1, 9, 12), {'all': '#tube'}),
+                           element((x, 5, 4), (x + 1, 8, 5), {'all': '#tube'})]
+    back = [element((3, 5, 12), (13, 15, 13), {'north': '#web', 'south': '#web', 'up': '#tube', 'down': '#tube'}),
+            element((2, 5, 12), (3, 15, 13), {'all': '#tube'}), element((13, 5, 12), (14, 15, 13), {'all': '#tube'}),
+            element((3, 14, 12), (13, 15, 13), {'all': '#tube'})]
+    for e in back:
+        e['rotation'] = dict(lean)
+    chair = {'textures': {'web': T + 'movie_chair', 'tube': iron, 'particle': T + 'movie_chair'}, 'elements': chair_elements + back}
+    blanket = {'textures': {'cloth': T + 'movie_blanket', 'particle': T + 'movie_blanket'},
+               'elements': [element((0, 0, 0), (16, 1, 16), {'all': '#cloth'})]}
+    cooler = {'textures': {'side': T + 'movie_cooler', 'lid': T + 'movie_cooler_top', 'dark': dark, 'particle': T + 'movie_cooler'},
+              'elements': [element((3, 0, 4), (13, 8, 12), {'north': '#side', 'south': '#side', 'east': '#side', 'west': '#side', 'down': '#side'}),
+                           element((2.5, 8, 3.5), (13.5, 10, 12.5), {'up': '#lid', 'north': '#lid', 'south': '#lid', 'east': '#lid', 'west': '#lid', 'down': '#lid'}),
+                           element((5, 10, 7.5), (11, 11, 8.5), {'all': '#dark'})]}
+    plate = element((0, 0, 0), (16, 1, 16), {'all': '#cloth'})
+    popcorn = {'textures': {'cloth': T + 'movie_blanket', 'box': T + 'movie_popcorn', 'corn': T + 'movie_popcorn_top', 'particle': T + 'movie_popcorn'},
+               'elements': [plate, element((6, 1, 6), (10, 6, 10), {'north': '#box', 'south': '#box', 'east': '#box', 'west': '#box'}),
+                            element((6, 6, 6), (10, 7, 10), {'all': '#corn'})]}
+    tipped = element((5, 1, 6), (11, 5, 10), {'north': '#box', 'south': '#box', 'up': '#box', 'down': '#box', 'west': '#corn', 'east': '#box'})
+    for face in ('north', 'south', 'up', 'down'):
+        tipped['faces'][face]['rotation'] = 90
+    spilled = {'render_type': 'minecraft:cutout',
+               'textures': {'cloth': T + 'movie_blanket', 'box': T + 'movie_popcorn', 'corn': T + 'movie_popcorn_top', 'kernels': T + 'movie_kernels', 'particle': T + 'movie_popcorn'},
+               'elements': [plate, tipped, element((1, 1.1, 1), (15, 1.1, 15), {'up': '#kernels'})]}
+    def poster(half, top):
+        h = 14 if top else 16
+        els = [element((1, 0, 7), (15, h, 9), {'north': '#art', 'south': '#wood', 'east': '#wood', 'west': '#wood', 'down': '#wood', 'up': '#wood'}, [0, 16 - h, 16, 16] if top else [0, 0, 16, 16]),
+               element((2, 0, 9), (3, h, 10), {'all': '#post'}), element((13, 0, 9), (14, h, 10), {'all': '#post'})]
+        if top:
+            els.append(element((.5, 14, 6.5), (15.5, 15, 9.5), {'all': '#wood'}))
+        return {'textures': {'art': T + 'movie_poster_' + half, 'wood': spruce, 'post': log, 'particle': spruce}, 'elements': els}
+    ring = {'render_type': 'minecraft:cutout', 'textures': {'ring': T + 'movie_life_ring', 'particle': T + 'movie_life_ring'},
+            'elements': [element((2, 2, 14), (14, 14, 15), {'north': '#ring', 'south': '#ring'}, [2, 2, 14, 14])]}
+    cans = {'textures': {'side': T + 'movie_can_side', 'top': T + 'movie_can_top', 'particle': T + 'movie_can_side'},
+            'elements': [element((4, 0, 4), (12, 2, 12), {'up': '#top', 'down': '#top', 'north': '#side', 'south': '#side', 'east': '#side', 'west': '#side'}, None),
+                         element((3.5, 2, 4.5), (11.5, 4, 12.5), {'up': '#top', 'down': '#top', 'north': '#side', 'south': '#side', 'east': '#side', 'west': '#side'}),
+                         element((4.5, 4, 3.5), (12.5, 6, 11.5), {'up': '#top', 'down': '#top', 'north': '#side', 'south': '#side', 'east': '#side', 'west': '#side'})]}
+    for e in cans['elements']:
+        e['faces']['up']['uv'] = e['faces']['down']['uv'] = [0, 0, 16, 16]
+    buoy = {'textures': {'paint': T + 'movie_buoy', 'lamp': 'minecraft:block/glowstone', 'particle': T + 'movie_buoy'},
+            'elements': [element((4, 0, 4), (12, 7, 12), {'all': '#paint'}), element((6, 7, 6), (10, 11, 10), {'all': '#paint'}),
+                         element((7, 11, 7), (9, 13, 9), {'all': '#lamp'})]}
+    return {'movie_speaker': speaker, 'movie_projector': projector, 'movie_mortar': mortar, 'movie_lawn_chair': chair, 'movie_blanket': blanket,
+            'movie_cooler': cooler, 'movie_popcorn': popcorn, 'movie_popcorn_spilled': spilled, 'movie_poster': poster('bottom', False),
+            'movie_poster_top': poster('top', True), 'movie_life_ring': ring, 'movie_film_cans': cans, 'movie_buoy': buoy}
+
+
+PROP_KINDS = ('speaker', 'projector', 'mortar', 'lawn_chair', 'lawn_chair_tipped', 'blanket', 'cooler', 'popcorn', 'popcorn_spilled',
+              'poster', 'poster_top', 'life_ring', 'film_cans', 'buoy')
+MATERIAL_KINDS = ('dock', 'raft', 'pier', 'canvas', 'frame', 'siding')
 
 
 def write_models():
@@ -736,14 +1015,21 @@ def write_models():
     for name, model in prop_models().items():
         (folder / f'{name}.json').write_text(json.dumps(model, indent=2) + '\n')
     variants = {}
-    for kind in ('speaker', 'projector', 'mortar'):
+    for kind in PROP_KINDS:
         for facing, y in (('north', 0), ('east', 90), ('south', 180), ('west', 270)):
-            v = {'model': f'the_oldest_house:block/movie_{kind}'}
+            # The knocked-over chair is the chair, laid on its back.
+            v = {'model': 'the_oldest_house:block/movie_lawn_chair' if kind == 'lawn_chair_tipped' else f'the_oldest_house:block/movie_{kind}'}
+            if kind == 'lawn_chair_tipped':
+                v['x'] = 90
             if y:
                 v['y'] = y
             variants[f'facing={facing},kind={kind}'] = v
     (ASSETS / 'blockstates/movie_prop.json').write_text(json.dumps({'variants': variants}, indent=2) + '\n')
-    (ASSETS / 'blockstates/movie_screen.json').write_text(json.dumps({'variants': {'': {'model': 'minecraft:block/black_concrete'}}}, indent=2) + '\n')
+    for kind in MATERIAL_KINDS:
+        model = {'parent': 'minecraft:block/cube_all', 'textures': {'all': f'the_oldest_house:block/movie_{kind}'}}
+        (folder / f'movie_material_{kind}.json').write_text(json.dumps(model, indent=2) + '\n')
+    (ASSETS / 'blockstates/movie_material.json').write_text(json.dumps({'variants': {f'kind={k}': {'model': f'the_oldest_house:block/movie_material_{k}'} for k in MATERIAL_KINDS}}, indent=2) + '\n')
+    (ASSETS / 'blockstates/movie_screen.json').write_text(json.dumps({'variants': {'': {'model': 'the_oldest_house:block/movie_material_canvas'}}}, indent=2) + '\n')
 
 
 def write():
@@ -753,6 +1039,10 @@ def write():
     shark_skin().save(ASSETS / 'textures/entity/lake_shark.png')
     for name, img in prop_textures().items():
         img.save(ASSETS / 'textures/block' / f'{name}.png')
+    for name, arr in {**material_textures(), **audience_textures()}.items():
+        Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8), 'RGBA').save(ASSETS / 'textures/block' / f'{name}.png')
+    for name, img in canoe_paints().items():
+        img.save(ASSETS / 'textures/entity' / f'{name}.png')
     write_models()
 
 

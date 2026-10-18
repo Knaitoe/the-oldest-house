@@ -174,6 +174,7 @@ public final class LiteraryVignettes {
         }
         else if(place==LabyrinthPlace.CONFESSION)actor.say("Bring a blank book. Sit where you can hear me.");
         else if(place==LabyrinthPlace.ELK_LOT)ElkLotNight.talk(p,actor,own);
+        else if(place==LabyrinthPlace.MOVIE_NIGHT)MovieNightCast.talk(p,actor,own);
         else if(place==LabyrinthPlace.THREE_FINGERS)ThreeFingers.talk(p,actor,own);
         else if(place==LabyrinthPlace.GHOSTS_SET)GhostsSet.talk(p,actor,own);
         else if(place==LabyrinthPlace.LAKE_HOUSE)LakeHouse.talk(p,actor,own);else if(place==LabyrinthPlace.BORRASCA)BorrascaStory.talk(p,actor,own);

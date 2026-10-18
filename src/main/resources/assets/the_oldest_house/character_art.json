@@ -824,5 +824,61 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 13
+  },
+  {
+    "name": "literary_movie_ray",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 14
+  },
+  {
+    "name": "literary_movie_dot",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 15
+  },
+  {
+    "name": "literary_movie_frank",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 16
+  },
+  {
+    "name": "literary_movie_june",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 17
+  },
+  {
+    "name": "literary_movie_jamie",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 18
+  },
+  {
+    "name": "literary_movie_bobby",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 19
+  },
+  {
+    "name": "literary_movie_lynn",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 20
   }
 ]

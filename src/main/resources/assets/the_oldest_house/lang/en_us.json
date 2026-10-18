@@ -298,5 +298,6 @@
   "subtitles.the_oldest_house.movie.bump": "Something knocks the hull",
   "block.the_oldest_house.movie_prop": "Movie night fixture",
   "block.the_oldest_house.movie_screen": "Projection screen",
+  "block.the_oldest_house.movie_material": "Lakeside boards",
   "entity.the_oldest_house.lake_shark": "A shark from the film"
 }

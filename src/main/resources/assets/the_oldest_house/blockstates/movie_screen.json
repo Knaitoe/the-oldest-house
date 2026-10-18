@@ -1,7 +1,7 @@
 {
   "variants": {
     "": {
-      "model": "minecraft:block/black_concrete"
+      "model": "the_oldest_house:block/movie_material_canvas"
     }
   }
 }

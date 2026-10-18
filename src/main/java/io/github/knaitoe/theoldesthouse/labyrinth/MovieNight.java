@@ -102,12 +102,13 @@ public final class MovieNight {
     public static boolean inBeam(BlockPos base,Vec3 point){var f=filmPoint(base,point);return f!=null&&f[0]>=0&&f[0]<=1&&f[1]>=0&&f[1]<=1;}
 
     // ------------------------------------------------------------------------------------------------ her rules here
-    /** Where she may set a foot: open water, and the planks of the dock, the screen's raft and the barge. Never the far pier. */
-    public static boolean footing(BlockState below){return below.is(Blocks.WATER)||below.is(Blocks.OAK_PLANKS)||below.is(Blocks.DARK_OAK_PLANKS);}
+    /** Where she may set a foot: open water, and the grey boards of the dock and barge and the screen's tarred raft. Never the far pier's cedar. */
+    public static boolean footing(BlockState below){return below.is(Blocks.WATER)||boards(below);}
+    private static boolean boards(BlockState s){return MovieMaterialBlock.is(s,MovieMaterialBlock.Kind.DOCK)||MovieMaterialBlock.is(s,MovieMaterialBlock.Kind.RAFT);}
     /** Whom she hunts: a reader in a canoe, in the water but not under it, or out on the dock, raft or barge. */
     public static boolean exposed(ServerPlayer p){
         if(p.getVehicle() instanceof LakeCanoeEntity||p.isInWater())return true;
-        var below=p.level().getBlockState(p.blockPosition().below());return below.is(Blocks.OAK_PLANKS)||below.is(Blocks.DARK_OAK_PLANKS);
+        return boards(p.level().getBlockState(p.blockPosition().below()));
     }
     private static final Map<Long,Long> LIT=new HashMap<>();
     /** While a burst lights the lake she does not move. */
@@ -120,7 +121,7 @@ public final class MovieNight {
     }
     /** Every five ticks while the reader is here (from the shared hunt). */
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own,@Nullable LakeWitchEntity witch){
-        canoes(p,b);
+        canoes(p,b);MovieNightCast.reader(p,b,own);
         var canoe=p.getVehicle() instanceof LakeCanoeEntity c&&c.getTags().contains(CANOE)?c:null;
         if(canoe!=null){
             own.putBoolean("Rowed",true);
@@ -170,8 +171,8 @@ public final class MovieNight {
         var server=e.getServer();var origin=HouseSavedData.get(server).houseOrigin();if(origin==null)return;
         var b=LabyrinthPlaces.base(origin,PLACE);var l=server.getLevel(NovelRooms.dimension(PLACE));if(b==null||l==null)return;
         var readers=server.getPlayerList().getPlayers().stream().filter(p->LiteraryVignettes.inside(p,PLACE)).toList();
-        if(readers.isEmpty()){NEXT.remove(b.asLong());return;}
-        fireworks(l,b,readers);score(l,b,readers);
+        if(readers.isEmpty()){NEXT.remove(b.asLong());MovieNightCast.tick(l,b,readers);return;}
+        fireworks(l,b,readers);score(l,b,readers);MovieNightCast.tick(l,b,readers);
     }
     private static void fireworks(ServerLevel l,BlockPos b,List<ServerPlayer> readers){
         long now=l.getGameTime(),key=b.asLong();var live=ROCKETS.computeIfAbsent(key,k->new ArrayList<>());
@@ -249,7 +250,7 @@ public final class MovieNight {
             // Loaded absence still cannot authorize a replacement. Only actual native discard or death can.
             if(world.hasUUID("Canoe"+i)&&!world.getBoolean("Removed"+i))return;
             canoe=DrownedTownRegistry.CAVE_CANOE.get().create(level);if(canoe==null)return;
-            canoe.addTag(CANOE);canoe.mobile(true);canoe.moveTo(start.x,start.y,start.z,180,0);
+            canoe.addTag(CANOE);canoe.mobile(true);canoe.paint(1+i);canoe.moveTo(start.x,start.y,start.z,180,0);
             if(!level.addFreshEntity(canoe))return;
             QUEUED.put(canoe.getUUID(),canoe);world.putUUID("Canoe"+i,canoe.getUUID());world.remove("Removed"+i);world.remove("Claim"+i);
         }
@@ -287,14 +288,20 @@ public final class MovieNight {
 
     // ------------------------------------------------------------------------------------------------ the account
     public static String account(CompoundTag own){
-        var text=new StringBuilder("The film was called Teeth of Summer. Nobody else had come to see it.\n\n");
+        int missing=own.getInt("Missing0502");
+        var text=new StringBuilder("The film was called Teeth of Summer. Ray ran it from the end of the dock. A family had brought lawn chairs down to the sand, and two kids sat in a canoe tied up by the screen.\n\n");
         if(own.getBoolean("ShadowSeen0502"))text.append("When I rowed through the projector's light, my own head went up on the screen, over their beach.\n\n");
         if(own.getBoolean("WitchShadow0502"))text.append("Once something crossed the beam on all fours, bigger than anything in the film.\n\n");
         text.append("Each burst lit the whole lake. Each time she was nearer the canoe, standing still until the dark came back.\n\n");
         if(own.getBoolean("Quiet0502"))text.append("When the speakers went quiet, I knew she was close.\n\n");
+        if((missing&MovieNightCast.JAMIE_BIT)!=0)text.append("Partway through, the Pruitts' boy wasn't in his chair. His mother said he had gone to the restroom. There was no restroom.\n\n");
+        if((missing&MovieNightCast.TEENS_BIT)!=0)text.append("The canoe by the screen came loose and turned in the dark with nobody in it. I never saw them get out.\n\n");
+        if((missing&MovieNightCast.FRANK_BIT)!=0)text.append("Frank Pruitt's chair was on its side the next time I looked. He had gone to look along the water.\n\n");
+        if((missing&MovieNightCast.JUNE_BIT)!=0)text.append("By the end there was nobody on the sand. The chairs still faced the screen.\n\n");
         if(own.getBoolean("SharkSeen0502"))text.append("Out past the screen a fin came round the canoe, the way the one in the film had. Something went under the hull and lifted it. There are no sharks in a lake.\n\n");
         if(own.getBoolean("Struck0502"))text.append("She caught me once, in the dark between bursts.\n\n");
-        return text.append("The pier was under my hands before the last burst. Behind me the film went on for nobody. A boy on the screen asked if it was gone.").toString();
+        if(own.getBoolean("MetDot0502"))text.append(missing!=0?"The woman in the ticket hut asked whether I had seen the Pruitts on my way across. I said I hadn't.\n\n":"The woman in the ticket hut said nobody walks round.\n\n");
+        return text.append("The pier was under my hands before the last burst. Behind me the film went on").append((missing&MovieNightCast.JUNE_BIT)!=0?" for nobody":"").append(". A boy on the screen asked if it was gone.").toString();
     }
 
     // ------------------------------------------------------------------------------------------------ the build
@@ -351,42 +358,54 @@ public final class MovieNight {
         for(int h=height-2;h<=height+1;h++){int w=h>=height+1?1:2;for(int dx=-w;dx<=w;dx++)for(int dz=-w;dz<=w;dz++){if(Math.abs(dx)==w&&Math.abs(dz)==w&&(h==height+1||(x+z+h)%2==0))continue;if(s.at(x+dx,y+h,z+dz).isAir())s.set(x+dx,y+h,z+dz,leaves(leaf));}}
         s.fill(x,y,z,x,y+height-1,z,log);
     }
+    private static BlockState prop(MoviePropBlock.Kind k,Direction d){return MoviePropBlock.of(k,d);}
+    private static BlockState board(MovieMaterialBlock.Kind k){return MovieMaterialBlock.of(k);}
     private static void beach(Site s){
-        // Blankets on the sand facing the screen, a couple of deck chairs, a cooler, and a lamp at the gate.
-        int[][] blankets={{-6,-6},{-3,-9},{7,-9},{-9,-4},{9,-4}};Block[] cloth={Blocks.RED_CARPET,Blocks.WHITE_CARPET,Blocks.YELLOW_CARPET,Blocks.BLUE_CARPET,Blocks.RED_CARPET};
-        for(int i=0;i<blankets.length;i++)for(int dx=0;dx<2;dx++)for(int dz=0;dz<2;dz++)s.set(blankets[i][0]+dx,0,blankets[i][1]+dz,(dx+dz)%2==0?cloth[i]:Blocks.WHITE_CARPET);
-        for(int x:new int[]{-12,12})s.set(x,0,-7,Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.SOUTH));
+        // The Pruitts' spot: three lawn chairs facing the screen, a plaid blanket in front with the boy's popcorn, the cooler beside.
+        for(int x=-7;x<=-5;x++)for(int z=-8;z<=-7;z++)s.set(x,0,z,prop(MoviePropBlock.Kind.BLANKET,Direction.NORTH));
+        for(var chair:List.of(MovieNightCast.FRANK_CHAIR,MovieNightCast.JAMIE_CHAIR,MovieNightCast.JUNE_CHAIR))s.set(chair.getX(),chair.getY(),chair.getZ(),prop(MoviePropBlock.Kind.LAWN_CHAIR,Direction.NORTH));
+        s.set(MovieNightCast.POPCORN.getX(),0,MovieNightCast.POPCORN.getZ(),prop(MoviePropBlock.Kind.POPCORN,Direction.NORTH));
+        s.set(-8,0,-6,prop(MoviePropBlock.Kind.COOLER,Direction.EAST));
+        // Two more blankets nobody has come back to.
+        for(int[] at:new int[][]{{2,-10},{7,-8}})for(int dx=0;dx<2;dx++)for(int dz=0;dz<2;dz++)s.set(at[0]+dx,0,at[1]+dz,prop(MoviePropBlock.Kind.BLANKET,Direction.NORTH));
+        // The film's poster on its board, facing whoever comes down to the sand; a lamp at the gate.
+        s.set(3,0,-2,prop(MoviePropBlock.Kind.POSTER,Direction.SOUTH));s.set(3,1,-2,prop(MoviePropBlock.Kind.POSTER_TOP,Direction.SOUTH));
         s.set(6,0,-3,Blocks.OAK_FENCE);s.set(6,1,-3,Blocks.OAK_FENCE);s.set(6,2,-3,Blocks.LANTERN);
-        s.set(7,0,-6,Blocks.BARREL);
+        s.set(7,0,-6,prop(MoviePropBlock.Kind.FILM_CANS,Direction.SOUTH));
         NovelRooms.furniture(s.l(),s.b().offset(4,0,-6),HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);NovelRooms.furniture(s.l(),s.b().offset(4,0,-4),HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.NORTH);
         for(var speaker:SPEAKERS.subList(0,4)){for(int y=0;y<speaker.getY();y++)s.set(speaker.getX(),y,speaker.getZ(),Blocks.OAK_FENCE);s.set(speaker.getX(),speaker.getY(),speaker.getZ(),MoviePropBlock.of(MoviePropBlock.Kind.SPEAKER,Direction.SOUTH));}
     }
     private static void dock(Site s){
-        s.fill(-1,-1,-3,1,-1,-18,Blocks.OAK_PLANKS);
+        s.fill(-1,-1,-3,1,-1,-18,board(MovieMaterialBlock.Kind.DOCK));
         for(int z=-14;z>=-18;z-=4)for(int x:new int[]{-1,1})for(int y=-2;y>=-11&&s.at(x,y,z).is(Blocks.WATER);y--)s.set(x,y,z,Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.WATERLOGGED,true));
+        // A post with the life ring partway out, and the projectionist's film cans by the projector.
+        s.set(1,0,-11,Blocks.OAK_FENCE);s.set(1,1,-11,Blocks.OAK_FENCE);s.set(2,1,-11,prop(MoviePropBlock.Kind.LIFE_RING,Direction.EAST));
+        s.set(-1,0,-17,prop(MoviePropBlock.Kind.FILM_CANS,Direction.EAST));
         // The projector at the end, its lens to the north and the screen.
         s.set(PROJECTOR.getX(),PROJECTOR.getY(),PROJECTOR.getZ(),MoviePropBlock.of(MoviePropBlock.Kind.PROJECTOR,Direction.NORTH));
     }
     private static void screen(Site s){
-        s.fill(-12,-1,-44,13,-1,-40,Blocks.DARK_OAK_PLANKS);
+        s.fill(-12,-1,-44,13,-1,-40,board(MovieMaterialBlock.Kind.RAFT));
         for(int x:new int[]{-12,13})for(int z:new int[]{-44,-40})for(int y=-2;y>=-11&&s.at(x,y,z).is(Blocks.WATER);y--)s.set(x,y,z,Blocks.DARK_OAK_FENCE.defaultBlockState().setValue(FenceBlock.WATERLOGGED,true));
-        s.fill(-10,0,-41,10,11,-41,Blocks.BLACK_CONCRETE);
+        s.fill(-10,0,-41,10,11,-41,board(MovieMaterialBlock.Kind.CANVAS));
         s.set(SCREEN.getX(),SCREEN.getY(),SCREEN.getZ(),MovieNightRegistry.SCREEN.get().defaultBlockState());
-        for(int x:new int[]{-11,11})s.fill(x,0,-41,x,12,-41,Blocks.DARK_OAK_PLANKS);
-        s.fill(-11,12,-41,11,12,-41,Blocks.DARK_OAK_PLANKS);
-        for(int x:new int[]{-11,11})s.set(x,13,-41,Blocks.DARK_OAK_SLAB);
+        for(int x:new int[]{-11,11})s.fill(x,0,-41,x,12,-41,board(MovieMaterialBlock.Kind.FRAME));
+        s.fill(-11,12,-41,11,12,-41,board(MovieMaterialBlock.Kind.FRAME));
+        for(int x:new int[]{-11,11})s.set(x,13,-41,Blocks.BIRCH_SLAB);
         // Bracing behind the wall, so it stands on its raft in a wind.
         for(int x:new int[]{-8,-3,4,9}){s.fill(x,0,-42,x,9,-42,Blocks.DARK_OAK_FENCE);s.fill(x,0,-43,x,4,-43,Blocks.DARK_OAK_FENCE);}
         for(var speaker:SPEAKERS.subList(4,6)){for(int y=0;y<speaker.getY();y++)s.set(speaker.getX(),y,speaker.getZ(),Blocks.DARK_OAK_FENCE);s.set(speaker.getX(),speaker.getY(),speaker.getZ(),MoviePropBlock.of(MoviePropBlock.Kind.SPEAKER,Direction.SOUTH));}
+        // The buoy the two teenagers' canoe is tied to.
+        s.set(14,0,-35,prop(MoviePropBlock.Kind.BUOY,Direction.SOUTH));
     }
     private static void barge(Site s){
-        s.fill(14,-1,-62,19,-1,-58,Blocks.OAK_PLANKS);
+        s.fill(14,-1,-62,19,-1,-58,board(MovieMaterialBlock.Kind.DOCK));
         for(int x=14;x<=19;x++)for(int z=-62;z<=-58;z++)if(x==14||x==19||z==-62||z==-58)s.set(x,0,z,Blocks.SPRUCE_FENCE);
         for(var m:MORTARS)s.set(m.getX(),m.getY(),m.getZ(),MoviePropBlock.of(MoviePropBlock.Kind.MORTAR,Direction.SOUTH));
         s.set(16,0,-60,Blocks.BARREL);
     }
     private static void pier(Site s){
-        s.fill(-1,-1,PIER_BANK,1,-1,PIER_END,Blocks.SPRUCE_PLANKS);
+        s.fill(-1,-1,PIER_BANK,1,-1,PIER_END,board(MovieMaterialBlock.Kind.PIER));
         for(int z=PIER_END;z>=PIER_BANK;z-=4)for(int x:new int[]{-1,1})for(int y=-2;y>=-11&&s.at(x,y,z).is(Blocks.WATER);y--)s.set(x,y,z,Blocks.SPRUCE_FENCE.defaultBlockState().setValue(FenceBlock.WATERLOGGED,true));
         // A lantern and a speaker at each end of the pier.
         for(int z:new int[]{PIER_END,PIER_BANK}){
@@ -394,17 +413,19 @@ public final class MovieNight {
             s.set(1,0,z,Blocks.SPRUCE_FENCE);s.set(1,1,z,Blocks.SPRUCE_FENCE);s.set(1,2,z,MoviePropBlock.of(MoviePropBlock.Kind.SPEAKER,Direction.SOUTH));
         }
         // The boardwalk from the pier to the ticket hut.
-        s.fill(-1,-1,PIER_BANK-1,1,-1,-83,Blocks.SPRUCE_PLANKS);
+        s.fill(-1,-1,PIER_BANK-1,1,-1,-83,board(MovieMaterialBlock.Kind.PIER));
         for(int z=PIER_BANK-1;z>=-83;z--)for(int x:new int[]{-1,0,1})if(s.at(x,0,z).is(Blocks.GRASS_BLOCK))s.set(x,0,z,Blocks.AIR);
     }
     private static void hut(Site s){
-        s.fill(-3,-1,-88,3,-1,-83,Blocks.SPRUCE_PLANKS);s.fill(-3,0,-88,3,3,-83,Blocks.AIR);
+        // Dot's ticket hut: painted clapboard, a window each side, the counter she stands behind, the account in front of it.
+        s.fill(-3,-1,-88,3,-1,-83,board(MovieMaterialBlock.Kind.PIER));s.fill(-3,0,-88,3,3,-83,Blocks.AIR);
         for(int x:new int[]{-3,3})for(int z:new int[]{-88,-83})s.fill(x,0,z,x,2,z,Blocks.STRIPPED_SPRUCE_LOG);
-        s.fill(-2,0,-88,2,2,-88,Blocks.SPRUCE_PLANKS);
-        for(int x:new int[]{-3,3}){s.fill(x,0,-87,x,2,-84,Blocks.SPRUCE_PLANKS);s.set(x,1,-86,Blocks.GLASS_PANE);s.set(x,1,-85,Blocks.GLASS_PANE);}
+        s.fill(-2,0,-88,2,2,-88,board(MovieMaterialBlock.Kind.SIDING));
+        for(int x:new int[]{-3,3}){s.fill(x,0,-87,x,2,-84,board(MovieMaterialBlock.Kind.SIDING));s.set(x,1,-86,Blocks.GLASS_PANE);s.set(x,1,-85,Blocks.GLASS_PANE);}
         s.fill(-4,3,-89,4,3,-82,Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.BOTTOM));
-        s.fill(-2,0,-87,2,0,-87,Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP));
+        s.fill(-2,0,-86,2,0,-86,Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP));
         s.set(0,2,-86,Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));
         NovelRooms.sign(s.l(),s.b().offset(3,2,-82),Direction.SOUTH,new String[]{"TICKETS","Movie night","on the lake",""});
+        s.set(-4,0,-83,prop(MoviePropBlock.Kind.POSTER,Direction.SOUTH));s.set(-4,1,-83,prop(MoviePropBlock.Kind.POSTER_TOP,Direction.SOUTH));
     }
 }
