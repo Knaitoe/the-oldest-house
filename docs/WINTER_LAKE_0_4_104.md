@@ -73,6 +73,9 @@ This rule is Winter Lake's alone. Her ordinary hunt now remains only at Movie Ni
   snow kicked over the fire, and Hank calling back "I'm sorry. I'm sorry!" Then they are gone into the trees.
 - The scene is ready once the reader who gave the ribbon back is on the near bank again. The account waits by the sled.
 
+Years later, at Costume Night, old Hank remembers a reader who did the dare: the first time they speak to him he says
+"You. You took it back out to her, that winter. I never could.", and that night's account says so.
+
 Only the reader Hank gave a ribbon to can give it back. When the lake has been empty for five seconds and no camera is
 within 70 blocks, the night starts over: the boys by the fire, the fire lit, every crack and hole mended, her under the ice.
 
