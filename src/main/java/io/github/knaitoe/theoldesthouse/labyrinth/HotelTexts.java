@@ -28,7 +28,7 @@ public final class HotelTexts {
         "If the plant blows, the dining fire dies and 217 will not keep a sleeper. The restart switch stands beside the valve.\n\nThis circuit heats the hotel alone.");}
     public static ItemStack account(String name,int debt,boolean settled){return book("The closing account","The desk",
         "Guest: "+name+".\n\nUncollected places: "+debt+".\n\nProperty remains available at the desk and in the room drawers.",
-        settled?"The key, the photograph, the bed and the log have been entered. The gauge was attended. You read the account through.\n\nNo one has signed the second place setting.":"A blank line remains. Visit the bed, the bar, the dance floor, the maze, the caretaker's log and the heating plant. Return here when the tab is settled.");}
+        settled?"The key, the photograph, the bed and the log have been entered. The gauge was attended. You read the account through.\n\nNo one has signed the second place setting.":"A blank line remains. The account stays open against room 217's bed, the bar, the ballroom floor, the hedge maze, the caretaker's log and the heating plant.\n\nThe desk will hold it until it is settled.");}
     public static ItemStack blind(){return book("Before the unlit stretch","An electrician",
         "The lamps were removed. A bell remains at each turn. Follow its sound until it stops.\n\nThe printed arrow worked for the first two turns.",
         "Then it pointed through a wall. The bell had not moved.\n\nKeep a hand on the wall if you must return. There is no prize for believing a sign.");}

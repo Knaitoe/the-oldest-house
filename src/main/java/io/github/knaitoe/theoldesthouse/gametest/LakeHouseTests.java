@@ -118,11 +118,18 @@ public final class LakeHouseTests {
             h.assertTrue(canoe.underLowRoof()&&canoe.wallWithinReach(-1)&&canoe.wallWithinReach(1),"the actual culvert ceiling and two walls are reachable");
             h.assertTrue(p.getForcedPose()==net.minecraft.world.entity.Pose.CROUCHING&&!f.out.getBlockCollisions(p,p.getBoundingBox()).iterator().hasNext()&&p.getEyeY()>f.base().getY()&&tess.getEyeY()>f.base().getY(),"the actual ducked reader and original Tess have dry eyes and native ceiling clearance, rather than a synthetic box");
             h.assertTrue(!canoe.push(peer,-1)&&!canoe.push(p,8),"a non-rider and an invalid hand side cannot propel it");
-            float health=p.getHealth();var before=canoe.position();h.assertTrue(canoe.push(p,-1)&&canoe.getDeltaMovement().z<0&&canoe.getDeltaMovement().x<0,"the first stroke moves forward and away from the actual left wall");canoe.move(net.minecraft.world.entity.MoverType.SELF,canoe.getDeltaMovement());
+            float health=p.getHealth();var before=canoe.position();h.assertTrue(canoe.push(p,-1)&&canoe.getDeltaMovement().z<0&&canoe.getDeltaMovement().x>0,"the first stroke moves forward and away from the reader's own left (west) wall");canoe.move(net.minecraft.world.entity.MoverType.SELF,canoe.getDeltaMovement());
             h.assertTrue(canoe.position().distanceTo(before)>.1&&!canoe.push(p,1),"native collision applies real movement and blocks an immediate second stroke");
             h.runAfterDelay(LakeHouseCanoe.STROKE_TICKS+1,()->{
-                canoe.moveTo(f.base().getX()+.70,canoe.getY(),canoe.getZ(),180,0);canoe.positionRider(p);canoe.positionRider(tess);h.assertTrue(!f.out.getBlockCollisions(canoe,canoe.getBoundingBox()).iterator().hasNext()&&canoe.wallWithinReach(-1)&&canoe.wallWithinReach(1),"the off-centre original clears native wall collision and can still reach the opposite wall");canoe.setDeltaMovement(Vec3.ZERO);h.assertTrue(!canoe.push(p,-1)&&canoe.push(p,1)&&canoe.getDeltaMovement().x>0&&canoe.getDeltaMovement().z<0,"the next stroke switches walls and reverses the lateral shove");
+                canoe.moveTo(f.base().getX()+.70,canoe.getY(),canoe.getZ(),180,0);canoe.positionRider(p);canoe.positionRider(tess);h.assertTrue(!f.out.getBlockCollisions(canoe,canoe.getBoundingBox()).iterator().hasNext()&&canoe.wallWithinReach(-1)&&canoe.wallWithinReach(1),"the off-centre original clears native wall collision and can still reach the opposite wall");canoe.setDeltaMovement(Vec3.ZERO);h.assertTrue(canoe.push(p,-1)&&canoe.getDeltaMovement().x>0&&canoe.getDeltaMovement().z<0,"the same hand may push again, off the near left wall and away from it");
                 h.assertTrue(p.getHealth()==health&&!p.isInWall()&&!p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER)&&p.getAirSupply()==p.getMaxAirSupply(),"actual rider ticks and the first two native strokes cost neither health nor breath under the roof");
+            });
+            h.runAfterDelay(LakeHouseCanoe.STROKE_TICKS*2+2,()->{
+                canoe.moveTo(f.base().getX()+1,canoe.getY(),f.base().getZ()-112,120,0);canoe.positionRider(p);canoe.setDeltaMovement(Vec3.ZERO);
+                h.assertTrue(canoe.channelYaw()==180&&canoe.push(p,2)&&canoe.getDeltaMovement().z>0&&canoe.getDeltaMovement().x<0,"turned askew, a back stroke still runs along the culvert, back out and away from the right wall");
+                canoe.moveTo(f.base().getX()+1,canoe.getY(),f.base().getZ()-102.6,180,0);canoe.positionRider(p);
+                h.assertTrue(canoe.underLowRoof()&&p.getForcedPose()==net.minecraft.world.entity.Pose.CROUCHING&&!p.isInWall(),"the reader ducks as the bow passes under the roof, before their head reaches it");
+                canoe.moveTo(f.base().getX()+1,canoe.getY(),f.base().getZ()-112,180,0);canoe.positionRider(p);
             });
             h.runAfterDelay(340,()->{
                 h.assertTrue(p.getHealth()==health&&!p.isInWall()&&!p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER)&&p.getAirSupply()==p.getMaxAirSupply()&&!LakeHouseDive.choking(p.getUUID()),"remaining longer than an ordinary drowning window keeps the real seated reader alive and breathing");

@@ -52,6 +52,20 @@ public final class HouseNpcTests {
             chunks.close();var s=l.getServer();s.overworld().getDataStorage().set("the_oldest_house",oldHouse);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);}
     }
     private static Fixture cache,hunt,resume,torches,guards,upgrade,activity,aftermath,lateOriginal;
+    private static Fixture honest;
+    @AfterBatch(batch="npc_honest0505") public static void honestDone(ServerLevel l){if(honest!=null){honest.close();honest=null;}}
+    /** 0.4.105: a reader who never takes anything is told so on their third visit, and the camp is not dealt to them again. */
+    @GameTest(template="empty",batch="npc_honest0505",timeoutTicks=120)
+    public static void anHonestReaderIsToldOnceAndTheCampLeavesTheirDeals(GameTestHelper h){
+        honest=new Fixture(h,44600);var f=honest;var a=f.player();var thief=f.player();
+        h.assertTrue(HollowayVignette.canDeal(f.data(),a.getUUID())&&!f.own(a).getBoolean("Honest0505"),"one honest visit is only the camp");
+        for(int visit=2;visit<=HollowayVignette.HONEST_VISITS;visit++){f.at(a,0,19);HollowayVignette.depart(a);f.at(a,0,-3.5);HollowayVignette.enter(a);}
+        h.assertTrue(f.own(a).getInt("Visits")==HollowayVignette.HONEST_VISITS&&f.own(a).getBoolean("Honest0505")&&!HollowayVignette.canDeal(f.data(),a.getUUID()),"visits without taking anything end the camp for that reader, once");
+        h.assertTrue(!WitnessAccount.has(f.data(),a.getUUID(),WitnessAccount.Story.HOLLOWAY)&&!f.own(a).getBoolean("Run"),"honesty is acknowledged, not counted as surviving the hunt");
+        f.loot(thief,0);f.returnForHunt(thief);
+        h.assertTrue(HollowayVignette.canDeal(f.data(),thief.getUUID())&&!f.own(thief).getBoolean("Honest0505"),"a reader who took something keeps the camp and its hunt");
+        h.succeed();
+    }
     @AfterBatch(batch="npc_late_original0493") public static void lateOriginalDone(ServerLevel l){if(lateOriginal!=null){lateOriginal.close();lateOriginal=null;}}
     @GameTest(template="empty",batch="npc_late_original0493",timeoutTicks=300)
     public static void aLateSerializedOriginalNeverGetsReplacedAfterFiveSeconds(GameTestHelper h){

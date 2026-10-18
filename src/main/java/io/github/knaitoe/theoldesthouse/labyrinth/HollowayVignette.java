@@ -40,7 +40,9 @@ public final class HollowayVignette {
     private static void save(LabyrinthData data,UUID id,CompoundTag own){var all=data.state(ID);var players=all.getCompound("Players");players.put(id.toString(),own);all.put("Players",players);data.setState(ID,all);}
     public static @Nullable BlockPos base(MinecraftServer s){return IndianLakeRooms.base(s,LabyrinthPlace.HOLLOWAY_CAMP);}
     public static boolean inside(ServerPlayer p){return p.gameMode.getGameModeForPlayer()!=net.minecraft.world.level.GameType.SPECTATOR&&IndianLakeRooms.inside(p,LabyrinthPlace.HOLLOWAY_CAMP);}
-    public static boolean canDeal(LabyrinthData data,UUID id){var own=personal(data,id);return !own.getBoolean("Escaped")&&!WitnessAccount.has(data,id,WitnessAccount.Story.HOLLOWAY);}
+    public static boolean canDeal(LabyrinthData data,UUID id){var own=personal(data,id);return !own.getBoolean("Escaped")&&!own.getBoolean("Honest0505")&&!WitnessAccount.has(data,id,WitnessAccount.Story.HOLLOWAY);}
+    /** Visits that end the camp for a reader who never takes anything (0.4.105): he says so, and it is not dealt to them again. */
+    public static final int HONEST_VISITS=3;
     public static boolean pursued(ServerPlayer p){var own=personal(LabyrinthData.get(p.server),p.getUUID());return inside(p)&&(own.getBoolean("Run")||own.getBoolean("CampAnger"));}
     public static void provoke(ServerPlayer p,boolean theft){
         if(!inside(p))return;enter(p);var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());
@@ -62,8 +64,13 @@ public final class HollowayVignette {
             own.putBoolean("Run",own.getBoolean("Looted")&&visit>own.getInt("LootVisit")&&!own.getBoolean("Escaped"));
             own.putInt("Arena",0);own.putInt("ArenaTicks",0);own.putBoolean("Seen",own.getBoolean("KilledHolloway"));
         }
+        // A reader who has left everything where it was, visit after visit, is told so once, by the man who counted.
+        boolean honest=!resume&&!own.getBoolean("Looted")&&!own.getBoolean("KilledHolloway")&&!data.state(ID).getBoolean("ActorDead")&&own.getInt("Visits")>=HONEST_VISITS&&!own.getBoolean("Honest0505");
+        if(honest)own.putBoolean("Honest0505",true);
         own.putBoolean("InRoom",true);own.putLong("LastTick",-1);save(data,p.getUUID(),own);
-        ensureActor(l,b);
+        var holloway=ensureActor(l,b);
+        if(honest){if(holloway!=null){holloway.getLookControl().setLookAt(p,30,30);holloway.say("You came three times and left it all where it was. I counted. There's nothing here you need. Go on.");}
+            p.displayClientMessage(Component.literal("He turns back to his torches and does not look up again."),false);return;}
         p.displayClientMessage(Component.literal(own.getBoolean("Run")?(data.state(ID).getBoolean("ActorDead")?"The camp is empty. The survey describes three rooms north and a service latch on the left.":"Boots scrape beyond the hut. Three rooms north; the service latch is on the left."):"A dirt hut. A field survey by the bed. Someone has counted the supplies."),false);
     }
     /** Called only by the native source slot's onTake, never by opening or receiving a borrowed item. */

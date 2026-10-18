@@ -259,10 +259,12 @@ public final class LiveExpeditionClient {
         }
         if(step==41){mc.player.setYRot(0);mc.player.setXRot(0);mc.options.keyShift.setDown(false);mc.options.keyUp.setDown(true);
             if(ticks>20&&mc.player.getZ()>target.getZ()+2&&mc.player.getForcedPose()==null&&mc.player.getBbHeight()>1&&ack!=41){mc.options.keyUp.setDown(false);shot=role+"-camp-bed-left";ack(mc,41);}}
+        // The view may open before this client reaches the step; one frame from its middle onward is enough.
+        if((step==41||step==42)&&mc.screen instanceof PawClutchClient.Focus focus){if(focus.fingers()!=(role.equals("A")?2:1))throw new IllegalStateException("LIVE PAW: peer's finger count reached the wrong client");
+            if(focus.age()>=24&&!pawShot&&shot==null){shot=role+"-paw-clutch";pawShot=true;}}
         if(step==42){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);
-            if(mc.screen instanceof PawClutchClient.Focus focus){if(focus.fingers()!=(role.equals("A")?2:1))throw new IllegalStateException("LIVE PAW: peer's finger count reached the wrong client");// The view may open before this client reaches the step; one frame from its middle onward is enough.
-                if(focus.age()>=24&&!pawShot&&shot==null){shot=role+"-paw-clutch";pawShot=true;}}
-            if(ticks>80&&mc.screen==null&&ack!=42)ack(mc,42);
+            // A slow level load can hold the view back; wait for it rather than going on without the frame.
+            if(ticks>80&&mc.screen==null&&ack!=42&&(pawShot||ticks>600))ack(mc,42);
         }
         if(step>=43&&step<=46&&SupperSocketClient.ready(mc,step,ticks,role,target))ack(mc,step);
         if((step==52||step==53)&&GhostsSocketClient.ready(mc,step,ticks,role,target))ack(mc,step);

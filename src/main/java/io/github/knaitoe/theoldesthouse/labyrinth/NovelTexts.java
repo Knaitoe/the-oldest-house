@@ -63,5 +63,5 @@ public final class NovelTexts {
         Component.literal("The alarms stopped at dawn.\n\nThe chair was still in the same place.\n\nI had mistaken an answer for someone coming.")));}
     public static ItemStack karen(){return HouseWriting.book("A room to come back to","Karen Green",HouseWriting.WritingStyle.KAREN,List.of(
         "This bed remembers you.\n\nSleep here to set a place inside the House. It is the only bed beyond the hall that does.",
-        "The projector keeps pictures of the rooms you reached. Click it to change the frame.\n\nWhen you wake, count what is on the table.\n\nI do."));}
+        "The projector keeps pictures of the rooms you reached. Touch it and it shows you another.\n\nWhen you wake, count what is on the table.\n\nI do."));}
 }

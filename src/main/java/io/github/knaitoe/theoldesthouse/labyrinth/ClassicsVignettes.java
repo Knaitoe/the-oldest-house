@@ -97,7 +97,7 @@ public final class ClassicsVignettes {
         if(place==LabyrinthPlace.WALLPAPER_NURSERY){int index=ClassicsRooms.PANELS.indexOf(rel);var panel=p.serverLevel().getBlockState(event.getPos());if(index>=0&&panel.is(ClassicsRegistry.WALLPAPER.get())){if(p.getMainHandItem().getItem() instanceof AxeItem){peel(p,index);handled=true;}else if(panel.getValue(WallpaperPanelBlock.PEELED)){readPanel(p,index);handled=true;}}}
         else if(rel.equals(ClassicsRooms.GRACE)){open(p,place,"Grace",ClassicsTexts.grace(),false);handled=true;}
         else if(rel.equals(ClassicsRooms.SITTING)){open(p,place,"Sitting",ClassicsTexts.medium(),false);handled=true;}
-        else if(rel.equals(ClassicsRooms.ALBUM)){open(p,place,"Album",ClassicsTexts.album(p.getGameProfile().getName()),true);handled=true;}
+        else if(rel.equals(ClassicsRooms.ALBUM)){open(p,place,"Album",ClassicsTexts.albumRead(),true);handled=true;}
         else if(rel.equals(ClassicsRooms.CUPBOARD)){disturb(p,0);}
         else if(ClassicsRooms.CANDLES.contains(rel)&&p.getMainHandItem().isEmpty()){int index=ClassicsRooms.CANDLES.indexOf(rel);var state=p.serverLevel().getBlockState(event.getPos());if(state.is(Blocks.CANDLE)&&state.getValue(CandleBlock.LIT)){p.serverLevel().setBlock(event.getPos(),state.setValue(CandleBlock.LIT,false),F);p.serverLevel().playSound(null,event.getPos(),SoundEvents.CANDLE_EXTINGUISH,SoundSource.BLOCKS,.6F,1);disturb(p,index+1);}handled=true;}
         else if(rel.distManhattan(ClassicsRooms.GATE)<=1){handled=true;if(wingReady(p.serverLevel(),b))NovelRooms.door(p.serverLevel(),b.offset(ClassicsRooms.GATE),Direction.SOUTH,Blocks.IRON_DOOR,true);else say(p,1,"Shut the other door. And the shutters. All of them.");}

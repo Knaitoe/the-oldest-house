@@ -99,6 +99,22 @@ public final class LabyrinthDealer {
                 ? UNFINISHED_WEIGHT : 1;
     }
 
+    /**
+     * 0.4.105: a personal story is begun by the reader's own visits. Literary rooms and Holloway's camp keep their visits
+     * per reader and never write the shared counter, so the shared check alone never gave them the begun weight.
+     */
+    public static int dealWeight(LabyrinthData data, UUID player, LabyrinthPlace place) {
+        if (place.isMultiVisit() && LiteraryRooms.isLiterary(place)) {
+            var own = LiteraryVignettes.personal(data, player, place);
+            return own.getInt("Visit") > 0 && !own.getBoolean("Completed") ? UNFINISHED_WEIGHT : 1;
+        }
+        if (place == LabyrinthPlace.HOLLOWAY_CAMP) {
+            // Taking something is what begins his story: the camp comes back for the reader who owes it a visit.
+            return HollowayVignette.personal(data, player).getBoolean("Looted") && !WitnessAccount.has(data, player, WitnessAccount.Story.HOLLOWAY) ? UNFINISHED_WEIGHT : 1;
+        }
+        return dealWeight(data, place);
+    }
+
     public static int rememberedWeight(LabyrinthData data, UUID player, LabyrinthPlace place, int ordinaryWeight) {
         if(place==LabyrinthPlace.MOTHER_DEN&&rescueNeeded(data,player))return Math.max(1,ordinaryWeight)*96;
         // 0.4.53: what followed a reader home from the trailer keeps the trailer near; the way to be rid of it is there.
@@ -117,11 +133,11 @@ public final class LabyrinthDealer {
     private static LabyrinthPlace pickVignette(LabyrinthData data, UUID player, List<LabyrinthPlace> vignettes, RandomSource random) {
         int total = 0;
         for (LabyrinthPlace place : vignettes) {
-            total += rememberedWeight(data, player, place, dealWeight(data, place));
+            total += rememberedWeight(data, player, place, dealWeight(data, player, place));
         }
         int roll = random.nextInt(total);
         for (LabyrinthPlace place : vignettes) {
-            roll -= rememberedWeight(data, player, place, dealWeight(data, place));
+            roll -= rememberedWeight(data, player, place, dealWeight(data, player, place));
             if (roll < 0) {
                 return place;
             }

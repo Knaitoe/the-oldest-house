@@ -64,6 +64,17 @@ public final class WitnessTests {
         helper.assertTrue(complete.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream()
                 .anyMatch(p->p.raw().getString().contains("Crouch and open the bars")),"the fifteenth resolution restores the actual cell directions");helper.succeed();
     }
+    /** 0.4.105: the account lists rooms in the order this reader ended them; an older record without that order keeps the House's order. */
+    @GameTest(template="empty") public static void theAccountReadsInTheOrderTheRoomsEnded(GameTestHelper helper){
+        LabyrinthData data=new LabyrinthData();UUID player=UUID.randomUUID();
+        WitnessAccount.resolve(data,player,WitnessAccount.Story.WINTER_LAKE,"returned_ribbon");WitnessAccount.resolve(data,player,WitnessAccount.Story.CLAP,"won");
+        WitnessAccount.resolve(data,player,WitnessAccount.Story.WINTER_LAKE,"again");WitnessAccount.resolve(data,player,WitnessAccount.Story.HARRIGAN,"kept_phone");
+        var ordered=WitnessAccount.inOrder(WitnessAccount.record(data,player));
+        helper.assertTrue(ordered.subList(0,3).equals(List.of(WitnessAccount.Story.WINTER_LAKE,WitnessAccount.Story.CLAP,WitnessAccount.Story.HARRIGAN))&&ordered.size()==WitnessAccount.Story.values().length,"resolved rooms come first, in the order they ended, each once");
+        var older=WitnessAccount.record(data,player).copy();older.remove("Order");
+        helper.assertTrue(WitnessAccount.inOrder(older).equals(List.of(WitnessAccount.Story.values())),"an account saved before the order keeps the House's order");
+        helper.succeed();
+    }
     @GameTest(template="empty") public static void witnessQuotaTracksSeventyFivePercentOfTheEligiblePool(GameTestHelper helper){
         helper.assertTrue(WitnessAccount.Story.values().length==46&&WitnessAccount.REQUIRED==35,"the forty-six playable sources currently require thirty-five resolutions");
         for(int[] quota:new int[][]{{5,4},{6,5},{7,6},{8,6},{9,7},{10,8},{11,9},{12,9},{13,10},{16,12},{17,13},{18,14},{19,15},{20,15},{43,33}})
