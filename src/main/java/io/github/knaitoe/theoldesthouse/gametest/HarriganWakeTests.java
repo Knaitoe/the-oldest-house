@@ -19,15 +19,15 @@ public final class HarriganWakeTests {
         var f=new LiteraryTests.Fixture(h);active=f;var place=LabyrinthPlace.HARRIGAN;var b=f.base(place);
         f.built.add(place);f.chunks.hold(f.in,HarriganWake.bounds(b).inflate(2));
         HarriganVignette.build(f.in.getServer(),f.in,b);LabyrinthBuilder.registerDoors(f.data(),place,b);
-        var player=f.player("wake_reader",place);player.setGameMode(GameType.ADVENTURE);
-        java.util.function.Supplier<LiteraryActor> harrigan=()->f.in.getEntity(f.data().state(HarriganVignette.ID).getUUID("Harrigan0505")) instanceof LiteraryActor a?a:null;
+        var player=f.player("wake_reader",place);player.setGameMode(GameType.ADVENTURE);HarriganVignette.onArrive(player,place);
+        java.util.function.Supplier<LiteraryActor> harrigan=()->{var state=f.data().state(HarriganVignette.ID);return state.hasUUID("Harrigan0505")&&f.in.getEntity(state.getUUID("Harrigan0505")) instanceof LiteraryActor a?a:null;};
         java.util.function.Supplier<Integer> mourners=()->f.in.getEntitiesOfClass(LiteraryActor.class,HarriganWake.bounds(b),a->a.role()==LiteraryActor.HARRIGAN_MOURNER).size();
         java.util.function.Consumer<Boolean> visit=beat->{var state=f.data().state(HarriganVignette.ID);state.putBoolean("BeatDone",beat);f.data().setState(HarriganVignette.ID,state);
             HarriganVignette.onDepart(player);player.moveTo(b.getX()+.5,b.getY(),b.getZ()+5.5);player.moveTo(b.getX()+.5,b.getY(),b.getZ()-3.5);HarriganVignette.onArrive(player,place);};
         h.startSequence().thenWaitUntil(()->{if(f.chunks.ready()&&harrigan.get()==null)HarriganVignette.onArrive(player,place);h.assertTrue(f.chunks.ready()&&harrigan.get()!=null,"the original study actor is present");})
             .thenExecute(()->{
                 var identity=harrigan.get().getUUID();
-                h.assertTrue(harrigan.get().phase()==HarriganVignette.ALIVE_PHASE&&mourners.get()==0,"the first visit has him alive and nobody else");
+                h.assertTrue(f.data().state(HarriganVignette.ID).getInt("Visit")==1&&harrigan.get().phase()==HarriganVignette.ALIVE_PHASE&&mourners.get()==0,"the first visit has him alive and nobody else");
                 // The finished reading is an explicit fixture prerequisite.
                 visit.accept(true);
                 h.assertTrue(f.data().state(HarriganVignette.ID).getInt("Visit")==2&&harrigan.get().getUUID().equals(identity)&&harrigan.get().phase()==HarriganVignette.DEAD_PHASE,"a genuine departure and second arrival find the same saved body dead in his chair");
