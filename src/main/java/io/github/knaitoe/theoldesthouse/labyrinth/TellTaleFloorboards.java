@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
@@ -23,14 +24,18 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.GameEventTags;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -39,6 +44,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.VanillaGameEvent;
+import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -63,6 +69,10 @@ public final class TellTaleFloorboards {
 
     /** The loose board, relative to the room's base (the floor is at y -1). */
     public static final BlockPos LOOSE_BOARD = new BlockPos(2, -1, -6);
+    /** The chopping block in the corner by the wardrobe; the hatchet lies on top of it. */
+    public static final BlockPos AXE_BLOCK = new BlockPos(5, 0, -1);
+    private static final String AXE_TAG = TheOldestHouse.MOD_ID + "_floorboard_axe";
+    private static final String AXE_KEY = "FloorboardAxe0505";
 
     public static final double MAX_HEAT = 100.0D;
     private static final double DECAY_PER_TICK = 0.08D;
@@ -108,6 +118,8 @@ public final class TellTaleFloorboards {
         // A wardrobe by the door, and a shuttered lantern by the bed.
         level.setBlock(base.offset(4, 0, -1), LabyrinthBuilder.barrel(Direction.WEST), flags);
         level.setBlock(base.offset(4, 1, -1), LabyrinthBuilder.barrel(Direction.WEST), flags);
+        // 0.4.105: a chopping block in the corner beside it, with the hatchet he split kindling with left lying on top.
+        level.setBlock(base.offset(AXE_BLOCK), Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState(), flags);
         LabyrinthBuilder.hangLantern(level, base.offset(-4, 3, -5), true);
 
         LabyrinthBuilder.entrance(level, base, wall, floor, ceiling);
@@ -210,6 +222,7 @@ public final class TellTaleFloorboards {
             heat = 0.0D;
             return;
         }
+        if (server.getTickCount() % 20 == 0) keepHatchet(server, level, base);
         if (LabyrinthData.get(server).isCompleted(ID)) {
             return;
         }
@@ -266,7 +279,6 @@ public final class TellTaleFloorboards {
         if (!stack.is(ItemTags.AXES)) {
             // The board shifts a little under a hand, and the beat skips.
             player.serverLevel().playSound(null, event.getPos(), SoundEvents.WOOD_HIT, SoundSource.BLOCKS, 0.4F, 0.7F);
-            byHand(player);
             return;
         }
         event.setCanceled(true);
@@ -278,15 +290,10 @@ public final class TellTaleFloorboards {
     public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || player.isSpectator()
                 || event.getAction()!=PlayerInteractEvent.LeftClickBlock.Action.START
-                || !isLooseBoard(player.serverLevel(), event.getPos())) return;
-        if (!player.getMainHandItem().is(ItemTags.AXES)) { byHand(player); return; }
+                || !isLooseBoard(player.serverLevel(), event.getPos())
+                || !player.getMainHandItem().is(ItemTags.AXES)) return;
         event.setCanceled(true);
         pry(player, player.getMainHandItem(), InteractionHand.MAIN_HAND);
-    }
-
-    /** 0.4.105: nothing in the room mentions an axe, so trying the board with anything else says what it needs. */
-    private static void byHand(ServerPlayer player) {
-        player.displayClientMessage(Component.literal("It won't come up by hand. An axe would pry it up."), true);
     }
 
     public static boolean pry(ServerPlayer player, ItemStack axe, InteractionHand hand) {
@@ -332,11 +339,88 @@ public final class TellTaleFloorboards {
         if (event.getPos().equals(base.offset(LOOSE_BOARD)) && event.getPlayer() instanceof ServerPlayer player) {
             // Working at the board where the heartbeat is was never the noise; only an axe lifts it.
             if (player.getMainHandItem().is(ItemTags.AXES)) pry(player, player.getMainHandItem(), InteractionHand.MAIN_HAND);
-            else byHand(player);
             return;
         }
         // Trying to dig or break your way out is loud.
         heat = Math.min(MAX_HEAT, heat + BREAK_HEAT);
+    }
+
+    // ------------------------------------------------------------------
+    // The hatchet on the chopping block
+
+    /** The room's own hatchet: an ordinary axe the House knows as its own. */
+    public static ItemStack hatchet() {
+        ItemStack stack = new ItemStack(Items.IRON_AXE);
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putBoolean(AXE_KEY, true));
+        return stack;
+    }
+
+    public static boolean isHatchet(ItemStack stack) {
+        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        return data != null && data.copyTag().getBoolean(AXE_KEY);
+    }
+
+    /**
+     * The room is shared, so its one hatchet never leaves it: in someone's hands inside the room, or lying on the floor
+     * there, it stays where it is; anywhere else, the House takes it back and lays it on the block again.
+     */
+    public static void keepHatchet(MinecraftServer server, ServerLevel level, BlockPos base) {
+        BlockPos block = base.offset(AXE_BLOCK);
+        if (!level.hasChunkAt(block) || !level.areEntitiesLoaded(ChunkPos.asLong(block.getX() >> 4, block.getZ() >> 4))
+                || !level.getBlockState(block).is(Blocks.STRIPPED_SPRUCE_LOG)) return;
+        AABB room = interior(base);
+        if (!level.getEntitiesOfClass(ItemFrame.class, room.inflate(1), frame -> frame.getTags().contains(AXE_TAG) && isHatchet(frame.getItem())).isEmpty()) return;
+        if (!level.getEntitiesOfClass(ItemEntity.class, room, item -> isHatchet(item.getItem())).isEmpty()) return;
+        for (ServerPlayer player : level.players()) {
+            if (player.isAlive() && !player.isSpectator() && room.contains(player.position()) && carriesHatchet(player)) return;
+        }
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) takeHatchet(player);
+        for (ItemFrame stale : level.getEntitiesOfClass(ItemFrame.class, room.inflate(1), frame -> frame.getTags().contains(AXE_TAG))) stale.discard();
+        ItemFrame frame = new ItemFrame(level, block.above(), Direction.UP);
+        frame.addTag(AXE_TAG);
+        frame.setInvisible(true);
+        frame.setItem(hatchet(), false);
+        frame.setRotation(3);
+        level.addFreshEntity(frame);
+    }
+
+    private static boolean carriesHatchet(ServerPlayer player) {
+        if (isHatchet(player.containerMenu.getCarried())) return true;
+        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+            if (isHatchet(player.getInventory().getItem(slot))) return true;
+        }
+        return false;
+    }
+
+    private static void takeHatchet(ServerPlayer player) {
+        if (isHatchet(player.containerMenu.getCarried())) player.containerMenu.setCarried(ItemStack.EMPTY);
+        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+            if (isHatchet(player.getInventory().getItem(slot))) player.getInventory().setItem(slot, ItemStack.EMPTY);
+        }
+    }
+
+    /** Picking the hatchet up off the block, by either hand: it comes away whole, and the frame holding it goes. */
+    public static boolean pickUpHatchet(Player entity, Entity target) {
+        if (!(entity instanceof ServerPlayer player) || !(target instanceof ItemFrame frame) || !frame.getTags().contains(AXE_TAG)) return false;
+        if (!player.isAlive() || player.isSpectator() || frame.isRemoved()) return true;
+        ItemStack axe = frame.getItem().copy();
+        frame.setItem(ItemStack.EMPTY, false);
+        frame.discard();
+        if (!axe.isEmpty() && !player.getInventory().add(axe)) player.drop(axe, false);
+        player.serverLevel().playSound(null, frame.blockPosition(), SoundEvents.WOOD_HIT, SoundSource.BLOCKS, 0.3F, 1.3F);
+        return true;
+    }
+
+    public static void onAttackEntity(AttackEntityEvent event) {
+        if (pickUpHatchet(event.getEntity(), event.getTarget())) event.setCanceled(true);
+    }
+
+    public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
+        if (event.getHand() != InteractionHand.MAIN_HAND) return;
+        if (pickUpHatchet(event.getEntity(), event.getTarget())) {
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.SUCCESS);
+        }
     }
 
     // ------------------------------------------------------------------

@@ -146,6 +146,8 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, true, TellTaleFloorboards::onLeftClickBlock);
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, true, TellTaleFloorboards::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, true, TellTaleFloorboards::onBreak);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, TellTaleFloorboards::onAttackEntity);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, TellTaleFloorboards::onEntityInteract);
         NeoForge.EVENT_BUS.addListener(RedRoom::onServerTick);
         NeoForge.EVENT_BUS.addListener(RedRoom::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(RedRoom::onNeighborNotify);
@@ -168,7 +170,6 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(ModelHome::onAttackEntity);
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ModelHome::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onServerTick);
-        NeoForge.EVENT_BUS.addListener(HarriganVignette::onEntityTick);
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onContainerClose);
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onEntityInteract);
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onEntityInteractSpecific);

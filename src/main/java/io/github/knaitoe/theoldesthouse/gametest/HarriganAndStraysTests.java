@@ -6,14 +6,12 @@ import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import io.github.knaitoe.theoldesthouse.opening.CompanionOrders;
 import java.util.*;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Rotations;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.*;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.*;
-import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.ChunkPos;
@@ -27,7 +25,6 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class HarriganAndStraysTests {
-    private static final String BODY = TheOldestHouse.MOD_ID + "_harrigan_body";
     private static final List<Item> MEATS = List.of(Items.BEEF,Items.COOKED_BEEF,Items.PORKCHOP,Items.COOKED_PORKCHOP,
             Items.CHICKEN,Items.COOKED_CHICKEN,Items.MUTTON,Items.COOKED_MUTTON,Items.RABBIT,Items.COOKED_RABBIT,
             Items.ROTTEN_FLESH,Items.COD,Items.COOKED_COD,Items.SALMON,Items.COOKED_SALMON,Items.TROPICAL_FISH,Items.PUFFERFISH);
@@ -59,15 +56,15 @@ public final class HarriganAndStraysTests {
             var animal=LabyrinthEncounters.spawnStray(level,player.position().add(1,0,0),cat);
             helper.assertTrue(animal!=null,"the actual encounter factory spawns a native stray");animal.setNoAi(true);animals.add(animal);return animal;
         }
-        List<ArmorStand> bodies() {
-            return level.getEntitiesOfClass(ArmorStand.class,bounds(),e->e.getTags().contains(BODY));
+        List<LiteraryActor> bodies() {
+            return level.getEntitiesOfClass(LiteraryActor.class,bounds(),e->e.role()==LiteraryActor.HARRIGAN);
         }
         AABB bounds() {
             return new AABB(base.getX()-8,base.getY()-2,base.getZ()-25,base.getX()+9,base.getY()+7,base.getZ()+3);
         }
         public void close() {
             for(var animal:animals)animal.discard();
-            for(var entity:level.getEntitiesOfClass(Entity.class,bounds(),e->e instanceof ArmorStand||e instanceof ItemFrame||e instanceof SeatEntity))entity.discard();
+            for(var entity:level.getEntitiesOfClass(Entity.class,bounds(),e->e instanceof LiteraryActor||e instanceof ItemFrame||e instanceof SeatEntity))entity.discard();
             for(var player:players)if(level.getServer().getPlayerList().getPlayers().contains(player))level.getServer().getPlayerList().remove(player);else player.discard();
             for(var chunk:chunks)level.getChunkSource().removeRegionTicket(TicketType.PORTAL,chunk,3,base);
             level.getServer().overworld().getDataStorage().set("the_oldest_house",oldHouse);
@@ -80,59 +77,65 @@ public final class HarriganAndStraysTests {
     @AfterBatch(batch="stray_guards") public static void cleanGuards(ServerLevel level){if(guarded!=null){guarded.close();guarded=null;}}
     @AfterBatch(batch="stray_hands") public static void cleanHands(ServerLevel level){if(hands!=null){hands.close();hands=null;}}
 
-    private static void seated(GameTestHelper h, ArmorStand body, BlockPos chair) {
-        h.assertTrue(body.isNoGravity()&&body.getLeftLegPose().getX()<=-80&&body.getRightLegPose().getX()<=-80,
-                "native tracked leg rotations are seated and gravity cannot stand him back up");
+    private static void seated(GameTestHelper h, LiteraryActor body, BlockPos chair) {
+        h.assertTrue(body.isNoGravity()&&body.role()==LiteraryActor.HARRIGAN&&body.phase()!=HarriganVignette.CASKET_PHASE,
+                "a real seated scene actor whom gravity cannot stand back up");
         h.assertTrue(body.getY()<chair.getY()&&body.getY()+13.0/16.0>=chair.getY()+.5
                 &&body.getY()+13.0/16.0<chair.getY()+.65&&body.getZ()<chair.getZ()+.5,
                 "the rendered hip rests on the lower stair seat, ahead of its back");
-        h.assertTrue(body.getYRot()==180&&body.getLeftArmPose().getX()<0&&body.getRightArmPose().getX()<0,
-                "Harrigan faces away from the entrance with his hands resting forward");
+        h.assertTrue(body.getYRot()==180,"Harrigan faces away from the entrance");
     }
+    /** 0.4.105: one scene actor through all three visits; nothing about him can be taken apart. */
     @GameTest(template="empty",batch="harrigan_pose",timeoutTicks=450)
-    public static void existingHarriganIsSeatedWithoutRestagingAndBothVisitsRemainPlayable(GameTestHelper h) {
+    public static void harriganIsOneRealActorAliveThenDeadInHisChairThenInHisCasket(GameTestHelper h) {
         pose=new Fixture(h,25400);Fixture f=pose;
         var data=LabyrinthData.get(f.level.getServer());CompoundTag state=data.state(HarriganVignette.ID);
-        state.putInt("Visit",1);state.putInt("PagesTurned",3);state.putBoolean("TicketVisible",true);data.setState(HarriganVignette.ID,state);
-        // The already-earned ticket belongs to the saved scene before its originals are captured for comparison.
+        state.putInt("Visit",1);data.setState(HarriganVignette.ID,state);
         HarriganVignette.build(f.level.getServer(),f.level,f.base);
         var owner=f.player(f.base.offset(HarriganVignette.READER_CHAIR).above());
         UUID witness=UUID.randomUUID();WitnessAccount.resolve(data,witness,WitnessAccount.Story.HARRIGAN,"kept_phone");
         boolean[] started={false};
         h.onEachTick(()->{
-            if(started[0]||f.bodies().isEmpty())return;
-            // A newly loaded body can precede its neighbouring native frame sections. Capture only the saved originals.
-            var props=data.state(HarriganVignette.ID);
-            for(String role:List.of("player_phone","harrigan_phone","ticket")){String key="OriginalProp0490_"+role;
-                if(!props.hasUUID(key)||!(f.level.getEntity(props.getUUID(key)) instanceof ItemFrame))return;}
+            if(started[0])return;
+            if(f.bodies().isEmpty())HarriganVignette.onArrive(owner,LabyrinthPlace.HARRIGAN);
+            if(f.bodies().isEmpty())return;
             started[0]=true;
             h.assertTrue(f.bodies().size()==1,"one native study actor is loaded; count="+f.bodies().size());var body=f.bodies().getFirst();seated(h,body,f.base.offset(HarriganVignette.CHAIR));
-            var frames=f.level.getEntitiesOfClass(ItemFrame.class,f.bounds()).stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet());
+            h.assertTrue(body.phase()==HarriganVignette.ALIVE_PHASE,"on the first visit he is alive");
             UUID original=body.getUUID();
-            // Reproduce the old persisted actor, with a reader already in the room.
-            body.getPersistentData().remove("HarriganBodyPose");body.getPersistentData().remove("HarriganBodySeat");
-            body.setLeftLegPose(new Rotations(0,0,0));body.setRightLegPose(new Rotations(0,0,0));body.setNoGravity(false);
-            body.setPos(f.base.getX()+.5,f.base.getY()+1,f.base.getZ()+HarriganVignette.CHAIR.getZ()+.5);
-            h.runAfterDelay(10,()->{
-                h.assertTrue(f.bodies().size()==1&&f.bodies().getFirst().getUUID().equals(original),"native ticks repair the original actor without a replacement");
-                var repaired=f.bodies().getFirst();seated(h,repaired,f.base.offset(HarriganVignette.CHAIR));
-                h.assertTrue(data.state(HarriganVignette.ID).getInt("Visit")==1&&data.state(HarriganVignette.ID).getInt("PagesTurned")==3
-                        &&data.state(HarriganVignette.ID).getBoolean("TicketVisible")&&WitnessAccount.has(data,witness,WitnessAccount.Story.HARRIGAN),"reading, ticket and personal evidence survive the repair");
-                h.assertTrue(frames.equals(f.level.getEntitiesOfClass(ItemFrame.class,f.bounds()).stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet())),"the actual phones and props are untouched");
-                CompoundTag saved=new CompoundTag();repaired.saveWithoutId(saved);repaired.discard();var loaded=new ArmorStand(f.level,0,0,0);loaded.load(saved);h.assertTrue(f.level.addFreshEntity(loaded),"the saved original really returns to the native world");
-                seated(h,loaded,f.base.offset(HarriganVignette.CHAIR));h.assertTrue(loaded.getUUID().equals(original),"native entity NBT retains the pose and identity");
-                owner.moveTo(Vec3.atBottomCenterOf(f.base.offset(HarriganVignette.CHAIR).north()));
-                h.assertTrue(!HouseSitting.sit(owner,f.base.offset(HarriganVignette.CHAIR)),"the player cannot occupy Harrigan's chair through his body");
-                owner.moveTo(Vec3.atBottomCenterOf(f.base.offset(HarriganVignette.READER_CHAIR).above()));
-                h.assertTrue(HouseSitting.sit(owner,f.base.offset(HarriganVignette.READER_CHAIR)),"the separate reading chair still seats its reader");owner.stopRiding();
-                CompoundTag next=data.state(HarriganVignette.ID);next.putBoolean("BeatDone",true);data.setState(HarriganVignette.ID,next);HarriganVignette.onArrive(owner,LabyrinthPlace.HARRIGAN);
+            h.assertTrue(!body.hurt(owner.damageSources().playerAttack(owner),100)&&body.isAlive(),"a blow neither hurts nor removes him");
+            body.interact(owner,InteractionHand.MAIN_HAND);
+            h.assertTrue(java.util.Arrays.stream(EquipmentSlot.values()).allMatch(slot->body.getItemBySlot(slot).isEmpty())&&owner.getInventory().isEmpty()&&body.isAlive(),"there is nothing on him to strip, and interacting takes nothing");
+            CompoundTag saved=new CompoundTag();body.saveWithoutId(saved);
+            var loaded=LiteraryRegistry.ACTOR.get().create(f.level);loaded.load(saved);
+            h.assertTrue(loaded.getUUID().equals(original)&&loaded.role()==LiteraryActor.HARRIGAN&&loaded.phase()==HarriganVignette.ALIVE_PHASE,"native entity NBT keeps his identity and state");loaded.discard();
+            owner.moveTo(Vec3.atBottomCenterOf(f.base.offset(HarriganVignette.CHAIR).north()));
+            h.assertTrue(!HouseSitting.sit(owner,f.base.offset(HarriganVignette.CHAIR)),"the player cannot occupy Harrigan's chair through his body");
+            owner.moveTo(Vec3.atBottomCenterOf(f.base.offset(HarriganVignette.READER_CHAIR).above()));
+            h.assertTrue(HouseSitting.sit(owner,f.base.offset(HarriganVignette.READER_CHAIR)),"the separate reading chair still seats its reader");owner.stopRiding();
+            CompoundTag next=data.state(HarriganVignette.ID);next.putBoolean("BeatDone",true);data.setState(HarriganVignette.ID,next);HarriganVignette.onArrive(owner,LabyrinthPlace.HARRIGAN);
+            h.runAfterDelay(5,()->{
+                h.assertTrue(data.state(HarriganVignette.ID).getInt("Visit")==2&&f.bodies().size()==1&&f.bodies().getFirst().getUUID().equals(original),"the second visit has the same body");
+                var dead=f.bodies().getFirst();seated(h,dead,f.base.offset(HarriganVignette.CHAIR));
+                h.assertTrue(dead.phase()==HarriganVignette.DEAD_PHASE&&!WitnessAccount.has(data,owner.getUUID(),WitnessAccount.Story.HARRIGAN),"he is dead in his chair, and that awards nothing");
+                h.assertTrue(!f.level.getBlockState(f.base.offset(HarriganVignette.FUNERAL_DOOR)).isAir(),"on the second visit there is no way through to the funeral");
+                owner.moveTo(Vec3.atBottomCenterOf(f.base.offset(HarriganVignette.SIDE_TABLE).west()));
+                var phone=f.level.getEntitiesOfClass(ItemFrame.class,f.bounds(),frame->frame.getItem().is(LabyrinthRegistry.HARRIGANS_PHONE.get())).getFirst();
+                NeoForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteract(owner,InteractionHand.MAIN_HAND,phone));
+                h.assertTrue(owner.getInventory().countItem(LabyrinthRegistry.HARRIGANS_PHONE.get())==1&&data.state(HarriganVignette.ID).getBoolean("BeatDone"),"taking his phone is the second visit's beat");
+                HarriganVignette.onDepart(owner);
+                h.assertTrue(!WitnessAccount.has(data,owner.getUUID(),WitnessAccount.Story.HARRIGAN),"carrying it out of the study only takes it toward the funeral");
+                owner.moveTo(Vec3.atBottomCenterOf(f.base.offset(0,0,-3)));HarriganVignette.onArrive(owner,LabyrinthPlace.HARRIGAN);
                 h.runAfterDelay(5,()->{
-                    h.assertTrue(data.state(HarriganVignette.ID).getInt("Visit")==2&&f.bodies().size()==1,"completing the reading still reaches the second visit");
-                    var dead=f.bodies().getFirst();seated(h,dead,f.base.offset(HarriganVignette.CHAIR));
-                    h.assertTrue(dead.getItemBySlot(EquipmentSlot.HEAD).is(Items.ZOMBIE_HEAD)&&dead.getHeadPose().getX()>0
-                            &&!WitnessAccount.has(data,owner.getUUID(),WitnessAccount.Story.HARRIGAN),"the dead seated body keeps its slump without awarding a funeral resolution");
-                    CompoundTag funeral=data.state(HarriganVignette.ID);funeral.putBoolean("FuneralEntered",true);data.setState(HarriganVignette.ID,funeral);HarriganVignette.onArrive(owner,LabyrinthPlace.HARRIGAN);
-                    h.runAfterDelay(5,()->{h.assertTrue(f.bodies().size()==1&&f.bodies().getFirst().getZ()==f.base.getZ()+HarriganVignette.CASKET.getZ()+.5,"restaging an entered funeral leaves one body in the casket");h.succeed();});
+                    var laid=f.bodies();
+                    h.assertTrue(data.state(HarriganVignette.ID).getInt("Visit")==3&&laid.size()==1&&laid.getFirst().getUUID().equals(original)&&laid.getFirst().phase()==HarriganVignette.CASKET_PHASE
+                            &&Math.abs(laid.getFirst().getZ()-(f.base.getZ()+HarriganVignette.CASKET.getZ()+.5))<.01,"the third visit lays the same body in his casket");
+                    h.assertTrue(f.level.getBlockState(f.base.offset(HarriganVignette.FUNERAL_DOOR)).isAir()&&f.level.getBlockState(f.base.offset(HarriganVignette.CHAIR)).isAir()
+                            &&!HarriganVignette.occupiesChair(f.level,f.base.offset(HarriganVignette.CHAIR)),"the study is made ready for the funeral: his chair gone, the far doorway open");
+                    var lectern=(net.minecraft.world.level.block.entity.LecternBlockEntity)f.level.getBlockEntity(f.base.offset(HarriganVignette.LECTERN));
+                    h.assertTrue(lectern.getBook().get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).title().raw().equals("In memory"),"the lectern holds the guest book");
+                    h.assertTrue(f.level.getEntitiesOfClass(LiteraryActor.class,f.bounds(),a->a.role()==LiteraryActor.HARRIGAN_MOURNER).size()==3,"three mourners stand at the funeral");
+                    h.assertTrue(WitnessAccount.has(data,witness,WitnessAccount.Story.HARRIGAN),"another reader's evidence is untouched");h.succeed();
                 });
             });
         });

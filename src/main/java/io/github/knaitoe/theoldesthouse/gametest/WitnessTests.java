@@ -186,6 +186,30 @@ public final class WitnessTests {
     @GameTest(template="empty",batch="floorboard_attack") public static void axeAttackWorksThroughAnAlreadyCancelledEvent(GameTestHelper helper){pryFixture(helper,true);}
     @GameTest(template="empty",batch="floorboard_mining") public static void axeBreakFallbackWorksThroughAnAlreadyCancelledEvent(GameTestHelper helper){pryFixture(helper,false);}
 
+    private static Fixture hatchet;private static ServerPlayer hatchetReader;
+    @AfterBatch(batch="floorboard_hatchet0505") public static void hatchetDone(net.minecraft.server.level.ServerLevel ignored){if(hatchet!=null){hatchet.close();hatchet=null;}if(hatchetReader!=null){NativeTestPlayers.remove(hatchetReader);hatchetReader=null;}}
+    /** 0.4.105: the room's hatchet lies on its chopping block, goes with whoever picks it up, and never leaves the room. */
+    @GameTest(template="empty",batch="floorboard_hatchet0505",timeoutTicks=240)
+    public static void theRoomsHatchetLiesOnItsBlockAndNeverLeavesTheRoom(GameTestHelper helper){
+        var server=helper.getLevel().getServer();var level=HouseTestLevel.get(server);BlockPos origin=new BlockPos(45800,80,45800);
+        var player=NativeTestPlayers.survival(helper,"hatchet_reader");hatchetReader=player;hatchet=new Fixture(server,origin);
+        BlockPos base=LabyrinthPlaces.base(origin,LabyrinthPlace.FLOORBOARDS),block=base.offset(TellTaleFloorboards.AXE_BLOCK);
+        level.getChunkAt(block);TellTaleFloorboards.build(level,base,true);
+        player.teleportTo(level,base.getX()+.5,base.getY(),base.getZ()-5.5,0,0);player.setNoGravity(true);
+        java.util.function.Supplier<List<net.minecraft.world.entity.decoration.ItemFrame>> frames=()->level.getEntitiesOfClass(net.minecraft.world.entity.decoration.ItemFrame.class,new AABB(block.above()).inflate(.5),frame->TellTaleFloorboards.isHatchet(frame.getItem()));
+        java.util.function.IntSupplier carried=()->(int)player.getInventory().items.stream().filter(TellTaleFloorboards::isHatchet).count();
+        helper.startSequence().thenWaitUntil(()->{TellTaleFloorboards.keepHatchet(server,level,base);helper.assertTrue(frames.get().size()==1,"the hatchet lies on its chopping block");})
+            .thenExecute(()->{
+                helper.assertTrue(level.getBlockState(block).is(Blocks.STRIPPED_SPRUCE_LOG)&&frames.get().getFirst().isInvisible(),"a chopping block with the hatchet lying on top, its frame unseen");
+                var frame=frames.get().getFirst();
+                helper.assertTrue(TellTaleFloorboards.pickUpHatchet(player,frame)&&frame.isRemoved()&&carried.getAsInt()==1,"picking it up puts the whole hatchet in the reader's hands");
+                helper.assertTrue(player.getInventory().items.stream().filter(TellTaleFloorboards::isHatchet).allMatch(stack->stack.is(net.minecraft.tags.ItemTags.AXES)),"it is an axe the board will answer to");
+                TellTaleFloorboards.keepHatchet(server,level,base);
+                helper.assertTrue(frames.get().isEmpty()&&carried.getAsInt()==1,"carried inside the room it stays with the reader");
+                player.teleportTo(level,base.getX()+.5,base.getY(),base.getZ()+12.5,0,0);TellTaleFloorboards.keepHatchet(server,level,base);
+                helper.assertTrue(carried.getAsInt()==0&&frames.get().size()==1,"carried out of the room it goes back on the block, and only once");
+            }).thenSucceed();
+    }
     @GameTest(template="empty",batch="floorboard_observer0493")
     public static void observersCannotSpendTheHeartbeatOrBeForcedThroughItsExit(GameTestHelper helper){
         var server=helper.getLevel().getServer();var level=HouseTestLevel.get(server);BlockPos origin=new BlockPos(45400,80,45400);

@@ -5,13 +5,11 @@ import io.github.knaitoe.theoldesthouse.house.*;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import java.util.*;
 import net.minecraft.core.*;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.*;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.*;
-import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.GameType;
@@ -164,7 +162,7 @@ public final class HouseNpcTests {
         upgrade=new Fixture(h,43000);var f=upgrade;var old=f.b.offset(30,0,0);f.chunks.hold(f.l,new AABB(old).inflate(1));f.l.setBlock(old,Blocks.BARREL.defaultBlockState(),3);var container=f.l.getBlockEntity(old);((BarrelBlockEntity)container).setItem(0,new ItemStack(Items.DIAMOND,3));
         var harrigan=LabyrinthPlaces.base(f.origin,LabyrinthPlace.HARRIGAN);f.chunks.hold(f.l,IndianLakeRooms.bounds(harrigan,LabyrinthPlace.HARRIGAN));
         var prior=new CompoundTag();prior.putBoolean("TicketVisible",true);prior.putBoolean("ReadingFinished",true);prior.putInt("Visit",1);
-        final List<ArmorStand> bodies=new ArrayList<>();final ArmorStand[] original={null};final UUID[] identity={null};final int[] stage={0};
+        final LiteraryActor[] original={null};final UUID[] identity={null};final int[] stage={0};
         h.onEachTick(()->{
             if(stage[0]==0){
                 if(!f.chunks.ready())return;
@@ -172,10 +170,9 @@ public final class HouseNpcTests {
                 var reader=f.player();reader.moveTo(harrigan.getX()-2.5,harrigan.getY(),harrigan.getZ()-5.5);stage[0]=1;return;
             }
             if(stage[0]==1){
-                var tracked=f.l.getEntitiesOfClass(ArmorStand.class,IndianLakeRooms.bounds(harrigan,LabyrinthPlace.HARRIGAN));if(tracked.isEmpty())return;
-                bodies.addAll(tracked);var body=tracked.getFirst();original[0]=body;identity[0]=body.getUUID();
-                var head=body.getItemBySlot(EquipmentSlot.HEAD).copy();head.remove(DataComponents.CUSTOM_DATA);body.setItemSlot(EquipmentSlot.HEAD,head);
-                HarriganVignette.onEntityTick(new net.neoforged.neoforge.event.tick.EntityTickEvent.Post(body));
+                var body=HarriganVignette.harrigan(f.l,harrigan,HarriganVignette.ALIVE_PHASE);if(body==null)return;
+                original[0]=body;identity[0]=body.getUUID();
+                var saved=f.data().state(HarriganVignette.ID);prior.putUUID("Harrigan0505",identity[0]);prior.putBoolean("Parlor0505",saved.getBoolean("Parlor0505"));
                 f.data().setState(HarriganVignette.ID,prior);f.data().setBuilt(21,f.origin);LabyrinthBuilder.ensureBuilt(f.l.getServer());
                 // This case tests preservation; the hallway cases independently test paced construction.
                 LabyrinthBuilder.finishGameTest(f.l.getServer());stage[0]=2;return;
@@ -183,10 +180,11 @@ public final class HouseNpcTests {
             if(stage[0]!=2)return;stage[0]=3;var body=original[0];var id=identity[0];
             h.assertTrue(LabyrinthBuilder.isBuilt(f.l.getServer()),"the actual native append finishes");
             h.assertTrue(f.data().builtVersion()==LabyrinthBuilder.VERSION&&f.l.getBlockEntity(old)==container&&((BarrelBlockEntity)container).getItem(0).getCount()==3,"an append preserves existing container identity and contents");
-            h.assertTrue(body.isAlive()&&body.getUUID().equals(id)&&HarriganAppearance.variant(body)==1&&f.data().state(HarriganVignette.ID).equals(prior),"legacy seated identity/dialogue: alive="+body.isAlive()+", appearance="+HarriganAppearance.variant(body)+", state="+f.data().state(HarriganVignette.ID));
-            var saved=body.saveWithoutId(new CompoundTag());var restored=new ArmorStand(f.l,body.getX(),body.getY(),body.getZ());restored.load(saved);
-            h.assertTrue(HarriganAppearance.variant(restored)==1&&restored.getUUID().equals(id),"the client-visible appearance component persists with the native actor");
-            body.discard();for(var e:bodies)if(e!=body)e.discard();h.succeed();
+            h.assertTrue(body.isAlive()&&body.getUUID().equals(id)&&body.role()==LiteraryActor.HARRIGAN&&body.phase()==HarriganVignette.ALIVE_PHASE&&f.data().state(HarriganVignette.ID).equals(prior),"seated identity and dialogue state survive: alive="+body.isAlive()+", phase="+body.phase()+", state="+f.data().state(HarriganVignette.ID));
+            h.assertTrue(f.l.getEntitiesOfClass(LiteraryActor.class,IndianLakeRooms.bounds(harrigan,LabyrinthPlace.HARRIGAN),a->a.role()==LiteraryActor.HARRIGAN).size()==1,"the append adds no second Mr. Harrigan");
+            var saved=body.saveWithoutId(new CompoundTag());var restored=LiteraryRegistry.ACTOR.get().create(f.l);restored.load(saved);
+            h.assertTrue(restored.role()==LiteraryActor.HARRIGAN&&restored.phase()==HarriganVignette.ALIVE_PHASE&&restored.getUUID().equals(id),"his role and state persist with the native actor");
+            restored.discard();body.discard();h.succeed();
         });
     }
     @GameTest(template="empty") public static void newCampFitsWithoutMovingAnyOlderSlots(GameTestHelper h){
