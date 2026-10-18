@@ -189,7 +189,7 @@ public final class StaceyTests {
         });
     });}
     @GameTest(template="empty",batch="stacey_cover",timeoutTicks=1800)
-    public static void detailedCoverWaitsForCamerasAndLivingPetsAndNeverRefillsRemovedPieces(GameTestHelper h){run(h,LabyrinthPlace.WINTER_LAKE,1252500,f->{
+    public static void detailedCoverWaitsForCamerasAndLivingPetsAndNeverRefillsRemovedPieces(GameTestHelper h){run(h,LabyrinthPlace.MOVIE_NIGHT,1252500,f->{
         for(var center:StaceyCover.centers(f.place))for(int x=-2;x<=2;x++)for(int z=-2;z<=3;z++){var at=f.base.offset(center).offset(x,-1,z);f.l.setBlock(at,Blocks.SAND.defaultBlockState(),3);}
         var center=f.base.offset(StaceyCover.centers(f.place).getFirst());var camera=f.player("stacey_cover_camera",center.getX()-f.base.getX()+.5,center.getZ()-f.base.getZ()+.5);camera.setGameMode(GameType.SPECTATOR);
         var fresh=BuildBlocks.record(f.l,()->StaceyCover.fresh(f.l,f.base,f.place));

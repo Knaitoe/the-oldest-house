@@ -181,27 +181,98 @@ public final class VignetteAnimationTests {
     }
     @AfterBatch(batch="literary_miniature_visits") public static void miniatureDone(ServerLevel l){close();}
 
-    @GameTest(template="empty",batch="literary_winter_sequence",timeoutTicks=350)
-    public static void actualIceBreakUnderwaterWaitAndSupportedFarBankResolveOnlyTheirReader(GameTestHelper h){
-        var f=fixture(h);var place=LabyrinthPlace.WINTER_LAKE;var p=f.player("winter_route",place);var peer=f.player("winter_dry_peer",place);var b=f.base(place);
-        f.source(p,place);f.source(peer,place);f.at(peer,place,.5,.125,-80.5);f.at(p,place,.5,0,-24.5);
-        var ice=b.offset(0,-1,-25);final int[] phase={0},nativeWetTicks={0},fluidWarmup={0};
-        h.runAfterDelay(20,()->{
-            h.assertTrue(!f.own(peer,place).getBoolean("Ready")&&!f.own(p,place).getBoolean("Ready"),"dry bank arrival and the source alone do not resolve this lake");
-            h.assertTrue(f.out.getBlockState(ice).is(Blocks.ICE)&&p.gameMode.destroyBlock(ice)&&!f.out.getBlockState(ice).is(Blocks.ICE),"the actual allowed native mining action opens original lake ice");
-            h.assertTrue(f.own(p,place).getBoolean("BrokeIce")&&!f.own(peer,place).getBoolean("BrokeIce"),"only the real ice miner retains the break fact");phase[0]=1;
-        });
-        h.onEachTick(()->{
-            if(phase[0]!=1)return;f.at(p,place,.5,-3,-24.5);p.baseTick();p.setDeltaMovement(Vec3.ZERO);p.setHealth(20);
-            h.assertTrue(p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER)&&p.getY()+p.getBbHeight()<b.getY(),"native eye fluid and complete body are genuinely beneath the ice: eye="+p.getEyePosition()+", body="+p.getBoundingBox());
-            if(!p.isUnderWater()){h.assertTrue(++fluidWarmup[0]<=5,"native underwater state settles after actual fluid ticks, never from a forced flag");return;}nativeWetTicks[0]++;
-            if(nativeWetTicks[0]==65)h.assertTrue(!f.own(p,place).getBoolean("Ready"),"a shorter real underwater interval cannot manufacture the bank outcome");
-            if(f.own(p,place).getInt("SubmergedTicks")>=110){phase[0]=2;f.at(p,place,.5,.125,-80.5);p.baseTick();p.setDeltaMovement(Vec3.ZERO);h.assertTrue(!p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER)&&f.out.noCollision(p,p.getBoundingBox()),"the real far bank supports the living full-height reader above native water");}
-        });
-        h.startSequence().thenWaitUntil(()->h.assertTrue(phase[0]==2&&f.own(p,place).getBoolean("Ready"),"actual ice, at least one hundred native wet ticks and physical bank arrival all complete"))
-            .thenExecute(()->{h.assertTrue(nativeWetTicks[0]>=100&&!f.own(peer,place).getBoolean("Ready"),"the dry peer inherits neither water time nor outcome");f.reload();h.assertTrue(f.own(p,place).getBoolean("Ready")&&f.own(p,place).getInt("SubmergedTicks")>=100,"the actual escape facts survive SavedData reload");f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id())),"the owned final reading resolves only the real participant");}).thenSucceed();
+    private static void winterState(LiteraryTests.Fixture f,java.util.function.Consumer<CompoundTag> change){var w=LiteraryVignettes.shared(f.data(),LabyrinthPlace.WINTER_LAKE);change.accept(w);LiteraryVignettes.shared(f.data(),LabyrinthPlace.WINTER_LAKE,w);}
+    private static void winterChunks(LiteraryTests.Fixture f,BlockPos b){
+        for(int x=-24;x<=24;x+=16)for(int z=-72;z<=-8;z+=16){var c=new net.minecraft.world.level.ChunkPos(b.offset(x,0,z));if(!FORCED.contains(c)){FORCED.add(c);f.out.setChunkForced(c.x,c.z,true);}}
     }
-    @AfterBatch(batch="literary_winter_sequence") public static void winterDone(ServerLevel l){close();}
+    private static void unforce(ServerLevel l){var out=HouseTestLevel.get(l.getServer(),io.github.knaitoe.theoldesthouse.house.HouseDimensions.OUTSIDE);for(var c:FORCED)out.setChunkForced(c.x,c.z,false);FORCED.clear();}
+    private static int ribbons(ServerPlayer p){return p.getInventory().countItem(WinterLakeRegistry.RIBBON.get());}
+    private static ItemStack ribbonOf(ServerPlayer p){for(var stack:p.getInventory().items)if(stack.is(WinterLakeRegistry.RIBBON.get()))return stack;return ItemStack.EMPTY;}
+
+    @GameTest(template="empty",batch="literary_winter_hearing",timeoutTicks=560)
+    public static void underTheIceSheGoesToWhatSheHearsAndBreaksThroughUnderANoisyReader(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.WINTER_LAKE;var p=f.player("winter_walker",place);var peer=f.player("winter_bank",place);var b=f.base(place);winterChunks(f,b);
+        f.at(peer,place,-2.5,0,-6.5);f.at(p,place,1.5,0,-4.5);final int[] phase={0};final double[] wobble={.15};
+        h.runAfterDelay(15,()->{var witch=WinterLake.witch(f.out);
+            h.assertTrue(witch!=null&&witch.driven()&&witch.underIce()&&Math.abs(witch.getY()-(b.getY()+WinterLake.UNDER))<.01,"she is under the ice, hanging from its underside: "+(witch==null?null:witch.position()));
+            for(var who:WinterLake.BOYS){var a=WinterLake.cast(f.out,who);h.assertTrue(a!=null&&a.role()==LiteraryActor.STRANGER&&a.phase()==who.phase()&&a.getScale()<.9F&&!a.isInvisible(),"the four boys from the shallows are on the bank, still boys: "+who.name());}
+            h.assertTrue(f.out.getBlockState(b.offset(WinterLake.HOLE)).is(Blocks.WATER)&&WinterPropBlock.kind(f.out.getBlockState(b.offset(2,-1,-46)))==WinterPropBlock.Kind.BLACK_ICE
+                    &&WinterPropBlock.kind(f.out.getBlockState(b.offset(-26,-1,-40)))==WinterPropBlock.Kind.SNOW_ICE,"the hole never froze; black ice round it, snow drifted over the shore");
+            // Hank has stopped the snowball fight; a snowball thudding onto the ice is the loudest thing on the lake.
+            winterState(f,w->w.putInt("Night",WinterLake.QUIET_AT+10));
+            witch.setPos(b.getX()+10.5,b.getY()+WinterLake.UNDER,b.getZ()-36.5);
+            var ball=new net.minecraft.world.entity.projectile.Snowball(f.out,b.getX()+10.5,b.getY()+2,b.getZ()-30.5);ball.setOwner(peer);ball.setDeltaMovement(0,-.6,0);f.out.addFreshEntity(ball);});
+        h.runAfterDelay(35,()->{var w=LiteraryVignettes.shared(f.data(),place);
+            h.assertTrue(w.getFloat("Heard")>30&&Math.abs(w.getDouble("HeardX")-(b.getX()+10.5))<1&&Math.abs(w.getDouble("HeardZ")-(b.getZ()-30.5))<1&&f.own(peer,place).getBoolean("Lured0504"),"the snowball's thud is heard where it landed, and the thrower drew her: "+w);});
+        h.runAfterDelay(110,()->{var witch=WinterLake.witch(f.out);
+            h.assertTrue(Math.hypot(witch.getX()-(b.getX()+10.5),witch.getZ()-(b.getZ()-30.5))<1.5&&witch.underIce(),"she goes under the ice to where it landed: "+witch.position());
+            f.at(p,place,witch.getX()-b.getX(),0,witch.getZ()-b.getZ());p.setShiftKeyDown(true);phase[0]=1;});
+        // Crouched right over her, creeping: no sound, and nothing happens.
+        h.onEachTick(()->{if(phase[0]!=1&&phase[0]!=2||f.own(p,place).getBoolean("FellThrough0504"))return;var witch=WinterLake.witch(f.out);
+            if(phase[0]==1){f.at(p,place,witch.getX()-b.getX()+wobble[0],0,witch.getZ()-b.getZ());wobble[0]=-wobble[0];return;}
+            // Running back and forth over her on black ice.
+            f.at(p,place,witch.getX()-b.getX()+wobble[0]*2,0,witch.getZ()-b.getZ());wobble[0]=-wobble[0];});
+        h.runAfterDelay(150,()->{h.assertTrue(WinterLake.suspicion(p)==0&&!f.own(p,place).getBoolean("Knocked0504")&&p.getHealth()==20,"crouched and creeping, right over her, the reader makes no sound she can hear");
+            p.setShiftKeyDown(false);p.setSprinting(true);phase[0]=2;});
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("FellThrough0504"),"running over her she knocks, cracks the ice and comes through: suspicion="+WinterLake.suspicion(p)))
+            .thenExecute(()->{phase[0]=3;var w=LiteraryVignettes.shared(f.data(),place);
+                h.assertTrue(f.own(p,place).getBoolean("Knocked0504")&&!w.getList("Changed",Tag.TAG_COMPOUND).isEmpty()&&w.getInt("Rest")>0,"she knocked first, the broken ice is remembered, and she lets go");
+                h.assertTrue(p.getY()<b.getY()-1.5&&p.getHealth()<20,"the reader is pulled down under the ice: "+p.position());
+                h.assertTrue(peer.getHealth()==20&&!f.own(peer,place).getBoolean("FellThrough0504")&&!f.own(peer,place).getBoolean("Knocked0504"),"nothing happens to the reader on the bank");
+                p.setSprinting(false);f.at(p,place,.5,0,-8.5);})
+            .thenIdle(12).thenExecute(()->{h.assertTrue(f.own(p,place).getBoolean("CameUp0504"),"climbing out again counts as coming up");h.succeed();});
+    }
+    @AfterBatch(batch="literary_winter_hearing") public static void winterHearingDone(ServerLevel l){close();unforce(l);}
+
+    @GameTest(template="empty",batch="literary_winter_ribbon",timeoutTicks=360)
+    public static void hankGivesTheRibbonAHandTakesItAtTheHoleAndTheBoysRun(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.WINTER_LAKE;var p=f.player("winter_dare",place);var peer=f.player("winter_other",place);var b=f.base(place);winterChunks(f,b);
+        f.at(peer,place,3.5,0,-8.5);
+        h.runAfterDelay(15,()->{var hank=WinterLake.cast(f.out,WinterLake.HANK);h.assertTrue(hank!=null,"Hank is on the bank");
+            f.at(p,place,-4.5,0,-6.5);LiteraryVignettes.talk(p,hank);LiteraryVignettes.talk(p,hank);
+            h.assertTrue(!f.own(p,place).getBoolean("TookDare0504")&&ribbons(p)==0,"he tells it before he gives it");
+            LiteraryVignettes.talk(p,hank);
+            h.assertTrue(f.own(p,place).getBoolean("TookDare0504")&&ribbons(p)==1&&ribbons(peer)==0,"the third time, Hank gives this reader her ribbon, and only this reader");
+            var ribbon=ribbonOf(p);
+            h.assertTrue(!WinterLake.giveBack(p,ribbon)&&ribbons(p)==1,"on the bank it is only kept");
+            f.at(peer,place,2.5,0,-45.5);h.assertTrue(!WinterLake.giveBack(peer,ribbon)&&ribbons(p)==1,"nobody else can give it back for them");
+            f.at(p,place,2.5,0,-45.5);
+            h.assertTrue(WinterLake.giveBack(p,ribbon)&&ribbons(p)==0&&f.own(p,place).getBoolean("GaveRibbon0504")&&!f.own(peer,place).getBoolean("GaveRibbon0504"),"held out over the hole, it is taken");
+            var w=LiteraryVignettes.shared(f.data(),place);h.assertTrue(w.getInt("Hand")==WinterLake.HAND_TICKS&&w.getBoolean("Fled"),"her hand comes up for it, and the boys run");});
+        h.runAfterDelay(20,()->{var witch=WinterLake.witch(f.out);var hole=Vec3.atBottomCenterOf(b.offset(WinterLake.HOLE));
+            h.assertTrue(!witch.underIce()&&witch.striking()&&Math.hypot(witch.getX()-hole.x,witch.getZ()-hole.z)<.6&&witch.getY()>b.getY()-1.5,"up in the hole, reaching: "+witch.position());});
+        h.runAfterDelay(15+WinterLake.HAND_TICKS+5,()->{var witch=WinterLake.witch(f.out);h.assertTrue(witch.underIce()&&!witch.striking(),"then she is back under the ice");});
+        h.runAfterDelay(15+WinterLake.RUN_TICKS+20,()->{
+            for(var who:WinterLake.BOYS)h.assertTrue(WinterLake.cast(f.out,who).isInvisible(),"the boys have run into the trees: "+who.name());
+            h.assertTrue(!f.out.getBlockState(b.offset(WinterLake.BONFIRE)).getValue(net.minecraft.world.level.block.CampfireBlock.LIT),"they kicked snow over the fire");h.succeed();});
+    }
+    @AfterBatch(batch="literary_winter_ribbon") public static void winterRibbonDone(ServerLevel l){close();unforce(l);}
+
+    @GameTest(template="empty",batch="literary_winter_bank",timeoutTicks=420)
+    public static void walkingBackToTheBankEndsTheDareAndTheNightResets(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.WINTER_LAKE;var p=f.player("winter_back",place);var peer=f.player("winter_stayed",place);var b=f.base(place);winterChunks(f,b);
+        f.source(p,place);f.source(peer,place);var cracked=b.offset(10,-1,-30);
+        h.runAfterDelay(15,()->{var hank=WinterLake.cast(f.out,WinterLake.HANK);f.at(p,place,-4.5,0,-6.5);for(int i=0;i<3;i++)LiteraryVignettes.talk(p,hank);
+            f.at(p,place,2.5,0,-45.5);h.assertTrue(WinterLake.giveBack(p,ribbonOf(p)),"the ribbon is given back at the hole");
+            f.at(peer,place,4.5,0,-30.5);});
+        h.runAfterDelay(30,()->{h.assertTrue(!f.own(p,place).getBoolean("Ready"),"out on the ice, the dare is not over");f.at(p,place,.5,0,-8.5);f.at(peer,place,3.5,0,-8.5);});
+        h.runAfterDelay(45,()->{h.assertTrue(f.own(p,place).getBoolean("Ready"),"back on the bank with the ribbon given, the night is done");
+            h.assertTrue(!f.own(peer,place).getBoolean("Ready"),"a reader who walked out and back without it has not done the dare");
+            var text=LiteraryTexts.ending(p,place,f.own(p,place)).get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page->page.raw().getString()).reduce("",String::concat);
+            h.assertTrue(text.contains("A hand came up and took it")&&text.contains("Hank had carried her ribbon")&&!text.contains("The ice opened"),"the account tells this reader's night: "+text);
+            f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id())),"reading it completes only this reader's scene");
+            // A crack she made earlier that night, for the reset to mend.
+            winterState(f,w->{var c=new CompoundTag();c.putLong("Pos",cracked.asLong());c.putString("Kind","BLACK_ICE");var list=new net.minecraft.nbt.ListTag();list.add(c);w.put("Changed",list);});
+            f.out.setBlock(cracked,WinterPropBlock.of(WinterPropBlock.Kind.SPLIT),3);
+            for(var r:java.util.List.of(p,peer)){r.stopRiding();r.teleportTo(f.in,f.origin.getX()+.5,f.origin.getY()+1,f.origin.getZ()+.5,0,0);}});
+        h.runAfterDelay(260,()->{var w=LiteraryVignettes.shared(f.data(),place);
+            h.assertTrue(!w.getBoolean("Fled")&&!w.contains("Night")&&!w.contains("Changed")&&WinterPropBlock.kind(f.out.getBlockState(cracked))==WinterPropBlock.Kind.BLACK_ICE,"once the lake is empty and unwatched, the night starts over and the ice is whole: "+w);
+            for(var who:WinterLake.BOYS){var a=WinterLake.cast(f.out,who);h.assertTrue(!a.isInvisible()&&a.position().distanceTo(who.home(b))<.5,"the boys are back by the fire: "+who.name());}
+            h.assertTrue(f.out.getBlockState(b.offset(WinterLake.BONFIRE)).getValue(net.minecraft.world.level.block.CampfireBlock.LIT),"and the fire is lit");
+            var witch=WinterLake.witch(f.out);var start=Vec3.atBottomCenterOf(b.offset(WinterLake.WITCH_START));
+            h.assertTrue(witch!=null&&witch.underIce()&&Math.hypot(witch.getX()-start.x,witch.getZ()-start.z)<.5,"and she is back under the ice");h.succeed();});
+    }
+    @AfterBatch(batch="literary_winter_bank") public static void winterBankDone(ServerLevel l){close();unforce(l);}
 
     @GameTest(template="empty",batch="literary_diary_sequence",timeoutTicks=700)
     public static void eightActualDiaryOriginalsRequireThreeSeparateVisitsAndRetainTheirPrivateWords(GameTestHelper h){
@@ -303,8 +374,10 @@ public final class VignetteAnimationTests {
     @GameTest(template="empty",batch="literary_costume_still",timeoutTicks=420)
     public static void theThirteenthWitchHoldsStillWhileWatchedAndHuntsOnlyOnceTheLightsAreOut(GameTestHelper h){
         var f=fixture(h);var place=LabyrinthPlace.COSTUME_NIGHT;var p=f.player("costume_judge",place);var peer=f.player("costume_peer",place);var b=f.base(place);
-        f.at(p,place,13.5,0,-23.5);f.at(peer,place,.5,0,-4);final int[] stage={0};final Vec3[] still={null};
+        f.at(p,place,13.5,0,-23.5);f.at(peer,place,.5,0,-4);final int[] stage={0};final Vec3[] still={null};final double[] reach={0};
         h.onEachTick(()->{var witch=CostumeNight.witch(f.out);if(witch==null)return;lookUp(peer);
+            // She may strike and go straight back to the very spot she waited in, so measure how far she came, not where she ends.
+            if(stage[0]==2&&still[0]!=null)reach[0]=Math.max(reach[0],witch.position().distanceTo(still[0]));
             if(stage[0]==1){p.lookAt(EntityAnchorArgument.Anchor.EYES,witch.getEyePosition());if(still[0]==null)still[0]=witch.position();
                 h.assertTrue(witch.position().distanceToSqr(still[0])<1e-8,"while a reader looks at her she does not move at all, lights or no lights: "+witch.position()+" from "+still[0]);}
             else lookUp(p);
@@ -320,7 +393,7 @@ public final class VignetteAnimationTests {
             f.at(p,place,10.5,0,-24.5);costumeState(f,w->{w.putBoolean("LightsOut",true);w.putInt("RibbonAt",-10000);});stage[0]=1;});
         h.runAfterDelay(120,()->{stage[0]=2;var witch=CostumeNight.witch(f.out);still[0]=witch.position();});
         h.runAfterDelay(175,()->{var witch=CostumeNight.witch(f.out);
-            h.assertTrue(witch.position().distanceTo(still[0])>1&&p.getHealth()<20&&f.own(p,place).getBoolean("Struck0503"),"the moment nobody looks she comes, fast, and strikes the reader unseen: health="+p.getHealth()+" moved="+witch.position().distanceTo(still[0]));
+            h.assertTrue(reach[0]>1&&p.getHealth()<20&&f.own(p,place).getBoolean("Struck0503"),"the moment nobody looks she comes, fast, and strikes the reader unseen: health="+p.getHealth()+" came="+reach[0]);
             p.setHealth(20);f.at(p,place,.5,0,-60.5);});
         h.runAfterDelay(300,()->{h.assertTrue(p.getHealth()==20&&peer.getHealth()==20,"on the park grass, and where she cannot come by the entrance, nobody is hurt");h.succeed();});
     }

@@ -6,6 +6,7 @@ GHOSTS = {'marjorie':'GHOST_MARJORIE','merry':'GHOST_MERRY','john':'GHOST_JOHN',
 LITERARY = {'mother':'MOTHER','dancer':'DANCER','red_figure':'RED_FIGURE','coffin_woman':'COFFIN_WOMAN','lady':'LADY','brother':'BROTHER','father':'FATHER','visitor':'VISITOR','killer':'KILLER','family_father':'FAMILY_FATHER','family_mother':'FAMILY_MOTHER','family_child':'FAMILY_CHILD','old_man':'OLD_MAN','lake_tess':'LAKE_TESS','lake_wax':'LAKE_WAX'}
 MOVIE=['ray','dot','frank','june','jamie','bobby','lynn']
 COSTUME=['hank','tina','danny','ron','kaylee','marcus','shelly','owen','brooke','wes','rosa','pip','lyle']
+WINTER=['bud','hank','clay','lonnie']
 CLUB=['dancer_male','dancer_female','dancer_vest','dancer_copper','dancer_mustard','dancer_silver','dancer_brick','dancer_braids','dj']
 
 
@@ -47,7 +48,7 @@ def entry(name,logical):
 
 
 def entries():
-    rows=[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_'))]
+    rows=[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_winter_'))]
     for i,name in enumerate(['walter','ruth','will','sergeant','messenger']):
         rows.append({'name':'literary_paw_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':9+i})
     # Movie Night (0.4.102): the lake's audience on stranger phases fourteen to twenty.
@@ -56,4 +57,7 @@ def entries():
     # Costume Night (0.4.103): Hank and the twelve entrants on stranger phases twenty-one to thirty-three.
     for i,name in enumerate(COSTUME):
         rows.append({'name':'literary_costume_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':21+i})
+    # Winter Lake (0.4.104): the four boys from the shallows, that winter, on stranger phases thirty-four to thirty-seven.
+    for i,name in enumerate(WINTER):
+        rows.append({'name':'literary_winter_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':34+i})
     return rows

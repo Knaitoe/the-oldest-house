@@ -93,6 +93,6 @@ public final class CostumeNightVisualProof extends Screen {
         if(!proof.problems.isEmpty())throw new IllegalStateException("COSTUME NIGHT VIEW CHECK FAILED: "+String.join("; ",proof.problems));
         Files.writeString(dir.resolve("costume-night-passed.txt"),"Three native Costume Night views: the party's props lit and dark, and five entrants on all fours beside her; the crawl is about a block and a quarter high with its torso level, and every prop texture and costume skin is present.\n");
         TheOldestHouse.LOGGER.info("COSTUME NIGHT VIEW CHECK PASSED: three native views");
-        mc.setScreen(new CastVisualProof());
+        mc.setScreen(new WinterLakeVisualProof());
     }
 }

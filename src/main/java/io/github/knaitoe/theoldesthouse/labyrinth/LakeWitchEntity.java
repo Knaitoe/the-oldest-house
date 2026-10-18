@@ -33,6 +33,8 @@ public final class LakeWitchEntity extends PathfinderMob {
     private static final EntityDataAccessor<Boolean> BITING = SynchedEntityData.defineId(LakeWitchEntity.class, EntityDataSerializers.BOOLEAN);
     /** The Shallows carry's swing angle in radians, toward the water when positive (0.4.101). */
     private static final EntityDataAccessor<Float> SWING = SynchedEntityData.defineId(LakeWitchEntity.class, EntityDataSerializers.FLOAT);
+    /** Winter Lake (0.4.104): she hangs from the underside of the ice, and is drawn upside down. */
+    private static final EntityDataAccessor<Boolean> UNDER_ICE = SynchedEntityData.defineId(LakeWitchEntity.class, EntityDataSerializers.BOOLEAN);
     public static final int STALK=0, LUNGE=1, WITHDRAW=2;
     public static final double HUNT_SPEED_FACTOR=2;
     public static final int COVER_SEARCH_LIMIT=80, DOOR_BREAK_TICKS=60;
@@ -75,7 +77,7 @@ public final class LakeWitchEntity extends PathfinderMob {
                 .add(Attributes.ATTACK_DAMAGE, 6).add(Attributes.FOLLOW_RANGE, 40).add(Attributes.KNOCKBACK_RESISTANCE, .65);
     }
     @Override protected void registerGoals() {}
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { super.defineSynchedData(builder); builder.define(STRIKING, false); builder.define(MEMORY_PHASE, -1);builder.define(HUNT_PHASE,STALK);builder.define(BITING,false);builder.define(SWING,0F); }
+    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { super.defineSynchedData(builder); builder.define(STRIKING, false); builder.define(MEMORY_PHASE, -1);builder.define(HUNT_PHASE,STALK);builder.define(BITING,false);builder.define(SWING,0F);builder.define(UNDER_ICE,false); }
     public boolean memory() { return entityData.get(MEMORY_PHASE) >= 0; }
     public int memoryPhase() { return entityData.get(MEMORY_PHASE); }
     public void memoryPhase(int phase) {
@@ -90,6 +92,15 @@ public final class LakeWitchEntity extends PathfinderMob {
     /** Client ticks since the current recollection phase began. */
     public float phaseAge(float partial){return tickCount-phaseStart+partial;}
     public int huntPhase(){return entityData.get(HUNT_PHASE);}
+    /** Winter Lake (0.4.104) moves her itself, by what she hears; her own literary hunt stands aside while it does. */
+    private boolean driven;
+    public boolean driven(){return driven;}
+    public void drive(boolean on){driven=on;}
+    public boolean underIce(){return entityData.get(UNDER_ICE);}
+    public void underIce(boolean on){entityData.set(UNDER_ICE,on);}
+    /** Her arm up, as for a strike: at Winter Lake's hole it is a hand reaching up out of the water. */
+    public void reach(boolean on){entityData.set(STRIKING,on);}
+    @Override public boolean isPushedByFluid(){return !driven&&super.isPushedByFluid();}
     public boolean biting(){return !memory()&&entityData.get(BITING);}
     public void literaryHunt(BlockPos base,LabyrinthPlace place){
         literaryBase=base.immutable();literaryPlace=place;setNoGravity(true);setInvulnerable(false);
@@ -510,6 +521,7 @@ public final class LakeWitchEntity extends PathfinderMob {
     private void tickLiterary(){
         if(!(level() instanceof ServerLevel level)||!isAlive())return;setAirSupply(300);
         if(literaryPlace==LabyrinthPlace.COSTUME_NIGHT){tickCostume(level);return;}
+        if(driven)return;
         var target=level.players().stream().filter(this::literaryTarget)
                 .min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
         if(target==null||distanceToSqr(target)>3600){cancelStrike();route.clear();routeGoal=null;clearDoorBreak();coverReachable=false;return;}
@@ -597,6 +609,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         tag.putBoolean("CoverPause0459",coverPause);tag.putBoolean("Emerging0459",emerging);tag.putInt("PassingSwipeTicks0459",passingSwipeTicks);
         tag.putInt("HuntPhase0459",huntPhase()==WITHDRAW?WITHDRAW:STALK);
         if(literaryBase!=null&&literaryPlace!=null){tag.putLong("LiteraryBase",literaryBase.asLong());tag.putString("LiteraryScene",literaryPlace.id());}
+        if(driven){tag.putBoolean("Driven0504",true);tag.putBoolean("UnderIce0504",underIce());}
         if(memoryOwner!=null&&memoryBase!=null){tag.putUUID("MemoryOwner",memoryOwner);tag.putLong("MemoryBase",memoryBase.asLong());tag.putInt("MemoryPhase",memoryPhase());tag.putInt("MemoryTicks0501",memoryTicks);}
     }
     @Override public void readAdditionalSaveData(CompoundTag tag) {
@@ -607,6 +620,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         failedCoverTicks=Math.min(COVER_SEARCH_LIMIT,Math.max(0,tag.getInt("FailedCoverTicks0459")));exposedHunt=tag.getBoolean("ExposedHunt0459");clearDoorBreak();
         if(shoreBase!=null){setNoGravity(true);settleTicks=40;}
         if(tag.contains("LiteraryBase")){var place=LabyrinthPlace.byId(tag.getString("LiteraryScene"));if(place!=null)literaryHunt(BlockPos.of(tag.getLong("LiteraryBase")),place);}
+        driven=tag.getBoolean("Driven0504");underIce(tag.getBoolean("UnderIce0504"));
         // A recollection's own code places it every tick; native gravity never pulls on it (0.4.101).
         if(tag.hasUUID("MemoryOwner")){recollection(tag.getUUID("MemoryOwner"),BlockPos.of(tag.getLong("MemoryBase")));memoryPhase(tag.getInt("MemoryPhase"));memoryTicks=tag.getInt("MemoryTicks0501");setNoGravity(true);}
     }

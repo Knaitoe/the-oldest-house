@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "kind=black_ice": {
+      "model": "the_oldest_house:block/winter_black_ice"
+    },
+    "kind=snow_ice": {
+      "model": "the_oldest_house:block/winter_snow_ice"
+    },
+    "kind=cracked": {
+      "model": "the_oldest_house:block/winter_cracked"
+    },
+    "kind=split": {
+      "model": "the_oldest_house:block/winter_split"
+    },
+    "kind=cattails": {
+      "model": "the_oldest_house:block/winter_cattails"
+    },
+    "kind=snowballs": {
+      "model": "the_oldest_house:block/winter_snowballs"
+    }
+  }
+}

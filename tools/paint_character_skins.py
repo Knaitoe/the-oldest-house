@@ -43,6 +43,7 @@ class Look:
     logical: int = 128
     costume: str = ''
     number: int = 0
+    scarf: str = ''
 
 
 # Each row is a character design, rather than an index into a repeated picture.
@@ -74,6 +75,11 @@ LOOKS = {
     'literary_costume_rosa': Look('#c99b7d','#101012','long','#c3c9c8','#c3c9c8','dress','#9aa6a8',sleeve=0,costume='yarn gown',number=10),
     'literary_costume_pip': Look('#dcb092','#7a5634','messy','#c05a8a','#4a5866','tee','#e0d0d8',sleeve=4,costume='pillow',number=11),
     'literary_costume_lyle': Look('#c4977a','#121212','long','#b6566c','#3d5170','dress','#e6c6a0',beard='full',sleeve=6,costume='flowers',number=12),
+    # Winter Lake (0.4.104): Bud, Hank, Clay and Lonnie from the shallows, that winter: coats, knit caps, scarves and mittens.
+    'literary_winter_bud': Look('#c39a77','#55402d','messy','#8f2b26','#3b3e45','flannel','#2b4f86',mark='winter',sleeve=11,scarf='#d8c9a6'),
+    'literary_winter_hank': Look('#d8ae8e','#a4562e','short','#2a3550','#4a4339','jacket','#b8392e',eyes='#5a6a4a',mark='winter',sleeve=11,scarf='#e6dcc4'),
+    'literary_winter_clay': Look('#d2a684','#c9a35a','messy','#7a5a38','#34383f','jacket','#d4a640',eyes='#506a80',mark='winter',sleeve=11,scarf='#5a7a4a'),
+    'literary_winter_lonnie': Look('#bf9171','#2f241d','close','#4a5a3c','#3d4148','jacket','#6a6a72',eyes='#4a3c30',mark='winter',sleeve=11,scarf='#9a3a30'),
     'harrigan': Look('#c7ab91','#b9b7ac','receding','#343941','#2c3037','suit','#7d3940',age=2,glasses=True,logical=64),
     'harrigan_dead': Look('#b9b2a4','#b9b7ac','receding','#343941','#2c3037','suit','#7d3940',age=2,mark='dead',logical=64),
     'harrigan_mourner_0': Look('#ae7b59','#262320','close','#292e33','#26292f','suit','#77736e',logical=64),
@@ -567,6 +573,37 @@ def paint(look):
                     d.rectangle((0,h-5,w-1,h-1),fill='#34302c');d.line((1,h-4,w-2,h-4),fill='#635442');d.line((0,h-1,w-1,h-1),fill='#222522')
             if side=='bottom':art=panel((w,h),look.skin if look.style=='swim' else '#292c28','skin')
             put(box,art)
+    if look.mark=='winter':
+        def over(box,art):im.paste(art,(round(box[0]*S),round(box[1]*S)),art)
+        # A knit cap on the hat layer: ribbed, a turned-up band, and a bobble on the crown.
+        cap=look.accent
+        for side,box in net(32,0,8,8,8).items():
+            art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
+            if side=='top':
+                art=panel((16,16),cap,'cloth');d=ImageDraw.Draw(art)
+                for x in range(1,15,3):d.line((x,0,x,15),fill=shade(cap,-14))
+                d.rectangle((6,6,9,9),fill=shade(cap,42));d.point((7,7),fill=shade(cap,60))
+            elif side!='bottom':
+                d.rectangle((0,0,15,7),fill=rgb(cap))
+                for x in range(1,15,3):d.line((x,0,x,4),fill=shade(cap,-14))
+                d.rectangle((0,5,15,7),fill=shade(cap,-22));d.line((0,6,15,6),fill=shade(cap,-8))
+            put(box,art)
+        # A scarf wound at the neck, one end hanging down the front.
+        for side,box in net(16,16,8,12,4).items():
+            if side in ('top','bottom'):continue
+            w,h=round((box[2]-box[0])*S),round((box[3]-box[1])*S);art=Image.new('RGBA',(w,h));d=ImageDraw.Draw(art)
+            d.rectangle((0,0,w-1,4),fill=rgb(look.scarf));d.line((0,2,w-1,2),fill=shade(look.scarf,-22))
+            if side=='front':
+                d.rectangle((3,5,6,13),fill=rgb(look.scarf));d.line((3,10,6,10),fill=shade(look.scarf,-22))
+                for x in (3,5):d.point((x,14),fill=shade(look.scarf,-10))
+            over(box,art)
+        # Mittens, knitted to match the cap.
+        for arm in (net(40,16,4,12,4),net(32,48,4,12,4)):
+            for side,box in arm.items():
+                w,h=round((box[2]-box[0])*S),round((box[3]-box[1])*S);art=Image.new('RGBA',(w,h));d=ImageDraw.Draw(art)
+                if side=='bottom':d.rectangle((0,0,w-1,h-1),fill=rgb(cap))
+                elif side!='top':d.rectangle((0,h-6,w-1,h-1),fill=rgb(cap));d.line((0,h-6,w-1,h-6),fill=shade(cap,-24))
+                over(box,art)
     if look.logical==128:
         # Insets serve named geometry (coat, gown, collar, cuffs, cap), never a portrait.
         fill_net(net(64,28,9,17,5),look.cloth)
