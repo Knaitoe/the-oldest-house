@@ -54,6 +54,8 @@ public final class CharacterArtVisualProof extends Screen {
         model.preview(1);if(model.head.z!=0||model.leftElbow.zRot!=0||Math.abs(model.leftKnee.xRot-(float)Math.PI/2)>.001F)throw new IllegalStateException("Casket pose leaked into the seated original");
         // 0.4.105: mourners stand with their hands clasped, so their elbows bend; the seated pose is knees up and elbows at +0.5.
         model.preview(4);if(model.leftKnee.xRot!=0||model.leftLeg.xRot!=0||Math.abs(model.rightElbow.xRot-.5F)<.001F)throw new IllegalStateException("Seated pose leaked into a standing mourner");
+        // The caps are painted on the limb's own planes, so they are probed with the limbs at rest, not in a mourner's clasp.
+        model.rightArm.getAllParts().forEach(net.minecraft.client.model.geom.ModelPart::resetPose);model.rightLeg.getAllParts().forEach(net.minecraft.client.model.geom.ModelPart::resetPose);
         jointCaps(model.rightArm,6/16F,0,8);jointCaps(model.rightLeg,18/16F,24,32);
     }
     private static void jointCaps(net.minecraft.client.model.geom.ModelPart part,float plane,int u0,int u1){
