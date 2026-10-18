@@ -30,10 +30,12 @@ public final class GhostsSetTests {
     private static String words(ItemStack s){return s.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(p->p.raw().getString()).reduce("",String::concat);}
     @GameTest(template="empty",batch="ghosts_room0490",timeoutTicks=500)
     public static void anUpstairsTakeWaitsForTheActualRoomAndMarjorieIsSmallerThanTheAdults(GameTestHelper h){
-        var f=fixture(h);var p=f.player("ghost_room",P);f.source(p,P);h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the native cast sections are ready")).thenExecute(()->{
+        var f=fixture(h);var p=f.player("ghost_room",P);f.source(p,P);var held=f.base(P);
+        f.chunks.hold(f.in,new AABB(Vec3.atLowerCornerOf(held.offset(-21,-5,-47)),Vec3.atLowerCornerOf(held.offset(22,13,1))));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&GhostsSet.built(f.data(),held),"the native cast sections are ready")).thenExecute(()->{
             var b=f.base(P);var own=f.own(p,P);own.putInt("FilmDay",3);own.putBoolean("Rolling",true);own.putBoolean("CastPlaced",false);own.putInt("ShotClock",0);f.at(p,P,-9,0,-30);GhostsSet.reader(p,b,own);
             h.assertTrue(own.getInt("ShotClock")==0&&!GhostsSet.inRoom(p,b,3,false),"the matching downstairs coordinates cannot advance an upstairs reconstruction");
-            f.at(p,P,-7,5,-28);GhostsSet.reader(p,b,own);h.assertTrue(own.getInt("ShotClock")==5&&GhostsSet.inRoom(p,b,3,false),"entering the real upstairs bedroom starts its occupied take");
+            f.at(p,P,-7,5,-28);GhostsSet.reader(p,b,own);h.assertTrue(own.getInt("ShotClock")==5&&GhostsSet.inRoom(p,b,3,false),"entering the real upstairs bedroom starts its occupied take: "+status(f,p));
             h.assertTrue(actor(f,p,LiteraryActor.GHOST_MARJORIE).getScale()<actor(f,p,LiteraryActor.GHOST_JOHN).getScale(),"the teenager's native model and collider are smaller than the adults");
             var father=actor(f,p,LiteraryActor.GHOST_JOHN);own.putInt("ShotClock",335);GhostsSet.reader(p,b,own);h.assertTrue(father.phase()==GhostsSet.HELP,"the original father reaches up to help his struggling daughter");save(f,p,own);
         }).thenSucceed();
