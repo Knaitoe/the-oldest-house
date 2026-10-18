@@ -52,7 +52,8 @@ public final class CharacterArtVisualProof extends Screen {
         if(bounds.x0<-.04F||bounds.x1>1.04F||bounds.z0<-.7F||bounds.z1>1.7F||bounds.y0<.54F)throw new IllegalStateException("Harrigan clips the native casket: "+bounds);
         if(model.leftElbow.zRot<1||model.rightElbow.zRot> -1)throw new IllegalStateException("Casket hands have not folded across the torso");
         model.preview(1);if(model.head.z!=0||model.leftElbow.zRot!=0||Math.abs(model.leftKnee.xRot-(float)Math.PI/2)>.001F)throw new IllegalStateException("Casket pose leaked into the seated original");
-        model.preview(4);if(model.leftKnee.xRot!=0||model.rightElbow.xRot!=0)throw new IllegalStateException("Seated pose leaked into a standing mourner");
+        // 0.4.105: mourners stand with their hands clasped, so their elbows bend; the seated pose is knees up and elbows at +0.5.
+        model.preview(4);if(model.leftKnee.xRot!=0||model.leftLeg.xRot!=0||Math.abs(model.rightElbow.xRot-.5F)<.001F)throw new IllegalStateException("Seated pose leaked into a standing mourner");
         jointCaps(model.rightArm,6/16F,0,8);jointCaps(model.rightLeg,18/16F,24,32);
     }
     private static void jointCaps(net.minecraft.client.model.geom.ModelPart part,float plane,int u0,int u1){

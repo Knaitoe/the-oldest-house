@@ -271,4 +271,8 @@ Four visits stay. What changed:
   page it lays on the floor (fixed in afb3e43).
 - **Run 39156292190 (72e53d3):** live-multiplayer stopped on the server watchdog early in the expedition (phase 4 to 5).
   The server thread was still logging twenty seconds before the watchdog fired, so the server had fallen steadily behind
-  rather than hanging on one tick; the run before got through the whole expedition.
+  rather than hanging on one tick; the run before got through the whole expedition. In the same run every native game test passed
+  (the full suite, the literary job included). The build job then stopped at the first client view check: the character
+  art proof still required a standing mourner's elbows to be straight, from before mourners stood with their hands
+  clasped. It now checks only what the seated pose would leak (knees up, elbows at +0.5). The phone screen's views come
+  later in the same chain and are still to run.
