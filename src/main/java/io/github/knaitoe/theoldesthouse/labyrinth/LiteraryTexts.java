@@ -110,7 +110,7 @@ public final class LiteraryTexts {
         case WINCHESTER->"The switchbacks brought me one floor up, to the upper ledger. Beside every room it kept a name, and none of the names were the builders'. The last name had no room yet. That was why the work could not stop.";
         case CHILD_ROOM->"The windows went first. Then the doors. I crawled beneath the bed and found a strip of floor that still led somewhere. I stood up only after I had left it.";
         case CRIMSON_HALL->"I played the three voices all the way through. Under the snow, the floor was red. A house can keep a voice much longer than it keeps a person.";
-        case BLY_ROUTE->"I shut a cupboard from inside while the drips passed on their way to the lake room. The catches are inside because a child once hid from her in one. She has never opened one. I think she is still looking for that child.";
+        case BLY_ROUTE->own.getBoolean("Dragged")?"The first time I stood where she walks and came up in the lake room's water. Then I shut a cupboard from inside. The catches are inside because a child once hid from her in one. I think she was looking for that child when she found me.":"I shut a cupboard from inside while the drips passed on their way to the lake room. The catches are inside because a child once hid from her in one. She has never opened one. I think she is still looking for that child.";
         case THREE_FINGERS->ThreeFingers.account(own);
         case LAKE_HOUSE->LakeHouse.account(own);
         case BORRASCA->BorrascaTexts.account();
@@ -129,7 +129,7 @@ public final class LiteraryTexts {
         case GHOSTS_SET->own.getBoolean("Filming0485")?GhostsSet.account(name,own):"TRANSCRIPT\n\n"+(own.getString("Confession").isEmpty()?"[The booth recorded silence.]":own.getString("Confession"))+"\n\nThe lights had shown a family waiting on its marks. Off the carpet, another conversation had gone on behind my back.";
         case END_WORLD_CABIN->own.getBoolean("Offered")?"I chose what went to the keeper. The visitors thanked me by name. On her shelf it would remain exactly what I gave up. I could see it; I would not carry it again.":"I refused. One visitor walked into the lake. On the screen, "+StaircaseProse.place(own.getString("ClosedRoom"))+" went dark. My hands were still full.";
         case FAMILY_COPY->"They knew my rooms better than I did: which stair complained, where the window had been. The weapon on their wall had my old scratches, but none of its days. When the welcome ended, the father thanked me for minding the place while they were away.";
-        case OLD_CABIN->"The lamp finished a name. The man beside it said another. He did not need either one to recognize what I had brought.";
+        case OLD_CABIN->"Three times the lamp finished a name, and three times I said it back. None of them was his. He had taken his sword down from a kitchen wall that looked like his own, every nick in place. He never found out where his own had gone.";
         default->throw new IllegalArgumentException(place.id());};if(place==LabyrinthPlace.GHOSTS_SET&&own.getBoolean("Filming0485"))return HouseWriting.book("The tape and the cut",name,HouseWriting.WritingStyle.WILL,GhostsSet.pages(text));
         // 0.4.105: each account ends on its own last line. The shared folded-paper afterword closed some twenty-five of them.
         if(place==LabyrinthPlace.HOLY_RABBIT)return book(WitnessAccount.Story.HOLY_RABBIT.title,name,GhostsSet.pages(text).toArray(String[]::new));

@@ -49,6 +49,25 @@ public final class VignetteAnimationTests {
     }
     @AfterBatch(batch="literary_bly_motion") public static void blyDone(ServerLevel l){close();}
 
+    @GameTest(template="empty",batch="literary_bly_hold",timeoutTicks=1400)
+    public static void standingInTheLadysWayCostsTheReaderTheirPlace(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.BLY_ROUTE;var p=f.player("bly_held",place);var b=f.base(place);f.at(p,place,8,0,-3);
+        final boolean[] placed={false};final int[] carried={0};
+        h.onEachTick(()->{
+            var state=LiteraryVignettes.shared(f.data(),place);if(!state.hasUUID("Lady"))return;
+            var lady=(LiteraryActor)f.in.getEntity(state.getUUID("Lady"));if(lady==null)return;
+            int clock=(int)Math.floorMod(f.in.getGameTime(),900);var own=f.own(p,place);
+            if(!placed[0]){if(clock<150||clock>500)return;own.putInt("RefugeTicks",200);own.putBoolean("WaitedInCloset",true);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);p.moveTo(lady.getX(),lady.getY(),lady.getZ()-.6);p.setDeltaMovement(Vec3.ZERO);placed[0]=true;return;}
+            if(own.contains("HeldUntil0506")){h.assertTrue(Math.abs(p.getX()-lady.getX())<.2&&p.getZ()<lady.getZ()&&p.getZ()>lady.getZ()-1,"the held reader is carried a pace ahead of her on her route: "+p.position().subtract(lady.position()));carried[0]++;return;}
+            if(!own.getBoolean("Dragged"))return;
+            h.assertTrue(carried[0]>=20,"she holds the reader long enough to be seen: "+carried[0]);
+            h.assertTrue(own.getInt("RefugeTicks")==0&&!own.getBoolean("WaitedInCloset"),"the cupboard the reader waited in no longer counts");
+            h.assertTrue(p.getY()<b.getY()-1&&p.getZ()<b.getZ()-40&&p.getZ()>b.getZ()-51&&p.isAlive()&&p.getHealth()>=2,"the reader comes up in the lake room's water, alive: "+p.position().subtract(Vec3.atLowerCornerOf(b)));
+            h.assertTrue(!own.getBoolean("Ready"),"being taken is not the wait");h.succeed();
+        });
+    }
+    @AfterBatch(batch="literary_bly_hold") public static void blyHoldDone(ServerLevel l){close();}
+
     @GameTest(template="empty",batch="literary_mapping_motion",timeoutTicks=260)
     public static void privateMappingSilhouetteUsesContinuousNativeCollisionBetweenScriptStops(GameTestHelper h){
         var f=fixture(h);var place=LabyrinthPlace.MAPPING_INTERIOR;var p=f.player("mapping_motion",place);f.at(p,place,3,0,-26);

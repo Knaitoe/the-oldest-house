@@ -3,6 +3,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 import java.util.WeakHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.phys.Vec3;
@@ -14,13 +15,18 @@ public final class LiteraryMotion {
     private record ElkStep(Vec3 velocity,long until) {}
     private static final WeakHashMap<LiteraryElk,ElkStep> elkSteps=new WeakHashMap<>();
     private static final String BLY_CYCLE = "BlyCycle0496";
+    /** Readers the Lady is holding, until the game tick she lets go (0.4.105). */
+    private static final java.util.Map<java.util.UUID, Long> held = new java.util.HashMap<>();
     private LiteraryMotion() {}
+
+    static void hold(ServerPlayer reader, long until) { held.put(reader.getUUID(), until); }
+    static void release(ServerPlayer reader) { held.remove(reader.getUUID()); }
 
     static void toward(LiteraryActor actor, Vec3 at, double fiveTickDistance) {
         goals.put(actor, new Goal(at, fiveTickDistance / 5, actor.level().getGameTime() + 6));
     }
     static void stop(LiteraryActor actor) { goals.remove(actor); actor.setDeltaMovement(Vec3.ZERO); }
-    public static void clearAll() { goals.clear(); elkSteps.clear(); }
+    public static void clearAll() { goals.clear(); elkSteps.clear(); held.clear(); }
     static void legacyElk(LiteraryElk elk,Vec3 fiveTickStep){elkSteps.put(elk,new ElkStep(fiveTickStep.scale(.2),elk.level().getGameTime()+6));}
     public static void tickElk(LiteraryElk elk){
         if(!(elk.level() instanceof ServerLevel level))return;var step=elkSteps.get(elk);if(step==null)return;
@@ -99,5 +105,13 @@ public final class LiteraryMotion {
         actor.walkAnimation.update((float)actor.position().subtract(before).horizontalDistance()*4,.4F);
         actor.setYRot(Mth.approachDegrees(actor.getYRot(), 180, 8));
         actor.setYBodyRot(actor.getYRot()); actor.setYHeadRot(actor.getYRot());
+        // A held reader is carried a pace ahead of her on her own route, lifted, facing her.
+        held.entrySet().removeIf(entry -> {
+            var reader = level.getServer().getPlayerList().getPlayer(entry.getKey());
+            if (reader == null || entry.getValue() <= now || reader.level() != level) return true;
+            reader.teleportTo(level, actor.getX(), actor.getY() + .3, actor.getZ() - .7, 0, -10);
+            reader.setDeltaMovement(Vec3.ZERO); reader.fallDistance = 0;
+            return false;
+        });
     }
 }
