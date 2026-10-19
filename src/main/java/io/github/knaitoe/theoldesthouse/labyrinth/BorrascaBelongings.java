@@ -50,7 +50,7 @@ public final class BorrascaBelongings {
     }
     public static boolean confiscate(ServerPlayer p,CompoundTag own){
         var actual=remove(p,own,"Compass");if(actual.isEmpty())return false;
-        own.put("ConfiscatedCompass",actual.save(p.registryAccess()));own.putBoolean("CompassConfiscated",true);return true;
+        own.put("ConfiscatedCompass",actual.save(p.registryAccess()));own.putBoolean("CompassConfiscated",true);own.putBoolean("CompassEverConfiscated",true);return true;
     }
     public static boolean reclaim(ServerPlayer p,CompoundTag own){
         if(!own.contains("ConfiscatedCompass"))return false;var actual=ItemStack.parseOptional(p.registryAccess(),own.getCompound("ConfiscatedCompass"));

@@ -13,7 +13,7 @@ import net.minecraft.world.phys.shapes.*;
 /** Fitted wood, metal, notices, filing drawers and conveyor. Their native collision matches their use. */
 public final class BorrascaFittingBlock extends Block {
     public static final MapCodec<BorrascaFittingBlock> CODEC=simpleCodec(BorrascaFittingBlock::new);
-    public enum Kind implements StringRepresentable { TIMBER,STEEL,RUST,PAPER,NOTICE,CARVING,DRAWERS,BELT,TRUCK,TRAIL,AGED_WOOD,TAPE,FENCE,POLISHED,PACK,PATCH,LOCK,LAMP,BREAKER,COUNTY,TRACKS,MARKER_ONE,MARKER_TWO,MARKER_THREE,MARKER_FOUR;public String getSerializedName(){return name().toLowerCase(Locale.ROOT);} }
+    public enum Kind implements StringRepresentable { TIMBER,STEEL,RUST,PAPER,NOTICE,CARVING,DRAWERS,BELT,TRUCK,TRAIL,AGED_WOOD,TAPE,FENCE,POLISHED,PACK,PATCH,LOCK,LAMP,BREAKER,COUNTY,TRACKS,MARKER_ONE,MARKER_TWO,MARKER_THREE,MARKER_FOUR,LAMP_OFF;public String getSerializedName(){return name().toLowerCase(Locale.ROOT);} }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public static final DirectionProperty FACING=BlockStateProperties.HORIZONTAL_FACING;
     public BorrascaFittingBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(KIND,Kind.TIMBER).setValue(FACING,Direction.NORTH));}

@@ -37,11 +37,11 @@ public final class BorrascaCast {
     public static void motion(LiteraryActor a){
         var t=a.getPersistentData();if(!t.contains("BorrascaSpeed")||a.isInvisible())return;
         Vec3 goal=new Vec3(t.getDouble("BorrascaGoalX"),t.getDouble("BorrascaGoalY"),t.getDouble("BorrascaGoalZ"));Vec3 d=goal.subtract(a.position());double horizontal=d.horizontalDistance();
-        if(horizontal<.18&&Math.abs(d.y)<.25){stop(a);return;}
+        if(horizontal<.18&&Math.abs(d.y)<.08){stop(a);return;}
         if(!a.level().hasChunkAt(BlockPos.containing(a.position().add(d.normalize().scale(.5)))))return;
         float yaw=horizontal>.1?(float)Math.toDegrees(Math.atan2(-d.x,d.z)):180;a.setYRot(Mth.approachDegrees(a.getYRot(),yaw,12));a.setYBodyRot(a.getYRot());a.setYHeadRot(a.getYRot());
         Vec3 before=a.position();
-        if(horizontal<.7&&Math.abs(d.y)>.3&&a.onClimbable()){
+        if(horizontal<.7&&Math.abs(d.y)>.08&&a.onClimbable()){
             a.setYRot(180);a.setYBodyRot(180);a.setDeltaMovement(a.getDeltaMovement().x,d.y>0?.15:-.12,a.getDeltaMovement().z);a.travel(new Vec3(0,0,d.y>0?.5:0));
         }else a.travel(new Vec3(0,0,Math.min(t.getDouble("BorrascaSpeed"),horizontal*2)));
         a.walkAnimation.update((float)a.position().subtract(before).horizontalDistance()*4,.4F);

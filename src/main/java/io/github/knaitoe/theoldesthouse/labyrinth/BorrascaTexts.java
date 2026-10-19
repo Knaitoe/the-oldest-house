@@ -15,10 +15,11 @@ public final class BorrascaTexts {
     public static ItemStack source(){return book("A note at the trailhead","The House",
         "CONTENT NOTE\n\nAbduction, coercion, sexual violence and death. These themes remain off-screen. No assault is shown or heard.",
         "The second visit begins an investigation into a child's disappearance. You may leave through the House door at any point. Leaving early does not finish a visit.");}
-    public static ItemStack document(String key){return switch(key){
+    public static ItemStack document(String key){return document(key,false);}
+    public static ItemStack document(String key,boolean compassHeld){return switch(key){
         case "Evidence","Register","Service"->book("Ridge property transfer","County property office",
             "COUNTY PROPERTY\nRIDGE DEPOT\n\nReceipt: 41\nAuthority: Sheriff's office\nVehicle: County 17\nTransport: Prescott Ore Services\nReceived by: Prescott",
-            "Tag: 41-A\nName: KIMBER\nCollection: Marker 3\nContents: teal pack; stitched name patch; brass compass.\nCase: closed.\nRelease: none.\nStore: sorting table.",
+            "Tag: 41-A\nName: KIMBER\nCollection: Marker 3\nContents: teal pack; stitched name patch."+(compassHeld?"\nSupplement: brass compass; Sheriff receipt.":"")+"\nCase: closed.\nRelease: none.\nStore: sorting table.",
             "Transfer: D-417\nNight access: authorized\nFuel account: county maintenance\nReceived: Prescott\nOffice approval: filed\n\nNext collection: 42-B\nName: Mara\nRelease: none.");
         case "Map"->book("Pine trail notice","County trails","Triple Tree: Marker 1.\n\nThe second marker is the end of the public walk.\n\nStay on the marked trail. Return before dark.");
         case "Bedroom"->book("Property tag 41-A","County property office","KIMBER\n\nTeal pack. Red tape on brass case. Name stitched inside flap.\n\nReceived with the other effects.");
