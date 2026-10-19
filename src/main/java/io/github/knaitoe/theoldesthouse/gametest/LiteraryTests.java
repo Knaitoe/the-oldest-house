@@ -921,6 +921,11 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
     @GameTest(template="empty",batch="literary_elk_upgrade",timeoutTicks=200)
     public static void elkRebuildKeepsTheSceneKillerPetsAndDroppedThings(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;f.build(place);var b=f.base(place);var l=f.out;
+        // Keep both the saved body's source and its landing entity section native and loaded.
+        // The first reader's view does not reach the killer waiting under the far yacht deck.
+        f.chunks.hold(l,new AABB(Vec3.atBottomCenterOf(b.offset(7,0,-43)),Vec3.atBottomCenterOf(b.offset(7,0,-43))).inflate(3));
+        f.chunks.hold(l,new AABB(Vec3.atBottomCenterOf(b.offset(ElkCarcassMap.KILLER_START)),Vec3.atBottomCenterOf(b.offset(ElkCarcassMap.KILLER_START))).inflate(3));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the original and landing entity sections are ready before staging the saved residents")).thenExecute(()->{
         h.assertTrue(ElkUpgrade.rebuilds(32)&&ElkUpgrade.rebuilds(35)&&!ElkUpgrade.rebuilds(31)&&!ElkUpgrade.rebuilds(36),"only a saved layout with the earlier elk scene carves it again");
         // The earlier scene's shared killer, a pet left sitting, and a dropped original, as a saved world would hold them.
         var legacy=LiteraryRegistry.ACTOR.get().create(l);legacy.bind(place,null);legacy.appearance(LiteraryActor.KILLER,0);legacy.moveTo(Vec3.atBottomCenterOf(b.offset(7,0,-43)));l.addFreshEntity(legacy);f.extras.add(legacy);
@@ -942,9 +947,10 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         h.assertTrue(item.isAlive()&&!ElkUpgrade.stranded(l,item),"a dropped original is kept, set on dry ground");
         for(var id:ids)h.assertTrue(l.getEntity(id)!=null,"identity kept: "+id);
         var reader=f.player("elk_adopter",place);
-        h.runAfterDelay(10,()->{var shared=LiteraryVignettes.shared(f.data(),place);
+        h.succeedWhen(()->{var shared=LiteraryVignettes.shared(f.data(),place);
             h.assertTrue(shared.hasUUID("Killer_"+reader.getUUID())&&shared.getUUID("Killer_"+reader.getUUID()).equals(legacy.getUUID())&&!shared.hasUUID("Killer"),"the next reader inherits the scene's killer rather than a new one");
-            h.assertTrue(legacy.owner().isPresent()&&legacy.owner().get().equals(reader.getUUID())&&!legacy.isNoAi(),"he is now that reader's alone");h.succeed();});
+            h.assertTrue(legacy.owner().isPresent()&&legacy.owner().get().equals(reader.getUUID())&&!legacy.isNoAi(),"he is now that reader's alone");});
+        });
     }
     @AfterBatch(batch="literary_elk_upgrade") public static void elkUpgradeDone(ServerLevel l){close();}
 
