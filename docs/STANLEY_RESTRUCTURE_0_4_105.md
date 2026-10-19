@@ -133,3 +133,5 @@ The architecture test exports the hotel's three floors and its grounds.
   a key they did not define, so every client check stopped loading models (build, trailer-client). The well through the
   lobby ceiling began over the fourth tread, so a guest's head struck the ceiling stepping up from the third and the walk
   never reached the landing (build, hotel-gameplay); the well now begins one tread earlier.
+- **Run 39202668820 (ee85083):** eleven of twelve jobs passed, the hotel job and every client check included. The build
+  job's full suite failed one case outside the hotel: the cancelled canoe toss (see the small fixes' runs).

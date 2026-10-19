@@ -56,25 +56,31 @@ public final class IntegrationRepairsTests {
             cat.setOwnerUUID(UUID.randomUUID());h.assertTrue(!CompanionOrders.command(p,cat.getId(),0),"species eligibility does not bypass ownership");
             });
     }
-    @GameTest(template="empty",batch="integration_toss")
+    @GameTest(template="empty",batch="integration_toss",timeoutTicks=200)
     public static void canceledCanoeTossKeepsResidualOriginalThroughNativeSaveAndRelease(GameTestHelper h){
         tosses=new Fixture(h,97000);var f=tosses;
-            var l=f.level(LabyrinthPlace.PHONE_CANOE);var b=LabyrinthPlaces.base(f.origin,LabyrinthPlace.PHONE_CANOE);var p=f.player(h,l,Vec3.atBottomCenterOf(b.offset(PhoneCanoe.DOCK)));
-            for(int i=0;i<36;i++)p.getInventory().setItem(i,new ItemStack(Items.STONE,64));
+            var l=f.level(LabyrinthPlace.PHONE_CANOE);var b=LabyrinthPlaces.base(f.origin,LabyrinthPlace.PHONE_CANOE);var dock=b.offset(PhoneCanoe.DOCK);var p=f.player(h,l,Vec3.atBottomCenterOf(dock));
             var original=new ItemStack(Items.DIAMOND,7);original.set(DataComponents.CUSTOM_NAME,Component.literal("The seven originals"));CustomData.update(DataComponents.CUSTOM_DATA,original,t->t.putUUID("Provenance",UUID.randomUUID()));
+            var loaded=new LabyrinthData[1];
+            // A busy server can take many ticks to make a freshly loaded chunk's entity section visible; until it does, the refund
+            // exists but no search can see it. Toss only once the dock's section is loaded and ticking, then wait for the refund.
+            h.startSequence().thenWaitUntil(()->h.assertTrue(l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(dock))&&l.isPositionEntityTicking(dock),"the dock's native entity section is loaded and ticking before the toss")).thenExecute(()->{
+            for(int i=0;i<36;i++)p.getInventory().setItem(i,new ItemStack(Items.STONE,64));
             p.getInventory().setItem(0,original.copyWithCount(60));var personal=new CompoundTag();personal.putInt("Phase",3);var all=f.data.state(PhoneCanoe.ID);all.put(p.getUUID().toString(),personal);f.data.setState(PhoneCanoe.ID,all);
             var dropped=new ItemEntity(l,p.getX(),p.getY(),p.getZ(),original.copy());var toss=new ItemTossEvent(dropped,p);PhoneCanoe.onToss(toss);
             var queue=PhoneCanoe.personal(f.data,p.getUUID()).getList("ReturnedTosses",Tag.TAG_COMPOUND);var residual=ItemStack.parseOptional(p.registryAccess(),queue.getCompound(0));
             h.assertTrue(toss.isCanceled()&&p.getInventory().getItem(0).getCount()==64&&residual.getCount()==3&&ItemStack.isSameItemSameComponents(original,residual)&&dropped.getItem().isEmpty(),"partial native insertion keeps exactly the three residual originals with every component");
-            var loaded=LabyrinthData.FACTORY.deserializer().apply(f.data.save(new CompoundTag(),p.registryAccess()),p.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);
-            var saved=PhoneCanoe.personal(loaded,p.getUUID());saved.putInt("Phase",0);all=loaded.state(PhoneCanoe.ID);all.put(p.getUUID().toString(),saved);loaded.setState(PhoneCanoe.ID,all);
+            loaded[0]=LabyrinthData.FACTORY.deserializer().apply(f.data.save(new CompoundTag(),p.registryAccess()),p.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded[0]);
+            var saved=PhoneCanoe.personal(loaded[0],p.getUUID());saved.putInt("Phase",0);all=loaded[0].state(PhoneCanoe.ID);all.put(p.getUUID().toString(),saved);loaded[0].setState(PhoneCanoe.ID,all);
             PhoneCanoe.tick(p);
-            h.runAfterDelay(10,()->{
+            }).thenWaitUntil(()->{
             // The refund drops with vanilla's random toss beside the dock, so it is looked for where it can land, not under the reader.
-            var returned=l.getEntitiesOfClass(ItemEntity.class,p.getBoundingBox().inflate(8),e->ItemStack.isSameItemSameComponents(e.getItem(),original));returned.forEach(f::keep);
-            h.assertTrue(returned.size()==1&&returned.getFirst().getItem().getCount()==3&&p.getUUID().equals(returned.getFirst().getTarget())&&PhoneCanoe.personal(loaded,p.getUUID()).getList("ReturnedTosses",Tag.TAG_COMPOUND).isEmpty(),"a full inventory after the saved binding ends returns one owner-targeted residual stack: visible="+returned.size()+"; saved="+PhoneCanoe.personal(loaded,p.getUUID()).getList("ReturnedTosses",Tag.TAG_COMPOUND).size());
-            PhoneCanoe.tick(p);h.assertTrue(l.getEntitiesOfClass(ItemEntity.class,p.getBoundingBox().inflate(8),e->ItemStack.isSameItemSameComponents(e.getItem(),original)).size()==1,"subsequent ticks cannot duplicate the saved toss refund");h.succeed();
-            });
+            var returned=l.getEntitiesOfClass(ItemEntity.class,p.getBoundingBox().inflate(8),e->ItemStack.isSameItemSameComponents(e.getItem(),original));
+            h.assertTrue(returned.size()==1&&returned.getFirst().getItem().getCount()==3&&p.getUUID().equals(returned.getFirst().getTarget())&&PhoneCanoe.personal(loaded[0],p.getUUID()).getList("ReturnedTosses",Tag.TAG_COMPOUND).isEmpty(),"a full inventory after the saved binding ends returns one owner-targeted residual stack: visible="+returned.size()+"; saved="+PhoneCanoe.personal(loaded[0],p.getUUID()).getList("ReturnedTosses",Tag.TAG_COMPOUND).size());
+            returned.forEach(f::keep);
+            }).thenExecute(()->{
+            PhoneCanoe.tick(p);h.assertTrue(l.getEntitiesOfClass(ItemEntity.class,p.getBoundingBox().inflate(8),e->ItemStack.isSameItemSameComponents(e.getItem(),original)).size()==1,"subsequent ticks cannot duplicate the saved toss refund");
+            }).thenSucceed();
     }
     @GameTest(template="empty",batch="integration_finale")
     public static void nativeFinaleClaimReleasesOnlyItsOwnerAndRetainsOfflineCommittedAttempts(GameTestHelper h){

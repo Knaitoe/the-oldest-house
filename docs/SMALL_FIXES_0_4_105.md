@@ -352,4 +352,10 @@ sampled), with the models and states: one `masque` block (19 kinds, seven colour
   cancelled canoe toss case looked for the refunded paper only within two blocks of the reader, but the refund falls
   with vanilla's random toss beside the dock; it now looks within eight.
 - **Run 39169885241 (c378658):** all twelve jobs passed, the rebuilt Masque and Bly included.
+- **Run 39202668820 (ee85083):** eleven of twelve jobs passed. The full suite failed only the cancelled canoe toss case
+  again, finding neither the refunded stack nor a saved one (visible 0, saved 0), so the refund had been dropped but could not
+  be seen. The case spawns it in the same tick it loads the dock's chunk; on a busy server vanilla only marks a newly loaded
+  chunk's entity section visible when it has time between ticks, so an item spawned before then stays out of every search.
+  Looking further was never the fix. The case now tosses only once the dock's entity section is loaded and ticking, and waits
+  for the refund to appear.
 - **The hotel** is restructured in the same candidate: see [the hotel, restructured](STANLEY_RESTRUCTURE_0_4_105.md).
