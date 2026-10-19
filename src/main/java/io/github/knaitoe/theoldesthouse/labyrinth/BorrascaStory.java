@@ -33,7 +33,7 @@ public final class BorrascaStory {
     private static final BlockPos FRONT_LEVER=new BlockPos(-15,13,-168);
     private static final BlockPos[] CHILD_WALK={new BlockPos(1,0,-35),new BlockPos(1,0,-60),new BlockPos(3,0,-86),new BlockPos(3,6,-88),new BlockPos(1,6,-94)};
     private static final BlockPos[] DOWN={new BlockPos(3,6,-88),new BlockPos(3,0,-88),new BlockPos(1,0,-96)};
-    private static final BlockPos[] TAKING_WALK={new BlockPos(1,0,-99),BorrascaRooms.trail(-108),BorrascaRooms.trail(-115),BorrascaRooms.trail(-125),BorrascaRooms.trail(-132),BorrascaRooms.trail(-141),BorrascaRooms.TAKING};
+    private static final BlockPos[] TAKING_WALK={new BlockPos(1,0,-85),new BlockPos(2,0,-93),new BlockPos(3,0,-97),new BlockPos(3,0,-103),BorrascaRooms.trail(-108),BorrascaRooms.SHELTER_ONE,new BlockPos(7,2,-114),new BlockPos(7,3,-116),BorrascaRooms.trail(-125),BorrascaRooms.SHELTER_TWO,new BlockPos(1,6,-131),BorrascaRooms.trail(-141),BorrascaRooms.TAKING};
     private BorrascaStory(){}
     public static void arrive(ServerPlayer p,CompoundTag own){
         int visit=own.getInt("Visit");if(visit==0)visit=1;else if(own.getBoolean("BorrascaDeparted")&&(own.getInt("ConfirmedVisits")&(1<<(visit-1)))!=0)visit=Math.min(4,visit+1);
@@ -150,8 +150,8 @@ public final class BorrascaStory {
         }
     }
     private static boolean follow(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor friend,String key,BlockPos[] points){
-        int i=own.getInt(key);if(i>=points.length){BorrascaCast.stop(friend);return true;}if(friend.distanceToSqr(p)>18*18){BorrascaCast.stop(friend);return false;}
-        var at=Vec3.atBottomCenterOf(b.offset(points[i]));var delta=friend.position().subtract(at);if(delta.horizontalDistance()<.4&&Math.abs(delta.y)<.14){own.putInt(key,i+1);BorrascaCast.stop(friend);}else BorrascaCast.walk(friend,at,.8);return own.getInt(key)>=points.length;
+        int i=own.getInt(key);if(i>=points.length){BorrascaCast.stop(friend);return true;}var at=Vec3.atBottomCenterOf(b.offset(points[i]));if(friend.distanceToSqr(p)>18*18&&p.position().subtract(friend.position()).dot(at.subtract(friend.position()))<0){BorrascaCast.stop(friend);return false;}
+        var delta=friend.position().subtract(at);if(delta.horizontalDistance()<.4&&Math.abs(delta.y)<.14){own.putInt(key,i+1);BorrascaCast.stop(friend);}else BorrascaCast.walk(friend,at,.8);return own.getInt(key)>=points.length;
     }
     private static void taking(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor friend){
         if(!own.getBoolean("Read_Source")||!own.getBoolean("FollowAgain"))return;
@@ -162,7 +162,7 @@ public final class BorrascaStory {
             return;
         }
         int step=own.getInt("TakingStep");
-        if((step==2||step==4)&&own.getInt("Shelter"+step)<60){friend.gesture(5);BorrascaCast.stop(friend);int t=own.getInt("Shelter"+step);if(t==0){heard(p,BorrascaRegistry.CHIME.get(),b.offset(BorrascaRooms.MACHINE),.8F);dust(p);}own.putInt("Shelter"+step,t+5);return;}
+        if(step==6||step==10){int t=own.getInt("Shelter"+step);if(p.isCrouching()&&p.distanceToSqr(friend)<25)own.putBoolean("Sheltered"+step,true);if(t<60||!own.getBoolean("Sheltered"+step)){friend.gesture(5);BorrascaCast.stop(friend);if(t==0){heard(p,BorrascaRegistry.CHIME.get(),b.offset(BorrascaRooms.MACHINE),.8F);dust(p);say(p,friend,"Down here. Behind the timber.");}own.putInt("Shelter"+step,Math.min(60,t+5));return;}}
         friend.gesture(0);if(follow(p,b,own,friend,"TakingStep",TAKING_WALK)&&near(p,b.offset(BorrascaRooms.TAKING),8)){own.putInt("TakingTicks",1);friend.gesture(2);say(p,friend,"Wait. Is that someone—");heard(p,BorrascaRegistry.CHIME.get(),b.offset(BorrascaRooms.MACHINE),1.6F);dust(p);send(p,own);}
     }
     public static boolean masking(CompoundTag own){return own.getInt("TrailClock")%200<60;}
@@ -202,7 +202,7 @@ public final class BorrascaStory {
     private static void save(ServerPlayer p,CompoundTag own){LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),PLACE,own);}
     private static void send(ServerPlayer p,CompoundTag own){var b=BorrascaSites.base(p.server,p.getUUID());var sheriff=actor(p,own,"CastSheriff");if(b!=null)HousePackets.send(p,new BorrascaViewPayload(b.offset(BorrascaRooms.MACHINE),own.getInt("Visit"),own.getBoolean("Here"),!own.getBoolean("PowerOff")&&(own.getInt("Visit")>1||own.getBoolean("PactCarved")),own.getInt("TakingTicks"),own.getInt("TrailClock"),sheriff==null?b.offset(BorrascaRooms.SHERIFF):sheriff.blockPosition(),flashlightYaw(own)));}
     /** Per-native-tick motion; native collision and ladder physics remain enabled. */
-    public static void actorTick(LiteraryActor a){if(!a.scene().equals(PLACE.id())||!(a.level() instanceof ServerLevel l))return;var p=a.owner().map(l.getServer().getPlayerList()::getPlayer).orElse(null);if(p==null||!BorrascaSites.inside(p)){BorrascaCast.stop(a);return;}var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);if(!own.getBoolean("Here")){BorrascaCast.stop(a);return;}BorrascaCast.motion(a);}
+    public static void actorTick(LiteraryActor a){if(!a.scene().equals(PLACE.id())||!(a.level() instanceof ServerLevel l))return;var p=a.owner().map(l.getServer().getPlayerList()::getPlayer).orElse(null);if(p==null||!BorrascaSites.inside(p)||!LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE).getBoolean("Here"))BorrascaCast.stop(a);}
     /** Capture intent; the actual door travel callback is the sole return authority. */
     public static void depart(ServerPlayer p){BorrascaCast.release(p.getUUID());var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);boolean valid=BorrascaSites.inside(p)&&own.getBoolean("Here")&&!own.getBoolean("Interrupted")&&p.isAlive();if(valid&&own.getInt("Beat")>=own.getInt("Visit"))own.putInt("DepartVisit",own.getInt("Visit"));else own.remove("DepartVisit");own.putBoolean("ExitEligible",valid&&own.getInt("Visit")==4&&(own.getInt("ConfirmedVisits")&7)==7&&own.getBoolean("Ready")&&own.getBoolean("PowerOff")&&own.getBoolean("EvidenceRead")&&carriesEvidence(p,own));own.putBoolean("Here",false);save(p,own);}
     public static void returned(ServerPlayer p){var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),PLACE);own.putBoolean("BorrascaDeparted",true);int returned=own.getInt("DepartVisit");if(returned>=1&&returned<=3)own.putInt("ConfirmedVisits",own.getInt("ConfirmedVisits")|(1<<(returned-1)));if(own.getBoolean("ExitEligible")&&carriesEvidence(p,own)){own.putBoolean("NameReturned",own.getBoolean("RestoredName"));own.putBoolean("Completed",true);own.putInt("Beat",4);save(p,own);WitnessAccount.resolve(p,WitnessAccount.Story.BORRASCA,"silenced_the_mountain");d.setCompleted(PLACE.id(),true);WitnessAccount.updateBook(p,false);}own.remove("ExitEligible");own.remove("DepartVisit");save(p,own);}

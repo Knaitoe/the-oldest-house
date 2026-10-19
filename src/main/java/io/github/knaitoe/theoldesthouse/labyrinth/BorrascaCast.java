@@ -8,6 +8,7 @@ import net.minecraft.server.level.*;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.util.Mth;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -31,20 +32,19 @@ public final class BorrascaCast {
         if(!p.serverLevel().areEntitiesLoaded(ChunkPos.asLong(at.getX()>>4,at.getZ()>>4)))return false;
         stop(a);a.moveTo(Vec3.atBottomCenterOf(at),180,0);a.setYBodyRot(180);a.setYHeadRot(180);return true;
     }
-    public static void walk(LiteraryActor a,Vec3 at,double speed){a.getPersistentData().putDouble("BorrascaGoalX",at.x);a.getPersistentData().putDouble("BorrascaGoalY",at.y);a.getPersistentData().putDouble("BorrascaGoalZ",at.z);a.getPersistentData().putDouble("BorrascaSpeed",speed);a.setNoAi(true);a.setNoGravity(false);}
-    public static void stop(LiteraryActor a){a.getPersistentData().remove("BorrascaSpeed");a.getNavigation().stop();a.setDeltaMovement(Vec3.ZERO);}
-    /** Native travel includes gravity, stair stepping and ladder collision on every tick. */
-    public static void motion(LiteraryActor a){
-        var t=a.getPersistentData();if(!t.contains("BorrascaSpeed")||a.isInvisible())return;
+    public static void walk(LiteraryActor a,Vec3 at,double speed){a.getPersistentData().putDouble("BorrascaGoalX",at.x);a.getPersistentData().putDouble("BorrascaGoalY",at.y);a.getPersistentData().putDouble("BorrascaGoalZ",at.z);a.getPersistentData().putDouble("BorrascaSpeed",speed);a.setNoAi(false);a.setNoGravity(false);}
+    public static void stop(LiteraryActor a){a.getPersistentData().remove("BorrascaSpeed");a.getNavigation().stop();a.setSpeed(0);a.setNoAi(true);a.setDeltaMovement(Vec3.ZERO);}
+    /** Feed the normal once-per-tick travel call; vanilla owns gravity, stepping and ladder collision. */
+    public static Vec3 input(LiteraryActor a){
+        var t=a.getPersistentData();if(!t.contains("BorrascaSpeed")||a.isInvisible())return Vec3.ZERO;
         Vec3 goal=new Vec3(t.getDouble("BorrascaGoalX"),t.getDouble("BorrascaGoalY"),t.getDouble("BorrascaGoalZ"));Vec3 d=goal.subtract(a.position());double horizontal=d.horizontalDistance();
-        if(horizontal<.18&&Math.abs(d.y)<.08){stop(a);return;}
-        if(!a.level().hasChunkAt(BlockPos.containing(a.position().add(d.normalize().scale(.5)))))return;
+        if(horizontal<.18&&Math.abs(d.y)<.08){stop(a);return Vec3.ZERO;}
+        if(!a.level().hasChunkAt(BlockPos.containing(a.position().add(d.normalize().scale(.5)))))return Vec3.ZERO;
         float yaw=horizontal>.1?(float)Math.toDegrees(Math.atan2(-d.x,d.z)):180;a.setYRot(Mth.approachDegrees(a.getYRot(),yaw,12));a.setYBodyRot(a.getYRot());a.setYHeadRot(a.getYRot());
-        Vec3 before=a.position();
+        a.setSpeed((float)a.getAttributeValue(Attributes.MOVEMENT_SPEED));
         if(horizontal<.7&&Math.abs(d.y)>.08&&a.onClimbable()){
-            a.setYRot(180);a.setYBodyRot(180);a.setDeltaMovement(a.getDeltaMovement().x,d.y>0?.15:-.12,a.getDeltaMovement().z);a.travel(new Vec3(0,0,d.y>0?.5:0));
-        }else a.travel(new Vec3(0,0,Math.min(t.getDouble("BorrascaSpeed"),horizontal*2)));
-        a.walkAnimation.update((float)a.position().subtract(before).horizontalDistance()*4,.4F);
+            a.setYRot(180);a.setYBodyRot(180);a.setDeltaMovement(a.getDeltaMovement().x,d.y>0?.15:-.12,a.getDeltaMovement().z);return new Vec3(0,0,d.y>0?.5:0);
+        }return new Vec3(0,0,Math.min(t.getDouble("BorrascaSpeed"),horizontal*2));
     }
     public static void remember(CompoundTag own,String key,LiteraryActor actor){if(actor!=null)own.putLong(key+"At",actor.blockPosition().asLong());}
     public static BlockPos destination(CompoundTag own,String key,BlockPos base){return own.getInt("CastVisit")==own.getInt("Visit")&&own.contains(key+"At")?BlockPos.of(own.getLong(key+"At")).subtract(base):target(key,key.equals("CastKimber")&&own.getBoolean("FriendMissing")?3:own.getInt("Visit"));}
