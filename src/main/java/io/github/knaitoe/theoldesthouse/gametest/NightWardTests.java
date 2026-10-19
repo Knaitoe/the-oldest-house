@@ -34,7 +34,7 @@ public final class NightWardTests {
         var data=new LabyrinthData();data.setBuilt(LabyrinthBuilder.VERSION,origin);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);
         var b=LabyrinthPlaces.base(origin,LabyrinthPlace.HOSPITAL);chunks=new NativeTestChunks();chunks.hold(level,new AABB(Vec3.atLowerCornerOf(b.offset(-14,-2,-27)),Vec3.atLowerCornerOf(b.offset(15,9,4))));
         NovelRooms.build(server,level,b,LabyrinthPlace.HOSPITAL);
-        reader=new FakePlayer(level,new GameProfile(UUID.randomUUID(),"night_ward_reader"));reader.setNoGravity(true);reader.moveTo(Vec3.atBottomCenterOf(b.offset(0,0,-3)));level.addNewPlayer(reader);
+        reader=new FakePlayer(level,new GameProfile(UUID.randomUUID(),"ward_reader"));reader.setNoGravity(true);reader.moveTo(Vec3.atBottomCenterOf(b.offset(0,0,-3)));level.addNewPlayer(reader);
         h.startSequence().thenWaitUntil(()->h.assertTrue(chunks.ready(),"native block and entity sections are ready"))
             .thenExecute(()->{
                 var chart=(LecternBlockEntity)level.getBlockEntity(b.offset(NovelRooms.WARD_NOTE));var original=chart.getBook().copy();
@@ -46,13 +46,14 @@ public final class NightWardTests {
                 var kept=b.offset(7,0,-21);level.setBlock(kept,Blocks.CHEST.defaultBlockState(),2);((ChestBlockEntity)level.getBlockEntity(kept)).setItem(4,original.copy());
                 var mark=data.state(NightWardMaterials.STATE);mark.remove(Long.toString(b.asLong()));data.setState(NightWardMaterials.STATE,mark);
                 h.assertTrue(!NightWardMaterials.apply(level,b),"a reader's actual camera keeps the saved ward untouched");
-                reader.moveTo(100,80,100);resident=EntityType.CAT.create(level);resident.setNoAi(true);resident.setNoGravity(true);resident.moveTo(Vec3.atBottomCenterOf(b.offset(3,0,-5)));level.addFreshEntity(resident);var identity=resident.getUUID();
+                reader.moveTo(100,80,100);resident=EntityType.CAT.create(level);h.assertTrue(resident!=null,"the native resident can be created");resident.setNoAi(true);resident.setNoGravity(true);resident.moveTo(Vec3.atBottomCenterOf(b.offset(3,0,-5)));resident.tame(reader);resident.setHealth(4);var identity=resident.getUUID();
+                h.assertTrue(level.addFreshEntity(resident)&&level.getEntity(identity)==resident,"the actual owned resident passes native spawn rules before testing its guard");
                 h.assertTrue(!NightWardMaterials.apply(level,b),"a living resident also defers the entire cosmetic refit");resident.moveTo(100,80,110);
                 h.assertTrue(NightWardMaterials.apply(level,b),"the loaded, unseen, vacant hospital receives its own materials");
                 h.assertTrue(level.getBlockState(b.offset(-9,2,-12)).is(NovelRegistry.NIGHT_WARD.get())&&level.getBlockState(b.offset(-7,0,-7)).getValue(NightWardBlock.KIND)==NightWardBlock.Kind.BED_FOOT,"walls and the authored bed become native ward fittings");
                 h.assertTrue(ItemStack.isSameItemSameComponents(original,chart.getBook())&&ItemStack.isSameItemSameComponents(original,((ChestBlockEntity)level.getBlockEntity(kept)).getItem(4)),"the actual source chart and a stored original keep every item component");
                 var door=level.getBlockState(b.offset(0,0,0));h.assertTrue(door.is(NovelRegistry.NIGHT_WARD_DOOR.get())&&door.getValue(DoorBlock.OPEN)&&door.getValue(DoorBlock.HINGE)==DoorHingeSide.RIGHT&&level.getBlockState(button).getValue(ButtonBlock.POWERED),"the native doorway and call state survive the material change");
-                h.assertTrue(resident.getUUID().equals(identity)&&NovelVignettes.personal(data,reader.getUUID()).getInt("WardCalls")==7&&NovelVignettes.personal(data,reader.getUUID()).getBoolean("WardFinished")&&!WitnessAccount.has(data,reader.getUUID(),WitnessAccount.Story.HOSPITAL),"resident identity and the completed night remain, with no unearned resolution");
+                h.assertTrue(resident.getUUID().equals(identity)&&resident.getOwnerUUID().equals(reader.getUUID())&&resident.getHealth()==4&&NovelVignettes.personal(data,reader.getUUID()).getInt("WardCalls")==7&&NovelVignettes.personal(data,reader.getUUID()).getBoolean("WardFinished")&&!WitnessAccount.has(data,reader.getUUID(),WitnessAccount.Story.HOSPITAL),"resident identity, ownership and health and the completed night remain, with no unearned resolution");
                 level.setBlock(b.offset(-7,0,-7),Blocks.AIR.defaultBlockState(),2);var loaded=LabyrinthData.FACTORY.deserializer().apply(data.save(new net.minecraft.nbt.CompoundTag(),level.registryAccess()),level.registryAccess());server.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);
                 h.assertTrue(NightWardMaterials.apply(level,b)&&level.getBlockState(b.offset(-7,0,-7)).isAir()&&ItemStack.isSameItemSameComponents(original,chart.getBook()),"the saved checkpoint does not rebuild a removed fitting or rewrite the chart");
             }).thenSucceed();

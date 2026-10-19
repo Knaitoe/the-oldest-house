@@ -105,9 +105,17 @@ def models():
         obj=json.loads(json.dumps(obj).replace('the_oldest_house:block/ward_', 'the_oldest_house:block/night_ward_'))
         put(f'blockstates/night_ward_{group}.json',obj)
     incubator=json.loads((A/'models/block/novel_incubator.json').read_text())
+    incubator['elements']=incubator['elements'][:8]
     incubator['textures']={'frame':PREFIX+'enamel','glass':PREFIX+'glass','fabric':PREFIX+'sheet','controls':PREFIX+'controls','particle':PREFIX+'enamel'}
     incubator['elements'][0]['faces']['south']={'texture':'#frame'}
     incubator['elements'][0]['faces']['north']={'texture':'#controls','uv':[0,0,14,2]}
+    # A clear case needs a readable frame, even where the thin glass UVs sample its transparent centre.
+    # These rails stay inside the incubator's existing 1..15 collision footprint and 15-pixel top.
+    rails=[[x,5,z,x+.5,14.75,z+.5] for x in (1.25,14.25) for z in (1.25,14.25)]
+    rails += [[1.25,14.25,z,14.75,14.75,z+.5] for z in (1.25,14.25)]
+    rails += [[x,14.25,1.25,x+.5,14.75,14.75] for x in (1.25,14.25)]
+    for bounds in rails:
+        part=cube('frame');part['from']=bounds[:3];part['to']=bounds[3:];incubator['elements'].append(part)
     put('models/block/novel_incubator.json',incubator)
     return result
 

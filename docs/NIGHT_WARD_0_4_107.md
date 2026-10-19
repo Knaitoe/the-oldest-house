@@ -14,8 +14,9 @@ No additional pre-existing PNG is repainted.
 The ward has native fittings using those materials: metal beds and their pillows,
 chairs, stools, bedside cabinets and tables. The fitted geometry follows the existing
 institute furniture meshes; door and connected-pane geometry remain native. The empty
-incubator retains its original shape and location and now resolves its own enamel,
-glass, mattress and control face. Its controls face the authored approach.
+incubator retains its original collision footprint and location and now resolves its
+own enamel, glass, mattress and control face. Thin enamel rails inside the existing
+glass volume make its clear case legible. Its controls face the authored approach.
 
 `NightWardMaterials` converts authored material types inside this ward's bounded area.
 New rooms receive it after construction and dressing. Saved rooms wait for native block
@@ -49,6 +50,10 @@ and a resident delaying the refit, then checks the original chart and a stored i
 door and call states, the finished night, source credit, resident UUID and saved
 checkpoint after a fitting is removed. Total declared native cases: 677. The focused
 ward namespace runs with the existing funeral/trailer suite as well as the full corpus.
+The first ward test at `27094bf` failed because its untamed cat was rejected by native
+spawn rules, leaving no resident to guard. The fixture now uses an owned native cat
+and explicitly requires successful registration before checking vacancy; ownership,
+health and UUID preservation are also asserted. No resident guard is relaxed.
 
 Three new native GPU views show a staged ward cutaway and its fittings. Every possible
 new fixture, door and pane state, and every incubator facing, must resolve custom ward
