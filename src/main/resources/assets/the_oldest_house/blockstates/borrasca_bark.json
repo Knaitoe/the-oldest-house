@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "stage=0": {
+      "model": "the_oldest_house:block/borrasca_bark_0"
+    },
+    "stage=1": {
+      "model": "the_oldest_house:block/borrasca_bark_1"
+    },
+    "stage=2": {
+      "model": "the_oldest_house:block/borrasca_bark_2"
+    },
+    "stage=3": {
+      "model": "the_oldest_house:block/borrasca_bark_3"
+    },
+    "stage=4": {
+      "model": "the_oldest_house:block/borrasca_bark_4"
+    }
+  }
+}

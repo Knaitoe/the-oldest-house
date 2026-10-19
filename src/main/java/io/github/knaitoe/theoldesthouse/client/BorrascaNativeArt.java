@@ -10,6 +10,7 @@ import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.blockentity.*;
 import net.minecraft.client.renderer.entity.*;
+import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -23,14 +24,22 @@ public final class BorrascaNativeArt {
     public static final ModelLayerLocation CAST=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"borrasca_cast"),"main");
     private BorrascaNativeArt(){}
     @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions e){e.registerLayerDefinition(CAST,()->LayerDefinition.create(HumanoidModel.createMesh(CubeDeformation.NONE,0),64,64));}
-    @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(BorrascaRegistry.MACHINE_ENTITY.get(),MachineRenderer::new);}
-    public static final class CastRenderer extends MobRenderer<LiteraryActor,CastModel>{public CastRenderer(EntityRendererProvider.Context c){super(c,new CastModel(c.bakeLayer(CAST)),.25F);}@Override public ResourceLocation getTextureLocation(LiteraryActor a){return ATLAS;}}
-    public static final class CastModel extends HumanoidModel<LiteraryActor>{private int person;public CastModel(ModelPart root){super(root);}
-        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){HumanoidMotion.reset(this);super.setupAnim(a,walk,amount,age,yaw,pitch);person=Math.max(0,Math.min(3,a.role()-LiteraryActor.BORRASCA_KYLE));var motion=HumanoidMotion.sample(a,age-a.tickCount);HumanoidMotion.gait(this,motion.phase(),motion.amount(),motion.running());body.xRot+=.015F*(float)Math.sin(age*.055F+a.getId());HumanoidMotion.connect(this);}
+    @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(BorrascaRegistry.MACHINE_ENTITY.get(),MachineRenderer::new);e.registerBlockEntityRenderer(BorrascaRegistry.CARVING_ENTITY.get(),BorrascaCarvingRenderer::new);}
+    public static final class CastRenderer extends MobRenderer<LiteraryActor,CastModel>{public CastRenderer(EntityRendererProvider.Context c){super(c,new CastModel(c.bakeLayer(CAST)),.25F);addLayer(new ItemInHandLayer<>(this,c.getItemInHandRenderer()));}@Override public ResourceLocation getTextureLocation(LiteraryActor a){return ATLAS;}@Override protected boolean shouldShowName(LiteraryActor a){return false;}}
+    public static final class CastModel extends HumanoidModel<LiteraryActor>{private int person;private boolean worker;public CastModel(ModelPart root){super(root);}
+        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){HumanoidMotion.reset(this);super.setupAnim(a,walk,amount,age,yaw,pitch);person=Math.max(0,Math.min(3,a.role()-LiteraryActor.BORRASCA_KYLE));worker=a.phase()>=BorrascaStory.WORKER;var motion=HumanoidMotion.sample(a,age-a.tickCount);HumanoidMotion.gait(this,motion.phase(),motion.amount(),motion.running());body.xRot+=.015F*(float)Math.sin(age*.055F+a.getId());
+            switch(a.gesture()){
+                case 1->{rightArm.xRot=-2.1F;rightArm.zRot=-.25F;head.xRot+=.15F;}
+                case 2->{rightArm.xRot=-1.4F;rightArm.yRot=-.25F;}
+                case 3->{body.yRot=-.15F;head.xRot=.5F;leftArm.xRot=-1.1F;rightArm.xRot=-1.3F+.18F*(float)Math.sin(age*.5F);}
+                case 4->{rightArm.xRot=a.role()==LiteraryActor.BORRASCA_SHERIFF?-1.35F:-1.1F;rightArm.zRot=-.1F;}
+                case 5->{body.xRot=.42F;leftLeg.xRot=-.3F;rightLeg.xRot=-.3F;leftArm.xRot=-.35F;rightArm.xRot=-.35F;head.xRot=-.1F;}
+                default->{}
+            }HumanoidMotion.connect(this);}
         public void preview(int person,float age,float stride){HumanoidMotion.reset(this);this.person=person;HumanoidMotion.gait(this,age*.22F,stride,false);head.yRot=.22F*(float)Math.sin(age*.02F);HumanoidMotion.connect(this);}
         @Override public void renderToBuffer(PoseStack p,VertexConsumer out,int light,int overlay,int colour){
             joint(head,p,()->{cube(p,out,-4,-8,-4,4,0,4,10,light,overlay,colour);cube(p,out,-4.06F,-8.08F,-3.98F,4.06F,person==1?2:-3,4.08F,16+person,light,overlay,colour);quad(p,out,new float[][]{{-4,-8,-4.09F},{4,-8,-4.09F},{4,0,-4.09F},{-4,0,-4.09F}},person,0,0,-1,light,overlay,colour);});
-            joint(body,p,()->cube(p,out,-4.2F,0,-2.1F,4.2F,12,2.1F,4+person,light,overlay,colour));
+            joint(body,p,()->cube(p,out,-4.2F,0,-2.1F,4.2F,12,2.1F,worker?13:4+person,light,overlay,colour));
             joint(rightArm,p,()->{cube(p,out,-3.05F,-2,-2,1.05F,7,2,4+person,light,overlay,colour);cube(p,out,-3,7,-2,1,10,2,10,light,overlay,colour);});
             joint(leftArm,p,()->{cube(p,out,-1.05F,-2,-2,3.05F,7,2,4+person,light,overlay,colour);cube(p,out,-1,7,-2,3,10,2,10,light,overlay,colour);});
             int trousers=person==0||person==3?8:9;for(var leg:new ModelPart[]{rightLeg,leftLeg})joint(leg,p,()->{cube(p,out,-2,0,-2,2,10,2,trousers,light,overlay,colour);cube(p,out,-2.06F,10,-2.6F,2.06F,12,2.05F,11,light,overlay,colour);});

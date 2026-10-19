@@ -1416,5 +1416,41 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.phone.his_ring"
+  },
+  "borrasca.triple_chime": {
+    "subtitle": "subtitles.the_oldest_house.borrasca.triple_chime",
+    "sounds": [
+      {
+        "name": "the_oldest_house:borrasca/triple_chime",
+        "attenuation_distance": 256
+      }
+    ]
+  },
+  "borrasca.carve": {
+    "subtitle": "subtitles.the_oldest_house.borrasca.carve",
+    "sounds": [
+      {
+        "name": "the_oldest_house:borrasca/carve",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "borrasca.breaker": {
+    "subtitle": "subtitles.the_oldest_house.borrasca.breaker",
+    "sounds": [
+      {
+        "name": "the_oldest_house:borrasca/breaker",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "borrasca.chain": {
+    "subtitle": "subtitles.the_oldest_house.borrasca.chain",
+    "sounds": [
+      {
+        "name": "the_oldest_house:borrasca/chain",
+        "attenuation_distance": 24
+      }
+    ]
   }
 }

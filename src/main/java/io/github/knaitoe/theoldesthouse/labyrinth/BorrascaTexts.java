@@ -1,26 +1,33 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.house.HouseWriting;
-import java.util.List;
+import java.util.*;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 
-/** Newly written adaptation documents, not extracted story prose. Exploitation is never depicted or simulated. */
+/** Original writing. The childhood legend withholds the cause; the final form records ordinary work. */
 public final class BorrascaTexts {
     private BorrascaTexts(){}
-    private static ItemStack book(String title,String author,String... pages){var fitted=new java.util.ArrayList<String>();for(String original:pages){var page=new StringBuilder();for(String word:original.split("(?<=\\s)")){if(page.length()+word.length()>145){fitted.add(page.toString().strip());page.setLength(0);}page.append(word);}if(!page.isEmpty())fitted.add(page.toString().strip());}return HouseWriting.book(title,author,HouseWriting.WritingStyle.WILL,fitted);}
-    public static ItemStack accountBook(String reader){return book("The names brought back",reader,account());}
-    public static ItemStack accountBook(String reader,net.minecraft.nbt.CompoundTag own){String text=account();if(own.getBoolean("PowerOff"))text=text.replace("The sound had not changed. What I allowed it to mean had.","I stopped the motor. I could no longer pretend I had not known what I was hearing.");return book("The names brought back",reader,text);}
-    public static ItemStack source(){return book("A place kept at the tree","Drisking",
-        "CONTENT NOTE\n\nThis investigation concerns abduction, sexual violence, forced pregnancy and death. These events remain off-screen. No assault is shown or heard.\n\nThe way back stays open. You may leave at any point.",
-        "Kyle and Kimber said they would wait by the diner. There is a platform in the three trees beyond the last house.\n\nWhen the sound comes from the ridge, everyone in town seems to know what to call it. Nobody agrees about what makes it.");}
+    private static ItemStack book(String title,String author,String... pages){
+        var fitted=new ArrayList<String>();for(String original:pages){var page=new StringBuilder();for(String word:original.split("(?<=\\s)")){if(page.length()+word.length()>145){fitted.add(page.toString().strip());page.setLength(0);}page.append(word);}if(!page.isEmpty())fitted.add(page.toString().strip());}
+        return HouseWriting.book(title,author,HouseWriting.WritingStyle.WILL,fitted);
+    }
+    public static ItemStack source(){return book("A note at the trailhead","The House",
+        "CONTENT NOTE\n\nAbduction, coercion, sexual violence and death. These themes remain off-screen. No assault is shown or heard.",
+        "The second visit begins an investigation into a child's disappearance. You may leave through the House door at any point. Leaving early does not finish a visit.");}
     public static ItemStack document(String key){return switch(key){
-        case "Bedroom"->book("A note left on a desk","W.","The window sticks unless you lift it at the left corner. I meant to fix it before winter.\n\nMy bag is under the bed. If I leave, I take that bag. Ask them why it is still here.");
-        case "Register"->book("The public register","County records","Missing: Whitney. Last address: the house beside the diner. Status: left voluntarily.\n\nThe entry was closed before the family signed it. The officer's initials appear on three earlier closures.","The old mineral survey is in the lower drawer. A road marked as abandoned still receives maintenance payments.\n\nThe payments go through Prescott's company. The dates continue after the mine's closure.");
-        case "Map"->book("West rim mineral survey","County surveyor","Drisking. Diner opposite county records. Three-tree clearing beyond the last street.\n\nFrom the clearing, take the rising switchback north. The old mine sign stands below the service road. The first dry workings are under the west rim.","The survey marks a second descent behind the refinery. It joins the old logging path and returns west of the three trees.\n\nThe office's fire release opens that descent. Keep low under the service pipe.");
-        case "Service"->book("Maintenance docket","Prescott Ore Services","The mine is recorded as closed. The motor bearings were replaced last month. The night crew's fuel is charged to the county.\n\nD-417: green service pickup. Driver authorised by the sheriff's office.","The conical hopper feeds a crushing drum, not an ore lift. The long metallic rasp is the same sound heard in town.");
-        case "Evidence"->book("The unclosed register","Refinery office","The names in this book belong to missing adult women. They were confined here. Pregnancies were forced on them; infants were sold through private arrangements. The entries call people stock and payments maintenance.\n\nThe county closures carry the same names.","The sheriff approved transport. Prescott received payment. A separate disposal account records the crusher running after deaths.\n\nThe dates match the sound heard from the treehouse.","These are records of crimes, not ownership papers. No person named here is cargo, a prize or a debt.\n\nTake this original if you can. The fire release is behind the west office. The logging path returns to town. Do not stop at the sheriff's desk.");
-        case "Testimony"->book("A statement never filed","An adult survivor","I asked the officer to take me home. He called the office instead.\n\nPlease write that I asked. Please write that the door locked from his side. I was not lost. I had not agreed to stay.","Do not put the story about the mountain beside my name. It made people afraid of the wrong thing.\n\nWe needed somebody to believe us while we were still here.");
+        case "Evidence","Register","Service"->book("Ridge property transfer","County property office",
+            "COUNTY PROPERTY\nRIDGE DEPOT\n\nReceipt: 41\nAuthority: Sheriff's office\nVehicle: County 17\nTransport: Prescott Ore Services\nReceived by: Prescott",
+            "Tag: 41-A\nName: KIMBER\nCollection: Marker 3\nContents: teal pack; stitched name patch; brass compass.\nCase: closed.\nRelease: none.\nStore: sorting table.",
+            "Transfer: D-417\nNight access: authorized\nFuel account: county maintenance\nReceived: Prescott\nOffice approval: filed\n\nNext collection: 42-B\nName: Mara\nRelease: none.");
+        case "Map"->book("Pine trail notice","County trails","Triple Tree: Marker 1.\n\nThe second marker is the end of the public walk.\n\nStay on the marked trail. Return before dark.");
+        case "Bedroom"->book("Property tag 41-A","County property office","KIMBER\n\nTeal pack. Red tape on brass case. Name stitched inside flap.\n\nReceived with the other effects.");
+        case "Testimony"->book("Receiving copy","Prescott Ore Services","Receipt 41 acknowledged.\n\nCounty transport returned empty.\n\nThe original remains at the sorting table.");
         default->throw new IllegalArgumentException(key);
     };}
-    public static String account(){return "I climbed to the place they kept for a friend. I returned to an empty chair, then to records closed before anyone had searched. I followed the sound to a machine run by people the town already knew. I read the survivor's statement and took the original register out by the service descent. The sound had not changed. What I allowed it to mean had. I am taking the names back with me.";}
+    public static ItemStack accountBook(String reader){return book("The name beside mine",reader,account());}
+    public static ItemStack accountBook(String reader,CompoundTag own){return book("The name beside mine",reader,account(),own.getBoolean("RestoredName")?restored():"I carried her name out in the cloth.");}
+    public static String account(){return "We cut our names into the three trees. She was beside me when the light came. I came back grown, and someone had freshly cut her name away. The Sheriff knew which marker we had reached. At the ridge, his office's papers and Prescott's signature lay beside her things. I stopped the machine. The wind was still in the pines.";}
+    public static String restored(){return "I cut her name beside mine again. The gouges were still there.";}
+    public static String witness(CompoundTag own){return WitnessAccount.Story.BORRASCA.text+(own.getBoolean("NameReturned")?" "+restored():"");}
 }
