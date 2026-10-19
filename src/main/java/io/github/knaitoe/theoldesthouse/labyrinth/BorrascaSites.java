@@ -39,7 +39,7 @@ public final class BorrascaSites {
     public static @Nullable LabyrinthData.Door prepareEntry(ServerPlayer p){
         var d=LabyrinthData.get(p.server);if(store!=d){clear();store=d;}var t=site(p.server,p.getUUID());
         if(!t.contains("Index")){var world=d.stateEntry(SITES,"World");int index=world.getInt("NextIndex");if(index>=32000)return null;t.putInt("Index",index);world.putInt("NextIndex",index+1);d.setStateEntry(SITES,"World",world);d.setStateEntry(SITES,p.getUUID().toString(),t);}
-        if(t.getBoolean("Built"))return entry(p);if(!p.getUUID().equals(building))waiting.add(p.getUUID());return null;
+        if(t.getBoolean("Built"))return BorrascaCast.prepareNext(p)?entry(p):null;if(!p.getUUID().equals(building))waiting.add(p.getUUID());return null;
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post event){advance(event.getServer());}
     public static void advance(MinecraftServer server){
