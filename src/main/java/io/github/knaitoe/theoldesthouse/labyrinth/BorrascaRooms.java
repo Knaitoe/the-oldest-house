@@ -11,6 +11,7 @@ public final class BorrascaRooms {
     public static final BlockPos SOURCE=new BlockPos(3,1,-5),ACCOUNT=new BlockPos(-3,1,-5),CARVING=new BlockPos(0,1,-98);
     public static final BlockPos MARKER_ONE=new BlockPos(5,0,-76),MARKER_TWO=new BlockPos(7,4,-123),MARKER_THREE=new BlockPos(5,9,-148),MARKER_FOUR=new BlockPos(5,12,-165);
     public static final BlockPos SHERIFF=new BlockPos(2,4,-122),TAPE=new BlockPos(2,5,-125),TAKING=new BlockPos(-2,9,-148),DROP=new BlockPos(1,10,-151),HIDE=new BlockPos(-12,9,-151);
+    public static final BlockPos SHELTER_ONE=new BlockPos(3,2,-114),SHELTER_TWO=new BlockPos(-2,6,-131);
     public static final BlockPos GATE=new BlockPos(0,12,-169),LOCK=new BlockPos(0,13,-168),PACK=new BlockPos(-24,13,-195),PATCH=PACK;
     public static final BlockPos EVIDENCE=new BlockPos(-26,13,-195),POWER=new BlockPos(6,12,-183),RELEASE=new BlockPos(-15,12,-205),MACHINE=new BlockPos(0,12,-189),FACTORY_DOOR=new BlockPos(-17,12,-169),LAMP=new BlockPos(0,16,-184);
     public static final BlockPos[] GULLY={new BlockPos(-9,0,-97),new BlockPos(-15,0,-107),new BlockPos(-16,2,-117),new BlockPos(-13,4,-128),new BlockPos(-8,6,-137),new BlockPos(-2,8,-143)};
@@ -35,6 +36,7 @@ public final class BorrascaRooms {
         box(l,b,-44,0,-220,44,23,-217,Blocks.STONE);
         treehouse(l,b);gully(l,b);compound(l,b);serviceDescent(l,b);
         marker(l,b,MARKER_ONE,BorrascaFittingBlock.Kind.MARKER_ONE);marker(l,b,MARKER_TWO,BorrascaFittingBlock.Kind.MARKER_TWO);marker(l,b,MARKER_THREE,BorrascaFittingBlock.Kind.MARKER_THREE);marker(l,b,MARKER_FOUR,BorrascaFittingBlock.Kind.MARKER_FOUR);
+        path(l,b,trail(-125),SHELTER_TWO);path(l,b,SHELTER_TWO,new BlockPos(1,6,-131));path(l,b,new BlockPos(1,6,-131),trail(-141));
         for(var at:new BlockPos[]{new BlockPos(1,2,-115),new BlockPos(-5,6,-132)})box(l,b,at.getX(),at.getY(),at.getZ(),at.getX()+4,at.getY(),at.getZ(),Blocks.SPRUCE_LOG);
         box(l,b,-14,8,-154,7,8,-144,Blocks.RED_TERRACOTTA);box(l,b,-14,9,-154,7,13,-144,Blocks.AIR);box(l,b,-9,9,-154,-7,14,-150,Blocks.SPRUCE_LOG);box(l,b,-10,9,-152,-8,12,-149,Blocks.MOSSY_COBBLESTONE);
         box(l,b,-15,8,-157,-13,14,-146,Blocks.STONE);box(l,b,-16,8,-157,-12,8,-148,Blocks.RED_TERRACOTTA);
