@@ -50,7 +50,7 @@ public final class BorrascaRooms {
         NovelRooms.safeApproach(l,b);LabyrinthBuilder.entrance(l,b,Blocks.SPRUCE_PLANKS.defaultBlockState(),Blocks.STONE_BRICKS.defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState());NovelRooms.door(l,b.offset(0,0,1),Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);
     }
     private static void treehouse(ServerLevel l,BlockPos b){
-        box(l,b,-8,-1,-105,7,-1,-82,Blocks.PODZOL);box(l,b,-8,0,-105,7,16,-82,Blocks.AIR);for(int x:new int[]{-3,0,4})tree(l,b,x,-100+Math.floorMod(x,3),0,17);
+        box(l,b,-8,-1,-104,7,-1,-82,Blocks.PODZOL);box(l,b,-8,0,-104,7,16,-82,Blocks.AIR);for(int x:new int[]{-3,0,4})tree(l,b,x,-100+Math.floorMod(x,3),0,17);
         box(l,b,-5,5,-100,5,5,-88,Blocks.SPRUCE_PLANKS);for(int x:new int[]{-5,5})for(int z:new int[]{-100,-89})box(l,b,x,0,z,x,5,z,Blocks.SPRUCE_LOG);
         for(int x:new int[]{-5,5})box(l,b,x,6,-100,x,8,-89,Blocks.SPRUCE_FENCE);box(l,b,-5,6,-100,5,8,-100,Blocks.SPRUCE_PLANKS);box(l,b,-5,10,-101,5,10,-88,Blocks.SPRUCE_SLAB);
         box(l,b,3,-1,-88,3,-1,-86,Blocks.SPRUCE_PLANKS);box(l,b,3,0,-89,3,7,-89,Blocks.SPRUCE_LOG);
