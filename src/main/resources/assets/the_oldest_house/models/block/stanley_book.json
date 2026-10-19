@@ -1,0 +1,76 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "b": "minecraft:block/brown_wool",
+  "l": "the_oldest_house:block/stanley/book",
+  "p": "the_oldest_house:block/stanley/card",
+  "particle": "the_oldest_house:block/stanley/book"
+ },
+ "elements": [
+  {
+   "from": [
+    3,
+    0,
+    4
+   ],
+   "to": [
+    13,
+    1,
+    12
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b"
+    },
+    "south": {
+     "texture": "#b"
+    },
+    "east": {
+     "texture": "#b"
+    },
+    "west": {
+     "texture": "#b"
+    },
+    "up": {
+     "texture": "#l"
+    },
+    "down": {
+     "texture": "#b"
+    }
+   }
+  },
+  {
+   "from": [
+    3.5,
+    1,
+    4.5
+   ],
+   "to": [
+    12.5,
+    1.5,
+    11.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#p"
+    },
+    "south": {
+     "texture": "#p"
+    },
+    "east": {
+     "texture": "#p"
+    },
+    "west": {
+     "texture": "#p"
+    },
+    "up": {
+     "texture": "#l"
+    },
+    "down": {
+     "texture": "#p"
+    }
+   }
+  }
+ ]
+}

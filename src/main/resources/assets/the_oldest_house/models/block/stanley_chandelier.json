@@ -1,0 +1,260 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "b": "the_oldest_house:block/stanley/brass16",
+  "k": "the_oldest_house:block/stanley/crystal",
+  "particle": "the_oldest_house:block/stanley/crystal"
+ },
+ "elements": [
+  {
+   "from": [
+    7.5,
+    10,
+    7.5
+   ],
+   "to": [
+    8.5,
+    16,
+    8.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b"
+    },
+    "south": {
+     "texture": "#b"
+    },
+    "east": {
+     "texture": "#b"
+    },
+    "west": {
+     "texture": "#b"
+    },
+    "up": {
+     "texture": "#b"
+    },
+    "down": {
+     "texture": "#b"
+    }
+   }
+  },
+  {
+   "from": [
+    3,
+    8,
+    3
+   ],
+   "to": [
+    13,
+    10,
+    13
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b"
+    },
+    "south": {
+     "texture": "#b"
+    },
+    "east": {
+     "texture": "#b"
+    },
+    "west": {
+     "texture": "#b"
+    },
+    "up": {
+     "texture": "#k"
+    },
+    "down": {
+     "texture": "#k"
+    }
+   }
+  },
+  {
+   "from": [
+    3,
+    3,
+    7
+   ],
+   "to": [
+    5,
+    8,
+    9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#k"
+    },
+    "south": {
+     "texture": "#k"
+    },
+    "east": {
+     "texture": "#k"
+    },
+    "west": {
+     "texture": "#k"
+    },
+    "up": {
+     "texture": "#k"
+    },
+    "down": {
+     "texture": "#k"
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  },
+  {
+   "from": [
+    11,
+    3,
+    7
+   ],
+   "to": [
+    13,
+    8,
+    9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#k"
+    },
+    "south": {
+     "texture": "#k"
+    },
+    "east": {
+     "texture": "#k"
+    },
+    "west": {
+     "texture": "#k"
+    },
+    "up": {
+     "texture": "#k"
+    },
+    "down": {
+     "texture": "#k"
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  },
+  {
+   "from": [
+    7,
+    3,
+    3
+   ],
+   "to": [
+    9,
+    8,
+    5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#k"
+    },
+    "south": {
+     "texture": "#k"
+    },
+    "east": {
+     "texture": "#k"
+    },
+    "west": {
+     "texture": "#k"
+    },
+    "up": {
+     "texture": "#k"
+    },
+    "down": {
+     "texture": "#k"
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  },
+  {
+   "from": [
+    7,
+    3,
+    11
+   ],
+   "to": [
+    9,
+    8,
+    13
+   ],
+   "faces": {
+    "north": {
+     "texture": "#k"
+    },
+    "south": {
+     "texture": "#k"
+    },
+    "east": {
+     "texture": "#k"
+    },
+    "west": {
+     "texture": "#k"
+    },
+    "up": {
+     "texture": "#k"
+    },
+    "down": {
+     "texture": "#k"
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  },
+  {
+   "from": [
+    6,
+    2,
+    6
+   ],
+   "to": [
+    10,
+    8,
+    10
+   ],
+   "faces": {
+    "north": {
+     "texture": "#k"
+    },
+    "south": {
+     "texture": "#k"
+    },
+    "east": {
+     "texture": "#k"
+    },
+    "west": {
+     "texture": "#k"
+    },
+    "up": {
+     "texture": "#k"
+    },
+    "down": {
+     "texture": "#k"
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ]
+}

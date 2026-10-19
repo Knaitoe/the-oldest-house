@@ -1,0 +1,115 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "c": "the_oldest_house:block/stanley/cloth",
+  "t": "the_oldest_house:block/stanley/setting_1",
+  "w": "the_oldest_house:block/stanley/walnut16",
+  "k": "minecraft:block/white_candle",
+  "f": "minecraft:block/fire_0",
+  "particle": "the_oldest_house:block/stanley/cloth"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    16,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#c"
+    },
+    "south": {
+     "texture": "#c"
+    },
+    "east": {
+     "texture": "#c"
+    },
+    "west": {
+     "texture": "#c"
+    },
+    "up": {
+     "texture": "#t"
+    },
+    "down": {
+     "texture": "#w"
+    }
+   }
+  },
+  {
+   "from": [
+    7,
+    16,
+    7
+   ],
+   "to": [
+    9,
+    19,
+    9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#k"
+    },
+    "south": {
+     "texture": "#k"
+    },
+    "east": {
+     "texture": "#k"
+    },
+    "west": {
+     "texture": "#k"
+    },
+    "up": {
+     "texture": "#k"
+    },
+    "down": {
+     "texture": "#k"
+    }
+   }
+  },
+  {
+   "from": [
+    7.5,
+    19,
+    7.5
+   ],
+   "to": [
+    8.5,
+    20,
+    8.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#f"
+    },
+    "south": {
+     "texture": "#f"
+    },
+    "east": {
+     "texture": "#f"
+    },
+    "west": {
+     "texture": "#f"
+    },
+    "up": {
+     "texture": "#f"
+    },
+    "down": {
+     "texture": "#f"
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ]
+}

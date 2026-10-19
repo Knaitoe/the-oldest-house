@@ -122,6 +122,9 @@ public final class ArchitectureTests {
             export(HouseTestLevel.get(server,HouseDimensions.OUTSIDE),LabyrinthPlaces.base(origin,LabyrinthPlace.LAKE_HOUSE),LabyrinthPlace.LAKE_HOUSE,"lake_house_cutaway");
             for(String view:List.of("borrasca_treehouse","borrasca_refinery"))export(HouseTestLevel.get(server,HouseDimensions.OUTSIDE),LabyrinthPlaces.base(origin,LabyrinthPlace.BORRASCA),LabyrinthPlace.BORRASCA,view);
             elkStages(h,HouseTestLevel.get(server,HouseDimensions.OUTSIDE),LabyrinthPlaces.base(origin,LabyrinthPlace.ELK_CARCASSES));
+            // The hotel (0.4.105) is built whole: its three floors, and the grounds with the rear wall they see.
+            export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL);
+            export(HouseTestLevel.get(server,HouseDimensions.OUTSIDE),LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL_GROUNDS),LabyrinthPlace.HOTEL_GROUNDS);
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL,"hotel_upstairs");
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL,"hotel_basement");
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.GHOSTS_SET),LabyrinthPlace.GHOSTS_SET,"ghosts_upstairs");
@@ -133,7 +136,8 @@ public final class ArchitectureTests {
             literaryRoutes(h,interior,LabyrinthPlaces.base(origin,LabyrinthPlace.WINCHESTER));
             var newCamp=LabyrinthPlaces.base(origin,LabyrinthPlace.CAMP_BLOOD);var woods=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);
             for(int x:new int[]{-20,20})for(int z:new int[]{-26,-57,-83})for(var at:BlockPos.betweenClosed(newCamp.offset(x-7,0,z-6),newCamp.offset(x+7,10,z+6)))h.assertTrue(!woods.getBlockState(at).is(Blocks.SPRUCE_LEAVES)&&!woods.getBlockState(at).is(Blocks.SPRUCE_LOG),"the camp's forest cannot grow through a furnished cabin or roof");
-            h.assertTrue(dressed==23&&props>=94,"all twenty-three authored scenes/camps receive supported detail; the copied Red Room stays personal");
+            // The hotel and its grounds (0.4.105) are built whole by HotelRooms, outside the generic dressing.
+            h.assertTrue(dressed==21&&props>=80,"all twenty-one generically dressed scenes/camps receive supported detail; the copied Red Room stays personal: "+dressed+" / "+props);
             shellsAndEdges(h,server,origin,data);
             composition(h,server,origin,data);
             frontsAndInteriors(h,server,origin,data);
@@ -390,9 +394,10 @@ public final class ArchitectureTests {
         if(scene==LabyrinthPlace.WHALE)maxY=9;
         if(scene==LabyrinthPlace.PLAIN)minZ=-105;
         if(LakeLandscape.isLake(scene))maxY=16;
-        if(scene==LabyrinthPlace.HOTEL)maxY=3;
-        if(name.equals("hotel_upstairs")){minY=4;maxY=8;}
-        if(name.equals("hotel_basement")){minY=-5;maxY=-2;}
+        if(scene==LabyrinthPlace.HOTEL){maxX=28;maxY=4;}
+        if(name.equals("hotel_upstairs")){minY=5;maxY=8;}
+        if(name.equals("hotel_basement")){minX=-12;maxX=13;minZ=-67;maxZ=-55;minY=-5;maxY=-2;}
+        if(name.equals("hotel_grounds")){minX=-28;maxX=28;minZ=-69;maxZ=2;minY=-1;maxY=14;}
         if(HallVariations.added(scene))maxY=HallVariations.domestic(scene)?4:scene==LabyrinthPlace.STONE_BEND?5:6;
         if(scene==LabyrinthPlace.BLIND_STRETCH)maxY=2;if(LiteraryRooms.isLiterary(scene)){minY=Math.max(scene.room().minY(),-6);maxY=NovelRooms.outside(scene)?Math.min(7,scene.room().maxY()):Math.min(4,scene.room().maxY());if(scene==LabyrinthPlace.WINCHESTER)maxY=10;}
         if(scene==LabyrinthPlace.GHOSTS_SET){minY=-1;maxY=3;}
@@ -415,8 +420,6 @@ public final class ArchitectureTests {
             if(!exterior&&y>=0&&(x==maxX||z==maxZ||(scene==LabyrinthPlace.WALLPAPER_NURSERY&&x==9)||(scene==LabyrinthPlace.SEANCE&&z==-7&&Math.abs(x)>3)||(scene==LabyrinthPlace.WALLPAPER_NURSERY&&z==-6&&Math.abs(x)>3)))continue;
             if(y>=0&&((scene==LabyrinthPlace.WHALE&&x==13)||(scene==LabyrinthPlace.HOSPITAL&&x==9)
                     ||(scene==LabyrinthPlace.KAREN_ROOM&&x==9)||(scene==LabyrinthPlace.ZAMPANO_COURTYARD&&x==12&&z<=-19)))continue;
-            if(name.equals("hotel_upstairs")&&y>=5&&(x==10||z==-6))continue;
-            if(scene==LabyrinthPlace.HOTEL&&name.equals("hotel")&&y>=0&&(x==12||z==-4))continue;
             if(!exterior&&y>2&&s.is(Blocks.BIRCH_PLANKS))continue;
             // The institute's ward ceiling comes off; over the dayroom it is the attics' floor and stays.
             if(!exterior&&scene==LabyrinthPlace.WHALE&&y==5&&z>-25&&s.is(Blocks.SMOOTH_STONE))continue;

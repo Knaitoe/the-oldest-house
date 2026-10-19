@@ -1,0 +1,43 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "w": "the_oldest_house:block/stanley/walnut16",
+  "s": "the_oldest_house:block/stanley/switchboard",
+  "particle": "the_oldest_house:block/stanley/switchboard"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    12
+   ],
+   "to": [
+    16,
+    16,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#s"
+    },
+    "south": {
+     "texture": "#w"
+    },
+    "east": {
+     "texture": "#w"
+    },
+    "west": {
+     "texture": "#w"
+    },
+    "up": {
+     "texture": "#w"
+    },
+    "down": {
+     "texture": "#w"
+    }
+   }
+  }
+ ]
+}

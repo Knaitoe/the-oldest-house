@@ -473,15 +473,25 @@ These three are covered under Core characters.
 
 ## Vignettes: the hotel
 
-One mechanic runs the whole hotel, the tab: everything is free, and the house collects later, at a moment you don't choose. The next time you open any chest, something is missing. The hotel blends the Stanley's real history with the Overlook's fiction.
+One mechanic runs the whole hotel, the account: everything is free and goes on it. The next time you open any chest, something is missing; the desk holds it. Since 0.4.105 the hotel is one building over three floors, its doors joined to where they lead, and its story is the closing account, which comes due on the third night and closes one of three ways. The hotel blends the Stanley's real history with the Overlook's fiction. Canon: [the hotel, restructured](STANLEY_RESTRUCTURE_0_4_105.md).
+
+### The building
+
+*Map*
+
+- Ground floor: the lobby with the front desk (bell, register, key rack, the porter) and the grand stair; the gold bar; the manager's office behind the desk; the dining room with the table for two under 217's patched floor, its fire and the orchestra's empty dais; the ballroom two storeys high with the 1921 photograph and a bandstand; the kitchen, stores and laundry; and across the back the service corridor to the caretaker's rooms, the staff entrance, the back porch, the workshop and the stair down to the boiler.
+- Upstairs: the guest corridor, built like the numbered corridor it runs into; Room 217 and its bathroom; the fire hose across from 217; the linen room; the caretaker's family's rooms, the beds made and the children's trunks at their feet.
+- Windows on the outer walls show night and snow. Each night a guest stays, the snow stands higher at their own windows: at the sill, halfway up, above the latch, nearly to the top.
+- The back door opens on the grounds, and the grounds see that same wall from outside. The guest corridor's end door opens into the numbered corridor, where the rooms begin again; walking back against the numbers returns you. The numbered corridor's 217 opens into the hotel in front of 217's own door. The staff entrance is a way out.
+- Assets: one hotel block of siding, roof, papers, tiles, windows (room side and outside) and fittings.
 
 ### Arrival and the dining room
 
-*First visit · verb: taking the seat*
+*Every night · verb: taking the seat*
 
-- Closing night of the season. Every table has its chairs stacked on top except one set for two. The orchestra plays to empty chairs, and the front doors lock behind you.
-- Sit, and food appears on your plate. Eating it goes on the tab.
-- Assets: orchestra audio, food props.
+- Closing night of the season, every night. Every table is cleared but one, set for two. The orchestra plays to empty chairs.
+- Sit, and dinner is served at your place. Eating it goes on the account. The other place stays laid.
+- Assets: orchestra audio, the table for two (laid, served, cleared).
 
 ### The hallway
 
@@ -489,7 +499,6 @@ One mechanic runs the whole hotel, the tab: everything is free, and the house co
 
 - Seamless loops, with room numbers that climb and repeat. The exit rule: walk against the rising numbers.
 - Carpet runners over bare wood make the player's footsteps fall into a trike's rhythm.
-- An office window shows mountains, a painted diorama behind glass.
 - Assets: an original loud carpet pattern, wallpaper textures, number plaques.
 
 ### The fire hose
@@ -507,14 +516,14 @@ One mechanic runs the whole hotel, the tab: everything is free, and the house co
 - You wake with your inventory neatly sorted, the candles snuffed, and every torch you placed returned to you, stacked.
 - On later visits she starts putting your things away in 217's drawers, and you have to come back for them.
 - The door reads 217 until you look back, then 237. The patched floorboards drop you into the dining room, onto the table set for two.
-- The chambermaid's housekeeping log runs from 1911 onward.
-- Assets: patched-floor texture.
+- The chambermaid's housekeeping card runs from 1911 onward.
+- Assets: patched-floor texture, rose paper, the tub.
 
 ### The bar
 
 *Multi-visit · verb: drinking on the house*
 
-- A lone bartender. Free drinks heal you and go on the tab.
+- A lone bartender. Free drinks heal you and go on the account.
 - Strangers along the bar retell the player's real deaths, all wrong, and tell different stories about a scarred man.
 - Assets: NPC skins, drink textures.
 
@@ -522,24 +531,24 @@ One mechanic runs the whole hotel, the tab: everything is free, and the house co
 
 *One-shot · verb: standing on the floor*
 
-- A piano plays in the empty room. Stand on the dance floor and ghost couples fill it around you.
-- A flash whites out the screen, and the old party photo on the wall now has your face in the front row.
+- A piano plays on the bandstand. Stand on the dance floor and ghost couples fill it around you.
+- A flash whites out the screen, and the 1921 photograph on the wall now has your face in the front row's empty place.
 - Assets: piano model and audio, a photo template that takes the face from the player's skin.
 
 ### The grounds
 
 *Multi-visit · verb: moving when unseen*
 
-- A snowbound hedge maze with the hotel's master key at the center. A client-side blizzard fog makes building up to see over it pointless.
-- Topiary animals made of leaf blocks change pose when you're not looking.
+- Behind the hotel: its rear wall, a terrace, the topiary walk, a snowbound hedge maze with the hotel's master key at the center, and the pet cemetery. A client-side blizzard fog makes building up to see over the maze pointless.
+- Topiary animals made of leaf blocks change pose when you're not looking; others are clipped in the drifts.
 - The pet cemetery gains a headstone with the name of each tamed pet the player loses.
-- Assets: optional headstone model. The topiary are groups of leaf blocks on display entities.
+- Assets: optional headstone model. The moving topiary are groups of leaf blocks on display entities.
 
 ### The caretaker's quarters
 
 *Multi-visit · verb: reading the log*
 
-- One caretaker's log: days sober, entries shrinking as the snow climbs the windows, and his family unmentioned after a certain date.
+- One caretaker's log: days sober, entries shrinking as the snow climbs the windows, and his family upstairs asking him to come up. He never goes upstairs; their rooms are empty and a note on their table says they kept his place.
 - A typewriter beside a manuscript of one sentence repeated.
 - Assets: typewriter model.
 
@@ -547,9 +556,18 @@ One mechanic runs the whole hotel, the tab: everything is free, and the house co
 
 *Chore · verb: maintenance*
 
-- The boiler starts running only once the player has found it. Its gauge climbs by in-game days, and a lever vents it.
+- The boiler starts running only once the player has found it. Its gauge climbs by in-game days, and a valve vents it.
 - Neglect it and it blasts. The room's contents burn, no blocks break, and the hotel goes cold: the dining room's fire goes out and 217's bed is unusable until it's restarted.
-- Assets: boiler model, gauge states, hiss audio.
+- Assets: boiler model, gauge states, valve and restart switch, hiss audio.
+
+### The closing account
+
+*Third night · verb: closing the account*
+
+- Each stay is a night. On the third the account is due at the desk, and the desk names three ways out of it. Each closes the hotel's story once, with its own line in the Witness account.
+- Settle: ring the bell; the porter takes what is owing from your pack, one thing for each place on the account, and the settled account is yours to read through. It needs something charged.
+- Sign the second place: if you are in the photograph, the register's blank second line takes your name, and you stay. The staff call you caretaker; the log and the typewriter go on in your name.
+- Walk out: with the master key from the maze, through the iron service door and out by the staff entrance before the account is presented. The hotel keeps whatever it holds of yours.
 
 ## Vignettes: haunted-house classics
 
@@ -852,7 +870,7 @@ First playable site in 0.4.11: [DROWNED_TOWN_0_4_11.md](DROWNED_TOWN_0_4_11.md).
 - Lake Witch costumes stand on armor stands across the beach. One is not a costume, and moves only when the player looks away. Reach the grass.
 - **0.4.103:** Proofrock's Halloween Lake Witch costume contest. Hank, the boy from the Shallows grown old, judges twelve numbered entrants, all dressed as her; the thirteenth has no number and moves only while no living reader can see her. He gives the ribbon to "the one down by the water", the lights go out, everyone crawls, and she hunts; the park's grass, reached with her in sight, is the way out. Canon: [COSTUME_NIGHT_0_4_103.md](COSTUME_NIGHT_0_4_103.md).
 - **0.4.104:** Winter Lake becomes the dare, the winter after the Shallows: Bud, Hank, Clay and Lonnie take the reader back out onto the frozen lake, and Hank gives them her ribbon to walk out to the hole where she went down. She is under the ice and goes to sound; snowballs draw her; under a noisy reader she breaks through and pulls them under. A hand takes the ribbon, the boys run, and the bank is the way out. Canon: [WINTER_LAKE_0_4_104.md](WINTER_LAKE_0_4_104.md).
-- **0.4.105:** the smaller fixes from the vignette review, and two owner requests: Floorboards gets a hatchet on a chopping block in its corner (no hint text; attempts on the board make no noise); account books are titled with prose place names; Elk Fan's Witness line matches its ending; moving at the Masque chime puts the reader back a room; Hide-and-Clap states its stakes before the blindfold; and Mr. Harrigan becomes three visits (alive, dead in his chair, his funeral at a funeral home built in the study's place) with a real actor for him and his mourners, and his phone gets a screen to call and text him (protocol 77). Then the storytelling batch (distinct turns for five rooms that reused the name reveal, rules out of characters' mouths, Holloway's honest reader, a written Confession count, no shared afterword, the Witness account in resolution order, personal begun-story weighting) and the lake house culvert's hand pushes. Then the larger storytelling fixes: endings that retold the night end on a reason or a past (Bly, Winchester, Wheel, the yacht's hides, and the Hotel and Drowned Town Witness lines), and Costume Night, Movie Night and Winter Lake carry the Indian Lake story forward (the ribbon's yearly return to Hank; the lake keeping the people she takes). Then a lake house polish: the half door counts only when leaving, the lit house needs no air, bubbles and steam show the way to the pool and the sauna, the figure puts on the black dress, and the upstairs and eaves are furnished. Then the thin rooms: Bly's Lady carries a reader in her path under and they lose their closet wait; the Masque's party is each reader's own; the old man tells his story for decoded names. Then both rooms are rebuilt whole with their own blocks and textures (Poe's winding, brazier-lit suite; Bly's manor floor and conservatory) and the old cabin gets a porch and a signal lamp. Canon: [SMALL_FIXES_0_4_105.md](SMALL_FIXES_0_4_105.md).
+- **0.4.105:** the smaller fixes from the vignette review, and two owner requests: Floorboards gets a hatchet on a chopping block in its corner (no hint text; attempts on the board make no noise); account books are titled with prose place names; Elk Fan's Witness line matches its ending; moving at the Masque chime puts the reader back a room; Hide-and-Clap states its stakes before the blindfold; and Mr. Harrigan becomes three visits (alive, dead in his chair, his funeral at a funeral home built in the study's place) with a real actor for him and his mourners, and his phone gets a screen to call and text him (protocol 77). Then the storytelling batch (distinct turns for five rooms that reused the name reveal, rules out of characters' mouths, Holloway's honest reader, a written Confession count, no shared afterword, the Witness account in resolution order, personal begun-story weighting) and the lake house culvert's hand pushes. Then the larger storytelling fixes: endings that retold the night end on a reason or a past (Bly, Winchester, Wheel, the yacht's hides, and the Hotel and Drowned Town Witness lines), and Costume Night, Movie Night and Winter Lake carry the Indian Lake story forward (the ribbon's yearly return to Hank; the lake keeping the people she takes). Then a lake house polish: the half door counts only when leaving, the lit house needs no air, bubbles and steam show the way to the pool and the sauna, the figure puts on the black dress, and the upstairs and eaves are furnished. Then the thin rooms: Bly's Lady carries a reader in her path under and they lose their closet wait; the Masque's party is each reader's own; the old man tells his story for decoded names. Then both rooms are rebuilt whole with their own blocks and textures (Poe's winding, brazier-lit suite; Bly's manor floor and conservatory) and the old cabin gets a porch and a signal lamp. Canon: [SMALL_FIXES_0_4_105.md](SMALL_FIXES_0_4_105.md). Then the hotel is restructured as one building over three floors, its back door, guest corridor and 217 joined to the grounds and the numbered corridor, its story the closing account due on the third night with three endings (settle, sign the second place, walk out); protocol 79. Canon: [STANLEY_RESTRUCTURE_0_4_105.md](STANLEY_RESTRUCTURE_0_4_105.md).
 
 ### Indian Lake: movie night
 

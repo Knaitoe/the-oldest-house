@@ -7,6 +7,7 @@ import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
 import io.github.knaitoe.theoldesthouse.labyrinth.CrayonDrawing;
 import io.github.knaitoe.theoldesthouse.labyrinth.Growl;
+import io.github.knaitoe.theoldesthouse.labyrinth.StanleyBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.HideAndClap;
 import io.github.knaitoe.theoldesthouse.labyrinth.HarriganPhoneItem;
 import io.github.knaitoe.theoldesthouse.labyrinth.HarriganVignette;
@@ -781,8 +782,9 @@ public final class LabyrinthTests {
 
         BlockPos hotelBase = helper.absolutePos(BlockPos.ZERO).offset(-340, 6, 40);
         BlockPos hotelPeriod = hotelBase.offset(LabyrinthLoops.periodOrigin(0));
-        helper.assertTrue(level.getBlockState(hotelPeriod.below()).is(HouseBlocks.HOTEL_CARPET.get()),
-                "the hotel has its authored carpet");
+        helper.assertTrue(level.getBlockState(hotelPeriod).is(HouseBlocks.HOTEL_CARPET.get())
+                        && StanleyBlock.is(level.getBlockState(hotelPeriod.below()), StanleyBlock.Kind.CEILING),
+                "the hotel has its authored carpet, laid on boards level with its doors");
         helper.assertTrue(level.getBlockState(hotelPeriod.offset(-2, 0, 0)).is(HouseBlocks.HOTEL_WAINSCOT.get()),
                 "dark wainscot runs along the lower hotel wall");
         helper.assertTrue(level.getBlockState(hotelPeriod.offset(-2, 1, 0)).is(HouseBlocks.HOTEL_WALLPAPER.get()),

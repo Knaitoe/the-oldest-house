@@ -86,7 +86,7 @@ public final class SceneCraft {
     // park, and Winter Lake (0.4.104) its frozen lake and snowy banks: nothing generic is planted over them.
     static final Set<LabyrinthPlace> GROUNDS = EnumSet.of(LabyrinthPlace.MAPPING_INTERIOR, LabyrinthPlace.HOLY_RABBIT,
             LabyrinthPlace.CAMP_BLOOD, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.SHALLOWS, LabyrinthPlace.PHONE_CANOE,
-            LabyrinthPlace.HOTEL_GROUNDS, LabyrinthPlace.BARN_WELL, LabyrinthPlace.GOATMAN, LabyrinthPlace.EXPLORER_CAMP);
+            LabyrinthPlace.BARN_WELL, LabyrinthPlace.GOATMAN, LabyrinthPlace.EXPLORER_CAMP);
     /** How far outside its room box a scene's banks and woods reach. */
     private static final int REACH = 6;
 
@@ -1215,7 +1215,6 @@ public final class SceneCraft {
             case CAMP_BLOOD -> { fellGrid(); woods(5, new int[]{30, 0, 40, 30, 0}, false); undergrowth(); cabins(); campGround(); }
             case END_WORLD_CABIN -> { fellGrid(); woods(5, new int[]{55, 10, 10, 25, 0}, false); undergrowth(); endCabin(); }
             case SHALLOWS, PHONE_CANOE, DROWNED_TOWN -> banks();
-            case HOTEL_GROUNDS -> hotelGrounds();
             case BARN_WELL -> barn();
             case GOATMAN -> thicket();
             case EXPLORER_CAMP -> camp();
@@ -2025,54 +2024,4 @@ public final class SceneCraft {
 
     // ------------------------------------------------------------------
 
-    /**
-     * The Overlook's grounds: drifts in place of stepped snow terraces, snowy
-     * spruces on them, the hedge animals of the novel by the maze, and lamps
-     * along the approach.
-     */
-    private void hotelGrounds() {
-        for (int x = -27; x <= 27; x++)
-            for (int z = -67; z <= -4; z++) {
-                if (Math.abs(x) < 21 && z > -60) continue;
-                if (x >= -26 && x <= -16 && z >= -27 && z <= -16 || x >= -23 && x <= -16 && z >= -62 && z <= -58) continue;
-                boolean snowOnly = true;
-                for (int y = 0; y <= 8 && snowOnly; y++) {
-                    BlockState s = at(x, y, z);
-                    snowOnly = s.isAir() || s.is(Blocks.SNOW_BLOCK) || s.is(Blocks.SNOW);
-                }
-                if (!snowOnly || !at(x, -1, z).is(Blocks.DIRT)) continue;
-                double rise = Math.max((Math.abs(x) - 20) * 0.75, (-59 - z) * 0.75);
-                double depth = Math.max(0, Math.min(7.5, rise + Landscapes.noise(x, z, 7) * 1.4));
-                int full = (int) depth, layers = (int) Math.round((depth - full) * 8);
-                if (layers == 8) { full++; layers = 0; }
-                for (int y = 0; y <= 8; y++) {
-                    BlockState want = y < full ? Blocks.SNOW_BLOCK.defaultBlockState() : y == full && layers > 0
-                            ? Blocks.SNOW.defaultBlockState().setValue(SnowLayerBlock.LAYERS, layers) : y == 0 ? Blocks.SNOW.defaultBlockState() : AIR;
-                    if (!at(x, y, z).equals(want)) set(p(x, y, z), want);
-                }
-            }
-        woods(-27, 27, -67, -4, 5, new int[]{85, 15, 0, 0, 0}, true,
-                (x, z) -> !(Math.abs(x) >= 23 || z <= -62) || x >= -27 && x <= -15 && z >= -28 && z <= -15 || x >= -24 && x <= -15 && z >= -63 && z <= -57);
-        topiary(-5, -24, LION);
-        topiary(5, -24, LION);
-        topiary(-10, -14, RABBIT);
-        topiary(10, -14, DOG);
-        for (int z : new int[]{-6, -16})
-            for (int x : new int[]{-4, 4}) new Plan().add(x, 0, z, Blocks.DARK_OAK_FENCE).add(x, 1, z, Blocks.DARK_OAK_FENCE).add(x, 2, z, lantern(false)).place();
-        put(-21, 3, -21, lantern(true));
-    }
-
-    private static final int[][] LION = {{-1, 0, -1}, {0, 0, -1}, {1, 0, -1}, {-1, 0, 0}, {0, 0, 0}, {1, 0, 0}, {-1, 0, 1}, {1, 0, 1},
-            {-1, 1, -1}, {0, 1, -1}, {1, 1, -1}, {-1, 1, 0}, {0, 1, 0}, {1, 1, 0}, {-1, 2, 0}, {0, 2, 0}, {1, 2, 0}, {0, 2, 1}, {-1, 3, 0}, {1, 3, 0}, {0, 1, -2}};
-    private static final int[][] DOG = {{-1, 0, -1}, {1, 0, -1}, {-1, 0, 1}, {1, 0, 1}, {-1, 1, -1}, {0, 1, -1}, {1, 1, -1}, {-1, 1, 0}, {0, 1, 0}, {1, 1, 0},
-            {-1, 1, 1}, {0, 1, 1}, {1, 1, 1}, {0, 2, 1}, {0, 2, 2}, {0, 3, 1}, {0, 2, -2}};
-    private static final int[][] RABBIT = {{0, 0, 0}, {0, 0, -1}, {0, 0, 1}, {-1, 0, 0}, {1, 0, 0}, {0, 1, 0}, {0, 1, 1}, {0, 2, 1}, {-1, 3, 1}, {1, 3, 1}};
-
-    /** One of the hedge animals, clipped from spruce, with snow on its back. */
-    private void topiary(int x, int z, int[][] shape) {
-        Plan plan = new Plan();
-        for (int[] o : shape) plan.add(x + o[0], o[1], z + o[2], leaves(Blocks.SPRUCE_LEAVES));
-        if (!plan.place()) return;
-        for (int[] o : shape) if (at(x + o[0], o[1] + 1, z + o[2]).isAir()) put(x + o[0], o[1] + 1, z + o[2], Blocks.SNOW.defaultBlockState());
-    }
 }

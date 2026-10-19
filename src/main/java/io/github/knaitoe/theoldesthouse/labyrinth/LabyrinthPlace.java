@@ -199,7 +199,8 @@ public enum LabyrinthPlace {
     SEANCE("seance",Kind.ONE_SHOT,40,new BoundingBox(-11,-1,-32,11,7,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
     WALLPAPER_NURSERY("wallpaper_nursery",Kind.MULTI_VISIT,41,new BoundingBox(-10,-1,-28,10,7,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
     BLIND_STRETCH("blind_stretch",Kind.GRAY,42,new BoundingBox(-13,-1,-42,13,4,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),new DoorSpec("far",new BlockPos(0,0,-41),Direction.SOUTH,LabyrinthData.DEALT))),
-    HOTEL("hotel",Kind.RECURRING,43,new BoundingBox(-29,-5,-68,29,14,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),new DoorSpec("numbers",new BlockPos(-14,0,-65),Direction.SOUTH,"place:hotel_hallway"),new DoorSpec("grounds",new BlockPos(28,0,-37),Direction.WEST,"place:hotel_grounds"))),
+    /** The hotel (0.4.105): its guest corridor's end door into the numbered corridor, the back door, and the staff entrance out. */
+    HOTEL("hotel",Kind.RECURRING,43,new BoundingBox(-29,-5,-68,29,14,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),new DoorSpec("numbers",new BlockPos(-14,6,-45),Direction.SOUTH,"place:hotel_hallway"),new DoorSpec("grounds",new BlockPos(0,0,-67),Direction.SOUTH,"place:hotel_grounds"),new DoorSpec("service",new BlockPos(-10,0,-67),Direction.SOUTH,LabyrinthData.DEALT))),
     HOTEL_GROUNDS("hotel_grounds",Kind.GRAY,44,new BoundingBox(-28,-3,-68,28,14,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
     HILL_NURSERY("hill_nursery",Kind.ONE_SHOT,45,new BoundingBox(-15,-5,-44,15,12,0),literaryEntry()),
     MINIATURES("miniatures",Kind.MULTI_VISIT,46,new BoundingBox(-15,-1,-31,15,9,0),literaryEntry()),

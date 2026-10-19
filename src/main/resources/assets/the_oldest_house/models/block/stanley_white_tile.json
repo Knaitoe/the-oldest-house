@@ -1,0 +1,12 @@
+{
+ "parent": "minecraft:block/cube",
+ "textures": {
+  "particle": "the_oldest_house:block/stanley/white_tile",
+  "north": "the_oldest_house:block/stanley/white_tile",
+  "south": "the_oldest_house:block/stanley/white_tile",
+  "east": "the_oldest_house:block/stanley/white_tile",
+  "west": "the_oldest_house:block/stanley/white_tile",
+  "up": "the_oldest_house:block/stanley/white_tile",
+  "down": "the_oldest_house:block/stanley/white_tile"
+ }
+}

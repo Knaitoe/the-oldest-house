@@ -18,6 +18,9 @@ public final class HotelRegistry {
     private static final DeferredRegister<EntityType<?>> TYPES=DeferredRegister.create(Registries.ENTITY_TYPE,TheOldestHouse.MOD_ID);
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<HotelPropBlock>> PROP_TYPE=CODECS.register("hotel_prop",()->HotelPropBlock.CODEC);
     public static final DeferredBlock<HotelPropBlock> PROP=BLOCKS.registerBlock("hotel_prop",HotelPropBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable());
+    /** The rebuilt hotel's siding, papers, windows and fittings (0.4.105), one block. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<StanleyBlock>> STANLEY_TYPE=CODECS.register("stanley",()->StanleyBlock.CODEC);
+    public static final DeferredBlock<StanleyBlock> STANLEY=BLOCKS.registerBlock("stanley",StanleyBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS).strength(.8F).noLootTable().lightLevel(StanleyBlock::light));
     public static final DeferredItem<Item> MASTER_KEY=ITEMS.registerSimpleItem("hotel_master_key",new Item.Properties().stacksTo(1));
     public static final DeferredItem<HotelDrinkItem> DRINK=ITEMS.register("hotel_drink",()->new HotelDrinkItem(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<Item> PHOTOGRAPH=ITEMS.registerSimpleItem("hotel_photograph",new Item.Properties().stacksTo(1));

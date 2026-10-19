@@ -1,0 +1,43 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "w": "the_oldest_house:block/stanley/walnut16",
+  "k": "the_oldest_house:block/stanley/key_rack",
+  "particle": "the_oldest_house:block/stanley/key_rack"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    12
+   ],
+   "to": [
+    16,
+    16,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#k"
+    },
+    "south": {
+     "texture": "#w"
+    },
+    "east": {
+     "texture": "#w"
+    },
+    "west": {
+     "texture": "#w"
+    },
+    "up": {
+     "texture": "#w"
+    },
+    "down": {
+     "texture": "#w"
+    }
+   }
+  }
+ ]
+}
