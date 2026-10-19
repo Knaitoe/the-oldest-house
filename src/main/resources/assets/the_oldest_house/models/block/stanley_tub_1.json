@@ -4,6 +4,7 @@
  "textures": {
   "e": "the_oldest_house:block/stanley/enamel",
   "b": "the_oldest_house:block/stanley/brass16",
+  "t": "the_oldest_house:block/stanley/tub_foot",
   "particle": "the_oldest_house:block/stanley/enamel"
  },
  "elements": [
@@ -32,7 +33,7 @@
      "texture": "#e"
     },
     "up": {
-     "texture": "#tub_foot"
+     "texture": "#t"
     },
     "down": {
      "texture": "#e"
