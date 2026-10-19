@@ -13,6 +13,7 @@ The development branch starts at `89ec9f9`, retaining the Claude, Harrigan and n
 - Two finite owner-bound originals, the compass and cloth name patch; native pickup/drop protection and saved compass confiscation/reclamation.
 - Timed taking with occluded departure, directional glare controlled by the vanilla screen-effect setting, dust cues, a real flashlight cone and nonlethal detection/retry.
 - A routine impound record naming the Sheriff's office and Prescott, and a saved irreversible breaker shutdown. The first-visit legend withholds the cause.
+- An ordinary trail notice on visit one. The separately tracked content note appears at the same trailhead before visit two; reading the earlier notice cannot start the taking route.
 - One new 64×64 atlas containing sixteen authored 16×16 material tiles, plus a 32×32 cast atlas with eight-pixel faces matching vanilla heads. Limited palettes, connected pixel clusters and hard pixel edges keep props, people and the machine consistent with vanilla. Native prop/item models and four original synthetic contact/triad recordings. All pre-existing PNGs remain unchanged.
 
 ## Verification

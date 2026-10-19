@@ -12,7 +12,9 @@ public final class BorrascaTexts {
         var fitted=new ArrayList<String>();for(String original:pages){var page=new StringBuilder();for(String word:original.split("(?<=\\s)")){if(page.length()+word.length()>145){fitted.add(page.toString().strip());page.setLength(0);}page.append(word);}if(!page.isEmpty())fitted.add(page.toString().strip());}
         return HouseWriting.book(title,author,HouseWriting.WritingStyle.WILL,fitted);
     }
-    public static ItemStack source(){return book("A note at the trailhead","The House",
+    public static ItemStack source(){return book("Triple Tree trail","County trails",
+        "TRIPLE TREE\n\nThe first mile marker stands beside the three trunks. The fort is above it.\n\nThe public walk ends at Marker Two. Return before dusk.");}
+    public static ItemStack contentNote(){return book("A note at the trailhead","The House",
         "CONTENT NOTE\n\nAbduction, coercion, sexual violence and death. These themes remain off-screen. No assault is shown or heard.",
         "The second visit begins an investigation into a child's disappearance. You may leave through the House door at any point. Leaving early does not finish a visit.");}
     public static ItemStack document(String key){return document(key,false);}
