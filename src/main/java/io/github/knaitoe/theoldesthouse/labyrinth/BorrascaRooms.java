@@ -40,6 +40,7 @@ public final class BorrascaRooms {
         for(var at:new BlockPos[]{new BlockPos(1,2,-115),new BlockPos(-5,6,-132)})box(l,b,at.getX(),at.getY(),at.getZ(),at.getX()+4,at.getY(),at.getZ(),Blocks.SPRUCE_LOG);
         box(l,b,-14,8,-154,7,8,-144,Blocks.RED_TERRACOTTA);box(l,b,-14,9,-154,7,13,-144,Blocks.AIR);box(l,b,-9,9,-154,-7,14,-150,Blocks.SPRUCE_LOG);box(l,b,-10,9,-152,-8,12,-149,Blocks.MOSSY_COBBLESTONE);
         box(l,b,-15,8,-157,-13,14,-146,Blocks.STONE);box(l,b,-16,8,-157,-12,8,-148,Blocks.RED_TERRACOTTA);
+        for(int x:new int[]{-8,9}){box(l,b,x-2,11,-159,x+2,11,-155,Blocks.STONE);box(l,b,x-2,12,-159,x+2,12,-155,Blocks.PODZOL);}
         for(int z=-151;z>=-163;z--){int y=trailY(z);for(int x=0;x<=4;x++)fit(l,b,new BlockPos(x,y-1,z),BorrascaFittingBlock.Kind.TRAIL,Direction.NORTH);}
         for(int x=0;x<=4;x++)BuildBlocks.set(l,b.offset(x,9,-150),Blocks.STONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH),F);
         box(l,b,5,-1,-26,15,-1,-14,Blocks.GRAVEL);vehicle(l,b,new BlockPos(8,0,-18),true);vehicle(l,b,new BlockPos(12,0,-25),false);
