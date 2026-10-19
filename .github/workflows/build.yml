@@ -94,7 +94,9 @@ jobs:
               assert 'io/github/knaitoe/theoldesthouse/gametest/GoatmanWindowViews.class' in z.namelist()
               assert z.read('assets/the_oldest_house/textures/entity/borrasca_atlas.png').startswith(b'\x89PNG')
               assert 'assets/minecraft/atlases/blocks.json' in z.namelist()
-              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/borrasca_fitting.json'))['variants']) == 36
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/borrasca_fitting.json'))['variants']) == 104
+              trail_png = z.read('assets/the_oldest_house/textures/entity/borrasca_trail_atlas.png')
+              assert trail_png.startswith(b'\x89PNG') and trail_png[16:24] == bytes.fromhex('0000004000000040')
               for cue in ('grinder','grinder_muffled','motor_stop','tree_creak','town_wind'):
                   assert z.read(f'assets/the_oldest_house/sounds/borrasca/{cue}.ogg').startswith(b'OggS')
               assert len(json.loads(z.read('assets/the_oldest_house/blockstates/harrigan_finish.json'))['variants']) == 5
@@ -875,7 +877,7 @@ jobs:
           for view in cast fixtures gear; do test -s build/font-smoke/native-lake-house-$view.png; done
           test -s build/font-smoke/lake-house-passed.txt
           test -s build/font-smoke/borrasca-assets-passed.txt
-          for view in front side back dim fixtures-0 fixtures-1; do test -s build/font-smoke/native-borrasca-$view.png; done
+          for view in front side back dim fixtures-0 fixtures-1 fixtures-2 fixtures-3; do test -s build/font-smoke/native-borrasca-$view.png; done
           for view in borrasca borrasca_treehouse borrasca_refinery; do test -s build/font-smoke/scenes/$view.png; done
           test -s build/font-smoke/hall-changes-passed.txt
           test -s build/font-smoke/native-hall-changes.png
@@ -1350,7 +1352,7 @@ jobs:
           sudo apt-get install -y -qq xvfb libgl1-mesa-dri
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PborrascaSmoke --no-daemon
           test -s build/font-smoke/borrasca-assets-passed.txt
-          for view in front side back dim fixtures-0 fixtures-1; do test -s build/font-smoke/native-borrasca-$view.png; done
+          for view in front side back dim fixtures-0 fixtures-1 fixtures-2 fixtures-3; do test -s build/font-smoke/native-borrasca-$view.png; done
           python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
       - uses: actions/upload-artifact@v4
         with:
