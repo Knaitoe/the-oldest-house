@@ -1,6 +1,7 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import java.util.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -25,11 +26,21 @@ public final class BorrascaCast {
     public static final List<String> KEYS=List.of("CastKimber","CastSheriff","CastPrescott","Worker0","Worker1");
     private BorrascaCast(){}
     public static BlockPos target(String key,int visit){return switch(key){case "CastKyle"->new BlockPos(36,-4,-57);case "CastKimber"->visit>=3?new BlockPos(39,-4,-57):visit==2?new BlockPos(1,0,-76):new BlockPos(1,0,-18);case "CastSheriff"->visit>=3?BorrascaRooms.SHERIFF:new BlockPos(4,0,-16);case "CastPrescott"->visit>=2?new BlockPos(15,12,-171):new BlockPos(11,0,-25);case "Worker0"->visit>=4?new BlockPos(-6,12,-193):new BlockPos(-8,13,-157);case "Worker1"->visit>=4?new BlockPos(5,12,-195):new BlockPos(9,13,-157);default->throw new IllegalArgumentException(key);};}
-    public static void prepare(ServerPlayer p,BlockPos base,CompoundTag own){var d=LabyrinthData.get(p.server);if(store!=d){clear();store=d;}if(leases.containsKey(p.getUUID()))return;var chunks=new LinkedHashSet<ChunkPos>();for(String key:KEYS){var from=own.contains(key+"At")?BlockPos.of(own.getLong(key+"At")):base.offset(target(key,1));var to=base.offset(target(key,key.equals("CastKimber")&&own.getBoolean("FriendMissing")?3:own.getInt("Visit")));chunks.add(new ChunkPos(from));chunks.add(new ChunkPos(to));}var held=List.copyOf(chunks);for(var c:held)p.serverLevel().getChunkSource().addRegionTicket(TICKET,c,3,p.getUUID());leases.put(p.getUUID(),new Lease(p.serverLevel(),held));}
+    public static void prepare(ServerPlayer p,BlockPos base,CompoundTag own){var d=LabyrinthData.get(p.server);if(store!=d){clear();store=d;}if(leases.containsKey(p.getUUID()))return;var level=p.server.getLevel(HouseDimensions.OUTSIDE);if(level==null)return;int visit=own.contains("CastNextVisit")?own.getInt("CastNextVisit"):own.getInt("Visit");var chunks=new LinkedHashSet<ChunkPos>();for(String key:KEYS){var from=own.contains(key+"At")?BlockPos.of(own.getLong(key+"At")):base.offset(target(key,1));var to=base.offset(target(key,key.equals("CastKimber")&&own.getBoolean("FriendMissing")?3:visit));chunks.add(new ChunkPos(from));chunks.add(new ChunkPos(to));}var held=List.copyOf(chunks);for(var c:held)level.getChunkSource().addRegionTicket(TICKET,c,3,p.getUUID());leases.put(p.getUUID(),new Lease(level,held));}
+    /** Prepare the next cast while the reader is still at the original House door, before travel. */
+    public static boolean prepareNext(ServerPlayer p){
+        var data=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(data,p.getUUID(),LabyrinthPlace.BORRASCA);int next=own.getInt("CastNextVisit");if(next==0)return true;
+        if(BorrascaSites.inside(p)||own.getBoolean("Here"))return false;var base=BorrascaSites.base(p.server,p.getUUID());var level=p.server.getLevel(HouseDimensions.OUTSIDE);if(base==null||level==null)return false;prepare(p,base,own);
+        boolean all=true;for(String key:KEYS){var a=own.hasUUID(key)&&level.getEntity(own.getUUID(key)) instanceof LiteraryActor actor?actor:null;all&=recall(level,a,base.offset(target(key,key.equals("CastKimber")&&own.getBoolean("FriendMissing")?3:next)));if(a!=null)remember(own,key,a);}
+        if(all){own.putInt("CastVisit",next);own.remove("CastNextVisit");release(p.getUUID());}LiteraryVignettes.save(data,p.getUUID(),LabyrinthPlace.BORRASCA,own);return all;
+    }
     public static boolean recall(ServerPlayer p,LiteraryActor a,BlockPos at){
+        return recall(p.serverLevel(),a,at);
+    }
+    private static boolean recall(ServerLevel level,LiteraryActor a,BlockPos at){
         if(a==null)return false;if(a.position().distanceToSqr(Vec3.atBottomCenterOf(at))<1)return true;
-        if(LiteraryVignettes.watched(p.serverLevel(),a.getEyePosition())||LiteraryVignettes.watched(p.serverLevel(),at.getCenter()))return false;
-        if(!p.serverLevel().areEntitiesLoaded(ChunkPos.asLong(at.getX()>>4,at.getZ()>>4)))return false;
+        if(LiteraryVignettes.watched(level,a.getEyePosition())||LiteraryVignettes.watched(level,at.getCenter()))return false;
+        if(!level.areEntitiesLoaded(ChunkPos.asLong(at.getX()>>4,at.getZ()>>4)))return false;
         stop(a);a.moveTo(Vec3.atBottomCenterOf(at),180,0);a.setYBodyRot(180);a.setYHeadRot(180);return true;
     }
     public static void walk(LiteraryActor a,Vec3 at,double speed){a.getPersistentData().putDouble("BorrascaGoalX",at.x);a.getPersistentData().putDouble("BorrascaGoalY",at.y);a.getPersistentData().putDouble("BorrascaGoalZ",at.z);a.getPersistentData().putDouble("BorrascaSpeed",speed);a.setNoAi(false);a.setNoGravity(false);}
