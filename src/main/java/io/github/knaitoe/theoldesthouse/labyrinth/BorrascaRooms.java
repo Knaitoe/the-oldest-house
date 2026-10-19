@@ -29,7 +29,7 @@ public final class BorrascaRooms {
     public static void build(ServerLevel l,BlockPos b){
         box(l,b,-44,-5,-220,44,26,2,Blocks.AIR);box(l,b,-44,-5,-220,44,-2,2,Blocks.STONE);box(l,b,-44,-1,-220,44,-1,2,Blocks.GRASS_BLOCK);
         for(int z=-101;z>=-216;z--){int y=trailY(z);if(y>0){if(y>1)box(l,b,-30,0,z,30,y-2,z,Blocks.STONE);box(l,b,-30,y-1,z,30,y-1,z,Blocks.PODZOL);}}
-        for(int z=-8;z>=-166;z--){var p=trail(z);box(l,b,p.getX()-2,p.getY(),z,p.getX()+2,p.getY()+3,z,Blocks.AIR);for(int dx=-2;dx<=2;dx++)fit(l,b,p.offset(dx,-1,0),BorrascaFittingBlock.Kind.TRAIL,Direction.NORTH);if(z<-101&&(-z-100)%5==0)for(int dx=-2;dx<=2;dx++)BuildBlocks.set(l,b,p.offset(dx,-1,0),Blocks.STONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH),F);}
+        for(int z=-8;z>=-166;z--){var p=trail(z);box(l,b,p.getX()-2,p.getY(),z,p.getX()+2,p.getY()+3,z,Blocks.AIR);for(int dx=-2;dx<=2;dx++)fit(l,b,p.offset(dx,-1,0),BorrascaFittingBlock.Kind.TRAIL,Direction.NORTH);if(z<-101&&(-z-100)%5==0)for(int dx=-2;dx<=2;dx++)BuildBlocks.set(l,b.offset(p.offset(dx,-1,0)),Blocks.STONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH),F);}
         for(int z=-18;z>=-211;z-=11)for(int side:new int[]{-1,1}){int x=side*(12+Math.floorMod(z*7,23));int y=trailY(z);tree(l,b,x,z,y,9+Math.floorMod(z,5));if(z>-142&&z<-104)box(l,b,side<0?-7:8,y,z,side<0?-5:11,y+3,z+3,Blocks.MOSSY_COBBLESTONE);}
         for(int z=-211;z<=-9;z+=9)for(int x:new int[]{-41,40}){tree(l,b,x,z,trailY(z),10);box(l,b,x,0,z,x+1,trailY(z)+3,z+8,Blocks.STONE);}
         box(l,b,-44,0,-220,44,23,-217,Blocks.STONE);

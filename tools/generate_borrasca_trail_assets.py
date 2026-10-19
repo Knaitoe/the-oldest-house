@@ -1,7 +1,8 @@
-"""Native meshes and UVs for the retained, generated 4x4 trail atlas. Does not repaint any PNG."""
+"""Native meshes and authored 16-pixel material tiles, matching vanilla's pixel scale."""
 import argparse
 import json
 from pathlib import Path
+from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'src/main/resources/assets/the_oldest_house'
@@ -16,6 +17,79 @@ GLYPHS = {
     'M': ('101','111','111','101','101'), 'B': ('110','101','110','101','110'),
     'E': ('111','100','110','100','111'), 'R': ('110','101','110','110','101'),
 }
+
+
+def paintings():
+    """Draw at native resolution: no resized concept art, filters or antialiasing."""
+    tiles = []
+    def tile(base):
+        im = Image.new('RGBA', (16, 16), base)
+        tiles.append(im)
+        return ImageDraw.Draw(im)
+    # Bark: connected vertical clusters rather than high frequency noise.
+    d = tile('#59452f')
+    for x, y, height in ((1,0,8),(5,5,11),(9,0,12),(13,7,9)):
+        d.rectangle((x,y,x+1,min(15,y+height)),fill='#382f25')
+        d.line((x+2,y,x+2,min(15,y+height-2)),fill='#776044')
+    d.line((0,11,2,11,2,15),fill='#453825');d.line((11,2,11,5,12,5),fill='#8a7150')
+    tiles.append(tiles[0].copy());d=ImageDraw.Draw(tiles[-1])
+    d.polygon(((2,4),(13,3),(12,6),(14,8),(12,11),(3,12),(4,9),(2,8)),fill='#c2a777')
+    for y,x in ((5,4),(7,3),(9,5),(11,4)):
+        d.line((x,y,11,y),fill='#e0c692');d.point((12,y),fill='#977b51')
+    d = tile('#79705a')
+    for y in (0,7,15):d.line((0,y,15,y),fill='#403f34')
+    for x,y in ((1,3),(7,10),(11,4),(3,13)):
+        d.line((x,y,x+3,y),fill='#9a8b6b');d.line((x+1,y+1,x+4,y+1),fill='#625e4b')
+    d=tile('#995b40')
+    for x,y in ((1,3),(6,1),(11,6),(3,11),(10,13)):
+        d.rectangle((x,y,x+2,y+1),fill='#ae704d');d.point((x+1,y+2),fill='#7c4937')
+    for x,y in ((3,6),(8,9),(13,2)):
+        d.line((x,y,x+2,y+2),fill='#706044');d.point((x+3,y+2),fill='#b39764')
+    d=tile('#d2b43b')
+    d.line((0,1,15,1),fill='#ebd66a');d.line((0,14,15,14),fill='#8d772c')
+    for x in range(-16,32,8):d.polygon(((x,12),(x+4,12),(x+12,4),(x+8,4)),fill='#34372e')
+    d=tile('#92998d')
+    d.line((0,0,15,0),fill='#c1c5b6');d.line((0,1,0,15),fill='#b0b6a9')
+    for x,y in ((2,4),(9,2),(7,11),(13,8)):d.line((x,y,x+1,y+1),fill='#6c786f')
+    d=tile('#a4aca1')
+    d.rectangle((0,0,15,15),outline='#626e66');d.line((1,1,14,1),fill='#d0d4bf')
+    d.line((1,2,1,14),fill='#b9c2af');d.line((3,6,11,6),fill='#959f95');d.line((7,11,13,11),fill='#959f95')
+    d=tile('#80653c')
+    d.rectangle((1,1,14,14),fill='#bd9b53');d.rectangle((3,3,12,12),fill='#d4cfaf')
+    d.line((8,4,8,11),fill='#514f42');d.line((4,8,11,8),fill='#6f705c')
+    d.polygon(((8,4),(6,8),(8,8)),fill='#a14939');d.polygon(((8,11),(10,8),(8,8)),fill='#596d70')
+    for x,y in ((3,3),(12,3),(3,12),(12,12)):d.point((x,y),fill='#514a35')
+    d=tile('#476b61')
+    d.rectangle((1,1,14,14),outline='#2e4a44');d.line((2,2,13,2),fill='#65867a')
+    d.rectangle((3,0,4,15),fill='#8e805b');d.rectangle((11,0,12,15),fill='#8e805b')
+    d.rectangle((3,6,4,8),fill='#b3aa82');d.rectangle((11,6,12,8),fill='#b3aa82')
+    d=tile('#713d42')
+    d.rectangle((1,1,14,14),outline='#b29469')
+    for i in range(3,14,3):d.point((i,2),fill='#d1b888');d.point((i,13),fill='#d1b888')
+    d.line((3,7,12,7),fill='#854c4c');d.line((3,9,10,9),fill='#854c4c')
+    d=tile('#303b38')
+    for y in (1,5,9,13):d.line((0,y,15,y),fill='#45504a');d.line((0,y+1,15,y+1),fill='#26302e')
+    d=tile('#8e7747')
+    d.rectangle((1,1,14,14),outline='#4f4e3b');d.line((2,2,13,2),fill='#bfaa6c')
+    d.rectangle((7,6,8,10),fill='#393d32');d.rectangle((6,6,9,7),fill='#393d32')
+    d=tile('#c9c3a5')
+    d.rectangle((0,0,15,15),outline='#a49b7c');d.line((1,1,14,1),fill='#e0d9b9')
+    for y in (5,8,11):d.line((3,y,12,y),fill='#8a8c75')
+    d.line((3,3,7,3),fill='#62766c')
+    d=tile('#d3d2bd')
+    d.rectangle((0,7,15,12),fill='#3e5d71');d.line((0,6,15,6),fill='#72909a')
+    d.rectangle((6,8,9,11),fill='#b49b55');d.line((0,15,15,15),fill='#8d9688')
+    d=tile('#6d663f')
+    d.rectangle((1,1,14,14),fill='#b58f47');d.rectangle((3,3,12,12),fill='#e5c477')
+    d.rectangle((5,5,10,10),fill='#f0df9d');d.rectangle((0,0,15,15),outline='#465247')
+    d=tile('#76847c')
+    d.rectangle((0,0,15,15),outline='#46554f');d.line((1,1,14,1),fill='#a7b2a0')
+    d.rectangle((4,3,11,12),fill='#3b4942');d.rectangle((6,5,9,10),fill='#bd794e')
+    d.line((6,5,9,5),fill='#d6a073')
+    atlas=Image.new('RGBA',(64,64))
+    for i,im in enumerate(tiles):atlas.paste(im,((i%4)*16,(i//4)*16))
+    assert len(tiles)==16
+    return atlas
 
 
 def uv(tile):
@@ -130,6 +204,13 @@ def main():
     parser.add_argument('--check', action='store_true')
     args = parser.parse_args()
     changed = []
+    path = ASSETS / 'textures/entity/borrasca_trail_atlas.png'
+    image = paintings()
+    if args.check:
+        with Image.open(path) as actual:
+            assert actual.size == (64,64) and actual.convert('RGBA').tobytes() == image.tobytes(), 'Native trail pixels differ'
+    else:
+        image.save(path,optimize=True)
     for name, value in outputs().items():
         path = ASSETS / name
         content = json.dumps(value,indent=2,ensure_ascii=False)+'\n'
