@@ -82,9 +82,9 @@ LOOKS = {
     'literary_winter_lonnie': Look('#bf9171','#2f241d','close','#4a5a3c','#3d4148','jacket','#6a6a72',eyes='#4a3c30',mark='winter',sleeve=11,scarf='#9a3a30'),
     'harrigan': Look('#c7ab91','#b9b7ac','receding','#343941','#2c3037','suit','#7d3940',age=2,glasses=True,logical=64),
     'harrigan_dead': Look('#b9b2a4','#b9b7ac','receding','#343941','#2c3037','suit','#7d3940',age=2,mark='dead',logical=64),
-    'harrigan_mourner_0': Look('#ae7b59','#262320','close','#292e33','#26292f','suit','#77736e',logical=64),
-    'harrigan_mourner_1': Look('#d0ab8b','#7c7164','part','#454342','#343338','suit','#65544b',age=1,logical=64),
-    'harrigan_mourner_2': Look('#cfaa8b','#a7a295','receding','#34485d','#303e4e','suit','#83918e',age=2,glasses=True,logical=64),
+    'harrigan_mourner_0': Look('#ae7b59','#262320','close','#292e33','#26292f','suit','#343338',mark='mourner_flower',logical=64),
+    'harrigan_mourner_1': Look('#d0ab8b','#7c7164','part','#454342','#343338','suit','#65544b',age=1,mark='mourner_pocket',logical=64),
+    'harrigan_mourner_2': Look('#cfaa8b','#a7a295','receding','#34485d','#303e4e','suit','#603c46',age=2,glasses=True,mark='mourner_watch',logical=64),
     'holloway': Look('#b98b69','#5a4230','part','#5b6148','#51483a','field','#b49355',age=1,beard='stubble',logical=64),
     'finale_witness': Look('#c0a184','#ada794','receding','#615746','#484438','coat','#98846a',age=2,beard='full',logical=64),
     'caged_child': Look('#c9a283','#4b342a','messy','#79766b','#494a46','ragged','#b4aa8c',eyes='#6c6252',logical=64),
@@ -411,6 +411,15 @@ def cloth_face(size,look,side='front'):
         d.line((3,6,mid-2,6),fill=a);d.line((mid+1,6,w-4,6),fill=a)
         d.rectangle((0,h-6,w-1,h-1),fill=c);d.line((0,h-6,w-1,h-6),fill=a)
     # Cottage garments use deliberate pixel marks, with their original period details.
+    if look.mark=='mourner_flower':
+        d.line((w-5,5,w-5,9),fill='#69745e');d.point((w-6,8),fill='#899477')
+        d.rectangle((w-6,4,w-4,5),fill='#e5dfcc');d.point((w-5,3),fill='#f2ebd8')
+    if look.mark=='mourner_pocket':
+        d.line((w-7,10,w-3,10),fill=lo);d.line((w-7,9,w-3,9),fill='#e6decc')
+        d.point((w-6,8),fill='#f0e9d9');d.point((w-4,8),fill='#f0e9d9')
+    if look.mark=='mourner_watch':
+        d.polygon([(mid-2,8),(mid+1,8),(mid+2,h-3),(mid-3,h-3)],fill='#49303a')
+        d.line((mid+1,14,mid+4,16,mid+6,14),fill='#b09a65');d.point((mid+5,15),fill='#d4bf86')
     if look.mark=='cottage_walter':
         d.rectangle((mid-3,7,mid+2,h-2),fill='#796047')
         for y in range(9,h-2,5):d.point((mid,y),fill='#3c332b')
@@ -548,6 +557,7 @@ def paint(look):
                         for y in range(4,min(h,cuff),7):d.line((0,y,w-1,y),fill=shade(look.cloth,-19))
                     d.rectangle((0,cuff,w-1,h-1),fill=rgb(look.skin))
                     if look.sleeve>=8:d.line((0,cuff-1,w-1,cuff-1),fill=shade(look.accent,8))
+                if look.mark=='mourner_pocket':d.rectangle((0,5*S,w-1,7*S-1),fill='#1c2027')
                 if h>=20:
                     d.line((1,h-2,w-2,h-2),fill=shade(look.skin,-18));d.point((w-2,h-4),fill=shade(look.skin,7))
                     if side in ('left','right'):d.line((1,h-5,1,h-3),fill=shade(look.skin,-22))

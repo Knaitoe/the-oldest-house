@@ -76,8 +76,22 @@ public final class HouseHumanRenderers {
             young=false;crouching=false;riding=false;
             if(role==3)resting(this);
             else if(role<3){leftLeg.xRot=rightLeg.xRot=-(float)Math.PI/2;leftKnee.xRot=rightKnee.xRot=(float)Math.PI/2;leftKnee.yScale=rightKnee.yScale=4F/3;leftArm.xRot=rightArm.xRot=role==2?-.43F:-.698F;leftElbow.xRot=rightElbow.xRot=.5F;if(role==2){head.xRot=.314F;head.zRot=.14F;body.xRot=.14F;}HumanoidMotion.connect(this);}
-            // A mourner stands with the head a little bowed and the hands folded in front.
-            else{head.xRot=.17F;leftArm.xRot=rightArm.xRot=-.31F;leftArm.zRot=-.16F;rightArm.zRot=.16F;leftElbow.xRot=rightElbow.xRot=-.6F;HumanoidMotion.connect(this);}
+            else {
+                if(role==4){
+                    // Quietly clasped hands at the waist, with the head bowed.
+                    head.xRot=.24F;leftArm.xRot=rightArm.xRot=-.35F;leftArm.zRot=.17F;rightArm.zRot=-.17F;
+                    leftElbow.xRot=rightElbow.xRot=-.45F;leftElbow.zRot=1F;rightElbow.zRot=-.95F;
+                }else if(role==5){
+                    // One hand at the cheek; the other supports the raised elbow.
+                    head.xRot=.28F;head.zRot=.08F;rightArm.xRot=-1.1F;rightArm.zRot=.1F;rightElbow.xRot=-1.8F;rightElbow.zRot=-.35F;
+                    leftArm.xRot=-.4F;leftArm.zRot=.6F;leftElbow.xRot=-.15F;leftElbow.zRot=1.2F;
+                }else{
+                    // A hand over the heart, the unused hand held awkwardly at the side.
+                    head.xRot=.2F;head.zRot=-.05F;body.xRot=.05F;rightArm.xRot=-.7F;rightArm.zRot=-.1F;
+                    rightElbow.xRot=-.55F;rightElbow.zRot=-1.25F;leftArm.xRot=.08F;leftElbow.xRot=.15F;
+                }
+                HumanoidMotion.connect(this);
+            }
             copyClothing();
         }
         public void copyClothing(){hat.copyFrom(head);jacket.copyFrom(body);leftSleeve.copyFrom(leftArm);rightSleeve.copyFrom(rightArm);leftPants.copyFrom(leftLeg);rightPants.copyFrom(rightLeg);leftCuff.copyFrom(leftElbow);rightCuff.copyFrom(rightElbow);leftShin.copyFrom(leftKnee);rightShin.copyFrom(rightKnee);}

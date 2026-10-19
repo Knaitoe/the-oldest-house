@@ -133,8 +133,8 @@ public final class HarriganAndStraysTests {
                     h.assertTrue(f.level.getBlockState(f.base.offset(HarriganVignette.FUNERAL_DOOR).above()).isAir()&&f.level.getBlockState(f.base.offset(-4,2,-13)).isAir()&&!(f.level.getBlockState(f.base.offset(HarriganVignette.CHAIR)).getBlock() instanceof net.minecraft.world.level.block.StairBlock)                            &&!HarriganVignette.occupiesChair(f.level,f.base.offset(HarriganVignette.CHAIR))&&!f.level.getBlockState(f.base.offset(HarriganVignette.LECTERN)).is(net.minecraft.world.level.block.Blocks.LECTERN),"the door opens on a funeral home: his study, its chair and its reading lectern are gone");
                     var lectern=(net.minecraft.world.level.block.entity.LecternBlockEntity)f.level.getBlockEntity(f.base.offset(HarriganVignette.GUEST_BOOK));
                     h.assertTrue(lectern.getBook().get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).title().raw().equals("In memory"),"the foyer's stand holds the guest book");
-                    var sign=(net.minecraft.world.level.block.entity.SignBlockEntity)f.level.getBlockEntity(f.base.offset(HarriganVignette.HOME_SIGN));
-                    h.assertTrue(sign.getFrontText().getMessage(0,false).getString().equals("PEABODY & SONS"),"the funeral home has its own sign");
+                    var plaque=f.level.getBlockState(f.base.offset(HarriganVignette.HOME_SIGN));
+                    h.assertTrue(plaque.is(LabyrinthRegistry.HARRIGAN_FINISH.get())&&plaque.getValue(HarriganFinishBlock.KIND)==HarriganFinishBlock.Kind.PLAQUE,"the funeral home's entrance has its fitted Peabody & Sons plaque");
                     h.assertTrue(f.level.getBlockState(f.base.offset(HarriganVignette.CASKET)).is(LabyrinthRegistry.HARRIGAN_FINISH.get())
                             &&f.level.getBlockState(f.base.offset(4,0,-8)).getBlock() instanceof net.minecraft.world.level.block.StairBlock
                             &&f.level.getBlockState(f.base.offset(0,0,-10)).is(net.minecraft.world.level.block.Blocks.RED_CARPET),"his casket stands at the front of a chapel of pews either side of an aisle");

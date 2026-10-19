@@ -8,14 +8,14 @@ import net.minecraft.world.level.block.state.*;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.*;
 public final class HarriganFinishBlock extends Block {
-    public enum Kind implements StringRepresentable{WALLPAPER,CARPET,PANEL,CASKET;public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}}
+    public enum Kind implements StringRepresentable{WALLPAPER,CARPET,PANEL,CASKET,PLAQUE;public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}}
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public static final MapCodec<HarriganFinishBlock> CODEC=simpleCodec(HarriganFinishBlock::new);
     public HarriganFinishBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(KIND,Kind.WALLPAPER));}
     @Override protected MapCodec<? extends Block> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(KIND);}
     public static BlockState of(Kind k){return LabyrinthRegistry.HARRIGAN_FINISH.get().defaultBlockState().setValue(KIND,k);}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return s.getValue(KIND)==Kind.CASKET?Block.box(-2,0,-12,18,12,28):Shapes.block();}
-    @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return s.getValue(KIND)==Kind.CASKET?Shapes.empty():Shapes.block();}
-    @Override protected int getLightBlock(BlockState s,BlockGetter l,BlockPos p){return s.getValue(KIND)==Kind.CASKET?0:15;}
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return switch(s.getValue(KIND)){case CASKET->Block.box(-2,0,-12,18,12,28);case PLAQUE->Shapes.or(Block.box(0,0,4,16,2,12),Block.box(3,2,7,5,11,9),Block.box(11,2,7,13,11,9),Block.box(1,10,6.4,15,28,9.1));default->Shapes.block();};}
+    @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return s.getValue(KIND)==Kind.CASKET||s.getValue(KIND)==Kind.PLAQUE?Shapes.empty():Shapes.block();}
+    @Override protected int getLightBlock(BlockState s,BlockGetter l,BlockPos p){return s.getValue(KIND)==Kind.CASKET||s.getValue(KIND)==Kind.PLAQUE?0:15;}
 }

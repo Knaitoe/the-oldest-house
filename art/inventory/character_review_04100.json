@@ -139,7 +139,7 @@
     {
       "path": "src/main/resources/assets/the_oldest_house/textures/entity/harrigan_mourner_0.png",
       "previous_sha256": "8dd595c2b3a5955ac59448e222028efdbad841a3a0959432facf82ade3566c1d",
-      "sha256": "31b6e04b4e5cf6dcfd46b05893b684f495ed1d9fdd63846cd1b31f3935f2b7d7",
+      "sha256": "f085fa4de8b9bed22c915dda7ee4f3ab313e6d916949d8e58d329f20eb889723",
       "size": [
         256,
         256
@@ -149,7 +149,7 @@
     {
       "path": "src/main/resources/assets/the_oldest_house/textures/entity/harrigan_mourner_1.png",
       "previous_sha256": "4d6800317ff260c916344794955feab055a4f6071254a6a2c04fd03b73b7db0e",
-      "sha256": "b590fb97986ca72f097c0c78a1451ee4d5cb76c45db55aa23ab7d3d92a3f0d06",
+      "sha256": "290b2c1451c2f3c4c3e0cd3a69b98c63e178c2f2bde06f31c56ddc96c4f71737",
       "size": [
         256,
         256
@@ -159,7 +159,7 @@
     {
       "path": "src/main/resources/assets/the_oldest_house/textures/entity/harrigan_mourner_2.png",
       "previous_sha256": "747a145057ef98f7add84ee52eedd7ca4081ec38017f4beca55c29f9061ed222",
-      "sha256": "786ceccd26f9f6ef816a05b998d934357ab364ddb558579f9c348a95ad1d0736",
+      "sha256": "d2cb31f53bce43ef5a649d5280cf5ad0415da5a46cc5543796c1a0879588200f",
       "size": [
         256,
         256

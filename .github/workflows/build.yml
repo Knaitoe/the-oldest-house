@@ -37,6 +37,7 @@ jobs:
           python3 tools/verify_textures.py
           python3 tools/paint_character_skins.py --check
           python3 tools/verify_character_art.py
+          python3 tools/draw_harrigan_funeral_assets.py --check
 
       - name: Verify playtest journey measurements
         run: python3 -m unittest discover -s tools -p test_summarize_playtest_log.py -v
@@ -94,6 +95,10 @@ jobs:
               assert len(json.loads(z.read('assets/the_oldest_house/blockstates/borrasca_fitting.json'))['variants']) == 36
               for cue in ('grinder','grinder_muffled','motor_stop','tree_creak','town_wind'):
                   assert z.read(f'assets/the_oldest_house/sounds/borrasca/{cue}.ogg').startswith(b'OggS')
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/harrigan_finish.json'))['variants']) == 5
+              for material in ('harrigan_casket_wood','harrigan_casket_brass','harrigan_casket_lining','harrigan_plaque_front','harrigan_plaque_back'):
+                  assert z.read(f'assets/the_oldest_house/textures/block/{material}.png').startswith(b'\x89PNG')
+              assert len(json.loads(z.read('assets/the_oldest_house/models/block/harrigan_plaque.json'))['elements']) >= 6
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
               hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
               assert len(hall) == 24
@@ -761,7 +766,7 @@ jobs:
           test -s build/font-smoke/native-npcs.png
           test -s build/font-smoke/native-harrigan-wake.png
           test -s build/font-smoke/character-art-passed.txt
-          for view in $(seq -w 0 22); do test -s build/font-smoke/native-character-art-$view.png; done
+          for view in $(seq -w 0 23); do test -s build/font-smoke/native-character-art-$view.png; done
           test -s build/font-smoke/shallows-passed.txt
           for view in 0 1 2 3 4 5 6 7; do test -s build/font-smoke/native-shallows-$view.png; done
           test -s build/font-smoke/movie-night-passed.txt
@@ -1346,6 +1351,20 @@ jobs:
           path: |
             build/font-smoke/native-borrasca-*.png
             build/font-smoke/borrasca-assets-passed.txt
+          if-no-files-found: error
+      - name: Native Harrigan funeral materials and individual mourners
+        timeout-minutes: 5
+        run: |
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PcharacterArtSmoke --no-daemon
+          test -s build/font-smoke/character-art-passed.txt
+          for view in $(seq -w 0 23); do test -s build/font-smoke/native-character-art-$view.png; done
+          python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: harrigan-funeral-views-${{ github.sha }}
+          path: |
+            build/font-smoke/native-character-art-*.png
+            build/font-smoke/character-art-passed.txt
           if-no-files-found: error
       - name: Native Ghosts textures, joints and prop transitions
         timeout-minutes: 5

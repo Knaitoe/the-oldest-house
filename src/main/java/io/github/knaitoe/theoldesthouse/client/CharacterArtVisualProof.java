@@ -94,9 +94,10 @@ public final class CharacterArtVisualProof extends Screen {
     }
     @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){}
     @Override public void render(GuiGraphics g,int x,int y,float partial){
-        g.fill(0,0,width,height,0xff2b3033);g.drawString(font,"Native character review / "+(page<4?"Harrigan / "+new String[]{"coffin, overhead","coffin, side","face and folded hands","seated original"}[page]:"front and back / sheet "+(page-3)),10,9,0xffe9dfcd,false);g.flush();
+        g.fill(0,0,width,height,0xff2b3033);g.drawString(font,"Native character review / "+(page<4?"Harrigan / "+new String[]{"coffin, overhead","coffin, side","face and folded hands","seated original"}[page]:page==4?"funeral plaque and three mourners":"front and back / sheet "+(page-4)),10,9,0xffe9dfcd,false);g.flush();
         var mc=Minecraft.getInstance();var out=mc.renderBuffers().bufferSource();var p=g.pose();
-        if(page>=4+(cast.size()+7)/8){creatures(g,page-(4+(cast.size()+7)/8));return;}
+        if(page>=5+(cast.size()+7)/8){creatures(g,page-(5+(cast.size()+7)/8));return;}
+        if(page==4){funeral(g);return;}
         if(page<4){
             var m=new HouseHumanRenderers.HarriganModel(mc.getEntityModels().bakeLayer(HouseHumanRenderers.HARRIGAN_LAYER));m.preview(page==3?1:3);
             p.pushPose();p.translate(width*.5F,height*.53F,190);float scale=Math.min(width/3.8F,height/2.6F);float zoom=page==2?1.6F:1;p.scale(scale*zoom,-scale*zoom,scale*zoom);
@@ -107,13 +108,22 @@ public final class CharacterArtVisualProof extends Screen {
             m.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(page==3?HouseHumanRenderers.HARRIGAN:HouseHumanRenderers.HARRIGAN_DEAD)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);out.endBatch();p.popPose();return;
         }
         float cw=(width-16F)/4,ch=(height-35F)/2;
-        int first=(page-4)*8;
+        int first=(page-5)*8;
         for(int i=0;i<8&&first+i<cast.size();i++){
             var row=cast.get(first+i);String name=row.get("name").getAsString();float cx=8+(i%4+.5F)*cw,top=28+(i/4)*ch;
             float scale=Math.min(cw*.32F,ch*.42F);var label=font.split(Component.literal(name.replace("literary_","").replace("nightclub_","club_")),(int)cw-8);for(int line=0;line<Math.min(2,label.size());line++)g.drawString(font,label.get(line),(int)cx-font.width(label.get(line))/2,(int)(top+ch-20)+line*9,0xffe0dacb,false);g.flush();
             for(int view=0;view<2;view++){
                 draw(g,model(row),texture(name),cx+(view==0?-.23F:.23F)*cw,top+ch*.47F,cw*.44F,ch*.85F,view==0?165:20,0);
             }
+        }
+    }
+    private void funeral(GuiGraphics g){
+        var mc=Minecraft.getInstance();var p=g.pose();var out=mc.renderBuffers().bufferSource();float column=width/4F;
+        String[] labels={"Peabody & Sons","Clasped hands","Hand to face","Hand over heart"};
+        for(int i=0;i<4;i++){float x=(i+.5F)*column;g.drawCenteredString(font,labels[i],(int)x,height-26,0xffe0dacb);g.flush();
+            if(i==0){p.pushPose();p.translate(x,height*.77F,180);float scale=Math.min(column*.72F,height*.34F);p.scale(scale,-scale,scale);p.mulPose(Axis.YP.rotationDegrees(-12));p.translate(-.5,0,-.5);
+                mc.getBlockRenderer().renderSingleBlock(HarriganFinishBlock.of(HarriganFinishBlock.Kind.PLAQUE),p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);out.endBatch();p.popPose();}
+            else{var model=new HouseHumanRenderers.HarriganModel(mc.getEntityModels().bakeLayer(HouseHumanRenderers.HARRIGAN_LAYER));model.preview(i+3);draw(g,model,HouseHumanRenderers.mourner(i-1),x,height*.47F,column*.86F,height*.74F,165,0);}
         }
     }
     private static void draw(GuiGraphics g,EntityModel<?> model,ResourceLocation skin,float cx,float cy,float width,float height,float yaw,float pitch){
@@ -147,7 +157,7 @@ public final class CharacterArtVisualProof extends Screen {
         var mc=Minecraft.getInstance();if(!(mc.screen instanceof CharacterArtVisualProof proof)||++proof.frames<8)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);
         try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve(String.format(java.util.Locale.ROOT,"native-character-art-%02d.png",proof.page)));}
-        if(++proof.page<6+(proof.cast.size()+7)/8){proof.frames=0;return;}
+        if(++proof.page<7+(proof.cast.size()+7)/8){proof.frames=0;return;}
         Files.writeString(dir.resolve("character-art-passed.txt"),proof.cast.size()+" human skins on production layers, front and back; native coffin/pillow and three close views, seated original, bounded corpse vertices, joint and renderer-reuse reset checks. Existing character-phase views cover all sixteen Mother stages, witch attacks, cloth girl and earlier creature views. Borrasca excluded. These are staged mesh/UV views, not uninterrupted ordinary playthroughs.\n");
         TheOldestHouse.LOGGER.info("CHARACTER ART CHECK PASSED: {} human sheets and native coffin bounds",proof.cast.size());
         if(Boolean.getBoolean("the_oldest_house.characterArtSmoke"))mc.stop();else mc.setScreen(new ShallowsVisualProof());

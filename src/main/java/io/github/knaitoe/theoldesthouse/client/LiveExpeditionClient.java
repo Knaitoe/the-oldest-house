@@ -270,6 +270,7 @@ public final class LiveExpeditionClient {
         if((step==52||step==53)&&GhostsSocketClient.ready(mc,step,ticks,role,target))ack(mc,step);
         if(step>=47&&step<=51&&CanoeSocketClient.ready(mc,step,ticks,role,target))ack(mc,step);
         if(step>=54&&step<=59&&BorrascaSocketClient.ready(mc,step,ticks,role,target))ack(mc,step);
+        if(step>=60&&step<=62&&HarriganSocketClient.ready(mc,step,ticks,role,target))ack(mc,step);
         if(step==30&&ticks==30){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);mc.options.keyUse.setDown(false);mc.stop();}
     }
     private static boolean open(net.minecraft.world.level.block.state.BlockState s){return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}

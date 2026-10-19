@@ -11,6 +11,9 @@
     },
     "kind=casket": {
       "model": "the_oldest_house:block/harrigan_casket"
+    },
+    "kind=plaque": {
+      "model": "the_oldest_house:block/harrigan_plaque"
     }
   }
 }

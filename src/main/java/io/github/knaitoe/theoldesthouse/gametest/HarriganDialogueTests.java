@@ -85,7 +85,53 @@ public final class HarriganDialogueTests {
             level.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);
         }
     }
-    private static Fixture reading,legacy,phones,observer;
+    private static Fixture reading,legacy,phones,observer,deadReload,casketReload;
+    @AfterBatch(batch="harrigan_dead_reload0506") public static void cleanDeadReload(ServerLevel level){if(deadReload!=null){deadReload.close();deadReload=null;}}
+    @AfterBatch(batch="harrigan_casket_reload0506") public static void cleanCasketReload(ServerLevel level){if(casketReload!=null){casketReload.close();casketReload=null;}}
+    @GameTest(template="empty",batch="harrigan_dead_reload0506",timeoutTicks=220)
+    public static void aLateOriginalCannotAnswerFromItsLivingPhaseAfterTheSecondVisitWasSaved(GameTestHelper h){
+        deadReload=new Fixture(h,27900,false);var f=deadReload;
+        final java.util.UUID[] original={null};final float[] head={0};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(HarriganVignette.harrigan(f.level,f.base,-1)!=null,"the original first-visit body has loaded"))
+            .thenExecute(()->{
+                var body=HarriganVignette.harrigan(f.level,f.base,-1);original[0]=body.getUUID();
+                var saved=new CompoundTag();body.saveWithoutId(saved);
+                var state=f.data().state(HarriganVignette.ID);state.putInt("Visit",2);state.putBoolean("ReadingFinished",true);f.data().setState(HarriganVignette.ID,state);
+                // This is the body's actual pre-arrival NBT, restored after the story's newer saved visit.
+                body.load(saved);f.player.moveTo(body.position().add(0,0,-2));f.player.messages.clear();
+                body.interact(f.player,InteractionHand.MAIN_HAND);
+                h.assertTrue(f.player.messages.isEmpty(),"even before the next scene tick, the dead original neither speaks nor responds to a click");
+            }).thenIdle(25).thenExecute(()->{
+                var body=HarriganVignette.harrigan(f.level,f.base,-1);head[0]=body.getYHeadRot();
+                h.assertTrue(body.getUUID().equals(original[0])&&body.phase()==HarriganVignette.DEAD_PHASE&&body.isNoAi()&&body.isNoGravity()&&body.isSilent(),"native ticks reconcile the same UUID to the motionless dead chair state");
+                f.player.moveTo(body.position().add(2,0,0));f.player.messages.clear();body.interact(f.player,InteractionHand.MAIN_HAND);
+            }).thenIdle(25).thenExecute(()->{
+                var body=HarriganVignette.harrigan(f.level,f.base,-1);
+                h.assertTrue(body.getYHeadRot()==head[0]&&f.player.messages.isEmpty(),"he does not follow the reader's head or react to another interaction");
+                h.assertTrue(!WitnessAccount.has(f.data(),f.player.getUUID(),WitnessAccount.Story.HARRIGAN)&&f.player.getInventory().isEmpty(),"the dead body grants neither ending credit nor items");
+            }).thenSucceed();
+    }
+    @GameTest(template="empty",batch="harrigan_casket_reload0506",timeoutTicks=220)
+    public static void anOlderBodyLoadedAfterTheFuneralSetupIsPlacedInItsActualCasketWithoutAnotherArrival(GameTestHelper h){
+        casketReload=new Fixture(h,28200,false);var f=casketReload;final java.util.UUID[] original={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(HarriganVignette.harrigan(f.level,f.base,-1)!=null,"the original body is loaded before its older entity snapshot"))
+            .thenExecute(()->{
+                var body=HarriganVignette.harrigan(f.level,f.base,-1);original[0]=body.getUUID();var saved=new CompoundTag();body.saveWithoutId(saved);
+                var state=f.data().state(HarriganVignette.ID);state.putInt("Visit",3);f.data().setState(HarriganVignette.ID,state);
+                HarriganVignette.onArrive(f.player,LabyrinthPlace.HARRIGAN);
+                h.assertTrue(f.data().state(HarriganVignette.ID).getBoolean("FuneralHome0505"),"the real third-visit setup has built its funeral home");
+                body.load(saved);f.player.moveTo(f.base.getX()+2.5,f.base.getY(),f.base.getZ()-20);f.player.messages.clear();
+            }).thenIdle(25).thenExecute(()->{
+                var body=HarriganVignette.harrigan(f.level,f.base,-1);var at=f.base.offset(HarriganVignette.CASKET);
+                h.assertTrue(body.getUUID().equals(original[0])&&body.phase()==HarriganVignette.CASKET_PHASE&&body.position().distanceToSqr(new Vec3(at.getX()+.5,at.getY()+.9,at.getZ()+.5))<.0001,"ordinary native ticks bring the late original into the actual casket, with no new arrival or replacement");
+                h.assertTrue(f.level.getEntitiesOfClass(LiteraryActor.class,f.bounds(),a->a.role()==LiteraryActor.HARRIGAN).size()==1&&f.level.getBlockState(at).is(LabyrinthRegistry.HARRIGAN_FINISH.get()),"one body rests in the shipped casket block");
+                h.assertTrue(f.level.getEntitiesOfClass(LiteraryActor.class,f.bounds(),a->a.role()==LiteraryActor.HARRIGAN_MOURNER).size()==3,"his original three mourners remain present");
+                f.player.messages.clear();body.interact(f.player,InteractionHand.MAIN_HAND);
+                h.assertTrue(f.player.messages.isEmpty()&&!WitnessAccount.has(f.data(),f.player.getUUID(),WitnessAccount.Story.HARRIGAN),"the casket body remains silent and the kept/buried-phone decision is still required");
+                var saved=new CompoundTag();body.saveWithoutId(saved);body.load(saved);
+                h.assertTrue(body.getUUID().equals(original[0])&&body.phase()==HarriganVignette.CASKET_PHASE&&body.getBbHeight()==.5F,"native save/load keeps the original corpse identity, phase and low collision body");
+            }).thenSucceed();
+    }
     @AfterBatch(batch="harrigan_observer0493") public static void cleanObserver(ServerLevel level){if(observer!=null){observer.close();observer=null;}}
     @GameTest(template="empty",batch="harrigan_observer0493",timeoutTicks=120)
     public static void anObserverCannotFinishTheReadingOrTakeItsOriginalGift(GameTestHelper h){
