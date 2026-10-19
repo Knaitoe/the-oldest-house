@@ -217,7 +217,7 @@ public final class LiteraryVignettes {
         var own = personal(LabyrinthData.get(p.server), p.getUUID(), LabyrinthPlace.HOLY_RABBIT);
         return rabbitCommitted(own) && !own.getBoolean("Ready");
     }
-    private static void scale(ServerPlayer p,boolean child){var a=p.getAttribute(Attributes.SCALE);if(a==null)return;if(child&&!a.hasModifier(CHILD))a.addTransientModifier(new AttributeModifier(CHILD,-.46,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));else if(!child)a.removeModifier(CHILD);}
+    private static void scale(ServerPlayer p,boolean child){var a=p.getAttribute(Attributes.SCALE);if(a==null)return;if(child&&!a.hasModifier(CHILD)){a.addTransientModifier(new AttributeModifier(CHILD,-.46,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));p.refreshDimensions();}else if(!child&&a.hasModifier(CHILD)){a.removeModifier(CHILD);p.refreshDimensions();}}
     private static void crawl(ServerPlayer p,boolean active){var c=CRAWLS.get(p.getUUID());if(c!=null&&c.p()!=p){restore(c);CRAWLS.remove(p.getUUID());c=null;}if(active&&c==null){CRAWLS.put(p.getUUID(),new Crawl(p,p.getForcedPose(),p.getPose()));p.setForcedPose(Pose.SWIMMING);p.setPose(Pose.SWIMMING);p.refreshDimensions();}else if(!active&&c!=null){restore(c);CRAWLS.remove(p.getUUID());}
         if(active&&(inside(p,LabyrinthPlace.ELK_CARCASSES)||inside(p,LabyrinthPlace.GHOSTS_SET))){
             if(c==null){var house=HouseSavedData.get(p.server);var origin=house.houseOrigin();if(origin!=null)HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.HouseSightlineStatePayload(origin,house.isImpossibleDoorRevealed()));}
