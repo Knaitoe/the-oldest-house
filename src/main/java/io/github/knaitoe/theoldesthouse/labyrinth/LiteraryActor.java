@@ -38,8 +38,8 @@ public final class LiteraryActor extends PathfinderMob {
     public void say(String text){setCustomName(Component.literal(text));setCustomNameVisible(true);}
     @Override public void tick(){
         boolean privateKiller=!level().isClientSide&&role()==KILLER&&scene.equals(LabyrinthPlace.ELK_CARCASSES.id())&&owner().isPresent();
-        var before=position();boolean active=!privateKiller||privateHunt.prepare(this);super.tick();
-        if(!level().isClientSide){GhostsMotion.tick(this);LiteraryMotion.tick(this);BorrascaStory.actorTick(this);}
+        var before=position();boolean active=!privateKiller||privateHunt.prepare(this);if(!level().isClientSide)BorrascaStory.actorTick(this);super.tick();
+        if(!level().isClientSide){GhostsMotion.tick(this);LiteraryMotion.tick(this);}
         if(role()==LAKE_TESS)setAirSupply(getMaxAirSupply());
         if(privateKiller){if(active)privateHunt.tick(this,before);}
         else if(!level().isClientSide&&role()==KILLER&&(scene.equals(LabyrinthPlace.CAMP_BLOOD.id())||scene.equals(LabyrinthPlace.ELK_CARCASSES.id())))carcassHunt.tick(this);
