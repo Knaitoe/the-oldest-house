@@ -13,8 +13,9 @@ No additional pre-existing PNG is repainted.
 
 The ward has native fittings using those materials: metal beds and their pillows,
 chairs, stools, bedside cabinets and tables. The fitted geometry follows the existing
-institute furniture meshes; door and connected-pane geometry remain native. The empty
-incubator retains its original collision footprint and location and now resolves its
+institute furniture meshes; door and connected-pane geometry remain native. Chairs
+and stools retain the normal sitting handler, half-block seat height and facing.
+The empty incubator retains its original collision footprint and location and resolves its
 own enamel, glass, mattress and control face. Thin enamel rails inside the existing
 glass volume make its clear case legible. Its controls face the authored approach.
 
@@ -54,6 +55,12 @@ The first ward test at `27094bf` failed because its untamed cat was rejected by 
 spawn rules, leaving no resident to guard. The fixture now uses an owned native cat
 and explicitly requires successful registration before checking vacancy; ownership,
 health and UUID preservation are also asserted. No resident guard is relaxed.
+The ward check also mounts the actual reader on the refitted chair at its original
+height and facing. The native elk-rebuild identity case, unchanged in production code,
+failed once with its original/landing entity sections unleased and a fixed ten-tick
+assertion. Its fixture now holds both sections and waits for native readiness and
+reader enrollment, retaining all UUID, ownership, health, item and physics assertions
+and its existing timeout. The leases are released by the existing fixture cleanup.
 
 Three new native GPU views show a staged ward cutaway and its fittings. Every possible
 new fixture, door and pane state, and every incubator facing, must resolve custom ward
