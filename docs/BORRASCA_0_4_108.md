@@ -29,3 +29,5 @@ After a confirmed early return, the next entry prepares the saved originals whil
 The preceding 0.4.107 build failed the hospital supported-detail check: the new bedside cabinet top stopped at 15/16 block height, leaving the authored towels unsupported. This checkpoint brings both native collision and the matching cabinet mesh to the block top. Its deterministic ward asset check passes; the full architecture regression must pass again.
 
 The initial generated material study was rejected as too detailed for vanilla. The candidate texture is drawn from scratch at native pixel resolution by `tools/generate_borrasca_trail_assets.py`, which also creates the meshes. `--check` verifies every pixel and generated definition. The material specification is retained at `docs/art/borrasca-trail-atlas.prompt.txt`. `tools/compose_borrasca_trail.py` creates only the four new recordings.
+
+Native frame review caught back-facing bark lettering and mirrored geometric labels. Their face directions are corrected; the GPU proof now also requires visible differences between otherwise identical unnamed/named bark states. The broader run remains pending.

@@ -145,12 +145,13 @@ def model(elements):
 
 def letters(word, x, y, z, size, tile):
     result = []
+    start=x; width=(len(word)*4-1)*size
     for char in word:
         rows = GLYPHS[char]
         for row, line in enumerate(rows):
             for col, pixel in enumerate(line):
                 if pixel == '1':
-                    a, b = x + col * size, y + (len(rows) - row - 1) * size
+                    a, b = start+width-(x-start+col*size)-size, y + (len(rows) - row - 1) * size
                     result.append(cube((a,b,z,a+size*.88,b+size*.88,z+.08),tile))
         x += 4 * size
     return result
