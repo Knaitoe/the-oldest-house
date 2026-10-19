@@ -1,7 +1,7 @@
 {
   "textures": {
-    "atlas": "the_oldest_house:entity/borrasca_atlas",
-    "particle": "the_oldest_house:entity/borrasca_atlas"
+    "atlas": "the_oldest_house:entity/borrasca_cast_pixels",
+    "particle": "the_oldest_house:entity/borrasca_cast_pixels"
   },
   "elements": [
     {

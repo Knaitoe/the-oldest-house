@@ -7,6 +7,7 @@ from PIL import Image, ImageDraw
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'src/main/resources/assets/the_oldest_house'
 ATLAS = 'the_oldest_house:entity/borrasca_trail_atlas'
+CAST_ATLAS = 'the_oldest_house:entity/borrasca_cast_pixels'
 FACES = ('north', 'south', 'east', 'west', 'up', 'down')
 GLYPHS = {
     '1': ('010','110','010','010','010','010','111'),
@@ -33,8 +34,8 @@ def paintings():
         d.line((x+2,y,x+2,min(15,y+height-2)),fill='#776044')
     d.line((0,11,2,11,2,15),fill='#453825');d.line((11,2,11,5,12,5),fill='#8a7150')
     tiles.append(tiles[0].copy());d=ImageDraw.Draw(tiles[-1])
-    d.polygon(((2,4),(13,3),(12,6),(14,8),(12,11),(3,12),(4,9),(2,8)),fill='#c2a777')
-    for y,x in ((5,4),(7,3),(9,5),(11,4)):
+    d.polygon(((2,3),(13,2),(12,4),(14,5),(12,7),(3,8),(4,6),(2,5)),fill='#c2a777')
+    for y,x in ((3,4),(5,3),(7,5)):
         d.line((x,y,11,y),fill='#e0c692');d.point((12,y),fill='#977b51')
     d = tile('#79705a')
     for y in (0,7,15):d.line((0,y,15,y),fill='#403f34')
@@ -89,6 +90,39 @@ def paintings():
     atlas=Image.new('RGBA',(64,64))
     for i,im in enumerate(tiles):atlas.paste(im,((i%4)*16,(i//4)*16))
     assert len(tiles)==16
+    return atlas
+
+
+def cast_painting():
+    """Eight logical pixels across each head, like a vanilla player head."""
+    tiles=[]
+    faces=(('#ad8461','#4b392b','#63746e'),('#c99c76','#623f2c','#547561'),
+           ('#b58e6c','#3a3b2d','#526d79'),('#af8a68','#686653','#646c56'))
+    for person,(skin,hair,eyes) in enumerate(faces):
+        im=Image.new('RGBA',(8,8),skin);d=ImageDraw.Draw(im)
+        d.rectangle((0,0,7,1),fill=hair);d.point((0,2),fill=hair);d.point((7,2),fill=hair)
+        if person==1:d.rectangle((0,2,0,6),fill=hair);d.rectangle((7,2,7,6),fill=hair)
+        if person==2:d.rectangle((0,0,7,1),fill='#4b5648');d.line((0,2,7,2),fill='#85794b')
+        d.point((1,4),fill='#d8c4a1');d.point((6,4),fill='#d8c4a1');d.point((2,4),fill=eyes);d.point((5,4),fill=eyes)
+        d.line((3,5,4,5),fill='#9c7052');d.line((3,6,4,6),fill='#885c46')
+        if person==2:d.line((2,6,5,6),fill=hair)
+        tiles.append(im)
+    for i,base in enumerate(('#6d6651','#6a7376','#506574','#716449')):
+        im=Image.new('RGBA',(8,8),base);d=ImageDraw.Draw(im)
+        d.line((0,0,7,0),fill='#424c46');d.line((3,1,3,7),fill='#52594b')
+        d.point((4,2),fill='#a9a38a');d.point((4,5),fill='#a9a38a')
+        if i==2:d.rectangle((5,2,6,3),fill='#b49b55');d.line((0,7,7,7),fill='#393f34')
+        if i==1:d.line((0,5,7,5),fill='#8b5149')
+        tiles.append(im)
+    for base,line in (('#4b5552','#3a4543'),('#5b5849','#474a3e'),('#bd9270','#c79e79'),('#3d3b32','#4f4b3e')):
+        im=Image.new('RGBA',(8,8),base);ImageDraw.Draw(im).line((0,7,7,7),fill=line);tiles.append(im)
+    # Retained prop UVs use the same four-by-four islands; author their materials at native scale too.
+    for base,line in (('#66533b','#493e2f'),('#8f9a90','#64746a'),('#85583d','#a36f45'),('#d0c8a9','#96977f')):
+        im=Image.new('RGBA',(8,8),base);d=ImageDraw.Draw(im)
+        for y in (1,5):d.line((1,y,6,y),fill=line)
+        tiles.append(im)
+    atlas=Image.new('RGBA',(32,32))
+    for i,im in enumerate(tiles):atlas.paste(im,(i%4*8,i//4*8))
     return atlas
 
 
@@ -151,6 +185,10 @@ def outputs():
         digit = letters(number,5.5,2.7,13.8,1.45,12)
         out[f'models/block/borrasca_trail_marker_{name}.json'] = model([cube((0,0,14,16,16,16),2),*digit])
     old = ('timber','steel','rust','paper','notice','carving','drawers','belt','truck')
+    for name in (*old,'machine'):
+        native=json.loads((ASSETS / f'models/block/borrasca_{name}.json').read_text())
+        native['textures']={k:CAST_ATLAS for k in native['textures']}
+        out[f'models/block/borrasca_{name}.json']=native
     new = tuple(kinds) + ('fence','marker_one','marker_two','marker_three','marker_four')
     states = {}
     for name in (*old,*new):
@@ -181,6 +219,9 @@ def outputs():
     source = {'type':'minecraft:single','resource':ATLAS,'sprite':ATLAS}
     if source not in atlas['sources']:
         atlas['sources'].append(source)
+    source = {'type':'minecraft:single','resource':CAST_ATLAS,'sprite':CAST_ATLAS}
+    if source not in atlas['sources']:
+        atlas['sources'].append(source)
     out['../minecraft/atlases/blocks.json'] = atlas
     lang = json.loads((ASSETS / 'lang/en_us.json').read_text())
     lang.update({'block.the_oldest_house.borrasca_bark':'Carved pine bark',
@@ -205,13 +246,13 @@ def main():
     parser.add_argument('--check', action='store_true')
     args = parser.parse_args()
     changed = []
-    path = ASSETS / 'textures/entity/borrasca_trail_atlas.png'
-    image = paintings()
-    if args.check:
-        with Image.open(path) as actual:
-            assert actual.size == (64,64) and actual.convert('RGBA').tobytes() == image.tobytes(), 'Native trail pixels differ'
-    else:
-        image.save(path,optimize=True)
+    for name,image in (('borrasca_trail_atlas',paintings()),('borrasca_cast_pixels',cast_painting())):
+        path = ASSETS / f'textures/entity/{name}.png'
+        if args.check:
+            with Image.open(path) as actual:
+                assert actual.size == image.size and actual.convert('RGBA').tobytes() == image.tobytes(), 'Native pixels differ: '+name
+        else:
+            image.save(path,optimize=True)
     for name, value in outputs().items():
         path = ASSETS / name
         content = json.dumps(value,indent=2,ensure_ascii=False)+'\n'

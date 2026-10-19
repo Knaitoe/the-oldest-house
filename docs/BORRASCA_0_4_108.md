@@ -13,11 +13,13 @@ The development branch starts at `89ec9f9`, retaining the Claude, Harrigan and n
 - Two finite owner-bound originals, the compass and cloth name patch; native pickup/drop protection and saved compass confiscation/reclamation.
 - Timed taking with occluded departure, directional glare controlled by the vanilla screen-effect setting, dust cues, a real flashlight cone and nonlethal detection/retry.
 - A routine impound record naming the Sheriff's office and Prescott, and a saved irreversible breaker shutdown. The first-visit legend withholds the cause.
-- One new 64×64 atlas containing sixteen authored 16×16 material tiles, native prop/item models and four original synthetic contact/triad recordings. Limited palettes, connected pixel clusters and hard pixel edges match vanilla's material scale. The retained cast atlas and all other pre-existing PNGs are unchanged.
+- One new 64×64 atlas containing sixteen authored 16×16 material tiles, plus a 32×32 cast atlas with eight-pixel faces matching vanilla heads. Limited palettes, connected pixel clusters and hard pixel edges keep props, people and the machine consistent with vanilla. Native prop/item models and four original synthetic contact/triad recordings. All pre-existing PNGs remain unchanged.
 
 ## Verification
 
 Development checkpoint: compilation and expanded gameplay/client verification are pending. Do not describe this as a verified release or a completed ordinary four-visit playthrough. Existing Borrasca progression checks and connected drivers are being rewritten for the replacement; unrelated coverage stays in place. All twelve CI jobs and the declared native corpus remain required.
+
+Ten replacement Borrasca native cases cover child/Friend ladder motion, adult gully/service clearance, four confirmed returns with explicitly staged endpoints, ownership/privacy, reload, finite original custody, taking aftermath, denial/handover and continuous escort. The connected drivers now use the original Friend and name patch; final-visit socket staging cannot fabricate the three earlier returns. Native asset sheets cover all 104 fitting/facing variants across four bounded pages. Architecture adds gully and taking-clearing views. These checks still need to pass on the current source.
 
 The preceding 0.4.107 build failed the hospital supported-detail check: the new bedside cabinet top stopped at 15/16 block height, leaving the authored towels unsupported. This checkpoint brings both native collision and the matching cabinet mesh to the block top. Its deterministic ward asset check passes; the full architecture regression must pass again.
 

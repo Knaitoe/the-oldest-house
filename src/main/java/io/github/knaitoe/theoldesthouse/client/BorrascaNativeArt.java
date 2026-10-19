@@ -20,7 +20,7 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 /** Explicit per-face material islands: no stock skin net can cross into another painted face. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
 public final class BorrascaNativeArt {
-    public static final ResourceLocation ATLAS=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/borrasca_atlas.png");
+    public static final ResourceLocation ATLAS=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/borrasca_cast_pixels.png");
     public static final ModelLayerLocation CAST=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"borrasca_cast"),"main");
     private BorrascaNativeArt(){}
     @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions e){e.registerLayerDefinition(CAST,()->LayerDefinition.create(HumanoidModel.createMesh(CubeDeformation.NONE,0),64,64));}
@@ -36,7 +36,7 @@ public final class BorrascaNativeArt {
                 case 5->{body.xRot=.42F;leftLeg.xRot=-.3F;rightLeg.xRot=-.3F;leftArm.xRot=-.35F;rightArm.xRot=-.35F;head.xRot=-.1F;}
                 default->{}
             }HumanoidMotion.connect(this);}
-        public void preview(int person,float age,float stride){HumanoidMotion.reset(this);this.person=person;HumanoidMotion.gait(this,age*.22F,stride,false);head.yRot=.22F*(float)Math.sin(age*.02F);HumanoidMotion.connect(this);}
+        public void preview(int person,float age,float stride){HumanoidMotion.reset(this);this.person=person;worker=false;HumanoidMotion.gait(this,age*.22F,stride,false);head.yRot=.22F*(float)Math.sin(age*.02F);HumanoidMotion.connect(this);}
         @Override public void renderToBuffer(PoseStack p,VertexConsumer out,int light,int overlay,int colour){
             joint(head,p,()->{cube(p,out,-4,-8,-4,4,0,4,10,light,overlay,colour);cube(p,out,-4.06F,-8.08F,-3.98F,4.06F,person==1?2:-3,4.08F,16+person,light,overlay,colour);quad(p,out,new float[][]{{-4,-8,-4.09F},{4,-8,-4.09F},{4,0,-4.09F},{-4,0,-4.09F}},person,0,0,-1,light,overlay,colour);});
             joint(body,p,()->cube(p,out,-4.2F,0,-2.1F,4.2F,12,2.1F,worker?13:4+person,light,overlay,colour));

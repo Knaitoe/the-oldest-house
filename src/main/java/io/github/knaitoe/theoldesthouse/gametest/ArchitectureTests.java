@@ -120,7 +120,7 @@ public final class ArchitectureTests {
             export(HouseTestLevel.get(server,HouseDimensions.OUTSIDE),LabyrinthPlaces.base(origin,LabyrinthPlace.LAKE_HOUSE_EMPTY),LabyrinthPlace.LAKE_HOUSE_EMPTY);
             // The house at the bottom of the lake, in section through both storeys under the water.
             export(HouseTestLevel.get(server,HouseDimensions.OUTSIDE),LabyrinthPlaces.base(origin,LabyrinthPlace.LAKE_HOUSE),LabyrinthPlace.LAKE_HOUSE,"lake_house_cutaway");
-            for(String view:List.of("borrasca_treehouse","borrasca_refinery"))export(HouseTestLevel.get(server,HouseDimensions.OUTSIDE),LabyrinthPlaces.base(origin,LabyrinthPlace.BORRASCA),LabyrinthPlace.BORRASCA,view);
+            for(String view:List.of("borrasca_treehouse","borrasca_refinery","borrasca_gully","borrasca_taking"))export(HouseTestLevel.get(server,HouseDimensions.OUTSIDE),LabyrinthPlaces.base(origin,LabyrinthPlace.BORRASCA),LabyrinthPlace.BORRASCA,view);
             elkStages(h,HouseTestLevel.get(server,HouseDimensions.OUTSIDE),LabyrinthPlaces.base(origin,LabyrinthPlace.ELK_CARCASSES));
             // The hotel (0.4.105) is built whole: its three floors, and the grounds with the rear wall they see.
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL);
@@ -411,6 +411,8 @@ public final class ArchitectureTests {
         if(scene==LabyrinthPlace.BORRASCA){minX=-34;maxX=35;minZ=-69;maxZ=0;minY=-1;maxY=4;}
         if(name.equals("borrasca_treehouse")){minX=-7;maxX=7;minZ=-103;maxZ=-85;minY=-1;maxY=9;}
         if(name.equals("borrasca_refinery")){minX=-30;maxX=15;minZ=-211;maxZ=-166;minY=10;maxY=16;}
+        if(name.equals("borrasca_gully")){minX=-20;maxX=12;minZ=-142;maxZ=-96;minY=-1;maxY=12;}
+        if(name.equals("borrasca_taking")){minX=-18;maxX=17;minZ=-169;maxZ=-139;minY=7;maxY=19;}
         for(int x=minX;x<=maxX;x++)for(int y=minY;y<=maxY;y++)for(int z=minZ;z<=maxZ;z++){
             var at=b.offset(x,y,z);var s=l.getBlockState(at);if(s.is(LiteraryRegistry.FROZEN.get()))s=LiteraryFrozenBlock.original(l,at);
             if(s.isAir()||s.is(Blocks.BARRIER)||s.is(Blocks.LIGHT))continue;
