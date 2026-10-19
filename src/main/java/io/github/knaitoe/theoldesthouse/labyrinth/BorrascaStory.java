@@ -172,7 +172,7 @@ public final class BorrascaStory {
         if(own.getInt("TrailClock")%200==0){heard(p,BorrascaRegistry.CHIME.get(),b.offset(BorrascaRooms.MACHINE),.8F);dust(p);}
         if(own.getBoolean("Escorting")){
             var end=Vec3.atBottomCenterOf(b.offset(2,4,-119));if(p.getZ()>=end.z-.5&&sheriff.position().distanceToSqr(end)<4){own.putBoolean("Escorting",false);own.putInt("CaughtCooldown",80);BorrascaCast.stop(sheriff);return;}
-            if(sheriff.distanceToSqr(p)>9)BorrascaCast.walk(sheriff,p.position(),.6);else{BorrascaCast.walk(sheriff,end,.65);Vec3 delta=end.subtract(p.position()).multiply(1,0,1);if(delta.lengthSqr()>1){p.push(delta.normalize().x*.045,0,delta.normalize().z*.045);p.hurtMarked=true;}}return;
+            if(sheriff.distanceToSqr(p)>9)BorrascaCast.walk(sheriff,p.position(),.6);else{BorrascaCast.walk(sheriff,end,.65);Vec3 delta=end.subtract(p.position()).multiply(1,0,1);if(delta.lengthSqr()>.16){p.push(delta.normalize().x*.045,0,delta.normalize().z*.045);p.hurtMarked=true;}}return;
         }
         int cooldown=Math.max(0,own.getInt("CaughtCooldown")-5);own.putInt("CaughtCooldown",cooldown);BorrascaCast.walk(sheriff,Vec3.atBottomCenterOf(b.offset(BorrascaRooms.SHERIFF)),.65);
         float yaw=flashlightYaw(own);sheriff.setYRot(yaw);sheriff.setYBodyRot(yaw);sheriff.setYHeadRot(yaw);sheriff.gesture(4);
