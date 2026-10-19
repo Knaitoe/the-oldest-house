@@ -1,0 +1,24 @@
+# Borrasca — development 0.4.108
+
+This implements the [reviewed four-visit design](BORRASCA_FOUR_VISITS_PROPOSAL.md) for new builds. It replaces the earlier town itinerary with the pine trail, the Triple Tree pact, Kimber's disappearance, the adult return and Sheriff's blockade, and the refinery investigation.
+
+The development branch starts at `89ec9f9`, retaining the Claude, Harrigan and night-ward work. Version 0.4.108 / network protocol 82 / layout 45. Borrasca remains one Understanding source: 46 eligible stories, 35 required across two kinds, three House endings. The optional restored name changes the bark and adds an account line.
+
+## Implemented checkpoint
+
+- One continuous outdoor trail, four marker plates, ladder/fort, a fern gully for an adult's crouch and an enclosed compound with a service descent.
+- Native child scale for visits one and two, released for the adult return and on leaving the site.
+- Original saved Friend, Sheriff, Prescott and workers; native per-tick movement, knife/compass/flashlight hand poses and a physical walking escort.
+- Personal carved names drawn by a native block-entity renderer. The steel gouge remains under the restored name.
+- Two finite owner-bound originals, the compass and cloth name patch; native pickup/drop protection and saved compass confiscation/reclamation.
+- Timed taking with occluded departure, directional glare controlled by the vanilla screen-effect setting, dust cues, a real flashlight cone and nonlethal detection/retry.
+- A routine impound record naming the Sheriff's office and Prescott, and a saved irreversible breaker shutdown. The first-visit legend withholds the cause.
+- One new generated 4×4 material atlas, native prop/item models and four original synthetic contact/triad recordings. The retained cast atlas and all other pre-existing PNGs are unchanged.
+
+## Verification
+
+Development checkpoint: compilation and expanded gameplay/client verification are pending. Do not describe this as a verified release or a completed ordinary four-visit playthrough. Existing Borrasca progression checks and connected drivers are being rewritten for the replacement; unrelated coverage stays in place. All twelve CI jobs and the declared native corpus remain required.
+
+The preceding 0.4.107 build failed the hospital supported-detail check: the new bedside cabinet top stopped at 15/16 block height, leaving the authored towels unsupported. This checkpoint brings both native collision and the matching cabinet mesh to the block top. Its deterministic ward asset check passes; the full architecture regression must pass again.
+
+Generated art uses the built-in image-generation tool. Its prompt is retained at `docs/art/borrasca-trail-atlas.prompt.txt`; project asset: `src/main/resources/assets/the_oldest_house/textures/entity/borrasca_trail_atlas.png`. Native models are reproducible with `python3 tools/generate_borrasca_trail_assets.py`; `--check` verifies the generated definitions. `tools/compose_borrasca_trail.py` creates only the four new recordings.

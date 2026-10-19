@@ -27,7 +27,7 @@ public final class NightWardBlock extends HorizontalDirectionalBlock {
         case BED_HEAD->InstituteFixtureBlock.boxes(InstituteFixtureBlock.Kind.BED_HEAD);
         case BED_FOOT->InstituteFixtureBlock.boxes(InstituteFixtureBlock.Kind.BED_FOOT);
         case CHAIR->InstituteFixtureBlock.boxes(InstituteFixtureBlock.Kind.CHAIR);
-        case BEDSIDE->InstituteFixtureBlock.boxes(InstituteFixtureBlock.Kind.BEDSIDE);
+        case BEDSIDE->new double[][]{{1,3,1,15,16,15},{2,0,2,4,3,4},{12,0,2,14,3,4},{2,0,12,4,3,14},{12,0,12,14,3,14}};
         case TABLE->InstituteFixtureBlock.boxes(InstituteFixtureBlock.Kind.TABLE);
         case STOOL->InstituteFixtureBlock.boxes(InstituteFixtureBlock.Kind.STOOL);
         case LIGHT->new double[][]{{0,0,0,16,16,16}}; // keeps the authored sea lantern's support and light volume

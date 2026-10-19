@@ -324,5 +324,13 @@
   "subtitles.the_oldest_house.phone.his_ring": "His phone rings",
   "block.the_oldest_house.masque": "Masque chamber piece",
   "block.the_oldest_house.manor": "Manor piece",
-  "block.the_oldest_house.stanley": "Hotel piece"
+  "block.the_oldest_house.stanley": "Hotel piece",
+  "block.the_oldest_house.borrasca_bark": "Carved pine bark",
+  "item.the_oldest_house.borrasca_compass": "Kimber's compass",
+  "item.the_oldest_house.borrasca_name_patch": "Kimber's name patch",
+  "item.the_oldest_house.borrasca_flashlight": "County flashlight",
+  "subtitles.the_oldest_house.borrasca.triple_chime": "Metallic cry from the ridge",
+  "subtitles.the_oldest_house.borrasca.carve": "Knife scrapes wood",
+  "subtitles.the_oldest_house.borrasca.breaker": "Breaker drops",
+  "subtitles.the_oldest_house.borrasca.chain": "Chain rattles"
 }

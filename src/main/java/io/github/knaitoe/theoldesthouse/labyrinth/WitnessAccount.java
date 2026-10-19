@@ -86,7 +86,7 @@ public final class WitnessAccount {
         FAMILY_COPY("family_copy","The house they remembered","memory","They welcomed me into a house I had actually lived in, and thanked me at the door for looking after it."),
         THREE_FINGERS("three_fingers","The last finger","release","I took the paw out of the fire and wished on it. Every wish came true in the worst way it could. I chose how the last finger fell."),
         LAKE_HOUSE("lake_house","The house in the third lake","connection","There was a house on the bottom of the lake, and every time we went down it let us a little further in. We kept to one rule and didn't ask how. In the end I went back to meet whoever lived there."),
-        BORRASCA("borrasca","The names brought out of Drisking","understanding","I returned to the town, followed its ordinary machinery and brought an original account of its crimes back through the door. The thing in the mountain was people whom the town already knew.");
+        BORRASCA("borrasca","The name beside mine","understanding","I came back grown. Her name had been cut from the tree. The Sheriff and Prescott had signed for her things. I stopped the machine and brought out her name.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}
@@ -220,7 +220,7 @@ public final class WitnessAccount {
                         case WALLPAPER->"The plaster showed through four seams. Someone had kept the pages the room was meant to conceal.";
                         case HOTEL->"The second place was empty. The desk still held the missing things. The heating plant had been attended.";
                         default->story.text;
-                    }:story==Story.HOTEL?HotelTexts.witness(stories.getString(story.id)):story.text;
+                    }:story==Story.HOTEL?HotelTexts.witness(stories.getString(story.id)):story==Story.BORRASCA?BorrascaTexts.witness(LiteraryVignettes.personal(data,player,LabyrinthPlace.BORRASCA)):story.text;
             // Accounts written before 0.4.66 heard the institute end in its middle attic; their words stay theirs.
             boolean attic=story==Story.WHALE&&stories.getString(story.id).equals("read_the_final_page");
             if(attic)text=LEGACY_WHALE;

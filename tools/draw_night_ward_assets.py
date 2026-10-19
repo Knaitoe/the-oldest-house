@@ -80,6 +80,7 @@ def models():
             mapping={'enamel':'enamel','ivory':'sheet','vinyl':'blanket','steel':'steel','cabinet':'enamel','laminate':'enamel'}
             for part in elements:
                 for face in part['faces'].values():face['texture']='#'+mapping[face['texture'][1:]]
+            if k=='bedside':elements[0]['to'][1]=16
             if k.startswith('bed_'):
                 for face in elements[1]['faces'].values():face['texture']='#blanket'
             materials=sorted({f['texture'][1:] for e in elements for f in e['faces'].values()})

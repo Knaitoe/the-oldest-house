@@ -4,6 +4,11 @@
       "type": "minecraft:single",
       "resource": "the_oldest_house:entity/borrasca_atlas",
       "sprite": "the_oldest_house:entity/borrasca_atlas"
+    },
+    {
+      "type": "minecraft:single",
+      "resource": "the_oldest_house:entity/borrasca_trail_atlas",
+      "sprite": "the_oldest_house:entity/borrasca_trail_atlas"
     }
   ]
 }
