@@ -1,8 +1,8 @@
 # Borrasca: the name beside yours
 
-Design proposal — revised after owner review, 19 October 2026. Not implemented or playtested.
+Approved design — revised after owner review, 19 October 2026. Implementation is in development; see [current work and verification](BORRASCA_0_4_108.md).
 
-This specifies a new Borrasca vignette for new builds, replacing the current Borrasca implementation. Its scope is comparable to the hotel rebuild or larger. This document records the design; gameplay implementation and playtesting are future work.
+This specifies a new Borrasca vignette for new builds, replacing the earlier Borrasca implementation. Its scope is comparable to the hotel rebuild or larger. This document records the approved design; current implementation and playtesting evidence are tracked separately.
 
 ## The central idea
 
