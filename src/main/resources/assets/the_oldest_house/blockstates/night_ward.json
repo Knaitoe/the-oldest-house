@@ -1,0 +1,214 @@
+{
+  "variants": {
+    "facing=north,kind=wall": {
+      "model": "the_oldest_house:block/night_ward_wall"
+    },
+    "facing=east,kind=wall": {
+      "model": "the_oldest_house:block/night_ward_wall",
+      "y": 90
+    },
+    "facing=south,kind=wall": {
+      "model": "the_oldest_house:block/night_ward_wall",
+      "y": 180
+    },
+    "facing=west,kind=wall": {
+      "model": "the_oldest_house:block/night_ward_wall",
+      "y": 270
+    },
+    "facing=north,kind=dado": {
+      "model": "the_oldest_house:block/night_ward_dado"
+    },
+    "facing=east,kind=dado": {
+      "model": "the_oldest_house:block/night_ward_dado",
+      "y": 90
+    },
+    "facing=south,kind=dado": {
+      "model": "the_oldest_house:block/night_ward_dado",
+      "y": 180
+    },
+    "facing=west,kind=dado": {
+      "model": "the_oldest_house:block/night_ward_dado",
+      "y": 270
+    },
+    "facing=north,kind=floor": {
+      "model": "the_oldest_house:block/night_ward_floor"
+    },
+    "facing=east,kind=floor": {
+      "model": "the_oldest_house:block/night_ward_floor",
+      "y": 90
+    },
+    "facing=south,kind=floor": {
+      "model": "the_oldest_house:block/night_ward_floor",
+      "y": 180
+    },
+    "facing=west,kind=floor": {
+      "model": "the_oldest_house:block/night_ward_floor",
+      "y": 270
+    },
+    "facing=north,kind=ceiling": {
+      "model": "the_oldest_house:block/night_ward_ceiling"
+    },
+    "facing=east,kind=ceiling": {
+      "model": "the_oldest_house:block/night_ward_ceiling",
+      "y": 90
+    },
+    "facing=south,kind=ceiling": {
+      "model": "the_oldest_house:block/night_ward_ceiling",
+      "y": 180
+    },
+    "facing=west,kind=ceiling": {
+      "model": "the_oldest_house:block/night_ward_ceiling",
+      "y": 270
+    },
+    "facing=north,kind=curtain": {
+      "model": "the_oldest_house:block/night_ward_curtain"
+    },
+    "facing=east,kind=curtain": {
+      "model": "the_oldest_house:block/night_ward_curtain",
+      "y": 90
+    },
+    "facing=south,kind=curtain": {
+      "model": "the_oldest_house:block/night_ward_curtain",
+      "y": 180
+    },
+    "facing=west,kind=curtain": {
+      "model": "the_oldest_house:block/night_ward_curtain",
+      "y": 270
+    },
+    "facing=north,kind=call_panel": {
+      "model": "the_oldest_house:block/night_ward_call_panel"
+    },
+    "facing=east,kind=call_panel": {
+      "model": "the_oldest_house:block/night_ward_call_panel",
+      "y": 90
+    },
+    "facing=south,kind=call_panel": {
+      "model": "the_oldest_house:block/night_ward_call_panel",
+      "y": 180
+    },
+    "facing=west,kind=call_panel": {
+      "model": "the_oldest_house:block/night_ward_call_panel",
+      "y": 270
+    },
+    "facing=north,kind=window": {
+      "model": "the_oldest_house:block/night_ward_window"
+    },
+    "facing=east,kind=window": {
+      "model": "the_oldest_house:block/night_ward_window",
+      "y": 90
+    },
+    "facing=south,kind=window": {
+      "model": "the_oldest_house:block/night_ward_window",
+      "y": 180
+    },
+    "facing=west,kind=window": {
+      "model": "the_oldest_house:block/night_ward_window",
+      "y": 270
+    },
+    "facing=north,kind=bed_head": {
+      "model": "the_oldest_house:block/night_ward_bed_head"
+    },
+    "facing=east,kind=bed_head": {
+      "model": "the_oldest_house:block/night_ward_bed_head",
+      "y": 90
+    },
+    "facing=south,kind=bed_head": {
+      "model": "the_oldest_house:block/night_ward_bed_head",
+      "y": 180
+    },
+    "facing=west,kind=bed_head": {
+      "model": "the_oldest_house:block/night_ward_bed_head",
+      "y": 270
+    },
+    "facing=north,kind=bed_foot": {
+      "model": "the_oldest_house:block/night_ward_bed_foot"
+    },
+    "facing=east,kind=bed_foot": {
+      "model": "the_oldest_house:block/night_ward_bed_foot",
+      "y": 90
+    },
+    "facing=south,kind=bed_foot": {
+      "model": "the_oldest_house:block/night_ward_bed_foot",
+      "y": 180
+    },
+    "facing=west,kind=bed_foot": {
+      "model": "the_oldest_house:block/night_ward_bed_foot",
+      "y": 270
+    },
+    "facing=north,kind=chair": {
+      "model": "the_oldest_house:block/night_ward_chair"
+    },
+    "facing=east,kind=chair": {
+      "model": "the_oldest_house:block/night_ward_chair",
+      "y": 90
+    },
+    "facing=south,kind=chair": {
+      "model": "the_oldest_house:block/night_ward_chair",
+      "y": 180
+    },
+    "facing=west,kind=chair": {
+      "model": "the_oldest_house:block/night_ward_chair",
+      "y": 270
+    },
+    "facing=north,kind=bedside": {
+      "model": "the_oldest_house:block/night_ward_bedside"
+    },
+    "facing=east,kind=bedside": {
+      "model": "the_oldest_house:block/night_ward_bedside",
+      "y": 90
+    },
+    "facing=south,kind=bedside": {
+      "model": "the_oldest_house:block/night_ward_bedside",
+      "y": 180
+    },
+    "facing=west,kind=bedside": {
+      "model": "the_oldest_house:block/night_ward_bedside",
+      "y": 270
+    },
+    "facing=north,kind=table": {
+      "model": "the_oldest_house:block/night_ward_table"
+    },
+    "facing=east,kind=table": {
+      "model": "the_oldest_house:block/night_ward_table",
+      "y": 90
+    },
+    "facing=south,kind=table": {
+      "model": "the_oldest_house:block/night_ward_table",
+      "y": 180
+    },
+    "facing=west,kind=table": {
+      "model": "the_oldest_house:block/night_ward_table",
+      "y": 270
+    },
+    "facing=north,kind=stool": {
+      "model": "the_oldest_house:block/night_ward_stool"
+    },
+    "facing=east,kind=stool": {
+      "model": "the_oldest_house:block/night_ward_stool",
+      "y": 90
+    },
+    "facing=south,kind=stool": {
+      "model": "the_oldest_house:block/night_ward_stool",
+      "y": 180
+    },
+    "facing=west,kind=stool": {
+      "model": "the_oldest_house:block/night_ward_stool",
+      "y": 270
+    },
+    "facing=north,kind=light": {
+      "model": "the_oldest_house:block/night_ward_light"
+    },
+    "facing=east,kind=light": {
+      "model": "the_oldest_house:block/night_ward_light",
+      "y": 90
+    },
+    "facing=south,kind=light": {
+      "model": "the_oldest_house:block/night_ward_light",
+      "y": 180
+    },
+    "facing=west,kind=light": {
+      "model": "the_oldest_house:block/night_ward_light",
+      "y": 270
+    }
+  }
+}

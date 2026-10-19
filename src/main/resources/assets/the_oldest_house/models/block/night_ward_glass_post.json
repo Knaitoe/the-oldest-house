@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/template_glass_pane_post",
+  "textures": {
+    "pane": "the_oldest_house:block/night_ward/glass",
+    "edge": "the_oldest_house:block/night_ward/enamel"
+  },
+  "render_type": "minecraft:cutout"
+}

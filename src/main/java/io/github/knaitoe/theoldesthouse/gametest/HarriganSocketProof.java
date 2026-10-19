@@ -25,6 +25,7 @@ final class HarriganSocketProof {
         var data=LabyrinthData.get(a.server);var state=data.state(HarriganVignette.ID);
         state.putInt("Visit",1);state.putBoolean("BeatDone",false);data.setState(HarriganVignette.ID,state);
         HarriganVignette.build(a.server,level,site);LabyrinthBuilder.registerDoors(data,LabyrinthPlace.HARRIGAN,site);
+        VignetteArchitecture.decorateOnce(level,origin,LabyrinthPlace.HARRIGAN);ScenePolish.polishOnce(level,origin,LabyrinthPlace.HARRIGAN);
         view(a,b,1);
     }
     private static LiteraryActor body(ServerPlayer p){
@@ -59,7 +60,7 @@ final class HarriganSocketProof {
     private static void view(ServerPlayer a,ServerPlayer b,int visit){
         for(var p:List.of(a,b)){
             p.setGameMode(GameType.SURVIVAL);p.setInvulnerable(true);p.setNoGravity(false);p.stopUsingItem();p.closeContainer();
-            double x=visit==3?(p==a?2.6:-1.6):(p==a?-.15:1.15);
+            double x=visit==3?(p==a?3.1:-2.1):(p==a?-.15:1.15);
             double z=visit==3?-20:-11.8;
             p.teleportTo(p.server.getLevel(HouseDimensions.INTERIOR),site.getX()+x,site.getY(),site.getZ()+z,0,0);p.hasChangedDimension();p.connection.resetPosition();
         }

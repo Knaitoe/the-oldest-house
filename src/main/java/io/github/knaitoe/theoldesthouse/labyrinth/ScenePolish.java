@@ -104,6 +104,7 @@ public final class ScenePolish {
         if(place==LabyrinthPlace.BARN_WELL)Farmstead.fresh(level,origin);
         if(place==LabyrinthPlace.WHALE)WhaleHospital.fresh(level,origin);
         PlaytestScenes0488.fresh(level,LabyrinthPlaces.base(origin,place),place);
+        if(place==LabyrinthPlace.HOSPITAL)NightWardMaterials.fresh(level,LabyrinthPlaces.base(origin,place));
     }
 
     private static void polish(ServerLevel level, BlockPos origin, LabyrinthPlace place) {

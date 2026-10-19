@@ -37,7 +37,7 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
  * server thread first runs its chunk tasks until no generation is left
  * (bounded; shutdown then goes on exactly as before).
  *
- * Does nothing outside the GameTest server.
+ * Does nothing outside GameTest or the explicit two-client expedition host.
  */
 public final class ShutdownWatch {
     private static final long[] REPORT_AFTER_MS = {20_000L, 50_000L, 120_000L};
@@ -49,7 +49,7 @@ public final class ShutdownWatch {
     }
 
     public static void onServerStopping(ServerStoppingEvent event) {
-        if (!(event.getServer() instanceof GameTestServer)) {
+        if (!(event.getServer() instanceof GameTestServer) && !LiveExpeditionProof.enabled()) {
             return;
         }
         MinecraftServer server = event.getServer();

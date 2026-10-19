@@ -1,0 +1,41 @@
+{
+  "ambientocclusion": true,
+  "textures": {
+    "curtain": "the_oldest_house:block/night_ward/curtain",
+    "particle": "the_oldest_house:block/night_ward/curtain"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#curtain"
+        },
+        "south": {
+          "texture": "#curtain"
+        },
+        "east": {
+          "texture": "#curtain"
+        },
+        "west": {
+          "texture": "#curtain"
+        },
+        "up": {
+          "texture": "#curtain"
+        },
+        "down": {
+          "texture": "#curtain"
+        }
+      }
+    }
+  ]
+}

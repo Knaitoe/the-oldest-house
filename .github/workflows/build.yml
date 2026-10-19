@@ -38,6 +38,7 @@ jobs:
           python3 tools/paint_character_skins.py --check
           python3 tools/verify_character_art.py
           python3 tools/draw_harrigan_funeral_assets.py --check
+          python3 tools/draw_night_ward_assets.py --check
 
       - name: Verify playtest journey measurements
         run: python3 -m unittest discover -s tools -p test_summarize_playtest_log.py -v
@@ -99,6 +100,9 @@ jobs:
               for material in ('harrigan_casket_wood','harrigan_casket_brass','harrigan_casket_lining','harrigan_plaque_front','harrigan_plaque_back'):
                   assert z.read(f'assets/the_oldest_house/textures/block/{material}.png').startswith(b'\x89PNG')
               assert len(json.loads(z.read('assets/the_oldest_house/models/block/harrigan_plaque.json'))['elements']) >= 6
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/night_ward.json'))['variants']) == 56
+              for material in ('wall','dado','floor','ceiling','enamel','steel','sheet','blanket','curtain','glass','light','call','controls','door_lower','door_upper'):
+                  assert z.read(f'assets/the_oldest_house/textures/block/night_ward/{material}.png').startswith(b'\x89PNG')
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
               hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
               assert len(hall) == 24
@@ -832,6 +836,8 @@ jobs:
           test -s build/font-smoke/playtest-0468-passed.txt
           for page in 4 5 6; do test -s build/font-smoke/native-playtest-0468-$page.png; done
           test -s build/font-smoke/institute-0470-passed.txt
+          test -s build/font-smoke/night-ward-passed.txt
+          for page in 0 1 2; do test -s build/font-smoke/native-night-ward-$page.png; done
           test -s build/font-smoke/native-goatman-fear0472-0.png
           test -s build/font-smoke/native-goatman-fear0472-1.png
           test -s build/font-smoke/native-goatman-fear0472-2.png
@@ -1403,6 +1409,8 @@ jobs:
           test -s build/font-smoke/playtest-0468-passed.txt
           for page in 4 5 6; do test -s build/font-smoke/native-playtest-0468-$page.png; done
           test -s build/font-smoke/institute-0470-passed.txt
+          test -s build/font-smoke/night-ward-passed.txt
+          for page in 0 1 2; do test -s build/font-smoke/native-night-ward-$page.png; done
           test -s build/font-smoke/native-goatman-fear0472-0.png
           test -s build/font-smoke/native-goatman-fear0472-1.png
           test -s build/font-smoke/native-goatman-fear0472-2.png
@@ -1445,6 +1453,8 @@ jobs:
             build/font-smoke/streetlights-0469-passed.txt
             build/font-smoke/native-institute-0470-*.png
             build/font-smoke/institute-0470-passed.txt
+            build/font-smoke/native-night-ward-*.png
+            build/font-smoke/night-ward-passed.txt
             build/font-smoke/native-goatman-fear0472-*.png
             build/font-smoke/goatman-fear0472-passed.txt
             build/font-smoke/native-stanley-*.png
@@ -1467,7 +1477,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
-      - name: Native trailer cooking, physical stalking, disguises and streetlights
+      - name: Native trailer, funeral and hospital gameplay
         timeout-minutes: 12
         env:
           JAVA_TOOL_OPTIONS: -Xmx6g
@@ -1475,14 +1485,14 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 11m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_goatman,the_oldest_house_wake,the_oldest_house_goatman_windows --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/goatman-native.log
+          timeout --signal=QUIT --kill-after=20s 11m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_goatman,the_oldest_house_wake,the_oldest_house_nightward,the_oldest_house_goatman_windows --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/goatman-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/goatman-native.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('GoatmanTests.java','StreetlightTests.java','HarriganWakeTests.java','HarriganDialogueTests.java','OctoberFollowupTests.java','ImmediateFindingsTests.java'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('GoatmanTests.java','StreetlightTests.java','HarriganWakeTests.java','HarriganDialogueTests.java','NightWardTests.java','OctoberFollowupTests.java','ImmediateFindingsTests.java'))
           assert completed and int(completed[-1])==declared, (completed,declared)
-          print(f'All {declared} focused native Goatman cases passed; the complete suite remains required.')
+          print(f'All {declared} focused trailer, funeral and hospital native cases passed; the complete suite remains required.')
           PY
       - name: Publish failed Goatman game tests
         if: failure()
