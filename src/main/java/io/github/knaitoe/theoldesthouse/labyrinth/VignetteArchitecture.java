@@ -19,7 +19,8 @@ public final class VignetteArchitecture {
     private final LabyrinthPlace scene;
     private boolean rugsOnly;
     private VignetteArchitecture(ServerLevel level,BlockPos base,LabyrinthPlace place){l=level;b=base;scene=place;}
-    public static boolean applies(LabyrinthPlace p){return p!=LabyrinthPlace.NIGHTCLUB&&!LiteraryRooms.isLiterary(p)&&(p.isVignette()||p==LabyrinthPlace.EXPLORER_CAMP||p==LabyrinthPlace.HOTEL_GROUNDS);}
+    /** The hotel and its grounds (0.4.105) are built whole by HotelRooms. */
+    public static boolean applies(LabyrinthPlace p){return p!=LabyrinthPlace.NIGHTCLUB&&p!=LabyrinthPlace.HOTEL&&!LiteraryRooms.isLiterary(p)&&(p.isVignette()||p==LabyrinthPlace.EXPLORER_CAMP);}
     public static void decorateOnce(ServerLevel l,BlockPos origin,LabyrinthPlace p){
         if(!applies(p))return;
         var d=LabyrinthData.get(l.getServer());CompoundTag done=d.state(STATE);

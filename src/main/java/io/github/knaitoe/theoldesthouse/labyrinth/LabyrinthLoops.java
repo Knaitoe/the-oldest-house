@@ -196,8 +196,12 @@ public final class LabyrinthLoops {
         LabyrinthBuilder.doors(level, base, place);
     }
 
+    /**
+     * The boards under the hotel's carpet (0.4.105): the carpet lies on a floor, so the room doors sit flush with it, and the
+     * boards are the hotel's own floor, so this corridor and the hotel's guest corridor are the same block for block.
+     */
     private static BlockState floorFor(boolean hotel, int lx, int lz) {
-        return hotel ? HouseBlocks.HOTEL_CARPET.get().defaultBlockState() : Blocks.SMOOTH_STONE.defaultBlockState();
+        return hotel ? StanleyBlock.of(StanleyBlock.Kind.CEILING, Direction.NORTH) : Blocks.SMOOTH_STONE.defaultBlockState();
     }
 
     private static BlockState hotelWallFor(int y) {
@@ -246,6 +250,9 @@ public final class LabyrinthLoops {
             if (light != null) {
                 return light;
             }
+        }
+        if (hotel && y == 0) {
+            return HouseBlocks.HOTEL_CARPET.get().defaultBlockState();
         }
         if (hotel && region.straight() && y == 1 && z == -3 && (x == -1 || x == 1)) {
             return HouseBlocks.HOTEL_ROOM_PLAQUE.get().defaultBlockState()

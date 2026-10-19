@@ -1,0 +1,43 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "w": "the_oldest_house:block/stanley/walnut16",
+  "t": "the_oldest_house:block/stanley/time_clock",
+  "particle": "the_oldest_house:block/stanley/time_clock"
+ },
+ "elements": [
+  {
+   "from": [
+    3,
+    1,
+    11
+   ],
+   "to": [
+    13,
+    15,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t"
+    },
+    "south": {
+     "texture": "#w"
+    },
+    "east": {
+     "texture": "#w"
+    },
+    "west": {
+     "texture": "#w"
+    },
+    "up": {
+     "texture": "#w"
+    },
+    "down": {
+     "texture": "#w"
+    }
+   }
+  }
+ ]
+}

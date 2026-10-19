@@ -29,7 +29,7 @@ public final class HotelRoomPlaqueRenderer implements BlockEntityRenderer<HotelR
     @Override
     public void render(HotelRoomPlaqueBlockEntity plaque, float partialTick, PoseStack poseStack,
                        MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
-        int number = HotelPlaqueClientState.numberAt(plaque.getBlockPos());
+        int number = plaque.number() > 0 ? plaque.number() : HotelPlaqueClientState.numberAt(plaque.getBlockPos());
         if (number <= 0) {
             return;
         }

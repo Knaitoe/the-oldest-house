@@ -36,11 +36,13 @@ public final class OctoberFollowupTests {
             reader.moveTo(lower.getX()+1.5,lower.getY(),lower.getZ()+.5);
             reader.gameMode.useItemOn(reader,f.in,reader.getMainHandItem(),InteractionHand.MAIN_HAND,new BlockHitResult(lower.getCenter().add(.5,0,0),Direction.EAST,lower,false));
             h.assertTrue(HotelVignette.inside(reader,LabyrinthPlace.HOTEL)&&!HotelVignette.inside(peer,LabyrinthPlace.HOTEL),"using the displayed 217 through a native Adventure click enters the real hotel for this reader");
-            var room=hotel.offset(HotelRooms.ROOM_DOOR);reader.moveTo(room.getX()+.5,room.getY(),room.getZ()+1.5);
-            // New hotels start with this ordinary interior door open. Close its
-            // two physical halves as the prerequisite for checking native opening.
+            // 0.4.105: the hotel's own guest corridor is built like this one, so the reader steps out in front of 217's own door.
+            var room=hotel.offset(HotelRooms.ROOM_DOOR);
+            h.assertTrue(reader.position().distanceTo(Vec3.atBottomCenterOf(room).add(1,0,0))<1.5&&f.in.getBlockState(room).getValue(DoorBlock.OPEN),"the displayed 217 lets the reader out in front of 217's own door on the hotel's guest corridor, standing open");
+            reader.moveTo(room.getX()+1.5,room.getY(),room.getZ()+.5);
+            // Close its two physical halves as the prerequisite for checking native opening.
             f.in.setBlock(room,f.in.getBlockState(room).setValue(DoorBlock.OPEN,false),3);f.in.setBlock(room.above(),f.in.getBlockState(room.above()).setValue(DoorBlock.OPEN,false),3);
-            reader.gameMode.useItemOn(reader,f.in,reader.getMainHandItem(),InteractionHand.MAIN_HAND,new BlockHitResult(room.getCenter().add(0,0,.5),Direction.SOUTH,room,false));
+            reader.gameMode.useItemOn(reader,f.in,reader.getMainHandItem(),InteractionHand.MAIN_HAND,new BlockHitResult(room.getCenter().add(.5,0,0),Direction.EAST,room,false));
             h.assertTrue(f.in.getBlockState(room).getValue(DoorBlock.OPEN),"the made bedroom's native door also opens normally");
         }).thenSucceed();
     }

@@ -53,7 +53,7 @@ import net.minecraft.world.phys.AABB;
 public final class ScenePolish {
     public static final String STATE = "scene_polish_0442";
     public static final String REPAIR_STATE = "scene_polish_repairs_0443";
-    private static final Set<LabyrinthPlace> REPAIR_PLACES = EnumSet.of(LabyrinthPlace.PHONE_CANOE, LabyrinthPlace.HOTEL,
+    private static final Set<LabyrinthPlace> REPAIR_PLACES = EnumSet.of(LabyrinthPlace.PHONE_CANOE,
             LabyrinthPlace.MASQUE, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.ELK_FAN, LabyrinthPlace.HILL_NURSERY,
             LabyrinthPlace.ZAMPANO_COURTYARD, LabyrinthPlace.WINCHESTER, LabyrinthPlace.BLY_ROUTE,
             LabyrinthPlace.MOTHER_DEN);
@@ -83,7 +83,7 @@ public final class ScenePolish {
         // The child's room (0.4.74) is furnished, lit and dressed whole by ChildRoom, the Last Stop (0.4.78) by ElkLot, and
         // the Three Fingers cottage (0.4.81) by ThreeFingers, the house at the bottom of the lake by LakeHouse, Movie Night (0.4.102) by MovieNight, Costume Night (0.4.103) by CostumeNight and Winter Lake (0.4.104) by WinterLake.
         return place.room() != null && place.slot() >= 0 && place != LabyrinthPlace.RED_ROOM
-                && place != LabyrinthPlace.FAMILY_COPY && place != LabyrinthPlace.OLD_CABIN && place != LabyrinthPlace.CHILD_ROOM && place != LabyrinthPlace.MASQUE && place != LabyrinthPlace.BLY_ROUTE
+                && place != LabyrinthPlace.FAMILY_COPY && place != LabyrinthPlace.OLD_CABIN && place != LabyrinthPlace.CHILD_ROOM && place != LabyrinthPlace.MASQUE && place != LabyrinthPlace.BLY_ROUTE && place != LabyrinthPlace.HOTEL && place != LabyrinthPlace.HOTEL_GROUNDS
                 && place != LabyrinthPlace.GHOSTS_SET && place != LabyrinthPlace.ELK_LOT && place != LabyrinthPlace.THREE_FINGERS && place != LabyrinthPlace.MOVIE_NIGHT && place != LabyrinthPlace.COSTUME_NIGHT && place != LabyrinthPlace.WINTER_LAKE && place != LabyrinthPlace.NIGHTCLUB && place != LabyrinthPlace.LAKE_HOUSE && place != LabyrinthPlace.LAKE_HOUSE_EMPTY && place != LabyrinthPlace.BORRASCA && !HazardVariety.added(place);
     }
 
@@ -255,10 +255,6 @@ public final class ScenePolish {
         switch (place) {
             // The drowned bell tower gets the beam its bell hangs from.
             case PHONE_CANOE -> changed += support(level, base.offset(0, -1, -37), Blocks.DEEPSLATE_BRICKS.defaultBlockState());
-            // The boiler room's two levers stand on a control plinth.
-            case HOTEL -> {
-                for (int x : new int[]{4, 6}) changed += support(level, base.offset(x, -4, -58), Blocks.POLISHED_ANDESITE.defaultBlockState());
-            }
             // The last chamber's red light stands on a post.
             case MASQUE -> changed += support(level, base.offset(0, 0, -77), Blocks.POLISHED_BLACKSTONE_BRICK_WALL.defaultBlockState());
             // The cabin television stands on a cabinet.

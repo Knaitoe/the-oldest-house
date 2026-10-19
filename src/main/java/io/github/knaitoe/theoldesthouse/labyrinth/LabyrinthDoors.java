@@ -271,7 +271,7 @@ public final class LabyrinthDoors {
      * where the player stands, and the player is shifted to match.
      */
     private static void arrive(ServerPlayer player, LabyrinthData.Door from, LabyrinthData.Door suppliedEntry, LabyrinthPlace place) {
-        final LabyrinthData.Door entry=LakeHouse.destinationEntry(player,suppliedEntry,place);
+        final LabyrinthData.Door entry=HotelVignette.destinationEntry(player,from,LakeHouse.destinationEntry(player,suppliedEntry,place),place);
         MinecraftServer server = player.server;
         ServerLevel fromLevel = player.serverLevel();
         ServerLevel toLevel = server.getLevel(entry.dimension);
@@ -285,7 +285,8 @@ public final class LabyrinthDoors {
         // Someone else may be standing in this entry's doorway: it stays open
         // for them, and the copied vestibule leaves the cells they occupy.
         if (!othersAtDoor(toLevel, entry.lower, player)) setDoorOpen(toLevel, entry.lower, false, null);
-        copyVestibule(fromLevel, from, toLevel, entry, turn, player);
+        // A door inside a standing room (the hotel's own 217) keeps the room as built: nothing is copied over its corridor.
+        if (!HotelVignette.withinRoom(entry)) copyVestibule(fromLevel, from, toLevel, entry, turn, player);
         Vec3 target = shifted(player.position(), from.lower, entry.lower, turn);
         float yaw = player.getYRot() + angle(turn);
 

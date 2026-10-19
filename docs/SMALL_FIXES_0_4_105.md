@@ -351,3 +351,5 @@ sampled), with the models and states: one `masque` block (19 kinds, seven colour
   still clasped, so a bent elbow's cap read as open; the limbs are now put back at rest before the caps are probed. The
   cancelled canoe toss case looked for the refunded paper only within two blocks of the reader, but the refund falls
   with vanilla's random toss beside the dock; it now looks within eight.
+- **Run 39169885241 (c378658):** all twelve jobs passed, the rebuilt Masque and Bly included.
+- **The hotel** is restructured in the same candidate: see [the hotel, restructured](STANLEY_RESTRUCTURE_0_4_105.md).

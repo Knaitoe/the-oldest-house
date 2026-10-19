@@ -343,7 +343,8 @@ jobs:
               assert 'HouseMobTrackingMixin' in json.loads(z.read('the_oldest_house.common.mixins.json'))['mixins']
               assert 'HouseMobRenderMixin' in json.loads(z.read('the_oldest_house.mixins.json'))['client']
               # 0.4.105: the thin rooms rebuilt; the Masque's chambers and Bly's manor each have one block, every state modelled and textured.
-              for block, count in (('masque', 532), ('manor', 416)):
+              # 0.4.105: the hotel rebuilt as one building with its own block; every state modelled and textured.
+              for block, count in (('masque', 532), ('manor', 416), ('stanley', 640)):
                   states = json.loads(z.read(f'assets/the_oldest_house/blockstates/{block}.json'))['variants']
                   assert len(states) == count, (block, len(states))
                   for variant in states.values():
@@ -352,7 +353,7 @@ jobs:
                           if texture.startswith('the_oldest_house:'):
                               assert z.read(texture.replace('the_oldest_house:', 'assets/the_oldest_house/textures/') + '.png').startswith(b'\x89PNG'), (block, texture)
               assert json.loads(z.read('assets/the_oldest_house/textures/block/masque/clock_case.png.mcmeta'))['animation']['frametime'] == 3
-              for name in ('labyrinth/MasqueBlock','labyrinth/MasqueSuite','labyrinth/ManorBlock','labyrinth/BlyManor'):
+              for name in ('labyrinth/MasqueBlock','labyrinth/MasqueSuite','labyrinth/ManorBlock','labyrinth/BlyManor','labyrinth/StanleyBlock'):
                   assert f'io/github/knaitoe/theoldesthouse/{name}.class' in z.namelist(), name
               # 0.4.81: Three Fingers, one cottage block, six subtitled cues, the withered paw and five cottage skins.
               cottage = json.loads(z.read('assets/the_oldest_house/blockstates/cottage.json'))['variants']
