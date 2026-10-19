@@ -659,8 +659,8 @@ def models():
     m('steel_table', [box((0, 13, 0), (16, 16, 16), 's'), *[box((x, 0, z), (x + 2, 13, z + 2), 's') for x in (1, 13) for z in (1, 13)],
                       box((2, 4, 2), (14, 5, 14), 's')], {'s': 'steel16'}, 'steel16')
     for s, name in ((0, 'tub_head'), (1, 'tub_foot')):
-        m(f'tub_{s}', [box((1, 2, 0), (15, 10, 16), 'e', overrides={'up': name}), *[box((x, 0, z), (x + 2, 2, z + 2), 'b') for x in (2, 12) for z in ((2,) if s == 0 else (12,))]],
-          {'e': 'enamel', 'b': 'brass16'}, 'enamel')
+        m(f'tub_{s}', [box((1, 2, 0), (15, 10, 16), 'e', overrides={'up': 't'}), *[box((x, 0, z), (x + 2, 2, z + 2), 'b') for x in (2, 12) for z in ((2,) if s == 0 else (12,))]],
+          {'e': 'enamel', 'b': 'brass16', 't': name}, 'enamel')
     m('sink', [box((6, 0, 8), (10, 10, 12), 'e'), box((3, 10, 5), (13, 14, 16), 'e', overrides={'up': 'tub_foot'}), box((7.5, 14, 14), (8.5, 16, 15), 'b')],
       {'e': 'enamel', 'tub_foot': 'tub_foot', 'b': 'brass16'}, 'enamel')
     m('trunk', [box((1, 0, 2), (15, 12, 14), 't')], {'t': 'trunk'}, 'trunk')

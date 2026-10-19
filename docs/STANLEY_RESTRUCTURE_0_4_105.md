@@ -40,7 +40,8 @@ Basement: the **boiler room** x -10..11, z -60..-66 (walk -4..-2), down the wall
 
 Upstairs (carpet at 6 over boards at 5, walk to 8, ceiling 9):
 
-- **Landing** x 8..10, z -9..-14, at the top of the stair.
+- **Landing** x 8..10, z -8..-14, at the top of the stair; the well through the ground floor's ceiling is z -8..-10, so
+  a guest's head clears it from the third tread up.
 - **Guest corridor**: west along z -12..-14 to x -15, then north along x -15..-13 to the end door `NUMBERS` (-14,6,-45).
   It is built exactly as the numbered corridor is: three wide, carpet on the boards, wainscot to the knee, paper above,
   the same ceiling, spruce doors set in its walls and a brass plate one step before each. Its doors are numbered 211..222
@@ -125,3 +126,10 @@ real hit, locked rooms, the dancers on the ballroom floor; and a walk from the f
 stair and down to the boiler, the grounds' wall matching the rear wall, and 217's side of the corridor matching the
 numbered corridor's. `OctoberFollowupTests`: the numbered corridor's 217 lets its reader out in front of 217's own door.
 The architecture test exports the hotel's three floors and its grounds.
+
+## Runs
+
+- **Run 39197354581 (82961a5):** nine of twelve jobs passed. Two faults. The tub's two models named their top texture by
+  a key they did not define, so every client check stopped loading models (build, trailer-client). The well through the
+  lobby ceiling began over the fourth tread, so a guest's head struck the ceiling stepping up from the third and the walk
+  never reached the landing (build, hotel-gameplay); the well now begins one tread earlier.

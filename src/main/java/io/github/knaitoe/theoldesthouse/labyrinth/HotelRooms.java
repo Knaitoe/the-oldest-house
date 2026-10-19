@@ -177,7 +177,8 @@ public final class HotelRooms {
         for(int i=0;i<=5;i++){int z=-6-i;
             for(int x=8;x<=10;x++){if(i>0)fill(l,b,x,0,z,x,i-1,z,planks);stairs(l,b,x,i,z,Blocks.DARK_OAK_STAIRS,Direction.NORTH);}
             fill(l,b,7,0,z,7,i,z,planks);set(l,b,7,i+1,z,Blocks.DARK_OAK_FENCE);}
-        fill(l,b,8,5,-10,10,5,-9,Blocks.AIR);
+        // The well through the ceiling starts over the third tread, so a guest's head clears it on the way up.
+        fill(l,b,8,5,-10,10,5,-8,Blocks.AIR);
         set(l,b,7,0,-5,Blocks.STRIPPED_DARK_OAK_LOG);set(l,b,7,1,-5,Blocks.DARK_OAK_FENCE);
         // Through to the bar, the dining room and the ballroom.
         arch(l,b,11,0,-3,Direction.EAST,2,3,4);
@@ -373,7 +374,7 @@ public final class HotelRooms {
         // The guest corridor: up the stair to the landing, west along the front, then north past 217 to the corridor's
         // end, carpet over boards, panelled to the knee, papered above, exactly as the numbered corridor beyond it is.
         var open=new HashSet<Long>();
-        for(int x=8;x<=10;x++)for(int z=-14;z<=-9;z++)open.add(BlockPos.asLong(x,0,z));
+        for(int x=8;x<=10;x++)for(int z=-14;z<=-8;z++)open.add(BlockPos.asLong(x,0,z));
         for(int x=-15;x<=7;x++)for(int z=-14;z<=-12;z++)open.add(BlockPos.asLong(x,0,z));
         for(int x=-15;x<=-13;x++)for(int z=-44;z<=-15;z++)open.add(BlockPos.asLong(x,0,z));
         for(long column:open){var c=BlockPos.of(column);
@@ -383,7 +384,7 @@ public final class HotelRooms {
             set(l,b,c.getX(),9,c.getZ(),HouseBlocks.HOTEL_CEILING.get().defaultBlockState());
             if(c.getZ()<=-12)set(l,b,c.getX(),6,c.getZ(),HouseBlocks.HOTEL_CARPET.get());}
         // The stairwell under the landing's near end, and the top tread level with the landing.
-        fill(l,b,8,5,-10,10,5,-9,Blocks.AIR);
+        fill(l,b,8,5,-10,10,5,-8,Blocks.AIR);
         for(int x=8;x<=10;x++)stairs(l,b,x,5,-11,Blocks.DARK_OAK_STAIRS,Direction.NORTH);
         for(int x:new int[]{4,-2,-8})lantern(l,b,x,8,-13);
         for(int z=-18;z>=-42;z-=6)lantern(l,b,-14,8,z);
