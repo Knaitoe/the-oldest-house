@@ -101,6 +101,12 @@ try:
     assert (report / "canoe-passed.txt").is_file()
     assert (report / "ghosts-native-jump-passed.txt").is_file()
     assert (report / "borrasca-socket-passed.txt").is_file()
+    assert (report / "harrigan-states-passed.txt").is_file()
+    for role in ("A", "B"):
+        for view in ("harrigan-alive", "harrigan-dead", "harrigan-casket"):
+            assert (report / f"{role}-{view}.png").stat().st_size > 10000, (role, view)
+            assert (report / f"{role}-{view}.txt").stat().st_size > 100, (role, view)
+
     for role in ("A", "B"):
         for view in ("source-and-sound", "native-ladder", "original-register", "native-pipe", "native-return"):
             assert (report / f"{role}-borrasca-{view}.png").stat().st_size > 500, (role, view)

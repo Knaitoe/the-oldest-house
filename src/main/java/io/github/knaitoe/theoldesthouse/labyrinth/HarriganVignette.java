@@ -348,17 +348,7 @@ public final class HarriganVignette {
         // The foyer: the guest book on its stand, the home's sign, flowers, a bench either side.
         level.setBlock(base.offset(GUEST_BOOK), Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.FACING, Direction.EAST).setValue(LecternBlock.HAS_BOOK, true), flags);
         if (level.getBlockEntity(base.offset(GUEST_BOOK)) instanceof LecternBlockEntity book) book.setBook(guestBook());
-        level.setBlock(base.offset(HOME_SIGN), Blocks.DARK_OAK_SIGN.defaultBlockState().setValue(net.minecraft.world.level.block.StandingSignBlock.ROTATION, 0), flags);
-        if (level.getBlockEntity(base.offset(HOME_SIGN)) instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign) {
-            var text = new net.minecraft.world.level.block.entity.SignText()
-                    .setMessage(0, Component.literal("PEABODY & SONS"))
-                    .setMessage(1, Component.literal("Funeral Home"))
-                    .setMessage(2, Component.literal("Visitation for"))
-                    .setMessage(3, Component.literal("Mr. Harrigan"));
-            sign.setText(text, true);
-            sign.setText(text, false);
-            sign.setWaxed(true);
-        }
+        level.setBlock(base.offset(HOME_SIGN), HarriganFinishBlock.of(HarriganFinishBlock.Kind.PLAQUE), flags);
         for (int side : new int[]{-1, 1}) {
             pedestal(level, base.offset(side * 6, 0, -1), side < 0 ? Blocks.POTTED_WHITE_TULIP : Blocks.POTTED_LILY_OF_THE_VALLEY);
             for (int z = -4; z <= -3; z++) level.setBlock(base.offset(side * 7, 0, z), LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS, side < 0 ? Direction.WEST : Direction.EAST), flags);
@@ -406,6 +396,22 @@ public final class HarriganVignette {
                 "He paid for the new roof on the library and made them promise not to put his name on it.\n\nThe church\n\nYou kept him company at the end. That was more than most of us managed.\n\nM."));
     }
 
+    /** Replace only the unchanged authored old sign, in a loaded, unseen and empty entrance. */
+    private static void funeralPlaque(ServerLevel level, BlockPos base, LabyrinthData data) {
+        BlockPos at = base.offset(HOME_SIGN);
+        if (!data.state(ID).getBoolean("FuneralHome0505") || !level.hasChunkAt(at)
+                || !level.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(at.getX() >> 4, at.getZ() >> 4))
+                || !(level.getBlockEntity(at) instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign)) return;
+        String[] words = {"PEABODY & SONS", "Funeral Home", "Visitation for", "Mr. Harrigan"};
+        for (int line = 0; line < words.length; line++)
+            if (!sign.getFrontText().getMessage(line, false).getString().equals(words[line])
+                    || !sign.getBackText().getMessage(line, false).getString().equals(words[line])) return;
+        if (io.github.knaitoe.theoldesthouse.house.HouseWatchers.isWatched(level, Vec3.atCenterOf(at))
+                || !level.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,
+                    new AABB(at).expandTowards(0, .8, 0), net.minecraft.world.entity.LivingEntity::isAlive).isEmpty()) return;
+        level.setBlock(at, HarriganFinishBlock.of(HarriganFinishBlock.Kind.PLAQUE), LabyrinthBuilder.flags());
+    }
+
     private static ItemStack readingBook() {
         return HouseWriting.book(
                 "The Western Road",
@@ -429,7 +435,15 @@ public final class HarriganVignette {
         var data = LabyrinthData.get(level.getServer());
         var state = data.state(ID);
         if (state.hasUUID(ACTOR)) {
-            if (level.getEntity(state.getUUID(ACTOR)) instanceof LiteraryActor found) return found;
+            if (level.getEntity(state.getUUID(ACTOR)) instanceof LiteraryActor found) {
+                // Arrival can run before this original's entity section has loaded. Its saved
+                // phase/position then belong to the previous visit, even though the story advanced.
+                if (createAs >= 0 && (found.role() != LiteraryActor.HARRIGAN || found.phase() != createAs
+                        || found.position().distanceToSqr(bodyPosition(base, createAs)) > .0001D)) {
+                    pose(found, base, createAs);
+                }
+                return found;
+            }
             // An unloaded original is not a missing one: wait until both his places are loaded to know.
             for (BlockPos place : List.of(base.offset(CHAIR), base.offset(CASKET)))
                 if (!level.hasChunkAt(place) || !level.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(place.getX() >> 4, place.getZ() >> 4))) return null;
@@ -454,17 +468,27 @@ public final class HarriganVignette {
     /** Seated in his chair facing away from the door, alive or dead, or laid out in the casket. */
     private static void pose(LiteraryActor actor, BlockPos base, int phase) {
         actor.appearance(LiteraryActor.HARRIGAN, phase);
+        Vec3 at = bodyPosition(base, phase);
+        actor.moveTo(at.x, at.y, at.z, 180.0F, 0.0F);
+        actor.setYHeadRot(180.0F);
+        actor.yBodyRot = actor.yBodyRotO = actor.yHeadRotO = actor.yRotO = 180.0F;
+        actor.xRotO = 0.0F;
+        actor.setDeltaMovement(Vec3.ZERO);
+        actor.setNoAi(true);
+        actor.setNoGravity(true);
+        actor.setSilent(true);
+        actor.getNavigation().stop();
+        actor.setTarget(null);
+    }
+
+    private static Vec3 bodyPosition(BlockPos base, int phase) {
         if (phase == CASKET_PHASE) {
             BlockPos casket = base.offset(CASKET);
-            actor.moveTo(casket.getX() + .5D, casket.getY() + .9D, casket.getZ() + .5D, 180.0F, 0.0F);
-        } else {
-            // The model's hip is thirteen pixels above its feet: just above the stair's half-height seat, ahead of its back.
-            BlockPos chair = base.offset(CHAIR);
-            actor.moveTo(chair.getX() + .5D, chair.getY() + .55D - 13.0D / 16.0D, chair.getZ() + .3D, 180.0F, 0.0F);
+            return new Vec3(casket.getX() + .5D, casket.getY() + .9D, casket.getZ() + .5D);
         }
-        actor.setYHeadRot(180.0F);
-        actor.yBodyRot = 180.0F;
-        actor.setDeltaMovement(Vec3.ZERO);
+        // The model's hip is thirteen pixels above its feet: just above the stair's half-height seat, ahead of its back.
+        BlockPos chair = base.offset(CHAIR);
+        return new Vec3(chair.getX() + .5D, chair.getY() + .55D - 13.0D / 16.0D, chair.getZ() + .3D);
     }
 
     /** Whether his own body is in this chair, so nobody else can sit in it through him. */
@@ -477,15 +501,16 @@ public final class HarriganVignette {
     public static void talk(ServerPlayer player, LiteraryActor actor) {
         if (!player.isAlive() || player.isSpectator() || !inVignette(player) || player.distanceToSqr(actor) > 36) return;
         if (actor.role() == LiteraryActor.HARRIGAN_MOURNER) { HarriganWake.talk(player, actor); return; }
+        LabyrinthData data = LabyrinthData.get(player.server);
+        int phase = phaseFor(data, visitFor(data));
+        // The saved visit, not a just-loaded actor's stale metadata, decides whether he can answer.
+        if (actor.role() != LiteraryActor.HARRIGAN || phase != ALIVE_PHASE) {
+            if (actor.role() == LiteraryActor.HARRIGAN) harrigan(player.serverLevel(), base(player.server), phase);
+            return;
+        }
         long now = player.serverLevel().getGameTime();
         if (player.getPersistentData().getLong("HarriganTalk0505") > now) return;
         player.getPersistentData().putLong("HarriganTalk0505", now + 40);
-        if (actor.phase() != ALIVE_PHASE) {
-            player.displayClientMessage(Component.literal(actor.phase() == CASKET_PHASE ? "He looks smaller than he did in his chair."
-                    : "He doesn't answer. His hand is cold.").withStyle(ChatFormatting.GRAY), false);
-            return;
-        }
-        LabyrinthData data = LabyrinthData.get(player.server);
         CompoundTag state = data.state(ID);
         String line;
         if (readingFinished(state)) line = "Mr. Harrigan: That's enough for today. The ticket is yours. So is the phone.";
@@ -657,6 +682,15 @@ public final class HarriganVignette {
     }
 
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (!event.getLevel().isClientSide() && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND
+                && event.getEntity() instanceof ServerPlayer reader && reader.isAlive() && !reader.isSpectator() && inVignette(reader)
+                && event.getPos().equals(base(reader.server).offset(HOME_SIGN))
+                && event.getLevel().getBlockState(event.getPos()).is(LabyrinthRegistry.HARRIGAN_FINISH.get())
+                && event.getLevel().getBlockState(event.getPos()).getValue(HarriganFinishBlock.KIND) == HarriganFinishBlock.Kind.PLAQUE) {
+            reader.displayClientMessage(Component.literal("Peabody & Sons Funeral Home. Visitation for Mr. Harrigan.").withStyle(ChatFormatting.GRAY), false);
+            event.setCanceled(true);
+            return;
+        }
         if (!event.getLevel().isClientSide() && event.getEntity() instanceof ServerPlayer reader
                 && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND && inVignette(reader)
                 && reader.isAlive()&&!reader.isSpectator()
@@ -998,6 +1032,7 @@ public final class HarriganVignette {
         int visit = visitFor(data);
         List<ServerPlayer> visitors = interior.getEntitiesOfClass(ServerPlayer.class, placeBounds(base));
         if (visitors.isEmpty()) {
+            if (visit >= FINAL_VISIT) funeralPlaque(interior, base, data);
             return;
         }
 

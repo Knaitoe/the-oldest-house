@@ -13,7 +13,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("79")
+        event.registrar("80")
                 .playToClient(HarriganPhonePayload.TYPE,HarriganPhonePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.HarriganPhoneScreen.accept(payload)))
                 .playToServer(HarriganPhoneActionPayload.TYPE,HarriganPhoneActionPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.HarriganVignette.phoneAction(p,payload.action(),payload.text());}))
                 .playToServer(ShallowsSwingPayload.TYPE,ShallowsSwingPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.Shallows.swing(p,payload.side());}))
