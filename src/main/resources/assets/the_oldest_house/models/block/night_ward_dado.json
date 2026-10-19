@@ -1,0 +1,41 @@
+{
+  "ambientocclusion": true,
+  "textures": {
+    "dado": "the_oldest_house:block/night_ward/dado",
+    "particle": "the_oldest_house:block/night_ward/dado"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dado"
+        },
+        "south": {
+          "texture": "#dado"
+        },
+        "east": {
+          "texture": "#dado"
+        },
+        "west": {
+          "texture": "#dado"
+        },
+        "up": {
+          "texture": "#dado"
+        },
+        "down": {
+          "texture": "#dado"
+        }
+      }
+    }
+  ]
+}

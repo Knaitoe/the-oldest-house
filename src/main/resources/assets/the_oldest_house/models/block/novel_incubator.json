@@ -1,10 +1,11 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "frame": "the_oldest_house:block/enamel",
-    "glass": "minecraft:block/glass",
-    "fabric": "the_oldest_house:block/ward_fabric",
-    "particle": "the_oldest_house:block/enamel"
+    "frame": "the_oldest_house:block/night_ward/enamel",
+    "glass": "the_oldest_house:block/night_ward/glass",
+    "fabric": "the_oldest_house:block/night_ward/sheet",
+    "controls": "the_oldest_house:block/night_ward/controls",
+    "particle": "the_oldest_house:block/night_ward/enamel"
   },
   "elements": [
     {
@@ -26,7 +27,13 @@
           "texture": "#frame"
         },
         "north": {
-          "texture": "#frame"
+          "texture": "#controls",
+          "uv": [
+            0,
+            0,
+            14,
+            2
+          ]
         },
         "south": {
           "texture": "#frame"

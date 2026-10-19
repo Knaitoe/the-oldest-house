@@ -27,10 +27,11 @@ public final class HarriganSocketClient {
         if(step!=next){step=next;renders=0;captured=false;clicked=false;pending=null;actor=null;frozenPose=null;role=reader;}
         mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);mc.options.keyUse.setDown(false);
         if(mc.level==null||mc.player==null||mc.getOverlay()!=null)return false;
+        mc.options.hideGui=true;
         for(var entity:mc.level.entitiesForRendering())if(entity instanceof LiteraryActor candidate&&candidate.role()==LiteraryActor.HARRIGAN&&candidate.distanceToSqr(mc.player)<100){actor=candidate;break;}
         if(actor==null||actor.phase()!=next-60)return false;
         if(original==null)original=actor.getUUID();require(original.equals(actor.getUUID()),"all visits retain the original tracked UUID");
-        Vec3 point=actor.position().add(0,next==62?.03:.9,0),delta=point.subtract(mc.player.getEyePosition());
+        Vec3 point=actor.position().add(0,next==62?.03:1.25,0),delta=point.subtract(mc.player.getEyePosition());
         mc.player.setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));mc.player.setXRot((float)-Math.toDegrees(Math.atan2(delta.y,Math.hypot(delta.x,delta.z))));
         if(age>30&&!clicked){mc.gameMode.interact(mc.player,actor,InteractionHand.MAIN_HAND);clicked=true;}
         if(age>60&&renders>=8&&!captured&&pending==null)pending=next==60?"harrigan-alive":next==61?"harrigan-dead":"harrigan-casket";

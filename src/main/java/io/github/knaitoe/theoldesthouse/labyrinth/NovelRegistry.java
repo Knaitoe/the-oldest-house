@@ -28,6 +28,10 @@ public final class NovelRegistry {
         CARVINGS=material("well_carvings",Blocks.MOSSY_COBBLESTONE),PAPER=material("archive_paper",Blocks.WHITE_TERRACOTTA);
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<NovelPropBlock>> PROP_TYPE=CODECS.register("novel_prop",()->NovelPropBlock.CODEC);
     public static final DeferredBlock<NovelPropBlock> PROP=BLOCKS.registerBlock("novel_prop",NovelPropBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable());
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<NightWardBlock>> NIGHT_WARD_TYPE=CODECS.register("night_ward",()->NightWardBlock.CODEC);
+    public static final DeferredBlock<NightWardBlock> NIGHT_WARD=BLOCKS.registerBlock("night_ward",NightWardBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable().lightLevel(s->s.getValue(NightWardBlock.KIND)==NightWardBlock.Kind.LIGHT?15:0));
+    public static final DeferredBlock<IronBarsBlock> NIGHT_WARD_GLASS=BLOCKS.registerBlock("night_ward_glass",IronBarsBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_STAINED_GLASS_PANE).noLootTable());
+    public static final DeferredBlock<DoorBlock> NIGHT_WARD_DOOR=BLOCKS.registerBlock("night_ward_door",p->new DoorBlock(net.minecraft.world.level.block.state.properties.BlockSetType.BIRCH,p),BlockBehaviour.Properties.ofFullCopy(Blocks.BIRCH_DOOR).noLootTable());
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<InstituteSignBlock>> SIGN_TYPE=CODECS.register("institute_sign",()->InstituteSignBlock.CODEC);
     public static final DeferredBlock<InstituteSignBlock> SIGN=BLOCKS.registerBlock("institute_sign",InstituteSignBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable());
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<InstituteFixtureBlock>> WARD_FIXTURE_TYPE=CODECS.register("institute_fixture",()->InstituteFixtureBlock.CODEC);

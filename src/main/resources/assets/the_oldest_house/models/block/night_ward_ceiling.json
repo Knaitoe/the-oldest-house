@@ -1,0 +1,41 @@
+{
+  "ambientocclusion": true,
+  "textures": {
+    "ceiling": "the_oldest_house:block/night_ward/ceiling",
+    "particle": "the_oldest_house:block/night_ward/ceiling"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ceiling"
+        },
+        "south": {
+          "texture": "#ceiling"
+        },
+        "east": {
+          "texture": "#ceiling"
+        },
+        "west": {
+          "texture": "#ceiling"
+        },
+        "up": {
+          "texture": "#ceiling"
+        },
+        "down": {
+          "texture": "#ceiling"
+        }
+      }
+    }
+  ]
+}

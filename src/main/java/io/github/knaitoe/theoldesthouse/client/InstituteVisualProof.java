@@ -38,6 +38,6 @@ public final class InstituteVisualProof extends Screen {
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{var mc=Minecraft.getInstance();if(!(mc.screen instanceof InstituteVisualProof proof)||++proof.frames<16)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage im=Screenshot.takeScreenshot(mc.getMainRenderTarget())){im.writeToFile(dir.resolve("native-institute-0470-"+proof.page+".png"));}proof.frames=0;if(++proof.page<2)return;
-        Files.writeString(dir.resolve("institute-0470-passed.txt"),"All twenty ward fittings, 27-slot cabinet, original-source reading table, bedside notebook, rails, stairs, shelf, glass and both door types have native baked geometry and resolved atlas sprites; two native GPU views.\n");if(Boolean.getBoolean("the_oldest_house.trailerSmoke"))mc.stop();else mc.setScreen(new CoffinVisualProof());
+        Files.writeString(dir.resolve("institute-0470-passed.txt"),"All twenty ward fittings, 27-slot cabinet, original-source reading table, bedside notebook, rails, stairs, shelf, glass and both door types have native baked geometry and resolved atlas sprites; two native GPU views.\n");mc.setScreen(new NightWardVisualProof());
     }
 }
