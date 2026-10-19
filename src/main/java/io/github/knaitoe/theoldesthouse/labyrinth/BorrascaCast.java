@@ -41,7 +41,7 @@ public final class BorrascaCast {
         if(horizontal<.18&&Math.abs(d.y)<.08){stop(a);return Vec3.ZERO;}
         if(!a.level().hasChunkAt(BlockPos.containing(a.position().add(d.normalize().scale(.5)))))return Vec3.ZERO;
         float yaw=horizontal>.1?(float)Math.toDegrees(Math.atan2(-d.x,d.z)):180;a.setYRot(Mth.approachDegrees(a.getYRot(),yaw,12));a.setYBodyRot(a.getYRot());a.setYHeadRot(a.getYRot());
-        a.setSpeed((float)a.getAttributeValue(Attributes.MOVEMENT_SPEED));
+        a.setSpeed((float)a.getAttributeValue(Attributes.MOVEMENT_SPEED)*(.1F/.24F));
         if(horizontal<.7&&Math.abs(d.y)>.08&&a.onClimbable()){
             a.setYRot(180);a.setYBodyRot(180);a.setDeltaMovement(a.getDeltaMovement().x,d.y>0?.15:-.12,a.getDeltaMovement().z);return new Vec3(0,0,d.y>0?.5:0);
         }return new Vec3(0,0,Math.min(t.getDouble("BorrascaSpeed"),horizontal*2));

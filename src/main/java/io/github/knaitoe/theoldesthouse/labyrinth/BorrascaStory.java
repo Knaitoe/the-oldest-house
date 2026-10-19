@@ -56,7 +56,7 @@ public final class BorrascaStory {
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
         int visit=own.getInt("Visit");
         if(rel.equals(BorrascaRooms.CARVING)){
-            if(visit==1){if(!own.getBoolean("FriendCarved")){p.displayClientMessage(Component.literal("Kimber has kept a space beside her name."),true);return true;}if(!own.getBoolean("PactCarved")){own.putBoolean("PactCarved",true);own.putInt("Beat",1);bark(p,b,2);heard(p,BorrascaRegistry.CARVE.get(),b.offset(rel),.55F);var friend=actor(p,own,"CastKimber");if(friend!=null){friend.gesture(2);say(p,friend,"There. Now it has to keep a place for both of us.");}heard(p,BorrascaRegistry.CHIME.get(),b.offset(BorrascaRooms.MACHINE),.35F);p.displayClientMessage(Component.literal("Kimber gestures back down the trail, before the light goes."),false);}return true;}
+            if(visit==1){if(!own.getBoolean("FriendCarved")){p.displayClientMessage(Component.literal("Kimber has kept a space beside her name."),true);return true;}if(!own.getBoolean("PactCarved")){own.putBoolean("PactCarved",true);own.putInt("Beat",1);bark(p,b,2);heard(p,BorrascaRegistry.CARVE.get(),b.offset(rel),.55F);var friend=actor(p,own,"CastKimber");if(friend!=null){friend.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);friend.gesture(2);say(p,friend,"There. Now it has to keep a place for both of us.");}heard(p,BorrascaRegistry.CHIME.get(),b.offset(BorrascaRooms.MACHINE),.35F);p.displayClientMessage(Component.literal("Kimber gestures back down the trail, before the light goes."),false);}return true;}
             if(visit>=3){own.putBoolean("GougeSeen",true);p.displayClientMessage(Component.literal("Fresh pale cuts. A flat steel tool has taken her name out. Yours is still there."),false);if(visit==4)restoreName(p,b,own);}return true;
         }
         if(rel.equals(BorrascaRooms.DROP)||rel.equals(BorrascaRooms.DROP.below())){
@@ -121,7 +121,7 @@ public final class BorrascaStory {
         }
         if(friend!=null){
             if(visit>=3||own.getBoolean("FriendMissing"))missing(p,b,own,friend);
-            else{friend.setInvisible(false);friend.appearance(LiteraryActor.BORRASCA_KIMBER,0);if(!own.getBoolean("CompassIssued"))friend.setItemSlot(EquipmentSlot.OFFHAND,BorrascaBelongings.original(p,own,"Compass"));if(visit==1)pact(p,b,own,friend);else taking(p,b,own,friend);}
+            else{friend.setInvisible(false);friend.appearance(LiteraryActor.BORRASCA_KIMBER,0);if(!own.getBoolean("CompassIssued"))friend.setItemSlot(EquipmentSlot.OFFHAND,BorrascaBelongings.original(p,own,"Compass"));if(visit==1)pact(p,b,own,friend);else{friend.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);friend.gesture(0);taking(p,b,own,friend);}}
         }
         if(visit>=3&&sheriff!=null){sheriff.setItemSlot(EquipmentSlot.MAINHAND,new ItemStack(BorrascaRegistry.FLASHLIGHT.get()));if(visit==3)blockade(p,b,own,sheriff);}
         if(visit==2&&own.getBoolean("FriendMissing")&&BorrascaBelongings.has(p,own,"Compass")){own.putBoolean("CompassExamined",true);own.putInt("Beat",2);}
@@ -189,7 +189,7 @@ public final class BorrascaStory {
         int stage=own.getBoolean("RestoredName")?4:visit>=3?3:own.getBoolean("PactCarved")?2:own.getBoolean("FriendCarved")?1:0;bark(p,b,stage);
         if(own.getInt("SceneryVisit")==visit)return;
         if(visit>=3){for(int x=-5;x<=5;x++)for(int z=-100;z<=-88;z++)if(p.serverLevel().getBlockState(b.offset(x,5,z)).is(Blocks.SPRUCE_PLANKS))fit(p,b,new BlockPos(x,5,z),BorrascaFittingBlock.Kind.AGED_WOOD);for(int x=-1;x<=5;x++)fit(p,b,new BlockPos(x,5,-125),BorrascaFittingBlock.Kind.TAPE);}
-        if(visit==2)p.serverLevel().setBlock(b.offset(2,1,-98),BorrascaRegistry.CARVING.get().defaultBlockState().setValue(BorrascaCarvingBlock.STAGE,3),F);
+        if(visit==2)p.serverLevel().setBlock(b.offset(2,0,-98),BorrascaRegistry.CARVING.get().defaultBlockState().setValue(BorrascaCarvingBlock.STAGE,3),F);
         if(visit==4){for(int x=-1;x<=1;x++)for(int y=12;y<=14;y++)p.serverLevel().setBlock(b.offset(x,y,-167),Blocks.AIR.defaultBlockState(),F);p.serverLevel().setBlock(b.offset(BorrascaRooms.LOCK),Blocks.AIR.defaultBlockState(),F);fit(p,b,new BlockPos(2,12,-168),BorrascaFittingBlock.Kind.LOCK);openDoor(p.serverLevel(),b.offset(BorrascaRooms.FACTORY_DOOR),true);}
         own.putInt("SceneryVisit",visit);
     }
