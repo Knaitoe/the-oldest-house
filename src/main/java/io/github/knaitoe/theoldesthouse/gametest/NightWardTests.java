@@ -21,11 +21,11 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID+"_nightward") @PrefixGameTestTemplate(false)
 public final class NightWardTests {
     private static NativeTestChunks chunks;private static HouseSavedData oldHouse;private static LabyrinthData oldData;
-    private static ServerLevel level;private static FakePlayer reader;private static Cat resident;
+    private static ServerLevel level;private static FakePlayer reader;private static ServerPlayer sitter;private static Cat resident;
     @AfterBatch(batch="night_ward_materials0507") public static void clean(ServerLevel ignored){
-        if(reader!=null)reader.discard();if(resident!=null)resident.discard();if(chunks!=null)chunks.close();
+        if(reader!=null)reader.discard();if(sitter!=null)NativeTestPlayers.remove(sitter);if(resident!=null)resident.discard();if(chunks!=null)chunks.close();
         if(level!=null){var store=level.getServer().overworld().getDataStorage();store.set("the_oldest_house",oldHouse);store.set("the_oldest_house_labyrinth",oldData);}
-        chunks=null;level=null;reader=null;resident=null;NovelVignettes.clearAll();
+        chunks=null;level=null;reader=null;sitter=null;resident=null;NovelVignettes.clearAll();
     }
     @GameTest(template="empty",batch="night_ward_materials0507",timeoutTicks=2400)
     public static void aSavedWardRefitsOnlyWhenVacantAndKeepsItsActualChartCallsAndFinishedNight(GameTestHelper h){
@@ -54,9 +54,11 @@ public final class NightWardTests {
                 h.assertTrue(ItemStack.isSameItemSameComponents(original,chart.getBook())&&ItemStack.isSameItemSameComponents(original,((ChestBlockEntity)level.getBlockEntity(kept)).getItem(4)),"the actual source chart and a stored original keep every item component");
                 var door=level.getBlockState(b.offset(0,0,0));h.assertTrue(door.is(NovelRegistry.NIGHT_WARD_DOOR.get())&&door.getValue(DoorBlock.OPEN)&&door.getValue(DoorBlock.HINGE)==DoorHingeSide.RIGHT&&level.getBlockState(button).getValue(ButtonBlock.POWERED),"the native doorway and call state survive the material change");
                 h.assertTrue(resident.getUUID().equals(identity)&&resident.getOwnerUUID().equals(reader.getUUID())&&resident.getHealth()==4&&NovelVignettes.personal(data,reader.getUUID()).getInt("WardCalls")==7&&NovelVignettes.personal(data,reader.getUUID()).getBoolean("WardFinished")&&!WitnessAccount.has(data,reader.getUUID(),WitnessAccount.Story.HOSPITAL),"resident identity, ownership and health and the completed night remain, with no unearned resolution");
-                var chair=b.offset(3,0,-12);reader.moveTo(Vec3.atBottomCenterOf(chair.south()));
-                h.assertTrue(HouseSitting.sit(reader,chair)&&reader.getVehicle() instanceof SeatEntity&&Math.abs(reader.getVehicle().getY()-(chair.getY()+.5))<.0001&&reader.getYRot()==Direction.WEST.toYRot(),"the refitted chair keeps the actual native sitting interaction, height and facing");
-                var anchor=reader.getVehicle();reader.stopRiding();anchor.discard();
+                var chair=b.offset(3,0,-12);sitter=NativeTestPlayers.survival(h,"ward_sitter");sitter.teleportTo(level,chair.getX()+.5,chair.getY(),chair.getZ()+1.5,0,0);sitter.hasChangedDimension();
+                h.assertTrue(HouseSitting.isSeat(level.getBlockState(chair))&&HouseSitting.sit(sitter,chair),"the refitted chair accepts an actual native server player: "+level.getBlockState(chair));
+                h.assertTrue(sitter.getVehicle() instanceof SeatEntity,"the actual server player rides the normal seat entity");
+                var anchor=sitter.getVehicle();h.assertTrue(Math.abs(anchor.getY()-(chair.getY()+.5))<.0001,"the refitted chair keeps its half-block native seat height: "+anchor.position());
+                h.assertTrue(sitter.getYRot()==Direction.WEST.toYRot(),"the native seated player keeps the chair's original west facing: "+sitter.getYRot());sitter.stopRiding();anchor.discard();
                 level.setBlock(b.offset(-7,0,-7),Blocks.AIR.defaultBlockState(),2);var loaded=LabyrinthData.FACTORY.deserializer().apply(data.save(new net.minecraft.nbt.CompoundTag(),level.registryAccess()),level.registryAccess());server.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);
                 h.assertTrue(NightWardMaterials.apply(level,b)&&level.getBlockState(b.offset(-7,0,-7)).isAir()&&ItemStack.isSameItemSameComponents(original,chart.getBook()),"the saved checkpoint does not rebuild a removed fitting or rewrite the chart");
             }).thenSucceed();

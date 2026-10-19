@@ -1477,6 +1477,16 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
+      - name: Native hospital save and seating check
+        timeout-minutes: 4
+        env:
+          JAVA_TOOL_OPTIONS: -Xmx6g
+        run: |
+          mkdir -p build run
+          printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 3m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_nightward --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/night-ward-native.log
+          python3 -c "from pathlib import Path; assert 'All 1 required tests passed' in Path('build/night-ward-native.log').read_text()"
       - name: Native trailer, funeral and hospital gameplay
         timeout-minutes: 12
         env:
@@ -1502,6 +1512,8 @@ jobs:
           import re
           log = Path('build/goatman-native.log')
           if not log.exists():
+              log = Path('build/night-ward-native.log')
+          if not log.exists():
               print('::error title=Failed game test::no game test log was written')
               raise SystemExit(0)
           lines = log.read_text(errors='replace').splitlines()
@@ -1524,7 +1536,9 @@ jobs:
         if: always()
         with:
           name: goatman-diagnostics-${{ github.sha }}
-          path: build/goatman-native.log
+          path: |
+            build/goatman-native.log
+            build/night-ward-native.log
 
   caver-gameplay:
     runs-on: ubuntu-latest

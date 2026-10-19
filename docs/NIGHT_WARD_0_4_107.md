@@ -56,7 +56,9 @@ spawn rules, leaving no resident to guard. The fixture now uses an owned native 
 and explicitly requires successful registration before checking vacancy; ownership,
 health and UUID preservation are also asserted. No resident guard is relaxed.
 The ward check also mounts the actual reader on the refitted chair at its original
-height and facing. The native elk-rebuild identity case, unchanged in production code,
+height and facing, using the repo's real mock-connected ServerPlayer fixture for the
+mount/vehicle/height/facing assertions. This case runs first in its own native namespace
+before the complete 43-case funeral/trailer/ward suite. The native elk-rebuild identity case, unchanged in production code,
 failed once with its original/landing entity sections unleased and a fixed ten-tick
 assertion. Its fixture now holds both sections and waits for native readiness and
 reader enrollment, retaining all UUID, ownership, health, item and physics assertions
