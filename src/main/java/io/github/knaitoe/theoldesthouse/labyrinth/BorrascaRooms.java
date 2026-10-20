@@ -37,6 +37,8 @@ public final class BorrascaRooms {
         treehouse(l,b);gully(l,b);compound(l,b);serviceDescent(l,b);
         marker(l,b,MARKER_ONE,BorrascaFittingBlock.Kind.MARKER_ONE);marker(l,b,MARKER_TWO,BorrascaFittingBlock.Kind.MARKER_TWO);marker(l,b,MARKER_THREE,BorrascaFittingBlock.Kind.MARKER_THREE);marker(l,b,MARKER_FOUR,BorrascaFittingBlock.Kind.MARKER_FOUR);
         path(l,b,trail(-125),SHELTER_TWO);path(l,b,SHELTER_TWO,new BlockPos(1,6,-131));path(l,b,new BlockPos(1,6,-131),trail(-141));
+        // The shelter branch starts on this rise; its floor must not replace the main trail's half-step.
+        for(int dx=-2;dx<=2;dx++)BuildBlocks.set(l,b.offset(trail(-125).offset(dx,-1,0)),Blocks.STONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH),F);
         for(var at:new BlockPos[]{new BlockPos(1,2,-115),new BlockPos(-5,6,-132)})box(l,b,at.getX(),at.getY(),at.getZ(),at.getX()+4,at.getY(),at.getZ(),Blocks.SPRUCE_LOG);
         box(l,b,-14,8,-154,7,8,-144,Blocks.RED_TERRACOTTA);box(l,b,-14,9,-154,7,13,-144,Blocks.AIR);box(l,b,-9,9,-154,-7,14,-150,Blocks.SPRUCE_LOG);box(l,b,-10,9,-152,-8,12,-149,Blocks.MOSSY_COBBLESTONE);
         for(int x=-3;x<=1;x++)BuildBlocks.set(l,b.offset(x,8,-144),Blocks.STONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH),F);
