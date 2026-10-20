@@ -15,6 +15,11 @@ public final class HotelActor extends PathfinderMob {
     private static final EntityDataAccessor<Boolean> DANCING=SynchedEntityData.defineId(HotelActor.class,EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Integer> GESTURE=SynchedEntityData.defineId(HotelActor.class,EntityDataSerializers.INT);
     private static final EntityDataAccessor<Long> START=SynchedEntityData.defineId(HotelActor.class,EntityDataSerializers.LONG),UNTIL=SynchedEntityData.defineId(HotelActor.class,EntityDataSerializers.LONG);
+    private static final EntityDataAccessor<Integer> BATH_PHASE=SynchedEntityData.defineId(HotelActor.class,EntityDataSerializers.INT),BATH_AGE=SynchedEntityData.defineId(HotelActor.class,EntityDataSerializers.INT);
+    public int bathPhase(){return entityData.get(BATH_PHASE);}public int bathAge(){return entityData.get(BATH_AGE);}
+    public void bathState(int phase,int age){entityData.set(BATH_PHASE,Math.max(0,Math.min(3,phase)));entityData.set(BATH_AGE,Math.max(0,age));}
+    @Override public EntityDimensions getDefaultDimensions(Pose pose){return role()==6?EntityDimensions.scalable(.55F,1.7F).withEyeHeight(1.46F):super.getDefaultDimensions(pose);}
+    @Override public boolean isPickable(){return role()!=6&&super.isPickable();}
     private int danceSlot=-1;
     public void danceSlot(int slot){danceSlot=Math.max(-1,Math.min(5,slot));}
     public int danceSlot(){return danceSlot;}
@@ -25,17 +30,17 @@ public final class HotelActor extends PathfinderMob {
     }
     public HotelActor(EntityType<? extends HotelActor> type,Level l){super(type,l);setPersistenceRequired();setNoAi(true);setCanPickUpLoot(false);}
     public static AttributeSupplier.Builder attributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,20).add(Attributes.MOVEMENT_SPEED,.2);}
-    @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(ROLE,0);b.define(DANCING,false);b.define(GESTURE,IDLE);b.define(START,0L);b.define(UNTIL,0L);}
+    @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(ROLE,0);b.define(DANCING,false);b.define(GESTURE,IDLE);b.define(START,0L);b.define(UNTIL,0L);b.define(BATH_PHASE,0);b.define(BATH_AGE,0);}
     public int role(){return entityData.get(ROLE);}public boolean dancing(){return entityData.get(DANCING);}
     public int gesture(){return level().getGameTime()<entityData.get(UNTIL)?entityData.get(GESTURE):IDLE;}
     public float gestureProgress(float partial){long duration=entityData.get(UNTIL)-entityData.get(START);return duration<=0?1:net.minecraft.util.Mth.clamp((level().getGameTime()-entityData.get(START)+partial)/duration,0,1);}
     /** Native interaction starts a bounded motion on the existing saved body. */
     public void gesture(int motion,int duration){if(level().isClientSide)return;long now=level().getGameTime();entityData.set(GESTURE,Math.max(IDLE,Math.min(LISTEN,motion)));entityData.set(START,now);entityData.set(UNTIL,now+Math.max(1,Math.min(100,duration)));}
-    public void appearance(int role,boolean dance){entityData.set(ROLE,Math.max(0,Math.min(6,role)));entityData.set(DANCING,dance);}
+    public void appearance(int role,boolean dance){entityData.set(ROLE,Math.max(0,Math.min(6,role)));entityData.set(DANCING,dance);if(role==6){setNoGravity(true);noPhysics=bathPhase()<=1;}refreshDimensions();}
     @Override protected InteractionResult mobInteract(Player p,InteractionHand hand){if(role()==6)return InteractionResult.PASS;if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)HotelVignette.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}
     @Override public boolean hurt(DamageSource source,float amount){return false;}
     @Override public boolean removeWhenFarAway(double distance){return false;}
     @Override public boolean isPushable(){return false;}
-    @Override public void addAdditionalSaveData(CompoundTag t){super.addAdditionalSaveData(t);t.putInt("Role",role());t.putBoolean("Dancing",dancing());t.putInt("StanleyGesture",entityData.get(GESTURE));t.putLong("StanleyStart",entityData.get(START));t.putLong("StanleyUntil",entityData.get(UNTIL));t.putInt("StanleyDanceSlot",danceSlot);}
-    @Override public void readAdditionalSaveData(CompoundTag t){super.readAdditionalSaveData(t);appearance(t.getInt("Role"),t.getBoolean("Dancing"));danceSlot=t.contains("StanleyDanceSlot")?Math.max(-1,Math.min(5,t.getInt("StanleyDanceSlot"))):-1;long now=level().getGameTime(),start=t.getLong("StanleyStart"),until=t.getLong("StanleyUntil");if(start<=now&&until>now&&until-start<=100){entityData.set(GESTURE,Math.max(IDLE,Math.min(LISTEN,t.getInt("StanleyGesture"))));entityData.set(START,start);entityData.set(UNTIL,until);}}
+    @Override public void addAdditionalSaveData(CompoundTag t){super.addAdditionalSaveData(t);t.putInt("BathPhase04113",bathPhase());t.putInt("BathAge04113",bathAge());t.putInt("Role",role());t.putBoolean("Dancing",dancing());t.putInt("StanleyGesture",entityData.get(GESTURE));t.putLong("StanleyStart",entityData.get(START));t.putLong("StanleyUntil",entityData.get(UNTIL));t.putInt("StanleyDanceSlot",danceSlot);}
+    @Override public void readAdditionalSaveData(CompoundTag t){super.readAdditionalSaveData(t);appearance(t.getInt("Role"),t.getBoolean("Dancing"));bathState(t.getInt("BathPhase04113"),t.getInt("BathAge04113"));if(role()==6)noPhysics=bathPhase()<=1;danceSlot=t.contains("StanleyDanceSlot")?Math.max(-1,Math.min(5,t.getInt("StanleyDanceSlot"))):-1;long now=level().getGameTime(),start=t.getLong("StanleyStart"),until=t.getLong("StanleyUntil");if(start<=now&&until>now&&until-start<=100){entityData.set(GESTURE,Math.max(IDLE,Math.min(LISTEN,t.getInt("StanleyGesture"))));entityData.set(START,start);entityData.set(UNTIL,until);}}
 }

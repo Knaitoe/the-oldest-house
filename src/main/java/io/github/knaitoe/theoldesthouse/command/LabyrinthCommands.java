@@ -70,6 +70,7 @@ public final class LabyrinthCommands {
     public static LiteralArgumentBuilder<CommandSourceStack> vignette() {
         return Commands.literal("vignette")
                 .then(UncannyCommands.build())
+                .then(HotelBathCommands.build())
                 .then(io.github.knaitoe.theoldesthouse.labyrinth.NovelCommands.build())
                 .then(Commands.literal("holloway_camp").then(Commands.literal("status").executes(context->{
                     var p=context.getSource().getPlayerOrException();var own=io.github.knaitoe.theoldesthouse.labyrinth.HollowayVignette.personal(LabyrinthData.get(p.server),p.getUUID());

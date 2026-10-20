@@ -172,7 +172,7 @@ public final class HotelRooms {
         set(l,b,10,0,-15,ManorBlock.of(ManorBlock.Kind.CLOCK_LOW,Direction.WEST));set(l,b,10,1,-15,ManorBlock.of(ManorBlock.Kind.CLOCK_HIGH,Direction.WEST));
         set(l,b,-10,0,-16,Blocks.POTTED_FERN);set(l,b,10,0,-1,Blocks.POTTED_FERN);set(l,b,-10,0,-1,Blocks.POTTED_FERN);
         for(int z:new int[]{-5,-12})put(l,b,0,4,z,Kind.CHANDELIER,Direction.NORTH);
-        for(int z:new int[]{-10,-14})put(l,b,-10,2,z,Kind.SCONCE,Direction.EAST);
+        for(int z:new int[]{-10,-15})put(l,b,-10,2,z,Kind.SCONCE,Direction.EAST);
         // The grand stair up the east side: six treads, a closed string and a rail, through the ceiling to the landing.
         for(int i=0;i<=5;i++){int z=-6-i;
             for(int x=8;x<=10;x++){if(i>0)fill(l,b,x,0,z,x,i-1,z,planks);stairs(l,b,x,i,z,Blocks.DARK_OAK_STAIRS,Direction.NORTH);}
@@ -227,7 +227,7 @@ public final class HotelRooms {
             furniture(l,b,14,0,z,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);furniture(l,b,16,0,z,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.WEST);}
         detail(l,b,15,1,-9,SceneDetailBlock.Kind.BOTTLES,Direction.SOUTH);
         put(l,b,19,4,-8,Kind.CHANDELIER,Direction.NORTH);
-        for(int z:new int[]{-3,-13})put(l,b,13,1,z,Kind.SCONCE,Direction.EAST);
+        for(int z:new int[]{-5,-13})put(l,b,13,1,z,Kind.SCONCE,Direction.EAST);
         // A dark mirror above the bottles.
         for(int z=-4;z>=-12;z--)set(l,b,27,2,z,Blocks.BLACK_STAINED_GLASS);
         for(int z=-4;z>=-12;z--)set(l,b,28,2,z,Blocks.BLACK_CONCRETE);
