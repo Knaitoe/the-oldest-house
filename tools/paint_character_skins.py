@@ -173,6 +173,7 @@ HOTEL = [
 for prefix in ('hotel','stanley'):
     for role, look in zip(('porter','bartender','scarred_guest','pianist','dancer','dancer_dress'),HOTEL):
         LOOKS[f'{prefix}_{role}']=look
+LOOKS['stanley_bath_ghost']=Look('#a3ab99','#aab1a5','long','#b8baa7','#9a9f90','dress','#76816e',eyes='#d4d6bb',age=3,sleeve=0)
 
 CLUB = [
     ('male',Look('#c7a17c','#51392c','short','#434b50','#2f353a','tee','#8a9799',beard='short',sleeve=4)),
@@ -654,7 +655,7 @@ def paint(look):
             fill_net(net(64,0,8,3,8),'#a68d49');fill_net(net(64,16,10,1,10),'#c1a35c')
         if look==LOOKS.get('literary_lake_tess'):
             for box in ((64,0,82,24),(84,0,100,24)):put(box,panel((round((box[2]-box[0])*S),round((box[3]-box[1])*S)),look.hair,'hair'))
-        if look.style in ('uniform','waistcoat') or look in HOTEL:
+        if look.style in ('uniform','waistcoat') or look in HOTEL or look==LOOKS.get('stanley_bath_ghost'):
             fill_net(net(64,0,10,2,10),look.cloth)
             for box,c in [((64,30,96,64),look.cloth),((96,0,120,24),'#d7ccb2'),((96,24,103,32),look.skin),((104,24,116,42),'#c8ad70'),((116,24,128,42),'#4e6243'),((100,44,116,52),'#c7bea5')]:
                 put(box,panel((round((box[2]-box[0])*S),round((box[3]-box[1])*S)),c))

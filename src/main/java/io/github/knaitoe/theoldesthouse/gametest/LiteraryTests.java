@@ -474,7 +474,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         });
     }
     @AfterBatch(batch="literary_last_stop_bar") public static void lastStopBarDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="literary_last_stop_night",timeoutTicks=1000)
+    @GameTest(template="empty",batch="literary_last_stop_night",timeoutTicks=1200)
     public static void theElkDentsATruckLooksAtTheReaderAndTheMenHerdWithoutTouching(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_LOT;var p=f.player("night_reader",place);var b=f.base(place);var l=f.out;var room=place.room();
         f.chunks.hold(l,new AABB(b.getX()+room.minX(),b.getY()-4,b.getZ()+room.minZ(),b.getX()+room.maxX()+1,b.getY()+12,b.getZ()+2));
@@ -508,6 +508,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             h.assertTrue(closest[0]>=1.5,"nobody laid a hand on the reader: closest "+closest[0]);
             var world=LiteraryVignettes.shared(f.data(),place);var russ=(LiteraryActor)l.getEntity(world.getUUID(ElkLotNight.RUSS.key()));
             h.assertTrue(russ.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(0,0,-6)))<9,"by now one of them stands on the road back");
+            var released=(LiteraryElk)l.getEntity(world.getUUID("Elk"));h.assertTrue(world.getInt("ElkStage")==6&&released.position().distanceToSqr(ElkLotNight.REST.add(b.getX(),b.getY(),b.getZ()))<.1,"the same wounded elk physically clears the pickups, fallen rail and ditch to reach the field: stage="+world.getInt("ElkStage")+" leg="+world.getInt("ElkLeg")+" feet="+released.position().subtract(b.getX(),b.getY(),b.getZ()));
             p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()+200.5,0,0);
         }).thenIdle(ElkLotNight.EMPTY_RESET+20).thenExecute(()->{
             var world=LiteraryVignettes.shared(f.data(),place);

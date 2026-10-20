@@ -35,10 +35,13 @@ public final class HotelRoomPlaqueRenderer implements BlockEntityRenderer<HotelR
         }
 
         Direction facing = plaque.getBlockState().getValue(HotelRoomPlaqueBlock.FACING);
+        engrave(font,number,facing,poseStack,bufferSource,packedLight);
+    }
+    public static void engrave(Font font,int number,Direction facing,PoseStack poseStack,MultiBufferSource bufferSource,int packedLight){
         float rotation = switch (facing) {
-            case WEST -> 90.0F;
+            case WEST -> 270.0F;
             case NORTH -> 180.0F;
-            case EAST -> 270.0F;
+            case EAST -> 90.0F;
             default -> 0.0F;
         };
 
@@ -49,7 +52,7 @@ public final class HotelRoomPlaqueRenderer implements BlockEntityRenderer<HotelR
         poseStack.translate(0.5D, 0.5D, 0.5D);
         poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
         // The base model faces south and sits against the north wall edge.
-        poseStack.translate(0.0D, 0.0D, -0.395D);
+        poseStack.translate(0.0D, 0.0D, -0.40525D);
         poseStack.scale(-0.020F, -0.020F, 0.020F);
 
         float width = font.width(text);

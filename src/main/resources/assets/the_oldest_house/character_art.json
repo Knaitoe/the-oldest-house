@@ -688,6 +688,13 @@
     "phase": 0
   },
   {
+    "name": "stanley_bath_ghost",
+    "logical": 128,
+    "model": "hotel",
+    "number": 6,
+    "phase": 0
+  },
+  {
     "name": "stanley_dancer",
     "logical": 128,
     "model": "hotel",

@@ -16,8 +16,10 @@ public final class HotelRegistry {
     private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
     private static final DeferredRegister<MapCodec<? extends Block>> CODECS=DeferredRegister.create(BuiltInRegistries.BLOCK_TYPE,TheOldestHouse.MOD_ID);
     private static final DeferredRegister<EntityType<?>> TYPES=DeferredRegister.create(Registries.ENTITY_TYPE,TheOldestHouse.MOD_ID);
+    private static final DeferredRegister<net.minecraft.world.level.block.entity.BlockEntityType<?>> TILES=DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE,TheOldestHouse.MOD_ID);
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<HotelPropBlock>> PROP_TYPE=CODECS.register("hotel_prop",()->HotelPropBlock.CODEC);
     public static final DeferredBlock<HotelPropBlock> PROP=BLOCKS.registerBlock("hotel_prop",HotelPropBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable());
+    public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,net.minecraft.world.level.block.entity.BlockEntityType<HotelPhotoBlockEntity>> PHOTO_ENTITY=TILES.register("hotel_photo",()->net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(HotelPhotoBlockEntity::new,PROP.get()).build(null));
     /** The rebuilt hotel's siding, papers, windows and fittings (0.4.105), one block. */
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<StanleyBlock>> STANLEY_TYPE=CODECS.register("stanley",()->StanleyBlock.CODEC);
     public static final DeferredBlock<StanleyBlock> STANLEY=BLOCKS.registerBlock("stanley",StanleyBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS).strength(.8F).noLootTable().lightLevel(StanleyBlock::light));
@@ -30,6 +32,6 @@ public final class HotelRegistry {
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String name){return SOUNDS.register("hotel."+name,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"hotel."+name)));}
     public static final DeferredHolder<SoundEvent,SoundEvent> PIANO=sound("piano"),ORCHESTRA=sound("orchestra"),BELL=sound("bell"),RUBBER=sound("hose");
     private HotelRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);TYPES.register(bus);SOUNDS.register(bus);bus.addListener(HotelRegistry::attributes);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);TYPES.register(bus);TILES.register(bus);SOUNDS.register(bus);bus.addListener(HotelRegistry::attributes);}
     private static void attributes(EntityAttributeCreationEvent e){e.put(ACTOR.get(),HotelActor.attributes().build());e.put(HOSE.get(),HotelHose.attributes().build());}
 }

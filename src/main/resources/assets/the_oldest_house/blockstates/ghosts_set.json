@@ -589,6 +589,22 @@
     "facing=west,kind=rail": {
       "model": "the_oldest_house:block/ghosts_rail",
       "y": 270
+    },
+    "kind=table_leg,facing=north": {
+      "model": "the_oldest_house:block/ghosts_table_leg",
+      "y": 0
+    },
+    "kind=table_leg,facing=east": {
+      "model": "the_oldest_house:block/ghosts_table_leg",
+      "y": 90
+    },
+    "kind=table_leg,facing=south": {
+      "model": "the_oldest_house:block/ghosts_table_leg",
+      "y": 180
+    },
+    "kind=table_leg,facing=west": {
+      "model": "the_oldest_house:block/ghosts_table_leg",
+      "y": 270
     }
   }
 }

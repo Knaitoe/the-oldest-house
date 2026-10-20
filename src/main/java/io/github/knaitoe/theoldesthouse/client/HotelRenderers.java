@@ -15,10 +15,10 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
 public final class HotelRenderers {
     public static final ModelLayerLocation CAST=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"hotel_cast"),"main"),HOSE=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"hotel_hose"),"main");
-    public static ResourceLocation skin(int role){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/stanley_"+new String[]{"porter","bartender","scarred_guest","pianist","dancer","dancer_dress"}[Math.max(0,Math.min(5,role))]+".png");}
+    public static ResourceLocation skin(int role){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/stanley_"+new String[]{"porter","bartender","scarred_guest","pianist","dancer","dancer_dress","bath_ghost"}[Math.max(0,Math.min(6,role))]+".png");}
     public static ResourceLocation rubber(){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/hotel_hose.png");}
     @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions e){e.registerLayerDefinition(CAST,CastModel::layer);e.registerLayerDefinition(HOSE,HoseModel::layer);}
-    @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerEntityRenderer(HotelRegistry.ACTOR.get(),CastRenderer::new);e.registerEntityRenderer(HotelRegistry.HOSE.get(),HoseRenderer::new);}
+    @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerEntityRenderer(HotelRegistry.ACTOR.get(),CastRenderer::new);e.registerEntityRenderer(HotelRegistry.HOSE.get(),HoseRenderer::new);e.registerBlockEntityRenderer(HotelRegistry.PHOTO_ENTITY.get(),HotelPhotoRenderer::new);}
     public static final class CastModel extends HumanoidModel<HotelActor> {
         private final ModelPart tails,apron,skirt,cap,leftElbow,rightElbow,leftKnee,rightKnee,glass,bottleGrip,bottleAim,bottle,cloth;
         private final ModelPart[] leftFingers=new ModelPart[3],rightFingers=new ModelPart[3];
@@ -58,15 +58,18 @@ public final class HotelRenderers {
             if(role==2||role==4&&!dancing){head.zRot=.11F;rightArm.xRot=-.1F;rightElbow.xRot=-.3F;if(motion==HotelActor.LISTEN){float lean=(float)Math.sin(Math.PI*progress);head.xRot+=.18F*lean;head.zRot+=.12F*lean;leftArm.xRot=-.25F*lean;leftElbow.xRot=-.8F*lean;}}
             if(role==3){leftArm.xRot=rightArm.xRot=-.84F;leftArm.yRot=.15F;rightArm.yRot=-.15F;leftElbow.xRot=-.64F-beat*.05F;rightElbow.xRot=-.64F+beat*.05F;leftArm.zRot=(float)Math.sin(time*.11F)*.045F;rightArm.zRot=(float)Math.cos(time*.11F)*.045F;head.xRot=.23F;body.xRot=.06F;for(int i=0;i<3;i++){leftFingers[i].xRot=-.2F-(float)Math.sin(time*.3F+i*1.7F)*.18F;rightFingers[i].xRot=-.2F-(float)Math.cos(time*.3F+i*1.7F)*.18F;}}
             if(dancing){boolean dress=role==5;leftArm.xRot=-.9F;rightArm.xRot=-.8F;leftArm.zRot=dress?-.37F:-.58F;rightArm.zRot=dress?.58F:.37F;leftElbow.xRot=dress?-.5F:-.8F;rightElbow.xRot=dress?-.8F:-.5F;body.yRot=(float)Math.sin(time*.04F)*.09F;head.yRot=-body.yRot;leftLeg.xRot=beat*.19F;rightLeg.xRot=-leftLeg.xRot;leftKnee.xRot=Math.max(0,-beat)*.28F;rightKnee.xRot=Math.max(0,beat)*.28F;skirt.xRot=beat*.035F;tails.xRot=-beat*.025F;}
+            if(role==6){skirt.visible=true;body.y=7;body.xRot=.22F;head.y=6;head.xRot=.24F;head.zRot=.12F;leftArm.y=rightArm.y=8;leftArm.xRot=-.35F;rightArm.xRot=-.5F;leftElbow.xRot=-.6F;rightElbow.xRot=-.4F;leftLeg.xRot=rightLeg.xRot=-1.25F;leftKnee.xRot=rightKnee.xRot=1.55F;leftLeg.y=rightLeg.y=18;}
             hat.copyFrom(head);
         }
         @Override public void setupAnim(HotelActor a,float walk,float amount,float time,float yaw,float pitch){reset();super.setupAnim(a,walk,amount,time,yaw,pitch);pose(a.role(),a.dancing(),time,a.gesture(),a.gestureProgress(time-a.tickCount));}
     }
     private static final class CastRenderer extends MobRenderer<HotelActor,CastModel>{CastRenderer(EntityRendererProvider.Context c){super(c,new CastModel(c.bakeLayer(CAST)),.2F);}@Override public ResourceLocation getTextureLocation(HotelActor a){return skin(a.role());}@Override protected boolean shouldShowName(HotelActor a){return false;}}
     public static final class HoseModel extends EntityModel<HotelHose>{private final ModelPart root;public HoseModel(ModelPart r){root=r;}
-        public static LayerDefinition layer(){var m=new MeshDefinition();var r=m.getRoot();for(int i=0;i<16;i++)r.addOrReplaceChild("segment"+i,CubeListBuilder.create().texOffs(i==0?16:0,0).addBox(-1.9F,-1.8F,-1.6F,3.8F,3.6F,3.2F),PartPose.offset(0,22,i*2.6F-20));return LayerDefinition.create(m,32,16);}
+        public static final int SEGMENTS=32;
+        public static LayerDefinition layer(){var m=new MeshDefinition();var r=m.getRoot();for(int i=0;i<SEGMENTS;i++)r.addOrReplaceChild("segment"+i,CubeListBuilder.create().texOffs(i==0?16:0,0).addBox(-.75F,-.5F,-1.5F,1.5F,1,3),PartPose.offset(0,23.4F,0));return LayerDefinition.create(m,32,16);}
         public void pose(float time){pose(time,2);}
-        public void pose(float time,int phase){for(int i=0;i<16;i++){var p=root.getChild("segment"+i);p.resetPose();if(phase==0){float angle=i*.65F,radius=3+i*.25F;p.x=(float)Math.sin(angle)*radius;p.z=(float)Math.cos(angle)*radius;p.yRot=angle;}else{p.x=(float)Math.sin((phase==2?time*.13:0)-i*.38)*2.2F;p.yRot=(float)Math.cos((phase==2?time*.13:0)-i*.38)*.16F;}}}
+        public static float[] point(float time,int phase,int i){if(phase==0){float angle=i*(float)(Math.PI*4/SEGMENTS),radius=1.3F+i*.16F;return new float[]{(float)Math.sin(angle)*radius,(float)Math.cos(angle)*radius};}return new float[]{(float)Math.sin((phase==2?time*.09:0)-i*.20)*1.4F,-12+i*.75F};}
+        public void pose(float time,int phase){for(int i=0;i<SEGMENTS;i++){var p=root.getChild("segment"+i);p.resetPose();var a=point(time,phase,i);var b=point(time,phase,i+1);float dx=b[0]-a[0],dz=b[1]-a[1];p.x=(a[0]+b[0])*.5F;p.z=(a[1]+b[1])*.5F;p.yRot=(float)Math.atan2(dx,dz);p.zScale=((float)Math.hypot(dx,dz)+.16F)/3;}}
         @Override public void setupAnim(HotelHose a,float walk,float amount,float time,float yaw,float pitch){pose(time,a.phase());}
         @Override public void renderToBuffer(PoseStack p,VertexConsumer out,int light,int overlay,int color){root.render(p,out,light,overlay,color);}}
     private static final class HoseRenderer extends MobRenderer<HotelHose,HoseModel>{HoseRenderer(EntityRendererProvider.Context c){super(c,new HoseModel(c.bakeLayer(HOSE)),.15F);}@Override public ResourceLocation getTextureLocation(HotelHose e){return rubber();}}

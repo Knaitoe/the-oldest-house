@@ -31,8 +31,8 @@ public final class HotelActor extends PathfinderMob {
     public float gestureProgress(float partial){long duration=entityData.get(UNTIL)-entityData.get(START);return duration<=0?1:net.minecraft.util.Mth.clamp((level().getGameTime()-entityData.get(START)+partial)/duration,0,1);}
     /** Native interaction starts a bounded motion on the existing saved body. */
     public void gesture(int motion,int duration){if(level().isClientSide)return;long now=level().getGameTime();entityData.set(GESTURE,Math.max(IDLE,Math.min(LISTEN,motion)));entityData.set(START,now);entityData.set(UNTIL,now+Math.max(1,Math.min(100,duration)));}
-    public void appearance(int role,boolean dance){entityData.set(ROLE,Math.max(0,Math.min(5,role)));entityData.set(DANCING,dance);}
-    @Override protected InteractionResult mobInteract(Player p,InteractionHand hand){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)HotelVignette.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}
+    public void appearance(int role,boolean dance){entityData.set(ROLE,Math.max(0,Math.min(6,role)));entityData.set(DANCING,dance);}
+    @Override protected InteractionResult mobInteract(Player p,InteractionHand hand){if(role()==6)return InteractionResult.PASS;if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)HotelVignette.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}
     @Override public boolean hurt(DamageSource source,float amount){return false;}
     @Override public boolean removeWhenFarAway(double distance){return false;}
     @Override public boolean isPushable(){return false;}

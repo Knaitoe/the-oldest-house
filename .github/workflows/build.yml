@@ -77,7 +77,7 @@ jobs:
                   assert name in z.namelist(), name
               assert f'version="{expected_version}"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               ghosts = json.loads(z.read('assets/the_oldest_house/blockstates/ghosts_set.json'))['variants']
-              assert len(ghosts) == 148
+              assert len(ghosts) == 152
               for variant in ghosts.values():
                   assert json.loads(z.read('assets/the_oldest_house/models/'+variant['model'].split(':')[1]+'.json'))['elements']
               for name in ('marjorie','merry','john','sarah','barry','father_wanderly','marjorie_dinner','john_hand'):
@@ -799,6 +799,8 @@ jobs:
           test -s build/font-smoke/native-companions.png
           test -s build/font-smoke/hotel-passed.txt
           test -s build/font-smoke/native-hotel.png
+          test -s build/font-smoke/hotel-fitting-passed.txt
+          for page in 0 1 2 3; do test -s build/font-smoke/native-hotel-fitting-$page.png; done
           test -s build/font-smoke/stanley-passed.txt
           for view in cast actions fixtures comparison; do test -s build/font-smoke/native-stanley-$view.png; done
           test -s build/font-smoke/ghosts-passed.txt
@@ -1369,6 +1371,22 @@ jobs:
           test -s build/font-smoke/death-portraits-passed.txt
           test -s build/font-smoke/native-death-portraits-front.png
           test -s build/font-smoke/native-death-portraits-dim.png
+      - name: Native photographed hotel fitting repairs
+        timeout-minutes: 5
+        run: |
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PhotelFixSmoke --no-daemon
+          test -s build/font-smoke/hotel-fitting-passed.txt
+          for page in 0 1 2 3; do test -s build/font-smoke/native-hotel-fitting-$page.png; done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hotel-fitting-views-${{ github.sha }}
+          path: |
+            build/font-smoke/native-hotel-fitting-*.png
+            build/font-smoke/hotel-fitting-passed.txt
+            run/logs/latest.log
+            run/crash-reports/
+          if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         if: always()
         with:

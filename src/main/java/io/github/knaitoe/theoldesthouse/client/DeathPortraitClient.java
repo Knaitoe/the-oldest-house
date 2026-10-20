@@ -53,7 +53,10 @@ public final class DeathPortraitClient {
     }
 
     public static @Nullable ResourceLocation texture(PortraitProfile profile) {
-        String key = profile.encode(); var cached = CACHE.get(key); if (cached != null) return cached.texture;
+        return texture(profile,false);
+    }
+    public static @Nullable ResourceLocation texture(PortraitProfile profile,boolean party) {
+        String key = (party?"party:":"family:")+profile.encode(); var cached = CACHE.get(key); if (cached != null) return cached.texture;
         var entry = new Entry(); CACHE.put(key, entry); int epoch = generation;
         if (CACHE.size() > 32) {
             var oldest = CACHE.entrySet().iterator(); var evicted = oldest.next();
@@ -67,9 +70,9 @@ public final class DeathPortraitClient {
             var skin = failure == null ? mc.getSkinManager().getInsecureSkin(profile.gameProfile()) : DefaultPlayerSkin.get(profile.owner());
             int previous = GlStateManager._getInteger(GL11.GL_TEXTURE_BINDING_2D);
             try (var pixels = new NativeImage(64, 64, false);
-                 var stream = mc.getResourceManager().open(FAMILY); var family = NativeImage.read(stream)) {
+                 var stream = mc.getResourceManager().open(party?ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/block/stanley/party.png"):FAMILY); var family = NativeImage.read(stream)) {
                 mc.getTextureManager().getTexture(skin.texture()).bind(); pixels.downloadTexture(0, false);
-                var texture = new DynamicTexture(PortraitPainter.paint(pixels, family)); texture.setFilter(false, false);
+                var texture = new DynamicTexture(party?HotelPhotoPainter.paint(pixels,family):PortraitPainter.paint(pixels, family)); texture.setFilter(false, false);
                 entry.texture = mc.getTextureManager().register("the_oldest_house_portrait_" + profile.owner(), texture);
             } catch (Exception exception) {
                 TheOldestHouse.LOGGER.warn("Could not paint the House portrait for {}", profile.owner(), exception);

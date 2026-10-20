@@ -101,6 +101,17 @@ public final class Vignette0492Tests {
         }).thenSucceed();
     }
     @AfterBatch(batch="review492_bar_capture") public static void barDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="review492_bar_furniture04112",timeoutTicks=900)
+    public static void theOriginalMenFindAReaderAcrossTheActualPoolTableAndMarlaIsWithinReach(GameTestHelper h){
+        var f=fixture(h);var place=ElkLot.PLACE;var p=f.player("bar_furniture",place);var b=f.base(place);lease(f,place);var ids=new HashMap<String,UUID>();
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&LiteraryVignettes.shared(f.data(),place).hasUUID("Wade"),"the actual furnished bar and native sections are ready")).thenExecute(()->{
+            var night=LiteraryVignettes.shared(f.data(),place);var marla=(LiteraryActor)f.out.getEntity(night.getUUID("Marla"));f.at(p,place,-24.5,0,-23.5);h.assertTrue(p.getEyePosition().distanceToSqr(marla.getBoundingBox().getCenter())<9&&f.out.noCollision(marla,marla.getBoundingBox()),"Marla serves from behind the actual counter at natural native reach");
+            f.at(p,place,-25.5,0,-16.5);for(var who:ElkLotNight.MEN)ids.put(who.key(),night.getUUID(who.key()));night.putInt("CrashAt",0);night.putInt("Night",ElkLotNight.MEN_OUT+ElkLotNight.SEARCH+ElkLotNight.STAGE*3);LiteraryVignettes.shared(f.data(),place,night);var own=f.own(p,place);own.putBoolean("ElkSeen",true);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+        }).thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Ready"),"two original men must walk around the pool table and reach the reader: "+ids.values().stream().map(id->f.out.getEntity(id)).filter(Objects::nonNull).map(a->a.position().subtract(b.getX(),b.getY(),b.getZ()).toString()).toList())).thenExecute(()->{
+            h.assertTrue(f.own(p,place).getBoolean("CaptureWitness0492")&&ElkLotEnding.MEN.equals(f.own(p,place).getString("Outcome")),"only actual physical contact finishes the men's ending across furniture");var night=LiteraryVignettes.shared(f.data(),place);for(var who:ElkLotNight.MEN)h.assertTrue(ids.get(who.key()).equals(night.getUUID(who.key())),"routing never substitutes a new man");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="review492_bar_furniture04112") public static void barFurnitureDone(ServerLevel level){close();}
 
     @GameTest(template="empty",batch="review492_herd_custody",timeoutTicks=400)
     public static void loopCountersCannotCaptureTheReaderAndPrivateHerdsPreserveSavedOriginals(GameTestHelper h){

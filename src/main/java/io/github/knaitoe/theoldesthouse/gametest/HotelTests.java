@@ -23,6 +23,22 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID+"_hotel")
 @PrefixGameTestTemplate(false)
 public final class HotelTests {
+    private static Fixture fittings;
+    private static NativeTestChunks fittingChunks;
+    @AfterBatch(batch="hotel_fittings04112") public static void fittingsDone(ServerLevel level){if(fittings!=null){fittings.close();fittings=null;}if(fittingChunks!=null){fittingChunks.close();fittingChunks=null;}}
+    @GameTest(template="empty",batch="hotel_fittings04112",timeoutTicks=400)
+    public static void flatPhotographTracksItsSitterAndTheBarAndBathUseTheirActualNativeBodies(GameTestHelper h){
+        fittings=new Fixture(h,53100,true);var f=fittings;var p=f.player("hotel_fittings");HotelVignette.onArrive(p,LabyrinthPlace.HOTEL);var chunks=fittingChunks=new NativeTestChunks();chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.HOTEL));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(chunks.ready()&&HotelVignette.world(f.data()).hasUUID("BathGhost"),"the original bar and bathroom cast are loaded")).thenExecute(()->{
+            var all=HotelVignette.world(f.data());var bar=(HotelActor)f.l.getEntity(all.getUUID("Actor1"));var ghost=(HotelActor)f.l.getEntity(all.getUUID("BathGhost"));
+            f.at(p,20.5,0,-7.5);h.assertTrue(p.getEyePosition().distanceToSqr(bar.getBoundingBox().getCenter())<9&&f.l.noCollision(bar,bar.getBoundingBox()),"the original bartender fits behind the counter within natural native interaction reach");
+            HotelVignette.talk(p,bar);int line=f.own(p).getInt("BarLine04112");var own=f.own(p);own.putLong("LastDrink",f.l.getGameTime()-41);HotelVignette.save(f.data(),p.getUUID(),own);HotelVignette.talk(p,bar);h.assertTrue(f.own(p).getInt("BarLine04112")==line+1,"subsequent service advances the reader's dialogue without bypassing service cooldown");
+            var saved=ghost.saveWithoutId(new CompoundTag());var restored=HotelRegistry.ACTOR.get().create(f.l);restored.load(saved);h.assertTrue(ghost.role()==6&&restored.role()==6&&restored.getUUID().equals(ghost.getUUID())&&ghost.isNoGravity()&&ghost.position().distanceToSqr(new Vec3(f.b.getX()-26.5,f.b.getY()+6.45,f.b.getZ()-24.1))<.01,"the old woman occupies the bath and retains her saved original identity and appearance");
+            f.at(p,.5,0,-27.5);HotelVignette.photograph(p);var tile=(HotelPhotoBlockEntity)f.l.getBlockEntity(f.b.offset(HotelRooms.PHOTO));var fresh=new HotelPhotoBlockEntity(tile.getBlockPos(),tile.getBlockState());fresh.loadWithComponents(tile.getUpdateTag(f.l.registryAccess()),f.l.registryAccess());h.assertTrue(fresh.sitter()!=null&&fresh.sitter().equals(tile.sitter())&&fresh.sitter().owner().equals(p.getUUID()),"native disk and late-tracking tile data retain the real flat sitter profile");
+            h.assertTrue(!f.l.getBlockState(f.b.offset(HotelRooms.FRONT_ROW)).is(Blocks.PLAYER_WALL_HEAD)&&p.getInventory().countItem(HotelRegistry.PHOTOGRAPH.get())==1,"one personally owned print is issued and no three-dimensional head protrudes from the wall");
+            chunks.close();h.succeed();
+        });
+    }
     private static Fixture arc,custody,plant,blind,history,stanleyItems,stanleyDance,routes;
     private static final class Fixture implements AutoCloseable {
         final GameTestHelper h;final ServerLevel l,outside;final BlockPos origin,b,gb;final HouseSavedData oldHouse;final LabyrinthData oldData;final MotherCollection oldMother;final List<ServerPlayer> players=new ArrayList<>();
@@ -55,7 +71,7 @@ public final class HotelTests {
         h.runAfterDelay(105,()->{h.assertTrue(f.own(p).getBoolean("Rested")&&!p.isSleeping()&&Objects.equals(spawn,p.getRespawnPosition()),"an actual completed rest preserves the native spawn");
             f.at(p,19.5,0,-8.5);p.setHealth(12);var drink=new ItemStack(HotelRegistry.DRINK.get());drink.getItem().finishUsingItem(drink,f.l,p);h.assertTrue(drink.isEmpty()&&p.getHealth()==16&&f.own(p).getInt("Drinks")==1&&f.own(p).getInt("Debt")==2,"finishing the actual native drink in the bar heals and goes on the account");
             f.at(p,.5,0,-27.5);HotelVignette.photograph(p);h.assertTrue(f.own(p).getBoolean("Photographed")&&p.getInventory().countItem(HotelRegistry.PHOTOGRAPH.get())==1,"standing on the actual ballroom floor puts the guest in the photograph once");
-            h.assertTrue(f.l.getBlockState(f.b.offset(HotelRooms.PHOTO)).is(HotelRegistry.PROP.get())&&f.l.getBlockState(f.b.offset(HotelRooms.FRONT_ROW)).is(Blocks.PLAYER_WALL_HEAD),"the guest's head fills the front row's empty place in the print");f.read(p,HotelRooms.LOG);
+            h.assertTrue(f.l.getBlockState(f.b.offset(HotelRooms.PHOTO)).is(HotelRegistry.PROP.get())&&f.l.getBlockEntity(f.b.offset(HotelRooms.PHOTO)) instanceof HotelPhotoBlockEntity photo&&photo.sitter()!=null&&photo.sitter().owner().equals(p.getUUID())&&!f.l.getBlockState(f.b.offset(HotelRooms.FRONT_ROW)).is(Blocks.PLAYER_WALL_HEAD),"the native flat print retains the actual sitter profile without a protruding head");f.read(p,HotelRooms.LOG);
             p.teleportTo(f.outside,f.gb.getX()+.5,f.gb.getY(),f.gb.getZ()-38,180,0);p.hasChangedDimension();HotelVignette.onArrive(p,LabyrinthPlace.HOTEL_GROUNDS);var at=f.gb.offset(HotelRooms.KEY.below());NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new BlockHitResult(at.getCenter(),Direction.UP,at,false)));h.assertTrue(f.own(p).getBoolean("MasterKey")&&p.getInventory().countItem(HotelRegistry.MASTER_KEY.get())==1,"the actual maze pedestal gives a finite personally found key");
             p.teleportTo(f.l,f.b.getX()+.5,f.b.getY(),f.b.getZ()-3,180,0);p.hasChangedDimension();HotelVignette.onArrive(p,LabyrinthPlace.HOTEL);h.assertTrue(f.own(p).getInt("Visits")==1&&!HotelVignette.due(f.own(p)),"the same stay is still the first night");
             f.click(p,HotelRooms.DESK);f.last(p);f.bell(p);h.assertTrue(!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.HOTEL)&&f.own(p).getInt("Debt")==2&&!f.own(p).getBoolean("Settled"),"before the last night the account is only read and the bell only rung");

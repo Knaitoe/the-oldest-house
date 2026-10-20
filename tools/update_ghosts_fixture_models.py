@@ -42,7 +42,7 @@ def main():
         save(name,{'textures':{'food':'the_oldest_house:block/ghosts/meals_atlas'},'render_type':'minecraft:cutout','ambientocclusion':False,'elements':[box([3,0,3],[13,1,13],'food',atlas_uv(index,4,2))]})
     lamp=json.loads((M/'ghosts_lamp.json').read_text());save('lamp_off',lamp)
     save('rug',{'textures':{'cloth':'the_oldest_house:block/ghosts/materials_atlas'},'elements':[box([0,0,0],[16,1,16],'cloth',atlas_uv(11,4,4))]})
-    kinds=['wallpaper','floor','ceiling','tile','panel','table','chair','counter','sink','cooker','plate','hat','books','jug','bolts','camera','case','monitor','drawing','lamp','bed_head','bed_foot','plain_plate','playhouse','torn_card','drawer','drawer_rig','plaster','meal_stew','meal_sandwich','meal_soup','meal_roast','meal_potatoes','lamp_off','rug']
+    kinds=['wallpaper','floor','ceiling','tile','panel','table','chair','counter','sink','cooker','plate','hat','books','jug','bolts','camera','case','monitor','drawing','lamp','bed_head','bed_foot','plain_plate','playhouse','torn_card','drawer','drawer_rig','plaster','meal_stew','meal_sandwich','meal_soup','meal_roast','meal_potatoes','lamp_off','rug','stair','rail','table_leg']
     variants={f'kind={kind},facing={face}':{'model':'the_oldest_house:block/ghosts_'+kind,'y':angle} for kind in kinds for face,angle in [('north',0),('east',90),('south',180),('west',270)]}
     (A/'blockstates/ghosts_set.json').write_text(json.dumps({'variants':variants},indent=2)+'\n')
     # Native case contents and lid state are independent of private filming days.

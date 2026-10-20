@@ -227,7 +227,7 @@ public final class HotelRooms {
             furniture(l,b,14,0,z,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);furniture(l,b,16,0,z,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.WEST);}
         detail(l,b,15,1,-9,SceneDetailBlock.Kind.BOTTLES,Direction.SOUTH);
         put(l,b,19,4,-8,Kind.CHANDELIER,Direction.NORTH);
-        for(int z:new int[]{-3,-13})put(l,b,13,2,z,Kind.SCONCE,Direction.EAST);
+        for(int z:new int[]{-3,-13})put(l,b,13,1,z,Kind.SCONCE,Direction.EAST);
         // A dark mirror above the bottles.
         for(int z=-4;z>=-12;z--)set(l,b,27,2,z,Blocks.BLACK_STAINED_GLASS);
         for(int z=-4;z>=-12;z--)set(l,b,28,2,z,Blocks.BLACK_CONCRETE);
