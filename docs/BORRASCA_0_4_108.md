@@ -28,6 +28,10 @@ The corrected shelter driver reached the Marker Two junction and exposed a terra
 
 Sightline review also found that the chain-link collision plane obscured the searchlight during the taking. The mesh remains a physical fence, while native visual rays pass through it; terrain and solid cover still occlude the glare and beam. The walking case now checks that actual child-eye sightline and a placed solid obstruction before the encounter.
 
+The added sightline check caught the rising trail clipping the low searchlight ray. The lamp and its supported mast are one block higher so the child's view clears the crest; the refinery cutaway includes its full height. The ray assertion reports the actual obstruction if another one remains.
+
+Native milestone: `675d6fb` passed all 124 focused literary cases, including all eleven Borrasca cases and the full continuous second-visit walk after the junction repair. The later `a814475` run failed only the newly added searchlight sightline assertion; the higher mast and complete current-source rerun remain pending.
+
 After a confirmed early return, the next entry prepares the saved originals while the reader is still outside the site. It waits for native entity sections and unseen positions before moving them, then releases its leases. This puts the Sheriff at his actual blockade and Prescott at the compound before the reader can look at them; arrival does not wait for a watched actor to disappear from the trailhead.
 
 The preceding 0.4.107 build failed the hospital supported-detail check: the new bedside cabinet top stopped at 15/16 block height, leaving the authored towels unsupported. This checkpoint brings both native collision and the matching cabinet mesh to the block top. Its deterministic ward asset check passes; the full architecture regression must pass again.

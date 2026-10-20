@@ -13,7 +13,7 @@ public final class BorrascaRooms {
     public static final BlockPos SHERIFF=new BlockPos(2,4,-122),TAPE=new BlockPos(2,5,-125),TAKING=new BlockPos(-2,9,-148),DROP=new BlockPos(1,10,-151),HIDE=new BlockPos(-12,9,-151);
     public static final BlockPos SHELTER_ONE=new BlockPos(3,2,-114),SHELTER_TWO=new BlockPos(-2,6,-131);
     public static final BlockPos GATE=new BlockPos(0,12,-169),LOCK=new BlockPos(0,13,-168),PACK=new BlockPos(-24,13,-195),PATCH=PACK;
-    public static final BlockPos EVIDENCE=new BlockPos(-26,13,-195),POWER=new BlockPos(6,12,-183),RELEASE=new BlockPos(-15,12,-205),MACHINE=new BlockPos(0,12,-189),FACTORY_DOOR=new BlockPos(-17,12,-169),LAMP=new BlockPos(0,16,-184);
+    public static final BlockPos EVIDENCE=new BlockPos(-26,13,-195),POWER=new BlockPos(6,12,-183),RELEASE=new BlockPos(-15,12,-205),MACHINE=new BlockPos(0,12,-189),FACTORY_DOOR=new BlockPos(-17,12,-169),LAMP=new BlockPos(0,17,-184);
     public static final BlockPos[] GULLY={new BlockPos(-9,0,-97),new BlockPos(-15,0,-107),new BlockPos(-16,2,-117),new BlockPos(-13,4,-128),new BlockPos(-8,6,-137),new BlockPos(-2,8,-143)};
     public static final BlockPos[] RETURN_ROUTE={new BlockPos(-17,12,-208),new BlockPos(-27,11,-209),new BlockPos(-32,8,-189),new BlockPos(-32,4,-165),new BlockPos(-27,0,-131),new BlockPos(-18,0,-106),new BlockPos(-12,0,-73)};
     public static final BlockPos BEDROOM=PACK,REGISTER=EVIDENCE,MAP=MARKER_TWO,NOTICE=SOURCE,SIGN=MARKER_FOUR,TRUCK=new BlockPos(12,12,-163),SERVICE=EVIDENCE,TESTIMONY=EVIDENCE;
@@ -76,7 +76,7 @@ public final class BorrascaRooms {
         for(int z=-175;z>=-201;z-=5)furniture(l,b,new BlockPos(-27,12,z),HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS);for(var at:new BlockPos[]{EVIDENCE,PACK})furniture(l,b,at.below(),HouseholdFurnitureBlock.Kind.WALNUT_DESK);fit(l,b,EVIDENCE,BorrascaFittingBlock.Kind.PAPER,Direction.SOUTH);fit(l,b,PACK,BorrascaFittingBlock.Kind.PACK,Direction.SOUTH);
         for(int z=-178;z>=-200;z--)fit(l,b,new BlockPos(0,12,z),BorrascaFittingBlock.Kind.BELT,Direction.NORTH);
         for(int y=13;y<=16;y++)for(int x=-2;x<=2;x++)for(int z=-191;z<=-187;z++)if(Math.abs(x)==2||z==-191||z==-187)fit(l,b,new BlockPos(x,y,z),BorrascaFittingBlock.Kind.POLISHED,Direction.NORTH);
-        BuildBlocks.set(l,b.offset(MACHINE),BorrascaRegistry.MACHINE.get().defaultBlockState(),F);box(l,b,3,12,-184,3,16,-184,Blocks.IRON_BARS);box(l,b,1,16,-184,3,16,-184,Blocks.IRON_BARS);join(l,b,1,12,-184,3,16,-184);fit(l,b,LAMP,BorrascaFittingBlock.Kind.LAMP,Direction.SOUTH);
+        BuildBlocks.set(l,b.offset(MACHINE),BorrascaRegistry.MACHINE.get().defaultBlockState(),F);box(l,b,3,12,-184,3,17,-184,Blocks.IRON_BARS);box(l,b,1,17,-184,3,17,-184,Blocks.IRON_BARS);join(l,b,1,12,-184,3,17,-184);fit(l,b,LAMP,BorrascaFittingBlock.Kind.LAMP,Direction.SOUTH);
         BuildBlocks.set(l,b.offset(POWER),Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACE,AttachFace.FLOOR).setValue(LeverBlock.POWERED,true),F);fit(l,b,POWER.below(),BorrascaFittingBlock.Kind.BREAKER,Direction.SOUTH);
         vehicle(l,b,new BlockPos(12,12,-179),true);vehicle(l,b,TRUCK,false);for(int z:new int[]{-175,-185,-201}){set(l,b,-22,16,z,Blocks.CHAIN);set(l,b,-22,15,z,Blocks.LANTERN);}set(l,b,5,14,-183,Blocks.REDSTONE_TORCH);
         for(int z=-180;z>=-201;z--)box(l,b,-11,12,z,-11,14,z,Blocks.IRON_BARS);join(l,b,-11,12,-201,-11,14,-180);
