@@ -14,7 +14,7 @@ When a survival player deposits possessions into previously vacant slots of the 
 
 The possessions stay in that cache until the reader returns and spends six occupied seconds in the manor. Each original stack can then appear separately on the upstairs reading-bedroom floor, removed from its original cache slot. These are persistent native items that the owner can pick up. Every original component and stack count remains unchanged. There is no invented equipment, bag or temporary companion.
 
-Delivery holds one temporary source-chunk lease and waits for native entity loading, an unused source menu and supported, vacant, unwatched floor positions. Actual spectator cameras count. Player blocks and items are preserved. A retrieved or changed stack, or a removed cache, yields nothing from its saved description. The return never searches somebody else's inventory, another container or the Mother's custody. Completed floor items are never replenished.
+Delivery holds one temporary source-chunk lease and waits for native entity loading, an unused source menu and supported, unwatched floor positions clear of blocks and bodies. Actual spectator cameras and Overworld cameras looking into the manor count. Loose items can share the floor so one reader leaving theirs never blocks a peer's encounter. Player blocks and items are preserved. A retrieved or changed stack, or a removed cache, yields nothing from its saved description. The return never searches somebody else's inventory, another container or the Mother's custody. Completed floor items are never replenished.
 
 ## Operator commands
 

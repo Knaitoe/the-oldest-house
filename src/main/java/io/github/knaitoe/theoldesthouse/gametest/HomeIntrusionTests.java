@@ -181,6 +181,12 @@ public final class HomeIntrusionTests {
             HomeBelongings.reset(p); HomeBelongings.tickPlayer(p);
             h.assertTrue(f.returned().size() == 3 && f.returned().stream().anyMatch(e -> e.getUUID().equals(entity))
                     && ItemStack.matches(laid.getItem(), expected), "saved completion and operator reset never reproduce or remove a returned original");
+            var peersOriginal = keepsake(); var peersExpected = peersOriginal.copy();
+            peer.setItemInHand(InteractionHand.MAIN_HAND, peersOriginal);
+            h.assertTrue(HomeBelongings.stageHeld(peer) && HomeBelongings.hurry(peer), "a peer can stage their own original after the first reader's completed return");
+            HomeBelongings.tickPlayer(peer);
+            h.assertTrue(f.returned().size() == 4 && f.returned().stream().anyMatch(e -> ItemStack.matches(e.getItem(), peersExpected))
+                    && ItemStack.matches(laid.getItem(), expected), "leaving three original floor items never blocks or replaces another reader's native return");
             h.assertTrue(WitnessAccount.count(f.data(), p.getUUID()) == 0, "finding a possession does not inflate the Witness pool");
         });
     }
@@ -209,9 +215,12 @@ public final class HomeIntrusionTests {
             f.at(observer, f.origin.offset(6, 8, 9), 0, 30);
             for (int i = 0; i < 12; i++) HomeBelongings.tickPlayer(p);
             h.assertTrue(f.returned().isEmpty() && HomeBelongings.record(p).getBoolean("Pending"), "a spectator's actual camera prevents a watched appearance at every candidate");
+            observer.teleportTo(observer.server.overworld(), f.origin.getX() + 6.5, f.origin.getY() + 8, f.origin.getZ() + 9.5, 0, 30);
+            observer.hasChangedDimension(); observer.connection.resetPosition(); HomeBelongings.tickPlayer(p);
+            h.assertTrue(f.returned().isEmpty() && HomeBelongings.record(p).getBoolean("Pending"), "an Overworld camera looking into the manor also defers the return");
             f.at(observer, f.origin.north(12), 180, 0); HomeBelongings.tickPlayer(p);
             h.assertTrue(f.returned().size() == 1 && ItemStack.matches(f.returned().getFirst().getItem(), expected), "the saved original appears after the observer leaves");
-            var item = f.returned().getFirst(); item.playerTouch(observer);
+            var item = f.returned().getFirst(); observer.gameMode.changeGameModeForPlayer(GameType.SURVIVAL); item.playerTouch(observer);
             h.assertTrue(!item.isRemoved() && observer.getInventory().items.stream().noneMatch(s -> ItemStack.matches(s, expected)), "an observer cannot pick up the owner's returned item");
             f.at(p, item.blockPosition(), 0, 0); item.playerTouch(p);
             h.assertTrue(item.isRemoved() && p.getInventory().items.stream().anyMatch(s -> ItemStack.matches(s, expected)), "the actual owner recovers the native original normally");
