@@ -333,5 +333,11 @@
   "subtitles.the_oldest_house.borrasca.triple_chime": "Metallic cry from the ridge",
   "subtitles.the_oldest_house.borrasca.carve": "Knife scrapes wood",
   "subtitles.the_oldest_house.borrasca.breaker": "Breaker drops",
-  "subtitles.the_oldest_house.borrasca.chain": "Chain rattles"
+  "subtitles.the_oldest_house.borrasca.chain": "Chain rattles",
+  "block.the_oldest_house.uncanny_fitting": "Uncanny fitting",
+  "item.the_oldest_house.bone_ring": "Bone Ring",
+  "item.the_oldest_house.smoky_mirror": "Smoky Mirror",
+  "item.the_oldest_house.cellar_cleaver": "Cellar Cleaver",
+  "item.the_oldest_house.second_waitress_meal": "A meal from the second apron",
+  "item.the_oldest_house.hallway_bat": "Wooden Bat"
 }

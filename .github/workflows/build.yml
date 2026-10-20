@@ -860,6 +860,9 @@ jobs:
           test -s build/font-smoke/goatman-fear0472-passed.txt
           for page in 0 1; do test -s build/font-smoke/native-institute-0470-$page.png; done
           test -s build/font-smoke/native-goatman.png
+          test -s build/font-smoke/uncanny-assets-passed.txt
+          for page in 0 1 2; do test -s build/font-smoke/native-uncanny-$page.png; done
+          test -s build/font-smoke/native-uncanny-materials.png
           test -s build/font-smoke/goatman-child-eyes-passed.txt
           test -s build/font-smoke/native-goatman-child-eyes.png
           test -s build/font-smoke/coffin-passed.txt
@@ -975,6 +978,28 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
+      - name: Native six uncanny rooms and artifacts
+        timeout-minutes: 8
+        run: |
+          mkdir -p build run
+          printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 7m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_uncanny --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/uncanny-native.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          completed=re.findall(r'All (\d+) required tests passed',Path('build/uncanny-native.log').read_text())
+          declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/UncannyTests.java').read_text()))
+          assert completed and int(completed[-1])==declared,(completed,declared)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: uncanny-native-${{ github.sha }}
+          path: |
+            build/uncanny-native.log
+            run/crash-reports/
+          if-no-files-found: warn
       - name: Focused native literary gameplay
         timeout-minutes: 15
         env:
@@ -1368,6 +1393,23 @@ jobs:
           test -s build/font-smoke/borrasca-assets-passed.txt
           for view in front side back dim fixtures-0 fixtures-1 fixtures-2 fixtures-3 gestures keepsakes; do test -s build/font-smoke/native-borrasca-$view.png; done
           python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
+      - name: Native uncanny faces, joints, fittings and item models
+        timeout-minutes: 5
+        run: |
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PuncannySmoke --no-daemon
+          test -s build/font-smoke/uncanny-assets-passed.txt
+          for page in 0 1 2; do test -s build/font-smoke/native-uncanny-$page.png; done
+          test -s build/font-smoke/native-uncanny-materials.png
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: uncanny-assets-${{ github.sha }}
+          path: |
+            build/font-smoke/native-uncanny-*.png
+            build/font-smoke/uncanny-assets-passed.txt
+            run/logs/latest.log
+            run/crash-reports/
+          if-no-files-found: warn
       - name: Native first-death portrait painting and skin readback
         timeout-minutes: 5
         run: |

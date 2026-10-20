@@ -79,6 +79,6 @@ public final class GoatmanChildEyesProof extends Screen {
             }
         }
         Files.writeString(dir.resolve("goatman-child-eyes-passed.txt"),evidence.toString());
-        if(Boolean.getBoolean("the_oldest_house.goatmanEyesSmoke"))mc.stop();else mc.setScreen(new PlaytestVisualProof());
+        if(Boolean.getBoolean("the_oldest_house.goatmanEyesSmoke"))mc.stop();else mc.setScreen(new UncannyAssetProof());
     }
 }
