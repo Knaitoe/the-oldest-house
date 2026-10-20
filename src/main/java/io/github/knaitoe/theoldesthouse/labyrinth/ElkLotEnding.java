@@ -67,6 +67,8 @@ public final class ElkLotEnding {
             LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),ElkLot.PLACE,own);
             if(menTarget(p.server)!=p)return;
             var men=men(p);for(int i=0;i<men.size();i++){var a=men.get(i);a.gesture(4);a.setNoGravity(true);double angle=i*Math.PI*2/3;int leg=a.getPersistentData().getInt("ReturnToBar0492");double[][] route={{-12.5,ElkLot.SIDE_DOOR.getZ()+.5},{-14.5,ElkLot.SIDE_DOOR.getZ()+.5},{-16.5,-22.5}};
+                var doorway=b.offset(ElkLot.SIDE_DOOR);var state=p.serverLevel().getBlockState(doorway);
+                if(a.distanceToSqr(Vec3.atCenterOf(doorway))<6.25&&state.getBlock() instanceof net.minecraft.world.level.block.DoorBlock door&&!state.getValue(net.minecraft.world.level.block.DoorBlock.OPEN))door.setOpen(a,p.serverLevel(),state,doorway,true);
                 if(leg==0&&ElkLotNight.inBar(a.position(),b))leg=route.length;
                 if(leg<route.length){var goal=new Vec3(b.getX()+route[leg][0],b.getY(),b.getZ()+route[leg][1]);if(step(a,goal,.35))a.getPersistentData().putInt("ReturnToBar0492",leg+1);}
                 else step(a,p.position().add(Math.cos(angle)*.85,0,Math.sin(angle)*.85),.35);bodies.add(a);}

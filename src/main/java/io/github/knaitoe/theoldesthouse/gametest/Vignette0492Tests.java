@@ -174,13 +174,18 @@ public final class Vignette0492Tests {
         }).thenSucceed();
     }
     @AfterBatch(batch="review492_men_exit") public static void menExitDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="review492_men_exit",timeoutTicks=450)
+    @GameTest(template="empty",batch="review492_men_exit",timeoutTicks=1200)
     public static void allThreeOriginalMenLeaveTheirActualBarSeatsThroughTheSideDoor(GameTestHelper h){
         var f=fixture(h);var place=ElkLot.PLACE;var p=f.player("bar_exit_reader",place);var b=f.base(place);lease(f,place);f.at(p,place,-3.5,0,-8.5);var ids=new HashMap<String,UUID>();
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&LiteraryVignettes.shared(f.data(),place).hasUUID("Wade"),"the native bar layout and original men are loaded")).thenExecute(()->{
             var w=LiteraryVignettes.shared(f.data(),place);for(var who:ElkLotNight.MEN)ids.put(who.key(),w.getUUID(who.key()));w.putInt("CrashAt",0);w.putInt("Night",ElkLotNight.MEN_OUT-1);LiteraryVignettes.shared(f.data(),place,w);
         }).thenWaitUntil(()->{for(var who:ElkLotNight.MEN){var a=(LiteraryActor)f.out.getEntity(ids.get(who.key()));h.assertTrue(a!=null&&!ElkLotNight.inBar(a.position(),b),who.name()+" exits the actual furnishings: "+(a==null?"missing":a.position().subtract(b.getX(),b.getY(),b.getZ())+" leg="+a.getPersistentData().getInt("Leg0478")));}}).thenExecute(()->{
             for(var id:ids.values())h.assertTrue(f.out.getEntity(id) instanceof LiteraryActor,"the same original men walked out");h.assertTrue(f.out.getBlockState(b.offset(ElkLot.SIDE_DOOR)).getValue(DoorBlock.OPEN),"they leave the real side door open");
+            var doorway=b.offset(ElkLot.SIDE_DOOR);var state=f.out.getBlockState(doorway);((DoorBlock)state.getBlock()).setOpen(p,f.out,state,doorway,false);
+            f.at(p,place,-25.5,0,-16.5);var own=f.own(p,place);own.putBoolean("ElkSeen",true);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);var night=LiteraryVignettes.shared(f.data(),place);night.putInt("Night",ElkLotNight.MEN_OUT+ElkLotNight.SEARCH+ElkLotNight.STAGE*3);LiteraryVignettes.shared(f.data(),place,night);
+        }).thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Ready"),"after the reader returns to the furnished bar, those same men open the closed side door and physically take them")).thenExecute(()->{
+            h.assertTrue(ElkLotEnding.MEN.equals(f.own(p,place).getString("Outcome"))&&f.own(p,place).getBoolean("CaptureWitness0492"),"the complete outward and return route ends only with actual capture");
+            var night=LiteraryVignettes.shared(f.data(),place);for(var who:ElkLotNight.MEN)h.assertTrue(ids.get(who.key()).equals(night.getUUID(who.key()))&&f.out.getEntity(ids.get(who.key())) instanceof LiteraryActor,"the complete ending retains every original man");
         }).thenSucceed();
     }
     private static GoatmanTests.Fixture goatman;
