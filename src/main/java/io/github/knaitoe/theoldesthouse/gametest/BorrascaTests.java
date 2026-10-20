@@ -151,7 +151,7 @@ public final class BorrascaTests {
 
     private static void assertTakingSightline(Fixture f,ServerPlayer p){
         var b=f.base(p);var eye=Vec3.atBottomCenterOf(b.offset(BorrascaRooms.TAKING)).add(0,p.getEyeHeight(),0);var lamp=b.offset(BorrascaRooms.LAMP).getCenter();
-        var ray=f.out.clip(new ClipContext(eye,lamp,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p));f.h.assertTrue(ray.getType()==HitResult.Type.MISS||ray.getLocation().distanceToSqr(lamp)<2,"the actual taking sightline sees the lamp through the wire mesh");
+        var ray=f.out.clip(new ClipContext(eye,lamp,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p));f.h.assertTrue(ray.getType()==HitResult.Type.MISS||ray.getLocation().distanceToSqr(lamp)<2,"the actual taking sightline sees the lamp through the wire mesh: eye="+p.getEyeHeight()+" hit="+ray.getBlockPos().subtract(b)+" "+f.out.getBlockState(ray.getBlockPos()));
         var obstacle=BlockPos.containing(eye.lerp(lamp,.35));var before=f.out.getBlockState(obstacle);f.out.setBlock(obstacle,Blocks.STONE.defaultBlockState(),3);var covered=f.out.clip(new ClipContext(eye,lamp,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p));f.h.assertTrue(covered.getType()==HitResult.Type.BLOCK&&covered.getBlockPos().equals(obstacle),"solid native cover still hides the taking light");f.out.setBlock(obstacle,before,3);
     }
 
