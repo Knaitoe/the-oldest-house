@@ -24,6 +24,8 @@ Eleven replacement Borrasca native cases cover child/Friend ladder motion and de
 
 Early native runs exposed and corrected the bark registration, the actor's movement speed/travel integration, an over-strict follow leash, a route point inside the trunk and a missing rear-office doorway. The second route now goes around its shelter logs; descending service steps also admit native crouching. The carving is at child hand height and remains below the adult reader's gaze. All these repairs require current-source reruns.
 
+The corrected shelter driver reached the Marker Two junction and exposed a terrain defect: the shelter branch's initial floor replaced the main trail's stair at z=-125. The junction now retains the half-step, allowing Kimber and the reader to continue uphill without jumping or relocation. The same full walking case remains required.
+
 After a confirmed early return, the next entry prepares the saved originals while the reader is still outside the site. It waits for native entity sections and unseen positions before moving them, then releases its leases. This puts the Sheriff at his actual blockade and Prescott at the compound before the reader can look at them; arrival does not wait for a watched actor to disappear from the trailhead.
 
 The preceding 0.4.107 build failed the hospital supported-detail check: the new bedside cabinet top stopped at 15/16 block height, leaving the authored towels unsupported. This checkpoint brings both native collision and the matching cabinet mesh to the block top. Its deterministic ward asset check passes; the full architecture regression must pass again.
