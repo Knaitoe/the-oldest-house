@@ -213,7 +213,7 @@ def outputs():
     patch = model([cube((0,3,7.5,16,13,8.5),9),*letters('KIMBER',1.1,6,7.35,.6,12)])
     flashlight = model([cube((6,0,6,10,12,10),5),cube((5.5,2,5.5,10.5,10,10.5),10),cube((4,10,4,12,16,12),14)])
     for name, asset in (('compass',compass),('name_patch',patch),('flashlight',flashlight)):
-        asset['display'] = display
+        asset['display'] = {**display, 'gui': {**display['gui'], 'rotation': [0,0,0]}} if name == 'name_patch' else display
         out[f'models/item/borrasca_{name}.json'] = asset
     atlas_file = ROOT / 'src/main/resources/assets/minecraft/atlases/blocks.json'
     atlas = json.loads(atlas_file.read_text())

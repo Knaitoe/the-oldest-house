@@ -16,8 +16,8 @@ public final class BorrascaCarvingRenderer implements BlockEntityRenderer<Borras
     public static void draw(Font font,String friend,String reader,int stage,PoseStack p,MultiBufferSource buffers,int light){
         if(stage==0)return;
         p.pushPose();p.translate(.5,.70,1.003);p.scale(.009F,-.009F,.009F);
-        if(stage!=3)line(font,friend,0,stage==4?0xFFE4B47D:0xFF24160D,p,buffers,light);
-        if(stage>=2)line(font,reader,32,0xFF24160D,p,buffers,light);
+        if(stage!=3)line(font,friend,0,stage==4?0xFFE4B47D:0xFFBE9662,p,buffers,light);
+        if(stage>=2)line(font,reader,32,0xFFBE9662,p,buffers,light);
         p.popPose();
     }
     private static void line(Font font,String text,float y,int colour,PoseStack p,MultiBufferSource b,int light){
