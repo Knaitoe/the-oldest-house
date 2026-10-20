@@ -276,7 +276,14 @@ public final class GhostsSet {
             if(t>=480&&t<650){pose(cast[1],PRAY);pose(cast[2],PRAY);pose(cast[3],PRAY);toward(cast[2],b,-.4,0,-27.3,.15);toward(cast[3],b,2.4,0,-27.7,.15);}
             if(previous<520&&t>=520)cue(p,LiteraryRegistry.GHOST_SCRAPE,cast[0].position());
             if(t>=250&&t<520){pose(cast[0],VOMIT);if(t%20==0)p.serverLevel().sendParticles(p,net.minecraft.core.particles.ParticleTypes.SPORE_BLOSSOM_AIR,false,b.getX()+.5,b.getY()+1.03,b.getZ()-28.5,2,.06,.02,.06,0);}
-            if(t>=520&&t<950){pose(cast[0],CRAWL);toward(cast[0],b,.6,0,-28.5,.24);}
+            if(t>=520&&t<950){
+                pose(cast[0],CRAWL);if(previous<520)own.putInt("CrawlChair04112",0);
+                // Leave the seat at its side, lower to the floor, then go under.
+                // A diagonal from the nearer chair can natively step onto the top.
+                int leg=own.getInt("CrawlChair04112");double[][] route={{-.4,seatedHeight(cast[0].getScale()),-27.5},{-.4,0,-27.5},{.6,0,-27.5},{.6,0,-28.5}};var goal=route[Math.min(3,leg)];
+                toward(cast[0],b,goal[0],goal[1],goal[2],.24);
+                if(leg<4&&cast[0].position().distanceToSqr(Vec3.atLowerCornerOf(b).add(goal[0],goal[1],goal[2]))<.008)own.putInt("CrawlChair04112",leg+1);
+            }
             if(t>=650&&t<880){pose(cast[1],SIT);for(int i=2;i<4;i++){pose(cast[i],STAND);double seatY=seatedHeight(cast[i].getScale());toward(cast[i],b,i==2?-.4:2.4,seatY,-26.5,.16);if(cast[i].position().distanceToSqr(Vec3.atLowerCornerOf(b).add(i==2?-.4:2.4,seatY,-26.5))<.04)pose(cast[i],SIT);}}
             if(t>=880)pose(cast[2],HAND);
             if(t>=950){pose(cast[0],CRAWL);toward(cast[0],b,-.4,0,-38.5,.24);}

@@ -14,7 +14,7 @@ public final class SceneFootpaths {
     private record Node(int x,int z,double y,double cost,double score,Node previous){}
     private static long key(int x,int z){return (long)x<<32|(z&0xffffffffL);}
     private static boolean loaded(LivingEntity body,Vec3 at){var p=BlockPos.containing(at);return body.level().hasChunkAt(p)&&(!(body.level() instanceof ServerLevel l)||l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(p.getX()>>4,p.getZ()>>4)));}
-    private static AABB box(LivingEntity body,double x,double y,double z){double half=body.getBbWidth()*.5+.015;return new AABB(x-half,y+.002,z-half,x+half,y+body.getBbHeight(),z+half);}
+    private static AABB box(LivingEntity body,double x,double y,double z){double half=body.getBbWidth()*.5+.001;return new AABB(x-half,y+.002,z-half,x+half,y+body.getBbHeight(),z+half);}
     /** Real support can rise over the fallen rail or carpet; an open ditch is never a floor. */
     private static Vec3 feet(LivingEntity body,double x,double y,double z){
         var at=new Vec3(x,y,z);if(!loaded(body,at))return null;
