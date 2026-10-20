@@ -632,6 +632,7 @@ final class HouseInteriors {
                     .getOrThrow(spec.variant());
 
             Painting painting = new Painting(level, origin.offset(spec.x(), spec.y(), spec.z()), spec.facing(), variant);
+            HouseDeathPortraits.markOriginal(painting);
             if (painting.survives()) {
                 level.addFreshEntity(painting);
             }

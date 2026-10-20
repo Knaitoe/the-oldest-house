@@ -15,7 +15,8 @@
     "LazySectionBuffersMixin",
     "HouseMobRenderMixin",
     "GhostsPickMixin",
-    "GhostsLecternMixin"
+    "GhostsLecternMixin",
+    "DeathPortraitRenderMixin"
   ],
   "injectors": {
     "defaultRequire": 1
