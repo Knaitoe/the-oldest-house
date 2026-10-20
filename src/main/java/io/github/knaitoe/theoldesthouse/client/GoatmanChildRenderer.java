@@ -11,7 +11,15 @@ import net.minecraft.world.entity.Pose;
 
 public final class GoatmanChildRenderer extends MobRenderer<GoatmanChild,GoatmanChildModel> {
     private final StalkerRenderer stalker;
-    public GoatmanChildRenderer(EntityRendererProvider.Context c){super(c,new GoatmanChildModel(c.bakeLayer(ModelLayers.PLAYER)),.25F);stalker=new StalkerRenderer(c);addLayer(new net.minecraft.client.renderer.entity.layers.ItemInHandLayer<>(this,c.getItemInHandRenderer()));}
+    public GoatmanChildRenderer(EntityRendererProvider.Context c){
+        super(c,new GoatmanChildModel(c.bakeLayer(ModelLayers.PLAYER)),.25F);stalker=new StalkerRenderer(c);
+        addLayer(new net.minecraft.client.renderer.entity.layers.ItemInHandLayer<>(this,c.getItemInHandRenderer()));
+        addLayer(new net.minecraft.client.renderer.entity.layers.RenderLayer<GoatmanChild,GoatmanChildModel>(this){
+            @Override public void render(com.mojang.blaze3d.vertex.PoseStack poses,net.minecraft.client.renderer.MultiBufferSource buffers,int light,GoatmanChild child,float walk,float amount,float partial,float age,float yaw,float pitch){
+                if(GoatmanChildEyes.visible(child)){GoatmanChildEyes.render(getParentModel(),poses,buffers);GoatmanWindowClient.disguiseEyesDrawn(child);}
+            }
+        });
+    }
     @Override public boolean shouldRender(GoatmanChild e,Frustum f,double x,double y,double z){
         var player=Minecraft.getInstance().player;
         if(e.girl()&&(player==null||!e.viewer().get().equals(player.getUUID())))return false;

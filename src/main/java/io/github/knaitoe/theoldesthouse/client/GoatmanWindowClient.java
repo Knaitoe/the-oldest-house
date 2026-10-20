@@ -32,7 +32,7 @@ public final class GoatmanWindowClient {
     private static long probeAt;
     private static int aiming;
     private static boolean audioPassed,departed,middleView;
-    private static GoatmanChild pendingBody;private static Vec3 pendingBase;private static String pendingName;private static boolean pendingForm,drawn,maskBody;private static int pendingSkin,pixelStage,visiblePixels;private static double pendingZ;private static int[] facePixels;
+    private static GoatmanChild pendingBody;private static Vec3 pendingBase;private static String pendingName;private static boolean pendingForm,drawn,maskBody,childEyesDrawn;private static int pendingSkin,pixelStage,visiblePixels;private static double pendingZ;private static int[] facePixels;
     private GoatmanWindowClient(){}
     static boolean ready(){return forms.size()==2&&childFaces.size()>=2&&panes.size()==2&&audioPassed;}
     static String tick(Minecraft mc,List<GoatmanChild> children,BlockPos base,String role,boolean capture){
@@ -74,17 +74,19 @@ public final class GoatmanWindowClient {
         if(!name.equals(pendingName)||pendingBody==null)return false;var rel=pendingBody.position().subtract(pendingBase);
         if(!pendingBody.isAlive()||!pendingBody.stalkingAppearance()||pendingBody.monsterAppearance()!=pendingForm||!pendingForm&&pendingBody.visibleSkin()!=pendingSkin||rel.y<.85||Math.abs(rel.z-pendingZ)>.2){pendingName=null;pendingBody=null;maskBody=false;return false;}
         var camera=mc.gameRenderer.getMainCamera();var point=face(pendingBody);var ray=point.subtract(camera.getPosition()).normalize();var look=camera.getLookVector();
-        if(!(drawn||maskBody)||ray.dot(new Vec3(look.x(),look.y(),look.z()))<=.999||!GoatmanStalking.visible(mc.level,mc.player,camera.getPosition(),point))return false;
+        if(!(drawn||maskBody)||!pendingForm&&!maskBody&&!childEyesDrawn||ray.dot(new Vec3(look.x(),look.y(),look.z()))<=.999||!GoatmanStalking.visible(mc.level,mc.player,camera.getPosition(),point))return false;
         if(pixelStage==0){facePixels=facePixels(mc);maskBody=true;pixelStage=1;return false;}
         if(pixelStage==1){var hidden=facePixels(mc);for(int i=0;i<hidden.length;i++){int a=facePixels[i],b=hidden[i];if(Math.abs((a&255)-(b&255))+Math.abs((a>>8&255)-(b>>8&255))+Math.abs((a>>16&255)-(b>>16&255))>45)visiblePixels++;}maskBody=false;pixelStage=2;if(visiblePixels<20)throw new IllegalStateException("LIVE EXPEDITION the window face was tracked but not visibly drawn: changed head pixels="+visiblePixels);return false;}
         return drawn;
     }
     static void captured(Minecraft mc,String name){
         if(!windowShot(name))return;if(!frameReady(mc,name))throw new IllegalStateException("LIVE EXPEDITION the window image does not show the original native face through clear glazing");
+        if(!pendingForm)write(name.substring(0,1)+"-trailer-child-eyes.txt","The actual child disguise rendered its full-bright amber eye layer on original body "+pendingBody.getUUID()+"; native head-region pixels and clear window ray verified.\n");
         original=pendingBody.getUUID();forms.add(pendingForm);panes.add(pendingZ==GoatmanWindowViews.window(true));if(!pendingForm&&!childFaces.add(pendingSkin))throw new IllegalStateException("LIVE EXPEDITION a later window sighting recycled a child face");write(name+".txt","Original native body="+original+" form="+(pendingForm?"goatman":"child "+pendingSkin)+" relative="+pendingBody.position().subtract(pendingBase)+" actual eye="+mc.player.getEyePosition()+" camera="+mc.gameRenderer.getMainCamera().getPosition()+" native look="+mc.gameRenderer.getMainCamera().getLookVector()+" visible head pixels="+visiblePixels+"; actual head-region render was compared with one diagnostic frame suppressing only this original body. Clear glazing ray and settled native aim checked.\n");if(childFaces.size()>=2)write(name.substring(0,1)+"-trailer-window-variety.txt","Original body="+original+"; distinct observed child faces="+childFaces+"; Goatman form="+forms.contains(true)+". Native front and middle window screenshots each require visible head pixels, not just entity tracking.\n");middleView=pendingZ==GoatmanWindowViews.window(false);pendingName=null;pendingBody=null;maskBody=false;
     }
     private static int[] facePixels(Minecraft mc){try(var image=net.minecraft.client.Screenshot.takeScreenshot(mc.getMainRenderTarget())){int[] pixels=new int[64*64];int x=image.getWidth()/2-32,y=image.getHeight()/2-32;for(int i=0;i<pixels.length;i++)pixels[i]=image.getPixelRGBA(x+i%64,y+i/64);return pixels;}}
-    @SubscribeEvent public static void beginFrame(RenderFrameEvent.Pre ignored){drawn=false;}
+    static void disguiseEyesDrawn(GoatmanChild child){if(child==pendingBody)childEyesDrawn=true;}
+    @SubscribeEvent public static void beginFrame(RenderFrameEvent.Pre ignored){drawn=false;childEyesDrawn=false;}
     @SubscribeEvent public static void mask(RenderLivingEvent.Pre<?,?> e){if(maskBody&&pendingBody!=null&&e.getEntity()==pendingBody)e.setCanceled(true);}
     @SubscribeEvent public static void bodyDrawn(RenderLivingEvent.Post<?,?> e){if(pendingBody!=null&&e.getEntity()==pendingBody)drawn=true;}
     static void leave(Minecraft mc,int step,int ticks,String role){

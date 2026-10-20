@@ -860,6 +860,8 @@ jobs:
           test -s build/font-smoke/goatman-fear0472-passed.txt
           for page in 0 1; do test -s build/font-smoke/native-institute-0470-$page.png; done
           test -s build/font-smoke/native-goatman.png
+          test -s build/font-smoke/goatman-child-eyes-passed.txt
+          test -s build/font-smoke/native-goatman-child-eyes.png
           test -s build/font-smoke/coffin-passed.txt
           test -s build/font-smoke/native-coffin.png
           test -s build/font-smoke/bed-passed.txt
@@ -1332,6 +1334,8 @@ jobs:
           # Two LLVMpipe clients share this runner with the native server.
           # Give each renderer one worker instead of both claiming every core.
           LP_NUM_THREADS=1 LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a python3 tools/run_live_expedition.py
+          test -s build/live-proof/A-trailer-child-eyes.txt
+          test -s build/live-proof/B-trailer-child-eyes.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -1371,6 +1375,22 @@ jobs:
           test -s build/font-smoke/death-portraits-passed.txt
           test -s build/font-smoke/native-death-portraits-front.png
           test -s build/font-smoke/native-death-portraits-dim.png
+      - name: Native emissive eyes on all nine child disguises
+        timeout-minutes: 5
+        run: |
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PgoatmanEyesSmoke --no-daemon
+          test -s build/font-smoke/goatman-child-eyes-passed.txt
+          test -s build/font-smoke/native-goatman-child-eyes.png
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: goatman-child-eyes-${{ github.sha }}
+          path: |
+            build/font-smoke/native-goatman-child-eyes.png
+            build/font-smoke/goatman-child-eyes-passed.txt
+            run/logs/latest.log
+            run/crash-reports/
+          if-no-files-found: warn
       - name: Native photographed hotel fitting repairs
         timeout-minutes: 5
         run: |

@@ -88,6 +88,10 @@ neoForge {
                 systemProperty 'the_oldest_house.deathPortraitSmoke', 'true'
                 programArguments.addAll '--width', '1200', '--height', '800'
             }
+            if (providers.gradleProperty('goatmanEyesSmoke').isPresent()) {
+                systemProperty 'the_oldest_house.goatmanEyesSmoke', 'true'
+                programArguments.addAll '--width', '1200', '--height', '800'
+            }
             if (providers.gradleProperty('hotelFixSmoke').isPresent()) {
                 systemProperty 'the_oldest_house.hotelFixSmoke', 'true'
                 programArguments.addAll '--width', '1200', '--height', '800'
