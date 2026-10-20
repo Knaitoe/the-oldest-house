@@ -250,6 +250,10 @@ public final class GoatmanStalking {
         Vec3 via=!window&&supported?GoatmanWindowCircuit.via(leg):null;boolean approaching=via!=null&&r.getInt("StalkVia0497")!=leg;
         Vec3 target=abs(b,approaching?via:local),delta=target.subtract(c.position());double length=delta.length();
         double speed=(r.contains("StalkSpeed0497")?r.getFloat("StalkSpeed0497"):.42)*(r.getInt("DemandStage0465")>=4?.52/.42:1);
+        // Leave the tire sideways before descending. A diagonal downward move is
+        // clipped by the wheel under the feet and pins the body against the sill.
+        if(c.getY()>target.y+.15&&Math.abs(c.getX()-b.getX())>8){double lane=c.getX()<b.getX()?-9.5:10.25;double exit=b.getX()+lane-c.getX();
+            delta=Math.abs(exit)>.04?new Vec3(exit,0,0):new Vec3(0,target.y-c.getY(),0);length=delta.length();}
         Vec3 movement=length<=speed?delta:delta.scale(speed/length);var before=c.position();
         c.setOnGround(true);c.move(net.minecraft.world.entity.MoverType.SELF,movement);c.setDeltaMovement(Vec3.ZERO);
         // A wheel approach rises physically before the next horizontal step; collision never teleports the body.
@@ -285,10 +289,9 @@ public final class GoatmanStalking {
         boolean hit=switch(stage){case 0->beat==0||beat==14;case 1->beat==0||beat==22||beat==44;case 2->beat==12;case 3->beat==0||beat==10||beat==20;case 4->beat==30;case 5->beat==12;default->beat<80&&beat%6==0;};
         if(!hit)return;
         var it=l.getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),c->c.getTags().contains(GoatmanVignette.ACTOR)&&c.getPersistentData().getInt(GoatmanVignette.INDEX)==r.getInt("Wrong")&&c.getPersistentData().hasUUID(GoatmanVignette.ROUND)&&c.getPersistentData().getUUID(GoatmanVignette.ROUND).equals(r.getUUID("Id"))).stream().findFirst().orElse(null);
-        // The sound follows the original body's side of the trailer. Once it reaches the
-        // front step, the same nearest-surface rule puts the final blows at the actual door.
-        BlockPos surface=it==null?GoatmanWoods.DOOR:nearestSurface(b,it.position());
-        impact(l,b,r,it,surface,stage==0?1:stage<3?2:3);
+        // The door answers while the same original body is seen circling outside.
+        // This deliberate overlap is the requested impossibility, not a second actor.
+        impact(l,b,r,it!=null&&it.distanceToSqr(Vec3.atCenterOf(b.offset(GoatmanWoods.DOOR)))<9?it:null,GoatmanWoods.DOOR,stage==0?1:stage<3?2:3);
         if(stage==6)r.putInt("FinalBlows0465",r.getInt("FinalBlows0465")+1);
     }
     private static BlockPos nearestSurface(BlockPos b,Vec3 body){

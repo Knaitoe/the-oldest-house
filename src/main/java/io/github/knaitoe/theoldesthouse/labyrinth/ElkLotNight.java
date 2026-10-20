@@ -71,7 +71,7 @@ public final class ElkLotNight {
     public record Person(String key,String name,int phase,double x,double z,float yaw){
         public Vec3 home(BlockPos b){return new Vec3(b.getX()+x,b.getY(),b.getZ()+z);}
     }
-    public static final Person MARLA=new Person("Marla","Marla",4,-24.5,-27.5,0),RUSS=new Person("Russ","Russ",5,-23.5,-23.5,180),
+    public static final Person MARLA=new Person("Marla","Marla",4,-24.5,-26.0,0),RUSS=new Person("Russ","Russ",5,-23.5,-23.5,180),
         DENNY=new Person("Denny","Denny",6,-23.5,-19.5,90),WADE=new Person("Wade","Wade",7,-30.5,-21.5,0),HOLLIS=new Person("Hollis","Hollis",8,-29.5,-23.5,180);
     public static final List<Person> CAST=List.of(MARLA,RUSS,DENNY,WADE,HOLLIS);
     /** The three who go out. */
@@ -175,8 +175,8 @@ public final class ElkLotNight {
     }
 
     // ------------------------------------------------------------------------------------------------ the elk
-    private static final double[][] CHARGE={{13.5,-6.5},{1.5,-12.5},{-2.5,-15.5},{-2.3,-21.0}},STUMBLE={{-2.5,-15.5},{-3.5,-13.5}},
-        GO={{-2.5,-16.0},{-2.5,-25.0},{1.5,-36.5},{1.5,-41.0},{1.5,-44.0},{3.5,-52.0},{4.5,-72.5}};
+    private static final double[][] CHARGE={{13.5,-6.5},{1.5,-12.5},{-2,-15.5},{-2,-21.0}},STUMBLE={{-2,-15.5},{-3.5,-13.5}},
+        GO={{-2,-16.0},{-2,-25.0},{1.5,-36.5},{1.5,-41.0},{1.5,-44.0},{3.5,-52.0},{4.5,-72.5}};
     /** Where the elk waits in the field, ahead of anyone walking the lane. */
     public static final Vec3 REST=new Vec3(4.5,0,-72.5);
     static void hide(ServerLevel l,BlockPos b,LiteraryElk e){e.setInvisible(true);e.setNoGravity(true);e.moveTo(b.getX()+24.5,b.getY(),b.getZ()+.5,90,0);turn(e,90);e.setDeltaMovement(Vec3.ZERO);}
@@ -210,7 +210,7 @@ public final class ElkLotNight {
                 if(t%10==0)l.playSound(null,e.blockPosition(),LiteraryRegistry.HOOVES.get(),SoundSource.NEUTRAL,.6F,1F);
             }
             default->{ // Waiting in the field, watching whoever comes.
-                var at=rel(b,REST.x,REST.z);if(e.position().distanceToSqr(at)>.04)e.moveTo(at.x,at.y,at.z,e.getYRot(),0);
+                var at=rel(b,REST.x,REST.z);if(e.position().distanceToSqr(at)>.04)walk(e,at,.16);
                 var p=nearest(e,here.stream().filter(r->inField(r.position(),b)).toList(),24);turn(e,p==null?0:yawTo(e,p.position()));
             }
         }

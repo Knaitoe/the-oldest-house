@@ -71,6 +71,8 @@ public final class DeathPortraitTests {
         }
         void kill(GameTestHelper h, ServerPlayer p) {
             int before = p.getStats().getValue(Stats.CUSTOM.get(Stats.DEATHS));
+            // Independent lethal attempts may share this test tick after a rescued hit.
+            p.invulnerableTime = 0;
             p.hurt(p.damageSources().genericKill(), 10000);
             h.assertTrue(p.getStats().getValue(Stats.CUSTOM.get(Stats.DEATHS)) == before + 1,
                     "the complete native death succeeded and awarded exactly one vanilla death");

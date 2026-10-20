@@ -8,7 +8,7 @@ import net.minecraft.world.level.block.state.*;
 import net.minecraft.world.level.block.state.properties.*;
 import net.minecraft.world.phys.shapes.*;
 /** Native furniture, with collision kept below its visible walking silhouette. */
-public final class HotelPropBlock extends HorizontalDirectionalBlock {
+public final class HotelPropBlock extends HorizontalDirectionalBlock implements EntityBlock {
     public static final MapCodec<HotelPropBlock> CODEC=simpleCodec(HotelPropBlock::new);
     public enum Kind implements StringRepresentable {PIANO,TYPEWRITER,BOILER,GAUGE,MEAL,RECEPTION,HOSE_RACK,PHOTO,HEADSTONE,PATCH;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}}
@@ -16,6 +16,7 @@ public final class HotelPropBlock extends HorizontalDirectionalBlock {
     public static final IntegerProperty PRESSURE=IntegerProperty.create("pressure",0,3);
     public HotelPropBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.PIANO).setValue(PRESSURE,0));}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
+    @Override public net.minecraft.world.level.block.entity.BlockEntity newBlockEntity(BlockPos pos,BlockState state){return state.getValue(KIND)==Kind.PHOTO?new HotelPhotoBlockEntity(pos,state):null;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,PRESSURE);}
     private static VoxelShape north(Kind kind){return switch(kind){
         case PIANO->Shapes.or(Block.box(0,12,0,30,16,16),Block.box(0,16,9,30,29,17),Block.box(0,14,-3,30,17,5),Block.box(1,0,1,3,12,3),Block.box(13,0,13,15,12,15));

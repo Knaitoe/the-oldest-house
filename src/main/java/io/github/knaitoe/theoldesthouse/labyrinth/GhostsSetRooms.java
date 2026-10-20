@@ -58,12 +58,10 @@ public final class GhostsSetRooms {
         for(int x:new int[]{-12,10})for(int z:new int[]{-41,-26}) {
             prop(l,b,x,3,z,LAMP,Direction.NORTH);prop(l,b,x,9,z,LAMP,Direction.NORTH);
         }
-        // A six-block table with a continuous underside and real leg clearance. The rusty fittings can be filmed from below.
-        for(int x=-1;x<=1;x++)for(int z=-29;z<=-28;z++)prop(l,b,x,0,z,GhostsSetBlock.Kind.TABLE,Direction.NORTH);
-        prop(l,b,-1,1,-28,PLATE,Direction.NORTH);prop(l,b,1,1,-28,PLATE,Direction.NORTH);
-        prop(l,b,-1,1,-29,PLATE,Direction.NORTH);prop(l,b,1,1,-29,PLAIN_PLATE,Direction.NORTH);
-        prop(l,b,0,0,-29,BOLTS,Direction.NORTH);
-        for(int x:new int[]{-3,3})for(int z:new int[]{-29,-27})prop(l,b,x,0,z,CHAIR,x<0?Direction.EAST:Direction.WEST);
+        // One two-by-three table, four corner legs, and chairs close enough to eat.
+        for(int x=0;x<=1;x++)for(int z=-29;z<=-27;z++)set(l,b,x,0,z,tableState(x,z));
+        for(int x=0;x<=1;x++)for(int z:new int[]{-29,-27})prop(l,b,x,1,z,x==1&&z==-29?PLAIN_PLATE:PLATE,Direction.NORTH);
+        for(int x:new int[]{-1,2})for(int z:new int[]{-29,-27})prop(l,b,x,0,z,CHAIR,x<0?Direction.EAST:Direction.WEST);
         for(int x=-12;x<=-7;x++)prop(l,b,x,0,-42,x==-10?SINK:x==-8?COOKER:COUNTER,Direction.SOUTH);
         prop(l,b,-12,1,-42,JUG,Direction.SOUTH);prop(l,b,-7,1,-42,BOOKS,Direction.SOUTH);
         furniture(l,b,-10,0,-18,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);
@@ -98,5 +96,10 @@ public final class GhostsSetRooms {
         fill(l,b,14,4,-41,19,4,-32,GhostsSetBlock.of(CEILING,Direction.NORTH));
         prop(l,b,16,3,-38,LAMP,Direction.NORTH);prop(l,b,0,10,-9,LAMP,Direction.NORTH);
         BuildBlocks.after(l,()->{var data=LabyrinthData.get(l.getServer());GhostsSet.markBuilt(data,b);GhostsSetDressing.markBuilt(data,b);GhostsSetFinish.markBuilt(l,b);});
+    }
+    public static net.minecraft.world.level.block.state.BlockState tableState(int x,int z){
+        if(x==0&&z==-29)return GhostsSetBlock.of(BOLTS,Direction.NORTH);
+        if(z==-28)return GhostsSetBlock.of(GhostsSetBlock.Kind.TABLE,Direction.NORTH);
+        return GhostsSetBlock.of(TABLE_LEG,z==-29?Direction.EAST:x==0?Direction.WEST:Direction.SOUTH);
     }
 }

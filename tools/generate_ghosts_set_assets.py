@@ -11,7 +11,7 @@ ROOT=Path(__file__).resolve().parents[1]
 A=ROOT/'src/main/resources/assets/the_oldest_house'
 T=A/'textures/block/ghosts';T.mkdir(parents=True,exist_ok=True)
 M=A/'models/block';S=A/'blockstates';E=A/'textures/entity'
-K=['wallpaper','floor','ceiling','tile','panel','table','chair','counter','sink','cooker','plate','hat','books','jug','bolts','camera','case','monitor','drawing','lamp','bed_head','bed_foot','plain_plate','playhouse','torn_card','drawer','drawer_rig','plaster','plain_plate','meal_stew','meal_sandwich','meal_soup','meal_roast','meal_potatoes','lamp_off','rug','stair','rail']
+K=['wallpaper','floor','ceiling','tile','panel','table','chair','counter','sink','cooker','plate','hat','books','jug','bolts','camera','case','monitor','drawing','lamp','bed_head','bed_foot','plain_plate','playhouse','torn_card','drawer','drawer_rig','plaster','plain_plate','meal_stew','meal_sandwich','meal_soup','meal_roast','meal_potatoes','lamp_off','rug','stair','rail','table_leg']
 palette={'wallpaper':(199,185,159),'floor':(118,85,53),'ceiling':(216,210,188),'tile':(122,135,122),'panel':(107,82,58),
          'wood':(105,75,48),'formica':(161,171,151),'metal':(56,64,61),'cream':(225,215,183),'cardboard':(164,133,90),
          'denim':(64,82,114),'red':(126,47,36),'green':(89,115,61),'cloth':(126,139,155),'white':(220,218,199)}
@@ -66,7 +66,8 @@ def box(a,b,t,face=None):
     return {'from':a,'to':b,'faces':faces}
 def q(a,b,t):return box(a,b,t)
 parts={
-'table':[q([0,15,0],[16,16,16],'formica'),q([1,0,1],[3,15,3],'wood'),q([13,0,13],[15,15,15],'wood')],
+'table':[q([0,15,0],[16,16,16],'formica')],
+'table_leg':[q([0,15,0],[16,16,16],'formica'),q([1,0,1],[3,15,3],'wood')],
 'chair':[q([2,8,2],[14,10,14],'cloth'),q([2,0,2],[4,8,4],'wood'),q([12,0,12],[14,8,14],'wood'),q([2,10,12],[14,22,14],'wood')],
 'counter':[q([0,0,0],[16,14,16],'cream'),q([0,14,0],[16,16,16],'formica')],
 'sink':[q([0,0,0],[16,14,16],'cream'),q([0,14,0],[16,16,16],'metal'),q([6,16,12],[8,23,14],'metal'),q([6,22,7],[8,24,14],'metal')],
@@ -76,7 +77,7 @@ parts={
 'hat':[q([4,0,4],[12,5,12],'hat'),q([4,0,1],[12,1,5],'hat')],
 'books':[q([3,0,4],[13,1,12],'denim'),q([4,1,3],[12,3,13],'red')],
 'jug':[q([5,0,5],[11,7,11],'white'),q([6,7,6],[10,9,10],'cream'),q([11,2,7],[13,6,9],'white')],
-'bolts':[q([0,15,0],[16,16,16],'formica'),q([4,10,6],[12,13,9],'metal'),q([5,9,6],[7,11,8],'red'),q([10,9,6],[12,11,8],'red')],
+'bolts':[q([0,15,0],[16,16,16],'formica'),q([4,10,6],[12,13,9],'metal'),q([5,9,6],[7,11,8],'red'),q([10,9,6],[12,11,8],'red'),q([1,0,1],[3,15,3],'wood')],
 'camera':[q([5,15,4],[12,21,12],'metal'),q([6,17,0],[11,20,4],'controls'),q([7,0,7],[9,15,9],'metal'),q([2,0,3],[4,9,5],'metal'),q([12,0,11],[14,9,13],'metal')],
 'case':[q([1,0,1],[15,12,15],'metal'),q([6,12,5],[10,14,11],'wood'),q([3,4,.9],[13,10,1],'label')],
 'monitor':[q([2,0,3],[14,10,13],'metal'),q([3,2,2.9],[13,9,3],'controls')],
@@ -117,3 +118,5 @@ print(f'Generated {len(K)*4} fixture states, {len(palette)+7+1} home textures, e
 import runpy
 runpy.run_path(str(ROOT/'tools/update_ghosts_fixture_models.py'),run_name='__main__')
 runpy.run_path(str(ROOT/'tools/update_ghosts_seating_models.py'),run_name='__main__')
+
+runpy.run_path(str(ROOT/'tools/update_ghosts_dining_models.py'),run_name='__main__')

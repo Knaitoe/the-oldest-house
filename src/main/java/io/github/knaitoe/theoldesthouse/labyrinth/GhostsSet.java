@@ -119,7 +119,7 @@ public final class GhostsSet {
         if(!world.hasUUID(key)&&!old.isEmpty()&&world.hasUUID(old)&&p.serverLevel().getEntity(world.getUUID(old)) instanceof LiteraryActor legacy&&legacy.owner().isEmpty()) {
             legacy.bind(PLACE,p.getUUID());legacy.appearance(ROLES[i],STAND);world.putUUID(key,legacy.getUUID());world.remove(old);LiteraryVignettes.shared(d,PLACE,world);
         }
-        var home=i<4?new BlockPos(i==0||i==2?-3:3,0,i<2?-29:-27):new BlockPos(16,0,i==4?-22:-31);
+        var home=i<4?new BlockPos(i==0||i==2?-1:2,0,i<2?-29:-27):new BlockPos(16,0,i==4?-22:-31);
         var at=b.offset(home);if(!p.serverLevel().hasChunkAt(at)||!p.serverLevel().areEntitiesLoaded(ChunkPos.asLong(at.getX()>>4,at.getZ()>>4)))return null;
         var a=LiteraryVignettes.actor(p,PLACE,"Film"+PEOPLE[i],ROLES[i],home,true);
         if(a!=null){a.setNoGravity(true);a.setCustomName(Component.literal(PEOPLE[i]));a.setCustomNameVisible(false);}return a;
@@ -165,7 +165,7 @@ public final class GhostsSet {
     private static void fitSavedSeats(BlockPos b,LiteraryActor[] cast){
         for(var a:cast){if(a==null||a.getPersistentData().getBoolean("GhostSeat0492"))continue;
             if(!seatedPose(a.role(),a.phase()))continue;
-            double y=a.getY()-b.getY();boolean table=Math.abs(y-.625)<.01&&Math.abs(a.getX()-b.getX()-(a.role()==LiteraryActor.GHOST_MARJORIE||a.role()==LiteraryActor.GHOST_JOHN?-2.4:3.4))<.15;
+            double y=a.getY()-b.getY();boolean table=Math.abs(y-.625)<.01&&Math.abs(a.getX()-b.getX()-(a.role()==LiteraryActor.GHOST_MARJORIE||a.role()==LiteraryActor.GHOST_JOHN?-.4:2.4))<.15;
             boolean bed=a.role()==LiteraryActor.GHOST_MARJORIE&&Math.abs(y-5.75)<.01&&Math.abs(a.getX()-b.getX()+9.5)<.15;
             if(!table&&!bed){a.getPersistentData().putBoolean("GhostSeat0492",true);continue;}
             var lift=new Vec3(0,(.125-.001)*a.getScale(),0);if(!a.level().noCollision(a,a.getBoundingBox().move(lift)))continue;
@@ -174,7 +174,7 @@ public final class GhostsSet {
     }
     private static void stage(BlockPos b,LiteraryActor[] cast,int d) {
         for(var actor:cast){GhostsMotion.stop(actor);GhostsJump.clear(actor);}
-        for(int i=0;i<4;i++){place(cast[i],b,i==0||i==2?-2.4:3.4,seatedHeight(cast[i].getScale()),i<2?-28.5:-26.5,i==0||i==2?-90:90,SIT);cast[i].getPersistentData().putBoolean("GhostSeat0492",true);}
+        for(int i=0;i<4;i++){place(cast[i],b,i==0||i==2?-.4:2.4,seatedHeight(cast[i].getScale()),i<2?-28.5:-26.5,i==0||i==2?-90:90,SIT);cast[i].getPersistentData().putBoolean("GhostSeat0492",true);}
         place(cast[4],b,17.5,0,-32.5,90,STAND);place(cast[5],b,16.5,0,-30.5,90,STAND);
         if(d==1){place(cast[0],b,-7,0,-16.5,90,STAND);place(cast[1],b,-10,0,-16.5,-90,STAND);}
         if(d==3||d==6){place(cast[0],b,d==6?-9.5:-12.5,5,d==6?-32.5:-33,d==6?0:90,d==6?BED:STAND);place(cast[1],b,-6,5,-28,180,STAND);place(cast[2],b,-8,5,-34,-90,STAND);place(cast[3],b,-8,5,-29,180,STAND);place(cast[5],b,-11,5,-31,180,STAND);}
@@ -222,7 +222,7 @@ public final class GhostsSet {
         var at=b.offset(relative);if(!p.serverLevel().hasChunkAt(at)||!p.serverLevel().areEntitiesLoaded(ChunkPos.asLong(at.getX()>>4,at.getZ()>>4)))return null;
         var a=LiteraryVignettes.actor(p,PLACE,key,role,relative,true);if(a!=null){a.setNoGravity(true);a.setCustomNameVisible(false);}return a;
     }
-    private static final double[][] MERRY_EXIT={{3.4,.625,-27.6},{4.6,.625,-27.6},{5.5,0,-25.5},{.5,0,-24.5},{.5,0,-15.5},{.5,0,-12.5},{.5,0,-6.5}};
+    private static final double[][] MERRY_EXIT={{2.4,.625,-27.6},{3.6,.625,-27.6},{5.5,0,-25.5},{.5,0,-24.5},{.5,0,-15.5},{.5,0,-12.5},{.5,0,-6.5}};
     /** The surviving original walks round the table and through the ordinary native front door. */
     private static void finalDinner(ServerPlayer p,BlockPos b,LiteraryActor[] cast,CompoundTag own,int t){
         for(int i:new int[]{0,2,3}){
@@ -273,11 +273,11 @@ public final class GhostsSet {
         for(var line:LINES.get(d-1))if(line.tick()>previous&&line.tick()<=t&&p.distanceToSqr(cast[line.speaker()])<24*24){String words=PEOPLE[line.speaker()]+": "+line.text();if(line.speaker()==0&&d==2){own.putString("GhostVoice",words);own.putInt("GhostVoiceId",d*10000+line.tick());own.putLong("GhostVoiceUntil",p.level().getGameTime()+140);}else p.displayClientMessage(Component.literal(words),false);if(d==2&&line.speaker()==0)cue(p,line.tick()<1100?LiteraryRegistry.GHOST_LOW:LiteraryRegistry.GHOST_THIN,cast[0].getEyePosition());}
         if(d==2) {
             for(int i=1;i<4;i++)face(cast[i],cast[0].getEyePosition());
-            if(t>=480&&t<650){pose(cast[1],PRAY);pose(cast[2],PRAY);pose(cast[3],PRAY);toward(cast[2],b,-2.4,0,-27.3,.15);toward(cast[3],b,3.4,0,-27.7,.15);}
+            if(t>=480&&t<650){pose(cast[1],PRAY);pose(cast[2],PRAY);pose(cast[3],PRAY);toward(cast[2],b,-.4,0,-27.3,.15);toward(cast[3],b,2.4,0,-27.7,.15);}
             if(previous<520&&t>=520)cue(p,LiteraryRegistry.GHOST_SCRAPE,cast[0].position());
-            if(t>=250&&t<520){pose(cast[0],VOMIT);if(t%20==0)p.serverLevel().sendParticles(p,net.minecraft.core.particles.ParticleTypes.SPORE_BLOSSOM_AIR,false,b.getX()-.5,b.getY()+1.03,b.getZ()-28.5,2,.06,.02,.06,0);}
-            if(t>=520&&t<950){pose(cast[0],CRAWL);toward(cast[0],b,-.4,0,-28.5,.24);}
-            if(t>=650&&t<880){pose(cast[1],SIT);for(int i=2;i<4;i++){pose(cast[i],STAND);double seatY=seatedHeight(cast[i].getScale());toward(cast[i],b,i==2?-2.4:3.4,seatY,-26.5,.16);if(cast[i].position().distanceToSqr(Vec3.atLowerCornerOf(b).add(i==2?-2.4:3.4,seatY,-26.5))<.04)pose(cast[i],SIT);}}
+            if(t>=250&&t<520){pose(cast[0],VOMIT);if(t%20==0)p.serverLevel().sendParticles(p,net.minecraft.core.particles.ParticleTypes.SPORE_BLOSSOM_AIR,false,b.getX()+.5,b.getY()+1.03,b.getZ()-28.5,2,.06,.02,.06,0);}
+            if(t>=520&&t<950){pose(cast[0],CRAWL);toward(cast[0],b,.6,0,-28.5,.24);}
+            if(t>=650&&t<880){pose(cast[1],SIT);for(int i=2;i<4;i++){pose(cast[i],STAND);double seatY=seatedHeight(cast[i].getScale());toward(cast[i],b,i==2?-.4:2.4,seatY,-26.5,.16);if(cast[i].position().distanceToSqr(Vec3.atLowerCornerOf(b).add(i==2?-.4:2.4,seatY,-26.5))<.04)pose(cast[i],SIT);}}
             if(t>=880)pose(cast[2],HAND);
             if(t>=950){pose(cast[0],CRAWL);toward(cast[0],b,-.4,0,-38.5,.24);}
             if(t>=100&&t<500)capture(p,own,"HatExchange",cast[0].getEyePosition());

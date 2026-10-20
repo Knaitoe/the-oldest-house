@@ -36,9 +36,7 @@ public final class ElkLotEnding {
     @SubscribeEvent public static void died(LivingDeathEvent e){if(e.getEntity() instanceof ServerPlayer p)release(p);}
     @SubscribeEvent public static void playerTick(PlayerTickEvent.Post e){if(e.getEntity() instanceof ServerPlayer p&&HELD.containsKey(p.getUUID())&&(!p.isAlive()||!LiteraryVignettes.inside(p,ElkLot.PLACE)))release(p);}
     public static boolean step(LivingEntity body,Vec3 target,double speed){
-        var cell=BlockPos.containing(target);if(!body.level().hasChunkAt(cell)||body.level() instanceof net.minecraft.server.level.ServerLevel l&&!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(cell.getX()>>4,cell.getZ()>>4)))return false;var d=target.subtract(body.position()).multiply(1,0,1);
-        if(d.lengthSqr()<.025)return true;float yaw=(float)Math.toDegrees(Math.atan2(-d.x,d.z));body.setYRot(yaw);body.setYHeadRot(yaw);body.yBodyRot=yaw;
-        var before=body.position();body.move(MoverType.SELF,d.normalize().scale(Math.min(speed,d.length())));body.walkAnimation.update((float)body.position().subtract(before).horizontalDistance()*4,.4F);body.setDeltaMovement(Vec3.ZERO);return body.position().distanceToSqr(target)<.025;
+        return SceneFootpaths.step(body,target,speed);
     }
     private static LiteraryElk herd(ServerPlayer p,BlockPos b,int i){
         var d=LabyrinthData.get(p.server);var w=LiteraryVignettes.shared(d,ElkLot.PLACE);String key="EndingHerd0492_"+i+"_"+p.getUUID();

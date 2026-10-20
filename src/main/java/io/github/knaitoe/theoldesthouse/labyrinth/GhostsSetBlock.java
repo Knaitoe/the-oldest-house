@@ -22,7 +22,7 @@ public final class GhostsSetBlock extends Block {
         WALLPAPER, FLOOR, CEILING, TILE, PANEL, TABLE, CHAIR, COUNTER, SINK, COOKER,
         PLATE, HAT, BOOKS, JUG, BOLTS, CAMERA, CASE, MONITOR, DRAWING, LAMP, BED_HEAD, BED_FOOT,
         PLAIN_PLATE, PLAYHOUSE, TORN_CARD, DRAWER, DRAWER_RIG, PLASTER,
-        MEAL_STEW, MEAL_SANDWICH, MEAL_SOUP, MEAL_ROAST, MEAL_POTATOES, LAMP_OFF, RUG, STAIR, RAIL;
+        MEAL_STEW, MEAL_SANDWICH, MEAL_SOUP, MEAL_ROAST, MEAL_POTATOES, LAMP_OFF, RUG, STAIR, RAIL, TABLE_LEG;
         @Override public String getSerializedName() { return name().toLowerCase(java.util.Locale.ROOT); }
         public boolean cube() { return ordinal() <= PANEL.ordinal(); }
     }
@@ -39,9 +39,10 @@ public final class GhostsSetBlock extends Block {
         return switch(k) {
             case STAIR -> Shapes.or(Block.box(0,0,0,16,8,16),Block.box(0,8,0,16,16,8));
             case RAIL -> Shapes.or(Block.box(6,0,1,10,16,3),Block.box(6,0,13,10,16,15),Block.box(5,14,0,11,16,16));
-            case TABLE -> Shapes.or(Block.box(0,15,0,16,16,16), Block.box(1,0,1,3,15,3), Block.box(13,0,13,15,15,15));
+            case TABLE -> Block.box(0,15,0,16,16,16);
+            case TABLE_LEG -> Shapes.or(Block.box(0,15,0,16,16,16),Block.box(1,0,1,3,15,3));
             case CHAIR -> Shapes.or(Block.box(2,8,2,14,10,14), Block.box(2,0,2,4,8,4), Block.box(12,0,2,14,8,4), Block.box(2,0,12,4,8,14), Block.box(12,0,12,14,8,14), Block.box(2,4,2,14,6,4), Block.box(2,10,12,14,22,14));
-            case BOLTS -> Shapes.or(Block.box(0,15,0,16,16,16),Block.box(4,9,6,12,13,9));
+            case BOLTS -> Shapes.or(Block.box(0,15,0,16,16,16),Block.box(4,9,6,12,13,9),Block.box(1,0,1,3,15,3));
             case PLATE, PLAIN_PLATE, MEAL_STEW, MEAL_SANDWICH, MEAL_SOUP, MEAL_ROAST, MEAL_POTATOES, HAT, BOOKS -> Block.box(3,0,3,13,3,13);
             case JUG -> Block.box(5,0,5,11,9,11);
             case DRAWING -> Block.box(2,2,15,14,14,16);
