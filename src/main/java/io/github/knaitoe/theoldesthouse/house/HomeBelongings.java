@@ -265,7 +265,7 @@ public final class HomeBelongings {
         if (HazardVariety.watched(level, at) || HazardVariety.watched(level.getServer().overworld(), at)
                 || !level.getEntitiesOfClass(LivingEntity.class, new AABB(at).inflate(.3)).isEmpty()) return false;
         // Loose items can share floor space. A reader leaving theirs here cannot starve a peer's event.
-        return level.getEntities(null, new AABB(at).inflate(.15), e -> !(e instanceof ItemEntity)).isEmpty();
+        return level.getEntities(null, new AABB(at).inflate(.15)).stream().allMatch(ItemEntity.class::isInstance);
     }
 
     private static void hold(ServerPlayer player, BlockPos at) {
