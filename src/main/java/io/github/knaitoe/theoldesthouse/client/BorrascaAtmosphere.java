@@ -43,7 +43,7 @@ public final class BorrascaAtmosphere {
     @SubscribeEvent public static void glare(RenderGuiEvent.Post e){
         if(!active()||state.takingTicks()<=0||state.takingTicks()>60)return;var mc=Minecraft.getInstance();var camera=mc.gameRenderer.getMainCamera();var at=state.source().subtract(BorrascaRooms.MACHINE).offset(BorrascaRooms.LAMP).getCenter();var d=at.subtract(camera.getPosition());if(d.lengthSqr()<.01)return;
         var f=camera.getLookVector();double look=new Vec3(f.x(),f.y(),f.z()).dot(d.normalize());if(look<.7)return;
-        var ray=mc.level.clip(new ClipContext(camera.getPosition(),at,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,mc.player));if(ray.getType()!=HitResult.Type.MISS&&ray.getLocation().distanceToSqr(at)>2)return;
+        var ray=mc.level.clip(new ClipContext(camera.getPosition(),at,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,mc.player));if(ray.getType()!=HitResult.Type.MISS&&ray.getLocation().distanceToSqr(at)>2)return;
         double effects=mc.options.screenEffectScale().get();double rise=Math.sin(Math.PI*Math.min(60,state.takingTicks()+mc.level.getGameTime()-received)/60D);int alpha=(int)(225*Mth.clamp((look-.7)/.3,0,1)*Math.max(0,rise)*effects);if(alpha<=0)return;
         e.getGuiGraphics().fill(0,0,mc.getWindow().getGuiScaledWidth(),mc.getWindow().getGuiScaledHeight(),alpha<<24|0xF1EEE6);
     }
@@ -54,7 +54,7 @@ public final class BorrascaAtmosphere {
     }
     private static void beam(RenderLevelStageEvent e,Vec3 start,Vec3 direction,double length,double radius,float opacity){
         var mc=Minecraft.getInstance();var camera=e.getCamera().getPosition();var pose=e.getPoseStack();var buffers=mc.renderBuffers().bufferSource();var type=RenderType.lightning();var v=buffers.getBuffer(type);var side=direction.cross(new Vec3(0,1,0)).normalize();var up=side.cross(direction).normalize();Vec3[] ring=new Vec3[17];
-        for(int i=0;i<=16;i++){double a=i*Math.PI/8;var end=start.add(direction.scale(length)).add(side.scale(Math.cos(a)*radius)).add(up.scale(Math.sin(a)*radius));var hit=mc.level.clip(new ClipContext(start,end,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,mc.player));ring[i]=hit.getType()==HitResult.Type.MISS?end:hit.getLocation();}
+        for(int i=0;i<=16;i++){double a=i*Math.PI/8;var end=start.add(direction.scale(length)).add(side.scale(Math.cos(a)*radius)).add(up.scale(Math.sin(a)*radius));var hit=mc.level.clip(new ClipContext(start,end,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,mc.player));ring[i]=hit.getType()==HitResult.Type.MISS?end:hit.getLocation();}
         pose.pushPose();pose.translate(-camera.x,-camera.y,-camera.z);for(int i=0;i<16;i++){for(var at:new Vec3[]{start,ring[i],ring[i+1],start})v.addVertex(pose.last(),(float)at.x,(float)at.y,(float)at.z).setColor(240,232,202,(int)(opacity*255));}pose.popPose();buffers.endBatch(type);
     }
     private static final class Loop extends AbstractTickableSoundInstance {

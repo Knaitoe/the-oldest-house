@@ -24,4 +24,6 @@ public final class BorrascaFittingBlock extends Block {
     @Override protected BlockState mirror(BlockState s,Mirror m){return s.rotate(m.getRotation(s.getValue(FACING)));}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){return switch(s.getValue(KIND)){case PAPER,PATCH,TRACKS->box(1,0,1,15,1,15);case PACK->box(3,0,3,13,11,13);case TAPE,FENCE->s.getValue(FACING).getAxis()==Direction.Axis.Z?box(0,0,7,16,16,9):box(7,0,0,9,16,16);case NOTICE,CARVING,MARKER_ONE,MARKER_TWO,MARKER_THREE,MARKER_FOUR->switch(s.getValue(FACING)){case SOUTH->box(0,0,0,16,16,2);case NORTH->box(0,0,14,16,16,16);case EAST->box(0,0,0,2,16,16);default->box(14,0,0,16,16,16);};case BELT->box(0,0,0,16,11,16);default->Shapes.block();};}
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){return switch(s.getValue(KIND)){case PAPER,NOTICE,CARVING,PATCH,TRACKS,TAPE,LOCK,MARKER_ONE,MARKER_TWO,MARKER_THREE,MARKER_FOUR->Shapes.empty();default->getShape(s,l,at,c);};}
+    /** Wire stops a body, but its open mesh does not hide the ridge searchlight. */
+    @Override public VoxelShape getVisualShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){return s.getValue(KIND)==Kind.FENCE?Shapes.empty():super.getVisualShape(s,l,at,c);}
 }
