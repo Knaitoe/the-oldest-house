@@ -56,7 +56,7 @@ public final class NovelCorrespondenceTests {
             for(String key:before.getCompound("Books").getAllKeys())h.assertTrue(before.getCompound("Books").get(key).equals(own.getCompound("Books").get(key)),"every older original remains byte-exact: "+key);
             f.reload();var same=f.open(a,HouseMarginalia.Thread.CALLS);h.assertTrue(ItemStack.isSameItemSameComponents(book,same.book())&&!same.clickMenuButton(a,3),"the saved source remains exact and cannot refill after reload");
             h.assertTrue(!HouseCorrespondence.available(a,"HOL_P02"),"the next dated letter waits for actual travel");HouseCorrespondence.crossed(a);h.assertTrue(!HouseCorrespondence.available(a,"HOL_P02"),"one crossing is insufficient");HouseCorrespondence.crossed(a);h.assertTrue(HouseCorrespondence.available(a,"HOL_P02"),"two actual crossings unlock the next dated source");
-            h.assertTrue(WitnessAccount.count(f.data(),a.getUUID())==0&&WitnessAccount.REQUIRED==35&&WitnessAccount.Story.values().length==46,"poems, correspondence and cipher reading never add Witness sources");h.succeed();
+            h.assertTrue(WitnessAccount.count(f.data(),a.getUUID())==0&&WitnessAccount.REQUIRED==39&&WitnessAccount.Story.values().length==52,"poems, correspondence and cipher reading never add Witness sources");h.succeed();
         });
     }
 }
