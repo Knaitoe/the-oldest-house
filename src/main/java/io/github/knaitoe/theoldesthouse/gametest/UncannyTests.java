@@ -114,9 +114,14 @@ public final class UncannyTests {
         h.assertTrue(f.own(p,place).getBoolean("UncannyFailed")&&!f.own(peer,place).getBoolean("UncannyFailed"),"the brass release is a personal admission");h.assertTrue(before.equals(f.own(p,place).getUUID("CastVisitor"))&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.MOTION_LIGHT),"the same visitor remains and no survival is awarded");
     });}
     @AfterBatch(batch="uncanny_buzzer") public static void buzzerDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="uncanny_mirror",timeoutTicks=300) public static void theMirrorNeedsActualHealthAndItsFuelIsSavedOnlyForThatReader(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
-        var peer=f.player("mirror_peer",LabyrinthPlace.MISSING_SLEEP);p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(UncannyRegistry.SMOKY_MIRROR.get()));p.setHealth(20);p.invulnerableTime=0;h.assertTrue(UncannySenses.wakeMirror(p)&&p.getHealth()==18&&UncannySenses.mirror(p),"native health loss buys the short true view");f.reload();h.assertTrue(UncannySenses.mirror(p)&&!UncannySenses.mirror(peer),"fuel persists per reader");p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);h.assertTrue(!UncannySenses.mirror(p),"putting the mirror down removes the true view immediately");
-    });}
+    @GameTest(template="empty",batch="uncanny_mirror",timeoutTicks=400) public static void theMirrorNeedsActualHealthAndItsFuelIsSavedOnlyForThatReader(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);fixture=f;var p=f.player("mirror_reader",LabyrinthPlace.MISSING_SLEEP);var peer=f.player("mirror_peer",LabyrinthPlace.MISSING_SLEEP);f.chunks.hold(f.in,IndianLakeRooms.bounds(f.base(LabyrinthPlace.MISSING_SLEEP),LabyrinthPlace.MISSING_SLEEP));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"real reader sections loaded")).thenIdle(80).thenExecute(()->{
+            p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(UncannyRegistry.SMOKY_MIRROR.get()));p.setHealth(20);p.setInvulnerable(false);p.invulnerableTime=0;
+            boolean woke=UncannySenses.wakeMirror(p);h.assertTrue(woke&&p.getHealth()==18&&UncannySenses.mirror(p),"native health loss after login protection buys sight; woke="+woke+" health="+p.getHealth()+" abilities="+p.getAbilities().invulnerable);
+            f.reload();h.assertTrue(UncannySenses.mirror(p)&&!UncannySenses.mirror(peer),"fuel persists per reader");p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);h.assertTrue(!UncannySenses.mirror(p),"putting the mirror down removes the true view immediately");
+        }).thenSucceed();
+    }
     @AfterBatch(batch="uncanny_mirror") public static void mirrorDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="uncanny_mirror_no_blood",timeoutTicks=300) public static void absorptionAndInvulnerabilityCannotBuyBloodSight(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
         p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(UncannyRegistry.SMOKY_MIRROR.get()));p.setHealth(20);p.setAbsorptionAmount(4);p.invulnerableTime=0;h.assertTrue(!UncannySenses.wakeMirror(p)&&!UncannySenses.mirror(p)&&p.getHealth()==20,"absorbed damage is not a blood payment");p.setAbsorptionAmount(0);p.setGameMode(GameType.CREATIVE);h.assertTrue(!UncannySenses.wakeMirror(p)&&!UncannySenses.mirror(p),"invulnerability grants no free activation");

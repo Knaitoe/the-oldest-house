@@ -27,7 +27,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 /** Opt-in dedicated-server proof with actual socket-connected clients. Inert in every ordinary game. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class LiveExpeditionProof {
-    public static boolean enabled(){return Boolean.getBoolean("the_oldest_house.liveProof");}
+    public static boolean enabled(){return Boolean.getBoolean("the_oldest_house.liveProof")&&!UncannySocketProof.enabled();}
     public static Path folder(){return Path.of(System.getProperty("the_oldest_house.liveProofDir","build/live-proof"));}
     private static final BlockPos ORIGIN=new BlockPos(6000,80,6000);
     private static final Set<String> ACKS=new HashSet<>();

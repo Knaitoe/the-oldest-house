@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "plate": "minecraft:block/smooth_quartz",
+    "plate": "minecraft:block/quartz_block_top",
     "food": "minecraft:block/brown_mushroom_block"
   },
   "elements": [

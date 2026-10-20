@@ -223,6 +223,7 @@ public final class UncannyStories {
             }
             if((rel.equals(UncannyRooms.PARENTS_DOOR)||rel.equals(UncannyRooms.PARENTS_DOOR.above()))&&own.getInt("Sleeps")>=2){
                 if(own.getBoolean("MarionetteSeen")&&own.getBoolean("OwnFaceSeen")&&own.getInt("MonitorTicks")>=40&&own.getInt("FeedsSeen")==15&&p.serverLevel().getBlockState(b.offset(UncannyRooms.PARENTS_DOOR)).getValue(DoorBlock.OPEN)){setDoor(p.serverLevel(),b.offset(UncannyRooms.PARENTS_DOOR),false);own.putBoolean("BlockedDoor",true);ready(p,place,own,"closed_the_door_on_the_other_feed");}
+                else if(own.getBoolean("MarionetteSeen")&&own.getBoolean("OwnFaceSeen")&&own.getInt("FeedsSeen")==15){setDoor(p.serverLevel(),b.offset(UncannyRooms.PARENTS_DOOR),true);cue(p,"Your hand raises the latch.");}
                 else cue(p,"On the screen, your hand reaches for this handle.");
                 return true;
             }

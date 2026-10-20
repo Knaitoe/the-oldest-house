@@ -800,7 +800,7 @@ jobs:
           test -s build/font-smoke/hotel-passed.txt
           test -s build/font-smoke/native-hotel.png
           test -s build/font-smoke/hotel-fitting-passed.txt
-          for page in 0 1 2 3; do test -s build/font-smoke/native-hotel-fitting-$page.png; done
+          for page in 0 1 2 3 4; do test -s build/font-smoke/native-hotel-fitting-$page.png; done
           test -s build/font-smoke/stanley-passed.txt
           for view in cast actions fixtures comparison; do test -s build/font-smoke/native-stanley-$view.png; done
           test -s build/font-smoke/ghosts-passed.txt
@@ -1335,6 +1335,21 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
+      - name: Six uncanny rooms and actual four-channel CCTV on both clients
+        timeout-minutes: 13
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri
+          LP_NUM_THREADS=1 LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a python3 tools/run_live_expedition.py --uncanny-only
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: uncanny-socket-preflight-${{ github.sha }}
+          path: |
+            build/uncanny-live-proof/
+            run-uncanny-live/*/logs/latest.log
+            run-uncanny-live/*/crash-reports/
+          if-no-files-found: warn
       - name: Targeted production Borrasca socket entry and movement
         timeout-minutes: 8
         run: |
@@ -1438,7 +1453,7 @@ jobs:
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PhotelFixSmoke --no-daemon
           test -s build/font-smoke/hotel-fitting-passed.txt
-          for page in 0 1 2 3; do test -s build/font-smoke/native-hotel-fitting-$page.png; done
+          for page in 0 1 2 3 4; do test -s build/font-smoke/native-hotel-fitting-$page.png; done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
