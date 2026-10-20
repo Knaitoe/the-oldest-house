@@ -1,7 +1,6 @@
 package io.github.knaitoe.theoldesthouse.client;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.math.Axis;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import java.nio.file.*;
 import net.minecraft.client.*;
@@ -41,7 +40,9 @@ public final class GoatmanChildEyesProof extends Screen {
             var texture=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/trailer_child_"+skin+".png");
             for(boolean glow:new boolean[]{false,true}){
                 model.pose(skin,0,0,0,false,false,false);var poses=g.pose();poses.pushPose();
-                poses.translate(center(skin,glow),baseline(skin),160);poses.scale(90,90,90);poses.mulPose(Axis.YP.rotationDegrees(180));
+                poses.translate(center(skin,glow),baseline(skin),160);
+                // GUI Y points down: reflect Z so the native, culled eyes pass sees the front face.
+                poses.scale(90,90,-90);
                 model.head.render(poses,buffers.getBuffer(RenderType.entityCutoutNoCull(texture)),LightTexture.pack(0,0),OverlayTexture.NO_OVERLAY,0xffffffff);
                 if(glow)GoatmanChildEyes.render(model,poses,buffers);
                 buffers.endBatch();poses.popPose();
