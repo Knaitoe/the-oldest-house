@@ -1,0 +1,78 @@
+package io.github.knaitoe.theoldesthouse.gametest;
+
+import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.house.HouseFurnishings;
+import io.github.knaitoe.theoldesthouse.labyrinth.*;
+import java.util.*;
+import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.*;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.gametest.*;
+
+/** The finished production camper, including the exterior pass omitted by the original route fixtures. */
+@GameTestHolder(TheOldestHouse.MOD_ID+"_goatman_windows")
+@PrefixGameTestTemplate(false)
+public final class GoatmanExteriorTests {
+    private static GoatmanTests.Fixture finished;
+    @AfterBatch(batch="goat_finished_camper04112")
+    public static void clean(ServerLevel level){if(finished!=null){finished.close();finished=null;}}
+
+    @GameTest(template="empty",batch="goat_finished_camper04112",timeoutTicks=6500)
+    public static void theFinishedCamperKeepsItsOriginalMovingFromEveningThroughDawnWithSimultaneousDoorPressure(GameTestHelper h){
+        finished=new GoatmanTests.Fixture(h,53700);var f=finished;
+        // Exactly the production construction order, before a visitor can defer exterior dressing.
+        HouseFurnishings.decorate(f.l,f.b,LabyrinthPlace.GOATMAN);
+        VignetteArchitecture.decorateOnce(f.l,f.origin,LabyrinthPlace.GOATMAN);
+        var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        boolean[] begun={false},loaded={false},overlap={false},lateOverlap={false},approached={false};
+        UUID[] original={null};int[] eveningSerial={0},nightSerial={0},pulse={0};
+        var eveningPanes=new HashSet<Long>();var children=new HashSet<Integer>();var forms=new HashSet<Integer>();
+        h.onEachTick(()->{
+            if(!begun[0])return;var r=f.run();if(r.getInt("Phase")==GoatmanVignette.DAWN)return;
+            var body=f.cousin(r.getInt("Wrong")).orElseThrow();
+            h.assertTrue(body.getUUID().equals(original[0])&&!body.noPhysics,"the same original keeps native collision through every exterior route and save");
+            var lap=r.getInt("Phase")==GoatmanVignette.GATHERING?r.getCompound("EveningCircuit0497"):r;
+            int serial=lap.getInt("WindowSerial0497");int[] last=r.getInt("Phase")==GoatmanVignette.GATHERING?eveningSerial:nightSerial;
+            if(serial>last[0]){
+                last[0]=serial;var feet=f.rel(body);
+                h.assertTrue(Math.abs(feet.y-1.5)<.11&&!f.l.noCollision(body,body.getBoundingBox().move(0,-.02,0)),"the original actually stands on the finished stone sill, above the tire: feet="+feet);
+                if(r.getInt("Phase")==GoatmanVignette.GATHERING)eveningPanes.add(lap.getLong("LastImpactPos0465"));
+                else {forms.add(lap.getInt("WindowSkin0497"));if(lap.getInt("WindowSkin0497")>=0)children.add(lap.getInt("WindowSkin0497"));}
+                if(!loaded[0]){
+                    var actor=body.saveWithoutId(new CompoundTag());body.load(actor);
+                    var data=LabyrinthData.get(f.server);var restored=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),f.l.registryAccess()),f.l.registryAccess());
+                    f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",restored);loaded[0]=true;
+                }
+            }
+            if(r.getInt("Phase")==GoatmanVignette.VIGIL){
+                boolean distant=body.distanceToSqr(Vec3.atCenterOf(f.b.offset(GoatmanWoods.DOOR)))>16;
+                if(distant&&r.getLong("LastImpactPos0465")==f.b.offset(GoatmanWoods.DOOR).asLong()&&r.getInt("ImpactClock0472")==r.getInt("Clock"))overlap[0]=true;
+                int next=r.getInt("DoorPulseSerial04112");if(next>pulse[0]&&distant)lateOverlap[0]=true;pulse[0]=next;
+                approached[0]|=GoatmanStalking.circuitDone(r)&&GoatmanStalking.windowApproachDone(r);
+            }
+        });
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"all finished exterior and original body sections are loaded")).thenExecute(()->{
+            h.assertTrue(f.l.getBlockState(f.b.offset(-9,1,-59)).is(Blocks.SMOOTH_STONE_SLAB)
+                    &&f.l.getBlockState(f.b.offset(-9,2,-58)).is(Blocks.IRON_BARS)
+                    &&f.l.getBlockState(f.b.offset(5,0,-52)).is(Blocks.IRON_BARS),"the actual photographed sill, frame and porch rail are present");
+            h.assertTrue(GoatmanVignette.enter(p),"the reader joins an ordinary fresh evening");
+            var r=f.run();r.putInt("Wrong",0);r.putInt("Runner",7);r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.BACK0465-1);
+            r.putInt("ExtraState",GoatmanVignette.X_SUPPER);r.putInt("RunnerState",GoatmanVignette.R_AWAY);f.cohort(r,List.of(p),0);f.run(r);
+            GoatmanVignette.stage(f.l,f.b,r);GoatmanVignette.hurry(f.l,f.b);GoatmanWoods.door(f.l,f.b,true);GoatmanWoods.setWindow(f.l,f.b,true);
+            original[0]=f.cousin(0).orElseThrow().getUUID();begun[0]=true;
+        }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Phase")==GoatmanVignette.VIGIL,"ordinary evening reaches nightfall after every actual sill: "+status(f))).thenExecute(()->{
+            for(var at:List.of(new BlockPos(-8,2,-59),new BlockPos(-8,2,-67),new BlockPos(-8,2,-73),new BlockPos(8,2,-59),new BlockPos(8,2,-67)))
+                h.assertTrue(eveningPanes.contains(f.b.offset(at).asLong()),"the saved original left the photographed first sill and struck the other panes: "+eveningPanes.size()+"/5");
+            h.assertTrue(loaded[0],"the native body and run were saved and restored on a real finished sill");
+        }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Phase")==GoatmanVignette.DAWN,"all three native circuits and the complete porch/window approach reach dawn: "+status(f))).thenExecute(()->{
+            var r=f.run();h.assertTrue(approached[0]&&r.getInt("Circuits0494")==GoatmanStalking.CIRCUITS,"all three physical circuits and every bathroom approach leg finish");
+            h.assertTrue(overlap[0]&&lateOverlap[0]&&pulse[0]>0,"actual front-door contacts continue while the original is elsewhere, including after all seven demands");
+            h.assertTrue(forms.contains(-2)&&children.size()>=2,"the complete native night retains the monster and different child disguises: "+forms);
+            h.assertTrue(r.getBoolean("Right")&&WitnessAccount.has(LabyrinthData.get(f.server),p.getUUID(),WitnessAccount.Story.GOATMAN),"only the complete closed-door and closed-window vigil resolves survival");
+        }).thenSucceed();
+    }
+    private static String status(GoatmanTests.Fixture f){var r=f.run();return "phase="+r.getInt("Phase")+" clock="+r.getInt("Clock")+" evening="+r.getCompound("EveningCircuit0497").getInt("StalkLeg0465")+" circuit="+r.getInt("StalkLeg0465")+" approach="+r.getInt("StalkWindowLeg0465")+" feet="+f.cousin(r.getInt("Wrong")).map(f::rel);}
+}
