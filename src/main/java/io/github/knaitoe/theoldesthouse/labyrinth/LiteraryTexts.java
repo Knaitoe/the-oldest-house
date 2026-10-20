@@ -10,7 +10,7 @@ import net.minecraft.world.item.ItemStack;
 public final class LiteraryTexts {
     private LiteraryTexts(){}
     private static ItemStack book(String title,String author,String... pages){return HouseWriting.book(title,author,HouseWriting.WritingStyle.WILL,List.of(pages));}
-    public static ItemStack source(LabyrinthPlace p){return switch(p){
+    public static ItemStack source(LabyrinthPlace p){if(UncannyRooms.isUncanny(p))return UncannyTexts.source(p);return switch(p){
         case BORRASCA->BorrascaTexts.source();
         case HILL_NURSERY->book("A mother's night book","O.",
             "Tuesday\n\nI measured the children's beds. Both will fit in the room at the end. The room has no outside wall. I think they will be warm there.",
@@ -102,7 +102,7 @@ public final class LiteraryTexts {
             "Bring the weapon you have used most. I can tell whether it has a past, or whether the House has made another one.\n\nThe lamp speaks my name slowly.");
         default->throw new IllegalArgumentException(p.id());};}
     public static ItemStack ending(ServerPlayer p,LabyrinthPlace place,CompoundTag own){return ending(p.getGameProfile().getName(),place,own);}
-    public static ItemStack ending(String name,LabyrinthPlace place,CompoundTag own){if(place==LabyrinthPlace.BORRASCA)return BorrascaTexts.accountBook(name,own);if(place==LabyrinthPlace.END_WORLD_CABIN&&own.getBoolean("Bargain0451"))return cabin(name,own);String text=switch(place){
+    public static ItemStack ending(String name,LabyrinthPlace place,CompoundTag own){if(UncannyRooms.isUncanny(place))return UncannyTexts.account(name,place,own);if(place==LabyrinthPlace.BORRASCA)return BorrascaTexts.accountBook(name,own);if(place==LabyrinthPlace.END_WORLD_CABIN&&own.getBoolean("Bargain0451"))return cabin(name,own);String text=switch(place){
         case HILL_NURSERY->"I knocked "+own.getInt("Knocks")+" times. The cellar returned each one. Beside the cold door hung a photograph of the two children grown, in clothes from years the house had not reached. The diary called the same thing protection that I had called a locked room.";
         case MINIATURES->"The tables held rooms I had walked through, a little figure standing where I had stood. In the latest, a second figure stood just behind mine, close enough to touch its shoulder. I had crossed that room alone.";
         case MASQUE->"I put my hand on the clock. The next chime did not come. Seven rooms of people had been waiting for it; now there was only the sound of my hand leaving the wood.";
@@ -147,6 +147,7 @@ public final class LiteraryTexts {
         default->null;};}
     /** 0.4.105: an account is titled with its room's prose name, never its internal id. A book title holds 32 characters, so the longest names are shortened. */
     public static String accountTitle(LabyrinthPlace place){
+        if(UncannyRooms.isUncanny(place))return UncannyTexts.title(place);
         String title="The account: "+StaircaseProse.place(place.id());if(title.length()<=32)return title;
         return "The account: "+switch(place){case HILL_NURSERY->"the nursery";case MINIATURES->"the workshop";case ELK_FAN->"the fan room";case MAPPING_INTERIOR->"the crawlspace";
             case ELK_CARCASSES->"the ridge";case END_WORLD_CABIN->"the cabin";case FAMILY_COPY->"the copied home";case THREE_FINGERS->"the cottage";case LAKE_HOUSE->"the lake house";default->"the room";};

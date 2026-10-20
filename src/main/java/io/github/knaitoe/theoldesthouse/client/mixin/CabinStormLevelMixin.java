@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class CabinStormLevelMixin {
     @Inject(method="getRainLevel",at=@At("RETURN"),cancellable=true)
     private void house$cabinRain(float partial,CallbackInfoReturnable<Float> cir){
-        Level level=(Level)(Object)this;if(level.isClientSide())cir.setReturnValue(CabinStormClient.rain(level,cir.getReturnValue()));
+        Level level=(Level)(Object)this;if(level.isClientSide())cir.setReturnValue(io.github.knaitoe.theoldesthouse.client.UncannyClient.rain(level,CabinStormClient.rain(level,cir.getReturnValue())));
     }
     @Inject(method="getThunderLevel",at=@At("RETURN"),cancellable=true)
     private void house$cabinThunder(float partial,CallbackInfoReturnable<Float> cir){

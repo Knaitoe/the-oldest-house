@@ -25,7 +25,7 @@ public final class SceneClock {
             case DROWNED_TOWN,SHALLOWS,PHONE_CANOE->7;
             case HOTEL_GROUNDS->8;
             case HOLY_RABBIT->11;
-            case ELK_LOT,ELK_CARCASSES,COSTUME_NIGHT,MOVIE_NIGHT,WINTER_LAKE,CAMP_BLOOD,BLY_ROUTE->9;
+            case SECOND_WAITRESS,ELK_LOT,ELK_CARCASSES,COSTUME_NIGHT,MOVIE_NIGHT,WINTER_LAKE,CAMP_BLOOD,BLY_ROUTE->9;
             case END_WORLD_CABIN->10;
             case LAKE_HOUSE,LAKE_HOUSE_EMPTY->4;
             default->0;

@@ -80,6 +80,7 @@ public final class TheOldestHouse {
         io.github.knaitoe.theoldesthouse.labyrinth.WinterLakeRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.PhoneSounds.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.BorrascaRegistry.register(modEventBus);
+        io.github.knaitoe.theoldesthouse.labyrinth.UncannyRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.FinaleLoot.register(modEventBus);
         ClapGhostRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.GoatmanRegistry.register(modEventBus);

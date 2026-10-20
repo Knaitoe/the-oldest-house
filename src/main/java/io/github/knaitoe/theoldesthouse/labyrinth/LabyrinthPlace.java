@@ -296,6 +296,13 @@ public enum LabyrinthPlace {
     LAKE_HOUSE_EMPTY("lake_house_empty",Kind.HALLWAY,97,new BoundingBox(LakeHouse.MIN_X,LakeHouse.MIN_Y,LakeHouse.MIN_Z,LakeHouse.MAX_X,LakeHouse.MAX_Y,0),literaryEntry()),
     /** Borrasca: one reader's four returns to the same town, never another reader's later town. */
     BORRASCA("borrasca",Kind.MULTI_VISIT,98,new BoundingBox(-44,-5,-220,44,26,0),literaryEntry()),
+    /** Six original uncanny rooms (0.4.113); every earlier address remains unchanged. */
+    PAINTED_INTERIOR("painted_interior",Kind.ONE_SHOT,99,new BoundingBox(-15,-3,-39,15,11,0),literaryEntry()),
+    SECOND_WAITRESS("second_waitress",Kind.ONE_SHOT,100,new BoundingBox(-28,-4,-57,28,12,0),literaryEntry()),
+    TUNNEL_PERIPHERY("tunnel_periphery",Kind.ONE_SHOT,101,new BoundingBox(-5,-2,-75,5,8,0),literaryEntry()),
+    MISSING_SLEEP("missing_sleep",Kind.ONE_SHOT,102,new BoundingBox(-11,-2,-31,11,12,0),literaryEntry()),
+    LAYERED_MAN("layered_man",Kind.ONE_SHOT,103,new BoundingBox(-9,-7,-32,9,6,0),literaryEntry()),
+    MOTION_LIGHT("motion_light",Kind.ONE_SHOT,104,new BoundingBox(-9,-2,-27,9,9,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

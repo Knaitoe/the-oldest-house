@@ -86,7 +86,13 @@ public final class WitnessAccount {
         FAMILY_COPY("family_copy","The house they remembered","memory","They welcomed me into a house I had actually lived in, and thanked me at the door for looking after it."),
         THREE_FINGERS("three_fingers","The last finger","release","I took the paw out of the fire and wished on it. Every wish came true in the worst way it could. I chose how the last finger fell."),
         LAKE_HOUSE("lake_house","The house in the third lake","connection","There was a house on the bottom of the lake, and every time we went down it let us a little further in. We kept to one rule and didn't ask how. In the end I went back to meet whoever lived there."),
-        BORRASCA("borrasca","The name beside mine","understanding","I came back grown. Her name had been cut from the tree. The Sheriff and Prescott had signed for her things. I stopped the machine and brought out her name.");
+        BORRASCA("borrasca","The name beside mine","understanding","I came back grown. Her name had been cut from the tree. The Sheriff and Prescott had signed for her things. I stopped the machine and brought out her name."),
+        PAINTED_INTERIOR("painted_interior","The painted sun","understanding","I took a painted plank down. There was earth behind it, and people in the corners whenever I turned away. I left by the unpainted door."),
+        SECOND_WAITRESS("second_waitress","The second apron","understanding","The second waitress became heavy enough to carry a plate. I left her food untouched and asked the woman on the rota for the way out."),
+        TUNNEL_PERIPHERY("tunnel_periphery","Under the green lights","survival","She kept pace without running. At the green signals she stopped. I reached the place where the ceiling rose before she could stand upright."),
+        MISSING_SLEEP("missing_sleep","The empty mattress","memory","The bed was empty during the missing hours. On the monitor the man in the hallway had my face. I closed the other bedroom door before his hand reached it."),
+        LAYERED_MAN("layered_man","The cellar shift","understanding","The knife broke against the next wet layer. The man beside the sump was still working when I reached the top step. The cellar was smaller than when I entered."),
+        MOTION_LIGHT("motion_light","The unhinged door","survival","The floodlight went out while I watched the courtyard. The new door behind me had no hinges. I kept my hand off the buzzer and opened the service door.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}

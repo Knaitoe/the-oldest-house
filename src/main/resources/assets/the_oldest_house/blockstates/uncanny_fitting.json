@@ -1,0 +1,61 @@
+{
+  "variants": {
+    "kind=painted_board": {
+      "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=paper": {
+      "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=receipt": {
+      "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=clipboard": {
+      "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=ledger": {
+      "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=scrawl": {
+      "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=monitor": {
+      "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=camera": {
+      "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=signal": {
+      "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=sign": {
+      "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=floodlight": {
+      "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=buzzer": {
+      "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=false_door": {
+      "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=flesh": {
+      "model": "the_oldest_house:block/uncanny_flesh"
+    },
+    "kind=register": {
+      "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=pie_case": {
+      "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=plate": {
+      "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=cleaver": {
+      "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=box": {
+      "model": "the_oldest_house:block/uncanny_fitting"
+    }
+  }
+}

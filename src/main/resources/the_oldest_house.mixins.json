@@ -16,7 +16,9 @@
     "HouseMobRenderMixin",
     "GhostsPickMixin",
     "GhostsLecternMixin",
-    "DeathPortraitRenderMixin"
+    "DeathPortraitRenderMixin",
+    "UncannyGlowMixin",
+    "UncannyTargetMixin"
   ],
   "injectors": {
     "defaultRequire": 1

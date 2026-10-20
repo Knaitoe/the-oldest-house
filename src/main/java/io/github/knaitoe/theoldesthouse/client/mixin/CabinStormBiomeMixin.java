@@ -9,5 +9,5 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Biome.class)
 public abstract class CabinStormBiomeMixin {
     @Inject(method="hasPrecipitation",at=@At("RETURN"),cancellable=true)
-    private void house$cabinStorm(CallbackInfoReturnable<Boolean> cir){if(!cir.getReturnValueZ()&&CabinStormClient.precipitating())cir.setReturnValue(true);}
+    private void house$cabinStorm(CallbackInfoReturnable<Boolean> cir){if(!cir.getReturnValueZ()&&(CabinStormClient.precipitating()||io.github.knaitoe.theoldesthouse.client.UncannyClient.room().equals("second_waitress")))cir.setReturnValue(true);}
 }
