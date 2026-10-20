@@ -7,13 +7,21 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 
-/** Operator controls for the two domestic encounters; never restage a story or fabricate possessions. */
+/** Operator controls for domestic encounters; never restage a story or fabricate possessions. */
 public final class HomeTestCommands {
     private HomeTestCommands() {}
 
     public static LiteralArgumentBuilder<CommandSourceStack> build() {
         return Commands.literal("home").requires(s -> s.hasPermission(2)).executes(c -> help(c.getSource()))
                 .then(Commands.literal("status").executes(c -> status(c.getSource())))
+                .then(Commands.literal("portrait").executes(c -> portrait(c.getSource()))
+                        .then(Commands.literal("preview").executes(c -> portrait(c.getSource())))
+                        .then(Commands.literal("status").executes(c -> status(c.getSource())))
+                        .then(Commands.literal("reset").executes(c -> {
+                            if (!HouseDeathPortraits.resetPreview(c.getSource().getPlayerOrException()))
+                                return fail(c.getSource(), "A real first-death portrait is permanent. For an undelivered preview, load its original manor painting before resetting.");
+                            return say(c.getSource(), "Removed your test preview. Your real first House death is still unused; no painting was recreated.");
+                        })))
                 .then(Commands.literal("knocking").executes(c -> knocking(c.getSource()))
                         .then(Commands.literal("start").executes(c -> knocking(c.getSource())))
                         .then(Commands.literal("status").executes(c -> status(c.getSource())))
@@ -37,7 +45,8 @@ public final class HomeTestCommands {
     }
 
     private static int help(CommandSourceStack source) {
-        say(source, "Run these inside the main manor, rather than a copied home or separate vignette. /ghosthouse test home status shows both personal events.");
+        say(source, "Run these inside the main manor, rather than a copied home or separate vignette. /ghosthouse test home status shows your domestic events.");
+        say(source, "/ghosthouse test home portrait preview stages a reversible painted skin on one existing family portrait, once nobody watches it. 'portrait reset' removes only your preview; a real first-death portrait cannot be reset or repeated.");
         say(source, "/ghosthouse test home knocking starts faint knocks at the parlour/study partition. Wait through the three groups, then crouch close to that wall and listen for an answer from the study's hall wall. 'knocking reset' stops it.");
         return say(source, "/ghosthouse test home belongings stages ONE item from your main hand. After six seconds at home, it can turn up on the upstairs reading-bedroom floor while nobody watches. 'belongings return' skips the wait; 'belongings reset' refunds pending test custody. Ordinary play instead watches items you actually deposit in the explorer's camp barrel, then return home without.");
     }
@@ -54,10 +63,21 @@ public final class HomeTestCommands {
         return say(source, "One held original is in test custody. Stay home for six seconds with the upstairs reading bedroom out of view, then look for it on the floor. Reset refunds it if delivery is still pending.");
     }
 
+    private static int portrait(CommandSourceStack source) throws CommandSyntaxException {
+        if (!HouseDeathPortraits.preview(source.getPlayerOrException()))
+            return fail(source, "Enter the main manor first. A real first-death portrait already recorded for your UUID cannot be repeated.");
+        HouseDeathPortraits.place(source.getServer());
+        return say(source, "Your one portrait preview is queued. Leave the family portraits out of view, then look for your painted face. 'portrait status' reports its position; 'portrait reset' removes only this test preview.");
+    }
+
     private static int status(CommandSourceStack source) throws CommandSyntaxException {
         var player = source.getPlayerOrException();
         var knocks = HomeKnocking.record(player);
         var belongings = HomeBelongings.record(player);
+        var portrait = HouseDeathPortraits.record(player);
+        say(source, "House portrait: first death=" + portrait.getBoolean("FirstDeath") + ", preview=" + portrait.getBoolean("Preview")
+                + ", pending=" + portrait.getBoolean("Pending") + ", original painting=" + (portrait.hasUUID("Painting") ? portrait.getUUID("Painting") : "not placed")
+                + (portrait.contains("At") ? ", at=" + net.minecraft.core.BlockPos.of(portrait.getLong("At")).toShortString() : ""));
         say(source, "Home knocking: active=" + knocks.getBoolean("Active") + ", done=" + knocks.getBoolean("Done")
                 + ", phase=" + knocks.getInt("Phase") + ", present ticks=" + knocks.getInt("Elapsed")
                 + ", heard groups=" + knocks.getInt("Heard") + ", listened=" + knocks.getBoolean("Listened"));

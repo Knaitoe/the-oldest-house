@@ -169,7 +169,7 @@ public final class HouseShiftEffects {
     public static String paintings(Context ctx) {
         List<Painting> paintings = new ArrayList<>();
         for (Painting painting : ctx.interior().getEntitiesOfClass(Painting.class, envelope(ctx.origin()))) {
-            if (!watched(ctx, painting.getPos())) {
+            if (!HouseDeathPortraits.claimed(painting) && !watched(ctx, painting.getPos())) {
                 paintings.add(painting);
             }
         }

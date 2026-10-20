@@ -835,6 +835,9 @@ jobs:
           test -s build/font-smoke/plains-crouch-passed.txt
           test -s build/font-smoke/native-plains-crouch.png
           test -s build/font-smoke/native-plains-crouch-fallback.png
+          test -s build/font-smoke/death-portraits-passed.txt
+          test -s build/font-smoke/native-death-portraits-front.png
+          test -s build/font-smoke/native-death-portraits-dim.png
           test -s build/font-smoke/trailer-0465-passed.txt
           for page in 0 1 2 3; do test -s build/font-smoke/native-trailer-0465-$page.png; done
           test -s build/font-smoke/cousin-gaits-0497-passed.txt
@@ -1245,7 +1248,7 @@ jobs:
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/multiplayer-native.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('MultiplayerStoryTests.java','StaircaseLeakTests.java','PlaytestCommandTests.java','SceneSupportTests.java','SceneReviewTests.java','StaceyTests.java','SlasherTests.java','ReviewIntegrationTests.java','HomeIntrusionTests.java'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('MultiplayerStoryTests.java','StaircaseLeakTests.java','PlaytestCommandTests.java','SceneSupportTests.java','SceneReviewTests.java','StaceyTests.java','SlasherTests.java','ReviewIntegrationTests.java','HomeIntrusionTests.java','DeathPortraitTests.java'))
           declared+=len(re.findall(r'@GameTest\s*\([^)]*templateNamespace\s*=\s*TheOldestHouse\.MOD_ID\s*\+\s*"_multiplayer"',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/PetsAndClapTests.java').read_text()))
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused native multiplayer cases passed; the complete suite remains required.')
@@ -1359,6 +1362,23 @@ jobs:
           test -s build/font-smoke/borrasca-assets-passed.txt
           for view in front side back dim fixtures-0 fixtures-1 fixtures-2 fixtures-3 gestures keepsakes; do test -s build/font-smoke/native-borrasca-$view.png; done
           python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
+      - name: Native first-death portrait painting and skin readback
+        timeout-minutes: 5
+        run: |
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PdeathPortraitSmoke --no-daemon
+          test -s build/font-smoke/death-portraits-passed.txt
+          test -s build/font-smoke/native-death-portraits-front.png
+          test -s build/font-smoke/native-death-portraits-dim.png
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: first-death-portrait-views-${{ github.sha }}
+          path: |
+            build/font-smoke/native-death-portraits-*.png
+            build/font-smoke/death-portraits-passed.txt
+            run/logs/latest.log
+            run/crash-reports/
+          if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         with:
           name: borrasca-native-assets-${{ github.sha }}

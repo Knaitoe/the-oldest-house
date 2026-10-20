@@ -9,7 +9,8 @@
     "PortholeCrawlMixin",
     "OneArmMixin",
     "HouseMobTrackingMixin",
-    "StillRabbitMixin"
+    "StillRabbitMixin",
+    "PortraitPaintingMixin"
   ],
   "injectors": {
     "defaultRequire": 1

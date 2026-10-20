@@ -82,6 +82,6 @@ public final class PlaytestVisualProof extends Screen {
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof PlaytestVisualProof proof)||++proof.frames<16)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve(proof.page==0?"native-playtest-0464.png":"native-plains-crouch.png"));}
         if(proof.page++==0){proof.frames=0;return;}verifyPlains(dir);
-        Files.writeString(dir.resolve("playtest-assets-passed.txt"),"Additional cousin skins, shared cowering pose, distant boy, camera, keys, ribbon, packets, chess table, varied paper and boarded window rendered by the native client.\n");mc.setScreen(new TrailerVisualProof());
+        Files.writeString(dir.resolve("playtest-assets-passed.txt"),"Additional cousin skins, shared cowering pose, distant boy, camera, keys, ribbon, packets, chess table, varied paper and boarded window rendered by the native client.\n");mc.setScreen(new DeathPortraitVisualProof());
     }
 }
